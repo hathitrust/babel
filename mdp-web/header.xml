@@ -1,0 +1,12 @@
+<!-- header.xml XML include file-->
+
+<Header>
+  <UserName><?USER_NAME?></UserName>
+  <UserId><?USER_ID?></UserId>
+  <LoginLink><?LOGIN_LINK?></LoginLink>
+  <PubCollLink><?PUB_COLL_LINK?></PubCollLink>
+  <PrivCollLink><?PRIV_COLL_LINK?></PrivCollLink>
+  <MirlynItemLink><?MIRLYN_ITEM_LINK?></MirlynItemLink>
+  <HomeLink><?HOME_LINK?></HomeLink>
+  <JumpToCollWidget><?JUMP_TO_COLL_WIDGET?></JumpToCollWidget>
+</Header>
