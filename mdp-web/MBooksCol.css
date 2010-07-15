@@ -1,5 +1,6 @@
 /***
-XXX tbw  move this to LS specfic css file, yo !
+When this CSS is concatenated into concatenated-min.css it lives under web. 
+images are under web/common-web/graphics/ Use ./graphics/foo.gif so make_concat can fix pathis correctly
 ***/
 
 .PTerror 
@@ -202,17 +203,17 @@ td.ItemData ul li {
 
 .viewonly {
   padding-left: 20px;
-  background: transparent url(/m/mdp/graphics/Icon_SearchOnly.png) no-repeat center left;
+  background: transparent url(./graphics/Icon_SearchOnly.png) no-repeat center left;
 }
 
 .fulltext {
   padding-left: 20px;
-  background: transparent url(/m/mdp/graphics/Icon_FullText.png) no-repeat center left;
+  background: transparent url(./graphics/Icon_FullText.png) no-repeat center left;
 }
 
 .cataloglinkhref {
   padding-left: 20px;
-  background: transparent url("/m/mdp/graphics/icon_information_lt.png") no-repeat center left;
+  background: transparent url("./graphics/icon_information_lt.png") no-repeat center left;
 }
 
 /* Used on list_items & search results to show which collection you're currently viewing */
@@ -242,17 +243,17 @@ a .colName {
 }
 
 .error { 
-  background: #feeeee url(/m/mdp/graphics/icon_x.gif) no-repeat scroll 15px 50%;
+  background: #feeeee url(./graphics/icon_x.gif) no-repeat scroll 15px 50%;
   border: 1px solid #ff4040;
 } 
 
 .alert {
-  background: #e2f8d6 url(/m/mdp/graphics/icon_check.gif) no-repeat scroll 15px 50%;
+  background: #e2f8d6 url(./graphics/icon_check.gif) no-repeat scroll 15px 50%;
   border: 1px solid #b9cbaf;
 }
 
 .infoAlert {
-  background: #fae496 url(/m/mdp/graphics/icon_info.gif) no-repeat scroll 15px 50%;
+  background: #fae496 url(./graphics/icon_info.gif) no-repeat scroll 15px 50%;
   border: 1px solid #fc6;
 }
 
@@ -307,7 +308,7 @@ a .colName {
   width:100%;
   background-color: #fff;
   border-top: 5px solid #494949;
-  /*background: url(/m/mdp/graphics/stripe_bkg.png) repeat-x;*/
+  /*background: url(./graphics/stripe_bkg.png) repeat-x;*/
   height: 125px;
 }
 
@@ -372,7 +373,7 @@ a .colName {
   position: relative;
   font-size: .85em;
   color: #eeeeee;
-  background: #494949 url(/m/mdp/graphics/corner_left.png) no-repeat left bottom;
+  background: #494949 url(./graphics/corner_left.png) no-repeat left bottom;
   padding-left: 3px;
 }
 
@@ -406,7 +407,7 @@ a .colName {
 
 #CBNavContainer {
   height: 35px;
-  background: #eeeeee url(/m/mdp/graphics/grayGradient.gif) repeat-x;
+  background: #eeeeee url(./graphics/grayGradient.gif) repeat-x;
   border-top: 1px solid #c9c7b8;
 }
 
