@@ -71,7 +71,7 @@ img {
   font-size: 0.85em;
   padding-left: 3px;
   position: relative;
-  background: #494949 url(/m/mdp/graphics/corner_left.png) no-repeat scroll left bottom
+  background: #494949 url(common-web/graphics/corner_left.png) no-repeat scroll left bottom
 }
 
 .MBooksNav ul {

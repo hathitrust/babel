@@ -592,7 +592,7 @@
             </xsl:attribute>
 
             <xsl:element name="img">
-              <xsl:attribute name="src">/m/mdp/graphics/bookmark.gif</xsl:attribute>
+              <xsl:attribute name="src">//common-web/graphics/bookmark.gif</xsl:attribute>
               <xsl:attribute name="alt">Bookmark this item</xsl:attribute>
               <xsl:attribute name="title">Bookmark this item in your browser</xsl:attribute>
             </xsl:element>

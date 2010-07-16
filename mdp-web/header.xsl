@@ -98,7 +98,7 @@
  <xsl:template name="Accessibilitylink">
    <div class="SkipLink">
      <xsl:text>Go to the </xsl:text>
-     <a href="/m/mdp/accessibility.html">web accessibility page</a> 
+     <a href="//common-web/accessibility.html">web accessibility page</a> 
      <xsl:text> for access keys and other accessibility related information.</xsl:text>
    </div>
  </xsl:template>
@@ -106,7 +106,7 @@
  <xsl:template name="branding">
    <div class="branding">
      <div class="brandingLogo">
-       <a href="http://catalog.hathitrust.org"><img src="/m/mdp/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/>
+       <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/>
         <span>Digital Library</span></a>
      </div>
    </div>
