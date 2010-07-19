@@ -17,7 +17,7 @@
     <h3>Method 1: Copy items from existing MBooks collections</h3>
 
       <ol>
-        <li>Open MBooks Collection interface: <a href="http://dev-linux.umdl.umich.edu/cgi/m/mdp/mb">http://dev-linux.umdl.umich.edu/cgi/m/mdp/mb</a></li>
+        <li>Open MBooks Collection interface: <a href="http://dev-linux.umdl.umich.edu/cgi/mb">http://dev-linux.umdl.umich.edu/cgi/mb</a></li>
         <li>You will be prompted to login</li>
         <li>You'll see a list of "Public Collections," choose one by clicking the collection's title.</li>
         <li>You'll see a list of items within your chosen collection... </li>
@@ -29,18 +29,18 @@
       
       <ol>
         <li>Save the bookmarklet link to your toolbar/links list (see instructions below)</li>
-        <li>When viewing a record in Mirlyn where the MBooks icon <img src="http://tburtonw.dev.umdl.umich.edu/m/mdp/graphics/Mbooks.gif"> is displayed, click on the bookmarklet</li>
+        <li>When viewing a record in Mirlyn where the MBooks icon <img src="http://dev-linux.umdl.umich.edu/graphics/Mbooks.gif"> is displayed, click on the bookmarklet</li>
         <li> This will take you to the item in MBooks where you can click on "Add to your collection" </li>
       </ol>
       
-      <p><em>Alternatively,</em> you can paste the barcode number of any mdp item into this url (paste over the last part of the url - starting with 39015). A book's barcode can be found in the URL listed in the Mirlyn record: <a href="http://dev-linux.umdl.umich.edu/cgi/m/mdp/pt?id=mdp.39015031699849">http://dev-linux.umdl.umich.edu/cgi/m/mdp/pt?id=mdp.39015031699849</a>
+      <p><em>Alternatively,</em> you can paste the barcode number of any mdp item into this url (paste over the last part of the url - starting with 39015). A book's barcode can be found in the URL listed in the Mirlyn record: <a href="http://dev-linux.umdl.umich.edu/cgi/pt?id=mdp.39015031699849">http://dev-linux.umdl.umich.edu/cgi/pt?id=mdp.39015031699849</a>
     
     
     <p>&nbsp;</p>
     <h2>MyMBooks BookMarklet</h2>
 
 
-    Bookmarklet link: <a href="javascript:var links=document.getElementsByTagName('a');var mdp_id;for (var i=0; i <links.length;i++){if (mdp_id=links[i].innerHTML.match(/hdl\.handle\.net\/2027\/(.+)/)){var newURL='http://dev-linux.umdl.umich.edu/cgi/m/mdp/pt?id=' + mdp_id[1];window.location =  newURL;}}">Save to My MBooks</a>
+    Bookmarklet link: <a href="javascript:var links=document.getElementsByTagName('a');var mdp_id;for (var i=0; i <links.length;i++){if (mdp_id=links[i].innerHTML.match(/hdl\.handle\.net\/2027\/(.+)/)){var newURL='http://dev-linux.umdl.umich.edu/cgi/pt?id=' + mdp_id[1];window.location =  newURL;}}">Save to My MBooks</a>
 
 
     <h3>To save the bookmarklet to your toolbar/links list:</h3>
@@ -68,7 +68,7 @@
     </ol>
     <!-- old one uses mdp-->
     <!--
-<a href="javascript:var links=document.getElementsByTagName('a');var mdp_id;for (var i=0;i<links.length;i++){if (mdp_id =links[i].innerHTML.match(/mdp\.\d{14}/)){ var newURL='http://dev-linux.umdl.umich.edu/cgi/m/mdp/pt?id=' + mdp_id;window.location = newURL;}}">My MBooks Bookmarklet</a>
+<a href="javascript:var links=document.getElementsByTagName('a');var mdp_id;for (var i=0;i<links.length;i++){if (mdp_id =links[i].innerHTML.match(/mdp\.\d{14}/)){ var newURL='http://dev-linux.umdl.umich.edu/cgi/pt?id=' + mdp_id;window.location = newURL;}}">My MBooks Bookmarklet</a>
 -->
 
 <!-- new one uses hdl.handle.net/2027/anything since mdp may be replaced by miun or other namespace-->

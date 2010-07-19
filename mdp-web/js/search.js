@@ -1,14 +1,14 @@
 
 YAHOO.namespace("mbooks");
 
-var DEBUG = false;
-//var DEBUG = true;
+var sDEBUG = false;
+//var sDEBUG = true;
 
 
 function dMsg(msg) {
-        if (DEBUG === true) {
-                alert(msg);
-        }
+    if (sDEBUG === true) {
+        alert(msg);
+    }
 }
 
 

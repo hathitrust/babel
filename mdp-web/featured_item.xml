@@ -1,8 +1,4 @@
 
-<!--$Id: featured_item.xml,v 1.6 2008/06/18 14:36:07 suzchap Exp $ -->
-<!--############################################################################################################
-
-############################################################################################################-->
 
 <!-- The first item is the default and will probably show more
 frequently than the others  Note to programmers: This will occur if the max number in
@@ -14,7 +10,7 @@ on this page
 
 <Item>
 <img src="//common-web/graphics/featuredItem/Henty1.jpg" alt="book image"></img>
-<h3><a href="/cgi//common-web/mb?a=listis;c=464226859">Adventure Novels: G.A. Henty</a></h3>
+<h3><a href="/cgi/mb?a=listis;c=464226859">Adventure Novels: G.A. Henty</a></h3>
 <p>Novels from the U-M <a href="http://www.lib.umich.edu/spec-coll/">Special Collections'</a> Henty Collection and books about George A. Henty.</p>
 </Item>
 

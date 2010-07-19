@@ -213,7 +213,7 @@ td.ItemData ul li {
 
 .cataloglinkhref {
   padding-left: 20px;
-  background: transparent url("./graphics/icon_information_lt.png") no-repeat center left;
+  background: transparent url(./graphics/icon_information_lt.png) no-repeat center left;
 }
 
 /* Used on list_items & search results to show which collection you're currently viewing */
