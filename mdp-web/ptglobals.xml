@@ -18,7 +18,6 @@
 <Debug><?DEBUG_SWITCH?></Debug>
 <ContactEmail><?CONTACT_EMAIL?></ContactEmail>
 <ContactText><?CONTACT_TEXT?></ContactText>
-<SearchAction><?SEARCH_ACTION?></SearchAction>
 <VolumeData><?VOLUME_DATA?></VolumeData>
 <VolCurrTitleFrag><?VOLUME_CURRENT_TITLE?></VolCurrTitleFrag>
 <MetadataType><?METADATA_TYPE?></MetadataType>
