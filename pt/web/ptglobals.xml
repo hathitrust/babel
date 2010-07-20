@@ -1,0 +1,29 @@
+<DebugMessages><?DEBUG_MESSAGES?></DebugMessages>
+<RightsAttribute><?RIGHTS_ATTRIBUTE?></RightsAttribute>
+<SourceAttribute><?SOURCE_ATTRIBUTE?></SourceAttribute>
+<FinalAccessStatus><?FINAL_ACCESS_STATUS?></FinalAccessStatus>
+<LoggedIn><?LOGGED_IN?></LoggedIn>
+<HathiTrustAffiliate><?HATHITRUST_AFFILIATE?></HathiTrustAffiliate>
+<MichiganAffiliate><?MICHIGAN_AFFILIATE?></MichiganAffiliate>
+<LoggedInJs><?LOGGED_IN_JS?></LoggedInJs>
+<ItemHandle><?ITEM_HANDLE?></ItemHandle>
+<CurrentCgi><?CGI_GLOBALS?></CurrentCgi>
+<CurrentUrl><?CURRENT_URL?></CurrentUrl>
+<UserAgent><?ENV_VAR variable="HTTP_USER_AGENT"?></UserAgent>
+<ReferrerHref><?ENV_VAR variable="HTTP_REFERRER"?></ReferrerHref>
+<HttpHost><?ENV_VAR variable="HTTP_HOST"?></HttpHost>
+<EnvDLPS_DEV><?ENV_VAR variable="DLPS_DEV"?></EnvDLPS_DEV>
+<EnvSDRINST><?ENV_VAR variable="SDRINST"?></EnvSDRINST>
+<SessionId><?SESSION_ID?></SessionId>
+<Debug><?DEBUG_SWITCH?></Debug>
+<ContactEmail><?CONTACT_EMAIL?></ContactEmail>
+<ContactText><?CONTACT_TEXT?></ContactText>
+<SearchAction><?SEARCH_ACTION?></SearchAction>
+<VolumeData><?VOLUME_DATA?></VolumeData>
+<VolCurrTitleFrag><?VOLUME_CURRENT_TITLE?></VolCurrTitleFrag>
+<MetadataType><?METADATA_TYPE?></MetadataType>
+<MetadataFailure><?METADATA_FAILURE?></MetadataFailure>
+<SSDSession><?SSD_SESSION?></SSDSession>
+<Skin><?MY_SKIN?></Skin>
+<DebugUncompressed><?DEBUG_UNCOMPRESSED?></DebugUncompressed>
+<Pod><?POD_DATA?></Pod>

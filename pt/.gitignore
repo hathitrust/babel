@@ -1,0 +1,6 @@
+# Ignore all backup files
+*~
+# Ignore Emacs auto saved files
+*#*#
+# Ignore the Auth/Surrogate SDR file
+SDR

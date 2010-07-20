@@ -1,0 +1,72 @@
+#
+# Comments and newlines are ignored
+#
+# Section information must start with string Section followed by a
+# colon and the section name.  These will be translated into comments in
+# the XSL.  Sections currently only implemented for javascript includes.
+#
+
+# Paths below to HathiTrust *shared* css and js, i.e. web files in
+# /mdp-web MUST be coded //common-web/...  They are transformed by
+# View::_render_template().
+
+# If debug=local is set, //common-web/... is transformed to
+# /mdp-web/... otherwise to /appname/common-web/...  This means that
+# css and js will come from either the shared web repo mdp-web.git or
+# from its submodule under /appname/vendors/common-web, whichever is
+# more convienent for the developer.
+
+# If, in local.conf, debug_uncompressed_css=1 and/or
+# debug_uncompressed_js=1, then the paths that will load that begin
+# with //common-web/ are affected according to the debug=local
+# switch. If a switch in local.conf is NOT set, then the concatenated
+# file will load from /appname/web.
+
+# The concatenator script make-concat always draws the shared files to
+# concatenate from /appname/web/common-web.  This means that changes
+# to shared web files in /mdp-web must be committed, pushed and pulled
+# into the common-web submodule to be seen in the concatenated-min
+# files.  So that usually the last phase of development.
+
+# NOTE: paths WITHIN shared web files like graphics/foo.gif MUST be
+# relative and MUST be coded withthe dot-slash syntax
+# './graphics/foo.gif so the concatenator can change the path to
+# common-web/graphics. This means that when a shared web file is
+# loaded from /mdp-web it will find its paths relative to itself but
+# when it is concatenated into concatenated-min under /appname/web it
+# will find its paths in common-web, i.e. relative to its new location
+# under /appname/web.
+
+Section:YUI
+# NOTE: utilities/README says utilities.js includes all of the below
+# so it should suffice to load just utilities.js instead of all of
+# these except we got a JS error when we tried that.
+/pt/web/yui2-lib/build/yahoo/yahoo-min.js
+/pt/web/yui2-lib/build/event/event-min.js
+/pt/web/yui2-lib/build/dom/dom-min.js
+/pt/web/yui2-lib/build/dragdrop/dragdrop-min.js
+/pt/web/yui2-lib/build/container/container-min.js
+/pt/web/yui2-lib/build/connection/connection-min.js
+/pt/web/yui2-lib/build/utilities/utilities.js
+/pt/web/yui2-lib/build/resize/resize-min.js
+
+Section:LOCAL_JS
+# These should be listed with the unminimized name.
+# The script will run yuicompress on them
+//common-web/js/feedbackForm.js
+//common-web/js/newCollOverlayCore.js
+/pt/web/js/newCollOverlayPT.js
+//common-web/js/overlayUtils.js
+//common-web/js/listUtils.js
+/pt/web/js/section108.js
+/pt/web/js/pageturner.js
+
+Section:CSS
+# css files, note last one overides earlier
+/pt/web/yui2-lib/build/fonts/fonts-min.css
+/pt/web/yui2-lib/build/container/assets/skins/sam/container.css
+/pt/web/yui2-lib/build/resize/assets/skins/sam/resize.css
+//common-web/framework.css
+/pt/web/feedback.css
+/pt/web/pageviewer.css
+//common-web/MBooksCol.css
