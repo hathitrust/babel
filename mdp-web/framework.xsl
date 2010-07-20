@@ -669,6 +669,7 @@
           </xsl:element>
         </li>
       </ul>
+      <xsl:call-template name="HiddenDebug"/>
     </xsl:element>
     
   </xsl:template>
