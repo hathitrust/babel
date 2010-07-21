@@ -1,31 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!--
-  Copyright 2006, The Regents of The University of Michigan, All Rights Reserved
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal in the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject
-  to the following conditions:
-
-  The above copyright notice and this permission notice shall be
-  included in all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
--->
-
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-
-  <!--xsl:import href="framework.xsl"/-->
 
   <!-- Global Variables -->
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
@@ -987,6 +962,7 @@
               <xsl:value-of select="$gCurrentPageNum"/>
             </xsl:attribute>
           </xsl:element>
+          <xsl:call-template name="HiddenDebug"/>
         </li>
 
       </ul>
@@ -1016,6 +992,7 @@
           </xsl:for-each>
         </li>
       </ul>
+      <xsl:call-template name="HiddenDebug"/>
     </xsl:element>
   </xsl:template>
 
@@ -1204,7 +1181,6 @@
       <ul>
         <li class="asearchform">
           <xsl:apply-templates select="$pResizeForm/HiddenVars"/>
-
           <xsl:for-each select="$pResizeForm/ResizeValuesSelect">
             <span class="sizeLabel" title="Change size">size&#xa0;</span>
             <xsl:call-template name="BuildHtmlSelect">
@@ -1215,6 +1191,7 @@
         </li>
       </ul>
     </xsl:element>
+    <xsl:call-template name="HiddenDebug"/>
   </xsl:template>
 
   <!-- AJAX: build "add item to [new] collection" request URL -->

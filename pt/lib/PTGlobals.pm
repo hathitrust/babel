@@ -54,7 +54,7 @@ $gMULTIRGN  = "multirgn";
 $gXPATU     = "xpatu";
 
 $gPtLibMiscDir = $LOCATION . '/misc';
-$gDd        = $gPtLibMiscDir . '/BooksXPatDataDictionary.xml';
+$gDd        = $gPtLibMiscDir . '/MBooksXPatDataDictionary.xml';
 $gMdpTags   = $gPtLibMiscDir . '/mdp-regions.tags';
 
 $gPsetOffset = 200;
@@ -124,13 +124,13 @@ $gGraphicsHtmlDir  = $LOCATION . q{/../web/common-web/graphics/};
                                  },
                      );
 
-$gCacheDocRoot     = '/cache/';
+$gCacheDocRoot  = ($ENV{SDRVIEW} eq 'full') ? '/cache-full/' : '/cache/';
 
 # Filesystem root for cached generated images
-$gCacheDir         = $ENV{'SDRROOT'} . '/cache/web/';
+$gCacheDir      = $ENV{SDRROOT} . (($ENV{SDRVIEW} eq 'full') ? "/cache-full/imgsrv" : "/cache/imgsrv");
 
-# USING SDRROOT HERE, NOT SDRDATAROOT
-$gIndexCacheDir    = $ENV{'SDRROOT'} . '/cache/idx';
+# XPAT indexes
+$gIndexCacheDir = $ENV{SDRROOT} . (($ENV{SDRVIEW} eq 'full') ? "/cache-full/ptsearch" : "/cache/ptsearch");
 
 # Jp2 info and extraction command templates
 $gKduInfoCommand = 

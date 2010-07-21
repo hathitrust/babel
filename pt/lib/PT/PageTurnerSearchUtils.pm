@@ -466,7 +466,7 @@ sub GetIndexOutputDestDir
 {
     my $id = shift;
     my $outputDestDir =
-        $PTGlobals::gIndexCacheDir . Identifier::id_to_mdp_path($id);
+        "$PTGlobals::gIndexCacheDir/" . Identifier::id_to_mdp_path($id);
     return $outputDestDir;
 }
 
@@ -620,7 +620,7 @@ sub MaybeBuildOcrXmlFile
     {
         DEBUG('index,all', qq{<h5>Creating output XML file: $outputOcrXmlFileName</h5>});
 
-        my $doc = new MBooks::Document::XPAT;
+        my $doc = new Document::XPAT;
         my $fullTextRef = $doc->get_document_content($C, $mdpItem);
         Utils::write_data_to_file( $fullTextRef, $outputOcrXmlFileName );
 
