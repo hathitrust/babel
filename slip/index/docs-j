@@ -1,0 +1,222 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+docs-j
+
+=head1 USAGE
+
+% docs-j -r run -F filename-of-ids
+
+=head1 DESCRIPTION
+
+Read a list of IDs from `filename' and build the corresponding Solr
+docs.  It only needs run to read the database config.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Context;
+use ObjFactory;
+use Database;
+use Search::Constants;
+
+# Local
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+
+our ($opt_r, $opt_F, $opt_d);
+
+my $ops = getopts('r:F:d:');
+
+# Required: run
+my $RUN;
+if (defined($opt_r)) {
+    $RUN = $opt_r;
+}
+else {
+    my $s = d_get_usage();
+    print $s;
+    exit 1;
+}
+# Required: filename
+my $ID_FILENAME;
+if (defined($opt_F)) {
+    $ID_FILENAME = $opt_F;
+}
+else {
+    my $s = d_get_usage();
+    print $s;
+    exit 1;
+}
+
+if (defined($opt_d)) {
+    if (! grep(/1|2|3/, ($opt_d))) {
+        my $s = i_get_usage();
+        __output($s);
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+
+    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= ',vufind'
+        if ($opt_d == 2);
+    $ENV{'DEBUG'} .= ',docfulldebug'
+        if ($opt_d == 3);
+}
+$ENV{'DEBUG'} .= ',doconly';
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_run_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $db = new Database($config);
+$C->set_object('Database', $db);
+my $dbh = $db->get_DBH();
+
+# Flush i/o
+$| = 1;
+
+my $id_arr_ref = d__load_ids_from_file($ID_FILENAME);
+print scalar(@$id_arr_ref) . qq{ ids loaded from $ID_FILENAME\n};
+
+foreach my $id (@$id_arr_ref) {
+    # --------------------  Create Document  --------------------
+    my $of = new ObjFactory;
+    my $document_subclass = $C->get_object('MdpConfig')->get('document_subclass');
+    my %of_attrs = (
+                    'class_name' => $document_subclass,
+                    'parameters' => {
+                                     'C'  => $C,
+                                     'dbh' => $dbh,
+                                     'id' => $id,
+                                    },
+                   );
+    my $doc = $of->create_instance($C, \%of_attrs);
+    my ($ocr_status, $metadata_status) = $doc->get_document_status();
+
+    if ($ocr_status != IX_NO_ERROR) {
+        print qq{-----> OCR error};
+    }
+    if ($metadata_status != IX_NO_ERROR) {
+        print qq{-----> metadata error};
+    }
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+
+# ---------------------------------------------------------------------
+
+=item d__load_ids_from_file
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub d__load_ids_from_file {
+    my $filename = shift;
+
+    my @arr;
+    my $ok;
+    eval {
+        $ok = open(IDS, $filename);
+    };
+    if ($@) {
+        print qq{i/o ERROR:($@) reading file="$filename" ... exit\n};
+        exit 1;
+    }
+
+    if (! $ok) {
+        print qq{could not open file="$filename" ... exit\n};
+        exit 1;
+    }
+
+    while (my $id = <IDS>) {
+        chomp($id);
+        push(@arr, $id)
+            if($id);
+    }
+    close (IDS);
+
+    return \@arr;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item d_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub d_get_usage {
+    my $s = qq{Usage: doc-j -r run(any)-d{1,2,3} -F filename-of-ids\n\t\tWrites results to, e.g., "/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
+                      where 1=default
+                            2=add vufind response
+                            3=add docfulldebug (no delete of zip tmpdir)\n\n};
+    return $s;
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

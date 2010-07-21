@@ -1,0 +1,417 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+enqueuer-j
+
+=head1 USAGE
+
+% enqueuer-j -r run
+
+=head1 DESCRIPTION
+
+enqueuer-j reads the timestamp recorded in mdp.j_rights_timestamp when
+it last did work. If there are ids in j_rights newer or _equal_ than
+that time, it inserts those ids into the queue to be processed for the
+given run.  Producers (index-j) read and dequeue from the queue.
+
+The enqueuer-j runs independently of the other scripts, i.e if index-j
+is disabled, enqueuer-j still runs.
+
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Database;
+use Semaphore;
+use Utils::GlobalSwitch;
+use Search::Site;
+
+# Local
+use SLIP_Utils::Log;
+use SLIP_Utils::Common;
+use Db;
+
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+
+# Prevent replication errors: enqueue only to one mysqlserv
+exit 0
+    if (Search::Site::get_server_site_name() ne 'macc');
+
+# ---------------------------------------------------------------------
+
+=item qu_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub qu_get_usage {
+    my $s;
+    $s .= qq{Usage: enqueuer-j -r run [-n] [-d]};
+    $s .= qq{ [-F filename]\n};
+
+    return $s;
+}
+
+our ($opt_d, $opt_r, $opt_F, $opt_n);
+
+my $ops = getopts('dr:F:n');
+
+# Required
+my $RUN = $opt_r;
+if (! $opt_r) {
+    my $s = qu_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+# Enqueue ids from a file
+my $ID_FILENAME;
+if (defined($opt_F)) {
+    $ID_FILENAME = $opt_F;
+}
+
+my $CHECK = defined($opt_n);
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+}
+
+my $INTERACTIVE = $ENV{'TERM'};
+
+# Do not try to enqueue ids while I am running already
+my $lock_run = $RUN;
+my $Lock_File = "/tmp/enqueuer-$lock_run-lock.sem";
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    exit 0;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_run_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $db;
+eval {
+    $db = new Database($config);
+};
+if ($@) {
+    SLIP_Utils::Common::Log_database_connection_error($C, 'enqueuer-j', $@);
+    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+}
+
+$C->set_object('Database', $db);
+
+my $DBH = $C->get_object('Database')->get_DBH();
+
+eval {
+    if (defined($ID_FILENAME)) {
+        enqueue_from_FILE($C, $DBH, $RUN);
+    }
+    else {
+        if (
+            qu_enqueuer_enabled($C, $DBH, $RUN)
+            ||
+            $INTERACTIVE
+           ) {
+            # Exit this cron'd enquerer-j if another has the tables locked
+            # to prevent cron'd enqueuer-j's from piling up
+            my $lock_file = '/tmp/enqueuer-lock.sem';
+            my $sem = new Semaphore($lock_file);
+            if (! $sem) {
+                DEBUG('me', qq{DEBUG: enqueuer-j could not get semaphore});
+                exit 0;
+            }
+
+            enqueue_from_j_rights($C, $DBH, $RUN);
+
+            $sem->unlock()
+                if ($sem);
+        }
+        else {
+            my $s = qq{enqueuer-j not enabled\n};
+            __output($s);
+        }
+    }   
+};
+if ($@) {
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+    my $s = qq{CRITICAL ERROR: $@\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+
+# ---------------------------------------------------------------------
+
+=item __load_ids_from_file
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __load_ids_from_file {
+    my $C = shift;
+    my $filename = shift;
+
+    my @arr;
+    my $ok;
+    eval {
+        $ok = open(IDS, $filename);
+    };
+    if ($@) {
+        my $s0 = qq{i/o ERROR:($@) reading file="$filename"\n};
+        __output($s0);
+
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+
+    if (! $ok) {
+        my $s1 = qq{could not open file="$filename"\n};
+        __output($s1);
+
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+
+    while (my $id = <IDS>) {
+        chomp($id);
+        push(@arr, {'id' => $id})
+            if($id);
+    }
+    close (IDS);
+
+    return \@arr;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __handle_queue_insert
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_queue_insert {
+    my $C = shift;
+    my $dbh = shift;
+    my $run = shift;
+    my $ref_to_arr_of_hash_ref = shift;
+
+    my $total_num_inserted = 0;
+    
+    while (1) {
+        # Insert in blocks of 100
+        my @queue_array = splice(@$ref_to_arr_of_hash_ref, 0, 100);
+        last
+            if (scalar(@queue_array) <= 0);
+
+        my $num_inserted = Db::insert_queue_items($C, $dbh, $run, \@queue_array);
+        $total_num_inserted += $num_inserted;
+        my $s0 = qq{enqueuer-j: added $num_inserted items to queue, total now $total_num_inserted\n};
+        __output($s0);
+    }
+
+    my $s1 = qq{enqueuer-j: added $total_num_inserted total items to queue\n};
+    __output($s1);
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item enqueue_from_FILE
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_from_FILE {
+    my ($C, $dbh, $run) = @_;
+
+    my $ref_to_arr_of_hash_ref = __load_ids_from_file($C, $ID_FILENAME);
+    my $num_loaded = scalar(@$ref_to_arr_of_hash_ref);
+
+    if ($num_loaded > 0) {
+        my $s0 = qq{enqueuer-j: loaded $num_loaded items from file=$ID_FILENAME\n};
+        __output($s0);
+        __handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_hash_ref);
+    }
+    else {
+        my $s1 = qq{enqueuer-j: no items to add to queue\n};
+        __output($s1);
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item enqueue_from_j_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_from_j_rights {
+    my ($C, $dbh, $run) = @_;
+
+    my $before_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+    if ($CHECK) {
+        my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
+        __output(qq{count=$would_be_queued would be queued with timestamp > $before_timestamp\n});
+    }
+    else {
+        # Insert items into the queue and mark their status as "available"
+        
+        # Get all items from the j_rights table with update_time newer
+        # than the timestamp set when enqueuer-j last recorded
+        # the MAX(update_time) and insert them into j_queue advancing the
+        # timestamp j_rights_timestamp
+        my $num_inserted = Db::insert_latest_into_queue($C, $dbh, $run);
+        my $after_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+        
+        if ($num_inserted > 0) {
+            my $s = qq{enqueuer-j: added $num_inserted items to queue};
+            __output(qq{$s\n});
+            DEBUG('me', qq{DEBUG: $s});
+            qu_Log_work($C, $run, $num_inserted, $before_timestamp, $after_timestamp);
+        }
+        else {
+            my $s = qq{enqueuer-j: no items to add to queue};
+            __output(qq{$s\n});
+            DEBUG('me', qq{DEBUG: $s});
+            qu_Log_work($C, $run, 0, $before_timestamp, $after_timestamp);
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item qu_enqueuer_enabled
+
+Is enqueuer enabled?
+
+=cut
+
+# ---------------------------------------------------------------------
+sub qu_enqueuer_enabled {
+    my ($C, $dbh, $run) = @_;
+
+    my $enquerer_enabled = Db::Select_enqueuer_enabled($C, $dbh, $run);
+
+    return $enquerer_enabled;
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item qu_Log_work
+
+Description; Procdeural interface
+
+=cut
+
+# ---------------------------------------------------------------------
+sub qu_Log_work {
+    my ($C, $run, $num_inserted, $t_before, $t_after) = @_;
+
+    my $f;
+    if (defined($ID_FILENAME)) {
+        $f = qq{from file=$ID_FILENAME};
+    }
+
+    my $s = qq{enqueuer-j added $num_inserted $f items to queue before_timestamp=$t_before after_timestamp=$t_after at: } . Utils::Time::iso_Time();
+    SLIP_Utils::Log::this_string($C, $s, 'enqueuer_logfile', '___RUN___', $run);
+}
+
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-9 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

@@ -1,0 +1,995 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+driver-j
+
+=head1 USAGE
+
+# driver-j -r run
+
+=head1 DESCRIPTION
+
+Drives the process of indexing queued documents into shards,
+optimizing. Optimization can be accomplished by stages or all at once
+to any number of segments.
+
+The driver takes care of enabling all configured hosts, enabling shard
+indexers, enabling optimizers monitoring their progress through the
+mdp.j_shard_control table.
+
+If the driver has an error it emails and stops the run.
+
+There is a single driver script running on a distinguished host.
+
+=head1 OPTIONS
+
+=over 8
+
+=item --help
+
+Prints this message and exits.
+
+=back
+
+=cut
+
+=head1 EXAMPLES
+
+Run this script in debug mode if ...
+
+=over
+
+perl foo.pl --help
+
+=back
+
+=cut
+
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Context;
+use MdpConfig;
+use Database;
+use Utils::GlobalSwitch;
+use Semaphore;
+
+# Local
+use Db;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Common;
+use SLIP_Utils::Log;
+
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+
+sub sd_get_usage {
+    my $s .= qq{Usage: driver-j -r run -O limit_segments [-d]\n};
+    return $s;
+}
+
+our ($opt_r, $opt_d, $opt_O);
+
+my $ops = getopts('r:dO:');
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $s = qq{run (-r) param missing: } . sd_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $LIMIT_SEGS = $opt_O; # Required
+if (! defined($LIMIT_SEGS)) {
+    my $s = qq{limit_segs (-O) param missing: } . sd_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} = 'lsdb,me';
+}
+
+my $INTERACTIVE = $ENV{'TERM'};
+
+my $C = new Context;
+
+my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
+my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+
+my $config = new MdpConfig($common_configfile, $global_configfile);
+$C->set_object('MdpConfig', $config);
+
+my $db;
+eval {
+    $db = new Database($config);
+};
+if ($@) {
+    SLIP_Utils::Common::Log_database_connection_error($C, qq{driver-j run=$RUN}, $@);
+    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+}
+
+$C->set_object('Database', $db);
+my $DBH = $db->get_DBH();
+
+my $BASE_DIR = $ENV{'SDRROOT'} . '/bin/l/ls/index/';
+my @NUM_SHARDS_LIST = $config->get('num_shards_list');
+my $Child_Err_File =
+    qq{/tmp/driver_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
+my $EMAIL_MESSAGE_BUFFER;
+
+my $flags_dir = $config->get('shared_flags_dir');
+if (! -e $flags_dir) {
+    my $rc = $SLIP_Utils::States::RC_DRIVER_FLAGS_DIR;
+    my $s = qq{driver-j: $flags_dir does not exist run=$RUN\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+use constant OPTIMIZE_SLEEP_WAIT => 300; # 5 minutes
+use constant INDEX_SLEEP_WAIT    => 60;  # 1 minute
+use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
+
+# Outta here if not enabled
+__check_driver_enabled($C, $DBH, $RUN);
+
+# Exit driver-j if another has the semaphore to prevent piling up
+my $Lock_File = '/tmp/driver-lock.sem';
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    my $rc = $SLIP_Utils::States::RC_DRIVER_NO_SEM;
+
+    my $s = qq{driver-j could not get semaphore run=$RUN\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+# Test busy file used to communicate driver in process to Core
+# snapshot release ant Tomcat restart scripts.  Also acts as a valve
+# for Core Services to indicate their scripts are not available.
+my $BUSY_FILE = $flags_dir . '/' . 'busy';
+if (-e $BUSY_FILE) {
+    my $rc =  $SLIP_Utils::States::RC_DRIVER_BUSY_FILE;
+    my $s = qq{driver-j: busy file=$BUSY_FILE detected run=$RUN, exit.\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $INITIAL_QUEUE_SIZE = 0;
+
+eval {
+    my $rc = 0;
+    ($INITIAL_QUEUE_SIZE, $rc) = get_Building_queue_size($C, $DBH, $RUN, $SLIP_Utils::States::St_Undefined);
+    if ($rc == 0) {
+        run_driver($C, $DBH, $RUN);
+
+        $Semaphore->unlock()
+            if ($Semaphore);
+    }
+    else {
+        handle_Stage_rc($SLIP_Utils::States::St_Undefined, $rc);
+        # NOTREACHED
+    }
+};
+if ($@) {
+    my $s = qq{Error running driver-j -r$RUN: $@\n};
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+
+    email_driver_msg($C, $s, 1);
+
+    handle_Stage_rc($SLIP_Utils::States::St_Undefined, $rc);
+    # NOTREACHED
+}
+
+exit 0;
+
+
+#
+# ----------------------- H a n d l e r s -----------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item handle_Stage_rc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Stage_rc {
+    my ($stage, $rc) = @_;
+
+    if ($rc > 0) {
+        my $s = qq{stage=$stage error=} . SLIP_Utils::Common::stage_rc_to_string($rc);
+
+        email_driver_msg($C, $s, 1);
+
+        __output("$s\n");
+        __non_interactive_err_output($rc, $s);
+
+        __control_producers($C, $DBH, $RUN, $stage, 'stop');
+        __control_optimizers($C, $DBH, $RUN, $stage, 'stop');
+
+        SLIP_Utils::Db_driver::set_driver_enabled($C, $DBH, $RUN, 0);
+        SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Driver_ERROR);
+
+        exit $rc;
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item run_driver
+
+Drive the stages.  __Order_matters__
+
+=cut
+
+# ---------------------------------------------------------------------
+sub run_driver {
+    my ($C, $dbh, $run) = @_;
+
+    my $driver_START = time();
+
+    Log_run($C, $run);
+
+    my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
+
+    if ($_Stage ne $SLIP_Utils::States::St_Build_Wait) {
+        handle_Stage_rc($_Stage, $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE);
+    }
+    # POSSIBLY NOTREACHED
+
+    while (1) {
+
+        if ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
+            # Check for work
+            handle_Stage_rc($_Stage, handle_Build_Wait($C, $dbh, $run));
+        }
+        elsif ($_Stage eq $SLIP_Utils::States::St_Building) {
+            # Update shards
+            handle_Stage_rc($_Stage, handle_Building($C, $dbh, $run));
+        }
+        elsif ($_Stage eq $SLIP_Utils::States::St_Optimizing) {
+            # Optimize shards
+            handle_Stage_rc($_Stage, handle_Optimizing($C, $dbh, $run));
+        }
+
+        $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
+        if ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
+            # Reset the shard states.  This will not happen if there
+            # was an error so the states of individual shards will be
+            # preserved.
+            __Reset_shard_states($C, $dbh, $run);
+            last;
+        }
+    }
+    # Status
+    driver_exit_msg(qq{driver completed successfully}, $driver_START);
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item driver_exit_msg
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub driver_exit_msg {
+    my $s = shift;
+    my $start = shift;
+
+    if ($start) {
+        my $elapsed = time() - $start;
+        $elapsed = sprintf("%.2f", $elapsed/60/60);
+        $s .= qq{: elapsed=$elapsed hours};
+    }
+
+    email_driver_msg($C, $s, 0);
+}
+
+# ---------------------------------------------------------------------
+
+=item ___rate
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ___rate {
+    my $start = shift;
+
+    my $elapsed_hours = sprintf("%.2f", (time() - $start)/60/60);
+    my $rate = sprintf("%.1f", $INITIAL_QUEUE_SIZE/$elapsed_hours);
+
+    return qq{rate=$rate docs/hour elapsed=$elapsed_hours hours};
+}
+
+
+# ---------------------------------------------------------------------
+
+=item handle_Build_Wait
+
+Build_Wait is the base stage driver-j must be at for a run to
+be processed when triggered from cron.
+
+driver-j enables several other scripts to run from cron.  They can
+proceed at different paces.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Build_Wait {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Build_Wait;
+    my $_Next_Stage = $SLIP_Utils::States::St_Building;
+
+    __output("$_Stage\n");
+
+    __check_driver_enabled($C, $dbh, $run);
+
+    # Is there any work to do?
+    my $q = qq{queue size=$INITIAL_QUEUE_SIZE};
+
+    if ($INITIAL_QUEUE_SIZE == 0) {
+        # Nothing to do.  Clean exit remaining in default Build_Wait
+        my $s = qq{Driver queue empty\n};
+        __output($s);
+        Log_stage($C, $run, $_Stage, $q);
+        driver_exit_msg($s);
+
+        exit 0;
+    }
+    # POSSIBLY NOTREACHED
+    Log_stage($C, $run, $_Stage, $q);
+
+    my $rc = 0;
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+
+    $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+    if ($rc == 0) {
+        # Zero the rates and counts
+        $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage);
+
+        if ($rc == 0) {
+            # Enable producers to start running from cron
+            $rc = __control_producers($C, $DBH, $RUN, $_Stage, 'start');
+
+            # Proceed to next stage or let handle_Stage_rc deal with the
+            # bad rc
+            if ($rc == 0) {
+                SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+                # Set busy file
+                `touch $BUSY_FILE`;
+            }
+        }
+    }
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item handle_Building
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Building {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Building;
+    my $_Next_Stage = $SLIP_Utils::States::St_Optimizing;
+
+    __output("$_Stage\n");
+
+    __check_driver_enabled($C, $dbh, $run);
+    Log_stage($C, $run, $_Stage);
+
+    my $build_START = time();
+
+    my $rc = 0;
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+
+    $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+    if ($rc == 0) {
+        # Wait for shards to finish building (queue empty)
+        $rc = __Wait_shard_states($C, $dbh, $run, $_Stage, $state_record_ref);
+
+        # Unconditionally, disable producers to stop them from running from cron
+        $rc ||= __control_producers($C, $dbh, $run, $_Stage, 'stop');
+
+        if ($rc == 0) {
+            # Record this finish time for all shards without errors.
+            __record_shards_build_done($C, $dbh, $run);
+
+            # Enable transition to next stage before allowing
+            # optimization so sizer-j will not try to enable or commit
+            # during optimization.
+            SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+            # Enable optimizers to start running from cron
+            $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
+        }
+    }
+
+    Log_stage($C, $run, $_Stage, ___rate($build_START));
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item handle_Optimizing
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Optimizing {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Optimizing;
+    my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+
+    __output("$_Stage\n");
+
+    __check_driver_enabled($C, $dbh, $run);
+    Log_stage($C, $run, $_Stage);
+
+    my $optimize_START = time();
+
+    my $rc = 0;
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+
+    $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+    if ($rc == 0) {
+        # Wait for all shards to finish optimizing
+        $rc = __Wait_shard_states($C, $dbh, $run, $_Stage, $state_record_ref);
+
+        # Unconditionally disable optimizers to stop them from running from cron
+        $rc ||= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
+
+        if ($rc == 0) {
+            # Informational segment count test. System snap/release
+            # also check and abort.
+            $rc = __check_shards_segment_count($C, $run, $_Stage, $LIMIT_SEGS);
+
+            # Proceed to next stage.
+            SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+            # Remove busy file
+            unlink($BUSY_FILE);
+        }
+    }
+
+    Log_stage($C, $run, $_Stage, ___rate($optimize_START));
+
+    return $rc;
+}
+
+#
+# ----------------------- U t i l i t i e s ---------------------------
+#
+# ---------------------------------------------------------------------
+
+=item __Wait_shard_states
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Wait_shard_states {
+    my ($C, $dbh, $run, $stage) = @_;
+
+    while (1) {
+        __check_driver_enabled($C, $dbh, $run);
+
+        my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+
+        my $rc_0 = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+        return $rc_0 if ($rc_0 > 0);
+        # POSSIBLY NOTREACHED
+
+        if ($stage eq $SLIP_Utils::States::St_Building) {
+            my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $stage);
+            return $rc_1 if ($rc_1 > 0);
+
+            while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP')) {
+                __output("  wait Building: STOPSLIP\n");
+                sleep STOPSLIP_SLEEP_WAIT;
+            }
+
+            if ($current_queue_size > 0) {
+                __output("  wait Building\n");
+                sleep INDEX_SLEEP_WAIT;
+            }
+            else {
+                return 0;
+            }
+        }
+        elsif ($stage eq $SLIP_Utils::States::St_Optimizing) {
+            if ($state_record_ref->{'num_optimized'} == scalar(@NUM_SHARDS_LIST)) {
+                return 0;
+            }
+            else {
+                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP')) {
+                    __output("  wait Optimizing: STOPSLIP\n");
+                    sleep STOPSLIP_SLEEP_WAIT;
+                }
+
+                __output("  wait Optimizing\n");
+                sleep OPTIMIZE_SLEEP_WAIT;
+            }
+        }
+        else {
+            return 0;
+        }
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item get_Building_queue_size
+
+Return current queue size if non-zero.  If zero, requeue timeouts and
+return queue size.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_Building_queue_size {
+    my ($C, $dbh, $run, $stage) = @_;
+
+    my $rc = 0;
+
+    my ($size) = Db::Select_queue_data($C, $dbh, $run);;
+
+    if ($size == 0) {
+        # Requeue timeouts, if any
+        my $timeouts = Db::Select_timeouts_count($C, $dbh, $run);
+        if ($timeouts > 0) {
+            $rc = __requeue_timeouts($C, $dbh, $run, $stage);
+            if ($rc == 0) {
+                ($size) = Db::Select_queue_data($C, $dbh, $run);
+                __output("     requeue $size\n");
+                Log_stage($C, $run, $stage, qq{Requeue timeouts num=$size});
+            }
+        }
+    }
+
+    return ($size, $rc);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __requeue_timeouts
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __requeue_timeouts {
+    my ($C, $dbh, $run, $stage) = @_;
+
+    my $cmd = $BASE_DIR . qq{timeouts-j -r$run -Q 2>$Child_Err_File};
+    my $sysrc = system($cmd);
+
+    my $s = qq{"timeouts-j -r$run -Q"};
+    my $rc = __check_sysrc($sysrc, $C, $run, $stage, $s);
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __check_driver_enabled
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __check_driver_enabled {
+    my ($C, $dbh, $run) = @_;
+
+    if (! __driver_enabled($C, $DBH, $RUN)) {
+        my $rc = $SLIP_Utils::States::RC_DRIVER_DISABLED;
+        my $s = qq{driver-j disabled for run=$RUN\n};
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+
+        exit $rc;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __record_shards_build_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __record_shards_build_done {
+    my ($C, $dbh, $run) = @_;
+
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        my $build_state = Db::Select_shard_build_state($C, $dbh, $run, $shard);
+
+        if ($build_state == $SLIP_Utils::States::Sht_No_Build_Error) {
+            Db::set_shard_build_done($C, $dbh, $run, $shard);
+        }
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __get_shard_states
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_shard_state_record {
+    my ($C, $dbh, $run) = @_;
+
+    my %h;
+
+    $h{'num_errors'}    = 0;
+    $h{'num_optimized'} = 0;
+
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        my $build_state    = Db::Select_shard_build_state($C, $dbh, $run, $shard);
+        my $optimize_state = Db::Select_shard_optimize_state($C, $dbh, $run, $shard);
+
+        $h{'num_errors'}    += ($build_state    == $SLIP_Utils::States::Sht_Build_Error);
+        $h{'num_errors'}    += ($optimize_state == $SLIP_Utils::States::Sht_Optimize_Error);
+
+        $h{'num_optimized'} += ($optimize_state == $SLIP_Utils::States::Sht_Optimized);
+    }
+
+    return \%h;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __check_shard_errors
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __check_shard_errors {
+    my ($C, $dbh, $run, $state_record_ref) = @_;
+
+    my $rc = 0;
+    if ($state_record_ref->{'num_errors'} > 0) {
+        $rc = $SLIP_Utils::States::RC_ERROR_SHARD_STATES;
+    }
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __driver_enabled
+
+Is driver enabled?
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __driver_enabled {
+    my ($C, $dbh, $run) = @_;
+
+    my $enabled =
+        (
+         SLIP_Utils::Db_driver::Select_driver_enabled($C, $dbh, $run)
+         ||
+         $INTERACTIVE
+        );
+
+    return $enabled;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __check_sysrc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __check_sysrc {
+    my ($sysrc, $C, $run, $stage, $s) = @_;
+
+    my $rc = 0;
+
+    if ($sysrc > 0) {
+        my $s_ref = SLIP_Utils::read_file($Child_Err_File, 1, 0);
+        my $ss = qq{driver-j system_rc=$sysrc attempting $s stage=$stage error:$$s_ref\n};
+        $rc = $SLIP_Utils::States::RC_DRIVER_CHILD_ERROR;
+        Log_stage($C, $run, $stage, $ss);
+        __output($ss);
+        __non_interactive_err_output($rc, $ss);
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item __check_shards_segment_count
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __check_shards_segment_count {
+    my ($C, $run, $stage, $num_segs) = @_;
+
+    my $rc = 0;
+
+    # Make sure shards have correct number of segments post-optimize
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        my $cmd = $BASE_DIR . qq{Utils/check-shards -r$run -N$num_segs 2>$Child_Err_File};
+        my $sysrc = system($cmd);
+
+        my $s = qq{"check-shards -r$run -N$num_segs"};
+        $rc ||= __check_sysrc($sysrc, $C, $run, $stage, $s);
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item __control_optimizers
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __control_optimizers {
+    my ($C, $dbh, $run, $stage, $option) = @_;
+
+    my $rc = 0;
+
+    # Start or stop the commit-j script for each shard
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -O 2>$Child_Err_File};
+        my $sysrc = system($cmd);
+
+        my $s = qq{"control-j -r$run -R$shard -k$option -O"};
+        $rc ||= __check_sysrc($sysrc, $C, $run, $stage, $s);
+    }
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __Reset_stats_recording
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Reset_stats_recording {
+    my ($C, $dbh, $run, $stage) = @_;
+
+    my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats 2>$Child_Err_File};
+    my $sysrc = system($cmd);
+
+    my $s = qq{"control-j -r$run -kresetstats"};
+    my $rc = __check_sysrc($sysrc, $C, $run, $stage, $s);
+
+    return $rc;
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item __control_producers
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __control_producers {
+    my ($C, $dbh, $run, $stage, $option) = @_;
+
+    my $rc = 0;
+
+    # Start or stop the run
+    my $cmd = $BASE_DIR . qq{control-j -r$run -k$option 2>$Child_Err_File};
+    my $sysrc = system($cmd);
+
+    my $s = qq{"control-j -r$run -k$option"};
+    $rc ||= __check_sysrc($sysrc, $C, $run, $stage, $s);
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item __Reset_shard_states
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Reset_shard_states {
+    my ($C, $dbh, $run) = @_;
+
+    # Reset the shard states
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        Db::Reset_shard_control($C, $dbh, $run, $shard);
+    }
+}
+
+
+#
+# ------------------------- L o g g i n g -----------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item Log_disabled
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_disabled {
+    my ($C, $run) = @_;
+
+    my $s = qq{***DRIVER [DISABLED]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_run
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_run {
+    my ($C, $run) = @_;
+
+    my $s = qq{***DRIVER [RUN]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_stage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_stage {
+    my ($C, $run, $stage, $extra) = @_;
+
+    my $s = qq{***DRIVER [STAGE]: } . Utils::Time::iso_Time() . qq{ r=$run stage=$stage $extra};
+    SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
+    $EMAIL_MESSAGE_BUFFER .= qq{$s\n};
+}
+
+
+# ---------------------------------------------------------------------
+
+=item email_driver_msg
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub email_driver_msg
+{
+    my $C = shift;
+    my $msg = shift;
+    my $error = shift;
+
+    $msg .= qq{\n$EMAIL_MESSAGE_BUFFER};
+
+    my $subj = $error
+        ? qq{[driver] Error report -r$RUN}
+            : qq{[driver] Status report -r$RUN};
+    SLIP_Utils::Common::Send_email($C, 'driver', $subj, $msg);
+}
+
+1;
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

@@ -1,0 +1,428 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+sizer-j
+
+=head1 USAGE
+
+% sizer-j -r run [-H host]
+
+=head1 DESCRIPTION
+
+The sizer needs to be on the same machine running Solr so sizer-j can
+do a du on the index subdirectories.
+
+In a multi-machine environment that can see storage over NFS, sizer-j
+only needs to run from cron on one machine.
+
+When scheduled, it saves the du
+stats to a table that can be read by the producers, anywhere, to store
+that stat along with data sizes and indexing and doc creation times.
+It should run frequently enough to capture the solr index flush to
+disk.
+
+
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Context;
+use MdpConfig;
+use Database;
+use Semaphore;
+
+
+# Local
+use Db;
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Log;
+
+
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+
+sub sz_get_usage {
+    my $s .= qq{Usage: sizer-j -r run [-S][-z]
+                  where -S updates the snapshot status
+                        -z updates the index size\n};
+    return $s;
+}
+
+our ($opt_d, $opt_r, $opt_S, $opt_z);
+
+my $ops = getopts('dr:Sz');
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    my $s = sz_get_usage();
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $SNAPSHOT = $opt_S; # Optional
+my $SIZE = $opt_z;
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+}
+
+my $INTERACTIVE = $ENV{'TERM'};
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
+my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+
+my $config = new MdpConfig($common_configfile, $global_configfile);
+$C->set_object('MdpConfig', $config);
+
+# Doing a lot of commits in the shard loop below may take more time
+# that allowed for in cron
+my $Lock_File = "/tmp/sizer--lock.sem";
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    __output("could not get semaphore. exit...\n");
+    Log_sem($C, $RUN);
+    exit 0;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+my $db;
+eval {
+    $db = new Database($config);
+};
+if ($@) {
+    SLIP_Utils::Common::Log_database_connection_error($C, 'sizer-j', $@);
+    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+}
+
+$C->set_object('Database', $db);
+
+my $DBH = $db->get_DBH();
+
+eval {
+    # Only commit to determine index size during the Building and
+    # Build_Wait stages.
+    my $driver_driven = $config->get('driver_driven');
+    if ($driver_driven) {
+        if ($SIZE) {
+            my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $DBH, $RUN);
+            if (($_Stage eq $SLIP_Utils::States::St_Build_Wait)
+                ||
+                ($_Stage eq $SLIP_Utils::States::St_Building)
+               ) {
+                sz_update_indexdir_size($C, $DBH, $RUN);
+            }
+            else {
+                if ($INTERACTIVE) {
+                    my $s = qq{Wrong driver stage=$_Stage to size index ... skip\n};
+                    __output($s);
+                }
+            }
+        }
+
+        if ($SNAPSHOT) {
+            sz_update_release_status($C, $DBH, $RUN);
+        }
+    }
+};
+if ($@) {
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+
+    my $s = qq{CRITICAL ERROR: $@\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+__output("exit\n");
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item __get_release_status
+
+Description: If it is after 6 a.m. today and there is not a snapshot with 
+             today's date: error
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_release_status {
+    my ($C, $shard) = @_;
+
+    my $status;
+    
+    my $directory = $C->get_object('MdpConfig')->get('dir_for_shard_' . $shard);
+    my $todays_iso_date = `date '+%F'`;
+    chomp($todays_iso_date);
+    my $unix_today_at_6am = Utils::Time::unix_Time($todays_iso_date . 'T06:00:00'); 
+    my $unix_now = time();
+    
+    if ($unix_now > $unix_today_at_6am) {
+        my $snapshot = `ls "$directory/.snapshot/serve-$todays_iso_date" 2> /dev/null`;
+        if ($snapshot) {
+            $status = $SLIP_Utils::States::Srl_Rel_Ok;
+        }
+        else {
+            $status = $SLIP_Utils::States::Srl_Rel_Error
+        }
+    }
+    else {
+        $status = $SLIP_Utils::States::Srl_Rel_Pending;
+    }
+    
+    __output(qq{.snapshot status=$status for shard=$shard dir=$directory\n});
+
+    return $status;
+}
+
+# ---------------------------------------------------------------------
+
+=item sz_update_release_status
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub sz_update_release_status {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my @shards = $config->get('num_shards_list');
+
+    # check/update the release status
+    foreach my $shard (@shards) {
+        my $status = __get_release_status($C, $shard);
+        Db::set_shard_release_state($C, $dbh, $run, $shard, $status) 
+                unless ($status == $SLIP_Utils::States::Srl_Rel_Wrong_Host);
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item sz_update_indexdir_size
+
+This script is responsible for determining the size of the index on
+disk reliably.
+
+Until a commit removes segment files that have been merged
+into a larger segment, du gives a false number for the shard size.
+So the strategy is to commit then do the du.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub sz_update_indexdir_size {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my @shards = $config->get('num_shards_list');
+
+    # cron runs sizer every 2 minutes.  We do not want to exceed
+    # maxWarmingReaders so use a long timeout to block until the
+    # commit finishes and thereby block later scheduled sizer-j on the
+    # current semaphore.
+    use constant COMMIT_TIMEOUT => 43200;
+
+    foreach my $shard (@shards) {
+        my $enabled = Db::Select_shard_enabled($C, $dbh, $run, $shard);
+        my $suspended = Db::shard_is_suspended($C, $dbh, $run, $shard);
+        
+        # Skip totally disabled shards. Process only enabled
+        # shards. The goal is to suspend them if the shard has grown
+        # to the max allowed but to un-suspend them if they have
+        # shrunk due to commits or an optimize. In INTERACTIVE mode
+        # run (carefully) anyway to get the size.
+        if (! $enabled) {
+            next unless ($INTERACTIVE);
+        }
+
+        my $index_dir = $config->get('dir_for_shard_' . $shard);
+
+        # Unless storage is shared, the machine running this sizer-j
+        # may not be running the solr instance backing every shard
+        if (! -e $index_dir) {
+            __output(qq{index directory="$index_dir" does not exist. skipping shard=$shard\n});
+            next;
+        }
+
+        # Just hope the commit does not time-out. If it does, we will
+        # probably see a too large du size and hope the next
+        # invocation works and we get the "true" smaller size.
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, COMMIT_TIMEOUT);
+        $indexer->commit_updates($C);
+        __output("shard=$shard committed\n");
+
+        my $size_now = ___du($index_dir);
+        Db::update_indexdir_size($C, $dbh, $run, $shard, $size_now);
+        
+        # max_size_GB in .conf leaves some "headroom"
+        my $size_now_GB = get_shard_size_GB($C, $dbh, $run, $shard, $size_now);
+        my $max_size_GB = $C->get_object('MdpConfig')->get('default_max_shard_size_GB');
+
+        __output("shard=$shard size=$size_now ($size_now_GB GB)\n");
+
+        if ($size_now_GB > $max_size_GB) {
+            # If it was not suspended and now suould be.
+            if (! $suspended) {
+                Db::suspend_shard($C, $dbh, $run, $shard);
+                __output("shard=$shard suspended\n");
+                Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'SUSPENDED');
+            }
+        }
+        elsif  ($size_now_GB < $max_size_GB) {
+            # If it was suspended and now should not be.
+            if ($suspended) {
+                Db::unsuspend_shard($C, $dbh, $run, $shard);
+                __output("shard=$shard un-suspended\n");
+                Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'UNSUSPENDED') ;
+            }
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_sem
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_sem {
+    my ($C, $run) = @_;
+
+    my $s = qq{***SEMAPHORE EXIT: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_shard_size
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_shard_size {
+    my ($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, $e) = @_;
+
+    my $s = qq{***SHARD SIZE: [$e] }
+        . Utils::Time::iso_Time()
+            . qq{ r=$run shard=$shard max=$max_size_GB now=$size_now_GB};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item get_shard_size_GB
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_shard_size_GB {
+    my ($C, $dbh, $run, $shard, $size_bytes) = @_;
+    my $idx_size_GB  = sprintf("%.3f", $size_bytes/1024/1024/1024);
+    return $idx_size_GB
+}
+
+
+# ---------------------------------------------------------------------
+
+=item ___du
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ___du {
+    my $dir = shift;
+
+    my $du_res = `du -B1 $dir`;
+    my ($total) = ($du_res =~ m,^(\d+),);
+
+    return $total;
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-9 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

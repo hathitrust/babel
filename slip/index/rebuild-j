@@ -1,0 +1,454 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+rebuild-j -r run
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+Rebuild mdp.j_indexed based on what is actually present in the index
+removing duplicates in j_indexed and Solr. Cannot be run until queue
+is indexed and index is optimized. Should only take a few minutes.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -d
+
+Debugging
+
+=back
+
+=cut
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+use Time::HiRes;
+
+# App
+use Utils;
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Database;
+use Search::Site;
+
+# Local
+use Db;
+use SLIP_Utils::Db_sync;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Log;
+use Result::SLIP;
+use Searcher::SLIP;
+
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+
+# ---------------------------------------------------------------------
+
+=item rb_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub rb_get_usage {
+    my $s = qq{Usage: rebuild-j -r run [-n][-d]
+            build j_indexed_temp and dedup leaving behind j_indexed_temp
+               where -n skips INSERT INTO j_indexed and Solr duplicate doc deletion\n};
+    return $s;
+}
+
+our ($opt_d, $opt_r, $opt_n);
+
+my $ops = getopts('dr:n');
+
+# Required
+my $RUN = $opt_r;
+if (! $opt_r) {
+    print rb_get_usage();
+    exit 1;
+}
+
+my $CHECK = defined($opt_n);
+my $C_MSG = ($CHECK ? 'CHECK Only: Do NOT delete j_indexed rows' : 'DELETE j_indexed rows');
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+}
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
+my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+
+my $CONFIG = new MdpConfig($common_configfile, $global_configfile);
+$C->set_object('MdpConfig', $CONFIG);
+
+my $db;
+eval {
+    $db = new Database($CONFIG);
+};
+if ($@) {
+    __output(qq{database connect fail\n});
+    exit 1;
+}
+
+$C->set_object('Database', $db);
+my $DBH = $db->get_DBH();
+
+# No indexing enabled
+my $driver_enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $DBH, $RUN);
+if ($driver_enabled) {
+    my $stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $DBH, $RUN);
+    if ($stage ne 'Build_Wait') {
+        __output(qq{WARNING: run=$RUN driver-j active: stage=$stage. Unsafe to query Solr! ... Exit.\n});
+        exit 0;
+    }
+}
+
+__confirm(qq{$C_MSG OK? [N] });
+
+eval {
+    rebuild_indexed($C, $DBH, $RUN);
+};
+if ($@) {
+    die qq{CRITICAL ERROR: $@\n};
+}
+
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+
+
+
+# ---------------------------------------------------------------------
+
+=item Log_rebuild
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_rebuild {
+    my ($C, $run, $s) = @_;
+    SLIP_Utils::Log::this_string($C, $s, 'rebuild_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item __rb_commit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rb_commit {
+    my ($C, $run, $shard, $indexer) = @_;
+
+    my ($s, $s1);
+    
+    $s1 = qq{commit shard=$shard ...};
+    __output(qq{$s1});
+    my ($index_state, $stats_ref) = $indexer->commit_updates($C);
+    $s =  qq{Done.};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s1);
+
+    if (Search::Constants::indexing_failed($index_state)) {
+        $s = qq{commit failed shard=$shard index_state=}
+            . SLIP_Utils::Common::IXconstant2string($index_state);
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
+
+        exit 1;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item rebuild_indexed
+
+For each shard, add its ids to j_indexed[shard] for this run
+
+=cut
+
+# ---------------------------------------------------------------------
+sub rebuild_indexed {
+    my ($C, $dbh, $run) = @_;
+
+    my ($s, $s1);
+
+    $s = qq{Begin j_indexed rebuild run=$run $C_MSG};
+    __output(qq{\n\n ***** $s ***** \n\n});
+    Log_rebuild($C, $run, $s);
+
+    $s1 = qq{Initialize j_indexed_temp ...};
+    __output(qq{$s1});
+    SLIP_Utils::Db_sync::init_j_indexed_temp($C, $dbh);
+    $s = qq{Done.};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s1);
+
+    my $total_item_ct = 0;
+    my $R_SLICE_SIZE = 100000;
+
+    my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+
+    foreach my $shard (@shards) {
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+        
+        $s = qq{processing shard=$shard ...};
+        __output(qq{\n$s\n});
+        Log_rebuild($C, $run, $s);
+        
+        # Commit
+        __rb_commit($C, $run, $shard, $indexer);
+        
+        # For each id in Solr shard, add it to j_indexed_temp
+        my $start = 0;
+        my ($slice_num, $item_ct) = (0, 0);
+        
+        while (1) {
+            my $query = qq{q=*:*&fl=id&start=$start&rows=$R_SLICE_SIZE};
+            my $result = `$ENV{SDRROOT}/slip/lib/query-j -r$run -R$shard -q'$query' -N`;
+            my @ids = ($result =~ m,<str name="id">(.*?)</str>,g);
+            
+            my $rows_returned = scalar(@ids);
+            last if ($rows_returned == 0);
+            
+            $start += $R_SLICE_SIZE;
+            $slice_num++;
+            
+            $s = qq{[SLICE=$slice_num] (Solr returned=$rows_returned at: } . localtime(time);
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+            
+            SLIP_Utils::Db_sync::insert_item_id_j_indexed_temp($C, $dbh, $shard, \@ids);
+            
+            $item_ct += $rows_returned;
+            $total_item_ct += $rows_returned;
+        }
+        $s = qq{shard=$shard done: checked=$item_ct};
+        __output(qq{\n$s\n});
+        Log_rebuild($C, $run, $s);
+    }
+    
+    # Delete duplicate rows in j_indexed_temp and corresponding Solr
+    # documents duplicated in the recorded shard.
+    if ($CHECK) {
+        $s = qq{Delete Duplicate j_indexed_temp rows, NOT deleting duplicate Solr docs ...};
+        __output(qq{$s\n});
+    }
+    else {
+        $s = qq{Delete Duplicate j_indexed_temp rows, duplicate Solr docs ...};
+        __output(qq{$s\n});
+    }
+    
+    my ($total_dupl_id_item_ct, $total_Delete_ct) = Delete_duplicates($C, $run, $dbh);
+    $s = qq{Done. duplicated j_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+    
+    # Commit again after duplicate docs have been deleted
+    foreach my $sh (@shards) {
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $sh);
+        __rb_commit($C, $run, $sh, $indexer)
+            unless(! $CHECK);
+    }
+    
+    # Clear the rows from j_indexed for this run
+    if ($CHECK) {        
+        $s1 = qq{SKIP Delete j_indexed rows};
+        __output(qq{$s1\n});
+    }
+    else {
+        $s1 = qq{Delete j_indexed rows ...};
+        __output(qq{$s1});
+        Db::Delete_indexed($C, $dbh, $run);
+        $s = qq{Done.};
+        __output(qq{$s\n});
+    }
+    Log_rebuild($C, $run, $s1);
+    
+    # Insert the rows from j_indexed_temp
+    if ($CHECK) {
+        $s1 = qq{SKIP Insert j_indexed_temp rows into j_indexed};
+        __output(qq{$s1\n});
+    }
+    else {
+        $s1 = qq{Insert j_indexed_temp rows into j_indexed ...};
+        __output(qq{$s1});
+        SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
+        $s = qq{Done.};
+        __output(qq{$s\n});
+    }
+    Log_rebuild($C, $run, $s1);
+    
+    
+    $s = qq{rebuild-j $C_MSG: checked=$total_item_ct deleted=$total_Delete_ct};
+    __output(qq{\n$s\n});
+    Log_rebuild($C, $run, $s);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Delete_duplicates
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Delete_duplicates {
+    my ($C, $run, $dbh) = @_;
+
+    my $s;
+    my ($total_dupl_id_item_ct, $total_Delete_ct) = (0, 0);
+
+    my @dupl_shard_accumulator = ();
+
+    # Find ids that appear in more than one shard according to j_indexed_temp
+    my $ref_to_arr_of_hashref = SLIP_Utils::Db_sync::Select_duplicate_ids_j_indexed_temp($C, $dbh);
+    foreach my $hashref (@$ref_to_arr_of_hashref) {
+        # For each id, find the extraneous shards.
+        my $id = $hashref->{'id'};
+        my $ct = $hashref->{'count(shard)'};
+
+        $s = qq{id=$id is in $ct shards};
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
+
+        $total_dupl_id_item_ct++;
+
+        # gather duplicates, shift one off to preserve it
+        my @del_dupl_shards_of_id;
+        my $ref_to_arr_of_ary_ref =
+            SLIP_Utils::Db_sync::Select_shards_of_duplicate_id_j_indexed_temp($C, $dbh, $id);
+        foreach my $ary_ref (@$ref_to_arr_of_ary_ref) {
+            my $dupl_shard = $ary_ref->[0];
+            push(@del_dupl_shards_of_id, $dupl_shard);
+            $s = qq{  id=$id duplicated in shard=$dupl_shard};
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+        }
+        my $preserved_shard = shift(@del_dupl_shards_of_id);
+        if (! $CHECK) {
+            $s = qq{  -----> id=$id preserved in shard=$preserved_shard};
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+        }
+
+        foreach my $del_shard (@del_dupl_shards_of_id) {
+            # Delete from j_indexed_temp
+            SLIP_Utils::Db_sync::Delete_duplicate_id_j_indexed_temp($C, $dbh, $id, $del_shard);
+
+            $s = qq{  deleted id=$id shard=$del_shard from j_indexed_temp};
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+
+            # Delete from Solr
+            if (! $CHECK) {
+                __rb_Delete_document($C, $run, $id, $del_shard);
+                $total_Delete_ct++;
+
+                $s = qq{  deleted id=$id shard=$del_shard Solr document};
+                __output(qq{$s\n});
+                Log_rebuild($C, $run, $s);
+            }
+        }
+    }
+
+    return ($total_dupl_id_item_ct, $total_Delete_ct);
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item __rb_Delete_document
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rb_Delete_document {
+    my ($C, $run, $id, $shard) = @_;
+
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+    my ($index_state, $dummy) = $indexer->delete_document($C, $id);
+
+    if (Search::Constants::indexing_failed($index_state)) {
+        my $s =
+            qq{delete doc id=$id shard=$shard failed index_state=}
+                . SLIP_Utils::Common::IXconstant2string($index_state);
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
+    }
+}
+
+1;
+
+#
+# =head1 AUTHOR
+#
+# Phillip Farber, University of Michigan, pfarber@umich.edu
+#
+# =head1 COPYRIGHT
+#
+# Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# =cut
+#
+#
+
+

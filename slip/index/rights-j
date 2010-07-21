@@ -1,0 +1,713 @@
+#!/l/local/bin/perl
+
+=head NAME
+
+rights-j
+
+=head USAGE
+
+% rights-j [-B][-I][-d{1|2}]
+
+=head DESCRIPTION
+
+=head1 DATA SCHEMA
+
+The VuFind Solr index document has two fields to support mdp.j_rights
+table updates to HathiTrust IDs (nid's: n]amespace + id).
+
+=over 4
+
+=item ht_id_display [stored]:
+
+a repeating field that contains the nid(s) of volumes associated with
+the bib record together with the date each item was last updated and
+an optional enumcron if the work is multi-volume. For example:
+
+<arr name="ht_id_display">
+  <str>mdp.39015066198014|20090701|v.1</str>
+  <str>mdp.39015025339659|00000000|v.10</str>
+  <str>mdp.39015066198311|00000000|v.2</str>
+</arr>
+
+=item ht_id_update [not stored]:
+
+the date when the bib record was last updated due to a change/addition
+to the list in the ht_id_display field. One or more dates on the items
+in the ht_id_didplay field will be the same as this field's value. In
+the above example, ht_id_update would be 20090701.
+
+=back
+
+=head1 QUERYING
+
+rights-j does a query based on timestamp=D, where D is 2 days earlier
+than the last run of rights-j.  The lag is to avoid overlooking
+records than could have been added to the VuFind Solr index after
+j-rights ran that day 
+
+=over 4
+
+=item q=ht_id_update:[D TO *],fl=ht_id_display
+
+These are bib records for added or updated (rights changed) volumes
+but not for volumes where just the record-level metadata has changed.
+These volumes correspond to ht_id_display items with dates equal or
+newer that D. Just these volumes re-indexed to reflect their addition,
+rights changes or reloaded status.
+
+=back
+
+=head1 PROCESSING
+
+rights-j gets timestamp=D from the j_vsolr_timestamp table which
+records the newest update_time seen when rights-j last ran.
+
+rights-j parses the item ids from the bib records and queries
+mdp.rights table for the complete set of rights data for that id and
+REPLACES INTO the mdp.j-rights with an update_time=vsolr_update_time.
+
+enqueuer-j script processes records with an update_time newer than the
+newest update_time seen on any record the last time it ran. Processing
+means to copy from mdp.j-rights into mdp.j-queue to be later consumed
+by the index-j script.
+
+The -R option drops the entire j_rights_temp table, rebuilds it and
+renames it to j_rights.
+
+=head1 OPTIONS
+
+=over 8
+
+=item see help
+
+see help
+
+=back
+
+=cut
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+use Time::HiRes;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Database;
+use Search::Site;
+use Utils::GlobalSwitch;
+
+# Local
+use Db;
+use vSolr;
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+
+# Prevent replication errors: enqueue only to one mysqlserv
+exit 0
+    if (Search::Site::get_server_site_name() ne 'macc');
+
+
+sub r_get_usage {
+    my $s;
+    $s .= qq{Usage: rights-j [[-B|-R] [-n]] [-d{1|2|3|4}]\n};
+    $s .= qq{     -B build from last vSolr timestamp\n};
+    $s .= qq{           where -n is check_only, no inserts to j_rights\n};
+    $s .= qq{     -R re-build j_rights_temp from 0000000\n};
+    $s .= qq{           where -n is check_only, NO DROP of j_rights\n};
+    $s .= qq{     -d options\n};
+    $s .= qq{           1: me\n};
+    $s .= qq{           2: me,lsdb\n};
+    $s .= qq{           3: me,vsolr\n};
+    $s .= qq{           4: me,vsolrlibxml\n};
+    $s .= qq{           5: me,query\n};
+    $s .= qq{           5: me,response\n};
+    return $s;
+}
+
+our ($opt_B, $opt_R, $opt_d, $opt_n);
+
+my $ops = getopts('BRd:n');
+
+if ($opt_d) {
+    if ($opt_d == 1) {
+        $ENV{'DEBUG'} = 'me';
+    }
+    elsif ($opt_d == 2) {
+        $ENV{'DEBUG'} = 'me,lsdb';
+    }
+    elsif ($opt_d == 3) {
+        $ENV{'DEBUG'} = 'me,vsolr';
+    }
+    elsif ($opt_d == 4) {
+        $ENV{'DEBUG'} = 'me,vsolrlibxml';
+    }
+    elsif ($opt_d == 5) {
+        $ENV{'DEBUG'} = 'me,query';
+    }
+    elsif ($opt_d == 6) {
+        $ENV{'DEBUG'} = 'me,query,response';
+    }
+}
+
+my $BUILD = 0;
+my $REBUILD = 0;
+my $CHECK = 0;
+if (defined($opt_n)) {
+    $CHECK = 1;
+}
+
+if (defined($opt_B)) {
+    $BUILD = 1;
+}
+elsif (defined($opt_R)) {
+    $REBUILD = 1;
+}
+else {
+    print r_get_usage();
+    exit 0;
+}
+
+# log to different files for incremental build vs. full rebuild
+my $RIGHTS_LOGFILE_KEY = ($REBUILD ? 'rights_rebuild_logfile' : 'rights_logfile');
+
+# Do not try to build shadow rights table while I am running already
+my $Lock_File = "/tmp/rights-lock.sem";
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    my $rc = $SLIP_Utils::States::RC_RIGHTS_NO_SEM;
+    my $s = qq{rights-j could not get semaphore\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+# Flush i/o
+$| = 1;
+
+my $SLICE_SIZE = ($REBUILD ? 100 : 1000);
+my $INTERACTIVE = $ENV{'TERM'};
+
+my $C = new Context;
+
+# Any run number will do to grab common.conf
+my $config = SLIP_Utils::Common::gen_run_config(0);
+$C->set_object('MdpConfig', $config);
+
+my $db;
+eval {
+    $db = new Database($config);
+};
+if ($@) {
+    SLIP_Utils::Common::Log_database_connection_error($C, 'rights-j', $@);
+    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+}
+
+$C->set_object('Database', $db);
+my $DBH = $C->get_object('Database')->get_DBH();
+
+my $INIT_MSG;
+
+eval {
+    if (r_rights_enabled($C, $DBH) || $INTERACTIVE) {
+        my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
+        
+        if ($BUILD) {
+            # Build from last timestamp
+            my $last_timestamp = Db::Select_vSolr_timestamp($C, $DBH);
+            my $lag = $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
+            my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($last_timestamp, $lag);
+            
+            $INIT_MSG = qq{Today is $now_timestamp.\n}
+                . qq{Last run set MAX(update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
+
+            if ($CHECK) {
+                __confirm("\n$INIT_MSG\nCheck j_rights table: NO j_rights INSERT? [N] ");
+            }
+            else {
+                __confirm("\n$INIT_MSG\nExtend j_rights table: INSERT INTO j_rights? [N] ");
+            }
+
+            # Go
+            process_rights($C, $DBH, $last_timestamp, $CHECK, 0);
+        }
+        elsif ($REBUILD) {
+            # Build from 00000000
+            $INIT_MSG = qq{Today is $now_timestamp. Rebuild from '00000000'. }
+                . qq{Query will be ['00000000' TO *]};
+
+            if ($CHECK) {
+                __confirm("\n$INIT_MSG\nCHECK=1 CREATE j_rights_temp\n  => NO RENAME j_rights_temp, NO DROP j_rights? [N] ");
+            }
+            else {
+                __confirm("\n$INIT_MSG\nCHECK=0 RENAME j_rights_temp to j_rights\n  => DROP j_rights? [N] ");
+            }
+
+            # DROP/CREATE j_rights_temp
+            initialize_j_rights_temp($C, $DBH);
+            # Always insert into j_rights_temp by forcing CHECK=0 here
+            process_rights($C, $DBH, '00000000', 0, 1);
+            # DO NOT DROP j_rights if CHECK==1. j_rights_temp is left
+            # behind until next (-R) run.
+            if (! $CHECK) {
+                DROP_j_rights_RENAME_j_rights_temp($C, $DBH);
+            }
+        }
+
+        # Flush remaining logs to disk
+        flush_r_rights_Log($C, $RIGHTS_LOGFILE_KEY);
+    }
+    else {
+        __output(qq{j_rights not enabled\n})
+            unless $INTERACTIVE;
+    }
+};
+if ($@) {
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+
+    my $s = qq{CRITICAL ERROR: $@\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+
+# ---------------------------------------------------------------------
+
+=item r_rights_Log
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+my $LOG_BUFFER = '';
+my $Log_buffer_size = 0;
+use constant LOG_BUFFER_MAX => 1000;
+
+sub r_rights_Log {
+    my ($C, $s, $key) = @_;
+    
+    my $ss = qq{$s at: } . Utils::Time::iso_Time() . qq{\n};
+    $LOG_BUFFER .= $ss;
+    $Log_buffer_size++;
+    if ($Log_buffer_size > LOG_BUFFER_MAX) {
+        flush_r_rights_Log($C, $key);
+    }
+}
+
+sub flush_r_rights_Log {
+    my ($C, $key) = @_;
+    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $key, '___RUN___', 'rights', 0, 'no_newline');
+    $LOG_BUFFER = '';
+    $Log_buffer_size = 0;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __hiresTime
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __hiresTime
+{
+    my ($seconds, $microseconds) = Time::HiRes::gettimeofday();
+    my $fraction = sprintf("%.8f", $microseconds/1000000);
+    return sprintf("%.8f", $seconds + $fraction);
+}
+
+# ---------------------------------------------------------------------
+
+=item initialize_j_rights_temp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub initialize_j_rights_temp {
+    my ($C, $dbh) = @_;
+    Db::initialize_j_rights_temp($C, $dbh);
+}
+
+# ---------------------------------------------------------------------
+
+=item DROP_j_rights_RENAME_j_rights_temp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub DROP_j_rights_RENAME_j_rights_temp {
+    my ($C, $dbh) = @_;
+    Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item process_rights
+
+To build, get the timestamp recorded when VuFind Solr was last queried
+for IDs.  This timestamp will not be updated until we successfully
+process the entire Solr range query :[$timestamp -2d TO *].  If FAIL,
+we must redo:
+
+% rights-j -B | -R
+
+Query for a day in the past with a +ve $INCREMENT to prevent id loss
+updates to the vSolr index in the *same* day *after* rights-j runs on
+that day.  NOTE: This is not expected to happen. Negative values
+advance the timestamp.
+
+Insert in blocks of SLICE_SIZE. Anomalies count items from bib
+records that are not in mdp.rights.  These are logged and must be
+corrected manually.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub process_rights {
+    my ($C, $dbh, $timestamp, $Check, $Rebuild) = @_;
+
+    my $process_start = __hiresTime();
+
+    my $LAG = $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
+    my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($timestamp, $LAG);
+
+    my $s0 = qq{[BEGIN]: $INIT_MSG CHECK=$CHECK };
+    __output(qq{$s0} . Utils::Time::iso_Time() . qq{\n});
+    r_rights_Log($C, $s0, $RIGHTS_LOGFILE_KEY);
+
+    my %totals =
+        (
+         'bib_record_ct' => 0,
+         'ids' => 0,
+         'anomalies' => 0,
+         'new' => 0,
+         'noop' => 0,
+         'moved' => 0,
+         'updated' => 0,
+        );
+
+    my $offset = 0;
+    my $slice = 0;
+    while (1) {
+        my %slice =
+        (
+         'new' => 0,
+         'noop' => 0,
+         'moved' => 0,
+         'updated' => 0,
+        );
+
+        my $slice_start = __hiresTime();
+
+        # Get nids from vSolr bib records that are newer than the last
+        # time we looked (or all of them if REBUILDing).
+        my ($ref_to_arr_of_hashref, $bib_record_ct, $anomalies) =
+            vSolr::get_item_updated_nid_slice_as_of($C, $dbh, $query_timestamp, $offset, $SLICE_SIZE, $Rebuild);
+
+        $slice++;
+        $totals{'bib_record_ct'} += $bib_record_ct;
+        $totals{'anomalies'} += $anomalies;
+
+        my $ids = scalar(@$ref_to_arr_of_hashref);
+        if ($ids <= 0) {
+            my $s1 = qq{Slice: num=$slice offset=$offset ids_in_slice=$ids vq_time=$query_timestamp };
+            __output(qq{$s1} . Utils::Time::iso_Time() . qq{\n});
+            r_rights_Log($C, $s1, $RIGHTS_LOGFILE_KEY);
+
+            last;
+        }
+        
+        $totals{'ids'} += $ids;
+
+        my $s2 = qq{[SLICE $slice] offset=$offset ids_in_slice=$ids vq_time=$query_timestamp };
+        __output(qq{$s2} . Utils::Time::iso_Time() . qq{\n});
+        r_rights_Log($C, $s2, $RIGHTS_LOGFILE_KEY);
+
+        foreach my $hashref (@$ref_to_arr_of_hashref) {
+            my $case = Db::Replace_j_rights_id($C, $dbh, $hashref, $Check, $Rebuild);
+
+            if ($case eq 'NEW') {
+                $slice{'new'}++;
+                $totals{'new'}++;
+                r_event_report($C, $dbh, $offset, $hashref, 'NEW');
+            }
+            elsif ($case eq 'NOOP') {
+                $slice{'noop'}++;
+                $totals{'noop'}++;
+                r_event_report($C, $dbh, $offset, $hashref, 'NOOP');
+            }
+            elsif ($case eq 'MOVED') {
+                $slice{'moved'}++;
+                $totals{'moved'}++;
+                r_event_report($C, $dbh, $offset, $hashref, 'MOVED');
+            }
+            elsif ($case eq 'UPDATED') {
+                $slice{'updated'}++;
+                $totals{'updated'}++;
+                r_event_report($C, $dbh, $offset, $hashref, 'UPDATED');
+            }
+            else {
+                # sofware error
+                my $s3 = qq{Invalid case value=$case};
+                __output(qq{$s3} . Utils::Time::iso_Time() . qq{\n});
+                r_rights_Log($C, $s3, , 'bad_$RIGHTS_LOGFILE_KEY');
+            }
+        }
+
+        r_slice_report($C, $dbh, $slice_start, $offset, $ids, $anomalies, \%slice, \%totals);
+        Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+
+        $offset += $SLICE_SIZE;
+    }
+
+    # Update the vSolr timestamp to the MAX(update_time) in
+    # j_rights{_temp}. We will backtrack by 2 days from this value when
+    # next we run.
+    Db::update_vSolr_timestamp($C, $dbh, $Rebuild)
+            unless $Check;
+
+    r_final_report($C, $dbh, $process_start, \%totals);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item near_vSolr_downtime
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub near_vSolr_downtime {
+    my $C = shift;
+    my $config = $C->get_object('MdpConfig');
+
+    my $near = 0;
+
+    return
+        if (! $config->get('vSolr_downtime_checking'));
+
+    my @downtime = $config->get('vSolr_downtime_interval');
+
+    my ($second, $minute, $hour) = localtime();
+    my $decimal_hour = $hour + $minute/60.0;
+
+    if (
+        ($decimal_hour > $downtime[0])
+        &&
+        ($decimal_hour < $downtime[1])
+       ) {
+        $near = 1;
+    }
+
+    return $near;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item r_rights_enabled
+
+Is j_rights enabled?
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_rights_enabled {
+    my ($C, $dbh) = @_;
+
+    my $enabled = Db::Select_rights_enabled($C, $dbh);
+    return $enabled;
+}
+
+# ---------------------------------------------------------------------
+
+=item r_slice_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_slice_report {
+    my ($C, $dbh, $slice_start, $offset, $slice_ids, $anomalies, $sref, $tref) = @_;
+
+    my $slice_elapsed = __hiresTime() - $slice_start;
+    my $idsPsec = sprintf("%.2f", ($slice_ids + $anomalies)/$slice_elapsed);
+
+    my $size = Db::Select_count_from_j_rights($C, $dbh);
+    my $temp_size = 0;
+    if ($REBUILD) {
+        $temp_size = Db::Select_count_from_j_rights_temp($C, $dbh);
+    }
+
+    my $s =
+        qq{Checkpoint: j_rights size=$size j_rights_temp size=$temp_size off=$offset\n}
+            . qq{  slice_ids=$slice_ids anom=$anomalies new=$sref->{'new'} noop=$sref->{'noop'} upd=$sref->{'updated'} mov=$sref->{'moved'}\n}
+                . qq{  total_ids=$tref->{'ids'} total_anom=$anomalies total_new=$tref->{'new'} total_noop=$tref->{'noop'} total_upd=$tref->{'updated'} total_mov=$tref->{'moved'}\n}
+                    . qq{  rate=$idsPsec ids/sec };
+
+    __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+}
+
+# ---------------------------------------------------------------------
+
+=item r_downtime_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_downtime_report {
+    my ($C, $timestamp) = @_;
+
+    my $s = qq{DOWNTIME: timestamp=$timestamp };
+    __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+}
+
+# ---------------------------------------------------------------------
+
+=item r_event_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_event_report {
+    my ($C, $dbh, $offset, $hashref, $event) = @_;
+
+    my $nid = $hashref->{'nid'};
+    my $attr = $hashref->{'attr'};
+    my $reason = $hashref->{'reason'};
+    my $source = $hashref->{'source'};
+    my $user = $hashref->{'user'};
+    my $time = $hashref->{'time'};
+    my $sysid = $hashref->{'sysid'};
+
+    # Get supplements to the mdp.rights data queried from j_rights and nid processing
+    my $timestamp_of_nid = $hashref->{'timestamp_of_nid'};
+    my $timestamp_in_j_rights = $hashref->{'timestamp_in_j_rights'};
+    my $sysid_in_j_rights = $hashref->{'sysid_in_j_rights'};
+    
+    my $s =
+        qq{$event: nid=$nid attr=$attr reason=$reason source=$source user=$user time=$time timestamp_of_nid=$timestamp_of_nid timestamp_in_j_rights=$timestamp_in_j_rights j_rights_sysid=$sysid_in_j_rights vsolr_sysid=$sysid };
+    DEBUG('vsolr', qq{DEBUG: $s} . Utils::Time::iso_Time() . qq{\n});
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+}
+
+# ---------------------------------------------------------------------
+
+=item r_final_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_final_report {
+    my ($C, $dbh, $process_start, $tref) = @_;
+
+    my $process_elapsed = __hiresTime() - $process_start;
+    my $process_elapsed_min = sprintf("%.2f", $process_elapsed/60);
+    my $idsPsec = sprintf("%.2f", ($tref->{'ids'} + $tref->{'anomalies'})/$process_elapsed);
+
+    my $size = Db::Select_count_from_j_rights($C, $dbh);
+    my $temp_size = 0;
+    if ($REBUILD) {
+        $temp_size = Db::Select_count_from_j_rights_temp($C, $dbh);
+    }
+
+    my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
+    
+    my $run_total = $tref->{'new'} + $tref->{'updated'} + $tref->{'moved'};
+    my $s =
+        qq{\nUpdate: j_rights size=$size j_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
+            . qq{\tthis_run_total=$run_total :: total_new=$tref->{'new'} total_upd=$tref->{'updated'} total_mov=$tref->{'moved'}\n}
+                . qq{\ttotal_noop=$tref->{'noop'} total_anom=$tref->{'anomalies'}\n}
+                    . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min };
+
+    __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+
+    if (! $INTERACTIVE) {
+        my $HOST = `hostname`;
+        $HOST =~ s,\..*$,,s;
+        my $subj = qq{[SLIP] j-rights report ($HOST)};
+        SLIP_Utils::Common::Send_email($C, 'report', $subj, $s);
+    }
+}
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-2010 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
