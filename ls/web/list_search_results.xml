@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+
+  <!-- LS/list_search_results.xml -->
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>header.xsl</Filename>
+    <Filename>footer.xsl</Filename>
+    <Filename>js_utils.xsl</Filename>
+    <Filename>loads.xsl</Filename>
+    <Filename>loads_helper_ls.xsl</Filename>
+    <Filename>coll.xsl</Filename>
+    <Filename>skin.xsl</Filename>
+    <Filename>common.xsl</Filename>
+    <Filename>list_search_results.xsl</Filename>
+    <Filename>xsl2htmlutils.xsl</Filename>
+   </XslFileList>
+
+  <!-- Custom OPTIONAL XML for top-level file -->
+  <CustomXml><?CHUNK filename="list_search_results_extra.xml" optional="1"?></CustomXml>
+
+  <?CHUNK filename="mbooks_globals.xml"?>
+  
+  <!-- Minimal header.xml -->
+
+  <?CHUNK filename="header.xml"?>
+  <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
+  
+  <!-- Main -->
+  <OperationResults><?OPERATION_RESULTS?></OperationResults>
+
+  <QueryString><?QUERY_STRING?></QueryString>
+  <SearchResults><?SEARCH_RESULTS?></SearchResults>
+
+  <Paging><?PAGING?></Paging>
+ <SelectCollectionWidget><?SELECT_COLLECTION_WIDGET?></SelectCollectionWidget>
+
+  <LimitToFullText><?LIMIT_TO_FULL_TEXT?></LimitToFullText>
+  <SearchResultsAjaxUrl><?SEARCH_RESULTS_AJAX_URL?></SearchResultsAjaxUrl>
+
+</MBooksTop>
+
