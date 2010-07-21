@@ -2911,7 +2911,7 @@ sub BuildOutputImageFileInfo
         $self->GetFilePathMaybeExtract($requestedPageSequence, 'imagefile');
 
     my $outputDestDir =
-        $PTGlobals::gCacheDir . Identifier::id_to_mdp_path($id);
+        $PTGlobals::gCacheDir . q{/} . Identifier::id_to_mdp_path($id);
 
     my $outputFileName = $outputDestDir . q{/} .
         join( '.',
