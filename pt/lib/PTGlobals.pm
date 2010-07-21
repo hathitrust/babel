@@ -124,7 +124,7 @@ $gGraphicsHtmlDir  = $LOCATION . q{/../web/common-web/graphics/};
                                  },
                      );
 
-$gCacheDocRoot  = ($ENV{SDRVIEW} eq 'full') ? '/cache-full/' : '/cache/';
+$gCacheDocRoot  = ($ENV{SDRVIEW} eq 'full') ? '/cache-full/imgsrv/' : '/cache/imgsrv/';
 
 # Filesystem root for cached generated images
 $gCacheDir      = $ENV{SDRROOT} . (($ENV{SDRVIEW} eq 'full') ? "/cache-full/imgsrv" : "/cache/imgsrv");
