@@ -1,0 +1,59 @@
+#!/l/local/bin/perl -w
+
+use strict;
+use CGI;
+
+# change 'central' to the url of your weblogin server.
+my $central = "https://weblogin.umich.edu/cgi-bin/logout";
+my $query_string = "";
+
+# expire and nullify service cookie
+print( "Set-Cookie: $ENV{ COSIGN_SERVICE }=null; path=/; expires=Wednesday, 27-Jan-77 00:00:00 GMT; secure\n" );
+
+if ( $ENV{ QUERY_STRING } =~ m|^(https?://.*)$| ) {
+    $query_string = "?$1";
+}
+
+# perform any local cleanup here
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# erase trace of previous auth stored in session
+use Utils;
+use Context;
+use MdpConfig;
+use Database;
+use Session;
+
+my $C = new Context;
+
+# configuration
+my $config = new MdpConfig(
+                           Utils::get_uber_config_path('logout'),
+                          );
+$C->set_object('MdpConfig', $config);
+
+
+my $cookie_name = $config->get('cookie_name');
+
+my %cookies = fetch CGI::Cookie;
+if (defined($cookies{$cookie_name}))
+{
+    my $db = new Database($config);
+    $C->set_object('Database', $db);
+
+    my $sid = $cookies{$cookie_name}->value;
+    my $ses = new Session($C, $sid, 0);
+
+    $ses->set_persistent('authenticated_via', undef);
+    $ses->close();
+}            
+
+# redirect to central weblogin server
+print( "Location: $central$query_string\n\n" );
+
+exit( 0 );
