@@ -348,7 +348,7 @@ sub CleanKwic
 
     Utils::remove_tags($sRef);
 
-    my $doc = new MBooks::Document::XPAT;
+    my $doc = new Document::XPAT;
     $doc->clean_xml($sRef);
 }
 
