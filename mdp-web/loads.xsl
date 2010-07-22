@@ -28,7 +28,7 @@
         <xsl:call-template name="load_concat_js_file"/>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:call-template name="load_recaptcha"/>
+    <!--xsl:call-template name="load_recaptcha"/-->
   </xsl:template>
 
   <xsl:template name="load_recaptcha">
