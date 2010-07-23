@@ -31,8 +31,8 @@
  <link rel="stylesheet" type="text/css" href="/pt/yui2-lib/build/container/assets/skins/sam/container.css"/>
  <link rel="stylesheet" type="text/css" href="/pt/yui2-lib/build/resize/assets/skins/sam/resize.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/framework.css"/>
- <link rel="stylesheet" type="text/css" href="/pt/feedback.css"/>
- <link rel="stylesheet" type="text/css" href="/pt/pageviewer.css"/>
+ <link rel="stylesheet" type="text/css" href="//common-web/feedback.css"/>
+ <link rel="stylesheet" type="text/css" href="//common-web/pageviewer.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css"/>
 </xsl:template>
 </xsl:stylesheet>

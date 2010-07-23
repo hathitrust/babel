@@ -274,7 +274,7 @@
           <xsl:if test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
             <div id="PTcollectionUnavail">
               <span class="PTcollectionlabel">Sorry, the personal collection function is not available for this item</span>
-            </div>            
+            </div>
           </xsl:if>
         </xsl:when>
         <xsl:otherwise>
@@ -858,7 +858,7 @@
                 </ul>
                 <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
                 <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
-                
+
               </div>
             </xsl:when>
             <xsl:otherwise>
@@ -910,7 +910,7 @@
     <xsl:param name="pPageXofYForm"/>
     <xsl:param name="pPageXofYFormId"/>
     <xsl:param name="pPageXofYId"/>
-
+    
     <xsl:element name="form">
       <xsl:attribute name="onsubmit">
         <xsl:value-of select="'return FormValidation(this.num, &quot;Please enter a page number in the box.&quot;)'"/>
@@ -922,18 +922,18 @@
       <xsl:attribute name="id">
         <xsl:value-of select="$pPageXofYId"/>
       </xsl:attribute>
-
+      
       <ul>
         <li class="asearchform">
           <xsl:apply-templates select="$pPageXofYForm/HiddenVars"/>
-
+          
           <!-- this hidden variable exists to differentiate page
-          numbers entered by users via form submission where it is
-          possible for them to enter an incorrect number and page
-          numbers on links the middleware builds which will always
-          correspond, if present, to a physical page. -->
+               numbers entered by users via form submission where it is
+               possible for them to enter an incorrect number and page
+               numbers on links the middleware builds which will always
+               correspond, if present, to a physical page. -->
           <input type="hidden" name="u" id="u" value="1"/>
-
+          
           <xsl:element name="input">
             <xsl:attribute name="class">mdpGotoButton</xsl:attribute>
             <xsl:attribute name="type">submit</xsl:attribute>
@@ -941,7 +941,7 @@
             <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
             <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
           </xsl:element>
-
+          
           <xsl:element name="label">
             <xsl:attribute name="for">
               <xsl:value-of select="$pPageXofYFormId"/>
@@ -950,7 +950,7 @@
             <xsl:text>Enter page number to jump</xsl:text>
           </xsl:element>
           <span class="mdpNumberLabel">&#xa0;#</span>
-
+          
           <xsl:element name="input">
             <xsl:attribute name="class">mdpPageNumberInputBox</xsl:attribute>
             <xsl:attribute name="id">
@@ -964,16 +964,15 @@
           </xsl:element>
           <xsl:call-template name="HiddenDebug"/>
         </li>
-
       </ul>
     </xsl:element>
-
+    
   </xsl:template>
-
+  
   <!-- FORM: Image View Type -->
   <xsl:template name="BuildViewTypeForm">
     <xsl:param name="pViewTypeForm"/>
-
+    
     <xsl:element name="form">
       <xsl:attribute name="method">get</xsl:attribute>
       <xsl:attribute name="action">
@@ -1190,8 +1189,8 @@
           </xsl:for-each>
         </li>
       </ul>
+      <xsl:call-template name="HiddenDebug"/>
     </xsl:element>
-    <xsl:call-template name="HiddenDebug"/>
   </xsl:template>
 
   <!-- AJAX: build "add item to [new] collection" request URL -->

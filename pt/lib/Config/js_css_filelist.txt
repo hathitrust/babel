@@ -67,6 +67,6 @@ Section:CSS
 /pt/web/yui2-lib/build/container/assets/skins/sam/container.css
 /pt/web/yui2-lib/build/resize/assets/skins/sam/resize.css
 //common-web/framework.css
-/pt/web/feedback.css
-/pt/web/pageviewer.css
+//common-web/feedback.css
+//common-web/pageviewer.css
 //common-web/MBooksCol.css

@@ -2385,7 +2385,7 @@ sub OcrHandler
     }
     else
     {
-        my $doc = new MBooks::Document::XPAT;
+        my $doc = new Document::XPAT;
         $doc->clean_xml($ocrTextRef);
 
         # XMLify line breaks using <br/>
@@ -2435,7 +2435,7 @@ sub GetOcrBySequence
 
     DEBUG('all', qq{ocr file is: $ocrFile});
 
-    my $doc = new MBooks::Document::XPAT;
+    my $doc = new Document::XPAT;
     $doc->clean_xml($ocrTextRef);
 
     $$ocrTextRef =~ s,\n\n,<br /><br />\n,g;
@@ -2506,7 +2506,7 @@ sub CheckCreateDeliveryWebDirectory
     my $self = shift;
     my $destDir = shift;
 
-    Utils::mkdir_path( $destDir, $PTGlobals::gMakeDirOutputLog );
+    Utils::mkdir_path( $destDir );
 }
 
 
