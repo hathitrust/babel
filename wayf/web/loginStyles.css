@@ -38,7 +38,7 @@ h3 {
 	position: relative;
 	left: -18px;
 	margin:-10px 0 0 0;
-	background: transparent url(/m/mdp/graphics/banner.png) no-repeat scroll 100%;
+	background: transparent url(/wayf/common-web/graphics/banner.png) no-repeat scroll 100%;
 	width:417px;
 	height:62px;
 	font-size: 130%;
@@ -56,7 +56,7 @@ h4 {
 }
 
 p.loggedinAccess {
-  background: transparent url(/m/mdp/graphics/icon_check.gif) no-repeat scroll 15px 50%;
+  background: transparent url(/wayf/common-web/graphics/icon_check.gif) no-repeat scroll 15px 50%;
   padding: 5px 5px 5px 40px;
   font-style: italic;
 }
@@ -91,7 +91,7 @@ p.msg {
 }
 
 .loginPrompt {
-  background: transparent url(/m/mdp/graphics/arrow_right.png) no-repeat scroll 8px 0;
+  background: transparent url(/wayf/common-web/graphics/arrow_right.png) no-repeat scroll 8px 0;
   padding: 5px 0 5px 45px;
   margin: 0;
 } 

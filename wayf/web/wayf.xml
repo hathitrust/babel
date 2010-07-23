@@ -8,6 +8,10 @@
   <XslFileList>
     <Filename>smallheader.xsl</Filename>
     <Filename>wayf.xsl</Filename>
+    <Filename>coll.xsl</Filename>
+    <Filename>skin.xsl</Filename>
+    <Filename>loads.xsl</Filename>
+    <Filename>loads_helper_wayf.xsl</Filename>
    </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->

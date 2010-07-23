@@ -7,9 +7,7 @@
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title>HathiTrust Digital Library - Login</title>
-        <link rel="stylesheet" type="text/css" media="screen" href="/m/mdp/WAYF/loginStyles.css"/>
-        <link rel="stylesheet" type="text/css" media="screen" href="/m/mdp/MBooks/smallheader.css"/>
-        <script type="text/javascript" src="/m/mdp/WAYF/js/login.js"/>
+        <xsl:call-template name="load_js_and_css"/>
       </head>
 
       <body>
