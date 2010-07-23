@@ -90,9 +90,6 @@ use PT::Prolog;
 
 $::VERSION = 1.1200;
 
-# Permit created directories at 777 and created files at 666.
-umask '0000';
-
 # ---------------------------------------------------------------------
 #
 #                           M A I N
