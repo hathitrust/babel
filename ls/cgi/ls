@@ -48,10 +48,6 @@ BEGIN {
         # system absence.
         require Auth::Surrogate;
         Auth::Surrogate::authorize('/ls/cgi');
-
-        # Permit created directories at 777 and created files at 666
-        # in development to make accessible/removable
-        umask '0000';
     }
 }
 
