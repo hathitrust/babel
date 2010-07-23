@@ -592,6 +592,7 @@ sub handle_BEGINNING_LINK_PI
     
     my $temp_cgi = new CGI('');
     $temp_cgi->param('id', $id);
+    $temp_cgi->param('debug', $cgi->param('debug'));
 
     my $url = Utils::url_to($temp_cgi, $PTGlobals::gPageturnerCgiRoot);
 
