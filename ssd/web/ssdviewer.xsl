@@ -66,7 +66,7 @@
             <xsl:with-param name="maxLength" select="50"/>
           </xsl:call-template>
         </title>
-        <link rel="stylesheet" href="/m/mdp/ssdstyles.css" type="text/css" />
+        <link rel="stylesheet" href="/ssd/web/ssdstyles.css" type="text/css" />
 
         <!-- Below is a workaround for javascript script tags so we don't get a cdata output              -->
         <!--     WARNING  This won't work if the javascript in the XML has a > or < sign in them          -->

@@ -29,6 +29,7 @@
 
   <!-- XSL fallback files -->
   <XslFileList>
+    <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>framework.xsl</Filename>
     <Filename>footer.xsl</Filename>
     <Filename>ssdviewer.xsl</Filename>
