@@ -1,0 +1,401 @@
+package MBooks::Operation::AddMultipleItems;
+
+
+=head1 NAME
+
+MBooks::Operation::AddMultipleItems (op)
+
+=head1 DESCRIPTION
+
+This class is a subclass of MBooks::Operation (op)
+
+=head1 SYNOPSIS
+
+=head1 METHODS
+
+=over 8
+
+=cut
+
+use strict;
+
+use base qw(Operation);
+use Collection;
+use Utils;
+use Identifier;
+use Debug::DUtils;
+use MBooks::Operation::Status;
+use MBooks::MetaDataGetter::VuFindSolr;
+use Time::HiRes;
+
+# ---------------------------------------------------------------------
+sub new
+{
+    my $class = shift;
+
+    my $self = {};
+    bless $self, $class;
+    $self->_initialize(@_);
+
+    return $self;
+}
+# ---------------------------------------------------------------------
+
+=item _initialize
+
+Initialize MBooks::Operation::AddItems.  Must call parent initialize.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _initialize
+{
+    my $self = shift;
+    my $rattr_ref = shift;
+
+    my $C = $$rattr_ref{'C'};
+    my $act = $$rattr_ref{'act'};
+
+    $self->SUPER::_initialize($C, $act);
+}
+# ---------------------------------------------------------------------
+
+=item execute_operation
+
+Perform the database operations necessary for AddMultipleItems action
+
+=cut
+
+# ---------------------------------------------------------------------
+sub execute_operation
+{
+    my $self = shift;
+    my $C = shift;
+    my $config = $C->get_object('MdpConfig');
+    my $co = $self->get_action()->get_transient_facade_member_data($C, 'collection_object');
+    my $act = $self->get_action();
+    DEBUG('op', qq{execute operation="AddMultipleItems"});
+    $self->SUPER::execute_operation($C);
+
+    my $start = Time::HiRes::time();
+    # Pessimistic
+    my $db_success = 0;
+    my $ALL_METADATA_RETURNED = 0;
+    my $GET_METADATA = 0;
+    
+    my $cgi = $C->get_object('CGI');
+
+    # if in production limit ids to max_ids    
+    my @ids = $cgi->param('id');
+    my $num_ids = scalar(@ids);
+    my $max_ids = $config->get('max_add_ids');
+    if (! defined ($ENV{'HT_DEV'})) {
+        ASSERT($num_ids <= $max_ids,qq{$num_ids items submitted.  Maximum allowed is $max_ids});
+    }
+
+    my @couldnot_index;
+    my @no_metadata;
+    my @update_metadata;
+    my @invalid_ids;
+    my @added_or_updated; 
+    my @failed_ids;
+    my $report="";
+    my $failed_to_add_count  = 0;
+    my $added_count = 0;
+    my $internal_id;
+    
+    foreach my $id (@ids)
+    {
+        my $statsref;
+        
+        if (! Identifier::validate_mbooks_id($id))
+        {
+            push (@invalid_ids, $id);
+        }
+        else
+        {
+            #its valid
+            if (! $co->item_exists_extern_id($id))
+            {
+                #if there is no entry in the item table we don't have metadata
+                push(@no_metadata,$id);
+            }
+            else
+            {
+                push (@update_metadata,$id);
+            }
+        }
+    }   
+
+    my @get_metadata=(@no_metadata,@update_metadata);
+    
+    my $metadata_aryref = $self->get_metadata($C,\@get_metadata);
+    if (!defined ($metadata_aryref))
+    {
+        my $msg = qq{Could not get metadata for items. };  
+        $act->set_error_record($C, $act->make_error_record($C, $msg));
+    }
+    else
+    {
+        # check to see that we have 1 metadata ref for each id?
+        if ( scalar(@get_metadata) == scalar(@{$metadata_aryref}) )
+        {
+            $ALL_METADATA_RETURNED = 1;
+        }
+        
+        foreach my $metadata_hashref (@{$metadata_aryref})
+        {
+            my $metadata_ref = $self->normalize_metadata($metadata_hashref);            
+            $internal_id =$self->add_item_metadata_to_database($C,$metadata_ref);
+            #XXX check that soft assert for Super->add... doesn;t cause everything to
+            # bomb out for one failed add!
+            if (defined($internal_id))
+            {
+                $added_count ++;
+                push (@added_or_updated, $metadata_hashref->{'extern_item_id'});
+            }
+            else
+            {
+                $failed_to_add_count++;
+                push (@failed_ids, $metadata_hashref->{'extern_item_id'});
+            }
+            # next action, copy items (to collection) assumes that internal ids are available on the 
+            # cgi params as ids
+            $cgi->append( -name=>'iid', -values =>[$internal_id]);
+        }
+    }
+            
+    if (scalar(@failed_ids) == 0 && scalar(@invalid_ids)==0 && $ALL_METADATA_RETURNED)
+    {
+        $db_success=1;
+    }
+    
+    my $elapsed = Time::HiRes::time() - $start;
+
+    
+    my $summary = "\n------\n" ;
+    $summary .= $added_count ." were added for indexing/updating in " . $elapsed . " \n\t";    
+    $summary .= scalar(@ids) . " item ids  input\n\t";
+    $summary .=  scalar(@invalid_ids) ." invalid_ids\n----\n";
+    $summary .= $failed_to_add_count ." failed to be added  \n\t";
+    if (!$ALL_METADATA_RETURNED)
+    {        
+        $summary .= "Not all metadata returned from MetaDataGetter";
+    }
+    
+
+    # unless needed for debugging, the only data currently used seems to be database success
+    # consider double checking and then removing
+    my %add_multiple_items_data;
+    $add_multiple_items_data{'database_success'} = $db_success;
+    $add_multiple_items_data{'all_metadata_returned'} = $ALL_METADATA_RETURNED;
+    $add_multiple_items_data{'added_or_updated'} = \@added_or_updated;
+    $add_multiple_items_data{'ids'} =\@ids;
+    $add_multiple_items_data{'invalid_ids'} = \@invalid_ids;
+    $add_multiple_items_data{'failed_ids'} = \@failed_ids;
+
+    $report .=  $summary;
+    
+    DEBUG('time', qq{$report});
+
+    my $act = $self->get_action();
+    $act->set_persistent_facade_member_data($C, 'add_multiple_items_data', \%add_multiple_items_data);
+
+    
+    # XXX delete external ids before saving cgi back to session
+    $cgi->param('c', $cgi->param('c2'));
+    $C->set_object('CGI',$cgi);    
+    return $db_success ? $ST_OK : $ST_NOT_OK;
+    
+}
+
+# ---------------------------------------------------------------------
+sub get_metadata
+{
+    my $self = shift;
+    my $C = shift;
+    my $id_aryref = shift;
+    
+
+    my $metadata_aryref= [];
+    
+    my $md = new MBooks::MetaDataGetter::VuFindSolr($C,$id_aryref);
+    my $metadata_aryref = $md->get_metadata($C, $id_aryref);
+    return $metadata_aryref;
+}
+
+# ---------------------------------------------------------------------
+# add_item_metadata_to_database
+#
+#   calls $co->create_or_update_item_metadata($metadata_ref);
+#   which will create new item if extern_id not in db or update data otherwise
+#   returns internal item id
+# ---------------------------------------------------------------------
+sub add_item_metadata_to_database
+{
+    my $self = shift;
+    my $C = shift;
+    my $metadata_ref = shift;
+    my $act = $self->get_action();
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+   
+    my $item_id;
+
+    eval
+    {
+        $item_id = $co->create_or_update_item_metadata($metadata_ref);
+    };
+    if ($@)
+    {
+        $item_id = undef;
+        soft_ASSERT(0, qq{AddItem database failure="$@", extern_id="$$metadata_ref{'extern_item_id'}"}, 'force_email');
+    }
+    return $item_id;
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item get_sort_title
+
+MARC 245 indicator 2 indicates how many positions to skip
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_sort_title
+{
+    my $self = shift;
+    my ($display_title, $i2) = @_;
+
+    # Remap XML charents so I2 makes sense
+    Utils::remap_cers_to_chars(\$display_title);
+    my $sort_title = substr($display_title, $i2);
+    Utils::map_chars_to_cers(\$sort_title);
+
+    return $sort_title;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item normalize_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub normalize_metadata
+{
+    my $self = shift;
+    my $metadata_hashref = shift;
+
+    my $metadata_clean_ref = {};
+    
+    foreach my $key (keys %{$metadata_hashref})
+    {
+        my $value = $self->dealWithArray($$metadata_hashref{$key});
+        $$metadata_clean_ref{$key} = $value;
+    }
+    my $date = $$metadata_clean_ref{'date'};
+    $$metadata_clean_ref{'date'} = $self->normalize_date($date);
+    if (! defined($$metadata_clean_ref{'author'}))
+    {
+        $$metadata_clean_ref{'author'}='';
+    }
+    return $metadata_clean_ref;
+}
+
+
+# ---------------------------------------------------------------------
+sub dealWithArray
+{
+    #XXX Do we need smarter processing?
+    my $self = shift;
+    my $couldBeArrayRef = shift;
+    my $ref_type=ref($couldBeArrayRef);
+    my $concatenated;
+    
+    ASSERT(defined($couldBeArrayRef),qq{value not defined});
+    if ($ref_type eq "ARRAY")
+    {
+        $concatenated = join (" ",@{$couldBeArrayRef});
+        return $concatenated;
+    }
+    else 
+    {
+        return $couldBeArrayRef;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
+=item Name
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub normalize_date
+{
+    my $self = shift;
+    my $date = shift;
+
+    # XXX what kind of error to throw if can't figure out how to
+    # normalize date.  Consider logging somewhere and inserting fake
+    # date such as 3000 chk mysql for possible fake date value try
+    # 0000
+    if ($date =~ m,(1\d{3}|20\d{2}),)
+    {
+        $date = $1;
+        # mysql needs month and day so put in fake
+        $date .= '-00-00';
+    }
+    else
+    {
+        $date = '0000-00-00';
+    }
+
+    return $date;
+}
+
+
+
+# ---------------------------------------------------------------------
+1;
+
+__END__
+
+=head1 AUTHOR
+
+Tom Burton-West, University of Michigan, tburtonw@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2007 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+

@@ -1,0 +1,23 @@
+  <CollectionOwner><?COLLECTION_OWNER?></CollectionOwner>
+  <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
+  <EditCollectionWidget><?EDIT_COLLECTION_WIDGET?></EditCollectionWidget>
+
+  <CollectionName><?COLLECTION_NAME?></CollectionName>
+  <OperationResults><?OPERATION_RESULTS?></OperationResults>
+
+  <QueryString><?QUERY_STRING?></QueryString>
+  <SearchResults><?SEARCH_RESULTS?></SearchResults>
+
+  <TitleSortHref><?TITLE_SORT_HREF?></TitleSortHref>
+  <AuthorSortHref><?AUTHOR_SORT_HREF?></AuthorSortHref>
+  <DateSortHref><?DATE_SORT_HREF?></DateSortHref>
+  <RelSortHref><?REL_SORT_HREF?></RelSortHref>
+
+  <SelectCollectionWidget><?SELECT_COLLECTION_WIDGET?></SelectCollectionWidget>
+  <SortWidget><?SORT_WIDGET?></SortWidget>
+  <Paging><?PAGING?></Paging>
+
+  <SearchWidget><?SEARCH_WIDGET?></SearchWidget>
+
+  <LimitToFullText><?LIMIT_TO_FULL_TEXT?></LimitToFullText>
+<SearchResultsAjaxUrl><?SEARCH_RESULTS_AJAX_URL?></SearchResultsAjaxUrl>
