@@ -4,3 +4,4 @@
 *#*#
 # Ignore the Auth/Surrogate SDR file
 SDR
+/lib/Config/local.conf
