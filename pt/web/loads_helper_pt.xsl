@@ -22,7 +22,7 @@
  <script type="text/javascript" src="//common-web/js/overlayUtils.js"></script>
  <script type="text/javascript" src="//common-web/js/listUtils.js"></script>
  <script type="text/javascript" src="/pt/js/section108.js"></script>
- <script type="text/javascript" src="/pt/js/pageturner.js"></script>
+ <script type="text/javascript" src="//common-web/js/pageturner.js"></script>
 </xsl:template>
  
 

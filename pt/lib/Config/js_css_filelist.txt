@@ -59,7 +59,7 @@ Section:LOCAL_JS
 //common-web/js/overlayUtils.js
 //common-web/js/listUtils.js
 /pt/web/js/section108.js
-/pt/web/js/pageturner.js
+//common-web/js/pageturner.js
 
 Section:CSS
 # css files, note last one overides earlier
