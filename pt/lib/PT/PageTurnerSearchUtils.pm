@@ -125,6 +125,11 @@ sub ocr_search_driver
     my ( $numberOfFinalQs, $parsedQsCgi, $xpatReadySearchTermsArrayRef ) =
         ParseSearchTerms($C, \$q1);
 
+    my $ipaddr = $ENV{'REMOTE_ADDR'};
+    my $log_string = "$ipaddr " . Utils::Time::iso_Time('time') . " " . $parsedQsCgi->query_string();
+    Utils::Logger::__Log_string($C, $log_string,
+                                     'query_logfile', '___QUERY___', 'ptsearch');
+
     # Flag indicating whether we redid the query as an "OR"
     my $secondary_query = 0;
 
@@ -391,11 +396,6 @@ sub ParseSearchTerms
               my $s = $parsedQsCgi->as_string();
               return qq{<h3>CGI after parsing into separate terms: $s</h3>};
           });
-
-    my $ipaddr = $ENV{'REMOTE_ADDR'};
-    my $log_string = "$ipaddr " . Utils::Time::iso_Time('time') . " " . $parsedQsCgi->query_string();
-    Utils::Logger::__Log_string($C, $log_string,
-                                     'query_logfile', '___QUERY___', 'ptsearch');
 
     return ( $numberOfFinalQs, $parsedQsCgi, \@xPatSearchExpressions );
 }
