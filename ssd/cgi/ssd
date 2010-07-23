@@ -1,0 +1,193 @@
+#!/l/local/bin/perl
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# ----------------------------------------------------------------------
+# Performance measurement
+# ----------------------------------------------------------------------
+BEGIN {
+    ( $main::realSTART ) = time;
+}
+
+BEGIN {
+    if ( $ENV{'HT_DEV'} ) {
+        # Set the AUTHZD_COLL environment variable in auth system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ssd/cgi');
+    }
+}
+
+# END block for clean up
+END {
+   FinishUp();
+   exit;
+}
+
+
+# ----------------------------------------------------------------------
+# Libraries
+# ----------------------------------------------------------------------
+# ---------- Perl standard libs -----------
+use CGI;
+
+# Magic
+use Attribute::Handlers;
+
+# ----------  MDP specfic ----------
+use MdpGlobals;
+use Utils;
+use Debug::DUtils;
+use PI;
+use View;
+use Identifier;
+use MirlynGlobals;
+
+BEGIN {
+    Debug::DUtils::setup_DebugScreen();
+}
+
+use PTGlobals;
+
+use PT::MdpItem;
+use PT::PageTurnerUtils;
+use PT::PageTurnerSearchUtils;
+use PT::Prolog;
+
+$::VERSION = 1.1200;
+
+# ---------------------------------------------------------------------
+#
+#                           M A I N
+#
+# ---------------------------------------------------------------------
+
+my $prolog = new PT::Prolog;
+
+$prolog->Run(\&ValidityChecks, 'ssd');
+
+my $C = $prolog->GetContext();
+my $gCgi = $C->get_object('CGI');
+my $gDso = $C->get_object('Session');
+my $gMdpItem = $C->get_object('MdpItem');
+
+my $gId = $gCgi->param( 'id' );
+
+# Save the current URL in the session so that later we can build a
+# "back" link
+PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
+
+if ( $C->get_object('AccessRights')->assert_final_access_status($C, $gId) eq 'allow' )
+{
+    # Any information specific to this request (page,
+    # possibly new handler, etc.) is done after initialization
+    $gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues);
+
+    # set up text, image or pdf handlers for this request
+    $gMdpItem->DetermineAndSetContentHandler( );
+
+    if ( $gCgi->param( 'ssd' ) ne 1 )
+    {
+        $gMdpItem->OcrHandler( );
+    }
+}
+
+# ----------------------------------------------------------------------
+# get XML template and process its PIs
+# ----------------------------------------------------------------------
+
+my $vw = new View($C);
+
+my $act = $C->get_object('Action');
+
+$vw->execute_view($C, $act);
+$vw->output($C);
+
+$C->dispose();
+
+exit 0;
+
+
+# ---------------------------------------------------------------------
+#
+#                       end of M A I N
+#
+# ---------------------------------------------------------------------
+
+
+
+# ----------------------------------------------------------------------
+# NAME	       : FinishUp
+# PURPOSE      :
+# CALLS	       :
+# INPUT	       :
+# RETURNS      :
+# GLOBALS      :
+# SIDE-EFFECTS :
+# NOTES	       :
+# ----------------------------------------------------------------------
+sub FinishUp
+{
+    DEBUG('time', qq{<h4>main::FinishUp start serialization</h4>} . Utils::display_stats());
+    # Serialize	the session to the database
+    if ( $gDso )
+    {   $gDso->dispose();   }
+    DEBUG('time', qq{<h4>main::FinishUp end serialization</h4>} . Utils::display_stats());
+
+}
+
+# ----------------------------------------------------------------------
+# NAME         :
+# PURPOSE      :
+# CALLS        :
+# INPUT        :
+# RETURNS      :
+# GLOBALS      :
+# SIDE-EFFECTS :
+# NOTES        :
+# ----------------------------------------------------------------------
+sub ValidityChecks
+{
+    my ( $cgi ) = @_;
+
+    my $rc = PT::Prolog::ST_EMPTY;
+
+    my $id = $cgi->param('id');
+
+    # There must be a valid id of an item to view
+    Utils::silent_ASSERT(Identifier::validate_mbooks_id($cgi),
+                              qq{Invalid document id provided.});
+
+    # lose any image map params
+    $cgi->delete( 'x' );
+    $cgi->delete( 'y' );
+    $cgi->delete( 'orient' );
+
+    my $seq = $cgi->param( 'seq' );
+    if ( ! $seq  )
+    {
+        $rc |= PT::Prolog::ST_SEQ_NOT_SUPPLIED;
+	$cgi->param( 'seq', $PTGlobals::gDefaultSeq );
+    }
+
+    if( $cgi->param ( 'page' ) ne 'ssd' )
+    {
+    	$cgi->delete( 'page' );
+	$cgi->param( 'page', 'ssd');
+    }
+
+    $cgi->param( 'view', 'text' );
+
+    # Force ssd=1 even if not supplied.  Running the ssd cgi implies
+    # ssd=1 and forcing this allows a short-circuit in AccessRights
+    # tha avoids a slow check for ssd status.
+    $cgi->param('ssd', 1);
+
+    return $rc;
+}
+

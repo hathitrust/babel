@@ -1,0 +1,36 @@
+.PageNum {
+  font-weight:bold;
+}
+
+p {
+}
+
+p.Image {
+  font-style:italic;
+}
+
+.Section {
+  border-bottom: 3px dashed #999;
+}
+
+.Page {
+  padding: 8px;
+  margin: 8px;
+  border: 1px solid #999;
+}
+
+
+#mdpFlexible_1 {
+}
+
+.mdpMetaDataRow {
+  margin-bottom: 3px;
+}
+
+.mdpMetaDataRegionHead, .mdpMetaDataRow span {
+  float: left;
+  padding-right: 3px;
+  font-weight: bold;
+}
+
+.mdpMetaText {}
