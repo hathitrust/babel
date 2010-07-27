@@ -9,10 +9,6 @@ Log.pm
 
 This non-OO package logs indexing stats
 
-=head1 VERSION
-
-$Id: Log.pm,v 1.5 2010/05/25 16:47:37 pfarber Exp $
-
 =head1 SYNOPSIS
 
 various
