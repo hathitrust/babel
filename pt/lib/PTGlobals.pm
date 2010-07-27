@@ -46,12 +46,13 @@ $ghOCREnabled          = 0;
 $gMakeDirOutputLog    = '/tmp/pageturnerdiroutput.log';
 
 ## --------------------------------------------------
-# Programs run by CGI scripts (in $PATH)
-$gTIF2WEB   = "tif2web";
-$gCONVERT   = "convert";
-$gXPATBLDU  = "xpatbldu";
-$gMULTIRGN  = "multirgn";
-$gXPATU     = "xpatu";
+# Programs run by CGI scripts
+my $local_bin_dir = "/l/local/bin";
+$gTIF2WEB   = "$local_bin_dir/tif2web";
+$gCONVERT   = "$local_bin_dir/convert";
+$gXPATBLDU  = "$local_bin_dir/xpatbldu";
+$gMULTIRGN  = "$local_bin_dir/multirgn";
+$gXPATU     = "$local_bin_dir/xpatu";
 
 $gPtLibMiscDir = $LOCATION . '/misc';
 $gDd        = $gPtLibMiscDir . '/MBooksXPatDataDictionary.xml';
