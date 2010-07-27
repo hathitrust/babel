@@ -11,6 +11,7 @@
   <xsl:variable name="gCurrentPageSeq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
   <xsl:variable name="gItemId" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
   <xsl:variable name="gFeatureList" select="/MBooksTop/MdpApp/FeatureList"/>
+  <xsl:variable name="gItemHandle" select="/MBooksTop/MBooksGlobals/ItemHandle"/>
 
   <xsl:variable name="gFinalView">
     <xsl:choose>
