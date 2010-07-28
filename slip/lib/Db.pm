@@ -106,6 +106,24 @@ sub Drop_j_rights_Rename_j_rights_temp {
 
 # ---------------------------------------------------------------------
 
+=item init_vSolr_timestamp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub init_vSolr_timestamp {
+    my ($C, $dbh, $time) = @_;
+
+    my $timestamp = defined($time) ? $time : $vSOLR_ZERO_TIMESTAMP;
+    my $statement = qq{REPLACE INTO j_vsolr_timestamp SET time=$timestamp};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
+# ---------------------------------------------------------------------
+
 =item Select_vSolr_timestamp
 
 A pointer into j_rights

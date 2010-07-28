@@ -93,8 +93,13 @@ sub cont_get_usage {
        control-j -kresetstats -r run
           zeros j_shard_stats and j_rate_stats for incremental recording
 
-       control-j -ktimestamp -r run [-tYYYYMMDD]
+       control-j -kQtimestamp -r run [-tYYYYMMDD]
           set queue timestamp to 00000000 or value of -t
+            re-queue ids in j_rights newer than timestamp, to be re-indexed
+
+       control-j -kVtimestamp -r run [-tYYYY-MM-DD]
+          set vSolr timestamp to 0000-00-00 or value of -t
+            re-query vSolr for ids newer that timestamp, to be re-added j_rights 
 
        control-j -k stop|start -V
           -V starts/stops rights-j
@@ -202,10 +207,15 @@ eval {
     elsif ($KOMMAND eq 'unstick') {
         c_unstick($C, $DBH, $RUN);
     }
-    elsif ($KOMMAND eq 'timestamp') {
+    elsif ($KOMMAND eq 'Qtimestamp') {
         my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
         Db::init_j_rights_timestamp($C, $DBH, $RUN, $time);
         __output(qq{\tset queue timestamp to } . ($time ? $time : '00000000') . qq{\n});
+    }
+    elsif ($KOMMAND eq 'Vtimestamp') {
+        my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
+        Db::init_vSolr_timestamp($C, $DBH, $time);
+        __output(qq{\tset vSolr timestamp to } . ($time ? $time : '00000000') . qq{\n});
     }
     elsif ($KOMMAND eq 'resetdriver') {
         my $driver_driven = $config->get('driver_driven');

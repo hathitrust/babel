@@ -158,9 +158,10 @@ CREATE TABLE `j_rights` (`nid` varchar(32) NOT NULL default '', `attr` tinyint(4
 ---------------------------------------------------------------------
 CREATE TABLE `j_vsolr_timestamp` (
        `time` int NOT NULL default '00000000',
+                PRIMARY KEY (`time`)
        );
 
-CREATE TABLE `j_vsolr_timestamp` (`time` int NOT NULL default '00000000');
+CREATE TABLE `j_vsolr_timestamp` (`time` int NOT NULL default '00000000', PRIMARY KEY (`time`));
 
 
 ---------------------------------------------------------------------
