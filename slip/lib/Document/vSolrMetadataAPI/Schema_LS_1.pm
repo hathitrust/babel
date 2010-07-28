@@ -87,7 +87,7 @@ sub post_process_metadata {
     my @hathiTrust_str = grep(/^$item_id\|.*/, @{$metadata_hashref->{'ht_id_display'}});
     # 0      1            2          3  
     # htid | ingestDate | enumcron | rightsCodeForThisItem
-    my @ht_id_display = split('|', $hathiTrust_str[0]);
+    my @ht_id_display = split(/\|/, $hathiTrust_str[0]);
     my $volume_enumcron = $ht_id_display[2];
     if ($volume_enumcron) {
         $metadata_hashref->{'title'}[0] .= qq{, $volume_enumcron};
