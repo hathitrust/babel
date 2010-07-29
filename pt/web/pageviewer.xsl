@@ -1105,6 +1105,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
               </xsl:attribute>
+              <xsl:attribute name="target">
+                <xsl:text>pdf</xsl:text>
+              </xsl:attribute>
               <xsl:element name="img">
                 <xsl:attribute name="alt">View Page as PDF</xsl:attribute>
                 <xsl:attribute name="title">PDF view for printing</xsl:attribute>
@@ -1119,6 +1122,9 @@
                 <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
               </xsl:attribute>
               <xsl:attribute name="title">PDF view for printing</xsl:attribute>
+              <xsl:attribute name="target">
+                <xsl:text>pdf</xsl:text>
+              </xsl:attribute>
               <xsl:text>1-page PDF</xsl:text>
             </xsl:element>
           </xsl:when>

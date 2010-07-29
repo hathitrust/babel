@@ -76,59 +76,10 @@ sub GetMdpItem
 {
     my ($C, $id, $itemFileSystemLocation ) = @_;
 
-    # # Instantiate object
-    my $ses = $C->get_object('Session');
-
-    DEBUG('time', qq{<h3>Start mdp item uncache</h3>} . Utils::display_stats());
-    my $mdpItem = $ses->get_persistent( 'mdpitem' );
-    DEBUG('time', qq{<h3>Finish mdp item uncache</h3>} . Utils::display_stats());
-
-    # if we already have instantiated and saved on the session the
-    # full mdpitem for the id being requested, we have everything we
-    # need and can return
-    if ( $mdpItem  && ( $mdpItem->Get( 'id' ) eq $id ))
-    {
-        # item is already cached and we have it in $mdpItem.  Test to
-        # see if the item files got zipped since the last time we
-        # accessed this mdpItem object.
-        if (! $mdpItem->ItemIsZipped())
-        {
-            if (-e $itemFileSystemLocation . qq{/$id.zip})
-            {
-                $mdpItem->SetItemZipped();
-            }
-        }
-
-        DEBUG('pt,all', qq{<h3>Using cached mdpItem object for id="$id" zipped="}  . ($mdpItem->ItemIsZipped() || '0') . q{"</h3>});
-    }
-    else
-    {
-        # if a different id is being asked for or nothing is set up
-        # yet, set up a new MdpItem
-        my $metsXmlFilename = GetMetsXmlFilename($itemFileSystemLocation, $id);
-        my $metsXmlRef = GetMetsXmlFromFile( $metsXmlFilename );
-
-        ASSERT(($metsXmlRef && $$metsXmlRef),
-               qq{ERROR in PageTurnerUtils::GetMdpItem: Invalid or empty METS file});
-
-        DEBUG('pt,all', qq{<h3>METS file: $metsXmlFilename</h3>});
-
-        # Namespace=mdp: GetMetadataFromMirlyn always returns
-        # something in $metadata we can use for display.  We assert
-        # that the response was OK else we send email via soft_ASSERT
-        # and continue execution.
-        my ($metadataRef, $metadata_failed) = GetMetadataFromMirlyn($C, $id);
-
-        $mdpItem = new PT::MdpItem( $C,
-                                    $id,
-                                    $metsXmlRef,
-                                    $metsXmlFilename,
-                                    $metadataRef,
-                                    $itemFileSystemLocation,
-                                    $metadata_failed,
-                                  );
-        $ses->set_persistent('mdpitem', $mdpItem);
-    }
+    ### return App::MdpItem
+    DEBUG('time', qq{<h3>Start mdp item uncache</h3>} . App::Utils::display_stats());
+    my $mdpItem = PT::MdpItem->new(App::MdpItem->GetMdpItem($C, $id));
+    DEBUG('time', qq{<h3>Finish mdp item uncache</h3>} . App::Utils::display_stats());
 
     DEBUG('pt,all',
           sub

@@ -50,12 +50,38 @@ sub BuildViewTypeUrl
 
     my $tempCgi = new CGI( $cgi );
 
+    if ( $view eq 'fpdf' || $view eq 'pdf' ) {
+        return BuildImageServerPDFUrl($cgi, $view);
+    }
+
     $tempCgi->param( 'view', $view );
     my $href = Utils::url_to($tempCgi);
 
     return $href;
 }
 
+sub BuildImageServerPDFUrl
+{
+    my ( $cgi, $view ) = @_;
+    
+    my $tempCgi = new CGI ("");
+    
+    # copy params
+    foreach my $p (qw(id orient size attr src u)) {
+        $tempCgi->param($p, $cgi->param($p));
+    }
+    if ( $view eq 'fpdf' ) {
+        # pass
+    } elsif ( $view eq 'pdf' ) {
+        # don't force download;
+        # let the PDF open in the browser if possible
+        $tempCgi->param('seq', $cgi->param('seq'));
+        $tempCgi->param('num', $cgi->param('num'));
+        $tempCgi->param('attachment', 0);
+    }
+    my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/pdf");
+    return $href;
+}
 
 # ---------------------------------------------------------------------
 

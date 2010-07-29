@@ -216,6 +216,7 @@ $gCgiPathComponent         = ($ENV{'AUTH_TYPE'} eq 'shibboleth') ? '/shcgi' : '/
 
 $gCollectionBuilderCgiRoot = $gCgiPathComponent . '/mb';
 $gPageturnerCgiRoot        = $gCgiPathComponent . '/pt';
+$gImgsrvCgiRoot            = $gCgiPathComponent . '/i/imgsrv/imgsrv';
 
 # ---------------------------------------------------------------------
 #

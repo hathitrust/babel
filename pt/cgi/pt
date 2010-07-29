@@ -120,13 +120,17 @@ if ( $C->get_object('AccessRights')->assert_final_access_status($C, $gId) eq 'al
     
     # There will only be a "requested rotation" value if the user
     # clicked on a "rotate image" button
-    if ( $gCgi->param( 'view' ) eq 'image' || $gCgi->param( 'view' ) eq 'pdf' ) {
+    if ( $gCgi->param( 'view' ) eq 'image' ) {
         # get displayable page image, if cached in web space), or
         # create and place in web space cache
         $gMdpItem->HandleImageContent();
     }
-    elsif ( $gCgi->param( 'view' ) eq 'fpdf' ) {
-        $gMdpItem->FullPdfHandler($C);
+    elsif ( $gCgi->param( 'view' ) eq 'fpdf' || $gCgi->param( 'view' ) eq 'pdf'  ) {
+        ### $gMdpItem->FullPdfHandler($C);
+        require PT::PIFiller::Root;
+        my $redirect_url = PT::PIFiller::Root::BuildImageServerPDFUrl($gCgi, $gCgi->param('view'));
+        print $gCgi->redirect($redirect_url);
+        exit;
     }
     elsif ( $gCgi->param( 'view' ) eq 'text' ) {
         $gMdpItem->OcrHandler();
@@ -253,10 +257,11 @@ sub ValidityChecks {
         $cgi->param( 'size', $PTGlobals::gDefaultSize );
     }
     
-    if (! defined($orient) ||
-        ! exists( $PTGlobals::gValidRotationValues{$orient})) {
-        $cgi->param( 'orient', $PTGlobals::gDefaultOrientation );
-    }
+    ## assume defaults later down the road
+    # if (! defined($orient) ||
+    #     ! exists( $PTGlobals::gValidRotationValues{$orient})) {
+    #     $cgi->param( 'orient', $PTGlobals::gDefaultOrientation );
+    # }
     
     return $rc;
 }
