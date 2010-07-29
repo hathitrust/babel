@@ -1,2 +1,0 @@
-141.211.43.195 6322647c919e9aa75069b2e88eaa7abc 17498 09:46:08 qtime=0.363 numfound=29 url=http://solr-sdr:8080/mbooks?q=dog&fl=id,score&fq=coll_id:(1580161751)&version=2.2&start=0&rows=1000000&indent=off 
-141.211.43.195 6322647c919e9aa75069b2e88eaa7abc 17528 09:46:22 qtime=0.000 numfound=29 url=http://solr-sdr:8080/mbooks?q=dog&fl=id,score&fq=coll_id:(1580161751)&version=2.2&start=0&rows=1000000&indent=off 

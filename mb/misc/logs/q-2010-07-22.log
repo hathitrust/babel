@@ -1,3 +1,0 @@
-141.211.43.195 8a62f5b4e3f3a6007a750e3efed65420 15822 16:41:54 qtime=0.134 numfound=29 url=http://solr-sdr:8080/mbooks?q=dog&fl=id,score&fq=coll_id:(1580161751)&version=2.2&start=0&rows=1000000&indent=off 
-141.211.43.195 8a62f5b4e3f3a6007a750e3efed65420 15928 16:42:06 qtime=0.001 numfound=29 url=http://solr-sdr:8080/mbooks?q=dog&fl=id,score&fq=coll_id:(1580161751)&version=2.2&start=0&rows=1000000&indent=off 
-141.211.43.195 8a62f5b4e3f3a6007a750e3efed65420 16526 17:04:31 qtime=0.001 numfound=29 url=http://solr-sdr:8080/mbooks?q=dog&fl=id,score&fq=coll_id:(1580161751)&version=2.2&start=0&rows=1000000&indent=off 
