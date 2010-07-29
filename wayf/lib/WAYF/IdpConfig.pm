@@ -57,7 +57,7 @@ package WAYF::IdpConfig;
                    },
      'uiuc' =>     {
                     'authtype' => 'shibboleth',
-                    'link_text' => 'University of Illinois, Champaign-Urbana',
+                    'link_text' => 'University of Illinois at Urbana-Champaign',
                     'template'  => 'https://___HOST___/Shibboleth.sso/uiuc?target=___TARGET___',
                     'enabled' => '1',
                    },
