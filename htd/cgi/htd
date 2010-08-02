@@ -46,9 +46,6 @@ use constant HIGHEST_API_VERSION => 1;
 
 # ============================ Main ===================================
 
-# make files & directories 666/777, accessible/removable
-umask '0000';
-
 # Determine which version of API to load and run
 my $Q = CGI->new();
 my $API_version = __determineVersion($Q);
