@@ -33,6 +33,7 @@ use Utils;
 use Utils::Logger;
 use Debug::DUtils;
 use Identifier;
+use Search::ISO8859_1_Map;
 
 use Document::XPAT;
 
@@ -376,6 +377,7 @@ sub ParseSearchTerms
         my $qTerm   = $finalQs[$i];
 
         limit_operand_length(\$qTerm);
+        Search::ISO8859_1_Map::iso8859_1_mapping(\$qTerm);
 
         # if the term is empty, remove it
         if ( $qTerm &&
