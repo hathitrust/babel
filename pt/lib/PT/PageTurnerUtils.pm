@@ -33,6 +33,9 @@ use Collection;
 use PI;
 use MirlynGlobals;
 
+use PT::MdpItem;
+use MdpItem;
+
 
 # ----------------------------------------------------------------------
 # NAME         :
@@ -76,10 +79,10 @@ sub GetMdpItem
 {
     my ($C, $id, $itemFileSystemLocation ) = @_;
 
-    ### return App::MdpItem
-    DEBUG('time', qq{<h3>Start mdp item uncache</h3>} . App::Utils::display_stats());
-    my $mdpItem = PT::MdpItem->new(App::MdpItem->GetMdpItem($C, $id));
-    DEBUG('time', qq{<h3>Finish mdp item uncache</h3>} . App::Utils::display_stats());
+    ### return MdpItem
+    DEBUG('time', qq{<h3>Start mdp item uncache</h3>} . Utils::display_stats());
+    my $mdpItem = PT::MdpItem->new(MdpItem->GetMdpItem($C, $id));
+    DEBUG('time', qq{<h3>Finish mdp item uncache</h3>} . Utils::display_stats());
 
     DEBUG('pt,all',
           sub
