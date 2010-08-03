@@ -1,0 +1,69 @@
+#!/l/local/bin/perl
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use MdpGitTools;
+
+our ($opt_a, $opt_A, $opt_h, $opt_t );
+my $ops = getopts('a:Aht');
+
+sub Usage {
+    print "git-latest-submodules [-a app | -A] [-t] | [-h]
+  updates submodules for apps under /htapps/[developer|test].babel
+    OPTIONS
+      -a app updates just 'app'
+      -A updates submodules in all apps that contain a .gitmodules file
+
+      -t updates test.babel instead of developer.babel
+      -h help\n";
+}
+
+if ($opt_h) {
+    print Usage();
+    exit 0;
+}
+
+if (! $opt_a && ! $opt_A) {
+    print STDERR "supply -A or -a argument\n";
+    print Usage();
+    exit 1;
+}
+
+my $SDRROOT;
+my $me = `whoami`;
+chomp($me);
+if ($opt_t) {
+    $SDRROOT = "/htapps/test.babel";
+}
+else {
+    $SDRROOT = "/htapps/$me.babel";
+}
+
+my @app_dirs = ();
+if ($opt_A) {
+    @app_dirs = MdpGitTools::get_app_dir_list($SDRROOT);
+}
+else {
+    @app_dirs = ("$SDRROOT/$opt_a");
+}
+
+foreach my $app_dir (@app_dirs) {
+    next if (! -e "$app_dir/.gitmodules");
+
+    if (! chdir($app_dir)) {
+        print STDERR "could not cd to $app_dir\n";
+        exit 1;
+    }
+
+    print "\n\n--- processing $app_dir ---\n";
+    print `git submodule foreach git pull -v`;
+}
+
+exit 0;
+
+
+
