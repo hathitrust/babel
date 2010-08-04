@@ -1,17 +1,13 @@
-package Document::XPAT;
+package PT::Document::XPAT;
 
 
 =head1 NAME
 
-Document::XPAT
+PT::Document::XPAT
 
 =head1 DESCRIPTION
 
 This class creates an XPAT stype document for indexing
-
-=head1 VERSION
-
-$Id: XPAT.pm,v 1.5 2010/03/03 19:27:45 pfarber Exp $
 
 =head1 SYNOPSIS
 
@@ -28,7 +24,7 @@ use strict;
 use base qw(Search::Document);
 use Utils;
 use Utils::Extract;
-
+use PT::Document::ISO8859_1_Map;
 
 # ---------------------------------------------------------------------
 
@@ -83,6 +79,7 @@ sub get_document_content
                                                [['SEQ', $i], ['NUM', $num]]);
     }
 
+    PT::Document::ISO8859_1_Map::iso8859_1_mapping(\$full_text);
     $full_text = wrap_string_in_tag_by_ref(\$full_text, 'doc');
 
     return \$full_text;

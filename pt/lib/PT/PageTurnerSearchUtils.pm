@@ -23,6 +23,8 @@ package PT::PageTurnerSearchUtils;
 
 use PT::MdpItem;
 use PT::CompositeResult;
+use PT::Document::XPAT;
+use PT::Document::ISO8859_1_Map;
 
 use Search::XPat::Simple;
 use Search::XPat::Result;
@@ -33,9 +35,6 @@ use Utils;
 use Utils::Logger;
 use Debug::DUtils;
 use Identifier;
-use Search::ISO8859_1_Map;
-
-use Document::XPAT;
 
 
 # ---------------------------------------------------------------------
@@ -377,7 +376,7 @@ sub ParseSearchTerms
         my $qTerm   = $finalQs[$i];
 
         limit_operand_length(\$qTerm);
-        Search::ISO8859_1_Map::iso8859_1_mapping(\$qTerm);
+        PT::Document::ISO8859_1_Map::iso8859_1_mapping(\$qTerm);
 
         # if the term is empty, remove it
         if ( $qTerm &&
@@ -622,7 +621,7 @@ sub MaybeBuildOcrXmlFile
     {
         DEBUG('index,all', qq{<h5>Creating output XML file: $outputOcrXmlFileName</h5>});
 
-        my $doc = new Document::XPAT;
+        my $doc = new PT::Document::XPAT;
         my $fullTextRef = $doc->get_document_content($C, $mdpItem);
         Utils::write_data_to_file( $fullTextRef, $outputOcrXmlFileName );
 

@@ -27,7 +27,7 @@ use base qw(PIFiller);
 use PT::PIFiller::Common;
 
 use PT::PageTurnerUtils;
-
+use PT::Document::XPAT;
 
 
 # ---------------------------  Utilities  -----------------------------
@@ -348,7 +348,7 @@ sub CleanKwic
 
     Utils::remove_tags($sRef);
 
-    my $doc = new Document::XPAT;
+    my $doc = new PT::Document::XPAT;
     $doc->clean_xml($sRef);
 }
 

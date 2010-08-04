@@ -37,7 +37,7 @@ use Context;
 use Auth::Auth;
 use Identifier;
 
-use Document::XPAT;
+use PT::Document::XPAT;
 
 use PT::PageTurnerUtils;
 use XML::LibXML;
@@ -1423,7 +1423,7 @@ sub OcrHandler
     }
     else
     {
-        my $doc = new Document::XPAT;
+        my $doc = new PT::Document::XPAT;
         $doc->clean_xml($ocrTextRef);
 
         # XMLify line breaks using <br/>
@@ -1473,7 +1473,7 @@ sub GetOcrBySequence
 
     DEBUG('all', qq{ocr file is: $ocrFile});
 
-    my $doc = new Document::XPAT;
+    my $doc = new PT::Document::XPAT;
     $doc->clean_xml($ocrTextRef);
 
     $$ocrTextRef =~ s,\n\n,<br /><br />\n,g;
