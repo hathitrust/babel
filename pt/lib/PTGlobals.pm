@@ -135,9 +135,9 @@ $gIndexCacheDir = $ENV{SDRROOT} . (($ENV{SDRVIEW} eq 'full') ? "/cache-full/ptse
 
 # Jp2 info and extraction command templates
 $gKduInfoCommand = 
-    $ENV{'SDRROOT'} . q{/bin/kdu_expand_record-stdout -i __INPUT_JP2__ -record -};
+    $ENV{'SDRROOT'} . q{/pt/bin/kdu_expand_record-stdout -i __INPUT_JP2__ -record -};
 $gKduExtractCommand = 
-    $ENV{'SDRROOT'} . q{/bin/kdu_expand_jpg -quiet -i __INPUT_JP2__ -o __OUTPUT_JPG__ -reduce __LEVEL_CHOICE__ -quality 85};
+    $ENV{'SDRROOT'} . q{/pt/bin/kdu_expand_jpg -quiet -i __INPUT_JP2__ -o __OUTPUT_JPG__ -reduce __LEVEL_CHOICE__ -quality 85};
 
 
 # ---------------------------------------------------------------------
