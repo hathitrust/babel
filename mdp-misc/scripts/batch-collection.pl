@@ -120,7 +120,8 @@ $C->set_object('Collection', $co);
 my $cs = CollectionSet->new($db->get_DBH(), $config, $c_owner) ;
 $C->set_object('CollectionSet', $cs);
 
-print qq{Begin "$opt_t" collection creation\n};
+my $dsn = $db->get_dsn();
+print qq{Begin "$opt_t" collection creation using db connection $dsn\n};
 
 if ($cs->exists_coll_name_for_owner($c_name, $c_owner))
 {
