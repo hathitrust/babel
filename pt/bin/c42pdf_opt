@@ -1,0 +1,44 @@
+#! /bin/sh
+
+#
+# wrapper for c42pdf and pdfopt--create linearized/optimized pdf in one step
+#
+
+# determine locations of binaries
+C42PDF=/l/local/bin/c42pdf
+PDFOPT=/l/local/bin/pdfopt
+
+# set path to location of real pdfopt to find ghostscript
+REALPDFOPT=`/bin/ls -l $PDFOPT | cut -d\> -f2 | sed 's/ //g'`
+PDFOPTPATH=`dirname "$REALPDFOPT"`
+PATH="$PDFOPTPATH:$PATH"
+export PATH
+
+# set library load path to ensure ghostscript can find all needed libraries
+LD_LIBRARY_PATH=/l/local/lib:/usr/local/lib:/usr/lib:/lib
+export LD_LIBRARY_PATH
+
+# intermediate file
+TMPPDF=/tmp/c42pdf_opt_$$.pdf
+
+# parse arguments
+C42PDFARGS=""
+PDFOPTARGS=""
+while [ -n "$1" ]; do
+
+  # preserve/translate -o argument for pdfopt
+  if [ "$1" = "-o" ]; then
+    PDFOPTARGS="$PDFOPTARGS $2"
+    shift
+
+  # preserve all other arguments for c42pdf
+  else
+    C42PDFARGS="$C42PDFARGS $1"
+  fi
+  shift
+done
+
+$C42PDF -o $TMPPDF $C42PDFARGS
+$PDFOPT $TMPPDF $PDFOPTARGS
+
+rm -f $TMPPDF
