@@ -657,6 +657,7 @@ sub KakaduCreateJpg
           {
               my $s = qq{KakaduCreateJpg:<br/>\n} .
                   join( '<br/>',
+                        qq{jp2 extract cmd: $jp2ExtractCommand},
                         qq{Input file path: $jp2InputFile},
                         qq{Output file path: $outputFileName},
                         qq{Scale factor: $outputRatio},
