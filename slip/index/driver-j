@@ -179,11 +179,13 @@ if (-e $BUSY_FILE) {
     exit $rc;
 }
 
-my $INITIAL_QUEUE_SIZE = 0;
+my ($INITIAL_QUEUE_SIZE, $STAGE_QUEUE_SIZE) = (0, 0);
 
 eval {
     my $rc = 0;
     ($INITIAL_QUEUE_SIZE, $rc) = get_Building_queue_size($C, $DBH, $RUN, $SLIP_Utils::States::St_Undefined);
+    $STAGE_QUEUE_SIZE = $INITIAL_QUEUE_SIZE;
+    
     if ($rc == 0) {
         run_driver($C, $DBH, $RUN);
 
@@ -588,11 +590,14 @@ sub get_Building_queue_size {
         # Requeue timeouts, if any
         my $timeouts = Db::Select_timeouts_count($C, $dbh, $run);
         if ($timeouts > 0) {
+            my $percent_timeouts = sprintf("%.1f", ($timeouts/$STAGE_QUEUE_SIZE) * 100);
+            $STAGE_QUEUE_SIZE = $timeouts;
+
             $rc = __requeue_timeouts($C, $dbh, $run, $stage);
             if ($rc == 0) {
                 ($size) = Db::Select_queue_data($C, $dbh, $run);
                 __output("     requeue $size\n");
-                Log_stage($C, $run, $stage, qq{Requeue timeouts num=$size});
+                Log_stage($C, $run, $stage, qq{Requeue timeouts num=$size, percent=$percent_timeouts});
             }
         }
     }
