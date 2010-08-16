@@ -304,7 +304,10 @@ sub get_fields_from_mdp_metadata
     #   <subfield label="u">mdp.39015009999635</subfield>
     #   <subfield label="z">v.5-6 1961-1963</subfield>
     # </varfield>
-    my ($vol_string) = ($$metadata_ref =~ m,<varfield id="MDP"[^>]*>\s*<subfield label="u">$id</subfield>\s*<subfield label="z">(.*?)</subfield>\s*</varfield>,g );
+    #  subfields won't necessarily be in order!
+
+    my ($MDP_Vol)  = ($$metadata_ref =~ m,<varfield id="MDP"[^>]*>(.*?)</varfield>,is);
+    my ($vol_string) = ($MDP_Vol =~ m,<subfield label="z">(.*?)</subfield>,is);
     $m_title .= ' ' . $vol_string if $vol_string;
 
     # Author
