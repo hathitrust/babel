@@ -1,0 +1,84 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+stage-app - Stage a HT application on test.babel in preparation for testing.
+
+=head1 SYNOPSIS
+
+stage-app [options] app
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>
+
+Print a brief help message and exit.
+
+=item B<-v> tag
+
+Verbose status
+
+=back
+
+=head1 DESCRIPTION
+
+B<stage-app> will attempt synchronize the local master branch of
+test.babel (or as overridden by HTDE_APPROOT) for an existing
+application <app> with origin/master after a fetch from origin at the
+central repositoy including updating all submodules in preparation for
+testing before deployment.
+
+Note: B<stage-app> MUST be the only script that fetches origin for
+/htapps/test.babel apps.
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use MdpGitTools;
+
+sub stage_app_usage {
+    my $s = qq{Usage: stage-app [options] <app>
+           where <app> is the application. Bring app to most current version for testing under test.babel
+                 -v verbose
+                 -h print help\n};
+    return $s;
+}
+
+our ($opt_h, $opt_v);
+my $ops = getopts('hv');
+
+my $app = shift;
+my $help = $opt_h;
+$MdpGitTools::VERBOSE = $opt_v;
+
+if ($help) {
+    print stage_app_usage();
+    exit 0;
+}
+
+if (! $app) {
+    print stage_app_usage();
+    exit 1;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots('test.babel');
+my $app_dir = "$app_root/$app";
+
+if (! validate_app($repo_root, $app_root, $app)) {
+    exit 1;
+}
+else {
+    print qq{Application ($app) appears to be valid\n};
+}
+
+exit G_sync_local_master($app_dir);
+
+
+__END__;
