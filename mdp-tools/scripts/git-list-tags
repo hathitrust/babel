@@ -1,0 +1,69 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+git-list-tags - List tags
+
+=head1 SYNOPSIS
+
+git-list-tags [options]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>
+
+Print a brief help message and exit.
+
+=item B<-l> tag
+
+List this number of tags
+
+=back
+
+=head1 DESCRIPTION
+
+B<git-list-tags> will attempt to give a detailed list the given number
+of tags in chronological tagging order for the current repository.
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use MdpGitTools;
+
+our ($opt_h, $opt_l);
+my $ops = getopts('hl:');
+
+my $help = $opt_h;
+my $list_num_tags = $opt_l;
+
+if ($help) {
+    print git_list_tags_usage();
+    exit 0;
+}
+
+G_list_tags($list_num_tags);
+
+exit;
+
+#
+# Subroutines
+#
+
+# ---------------------------------------------------------------------
+sub git_list_tags_usage {
+    my $s = qq{Usage: git-list-tags [options]
+           where <app> is the application to list tags for 
+                 -l <num> sets number to list. default is 3
+                 -h print help\n};
+    return $s;
+}
+
+__END__;
+
