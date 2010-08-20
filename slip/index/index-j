@@ -838,7 +838,7 @@ sub handle_i_result {
         if ($max_errors_seen && (! $MAX_ERRORS_SEEN)) {
             $MAX_ERRORS_SEEN = $SLIP_Utils::States::RC_MAX_ERRORS;
 
-            Log_error_stop($C, $run, $shard, $pid, $host, 'MAX ERRORS condition=$condition num=$num)');
+            Log_error_stop($C, $run, $shard, $pid, $host, "MAX ERRORS condition=$condition num=$num)");
 
             my $subj = qq{[SLIP] MAX ERRORS: run=$run shard=$shard disabled};
             my $msg =
