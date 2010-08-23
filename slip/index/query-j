@@ -55,7 +55,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub query_get_usage {
-    my $s .= qq{Usage: query-j -r run [-R shard] [-N] -q query
+    my $s .= qq{Usage: query-j -r run [-R shard] [-N] [-d] -q query
                   where -q query should be well-formed shell quoted
                           if running from command line, e.g.:
                              -q'q=id:"mdp.390150*"&start=0&rows=20'
@@ -63,9 +63,9 @@ sub query_get_usage {
     return $s;
 }
 
-our ($opt_r, $opt_R, $opt_q, $opt_N);
+our ($opt_r, $opt_R, $opt_q, $opt_N, $opt_d);
 
-my $ops = getopts('r:R:q:N');
+my $ops = getopts('r:R:q:Nd');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -81,6 +81,10 @@ if (! $QUERY) {
     my $s = query_get_usage();
     print $s;
     exit 1;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
 }
 
 my $INTERACTIVE = (! defined($opt_N)); # optional
