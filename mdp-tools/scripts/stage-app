@@ -41,7 +41,7 @@ use Getopt::Std;
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
 
-use MdpGitTools;
+use ToolLib;
 
 sub stage_app_usage {
     my $s = qq{Usage: stage-app [options] <app>
@@ -56,7 +56,7 @@ my $ops = getopts('hv');
 
 my $app = shift;
 my $help = $opt_h;
-$MdpGitTools::VERBOSE = $opt_v;
+$ToolLib::VERBOSE = $opt_v;
 
 if ($help) {
     print stage_app_usage();
@@ -68,17 +68,39 @@ if (! $app) {
     exit 1;
 }
 
+my $fail_msg = qq{Failed to stage application ($app)\n};
 my ($repo_root, $app_root) = get_HTDE_roots('test.babel');
-my $app_dir = "$app_root/$app";
 
-if (! validate_app($repo_root, $app_root, $app)) {
+my $app_dir = "$app_root/$app";
+print qq{Staging application ($app) at $app_dir\n};
+
+if (! validate_existing_app($repo_root, $app_root, $app)) {
+    print $fail_msg;
     exit 1;
 }
-else {
-    print qq{Application ($app) appears to be valid\n};
+
+
+if (! (
+       G_fetch_origin($app_dir)
+       &&
+       G_sync_local_master($app_dir)
+       &&
+       G_sync_local_deployment($app_dir)
+       &&
+       G_checkout_deployment($app_dir)
+       &&
+       G_merge_master_branch($app_dir)
+       &&
+       G_update_submodules($app_dir)
+      )
+   ) {
+    print $fail_msg;
+    exit 1;
 }
 
-exit G_sync_local_master($app_dir);
+print qq{Staging succeeds\n};
+
+exit 0;
 
 
 __END__;

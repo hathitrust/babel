@@ -1,0 +1,68 @@
+#!/l/local/bin/perl
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+our ($opt_A, $opt_h );
+my $ops = getopts('Ah');
+my $app = shift;
+
+sub Usage {
+    print "git-pull-latest-submodules <app> | -A | -h
+  pulls latest version of submodules for one or all apps under /htapps/[developer|test].babel
+    OPTIONS
+      -A pulls submodules in all apps that contain a .gitmodules file
+      -h help\n";
+}
+
+if ($opt_h) {
+    print Usage();
+    exit 0;
+}
+
+if (! $app && ! $opt_A) {
+    print STDERR "supply -A option or <app>\n";
+    print Usage();
+    exit 1;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+
+my @app_dirs = ();
+if ($opt_A) {
+    @app_dirs = ToolLib::get_app_dir_list($app_root);
+}
+else {
+    @app_dirs = ("$app_root/$app");
+}
+
+foreach my $app_dir (@app_dirs) {
+    next if (! -e "$app_dir/.gitmodules");
+
+    if (! chdir_to_app_dir($app_dir)) {
+        exit 1;
+    }
+
+    my $branch = `git branch`;
+    if ($branch !~ m,\* master,s) {
+        print "\nMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n";
+        next;
+    }
+
+    print "\n--- pulling submodules from origin into $app_dir ---\n";
+    print `git submodule foreach git pull origin master -v`;
+    print "\n--- updating submodules ---\n";
+    print `git submodule update`;
+    print "\n--- submodule's status ---\n";
+    print `git submodule status`;
+}
+
+exit 0;
+
+
+

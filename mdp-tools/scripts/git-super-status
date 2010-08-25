@@ -1,0 +1,94 @@
+#!/l/local/bin/perl
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+our ($opt_A, $opt_h, $opt_t );
+my $ops = getopts('Aht');
+my $app = shift;
+
+sub Usage {
+    return "git-super-status <app> | -A | -h
+  Lists uncommitted changes on master and commits to master\n  that have not been pushed to origin/master for /htapps/[developer|test].babel/<app>
+    OPTIONS
+      -A lists all apps
+      -h help\n";
+}
+
+if ($opt_h) {
+    print Usage();
+    exit 0;
+}
+
+if (! $app && ! $opt_A) {
+    print STDERR "supply -A or <app>\n";
+    print Usage();
+    exit 1;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+
+my @app_dirs = ();
+if ($opt_A) {
+    @app_dirs = get_app_dir_list($app_root);
+}
+
+else {
+    @app_dirs = ("$app_root/$app");
+}
+
+foreach my $app_dir (@app_dirs) {
+    next if (! -e "$app_dir/.git");
+
+    if (! chdir_to_app_dir($app_dir)) {
+        exit 1;
+    }
+    print "\n-----------------------------------------------------------\n";
+    print "Checking $app_dir\n";
+    
+    my $branch = qx(git branch);
+    if ($branch !~ m,\* master,s) {
+        print "\tMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n";
+        next;
+    }
+    else {
+        my @output;
+        
+        print "STATUS:\n";
+        @output = qx(git status);        
+        map { $_ =~ s/^#/\t/ } @output;
+        print join('', @output);
+        
+        print "PUSH-PULL ('with respect ONLY to last 'git fetch origin'):\n";
+        @output = qx(git log --oneline origin/master..HEAD);
+        if (scalar @output) {
+            print "\tUNPUSHED:\n";
+            print map { "\t\t$_" } @output;
+        }
+        else {
+            print "\tAll pushed\n";
+        }
+
+        @output = qx(git log --oneline HEAD..origin/master);
+        if (scalar @output) {
+            print "\tUNPULLED:\n";
+            print map { "\t\t$_" } @output;
+        }
+        else {
+            print "\tAll pulled\n";
+        }
+
+    }
+
+
+}
+
+exit 0;
+
+
+

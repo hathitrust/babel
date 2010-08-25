@@ -16,7 +16,7 @@ git-list-tags [options]
 
 Print a brief help message and exit.
 
-=item B<-l> tag
+=item B<-l> num
 
 List this number of tags
 
@@ -35,7 +35,7 @@ use Getopt::Std;
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
 
-use MdpGitTools;
+use ToolLib;
 
 our ($opt_h, $opt_l);
 my $ops = getopts('hl:');
@@ -48,7 +48,15 @@ if ($help) {
     exit 0;
 }
 
-G_list_tags($list_num_tags);
+my $tags = G_list_tags($list_num_tags);
+
+if ($tags) {
+    print "Tag list including the commit each tag refers to:\n";
+    print $tags;
+}
+else {
+    print "No tags here\n";
+}
 
 exit;
 

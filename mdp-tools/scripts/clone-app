@@ -1,0 +1,86 @@
+#!/l/local/bin/perl
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+sub clone_app_usage {
+    my $s = qq{Usage: clone-app [options] <app.git>
+           where <app.git> is the application central repository. Clone central repo and update its submodules.
+                 -v verbose
+                 -h print help\n};
+    return $s;
+}
+
+our ($opt_h, $opt_v);
+my $ops = getopts('hv');
+
+my $app_repo = shift;
+my $help = $opt_h;
+my $VERBOSE = $opt_v;
+
+if ($help) {
+    print clone_app_usage();
+    exit 0;
+}
+
+if (! $app_repo) {
+    print clone_app_usage();
+    exit 1;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+my ($app) = ($app_repo =~ m,^(.*?)\.git$,);
+my $app_dir = "$app_root/$app";    
+
+print qq{Clone ($app_repo) and update submodules\n};
+
+if (! validate_clone_app($repo_root, $app_root, $app_repo, $app_dir)) {
+    exit 1;
+}
+
+if (! G_clone($app_root, $repo_root, $app_repo, $app_dir)) {
+    exit 1;
+}
+
+if (! G_update_submodules($app_dir)) {
+    exit 1;
+}
+print qq{Clone succeeds\n};
+
+exit 0;
+
+
+__END__
+
+=head1 NAME
+
+clone-app - Stage a HT application on test.babel in preparation for testing.
+
+=head1 SYNOPSIS
+
+clone-app [options] app
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>
+
+Print a brief help message and exit.
+
+=item B<-v> tag
+
+Verbose status
+
+=back
+
+=head1 DESCRIPTION
+
+B<clone-app> will attempt clone central repository "app.git" at /htapps/whoami.babel/app  including updating all submodules.
+
+=cut
