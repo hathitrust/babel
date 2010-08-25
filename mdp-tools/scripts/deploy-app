@@ -127,7 +127,8 @@ if (! rdist_to_production($app_dir)) {
     exit 1;
 }
 
-print qq{Successful deployment of application ($app) from $app_dir\n};
+on(1);print qq{Successful deployment of application ($app) from $app_dir\n};off();
+
 
 exit 0;
 
@@ -242,7 +243,7 @@ sub rdist_to_production {
     print qx(rdist -f $app_dir/bin/rdist.app -s sdr);
 
     if ($?) {
-        print qq{ERROR: rdist failure\n};
+        on();print qq{ERROR: rdist failure\n};off();
         return 0;
     }
 
@@ -282,7 +283,7 @@ sub __validate_tag {
     print qq{Trying to validate tag="$tag" ... };
 
     if (! defined($tag)) {
-        print qq{ERROR: format is not valid for tag="$tag"\n};
+        on();print qq{ERROR: format is not valid for tag="$tag"\n};off();
         return 0;
     }
         
@@ -290,11 +291,11 @@ sub __validate_tag {
         # Acceptable format?
         $cmd = "git check-ref-format refs/tags/$tag";
         if (! execute_command($cmd)) {
-            print qq{ERROR: format is not valid for tag="$tag"\n};
+            on();print qq{ERROR: format is not valid for tag="$tag"\n};off();
             return 0;
         }
         if (! __tag_is_greater($tag)) {
-            print qq{ERROR: new tag="$tag" is less than or equal last tag in chronological order\n};
+            on();print qq{ERROR: new tag="$tag" is less than or equal last tag in chronological order\n};off();
             print qq{Last tag was: }. __last_tag() . qq{\n};
             return 0;
         }
@@ -303,12 +304,12 @@ sub __validate_tag {
         # Exists?
         $cmd = "git show $tag";
         if (! execute_command($cmd)) {
-            print qq{ERROR: tag="$tag" does not exist\n};
+            on();print qq{ERROR: tag="$tag" does not exist\n};off();
             return 0;
         }
     }
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
 
     return 1;
 }
@@ -330,7 +331,7 @@ sub __tag_is_greater {
     my $output;
     my $cmd = "git for-each-ref --count=1 --sort='-taggerdate' --format='%(refname)' 'refs/tags'";
     if (! execute_command_w_output($cmd, \$output)) {
-        print "ERROR: could not get last tag in chronological order\n";
+        on();print "ERROR: could not get last tag in chronological order\n";off();
         exit 1;
     }
     my ($last_major, $last_minor, $last_tert) = ($output =~ m,(\d+)\.(\d+)\.(\d+),);

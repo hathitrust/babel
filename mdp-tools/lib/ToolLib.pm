@@ -3,6 +3,8 @@ package ToolLib;
 use Exporter ();
 @ISA = qw(Exporter);
 @EXPORT = qw(
+                on
+                off
                 query
                 query_yn
                 validate_existing_app
@@ -57,7 +59,7 @@ sub G_clone {
     return 0
       if (! execute_command($cmd));
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
     return 1;
 }
 
@@ -129,7 +131,7 @@ sub G_fetch_origin {
     return 0
       if (! execute_command($cmd));
 
-    print qq{OK\n};    
+    on(1);print qq{OK\n};off();
     return 1;
 }
 
@@ -200,11 +202,11 @@ sub G_checkout_deployment {
 
     # Is there already a deployment branch at origin?
     my $output;
-    $cmd = "git ls-remote  --heads origin";    
+    $cmd = "git ls-remote  --heads origin";
     if (! execute_command_w_output($cmd, \$output)) {
         return 0;
     }
-    
+
     my $new_branch;
     if ($output !~ m,refs/heads/deployment,s) {
         # Nope. So there was never a local deployment branch (which
@@ -225,8 +227,8 @@ sub G_checkout_deployment {
     if ($new_branch_ref) {
         $$new_branch_ref = $new_branch
     }
-    
-    print qq{OK\n};
+
+    on(1);print qq{OK\n};off();
     return 1;
 }
 
@@ -251,7 +253,7 @@ sub G_checkout_master {
     return 0
       if (! execute_command($cmd));
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
 
     return 1;
 }
@@ -285,8 +287,7 @@ sub G_merge_master_branch {
     return 0
       if (! execute_command($cmd));
 
-    print qq{OK\n};
-
+    on(1);print qq{OK\n};off();
     return 1;
 }
 
@@ -313,7 +314,7 @@ sub G_update_submodules {
     return 0
       if (! execute_command($cmd));
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
 
     return 1;
 }
@@ -341,7 +342,7 @@ sub G_tag_app {
     return 0
       if (! execute_command($cmd));
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
 
     return 1;
 }
@@ -426,7 +427,7 @@ sub G_checkout_tag {
     return 0
       if (! execute_command($cmd));
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
 
     return 1;
 }
@@ -454,7 +455,7 @@ sub get_app_dir_list {
     my @app_dirs = ();
 
     if (! opendir(DIR, $app_root)) {
-        print STDERR "ERROR: Could not read $app_root\n";
+        on();print STDERR "ERROR: Could not read $app_root\n";off();
         exit 1;
     }
 
@@ -477,7 +478,7 @@ sub chdir_to_app_dir {
     my $app_dir = shift;
 
     if (! chdir($app_dir)) {
-        print qq{ERROR: could not cd to $app_dir\n};
+        on();print qq{ERROR: could not cd to $app_dir\n};off();
         return 0;
     }
 
@@ -498,11 +499,12 @@ sub execute_command {
 
     print qq{$cmd\n}
       if ($ToolLib::VERBOSE);
-    
+
     $ToolLib::VERBOSE ? print qx($cmd) : qx($cmd 1> /dev/null 2>&1);
     if ($?) {
-        print qq{ERROR: $?\ncmd=$cmd\n}
-          if ($ToolLib::VERBOSE);
+        if ($ToolLib::VERBOSE) {
+            on();print qq{ERROR: $?\ncmd=$cmd\n};off();
+        }
         return 0;
     }
 
@@ -523,13 +525,14 @@ sub execute_command_w_output {
 
     print qq{$cmd\n}
       if ($ToolLib::VERBOSE);
-    
-    $ToolLib::VERBOSE 
-      ? ($$output_ref = qx($cmd)) 
+
+    $ToolLib::VERBOSE
+      ? ($$output_ref = qx($cmd))
         : ($$output_ref = qx($cmd 2> /dev/null));
     if ($?) {
-        print qq{ERROR: $?\ncmd=$cmd\n}
-          if ($ToolLib::VERBOSE);
+        if ($ToolLib::VERBOSE) {
+            on();print qq{ERROR: $?\ncmd=$cmd\n};off();
+        }
         return 0;
     }
 
@@ -569,7 +572,7 @@ sub get_HTDE_roots {
             print "Using env=$ENV{HTDE_APPROOT} to set \$app_root\n";
         }
     }
-    
+
     my $repo_root = $ENV{HTDE_REPOROOT} || "/htapps/repos";
     my $app_root = $ENV{HTDE_APPROOT} || "/htapps/$where.babel";
 
@@ -591,15 +594,15 @@ sub validate_clone_app {
     print qq{Validating application ($app) ... };
 
     if (! -e "$repo_root/$app_repo") {
-        print qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n};
+        on();print qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n};off();
         return 0;
     }
     if (-e "$app_dir") {
-        print qq{ERROR: application appears to exist already under $app_dir\n};
+        on();print qq{ERROR: application appears to exist already under $app_dir\n};off();
         return 0;
     }
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
     return 1;
 }
 
@@ -623,26 +626,26 @@ sub validate_existing_app {
     my $app_dir = "$app_root/$app";
 
     if (! -e "$repo_root/$app.git") {
-        print qq{ERROR: '$app' is not a valid app: no central repo: $repo_root/$app.git does not exist\n};
+        on();print qq{ERROR: '$app' is not a valid app: no central repo: $repo_root/$app.git does not exist\n};off();
         return 0;
     }
     if (! -e "$app_dir") {
-        print qq{ERROR: '$app' is not a valid app: $app_dir does not exist\n};
+        on();print qq{ERROR: '$app' is not a valid app: $app_dir does not exist\n};off();
         return 0;
     }
     if (! -e "$app_dir/.git") {
-        print qq{ERROR: '$app' is not a valid app: $app_dir/.git does not exist\n};
+        on();print qq{ERROR: '$app' is not a valid app: $app_dir/.git does not exist\n};off();
         return 0;
     }
     if (! -e "$app_dir/bin/rdist.app") {
-        print qq{ERROR: '$app' appears valid but: $app_dir/bin/rdist.app does not exist\n};
+        on();print qq{ERROR: '$app' appears valid but: $app_dir/bin/rdist.app does not exist\n};off();
         return 0;
     }
 
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    print qq{OK\n};
+    on(1);print qq{OK\n};off();
 
     return 1;
 }
@@ -669,7 +672,7 @@ sub query {
 
     my $ans = <STDIN>;
     chomp $ans;
-    
+
     $ans =~ s,^\s*(.*?)\s*$,$1,;
     if($ans =~ /^q$/) {
         print "Quitting...\n";
@@ -709,6 +712,16 @@ sub query_yn {
     $ans = ($ans =~ /^y/i ? 1 : 0);
 
     return $ans;
+}
+
+sub on {
+    return unless $ENV{TERM};
+    my $ok = shift;
+    $ok ? print "\033[1;30m" : print "\033[1;31m";
+}
+sub off {
+    return unless $ENV{TERM};
+    print "\033[0m";
 }
 
 1;
