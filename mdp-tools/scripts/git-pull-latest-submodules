@@ -56,8 +56,6 @@ foreach my $app_dir (@app_dirs) {
 
     print "\n--- pulling submodules from origin into $app_dir ---\n";
     print `git submodule foreach git pull origin master -v`;
-    print "\n--- updating submodules ---\n";
-    print `git submodule update`;
     print "\n--- submodule's status ---\n";
     print `git submodule status`;
 }

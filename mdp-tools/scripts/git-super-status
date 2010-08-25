@@ -8,17 +8,20 @@ use Vendors;
 
 use ToolLib;
 
-our ($opt_A, $opt_h, $opt_t );
-my $ops = getopts('Aht');
+our ($opt_A, $opt_h, $opt_t, $opt_F);
+my $ops = getopts('AhtF');
 my $app = shift;
 
 sub Usage {
-    return "git-super-status <app> | -A | -h
+    return "git-super-status [ [-F] [<app> | -A] ] | -h
   Lists uncommitted changes on master and commits to master\n  that have not been pushed to origin/master for /htapps/[developer|test].babel/<app>
     OPTIONS
       -A lists all apps
+      -F fetches from origin master
       -h help\n";
 }
+
+my $FETCH = $opt_F;
 
 if ($opt_h) {
     print Usage();
@@ -49,8 +52,8 @@ foreach my $app_dir (@app_dirs) {
         exit 1;
     }
     print "\n-----------------------------------------------------------\n";
-    print "Checking $app_dir\n";
-    
+    print "Checking $app_dir " . ($FETCH ? "with FETCH" : '') . qq{\n};
+
     my $branch = qx(git branch);
     if ($branch !~ m,\* master,s) {
         print "\tMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n";
@@ -58,12 +61,19 @@ foreach my $app_dir (@app_dirs) {
     }
     else {
         my @output;
-        
+
+        if ($FETCH) {
+            print "FETCH ...";
+            if (! G_fetch_origin($app_dir)) {
+                next;
+            }
+        }
+
         print "STATUS:\n";
-        @output = qx(git status);        
+        @output = qx(git status);
         map { $_ =~ s/^#/\t/ } @output;
         print join('', @output);
-        
+
         print "PUSH-PULL ('with respect ONLY to last 'git fetch origin'):\n";
         @output = qx(git log --oneline origin/master..HEAD);
         if (scalar @output) {
