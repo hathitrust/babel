@@ -22,6 +22,7 @@ use Exporter ();
                 G_checkout_master
                 G_merge_master_branch
                 G_update_submodules
+                G_init_submodules
                 G_tag_app
                 G_push_origin_deployment
                 G_checkout_tag
@@ -311,6 +312,32 @@ sub G_update_submodules {
       if (! chdir_to_app_dir($app_dir));
 
     my $cmd = "git submodule update --init";
+    return 0
+      if (! execute_command($cmd));
+
+    on(1);print qq{OK\n};off();
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item G_init_submodules
+
+Initialize submodules.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub G_init_submodules {
+    my $app_dir = shift;
+
+    print qq{Initializing submodules ... };
+
+    return 0
+      if (! chdir_to_app_dir($app_dir));
+
+    my $cmd = "git submodule init";
     return 0
       if (! execute_command($cmd));
 

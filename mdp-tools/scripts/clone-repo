@@ -9,8 +9,8 @@ use Vendors;
 use ToolLib;
 
 sub clone_app_usage {
-    my $s = qq{Usage: clone-app [options] <app.git>
-           where <app.git> is the application central repository. Clone central repo and update its submodules.
+    my $s = qq{Usage: clone-repo [options] <app.git>
+           where <app.git> is the application central repository. Clone central repo, init and update its submodules.
                  -v verbose
                  -h print help\n};
     return $s;
@@ -47,10 +47,13 @@ if (! G_clone($app_root, $repo_root, $app_repo, $app_dir)) {
     exit 1;
 }
 
+if (! G_init_submodules($app_dir)) {
+    exit 1;
+}
 if (! G_update_submodules($app_dir)) {
     exit 1;
 }
-print qq{Clone succeeds\n};
+on(1);print qq{Clone succeeds\n};off();
 
 exit 0;
 
@@ -59,11 +62,11 @@ __END__
 
 =head1 NAME
 
-clone-app - Stage a HT application on test.babel in preparation for testing.
+clone-repo - Clonf an application repository, init and update it's submodules, if any.
 
 =head1 SYNOPSIS
 
-clone-app [options] app
+clone-repo [options] app.git
 
 =head1 OPTIONS
 
@@ -81,6 +84,6 @@ Verbose status
 
 =head1 DESCRIPTION
 
-B<clone-app> will attempt clone central repository "app.git" at /htapps/whoami.babel/app  including updating all submodules.
+B<clone-repo> will attempt clone central repository "app.git" at /htapps/whoami.babel/app  including initializing and updating all submodules.
 
 =cut
