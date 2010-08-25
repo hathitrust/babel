@@ -148,6 +148,10 @@
     <xsl:param name="which_list"/>
     <xsl:param name="list_node"/>
     
+    <xsl:variable name="debug_switch">
+      <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
+    </xsl:variable>
+
     <xsl:variable name="pub_priv">
       <xsl:choose>
         <xsl:when test="$which_list='mycolls'">private</xsl:when>          
@@ -271,6 +275,10 @@
                   <xsl:attribute name="href">
                     <xsl:text>mb?a=listis;c=</xsl:text>
                     <xsl:value-of select="$CollId"/>
+                    <xsl:if test="$debug_switch!=''">
+                      <xsl:text>;debug=</xsl:text>
+                      <xsl:value-of select="$debug_switch"/>
+                    </xsl:if>
                   </xsl:attribute>
                   <xsl:value-of select="CollName"/>
                 </a>
@@ -297,6 +305,10 @@
                   <xsl:attribute name="href">
                     <xsl:text>mb?a=listis;c=</xsl:text>
                     <xsl:value-of select="$CollId"/>
+                    <xsl:if test="$debug_switch!=''">
+                      <xsl:text>;debug=</xsl:text>
+                      <xsl:value-of select="$debug_switch"/>
+                    </xsl:if>
                   </xsl:attribute>
                   <xsl:choose>
                     <xsl:when test="Owner=$g_user_id or Owner=/MBooksTop/MBooksGlobals/SessionId" >
@@ -348,6 +360,10 @@
                           <xsl:text>;colltype=</xsl:text>
                           <!--XXX ask suz, if we are in public coll and make private, should we go to mycolls?-->
                           <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']"/>
+                          <xsl:if test="$debug_switch!=''">
+                            <xsl:text>;debug=</xsl:text>
+                            <xsl:value-of select="$debug_switch"/>
+                          </xsl:if>
                         </xsl:attribute>
                         <xsl:text>make private</xsl:text>
                       </xsl:element>
@@ -363,6 +379,10 @@
                           <xsl:value-of select="$CollId"/>
                           <xsl:text>;colltype=</xsl:text>
                           <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']"/>
+                          <xsl:if test="$debug_switch!=''">
+                            <xsl:text>;debug=</xsl:text>
+                            <xsl:value-of select="$debug_switch"/>
+                          </xsl:if>
                         </xsl:attribute>
                         <xsl:text>make public</xsl:text>
                       </xsl:element>
