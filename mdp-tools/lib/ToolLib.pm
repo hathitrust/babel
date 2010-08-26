@@ -585,6 +585,8 @@ sub get_HTDE_roots {
     my $where;
     if ($test) {
         $where = 'test';
+        delete $ENV{HTDE_REPOROOT};
+        delete $ENV{HTDE_APPROOT};
     }
     else {
         $where = `whoami`;
