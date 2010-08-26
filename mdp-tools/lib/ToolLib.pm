@@ -8,7 +8,6 @@ use Exporter ();
                 query
                 query_yn
                 validate_existing_app
-                validate_clone_app
                 chdir_to_app_dir
                 execute_command
                 execute_command_w_output
@@ -606,33 +605,6 @@ sub get_HTDE_roots {
     my $app_root = $ENV{HTDE_APPROOT} || "/htapps/$where.babel";
 
     return ($repo_root, $app_root);
-}
-
-# ---------------------------------------------------------------------
-
-=item validate_clone_app
-
-Make some reasonable checks to derermine the validity of cloning an app.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub validate_clone_app {
-    my ($repo_root, $app_root, $app_repo, $app_dir) = @_;
-
-    print qq{Validating application ($app) ... };
-
-    if (! -e "$repo_root/$app_repo") {
-        on();print qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n};off();
-        return 0;
-    }
-    if (-e "$app_dir") {
-        on();print qq{ERROR: application appears to exist already under $app_dir\n};off();
-        return 0;
-    }
-
-    on(1);print qq{OK\n};off();
-    return 1;
 }
 
 

@@ -12,18 +12,20 @@ sub clone_app_usage {
     my $s = qq{Usage: clone-repo [options] <app.git>
            where <app.git> is the application central repository. Clone central repo, init and update its submodules.
                  -t clone under /htapps/test.babel instead of /htapps/user.babel
+                 -f force remove existing clone, then clone
                  -v verbose
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_t);
-my $ops = getopts('hvt');
+our ($opt_h, $opt_v, $opt_t, $opt_f);
+my $ops = getopts('hvtf');
 
 my $app_repo = shift;
 my $help = $opt_h;
-my $VERBOSE = $opt_v;
+$ToolLib::VERBOSE = $opt_v;
 my $TESTdotBABEL = $opt_t;
+my $FORCE = $opt_f;
 
 if ($help) {
     print clone_app_usage();
@@ -39,9 +41,9 @@ my ($repo_root, $app_root) = get_HTDE_roots($TESTdotBABEL);
 my ($app) = ($app_repo =~ m,^(.*?)\.git$,);
 my $app_dir = "$app_root/$app";    
 
-print qq{Clone ($app_repo) and update submodules\n};
+print qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE removal" : "") . qq{\n};
 
-if (! validate_clone_app($repo_root, $app_root, $app_repo, $app_dir)) {
+if (! __validate_clone_app($repo_root, $app_root, $app_repo, $app_dir)) {
     exit 1;
 }
 
@@ -58,6 +60,47 @@ if (! G_update_submodules($app_dir)) {
 on(1);print qq{Clone succeeds\n};off();
 
 exit 0;
+
+# ---------------------------------------------------------------------
+
+=item __validate_clone_app
+
+Make some reasonable checks to derermine the validity of cloning an app.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_clone_app {
+    my ($repo_root, $app_root, $app_repo, $app_dir) = @_;
+
+    print qq{Validating application ($app) ... };
+
+    if (! -e "$repo_root/$app_repo") {
+        on();print qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n};off();
+        return 0;
+    }
+    if (-e "$app_dir") {
+        if ($FORCE) {
+            if (! query_yn("\nWARN: This will force removal of existing clone. \n\tContinue?", 'y')) {
+                return 0;
+            }
+            else {
+                print "Removing $app_dir ... ";
+                `rm -rf $app_dir`;
+                print "Done\n";
+            }
+        }
+        else {
+            on();print qq{ERROR: application appears to exist already under $app_dir\n};off();
+            return 0;
+        }
+    }
+
+    on(1);print qq{OK\n};off();
+    return 1;
+}
+
+
 
 
 __END__
@@ -78,9 +121,18 @@ clone-repo [options] app.git
 
 Print a brief help message and exit.
 
-=item B<-v> tag
+=item B<-v>
 
 Verbose status
+
+=item B<-t>
+
+Clone under test.babel
+
+=item B<-f>
+
+Clone even if clone exists.  I.e., remove clone and re-clone.
+
 
 =back
 
