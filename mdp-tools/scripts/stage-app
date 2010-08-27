@@ -92,8 +92,6 @@ if (! (
        G_merge_master_branch($app_dir)
        &&
        G_update_submodules($app_dir)
-       &&
-       G_push_origin_deployment($app_dir)
       )
    ) {
     PrintN($fail_msg);

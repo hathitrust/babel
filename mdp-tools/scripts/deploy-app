@@ -104,6 +104,8 @@ if ($tag_is_new) {
            G_tag_app($app_dir, $tag)
            &&
            G_push_origin_tags($app_dir)
+           &&
+           G_push_origin_deployment($app_dir)
           )
        ) {
         PrintN($fail_msg);
