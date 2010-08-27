@@ -1183,6 +1183,23 @@ sub Delete_id_from_shard {
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
 
+# ---------------------------------------------------------------------
+
+=item Delete_id_from_j_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Delete_id_from_j_rights {
+    my ($C, $dbh, $id) = @_;
+
+    my $statement = qq{DELETE FROM j_rights WHERE nid='$id'};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
 
 # =====================================================================
 # =====================================================================
