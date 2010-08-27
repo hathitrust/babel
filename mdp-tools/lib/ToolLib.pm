@@ -430,7 +430,7 @@ Description
 sub G_push_origin_deployment {
     my $app_dir = shift;
 
-    print qq{Push local deployment branch + tags to origin ...\n};
+    print qq{Push local deployment branch to origin ...\n};
 
     return 0
       if (! chdir_to_app_dir($app_dir));
@@ -438,7 +438,7 @@ sub G_push_origin_deployment {
     return 0
       if (! G_checkout_deployment($app_dir));
 
-    my $cmd = "git push --tags origin deployment";
+    my $cmd = "git push origin deployment";
     return 0
       if (! execute_command($cmd));
 
