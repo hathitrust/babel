@@ -72,10 +72,10 @@ my $fail_msg = qq{Failed to stage application ($app)\n};
 my ($repo_root, $app_root) = get_HTDE_roots('test.babel');
 
 my $app_dir = "$app_root/$app";
-print qq{Staging application ($app) at $app_dir\n};
+PrintY(qq{\nStaging application ($app) at $app_dir\n});
 
 if (! validate_existing_app($repo_root, $app_root, $app)) {
-    print $fail_msg;
+    PrintN($fail_msg);
     exit 1;
 }
 
@@ -92,13 +92,15 @@ if (! (
        G_merge_master_branch($app_dir)
        &&
        G_update_submodules($app_dir)
+       &&
+       G_push_origin_deployment($app_dir)
       )
    ) {
-    print $fail_msg;
+    PrintN($fail_msg);
     exit 1;
 }
 
-print qq{Staging succeeds\n};
+PrintY(qq{Staging succeeds\n});
 
 exit 0;
 

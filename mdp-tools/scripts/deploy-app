@@ -78,22 +78,22 @@ my $fail_msg = qq{Failed to deploy application ($app)\n};
 my ($repo_root, $app_root) = get_HTDE_roots('test.babel');
 
 my $app_dir = "$app_root/$app";
-print qq{Deploying application ($app) from $app_dir\n};
+PrintY(qq{\nDeploying application ($app) from $app_dir\n});
 
 if (! validate_existing_app($repo_root, $app_root, $app)) {
-    print $fail_msg;
+    PrintN($fail_msg);
     exit 1;
 }
 
 if (! __validate_local_deployment($repo_root, $app_dir, $app)) {
-    print $fail_msg;
+    PrintN($fail_msg);
     exit 1;
 }
 
 my ($tag, $tag_is_new) = __get_tag($app);
 
 if (! __validate_tag($tag, $tag_is_new)) {
-    print $fail_msg;
+    PrintN($fail_msg);
     exit 1;
 }
 
@@ -103,10 +103,10 @@ if ($tag_is_new) {
            &&
            G_tag_app($app_dir, $tag)
            &&
-           G_push_origin_deployment($app_dir)
+           G_push_origin_tags($app_dir)
           )
        ) {
-        print $fail_msg;
+        PrintN($fail_msg);
         exit 1;
     }
 }
@@ -117,17 +117,17 @@ else {
            G_update_submodules($app_dir)
           )
        ) {
-        print $fail_msg;
+        PrintN($fail_msg);
         exit 1;
     }
 }
 
 if (! rdist_to_production($app_dir)) {
-    print $fail_msg;
+    PrintN($fail_msg);
     exit 1;
 }
 
-on(1);print qq{Successful deployment of application ($app) from $app_dir\n};off();
+PrintY("Successful deployment of application ($app) from $app_dir\n");
 
 
 exit 0;
@@ -192,7 +192,7 @@ sub __validate_local_deployment {
             return 0;
         }
     }
-    print qq{Validation succeeds\n};
+    PrintY("Validation succeeds\n");
 
     return 1;
 }
@@ -243,11 +243,11 @@ sub rdist_to_production {
     print qx(rdist -f $app_dir/bin/rdist.app -s sdr);
 
     if ($?) {
-        on();print qq{ERROR: rdist failure\n};off();
+        PrintN("ERROR: rdist failure\n");
         return 0;
     }
 
-    print qq{Rdist succeeds\n};
+    PrintY("Rdist succeeds\n");
 
     return 1;
 }
@@ -283,7 +283,7 @@ sub __validate_tag {
     print qq{Trying to validate tag="$tag" ... };
 
     if (! defined($tag)) {
-        on();print qq{ERROR: format is not valid for tag="$tag"\n};off();
+        PrintN(qq{ERROR: format is not valid for tag="$tag"\n});
         return 0;
     }
         
@@ -291,11 +291,11 @@ sub __validate_tag {
         # Acceptable format?
         $cmd = "git check-ref-format refs/tags/$tag";
         if (! execute_command($cmd)) {
-            on();print qq{ERROR: format is not valid for tag="$tag"\n};off();
+            PrintN(qq{ERROR: format is not valid for tag="$tag"\n});
             return 0;
         }
         if (! __tag_is_greater($tag)) {
-            on();print qq{ERROR: new tag="$tag" is less than or equal last tag in chronological order\n};off();
+            PrintN(qq{ERROR: new tag="$tag" is less than or equal last tag in chronological order\n});
             print qq{Last tag was: }. __last_tag() . qq{\n};
             return 0;
         }
@@ -304,13 +304,12 @@ sub __validate_tag {
         # Exists?
         $cmd = "git show $tag";
         if (! execute_command($cmd)) {
-            on();print qq{ERROR: tag="$tag" does not exist\n};off();
+            PrintN(qq{ERROR: tag="$tag" does not exist\n});
             return 0;
         }
     }
 
-    on(1);print qq{OK\n};off();
-
+    PrintY("OK\n");
     return 1;
 }
 
@@ -331,7 +330,7 @@ sub __tag_is_greater {
     my $output;
     my $cmd = "git for-each-ref --count=1 --sort='-taggerdate' --format='%(refname)' 'refs/tags'";
     if (! execute_command_w_output($cmd, \$output)) {
-        on();print "ERROR: could not get last tag in chronological order\n";off();
+        PrintN(qq{ERROR: could not get last tag in chronological order\n});
         exit 1;
     }
     my ($last_major, $last_minor, $last_tert) = ($output =~ m,(\d+)\.(\d+)\.(\d+),);
@@ -366,7 +365,7 @@ sub __get_version_string {
         $version_string = qq{$1.$2.$3};
     }
     else {
-        print "ERROR: enter 3 numbers\n";
+        PrintN("ERROR: enter 3 numbers\n");
         goto GET_VERSION;
     }
 

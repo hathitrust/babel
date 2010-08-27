@@ -3,8 +3,8 @@ package ToolLib;
 use Exporter ();
 @ISA = qw(Exporter);
 @EXPORT = qw(
-                on
-                off
+                PrintY
+                PrintN
                 query
                 query_yn
                 validate_existing_app
@@ -24,6 +24,7 @@ use Exporter ();
                 G_init_submodules
                 G_tag_app
                 G_push_origin_deployment
+                G_push_origin_tags
                 G_checkout_tag
                 G_clone
                 G_fetch_origin
@@ -59,7 +60,7 @@ sub G_clone {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
+    PrintY("OK\n");
     return 1;
 }
 
@@ -100,7 +101,7 @@ sub G_sync_local_master {
     return 0
       if (! G_update_submodules($app_dir));
 
-    print qq{Sync succeeds\n};
+    PrintY("Sync master succeeds\n");
     return 1;
 }
 
@@ -131,7 +132,7 @@ sub G_fetch_origin {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
+    PrintY("OK\n");
     return 1;
 }
 
@@ -149,7 +150,7 @@ sub G_sync_local_deployment {
     my $app_dir = shift;
 
     my $cmd;
-    print qq{Sync local deployment branch to fetch of origin/deployment ...\n};
+    print qq{Sync local deployment branch to origin/deployment ...\n};
 
     return 0
       if (! chdir_to_app_dir($app_dir));
@@ -159,11 +160,11 @@ sub G_sync_local_deployment {
     return 0
       if (! G_checkout_master($app_dir));
 
-    my $new_branch;
+    my $branch_is_remote;
     return 0
-      if (! G_checkout_deployment($app_dir, \$new_branch));
+      if (! G_checkout_deployment($app_dir, \$branch_is_remote));
 
-    if (! $new_branch) {
+    if ($branch_is_remote) {
         $cmd = "git reset --hard origin/deployment";
         return 0
           if (! execute_command($cmd));
@@ -176,10 +177,50 @@ sub G_sync_local_deployment {
     return 0
       if (! G_update_submodules($app_dir));
 
-    print qq{Sync deployment succeeds\n};
+    PrintY("Sync deployment succeeds\n");
     return 1;
 }
 
+# ---------------------------------------------------------------------
+
+=item __exists_remote_branch
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __exists_remote_branch {
+    my $branch = shift;
+
+    my $output;
+    my $cmd = "git ls-remote --heads origin";
+    return 0 
+      if (! execute_command_w_output($cmd, \$output));
+
+    return ($output =~ m,refs/heads/$branch,s);
+}
+
+# ---------------------------------------------------------------------
+
+=item __exists_local_branch
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __exists_local_branch {
+    my $branch = shift;
+
+    my $output;
+    my $cmd = "git branch";
+    if (! execute_command_w_output($cmd, \$output)) {
+        return 0;
+    }
+    
+    return ($output =~ m,deployment,s);
+}
 
 # ---------------------------------------------------------------------
 
@@ -192,43 +233,50 @@ Checkout the deployment branch in preparation for operating on it.
 # ---------------------------------------------------------------------
 sub G_checkout_deployment {
     my $app_dir = shift;
-    my $new_branch_ref = shift;
+    my $branch_exists_at_remote_ref = shift;
 
+    my $exists_remotely = 0;
+    
     my $cmd;
-    print qq{Checkout local deployment branch ... };
+    my $output;
+    print qq{Checkout local deployment branch ...\n};
 
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    # Is there already a deployment branch at origin?
-    my $output;
-    $cmd = "git ls-remote  --heads origin";
-    if (! execute_command_w_output($cmd, \$output)) {
-        return 0;
-    }
-
-    my $new_branch;
-    if ($output !~ m,refs/heads/deployment,s) {
-        # Nope. So there was never a local deployment branch (which
-        # would have been pushed to origin by a previous
-        # deployment). Make one.
-        $cmd = "git checkout -b deployment";
-        $new_branch = 1;
+    if (__exists_remote_branch('deployment')) {
+        if (! G_fetch_origin($app_dir)) {
+            return 0;
+        }
+        if (! __exists_local_branch('deployment')) {
+            return 0;
+        }
+        $cmd = "git checkout deployment";
+        if (! execute_command($cmd)) {
+            return 0;
+        }
+        $exists_remotely = 1;
     }
     else {
-        $cmd = "git checkout deployment";
-        $new_branch = 0;
+        if (__exists_local_branch('deployment')) {
+            $cmd = "git checkout deployment";
+            if (! execute_command($cmd)) {
+                return 0;
+            }
+        }
+        else {
+            $cmd = "git checkout -b deployment";
+            if (! execute_command($cmd)) {
+                return 0;
+            }
+        }
     }
 
-    if (! execute_command($cmd)) {
-        return 0;
+    if (defined($branch_exists_at_remote_ref)) {
+        $$branch_exists_at_remote_ref = $exists_remotely;
     }
 
-    if ($new_branch_ref) {
-        $$new_branch_ref = $new_branch
-    }
-
-    on(1);print qq{OK\n};off();
+    PrintY("OK\n");
     return 1;
 }
 
@@ -253,8 +301,7 @@ sub G_checkout_master {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
-
+    PrintY("OK\n");
     return 1;
 }
 
@@ -287,7 +334,7 @@ sub G_merge_master_branch {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
+    PrintY("OK\n");
     return 1;
 }
 
@@ -314,8 +361,7 @@ sub G_update_submodules {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
-
+    PrintY("OK\n");
     return 1;
 }
 
@@ -340,8 +386,7 @@ sub G_init_submodules {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
-
+    PrintY("OK\n");
     return 1;
 }
 
@@ -368,8 +413,7 @@ sub G_tag_app {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
-
+    PrintY("OK\n");
     return 1;
 }
 
@@ -398,8 +442,32 @@ sub G_push_origin_deployment {
     return 0
       if (! execute_command($cmd));
 
-    print qq{Push succeeds\n};
+    PrintY("Push succeeds\n");
+    return 1;
+}
 
+# ---------------------------------------------------------------------
+
+=item G_push_origin_tags
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub G_push_origin_tags {
+    my $app_dir = shift;
+
+    print qq{Push tags to origin ... };
+
+    return 0
+      if (! chdir_to_app_dir($app_dir));
+
+    my $cmd = "git push origin --tags";
+    return 0
+      if (! execute_command($cmd));
+
+    PrintY("OK\n");
     return 1;
 }
 
@@ -453,8 +521,7 @@ sub G_checkout_tag {
     return 0
       if (! execute_command($cmd));
 
-    on(1);print qq{OK\n};off();
-
+    PrintY("OK\n");
     return 1;
 }
 
@@ -481,7 +548,7 @@ sub get_app_dir_list {
     my @app_dirs = ();
 
     if (! opendir(DIR, $app_root)) {
-        on();print STDERR "ERROR: Could not read $app_root\n";off();
+        PrintN("ERROR: Could not read $app_root\n");
         exit 1;
     }
 
@@ -504,7 +571,7 @@ sub chdir_to_app_dir {
     my $app_dir = shift;
 
     if (! chdir($app_dir)) {
-        on();print qq{ERROR: could not cd to $app_dir\n};off();
+        PrintN("ERROR: could not cd to $app_dir\n");
         return 0;
     }
 
@@ -529,7 +596,7 @@ sub execute_command {
     $ToolLib::VERBOSE ? print qx($cmd) : qx($cmd 1> /dev/null 2>&1);
     if ($?) {
         if ($ToolLib::VERBOSE) {
-            on();print qq{ERROR: $?\ncmd=$cmd\n};off();
+            PrintN("ERROR: $?\ncmd=$cmd\n");
         }
         return 0;
     }
@@ -557,7 +624,7 @@ sub execute_command_w_output {
         : ($$output_ref = qx($cmd 2> /dev/null));
     if ($?) {
         if ($ToolLib::VERBOSE) {
-            on();print qq{ERROR: $?\ncmd=$cmd\n};off();
+            PrintN("ERROR: $?\ncmd=$cmd\n");
         }
         return 0;
     }
@@ -638,16 +705,11 @@ sub validate_existing_app {
         on();print qq{ERROR: '$app' is not a valid app: $app_dir/.git does not exist\n};off();
         return 0;
     }
-    if (! -e "$app_dir/bin/rdist.app") {
-        on();print qq{ERROR: '$app' appears valid but: $app_dir/bin/rdist.app does not exist\n};off();
-        return 0;
-    }
 
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    on(1);print qq{OK\n};off();
-
+    PrintY("OK\n");
     return 1;
 }
 
@@ -716,13 +778,29 @@ sub query_yn {
 }
 
 sub on {
-    return unless $ENV{TERM};
+    return unless ($ENV{TERM} eq 'xterm');
     my $ok = shift;
     $ok ? print "\033[1;30m" : print "\033[1;31m";
 }
 sub off {
-    return unless $ENV{TERM};
+    return unless ($ENV{TERM} eq 'xterm');
     print "\033[0m";
 }
 
+sub PrintY {
+    my $s = shift;
+    on(1);
+    print $s;
+    off();
+}
+sub PrintN {
+    my $s = shift;
+    on();
+    print $s;
+    off();
+}
+
 1;
+
+__END__
+
