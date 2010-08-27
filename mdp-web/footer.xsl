@@ -21,22 +21,11 @@
  <xsl:template name="footermbooksnav">
    <div class="MBooksNav">
      <ul>
-       <li>
-         <xsl:call-template name="loginlink"/>
-       </li>
-       <li>
-         <xsl:call-template name="aboutlink"/>
-       </li>
-       <li>
-         <xsl:call-template name="helplink"/>
-       </li>
-       <li>
-         <xsl:call-template name="footerfeedbacklink"/>
-       </li>
-       <li>
-         <xsl:call-template name="footertakedownlink"/>
-       </li>
-
+       <xsl:call-template name="loginlink"/>
+       <xsl:call-template name="aboutlink"/>
+       <xsl:call-template name="helplink"/>
+       <xsl:call-template name="footerfeedbacklink"/>
+       <xsl:call-template name="footertakedownlink"/>
      </ul>
    </div>
  </xsl:template>
@@ -107,7 +96,9 @@
  <!--  mbooks nav content where its different in the footer-->
 
  <xsl:template name="footertakedownlink">
-   | <a href="http://www.hathitrust.org/take_down_policy" title="item removal policy">Take-Down Policy</a>
+   <li>
+     | <a href="http://www.hathitrust.org/take_down_policy" title="item removal policy">Take-Down Policy</a>
+   </li>
  </xsl:template>
  
  <xsl:template name="footerfeedbacklink">
