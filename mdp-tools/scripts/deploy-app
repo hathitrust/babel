@@ -75,7 +75,7 @@ if (! $app) {
 
 my $fail_msg = qq{Failed to deploy application ($app)\n};
 
-my ($repo_root, $app_root) = get_HTDE_roots('test.babel');
+my ($repo_root, $app_root) = get_HTDE_roots('test');
 
 my $app_dir = "$app_root/$app";
 PrintY(qq{\nDeploying application ($app) from $app_dir\n});
@@ -124,7 +124,7 @@ else {
     }
 }
 
-if (! rdist_to_production($app_dir)) {
+if (! __rdist_to_production($app_dir)) {
     PrintN($fail_msg);
     exit 1;
 }
@@ -231,14 +231,14 @@ sub __get_tag {
 
 # ---------------------------------------------------------------------
 
-=item rdist_to_production
+=item __rdist_to_production
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub rdist_to_production {
+sub __rdist_to_production {
     my $app_dir = shift;
 
     print qq{Now starting rdist to production ...\n};

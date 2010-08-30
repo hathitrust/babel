@@ -11,20 +11,21 @@ use ToolLib;
 sub clone_app_usage {
     my $s = qq{Usage: clone-repo [options] <app.git>
            where <app.git> is the application central repository. Clone central repo, init and update its submodules.
-                 -t clone under /htapps/test.babel instead of /htapps/user.babel
+                 -s clone under staging area: test, beta-1, beta-2, beta-3 (e.g. /htapps/test.babel)
+                    instead of /htapps/user.babel
                  -f force remove existing clone, then clone
                  -v verbose
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_t, $opt_f);
-my $ops = getopts('hvtf');
+our ($opt_h, $opt_v, $opt_s, $opt_f);
+my $ops = getopts('hvs:f');
 
 my $app_repo = shift;
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
-my $TESTdotBABEL = $opt_t;
+my $STAGE = $opt_s;
 my $FORCE = $opt_f;
 
 if ($help) {
@@ -37,7 +38,7 @@ if (! $app_repo) {
     exit 1;
 }
 
-my ($repo_root, $app_root) = get_HTDE_roots($TESTdotBABEL);
+my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
 my ($app) = ($app_repo =~ m,^(.*?)\.git$,);
 my $app_dir = "$app_root/$app";    
 

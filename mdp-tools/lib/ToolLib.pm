@@ -646,11 +646,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub get_HTDE_roots {
-    my $test = shift;
+    my $stage = shift;
 
     my $where;
-    if ($test) {
-        $where = 'test';
+    if ($stage) {
+        $where = $stage;
         delete $ENV{HTDE_REPOROOT};
         delete $ENV{HTDE_APPROOT};
     }

@@ -45,14 +45,15 @@ use ToolLib;
 
 sub stage_app_usage {
     my $s = qq{Usage: stage-app [options] <app>
-           where <app> is the application. Bring app to most current version for testing under test.babel
+           where <app> is the application. Bring app to most current version for testing under test.babel (default)
+                 -s staging areas: test (default), beta-1, beta-2, beta-3
                  -v verbose
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v);
-my $ops = getopts('hv');
+our ($opt_h, $opt_v, $opt_s);
+my $ops = getopts('hvs:');
 
 my $app = shift;
 my $help = $opt_h;
@@ -68,8 +69,10 @@ if (! $app) {
     exit 1;
 }
 
+my $STAGE = $opt_s || 'test';
+
 my $fail_msg = qq{Failed to stage application ($app)\n};
-my ($repo_root, $app_root) = get_HTDE_roots('test.babel');
+my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
 
 my $app_dir = "$app_root/$app";
 PrintY(qq{\nStaging application ($app) at $app_dir\n});
