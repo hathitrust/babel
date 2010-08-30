@@ -626,6 +626,23 @@ sub dequeue {
 
 # ---------------------------------------------------------------------
 
+=item Delete_id_from_j_queue
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Delete_id_from_j_queue {
+    my ($C, $dbh, $run, $id) = @_;
+
+    my $statement = qq{DELETE FROM j_queue WHERE run=$run AND id='$id'};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
+# ---------------------------------------------------------------------
+
 =item update_unstick_inprocess
 
 Description

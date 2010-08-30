@@ -132,6 +132,8 @@ sub delete_Solr_doc {
         __output(qq{Deleted id=$id, shard=$shard from mdp.j_indexed\n});
         Db::Delete_id_from_j_rights($C, $DBH, $id);
         __output(qq{Deleted nid=$id from mdp.j_rights\n});
+        Db::Delete_id_from_j_queue($C, $DBH, $run, $id);
+        __output(qq{Deleted nid=$id from mdp.j_queue\n});
     }
 }
 
