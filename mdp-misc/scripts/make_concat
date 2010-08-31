@@ -5,7 +5,7 @@ use Getopt::Std;
 use File::Basename;
 
 my %opts;
-getopts('c:f:x:hv', \%opts);
+getopts('c:f:x:hvD', \%opts);
 
 if ($ENV{'SDRROOT'} !~ /[a-z]+\.babel/) {
     die "This program should only be run in a development environment";
@@ -27,6 +27,17 @@ if (! grep(/$opts{c}/, @ALLOWED_APPS)) {
 # Note: global variables are UPPERCASE
 my $VERBOSE = $opts{v};
 my $PROGRAM = $opts{c};
+my $DEVELOPMENT = $opts{D}; # See Usage below.
+
+if ($DEVELOPMENT) {
+    print STDERR "WARN: //common-web will be transformed to /mdp-web instead of /$PROGRAM/web/common-web\n\n";
+    print STDERR "OK? [y] ";
+    my $ok = <STDIN>;
+    if (($ok !~ m,y,) && ($ok ne "\n")) {
+        exit 0;
+    }
+}
+
 
 my $ROOT_PATH = "$ENV{SDRROOT}/$PROGRAM";
 my $WEB_PATH = "$ROOT_PATH/web";
@@ -60,7 +71,7 @@ my %CSS_REPLACE_REGEXPS =
   );
 
 my $TO_REMOVE_REF = [];
-
+        
 eval {
     make_concatenated_files();
 };
@@ -347,7 +358,13 @@ sub make_concatenated_files {
         
         # See View::__transform_paths()
         my $filesystem_filename = $xsl_helper_filename;
-        $filesystem_filename =~ s,//common-web,/$PROGRAM/web/common-web,;
+        if ($DEVELOPMENT) {
+            $filesystem_filename =~ s,//common-web,/mdp-web,;
+        }
+        else {
+            $filesystem_filename =~ s,//common-web,/$PROGRAM/web/common-web,;
+        }
+        
         $filesystem_filename = $ENV{SDRROOT} . $filesystem_filename;
         
         if (! -e $filesystem_filename) {
@@ -397,27 +414,34 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub usage
-{
+sub usage {
     my $msg = <<USAGE_MSG;
-  USAGE:
-   \t$0 -c [mb|pt|ls] configure for Collection Builder or LS or Pageturner
-   \t$0 -c [mb|pt|ls] -v (verbose)
+  Usage:
+   \t$0 [-v][-x][-f][-h][-D] -c mb|pt|ls configure for Collection Builder or Pageturner or LS
+
+   \tRead .../lib/Config/js_css_filelist.txt and concatenate and minimize js and css files. 
+   \tNormally, transform "//common-web" to "/{pt,ls,mb}/web/common-web" but see -D option
+
+   \tOutput consists of 3 files:
+   \t\t1) .../web/js/concatenated_common-min.js
+   \t\t2) .../web/concatenated_common-min.css
+   \t\t3) .../web/loads_helper_{mb,pt,ls}.xsl
+
+   \t Options:
+   \t\t-h This usage message
+   \t\t-v verbose
+   \t\t-D transform //common-web to /mdp-web for development ease. No git push/pull 
+   \t\t   required to see changes made in mdp-web under web/common-web
 
    \tDefaults:
-   \t filelist = .../Config/js_css_filelist.txt
-   \t xsl file = .../web/loads_helper_(mb|pt|ls).xsl
-   \t outputfile = .../web/js/concatenated_common-min.(js|css)
-   \t Defaults can be overriden with following options:
-   \t-f  <fullpath> to  filelist: list of javascripts to concatenate.
-   \t-x name of xsl file to output
-   \t-h This usage message
+   \t\t filelist = ...lib//Config/js_css_filelist.txt
+   \t\t xsl file = .../web/loads_helper_{mb,pt,ls}.xsl
+   \t\t outputfile = .../web/js/concatenated_common-min.{js,css}
 
-This script reads the config file and concatenates and minimizes js and css files
-The output consists of 3 files
-1) .../web/js/concatenated_common-min.js
-2) .../web/concatenated_common-min.css)
-3) .../lib/Config/js_css_filelist.txt   (XSL templates to load the uncompressed files and/or concatenated files)
+   \t Defaults can be overriden with following options:
+   \t\t-f  <fullpath> to  filelist: list of javascripts to concatenate.
+   \t\t-x name of xsl file to output
+
 USAGE_MSG
     
     print STDERR $msg;    
