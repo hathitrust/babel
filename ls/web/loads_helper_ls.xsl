@@ -14,7 +14,7 @@
  <script type="text/javascript" src="/ls/yui2-lib/build/dragdrop/dragdrop-min.js"></script>
  <script type="text/javascript" src="/ls/yui2-lib/build/container/container-min.js"></script>
  <script type="text/javascript" src="/ls/yui2-lib/build/connection/connection-min.js"></script>
- <script type="text/javascript" src="//common-web/js/feedbackCBForm.js"></script>
+ <script type="text/javascript" src="//common-web/js/feedbackLSForm.js"></script>
  <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js"></script>
  <script type="text/javascript" src="//common-web/js/overlayUtils.js"></script>
  <script type="text/javascript" src="//common-web/js/listUtils.js"></script>
