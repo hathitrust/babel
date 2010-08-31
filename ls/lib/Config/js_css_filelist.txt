@@ -52,8 +52,8 @@ Section:LOCAL_JS
 # These should be listed with the unminimized name.  
 # The script will run yuicompress on them
 
-# This feedback form script is used for LS.  Does ls need a different one?
-//common-web/js/feedbackCBForm.js
+# This feedback form script is used for LS.
+//common-web/js/feedbackLSForm.js
 
 # Copied from MBooks, Are these used by ls?
 //common-web/js/newCollOverlayCore.js
