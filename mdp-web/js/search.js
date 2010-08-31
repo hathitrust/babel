@@ -13,8 +13,8 @@ function dMsg(msg) {
 
 
 function displayErrorMsg(Msg) {
-        search_errormsg.setBody(Msg);
-        search_errormsg.show();
+    search_errormsg.setBody(Msg);
+    search_errormsg.show();
 }
 
 /*********************************************************************
@@ -29,66 +29,62 @@ XXX copied from newCollOverlayCB.js  Should go in some common utility js!!
    i.e.  Do not use   var action =p[a]
 ***********************************************************************/
 function getCgiParams(){
-        var params = {}; //empty hash
-        var loc = window.location.toString();
-        var temp = loc.split(/\?/);
-        if (temp[1])
-        {
-                var pairs = temp[1].split(/\;|\&/);
-                for (var i = 0; i < pairs.length; i++){
-                        var keyvalue = pairs[i].split(/\=/);
-                        var key = keyvalue[0];
-                        var value = keyvalue[1];
-                        params[key] = value;
-                }
+    var params = {}; //empty hash
+    var loc = window.location.toString();
+    var temp = loc.split(/\?/);
+    if (temp[1]) {
+        var pairs = temp[1].split(/\;|\&/);
+        for (var i = 0; i < pairs.length; i++){
+            var keyvalue = pairs[i].split(/\=/);
+            var key = keyvalue[0];
+            var value = keyvalue[1];
+            params[key] = value;
         }
-        return params;
+    }
+    return params;
 }
 
 
 // Get form function for items
-function getForm(e)
-{
-        return  document.getElementById('itemlist_searchform');
+function getForm(e) {
+    return  document.getElementById('itemlist_searchform');
 }
 
-function initSearchErrorMessage(formId)
-{
-        // For list_items and list_search_results need to use same div as other javascript
-        //So we ignore the formId passed in
-        var MsgId='errormsg';
-        search_errormsg = new YAHOO.widget.Module(MsgId, { visible: false });
-        search_errormsg.render();
+function initSearchErrorMessage(formId) {
+    // For list_items and list_search_results need to use same div as other javascript
+    //So we ignore the formId passed in
+    var MsgId='errormsg';
+    search_errormsg = new YAHOO.widget.Module(MsgId, { visible: false });
+    search_errormsg.render();
 }
 
 
 function processSearch(e) {
-        dMsg("processSearch was called");
-        
-        var myForm = getForm(e);
-        var q1 = myForm.q1.value;
-        var formId = myForm.id;
-        
-        // pass form  id into error message processing for use in list colls
-        initSearchErrorMessage(formId);
-        
-        q1 = q1.replace(/^\s*|\s*$/g,'');
-
-        if (q1 === "") {
-                var emptyQueryMsg="<div class='error'>Please enter a search term.</div>";
-                displayErrorMsg(emptyQueryMsg);
-                return false;
-        }
-        else
-        {
-                return myForm.submit();
-        }
+    dMsg("processSearch was called");
+    
+    var myForm = getForm(e);
+    var q1 = myForm.q1.value;
+    var formId = myForm.id;
+    
+    // pass form  id into error message processing for use in list colls
+    initSearchErrorMessage(formId);
+    
+    q1 = q1.replace(/^\s*|\s*$/g,'');
+    
+    if (q1 === "") {
+        var emptyQueryMsg="<div class='error'>Please enter a search term.</div>";
+        displayErrorMsg(emptyQueryMsg);
+        return false;
+    }
+    else {
+        return myForm.submit();
+    }
 }
 
 var interceptSubmitByEnter = function(e) {
-        YAHOO.util.Event.stopEvent(e);
-        processSearch(e);
-        return false;
+    YAHOO.util.Event.stopEvent(e);
+    processSearch(e);
+    return false;
 };
 
 /****** This code moved from searchAjaxItems.js now that we are not doing search on list_coll page we don't need
