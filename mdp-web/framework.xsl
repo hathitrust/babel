@@ -727,7 +727,7 @@
           <xsl:element name="input">
             <xsl:attribute name="type">hidden</xsl:attribute>
             <xsl:attribute name="name">m</xsl:attribute>
-            <xsl:attribute name="value">mdp</xsl:attribute>
+            <xsl:attribute name="value">pt</xsl:attribute>
           </xsl:element>
           
           

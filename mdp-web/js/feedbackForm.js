@@ -24,14 +24,12 @@ function initPTFeedback() {
 
     var browser = navigator.appName;
 
-    if (browser == "Microsoft Internet Explorer"
-        && view =="pdf") {
+    if (browser == "Microsoft Internet Explorer" && view =="pdf") {
         // Make non-modal iframe for IE pdf
         YAHOO.mbooks.PTFeedbackForm =
             new YAHOO.widget.Panel("formWidget", { width:'550px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:false, iframe: true } );
     }
-    else if (browser == "Microsoft Internet Explorer"
-             && (view != "pdf" || view === null)) {
+    else if (browser == "Microsoft Internet Explorer" && (view != "pdf" || view === null)) {
         // Make non-modal non-iframe for IE non-pdf
         YAHOO.mbooks.PTFeedbackForm =
             new YAHOO.widget.Panel("formWidget", { width:'550px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:false } );
