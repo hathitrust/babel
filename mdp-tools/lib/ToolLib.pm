@@ -694,15 +694,15 @@ sub validate_existing_app {
     my $app_dir = "$app_root/$app";
 
     if (! -e "$repo_root/$app.git") {
-        on();print qq{ERROR: '$app' is not a valid app: no central repo: $repo_root/$app.git does not exist\n};off();
+        PrintN(qq{ERROR: '$app' is not a valid app: no central repo: $repo_root/$app.git does not exist\n});
         return 0;
     }
     if (! -e "$app_dir") {
-        on();print qq{ERROR: '$app' is not a valid app: $app_dir does not exist\n};off();
+        PrintN(qq{ERROR: '$app' is not a valid app: $app_dir does not exist\n});
         return 0;
     }
     if (! -e "$app_dir/.git") {
-        on();print qq{ERROR: '$app' is not a valid app: $app_dir/.git does not exist\n};off();
+        PrintN(qq{ERROR: '$app' is not a valid app: $app_dir/.git does not exist\n});
         return 0;
     }
 

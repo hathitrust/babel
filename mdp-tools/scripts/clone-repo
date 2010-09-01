@@ -58,7 +58,7 @@ if (! G_init_submodules($app_dir)) {
 if (! G_update_submodules($app_dir)) {
     exit 1;
 }
-on(1);print qq{Clone succeeds\n};off();
+PrintY(qq{Clone succeeds\n});
 
 exit 0;
 
@@ -77,7 +77,7 @@ sub __validate_clone_app {
     print qq{Validating application ($app) ... };
 
     if (! -e "$repo_root/$app_repo") {
-        on();print qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n};off();
+        PrintY(qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n});
         return 0;
     }
     if (-e "$app_dir") {
@@ -92,12 +92,12 @@ sub __validate_clone_app {
             }
         }
         else {
-            on();print qq{ERROR: application appears to exist already under $app_dir\n};off();
+            PrintY(qq{ERROR: application appears to exist already under $app_dir\n});
             return 0;
         }
     }
 
-    on(1);print qq{OK\n};off();
+    PrintY(qq{OK\n});
     return 1;
 }
 
