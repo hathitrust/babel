@@ -16,7 +16,7 @@ stage-app [options] app
 
 Print a brief help message and exit.
 
-=item B<-v> tag
+=item B<-v>
 
 Verbose status
 
