@@ -8,20 +8,22 @@ use Vendors;
 
 use ToolLib;
 
-our ($opt_A, $opt_h, $opt_t, $opt_F);
-my $ops = getopts('AhtF');
+our ($opt_A, $opt_h, $opt_t, $opt_F, $opt_s);
+my $ops = getopts('AhtFs:');
 my $app = shift;
 
 sub Usage {
-    return "git-super-status [ [-F] [<app> | -A] ] | -h
+    return "git-super-status [ [-F] [-s where] [<app> | -A] ] | -h
   Lists uncommitted changes on master and commits to master\n  that have not been pushed to origin/master for /htapps/[developer|test].babel/<app>
     OPTIONS
       -A lists all apps
       -F fetches from origin master
+      -s where to do status: e.g. test: /htapps/test.babel. Default is /htapps/whoami.babel
       -h help\n";
 }
 
 my $FETCH = $opt_F;
+my $STAGE = $opt_s;
 
 if ($opt_h) {
     print Usage();
@@ -34,7 +36,7 @@ if (! $app && ! $opt_A) {
     exit 1;
 }
 
-my ($repo_root, $app_root) = get_HTDE_roots();
+my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
 
 my @app_dirs = ();
 if ($opt_A) {
