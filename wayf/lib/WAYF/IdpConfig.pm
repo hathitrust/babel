@@ -72,7 +72,7 @@ package WAYF::IdpConfig;
      'columbia' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Columbia University',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/uic?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/columbia?target=___TARGET___',
                     'enabled' => '0',
                    },
      'uic'  =>     {
