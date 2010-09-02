@@ -59,7 +59,9 @@ sub query_get_usage {
                   where -q query should be well-formed shell quoted
                           if running from command line, e.g.:
                              -q'q=id:"mdp.390150*"&start=0&rows=20'
-                        -N is silent mode (no status printed)\n};
+                        -N is silent mode (no status printed)
+                  Warning: Run /l/local/bin/tomcat-build-restart on all
+                           Solr build hosts before and after querying to restore java heap\n};
     return $s;
 }
 
