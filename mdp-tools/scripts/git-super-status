@@ -58,7 +58,7 @@ foreach my $app_dir (@app_dirs) {
 
     my $branch = qx(git branch);
     if ($branch !~ m,\* master,s) {
-        print "\tMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n";
+        PrintN("\tMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n");
         next;
     }
     else {
@@ -71,28 +71,30 @@ foreach my $app_dir (@app_dirs) {
             }
         }
 
-        print "STATUS:\n";
         @output = qx(git status);
+        my $clean = (grep(/working directory clean/, @output));
         map { $_ =~ s/^#/\t/ } @output;
+        
+        $clean ? print "STATUS:\n" : PrintN("STATUS:\n");
         print join('', @output);
 
         print "PUSH-PULL ('with respect ONLY to last 'git fetch origin'):\n";
         @output = qx(git log --oneline origin/master..HEAD);
         if (scalar @output) {
-            print "\tUNPUSHED:\n";
+            PrintN("\tUNPUSHED:\n");
             print map { "\t\t$_" } @output;
         }
         else {
-            print "\tAll pushed\n";
+            print "\tAll pushed: "; PrintY("OK\n");
         }
 
         @output = qx(git log --oneline HEAD..origin/master);
         if (scalar @output) {
-            print "\tUNPULLED:\n";
+            PrintN("\tUNPULLED:\n");
             print map { "\t\t$_" } @output;
         }
         else {
-            print "\tAll pulled\n";
+            print "\tAll pulled: ";  PrintY("OK\n");
         }
 
     }
