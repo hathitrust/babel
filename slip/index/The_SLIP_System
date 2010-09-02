@@ -1,4 +1,27 @@
 ****************************************************************
+                        SLIP Maintenance
+****************************************************************
+
+Resetting a failed indexing run
+===============================
+
+Use the following sequence of commands:
+
+$ ssh bubble
+$ cd /sdr1/bin/l/ls/index
+$ ./control-j -r10 -kresetdriver
+$ ./control-j -r10 -krestore  # errors back to indexing queue
+$ ./control-j -r10 -kstart -D # enable driver to run
+
+Then you can edit the SLIP crontab and advance the scheduled run of
+$DRIVER to a few minutes into the future so cron will run it again. As
+soon as driver gets scheduled, re-edit the start time back to 09:20 as
+in:
+
+20 9 * * *  eval $DRIVER
+
+
+****************************************************************
                         SLIP Data Flows
 ****************************************************************
 
