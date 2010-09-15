@@ -123,6 +123,42 @@ $gGraphicsHtmlDir  = $LOCATION . q{/../web/common-web/graphics/};
                                   '3' => $gGraphicsHtmlDir . q{},
                                   '4' => $gGraphicsHtmlDir . q{},
                                  },
+                       'nyp'   => {
+                                   '1' => $gGraphicsHtmlDir . q{DigGoogle_OrigNYPL.png},
+                                   '2' => $gGraphicsHtmlDir . q{DigNYPL_OrigNYPL.png},
+                                   '3' => $gGraphicsHtmlDir . q{},
+                                   '4' => $gGraphicsHtmlDir . q{DigIA_OrigNYPL.png},
+                                  },
+                      'chi'   => {
+                                  '1' => $gGraphicsHtmlDir . q{DigGoogle_OrigChicago.png},
+                                  '2' => $gGraphicsHtmlDir . q{DigChicago_OrigChicago.png},
+                                  '3' => $gGraphicsHtmlDir . q{},
+                                  '4' => $gGraphicsHtmlDir . q{DigIA_OrigChicago.png},
+                                 },
+                     'nnc1'  => {
+                                 '1' => $gGraphicsHtmlDir . q{DigGoogle_OrigColumbia.png},
+                                 '2' => $gGraphicsHtmlDir . q{},
+                                 '3' => $gGraphicsHtmlDir . q{},
+                                 '4' => $gGraphicsHtmlDir . q{},
+                                },
+                     'nnc2'  => {
+                                 '1' => $gGraphicsHtmlDir . q{DigIA_OrigColumbia.png},
+                                 '2' => $gGraphicsHtmlDir . q{},
+                                 '3' => $gGraphicsHtmlDir . q{},
+                                 '4' => $gGraphicsHtmlDir . q{},
+                                },
+                    'yale' => {
+                                '1' => $gGraphicsHtmlDir . q{DigGoogle_OrigYale.png},
+                                '2' => $gGraphicsHtmlDir . q{DigYale_OrigYale.png},
+                                '3' => $gGraphicsHtmlDir . q{},
+                                '4' => $gGraphicsHtmlDir . q{DigIA_OrigYale.png},
+                               },
+                    'njp' => {
+                                '1' => $gGraphicsHtmlDir . q{DigGoogle_OrigPrinceton.png},
+                                '2' => $gGraphicsHtmlDir . q{DigPrinceton_OrigPrinceton.png},
+                                '3' => $gGraphicsHtmlDir . q{},
+                                '4' => $gGraphicsHtmlDir . q{DigIA_OrigPrinceton.png},
+                               },
                      );
 
 $gCacheDocRoot  = ($ENV{SDRVIEW} eq 'full') ? '/cache-full/imgsrv/' : '/cache/imgsrv/';
