@@ -159,6 +159,12 @@ $gGraphicsHtmlDir  = $LOCATION . q{/../web/common-web/graphics/};
                                 '3' => $gGraphicsHtmlDir . q{},
                                 '4' => $gGraphicsHtmlDir . q{DigIA_OrigPrinceton.png},
                                },
+                    'uiuo' => {
+                                '1' => $gGraphicsHtmlDir . q{DigGoogle_OrigIllinois.png},
+                                '2' => $gGraphicsHtmlDir . q{DigIllinois_OrigIllinois.png},
+                                '3' => $gGraphicsHtmlDir . q{},
+                                '4' => $gGraphicsHtmlDir . q{DigIA_OrigIllinois.png},
+                               },
                      );
 
 $gCacheDocRoot  = ($ENV{SDRVIEW} eq 'full') ? '/cache-full/imgsrv/' : '/cache/imgsrv/';

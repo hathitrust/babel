@@ -218,6 +218,43 @@ sub handle_CURRENT_PAGE_IMG_SRC_PI
     return $href;
 }
 
+sub handle_CURRENT_PAGE_IMG_WIDTH_PI
+    : PI_handler(CURRENT_PAGE_IMG_WIDTH)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+
+    my $finalAccessStatus =
+        $C->get_object('AccessRights')->assert_final_access_status($C, $id);
+
+    my $value = '';
+    
+    if ( $finalAccessStatus eq 'allow' ) {
+        $value = $C->get_object('MdpItem')->GetTargetImageFileInfo()->{width};
+    }
+
+    return $value;
+}
+
+sub handle_CURRENT_PAGE_IMG_HEIGHT_PI
+    : PI_handler(CURRENT_PAGE_IMG_HEIGHT)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    my $value = '';
+
+    my $finalAccessStatus =
+        $C->get_object('AccessRights')->assert_final_access_status($C, $id);
+
+    if ( $finalAccessStatus eq 'allow' ) {
+        $value = $C->get_object('MdpItem')->GetTargetImageFileInfo()->{height};
+    }
+
+    return $value;
+}
+
 # ---------------------------------------------------------------------
 
 =item handle_DEFAULT_COLLID_PI : PI_handler(DEFAULT_COLLID)
