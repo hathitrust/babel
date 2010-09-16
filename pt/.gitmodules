@@ -7,3 +7,6 @@
 [submodule "web/common-web"]
 	path = web/common-web
 	url = /htapps/repos/mdp-web.git
+[submodule "vendor/imgsrv-lib"]
+	path = vendor/imgsrv-lib
+	url = /htapps/repos/imgsrv.git
