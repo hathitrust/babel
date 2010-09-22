@@ -61,30 +61,36 @@ package WAYF::IdpConfig;
                     'template'  => 'https://___HOST___/Shibboleth.sso/uiuc?target=___TARGET___',
                     'enabled' => '1',
                    },
-     
-     # Waiting
-     'dart'  =>    {
+     'wisc' =>     {
                     'authtype' => 'shibboleth',
-                    'link_text' => 'Dartmouth College',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/dart?target=___TARGET___',
-                    'enabled' => '0',
+                    'link_text' => 'University of Wisconsin - Madison',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/wisc?target=___TARGET___',
+                    'enabled' => '1',
                    },
      'columbia' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Columbia University',
                     'template'  => 'https://___HOST___/Shibboleth.sso/columbia?target=___TARGET___',
-                    'enabled' => '0',
-                   },
-     'uic'  =>     {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'University of Illinois, Chicago',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/uic?target=___TARGET___',
-                    'enabled' => '0',
+                    'enabled' => '1',
                    },
      'minn' =>     {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of Minnesota',
                     'template'  => 'https://___HOST___/Shibboleth.sso/minn?target=___TARGET___',
+                   'enabled' => '1',
+                  },
+     'psu'  =>    {
+                   'authtype' => 'shibboleth',
+                   'link_text' => 'Pennsylvania State University',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/psu?target=___TARGET___',
+                   'enabled' => '1',
+                   },
+     
+     # Waiting
+     'uic'  =>     {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'University of Illinois, Chicago',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/uic?target=___TARGET___',
                     'enabled' => '0',
                    },
      'uva'  =>     {
@@ -97,18 +103,6 @@ package WAYF::IdpConfig;
                     'authtype' => 'shibboleth',
                     'link_text' => 'Ohio State University',
                     'template'  => 'https://___HOST___/Shibboleth.sso/osu?target=___TARGET___',
-                    'enabled' => '0',
-                   },
-     'psu'  =>     {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'Pennsylvania State University',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/psu?target=___TARGET___',
-                    'enabled' => '0',
-                   },
-     'wisc' =>     {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'University of Wisconsin',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/wisc?target=___TARGET___',
                     'enabled' => '0',
                    },
      'ucal' =>     {
