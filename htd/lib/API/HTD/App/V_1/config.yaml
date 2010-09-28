@@ -7,12 +7,13 @@ mets_pagemeta_xsl: /htd/lib/API/HTD/App/V_1/mets-pagemeta.xsl
 mets_meta_xsl:     /htd/lib/API/HTD/App/V_1/mets-meta.xsl
 
 patterns:
-  meta:      /(meta)/((.*?)\.(.*))$
-  structure: /(structure)/((.*?)\.(.*))$
-  aggregate: /(aggregate)/((.*?)\.(.*))$
-  pageimage: /(pageimage)/((.*?)\.(.*))/(\d+)$
-  pageocr:   /(pageocr)/((.*?)\.(.*))/(\d+)$
-  pagemeta:  /(pagemeta)/((.*?)\.(.*))/(\d+)$
+  meta:         /(meta)/((.*?)\.(.*))$
+  structure:    /(structure)/((.*?)\.(.*))$
+  aggregate:    /(aggregate)/((.*?)\.(.*))$
+  pageimage:    /(pageimage)/((.*?)\.(.*))/(\d+)$
+  pageocr:      /(pageocr)/((.*?)\.(.*))/(\d+)$
+  pagecoordocr: /(pagecoordocr)/((.*?)\.(.*))/(\d+)$
+  pagemeta:     /(pagemeta)/((.*?)\.(.*))/(\d+)$
 
 valid_query_params:
   - debug
@@ -69,6 +70,9 @@ responses:
           - attrs:
               resource: pageocr
             content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGEOCR
+          - attrs:
+              resource: pagecoordocr
+            content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGECOORDOCR
           - attrs:
               resource: pageimage
             content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGEIMAGE
@@ -159,6 +163,9 @@ responses:
           - attrs:
               resource: pageocr
             content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGEOCR
+          - attrs:
+              resource: pagecoordocr
+            content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGECOORDOCR
           - attrs:
               resource: pageimage
             content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGEIMAGE
@@ -253,6 +260,9 @@ responses:
               resource: pageocr
             content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGEOCR
           - attrs:
+              resource: pagecoordocr
+            content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGECOORDOCR
+          - attrs:
               resource: pageimage
             content: _HTD_SCHEMAS_URI_#:::DOWNLOADPAGEIMAGE
           - attrs:
@@ -292,6 +302,11 @@ responses:
               rel: _HTD_SCHEMAS_URI_#pageocr
               href: _HTD_PAGEOCR_URI_/pageocr/__ID__/__SEQ__
               type: :::OCRMIMETYPE
+            content: null
+          - attrs:
+              rel: _HTD_SCHEMAS_URI_#pagecoordocr
+              href: _HTD_PAGEOCR_URI_/pagecoordocr/__ID__/__SEQ__
+              type: :::COORDOCRMIMETYPE
             content: null
           - attrs:
               rel: _HTD_SCHEMAS_URI_#aggregate
@@ -372,6 +387,9 @@ mimetype_map:
   pageocr:
     default: text/plain
     text: text/plain
+  pagecoordocr:
+    default: text/html
+    text: text/html
 
 # ---------------------------------------------------------------------
 # Access type map: f(resource, rights attr, source)
@@ -389,6 +407,17 @@ accessibility_matrix:
       um-press: restricted
       internet-archive: restricted
   pageocr:
+    free:
+      google: limited
+      lit-dlps-dc: open
+      um-press: open
+      internet-archive: open
+    nonfree:
+      google: restricted
+      lit-dlps-dc: restricted
+      um-press: restricted
+      internet-archive: restricted
+  pagecoordocr:
     free:
       google: limited
       lit-dlps-dc: open
@@ -491,6 +520,7 @@ _HTD_PAGEMETA_URI_:       http://services.hathitrust.org/api/htd
 _HTD_STRUCTURE_URI_:      http://services.hathitrust.org/api/htd
 _HTD_PAGEIMAGE_URI_:      :::PAGEIMAGEPROTOCOL://services.hathitrust.org/api/htd
 _HTD_PAGEOCR_URI_:        :::PAGEOCRPROTOCOL://services.hathitrust.org/api/htd
+_HTD_PAGECOORDOCR_URI_:   :::PAGECOORDOCRPROTOCOL://services.hathitrust.org/api/htd
 _HTD_AGGREGATE_URI_:      :::AGGREGATEPROTOCOL://services.hathitrust.org/api/htd
 _HTD_SCHEMAS_URI_:        http://schemas.hathitrust.org/htd/2009
 _HTD_PT_ALTERNATE_URI_:   http://babel.hathitrust.org/cgi/pt?id=__ID__

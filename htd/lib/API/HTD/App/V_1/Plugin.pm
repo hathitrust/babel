@@ -156,6 +156,8 @@ sub __bindYAMLTokens {
                        sub { $self->__getDownloadability('pageimage') });
     $self->__setMember(':::DOWNLOADPAGEOCR',
                        sub { $self->__getDownloadability('pageocr') });
+    $self->__setMember(':::DOWNLOADPAGECOORDOCR',
+                       sub { $self->__getDownloadability('pagecoordocr') });
     $self->__setMember(':::DOWNLOADAGGREGATE',
                        sub { $self->__getDownloadability('aggregate') });
 
@@ -163,6 +165,8 @@ sub __bindYAMLTokens {
                        sub { $self->__getProtocol('pageimage') });
     $self->__setMember(':::PAGEOCRPROTOCOL',
                        sub { $self->__getProtocol('pageocr') });
+    $self->__setMember(':::PAGECOORDOCRPROTOCOL',
+                       sub { $self->__getProtocol('pagecoordocr') });
     $self->__setMember(':::AGGREGATEPROTOCOL',
                        sub { $self->__getProtocol('aggregate') });
 
@@ -170,6 +174,8 @@ sub __bindYAMLTokens {
                        sub { $self->__getMetaMimeType($P_Ref, 'image') });
     $self->__setMember(':::OCRMIMETYPE',
                        sub { $self->__getMetaMimeType($P_Ref, 'ocr') });
+    $self->__setMember(':::COORDOCRMIMETYPE',
+                       sub { $self->__getMetaMimeType($P_Ref, 'coordOCR') });
 
     $self->__setMember(':::UPDATED',
                        sub { API::Utils::getDateString });
@@ -469,6 +475,41 @@ sub GET_pageocr {
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageocr', $extension);
+        my %header =
+            (
+             -Status => $statusLine,
+             -Content_type => $mimetype . '; charset=utf8',
+             -Content_Disposition => qq{filename=$filename},
+            );
+        $self->__handlePdusHeader(\%header);
+        $self->header(%header);
+    }
+    else {
+        $self->__setErrorResponseCode('404');
+    }
+
+    return $representationRef;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item GET_pagecoordocr
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub GET_pagecoordocr {
+    my $self = shift;
+    my $P_Ref = $self->__makeParamsRef(@_);
+
+    my ($representationRef, $filename, $extension) =
+        $self->__getFileResourceRepresentation($P_Ref, 'coordOCR');
+    if (defined($representationRef)) {
+        my $statusLine = $self->__getConfigVal('httpstatus', 200);
+        my $mimetype = $self->__getMimetype('pagecoordocr', $extension);
         my %header =
             (
              -Status => $statusLine,
