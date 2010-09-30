@@ -20,7 +20,6 @@
 <ContactText><?CONTACT_TEXT?></ContactText>
 <VolumeData><?VOLUME_DATA?></VolumeData>
 <VolCurrTitleFrag><?VOLUME_CURRENT_TITLE?></VolCurrTitleFrag>
-<MetadataType><?METADATA_TYPE?></MetadataType>
 <MetadataFailure><?METADATA_FAILURE?></MetadataFailure>
 <SSDSession><?SSD_SESSION?></SSDSession>
 <Skin><?MY_SKIN?></Skin>
