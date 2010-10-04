@@ -65,14 +65,20 @@ else {
 }
 # Required: filename
 my $ID_FILENAME;
+my $ID;
+
 if (defined($opt_F)) {
     $ID_FILENAME = $opt_F;
 }
 else {
-    my $s = d_get_usage();
-    print $s;
-    exit 1;
+    $ID = shift;
+    if (! $ID) {
+        my $s = d_get_usage();
+        print $s;
+        exit 1;
+    }
 }
+
 
 if (defined($opt_d)) {
     if (! grep(/1|2|3/, ($opt_d))) {
@@ -101,8 +107,15 @@ my $dbh = $db->get_DBH();
 # Flush i/o
 $| = 1;
 
-my $id_arr_ref = d__load_ids_from_file($ID_FILENAME);
-print scalar(@$id_arr_ref) . qq{ ids loaded from $ID_FILENAME\n};
+my $id_arr_ref;
+if ($ID_FILENAME) {
+    $id_arr_ref = d__load_ids_from_file($ID_FILENAME);
+    print scalar(@$id_arr_ref) . qq{ ids loaded from $ID_FILENAME\n};
+}
+else {
+    $id_arr_ref = [$ID];
+}
+
 
 foreach my $id (@$id_arr_ref) {
     # --------------------  Create Document  --------------------
@@ -182,7 +195,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub d_get_usage {
-    my $s = qq{Usage: doc-j -r run(any)-d{1,2,3} -F filename-of-ids\n\t\tWrites results to, e.g., "/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
+    my $s = qq{Usage: doc-j -r run(any)-d{1,2,3} -F filename-of-ids | <id>\n\t\tWrites results to, e.g., "/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
                       where 1=default
                             2=add vufind response
                             3=add docfulldebug (no delete of zip tmpdir)\n\n};
@@ -198,7 +211,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
