@@ -27,12 +27,12 @@ use Debug::DUtils;
 use Context;
 use MdpConfig;
 use Search::Constants;
-use Utils::Log;
+use SLIP_Utils::Log;
 
 # Local
 use Db;
-use Utils::Common;
-use Utils::Solr;
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
 use Result::vSolr;
 
 # ---------------------------------------------------------------------
@@ -170,7 +170,7 @@ sub rights_database_anomaly {
 
         my $s2 = qq{vSolr ANOMALY: nid=$nid sysid=$sysid node_content="$node_content" nid_timestamp=$nid_timestamp };
         DEBUG('me', qq{DEBUG: $s2} . Utils::Time::iso_Time());
-        Utils::Log::this_string($C, $s2, 'bad_rights_logfile', '___RUN___', 'rights');
+        SLIP_Utils::Log::this_string($C, $s2, 'bad_rights_logfile', '___RUN___', 'rights');
         
         return 1;
     }
