@@ -49,9 +49,32 @@ exit 0
 
 _empty_cache();
 
-my @accepted_statuses = ('200', '301', '302');
-
 foreach my $url (@$url_arr_ref) {
+    if ($url =~ m,^http,) {
+        _test_url($url);
+    }
+    else {
+        _test_cmd($url);
+    }    
+}
+
+exit 0;
+
+
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# --------------------------------------------------------------------- 
+sub _test_url {
+    my $url = shift;
+    
+    my @accepted_statuses = ('200', '301', '302');
+
     PrintY("Testing $app "); print(" URL=$url ... ");
 
     my $status = `curl --silent --write-out %{http_code} '$url' -o /dev/null`;
@@ -70,9 +93,15 @@ foreach my $url (@$url_arr_ref) {
     }
 }
 
-exit 0;
+# ---------------------------------------------------------------------
 
+=item Name 
 
+Description
+
+=cut
+
+# --------------------------------------------------------------------- 
 sub _empty_cache {
     
     PrintY("Emptying cache ... ");
@@ -85,6 +114,44 @@ sub _empty_cache {
     }    
 }
 
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# --------------------------------------------------------------------- 
+sub _test_cmd {
+    my $cmd = shift;
+
+    my @accepted_exits = ('0', '1', '4');
+
+    PrintY("Testing $app "); print(" CMD=$cmd ... ");
+
+    `$cmd 2> /dev/null`;
+    
+    my $exitval = $? >> 8;
+    my $result = grep(/$exitval/, @accepted_exits);
+    
+    if ($result) {
+        PrintY("OK\n");
+    }
+    else {
+        PrintN("cmd fail: $exitval\n");
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# --------------------------------------------------------------------- 
 sub _get_config_val {
     my ($key, $sub_1_key) = @_;
     
@@ -96,6 +163,15 @@ sub _get_config_val {
     }
 }
 
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# --------------------------------------------------------------------- 
 sub _get_curl_errmsg {
     my $sysval = shift;
     my %msghash = 
