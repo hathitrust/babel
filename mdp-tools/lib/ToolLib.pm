@@ -224,6 +224,25 @@ sub __exists_local_branch {
 
 # ---------------------------------------------------------------------
 
+=item G_create_local_deployment_track_remote
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub G_create_local_deployment_track_remote {
+    my $cmd = "git checkout --track -b deployment origin/deployment";
+    if (! execute_command($cmd)) {
+        return 0;
+    }
+    
+    return 1;
+}
+
+
+# ---------------------------------------------------------------------
+
 =item G_checkout_deployment
 
 Checkout the deployment branch in preparation for operating on it.
@@ -244,13 +263,19 @@ sub G_checkout_deployment {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
+    # If there's a remote deployment branch, a local deployment branch
+    # must have been created and pushed to remote. But the local could
+    # have been deleted so track the remote again to restore it.
     if (__exists_remote_branch('deployment')) {
         if (! G_fetch_origin($app_dir)) {
             return 0;
         }
         if (! __exists_local_branch('deployment')) {
-            return 0;
-        }
+            if (! G_create_local_deployment_track_remote()) {
+                return 0;
+            }
+        }    
+        
         $cmd = "git checkout deployment";
         if (! execute_command($cmd)) {
             return 0;
