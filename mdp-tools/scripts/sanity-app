@@ -41,21 +41,13 @@ if (! $app) {
     exit 1;
 }
 
-# empty the cache
-PrintY("Emptying cache ... ");
-`rm -rf /htapps/test.babel/cache-full/*`;
-if ($? > 0) {
-    PrintN("Cache not cleared\n");
-}
-else {
-    PrintY("OK\n");
-}
-
 my $CONFIG = YAML::XS::LoadFile("$ENV{SDRROOT}/mdp-tools/lib/Config/sanity-config.yaml");
 my $url_arr_ref = _get_config_val($app);
 
 exit 0
   if (! $url_arr_ref);
+
+_empty_cache();
 
 my @accepted_statuses = ('200', '301', '302');
 
@@ -81,6 +73,17 @@ foreach my $url (@$url_arr_ref) {
 exit 0;
 
 
+sub _empty_cache {
+    
+    PrintY("Emptying cache ... ");
+    `rm -rf /htapps/test.babel/cache-full/*`;
+    if ($? > 0) {
+        PrintN("Cache not cleared\n");
+    }
+    else {
+        PrintY("OK\n");
+    }    
+}
 
 sub _get_config_val {
     my ($key, $sub_1_key) = @_;
