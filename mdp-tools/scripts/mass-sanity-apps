@@ -1,0 +1,3 @@
+#!/bin/bash
+for f in  `cat /htapps/pfarber.babel/mdp-tools/app-list.txt` ; do sanity-app $f; done
+exit 0;

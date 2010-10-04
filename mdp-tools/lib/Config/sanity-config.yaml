@@ -1,0 +1,56 @@
+---
+# =====================================================================
+# App _. UV_1-specific plugin config
+# =====================================================================
+imgsrv:
+  - http://test.babel.hathitrust.org/cgi/imgsrv/pdf?id=1
+  - http://test.babel.hathitrust.org/cgi/imgsrv?id=1
+
+feedback:
+  - http://test.babel.hathitrust.org/cgi/feedback?SysID=mdp.39015081447842&return=https%3A%2F%2Ftest.babel.hathitrust.org/cgi/mb&m=pt&SeqNo=1&view=image&missing=1&other=&comments=foobar+test&email=foo@foo.com&submit=Submit
+  - http://test.babel.hathitrust.org/cgi/feedback?m=ls&id=Large-scale+Search&email=foo@foo.com&comments=foobar+test
+  - http://test.babel.hathitrust.org/cgi/feedback?m=cb&id=Collection+Builder&email=foo@foo.com&comments=foobar+test
+
+gr:
+  - http://test.babel.hathitrust.org/cgi/gr?id=1
+
+htd:
+  - http://test.babel.hathitrust.org/cgi/htd/pagemeta/mdp.39015004314111/37
+  - http://test.babel.hathitrust.org/cgi/htd/meta/mdp.39015004314111
+  - http://test.babel.hathitrust.org/cgi/htd/structure/mdp.39015004314111
+  - http://test.babel.hathitrust.org/cgi/htd/aggregate/mdp.39015004314111
+  - http://test.babel.hathitrust.org/cgi/htd/pageimage/mdp.39015004314111/19
+  - http://test.babel.hathitrust.org/cgi/htd/pageocr/mdp.39015004314111/51
+
+logout:
+  - http://test.babel.hathitrust.org/cgi/logout
+
+ls:
+  - http://test.babel.hathitrust.org/cgi/ls?q1=fungible&a=srchls&lmt=all&pn=2
+  - http://test.babel.hathitrust.org/cgi/ls?q1=dog;a=srchls;lmt=ft
+
+mb:
+  - http://test.babel.hathitrust.org/cgi/mb
+  - http://test.babel.hathitrust.org/cgi/mb?a=listis;c=1276272457
+  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=rel_d;pn=1
+  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_a;pn=1
+  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_d;pn=1
+  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_d;pn=1
+  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_a;pn=1
+
+pt:
+  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154
+  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&orient=1
+  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&size=50
+  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=text
+  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=pdf
+
+ptsearch:
+  - http://test.babel.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=medecine
+
+ssd:
+  - http://test.babel.hathitrust.org/cgi/ssd?id=mdp.39015004314111
+
+wayf:
+  - http://test.babel.hathitrust.org/cgi/wayf
+
