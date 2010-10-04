@@ -53,6 +53,9 @@ ssd:
 
 wayf:
   - http://test.babel.hathitrust.org/cgi/wayf
+
+slip:
+  - http://test.babel.hathitrust.org/cgi/slip
   - /htapps/test.babel/slip/index/commit-j
   - /htapps/test.babel/slip/index/control-j
   - /htapps/test.babel/slip/index/delete-j
