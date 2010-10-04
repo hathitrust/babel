@@ -53,22 +53,18 @@ ssd:
 
 wayf:
   - http://test.babel.hathitrust.org/cgi/wayf
-
-slip:
-  - http://test.babel.hathitrust.org/cgi/slip
-  - /htapps/pfarber.babel/slip/index/commit-j
-  - /htapps/pfarber.babel/slip/index/control-j
-  - /htapps/pfarber.babel/slip/index/delete-j
-  - /htapps/pfarber.babel/slip/index/docs-j
-  - /htapps/pfarber.babel/slip/index/driver-j
-  - /htapps/pfarber.babel/slip/index/enqueuer-j
-  - /htapps/pfarber.babel/slip/index/index-j
-  - /htapps/pfarber.babel/slip/index/optimize-j
-  - /htapps/pfarber.babel/slip/index/query-j
-  - /htapps/pfarber.babel/slip/index/rebuild-j
-  - /htapps/pfarber.babel/slip/index/report-j
-  - /htapps/pfarber.babel/slip/index/rights-j
-  - /htapps/pfarber.babel/slip/index/sizer-j
-  - /htapps/pfarber.babel/slip/index/sync-j
-  - /htapps/pfarber.babel/slip/index/timeouts-j
-
+  - /htapps/test.babel/slip/index/commit-j
+  - /htapps/test.babel/slip/index/control-j
+  - /htapps/test.babel/slip/index/delete-j
+  - /htapps/test.babel/slip/index/docs-j
+  - /htapps/test.babel/slip/index/driver-j
+  - /htapps/test.babel/slip/index/enqueuer-j
+  - /htapps/test.babel/slip/index/index-j
+  - /htapps/test.babel/slip/index/optimize-j
+  - /htapps/test.babel/slip/index/query-j
+  - /htapps/test.babel/slip/index/rebuild-j
+  - /htapps/test.babel/slip/index/report-j
+  - /htapps/test.babel/slip/index/rights-j
+  - /htapps/test.babel/slip/index/sizer-j
+  - /htapps/test.babel/slip/index/sync-j
+  - /htapps/test.babel/slip/index/timeouts-j
