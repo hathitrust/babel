@@ -185,10 +185,10 @@ sub gen_run_config
     my $run = shift;
     
     my $global_configfile;
-    my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/index/Config/common.conf};
+    my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
     
     if ($run) {
-        $global_configfile = $ENV{'SDRROOT'} . qq{/slip/index/Config/run-$run.conf};
+        $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$run.conf};
     }
     my $config = new MdpConfig($common_configfile, $global_configfile);
     
