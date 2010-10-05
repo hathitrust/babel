@@ -204,6 +204,23 @@ sub __validate_local_deployment {
     return 1;
 }
 
+# ---------------------------------------------------------------------
+
+=item __build_tag
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __build_tag {
+    my $app = shift;
+
+    my $version = __get_version_string($app);
+    my $tag = $app . '_v' . $version;
+
+    return $tag;
+}
 
 # ---------------------------------------------------------------------
 
@@ -223,12 +240,13 @@ sub __get_tag {
     if (query_yn("Deploy using new tag?", 'y')) {
         print qq{Ok. Last tag was: } . __last_tag() . qq{\n};
 
-        my $version = __get_version_string($app);
-        $tag = $app . '_v' . $version;
+        $tag = __build_tag($app);
         $new = 1;
     }
     else {
-        $tag = query("\nEnter full text of existing tag (app_vN.N.N): ");
+        print qq{Ok. Last 3 tags were:\n} . G_list_tags() . qq{\n};
+
+        $tag = __build_tag($app);
     }
 
     return ($tag, $new);
