@@ -90,12 +90,17 @@ if (! __validate_local_deployment($repo_root, $app_dir, $app)) {
     exit 1;
 }
 
-my ($tag, $tag_is_new) = __get_tag($app);
+my ($tag, $tag_is_new, $rc);
+do {
+    ($tag, $tag_is_new) = __get_tag($app);
 
-if (! __validate_tag($tag, $tag_is_new)) {
-    PrintN($fail_msg);
-    exit 1;
-}
+    $rc = __validate_tag($tag, $tag_is_new);
+    if ($rc eq 'notvalid') {
+        PrintN($fail_msg);
+        exit 1;
+    }
+} until ($rc eq 'valid');
+    
 
 if ($tag_is_new) {
     if (! (
@@ -281,12 +286,14 @@ Description
 sub __validate_tag {
     my ($tag, $new) = @_;
 
+    my $rc = 'valid';
+    
     my $cmd;
     print qq{Trying to validate tag="$tag" ... };
 
     if (! defined($tag)) {
         PrintN(qq{ERROR: format is not valid for tag="$tag"\n});
-        return 0;
+        $rc = 'notvalid';
     }
         
     if ($new) {
@@ -294,12 +301,12 @@ sub __validate_tag {
         $cmd = "git check-ref-format refs/tags/$tag";
         if (! execute_command($cmd)) {
             PrintN(qq{ERROR: format is not valid for tag="$tag"\n});
-            return 0;
+            $rc = 'notvalid';
         }
         if (! __tag_is_greater($tag)) {
             PrintN(qq{ERROR: new tag="$tag" is less than or equal last tag in chronological order\n});
             print qq{Last tag was: }. __last_tag() . qq{\n};
-            return 0;
+            $rc = 'notvalid';
         }
     }
     else {
@@ -307,12 +314,18 @@ sub __validate_tag {
         $cmd = "git show $tag";
         if (! execute_command($cmd)) {
             PrintN(qq{ERROR: tag="$tag" does not exist\n});
-            return 0;
+            $rc = 'notvalid';
         }
     }
 
-    PrintY("OK\n");
-    return 1;
+    if ($rc eq 'valid') {
+        PrintY("OK\n");
+    }
+    elsif (query_yn("\nRetry?", 'y')) {
+        $rc = 'retry';
+    }
+    
+    return $rc;
 }
 
 
