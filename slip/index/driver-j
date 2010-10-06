@@ -130,7 +130,7 @@ if ($@) {
 $C->set_object('Database', $db);
 my $DBH = $db->get_DBH();
 
-my $BASE_DIR = $ENV{'SDRROOT'} . '/bin/l/ls/index/';
+my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 my @NUM_SHARDS_LIST = $config->get('num_shards_list');
 my $Child_Err_File =
     qq{/tmp/driver_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
