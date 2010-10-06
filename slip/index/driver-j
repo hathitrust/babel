@@ -761,7 +761,7 @@ sub __check_sysrc {
     my $rc = 0;
 
     if ($sysrc > 0) {
-        my $s_ref = SLIP_Utils::read_file($Child_Err_File, 1, 0);
+        my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
         my $ss = qq{driver-j system_rc=$sysrc attempting $s stage=$stage error:$$s_ref\n};
         $rc = $SLIP_Utils::States::RC_DRIVER_CHILD_ERROR;
         Log_stage($C, $run, $stage, $ss);
