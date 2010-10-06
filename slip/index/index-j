@@ -148,8 +148,8 @@ $| = 1;
 
 my $C = new Context;
 
-my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/Config/common.conf};
+my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
+my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
 
 my $config = new MdpConfig($common_configfile, $global_configfile);
 $C->set_object('MdpConfig', $config);
