@@ -20,7 +20,7 @@ APP_dest = ( /htapps/babel/slip )
 #
 # Release instructions
 #
-( ${APP_src} ) -> ( ${NASMACC} )
+( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
 #( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
         install -oremove ${APP_dest};
         except_pat ( .git* );
