@@ -47,6 +47,7 @@ pt:
 
 ptsearch:
   - http://test.babel.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=medecine
+  - http://test.babel.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=foobar
 
 ssd:
   - http://test.babel.hathitrust.org/cgi/ssd?id=mdp.39015004314111
