@@ -220,6 +220,11 @@ sub i_processing_loop {
         Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
         # POSSIBLY NOTREACHED
 
+        # Exit before (another) slice is taken if this host is
+        # disabled
+        handle_host_enabled($C, $DBH, $RUN, $PID, $HOST, $slices_taken);
+        # POSSIBLY NOTREACHED
+
         # Exit this producer if time of day falls between the downtime
         # for VuFind Solr. We need VuFind for Solr document metadata.
         handle_vSolr_downtime($C);
@@ -229,11 +234,6 @@ sub i_processing_loop {
         # marked as available for indexing if max configured producers
         # are running
         handle_max_producers_running($C, $DBH, $RUN, $HOST);
-        # POSSIBLY NOTREACHED
-
-        # Exit before (another) slice is taken if this host is
-        # disabled
-        handle_host_enabled($C, $DBH, $RUN, $PID, $HOST, $slices_taken);
         # POSSIBLY NOTREACHED
 
         # Exit if no shards are enabled to receive data
