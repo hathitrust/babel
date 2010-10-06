@@ -166,7 +166,7 @@ my $C = new Context;
 my $run_configfile = $RIGHTS ? undef : $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
 my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
 
-my $config = new Config($common_configfile, $run_configfile);
+my $config = new MdpConfig($common_configfile, $run_configfile);
 $C->set_object('MdpConfig', $config);
 
 my @NUM_SHARDS_LIST = $RIGHTS ? () : $C->get_object('MdpConfig')->get('num_shards_list');
