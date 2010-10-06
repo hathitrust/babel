@@ -56,7 +56,7 @@ sub get_item_updated_nid_slice_as_of {
     my ($C, $dbh, $query_timestamp, $offset, $slice_size, $Rebuild) = @_;
     
     my $anomalies = 0;
-    my $searcher = Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+    my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
     
     my $rs = new Result::vSolr();
     my $query = qq{q=ht_id_update:[$query_timestamp TO *]&start=$offset&rows=$slice_size&fl=ht_id_display,id };
