@@ -84,11 +84,14 @@ sub this_string
     my $lock_file = $logfile_path . '.sem';
 
     # --- BEGIN CRITICAL SECTION ---
+    use constant MAX_TRIES => 10;
     my $sem;
-    if ($use_sem) {
-        while (! ($sem = new Semaphore($lock_file))) {
-            sleep 1;
-        }
+    my $tries = 0;
+    while (! ($sem = new Semaphore($lock_file)))
+    {
+        $tries++;
+        return if ($tries > MAX_TRIES);
+        sleep 1;
     }
 
     if (open(LOG, ">>$logfile_path")) {
