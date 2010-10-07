@@ -15,12 +15,12 @@ gr:
   - http://test.babel.hathitrust.org/cgi/gr?id=1
 
 htd:
-  - http://test.babel.hathitrust.org/cgi/htd/pagemeta/mdp.39015004314111/37
-  - http://test.babel.hathitrust.org/cgi/htd/meta/mdp.39015004314111
-  - http://test.babel.hathitrust.org/cgi/htd/structure/mdp.39015004314111
-  - http://test.babel.hathitrust.org/cgi/htd/aggregate/mdp.39015004314111
-  - http://test.babel.hathitrust.org/cgi/htd/pageimage/mdp.39015004314111/19
-  - http://test.babel.hathitrust.org/cgi/htd/pageocr/mdp.39015004314111/51
+  - http://test.services.hathitrust.org/htd/pagemeta/mdp.39015004314111/37
+  - http://test.services.hathitrust.org/htd/meta/mdp.39015004314111
+  - http://test.services.hathitrust.org/htd/structure/mdp.39015004314111
+  - http://test.services.hathitrust.org/htd/aggregate/mdp.39015004314111
+  - http://test.services.hathitrust.org/htd/pageimage/mdp.39015004314111/19
+  - http://test.services.hathitrust.org/htd/pageocr/mdp.39015004314111/51
 
 logout:
   - http://test.babel.hathitrust.org/cgi/logout
