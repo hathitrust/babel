@@ -65,8 +65,8 @@ sub this_string
     my $dir_subst = shift;
     my $use_sem = shift;
     my $no_newline = shift;
-    
-    exit 0 if (! $log_function_enabled);
+
+    return if (! $log_function_enabled);
 
     my $config = $C->get_object('MdpConfig');
 
