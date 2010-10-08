@@ -627,6 +627,26 @@ sub c_Reset_driver {
     my ($C, $dbh, $run) = @_;
 
     driver_initialization($C, $dbh, $run);
+
+    my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
+    my $busy_file = $flags_dir . '/' . 'busy';
+    my $s;
+
+    if (-e $busy_file) {
+        $s = `rm $busy_file`;
+        }
+    else {
+        my $host = `hostname`;
+        $host =~ s,\..*$,,s;
+        if ($host eq 'bubble') {
+            $s = "No busy file\n";
+        }
+        else {
+            $s = "Host=$host (not bubble): cannot see busy file\n";
+        }
+    }
+    __output($s);
+
     Log_driver_start_stop($C, $run, 'DISABLE');
 }
 
