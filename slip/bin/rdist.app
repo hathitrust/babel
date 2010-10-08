@@ -23,6 +23,6 @@ APP_dest = ( /htapps/babel/slip )
 ( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
 #( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
         install -oremove ${APP_dest};
-        except_pat ( .git* );
+        except_pat ( \\.git );
         # notify hathitrust-release@umich.edu ;
 
