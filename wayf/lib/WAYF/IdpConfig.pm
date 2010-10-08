@@ -84,15 +84,15 @@ package WAYF::IdpConfig;
                    'link_text' => 'Pennsylvania State University',
                    'template'  => 'https://___HOST___/Shibboleth.sso/psu?target=___TARGET___',
                    'enabled' => '1',
-                   },
+                  },
+     'prnc'  =>   {
+                   'authtype' => 'shibboleth',
+                   'link_text' => 'Princeton University',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/prnc?target=___TARGET___',
+                   'enabled' => '1',
+                  },
      
      # Waiting
-     'prnc'  =>     {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'Princeton University',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/prnc?target=___TARGET___',
-                    'enabled' => '0',
-                   },
      'uic'  =>     {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of Illinois, Chicago',
