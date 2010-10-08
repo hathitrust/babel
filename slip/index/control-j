@@ -375,6 +375,9 @@ sub driver_initialization {
     foreach my $host (@host_list) {
         c_configure($C, $dbh, $run, $producers_per_host, $host);
     }
+
+    # Disable all hosts
+    __c_host_control($C, $dbh, $run, undef, 0);
 }
 
 
