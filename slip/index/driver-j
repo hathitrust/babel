@@ -131,6 +131,7 @@ $C->set_object('Database', $db);
 my $DBH = $db->get_DBH();
 
 my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
+my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my @NUM_SHARDS_LIST = $config->get('num_shards_list');
 my $Child_Err_File =
     qq{/tmp/driver_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
@@ -788,7 +789,7 @@ sub __check_shards_segment_count {
 
     # Make sure shards have correct number of segments post-optimize
     foreach my $shard (@NUM_SHARDS_LIST) {
-        my $cmd = $BASE_DIR . qq{Utils/check-shards -r$run -N$num_segs 2>$Child_Err_File};
+        my $cmd = $SCRIPTS_DIR . qq{check-shards -r$run -N$num_segs 2>$Child_Err_File};
         my $sysrc = system($cmd);
 
         my $s = qq{"check-shards -r$run -N$num_segs"};
