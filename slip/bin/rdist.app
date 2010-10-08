@@ -21,8 +21,7 @@ APP_dest = ( /htapps/babel/slip )
 # Release instructions
 #
 ( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
-#( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
         install -oremove ${APP_dest};
-        except_pat ( \\.git );
+        except_pat ( \\.git yui2-lib );
         # notify hathitrust-release@umich.edu ;
 
