@@ -75,8 +75,7 @@ Initialize IndexerPool object.
 =cut
 
 # ---------------------------------------------------------------------
-sub _initialize
-{
+sub _initialize {
     my $self = shift;
     my ($C, $dbh, $run) = @_;
 
@@ -85,11 +84,11 @@ sub _initialize
 
     my @io_arr = ();
 
-    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
-    foreach my $__shard (@num_shards_list)
-    {
-        # HTTP timeout=30 sec (default)
-        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $__shard);
+    my $config = $C->get_object('MdpConfig');
+    my @num_shards_list = $config->get('num_shards_list');
+    my $timeout =  $config->get('solr_indexer_timeout');
+    foreach my $__shard (@num_shards_list) {
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $__shard, $timeout);
         # Init obj
         $io_arr[__sh_2_io_idx($__shard)] = IndexerPool::IndexerObj->new($indexer, $__shard);
     }
