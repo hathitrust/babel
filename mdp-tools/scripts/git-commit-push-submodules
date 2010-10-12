@@ -68,7 +68,7 @@ foreach my $app_dir (@app_dirs) {
     my $commit_push = 0;
     foreach my $sub (@submodules) {
         if ($sub) {
-            print "\tStaging: $sub\n";
+            print "\tGit add: $sub\n";
             execute_command(qq{git add $sub});
             $subs .= "$sub ";
             $commit_push = 1;
