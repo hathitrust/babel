@@ -722,8 +722,12 @@ sub HandleImageContent
     
     my $cacheDir      = $PTGlobals::gCacheDir;
     my $cacheDocRoot  = $PTGlobals::gCacheDocRoot;
-
-    my $file_info = MediaHandler::Image::GetImageInfo({mdpItem => $self, linkTo => 'cache'});
+    my $file_info;
+    
+    eval {
+        $file_info = MediaHandler::Image::GetImageInfo({mdpItem => $self, linkTo => 'cache'});
+    };
+    ASSERT(!$@, qq{Error creating page image file="$$file_info{'src'}": $@} );
 
     my $targetFileName = $self->{'targetimagefilename'} = $$file_info{'src'};
     $self->{'targetimagefileinfo'} = $file_info;
