@@ -1,6 +1,7 @@
 #!/l/local/bin/perl
 
 use strict;
+umask 0000;
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
