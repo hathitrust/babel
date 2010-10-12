@@ -728,7 +728,7 @@ sub HandleImageContent
         $file_info = MediaHandler::Image::GetImageInfo({mdpItem => $self, linkTo => 'cache'});
     };
     ASSERT(!$@, qq{Error creating page image file="$$file_info{'src'}": $@} );
-
+    
     my $targetFileName = $self->{'targetimagefilename'} = $$file_info{'src'};
     $self->{'targetimagefileinfo'} = $file_info;
     
