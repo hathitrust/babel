@@ -8,22 +8,17 @@ use Vendors;
 
 use ToolLib;
 
-our ($opt_A, $opt_h, $opt_t, $opt_F, $opt_s);
-my $ops = getopts('AhtFs:');
+our ($opt_A, $opt_h);
+my $ops = getopts('Ah');
 my $app = shift;
 
 sub Usage {
-    return "git-super-status [ [-F] [-s where] [<app> | -A] ] | -h
-  Lists uncommitted changes on master and commits to master\n  that have not been pushed to origin/master for /htapps/[developer|test].babel/<app>
+    return "git-super-status [<app> | -A] ] | -h
+  Fetches origin and lists uncommitted changes on master and commits to master\n  that have not been pushed to origin/master for /htapps/develop.babel/<app>
     OPTIONS
       -A lists all apps
-      -F fetches from origin master
-      -s where to do status: e.g. test: /htapps/test.babel. Default is /htapps/whoami.babel
       -h help\n";
 }
-
-my $FETCH = $opt_F;
-my $STAGE = $opt_s;
 
 if ($opt_h) {
     print Usage();
@@ -36,7 +31,7 @@ if (! $app && ! $opt_A) {
     exit 1;
 }
 
-my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
+my ($repo_root, $app_root) = get_HTDE_roots();
 
 my @app_dirs = ();
 if ($opt_A) {
@@ -54,7 +49,7 @@ foreach my $app_dir (@app_dirs) {
         exit 1;
     }
     print "\n-----------------------------------------------------------\n";
-    print "Checking $app_dir " . ($FETCH ? "with FETCH" : '') . qq{\n};
+    print "Checking $app_dir with FETCH\n";
 
     my $branch = qx(git branch);
     if ($branch !~ m,\* master,s) {
@@ -64,11 +59,9 @@ foreach my $app_dir (@app_dirs) {
     else {
         my @output;
 
-        if ($FETCH) {
-            print "FETCH ...";
-            if (! G_fetch_origin($app_dir)) {
-                next;
-            }
+        print "FETCH ...";
+        if (! G_fetch_origin($app_dir)) {
+            next;
         }
 
         @output = qx(git status);
@@ -78,7 +71,7 @@ foreach my $app_dir (@app_dirs) {
         $clean ? print "STATUS:\n" : PrintN("STATUS:\n");
         print join('', @output);
 
-        print "PUSH-PULL ('with respect ONLY to last 'git fetch origin'):\n";
+        print "PUSH-PULL:\n";
         @output = qx(git log --oneline origin/master..HEAD);
         if (scalar @output) {
             PrintN("\tUNPUSHED:\n");
