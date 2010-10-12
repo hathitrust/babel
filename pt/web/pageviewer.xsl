@@ -5,6 +5,8 @@
   <!-- Global Variables -->
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
   <xsl:variable name="gCurrentPageImageSource" select="/MBooksTop/MBooksGlobals/CurrentPageImageSource"/>
+  <xsl:variable name="gCurrentPageImageWidth" select="/MBooksTop/MBooksGlobals/CurrentPageImageWidth"/>
+  <xsl:variable name="gCurrentPageImageHeight" select="/MBooksTop/MBooksGlobals/CurrentPageImageHeight"/>
   <xsl:variable name="gCurrentPageOcr" select="/MBooksTop/MBooksGlobals/CurrentPageOcr"/>
   <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/>
   <xsl:variable name="gCurrentPageNum" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']"/>
@@ -893,6 +895,12 @@
           <xsl:attribute name="id">mdpImage</xsl:attribute>
           <xsl:attribute name="src">
             <xsl:value-of select="$pCurrentPageImageSource"/>
+          </xsl:attribute>
+          <xsl:attribute name="width">
+            <xsl:value-of select="$gCurrentPageImageWidth"/>
+          </xsl:attribute>
+          <xsl:attribute name="height">
+            <xsl:value-of select="$gCurrentPageImageHeight"/>
           </xsl:attribute>
         </xsl:element>
       </xsl:otherwise>
