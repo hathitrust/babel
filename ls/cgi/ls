@@ -26,6 +26,7 @@ Debug options
 =cut
 
 use strict;
+umask 0000;
 
 # ----------------------------------------------------------------------
 # Performance check-pointing
