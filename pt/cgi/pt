@@ -23,6 +23,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use strict;
+umask 0000;
 
 # ----------------------------------------------------------------------
 # Performance measurement
