@@ -720,8 +720,6 @@ sub HandleImageContent
 {
     my $self = shift;
     
-    print STDERR "YO HEY DER\n";
-
     my $cacheDir      = $PTGlobals::gCacheDir;
     my $cacheDocRoot  = $PTGlobals::gCacheDocRoot;
 
@@ -729,12 +727,6 @@ sub HandleImageContent
 
     my $targetFileName = $self->{'targetimagefilename'} = $$file_info{'src'};
     $self->{'targetimagefileinfo'} = $file_info;
-
-    ## return $targetFileName;
-
-    ## $targetFileName =~ s,^$cacheDir,$cacheDocRoot,;
-
-    ## $self->{'targetimagefilename'} = $targetFileName;
     
     return $targetFileName;
 }

@@ -490,29 +490,6 @@ sub handle_VOLUME_CURRENT_TITLE_PI
 
 # ---------------------------------------------------------------------
 
-=item handle_METADATA_TYPE_PI : PI_handler(METADATA_TYPE)
-
-Handler for METADATA_TYPE either MARC or TEI (die TEI, die)
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_METADATA_TYPE_PI
-    : PI_handler(METADATA_TYPE)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $mdpItem = $C->get_object('MdpItem');
-    my $metadata_type = 
-        Identifier::has_MARC_metadata($mdpItem->GetId())
-                ? 'MARC'
-                    : '';
-    
-    return $metadata_type;
-}
-
-# ---------------------------------------------------------------------
-
 =item handle_METADATA_FAILURE_PI : PI_handler(METADATA_FAILURE)
 
 Handler for METADATA_FAILURE
