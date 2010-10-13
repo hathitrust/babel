@@ -20,5 +20,5 @@ APP_dest = ( /htapps/babel/mdp-web )
 ( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
         install -oremove ${APP_dest};
         except_pat ( \\.git );
-        # notify hathitrust-release@umich.edu ;
+        notify hathitrust-release@umich.edu ;
 
