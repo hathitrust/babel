@@ -49,7 +49,7 @@ foreach my $app_dir (@app_dirs) {
         exit 1;
     }
     print "\n-----------------------------------------------------------\n";
-    print "Checking $app_dir with FETCH\n";
+    PrintY("Checking $app_dir with FETCH\n");
 
     my $branch = qx(git branch);
     if ($branch !~ m,\* master,s) {
