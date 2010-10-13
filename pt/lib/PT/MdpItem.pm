@@ -39,7 +39,7 @@ use PT::Document::XPAT;
 use PT::PageTurnerUtils;
 use XML::LibXML;
 
-use MediaHandler::Image;
+### use MediaHandler::Image;
 
 # Global variables
 
@@ -725,6 +725,7 @@ sub HandleImageContent
     my $file_info;
     
     eval {
+        require MediaHandler::Image;
         $file_info = MediaHandler::Image::GetImageInfo({mdpItem => $self, linkTo => 'cache'});
     };
     ASSERT(!$@, qq{Error creating page image file="$$file_info{'src'}": $@} );
