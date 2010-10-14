@@ -82,6 +82,15 @@ if (! validate_existing_app($repo_root, $app_root, $app)) {
     exit 1;
 }
 
+if (-e "$app_dir/.gitmodules") {
+    my @submodules = `cat "$app_dir/.gitmodules"`;
+    @submodules = grep(/submodule/, @submodules);
+    PrintM("Dependencies: \n\t");
+    PrintM(join("\t", @submodules));
+}
+else {
+    PrintY("No Dependencies\n");
+}
 
 if (! (
        G_fetch_origin($app_dir)
