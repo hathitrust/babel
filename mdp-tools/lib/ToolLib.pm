@@ -5,6 +5,7 @@ use Exporter ();
 @EXPORT = qw(
                 PrintY
                 PrintN
+                PrintM
                 query
                 query_yn
                 validate_existing_app
@@ -802,10 +803,11 @@ sub query_yn {
     return $ans;
 }
 
+# gray=30, red=31, green=32
 sub on {
     return unless ($ENV{TERM} eq 'xterm');
-    my $ok = shift;
-    $ok ? print "\033[1;30m" : print "\033[1;31m";
+    my $color = shift;
+    $ok ? print "\033[1;${color}m" : print "\033[1;${color}m";
 }
 sub off {
     return unless ($ENV{TERM} eq 'xterm');
@@ -814,13 +816,20 @@ sub off {
 
 sub PrintY {
     my $s = shift;
-    on(1);
+    on(30);
     print $s;
     off();
 }
 sub PrintN {
     my $s = shift;
-    on();
+    on(31);
+    print $s;
+    off();
+}
+
+sub PrintM {
+    my $s = shift;
+    on(35);
     print $s;
     off();
 }
