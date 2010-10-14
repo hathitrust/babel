@@ -85,10 +85,11 @@ sub _test_url {
     }
     else {
         if (grep($status, @accepted_statuses)) {
-            PrintY("OK\n");
+            PrintY("OK");
+            PrintM("[$status]\n");
         }
         else {
-            PrintN("HTTP status fail: $status\n");
+            PrintN("HTTP status fail [$status]\n");
         }
     }
 }
