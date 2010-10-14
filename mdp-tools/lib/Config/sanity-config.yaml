@@ -4,7 +4,7 @@
 # =====================================================================
 imgsrv:
   - http://test.babel.hathitrust.org/cgi/imgsrv/pdf?id=1
-  - http://test.babel.hathitrust.org/cgi/imgsrv?id=1
+  - http://test.babel.hathitrust.org/cgi/imgsrv/image?id=1
 
 feedback:
   - http://test.babel.hathitrust.org/cgi/feedback?SysID=mdp.39015081447842&return=https%3A%2F%2Ftest.babel.hathitrust.org/cgi/mb&m=pt&SeqNo=1&view=image&missing=1&other=&comments=foobar+test&email=foo@foo.com&submit=Submit
