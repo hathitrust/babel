@@ -1,3 +1,46 @@
-#!/bin/bash
-for f in  `cat /htapps/pfarber.babel/mdp-tools/app-list.txt` ; do deploy-app $f; done
+#!/l/local/bin/perl
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+sub mass_deploy_apps_usage {
+    my $s = qq{Usage: mass-deploy-apps [options]
+                 -v verbose
+                 -h print help\n};
+    return $s;
+}
+
+our ($opt_h, $opt_v);
+my $ops = getopts('hv');
+
+my $help = $opt_h;
+
+if ($help) {
+    print mass_deploy_apps_usage();
+    exit 0;
+}
+
+my $deploy_options = ($opt_v ? ' -v ' : '');
+
+if (query_yn("Deploy using auto tagging?", 'n')) {
+    my $increment = query_option( "\tEnter auto increment", 'ter', qw(maj min ter));
+    $deploy_options .= " -T$increment ";
+}
+else {
+    print "$0 only works with auth tagging\n";
+    exit 0;
+}
+
+my @app_list = `cat /htapps/pfarber.babel/mdp-tools/app-list.txt`;
+chomp(@app_list);
+@app_list = ('gr');
+foreach my $app (@app_list) {
+    print `deploy-app $deploy_options $app`;
+}
+
 exit 0;

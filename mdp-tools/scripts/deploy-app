@@ -52,12 +52,14 @@ sub deploy_app_usage {
     my $s = qq{Usage: deploy-app [options] <app>
            where <app> is the application to tag and deploy or re-deploy from an existing tag
                  -v verbose
+                 -T maj(or|min(or|ter(tiary 
+                      increment the indicated version number component when tagging 
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v);
-my $ops = getopts('hv');
+our ($opt_h, $opt_v, $opt_T);
+my $ops = getopts('hvT:');
 
 my $app = shift;
 my $help = $opt_h;
@@ -71,6 +73,15 @@ if ($help) {
 if (! $app) {
     print deploy_app_usage();
     exit 1;
+}
+
+my $VERSION_INCREMENT;
+if ($opt_T) {
+    if (! grep(/^$opt_T$/, 'maj', 'min', 'ter', )) {
+        print deploy_app_usage();
+        exit 1;
+    }
+    $VERSION_INCREMENT = $opt_T;
 }
 
 my $fail_msg = qq{Failed to deploy application ($app)\n};
@@ -215,11 +226,47 @@ Description
 # ---------------------------------------------------------------------
 sub __build_tag {
     my $app = shift;
-
-    my $version = __get_version_string($app);
+    my $auto_version = shift;
+    
+    my $version = __get_version_string($app, $auto_version);
     my $tag = $app . '_v' . $version;
 
     return $tag;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __get_auto_increment_version
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_auto_increment_version {
+    my $increment = shift;
+    my $last_tag = __last_tag();
+    
+    my @version_arr = ($last_tag =~ m,(\d+)\.(\d+)\.(\d+),);
+    
+    if ($increment eq 'maj') {
+        $version_arr[0] += 1;
+        $version_arr[1] = 0;
+        $version_arr[2] = 0;        
+    }
+    elsif ($increment eq 'min') {
+        $version_arr[1] += 1;
+        $version_arr[2] = 0;        
+    }
+    elsif ($increment eq 'ter') {
+        $version_arr[2] += 1;
+    }
+    else {
+        die "bad increment arg: $increment\n";
+    }
+
+    return "$version_arr[0] $version_arr[1] $version_arr[2]";
 }
 
 # ---------------------------------------------------------------------
@@ -237,7 +284,14 @@ sub __get_tag {
     my $new = 0;
     my $tag;
 
-    if (query_yn("Deploy using new tag?", 'y')) {
+    if ($VERSION_INCREMENT){
+        my $auto_version = __get_auto_increment_version($VERSION_INCREMENT);
+        $tag = __build_tag($app, $auto_version);
+        PrintM("AUTO ");
+        print qq{tagging using: $tag\n};
+        $new = 1;
+    }
+    elsif (query_yn("Deploy using new tag?", 'y')) {
         print qq{Ok. Last tag was: } . __last_tag() . qq{\n};
 
         $tag = __build_tag($app);
@@ -389,11 +443,19 @@ Description
 # ---------------------------------------------------------------------
 sub __get_version_string {
     my $app = shift;
-
+    my $auto_version = shift;
+    
     my $version_string;
-
+    my $ver;
+    
   GET_VERSION:
-    my $ver = query("\nEnter major.minor.tertiary release numbers for $app (N N N) ");
+    if ($auto_version) {
+        $ver = $auto_version;  
+    }
+    else {
+        $ver = query("\nEnter major.minor.tertiary release numbers for $app (N N N) ");
+    }
+    
     if ($ver =~ m,(\d+)\s+(\d+)\s+(\d+),) {
         $version_string = qq{$1.$2.$3};
     }

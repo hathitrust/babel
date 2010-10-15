@@ -8,6 +8,7 @@ use Exporter ();
                 PrintM
                 query
                 query_yn
+                query_option
                 validate_existing_app
                 chdir_to_app_dir
                 execute_command
@@ -196,7 +197,7 @@ sub __exists_remote_branch {
 
     my $output;
     my $cmd = "git ls-remote --heads origin";
-    return 0 
+    return 0
       if (! execute_command_w_output($cmd, \$output));
 
     return ($output =~ m,refs/heads/$branch,s);
@@ -219,7 +220,7 @@ sub __exists_local_branch {
     if (! execute_command_w_output($cmd, \$output)) {
         return 0;
     }
-    
+
     return ($output =~ m,deployment,s);
 }
 
@@ -237,7 +238,7 @@ sub G_create_local_deployment_track_remote {
     if (! execute_command($cmd)) {
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -256,7 +257,7 @@ sub G_checkout_deployment {
     my $branch_exists_at_remote_ref = shift;
 
     my $exists_remotely = 0;
-    
+
     my $cmd;
     my $output;
     print qq{Checkout local deployment branch ...\n};
@@ -275,8 +276,8 @@ sub G_checkout_deployment {
             if (! G_create_local_deployment_track_remote()) {
                 return 0;
             }
-        }    
-        
+        }
+
         $cmd = "git checkout deployment";
         if (! execute_command($cmd)) {
             return 0;
@@ -799,6 +800,46 @@ sub query_yn {
     }
 
     $ans = ($ans =~ /^y/i ? 1 : 0);
+
+    return $ans;
+}
+
+# ---------------------------------------------------------------------
+
+=item query_option
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub query_option {
+    my $query = shift;
+    my $default = shift;
+
+    my @options = @_;
+    my @answers;
+    my $options_list = "";
+    my $i;
+
+    # Make sure default is one of the options.
+    $default = 'none' if ( ! $default );
+    push @options, $default unless grep /$default/i, @options;
+
+    # Format list of options
+    for( $i = 0; $i < @options - 1; $i++ ) {
+        $options_list .= "$options[$i]|";
+    }
+    $options_list .= "$options[$i]";
+    $query .= " ($options_list)";
+
+    # Query until one of the options is chosen
+    my $ans = query($query, $default);
+    while(! (@answers = grep /^$ans$/, @options )) {
+        print "Options are: $options_list\n";
+        $ans = query( $query, $default );
+    }
+    $ans = ( $answers[0] eq 'none' ) ? '' : $answers[0];
 
     return $ans;
 }
