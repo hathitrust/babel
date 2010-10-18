@@ -18,6 +18,10 @@ gr:
   - http://test.babel.hathitrust.org/cgi/gr?id=1
   - http://test.babel.hathitrust.org/cgi/gr?id=8
 
+ht-graphics:
+  - http://test.babel.hathitrust.org/ht-graphics/HathiTrustDL_logo.png
+  - http://test.babel.hathitrust.org/ht-graphics/favicon.ico
+
 htd:
   - http://test.services.hathitrust.org/htd/pagemeta/mdp.39015004314111/37
   - http://test.services.hathitrust.org/htd/meta/mdp.39015004314111
