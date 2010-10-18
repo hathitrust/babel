@@ -1,0 +1,54 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+git-me - Keep an app in sync with the upstream
+
+=head1 SYNOPSIS
+
+git-me <app>
+
+=head1 OPTIONS
+
+=over 8
+
+=back
+
+=head1 DESCRIPTION
+
+B<git-me> checkout the master branch, fetch objects, rebase to
+origin/master ans update submodules.
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+my $app = shift;
+my $branch = shift || 'master';
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+
+my $app_dir = "$app_root/$app";
+
+if (! chdir_to_app_dir($app_dir)) {
+    exit 1;
+}
+
+$ToolLib::VERBOSE = 1;
+
+PrintY("Sync $app on branch=$branch with upstream\n");
+execute_command("git checkout $branch");
+execute_command("git fetch origin master");
+execute_command("git rebase origin/master");
+execute_command("git submodule update --init");
+
+exit 0;
+
+__END__;
+
