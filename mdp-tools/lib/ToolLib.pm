@@ -720,6 +720,11 @@ sub validate_existing_app {
 
     my $app_dir = "$app_root/$app";
 
+    if (! $app) {
+        PrintN(qq{\nERROR: '$app' is not a valid app\n});
+        return 0;
+    }
+    
     if (! -e "$repo_root/$app.git") {
         PrintN(qq{\nERROR: '$app' is not a valid app: no central repo:\n\t$repo_root/$app.git does not exist\n});
         PrintN(qq{\nPerhaps you need to run clone-repo -s test $app.git\n});

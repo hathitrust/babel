@@ -29,14 +29,28 @@ use Vendors;
 
 use ToolLib;
 
+sub git_me_app_usage {
+    my $s = qq{Usage: git-me <app> [<branch>]
+           where <app> is the application to sync with the upstream
+                 <branch> is optional, defaults to 'master'\n};
+    return $s;
+}
+
+
 my $app = shift;
 my $branch = shift || 'master';
 
 my ($repo_root, $app_root) = get_HTDE_roots();
 
+if (! validate_existing_app($repo_root, $app_root, $app)) {
+    print git_me_app_usage();
+    exit 1;
+}
+
 my $app_dir = "$app_root/$app";
 
 if (! chdir_to_app_dir($app_dir)) {
+    print git_me_app_usage();
     exit 1;
 }
 
