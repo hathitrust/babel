@@ -93,6 +93,12 @@ package WAYF::IdpConfig;
                   },
      
      # Waiting
+     'jhu'  =>     {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'Johns Hopkins University',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/jhu?target=___TARGET___',
+                    'enabled' => '0',
+                   },
      'uic'  =>     {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of Illinois, Chicago',
