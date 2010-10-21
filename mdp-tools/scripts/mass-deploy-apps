@@ -38,8 +38,8 @@ else {
 
 my @app_list = `cat /htapps/pfarber.babel/mdp-tools/app-list.txt`;
 chomp(@app_list);
-@app_list = ('gr');
 foreach my $app (@app_list) {
+    next unless ($app);
     print `deploy-app $deploy_options $app`;
 }
 

@@ -22,6 +22,7 @@ B<sanity-app> will attempt a curl on a list of URLs for the app.
 
 use strict;
 use YAML::XS;
+use Getopt::Std;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
@@ -29,12 +30,17 @@ use Vendors;
 use ToolLib;
 
 sub sanity_app_usage {
-    my $s = qq{Usage: sanity <app>
-           where <app> is the application.\n};
+    my $s = qq{Usage: sanity-app [options] <app>
+           where <app> is the application.
+                 -s staging areas: test (default), beta-1, beta-2, beta-3\n};
     return $s;
 }
 
+our ($opt_s);
+my $ops = getopts('s:');
 my $app = shift;
+
+my $STAGE = $opt_s || 'test';
 
 if (! $app) {
     print sanity_app_usage();
@@ -50,6 +56,8 @@ exit 0
 _empty_cache();
 
 foreach my $url (@$url_arr_ref) {
+    $url =~ s,__STAGE__,$STAGE.babel,g;
+    
     if ($url =~ m,^http,) {
         _test_url($url);
     }

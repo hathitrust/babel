@@ -3,24 +3,24 @@
 # App _. UV_1-specific plugin config
 # =====================================================================
 imgsrv:
-  - http://test.babel.hathitrust.org/cgi/imgsrv/pdf?id=1
-  - http://test.babel.hathitrust.org/cgi/imgsrv/image?id=1
-  - http://test.babel.hathitrust.org/cgi/imgsrv/pdf?id=1;seq=8;seq=9;seq=10
-  - http://test.babel.hathitrust.org/cgi/imgsrv/image?id=1;seq=7
-  - http://test.babel.hathitrust.org/cgi/imgsrv/meta?id=2;start=0;limit=10
+  - http://__STAGE__.hathitrust.org/cgi/imgsrv/pdf?id=1
+  - http://__STAGE__.hathitrust.org/cgi/imgsrv/image?id=1
+  - http://__STAGE__.hathitrust.org/cgi/imgsrv/pdf?id=1;seq=8;seq=9;seq=10
+  - http://__STAGE__.hathitrust.org/cgi/imgsrv/image?id=1;seq=7
+  - http://__STAGE__.hathitrust.org/cgi/imgsrv/meta?id=2;start=0;limit=10
 
 feedback:
-  - http://test.babel.hathitrust.org/cgi/feedback?SysID=mdp.39015081447842&return=https%3A%2F%2Ftest.babel.hathitrust.org/cgi/mb&m=pt&SeqNo=1&view=image&missing=1&other=&comments=foobar+test&email=foo@foo.com&submit=Submit
-  - http://test.babel.hathitrust.org/cgi/feedback?m=ls&id=Large-scale+Search&email=foo@foo.com&comments=foobar+test
-  - http://test.babel.hathitrust.org/cgi/feedback?m=cb&id=Collection+Builder&email=foo@foo.com&comments=foobar+test
+  - http://__STAGE__.hathitrust.org/cgi/feedback?SysID=mdp.39015081447842&return=https%3A%2F%2F__STAGE__.hathitrust.org/cgi/mb&m=pt&SeqNo=1&view=image&missing=1&other=&comments=foobar+test&email=foo@foo.com&submit=Submit
+  - http://__STAGE__.hathitrust.org/cgi/feedback?m=ls&id=Large-scale+Search&email=foo@foo.com&comments=foobar+test
+  - http://__STAGE__.hathitrust.org/cgi/feedback?m=cb&id=Collection+Builder&email=foo@foo.com&comments=foobar+test
 
 gr:
-  - http://test.babel.hathitrust.org/cgi/gr?id=1
-  - http://test.babel.hathitrust.org/cgi/gr?id=8
+  - http://__STAGE__.hathitrust.org/cgi/gr?id=1
+  - http://__STAGE__.hathitrust.org/cgi/gr?id=8
 
 ht-graphics:
-  - http://test.babel.hathitrust.org/ht-graphics/HathiTrustDL_logo.png
-  - http://test.babel.hathitrust.org/ht-graphics/favicon.ico
+  - http://__STAGE__.hathitrust.org/ht-graphics/HathiTrustDL_logo.png
+  - http://__STAGE__.hathitrust.org/ht-graphics/favicon.ico
 
 htd:
   - http://test.services.hathitrust.org/htd/pagemeta/mdp.39015004314111/37
@@ -32,52 +32,52 @@ htd:
   - http://test.services.hathitrust.org/htd/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22
 
 logout:
-  - http://test.babel.hathitrust.org/cgi/logout
+  - http://__STAGE__.hathitrust.org/cgi/logout
 
 ls:
-  - http://test.babel.hathitrust.org/cgi/ls?q1=fungible&a=srchls&lmt=all&pn=2
-  - http://test.babel.hathitrust.org/cgi/ls?q1=dog;a=srchls;lmt=ft
+  - http://__STAGE__.hathitrust.org/cgi/ls?q1=fungible&a=srchls&lmt=all&pn=2
+  - http://__STAGE__.hathitrust.org/cgi/ls?q1=dog;a=srchls;lmt=ft
 
 mb:
-  - http://test.babel.hathitrust.org/cgi/mb
-  - http://test.babel.hathitrust.org/cgi/mb?a=listis;c=1276272457
-  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=rel_d;pn=1
-  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_a;pn=1
-  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_d;pn=1
-  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_d;pn=1
-  - http://test.babel.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_a;pn=1
+  - http://__STAGE__.hathitrust.org/cgi/mb
+  - http://__STAGE__.hathitrust.org/cgi/mb?a=listis;c=1276272457
+  - http://__STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=rel_d;pn=1
+  - http://__STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_a;pn=1
+  - http://__STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_d;pn=1
+  - http://__STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_d;pn=1
+  - http://__STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_a;pn=1
 
 pt:
-  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154
-  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&orient=1
-  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&size=50
-  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=text
-  - http://test.babel.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=pdf
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&orient=1
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&size=50
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=text
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=pdf
 
 ptsearch:
-  - http://test.babel.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=medecine
-  - http://test.babel.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=foobar
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=medecine
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=foobar
 
 ssd:
-  - http://test.babel.hathitrust.org/cgi/ssd?id=mdp.39015004314111
+  - http://__STAGE__.hathitrust.org/cgi/ssd?id=mdp.39015004314111
 
 wayf:
-  - http://test.babel.hathitrust.org/cgi/wayf
+  - http://__STAGE__.hathitrust.org/cgi/wayf
 
 slip:
-  - http://test.babel.hathitrust.org/cgi/slip
-  - /htapps/test.babel/slip/index/commit-j
-  - /htapps/test.babel/slip/index/control-j
-  - /htapps/test.babel/slip/index/delete-j
-  - /htapps/test.babel/slip/index/docs-j
-  - /htapps/test.babel/slip/index/driver-j
-  - /htapps/test.babel/slip/index/enqueuer-j
-  - /htapps/test.babel/slip/index/index-j
-  - /htapps/test.babel/slip/index/optimize-j
-  - /htapps/test.babel/slip/index/query-j
-  - /htapps/test.babel/slip/index/rebuild-j
-  - /htapps/test.babel/slip/index/report-j
-  - /htapps/test.babel/slip/index/rights-j
-  - /htapps/test.babel/slip/index/sizer-j
-  - /htapps/test.babel/slip/index/sync-j
-  - /htapps/test.babel/slip/index/timeouts-j
+  - http://__STAGE__.hathitrust.org/cgi/slip
+  - /htapps/__STAGE__/slip/index/commit-j
+  - /htapps/__STAGE__/slip/index/control-j
+  - /htapps/__STAGE__/slip/index/delete-j
+  - /htapps/__STAGE__/slip/index/docs-j
+  - /htapps/__STAGE__/slip/index/driver-j
+  - /htapps/__STAGE__/slip/index/enqueuer-j
+  - /htapps/__STAGE__/slip/index/index-j
+  - /htapps/__STAGE__/slip/index/optimize-j
+  - /htapps/__STAGE__/slip/index/query-j
+  - /htapps/__STAGE__/slip/index/rebuild-j
+  - /htapps/__STAGE__/slip/index/report-j
+  - /htapps/__STAGE__/slip/index/rights-j
+  - /htapps/__STAGE__/slip/index/sizer-j
+  - /htapps/__STAGE__/slip/index/sync-j
+  - /htapps/__STAGE__/slip/index/timeouts-j

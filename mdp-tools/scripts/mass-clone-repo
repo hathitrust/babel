@@ -8,10 +8,10 @@ use Vendors;
 
 use ToolLib;
 
-sub mass_sanity_apps_usage {
-    my $s = qq{Usage: mass-sanity-apps [options]
-                 -s sanity for staging area: beta-1, beta-2, beta-3 (e.g. /htapps/beta-1.babel)
-                    instead of /htapps/test.babel
+sub mass_clone_repo_usage {
+    my $s = qq{Usage: mass-clone-repo [options]
+                 -s clone under staging area: test, beta-1, beta-2, beta-3 (e.g. /htapps/test.babel)
+                    instead of /htapps/user.babel
                  -v verbose
                  -h print help\n};
     return $s;
@@ -23,20 +23,20 @@ my $ops = getopts('hvs:');
 my $help = $opt_h;
 
 if ($help) {
-    print mass_sanity-apps_usage();
+    print mass_clone_repo_usage();
     exit 0;
 }
 
-my $sanity_options;
-$sanity_options .= ($opt_v ? ' -v ' : '');
-$sanity_options .= ($opt_s ? " -s$opt_s " : '');
+my $clone_options;
+$clone_options .= ($opt_v ? ' -v ' : '');
+$clone_options .= ($opt_s ? " -s$opt_s " : '');
 
 my @app_list = `cat /htapps/pfarber.babel/mdp-tools/app-list.txt`;
 chomp(@app_list);
 
 foreach my $app (@app_list) {
     next unless ($app);
-    print `sanity-app $sanity_options $app`;
+    print `clone-repo $clone_options $app.git`;
 }
 
 exit 0;
