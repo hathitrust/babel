@@ -30,6 +30,7 @@ htd:
   - http://test.services.hathitrust.org/htd/pageimage/mdp.39015004314111/19
   - http://test.services.hathitrust.org/htd/pageocr/mdp.39015004314111/51
   - http://test.services.hathitrust.org/htd/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22
+  - http://test.services.hathitrust.org/htd/pagemeta/uc1.$b699489/1
 
 logout:
   - http://__STAGE__.hathitrust.org/cgi/logout
