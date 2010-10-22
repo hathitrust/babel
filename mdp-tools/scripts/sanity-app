@@ -50,8 +50,12 @@ if (! $app) {
 my $CONFIG = YAML::XS::LoadFile("$ENV{SDRROOT}/mdp-tools/lib/Config/sanity-config.yaml");
 my $url_arr_ref = _get_config_val($app);
 
-exit 0
-  if (! $url_arr_ref);
+PrintY(qq{SANITY checking: $app\n});
+
+if (! $url_arr_ref) {
+    print("\t$app: no test configured\n");
+    exit 0;
+}
 
 _empty_cache();
 
@@ -93,8 +97,7 @@ sub _test_url {
     }
     else {
         if (grep($status, @accepted_statuses)) {
-            PrintY("OK");
-            PrintM("[$status]\n");
+            PrintY("OK [$status]\n");
         }
         else {
             PrintN("HTTP status fail [$status]\n");
