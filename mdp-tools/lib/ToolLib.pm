@@ -15,6 +15,7 @@ use Exporter ();
                 execute_command_w_output
                 get_HTDE_roots
                 get_app_dir_list
+                get_app_list
 
                 G_list_tags
                 G_sync_local_master
@@ -572,17 +573,65 @@ Description
 sub get_app_dir_list {
     my $app_root = shift;
 
-    my @app_dirs = ();
+    my @app_dirs = __get_list($app_root, 0);
+
+    return @app_dirs;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item get_app_list
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_app_list {
+    my $app_root = shift;
+
+    my @apps = __get_list($app_root, 1);
+
+    return @apps;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item get_app_dir_list
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_list {
+    my $app_root = shift;
+    my $apps_only = shift;
+
+    my @list = ();
 
     if (! opendir(DIR, $app_root)) {
         PrintN("ERROR: Could not read $app_root\n");
         exit 1;
     }
 
-    @app_dirs = map { "$app_root/$_" } grep(! /^(\.|\..)/, readdir(DIR));
+    my @temp_list = map { "$app_root/$_" } grep(! /^(\.|\..)/, readdir(DIR));
     closedir(DIR);
 
-    return @app_dirs;
+    foreach my $dir (@temp_list) {
+        next if (! -e "$dir/.git");
+        if ($apps_only) {
+            my ($app) = ($dir =~ m,.+/(.+)$,);
+            push(@list, $app);
+        }
+        else {
+            push(@list, $dir);
+        }
+    }
+
+    return @list;
 }
 
 # ---------------------------------------------------------------------
@@ -724,7 +773,7 @@ sub validate_existing_app {
         PrintN(qq{\nERROR: '$app' is not a valid app\n});
         return 0;
     }
-    
+
     if (! -e "$repo_root/$app.git") {
         PrintN(qq{\nERROR: '$app' is not a valid app: no central repo:\n\t$repo_root/$app.git does not exist\n});
         PrintN(qq{\nPerhaps you need to run clone-repo -s test $app.git\n});

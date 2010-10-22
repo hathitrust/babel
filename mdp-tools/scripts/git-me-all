@@ -1,0 +1,30 @@
+#!/l/local/bin/perl
+
+use strict;
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+$| = 1;
+
+sub git_me_all_Usage {
+    return "git-me-all
+  Sync the master branch of every clone in your workspace with the updtream\n";
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+
+my @apps = get_app_list($app_root);
+
+foreach my $app (@apps) {
+    print "\n-----------------------------------------------------------\n";
+    print `$ENV{SDRROOT}/mdp-tools/scripts/git-me $app`;
+
+}
+
+exit 0;
+
+
+

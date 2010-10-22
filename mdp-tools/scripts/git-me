@@ -28,6 +28,7 @@ use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
 
 use ToolLib;
+$| = 1;
 
 sub git_me_app_usage {
     my $s = qq{Usage: git-me <app> [<branch>]
@@ -41,6 +42,8 @@ my $app = shift;
 my $branch = shift || 'master';
 
 my ($repo_root, $app_root) = get_HTDE_roots();
+
+PrintY("Sync $app on branch=$branch with upstream\n");
 
 if (! validate_existing_app($repo_root, $app_root, $app)) {
     print git_me_app_usage();
@@ -56,11 +59,10 @@ if (! chdir_to_app_dir($app_dir)) {
 
 $ToolLib::VERBOSE = 1;
 
-PrintY("Sync $app on branch=$branch with upstream\n");
-execute_command("git checkout $branch");
-execute_command("git fetch origin master");
-execute_command("git rebase origin/master");
-execute_command("git submodule update --init");
+exit 1 if (! execute_command("git checkout $branch"));
+exit 1 if (! execute_command("git fetch origin master"));
+exit 1 if (! execute_command("git rebase origin/master"));
+exit 1 if (! execute_command("git submodule update --init"));
 
 exit 0;
 

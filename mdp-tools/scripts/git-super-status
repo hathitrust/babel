@@ -43,8 +43,6 @@ else {
 }
 
 foreach my $app_dir (@app_dirs) {
-    next if (! -e "$app_dir/.git");
-
     if (! chdir_to_app_dir($app_dir)) {
         exit 1;
     }
