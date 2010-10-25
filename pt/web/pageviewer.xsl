@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
+  
+  <xsl:import href="str.replace.function.xsl" />
 
   <!-- Global Variables -->
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
@@ -19,6 +22,16 @@
   <xsl:variable name="gCollectionForm" select="/MBooksTop/MdpApp/AddToCollectionForm"/>
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
   <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
+  <xsl:variable name="gCurrentEmbed">
+    <xsl:choose>
+      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
+        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>full</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
 
   <xsl:variable name="gFinalView">
     <xsl:choose>
@@ -103,13 +116,102 @@
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="online_assessment"/>
+        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/> 
+        <xsl:choose>
+          <xsl:when test="$gCurrentEmbed = 'embed'">
+            <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReaderEmbed.css"/> 
+          </xsl:when>
+          <xsl:otherwise>
+          </xsl:otherwise>
+        </xsl:choose>
+            
+        <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
+        <xsl:choose>
+          <xsl:when test="$gCurrentEmbed = 'embed'">
+            <link rel="stylesheet" type="text/css" href="/pt/hathi_embed.css"/> 
+          </xsl:when>
+          <xsl:otherwise>
+          </xsl:otherwise>
+        </xsl:choose>
+        
+        <xsl:variable name="protocol">
+          <xsl:choose>
+            <xsl:when test="/MBooksTop/MBooksGlobals/LoggedIn='YES'"><xsl:text>https</xsl:text></xsl:when>
+            <xsl:otherwise><xsl:text>http</xsl:text></xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        
+        <!-- <script type="text/javascript" src="http://www.archive.org/download/BookReader/lib/jquery-1.2.6.min.js"></script> -->
+        <script type="text/javascript" src="{$protocol}://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+        <script type="text/javascript" src="/pt/jquery.easing.1.3.js"></script>
+        <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
+        <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js"></script>
+        <!-- <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script> -->
+>>>>>>> b934334... Updates for bookreader
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
         <div>
           <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
         </div>
+        <div id="container">
+          <!-- Header -->
+          <xsl:if test="$gCurrentEmbed = 'full'">
+            <xsl:call-template name="header"/>
+          </xsl:if>
         <xsl:call-template name="UberContainer"/>
+        <!-- Footer -->
+          <xsl:if test="$gCurrentEmbed = 'full'">
+            <xsl:call-template name="footer"/>
+          </xsl:if>
+        </div>
+        <!-- for prototype : bookreader instance section -->
+        <script type="text/javascript">
+        	$(window).bind("resize", function() {
+           	var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
+          	var chromeHeight = $("#mbFooter").height() + $("#mbHeader").height();
+          	$("#BookReader").height(viewportHeight - chromeHeight - 50);
+        	  console.log("RESIZING: ", viewportHeight - chromeHeight - 50);
+        	})
+
+        $(document).ready(function(){	
+        	$('#mdpImage').hide();
+        	var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
+        	var chromeHeight = $("#mbFooter").height() + $("#mbHeader").height();
+        	$("#BookReader").height(viewportHeight - chromeHeight - 50);
+        	
+        	// $('#BookReader').height($('.mdpControlContainer').height()-50);
+        	// $('#BookReader').height(viewportHeight-50);
+        	
+        	
+        });
+
+           br = new BookReader();
+           br.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
+           br.bookTitle = "<xsl:value-of select="str:replace(string($gFullTitleString), '&quot;', '\&quot;')"/>";
+           br.reduce = 1;
+           br.pageProgression = 'lr';
+           //br.reductionFactors = [0.5, 0.75, 1, 1.5, 2, 4, 8, 16]; // [0.5, 1, 2, 4, 8];
+                  <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
+                    <xsl:if test="position() = 1">   
+                      // The index of the title page.
+                      br.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;  
+                    </xsl:if>
+                  </xsl:for-each>
+            br.imagesBaseURL = "/pt/bookreader/BookReader/images";
+            br.metaURL = "/cgi/imgsrv/meta";
+            br.force = 1;
+            br.imageURL = "/cgi/imgsrv/image";
+            br.slice_size = 10;
+            br.ui = '<xsl:value-of select="$gCurrentEmbed"/>';
+            if ( br.ui == 'embed' ) {
+              br.mode = 1;
+              br.reduce = 1;
+            }
+            br.displayMode = 'image';
+        </script>
+        <script type="text/javascript" src="/pt/js/hathi.js?ts={generate-id(.)}"/> 
+        
         <xsl:call-template name="GetAddItemRequestUrl"/>
 
         <xsl:if test="$gEnableGoogleAnalytics='true'">
@@ -146,13 +248,13 @@
   <xsl:template name="UberContainer">
 
     <div id="mdpUberContainer">
-      <!-- Header -->
-      <xsl:call-template name="header"/>
 
       <div id="ControlContentContainer">
         <div id="ControlContent">
           <!-- Controls -->
+          <xsl:if test="$gCurrentEmbed = 'full'">
           <xsl:call-template name="ControlContainer"/>
+          </xsl:if>
 
           <!-- Image -->
           <xsl:call-template name="ContentContainer"/>
@@ -164,15 +266,13 @@
           <div id="overlay"></div>
 
           <!-- Controls Bottom -->
-          <xsl:call-template name="ControlContainerBottom"/>
+          <!-- <xsl:call-template name="ControlContainerBottom"/> -->
 
           <!-- Feedback -->
           <xsl:call-template name="Feedback"/>
         </div>
       </div>
 
-      <!-- Footer -->
-      <xsl:call-template name="footer"/>
     </div>
 
   </xsl:template>
@@ -920,7 +1020,7 @@
         </div>
       </xsl:when>
 
-      <xsl:otherwise>
+      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']='classic'">
         <xsl:element name="img">
           <xsl:attribute name="alt">image of individual page</xsl:attribute>
           <xsl:attribute name="id">mdpImage</xsl:attribute>
@@ -934,7 +1034,12 @@
             <xsl:value-of select="$gCurrentPageImageHeight"/>
           </xsl:attribute>
         </xsl:element>
+      </xsl:when>
+      
+      <xsl:otherwise>
+        <div id="BookReader" />
       </xsl:otherwise>
+      
     </xsl:choose>
   </xsl:template>
 
