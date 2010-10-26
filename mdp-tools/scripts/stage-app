@@ -44,7 +44,7 @@ use Vendors;
 use ToolLib;
 
 sub stage_app_usage {
-    my $s = qq{Usage: stage-app [options] <app>
+    my $s = qq{Usage: stage-app [options] <app> [<app>]+
            where <app> is the application. Bring app to most current version for testing under test.babel (default)
                  -s staging areas: test (default), beta-1, beta-2, beta-3
                  -v verbose
@@ -55,7 +55,7 @@ sub stage_app_usage {
 our ($opt_h, $opt_v, $opt_s);
 my $ops = getopts('hvs:');
 
-my $app = shift;
+my @apps = @ARGV;
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
 
@@ -64,55 +64,58 @@ if ($help) {
     exit 0;
 }
 
-if (! $app) {
+if (! scalar(@apps)) {
     print stage_app_usage();
     exit 1;
 }
 
 my $STAGE = $opt_s || 'test';
 
-my $fail_msg = qq{Failed to stage application ($app)\n};
 my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
 
-my $app_dir = "$app_root/$app";
-PrintY(qq{\nStaging application ($app) at $app_dir\n});
-
-if (! validate_existing_app($repo_root, $app_root, $app)) {
-    PrintN($fail_msg);
-    exit 1;
+foreach my $app (@apps) {
+    my $fail_msg = qq{Failed to stage application ($app)\n};
+    my $app_dir = "$app_root/$app";
+    
+    PrintY(qq{\nStaging application ($app) at $app_dir\n});
+    
+    if (! validate_existing_app($repo_root, $app_root, $app)) {
+        PrintN($fail_msg);
+        exit 1;
+    }
+    
+    if (-e "$app_dir/.gitmodules") {
+        my @submodules = `cat "$app_dir/.gitmodules"`;
+        @submodules = grep(/submodule/, @submodules);
+        PrintM("Dependencies: \n\t");
+        PrintM(join("\t", @submodules));
+    }
+    else {
+        PrintY("No Dependencies\n");
+    }
+    
+    if (! (
+           G_fetch_origin($app_dir)
+           &&
+           G_sync_local_master($app_dir)
+           &&
+           G_sync_local_deployment($app_dir)
+           &&
+           G_checkout_deployment($app_dir)
+           &&
+           G_merge_master_branch($app_dir)
+           &&
+           G_update_submodules($app_dir)
+          )
+       ) {
+        PrintN($fail_msg);
+        exit 1;
+    }
+    
+    print `$ENV{SDRROOT}/mdp-tools/scripts/sanity-app -s$STAGE $app`;
+    
+    PrintY(qq{Staging succeeds\n});
 }
-
-if (-e "$app_dir/.gitmodules") {
-    my @submodules = `cat "$app_dir/.gitmodules"`;
-    @submodules = grep(/submodule/, @submodules);
-    PrintM("Dependencies: \n\t");
-    PrintM(join("\t", @submodules));
-}
-else {
-    PrintY("No Dependencies\n");
-}
-
-if (! (
-       G_fetch_origin($app_dir)
-       &&
-       G_sync_local_master($app_dir)
-       &&
-       G_sync_local_deployment($app_dir)
-       &&
-       G_checkout_deployment($app_dir)
-       &&
-       G_merge_master_branch($app_dir)
-       &&
-       G_update_submodules($app_dir)
-      )
-   ) {
-    PrintN($fail_msg);
-    exit 1;
-}
-
-print `$ENV{SDRROOT}/mdp-tools/scripts/sanity-app -s$STAGE $app`;
-
-PrintY(qq{Staging succeeds\n});
 
 exit 0;
 
