@@ -490,6 +490,12 @@ rights_name_map:
   7: world
   8: nobody
   9: pdus
+  10: ccby
+  11: ccby-nd
+  12: ccby-nc-nd
+  13: ccby-nc
+  14: ccby-nc-sa
+  15: ccby-sa
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights.source field values to names used in
