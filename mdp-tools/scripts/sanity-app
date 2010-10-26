@@ -148,10 +148,10 @@ sub _test_cmd {
     my $result = grep(/$exitval/, @accepted_exits);
     
     if ($result) {
-        PrintY("OK\n");
+        PrintY("OK [$exitval]\n");
     }
     else {
-        PrintN("cmd fail: $exitval\n");
+        PrintN("cmd fail: [$exitval]\n");
     }
 }
 
