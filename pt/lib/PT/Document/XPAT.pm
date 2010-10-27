@@ -71,6 +71,9 @@ sub get_document_content
         my $ocr_file = $mdp_item->GetFileNameBySequence($i, 'ocrfile');
         my $ocr_text_ref = Utils::read_file($fileDir . '/' . $ocr_file);
 
+        # Do no build pages of whitespace
+        next if ($$ocr_text_ref =~ m,^\s+$,);
+        
         $self->clean_xml($ocr_text_ref);
         my $num = $mdp_item->GetPageNumBySequence($i);
 
