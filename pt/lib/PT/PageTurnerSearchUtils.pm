@@ -66,6 +66,10 @@ sub clean_user_query_string
     $$s_ref =~ s,^\*+,,g;  # no leading '*'
     $$s_ref =~ s,\*+,*,g;  # only a single trailing '*'
 
+    # Remove punctuation usually mapped to ' ' by XPAT resulting in
+    # searches on the null string which find all pages.
+    $$s_ref =~ s,\p{Punctuation}, ,g;
+    
     # We now support AND, OR operators in the Solr interface. Remove
     # those so they are not searched as words in the XPAT query.
     $$s_ref =~ s,(\s+AND\s+|\s+OR\s+), ,g;
