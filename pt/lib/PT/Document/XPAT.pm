@@ -65,14 +65,16 @@ sub get_document_content
 
     my $pattern_arr_ref = ['*[0-9].txt'];
     my $fileDir = $mdp_item->GetDirPathMaybeExtract($pattern_arr_ref, 'ocrfile');
-
+    my $empty_ocr = 1;
+    
     for (my $i = $first_page; $i <= $last_page; $i++)
     {
         my $ocr_file = $mdp_item->GetFileNameBySequence($i, 'ocrfile');
         my $ocr_text_ref = Utils::read_file($fileDir . '/' . $ocr_file);
 
         # Do no build pages of whitespace
-        next if ($$ocr_text_ref =~ m,^\s+$,);
+        next if ($$ocr_text_ref =~ m,^\s*$,);
+        $empty_ocr = 0;
         
         $self->clean_xml($ocr_text_ref);
         my $num = $mdp_item->GetPageNumBySequence($i);
@@ -80,6 +82,15 @@ sub get_document_content
         $full_text .= wrap_string_in_tag_by_ref($ocr_text_ref,
                                                'page',
                                                [['SEQ', $i], ['NUM', $num]]);
+    }
+    # Safety valve: If all the OCR is empty indexing will crash. So we
+    # really should not be here. Some other mechanism will remove the
+    # search box from the UI but there could still be a URL to
+    # ptsearch ...
+    if ($empty_ocr) {
+        $full_text = wrap_string_in_tag('__EMPTYOCR__',
+                                        'page',
+                                        [['SEQ', 1], ['NUM', 1]]);
     }
 
     PT::Document::ISO8859_1_Map::iso8859_1_mapping(\$full_text);
