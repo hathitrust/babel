@@ -30,45 +30,58 @@ use Vendors;
 use ToolLib;
 
 sub sanity_app_usage {
-    my $s = qq{Usage: sanity-app [options] <app>
+    my $s = qq{Usage: sanity-app [options] [<app>]
            where <app> is the application.
+                 -A all apps
                  -s staging areas: test (default), beta-1, beta-2, beta-3\n};
     return $s;
 }
 
-our ($opt_s);
-my $ops = getopts('s:');
-my $app = shift;
+our ($opt_s, $opt_A);
+my $ops = getopts('As:');
 
 my $STAGE = $opt_s || 'test';
 
-if (! $app) {
-    print sanity_app_usage();
-    exit 1;
+my $ALL = $opt_A;
+my @apps;
+if ($ALL) {
+    @apps = `cat $ENV{SDRROOT}/mdp-tools/app-list.txt`;
+    chomp(@apps);
+}
+else {
+    @apps = @ARGV;
+    if (! scalar(@apps)) {
+        print sanity_app_usage();
+        exit 1;
+    }
 }
 
 my $CONFIG = YAML::XS::LoadFile("$ENV{SDRROOT}/mdp-tools/lib/Config/sanity-config.yaml");
-my $url_arr_ref = _get_config_val($app);
 
-PrintY(qq{SANITY checking: $app\n});
-
-if (! $url_arr_ref) {
-    print("\t$app: no test configured\n");
-    exit 0;
-}
-
-_empty_cache();
-
-foreach my $url (@$url_arr_ref) {
-    $url =~ s,__STAGE__,$STAGE.babel,g;
+foreach my $app (@apps) {
+    my $url_arr_ref = _get_config_val($app);
     
-    if ($url =~ m,^http,) {
-        _test_url($url);
+    PrintY(qq{SANITY checking: $app\n});
+    
+    if (! $url_arr_ref) {
+        print("\t$app: no test configured\n");
+        next;
     }
-    else {
-        _test_cmd($url);
-    }    
+
+    _empty_cache();
+
+    foreach my $url (@$url_arr_ref) {
+        $url =~ s,__STAGE__,$STAGE.babel,g;
+    
+        if ($url =~ m,^http,) {
+            _test_url($app, $url);
+        }
+        else {
+            _test_cmd($url);
+        }    
+    }
 }
+
 
 exit 0;
 
@@ -83,11 +96,12 @@ Description
 
 # --------------------------------------------------------------------- 
 sub _test_url {
+    my $app = shift;
     my $url = shift;
     
     my @accepted_statuses = ('200', '301', '302');
 
-    PrintY("Testing $app "); print(" URL=$url ... ");
+    print("app=$app "); print(" URL=$url ... ");
 
     my $status = `curl --silent --write-out %{http_code} '$url' -o /dev/null`;
     if ($? > 0) {
@@ -116,7 +130,7 @@ Description
 # --------------------------------------------------------------------- 
 sub _empty_cache {
     
-    PrintY("Emptying cache ... ");
+    print("Emptying cache ... ");
     `rm -rf /htapps/test.babel/cache-full/*`;
     if ($? > 0) {
         PrintN("Cache not cleared\n");
@@ -136,11 +150,12 @@ Description
 
 # --------------------------------------------------------------------- 
 sub _test_cmd {
+    my $app = shift;
     my $cmd = shift;
 
     my @accepted_exits = ('0', '1', '4');
 
-    PrintY("Testing $app "); print(" CMD=$cmd ... ");
+    print("app=$app "); print(" CMD=$cmd ... ");
 
     `$cmd 2> /dev/null`;
     
