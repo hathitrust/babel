@@ -6,7 +6,7 @@ deploy-app - Deploy a HathiTrust application to production
 
 =head1 SYNOPSIS
 
-deploy-app [options] app
+deploy-app [options] [<app>]
 
 =head1 OPTIONS
 
@@ -17,6 +17,10 @@ deploy-app [options] app
 Print a brief help message and exit.
 
 =item B<-v>
+
+Verbose
+
+=item B<-A>
 
 Verbose
 
@@ -49,19 +53,19 @@ use Vendors;
 use ToolLib;
 
 sub deploy_app_usage {
-    my $s = qq{Usage: deploy-app [options] <app> [<app>]+
+    my $s = qq{Usage: deploy-app [options] [<app> [<app>]+]
            where <app> is the application to tag and deploy or re-deploy from an existing tag
                  -v verbose
+                 -A all apps
                  -T maj(or|min(or|ter(tiary 
                       increment the indicated version number component when tagging 
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_T);
-my $ops = getopts('hvT:');
+our ($opt_h, $opt_v, $opt_T, $opt_A);
+my $ops = getopts('hvT:A');
 
-my @apps = @ARGV;
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
 
@@ -70,9 +74,18 @@ if ($help) {
     exit 0;
 }
 
-if (! scalar(@apps)) {
-    print deploy_app_usage();
-    exit 1;
+my $ALL = $opt_A;
+my @apps;
+if ($ALL) {
+    @apps = `cat $ENV{SDRROOT}/mdp-tools/app-list.txt`;
+    chomp(@apps);
+}
+else {
+    @apps = @ARGV;
+    if (! scalar(@apps)) {
+        print deploy_app_usage();
+        exit 1;
+    }
 }
 
 my $VERSION_INCREMENT;
