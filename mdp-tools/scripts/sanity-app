@@ -96,7 +96,7 @@ sub _test_url {
         PrintN("curl fail: $sysval: $msg\n");
     }
     else {
-        if (grep($status, @accepted_statuses)) {
+        if (grep(/^$status$/, @accepted_statuses)) {
             PrintY("OK [$status]\n");
         }
         else {
