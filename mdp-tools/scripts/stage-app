@@ -6,7 +6,7 @@ stage-app - Stage a HT application on test.babel in preparation for testing.
 
 =head1 SYNOPSIS
 
-stage-app [options] app
+stage-app [options] [<app>]
 
 =head1 OPTIONS
 
@@ -44,18 +44,18 @@ use Vendors;
 use ToolLib;
 
 sub stage_app_usage {
-    my $s = qq{Usage: stage-app [options] <app> [<app>]+
+    my $s = qq{Usage: stage-app [options] [<app> [<app>]+]
            where <app> is the application. Bring app to most current version for testing under test.babel (default)
                  -s staging areas: test (default), beta-1, beta-2, beta-3
+                 -A all apps
                  -v verbose
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_s);
-my $ops = getopts('hvs:');
+our ($opt_h, $opt_v, $opt_s, $opt_A);
+my $ops = getopts('hvs:A');
 
-my @apps = @ARGV;
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
 
@@ -64,9 +64,18 @@ if ($help) {
     exit 0;
 }
 
-if (! scalar(@apps)) {
-    print stage_app_usage();
-    exit 1;
+my $ALL = $opt_A;
+my @apps;
+if ($ALL) {
+    @apps = `cat $ENV{SDRROOT}/mdp-tools/app-list.txt`;
+    chomp(@apps);
+}
+else {
+    @apps = @ARGV;
+    if (! scalar(@apps)) {
+        print stage_app_usage();
+        exit 1;
+    }
 }
 
 my $STAGE = $opt_s || 'test';
