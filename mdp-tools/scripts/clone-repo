@@ -9,20 +9,20 @@ use Vendors;
 use ToolLib;
 
 sub clone_app_usage {
-    my $s = qq{Usage: clone-repo [options] <app.git>
-           where <app.git> is the application central repository. Clone central repo, init and update its submodules.
+    my $s = qq{Usage: clone-repo [options] [<app>[<app>+]]
+           where <app> is the application of which to clone its central repo, init and update its submodules.
                  -s clone under staging area: test, beta-1, beta-2, beta-3 (e.g. /htapps/test.babel)
                     instead of /htapps/user.babel
                  -f force remove existing clone, then clone
+                 -A all apps
                  -v verbose
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_s, $opt_f);
-my $ops = getopts('hvs:f');
+our ($opt_h, $opt_v, $opt_s, $opt_f, $opt_A);
+my $ops = getopts('hvs:fA');
 
-my $app_repo = shift;
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
 my $STAGE = $opt_s;
@@ -33,34 +33,48 @@ if ($help) {
     exit 0;
 }
 
-if (! $app_repo) {
-    print clone_app_usage();
-    exit 1;
+my $ALL = $opt_A;
+my @apps;
+if ($ALL) {
+    @apps = `cat $ENV{SDRROOT}/mdp-tools/app-list.txt`;
+    chomp(@apps);
+}
+else {
+    @apps = @ARGV;
+    if (! scalar(@apps)) {
+        print clone_app_usage();
+        exit 1;
+    }
 }
 
+my $rc = 0;
 my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
-my ($app) = ($app_repo =~ m,^(.*?)\.git$,);
-my $app_dir = "$app_root/$app";    
+foreach my $app (@apps) {
+    my $app_dir = "$app_root/$app";    
+    my $app_repo = $app . '.git';
+    
+    print qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE removal" : "") . qq{\n};
 
-print qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE removal" : "") . qq{\n};
-
-if (! __validate_clone_app($repo_root, $app_root, $app_repo, $app_dir)) {
-    exit 1;
+    if (! __validate_clone_app($repo_root, $app_root, $app_repo, $app_dir, $app)) {
+        next;
+        $rc ||= 1;
+    }
+    if (! G_clone($app_root, $repo_root, $app_repo, $app_dir)) {
+        next;
+        $rc ||= 1;
+    }
+    if (! G_init_submodules($app_dir)) {
+        next;
+        $rc ||= 1;
+    }
+    if (! G_update_submodules($app_dir)) {
+        next;
+        $rc ||= 1;
+    }
+    PrintY(qq{Clone succeeds\n});
 }
 
-if (! G_clone($app_root, $repo_root, $app_repo, $app_dir)) {
-    exit 1;
-}
-
-if (! G_init_submodules($app_dir)) {
-    exit 1;
-}
-if (! G_update_submodules($app_dir)) {
-    exit 1;
-}
-PrintY(qq{Clone succeeds\n});
-
-exit 0;
+exit $rc;
 
 # ---------------------------------------------------------------------
 
@@ -72,12 +86,12 @@ Make some reasonable checks to derermine the validity of cloning an app.
 
 # ---------------------------------------------------------------------
 sub __validate_clone_app {
-    my ($repo_root, $app_root, $app_repo, $app_dir) = @_;
+    my ($repo_root, $app_root, $app_repo, $app_dir, $app) = @_;
 
     print qq{Validating application ($app) ... };
 
     if (! -e "$repo_root/$app_repo") {
-        PrintY(qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n});
+        PrintN(qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n});
         return 0;
     }
     if (-e "$app_dir") {
@@ -92,7 +106,7 @@ sub __validate_clone_app {
             }
         }
         else {
-            PrintY(qq{ERROR: application appears to exist already under $app_dir\n});
+            PrintN(qq{ERROR: application appears to exist already under $app_dir\n});
             return 0;
         }
     }
