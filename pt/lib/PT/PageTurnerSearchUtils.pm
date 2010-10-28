@@ -658,8 +658,7 @@ sub MaybeBuildInitFile {
        ) {
         DEBUG('index,all', qq{<h5>Creating indexing init file: $initFile</h5>});
 
-        my $command = 'touch ' . $initFile;
-        system( $command );
+        system("touch", $initFile);
     }
 
     return $initFile;
@@ -678,8 +677,6 @@ sub BuildIdxIndex
 {
     my ($id, $outputDdFile, $force_rebuild) = @_;
 
-    my ( $command, $result );
-
     my $idx_file_name = GetOutputIdxFileName($id);
 
     my @fileStat;
@@ -691,11 +688,12 @@ sub BuildIdxIndex
         $force_rebuild
        )
     {
-        $command = $PTGlobals::gXPATBLDU . q{ -m 256m -D } . $outputDdFile;
-        $result = system( $command ) / 256;
+        my @command = ($PTGlobals::gXPATBLDU, "-m", "256m", "-D", $outputDdFile);
+        my $command = join(' ', @command);
+        my $result = system(@command) / 256;
 
         DEBUG('index,all', qq{<h5>Index command( result="$result" ): $command</h5>});
-        ASSERT(($result == 0), qq{[ERROR] result="$result" index command="$command"});
+        ASSERT(($result == 0), qq{[ERROR] result="$result" index command=$command});
         DEBUG('index,time', qq{<h3>Main index FINISHED</h3>} . Utils::display_stats());
     }
 }
@@ -717,8 +715,6 @@ sub BuildRgnIndex
 {
     my ($id, $outputDdFile, $force_rebuild) = @_;
 
-    my ( $command, $result );
-
     my $rgn_file_name = GetOutputRgnFileName($id);
 
     my @fileStat;
@@ -733,9 +729,10 @@ sub BuildRgnIndex
         my $currentDir = $ENV{'PWD'};
         chdir $PTGlobals::gIndexCacheDir;
 
-        $command = $PTGlobals::gMULTIRGN . q{ -f -D } . $outputDdFile . q{ -t } . $PTGlobals::gMdpTags;
-        $result = system( $command ) / 256;
-        ASSERT(($result == 0), qq{[ERROR] result="$result" index command="$command});
+        my @command = ($PTGlobals::gMULTIRGN, "-f", "-D", $outputDdFile, "-t", $PTGlobals::gMdpTags);
+        my $command = join(' ', @command);
+        my $result = system(@command) / 256;
+        ASSERT(($result == 0), qq{[ERROR] result="$result" index command=$command});
 
         # back to original working directory
         chdir $currentDir;
