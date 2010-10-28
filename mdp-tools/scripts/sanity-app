@@ -57,7 +57,7 @@ else {
 }
 
 my $CONFIG = YAML::XS::LoadFile("$ENV{SDRROOT}/mdp-tools/lib/Config/sanity-config.yaml");
-
+my $rc = 0;
 foreach my $app (@apps) {
     my $url_arr_ref = _get_config_val($app);
     
@@ -68,22 +68,24 @@ foreach my $app (@apps) {
         next;
     }
 
-    _empty_cache();
-
-    foreach my $url (@$url_arr_ref) {
-        $url =~ s,__STAGE__,$STAGE.babel,g;
-    
-        if ($url =~ m,^http,) {
-            _test_url($app, $url);
+    if (_empty_cache()) {
+        foreach my $url (@$url_arr_ref) {
+            $url =~ s,__STAGE__,$STAGE.babel,g;
+            
+            if ($url =~ m,^http,) {
+                $rc ||=_test_url($app, $url);
+            }
+            else {
+                $rc ||= _test_cmd($app, $url);
+            }
         }
-        else {
-            _test_cmd($url);
-        }    
+    }
+    else {
+        $rc ||= 1;
     }
 }
 
-
-exit 0;
+exit $rc;
 
 
 # ---------------------------------------------------------------------
@@ -99,6 +101,7 @@ sub _test_url {
     my $app = shift;
     my $url = shift;
     
+    my $rc = 0;
     my @accepted_statuses = ('200', '301', '302');
 
     print("app=$app "); print(" URL=$url ... ");
@@ -108,6 +111,7 @@ sub _test_url {
         my $sysval = $? >> 8;
         my $msg = _get_curl_errmsg($sysval);
         PrintN("curl fail: $sysval: $msg\n");
+        $rc = 1;
     }
     else {
         if (grep(/^$status$/, @accepted_statuses)) {
@@ -115,8 +119,11 @@ sub _test_url {
         }
         else {
             PrintN("HTTP status fail [$status]\n");
+            $rc =1 ;
         }
     }
+
+    return $rc;
 }
 
 # ---------------------------------------------------------------------
@@ -130,6 +137,8 @@ Description
 # --------------------------------------------------------------------- 
 sub _empty_cache {
     
+    my $rc = 0;
+    
     print("Emptying cache ... ");
     `rm -rf /htapps/test.babel/cache-full/*`;
     if ($? > 0) {
@@ -137,7 +146,10 @@ sub _empty_cache {
     }
     else {
         PrintY("OK\n");
-    }    
+        $rc = 1;
+    }
+
+    return $rc;
 }
 
 # ---------------------------------------------------------------------
@@ -153,6 +165,7 @@ sub _test_cmd {
     my $app = shift;
     my $cmd = shift;
 
+    my $rc = 0;
     my @accepted_exits = ('0', '1', '4');
 
     print("app=$app "); print(" CMD=$cmd ... ");
@@ -164,10 +177,13 @@ sub _test_cmd {
     
     if ($result) {
         PrintY("OK [$exitval]\n");
+        $rc =1 ;
     }
     else {
         PrintN("cmd fail: [$exitval]\n");
     }
+
+    return $rc;
 }
 
 # ---------------------------------------------------------------------

@@ -81,7 +81,7 @@ else {
 my $STAGE = $opt_s || 'test';
 
 my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
-
+my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to stage application ($app)\n};
     my $app_dir = "$app_root/$app";
@@ -90,7 +90,8 @@ foreach my $app (@apps) {
     
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         PrintN($fail_msg);
-        exit 1;
+        $rc ||= 1;
+        next;
     }
     
     if (-e "$app_dir/.gitmodules") {
@@ -118,15 +119,17 @@ foreach my $app (@apps) {
           )
        ) {
         PrintN($fail_msg);
-        exit 1;
+        $rc ||= 1;
+        next;
     }
     
     print `$ENV{SDRROOT}/mdp-tools/scripts/sanity-app -s$STAGE $app`;
+    $rc ||= $?;
     
-    PrintY(qq{Staging succeeds\n});
+    PrintY(qq{Staging succeeds\n}) unless ($rc);
 }
 
-exit 0;
+exit $rc;
 
 
 __END__;

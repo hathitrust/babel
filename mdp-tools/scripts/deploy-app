@@ -57,8 +57,8 @@ sub deploy_app_usage {
            where <app> is the application to tag and deploy or re-deploy from an existing tag
                  -v verbose
                  -A all apps
-                 -T maj(or|min(or|ter(tiary 
-                      increment the indicated version number component when tagging 
+                 -T maj(or|min(or|ter(tiary
+                      increment the indicated version number component when tagging
                  -h print help\n};
     return $s;
 }
@@ -98,35 +98,31 @@ if ($opt_T) {
 }
 
 my ($repo_root, $app_root) = get_HTDE_roots('test');
-
+my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to deploy application ($app)\n};
     my $app_dir = "$app_root/$app";
 
     PrintY(qq{\nDeploying application ($app) from $app_dir\n});
-    
+
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         PrintN($fail_msg);
-        exit 1;
+        next;
+        $rc ||= 1;
     }
-    
+
     if (! __validate_local_deployment($repo_root, $app_dir, $app)) {
         PrintN($fail_msg);
-        exit 1;
+        next;
+        $rc ||= 1;
     }
-    
-    my ($tag, $tag_is_new, $rc);
+
+    my ($tag, $tag_is_new, $vrc);
     do {
         ($tag, $tag_is_new) = __get_tag($app);
-        
-        $rc = __validate_tag($tag, $tag_is_new);
-        if ($rc eq 'notvalid') {
-            PrintN($fail_msg);
-            exit 1;
-        }
-    } until ($rc eq 'valid');
-    
-    
+        $vrc = __validate_tag($tag, $tag_is_new);
+    } until ($vrc eq 'valid');
+
     if ($tag_is_new) {
         if (! (
                G_checkout_deployment($app_dir)
@@ -139,7 +135,8 @@ foreach my $app (@apps) {
               )
            ) {
             PrintN($fail_msg);
-            exit 1;
+            next;
+            $rc ||= 1;
         }
     }
     else {
@@ -150,20 +147,21 @@ foreach my $app (@apps) {
               )
            ) {
             PrintN($fail_msg);
-            exit 1;
+            next;
+            $rc ||= 1;
         }
     }
-    
+
     if (! __rdist_to_production($app_dir)) {
         PrintN($fail_msg);
-        exit 1;
+        next;
+        $rc ||= 1;
     }
-    
+
     PrintY("Successful deployment of application ($app) from $app_dir\n");
 }
 
-
-exit 0;
+exit $rc;
 
 #
 # Subroutines
@@ -206,7 +204,7 @@ sub __validate_local_deployment {
         return 0;
     }
     ($remote_master_SHA1) = split(/\s+/, $remote_master_SHA1);
-    
+
     my $local_deployment_SHA1;
     $cmd = "git ls-remote . refs/heads/deployment";
     if (! execute_command_w_output($cmd, \$local_deployment_SHA1)) {
@@ -242,7 +240,7 @@ Description
 sub __build_tag {
     my $app = shift;
     my $auto_version = shift;
-    
+
     my $version = __get_version_string($app, $auto_version);
     my $tag = $app . '_v' . $version;
 
@@ -262,17 +260,17 @@ Description
 sub __get_auto_increment_version {
     my $increment = shift;
     my $last_tag = __last_tag();
-    
+
     my @version_arr = ($last_tag =~ m,(\d+)\.(\d+)\.(\d+),);
-    
+
     if ($increment eq 'maj') {
         $version_arr[0] += 1;
         $version_arr[1] = 0;
-        $version_arr[2] = 0;        
+        $version_arr[2] = 0;
     }
     elsif ($increment eq 'min') {
         $version_arr[1] += 1;
-        $version_arr[2] = 0;        
+        $version_arr[2] = 0;
     }
     elsif ($increment eq 'ter') {
         $version_arr[2] += 1;
@@ -374,7 +372,7 @@ sub __validate_tag {
     my ($tag, $new) = @_;
 
     my $rc = 'valid';
-    
+
     my $cmd;
     print qq{Trying to validate tag="$tag" ... };
 
@@ -382,7 +380,7 @@ sub __validate_tag {
         PrintN(qq{ERROR: format is not valid for tag="$tag"\n});
         $rc = 'notvalid';
     }
-        
+
     if ($new) {
         # Acceptable format?
         $cmd = "git check-ref-format refs/tags/$tag";
@@ -409,9 +407,10 @@ sub __validate_tag {
         PrintY("OK\n");
     }
     elsif (query_yn("\nRetry?", 'y')) {
-        $rc = 'retry';
+            $rc = 'retry';
+        }
     }
-    
+
     return $rc;
 }
 
@@ -459,18 +458,18 @@ Description
 sub __get_version_string {
     my $app = shift;
     my $auto_version = shift;
-    
+
     my $version_string;
     my $ver;
-    
+
   GET_VERSION:
     if ($auto_version) {
-        $ver = $auto_version;  
+        $ver = $auto_version;
     }
     else {
         $ver = query("\nEnter major.minor.tertiary release numbers for $app (N N N) ");
     }
-    
+
     if ($ver =~ m,(\d+)\s+(\d+)\s+(\d+),) {
         $version_string = qq{$1.$2.$3};
     }
