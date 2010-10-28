@@ -5,6 +5,7 @@
 imgsrv:
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/pdf?id=1
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/image?id=1
+  - http://__STAGE__.hathitrust.org/cgi/imgsrv/image?id=uc1.$b699489
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/pdf?id=1;seq=8;seq=9;seq=10
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/image?id=1;seq=7
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/meta?id=2;start=0;limit=10
@@ -17,6 +18,7 @@ feedback:
 gr:
   - http://__STAGE__.hathitrust.org/cgi/gr?id=1
   - http://__STAGE__.hathitrust.org/cgi/gr?id=8
+  - http://__STAGE__.hathitrust.org/cgi/gr?id=uc1.$b699489
 
 ht-graphics:
   - http://__STAGE__.hathitrust.org/ht-graphics/HathiTrustDL_logo.png
@@ -50,12 +52,15 @@ mb:
 
 pt:
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=uc1.$b699489
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&orient=1
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&size=50
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=text
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=pdf
 
 ptsearch:
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489&q1=drama
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489&q1=__EMPTYOCR__
   - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=medecine
   - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=foobar
 
