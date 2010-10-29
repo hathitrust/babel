@@ -57,19 +57,19 @@ foreach my $app (@apps) {
 
     if (! __validate_clone_app($repo_root, $app_root, $app_repo, $app_dir, $app)) {
         next;
-        $rc ||= 1;
+        $rc |= 1;
     }
     if (! G_clone($app_root, $repo_root, $app_repo, $app_dir)) {
         next;
-        $rc ||= 1;
+        $rc |= 1;
     }
     if (! G_init_submodules($app_dir)) {
         next;
-        $rc ||= 1;
+        $rc |= 1;
     }
     if (! G_update_submodules($app_dir)) {
         next;
-        $rc ||= 1;
+        $rc |= 1;
     }
     PrintY(qq{Clone succeeds\n});
 }

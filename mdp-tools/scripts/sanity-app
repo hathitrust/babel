@@ -19,10 +19,12 @@ sanity-app app
 B<sanity-app> will attempt a curl on a list of URLs for the app.
 
 =cut
+$| = 1;
 
 use strict;
 use YAML::XS;
 use Getopt::Std;
+use IPC::Run;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
@@ -33,14 +35,16 @@ sub sanity_app_usage {
     my $s = qq{Usage: sanity-app [options] [<app>]
            where <app> is the application.
                  -A all apps
+                 -v verbose
                  -s staging areas: test (default), beta-1, beta-2, beta-3\n};
     return $s;
 }
 
-our ($opt_s, $opt_A);
-my $ops = getopts('As:');
+our ($opt_s, $opt_A, $opt_v);
+my $ops = getopts('As:v');
 
 my $STAGE = $opt_s || 'test';
+my $VERBOSE = $opt_v;
 
 my $ALL = $opt_A;
 my @apps;
@@ -73,15 +77,15 @@ foreach my $app (@apps) {
             $url =~ s,__STAGE__,$STAGE.babel,g;
             
             if ($url =~ m,^http,) {
-                $rc ||=_test_url($app, $url);
+                $rc |= _test_url($app, $url);
             }
             else {
-                $rc ||= _test_cmd($app, $url);
+                $rc |= _test_cmd($app, $url);
             }
         }
     }
     else {
-        $rc ||= 1;
+        $rc |= 1;
     }
 }
 
@@ -170,7 +174,13 @@ sub _test_cmd {
 
     print("app=$app "); print(" CMD=$cmd ... ");
 
-    `$cmd 2> /dev/null`;
+    my @cmds = split(/ /, $cmd);
+    if ($VERBOSE) {
+        IPC::Run::run \@cmds;
+    }
+    else {
+        IPC::Run::run \@cmds, ">", "/dev/null", "2>&1";
+    }
     
     my $exitval = $? >> 8;
     my $result = grep(/$exitval/, @accepted_exits);

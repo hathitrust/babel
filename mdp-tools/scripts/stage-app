@@ -90,7 +90,7 @@ foreach my $app (@apps) {
     
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         PrintN($fail_msg);
-        $rc ||= 1;
+        $rc |= 1;
         next;
     }
     
@@ -119,12 +119,12 @@ foreach my $app (@apps) {
           )
        ) {
         PrintN($fail_msg);
-        $rc ||= 1;
+        $rc |= 1;
         next;
     }
     
     print `$ENV{SDRROOT}/mdp-tools/scripts/sanity-app -s$STAGE $app`;
-    $rc ||= $?;
+    $rc |= $?;
     
     PrintY(qq{Staging succeeds\n}) unless ($rc);
 }
