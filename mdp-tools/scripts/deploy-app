@@ -408,7 +408,6 @@ sub __validate_tag {
     }
     elsif (query_yn("\nRetry?", 'y')) {
             $rc = 'retry';
-        }
     }
 
     return $rc;
