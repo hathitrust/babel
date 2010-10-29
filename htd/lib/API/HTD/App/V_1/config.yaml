@@ -498,6 +498,20 @@ rights_name_map:
   15: ccby-sa
 
 # ---------------------------------------------------------------------
+# List of name that equate to open access
+# ---------------------------------------------------------------------
+open_access_names: 
+  - pd 
+  - pdus 
+  - world 
+  - ccby 
+  - ccby-nd 
+  - ccby-nc-nd 
+  - ccby-nc 
+  - ccby-nc-sa 
+  - ccby-sa
+
+# ---------------------------------------------------------------------
 # Mapping from mdp.rights.source field values to names used in
 # accessibility_matrix
 # ---------------------------------------------------------------------

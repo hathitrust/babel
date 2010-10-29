@@ -579,18 +579,6 @@ sub __getConfigVal {
 # =====================================================================
 # =====================================================================
 
-my @g_open_access_names = 
-  (
-   'pd', 
-   'pdus', 
-   'world', 
-   'ccby', 
-   'ccby-nd', 
-   'ccby-nc-nd', 
-   'ccby-nc', 
-   'ccby-nc-sa', 
-   'ccby-sa'
-  ); 
 # ---------------------------------------------------------------------
 
 =item __getFreedomVal
@@ -605,9 +593,8 @@ sub __getFreedomVal {
     my $self = shift;
     my $rights = shift;
 
-    my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
-
-    my $freedom = grep(/^$rights$/, @g_open_access_names) ? 'free' : 'nonfree';
+    my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
+    my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
 
     # Limit pdus volumes to "U.S." clients
     if (($freedom eq 'free') && ($rights eq 'pdus')) {
@@ -616,6 +603,8 @@ sub __getFreedomVal {
 
         my $geoIP = Geo::IP->new();
         my $country_code = $geoIP->country_code_by_addr($IPADDR);
+        my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
+
         if (! grep(/$country_code/, @$pdusCountryCodesRef)) {
             $freedom = 'nonfree';
         }
