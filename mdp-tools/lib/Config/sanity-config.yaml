@@ -75,7 +75,7 @@ slip:
   - /htapps/__STAGE__/slip/index/commit-j
   - /htapps/__STAGE__/slip/index/control-j
   - /htapps/__STAGE__/slip/index/delete-j
-  - /htapps/__STAGE__/slip/index/docs-j -r10 'uc1.$b699489'
+  - /htapps/__STAGE__/slip/index/docs-j -r10 uc1.$b699489
   - /htapps/__STAGE__/slip/index/driver-j
   - /htapps/__STAGE__/slip/index/enqueuer-j
   - /htapps/__STAGE__/slip/index/index-j
