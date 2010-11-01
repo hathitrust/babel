@@ -117,7 +117,7 @@ sub get_schedule_filepath {
 
     my $config = $C->get_object('MdpConfig');
     my $schedule_filepath = 
-      ($ENV{HT_DEV} ? '/tmp' : $C->config->get('shared_flags_dir')) 
+      ($ENV{HT_DEV} ? '/tmp' : $config->get('shared_flags_dir')) 
         . '/' 
           . $config->get('full_optimize_flag_file');
     $schedule_filepath =~ s,__RUN__,$run,;
