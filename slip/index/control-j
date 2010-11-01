@@ -931,7 +931,7 @@ sub shards_enabled {
     my $any_shard_enabled = 0;
     foreach my $__shard (@NUM_SHARDS_LIST) {
         my $shard_enabled = Db::Select_shard_enabled($C, $dbh, $run, $__shard);
-        $any_shard_enabled ||= $shard_enabled;
+        $any_shard_enabled |= $shard_enabled;
     }
 
     return $any_shard_enabled;

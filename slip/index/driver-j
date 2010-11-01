@@ -436,7 +436,7 @@ sub handle_Building {
         $rc = __Wait_shard_states($C, $dbh, $run, $_Stage, $state_record_ref);
 
         # Unconditionally, disable producers to stop them from running from cron
-        $rc ||= __control_producers($C, $dbh, $run, $_Stage, 'stop');
+        $rc |= __control_producers($C, $dbh, $run, $_Stage, 'stop');
 
         if ($rc == 0) {
             # Record this finish time for all shards without errors.
@@ -489,7 +489,7 @@ sub handle_Optimizing {
         $rc = __Wait_shard_states($C, $dbh, $run, $_Stage, $state_record_ref);
 
         # Unconditionally disable optimizers to stop them from running from cron
-        $rc ||= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
+        $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
 
         if ($rc == 0) {
             # Informational segment count test. System snap/release
@@ -793,7 +793,7 @@ sub __check_shards_segment_count {
         my $sysrc = system($cmd);
 
         my $s = qq{"check-shards -r$run -N$num_segs"};
-        $rc ||= __check_sysrc($sysrc, $C, $run, $stage, $s);
+        $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
     }
 
     return $rc;
@@ -819,7 +819,7 @@ sub __control_optimizers {
         my $sysrc = system($cmd);
 
         my $s = qq{"control-j -r$run -R$shard -k$option -O"};
-        $rc ||= __check_sysrc($sysrc, $C, $run, $stage, $s);
+        $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
     }
 
     return $rc;
@@ -868,7 +868,7 @@ sub __control_producers {
     my $sysrc = system($cmd);
 
     my $s = qq{"control-j -r$run -k$option"};
-    $rc ||= __check_sysrc($sysrc, $C, $run, $stage, $s);
+    $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
 
     return $rc;
 }
