@@ -48,6 +48,7 @@ use Utils::GlobalSwitch;
 
 # Local
 use Db;
+use Scheduler;
 use SLIP_Utils::Db_driver;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
@@ -491,8 +492,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub report_flags_state {
-    my ($C) = @_;
-
+    my ($C, $run) = @_;
     
     my $busy;
     if ($DRIVER) {
@@ -502,8 +502,18 @@ sub report_flags_state {
         $busy = 'Not driver driven';
     }
 
-    my $stop = (-e '/sdr1/etc/l/ls/STOPSLIP') ? 'YES' : 'no';
-    __Print qq{\n * flags state: \n\tbusy=$busy \n\tstopped=$stop\n};
+    my $stop = (-e '/htapps/slip/etc/STOPSLIP') ? 'YES' : 'no';
+    
+    my $fo = "full optimize not configured for run=$run";
+    if (Scheduler::full_optimize_supported($C, $run)) {
+        my $schedule_filepath = Scheduler::get_schedule_filepath($C, $run);
+        my $schedule = `cat $schedule_filepath`;
+        chomp($schedule);    
+        my ($y, $m, $d, $h, $min, $int) = split(/\s+/, $schedule);
+        $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals";
+    }          
+          
+    __Print qq{\n * flags state: \n\tbusy=$busy \n\tstopped=$stop\n\t$fo\n};
 }
 
 # ---------------------------------------------------------------------
@@ -678,7 +688,7 @@ sub c_report {
 
     report_queue_state($C, $dbh, $run);
 
-    report_flags_state($C);
+    report_flags_state($C, $run);
 
     __Print qq{\n};
 }
