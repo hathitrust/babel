@@ -66,10 +66,6 @@ sub clean_user_query_string
     $$s_ref =~ s,^\*+,,g;  # no leading '*'
     $$s_ref =~ s,\*+,*,g;  # only a single trailing '*'
 
-    # Remove punctuation usually mapped to ' ' by XPAT resulting in
-    # searches on the null string which find all pages.
-    $$s_ref =~ s,\p{Punctuation}, ,g;
-    
     # We now support AND, OR operators in the Solr interface. Remove
     # those so they are not searched as words in the XPAT query.
     $$s_ref =~ s,(\s+AND\s+|\s+OR\s+), ,g;
@@ -353,14 +349,11 @@ sub ParseSearchTerms
 
     # yank out quoted terms
     my @quotedTerms = ( $$s_ref =~ m,\"(.*?)\",gis );
-
     $$s_ref =~ s,\"(.*?)\",,gis;
-
     @quotedTerms = grep( !/^\s*$/, @quotedTerms );
 
     # yank out leftover single instance of double quote, if any
     $$s_ref =~ s,\",,gs;
-
     Utils::trim_spaces($s_ref);
 
     # yank out single word terms
@@ -378,6 +371,13 @@ sub ParseSearchTerms
     {
         my $qNumber = 'q' . ( $i + 1 );
         my $qTerm   = $finalQs[$i];
+
+        # Remove punctuation in the term usually mapped to ' ' by XPAT
+        # causing searches on the null string which find all pages but
+        # preserve wildcard (*).
+        my $wildcard = ($qTerm =~ m,.+\*$,);
+        $qTerm =~ s,\p{Punctuation}, ,g;
+        $qTerm .= '*' if ($wildcard);
 
         limit_operand_length(\$qTerm);
         PT::Document::ISO8859_1_Map::iso8859_1_mapping(\$qTerm);
