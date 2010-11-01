@@ -40,7 +40,7 @@ sub driver_do_full_optimize {
     my $C = shift;
     my $run = shift;
 
-    if (! __full_optimize_supported($C, $run)) {
+    if (! full_optimize_supported($C, $run)) {
         return 0;
     }
 
@@ -66,7 +66,7 @@ sub optimize_do_full_optimize {
     my $C = shift;
     my $run = shift;
 
-    if (! __full_optimize_supported($C, $run)) {
+    if (! full_optimize_supported($C, $run)) {
         return 0;
     }
 
@@ -89,7 +89,7 @@ sub advance_full_optimize_date {
     my $C = shift;
     my $run = shift;
     
-    if (! __full_optimize_supported($C, $run)) {
+    if (! full_optimize_supported($C, $run)) {
         return 0;
     }
 
