@@ -11,7 +11,7 @@ see usage
 =head1 DESCRIPTION
 
 Optimize a given shard. With -S1 (default, optional) a multi-stage
-optimize that is a function of the number of segments broken down by powers of 2. 
+optimize that is a function of the number of segments broken down by powers of 2.
 
 Timeout is forced to ∞, i.e. -T is ignored. With optional, -O n param
 optimize down to that number of segments either staged or not. If not
@@ -55,6 +55,7 @@ use Semaphore;
 
 # Local
 use Db;
+use Scheduler;
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use SLIP_Utils::States;
@@ -65,11 +66,11 @@ Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
 # Flush i/o
 $| = 1;
 
-sub com_get_usage {
-    my $s .= qq{Usage: optimize-j -r run -R shard [-S0 | -S1][-On][-T timeout][-d][-n]
+sub opt_get_usage {
+    my $s .= qq{Usage: optimize-j -r run -R shard -On [-S0 | -S1][-T timeout][-d][-n]
        where -S0 is non-staged (default), -S1 is staged
-             -On optimizes in powers of 2 down to n={1,2,4,...} segments (default 2 segments)
-             -T timeout overrides default long timeout (24 hours) 
+             -On optimizes to n segments. If -S1, then in powers of 2 down to n={1,2,4,...} segments
+             -T timeout overrides default long timeout (24 hours)
              -n runs without calling optimize\n};
     return $s;
 }
@@ -79,17 +80,19 @@ our ($opt_r, $opt_R, $opt_T, $opt_S, $opt_d, $opt_O, $opt_n);
 my $ops = getopts('r:R:T:dS:O:n');
 
 my $INTERACTIVE = $ENV{'TERM'};
-use constant LARGE_TIMEOUT => 86400; # 24 hours
+use constant LARGE_TIMEOUT => 172800; # 48 hours
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 
 my $NOOP = $opt_n; # optional
 my $RUN = $opt_r; # Required
-my $LIMIT_SEGS = 2; # optional
-if (defined($opt_O)) {
-    $LIMIT_SEGS = $opt_O;
-    if ($LIMIT_SEGS <= 0) {
-        $LIMIT_SEGS = 2;
-    }
+my $LIMIT_SEGS = $opt_O; # Required
+if (! defined($LIMIT_SEGS)) {
+    my $s = qq{limit_segs (-O) param missing: } . opt_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
 }
 
 my $STAGED = 0; # optional
@@ -104,7 +107,7 @@ if (defined($opt_S)) {
 my $TIMEOUT = defined($opt_T) ? $opt_T : LARGE_TIMEOUT; # optional
 
 if (! $RUN) {
-    my $s = qq{run (-r) parameter missing } . com_get_usage();
+    my $s = qq{run (-r) parameter missing } . opt_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
     __non_interactive_err_output($rc, $s);
@@ -114,7 +117,7 @@ if (! $RUN) {
 
 my $SHARD = $opt_R; # Required
 if (! defined($SHARD)) {
-    my $s = qq{shard (-R) parameter missing } . com_get_usage();
+    my $s = qq{shard (-R) parameter missing } . opt_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
     __non_interactive_err_output($rc, $s);
@@ -128,7 +131,7 @@ if ($INTERACTIVE) {
         $s = q{Staged optimize. DO NOT KILL script until finished! OK? [N] };
         __confirm($s);
     }
-    
+
     $s = q{Are you running from a shell that can see the Solr index directory for `ls`? [N] };
     __confirm($s);
 }
@@ -165,11 +168,21 @@ if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, qq{optimize-j run=$RUN shard=$SHARD}, $@);
     exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
 }
-
 $C->set_object('Database', $db);
 
 my $DBH = $db->get_DBH();
 my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
+
+# Adjust $LIMIT_SEGS for full optimize?
+eval {
+    if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
+        $LIMIT_SEGS = 1;
+    }
+};
+if ($@) {
+    Log_osched_error($C, $RUN, $@);
+    exit $SLIP_Utils::States::RC_BAD_SCHED_FILE;
+}   
 
 eval {
     if (
@@ -177,7 +190,7 @@ eval {
         ||
         Db::Select_optimize_enabled($C, $DBH, $RUN, $SHARD)
        ) {
-        my $s = 
+        my $s =
             "optimize-j: OPTIMIZE shard=$SHARD staged=$STAGED timeout=$TIMEOUT"
                 . " limit_to_segments=$LIMIT_SEGS\n";
         __output($s);
@@ -213,7 +226,7 @@ Description
 sub handle_optimize_rc {
     my ($C, $dbh, $run, $shard, $host, $rc) = @_;
 
-    while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP')) {
+    while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
         __output("  wait Optimize done: STOPSLIP\n");
         sleep STOPSLIP_SLEEP_WAIT;
     }
@@ -222,7 +235,7 @@ sub handle_optimize_rc {
     my $state = 'undef';
     my $connect_error = 0;
     my $connection_still_alive = $dbh->ping();
-    
+
     if ($connection_still_alive) {
         if ($rc > 0) {
             # Set shard state to 'error'
@@ -238,14 +251,14 @@ sub handle_optimize_rc {
     else {
         $connect_error = 1;
     }
-    
+
     # Set terminal state
     Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
     # Self-stop.  driver-j also disables optimize-j as extra measure.
     Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
 
     # Log
-    my $s = SLIP_Utils::Common::stage_rc_to_string($rc) 
+    my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
         . qq{ run=$run shard=$shard host=$host}
             . qq{ [stop][self] State=$state connect_error=$connect_error};
     __output(qq{$s\n});
@@ -276,14 +289,14 @@ Examples of staged list:
 sub get_segment_list {
     my $C = shift;
     my ($shard, $staged, $limit_segs) = @_;
-    
+
     my $rc = 0;
 
     my $index_dir = $C->get_object('MdpConfig')->get('dir_for_shard_' . $shard);
     my $num_segments = `ls $index_dir/*.prx 2> /dev/null | wc -l 2> /dev/null`;
     chomp($num_segments);
     my $orig_num_segments = $num_segments;
-    
+
     my @segments_arr;
 
     # If dir does not exist, etc.
@@ -325,7 +338,7 @@ sub c_optimize {
 
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, $timeout);
 
-    my ($rc, $num_orig_segments, $segments_ref) = 
+    my ($rc, $num_orig_segments, $segments_ref) =
         get_segment_list($C, $shard, $staged, $LIMIT_SEGS);
 
     if ($rc == 0) {
@@ -338,7 +351,7 @@ sub c_optimize {
             # case, do the optimize (which will degenerate to a
             # simple commit).
             if ($this_stage_segments < $LIMIT_SEGS) {
-                last 
+                last
                     unless ($num_orig_segments == 1);
             }
             my $segs = " limit_to_segments=$LIMIT_SEGS\n";
@@ -347,11 +360,11 @@ sub c_optimize {
             Log_optimize($C, $run, $s1);
 
             # Optimize
-            my ($index_state, $stats_ref) = 
-                $NOOP 
-                    ? (IX_INDEXED, {}) 
+            my ($index_state, $stats_ref) =
+                $NOOP
+                    ? (IX_INDEXED, {})
                         : $indexer->optimize($C, $this_stage_segments);
-            
+
             my $elapsed = $$stats_ref{'optimize'}{'elapsed'};
             $total_elapsed += $elapsed;
 
@@ -392,6 +405,22 @@ sub Log_optimize {
     SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run, 1);
 }
 
+
+# ---------------------------------------------------------------------
+
+=item Log_osched_error
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_osched_error {
+    my ($C, $run, $error) = @_;
+
+    my $s = qq{***OPTIMIZE [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run $error};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
 
 1;
 

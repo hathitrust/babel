@@ -69,6 +69,7 @@ use Semaphore;
 
 # Local
 use Db;
+use Scheduler;
 use SLIP_Utils::Db_driver;
 use SLIP_Utils::Common;
 use SLIP_Utils::Log;
@@ -117,6 +118,19 @@ my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
 
 my $config = new MdpConfig($common_configfile, $global_configfile);
 $C->set_object('MdpConfig', $config);
+
+# Adjust $LIMIT_SEGS for full optimize?
+my $FULL_OPTIMIZE_RUN = 0;
+eval {
+    if (Scheduler::driver_do_full_optimize($C, $RUN)) {
+        $LIMIT_SEGS = 1;
+        $FULL_OPTIMIZE_RUN = 1;
+    }
+};
+if ($@) {
+    Log_sched_error($C, $RUN, $@);
+    exit $SLIP_Utils::States::RC_BAD_SCHED_FILE;
+}
 
 my $db;
 eval {
@@ -186,7 +200,7 @@ eval {
     my $rc = 0;
     ($INITIAL_QUEUE_SIZE, $rc) = get_Building_queue_size($C, $DBH, $RUN, $SLIP_Utils::States::St_Undefined);
     $STAGE_QUEUE_SIZE = $INITIAL_QUEUE_SIZE;
-    
+
     if ($rc == 0) {
         run_driver($C, $DBH, $RUN);
 
@@ -491,6 +505,11 @@ sub handle_Optimizing {
         # Unconditionally disable optimizers to stop them from running from cron
         $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
 
+        # Maybe unconditionally update the full optimize schedule file
+        if ($FULL_OPTIMIZE_RUN) {
+            $rc |= __handle_full_optimize_done($C, $run);
+        }
+
         if ($rc == 0) {
             # Informational segment count test. System snap/release
             # also check and abort.
@@ -512,6 +531,32 @@ sub handle_Optimizing {
 #
 # ----------------------- U t i l i t i e s ---------------------------
 #
+# ---------------------------------------------------------------------
+
+=item __handle_full_optimize_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_full_optimize_done {
+    my $C = shift;
+    my $run = shift;
+
+    my $rc = 0;
+
+    eval {
+        Scheduler::advance_full_optimize_date($C, $run);
+    };
+    if ($@) {
+        $rc = $SLIP_Utils::States::RC_BAD_SCHED_FILE;
+    }
+
+    return $rc;
+}
+
+
 # ---------------------------------------------------------------------
 
 =item __Wait_shard_states
@@ -537,7 +582,7 @@ sub __Wait_shard_states {
             my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $stage);
             return $rc_1 if ($rc_1 > 0);
 
-            while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP')) {
+            while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
                 __output("  wait Building: STOPSLIP\n");
                 sleep STOPSLIP_SLEEP_WAIT;
             }
@@ -555,7 +600,7 @@ sub __Wait_shard_states {
                 return 0;
             }
             else {
-                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP')) {
+                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
                     __output("  wait Optimizing: STOPSLIP\n");
                     sleep STOPSLIP_SLEEP_WAIT;
                 }
@@ -925,6 +970,22 @@ sub Log_run {
     my ($C, $run) = @_;
 
     my $s = qq{***DRIVER [RUN]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_sched_error
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_sched_error {
+    my ($C, $run, $error) = @_;
+
+    my $s = qq{***DRIVER [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run $error};
     SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
 }
 

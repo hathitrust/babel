@@ -1,0 +1,236 @@
+package Scheduler;
+
+=head1 NAME
+
+Scheduler.pm
+
+=head1 DESCRIPTION
+
+Routines for scheduling:
+
+* full optimization
+
+=cut
+
+use strict;
+
+# Perl
+use Date::Calc;
+
+# App
+use Utils;
+use MdpConfig;
+
+# ---------------------------------------------------------------------
+
+=item driver_do_full_optimize
+
+PUBLIC.  Assumes a full optimize is kicked off immediately after
+indexing finishes and that these two events occur on the same day, not
+split across midnight.  driver-j will validate that all shards have
+exactly one segment after completion of optimization and update the
+schedule file.
+
+Change delta days by negative one if the schedule spans midnight.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub driver_do_full_optimize {
+    my $C = shift;
+    my $run = shift;
+
+    if (! __full_optimize_supported($C, $run)) {
+        return 0;
+    }
+
+    my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
+    my ($year, $month, $day) = Date::Calc::Add_Delta_Days($oyear, $omonth, $oday, 0);
+    my ($tyear, $tmonth, $tday) = Date::Calc::Today();
+
+    return (($tyear == $year) && ($tmonth == $month) && ($tday == $day));
+}
+
+# ---------------------------------------------------------------------
+
+=item optimize_do_full_optimize
+
+PUBLIC.  If the scheduled day and time have arrived, optimize-j will
+optimize to one segment.  Time should be configured to be sometime
+after the time the driver starts running from cron.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub optimize_do_full_optimize {
+    my $C = shift;
+    my $run = shift;
+
+    if (! __full_optimize_supported($C, $run)) {
+        return 0;
+    }
+
+    my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
+    my ($year, $month, $day, $hour, $min, $sec) = Date::Calc::Today_and_Now();
+    
+    return (($year == $oyear) && ($month == $omonth) && ($day == $oday) && ($hour == $ohour) && ($min >= $omin));
+}
+
+# ---------------------------------------------------------------------
+
+=item advance_full_optimize_date
+
+PUBLIC
+
+=cut
+
+# ---------------------------------------------------------------------
+sub advance_full_optimize_date {
+    my $C = shift;
+    my $run = shift;
+    
+    if (! __full_optimize_supported($C, $run)) {
+        return 0;
+    }
+
+    my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
+    my ($year, $month, $day) = Date::Calc::Add_Delta_Days($oyear, $omonth, $oday, $interval);
+
+    my $next_schedule = "$year $month $day $ohour $omin $interval";
+
+    __write_optimize_flag_file($C, $run, $next_schedule);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __get_schedule_filepath
+
+Private.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_schedule_filepath {
+    my $C = shift;
+    my $run = shift;
+
+    my $config = $C->get_object('MdpConfig');
+    my $schedule_filepath = 
+      ($ENV{HT_DEV} ? '/tmp' : $C->config->get('shared_flags_dir')) 
+        . '/' 
+          . $config->get('full_optimize_flag_file');
+    $schedule_filepath =~ s,__RUN__,$run,;
+
+    return $schedule_filepath;
+}
+
+# ---------------------------------------------------------------------
+
+=item __read_optimize_flag_file
+
+Private. Read a line:
+
+YYYY MM DD HH MM N[N]
+
+where NN is number of days between full optimizations 
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __read_optimize_flag_file {
+    my $C = shift;
+    my $run = shift;
+
+    my $schedule_filepath = __get_schedule_filepath($C, $run);
+    open(SCHED, "<$schedule_filepath") || die("$schedule_filepath i/o error: $!");
+    local $/;
+    my $schedule = <SCHED>;
+    close(SCHED);
+    chomp($schedule);
+    
+    return split(/\s+/, $schedule);
+}
+
+# ---------------------------------------------------------------------
+
+=item __write_optimize_flag_file
+
+Private
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __write_optimize_flag_file {
+    my $C = shift;
+    my $run = shift;
+    my $schedule = shift;
+
+    my $schedule_filepath = __get_schedule_filepath($C, $run);
+    open(SCHED, ">$schedule_filepath") || die("$schedule_filepath i/o error: $!");
+    print SCHED $schedule;
+    close(SCHED);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __full_optimize_supported
+
+Private.  True if, the run is configured to do full optimization and the
+schedule file is in place.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __full_optimize_supported {
+    my $C = shift;
+    my $run = shift;
+
+    my $config = $C->get_object('MdpConfig');
+    my $is_supported = $config->get('full_optimize_supported');
+    if ($is_supported) {
+        # Is the schedule file present?
+        my $schedule_filepath = __get_schedule_filepath($C, $run);
+        if (! -e $schedule_filepath) {
+            $is_supported = 0;
+        }
+    }
+
+    return $is_supported;
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2010 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
