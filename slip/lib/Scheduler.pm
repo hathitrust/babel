@@ -104,14 +104,14 @@ sub advance_full_optimize_date {
 
 # ---------------------------------------------------------------------
 
-=item __get_schedule_filepath
+=item get_schedule_filepath
 
-Private.
+PUBLIC
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __get_schedule_filepath {
+sub get_schedule_filepath {
     my $C = shift;
     my $run = shift;
 
@@ -142,7 +142,7 @@ sub __read_optimize_flag_file {
     my $C = shift;
     my $run = shift;
 
-    my $schedule_filepath = __get_schedule_filepath($C, $run);
+    my $schedule_filepath = get_schedule_filepath($C, $run);
     open(SCHED, "<$schedule_filepath") || die("$schedule_filepath i/o error: $!");
     local $/;
     my $schedule = <SCHED>;
@@ -166,7 +166,7 @@ sub __write_optimize_flag_file {
     my $run = shift;
     my $schedule = shift;
 
-    my $schedule_filepath = __get_schedule_filepath($C, $run);
+    my $schedule_filepath = get_schedule_filepath($C, $run);
     open(SCHED, ">$schedule_filepath") || die("$schedule_filepath i/o error: $!");
     print SCHED $schedule;
     close(SCHED);
@@ -175,15 +175,15 @@ sub __write_optimize_flag_file {
 
 # ---------------------------------------------------------------------
 
-=item __full_optimize_supported
+=item full_optimize_supported
 
-Private.  True if, the run is configured to do full optimization and the
+PUBLIC.  True if, the run is configured to do full optimization and the
 schedule file is in place.
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __full_optimize_supported {
+sub full_optimize_supported {
     my $C = shift;
     my $run = shift;
 
@@ -191,7 +191,7 @@ sub __full_optimize_supported {
     my $is_supported = $config->get('full_optimize_supported');
     if ($is_supported) {
         # Is the schedule file present?
-        my $schedule_filepath = __get_schedule_filepath($C, $run);
+        my $schedule_filepath = get_schedule_filepath($C, $run);
         if (! -e $schedule_filepath) {
             $is_supported = 0;
         }
