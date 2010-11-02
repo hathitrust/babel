@@ -30,7 +30,7 @@ use Semaphore;
 
 
 # ------- Configuration variables --------
-my $log_function_enabled = 0;
+my $log_function_enabled = 1;
 
 # ---------------------------------------------------------------------
 
