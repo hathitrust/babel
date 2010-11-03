@@ -93,6 +93,12 @@ package WAYF::IdpConfig;
                   },
      
      # Waiting
+     'stanford' => {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'Stanford University',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/stanford?target=___TARGET___',
+                    'enabled' => '0',
+                   },
      'cornell' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Cornell University',
