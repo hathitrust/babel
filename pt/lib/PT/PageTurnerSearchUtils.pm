@@ -366,18 +366,21 @@ sub ParseSearchTerms
 
     my @xPatSearchExpressions = ();
 
+    my $numberOfCgiQs = 0;
     my $numberOfFinalQs = scalar( @finalQs );
     foreach ( my $i = 0; $i < $numberOfFinalQs; $i++ )
     {
-        my $qNumber = 'q' . ( $i + 1 );
-        my $qTerm   = $finalQs[$i];
+        my $qTerm = $finalQs[$i];
 
         # Remove punctuation in the term usually mapped to ' ' by XPAT
-        # causing searches on the null string which find all pages but
-        # preserve wildcard (*).
+        # causing searches on the null string (finds all pages) when
+        # term is only punctuation. Preserve wildcard (*).
         my $wildcard = ($qTerm =~ m,.+\*$,);
         $qTerm =~ s,\p{Punctuation}, ,g;
-        $qTerm .= '*' if ($wildcard);
+        next 
+          if ($qTerm =~ m,^\s*$,);
+        $qTerm .= '*' 
+          if ($wildcard);
 
         limit_operand_length(\$qTerm);
         PT::Document::ISO8859_1_Map::iso8859_1_mapping(\$qTerm);
@@ -386,6 +389,8 @@ sub ParseSearchTerms
         if ( $qTerm &&
              $qTerm ne '*' )
         {
+            my $qNumber = 'q' . ( $numberOfCgiQs + 1 );
+            $numberOfCgiQs++;
             push(@xPatSearchExpressions, XPAT_truncation_handler($C, $qTerm));
             $parsedQsCgi->param($qNumber, $qTerm);
         }
@@ -393,7 +398,7 @@ sub ParseSearchTerms
 
     # tack on $numberOfFinalTerms onto the transient cgi, so that it
     # will be available downstream
-    $parsedQsCgi->param( 'numberofqs', $numberOfFinalQs );
+    $parsedQsCgi->param( 'numberofqs', $numberOfCgiQs );
 
     DEBUG('search,all',
           sub
@@ -402,7 +407,7 @@ sub ParseSearchTerms
               return qq{<h3>CGI after parsing into separate terms: $s</h3>};
           });
 
-    return ( $numberOfFinalQs, $parsedQsCgi, \@xPatSearchExpressions );
+    return ( $numberOfCgiQs, $parsedQsCgi, \@xPatSearchExpressions );
 }
 
 
