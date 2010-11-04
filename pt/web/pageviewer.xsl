@@ -144,8 +144,9 @@
         <!-- <script type="text/javascript" src="http://www.archive.org/download/BookReader/lib/jquery-1.2.6.min.js"></script> -->
         <script type="text/javascript" src="{$protocol}://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
         <script type="text/javascript" src="/pt/jquery.easing.1.3.js"></script>
+        <script type="text/javascript" src="/pt/jquery-textfill-0.1.js"></script>
         <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
-        <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js"></script>
+        <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js?ts={generate-id(.)}"></script>
         <!-- <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script> -->
 >>>>>>> b934334... Updates for bookreader
       </head>
@@ -171,7 +172,6 @@
            	var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
           	var chromeHeight = $("#mbFooter").height() + $("#mbHeader").height();
           	$("#BookReader").height(viewportHeight - chromeHeight - 50);
-        	  console.log("RESIZING: ", viewportHeight - chromeHeight - 50);
         	})
 
         $(document).ready(function(){	
@@ -202,13 +202,14 @@
             br.metaURL = "/cgi/imgsrv/meta";
             br.force = 1;
             br.imageURL = "/cgi/imgsrv/image";
+            br.ocrURL = "/cgi/imgsrv/ocr";
             br.slice_size = 10;
             br.ui = '<xsl:value-of select="$gCurrentEmbed"/>';
             if ( br.ui == 'embed' ) {
               br.mode = 1;
               br.reduce = 1;
             }
-            br.displayMode = 'image';
+            br.displayMode = 'ocr';
         </script>
         <script type="text/javascript" src="/pt/js/hathi.js?ts={generate-id(.)}"/> 
         
