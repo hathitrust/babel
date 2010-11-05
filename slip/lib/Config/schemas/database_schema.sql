@@ -107,11 +107,12 @@ CREATE TABLE `j_queue` (
                 KEY `id` (`id`),
                 KEY `pid` (`pid`),
                 KEY `host` (`host`),
-                KEY `proc_status` (`proc_status`)
+                KEY `proc_status` (`proc_status`),
+                KEY `runstatus` (`run`,`proc_status`)
        );
 
 
-CREATE TABLE `j_queue` (`run` smallint(3) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `pid` int NOT NULL default '0', `host` varchar(32) NOT NULL default '', `proc_status` smallint(1) NOT NULL default '0', KEY `run` (`run`), KEY `id` (`id`), KEY `pid` (`pid`), KEY `host` (`host`), KEY `proc_status` (`proc_status`));
+CREATE TABLE `j_queue` (`run` smallint(3) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `pid` int NOT NULL default '0', `host` varchar(32) NOT NULL default '', `proc_status` smallint(1) NOT NULL default '0', KEY `run` (`run`), KEY `id` (`id`), KEY `pid` (`pid`), KEY `host` (`host`), KEY `proc_status` (`proc_status`), KEY `runstatus` (`run`,`proc_status`));
 
 ---------------------------------------------------------------------
 -- Changes to j_rights MUST be made to j_rights_temp also!  
