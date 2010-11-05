@@ -25,7 +25,6 @@ Coding example
 # Perl
 use Proc::ProcessTable;
 
-
 # ---------------------------------------------------------------------
 
 =item num_producers_running
@@ -35,22 +34,17 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub num_producers_running
-{
+sub num_producers_running {
     my ($C, $producer_pattern, $exclude_pattern) = @_;
 
     my $gp = new Proc::ProcessTable;
-
     my $num_producers = 0;
-    
+
     # look for producer processes
-    foreach $proc ( @{$gp->table} ) 
-    {
+    foreach $proc ( @{$gp->table} ) {
         # does this process match the pattern
-        if ($proc->cmndline =~ /$producer_pattern/) 
-        {
-            if ($proc->cmndline !~ /$exclude_pattern/) 
-            {
+        if ($proc->cmndline =~ /$producer_pattern/) {
+            if ($proc->cmndline !~ /$exclude_pattern/) {
                 $num_producers++;
             }
         }
@@ -59,7 +53,30 @@ sub num_producers_running
     return $num_producers;
 }
 
+# ---------------------------------------------------------------------
 
+=item num_tomcats_running
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub num_tomcats_running {
+    my ($C, $tomcat_pattern) = @_;
+
+    my $gp = new Proc::ProcessTable;
+    my $num_tomcats = 0;
+
+    # look for tomcat processes
+    foreach $proc ( @{$gp->table} ) {
+        if ($proc->cmndline =~ /$producer_pattern/) {
+            $num_tomcats++;
+        }
+    }
+
+    return $num_tomcats;
+}
 
 1;
 
@@ -71,7 +88,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-10 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
