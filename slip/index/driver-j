@@ -447,7 +447,7 @@ sub handle_Building {
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
         # Wait for shards to finish building (queue empty)
-        $rc = __Wait_shard_states($C, $dbh, $run, $_Stage, $state_record_ref);
+        $rc = __Wait_build_done($C, $dbh, $run, $_Stage, $state_record_ref);
 
         # Unconditionally, disable producers to stop them from running from cron
         $rc |= __control_producers($C, $dbh, $run, $_Stage, 'stop');
@@ -500,7 +500,7 @@ sub handle_Optimizing {
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
         # Wait for all shards to finish optimizing
-        $rc = __Wait_shard_states($C, $dbh, $run, $_Stage, $state_record_ref);
+        $rc = __Wait_optimize_done($C, $dbh, $run, $_Stage, $state_record_ref);
 
         # Unconditionally disable optimizers to stop them from running from cron
         $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
@@ -559,14 +559,55 @@ sub __handle_full_optimize_done {
 
 # ---------------------------------------------------------------------
 
-=item __Wait_shard_states
+=item __Wait_optimize_done
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __Wait_shard_states {
+sub __Wait_optimize_done {
+    my ($C, $dbh, $run, $stage) = @_;
+
+    while (1) {
+        __check_driver_enabled($C, $dbh, $run);
+
+        my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+
+        my $rc_0 = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+        return $rc_0 if ($rc_0 > 0);
+        # POSSIBLY NOTREACHED
+
+        if ($stage eq $SLIP_Utils::States::St_Optimizing) {
+            if ($state_record_ref->{'num_optimized'} == scalar(@NUM_SHARDS_LIST)) {
+                return 0;
+            }
+            else {
+                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
+                    __output("  wait Optimizing: STOPSLIP\n");
+                    sleep STOPSLIP_SLEEP_WAIT;
+                }
+
+                __output("  wait Optimizing\n");
+                sleep OPTIMIZE_SLEEP_WAIT;
+            }
+        }
+        else {
+            return $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE;
+        }
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __Wait_build_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Wait_build_done {
     my ($C, $dbh, $run, $stage) = @_;
 
     while (1) {
@@ -595,22 +636,8 @@ sub __Wait_shard_states {
                 return 0;
             }
         }
-        elsif ($stage eq $SLIP_Utils::States::St_Optimizing) {
-            if ($state_record_ref->{'num_optimized'} == scalar(@NUM_SHARDS_LIST)) {
-                return 0;
-            }
-            else {
-                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
-                    __output("  wait Optimizing: STOPSLIP\n");
-                    sleep STOPSLIP_SLEEP_WAIT;
-                }
-
-                __output("  wait Optimizing\n");
-                sleep OPTIMIZE_SLEEP_WAIT;
-            }
-        }
         else {
-            return 0;
+            return $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE;
         }
     }
 }
