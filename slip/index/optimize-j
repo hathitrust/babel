@@ -70,7 +70,7 @@ sub opt_get_usage {
     my $s .= qq{Usage: optimize-j -r run -R shard -On [-S0 | -S1][-T timeout][-d][-n]
        where -S0 is non-staged (default), -S1 is staged
              -On optimizes to n segments. If -S1, then in powers of 2 down to n={1,2,4,...} segments
-             -T timeout overrides default long timeout (24 hours)
+             -T timeout overrides default long timeout (48 hours)
              -n runs without calling optimize\n};
     return $s;
 }
