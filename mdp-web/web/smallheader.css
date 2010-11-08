@@ -1,0 +1,95 @@
+body {
+  color: #333;
+  font-family: Arial;
+  font-size: 90%;
+  line-height: 1.2em;
+  margin: 0;
+}
+
+.SkipLink {
+  display:none;
+}
+
+a:link, a:visited {
+  color: #C4630F;
+  text-decoration: none;
+}
+
+a:hover, a:focus, a:active {
+  color: #EF7A06;
+  text-decoration: underline;
+}
+
+img {
+  border: none;
+}
+
+
+#smallHeader {
+  border-top: 5px solid #494949;
+  border-bottom: 3px solid #777;
+  height: 60px;
+  text-indent: 0;
+  width: 100%;
+  margin-bottom: 10px;
+  background-color: #FFF;
+}
+
+#masthead {
+  padding: 0;
+  margin: 0 auto;
+  width: 96%;
+}
+
+.branding {
+  float: left;
+  position: relative;
+}
+
+.brandingLogo {
+  float: left;
+  height: 51px;
+  margin-top: 4px;
+}
+
+.brandingLogo span {
+  color: #6A6B6E;
+  font-size: 1.7em;
+  left: 14px;
+  position: relative;
+  top: -15px;
+}
+
+.brandingLogo a {
+  text-decoration: none;
+}
+
+
+.MBooksNav {
+  color: #EEE;
+  float: right;
+  font-size: 0.85em;
+  padding-left: 3px;
+  position: relative;
+  background: #494949 url(./graphics/corner_left.png) no-repeat scroll left bottom
+}
+
+.MBooksNav ul {
+  list-style-type: none;
+  margin: 0 0 0 5px;
+  padding: 0;
+}
+
+.MBooksNav ul li {
+  display: inline;
+  float: left;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.MBooksNav ul li a {
+  color: #EEE !important;
+  line-height: 18px;
+  padding: 5px 8px 7px;
+}

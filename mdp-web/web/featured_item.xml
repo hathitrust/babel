@@ -1,0 +1,96 @@
+
+
+<!-- The first item is the default and will probably show more
+frequently than the others  Note to programmers: This will occur if the max number in
+PIFIller/Home::FEATURED_ITEM_POS is greater than the number of items
+on this page
+
+-->
+
+
+<Item>
+<img src="//common-web/graphics/featuredItem/Henty1.jpg" alt="book image"></img>
+<h3><a href="/cgi/mb?a=listis;c=464226859">Adventure Novels: G.A. Henty</a></h3>
+<p>Novels from the U-M <a href="http://www.lib.umich.edu/spec-coll/">Special Collections'</a> Henty Collection and books about George A. Henty.</p>
+</Item>
+
+
+
+<!-- Featured Items 
+<Item>
+<img src="http://www.lib.umich.edu/news/images/MMTitlePage.jpg" alt="book image"></img>
+<h3>Millionth Book</h3>
+<p>The star of this digitization milestone is "Maria Mitchell, life,
+letters and journals," the one millionth book from the University of
+Michigan Library's collection to be put on-line. The book documents
+the life of Maria Mitchell, the 19th century American astronomer. <a
+href="http://hdl.handle.net/2027/mdp.39015033356646">Read the book
+online</a> | <a href="images/MariaMitchellFacts.pdf">Facts about Maria
+Mitchell (PDF)</a>.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike1.jpg" alt="book image"></img>
+<h3>How not to ride a bike</h3>
+<p>An illustration of the incorrect way to lean while turning a bicycle, from <a href="http://hdl.handle.net/2027/mdp.39015012368612"><em>Bicycling for ladies</em></a>, published in 1896.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike2.jpg" alt="book image"></img>
+<h3>Cycling</h3>
+<p>The first page of <a href="http://hdl.handle.net/2027/mdp.39015015359972"><em>Cycling</em></a>, by William Coutts Keppel, 7th Earl of Albermarle, published in 1889.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike3.jpg" alt="book image"></img>
+<h3>Velocipede &amp; your dog</h3>
+<p>An 1870 velocipede patent would
+provide exercise for both the bicyclist and her dog.  From <a href="http://hdl.handle.net/2027/mdp.39015012367895"><em>Cycling
+art, energy and locomotion</em></a> by Robert Pittis Scott, published in
+1889.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike4.jpg" alt="book image"></img>
+<h3>Velocipede</h3>
+<p>Illustration of T. W. Ward's 1869 patent application for a velocipede, from <a href="http://hdl.handle.net/2027/mdp.39015012367895"><em>Cycling art, energy and locomotion</em></a> by Robert Pittis Scott, published in 1889.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike6.jpg" alt="book image"></img>
+<h3>Riding Side Saddle is easy</h3>
+<p>How to ride your bicycle side-saddle, from <a href="http://hdl.handle.net/2027/mdp.39015064570875"><em>The modern bicycle. Containing instructions for beginners; choice of
+a machine; hints on training; road book for England, Wales, &amp;c., &amp;c.</em></a>
+by Charles Spencer, published in 1876.</p>
+</Item>
+
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike2.jpg" alt="book image"></img>
+<h3>Cycling</h3>
+<p>The first page of <a href="http://hdl.handle.net/2027/mdp.39015015359972"><em>Cycling</em></a>, by William Coutts Keppel, 7th Earl of Albermarle, published in 1889.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike3.jpg" alt="book image"></img>
+<h3>Velocipede &amp; your dog</h3>
+<p>An 1870 velocipede patent would
+provide exercise for both the bicyclist and her dog.  From <a href="http://hdl.handle.net/2027/mdp.39015012367895"><em>Cycling
+art, energy and locomotion</em></a> by Robert Pittis Scott, published in
+1889.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike4.jpg" alt="book image"></img>
+<h3>Velocipede</h3>
+<p>Illustration of T. W. Ward's 1869 patent application for a velocipede, from <a href="http://hdl.handle.net/2027/mdp.39015012367895"><em>Cycling art, energy and locomotion</em></a> by Robert Pittis Scott, published in 1889.</p>
+</Item>
+
+<Item>
+<img src="//common-web/graphics/featuredItem/bike6.jpg" alt="book image"></img>
+<h3>Riding Side Saddle is easy</h3>
+<p>How to ride your bicycle side-saddle, from <a href="http://hdl.handle.net/2027/mdp.39015064570875"><em>The modern bicycle. Containing instructions for beginners; choice of
+a machine; hints on training; road book for England, Wales, &amp;c., &amp;c.</em></a>
+by Charles Spencer, published in 1876.</p>
+</Item>
+-->

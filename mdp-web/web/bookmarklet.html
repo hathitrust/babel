@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+  <head>
+    <title>MyMBooks BookMarklet</title>
+  </head>
+  
+  <body>
+    
+    <h2>About This Tutorial</h2>
+    <p>For testing purposes, the next version of MBooks can be accessed via the development server.
+      Because this isn't a "live" site, the procedure for using it is a little more complicated than it would normally be. These instructions are only intended to get you started, not to describe how to do things - you're on your own for that.
+    
+    <p>&nbsp;</p>
+    
+    <h2>Building Collections in MBooks Dev<h2>
+    
+    <h3>Method 1: Copy items from existing MBooks collections</h3>
+
+      <ol>
+        <li>Open MBooks Collection interface: <a href="http://dev-linux.umdl.umich.edu/cgi/mb">http://dev-linux.umdl.umich.edu/cgi/mb</a></li>
+        <li>You will be prompted to login</li>
+        <li>You'll see a list of "Public Collections," choose one by clicking the collection's title.</li>
+        <li>You'll see a list of items within your chosen collection... </li>
+      </ol>
+     
+     
+    <h3>Method 2: Find items in Mirlyn to add to MBooks</h3>
+      (this is where it gets a tad complicated)
+      
+      <ol>
+        <li>Save the bookmarklet link to your toolbar/links list (see instructions below)</li>
+        <li>When viewing a record in Mirlyn where the MBooks icon <img src="http://dev-linux.umdl.umich.edu/graphics/Mbooks.gif"> is displayed, click on the bookmarklet</li>
+        <li> This will take you to the item in MBooks where you can click on "Add to your collection" </li>
+      </ol>
+      
+      <p><em>Alternatively,</em> you can paste the barcode number of any mdp item into this url (paste over the last part of the url - starting with 39015). A book's barcode can be found in the URL listed in the Mirlyn record: <a href="http://dev-linux.umdl.umich.edu/cgi/pt?id=mdp.39015031699849">http://dev-linux.umdl.umich.edu/cgi/pt?id=mdp.39015031699849</a>
+    
+    
+    <p>&nbsp;</p>
+    <h2>MyMBooks BookMarklet</h2>
+
+
+    Bookmarklet link: <a href="javascript:var links=document.getElementsByTagName('a');var mdp_id;for (var i=0; i <links.length;i++){if (mdp_id=links[i].innerHTML.match(/hdl\.handle\.net\/2027\/(.+)/)){var newURL='http://dev-linux.umdl.umich.edu/cgi/pt?id=' + mdp_id[1];window.location =  newURL;}}">Save to My MBooks</a>
+
+
+    <h3>To save the bookmarklet to your toolbar/links list:</h3>
+
+    <h4>Internet Explorer</h4>
+    <ol>
+      <li>Right click (or control + click on mac) on the "Save to My MBooks" link above </li>  
+      <li>Select "Add to Favorites"</li>  
+      <li>When prompted "You are adding a favorite that may not be safe. Do you want to continue?" answer "Yes"</li>  
+      <li>Select "Create In" and highlight "Links"</li>  
+      <li>Click on "OK""</li>  
+    </ol>
+    
+    <h4>Firefox</h4>
+    
+    <ol>
+      <li>Left click (or just click on mac) on "Save to My MBooks" link above and drag to your toolbar</li>
+    </ol>
+    or
+    <ol>
+      <li>Right click (or control + click on mac) on "Save to My MBooks" link above</li>  
+      <li>Select "Bookmark this Link"</li>
+      <li>Select "Create in"  "Bookmarks Toolbar"</li>
+      <li>Click "OK"</li>
+    </ol>
+    <!-- old one uses mdp-->
+    <!--
+<a href="javascript:var links=document.getElementsByTagName('a');var mdp_id;for (var i=0;i<links.length;i++){if (mdp_id =links[i].innerHTML.match(/mdp\.\d{14}/)){ var newURL='http://dev-linux.umdl.umich.edu/cgi/pt?id=' + mdp_id;window.location = newURL;}}">My MBooks Bookmarklet</a>
+-->
+
+<!-- new one uses hdl.handle.net/2027/anything since mdp may be replaced by miun or other namespace-->
+
+
+
+  </body>
+</html>
