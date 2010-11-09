@@ -107,6 +107,9 @@ sub cont_get_usage {
        control-j -k stop|start -r run -R shard -O
           -O starts/stops optimize-j
 
+       control-j -k stop|start -r run -R shard -C
+          -C starts/stops check-j
+
        control-j -k conf -r run -h host -n num_producers
           configure host names and number of producers per host
 
@@ -121,9 +124,9 @@ sub cont_get_usage {
     return $s;
 }
 
-our ($opt_k, $opt_r, $opt_R, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_L );
+our ($opt_k, $opt_r, $opt_R, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_L, $opt_C );
 
-my $ops = getopts('k:r:R:n:h:edDVOt:');
+my $ops = getopts('k:r:R:n:h:edDVOt:C');
 
 # Required
 my $KOMMAND = $opt_k;
@@ -132,6 +135,7 @@ my $RUN = $opt_r;
 my $ENQUEUER = $opt_e;
 my $DRIVER = $opt_D;
 my $OPTIMIZE = $opt_O;
+my $CHECK = $opt_C;
 my $RIGHTS = $opt_V;
 
 my $TIMESTAMP = $opt_t;
@@ -260,6 +264,20 @@ eval {
                 c_optimize_control($C, $DBH, $RUN, $shard, $enabled);
             }
         }
+        elsif ($CHECK) {
+            my $shard = $opt_R;
+            if (! defined($shard)) {
+                my $s = qq{bad shard arg="$shard"} . cont_get_usage();
+                my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+                __output($s);
+                __non_interactive_err_output($rc, $s);
+
+                exit $rc;
+            }
+            else {
+                c_check_control($C, $DBH, $RUN, $shard, $enabled);
+            }
+        }
         else {
             my $shard = $opt_R; # optional
             my $host = $opt_h; # optional
@@ -367,6 +385,10 @@ sub driver_initialization {
     foreach my $__shard (@NUM_SHARDS_LIST) {
         __output(qq{\tdisable optimize-j scripts for shard=$__shard ...});
         Db::set_optimize_enabled($C, $dbh, $run, $__shard, 0);
+        __output(qq{Done.\n});
+
+        __output(qq{\tdisable check-j scripts for shard=$__shard ...});
+        Db::set_check_enabled($C, $dbh, $run, $__shard, 0);
         __output(qq{Done.\n});
     }
 
@@ -593,6 +615,26 @@ sub c_optimize_control {
     Db::set_optimize_enabled($C, $dbh, $run, $shard, $enabled);
     Log_optimize_start_stop($C, $run, $shard, $what);
     __output(qq{\t$what optimize shard=$shard\n});
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_check_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_check_control {
+    my ($C, $dbh, $run, $shard, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    Db::set_check_enabled($C, $dbh, $run, $shard, $enabled);
+    Log_check_start_stop($C, $run, $shard, $what);
+    __output(qq{\t$what check shard=$shard\n});
 }
 
 
@@ -864,6 +906,22 @@ sub Log_optimize_start_stop {
     my ($C, $run, $shard, $what) = @_;
 
     my $s = qq{***OPTIMIZE $what: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_check_start_stop
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_check_start_stop {
+    my ($C, $run, $shard, $what) = @_;
+
+    my $s = qq{***CHECK $what: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 

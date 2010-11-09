@@ -209,6 +209,7 @@ CREATE TABLE `j_host_control` (`run` smallint(3) NOT NULL default '0', `host` va
 --
 -- build    ::= 0=noerror                   2=error
 -- optimiz  ::= 0=unoptimized, 1=optimized, 2=error
+-- checkd   ::= 0=unchecked,   1=checked,   2=error
 --
 ---------------------------------------------------------------------
 CREATE TABLE `j_shard_control` (
@@ -218,13 +219,15 @@ CREATE TABLE `j_shard_control` (
         `suspended`     tinyint(1)  NOT NULL default '0',
         `build`         tinyint(1)  NOT NULL default '0',
         `optimiz`       tinyint(1)  NOT NULL default '0',
+        `checkd`        tinyint(1)  NOT NULL default '0',
         `build_time`    timestamp   NOT NULL default '0000-00-00 00::00::00',
         `optimize_time` timestamp   NOT NULL default '0000-00-00 00::00::00',
+        `checkd_time`   timestamp   NOT NULL default '0000-00-00 00::00::00',
         `release_state` tinyint(1)  NOT NULL default '0',
                 PRIMARY KEY  (`run`, `shard`)
        );
 
-CREATE TABLE `j_shard_control` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', `suspended` tinyint(1) NOT NULL default '0', `build` tinyint(1) NOT NULL default '0', `optimiz` tinyint(1) NOT NULL default '0', `build_time` timestamp NOT NULL default '0000-00-00 00::00::00', `optimize_time` timestamp NOT NULL default '0000-00-00 00::00::00', `release_state` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `shard`));
+CREATE TABLE `j_shard_control` (`run`  smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', `suspended` tinyint(1) NOT NULL default '0', `build` tinyint(1) NOT NULL default '0', `optimiz` tinyint(1) NOT NULL default '0', `checkd` tinyint(1) NOT NULL default '0', `build_time` timestamp NOT NULL default '0000-00-00 00::00::00', `optimize_time` timestamp NOT NULL default '0000-00-00 00::00::00', `checkd_time` timestamp NOT NULL default '0000-00-00 00::00::00', `release_state` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `shard`));
 
 
 ---------------------------------------------------------------------
@@ -264,6 +267,18 @@ CREATE TABLE `j_commit_control` (
        );
 
 CREATE TABLE `j_commit_control` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `shard`));
+
+---------------------------------------------------------------------
+--
+---------------------------------------------------------------------
+CREATE TABLE `j_check_control` (
+        `run`      smallint(3) NOT NULL default '0',
+        `shard`    smallint(2) NOT NULL default '0',
+        `enabled`  tinyint(1)  NOT NULL default '0',
+                PRIMARY KEY  (`run`, `shard`)
+       );
+
+CREATE TABLE `j_check_control` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `shard`));
 
 
 

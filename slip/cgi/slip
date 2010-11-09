@@ -258,8 +258,8 @@ sub report_shards {
     
     my @states_head = ();
     if ($driver_driven) {
-        @enabled_head = ("ind", "opt");
-        @states_head = ("indexed", "optimized", "released");
+        @enabled_head = ("ind", "opt", "ckd");
+        @states_head = ("indexed", "optimized", "checked", "released");
     }
     my %sh_tot;
     
@@ -280,14 +280,21 @@ sub report_shards {
         else {
             $e = Db::shard_is_suspended($C, $DBH, $run, $shard) ? 'sus' : 'enb';
         }
+        my $enabled = td({-class=>"$shard_class"}, ["$e"]);
         
         my $opt_enabled = Db::Select_optimize_enabled($C, $DBH, $run, $shard);
         my $opt_class = $opt_enabled ? 'enabled' : 'not-enabled';
-        
-        my $enabled = td({-class=>"$shard_class"}, ["$e"]);
         if ($driver_driven) {
             my $opt_en = td({-class=>"$opt_class"}, ["$opt_enabled"]);
             $enabled .= $opt_en;
+        }
+
+        my $ck_enabled = Db::Select_check_enabled($C, $DBH, $run, $shard);
+        my $ck_class = $ck_enabled ? 'enabled' : 'not-enabled';
+        
+        if ($driver_driven) {
+            my $ck_en = td({-class=>"$ck_class"}, ["$ck_enabled"]);
+            $enabled .= $ck_en;
         }
         
         my $states = '';
@@ -321,6 +328,20 @@ sub report_shards {
                     $os_s = td({-class=>'pending'}, ["$optimizeDoneTime"]);
                 }
             }
+            my $checkDoneTime = Db::Select_shard_check_done($C, $DBH, $run, $shard); 
+            my $check_state = Db::Select_shard_check_state($C, $DBH, $run, $shard);
+            my $os_c = td({-class=>'neutral'}, ["$checkDoneTime"]);
+            if ($check_state == $SLIP_Utils::States::Sht_Check_Error) {
+                $os_c = td({-class=>'error'}, ["$checkDoneTime"]);
+            }
+            else {
+                if (time_is_today($checkDoneTime)) {
+                    $os_c = td({-class=>'good'}, ["$checkDoneTime"]);
+                }
+                else {
+                    $os_c = td({-class=>'pending'}, ["$checkDoneTime"]);
+                }
+            }
             my $rs_s;
             my $release_state = Db::Select_shard_release_state($C, $DBH, $run, $shard);
             if ($release_state == $SLIP_Utils::States::Srl_Rel_Error) {
@@ -336,7 +357,7 @@ sub report_shards {
                 $rs_s = td({-class=>'neutral'}, ["unk"]);
             }
             
-            $states = $bs_s . $os_s . $rs_s;
+            $states = $bs_s . $os_s . $os_c . $rs_s;
         }
         
         my ($total_errs, $index, $ocr, $meta, $critical, $server) =
@@ -371,7 +392,7 @@ sub report_shards {
     }
     
     my $totals;
-    my $blank_fields = ($driver_driven ? ["","","","","","","",""] : ["","","",""]);
+    my $blank_fields = ($driver_driven ? ["","","","","","","","",""] : ["","","",""]);
     if (scalar(@num_shards_list) > 1) {
         $totals = td({-class=>"hidden-cell-1"}, $blank_fields) . td([$sh_tot{'num_docs'}, $sh_tot{'size'}, $sh_tot{'max'}, $sh_tot{'total_errs'}, $sh_tot{'index'}, $sh_tot{'ocr'}, $sh_tot{'meta'}, $sh_tot{'server'}, $sh_tot{'critical'}]);
     }   
@@ -381,8 +402,8 @@ sub report_shards {
         $TR = Tr({-align=>"center"},
                  [
                   th({-class=>"hidden-cell-1", -colspan=>1}, "") . 
-                  th({-colspan=>2}, "enabled") . 
-                  th({-colspan=>3}, "completion times") . 
+                  th({-colspan=>3}, "enabled") . 
+                  th({-colspan=>4}, "completion times") . 
                   th({-class=>"hidden-cell-1", -colspan=>5}, "") . 
                   th({-colspan=>6, -width=>"15%"},  "errors") . $N,
                   th({-width=>"2%"}, ["shard", @enabled_head, @states_head]) . th(["solr instance", "index directory", "num", "size", "max", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,

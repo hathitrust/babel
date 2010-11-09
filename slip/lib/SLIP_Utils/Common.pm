@@ -222,7 +222,7 @@ sub stage_rc_to_string {
     elsif ($rc == $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE) { $s = 'driver-j not at expected stage';   }
     elsif ($rc == $SLIP_Utils::States::RC_DRIVER_BUSY_FILE)   { $s = 'driver-j encountered busy file';   }
     elsif ($rc == $SLIP_Utils::States::RC_DRIVER_FLAGS_DIR)   { $s = 'flags dir unavailable';            }
-    elsif ($rc == $SLIP_Utils::States::RC_DRIVER_CHILD_ERROR) { $s = '(fore|back)ground process error';  }
+    elsif ($rc == $SLIP_Utils::States::RC_CHILD_ERROR)        { $s = '(fore|back)ground process error';  }
     elsif ($rc == $SLIP_Utils::States::RC_ERROR_SHARD_STATES) { $s = 'shard error state exists';         }
     elsif ($rc == $SLIP_Utils::States::RC_NO_INDEX_DIR)       { $s = 'bad index directory';              }
     elsif ($rc == $SLIP_Utils::States::RC_BAD_SCHED_FILE)     { $s = 'schedule file i/o error';          }

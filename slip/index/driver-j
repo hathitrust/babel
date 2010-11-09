@@ -145,7 +145,6 @@ $C->set_object('Database', $db);
 my $DBH = $db->get_DBH();
 
 my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
-my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my @NUM_SHARDS_LIST = $config->get('num_shards_list');
 my $Child_Err_File =
     qq{/tmp/driver_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
@@ -161,6 +160,7 @@ if (! -e $flags_dir) {
     exit $rc;
 }
 
+use constant CHECK_SLEEP_WAIT => 300; # 5 minutes
 use constant OPTIMIZE_SLEEP_WAIT => 300; # 5 minutes
 use constant INDEX_SLEEP_WAIT    => 60;  # 1 minute
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
@@ -297,6 +297,10 @@ sub run_driver {
             # Optimize shards
             handle_Stage_rc($_Stage, handle_Optimizing($C, $dbh, $run));
         }
+        elsif ($_Stage eq $SLIP_Utils::States::St_Checking) {
+            # Count segments and maybe run Lucene CheckIndex
+            handle_Stage_rc($_Stage, handle_Checking($C, $dbh, $run));
+        }
 
         $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
         if ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
@@ -304,6 +308,10 @@ sub run_driver {
             # was an error so the states of individual shards will be
             # preserved.
             __Reset_shard_states($C, $dbh, $run);
+
+            # Remove busy file
+            unlink($BUSY_FILE);
+            # Jump out of loop
             last;
         }
     }
@@ -485,7 +493,7 @@ sub handle_Optimizing {
     my ($C, $dbh, $run) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Optimizing;
-    my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+    my $_Next_Stage = $SLIP_Utils::States::St_Checking;
 
     __output("$_Stage\n");
 
@@ -511,19 +519,66 @@ sub handle_Optimizing {
         }
 
         if ($rc == 0) {
-            # Informational segment count test. System snap/release
-            # also check and abort.
-            $rc = __check_shards_segment_count($C, $run, $_Stage, $LIMIT_SEGS);
+            # Record this optimize finish time for all shards without errors.
+            __record_shards_optimize_done($C, $dbh, $run);
+
+            # Enable checkers to start running from cron
+            $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
 
             # Proceed to next stage.
             SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
-
-            # Remove busy file
-            unlink($BUSY_FILE);
         }
     }
 
     Log_stage($C, $run, $_Stage, ___rate($optimize_START));
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item handle_Checking
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Checking {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Checking;
+    my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+
+    __output("$_Stage\n");
+
+    __check_driver_enabled($C, $dbh, $run);
+    Log_stage($C, $run, $_Stage);
+
+    my $check_START = time();
+
+    my $rc = 0;
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+
+    $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+    if ($rc == 0) {
+        # Wait for all shards to finish checking
+        $rc = __Wait_check_done($C, $dbh, $run, $_Stage, $state_record_ref);
+
+        # Unconditionally disable checkers to stop them from running from cron
+        $rc |= __control_checkers($C, $dbh, $run, $_Stage, 'stop');
+
+        if ($rc == 0) {
+            # Record this check finish time for all shards without errors.
+            __record_shards_check_done($C, $dbh, $run);
+
+            # Proceed to next stage.
+            SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+        }
+    }
+
+    Log_stage($C, $run, $_Stage, ___rate($check_START));
 
     return $rc;
 }
@@ -556,6 +611,47 @@ sub __handle_full_optimize_done {
     return $rc;
 }
 
+# ---------------------------------------------------------------------
+
+=item __Wait_check_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Wait_check_done {
+    my ($C, $dbh, $run, $stage) = @_;
+
+    while (1) {
+        __check_driver_enabled($C, $dbh, $run);
+
+        my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+
+        my $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+        return $rc if ($rc > 0);
+        # POSSIBLY NOTREACHED
+
+        if ($stage eq $SLIP_Utils::States::St_Checking) {
+            if ($state_record_ref->{'num_checked'} == scalar(@NUM_SHARDS_LIST)) {
+                return 0;
+            }
+            else {
+                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
+                    __output("  wait Checking: STOPSLIP\n");
+                    sleep CHECK_SLEEP_WAIT;
+                }
+
+                __output("  wait Checking\n");
+                sleep CHECK_SLEEP_WAIT;
+            }
+        }
+        else {
+            return $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE;
+        }
+    }
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -574,8 +670,8 @@ sub __Wait_optimize_done {
 
         my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
 
-        my $rc_0 = __check_shard_errors($C, $dbh, $run, $state_record_ref);
-        return $rc_0 if ($rc_0 > 0);
+        my $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
+        return $rc if ($rc > 0);
         # POSSIBLY NOTREACHED
 
         if ($stage eq $SLIP_Utils::States::St_Optimizing) {
@@ -746,6 +842,49 @@ sub __record_shards_build_done {
 
 # ---------------------------------------------------------------------
 
+=item __record_shards_optimize_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __record_shards_optimize_done {
+    my ($C, $dbh, $run) = @_;
+
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        my $optimize_state = Db::Select_shard_optimize_state($C, $dbh, $run, $shard);
+
+        if ($optimize_state == $SLIP_Utils::States::Sht_Optimized) {
+            Db::set_shard_optimize_done($C, $dbh, $run, $shard);
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __record_shards_check_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __record_shards_check_done {
+    my ($C, $dbh, $run) = @_;
+
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        my $check_state = Db::Select_shard_check_state($C, $dbh, $run, $shard);
+
+        if ($check_state == $SLIP_Utils::States::Sht_Checked) {
+            Db::set_shard_check_done($C, $dbh, $run, $shard);
+        }
+    }
+}
+
+# ---------------------------------------------------------------------
+
 =item __get_shard_states
 
 Description
@@ -760,15 +899,19 @@ sub __get_shard_state_record {
 
     $h{'num_errors'}    = 0;
     $h{'num_optimized'} = 0;
+    $h{'num_checked'}   = 0;
 
     foreach my $shard (@NUM_SHARDS_LIST) {
         my $build_state    = Db::Select_shard_build_state($C, $dbh, $run, $shard);
         my $optimize_state = Db::Select_shard_optimize_state($C, $dbh, $run, $shard);
+        my $check_state    = Db::Select_shard_check_state($C, $dbh, $run, $shard);
 
         $h{'num_errors'}    += ($build_state    == $SLIP_Utils::States::Sht_Build_Error);
         $h{'num_errors'}    += ($optimize_state == $SLIP_Utils::States::Sht_Optimize_Error);
+        $h{'num_errors'}    += ($check_state    == $SLIP_Utils::States::Sht_Check_Error);
 
         $h{'num_optimized'} += ($optimize_state == $SLIP_Utils::States::Sht_Optimized);
+        $h{'num_checked'}   += ($check_state    == $SLIP_Utils::States::Sht_Checked);
     }
 
     return \%h;
@@ -836,36 +979,10 @@ sub __check_sysrc {
     if ($sysrc > 0) {
         my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
         my $ss = qq{driver-j system_rc=$sysrc attempting $s stage=$stage error:$$s_ref\n};
-        $rc = $SLIP_Utils::States::RC_DRIVER_CHILD_ERROR;
+        $rc = $SLIP_Utils::States::RC_CHILD_ERROR;
         Log_stage($C, $run, $stage, $ss);
         __output($ss);
         __non_interactive_err_output($rc, $ss);
-    }
-
-    return $rc;
-}
-
-# ---------------------------------------------------------------------
-
-=item __check_shards_segment_count
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __check_shards_segment_count {
-    my ($C, $run, $stage, $num_segs) = @_;
-
-    my $rc = 0;
-
-    # Make sure shards have correct number of segments post-optimize
-    foreach my $shard (@NUM_SHARDS_LIST) {
-        my $cmd = $SCRIPTS_DIR . qq{check-shards -r$run -N$num_segs 2>$Child_Err_File};
-        my $sysrc = system($cmd);
-
-        my $s = qq{"check-shards -r$run -N$num_segs"};
-        $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
     }
 
     return $rc;
@@ -885,12 +1002,39 @@ sub __control_optimizers {
 
     my $rc = 0;
 
-    # Start or stop the commit-j script for each shard
+    # Start or stop the optimize-j script for each shard
     foreach my $shard (@NUM_SHARDS_LIST) {
         my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -O 2>$Child_Err_File};
         my $sysrc = system($cmd);
 
         my $s = qq{"control-j -r$run -R$shard -k$option -O"};
+        $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
+    }
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __control_checkers
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __control_checkers {
+    my ($C, $dbh, $run, $stage, $option) = @_;
+
+    my $rc = 0;
+
+    # Start or stop the check-j script for each shard
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -C 2>$Child_Err_File};
+        my $sysrc = system($cmd);
+
+        my $s = qq{"control-j -r$run -R$shard -k$option -C"};
         $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
     }
 
@@ -1065,7 +1209,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

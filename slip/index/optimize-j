@@ -102,7 +102,7 @@ if (defined($opt_S)) {
 
 # Force a long timeout unless explicitly over-ridden for some
 # reason. We do no want to timeout before optimize, staged or not,
-# finishes so check-shards will see final result. Optimize to 1 or 2
+# finishes so check-j will see final result. Optimize to 1 or 2
 # segs can take a long time.
 my $TIMEOUT = defined($opt_T) ? $opt_T : LARGE_TIMEOUT; # optional
 
@@ -180,7 +180,7 @@ eval {
     }
 };
 if ($@) {
-    Log_osched_error($C, $RUN, $@);
+    Log_optimize_error($C, $RUN, $SHARD, "Problem with schedule file: $@");
     exit $SLIP_Utils::States::RC_BAD_SCHED_FILE;
 }   
 
@@ -263,7 +263,13 @@ sub handle_optimize_rc {
             . qq{ [stop][self] State=$state connect_error=$connect_error};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
-    Log_optimize($C, $run, $s);
+    if ($connect_error || ($rc > 0)) {
+        Log_optimize_error($C, $run, $shard, $s);
+    }
+    else {
+        Log_optimize($C, $run, $shard, $s);
+    }
+
 
     exit $rc if ($rc > 0);
 }
@@ -357,7 +363,7 @@ sub c_optimize {
             my $segs = " limit_to_segments=$LIMIT_SEGS\n";
             my $s1 = qq{OPTIMIZE: [start] run=$RUN shard=$shard staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
             __output($s1);
-            Log_optimize($C, $run, $s1);
+            Log_optimize($C, $run, $shard, $s1);
 
             # Optimize
             my ($index_state, $stats_ref) =
@@ -378,7 +384,7 @@ sub c_optimize {
 
             my $e = sprintf(qq{elapsed=%.3f total=%.3f}, $elapsed, $total_elapsed);
             my $s2 = qq{OPTIMIZE: [done] run=$RUN shard=$shard index_state=$success_str $e staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
-            Log_optimize($C, $run, $s2);
+            Log_optimize($C, $run, $shard, $s2);
             __output($s2);
             __non_interactive_err_output($rc, $s2);
 
@@ -399,26 +405,26 @@ Description
 
 # ---------------------------------------------------------------------
 sub Log_optimize {
-    my ($C, $run, $s) = @_;
+    my ($C, $run, $shard, $s) = @_;
 
-    my $s0 = qq{***OPTIMIZE: } . Utils::Time::iso_Time() . qq{ $s};
+    my $s0 = qq{***OPTIMIZE: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
     SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run, 1);
 }
 
 
 # ---------------------------------------------------------------------
 
-=item Log_osched_error
+=item Log_optimize_error
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub Log_osched_error {
-    my ($C, $run, $error) = @_;
+sub Log_optimize_error {
+    my ($C, $run, $shard, $error) = @_;
 
-    my $s = qq{***OPTIMIZE [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run $error};
+    my $s = qq{***OPTIMIZE [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard $error};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 

@@ -1459,6 +1459,7 @@ sub Select_shard_build_done {
     return $time;
 }
 
+
 # ---------------------------------------------------------------------
 
 =item Select_shard_optimize_done
@@ -1472,6 +1473,26 @@ sub Select_shard_optimize_done {
     my ($C, $dbh, $run, $shard) = @_;
 
     my $statement = qq{SELECT optimize_time FROM j_shard_control WHERE run=$run AND shard=$shard};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+
+    my $time = $sth->fetchrow_array || '$MYSQL_ZERO_TIMESTAMP';
+    return $time;
+}
+
+# ---------------------------------------------------------------------
+
+=item Select_shard_check_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Select_shard_check_done {
+    my ($C, $dbh, $run, $shard) = @_;
+
+    my $statement = qq{SELECT checkd_time FROM j_shard_control WHERE run=$run AND shard=$shard};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 
@@ -1552,6 +1573,23 @@ sub set_shard_optimize_done {
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
 
+# ---------------------------------------------------------------------
+
+=item set_shard_check_done
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub set_shard_check_done {
+    my ($C, $dbh, $run, $shard) = @_;
+
+    my $statement = qq{UPDATE j_shard_control SET checkd_time=NOW() WHERE run=$run AND shard=$shard};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -1565,7 +1603,7 @@ Description
 sub Reset_shard_control {
     my ($C, $dbh, $run, $shard) = @_;
 
-    my $statement = qq{UPDATE j_shard_control SET build=0, optimiz=0 WHERE run=$run AND shard=$shard};
+    my $statement = qq{UPDATE j_shard_control SET build=0, optimiz=0, checkd=0 WHERE run=$run AND shard=$shard};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
@@ -1589,7 +1627,7 @@ sub init_shard_control {
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 
-    $statement = qq{INSERT INTO j_shard_control SET run=$run, shard=$shard, enabled=0, suspended=0, build=0, optimiz=0, build_time='$MYSQL_ZERO_TIMESTAMP', optimize_time='$MYSQL_ZERO_TIMESTAMP', release_state=0};
+    $statement = qq{INSERT INTO j_shard_control SET run=$run, shard=$shard, enabled=0, suspended=0, build=0, optimiz=0, checkd=0, build_time='$MYSQL_ZERO_TIMESTAMP', optimize_time='$MYSQL_ZERO_TIMESTAMP', checkd_time='$MYSQL_ZERO_TIMESTAMP', release_state=0};
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
@@ -1772,6 +1810,65 @@ sub Select_shard_optimize_state {
     my $state = $sth->fetchrow_array;
 
     return $state || $SLIP_Utils::States::Sht_Not_Optimized;
+}
+
+# ---------------------------------------------------------------------
+
+=item set_shard_check_state
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub set_shard_check_state {
+    my ($C, $dbh, $run, $shard, $state) = @_;
+
+    my ($statement, $sth);
+
+    $statement = qq{LOCK TABLES j_shard_control WRITE};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    # Error state is terminal
+    my $current_state = Select_shard_check_state($C, $dbh, $run, $shard);
+    if ($current_state == $SLIP_Utils::States::Sht_Check_Error) {
+        $statement = qq{UNLOCK TABLES};
+        DEBUG('lsdb', qq{DEBUG: $statement});
+        $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+        return;
+    }
+    # POSSIBLY NOTREACHED
+
+    $statement = qq{UPDATE j_shard_control SET checkd=$state WHERE run=$run AND shard=$shard};
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+
+    $statement = qq{UNLOCK TABLES};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+}
+
+# ---------------------------------------------------------------------
+
+=item Select_shard_check_state
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Select_shard_check_state {
+    my ($C, $dbh, $run, $shard) = @_;
+
+    my $statement = qq{SELECT checkd FROM j_shard_control WHERE run=$run AND shard=$shard};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+
+    my $state = $sth->fetchrow_array;
+
+    return $state || $SLIP_Utils::States::Sht_Not_Checkd;
 }
 
 # ---------------------------------------------------------------------
@@ -2077,7 +2174,7 @@ sub set_rights_enabled {
 # =====================================================================
 # =====================================================================
 #
-#    Control tables:  [j_commit_control] @@
+#    Control tables:  [j_commit_control][j_check_control] @@
 #
 # =====================================================================
 # =====================================================================
@@ -2112,6 +2209,46 @@ sub Select_optimize_enabled {
     my ($C, $dbh, $run, $shard) = @_;
 
     my $statement = qq{SELECT enabled FROM j_commit_control WHERE run=$run AND shard=$shard};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+
+    my $enabled = $sth->fetchrow_array || 0;
+    DEBUG('lsdb', qq{DEBUG: $statement ::: enabled=$enabled});
+
+    return $enabled;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item set_check_enabled
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub set_check_enabled {
+    my ($C, $dbh, $run, $shard, $enabled) = @_;
+
+    my $statement = qq{REPLACE INTO j_check_control SET run=$run, shard=$shard, enabled=$enabled};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
+# ---------------------------------------------------------------------
+
+=item Select_check_enabled
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Select_check_enabled {
+    my ($C, $dbh, $run, $shard) = @_;
+
+    my $statement = qq{SELECT enabled FROM j_check_control WHERE run=$run AND shard=$shard};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 
