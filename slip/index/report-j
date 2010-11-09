@@ -494,15 +494,16 @@ Description
 sub report_flags_state {
     my ($C, $run) = @_;
     
-    my $busy;
+    my $busy = (-e '/lss/prod/flags/busy') ? 'YES' : 'no';
+    my $stop = (-e '/htapps/slip/etc/STOPSLIP') ? 'YES' : 'no';
     if ($DRIVER) {
-        $busy = ($HOST eq 'bubble') ? (-e '/lss/prod/flags/busy') : qq{Undetermined: $HOST is not bubble};
+        $busy = ($HOST eq 'bubble') ? $busy : qq{Undetermined: $HOST is not bubble};
     }
     else {
         $busy = 'Not driver driven';
     }
 
-    my $stop = (-e '/htapps/slip/etc/STOPSLIP') ? 'YES' : 'no';
+    my $stop = ($HOST eq 'bubble') ? $stop : qq{Undetermined: $HOST is not bubble};
     
     my $fo = "full optimize not configured for run=$run";
     if (Scheduler::full_optimize_supported($C, $run)) {
