@@ -71,7 +71,7 @@ wayf:
   - http://__STAGE__.hathitrust.org/cgi/wayf
 
 slip:
-  - http://__STAGE__.hathitrust.org/cgi/slip
+  - http://__STAGE__.hathitrust.org/cgi/slip?r=10
   - /htapps/__STAGE__/slip/index/commit-j
   - /htapps/__STAGE__/slip/index/control-j
   - /htapps/__STAGE__/slip/index/delete-j
@@ -82,8 +82,9 @@ slip:
   - /htapps/__STAGE__/slip/index/optimize-j
   - /htapps/__STAGE__/slip/index/query-j
   - /htapps/__STAGE__/slip/index/rebuild-j
-  - /htapps/__STAGE__/slip/index/report-j
+  - /htapps/__STAGE__/slip/index/report-j -r10
   - /htapps/__STAGE__/slip/index/rights-j
   - /htapps/__STAGE__/slip/index/sizer-j
   - /htapps/__STAGE__/slip/index/sync-j
   - /htapps/__STAGE__/slip/index/timeouts-j
+  - /htapps/__STAGE__/slip/index/check-j -r10 -R1 -n -O2 -C
