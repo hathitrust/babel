@@ -115,7 +115,7 @@ my $NOOP = $opt_n; # optional
 
 if ($INTERACTIVE) {
     my $s = q{Are you running from a shell that can see the Solr index directory for `ls`? [N] };
-    __confirm($s);
+    __confirm($s) unless($NOOP);
 }
 
 # Do not try to check this shard while I am running already
@@ -181,7 +181,7 @@ eval {
             "check-j: CHECK shard=$SHARD CheckIndex="
               . ($CHECK_INDEX ? 'yes' : 'no')
                 . " check for segments=$LIMIT_SEGS"
-                  . ($NOOP ? "NOOP\n" : "\n") ;
+                  . ($NOOP ? " ---> NOOP\n" : "\n") ;
         __output($s);
 
         handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST,
