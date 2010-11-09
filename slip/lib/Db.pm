@@ -1868,7 +1868,7 @@ sub Select_shard_check_state {
 
     my $state = $sth->fetchrow_array;
 
-    return $state || $SLIP_Utils::States::Sht_Not_Checkd;
+    return $state || $SLIP_Utils::States::Sht_Not_Checked;
 }
 
 # ---------------------------------------------------------------------
