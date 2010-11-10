@@ -56,6 +56,7 @@ use Db;
 use Scheduler;
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
+use SLIP_Utils::Processes;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
@@ -76,6 +77,8 @@ our ($opt_r, $opt_R, $opt_C, $opt_O, $opt_d, $opt_n);
 
 my $ops = getopts('r:R:CdnO:');
 use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
+use constant TOMCAT_RUNNING_TRIES => 10;
+use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
 
 my $INTERACTIVE = $ENV{'TERM'};
 
@@ -111,7 +114,6 @@ if (! defined($LIMIT_SEGS)) {
 }
 
 my $CHECK_INDEX = $opt_C; # optional
-my $NOOP = $opt_n; # optional
 
 if ($INTERACTIVE) {
     my $s = q{Are you running from a shell that can see the Solr index directory for `ls`? [N] };
@@ -282,7 +284,7 @@ sub __check_c_sysrc {
         $rc = $SLIP_Utils::States::RC_CHILD_ERROR;
         __output($ss);
         __non_interactive_err_output($rc, $ss);
-        Log_check_error($C, $run, $shard, $ss); 
+        Log_check_error($C, $run, $shard, $ss);
     }
 
     return $rc;
@@ -301,7 +303,7 @@ sub __run_check_shard {
     my ($C, $run, $shard, $num_segs) = @_;
 
     return 0 if $NOOP;
-    
+
     my $cmd = qq{$SCRIPTS_DIR/check-shard -r$run -R$shard -N$num_segs 2> $Child_Err_File};
     my $output = `$cmd`;
     my $rc = __check_c_sysrc($?, $C, $run, $shard, "check num_segs=$num_segs");
@@ -309,7 +311,7 @@ sub __run_check_shard {
     if ($rc == 0) {
         Log_check($C, $run, $shard, $output);
     }
-    
+
     return $rc;
 }
 
@@ -326,13 +328,34 @@ sub __run_s_tomcat {
     my ($C, $run, $shard, $action) = @_;
 
     return 0 if $NOOP;
+
+    my $rc = 0;
     
     # Try to act on a tomcat
     my $cmd = qq{sudo /etc/init.d/tomcat-build $action $shard};
     my $output = `$cmd 2> $Child_Err_File`;
-    my $rc = __check_c_sysrc($?, $C, $run, $shard, "$action tomcat");
-    
-    if ($rc == 0) {
+
+    # The rc from tomcat-build is unreliable. Test result by looking at
+    # process table to make sure sure it stopped
+    my $tomcat_pattern = $C->get_object('MdpConfig')->get('tomcat_pattern');
+    $tomcat_pattern =~ s,__SHARD__,$shard,;
+
+    my $tries = 0;
+    my $num = SLIP_Utils::Processes::num_tomcats_running($C, $tomcat_pattern);
+    while ($num > 0) {
+        $tries++;
+        last if ($tries > TOMCAT_RUNNING_TRIES);
+        sleep TOMCAT_TRIES_WAIT;
+    }
+
+    if ($tries > TOMCAT_RUNNING_TRIES) {
+        $rc = $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL;
+        my $s = qq{check-j tomcat failed to stop run=$run shard=$shard\n};
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        Log_check_error($C, $run, $shard, $s);
+    }
+    else {
         Log_check($C, $run, $shard, $output);
     }
 
@@ -353,13 +376,13 @@ sub __run_CheckIndex {
     my ($C, $run, $shard) = @_;
 
     return 0 if $NOOP;
-    
+
     # Try to act on a tomcat
     my $cmd = qq{java -Xmx10g -Xms10g -cp /l/local/apache-tomcat-build-$shard/webapps/solr-sdr-build/build-$shard/WEB-INF/lib/lucene-core-2.9-dev.jar -ea:org.apache.lucene... org.apache.lucene.index.CheckIndex  /l/solrs/prod/$shard/data/index };
 
     my $output = `$cmd 2> $Child_Err_File`;
     my $rc = __check_c_sysrc($?, $C, $run, $shard, "CheckIndex");
-    
+
     if ($rc == 0) {
         Log_check($C, $run, $shard, $output);
     }

@@ -226,6 +226,7 @@ sub stage_rc_to_string {
     elsif ($rc == $SLIP_Utils::States::RC_ERROR_SHARD_STATES) { $s = 'shard error state exists';         }
     elsif ($rc == $SLIP_Utils::States::RC_NO_INDEX_DIR)       { $s = 'bad index directory';              }
     elsif ($rc == $SLIP_Utils::States::RC_BAD_SCHED_FILE)     { $s = 'schedule file i/o error';          }
+    elsif ($rc == $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL)   { $s = 'tomcat stop failure';              }
     else                                                      { $s = 'unknown rc';                       }
     
     return $s;
