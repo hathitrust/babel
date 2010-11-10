@@ -48,6 +48,21 @@ if ($help) {
     exit 0;
 }
 
+my $app = shift;
+if (! $app) {
+    print git_list_tags_usage();
+    exit 1;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+my $fail_msg = qq{Failed to stage application ($app)\n};
+my $app_dir = "$app_root/$app";
+    
+if (! validate_existing_app($repo_root, $app_root, $app)) {
+    PrintN($fail_msg);
+    exit 1;
+}
+
 my $tags = G_list_tags($list_num_tags);
 
 if ($tags) {
@@ -66,7 +81,7 @@ exit;
 
 # ---------------------------------------------------------------------
 sub git_list_tags_usage {
-    my $s = qq{Usage: git-list-tags [options]
+    my $s = qq{Usage: git-list-tags [options] <app>
            where <app> is the application to list tags for 
                  -l <num> sets number to list. default is 3
                  -h print help\n};

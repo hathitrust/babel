@@ -5,6 +5,8 @@ use Getopt::Std;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
+use File::Basename;
+my $LOCATION = dirname(__FILE__);
 
 use ToolLib;
 $| = 1;
@@ -20,8 +22,7 @@ my @apps = get_app_list($app_root);
 
 foreach my $app (@apps) {
     print "\n-----------------------------------------------------------\n";
-    print `$ENV{SDRROOT}/mdp-tools/scripts/git-me $app`;
-
+    print `$LOCATION/git-me $app`;
 }
 
 exit 0;

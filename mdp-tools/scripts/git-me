@@ -12,12 +12,14 @@ git-me <app>
 
 =over 8
 
+-S pull the latest submodule versions
+
 =back
 
 =head1 DESCRIPTION
 
 B<git-me> checkout the master branch, fetch objects, rebase to
-origin/master ans update submodules.
+origin/master and update submodules.
 
 =cut
 
@@ -31,12 +33,19 @@ use ToolLib;
 $| = 1;
 
 sub git_me_app_usage {
-    my $s = qq{Usage: git-me <app> [<branch>]
+    my $s = qq{Usage: git-me [options] <app> [<branch>]
            where <app> is the application to sync with the upstream
                  <branch> is optional, defaults to 'master'\n};
     return $s;
 }
 
+our ($opt_S, $opt_h);
+my $ops = getopts('Sh');
+
+if ($opt_h) {
+    print git_me_app_usage();
+    exit 0;
+}
 
 my $app = shift;
 if (! $app) {
@@ -45,10 +54,19 @@ if (! $app) {
 }
 
 my $branch = shift || 'master';
+my $SUBMODULES = $opt_S;
 
 my ($repo_root, $app_root) = get_HTDE_roots();
 
-PrintY("Sync $app on branch=$branch with upstream\n");
+PrintY("Rebase $app on branch=$branch to origin/master\n");
+if ($SUBMODULES) {
+    if (! query_yn("\t... and pull latest submodules?", 'y')) {
+        exit 0;
+    }
+    else {
+        undef $SUBMODULES;
+    }
+}
 
 if (! validate_existing_app($repo_root, $app_root, $app)) {
     print git_me_app_usage();
@@ -68,6 +86,10 @@ exit 1 if (! execute_command("git checkout $branch"));
 exit 1 if (! execute_command("git fetch origin master"));
 exit 1 if (! execute_command("git rebase origin/master"));
 exit 1 if (! execute_command("git submodule update --init"));
+if ($SUBMODULES) {
+    exit 1 if (! execute_command("git submodule foreach git pull origin master -v"));
+}
+execute_command("git submodule status");
 
 exit 0;
 

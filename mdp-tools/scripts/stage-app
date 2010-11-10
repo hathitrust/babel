@@ -40,6 +40,8 @@ use Getopt::Std;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
+use File::Basename;
+my $LOCATION = dirname(__FILE__);
 
 use ToolLib;
 
@@ -67,7 +69,7 @@ if ($help) {
 my $ALL = $opt_A;
 my @apps;
 if ($ALL) {
-    @apps = `cat $ENV{SDRROOT}/mdp-tools/app-list.txt`;
+    @apps = `cat $LOCATION/../app-list.txt`;
     chomp(@apps);
 }
 else {
@@ -123,7 +125,7 @@ foreach my $app (@apps) {
         next;
     }
     
-    print `$ENV{SDRROOT}/mdp-tools/scripts/sanity-app -s$STAGE $app`;
+    print `$LOCATION/sanity-app -s$STAGE $app`;
     $rc |= $?;
     
     PrintY(qq{Staging succeeds\n}) unless ($rc);

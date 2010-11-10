@@ -28,6 +28,8 @@ use IPC::Run;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
+use File::Basename;
+my $LOCATION = dirname(__FILE__);
 
 use ToolLib;
 
@@ -49,7 +51,7 @@ my $VERBOSE = $opt_v;
 my $ALL = $opt_A;
 my @apps;
 if ($ALL) {
-    @apps = `cat $ENV{SDRROOT}/mdp-tools/app-list.txt`;
+    @apps = `cat $LOCATION/../app-list.txt`;
     chomp(@apps);
 }
 else {
@@ -60,7 +62,7 @@ else {
     }
 }
 
-my $CONFIG = YAML::XS::LoadFile("$ENV{SDRROOT}/mdp-tools/lib/Config/sanity-config.yaml");
+my $CONFIG = YAML::XS::LoadFile("$LOCATION/../lib/Config/sanity-config.yaml");
 my $rc = 0;
 foreach my $app (@apps) {
     my $url_arr_ref = _get_config_val($app);
