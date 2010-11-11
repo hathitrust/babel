@@ -26,6 +26,8 @@
        <xsl:call-template name="helplink"/>
        <xsl:call-template name="footerfeedbacklink"/>
        <xsl:call-template name="footertakedownlink"/>
+       <xsl:call-template name="footerprivacylink"/>
+       <xsl:call-template name="footercontactlink"/>
      </ul>
    </div>
  </xsl:template>
@@ -97,7 +99,19 @@
 
  <xsl:template name="footertakedownlink">
    <li>
-     | <a href="http://www.hathitrust.org/take_down_policy" title="item removal policy">Take-Down Policy</a>
+     <a href="http://www.hathitrust.org/take_down_policy" title="item removal policy">Take-Down Policy</a>
+   </li>
+ </xsl:template>
+
+ <xsl:template name="footerprivacylink">
+   <li>
+     <a href="http://www.hathitrust.org/privacy" title="privacy policy">Privacy</a>
+   </li>
+ </xsl:template>
+ 
+ <xsl:template name="footercontactlink">
+   <li>
+     <a href="http://www.hathitrust.org/contact" title="contact information">Contact</a>
    </li>
  </xsl:template>
  

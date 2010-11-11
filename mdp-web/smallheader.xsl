@@ -43,14 +43,14 @@
 
  <xsl:template name="aboutlink">
    <li>
-     <a href="http://www.hathitrust.org" title="About Hathi Trust">About</a>
+     <a href="http://www.hathitrust.org/about" title="About Hathi Trust">About</a>
    </li>
  </xsl:template>
  
  <xsl:template name="helplink">
    <li>
      <a>
-       <xsl:attribute name="href">http://www.hathitrust.org/faq</xsl:attribute>
+       <xsl:attribute name="href">http://www.hathitrust.org/help</xsl:attribute>
        <xsl:attribute name="title">Help page and faq</xsl:attribute>
        <xsl:text>Help</xsl:text>
      </a>
