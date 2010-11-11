@@ -407,12 +407,22 @@ a .colName {
 
 #CBNavContainer {
   height: 35px;
-  background: #eeeeee url(./graphics/grayGradient.gif) repeat-x;
-  border-top: 1px solid #c9c7b8;
+  background: url(./graphics/grayGradient.gif) repeat-x SCROLL 0 0 #EEEEEE;
+  border-bottom: 3px solid #E2E2E2;
+  border-top: 1px solid #C9C7B8;
+  height: 30px;
 }
 
 #CBNav {
+}
 
+#CBNav #selected {
+  background-color:#E2E2E2;
+}
+
+#CBNav #selected a {
+  color:#333333;
+  border-bottom: 0px;
 }
 
 #CBNav ul {
@@ -426,8 +436,6 @@ a .colName {
   height: 30px;
   text-align: center;
   padding: 0;
-  margin: 0;
-  border-right: 1px solid #cdcbbb;
   float: left;
 }
 
@@ -437,18 +445,41 @@ a .colName {
   font-size: 1.1em;
   padding: 5px 10px 7px;
   line-height: 18px;
-  color: #fafafa;
+  color: #FAFAFA;
 }
 
 #CBNav ul li a:hover {
   padding: 5px 10px 7px;
-  background-color: #777777;
+  background-color: #E2E2E2;
+  color: #333333;
 }
 
 #CBNav select {
   margin-right: 10px;
   position: relative;
   top: 3px;
+}
+
+body#PubCollPage li#PubCollLink {
+    background-color: #E2E2E2;
+}
+
+body#PubCollPage li#PubCollLink a {
+    background-color: #E2E2E2;
+    color: #333333;
+}
+
+body#PrivCollPage li#PrivCollLink {
+    background-color: #E2E2E2;
+}
+
+body#PrivCollPage li#PrivCollLink a {
+    background-color: #E2E2E2;
+    color: #333333;
+}
+
+#jumpToColl {
+    margin-left: 5px;
 }
 
 /* Subnav HEADER */

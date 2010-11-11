@@ -69,10 +69,10 @@ function initCBFeedback() {
     var browser = navigator.appName;
     
     if (browser =="Microsoft Internet Explorer") { //Make non-modal for IE
-        YAHOO.mbooks.CBformWidget = new YAHOO.widget.Panel("CBformWidget", { width:'400px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:false, close:true, modal:false, iframe: true} );
+        YAHOO.mbooks.CBformWidget = new YAHOO.widget.Panel("CBformWidget", { width:'400px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:false, iframe: true} );
     }
     else {
-        YAHOO.mbooks.CBformWidget = new YAHOO.widget.Panel("CBformWidget", { width:'400px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:false, close:true, modal:true, iframe: true} );
+        YAHOO.mbooks.CBformWidget = new YAHOO.widget.Panel("CBformWidget", { width:'400px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:true, iframe: true} );
     }
     
     YAHOO.mbooks.CBformWidget.setHeader("Feedback");
