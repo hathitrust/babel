@@ -91,6 +91,12 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/prnc?target=___TARGET___',
                    'enabled' => '1',
                   },
+     'jhu'  =>     {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'Johns Hopkins University',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/jhu?target=___TARGET___',
+                    'enabled' => '1',
+                   },
      
      # Waiting
      'ucsd' =>    {
@@ -109,12 +115,6 @@ package WAYF::IdpConfig;
                     'authtype' => 'shibboleth',
                     'link_text' => 'Cornell University',
                     'template'  => 'https://___HOST___/Shibboleth.sso/cornell?target=___TARGET___',
-                    'enabled' => '0',
-                   },
-     'jhu'  =>     {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'Johns Hopkins University',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/jhu?target=___TARGET___',
                     'enabled' => '0',
                    },
      'uic'  =>     {
