@@ -39,8 +39,8 @@ sub git_me_app_usage {
     return $s;
 }
 
-our ($opt_S, $opt_h);
-my $ops = getopts('Sh');
+our ($opt_h);
+my $ops = getopts('h');
 
 if ($opt_h) {
     print git_me_app_usage();
@@ -54,19 +54,10 @@ if (! $app) {
 }
 
 my $branch = shift || 'master';
-my $SUBMODULES = $opt_S;
 
 my ($repo_root, $app_root) = get_HTDE_roots();
 
 PrintY("Rebase $app on branch=$branch to origin/master\n");
-if ($SUBMODULES) {
-    if (! query_yn("\t... and pull latest submodules?", 'y')) {
-        exit 0;
-    }
-    else {
-        undef $SUBMODULES;
-    }
-}
 
 if (! validate_existing_app($repo_root, $app_root, $app)) {
     print git_me_app_usage();
@@ -86,9 +77,7 @@ exit 1 if (! execute_command("git checkout $branch"));
 exit 1 if (! execute_command("git fetch origin master"));
 exit 1 if (! execute_command("git rebase origin/master"));
 exit 1 if (! execute_command("git submodule update --init"));
-if ($SUBMODULES) {
-    exit 1 if (! execute_command("git submodule foreach git pull origin master -v"));
-}
+
 execute_command("git submodule status");
 
 exit 0;
