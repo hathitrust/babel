@@ -93,6 +93,12 @@ package WAYF::IdpConfig;
                   },
      
      # Waiting
+     'ucsd' =>    {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'University of California, San Diego',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucsd?target=___TARGET___',
+                    'enabled' => '0',
+                   },
      'stanford' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Stanford University',
@@ -163,12 +169,6 @@ package WAYF::IdpConfig;
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Riverside',
                     'template'  => 'https://___HOST___/Shibboleth.sso/ucal-5?target=___TARGET___',
-                    'enabled' => '0',
-                   },
-     'ucal-6' =>   {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'University of California, San Diego',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-6?target=___TARGET___',
                     'enabled' => '0',
                    },
      'ucal-7' =>   {
