@@ -32,10 +32,24 @@
 
       </head>
 
-      <!-- XXX the onload below only needed to use with searchAjaxColl.js, if we don't search from this page we don't need it-->
-      <!--  <body class="yui-skin-sam" onload="setHandlers()"> -->
+      <!-- XXX the onload below only needed to use with
+      searchAjaxColl.js, if we don't search from this page we don't
+      need it-->
+
+      <!-- <body class="yui-skin-sam" onload="setHandlers()"> -->
       
-      <body class="yui-skin-sam">
+      <xsl:element name="body">
+        <xsl:attribute name="class">yui-skin-sam</xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='pub'">
+            <xsl:attribute name="id">PubCollPage</xsl:attribute>
+          </xsl:when>
+          <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='priv'">
+            <xsl:attribute name="id">PrivCollPage</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise></xsl:otherwise>
+        </xsl:choose>
+
         <div id="mbMasterContainer">
           
           <div id="DlpsDev">
@@ -80,7 +94,7 @@
           <xsl:call-template name="google_analytics" />
           
         </div>      
-      </body>
+      </xsl:element> <!-- end body -->
     </html>
   </xsl:template>
   
