@@ -120,7 +120,7 @@
            <a href="http://hathitrust.org"><span title="Catalog Search">Home</span></a>
          </li>
          <li>
-           <a href="http://hathitrust.org/about"><span title="Catalog Search">About</span></a>
+           <a href="http://hathitrust.org/about"><span title="About HathiTrust">About</span></a>
          </li>
          <li id="PubCollLink">
            <xsl:element name="a">
