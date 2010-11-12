@@ -57,7 +57,6 @@
       <h2 class="SkipLink">Navigation links for login, help, feedback, etc.</h2>
         <ul>
           <xsl:call-template name="loginlink"/>
-          <xsl:call-template name="aboutlink"/>
           <xsl:call-template name="helplink"/>
           <xsl:call-template name="feedbacklink"/>
         </ul>
@@ -119,9 +118,6 @@
        <ul>
          <li>
            <a href="http://hathitrust.org"><span title="Catalog Search">Home</span></a>
-         </li>
-         <li>
-           <a href="http://hathitrust.org/about"><span title="Catalog Search">About</span></a>
          </li>
          <li id="PubCollLink">
            <xsl:element name="a">
@@ -217,13 +213,7 @@
      </xsl:choose>
    </li>
  </xsl:template>
- 
- <xsl:template name="aboutlink">
-   <li>
-     <a href="http://www.hathitrust.org/about" title="About Hathi Trust">About</a>
-   </li>
- </xsl:template>
- 
+  
  <xsl:template name="helplink">
    <li>
      <a>

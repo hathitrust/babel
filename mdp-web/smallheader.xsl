@@ -18,7 +18,6 @@
     <div class="MBooksNav">
       <h2 class="SkipLink">Navigation links for login, help, feedback, etc.</h2>
         <ul>
-          <xsl:call-template name="aboutlink"/>
           <xsl:call-template name="helplink"/>
         </ul>
     </div>
@@ -41,12 +40,6 @@
    </div>
  </xsl:template>
 
- <xsl:template name="aboutlink">
-   <li>
-     <a href="http://www.hathitrust.org/about" title="About Hathi Trust">About</a>
-   </li>
- </xsl:template>
- 
  <xsl:template name="helplink">
    <li>
      <a>
