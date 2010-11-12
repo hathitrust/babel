@@ -69,7 +69,7 @@ foreach my $app_dir (@app_dirs) {
         $clean ? print "STATUS:\n" : PrintN("STATUS:\n");
         print join('', @output);
 
-        print "PUSH-PULL:\n";
+        print "PROJECT:\n";
         @output = qx(git log --oneline origin/master..HEAD);
         if (scalar @output) {
             PrintN("\tUNPUSHED:\n");
@@ -88,6 +88,13 @@ foreach my $app_dir (@app_dirs) {
             print "\tAll pulled: ";  PrintY("OK\n");
         }
 
+        print "\nSUB-PROJECTS (submodules):\n";
+        my @submodules = `git submodule status`;
+        # Grab submodules whose SHA1 begins with a '+'
+        @submodules = map { $_ =~ m,^\+.*?\s+(.*?)\s+.*?$,; "$1" } @submodules;
+        foreach my $submodule (@submodules){
+            PrintN("\tCOMMIT: $submodule\n") if ($submodule);
+        }
     }
 
 
