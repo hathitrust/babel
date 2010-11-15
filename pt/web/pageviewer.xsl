@@ -89,7 +89,39 @@
 
   <!-- root template -->
   <xsl:template match="/MBooksTop">
+    
+    <xsl:choose>
+      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view'] = 'text'">
+        <xsl:call-template name="ocr-frame" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="default-frame"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template name="common-html-head">
+    <title>
+        <xsl:choose>
+          <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
+            <xsl:text>HathiTrust Digital Library - </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>HathiTrust Digital Library -- </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:call-template name="GetMaybeTruncatedTitle">
+        <xsl:with-param name="titleString" select="$gFullTitleString"/>
+        <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+        <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
+      </xsl:call-template>
+    </title>
 
+  </xsl:template>
+  
+  <!-- DEFAULT FRAME -->
+  <xsl:template name="default-frame">
+        
     <html lang="en" xml:lang="en" 
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -101,18 +133,7 @@
       <head profile="http://www.w3.org/1999/xhtml/vocab">
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
-        <title>
-           <xsl:choose>
-             <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-               <xsl:text>HathiTrust Digital Library - </xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>HathiTrust Digital Library - </xsl:text>
-              </xsl:otherwise>
-            </xsl:choose>
-            <xsl:value-of select="$gTruncTitleString"/>
-        </title>
-
+        <xsl:call-template name="common-html-head" />
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="online_assessment"/>
@@ -145,10 +166,14 @@
         <script type="text/javascript" src="{$protocol}://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
         <script type="text/javascript" src="/pt/jquery.easing.1.3.js"></script>
         <script type="text/javascript" src="/pt/jquery-textfill-0.1.js"></script>
+        <script type="text/javascript" src="/pt/jquery.pnotify.js"></script>
         <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
         <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js?ts={generate-id(.)}"></script>
         <!-- <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script> -->
->>>>>>> b934334... Updates for bookreader
+
+    		<link href="{$protocol}://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/start/jquery-ui.css" media="all" rel="stylesheet" type="text/css" /> 
+    		<link href="/pt/jquery.pnotify.default.css" media="all" rel="stylesheet" type="text/css" /> 
+    		<link href="/pt/jquery.pnotify.default.icons.css" media="all" rel="stylesheet" type="text/css" /> 
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
@@ -168,17 +193,50 @@
         </div>
         <!-- for prototype : bookreader instance section -->
         <script type="text/javascript">
+          function subclass(constructor, superConstructor)
+          {
+          	function surrogateConstructor()
+          	{
+          	}
+
+          	surrogateConstructor.prototype = superConstructor.prototype;
+
+          	var prototypeObject = new surrogateConstructor();
+          	prototypeObject.constructor = constructor;
+
+          	constructor.prototype = prototypeObject;
+          }
+
+          subclass(FrankenBookReader, BookReader);
+
+          function FrankenBookReader() {
+              BookReader.call(this);
+              this.inTextMode = false;
+          }
+        </script>
+        
+        <script type="text/javascript">
         	$(window).bind("resize", function() {
            	var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
           	var chromeHeight = $("#mbFooter").height() + $("#mbHeader").height();
-          	$("#BookReader").height(viewportHeight - chromeHeight - 50);
+          	$("#BookReader").height(viewportHeight - chromeHeight - 75);
+          	$("div.mdpControlContainer").height(viewportHeight - chromeHeight - 75);
         	})
+
+
+          <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+              <xsl:variable name="seq" select="number(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']) - 1" />
+              console.log("SETTING DAS HASH: <xsl:value-of select="$seq" />");
+              window.location.hash = "#page/n<xsl:value-of select="$seq" />/mode/1up";
+          </xsl:if>
+
 
         $(document).ready(function(){	
         	$('#mdpImage').hide();
         	var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
         	var chromeHeight = $("#mbFooter").height() + $("#mbHeader").height();
-        	$("#BookReader").height(viewportHeight - chromeHeight - 50);
+        	$("#BookReader").height(viewportHeight - chromeHeight - 75);
+        	$("div.mdpControlContainer").height(viewportHeight - chromeHeight - 75);
         	
         	// $('#BookReader').height($('.mdpControlContainer').height()-50);
         	// $('#BookReader').height(viewportHeight-50);
@@ -186,30 +244,44 @@
         	
         });
 
-           br = new BookReader();
+           br = new FrankenBookReader();
            br.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
            br.bookTitle = "<xsl:value-of select="str:replace(string($gFullTitleString), '&quot;', '\&quot;')"/>";
            br.reduce = 1;
            br.pageProgression = 'lr';
-           //br.reductionFactors = [0.5, 0.75, 1, 1.5, 2, 4, 8, 16]; // [0.5, 1, 2, 4, 8];
+           // specifying our own reductionFactors seems to mess with zooming out
+           //br.reductionFactors = [0.5, 0.75, 1, 1.5, 2, 4]; // [0.5, 1, 2, 4, 8];
+           
+           br.reductionFactors = [   {reduce: 0.5, autofit: null},
+                                     {reduce: 2/3, autofit: null},
+                                     {reduce: 1, autofit: null},
+                                     {reduce: 2, autofit: null},
+                                     {reduce: 4, autofit: null},
+                                 ];
+           
+           
                   <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
                     <xsl:if test="position() = 1">   
                       // The index of the title page.
                       br.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;  
                     </xsl:if>
                   </xsl:for-each>
-            br.imagesBaseURL = "/pt/bookreader/BookReader/images";
+            br.imagesBaseURL = "/pt/bookreader/BookReader/images/";
             br.metaURL = "/cgi/imgsrv/meta";
             br.force = 1;
             br.imageURL = "/cgi/imgsrv/image";
             br.ocrURL = "/cgi/imgsrv/ocr";
+            br.pingURL = "/cgi/imgsrv/ping";
+            br.ocrFrameURL = "/cgi/pt";
             br.slice_size = 10;
             br.ui = '<xsl:value-of select="$gCurrentEmbed"/>';
             if ( br.ui == 'embed' ) {
               br.mode = 1;
               br.reduce = 1;
             }
-            br.displayMode = 'ocr';
+            br.displayMode = 'image';
+            // br.highlightText = "<xsl:value-of select="str:replace(string(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']), '&quot;', '\&quot;')"/>";
+            br.qvalsHash = "<xsl:value-of select="string(/MBooksTop/MdpApp/QValsHash)" />";
         </script>
         <script type="text/javascript" src="/pt/js/hathi.js?ts={generate-id(.)}"/> 
         
@@ -220,6 +292,45 @@
         </xsl:if>
       </body>
     </html>
+  </xsl:template>
+  
+  <!-- Embedded OCR Frame -->
+  <xsl:template name="ocr-frame">
+    
+    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+    
+      <head>
+        <xsl:call-template name="common-html-head" />
+        <xsl:call-template name="load_css" />
+        <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
+
+        <xsl:variable name="protocol">
+          <xsl:choose>
+            <xsl:when test="/MBooksTop/MBooksGlobals/LoggedIn='YES'"><xsl:text>https</xsl:text></xsl:when>
+            <xsl:otherwise><xsl:text>http</xsl:text></xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        <script type="text/javascript" src="{$protocol}://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+        <script type="text/javascript" src="/pt/jquery-textfill-0.1.js"></script>
+        <script type="text/javascript">
+          $(document).ready(function() {
+            $("#mdpTextFrame").textfill({ maxFontSize:40, minFontSize:12 });
+            $("#MdpOcrFrame", parent.document).removeClass('loading');
+          })
+        </script>
+      </head>
+      
+      <body>
+        <xsl:element name="div">
+          <xsl:attribute name="id">mdpTextFrame</xsl:attribute>
+          <p>
+            <xsl:apply-templates select="$gCurrentPageOcr"/>
+          </p>
+        </xsl:element>
+      </body>
+    
+    </html>
+    
   </xsl:template>
 
   <xsl:template name="online_assessment">
@@ -1047,7 +1158,20 @@
   <!-- -->
   <xsl:template match="CurrentPageOcr">
     <!-- handle Highlight element children in the OCR -->
-    <xsl:apply-templates/>
+    <xsl:apply-templates mode="ocr"/>
+  </xsl:template>
+  
+  <xsl:template match="@*|*|text()" mode="ocr">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|*|text()" mode="ocr"/>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:template match="Highlight" mode="ocr">
+    <xsl:element name="span">
+      <xsl:copy-of select="@class"/>
+      <xsl:value-of select="."/>
+    </xsl:element>
   </xsl:template>
 
   <!-- FORM: Page X of Y -->

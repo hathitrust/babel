@@ -525,7 +525,7 @@ sub alphabet_is_truncatable
 # ----------------------------------------------------------------------
 sub highlight_hit
 {
-    my ($C, $parsedQsCgi, $s_ref) = @_;
+    my ($C, $parsedQsCgi, $s_ref, $partial) = @_;
 
     # flag to return: false if no hits found, true if hits found
     my $hitFound = 0;
@@ -620,6 +620,8 @@ sub highlight_hit
             }
         }
     }
+    
+    return \%qvalsHash if ( $partial );
 
     # Sort hits in descending order by length of word/phrase so that
     # we can prevent highlighting of substrings within a longer hit
@@ -687,7 +689,7 @@ sub highlight_hit
     }
 
     return $hitFound  if ( ! $hitFound );
-
+    
     # Markup for XML vs. HTML and for multicoloring.
     my ( $sMarkup, $eMarkup ) =
         (q{<Highlight class="hilite@" seq="_%%">}, q{</Highlight>});
@@ -781,9 +783,9 @@ sub highlight_hit
 # ----------------------------------------------------------------------
 sub HighlightMultipleQs
 {
-    my ($C, $parsedQsCgi, $textRef) = @_;
+    my ($C, $parsedQsCgi, $textRef, $partial) = @_;
 
-    my $hitFound = highlight_hit($C, $parsedQsCgi, $textRef);
+    my $hitFound = highlight_hit($C, $parsedQsCgi, $textRef, $partial);
 }
 
 

@@ -179,6 +179,18 @@ sub handle_HIDDEN_Q1_PI
     return Utils::build_hidden_var_XML($cgi, 'q1');
 }
 
+sub handle_QVAL_ENCODED_PI
+    : PI_handler(QVAL_ENCODED)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $sess = $C->get_object('Session');
+    my $qval = $sess->get_transient('qvalsHash');
+    return CGI::escape($qval);
+}
+
+
 
 # ---------------------------------------------------------------------
 
