@@ -493,7 +493,6 @@ sub handle_Optimizing {
     my ($C, $dbh, $run) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Optimizing;
-    my $_Next_Stage = $SLIP_Utils::States::St_Checking;
 
     __output("$_Stage\n");
 
@@ -522,8 +521,16 @@ sub handle_Optimizing {
             # Record this optimize finish time for all shards without errors.
             __record_shards_optimize_done($C, $dbh, $run);
 
-            # Enable checkers to start running from cron
-            $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
+            my $_Next_Stage;
+            my $check_index_supported = $C->get_object('MdpConfig')->get('check_index_supported');
+            if ($check_index_supported) {
+                # Enable checkers to start running from cron
+                $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
+                $_Next_Stage = $SLIP_Utils::States::St_Checking;
+            }
+            else {
+                $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+            }
 
             # Proceed to next stage.
             SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
