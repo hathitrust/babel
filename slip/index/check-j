@@ -395,7 +395,8 @@ sub __run_CheckIndex {
 
 =item c_check
 
-Check number of segments is correct.  If -C run CheckIndex
+Check number of segments is correct.  If -C run CheckIndex.  Must be
+run on the SAME machine running tomcat.
 
 =cut
 
