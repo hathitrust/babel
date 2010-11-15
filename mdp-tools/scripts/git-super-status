@@ -90,10 +90,17 @@ foreach my $app_dir (@app_dirs) {
 
         print "\nSUB-PROJECTS (submodules):\n";
         my @submodules = `git submodule status`;
-        # Grab submodules whose SHA1 begins with a '+'
-        @submodules = map { $_ =~ m,^\+.*?\s+(.*?)\s+.*?$,; "$1" } @submodules;
-        foreach my $submodule (@submodules){
-            PrintN("\tCOMMIT: $submodule\n") if ($submodule);
+        my @missubmodules = map { $_ =~ m,^\s*\+[0-9a-f]+\s+(.*?)\s+.*?$,; "$1" } @submodules;
+        my @uninitsubmodules = map { $_ =~ m,^\s*\-[0-9a-f]+\s+(.*?)\s+.*?$,; "$1" } @submodules;
+        my @oksubmodules = map { $_ =~ m,^\s*[0-9a-f]+\s+(.*?)\s+.*?$,; "$1" } @submodules;
+        foreach my $submodule (@missubmodules) {
+            PrintN("\tMISMATCHES PROJECT INDEX: $submodule\n") if ($submodule);
+        }
+        foreach my $submodule (@uninitsubmodules) {
+            PrintN("\tUNINITIALIZED: $submodule\n") if ($submodule);
+        }
+        foreach my $submodule (@oksubmodules) {
+            PrintY("\tMATCHES PROJECT INDEX: $submodule\n") if ($submodule);
         }
     }
 
