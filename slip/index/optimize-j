@@ -408,7 +408,7 @@ sub Log_optimize {
     my ($C, $run, $shard, $s) = @_;
 
     my $s0 = qq{***OPTIMIZE: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
-    SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run);
 }
 
 

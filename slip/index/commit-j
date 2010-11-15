@@ -257,7 +257,7 @@ sub Log_commit {
     my ($C, $run, $shard, $index_state, $elapsed) = @_;
 
     my $s = qq{***COMMIT: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard index_state=$index_state $elapsed};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 

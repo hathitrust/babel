@@ -929,7 +929,7 @@ sub Log_critical {
     my ($C, $run, $id) = @_;
 
     my $s = Utils::Time::iso_Time() . qq{ id=$id};
-    SLIP_Utils::Log::this_string($C, $s, 'critical_ids_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s, 'critical_ids_logfile', '___RUN___', $run);
 }
 
 # ---------------------------------------------------------------------
@@ -945,7 +945,7 @@ sub Log_dequeue {
     my ($C, $run, $id, $pid, $host) = @_;
 
     my $s = qq{***DEQUEUE: } . Utils::Time::iso_Time() . qq{ id=$id r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1)
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
             if ($VERBOSE_LOGGING);
 }
 
@@ -962,7 +962,7 @@ sub Log_slice {
     my ($C, $run, $pid, $host, $num_sliced_from_queue) = @_;
 
     my $s = qq{***SLICE: } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host slice_size=$num_sliced_from_queue};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1)
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
             if ($VERBOSE_LOGGING);
 }
 
@@ -979,7 +979,7 @@ sub Log_queue_empty {
     my ($C, $run, $pid, $host) = @_;
 
     my $s = qq{***QUEUE EMPTY (exit): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1)
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
             if ($VERBOSE_LOGGING);
 }
 
@@ -996,7 +996,7 @@ sub Log_startup {
     my ($C, $run, $pid, $host) = @_;
 
     my $s = qq{***START: } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 
@@ -1013,7 +1013,7 @@ sub Log_host_Shutdown {
     my ($C, $run, $pid, $host) = @_;
 
     my $s = qq{***STOP (host): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 # ---------------------------------------------------------------------
@@ -1029,7 +1029,7 @@ sub Log_shard_Shutdown {
     my ($C, $run, $pid, $host) = @_;
 
     my $s = qq{***STOP (no shards): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 # ---------------------------------------------------------------------
@@ -1045,7 +1045,7 @@ sub Log_max_producers_seen {
     my ($C, $run, $pid, $host, $num_configured, $num_running) = @_;
 
     my $s = qq{***MAX PRODUCERS (exit): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host num_cfgd=$num_configured num_running=$num_running};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1)
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
             if ($VERBOSE_LOGGING);
 }
 
@@ -1092,7 +1092,7 @@ sub Log_item {
 
     $shard = $random ? qq{rand_$shard} : qq{REQD_$shard};
     my $s = qq{ITEM[$ct$ri$error]: } . Utils::Time::iso_Time() . qq{ r=$run s=$shard id=$id pid=$pid h=$host} . $buf;
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 
@@ -1109,7 +1109,7 @@ sub Log_error_stop {
     my ($C, $run, $shard, $pid, $host, $s) = @_;
 
     my $ss = qq{***ERROR STOP: } . Utils::Time::iso_Time() . qq{ run=$run pid=$pid host=$host shard=$shard stop=$s};
-    SLIP_Utils::Log::this_string($C, $ss, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $ss, 'indexer_logfile', '___RUN___', $run);
 }
 
 
@@ -1128,7 +1128,7 @@ sub Log_timeout {
     my $delay_str = $delay ? "***TIMEOUT DELAY[$ct]" : "***TIMEOUT RESET[$ct]" ;
 
     my $s = qq{$delay_str: } . Utils::Time::iso_Time() . qq{ r=$run s=$shard $id pid=$pid host=$host delay=$delay};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run, 1);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 1;

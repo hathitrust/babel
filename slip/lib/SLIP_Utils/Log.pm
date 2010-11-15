@@ -81,17 +81,18 @@ sub this_string
     $logfile =~ s,___DATE___,-$date,;
 
     my $logfile_path = $logdir . '/' . $logfile;
-    my $lock_file = $logfile_path . '.sem';
 
     # --- BEGIN CRITICAL SECTION ---
-    use constant MAX_TRIES => 10;
     my $sem;
-    my $tries = 0;
-    while (! ($sem = new Semaphore($lock_file)))
-    {
-        $tries++;
-        return if ($tries > MAX_TRIES);
-        sleep 1;
+    if ($use_sem) {
+        use constant MAX_TRIES => 10;
+        my $tries = 0;
+        my $lock_file = $logfile_path . '.sem';
+        while (! ($sem = new Semaphore($lock_file))) {
+            $tries++;
+            return if ($tries > MAX_TRIES);
+            sleep 1;
+        }
     }
 
     if (open(LOG, ">>$logfile_path")) {
