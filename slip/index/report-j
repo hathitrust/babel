@@ -582,17 +582,19 @@ sub report_configuration {
     my ($C, $dbh, $run) = @_;
 
     my $config = $C->get_object('MdpConfig');
-    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    my @num_shards_list = $config->get('num_shards_list');
+    my $ck_support = $config->get('check_index_supported');
 
     __Print qq{\n * current config:\n};
 
-    __Print qq{\tshards:\n};
+    __Print qq{\tshards: (checkIndex support=$ck_support)\n};
 
     foreach my $__shard (@num_shards_list) {
         my $engine_uri = $config->get('engine_for_shard_' . $__shard);
         my $s_enabled = Db::Select_shard_enabled($C, $dbh, $run, $__shard);
         my $opt_enabled = Db::Select_optimize_enabled($C, $dbh, $run, $__shard);
-
+        my $ck_enabled = Db::Select_check_enabled($C, $dbh, $run, $__shard);
+        
         my $e;
         if (! $s_enabled) {
             $e = 'disabled';
@@ -601,7 +603,7 @@ sub report_configuration {
             $e = Db::shard_is_suspended($C, $dbh, $run, $__shard) ? 'suspended' : 'enabled';
         }
 
-        __Print qq{\t\t$__shard: build=$e optimize=$opt_enabled engine=$engine_uri\n};
+        __Print qq{\t\t$__shard: build=$e optimize=$opt_enabled ck_enb=$ck_enabled engine=$engine_uri\n};
     }
 
     __Print qq{\thosts:\n};
