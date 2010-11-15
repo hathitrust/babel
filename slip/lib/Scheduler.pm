@@ -73,7 +73,7 @@ sub optimize_do_full_optimize {
     my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
     my ($year, $month, $day, $hour, $min, $sec) = Date::Calc::Today_and_Now();
     
-    return (($year == $oyear) && ($month == $omonth) && ($day == $oday) && ($hour > $ohour) && ($min > $omin));
+    return (($year == $oyear) && ($month == $omonth) && ($day == $oday) && ($hour >= $ohour) && ($min >= $omin));
 }
 
 # ---------------------------------------------------------------------
