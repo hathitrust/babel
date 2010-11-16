@@ -603,7 +603,7 @@ sub report_configuration {
             $e = Db::shard_is_suspended($C, $dbh, $run, $__shard) ? 'suspended' : 'enabled';
         }
 
-        __Print qq{\t\t$__shard: build=$e optimize=$opt_enabled ck_enb=$ck_enabled engine=$engine_uri\n};
+        __Print qq{\t\t$__shard: build=$e optimize=$opt_enabled check=$ck_enabled engine=$engine_uri\n};
     }
 
     __Print qq{\thosts:\n};
