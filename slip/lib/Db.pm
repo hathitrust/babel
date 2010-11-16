@@ -46,8 +46,8 @@ my $C_METADATA_FAILURE = IX_METADATA_FAILURE;
 my $C_CRITICAL_FAILURE = IX_CRITICAL_FAILURE;
 my $C_NO_INDEXER_AVAIL = IX_NO_INDEXER_AVAIL;
 
-my $MYSQL_ZERO_TIMESTAMP = '0000-00-00 00:00:00';
-my $vSOLR_ZERO_TIMESTAMP = '00000000';
+$Db::MYSQL_ZERO_TIMESTAMP = '0000-00-00 00:00:00';
+$Db::vSOLR_ZERO_TIMESTAMP = '00000000';
 
 # =====================================================================
 # =====================================================================
@@ -116,7 +116,7 @@ Description
 sub init_vSolr_timestamp {
     my ($C, $dbh, $time) = @_;
 
-    my $timestamp = defined($time) ? $time : $vSOLR_ZERO_TIMESTAMP;
+    my $timestamp = defined($time) ? $time : $Db::vSOLR_ZERO_TIMESTAMP;
     my $statement = qq{REPLACE INTO j_vsolr_timestamp SET time=$timestamp};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
@@ -136,7 +136,7 @@ sub Select_vSolr_timestamp {
 
     my $statement = qq{SELECT time FROM j_vsolr_timestamp};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
-    my $timestamp = $sth->fetchrow_array || $vSOLR_ZERO_TIMESTAMP;
+    my $timestamp = $sth->fetchrow_array || $Db::vSOLR_ZERO_TIMESTAMP;
     DEBUG('lsdb', qq{DEBUG: $statement ::: $timestamp});
 
     return $timestamp;
@@ -160,7 +160,7 @@ sub update_vSolr_timestamp {
 
     $statement = qq{SELECT MAX(update_time) FROM $J_RIGHTS_TABLE_NAME};
     $sth = DbUtils::prep_n_execute($dbh, $statement);
-    my $latest_timestamp = $sth->fetchrow_array || $vSOLR_ZERO_TIMESTAMP;
+    my $latest_timestamp = $sth->fetchrow_array || $Db::vSOLR_ZERO_TIMESTAMP;
     DEBUG('lsdb', qq{DEBUG: $statement ::: $latest_timestamp});
 
     $statement = qq{UPDATE j_vsolr_timestamp SET time=$latest_timestamp};
@@ -271,7 +271,7 @@ sub Replace_j_rights_id {
 
     my $nid_exists_in_j_rights = $ref_to_arr_of_hashref->[0]->{'nid'};
     my $sysid_in_j_rights = $ref_to_arr_of_hashref->[0]->{'sysid'};
-    my $updateTime_in_j_rights = $ref_to_arr_of_hashref->[0]->{'update_time'} || $vSOLR_ZERO_TIMESTAMP;
+    my $updateTime_in_j_rights = $ref_to_arr_of_hashref->[0]->{'update_time'} || $Db::vSOLR_ZERO_TIMESTAMP;
 
     # Pass the j_rights timestamp in the input hashref
     $hashref->{'timestamp_in_j_rights'} = $updateTime_in_j_rights;
@@ -390,7 +390,7 @@ sub Select_j_rights_timestamp {
 
     my $statement = qq{SELECT time FROM j_rights_timestamp WHERE run=$run};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
-    my $timestamp = $sth->fetchrow_array || $vSOLR_ZERO_TIMESTAMP;
+    my $timestamp = $sth->fetchrow_array || $Db::vSOLR_ZERO_TIMESTAMP;
     DEBUG('lsdb', qq{DEBUG: $statement ::: $timestamp});
 
     return $timestamp;
@@ -427,7 +427,7 @@ Description
 sub init_j_rights_timestamp {
     my ($C, $dbh, $run, $time) = @_;
 
-    my $timestamp = defined($time) ? $time : $vSOLR_ZERO_TIMESTAMP;
+    my $timestamp = defined($time) ? $time : $Db::vSOLR_ZERO_TIMESTAMP;
     my $statement = qq{REPLACE INTO j_rights_timestamp SET run=$run, time=$timestamp};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
@@ -533,12 +533,35 @@ sub insert_queue_items {
 }
 
 
+# ---------------------------------------------------------------------
+
+=item __get_update_time_WHERE_clause
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_update_time_WHERE_clause {
+    my ($C, $dbh, $run) = @_;
+    
+    my $timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+    my $WHERE_clause;
+    if ($timestamp eq $Db::vSOLR_ZERO_TIMESTAMP) {
+        $WHERE_clause = qq{ WHERE update_time >= $timestamp};
+    }
+    else {
+        $WHERE_clause = qq{ WHERE update_time > $timestamp};
+    }
+
+    return $WHERE_clause;
+}
 
 # ---------------------------------------------------------------------
 
 =item count_insert_latest_into_queue
 
-Description
+Coupled to insert_latest_into_queue via update_time > $timestamp
 
 =cut
 
@@ -546,10 +569,10 @@ Description
 sub count_insert_latest_into_queue {
     my ($C, $dbh, $run) = @_;
 
-    # NOTE: non-overlap (>) Talk to Tim and see insert_latest_into_queue()
-
-    my $timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
-    my $statement = qq{SELECT count(*) FROM j_rights WHERE update_time > $timestamp};
+    # NOTE: non-overlap (>) Talk to Tim and see
+    # insert_latest_into_queue(). If timestamp is 0, we want all.
+    my $WHERE_clause = __get_update_time_WHERE_clause($C, $dbh, $run);
+    my $statement = qq{SELECT count(*) FROM j_rights } . $WHERE_clause;
     DEBUG('lsdb', qq{DEBUG: $statement});
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
 
@@ -562,7 +585,7 @@ sub count_insert_latest_into_queue {
 
 =item insert_latest_into_queue
 
-Description
+Coupled to count_insert_latest_into_queue via update_time > $timestamp
 
 =cut
 
@@ -580,11 +603,10 @@ sub insert_latest_into_queue {
     # Get the timestamp of the newest items last enqueued from
     # j_rights into j_queue. NOTE: non-overlap (>) Talk to Tim and see
     # count_insert_latest_into_queue()
-    my $timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
-    my $WHERE_clause = qq{ WHERE update_time > $timestamp};
+    my $WHERE_clause = __get_update_time_WHERE_clause($C, $dbh, $run);
     my $SELECT_clause =
-        qq{SELECT $run AS run, nid AS id, 0 AS pid, '' AS host, $SLIP_Utils::States::Q_AVAILABLE AS proc_status FROM j_rights}
-            . $WHERE_clause;
+      qq{SELECT $run AS run, nid AS id, 0 AS pid, '' AS host, $SLIP_Utils::States::Q_AVAILABLE AS proc_status FROM j_rights} 
+        . $WHERE_clause;
 
     $statement = qq{INSERT INTO j_queue ($SELECT_clause)};
     my $num_inserted = 0;
@@ -1455,7 +1477,7 @@ sub Select_shard_build_done {
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 
-    my $time = $sth->fetchrow_array || '$MYSQL_ZERO_TIMESTAMP';
+    my $time = $sth->fetchrow_array || '$Db::MYSQL_ZERO_TIMESTAMP';
     return $time;
 }
 
@@ -1476,7 +1498,7 @@ sub Select_shard_optimize_done {
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 
-    my $time = $sth->fetchrow_array || '$MYSQL_ZERO_TIMESTAMP';
+    my $time = $sth->fetchrow_array || '$Db::MYSQL_ZERO_TIMESTAMP';
     return $time;
 }
 
@@ -1496,7 +1518,7 @@ sub Select_shard_check_done {
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 
-    my $time = $sth->fetchrow_array || '$MYSQL_ZERO_TIMESTAMP';
+    my $time = $sth->fetchrow_array || '$Db::MYSQL_ZERO_TIMESTAMP';
     return $time;
 }
 
@@ -1627,7 +1649,7 @@ sub init_shard_control {
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 
-    $statement = qq{INSERT INTO j_shard_control SET run=$run, shard=$shard, enabled=0, suspended=0, build=0, optimiz=0, checkd=0, build_time='$MYSQL_ZERO_TIMESTAMP', optimize_time='$MYSQL_ZERO_TIMESTAMP', checkd_time='$MYSQL_ZERO_TIMESTAMP', release_state=0};
+    $statement = qq{INSERT INTO j_shard_control SET run=$run, shard=$shard, enabled=0, suspended=0, build=0, optimiz=0, checkd=0, build_time='$Db::MYSQL_ZERO_TIMESTAMP', optimize_time='$Db::MYSQL_ZERO_TIMESTAMP', checkd_time='$Db::MYSQL_ZERO_TIMESTAMP', release_state=0};
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 }

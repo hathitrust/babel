@@ -64,10 +64,6 @@ use Db;
 
 Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
 
-# Prevent replication errors: enqueue only to one mysqlserv
-exit 0
-    if (Search::Site::get_server_site_name() ne 'macc');
-
 # ---------------------------------------------------------------------
 
 =item qu_get_usage
@@ -114,6 +110,14 @@ if (defined($opt_d)) {
 }
 
 my $INTERACTIVE = $ENV{'TERM'};
+
+# Prevent replication errors: enqueue only to one mysqlserv
+if (Search::Site::get_server_site_name() ne 'macc') {
+    if (! $CHECK) {
+        __output("Only runs from MACC unless check mode (-n)\n");
+        exit 0;
+    }
+}
 
 # Do not try to enqueue ids while I am running already
 my $lock_run = $RUN;
@@ -314,7 +318,8 @@ sub enqueue_from_j_rights {
     my $before_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
     if ($CHECK) {
         my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
-        __output(qq{count=$would_be_queued would be queued with timestamp > $before_timestamp\n});
+        my $relation = ($before_timestamp eq $Db::vSOLR_ZERO_TIMESTAMP) ? '>=' : '>';
+        __output(qq{count=$would_be_queued would be queued with timestamp $relation $before_timestamp\n});
     }
     else {
         # Insert items into the queue and mark their status as "available"

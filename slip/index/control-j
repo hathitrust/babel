@@ -392,16 +392,32 @@ sub driver_initialization {
         __output(qq{Done.\n});
     }
 
-    my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
-    my $producers_per_host = $config->get('producers_per_host');
-    foreach my $host (@host_list) {
-        c_configure($C, $dbh, $run, $producers_per_host, $host);
-    }
+    # According to run-N.conf:
+    __configure_init_hosts($C, $dbh, $run);
 
     # Disable all hosts
     __c_host_control($C, $dbh, $run, undef, 0);
 }
 
+# ---------------------------------------------------------------------
+
+=item __configure_init_hosts
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __configure_init_hosts {
+    my $C = shift;
+    my ($dbh, $run) = @_;
+    
+    my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
+    my $producers_per_host = $config->get('producers_per_host');
+    foreach my $host (@host_list) {
+        c_configure($C, $dbh, $run, $producers_per_host, $host);
+    }
+}
 
 # ---------------------------------------------------------------------
 
@@ -466,8 +482,10 @@ sub c_init {
         driver_initialization($C, $dbh, $run);
     }
     else {
-        # Just shards
+        # Just shards and hosts according to run-N.conf
         __Initialize_shards($C, $dbh, $run);
+        __configure_init_hosts($C, $dbh, $run);
+
     }
 
     Log_init($C, $run);
