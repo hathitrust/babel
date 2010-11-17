@@ -121,7 +121,8 @@ Description
 # ---------------------------------------------------------------------
 sub G_fetch_origin {
     my $app_dir = shift;
-
+    my $silent = shift;
+    
     my $cmd;
     print qq{Fetching origin/master ... };
 
@@ -136,7 +137,7 @@ sub G_fetch_origin {
     return 0
       if (! execute_command($cmd));
 
-    PrintY("OK\n");
+    PrintY("OK\n") unless ($silent);
     return 1;
 }
 
@@ -271,7 +272,7 @@ sub G_checkout_deployment {
     # must have been created and pushed to remote. But the local could
     # have been deleted so track the remote again to restore it.
     if (__exists_remote_branch('deployment')) {
-        if (! G_fetch_origin($app_dir)) {
+        if (! G_fetch_origin($app_dir, 'silent')) {
             return 0;
         }
         if (! __exists_local_branch('deployment')) {
