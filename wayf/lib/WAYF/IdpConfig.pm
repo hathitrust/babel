@@ -97,20 +97,20 @@ package WAYF::IdpConfig;
                     'template'  => 'https://___HOST___/Shibboleth.sso/jhu?target=___TARGET___',
                     'enabled' => '1',
                    },
-     
-     # Waiting
      'ucsd' =>    {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, San Diego',
                     'template'  => 'https://___HOST___/Shibboleth.sso/ucsd?target=___TARGET___',
-                    'enabled' => '0',
+                    'enabled' => '1',
                    },
      'stanford' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Stanford University',
                     'template'  => 'https://___HOST___/Shibboleth.sso/stanford?target=___TARGET___',
-                    'enabled' => '0',
+                    'enabled' => '1',
                    },
+     
+     # Waiting
      'cornell' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Cornell University',
