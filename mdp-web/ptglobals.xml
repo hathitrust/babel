@@ -25,3 +25,4 @@
 <Skin><?MY_SKIN?></Skin>
 <DebugUncompressed><?DEBUG_UNCOMPRESSED?></DebugUncompressed>
 <Pod><?POD_DATA?></Pod>
+<HasOcr><?HAS_OCR?></HasOcr>

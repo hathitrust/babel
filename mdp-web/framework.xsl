@@ -30,6 +30,7 @@
        -->
   
   <!-- Global Variables -->
+  <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gPodUrl" select="/MBooksTop/MBooksGlobals/Pod/Url"/>
   <xsl:variable name="gSkin" select="/MBooksTop/MBooksGlobals/Skin"/>
   <xsl:variable name="gSdrInst" select="/MBooksTop/MBooksGlobals/EnvSDRINST"/>
@@ -658,15 +659,29 @@
             <xsl:attribute name="name">q1</xsl:attribute>
             <xsl:attribute name="maxlength">150</xsl:attribute>
             <xsl:attribute name="size">20</xsl:attribute>
-            <xsl:attribute name="value">
-              <xsl:value-of select="$gCurrentQ1"/>
-            </xsl:attribute>
+            <xsl:if test="$gHasOcr!='YES'">
+              <xsl:attribute name="disabled">disabled</xsl:attribute>
+            </xsl:if>
+            <xsl:choose>
+              <xsl:when test="$gHasOcr='YES'">
+                <xsl:attribute name="value">
+                  <xsl:value-of select="$gCurrentQ1"/>
+                </xsl:attribute>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:attribute name="value">
+                  <xsl:value-of select="'No text to search in this item'"/>
+                </xsl:attribute>                
+              </xsl:otherwise>
+            </xsl:choose>
           </xsl:element>
-          <xsl:element name="input">
-            <xsl:attribute name="id">mdpSearchButton</xsl:attribute>
-            <xsl:attribute name="type">submit</xsl:attribute>
-            <xsl:attribute name="value">Find</xsl:attribute>
-          </xsl:element>
+          <xsl:if test="$gHasOcr='YES'">
+            <xsl:element name="input">
+              <xsl:attribute name="id">mdpSearchButton</xsl:attribute>
+              <xsl:attribute name="type">submit</xsl:attribute>
+              <xsl:attribute name="value">Find</xsl:attribute>
+            </xsl:element>
+          </xsl:if>
         </li>
       </ul>
       <xsl:call-template name="HiddenDebug"/>
