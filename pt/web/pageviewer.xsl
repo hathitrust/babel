@@ -841,7 +841,14 @@
       <xsl:when test="$gFinalView='empty'">
         <div id="mdpTextEmpty">
           <div class="mdpTMPhead">NO TEXT ON PAGE</div>
-          <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine</div>
+          <xsl:choose>
+            <xsl:when test="$gHasOcr='YES'">
+              <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine</div>
+            </xsl:when>
+            <xsl:otherwise>
+              <div class="mdpTMPtext">This item does not contain any OCR text</div>           
+            </xsl:otherwise>
+          </xsl:choose>
         </div>
       </xsl:when>
 
@@ -1053,55 +1060,57 @@
         </xsl:choose>
       </li>
 
-      <li>
-        <xsl:choose>
-          <xsl:when test="$gCurrentView!='text'">
-            <xsl:element name="a">
-              <xsl:attribute name="class">SkipLink</xsl:attribute>
-              <xsl:attribute name="accesskey">5</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
-              </xsl:attribute>
-              <xsl:attribute name="title">OCR text version</xsl:attribute>
-            </xsl:element>
-
-            <xsl:element name="a">
-              <xsl:attribute name="class">ViewAsIcon</xsl:attribute>
-              <xsl:attribute name="title">full view</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
-              </xsl:attribute>
-              <xsl:element name="img">
-                <xsl:attribute name="alt">View Page as Text</xsl:attribute>
-                <xsl:attribute name="title">OCR text view for copy/paste [5]</xsl:attribute>
-                <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/icon_text.gif'"/>
+      <xsl:if test="$gHasOcr='YES'">
+        <li>
+          <xsl:choose>
+            <xsl:when test="$gCurrentView!='text'">
+              <xsl:element name="a">
+                <xsl:attribute name="class">SkipLink</xsl:attribute>
+                <xsl:attribute name="accesskey">5</xsl:attribute>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
                 </xsl:attribute>
+                <xsl:attribute name="title">OCR text version</xsl:attribute>
               </xsl:element>
-            </xsl:element>
-            <xsl:element name="a">
-              <xsl:attribute name="class">ViewAsLabel</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
-              </xsl:attribute>
-              <xsl:attribute name="title">Text view for copy/paste</xsl:attribute>
-              <xsl:text>text</xsl:text>
-            </xsl:element>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:element name="img">
-              <xsl:attribute name="alt"><xsl:value-of select="$currentViewDesc"/></xsl:attribute>
-              <xsl:attribute name="src">
-                <xsl:value-of select="'//common-web/graphics/icon_text_gray.gif'"/>
-              </xsl:attribute>
-              <xsl:attribute name="title"><xsl:value-of select="$currentViewDesc"/></xsl:attribute>
-            </xsl:element>
-            <span class="nonactiveView">
-              <xsl:text>text</xsl:text>
-            </span>
-          </xsl:otherwise>
-        </xsl:choose>
-      </li>
+              
+              <xsl:element name="a">
+                <xsl:attribute name="class">ViewAsIcon</xsl:attribute>
+                <xsl:attribute name="title">full view</xsl:attribute>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
+                </xsl:attribute>
+                <xsl:element name="img">
+                  <xsl:attribute name="alt">View Page as Text</xsl:attribute>
+                  <xsl:attribute name="title">OCR text view for copy/paste [5]</xsl:attribute>
+                  <xsl:attribute name="src">
+                    <xsl:value-of select="'//common-web/graphics/icon_text.gif'"/>
+                  </xsl:attribute>
+                </xsl:element>
+              </xsl:element>
+              <xsl:element name="a">
+                <xsl:attribute name="class">ViewAsLabel</xsl:attribute>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
+                </xsl:attribute>
+                <xsl:attribute name="title">Text view for copy/paste</xsl:attribute>
+                <xsl:text>text</xsl:text>
+              </xsl:element>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:element name="img">
+                <xsl:attribute name="alt"><xsl:value-of select="$currentViewDesc"/></xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'//common-web/graphics/icon_text_gray.gif'"/>
+                </xsl:attribute>
+                <xsl:attribute name="title"><xsl:value-of select="$currentViewDesc"/></xsl:attribute>
+              </xsl:element>
+              <span class="nonactiveView">
+                <xsl:text>text</xsl:text>
+              </span>
+            </xsl:otherwise>
+          </xsl:choose>
+        </li>        
+      </xsl:if> <!-- has ocr -->
 
       <li>
         <xsl:choose>
