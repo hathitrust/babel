@@ -840,13 +840,14 @@
 
       <xsl:when test="$gFinalView='empty'">
         <div id="mdpTextEmpty">
-          <div class="mdpTMPhead">NO TEXT ON PAGE</div>
           <xsl:choose>
             <xsl:when test="$gHasOcr='YES'">
+              <div class="mdpTMPhead">NO TEXT ON PAGE</div>
               <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine</div>
             </xsl:when>
             <xsl:otherwise>
-              <div class="mdpTMPtext">This item does not contain any OCR text</div>           
+              <div class="mdpTMPhead">NO TEXT IN THIS ITEM</div>
+              <div class="mdpTMPtext">This item consists only of page images without any OCR text</div>           
             </xsl:otherwise>
           </xsl:choose>
         </div>
