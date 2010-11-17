@@ -66,10 +66,9 @@ foreach my $app_dir (@app_dirs) {
         my $clean = (grep(/working directory clean/, @output));
         map { $_ =~ s/^#/\t/ } @output;
         
-        $clean ? print "STATUS:\n" : PrintN("STATUS:\n");
+        $clean ? print "PROJECT STATUS:\n" : PrintN("PROJECT STATUS:\n");
         print join('', @output);
 
-        print "PROJECT:\n";
         @output = qx(git log --oneline origin/master..HEAD);
         if (scalar @output) {
             PrintN("\tUNPUSHED:\n");
@@ -88,20 +87,30 @@ foreach my $app_dir (@app_dirs) {
             print "\tAll pulled: ";  PrintY("OK\n");
         }
 
-        print "\nSUB-PROJECTS (submodules):\n";
+        print "\nSUB-PROJECT STATUS (submodules):\n";
         my @submodules = `git submodule status`;
-        my @missubmodules = map { $_ =~ m,^\s*\+[0-9a-f]+\s+(.*?)\s+.*?$,; "$1" } @submodules;
-        my @uninitsubmodules = map { $_ =~ m,^\s*\-[0-9a-f]+\s+(.*?)\s+.*?$,; "$1" } @submodules;
-        my @oksubmodules = map { $_ =~ m,^\s*[0-9a-f]+\s+(.*?)\s+.*?$,; "$1" } @submodules;
-        foreach my $submodule (@missubmodules) {
-            PrintN("\tMISMATCHES PROJECT INDEX: $submodule\n") if ($submodule);
+        if (! scalar(@submodules)) {
+            print "No submodules\n";
+            next;
         }
-        foreach my $submodule (@uninitsubmodules) {
-            PrintN("\tUNINITIALIZED: $submodule\n") if ($submodule);
-        }
-        foreach my $submodule (@oksubmodules) {
-            PrintY("\tMATCHES PROJECT INDEX: $submodule\n") if ($submodule);
-        }
+        
+        PrintY("\t\t\tINDEX\tREMOTE\tINITIALIZED\n");
+
+        foreach my $submodule (@submodules) {
+            my ($char, $sha, $path) = ($submodule =~ m,^\s*(\+|\-)?([0-9a-f]+)\s+(.*?)\s+.*$,);
+            chdir_to_app_dir("$app_dir/$path");
+            my $remote_sha = `git ls-remote --heads origin master`;
+            ($remote_sha) = ($remote_sha =~ m,([0-9a-f]+),);
+
+            printf("%22s", $path);
+            ($char eq "+") 
+              ? PrintN("\tNO") : PrintY("\tyes") ;
+            ($sha ne $remote_sha)
+              ? PrintN("\tNO") : PrintY("\tyes") ;
+            ($char eq "-") 
+              ? PrintN("\tNO") : PrintY("\tyes") ;
+            print("\n");
+        }        
     }
 
 
