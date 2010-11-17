@@ -142,25 +142,10 @@ eval {
     # Build_Wait stages.
     my $driver_driven = $config->get('driver_driven');
     if ($driver_driven) {
-        if ($SIZE) {
-            my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $DBH, $RUN);
-            if (($_Stage eq $SLIP_Utils::States::St_Build_Wait)
-                ||
-                ($_Stage eq $SLIP_Utils::States::St_Building)
-               ) {
-                sz_update_indexdir_size($C, $DBH, $RUN);
-            }
-            else {
-                if ($INTERACTIVE) {
-                    my $s = qq{Wrong driver stage=$_Stage to size index ... skip\n};
-                    __output($s);
-                }
-            }
-        }
-
-        if ($SNAPSHOT) {
-            sz_update_release_status($C, $DBH, $RUN);
-        }
+        handle_driver_sizing($C, $DBH, $RUN);
+    }
+    else {
+        handle_non_driver_sizing($C, $DBH, $RUN);
     }
 };
 if ($@) {
@@ -179,6 +164,60 @@ exit 0;
 #
 # --------------------- S u b r o t i n e s   -------------------------
 #
+
+# ---------------------------------------------------------------------
+
+=item handle_driver_sizing
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_driver_sizing {
+    my ($C, $dbh, $run) = @_;
+    
+    if ($SIZE) {
+        my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
+        if (($_Stage eq $SLIP_Utils::States::St_Build_Wait)
+            ||
+            ($_Stage eq $SLIP_Utils::States::St_Building)
+           ) {
+            sz_update_indexdir_size($C, $dbh, $run);
+        }
+        else {
+            if ($INTERACTIVE) {
+                my $s = qq{Wrong driver stage=$_Stage to size index ... skip\n};
+                __output($s);
+            }
+        }
+    }
+    
+    if ($SNAPSHOT) {
+        sz_update_release_status($C, $dbh, $run);
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_non_driver_sizing
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_non_driver_sizing {
+    my ($C, $dbh, $run) = @_;
+    
+    if ($SIZE) {
+        sz_update_indexdir_size($C, $dbh, $run);
+    }
+    
+    if ($SNAPSHOT) {
+        sz_update_release_status($C, $dbh, $run);
+    }
+}
 
 # ---------------------------------------------------------------------
 
