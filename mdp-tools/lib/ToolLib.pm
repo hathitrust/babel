@@ -6,6 +6,7 @@ use Exporter ();
                 PrintY
                 PrintN
                 PrintM
+                PrintG
                 query
                 query_yn
                 query_option
@@ -926,6 +927,13 @@ sub PrintN {
 sub PrintM {
     my $s = shift;
     on(35);
+    print $s;
+    off();
+}
+
+sub PrintG {
+    my $s = shift;
+    on(32);
     print $s;
     off();
 }
