@@ -84,6 +84,7 @@ slip:
   - /htapps/__STAGE__/slip/index/query-j
   - /htapps/__STAGE__/slip/index/rebuild-j
   - /htapps/__STAGE__/slip/index/report-j -r10
+  - /htapps/__STAGE__/slip/index/report-j -r11
   - /htapps/__STAGE__/slip/index/rights-j
   - /htapps/__STAGE__/slip/index/sizer-j
   - /htapps/__STAGE__/slip/index/sync-j
