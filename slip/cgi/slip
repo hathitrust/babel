@@ -392,7 +392,7 @@ sub report_shards {
     }
     
     my $totals;
-    my $blank_fields = ($driver_driven ? ["","","","","","","","",""] : ["","","",""]);
+    my $blank_fields = ($driver_driven ? ["","","","","","","","","",""] : ["","","",""]);
     if (scalar(@num_shards_list) > 1) {
         $totals = td({-class=>"hidden-cell-1"}, $blank_fields) . td([$sh_tot{'num_docs'}, $sh_tot{'size'}, $sh_tot{'max'}, $sh_tot{'total_errs'}, $sh_tot{'index'}, $sh_tot{'ocr'}, $sh_tot{'meta'}, $sh_tot{'server'}, $sh_tot{'critical'}]);
     }   
