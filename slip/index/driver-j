@@ -518,9 +518,6 @@ sub handle_Optimizing {
         }
 
         if ($rc == 0) {
-            # Record this optimize finish time for all shards without errors.
-            __record_shards_optimize_done($C, $dbh, $run);
-
             my $_Next_Stage;
             my $check_index_supported = $C->get_object('MdpConfig')->get('check_index_supported');
             if ($check_index_supported) {
@@ -577,9 +574,6 @@ sub handle_Checking {
         $rc |= __control_checkers($C, $dbh, $run, $_Stage, 'stop');
 
         if ($rc == 0) {
-            # Record this check finish time for all shards without errors.
-            __record_shards_check_done($C, $dbh, $run);
-
             # Proceed to next stage.
             SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
         }
@@ -843,49 +837,6 @@ sub __record_shards_build_done {
 
         if ($build_state == $SLIP_Utils::States::Sht_No_Build_Error) {
             Db::set_shard_build_done($C, $dbh, $run, $shard);
-        }
-    }
-}
-
-# ---------------------------------------------------------------------
-
-=item __record_shards_optimize_done
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __record_shards_optimize_done {
-    my ($C, $dbh, $run) = @_;
-
-    foreach my $shard (@NUM_SHARDS_LIST) {
-        my $optimize_state = Db::Select_shard_optimize_state($C, $dbh, $run, $shard);
-
-        if ($optimize_state == $SLIP_Utils::States::Sht_Optimized) {
-            Db::set_shard_optimize_done($C, $dbh, $run, $shard);
-        }
-    }
-}
-
-
-# ---------------------------------------------------------------------
-
-=item __record_shards_check_done
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __record_shards_check_done {
-    my ($C, $dbh, $run) = @_;
-
-    foreach my $shard (@NUM_SHARDS_LIST) {
-        my $check_state = Db::Select_shard_check_state($C, $dbh, $run, $shard);
-
-        if ($check_state == $SLIP_Utils::States::Sht_Checked) {
-            Db::set_shard_check_done($C, $dbh, $run, $shard);
         }
     }
 }
