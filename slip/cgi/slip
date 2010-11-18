@@ -72,15 +72,9 @@ my $running = "<span class='alert'>serving</span>";
 
 my %run_tasks =
   (
-   '1'  => "test, solr host: pilsner",
-   '2'  => "test, solr host: pilsner",
-   '3'  => "test facets, solr host: pilsner",
-   '4'  => "beta search, solr host: bancha(MACC), state: [$running]",
-   '5'  => "driver test, solr host: pilsner",
-   '6'  => "multi-shard test, solr host: pilsner",
-   '7'  => "beta search, solr host: sharbat(ICTC) state: [$running]",
-   '8'  => "beta search Phase II - one shard ",
-   '10' => "beta search Phase II - all shards",
+   '10' => "production Schema 1",
+   '11' => "re-indexing Schema 4",
+   '60' => "test",
   );
 
 my $N = "\n";
