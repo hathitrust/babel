@@ -162,10 +162,8 @@ my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
 
 # Adjust $LIMIT_SEGS for full optimize case?
 eval {
-    if (! $NOOP) {
-        if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
-            $LIMIT_SEGS = 1;
-        }
+    if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
+        $LIMIT_SEGS = 1;
     }
 };
 if ($@) {

@@ -21,6 +21,26 @@ use Date::Calc;
 use Utils;
 use MdpConfig;
 
+# SLIP
+use SLIP_Utils::Log;
+use SLIP_Utils::Common;
+
+# ---------------------------------------------------------------------
+
+=item Log_schedule
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_schedule {
+    my ($C, $run, $msg) = @_;
+
+    my $s = qq{***SCHEDULER: } . Utils::Time::iso_Time() . qq{ r=$run $msg};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
 # ---------------------------------------------------------------------
 
 =item driver_do_full_optimize
@@ -48,7 +68,13 @@ sub driver_do_full_optimize {
     my ($year, $month, $day) = Date::Calc::Add_Delta_Days($oyear, $omonth, $oday, 0);
     my ($tyear, $tmonth, $tday) = Date::Calc::Today();
 
-    return (($tyear == $year) && ($tmonth == $month) && ($tday == $day));
+    my $do = (($tyear == $year) && ($tmonth == $month) && ($tday == $day));
+    my $msg = qq{driver: do full optimize=} . ($do ? 1 : 0) . qq{ today=$tyear-$tmonth-$tday schedule=$oyear-$omonth-$oday};
+    __output("$msg\n");
+
+    Log_schedule($C, $run, $msg);
+    
+    return $do; 
 }
 
 # ---------------------------------------------------------------------
@@ -71,9 +97,15 @@ sub optimize_do_full_optimize {
     }
 
     my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
-    my ($year, $month, $day, $hour, $min, $sec) = Date::Calc::Today_and_Now();
+    my ($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = Date::Calc::Today_and_Now();
+
+    my $do = (($tyear == $oyear) && ($tmonth == $omonth) && ($tday == $oday) && ($thour >= $ohour) && ($tmin >= $omin));
     
-    return (($year == $oyear) && ($month == $omonth) && ($day == $oday) && ($hour >= $ohour) && ($min >= $omin));
+    my $msg = qq{optimize: do full optimize=} . ($do ? 1 : 0) . qq{ today_now=$tyear-$tmonth-$tday $thour:$tmin schedule=$oyear-$omonth-$oday $ohour:$omin };
+    __output("$msg\n");
+    Log_schedule($C, $run, $msg);
+    
+    return $do; 
 }
 
 # ---------------------------------------------------------------------
@@ -97,6 +129,9 @@ sub advance_full_optimize_date {
     my ($year, $month, $day) = Date::Calc::Add_Delta_Days($oyear, $omonth, $oday, $interval);
 
     my $next_schedule = "$year $month $day $ohour $omin $interval";
+    my $msg = "advance next schedule=$next_schedule";
+    __output("$msg\n");
+    Log_schedule($C, $run, $msg);
 
     __write_optimize_flag_file($C, $run, $next_schedule);
 }

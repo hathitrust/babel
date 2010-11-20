@@ -292,6 +292,11 @@ sub run_driver {
 
         $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
         if ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
+            # Maybe unconditionally update the full optimize schedule file
+            if ($FULL_OPTIMIZE_RUN) {
+                handle_Stage_rc($_Stage, handle_full_optimize_done($C, $run));
+            }
+
             # Reset the shard states.  This will not happen if there
             # was an error so the states of individual shards will be
             # preserved.
@@ -500,11 +505,6 @@ sub handle_Optimizing {
         # Unconditionally disable optimizers to stop them from running from cron
         $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
 
-        # Maybe unconditionally update the full optimize schedule file
-        if ($FULL_OPTIMIZE_RUN) {
-            $rc |= __handle_full_optimize_done($C, $run);
-        }
-
         if ($rc == 0) {
             my $_Next_Stage;
             my $check_index_supported = $C->get_object('MdpConfig')->get('check_index_supported');
@@ -577,14 +577,14 @@ sub handle_Checking {
 #
 # ---------------------------------------------------------------------
 
-=item __handle_full_optimize_done
+=item handle_full_optimize_done
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __handle_full_optimize_done {
+sub handle_full_optimize_done {
     my $C = shift;
     my $run = shift;
 
