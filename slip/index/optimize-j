@@ -173,10 +173,22 @@ $C->set_object('Database', $db);
 my $DBH = $db->get_DBH();
 my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
 
+
+my $optimize_enabled = 
+  (
+   $NOOP
+   ||
+   $INTERACTIVE
+   ||
+   Db::Select_optimize_enabled($C, $DBH, $RUN, $SHARD)
+  );
+
 # Adjust $LIMIT_SEGS for full optimize?
 eval {
-    if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
-        $LIMIT_SEGS = 1;
+    if ($optimize_enabled) {
+        if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
+            $LIMIT_SEGS = 1;
+        }
     }
 };
 if ($@) {
@@ -185,18 +197,14 @@ if ($@) {
 }   
 
 eval {
-    if (
-        $INTERACTIVE
-        ||
-        Db::Select_optimize_enabled($C, $DBH, $RUN, $SHARD)
-       ) {
+    if ($optimize_enabled) {
         my $s =
             "optimize-j: OPTIMIZE shard=$SHARD staged=$STAGED timeout=$TIMEOUT"
                 . " limit_to_segments=$LIMIT_SEGS\n";
         __output($s);
 
         handle_optimize_rc($C, $DBH, $RUN, $SHARD, $HOST,
-                         c_optimize($C, $RUN, $DBH, $SHARD, $TIMEOUT, $STAGED));
+                         c_optimize($C, $RUN, $DBH, $SHARD, $TIMEOUT, $STAGED, $LIMIT_SEGS));
     }
     # POSSIBLY NOTREACHED
     else {
@@ -340,27 +348,27 @@ is a degenerate case that is just a commit.
 
 # ---------------------------------------------------------------------
 sub c_optimize {
-    my ($C, $run, $dbh, $shard, $timeout, $staged) = @_;
+    my ($C, $run, $dbh, $shard, $timeout, $staged, $limit_segs) = @_;
 
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, $timeout);
 
     my ($rc, $num_orig_segments, $segments_ref) =
-        get_segment_list($C, $shard, $staged, $LIMIT_SEGS);
+        get_segment_list($C, $shard, $staged, $limit_segs);
 
     if ($rc == 0) {
         my $total_elapsed;
         my $success_str;
 
         foreach my $this_stage_segments (@$segments_ref) {
-            # Only optimize down to $LIMIT_SEGS segments unless
+            # Only optimize down to $limit_segs segments unless
             # there is only one segment to start with. In that
             # case, do the optimize (which will degenerate to a
             # simple commit).
-            if ($this_stage_segments < $LIMIT_SEGS) {
+            if ($this_stage_segments < $limit_segs) {
                 last
                     unless ($num_orig_segments == 1);
             }
-            my $segs = " limit_to_segments=$LIMIT_SEGS\n";
+            my $segs = " limit_to_segments=$limit_segs\n";
             my $s1 = qq{OPTIMIZE: [start] run=$RUN shard=$shard staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
             __output($s1);
             Log_optimize($C, $run, $shard, $s1);

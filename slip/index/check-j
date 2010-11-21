@@ -160,10 +160,21 @@ $C->set_object('Database', $db);
 my $DBH = $db->get_DBH();
 my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
 
+my $check_enabled = 
+  (
+   $NOOP
+   ||
+   $INTERACTIVE
+   ||
+   Db::Select_check_enabled($C, $DBH, $RUN, $SHARD)
+  );
+
 # Adjust $LIMIT_SEGS for full optimize case?
 eval {
-    if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
-        $LIMIT_SEGS = 1;
+    if ($check_enabled) {
+        if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
+            $LIMIT_SEGS = 1;
+        }
     }
 };
 if ($@) {
@@ -172,11 +183,7 @@ if ($@) {
 }
 
 eval {
-    if (
-        $INTERACTIVE
-        ||
-        Db::Select_check_enabled($C, $DBH, $RUN, $SHARD)
-       ) {
+    if ($check_enabled) {
         my $s =
             "check-j: CHECK shard=$SHARD CheckIndex="
               . ($CHECK_INDEX ? 'yes' : 'no')
