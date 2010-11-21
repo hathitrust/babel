@@ -98,7 +98,10 @@ sub __do_full_optimize {
     my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
     my ($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = Date::Calc::Today_and_Now();
 
-    my $do = (($tyear == $oyear) && ($tmonth == $omonth) && ($tday == $oday) && ($thour >= $ohour) && ($tmin >= $omin));
+    my $oTimeTime = Date::Calc::Date_to_Time($oyear, $omonth, $oday, $ohour, $omin, 1);
+    my $tTimeTime = Date::Calc::Date_to_Time($tyear, $tmonth, $tday, $thour, $tmin, $tsec);
+    
+    my $do = ($tTimeTime >= $oTimeTime);
     
     my $msg = qq{$what: shard=$shard, do full optimize=} . ($do ? 1 : 0) . qq{ today_now=$tyear-$tmonth-$tday $thour:$tmin schedule=$oyear-$omonth-$oday $ohour:$omin };
     __output("$msg\n");
