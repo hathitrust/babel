@@ -79,6 +79,37 @@ sub driver_do_full_optimize {
 
 # ---------------------------------------------------------------------
 
+=item __do_full_optimize
+
+PRIVATE.  If the scheduled day and time have arrived, optimize-j will
+optimize to one segment.  Time should be configured to be sometime
+after the time the driver starts running from cron.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __do_full_optimize {
+    my ($C, $run, $shard, $what) = @_;
+
+    if (! full_optimize_supported($C, $run)) {
+        return 0;
+    }
+
+    my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
+    my ($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = Date::Calc::Today_and_Now();
+
+    my $do = (($tyear == $oyear) && ($tmonth == $omonth) && ($tday == $oday) && ($thour >= $ohour) && ($tmin >= $omin));
+    
+    my $msg = qq{$what: shard=$shard, do full optimize=} . ($do ? 1 : 0) . qq{ today_now=$tyear-$tmonth-$tday $thour:$tmin schedule=$oyear-$omonth-$oday $ohour:$omin };
+    __output("$msg\n");
+    Log_schedule($C, $run, $msg);
+    
+    return $do; 
+}
+
+
+# ---------------------------------------------------------------------
+
 =item optimize_do_full_optimize
 
 PUBLIC.  If the scheduled day and time have arrived, optimize-j will
@@ -91,21 +122,28 @@ after the time the driver starts running from cron.
 sub optimize_do_full_optimize {
     my $C = shift;
     my $run = shift;
+    my $shard = shift;
 
-    if (! full_optimize_supported($C, $run)) {
-        return 0;
-    }
+    return __do_full_optimize($C, $run, $shard, 'optimize');
+}
 
-    my ($oyear, $omonth, $oday, $ohour, $omin, $interval) = __read_optimize_flag_file($C, $run);
-    my ($tyear, $tmonth, $tday, $thour, $tmin, $tsec) = Date::Calc::Today_and_Now();
+# ---------------------------------------------------------------------
 
-    my $do = (($tyear == $oyear) && ($tmonth == $omonth) && ($tday == $oday) && ($thour >= $ohour) && ($tmin >= $omin));
-    
-    my $msg = qq{optimize: do full optimize=} . ($do ? 1 : 0) . qq{ today_now=$tyear-$tmonth-$tday $thour:$tmin schedule=$oyear-$omonth-$oday $ohour:$omin };
-    __output("$msg\n");
-    Log_schedule($C, $run, $msg);
-    
-    return $do; 
+=item check_do_full_optimize
+
+PUBLIC.  If the scheduled day and time have arrived, check-j will
+check to one segment.  Time should be configured to be sometime
+after the time the driver starts running from cron.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub check_do_full_optimize {
+    my $C = shift;
+    my $run = shift;
+    my $shard = shift;
+
+    return __do_full_optimize($C, $run, $shard, 'check');
 }
 
 # ---------------------------------------------------------------------

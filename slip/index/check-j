@@ -172,7 +172,7 @@ my $check_enabled =
 # Adjust $LIMIT_SEGS for full optimize case?
 eval {
     if ($check_enabled) {
-        if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
+        if (Scheduler::check_do_full_optimize($C, $RUN, $SHARD)) {
             $LIMIT_SEGS = 1;
         }
     }

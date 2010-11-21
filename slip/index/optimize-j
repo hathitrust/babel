@@ -186,7 +186,7 @@ my $optimize_enabled =
 # Adjust $LIMIT_SEGS for full optimize?
 eval {
     if ($optimize_enabled) {
-        if (Scheduler::optimize_do_full_optimize($C, $RUN)) {
+        if (Scheduler::optimize_do_full_optimize($C, $RUN, $SHARD)) {
             $LIMIT_SEGS = 1;
         }
     }
