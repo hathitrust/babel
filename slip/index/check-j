@@ -170,38 +170,35 @@ my $check_enabled =
   );
 
 # Adjust $LIMIT_SEGS for full optimize case?
-eval {
-    if ($check_enabled) {
+if ($check_enabled) {
+    eval {
         if (Scheduler::check_do_full_optimize($C, $RUN, $SHARD)) {
             $LIMIT_SEGS = 1;
         }
+    };
+    if ($@) {
+        Log_check_error($C, $RUN, $SHARD, "Schedule file error:$@");
+        handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_BAD_SCHED_FILE);
     }
-};
-if ($@) {
-    Log_check_error($C, $RUN, $SHARD, "Schedule file error:$@");
-    exit $SLIP_Utils::States::RC_BAD_SCHED_FILE;
-}
-
-eval {
-    if ($check_enabled) {
+    
+    eval {
         my $s =
-            "check-j: CHECK shard=$SHARD CheckIndex="
-              . ($CHECK_INDEX ? 'yes' : 'no')
-                . " check for segments=$LIMIT_SEGS"
-                  . ($NOOP ? " ---> NOOP\n" : "\n") ;
+          "check-j: CHECK shard=$SHARD CheckIndex="
+            . ($CHECK_INDEX ? 'yes' : 'no')
+              . " check for segments=$LIMIT_SEGS"
+                . ($NOOP ? " ---> NOOP\n" : "\n") ;
         __output($s);
-
+        
         handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST,
-                         c_check($C, $RUN, $DBH, $SHARD, $LIMIT_SEGS, $CHECK_INDEX));
+                        c_check($C, $RUN, $DBH, $SHARD, $LIMIT_SEGS, $CHECK_INDEX));
+    };
+    if ($@) {
+        handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
+        # NOTREACHED
     }
-    # POSSIBLY NOTREACHED
-    else {
-        __output("check-j not enabled for shard=$SHARD\n");
-    }
-};
-if ($@) {
-    handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
-    # NOTREACHED
+}
+else {
+    __output("check-j not enabled for shard=$SHARD\n");
 }
 
 exit 0;

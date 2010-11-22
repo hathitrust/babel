@@ -184,36 +184,26 @@ my $optimize_enabled =
   );
 
 # Adjust $LIMIT_SEGS for full optimize?
-eval {
-    if ($optimize_enabled) {
+if ($optimize_enabled) {
+    eval {
         if (Scheduler::optimize_do_full_optimize($C, $RUN, $SHARD)) {
             $LIMIT_SEGS = 1;
         }
-    }
-};
-if ($@) {
-    Log_optimize_error($C, $RUN, $SHARD, "Problem with schedule file: $@");
-    exit $SLIP_Utils::States::RC_BAD_SCHED_FILE;
-}   
+    };
+    if ($@) {
+        Log_optimize_error($C, $RUN, $SHARD, "Problem with schedule file: $@");
+        handle_optimize_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_BAD_SCHED_FILE);
+    }   
 
-eval {
-    if ($optimize_enabled) {
+    eval {
         my $s =
-            "optimize-j: OPTIMIZE shard=$SHARD staged=$STAGED timeout=$TIMEOUT"
-                . " limit_to_segments=$LIMIT_SEGS\n";
+          "optimize-j: OPTIMIZE shard=$SHARD staged=$STAGED timeout=$TIMEOUT"
+            . " limit_to_segments=$LIMIT_SEGS\n";
         __output($s);
-
+        
         handle_optimize_rc($C, $DBH, $RUN, $SHARD, $HOST,
-                         c_optimize($C, $RUN, $DBH, $SHARD, $TIMEOUT, $STAGED, $LIMIT_SEGS));
-    }
-    # POSSIBLY NOTREACHED
-    else {
-        __output("optimize-j not enabled for shard=$SHARD\n");
-    }
-};
-if ($@) {
-    handle_optimize_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
-    # NOTREACHED
+                           c_optimize($C, $RUN, $DBH, $SHARD, $TIMEOUT, $STAGED, $LIMIT_SEGS));
+    };
 }
 
 exit 0;
