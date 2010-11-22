@@ -611,7 +611,7 @@ sub report_configuration {
         __Print qq{\t\t$__shard: build=$e optimize=$opt_enabled check=$ck_enabled engine=$engine_uri\n};
     }
 
-    __Print qq{\thosts:\n};
+    __Print qq{\tingest hosts:\n};
 
     my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
 
