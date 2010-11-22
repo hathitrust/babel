@@ -358,7 +358,7 @@ sub c_optimize {
                 last
                     unless ($num_orig_segments == 1);
             }
-            my $segs = " limit_to_segments=$limit_segs\n";
+            my $segs = " limit_to_segments=$limit_segs";
             my $s1 = qq{OPTIMIZE: [start] run=$RUN shard=$shard staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
             __output($s1);
             Log_optimize($C, $run, $shard, $s1);
