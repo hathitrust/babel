@@ -89,4 +89,4 @@ slip:
   - /htapps/__STAGE__/slip/index/sizer-j
   - /htapps/__STAGE__/slip/index/sync-j
   - /htapps/__STAGE__/slip/index/timeouts-j -r10 -l1
-  - /htapps/__STAGE__/slip/index/check-j -r10 -R1 -n -O2 -C
+  - /htapps/__STAGE__/slip/index/check-j 
