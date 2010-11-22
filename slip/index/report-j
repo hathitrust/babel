@@ -503,18 +503,24 @@ sub report_flags_state {
         $busy = 'Not driver driven';
     }
 
-    my $stop = ($HOST eq 'bubble') ? $stop : qq{Undetermined: $HOST is not bubble};
+    $stop = ($HOST eq 'bubble') ? $stop : qq{Undetermined: $HOST is not bubble};
     
+    my $cksup = $C->get_object('MdpConfig')->get('check_index_supported');
+    my $ck = "check index support=$cksup";
+
     my $fo = "full optimize not configured for run=$run";
     if (Scheduler::full_optimize_supported($C, $run)) {
         my $schedule_filepath = Scheduler::get_schedule_filepath($C, $run);
         my $schedule = `cat $schedule_filepath`;
         chomp($schedule);    
         my ($y, $m, $d, $h, $min, $int) = split(/\s+/, $schedule);
-        $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals";
+        my $do = Scheduler::driver_do_full_optimize($C, $run) ? "YES" : "no";
+
+        $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals\n\t"
+          . "? This run=$do";
     }          
           
-    __Print qq{\n * flags state: \n\tbusy=$busy \n\tstopped=$stop\n\t$fo\n};
+    __Print qq{\n * flags state: \n\tbusy=$busy \n\tstopped=$stop\n\t$fo\n\t$ck\n};
 }
 
 # ---------------------------------------------------------------------
@@ -583,11 +589,10 @@ sub report_configuration {
 
     my $config = $C->get_object('MdpConfig');
     my @num_shards_list = $config->get('num_shards_list');
-    my $ck_support = $config->get('check_index_supported');
 
     __Print qq{\n * current config:\n};
 
-    __Print qq{\tshards: (checkIndex support=$ck_support)\n};
+    __Print qq{\tshards:\n};
 
     foreach my $__shard (@num_shards_list) {
         my $engine_uri = $config->get('engine_for_shard_' . $__shard);

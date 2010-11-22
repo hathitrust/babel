@@ -59,6 +59,7 @@ Change delta days by negative one if the schedule spans midnight.
 sub driver_do_full_optimize {
     my $C = shift;
     my $run = shift;
+    my $msg_ref = shift;
 
     if (! full_optimize_supported($C, $run)) {
         return 0;
@@ -69,10 +70,9 @@ sub driver_do_full_optimize {
     my ($tyear, $tmonth, $tday) = Date::Calc::Today();
 
     my $do = (($tyear == $year) && ($tmonth == $month) && ($tday == $day));
-    my $msg = qq{driver: do full optimize=} . ($do ? 1 : 0) . qq{ today=$tyear-$tmonth-$tday schedule=$oyear-$omonth-$oday};
-    __output("$msg\n");
-
-    Log_schedule($C, $run, $msg);
+    if ($msg_ref) {
+        $$msg_ref = qq{driver: do full optimize=} . ($do ? 1 : 0) . qq{ today=$tyear-$tmonth-$tday schedule=$oyear-$omonth-$oday};
+    }
     
     return $do; 
 }

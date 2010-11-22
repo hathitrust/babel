@@ -111,8 +111,11 @@ $C->set_object('MdpConfig', $config);
 
 my $FULL_OPTIMIZE_RUN = 0;
 eval {
-    if (Scheduler::driver_do_full_optimize($C, $RUN)) {
+    my $msg;
+    if (Scheduler::driver_do_full_optimize($C, $RUN, \$msg)) {
         $FULL_OPTIMIZE_RUN = 1;
+        __output("$msg\n");
+        Log_schedule($C, $RUN, $msg);
     }
 };
 if ($@) {
