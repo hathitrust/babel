@@ -358,25 +358,6 @@ FrankenBookReader.prototype.init = function() {
         if ( 'undefined' == typeof(startIndex) || this.sliceFromIndex(startIndex).slice < this.total_slices ) {
              var self = this;
 
-             if ( self.notice == null ) {
-                 self.notice = $.pnotify({
-                    pnotify_title: "Please wait",
-                    pnotify_notice_icon: "",
-                    pnotify_hide: false,
-                    pnotify_closer: false,
-                    pnotify_opacity: .85,
-                    pnotify_width: "150px",
-                    pnotify_history: false,
-                    pnotify_before_open: function(pnotify){
-                    	// Position this notice in the center of the screen.
-                    	pnotify.css({
-                    		"top": ($(window).height() / 2) - (pnotify.height() / 2),
-                    		"left": ($(window).width() / 2) - (pnotify.width() / 2)
-                    	});
-                    }
-                 });
-             }
-
              setTimeout(function() {
                  var options = { pnotify_text: "Loading: " + (self.numLeafs) + " / " + self.total_items};
                  self.notice.pnotify(options);
@@ -388,7 +369,7 @@ FrankenBookReader.prototype.init = function() {
     }
     
     if ( self.notice != null ) {
-        self.notice.pnotify({pnotify_title: "All finished", pnotify_text: "Enjoy!", pnotify_hide: true, pnotify_closer: true, pnotify_opacity: 1.0, pnotify_width: '250px' });
+        self.notice.pnotify({pnotify_title: "All finished", pnotify_text: "Enjoy!", pnotify_delay: 2000, pnotify_hide: true, pnotify_closer: true, pnotify_opacity: 1.0, pnotify_width: '250px' });
         self.notice = null; // notice will be cleaned up by pnotify
     }
 
@@ -426,9 +407,34 @@ FrankenBookReader.prototype.init = function() {
     
 }
 
-FrankenBookReader.prototype.getURLParameter = function(name) {
+FrankenBookReader.prototype.openNotice = function() {
+  var self = this;
+  if ( self.notice == null ) {
+      self.notice = $.pnotify({
+         pnotify_title: "Please wait: loading",
+         pnotify_notice_icon: "",
+         pnotify_hide: false,
+         pnotify_closer: false,
+         pnotify_opacity: .85,
+         pnotify_width: "250px",
+         pnotify_history: false,
+         pnotify_before_open: function(pnotify){
+         	// Position this notice in the center of the screen.
+         	pnotify.css({
+         		"top": ($(window).height() / 2) - (pnotify.height() / 2),
+         		"left": ($(window).width() / 2) - (pnotify.width() / 2)
+         	});
+         }
+      });
+  }
+}
+
+FrankenBookReader.prototype.getURLParameter = function(name, href) {
+    if ( href == null ) {
+      href = location.search;
+    }
     return unescape(
-        (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+        (RegExp(name + '=' + '(.+?)(;|&|$)').exec(href)||[,null])[1]
     );
 }
 
@@ -1263,6 +1269,7 @@ while ( br.slice_size % br.thumbColumns != 0 ) {
 // Load bookreader
 var params = br.getMetaUrlParams(0);
 // delay loading metaURL - BAH HUMBUG
+br.openNotice();
 setTimeout(function() {
     $.getJSON(br.metaURL, params, function(data) {
       br.bookData = { 0 : data };
@@ -1273,11 +1280,13 @@ setTimeout(function() {
       br.total_slices = Math.ceil(data['total_items'] / br.slice_size);
       br.total_items = data['total_items'];
       br.cleanupMetadata();
-      br.complete = false;
-      br.init();
-
-      br.loadSlices(1);
       
+      br.complete = br.slices.length == br.total_slices;
+      br.init();
+      
+      if ( ! br.complete ) {
+        br.loadSlices(1);
+      }
       
     });
 }, 500);
@@ -1288,4 +1297,33 @@ $(document).ready(function() {
             log : function() { }
         }
     }
+    
+    // rewrite mdpContentsList links
+    $("#mdpContentsList .mdpFeatureListItem a.mdpContentsLink").click(function(e) {
+      var seq = br.getURLParameter('seq', $(this).attr('href'));
+      seq -= 1;
+      console.log("JUMPING TO INDEX:", seq);
+      br.jumpToIndex(seq);
+      return false;
+    })
+        
+    $("#uiSwitchLink").click(function() {
+      var href = $(this).attr("href");
+      // switch any sequence to the current index
+      var seqParam = "seq=" + (br.currentIndex() + 1);
+      var numParam = "";
+      // if ( br.getPageNum(br.currentIndex()) != null ) {
+      //   numParam = "num=" + br.getPageNum(br.currentIndex());
+      // }
+      
+      if ( href.indexOf("seq=") >= 0 ) {
+        href = href.replace(/seq=[0-9]+/, seqParam);
+        href = href.replace(/num=[0-9]+;/, numParam);
+      } else {
+        href += ";" + seqParam;
+      }
+      $(this).attr("href", href);
+      return true;
+    })
+    
 })

@@ -270,6 +270,7 @@ button.active {
 div.mdpControlContainer {
 	overflow: hidden;
 	overflow-y: auto;
+	padding-right: 15px;
 }
 
 .mdpMetaDataRow {
