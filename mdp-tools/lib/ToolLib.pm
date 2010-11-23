@@ -60,10 +60,17 @@ sub G_clone {
     return 0
       if (! chdir_to_app_dir($app_root));
 
-    my $cmd = "git clone $repo_root/$app_repo";
+    my $cmd_1 = "git clone $repo_root/$app_repo";
     return 0
-      if (! execute_command($cmd));
+      if (! execute_command($cmd_1));
 
+    return 0
+      if (! chdir_to_app_dir($app_dir));
+
+    my $cmd_2 = "git remote show origin";
+    return 0
+      if (! execute_command($cmd_2));
+    
     PrintY("OK\n");
     return 1;
 }

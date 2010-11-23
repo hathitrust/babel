@@ -17,16 +17,15 @@ sub clone_app_usage {
                     instead of /htapps/user.babel
                  -f force remove existing clone, then clone
                  -A all apps
-                 -v verbose
                  -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_s, $opt_f, $opt_A);
-my $ops = getopts('hvs:fA');
+our ($opt_h, $opt_s, $opt_f, $opt_A);
+my $ops = getopts('hs:fA');
 
 my $help = $opt_h;
-$ToolLib::VERBOSE = $opt_v;
+$ToolLib::VERBOSE = 1;
 my $STAGE = $opt_s;
 my $FORCE = $opt_f;
 
