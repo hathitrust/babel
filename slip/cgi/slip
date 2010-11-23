@@ -44,6 +44,7 @@ use Vendors;
 use CGI qw/:standard/;
 use Getopt::Std;
 use Time::Local;
+use Date::Calc;
 
 # App
 use Utils;
@@ -231,6 +232,30 @@ sub time_is_today {
 
 # ---------------------------------------------------------------------
 
+=item time_is_after
+
+Description: take a build done time and another time and see the other
+time is after the build done time
+
+=cut
+
+# ---------------------------------------------------------------------
+sub time_is_after {
+    my ($build_done_iso_datetime, $time_iso_datetime) = @_;
+    
+    my ($y, $m, $d, $hr, $min, $s);
+    ($y, $m, $d, $hr, $min, $s) = ($build_done_iso_datetime =~ m,^(.*?)-(.*?)-(.*?) (.*?):(.*?):(.*?)$,);
+    
+    my $build_done = Date::Calc::Date_to_Time($y, $m, $d, $hr, $min, $s);
+    
+    ($y, $m, $d, $hr, $min, $s) = ($time_iso_datetime =~ m,^(.*?)-(.*?)-(.*?) (.*?):(.*?):(.*?)$,);
+    my $time = Date::Calc::Date_to_Time($y, $m, $d, $hr, $min, $s);
+    
+    return  ($time > $build_done);
+}
+
+# ---------------------------------------------------------------------
+
 =item report_shards
 
 Description
@@ -315,7 +340,7 @@ sub report_shards {
                 $os_s = td({-class=>'error'}, ["$optimizeDoneTime"]);
             }
             else {
-                if (time_is_today($optimizeDoneTime)) {
+                if (time_is_today($optimizeDoneTime) && time_is_after($buildDoneTime, $optimizeDoneTime)) {
                     $os_s = td({-class=>'good'}, ["$optimizeDoneTime"]);
                 }
                 else {
@@ -329,7 +354,7 @@ sub report_shards {
                 $os_c = td({-class=>'error'}, ["$checkDoneTime"]);
             }
             else {
-                if (time_is_today($checkDoneTime)) {
+                if (time_is_today($checkDoneTime) && time_is_after($buildDoneTime, $checkDoneTime)) {
                     $os_c = td({-class=>'good'}, ["$checkDoneTime"]);
                 }
                 else {
