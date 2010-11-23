@@ -151,15 +151,6 @@ br.getPageURI = function(index, reduce, rotate) {
     return page_uri
 }
 
-br.getOcrURI = function(index) {
-    var q1 = this.getURLParameter("q1");
-    var page_uri = this.ocrFrameURL + '?id=' + this.bookId + ';seq=' + (index+1) + ';view=text';
-    if ( q1 ) {
-        page_uri += ";q1=" + escape(q1);
-    }
-    return page_uri;
-}
-
 // Returns true if page image is available rotated
 br.canRotatePage = function(index) {
     //return 'jp2' == this.imageFormat; // Assume single format for now
@@ -539,36 +530,10 @@ FrankenBookReader.prototype.switchMode = function(mode, extra) {
         cls += "_image";        
     }
     
-    console.log("TOGGLING", cls);
     $("#BRmodebuttons button").removeClass('active');
     $("#BRmodebuttons button." + cls).addClass('active');
-    
 
-    if (mode == this.mode) {
-        return;
-    }
-    
-    if ( 4 == mode ) {
-        this.autoStop();
-        this.toggleTextMode();
-        this.mode = mode;
-        this.switchToolbarMode(this.mode);
-    } else {
-        if ( this.mode == 4 ) {
-            this.toggleTextMode();
-        }
-        BookReader.prototype.switchMode.call(this, mode);
-    }
-}
-
-var _bindToolbarNavHandlers = br.bindToolbarNavHandlers;
-br.bindToolbarNavHandlers = function(jToolbar) {
-    var self = this;
-    _bindToolbarNavHandlers.call(this, jToolbar);
-    jToolbar.find('.print').unbind('click').bind('click', function(e) {
-        self.toggleDisplayMode();
-        return false;
-    });
+    BookReader.prototype.switchMode.call(this, mode);
 }
 
 FrankenBookReader.prototype.paramsFromCurrent = function() {
@@ -598,72 +563,6 @@ FrankenBookReader.prototype.toggleDisplayMode = function(mode) {
     // this.drawLeafs();
 }
 
-FrankenBookReader.prototype.toggleTextMode = function() {
-    
-    var self = this;
-    var $textContainer = $("#PTcontainer");
-    var $imageContainer = $("#BRcontainer");
-    if ( $textContainer.size() == 0 ) {
-        $textContainer = $('<div id="PTcontainer"><iframe id="MdpOcrFrame"></iframe></div>').appendTo("#BookReader");
-    }
-    
-    if ( $textContainer.css('left') == '0px' ) {
-        // $textContainer.fadeOut(500, function() {
-        //     $imageContainer.fadeIn(500, function() {
-        //         $(this).scrollTop(self.imageScroll);
-        //     });
-        // })
-        
-        $textContainer.css('left', "-5000px");
-        $imageContainer.css('left', "0px")
-        $imageContainer.scrollTop(this.lastScrollTop);
-        this.inTextMode = false;
-        
-    } else {
-        // this.imageScroll = $imageContainer.scrollTop();
-        // $imageContainer.fadeOut(500, function() {
-        //     $textContainer.fadeIn(500);
-        // })
-        
-        var ocr_url = this.getOcrURI(this.currentIndex());
-
-        var viewWidth = $('#PTcontainer').attr('scrollWidth');
-        var viewHeight = $('#PTcontainer').attr('scrollHeight');
-
-        // var height  = parseInt(this._getPageHeight(0)/1); 
-        // var width  = parseInt(this._getPageWidth(0)/1); 
-        
-        // if ( height > $textContainer.height() ) {
-        //     height = $textContainer.height() - 150;
-        // }
-        
-        var height = $('#PTcontainer').height() - 100;
-        var width = $('#PTcontainer').width() - 200;
-        var left = (viewWidth-width)>>1;
-        var top = (viewHeight-height)>>1;
-        
-        if (left<0) left = 0;
-        if (top<0) top = 0;
-
-        var $iframe = $textContainer.find('#MdpOcrFrame');
-        
-        this.lastScrollTop = $imageContainer.scrollTop();
-        
-        $imageContainer.css('left', "-5000px");
-        $textContainer.css('left', "0px");
-        $iframe
-            .css('width', width + 'px')
-            .css('height', height + 'px')
-            .css('left', left + 'px')
-            .css('top', top + "px")
-            .attr('src', ocr_url);
-            
-        this.inTextMode = true;
-        
-
-    }
-}
-
 //prepareOnePageView()
 //______________________________________________________________________________
 BookReader.prototype.prepareOnePageView = function() {
@@ -679,21 +578,6 @@ BookReader.prototype.prepareOnePageView = function() {
     
     $("#BRcontainer").append("<div id='BRpageview'></div>");
     var options = { ignoreTargets:['ocrText', 'rotateAction']};
-    if ( this.displayMode == 'image' ) {
-        // Attaches to first child - child must be present
-    } else {
-        
-        // $("#BRpageview").delegate("div.ocrText", 'mousedown', function(event) {
-        //     console.log("TEXT GOT A MOUSEDOWN");
-        //     event.preventDefault();
-        //     return false;
-        // });
-        
-        // Attaches to first child - child must be present
-        //$('#BRcontainer').dragscrollable({dragSelector : '.ocrScrollBar', acceptPropagatedEvent : false, preventDefault : false});
-        
-        //options = {dragSelector : '.ocrScrollBar', acceptPropagatedEvent : false, preventDefault : false};
-    }
     
     $('#BRcontainer').dragscrollable(options); // {preventDefault:true, ignoreTargets:['ocrText']}
 
@@ -710,64 +594,6 @@ BookReader.prototype.prepareOnePageView = function() {
     this.displayedIndices = [];
     
     this.drawLeafsOnePage();
-}
-
-//prepareOcrPageView()
-//______________________________________________________________________________
-BookReader.prototype.prepareOcrPageView = function() {
-
-    // var startLeaf = this.displayedIndices[0];
-    var startLeaf = this.currentIndex();
-        
-    $('#BRcontainer').empty();
-    $('#BRcontainer').css({
-        overflowY: 'scroll',
-        overflowX: 'auto'
-    });
-        
-    $("#BRcontainer").append("<div id='BRpageview' class='ocrpage'></div>");
-
-    // Attaches to first child - child must be present
-    // $('#BRcontainer').dragscrollable();
-    // this.bindGestures($('#BRcontainer'));
-
-    // $$$ keep select enabled for now since disabling it breaks keyboard
-    //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
-    // BookReader.util.disableSelect($('#BRpageview'));
-    
-    //this.resizePageView();    
-    
-    //this.jumpToIndex(startLeaf);
-    this.displayedIndices = [];
-    
-    this.drawLeafsOcrPage();
-}
-
-BookReader.prototype.drawLeafsOcrPage = function() {
-    console.log("Drawing OCR pages, in theory");
-}
-
-// switchToolbarMode
-//______________________________________________________________________________
-// Update the toolbar for the given mode (changes navigation buttons)
-// $$$ we should soon split the toolbar out into its own module
-FrankenBookReader.prototype.switchToolbarMode = function(mode) { 
-    if (4 == mode) {
-        // 1-up
-        $('#BRtoolbar .BRtoolbarzoom').show().css('display', 'inline');
-        $('#BRtoolbar .BRtoolbarmode1').hide();
-        $('#BRtoolbar .BRtoolbarmode3').hide();
-        $('#BRtoolbar .BRtoolbarmode2').show().css('display', 'inline');
-    } else {
-        BookReader.prototype.switchToolbarMode.call(this, mode);
-    }
-}
-
-FrankenBookReader.prototype.currentIndex = function() {
-    if ( 4 == this.mode ) {
-        return this.firstIndex;
-    }
-    return BookReader.prototype.currentIndex.call(this);
 }
 
 FrankenBookReader.prototype.fragmentFromParams = function(params) {
