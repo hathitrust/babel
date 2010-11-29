@@ -153,7 +153,10 @@ sub post_process_metadata {
                                                   
     
     # save author to Vauthor for vufind processed field
-    $metadata_hashref->{'Vauthor'}=$metadata_hashref->{'author'};
+    if (defined($metadata_hashref->{'author'}))
+    { 
+        $metadata_hashref->{'Vauthor'} = $metadata_hashref->{'author'}
+    }
     
 
 
