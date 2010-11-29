@@ -65,7 +65,8 @@ ptsearch:
   - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=foobar
 
 ssd:
-  - http://__STAGE__.hathitrust.org/cgi/ssd?id=mdp.39015004314111
+  - http://__STAGE__.hathitrust.org/cgi/ssd?id=8&ssd=1
+  - http://__STAGE__.hathitrust.org/cgi/ssd?id=1
 
 wayf:
   - http://__STAGE__.hathitrust.org/cgi/wayf
