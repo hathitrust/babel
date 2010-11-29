@@ -12,7 +12,7 @@
 <UserAgent><?ENV_VAR variable="HTTP_USER_AGENT"?></UserAgent>
 <ReferrerHref><?ENV_VAR variable="HTTP_REFERRER"?></ReferrerHref>
 <HttpHost><?ENV_VAR variable="HTTP_HOST"?></HttpHost>
-<EnvDLPS_DEV><?ENV_VAR variable="DLPS_DEV"?></EnvDLPS_DEV>
+<EnvHT_DEV><?ENV_VAR variable="HT_DEV"?></EnvHT_DEV>
 <EnvSDRINST><?ENV_VAR variable="SDRINST"?></EnvSDRINST>
 <SessionId><?SESSION_ID?></SessionId>
 <Debug><?DEBUG_SWITCH?></Debug>
