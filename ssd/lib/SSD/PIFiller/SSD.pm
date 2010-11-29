@@ -30,6 +30,7 @@ use base qw(PIFiller);
 use PT::MdpItem;
 
 BEGIN {
+    require "PT/PIFiller/Root.pm";
     require "PT/PIFiller/Common.pm";
 }
 
