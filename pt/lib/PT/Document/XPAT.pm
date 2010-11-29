@@ -62,32 +62,32 @@ sub get_document_content
     my $last_page = $mdp_item->GetLastPageSequence();
 
     my $full_text = '';
-
-    my $pattern_arr_ref = ['*[0-9].txt'];
-    my $fileDir = $mdp_item->GetDirPathMaybeExtract($pattern_arr_ref, 'ocrfile');
-    my $empty_ocr = 1;
+    my $has_ocr = $mdp_item->Get('has_ocr');
     
-    for (my $i = $first_page; $i <= $last_page; $i++)
-    {
-        my $ocr_file = $mdp_item->GetFileNameBySequence($i, 'ocrfile');
-        my $ocr_text_ref = Utils::read_file($fileDir . '/' . $ocr_file);
+    if ($has_ocr) {
+        my $pattern_arr_ref = ['*[0-9].txt'];
+        my $fileDir = $mdp_item->GetDirPathMaybeExtract($pattern_arr_ref, 'ocrfile');
 
-        # Do no build pages of whitespace
-        next if ($$ocr_text_ref =~ m,^\s*$,);
-        $empty_ocr = 0;
+        for (my $i = $first_page; $i <= $last_page; $i++) {
+            my $ocr_file = $mdp_item->GetFileNameBySequence($i, 'ocrfile');
+            my $ocr_text_ref = Utils::read_file($fileDir . '/' . $ocr_file);
+
+            # Do no build pages of whitespace
+            next if ($$ocr_text_ref =~ m,^\s*$,);
         
-        $self->clean_xml($ocr_text_ref);
-        my $num = $mdp_item->GetPageNumBySequence($i);
+            $self->clean_xml($ocr_text_ref);
+            my $num = $mdp_item->GetPageNumBySequence($i);
 
-        $full_text .= wrap_string_in_tag_by_ref($ocr_text_ref,
-                                               'page',
-                                               [['SEQ', $i], ['NUM', $num]]);
+            $full_text .= wrap_string_in_tag_by_ref($ocr_text_ref,
+                                                    'page',
+                                                    [['SEQ', $i], ['NUM', $num]]);
+        }
     }
-    # Safety valve: If all the OCR is empty indexing will crash. So we
-    # really should not be here. Some other mechanism will remove the
-    # search box from the UI but there could still be a URL to
-    # ptsearch ...
-    if ($empty_ocr) {
+    else {
+        # Safety valve: If all the OCR is empty indexing will
+        # crash. So we really should not be here. Some other mechanism
+        # will remove the search box from the UI but there could still
+        # be a URL to ptsearch ...
         $full_text = wrap_string_in_tag('__EMPTYOCR__',
                                         'page',
                                         [['SEQ', 1], ['NUM', 1]]);
@@ -113,7 +113,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2007 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2007-10 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
