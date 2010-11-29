@@ -49,9 +49,9 @@ use Search::Constants;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 
-our ($opt_r, $opt_F, $opt_d);
+our ($opt_r, $opt_F, $opt_d, $opt_I);
 
-my $ops = getopts('r:F:d:');
+my $ops = getopts('r:F:d:I:');
 
 # Required: run
 my $RUN;
@@ -71,7 +71,7 @@ if (defined($opt_F)) {
     $ID_FILENAME = $opt_F;
 }
 else {
-    $ID = shift;
+    $ID = $opt_I;
     if (! $ID) {
         my $s = d_get_usage();
         print $s;
@@ -195,7 +195,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub d_get_usage {
-    my $s = qq{Usage: doc-j -r run(any)-d{1,2,3} -F filename-of-ids | <id>\n\t\tWrites results to, e.g., "/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
+    my $s = qq{Usage: doc-j -r run(any)-d{1,2,3} -F filename-of-ids | -I<id>\n\t\tWrites results to, e.g., "/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
                       where 1=default
                             2=add vufind response
                             3=add docfulldebug (no delete of zip tmpdir)\n\n};
