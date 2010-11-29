@@ -53,7 +53,7 @@
         <div id="mbMasterContainer">
           
           <div id="DlpsDev">
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvDLPS_DEV"/>
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
           </div>
           
           <div>

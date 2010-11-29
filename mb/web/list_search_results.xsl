@@ -22,7 +22,7 @@
         <div id="mbMasterContainer">
           
           <div id="DlpsDev">
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvDLPS_DEV"/>
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
           </div>
           
           <div>
@@ -133,7 +133,7 @@
         <xsl:text>'s </xsl:text>
         <xsl:value-of select="/MBooksTop/CollectionName"/>
         <xsl:text> collection</xsl:text>
-      <xsl:if test="string-length(/MBooksTop/MBooksGlobals/EnvDLPS_DEV)&gt;1">
+      <xsl:if test="string-length(/MBooksTop/MBooksGlobals/EnvHT_DEV)&gt;1">
         <xsl:text> in </xsl:text>
         <xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>
         <xsl:text> sec.</xsl:text>
