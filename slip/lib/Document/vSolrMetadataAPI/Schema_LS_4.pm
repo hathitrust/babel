@@ -8,9 +8,11 @@ Document::vSolrMetadataAPI::Schema_LS_4
 
 This class creates an VuFind Solr type 4 schema document for indexing
 using the VuFind API and the VuFind Solr schema for facets.
-This is currently based on the ancient Schema_LS_4 and needs to be updated for the current VuFind
 
+Maps VuFind id to "record_no"
 Maps the publishDate field to the stored date field for display
+Processes the Vufind FullText field (MARC21 MARCXML for record) to create the "allfields"
+ field which concatentates all MARC fields over 99
 
 =head1 VERSION
 
@@ -44,31 +46,57 @@ use base qw(Document::vSolrMetadataAPI);
 #
 # So far all are multi-valued (arr)  
 #
+
+#add rest of vufind fields here!
 my @g_FIELD_LIST = 
     (
-     'id',
-     'oclc',
-     'ht_id_display',
-     'author',
-     'author2',
-     'titleSort',
-     'title',
-     'series',
-     'series2',
-     'language',
-     'format',
-     'ht_availability',
-     'htsource',
-     'topicStr',
-     'geographicStr',
-     'fullgenre',
-     'genre',
-     'hlb3',
-     'hlb3Str',
-     'publishDate',
-     'publishDateRange',
-     'era',
-     'countryOfPubStr',
+
+	'author',
+	'author2',
+	'availability',
+	'callnumber',
+	'countryOfPubStr',
+	'ctrlnum',
+	'dateSpan',
+	'era',
+	'format',
+	'fullgenre',
+	'fullrecord',
+	'genre',
+	'geographicStr',
+         'hlb3Str',
+	'hlb3Delimited',
+	'ht_availability',
+	'ht_availability_intl',
+	'ht_id_display',
+	'htsource',
+	'id',
+	'isbn',
+	'issn',
+	'language',
+	'lccn',
+	'oclc',
+	'publishDate',
+	'publishDateRange',
+	'record_no',
+	'rptnum',
+	'sdrnum',
+	'serialTitle',
+	'serialTitle_a',
+	'serialTitle_ab',
+	'series',
+	'series2',
+	# 'spelling',   use our allfields->spelling conversion instead of VuFinds
+	'subgeographic',
+	'sudoc',
+	'title',
+	'title_ab',
+	'title_rest',
+	'title_restProper',
+	'titleSort',
+	'title_top',
+	'title_topProper',
+	'topicStr',
     );
 
 
@@ -101,16 +129,34 @@ sub post_process_metadata {
     my $self = shift;
     my ($C, $item_id, $metadata_hashref) = @_;
 
+
+    # get marc xml and concatenate text contents of all fields >99
+    # ie no control 0xx fields!  
+
+    $metadata_hashref->{'allfields'} = getAllFields($metadata_hashref->{'fullrecord'});
+    delete $metadata_hashref->{'fullrecord'};
+    
     # map VuFind id to LS bib_id
     # PIFiller/ListSearchResults uses $record_no so we use that for now.  Is it worth changing here and in ls UI code?
 
     $metadata_hashref->{'record_no'}=    $metadata_hashref->{'id'};
     delete $metadata_hashref->{'id'};
+   
 
     my @titles = @{$metadata_hashref->{'title'}};
 
     # Title is used as a proxy for metadata validity
     return unless (scalar(@titles) > 0);
+
+    # save title as Vtitle before Mbooks specific processing reserved for "title" field
+     $metadata_hashref->{'Vtitle'} = $metadata_hashref->{'title'};
+                                                  
+    
+    # save author to Vauthor for vufind processed field
+    $metadata_hashref->{'Vauthor'}=$metadata_hashref->{'author'};
+    
+
+
 
     my @hathiTrust_str = grep(/^$item_id\|.*/, @{$metadata_hashref->{'ht_id_display'}});
     # 0      1            2          3  
@@ -122,12 +168,64 @@ sub post_process_metadata {
     }
     delete $metadata_hashref->{'ht_id_display'};
     
-    # put publishDate into date field
+    # copy publishDate into date field
     if (defined($metadata_hashref->{'publishDate'})) {
         $metadata_hashref->{'date'}[0] = $metadata_hashref->{'publishDate'}[0];
     }
-    delete $metadata_hashref->{'publishDate'};
+    # dont    delete $metadata_hashref->{'publishDate'};
+}
+
+
+# ---------------------------------------------------------------------
+#
+# sub getAllFields
+# 
+# input is the VuFind "FullText" field which is the MARC21 MARCXML for the record,
+# output is concatenation of all the MARC fields above 99
+# Note that an earlier process escaped the xml so we reverse the process
+# ---------------------------------------------------------------------
+sub getAllFields{
+
+    my $xmlref = shift;
+    my $xml=$xmlref->[0];
+    # clean up escaped xml until we find out where its escaped
+    $xml =~s/\&lt\;/\</g;
+    $xml =~s/\&gt\;/\>/g;
+
+
+
+    
+    my $g_PARSER = XML::LibXML->new();
+    my $doc = $g_PARSER->parse_string($xml);
+    my @nodelist= $doc->getElementsByTagName('datafield');
+    my $bigstring;
+    my $content;
+    
+    foreach my $node (@nodelist) 
+    {
+        my $tag=$node->getAttribute('tag');
+              
+        if ($tag >99)
+        {
+            if ( $node->hasChildNodes()  )
+            {
+                my @childnodes = $node->childNodes();
+                foreach my $child (@childnodes)
+                {
+                    $content =$child->textContent;
+                    $bigstring .= $content . " ";
+                }
+            }
+            else 
+            {
+                $content =$node->textContent;
+                $bigstring .= $content . " ";
+            }
+        }
+    }
+    my $aryref=[];
+    $aryref->[0]=$bigstring;
+    return $aryref;
 }
 
 1;
-`
