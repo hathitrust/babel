@@ -89,13 +89,7 @@ if ( $C->get_object('AccessRights')->assert_final_access_status($C, $gId) eq 'al
     # possibly new handler, etc.) is done after initialization
     $gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues);
 
-    # set up text, image or pdf handlers for this request
-    $gMdpItem->DetermineAndSetContentHandler( );
-
-    if ( $gCgi->param( 'ssd' ) ne 1 )
-    {
-        $gMdpItem->OcrHandler( );
-    }
+    $gMdpItem->OcrHandler();
 }
 
 # ----------------------------------------------------------------------

@@ -12,6 +12,7 @@
   <xsl:variable name="gItemId" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
   <xsl:variable name="gFeatureList" select="/MBooksTop/MdpApp/FeatureList"/>
   <xsl:variable name="gItemHandle" select="/MBooksTop/MBooksGlobals/ItemHandle"/>
+  <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
 
   <xsl:variable name="gFinalView">
     <xsl:choose>
@@ -20,7 +21,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:choose>
-           <xsl:when test="$gFullOcr=''">
+           <xsl:when test="$gHasOcr='NO'">
                <xsl:value-of select="'empty'"/>
            </xsl:when>
            <xsl:otherwise>
@@ -97,19 +98,27 @@
 
   <!-- Top Level Container DIV -->
   <xsl:template name="UberContainer">
-
+    
     <div id="mdpUberContainer">
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
-
+      
       <div id="ControlContentContainer">
-        <!-- Table of Contents -->
-	<xsl:if test="$gFinalAccessStatus='allow'">
-        	<xsl:call-template name="BuildTOC"/>
-	</xsl:if>
-
-        <!-- Pages -->
-        <xsl:call-template name="ContentContainer"/>
+        <xsl:choose>
+          <xsl:when test="$gFinalAccessStatus='allow' and $gHasOcr='YES'">
+            <!-- Table of Contents -->
+            <xsl:call-template name="BuildTOC"/>
+            
+            <!-- Pages -->
+            <xsl:call-template name="ContentContainer"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:if test="$gHasOcr='NO'">
+              <h2 class="SkipLink">Page Text</h2>
+              <xsl:text>Sorry, this volume does not contain any readable text.</xsl:text>
+            </xsl:if>
+          </xsl:otherwise>
+        </xsl:choose>
       </div>
     </div>
   </xsl:template>
