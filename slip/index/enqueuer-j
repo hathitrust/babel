@@ -120,10 +120,10 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 }
 
 # Do not try to enqueue ids while I am running already
-my $lock_run = $RUN;
-my $Lock_File = "/tmp/enqueuer-$lock_run-lock.sem";
+my $Lock_File = "/tmp/enqueuer-$RUN-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
+    DEBUG('me', qq{DEBUG: enqueuer-j could not get semaphore run=$RUN});
     exit 0;
 }
 END {
@@ -162,19 +162,7 @@ eval {
             ||
             $INTERACTIVE
            ) {
-            # Exit this cron'd enquerer-j if another has the tables locked
-            # to prevent cron'd enqueuer-j's from piling up
-            my $lock_file = '/tmp/enqueuer-lock.sem';
-            my $sem = new Semaphore($lock_file);
-            if (! $sem) {
-                DEBUG('me', qq{DEBUG: enqueuer-j could not get semaphore});
-                exit 0;
-            }
-
             enqueue_from_j_rights($C, $DBH, $RUN);
-
-            $sem->unlock()
-                if ($sem);
         }
         else {
             my $s = qq{enqueuer-j not enabled\n};
