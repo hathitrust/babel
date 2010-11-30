@@ -120,7 +120,7 @@ if (defined($opt_d)) {
         exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
 
-    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
     $ENV{'DEBUG'} .= ',vufind'
         if ($opt_d == 2);
     $ENV{'DEBUG'} .= ',docfulldebug'
@@ -148,10 +148,7 @@ $| = 1;
 
 my $C = new Context;
 
-my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
-
-my $config = new MdpConfig($common_configfile, $global_configfile);
+my $config = SLIP_Utils::Common::gen_run_config($RUN);
 $C->set_object('MdpConfig', $config);
 
 my $db;

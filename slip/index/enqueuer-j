@@ -106,7 +106,7 @@ if (defined($opt_F)) {
 my $CHECK = defined($opt_n);
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
 
 my $INTERACTIVE = $ENV{'TERM'};

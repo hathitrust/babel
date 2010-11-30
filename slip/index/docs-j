@@ -87,7 +87,7 @@ if (defined($opt_d)) {
         exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
 
-    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
     $ENV{'DEBUG'} .= ',vufind'
         if ($opt_d == 2);
     $ENV{'DEBUG'} .= ',docfulldebug'

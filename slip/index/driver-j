@@ -96,17 +96,14 @@ if (! $RUN) {
 }
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} = 'lsdb,me';
+    $ENV{'DEBUG'} .= 'lsdb,me';
 }
 
 my $INTERACTIVE = $ENV{'TERM'};
 
 my $C = new Context;
 
-my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
-
-my $config = new MdpConfig($common_configfile, $global_configfile);
+my $config = SLIP_Utils::Common::gen_run_config($RUN);
 $C->set_object('MdpConfig', $config);
 
 my $FULL_OPTIMIZE_RUN = 0;

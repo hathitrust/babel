@@ -86,7 +86,7 @@ if (! $QUERY) {
 }
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
 
 my $INTERACTIVE = (! defined($opt_N)); # optional
@@ -96,10 +96,7 @@ $| = 1;
 
 my $C = new Context;
 
-my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
-
-my $CONFIG = new MdpConfig($common_configfile, $global_configfile);
+my $CONFIG = SLIP_Utils::Common::gen_run_config($RUN);
 $C->set_object('MdpConfig', $CONFIG);
 
 my @SHARDS = ();

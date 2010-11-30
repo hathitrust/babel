@@ -111,15 +111,12 @@ END {
 }
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
 
 my $C = new Context;
 
-my $run_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
-
-my $config = new MdpConfig($common_configfile, $run_configfile);
+my $config = SLIP_Utils::Common::gen_run_config($RUN);
 $C->set_object('MdpConfig', $config);
 
 my $db;

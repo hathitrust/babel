@@ -126,7 +126,7 @@ exit 0
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j [[-B|-R] [-n]] [-d{1|2|3|4}]\n};
+    $s .= qq{Usage: rights-j [[-B|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -B build from last vSolr timestamp\n};
     $s .= qq{           where -n is check_only, no inserts to j_rights\n};
     $s .= qq{     -R re-build j_rights_temp from 0000000\n};
@@ -137,7 +137,7 @@ sub r_get_usage {
     $s .= qq{           3: me,vsolr\n};
     $s .= qq{           4: me,vsolrlibxml\n};
     $s .= qq{           5: me,query\n};
-    $s .= qq{           5: me,response\n};
+    $s .= qq{           6: me,response\n};
     return $s;
 }
 
@@ -147,22 +147,22 @@ my $ops = getopts('BRd:n');
 
 if ($opt_d) {
     if ($opt_d == 1) {
-        $ENV{'DEBUG'} = 'me';
+        $ENV{'DEBUG'} .= 'me';
     }
     elsif ($opt_d == 2) {
-        $ENV{'DEBUG'} = 'me,lsdb';
+        $ENV{'DEBUG'} .= 'me,lsdb';
     }
     elsif ($opt_d == 3) {
-        $ENV{'DEBUG'} = 'me,vsolr';
+        $ENV{'DEBUG'} .= 'me,vsolr';
     }
     elsif ($opt_d == 4) {
-        $ENV{'DEBUG'} = 'me,vsolrlibxml';
+        $ENV{'DEBUG'} .= 'me,vsolrlibxml';
     }
     elsif ($opt_d == 5) {
-        $ENV{'DEBUG'} = 'me,query';
+        $ENV{'DEBUG'} .= 'me,query';
     }
     elsif ($opt_d == 6) {
-        $ENV{'DEBUG'} = 'me,query,response';
+        $ENV{'DEBUG'} .= 'me,query,response';
     }
 }
 

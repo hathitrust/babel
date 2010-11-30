@@ -32,6 +32,7 @@ use Debug::DUtils;
 use Context;
 use MdpConfig;
 use Search::Constants;
+use Utils;
 use Utils::Time;
 
 # Local
@@ -180,17 +181,17 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub gen_run_config
-{
+sub gen_run_config {
     my $run = shift;
     
+    my $uber_configfile = Utils::get_uber_config_path('slip'),
     my $global_configfile;
     my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
     
     if ($run) {
         $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$run.conf};
     }
-    my $config = new MdpConfig($common_configfile, $global_configfile);
+    my $config = new MdpConfig($uber_configfile, $common_configfile, $global_configfile);
     
     return $config;
 }

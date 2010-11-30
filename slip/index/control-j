@@ -161,7 +161,7 @@ if (! $RUN) {
 }
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} = 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
 
 
@@ -169,8 +169,9 @@ my $C = new Context;
 
 my $run_configfile = $RIGHTS ? undef : $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
 my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+my $uber_configfile = Utils::get_uber_config_path('slip');
 
-my $config = new MdpConfig($common_configfile, $run_configfile);
+my $config = new MdpConfig($uber_configfile, $common_configfile, $run_configfile);
 $C->set_object('MdpConfig', $config);
 
 my @NUM_SHARDS_LIST = $RIGHTS ? () : $C->get_object('MdpConfig')->get('num_shards_list');

@@ -133,7 +133,7 @@ END {
 }
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} = 'lsdb,me';
+    $ENV{'DEBUG'} .= 'lsdb,me';
 }
 
 my $C = new Context;
@@ -141,10 +141,7 @@ my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my $Child_Err_File =
     qq{/tmp/check_child_error-$SHARD-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
 
-my $run_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
-
-my $config = new MdpConfig($common_configfile, $run_configfile);
+my $config = SLIP_Utils::Common::gen_run_config($RUN);
 $C->set_object('MdpConfig', $config);
 
 my $db;
