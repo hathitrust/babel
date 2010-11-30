@@ -109,7 +109,7 @@ $C->set_object('MdpConfig', $config);
 
 # Doing a lot of commits in the shard loop below may take more time
 # that allowed for in cron
-my $Lock_File = "/tmp/sizer--lock.sem";
+my $Lock_File = "/tmp/sizer-$RUN-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     __output("could not get semaphore. exit...\n");
