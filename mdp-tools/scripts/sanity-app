@@ -38,7 +38,8 @@ sub sanity_app_usage {
            where <app> is the application.
                  -A all apps
                  -v verbose
-                 -s staging areas: test (default), beta-1, beta-2, beta-3\n};
+                 -s staging areas: test (default), beta-1, beta-2, beta-3
+                    OR uniqname\n};
     return $s;
 }
 
