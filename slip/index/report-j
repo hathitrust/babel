@@ -124,8 +124,13 @@ eval {
     $db = new Database($config);
 };
 if ($@) {
+    my $rc = $SLIP_Utils::States::RC_DATABASE_CONNECT;
     SLIP_Utils::Common::Log_database_connection_error($C, 'report-j', $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    my $s = "Database connect error: $@";
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
 }
 
 $C->set_object('Database', $db);
