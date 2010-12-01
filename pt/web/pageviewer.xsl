@@ -142,6 +142,7 @@
         <xsl:if test="$gEnableGoogleAnalytics='true'">
           <xsl:call-template name="google_analytics" />
         </xsl:if>
+        
       </body>
     </html>
   </xsl:template>
@@ -202,6 +203,12 @@
         <xsl:if test="$gEnableGoogleAnalytics='true'">
           <xsl:call-template name="google_analytics" />
         </xsl:if>
+
+        <div id="mdpLoadProgress">
+          <h2>Please wait: loading...</h2>
+          <p class="message"></p>
+        </div>
+        
       </body>
     </html>
   </xsl:template>
@@ -562,12 +569,35 @@
       </xsl:if> -->
     </xsl:variable>
     <div class="mdpControlContainer">
-      <div class="bibLinks">
-        <ul>
-          <li>
-            <a class="catalog" title="Switch to BookReader UI" href="{$BookReaderURL}">Switch to BookReader UI</a>
-          </li>
-        </ul>
+      
+      <style>
+        
+        .uiSwitchNote {
+          padding: 8px;
+          padding-bottom: 4px;
+          margin-botom: 4px;
+          border: 1px solid #C96806;
+          background-color: #ef7a06;
+        }
+
+        .uiSwitchNote a {
+          color: black;
+          font-weight: bold;
+        }
+
+        .uiSwitchLink {
+          font-size: 80%;
+        }
+        
+      </style>
+
+      <div class="uiSwitchNote">
+        <p>
+          You are using the <strong>Classic</strong> interface.
+        </p>
+        <p class="uiSwitchLink">
+          Switch to the <a title="Switch to BookReader UI" href="{$BookReaderURL}">Book Reader interface</a>.
+        </p>
       </div>
 
       <xsl:choose>
@@ -660,12 +690,13 @@
 
     <div class="mdpControlContainer">
       
-      <div class="bibLinks">
-        <ul>
-          <li>
-            <a id="uiSwitchLink" class="catalog" title="Switch to Classic UI" href="{str:replace(string(/MBooksTop/MBooksGlobals/CurrentUrl), 'ui=bookreader', 'ui=classic')}">Switch to Classic UI</a>
-          </li>
-        </ul>
+      <div class="uiSwitchNote">
+        <p>
+          You are using the <strong>Book Reader</strong> interface.
+        </p>
+        <p class="uiSwitchLink">
+          Switch to the <a id="uiSwitchLink" title="Switch to Classic UI" href="{str:replace(string(/MBooksTop/MBooksGlobals/CurrentUrl), 'ui=bookreader', 'ui=classic')}">Classic interface</a>.
+        </p>
       </div>
       
       <xsl:choose>

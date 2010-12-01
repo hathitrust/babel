@@ -350,8 +350,9 @@ FrankenBookReader.prototype.init = function() {
              var self = this;
 
              setTimeout(function() {
-                 var options = { pnotify_text: "Loading: " + (self.numLeafs) + " / " + self.total_items};
-                 self.notice.pnotify(options);
+                 // var options = { pnotify_text: "Loading: " + (self.numLeafs) + " / " + self.total_items};
+                 // self.notice.pnotify(options);
+                 $("#mdpLoadProgress").find("p.message").html("Loading: " + (self.numLeafs) + " / " + self.total_items).show(200);
                  self.init();
              }, 500);
              console.log("WAITING:", now);
@@ -359,10 +360,15 @@ FrankenBookReader.prototype.init = function() {
         }
     }
     
-    if ( self.notice != null ) {
-        self.notice.pnotify({pnotify_title: "All finished", pnotify_text: "Enjoy!", pnotify_delay: 2000, pnotify_hide: true, pnotify_closer: true, pnotify_opacity: 1.0, pnotify_width: '250px' });
-        self.notice = null; // notice will be cleaned up by pnotify
-    }
+    // if ( self.notice != null ) {
+    //     self.notice.pnotify({pnotify_title: "All finished", pnotify_text: "Enjoy!", pnotify_delay: 2000, pnotify_hide: true, pnotify_closer: true, pnotify_opacity: 1.0, pnotify_width: '250px' });
+    //     self.notice = null; // notice will be cleaned up by pnotify
+    // }
+    
+    $("#mdpLoadProgress").find("h2").text("All finished").end().find("p.message").text("Enjoy!");
+    setTimeout(function() {
+      $("#mdpLoadProgress").fadeOut(500);
+    }, 1000);
 
     // if (! this.complete && do_wait) {
     //     console.log("INIT: WAITING FOR", now, startIndex, "/", this.complete, "/", do_wait, "/", this.sliceFromIndex(startIndex), ":", this.total_slices);
@@ -400,24 +406,31 @@ FrankenBookReader.prototype.init = function() {
 
 FrankenBookReader.prototype.openNotice = function() {
   var self = this;
-  if ( self.notice == null ) {
-      self.notice = $.pnotify({
-         pnotify_title: "Please wait: loading",
-         pnotify_notice_icon: "",
-         pnotify_hide: false,
-         pnotify_closer: false,
-         pnotify_opacity: .85,
-         pnotify_width: "250px",
-         pnotify_history: false,
-         pnotify_before_open: function(pnotify){
-         	// Position this notice in the center of the screen.
-         	pnotify.css({
-         		"top": ($(window).height() / 2) - (pnotify.height() / 2),
-         		"left": ($(window).width() / 2) - (pnotify.width() / 2)
-         	});
-         }
-      });
-  }
+  
+  var $notice = $("#mdpLoadProgress");
+  $notice.css({
+ 		"top": ($(window).height() / 2) - ($notice.height() / 2),
+ 		"left": ($("#BookReader").width() / 2) - ($notice.width() / 2) + $("#BookReader").offset().left // ($(window).width() / 2) - (pnotify.width() / 2)
+ 	}).fadeIn();
+  
+  // if ( self.notice == null ) {
+  //     self.notice = $.pnotify({
+  //        pnotify_title: "Please wait: loading",
+  //        pnotify_notice_icon: "",
+  //        pnotify_hide: false,
+  //        pnotify_closer: false,
+  //        pnotify_opacity: .85,
+  //        pnotify_width: "250px",
+  //        pnotify_history: false,
+  //        pnotify_before_open: function(pnotify){
+  //          // Position this notice in the center of the screen.
+  //          pnotify.css({
+  //            "top": ($(window).height() / 2) - (pnotify.height() / 2),
+  //            "left": ($("#BookReader").width() / 2) - (pnotify.width() / 2) + $("#BookReader").offset().left // ($(window).width() / 2) - (pnotify.width() / 2)
+  //          });
+  //        }
+  //     });
+  // }
 }
 
 FrankenBookReader.prototype.getURLParameter = function(name, href) {
@@ -432,7 +445,7 @@ FrankenBookReader.prototype.getURLParameter = function(name, href) {
 // initToolbar
 FrankenBookReader.prototype.initToolbar = function(mode, ui) {
 
-    $("#BookReader").append("<div id='BRtoolbar'>"
+        var html = "<div id='BRtoolbar'>"
         + "<span id='BRtoolbarbuttons' style='float: right; white-space: nowrap; padding-right: 4px'>"
         +   "<div class='BRzoomOptions'>"
         +   " <button class='BRicon rollover zoom_out' onclick='br.zoom(-1); return false;'/>" 
@@ -452,16 +465,24 @@ FrankenBookReader.prototype.initToolbar = function(mode, ui) {
         
         + "<span id='BRmodebuttons' style='padding-left: 4px'>"
         +   " <button class='BRlabel one_page_mode mode1_image' onclick='br.switchMode(1, \"image\"); br.toggleDisplayMode(\"image\"); return false'>Image</button>"
-        +   " | "
-        +   " <button class='BRlabel one_page_mode mode1_text' onclick='br.switchMode(1, \"text\"); br.toggleDisplayMode(\"text\"); return false'>Text</button>"
-        +   " | "
+        +   " | ";
+        
+        if ( this.hasOcr ) {
+          html += " <button class='BRlabel one_page_mode mode1_text' onclick='br.switchMode(1, \"text\"); br.toggleDisplayMode(\"text\"); return false'>Text</button>";
+        } else {
+          html += " <button class='BRdisabled' disabled='disabled' onclick='return false'>Text</button>";
+        }
+        
+        html +=
+            " | "
         +   " <button class='BRlabel two_page_mode mode2' onclick='br.switchMode(2); return false'>Flip</button>"
         +   " | "
         +   " <button class='BRlabel thumbnail_mode mode3' onclick='br.switchMode(3); return false'>Thumbnail</button>"
         + "</span>"
         
-        + "</div>");
+        + "</div>";
 
+    $("#BookReader").append(html);
     this.updateToolbarZoom(this.reduce); // Pretty format
         
     // $$$ turn this into a member variable
@@ -1092,30 +1113,6 @@ while ( br.slice_size % br.thumbColumns != 0 ) {
     br.slice_size += 1;
 }
 
-// Load bookreader
-var params = br.getMetaUrlParams(0);
-// delay loading metaURL - BAH HUMBUG
-br.openNotice();
-setTimeout(function() {
-    $.getJSON(br.metaURL, params, function(data) {
-      br.bookData = { 0 : data };
-      br.slices = [0];
-      // br.numLeafs = br.bookData['total_pages'];
-      br.titleLeaf = br.bookData[0]['first_page_sequence'];
-      br.numLeafs = br.bookData[0]['seq'].length;
-      br.total_slices = Math.ceil(data['total_items'] / br.slice_size);
-      br.total_items = data['total_items'];
-      br.cleanupMetadata();
-      
-      br.complete = br.slices.length == br.total_slices;
-      br.init();
-      
-      if ( ! br.complete ) {
-        br.loadSlices(1);
-      }
-      
-    });
-}, 500);
 
 $(document).ready(function() {
     if ( window.console === undefined ) {
@@ -1151,5 +1148,31 @@ $(document).ready(function() {
       $(this).attr("href", href);
       return true;
     })
+    
+    
+    // Load bookreader
+    var params = br.getMetaUrlParams(0);
+    // delay loading metaURL - BAH HUMBUG
+    br.openNotice();
+    setTimeout(function() {
+        $.getJSON(br.metaURL, params, function(data) {
+          br.bookData = { 0 : data };
+          br.slices = [0];
+          // br.numLeafs = br.bookData['total_pages'];
+          br.titleLeaf = br.bookData[0]['first_page_sequence'];
+          br.numLeafs = br.bookData[0]['seq'].length;
+          br.total_slices = Math.ceil(data['total_items'] / br.slice_size);
+          br.total_items = data['total_items'];
+          br.cleanupMetadata();
+
+          br.complete = br.slices.length == br.total_slices;
+          br.init();
+
+          if ( ! br.complete ) {
+            br.loadSlices(1);
+          }
+
+        });
+    }, 500);
     
 })

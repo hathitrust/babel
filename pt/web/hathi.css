@@ -276,3 +276,50 @@ div.mdpControlContainer {
 .mdpMetaDataRow {
   z-index: 999999;
 }
+
+.BRdisabled {
+  background-color: transparent;
+  border: none;
+  color: #DDD;
+}
+
+.BRdisabled:hover {
+    /*background-color: #ef7a06;*/
+    color: #CCC;
+}
+
+
+.uiSwitchNote {
+  padding: 8px;
+  padding-bottom: 4px;
+  margin-botom: 4px;
+  border: 1px solid #C96806;
+  background-color: #ef7a06;
+}
+
+.uiSwitchNote a {
+  color: black;
+  font-weight: bold;
+}
+
+.uiSwitchLink {
+  font-size: 80%;
+}
+
+#mdpLoadProgress {
+  background-color: #E2E2E2;
+  width: 250px;
+  min-height: 16px;
+  opacity: 0.80;
+  display: none;
+  z-index: 999999;
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+}
+
+#mdpLoadProgress p.message {
+  font-size: 0.8em;
+  display: none;
+}
