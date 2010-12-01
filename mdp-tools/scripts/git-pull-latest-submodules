@@ -10,11 +10,10 @@ use ToolLib;
 
 our ($opt_A, $opt_h, $opt_v );
 my $ops = getopts('Ahv');
-my $app = shift;
 
 sub Usage {
-    print "git-pull-latest-submodules [options] <app> | -A
-  pulls latest version of submodules for one or all apps under /htapps/[developer|test].babel
+    print "git-pull-latest-submodules [options] <app> [<app>]+ | -A
+  pulls latest version of submodules for one or more or all apps under /htapps/[developer|test].babel
       -A pulls submodules in all apps that contain a .gitmodules file
     OPTIONS
       -v verbose
@@ -26,24 +25,26 @@ if ($opt_h) {
     exit 0;
 }
 
-if (! $app && ! $opt_A) {
-    print STDERR "supply -A option or <app>\n";
-    print Usage();
-    exit 1;
-}
 $ToolLib::VERBOSE = $opt_v;
 
 my ($repo_root, $app_root) = get_HTDE_roots();
+my @apps;
 
-my @app_dirs = ();
 if ($opt_A) {
-    @app_dirs = ToolLib::get_app_dir_list($app_root);
+    @apps = ToolLib::get_app_list($app_root);
 }
 else {
-    @app_dirs = ("$app_root/$app");
+    @apps = @ARGV;
 }
 
-foreach my $app_dir (@app_dirs) {
+if (! scalar(@apps)) {
+    print Usage();
+    exit 0;
+}
+
+foreach my $app (@apps) {
+    my $app_dir = "$app_root/$app";
+    
     next if (! -e "$app_dir/.gitmodules");
 
     if (! chdir_to_app_dir($app_dir)) {
