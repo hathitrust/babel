@@ -22,6 +22,6 @@ APP_dest = ( /htapps/babel/slip )
 #
 ( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
         install -oremove ${APP_dest};
-        except_pat ( \\.git yui2-lib );
+        except_pat ( \\.git yui2-lib STOPSLIP );
         notify hathitrust-release@umich.edu ;
 
