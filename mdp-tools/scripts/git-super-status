@@ -87,6 +87,13 @@ foreach my $app_dir (@app_dirs) {
             print "\tAll pulled: ";  PrintY("OK\n");
         }
 
+        print "\nLAST DEPLOYMENT:\n";
+        chdir_to_app_dir($app_dir);
+        my $last = `git for-each-ref --count=1 --sort='-taggerdate' --format='%(refname) %(taggerdate)'`;
+        $last =~ s,refs/tags/,,g;
+        my ($tag, $date) = ($last =~ m,^(.*?)\s+(.*),);
+        print("\tTag:$tag  Date:$date\n");
+
         print "\nSUB-PROJECT STATUS (submodules):\n";
         my @submodules = `git submodule status`;
         if (! scalar(@submodules)) {
@@ -110,7 +117,7 @@ foreach my $app_dir (@app_dirs) {
             ($char eq "-") 
               ? PrintN("\tNO") : PrintY("\tyes") ;
             print("\n");
-        }        
+        }
     }
 
 
