@@ -39,17 +39,6 @@ use PT::Document::XPAT;
 use PT::PageTurnerUtils;
 use XML::LibXML;
 
-### use MediaHandler::Image;
-
-# Global variables
-
-# store the paths for each original image file used to create the
-# multipage pdf
-my @imageFiles;
-# store the paths for each scaled image file (png or jpg) used to
-# create the multipage pdf. (Use these scaled versions due to
-# watermark size issues)
-my @scaledImageFiles;
 
 # **********************************************************************
 #
@@ -98,44 +87,6 @@ sub _initialize
     my $self = shift;
     my ( $C, $id, $metsXmlRef, $metsXmlFilename, $metadataRef, $fileSystemLocation, $metadata_failed ) = @_;
 
-    # $self->SetId( $id );
-    # $self->Set('namespace', App::Identifier::the_namespace($id));
-    # 
-    # # Reduce size of METS
-    # $self->DeleteExtraneousMETSElements($metsXmlRef);
-    # 
-    # $self->Set( 'metsxml', $metsXmlRef );
-    # $self->Set( 'metsxmlfilename', $metsXmlFilename );
-    # $self->Set( 'filesystemlocation', $fileSystemLocation );
-    # 
-    # my $stripped_id = App::Identifier::get_pairtree_id_wo_namespace($id);
-    # my $zipfile = $fileSystemLocation . qq{/$stripped_id.zip};
-    # if (-e $zipfile)
-    # {
-    #     $self->SetItemZipped();
-    #     $self->Set('zipfile', $zipfile); 
-    # }
-    # 
-    # my $source_attribute = $C->get_object('AccessRights')->get_source_attribute($C, $id);
-    # $self->Set( 'source_attribute', $source_attribute );
-    # 
-    # $self->Set( 'marcmetadata', $metadataRef );
-    # 
-    # # --------------------------------------------------
-    # 
-    # $self->Set( 'defaultsize', $PTGlobals::gDefaultSize );
-    # $self->Set( 'defaultseq', $PTGlobals::gDefaultSeq );
-    # 
-    # $self->Set( 'sizehash', \%PTGlobals::gSizes );
-    # $self->Set( 'pdfchunksize', $PTGlobals::gPdfChunkSize );
-    # $self->Set( 'metadatafailure', $metadata_failed );
-    # 
-    # $self->SetPageInfo();
-    # 
-    # if ( $self->HasPageFeatures() )
-    # {
-    #     $self->BuildFeatureTable();
-    # }
 }
 
 sub GetFormatHandler
@@ -230,35 +181,37 @@ sub DetermineAndSetContentHandler {
 # SIDE-EFFECTS :
 # NOTES        :
 # ----------------------------------------------------------------------
-sub OcrHandler
-{
+sub OcrHandler {
     my $self = shift;
 
     my $hOCR = $self->HasCoordOCR();
     my $fileType = $hOCR ? 'coordocrfile' : 'ocrfile';
 
     my $ocrFile = $self->GetFilePathMaybeExtract( $self->GetRequestedPageSequence(), $fileType );
-    my $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
-    DEBUG('all', qq{ocr file is: $ocrFile});
-
-    if ($hOCR)
-    {
-        my ($hOCR_Body) = ($$ocrTextRef =~ m,<body[^>]*>(.*?)</body>,is);
-        # Aaaiiiieee!!!
-        $hOCR_Body =~ s,\&shy;,\&\#173;,gis;
-        $hOCR_Body =~ s,<br>,<br/>,gis;
-
-        $self->{'ocrtextref'} =  \$hOCR_Body;
+    if (! $ocrFile) {
+        my $text = '';
+        $self->{'ocrtextref'} = \$text;
     }
-    else
-    {
-        my $doc = new PT::Document::XPAT;
-        $doc->clean_xml($ocrTextRef);
+    else {
+        my $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
+        DEBUG('all', qq{ocr file is: $ocrFile});
 
-        # XMLify line breaks using <br/>
-        $$ocrTextRef =~ s,\n,<br />\n,g;
-
-        $self->{'ocrtextref'} =  $ocrTextRef;
+        if ($hOCR) {
+            my ($hOCR_Body) = ($$ocrTextRef =~ m,<body[^>]*>(.*?)</body>,is);
+            # Aaaiiiieee!!!
+            $hOCR_Body =~ s,\&shy;,\&\#173;,gis;
+            $hOCR_Body =~ s,<br>,<br/>,gis;
+            
+            $self->{'ocrtextref'} =  \$hOCR_Body;
+        }
+        else {
+            PT::Document::XPAT::clean_xml($ocrTextRef);
+            
+            # XMLify line breaks using <br/>
+            $$ocrTextRef =~ s,\n,<br />\n,g;
+            
+            $self->{'ocrtextref'} =  $ocrTextRef;
+        }
     }
 
     return $self->{'ocrtextref'};
@@ -292,19 +245,23 @@ sub GetOcrTextRef
 # SIDE-EFFECTS :
 # NOTES        :
 # ----------------------------------------------------------------------
-sub GetOcrBySequence
-{
+sub GetOcrBySequence {
     my $self = shift;
     my $sequence = shift;
 
+    my $ocrTextRef;
     my $ocrFile = $self->GetFilePathMaybeExtract( $sequence, 'ocrfile' );
-    my $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
+    if (! $ocrFile) {
+        my $text = '';
+        $ocrTextRef = \$text;
+    }
+    else {
+        $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
+    }
 
     DEBUG('all', qq{ocr file is: $ocrFile});
 
-    my $doc = new PT::Document::XPAT;
-    $doc->clean_xml($ocrTextRef);
-
+    PT::Document::XPAT::clean_xml($ocrTextRef);
     $$ocrTextRef =~ s,\n\n,<br /><br />\n,g;
 
     return $ocrTextRef;
@@ -457,55 +414,6 @@ sub DumpPageInfoToHtml
     return $s;
 }
 
-# ----------------------------------------------------------------------
-# NAME         :
-# PURPOSE      :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub BuildOutputImageFileInfo
-{
-    my $self = shift;
-    my $outputFileType = shift;
-
-    my $id                    = $self->GetId();
-    my $requestedPageSequence = $self->GetRequestedPageSequence();
-    my $requestedOrientation  = $self->GetOrientationForIdSequence( $id, $requestedPageSequence );
-    my $requestedSize         = $self->GetRequestedSize();
-
-    my ( $storedFileName, $storedFilePath ) =
-        $self->GetFilePathMaybeExtract($requestedPageSequence, 'imagefile');
-
-    my $outputDestDir =
-        $PTGlobals::gCacheDir . q{/} . Identifier::id_to_mdp_path($id);
-
-    my $outputFileName = $outputDestDir . q{/} .
-        join( '.',
-              $storedFileName,
-              $requestedSize,
-              $requestedOrientation,
-              $outputFileType );
-
-    # Give the output file a different name if this is for the final
-    # concatenation of the multipage pdf
-    if ($self->GetConcatenate() eq 1)
-    {
-	my $pages = $self->GetPageCount() . "pg";
-
-	$outputFileName = $outputDestDir . q{/} .
-            join( '.',
-                  $storedFileName, $pages,
-                  $requestedSize,
-                  $requestedOrientation,
-                  $outputFileType );
-    }
-
-    return ( $outputDestDir, $outputFileName, $storedFilePath );
-}
 
 # ---------------------------------------------------------------------
 

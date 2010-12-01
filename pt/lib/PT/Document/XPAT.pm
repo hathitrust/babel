@@ -65,11 +65,15 @@ sub get_document_content
     my $has_ocr = $mdp_item->Get('has_ocr');
     
     if ($has_ocr) {
-        my $pattern_arr_ref = ['*[0-9].txt'];
+        my $pattern_arr_ref = ['*.txt'];
         my $fileDir = $mdp_item->GetDirPathMaybeExtract($pattern_arr_ref, 'ocrfile');
 
         for (my $i = $first_page; $i <= $last_page; $i++) {
             my $ocr_file = $mdp_item->GetFileNameBySequence($i, 'ocrfile');
+            
+            # Some packages lack OCR for some pages
+            next if (! $ocr_file);
+
             my $ocr_text_ref = Utils::read_file($fileDir . '/' . $ocr_file);
 
             # Do no build pages of whitespace
