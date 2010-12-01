@@ -157,7 +157,7 @@ use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 __check_driver_enabled($C, $DBH, $RUN);
 
 # Exit driver-j if another has the semaphore to prevent piling up
-my $Lock_File = '/tmp/driver-$RUN-lock.sem';
+my $Lock_File = "/tmp/driver-$RUN-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     my $rc = $SLIP_Utils::States::RC_DRIVER_NO_SEM;
