@@ -234,7 +234,7 @@
 
       function FrankenBookReader() {
           BookReader.call(this);
-          this.inTextMode = false;
+          this.constModeText = 4;
       }
     </script>
     

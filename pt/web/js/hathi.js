@@ -558,16 +558,69 @@ FrankenBookReader.prototype.initToolbar = function(mode, ui) {
 FrankenBookReader.prototype.switchMode = function(mode, extra) {
 
     cls = "mode" + mode;
-    if ( extra != null ) {
-        cls += "_" + extra;
-    } else if ( cls == "mode1" ) {
-        cls += "_image";        
-    }
     
     $("#BRmodebuttons button").removeClass('active');
     $("#BRmodebuttons button." + cls).addClass('active');
 
-    BookReader.prototype.switchMode.call(this, mode);
+    // BookReader.prototype.switchMode.call(this, mode);
+
+
+    //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
+    
+    if (mode == this.mode) {
+        return;
+    }
+    
+    if (!this.canSwitchToMode(mode)) {
+        return;
+    }
+
+    this.autoStop();
+    this.removeSearchHilites();
+
+    this.mode = mode;
+    this.switchToolbarMode(mode);
+
+    // reinstate scale if moving from thumbnail view
+    if (this.pageScale != this.reduce) {
+        this.reduce = this.pageScale;
+    }
+    
+    // $$$ TODO preserve center of view when switching between mode
+    //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
+
+    // XXX maybe better to preserve zoom in each mode
+    if (1 == mode) {
+      
+        if ( this.saved1upReduce) {
+          this.reduce = this.saved1upReduce;
+        }
+      
+        this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'), $('#BRcontainer').attr('clientHeight'));
+        this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
+        
+        if ( this.displayMode == "text" ) {
+          this.saved1upReduce = this.reduce;
+          this.reduce = 1;
+        }
+        
+        this.prepareOnePageView();
+    } else if (3 == mode) {
+        this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
+        this.prepareThumbnailView();
+    } else if (4 == mode) {
+        this.pageScale = this.reduce;
+        this.reduce = 1;
+        this.prepareTextView();
+    } else {
+        // $$$ why don't we save autofit?
+        this.twoPage.autofit = true; // Take zoom level from other mode; RRE: we'd rather it didn't
+        this.twoPageCalculateReductionFactors();
+        this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+        this.prepareTwoPageView();
+        this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
+    }
+
 }
 
 FrankenBookReader.prototype.paramsFromCurrent = function() {
@@ -592,6 +645,15 @@ FrankenBookReader.prototype.toggleDisplayMode = function(mode) {
     // $("#BRcontainer").append("<div id='BRpageview' class='ocrpage'></div>");
     // $('#BRcontainer').dragscrollable({acceptPropagatedEvent:false});
     
+    if ( this.displayMode == "text" ) {
+      this.saved1upReduce = this.reduce;
+      this.reduce = 1;
+    } else {
+      if ( this.saved1upReduce ) {
+        this.reduce = this.saved1upReduce;
+      }
+    }
+    
     this.prepareOnePageView();
     // this.displayedIndices = [];
     // this.drawLeafs();
@@ -599,7 +661,7 @@ FrankenBookReader.prototype.toggleDisplayMode = function(mode) {
 
 //prepareOnePageView()
 //______________________________________________________________________________
-BookReader.prototype.prepareOnePageView = function() {
+BookReader.prototype.prepareTextView = function() {
 
     // var startLeaf = this.displayedIndices[0];
     var startLeaf = this.currentIndex();
@@ -628,6 +690,62 @@ BookReader.prototype.prepareOnePageView = function() {
     this.displayedIndices = [];
     
     this.drawLeafsOnePage();
+}
+
+
+FrankenBookReader.prototype.resizePageView1up = function() {
+    var i;
+    var viewHeight = 0;
+    //var viewWidth  = $('#BRcontainer').width(); //includes scrollBar
+    var viewWidth  = $('#BRcontainer').attr('clientWidth');   
+
+    var oldScrollTop  = $('#BRcontainer').attr('scrollTop');
+    var oldScrollLeft = $('#BRcontainer').attr('scrollLeft');
+    var oldPageViewHeight = $('#BRpageview').height();
+    var oldPageViewWidth = $('#BRpageview').width();
+    
+    var oldCenterY = this.centerY1up();
+    var oldCenterX = this.centerX1up();
+    
+    if (0 != oldPageViewHeight) {
+        var scrollRatio = oldCenterY / oldPageViewHeight;
+    } else {
+        var scrollRatio = 0;
+    }
+    
+    // Recalculate 1up reduction factors
+    this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'),
+                                           $('#BRcontainer').attr('clientHeight') );                                        
+    // Update current reduce (if in autofit)
+    if (this.onePage.autofit && this.displayMode == "image") {
+        var reductionFactor = this.nextReduce(this.reduce, this.onePage.autofit, this.onePage.reductionFactors);
+        this.reduce = reductionFactor.reduce;
+    }
+    
+    for (i=0; i<this.numLeafs; i++) {
+        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
+        var width = parseInt(this._getPageWidth(i)/this.reduce);
+        if (width>viewWidth) viewWidth=width;
+    }
+    $('#BRpageview').height(viewHeight);
+    $('#BRpageview').width(viewWidth);
+
+    var newCenterY = scrollRatio*viewHeight;
+    var newTop = Math.max(0, Math.floor( newCenterY - $('#BRcontainer').height()/2 ));
+    $('#BRcontainer').attr('scrollTop', newTop);
+    
+    // We use clientWidth here to avoid miscalculating due to scroll bar
+    var newCenterX = oldCenterX * (viewWidth / oldPageViewWidth);
+    var newLeft = newCenterX - $('#BRcontainer').attr('clientWidth') / 2;
+    newLeft = Math.max(newLeft, 0);
+    $('#BRcontainer').attr('scrollLeft', newLeft);
+    //console.log('oldCenterX ' + oldCenterX + ' newCenterX ' + newCenterX + ' newLeft ' + newLeft);
+    
+    //this.centerPageView();
+    this.loadLeafs();
+        
+    this.removeSearchHilites();
+    this.updateSearchHilites();
 }
 
 FrankenBookReader.prototype.fragmentFromParams = function(params) {
