@@ -76,7 +76,7 @@ slip:
   - /htapps/__STAGE__/slip/index/commit-j
   - /htapps/__STAGE__/slip/index/control-j
   - /htapps/__STAGE__/slip/index/delete-j
-  - /htapps/__STAGE__/slip/index/docs-j -r10 uc1.$b699489
+  - /htapps/__STAGE__/slip/index/docs-j -r10 -Iuc1.$b699489
   - /htapps/__STAGE__/slip/index/driver-j
   - /htapps/__STAGE__/slip/index/enqueuer-j -r10 -n
   - /htapps/__STAGE__/slip/index/enqueuer-j -r11 -n
@@ -90,4 +90,4 @@ slip:
   - /htapps/__STAGE__/slip/index/sizer-j
   - /htapps/__STAGE__/slip/index/sync-j
   - /htapps/__STAGE__/slip/index/timeouts-j -r10 -l1
-  - /htapps/__STAGE__/slip/index/check-j 
+  - /htapps/__STAGE__/slip/index/check-j -r10 -R1 -O2 -n -C

@@ -92,7 +92,7 @@ foreach my $app_dir (@app_dirs) {
         my $last = `git for-each-ref --count=1 --sort='-taggerdate' --format='%(refname) %(taggerdate)'`;
         $last =~ s,refs/tags/,,g;
         my ($tag, $date) = ($last =~ m,^(.*?)\s+(.*),);
-        print("\tTag:$tag  Date:$date\n");
+        printf("\tTag: %-20s  Date: %s\n", $tag, $date);
 
         print "\nSUB-PROJECT STATUS (submodules):\n";
         my @submodules = `git submodule status`;
