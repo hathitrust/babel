@@ -442,6 +442,19 @@ FrankenBookReader.prototype.getURLParameter = function(name, href) {
     );
 }
 
+FrankenBookReader.prototype.onePageCalculateReductionFactors = function( width, height ) {
+    BookReader.prototype.onePageCalculateReductionFactors.call(this, width, height);
+    var autoFit = this.onePage.reductionFactors[this.onePage.reductionFactors.length - 1];
+    var prefFit = this.reductionFactors[this.reductionFactors.length - 1];
+    
+    if ( autoFit.reduce > prefFit.reduce ) {
+      // pop off
+      this.onePage.reductionFactors.pop();
+      this.onePage.reductionFactors[this.onePage.reductionFactors.length - 1].autofit = 'height';
+    }
+}
+
+
 // initToolbar
 FrankenBookReader.prototype.initToolbar = function(mode, ui) {
 
