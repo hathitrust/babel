@@ -205,7 +205,8 @@ sub OcrHandler {
             $self->{'ocrtextref'} =  \$hOCR_Body;
         }
         else {
-            PT::Document::XPAT::clean_xml($ocrTextRef);
+            my $doc = new PT::Document::XPAT;
+            $doc->clean_xml($sRef);
             
             # XMLify line breaks using <br/>
             $$ocrTextRef =~ s,\n,<br />\n,g;
