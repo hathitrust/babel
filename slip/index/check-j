@@ -216,6 +216,8 @@ Description
 sub handle_check_rc {
     my ($C, $dbh, $run, $shard, $host, $rc) = @_;
 
+    exit 0 if ($NOOP);
+    
     while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
         __output("  wait Check done: STOPSLIP\n");
         sleep STOPSLIP_CSLEEP_WAIT;
