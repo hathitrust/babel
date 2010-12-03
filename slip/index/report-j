@@ -518,7 +518,7 @@ sub report_flags_state {
         my ($y, $m, $d, $h, $min, $int) = split(/\s+/, $schedule);
         my $do = Scheduler::driver_do_full_optimize($C, $run) ? "YES" : "no";
 
-        $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals\n\t"
+        $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals\n\t\t"
           . "? This run=$do";
     }          
           

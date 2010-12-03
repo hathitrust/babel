@@ -310,7 +310,7 @@ sub __run_check_shard {
     my $rc = __check_c_sysrc($?, $C, $run, $shard, "check num_segs=$num_segs");
 
     if ($rc == 0) {
-        Log_check($C, $run, $shard, $output);
+        Log_check($C, $run, $shard, "__run_check_shard num_segs=$num_segs: " . $output);
     }
 
     return $rc;
@@ -357,7 +357,7 @@ sub __run_s_tomcat {
         Log_check_error($C, $run, $shard, $s);
     }
     else {
-        Log_check($C, $run, $shard, $output);
+        Log_check($C, $run, $shard, "__run_s_tomcat (action=$action): " . $output);
     }
 
     return $rc;
@@ -441,7 +441,7 @@ sub Log_check {
     my ($C, $run, $shard, $s) = @_;
 
     my $s0 = qq{***CHECK: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
-    SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 
