@@ -10,10 +10,9 @@ use ToolLib;
 
 our ($opt_A, $opt_h);
 my $ops = getopts('Ah');
-my $app = shift;
 
 sub Usage {
-    return "git-super-status [<app> | -A] ] | -h
+    return "git-super-status [<app> [<app>]+ | -A] ] | -h
   Fetches origin and lists uncommitted changes on master and commits to master\n  that have not been pushed to origin/master for /htapps/develop.babel/<app>
     OPTIONS
       -A lists all apps
@@ -25,24 +24,24 @@ if ($opt_h) {
     exit 0;
 }
 
-if (! $app && ! $opt_A) {
-    print STDERR "supply -A or <app>\n";
-    print Usage();
-    exit 1;
-}
-
 my ($repo_root, $app_root) = get_HTDE_roots();
+my @apps;
 
-my @app_dirs = ();
 if ($opt_A) {
-    @app_dirs = get_app_dir_list($app_root);
+    @apps = ToolLib::get_app_list($app_root);
 }
-
 else {
-    @app_dirs = ("$app_root/$app");
+    @apps = @ARGV;
 }
 
-foreach my $app_dir (@app_dirs) {
+if (! scalar(@apps)) {
+    print Usage();
+    exit 0;
+}
+
+foreach my $app (@apps) {
+    my $app_dir = "$app_root/$app";
+
     if (! chdir_to_app_dir($app_dir)) {
         exit 1;
     }

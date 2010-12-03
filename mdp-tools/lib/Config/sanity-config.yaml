@@ -55,7 +55,7 @@ pt:
   - http://__STAGE__.hathitrust.org/cgi/pt?id=uc1.$b699489
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&orient=1
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&size=50
-  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=text
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=id=mdp.39015051323379;view=text;seq=100
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=pdf
 
 ptsearch:
