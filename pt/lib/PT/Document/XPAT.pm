@@ -66,7 +66,13 @@ sub get_document_content
     
     if ($has_ocr) {
         my $pattern_arr_ref = ['*.txt'];
-        my $fileDir = $mdp_item->GetDirPathMaybeExtract($pattern_arr_ref, 'ocrfile');
+        my $exclude_pattern_arr_ref = ['*/notes.txt', '*/pagedata.txt'];
+        
+        my $fileDir = $mdp_item->GetDirPathMaybeExtract
+          (
+           $pattern_arr_ref, 
+           $exclude_pattern_arr_ref
+          );
 
         for (my $i = $first_page; $i <= $last_page; $i++) {
             my $ocr_file = $mdp_item->GetFileNameBySequence($i, 'ocrfile');
