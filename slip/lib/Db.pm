@@ -1095,6 +1095,8 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
+my $DELETE_SLICE_SIZE = 1000;
+
 sub Delete_indexed {
     my ($C, $dbh, $run) = @_;
 
@@ -1104,9 +1106,12 @@ sub Delete_indexed {
     DEBUG('lsdb', qq{DEBUG: $statement});
     $sth = DbUtils::prep_n_execute($dbh, $statement);
 
-    $statement = qq{DELETE FROM j_indexed WHERE run=$run};
-    DEBUG('lsdb', qq{DEBUG: $statement});
-    $sth = DbUtils::prep_n_execute($dbh, $statement);
+    my $num_affected = 0;
+    do {
+        $statement = qq{DELETE FROM j_indexed WHERE run=$run LIMIT $DELETE_SLICE_SIZE};
+        DEBUG('lsdb', qq{DEBUG: $statement});
+        $sth = DbUtils::prep_n_execute($dbh, $statement, \$num_affected);
+    } until ($num_affected == 0);
 
     $statement = qq{UNLOCK TABLES};
     DEBUG('lsdb', qq{DEBUG: $statement});
