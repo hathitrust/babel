@@ -206,7 +206,7 @@ sub OcrHandler {
         }
         else {
             my $doc = new PT::Document::XPAT;
-            $doc->clean_xml($sRef);
+            $doc->clean_xml($ocrTextRef);
             
             # XMLify line breaks using <br/>
             $$ocrTextRef =~ s,\n,<br />\n,g;
@@ -407,7 +407,6 @@ sub DumpPageInfoToHtml
 {
     my $self = shift;
 
-    my $s;
     my $s = $self->{ProxyItem}->DumpPageInfoToHtml();
 
     # attach any other details
