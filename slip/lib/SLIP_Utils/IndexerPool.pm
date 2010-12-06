@@ -95,7 +95,13 @@ sub _initialize {
 
     $self->{'indexers'} = \@io_arr;
     $self->{'num_indexers'} = scalar(@num_shards_list);
-    $self->{'indexer_index'} = 0;
+
+    # Randomize the round robin start index to not favor the
+    # indexer at 0 at startup to better balance the number of ids in
+    # each shard. Select an integer between 0 and number of shards in
+    # @num_shards_list - 1
+    my $index_of_start_shard = int(rand(scalar(@num_shards_list)));
+    $self->{'indexer_index'} = $index_of_start_shard;
 }
 
 
