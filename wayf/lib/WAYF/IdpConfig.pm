@@ -109,14 +109,14 @@ package WAYF::IdpConfig;
                     'template'  => 'https://___HOST___/Shibboleth.sso/stanford?target=___TARGET___',
                     'enabled' => '1',
                    },
-     
-     # Waiting
      'cornell' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Cornell University',
                     'template'  => 'https://___HOST___/Shibboleth.sso/cornell?target=___TARGET___',
-                    'enabled' => '0',
+                    'enabled' => '1',
                    },
+     
+     # Waiting
      'uic'  =>     {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of Illinois, Chicago',
