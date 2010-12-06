@@ -487,12 +487,16 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
+my $DELETE_Q_SLICE_SIZE = 1000;
 sub Delete_queue {
     my ($C, $dbh, $run) = @_;
 
-    my $statement = qq{DELETE FROM j_queue WHERE run=$run};
-    my $sth = DbUtils::prep_n_execute($dbh, $statement);
-    DEBUG('lsdb', qq{DEBUG: $statement});
+    my $num_affected = 0;
+    do {
+        my $statement = qq{DELETE FROM j_queue WHERE run=$run LIMIT $DELETE_Q_SLICE_SIZE};
+        DEBUG('lsdb', qq{DEBUG: $statement});
+        my $sth = DbUtils::prep_n_execute($dbh, $statement, \$num_affected);
+    } until ($num_affected == 0);
 }
 
 
