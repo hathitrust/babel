@@ -141,58 +141,64 @@ package WAYF::IdpConfig;
                     'template'  => 'https://___HOST___/Shibboleth.sso/osu?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal' =>     {
+     'berkeley' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Berkeley',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/berkeley?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-1' =>   {
+     'ucdavis' =>  {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Davis',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-1?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucdavis?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-2' =>   {
+     'uci'    =>   {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Irvine',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-2?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/uci?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-3' =>   {
+     'ucla' =>     {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Los Angeles',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-3?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucla?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-4' =>   {
+     'ucmerced' => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Merced',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-4?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucmerced?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-5' =>   {
+     'ucr' =>      {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Riverside',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-5?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucr?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-7' =>   {
+     'ucsf'   =>   {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, San Francisco',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-7?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucsf?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-8' =>   {
+     'ucsb'   =>   {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Santa Barbara',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-8?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___',
                     'enabled' => '0',
                    },
-     'ucal-9' =>   {
+     'ucsc'   =>   {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Santa Cruz',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucal-9?target=___TARGET___',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucsc?target=___TARGET___',
+                    'enabled' => '0',
+                   },
+     'tamu'   =>   {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'Texas A&amp;M University',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/tamu?target=___TARGET___',
                     'enabled' => '0',
                    },
     );
