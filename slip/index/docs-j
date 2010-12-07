@@ -133,10 +133,10 @@ foreach my $id (@$id_arr_ref) {
     my ($ocr_status, $metadata_status) = $doc->get_document_status();
 
     if ($ocr_status != IX_NO_ERROR) {
-        print qq{-----> OCR error};
+        print qq{-----> OCR error\n};
     }
     if ($metadata_status != IX_NO_ERROR) {
-        print qq{-----> metadata error};
+        print qq{-----> metadata error\n};
     }
 }
 
