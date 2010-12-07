@@ -12,7 +12,15 @@ br.getMetaUrlParams = function(start) {
         params["force"] = this.force
     }
     params['start'] = start;
-    params['debug'] = 'local';
+    
+    if ( window.location.search.match(/debug=[\w+,]*local[\w+,]*;?/) ) {
+      params['debug'] = 'local';
+    }
+    
+    // if ( this.qvalsHash ) {
+    //   params['qvalsHash'] = unescape(this.qvalsHash);
+    // }
+    
     // params['noscale'] = '0';
     return params;
 }
@@ -31,6 +39,12 @@ br.getPageHeight = function(index) {
         h = Math.ceil(w * ( w / h ));
     }
     return h;
+}
+
+br.getPageText = function(index) {
+    var slice = this.sliceFromIndex(index);
+    var retval = this.bookData[slice.slice]['ocrtext'][slice.index];
+    return retval;
 }
 
 br.__getPageWidth = function(index) {
@@ -143,7 +157,7 @@ br.getPageURI = function(index, reduce, rotate) {
     if ( this.mode == 1 && this.displayMode == "text" ) {
         if ( this.qvalsHash ) {
             page_uri += ";qvalsHash=" + this.qvalsHash;
-        }        
+        }
     } else {
         page_uri += ';width=' + _targetWidth + ';orient=' + _orient;
     }
@@ -285,27 +299,6 @@ br.updateViewSettings = function() {
     }
 }
 
-br.loadSlices = function(next_slice) {
-    var self = this;
-    if(next_slice < self.total_slices) {
-        var start = next_slice * this.slice_size;
-        var params = self.getMetaUrlParams(start);
-        $.getJSON(self.metaURL, params, function(data) {
-            self.bookData[next_slice] = data;
-            self.numLeafs += self.bookData[next_slice]['seq'].length;
-            self.slices.push(next_slice);
-            self.cleanupMetadata();
-
-            self.updateViewSettings();
-
-            self.loadSlices(next_slice + 1);
-        });
-    } else {
-        self.complete = true;
-    }
-}
-
-
 // getEmbedURL
 //________
 // Returns a URL for an embedded version of the current book
@@ -329,6 +322,58 @@ br.getEmbedCode = function() {
 
 // OVERRIDE
 
+// installBookDataSlice()
+//______________________________________________________________________________
+// Handle slices.
+FrankenBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cache) {
+    if ( this.bookData == null ) {
+        this.bookData = {};
+        this.slices = [];
+        this.numLeafs = 0;
+    }
+    this.bookData[slice_index] = data;
+    this.slices.push(slice_index);
+    
+    if ( do_cache ) {
+        lscache.set(this.bookId + "-" + slice_index, data, 600);
+    }
+    
+    if ( slice_index == 0 ) {
+        this.titleLeaf = this.bookData[0]['first_page_sequence'];
+        this.total_slices = Math.ceil(data['total_items'] / this.slice_size);
+        this.total_items = data['total_items'];
+    }
+    
+    this.numLeafs += this.bookData[slice_index]['seq'].length;
+    this.cleanupMetadata();
+    this.complete = this.slices.length == this.total_slices;
+}
+
+FrankenBookReader.prototype.loadBookDataSlice = function(next_slice) {
+    var self = this;
+    if(next_slice < self.total_slices) {
+      
+        var data = lscache.get(this.id + "-" + next_slice);
+        if (data) {
+            self.installBookDataSlice(next_slice, data);
+            self.updateViewSettings();
+            self.loadBookDataSlice(next_slice + 1);
+        } else {
+            var start = next_slice * this.slice_size;
+            var params = self.getMetaUrlParams(start);
+            $.getJSON(self.metaURL, params,
+                function(data) {
+                    self.installBookDataSlice(next_slice, data, true);
+                    self.updateViewSettings();
+                    self.loadBookDataSlice(next_slice + 1);
+                }
+            );
+        }
+    } else {
+        self.complete = true;
+    }
+}
+
 FrankenBookReader.prototype.init = function() {
     var self = this;
     var startIndex = undefined;
@@ -340,6 +385,10 @@ FrankenBookReader.prototype.init = function() {
     } else if ('undefined' != typeof(params.page)) {
         startIndex = this.getPageIndex(params.page);
         do_wait = true;
+    }
+    
+    if ( params.displayMode ) {
+      this.displayMode = params.displayMode;
     }
     
     var now = Date();
@@ -401,6 +450,9 @@ FrankenBookReader.prototype.init = function() {
     //     return true;
     // });
     
+    if ( ! this.complete ) {
+      this.loadBookDataSlice(this.slices.length);
+    }
     
 }
 
@@ -558,6 +610,15 @@ FrankenBookReader.prototype.initToolbar = function(mode, ui) {
 FrankenBookReader.prototype.switchMode = function(mode, extra) {
 
     cls = "mode" + mode;
+    if ( extra != null ) {
+        cls += "_" + extra;
+    } else if ( cls == "mode1" ) {
+        if ( this.displayMode == "text" ) {
+          cls += "_text;"
+        } else {
+          cls += "_image";
+        }
+    }
     
     $("#BRmodebuttons button").removeClass('active');
     $("#BRmodebuttons button." + cls).addClass('active');
@@ -623,10 +684,25 @@ FrankenBookReader.prototype.switchMode = function(mode, extra) {
 
 }
 
+FrankenBookReader.prototype.paramsFromFragment = function(urlFragment) {
+    var params = BookReader.prototype.paramsFromFragment.call( this, urlFragment );
+    // and again
+    // Split into key-value pairs
+    var urlArray = urlFragment.split('/');
+    var urlHash = {};
+    for (var i = 0; i < urlArray.length; i += 2) {
+        urlHash[urlArray[i]] = urlArray[i+1];
+    }
+    if (urlHash['view']) {
+        params.displayMode = urlHash['view'];
+    }
+    return params;
+}
+
 FrankenBookReader.prototype.paramsFromCurrent = function() {
     var params = BookReader.prototype.paramsFromCurrent.call(this);
     if ( this.displayMode == "text" ) {
-        params['display'] = "text";
+        params['view'] = "text";
     }
     return params;
 }
@@ -647,10 +723,24 @@ FrankenBookReader.prototype.toggleDisplayMode = function(mode) {
     
     if ( this.displayMode == "text" ) {
       this.saved1upReduce = this.reduce;
-      this.reduce = 1;
+      
+      for(var i = 0; i < this.onePage.reductionFactors.length; i++) {
+        if ( this.onePage.reductionFactors[i].reduce == 1 ) {
+          this.reduce = 1;
+          this.onePage.autofit = this.onePage.reductionFactors[i].autofit;
+          break;
+        }
+      }
+      
     } else {
       if ( this.saved1upReduce ) {
-        this.reduce = this.saved1upReduce;
+        for(var i = 0; i < this.onePage.reductionFactors.length; i++) {
+          if ( this.onePage.reductionFactors[i].reduce == this.saved1upReduce ) {
+            this.reduce = this.saved1upReduce;
+            this.onePage.autofit = this.onePage.reductionFactors[i].autofit;
+            break;
+          }
+        }
       }
     }
     
@@ -661,7 +751,7 @@ FrankenBookReader.prototype.toggleDisplayMode = function(mode) {
 
 //prepareOnePageView()
 //______________________________________________________________________________
-BookReader.prototype.prepareTextView = function() {
+BookReader.prototype.prepareOnePageView = function() {
 
     // var startLeaf = this.displayedIndices[0];
     var startLeaf = this.currentIndex();
@@ -692,99 +782,58 @@ BookReader.prototype.prepareTextView = function() {
     this.drawLeafsOnePage();
 }
 
-
-FrankenBookReader.prototype.resizePageView1up = function() {
-    var i;
-    var viewHeight = 0;
-    //var viewWidth  = $('#BRcontainer').width(); //includes scrollBar
-    var viewWidth  = $('#BRcontainer').attr('clientWidth');   
-
-    var oldScrollTop  = $('#BRcontainer').attr('scrollTop');
-    var oldScrollLeft = $('#BRcontainer').attr('scrollLeft');
-    var oldPageViewHeight = $('#BRpageview').height();
-    var oldPageViewWidth = $('#BRpageview').width();
-    
-    var oldCenterY = this.centerY1up();
-    var oldCenterX = this.centerX1up();
-    
-    if (0 != oldPageViewHeight) {
-        var scrollRatio = oldCenterY / oldPageViewHeight;
-    } else {
-        var scrollRatio = 0;
-    }
-    
-    // Recalculate 1up reduction factors
-    this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'),
-                                           $('#BRcontainer').attr('clientHeight') );                                        
-    // Update current reduce (if in autofit)
-    if (this.onePage.autofit && this.displayMode == "image") {
-        var reductionFactor = this.nextReduce(this.reduce, this.onePage.autofit, this.onePage.reductionFactors);
-        this.reduce = reductionFactor.reduce;
-    }
-    
-    for (i=0; i<this.numLeafs; i++) {
-        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
-        var width = parseInt(this._getPageWidth(i)/this.reduce);
-        if (width>viewWidth) viewWidth=width;
-    }
-    $('#BRpageview').height(viewHeight);
-    $('#BRpageview').width(viewWidth);
-
-    var newCenterY = scrollRatio*viewHeight;
-    var newTop = Math.max(0, Math.floor( newCenterY - $('#BRcontainer').height()/2 ));
-    $('#BRcontainer').attr('scrollTop', newTop);
-    
-    // We use clientWidth here to avoid miscalculating due to scroll bar
-    var newCenterX = oldCenterX * (viewWidth / oldPageViewWidth);
-    var newLeft = newCenterX - $('#BRcontainer').attr('clientWidth') / 2;
-    newLeft = Math.max(newLeft, 0);
-    $('#BRcontainer').attr('scrollLeft', newLeft);
-    //console.log('oldCenterX ' + oldCenterX + ' newCenterX ' + newCenterX + ' newLeft ' + newLeft);
-    
-    //this.centerPageView();
-    this.loadLeafs();
-        
-    this.removeSearchHilites();
-    this.updateSearchHilites();
+FrankenBookReader.prototype.nextReduce = function( currentReduce, direction, reductionFactors ) {
+  // if ( this.mode == this.constMode1up && this.displayMode == "text" && ( direction == "height" || direction == "width" ) ) {
+  //   return { reduce : 1.0 };
+  // }
+  return BookReader.prototype.nextReduce.call( this, currentReduce, direction, reductionFactors );
 }
 
 FrankenBookReader.prototype.fragmentFromParams = function(params) {
-    var separator = '/';
-
-    var fragments = [];
-    
-    if ('undefined' != typeof(params.page)) {
-        fragments.push('page', params.page);
-    } else {
-        // Don't have page numbering -- use index instead
-        fragments.push('page', 'n' + params.index);
+    var fragment = BookReader.prototype.fragmentFromParams.call(this, params);
+    if ( this.mode == this.constMode1up && this.displayMode == "text" ) {
+        fragment += "/view/text";
     }
-    
-    // $$$ highlight
-    // $$$ region
-    
-    // mode
-    if ('undefined' != typeof(params.mode)) {    
-        if (params.mode == this.constMode1up) {
-            fragments.push('mode', '1up');
-        } else if (params.mode == this.constMode2up) {
-            fragments.push('mode', '2up');
-        } else if (params.mode == this.constModeThumb) {
-            fragments.push('mode', 'thumb');
-        } else if (params.mode == 4) {
-            fragments.push('mode', 'text');
-        } else {
-            throw 'fragmentFromParams called with unknown mode ' + params.mode;
-        }
-    }
-    
-    // search
-    if (params.searchTerm) {
-        fragments.push('search', params.searchTerm);
-    }
-    
-    return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+    return fragment;
 }
+
+// FrankenBookReader.prototype.fragmentFromParams = function(params) {
+//     var separator = '/';
+// 
+//     var fragments = [];
+//     
+//     if ('undefined' != typeof(params.page)) {
+//         fragments.push('page', params.page);
+//     } else {
+//         // Don't have page numbering -- use index instead
+//         fragments.push('page', 'n' + params.index);
+//     }
+//     
+//     // $$$ highlight
+//     // $$$ region
+//     
+//     // mode
+//     if ('undefined' != typeof(params.mode)) {    
+//         if (params.mode == this.constMode1up) {
+//             fragments.push('mode', '1up');
+//         } else if (params.mode == this.constMode2up) {
+//             fragments.push('mode', '2up');
+//         } else if (params.mode == this.constModeThumb) {
+//             fragments.push('mode', 'thumb');
+//         } else if (params.mode == 4) {
+//             fragments.push('mode', 'text');
+//         } else {
+//             throw 'fragmentFromParams called with unknown mode ' + params.mode;
+//         }
+//     }
+//     
+//     // search
+//     if (params.searchTerm) {
+//         fragments.push('search', params.searchTerm);
+//     }
+//     
+//     return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+// }
 
 
 // jumpToIndex()
@@ -813,6 +862,16 @@ FrankenBookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     
 }
 
+// reflowText()
+//______________________________________________________________________________
+// Reflow text within iframe. Not used.
+FrankenBookReader.prototype.reflowText = function(div) {
+    var maxFontSize = ( 40 / Math.round(this.reduce ));
+    var minFontSize = ( 14 / Math.round(this.reduce ));
+    if ( minFontSize < 9 ) { minFontSize = 9; }
+
+    $(div).textfill({minFontSize:minFontSize, maxFontSize:maxFontSize});
+}
 
 // drawLeafsThumbnail()
 //______________________________________________________________________________
@@ -1054,9 +1113,10 @@ FrankenBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     this.updateToolbarZoom(this.reduce); 
 }
 
-br.createContentElement = function(url, width, height) {
+br.createContentElement = function(index, reduce, width, height) {
     var e;
     if ( this.displayMode == 'image' ) {
+        var url = this._getPageURI(index, reduce, 0);
         e = document.createElement("img");
         $(e).css('width', width+'px');
         $(e).css('height', height+'px');
@@ -1072,6 +1132,10 @@ br.createContentElement = function(url, width, height) {
         //     e.innerHTML = data;
         // })
         
+        // var ocrtext = this.getPageText(index);
+
+        var url = this._getPageURI(index, reduce, 0);
+        // url += ";iframe=1";
         e = document.createElement("div");
         $(e).addClass("ocrTextContainer");
         $(e).css('height', height + 'px');
@@ -1080,33 +1144,27 @@ br.createContentElement = function(url, width, height) {
         var ee = document.createElement("div");
         $(ee).addClass("ocrScrollBar");
         $(e).append(ee);
-        // var value = (100 / this.reduce).toFixed(2);
-        // $(ee).css("font-size", value + "%");
-        // $.get(url, null, function(data) {
-        //     ee.innerHTML = data;
-        // })
         
         ee = document.createElement("div");
         $(ee).addClass("ocrText");
-        // var value = (100 / this.reduce).toFixed(2);
-        // $(ee).css("font-size", value + "%");
-        // value = ( 100 / ( this.reduce / 1.5 ) ).toFixed(2);
-        //         $(ee).css('line-height', value + "%");
         
         var maxFontSize = ( 40 / Math.round(this.reduce ));
         var minFontSize = ( 14 / Math.round(this.reduce ));
         if ( minFontSize < 9 ) { minFontSize = 9; }
-        // console.log("USING FONT:", minFontSize, "/", maxFontSize, "/", this.reduce);
+
+        var $ee = $(ee).appendTo(e).bind('mousedown', function() { console.log("HEY"); return true })
+        var gutter = Math.floor(width / 8);
+        $(ee).css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' });
+        
+        // $(ee).html(ocrtext).textfill({minFontSize:minFontSize, maxFontSize:maxFontSize});
+        // $('<iframe class="MdpOcrFrame" src="' + url + '"></iframe>').appendTo(ee).css({height: height * 0.95, width: ( width * 0.75 )});
+
         $.get(url, null, function(data) {
-            ee.innerHTML = data;
-            $(ee).textfill({debug:url, minFontSize:minFontSize, maxFontSize:maxFontSize});
+            $(ee).html(data).textfill({debug:url, minFontSize:minFontSize, maxFontSize:maxFontSize}).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
+              $(ee).css('backgroundColor', 'white');
+            });
         })
         
-        $(ee).appendTo(e).bind('mousedown', function() { console.log("HEY"); return true })
-        var w = $(ee).width();
-        var gutter = Math.floor(width / 8);
-        // $(ee).css('right', gutter + "px");
-        $(ee).css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' });
         
         // $(e).append(ee);
         
@@ -1244,7 +1302,6 @@ while ( br.slice_size % br.thumbColumns != 0 ) {
     br.slice_size += 1;
 }
 
-
 $(document).ready(function() {
     if ( window.console === undefined ) {
         window.console = {
@@ -1284,26 +1341,19 @@ $(document).ready(function() {
     // Load bookreader
     var params = br.getMetaUrlParams(0);
     // delay loading metaURL - BAH HUMBUG
-    br.openNotice();
-    setTimeout(function() {
-        $.getJSON(br.metaURL, params, function(data) {
-          br.bookData = { 0 : data };
-          br.slices = [0];
-          // br.numLeafs = br.bookData['total_pages'];
-          br.titleLeaf = br.bookData[0]['first_page_sequence'];
-          br.numLeafs = br.bookData[0]['seq'].length;
-          br.total_slices = Math.ceil(data['total_items'] / br.slice_size);
-          br.total_items = data['total_items'];
-          br.cleanupMetadata();
-
-          br.complete = br.slices.length == br.total_slices;
-          br.init();
-
-          if ( ! br.complete ) {
-            br.loadSlices(1);
-          }
-
-        });
-    }, 500);
+    
+    var data = lscache.get(br.bookId + "0");
+    console.log("CACHE:", br.bookId, "0", data);
+    if ( data ) {
+      br.init();
+    } else {
+      br.openNotice();
+      setTimeout(function() {
+          $.getJSON(br.metaURL, params, function(data) {
+            br.installBookDataSlice(0, data);
+            br.init();
+          });
+      }, 500);
+    }
     
 })
