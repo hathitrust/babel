@@ -626,7 +626,7 @@ sub __Wait_check_done {
                 return 0;
             }
             else {
-                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
+                while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
                     __output("  wait Checking: STOPSLIP\n");
                     sleep CHECK_SLEEP_WAIT;
                 }
@@ -668,7 +668,7 @@ sub __Wait_optimize_done {
                 return 0;
             }
             else {
-                while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
+                while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
                     __output("  wait Optimizing: STOPSLIP\n");
                     sleep STOPSLIP_SLEEP_WAIT;
                 }
@@ -708,7 +708,7 @@ sub __Wait_build_done {
             my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $stage);
             return $rc_1 if ($rc_1 > 0);
 
-            while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
+            while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
                 __output("  wait Building: STOPSLIP\n");
                 sleep STOPSLIP_SLEEP_WAIT;
             }

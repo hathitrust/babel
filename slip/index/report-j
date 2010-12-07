@@ -497,7 +497,7 @@ sub report_flags_state {
     my ($C, $run) = @_;
     
     my $busy = (-e '/lss/prod/flags/busy') ? 'YES' : 'no';
-    my $stop = (-e '/htapps/babel/slip/etc/STOPSLIP') ? 'YES' : 'no';
+    my $stop = (-e "$ENV{SDRROOT}/slip/etc/STOPSLIP") ? 'YES' : 'no';
     if ($DRIVER) {
         $busy = ($HOST eq 'bubble') ? $busy : qq{Undetermined: $HOST is not bubble};
     }
@@ -505,7 +505,7 @@ sub report_flags_state {
         $busy = 'Not driver driven';
     }
 
-    $stop = ($HOST eq 'bubble') ? $stop : qq{Undetermined: $HOST is not bubble};
+    $stop .= " on $HOST";
     
     my $cksup = $C->get_object('MdpConfig')->get('check_index_supported');
     my $ck = "check index support=$cksup";

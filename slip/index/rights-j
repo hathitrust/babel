@@ -166,6 +166,8 @@ if ($opt_d) {
     }
 }
 
+use constant STOPSLIP_SLEEP_WAIT => 60;
+
 my $BUILD = 0;
 my $REBUILD = 0;
 my $CHECK = 0;
@@ -417,21 +419,26 @@ sub process_rights {
          'bib_record_ct' => 0,
          'ids' => 0,
          'anomalies' => 0,
-         'new' => 0,
-         'noop' => 0,
-         'moved' => 0,
-         'updated' => 0,
+         'NEW' => 0,
+         'NOOP' => 0,
+         'MOVED' => 0,
+         'UPDATED' => 0,
         );
 
     my $offset = 0;
     my $slice = 0;
     while (1) {
+        while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+            __output("  wait Rights done: STOPSLIP\n");
+            sleep STOPSLIP_SLEEP_WAIT;
+        }
+
         my %slice =
         (
-         'new' => 0,
-         'noop' => 0,
-         'moved' => 0,
-         'updated' => 0,
+         'NEW' => 0,
+         'NOOP' => 0,
+         'MOVED' => 0,
+         'UPDATED' => 0,
         );
 
         my $slice_start = __hiresTime();
@@ -463,36 +470,18 @@ sub process_rights {
         foreach my $hashref (@$ref_to_arr_of_hashref) {
             my $case = Db::Replace_j_rights_id($C, $dbh, $hashref, $Check, $Rebuild);
 
-            if ($case eq 'NEW') {
-                $slice{'new'}++;
-                $totals{'new'}++;
-                r_event_report($C, $dbh, $offset, $hashref, 'NEW');
-            }
-            elsif ($case eq 'NOOP') {
-                $slice{'noop'}++;
-                $totals{'noop'}++;
-                r_event_report($C, $dbh, $offset, $hashref, 'NOOP');
-            }
-            elsif ($case eq 'MOVED') {
-                $slice{'moved'}++;
-                $totals{'moved'}++;
-                r_event_report($C, $dbh, $offset, $hashref, 'MOVED');
-            }
-            elsif ($case eq 'UPDATED') {
-                $slice{'updated'}++;
-                $totals{'updated'}++;
-                r_event_report($C, $dbh, $offset, $hashref, 'UPDATED');
-            }
-            else {
-                # sofware error
-                my $s3 = qq{Invalid case value=$case};
-                __output(qq{$s3} . Utils::Time::iso_Time() . qq{\n});
+            if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
+                my $s3 = qq{SOftware error: invalid case value=$case } . Utils::Time::iso_Time();
                 r_rights_Log($C, $s3, , 'bad_$RIGHTS_LOGFILE_KEY');
+                die $s3;
             }
+
+            $slice{$case}++;
+            $totals{$case}++;
+            r_event_report($C, $dbh, $offset, $hashref, $case);
         }
 
         r_slice_report($C, $dbh, $slice_start, $offset, $ids, $anomalies, \%slice, \%totals);
-        Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
 
         $offset += $SLICE_SIZE;
     }
@@ -581,8 +570,8 @@ sub r_slice_report {
 
     my $s =
         qq{Checkpoint: j_rights size=$size j_rights_temp size=$temp_size off=$offset\n}
-            . qq{  slice_ids=$slice_ids anom=$anomalies new=$sref->{'new'} noop=$sref->{'noop'} upd=$sref->{'updated'} mov=$sref->{'moved'}\n}
-                . qq{  total_ids=$tref->{'ids'} total_anom=$anomalies total_new=$tref->{'new'} total_noop=$tref->{'noop'} total_upd=$tref->{'updated'} total_mov=$tref->{'moved'}\n}
+            . qq{  slice_ids=$slice_ids anom=$anomalies new=$sref->{'NEW'} noop=$sref->{'NOOP'} upd=$sref->{'UPDATED'} mov=$sref->{'MOVED'}\n}
+                . qq{  total_ids=$tref->{'ids'} total_anom=$anomalies total_new=$tref->{'NEW'} total_noop=$tref->{'NOOP'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'}\n}
                     . qq{  rate=$idsPsec ids/sec };
 
     __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
@@ -661,11 +650,11 @@ sub r_final_report {
 
     my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
     
-    my $run_total = $tref->{'new'} + $tref->{'updated'} + $tref->{'moved'};
+    my $run_total = $tref->{'NEW'} + $tref->{'UPDATED'} + $tref->{'MOVED'};
     my $s =
         qq{\nUpdate: j_rights size=$size j_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
-            . qq{\tthis_run_total=$run_total :: total_new=$tref->{'new'} total_upd=$tref->{'updated'} total_mov=$tref->{'moved'}\n}
-                . qq{\ttotal_noop=$tref->{'noop'} total_anom=$tref->{'anomalies'}\n}
+            . qq{\tthis_run_total=$run_total :: total_new=$tref->{'NEW'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'}\n}
+                . qq{\ttotal_noop=$tref->{'NOOP'} total_anom=$tref->{'anomalies'}\n}
                     . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min };
 
     __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});

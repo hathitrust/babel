@@ -221,7 +221,7 @@ Description
 sub handle_optimize_rc {
     my ($C, $dbh, $run, $shard, $host, $rc) = @_;
 
-    while (Utils::GlobalSwitch::cron_jobs_disabled('STOPSLIP', 'slip')) {
+    while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
         __output("  wait Optimize done: STOPSLIP\n");
         sleep STOPSLIP_SLEEP_WAIT;
     }
