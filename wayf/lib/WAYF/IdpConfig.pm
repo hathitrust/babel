@@ -117,6 +117,12 @@ package WAYF::IdpConfig;
                    },
      
      # Waiting
+     'dart'    => {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'Dartmouth University',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/dart?target=___TARGET___',
+                    'enabled' => '0',
+                   },
      'uic'  =>     {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of Illinois, Chicago',
