@@ -50,6 +50,8 @@ use Getopt::Std;
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
 use File::Basename;
+use Date::Calc qw(Today_and_Now Delta_DHMS);
+
 my $LOCATION = dirname(__FILE__);
 
 use ToolLib;
@@ -333,6 +335,8 @@ Description
 sub __rdist_to_production {
     my $app_dir = shift;
 
+    my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
+
     print qq{Now starting rdist to production ...\n};
     print qx(rdist -f $app_dir/bin/rdist.app -s sdr);
 
@@ -341,7 +345,13 @@ sub __rdist_to_production {
         return 0;
     }
 
-    PrintY("Rdist succeeds\n");
+    my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
+
+    my ($Dd,$Dh,$Dm,$Ds) =
+      Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
+                 $year2,$month2,$day2,$hour2,$min2,$sec2);
+
+    PrintY("Rdist succeeds. Elapsed=$Dm:$Ds\n");
 
     return 1;
 }

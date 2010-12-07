@@ -87,15 +87,15 @@ my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to stage application ($app)\n};
     my $app_dir = "$app_root/$app";
-    
-    PrintY(qq{\nStaging application ($app) at $app_dir\n});
-    
+
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         PrintN($fail_msg);
         $rc |= 1;
         next;
     }
-    
+
+    PrintY(qq{\nStaging application ($app) at $app_dir\n});
+
     if (-e "$app_dir/.gitmodules") {
         my @submodules = `cat "$app_dir/.gitmodules"`;
         @submodules = grep(/submodule/, @submodules);
@@ -105,7 +105,7 @@ foreach my $app (@apps) {
     else {
         PrintY("No Dependencies\n");
     }
-    
+
     if (! (
            G_fetch_origin($app_dir)
            &&
@@ -124,11 +124,11 @@ foreach my $app (@apps) {
         $rc |= 1;
         next;
     }
-    
+
     PrintY("Begin sanity checks ...\n");
     print `$LOCATION/sanity-app -s$STAGE $app`;
     $rc |= $?;
-    
+
     PrintY(qq{Staging succeeds\n}) unless ($rc);
 }
 
