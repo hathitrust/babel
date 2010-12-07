@@ -255,6 +255,9 @@ sub Replace_j_rights_id {
 
     # From vSolr query result
     my $nid = $hashref->{'nid'};
+    # For reasons unknown, we sometimes have trailing spaces
+    Utils::trim_spaces(\$nid);
+
     my $sysid = $hashref->{'sysid'};
     my $updateTime_in_vSolr = $hashref->{'timestamp_of_nid'};
 
