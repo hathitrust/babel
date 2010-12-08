@@ -119,7 +119,7 @@ package WAYF::IdpConfig;
      # Waiting
      'dart'    => {
                     'authtype' => 'shibboleth',
-                    'link_text' => 'Dartmouth University',
+                    'link_text' => 'Dartmouth College',
                     'template'  => 'https://___HOST___/Shibboleth.sso/dart?target=___TARGET___',
                     'enabled' => '0',
                    },
