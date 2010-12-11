@@ -62,6 +62,9 @@ sub driver_do_full_optimize {
     my $msg_ref = shift;
 
     if (! full_optimize_supported($C, $run)) {
+        if ($msg_ref) {
+            $$msg_ref = qq{driver: do full optimize not supported};
+        }
         return 0;
     }
 
