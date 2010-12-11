@@ -355,7 +355,10 @@ sub ___rate {
     my $start = shift;
 
     my $elapsed_hours = sprintf("%.2f", (time() - $start)/60/60);
-    my $rate = sprintf("%.1f", $INITIAL_QUEUE_SIZE/$elapsed_hours);
+    my $rate = 
+      ($elapsed_hours > 0) 
+        ? sprintf("%.1f", $INITIAL_QUEUE_SIZE/$elapsed_hours)
+          : 0.0;
 
     return qq{rate=$rate docs/hour elapsed=$elapsed_hours hours};
 }
