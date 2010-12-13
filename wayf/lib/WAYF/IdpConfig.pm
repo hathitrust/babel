@@ -117,6 +117,12 @@ package WAYF::IdpConfig;
                    },
      
      # Waiting
+     'upenn'   => {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'University of Pennsylvania',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/upenn?target=___TARGET___',
+                    'enabled' => '0',
+                   },
      'dart'    => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Dartmouth College',
