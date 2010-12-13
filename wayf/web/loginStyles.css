@@ -26,6 +26,7 @@ p {
   background-color:#FFF;
   border: 1px solid #CCCCCC; 
   padding: 8px;
+  width: 380px;
 }
 
 .loginBox div {
@@ -67,6 +68,10 @@ form {
 
 select {
   font-size: .85em;
+}
+
+select#idp {
+    width: 260px;
 }
 
 button {
