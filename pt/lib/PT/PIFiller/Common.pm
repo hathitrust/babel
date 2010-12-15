@@ -883,7 +883,7 @@ sub handle_FEATURE_LIST_PI
                 # Skip CHAPTER_START
                 $mdpItem->GetNextFeature();
             }
-            $label = qq{$label};
+            $label = qq{$label } . $i++;
             $seenSection = 1;
         }
 
