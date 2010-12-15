@@ -831,73 +831,89 @@ sub BuildContentsItemLink
 
 # ---------------------------------------------------------------------
 
-=item handle_FEATURE_LIST_PI : PI_handler(FEATURE_LIST)
+=item handle_FEATURE_LIST_PI
 
-Handler for FEATURE_LIST
+Description
 
 =cut
 
 # ---------------------------------------------------------------------
 sub handle_FEATURE_LIST_PI
-    : PI_handler(FEATURE_LIST)
+  : PI_handler(FEATURE_LIST) 
 {
     my ($C, $act, $piParamHashRef) = @_;
-
+    
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
-
+    
     my $featureXML;
-
+    
     $mdpItem->InitFeatureIterator();
     my $featureRef;
-
-    my $hasFirstContentFeature = $mdpItem->HasFirstContentFeature();
-    my $seenFirstContentFeature = 0;
+    
     my $seenFirstTOC = 0;
     my $seenFirstIndex = 0;
-
+    my $seenSection = 0;
+    
     my $i = 1;
-    while ( $featureRef = $mdpItem->GetNextFeature(), $$featureRef )
-    {
+    while ($featureRef = $mdpItem->GetNextFeature(), $$featureRef) {
         my $tag   = $$$featureRef{'tag'};
         my $label = $$$featureRef{'label'};
-
-        if  ( $tag =~ m,TABLE_OF_CONTENTS, )
-        {
-            if ( $seenFirstTOC )
-            {   next;   }
-            else
-            {   $seenFirstTOC = 1;   }
-        }
-
-        if  ( $tag =~ m,INDEX, )
-        {
-            if ( $seenFirstIndex )
-            {   next;   }
-            else
-            {   $seenFirstIndex = 1;   }
-        }
-
-        if ( $hasFirstContentFeature )
-        {
-            if  ( $tag =~ m,FIRST_CONTENT_CHAPTER_START, )
-            {
-                $seenFirstContentFeature = 1;
-                $label = qq{$label } . $i++
-            }
-            elsif ( $tag =~ m,^CHAPTER_START$, )
-            {
-                $label = qq{$label } . $i++
-                    if ( $seenFirstContentFeature );
-            }
-        }
-        elsif ( $tag =~ m,^CHAPTER_START$, )
-        {   $label = qq{$label } . $i++   }
-
         my $page  = $$$featureRef{'pg'};
         my $seq   = $$$featureRef{'seq'};
+        
+        if  ($tag =~ m,FIRST_CONTENT_CHAPTER_START|1STPG,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^CHAPTER_START$,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^MULTIWORK_BOUNDARY$,) {
+            # Suppress redundant link on MULTIWORK_BOUNDARY seq+1
+            # if its seq matches the next CHAPTER seq.
+            my $nextFeatureRef = $mdpItem->PeekNextFeature();
+            if ($$nextFeatureRef 
+                && (
+                    ($$$nextFeatureRef{'tag'} =~ m,^CHAPTER_START$,)
+                    &&
+                    ($$$nextFeatureRef{'seq'} eq $seq))
+               ) {
+                # Skip CHAPTER_START
+                $mdpItem->GetNextFeature();
+            }
+            $label = qq{$label};
+            $seenSection = 1;
+        }
 
-        my $url = BuildContentsItemLink( $cgi, $seq, $page );
+        if ($seenSection) {
+            $seenFirstTOC = 0;
+            $seenFirstIndex = 0;
+        }
+        
+        # Repetition suppression
+        if  ($tag =~ m,TABLE_OF_CONTENTS|TOC,) {
+            $seenSection = 0;
+            if ($seenFirstTOC) {   
+                next;   
+            }
+            else {   
+                $seenFirstTOC = 1;   
+            }
+        }
+        
+        if  ($tag =~ m,INDEX|IND,) {
+            $seenSection = 0;
+            if ($seenFirstIndex) {   
+                next;   
+            }
+            else {   
+                $seenFirstIndex = 1;   
+            }
+        }
+        
+        my $url = BuildContentsItemLink($cgi, $seq, $page);
 
         my $featureItem =
             wrap_string_in_tag($tag, 'Tag') .
