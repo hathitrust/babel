@@ -138,8 +138,12 @@ my $collid = add_collection();
 #
 # Add items to the collection
 #
+
+my @IDS = <INPUTFILE>;
+my $num_ids = scalar(@IDS);
+
 my $ct = 0;
-foreach my $id (<INPUTFILE>)
+foreach my $id (@IDS)
 {
     chomp($id);
     $id =~ s,\s,,g;
@@ -160,7 +164,7 @@ foreach my $id (<INPUTFILE>)
     }
 
     # Check existence in repository
-    my $exists = `curl 'http://services.hathitrust.org/api/htd/meta/$use_id' 2>/dev/null`;
+    my $exists = `curl 'http://services.hathitrust.org/htd/pagemeta/$use_id/1' 2>/dev/null`;
     if (! $exists) {
         print qq{id="$use_id" is not in the repository ... skipping\n};
         next;
@@ -192,7 +196,7 @@ foreach my $id (<INPUTFILE>)
     if ($item_id = add_item($use_id, $collid, $rights, $metadata_ref))
     {
        $ct++;
-       add_item_to_queue($item_id);
+       add_item_to_queue($item_id, $num_ids);
        print qq{\tQueuing item $ct "$use_id" for indexing ...\n};
     }
 }
@@ -473,18 +477,15 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub add_item_to_queue
-{
+sub add_item_to_queue {
     my $item_id = shift;
-
+    my $priority = shift;
+    
     # Add to queue for indexing
-    eval
-    {
-        my $priority = 1;
+    eval {
         $co->add_to_queue([$item_id], $priority);
     };
-    if  ($@)
-    {
+    if  ($@) {
         print qq{Could not add item="$item_id" to indexing queue: $@};
     }
 }
