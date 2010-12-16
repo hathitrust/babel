@@ -138,8 +138,10 @@ if (defined($opt_d)) {
 
 my $C = new Context;
 my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
+
+my $logdir = Utils::get_tmp_logdir();
 my $Child_Err_File =
-    qq{/tmp/check_child_error-$SHARD-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
+    qq{$logdir/check_child_error-$SHARD-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
 
 my $config = SLIP_Utils::Common::gen_run_config($RUN);
 $C->set_object('MdpConfig', $config);

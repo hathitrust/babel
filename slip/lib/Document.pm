@@ -136,9 +136,11 @@ sub build_solr_document {
 
         if (DEBUG('docfulldebug,doconly')) {
             my $pairtree_item_id = Identifier::get_pairtree_id_wo_namespace($item_id);
-            my $temporary_dir = $ENV{'SOLR_DOC_DIR'} ? $ENV{'SOLR_DOC_DIR'} : '/tmp'; 
+            my $logdir = Utils::get_tmp_logdir();
+            my $temporary_dir = $ENV{'SOLR_DOC_DIR'} ? $ENV{'SOLR_DOC_DIR'} : $logdir; 
             my $complete_solr_doc_filename = "$temporary_dir/" . $pairtree_item_id . "-$$" . '.solr.xml';
             Utils::write_data_to_file(\$complete_solr_doc, $complete_solr_doc_filename);
+            chmod(0666, $complete_solr_doc_filename) if (-o $complete_solr_doc_filename);
             DEBUG('docfulldebug,doconly', qq{build_solr_document: save solr doc: "$complete_solr_doc_filename"});
         }
     }
