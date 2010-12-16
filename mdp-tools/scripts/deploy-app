@@ -351,7 +351,8 @@ sub __rdist_to_production {
       Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
                  $year2,$month2,$day2,$hour2,$min2,$sec2);
 
-    PrintY("Rdist succeeds. Elapsed=$Dm:$Ds\n");
+    my $e = sprintf("Rdist succeeds. Elapsed=%02d:%02d", $Dm, $Ds);
+    PrintY($e);
 
     return 1;
 }
