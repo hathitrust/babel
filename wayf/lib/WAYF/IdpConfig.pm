@@ -115,6 +115,12 @@ package WAYF::IdpConfig;
                     'template'  => 'https://___HOST___/Shibboleth.sso/cornell?target=___TARGET___',
                     'enabled' => '1',
                    },
+     'tamu'   =>   {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'Texas A&amp;M University',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/tamu?target=___TARGET___',
+                    'enabled' => '1',
+                   },
      
      # Waiting
      'upenn'   => {
@@ -199,12 +205,6 @@ package WAYF::IdpConfig;
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Santa Cruz',
                     'template'  => 'https://___HOST___/Shibboleth.sso/ucsc?target=___TARGET___',
-                    'enabled' => '0',
-                   },
-     'tamu'   =>   {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'Texas A&amp;M University',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/tamu?target=___TARGET___',
                     'enabled' => '0',
                    },
     );
