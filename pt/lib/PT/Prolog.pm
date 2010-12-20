@@ -26,7 +26,7 @@ use CGI;
 # ----------  MBooks Lib related ----------
 use Utils;
 use App;
-use AccessRights;
+use Access::Rights;
 use Collection;
 use CollectionSet;
 use Session;
@@ -138,8 +138,8 @@ sub Run {
     my $itemFileSystemLocation = Identifier::get_item_location($id);
 
     # Determine access rights and store them on the MdpItem object
-    $ar = new AccessRights($C, $id);
-    $C->set_object('AccessRights', $ar);
+    $ar = new Access::Rights($C, $id);
+    $C->set_object('Access::Rights', $ar);
 
     # MdpItem is instantiated if it cannot be found  already cached on the session object.
     $mdpItem = PT::PageTurnerUtils::GetMdpItem($C, $id, $itemFileSystemLocation);

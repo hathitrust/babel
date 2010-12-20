@@ -206,7 +206,7 @@ sub handle_CURRENT_PAGE_IMG_SRC_PI
 
     my $id = $C->get_object('CGI')->param('id');
     my $finalAccessStatus =
-        $C->get_object('AccessRights')->assert_final_access_status($C, $id);
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
 
     my $href = '';
 
@@ -226,7 +226,7 @@ sub handle_CURRENT_PAGE_IMG_WIDTH_PI
     my $id = $C->get_object('CGI')->param('id');
 
     my $finalAccessStatus =
-        $C->get_object('AccessRights')->assert_final_access_status($C, $id);
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
 
     my $value = '';
     
@@ -246,7 +246,7 @@ sub handle_CURRENT_PAGE_IMG_HEIGHT_PI
     my $value = '';
 
     my $finalAccessStatus =
-        $C->get_object('AccessRights')->assert_final_access_status($C, $id);
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
 
     if ( $finalAccessStatus eq 'allow' ) {
         $value = $C->get_object('MdpItem')->GetTargetImageFileInfo()->{height};
@@ -280,7 +280,7 @@ sub handle_DEFAULT_COLLID_PI
 =item handle_SECTION_108_PI : PI_handler(SECTION_108)
 
 Handler for SECTION_108 Note that this handler depends on
-AccessRights::assert_final_access_status having been called already to
+Access::Rights::assert_final_access_status having been called already to
 set the exclusivity data. This happens in the main script for pt,
 ptsearch and ssd.
 
@@ -292,7 +292,7 @@ sub handle_SECTION_108_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $ar = $C->get_object('AccessRights');
+    my $ar = $C->get_object('Access::Rights');
     my ($granted, $owner, $expires) = $ar->get_exclusivity($C);
 
     my $date = Utils::Time::friendly_iso_Time($expires, 'date');
@@ -397,7 +397,7 @@ sub handle_VIEW_TYPE_VALUES_PI
     my @view_types = @PTGlobals::gViewTypes;
 
     my $id = $C->get_object('CGI')->param('id');
-    my $status = $C->get_object('AccessRights')->get_full_PDF_access_status($C, $id);
+    my $status = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
     if ($status eq 'allow') {
         @view_types = (@view_types, @PTGlobals::gAuthdViewTypes);
     }
@@ -488,7 +488,7 @@ sub handle_VIEW_TYPE_FULL_PDF_LINK_PI
 
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
-    my $status = $C->get_object('AccessRights')->get_full_PDF_access_status($C, $id);
+    my $status = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
     if ($status eq 'allow') {
         $href = BuildViewTypeUrl($cgi, 'fpdf');
     }
@@ -516,7 +516,7 @@ sub handle_ALLOW_FULL_PDF_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $id = $C->get_object('CGI')->param('id');
-    return $C->get_object('AccessRights')->get_full_PDF_access_status($C, $id);
+    return $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
 }
 
 

@@ -115,7 +115,7 @@ my $gDso = $C->get_object('Session');
 PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
 
 my $gId = $gCgi->param('id');
-if ( $C->get_object('AccessRights')->assert_final_access_status($C, $gId) eq 'allow' ) {
+if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
     # set up text, image or pdf handlers for this request
     $gMdpItem->DetermineAndSetContentHandler();
     

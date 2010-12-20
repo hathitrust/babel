@@ -624,7 +624,7 @@ sub handle_ITEM_SEARCH_RESULTS_PI
     my $page_hit_counts_ref = $C->get_object('CompositeResult')->get_page_hit_counts_ref();
 
     my $final_access_status =
-        $C->get_object('AccessRights')->assert_final_access_status($C, $id);
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
 
     if ( $rset )
     {

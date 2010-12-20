@@ -27,7 +27,7 @@ use Identifier;
 use View::Skin;
 use Collection;
 use CollectionSet;
-use AccessRights;
+use Access::Rights;
 use MirlynGlobals;
 
 
@@ -79,7 +79,7 @@ sub handle_RIGHTS_ATTRIBUTE_PI
     
     if (defined($id))
     {
-        my $ar = new AccessRights($C, $id);
+        my $ar = new Access::Rights($C, $id);
         $rights_attribute = $ar->get_rights_attribute($C, $id);
     }
     
@@ -108,7 +108,7 @@ sub handle_SOURCE_ATTRIBUTE_PI
     
     if (defined($id))
     {
-        my $ar = new AccessRights($C, $id);
+        my $ar = new Access::Rights($C, $id);
         $source_attribute = $ar->get_source_attribute($C, $id);
     }
     
@@ -301,7 +301,7 @@ sub handle_FINAL_ACCESS_STATUS_PI
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
 
-    my $ar = $C->get_object('AccessRights');
+    my $ar = $C->get_object('Access::Rights');
     my $output = $ar->assert_final_access_status($C, $id);
 
     return $output;
