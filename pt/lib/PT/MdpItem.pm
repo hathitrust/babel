@@ -269,25 +269,6 @@ sub GetOcrBySequence {
 }
 
 # ----------------------------------------------------------------------
-# NAME         : CheckCreateDeliveryWebDirectory
-# PURPOSE      : Check to see if "cache" directory, into which we will
-# CALLS        : deposit/create a file for viewing. If not
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub CheckCreateDeliveryWebDirectory
-{
-    my $self = shift;
-    my $destDir = shift;
-
-    Utils::mkdir_path( $destDir );
-}
-
-
-# ----------------------------------------------------------------------
 # NAME         :
 # PURPOSE      :
 # CALLS        :
