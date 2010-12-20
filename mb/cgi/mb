@@ -75,7 +75,7 @@ use Action::Bind;
 use Context;
 use Session;
 use Auth::Auth;
-use AccessRights;
+use Access::Rights;
 
 use MBooks::Controller;
 
