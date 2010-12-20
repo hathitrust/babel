@@ -180,7 +180,7 @@ sub get_Solr_query_string
     my $self = shift;
     my $C = shift;
 
-    # Cache to avoid repeated MySQL calls in AccessRights
+    # Cache to avoid repeated MySQL calls in Access::Rights
     if ($self->get_cached_Solr_query_string()) {
         return $self->get_cached_Solr_query_string();
     }
@@ -210,7 +210,7 @@ sub get_Solr_query_string
         # is mainly for GeoIP check to add '9' to the list
         my $attr_list_aryref = [1,7];
         eval {
-            $attr_list_aryref = AccessRights::get_fulltext_attr_list($C);
+            $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
         };
         $FQ = '&fq=rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
     }

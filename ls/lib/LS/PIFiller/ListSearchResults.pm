@@ -547,7 +547,7 @@ sub wrap_result_data {
         # Access rights
         my $access_status;
         eval {
-            my $ar = new AccessRights($C, $id);
+            my $ar = new Access::Rights($C, $id);
             $access_status = $ar->check_final_access_status_by_attribute($C, $rights, $id);
         };
         $access_status = 'deny'         
