@@ -55,7 +55,7 @@ use Context;
 use Identifier;
 use MdpConfig;
 use Collection;
-use AccessRights;
+use Access::Rights;
 use MirlynGlobals;
 use Debug::DUtils; 
 
@@ -189,7 +189,7 @@ foreach my $id (@IDS)
 
     print qq{Adding item $ct "$use_id" ...\n};
 
-    my $ar = new AccessRights($C, $use_id);
+    my $ar = new Access::Rights($C, $use_id);
     my $rights = $ar->get_rights_attribute($C, $use_id);
 
     my $item_id;
