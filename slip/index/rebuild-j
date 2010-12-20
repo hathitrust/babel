@@ -236,7 +236,7 @@ sub rebuild_indexed {
         
         while (1) {
             my $query = qq{q=*:*&fl=id&start=$start&rows=$R_SLICE_SIZE};
-            my $result = `$ENV{SDRROOT}/slip/lib/query-j -r$run -R$shard -q'$query' -N`;
+            my $result = `$ENV{SDRROOT}/slip/index/query-j -r$run -R$shard -q'$query' -N`;
             my @ids = ($result =~ m,<str name="id">(.*?)</str>,g);
             
             my $rows_returned = scalar(@ids);
