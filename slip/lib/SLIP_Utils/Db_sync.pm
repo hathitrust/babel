@@ -230,9 +230,9 @@ Description
 
 # ---------------------------------------------------------------------
 sub Delete_duplicate_id_j_indexed_temp {
-    my ($C, $dbh, $run, $id, $shard) = @_;
+    my ($C, $dbh, $id, $shard) = @_;
 
-    my $statement = qq{DELETE FROM j_indexed_temp WHERE run=$run AND id='$id' AND shard=$shard};
+    my $statement = qq{DELETE FROM j_indexed_temp WHERE id='$id' AND shard=$shard};
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
