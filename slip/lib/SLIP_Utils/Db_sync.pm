@@ -33,6 +33,8 @@ use DbUtils;
 my $MYSQL_ZERO_TIMESTAMP = '0000-00-00 00:00:00';
 my $vSOLR_ZERO_TIMESTAMP = '00000000';
 
+use constant C_INSERT_SIZE => 100000;
+
 # =====================================================================
 # =====================================================================
 #
@@ -150,11 +152,16 @@ idempotent
 sub insert_item_id_j_indexed_temp {
     my ($C, $dbh, $shard, $id_arr_ref) = @_;
 
-    my $values = join(',', map("($shard, '$_')", @$id_arr_ref));
-    
+    my $values = join(',', map("($shard, '$_')", @$id_arr_ref));    
     my $statement = qq{INSERT INTO j_indexed_temp (`shard`, `id`) VALUES $values};
-    DEBUG('lsdb', qq{DEBUG: $statement});
+
+    my $begin = time();
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    my $elapsed = time() - $begin;
+
+    # Let replication catch up
+    sleep $elapsed/2;
 }
 
 # ---------------------------------------------------------------------
@@ -239,7 +246,7 @@ sub Delete_duplicate_id_j_indexed_temp {
 
 # ---------------------------------------------------------------------
 
-=item insert_item_id_j_indexed_temp
+=item insert_j_indexed_temp_j_indexed
 
 Description
 
@@ -251,16 +258,35 @@ sub insert_j_indexed_temp_j_indexed {
 
     my ($statement, $sth);
 
+    my $start = 0;
+    my $offset = C_INSERT_SIZE;
+    my $num_inserted = 0;
+
     $statement = qq{ALTER TABLE j_indexed DISABLE KEYS};
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
     
-    my $SELECT_clause = qq{SELECT $run, `shard`, `id`, '$MYSQL_ZERO_TIMESTAMP', 1 FROM j_indexed_temp};
+    my $SELECT_clause = qq{SELECT $run, `shard`, `id`, '$MYSQL_ZERO_TIMESTAMP', 1 FROM j_indexed_temp LIMIT $start, $offset};
+    do {
+        my $begin = time();
+        
+        $statement = qq{LOCK TABLES j_indexed_temp WRITE, j_indexed WRITE};
+        $sth = prep_n_execute($dbh, $statement);
+        DEBUG('lsdb', qq{DEBUG: $statement});
 
-    $statement = qq{INSERT INTO j_indexed (`run`, `shard`, `id`, `time`, `indexed_ct`) ($SELECT_clause)};
-    $sth = DbUtils::prep_n_execute($dbh, $statement);
-    DEBUG('lsdb', qq{DEBUG: $statement});
+        $statement = qq{INSERT INTO j_indexed (`run`, `shard`, `id`, `time`, `indexed_ct`) ($SELECT_clause)};
+        $sth = DbUtils::prep_n_execute($dbh, $statement, \$num_inserted);
+        DEBUG('lsdb', qq{DEBUG: $statement});
 
+        $statement = qq{UNLOCK TABLES};
+        $sth = prep_n_execute($dbh, $statement);
+        DEBUG('lsdb', qq{DEBUG: $statement});
+
+        my $elapsed = time() - $begin;
+        # Let replication catch up
+        sleep $elapsed/2;
+    } until ($num_inserted <= 0);
+    
     $statement = qq{ALTER TABLE j_indexed ENABLE KEYS};
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});

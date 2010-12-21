@@ -61,7 +61,18 @@ use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot optimize. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 # Flush i/o
 $| = 1;
@@ -79,7 +90,6 @@ our ($opt_r, $opt_R, $opt_T, $opt_S, $opt_d, $opt_O, $opt_n);
 
 my $ops = getopts('r:R:T:dS:O:n');
 
-my $INTERACTIVE = $ENV{'TERM'};
 use constant LARGE_TIMEOUT => 172800; # 48 hours
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 
