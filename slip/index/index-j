@@ -81,7 +81,18 @@ use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot index. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -178,7 +189,6 @@ my $GLOBAL_SHARD_FOR_ERROR_REPORT = 0;
 
 my $PROCESSING = 1;
 my $MAX_ERRORS_SEEN = 0;
-my $INTERACTIVE = $ENV{'TERM'};
 
 eval {
     i_processing_loop($C);

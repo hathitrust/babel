@@ -59,7 +59,18 @@ use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot commit. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 # Flush i/o
 $| = 1;
@@ -77,8 +88,6 @@ my $ops = getopts('r:R:T:d');
 # Required
 my $RUN = $opt_r;
 my $TIMEOUT = $opt_T; # optional
-
-my $INTERACTIVE = $ENV{'TERM'};
 
 if (! $RUN) {
     my $s = qq{run (-r) parameter missing } . com_get_usage();
@@ -103,6 +112,7 @@ my $lock_shard = $opt_R;
 my $Lock_File = "/tmp/commit-$lock_shard-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
+    __output("Could not get semaphore file: $Lock_File\n");
     exit 0;
 }
 END {

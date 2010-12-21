@@ -117,12 +117,24 @@ use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot get rights. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 # Prevent replication errors: enqueue only to one mysqlserv
-exit 0
-    if (Search::Site::get_server_site_name() ne 'macc');
-
+if (Search::Site::get_server_site_name() ne 'macc') {
+    __output("Must be run only from site=MACC\n");
+    exit 0;
+}
 
 sub r_get_usage {
     my $s;

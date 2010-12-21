@@ -62,7 +62,18 @@ use SLIP_Utils::Log;
 use SLIP_Utils::Common;
 use Db;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot optimize. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -109,8 +120,6 @@ if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
 
-my $INTERACTIVE = $ENV{'TERM'};
-
 # Prevent replication errors: enqueue only to one mysqlserv
 if (Search::Site::get_server_site_name() ne 'macc') {
     if (! $CHECK) {
@@ -123,7 +132,7 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 my $Lock_File = "/tmp/enqueuer-$RUN-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
-    DEBUG('me', qq{DEBUG: enqueuer-j could not get semaphore run=$RUN});
+    __output("Could not get semaphore file: $Lock_File\n");
     exit 0;
 }
 END {

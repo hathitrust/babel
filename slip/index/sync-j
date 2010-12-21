@@ -85,7 +85,18 @@ use SLIP_Utils::Log;
 use Result::SLIP;
 use Searcher::SLIP;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot sync. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 # ---------------------------------------------------------------------
 

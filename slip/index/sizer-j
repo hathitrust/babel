@@ -67,7 +67,18 @@ use SLIP_Utils::Db_driver;
 use SLIP_Utils::Log;
 
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot run sized. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 sub sz_get_usage {
     my $s .= qq{Usage: sizer-j -r run [-S][-z]
@@ -96,8 +107,6 @@ my $SIZE = $opt_z;
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
-
-my $INTERACTIVE = $ENV{'TERM'};
 
 # Flush i/o
 $| = 1;
