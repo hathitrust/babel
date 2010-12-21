@@ -63,8 +63,18 @@ use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
+my $INTERACTIVE = $ENV{TERM};
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("Cannot control SLIP. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Exit_If_cron_jobs_disabled('STOPSLIP');
+}
+
 
 # Flush i/o
 $| = 1;
@@ -707,7 +717,7 @@ sub c_Reset_driver {
             $s = "No busy file\n";
         }
         else {
-            $s = "Host=$host (not bubble): cannot see busy file=$busy_file: hand remove!\n";
+            $s = "Host=$host (not bubble): cannot see busy file=$busy_file: MUST HAND REMOVE!!\n";
         }
     }
     __output($s);
@@ -720,7 +730,7 @@ sub c_Reset_driver {
             $s = "No semaphore file\n";
         }
         else {
-            $s = "Host=$host (not bubble): cannot see semaphore file=$driver_Lock_File: hand remove!\n";
+            $s = "Host=$host (not bubble): cannot see semaphore file=$driver_Lock_File: MUST HAND REMOVE!!\n";
         }
     }
     __output($s);
