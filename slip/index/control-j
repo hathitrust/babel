@@ -72,7 +72,7 @@ if ($INTERACTIVE) {
     }
 }
 else {
-    Exit_If_cron_jobs_disabled('STOPSLIP');
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
 }
 
 
