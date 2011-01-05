@@ -38,16 +38,18 @@ sub sanity_app_usage {
            where <app> is the application.
                  -A all apps
                  -v verbose
+                 -L apply debug=local  
                  -s staging areas: test (default), beta-1, beta-2, beta-3
                     OR uniqname\n};
     return $s;
 }
 
-our ($opt_s, $opt_A, $opt_v);
-my $ops = getopts('As:v');
+our ($opt_s, $opt_A, $opt_v, $opt_L);
+my $ops = getopts('LAs:v');
 
 my $STAGE = $opt_s || 'test';
 my $VERBOSE = $opt_v;
+my $LOCAL = $opt_L;
 
 my $ALL = $opt_A;
 my @apps;
@@ -108,6 +110,13 @@ sub _test_url {
     my $app = shift;
     my $url = shift;
     
+    if ($LOCAL) {
+        $url =~ s,__LOCAL__,;debug=local,;
+    }
+    else {
+        $url =~ s,__LOCAL__,,;
+    }
+    
     my $rc = 0;
     my @accepted_statuses = ('200', '301', '302');
 
@@ -161,7 +170,7 @@ sub _empty_cache {
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item _test_cmd
 
 Description
 
@@ -171,6 +180,13 @@ Description
 sub _test_cmd {
     my $app = shift;
     my $cmd = shift;
+
+    if ($LOCAL) {
+        $cmd =~ s,__LOCAL__,debug=local,;
+    }
+    else {
+        $cmd =~ s,__LOCAL__,,;
+    }
 
     my $rc = 0;
     my @accepted_exits = ('0', '1', '4');
