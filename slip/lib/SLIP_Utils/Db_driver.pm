@@ -44,6 +44,25 @@ use DbUtils;
 
 # ---------------------------------------------------------------------
 
+=item delete_driver
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_driver {
+    my ($C, $dbh, $run) = @_;
+
+    my ($statement, $sth);
+
+    $statement = qq{DELETE FROM j_driver_control WHERE run=$run};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+}
+
+# ---------------------------------------------------------------------
+
 =item init_driver
 
 Description

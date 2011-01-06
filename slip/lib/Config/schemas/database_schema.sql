@@ -281,20 +281,6 @@ CREATE TABLE `j_check_control` (
 CREATE TABLE `j_check_control` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `shard`));
 
 
-
----------------------------------------------------------------------
---
----------------------------------------------------------------------
-CREATE TABLE `j_release_control` (
-        `run`     smallint(3) NOT NULL default '0',
-        `host`    varchar(32) NOT NULL default '',
-        `enabled` tinyint(1)  NOT NULL default '0',
-                PRIMARY KEY  (`run`, `host`)
-       );
-
-CREATE TABLE `j_release_control` (`run` smallint(3) NOT NULL default '0', `host` varchar(32) NOT NULL default '', `enabled` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `host`));
-
-
 ---------------------------------------------------------------------
 --
 ---------------------------------------------------------------------

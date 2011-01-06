@@ -436,6 +436,23 @@ sub init_j_rights_timestamp {
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
 
+# ---------------------------------------------------------------------
+
+=item delete_j_rights_timestamp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_j_rights_timestamp {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{DELETE FROM j_rights_timestamp WHERE run=$run};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -1003,6 +1020,23 @@ sub insert_item_id_timeout {
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
 
+# ---------------------------------------------------------------------
+
+=item delete_timeouts
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_timeouts {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{DELETE FROM j_timeouts WHERE run=$run};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -1090,6 +1124,23 @@ sub Reset_Index_size {
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
+# ---------------------------------------------------------------------
+
+=item delete_Index_size
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_Index_size {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{DELETE FROM j_index_size WHERE run=$run};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
 
 # =====================================================================
 # =====================================================================
@@ -1483,6 +1534,24 @@ sub Select_rate_stats {
 #
 # =====================================================================
 # =====================================================================
+
+
+# ---------------------------------------------------------------------
+
+=item delete_shard_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_shard_control {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{DELETE FROM j_shard_control WHERE run=$run};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
 
 
 # ---------------------------------------------------------------------
@@ -2164,6 +2233,23 @@ sub set_enqueuer_enabled {
     DEBUG('lsdb', qq{DEBUG: $statement});
 }
 
+# ---------------------------------------------------------------------
+
+=item delete_enqueuer
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_enqueuer {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{DELETE FROM j_enqueuer_control WHERE run=$run};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
 # =====================================================================
 # =====================================================================
 #
@@ -2227,6 +2313,23 @@ sub set_rights_enabled {
 
 # ---------------------------------------------------------------------
 
+=item delete_optimize_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_optimize_control {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{DELETE FROM j_commit_control WHERE run=$run};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
+}
+
+# ---------------------------------------------------------------------
+
 =item set_optimize_enabled
 
 Description
@@ -2262,6 +2365,23 @@ sub Select_optimize_enabled {
     DEBUG('lsdb', qq{DEBUG: $statement ::: enabled=$enabled});
 
     return $enabled;
+}
+
+# ---------------------------------------------------------------------
+
+=item delete_check_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_check_control {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{DELETE FROM j_check_control WHERE run=$run};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    DEBUG('lsdb', qq{DEBUG: $statement});
 }
 
 

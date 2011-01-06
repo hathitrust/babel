@@ -130,7 +130,10 @@ sub cont_get_usage {
           mark queued ids with state "available" again when left behind as "processing"
 
        control-j -k init -r run [-t 'yyyy-mm-dd hh:mm:ss']
-          initialize a run, zero everything and optionally setting queue time pointer \n};
+          initialize a run, zero everything and optionally setting queue time pointer
+       
+       control-j -k delete -r run
+          delete a run entirely from the database\n};
     return $s;
 }
 
@@ -297,6 +300,9 @@ eval {
     }
     elsif ($KOMMAND eq 'init') {
         c_init($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'delete') {
+        c_delete($C, $DBH, $RUN);
     }
     else {
         my $s = cont_get_usage();
@@ -501,6 +507,83 @@ sub c_init {
 
     Log_init($C, $run);
     __output(qq{\n\tInitialized run=$run\n\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_delete
+
+Delete all record of a run from all database tables.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_delete {
+    my ($C, $dbh, $run) = @_;
+
+    __confirm("\n\n!!!(This will delete ALL RECORD of the run from the database for Run=$run !!!\n\n\t ARE YOU ABSOLUTELY 100% SURE ABOUT THIS!? [N] ");
+    
+    __confirm("\n\t\t\tREALLY? [N] ");
+    __confirm("\n\t\t\tREALLY, REALLY? [N] ");
+    
+    __output(qq{\n\tdelete queue timestamp ... });
+    Db::delete_j_rights_timestamp($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete errors ... });
+    Db::Delete_errors($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete indexed ... });
+    Db::Delete_indexed($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete enqueuer record ... });
+    Db::delete_enqueuer($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete shard stats ... });
+    Db::Reset_shard_stats($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete rate stats ... });
+    Db::Reset_rate_stats($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete index size ... });
+    Db::delete_Index_size($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete queue ... });
+    Db::Delete_queue($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete hosts ... });
+    Db::Reset_host_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+    
+    __output(qq{\tdelete driver ... });
+    SLIP_Utils::Db_driver::delete_driver($C, $dbh, $run);
+    __output(qq{Done.\n\n});
+
+    __output(qq{\tdelete shard control ... });
+    Db::delete_shard_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete optimize control ... });
+    Db::delete_optimize_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete check control ... });
+    Db::delete_check_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete timeouts ... });
+    Db::delete_timeouts($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    Log_delete($C, $run);
+    __output(qq{\n\tDELETED run=$run\n\n});
 }
 
 
@@ -915,6 +998,22 @@ sub Log_init {
     my ($C, $run, $offset) = @_;
 
     my $s = qq{***INITIALIZE: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_delete
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_delete {
+    my ($C, $run) = @_;
+
+    my $s = qq{***DELETE: } . Utils::Time::iso_Time() . qq{ r=$run};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
