@@ -490,16 +490,22 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-my $DELETE_Q_SLICE_SIZE = 1000;
+my $DELETE_Q_SLICE_SIZE = 10000;
 sub Delete_queue {
     my ($C, $dbh, $run) = @_;
 
     my $num_affected = 0;
     do {
+        my $begin = time();
+
         my $statement = qq{DELETE FROM j_queue WHERE run=$run LIMIT $DELETE_Q_SLICE_SIZE};
         DEBUG('lsdb', qq{DEBUG: $statement});
         my $sth = DbUtils::prep_n_execute($dbh, $statement, \$num_affected);
-    } until ($num_affected == 0);
+
+        my $elapsed = time() - $begin;
+        sleep $elapsed/2;
+
+    } until ($num_affected <= 0);
 }
 
 
@@ -1102,7 +1108,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-my $DELETE_SLICE_SIZE = 100000;
+my $DELETE_SLICE_SIZE = 10000;
 
 sub Delete_indexed {
     my ($C, $dbh, $run) = @_;
