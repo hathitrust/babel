@@ -129,6 +129,18 @@ package WAYF::IdpConfig;
                    },
      
      # Waiting
+     'baylor'  => {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'Baylor University',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/baylor?target=___TARGET___',
+                    'enabled' => '0',
+                   },
+     'washington' => {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'University of Washington',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/washington?target=___TARGET___',
+                    'enabled' => '0',
+                   },
      'upenn'   => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of Pennsylvania',
