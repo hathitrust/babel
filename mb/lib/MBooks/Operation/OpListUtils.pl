@@ -6,7 +6,7 @@ sub get_rights
     my $self = shift;
     my ($C, $rights_ref) = @_;
     
-    $rights_ref = AccessRights::get_fulltext_attr_list($C);
+    $rights_ref = Access::Rights::get_fulltext_attr_list($C);
     
     return $rights_ref;
 }
