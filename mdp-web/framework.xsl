@@ -30,6 +30,8 @@
        -->
   
   <!-- Global Variables -->
+  <xsl:variable name="gAccessUseHeader" select="/MBooksTop/MBooksGlobals/AccessUse/Header"/>
+  <xsl:variable name="gAccessUseLink" select="/MBooksTop/MBooksGlobals/AccessUse/Link"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gPodUrl" select="/MBooksTop/MBooksGlobals/Pod/Url"/>
   <xsl:variable name="gSkin" select="/MBooksTop/MBooksGlobals/Skin"/>
@@ -234,82 +236,20 @@
         </div>
       </xsl:if>
       
-      <xsl:if test="$gRightsAttribute">
-        <div class="mdpMetaDataRow">
-          <div class="mdpMetaDataRegionHead">
-            <xsl:text>Copyright&#xa0;</xsl:text>
-          </div>
-          <div class="mdpMetaText">
-            <xsl:element name="a">
-              <xsl:attribute name="href">http://www.hathitrust.org/faq#RightsCodes</xsl:attribute>
-              <xsl:choose>
-                <xsl:when test="$gRightsAttribute='1'">
-                  <xsl:text>Public Domain</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='2'">
-                  <xsl:text>In-copyright</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='3'">
-                  <xsl:text>In-copyright</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='4'">
-                  <xsl:text>In-copyright</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='5'">
-                  <xsl:text>Undetermined copyright status</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='6'">
-                  <xsl:text>Available to U-M affiliates and walk-in patrons (all
-                  campuses)</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='7'">
-                  <xsl:text>Available to everyone in the world</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='8'">
-                  <xsl:text>Available to nobody; blocked for all users</xsl:text>
-                </xsl:when>
-                <xsl:when test="$gRightsAttribute='9'">
-                  <xsl:text>Public domain only when viewed in the US</xsl:text>
-                </xsl:when>
-                <xsl:otherwise/>
-              </xsl:choose> 
-            </xsl:element>
-          </div>
+      <div class="mdpMetaDataRow">
+        <div class="mdpMetaDataRegionHead">
+          <xsl:text>Copyright&#xa0;</xsl:text>
         </div>
-      </xsl:if>
-      
-      <xsl:if test="$gSourceAttribute">
-        <div class="mdpMetaDataRow">
-          <div class="mdpMetaDataRegionHead">
-            <xsl:text>Access and Use&#xa0;</xsl:text>
-          </div>
-          <div class="mdpMetaText">
-            <xsl:choose>
-              <xsl:when test="$gRightsAttribute='1' or $gRightsAttribute='7' or $gRightsAttribute='9'">
-                <xsl:choose>
-                  <xsl:when test="$gSourceAttribute='1'">
-                    <xsl:text>Users are free to download, cite and link to this digital item. Downloaded portions may not be redistributed, rehosted, or used commercially.</xsl:text>
-                  </xsl:when>
-                  <xsl:when test="$gSourceAttribute='2'">
-                    <xsl:text>Users are free to download, copy, and distribute this work without asking for permission.</xsl:text>
-                  </xsl:when>
-                  <xsl:otherwise/>
-                </xsl:choose>
-              </xsl:when>
-              <xsl:when test="$gRightsAttribute='2' or $gRightsAttribute='3' or $gRightsAttribute='4'">
-                <xsl:text>This item is keyword searchable only. Page images and full text are not available due to copyright restrictions.</xsl:text> 
-              </xsl:when>
-              <xsl:when test="$gRightsAttribute='6'">
-                <xsl:text>This item is keyword searchable only. The copyright status is undetermined and it is treated as though it were in copyright.</xsl:text>
-              </xsl:when>
-              <xsl:when test="$gRightsAttribute='8'">
-                <xsl:text>This item is keyword searchable only. Viewing is restricted while issues regarding display are resolved.</xsl:text>
-              </xsl:when>
-              <xsl:otherwise/>
-            </xsl:choose>
-          </div>
+        <div class="mdpMetaText">
+          <xsl:value-of select="$gAccessUseHeader"/><xsl:text>. </xsl:text>
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="$gAccessUseLink"/>
+            </xsl:attribute>
+            <xsl:text>View access and use policy.</xsl:text>
+          </xsl:element>
         </div>
-      </xsl:if>
+      </div>
       
       <!-- allow SSD user to link from SSDviewer to pageturner if desired -->
       <xsl:choose>
@@ -322,8 +262,6 @@
           <xsl:call-template name="PermanentURL"/>
         </xsl:otherwise>
       </xsl:choose>
-      
-      
     </div>
   </xsl:template>
   
