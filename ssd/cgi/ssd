@@ -83,7 +83,7 @@ my $gId = $gCgi->param( 'id' );
 # "back" link
 PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
 
-if ( $C->get_object('AccessRights')->assert_final_access_status($C, $gId) eq 'allow' )
+if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' )
 {
     # Any information specific to this request (page,
     # possibly new handler, etc.) is done after initialization
