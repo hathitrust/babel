@@ -3,6 +3,15 @@
 # App _. UV_1-specific plugin config
 # =====================================================================
 imgsrv:
+  - EMPTY_CACHE
+  - /htapps/__STAGE__/imgsrv/cgi/imgsrv action=pdf id=1__LOCAL__
+  - /htapps/__STAGE__/imgsrv/cgi/imgsrv action=image id=1__LOCAL__
+  - /htapps/__STAGE__/imgsrv/cgi/imgsrv action=image id=uc1.$b699489__LOCAL__
+  - /htapps/__STAGE__/imgsrv/cgi/imgsrv action=image id=1 seq=8 seq=9 seq=10__LOCAL__
+  - /htapps/__STAGE__/imgsrv/cgi/imgsrv action=image id=1 seq=7__LOCAL__
+  - /htapps/__STAGE__/imgsrv/cgi/imgsrv action=meta id=2 start=0 limit=10__LOCAL__
+
+  - EMPTY_CACHE
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/pdf?id=1__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/image?id=1__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/image?id=uc1.$b699489__LOCAL__
@@ -11,11 +20,19 @@ imgsrv:
   - http://__STAGE__.hathitrust.org/cgi/imgsrv/meta?id=2;start=0;limit=10__LOCAL__
 
 feedback:
-  - http://__STAGE__.hathitrust.org/cgi/feedback?SysID=mdp.39015081447842&return=https%3A%2F%2F__STAGE__.hathitrust.org/cgi/mb&m=pt&SeqNo=1&view=image&missing=1&other=&comments=foobar+test&email=foo@foo.com&submit=Submit__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/feedback?m=ls&id=Large-scale+Search&email=foo@foo.com&comments=foobar+test__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/feedback?m=cb&id=Collection+Builder&email=foo@foo.com&comments=foobar+test__LOCAL__
+  - /htapps/__STAGE_/feedback/cgi/feedback SysID=mdp.39015015394847 return=%2Fcgi%2Fpt%3Fid%3Dmdp.39015015394847%3Bpage%3Droot%3Bseq%3D7%3Bview%3Dimage%3Bsize%3D100%3Borient%3D0 m=pt;SeqNo=7 view=image Quality=someproblems blurry=1 other= Rights=access comments=pfarber+test email=pfarber%40umich.edu submit=Submit__LOCAL__
+  - /htapps/__STAGE__/feedback/cgi/feedback m=ls id=Large-scale+Search email=foo@foo.com comments=foobar+test__LOCAL__
+  - /htapps/__STAGE__/feedback/cgi/feedback m=cb id=Collection+Builder email=foo@foo.com comments=foobar+test__LOCAL__
+
+  - http://__STAGE__.hathitrust.org/cgi/feedback?SysID=mdp.39015015394847;return=%2Fcgi%2Fpt%3Fid%3Dmdp.39015015394847%3Bpage%3Droot%3Bseq%3D7%3Bview%3Dimage%3Bsize%3D100%3Borient%3D0;m=pt;SeqNo=7;view=image;Quality=someproblems;blurry=1;other=;Rights=access;comments=pfarber+test;email=pfarber%40umich.edu;submit=Submit__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/feedback?m=ls;id=Large-scale+Search;email=foo@foo.com;comments=foobar+test__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/feedback?m=cb;id=Collection+Builder;email=foo@foo.com;comments=foobar+test__LOCAL__
 
 gr:
+  - /htapps/__STAGE__/gr/cgi/gr id=1__LOCAL__
+  - /htapps/__STAGE__/gr/cgi/gr id=8__LOCAL__
+  - /htapps/__STAGE__/gr/cgi/gr id=uc1.$b699489__LOCAL__
+
   - http://__STAGE__.hathitrust.org/cgi/gr?id=1__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/gr?id=8__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/gr?id=uc1.$b699489__LOCAL__
@@ -35,13 +52,26 @@ htd:
   - http://test.services.hathitrust.org/htd/pagemeta/uc1.$b699489/1__LOCAL__
 
 logout:
+  - /htapps/__STAGE__/logout/cgi/logout__LOCAL__
+
   - http://__STAGE__.hathitrust.org/cgi/logout__LOCAL__
 
 ls:
-  - http://__STAGE__.hathitrust.org/cgi/ls?q1=fungible&a=srchls&lmt=all&pn=2__LOCAL__
+  - /htapps/__STAGE__/ls/cgi/ls q1=fungible a=srchls lmt=all pn=2__LOCAL__
+  - /htapps/__STAGE__/ls/cgi/ls q1=dog a=srchls lmt=ft__LOCAL__
+
+  - http://__STAGE__.hathitrust.org/cgi/ls?q1=fungible;a=srchls;lmt=all;pn=2__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/ls?q1=dog;a=srchls;lmt=ft__LOCAL__
 
 mb:
+  - /htapps/__STAGE__/mb/cgi/mb__LOCAL__
+  - /htapps/__STAGE__/mb/cgi/mb a=listis c=1276272457__LOCAL__
+  - /htapps/__STAGE__/mb/cgi/mb c=1276272457 a=srch q1=Gettysburg sort=rel_d pn=1__LOCAL__
+  - /htapps/__STAGE__/mb/cgi/mb c=1276272457 a=srch q1=Gettysburg sort=title_a pn=1__LOCAL__
+  - /htapps/__STAGE__/mb/cgi/mb c=1276272457 a=srch q1=Gettysburg sort=title_d pn=1__LOCAL__
+  - /htapps/__STAGE__/mb/cgi/mb c=1276272457 a=srch q1=Gettysburg sort=date_d pn=1__LOCAL__
+  - /htapps/__STAGE__/mb/cgi/mb c=1276272457 a=srch q1=Gettysburg sort=date_a pn=1__LOCAL__
+
   - http://__STAGE__.hathitrust.org/cgi/mb__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/mb?a=listis;c=1276272457__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=rel_d;pn=1__LOCAL__
@@ -51,43 +81,74 @@ mb:
   - http://__STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_a;pn=1__LOCAL__
 
 pt:
+  - EMPTY_CACHE
+  - /htapps/__STAGE__/pt/cgi/pt id=mdp.39015079129154__LOCAL__
+  - /htapps/__STAGE__/pt/cgi/pt id=uc1.$b699489__LOCAL__
+  - /htapps/__STAGE__/pt/cgi/pt id=mdp.39015079129154 orient=1__LOCAL__
+  - /htapps/__STAGE__/pt/cgi/pt id=mdp.39015079129154 size=50__LOCAL__
+  - /htapps/__STAGE__/pt/cgi/pt id=mdp.39015051323379 view=text seq=100__LOCAL__
+  - /htapps/__STAGE__/pt/cgi/pt id=mdp.39015079129154 view=pdf__LOCAL__
+
+  - EMPTY_CACHE
   - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/pt?id=uc1.$b699489__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&orient=1__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&size=50__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/pt?id=id=mdp.39015051323379;view=text;seq=100__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154&view=pdf__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;orient=1__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;size=50__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015051323379;view=text;seq=100__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;view=pdf__LOCAL__
 
 ptsearch:
-  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489&q1=drama__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489&q1=__EMPTYOCR____LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=medecine__LOCAL__
-  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989&q1=foobar__LOCAL__
+  - EMPTY_CACHE
+  - /htapps/__STAGE__/ptsearch/cgi/ptsearch id=uc1.$b699489 q1=drama__LOCAL__
+  - /htapps/__STAGE__/ptsearch/cgi/ptsearch id=uc1.$b699489 q1=__EMPTYOCR____LOCAL__
+  - /htapps/__STAGE__/ptsearch/cgi/ptsearch id=mdp.39015062775989 q1=medecine__LOCAL__
+  - /htapps/__STAGE__/ptsearch/cgi/ptsearch id=mdp.39015062775989 q1=foobar__LOCAL__
+
+  - EMPTY_CACHE
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489;q1=drama__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489;q1=__EMPTYOCR____LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989;q1=medecine__LOCAL__
+  - http://__STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989;q1=foobar__LOCAL__
 
 ssd:
-  - http://__STAGE__.hathitrust.org/cgi/ssd?id=8&ssd=1__LOCAL__
+  - EMPTY_CACHE
+  - /htapps/__STAGE__/ssd/cgi/ssd id=8 ssd=1__LOCAL__
+  - /htapps/__STAGE__/ssd/cgi/ssd id=1__LOCAL__
+
+  - EMPTY_CACHE
+  - http://__STAGE__.hathitrust.org/cgi/ssd?id=8;ssd=1__LOCAL__
   - http://__STAGE__.hathitrust.org/cgi/ssd?id=1__LOCAL__
 
+mdp-misc:
+  - /htapps/__STAGE__/mdp-misc/cgi/access_stmts attr=1 src=3__LOCAL__
+
+  - http://__STAGE__.hathitrust.org/mdp-misc/cgi/access_stmts?attr=1;src=3__LOCAL__
+
 wayf:
+  - /htapps/__STAGE__/wayf/cgi/wayf__LOCAL__
+
   - http://__STAGE__.hathitrust.org/cgi/wayf__LOCAL__
 
 slip:
+  - /htapps/__STAGE__/slip/cgi/slip r=10__LOCAL__
+
   - http://__STAGE__.hathitrust.org/cgi/slip?r=10__LOCAL__
-  - /htapps/__STAGE__/slip/index/commit-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/control-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/delete-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/docs-j -r10 -Iuc1.$b699489 __LOCAL__
-  - /htapps/__STAGE__/slip/index/driver-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/enqueuer-j -r10 -n __LOCAL__
-  - /htapps/__STAGE__/slip/index/enqueuer-j -r11 -n __LOCAL__
-  - /htapps/__STAGE__/slip/index/index-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/optimize-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/query-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/rebuild-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/report-j -r10 __LOCAL__
-  - /htapps/__STAGE__/slip/index/report-j -r11 __LOCAL__
-  - /htapps/__STAGE__/slip/index/rights-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/sizer-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/sync-j __LOCAL__
-  - /htapps/__STAGE__/slip/index/timeouts-j -r10 -l1 __LOCAL__
-  - /htapps/__STAGE__/slip/index/check-j -r10 -R1 -O2 -n -C __LOCAL__
+
+  - /htapps/__STAGE__/slip/index/commit-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/control-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/delete-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/docs-j -r10 -Iuc1.$b699489__LOCAL__
+  - /htapps/__STAGE__/slip/index/driver-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/enqueuer-j -r10 -n__LOCAL__
+  - /htapps/__STAGE__/slip/index/enqueuer-j -r11 -n__LOCAL__
+  - /htapps/__STAGE__/slip/index/index-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/optimize-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/query-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/rebuild-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/report-j -r10__LOCAL__
+  - /htapps/__STAGE__/slip/index/report-j -r11__LOCAL__
+  - /htapps/__STAGE__/slip/index/rights-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/sizer-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/sync-j__LOCAL__
+  - /htapps/__STAGE__/slip/index/timeouts-j -r10 -l1__LOCAL__
+  - /htapps/__STAGE__/slip/index/check-j -r10 -R1 -O2 -n -C__LOCAL__

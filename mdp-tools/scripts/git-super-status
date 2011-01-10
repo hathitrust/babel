@@ -49,7 +49,10 @@ foreach my $app (@apps) {
     PrintY("Checking $app_dir with FETCH\n");
 
     my $branch = qx(git branch);
-    if ($branch !~ m,\* master,s) {
+    $branch =~ s,\* (\S+),  $1(current),;
+    
+    print("Branches:\n$branch\n");
+    if ($branch !~ m,master\(current\),s) {
         PrintN("\tMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n");
         next;
     }

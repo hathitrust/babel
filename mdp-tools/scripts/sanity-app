@@ -68,6 +68,7 @@ else {
 my $CONFIG = YAML::XS::LoadFile("$LOCATION/../lib/Config/sanity-config.yaml");
 my $rc = 0;
 foreach my $app (@apps) {
+    $rc = 0;
     my $url_arr_ref = _get_config_val($app);
     
     PrintY(qq{SANITY checking: $app\n});
@@ -77,20 +78,20 @@ foreach my $app (@apps) {
         next;
     }
 
-    if (_empty_cache()) {
-        foreach my $url (@$url_arr_ref) {
-            $url =~ s,__STAGE__,$STAGE.babel,g;
-            
-            if ($url =~ m,^http,) {
-                $rc |= _test_url($app, $url);
-            }
-            else {
-                $rc |= _test_cmd($app, $url);
-            }
+    foreach my $url (@$url_arr_ref) {
+        $url =~ s,__STAGE__,$STAGE.babel,g;
+        
+        if ($url =~ m,EMPTY_CACHE,) {
+            $rc ||= _empty_cache();
         }
-    }
-    else {
-        $rc |= 1;
+        elsif ($url =~ m,^http,) {
+            $rc ||= _test_url($app, $url);
+        }
+        else {
+            $rc ||= _test_cmd($app, $url);
+        }
+
+        last if ($rc > 0);
     }
 }
 
@@ -142,6 +143,54 @@ sub _test_url {
     return $rc;
 }
 
+
+# ---------------------------------------------------------------------
+
+=item _test_cmd
+
+Description
+
+=cut
+
+# --------------------------------------------------------------------- 
+sub _test_cmd {
+    my $app = shift;
+    my $cmd = shift;
+
+    if ($LOCAL) {
+        $cmd =~ s,__LOCAL__,  debug=local,;
+    }
+    else {
+        $cmd =~ s,__LOCAL__,,;
+    }
+
+    my $rc = 0;
+    my @accepted_exits = ('0', '1', '4');
+
+    print("app=$app "); print(" CMD=$cmd ... ");
+
+    if ($VERBOSE) {
+        print `$cmd`;
+    }
+    else {
+        print `$cmd > /dev/null 2>&1`;        
+    }
+    
+    my $exitval = $? >> 8;
+    my $result = grep(/$exitval/, @accepted_exits);
+    
+    if ($result) {
+        PrintY("OK [$exitval]\n");
+    }
+    else {
+        PrintN("cmd fail: [$exitval]\n");
+        $rc = 1 ;
+    }
+
+    return $rc;
+}
+
+
 # ---------------------------------------------------------------------
 
 =item Name 
@@ -159,57 +208,10 @@ sub _empty_cache {
     `rm -rf /htapps/test.babel/cache-full/*`;
     if ($? > 0) {
         PrintN("Cache not cleared\n");
+        $rc = 1;
     }
     else {
         PrintY("OK\n");
-        $rc = 1;
-    }
-
-    return $rc;
-}
-
-# ---------------------------------------------------------------------
-
-=item _test_cmd
-
-Description
-
-=cut
-
-# --------------------------------------------------------------------- 
-sub _test_cmd {
-    my $app = shift;
-    my $cmd = shift;
-
-    if ($LOCAL) {
-        $cmd =~ s,__LOCAL__,debug=local,;
-    }
-    else {
-        $cmd =~ s,__LOCAL__,,;
-    }
-
-    my $rc = 0;
-    my @accepted_exits = ('0', '1', '4');
-
-    print("app=$app "); print(" CMD=$cmd ... ");
-
-    my @cmds = split(/ /, $cmd);
-    if ($VERBOSE) {
-        IPC::Run::run \@cmds;
-    }
-    else {
-        IPC::Run::run \@cmds, ">", "/dev/null", "2>&1";
-    }
-    
-    my $exitval = $? >> 8;
-    my $result = grep(/$exitval/, @accepted_exits);
-    
-    if ($result) {
-        PrintY("OK [$exitval]\n");
-        $rc =1 ;
-    }
-    else {
-        PrintN("cmd fail: [$exitval]\n");
     }
 
     return $rc;

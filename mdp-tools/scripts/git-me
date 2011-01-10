@@ -33,7 +33,7 @@ use ToolLib;
 $| = 1;
 
 sub git_me_app_usage {
-    my $s = qq{Usage: git-me [options] <app> [<branch>]
+    my $s = qq{Usage: git-me <app> [<branch>]
            where <app> is the application to sync with the upstream
                  <branch> is optional, defaults to 'master'\n};
     return $s;
