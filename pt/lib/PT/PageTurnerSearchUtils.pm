@@ -768,8 +768,7 @@ sub IndexOcr
     my $mdpItem = $C->get_object('MdpItem');
     my $id = $mdpItem->GetId();
 
-    my $outputDestDir = GetIndexOutputDestDir($id);
-    $mdpItem->CheckCreateDeliveryWebDirectory($outputDestDir);
+    Utils::mkdir_path( GetIndexOutputDestDir($id) );
 
     # ----------------------------------------------------------------------
     # Create XML to index
