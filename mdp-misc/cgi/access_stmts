@@ -12,19 +12,23 @@ http://babel.hathitrust.org/mdp-misc/cgi/access_stmts
 
 Dump of access_stmts and access_map 
 
-=head1 VERSION
-
 =head1 OPTIONS
 
 =over 8
 
 =item URL params
 
-Debug options
+none or {attr,src}
+
+=back
+
+=head1 METHODS
 
 =back
 
 =cut
+
+use strict;
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -45,15 +49,24 @@ use Utils::Time;
 use Context;
 use MdpConfig;
 use Database;
+use Access::Statements;
+use RightsGlobals;
+
 
 # ============================ Main ===================================
+
+my $C = new Context;
 
 my $uber_configfile = Utils::get_uber_config_path('mdp-misc');
 my $config = new MdpConfig($uber_configfile);
 my $db = new Database($config);
-my $DBH = $db->get_DBH();
+$C->set_object('Database', $db);
+
 
 my $cgi = new CGI;
+
+my $attr = $cgi->param('attr');
+my $source = $cgi->param('src');
 
 my $date = `date`;
 
@@ -64,24 +77,17 @@ print start_html(-title=>"Hathitrust access statements and map",
 print div({-class=>"brandingLogo"},
           a({-href=>"http://hathitrust.org"},
             img({-src=>"/ht-graphics/web/HathiTrustDL_logo.png", -style=>"border:0"})));
-print div("Digital Library - access statements and map - $date");
+print div(h2("Digital Library - access statements and map - $date") 
+          . h3("Usage: http://babel.hathitrust.org/mdp-misc/cgi/access_stmts or: http://babel.hathitrust.org/mdp-misc/cgi/access_stmts?attr=1;src=3"));
 
-my @rows;
-
-my $ref_to_ary_of_hashref = get_stmts();
-foreach my $hashref (@$ref_to_ary_of_hashref) {
-    my $key = $hashref->{'stmt_key'};
-    my $url = $hashref->{'stmt_url'};
-    my $head = $hashref->{'stmt_head'};
-    my $text = $hashref->{'stmt_text'};
-
-    push(@rows, Tr(td([$key]) . td([$url]) . td([$head]) . td([$text])));
+if ($attr && $source) {
+    print_stmt($attr, $source);
+    print_tables();
+}
+else {
+    print_tables();
 }
 
-my $table = table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
-                  @rows);
-
-print $table;
 
 print end_html();
 
@@ -90,19 +96,97 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
-=item get_stmts
+=item print_stmt
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_stmts {
-    my $statement = qq{SELECT stmt_key, stmt_url, stmt_head, stmt_text FROM access_stmts};
-    my $sth = DbUtils::prep_n_execute($DBH, $statement);
-    my $ref_to_ary_of_hashref = $sth->fetchall_arrayref({});
+sub print_stmt {
+    my ($attr, $source) = @_;
 
-    return $ref_to_ary_of_hashref;
+    my @rows;
+    my $ref_to_arr_of_hashref = 
+      Access::Statements::get_stmt_by_rights_values($C, $attr, $source, 
+                                                  {
+                                                   stmt_key  => 1,
+                                                   stmt_url  => 1,
+                                                   stmt_head => 1,
+                                                   stmt_text => 1,
+                                                  });
+    
+    foreach my $hashref (@$ref_to_arr_of_hashref) {
+        my $key = $hashref->{stmt_key};
+        my $url = $hashref->{stmt_url};
+        my $head = $hashref->{stmt_head};
+        my $text = $hashref->{stmt_text};
+        
+        push(@rows, Tr(td([$key]) . td([$url]) . td([$head]) . td([$text])));
+    }
+    
+    my $src = $RightsGlobals::g_source_names{$source};
+    my $at = $RightsGlobals::g_attribute_keys{$attr};
+
+    my $table = table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
+                      th({-colspan=>4}, "Statement for attr=$attr ($at) source=$source ($src)"), @rows);
+    print $table;
+
+
+
+}
+  
+# ---------------------------------------------------------------------
+
+=item print_tables
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub print_tables {
+    my @rows;
+    my $table;
+    
+    foreach my $attr (sort { $a <=> $b } keys %RightsGlobals::g_attribute_keys) {
+        my $key = $RightsGlobals::g_attribute_keys{$attr};
+        push(@rows, Tr(td([$attr]) . td([$key])));
+    }
+    $table = table({-border=>"1", -width=>"20%", -cellpadding=>"5px", -cellspacing=>0},
+                   th({-colspan=>2}, "All Attributes"), @rows);
+    print $table;
+    @rows = ();
+    
+    foreach my $source (sort { $a <=> $b } keys %RightsGlobals::g_source_names) {
+        my $key = $RightsGlobals::g_source_names{$source};
+        push(@rows, Tr(td([$source]) . td([$key])));
+    }
+    $table = table({-border=>"1", -width=>"20%", -cellpadding=>"5px", -cellspacing=>0},
+                   th({-colspan=>2}, "All Sources"), @rows);
+    print $table;
+    @rows = ();
+    
+    my $ref_to_arr_of_hashref = Access::Statements::get_all_stmts($C,      
+                                                                {
+                                                                 stmt_key  => 1,
+                                                                 stmt_url  => 1,
+                                                                 stmt_head => 1,
+                                                                 stmt_text => 1,
+                                                                });
+    foreach my $hashref (@$ref_to_arr_of_hashref) {
+        my $key = $hashref->{stmt_key};
+        my $url = $hashref->{stmt_url};
+        my $head = $hashref->{stmt_head};
+        my $text = $hashref->{stmt_text};
+        
+        push(@rows, Tr(td([$key]) . td([$url]) . td([$head]) . td([$text])));
+    }
+    
+    
+    $table = table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
+                   th({-colspan=>4}, "All Statements"), @rows);
+    print $table;
 }
 
 
@@ -112,7 +196,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2010 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2010-11 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
