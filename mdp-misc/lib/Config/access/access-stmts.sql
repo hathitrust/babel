@@ -3,6 +3,18 @@
 -- commands to re-populate access_stmts table. Do not change
 -- access_stmts table using mysql client.
 -- ---------------------------------------------------------------------
+-- ---------------------------------------------------------------------
+-- query:
+--
+-- SELECT stmt_num, stmt_url, stmt_head, stmt_text FROM access_stmts 
+--   WHERE access_stmts.stmt_key = 
+--     SELECT stmt_key FROM access_stmts_map 
+--       WHERE attr=$attr AND source=$source 
+-- ---------------------------------------------------------------------
+
+DROP TABLE IF EXISTS access_stmts;
+CREATE TABLE `access_stmts` (`stmt_key` varchar(32) NOT NULL default '', `stmt_url` text NOT NULL default '', `stmt_head` text NOT NULL default '', `stmt_text` text NOT NULL default '', PRIMARY KEY (`stmt_key`));
+
 INSERT INTO access_stmts
        SET
        stmt_key='pd',
