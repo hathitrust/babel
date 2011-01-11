@@ -20,7 +20,7 @@ imgsrv:
   - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/meta?id=2;start=0;limit=10__LOCAL__
 
 feedback:
-  - /htapps/__CMD_STAGE_/feedback/cgi/feedback SysID=mdp.39015015394847 return=%2Fcgi%2Fpt%3Fid%3Dmdp.39015015394847%3Bpage%3Droot%3Bseq%3D7%3Bview%3Dimage%3Bsize%3D100%3Borient%3D0 m=pt;SeqNo=7 view=image Quality=someproblems blurry=1 other= Rights=access comments=pfarber+test email=pfarber%40umich.edu submit=Submit__LOCAL__
+  - /htapps/__CMD_STAGE_/feedback/cgi/feedback SysID=mdp.39015015394847 return=%2Fcgi%2Fpt%3Fid%3Dmdp.39015015394847%3Bpage%3Droot%3Bseq%3D7%3Bview%3Dimage%3Bsize%3D100%3Borient%3D0 m=pt SeqNo=7 view=image Quality=someproblems blurry=1 other= Rights=access comments=pfarber+test email=pfarber%40umich.edu submit=Submit__LOCAL__
   - /htapps/__CMD_STAGE__/feedback/cgi/feedback m=ls id=Large-scale+Search email=foo@foo.com comments=foobar+test__LOCAL__
   - /htapps/__CMD_STAGE__/feedback/cgi/feedback m=cb id=Collection+Builder email=foo@foo.com comments=foobar+test__LOCAL__
 
