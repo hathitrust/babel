@@ -47,7 +47,7 @@ sub sanity_app_usage {
 our ($opt_s, $opt_A, $opt_v, $opt_L);
 my $ops = getopts('LAs:v');
 
-my $STAGE = $opt_s ? ($opt_s . '-full') : 'test';
+my $STAGE = $opt_s || 'test';
 my $VERBOSE = $opt_v;
 my $LOCAL = $opt_L;
 
@@ -79,7 +79,6 @@ foreach my $app (@apps) {
     }
 
     foreach my $url (@$url_arr_ref) {
-        $url =~ s,__STAGE__,$STAGE.babel,g;
         $url =~ s,__CGI__,cgi,g;
         
         if ($url =~ m,EMPTY_CACHE,) {
@@ -112,6 +111,9 @@ sub _test_url {
     my $app = shift;
     my $url = shift;
     
+    my $stage = ($STAGE eq 'test') ? $STAGE : $STAGE . '-full'; 
+    $url =~ s,__URL_STAGE__,$stage.babel,g;
+
     if ($LOCAL) {
         $url =~ s,__LOCAL__,;debug=local,;
     }
@@ -157,6 +159,9 @@ Description
 sub _test_cmd {
     my $app = shift;
     my $cmd = shift;
+
+    my $stage = ($STAGE eq 'test') ? $STAGE : $STAGE; 
+    $cmd =~ s,__CMD_STAGE__,$stage.babel,g;
 
     if ($LOCAL) {
         $cmd =~ s,__LOCAL__,  debug=local,;
