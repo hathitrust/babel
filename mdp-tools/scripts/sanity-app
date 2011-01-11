@@ -51,6 +51,8 @@ my $STAGE = $opt_s || 'test';
 my $VERBOSE = $opt_v;
 my $LOCAL = $opt_L;
 
+my @staging_hosts = ('test', 'beta-1', 'beta-2', 'beta-3', );
+
 my $ALL = $opt_A;
 my @apps;
 if ($ALL) {
@@ -111,7 +113,7 @@ sub _test_url {
     my $app = shift;
     my $url = shift;
     
-    my $stage = ($STAGE eq 'test') ? $STAGE : $STAGE . '-full'; 
+    my $stage = (grep(/$STAGE/, @staging_hosts)) ? $STAGE : $STAGE . '-full'; 
     $url =~ s,__URL_STAGE__,$stage.babel,g;
 
     if ($LOCAL) {
@@ -160,7 +162,8 @@ sub _test_cmd {
     my $app = shift;
     my $cmd = shift;
 
-    my $stage = ($STAGE eq 'test') ? $STAGE : $STAGE; 
+    my $stage = (grep(/$STAGE/, @staging_hosts)) ? $STAGE : $STAGE . '-full'; 
+
     $cmd =~ s,__CMD_STAGE__,$stage.babel,g;
 
     if ($LOCAL) {
