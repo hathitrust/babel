@@ -405,80 +405,122 @@ accessibility_matrix:
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
       um-press: restricted
       internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
   pageocr:
     free:
       google: limited
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
       um-press: restricted
       internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
   pagecoordocr:
     free:
       google: limited
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
       um-press: restricted
       internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
   aggregate:
     free:
       google: free_bulk_restricted
       lit-dlps-dc: open
       um-press: restricted
       internet-archive: open
+      yale: open
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
       um-press: restricted
       internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
   structure:
     free:
       google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
     nonfree:
       google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
   meta:
     free:
       google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
     nonfree:
       google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
   pagemeta:
     free:
       google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
     nonfree:
       google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
+      yale: open
+      minn-dig-lib: open
+      minn-hist-soc: open
 
 # ---------------------------------------------------------------------
-# Mapping from mdp.rights.attr field values to names
+# Mapping from mdp.rights_current.attr field values to names
 # ---------------------------------------------------------------------
 rights_name_map:
   1: pd
@@ -520,6 +562,9 @@ sources_name_map:
   2: lit-dlps-dc
   3: um-press
   4: internet-archive
+  5: yale
+  6: minn-dig-lib
+  7: minn-hist-soc
 
 # ---------------------------------------------------------------------
 # MIME type map
