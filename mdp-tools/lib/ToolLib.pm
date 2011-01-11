@@ -675,14 +675,13 @@ Description
 sub execute_command {
     my $cmd = shift;
 
-    print qq{$cmd\n}
-      if ($ToolLib::VERBOSE);
+    my $verbose = ($ToolLib::VERBOSE || ($cmd =~ m,-v,) );
+    
+    print qq{$cmd\n} if ($verbose);
 
-    $ToolLib::VERBOSE ? print qx($cmd) : qx($cmd 1> /dev/null 2>&1);
+    $verbose ? print qx($cmd) : qx($cmd 1> /dev/null 2>&1);
     if ($?) {
-        if ($ToolLib::VERBOSE) {
-            PrintN("ERROR: $?\ncmd=$cmd\n");
-        }
+        PrintN("ERROR: $?\ncmd=$cmd\n") if ($verbose);
         return 0;
     }
 
@@ -701,21 +700,19 @@ Description
 sub execute_command_w_output {
     my ($cmd, $output_ref) = @_;
 
-    print qq{$cmd\n}
-      if ($ToolLib::VERBOSE);
+    my $verbose = ($ToolLib::VERBOSE || ($cmd =~ m,-v,) );
+    
+    print qq{$cmd\n} if ($verbose);
 
-    $ToolLib::VERBOSE
+    $verbose
       ? ($$output_ref = qx($cmd))
         : ($$output_ref = qx($cmd 2> /dev/null));
     if ($?) {
-        if ($ToolLib::VERBOSE) {
-            PrintN("ERROR: $?\ncmd=$cmd\n");
-        }
+        PrintN("ERROR: $?\ncmd=$cmd\n") if ($verbose);
         return 0;
     }
 
-    print $$output_ref
-      if ($ToolLib::VERBOSE);
+    print $$output_ref if ($verbose);
 
     return 1;
 }
