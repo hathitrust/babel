@@ -42,14 +42,23 @@ ht-graphics:
   - http://__STAGE__.hathitrust.org/ht-graphics/favicon.ico
 
 htd:
-  - http://test.services.hathitrust.org/htd/pagemeta/mdp.39015004314111/37__LOCAL__
-  - http://test.services.hathitrust.org/htd/meta/mdp.39015004314111__LOCAL__
-  - http://test.services.hathitrust.org/htd/structure/mdp.39015004314111__LOCAL__
-  - http://test.services.hathitrust.org/htd/aggregate/mdp.39015004314111__LOCAL__
-  - http://test.services.hathitrust.org/htd/pageimage/mdp.39015004314111/19__LOCAL__
-  - http://test.services.hathitrust.org/htd/pageocr/mdp.39015004314111/51__LOCAL__
-  - http://test.services.hathitrust.org/htd/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22__LOCAL__
-  - http://test.services.hathitrust.org/htd/pagemeta/uc1.$b699489/1__LOCAL__
+  - /htapps/__STAGE__/htd/cgi/htd /pagemeta/mdp.39015004314111/37__LOCAL__?
+  - /htapps/__STAGE__/htd/cgi/htd /meta/mdp.39015004314111__LOCAL__?
+  - /htapps/__STAGE__/htd/cgi/htd /structure/mdp.39015004314111__LOCAL__?
+  - /htapps/__STAGE__/htd/cgi/htd /aggregate/mdp.39015004314111__LOCAL__?
+  - /htapps/__STAGE__/htd/cgi/htd /pageimage/mdp.39015004314111/19__LOCAL__?
+  - /htapps/__STAGE__/htd/cgi/htd /pageocr/mdp.39015004314111/51__LOCAL__?
+  - /htapps/__STAGE__/htd/cgi/htd /pagecoordocr/uc2.ark:/13960/t0dv1g69b/22__LOCAL__?
+  - /htapps/__STAGE__/htd/cgi/htd /pagemeta/uc1.$b699489/1__LOCAL__?
+
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/pagemeta/mdp.39015004314111/37__LOCAL__
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/meta/mdp.39015004314111__LOCAL__
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/structure/mdp.39015004314111__LOCAL__
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/aggregate/mdp.39015004314111__LOCAL__
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/pageimage/mdp.39015004314111/19__LOCAL__
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/pageocr/mdp.39015004314111/51__LOCAL__
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22__LOCAL__
+  - http://__STAGE__.hathitrust.org/__CGI__/htd/pagemeta/uc1.$b699489/1__LOCAL__
 
 logout:
   - /htapps/__STAGE__/logout/cgi/logout__LOCAL__
