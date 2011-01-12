@@ -6,7 +6,7 @@ imgsrv:
   - EMPTY_CACHE
   - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=pdf id=1__LOCAL__
   - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=1__LOCAL__
-  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=uc1.$b699489__LOCAL__
+  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=uc1.\$b699489__LOCAL__
   - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=1 seq=8 seq=9 seq=10__LOCAL__
   - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=1 seq=7__LOCAL__
   - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=meta id=2 start=0 limit=10__LOCAL__
@@ -31,7 +31,7 @@ feedback:
 gr:
   - /htapps/__CMD_STAGE__/gr/cgi/gr id=1__LOCAL__
   - /htapps/__CMD_STAGE__/gr/cgi/gr id=8__LOCAL__
-  - /htapps/__CMD_STAGE__/gr/cgi/gr id=uc1.$b699489__LOCAL__
+  - /htapps/__CMD_STAGE__/gr/cgi/gr id=uc1.\$b699489__LOCAL__
 
   - http://__URL_STAGE__.hathitrust.org/cgi/gr?id=1__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/gr?id=8__LOCAL__
@@ -49,7 +49,7 @@ htd:
   - /htapps/__CMD_STAGE__/htd/cgi/htd /pageimage/mdp.39015004314111/19__LOCAL__?
   - /htapps/__CMD_STAGE__/htd/cgi/htd /pageocr/mdp.39015004314111/51__LOCAL__?
   - /htapps/__CMD_STAGE__/htd/cgi/htd /pagecoordocr/uc2.ark:/13960/t0dv1g69b/22__LOCAL__?
-  - /htapps/__CMD_STAGE__/htd/cgi/htd /pagemeta/uc1.$b699489/1__LOCAL__?
+  - /htapps/__CMD_STAGE__/htd/cgi/htd /pagemeta/uc1.\$b699489/1__LOCAL__?
 
   - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/pagemeta/mdp.39015004314111/37__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/meta/mdp.39015004314111__LOCAL__
@@ -92,7 +92,7 @@ mb:
 pt:
   - EMPTY_CACHE
   - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015079129154__LOCAL__
-  - /htapps/__CMD_STAGE__/pt/cgi/pt id=uc1.$b699489__LOCAL__
+  - /htapps/__CMD_STAGE__/pt/cgi/pt id=uc1.\$b699489__LOCAL__
   - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015079129154 orient=1__LOCAL__
   - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015079129154 size=50__LOCAL__
   - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015051323379 view=text seq=100__LOCAL__
@@ -108,8 +108,8 @@ pt:
 
 ptsearch:
   - EMPTY_CACHE
-  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=uc1.$b699489 q1=drama__LOCAL__
-  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=uc1.$b699489 q1=__EMPTYOCR____LOCAL__
+  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=uc1.\$b699489 q1=drama__LOCAL__
+  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=uc1.\$b699489 q1=__EMPTYOCR____LOCAL__
   - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=mdp.39015062775989 q1=medecine__LOCAL__
   - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=mdp.39015062775989 q1=foobar__LOCAL__
 
@@ -146,7 +146,7 @@ slip:
   - /htapps/__CMD_STAGE__/slip/index/commit-j__LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/control-j__LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/delete-j__LOCAL__
-  - /htapps/__CMD_STAGE__/slip/index/docs-j -r10 -Iuc1.$b699489__LOCAL__
+  - /htapps/__CMD_STAGE__/slip/index/docs-j -r10 -Iuc1.\$b699489__LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/driver-j__LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/enqueuer-j -r10 -n__LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/enqueuer-j -r11 -n__LOCAL__
