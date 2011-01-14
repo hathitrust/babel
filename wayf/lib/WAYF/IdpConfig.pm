@@ -133,6 +133,12 @@ package WAYF::IdpConfig;
                     'template'  => 'https://___HOST___/Shibboleth.sso/washington?target=___TARGET___',
                     'enabled' => '1',
                    },
+     'ucla' =>     {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'University of California, Los Angeles',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/ucla?target=___TARGET___',
+                    'enabled' => '1',
+                   },
      
      # Waiting
      'baylor'  => {
@@ -187,12 +193,6 @@ package WAYF::IdpConfig;
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of California, Irvine',
                     'template'  => 'https://___HOST___/Shibboleth.sso/uci?target=___TARGET___',
-                    'enabled' => '0',
-                   },
-     'ucla' =>     {
-                    'authtype' => 'shibboleth',
-                    'link_text' => 'University of California, Los Angeles',
-                    'template'  => 'https://___HOST___/Shibboleth.sso/ucla?target=___TARGET___',
                     'enabled' => '0',
                    },
      'ucmerced' => {
