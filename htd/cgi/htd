@@ -39,7 +39,7 @@ use Vendors;
 use CGI;
 
 # Code version
-$::VERSION = 0.1000;
+$::VERSION = 0.2000;
 
 # Highest API version supported
 use constant HIGHEST_API_VERSION => 1;
@@ -48,6 +48,13 @@ use constant HIGHEST_API_VERSION => 1;
 
 # Determine which version of API to load and run
 my $Q = CGI->new();
+# get path_info + query_string from command line
+my $action = $Q->param('action');
+if ($action) {
+    $Q->delete('action');
+    $Q->path_info($action);
+}
+    
 my $API_version = __determineVersion($Q);
 
 if (! $API_version) {
@@ -64,7 +71,7 @@ else {
         # NOTREACHED
     }
     
-    my $API_version_instance = $classPackage->new();    
+    my $API_version_instance = $classPackage->new(('CGI' => $Q));    
     $API_version_instance->run();
 }
 

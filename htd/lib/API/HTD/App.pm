@@ -101,7 +101,6 @@ use API::DbIF;
 use API::HTD::Rights;
 use Geo::IP;
 
-my $DBH = undef;
 my $DEBUG = '';
 
 # =====================================================================
@@ -187,13 +186,13 @@ sub setup {
 
     # We need a database connection from this point on. Note ||= for
     # persistent connectivity under mod_perl
-    $DBH ||= API::DbIF::databaseConnect
-        (
-         $self->__getConfigVal('database', 'name'),
-         $self->__getConfigVal('database', 'user'),
-         $self->__getConfigVal('database', 'passwd'),
-         $self->__getConfigVal('database', 'server'),
-        );
+    my $DBH = API::DbIF::databaseConnect
+      (
+       $self->__getConfigVal('database', 'name'),
+       $self->__getConfigVal('database', 'user'),
+       $self->__getConfigVal('database', 'passwd'),
+       $self->__getConfigVal('database', 'server'),
+      );
 
     if (! $DBH) {
         $self->__setErrorResponseCode('503');
@@ -201,6 +200,8 @@ sub setup {
         return 0;
     }
     # POSSIBLY NOTREACHED
+
+    $self->__setMember('dbh', $DBH);    
 
     # Map to requested version of resource handlers.
     $self->__mapURIsToHandlers();
@@ -273,7 +274,7 @@ sub preHandler {
 
     # Get a Rights object. We need this either to permit access or to
     # fill in response data for unrestricted resource.
-    my $ro = API::HTD::Rights::createRightsObject($DBH, $P_Ref);
+    my $ro = API::HTD::Rights::createRightsObject($self->__get_DBH(), $P_Ref);
     if (! defined($ro)) {
         $self->__setErrorResponseCode('404');
         return $defaultHandler;
@@ -324,8 +325,7 @@ sub __debugging {
         $DEBUG = $self->query()->param('debug') || $ENV{'DEBUG'} || '';
     }
 
-    print CGI::header()
-        if ($DEBUG);
+    print CGI::header() unless ($DEBUG eq 'local');
 
     if ($DEBUG eq 'env') {
         print $self->__printEnv();
@@ -459,6 +459,7 @@ sub __setErrorResponseCode {
     my $code = shift;
 
     my $statusLine = $self->__getConfigVal('httpstatus', $code) || $code;
+    $self->resetHeader();
     $self->header(
                   -Status => $statusLine,
                  );
@@ -523,14 +524,14 @@ sub __bindYAMLTokens {
 # =====================================================================
 # =====================================================================
 
-sub isPdus {
-    my $self = shift;
-    return $self->{'is_pdus'};
-}
-
 sub __getRightsObject {
     my $self = shift;
     return $self->{'rights'};
+}
+
+sub __get_DBH {
+    my $self = shift;
+    return $self->{'dbh'};
 }
 
 sub __getPathObject {
@@ -598,7 +599,6 @@ sub __getFreedomVal {
 
     # Limit pdus volumes to "U.S." clients
     if (($freedom eq 'free') && ($rights eq 'pdus')) {
-        $self->{'is_pdus'} = 1;
         my $IPADDR = shift || $ENV{'REMOTE_ADDR'};
 
         my $geoIP = Geo::IP->new();

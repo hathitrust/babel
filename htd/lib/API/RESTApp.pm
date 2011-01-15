@@ -25,7 +25,8 @@ our $VERSION = '0.1';
 sub new {
     my ($proto, %args) = @_;
     my $class = ref($proto) ? ref($proto) : $proto;
-    my $self = bless({ __defaultQuery => CGI->new() }, $class);
+    my $Q = defined $args{CGI} ? $args{CGI} : CGI->new();
+    my $self = bless({ __defaultQuery => $Q }, $class);
     $self->setup(%args);
     return $self;
 }
@@ -322,13 +323,15 @@ sub header {
         $self->{__header} = {};
     }
 
-    # If arguments were passed in then use them to set the header type.
-    # Arguments can be passed in as a hash-ref or as an even sized list.
+    # If arguments were passed in then use them to set the header.
+    # Arguments can be passed in as a hash-ref or as an even sized
+    # list. Made this additive per the perldoc. pfarber Wed Nov 3
+    # 15:43:08 2010
     if (@_) {
         if (@_%2 == 0) { # even-sized list, must be hash
-            %{ $self->{__header} } = @_;
+            $self->{__header} = { %{$self->{__header}}, @_ };
         } elsif (ref($_[0]) eq 'HASH') {  # First item must be a hash reference
-            $self->{__header} = shift;
+            $self->{__header} = { %{$self->{__header}}, %{$_[0]} };
         } else {
             croak "Expected even-sized list or hash reference.";
         }

@@ -66,6 +66,9 @@ responses:
         htd:version:
           attrs: null
           content: 1
+        htd:copyright_statement:
+          attrs: null
+          content: :::COPYRIGHTSTATEMENT
         htd:access:
           - attrs:
               resource: pageocr
@@ -159,6 +162,9 @@ responses:
         htd:version:
           attrs:   null
           content: 1
+        htd:copyright_statement:
+          attrs: null
+          content: :::COPYRIGHTSTATEMENT
         htd:access:
           - attrs:
               resource: pageocr
@@ -255,6 +261,9 @@ responses:
         htd:version:
           attrs: null
           content: 1
+        htd:copyright_statement:
+          attrs: null
+          content: :::COPYRIGHTSTATEMENT
         htd:access:
           - attrs:
               resource: pageocr
@@ -532,12 +541,18 @@ rights_name_map:
   7: world
   8: nobody
   9: pdus
-  10: ccby
-  11: ccby-nd
-  12: ccby-nc-nd
-  13: ccby-nc
-  14: ccby-nc-sa
-  15: ccby-sa
+  10: cc-by
+  11: cc-by-nd
+  12: cc-by-nc-nd
+  13: cc-by-nc
+  14: cc-by-nc-sa
+  15: cc-by-sa
+
+# -----------------------------------------------------------------------
+# Mapping from rights name to URI for same
+# -----------------------------------------------------------------------
+#rights_uri_map:
+#http://schemas.hathitrust.org/htd/2009#pdus
 
 # ---------------------------------------------------------------------
 # List of name that equate to open access
@@ -546,12 +561,12 @@ open_access_names:
   - pd 
   - pdus 
   - world 
-  - ccby 
-  - ccby-nd 
-  - ccby-nc-nd 
-  - ccby-nc 
-  - ccby-nc-sa 
-  - ccby-sa
+  - cc-by 
+  - cc-by-nd 
+  - cc-by-nc-nd 
+  - cc-by-nc 
+  - cc-by-nc-sa 
+  - cc-by-sa
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights.source field values to names used in

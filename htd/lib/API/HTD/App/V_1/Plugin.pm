@@ -35,6 +35,7 @@ Coding example
 
 use strict;
 use base qw(API::HTD::App);
+use Access::Statements;
 
 use constant API_VERSION => 1; 
 
@@ -97,22 +98,65 @@ sub validateQueryParams {
 # =====================================================================
 # =====================================================================
 
+
 # ---------------------------------------------------------------------
 
-=item __handlePdusHeader
+=item __getHeaderAccessUseMsg
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __handlePdusHeader {
+sub __getHeaderAccessUseMsg {
     my $self = shift;
-    my $headerHashRef = shift;
 
-    if ($self->isPdus()) {
-        my $pdus_message = $self->__getConfigVal('pdus_message');
-        $headerHashRef->{'-X_HathiTrust_Notice'} = $pdus_message;
+    my $url = $self->{stmt_url};
+    my $access_use_message = $self->__getConfigVal('access_use_intro') . " " . qq{$url};
+
+    return $access_use_message;
+}
+
+# ---------------------------------------------------------------------
+
+=item __getResourceAccessUseStatement
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getResourceAccessUseStatement {
+    my $self = shift;
+    return $self->{stmt_text};
+}
+
+# ---------------------------------------------------------------------
+
+=item __setAccessUseFields
+
+Expects a hashref. Stores requested fields.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __setAccessUseFields {
+    my $self = shift;
+    my $fieldHashRef = shift;
+    
+    my $ro = $self->__getRightsObject();
+    my $dbh = $self->__get_DBH();
+    
+    my ($attr, $source) = (
+                           $ro->getRightsFieldVal('attr'),
+                           $ro->getRightsFieldVal('source')
+                          );
+    my $ref_to_arr_of_hashref = 
+      Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $source, $fieldHashRef);
+    my $hashref = $ref_to_arr_of_hashref->[0];
+
+    foreach my $field_val (keys %$hashref) {
+        $self->__setMember($field_val, $hashref->{$field_val});
     }
 }
 
@@ -176,6 +220,10 @@ sub __bindYAMLTokens {
                        sub { $self->__getMetaMimeType($P_Ref, 'ocr') });
     $self->__setMember(':::COORDOCRMIMETYPE',
                        sub { $self->__getMetaMimeType($P_Ref, 'coordOCR') });
+
+    $self->__setAccessUseFields({stmt_url => 1, stmt_text => 1});
+    $self->__setMember(':::COPYRIGHTSTATEMENT',
+                       sub { $self->__getResourceAccessUseStatement() });
 
     $self->__setMember(':::UPDATED',
                        sub { API::Utils::getDateString });
@@ -311,10 +359,12 @@ sub GET_structure {
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('structure', $format);
+        my $msg = $self->__getHeaderAccessUseMsg();
         $self->header
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
+             -X_HathiTrust_Notice => $msg,
             );
     }
     else {
@@ -357,10 +407,12 @@ sub GET_meta {
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('meta', $format);
+        my $msg = $self->__getHeaderAccessUseMsg();
         $self->header
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
+             -X_HathiTrust_Notice => $msg,
             );
     }
     else {
@@ -404,10 +456,12 @@ sub GET_pagemeta {
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pagemeta', $format);
+        my $msg = $self->__getHeaderAccessUseMsg();
         $self->header
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
+             -X_HathiTrust_Notice => $msg,
             );
     }
     else {
@@ -439,14 +493,15 @@ sub GET_aggregate {
         my $filename = $self->__getPairtreeFilename($P_Ref, 'zip');
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('aggregate', 'zip');
+        my $msg = $self->__getHeaderAccessUseMsg();
         my %header =
             (
              -Status => $statusLine,
              -Content_type => $mimetype,
              -Content_Disposition => qq{filename=$filename},
+             -X_HathiTrust_Notice => $msg,
             );
-        $self->__handlePdusHeader(\%header);
-        $self->header(%header);
+        $self->header(\%header);
 
     }
     else {
@@ -475,14 +530,14 @@ sub GET_pageocr {
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageocr', $extension);
+        my $msg = $self->__getHeaderAccessUseMsg();
         my %header =
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
              -Content_Disposition => qq{filename=$filename},
-            );
-        $self->__handlePdusHeader(\%header);
-        $self->header(%header);
+             -X_HathiTrust_Notice => $msg,           );
+        $self->header(\%header);
     }
     else {
         $self->__setErrorResponseCode('404');
@@ -510,14 +565,15 @@ sub GET_pagecoordocr {
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pagecoordocr', $extension);
+        my $msg = $self->__getHeaderAccessUseMsg();
         my %header =
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
              -Content_Disposition => qq{filename=$filename},
+             -X_HathiTrust_Notice => $msg,
             );
-        $self->__handlePdusHeader(\%header);
-        $self->header(%header);
+        $self->header(\%header);
     }
     else {
         $self->__setErrorResponseCode('404');
@@ -545,14 +601,15 @@ sub GET_pageimage {
     {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageimage', $extension);
+        my $msg = $self->__getHeaderAccessUseMsg();        
         my %header = 
             (
              -Status => $statusLine,
              -Content_type => $mimetype,
              -Content_Disposition => qq{filename=$filename},
+             -X_HathiTrust_Notice => $msg,
             );
-        $self->__handlePdusHeader(\%header);
-        $self->header(%header);
+        $self->header(\%header);
     }
     else {
         $self->__setErrorResponseCode('404');
