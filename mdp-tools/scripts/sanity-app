@@ -117,7 +117,7 @@ sub _test_url {
     $url =~ s,__URL_STAGE__,$stage.babel,g;
 
     if ($LOCAL) {
-        $url =~ s,__LOCAL__,;debug=local,;
+        $url =~ s,__LOCAL__,debug=local,;
     }
     else {
         $url =~ s,__LOCAL__,,;
@@ -167,7 +167,7 @@ sub _test_cmd {
     $cmd =~ s,__CMD_STAGE__,$stage.babel,g;
 
     if ($LOCAL) {
-        $cmd =~ s,__LOCAL__,  debug=local,;
+        $cmd =~ s,__LOCAL__,debug=local,;
     }
     else {
         $cmd =~ s,__LOCAL__,,;
