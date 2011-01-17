@@ -325,7 +325,9 @@ sub __debugging {
         $DEBUG = $self->query()->param('debug') || $ENV{'DEBUG'} || '';
     }
 
-    print CGI::header() unless ($DEBUG eq 'local');
+    if ($DEBUG) {
+        print CGI::header() unless ($DEBUG eq 'local');
+    }
 
     if ($DEBUG eq 'env') {
         print $self->__printEnv();
