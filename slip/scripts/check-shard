@@ -116,7 +116,7 @@ if ($num_segments < 1) {
 }
 elsif ($num_segments > $NUMSEGS) {
     $err = qq{shard=$SHARD dir=$index_dir segments=$num_segments (exceeds $NUMSEGS)\n};
-        __output($err);
+    __output($err);
     $rc++;
 }
 else {
@@ -126,8 +126,6 @@ else {
 __non_interactive_err_output($rc, $err);
 
 exit $rc;
-
-1;
 
 
 =head1 AUTHOR

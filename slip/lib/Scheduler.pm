@@ -130,7 +130,7 @@ sub optimize_do_full_optimize {
     my $run = shift;
     my $shard = shift;
 
-    return __do_full_optimize($C, $run, $shard, 'optimize');
+    return __do_full_optimize($C, $run, $shard, 'optimize phase');
 }
 
 # ---------------------------------------------------------------------
@@ -138,7 +138,7 @@ sub optimize_do_full_optimize {
 =item check_do_full_optimize
 
 PUBLIC.  If the scheduled day and time have arrived, check-j will
-check to one segment.  Time should be configured to be sometime
+check for one segment.  Time should be configured to be sometime
 after the time the driver starts running from cron.
 
 =cut
@@ -149,7 +149,7 @@ sub check_do_full_optimize {
     my $run = shift;
     my $shard = shift;
 
-    return __do_full_optimize($C, $run, $shard, 'check');
+    return __do_full_optimize($C, $run, $shard, 'check phase');
 }
 
 # ---------------------------------------------------------------------

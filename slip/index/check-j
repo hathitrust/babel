@@ -125,6 +125,7 @@ my $lock_shard = $SHARD;
 my $Lock_File = "/tmp/check-$lock_shard-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
+    __output("Could not get semaphore file: $Lock_File\n");
     exit 0;
 }
 END {
