@@ -133,6 +133,21 @@ sub __getResourceAccessUseStatement {
 
 # ---------------------------------------------------------------------
 
+=item __getResourceAccessUseKey
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getResourceAccessUseKey {
+    my $self = shift;
+    return $self->{stmt_key};
+}
+
+
+# ---------------------------------------------------------------------
+
 =item __setAccessUseFields
 
 Expects a hashref. Stores requested fields.
@@ -221,8 +236,10 @@ sub __bindYAMLTokens {
     $self->__setMember(':::COORDOCRMIMETYPE',
                        sub { $self->__getMetaMimeType($P_Ref, 'coordOCR') });
 
-    $self->__setAccessUseFields({stmt_url => 1, stmt_text => 1});
+    $self->__setAccessUseFields({stmt_url => 1, stmt_text => 1, stmt_key => 1});
     $self->__setMember(':::ACCESSUSE',
+                       sub { $self->__getResourceAccessUseKey() });
+    $self->__setMember(':::ACCESSUSESTATEMENT',
                        sub { $self->__getResourceAccessUseStatement() });
 
     $self->__setMember(':::UPDATED',

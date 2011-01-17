@@ -66,9 +66,12 @@ responses:
         htd:version:
           attrs: null
           content: 1
+        htd:access_use_statement:
+          attrs: null
+          content: :::ACCESSUSESTATEMENT
         htd:access_use:
           attrs: null
-          content: :::ACCESSUSE
+          content: _HTD_SCHEMAS_URI_#:::ACCESSUSE
         htd:access:
           - attrs:
               resource: pageocr
@@ -162,9 +165,12 @@ responses:
         htd:version:
           attrs:   null
           content: 1
+        htd:access_use_statement:
+          attrs: null
+          content: :::ACCESSUSESTATEMENT
         htd:access_use:
           attrs: null
-          content: :::ACCESSUSE
+          content: _HTD_SCHEMAS_URI_#:::ACCESSUSE
         htd:access:
           - attrs:
               resource: pageocr
@@ -261,9 +267,12 @@ responses:
         htd:version:
           attrs: null
           content: 1
+        htd:access_use_statement:
+          attrs: null
+          content: :::ACCESSUSESTATEMENT
         htd:access_use:
           attrs: null
-          content: :::ACCESSUSE
+          content: _HTD_SCHEMAS_URI_#:::ACCESSUSE
         htd:access:
           - attrs:
               resource: pageocr
