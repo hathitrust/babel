@@ -222,7 +222,7 @@ sub __bindYAMLTokens {
                        sub { $self->__getMetaMimeType($P_Ref, 'coordOCR') });
 
     $self->__setAccessUseFields({stmt_url => 1, stmt_text => 1});
-    $self->__setMember(':::COPYRIGHTSTATEMENT',
+    $self->__setMember(':::ACCESSUSE',
                        sub { $self->__getResourceAccessUseStatement() });
 
     $self->__setMember(':::UPDATED',

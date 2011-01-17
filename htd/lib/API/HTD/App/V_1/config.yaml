@@ -66,9 +66,9 @@ responses:
         htd:version:
           attrs: null
           content: 1
-        htd:copyright_statement:
+        htd:access_use:
           attrs: null
-          content: :::COPYRIGHTSTATEMENT
+          content: :::ACCESSUSE
         htd:access:
           - attrs:
               resource: pageocr
@@ -162,9 +162,9 @@ responses:
         htd:version:
           attrs:   null
           content: 1
-        htd:copyright_statement:
+        htd:access_use:
           attrs: null
-          content: :::COPYRIGHTSTATEMENT
+          content: :::ACCESSUSE
         htd:access:
           - attrs:
               resource: pageocr
@@ -261,9 +261,9 @@ responses:
         htd:version:
           attrs: null
           content: 1
-        htd:copyright_statement:
+        htd:access_use:
           attrs: null
-          content: :::COPYRIGHTSTATEMENT
+          content: :::ACCESSUSE
         htd:access:
           - attrs:
               resource: pageocr
