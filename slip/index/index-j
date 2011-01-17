@@ -104,7 +104,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub i_get_usage {
-    my $s .= qq{Usage: index-j -r run [-H host][-I id][-d 1|2|3][-v]
+    my $s .= qq{Usage: index-j -r run [-H host][-I id][-d 1|2|3][-v][-T]
             where -I id indexes one id
                   -H hostname overrides \`hostname\` call
                   -v turns on verbose logging
@@ -118,9 +118,9 @@ sub i_get_usage {
 # When total docs reaches an even multiple of the stop point the
 # indexer stops.
 
-our ($opt_d, $opt_r, $opt_I, $opt_H, $opt_v);
+our ($opt_d, $opt_r, $opt_I, $opt_H, $opt_v, $opt_T);
 
-my $ops = getopts('d:r:I:vH:');
+my $ops = getopts('d:r:I:vH:T');
 
 my $VERBOSE_LOGGING = defined($opt_v);
 
@@ -153,6 +153,9 @@ if (! $opt_r) {
     __output($s);
     exit $SLIP_Utils::States::RC_BAD_ARGS;
 }
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 # Flush i/o
 $| = 1;

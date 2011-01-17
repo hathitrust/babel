@@ -52,13 +52,13 @@ Description
 
 # ---------------------------------------------------------------------
 sub delete_get_usage {
-    my $s .= qq{Usage: delete-j -r run -I docid\n};
+    my $s .= qq{Usage: delete-j -r run -I<docid> [-T]\n};
     return $s;
 }
 
-our ($opt_r, $opt_I);
+our ($opt_r, $opt_I, $opt_T);
 
-my $ops = getopts('r:I:');
+my $ops = getopts('r:I:T');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -73,6 +73,9 @@ if (! $DOCID) {
     print $s;
     exit 1;
 }
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 # Flush i/o
 $| = 1;

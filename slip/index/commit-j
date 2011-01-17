@@ -76,18 +76,18 @@ else {
 $| = 1;
 
 sub com_get_usage {
-    my $s .= qq{Usage: commit-j -r run [-R shard][-T timeout][-d]
+    my $s .= qq{Usage: commit-j -r run [-R shard][-t timeout][-d][-T]
        where -R missing imples all shards, interactive mode only\n};
     return $s;
 }
 
-our ($opt_r, $opt_R, $opt_T, $opt_d);
+our ($opt_r, $opt_R, $opt_t, $opt_d, $opt_T);
 
-my $ops = getopts('r:R:T:d');
+my $ops = getopts('r:R:t:dT');
 
 # Required
 my $RUN = $opt_r;
-my $TIMEOUT = $opt_T; # optional
+my $TIMEOUT = $opt_t; # optional
 
 if (! $RUN) {
     my $s = qq{run (-r) parameter missing } . com_get_usage();
@@ -97,6 +97,9 @@ if (! $RUN) {
 
     exit $rc;
 }
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 if (! $INTERACTIVE) {
     my $s = qq{interactive only } . com_get_usage();

@@ -108,17 +108,18 @@ Description
 
 # ---------------------------------------------------------------------
 sub syn_get_usage {
-    my $s .= qq{Usage: sync-j -r run -m{rightsNINindexed [-n]|indexedNINrights} [-d]
+    my $s .= qq{Usage: sync-j -r run -m{rightsNINindexed [-n]|indexedNINrights} [-T][-d]
             where rightsNINindexed: queue ids in j_rights not in j_indexed
                                        where -n checks, NO queuing
 
-                  indexedNINrights: report ids in j_indexed not in j_rights\n};
+                  indexedNINrights: report ids in j_indexed not in j_rights
+                  -T just test compilation and exit\n};
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_m, $opt_R, $opt_n);
+our ($opt_d, $opt_r, $opt_m, $opt_R, $opt_n, $opt_T);
 
-my $ops = getopts('dr:m:R:n');
+my $ops = getopts('dr:m:R:nT');
 my $g_S;
 
 # Required
@@ -151,6 +152,9 @@ else {
 if ($opt_d) {
     $ENV{'DEBUG'} .= 'full';
 }
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 # Flush i/o
 $| = 1;

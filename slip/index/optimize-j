@@ -13,7 +13,7 @@ see usage
 Optimize a given shard. With -S1 (default, optional) a multi-stage
 optimize that is a function of the number of segments broken down by powers of 2.
 
-Timeout is forced to ∞, i.e. -T is ignored. With optional, -O n param
+Timeout is forced to ∞, i.e. -t is ignored. With optional, -O n param
 optimize down to that number of segments either staged or not. If not
 staged, timeout may be specified.
 
@@ -78,7 +78,7 @@ else {
 $| = 1;
 
 sub opt_get_usage {
-    my $s .= qq{Usage: optimize-j -r run -R shard -On [-S0 | -S1][-T timeout][-d][-n]
+    my $s .= qq{Usage: optimize-j -r run -R shard -On [-S0 | -S1][-t timeout][-d][-n][-T]
        where -S0 is non-staged (default), -S1 is staged
              -On optimizes to n segments. If -S1, then in powers of 2 down to n={1,2,4,...} segments
              -T timeout overrides default long timeout (48 hours)
@@ -86,9 +86,9 @@ sub opt_get_usage {
     return $s;
 }
 
-our ($opt_r, $opt_R, $opt_T, $opt_S, $opt_d, $opt_O, $opt_n);
+our ($opt_r, $opt_R, $opt_t, $opt_S, $opt_d, $opt_O, $opt_n, $opt_T);
 
-my $ops = getopts('r:R:T:dS:O:n');
+my $ops = getopts('r:R:t:dS:O:nT');
 
 use constant LARGE_TIMEOUT => 172800; # 48 hours
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
@@ -114,7 +114,7 @@ if (defined($opt_S)) {
 # reason. We do no want to timeout before optimize, staged or not,
 # finishes so check-j will see final result. Optimize to 1 or 2
 # segs can take a long time.
-my $TIMEOUT = defined($opt_T) ? $opt_T : LARGE_TIMEOUT; # optional
+my $TIMEOUT = defined($opt_t) ? $opt_t : LARGE_TIMEOUT; # optional
 
 if (! $RUN) {
     my $s = qq{run (-r) parameter missing } . opt_get_usage();
@@ -134,6 +134,9 @@ if (! defined($SHARD)) {
 
     exit $rc;
 }
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 if ($INTERACTIVE) {
     my $s;

@@ -83,15 +83,15 @@ Description
 
 # ---------------------------------------------------------------------
 sub rb_get_usage {
-    my $s = qq{Usage: rebuild-j -r run [-n][-d]
+    my $s = qq{Usage: rebuild-j -r run [-n][-d]|[-T]
             build j_indexed_temp and dedup leaving behind j_indexed_temp
                where -n skips INSERT INTO j_indexed and Solr duplicate doc deletion\n};
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_n);
+our ($opt_d, $opt_r, $opt_n, $opt_T);
 
-my $ops = getopts('dr:n');
+my $ops = getopts('dr:nT');
 
 # Required
 my $RUN = $opt_r;
@@ -106,6 +106,9 @@ my $C_MSG = ($CHECK ? 'CHECK Only: Do NOT delete j_indexed rows' : 'DELETE j_ind
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 # Flush i/o
 $| = 1;

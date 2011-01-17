@@ -6,7 +6,7 @@ rights-j
 
 =head USAGE
 
-% rights-j [-B][-I][-d{1|2}]
+% rights-j [-T][-B][-I][-d{1|2}]
 
 =head DESCRIPTION
 
@@ -138,7 +138,7 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j [[-B|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j [-T][[-B|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -B build from last vSolr timestamp\n};
     $s .= qq{           where -n is check_only, no inserts to j_rights\n};
     $s .= qq{     -R re-build j_rights_temp from 0000000\n};
@@ -153,9 +153,9 @@ sub r_get_usage {
     return $s;
 }
 
-our ($opt_B, $opt_R, $opt_d, $opt_n);
+our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T);
 
-my $ops = getopts('BRd:n');
+my $ops = getopts('BRd:nT');
 
 if ($opt_d) {
     if ($opt_d == 1) {
@@ -197,6 +197,9 @@ else {
     print r_get_usage();
     exit 0;
 }
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 # log to different files for incremental build vs. full rebuild
 my $RIGHTS_LOGFILE_KEY = ($REBUILD ? 'rights_rebuild_logfile' : 'rights_logfile');

@@ -88,14 +88,14 @@ else {
 
 
 sub sd_get_usage {
-    my $s .= qq{Usage: driver-j -r run [-d] [-X]
+    my $s .= qq{Usage: driver-j -r run [-d][-X][-T]
                  where -X skips the check index phase\n};
     return $s;
 }
 
-our ($opt_r, $opt_d, $opt_X);
+our ($opt_r, $opt_d, $opt_X, $opt_T);
 
-my $ops = getopts('r:dX');
+my $ops = getopts('r:dXT');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -112,6 +112,9 @@ if (defined($opt_d)) {
 }
 
 my $SKIP_CHECKINDEX = defined($opt_X);
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 my $C = new Context;
 
