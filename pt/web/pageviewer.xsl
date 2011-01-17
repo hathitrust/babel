@@ -152,6 +152,18 @@
   
   <xsl:template match="/MBooksTop" mode="classic">
     <xsl:param name="gCurrentEmbed" select="'full'" />
+    <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
+    <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
+    <xsl:variable name="min-width">
+      <xsl:choose>
+        <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
+          <xsl:value-of select="235 + (1100 * ( $currentSize div 100 ))" />
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="235 + (680 * ( $currentSize div 100 ))" />
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
 
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
@@ -171,22 +183,27 @@
           </xsl:call-template>
         </title>
 
-        <xsl:call-template  name="include_local_javascript"/>
-        <xsl:call-template name="load_js_and_css"/>
-        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/> 
-        <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
-
         <!-- jQuery and plugins -->
     		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-        <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
-        <script type="text/javascript" src="/pt/jquery/jquery-textfill-0.1.js"></script>
-        <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
+    		<script type="text/javascript" src="/pt/js/classic.js" charset="utf-8"></script>
+
+        <xsl:call-template  name="include_local_javascript"/>
+        <xsl:call-template name="load_js_and_css"/>
+        <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
+
+        <!-- jQuery plugins -->
     		<script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js" charset="utf-8"></script>
     		
         <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
         <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
         <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
-
+        
+        <style>
+          html {
+            min-width: <xsl:value-of select="$min-width" />px;
+          }
+        </style>
+        
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
@@ -636,23 +653,7 @@
 
         <div class="collectionLinks">
           <h2>Add to Collection</h2>
-          <xsl:choose>
-            <xsl:when test="$gLoggedIn='NO'">
-              <p class="collectionLoginMessage">
-                <xsl:element name="a">
-                  <xsl:attribute name="class">PTloginLinkText</xsl:attribute>
-                  <xsl:attribute name="href">
-                    <xsl:value-of select="/MBooksTop/MdpApp/LoginLink"/>
-                  </xsl:attribute>
-                  <xsl:text>Login</xsl:text>
-                </xsl:element>
-                <xsl:text> to make your personal collections permanent</xsl:text>
-              </p>
-            </xsl:when>
-            <xsl:otherwise>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:call-template name="BuildAddToCollectionControl"/>
+          <xsl:call-template name="CollectionWidgetContainer" />
         </div>
         
         <div class="shareLinks">
@@ -836,7 +837,7 @@
 				</ul>
 			</div>
 			<div id="mdpToolbarNav">
-			  <form action="/cgi/pt" method="GET">
+			  <form action="/cgi/pt" method="GET" id="mdpSectionForm">
   				<ul id="mdpSectionOptions">
             <xsl:if test="$gFeatureList/Feature">
               <xsl:call-template name="BuildContentsList"/>
@@ -963,7 +964,7 @@
   <!-- Collection Widget -->
   <xsl:template name="CollectionWidgetContainer">
 
-    <xsl:call-template name="hathiVuFind"/>
+    <!-- <xsl:call-template name="hathiVuFind"/> -->
 
     <div id="PTcollection">
       <h3 class="SkipLink">Collection Lists</h3>
@@ -1018,7 +1019,12 @@
       <h3 class="SkipLink">Add to a Collection</h3>
 
       <xsl:call-template name="BuildAddToCollectionControl"/>
-      <xsl:call-template name="BackwardNavigation"/>
+
+      <!-- add COinS -->
+      <xsl:for-each select="$gMdpMetadata">
+        <xsl:call-template name="marc2coins" />
+      </xsl:for-each>
+
     </div>
   </xsl:template>
 
@@ -1345,11 +1351,11 @@
         </xsl:element>
       </xsl:for-each>
     </select>
-    <input type="submit" value="Go" />
+    <input type="submit" value="Go" id="mdpJumpToSectionSubmit" />
     
     <xsl:for-each select="//CurrentCgi/Param">
       <xsl:choose>
-        <xsl:when test="@name != 'page' or @name != 'seq'">
+        <xsl:when test="@name != 'num' and @name != 'seq'">
           <input type="hidden" name="{@name}" value="{.}" />
         </xsl:when>
         <xsl:otherwise />
@@ -1538,6 +1544,9 @@
             </xsl:attribute>
           </xsl:element>
           <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
+          <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
+            <input type="hidden" name="seq" value="" />
+          </xsl:if>
           <xsl:call-template name="HiddenDebug" />
 				  
 				  <xsl:element name="input">

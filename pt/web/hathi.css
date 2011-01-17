@@ -554,7 +554,7 @@ div.mdpScrollableContainer {
 }
 
 .collectionLinks h2 {
-  background: transparent url(common-web/graphics/icon_collection_sm.png) no-repeat scroll left center;
+  background: transparent url(common-web/graphics/icon_books.png) no-repeat scroll left center;
 }
 
 .shareLinks h2 {
@@ -563,6 +563,16 @@ div.mdpScrollableContainer {
 
 .collectionLinks button {
   font-size: 85%;
+}
+
+.collectionInfo {
+  padding-bottom: 2px;
+  border-bottom: 1px dashed #666;
+}
+
+#PTcollection, #PTcollectionUnavail {
+  border: none;
+  padding: 0;
 }
 
 .shareLinks input {
