@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+<xsl:stylesheet version="1.0" 
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:METS="http://www.loc.gov/METS/"
+  xmlns:PREMIS="http://www.loc.gov/standards/premis"
   extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
 
   <xsl:import href="str.replace.function.xsl" />
@@ -169,32 +172,38 @@
         <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/> 
         <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
 
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
-        <script type="text/javascript" src="/pt/jquery.easing.1.3.js"></script>
-        <script type="text/javascript" src="/pt/jquery-textfill-0.1.js"></script>
-        <script type="text/javascript" src="/pt/jquery.pnotify.js"></script>
+        <!-- jQuery and plugins -->
+    		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
+        <script type="text/javascript" src="/pt/jquery/jquery-textfill-0.1.js"></script>
+        <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
+    		<script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js" charset="utf-8"></script>
+    		
+    		<!-- BookReader -->
         <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
         <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js?ts={generate-id(.)}"></script>
+        <script type="text/javascript" src="/pt/js/lscache.js?ts={generate-id(.)}"></script>
 
-        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/start/jquery-ui.css" media="all" rel="stylesheet" type="text/css" /> 
-        <link href="/pt/jquery.pnotify.default.css" media="all" rel="stylesheet" type="text/css" /> 
-        <link href="/pt/jquery.pnotify.default.icons.css" media="all" rel="stylesheet" type="text/css" /> 
+        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
+        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
+        <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
 
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
-        <div>
-          <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
-        </div>
-        <div id="container">
-          <!-- Header -->
-          <xsl:call-template name="header"/>
-          <xsl:call-template name="BookReaderContainer" />
-          <!-- Footer -->
-          <xsl:if test="$gCurrentEmbed = 'full'">
-            <xsl:call-template name="footer"/>
-          </xsl:if>
-        </div>
+        <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages">
+          <div>
+            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
+          </div>
+        </xsl:if>
+        <xsl:call-template name="header"/>
+
+        <xsl:call-template name="BookReaderContainer" />
+
+        <!-- Footer -->
+        <xsl:if test="$gCurrentEmbed = 'full'">
+          <xsl:call-template name="footer"/>
+        </xsl:if>
         
         <xsl:call-template name="bookreader-javascript-init" />
         
@@ -204,11 +213,6 @@
           <xsl:call-template name="google_analytics" />
         </xsl:if>
 
-        <div id="mdpLoadProgress">
-          <h2>Please wait: loading...</h2>
-          <p class="message"></p>
-        </div>
-        
       </body>
     </html>
   </xsl:template>
@@ -409,33 +413,285 @@
     <xsl:param name="gCurrentEmbed" select="'full'" />
 
     <div id="mdpUberContainer">
+      <xsl:call-template name="BookReaderToolbar" />
+      
+      <!-- Image -->
+      <xsl:call-template name="ContentContainer"/>
 
-      <div id="ControlContentContainer">
-        <div id="ControlContent">
-          <!-- Controls -->
-          <xsl:if test="$gCurrentEmbed = 'full'">
-            <xsl:call-template name="BookReaderControlContainer"/>
-          </xsl:if>
-
-          <!-- Image -->
-          <xsl:call-template name="ContentContainer"/>
-
-          <!-- Feedback form -->
-          <div id="feedbackDiv"></div>
-
-          <!-- New collection overlay -->
-          <div id="overlay"></div>
-
-          <!-- Controls Bottom -->
-          <!-- <xsl:call-template name="ControlContainerBottom"/> -->
-
-          <!-- Feedback -->
-          <xsl:call-template name="Feedback"/>
-        </div>
-      </div>
-
+      <xsl:if test="$gCurrentEmbed = 'full'">
+        <xsl:call-template name="BookReaderSidebar" />
+      </xsl:if>
     </div>
 
+    <!-- Feedback -->
+    <xsl:call-template name="Feedback"/>
+
+    <!-- New collection overlay -->
+    <div id="overlay"></div>
+
+
+  </xsl:template>
+  
+  <xsl:template name="BookReaderSidebar">
+    <div class="mdpControlContainer">
+      <div class="bibLinks">
+        <h2>About this Book</h2>
+        <p>
+          <xsl:value-of select="$gFullTitleString" />
+        </p>
+        <p>
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+              <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+            </xsl:attribute>
+            <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+            <xsl:text>View full catalog record</xsl:text>
+          </xsl:element>
+        </p>
+				<p class="smaller">
+					Access &amp; Use: 
+					<xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="$gAccessUseLink"/>
+            </xsl:attribute>
+            <xsl:value-of select="$gAccessUseHeader" />
+          </xsl:element>
+				</p>
+      </div>
+      
+      <div class="mdpScrollableContainer">
+        
+        <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+        
+        <div class="getLinks">
+          <h2>Get this Book</h2>
+          <ul>
+            <li>
+              <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+                <xsl:element name="a">
+                  <xsl:attribute name="href">
+                    <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
+                      <xsl:choose>
+                        <xsl:when test="contains(.,'OCoLC)ocm')">
+                          <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
+                        </xsl:when>
+                        <xsl:when test="contains(.,'OCoLC')">
+                          <xsl:value-of select="substring-after(.,'OCoLC)')"/>
+                        </xsl:when>
+                        <xsl:when test="contains(.,'oclc')">
+                          <xsl:value-of select="substring-after(.,'oclc')"/>
+                        </xsl:when>
+                        <xsl:when test="contains(.,'ocm')">
+                          <xsl:value-of select="substring-after(.,'ocm')"/>
+                        </xsl:when>
+                        <xsl:when test="contains(.,'ocn')">
+                          <xsl:value-of select="substring-after(.,'ocn')"/>
+                        </xsl:when>
+                        <xsl:otherwise/>
+                      </xsl:choose>
+                  </xsl:attribute>
+                  <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
+                  <xsl:if test="$gGoogleOnclickTracking = 'true'">
+                    <xsl:attribute name="onclick">
+                    <xsl:call-template name="PageTracker">
+                      <xsl:with-param name="category" select="'outLinks'"/>
+                      <xsl:with-param name="action" select="'click'"/>
+                      <xsl:with-param name="label" select="'PT Find in a Library'"/>
+                    </xsl:call-template>
+                    </xsl:attribute>
+                  </xsl:if>
+                  <xsl:text>Find in a library</xsl:text>
+                </xsl:element>
+              </xsl:for-each>
+            </li>
+            
+            <xsl:if test="$gPodUrl != ''">
+              <li>
+                <xsl:element name="a">
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="$gPodUrl"/>
+                  </xsl:attribute>
+                  <xsl:if test="$gGoogleOnclickTracking = 'true'">
+                    <xsl:attribute name="onclick">
+                      <xsl:call-template name="PageTracker">
+                        <xsl:with-param name="category" select="'outLinks'"/>
+                        <xsl:with-param name="action" select="'click'"/>
+                        <xsl:with-param name="label" select="'PT Buy a reprint'"/>
+                      </xsl:call-template>
+                    </xsl:attribute>
+                  </xsl:if>
+                  <xsl:text>Buy a copy</xsl:text>
+                </xsl:element>
+              </li>
+            </xsl:if>
+            
+            <li>
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
+                </xsl:attribute>
+                <xsl:attribute name="target">
+                  <xsl:text>pdf</xsl:text>
+                </xsl:attribute>
+                <xsl:text>Download PDF - this page</xsl:text>
+              </xsl:element>
+            </li>
+            
+            <xsl:if test="$gFullPdfAccess='allow'">
+              <li>
+                <xsl:element name="a">
+                  <xsl:attribute name="title">Download full PDF</xsl:attribute>
+                  <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+                  </xsl:attribute>
+                  <xsl:text>Download PDF - whole book</xsl:text>
+                </xsl:element>
+								<div id="fullPdfProgress" class="meter-wrap">
+									<div class="meter-value" style="background-color: #666; width: 0%">
+										<div clas="meter-text">
+											Generating PDF...
+										</div>
+									</div>
+								</div>
+								<div id="fullPdfAlert">
+									<p>
+										There was a problem building your PDF; staff have been notified.
+										Please try again in 24 hours.
+									</p>
+								</div>
+								<div id="fullPdfFrame"></div>
+              </li>
+            </xsl:if>
+          </ul>
+        </div>
+
+        <div class="collectionLinks">
+          <h2>Add to Collection</h2>
+          <xsl:choose>
+            <xsl:when test="$gLoggedIn='NO'">
+              <p class="collectionLoginMessage">
+                <xsl:element name="a">
+                  <xsl:attribute name="class">PTloginLinkText</xsl:attribute>
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="/MBooksTop/MdpApp/LoginLink"/>
+                  </xsl:attribute>
+                  <xsl:text>Login</xsl:text>
+                </xsl:element>
+                <xsl:text> to make your personal collections permanent</xsl:text>
+              </p>
+            </xsl:when>
+            <xsl:otherwise>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:call-template name="BuildAddToCollectionControl"/>
+        </div>
+        
+        <div class="shareLinks">
+          <h2>Share</h2>
+          <form action="" name="urlForm" id="urlForm">
+						<label class="smaller" for="permURL">Permanent link to this book</label>
+						<input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" />
+
+						<br />
+
+						<label class="smaller" for="pageURL">Link to this page</label>
+						<input type="text" name="pageURL_link" id="pageURL" class="email-permURL" onclick="document.urlForm.pageURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" />
+          </form>
+        </div>
+
+      </div> <!-- scrollable -->
+      
+    </div>
+  </xsl:template>
+  
+  <xsl:template name="BookReaderToolbar">
+		<div id="mdpToolbar">
+			
+			<div id="mdpToolbarViews">
+				<ul>
+					<li>
+						<a class="PTbutton" href="#" id="btnClassicView">
+							<img src="/pt/images/icon_classicview.png" />
+							<span>Classic View</span>
+						</a>
+					</li>
+					<li>
+						<ul id="mdpBookReaderViews">
+							<li>
+								<img id="mdpNewStarburst" src="/pt/images/NewStarburst.png" height="44" width="40" />
+							</li>
+							<li>
+								<span class="prompt">Try our new views!</span>
+							</li>
+							<li>
+								<a class="PTbutton" href="#" id="btnBookReaderScroll">
+									<img src="/pt/images/icon_scroll.png" />
+									<span>Scroll</span>
+								</a>
+							</li>
+							<li>
+								<a class="PTbutton PTbuttonActive" href="#" id="btnBookReaderFlip">
+									<img src="/pt/images/icon_flip_25.png" />
+									<span>Flip</span>
+								</a>
+							</li>
+							<li>
+								<a class="PTbutton" href="#" id="btnBookReaderThumbnails">
+									<img src="/pt/images/icon_thumbnails.png" />
+									<span>Thumbnails</span>
+								</a>
+							</li>
+							<li>
+								<a class="PTbutton" href="#" id="btnBookReaderText">
+									<img src="/pt/images/1x1.png" height="25" width="1" />
+									<span>Plain Text</span>
+									<img src="/pt/images/1x1.png" height="25" width="1" />
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<div id="mdpToolbarNav">
+				<ul id="mdpSectionOptions">
+					<li>
+						<select size="1" id="mdpJumpToSection">
+							<option value="">Jump to Section</option>
+						</select>
+					</li>
+				</ul>
+				<ul id="mdpZoomOptions">
+					<li class="PTiconButton">
+						<a href="#" id="mdpZoomOut"><img src="/pt/images/icon_zoomout.png" height="25" width="25" /></a>
+					</li>
+					<li>
+						<span id="mdpZoomStatus">100%</span>
+					</li>
+					<li class="PTiconButton">
+						<a href="#" id="mdpZoomIn"><img src="/pt/images/icon_zoomin.png" height="25" width="25" /></a>
+					</li>
+				</ul>
+				<ul id="mdpPageOptions">
+					<li class="PTiconButton">
+						<a href="#" id="mdpPageFirst"><img src="/pt/images/icon_first.png" height="25" width="17" /></a>
+					</li>
+					<li class="PTiconButton">
+						<a href="#" id="mdpPagePrev"><img src="/pt/images/icon_previous.png" height="25" width="17" /></a>
+					</li>
+					<li>
+						<input id="mdpPageNum" width="5" type="text" value="5" />
+					</li>
+					<li class="PTiconButton">
+						<a href="#" id="mdpPageNext"><img src="/pt/images/icon_next.png" height="25" width="17" /></a>
+					</li>
+					<li class="PTiconButton">
+						<a href="#" id="mdpPageLast"><img src="/pt/images/icon_last.png" height="25" width="17" /></a>								
+					</li>
+				</ul>
+			</div>
+		</div>
   </xsl:template>
   
   <!-- Backward Navigation -->
@@ -536,7 +792,7 @@
   <!-- FORM: Add To Collection Form -->
   <xsl:template name="BuildAddToCollectionControl">
     <div class="ptSelectBox">
-      <label for="PTaddItemSelect" class="PTcollectionlabel"><xsl:text>Add to your collection:</xsl:text></label>
+      <!-- <label for="PTaddItemSelect" class="PTcollectionlabel"><xsl:text>Add to your collection:</xsl:text></label> -->
       <!-- for-each just for context: there's only one -->
       <xsl:for-each select="$gCollectionForm/CollectionSelect">
         <xsl:call-template name="BuildHtmlSelect">
@@ -544,7 +800,7 @@
           <xsl:with-param name="class" select="'mdpColSelectMenu'"/>
         </xsl:call-template>
       </xsl:for-each>
-
+      <br />
       <button id="PTaddItemBtn">Add</button>
 
     </div>
@@ -1678,6 +1934,25 @@
     </div>
 
 
+  </xsl:template>
+  
+  <!-- TEMPORARY OVERRIDES -->
+  
+  <!-- Navigation bar -->
+  <xsl:template name="subnav_header">
+    
+    <div id="mdpItemBar">
+      <div id="ItemBarContainer">
+        
+        <!-- Search -->
+        <div id="mdpSearch">
+          <xsl:call-template name="BuildSearchForm">
+            <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
+          </xsl:call-template>
+        </div>
+      </div>
+    </div>
+    
   </xsl:template>
 
 </xsl:stylesheet>

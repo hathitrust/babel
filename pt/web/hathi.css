@@ -1,3 +1,16 @@
+html {
+	min-width:0px;
+	overflow: hidden;
+	/* 235px + width of image */
+ 	min-width: 910px;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 #BRcontainer {
 	left:0px;
 }
@@ -23,13 +36,20 @@
 	position:relative;
 }
 
-div#mdpContentContainer {
+/*div#mdpContentContainer {
 	padding-bottom:15px;
 	position:absolute;
 	left: 14em; right: 12px; top: 0px; bottom: 2em; 
 	width: auto;
-}
+}*/
 
+#mdpMainEvent {
+  margin-left: 16.5em; /* 17em*/
+  border: 2px solid #666;
+  padding: 4px;
+  margin-right: 10px;
+  text-align: center;
+}
 
 .mdpControlContainerBottom {
 	margin: 0 0 0 0;
@@ -62,12 +82,228 @@ body {
     position: relative;
 }
 
-#mdpUberContainer {
+/*#mdpUberContainer {
     padding: 0px;
     padding-bottom: 40px;
     height: 100%;
     position: static;
+}*/
+
+
+
+/* @group TOOLBAR */
+
+#mdpToolbar {  
+  height: 100px;
+  margin-right: 10px;
+  margin-left: 16.5em;
+  margin-bottom: 0.5em;
 }
+
+#mdpToolbarViews {
+  height: 48px;
+  margin-bottom: 0.5em;
+}
+
+#mdpToolbarViews > ul {
+  white-space: nowrap;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+#mdpToolbarViews li {
+  list-style-type: none;
+  display: inline;
+  float: left;
+  padding-right: 4px;
+}
+
+#mdpToolbarNav {
+  height: 48px;
+  background-color: #efefef;
+  border-top: 1px solid ;
+  border-color: #bbb;
+  text-align: center;
+}
+
+#mdpToolbarNav > ul {
+  white-space: nowrap;
+  margin-left: 0;
+  padding-left: 10px;
+}
+
+#mdpToolbarNav li {
+  list-style-type: none;
+  display: inline;
+  float: left;
+  padding-right: 4px;
+}
+
+a.PTbutton {
+  color: #ba5115;
+  cursor: pointer;
+  background-color: #eaebec;
+  border-right: 1px solid #797979;
+  border-top: 1px solid #d5d5d5;
+  border-bottom: 1px solid #797979;
+  border-left: 1px solid #d5d5d5;
+  display: block;
+  /*padding: 2px;
+  padding-top: 2px;
+  padding-right: 8px;
+  padding-bottom: 16px;*/
+  height: 2em;
+  padding: 4px;
+  text-align: center;
+  
+  font-size: 95%;
+  margin-top: 4px;
+
+}
+
+a.PTbutton:hover, a.PTbuttonActive {
+  color: white;
+  background-color: #545454;
+  text-decoration: none;
+}
+
+#btnClassicView {
+  width: 5.5em;
+  height: 2.5em;
+  padding: 4px;
+  padding-bottom: 8px;
+  margin-top: -1px;
+  /*background-image: url(images/bkg_classic.png);*/
+  /*float: left;*/
+}
+
+#btnClassicView img {
+  float: left;
+  padding: 4px;
+  padding-left: 0px;
+}
+
+#btnClassicView span {
+  float: left;
+  width: 3em;
+  /*font-weight: bold;*/
+  font-size: 95%;
+  white-space: normal;
+}
+
+#mdpBookReaderViews {
+  /*position: relative;*/
+  display: inline-block;
+  /*height: 48px;*/
+  border: 1px solid #f5a039;
+  margin-left: 5px;
+  padding-right: 8px;
+  white-space: nowrap;
+  padding-bottom: 4px;
+  margin-top: 0;
+}
+
+#mdpBookReaderViews li {
+  padding-left: 0px;
+}
+
+#mdpBookReaderViews #btnBookReaderText {
+  border: 1px solid transparent;
+  background-color: transparent;
+  /*padding-right: 16px;*/
+}
+
+#mdpBookReaderViews #btnBookReaderText:hover {
+  border: 1px solid transparent;
+  color: white;
+  background-color: #545454;
+  /*padding-right: 16px;*/
+}
+
+/*#mdpBookReaderViews button {
+  background-image: url(images/bkg_view_off.png);
+  height: 30px;
+  font-size: 95%;
+  margin-top: 8px;
+}*/
+
+
+.PTbutton span {
+	float:  left;
+	padding-top: 4px;
+	padding-bottom: 2px;
+	padding-right: 2px;
+}
+
+.PTbutton img {
+  float: left;
+  padding: 0px;
+  padding-left: 0px;
+  padding-right: 2px;
+}
+
+span.prompt {
+  /*vertical-align: text-bottom;*/
+  margin-top: 14px;
+  display: block;
+  margin-left: -10px;
+}
+
+#mdpNewStarburst {
+  /*position: absolute;*/
+  /*float: left;*/
+  margin-top: -5px;
+  margin-left: -50px;
+  /*padding-right: 5px;*/
+}
+
+#mdpSectionOptions {
+  float: left;
+}
+
+.PTiconButton:hover {
+  border-bottom: 2px solid #666;
+}
+
+#mdpPageOptions {
+  float: right;
+  margin-top: -1px;
+}
+
+#mdpZoomOptions {
+  margin-left: auto !important;
+  margin-right: auto;
+  width: 8em;
+  padding-right: 0;
+  padding-left: 0;
+  white-space: nowrap;
+}
+
+#mdpZoomStatus {
+  cursor: pointer;
+}
+
+#mdpPageOptions li {
+  padding-right: 8px;
+}
+
+#mdpPageNum {
+  width: 2em;
+  border: 1px solid #d5d5d5;
+  text-align: center;
+}
+
+#mdpZoomStatus {
+  width: 2em;
+  background-color: white;
+  padding: 4px;
+  border: 1px solid #d5d5d5;
+}
+
+/* @end */
+
+
+/* @group ROTATE CONTROLS */
 
 /* ROTATE CONTROL */
 
@@ -85,6 +321,11 @@ body {
     background: -moz-linear-gradient(top, rgba(255, 251, 239, 1), rgba(255, 220, 87, 1));
     border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px; }
 */
+
+/* @end */
+
+/* @group OCR */
+
 /* OCR TEXT */
 /*div.ocrText {
     padding: 25px;
@@ -155,6 +396,8 @@ div#mdpTextFrame p {
     font-family: Georgia, Times, serif;
 }
 
+/* @end */
+
 #PTcontainer {
     /*height:95%;*/
     top:0px;
@@ -194,20 +437,6 @@ div#mdpTextFrame p {
 
 .BRpageform {
   margin-right: 8px;
-}
-
-.BRicon.book_left { background: black url(bookreader/BookReader/images/prev.gif) no-repeat; }
-.BRicon.book_right { background: black url(bookreader/BookReader/images/next.gif) no-repeat; }
-.BRicon.book_up { background: black url(bookreader/BookReader/images/prev.gif) no-repeat; }
-.BRicon.book_down { background: black url(bookreader/BookReader/images/next.gif) no-repeat; }
-.BRicon.book_leftmost { background: black url(bookreader/BookReader/images/first.gif) no-repeat; }
-.BRicon.book_rightmost { background: black url(bookreader/BookReader/images/last.gif) no-repeat; }
-.BRicon.book_top { background: black url(bookreader/BookReader/images/first.gif) no-repeat; }
-.BRicon.book_bottom { background: black url(bookreader/BookReader/images/last.gif) no-repeat; }
-
-.BRicon.rollover:hover { 
-    background-position: 0; 
-    background-color: #ef7a06;
 }
 
 .BRlabel {
@@ -258,20 +487,88 @@ button.active {
 }
 */
 
-.ui-pnotify {
-    font-size: 10px;
-    background-color: #ef7a06;
-}
-
-.ui-pnotify {
-    top: 32px;
-}
+/* @group CONTROL CONTAINER */
 
 div.mdpControlContainer {
 	overflow: hidden;
 	overflow-y: auto;
 	padding-right: 15px;
 }
+
+.mdpControlContainer  {
+  padding: 4px 8px;
+  width: 14em;
+  position: absolute;
+  top: 0;
+}
+
+.mdpControlContainer div {
+  padding-bottom: 8px;
+}
+
+div.mdpScrollableContainer {
+  padding-bottom: 0;
+  /*margin-right: -25px;*/
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+.mdpControlContainer h2 {
+  padding-left: 20px;
+  font-weight:bold;
+  border-bottom: 1px solid #ddd;  
+}
+
+.mdpControlContainer ul {
+  list-style-type: none;
+  padding: 0;
+  margin:3px 0;
+  font-size: 90%;
+}
+
+.mdpControlContainer ul li {
+  padding-bottom: 8px;
+}
+
+.bibLinks h2 {
+  background: transparent url(common-web/graphics/icon_information.png) no-repeat scroll left center;
+}
+
+.getLinks h2 {
+  background: transparent url(common-web/graphics/icon_arrow_down.png) no-repeat scroll left center;
+}
+
+.collectionLinks h2 {
+  background: transparent url(common-web/graphics/icon_collection_sm.png) no-repeat scroll left center;
+}
+
+.shareLinks h2 {
+  background: transparent url(common-web/graphics/icon_gear.png) no-repeat scroll left center;
+}
+
+.collectionLinks button {
+  font-size: 85%;
+}
+
+.shareLinks input {
+  font-size: 85%;
+  margin-left:  -2px;
+  width: 95%;
+}
+
+.smaller {
+  font-size: 90%;
+}
+
+.ptSelectBox {
+  text-align: right;
+}
+
+.ptSelectBox select {
+  margin-bottom: 5px;
+}
+
+/* @end */
 
 .mdpMetaDataRow {
   z-index: 999999;
