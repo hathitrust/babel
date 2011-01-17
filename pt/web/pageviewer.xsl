@@ -111,7 +111,7 @@
     </xsl:choose>
   </xsl:template>
   
-  <xsl:template match="/MBooksTop" mode="classic">
+  <xsl:template match="/MBooksTop" mode="old-classic">
 
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
@@ -146,6 +146,70 @@
           <xsl:call-template name="google_analytics" />
         </xsl:if>
         
+      </body>
+    </html>
+  </xsl:template>
+  
+  <xsl:template match="/MBooksTop" mode="classic">
+    <xsl:param name="gCurrentEmbed" select="'full'" />
+
+    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+      <head>
+        <title>
+          <xsl:choose>
+            <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
+              <xsl:text>HathiTrust Digital Library - </xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>HathiTrust Digital Library -- </xsl:text>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:call-template name="GetMaybeTruncatedTitle">
+            <xsl:with-param name="titleString" select="$gFullTitleString"/>
+            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
+          </xsl:call-template>
+        </title>
+
+        <xsl:call-template  name="include_local_javascript"/>
+        <xsl:call-template name="load_js_and_css"/>
+        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/> 
+        <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
+
+        <!-- jQuery and plugins -->
+    		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
+        <script type="text/javascript" src="/pt/jquery/jquery-textfill-0.1.js"></script>
+        <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
+    		<script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js" charset="utf-8"></script>
+    		
+        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
+        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
+        <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
+
+      </head>
+
+      <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
+        <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages">
+          <div>
+            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
+          </div>
+        </xsl:if>
+        <xsl:call-template name="header"/>
+
+        <xsl:call-template name="BookReaderContainer" />
+
+        <!-- Footer -->
+        <xsl:if test="$gCurrentEmbed = 'full'">
+          <xsl:call-template name="footer"/>
+        </xsl:if>
+        
+        <xsl:call-template name="GetAddItemRequestUrl"/>
+
+        <xsl:if test="$gEnableGoogleAnalytics='true'">
+          <xsl:call-template name="google_analytics" />
+        </xsl:if>
+
       </body>
     </html>
   </xsl:template>
@@ -411,9 +475,13 @@
   <!-- Top Level Container DIV -->
   <xsl:template name="BookReaderContainer">
     <xsl:param name="gCurrentEmbed" select="'full'" />
+    
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
 
     <div id="mdpUberContainer">
-      <xsl:call-template name="BookReaderToolbar" />
+      <xsl:call-template name="BookReaderToolbar">
+        <xsl:with-param name="pViewTypeList" select="$pViewTypeList"/>
+      </xsl:call-template>
       
       <!-- Image -->
       <xsl:call-template name="ContentContainer"/>
@@ -538,33 +606,32 @@
               </xsl:element>
             </li>
             
-            <xsl:if test="$gFullPdfAccess='allow'">
-              <li>
-                <xsl:element name="a">
-                  <xsl:attribute name="title">Download full PDF</xsl:attribute>
-                  <xsl:attribute name="id">fullPdfLink</xsl:attribute>
-                  <xsl:attribute name="href">
-                    <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
-                  </xsl:attribute>
-                  <xsl:text>Download PDF - whole book</xsl:text>
-                </xsl:element>
-								<div id="fullPdfProgress" class="meter-wrap">
-									<div class="meter-value" style="background-color: #666; width: 0%">
-										<div clas="meter-text">
-											Generating PDF...
-										</div>
+            <li>
+              <xsl:element name="a">
+                <xsl:attribute name="title">Download full PDF</xsl:attribute>
+                <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+                <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+                </xsl:attribute>
+                <xsl:text>Download PDF - whole book</xsl:text>
+              </xsl:element>
+							<div id="fullPdfProgress" class="meter-wrap">
+								<div class="meter-value" style="background-color: #666; width: 0%">
+									<div clas="meter-text">
+										Generating PDF...
 									</div>
 								</div>
-								<div id="fullPdfAlert">
-									<p>
-										There was a problem building your PDF; staff have been notified.
-										Please try again in 24 hours.
-									</p>
-								</div>
-								<div id="fullPdfFrame"></div>
-              </li>
-            </xsl:if>
-          </ul>
+							</div>
+							<div id="fullPdfAlert">
+								<p>
+									There was a problem building your PDF; staff have been notified.
+									Please try again in 24 hours.
+								</p>
+							</div>
+							<div id="fullPdfFrame"></div>
+            </li>
+         </ul>
         </div>
 
         <div class="collectionLinks">
@@ -592,12 +659,51 @@
           <h2>Share</h2>
           <form action="" name="urlForm" id="urlForm">
 						<label class="smaller" for="permURL">Permanent link to this book</label>
-						<input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" />
+            <!-- <input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" /> -->
+            <xsl:element name="input">
+              <xsl:attribute name="type">text</xsl:attribute>
+              <xsl:attribute name="name">permURL_link</xsl:attribute>
+              <xsl:attribute name="id">permURL</xsl:attribute>
+              <xsl:attribute name="class">email-permURL</xsl:attribute>
+              <xsl:attribute name="onclick">javascript:document.urlForm.permURL_link.focus();</xsl:attribute>
+              <xsl:attribute name="onclick">document.urlForm.permURL_link.select();
+              <xsl:if test="$gGoogleOnclickTracking = 'true'">
+                <xsl:call-template name="PageTracker">
+                  <xsl:with-param name="label" select="'PT Perm Link'"/>
+                </xsl:call-template>
+              </xsl:if>
+              </xsl:attribute>
+              <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
+              <xsl:attribute name="value">
+                <xsl:value-of select="$gItemHandle"/>
+              </xsl:attribute>
+            </xsl:element>
 
 						<br />
 
 						<label class="smaller" for="pageURL">Link to this page</label>
-						<input type="text" name="pageURL_link" id="pageURL" class="email-permURL" onclick="document.urlForm.pageURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" />
+
+            <xsl:element name="input">
+              <xsl:attribute name="type">text</xsl:attribute>
+              <xsl:attribute name="name">pageURL_link</xsl:attribute>
+              <xsl:attribute name="id">pageURL</xsl:attribute>
+              <xsl:attribute name="class">email-permURL</xsl:attribute>
+              <xsl:attribute name="onclick">javascript:document.urlForm.pageURL_link.focus();</xsl:attribute>
+              <xsl:attribute name="onclick">document.urlForm.pageURL_link.select();
+              <xsl:if test="$gGoogleOnclickTracking = 'true'">
+                <xsl:call-template name="PageTracker">
+                  <xsl:with-param name="label" select="'PT Page URL Link'"/>
+                </xsl:call-template>
+              </xsl:if>
+              </xsl:attribute>
+              <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
+              <xsl:attribute name="value">
+                <xsl:text>http://</xsl:text>
+                <xsl:value-of select="//HttpHost" />
+                <xsl:value-of select="//CurrentUrl"/>
+              </xsl:attribute>
+            </xsl:element>
+
           </form>
         </div>
 
@@ -607,15 +713,42 @@
   </xsl:template>
   
   <xsl:template name="BookReaderToolbar">
+    <xsl:param name="pViewTypeList"/>
+
+    <xsl:variable name="CurrentUrl" select="string(/MBooksTop/MBooksGlobals/CurrentUrl)" />
+    <xsl:variable name="BookReaderURL">
+      <xsl:choose>
+        <xsl:when test="contains($CurrentUrl, 'ui=classic')">
+          <xsl:value-of select="str:replace($CurrentUrl, 'ui=classic', 'ui=bookreader')" />
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$CurrentUrl" /><xsl:text>;ui=bookreader</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+      <!-- <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+        <xsl:text>#page/</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
+      </xsl:if> -->
+    </xsl:variable>
+
 		<div id="mdpToolbar">
 			
 			<div id="mdpToolbarViews">
 				<ul>
 					<li>
-						<a class="PTbutton" href="#" id="btnClassicView">
+					  <xsl:element name="a">
+					    <xsl:attribute name="id"><xsl:text>btnClassicView</xsl:text></xsl:attribute>
+					    <xsl:attribute name="href">
+                <xsl:value-of select="$pViewTypeList/ViewTypeImageLink"/>
+					    </xsl:attribute>
+					    <xsl:attribute name="class">
+					      <xsl:text>PTbutton </xsl:text>
+  					    <xsl:if test="$gCurrentUi = 'classic' and $gCurrentView = 'image'">
+  					      <xsl:text>PTbuttonActive</xsl:text>
+  					    </xsl:if>
+  					  </xsl:attribute>
 							<img src="/pt/images/icon_classicview.png" />
 							<span>Classic View</span>
-						</a>
+					  </xsl:element>
 					</li>
 					<li>
 						<ul id="mdpBookReaderViews">
@@ -626,72 +759,172 @@
 								<span class="prompt">Try our new views!</span>
 							</li>
 							<li>
-								<a class="PTbutton" href="#" id="btnBookReaderScroll">
+    					  <xsl:element name="a">
+    					    <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
+    					    <xsl:attribute name="href">
+    					      <xsl:call-template name="build-bookreader-href">
+    					        <xsl:with-param name="mode" select="'1up'" />
+    					      </xsl:call-template>
+    					    </xsl:attribute>
+    					    <xsl:attribute name="class">
+    					      <xsl:text>PTbutton </xsl:text>
+      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = '1up'">
+      					      <xsl:text>PTbuttonActive</xsl:text>
+      					    </xsl:if>
+      					  </xsl:attribute>
 									<img src="/pt/images/icon_scroll.png" />
 									<span>Scroll</span>
-								</a>
+    					  </xsl:element>
 							</li>
 							<li>
-								<a class="PTbutton PTbuttonActive" href="#" id="btnBookReaderFlip">
+    					  <xsl:element name="a">
+    					    <xsl:attribute name="id"><xsl:text>btnBookReader2up</xsl:text></xsl:attribute>
+    					    <xsl:attribute name="href">
+    					      <xsl:call-template name="build-bookreader-href">
+    					        <xsl:with-param name="mode" select="'2up'" />
+    					      </xsl:call-template>
+    					    </xsl:attribute>
+    					    <xsl:attribute name="class">
+    					      <xsl:text>PTbutton </xsl:text>
+      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = '2up'">
+      					      <xsl:text>PTbuttonActive</xsl:text>
+      					    </xsl:if>
+      					  </xsl:attribute>
 									<img src="/pt/images/icon_flip_25.png" />
 									<span>Flip</span>
-								</a>
+    					  </xsl:element>
 							</li>
 							<li>
-								<a class="PTbutton" href="#" id="btnBookReaderThumbnails">
+    					  <xsl:element name="a">
+    					    <xsl:attribute name="id"><xsl:text>btnBookReaderThumbnail</xsl:text></xsl:attribute>
+    					    <xsl:attribute name="href">
+    					      <xsl:call-template name="build-bookreader-href">
+    					        <xsl:with-param name="mode" select="'thumbnail'" />
+    					      </xsl:call-template>
+    					    </xsl:attribute>
+    					    <xsl:attribute name="class">
+    					      <xsl:text>PTbutton </xsl:text>
+      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = 'thumbnail'">
+      					      <xsl:text>PTbuttonActive</xsl:text>
+      					    </xsl:if>
+      					  </xsl:attribute>
 									<img src="/pt/images/icon_thumbnails.png" />
 									<span>Thumbnails</span>
-								</a>
+    					  </xsl:element>
 							</li>
 							<li>
-								<a class="PTbutton" href="#" id="btnBookReaderText">
+    					  <xsl:element name="a">
+    					    <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
+    					    <xsl:attribute name="href">
+    					      <xsl:call-template name="build-bookreader-href">
+    					        <xsl:with-param name="mode" select="'text'" />
+    					      </xsl:call-template>
+    					    </xsl:attribute>
+    					    <xsl:attribute name="class">
+    					      <xsl:text>PTbutton </xsl:text>
+      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = 'text'">
+      					      <xsl:text>PTbuttonActive</xsl:text>
+      					    </xsl:if>
+      					  </xsl:attribute>
 									<img src="/pt/images/1x1.png" height="25" width="1" />
 									<span>Plain Text</span>
 									<img src="/pt/images/1x1.png" height="25" width="1" />
-								</a>
+    					  </xsl:element>
 							</li>
 						</ul>
 					</li>
 				</ul>
 			</div>
 			<div id="mdpToolbarNav">
-				<ul id="mdpSectionOptions">
-					<li>
-						<select size="1" id="mdpJumpToSection">
-							<option value="">Jump to Section</option>
-						</select>
-					</li>
-				</ul>
+			  <form action="/cgi/pt" method="GET">
+  				<ul id="mdpSectionOptions">
+            <xsl:if test="$gFeatureList/Feature">
+              <xsl:call-template name="BuildContentsList"/>
+            </xsl:if>
+  				</ul>
+  			</form>
 				<ul id="mdpZoomOptions">
 					<li class="PTiconButton">
-						<a href="#" id="mdpZoomOut"><img src="/pt/images/icon_zoomout.png" height="25" width="25" /></a>
+						<xsl:call-template name="build-zoomout-button" />
 					</li>
 					<li>
-						<span id="mdpZoomStatus">100%</span>
+						<span id="mdpZoomStatus"><xsl:value-of select="//ResizeForm/ResizeValuesSelect/Option[Focus='true']/Label" /></span>
 					</li>
 					<li class="PTiconButton">
-						<a href="#" id="mdpZoomIn"><img src="/pt/images/icon_zoomin.png" height="25" width="25" /></a>
+						<xsl:call-template name="build-zoomin-button" />
 					</li>
 				</ul>
-				<ul id="mdpPageOptions">
-					<li class="PTiconButton">
-						<a href="#" id="mdpPageFirst"><img src="/pt/images/icon_first.png" height="25" width="17" /></a>
-					</li>
-					<li class="PTiconButton">
-						<a href="#" id="mdpPagePrev"><img src="/pt/images/icon_previous.png" height="25" width="17" /></a>
-					</li>
-					<li>
-						<input id="mdpPageNum" width="5" type="text" value="5" />
-					</li>
-					<li class="PTiconButton">
-						<a href="#" id="mdpPageNext"><img src="/pt/images/icon_next.png" height="25" width="17" /></a>
-					</li>
-					<li class="PTiconButton">
-						<a href="#" id="mdpPageLast"><img src="/pt/images/icon_last.png" height="25" width="17" /></a>								
-					</li>
-				</ul>
+
+				<xsl:call-template name="BuildPageLinks">
+          <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
+        </xsl:call-template>
 			</div>
 		</div>
+  </xsl:template>
+  
+  <xsl:template name="build-zoomout-button">
+    <xsl:variable name="zoom" select="//ResizeForm/ResizeValuesSelect/Option[following-sibling::Option[Focus='true']][last()]" />
+    <xsl:choose>
+      <xsl:when test="$zoom">
+        <xsl:element name="a">
+          <xsl:attribute name="id"><xsl:text>mdpZoomOut</xsl:text></xsl:attribute>
+          <xsl:attribute name="href">
+            <xsl:call-template name="build-zoom-href">
+              <xsl:with-param name="size" select="$zoom/Value" />
+            </xsl:call-template>
+          </xsl:attribute>
+          <img src="/pt/images/icon_zoomout.png" height="25" width="25" />
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+        <img src="/pt/images/icon_zoomout_grayed.png" height="25" width="25" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="build-zoomin-button">
+    <xsl:variable name="zoom" select="//ResizeForm/ResizeValuesSelect/Option[preceding-sibling::Option[Focus='true']]" />
+    <xsl:choose>
+      <xsl:when test="$zoom">
+        <xsl:element name="a">
+          <xsl:attribute name="id"><xsl:text>mdpZoomIn</xsl:text></xsl:attribute>
+          <xsl:attribute name="href">
+            <xsl:call-template name="build-zoom-href">
+              <xsl:with-param name="size" select="$zoom/Value" />
+            </xsl:call-template>
+          </xsl:attribute>
+          <img src="/pt/images/icon_zoomin.png" height="25" width="25" />
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+        <img src="/pt/images/icon_zoomin_grayed.png" height="25" width="25" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="build-zoom-href">
+    <xsl:param name="size" />
+    
+    <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
+    <xsl:variable name="seq" select="//CurrentCgi/Param[@name='seq']" />
+    <xsl:variable name="view" select="//CurrentCgi/Param[@name='view']" />
+    
+    <xsl:variable name="href">
+      <xsl:value-of select="concat('/cgi/pt?id=', $id, ';ui=classic;seq=', $seq, ';size=', $size, ';view=', $view)" />
+    </xsl:variable>
+    <xsl:value-of select="normalize-space($href)" />
+  </xsl:template>
+  
+  <xsl:template name="build-bookreader-href">
+    <xsl:param name="mode" />
+    
+    <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
+    <xsl:variable name="seq" select="//CurrentCgi/Param[@name='seq']" />
+    
+    <xsl:variable name="href">
+      <xsl:value-of select="concat('/cgi/pt?id=', $id, ';ui=bookreader;seq=', $seq, '#mode/', $mode)" />
+    </xsl:variable>
+    <xsl:value-of select="normalize-space($href)" />
   </xsl:template>
   
   <!-- Backward Navigation -->
@@ -1092,7 +1325,40 @@
   </xsl:template>
 
   <!-- CONTROL: Contents List -->
+  
   <xsl:template name="BuildContentsList">
+    <select id="mdpJumpToSection" size="1" name="seq">
+      <option value="">Jump to Section</option>
+      <xsl:for-each select="$gFeatureList/Feature">
+        <xsl:element name="option">
+          <xsl:attribute name="value">
+            <xsl:value-of select="Seq" />
+          </xsl:attribute>
+          <xsl:attribute name="rel">
+            <xsl:value-of select="Link" />
+          </xsl:attribute>
+          <xsl:value-of select="Label" />
+          <xsl:if test="normalize-space(Page)">
+            <xsl:text> - </xsl:text>
+            <xsl:value-of select="Page" />
+          </xsl:if>
+        </xsl:element>
+      </xsl:for-each>
+    </select>
+    <input type="submit" value="Go" />
+    
+    <xsl:for-each select="//CurrentCgi/Param">
+      <xsl:choose>
+        <xsl:when test="@name != 'page' or @name != 'seq'">
+          <input type="hidden" name="{@name}" value="{.}" />
+        </xsl:when>
+        <xsl:otherwise />
+      </xsl:choose>
+    </xsl:for-each>
+    
+  </xsl:template>
+  
+  <xsl:template name="OldBuildContentsList">
     <xsl:param name="defaultFoldPosition" select="20" />
     <xsl:variable name="foldPosition">
       <xsl:choose>
@@ -1180,108 +1446,179 @@
   <!-- CONTROL: Page Links -->
   <xsl:template name="BuildPageLinks">
     <xsl:param name="pPageLinks"/>
-    <ul>
-      <li>
-        <xsl:if test="$pPageLinks/FirstPageLink">
-          <xsl:element name="a">
-            <xsl:attribute name="title">First [f]</xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pPageLinks/FirstPageLink"/>
-            </xsl:attribute>
-            <xsl:attribute name="accesskey">f</xsl:attribute>
-            <xsl:element name="img">
-              <xsl:attribute name="alt">First [f]</xsl:attribute>
-              <xsl:attribute name="src">
-                <xsl:value-of select="'//common-web/graphics/first.gif'"/>
+    <ul id="mdpPageOptions">
+			<li class="PTiconButton">
+			  <xsl:choose>
+			    <xsl:when test="$pPageLinks/FirstPageLink">
+            <xsl:element name="a">
+              <xsl:attribute name="id">mdpFirstPageLink</xsl:attribute>
+              <xsl:attribute name="title">First [f]</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="$pPageLinks/FirstPageLink"/>
               </xsl:attribute>
-            </xsl:element>
-          </xsl:element>
-        </xsl:if>
-      </li>
-
-      <li>
-        <xsl:choose>
-          <xsl:when test="$pPageLinks/PreviousPageLink=''">
-
-            <xsl:element name="span">
+              <xsl:attribute name="accesskey">f</xsl:attribute>
               <xsl:element name="img">
-                <xsl:attribute name="alt">Previous</xsl:attribute>
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
+                <xsl:attribute name="alt">First [f]</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/prev_gray.gif'"/>
+                  <xsl:value-of select="'/pt/images/icon_first.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
           </xsl:when>
           <xsl:otherwise>
+            <xsl:element name="span">
+              <xsl:element name="img">
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
+                <xsl:attribute name="alt"></xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'/pt/images/icon_first_grayed.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:otherwise>
+        </xsl:choose>
+			</li>
+			<li class="PTiconButton">
+			  <xsl:choose>
+			    <xsl:when test="$pPageLinks/PreviousPageLink">
             <xsl:element name="a">
+              <xsl:attribute name="id">mdpPreviousPageLink</xsl:attribute>
               <xsl:attribute name="title">Previous [p]</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/PreviousPageLink"/>
               </xsl:attribute>
               <xsl:attribute name="accesskey">p</xsl:attribute>
               <xsl:element name="img">
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Previous [p]</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/prev.gif'"/>
-                </xsl:attribute>
-              </xsl:element>
-            </xsl:element>
-          </xsl:otherwise>
-        </xsl:choose>
-      </li>
-
-
-      <li>
-        <xsl:choose>
-          <xsl:when test="$pPageLinks/NextPageLink=''">
-
-
-            <xsl:element name="span">
-              <xsl:element name="img">
-                <xsl:attribute name="alt">Next</xsl:attribute>
-                <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/next_gray.gif'"/>
+                  <xsl:value-of select="'/pt/images/icon_previous.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:element name="a">
-              <xsl:attribute name="title">Next [n]</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$pPageLinks/NextPageLink"/>
-              </xsl:attribute>
-              <xsl:attribute name="accesskey">n</xsl:attribute>
+            <xsl:element name="span">
               <xsl:element name="img">
-                <xsl:attribute name="alt">Next [n]</xsl:attribute>
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
+                <xsl:attribute name="alt">Previous</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/next.gif'"/>
+                  <xsl:value-of select="'/pt/images/icon_previous_grayed.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
-      </li>
-
-      <li>
-        <xsl:if test="$pPageLinks/LastPageLink">
-
-
-          <xsl:element name="a">
-            <xsl:attribute name="title">Last [l]</xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pPageLinks/LastPageLink"/>
+			</li>
+			<li>
+			  <xsl:variable name="pageNum">
+			    <xsl:choose>
+			      <xsl:when test="$gCurrentPageNum">
+			        <xsl:value-of select="$gCurrentPageNum" />
+			      </xsl:when>
+			      <xsl:otherwise>
+			        <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
+			      </xsl:otherwise>
+			    </xsl:choose>
+			  </xsl:variable>
+				<form method="GET" action="/cgi/pt" id="mdpPageForm">
+				  <input type="hidden" name="u" id="u" value="1" />
+          <xsl:element name="input">
+            <xsl:attribute name="id">mdpPageNum</xsl:attribute>
+            <xsl:attribute name="type">text</xsl:attribute>
+            <xsl:attribute name="size">8</xsl:attribute>
+            <xsl:attribute name="name">num</xsl:attribute>
+            <xsl:attribute name="value">
+              <xsl:value-of select="$pageNum"/>
             </xsl:attribute>
-            <xsl:attribute name="accesskey">l</xsl:attribute>
-            <xsl:element name="img">
-              <xsl:attribute name="alt">Last [l]</xsl:attribute>
-              <xsl:attribute name="src">
-                <xsl:value-of select="'//common-web/graphics/last.gif'"/>
-              </xsl:attribute>
-            </xsl:element>
           </xsl:element>
-        </xsl:if>
-      </li>
+          <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
+          <xsl:call-template name="HiddenDebug" />
+				  
+				  <xsl:element name="input">
+            <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
+            <xsl:attribute name="type">submit</xsl:attribute>
+            <xsl:attribute name="value">Go</xsl:attribute>
+            <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
+            <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
+          </xsl:element>
+          
+				</form>
+				
+			</li>
+			<li class="PTiconButton">
+			  <xsl:choose>
+			    <xsl:when test="$pPageLinks/NextPageLink">
+            <xsl:element name="a">
+              <xsl:attribute name="id">mdpNextPageLink</xsl:attribute>
+              <xsl:attribute name="title">Next [n]</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="$pPageLinks/NextPageLink"/>
+              </xsl:attribute>
+              <xsl:attribute name="accesskey">p</xsl:attribute>
+              <xsl:element name="img">
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
+                <xsl:attribute name="alt">Next [n]</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'/pt/images/icon_next.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:element name="span">
+              <xsl:element name="img">
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
+                <xsl:attribute name="alt">Next</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'/pt/images/icon_next_grayed.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:otherwise>
+        </xsl:choose>
+			</li>
+			<li class="PTiconButton">
+			  <xsl:choose>
+			    <xsl:when test="$pPageLinks/LastPageLink">
+            <xsl:element name="a">
+              <xsl:attribute name="id">mdpLastPageLink</xsl:attribute>
+              <xsl:attribute name="title">Last [l]</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="$pPageLinks/LastPageLink"/>
+              </xsl:attribute>
+              <xsl:attribute name="accesskey">l</xsl:attribute>
+              <xsl:element name="img">
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
+                <xsl:attribute name="alt">Last [l]</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'/pt/images/icon_last.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:element name="span">
+              <xsl:element name="img">
+                <xsl:attribute name="height">25</xsl:attribute>
+                <xsl:attribute name="width">17</xsl:attribute>
+                <xsl:attribute name="alt">Last</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'/pt/images/icon_last_grayed.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:otherwise>
+        </xsl:choose>
+			</li>
     </ul>
 
   </xsl:template>

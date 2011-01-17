@@ -1,6 +1,8 @@
+/* @override http://roger-full.babel.hathitrust.org/pt/hathi.css?ts=id859271 */
+
 html {
 	min-width:0px;
-	overflow: hidden;
+	/*overflow: hidden;*/
 	/* 235px + width of image */
  	min-width: 910px;
 }
@@ -25,7 +27,11 @@ html, body {
 		
 }
 
-#mbFooter {
+.htmlNoOverflow {
+  overflow: hidden;
+}
+
+.footerFixed {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -34,6 +40,7 @@ html, body {
 #mdpImage {
 	float:none;
 	position:relative;
+	top: 0px;
 }
 
 /*div#mdpContentContainer {
@@ -126,7 +133,11 @@ body {
   text-align: center;
 }
 
-#mdpToolbarNav > ul {
+#mdpToolbarNav form {
+  margin: 0;
+}
+
+#mdpToolbarNav > ul, #mdpToolbarNav > form > ul {
   white-space: nowrap;
   margin-left: 0;
   padding-left: 10px;
@@ -261,6 +272,10 @@ span.prompt {
   float: left;
 }
 
+.PTiconButton {
+  border-bottom: 2px solid transparent;
+}
+
 .PTiconButton:hover {
   border-bottom: 2px solid #666;
 }
@@ -288,7 +303,7 @@ span.prompt {
 }
 
 #mdpPageNum {
-  width: 2em;
+  width: 3em;
   border: 1px solid #d5d5d5;
   text-align: center;
 }
@@ -618,5 +633,17 @@ div.mdpScrollableContainer {
 
 #mdpLoadProgress p.message {
   font-size: 0.8em;
+  display: none;
+}
+
+#fullPdfProgress {
+  display: none;
+}
+
+#fullPdfAlert {
+  display: none;
+}
+
+#fullPdfFrame {
   display: none;
 }
