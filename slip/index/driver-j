@@ -88,13 +88,14 @@ else {
 
 
 sub sd_get_usage {
-    my $s .= qq{Usage: driver-j -r run [-d]\n};
+    my $s .= qq{Usage: driver-j -r run [-d] [-X]
+                 where -X skips the check index phase\n};
     return $s;
 }
 
-our ($opt_r, $opt_d);
+our ($opt_r, $opt_d, $opt_X);
 
-my $ops = getopts('r:d');
+my $ops = getopts('r:dX');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -109,6 +110,8 @@ if (! $RUN) {
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,me';
 }
+
+my $SKIP_CHECKINDEX = defined($opt_X);
 
 my $C = new Context;
 
@@ -533,7 +536,11 @@ sub handle_Optimizing {
         if ($rc == 0) {
             my $_Next_Stage;
             my $check_index_supported = $C->get_object('MdpConfig')->get('check_index_supported');
-            if ($check_index_supported) {
+            if (
+                $check_index_supported
+                &&
+                (! $SKIP_CHECKINDEX)
+               ) {
                 # Enable checkers to start running from cron
                 $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
                 $_Next_Stage = $SLIP_Utils::States::St_Checking;

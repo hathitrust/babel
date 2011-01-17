@@ -69,7 +69,7 @@ sub ck_get_usage {
     my $s .= qq{Usage: check-j -r run -R shard -On -C [-d][-n]
        where -C runs the (long-running) CheckIndex
              -O is number of segments to check for
-             -n runs without calling check-shard or CheckIndex\n};
+             -n runs without calling check-shard or CheckIndex. NOTE: Sets done db flag.\n};
     return $s;
 }
 
