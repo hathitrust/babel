@@ -411,7 +411,8 @@ mimetype_map:
     text: text/plain
   pagecoordocr:
     default: text/html
-    text: text/html
+    xml: application/xml
+    html: text/html
 
 # ---------------------------------------------------------------------
 # Access type map: f(resource, rights attr, source)
@@ -604,6 +605,8 @@ extension_format_map:
   tif:     tiff
   tiff:    tiff
   zip:     zip
+  html:    html
+  xml:     xml
 
 # ---------------------------------------------------------------------
 # Atom elements, contents and attribute values organized by resource

@@ -708,6 +708,9 @@ sub __getMetaMimeType {
         $mimeType = $self->__getMimetype('pageocr', 'txt');
     }
     elsif ($fileType eq 'coordOCR') {
+        my $filename = $self->__getFilenameFromMETSfor($P_Ref, 'pagecoordocr');
+        my $extension = $self->__getFileExtension($filename);
+
         $mimeType = $self->__getMimetype('pagecoordocr', 'txt');
     }
     elsif ($fileType eq 'image') {
