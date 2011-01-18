@@ -193,6 +193,7 @@ if ($check_enabled) {
                         c_check($C, $RUN, $DBH, $SHARD, $LIMIT_SEGS, $CHECK_INDEX));
     };
     if ($@) {
+        Log_check_error($C, $RUN, $SHARD, "Critical error: $@");
         handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
         # NOTREACHED
     }
@@ -240,15 +241,15 @@ sub handle_check_rc {
             # Record the time this successful optimize
             Db::set_shard_check_done($C, $dbh, $run, $shard);
         }
+
+        # Set terminal state
+        Db::set_shard_check_state($C, $dbh, $run, $shard, $state);
+        # Self-stop.  driver-j also disables check-j as extra measure.
+        Db::set_check_enabled($C, $dbh, $run, $shard, 0);
     }
     else {
         $connect_error = 1;
     }
-
-    # Set terminal state
-    Db::set_shard_check_state($C, $dbh, $run, $shard, $state);
-    # Self-stop.  driver-j also disables check-j as extra measure.
-    Db::set_check_enabled($C, $dbh, $run, $shard, 0);
 
     # Log
     my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
@@ -256,6 +257,7 @@ sub handle_check_rc {
           . qq{ [stop][self] State=$state connect_error=$connect_error};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
+
     if ($connect_error || ($rc > 0)) {
         Log_check_error($C, $run, $shard, $s);
     }
@@ -442,7 +444,7 @@ sub Log_check {
     my ($C, $run, $shard, $s) = @_;
 
     my $s0 = qq{***CHECK: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+    SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run);
 }
 
 
