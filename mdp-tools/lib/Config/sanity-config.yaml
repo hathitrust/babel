@@ -130,8 +130,10 @@ ssd:
 
 mdp-misc:
   - /htapps/__CMD_STAGE__/mdp-misc/cgi/access_stmts attr=1 src=3 __LOCAL__
+  - /htapps/__CMD_STAGE__/mdp-misc/cgi/access_stmts __LOCAL__
 
   - http://__URL_STAGE__.hathitrust.org/mdp-misc/cgi/access_stmts?attr=1;src=3;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/mdp-misc/cgi/access_stmts?__LOCAL__
 
 wayf:
   - /htapps/__CMD_STAGE__/wayf/cgi/wayf __LOCAL__
