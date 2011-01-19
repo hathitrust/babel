@@ -385,10 +385,15 @@ sub __run_CheckIndex {
     my $cmd = qq{java -Xmx10g -Xms10g -cp /l/local/apache-tomcat-build-$shard/webapps/solr-sdr-build/build-$shard/WEB-INF/lib/lucene-core-2.9-dev.jar -ea:org.apache.lucene... org.apache.lucene.index.CheckIndex  /l/solrs/prod/$shard/data/index };
 
     my $output = `$cmd 2> $Child_Err_File`;
-    my $rc = __check_c_sysrc($?, $C, $run, $shard, "CheckIndex");
+    # XXX try to figure out the $? value
+    #my $rc = __check_c_sysrc($?, $C, $run, $shard, "CheckIndex");
+    my $sysrc = $?;
+    
+    my $rc = __check_c_sysrc(0, $C, $run, $shard, "CheckIndex");
 
     if ($rc == 0) {
-        Log_check($C, $run, $shard, $output);
+        # Log_check($C, $run, $shard, $output);
+        Log_check($C, $run, $shard, qq{checkIndex sysrc="$sysrc"\n} . $output);
     }
 
     return $rc;
