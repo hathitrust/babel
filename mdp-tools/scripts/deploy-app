@@ -265,6 +265,10 @@ sub __get_auto_increment_version {
     my $increment = shift;
     my $last_tag = __last_tag();
 
+    if (! $last_tag){
+        return "0 0 1";
+    }
+    
     my @version_arr = ($last_tag =~ m,(\d+)\.(\d+)\.(\d+),);
 
     if ($increment eq 'maj') {
