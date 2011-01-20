@@ -24,12 +24,6 @@ BEGIN {
     }
 }
 
-# END block for clean up
-END {
-   FinishUp();
-   exit;
-}
-
 
 # ----------------------------------------------------------------------
 # Libraries
@@ -118,28 +112,6 @@ exit 0;
 #                       end of M A I N
 #
 # ---------------------------------------------------------------------
-
-
-
-# ----------------------------------------------------------------------
-# NAME	       : FinishUp
-# PURPOSE      :
-# CALLS	       :
-# INPUT	       :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES	       :
-# ----------------------------------------------------------------------
-sub FinishUp
-{
-    DEBUG('time', qq{<h4>main::FinishUp start serialization</h4>} . Utils::display_stats());
-    # Serialize	the session to the database
-    if ( $gDso )
-    {   $gDso->dispose();   }
-    DEBUG('time', qq{<h4>main::FinishUp end serialization</h4>} . Utils::display_stats());
-
-}
 
 # ----------------------------------------------------------------------
 # NAME         :
