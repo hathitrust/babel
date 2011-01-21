@@ -75,6 +75,8 @@ my $rc = 0;
 foreach my $app (@apps) {
     $rc = 0;
     
+    PrintY(qq{SANITY checking: $app\n});
+
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         next;
     }
@@ -85,8 +87,6 @@ foreach my $app (@apps) {
     }
 
     my $url_arr_ref = _get_config_val($app);
-
-    PrintY(qq{SANITY checking: $app\n});
 
     if (! $url_arr_ref) {
         print("\t$app: no test configured\n");
