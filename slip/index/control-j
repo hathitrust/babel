@@ -216,6 +216,12 @@ eval {
             exit $rc;
         }
         else {
+            my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
+            if (! grep(/^$host$/, @host_list)) {
+                __output(qq{\nhost="$host" is not in the config for run=$RUN\n});
+                __confirm("\n\tPossible typo.  Proceed anyway? [N] ");
+            }
+
             c_configure($C, $DBH, $RUN, $num_producers, $host);
         }
     }

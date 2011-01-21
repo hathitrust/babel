@@ -510,17 +510,22 @@ sub report_flags_state {
     my $cksup = $C->get_object('MdpConfig')->get('check_index_supported');
     my $ck = "check index support=$cksup";
 
-    my $fo = "full optimize not configured for run=$run";
-    if (Scheduler::full_optimize_supported($C, $run)) {
-        my $schedule_filepath = Scheduler::get_schedule_filepath($C, $run);
-        my $schedule = `cat $schedule_filepath`;
-        chomp($schedule);    
-        my ($y, $m, $d, $h, $min, $int) = split(/\s+/, $schedule);
-        my $do = Scheduler::driver_do_full_optimize($C, $run) ? "YES" : "no";
-
-        $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals\n\t\t"
-          . "? This run=$do";
-    }          
+    my $fo;
+    if ($HOST eq 'bubble') {
+        $fo = "full optimize=not configured for run=$run";
+        if (Scheduler::full_optimize_supported($C, $run)) {
+            my $schedule_filepath = Scheduler::get_schedule_filepath($C, $run);
+            my $schedule = `cat $schedule_filepath`;
+            chomp($schedule);    
+            my ($y, $m, $d, $h, $min, $int) = split(/\s+/, $schedule);
+            my $do = Scheduler::driver_do_full_optimize($C, $run) ? "YES" : "no";
+            
+            $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals\n\t\t" . "? This run=$do";
+        }
+    }
+    else {
+        $fo = qq{full optimize=Undetermined: $HOST is not bubble};
+    }
           
     __Print qq{\n * flags state: \n\tbusy=$busy \n\tstopped=$stop\n\t$fo\n\t$ck\n};
 }
