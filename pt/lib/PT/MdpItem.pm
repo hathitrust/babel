@@ -262,7 +262,9 @@ sub GetOcrBySequence {
 
     DEBUG('all', qq{ocr file is: $ocrFile});
 
-    PT::Document::XPAT::clean_xml($ocrTextRef);
+    my $doc = new PT::Document::XPAT;
+    $doc->clean_xml($ocrTextRef);
+
     $$ocrTextRef =~ s,\n\n,<br /><br />\n,g;
 
     return $ocrTextRef;
