@@ -38,7 +38,7 @@ sub sanity_app_usage {
            where <app> is the application.
                  -A all apps
                  -v verbose
-                 -L apply debug=local  
+                 -L apply debug=local
                  -s staging areas: test (default), beta-1, beta-2, beta-3
                     OR uniqname\n};
     return $s;
@@ -54,10 +54,12 @@ my $LOCAL = $opt_L;
 my @staging_hosts = ('test', 'beta-1', 'beta-2', 'beta-3', );
 
 my $ALL = $opt_A;
+my @app_list = `cat $LOCATION/../app-list.txt`;
+chomp(@app_list);
+
 my @apps;
 if ($ALL) {
-    @apps = `cat $LOCATION/../app-list.txt`;
-    chomp(@apps);
+    @apps = @app_list;
 }
 else {
     @apps = @ARGV;
@@ -67,14 +69,25 @@ else {
     }
 }
 
+my ($repo_root, $app_root) = get_HTDE_roots();
 my $CONFIG = YAML::XS::LoadFile("$LOCATION/../lib/Config/sanity-config.yaml");
 my $rc = 0;
 foreach my $app (@apps) {
     $rc = 0;
+    
+    if (! validate_existing_app($repo_root, $app_root, $app)) {
+        next;
+    }
+
+    if (! grep(/^$app$/, @app_list)) {
+        PrintN(qq{App not recognized in app-list.txt: $app\n});
+        next;
+    }
+
     my $url_arr_ref = _get_config_val($app);
-    
+
     PrintY(qq{SANITY checking: $app\n});
-    
+
     if (! $url_arr_ref) {
         print("\t$app: no test configured\n");
         next;
@@ -82,7 +95,7 @@ foreach my $app (@apps) {
 
     foreach my $url (@$url_arr_ref) {
         $url =~ s,__CGI__,cgi,g;
-        
+
         if ($url =~ m,EMPTY_CACHE,) {
             $rc ||= _empty_cache();
         }
@@ -102,18 +115,18 @@ exit $rc;
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item Name
 
 Description
 
 =cut
 
-# --------------------------------------------------------------------- 
+# ---------------------------------------------------------------------
 sub _test_url {
     my $app = shift;
     my $url = shift;
-    
-    my $stage = (grep(/$STAGE/, @staging_hosts)) ? $STAGE : $STAGE . '-full'; 
+
+    my $stage = (grep(/$STAGE/, @staging_hosts)) ? $STAGE : $STAGE . '-full';
     $url =~ s,__URL_STAGE__,$stage.babel,g;
 
     if ($LOCAL) {
@@ -122,7 +135,7 @@ sub _test_url {
     else {
         $url =~ s,__LOCAL__,,;
     }
-    
+
     my $rc = 0;
     my @accepted_statuses = ('200', '301', '302');
 
@@ -157,12 +170,12 @@ Description
 
 =cut
 
-# --------------------------------------------------------------------- 
+# ---------------------------------------------------------------------
 sub _test_cmd {
     my $app = shift;
     my $cmd = shift;
 
-    my $stage = (grep(/$STAGE/, @staging_hosts)) ? $STAGE : $STAGE . '-full'; 
+    my $stage = (grep(/$STAGE/, @staging_hosts)) ? $STAGE : $STAGE . '-full';
 
     $cmd =~ s,__CMD_STAGE__,$stage.babel,g;
 
@@ -172,7 +185,7 @@ sub _test_cmd {
     else {
         $cmd =~ s,__LOCAL__,,;
     }
-    
+
     $cmd =~ s,-full,,;
 
     my $rc = 0;
@@ -184,12 +197,12 @@ sub _test_cmd {
         print `$cmd`;
     }
     else {
-        print `$cmd > /dev/null 2>&1`;        
+        print `$cmd > /dev/null 2>&1`;
     }
-    
+
     my $exitval = $? >> 8;
     my $result = grep(/$exitval/, @accepted_exits);
-    
+
     if ($result) {
         PrintY("OK [$exitval]\n");
     }
@@ -204,17 +217,17 @@ sub _test_cmd {
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item Name
 
 Description
 
 =cut
 
-# --------------------------------------------------------------------- 
+# ---------------------------------------------------------------------
 sub _empty_cache {
-    
+
     my $rc = 0;
-    
+
     print("Emptying cache ... ");
     `rm -rf /htapps/test.babel/cache-full/*`;
     if ($? > 0) {
@@ -230,16 +243,16 @@ sub _empty_cache {
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item Name
 
 Description
 
 =cut
 
-# --------------------------------------------------------------------- 
+# ---------------------------------------------------------------------
 sub _get_config_val {
     my ($key, $sub_1_key) = @_;
-    
+
     if ($sub_1_key) {
         return $CONFIG->{$key}{$sub_1_key};
     }
@@ -250,16 +263,16 @@ sub _get_config_val {
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item Name
 
 Description
 
 =cut
 
-# --------------------------------------------------------------------- 
+# ---------------------------------------------------------------------
 sub _get_curl_errmsg {
     my $sysval = shift;
-    my %msghash = 
+    my %msghash =
       (
        '1' => 'Unsupported protocol. This build of curl has no support for this protocol.',
        '2' => 'Failed to initialize.',
