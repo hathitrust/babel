@@ -24,8 +24,17 @@
   <xsl:variable name="gCollectionList" select="/MBooksTop/MdpApp/CollectionList"/>
   <xsl:variable name="gCollectionForm" select="/MBooksTop/MdpApp/AddToCollectionForm"/>
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
-  <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
-  <xsl:variable name="gCurrentEmbed">
+  
+  <xsl:variable name="gUsingBookReader">
+    <xsl:choose>
+      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'thumbnail'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
@@ -49,7 +58,7 @@
           </xsl:when>
           <xsl:otherwise>
             <xsl:choose>
-              <xsl:when test="$gCurrentView='image' or $gCurrentView='pdf'">
+              <xsl:when test="$gCurrentView='image' or $gUsingBookReader = 'true'">
                 <xsl:value-of select="$gCurrentView"/>
               </xsl:when>
               <xsl:otherwise>
@@ -99,7 +108,7 @@
       <xsl:when test="$gCurrentUi = 'classic'">
         <xsl:apply-templates select="." mode="classic" />
       </xsl:when>
-      <xsl:when test="$gCurrentUi = 'bookreader'">
+      <xsl:when test="$gCurrentUi = 'true'">
         <xsl:apply-templates select="." mode="bookreader" />
       </xsl:when>
       <xsl:when test="$gCurrentUi = 'embed'">
@@ -166,6 +175,10 @@
     </xsl:variable>
 
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+      <xsl:if test="$gUsingBookReader = 'true'">
+        <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
+      </xsl:if>
+      <xsl:attribute name="gUsingBookReader"><xsl:value-of select="$gUsingBookReader" /> :: <xsl:value-of select="$gFinalView" /></xsl:attribute>
       <head>
         <title>
           <xsl:choose>
@@ -184,7 +197,10 @@
         </title>
 
         <!-- jQuery and plugins -->
-    		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    		<xsl:if test="$gUsingBookReader = 'true'">
+    		  <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/> 
+        </xsl:if>
     		<script type="text/javascript" src="/pt/js/classic.js" charset="utf-8"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
@@ -193,16 +209,34 @@
 
         <!-- jQuery plugins -->
     		<script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js" charset="utf-8"></script>
+    		<script type="text/javascript" src="/pt/jquery/jquery.tmpl.js" charset="utf-8"></script>
+    		<script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js" charset="utf-8"></script>
     		
-        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
+    		<xsl:if test="$gUsingBookReader = 'true'">
+          <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
+          <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
+          <!-- <script type="text/javascript" src="/pt/jquery/jquery-textfill-0.1.js"></script> -->
+          <!-- <script type="text/javascript" src="/pt/jquery/bigtext.js"></script> -->
+          <!-- <script type="text/javascript" src="/pt/js/fitOverflow.js"></script> -->
+          <script type="text/javascript" src="/pt/js/jquery.textfill.js"></script>          
+          <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
+          <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js?ts={generate-id(.)}"></script>
+          <script type="text/javascript" src="/pt/js/lscache.js?ts={generate-id(.)}"></script>
+          <script type="text/javascript" src="/pt/js/init.js?ts={generate-id(.)}"></script>
+    		</xsl:if>
+    		
         <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
         <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
         
-        <style>
-          html {
-            min-width: <xsl:value-of select="$min-width" />px;
-          }
-        </style>
+        <xsl:if test="$gCurrentView = 'image'">
+          <style>
+            html {
+              min-width: <xsl:value-of select="$min-width" />px;
+            }
+          </style>
+        </xsl:if>
+        
+        <xsl:call-template name="bookreader-toolbar-items" />
         
       </head>
 
@@ -216,11 +250,20 @@
 
         <xsl:call-template name="BookReaderContainer" />
 
+        <xsl:if test="$gCurrentEmbed = 'full' and $gUsingBookReader = 'true'">
+          <xsl:call-template name="bookreader-page-items" />
+        </xsl:if>
+
         <!-- Footer -->
         <xsl:if test="$gCurrentEmbed = 'full'">
-          <xsl:call-template name="footer"/>
+          <xsl:call-template name="footer">
+            <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
+          </xsl:call-template>
         </xsl:if>
         
+        <xsl:if test="$gUsingBookReader = 'true'">
+          <xsl:call-template name="bookreader-javascript-init" />
+        </xsl:if>
         <xsl:call-template name="GetAddItemRequestUrl"/>
 
         <xsl:if test="$gEnableGoogleAnalytics='true'">
@@ -266,7 +309,6 @@
         <script type="text/javascript" src="/pt/js/lscache.js?ts={generate-id(.)}"></script>
 
         <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
-        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
         <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
 
       </head>
@@ -299,56 +341,42 @@
   </xsl:template>
   
   <xsl:template name="bookreader-javascript-init">
-    <!-- for prototype : bookreader instance section -->
     <script type="text/javascript">
-      function subclass(constructor, superConstructor)
-      {
-        function surrogateConstructor()
-        {
-        }
-
-        surrogateConstructor.prototype = superConstructor.prototype;
-
-        var prototypeObject = new surrogateConstructor();
-        prototypeObject.constructor = constructor;
-
-        constructor.prototype = prototypeObject;
-      }
-
-      subclass(FrankenBookReader, BookReader);
-
-      function FrankenBookReader() {
-          BookReader.call(this);
-          this.constModeText = 4;
-      }
-    </script>
-    
-    <script type="text/javascript">
-      $(window).bind("resize", function() {
+      
+      var resizeBookReader = function() {
         var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
-        var chromeHeight = $("#mbFooter").height() + $("#mbHeader").height();
-        $("#BookReader").height(viewportHeight - chromeHeight - 75);
-        $("div.mdpControlContainer").height(viewportHeight - chromeHeight - 75);
+        var innerHeight = $("#mbFooter").height() + $("#mbHeader").height();
+        var chromeHeight = innerHeight + $("#mdpToolbar").height();
+        $("#BookReader").height(viewportHeight - chromeHeight - 25);
+        
+        var checkHeight = viewportHeight - innerHeight - $("div.bibLinks").height() - 50;
+        $("div.mdpScrollableContainer").removeAttr('style');
+        if ( $("div.mdpScrollableContainer").height() > checkHeight ) {
+          $("div.mdpScrollableContainer").height(checkHeight);
+        }
+      }
+      
+      
+      $(window).bind("resize", function() {
+        resizeBookReader();
       })
 
 
+      if ( ! window.location.hash ) {
+        var seq = ""; var mode = "";
       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
-          <xsl:variable name="seq" select="number(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']) - 1" />
-          window.location.hash = "#page/n<xsl:value-of select="$seq" />/mode/1up";
+        seq = <xsl:value-of select="number(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']) - 1" />;
       </xsl:if>
-
+        var hash = "mode/<xsl:value-of select="$gCurrentView" />";
+        if ( seq ) {
+          hash = "page/n" + seq + "/" + hash;
+        }
+        window.location.hash = "#" + hash;
+      }
 
       $(document).ready(function(){ 
         $('#mdpImage').hide();
-        var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
-        var chromeHeight = $("#mbFooter").height() + $("#mbHeader").height();
-        $("#BookReader").height(viewportHeight - chromeHeight - 75);
-        $("div.mdpControlContainer").height(viewportHeight - chromeHeight - 75);
-      
-        // $('#BookReader').height($('.mdpControlContainer').height()-50);
-        // $('#BookReader').height(viewportHeight-50);
-      
-      
+        resizeBookReader();
       });
 
        br = new FrankenBookReader();
@@ -362,8 +390,8 @@
        br.reductionFactors = [   {reduce: 0.5, autofit: null},
                                  {reduce: 2/3, autofit: null},
                                  {reduce: 1, autofit: null},
-                                 {reduce: 2, autofit: null},
-                                 {reduce: 4, autofit: null},
+                                 {reduce: 4/3, autofit: null}, // 1.5 = 66%, 1.25 == 80%
+                                 {reduce: 2, autofit: null}
                              ];
        
        
@@ -375,12 +403,14 @@
               </xsl:for-each>
         br.imagesBaseURL = "/pt/bookreader/BookReader/images/";
         br.metaURL = "/cgi/imgsrv/meta";
-        br.force = 1;
         br.imageURL = "/cgi/imgsrv/image";
         br.ocrURL = "/cgi/imgsrv/ocr";
         br.pingURL = "/cgi/imgsrv/ping";
+        br.thumbnailURL = "/cgi/imgsrv/thumbnail";
+        br.force = 1;
         br.ocrFrameURL = "/cgi/pt";
-        br.slice_size = 100;
+        br.slice_size = 25; // 100;
+        br.total_slices = 1;
         br.ui = 'full';
         if ( br.ui == 'embed' ) {
           br.mode = 1;
@@ -388,7 +418,8 @@
         }
         br.displayMode = 'image';
         br.hasOcr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
-        br.qvalsHash = "<xsl:value-of select="string(/MBooksTop/MdpApp/QValsHash)" />";
+        br.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
+        br.debug_flags = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
     </script>
     <script type="text/javascript" src="/pt/js/hathi.js?ts={generate-id(.)}"/> 
   </xsl:template>
@@ -613,6 +644,7 @@
             
             <li>
               <xsl:element name="a">
+                <xsl:attribute name="id">pagePdfLink</xsl:attribute>
                 <xsl:attribute name="href">
                   <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
                 </xsl:attribute>
@@ -743,7 +775,7 @@
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
 					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentUi = 'classic' and $gCurrentView = 'image'">
+  					    <xsl:if test="$gCurrentView = 'image'">
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
@@ -752,87 +784,21 @@
 					  </xsl:element>
 					</li>
 					<li>
-						<ul id="mdpBookReaderViews">
-							<li>
-								<img id="mdpNewStarburst" src="/pt/images/NewStarburst.png" height="44" width="40" />
-							</li>
-							<li>
-								<span class="prompt">Try our new views!</span>
-							</li>
-							<li>
-    					  <xsl:element name="a">
-    					    <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
-    					    <xsl:attribute name="href">
-    					      <xsl:call-template name="build-bookreader-href">
-    					        <xsl:with-param name="mode" select="'1up'" />
-    					      </xsl:call-template>
-    					    </xsl:attribute>
-    					    <xsl:attribute name="class">
-    					      <xsl:text>PTbutton </xsl:text>
-      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = '1up'">
-      					      <xsl:text>PTbuttonActive</xsl:text>
-      					    </xsl:if>
-      					  </xsl:attribute>
-									<img src="/pt/images/icon_scroll.png" />
-									<span>Scroll</span>
-    					  </xsl:element>
-							</li>
-							<li>
-    					  <xsl:element name="a">
-    					    <xsl:attribute name="id"><xsl:text>btnBookReader2up</xsl:text></xsl:attribute>
-    					    <xsl:attribute name="href">
-    					      <xsl:call-template name="build-bookreader-href">
-    					        <xsl:with-param name="mode" select="'2up'" />
-    					      </xsl:call-template>
-    					    </xsl:attribute>
-    					    <xsl:attribute name="class">
-    					      <xsl:text>PTbutton </xsl:text>
-      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = '2up'">
-      					      <xsl:text>PTbuttonActive</xsl:text>
-      					    </xsl:if>
-      					  </xsl:attribute>
-									<img src="/pt/images/icon_flip_25.png" />
-									<span>Flip</span>
-    					  </xsl:element>
-							</li>
-							<li>
-    					  <xsl:element name="a">
-    					    <xsl:attribute name="id"><xsl:text>btnBookReaderThumbnail</xsl:text></xsl:attribute>
-    					    <xsl:attribute name="href">
-    					      <xsl:call-template name="build-bookreader-href">
-    					        <xsl:with-param name="mode" select="'thumbnail'" />
-    					      </xsl:call-template>
-    					    </xsl:attribute>
-    					    <xsl:attribute name="class">
-    					      <xsl:text>PTbutton </xsl:text>
-      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = 'thumbnail'">
-      					      <xsl:text>PTbuttonActive</xsl:text>
-      					    </xsl:if>
-      					  </xsl:attribute>
-									<img src="/pt/images/icon_thumbnails.png" />
-									<span>Thumbnails</span>
-    					  </xsl:element>
-							</li>
-							<li>
-    					  <xsl:element name="a">
-    					    <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
-    					    <xsl:attribute name="href">
-    					      <xsl:call-template name="build-bookreader-href">
-    					        <xsl:with-param name="mode" select="'text'" />
-    					      </xsl:call-template>
-    					    </xsl:attribute>
-    					    <xsl:attribute name="class">
-    					      <xsl:text>PTbutton </xsl:text>
-      					    <xsl:if test="$gCurrentUi = 'bookreader' and $gCurrentView = 'text'">
-      					      <xsl:text>PTbuttonActive</xsl:text>
-      					    </xsl:if>
-      					  </xsl:attribute>
-									<img src="/pt/images/1x1.png" height="25" width="1" />
-									<span>Plain Text</span>
-									<img src="/pt/images/1x1.png" height="25" width="1" />
-    					  </xsl:element>
-							</li>
-						</ul>
+					  <xsl:element name="a">
+					    <xsl:attribute name="id"><xsl:text>btnClassicText</xsl:text></xsl:attribute>
+					    <xsl:attribute name="href">
+					      <xsl:value-of select="$pViewTypeList/ViewTypeSimpleTextLink"/>
+					    </xsl:attribute>
+					    <xsl:attribute name="class">
+					      <xsl:text>PTbutton </xsl:text>
+  					    <xsl:if test="$gCurrentView = 'simple-text'">
+  					      <xsl:text>PTbuttonActive</xsl:text>
+  					    </xsl:if>
+  					  </xsl:attribute>
+							<img src="/pt/images/1x1.png" height="25" width="1" />
+							<span>Plain Text</span>
+							<img src="/pt/images/1x1.png" height="25" width="1" />
+					  </xsl:element>
 					</li>
 				</ul>
 			</div>
@@ -861,6 +827,101 @@
         </xsl:call-template>
 			</div>
 		</div>
+  </xsl:template>
+  
+  <xsl:template name="bookreader-page-items">
+    <div id="BRpageControls">
+      <div>
+        <label>Print</label>
+        <a href="#" id="print-page" class="printAction" target="pdf"><img alt="Print Page" src="/pt/images/icon_printer.png" height="25" width="25" /></a>
+      </div>
+      <div>
+        <label>Rotate</label>
+        <a href="#" id="rotate-left" class="rotateAction"><img alt="Rotate Left" src="/pt/images/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-right" class="rotateAction"><img alt="Rotate Right" src="/pt/images/icon_rotate_clockwise.png" height="25" width="25" /></a>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="bookreader-toolbar-items">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <script id="bookreader-toolbar-items" type="text/x-jquery-tmpl">
+      <li>
+				<ul id="mdpBookReaderViews">
+					<li>
+						<img id="mdpNewStarburst" src="/pt/images/NewStarburst.png" height="44" width="40" />
+					</li>
+					<li>
+						<span class="prompt">Try our new views!</span>
+					</li>
+					<li>
+					  <xsl:element name="a">
+					    <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
+					    <xsl:attribute name="href">
+                <xsl:value-of select="$pViewTypeList/ViewType1UpLink"/>
+					    </xsl:attribute>
+					    <xsl:attribute name="class">
+					      <xsl:text>PTbutton </xsl:text>
+  					    <xsl:if test="$gCurrentView = '1up'">
+  					      <xsl:text>PTbuttonActive</xsl:text>
+  					    </xsl:if>
+  					  </xsl:attribute>
+							<img src="/pt/images/icon_scroll.png" />
+							<span>Scroll</span>
+					  </xsl:element>
+					</li>
+					<li>
+					  <xsl:element name="a">
+					    <xsl:attribute name="id"><xsl:text>btnBookReader2up</xsl:text></xsl:attribute>
+					    <xsl:attribute name="href">
+                <xsl:value-of select="$pViewTypeList/ViewType2UpLink"/>
+					    </xsl:attribute>
+					    <xsl:attribute name="class">
+					      <xsl:text>PTbutton </xsl:text>
+  					    <xsl:if test="$gCurrentView = '2up'">
+  					      <xsl:text>PTbuttonActive</xsl:text>
+  					    </xsl:if>
+  					  </xsl:attribute>
+							<img src="/pt/images/icon_flip_25.png" />
+							<span>Flip</span>
+					  </xsl:element>
+					</li>
+					<li>
+					  <xsl:element name="a">
+					    <xsl:attribute name="id"><xsl:text>btnBookReaderThumbnail</xsl:text></xsl:attribute>
+					    <xsl:attribute name="href">
+                <xsl:value-of select="$pViewTypeList/ViewTypeThumbnailLink"/>
+					    </xsl:attribute>
+					    <xsl:attribute name="class">
+					      <xsl:text>PTbutton </xsl:text>
+  					    <xsl:if test="$gCurrentView = 'thumbnail'">
+  					      <xsl:text>PTbuttonActive</xsl:text>
+  					    </xsl:if>
+  					  </xsl:attribute>
+							<img src="/pt/images/icon_thumbnails.png" />
+							<span>Thumbnails</span>
+					  </xsl:element>
+					</li>
+					<li>
+					  <xsl:element name="a">
+					    <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
+					    <xsl:attribute name="href">
+					      <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
+					    </xsl:attribute>
+					    <xsl:attribute name="class">
+					      <xsl:text>PTbutton </xsl:text>
+  					    <xsl:if test="$gCurrentView = 'text'">
+  					      <xsl:text>PTbuttonActive</xsl:text>
+  					    </xsl:if>
+  					  </xsl:attribute>
+							<img src="/pt/images/1x1.png" height="25" width="1" />
+							<span>Plain Text</span>
+							<img src="/pt/images/1x1.png" height="25" width="1" />
+					  </xsl:element>
+					</li>
+				</ul>
+			</li>
+    </script>
   </xsl:template>
   
   <xsl:template name="build-zoomout-button">
@@ -909,9 +970,11 @@
     <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
     <xsl:variable name="seq" select="//CurrentCgi/Param[@name='seq']" />
     <xsl:variable name="view" select="//CurrentCgi/Param[@name='view']" />
+    <xsl:variable name="debug" select="//CurrentCgi/Param[@name='debug']" />
     
     <xsl:variable name="href">
       <xsl:value-of select="concat('/cgi/pt?id=', $id, ';ui=classic;seq=', $seq, ';size=', $size, ';view=', $view)" />
+      <xsl:if test="normalize-space($debug)"><xsl:value-of select="concat(';debug=', $debug)" /></xsl:if>
     </xsl:variable>
     <xsl:value-of select="normalize-space($href)" />
   </xsl:template>
@@ -1248,6 +1311,9 @@
   <!-- Image -->
   <xsl:template name="ContentContainer">
     <div id="mdpContentContainer">
+      <xsl:if test="$gUsingBookReader = 'true'">
+        <xsl:attribute name="class"><xsl:text>hideContentContainer</xsl:text></xsl:attribute>
+      </xsl:if>
 
       <!-- Error message set from addItemToCollection javascript -->
       <div id="errormsg">
@@ -1453,6 +1519,46 @@
   <xsl:template name="BuildPageLinks">
     <xsl:param name="pPageLinks"/>
     <ul id="mdpPageOptions">
+			<li>
+			  <xsl:variable name="pageNum">
+			    <xsl:choose>
+			      <xsl:when test="$gCurrentPageNum">
+			        <xsl:value-of select="$gCurrentPageNum" />
+			      </xsl:when>
+			      <xsl:otherwise>
+			        <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
+			      </xsl:otherwise>
+			    </xsl:choose>
+			  </xsl:variable>
+				<form method="GET" action="/cgi/pt" id="mdpPageForm">
+				  <input type="hidden" name="u" id="u" value="1" />
+
+				  <xsl:element name="input">
+            <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
+            <xsl:attribute name="type">submit</xsl:attribute>
+            <xsl:attribute name="value">Go to</xsl:attribute>
+            <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
+            <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
+          </xsl:element>
+          
+          <xsl:element name="input">
+            <xsl:attribute name="id">BRpagenum</xsl:attribute>
+            <xsl:attribute name="type">text</xsl:attribute>
+            <xsl:attribute name="size">8</xsl:attribute>
+            <xsl:attribute name="name">num</xsl:attribute>
+            <xsl:attribute name="value">
+              <xsl:value-of select="$pageNum"/>
+            </xsl:attribute>
+          </xsl:element>
+          <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
+          <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
+            <input type="hidden" name="seq" value="" />
+          </xsl:if>
+          <xsl:call-template name="HiddenDebug" />
+				  
+				</form>
+				
+			</li>
 			<li class="PTiconButton">
 			  <xsl:choose>
 			    <xsl:when test="$pPageLinks/FirstPageLink">
@@ -1520,45 +1626,6 @@
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
-			</li>
-			<li>
-			  <xsl:variable name="pageNum">
-			    <xsl:choose>
-			      <xsl:when test="$gCurrentPageNum">
-			        <xsl:value-of select="$gCurrentPageNum" />
-			      </xsl:when>
-			      <xsl:otherwise>
-			        <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
-			      </xsl:otherwise>
-			    </xsl:choose>
-			  </xsl:variable>
-				<form method="GET" action="/cgi/pt" id="mdpPageForm">
-				  <input type="hidden" name="u" id="u" value="1" />
-          <xsl:element name="input">
-            <xsl:attribute name="id">mdpPageNum</xsl:attribute>
-            <xsl:attribute name="type">text</xsl:attribute>
-            <xsl:attribute name="size">8</xsl:attribute>
-            <xsl:attribute name="name">num</xsl:attribute>
-            <xsl:attribute name="value">
-              <xsl:value-of select="$pageNum"/>
-            </xsl:attribute>
-          </xsl:element>
-          <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
-          <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
-            <input type="hidden" name="seq" value="" />
-          </xsl:if>
-          <xsl:call-template name="HiddenDebug" />
-				  
-				  <xsl:element name="input">
-            <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
-            <xsl:attribute name="type">submit</xsl:attribute>
-            <xsl:attribute name="value">Go</xsl:attribute>
-            <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
-            <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
-          </xsl:element>
-          
-				</form>
-				
 			</li>
 			<li class="PTiconButton">
 			  <xsl:choose>
@@ -1828,7 +1895,7 @@
         </xsl:element>
       </xsl:when>
 
-      <xsl:when test="$gFinalView='text'">
+      <xsl:when test="$gFinalView='simple-text'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpText</xsl:attribute>
           <p>
@@ -1896,7 +1963,7 @@
         </div>
       </xsl:when>
 
-      <xsl:when test="$gCurrentUi='classic'">
+      <xsl:when test="$gFinalView = 'image'">
         <xsl:element name="img">
           <xsl:attribute name="alt">image of individual page</xsl:attribute>
           <xsl:attribute name="id">mdpImage</xsl:attribute>

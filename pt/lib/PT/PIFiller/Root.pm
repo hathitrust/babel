@@ -79,7 +79,29 @@ sub BuildImageServerPDFUrl
         $tempCgi->param('num', $cgi->param('num'));
         $tempCgi->param('attachment', 0);
     }
+    
+    if ( $cgi->param('debug') ) {
+        $tempCgi->param('debug');
+    }
+    
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/pdf");
+    return $href;
+}
+
+sub BuildSearchResultsUrl
+{
+    my ( $cgi, $view ) = @_;
+    
+    my $href;
+    
+    if ( $cgi->param('q1') ) {
+        my $tempCgi = new CGI( $cgi );
+        $tempCgi->param('page', 'search');
+        $tempCgi->delete('view');
+
+        $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
+    }
+    
     return $href;
 }
 
@@ -429,6 +451,42 @@ sub handle_VIEW_TYPE_TEXT_LINK_PI
 
     my $cgi = $C->get_object('CGI');
     return BuildViewTypeUrl($cgi, 'text');
+}
+
+sub handle_SEARCH_RESULTS_LINK_PI
+    : PI_handler(SEARCH_RESULTS_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return BuildSearchResultsUrl($cgi);
+}
+
+sub handle_VIEW_TYPE_2UP_LINK_PI
+    : PI_handler(VIEW_TYPE_2UP_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return BuildViewTypeUrl($cgi, '2up');
+}
+
+sub handle_VIEW_TYPE_1UP_LINK_PI
+    : PI_handler(VIEW_TYPE_1UP_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return BuildViewTypeUrl($cgi, '1up');
+}
+
+sub handle_VIEW_TYPE_THUMBNAIL_LINK_PI
+    : PI_handler(VIEW_TYPE_THUMBNAIL_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return BuildViewTypeUrl($cgi, 'thumbnail');
 }
 
 

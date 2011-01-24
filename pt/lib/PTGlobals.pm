@@ -259,6 +259,7 @@ $gCgiPathComponent         = ($ENV{'AUTH_TYPE'} eq 'shibboleth') ? '/shcgi' : '/
 $gCollectionBuilderCgiRoot = $gCgiPathComponent . '/mb';
 $gPageturnerCgiRoot        = $gCgiPathComponent . '/pt';
 $gImgsrvCgiRoot            = $gCgiPathComponent . '/imgsrv';
+$gPageturnerSearchCgiRoot            = $gCgiPathComponent . '/ptsearch';
 
 # ---------------------------------------------------------------------
 #
@@ -277,7 +278,7 @@ $gDefaultSize         = '100';
 $gDefaultSeq          = '1';
 $gDefaultNum          = '1';
 $gDefaultView         = 'image';
-$gDefaultSsdView      = 'text';
+$gDefaultSsdView      = 'simple-text';
 $gDefaultOrientation  = '0';
 $gDefaultRotation     = '0';
 
@@ -320,7 +321,7 @@ $gStandardPixelWidthAmount = 680;
     );
 
 # Views open to all
-@gViewTypes = ( 'image', 'text', 'pdf', );
+@gViewTypes = ( 'image', 'text', '1up', '2up', 'thumbnail', 'simple-text' );
 # Views open to some
 @gAuthdViewTypes = ( 'fpdf' );
 

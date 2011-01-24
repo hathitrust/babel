@@ -8,7 +8,7 @@
      'page'     => 'root',
      'seq'      => '\d+',
      'size'     => '\d+',
-     'view'     => 'image|text|pdf|fpdf',
+     'view'     => 'image|text|1up|2up|thumbnail|simple-text',
      'debug'    => '.*',
      'newsid'   => '1|[a-z0-9]{32}',
      'attr'     => '\d+',

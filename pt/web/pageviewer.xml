@@ -92,6 +92,9 @@
       <ViewTypeFullPdfLink><?VIEW_TYPE_FULL_PDF_LINK?></ViewTypeFullPdfLink>
       <ViewTypePdfLink><?VIEW_TYPE_PDF_LINK?></ViewTypePdfLink>
       <ViewTypeImageLink><?VIEW_TYPE_IMAGE_LINK?></ViewTypeImageLink>
+      <ViewType1UpLink><?VIEW_TYPE_1UP_LINK?></ViewType1UpLink>
+      <ViewType2UpLink><?VIEW_TYPE_2UP_LINK?></ViewType2UpLink>
+      <ViewTypeThumbnailLink><?VIEW_TYPE_THUMBNAIL_LINK?></ViewTypeThumbnailLink>
       <ViewTypeTextLink><?VIEW_TYPE_TEXT_LINK?></ViewTypeTextLink>
     </ViewTypeLinks>
 
@@ -137,6 +140,7 @@
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
       </HiddenVars>
+      <SearchResultsLink><?SEARCH_RESULTS_LINK?></SearchResultsLink>
     </SearchForm>
 
     <FeedbackForm>

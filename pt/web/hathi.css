@@ -17,16 +17,6 @@ html, body {
 	left:0px;
 }
 
-#BookReader {
-	border:2px solid #494949;
-	/*left: 0px; right: 1px; top: 10px;*/
-	position: relative;
-	top: 10px;
-	padding-bottom: 0px;
-	vertical-align:top;
-		
-}
-
 .htmlNoOverflow {
   overflow: hidden;
 }
@@ -96,7 +86,9 @@ body {
     position: static;
 }*/
 
-
+#mdpUberContainer {
+  margin-top: -10px;
+}
 
 /* @group TOOLBAR */
 
@@ -173,9 +165,19 @@ a.PTbutton {
 }
 
 a.PTbutton:hover, a.PTbuttonActive {
-  color: white;
-  background-color: #545454;
-  text-decoration: none;
+  color: white !important;
+  background-color: #545454 !important;
+  text-decoration: none !important;
+}
+
+a.PTbuttonDisabled {
+  color: #ccc;
+  opacity: 0.75;
+}
+
+a.PTbuttonDisabled:hover {
+  color: #ccc !important;
+  background-color: #eaebec !important;
 }
 
 #btnClassicView {
@@ -288,7 +290,7 @@ span.prompt {
 #mdpZoomOptions {
   margin-left: auto !important;
   margin-right: auto;
-  width: 8em;
+  width: 10em;
   padding-right: 0;
   padding-left: 0;
   white-space: nowrap;
@@ -302,7 +304,7 @@ span.prompt {
   padding-right: 8px;
 }
 
-#mdpPageNum {
+#BRpagenum {
   width: 3em;
   border: 1px solid #d5d5d5;
   text-align: center;
@@ -317,20 +319,19 @@ span.prompt {
 
 /* @end */
 
+/* @group PAGE CONTROLS */
 
-/* @group ROTATE CONTROLS */
-
-/* ROTATE CONTROL */
-
-#BRrotateControls {z-index: 999; padding:5px; background-color:#f5f5f5;background-color:rgba(245, 245, 245, 0.6); display:none; 
+#BRpageControls {z-index: 999; padding:5px; background-color:#f5f5f5;background-color:rgba(245, 245, 245, 0.6); display:none; 
        position:absolute; top:0px; left:0px; overflow:hidden;
        border:solid 1px #929292; border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px; 
        box-shadow: 5px 5px 5px #888; -moz-box-shadow: 1px 1px 3px #555; -webkit-box-shadow: 5px 5px 5px #888; white-space: nowrap;}
-#BRrotateControls:hover {background-color:rgba(245, 245, 245, 1);}
-#BRrotateControls a { padding:3px 5px; border:solid 1px transparent; color:#000; text-decoration:none; font-size:14px;
-    float:left; display:block; text-align:center;}
-#BRrotateControls a img { background-color: black; height: 25px; width: 25px; }
-#BRrotateControls a:hover img { background-color: #ef7a06; }
+#BRpageControls:hover {background-color:rgba(245, 245, 245, 1);}
+#BRpageControls a { padding:3px 5px; border:solid 1px transparent; color:#000; text-decoration:none; font-size:14px;
+    float:left; display:block; text-align:center; border-bottom: 2px solid transparent;}
+#BRpageControls a img { /*background-color: black;*/ height: 25px; width: 25px; }
+#BRpageControls a:hover { border-bottom: 2px solid #666; }
+#BRpageControls > div { float: left; text-align: center;}
+#BRpageControls label { font-size: 80%; display: block; font-weight: bold;}
 
 /*#BRrotateControls a:hover { border:solid 1px #bea881; background-color:#fff2cb;
     background: -moz-linear-gradient(top, rgba(255, 251, 239, 1), rgba(255, 220, 87, 1));
@@ -350,11 +351,21 @@ span.prompt {
     background-color: #eee;
 }*/
 
+div.ocrText span {
+  white-space: nowrap;
+  overflow: hidden;
+  background-color: yellow;
+}
+
+div.ocrText, div.ocrText > div {
+  overflow: hidden;
+}
+
 div.ocrTextContainer {
-    background-color: red;
     position: relative;
     font-size: 1em;
     background-color: white;
+    opacity: 0.4;
     font-family: Georgia, Times, serif;
 }
 
@@ -373,8 +384,8 @@ div.ocrScrollBar:hover {
 }
 
 div.ocrText {
-    overflow: auto;
-    line-height: 125%;
+    /*overflow: auto;*/
+    /*line-height: 125%;*/
     background-color: white;
     width: 75%;
     padding-top: 5%;
@@ -388,9 +399,10 @@ div.ocrText {
     border-left: 1px dotted #eee;
     padding-left: 16px;
     padding-right: 4px;
+    text-align: left;
 }
 
-div.ocrText span { white-space: nowrap; }
+/*div.ocrText div { white-space: nowrap; }*/
 
 div.ocrpage {
     border: 4px dotted green;
@@ -471,14 +483,35 @@ button.active {
     color: black;
 }
 
-#BookReader {
+#XXBookReader {
  border: 2px solid black;
  position:absolute;
  font-family: arial, sans-serif;
- top: 50px;
+ /*top: 50px;*/
  width: 98%;
 }
 
+#XXBookReader {
+	border:2px solid #494949;
+	/*left: 0px; right: 1px; top: 10px;*/
+	position: relative;
+	top: 10px;
+	padding-bottom: 0px;
+	vertical-align:top;
+}
+
+#BookReader {
+ border: 2px solid #494949;
+ position:relative;
+ font-family: arial, sans-serif;
+ /*top: 50px;*/
+ width: 100%;
+}
+
+.hideContentContainer {
+  border: none !important;
+  padding: 0 !important;
+}
 
 #BRtoolbar {
     height:25px;
@@ -657,3 +690,24 @@ div.mdpScrollableContainer {
 #fullPdfFrame {
   display: none;
 }
+
+.noText {
+  text-align: justify;
+  font-size: 36px;
+  opacity: 0.5;
+}
+
+.noTextAlert {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  /*font-size: 120% !important;*/
+}
+
+.boxy-inner {
+  min-width: 250px;
+}
+
+/*#mdpSearchFormLabel label { padding-right: 4px; }*/
+
+#mdpSearch ul li { padding-left: 4px ; }
