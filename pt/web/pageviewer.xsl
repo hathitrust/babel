@@ -14,7 +14,6 @@
   <xsl:variable name="gCurrentPageImageWidth" select="/MBooksTop/MBooksGlobals/CurrentPageImageWidth"/>
   <xsl:variable name="gCurrentPageImageHeight" select="/MBooksTop/MBooksGlobals/CurrentPageImageHeight"/>
   <xsl:variable name="gCurrentPageOcr" select="/MBooksTop/MBooksGlobals/CurrentPageOcr"/>
-  <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/>
   <xsl:variable name="gCurrentPageNum" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']"/>
   <xsl:variable name="gCurrentQ1" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
   <xsl:variable name="gCurrentPageFeatures" select="/MBooksTop/MdpApp/CurrentPageFeatures"/>
@@ -25,27 +24,6 @@
   <xsl:variable name="gCollectionForm" select="/MBooksTop/MdpApp/AddToCollectionForm"/>
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
   
-  <xsl:variable name="gUsingBookReader">
-    <xsl:choose>
-      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = 'thumbnail'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
-  <xsl:variable name="gCurrentUi">
-    <xsl:choose>
-      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
-        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']" />
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:text>classic</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-
   <xsl:variable name="gFinalView">
     <xsl:choose>
       <xsl:when test="$gFinalAccessStatus!='allow'">
@@ -74,6 +52,38 @@
             </xsl:choose>
           </xsl:otherwise>
         </xsl:choose>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  
+  <xsl:variable name="gCurrentView">
+    <xsl:choose>
+      <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  <!-- <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/> -->
+  
+  
+  <xsl:variable name="gUsingBookReader">
+    <xsl:choose>
+      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  
+  <xsl:variable name="gCurrentUi">
+    <xsl:choose>
+      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
+        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>classic</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -346,8 +356,16 @@
       var resizeBookReader = function() {
         var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
         var innerHeight = $("#mbFooter").height() + $("#mbHeader").height();
-        var chromeHeight = innerHeight + $("#mdpToolbar").height();
-        $("#BookReader").height(viewportHeight - chromeHeight - 25);
+        var textDenyHeight = 0;
+        var $textDeny = $("#mdpTextDeny");
+        if ( $textDeny.length > 0 ) {
+          textDenyHeight = $textDeny.outerHeight() + 8;
+        }
+        var chromeHeight = innerHeight;
+        if ( $("#mdpToolbar").is(":visible")) {
+          chromeHeight += $("#mdpToolbar").height();
+        }
+        $("#BookReader").height(viewportHeight - chromeHeight - textDenyHeight - 25);
         
         var checkHeight = viewportHeight - innerHeight - $("div.bibLinks").height() - 50;
         $("div.mdpScrollableContainer").removeAttr('style');
@@ -420,6 +438,8 @@
         br.hasOcr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
         br.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
         br.debug_flags = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
+        br.finalAccessStatus = '<xsl:value-of select="$gFinalAccessStatus" />';
+        br.lazyDelay = 500;
     </script>
     <script type="text/javascript" src="/pt/js/hathi.js?ts={generate-id(.)}"/> 
   </xsl:template>
@@ -764,6 +784,9 @@
     </xsl:variable>
 
 		<div id="mdpToolbar">
+		  <xsl:if test="$gFinalAccessStatus != 'allowed' and contains(//CurrentCgi/Param[@name='debug'], 'hide')">
+		    <xsl:attribute name="style"><xsl:text>display: none</xsl:text></xsl:attribute>
+		  </xsl:if>
 			
 			<div id="mdpToolbarViews">
 				<ul>
@@ -894,7 +917,7 @@
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
 					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = 'thumbnail'">
+  					    <xsl:if test="$gCurrentView = 'thumb'">
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
@@ -1532,15 +1555,9 @@
 			  </xsl:variable>
 				<form method="GET" action="/cgi/pt" id="mdpPageForm">
 				  <input type="hidden" name="u" id="u" value="1" />
+				  
+				  <span>Jump to </span>
 
-				  <xsl:element name="input">
-            <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
-            <xsl:attribute name="type">submit</xsl:attribute>
-            <xsl:attribute name="value">Go to</xsl:attribute>
-            <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
-            <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
-          </xsl:element>
-          
           <xsl:element name="input">
             <xsl:attribute name="id">BRpagenum</xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
@@ -1550,6 +1567,17 @@
               <xsl:value-of select="$pageNum"/>
             </xsl:attribute>
           </xsl:element>
+
+				  <xsl:element name="input">
+            <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
+            <xsl:attribute name="type">submit</xsl:attribute>
+            <xsl:attribute name="value">Go</xsl:attribute>
+            <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
+            <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
+          </xsl:element>
+          
+          &#160;
+          
           <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
           <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
             <input type="hidden" name="seq" value="" />
@@ -1919,7 +1947,7 @@
         </div>
       </xsl:when>
 
-      <xsl:when test="$gFinalView='restricted'">
+      <xsl:when test="$gFinalView='restrictedXX'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           <xsl:choose>
@@ -1953,6 +1981,47 @@
               (<a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">More information</a>)
             </div>
         </xsl:element>
+        <div id="BookReader"></div>
+      </xsl:when>
+
+      <xsl:when test="$gFinalView='restricted'">
+        <xsl:element name="div">
+          <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
+          <xsl:choose>
+            <!-- If opb (attr=3) + affiliated user then tell them when -->
+            <!-- current accessor's exclusive access expires -->
+            <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
+              <div class="Specialtext">
+                <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
+                <ul>
+                  <li><strong>Unlimited</strong> use via University of Michigan Library computers</li>
+                  <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
+                </ul>
+                <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
+                <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
+
+              </div>
+            </xsl:when>
+            <xsl:otherwise>
+              <h2>
+                <img src="//common-web/graphics/LimitedLink.png" alt="" class="imgFloat" />
+                Full view is not available for this item <br/>due to copyright &#169; restrictions.
+              </h2>
+            </xsl:otherwise>
+          </xsl:choose>
+          <!-- <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p> -->
+          <div>
+              <img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>
+              <p>What you <strong>CAN</strong> do:
+                <ul>
+                  <li>Use the "Search in this text" search box above to find frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, or when working with a book that does not have an index.</li>
+                  <li>Click the "Find in a library" link to find this item in a library near you.</li>
+                </ul>
+              </p>
+              (<a href="http://www.hathitrust.org/faq#RestrictedAccess">More information</a>)
+            </div>
+        </xsl:element>
+        <div id="BookReader"></div>
       </xsl:when>
 
       <xsl:when test="$gFinalView='missing'">

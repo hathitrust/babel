@@ -150,17 +150,17 @@ sub DetermineAndSetContentHandler {
 
     my $requestedPageView = $self->GetRequestedView();
 
-    if ( $requestedPageView eq 'text' ) {
+    if ( $requestedPageView eq 'simple-text' ) {
         $self->SetContentHandler( 'OcrHandler' );
     }
     elsif ( $requestedPageView eq 'fpdf' ) {
         my $handler = $self->GetFormatHandler('nul', 'fpdf');
         $self->SetContentHandler($handler);
     }
-    elsif ( $requestedPageView eq 'image' || $requestedPageView eq 'pdf' ) {
+    elsif ( $requestedPageView eq 'image' || $requestedPageView eq '1up' || $requestedPageView eq '2up' || $requestedPageView eq 'thumbnail' || $requestedPageView eq 'text' ) {
         my $requestedPageSequence = $self->GetRequestedPageSequence();
         my $storedFileType = $self->GetStoredFileType( $requestedPageSequence );
-        my $handler = $self->GetFormatHandler( $storedFileType, $requestedPageView );
+        my $handler = $self->GetFormatHandler( $storedFileType, 'image' ); # all variations on image
         $self->SetContentHandler( $handler );
 
         DEBUG('image,pt,all', qq{ContentHandler set to: $handler});

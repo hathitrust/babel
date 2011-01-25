@@ -653,7 +653,10 @@ FrankenBookReader.prototype.initToolbar = function(mode, ui) {
         return false;
     })
     
-    
+    if ( this.finalAccessStatus != 'allow' ) {
+        console.log("ACCESS", this.finalAccessStatus);
+        $("#mdpToolbar").css('opacity', 0.4);
+    }
 
     // Switch to requested mode -- binds other click handlers
     this.switchToolbarMode(mode);
@@ -1283,17 +1286,17 @@ br.createContentElement = function(index, reduce, width, height) {
         $(ee).addClass("ocrScrollBar");
         $(e).append(ee);
         
-        ee = document.createElement("div");
-        $(ee).addClass("ocrText");
-        $(ee).attr("id", "ocr" + index);
+        // ee = document.createElement("div");
+        // $(ee).addClass("ocrText");
+        // $(ee).attr("id", "ocr" + index);
         
         var maxFontSize = ( 5 / Math.round(this.reduce ));
         var minFontSize = ( 1 / Math.round(this.reduce ));
         if ( minFontSize < 1 ) { minFontSize = 1; }
 
-        var $ee = $(ee).appendTo(e).bind('mousedown', function() { console.log("HEY"); return true })
+        // var $ee = $(ee).appendTo(e).bind('mousedown', function() { console.log("HEY"); return true })
         var gutter = Math.floor(width / 8);
-        $(ee).css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' });
+        // $(ee).css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' });
         
         //// USING IFRAME!
         // $(ee).html(ocrtext).textfill({minFontSize:minFontSize, maxFontSize:maxFontSize});
@@ -1315,17 +1318,45 @@ br.createContentElement = function(index, reduce, width, height) {
             
             if ( ! data ) {
                 // data = '<div><div class="noTextAlert">NO TEXT ON PAGE</div></div><div>&nbsp;</div><div>This page does not contain any text recoverable by the OCR engine.</div></div>';
-                data = '<div class="noText"><div style="font-size: ${maxAlertFontSize}em" class="noTextAlert">NO TEXT ON PAGE</div><div style="font-size: ${maxFontSize}em"><p>This page does not contain any text recoverable by the OCR engine.</p></div></div>';
-                $(ee).html(data.replace('${maxAlertFontSize}', (2 / self.reduce)).replace('${maxFontSize}', (1 / self.reduce))).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                  $(ee).css('backgroundColor', 'white');
-                });
+                // data = '<div class="noText"><div style="font-size: ${maxAlertFontSize}em" class="noTextAlert">NO TEXT ON PAGE</div><div style="font-size: ${maxFontSize}em"><p>This page does not contain any text recoverable by the OCR engine.</p></div></div>';
+                
+                data = 
+                    '<div class="noText ocrText">' +
+                        '<div class="noTextAlert">NO TEXT ON PAGE</div>' +
+                        '<span>This page does not contain any text</span><br />' +
+                        '<span>recoverable by the OCR engine</span>' + 
+                    '</div>';
+                
+                // $(ee).html(data.replace('${maxAlertFontSize}', (2 / self.reduce)).replace('${maxFontSize}', (1 / self.reduce))).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
+                //   $(ee).css('backgroundColor', 'white');
+                // });
+                
+                $(data.replace('${maxAlertFontSize}', (2 / self.reduce)).replace('${maxFontSize}', (1 / self.reduce)))
+                    .appendTo(e)
+                    .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
+                    .textfill({maxFontSize : 40})
+                    .parents(".ocrTextContainer")
+                    .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
+                        $(ee).css('backgroundColor', 'white');
+                    });
+                
             } else {
                 // $(ee).html(data).find("> div").bigtext({maxfontsize : maxFontSize}).end().fitOverflow("div > div").parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
                 //   $(ee).css('backgroundColor', 'white');
                 // });
-                $(ee).html(data).textfill({maxFontSize : 40, sel : "span"}).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                  $(ee).css('backgroundColor', 'white');
-                });
+                // $(ee).html(data).textfill({maxFontSize : 40, sel : "span"}).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
+                //   $(ee).css('backgroundColor', 'white');
+                // });
+                $(data)
+                    .addClass('ocrText')
+                    .attr("id", "ocr" + index)
+                    .appendTo(e)
+                    .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
+                    .textfill({maxFontSize : 40, sel : "span"})
+                    .parents(".ocrTextContainer")
+                    .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
+                        $(ee).css('backgroundColor', 'white');
+                    });
             }
             
             
