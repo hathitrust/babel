@@ -52,7 +52,7 @@ my @g_FIELD_LIST =
     (
 
 	'author',
-	'author2',
+#	'author2', #remove for January index rebuild. For next rebuild include this here and in schema.xml
 	'availability',
 	'callnumber',
 	'countryOfPubStr',
