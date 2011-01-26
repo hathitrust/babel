@@ -228,6 +228,7 @@ sub stage_rc_to_string {
     elsif ($rc == $SLIP_Utils::States::RC_NO_INDEX_DIR)       { $s = 'bad index directory';              }
     elsif ($rc == $SLIP_Utils::States::RC_BAD_SCHED_FILE)     { $s = 'schedule file i/o error';          }
     elsif ($rc == $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL)   { $s = 'tomcat stop failure';              }
+    elsif ($rc == $SLIP_Utils::States::RC_TOMCAT_START_FAIL)  { $s = 'tomcat start failure';             }
     else                                                      { $s = 'unknown rc';                       }
     
     return $s;

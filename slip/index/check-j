@@ -77,7 +77,7 @@ our ($opt_r, $opt_R, $opt_C, $opt_O, $opt_d, $opt_n);
 
 my $ops = getopts('r:R:CdnO:');
 use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
-use constant TOMCAT_RUNNING_TRIES => 10;
+use constant TOMCAT_MAX_TRIES => 10;
 use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
 
 my $INTERACTIVE = $ENV{'TERM'};
@@ -334,27 +334,31 @@ sub __run_s_tomcat {
     return 0 if $NOOP;
 
     my $rc = 0;
+    my $fail_rc = ($action eq 'stop') 
+      ? $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL 
+        : $SLIP_Utils::States::RC_TOMCAT_START_FAIL;
+
+    my $test_num = ($action eq 'stop') ? 0 : 1;
     
     # Try to act on a tomcat
     my $cmd = qq{sudo /etc/init.d/tomcat-build $action $shard};
     my $output = `$cmd 2> $Child_Err_File`;
 
     # The rc from tomcat-build is unreliable. Test result by looking at
-    # process table to make sure sure it stopped
+    # process table to make sure sure it stopped or started
     my $tomcat_pattern = $C->get_object('MdpConfig')->get('tomcat_pattern');
     $tomcat_pattern =~ s,__SHARD__,$shard,;
 
     my $tries = 0;
-    my $num = SLIP_Utils::Processes::num_tomcats_running($C, $tomcat_pattern);
-    while ($num > 0) {
+    do {
         $tries++;
-        last if ($tries > TOMCAT_RUNNING_TRIES);
+        last if ($tries > TOMCAT_MAX_TRIES);
         sleep TOMCAT_TRIES_WAIT;
-    }
+    } until (SLIP_Utils::Processes::num_tomcats_running($C, $tomcat_pattern) == $test_num);
 
-    if ($tries > TOMCAT_RUNNING_TRIES) {
-        $rc = $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL;
-        my $s = qq{check-j tomcat failed to stop run=$run shard=$shard\n};
+    if ($tries > TOMCAT_MAX_TRIES) {
+        $rc = $fail_rc;
+        my $s = qq{check-j tomcat failed to $action run=$run shard=$shard\n};
         __output($s);
         __non_interactive_err_output($rc, $s);
         Log_check_error($C, $run, $shard, $s);

@@ -47,6 +47,7 @@ $RC_DRIVER_FLAGS_DIR   = 13;
 $RC_RIGHTS_NO_SEM      = 14;
 $RC_BAD_SCHED_FILE     = 15;
 $RC_TOMCAT_STOP_FAIL   = 16;
+$RC_TOMCAT_START_FAIL  = 17;
 
 # Driver stages check these
 $St_Undefined       = 'Undefined';
