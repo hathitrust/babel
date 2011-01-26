@@ -6,20 +6,19 @@ git-me - Keep an app in sync with the upstream
 
 =head1 SYNOPSIS
 
-git-me <app>
+git-me <app> <branch>
 
 =head1 OPTIONS
 
 =over 8
 
--S pull the latest submodule versions
-
 =back
 
 =head1 DESCRIPTION
 
-B<git-me> checkout the master branch, fetch objects, rebase to
-origin/master and update submodules.
+B<git-me> helps you keep a branch (NOT MASTER) up to date with
+origin/master. B<git-me >fetch objects, rebase to origin/master and
+update submodules.
 
 =cut
 
@@ -33,9 +32,10 @@ use ToolLib;
 $| = 1;
 
 sub git_me_app_usage {
-    my $s = qq{Usage: git-me <app> [<branch>]
+    my $s = qq{Usage: git-me <app> <branch>
            where <app> is the application to sync with the upstream
-                 <branch> is optional, defaults to 'master'\n};
+                 <branch> is branch to rebase
+                   Note: rebase of master branch not supported\n};
     return $s;
 }
 
@@ -53,7 +53,15 @@ if (! $app) {
     exit 1;
 }
 
-my $branch = shift || 'master';
+my $branch = shift;
+if (! $branch) {
+    print git_me_app_usage();
+    exit 1;
+}
+if ($branch eq 'master') {
+    print git_me_app_usage();
+    exit 1;
+}
 
 my ($repo_root, $app_root) = get_HTDE_roots();
 
