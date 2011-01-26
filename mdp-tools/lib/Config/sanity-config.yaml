@@ -141,25 +141,23 @@ wayf:
   - http://__URL_STAGE__.hathitrust.org/cgi/wayf?__LOCAL__
 
 slip:
-  - /htapps/__CMD_STAGE__/slip/cgi/slip r=10__LOCAL__
+  - /htapps/__CMD_STAGE__/slip/cgi/slip r=11__LOCAL__
 
-  - http://__URL_STAGE__.hathitrust.org/cgi/slip?r=10;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/slip?r=11;__LOCAL__
 
   - /htapps/__CMD_STAGE__/slip/index/commit-j -r1 -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/control-j -r1 -kstop __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/delete-j -r1 -Ifoo -T __LOCAL__
-  - /htapps/__CMD_STAGE__/slip/index/docs-j -r10 -Iuc1.\$b699489 __LOCAL__
+  - /htapps/__CMD_STAGE__/slip/index/docs-j -r11 -Iuc1.\$b699489 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/driver-j -r1 -T __LOCAL__
-  - /htapps/__CMD_STAGE__/slip/index/enqueuer-j -r10 -n __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/enqueuer-j -r11 -n __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/index-j -r1 -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/optimize-j -r1 -R1 -O1 -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/query-j -r1 -T -q'q=id:"mdp.390150*"' __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/rebuild-j -r1 -T __LOCAL__
-  - /htapps/__CMD_STAGE__/slip/index/report-j -r10 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/report-j -r11 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/rights-j -T -B -n __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/sizer-j -r1 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/sync-j -r1 -mrightsNINindexed -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/timeouts-j -r1 -l1 __LOCAL__
-  - /htapps/__CMD_STAGE__/slip/index/check-j -r10 -R1 -O2 -n -C __LOCAL__
+  - /htapps/__CMD_STAGE__/slip/index/check-j -r11 -R1 -O2 -n -C __LOCAL__
