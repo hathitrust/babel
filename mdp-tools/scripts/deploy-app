@@ -129,7 +129,7 @@ foreach my $app (@apps) {
 
     if ($tag_is_new) {
         if (! (
-               G_checkout_deployment($app_dir)
+               G_checkout_branch($app_dir, 'deployment')
                &&
                G_tag_app($app_dir, $tag)
                &&

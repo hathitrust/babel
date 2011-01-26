@@ -33,6 +33,11 @@ testing before deployment.
 Note: B<stage-app> MUST be the only script that fetches origin for
 /htapps/test.babel apps.
 
+B<stage-app> -b<branch> will attempt synchronize the local branch=<branch> of
+beta-1,2,3.babel for an existing
+application <app> with origin/master after a fetch from origin at the
+central repositoy including updating all submodules in preparation for
+testing before deployment
 =cut
 
 use strict;
@@ -47,16 +52,25 @@ use ToolLib;
 
 sub stage_app_usage {
     my $s = qq{Usage: stage-app [options] [<app> [<app>]+]
-           where <app> is the application. Bring app to most current version for testing under test.babel (default)
-                 -s staging areas: test (default), beta-1, beta-2, beta-3
+           Bring master branch of <app> up-to-date for testing under test.babel (default)
+                 -s staging area: test (default), beta-1, beta-2, beta-3
                  -A all apps
                  -v verbose
-                 -h print help\n};
+                 -h print help
+
+       stage-app [options] -b<branch> <app>
+           Bring <branch> of <app> up-to-date for testing under one of beta-*.babel
+                 -s staging area: beta-1, beta-2, beta-3 (ONLY)
+                 -v verbose
+                 -h print help \n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_s, $opt_A);
-my $ops = getopts('hvs:A');
+our ($opt_h, $opt_v, $opt_s, $opt_A, $opt_b);
+my $ops = getopts('hvs:Ab:');
+
+my @valid_beta_stages = qw(beta-1 beta-2 beta-3);
+my @all_valid_stages = (@valid_beta_stages, 'test');
 
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
@@ -66,35 +80,68 @@ if ($help) {
     exit 0;
 }
 
+my $BRANCH = $opt_b;
 my $ALL = $opt_A;
+
 my @apps;
-if ($ALL) {
-    @apps = `cat $LOCATION/../app-list.txt`;
-    chomp(@apps);
+if (defined($BRANCH)) {
+    @apps = shift;
 }
 else {
-    @apps = @ARGV;
-    if (! scalar(@apps)) {
+    if ($ALL) {
+        @apps = `cat $LOCATION/../app-list.txt`;
+        chomp(@apps);
+    }
+    else {
+        @apps = @ARGV;
+    }
+}
+
+if (! scalar(@apps)) {
+    print stage_app_usage();
+    exit 1;
+}
+
+my $STAGE = $opt_s;
+if ($BRANCH) {
+    if (! grep(/^$STAGE$/, @valid_beta_stages)) {
+        PrintN("$STAGE is not a valid beta staging area\n");
+        print stage_app_usage();
+        exit 1;
+    }
+}
+else {
+    $STAGE = $opt_s || 'test';
+    if (! grep(/^$STAGE$/, @all_valid_stages)) {
+        PrintN("$STAGE is not a valid staging area\n");
         print stage_app_usage();
         exit 1;
     }
 }
 
-my $STAGE = $opt_s || 'test';
+my $rc;
 
-my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
-my $rc = 0;
-foreach my $app (@apps) {
-    my $fail_msg = qq{Failed to stage application ($app)\n};
-    my $app_dir = "$app_root/$app";
+if ($BRANCH) {
+    $rc = stage_topic_branch($apps[0], $BRANCH);
+}
+else {
+    $rc = stage_master_branch(@apps);
+}
 
-    if (! validate_existing_app($repo_root, $app_root, $app)) {
-        PrintN($fail_msg);
-        $rc |= 1;
-        next;
-    }
 
-    PrintY(qq{\nStaging application ($app) at $app_dir\n});
+exit $rc;
+
+# ---------------------------------------------------------------------
+
+=item list_submodule_dependencies
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub list_submodule_dependencies {
+    my $app_dir = shift;
 
     if (-e "$app_dir/.gitmodules") {
         my @submodules = `cat "$app_dir/.gitmodules"`;
@@ -105,34 +152,111 @@ foreach my $app (@apps) {
     else {
         PrintY("No Dependencies\n");
     }
+}
+
+# ---------------------------------------------------------------------
+
+=item stage_master_branch
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub stage_master_branch {
+    my @apps = @_;
+
+    my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
+    my $rc = 0;
+    foreach my $app (@apps) {
+        my $fail_msg = qq{Failed to stage application ($app)\n};
+        my $app_dir = "$app_root/$app";
+
+        if (! validate_existing_app($repo_root, $app_root, $app)) {
+            PrintN($fail_msg);
+            $rc |= 1;
+            next;
+        }
+
+        PrintY(qq{\nStaging application ($app) at $app_dir\n});
+
+        if (! (
+               G_fetch_origin($app_dir)
+               &&
+               G_sync_local_master($app_dir)
+               &&
+               G_sync_local_deployment($app_dir)
+               &&
+               G_checkout_branch($app_dir, 'deployment')
+               &&
+               G_merge_master_branch($app_dir)
+               &&
+               G_update_submodules($app_dir)
+              )
+           ) {
+            PrintN($fail_msg);
+            $rc |= 1;
+            next;
+        }
+
+        list_submodule_dependencies($app_dir);
+
+        PrintY("Begin sanity checks ...\n");
+        print `$LOCATION/sanity-app -s$STAGE $app`;
+        $rc |= $?;
+
+        PrintY(qq{Staging succeeds\n}) unless ($rc);
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item stage_topic_branch
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub stage_topic_branch {
+    my $app = shift;
+    my $branch = shift;
+
+    my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
+
+    my $fail_msg = qq{Failed to stage application ($app) (branch=$BRANCH)\n};
+    my $app_dir = "$app_root/$app";
+
+    if (! validate_existing_app($repo_root, $app_root, $app)) {
+        PrintN($fail_msg);
+        return 1;
+    }
+
+    PrintY(qq{\nStaging application ($app) (branch=$branch) at $app_dir\n});
 
     if (! (
            G_fetch_origin($app_dir)
            &&
-           G_sync_local_master($app_dir)
-           &&
-           G_sync_local_deployment($app_dir)
-           &&
-           G_checkout_deployment($app_dir)
-           &&
-           G_merge_master_branch($app_dir)
+           G_checkout_branch($app_dir, $branch)
            &&
            G_update_submodules($app_dir)
           )
        ) {
         PrintN($fail_msg);
-        $rc |= 1;
-        next;
+        return 1;
     }
+
+    list_submodule_dependencies($app_dir);
 
     PrintY("Begin sanity checks ...\n");
     print `$LOCATION/sanity-app -s$STAGE $app`;
-    $rc |= $?;
+    my $rc = $?;
 
     PrintY(qq{Staging succeeds\n}) unless ($rc);
+
+    return $rc;
 }
-
-exit $rc;
-
 
 __END__;

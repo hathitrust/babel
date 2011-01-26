@@ -21,7 +21,7 @@ use Exporter ();
                 G_list_tags
                 G_sync_local_master
                 G_sync_local_deployment
-                G_checkout_deployment
+                G_checkout_branch
                 G_checkout_master
                 G_merge_master_branch
                 G_update_submodules
@@ -131,7 +131,7 @@ sub G_fetch_origin {
     my $silent = shift;
     
     my $cmd;
-    print qq{Fetching origin/master ... };
+    print qq{Fetching origin ... };
 
     return 0
       if (! chdir_to_app_dir($app_dir));
@@ -167,14 +167,14 @@ sub G_sync_local_deployment {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    # Start from master so G_checkout_deployment will branch from
+    # Start from master so G_checkout_branch('deployment') will branch from
     # master if new deployment branch is created.
     return 0
       if (! G_checkout_master($app_dir));
 
     my $branch_is_remote;
     return 0
-      if (! G_checkout_deployment($app_dir, \$branch_is_remote));
+      if (! G_checkout_branch($app_dir, 'deployment', \$branch_is_remote));
 
     if ($branch_is_remote) {
         $cmd = "git reset --hard origin/deployment";
@@ -230,21 +230,25 @@ sub __exists_local_branch {
     if (! execute_command_w_output($cmd, \$output)) {
         return 0;
     }
-
-    return ($output =~ m,deployment,s);
+    my @branches = split(/\n/, $output);
+    @branches = map {($_ =~ s,\s*|\*,,g , $_)[1]} @branches;
+    
+    return (grep(/^$branch$/, @branches));
 }
 
 # ---------------------------------------------------------------------
 
-=item G_create_local_deployment_track_remote
+=item G_create_local_branch_track_remote
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub G_create_local_deployment_track_remote {
-    my $cmd = "git checkout --track -b deployment origin/deployment";
+sub G_create_local_branch_track_remote {
+    my $branch = shift;
+    
+    my $cmd = "git checkout --track -b $branch origin/$branch";
     if (! execute_command($cmd)) {
         return 0;
     }
@@ -255,54 +259,55 @@ sub G_create_local_deployment_track_remote {
 
 # ---------------------------------------------------------------------
 
-=item G_checkout_deployment
+=item G_checkout_branch
 
-Checkout the deployment branch in preparation for operating on it.
+Checkout the branch in preparation for operating on it.
 
 =cut
 
 # ---------------------------------------------------------------------
-sub G_checkout_deployment {
+sub G_checkout_branch {
     my $app_dir = shift;
+    my $branch = shift;
     my $branch_exists_at_remote_ref = shift;
 
     my $exists_remotely = 0;
 
     my $cmd;
     my $output;
-    print qq{Checkout local deployment branch ...\n};
+    print qq{Checkout local branch=$branch ...\n};
 
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    # If there's a remote deployment branch, a local deployment branch
+    # If there's a remote branch, a local branch
     # must have been created and pushed to remote. But the local could
     # have been deleted so track the remote again to restore it.
-    if (__exists_remote_branch('deployment')) {
+    if (__exists_remote_branch($branch)) {
         if (! G_fetch_origin($app_dir, 'silent')) {
             return 0;
         }
-        if (! __exists_local_branch('deployment')) {
-            if (! G_create_local_deployment_track_remote()) {
+        if (! __exists_local_branch($branch)) {
+            if (! G_create_local_branch_track_remote($branch)) {
                 return 0;
             }
         }
 
-        $cmd = "git checkout deployment";
+        $cmd = "git checkout $branch";
         if (! execute_command($cmd)) {
             return 0;
         }
         $exists_remotely = 1;
     }
     else {
-        if (__exists_local_branch('deployment')) {
-            $cmd = "git checkout deployment";
+        if (__exists_local_branch($branch)) {
+            $cmd = "git checkout $branch";
             if (! execute_command($cmd)) {
                 return 0;
             }
         }
         else {
-            $cmd = "git checkout -b deployment";
+            $cmd = "git checkout -b $branch";
             if (! execute_command($cmd)) {
                 return 0;
             }
@@ -473,7 +478,7 @@ sub G_push_origin_deployment {
       if (! chdir_to_app_dir($app_dir));
 
     return 0
-      if (! G_checkout_deployment($app_dir));
+      if (! G_checkout_branch($app_dir, 'deployment'));
 
     my $cmd = "git push origin deployment";
     return 0
