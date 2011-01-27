@@ -223,6 +223,8 @@
     		<script type="text/javascript" src="/pt/jquery/jquery.tmpl.js" charset="utf-8"></script>
     		<script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js" charset="utf-8"></script>
 
+        <script type="text/javascript" src="/pt/js/init.js?ts={generate-id(.)}"></script>
+
         <!-- PDF -->
     		<script type="text/javascript" src="/pt/js/download_helper.js" charset="utf-8"></script>
     		
@@ -234,9 +236,9 @@
           <!-- <script type="text/javascript" src="/pt/js/fitOverflow.js"></script> -->
           <script type="text/javascript" src="/pt/js/jquery.textfill.js"></script>          
           <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
+          <script type="text/javascript" src="/pt/js/HTBookReader.js?ts={generate-id(.)}"></script>
           <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js?ts={generate-id(.)}"></script>
           <script type="text/javascript" src="/pt/js/lscache.js?ts={generate-id(.)}"></script>
-          <script type="text/javascript" src="/pt/js/init.js?ts={generate-id(.)}"></script>
     		</xsl:if>
     		
         <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
@@ -358,59 +360,20 @@
   <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
       
-      var resizeBookReader = function() {
-        var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
-        var innerHeight = $("#mbFooter").height() + $("#mbHeader").height();
-        var textDenyHeight = 0;
-        var $textDeny = $("#mdpTextDeny");
-        if ( $textDeny.length > 0 ) {
-          textDenyHeight = $textDeny.outerHeight() + 8;
-        }
-        var chromeHeight = innerHeight;
-        if ( $("#mdpToolbar").is(":visible")) {
-          chromeHeight += $("#mdpToolbar").height();
-        }
-        $("#BookReader").height(viewportHeight - chromeHeight - textDenyHeight - 25);
-        
-        var checkHeight = viewportHeight - innerHeight - $("div.bibLinks").height() - 50;
-        $("div.mdpScrollableContainer").removeAttr('style');
-        if ( $("div.mdpScrollableContainer").height() > checkHeight ) {
-          $("div.mdpScrollableContainer").height(checkHeight);
-        }
-      }
-      
-      
-      $(window).bind("resize", function() {
-        resizeBookReader();
-      })
+       HT.params = {};
+       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+         HT.params.seq = <xsl:value-of select="number(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']) - 1" />;
+       </xsl:if>
+       HT.params.view = "<xsl:value-of select="$gCurrentView" />";
 
+       HT.reader = new HTBookReader();
+       HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
+       HT.reader.bookTitle = "<xsl:value-of select="str:replace(string($gFullTitleString), '&quot;', '\&quot;')"/>";
+       HT.reader.reduce = 1;
+       HT.reader.pageProgression = 'lr';
 
-      if ( ! window.location.hash ) {
-        var seq = ""; var mode = "";
-      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
-        seq = <xsl:value-of select="number(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']) - 1" />;
-      </xsl:if>
-        var hash = "mode/<xsl:value-of select="$gCurrentView" />";
-        if ( seq ) {
-          hash = "page/n" + seq + "/" + hash;
-        }
-        window.location.hash = "#" + hash;
-      }
-
-      $(document).ready(function(){ 
-        $('#mdpImage').hide();
-        resizeBookReader();
-      });
-
-       br = new FrankenBookReader();
-       br.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
-       br.bookTitle = "<xsl:value-of select="str:replace(string($gFullTitleString), '&quot;', '\&quot;')"/>";
-       br.reduce = 1;
-       br.pageProgression = 'lr';
-       // specifying our own reductionFactors seems to mess with zooming out
-       //br.reductionFactors = [0.5, 0.75, 1, 1.5, 2, 4]; // [0.5, 1, 2, 4, 8];
-       
-       br.reductionFactors = [   {reduce: 0.5, autofit: null},
+       // reduce: 4 == thumbnails; too small for normal page browsing
+       HT.reader.reductionFactors = [   {reduce: 0.5, autofit: null},
                                  {reduce: 2/3, autofit: null},
                                  {reduce: 1, autofit: null},
                                  {reduce: 4/3, autofit: null}, // 1.5 = 66%, 1.25 == 80%
@@ -418,35 +381,37 @@
                              ];
        
        
-              <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
-                <xsl:if test="position() = 1">   
-                  // The index of the title page.
-                  br.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;  
-                </xsl:if>
-              </xsl:for-each>
-        br.imagesBaseURL = "/pt/bookreader/BookReader/images/";
-        br.metaURL = "/cgi/imgsrv/meta";
-        br.imageURL = "/cgi/imgsrv/image";
-        br.ocrURL = "/cgi/imgsrv/ocr";
-        br.pingURL = "/cgi/imgsrv/ping";
-        br.thumbnailURL = "/cgi/imgsrv/thumbnail";
-        br.force = 1;
-        br.ocrFrameURL = "/cgi/pt";
-        br.slice_size = 100;
-        br.total_slices = 1;
-        br.ui = 'full';
-        if ( br.ui == 'embed' ) {
-          br.mode = 1;
-          br.reduce = 1;
+        <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
+          <xsl:if test="position() = 1">   
+        // The index of the title page.
+        HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;  
+          </xsl:if>
+        </xsl:for-each>
+        HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
+        HT.reader.url_config = {
+          meta  : "/cgi/imgsrv/meta",
+          image : "/cgi/imgsrv/image",
+          text  : "/cgi/imgsrv/ocr",
+          ping  : "/cgi/imgsrv/ping",
+          thumb : "/cgi/imgsrv/thumbnail"
+        };
+        HT.reader.slice_size = 100;
+        HT.reader.total_slices = 1;
+        HT.reader.ui = 'full';
+        if ( HT.reader.ui == 'embed' ) {
+          HT.reader.mode = 1;
+          HT.reader.reduce = 1;
         }
-        br.displayMode = 'image';
-        br.hasOcr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
-        br.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
-        br.debug_flags = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
-        br.finalAccessStatus = '<xsl:value-of select="$gFinalAccessStatus" />';
-        br.lazyDelay = 500;
+        HT.reader.displayMode = 'image';
+        HT.reader.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
+        HT.reader.flags.debug = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
+        HT.reader.flags.attr = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='attr']"/>';
+        HT.reader.flags.has_ocr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
+        HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
+        HT.reader.flags.force = 1;
+        HT.reader.lazyDelay = 500;
     </script>
-    <script type="text/javascript" src="/pt/js/hathi.js?ts={generate-id(.)}"/> 
+    <script type="text/javascript" src="/pt/js/bookreader_startup.js?ts={generate-id(.)}"/> 
   </xsl:template>
 
   <xsl:template match="/MBooksTop" mode="embed">

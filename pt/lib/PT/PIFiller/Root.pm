@@ -486,7 +486,7 @@ sub handle_VIEW_TYPE_THUMBNAIL_LINK_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $cgi = $C->get_object('CGI');
-    return BuildViewTypeUrl($cgi, 'thumbnail');
+    return BuildViewTypeUrl($cgi, 'thumb');
 }
 
 

@@ -1,5 +1,6 @@
 // avoid polluting the global namespace
-$.pdf_helpers = {
+var HT = HT || {};
+HT.pdf_helpers = {
      download_pdf : function(self) {
         var progress = (((1+Math.random())*0x10000)|0).toString(16) + "." + (new Date()).getTime() + ".txt";
         progress = "progress/" + progress.substr(0,1) + "/" + progress.substr(1,1) + "/" + progress.substr(2,1) + "/" + progress;
@@ -140,9 +141,9 @@ $.pdf_helpers = {
 $(document).ready(function() {
     $("a#fullPdfLink").click(function() {
         if ( $(this).attr('rel') == 'allow' ) {
-            $.pdf_helpers.download_pdf(this);
+            HT.pdf_helpers.download_pdf(this);
         } else {
-            $.pdf_helpers.explain_pdf_access(this);
+            HT.pdf_helpers.explain_pdf_access(this);
         }
         return false;
     });

@@ -44,7 +44,7 @@ if (!Array.prototype.reduce)
   };
 }
 
-// define a console
+// define a console if not exists
 if ( window.console === undefined ) {
     window.console = {
         log : function() { }
@@ -66,9 +66,5 @@ function subclass(constructor, superConstructor)
   constructor.prototype = prototypeObject;
 }
 
-subclass(FrankenBookReader, BookReader);
-
-function FrankenBookReader() {
-    BookReader.call(this);
-    this.constModeText = 4;
-}
+// define a namespace
+var HT = HT || {};
