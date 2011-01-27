@@ -884,7 +884,7 @@
                   <li>Click the "Find in a library" link to find this item in a library near you.</li>
                 </ul>
               </p>
-              (<a href="http://www.hathitrust.org/faq#RestrictedAccess">More information</a>)
+              (<a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">More information</a>)
             </div>
         </xsl:element>
       </xsl:when>
