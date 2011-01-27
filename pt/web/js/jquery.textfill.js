@@ -1,4 +1,4 @@
-    ;(function($) {
+;(function($) {
 /**
 * Resize inner element to fit the outer element
 * @author Some modifications by Alexander Sandstorm

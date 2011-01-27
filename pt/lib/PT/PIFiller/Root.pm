@@ -81,7 +81,7 @@ sub BuildImageServerPDFUrl
     }
     
     if ( $cgi->param('debug') ) {
-        $tempCgi->param('debug');
+        $tempCgi->param('debug', $cgi->param('debug'));
     }
     
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/pdf");
@@ -575,6 +575,16 @@ sub handle_ALLOW_FULL_PDF_PI
 
     my $id = $C->get_object('CGI')->param('id');
     return $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+}
+
+sub handle_FULL_PDF_ACCESS_MESSAGE_PI
+    : PI_handler(FULL_PDF_ACCESS_MESSAGE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    my ( $message, $status ) = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    return $message;
 }
 
 

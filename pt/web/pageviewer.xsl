@@ -23,6 +23,7 @@
   <xsl:variable name="gCollectionList" select="/MBooksTop/MdpApp/CollectionList"/>
   <xsl:variable name="gCollectionForm" select="/MBooksTop/MdpApp/AddToCollectionForm"/>
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
+  <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
   
   <xsl:variable name="gFinalView">
     <xsl:choose>
@@ -221,6 +222,9 @@
     		<script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js" charset="utf-8"></script>
     		<script type="text/javascript" src="/pt/jquery/jquery.tmpl.js" charset="utf-8"></script>
     		<script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js" charset="utf-8"></script>
+
+        <!-- PDF -->
+    		<script type="text/javascript" src="/pt/js/download_helper.js" charset="utf-8"></script>
     		
     		<xsl:if test="$gUsingBookReader = 'true'">
           <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
@@ -237,6 +241,7 @@
     		
         <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
         <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
+        <link href="/pt/download_helper.css" media="all" rel="stylesheet" type="text/css" /> 
         
         <xsl:if test="$gCurrentView = 'image'">
           <style>
@@ -427,7 +432,7 @@
         br.thumbnailURL = "/cgi/imgsrv/thumbnail";
         br.force = 1;
         br.ocrFrameURL = "/cgi/pt";
-        br.slice_size = 25; // 100;
+        br.slice_size = 100;
         br.total_slices = 1;
         br.ui = 'full';
         if ( br.ui == 'embed' ) {
@@ -680,24 +685,48 @@
                 <xsl:attribute name="title">Download full PDF</xsl:attribute>
                 <xsl:attribute name="id">fullPdfLink</xsl:attribute>
                 <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+                <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
                 <xsl:attribute name="href">
                   <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
                 </xsl:attribute>
                 <xsl:text>Download PDF - whole book</xsl:text>
               </xsl:element>
-							<div id="fullPdfProgress" class="meter-wrap">
-								<div class="meter-value" style="background-color: #666; width: 0%">
-									<div clas="meter-text">
-										Generating PDF...
-									</div>
-								</div>
-							</div>
-							<div id="fullPdfAlert">
-								<p>
-									There was a problem building your PDF; staff have been notified.
-									Please try again in 24 hours.
-								</p>
-							</div>
+              
+              <xsl:if test="$gFullPdfAccess = 'deny'">
+                <div id="noPdfAccess">
+                  <p>
+                    <xsl:choose>
+                      <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                        <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                        <xsl:text> to determine whether you can download this book.</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                        <xsl:text>You need to be affiliated with a HathiTrust Member institution to download this book.</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+                        <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
+                      </xsl:when>
+                      <xsl:otherwse>
+                        <xsl:text>Sorry.</xsl:text>
+                      </xsl:otherwse>
+                    </xsl:choose>
+                  </p>
+                </div>
+              </xsl:if>
+              
+              <!-- <div id="fullPdfProgress" class="meter-wrap">
+                <div class="meter-value" style="background-color: #EF7A06; width: 0%">
+                  <div clas="meter-text">
+                    Generating PDF...
+                  </div>
+                </div>
+              </div>
+              <div id="fullPdfAlert">
+                <p>
+                  There was a problem building your PDF; staff have been notified.
+                  Please try again in 24 hours.
+                </p>
+              </div> -->
 							<div id="fullPdfFrame"></div>
             </li>
          </ul>
