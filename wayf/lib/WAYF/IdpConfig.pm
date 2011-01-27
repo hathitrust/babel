@@ -141,6 +141,12 @@ package WAYF::IdpConfig;
                    },
      
      # Waiting
+     'utah'    => {
+                    'authtype' => 'shibboleth',
+                    'link_text' => 'University of Utah',
+                    'template'  => 'https://___HOST___/Shibboleth.sso/utah?target=___TARGET___',
+                    'enabled' => '0',
+                  },
      'baylor'  => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Baylor University',
@@ -161,7 +167,7 @@ package WAYF::IdpConfig;
                    },
      'uic'  =>     {
                     'authtype' => 'shibboleth',
-                    'link_text' => 'University of Illinois, Chicago',
+                    'link_text' => 'University of Illinois at Chicago',
                     'template'  => 'https://___HOST___/Shibboleth.sso/uic?target=___TARGET___',
                     'enabled' => '0',
                    },
