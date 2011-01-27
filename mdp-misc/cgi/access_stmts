@@ -76,7 +76,7 @@ print start_html(-title=>"Hathitrust access statements and map",
                 );
 print div({-class=>"brandingLogo"},
           a({-href=>"http://hathitrust.org"},
-            img({-src=>"/ht-graphics/web/HathiTrustDL_logo.png", -style=>"border:0"})));
+            img({-src=>"/common/HathiTrustDL_logo.png", -style=>"border:0"})));
 print div(h2("Digital Library - access statements and map - $date") 
           . h3("Usage: http://babel.hathitrust.org/mdp-misc/cgi/access_stmts or: http://babel.hathitrust.org/mdp-misc/cgi/access_stmts?attr=1;src=3"));
 
