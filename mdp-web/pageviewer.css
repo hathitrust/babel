@@ -549,15 +549,15 @@ img.imgFloat {
 #mdpTextDeny {
   font-weight: normal;
   font-size: 1.1em;
-  margin: 10px 0 20px 0;
-  padding: 3em 2em 2em 4em;
+  margin: 10px 0 4px 0;
+  padding: 0.75em 1em 0.5em 1em; /*3em 2em 2em 4em;*/
   border: 1px solid #999;
   color: #333;
   background-color: #FFF;
   text-align: left;
-  height: 38em;
-  float: left;
-  position: relative; top: 10px; left:10px;
+  /*height: 38em;*/
+  /*float: left;*/
+  /*position: relative; top: 10px; left:10px;*/
 }
 
 #mdpTextDeny div {

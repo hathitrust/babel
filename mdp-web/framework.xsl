@@ -719,9 +719,23 @@
       </xsl:attribute>
       
       <h2 class="SkipLink">Search and page navigation options</h2>
-      <ul>
+      <ul class="searchForm">
         <li id="mdpSearchFormLabel">
-          <label for="mdpSearchInputBox">Search in this text</label>
+          <label for="mdpSearchInputBox">
+            <xsl:choose>
+              <xsl:when test="normalize-space($pSearchForm/SearchResultsLink)">
+                <xsl:element name="a">
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="$pSearchForm/SearchResultsLink" />
+                  </xsl:attribute>
+                  <xsl:text>Back to Search Results</xsl:text>
+                </xsl:element>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>Search in this text</xsl:text>
+              </xsl:otherwise>
+            </xsl:choose>
+          </label>
           <xsl:element name="a">
             <xsl:attribute name="class">SkipLink</xsl:attribute>
             <xsl:attribute name="name">SkipToSearch</xsl:attribute>
@@ -936,13 +950,19 @@
   <xsl:template match="Highlight">
     <xsl:element name="span">
       <xsl:copy-of select="@class"/>
-      <xsl:value-of select="."/>
+      <xsl:apply-templates select="." mode="copy" />
     </xsl:element>
   </xsl:template>
   
   <!-- Preserve line breaks in OCR -->
   <xsl:template match="br">
     <xsl:copy-of select="."/>
+  </xsl:template>
+  
+  <xsl:template match="@*|*|text()" mode="copy">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|*|text()" mode="copy" />
+    </xsl:copy>
   </xsl:template>
 
 </xsl:stylesheet>

@@ -7,7 +7,12 @@
 <xsl:variable name="gGoogleOnclickTracking" select="'true'"/>
 
   <xsl:template name="footer">
+    <xsl:param name="gUsingBookReader" select="'false'" />
     <div id="mbFooter">
+      <xsl:if test="$gUsingBookReader = 'true'">
+        <xsl:attribute name="class"><xsl:text>footerFixed</xsl:text></xsl:attribute>
+      </xsl:if>
+        
       <div id="FooterCont">
         <!--All pages use Footer-->
         <xsl:call-template name="footerBrandingLinks"/>
