@@ -37,9 +37,9 @@ gr:
   - http://__URL_STAGE__.hathitrust.org/cgi/gr?id=8;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/gr?id=uc1.$b699489;__LOCAL__
 
-ht-graphics:
-  - http://__URL_STAGE__.hathitrust.org/ht-graphics/HathiTrustDL_logo.png
-  - http://__URL_STAGE__.hathitrust.org/ht-graphics/favicon.ico
+common:
+  - http://__URL_STAGE__.hathitrust.org/common/HathiTrustDL_logo.png
+  - http://__URL_STAGE__.hathitrust.org/common/favicon.ico
 
 htd:
   - /htapps/__CMD_STAGE__/htd/cgi/htd action=/pagemeta/mdp.39015004314111/37 __LOCAL__
