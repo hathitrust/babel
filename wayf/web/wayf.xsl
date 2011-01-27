@@ -68,7 +68,7 @@
                   <h4>Logging in will allow you to:</h4>
                   <p class="loggedinAccess">Download full PDFs of public domain &amp; open access items</p>
                   <p class="loggedinAccess">Create permanent public &amp; private collections</p>
-                  <p>There is no sign up necessary. Login with your institutional account. <a href="http://www.hathitrust.org/faq#Shibboleth">Don't see your institution?</a></p>
+                  <p>There is no sign up necessary. Login with your institutional account. <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">Don't see your institution?</a></p>
                 </div>
               </div>
             </xsl:when>
@@ -90,7 +90,7 @@
               </div>
               <h4>Logging in will allow you to:</h4>
               <p class="loggedinAccess">Create permanent public &amp; private collections</p>
-              <p>Read more about <a href="http://www.hathitrust.org/faq#Save">friend accounts</a>.</p>
+              <p>Read more about <a href="http://www.hathitrust.org/help_digital_library#FriendAccount">friend accounts</a>.</p>
             </div>
           </div>
           <p class="msg">Note: Logging in does NOT provide access to page images of "Limited (search-only)" items.</p>
