@@ -309,8 +309,9 @@ sub __run_check_shard {
     return 0 if $NOOP;
 
     my $cmd = qq{$SCRIPTS_DIR/check-shard -r$run -R$shard -N$num_segs 2> $Child_Err_File};
-    my $output = `$cmd`;
-    my $rc = __check_c_sysrc($?, $C, $run, $shard, "check num_segs=$num_segs");
+    my $output = `$cmd 2> $Child_Err_File`;
+    my $sysrc = $? >> 8;
+    my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "check num_segs=$num_segs");
 
     if ($rc == 0) {
         Log_check($C, $run, $shard, "__run_check_shard num_segs=$num_segs: " . $output);
@@ -386,14 +387,12 @@ sub __run_CheckIndex {
     return 0 if $NOOP;
 
     # Try to act on a tomcat
-    my $cmd = qq{java -Xmx10g -Xms10g -cp /l/local/apache-tomcat-build-$shard/webapps/solr-sdr-build/build-$shard/WEB-INF/lib/lucene-core-2.9-dev.jar -ea:org.apache.lucene... org.apache.lucene.index.CheckIndex  /l/solrs/prod/$shard/data/index };
-
-    my $output = `$cmd 2> $Child_Err_File`;
-    # XXX try to figure out the $? value
-    #my $rc = __check_c_sysrc($?, $C, $run, $shard, "CheckIndex");
-    my $sysrc = $?;
+    my $cmd = $C->get_object('MdpConfig')->get('check_index_java_cmd');
+    $cmd =~ s,__SHARD__,$shard,g;
     
-    my $rc = __check_c_sysrc(0, $C, $run, $shard, "CheckIndex");
+    my $output = `$cmd 2> $Child_Err_File`;
+    my $sysrc = $? >> 8;    
+    my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "CheckIndex");
 
     if ($rc == 0) {
         # Log_check($C, $run, $shard, $output);
