@@ -354,7 +354,6 @@ span.prompt {
 div.ocrText span {
   white-space: nowrap;
   overflow: hidden;
-  background-color: yellow;
 }
 
 div.ocrText, div.ocrText > div {

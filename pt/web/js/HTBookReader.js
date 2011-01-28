@@ -396,6 +396,7 @@ HTBookReader.prototype.init = function() {
     var self = this;
     var startIndex = undefined;
     var params = this.paramsFromFragment(window.location.hash);
+    
     var do_wait = false;
     if ('undefined' != typeof(params.index)) {
         startIndex = params.index;

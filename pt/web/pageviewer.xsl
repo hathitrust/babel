@@ -231,6 +231,7 @@
     		<xsl:if test="$gUsingBookReader = 'true'">
           <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
           <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
+          <script type="text/javascript" src="/pt/jquery/jquery.color.js"></script>
           <!-- <script type="text/javascript" src="/pt/jquery/jquery-textfill-0.1.js"></script> -->
           <!-- <script type="text/javascript" src="/pt/jquery/bigtext.js"></script> -->
           <!-- <script type="text/javascript" src="/pt/js/fitOverflow.js"></script> -->
@@ -365,6 +366,7 @@
          HT.params.seq = <xsl:value-of select="number(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']) - 1" />;
        </xsl:if>
        HT.params.view = "<xsl:value-of select="$gCurrentView" />";
+       HT.init_from_params();
 
        HT.reader = new HTBookReader();
        HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
@@ -402,7 +404,7 @@
           HT.reader.mode = 1;
           HT.reader.reduce = 1;
         }
-        HT.reader.displayMode = 'image';
+        // HT.reader.displayMode = 'image';
         HT.reader.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
         HT.reader.flags.debug = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
         HT.reader.flags.attr = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='attr']"/>';

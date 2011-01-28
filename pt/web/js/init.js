@@ -68,3 +68,15 @@ function subclass(constructor, superConstructor)
 
 // define a namespace
 var HT = HT || {};
+
+// bookreader utility
+// seed hash based on URL parameters as needed
+HT.init_from_params = function() {
+    if ( ! window.location.hash ) {
+      var hash = "mode/" + HT.params.view;
+      if ( HT.params.seq ) {
+        hash = "page/n" + HT.params.seq + "/" + hash;
+      }
+      window.location.hash = "#" + hash;
+    }
+}

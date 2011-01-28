@@ -27,23 +27,6 @@ $(window).bind("resize", function() {
 })
 
 // PREPPING AND LOADING SECTION
-
-// Check for config object
-// $$$ change this to use the newer params object
-if (typeof(brConfig) != 'undefined') {
-    if (typeof(brConfig["ui"]) != 'undefined') {
-        HT.reader.ui = brConfig["ui"];
-    }
-    if (brConfig['mode'] == 1) {
-        HT.reader.mode = 1;
-        if (typeof(brConfig['reduce'] != 'undefined')) {
-            HT.reader.reduce = brConfig['reduce'];
-        }
-    } else if (brConfig['mode'] == 2) {
-        HT.reader.mode = 2;  
-    }
-} // brConfig
-
 // override slice size from params
 var newHash = window.location.hash.substr(1);
 if(newHash.indexOf("slice/") >= 0) {
@@ -67,16 +50,7 @@ $(document).ready(function() {
     
     $("#mdpImage").hide();
     HT.resizeBookReader();
-    
-    // seed hash based on URL parameters as needed
-    if ( ! window.location.hash ) {
-      var hash = "mode/" + HT.params.mode;
-      if ( HT.params.seq ) {
-        hash = "page/n" + HT.params.seq + "/" + hash;
-      }
-      window.location.hash = "#" + hash;
-    }
-    
+        
     // Load bookreader
     // delay loading metaURL - BAH HUMBUG
     
