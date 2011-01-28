@@ -24,6 +24,7 @@
   <xsl:variable name="gCollectionForm" select="/MBooksTop/MdpApp/AddToCollectionForm"/>
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
   <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
+  <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
   
   <xsl:variable name="gFinalView">
     <xsl:choose>
@@ -207,45 +208,15 @@
           </xsl:call-template>
         </title>
 
-        <!-- jQuery and plugins -->
+        <!-- jQuery from the Google CDN -->
     		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-    		<xsl:if test="$gUsingBookReader = 'true'">
-    		  <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/> 
-        </xsl:if>
-    		<script type="text/javascript" src="/pt/js/classic.js" charset="utf-8"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
+        <xsl:if test="$gUsingBookReader='true'">
+          <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
+        </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
-        <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
 
-        <!-- jQuery plugins -->
-    		<script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js" charset="utf-8"></script>
-    		<script type="text/javascript" src="/pt/jquery/jquery.tmpl.js" charset="utf-8"></script>
-    		<script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js" charset="utf-8"></script>
-
-        <script type="text/javascript" src="/pt/js/init.js?ts={generate-id(.)}"></script>
-
-        <!-- PDF -->
-    		<script type="text/javascript" src="/pt/js/download_helper.js" charset="utf-8"></script>
-    		
-    		<xsl:if test="$gUsingBookReader = 'true'">
-          <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
-          <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
-          <script type="text/javascript" src="/pt/jquery/jquery.color.js"></script>
-          <!-- <script type="text/javascript" src="/pt/jquery/jquery-textfill-0.1.js"></script> -->
-          <!-- <script type="text/javascript" src="/pt/jquery/bigtext.js"></script> -->
-          <!-- <script type="text/javascript" src="/pt/js/fitOverflow.js"></script> -->
-          <script type="text/javascript" src="/pt/js/jquery.textfill.js"></script>          
-          <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
-          <script type="text/javascript" src="/pt/js/HTBookReader.js?ts={generate-id(.)}"></script>
-          <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js?ts={generate-id(.)}"></script>
-          <script type="text/javascript" src="/pt/js/lscache.js?ts={generate-id(.)}"></script>
-    		</xsl:if>
-    		
-        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
-        <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
-        <link href="/pt/download_helper.css" media="all" rel="stylesheet" type="text/css" /> 
-        
         <xsl:if test="$gCurrentView = 'image'">
           <style>
             html {
@@ -391,11 +362,11 @@
         </xsl:for-each>
         HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
         HT.reader.url_config = {
-          meta  : "/cgi/imgsrv/meta",
-          image : "/cgi/imgsrv/image",
-          text  : "/cgi/imgsrv/ocr",
-          ping  : "/cgi/imgsrv/ping",
-          thumb : "/cgi/imgsrv/thumbnail"
+          meta  : "<xsl:value-of select="$gImgsrvUrlRoot" />/meta",
+          image : "<xsl:value-of select="$gImgsrvUrlRoot" />/image",
+          text  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ocr",
+          ping  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ping",
+          thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
         };
         HT.reader.slice_size = 100;
         HT.reader.total_slices = 1;
@@ -673,27 +644,13 @@
                       <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
                         <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
                       </xsl:when>
-                      <xsl:otherwse>
+                      <xsl:otherwise>
                         <xsl:text>Sorry.</xsl:text>
-                      </xsl:otherwse>
+                      </xsl:otherwise>
                     </xsl:choose>
                   </p>
                 </div>
               </xsl:if>
-              
-              <!-- <div id="fullPdfProgress" class="meter-wrap">
-                <div class="meter-value" style="background-color: #EF7A06; width: 0%">
-                  <div clas="meter-text">
-                    Generating PDF...
-                  </div>
-                </div>
-              </div>
-              <div id="fullPdfAlert">
-                <p>
-                  There was a problem building your PDF; staff have been notified.
-                  Please try again in 24 hours.
-                </p>
-              </div> -->
 							<div id="fullPdfFrame"></div>
             </li>
          </ul>
@@ -749,7 +706,7 @@
               <xsl:attribute name="value">
                 <xsl:text>http://</xsl:text>
                 <xsl:value-of select="//HttpHost" />
-                <xsl:value-of select="//CurrentUrl"/>
+                <xsl:value-of select="//PageLink"/>
               </xsl:attribute>
             </xsl:element>
 
@@ -789,6 +746,16 @@
 					<li>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnClassicView</xsl:text></xsl:attribute>
+						  <xsl:attribute name="title">
+						    <xsl:choose>
+    					    <xsl:when test="$gCurrentView = 'image'">
+    					      <xsl:text>Classic View is the current view</xsl:text>
+    					    </xsl:when>
+    					    <xsl:otherwise>
+    					      <xsl:text>Classic View</xsl:text>
+    					    </xsl:otherwise>
+    					  </xsl:choose>
+    					</xsl:attribute>
 					    <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypeImageLink"/>
 					    </xsl:attribute>
@@ -798,7 +765,12 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_classicview.png" />
+							<img src="/pt/images/icon_classicview.png">
+							  <xsl:attribute name="alt">
+							    <xsl:text>Classic View</xsl:text>
+							  </xsl:attribute>
+  					    <xsl:attribute name="title"><xsl:text>Classic View</xsl:text></xsl:attribute>
+							</img>
 							<span>Classic View</span>
 					  </xsl:element>
 					</li>
@@ -874,8 +846,19 @@
 						<span class="prompt">Try our new views!</span>
 					</li>
 					<li>
+					  <xsl:variable name="title">
+					    <xsl:choose>
+  					    <xsl:when test="$gCurrentView = '1up'">
+  					      <xsl:text>Scroll View is the current view</xsl:text>
+  					    </xsl:when>
+  					    <xsl:otherwise>
+  					      <xsl:text>Scroll View</xsl:text>
+  					    </xsl:otherwise>
+  					  </xsl:choose>
+  					</xsl:variable>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
+						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
 					    <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewType1UpLink"/>
 					    </xsl:attribute>
@@ -885,13 +868,29 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_scroll.png" />
+							<img src="/pt/images/icon_scroll.png">
+							  <xsl:attribute name="alt">
+							    <xsl:text>Scroll View</xsl:text>
+							  </xsl:attribute>
+  						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+      				</img>
 							<span>Scroll</span>
 					  </xsl:element>
 					</li>
 					<li>
+					  <xsl:variable name="title">
+					    <xsl:choose>
+  					    <xsl:when test="$gCurrentView = '2up'">
+  					      <xsl:text>Flip View is the current view</xsl:text>
+  					    </xsl:when>
+  					    <xsl:otherwise>
+  					      <xsl:text>Flip View</xsl:text>
+  					    </xsl:otherwise>
+  					  </xsl:choose>
+					  </xsl:variable>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnBookReader2up</xsl:text></xsl:attribute>
+						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
 					    <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewType2UpLink"/>
 					    </xsl:attribute>
@@ -901,13 +900,29 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_flip_25.png" />
+							<img src="/pt/images/icon_flip_25.png">
+							  <xsl:attribute name="alt">
+							    <xsl:text>Flip View</xsl:text>
+							  </xsl:attribute>
+  						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+							</img>
 							<span>Flip</span>
 					  </xsl:element>
 					</li>
 					<li>
+					  <xsl:variable name="title">
+					    <xsl:choose>
+  					    <xsl:when test="$gCurrentView = 'thumb'">
+  					      <xsl:text>Thumbnail View is the current view</xsl:text>
+  					    </xsl:when>
+  					    <xsl:otherwise>
+  					      <xsl:text>Thumbnail View</xsl:text>
+  					    </xsl:otherwise>
+  					  </xsl:choose>
+					  </xsl:variable>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnBookReaderThumbnail</xsl:text></xsl:attribute>
+						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
 					    <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypeThumbnailLink"/>
 					    </xsl:attribute>
@@ -917,7 +932,12 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_thumbnails.png" />
+							<img src="/pt/images/icon_thumbnails.png">
+							  <xsl:attribute name="alt">
+							    <xsl:text>Thumbnail View</xsl:text>
+							  </xsl:attribute>
+  						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+							</img>
 							<span>Thumbnails</span>
 					  </xsl:element>
 					</li>
@@ -925,17 +945,38 @@
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
 					    <xsl:attribute name="href">
-					      <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
+					      <xsl:if test="$gHasOcr='YES'">
+					        <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
+					      </xsl:if>
 					    </xsl:attribute>
+					    <xsl:if test="$gHasOcr='YES'">
+					      <xsl:attribute name="accesskey">5</xsl:attribute>
+					    </xsl:if>
+					    <xsl:attribute name="title">
+						    <xsl:choose>
+						      <xsl:when test="$gHasOcr='NO'">
+						        <xsl:text>(This item has no text)</xsl:text>
+						      </xsl:when>
+    					    <xsl:when test="$gCurrentView = 'text'">
+    					      <xsl:text>Text View is the current view</xsl:text>
+    					    </xsl:when>
+    					    <xsl:otherwise>
+    					      <xsl:text>Text View</xsl:text>
+    					    </xsl:otherwise>
+    					  </xsl:choose>
+    					</xsl:attribute>
 					    <xsl:attribute name="class">
 					      <xsl:text>PTbutton </xsl:text>
   					    <xsl:if test="$gCurrentView = 'text'">
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
+  					    <xsl:if test="$gHasOcr='NO'">
+  					      <xsl:text>PTbuttonDisabled</xsl:text>
+  					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/1x1.png" height="25" width="1" />
+							<img src="/pt/images/1x1.png" height="25" width="1" alt="" />
 							<span>Plain Text</span>
-							<img src="/pt/images/1x1.png" height="25" width="1" />
+							<img src="/pt/images/1x1.png" height="25" width="1" alt="" />
 					  </xsl:element>
 					</li>
 				</ul>
@@ -949,16 +990,17 @@
       <xsl:when test="$zoom">
         <xsl:element name="a">
           <xsl:attribute name="id"><xsl:text>mdpZoomOut</xsl:text></xsl:attribute>
+          <xsl:attribute name="title"><xsl:text>Zoom Out: </xsl:text><xsl:value-of select="$zoom/Value" /><xsl:text>%</xsl:text></xsl:attribute>
           <xsl:attribute name="href">
             <xsl:call-template name="build-zoom-href">
               <xsl:with-param name="size" select="$zoom/Value" />
             </xsl:call-template>
           </xsl:attribute>
-          <img src="/pt/images/icon_zoomout.png" height="25" width="25" />
+          <img src="/pt/images/icon_zoomout.png" height="25" width="25" alt="Zoom Out: {$zoom/Value}%" />
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <img src="/pt/images/icon_zoomout_grayed.png" height="25" width="25" />
+        <img src="/pt/images/icon_zoomout_grayed.png" height="25" width="25" alt="(At Minimum Zoom)"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -969,16 +1011,17 @@
       <xsl:when test="$zoom">
         <xsl:element name="a">
           <xsl:attribute name="id"><xsl:text>mdpZoomIn</xsl:text></xsl:attribute>
+          <xsl:attribute name="title"><xsl:text>Zoom In: </xsl:text><xsl:value-of select="$zoom/Value" /><xsl:text>%</xsl:text></xsl:attribute>
           <xsl:attribute name="href">
             <xsl:call-template name="build-zoom-href">
               <xsl:with-param name="size" select="$zoom/Value" />
             </xsl:call-template>
           </xsl:attribute>
-          <img src="/pt/images/icon_zoomin.png" height="25" width="25" />
+          <img src="/pt/images/icon_zoomin.png" height="25" width="25" alt="Zoom In: {$zoom/Value}%" />
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <img src="/pt/images/icon_zoomin_grayed.png" height="25" width="25" />
+        <img src="/pt/images/icon_zoomin_grayed.png" height="25" width="25" alt="(At Maximum Zoom)" />
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -1113,7 +1156,7 @@
   <!-- FORM: Add To Collection Form -->
   <xsl:template name="BuildAddToCollectionControl">
     <div class="ptSelectBox">
-      <!-- <label for="PTaddItemSelect" class="PTcollectionlabel"><xsl:text>Add to your collection:</xsl:text></label> -->
+      <label for="PTaddItemSelect" class="SkipLink"><xsl:text>Add to your collection:</xsl:text></label>
       <!-- for-each just for context: there's only one -->
       <xsl:for-each select="$gCollectionForm/CollectionSelect">
         <xsl:call-template name="BuildHtmlSelect">
@@ -1418,6 +1461,7 @@
   <!-- CONTROL: Contents List -->
   
   <xsl:template name="BuildContentsList">
+    <label for="mdpJumpToSection" class="SkipLink">Jump to a section</label>
     <select id="mdpJumpToSection" size="1" name="seq">
       <option value="">Jump to Section</option>
       <xsl:for-each select="$gFeatureList/Feature">
@@ -1552,7 +1596,7 @@
 				<form method="GET" action="/cgi/pt" id="mdpPageForm">
 				  <input type="hidden" name="u" id="u" value="1" />
 				  
-				  <span>Jump to </span>
+				  <label for="BRpagenum">Jump to </label>
 
           <xsl:element name="input">
             <xsl:attribute name="id">BRpagenum</xsl:attribute>
@@ -1660,7 +1704,7 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/NextPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">p</xsl:attribute>
+              <xsl:attribute name="accesskey">n</xsl:attribute>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>

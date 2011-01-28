@@ -587,6 +587,20 @@ sub handle_FULL_PDF_ACCESS_MESSAGE_PI
     return $message;
 }
 
+sub handle_URL_ROOTS_PI
+    : PI_handler(URL_ROOTS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    
+    my $toReturn = '';
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gCollectionBuilderCgiRoot, 'Variable', [ [ 'name', 'cgi/mb' ] ] );
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gPageturnerCgiRoot, 'Variable', [ [ 'name', 'cgi/pt' ] ] );
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gImgsrvCgiRoot, 'Variable', [ [ 'name', 'cgi/imgsrv' ] ] );
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gPageturnerSearchCgiRoot, 'Variable', [ [ 'name', 'cgi/ptsearch' ] ] );
+
+    return $toReturn;
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -831,6 +845,22 @@ sub handle_LAST_PAGE_LINK_PI
     my $mdpItem = $C->get_object('MdpItem');
 
     return BuildPageNavLink($cgi, $mdpItem, 'last');
+}
+
+
+sub handle_PAGE_LINK_PI
+    : PI_handler(PAGE_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $tempCgi = new CGI($C->get_object('CGI'));
+    $tempCgi->delete('q1');
+    $tempCgi->delete('start');
+    if ( $tempCgi->param('orient') == 0 ) {
+        $tempCgi->delete('orient');
+    }
+    
+    return Utils::url_to($tempCgi);
 }
 
 

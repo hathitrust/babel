@@ -1,20 +1,16 @@
-/* @override http://roger-full.babel.hathitrust.org/pt/hathi.css?ts=id859271 */
-
 html {
-	min-width:0px;
-	/*overflow: hidden;*/
-	/* 235px + width of image */
- 	min-width: 910px;
+  min-width:0px;
+  min-width: 910px;
 }
 
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 #BRcontainer {
-	left:0px;
+  left:0px;
 }
 
 .htmlNoOverflow {
@@ -28,17 +24,10 @@ html, body {
 }
 
 #mdpImage {
-	float:none;
-	position:relative;
-	top: 0px;
+  float:none;
+  position:relative;
+  top: 0px;
 }
-
-/*div#mdpContentContainer {
-	padding-bottom:15px;
-	position:absolute;
-	left: 14em; right: 12px; top: 0px; bottom: 2em; 
-	width: auto;
-}*/
 
 #mdpMainEvent {
   margin-left: 16.5em; /* 17em*/
@@ -49,13 +38,13 @@ html, body {
 }
 
 .mdpControlContainerBottom {
-	margin: 0 0 0 0;
-	padding:0;
-	width:100%;
+  margin: 0 0 0 0;
+  padding:0;
+  width:100%;
 }
 
 #ControlContentContainer {
-	float:none;
+  float:none;
 }
 
 html {
@@ -78,13 +67,6 @@ body {
     height: 100%;
     position: relative;
 }
-
-/*#mdpUberContainer {
-    padding: 0px;
-    padding-bottom: 40px;
-    height: 100%;
-    position: static;
-}*/
 
 #mdpUberContainer {
   margin-top: -10px;
@@ -151,10 +133,6 @@ a.PTbutton {
   border-bottom: 1px solid #797979;
   border-left: 1px solid #d5d5d5;
   display: block;
-  /*padding: 2px;
-  padding-top: 2px;
-  padding-right: 8px;
-  padding-bottom: 16px;*/
   height: 2em;
   padding: 4px;
   text-align: center;
@@ -186,8 +164,6 @@ a.PTbuttonDisabled:hover {
   padding: 4px;
   padding-bottom: 8px;
   margin-top: -1px;
-  /*background-image: url(images/bkg_classic.png);*/
-  /*float: left;*/
 }
 
 #btnClassicView img {
@@ -199,15 +175,12 @@ a.PTbuttonDisabled:hover {
 #btnClassicView span {
   float: left;
   width: 3em;
-  /*font-weight: bold;*/
   font-size: 95%;
   white-space: normal;
 }
 
 #mdpBookReaderViews {
-  /*position: relative;*/
   display: inline-block;
-  /*height: 48px;*/
   border: 1px solid #f5a039;
   margin-left: 5px;
   padding-right: 8px;
@@ -223,29 +196,19 @@ a.PTbuttonDisabled:hover {
 #mdpBookReaderViews #btnBookReaderText {
   border: 1px solid transparent;
   background-color: transparent;
-  /*padding-right: 16px;*/
 }
 
 #mdpBookReaderViews #btnBookReaderText:hover {
   border: 1px solid transparent;
   color: white;
   background-color: #545454;
-  /*padding-right: 16px;*/
 }
 
-/*#mdpBookReaderViews button {
-  background-image: url(images/bkg_view_off.png);
-  height: 30px;
-  font-size: 95%;
-  margin-top: 8px;
-}*/
-
-
 .PTbutton span {
-	float:  left;
-	padding-top: 4px;
-	padding-bottom: 2px;
-	padding-right: 2px;
+  float:  left;
+  padding-top: 4px;
+  padding-bottom: 2px;
+  padding-right: 2px;
 }
 
 .PTbutton img {
@@ -256,18 +219,14 @@ a.PTbuttonDisabled:hover {
 }
 
 span.prompt {
-  /*vertical-align: text-bottom;*/
   margin-top: 14px;
   display: block;
   margin-left: -10px;
 }
 
 #mdpNewStarburst {
-  /*position: absolute;*/
-  /*float: left;*/
   margin-top: -5px;
   margin-left: -50px;
-  /*padding-right: 5px;*/
 }
 
 #mdpSectionOptions {
@@ -333,23 +292,11 @@ span.prompt {
 #BRpageControls > div { float: left; text-align: center;}
 #BRpageControls label { font-size: 80%; display: block; font-weight: bold;}
 
-/*#BRrotateControls a:hover { border:solid 1px #bea881; background-color:#fff2cb;
-    background: -moz-linear-gradient(top, rgba(255, 251, 239, 1), rgba(255, 220, 87, 1));
-    border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px; }
-*/
-
 /* @end */
 
 /* @group OCR */
 
-/* OCR TEXT */
-/*div.ocrText {
-    padding: 25px;
-    padding-top: 15px;
-    padding-bottom: 10px;
-    overflow: auto;
-    background-color: #eee;
-}*/
+/* @group OCR TEXT */
 
 div.ocrText span {
   white-space: nowrap;
@@ -383,8 +330,6 @@ div.ocrScrollBar:hover {
 }
 
 div.ocrText {
-    /*overflow: auto;*/
-    /*line-height: 125%;*/
     background-color: white;
     width: 75%;
     padding-top: 5%;
@@ -401,8 +346,6 @@ div.ocrText {
     text-align: left;
 }
 
-/*div.ocrText div { white-space: nowrap; }*/
-
 div.ocrpage {
     border: 4px dotted green;
 }
@@ -415,8 +358,6 @@ div#mdpTextFrame {
 }
 
 div#mdpTextFrame p {
-    /*font-size: 1.2em;
-        line-height: 1.2em;*/
     font-weight: normal;
     color: black;
     font-family: Georgia, Times, serif;
@@ -425,13 +366,11 @@ div#mdpTextFrame p {
 /* @end */
 
 #PTcontainer {
-    /*height:95%;*/
     top:0px;
     bottom:0px;
     width:100%;
     overflow-x:auto;
     overflow-y:scroll;    
-    /*text-align: center;*/
     background-color: #FCFCFC;
     position:absolute;
     background-color: #eee;
@@ -482,28 +421,10 @@ button.active {
     color: black;
 }
 
-#XXBookReader {
- border: 2px solid black;
- position:absolute;
- font-family: arial, sans-serif;
- /*top: 50px;*/
- width: 98%;
-}
-
-#XXBookReader {
-	border:2px solid #494949;
-	/*left: 0px; right: 1px; top: 10px;*/
-	position: relative;
-	top: 10px;
-	padding-bottom: 0px;
-	vertical-align:top;
-}
-
 #BookReader {
  border: 2px solid #494949;
  position:relative;
  font-family: arial, sans-serif;
- /*top: 50px;*/
  width: 100%;
 }
 
@@ -528,18 +449,12 @@ button.active {
     top:0px;
 }
 
-/*#BRpageview {
-    background-color: #EEE;
-    border: 1px solid black;
-}
-*/
-
 /* @group CONTROL CONTAINER */
 
 div.mdpControlContainer {
-	overflow: hidden;
-	overflow-y: auto;
-	padding-right: 15px;
+  overflow: hidden;
+  overflow-y: auto;
+  padding-right: 15px;
 }
 
 .mdpControlContainer  {
@@ -642,42 +557,6 @@ div.mdpScrollableContainer {
     color: #CCC;
 }
 
-
-.uiSwitchNote {
-  padding: 8px;
-  padding-bottom: 4px;
-  margin-botom: 4px;
-  border: 1px solid #C96806;
-  background-color: #ef7a06;
-}
-
-.uiSwitchNote a {
-  color: black;
-  font-weight: bold;
-}
-
-.uiSwitchLink {
-  font-size: 80%;
-}
-
-#mdpLoadProgress {
-  background-color: #E2E2E2;
-  width: 250px;
-  min-height: 16px;
-  opacity: 0.80;
-  display: none;
-  z-index: 999999;
-  position: absolute;
-  top: 0;
-  left: 0;
-  text-align: center;
-}
-
-#mdpLoadProgress p.message {
-  font-size: 0.8em;
-  display: none;
-}
-
 #fullPdfProgress {
   display: none;
 }
@@ -707,7 +586,5 @@ div.mdpScrollableContainer {
 .boxy-inner {
   min-width: 250px;
 }
-
-/*#mdpSearchFormLabel label { padding-right: 4px; }*/
 
 #mdpSearch ul li { padding-left: 4px ; }

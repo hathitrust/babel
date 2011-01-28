@@ -65,11 +65,13 @@ $.fn.textfill = function(options) {
             // })
 
             innerElements.each(function(idx, item) {
-                var $item = $(item);
-                var original = $item.scrollLeft();
-                $item.scrollLeft(original + 1);
-                if ( $item.scrollLeft() > original ) {
-                    has_overflow = 1;
+                if (item !== undefined) {
+                    var $item = $(item);
+                    var original = $item.scrollLeft();
+                    $item.scrollLeft(original + 1);
+                    if ( $item.scrollLeft() > original ) {
+                        has_overflow = 1;
+                    }
                 }
             })
             
