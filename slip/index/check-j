@@ -395,7 +395,7 @@ sub __run_CheckIndex {
     $cmd =~ s,__SHARD__,$shard,g;
     
     my $output = `$cmd 2> $Child_Err_File`;
-    my $sysrc = $? >> 8;    
+    my $sysrc = (! -z $Child_Err_File) ? 99 : 0;
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "CheckIndex");
 
     if ($rc == 0) {
