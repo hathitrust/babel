@@ -139,20 +139,20 @@ package WAYF::IdpConfig;
                     'template'  => 'https://___HOST___/Shibboleth.sso/ucla?target=___TARGET___',
                     'enabled' => '1',
                    },
-     
-     # Waiting
-     'utah'    => {
+     'utah'    =>  {
                     'authtype' => 'shibboleth',
                     'link_text' => 'University of Utah',
                     'template'  => 'https://___HOST___/Shibboleth.sso/utah?target=___TARGET___',
-                    'enabled' => '0',
-                  },
-     'baylor'  => {
+                    'enabled' => '1',
+                   },
+     'baylor'  =>  {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Baylor University',
                     'template'  => 'https://___HOST___/Shibboleth.sso/baylor?target=___TARGET___',
-                    'enabled' => '0',
+                    'enabled' => '1',
                    },
+     
+     # Waiting
      'usu'     => {
                     'authtype' => 'shibboleth',
                     'link_text' => 'Utah State University',
