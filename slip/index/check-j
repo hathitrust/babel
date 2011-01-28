@@ -314,7 +314,9 @@ sub __run_check_shard {
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "check num_segs=$num_segs");
 
     if ($rc == 0) {
-        Log_check($C, $run, $shard, "__run_check_shard num_segs=$num_segs: " . $output);
+        my $msg = "__run_check_shard num_segs=$num_segs: " . $output;
+        __output("$msg\n");
+        Log_check($C, $run, $shard, $msg);
     }
 
     return $rc;
@@ -365,6 +367,8 @@ sub __run_s_tomcat {
         Log_check_error($C, $run, $shard, $s);
     }
     else {
+        my $s = qq{check-j success: tomcat action=$action run=$run shard=$shard\n};
+        __output($s);
         Log_check($C, $run, $shard, "__run_s_tomcat (action=$action): " . $output);
     }
 
@@ -395,8 +399,9 @@ sub __run_CheckIndex {
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "CheckIndex");
 
     if ($rc == 0) {
-        # Log_check($C, $run, $shard, $output);
-        Log_check($C, $run, $shard, qq{checkIndex sysrc="$sysrc"\n} . $output);
+        my $msg = qq{checkIndex sysrc="$sysrc" } . $output;
+        __output("$msg\n");
+        Log_check($C, $run, $shard, );
     }
 
     return $rc;
