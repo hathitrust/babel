@@ -157,8 +157,11 @@ my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 my @NUM_SHARDS_LIST = $config->get('num_shards_list');
 
 my $logdir = Utils::get_tmp_logdir();
-my $Child_Err_File =
-    qq{$logdir/driver_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
+my $Child_Err_File = qq{$logdir/driver_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
+END{
+    `rm -f $Child_Err_File` if (-z $Child_Err_File);
+}
+
 my $EMAIL_MESSAGE_BUFFER;
 
 my $flags_dir = $config->get('shared_flags_dir');

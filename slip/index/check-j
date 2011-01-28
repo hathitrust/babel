@@ -141,8 +141,10 @@ my $C = new Context;
 my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 
 my $logdir = Utils::get_tmp_logdir();
-my $Child_Err_File =
-    qq{$logdir/check_child_error-$SHARD-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
+my $Child_Err_File = qq{$logdir/check_child_error-$SHARD-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
+END{
+    `rm -f $Child_Err_File` if (-z $Child_Err_File);
+}
 
 my $config = SLIP_Utils::Common::gen_run_config($RUN);
 $C->set_object('MdpConfig', $config);
@@ -353,11 +355,13 @@ sub __run_s_tomcat {
     $tomcat_pattern =~ s,__SHARD__,$shard,;
 
     my $tries = 0;
-    do {
+    while (1) {
+        last if (SLIP_Utils::Processes::num_tomcats_running($C, $tomcat_pattern) == $test_num);
+        sleep TOMCAT_TRIES_WAIT;
+        
         $tries++;
         last if ($tries > TOMCAT_MAX_TRIES);
-        sleep TOMCAT_TRIES_WAIT;
-    } until (SLIP_Utils::Processes::num_tomcats_running($C, $tomcat_pattern) == $test_num);
+    }
 
     if ($tries > TOMCAT_MAX_TRIES) {
         $rc = $fail_rc;
@@ -395,7 +399,7 @@ sub __run_CheckIndex {
     $cmd =~ s,__SHARD__,$shard,g;
     
     my $output = `$cmd 2> $Child_Err_File`;
-    my $sysrc = (! -z $Child_Err_File) ? 99 : 0;
+    my $sysrc = $?;
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "CheckIndex");
 
     if ($rc == 0) {
