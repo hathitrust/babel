@@ -55,27 +55,26 @@ sub num_producers_running {
 
 # ---------------------------------------------------------------------
 
-=item num_tomcats_running
+=item is_tomcat_running
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub num_tomcats_running {
+sub is_tomcat_running {
     my ($C, $tomcat_pattern) = @_;
 
     my $gp = new Proc::ProcessTable;
-    my $num_tomcats = 0;
 
     # look for tomcat processes
     foreach $proc ( @{$gp->table} ) {
-        if ($proc->cmndline =~ /$producer_pattern/) {
-            $num_tomcats++;
+        if ($proc->cmndline =~ /$tomcat_pattern/) {
+            return 1;
         }
     }
 
-    return $num_tomcats;
+    return 0;
 }
 
 1;

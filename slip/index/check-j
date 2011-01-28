@@ -343,7 +343,7 @@ sub __run_s_tomcat {
       ? $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL 
         : $SLIP_Utils::States::RC_TOMCAT_START_FAIL;
 
-    my $test_num = ($action eq 'stop') ? 0 : 1;
+    my $test = ($action eq 'stop') ? 0 : 1;
     
     # Try to act on a tomcat
     my $cmd = qq{sudo /etc/init.d/tomcat-build $action $shard};
@@ -356,7 +356,7 @@ sub __run_s_tomcat {
 
     my $tries = 0;
     while (1) {
-        last if (SLIP_Utils::Processes::num_tomcats_running($C, $tomcat_pattern) == $test_num);
+        last if (SLIP_Utils::Processes::is_tomcat_running($C, $tomcat_pattern) == $test);
         sleep TOMCAT_TRIES_WAIT;
         
         $tries++;
