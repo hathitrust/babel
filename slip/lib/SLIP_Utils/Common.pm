@@ -323,7 +323,7 @@ sub __output {
     my $msg = shift;
     
     return if (! $ENV{'TERM'});
-    print qq{$msg};
+    print STDOUT qq{$msg};
 }
 
 # ---------------------------------------------------------------------
