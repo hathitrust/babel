@@ -723,7 +723,7 @@
         <li id="mdpSearchFormLabel">
           <label for="mdpSearchInputBox">
             <xsl:choose>
-              <xsl:when test="normalize-space($pSearchForm/SearchResultsLink)">
+              <xsl:when test="normalize-space($pSearchForm/SearchResultsLink) and $gHasOcr='YES'">
                 <xsl:element name="a">
                   <xsl:attribute name="href">
                     <xsl:value-of select="$pSearchForm/SearchResultsLink" />
