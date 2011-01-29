@@ -405,7 +405,7 @@ sub __run_CheckIndex {
     if ($rc == 0) {
         my $msg = qq{checkIndex sysrc="$sysrc" } . $output;
         __output("$msg\n");
-        Log_check($C, $run, $shard, );
+        Log_check($C, $run, $shard, $msg);
     }
 
     return $rc;
