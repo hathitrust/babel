@@ -381,6 +381,7 @@ sub qu_Log_work {
     }
 
     my $s = qq{enqueuer-j added $num_inserted $f items to queue before_timestamp=$t_before after_timestamp=$t_after at: } . Utils::Time::iso_Time();
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
     SLIP_Utils::Log::this_string($C, $s, 'enqueuer_logfile', '___RUN___', $run);
 }
 
