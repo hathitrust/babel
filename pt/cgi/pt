@@ -143,18 +143,7 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq '
         print $gCgi->redirect($redirect_url);
         exit;
     }
-    elsif ( $gCgi->param( 'view' ) eq 'simple-text' ) {
-        $gMdpItem->OcrHandler();
-        
-        my $q1 = $gCgi->param( 'q1' );
-        if ( $q1 ) {
-            my ( $numberOfFinalQs, $parsedQsCgi ) = Search::Utils::ParseSearchTerms($C, \$q1);
-            Search::Utils::HighlightMultipleQs($C,
-                                                     $parsedQsCgi,
-                                                     $gMdpItem->GetOcrTextRef() );
-        }
-    }
-    elsif ( $gCgi->param( 'view' ) eq 'ocr' ) {
+    elsif ( $gCgi->param( 'view' ) eq 'plaintext' ) {
         $gMdpItem->OcrHandler();
         
         my $q1 = $gCgi->param( 'q1' );

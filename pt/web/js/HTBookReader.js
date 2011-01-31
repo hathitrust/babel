@@ -4,6 +4,8 @@ function HTBookReader() {
     BookReader.call(this);
     this.constModeText = 4;
     this.flags = {};
+    this.defaultReduce = 4;
+    this.savedReduce = {'1.text' : 1};
 }
 
 HTBookReader.prototype.sliceFromIndex = function(index) {
@@ -409,7 +411,7 @@ HTBookReader.prototype.init = function() {
     if ( params.displayMode ) {
       this.displayMode = params.displayMode;
       if ( this.displayMode == "text" ) {
-          this.reduce = 1;
+          // this.reduce = 1;
           this.onePage.autofit = 'width';
       }
     }
@@ -669,18 +671,55 @@ HTBookReader.prototype.initToolbar = function(mode, ui) {
 // $$$ we should soon split the toolbar out into its own module
 HTBookReader.prototype.switchToolbarMode = function(mode) { 
     
-    $(".PTbuttonActive").removeClass("PTbuttonActive");
+    var $e;
+    // $(".PTbuttonActive").each(function() {
+    //     var title = $(this).attr('title');
+    //     $(this).attr('title', title.replace(" is the current view", ""));
+    // }).removeClass("PTbuttonActive");
+    
+    $e = $(".PTbuttonActive").removeClass("PTbuttonActive");
+    if ( $e.length > 0 ) {
+        var title = $e.attr('title').replace(" is the current view", "");
+        $e.attr('title', title).find("img").attr("title", title);
+    }
+    
     if ( 1 == mode ) {
         if ( this.displayMode == 'text' ) {
-            $("#btnBookReaderText").addClass("PTbuttonActive");
+            $e = $("#btnBookReaderText").addClass("PTbuttonActive");
         } else {
-            $("#btnBookReader1up").addClass("PTbuttonActive");
+            $e = $("#btnBookReader1up").addClass("PTbuttonActive");
         }
     } else if ( 2 == mode ) {
-        $("#btnBookReader2up").addClass("PTbuttonActive");
+        $e = $("#btnBookReader2up").addClass("PTbuttonActive");
     } else if ( 3 == mode ) {
-        $("#btnBookReaderThumbnail").addClass("PTbuttonActive");
+        $e = $("#btnBookReaderThumbnail").addClass("PTbuttonActive");
     }
+    var title = $e.attr('title') + " is the current view";
+    $e.attr('title', title).find("img").attr("title", title);
+}
+
+HTBookReader.prototype.saveReduce = function() {
+    var key = this.mode;
+    if ( this.mode == 1 ) {
+        key += "." + this.displayMode;
+    }
+    this.savedReduce[key] = this.reduce;
+}
+
+HTBookReader.prototype.getSavedReduce = function() {
+    var key = this.mode;
+    if ( this.mode == 1 ) {
+        key += "." + this.displayMode;
+    }
+    var reduce = this.savedReduce[key];
+    if ( reduce == null ) {
+        if ( this.mode == 1 && this.displayMode == 'text' ) {
+            reduce = 1;
+        } else {
+            reduce = this.defaultReduce; // default
+        }
+    }
+    return reduce;
 }
 
 HTBookReader.prototype.switchMode = function(mode, btn) {
@@ -698,9 +737,13 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
 
     this.autoStop();
     this.removeSearchHilites();
+    
+    // cache the existing reduce before we change mode
+    this.saveReduce();
 
     this.mode = mode;
     this.switchToolbarMode(mode);
+    this.reduce = this.getSavedReduce();
 
     // reinstate scale if moving from thumbnail view
     if (this.pageScale != this.reduce) {
@@ -713,26 +756,22 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
     // XXX maybe better to preserve zoom in each mode
     if (1 == mode) {
       
-        if ( this.saved1upReduce) {
-          this.reduce = this.saved1upReduce;
+        if ( this.savedReduce[mode]) {
+          this.reduce = this.savedReduce[mode];
         }
       
         this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'), $('#BRcontainer').attr('clientHeight'));
-        this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
+        // this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
         
-        if ( this.displayMode == "text" ) {
-          this.saved1upReduce = this.reduce;
-          this.reduce = 1;
-        }
+        // if ( this.displayMode == "text" ) {
+        //   this.savedReduce[mode] = this.reduce;
+        //   this.reduce = 1;
+        // }
         
         this.prepareOnePageView();
     } else if (3 == mode) {
         this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
         this.prepareThumbnailView();
-    } else if (4 == mode) {
-        this.pageScale = this.reduce;
-        this.reduce = 1;
-        this.prepareTextView();
     } else {
         // $$$ why don't we save autofit?
         this.twoPage.autofit = null; // Take zoom level from other mode; RRE: we'd rather it didn't
@@ -1261,6 +1300,9 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
         e = document.createElement("img");
         $(e).css('width', width+'px');
         $(e).css('height', height+'px');
+        
+        var title = "image of page " + this.getPageNum(index);
+        $(e).attr({ alt : title, title : title});
         e.src = url;
     } else {
         // e = document.createElement("div");

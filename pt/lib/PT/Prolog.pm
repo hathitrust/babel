@@ -150,8 +150,27 @@ sub Run {
         SetDefaultPage( $cgi, $mdpItem );
     }
 
+    # Support for tracking long-lived "Back to results..." links
+    # to catalog searches
+    SetBackToResultsReferer($cgi, $ses);
+    
     # Emit OWNERID if debug=ownerid. No-op otherwise
     PT::PageTurnerUtils::_get_OWNERID($C, $id);
+}
+
+
+sub SetBackToResultsReferer {
+    my ( $cgi, $ses ) = @_;
+    my $referer = $cgi->referer();
+    if ( $referer =~ m,$PTGlobals::gTrackableReferers, ) {
+        # we want to track these referers
+        $ses->set_persistent_subkey('referers', $id, $referer);
+    } elsif ( $referer =~ m,$PTGlobals::gPageturnerCgiRoot, ) {
+        # referer is us (e.g. changing views, paging), so noop
+    } else {
+        # not trackable, not us, so blank the key
+        $ses->set_persistent_subkey('referers', $id, undef);
+    }
 }
 
 # ----------------------------------------------------------------------

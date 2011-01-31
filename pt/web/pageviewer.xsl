@@ -782,7 +782,7 @@
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
 					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = 'simple-text'">
+  					    <xsl:if test="$gCurrentView = 'plaintext'">
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
@@ -1472,6 +1472,13 @@
           <xsl:attribute name="rel">
             <xsl:value-of select="Link" />
           </xsl:attribute>
+          <xsl:attribute name="title">
+            <xsl:value-of select="Label" />
+            <xsl:if test="Page!=''">
+              <xsl:text> on page number </xsl:text>
+              <xsl:value-of select="Page"/>
+            </xsl:if>
+          </xsl:attribute>
           <xsl:value-of select="Label" />
           <xsl:if test="normalize-space(Page)">
             <xsl:text> - </xsl:text>
@@ -1963,7 +1970,7 @@
         </xsl:element>
       </xsl:when>
 
-      <xsl:when test="$gFinalView='simple-text'">
+      <xsl:when test="$gFinalView='plaintext'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpText</xsl:attribute>
           <p>
@@ -2465,6 +2472,10 @@
     
     <div id="mdpItemBar">
       <div id="ItemBarContainer">
+        <!-- Back to Search Results -->
+        <xsl:if test="normalize-space(//SearchForm/SearchResultsLink)">
+          <xsl:call-template name="BuildBackToResultsLink" />
+        </xsl:if>
         
         <!-- Search -->
         <div id="mdpSearch">
@@ -2475,6 +2486,18 @@
       </div>
     </div>
     
+  </xsl:template>
+  
+  <xsl:template name="BuildBackToResultsLink">
+    <div id="mdpBackToResults">
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:value-of select="//SearchForm/SearchResultsLink" />
+        </xsl:attribute>
+        <xsl:text>&#171; Back to </xsl:text>
+        <xsl:value-of select="//SearchForm/SearchResultsLabel" />
+      </xsl:element>
+    </div>
   </xsl:template>
 
 </xsl:stylesheet>

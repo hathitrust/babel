@@ -260,6 +260,9 @@ $gCollectionBuilderCgiRoot = $gCgiPathComponent . '/mb';
 $gPageturnerCgiRoot        = $gCgiPathComponent . '/pt';
 $gImgsrvCgiRoot            = $gCgiPathComponent . '/imgsrv';
 $gPageturnerSearchCgiRoot            = $gCgiPathComponent . '/ptsearch';
+$gCatalogSearchPattern = "catalog.hathitrust.org/Search/";
+$gCatalogRecordPattern = "catalog.hathitrust.org/Record/";
+$gTrackableReferers = qq{$gCatalogSearchPattern|$gCatalogRecordPattern};
 
 # ---------------------------------------------------------------------
 #
@@ -278,7 +281,7 @@ $gDefaultSize         = '100';
 $gDefaultSeq          = '1';
 $gDefaultNum          = '1';
 $gDefaultView         = 'image';
-$gDefaultSsdView      = 'simple-text';
+$gDefaultSsdView      = 'plaintext';
 $gDefaultOrientation  = '0';
 $gDefaultRotation     = '0';
 
@@ -321,7 +324,7 @@ $gStandardPixelWidthAmount = 680;
     );
 
 # Views open to all
-@gViewTypes = ( 'image', 'text', '1up', '2up', 'thumb', 'simple-text' );
+@gViewTypes = ( 'image', 'text', '1up', '2up', 'thumb', 'plaintext' );
 # Views open to some
 @gAuthdViewTypes = ( 'fpdf' );
 

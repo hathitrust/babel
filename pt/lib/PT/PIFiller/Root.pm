@@ -95,10 +95,10 @@ sub BuildSearchResultsUrl
     my $href;
     
     if ( $cgi->param('q1') ) {
-        my $tempCgi = new CGI( $cgi );
+        my $tempCgi;
+        $tempCgi = new CGI( $cgi );
         $tempCgi->param('page', 'search');
         $tempCgi->delete('view');
-
         $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
     }
     
@@ -458,8 +458,42 @@ sub handle_SEARCH_RESULTS_LINK_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
+    my $ses = $C->get_object('Session');
     my $cgi = $C->get_object('CGI');
-    return BuildSearchResultsUrl($cgi);
+    my $id = $cgi->param('id');
+    
+    my $href;
+    if ( my $referer = $ses->get_persistent_subkey('referers', $id) ) {
+        $href = $referer;
+        $href =~ s,&,&amp;,g;
+    } else {
+        $href = BuildSearchResultsUrl($cgi);
+    }
+
+    return $href;
+}
+
+sub handle_SEARCH_RESULTS_LABEL_PI
+    : PI_handler(SEARCH_RESULTS_LABEL)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $ses = $C->get_object('Session');
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    
+    my $label;
+    if ( my $referer = $ses->get_persistent_subkey('referers', $id) ) {
+        if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
+            $label = qq{catalog search results};
+        } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
+            $label = qq{catalog record};
+        }
+    } elsif ( $cgi->param('q1') ) {
+        $label = qq{"Search in this text" results};
+    }
+
+    return $label;
 }
 
 sub handle_VIEW_TYPE_2UP_LINK_PI

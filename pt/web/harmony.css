@@ -588,3 +588,8 @@ div.mdpScrollableContainer {
 }
 
 #mdpSearch ul li { padding-left: 4px ; }
+
+#mdpBackToResults {
+  position: relative;
+  float: left;
+}
