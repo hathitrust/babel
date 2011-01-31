@@ -208,12 +208,13 @@ if (-e $BUSY_FILE) {
     exit $rc;
 }
 
-my ($INITIAL_QUEUE_SIZE, $STAGE_QUEUE_SIZE) = (0, 0);
+my ($INITIAL_QUEUE_SIZE, $STAGE_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT) = (0, 0, 0);
 
 eval {
     my $rc = 0;
     ($INITIAL_QUEUE_SIZE, $rc) = get_Building_queue_size($C, $DBH, $RUN, $SLIP_Utils::States::St_Undefined);
     $STAGE_QUEUE_SIZE = $INITIAL_QUEUE_SIZE;
+    $INITIAL_TOT_INDEXED_CT = get_tot_indexed_ct($C, $DBH, $RUN);
 
     if ($rc == 0) {
         run_driver($C, $DBH, $RUN);
@@ -334,8 +335,9 @@ sub run_driver {
             last;
         }
     }
+
     # Status
-    driver_exit_msg(qq{driver completed successfully}, $driver_START);
+    driver_exit_msg($C, $dbh, $run, qq{driver completed successfully}, $driver_START);
 }
 
 
@@ -350,15 +352,19 @@ Description
 
 # ---------------------------------------------------------------------
 sub driver_exit_msg {
-    my $s = shift;
-    my $start = shift;
+    my ($C, $dbh, $run, $s, $start) = @_;
 
     if ($start) {
         my $elapsed = time() - $start;
         $elapsed = sprintf("%.2f", $elapsed/60/60);
         $s .= qq{: elapsed=$elapsed hours};
+
+        # How many were queued and how many got indexed?
+        my $indexed_this_run = get_tot_indexed_ct($C, $dbh, $run);
+        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE, indexed=$indexed_this_run};
     }
 
+    __output($s);
     email_driver_msg($C, $s, 0);
 }
 
@@ -407,24 +413,21 @@ sub handle_Build_Wait {
 
     __check_driver_enabled($C, $dbh, $run);
 
-    # Is there any work to do?
-    my $q = qq{queue size=$INITIAL_QUEUE_SIZE};
-
     if ($INITIAL_QUEUE_SIZE == 0) {
         # Nothing to do.  Clean exit remaining in default Build_Wait
         my $s = qq{Driver queue empty\n};
-        __output($s);
 
         # If this is a full-optimize run, ignore a zero-size queue and
         # proceed to the next stage to flow through to optimization.
         if (! $FULL_OPTIMIZE_RUN) {
-            Log_stage($C, $run, $_Stage, $q);
-            driver_exit_msg($s);
+            Log_stage($C, $run, $_Stage, $s);
+            driver_exit_msg($C, $dbh, $run, $s);
 
             exit 0;
         }
     }
     # POSSIBLY NOTREACHED
+    my $q = qq{queue size=$INITIAL_QUEUE_SIZE};
     Log_stage($C, $run, $_Stage, $q);
 
     my $rc = 0;
@@ -763,6 +766,23 @@ sub __Wait_build_done {
             return $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE;
         }
     }
+}
+
+# ---------------------------------------------------------------------
+
+=item get_tot_indexed_ct
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_tot_indexed_ct {
+    my ($C, $dbh, $run) = @_;
+    
+    my $j_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
+
+    return $j_indexed_size - $INITIAL_TOT_INDEXED_CT;
 }
 
 # ---------------------------------------------------------------------
