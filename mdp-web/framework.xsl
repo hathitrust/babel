@@ -722,19 +722,7 @@
       <ul class="searchForm">
         <li id="mdpSearchFormLabel">
           <label for="mdpSearchInputBox">
-            <xsl:choose>
-              <xsl:when test="normalize-space($pSearchForm/SearchResultsLink) and $gHasOcr='YES'">
-                <xsl:element name="a">
-                  <xsl:attribute name="href">
-                    <xsl:value-of select="$pSearchForm/SearchResultsLink" />
-                  </xsl:attribute>
-                  <xsl:text>Back to Search Results</xsl:text>
-                </xsl:element>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>Search in this text</xsl:text>
-              </xsl:otherwise>
-            </xsl:choose>
+            <xsl:text>Search in this text</xsl:text>
           </label>
           <xsl:element name="a">
             <xsl:attribute name="class">SkipLink</xsl:attribute>
