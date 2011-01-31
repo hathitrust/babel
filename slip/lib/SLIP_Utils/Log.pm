@@ -30,7 +30,9 @@ use Semaphore;
 
 
 # ------- Configuration variables --------
-my $log_function_enabled = 1;
+my $LOG_FUNCTION_ENABLED = 1;
+# Semaphore uses flock() -- there have been lockd bugs
+my $LOG_USING_SEMAPHORE = 1;
 
 # ---------------------------------------------------------------------
 
@@ -63,10 +65,9 @@ sub this_string
     my $logfile_key = shift;
     my $dir_pattern = shift;
     my $dir_subst = shift;
-    my $use_sem = shift;
     my $no_newline = shift;
 
-    return if (! $log_function_enabled);
+    return if (! $LOG_FUNCTION_ENABLED);
 
     my $config = $C->get_object('MdpConfig');
 
@@ -84,7 +85,7 @@ sub this_string
 
     # --- BEGIN CRITICAL SECTION ---
     my $sem;
-    if ($use_sem) {
+    if ($LOG_USING_SEMAPHORE) {
         use constant MAX_TRIES => 10;
         my $tries = 0;
         my $lock_file = $logfile_path . '.sem';

@@ -343,7 +343,7 @@ sub r_rights_Log {
 
 sub flush_r_rights_Log {
     my ($C, $key) = @_;
-    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $key, '___RUN___', 'rights', 0, 'no_newline');
+    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $key, '___RUN___', 'rights', 'no_newline');
     $LOG_BUFFER = '';
     $Log_buffer_size = 0;
 }
