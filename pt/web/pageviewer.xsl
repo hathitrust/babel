@@ -75,8 +75,12 @@
 
   <!-- root template -->
   <xsl:template match="/MBooksTop">
-
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+    <html lang="en" xml:lang="en" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:cc="http://creativecommons.org/ns#"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/"
+      >
       <head>
         <title>
             <xsl:choose>
