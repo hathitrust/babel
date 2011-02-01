@@ -240,12 +240,6 @@
 
       <xsl:call-template name="BuildAddToCollectionControl"/>
       <xsl:call-template name="BackwardNavigation"/>
-
-      <!-- add COinS -->
-      <xsl:for-each select="$gMdpMetadata">
-        <xsl:call-template name="marc2coins" />
-      </xsl:for-each>
-
     </div>
   </xsl:template>
 

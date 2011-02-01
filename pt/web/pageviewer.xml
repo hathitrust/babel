@@ -40,7 +40,6 @@
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
     <Filename>pageviewer.xsl</Filename>
-    <Filename>xsl2htmlutils.xsl</Filename>
   </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->
