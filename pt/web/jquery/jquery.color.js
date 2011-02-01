@@ -61,7 +61,7 @@
 
     function getColor(elem, attr) {
         var color;
-
+        
         do {
             color = jQuery.curCSS(elem, attr);
 
@@ -71,6 +71,10 @@
 
             attr = "backgroundColor";
         } while ( elem = elem.parentNode );
+        
+        if ( ! color ) { 
+            color = 'transparent';
+        }
 
         return getRGB(color);
     };

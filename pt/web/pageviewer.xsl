@@ -765,7 +765,7 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_classicview.png">
+							<img src="//common-web/graphics/harmony/icon_classicview.png">
 							  <xsl:attribute name="alt">
 							    <xsl:text>Classic View</xsl:text>
 							  </xsl:attribute>
@@ -786,9 +786,9 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/1x1.png" height="25" width="1" />
+							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" />
 							<span>Plain Text</span>
-							<img src="/pt/images/1x1.png" height="25" width="1" />
+							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" />
 					  </xsl:element>
 					</li>
 				</ul>
@@ -824,12 +824,12 @@
     <div id="BRpageControls">
       <div>
         <label>Print</label>
-        <a href="#" id="print-page" class="printAction" target="pdf"><img alt="Print Page" src="/pt/images/icon_printer.png" height="25" width="25" /></a>
+        <a href="#" id="print-page" class="printAction" target="pdf"><img alt="Print Page" src="//common-web/graphics/harmony/icon_printer.png" height="25" width="25" /></a>
       </div>
       <div>
         <label>Rotate</label>
-        <a href="#" id="rotate-left" class="rotateAction"><img alt="Rotate Left" src="/pt/images/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
-        <a href="#" id="rotate-right" class="rotateAction"><img alt="Rotate Right" src="/pt/images/icon_rotate_clockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-left" class="rotateAction"><img alt="Rotate Left" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-right" class="rotateAction"><img alt="Rotate Right" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
       </div>
     </div>
   </xsl:template>
@@ -840,7 +840,7 @@
       <li>
 				<ul id="mdpBookReaderViews">
 					<li>
-						<img id="mdpNewStarburst" src="/pt/images/NewStarburst.png" height="44" width="40" />
+						<img id="mdpNewStarburst" src="//common-web/graphics/harmony/NewStarburst.png" height="44" width="40" />
 					</li>
 					<li>
 						<span class="prompt">Try our new views!</span>
@@ -868,7 +868,7 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_scroll.png">
+							<img src="//common-web/graphics/harmony/icon_scroll.png">
 							  <xsl:attribute name="alt">
 							    <xsl:text>Scroll View</xsl:text>
 							  </xsl:attribute>
@@ -900,7 +900,7 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_flip_25.png">
+							<img src="//common-web/graphics/harmony/icon_flip_25.png">
 							  <xsl:attribute name="alt">
 							    <xsl:text>Flip View</xsl:text>
 							  </xsl:attribute>
@@ -932,7 +932,7 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/icon_thumbnails.png">
+							<img src="//common-web/graphics/harmony/icon_thumbnails.png">
 							  <xsl:attribute name="alt">
 							    <xsl:text>Thumbnail View</xsl:text>
 							  </xsl:attribute>
@@ -974,9 +974,9 @@
   					      <xsl:text>PTbuttonDisabled</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="/pt/images/1x1.png" height="25" width="1" alt="" />
+							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
 							<span>Plain Text</span>
-							<img src="/pt/images/1x1.png" height="25" width="1" alt="" />
+							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
 					  </xsl:element>
 					</li>
 				</ul>
@@ -996,11 +996,11 @@
               <xsl:with-param name="size" select="$zoom/Value" />
             </xsl:call-template>
           </xsl:attribute>
-          <img src="/pt/images/icon_zoomout.png" height="25" width="25" alt="Zoom Out: {$zoom/Value}%" />
+          <img src="//common-web/graphics/harmony/icon_zoomout.png" height="25" width="25" alt="Zoom Out: {$zoom/Value}%" />
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <img src="/pt/images/icon_zoomout_grayed.png" height="25" width="25" alt="(At Minimum Zoom)"/>
+        <img src="//common-web/graphics/harmony/icon_zoomout_grayed.png" height="25" width="25" alt="(At Minimum Zoom)"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -1017,11 +1017,11 @@
               <xsl:with-param name="size" select="$zoom/Value" />
             </xsl:call-template>
           </xsl:attribute>
-          <img src="/pt/images/icon_zoomin.png" height="25" width="25" alt="Zoom In: {$zoom/Value}%" />
+          <img src="//common-web/graphics/harmony/icon_zoomin.png" height="25" width="25" alt="Zoom In: {$zoom/Value}%" />
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <img src="/pt/images/icon_zoomin_grayed.png" height="25" width="25" alt="(At Maximum Zoom)" />
+        <img src="//common-web/graphics/harmony/icon_zoomin_grayed.png" height="25" width="25" alt="(At Maximum Zoom)" />
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -1649,7 +1649,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">First [f]</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_first.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_first.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1661,7 +1661,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt"></xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_first_grayed.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_first_grayed.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1683,7 +1683,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Previous [p]</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_previous.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1695,7 +1695,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Previous</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_previous_grayed.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous_grayed.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1717,7 +1717,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Next [n]</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_next.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1729,7 +1729,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Next</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_next_grayed.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next_grayed.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1751,7 +1751,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Last [l]</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_last.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_last.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1763,7 +1763,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Last</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'/pt/images/icon_last_grayed.png'"/>
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_last_grayed.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
