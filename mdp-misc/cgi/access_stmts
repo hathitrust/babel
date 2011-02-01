@@ -122,7 +122,7 @@ sub __build_rows {
             td([$key]) .
             td([a({-href=>"$url"}, span("$url"))]) .
             td([$head]) .
-            td([a({-href=>"$url"}, img({-src=>"$icon", -style=>"border-style:hidden"}))]) .
+            ($icon ? td([a({-href=>"$url"}, img({-src=>"$icon", -style=>"border-style:hidden"}))]) : td(['none'])) .
             td([$text])));
 }
 
