@@ -1751,7 +1751,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Last [l]</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/harmony/icon_last.png'"/>
+                  <xsl:text>//common-web/graphics/harmony/icon_last.png</xsl:text>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -1763,7 +1763,7 @@
                 <xsl:attribute name="width">17</xsl:attribute>
                 <xsl:attribute name="alt">Last</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/harmony/icon_last_grayed.png'"/>
+                  <xsl:text>//common-web/graphics/harmony/icon_last_grayed.png</xsl:text>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>

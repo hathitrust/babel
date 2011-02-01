@@ -493,19 +493,19 @@ div.mdpScrollableContainer {
 }
 
 .bibLinks h2 {
-  background: transparent url(common-web/graphics/harmony/icon_information.png) no-repeat scroll left center;
+  background: transparent url(./graphics/icon_information.png) no-repeat scroll left center;
 }
 
 .getLinks h2 {
-  background: transparent url(common-web/graphics/harmony/icon_arrow_down.png) no-repeat scroll left center;
+  background: transparent url(./graphics/harmony/icon_arrow_down.png) no-repeat scroll left center;
 }
 
 .collectionLinks h2 {
-  background: transparent url(common-web/graphics/harmony/icon_books.png) no-repeat scroll left center;
+  background: transparent url(./graphics/harmony/icon_books.png) no-repeat scroll left center;
 }
 
 .shareLinks h2 {
-  background: transparent url(common-web/graphics/harmony/icon_gear.png) no-repeat scroll left center;
+  background: transparent url(./graphics/harmony/icon_gear.png) no-repeat scroll left center;
 }
 
 .collectionLinks button {
