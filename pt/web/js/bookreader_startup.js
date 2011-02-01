@@ -54,20 +54,25 @@ $(document).ready(function() {
     // Load bookreader
     // delay loading metaURL - BAH HUMBUG
     
-    var data = lscache.get(HT.reader.bookId + "-0");
-    console.log("CACHE:", HT.reader.bookId, "0", data);
-    if ( data ) {
-      HT.reader.init();
-    } else {
-      HT.reader.openNotice();
-      HT.reader.loadBookDataSlice(0);
-      // var params = HT.reader.getMetaUrlParams(0);
-      // setTimeout(function() {
-      //     $.getJSON(HT.reader.metaURL, params, function(data) {
-      //       HT.reader.installBookDataSlice(0, data, true);
-      //       HT.reader.init();
-      //     });
-      // }, 500);
+    HT.reader.openNotice();
+    HT.reader.loadBookDataSlice(0);
+    
+    if(false) {
+        var data = lscache.get(HT.reader.bookId + "-0");
+        console.log("CACHE:", HT.reader.bookId, "0", data);
+        if ( data ) {
+          HT.reader.init();
+        } else {
+          HT.reader.openNotice();
+          HT.reader.loadBookDataSlice(0);
+          // var params = HT.reader.getMetaUrlParams(0);
+          // setTimeout(function() {
+          //     $.getJSON(HT.reader.metaURL, params, function(data) {
+          //       HT.reader.installBookDataSlice(0, data, true);
+          //       HT.reader.init();
+          //     });
+          // }, 500);
+        }
     }
     
 })

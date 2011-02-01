@@ -6,6 +6,8 @@ function HTBookReader() {
     this.flags = {};
     this.defaultReduce = 4;
     this.savedReduce = {'1.text' : 1};
+    this.total_slices = 9999;
+    this.cache_age = 10;
 }
 
 HTBookReader.prototype.sliceFromIndex = function(index) {
@@ -350,8 +352,8 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
     this.bookData[slice_index] = data;
     this.slices.push(slice_index);
     
-    if ( 0 && do_cache ) {
-        lscache.set(this.bookId + "-" + slice_index, data, 600);
+    if ( do_cache ) {
+        lscache.set(this.bookId + "-" + slice_index, data, this.cache_age);
     }
     
     if ( slice_index == 0 ) {
@@ -367,25 +369,28 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
 
 HTBookReader.prototype.loadBookDataSlice = function(next_slice, callback) {
     var self = this;
-    if(next_slice < self.total_slices) {
-      
-        var data = lscache.get(this.id + "-" + next_slice);
-        if (data) {
-            self.installBookDataSlice(next_slice, data);
+    
+    var post_data_callback = function(next_slice, data, do_cache) {
+        self.installBookDataSlice(next_slice, data, do_cache);
+        if ( next_slice == 0 ) {
+            self.init();
+        } else {
             self.updateViewSettings();
-            self.loadBookDataSlice(next_slice + 1);
+        }
+        self.loadBookDataSlice(next_slice + 1);
+    }
+    
+    if(next_slice < self.total_slices) {
+        var data = lscache.get(self.bookId + "-" + next_slice);
+        if (data) {
+            post_data_callback(next_slice, data, false);
         } else {
             var start = next_slice * this.slice_size;
             var params = self.getMetaUrlParams(start);
+            
             $.getJSON(self.url_config.meta, params,
                 function(data) {
-                    self.installBookDataSlice(next_slice, data, true);
-                    if ( next_slice == 0 ) {
-                        self.init();
-                    } else {
-                        self.updateViewSettings();
-                    }
-                    self.loadBookDataSlice(next_slice + 1);
+                    post_data_callback(next_slice, data, true);
                 }
             );
         }
