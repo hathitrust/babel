@@ -23,6 +23,19 @@
  <script type="text/javascript" src="//common-web/js/listUtils.js"></script>
  <script type="text/javascript" src="/pt/js/section108.js"></script>
  <script type="text/javascript" src="//common-web/js/pageturner.js"></script>
+ <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+ <script type="text/javascript" src="/pt/web/js/jQuery-Notify-bar/jquery.notifyBar.js"></script>
+ <script type="text/javascript">
+   $(document).ready(function() {
+    $.notifyBar({
+       html: "Please take our survey!",
+       close: true,
+       delay: 2000000,
+       animationSpeed: "normal"
+   })});
+
+
+ </script>
 </xsl:template>
  
 
@@ -34,5 +47,8 @@
  <link rel="stylesheet" type="text/css" href="//common-web/feedback.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/pageviewer.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css"/>
+
+ <link rel="stylesheet" href="/pt/js/jQuery-Notify-bar/jquery.notifyBar.css" type="text/css" media="screen"  />
+
 </xsl:template>
 </xsl:stylesheet>
