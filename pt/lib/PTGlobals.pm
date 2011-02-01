@@ -263,6 +263,7 @@ $gPageturnerSearchCgiRoot            = $gCgiPathComponent . '/ptsearch';
 $gCatalogSearchPattern = "catalog.hathitrust.org/Search/";
 $gCatalogRecordPattern = "catalog.hathitrust.org/Record/";
 $gTrackableReferers = qq{$gCatalogSearchPattern|$gCatalogRecordPattern};
+$gTrackableLimit = 100;
 
 # ---------------------------------------------------------------------
 #

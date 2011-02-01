@@ -162,6 +162,49 @@ sub Run {
 sub SetBackToResultsReferer {
     my ( $cgi, $ses ) = @_;
     my $referer = $cgi->referer();
+    my $id = $cgi->param('id');
+    
+    # copy referer stack; keep track of us
+    my $stack = $ses->get_persistent('referers') || {};
+        
+    if ( $referer =~ m,$PTGlobals::gTrackableReferers, ) {
+        # we want to track these referers
+        $$stack{$id} = { referer => $referer, timestamp => time() };
+    } elsif ( $referer =~ m,$PTGlobals::gPageturnerCgiRoot, ) {
+        # referer is us (e.g. changing views, paging)
+        # update current timestamp if we're already tracking
+        # a referer for this id
+        if ( exists($$stack{$id}) ) {
+            $$stack{$id}{timestamp} = time();
+        }
+    } else {
+        # not trackable, not pt, so blank the key
+        delete $$stack{$id};
+    }
+    
+    # now prune old entries if necessary
+    if ( scalar keys %$stack > $PTGlobals::gTrackableLimit ) {
+        my @timestamps = ();
+        foreach ( sort { $$stack{$a}{timestamp} <=> $$stack{$b}{timestamp} } keys %$stack ) {
+            push @timestamps, [$$stack{$_}{timestamp}, $_];
+        }
+        
+        while ( scalar @timestamps > $PTGlobals::gTrackableLimit ) {
+            my ($timestamp, $key) = @{ shift @timestamps };
+            delete $$stack{$key};
+        }
+    }
+    
+    $ses->set_persistent('referers', $stack);
+    if ( exists($$stack{$id}) ) {
+        $ses->set_transient('referer', $$stack{$id}{referer});
+    }
+}
+
+sub XXSetBackToResultsReferer {
+    my ( $cgi, $ses ) = @_;
+    my $referer = $cgi->referer();
+    
     if ( $referer =~ m,$PTGlobals::gTrackableReferers, ) {
         # we want to track these referers
         $ses->set_persistent_subkey('referers', $id, $referer);

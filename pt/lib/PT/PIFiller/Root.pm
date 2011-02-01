@@ -463,7 +463,7 @@ sub handle_SEARCH_RESULTS_LINK_PI
     my $id = $cgi->param('id');
     
     my $href;
-    if ( my $referer = $ses->get_persistent_subkey('referers', $id) ) {
+    if ( my $referer = $ses->get_transient('referer') ) {
         $href = $referer;
         $href =~ s,&,&amp;,g;
     } else {
@@ -483,7 +483,7 @@ sub handle_SEARCH_RESULTS_LABEL_PI
     my $id = $cgi->param('id');
     
     my $label;
-    if ( my $referer = $ses->get_persistent_subkey('referers', $id) ) {
+    if ( my $referer = $ses->get_transient('referer') ) {
         if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
             $label = qq{catalog search results};
         } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
