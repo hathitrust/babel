@@ -10,7 +10,7 @@ http://babel.hathitrust.org/mdp-misc/cgi/access_stmts
 
 =head1 DESCRIPTION
 
-Dump of access_stmts and access_map 
+Dump of access_stmts and access_map
 
 =head1 OPTIONS
 
@@ -77,8 +77,12 @@ print start_html(-title=>"Hathitrust access statements and map",
 print div({-class=>"brandingLogo"},
           a({-href=>"http://hathitrust.org"},
             img({-src=>"/common/HathiTrustDL_logo.png", -style=>"border:0"})));
-print div(h2("Digital Library - access statements and map - $date") 
-          . h3("Usage: http://babel.hathitrust.org/mdp-misc/cgi/access_stmts or: http://babel.hathitrust.org/mdp-misc/cgi/access_stmts?attr=1;src=3"));
+print div(
+          h2("Digital Library - access statements and map - $date")
+          . h3("Usage: http://babel.hathitrust.org/mdp-misc/cgi/access_stmts")
+          . h3("or:")
+          . h3("http://babel.hathitrust.org/mdp-misc/cgi/access_stmts?attr=1;src=3")
+         );
 
 if ($attr && $source) {
     print_stmt($attr, $source);
@@ -96,6 +100,34 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
+=item __build_rows
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __build_rows {
+    my $hashref = shift;
+    my $rows_arr_ref = shift;
+
+    my $key = $hashref->{stmt_key};
+    my $url = $hashref->{stmt_url};
+    my $head = $hashref->{stmt_head};
+    my $icon = $hashref->{stmt_icon};
+    my $text = $hashref->{stmt_text};
+    
+    push(@$rows_arr_ref,
+         Tr(
+            td([$key]) .
+            td([a({-href=>"$url"}, span("$url"))]) .
+            td([$head]) .
+            td([a({-href=>"$url"}, img({-src=>"$icon", -style=>"border-style:hidden"}))]) .
+            td([$text])));
+}
+
+# ---------------------------------------------------------------------
+
 =item print_stmt
 
 Description
@@ -107,35 +139,39 @@ sub print_stmt {
     my ($attr, $source) = @_;
 
     my @rows;
-    my $ref_to_arr_of_hashref = 
-      Access::Statements::get_stmt_by_rights_values($C, undef, $attr, $source, 
+    my $ref_to_arr_of_hashref =
+      Access::Statements::get_stmt_by_rights_values($C, undef, $attr, $source,
                                                   {
                                                    stmt_key  => 1,
                                                    stmt_url  => 1,
                                                    stmt_head => 1,
+                                                   stmt_icon => 1,
                                                    stmt_text => 1,
                                                   });
-    
+
+    push(@rows,
+         Tr(
+            td(b(['key'])) .
+            td(b(['url'])) .
+            td(b(['head'])) .
+            td(b(['icon'])) .
+            td(b(['text']))));
+
     foreach my $hashref (@$ref_to_arr_of_hashref) {
-        my $key = $hashref->{stmt_key};
-        my $url = $hashref->{stmt_url};
-        my $head = $hashref->{stmt_head};
-        my $text = $hashref->{stmt_text};
-        
-        push(@rows, Tr(td([$key]) . td([$url]) . td([$head]) . td([$text])));
+        __build_rows($hashref, \@rows);
     }
-    
+
     my $src = $RightsGlobals::g_source_names{$source};
     my $at = $RightsGlobals::g_attribute_keys{$attr};
 
     my $table = table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
-                      th({-colspan=>4}, "Statement for attr=$attr ($at) source=$source ($src)"), @rows);
+                      th({-colspan=>5}, "Statement for attr=$attr ($at) source=$source ($src)"), @rows);
     print $table;
 
 
 
 }
-  
+
 # ---------------------------------------------------------------------
 
 =item print_tables
@@ -146,46 +182,83 @@ Description
 
 # ---------------------------------------------------------------------
 sub print_tables {
-    my @rows;
+    my @rows = ();
     my $table;
-    
+
+    push(@rows,
+         Tr(
+            td(b(['attr'])) .
+            td(b(['as a string']))));
+
     foreach my $attr (sort { $a <=> $b } keys %RightsGlobals::g_attribute_keys) {
         my $key = $RightsGlobals::g_attribute_keys{$attr};
         push(@rows, Tr(td([$attr]) . td([$key])));
     }
     $table = table({-border=>"1", -width=>"20%", -cellpadding=>"5px", -cellspacing=>0},
-                   th({-colspan=>2}, "All Attributes"), @rows);
+                   th({-colspan=>2}, "All Attributes (rights_current.attr)"), @rows);
     print $table;
     @rows = ();
-    
+
+    push(@rows,
+         Tr(
+            td(b(['source'])) .
+            td(b(['as a string']))));
     foreach my $source (sort { $a <=> $b } keys %RightsGlobals::g_source_names) {
         my $key = $RightsGlobals::g_source_names{$source};
         push(@rows, Tr(td([$source]) . td([$key])));
     }
     $table = table({-border=>"1", -width=>"20%", -cellpadding=>"5px", -cellspacing=>0},
-                   th({-colspan=>2}, "All Sources"), @rows);
+                   th({-colspan=>2}, "All Sources (rights_current.source)"), @rows);
     print $table;
     @rows = ();
-    
+
     my $ref_to_arr_of_hashref = Access::Statements::get_all_stmts($C, undef,
                                                                 {
                                                                  stmt_key  => 1,
                                                                  stmt_url  => 1,
                                                                  stmt_head => 1,
+                                                                 stmt_icon => 1,
                                                                  stmt_text => 1,
                                                                 });
+    push(@rows,
+         Tr(
+            td(b(['key'])) .
+            td(b(['url'])) .
+            td(b(['head'])) .
+            td(b(['icon'])) .
+            td(b(['text']))));
+
     foreach my $hashref (@$ref_to_arr_of_hashref) {
-        my $key = $hashref->{stmt_key};
-        my $url = $hashref->{stmt_url};
-        my $head = $hashref->{stmt_head};
-        my $text = $hashref->{stmt_text};
-        
-        push(@rows, Tr(td([$key]) . td([$url]) . td([$head]) . td([$text])));
+        __build_rows($hashref, \@rows);
     }
-    
-    
+
     $table = table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
-                   th({-colspan=>4}, "All Statements"), @rows);
+                   th({-colspan=>5}, "All Statements"), @rows);
+    print $table;
+    @rows = ();
+
+    my $ref_to_arr_of_hashref_1 = Access::Statements::get_all_mappings($C, undef);
+    
+    push(@rows,
+         Tr(
+            td(b(['rights.attr'])) .
+            td(b(['rights.source'])) .
+            td(b(['map to this key']))));
+    
+    foreach my $hashref (@$ref_to_arr_of_hashref_1) {
+        my $key = $hashref->{stmt_key};
+        my $a_attr = $hashref->{a_attr};
+        my $a_source = $hashref->{a_source};
+        
+        push(@rows,
+             Tr(
+                td([$a_attr]) .
+                td([$a_source]) .
+                td([$key])));
+    }    
+
+    $table = table({-border=>"1", -width=>"30%", -cellpadding=>"5px", -cellspacing=>0},
+                   th({-colspan=>3}, "All Mappings"), @rows);
     print $table;
 }
 
