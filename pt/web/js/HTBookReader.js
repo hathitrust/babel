@@ -866,11 +866,6 @@ HTBookReader.prototype.toggleDisplayMode = function(mode) {
     this.displayMode = mode;
     this.switchToolbarMode(this.mode);
     
-    // // does not change anything
-    // $("#BRcontainer").empty();
-    // $("#BRcontainer").append("<div id='BRpageview' class='ocrpage'></div>");
-    // $('#BRcontainer').dragscrollable({acceptPropagatedEvent:false});
-    
     if ( this.displayMode == "text" ) {
       this.saved1upReduce = this.reduce;
       
@@ -1037,7 +1032,6 @@ HTBookReader.prototype.printPage = function(index) {
     
     fireEvent($("a#pagePdfLink").get(0), "click");
     
-    console.log("CLICK TRIGGERED!");
     return false;
 }
 
@@ -1305,20 +1299,8 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
         $(e).attr({ alt : title, title : title});
         e.src = url;
     } else {
-        // e = document.createElement("div");
-        // $(e).addClass("ocrText");
-        // $(e).css('height', ( height - 25 ) + 'px');
-        // $(e).css('width', ( width - 50 ) + 'px');
-        // var value = (100 / this.reduce).toFixed(2);
-        // $(e).css("font-size", value + "%");
-        // $.get(url, null, function(data) {
-        //     e.innerHTML = data;
-        // })
-        
-        // var ocrtext = this.getPageText(index);
 
         var url = this._getPageURI(index, reduce, 0);
-        // url += ";iframe=1";
         e = document.createElement("div");
         $(e).addClass("ocrTextContainer");
         $(e).css('height', height + 'px');
@@ -1328,84 +1310,34 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
         $(ee).addClass("ocrScrollBar");
         $(e).append(ee);
         
-        // ee = document.createElement("div");
-        // $(ee).addClass("ocrText");
-        // $(ee).attr("id", "ocr" + index);
-        
         var maxFontSize = ( 5 / Math.round(this.reduce ));
         var minFontSize = ( 1 / Math.round(this.reduce ));
         if ( minFontSize < 1 ) { minFontSize = 1; }
 
-        // var $ee = $(ee).appendTo(e).bind('mousedown', function() { console.log("HEY"); return true })
         var gutter = Math.floor(width / 8);
-        // $(ee).css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' });
         
-        //// USING IFRAME!
-        // $(ee).html(ocrtext).textfill({minFontSize:minFontSize, maxFontSize:maxFontSize});
-        // $('<iframe class="MdpOcrFrame" src="' + url + '"></iframe>').appendTo(ee).css({height: height * 0.95, width: ( width * 0.75 )});
-
         $.get(url, null, function(data) {
             
-            //// ORIGINAL TEXTFILL APPROACH
-            // $(ee).html(data).find("div:first").textfill({
-            //     innerTag : 'div', 
-            //     debug:url, 
-            //     minFontSize:minFontSize, 
-            //     maxFontSize:maxFontSize,
-            //     paddingLeft: 0,
-            //     paddingRight: 1
-            // }).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-            //   $(ee).css('backgroundColor', 'white');
-            // });
-            
             if ( ! data ) {
-                // data = '<div><div class="noTextAlert">NO TEXT ON PAGE</div></div><div>&nbsp;</div><div>This page does not contain any text recoverable by the OCR engine.</div></div>';
-                // data = '<div class="noText"><div style="font-size: ${maxAlertFontSize}em" class="noTextAlert">NO TEXT ON PAGE</div><div style="font-size: ${maxFontSize}em"><p>This page does not contain any text recoverable by the OCR engine.</p></div></div>';
-                
                 data = 
                     '<div class="noText ocrText">' +
                         '<div class="noTextAlert">NO TEXT ON PAGE</div>' +
                         '<span>This page does not contain any text</span><br />' +
                         '<span>recoverable by the OCR engine</span>' + 
                     '</div>';
-                
-                // $(ee).html(data.replace('${maxAlertFontSize}', (2 / self.reduce)).replace('${maxFontSize}', (1 / self.reduce))).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                //   $(ee).css('backgroundColor', 'white');
-                // });
-                
-                $(data.replace('${maxAlertFontSize}', (2 / self.reduce)).replace('${maxFontSize}', (1 / self.reduce)))
-                    .appendTo(e)
-                    .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
-                    .textfill({maxFontSize : 40})
-                    .parents(".ocrTextContainer")
-                    .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                        $(ee).css('backgroundColor', 'white');
-                    });
-                
-            } else {
-                // $(ee).html(data).find("> div").bigtext({maxfontsize : maxFontSize}).end().fitOverflow("div > div").parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                //   $(ee).css('backgroundColor', 'white');
-                // });
-                // $(ee).html(data).textfill({maxFontSize : 40, sel : "span"}).parents(".ocrTextContainer").animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                //   $(ee).css('backgroundColor', 'white');
-                // });
-                $(data)
-                    .addClass('ocrText')
-                    .attr("id", "ocr" + index)
-                    .appendTo(e)
-                    .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
-                    .textfill({maxFontSize : 40, sel : "span"})
-                    .parents(".ocrTextContainer")
-                    .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                        $(ee).css('backgroundColor', 'white');
-                    });
-            }
-            
-            
+            }            
+
+            $(data)
+                .addClass('ocrText')
+                .attr("id", "ocr" + index)
+                .appendTo(e)
+                .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
+                .textfill({maxFontSize : 40})
+                .parents(".ocrTextContainer")
+                .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
+                    $(ee).css('backgroundColor', 'white');
+                });
         })
-        
-        
-        // $(e).append(ee);
         
     }
     return e;
@@ -1507,10 +1439,6 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
             $pageControl.appendTo($(this)).css("top", top).css("left", left).fadeIn(250);
             self._pageTarget = $(this);
             
-            var now = Date();
-            console.log("SHOWING CONTROLS", now);
-            
-            //$pageControl.css("top", top).css("left", left).fadeIn("500");
         } else {
             // if ( ! (( event.pageX >= position.left && event.pageX <= ( offset.left + w ) ) && 
             //      ( event.pageY >= offset.top && event.pageY <= offset.top + h )) ) {
