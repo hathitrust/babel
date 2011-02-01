@@ -131,46 +131,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
-  <xsl:template match="/MBooksTop" mode="old-classic">
-
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
-      <head>
-        <title>
-          <xsl:choose>
-            <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-              <xsl:text>HathiTrust Digital Library - </xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>HathiTrust Digital Library -- </xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
-          </xsl:call-template>
-        </title>
-
-        <xsl:call-template  name="include_local_javascript"/>
-        <xsl:call-template name="load_js_and_css"/>
-      </head>
-
-      <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
-        <div>
-          <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
-        </div>
-        <xsl:call-template name="UberContainer"/>
-        <xsl:call-template name="GetAddItemRequestUrl"/>
-
-        <xsl:if test="$gEnableGoogleAnalytics='true'">
-          <xsl:call-template name="google_analytics" />
-        </xsl:if>
-        
-      </body>
-    </html>
-  </xsl:template>
-  
+    
   <xsl:template match="/MBooksTop" mode="classic">
     <xsl:param name="gCurrentEmbed" select="'full'" />
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
