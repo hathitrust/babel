@@ -95,6 +95,12 @@
             <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
           </xsl:call-template>
         </div>
+
+        <!-- add COinS -->
+        <xsl:for-each select="$gMdpMetadata">
+          <xsl:call-template name="marc2coins" />
+        </xsl:for-each>
+
       </div>
     </div>
     
