@@ -32,7 +32,7 @@ use Semaphore;
 # ------- Configuration variables --------
 my $LOG_FUNCTION_ENABLED = 1;
 # Semaphore uses flock() -- there have been lockd bugs
-my $LOG_USING_SEMAPHORE = 1;
+my $LOG_USING_SEMAPHORE = 0;
 
 # ---------------------------------------------------------------------
 
