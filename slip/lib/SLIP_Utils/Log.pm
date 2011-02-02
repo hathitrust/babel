@@ -91,7 +91,7 @@ sub this_string
         my $lock_file = $logfile_path . '.sem';
         while (! ($sem = new Semaphore($lock_file))) {
             $tries++;
-            return if ($tries > MAX_TRIES);
+            last if ($tries > MAX_TRIES);
             sleep 1;
         }
     }
