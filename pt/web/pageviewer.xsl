@@ -579,41 +579,43 @@
               </xsl:element>
             </li>
             
-            <li>
-              <xsl:element name="a">
-                <xsl:attribute name="title">Download full PDF</xsl:attribute>
-                <xsl:attribute name="id">fullPdfLink</xsl:attribute>
-                <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
-                <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
-                <xsl:attribute name="href">
-                  <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
-                </xsl:attribute>
-                <xsl:text>Download PDF - whole book</xsl:text>
-              </xsl:element>
+            <xsl:if test="$gFullPdfAccessMessage != 'NOT_PD'">
+              <li>
+                <xsl:element name="a">
+                  <xsl:attribute name="title">Download full PDF</xsl:attribute>
+                  <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+                  <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+                  <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+                  </xsl:attribute>
+                  <xsl:text>Download PDF - whole book</xsl:text>
+                </xsl:element>
               
-              <xsl:if test="$gFullPdfAccess = 'deny'">
-                <div id="noPdfAccess">
-                  <p>
-                    <xsl:choose>
-                      <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                        <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
-                        <xsl:text> to determine whether you can download this book.</xsl:text>
-                      </xsl:when>
-                      <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                        <xsl:text>You need to be affiliated with a HathiTrust Member institution to download this book.</xsl:text>
-                      </xsl:when>
-                      <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
-                        <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <xsl:text>Sorry.</xsl:text>
-                      </xsl:otherwise>
-                    </xsl:choose>
-                  </p>
-                </div>
-              </xsl:if>
-							<div id="fullPdfFrame"></div>
-            </li>
+                <xsl:if test="$gFullPdfAccess = 'deny'">
+                  <div id="noPdfAccess">
+                    <p>
+                      <xsl:choose>
+                        <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                          <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                          <xsl:text> to determine whether you can download this book.</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                          <xsl:text>You need to be affiliated with a HathiTrust Member institution to download this book.</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+                          <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:text>Sorry.</xsl:text>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </p>
+                  </div>
+                </xsl:if>
+  							<div id="fullPdfFrame"></div>
+              </li>
+            </xsl:if>
          </ul>
         </div>
 
