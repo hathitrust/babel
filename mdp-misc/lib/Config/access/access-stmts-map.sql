@@ -172,81 +172,81 @@ INSERT INTO access_stmts_map
        a_source='lit-dlps-dc',
        stmt_key='cc-by-sa';
 
--- All source=um-press
+-- All source=ump
 INSERT INTO access_stmts_map
        SET
        a_attr='pd',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='pd';
 INSERT INTO access_stmts_map
        SET
        a_attr='ic',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='opb',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='section108';
 INSERT INTO access_stmts_map
        SET
        a_attr='orph',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='und',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='umall',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='world',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='oa';
 INSERT INTO access_stmts_map
        SET
        a_attr='nobody',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='pdus',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='pd-us';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='cc-by';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nd',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='cc-by-nd';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc-nd',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='cc-by-nc-nd';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='cc-by-nc';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc-sa',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='cc-by-nc-sa';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-sa',
-       a_source='um-press',
+       a_source='ump',
        stmt_key='cc-by-sa';
 
 -- All source=ia
@@ -403,156 +403,156 @@ INSERT INTO access_stmts_map
        a_source='yale',
        stmt_key='cc-by-sa';
 
--- All source=minn-dig-lib
+-- All source=umn
 INSERT INTO access_stmts_map
        SET
        a_attr='pd',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='pd';
 INSERT INTO access_stmts_map
        SET
        a_attr='ic',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='opb',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='section108';
 INSERT INTO access_stmts_map
        SET
        a_attr='orph',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='und',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='umall',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='world',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='oa';
 INSERT INTO access_stmts_map
        SET
        a_attr='nobody',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='pdus',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='pd-us';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='cc-by';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nd',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='cc-by-nd';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc-nd',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='cc-by-nc-nd';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='cc-by-nc';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc-sa',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='cc-by-nc-sa';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-sa',
-       a_source='minn-dig-lib',
+       a_source='umn',
        stmt_key='cc-by-sa';
 
--- All source=minn-hist-soc
+-- All source=mhs
 INSERT INTO access_stmts_map
        SET
        a_attr='pd',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='pd';
 INSERT INTO access_stmts_map
        SET
        a_attr='ic',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='opb',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='section108';
 INSERT INTO access_stmts_map
        SET
        a_attr='orph',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='und',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='umall',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='world',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='oa';
 INSERT INTO access_stmts_map
        SET
        a_attr='nobody',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='ic';
 INSERT INTO access_stmts_map
        SET
        a_attr='pdus',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='pd-us';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='cc-by';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nd',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='cc-by-nd';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc-nd',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='cc-by-nc-nd';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='cc-by-nc';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-nc-sa',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='cc-by-nc-sa';
 INSERT INTO access_stmts_map
        SET
        a_attr='cc-by-sa',
-       a_source='minn-hist-soc',
+       a_source='mhs',
        stmt_key='cc-by-sa';
