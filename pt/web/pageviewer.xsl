@@ -579,7 +579,7 @@
               </xsl:element>
             </li>
             
-            <xsl:if test="$gFullPdfAccessMessage != 'NOT_PD'">
+            <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
               <li>
                 <xsl:element name="a">
                   <xsl:attribute name="title">Download full PDF</xsl:attribute>
@@ -605,6 +605,9 @@
                         </xsl:when>
                         <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
                           <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
+                          <xsl:text>This book cannot be downloaded.</xsl:text>
                         </xsl:when>
                         <xsl:otherwise>
                           <xsl:text>Sorry.</xsl:text>
