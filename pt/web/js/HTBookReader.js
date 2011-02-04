@@ -1336,7 +1336,7 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
         if ( minFontSize < 1 ) { minFontSize = 1; }
 
         var gutter = Math.floor(width / 8);
-        
+        var sel = 'span';
         $.get(url, null, function(data) {
             
             if ( ! data ) {
@@ -1346,14 +1346,15 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
                         '<span>This page does not contain any text</span><br />' +
                         '<span>recoverable by the OCR engine</span>' + 
                     '</div>';
-            }            
+                span = null;
+            }         
 
             $(data)
                 .addClass('ocrText')
                 .attr("id", "ocr" + index)
                 .appendTo(e)
                 .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
-                .textfill({maxFontSize : 40})
+                .textfill({maxFontSize : 40, sel:sel})
                 .parents(".ocrTextContainer")
                 .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
                     $(ee).css('backgroundColor', 'white');

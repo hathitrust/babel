@@ -10,7 +10,7 @@ $.fn.textfill = function(options) {
     options = jQuery.extend({
         maxFontSize: null,
         minFontSize: 4,
-        step: 1,
+        step: 1.25,
         sel: null
     }, options);
 
@@ -37,7 +37,7 @@ $.fn.textfill = function(options) {
             }).reduce(function(p, c) {
                 return p + c;
             }, 0);
-
+            
             // innerWidth = innerElements.outerWidth(); // assumes that all inner elements have the same width
             var innerWidth = 0;
             innerElements.each(function() {
@@ -48,7 +48,7 @@ $.fn.textfill = function(options) {
             
             fontSize = fontSize - options.step;
             
-            //console.log(innerWidth, innerHeight, "/", maxWidth, maxHeight, "/", fontSize);
+            // console.log(innerWidth, innerHeight, "/", maxWidth, maxHeight, "/", fontSize);
             
         } while ((innerHeight > maxHeight || innerWidth > maxWidth) && fontSize > options.minFontSize);
         
@@ -84,7 +84,7 @@ $.fn.textfill = function(options) {
             
         } while (has_overflow);
 
-        //console.log("FIXED TO =", fontSize);
+        // console.log("FIXED TO =", fontSize);
         
         has_overflow = 0;
         var iter = 0;
