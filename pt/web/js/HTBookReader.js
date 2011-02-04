@@ -8,6 +8,7 @@ function HTBookReader() {
     this.savedReduce = {'1.text' : 1};
     this.total_slices = 9999;
     this.cache_age = 10;
+    this.restricted_width = 150;
 }
 
 HTBookReader.prototype.sliceFromIndex = function(index) {
@@ -702,6 +703,19 @@ HTBookReader.prototype.switchToolbarMode = function(mode) {
     var title = $e.attr('title') + " is the current view";
     $e.attr('title', title).find("img").attr("title", title);
 }
+
+// Returns the width per thumbnail to display the requested number of columns
+// Note: #BRpageview must already exist since its width is used to calculate the
+//       thumbnail width
+HTBookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
+    var width = BookReader.prototype.getThumbnailWidth.call(this, thumbnailColumns);
+    if ( this.flags.final_access_status != 'allow' && width > this.restrictd_width ) {
+        // keep this at 150
+        return this.restricted_width;
+    }
+    return width;
+}
+
 
 HTBookReader.prototype.saveReduce = function() {
     var key = this.mode;

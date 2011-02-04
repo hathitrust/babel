@@ -2447,28 +2447,5 @@
     </div>
   </xsl:template>
 
-  <xsl:template name="embed-header">
-    <div id="mbHeader">
-      <!--All pages use Header-->
-      <xsl:call-template name="skipNavLink"/>
-      <xsl:call-template name="heading1"/>
-      <xsl:call-template name="SSDinterfaceLink"/>
-      <xsl:call-template name="OSSDlink"/>
-      <xsl:call-template name="Accessibilitylink"/>
-
-      <div id="masthead">
-        <xsl:call-template name="branding"/>
-        <!-- <xsl:call-template name="mbooksnav"/> -->
-        <!--<xsl:call-template name="Survey"/>-->
-        <!--<xsl:call-template name="SpecialHeaderLink"/>-->
-      </div>
-
-      <!-- <xsl:call-template name="cbnavcontainer"/>
-      <xsl:call-template name="subnavheaderWrapper"/> -->
-    </div>
-    <xsl:call-template name="skipNavAnchor"/>
-    
-  </xsl:template>
-
 </xsl:stylesheet>
 
