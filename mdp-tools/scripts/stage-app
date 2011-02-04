@@ -37,7 +37,8 @@ B<stage-app> -b<branch> will attempt synchronize the local branch=<branch> of
 beta-1,2,3.babel for an existing
 application <app> with origin/master after a fetch from origin at the
 central repositoy including updating all submodules in preparation for
-testing before deployment
+testing before deployment.
+
 =cut
 
 use strict;
