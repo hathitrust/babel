@@ -47,7 +47,7 @@ If the B<-v> option is supplied, the output will be verbose.
 use strict;
 use Getopt::Std;
 
-use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use lib "/htapps/test.babel/mdp-lib/Utils";
 use Vendors;
 use File::Basename;
 use Date::Calc qw(Today_and_Now Delta_DHMS);

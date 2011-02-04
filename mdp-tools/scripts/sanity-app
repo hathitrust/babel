@@ -26,7 +26,7 @@ use YAML::XS;
 use Getopt::Std;
 use IPC::Run;
 
-use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use lib "/htapps/test.babel/mdp-lib/Utils";
 use Vendors;
 use File::Basename;
 my $LOCATION = dirname(__FILE__);

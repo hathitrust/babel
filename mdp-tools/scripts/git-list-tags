@@ -32,7 +32,7 @@ of tags in chronological tagging order for the current repository.
 use strict;
 use Getopt::Std;
 
-use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use lib "/htapps/test.babel/mdp-lib/Utils";
 use Vendors;
 
 use ToolLib;
