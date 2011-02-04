@@ -1,0 +1,25 @@
+#mbHeader {
+  height: 70px;
+}
+
+#mdpToolbar {
+  margin-left: 0;
+  height: 50px;
+}
+
+#mdpToolbarNav {
+  border-top: 1px solid #494949;
+}
+
+div#mdpContentContainer {
+  margin-left: 0;
+}
+
+#mdpZoomOptions {
+  width: auto;
+  visibility: hidden;
+}
+
+html, body {
+  min-width: 450px;
+}

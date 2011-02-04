@@ -798,34 +798,36 @@ HTBookReader.prototype.updateLocationHash = function() {
     var params = this.paramsFromCurrent();
     var $btn = $("#btnClassicView");
     var href = $btn.attr('href');
-    
-    if ( params.page ) {
-        var pageParam;
-        pageParam = "num=" + params.page;
-        if ( href.indexOf("num=") > -1 ) {
-            href = href.replace(/num=\d+(;?)/, pageParam + "$1");
-        } else {
-            href += ";" + pageParam;
-        }
-    } else {
-        href = href.replace(/num=\d+(;?)/, "");
-    }
 
-    if ( params.index ) {
-        var indexParam;
-        indexParam = "seq=" + ( params.index + 1 );
-        if ( href.indexOf("seq=") > -1 ) {
-            href = href.replace(/seq=\d+(;?)/, indexParam + "$1");
+    if ( href != null ) {
+        if ( params.page ) {
+            var pageParam;
+            pageParam = "num=" + params.page;
+            if ( href.indexOf("num=") > -1 ) {
+                href = href.replace(/num=\d+(;?)/, pageParam + "$1");
+            } else {
+                href += ";" + pageParam;
+            }
         } else {
-            href += ";" + indexParam;
+            href = href.replace(/num=\d+(;?)/, "");
         }
-    } else {
-        href = href.replace(/seq=\d+(;?)/, "");
-    }
 
-    $btn.attr('href', href);
-    
-    $("#pagePdfLink").attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
+        if ( params.index ) {
+            var indexParam;
+            indexParam = "seq=" + ( params.index + 1 );
+            if ( href.indexOf("seq=") > -1 ) {
+                href = href.replace(/seq=\d+(;?)/, indexParam + "$1");
+            } else {
+                href += ";" + indexParam;
+            }
+        } else {
+            href = href.replace(/seq=\d+(;?)/, "");
+        }
+
+        $btn.attr('href', href);
+
+        $("#pagePdfLink").attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
+    }
     
     var newHash = '#' + this.fragmentFromParams(params);
     window.location.replace(newHash);

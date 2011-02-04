@@ -58,27 +58,6 @@
     </xsl:choose>
   </xsl:variable>
   
-  <xsl:variable name="gCurrentView">
-    <xsl:choose>
-      <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  <!-- <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/> -->
-  
-  
-  <xsl:variable name="gUsingBookReader">
-    <xsl:choose>
-      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
@@ -90,6 +69,34 @@
     </xsl:choose>
   </xsl:variable>
 
+  <xsl:variable name="gCurrentView">
+    <xsl:choose>
+      <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when>
+      <xsl:when test="$gCurrentUi = 'embed'">1up</xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  <!-- <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/> -->
+  
+  <xsl:variable name="gCurrentEmbed">
+    <xsl:choose>
+      <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when>
+      <xsl:otherwise>full</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  
+  <xsl:variable name="gUsingBookReader">
+    <xsl:choose>
+      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  
   <xsl:variable name="gViewIsResizable">
     <xsl:choose>
       <xsl:when test="$gFinalView='restricted' or $gFinalView='empty' or $gFinalView='missing'">
@@ -120,11 +127,11 @@
       <xsl:when test="$gCurrentUi = 'classic'">
         <xsl:apply-templates select="." mode="classic" />
       </xsl:when>
-      <xsl:when test="$gCurrentUi = 'true'">
+      <xsl:when test="$gCurrentUi = 'bookreader'">
         <xsl:apply-templates select="." mode="bookreader" />
       </xsl:when>
       <xsl:when test="$gCurrentUi = 'embed'">
-        <xsl:apply-templates select="." mode="embed" />
+        <xsl:apply-templates select="." mode="classic" />
       </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates select="." mode="classic" />
@@ -133,7 +140,7 @@
   </xsl:template>
     
   <xsl:template match="/MBooksTop" mode="classic">
-    <xsl:param name="gCurrentEmbed" select="'full'" />
+    <!-- <xsl:param name="gCurrentEmbed" select="'full'" /> -->
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
     <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
     <xsl:variable name="min-width">
@@ -177,6 +184,10 @@
           <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
+        <xsl:if test="$gCurrentEmbed='embed'">
+          <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
+        </xsl:if>
+        
 
         <xsl:if test="$gCurrentView = 'image'">
           <style>
@@ -186,7 +197,9 @@
           </style>
         </xsl:if>
         
+        <xsl:if test="$gCurrentEmbed = 'full'">
         <xsl:call-template name="bookreader-toolbar-items" />
+        </xsl:if>
         
       </head>
 
@@ -196,7 +209,13 @@
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
           </div>
         </xsl:if>
+        
+        <xsl:if test="$gCurrentEmbed = 'full'">
         <xsl:call-template name="header"/>
+        </xsl:if>
+        <xsl:if test="$gCurrentEmbed = 'embed'">
+          <xsl:call-template name="embed-header" />
+        </xsl:if>
 
         <xsl:call-template name="BookReaderContainer" />
 
@@ -331,7 +350,7 @@
         };
         HT.reader.slice_size = 100;
         HT.reader.total_slices = 1;
-        HT.reader.ui = 'full';
+        HT.reader.ui = '<xsl:value-of select="$gCurrentEmbed" />';
         if ( HT.reader.ui == 'embed' ) {
           HT.reader.mode = 1;
           HT.reader.reduce = 1;
@@ -351,6 +370,8 @@
   <xsl:template match="/MBooksTop" mode="embed">
 
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+      <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
+      <xsl:attribute name="gUsingBookReader"><xsl:value-of select="$gUsingBookReader" /> :: <xsl:value-of select="$gFinalView" /></xsl:attribute>
       <head>
         <title>
           <xsl:choose>
@@ -368,7 +389,11 @@
           </xsl:call-template>
         </title>
 
+        <!-- jQuery from the Google CDN -->
+    		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+
         <xsl:call-template  name="include_local_javascript"/>
+        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         <xsl:call-template name="load_js_and_css"/>
       </head>
 
@@ -446,7 +471,7 @@
 
   <!-- Top Level Container DIV -->
   <xsl:template name="BookReaderContainer">
-    <xsl:param name="gCurrentEmbed" select="'full'" />
+    <!-- <xsl:param name="gCurrentEmbed" select="'full'" /> -->
     
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
 
@@ -456,6 +481,7 @@
       </xsl:call-template>
       
       <!-- Image -->
+      
       <xsl:call-template name="ContentContainer"/>
 
       <xsl:if test="$gCurrentEmbed = 'full'">
@@ -463,11 +489,13 @@
       </xsl:if>
     </div>
 
-    <!-- Feedback -->
-    <xsl:call-template name="Feedback"/>
+    <xsl:if test="$gCurrentEmbed = 'full'">
+      <!-- Feedback -->
+      <xsl:call-template name="Feedback"/>
 
-    <!-- New collection overlay -->
-    <div id="overlay"></div>
+      <!-- New collection overlay -->
+      <div id="overlay"></div>
+    </xsl:if>
 
 
   </xsl:template>
@@ -707,6 +735,7 @@
 		    <xsl:attribute name="style"><xsl:text>display: none</xsl:text></xsl:attribute>
 		  </xsl:if>
 			
+			<xsl:if test="$gCurrentEmbed = 'full'">
 			<div id="mdpToolbarViews">
 				<ul>
 					<li>
@@ -759,6 +788,7 @@
 					</li>
 				</ul>
 			</div>
+			</xsl:if>
 			<div id="mdpToolbarNav">
 			  <form action="/cgi/pt" method="GET" id="mdpSectionForm">
   				<ul id="mdpSectionOptions">
@@ -2464,6 +2494,29 @@
         <xsl:value-of select="//SearchForm/SearchResultsLabel" />
       </xsl:element>
     </div>
+  </xsl:template>
+
+  <xsl:template name="embed-header">
+    <div id="mbHeader">
+      <!--All pages use Header-->
+      <xsl:call-template name="skipNavLink"/>
+      <xsl:call-template name="heading1"/>
+      <xsl:call-template name="SSDinterfaceLink"/>
+      <xsl:call-template name="OSSDlink"/>
+      <xsl:call-template name="Accessibilitylink"/>
+
+      <div id="masthead">
+        <xsl:call-template name="branding"/>
+        <!-- <xsl:call-template name="mbooksnav"/> -->
+        <!--<xsl:call-template name="Survey"/>-->
+        <!--<xsl:call-template name="SpecialHeaderLink"/>-->
+      </div>
+
+      <!-- <xsl:call-template name="cbnavcontainer"/>
+      <xsl:call-template name="subnavheaderWrapper"/> -->
+    </div>
+    <xsl:call-template name="skipNavAnchor"/>
+    
   </xsl:template>
 
 </xsl:stylesheet>

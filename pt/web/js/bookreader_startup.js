@@ -14,10 +14,13 @@ HT.resizeBookReader = function() {
   }
   $("#BookReader").height(viewportHeight - chromeHeight - textDenyHeight - 25);
   
-  var checkHeight = viewportHeight - innerHeight - $("div.bibLinks").height() - 50;
-  $("div.mdpScrollableContainer").removeAttr('style');
-  if ( $("div.mdpScrollableContainer").height() > checkHeight ) {
-    $("div.mdpScrollableContainer").height(checkHeight);
+  var $scrollable = $("div.mdpScrollableContainer");
+  if ( $scrollable.length > 0 ) {
+      var checkHeight = viewportHeight - innerHeight - $("div.bibLinks").height() - 50;
+      $scrollable.removeAttr('style');
+      if ( $scrollable.height() > checkHeight ) {
+        $scrollable.height(checkHeight);
+      }
   }
 }
 
