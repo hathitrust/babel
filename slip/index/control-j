@@ -644,6 +644,7 @@ sub c_Reset_stats {
 
     Db::Reset_shard_stats($C, $dbh, $run);
     Db::Reset_rate_stats($C, $dbh, $run);
+    Db::Reset_indexed_ct($C, $dbh, $run);
 
     Log_stats($C, $run);
     __output(qq{\tSTATS RESET run=$run\n});

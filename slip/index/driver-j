@@ -214,7 +214,7 @@ eval {
     my $rc = 0;
     ($INITIAL_QUEUE_SIZE, $rc) = get_Building_queue_size($C, $DBH, $RUN, $SLIP_Utils::States::St_Undefined);
     $STAGE_QUEUE_SIZE = $INITIAL_QUEUE_SIZE;
-    $INITIAL_TOT_INDEXED_CT = get_tot_indexed_ct($C, $DBH, $RUN);
+    $INITIAL_TOT_INDEXED_CT = Db::Select_indexed_tot_count($C, $DBH, $RUN);
 
     if ($rc == 0) {
         run_driver($C, $DBH, $RUN);
@@ -337,21 +337,21 @@ sub run_driver {
     }
 
     # Status
-    driver_exit_msg($C, $dbh, $run, qq{driver completed successfully}, $driver_START);
+    __driver_exit_report($C, $dbh, $run, qq{driver completed successfully}, $driver_START);
 }
 
 
 
 # ---------------------------------------------------------------------
 
-=item driver_exit_msg
+=item __driver_exit_report
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub driver_exit_msg {
+sub __driver_exit_report {
     my ($C, $dbh, $run, $s, $start) = @_;
 
     if ($start) {
@@ -359,9 +359,16 @@ sub driver_exit_msg {
         $elapsed = sprintf("%.2f", $elapsed/60/60);
         $s .= qq{: elapsed=$elapsed hours};
 
-        # How many were queued and how many got indexed?
-        my $indexed_this_run = get_tot_indexed_ct($C, $dbh, $run);
-        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE, indexed=$indexed_this_run};
+        # How many were queued and how many got indexed? Some could
+        # have been re-indexed -- they do not increase the total
+        # number of items in the index.
+        my $re_indexed = get_reindexed_ct_this_run($C, $dbh, $run);
+        my $newly_indexed = get_newly_indexed_ct_this_run($C, $dbh, $run);
+        my $processed = $newly_indexed + $re_indexed;
+        my $delta = $INITIAL_QUEUE_SIZE - $processed;
+        my $percent_reindexed = ($INITIAL_QUEUE_SIZE > 0) ? sprintf("%.1f", ($re_indexed/$INITIAL_QUEUE_SIZE) * 100) : 0;
+
+        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE, processed=$processed delta=$delta (re-indexed=${percent_reindexed}%)};
     }
 
     __output($s);
@@ -421,7 +428,7 @@ sub handle_Build_Wait {
         # proceed to the next stage to flow through to optimization.
         if (! $FULL_OPTIMIZE_RUN) {
             Log_stage($C, $run, $_Stage, $s);
-            driver_exit_msg($C, $dbh, $run, $s);
+            __driver_exit_report($C, $dbh, $run, $s);
 
             exit 0;
         }
@@ -770,19 +777,34 @@ sub __Wait_build_done {
 
 # ---------------------------------------------------------------------
 
-=item get_tot_indexed_ct
+=item get_newly_indexed_ct_this_run
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_tot_indexed_ct {
+sub get_newly_indexed_ct_this_run {
     my ($C, $dbh, $run) = @_;
     
-    my $j_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $j_indexed_ct = Db::Select_indexed_tot_count($C, $dbh, $run);
+    return $j_indexed_ct - $INITIAL_TOT_INDEXED_CT;
+}
 
-    return $j_indexed_size - $INITIAL_TOT_INDEXED_CT;
+# ---------------------------------------------------------------------
+
+=item get_reindexed_ct_this_run
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_reindexed_ct_this_run {
+    my ($C, $dbh, $run) = @_;
+    
+    my $j_reindexed_ct = Db::Select_reindexed_tot_count($C, $dbh, $run);
+    return $j_reindexed_ct;
 }
 
 # ---------------------------------------------------------------------
@@ -1060,9 +1082,7 @@ sub __Reset_stats_recording {
 
     my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats 2>$Child_Err_File};
     my $sysrc = system($cmd);
-
-    my $s = qq{"control-j -r$run -kresetstats"};
-    my $rc = __check_sysrc($sysrc, $C, $run, $stage, $s);
+    my $rc = __check_sysrc($sysrc, $C, $run, $stage, $cmd);
 
     return $rc;
 }

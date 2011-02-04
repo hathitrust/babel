@@ -1218,6 +1218,25 @@ sub insert_item_id_indexed {
 
 # ---------------------------------------------------------------------
 
+=item Reset_indexed_ct
+
+For a given run to check how may were re-indexed, i.e. indexed_ct > 1.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Reset_indexed_ct {
+    my ($C, $dbh, $run) = @_;
+
+    my ($statement, $sth);
+
+    $statement = qq{UPDATE j_indexed SET indexed_ct=1 WHERE run=$run};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+}
+
+# ---------------------------------------------------------------------
+
 =item Select_item_id_shard
 
 idempotent
@@ -1271,6 +1290,27 @@ sub Select_indexed_tot_count {
     my ($C, $dbh, $run) = @_;
 
     my $statement = qq{SELECT count(*) FROM j_indexed WHERE run=$run};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    my $count = $sth->fetchrow_array() || 0;
+
+    return $count;
+}
+
+# ---------------------------------------------------------------------
+
+=item Select_reindexed_tot_count
+
+Depends on Reset_indexed_ct being called before a daily run.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Select_reindexed_tot_count {
+    my ($C, $dbh, $run) = @_;
+
+    my $statement = qq{SELECT count(*) FROM j_indexed WHERE run=$run AND indexed_ct > 1};
     DEBUG('lsdb', qq{DEBUG: $statement});
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
 
