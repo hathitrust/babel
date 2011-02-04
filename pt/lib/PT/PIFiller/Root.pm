@@ -54,6 +54,7 @@ sub BuildViewTypeUrl
         return BuildImageServerPDFUrl($cgi, $view);
     }
 
+    $tempCgi->delete('ui'); # clear ui=embed
     $tempCgi->param( 'view', $view );
     my $href = Utils::url_to($tempCgi);
 

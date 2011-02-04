@@ -19,7 +19,7 @@
      'skin'     => '.*',
      'q1'       => '.*',
      'u'        => '1',
-     'ui'       => 'classic|bookreader|embed',
+     'ui'       => 'reader|embed',
     );
 
 # Specification of global *database* operations to be executed before

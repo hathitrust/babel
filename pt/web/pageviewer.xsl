@@ -64,7 +64,7 @@
         <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']" />
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>classic</xsl:text>
+        <xsl:text>reader</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -80,7 +80,7 @@
   </xsl:variable>
   <!-- <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/> -->
   
-  <xsl:variable name="gCurrentEmbed">
+  <xsl:variable name="gCurrentReaderMode">
     <xsl:choose>
       <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when>
       <xsl:otherwise>full</xsl:otherwise>
@@ -124,23 +124,20 @@
   <xsl:template match="/MBooksTop">
     
     <xsl:choose>
-      <xsl:when test="$gCurrentUi = 'classic'">
-        <xsl:apply-templates select="." mode="classic" />
-      </xsl:when>
-      <xsl:when test="$gCurrentUi = 'bookreader'">
-        <xsl:apply-templates select="." mode="bookreader" />
+      <xsl:when test="$gCurrentUi = 'reader'">
+        <xsl:apply-templates select="." mode="reader" />
       </xsl:when>
       <xsl:when test="$gCurrentUi = 'embed'">
-        <xsl:apply-templates select="." mode="classic" />
+        <xsl:apply-templates select="." mode="embed" />
       </xsl:when>
       <xsl:otherwise>
-        <xsl:apply-templates select="." mode="classic" />
+        <xsl:apply-templates select="." mode="reader" />
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
     
-  <xsl:template match="/MBooksTop" mode="classic">
-    <!-- <xsl:param name="gCurrentEmbed" select="'full'" /> -->
+  <xsl:template match="/MBooksTop" mode="reader">
+    <!-- <xsl:param name="gCurrentReaderMode" select="'full'" /> -->
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
     <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
     <xsl:variable name="min-width">
@@ -154,12 +151,20 @@
       </xsl:choose>
     </xsl:variable>
 
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+    <html lang="en" xml:lang="en" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:cc="http://creativecommons.org/ns#"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/"
+      version="XHTML+RDFa 1.0"
+      >
       <xsl:if test="$gUsingBookReader = 'true'">
         <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
       </xsl:if>
       <xsl:attribute name="gUsingBookReader"><xsl:value-of select="$gUsingBookReader" /> :: <xsl:value-of select="$gFinalView" /></xsl:attribute>
-      <head>
+      <head profile="http://www.w3.org/1999/xhtml/vocab">
+        <!-- RDFa -->
+        <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
           <xsl:choose>
             <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
@@ -184,10 +189,7 @@
           <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
-        <xsl:if test="$gCurrentEmbed='embed'">
-          <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
-        </xsl:if>
-        
+        <xsl:call-template name="online_assessment"/>
 
         <xsl:if test="$gCurrentView = 'image'">
           <style>
@@ -197,9 +199,7 @@
           </style>
         </xsl:if>
         
-        <xsl:if test="$gCurrentEmbed = 'full'">
         <xsl:call-template name="bookreader-toolbar-items" />
-        </xsl:if>
         
       </head>
 
@@ -210,25 +210,18 @@
           </div>
         </xsl:if>
         
-        <xsl:if test="$gCurrentEmbed = 'full'">
         <xsl:call-template name="header"/>
-        </xsl:if>
-        <xsl:if test="$gCurrentEmbed = 'embed'">
-          <xsl:call-template name="embed-header" />
-        </xsl:if>
 
         <xsl:call-template name="BookReaderContainer" />
 
-        <xsl:if test="$gCurrentEmbed = 'full' and $gUsingBookReader = 'true'">
+        <xsl:if test="$gUsingBookReader = 'true'">
           <xsl:call-template name="bookreader-page-items" />
         </xsl:if>
 
         <!-- Footer -->
-        <xsl:if test="$gCurrentEmbed = 'full'">
-          <xsl:call-template name="footer">
-            <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
-          </xsl:call-template>
-        </xsl:if>
+        <xsl:call-template name="footer">
+          <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
+        </xsl:call-template>
         
         <xsl:if test="$gUsingBookReader = 'true'">
           <xsl:call-template name="bookreader-javascript-init" />
@@ -243,63 +236,46 @@
     </html>
   </xsl:template>
 
-  <xsl:template match="/MBooksTop" mode="bookreader">
-    <xsl:param name="gCurrentEmbed" select="'full'" />
+  <xsl:template match="/MBooksTop" mode="embed">
 
-    <html lang="en" xml:lang="en" 
-      xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:dc="http://purl.org/dc/elements/1.1/"
-      xmlns:cc="http://creativecommons.org/ns#"
-      xmlns:foaf="http://xmlns.com/foaf/0.1/"
-      version="XHTML+RDFa 1.0"
-      >
+    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml" class="htmlNoOverflow">
+      <head>
+        <title>
+          <xsl:choose>
+            <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
+              <xsl:text>HathiTrust Digital Library - </xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>HathiTrust Digital Library -- </xsl:text>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:call-template name="GetMaybeTruncatedTitle">
+            <xsl:with-param name="titleString" select="$gFullTitleString"/>
+            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
+          </xsl:call-template>
+        </title>
 
-      <head profile="http://www.w3.org/1999/xhtml/vocab">
-        <!-- RDFa -->
-        <xsl:call-template name="BuildRDFaLinkElement"/>
-        <xsl:call-template name="common-html-head" />
+        <!-- jQuery from the Google CDN -->
+    		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
+        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         <xsl:call-template name="load_js_and_css"/>
-        <xsl:call-template name="online_assessment"/>
-        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/> 
-        <link rel="stylesheet" type="text/css" href="/pt/hathi.css?ts={generate-id(.)}"/>
-
-        <!-- jQuery and plugins -->
-    		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-        <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
-        <script type="text/javascript" src="/pt/jquery/jquery-textfill-0.1.js"></script>
-        <script type="text/javascript" src="/pt/jquery/jgrowl/jquery.jgrowl.js"></script>
-    		<script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js" charset="utf-8"></script>
-    		
-    		<!-- BookReader -->
-        <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js?ts={generate-id(.)}"></script>
-        <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js?ts={generate-id(.)}"></script>
-        <script type="text/javascript" src="/pt/js/lscache.js?ts={generate-id(.)}"></script>
-
-        <link href="/pt/jquery/jgrowl/jquery.jgrowl.css" media="all" rel="stylesheet" type="text/css" /> 
-        <link href="/pt/jquery/boxy/boxy.css" media="all" rel="stylesheet" type="text/css" /> 
+        <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
 
       </head>
 
-      <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
+      <body class="yui-skin-sam">
         <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages">
           <div>
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
           </div>
         </xsl:if>
-        <xsl:call-template name="header"/>
-
-        <xsl:call-template name="BookReaderContainer" />
-
-        <!-- Footer -->
-        <xsl:if test="$gCurrentEmbed = 'full'">
-          <xsl:call-template name="footer"/>
-        </xsl:if>
         
+        <xsl:call-template name="BookReaderEmbeddedContainer" />
+
         <xsl:call-template name="bookreader-javascript-init" />
-        
-        <xsl:call-template name="GetAddItemRequestUrl"/>
 
         <xsl:if test="$gEnableGoogleAnalytics='true'">
           <xsl:call-template name="google_analytics" />
@@ -308,7 +284,7 @@
       </body>
     </html>
   </xsl:template>
-  
+
   <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
       
@@ -350,7 +326,7 @@
         };
         HT.reader.slice_size = 100;
         HT.reader.total_slices = 1;
-        HT.reader.ui = '<xsl:value-of select="$gCurrentEmbed" />';
+        HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
         if ( HT.reader.ui == 'embed' ) {
           HT.reader.mode = 1;
           HT.reader.reduce = 1;
@@ -365,50 +341,6 @@
         HT.reader.lazyDelay = 500;
     </script>
     <script type="text/javascript" src="/pt/js/bookreader_startup.js?ts={generate-id(.)}"/> 
-  </xsl:template>
-
-  <xsl:template match="/MBooksTop" mode="embed">
-
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
-      <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
-      <xsl:attribute name="gUsingBookReader"><xsl:value-of select="$gUsingBookReader" /> :: <xsl:value-of select="$gFinalView" /></xsl:attribute>
-      <head>
-        <title>
-          <xsl:choose>
-            <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-              <xsl:text>HathiTrust Digital Library - </xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>HathiTrust Digital Library -- </xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
-          </xsl:call-template>
-        </title>
-
-        <!-- jQuery from the Google CDN -->
-    		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-
-        <xsl:call-template  name="include_local_javascript"/>
-        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
-        <xsl:call-template name="load_js_and_css"/>
-      </head>
-
-      <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
-        <div>
-          <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
-        </div>
-        <xsl:call-template name="UberContainer"/>
-        <xsl:call-template name="GetAddItemRequestUrl"/>
-
-        <xsl:if test="$gEnableGoogleAnalytics='true'">
-          <xsl:call-template name="google_analytics" />
-        </xsl:if>
-      </body>
-    </html>
   </xsl:template>
 
   <xsl:template name="online_assessment">
@@ -469,9 +401,16 @@
 
   </xsl:template>
 
+  <xsl:template name="BookReaderEmbeddedContainer">
+    <div id="mdpUberContainer">
+      <xsl:call-template name="BookReaderEmbeddedToolbar" />
+      <xsl:call-template name="ContentContainer"/>
+    </div>
+  </xsl:template>
+
   <!-- Top Level Container DIV -->
   <xsl:template name="BookReaderContainer">
-    <!-- <xsl:param name="gCurrentEmbed" select="'full'" /> -->
+    <!-- <xsl:param name="gCurrentReaderMode" select="'full'" /> -->
     
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
 
@@ -484,19 +423,14 @@
       
       <xsl:call-template name="ContentContainer"/>
 
-      <xsl:if test="$gCurrentEmbed = 'full'">
-        <xsl:call-template name="BookReaderSidebar" />
-      </xsl:if>
+      <xsl:call-template name="BookReaderSidebar" />
     </div>
 
-    <xsl:if test="$gCurrentEmbed = 'full'">
-      <!-- Feedback -->
-      <xsl:call-template name="Feedback"/>
+    <!-- Feedback -->
+    <xsl:call-template name="Feedback"/>
 
-      <!-- New collection overlay -->
-      <div id="overlay"></div>
-    </xsl:if>
-
+    <!-- New collection overlay -->
+    <div id="overlay"></div>
 
   </xsl:template>
   
@@ -712,30 +646,41 @@
     </div>
   </xsl:template>
   
+  <xsl:template name="BookReaderEmbeddedToolbar">
+    <div id="mdpToolbarViews">
+    	<div id="mdpToolbarNav">
+        <div class="branding">
+          <div class="brandingLogo">
+            <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/></a>
+          </div>
+        </div>
+        <div class="embedLink">
+          <xsl:element name="a">
+            <xsl:attribute name="href"><xsl:value-of select="//ViewType1UpLink" /></xsl:attribute>
+            <xsl:attribute name="target"><xsl:text>_blank</xsl:text></xsl:attribute>
+            <xsl:call-template name="GetMaybeTruncatedTitle">
+              <xsl:with-param name="titleString" select="$gFullTitleString"/>
+              <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+              <xsl:with-param name="maxLength" select="'20'"/>
+            </xsl:call-template>
+          </xsl:element>
+        </div>  
+				<xsl:call-template name="BuildPageLinks">
+          <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
+        </xsl:call-template>
+      </div>
+    </div>
+  </xsl:template>
+  
   <xsl:template name="BookReaderToolbar">
     <xsl:param name="pViewTypeList"/>
-
-    <xsl:variable name="CurrentUrl" select="string(/MBooksTop/MBooksGlobals/CurrentUrl)" />
-    <xsl:variable name="BookReaderURL">
-      <xsl:choose>
-        <xsl:when test="contains($CurrentUrl, 'ui=classic')">
-          <xsl:value-of select="str:replace($CurrentUrl, 'ui=classic', 'ui=bookreader')" />
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$CurrentUrl" /><xsl:text>;ui=bookreader</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-      <!-- <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
-        <xsl:text>#page/</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
-      </xsl:if> -->
-    </xsl:variable>
 
 		<div id="mdpToolbar">
 		  <xsl:if test="$gFinalAccessStatus != 'allowed' and contains(//CurrentCgi/Param[@name='debug'], 'hide')">
 		    <xsl:attribute name="style"><xsl:text>display: none</xsl:text></xsl:attribute>
 		  </xsl:if>
 			
-			<xsl:if test="$gCurrentEmbed = 'full'">
+			<xsl:if test="$gCurrentReaderMode = 'full'">
 			<div id="mdpToolbarViews">
 				<ul>
 					<li>
@@ -1585,6 +1530,9 @@
   <xsl:template name="BuildPageLinks">
     <xsl:param name="pPageLinks"/>
     <ul id="mdpPageOptions">
+      
+      <xsl:if test="$gCurrentReaderMode = 'full'">
+      
 			<li>
 			  <xsl:variable name="pageNum">
 			    <xsl:choose>
@@ -1630,6 +1578,9 @@
 				</form>
 				
 			</li>
+			
+			</xsl:if>
+			
 			<li class="PTiconButton">
 			  <xsl:choose>
 			    <xsl:when test="$pPageLinks/FirstPageLink">

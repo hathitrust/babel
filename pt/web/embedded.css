@@ -8,7 +8,7 @@
 }
 
 #mdpToolbarNav {
-  border-top: 1px solid #494949;
+  /*border-top: 1px solid #494949;*/
 }
 
 div#mdpContentContainer {
@@ -21,5 +21,25 @@ div#mdpContentContainer {
 }
 
 html, body {
-  min-width: 450px;
+  min-width: 150px;
+}
+
+#mdpUberContainer {
+  margin-top: 0;
+  padding-top: 4px;
+  border-top: 2px solid #494949;
+}
+
+.branding {
+  padding-left: 4px;
+}
+
+#mdpPageOptions {
+  margin-top: 14px;
+}
+
+.embedLink {
+  margin-top: 14px;
+  margin-left: 14px;
+  float: left;
 }
