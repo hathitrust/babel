@@ -46,10 +46,10 @@ HTBookReader.prototype.getPageHeight = function(index) {
     return h;
 }
 
-HTBookReader.prototype.getPageText = function(index) {
+HTBookReader.prototype.hasPageFeature = function(index, feature) {
     var slice = this.sliceFromIndex(index);
-    var retval = this.bookData[slice.slice]['ocrtext'][slice.index];
-    return retval;
+    var features = this.bookData[slice.slice]['features'][slice.index];
+    return ( features.indexOf(feature) >= 0 );
 }
 
 HTBookReader.prototype.__getPageWidth = function(index) {
@@ -1345,36 +1345,82 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     this.updateToolbarZoom(this.reduce); 
 }
 
+HTBookReader.prototype._createTextElement = function(width, height) {
+    e = document.createElement("div");
+    $(e).addClass("ocrTextContainer");
+    $(e).css('height', height + 'px');
+    $(e).css('width', width + 'px');
+
+    var ee = document.createElement("div");
+    $(ee).addClass("ocrScrollBar");
+    $(e).append(ee);
+    
+    return e;
+}
+
+HTBookReader.prototype._insertTextPane = function(data, index, e, sel) {
+    var maxFontSize = ( 5 / Math.round(this.reduce ));
+    var minFontSize = ( 1 / Math.round(this.reduce ));
+    if ( minFontSize < 1 ) { minFontSize = 1; }
+    
+    var $e = $(e);
+
+    var width = $e.width();
+
+    var gutter = Math.floor(width / 8);
+
+    $(data)
+        .addClass('ocrText')
+        .attr("id", "ocr" + index)
+        .appendTo($e)
+        .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
+        .textfill({maxFontSize : 40, sel:sel})
+        
+    $e
+        .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
+            $(".ocrScrollBar", $e).css('backgroundColor', 'white');
+        });
+}
+
 HTBookReader.prototype.createContentElement = function(index, reduce, width, height) {
     var self = this;
     var e;
-    if ( this.displayMode == 'image' ) {
-        var url = this._getPageURI(index, reduce, 0);
+    var url = this._getPageURI(index, reduce, 0);
+    
+    if ( this.hasPageFeature(index, "MISSING_PAGE") ) {
+
+        e = this._createTextElement(width, height);
+        
+        // have to add the text AFTER the element is attached 
+        // to the DOM
+        setTimeout(function() {
+            var data = 
+                '<div class="noText ocrText">' +
+                    '<div class="noTextAlert">MISSING PAGE</div>' +
+                    '<span>This page is missing in the original.</span><br />' + 
+                    '<span>Please continue to available pages.</span><br />' +
+                    '<span><a target="_blank" href="http://www.hathitrust.org/help_digital_library#PageNotAvailable">See the Help page for more information.</a></span>' + 
+                '</div>';
+
+            self._insertTextPane(data, index, e);
+        }, 200);
+
+    } else if ( this.displayMode == 'image' ) {
+
         e = document.createElement("img");
         $(e).css('width', width+'px');
         $(e).css('height', height+'px');
-        
+
         var title = "image of page " + this.getPageNum(index);
         $(e).attr({ alt : title, title : title});
         e.src = url;
+
     } else {
 
-        var url = this._getPageURI(index, reduce, 0);
-        e = document.createElement("div");
-        $(e).addClass("ocrTextContainer");
-        $(e).css('height', height + 'px');
-        $(e).css('width', width + 'px');
-
-        var ee = document.createElement("div");
-        $(ee).addClass("ocrScrollBar");
-        $(e).append(ee);
-        
-        var maxFontSize = ( 5 / Math.round(this.reduce ));
-        var minFontSize = ( 1 / Math.round(this.reduce ));
-        if ( minFontSize < 1 ) { minFontSize = 1; }
-
-        var gutter = Math.floor(width / 8);
         var sel = 'span';
+        
+        e = this._createTextElement(width, height);
+        
         $.get(url, null, function(data) {
             
             if ( ! data ) {
@@ -1384,19 +1430,11 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
                         '<span>This page does not contain any text</span><br />' +
                         '<span>recoverable by the OCR engine</span>' + 
                     '</div>';
-                span = null;
-            }         
+                sel = null;
+            }
+            
+            self._insertTextPane(data, index, e, sel);
 
-            $(data)
-                .addClass('ocrText')
-                .attr("id", "ocr" + index)
-                .appendTo(e)
-                .css({ left : gutter + 'px', width : ( gutter * 6 ) + 'px' })
-                .textfill({maxFontSize : 40, sel:sel})
-                .parents(".ocrTextContainer")
-                .animate({ backgroundColor : '#ffffff', opacity: 1.0 }, "fast", function() {
-                    $(ee).css('backgroundColor', 'white');
-                });
         })
         
     }

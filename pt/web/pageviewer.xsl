@@ -33,7 +33,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:choose>
-          <xsl:when test="contains($gCurrentPageFeatures,'MISSING_PAGE')">
+          <xsl:when test="contains($gCurrentPageFeatures,'MISSING_PAGE') and $gUsingBookReader = 'false'">
             <xsl:value-of select="'missing'"/>
           </xsl:when>
           <xsl:otherwise>
