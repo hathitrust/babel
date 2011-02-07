@@ -208,13 +208,14 @@ if (-e $BUSY_FILE) {
     exit $rc;
 }
 
-my ($INITIAL_QUEUE_SIZE, $STAGE_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT) = (0, 0, 0);
+my ($INITIAL_QUEUE_SIZE, $STAGE_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT, $INITIAL_TOT_ERROR_CT) = (0, 0, 0, 0);
 
 eval {
     my $rc = 0;
     ($INITIAL_QUEUE_SIZE, $rc) = get_Building_queue_size($C, $DBH, $RUN, $SLIP_Utils::States::St_Undefined);
     $STAGE_QUEUE_SIZE = $INITIAL_QUEUE_SIZE;
     $INITIAL_TOT_INDEXED_CT = Db::Select_indexed_tot_count($C, $DBH, $RUN);
+    $INITIAL_TOT_ERROR_CT = Db::Select_tot_error_count($C, $DBH, $RUN);
 
     if ($rc == 0) {
         run_driver($C, $DBH, $RUN);
@@ -364,11 +365,13 @@ sub __driver_exit_report {
         # number of items in the index.
         my $re_indexed = get_reindexed_ct_this_run($C, $dbh, $run);
         my $newly_indexed = get_newly_indexed_ct_this_run($C, $dbh, $run);
-        my $processed = $newly_indexed + $re_indexed;
+        my $new_errors = get_new_error_ct_this_run($C, $dbh, $run);
+
+        my $processed = $newly_indexed + $re_indexed + $new_errors;
         my $delta = $INITIAL_QUEUE_SIZE - $processed;
         my $percent_reindexed = ($INITIAL_QUEUE_SIZE > 0) ? sprintf("%.1f", ($re_indexed/$INITIAL_QUEUE_SIZE) * 100) : 0;
 
-        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE, processed=$processed delta=$delta (re-indexed=${percent_reindexed}%)};
+        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE, processed=$processed new_errors=$new_errors delta=$delta re-indexed=${percent_reindexed}%};
     }
 
     __output($s);
@@ -789,6 +792,22 @@ sub get_newly_indexed_ct_this_run {
     
     my $j_indexed_ct = Db::Select_indexed_tot_count($C, $dbh, $run);
     return $j_indexed_ct - $INITIAL_TOT_INDEXED_CT;
+}
+
+# ---------------------------------------------------------------------
+
+=item get_new_error_ct_this_run
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_new_error_ct_this_run {
+    my ($C, $dbh, $run) = @_;
+    
+    my $j_error_ct = Db::Select_tot_error_count($C, $dbh, $run);
+    return $j_error_ct - $INITIAL_TOT_ERROR_CT;
 }
 
 # ---------------------------------------------------------------------

@@ -895,6 +895,31 @@ sub Select_timeout_ids {
 
 # ---------------------------------------------------------------------
 
+=item Select_tot_error_count
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Select_tot_error_count {
+    my ($C, $dbh, $run) = @_;
+
+    my $sth;
+    my $statement;
+
+    $statement = qq{SELECT count(*) from j_errors WHERE run=$run};
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    my $num_errors = $sth->fetchrow_array() || 0;
+    DEBUG('lsdb', qq{DEBUG: $statement ::: num_errors=$num_errors});
+
+    return $num_errors;
+}
+
+
+# ---------------------------------------------------------------------
+
 =item Select_error_data
 
 Description for reporting and error abort
