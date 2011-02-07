@@ -747,7 +747,7 @@
 						<xsl:call-template name="build-zoomout-button" />
 					</li>
 					<li>
-						<span id="mdpZoomStatus"><xsl:value-of select="//ResizeForm/ResizeValuesSelect/Option[Focus='true']/Label" /></span>
+						<div id="mdpZoomStatus"><xsl:value-of select="//ResizeForm/ResizeValuesSelect/Option[Focus='true']/Label" /></div>
 					</li>
 					<li class="PTiconButton">
 						<xsl:call-template name="build-zoomin-button" />

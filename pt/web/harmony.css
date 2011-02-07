@@ -255,10 +255,6 @@ span.prompt {
   white-space: nowrap;
 }
 
-#mdpZoomStatus {
-  cursor: pointer;
-}
-
 #mdpPageOptions li {
   padding-right: 8px;
 }
@@ -270,7 +266,8 @@ span.prompt {
 }
 
 #mdpZoomStatus {
-  width: 2em;
+  cursor: pointer;
+  width: 3.5em;
   background-color: white;
   padding: 4px;
   border: 1px solid #d5d5d5;

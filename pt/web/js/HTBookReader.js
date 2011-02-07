@@ -361,6 +361,7 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
         this.titleLeaf = this.bookData[0]['first_page_sequence'];
         this.total_slices = Math.ceil(data['total_items'] / this.slice_size);
         this.total_items = data['total_items'];
+        this.flags.download_progress_base = data['download_progress_base'];
     }
     
     this.numLeafs += this.bookData[slice_index]['seq'].length;
@@ -575,7 +576,7 @@ HTBookReader.prototype.initToolbar = function(mode, ui) {
     // Nav handlers
     $("#mdpLastPageLink").click(function(e) {
         if ( self.mode == 2 ) {
-            self.leftmost();
+            self.rightmost();
         } else {
             self.last();
         }
@@ -584,7 +585,7 @@ HTBookReader.prototype.initToolbar = function(mode, ui) {
 
     $("#mdpFirstPageLink").click(function(e) {
         if ( self.mode == 2 ) {
-            self.rightmost();
+            self.leftmost();
         } else {
             self.first();
         }
@@ -704,6 +705,34 @@ HTBookReader.prototype.switchToolbarMode = function(mode) {
     $e.attr('title', title).find("img").attr("title", title);
 }
 
+// Update titles on the magnifying glasses
+HTBookReader.prototype.updateToolbarZoom = function(reduce) {
+    BookReader.prototype.updateToolbarZoom.call(this, reduce);
+    var reduction_factors = ( this.mode == this.constMode2up ) ? this.twoPage.reductionFactors : this.onePage.reductionFactors;
+    if ( reduction_factors ) {
+        var zoom_labels = [];
+        zoom_labels.push(this.nextReduce(this.reduce, 'out', reduction_factors));
+        zoom_labels.push(this.nextReduce(this.reduce, 'in', reduction_factors));
+        for(var i = 0; i < zoom_labels.length; i++) {
+            var value;
+            if ( zoom_labels[i].autofit ) {
+                value = zoom_labels[i].autofit;
+                value = value.slice(0,1).toUpperCase() + value.slice(1); 
+            } else {
+                value = zoom_labels[i].reduce;
+                value = (100 / value).toFixed(2);
+                // Strip trailing zeroes and decimal if all zeroes
+                value = value.replace(/0+$/,'');
+                value = value.replace(/\.$/,'');
+                value += '%';
+            }
+            zoom_labels[i] = value;
+        }
+        $("#mdpZoomOut, #mdpZoomOut img").attr('title', "Zoom Out: " + zoom_labels[0]);
+        $("#mdpZoomIn, #mdpZoomIn img").attr('title', "Zoom In: " + zoom_labels[1]);
+    }
+}
+
 // Returns the width per thumbnail to display the requested number of columns
 // Note: #BRpageview must already exist since its width is used to calculate the
 //       thumbnail width
@@ -775,10 +804,6 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
     // XXX maybe better to preserve zoom in each mode
     if (1 == mode) {
       
-        if ( this.savedReduce[mode]) {
-          this.reduce = this.savedReduce[mode];
-        }
-      
         this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'), $('#BRcontainer').attr('clientHeight'));
         // this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
         
@@ -795,7 +820,20 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
         // $$$ why don't we save autofit?
         this.twoPage.autofit = null; // Take zoom level from other mode; RRE: we'd rather it didn't
         this.twoPageCalculateReductionFactors();
-        this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+        
+        if ( this.savedReduce[this.mode] == null ) {
+            // no zoom recorded yet; default to the autofit version
+            for(var i = 0; i < this.twoPage.reductionFactors.length; i++) {
+                if ( this.twoPage.reductionFactors[i].autofit != null ) {
+                    this.reduce = this.twoPage.reductionFactors[i].reduce;
+                    this.twoPage.autofit = this.twoPage.reductionFactors[i].autofit;
+                    break;
+                }
+            }
+        } else {
+            this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+        }
+        
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
