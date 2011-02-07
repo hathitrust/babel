@@ -48,8 +48,11 @@ HTBookReader.prototype.getPageHeight = function(index) {
 
 HTBookReader.prototype.hasPageFeature = function(index, feature) {
     var slice = this.sliceFromIndex(index);
-    var features = this.bookData[slice.slice]['features'][slice.index];
-    return ( features.indexOf(feature) >= 0 );
+    if ( this.bookData[slice.slice] != undefined ) {
+        var features = this.bookData[slice.slice]['features'][slice.index];
+        return ( features.indexOf(feature) >= 0 );
+    }
+    return false;
 }
 
 HTBookReader.prototype.__getPageWidth = function(index) {
