@@ -55,6 +55,11 @@ HTBookReader.prototype.hasPageFeature = function(index, feature) {
 HTBookReader.prototype.__getPageWidth = function(index) {
     var slice = this.sliceFromIndex(index);
     var w;
+    
+    if ( this.hasPageFeature(index, "MISSING_PAGE") ) {
+        return this.getAvgDimension('width');
+    }
+    
     if (this.bookData[slice.slice] != undefined && typeof(this.bookData[slice.slice]['width'][slice.index]) == 'number'){
         w = this.bookData[slice.slice]['width'][slice.index];
     }else{
@@ -70,6 +75,11 @@ HTBookReader.prototype.__getPageWidth = function(index) {
 HTBookReader.prototype.__getPageHeight = function(index) {
     // calculate slice from index
     var slice = this.sliceFromIndex(index);
+    
+    if ( this.hasPageFeature(index, "MISSING_PAGE") ) {
+        return this.getAvgDimension('height');
+    }
+    
     var h;
     if (this.bookData[slice.slice] != undefined && typeof(this.bookData[slice.slice]['height'][slice.index]) == 'number'){
         h = this.bookData[slice.slice]['height'][slice.index];
