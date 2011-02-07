@@ -15,14 +15,26 @@
   <?XSL_FILE_LIST?>
 
   <xsl:output
-      method="xml"
-      indent="yes"
-      encoding="utf-8"
-      omit-xml-declaration="yes"
-      doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
-      doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
-      />
+    method="xml"
+    indent="yes"
+    encoding="utf-8"
+    omit-xml-declaration="yes"
+    doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
+    doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
+    />
 
+  <!-- This doctype spec does not work because out current output is not valid vs. this dtd: 
+       http://www.w3.org/TR/2011/WD-rdfa-in-html-20110113/ -->
+
+  <!--xsl:output
+    method="xml"
+    indent="yes"
+    encoding="utf-8"
+    omit-xml-declaration="yes"
+    doctype-system="http://www.w3.org/MarkUp/DTD/html401-rdfa11-1.dtd"
+    doctype-public="-//W3C//DTD HTML 4.01+RDFa 1.1//EN"
+    /-->
+  
   <xsl:strip-space elements="*"/>
 
 </xsl:stylesheet>

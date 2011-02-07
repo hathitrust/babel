@@ -30,8 +30,10 @@
        -->
   
   <!-- Global Variables -->
+  <xsl:variable name="gHtId" select="/MBooksTop/MBooksGlobals/HtId"/>
   <xsl:variable name="gAccessUseHeader" select="/MBooksTop/MBooksGlobals/AccessUse/Header"/>
   <xsl:variable name="gAccessUseLink" select="/MBooksTop/MBooksGlobals/AccessUse/Link"/>
+  <xsl:variable name="gAccessUseIcon" select="/MBooksTop/MBooksGlobals/AccessUse/Icon"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gPodUrl" select="/MBooksTop/MBooksGlobals/Pod/Url"/>
   <xsl:variable name="gSkin" select="/MBooksTop/MBooksGlobals/Skin"/>
@@ -39,6 +41,8 @@
   <xsl:variable name="gRightsAttribute" select="/MBooksTop/MBooksGlobals/RightsAttribute"/>
   <xsl:variable name="gSourceAttribute" select="/MBooksTop/MBooksGlobals/SourceAttribute"/>
   <xsl:variable name="gMdpMetadata" select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc"/>
+  <xsl:variable name="gItemFormat" select="$gMdpMetadata/fixfield[@id='FMT']"/>
+  <xsl:variable name="gHasMARCAuthor" select="$gMdpMetadata/varfield[@id='100']/subfield or $gMdpMetadata/varfield[@id='110']/subfield or $gMdpMetadata/varfield[@id='111']/subfield"/>
   <xsl:variable name="gItemHandle" select="/MBooksTop/MBooksGlobals/ItemHandle"/>
   <xsl:variable name="gLoggedIn" select="/MBooksTop/MBooksGlobals/LoggedIn"/>
   <xsl:variable name="gHathiTrustAffiliate" select="/MBooksTop/MBooksGlobals/HathiTrustAffiliate"/>
@@ -47,20 +51,13 @@
   <xsl:variable name="gContactEmail" select="/MBooksTop/MBooksGlobals/ContactEmail"/>
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
   <xsl:variable name="gVolumeTitleFragment" select="concat(' ', /MBooksTop/MBooksGlobals/VolCurrTitleFrag)"/>
-  <xsl:variable name="gTitleTrunc">
+  <xsl:variable name="gTitleTruncAmt">
     <xsl:choose>
-      <xsl:when test="/MBooksTop/MBooksGlobals/SSDSession='false'">
-        <xsl:choose>
-          <xsl:when test="$gVolumeTitleFragment!=' '">
-            <xsl:value-of select="'40'"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="'50'"/>
-          </xsl:otherwise>
-        </xsl:choose>
+      <xsl:when test="$gVolumeTitleFragment!=' '">
+        <xsl:value-of select="'40'"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="'9999'"/>
+        <xsl:value-of select="'50'"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -77,6 +74,14 @@
     </xsl:if>
   </xsl:variable>
   
+  <xsl:variable name="gTruncTitleString">
+    <xsl:call-template name="GetMaybeTruncatedTitle">
+      <xsl:with-param name="titleString" select="$gFullTitleString"/>
+      <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+      <xsl:with-param name="maxLength" select="$gTitleTruncAmt"/>
+    </xsl:call-template>
+  </xsl:variable>
+
   <!-- Navigation bar -->
   <xsl:template name="subnav_header">
     
@@ -105,7 +110,98 @@
     </div>
     
   </xsl:template>
-  
+
+  <!-- FOAF: primary topic -->
+  <xsl:variable name="gFOAFPrimaryTopicId">
+    <xsl:value-of select="concat('[_:', $gHtId, ']')"/>
+  </xsl:variable>
+
+  <!-- RDFa: link -->
+  <xsl:template name="BuildRDFaLinkElement">
+    <xsl:element name="link">
+      <xsl:attribute name="about"><xsl:value-of select="$gFOAFPrimaryTopicId"/></xsl:attribute>
+      <xsl:attribute name="rel">foaf:isPrimaryTopicOf</xsl:attribute>
+      <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
+    </xsl:element>
+  </xsl:template>
+
+  <!-- RDFa: title wrapped in content-less span as an attribute. Visible title is emitted in tandem with this template differently in affected apps -->
+  <xsl:template name="BuildRDFaWrappedTitle">
+    <xsl:element name="span">
+      <xsl:attribute name="about"><xsl:value-of select="$gFOAFPrimaryTopicId"/></xsl:attribute>
+      <xsl:attribute name="property">dc:title</xsl:attribute>
+      <xsl:attribute name="rel">dc:type</xsl:attribute>
+      <xsl:attribute name="href">http://purl.org/dc/dcmitype/Text</xsl:attribute>
+      <xsl:attribute name="content">
+        <xsl:value-of select="$gFullTitleString"/>        
+      </xsl:attribute>
+    </xsl:element>
+  </xsl:template>
+
+  <!-- RDFa: author - no attribution is possible for serials - visible author string is emitted in tandem with a content-less span -->
+  <xsl:template name="BuildRDFaWrappedAuthor">
+    <xsl:variable name="author">
+      <xsl:call-template name="MetadataAuthorHelper"/>        
+    </xsl:variable>
+    
+    <xsl:choose>
+      <xsl:when test="$gItemFormat='BK'">
+        <!-- visible -->
+        <xsl:value-of select="$author"/>
+        <!-- CC attribution, creator -->
+        <xsl:element name="span">
+          <xsl:attribute name="property">cc:attributionName dc:creator</xsl:attribute>
+          <xsl:attribute name="rel">cc:attributionURL</xsl:attribute>
+          <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
+          <xsl:attribute name="content">
+            <xsl:value-of select="$author"/>
+          </xsl:attribute>
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$author"/>    
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <!-- RDFa: license - no license possible for serials -->
+  <xsl:template name="BuildRDFaCCLicenseMarkup">
+    <xsl:variable name="access_use_header">
+      <xsl:value-of select="$gAccessUseHeader"/><xsl:text>. </xsl:text>
+    </xsl:variable>
+    
+    <xsl:choose>
+      <xsl:when test="$gItemFormat='BK'">
+        <xsl:element name="span">
+          <xsl:attribute name="href"><xsl:value-of select="$gAccessUseLink"/></xsl:attribute>
+          <xsl:attribute name="rel">license</xsl:attribute>
+          <xsl:value-of select="$access_use_header"/>
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$access_use_header"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    
+    <xsl:element name="a">
+      <xsl:attribute name="href">
+        <xsl:value-of select="$gAccessUseLink"/>
+      </xsl:attribute>
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$gAccessUseIcon"/>
+        </xsl:attribute>
+      </xsl:element>
+    </xsl:element>
+
+    <xsl:element name="a">
+      <xsl:attribute name="href">
+        <xsl:value-of select="$gAccessUseLink"/>
+      </xsl:attribute>
+      <xsl:text>Read access and use policy.</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
   
   <!-- METADATA: All journal links -->
   <xsl:template name="BuildAllJournalLinksPopup">
@@ -159,13 +255,13 @@
     <xsl:param name="ssd"/>
     <div id="mdpFlexible_1">
       
-      <xsl:if test="$gMdpMetadata/varfield[@id='100']/subfield or $gMdpMetadata/varfield[@id='110']/subfield or $gMdpMetadata/varfield[@id='111']/subfield">
+      <xsl:if test="$gHasMARCAuthor">
         <div class="mdpMetaDataRow">
           <div class="mdpMetaDataRegionHead">
             <xsl:text>Author&#xa0;</xsl:text>
           </div>
           <div class="mdpMetaText">
-            <xsl:call-template name="MetadataAuthorHelper"/>
+            <xsl:call-template name="BuildRDFaWrappedAuthor"/>
           </div>
         </div>
       </xsl:if>
@@ -247,13 +343,7 @@
           <xsl:text>Copyright&#xa0;</xsl:text>
         </div>
         <div class="mdpMetaText">
-          <xsl:value-of select="$gAccessUseHeader"/><xsl:text>. </xsl:text>
-          <xsl:element name="a">
-            <xsl:attribute name="href">
-              <xsl:value-of select="$gAccessUseLink"/>
-            </xsl:attribute>
-            <xsl:text>View access and use policy.</xsl:text>
-          </xsl:element>
+          <xsl:call-template name="BuildRDFaCCLicenseMarkup"/>
         </div>
       </div>
       
@@ -342,12 +432,10 @@
           </xsl:if>
         </div>
         
+      <!-- Title -->
         <div class="mdpMetaText">
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
-          </xsl:call-template>
+          <xsl:call-template name="BuildRDFaWrappedTitle"/>
+          <xsl:value-of select="$gTruncTitleString"/>
         </div>
       </div>
       
@@ -480,21 +568,13 @@
           <xsl:text>not available</xsl:text>
         </xsl:when>
         <xsl:otherwise>
-          <!-- -->
-          <xsl:variable name="bookmarkTitle">
-            <xsl:call-template name="GetMaybeTruncatedTitle">
-              <xsl:with-param name="titleString" select="$gFullTitleString"/>
-              <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-              <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
-            </xsl:call-template>
-          </xsl:variable>
           <!-- The javascript function call uses double-quoted
                parameters but the title may have double quotes in it so
                escape those -->
           <xsl:variable name="safeBookmarkTitle">
             <xsl:call-template name="ReplaceChar">
               <xsl:with-param name="string">
-                <xsl:value-of select="$bookmarkTitle"/>
+                <xsl:value-of select="$gTruncTitleString"/>
               </xsl:with-param>
               <xsl:with-param name="from_char">
                 <xsl:text>"</xsl:text>
