@@ -75,27 +75,28 @@
 
   <!-- root template -->
   <xsl:template match="/MBooksTop">
+
     <html lang="en" xml:lang="en" 
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
       xmlns:cc="http://creativecommons.org/ns#"
       xmlns:foaf="http://xmlns.com/foaf/0.1/"
+      version="XHTML+RDFa 1.0"
       >
-      <head>
+
+      <head profile="http://www.w3.org/1999/xhtml/vocab">
+        <!-- RDFa -->
+        <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
-            <xsl:choose>
-              <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-                <xsl:text>HathiTrust Digital Library - </xsl:text>
+           <xsl:choose>
+             <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
+               <xsl:text>HathiTrust Digital Library - </xsl:text>
               </xsl:when>
               <xsl:otherwise>
-                <xsl:text>HathiTrust Digital Library -- </xsl:text>
+                <xsl:text>HathiTrust Digital Library - </xsl:text>
               </xsl:otherwise>
             </xsl:choose>
-            <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
-          </xsl:call-template>
+            <xsl:value-of select="$gTruncTitleString"/>
         </title>
 
         <xsl:call-template  name="include_local_javascript"/>
