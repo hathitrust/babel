@@ -34,3 +34,22 @@ p.Image {
 }
 
 .mdpMetaText {}
+
+/* Hide CC icon */
+img {
+  visibility:hidden;
+  display:none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.1em;
+}
+
+/* use to hide code from display AND screenreaders */
+.hidden {
+  visibility:hidden;
+  display:none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.1em;
+}
+
