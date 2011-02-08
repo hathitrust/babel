@@ -13,6 +13,9 @@
   <xsl:variable name="gFeatureList" select="/MBooksTop/MdpApp/FeatureList"/>
   <xsl:variable name="gItemHandle" select="/MBooksTop/MBooksGlobals/ItemHandle"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
+  <xsl:variable name="gSSDFullTitleString">
+    <xsl:value-of select="concat($gFullTitleString, ', ', $gVolumeTitleFragment)"/>
+  </xsl:variable>
 
   <xsl:variable name="gFinalView">
     <xsl:choose>
@@ -58,16 +61,22 @@
   <!-- root template -->
   <xsl:template match="/MBooksTop">
 
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
-      <head>
+    <html lang="en" xml:lang="en" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:cc="http://creativecommons.org/ns#"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/"
+      version="XHTML+RDFa 1.0"
+      >
+
+      <head profile="http://www.w3.org/1999/xhtml/vocab">
+        <!-- RDFa -->
+        <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
           <xsl:text>Hathi Trust Digital Library - </xsl:text>
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="50"/>
-          </xsl:call-template>
+          <xsl:value-of select="$gSSDFullTitleString"/>
         </title>
+
         <link rel="stylesheet" href="/ssd/web/ssdstyles.css" type="text/css" />
 
         <!-- Below is a workaround for javascript script tags so we don't get a cdata output              -->
@@ -128,14 +137,9 @@
     <div id="mdpHeaderContainer">
       <div id="mdpPageHeader">
         <xsl:element name="h1">
-          <!--fixme:suz title should match H1 -->
           <xsl:text>Hathi Trust Digital Library - </xsl:text>
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="50"/>
-          </xsl:call-template>
-
+          <xsl:value-of select="$gSSDFullTitleString"/>
+            
           <xsl:element name="a"><xsl:attribute name="name">top</xsl:attribute></xsl:element>
         </xsl:element>
 
@@ -216,14 +220,9 @@
   
   
   <xsl:template name="FullTitle">
+    <xsl:call-template name="BuildRDFaWrappedTitle"/>
     <span><xsl:text>Title: </xsl:text></span>
-    
-    <xsl:call-template name="GetMaybeTruncatedTitle">
-      <xsl:with-param name="titleString" select="$gFullTitleString"/>
-      <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-      <xsl:with-param name="maxLength" select="300"/>
-    </xsl:call-template>
-    
+    <xsl:value-of select="$gSSDFullTitleString"/>    
   </xsl:template>
   
   <!-- Control Container -->
