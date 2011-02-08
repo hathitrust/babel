@@ -204,11 +204,13 @@
       <xsl:attribute name="href">
         <xsl:value-of select="$gAccessUseLink"/>
       </xsl:attribute>
-      <xsl:element name="img">
-        <xsl:attribute name="src">
-          <xsl:value-of select="$gAccessUseIcon"/>
-        </xsl:attribute>
-      </xsl:element>
+      <xsl:if test="$gAccessUseIcon!=''">
+        <xsl:element name="img">
+          <xsl:attribute name="src">
+            <xsl:value-of select="$gAccessUseIcon"/>
+          </xsl:attribute>
+        </xsl:element>        
+      </xsl:if>
     </xsl:element>
 
     <xsl:element name="a">
