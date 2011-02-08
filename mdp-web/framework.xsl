@@ -164,6 +164,23 @@
     </xsl:choose>
   </xsl:template>
 
+  <!-- RDFa: published -->
+  <xsl:template name="BuildRDFaWrappedPublished">
+    <xsl:variable name="published">
+      <xsl:call-template name="MetadataPublishedHelper"/>        
+    </xsl:variable>
+
+    <!-- visible -->
+    <xsl:value-of select="$published"/>
+    <!-- published -->
+    <xsl:element name="span">
+      <xsl:attribute name="property">dc:publisher</xsl:attribute>
+      <xsl:attribute name="content">
+        <xsl:value-of select="$published"/>
+      </xsl:attribute>
+    </xsl:element>
+  </xsl:template>
+
   <!-- RDFa: license - no license possible for serials -->
   <xsl:template name="BuildRDFaCCLicenseMarkup">
     <xsl:variable name="access_use_header">
@@ -201,7 +218,6 @@
       <xsl:text>Read access and use policy.</xsl:text>
     </xsl:element>
   </xsl:template>
-
   
   <!-- METADATA: All journal links -->
   <xsl:template name="BuildAllJournalLinksPopup">
@@ -249,7 +265,23 @@
     </xsl:for-each>
 
   </xsl:template>
-  
+
+  <!-- METADATA: published metadata helper -->
+  <xsl:template name="MetadataPublishedHelper">
+    <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='a']">
+      <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='a']"/>
+      &#x20;
+    </xsl:if>
+    <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='b']">
+      <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='b']"/>
+      &#x20;
+    </xsl:if>
+    <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='c']">
+      <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='c']"/>
+    </xsl:if>
+    
+  </xsl:template>
+
   <!-- METADATA: MDP-style metadata helper -->
   <xsl:template name="MdpMetadataHelper">
     <xsl:param name="ssd"/>
@@ -282,17 +314,7 @@
           <xsl:text>Published&#xa0;</xsl:text>
         </div>
         <div class="mdpMetaText">
-          <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='a']">
-            <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='a']"/>
-            &#x20;
-          </xsl:if>
-          <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='b']">
-            <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='b']"/>
-            &#x20;
-          </xsl:if>
-          <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='c']">
-            <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='c']"/>
-          </xsl:if>
+          <xsl:call-template name="BuildRDFaWrappedPublished"/>
         </div>
       </div>
       
