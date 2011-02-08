@@ -49,6 +49,13 @@
   color: #333333;
   z-index: 1;
 }
+.mdpMetaText img 
+{
+    position:relative;
+    margin-left:3px;
+    margin-right:3px;
+    top:3px;
+}
 
 #PageNav
 {

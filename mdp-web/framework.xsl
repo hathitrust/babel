@@ -182,7 +182,7 @@
         <xsl:value-of select="$access_use_header"/>
       </xsl:otherwise>
     </xsl:choose>
-    
+    <br/>
     <xsl:element name="a">
       <xsl:attribute name="href">
         <xsl:value-of select="$gAccessUseLink"/>
