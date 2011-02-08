@@ -8,7 +8,7 @@ function HTBookReader() {
     this.savedReduce = {'1.text' : 1};
     this.total_slices = 9999;
     this.cache_age = 10;
-    this.restricted_width = 150;
+    this.restricted_width = this.restricted_height = 75;
 }
 
 HTBookReader.prototype.sliceFromIndex = function(index) {
@@ -100,6 +100,8 @@ HTBookReader.prototype.getAvgDimension = function(dimType) {
                count++;
            }
        }
+       // performance: punt after 1 slice
+       break;
    }
    return sum / count;
 }
@@ -743,9 +745,21 @@ HTBookReader.prototype.updateToolbarZoom = function(reduce) {
 //       thumbnail width
 HTBookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
     var width = BookReader.prototype.getThumbnailWidth.call(this, thumbnailColumns);
-    if ( this.flags.final_access_status != 'allow' && width > this.restrictd_width ) {
+    if ( this.flags.final_access_status != 'allow' ) {
+        // calculate what the height _would_ be at this width
+        var avg_height = this.getAvgDimension("height");
+        var avg_width = this.getAvgDimension("width");
+        var r = avg_width / avg_height;
+        return this.restricted_height * r;
+    }
+    return width;
+}
+
+HTBookReader.prototype.getThumbnailHeight = function(thumbnailColumns) {
+    var height = BookReader.prototype.getThumbnailHeight.call(this, thumbnailColumns);
+    if ( this.flags.final_access_status != 'allow' ) {
         // keep this at 150
-        return this.restricted_width;
+        return this.restricted_height;
     }
     return width;
 }
