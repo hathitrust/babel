@@ -33,7 +33,9 @@
   <xsl:variable name="gHtId" select="/MBooksTop/MBooksGlobals/HtId"/>
   <xsl:variable name="gAccessUseHeader" select="/MBooksTop/MBooksGlobals/AccessUse/Header"/>
   <xsl:variable name="gAccessUseLink" select="/MBooksTop/MBooksGlobals/AccessUse/Link"/>
+  <xsl:variable name="gAccessUseAuxLink" select="/MBooksTop/MBooksGlobals/AccessUse/AuxLink"/>
   <xsl:variable name="gAccessUseIcon" select="/MBooksTop/MBooksGlobals/AccessUse/Icon"/>
+  <xsl:variable name="gAccessUseAuxIcon" select="/MBooksTop/MBooksGlobals/AccessUse/AuxIcon"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gPodUrl" select="/MBooksTop/MBooksGlobals/Pod/Url"/>
   <xsl:variable name="gSkin" select="/MBooksTop/MBooksGlobals/Skin"/>
@@ -190,7 +192,7 @@
     <xsl:choose>
       <xsl:when test="$gItemFormat='BK'">
         <xsl:element name="span">
-          <xsl:attribute name="href"><xsl:value-of select="$gAccessUseLink"/></xsl:attribute>
+          <xsl:attribute name="href"><xsl:value-of select="$gAccessUseAuxLink"/></xsl:attribute>
           <xsl:attribute name="rel">license</xsl:attribute>
           <xsl:value-of select="$access_use_header"/>
         </xsl:element>
@@ -200,25 +202,42 @@
       </xsl:otherwise>
     </xsl:choose>
     <br/>
-    <xsl:element name="a">
-      <xsl:attribute name="href">
-        <xsl:value-of select="$gAccessUseLink"/>
-      </xsl:attribute>
-      <xsl:if test="$gAccessUseIcon!=''">
+    <!-- If there's a default icon, link it default HT.org page -->
+    <xsl:if test="$gAccessUseIcon!=''">
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:value-of select="$gAccessUseLink"/>
+        </xsl:attribute>
         <xsl:element name="img">
           <xsl:attribute name="src">
             <xsl:value-of select="$gAccessUseIcon"/>
           </xsl:attribute>
-        </xsl:element>        
-      </xsl:if>
-    </xsl:element>
+        </xsl:element>
+      </xsl:element>
+    </xsl:if>
 
+    <!-- Link text to the default HT.org page -->
     <xsl:element name="a">
       <xsl:attribute name="href">
         <xsl:value-of select="$gAccessUseLink"/>
       </xsl:attribute>
       <xsl:text>Read access and use policy.</xsl:text>
     </xsl:element>
+
+    <!-- (CC): If there's an auxillary icon, link it using auxillary link -->
+    <xsl:if test="$gAccessUseAuxLink!='' and $gAccessUseAuxIcon!=''">
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:value-of select="$gAccessUseLink"/>
+        </xsl:attribute>
+        <xsl:element name="img">
+          <xsl:attribute name="src">
+            <xsl:value-of select="$gAccessUseIcon"/>
+          </xsl:attribute>
+        </xsl:element>        
+      </xsl:element>
+    </xsl:if>
+
   </xsl:template>
   
   <!-- METADATA: All journal links -->
