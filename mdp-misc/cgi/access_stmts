@@ -113,16 +113,20 @@ sub __build_rows {
 
     my $key = $hashref->{stmt_key};
     my $url = $hashref->{stmt_url};
+    my $aux_url = $hashref->{stmt_url_aux};
     my $head = $hashref->{stmt_head};
     my $icon = $hashref->{stmt_icon};
+    my $aux_icon = $hashref->{stmt_icon_aux};
     my $text = $hashref->{stmt_text};
     
     push(@$rows_arr_ref,
          Tr(
             td([$key]) .
             td([a({-href=>"$url"}, span("$url"))]) .
+            td([a({-href=>"$aux_url"}, span("$aux_url"))]) .
             td([$head]) .
             ($icon ? td([a({-href=>"$url"}, img({-src=>"$icon", -style=>"border-style:hidden"}))]) : td(['none'])) .
+            ($aux_icon ? td([a({-href=>"$aux_url"}, img({-src=>"$aux_icon", -style=>"border-style:hidden"}))]) : td(['none'])) .
             td([$text])));
 }
 
@@ -144,8 +148,10 @@ sub print_stmt {
                                                   {
                                                    stmt_key  => 1,
                                                    stmt_url  => 1,
+                                                   stmt_url_aux  => 1,
                                                    stmt_head => 1,
                                                    stmt_icon => 1,
+                                                   stmt_icon_aux => 1,
                                                    stmt_text => 1,
                                                   });
 
@@ -153,8 +159,10 @@ sub print_stmt {
          Tr(
             td(b(['key'])) .
             td(b(['url'])) .
+            td(b(['aux url'])) .
             td(b(['head'])) .
             td(b(['icon'])) .
+            td(b(['aux icon'])) .
             td(b(['text']))));
 
     foreach my $hashref (@$ref_to_arr_of_hashref) {
@@ -165,7 +173,7 @@ sub print_stmt {
     my $at = $RightsGlobals::g_attribute_keys{$attr};
 
     my $table = table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
-                      th({-colspan=>5}, "Statement for attr=$attr ($at) source=$source ($src)"), @rows);
+                      th({-colspan=>7}, "Statement for attr=$attr ($at) source=$source ($src)"), @rows);
     print $table;
 
 
@@ -216,16 +224,20 @@ sub print_tables {
                                                                 {
                                                                  stmt_key  => 1,
                                                                  stmt_url  => 1,
+                                                                 stmt_url_aux  => 1,
                                                                  stmt_head => 1,
                                                                  stmt_icon => 1,
+                                                                 stmt_icon_aux => 1,
                                                                  stmt_text => 1,
                                                                 });
     push(@rows,
          Tr(
             td(b(['key'])) .
             td(b(['url'])) .
+            td(b(['aux url'])) .
             td(b(['head'])) .
             td(b(['icon'])) .
+            td(b(['aux icon'])) .
             td(b(['text']))));
 
     foreach my $hashref (@$ref_to_arr_of_hashref) {
@@ -233,7 +245,7 @@ sub print_tables {
     }
 
     $table = table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
-                   th({-colspan=>5}, "All Statements"), @rows);
+                   th({-colspan=>7}, "All Statements"), @rows);
     print $table;
     @rows = ();
 
