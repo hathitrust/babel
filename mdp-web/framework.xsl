@@ -228,11 +228,11 @@
     <xsl:if test="$gAccessUseAuxLink!='' and $gAccessUseAuxIcon!=''">
       <xsl:element name="a">
         <xsl:attribute name="href">
-          <xsl:value-of select="$gAccessUseLink"/>
+          <xsl:value-of select="$gAccessUseAuxLink"/>
         </xsl:attribute>
         <xsl:element name="img">
           <xsl:attribute name="src">
-            <xsl:value-of select="$gAccessUseIcon"/>
+            <xsl:value-of select="$gAccessUseAuxIcon"/>
           </xsl:attribute>
         </xsl:element>        
       </xsl:element>
