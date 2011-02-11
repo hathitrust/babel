@@ -26,6 +26,46 @@
   <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
   <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
   
+  <xsl:variable name="gCurrentUi">
+    <xsl:choose>
+      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
+        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>reader</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <!-- <xsl:variable name="gCurrentView">
+    <xsl:choose>
+      <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when>
+      <xsl:when test="$gCurrentUi = 'embed'">1up</xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable> -->
+  <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/>
+  
+  <xsl:variable name="gCurrentReaderMode">
+    <xsl:choose>
+      <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when>
+      <xsl:otherwise>full</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  
+  <xsl:variable name="gUsingBookReader">
+    <xsl:choose>
+      <xsl:when test="$gFinalAccessStatus!='allow'"><xsl:value-of select="'false'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
+      <!-- <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when> -->
+      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:variable name="gFinalView">
     <xsl:choose>
       <xsl:when test="$gFinalAccessStatus!='allow'">
@@ -35,6 +75,10 @@
         <xsl:choose>
           <xsl:when test="contains($gCurrentPageFeatures,'MISSING_PAGE') and $gUsingBookReader = 'false'">
             <xsl:value-of select="'missing'"/>
+          </xsl:when>
+          <xsl:when test="$gCurrentView = 'text'">
+            <!-- use classic text view -->
+            <xsl:text>plaintext</xsl:text>
           </xsl:when>
           <xsl:otherwise>
             <xsl:choose>
@@ -57,46 +101,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  
-  <xsl:variable name="gCurrentUi">
-    <xsl:choose>
-      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
-        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']" />
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:text>reader</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
 
-  <xsl:variable name="gCurrentView">
-    <xsl:choose>
-      <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when>
-      <xsl:when test="$gCurrentUi = 'embed'">1up</xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  <!-- <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/> -->
-  
-  <xsl:variable name="gCurrentReaderMode">
-    <xsl:choose>
-      <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when>
-      <xsl:otherwise>full</xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
-  <xsl:variable name="gUsingBookReader">
-    <xsl:choose>
-      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
   <xsl:variable name="gViewIsResizable">
     <xsl:choose>
       <xsl:when test="$gFinalView='restricted' or $gFinalView='empty' or $gFinalView='missing'">
@@ -528,6 +533,7 @@
               </li>
             </xsl:if>
             
+      		  <xsl:if test="$gFinalAccessStatus = 'allow'">
             <li>
               <xsl:element name="a">
                 <xsl:attribute name="id">pagePdfLink</xsl:attribute>
@@ -540,6 +546,7 @@
                 <xsl:text>Download PDF - this page</xsl:text>
               </xsl:element>
             </li>
+            </xsl:if>
             
             <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
               <li>
@@ -676,8 +683,8 @@
     <xsl:param name="pViewTypeList"/>
 
 		<div id="mdpToolbar">
-		  <xsl:if test="$gFinalAccessStatus != 'allowed' and contains(//CurrentCgi/Param[@name='debug'], 'hide')">
-		    <xsl:attribute name="style"><xsl:text>display: none</xsl:text></xsl:attribute>
+		  <xsl:if test="$gFinalAccessStatus != 'allow'">
+		    <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
 		  </xsl:if>
 			
 			<xsl:if test="$gCurrentReaderMode = 'full'">
@@ -714,15 +721,15 @@
 							<span>Classic View</span>
 					  </xsl:element>
 					</li>
-					<li>
+					<li id="mdpPlainTextView">
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnClassicText</xsl:text></xsl:attribute>
 					    <xsl:attribute name="href">
-					      <xsl:value-of select="$pViewTypeList/ViewTypeSimpleTextLink"/>
+					      <xsl:value-of select="$pViewTypeList/ViewTypePlainTextLink"/>
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
 					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = 'plaintext'">
+  					    <xsl:if test="$gCurrentView = 'plaintext' or $gCurrentView = 'text'">
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
@@ -742,18 +749,19 @@
             </xsl:if>
   				</ul>
   			</form>
-				<ul id="mdpZoomOptions">
-					<li class="PTiconButton">
-						<xsl:call-template name="build-zoomout-button" />
-					</li>
-					<li>
-						<div id="mdpZoomStatus"><xsl:value-of select="//ResizeForm/ResizeValuesSelect/Option[Focus='true']/Label" /></div>
-					</li>
-					<li class="PTiconButton">
-						<xsl:call-template name="build-zoomin-button" />
-					</li>
-				</ul>
-
+  				<ul id="mdpZoomOptions">
+      			<xsl:if test="$gFinalView != 'plaintext'">
+  					<li class="PTiconButton">
+  						<xsl:call-template name="build-zoomout-button" />
+  					</li>
+            <!-- <li>
+              <div id="mdpZoomStatus"><xsl:value-of select="//ResizeForm/ResizeValuesSelect/Option[Focus='true']/Label" /></div>
+            </li> -->
+  					<li class="PTiconButton">
+  						<xsl:call-template name="build-zoomin-button" />
+  					</li>
+          </xsl:if>
+  				</ul>
 				<xsl:call-template name="BuildPageLinks">
           <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
         </xsl:call-template>
@@ -882,44 +890,44 @@
 							<span>Thumbnails</span>
 					  </xsl:element>
 					</li>
-					<li>
-					  <xsl:element name="a">
-					    <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
-					    <xsl:attribute name="href">
-					      <xsl:if test="$gHasOcr='YES'">
-					        <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
-					      </xsl:if>
-					    </xsl:attribute>
-					    <xsl:if test="$gHasOcr='YES'">
-					      <xsl:attribute name="accesskey">5</xsl:attribute>
-					    </xsl:if>
-					    <xsl:attribute name="title">
-						    <xsl:choose>
-						      <xsl:when test="$gHasOcr='NO'">
-						        <xsl:text>(This item has no text)</xsl:text>
-						      </xsl:when>
-    					    <xsl:when test="$gCurrentView = 'text'">
-    					      <xsl:text>Text View is the current view</xsl:text>
-    					    </xsl:when>
-    					    <xsl:otherwise>
-    					      <xsl:text>Text View</xsl:text>
-    					    </xsl:otherwise>
-    					  </xsl:choose>
-    					</xsl:attribute>
-					    <xsl:attribute name="class">
-					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = 'text'">
-  					      <xsl:text>PTbuttonActive</xsl:text>
-  					    </xsl:if>
-  					    <xsl:if test="$gHasOcr='NO'">
-  					      <xsl:text>PTbuttonDisabled</xsl:text>
-  					    </xsl:if>
-  					  </xsl:attribute>
-							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
-							<span>Plain Text</span>
-							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
-					  </xsl:element>
-					</li>
+          <!-- <li>
+            <xsl:element name="a">
+              <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:if test="$gHasOcr='YES'">
+                  <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
+                </xsl:if>
+              </xsl:attribute>
+              <xsl:if test="$gHasOcr='YES'">
+                <xsl:attribute name="accesskey">5</xsl:attribute>
+              </xsl:if>
+              <xsl:attribute name="title">
+                <xsl:choose>
+                  <xsl:when test="$gHasOcr='NO'">
+                    <xsl:text>(This item has no text)</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="$gCurrentView = 'text'">
+                    <xsl:text>Text View is the current view</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>Text View</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:attribute name="class">
+                <xsl:text>PTbutton </xsl:text>
+                <xsl:if test="$gCurrentView = 'text'">
+                  <xsl:text>PTbuttonActive</xsl:text>
+                </xsl:if>
+                <xsl:if test="$gHasOcr='NO'">
+                  <xsl:text>PTbuttonDisabled</xsl:text>
+                </xsl:if>
+              </xsl:attribute>
+              <img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
+              <span>Plain Text</span>
+              <img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
+            </xsl:element>
+          </li> -->
 				</ul>
 			</li>
     </script>
@@ -1941,7 +1949,7 @@
         </div>
       </xsl:when>
 
-      <xsl:when test="$gFinalView='restrictedXX'">
+      <xsl:when test="$gFinalView='restricted'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           <xsl:choose>
@@ -1975,10 +1983,9 @@
               (<a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">More information</a>)
             </div>
         </xsl:element>
-        <div id="BookReader"></div>
       </xsl:when>
 
-      <xsl:when test="$gFinalView='restricted'">
+      <xsl:when test="$gFinalView='restricted-with-thumbnails'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           <xsl:choose>

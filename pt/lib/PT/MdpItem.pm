@@ -150,7 +150,8 @@ sub DetermineAndSetContentHandler {
 
     my $requestedPageView = $self->GetRequestedView();
 
-    if ( $requestedPageView eq 'simple-text' ) {
+    if ( $requestedPageView eq 'plaintext' || $requestedPageView eq 'text' ) {
+        ### BookReader will eventually serve "text" view
         $self->SetContentHandler( 'OcrHandler' );
     }
     elsif ( $requestedPageView eq 'fpdf' ) {

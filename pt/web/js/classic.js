@@ -23,6 +23,13 @@ $(document).ready(function() {
     })
 
     // remove the classic print button and append the bookreader icons
-    $("#btnClassicText").replaceWith($("#bookreader-toolbar-items").tmpl());
-
+    // $("#btnClassicText").replaceWith($("#bookreader-toolbar-items").tmpl());
+    $("#bookreader-toolbar-items").tmpl().appendTo("#mdpToolbarViews > ul").insertBefore($("#mdpPlainTextView"));
+    
+    // if the toolbar is disabled, punt
+    if ( $("#mdpToolbar").is(".disabled") ) {
+        $("#mdpToolbar")
+            .click(function() { return false; });
+    }
+    
 })

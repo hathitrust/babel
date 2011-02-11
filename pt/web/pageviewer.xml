@@ -98,6 +98,7 @@
       <ViewType2UpLink><?VIEW_TYPE_2UP_LINK?></ViewType2UpLink>
       <ViewTypeThumbnailLink><?VIEW_TYPE_THUMBNAIL_LINK?></ViewTypeThumbnailLink>
       <ViewTypeTextLink><?VIEW_TYPE_TEXT_LINK?></ViewTypeTextLink>
+      <ViewTypePlainTextLink><?VIEW_TYPE_PLAINTEXT_LINK?></ViewTypePlainTextLink>
     </ViewTypeLinks>
 
     <ResizeForm>

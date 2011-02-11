@@ -454,6 +454,15 @@ sub handle_VIEW_TYPE_TEXT_LINK_PI
     return BuildViewTypeUrl($cgi, 'text');
 }
 
+sub handle_VIEW_TYPE_PLAINTEXT_LINK_PI
+    : PI_handler(VIEW_TYPE_PLAINTEXT_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return BuildViewTypeUrl($cgi, 'plaintext');
+}
+
 sub handle_SEARCH_RESULTS_LINK_PI
     : PI_handler(SEARCH_RESULTS_LINK)
 {

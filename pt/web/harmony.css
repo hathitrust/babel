@@ -593,6 +593,19 @@ div.mdpScrollableContainer {
 
 #mdpTextDeny {
   float: none;
-  height: 16em;
-  padding-bottom: 1.5em;
+  padding-bottom: 8em;
+  /*height: 16em;
+    padding-bottom: 1.5em;*/
+}
+
+#mdpText {
+  float: none;
+}
+
+#mdpText p {
+  border: 1px solid #eee;
+}
+
+.disabled {
+  opacity: 0.4;
 }
