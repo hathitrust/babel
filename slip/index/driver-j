@@ -573,7 +573,7 @@ sub handle_Optimizing {
         }
     }
 
-    Log_stage($C, $run, $_Stage, ___rate($optimize_START));
+    Log_stage($C, $run, $_Stage, "full=$FULL_OPTIMIZE_RUN " . ___rate($optimize_START));
 
     return $rc;
 }
