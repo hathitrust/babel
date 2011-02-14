@@ -12,8 +12,8 @@
         <span class="Z3988">
           <xsl:attribute name="title">
             <xsl:text>ctx_ver=Z39.88-2004&amp;</xsl:text>
-            <xsl:text>rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;</xsl:text>
-            <!-- <xsl:text>rfr_id=info:sid/hathitrust.org&amp;</xsl:text> -->
+            <xsl:text>rft_val_fmt=info:ofi/fmt:kev:mtx:book&amp;</xsl:text>
+            <xsl:text>rfr_id=info:sid/hathitrust.org&amp;</xsl:text>
             <xsl:text>rft.genre=book&amp;</xsl:text>
 
             <xsl:text>rft.btitle=</xsl:text>
@@ -42,7 +42,7 @@
             <xsl:value-of select="varfield[@id=250]/subfield[@label='a']"/>
             <xsl:text>&amp;</xsl:text>
 
-            <xsl:text>rft.id=http://hdl.handle.net/2027/</xsl:text>
+            <xsl:text>rft_id=http://hdl.handle.net/2027/</xsl:text>
             <xsl:value-of select="varfield[@id='MDP']/subfield[@label='u']"/>
             <xsl:text>&amp;</xsl:text>
 
@@ -57,8 +57,8 @@
         <span class="Z3988">
           <xsl:attribute name="title">
             <xsl:text>ctx_ver=Z39.88-2004&amp;</xsl:text>
-            <xsl:text>rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;</xsl:text>
-            <!-- <xsl:text>rfr_id=info:sid/hathitrust.org&amp;</xsl:text> -->
+            <xsl:text>rft_val_fmt=info:ofi/fmt:kev:mtx:journal&amp;</xsl:text>
+            <xsl:text>rfr_id=info:sid/hathitrust.org&amp;</xsl:text>
             <xsl:text>rft.genre=article&amp;</xsl:text>
 
             <xsl:text>rft.title=</xsl:text>
@@ -74,7 +74,7 @@
             <xsl:value-of select="varfield[@id=260]/subfield[@label='c']"/>
             <xsl:text>&amp;</xsl:text>
 
-            <xsl:text>rft.id=http://hdl.handle.net/2027/</xsl:text>
+            <xsl:text>rft_id=http://hdl.handle.net/2027/</xsl:text>
             <xsl:value-of select="varfield[@id='MDP']/subfield[@label='u']"/>
             <xsl:text>&amp;</xsl:text>
 
@@ -89,8 +89,8 @@
         <span class="Z3988">
           <xsl:attribute name="title">
             <xsl:text>ctx_ver=Z39.88-2004&amp;</xsl:text>
-            <xsl:text>rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc&amp;</xsl:text>
-            <!-- <xsl:text>rfr_id=info:sid/hathitrust.org&amp;</xsl:text> -->
+            <xsl:text>rft_val_fmt=info:ofi/fmt:kev:mtx:dc&amp;</xsl:text>
+            <xsl:text>rfr_id=info:sid/hathitrust.org&amp;</xsl:text>
 
             <xsl:text>rft.title=</xsl:text>
             <xsl:value-of select="varfield[@id=245]/subfield[@label='a']"/>
@@ -130,7 +130,7 @@
             <xsl:value-of select="varfield[@id=260]/subfield[@label='c']"/>
             <xsl:text>&amp;</xsl:text>
 
-            <xsl:text>rft.id=http://hdl.handle.net/2027/</xsl:text>
+            <xsl:text>rft_id=http://hdl.handle.net/2027/</xsl:text>
             <xsl:value-of select="varfield[@id='MDP']/subfield[@label='u']"/>
             <xsl:text>&amp;</xsl:text>
 
@@ -147,7 +147,7 @@
     <span class="Z3988">
       <xsl:attribute name="title">
         <xsl:text>ctx_ver=Z39.88-2004</xsl:text>
-        <xsl:text>&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook</xsl:text>
+        <xsl:text>&amp;rft_val_fmt=info:ofi/fmt:kev:mtx:book</xsl:text>
 
         <xsl:text>&amp;rft.title=</xsl:text><xsl:value-of select="./Title" />
         <xsl:text>&amp;rft.year=</xsl:text><xsl:value-of select="./Date" />
