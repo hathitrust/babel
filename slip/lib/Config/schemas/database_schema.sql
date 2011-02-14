@@ -76,10 +76,11 @@ CREATE TABLE `j_indexed` (
                 PRIMARY KEY    (`run`, `id`, `shard`),
                 KEY `id`       (`id`),
                 KEY `runshard` (`run`, `shard`),
-                KEY `run`      (`run`)
+                KEY `run`      (`run`),
+                KEY `run_indexed_ct` (`run`, `indexed_ct`)
        );
 
-CREATE TABLE `j_indexed` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default '0000-00-00 00::00::00', `indexed_ct` smallint(3) NOT NULL default '0', PRIMARY KEY (`run`, `id`, `shard`), KEY `id` (`id`), KEY `runshard` (`run`, `shard`), KEY `run` (`run`));
+CREATE TABLE `j_indexed` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default '0000-00-00 00::00::00', `indexed_ct` smallint(3) NOT NULL default '0', PRIMARY KEY (`run`, `id`, `shard`), KEY `id` (`id`), KEY `runshard` (`run`, `shard`), KEY `run` (`run`), KEY `run_indexed_ct` (`run`, `indexed_ct`));
 
 
 ---------------------------------------------------------------------
