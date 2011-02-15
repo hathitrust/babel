@@ -45,6 +45,7 @@ html, body {
 
 #ControlContentContainer {
   float:none;
+  clear: left/right/both/none;
 }
 
 html {
@@ -70,6 +71,7 @@ body {
 
 #mdpUberContainer {
   margin-top: -10px;
+  clear: both;
 }
 
 /* @group TOOLBAR */
@@ -452,13 +454,10 @@ div.mdpControlContainer {
   overflow: hidden;
   overflow-y: auto;
   padding-right: 15px;
-}
-
-.mdpControlContainer  {
   padding: 4px 8px;
   width: 14em;
-  position: absolute;
-  top: 0;
+  position: relative;
+  float: left;
 }
 
 .mdpControlContainer div {

@@ -151,6 +151,8 @@
       <?FEEDBACK_CGI_URL?>
     </FeedbackForm>
 
+    <DownloadProgressBase><?DOWNLOAD_PROGRESS_BASE?></DownloadProgressBase>
+
   </MdpApp>
 
   <?METS_XML?>

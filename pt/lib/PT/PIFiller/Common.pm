@@ -38,6 +38,61 @@ require "PIFiller/Common/Group_HEADER.pm";
 #
 # ---------------------------------------------------------------------
 
+# ---------------------------------------------------------------------
+
+=item BuildViewTypeUrl
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub BuildViewTypeUrl
+{
+    my ( $cgi, $view ) = @_;
+
+    my $tempCgi = new CGI( $cgi );
+
+    if ( $view eq 'fpdf' || $view eq 'pdf' ) {
+        return BuildImageServerPDFUrl($cgi, $view);
+    }
+
+    $tempCgi->delete('ui'); # clear ui=embed
+    $tempCgi->param( 'view', $view );
+    my $href = Utils::url_to($tempCgi);
+
+    return $href;
+}
+
+sub BuildImageServerPDFUrl
+{
+    my ( $cgi, $view ) = @_;
+    
+    my $tempCgi = new CGI ("");
+    
+    # copy params
+    foreach my $p (qw(id orient size attr src u)) {
+        $tempCgi->param($p, $cgi->param($p));
+    }
+    if ( $view eq 'fpdf' ) {
+        # pass
+    } elsif ( $view eq 'pdf' ) {
+        # don't force download;
+        # let the PDF open in the browser if possible
+        $tempCgi->param('seq', $cgi->param('seq'));
+        $tempCgi->param('num', $cgi->param('num'));
+        $tempCgi->param('attachment', 0);
+    }
+    
+    if ( $cgi->param('debug') ) {
+        $tempCgi->param('debug', $cgi->param('debug'));
+    }
+    
+    my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/pdf");
+    return $href;
+}
+
+
 =item BuildItemHandle
 
 Description
@@ -947,6 +1002,78 @@ Handler for FULL_PDF_ACCESS_MESSAGE. Returns the reason that full book PDF
 download is not available.
 
 =cut
+=item handle_VIEW_TYPE_FULL_PDF_LINK_PI : PI_handler(VIEW_TYPE_FULL_PDF_LINK)
+
+Handler for VIEW_TYPE_FULL_PDF_LINK.  In the absence of authentication
+as a HathiTrust affilliate, this PI is a link to the WAYF.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_VIEW_TYPE_FULL_PDF_LINK_PI
+    : PI_handler(VIEW_TYPE_FULL_PDF_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $href;
+
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    my $status = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    if ($status eq 'allow') {
+        $href = BuildViewTypeUrl($cgi, 'fpdf');
+    }
+    else {
+        my $return_to_url = $cgi->self_url;
+        my $auth = $C->get_object('Auth');
+        $href = $auth->get_WAYF_login_href($C, $return_to_url);
+    }
+
+    return $href;
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_ALLOW_FULL_PDF_PI : PI_handler(ALLOW_FULL_PDF)
+
+Handler for ALLOW_FULL_PDF. 
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_ALLOW_FULL_PDF_PI
+    : PI_handler(ALLOW_FULL_PDF)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    return $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+}
+
+sub handle_FULL_PDF_ACCESS_MESSAGE_PI
+    : PI_handler(FULL_PDF_ACCESS_MESSAGE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    my ( $message, $status ) = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    return $message;
+}
+
+sub handle_DOWNLOAD_PROGRESS_BASE
+    : PI_handler(DOWNLOAD_PROGRESS_BASE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my $cache_dir = $config->get('download_progress_base');
+    my $true_cache_component = ($ENV{SDRVIEW} eq 'full') ? 'cache-full' : 'cache';
+    $cache_dir =~ s,___CACHE___,$true_cache_component,;
+    
+    return $cache_dir;
+}
+
+>>>>>>> 12129c1... before ptsearch merge
 
 # ---------------------------------------------------------------------
 sub handle_FULL_PDF_ACCESS_MESSAGE_PI

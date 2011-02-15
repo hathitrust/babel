@@ -7,7 +7,7 @@ HT.pdf_helpers = {
         progress = progress.substr(0,1) + "/" + progress.substr(1,1) + "/" + progress.substr(2,1) + "/" + progress;
         var src = $(self).attr('href') + ";progress=" + progress;
 
-        var progress_url = HT.reader.flags.download_progress_base + "/" + progress;
+        var progress_url = HT.config.download_progress_base + "/" + progress;
 
         var html = 
         '<div class="meter-wrap">' +
@@ -136,7 +136,7 @@ $(document).ready(function() {
     $("a#fullPdfLink").click(function() {
         if ( $(this).attr('rel') == 'allow' ) {
             // if there's no progress base, punt on the progress bar
-            if ( HT.reader.flags.download_progress_base == null ) {
+            if ( HT.config.download_progress_base == null ) {
                 return true;
             }
             HT.pdf_helpers.download_pdf(this);

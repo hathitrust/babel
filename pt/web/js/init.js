@@ -79,6 +79,7 @@ function subclass(constructor, superConstructor)
 
 // define a namespace
 var HT = HT || {};
+HT.config = HT.config || {};
 
 // bookreader utility
 // seed hash based on URL parameters as needed
