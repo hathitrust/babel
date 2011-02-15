@@ -608,3 +608,14 @@ div.mdpScrollableContainer {
 .disabled {
   opacity: 0.4;
 }
+
+.section108panel {
+  width: 750px;
+  text-align: left;
+}
+
+#mdpFeedbackForm
+{
+  margin-left: 0px; 
+  background-color: #fffeff
+}
