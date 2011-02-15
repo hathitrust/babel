@@ -1,0 +1,223 @@
+#!/l/local/bin/perl
+
+# Copyright 2006 The Regents of The University of Michigan, All Rights Reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+use strict;
+umask 0000;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# ----------------------------------------------------------------------
+# Performance measurement
+# ----------------------------------------------------------------------
+BEGIN {
+    ( $main::realSTART ) = time;
+}
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'HT_DEV'} ) {
+        # Set the SDRINST and SDRLIB environment variable in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/pt/cgi');
+    }
+}
+
+
+# ----------------------------------------------------------------------
+# Libraries
+# ----------------------------------------------------------------------
+# Perl standard libs
+use CGI;
+
+# Magic
+use Attribute::Handlers;
+
+# MDP specfic
+use MdpGlobals;
+use Utils;
+use Debug::DUtils;
+use PI;
+use View;
+use Identifier;
+
+BEGIN
+{
+    Debug::DUtils::setup_DebugScreen();
+}
+
+# ----------------------------------------------------------------------
+# define PTGlobals namespace
+# ----------------------------------------------------------------------
+use PTGlobals;
+
+use PT::MdpItem;
+use PT::PageTurnerUtils;
+use PT::PageTurnerSearchUtils;
+use PT::Prolog;
+
+$::VERSION = 2.0000;
+
+# ---------------------------------------------------------------------
+#
+#                           M A I N
+#
+# ---------------------------------------------------------------------
+
+my $prolog = new PT::Prolog;
+
+$prolog->Run(\&ValidityChecks, 'pt');
+
+my $C = $prolog->GetContext();
+my $gDso = $C->get_object('Session');
+my $gMdpItem = $C->get_object('MdpItem');
+my $cgi = $C->get_object('CGI');
+
+# Any information specific to this request (page, possibly new
+# handler, etc.) is done after initialization
+$gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues );
+
+
+# ----------------------------------------------------------------------
+#                          Handle search
+# ----------------------------------------------------------------------
+
+
+# Crude attempt to prevent another ptsearch process from entering here
+# and trying to build the same index while an earlier one is too.
+my $id = $cgi->param('id');
+my $outputDir = PT::PageTurnerSearchUtils::GetIndexOutputDestDir($id);
+Utils::mkdir_path($outputDir);
+my $lock_file = "$outputDir/" . $C->get_object('MdpConfig')->get('ptsearch_lock_file') . ".$id" ;
+
+# ----------------------
+# END block for clean up
+END {
+    `rm -f $lock_file`;
+    exit;
+}
+
+my $loop_ct = 0;
+use constant MAX_LOOPS => 15;
+
+while (-e $lock_file) {
+    sleep 3;
+    if (++$loop_ct > MAX_LOOPS) {
+        `rm -f $lock_file`;
+        ASSERT(0, qq{ptsearch wait loop time exceeded for lock file=$lock_file});
+    }
+}
+
+#
+# BEGIN SECTION
+#
+`touch $lock_file`;
+chmod(0666, $lock_file);
+
+# Index
+PT::PageTurnerSearchUtils::IndexOcr($C);
+
+`rm -f $lock_file`;
+#
+# END SECTION
+#
+
+# Search: returns CompositeResult (cres)
+my $cres = PT::PageTurnerSearchUtils::ocr_search_driver($C);
+$C->set_object('CompositeResult', $cres);
+
+
+# ----------------------------------------------------------------------
+# get XML template and process its PIs
+# ----------------------------------------------------------------------
+
+# Pseudo-controller-like sequence follows
+my $act = $C->get_object('Action');
+$act->execute_action($C);
+
+my $vw = new View($C);
+
+$vw->execute_view($C, $act);
+$vw->output($C);
+
+$C->dispose();
+
+exit 0;
+
+
+# ---------------------------------------------------------------------
+#
+#                       end of M A I N
+#
+# ---------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------
+# NAME         :
+# PURPOSE      :
+# CALLS        :
+# INPUT        :
+# RETURNS      :
+# GLOBALS      :
+# SIDE-EFFECTS :
+# NOTES        :
+# ----------------------------------------------------------------------
+sub ValidityChecks
+{
+    my ( $cgi ) = @_;
+
+    # lose any image map params
+    $cgi->delete( 'x' );
+    $cgi->delete( 'y' );
+
+    # make sure there is a proper search term
+    if ( ! $cgi->param( 'q1' ) ||
+         $cgi->param( 'q1' ) =~ m,^[\s*]*$,s )
+    {
+        $cgi->param( 'q1', 'Please_enter_a_search_term' );
+    }
+
+    # There must be a valid id for an item to search within
+    Utils::silent_ASSERT(Identifier::validate_mbooks_id($cgi),
+                         qq{Invalid document id provided.});
+
+    if ( !( $cgi->param( 'start' ) ) )
+    {
+        $cgi->param ( 'start', '1' );
+    }
+
+    if ( !( $cgi->param( 'size' ) ) )
+    {
+        $cgi->param ( 'size', $PTGlobals::gDefaultSliceSize );
+    }
+
+    $cgi->param( 'page', 'search' );
+
+    return PT::Prolog::ST_EMPTY;
+}

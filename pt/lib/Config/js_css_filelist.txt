@@ -59,13 +59,16 @@ Section:LOCAL_JS
 //common-web/js/overlayUtils.js
 //common-web/js/listUtils.js
 /pt/web/js/section108.js
-//common-web/js/pageturner.js
 /pt/web/jquery/boxy/jquery.boxy.js
+/pt/web/js/init.js
+/pt/web/js/download_helper.js
+
+Section:PAGETURNER_JS
+Test:$gBrowsing='true'
+//common-web/js/pageturner.js
 /pt/web/jquery/jquery.tmpl.js
 /pt/web/jquery/jquery.tmplPlus.js
-/pt/web/js/init.js
 /pt/web/js/classic.js
-/pt/web/js/download_helper.js
 
 Section:BOOKREADER_JS
 Test:$gUsingBookReader='true'
@@ -89,6 +92,10 @@ Section:CSS
 /pt/web/harmony.css
 /pt/web/jquery/boxy/boxy.css
 /pt/web/download_helper.css
+
+Section:SEARCH_CSS
+Test:$gBrowsing='false'
+/pt/web/searchresults.css
 
 # Section:BOOKREADER_CSS
 # NOTE: BookReader.css doesn't appear to work when minified.

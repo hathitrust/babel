@@ -22,8 +22,6 @@
   <xsl:variable name="gBackNavLinkHref" select="/MBooksTop/MdpApp/BackNavInfo/Href"/>
   <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
   
-  <xsl:variable name="gBrowsing" select="true()" />
-  
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
@@ -1420,25 +1418,6 @@
     </xsl:element>
   </xsl:template>
 
-  <!-- AJAX: build "add item to [new] collection" request URL -->
-  <xsl:template name="GetAddItemRequestUrl">
-
-    <xsl:variable name="id">
-      <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
-    </xsl:variable>
-
-    <xsl:variable name="ajax_request_partial_url">
-          <xsl:value-of select="concat('mb?', 'page=ajax', ';id=', $id )"/>
-    </xsl:variable>
-
-    <div id="PTajaxAddItemPartialUrl" class="hidden">
-          <xsl:value-of select="$ajax_request_partial_url"/>
-
-    </div>
-
-
-  </xsl:template>
-    
   <xsl:template name="BuildBackToResultsLink">
     <div id="mdpBackToResults">
       <xsl:element name="a">
