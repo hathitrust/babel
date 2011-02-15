@@ -20,7 +20,6 @@
      'q1'       => '.*',
      'u'        => '1',
      'ui'       => 'reader|embed',
-     'pgcount'  =>'.*', #changed to 10 by cgi but not forced here to avoid MAFR email overload
     );
 
 # Specification of global *database* operations to be executed before

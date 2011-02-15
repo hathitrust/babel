@@ -58,14 +58,14 @@ Section:LOCAL_JS
 /pt/web/js/newCollOverlayPT.js
 //common-web/js/overlayUtils.js
 //common-web/js/listUtils.js
-/pt/web/js/section108.js
+//common-web/js/pageturner.js
 /pt/web/jquery/boxy/jquery.boxy.js
 /pt/web/js/init.js
 /pt/web/js/download_helper.js
 
 Section:PAGETURNER_JS
-Test:$gBrowsing='true'
-//common-web/js/pageturner.js
+Test:$gUserIsSearching='false'
+/pt/web/js/section108.js
 /pt/web/jquery/jquery.tmpl.js
 /pt/web/jquery/jquery.tmplPlus.js
 /pt/web/js/classic.js
@@ -94,7 +94,7 @@ Section:CSS
 /pt/web/download_helper.css
 
 Section:SEARCH_CSS
-Test:$gBrowsing='false'
+Test:$gUserIsSearching='true'
 /pt/web/searchresults.css
 
 # Section:BOOKREADER_CSS
