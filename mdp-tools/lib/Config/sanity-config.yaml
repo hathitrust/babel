@@ -128,12 +128,16 @@ ssd:
   - http://__URL_STAGE__.hathitrust.org/cgi/ssd?id=8;ssd=1;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/ssd?id=1;__LOCAL__
 
-mdp-misc:
-  - /htapps/__CMD_STAGE__/mdp-misc/cgi/access_stmts attr=1 src=3 __LOCAL__
-  - /htapps/__CMD_STAGE__/mdp-misc/cgi/access_stmts __LOCAL__
+access:
+  - /htapps/__CMD_STAGE__/access/cgi/stmts __LOCAL__
+  - /htapps/__CMD_STAGE__/access/cgi/stmts attr=1 src=3 __LOCAL__
+  - /htapps/__CMD_STAGE__/access/cgi/stmts_api attr=1 src=3 fields=stmt_url,stmt_key __LOCAL__
+  - /htapps/__CMD_STAGE__/access/cgi/status_api id=mdp.39015015394847 __LOCAL__
 
-  - http://__URL_STAGE__.hathitrust.org/mdp-misc/cgi/access_stmts?attr=1;src=3;__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/mdp-misc/cgi/access_stmts?__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts?__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts?attr=1;src=3;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts_api?attr=1;src=3;fields=stmt_url,stmt_key;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/access/cgi/status_api?id=mdp.39015015394847;__LOCAL__
 
 wayf:
   - /htapps/__CMD_STAGE__/wayf/cgi/wayf __LOCAL__
