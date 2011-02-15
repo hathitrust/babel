@@ -54,6 +54,15 @@
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
   <xsl:variable name="gVolumeTitleFragment" select="concat(' ', /MBooksTop/MBooksGlobals/VolCurrTitleFrag)"/>
   <xsl:variable name="gTitleTruncAmt">
+
+  <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
+  <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
+  <xsl:variable name="gCollectionList" select="/MBooksTop/MdpApp/CollectionList"/>
+  <xsl:variable name="gCollectionForm" select="/MBooksTop/MdpApp/AddToCollectionForm"/>
+
+  <xsl:variable name="gUsingSearch" select="string(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='page'] = 'search')"/>
+
+  <xsl:variable name="gTitleTrunc">
     <xsl:choose>
       <xsl:when test="$gVolumeTitleFragment!=' '">
         <xsl:value-of select="'40'"/>
@@ -86,6 +95,27 @@
 
   <!-- Navigation bar -->
   <xsl:template name="subnav_header">
+    
+    <div id="mdpItemBar">
+      <div id="ItemBarContainer">
+        <!-- Back to Search Results -->
+        <xsl:if test="normalize-space(//SearchForm/SearchResultsLink)">
+          <xsl:call-template name="BuildBackToResultsLink" />
+        </xsl:if>
+        
+        <!-- Search -->
+        <div id="mdpSearch">
+          <xsl:call-template name="BuildSearchForm">
+            <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
+          </xsl:call-template>
+        </div>
+      </div>
+    </div>
+    
+  </xsl:template>
+  
+  <!-- Navigation bar -->
+  <xsl:template name="subnav_headerXXX">
     
     <div id="mdpItemBar">
       <div id="ItemBarContainer">
@@ -715,7 +745,8 @@
       </xsl:attribute>
       <xsl:attribute name="method">get</xsl:attribute>
       <xsl:attribute name="action">
-        <xsl:value-of select="'ptsearch'"/>
+        <!-- fix when rewrite rules are okay -->
+        <xsl:value-of select="'/pt/cgi/search'"/>
       </xsl:attribute>
       
       <h2 class="SkipLink">Search and page navigation options</h2>
@@ -934,6 +965,327 @@
     </div>
   </xsl:template>
   
+  <!-- HARMONY: SIDEBAR -->
+  <xsl:template name="aboutThisBook">
+    <div class="bibLinks">
+      <h2>About this Book</h2>
+      <p>
+        <xsl:value-of select="$gFullTitleString" />
+      </p>
+      <p>
+        <xsl:element name="a">
+          <xsl:attribute name="href">
+            <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+          </xsl:attribute>
+          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+          <xsl:text>View full catalog record</xsl:text>
+        </xsl:element>
+      </p>
+			<p class="smaller">
+				Access &amp; Use: 
+				<xsl:element name="a">
+          <xsl:attribute name="href">
+            <xsl:value-of select="$gAccessUseLink"/>
+          </xsl:attribute>
+          <xsl:value-of select="$gAccessUseHeader" />
+        </xsl:element>
+			</p>
+    </div>
+  </xsl:template>
+  
+  <xsl:template name="getThisBook">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    
+    <div class="getLinks">
+      <h2>Get this Book</h2>
+      <ul>
+        <li>
+          <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+            <xsl:element name="a">
+              <xsl:attribute name="href">
+                <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
+                  <xsl:choose>
+                    <xsl:when test="contains(.,'OCoLC)ocm')">
+                      <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
+                    </xsl:when>
+                    <xsl:when test="contains(.,'OCoLC')">
+                      <xsl:value-of select="substring-after(.,'OCoLC)')"/>
+                    </xsl:when>
+                    <xsl:when test="contains(.,'oclc')">
+                      <xsl:value-of select="substring-after(.,'oclc')"/>
+                    </xsl:when>
+                    <xsl:when test="contains(.,'ocm')">
+                      <xsl:value-of select="substring-after(.,'ocm')"/>
+                    </xsl:when>
+                    <xsl:when test="contains(.,'ocn')">
+                      <xsl:value-of select="substring-after(.,'ocn')"/>
+                    </xsl:when>
+                    <xsl:otherwise/>
+                  </xsl:choose>
+              </xsl:attribute>
+              <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
+              <xsl:if test="$gGoogleOnclickTracking = 'true'">
+                <xsl:attribute name="onclick">
+                <xsl:call-template name="PageTracker">
+                  <xsl:with-param name="category" select="'outLinks'"/>
+                  <xsl:with-param name="action" select="'click'"/>
+                  <xsl:with-param name="label" select="'PT Find in a Library'"/>
+                </xsl:call-template>
+                </xsl:attribute>
+              </xsl:if>
+              <xsl:text>Find in a library</xsl:text>
+            </xsl:element>
+          </xsl:for-each>
+        </li>
+        
+        <xsl:if test="$gPodUrl != ''">
+          <li>
+            <xsl:element name="a">
+              <xsl:attribute name="href">
+                <xsl:value-of select="$gPodUrl"/>
+              </xsl:attribute>
+              <xsl:if test="$gGoogleOnclickTracking = 'true'">
+                <xsl:attribute name="onclick">
+                  <xsl:call-template name="PageTracker">
+                    <xsl:with-param name="category" select="'outLinks'"/>
+                    <xsl:with-param name="action" select="'click'"/>
+                    <xsl:with-param name="label" select="'PT Buy a reprint'"/>
+                  </xsl:call-template>
+                </xsl:attribute>
+              </xsl:if>
+              <xsl:text>Buy a copy</xsl:text>
+            </xsl:element>
+          </li>
+        </xsl:if>
+        
+  		  <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
+        <li>
+          <xsl:element name="a">
+            <xsl:attribute name="id">pagePdfLink</xsl:attribute>
+            <xsl:attribute name="href">
+              <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
+            </xsl:attribute>
+            <xsl:attribute name="target">
+              <xsl:text>pdf</xsl:text>
+            </xsl:attribute>
+            <xsl:text>Download PDF - this page</xsl:text>
+          </xsl:element>
+        </li>
+        </xsl:if>
+        
+        <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
+          <li>
+            <xsl:element name="a">
+              <xsl:attribute name="title">Download full PDF</xsl:attribute>
+              <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+              <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+              <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+              </xsl:attribute>
+              <xsl:text>Download PDF - whole book</xsl:text>
+            </xsl:element>
+          
+            <xsl:if test="$gFullPdfAccess = 'deny'">
+              <div id="noPdfAccess">
+                <p>
+                  <xsl:choose>
+                    <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                      <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                      <xsl:text> to determine whether you can download this book.</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                      <xsl:text>You need to be affiliated with a HathiTrust Member institution to download this book.</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+                      <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
+                      <xsl:text>This book cannot be downloaded.</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:text>Sorry.</xsl:text>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </p>
+              </div>
+            </xsl:if>
+						<div id="fullPdfFrame"></div>
+          </li>
+        </xsl:if>
+     </ul>
+    </div>
+  </xsl:template>
+  
+  <xsl:template name="addToCollection">
+    <div class="collectionLinks">
+      <h2>Add to Collection</h2>
+      <xsl:call-template name="CollectionWidgetContainer" />
+    </div>
+  </xsl:template>
+  
+  <xsl:template name="shareThisBook">
+    <div class="shareLinks">
+      <h2>Share</h2>
+      <form action="" name="urlForm" id="urlForm">
+				<label class="smaller" for="permURL">Permanent link to this book</label>
+        <!-- <input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" /> -->
+        <xsl:element name="input">
+          <xsl:attribute name="type">text</xsl:attribute>
+          <xsl:attribute name="name">permURL_link</xsl:attribute>
+          <xsl:attribute name="id">permURL</xsl:attribute>
+          <xsl:attribute name="class">email-permURL</xsl:attribute>
+          <xsl:attribute name="onclick">javascript:document.urlForm.permURL_link.focus();</xsl:attribute>
+          <xsl:attribute name="onclick">document.urlForm.permURL_link.select();
+          <xsl:if test="$gGoogleOnclickTracking = 'true'">
+            <xsl:call-template name="PageTracker">
+              <xsl:with-param name="label" select="'PT Perm Link'"/>
+            </xsl:call-template>
+          </xsl:if>
+          </xsl:attribute>
+          <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
+          <xsl:attribute name="value">
+            <xsl:value-of select="$gItemHandle"/>
+          </xsl:attribute>
+        </xsl:element>
+
+        <xsl:if test="$gUsingSearch = 'false'">
+				<br />
+
+				<label class="smaller" for="pageURL">Link to this page</label>
+
+        <xsl:element name="input">
+          <xsl:attribute name="type">text</xsl:attribute>
+          <xsl:attribute name="name">pageURL_link</xsl:attribute>
+          <xsl:attribute name="id">pageURL</xsl:attribute>
+          <xsl:attribute name="class">email-permURL</xsl:attribute>
+          <xsl:attribute name="onclick">javascript:document.urlForm.pageURL_link.focus();</xsl:attribute>
+          <xsl:attribute name="onclick">document.urlForm.pageURL_link.select();
+          <xsl:if test="$gGoogleOnclickTracking = 'true'">
+            <xsl:call-template name="PageTracker">
+              <xsl:with-param name="label" select="'PT Page URL Link'"/>
+            </xsl:call-template>
+          </xsl:if>
+          </xsl:attribute>
+          <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
+          <xsl:attribute name="value">
+            <xsl:text>http://</xsl:text>
+            <xsl:value-of select="//HttpHost" />
+            <xsl:value-of select="//PageLink"/>
+          </xsl:attribute>
+        </xsl:element>
+        
+        </xsl:if>
+
+      </form>
+    </div>
+  </xsl:template>
+
+  <!-- Collection Widget -->
+  <xsl:template name="CollectionWidgetContainer">
+
+    <!-- <xsl:call-template name="hathiVuFind"/> -->
+
+    <div id="PTcollection">
+      <h3 class="SkipLink">Collection Lists</h3>
+
+      <xsl:variable name="collection_list_label">
+        <xsl:choose>
+          <xsl:when test="$gLoggedIn='YES'">
+            <xsl:choose>
+              <xsl:when test="$gCollectionList/Coll">
+                <xsl:text>This item is in your collection(s):</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>This item is not in any of your collections</xsl:text>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:element name="a">
+              <xsl:attribute name="class">PTloginLinkText</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="/MBooksTop/MdpApp/LoginLink"/>
+              </xsl:attribute>
+              <xsl:text>Login</xsl:text>
+            </xsl:element>
+            <xsl:text> to make your personal collections permanent</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+
+      <span id="PTitemInCollLabel" class="PTcollectionlabel">
+        <xsl:copy-of select="$collection_list_label"/>
+      </span>
+
+      <ul id="PTcollectionList">
+        <xsl:choose>
+          <xsl:when test="$gCollectionList/Coll">
+            <xsl:for-each select="$gCollectionList/Coll">
+              <li>
+                <xsl:element name="a">
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="Url"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="CollName"/>
+                </xsl:element>
+              </li>
+            </xsl:for-each>
+          </xsl:when>
+          <xsl:otherwise></xsl:otherwise>
+        </xsl:choose>
+      </ul>
+
+      <h3 class="SkipLink">Add to a Collection</h3>
+
+      <xsl:call-template name="BuildAddToCollectionControl"/>
+      <!-- <xsl:call-template name="BackwardNavigation"/> -->
+
+      <!-- add COinS -->
+      <xsl:for-each select="$gMdpMetadata">
+        <xsl:call-template name="marc2coins" />
+      </xsl:for-each>
+
+    </div>
+  </xsl:template>
+
+  <!-- FORM: Add To Collection Form -->
+  <xsl:template name="BuildAddToCollectionControl">
+    <div class="ptSelectBox">
+      <label for="PTaddItemSelect" class="SkipLink"><xsl:text>Add to your collection:</xsl:text></label>
+      <!-- for-each just for context: there's only one -->
+      <xsl:for-each select="$gCollectionForm/CollectionSelect">
+        <xsl:call-template name="BuildHtmlSelect">
+          <xsl:with-param name="id" select="'PTaddItemSelect'"/>
+          <xsl:with-param name="class" select="'mdpColSelectMenu'"/>
+        </xsl:call-template>
+      </xsl:for-each>
+      <br />
+      <button id="PTaddItemBtn">Add</button>
+
+    </div>
+  </xsl:template>
+
+  <!-- AJAX: build "add item to [new] collection" request URL -->
+  <xsl:template name="GetAddItemRequestUrl">
+
+    <xsl:variable name="id">
+      <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
+    </xsl:variable>
+
+    <xsl:variable name="ajax_request_partial_url">
+          <xsl:value-of select="concat('mb?', 'page=ajax', ';id=', $id )"/>
+    </xsl:variable>
+
+    <div id="PTajaxAddItemPartialUrl" class="hidden">
+          <xsl:value-of select="$ajax_request_partial_url"/>
+
+    </div>
+
+
+  </xsl:template>
+
   <!-- -->
   <xsl:template match="Highlight">
     <xsl:element name="span">
