@@ -64,7 +64,7 @@ Section:LOCAL_JS
 /pt/web/js/download_helper.js
 
 Section:PAGETURNER_JS
-Test:$gUserIsSearching='false'
+Test:$gUsingSearch='false'
 /pt/web/js/section108.js
 /pt/web/jquery/jquery.tmpl.js
 /pt/web/jquery/jquery.tmplPlus.js
@@ -94,7 +94,7 @@ Section:CSS
 /pt/web/download_helper.css
 
 Section:SEARCH_CSS
-Test:$gUserIsSearching='true'
+Test:$gUsingSearch='true'
 /pt/web/searchresults.css
 
 # Section:BOOKREADER_CSS
