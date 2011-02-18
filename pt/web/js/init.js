@@ -62,6 +62,10 @@ if ( window.console === undefined ) {
     }
 }
 
+window.unload = function(e) {
+    HT.unloading = true;
+}
+
 // class constructors for bookreader
 function subclass(constructor, superConstructor)
 {
@@ -92,3 +96,66 @@ HT.init_from_params = function() {
       window.location.hash = "#" + hash;
     }
 }
+
+HT.track_event = function(args, async) {
+    args = $.extend({}, { category : 'PT' }, args)
+    // has to be sync?
+    async = true;
+    if ( pageTracker != null ) {
+
+        if ( args.label == null ) {
+            var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+            args.label = params.id + " " + params.seq + " " + params.size + " " + params.orient + " " + params.view;
+        }
+
+        var fn = function() {
+            try {
+                pageTracker._trackEvent(args.category, args.action, args.label);
+            } catch(e) { console.log(e); }
+
+            // // local tracking
+            // $.ajax({
+            //     url : "/cgi/feedback",
+            //     data : { category : args.category, action : args.action, label : args.label },
+            //     error : function(xhr, textStatus, err) {
+            //         console.log("ERROR", textStatus, "/", err);
+            //         return false;
+            //     },
+            //     success : function(data, textStatus, xhr) {
+            //     },
+            //     async : async
+            // })
+            // console.log(args);
+        };
+        
+        if ( async ) {
+            _gaq.push(fn);
+        } else {
+            fn();
+        }
+        
+    }
+}
+
+$(document).ready(function() {
+    // bind click events
+    $(".tracked").click(function(e) {
+        var label = $(this).data('tracking-label');
+        var category = $(this).data('tracking-category') || 'PT';
+        var action = $(this).data('tracking-action');
+        
+        HT.track_event({ label : label, category : category, action : action });
+
+        if ( $(this).is("a") && ( HT.reader == null || ! $(this).hasClass("interactive") ) ) {
+            // delay the location switch so the tracking beacon
+            // can be relayed
+            var href = $(this).attr('href');
+            setTimeout(function() {
+                window.location.href = href;
+            }, 500);
+        }
+        
+        return false;
+        
+    })
+})

@@ -203,6 +203,18 @@
         <xsl:call-template name="bookreader-toolbar-items" />
         
         <script type="text/javascript">
+          HT.params = {};
+          <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
+            <xsl:choose>
+              <xsl:when test="@name = 'seq'">
+                HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
+              </xsl:when>
+              <xsl:otherwise>
+                HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          HT.params.view = "<xsl:value-of select="$gCurrentView" />";
           HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
         </script>
         
@@ -293,11 +305,6 @@
   <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
       
-       HT.params = {};
-       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
-         HT.params.seq = <xsl:value-of select="number(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']) - 1" />;
-       </xsl:if>
-       HT.params.view = "<xsl:value-of select="$gCurrentView" />";
        HT.init_from_params();
 
        HT.reader = new HTBookReader();
@@ -305,6 +312,8 @@
        HT.reader.bookTitle = "<xsl:value-of select="str:replace(string($gFullTitleString), '&quot;', '\&quot;')"/>";
        HT.reader.reduce = 1;
        HT.reader.pageProgression = 'lr';
+       
+       HT.reader.track_event = HT.track_event;
 
        // reduce: 4 == thumbnails; too small for normal page browsing
        HT.reader.reductionFactors = [   {reduce: 0.5, autofit: null},
@@ -497,6 +506,8 @@
 					<li>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnClassicView</xsl:text></xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Classic View</xsl:attribute>
 						  <xsl:attribute name="title">
 						    <xsl:choose>
     					    <xsl:when test="$gCurrentView = 'image'">
@@ -511,6 +522,7 @@
                 <xsl:value-of select="$pViewTypeList/ViewTypeImageLink"/>
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
+					      <xsl:text>tracked </xsl:text>
 					      <xsl:text>PTbutton </xsl:text>
   					    <xsl:if test="$gCurrentView = 'image'">
   					      <xsl:text>PTbuttonActive</xsl:text>
@@ -528,10 +540,13 @@
 					<li id="mdpPlainTextView">
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnClassicText</xsl:text></xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Plain Text</xsl:attribute>
 					    <xsl:attribute name="href">
 					      <xsl:value-of select="$pViewTypeList/ViewTypePlainTextLink"/>
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
+					      <xsl:text>tracked </xsl:text>
 					      <xsl:text>PTbutton </xsl:text>
   					    <xsl:if test="$gCurrentView = 'plaintext' or $gCurrentView = 'text'">
   					      <xsl:text>PTbuttonActive</xsl:text>
@@ -577,12 +592,12 @@
     <div id="BRpageControls">
       <div>
         <label>Print</label>
-        <a href="#" id="print-page" class="printAction" target="pdf"><img alt="Print Page" src="//common-web/graphics/harmony/icon_printer.png" height="25" width="25" /></a>
+        <a href="#" id="print-page" class="printAction tracked interactive" target="pdf" data-tracking-action="PT Print" data-tracking-category="PT"><img alt="Print Page" src="//common-web/graphics/harmony/icon_printer.png" height="25" width="25" /></a>
       </div>
       <div>
         <label>Rotate</label>
-        <a href="#" id="rotate-left" class="rotateAction"><img alt="Rotate Left" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
-        <a href="#" id="rotate-right" class="rotateAction"><img alt="Rotate Right" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-left" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT"><img alt="Rotate Left" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-right" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT"><img alt="Rotate Right" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
       </div>
     </div>
   </xsl:template>
@@ -611,11 +626,14 @@
   					</xsl:variable>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Scroll View</xsl:attribute>
 						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
 					    <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewType1UpLink"/>
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
+					      <xsl:text>tracked interactive </xsl:text>
 					      <xsl:text>PTbutton </xsl:text>
   					    <xsl:if test="$gCurrentView = '1up'">
   					      <xsl:text>PTbuttonActive</xsl:text>
@@ -643,11 +661,14 @@
 					  </xsl:variable>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnBookReader2up</xsl:text></xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Flip View</xsl:attribute>
 						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
 					    <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewType2UpLink"/>
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
+					      <xsl:text>tracked interactive </xsl:text>
 					      <xsl:text>PTbutton </xsl:text>
   					    <xsl:if test="$gCurrentView = '2up'">
   					      <xsl:text>PTbuttonActive</xsl:text>
@@ -675,11 +696,14 @@
 					  </xsl:variable>
 					  <xsl:element name="a">
 					    <xsl:attribute name="id"><xsl:text>btnBookReaderThumbnail</xsl:text></xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Thumbnail View</xsl:attribute>
 						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
 					    <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypeThumbnailLink"/>
 					    </xsl:attribute>
 					    <xsl:attribute name="class">
+					      <xsl:text>tracked interactive </xsl:text>
 					      <xsl:text>PTbutton </xsl:text>
   					    <xsl:if test="$gCurrentView = 'thumb'">
   					      <xsl:text>PTbuttonActive</xsl:text>
@@ -697,6 +721,8 @@
           <!-- <li>
             <xsl:element name="a">
               <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Text View</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:if test="$gHasOcr='YES'">
                   <xsl:value-of select="$pViewTypeList/ViewTypeTextLink"/>
@@ -719,6 +745,7 @@
                 </xsl:choose>
               </xsl:attribute>
               <xsl:attribute name="class">
+				        <xsl:text>tracked interactive </xsl:text>
                 <xsl:text>PTbutton </xsl:text>
                 <xsl:if test="$gCurrentView = 'text'">
                   <xsl:text>PTbuttonActive</xsl:text>
@@ -743,6 +770,9 @@
       <xsl:when test="$zoom">
         <xsl:element name="a">
           <xsl:attribute name="id"><xsl:text>mdpZoomOut</xsl:text></xsl:attribute>
+          <xsl:attribute name="class">tracked interactive </xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Zoom Out</xsl:attribute>
           <xsl:attribute name="title"><xsl:text>Zoom Out: </xsl:text><xsl:value-of select="$zoom/Value" /><xsl:text>%</xsl:text></xsl:attribute>
           <xsl:attribute name="href">
             <xsl:call-template name="build-zoom-href">
@@ -764,6 +794,9 @@
       <xsl:when test="$zoom">
         <xsl:element name="a">
           <xsl:attribute name="id"><xsl:text>mdpZoomIn</xsl:text></xsl:attribute>
+          <xsl:attribute name="class">tracked interactive </xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Zoom In</xsl:attribute>
           <xsl:attribute name="title"><xsl:text>Zoom In: </xsl:text><xsl:value-of select="$zoom/Value" /><xsl:text>%</xsl:text></xsl:attribute>
           <xsl:attribute name="href">
             <xsl:call-template name="build-zoom-href">
@@ -850,7 +883,11 @@
         </xsl:element>
       </xsl:for-each>
     </select>
-    <input type="submit" value="Go" id="mdpJumpToSectionSubmit" />
+    <input type="submit" value="Go" id="mdpJumpToSectionSubmit">
+      <xsl:attribute name="class">tracked interactive </xsl:attribute>
+      <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+      <xsl:attribute name="data-tracking-action">PT Jump to Section</xsl:attribute>
+    </input>
     
     <xsl:for-each select="//CurrentCgi/Param">
       <xsl:choose>
@@ -987,6 +1024,9 @@
             <xsl:attribute name="value">Go</xsl:attribute>
             <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
             <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
+            <xsl:attribute name="class">tracked interactive </xsl:attribute>
+            <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+            <xsl:attribute name="data-tracking-action">PT Jump to Page</xsl:attribute>
           </xsl:element>
           
           &#160;
@@ -1008,6 +1048,9 @@
 			    <xsl:when test="$pPageLinks/FirstPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpFirstPageLink</xsl:attribute>
+              <xsl:attribute name="class">tracked interactive </xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT First Page</xsl:attribute>
               <xsl:attribute name="title">First [f]</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/FirstPageLink"/>
@@ -1042,6 +1085,9 @@
 			    <xsl:when test="$pPageLinks/PreviousPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpPreviousPageLink</xsl:attribute>
+              <xsl:attribute name="class">tracked interactive </xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Previous Page</xsl:attribute>
               <xsl:attribute name="title">Previous [p]</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/PreviousPageLink"/>
@@ -1076,6 +1122,9 @@
 			    <xsl:when test="$pPageLinks/NextPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpNextPageLink</xsl:attribute>
+              <xsl:attribute name="class">tracked interactive </xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Next Page</xsl:attribute>
               <xsl:attribute name="title">Next [n]</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/NextPageLink"/>
@@ -1110,6 +1159,9 @@
 			    <xsl:when test="$pPageLinks/LastPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpLastPageLink</xsl:attribute>
+              <xsl:attribute name="class">tracked interactive </xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Last Page</xsl:attribute>
               <xsl:attribute name="title">Last [l]</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/LastPageLink"/>
@@ -1424,6 +1476,9 @@
         <xsl:attribute name="href">
           <xsl:value-of select="//SearchForm/SearchResultsLink" />
         </xsl:attribute>
+        <xsl:attribute name="class">tracked</xsl:attribute>
+        <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+        <xsl:attribute name="data-tracking-action">PT Back to Search Results</xsl:attribute>
         <xsl:text>&#171; Back to </xsl:text>
         <xsl:value-of select="//SearchForm/SearchResultsLabel" />
       </xsl:element>

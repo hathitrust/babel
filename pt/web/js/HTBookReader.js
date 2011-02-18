@@ -904,15 +904,59 @@ HTBookReader.prototype.updateLocationHash = function() {
         }
     })
     
-
     var newHash = '#' + this.fragmentFromParams(params);
     window.location.replace(newHash);
+
+    if ( this.last_index != params.index ) {
+        if ( this.last_index != null ) {
+            if ( pageTracker != null ) {
+                // window.location.origin?
+                var params_ = this.paramsForTracking(params);
+                var href = window.location.protocol + "//" + window.location.host + window.location.pathname + "?";
+                var args = ["id=" + params_.id];
+                args.push("view=" + params_.view);
+                args.push("orient=" + params_.orient);
+                args.push("size=" + params_.size);
+                
+                var num = this.getPageNum(params_.seq);
+                if ( typeof(num) == "number" ) {
+                    args.push("num=", num);
+                }
+                
+                args.push("seq=" + params_.seq);
+                href += args.join(";");
+                _gaq.push(["_trackPageview", href])
+            }
+        }
+        this.last_index = params.index;
+    }
     
     // This is the variable checked in the timer.  Only user-generated changes
     // to the URL will trigger the event.
     this.oldLocationHash = newHash;
 }
 
+HTBookReader.prototype.paramsForTracking = function(params) {
+    var self = this;
+    var retval = {};
+    if ( params == null ) {
+        params = self.paramsFromCurrent();
+    }
+    var orient = self.rotationCache[params.index] == null ? 0 : self.rotationCache[params.index];
+    if ( orient == 90 ) { orient = 1; }
+    else if ( orient == 180 ) { orient = 2 ; }
+    else if ( orient == 270 ) { orient = 3 ; }
+    var size = (100 / self.reduce).toFixed(2);
+    
+    retval.id = self.bookId;
+    retval.seq = params.index;
+    retval.size = size;
+    retval.orient = orient;
+
+    retval.view = $(".PTbuttonActive").attr('href').replace(/.*view=(\w+).*/, '$1');
+    
+    return retval;
+}
 
 HTBookReader.prototype.paramsFromFragment = function(urlFragment) {
     var params = BookReader.prototype.paramsFromFragment.call( this, urlFragment );
@@ -1015,14 +1059,6 @@ HTBookReader.prototype.nextReduce = function( currentReduce, direction, reductio
   // }
   return BookReader.prototype.nextReduce.call( this, currentReduce, direction, reductionFactors );
 }
-
-// HTBookReader.prototype.fragmentFromParams = function(params) {
-//     var fragment = BookReader.prototype.fragmentFromParams.call(this, params);
-//     if ( this.mode == this.constMode1up && this.displayMode == "text" ) {
-//         fragment += "/view/text";
-//     }
-//     return fragment;
-// }
 
 // fragmentFromParams(params)
 //________
