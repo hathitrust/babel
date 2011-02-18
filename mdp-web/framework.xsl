@@ -974,10 +974,15 @@
       </p>
       <p>
         <xsl:element name="a">
-          <xsl:attribute name="href">
+          <xsl:variable name="href">
             <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
             <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
-          </xsl:attribute>
+          </xsl:variable>
+          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
+          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
+          <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
           <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
           <xsl:text>View full catalog record</xsl:text>
         </xsl:element>
@@ -985,6 +990,10 @@
 			<p class="smaller">
 				Access &amp; Use: 
 				<xsl:element name="a">
+          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Access Use Link</xsl:attribute>
+          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gAccessUseLink" /></xsl:attribute>
           <xsl:attribute name="href">
             <xsl:value-of select="$gAccessUseLink"/>
           </xsl:attribute>
@@ -1003,6 +1012,9 @@
         <li>
           <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
             <xsl:element name="a">
+              <xsl:attribute name="class">tracked</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
                   <xsl:choose>
@@ -1025,7 +1037,7 @@
                   </xsl:choose>
               </xsl:attribute>
               <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
-              <xsl:if test="$gGoogleOnclickTracking = 'true'">
+              <!-- <xsl:if test="$gGoogleOnclickTracking = 'true'">
                 <xsl:attribute name="onclick">
                 <xsl:call-template name="PageTracker">
                   <xsl:with-param name="category" select="'outLinks'"/>
@@ -1033,7 +1045,7 @@
                   <xsl:with-param name="label" select="'PT Find in a Library'"/>
                 </xsl:call-template>
                 </xsl:attribute>
-              </xsl:if>
+              </xsl:if> -->
               <xsl:text>Find in a library</xsl:text>
             </xsl:element>
           </xsl:for-each>
@@ -1042,10 +1054,13 @@
         <xsl:if test="$gPodUrl != ''">
           <li>
             <xsl:element name="a">
+              <xsl:attribute name="class">tracked</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Buy a copy</xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$gPodUrl"/>
               </xsl:attribute>
-              <xsl:if test="$gGoogleOnclickTracking = 'true'">
+              <!-- <xsl:if test="$gGoogleOnclickTracking = 'true'">
                 <xsl:attribute name="onclick">
                   <xsl:call-template name="PageTracker">
                     <xsl:with-param name="category" select="'outLinks'"/>
@@ -1053,7 +1068,7 @@
                     <xsl:with-param name="label" select="'PT Buy a reprint'"/>
                   </xsl:call-template>
                 </xsl:attribute>
-              </xsl:if>
+              </xsl:if> -->
               <xsl:text>Buy a copy</xsl:text>
             </xsl:element>
           </li>
@@ -1063,6 +1078,9 @@
         <li>
           <xsl:element name="a">
             <xsl:attribute name="id">pagePdfLink</xsl:attribute>
+            <xsl:attribute name="class">tracked</xsl:attribute>
+            <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+            <xsl:attribute name="data-tracking-action">PT Download PDF - this page</xsl:attribute>
             <xsl:attribute name="href">
               <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
             </xsl:attribute>
@@ -1079,7 +1097,9 @@
             <xsl:element name="a">
               <xsl:attribute name="title">Download full PDF</xsl:attribute>
               <xsl:attribute name="id">fullPdfLink</xsl:attribute>
-              <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+              <xsl:attribute name="class">tracked</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Download PDF - whole book</xsl:attribute>
               <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
@@ -1136,14 +1156,11 @@
           <xsl:attribute name="name">permURL_link</xsl:attribute>
           <xsl:attribute name="id">permURL</xsl:attribute>
           <xsl:attribute name="class">email-permURL</xsl:attribute>
-          <xsl:attribute name="onclick">javascript:document.urlForm.permURL_link.focus();</xsl:attribute>
-          <xsl:attribute name="onclick">document.urlForm.permURL_link.select();
-          <xsl:if test="$gGoogleOnclickTracking = 'true'">
-            <xsl:call-template name="PageTracker">
-              <xsl:with-param name="label" select="'PT Perm Link'"/>
-            </xsl:call-template>
-          </xsl:if>
-          </xsl:attribute>
+          <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
+          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Link to this Book</xsl:attribute>
+          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gItemHandle" /></xsl:attribute>
           <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
           <xsl:attribute name="value">
             <xsl:value-of select="$gItemHandle"/>
@@ -1154,26 +1171,24 @@
 				<br />
 
 				<label class="smaller" for="pageURL">Link to this page</label>
+				<xsl:variable name="pageLink">
+          <xsl:text>http://</xsl:text>
+          <xsl:value-of select="//HttpHost" />
+          <xsl:value-of select="//PageLink"/>
+        </xsl:variable>
 
         <xsl:element name="input">
           <xsl:attribute name="type">text</xsl:attribute>
           <xsl:attribute name="name">pageURL_link</xsl:attribute>
           <xsl:attribute name="id">pageURL</xsl:attribute>
           <xsl:attribute name="class">email-permURL</xsl:attribute>
-          <xsl:attribute name="onclick">javascript:document.urlForm.pageURL_link.focus();</xsl:attribute>
-          <xsl:attribute name="onclick">document.urlForm.pageURL_link.select();
-          <xsl:if test="$gGoogleOnclickTracking = 'true'">
-            <xsl:call-template name="PageTracker">
-              <xsl:with-param name="label" select="'PT Page URL Link'"/>
-            </xsl:call-template>
-          </xsl:if>
-          </xsl:attribute>
+          <xsl:attribute name="onclick">document.urlForm.pageURL_link.select();</xsl:attribute>
+          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Link to this Page</xsl:attribute>
           <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
-          <xsl:attribute name="value">
-            <xsl:text>http://</xsl:text>
-            <xsl:value-of select="//HttpHost" />
-            <xsl:value-of select="//PageLink"/>
-          </xsl:attribute>
+          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$pageLink" /></xsl:attribute>
+          <xsl:attribute name="value"><xsl:value-of select="$pageLink" /></xsl:attribute>
         </xsl:element>
         
         </xsl:if>
