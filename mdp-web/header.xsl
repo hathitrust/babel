@@ -6,7 +6,7 @@
   <xsl:variable name="gHttpHost" select="/MBooksTop/MBooksGlobals/HttpHost"/>
 
   <xsl:template name="header">
-    <div id="mbHeader" style="height:225px">
+    <div id="mbHeader">
       <!--All pages use Header-->
       <xsl:call-template name="skipNavLink"/>
       <xsl:call-template name="heading1"/>

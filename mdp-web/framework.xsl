@@ -89,11 +89,6 @@
     
     <div id="mdpItemBar">
       <div id="ItemBarContainer">
-
-        <!-- temporary -->
-        <div class="infoAlert">
-          <p>Please note: bibliographic information and the "Add to your collection" service will be unavailable during an extended data center outage from 6pm EST Friday, Feb. 18 to 2pm EST Sunday, Feb. 20.  Page viewing will not be affected.  We apologize for this inconvenience. </p>
-        </div>
         
         <!-- Title, Author (short) -->
         <xsl:call-template name="ItemMetadata"/>
