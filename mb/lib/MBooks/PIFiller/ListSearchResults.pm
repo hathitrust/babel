@@ -32,14 +32,13 @@ use Utils::XSLT;
 use Search::Constants;
 use MBooks::Index;
 use MBooks::Utils::Sort;
+use MBooks::PIFiller::ListUtils;
 
 BEGIN
 {
     require "PIFiller/Common/Globals.pm";
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
-    require "PIFiller/ListUtils.pl";
-
 }
 
 # ---------------------------------------------------------------------
@@ -184,7 +183,7 @@ sub handle_REL_SORT_HREF_PI
     : PI_handler(REL_SORT_HREF)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    return get_sorting_href($C, 'rel')
+    return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'rel')
 }
 
 #XXX this will convert "&" to "&amp;" and > and < to &gt; and &lt;

@@ -111,7 +111,7 @@ sub execute_operation
         {
             # add item to queue
             my $priority = scalar(@{$item_id_ref});
-            $co->add_to_queue($item_id_ref, $priority);
+            $co->add_to_queue($item_id_ref, $priority); # XXXX
         }
     }
     

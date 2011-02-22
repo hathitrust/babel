@@ -36,15 +36,13 @@ use Utils::XSLT;
 use Search::Constants;
 use MBooks::Index;
 use MBooks::Utils::Sort;
-
+use MBooks::PIFiller::ListUtils;
 
 BEGIN
 {
     require "PIFiller/Common/Globals.pm";
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
-    require "PIFiller/ListUtils.pl";
-    
 }
 
 
@@ -116,7 +114,7 @@ sub handle_ITEM_LIST_PI
 
         # Link to Pageturner
         my $extern_id = $$item_hashref{'extern_item_id'};        
-        $s .= wrap_string_in_tag(PT_HREF_helper($C, $extern_id, 'pt'), 'PtHref');
+        $s .= wrap_string_in_tag(MBooks::PIFiller::ListUtils::PT_HREF_helper($C, $extern_id, 'pt'), 'PtHref');
 
         $output .= wrap_string_in_tag($s, 'Item');
     }

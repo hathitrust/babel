@@ -113,7 +113,7 @@ sub execute_operation
 
     #  add ids to index queue
     my $config = $C->get_object('MdpConfig');
-    my $style = $config->get('mbooks_filter_query_style');
+    my $style = $config->get('mbooks_filter_query_style'); # XXXX
     if ($style eq 'coll_id')
     {
         # add item to queue

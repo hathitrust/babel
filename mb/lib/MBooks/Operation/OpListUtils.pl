@@ -238,13 +238,16 @@ sub get_final_item_arr_ref
         my $extern_id = $co->get_extern_id_from_item_id($item_id);
         
         # temporary hack to get bib_id if its not in the item metadata
-           
         my $record_no = $item_hashref->{'bib_id'};
         
-        if (!defined($record_no))
+        if (! defined($record_no))
         {
+            # Catalog record number.  Beware of ids like 'uc1.$b776044'
+            # ($BARCODE) when interpolating Perl variables and
+            # uc2.ark:/13960/t0dv1g69b (colon causes Solr parse error)
+            $extern_id =~ s,ark:,ark\\:,;
             my $solr_response = 
-            `curl -s http://solr-vufind:8026/solr/biblio/select?q=ht_id:$extern_id&start=0&rows=1&fl=id`;
+            `curl -s 'http://solr-vufind:8026/solr/biblio/select?q=ht_id:$extern_id&start=0&rows=1&fl=id'`;
             ($record_no) = ($solr_response =~ m,<str name="id">(.*?)</str>,);
         }
         
