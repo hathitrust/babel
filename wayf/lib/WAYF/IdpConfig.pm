@@ -151,6 +151,12 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/baylor?target=___TARGET___',
                    'enabled'   => '1',
                   },
+   'umd'       => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'University of Maryland, College Park',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/umd?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
    
    # Waiting
    'usu'       => {
@@ -283,12 +289,6 @@ package WAYF::IdpConfig;
                    'authtype'  => 'shibboleth',
                    'link_text' => 'University of Maryland, Baltimore',
                    'template'  => 'https://___HOST___/Shibboleth.sso/umaryland?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'umd'       => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'University of Maryland, College Park',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/umd?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'unc'       => {
