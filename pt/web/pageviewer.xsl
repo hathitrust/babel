@@ -1470,20 +1470,5 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template name="BuildBackToResultsLink">
-    <div id="mdpBackToResults">
-      <xsl:element name="a">
-        <xsl:attribute name="href">
-          <xsl:value-of select="//SearchForm/SearchResultsLink" />
-        </xsl:attribute>
-        <xsl:attribute name="class">tracked</xsl:attribute>
-        <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-        <xsl:attribute name="data-tracking-action">PT Back to Search Results</xsl:attribute>
-        <xsl:text>&#171; Back to </xsl:text>
-        <xsl:value-of select="//SearchForm/SearchResultsLabel" />
-      </xsl:element>
-    </div>
-  </xsl:template>
-
 </xsl:stylesheet>
 

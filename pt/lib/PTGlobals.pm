@@ -262,7 +262,8 @@ $gImgsrvCgiRoot            = $gCgiPathComponent . '/imgsrv';
 $gPageturnerSearchCgiRoot            = $gCgiPathComponent . '/pt/search';
 $gCatalogSearchPattern = "catalog.hathitrust.org/Search/";
 $gCatalogRecordPattern = "catalog.hathitrust.org/Record/";
-$gTrackableReferers = qq{$gCatalogSearchPattern|$gCatalogRecordPattern};
+$gCollectionBuilderPattern = qq{$gCgiPathComponent/mb};
+$gTrackableReferers = qq{$gCatalogSearchPattern|$gCatalogRecordPattern|$gCollectionBuilderPattern};
 $gTrackableLimit = 100;
 
 # ---------------------------------------------------------------------

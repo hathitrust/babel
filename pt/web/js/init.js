@@ -146,13 +146,21 @@ $(document).ready(function() {
         
         HT.track_event({ label : label, category : category, action : action });
 
-        if ( $(this).is("a") && ( HT.reader == null || ! $(this).hasClass("interactive") ) ) {
-            // delay the location switch so the tracking beacon
-            // can be relayed
-            var href = $(this).attr('href');
-            setTimeout(function() {
-                window.location.href = href;
-            }, 500);
+        if ( HT.reader == null || ! $(this).hasClass("interactive") ) {
+            // delay events that change the current document so the
+            // tracking beacon can be relayed
+            
+            if ( $(this).is("a") ) {
+                var href = $(this).attr('href');
+                setTimeout(function() {
+                    window.location.href = href;
+                }, 500);
+            } else if ( $(this).is("input") ) {
+                var frm = $(this).parents("form");
+                setTimeout(function() {
+                    frm.submit();
+                }, 500);
+            }
         }
         
         return false;

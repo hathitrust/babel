@@ -1073,7 +1073,70 @@ sub handle_DOWNLOAD_PROGRESS_BASE
     return $cache_dir;
 }
 
->>>>>>> 12129c1... before ptsearch merge
+sub handle_SEARCH_RESULTS_LINK_PI
+    : PI_handler(SEARCH_RESULTS_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $ses = $C->get_object('Session');
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    
+    my $href;
+    if ( my $referer = $ses->get_transient('referer') ) {
+        $href = $referer;
+        $href =~ s,&,&amp;,g;
+    } else {
+        $href = BuildSearchResultsUrl($cgi);
+    }
+
+    return $href;
+}
+
+sub handle_SEARCH_RESULTS_LABEL_PI
+    : PI_handler(SEARCH_RESULTS_LABEL)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $ses = $C->get_object('Session');
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    
+    my $script_name = $cgi->script_name;
+    
+    my $label;
+    if ( my $referer = $ses->get_transient('referer') ) {
+        if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
+            $label = qq{catalog search results};
+        } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
+            $label = qq{catalog record};
+        } elsif ( $referer =~ m,$PTGlobals::gCollectionBuilderPattern, ) {
+            $label = qq{collection};
+        }
+    } elsif ( $cgi->param('q1') && $script_name !~ m,$PTGlobals::gPageturnerSearchCgiRoot, ) {
+        $label = qq{"Search in this text" results};
+    }
+
+    return $label;
+}
+
+sub BuildSearchResultsUrl
+{
+    my ( $cgi, $view ) = @_;
+    
+    my $href;
+    
+    if ( $cgi->param('q1') ) {
+        my $tempCgi;
+        $tempCgi = new CGI( $cgi );
+        $tempCgi->param('page', 'search');
+        $tempCgi->delete('view');
+        $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
+    }
+    
+    return $href;
+}
+>>>>>>> 6260cd3... fixes for analytics; better back-to-referer tracking
 
 # ---------------------------------------------------------------------
 sub handle_FULL_PDF_ACCESS_MESSAGE_PI

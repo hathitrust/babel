@@ -61,7 +61,9 @@
         <?HIDDEN_SSD?>
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
-    </HiddenVars>
+      </HiddenVars>
+      <SearchResultsLink><?SEARCH_RESULTS_LINK?></SearchResultsLink>
+      <SearchResultsLabel><?SEARCH_RESULTS_LABEL?></SearchResultsLabel>
     </SearchForm>
 
     <CollectionList><?COLLECTION_LIST?></CollectionList>

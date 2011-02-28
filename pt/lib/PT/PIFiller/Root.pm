@@ -35,23 +35,23 @@ use PT::PIFiller::Common;
 #
 
 
-sub BuildSearchResultsUrl
-{
-    my ( $cgi, $view ) = @_;
-    
-    my $href;
-    
-    if ( $cgi->param('q1') ) {
-        my $tempCgi;
-        $tempCgi = new CGI( $cgi );
-        $tempCgi->param('page', 'search');
-        $tempCgi->delete('view');
-        $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
-    }
-    
-    return $href;
-}
-
+# sub BuildSearchResultsUrl
+# {
+#     my ( $cgi, $view ) = @_;
+#     
+#     my $href;
+#     
+#     if ( $cgi->param('q1') ) {
+#         my $tempCgi;
+#         $tempCgi = new CGI( $cgi );
+#         $tempCgi->param('page', 'search');
+#         $tempCgi->delete('view');
+#         $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
+#     }
+#     
+#     return $href;
+# }
+# 
 # ---------------------------------------------------------------------
 
 =item BuildRotateLink
@@ -409,48 +409,50 @@ sub handle_VIEW_TYPE_PLAINTEXT_LINK_PI
     return PT::PIFiller::Common::BuildViewTypeUrl($cgi, 'plaintext');
 }
 
-sub handle_SEARCH_RESULTS_LINK_PI
-    : PI_handler(SEARCH_RESULTS_LINK)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $ses = $C->get_object('Session');
-    my $cgi = $C->get_object('CGI');
-    my $id = $cgi->param('id');
-    
-    my $href;
-    if ( my $referer = $ses->get_transient('referer') ) {
-        $href = $referer;
-        $href =~ s,&,&amp;,g;
-    } else {
-        $href = BuildSearchResultsUrl($cgi);
-    }
-
-    return $href;
-}
-
-sub handle_SEARCH_RESULTS_LABEL_PI
-    : PI_handler(SEARCH_RESULTS_LABEL)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $ses = $C->get_object('Session');
-    my $cgi = $C->get_object('CGI');
-    my $id = $cgi->param('id');
-    
-    my $label;
-    if ( my $referer = $ses->get_transient('referer') ) {
-        if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
-            $label = qq{catalog search results};
-        } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
-            $label = qq{catalog record};
-        }
-    } elsif ( $cgi->param('q1') ) {
-        $label = qq{"Search in this text" results};
-    }
-
-    return $label;
-}
+# sub handle_SEARCH_RESULTS_LINK_PI
+#     : PI_handler(SEARCH_RESULTS_LINK)
+# {
+#     my ($C, $act, $piParamHashRef) = @_;
+# 
+#     my $ses = $C->get_object('Session');
+#     my $cgi = $C->get_object('CGI');
+#     my $id = $cgi->param('id');
+#     
+#     my $href;
+#     if ( my $referer = $ses->get_transient('referer') ) {
+#         $href = $referer;
+#         $href =~ s,&,&amp;,g;
+#     } else {
+#         $href = BuildSearchResultsUrl($cgi);
+#     }
+# 
+#     return $href;
+# }
+# 
+# sub handle_SEARCH_RESULTS_LABEL_PI
+#     : PI_handler(SEARCH_RESULTS_LABEL)
+# {
+#     my ($C, $act, $piParamHashRef) = @_;
+# 
+#     my $ses = $C->get_object('Session');
+#     my $cgi = $C->get_object('CGI');
+#     my $id = $cgi->param('id');
+#     
+#     my $label;
+#     if ( my $referer = $ses->get_transient('referer') ) {
+#         if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
+#             $label = qq{catalog search results};
+#         } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
+#             $label = qq{catalog record};
+#         } elsif ( $referer =~ m,$PTGlobals::gCollectionBuilderPattern, ) {
+#             $label = qq{collection};
+#         }
+#     } elsif ( $cgi->param('q1') ) {
+#         $label = qq{"Search in this text" results};
+#     }
+# 
+#     return $label;
+# }
 
 sub handle_VIEW_TYPE_2UP_LINK_PI
     : PI_handler(VIEW_TYPE_2UP_LINK)
