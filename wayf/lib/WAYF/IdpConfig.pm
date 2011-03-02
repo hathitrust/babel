@@ -157,6 +157,12 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/umd?target=___TARGET___',
                    'enabled'   => '1',
                   },
+   'asu'       => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'Arizona State University',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/asu?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
    
    # Waiting
    'usu'       => {
@@ -235,12 +241,6 @@ package WAYF::IdpConfig;
                    'authtype'  => 'shibboleth',
                    'link_text' => 'University of California, Santa Cruz',
                    'template'  => 'https://___HOST___/Shibboleth.sso/ucsc?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'asu'       => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'Arizona State University',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/asu?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'duke'      => {
