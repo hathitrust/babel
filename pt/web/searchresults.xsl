@@ -81,6 +81,11 @@
 
       </div>
 
+      <xsl:element name="a">
+        <xsl:attribute name="name">skipNav</xsl:attribute>
+        <xsl:attribute name="id">skipNav</xsl:attribute>
+      </xsl:element>
+
       <!-- Results -->
       <xsl:call-template name="ResultsContainer">
         <xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms"/>

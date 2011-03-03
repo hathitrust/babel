@@ -33,16 +33,23 @@
     </xsl:choose>
   </xsl:variable>
 
-  <!-- <xsl:variable name="gCurrentView">
+  <xsl:variable name="gCurrentView">
+    <xsl:variable name="currentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
     <xsl:choose>
-      <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when>
-      <xsl:when test="$gCurrentUi = 'embed'">1up</xsl:when>
+      <!-- <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when> -->
+      <xsl:when test="$gCurrentUi = 'embed'">
+        <xsl:choose>
+          <xsl:when test="$currentView = 'image'">1up</xsl:when>
+          <xsl:when test="$currentView = 'text' or $currentView = 'plaintext'">1up</xsl:when>
+          <xsl:otherwise><xsl:value-of select="$currentView" /></xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
+        <xsl:value-of select="$currentView" />
       </xsl:otherwise>
     </xsl:choose>
-  </xsl:variable> -->
-  <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/>
+  </xsl:variable>
+  <!-- <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/> -->
   
   <xsl:variable name="gCurrentReaderMode">
     <xsl:choose>
@@ -246,19 +253,7 @@
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml" class="htmlNoOverflow">
       <head>
         <title>
-          <xsl:choose>
-            <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-              <xsl:text>HathiTrust Digital Library - </xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>HathiTrust Digital Library -- </xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
-          </xsl:call-template>
+          <xsl:call-template name="PageTitle" />
         </title>
 
         <!-- jQuery from the Google CDN -->
@@ -268,6 +263,22 @@
         <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         <xsl:call-template name="load_js_and_css"/>
         <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
+        
+        <script type="text/javascript">
+          HT.params = {};
+          <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
+            <xsl:choose>
+              <xsl:when test="@name = 'seq'">
+                HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
+              </xsl:when>
+              <xsl:otherwise>
+                HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          HT.params.view = "<xsl:value-of select="$gCurrentView" />";
+          HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
+        </script>
 
       </head>
 
@@ -426,6 +437,10 @@
       
 
       <!-- Image -->
+      <xsl:element name="a">
+        <xsl:attribute name="name">skipNav</xsl:attribute>
+        <xsl:attribute name="id">skipNav</xsl:attribute>
+      </xsl:element>
       <xsl:call-template name="ContentContainer"/>
 
     </div>
@@ -518,10 +533,11 @@
   					    </xsl:if>
   					  </xsl:attribute>
 							<img src="//common-web/graphics/harmony/icon_classicview.png">
-							  <xsl:attribute name="alt">
-							    <xsl:text>Classic View</xsl:text>
-							  </xsl:attribute>
-  					    <xsl:attribute name="title"><xsl:text>Classic View</xsl:text></xsl:attribute>
+							  <xsl:attribute name="alt"></xsl:attribute>
+                <!-- <xsl:attribute name="alt">
+                  <xsl:text>Classic View</xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="title"><xsl:text>Classic View</xsl:text></xsl:attribute> -->
 							</img>
 							<span>Classic View</span>
 					  </xsl:element>
@@ -541,9 +557,19 @@
   					      <xsl:text>PTbuttonActive</xsl:text>
   					    </xsl:if>
   					  </xsl:attribute>
-							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" />
+						  <xsl:attribute name="title">
+						    <xsl:choose>
+    					    <xsl:when test="$gCurrentView = 'plaintext' or $gCurrentView = 'text'">
+    					      <xsl:text>Plain Text is the current view</xsl:text>
+    					    </xsl:when>
+    					    <xsl:otherwise>
+    					      <xsl:text>Plain Text</xsl:text>
+    					    </xsl:otherwise>
+    					  </xsl:choose>
+    					</xsl:attribute>
+							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
 							<span>Plain Text</span>
-							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" />
+							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
 					  </xsl:element>
 					</li>
 				</ul>
@@ -581,12 +607,12 @@
     <div id="BRpageControls">
       <div>
         <label>Print</label>
-        <a href="#" id="print-page" class="printAction tracked interactive" target="pdf" data-tracking-action="PT Print" data-tracking-category="PT"><img alt="Print Page" src="//common-web/graphics/harmony/icon_printer.png" height="25" width="25" /></a>
+        <a href="#" id="print-page" title="Print Page" class="printAction tracked interactive" target="pdf" data-tracking-action="PT Print" data-tracking-category="PT"><img alt="" src="//common-web/graphics/harmony/icon_printer.png" height="25" width="25" /></a>
       </div>
       <div>
         <label>Rotate</label>
-        <a href="#" id="rotate-left" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT"><img alt="Rotate Left" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
-        <a href="#" id="rotate-right" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT"><img alt="Rotate Right" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-left" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left"><img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-right" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
       </div>
     </div>
   </xsl:template>
@@ -629,10 +655,11 @@
   					    </xsl:if>
   					  </xsl:attribute>
 							<img src="//common-web/graphics/harmony/icon_scroll.png">
-							  <xsl:attribute name="alt">
-							    <xsl:text>Scroll View</xsl:text>
-							  </xsl:attribute>
-  						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+							  <xsl:attribute name="alt"></xsl:attribute>
+                <!-- <xsl:attribute name="alt">
+                  <xsl:text>Scroll View</xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute> -->
       				</img>
 							<span>Scroll</span>
 					  </xsl:element>
@@ -664,10 +691,11 @@
   					    </xsl:if>
   					  </xsl:attribute>
 							<img src="//common-web/graphics/harmony/icon_flip_25.png">
-							  <xsl:attribute name="alt">
-							    <xsl:text>Flip View</xsl:text>
-							  </xsl:attribute>
-  						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+							  <xsl:attribute name="alt"></xsl:attribute>
+                <!-- <xsl:attribute name="alt">
+                  <xsl:text>Flip View</xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute> -->
 							</img>
 							<span>Flip</span>
 					  </xsl:element>
@@ -699,10 +727,11 @@
   					    </xsl:if>
   					  </xsl:attribute>
 							<img src="//common-web/graphics/harmony/icon_thumbnails.png">
-							  <xsl:attribute name="alt">
-							    <xsl:text>Thumbnail View</xsl:text>
-							  </xsl:attribute>
-  						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+							  <xsl:attribute name="alt"></xsl:attribute>
+                <!-- <xsl:attribute name="alt">
+                  <xsl:text>Thumbnail View</xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute> -->
 							</img>
 							<span>Thumbnails</span>
 					  </xsl:element>
@@ -848,7 +877,7 @@
   <xsl:template name="BuildContentsList">
     <label for="mdpJumpToSection" class="SkipLink">Jump to a section</label>
     <select id="mdpJumpToSection" size="1" name="seq">
-      <option value="">Jump to Section</option>
+      <option value="" alt="">Jump to Section</option>
       <xsl:for-each select="$gFeatureList/Feature">
         <xsl:element name="option">
           <xsl:attribute name="value">
@@ -1002,6 +1031,7 @@
             <xsl:attribute name="type">text</xsl:attribute>
             <xsl:attribute name="size">8</xsl:attribute>
             <xsl:attribute name="name">num</xsl:attribute>
+            <xsl:attribute name="alt">Page Number</xsl:attribute>
             <xsl:attribute name="value">
               <xsl:value-of select="$pageNum"/>
             </xsl:attribute>
@@ -1011,8 +1041,10 @@
             <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
             <xsl:attribute name="type">submit</xsl:attribute>
             <xsl:attribute name="value">Go</xsl:attribute>
-            <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
-            <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
+            <xsl:attribute name="title">Go</xsl:attribute>
+            <xsl:attribute name="alt">Jump</xsl:attribute>
+            <!-- <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
+            <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute> -->
             <xsl:attribute name="class">tracked interactive </xsl:attribute>
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
             <xsl:attribute name="data-tracking-action">PT Jump to Page</xsl:attribute>
@@ -1048,7 +1080,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt">First [f]</xsl:attribute>
+                <xsl:attribute name="alt"></xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:value-of select="'//common-web/graphics/harmony/icon_first.png'"/>
                 </xsl:attribute>
@@ -1060,7 +1092,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt"></xsl:attribute>
+                <xsl:attribute name="alt">First (at start of book)</xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:value-of select="'//common-web/graphics/harmony/icon_first_grayed.png'"/>
                 </xsl:attribute>
@@ -1085,7 +1117,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt">Previous [p]</xsl:attribute>
+                <xsl:attribute name="alt"></xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:value-of select="'//common-web/graphics/harmony/icon_previous.png'"/>
                 </xsl:attribute>
@@ -1097,7 +1129,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt">Previous</xsl:attribute>
+                <xsl:attribute name="alt">Previous (at start of book)</xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:value-of select="'//common-web/graphics/harmony/icon_previous_grayed.png'"/>
                 </xsl:attribute>
@@ -1122,7 +1154,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt">Next [n]</xsl:attribute>
+                <xsl:attribute name="alt"></xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:value-of select="'//common-web/graphics/harmony/icon_next.png'"/>
                 </xsl:attribute>
@@ -1134,7 +1166,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt">Next</xsl:attribute>
+                <xsl:attribute name="alt">Next (at end of book)</xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:value-of select="'//common-web/graphics/harmony/icon_next_grayed.png'"/>
                 </xsl:attribute>
@@ -1159,7 +1191,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt">Last [l]</xsl:attribute>
+                <xsl:attribute name="alt"></xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:text>//common-web/graphics/harmony/icon_last.png</xsl:text>
                 </xsl:attribute>
@@ -1171,7 +1203,7 @@
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
-                <xsl:attribute name="alt">Last</xsl:attribute>
+                <xsl:attribute name="alt">Last (at end of book)</xsl:attribute>
                 <xsl:attribute name="src">
                   <xsl:text>//common-web/graphics/harmony/icon_last_grayed.png</xsl:text>
                 </xsl:attribute>
