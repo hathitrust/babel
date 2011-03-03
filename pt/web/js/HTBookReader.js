@@ -489,6 +489,10 @@ HTBookReader.prototype.init = function() {
     
 }
 
+HTBookReader.prototype.shortTitle = function(n) {
+    return this.bookTitle;
+}
+
 HTBookReader.prototype.openNotice = function() {
   var self = this;
   
@@ -1326,7 +1330,9 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 });
                 
                 // $$$ we don't actually go to this URL (click is handled in handler above)
+                var title = "image of page " + this.getPageNum(leaf);
                 link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
+                $(link).attr({ title : title });
                 $(div).append(link);
                 
                 $('#BRpageview').append(div);

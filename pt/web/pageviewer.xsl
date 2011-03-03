@@ -167,19 +167,7 @@
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
-          <xsl:choose>
-            <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-              <xsl:text>HathiTrust Digital Library - </xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>HathiTrust Digital Library -- </xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
-          </xsl:call-template>
+          <xsl:call-template name="PageTitle" />
         </title>
 
         <!-- jQuery from the Google CDN -->
@@ -309,7 +297,8 @@
 
        HT.reader = new HTBookReader();
        HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
-       HT.reader.bookTitle = "<xsl:value-of select="str:replace(string($gFullTitleString), '&quot;', '\&quot;')"/>";
+       <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
+       HT.reader.bookTitle = document.title;
        HT.reader.reduce = 1;
        HT.reader.pageProgression = 'lr';
        
@@ -608,7 +597,7 @@
       <li>
 				<ul id="mdpBookReaderViews">
 					<li>
-						<img id="mdpNewStarburst" src="//common-web/graphics/harmony/NewStarburst.png" height="44" width="40" />
+						<img alt="NEW!" id="mdpNewStarburst" src="//common-web/graphics/harmony/NewStarburst.png" height="44" width="40" />
 					</li>
 					<li>
 						<span class="prompt">Try our new views!</span>

@@ -642,7 +642,9 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 });
                 
                 // $$$ we don't actually go to this URL (click is handled in handler above)
+                var title = "image of page " + this.getPageNum(leaf);
                 link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
+                $(link).attr({ title : title });
                 $(div).append(link);
                 
                 $('#BRpageview').append(div);
@@ -650,7 +652,6 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 img = document.createElement("img");
                 var thumbReduce = Math.floor(this.getPageWidth(leaf) / this.thumbWidth);
                 // UM
-                var title = "image of page " + this.getPageNum(leaf);
                 $(img).attr({'src' : this.imagesBaseURL + 'transparent.png', title : title, alt : title})
                     .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
                     .addClass('BRlazyload')
@@ -751,6 +752,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
     var img = new Image();
     var self = this;
     
+    console.log(dummyImage);
     $(img)
         .addClass('BRlazyloading')
         .one('load', function() {

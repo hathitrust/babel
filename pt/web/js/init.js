@@ -155,7 +155,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     window.location.href = href;
                 }, 500);
-            } else if ( $(this).is("input") ) {
+            } else if ( $(this).is("input[type=submit]") ) {
                 var frm = $(this).parents("form");
                 setTimeout(function() {
                     frm.submit();

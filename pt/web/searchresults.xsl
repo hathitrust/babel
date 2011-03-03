@@ -19,18 +19,8 @@
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
         <title>
-          <xsl:choose>
-            <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-              <xsl:text>HathiTrust Digital Library Search Inside - </xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>HathiTrust Digital Library Search Inside -- </xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
+          <xsl:call-template name="PageTitle">
+            <xsl:with-param name="prefix" select="'HathiTrust Digital Library Search Inside'" />
           </xsl:call-template>
         </title>
 

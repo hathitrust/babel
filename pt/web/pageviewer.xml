@@ -31,9 +31,9 @@
   <XslFileList>
     <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>coins.xsl</Filename>
-    <Filename>framework.xsl</Filename>
     <Filename>header.xsl</Filename>
     <Filename>footer.xsl</Filename>
+    <Filename>framework.xsl</Filename>
     <Filename>js_utils.xsl</Filename>
     <Filename>loads.xsl</Filename>
     <Filename>loads_helper_pt.xsl</Filename>
