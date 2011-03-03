@@ -1,5 +1,4 @@
-var displayPTFeedback = function(e) {
-    e.preventDefault();
+var displayPTFeedback = function() {
     
     var DEFAULT_EMAIL_VALUE = "[Your email address]";
     
@@ -92,11 +91,14 @@ var displayPTFeedback = function(e) {
 $(document).ready(function() {
     
     $("#feedback").click(function(e) {
-        return displayPTFeedback(e);
+        e.preventDefault();
+        displayPTFeedback();
+        return false;
     })
 
     $("#feedback_footer").click(function(e) {
-        displayPTFeedback(e);
+        e.preventDefault();
+        displayPTFeedback();
         return false;
     })
 

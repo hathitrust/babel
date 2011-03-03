@@ -1203,13 +1203,12 @@
     <!-- <xsl:call-template name="hathiVuFind"/> -->
 
     <div id="PTcollection">
-      <h3 class="SkipLink">Collection Lists</h3>
-
       <xsl:variable name="collection_list_label">
         <xsl:choose>
           <xsl:when test="$gLoggedIn='YES'">
             <xsl:choose>
               <xsl:when test="$gCollectionList/Coll">
+                <h3 class="SkipLink">Collections with this Item</h3>
                 <xsl:text>This item is in your collection(s):</xsl:text>
               </xsl:when>
               <xsl:otherwise>
@@ -1252,7 +1251,7 @@
         </xsl:choose>
       </ul>
 
-      <h3 class="SkipLink">Add to a Collection</h3>
+      <h3 class="SkipLink">Add Item to Collection</h3>
 
       <xsl:call-template name="BuildAddToCollectionControl"/>
       <!-- <xsl:call-template name="BackwardNavigation"/> -->
@@ -1334,6 +1333,36 @@
       <xsl:apply-templates select="@*|*|text()" mode="copy" />
     </xsl:copy>
   </xsl:template>
+
+  <xsl:template name="heading1">
+    <xsl:element name="h1">
+      <xsl:attribute name="class">SkipLink</xsl:attribute>
+      <xsl:call-template name="PageTitle" />
+    </xsl:element>
+  </xsl:template>
+  
+  <xsl:template name="PageTitle">
+    <xsl:param name="prefix" select="'HathiTrust Digital Library'" />
+    <xsl:value-of select="$prefix" />
+    <xsl:choose>
+      <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
+        <xsl:text> - </xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text> -- </xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:call-template name="GetMaybeTruncatedTitle">
+      <xsl:with-param name="titleString" select="$gFullTitleString"/>
+      <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+      <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
+    </xsl:call-template>
+  </xsl:template>
+  
+  <!-- need to move the anchor elsewhere -->
+  <xsl:template name="skipNavAnchor">
+  </xsl:template>
+  
 
 </xsl:stylesheet>
 

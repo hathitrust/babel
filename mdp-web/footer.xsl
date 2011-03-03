@@ -12,6 +12,7 @@
       <xsl:if test="$gUsingBookReader = 'true'">
         <xsl:attribute name="class"><xsl:text>footerFixed</xsl:text></xsl:attribute>
       </xsl:if>
+      <h2 class="SkipLink">More Page Information</h2>
         
       <div id="FooterCont">
         <!--All pages use Footer-->
