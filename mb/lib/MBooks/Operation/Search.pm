@@ -99,8 +99,10 @@ sub execute_operation
         # can't get it.
         my $msg = q{Collection "} . $coll_id .  q{" does not exist. };  
         $act->set_error_record($C, $act->make_error_record($C, $msg));
+
         return $ST_NOT_OK;
     }
+
     # This assertion should never get triggered because of the logic above    
     ASSERT($CS->exists_coll_id($coll_id), qq{Collection="$coll_id" does not exist});
     
@@ -115,9 +117,8 @@ sub execute_operation
     my $Q = new MBooks::Query::FullText($C, $user_query_string);
     my $rs = new MBooks::Result::FullText($coll_id);
 
-    my $config = $C->get_object('MdpConfig');
-    my $engine_uri = $config->get('mbooks_solr_engine');
-    my $searcher = new MBooks::Searcher::FullText($engine_uri);
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
+    my $searcher = new MBooks::Searcher::FullText($engine_uri, undef, 1);
 
     $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs);
 

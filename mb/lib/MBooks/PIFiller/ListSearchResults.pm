@@ -34,9 +34,7 @@ use MBooks::Index;
 use MBooks::Utils::Sort;
 use MBooks::PIFiller::ListUtils;
 
-BEGIN
-{
-    require "PIFiller/Common/Globals.pm";
+BEGIN {
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
 }
@@ -61,49 +59,33 @@ sub handle_SEARCH_RESULTS_PI
     $C->set_object('Collection', $co);
     my $ix = new MBooks::Index;
 
-    my $solr_all_indexed =$ix->get_coll_id_all_indexed_status($C,$coll_id);
- 
-    my $all_indexed='FALSE';
+    my $solr_all_indexed = $ix->get_coll_id_all_indexed_status($C, $coll_id);
+    my $all_indexed = ($solr_all_indexed ? 'TRUE' : 'FALSE');
 
-    if ($solr_all_indexed)
-    {
-        $all_indexed='TRUE'
-    }
-
-    my $solr_error_msg =
-        $act->get_transient_facade_member_data($C, 'solr_error');
+    my $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
 
     # array of hashrefs of metadata with same fields as list items but
     # also with relevance score
-    my $results_ref =
-        $act->get_transient_facade_member_data($C, 'result_set_final_data');
+    my $results_ref = $act->get_transient_facade_member_data($C, 'result_set_final_data');
+    my $query_time = $act->get_transient_facade_member_data($C, 'query_time');
 
-    my $query_time =
-        $act->get_transient_facade_member_data($C, 'query_time');
+    my $coll_has_items = $act->get_transient_facade_member_data($C, 'coll_has_items');
+    my $coll_empty = ($coll_has_items ? 'FALSE' : 'TRUE');
 
-    my $coll_empty = 'FALSE';
-    my $coll_has_items =
-        $act->get_transient_facade_member_data($C, 'coll_has_items');
-    if (! $coll_has_items)
-    {
-        $coll_empty='TRUE';
-    }
-
-    my $output .= wrap_string_in_tag($query_time, 'QueryTime');
+    my $output;
+    $output .= wrap_string_in_tag($query_time, 'QueryTime');
     $output .= wrap_string_in_tag($solr_error_msg, 'SolrError');
     $output .= wrap_string_in_tag($coll_empty, 'CollEmpty');
     $output .= wrap_string_in_tag($all_indexed, 'AllItemsIndexedColl');
 
     # Is the query a well-formed-formula (WFF)?
-    my $search_result_data_hashref = 
-        $act->get_persistent_facade_member_data($C, 'search_result_data');
+    my $search_result_data_hashref = $act->get_persistent_facade_member_data($C, 'search_result_data');
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
     my $well_formed = $wff_hashref->{'all'};
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
     $output .= wrap_string_in_tag($wff_hashref->{'processed_query_string'}, 'ProcessedQueryString');
 
-    foreach my $item_hashref (@$results_ref)
-    {
+    foreach my $item_hashref (@$results_ref) {
         my $s = '';
 
         my $display_title = $$item_hashref{'display_title'};
@@ -117,7 +99,7 @@ sub handle_SEARCH_RESULTS_PI
         $date =~s,(\d\d\d\d)\-\d+\-\d+,$1,;
         $s .= wrap_string_in_tag($date, 'Date');
 
-        $s .= wrap_string_in_tag($$item_hashref{'item_id'}, 'ItemID');
+        $s .= wrap_string_in_tag($$item_hashref{'extern_item_id'}, 'ItemID');
         $s .= wrap_string_in_tag($$item_hashref{'rights'}, 'rights');
         $s .= wrap_string_in_tag($$item_hashref{'fulltext'}, 'fulltext');
         $s .= wrap_string_in_tag($$item_hashref{'rel'}, 'relevance');
@@ -126,21 +108,21 @@ sub handle_SEARCH_RESULTS_PI
         my $coll_ary_ref = $item_hashref->{'item_in_collections'};
         my $colls;
 
-        foreach my $hashref (@{$coll_ary_ref})
-        {
+        foreach my $hashref (@$coll_ary_ref) {
             my $c;
             $c .= wrap_string_in_tag($hashref->{'collname'}, 'CollectionName');
             $c .= wrap_string_in_tag($hashref->{'MColl_ID'}, 'CollID');
             $c .= wrap_string_in_tag($hashref->{'href'}, 'CollHref');
             # wrap each set of coll info in a tag
-            my $coll=wrap_string_in_tag($c, 'Collection');
+            my $coll = wrap_string_in_tag($c, 'Collection');
             $colls .= $coll
         }
         $s .= wrap_string_in_tag($colls, 'Collections');
 
         # Link to Pageturner
         my $extern_id = $$item_hashref{'extern_item_id'};
-        $s .= wrap_string_in_tag(PT_HREF_helper($C, $extern_id, 'pt_search'), 'PtSearchHref');
+        $s .= wrap_string_in_tag(MBooks::PIFiller::ListUtils::PT_HREF_helper($C, $extern_id, 'pt_search'), 
+                                 'PtSearchHref');
 
         $output .= wrap_string_in_tag($s, 'Item');
     }

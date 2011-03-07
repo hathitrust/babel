@@ -59,31 +59,19 @@ internal queries)
 =cut
 
 # ---------------------------------------------------------------------
-sub get_ids_f_standard_user_query
-{
+sub get_ids_f_standard_user_query {
     my $self = shift;
     my $C = shift;
 
-    my $cgi = $C->get_object('CGI');
-    my $coll_id = $cgi->param('c');
+    my $coll_id = $C->get_object('CGI')->param('c');
+    my $co = $C->get_object('Collection');
 
     my $id_arr_ref;
-
-    my $config = $C->get_object('MdpConfig');
-    my $style = $config->get('mbooks_filter_query_style');
-
-    if ($style eq 'coll_id')
-    {
+    if ($co->collection_is_large($coll_id)) {
         $id_arr_ref = [$coll_id];
     }
-    elsif ($style eq 'item_id')
-    {
-        my $co = $C->get_object('Collection');
-        $id_arr_ref = $co->get_item_ids_for_coll($coll_id);
-    }
-    else
-    {
-        ASSERT(0, qq{Invalid style="$style"});
+    else {
+        $id_arr_ref = $co->get_ids_for_coll($coll_id);
     }
 
     $self->{'id_arr_ref'} = $id_arr_ref;
@@ -130,29 +118,26 @@ sub get_Solr_query_string
 
     # a Solr Filter Query to limit to the collections containing the
     # ids requested or to limit to the collection field itself
-    my $config = $C->get_object('MdpConfig');
-    my $style = $config->get('mbooks_filter_query_style');
-
     my $FQ;
-    if ($style eq 'coll_id')
-    {
+    my $co = $C->get_object('Collection');
+    my $coll_id = $C->get_object('CGI')->param('c');
+
+    if ($co->collection_is_large($coll_id)) {    
         $FQ = $self->get_coll_id_FQ();
     }
-    elsif ($style eq 'item_id')
-    {
+    else {
         $FQ = $self->get_id_FQ();
     }
 
-    # q=dog*&fl=id,score&fq=coll_id:(276+42)&$version=2.2,&start=0&rows=1000000&indent=off
-    # q=dog*&fl=id,score&fq=id:(1+334334+234576+4346752)&$version=2.2,&start=0&rows=1000000&indent=off
-    my $solr_query_string =
-        $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT;
+    # q=dog*&fl=id,score&fq=coll_id:(276)&$version=2.2,&start=0&rows=1000000&indent=off
+    # q=dog*&fl=id,score&fq=extern_id:(mdp.3910534567+OR+mdp.3910523456+OR+mdp.3910512345)&$version=2.2,&start=0&rows=1000000&indent=off
+
+    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT;
 
     DEBUG('all,query', qq{Solr query="$solr_query_string"});
 
     return $solr_query_string;
 }
-
 
 # ---------------------------------------------------------------------
 
@@ -163,8 +148,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub get_id_FQ
-{
+sub get_id_FQ {
     my $self = shift;
 
     # a Solr Filter Query to limit to the collections containing the ids requested
@@ -172,7 +156,10 @@ sub get_id_FQ
     ASSERT((scalar(@$id_arr_ref) > 0),
            qq{Missing id values for id filter query (fq) construction});
 
-    my $fq_args = join('+', @$id_arr_ref);
+    my $fq_args = join('+OR+', @$id_arr_ref);
+    # escape colons in IDs so Solr can parse query
+    $fq_args =~ s,:,\\:,g;
+
     my $FQ = qq{&fq=id:($fq_args)};
 
     return $FQ;
@@ -187,8 +174,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub get_coll_id_FQ
-{
+sub get_coll_id_FQ {
     my $self = shift;
 
     # a Solr Filter Query to limit to the collections containing the ids requested
@@ -196,7 +182,7 @@ sub get_coll_id_FQ
     ASSERT((scalar(@$coll_id_arr_ref) > 0),
            qq{Missing coll_id values for coll_id filter query construction});
 
-    my $fq_args = join('+', @$coll_id_arr_ref);
+    my $fq_args = join('+', @$coll_id_arr_ref);    
     my $FQ = qq{&fq=coll_id:($fq_args)};
 
     return $FQ;

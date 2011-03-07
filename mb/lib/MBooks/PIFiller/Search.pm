@@ -62,14 +62,14 @@ sub handle_OPERATION_RESULTS_PI
     
     my $s = qq{coll_name=$coll_name|coll_id=$coll_id|query=$query|url=$url};
 
-    my $config = $C->get_object('MdpConfig');
-    my $filename = $config->get('solr_index_maint_lock_file');
-    
-    if (-e  $filename)
-    {
-        $s .= qq{|num_found=0|result=INDEX_NOT_AVAILABLE};
-    }
-    else
+#     my $config = $C->get_object('MdpConfig');
+#     my $filename = $config->get('solr_index_maint_lock_file');
+#     
+#     if (-e  $filename)
+#     {
+#         $s .= qq{|num_found=0|result=INDEX_NOT_AVAILABLE};
+#     }
+#     else # XXXX@
     {
         my $num_found = 0;
         if ($rs->http_status_ok())

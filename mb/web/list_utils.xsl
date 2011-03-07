@@ -171,7 +171,7 @@
           </xsl:element>
 
           <xsl:text> or </xsl:text>
-          <a href="http://mirlyn.lib.umich.edu/" class="inlineLink"><span class="" title="New Search in Mirlyn">Search Mirlyn</span></a>
+          <a href="http://mirlyn.lib.umich.edu/" class="inlineLink"><span class="" title="New Catalog Search">Search the Catalog</span></a>
           <xsl:text> for new items</xsl:text>
         </div>
       </div>

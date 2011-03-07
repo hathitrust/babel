@@ -709,7 +709,7 @@ Rest of widget is in the XSL
 # ---------------------------------------------------------------------
 sub handle_SEARCH_WIDGET_PI
     : PI_handler(SEARCH_WIDGET)
-{
+ {
     my ($C, $act, $piParamHashRef) = @_;
     my $cgi = $C->get_object('CGI');
     my $coll_id = $cgi->param('c');
@@ -720,12 +720,12 @@ sub handle_SEARCH_WIDGET_PI
 
     my $all_indexed = "FALSE";
     my $ix = new MBooks::Index;
-    my ($solr_all_indexed) = $ix->get_coll_id_all_indexed_status($C,$coll_id);
-    if ($solr_all_indexed)
-    {
-        $all_indexed="TRUE";
+    my ($solr_all_indexed) = $ix->get_coll_id_all_indexed_status($C, $coll_id);
+    if ($solr_all_indexed) {
+        $all_indexed = "TRUE";
     }
     $s .= wrap_string_in_tag($all_indexed, 'AllItemsIndexed');
+
     return $s;
 }
 
@@ -757,15 +757,14 @@ sub handle_OPERATION_RESULTS_PI
    # Generate href for the link to the collection things were copied/moved to
     # This should always be a list items
     my $to_coll_id = $copy_items_hashref->{'to_coll_id'};
-    my $to_coll_href = make_coll_href($cgi,$to_coll_id);
+    my $to_coll_href = make_coll_href($cgi, $to_coll_id);
 
     # get coll_name and to_coll_name
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
     my $coll_name = $co->get_coll_name ($coll_id);
     my $to_coll_name;
 
-    if (defined ($to_coll_id))
-    {
+    if (defined ($to_coll_id)) {
         $to_coll_name = $co->get_coll_name ($to_coll_id);
     }
 
@@ -788,14 +787,12 @@ sub handle_OPERATION_RESULTS_PI
     my $already_count = 0;
     my $id = "";
 
-    foreach $id (@{$valid_ids_ref})
-    {
+    foreach $id (@$valid_ids_ref) {
         $valid_count++;
         $s .= wrap_string_in_tag($id, 'ValidId');
     }
 
-    foreach $id (@{$already_in_coll2_ref})
-    {
+    foreach $id (@$already_in_coll2_ref) {
         $already_count++;
         $s .= wrap_string_in_tag($id, 'AlreadyInColl2');
     }
@@ -807,9 +804,8 @@ sub handle_OPERATION_RESULTS_PI
     my $delete_items_hashref = $act->get_persistent_facade_member_data($C, 'delete_items_data');
     my $del_from_id = $delete_items_hashref->{'coll_id'};
     my $del_from_name = '';
-    if (defined ($del_from_id))
-    {
-        $del_from_name = $co->get_coll_name ($del_from_id);
+    if (defined ($del_from_id)) {
+        $del_from_name = $co->get_coll_name($del_from_id);
     }
 
     my $del_action_type = $delete_items_hashref->{'action'};
@@ -825,30 +821,27 @@ sub handle_OPERATION_RESULTS_PI
     # a redirect UI action could then retrieve it.
 
     my $undo_cgi = new CGI($cgi);
-    $undo_cgi->param('undo','delit');
-    $undo_cgi->param('a','copyit');
-    $undo_cgi->param('c2',"$del_from_id");
+    $undo_cgi->param('undo', 'delit');
+    $undo_cgi->param('a', 'copyit');
+    $undo_cgi->param('c2', "$del_from_id");
     # delete any ids in cgi
     $undo_cgi->delete('iid');
     # add back ids that were deleted from collection
-    $undo_cgi->param('iid', @{$del_valid_ids});
+    $undo_cgi->param('iid', @$del_valid_ids);
     # if the items were deleted from a search result set
     # page=srchresult (otherwise copyit will go to list items instead
     # of back to search results)
-    if ($cgi->param('a') eq 'listsrch')
-    {
-        $undo_cgi->param('page','srch');
+    if ($cgi->param('a') eq 'listsrch') {
+        $undo_cgi->param('page', 'srch');
     }
 
     my $undo_del_href = CGI::self_url($undo_cgi);
-
 
     my $d = '';
     $d .= wrap_string_in_tag($del_action_type, 'DelActionType');
     $d .= wrap_string_in_tag($del_from_id, 'DeleteFromCollId');
     $d .= wrap_string_in_tag($del_from_name, 'DeleteFromCollName');
-    foreach $id (@{$del_valid_ids})
-    {
+    foreach $id (@$del_valid_ids) {
         $del_valid_count++;
         $d .= wrap_string_in_tag($id, 'DelValidId');
     }
@@ -864,6 +857,8 @@ sub handle_OPERATION_RESULTS_PI
 
     return $s;
 }
+
+
 # ---------------------------------------------------------------------
 # make_coll_href
 # helper for PI OPERATION_RESULTS

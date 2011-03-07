@@ -20,7 +20,6 @@ Coding example
 
 use strict;
 
-use Search::Searcher;
 use base qw(Search::Searcher);
 
 use MBooks::Result::FullText;

@@ -25,7 +25,7 @@ use Utils;
 use Identifier;
 use Debug::DUtils;
 use MBooks::Operation::Status;
-use MBooks::MetaDataGetter::VuFindSolr;
+use MBooks::MetaDataGetter;
 use Time::HiRes;
 
 # ---------------------------------------------------------------------
@@ -71,21 +71,19 @@ sub execute_operation
 {
     my $self = shift;
     my $C = shift;
+
     my $config = $C->get_object('MdpConfig');
     my $co = $self->get_action()->get_transient_facade_member_data($C, 'collection_object');
     my $act = $self->get_action();
+
     DEBUG('op', qq{execute operation="AddMultipleItems"});
+
     $self->SUPER::execute_operation($C);
 
     my $start = Time::HiRes::time();
-    # Pessimistic
-    my $db_success = 0;
-    my $ALL_METADATA_RETURNED = 0;
-    my $GET_METADATA = 0;
-    
     my $cgi = $C->get_object('CGI');
 
-    # if in production limit ids to max_ids    
+    # if in production limit ids to max_ids
     my @ids = $cgi->param('id');
     my $num_ids = scalar(@ids);
     my $max_ids = $config->get('max_add_ids');
@@ -93,134 +91,107 @@ sub execute_operation
         ASSERT($num_ids <= $max_ids,qq{$num_ids items submitted.  Maximum allowed is $max_ids});
     }
 
-    my @couldnot_index;
     my @no_metadata;
     my @update_metadata;
     my @invalid_ids;
-    my @added_or_updated; 
+    my @added_or_updated;
     my @failed_ids;
-    my $report="";
     my $failed_to_add_count  = 0;
     my $added_count = 0;
-    my $internal_id;
     
-    foreach my $id (@ids)
-    {
-        my $statsref;
-        
-        if (! Identifier::validate_mbooks_id($id))
-        {
-            push (@invalid_ids, $id);
-        }
-        else
-        {
-            #its valid
-            if (! $co->item_exists_extern_id($id))
-            {
-                #if there is no entry in the item table we don't have metadata
-                push(@no_metadata,$id);
-            }
-            else
-            {
-                push (@update_metadata,$id);
-            }
-        }
-    }   
+    # Pessimistic
+    my $ALL_METADATA_RETURNED = 0;
 
-    my @get_metadata=(@no_metadata,@update_metadata);
-    
-    my $metadata_aryref = $self->get_metadata($C,\@get_metadata);
-    if (!defined ($metadata_aryref))
-    {
-        my $msg = qq{Could not get metadata for items. };  
+    foreach my $id (@ids) {
+        if (! Identifier::validate_mbooks_id($id)) {
+            push(@invalid_ids, $id);
+        }
+        else {
+            # valid
+            if (! $co->item_exists($id)) {
+                # if there is no entry in the item table we don't have metadata
+                push(@no_metadata, $id);
+            }
+            else {
+                push (@update_metadata, $id);
+            }
+        }
+    }
+
+    my @get_metadata_ids = (@no_metadata, @update_metadata);
+
+    my $metadata_aryref = $self->get_metadata_via_metadata_getter($C, \@get_metadata_ids);
+    if (! defined($metadata_aryref)) {
+        my $msg = qq{Could not get metadata for items. };
         $act->set_error_record($C, $act->make_error_record($C, $msg));
     }
-    else
-    {
+    else {
         # check to see that we have 1 metadata ref for each id?
-        if ( scalar(@get_metadata) == scalar(@{$metadata_aryref}) )
-        {
+        if ( scalar(@get_metadata_ids) == scalar(@$metadata_aryref) ) {
             $ALL_METADATA_RETURNED = 1;
         }
-        
-        foreach my $metadata_hashref (@{$metadata_aryref})
-        {
-            my $metadata_ref = $self->normalize_metadata($metadata_hashref);            
-            $internal_id =$self->add_item_metadata_to_database($C,$metadata_ref);
-            #XXX check that soft assert for Super->add... doesn;t cause everything to
-            # bomb out for one failed add!
-            if (defined($internal_id))
-            {
+
+        foreach my $metadata_hashref (@$metadata_aryref) {
+            my $metadata_ref = $self->normalize_metadata($metadata_hashref);
+            my $id = $self->add_item_metadata_to_database($C, $metadata_ref);
+            if (defined($id)) {
                 $added_count ++;
                 push (@added_or_updated, $metadata_hashref->{'extern_item_id'});
             }
-            else
-            {
+            else {
                 $failed_to_add_count++;
                 push (@failed_ids, $metadata_hashref->{'extern_item_id'});
             }
-            # next action, copy items (to collection) assumes that internal ids are available on the 
-            # cgi params as ids
-            $cgi->append( -name=>'iid', -values =>[$internal_id]);
+            # next action, copy items (to collection) assumes that ids
+            # are available on the cgi params as ids
+            $cgi->append(-name => 'iid', -values => [$id]);
         }
     }
-            
-    if (scalar(@failed_ids) == 0 && scalar(@invalid_ids)==0 && $ALL_METADATA_RETURNED)
-    {
-        $db_success=1;
-    }
-    
-    my $elapsed = Time::HiRes::time() - $start;
 
-    
+    my $db_success = (scalar(@failed_ids) == 0 && scalar(@invalid_ids) == 0 && $ALL_METADATA_RETURNED);
+
+    # DEBUG
+    my $elapsed = Time::HiRes::time() - $start;
     my $summary = "\n------\n" ;
-    $summary .= $added_count ." were added for indexing/updating in " . $elapsed . " \n\t";    
+    $summary .= $added_count ." were added for indexing/updating in " . $elapsed . " \n\t";
     $summary .= scalar(@ids) . " item ids  input\n\t";
     $summary .=  scalar(@invalid_ids) ." invalid_ids\n----\n";
     $summary .= $failed_to_add_count ." failed to be added  \n\t";
-    if (!$ALL_METADATA_RETURNED)
-    {        
+    if (!$ALL_METADATA_RETURNED) {
         $summary .= "Not all metadata returned from MetaDataGetter";
     }
-    
+    DEBUG('time', qq{$summary});
+    # end DEBUG
 
-    # unless needed for debugging, the only data currently used seems to be database success
-    # consider double checking and then removing
     my %add_multiple_items_data;
     $add_multiple_items_data{'database_success'} = $db_success;
     $add_multiple_items_data{'all_metadata_returned'} = $ALL_METADATA_RETURNED;
     $add_multiple_items_data{'added_or_updated'} = \@added_or_updated;
-    $add_multiple_items_data{'ids'} =\@ids;
+    $add_multiple_items_data{'ids'} = \@ids;
     $add_multiple_items_data{'invalid_ids'} = \@invalid_ids;
     $add_multiple_items_data{'failed_ids'} = \@failed_ids;
-
-    $report .=  $summary;
-    
-    DEBUG('time', qq{$report});
 
     my $act = $self->get_action();
     $act->set_persistent_facade_member_data($C, 'add_multiple_items_data', \%add_multiple_items_data);
 
-    
-    # XXX delete external ids before saving cgi back to session
     $cgi->param('c', $cgi->param('c2'));
-    $C->set_object('CGI',$cgi);    
+    $C->set_object('CGI', $cgi);
+
     return $db_success ? $ST_OK : $ST_NOT_OK;
-    
+
 }
 
 # ---------------------------------------------------------------------
-sub get_metadata
-{
+sub get_metadata_via_metadata_getter {
     my $self = shift;
     my $C = shift;
     my $id_aryref = shift;
-    
 
     my $metadata_aryref= [];
-    
-    my $md = new MBooks::MetaDataGetter::VuFindSolr($C,$id_aryref);
-    my $metadata_aryref = $md->get_metadata($C, $id_aryref);
+
+    my $mdg = new MBooks::MetaDataGetter($C,$id_aryref);
+    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, $id_aryref);
+
     return $metadata_aryref;
 }
 
@@ -229,28 +200,26 @@ sub get_metadata
 #
 #   calls $co->create_or_update_item_metadata($metadata_ref);
 #   which will create new item if extern_id not in db or update data otherwise
-#   returns internal item id
+#   
 # ---------------------------------------------------------------------
-sub add_item_metadata_to_database
-{
+sub add_item_metadata_to_database {
     my $self = shift;
     my $C = shift;
     my $metadata_ref = shift;
+
     my $act = $self->get_action();
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
-   
-    my $item_id;
+    my $id;
 
-    eval
-    {
-        $item_id = $co->create_or_update_item_metadata($metadata_ref);
+    eval {
+        $id = $co->create_or_update_item_metadata($metadata_ref);
     };
-    if ($@)
-    {
-        $item_id = undef;
+    if ($@) {
+        $id = undef;
         soft_ASSERT(0, qq{AddItem database failure="$@", extern_id="$$metadata_ref{'extern_item_id'}"}, 'force_email');
     }
-    return $item_id;
+
+    return $id;
 }
 
 
@@ -293,7 +262,7 @@ sub normalize_metadata
     my $metadata_hashref = shift;
 
     my $metadata_clean_ref = {};
-    
+
     foreach my $key (keys %{$metadata_hashref})
     {
         my $value = $self->dealWithArray($$metadata_hashref{$key});
@@ -317,14 +286,14 @@ sub dealWithArray
     my $couldBeArrayRef = shift;
     my $ref_type=ref($couldBeArrayRef);
     my $concatenated;
-    
+
     ASSERT(defined($couldBeArrayRef),qq{value not defined});
     if ($ref_type eq "ARRAY")
     {
         $concatenated = join (" ",@{$couldBeArrayRef});
         return $concatenated;
     }
-    else 
+    else
     {
         return $couldBeArrayRef;
     }

@@ -242,7 +242,7 @@ sub P_redirect_HTTP
     {
         my $sid = $ses->get_session_id();
         my $debug_msg = $url . qq{;newsid=$sid};
-        View::P_output_data_HTTP($C,\$debug_msg,undef)
+        View::P_output_data_HTTP($C, \$debug_msg, undef)
     }
     else
     {

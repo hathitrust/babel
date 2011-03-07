@@ -76,8 +76,7 @@ Example Solr result is:
 =cut
 
 # ---------------------------------------------------------------------
-sub AFTER_ingest_Solr_search_response
-{
+sub AFTER_ingest_Solr_search_response {
     my $self = shift;
     my $Solr_response_ref = shift;
 
@@ -89,17 +88,15 @@ sub AFTER_ingest_Solr_search_response
     @coll_ids = ($coll_id_fields =~ m,<long>(.*?)</long>,gs);
     $self->__set_result_coll_ids(\@coll_ids);
 
-    # Ids
-    @result_ids = ($$Solr_response_ref =~ m,<long name="id">(.*?)</long>,g);
+    # Ids (i.e. HT ids, mdp.3901502345676)
+    @result_ids = ($$Solr_response_ref =~ m,<str name="id">(.*?)</str>,g);
+    $self->__set_result_ids(\@result_ids);
 
     # Relevance scores
-    my @result_scores = ($$Solr_response_ref =~ m,<float[^>]+>(.*?)</float>,g);
-    for (my $i=0; $i < scalar(@result_ids); $i++)
-    {
+    my @result_scores = ($$Solr_response_ref =~ m,<float name="score">(.*?)</float>,g);
+    for (my $i=0; $i < scalar(@result_ids); $i++) {
         $result_score_hash{$result_ids[$i]} = $result_scores[$i];
     }
-
-    $self->__set_result_ids(\@result_ids);
     $self->{'result_scores'} = \%result_score_hash;
 }
 

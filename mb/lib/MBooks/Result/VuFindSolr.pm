@@ -161,13 +161,13 @@ sub AFTER_ingest_Solr_search_response
         my $converted_hash;
         
         my $iteminfo_aryref = $metadata_hash->{'ht_id_display'};
-        if (scalar(@{$iteminfo_aryref}) == 1)
+        if (scalar(@$iteminfo_aryref) == 1)
         {
            my  ($id, $volume_info) = $self->__get_id_and_volume_info($iteminfo_aryref->[0]);
            $metadata_hash->{'volume'} = $volume_info;
            $metadata_hash->{'ht_id_display'} = $id;
            $converted_hash = $self->process_metadata($metadata_hash);
-           push(@{$ary_metadata_hash}, $converted_hash);
+           push(@$ary_metadata_hash, $converted_hash);
         }
         else
         {
@@ -179,7 +179,7 @@ sub AFTER_ingest_Solr_search_response
 
             my ($vufind_id_aryref,$volid_hashref) = $self->__extract_volume_metadata($iteminfo_aryref);
             
-            foreach my $item_id (@{$vufind_id_aryref})
+            foreach my $item_id (@$vufind_id_aryref)
             { 
                 next if (!exists($ids_seen->{$item_id})); # skip any ids that weren't in the query
                 if ($ids_seen->{$item_id} == 0)

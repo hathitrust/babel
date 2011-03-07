@@ -28,6 +28,12 @@ Debug options
 use strict;
 umask 0000;
 
+# temporary # XXXX@
+use CGI;
+BEGIN{
+    CGI::param('debug', 'local');
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
@@ -62,7 +68,6 @@ use Attribute::Handlers;
 use MdpGlobals;
 use Utils;
 use Debug::DUtils;
-
 
 BEGIN {
     Debug::DUtils::setup_DebugScreen();
