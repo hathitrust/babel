@@ -125,7 +125,7 @@
 
     <script xmlns="" type="text/javascript">
       $(document).ready(function() {
-        if (document.referrer.string.match("hathitrust.worldcat.org")) {
+        if (document.referrer.match("hathitrust.worldcat.org")) {
           var value = $.cookie('survey.hathitrust.org');
           if (value == null) {
             $.cookie('survey.hathitrust.org', 1, { expires: 30, path: '/', domain: '.hathitrust.org' });
