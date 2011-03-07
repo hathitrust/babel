@@ -125,7 +125,6 @@
 
     <script xmlns="" type="text/javascript">
       $(document).ready(function() {
-        if (document.referrer.match("hathitrust.worldcat.org")) {
           var value = $.cookie('survey.hathitrust.org');
           if (value == null) {
             $.cookie('survey.hathitrust.org', 1, { expires: 30, path: '/', domain: '.hathitrust.org' });
@@ -137,7 +136,6 @@
                 animationSpeed: "normal"
               });
           }
-        }
       });
     </script>
     <link xmlns="" rel="stylesheet" href="/pt/js/jQuery-Notify-bar/jquery.notifyBar.css" type="text/css" media="screen" />
