@@ -130,7 +130,7 @@
             $.cookie('survey.hathitrust.org', 1, { expires: 30, path: '/', domain: '.hathitrust.org' });
             $.notifyBar(
               {
-                html: '<div style="margin-bottom:3px">Please participate in a brief <a onClick="pageTracker._trackEvent(\'PT\', \'click\', \'WCLsurveyIntercept\');" style="text-decoration: underline; color:blue" target="_blank" href="http://www.loop11.com/usability-test/7292/introduction/">online usability assessment</a>.</div><div>Your comments can help us improve access the HathiTrust Digital Library</div>',
+                html: '<div style="margin-bottom:3px">Please participate in a brief <a onClick="pageTracker._trackEvent(\'PT\', \'click\', \'WCLsurveyIntercept\');" style="text-decoration: underline; color:blue" target="_blank" href="http://www.loop11.com/usability-test/7292/introduction/">online usability assessment</a>.</div><div>Your comments can help us improve access to the HathiTrust Digital Library</div>',
                 close: true,
                 delay: 2000000,
                 animationSpeed: "normal"
