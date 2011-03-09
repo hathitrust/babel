@@ -1186,7 +1186,7 @@
       </li>
 
       <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
-        <li style="padding-left: 1.5em; text-indent: -1.5em; width: 105px">
+        <li style="padding-left: 1.5em; text-indent: -1.5em; width: 110px">
           <xsl:choose>
             <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
               <xsl:call-template name="BuildFullPdfDownloadLink">
@@ -1201,7 +1201,7 @@
               </xsl:call-template>
             </xsl:when>
             <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-              <p style="padding-left: 0; text-indent: 0">You need to be affiliated with a HathiTrust Member institution to download this book.</p>
+              <p style="padding-left: 0; text-indent: 0">Full PDF available only to authenticated users from <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions</a>.</p>
             </xsl:when>
             <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
               <p style="padding-left: 0; text-indent: 0">In-copyright books cannot be downloaded.</p>
