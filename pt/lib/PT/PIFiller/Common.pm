@@ -1050,6 +1050,16 @@ sub handle_ALLOW_FULL_PDF_PI
     return $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
 }
 
+# ---------------------------------------------------------------------
+
+=item handle_FULL_PDF_ACCESS_MESSAGE_PI : PI_handler(FULL_PDF_ACCESS_MESSAGE)
+
+Handler for FULL_PDF_ACCESS_MESSAGE. Returns the reason that full book PDF
+download is not available.
+
+=cut
+
+# ---------------------------------------------------------------------
 sub handle_FULL_PDF_ACCESS_MESSAGE_PI
     : PI_handler(FULL_PDF_ACCESS_MESSAGE)
 {
@@ -1112,6 +1122,15 @@ sub handle_SEARCH_RESULTS_LABEL_PI
             $label = qq{catalog record};
         } elsif ( $referer =~ m,$PTGlobals::gCollectionBuilderPattern, ) {
             $label = qq{collection};
+            my $co = $C->get_object('Collection');
+            my ( $collid ) = ( $referer =~ m,c=(\d+), );
+            if ( $collid ) {
+                my $collname = $co->get_coll_name($collid);
+                $collname =~ s,^\s+,,; $collname =~ s,\s+$,,;
+                ## $label = qq{&#x201c;$collname&#x201d; collection};
+                $label = qq{<em>$collname</em> $label};
+            }
+            
         }
     } elsif ( $cgi->param('q1') && $script_name !~ m,$PTGlobals::gPageturnerSearchCgiRoot, ) {
         $label = qq{"Search in this text" results};

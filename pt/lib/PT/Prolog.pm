@@ -203,21 +203,6 @@ sub SetBackToResultsReferer {
     }
 }
 
-sub XXSetBackToResultsReferer {
-    my ( $cgi, $ses ) = @_;
-    my $referer = $cgi->referer();
-    
-    if ( $referer =~ m,$PTGlobals::gTrackableReferers, ) {
-        # we want to track these referers
-        $ses->set_persistent_subkey('referers', $id, $referer);
-    } elsif ( $referer =~ m,$PTGlobals::gPageturnerCgiRoot, ) {
-        # referer is us (e.g. changing views, paging), so noop
-    } else {
-        # not trackable, not us, so blank the key
-        $ses->set_persistent_subkey('referers', $id, undef);
-    }
-}
-
 # ----------------------------------------------------------------------
 # NAME         : SetDefaultPage
 # PURPOSE      :
