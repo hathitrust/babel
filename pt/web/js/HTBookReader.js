@@ -1513,7 +1513,10 @@ HTBookReader.prototype.tweakDragParams = function() {
 
 // ROTATE SUPPORT
 $(window).scroll(function() {
-    $("div#BRpageControls").fadeOut(250);
+    var $controls = $("#BRpageControls");
+    if ( $controls.is(":visible") ) {
+        $("div#BRpageControls").fadeOut(250);
+    }
 })
 
 HTBookReader.prototype.rotationCache = {};
@@ -1571,6 +1574,11 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
         
         return true;
     })
+
+	$("#BRpageControls").hover(
+		function() { $(this).addClass("hovered"); },
+		function() { $(this).removeClass("hovered"); }
+	);
     
     $("div.BRpagediv1up:has(img)").live("mouseover mouseleave", function(event) {
         var h = $(this).height();
@@ -1600,7 +1608,8 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
             
             //br._rotateWidget.appendTo($(this)).css("top", top).css("left", left).fadeIn(500)
             //$pageControl.css("top", top).css("left", left).fadeIn(250);
-            $pageControl.appendTo($(this)).css("top", top).css("left", left).fadeIn(250);
+            //$pageControl.appendTo($(this)).css("top", top).css("left", left).addClass("waiting").fadeIn(250);
+            $pageControl.appendTo($(this)).css("top", top).css("left", left).css({ opacity: 0, display: 'block' }).animate({ opacity: 0.3 }, 250);
             self._pageTarget = $(this);
             
         } else {
