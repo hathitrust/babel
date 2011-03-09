@@ -1310,9 +1310,19 @@
         <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
         <xsl:attribute name="data-tracking-action">PT Back to Search Results</xsl:attribute>
         <xsl:text>&#171; Back to </xsl:text>
-        <xsl:value-of select="//SearchForm/SearchResultsLabel" />
+        <xsl:apply-templates select="//SearchForm/SearchResultsLabel" mode="copy" />
       </xsl:element>
     </div>
+  </xsl:template>
+  
+  <xsl:template match="SearchResultsLabel" mode="copy">
+    <xsl:apply-templates select="@*|*|text()" mode="copy" />
+  </xsl:template>
+  
+  <xsl:template match="@*|*|text()" mode="copy">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|*|text()" mode="copy" />
+    </xsl:copy>
   </xsl:template>
 
   <!-- -->
