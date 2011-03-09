@@ -145,6 +145,10 @@ $(document).ready(function() {
         var action = $(this).data('tracking-action');
         
         HT.track_event({ label : label, category : category, action : action });
+        
+        if ( $(this).hasClass("dialog") ) {
+            return false;
+        }
 
         if ( HT.reader == null || ! $(this).hasClass("interactive") ) {
             // delay events that change the current document so the

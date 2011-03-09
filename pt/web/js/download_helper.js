@@ -133,7 +133,7 @@ HT.pdf_helpers = {
   
 // depends on jQuery
 $(document).ready(function() {
-    $("a#fullPdfLink").click(function() {
+    $("a#fullPdfLink").addClass("dialog").click(function() {
         if ( $(this).attr('rel') == 'allow' ) {
             // if there's no progress base, punt on the progress bar
             if ( HT.config.download_progress_base == null ) {
