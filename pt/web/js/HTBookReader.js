@@ -1609,7 +1609,8 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
             //br._rotateWidget.appendTo($(this)).css("top", top).css("left", left).fadeIn(500)
             //$pageControl.css("top", top).css("left", left).fadeIn(250);
             //$pageControl.appendTo($(this)).css("top", top).css("left", left).addClass("waiting").fadeIn(250);
-            $pageControl.appendTo($(this)).css("top", top).css("left", left).css({ opacity: 0, display: 'block' }).animate({ opacity: 0.3 }, 250);
+            //$pageControl.appendTo($(this)).css("top", top).css("left", left).css({ opacity: 0, display: 'block' }).animate({ opacity: 0.3 }, 250);
+            $pageControl.appendTo($(this)).css("top", top).css("left", left);
             self._pageTarget = $(this);
             
         } else {
@@ -1620,7 +1621,8 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
             // }
             
             if ( $("#BRpageControls", this).length > 0 ) {
-                $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
+                //$pageControl.fadeOut(250).css("left", -1000).appendTo("body");
+                $pageControl.css("left", -1000).appendTo("body");
                 self._pageTarget = null;
             }
             
