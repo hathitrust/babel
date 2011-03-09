@@ -65,6 +65,7 @@
     <CollectionList><?COLLECTION_LIST?></CollectionList>
     <LoginLink><?LOGIN_LINK?></LoginLink>
     <AllowFullPDF><?ALLOW_FULL_PDF?></AllowFullPDF>
+    <FullPDFAccessMessage><?FULL_PDF_ACCESS_MESSAGE?></FullPDFAccessMessage>
     <Section108><?SECTION_108?></Section108>
 
     <AddToCollectionForm>

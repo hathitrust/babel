@@ -929,7 +929,25 @@ sub handle_FEATURE_LIST_PI
     return $featureXML;
 }
 
+# ---------------------------------------------------------------------
 
+=item handle_FULL_PDF_ACCESS_MESSAGE_PI : PI_handler(FULL_PDF_ACCESS_MESSAGE)
+
+Handler for FULL_PDF_ACCESS_MESSAGE. Returns the reason that full book PDF
+download is not available.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_FULL_PDF_ACCESS_MESSAGE_PI
+    : PI_handler(FULL_PDF_ACCESS_MESSAGE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    my ( $message, $status ) = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    return $message;
+}
 
 1;
 
