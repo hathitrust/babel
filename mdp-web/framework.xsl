@@ -205,6 +205,9 @@
     <!-- If there's a default icon, link it default HT.org page -->
     <xsl:if test="$gAccessUseIcon!=''">
       <xsl:element name="a">
+        <xsl:attribute name="target">
+          <xsl:text>_blank</xsl:text>
+        </xsl:attribute>
         <xsl:attribute name="href">
           <xsl:value-of select="$gAccessUseLink"/>
         </xsl:attribute>
@@ -218,6 +221,9 @@
 
     <!-- Link text to the default HT.org page -->
     <xsl:element name="a">
+      <xsl:attribute name="target">
+        <xsl:text>_blank</xsl:text>
+      </xsl:attribute>
       <xsl:attribute name="href">
         <xsl:value-of select="$gAccessUseLink"/>
       </xsl:attribute>
@@ -227,6 +233,9 @@
     <!-- (CC): If there's an auxillary icon, link it using auxillary link -->
     <xsl:if test="$gAccessUseAuxLink!='' and $gAccessUseAuxIcon!=''">
       <xsl:element name="a">
+        <xsl:attribute name="target">
+          <xsl:text>_blank</xsl:text>
+        </xsl:attribute>
         <xsl:attribute name="href">
           <xsl:value-of select="$gAccessUseAuxLink"/>
         </xsl:attribute>
