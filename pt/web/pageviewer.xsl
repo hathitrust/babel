@@ -18,6 +18,7 @@
   <xsl:variable name="gCollectionList" select="/MBooksTop/MdpApp/CollectionList"/>
   <xsl:variable name="gCollectionForm" select="/MBooksTop/MdpApp/AddToCollectionForm"/>
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
+  <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
 
   <xsl:variable name="gFinalView">
     <xsl:choose>
@@ -1184,7 +1185,32 @@
         </xsl:choose>
       </li>
 
-      <xsl:if test="$gFullPdfAccess='allow'">
+      <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
+        <li style="padding-left: 1.5em; text-indent: -1.5em; width: 105px">
+          <xsl:choose>
+            <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+              <xsl:call-template name="BuildFullPdfDownloadLink">
+                <xsl:with-param name="href" select="$pViewTypeList/ViewTypeFullPdfLink" />
+                <xsl:with-param name="linktext" select="'Partners login for full PDF'" />
+              </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$gLoggedIn = 'YES' and $gFullPdfAccess = 'allow'">
+              <xsl:call-template name="BuildFullPdfDownloadLink">
+                <xsl:with-param name="href" select="$pViewTypeList/ViewTypeFullPdfLink" />
+                <xsl:with-param name="linktext" select="'full PDF'" />
+              </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+              <p style="padding-left: 0; text-indent: 0">You need to be affiliated with a HathiTrust Member institution to download this book.</p>
+            </xsl:when>
+            <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+              <p style="padding-left: 0; text-indent: 0">In-copyright books cannot be downloaded.</p>
+            </xsl:when>
+          </xsl:choose>
+        </li>
+      </xsl:if>
+      
+      <!-- <xsl:if test="$gFullPdfAccess='allow'">
         <li>
           <xsl:element name="a">
             <xsl:attribute name="class">ViewAsIcon</xsl:attribute>
@@ -1210,8 +1236,41 @@
             <xsl:text>full PDF</xsl:text>
           </xsl:element>
         </li>
-      </xsl:if>
+      </xsl:if> -->
+
     </ul>
+  </xsl:template>
+  
+  <xsl:template name="BuildFullPdfDownloadLink">
+    <xsl:param name="href" />
+    <xsl:param name="linktext" />
+    
+    <xsl:element name="a">
+      <xsl:attribute name="class">ViewAsIcon</xsl:attribute>
+      <xsl:attribute name="title">Download full PDF</xsl:attribute>
+      <xsl:attribute name="id">pdfLink</xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:value-of select="$href"/>
+      </xsl:attribute>
+      <xsl:element name="img">
+        <xsl:attribute name="alt">Download book as PDF</xsl:attribute>
+        <xsl:attribute name="title">Download book as PDF</xsl:attribute>
+        <xsl:attribute name="src">
+          <xsl:value-of select="'//common-web/graphics/icon_pdf.gif'"/>
+        </xsl:attribute>
+      </xsl:element>
+    </xsl:element>
+    <xsl:element name="a">
+      <xsl:attribute name="class">ViewAsLabel</xsl:attribute>
+      <xsl:attribute name="style">width:120%</xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:value-of select="$href"/>
+      </xsl:attribute>
+      <xsl:attribute name="title">Download book as PDF</xsl:attribute>
+      <!-- <xsl:text>full PDF</xsl:text> -->
+      <xsl:value-of select="$linktext" />
+    </xsl:element>
+    
   </xsl:template>
 
   <!-- FORM: Image Resize -->
