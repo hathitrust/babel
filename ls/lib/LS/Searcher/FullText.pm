@@ -10,10 +10,6 @@ LS::Searcher::FullText (searcher)
 
 This class does X.
 
-=head1 VERSION
-
-$Id: FullText.pm,v 1.4 2009/11/13 22:08:39 pfarber Exp $
-
 =head1 SYNOPSIS
 
 Coding example
@@ -26,7 +22,6 @@ Coding example
 
 use strict;
 
-use Search::Searcher;
 use base qw(Search::Searcher);
 
 use LS::Result::FullText;
@@ -42,8 +37,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub get_populated_Solr_query_result
-{
+sub get_populated_Solr_query_result {
     my $self = shift;
     my ($C, $Q, $rs) = @_;
 
@@ -61,55 +55,13 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub get_Solr_internal_query_result
-{
+sub get_Solr_internal_query_result {
     my $self = shift;
     my ($C, $Q, $rs) = @_;    
 
     my $query_string = $Q->get_Solr_internal_query_string();
     return $self->__Solr_result($C, $query_string, $rs);
 }
-
-
-# ---------------------------------------------------------------------
-
-=item __get_Solr_select_url
-
-Description: OVERRIDE of Search::Searcher to support multi-shard
-parameters.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __get_Solr_select_url
-{
-    my $self = shift;
-    my ($C, $query_string) = @_;
-
-    my $config = $C->get_object('MdpConfig');
-    my @num_shards_list = $config->get('num_shards_list');
-
-    my @shard_engine_uris = $config->get('mbooks_solr_engines');
-    my @active_shard_engine_uris;
-    foreach my $shard (@num_shards_list) {
-        push(@active_shard_engine_uris, $shard_engine_uris[$shard-1]);
-    }
-    map {$_ =~ s,^http://,,} @active_shard_engine_uris;
-
-    my $shards_param = 'shards=' . join(',', @active_shard_engine_uris);
-    my $primary_engine_uri = $self->get_engine_uri();
-    my $script = $C->get_object('MdpConfig')->get('solr_select_script');
-    my $url = 
-        $primary_engine_uri 
-            . $script 
-                . '?' 
-                    . $shards_param
-                        . '&' . $query_string;
-
-    return $url;
-}
-
-
 
 1;
 

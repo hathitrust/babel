@@ -32,7 +32,6 @@ BEGIN
 {
     require "PIFiller/Common/Globals.pm";
     require "LS/PIFiller/Globals.pm";
-    require "PIFiller/ListUtils.pl"; 
 }
 
 
@@ -87,8 +86,8 @@ sub handle_PAGING_PI
         $start = 1;
         $end = $pager->last_page;
         $pagelinks =
-            get_pagelinks($start, $end,
-                          $pager, $temp_cgi, $current_page);
+            _ls_get_pagelinks($start, $end,
+                              $pager, $temp_cgi, $current_page);
     }
     else
     {
@@ -101,8 +100,8 @@ sub handle_PAGING_PI
             $end_links_start = $pager->last_page - ($NUM_END_LINKS - 1);
             $end_links_end = $pager->last_page;
             $start_pagelinks =
-                get_pagelinks($start, $end,
-                              $pager, $temp_cgi, $current_page);
+                _ls_get_pagelinks($start, $end,
+                                  $pager, $temp_cgi, $current_page);
         }
         else
         {
@@ -114,8 +113,8 @@ sub handle_PAGING_PI
             $pager->current_page($current_page);
         }
         $end_pagelinks =
-            get_pagelinks($end_links_start, $end_links_end,
-                          $pager, $temp_cgi, $current_page);
+            _ls_get_pagelinks($end_links_start, $end_links_end,
+                              $pager, $temp_cgi, $current_page);
     }
 
     # Make links for current page, next page, and previous page
@@ -123,7 +122,7 @@ sub handle_PAGING_PI
     # reset pager to correct current page
     $pager->current_page($current_page);
 
-    my $current_page_href = make_item_page_href($pager->current_page, $temp_cgi);
+    my $current_page_href = _ls_make_item_page_href($pager->current_page, $temp_cgi);
 
     my $previous_page_href;
     my $previous_page;
@@ -135,7 +134,7 @@ sub handle_PAGING_PI
         # $pager->first gives correct first record number for that
         # page
         $pager->current_page($previous_page_number);
-        $previous_page_href = make_item_page_href($pager->current_page, $temp_cgi);
+        $previous_page_href = _ls_make_item_page_href($pager->current_page, $temp_cgi);
         $previous_page = wrap_string_in_tag($previous_page_href, 'Href');
     }
     else
@@ -154,7 +153,7 @@ sub handle_PAGING_PI
     {
         # set pager current page to next_page_number
         $pager->current_page($next_page_number);
-        $next_page_href = make_item_page_href($pager->current_page, $temp_cgi);
+        $next_page_href = _ls_make_item_page_href($pager->current_page, $temp_cgi);
         $next_page = wrap_string_in_tag($next_page_href, 'Href');
     }
     else
@@ -190,7 +189,7 @@ sub handle_PAGING_PI
     }
 
     my @values = $config->get('slice_sizes');
-    $s .= wrap_string_in_tag(make_slice_size_widget($current_value, \@values), 'SliceSizeWidget');
+    $s .= wrap_string_in_tag(_ls_make_slice_size_widget($current_value, \@values), 'SliceSizeWidget');
 
     return $s;
 }
@@ -308,7 +307,7 @@ sub handle_SEARCH_RESULTS_PI
         $query_time = $primary_rs->get_query_time() + $secondary_rs->get_query_time();
         $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
 
-        my $result_ref = wrap_result_data($C, $primary_rs);
+        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
         $output .= $$result_ref;
     }
 
@@ -354,14 +353,14 @@ sub handle_QUERY_STRING_PI
 
 # ---------------------------------------------------------------------
 
-=item get_pagelinks
+=item _ls_get_pagelinks
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_pagelinks
+sub _ls_get_pagelinks
 {
     my $start = shift;
     my $end = shift;
@@ -392,7 +391,7 @@ sub get_pagelinks
 
     for my $page ($start..$end)
     {
-        $pagelinks .= make_pagelink($pager, $page, $temp_cgi, $current_page);
+        $pagelinks .= _ls_make_pagelink($pager, $page, $temp_cgi, $current_page);
     }
 
     return $pagelinks;
@@ -400,14 +399,14 @@ sub get_pagelinks
 
 # ---------------------------------------------------------------------
 
-=item make_pagelink
+=item _ls_make_pagelink
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub make_pagelink
+sub _ls_make_pagelink
 {
     my $pager = shift;
     my $page = shift;
@@ -418,7 +417,7 @@ sub make_pagelink
     my $DISPLAY = "page" ;    # set to page|records
 
     $pager->current_page($page);
-    $href = make_item_page_href($page, $temp_cgi);
+    $href = _ls_make_item_page_href($page, $temp_cgi);
 
     my $content;
     if ($DISPLAY eq "page")
@@ -450,14 +449,14 @@ sub make_pagelink
 
 # ---------------------------------------------------------------------
 
-=item make_item_page_href
+=item _ls_make_item_page_href
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub make_item_page_href
+sub _ls_make_item_page_href
 {
     my $page_number = shift;
     my $cgi = shift;
@@ -471,14 +470,14 @@ sub make_item_page_href
 
 # ---------------------------------------------------------------------
 
-=item make_slice_size_widget
+=item _ls_make_slice_size_widget
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub make_slice_size_widget
+sub _ls_make_slice_size_widget
 {
     my $default = shift;
     my $list_ref = shift;
@@ -499,14 +498,14 @@ sub make_slice_size_widget
 
 # ---------------------------------------------------------------------
 
-=item wrap_result_data
+=item _ls_wrap_result_data
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub wrap_result_data {
+sub _ls_wrap_result_data {
     my $C = shift;
     my $rs = shift;
 
@@ -556,7 +555,10 @@ sub wrap_result_data {
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
         $s .= wrap_string_in_tag($fulltext_flag, 'fulltext');
 
-        # Catalog record number.  Beware of ids like 'uc1.$b776044' when interpolating Perl variables
+        # Catalog record number.  Beware of ids like 'uc1.$b776044'
+        # ($BARCODE) when interpolating Perl variables and
+        # uc2.ark:/13960/t0dv1g69b (colon causes Solr parse error)
+        $id =~ s,ark:,ark\\:,;
          my $solr_response = 
              `curl -s 'http://solr-vufind:8026/solr/biblio/select?q=ht_id:$id&start=0&rows=1&fl=id'`;
          my ($record_no) = ($solr_response =~ m,<str name="id">(.*?)</str>,);
