@@ -29,9 +29,9 @@ use strict;
 umask 0000;
 
 # temporary # XXXX@
-use CGI;
 BEGIN{
-    CGI::param('debug', 'local');
+    $ENV{'not-yet-UNAVAILABLE'} = 1
+      unless ($ENV{REMOTE_ADDR} =~ m,^141\.211\.43\.(1(2[8-9]|[3-9][0-9])|2([0-4][0-9]|5[0-5]))$,);
 }
 
 # ----------------------------------------------------------------------

@@ -201,9 +201,6 @@ sub get_final_item_arr_ref {
     my $final_item_arr_ref = [];
     
     foreach my $item_hashref (@$item_arr_ref) {
-        # add isindexed field moved to PIFiller ListSearchResults
-        # SEARCH_RESULTS_PI and PIFiller::ListItems ITEM_LIST_PI.  Add
-        # "fulltext" field
         my $item_rights_attr = $item_hashref->{'rights'};
         
         if ( $self->is_full_text($rights_ref, $item_rights_attr)) {

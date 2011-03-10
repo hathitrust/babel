@@ -56,178 +56,6 @@ Initialize Search::Index object.
 sub _initialize
 {}
 
-# # ---------------------------------------------------------------------
-# 
-# =item __item_has_failure_sentinel
-# 
-# Description
-# 
-# =cut
-# 
-# # ---------------------------------------------------------------------
-# sub __item_has_failure_sentinel # XXXX@
-# {
-#     my $self = shift;
-#     my ($C, $item_id) = @_;
-#     
-#     my $has = 0;
-#     
-#     # check for the existence of ix_index_failure_string
-#     my $config = $C->get_object('MdpConfig');
-#     my $failure_sentinel = $config->get('ix_index_failure_string');
-#     my $query_string = qq{ocr:$failure_sentinel};
-#     my $id_arr_ref = $self->__get_result_ids_for_query($C, $query_string);
-# 
-#     if (grep(/^$item_id$/, @$id_arr_ref))
-#     {
-#         $has = 1;
-#     }
-#     
-#     return $has;
-# }
-
-
-# # ---------------------------------------------------------------------
-# 
-# =item item_is_properly_Solr_indexed
-# 
-# The item is properly Solr indexed if for every collection (coll_id)
-# the item_id is in, that coll_id is in a field in the indexed Solr
-# document
-# 
-# AND
-# 
-# The item did not fail a previous indexing attempt which is signaled by
-# the 'ocr' field consisting of the single string:
-# ix_index_failure_string in global.conf
-# 
-# 
-# =cut
-# 
-# # ---------------------------------------------------------------------
-# sub item_is_properly_Solr_indexed # XXXX@
-# {
-#     my $self = shift;
-#     my ($C, $item_id) = @_;
-# 
-#     my $co = $C->get_object('Collection');
-# 
-#     my $coll_ids_arr_ref = $co->get_coll_ids_for_item($item_id);
-# 
-#     # If item was deleted after we took the slice it won't be in any
-#     # collection
-#     if (scalar(@$coll_ids_arr_ref) == 0)
-#     {
-#         push(@$coll_ids_arr_ref, IX_NO_COLLECTION);
-#     }
-#     my $solr_coll_ids_arr_ref = $self->get_item_solr_collids($C, $item_id);
-# 
-#     my $indexed = 1;
-# 
-#     foreach my $coll_id (@$coll_ids_arr_ref)
-#     {
-#         if (! grep(/^$coll_id$/,  @$solr_coll_ids_arr_ref))
-#         {
-#             $indexed = 0;
-#             last;
-#         }
-#     }
-# 
-#     $indexed = 
-#         $indexed && (! $self->__item_has_failure_sentinel($C, $item_id));
-# 
-#     return $indexed;
-# }
-
-# # ---------------------------------------------------------------------
-# 
-# =item get_item_solr_collids
-# 
-# Get the list of coll_ids in the Solr index for this item_id
-# 
-# =cut
-# 
-# # ---------------------------------------------------------------------
-# sub get_item_solr_collids
-# {
-#     my $self = shift;
-#     my ($C, $item_id) = @_;
-# 
-#     my $query_string = qq{id:$item_id};
-#     my $Q = new MBooks::Query::FullText($C, $query_string, 'internal');
-# 
-#     my $rs = new MBooks::Result::FullText();
-# 
-#     my $config = $C->get_object('MdpConfig');
-#     my $engine_uri = $config->get('mbooks_solr_engine');
-#     my $searcher = new MBooks::Searcher::FullText($engine_uri);
-# 
-#     $rs = $searcher->get_Solr_internal_query_result($C, $Q, $rs);
-# 
-#     my $solr_coll_ids_arr_ref = $rs->get_result_coll_ids();
-# 
-#     return $solr_coll_ids_arr_ref;
-# }
-# 
-
-
-# # ---------------------------------------------------------------------
-# 
-# =item get_solr_item_ids
-# 
-# Get a slice of Solr item_ids
-# 
-# =cut
-# 
-# # ---------------------------------------------------------------------
-# sub get_solr_item_ids # XXXX@
-# {
-#     my $self = shift;
-#     my ($C, $offset, $size) = @_;
-# 
-#     my $rs = new MBooks::Result::FullText();
-#     my $config = $C->get_object('MdpConfig');
-#     my $engine_uri = $config->get('mbooks_solr_engine');
-#     my $searcher = new MBooks::Searcher::FullText($engine_uri);
-# 
-#     my $query_string = qq{q=*:*&start=$offset&rows=$size&fl=id};
-# 
-#     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
-# 
-#     my $solr_ids_arr_ref = $rs->get_result_ids();
-# 
-#     return ($solr_ids_arr_ref, $offset + $size);
-# }
-
-# # ---------------------------------------------------------------------
-# 
-# =item __get_result_ids_for_query
-# 
-# Description
-# 
-# =cut
-# 
-# # ---------------------------------------------------------------------
-# sub __get_result_ids_for_query # XXXX@
-# {
-#     my $self = shift;
-#     my ($C, $query) = @_;
-# 
-#     my $Q = new MBooks::Query::FullText($C, $query, 'internal');
-# 
-#     my $rs = new MBooks::Result::FullText();
-# 
-#     my $config = $C->get_object('MdpConfig');
-#     my $engine_uri = $config->get('mbooks_solr_engine');
-#     my $searcher = new MBooks::Searcher::FullText($engine_uri);
-# 
-#     $rs = $searcher->get_Solr_internal_query_result($C, $Q, $rs);
-# 
-#     my $solr_item_ids_arr_ref = $rs->get_result_ids();
-# 
-#     return $solr_item_ids_arr_ref;
-# }
-
 # ---------------------------------------------------------------------
 
 =item  __get_counts_for_coll_id
@@ -272,21 +100,21 @@ indexed, by definition.
 # ---------------------------------------------------------------------
 sub get_coll_id_all_indexed_status {
     my $self = shift;
-    my ($C, $coll_id) = @_;
+    my ($C, $co, $coll_id) = @_;
 
     my $all_indexed = 1;
+    my $num_not_indexed = 0;
+    my $num_in_collection = $co->count_all_items_for_coll($coll_id);
 
-    my $co = $C->get_object('Collection');
     if ($co->collection_is_large($coll_id)) {
-        my $db_count = $co->count_all_items_for_coll($coll_id);
-
         # count number of items in this collection in the Solr index
         my $solr_count = $self->__get_counts_for_coll_id($C, $coll_id);
-
-        $all_indexed = ($db_count == $solr_count);
+        $num_not_indexed = $num_in_collection - $solr_count;
+ 
+        $all_indexed = ($num_not_indexed == 0);
     }
 
-    return $all_indexed;
+    return ($all_indexed, $num_in_collection, $num_not_indexed);
 }
 
 1;

@@ -61,12 +61,10 @@ sub ManageAddItems {
             # ... and coll would become "large" -- all collection
             # items must be queued for indexing (for the first time)
             # to add the coll_id field to the Solr doc
-
-            my $queue_from_table = $co->get_coll_item_table_name();
             $ok = (
                    __DO_copy_items($C, $co, $to_coll_id, $id_arr_ref)
                    &&
-                   SharedQueue::enqueue_all_ids($C, $dbh, $queue_from_table, $to_coll_id)
+                   SharedQueue::enqueue_all_ids($C, $dbh, $to_coll_id)
                   );
         }
         else {
@@ -141,10 +139,8 @@ sub ManageDeleteItems {
             # items must be queued BEFORE DELETION so indexing will
             # globally remove the coll_id field from the Solr docs for
             # these items
-
-            my $queue_from_table = $co->get_coll_item_table_name();
             $ok = (
-                   SharedQueue::enqueue_all_ids($C, $dbh, $queue_from_table, $from_coll_id)
+                   SharedQueue::enqueue_all_ids($C, $dbh, $from_coll_id)
                    &&
                    __DO_delete_items($C, $co, $from_coll_id, $id_arr_ref)
                   );
@@ -215,9 +211,8 @@ sub ManageDeleteCollection {
     if ($coll_num_items > $small_collection_max_items) {
         # coll is "large"
         my $dbh = $co->get_dbh();
-        my $queue_from_table = $co->get_coll_item_table_name();
         $ok = (
-               SharedQueue::enqueue_all_ids($C, $dbh, $queue_from_table, $coll_id)
+               SharedQueue::enqueue_all_ids($C, $dbh, $coll_id)
                &&
                __DO_delete_coll($C, $co, $coll_id)
               );

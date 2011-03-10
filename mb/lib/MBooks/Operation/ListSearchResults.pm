@@ -136,21 +136,6 @@ sub execute_operation
 
     my $solr_error_msg;
 
-#     my $config = $C->get_object('MdpConfig');
-#     my $filename = $config->get('solr_index_maint_lock_file');
-# 
-#     if (-e  $filename)
-#     {
-#         # set INDEX_NOT_AVAILABLE in some kind of persistent data!
-#         $solr_error_msg = qq{INDEX_NOT_AVAILABLE};
-#         $act->set_transient_facade_member_data($C, 'solr_error', $solr_error_msg);
-# 
-#         my $empty_pager=$self->get_empty_pager($C,$cgi);
-#         $act->set_transient_facade_member_data($C, 'pager', $empty_pager);
-# 
-#         return;
-#     } # XXXX@
-
     # Result object
     my $ses = $C->get_object('Session');
     my $rs = $ses->get_persistent('search_result_object');

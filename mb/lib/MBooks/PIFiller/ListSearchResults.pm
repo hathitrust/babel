@@ -52,15 +52,9 @@ sub handle_SEARCH_RESULTS_PI
     : PI_handler(SEARCH_RESULTS)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+
     my $cgi = $C->get_object('CGI');
     my $coll_id = $cgi->param('c');
-
-    $C->set_object('Collection', $co);
-    my $ix = new MBooks::Index;
-
-    my $solr_all_indexed = $ix->get_coll_id_all_indexed_status($C, $coll_id);
-    my $all_indexed = ($solr_all_indexed ? 'TRUE' : 'FALSE');
 
     my $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
 
@@ -76,7 +70,6 @@ sub handle_SEARCH_RESULTS_PI
     $output .= wrap_string_in_tag($query_time, 'QueryTime');
     $output .= wrap_string_in_tag($solr_error_msg, 'SolrError');
     $output .= wrap_string_in_tag($coll_empty, 'CollEmpty');
-    $output .= wrap_string_in_tag($all_indexed, 'AllItemsIndexedColl');
 
     # Is the query a well-formed-formula (WFF)?
     my $search_result_data_hashref = $act->get_persistent_facade_member_data($C, 'search_result_data');

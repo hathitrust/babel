@@ -952,7 +952,7 @@
     <xsl:param name="IndexMsg">Default Message Goes Here</xsl:param>
     <xsl:param name="IndexMsgClass">IndexMsg</xsl:param>
     
-    <xsl:if test="$AllIndexedStatus = 'FALSE'">
+    <xsl:if test="$AllIndexedStatus='FALSE'">
       <span>
         <xsl:attribute name="class"><xsl:value-of select="$IndexMsgClass"/></xsl:attribute>
         <xsl:value-of select="$IndexMsg"/></span>
@@ -960,14 +960,7 @@
   </xsl:template>
     
 
-
-  <xsl:template name="util">
-    <h1>this is list_utils.xsl</h1>
-  </xsl:template>
-
-
   <xsl:template name="BuildItemChunk">
-
     <!--#######################  variables used for each chunk-->
 
     <xsl:variable name="row_class">

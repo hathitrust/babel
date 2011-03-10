@@ -64,15 +64,15 @@ sub ___core_initialize
     my $self = shift;
     my $C = shift;
 
-#     my $config = $C->get_object('MdpConfig');
-#     my $filename = $config->get('solr_index_maint_lock_file'); # XXXX@
-#     if (-e $filename) {
-#         $ENV{'UNAVAILABLE'} = 1;
-#         my $msg = $config->get('solr_mb_maint_msg');
-# 
-#         ASSERT(0, $msg);
-#     }
-
+    my $config = $C->get_object('MdpConfig');
+    my $filename = $config->get('solr_index_maint_lock_file');
+    if (-e $filename) {
+        $ENV{'UNAVAILABLE'} = 1;
+        my $msg = $config->get('solr_mb_maint_msg');
+        
+        ASSERT(0, $msg);
+    }
+    
     # Set up default action parameters if necessary
     my $cgi = $C->get_object('CGI');
 
