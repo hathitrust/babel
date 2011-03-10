@@ -1593,8 +1593,11 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
             
             // var top = offset.top + h - 75;
             // var left = offset.left + w - 75;
-            var top = h - 75;
-            var left = w - 150;
+            // var top = h - 75;
+            // var left = w - 150;
+            var left = w - $pageControl.width() - 20; // vertical
+            var top = h - $pageControl.height() - 20; // vertical
+            
 
             // if top is below the fold, pull back
             var $bookReaderDiv = $("#BookReader");

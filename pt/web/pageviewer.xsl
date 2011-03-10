@@ -608,6 +608,18 @@
       <div>
         <label>Print</label>
         <a href="#" id="print-page" title="Print Page" class="printAction tracked interactive" target="pdf" data-tracking-action="PT Print" data-tracking-category="PT"><img alt="" src="//common-web/graphics/harmony/icon_printer.png" height="25" width="25" /></a>
+        <label>Rotate</label>
+        <a href="#" id="rotate-left" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left"><img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+        <a href="#" id="rotate-right" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
+      </div>
+    </div>
+  </xsl:template>
+
+  <!-- <xsl:template name="bookreader-page-items">
+    <div id="BRpageControls">
+      <div>
+        <label>Print</label>
+        <a href="#" id="print-page" title="Print Page" class="printAction tracked interactive" target="pdf" data-tracking-action="PT Print" data-tracking-category="PT"><img alt="" src="//common-web/graphics/harmony/icon_printer.png" height="25" width="25" /></a>
       </div>
       <div>
         <label>Rotate</label>
@@ -615,7 +627,7 @@
         <a href="#" id="rotate-right" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
       </div>
     </div>
-  </xsl:template>
+  </xsl:template> -->
 
   <xsl:template name="bookreader-toolbar-items">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
