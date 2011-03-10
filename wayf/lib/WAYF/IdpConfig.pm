@@ -163,14 +163,20 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/asu?target=___TARGET___',
                    'enabled'   => '1',
                   },
-   
-   # Waiting
    'usu'       => {
                    'authtype'  => 'shibboleth',
                    'link_text' => 'Utah State University',
                    'template'  => 'https://___HOST___/Shibboleth.sso/usu?target=___TARGET___',
-                   'enabled'   => '0',
+                   'enabled'   => '1',
                   },
+   'ucmerced'  => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'University of California, Merced',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/ucmerced?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
+   
+   # Waiting
    'upenn'     => {
                    'authtype'  => 'shibboleth',
                    'link_text' => 'University of Pennsylvania',
@@ -211,12 +217,6 @@ package WAYF::IdpConfig;
                    'authtype'  => 'shibboleth',
                    'link_text' => 'University of California, Irvine',
                    'template'  => 'https://___HOST___/Shibboleth.sso/uci?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'ucmerced'  => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'University of California, Merced',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/ucmerced?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'ucr'       => {
