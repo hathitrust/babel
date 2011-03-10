@@ -1116,7 +1116,8 @@
                       <xsl:text> to determine whether you can download this book.</xsl:text>
                     </xsl:when>
                     <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                      <xsl:text>You need to be affiliated with a HathiTrust Member institution to download this book.</xsl:text>
+                      <xsl:text>Full PDF available only to authenticated users from </xsl:text>
+                      <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions.</a>
                     </xsl:when>
                     <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
                       <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
