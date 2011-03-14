@@ -36,15 +36,13 @@ use Utils::XSLT;
 use Search::Constants;
 use MBooks::Index;
 use MBooks::Utils::Sort;
-
+use MBooks::PIFiller::ListUtils;
 
 BEGIN
 {
     require "PIFiller/Common/Globals.pm";
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
-    require "PIFiller/ListUtils.pl";
-    
 }
 
 
@@ -69,6 +67,7 @@ sub handle_ITEM_LIST_PI
     : PI_handler(ITEM_LIST)
 {
     my ($C, $act, $piParamHashRef) = @_;
+
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');    
     $C->set_object('Collection', $co);
     my $cgi = $C->get_object('CGI');
@@ -77,10 +76,8 @@ sub handle_ITEM_LIST_PI
     my $output = '';
     my $data_ref = $act->get_transient_facade_member_data($C, 'list_items_data');
     
-    foreach my $item_hashref (@$data_ref)
-    {
+    foreach my $item_hashref (@$data_ref) {
         my $s = '';
-
 
         my $display_title = $$item_hashref{'display_title'};
         $s .= wrap_string_in_tag(normalize_string($display_title), 'Title');
@@ -93,30 +90,28 @@ sub handle_ITEM_LIST_PI
         $date =~s,(\d\d\d\d)\-\d+\-\d+,$1,;
         $s .= wrap_string_in_tag($date, 'Date');
         
-        $s .= wrap_string_in_tag($$item_hashref{'item_id'}, 'ItemID');
+        $s .= wrap_string_in_tag($$item_hashref{'extern_item_id'}, 'ItemID');
         $s .= wrap_string_in_tag($$item_hashref{'rights'}, 'rights');
         $s .= wrap_string_in_tag($$item_hashref{'fulltext'}, 'fulltext');
         $s .= wrap_string_in_tag($$item_hashref{'record_no'}, 'record');
-
         
         my $coll_ary_ref = $item_hashref->{'item_in_collections'};
         my $colls;        
         
-        foreach my $hashref (@{$coll_ary_ref})
-        {
+        foreach my $hashref (@$coll_ary_ref) {
             my $c;
             $c .= wrap_string_in_tag($hashref->{'collname'}, 'CollectionName');
             $c .= wrap_string_in_tag($hashref->{'MColl_ID'}, 'CollID');
             $c .= wrap_string_in_tag($hashref->{'href'}, 'CollHref');
             # wrap each set of coll info in a tag
-            my $coll=wrap_string_in_tag($c, 'Collection');
+            my $coll = wrap_string_in_tag($c, 'Collection');
             $colls .= $coll
         }
         $s .= wrap_string_in_tag($colls, 'Collections');
 
         # Link to Pageturner
         my $extern_id = $$item_hashref{'extern_item_id'};        
-        $s .= wrap_string_in_tag(PT_HREF_helper($C, $extern_id, 'pt'), 'PtHref');
+        $s .= wrap_string_in_tag(MBooks::PIFiller::ListUtils::PT_HREF_helper($C, $extern_id, 'pt'), 'PtHref');
 
         $output .= wrap_string_in_tag($s, 'Item');
     }
@@ -139,10 +134,6 @@ sub normalize_string
 }
 
 # ---------------------------------------------------------------------
-
-
-
-
 
 1;
 

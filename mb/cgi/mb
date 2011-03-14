@@ -28,6 +28,12 @@ Debug options
 use strict;
 umask 0000;
 
+# temporary # XXXX@
+BEGIN{
+    $ENV{'not-yet-UNAVAILABLE'} = 1
+      unless ($ENV{REMOTE_ADDR} =~ m,^141\.211\.43\.(1(2[8-9]|[3-9][0-9])|2([0-4][0-9]|5[0-5]))$,);
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
@@ -62,7 +68,6 @@ use Attribute::Handlers;
 use MdpGlobals;
 use Utils;
 use Debug::DUtils;
-
 
 BEGIN {
     Debug::DUtils::setup_DebugScreen();

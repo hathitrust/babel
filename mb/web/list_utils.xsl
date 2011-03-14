@@ -171,7 +171,7 @@
           </xsl:element>
 
           <xsl:text> or </xsl:text>
-          <a href="http://mirlyn.lib.umich.edu/" class="inlineLink"><span class="" title="New Search in Mirlyn">Search Mirlyn</span></a>
+          <a href="http://mirlyn.lib.umich.edu/" class="inlineLink"><span class="" title="New Catalog Search">Search the Catalog</span></a>
           <xsl:text> for new items</xsl:text>
         </div>
       </div>
@@ -952,7 +952,7 @@
     <xsl:param name="IndexMsg">Default Message Goes Here</xsl:param>
     <xsl:param name="IndexMsgClass">IndexMsg</xsl:param>
     
-    <xsl:if test="$AllIndexedStatus = 'FALSE'">
+    <xsl:if test="$AllIndexedStatus='FALSE'">
       <span>
         <xsl:attribute name="class"><xsl:value-of select="$IndexMsgClass"/></xsl:attribute>
         <xsl:value-of select="$IndexMsg"/></span>
@@ -960,14 +960,7 @@
   </xsl:template>
     
 
-
-  <xsl:template name="util">
-    <h1>this is list_utils.xsl</h1>
-  </xsl:template>
-
-
   <xsl:template name="BuildItemChunk">
-
     <!--#######################  variables used for each chunk-->
 
     <xsl:variable name="row_class">

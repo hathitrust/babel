@@ -26,6 +26,7 @@ use base qw(PIFiller);
 use Utils;
 use MBooks::Index;
 use MBooks::Utils::Sort;
+use MBooks::PIFiller::ListUtils;
 
 BEGIN
 {
@@ -33,8 +34,6 @@ BEGIN
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/ADD_COLL_LINK.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
-    require "PIFiller/ListUtils.pl"; 
-    
 }
 
 
@@ -100,6 +99,7 @@ sub handle_MY_COLL_LIST_PI
     return coll_list_helper($C, $act, 'my_list_colls_data');
 }
 
+
 # ---------------------------------------------------------------------
 #
 # helper for PUBLIC|MY_COLL_LIST
@@ -111,7 +111,8 @@ sub get_coll_xml
     my $s = '';
     
     $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName');
-    $s .= wrap_string_in_tag(get_owner_string($C, $$coll_hashref{'owner_name'}), 'OwnerString');
+    my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'});
+    $s .= wrap_string_in_tag($owner_string, 'OwnerString');
     $s .= wrap_string_in_tag($$coll_hashref{'owner'}, 'Owner');
     $s .= wrap_string_in_tag($$coll_hashref{'MColl_ID'},    'CollId');
     $s .= wrap_string_in_tag($$coll_hashref{'description'}, 'Description');
@@ -164,7 +165,7 @@ sub handle_OWNER_SORT_HREF_PI
     : PI_handler(OWNER_SORT_HREF)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    return get_sorting_href($C, 'own')
+    return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'own')
 }
 
 # ---------------------------------------------------------------------
@@ -180,7 +181,7 @@ sub handle_NUM_ITEMS_SORT_HREF_PI
     : PI_handler(NUM_ITEMS_SORT_HREF)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    return get_sorting_href($C, 'num')    
+    return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'num')    
 }
 
 # ---------------------------------------------------------------------
@@ -196,7 +197,7 @@ sub handle_SHARED_SORT_HREF_PI
     : PI_handler(SHARED_SORT_HREF)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    return get_sorting_href($C, 'shrd')
+    return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'shrd')
 }
 
 # ---------------------------------------------------------------------
@@ -212,7 +213,7 @@ sub handle_COLLNAME_SORT_HREF_PI
     : PI_handler(COLLNAME_SORT_HREF)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    return get_sorting_href($C, 'cn')
+    return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'cn')
 }
 
 

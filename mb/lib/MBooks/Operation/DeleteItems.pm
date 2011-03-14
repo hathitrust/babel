@@ -1,6 +1,5 @@
 package MBooks::Operation::DeleteItems;
 
-
 =head1 NAME
 
 MBooks::Operation::DeleteItems (op)
@@ -29,8 +28,8 @@ use Debug::DUtils;
 use Search::Constants;  # for index status constants
 
 use MBooks::Result::FullText;
-
 use MBooks::Operation::Status;
+use MBooks::Operation::Manager qw(ManageDeleteItems);
 
 sub new
 {
@@ -84,7 +83,7 @@ sub execute_operation
 
     my $cgi = $C->get_object('CGI');
     my $a_param=$cgi->param('a');
-    
+
     my $ab = $C->get_object('Bind');
     my $coll_id = $cgi->param('c');
 
@@ -98,52 +97,34 @@ sub execute_operation
     # check that these ids exist
     my @ids = $cgi->param('iid');
     my @valid_ids = ();
-    foreach my $id (@ids)
-    {
+    foreach my $id (@ids) {
         ASSERT($co->item_exists($id), qq{Invalid id="$id"});
         push(@valid_ids, $id);
     }
+    my $item_id_ref = \@valid_ids;
 
-    my $item_id_ref =\@valid_ids;
-    eval
-    {
-        $co->delete_items($coll_id, $item_id_ref);
-    };
-    die $@ if ($@);
+    my $ok = ManageDeleteItems($C, $co, $coll_id, $item_id_ref);
+    ASSERT($ok, qq{Operation DeleteItems error:$@});
 
-    #  add ids to index queue
-    my $config = $C->get_object('MdpConfig');
-    my $style = $config->get('mbooks_filter_query_style');
-    if ($style eq 'coll_id')
-    {
-        # add item to queue
-        my $priority = scalar(@{$item_id_ref});
-        $co->add_to_queue($item_id_ref, $priority);
-    }
-
-
-    # delete items from result object also
-    # Result object
+    # Delete items from result object also Result object
     my $ses = $C->get_object('Session');
     my $rs = $ses->get_persistent('search_result_object');
-    if (defined ($rs))
-    { 
+    if (defined($rs)) {
         $rs->remove_result_ids_for($coll_id, $item_id_ref);
     }
-    
+
     my $delete_items_data_hashref = {
                                      'coll_id'   => $coll_id,
                                      'action'    => $a_param,
-                                     'valid_ids' => \@valid_ids,
+                                     'valid_ids' => $item_id_ref,
                                     };
 
-    $act->set_persistent_facade_member_data($C, 
-                                            'delete_items_data', 
+    $act->set_persistent_facade_member_data($C,
+                                            'delete_items_data',
                                             $delete_items_data_hashref);
 
     return $ST_OK;
 }
-
 
 
 1;

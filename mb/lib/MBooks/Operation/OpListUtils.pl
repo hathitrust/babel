@@ -1,8 +1,8 @@
-# $Id: OpListUtils.pl,v 1.17 2010/07/06 17:57:00 tburtonw Exp $
+#----------------------------------------------------------------------
+# OpListUtils.pl
 #----------------------------------------------------------------------
 
-sub get_rights
-{
+sub get_rights {
     my $self = shift;
     my ($C, $rights_ref) = @_;
     
@@ -21,8 +21,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub test_ownership
-{
+sub test_ownership {
     my $self = shift;
     my ($C, $co, $act, $coll_id, $owner) = @_;
 
@@ -189,44 +188,35 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub get_final_item_arr_ref
-{
+sub get_final_item_arr_ref {
     my $self = shift;
     my $C = shift;
-    my $cgi = $C->get_object('CGI');
-    my $coll_id = $cgi->param('c');
-
     my $item_arr_ref = shift;
     my $rights_ref = shift;
-    
+
+    my $cgi = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
     my $co = $self->get_action()->get_transient_facade_member_data($C, 'collection_object');
     my $owner = $co->get_user_id;
     my $final_item_arr_ref = [];
     
-    foreach my $item_hashref (@{$item_arr_ref})
-    {
-        # add isindexed field moved to PIFiller ListSearchResults
-        # SEARCH_RESULTS_PI and PIFiller::ListItems ITEM_LIST_PI.  Add
-        # "fulltext" field
+    foreach my $item_hashref (@$item_arr_ref) {
         my $item_rights_attr = $item_hashref->{'rights'};
         
-        if ( $self->is_full_text($rights_ref, $item_rights_attr))
-        {
+        if ( $self->is_full_text($rights_ref, $item_rights_attr)) {
             $item_hashref->{'fulltext'} = '1';
         }
-        else
-        {
+        else {
             $item_hashref->{'fulltext'} = '0';
         }
         
         # add array_of hashrefs of collection info for collections
         # owned by user that also include the item
         my $coll_ary_hashref;
-        my $item_id = $item_hashref->{'item_id'};
+        my $id = $item_hashref->{'extern_item_id'};
         
-        eval
-        {
-            $coll_ary_hashref = $co->get_coll_data_for_item_and_user($item_id, $owner);
+        eval {
+            $coll_ary_hashref = $co->get_coll_data_for_item_and_user($id, $owner);
         };
         ASSERT(!$@, qq{Error: $@});
                 
@@ -234,22 +224,19 @@ sub get_final_item_arr_ref
         my $coll_ary_hashref_final = $self->add_hrefs($C, $coll_ary_hashref);        
         $item_hashref->{'item_in_collections'} = $coll_ary_hashref_final;
         
-        # get catalog record number for item
-        my $extern_id = $co->get_extern_id_from_item_id($item_id);
-        
         # temporary hack to get bib_id if its not in the item metadata
-           
-        my $record_no = $item_hashref->{'bib_id'};
-        
-        if (!defined($record_no))
-        {
+        my $record_no = $item_hashref->{'bib_id'};        
+        if (! defined($record_no)) {
+            # Catalog record number.  Beware of ids like
+            # 'uc1.$b776044' ($BARCODE) when interpolating Perl
+            # variables and uc2.ark:/13960/t0dv1g69b (colon causes
+            # Solr parse error)
+            $extern_id =~ s,ark:,ark\\:,;
             my $solr_response = 
-            `curl -s http://solr-vufind:8026/solr/biblio/select?q=ht_id:$extern_id&start=0&rows=1&fl=id`;
+            `curl -s 'http://solr-vufind:8026/solr/biblio/select?q=ht_id:$extern_id&start=0&rows=1&fl=id'`;
             ($record_no) = ($solr_response =~ m,<str name="id">(.*?)</str>,);
-        }
-        
+        }        
         $item_hashref->{'record_no'} = $record_no;
-        #$item_hashref->{'record_no'} = $item_hashref->{'bib_id'};
         
         # create final_item_arr_ref with additional fulltext field in
         # each hashref set to full text or not and additional
@@ -271,8 +258,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub get_item_data
-{
+sub get_item_data {
     my $self = shift;
     my $C = shift;
     my $rights_ref = shift;
@@ -300,18 +286,15 @@ sub get_item_data
     my $rights_limit; 
     my $limit = $cgi->param('lmt');
     
-    if ($limit eq 'ft')
-    {
-        $rights_limit=$rights_ref;
+    if ($limit eq 'ft') {
+        $rights_limit = $rights_ref;
     }
     
     my $item_arr_ref;
-    eval
-    {
-        $item_arr_ref = 
-            $co->list_items($coll_id, $sortkey, $direction, 
-                            $slice_start, $recs_per_slice, 
-                            $rights_limit, $id_arr_ref);
+    eval {
+        $item_arr_ref = $co->list_items($coll_id, $sortkey, $direction, 
+                                        $slice_start, $recs_per_slice, 
+                                        $rights_limit, $id_arr_ref);
     };
     ASSERT(!$@, qq{Error: $@});
 

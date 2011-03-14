@@ -62,60 +62,49 @@ sub handle_OPERATION_RESULTS_PI
     
     my $s = qq{coll_name=$coll_name|coll_id=$coll_id|query=$query|url=$url};
 
-    my $config = $C->get_object('MdpConfig');
-    my $filename = $config->get('solr_index_maint_lock_file');
-    
-    if (-e  $filename)
-    {
-        $s .= qq{|num_found=0|result=INDEX_NOT_AVAILABLE};
+    my $num_found = 0;
+    if ($rs->http_status_ok()) {
+        $s .= qq{|result=SEARCH_OK};
+        $num_found = $rs->get_total_hits();
+        
+        # check to see if all indexed
+        my $all_indexed = "FALSE";
+        my $ix = new MBooks::Index;
+        my ($solr_all_indexed, $item_status_hashref) = 
+          $ix->get_coll_id_indexed_status($C, $coll_id);
+        if ($solr_all_indexed)
+        {
+            $all_indexed = "TRUE";
+        }
+        $s .= qq{|all_indexed=$all_indexed};
+        
+        
+        if ($all_indexed eq 'FALSE' && $num_found > 0)
+        {
+            # This is to prevent sending user to a search result
+            # page if the only items found are items that have
+            # been deleted but the deletions are not reflected in
+            # the index check that at least one item in results is
+            # still in collection if no items in resulst are in
+            # the collection, then set num_found to 0!
+            my $id_arr_ref = $rs->get_result_ids();
+            if (! $co->one_or_more_items_in_coll($coll_id,$id_arr_ref))
+            {
+                #none of the results are in the collection so set num found to 0
+                $num_found = 0;
+            }
+        }
+        $s .= qq{|num_found=$num_found};
     }
     else
     {
-        my $num_found = 0;
-        if ($rs->http_status_ok())
+        $s .= qq{|num_found=$num_found|result=SEARCH_FAILED};
+        
+        my $response_code = $rs->get_response_code();
+        if (defined( $response_code))
         {
-            $s .= qq{|result=SEARCH_OK};
-            $num_found = $rs->get_total_hits();
-
-            # check to see if all indexed
-            my $all_indexed = "FALSE";
-            my $ix = new MBooks::Index;
-            my ($solr_all_indexed, $item_status_hashref) = 
-                $ix->get_coll_id_indexed_status($C, $coll_id);
-            if ($solr_all_indexed)
-            {
-                $all_indexed = "TRUE";
-            }
-            $s .= qq{|all_indexed=$all_indexed};
-
-
-            if ($all_indexed eq 'FALSE' && $num_found > 0)
-            {
-                # This is to prevent sending user to a search result
-                # page if the only items found are items that have
-                # been deleted but the deletions are not reflected in
-                # the index check that at least one item in results is
-                # still in collection if no items in resulst are in
-                # the collection, then set num_found to 0!
-                my $id_arr_ref = $rs->get_result_ids();
-                if (! $co->one_or_more_items_in_coll($coll_id,$id_arr_ref))
-                {
-                    #none of the results are in the collection so set num found to 0
-                    $num_found = 0;
-                }
-            }
-            $s .= qq{|num_found=$num_found};
-        }
-        else
-        {
-            $s .= qq{|num_found=$num_found|result=SEARCH_FAILED};
-            
-            my $response_code = $rs->get_response_code();
-            if (defined( $response_code))
-            {
-                $s .= qq{|Solr_http_response=$response_code};
-            }                
-        }
+            $s .= qq{|Solr_http_response=$response_code};
+        }                
     }
     
     return $s;

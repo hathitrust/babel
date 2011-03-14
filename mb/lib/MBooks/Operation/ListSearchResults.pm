@@ -99,7 +99,7 @@ sub execute_operation
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
 
     #XXX this seems kludgey set $co on $C for $ix call
-    $C->set_object('Collection',$co);
+    $C->set_object('Collection', $co);
 
     my $owner = $co->get_user_id;
     my $CS = $act->get_transient_facade_member_data($C, 'collection_set_object');
@@ -131,25 +131,10 @@ sub execute_operation
     # We need to know if this is an empty collection to determine
     # whether to display search widget Also if there are 0 results, we
     # need this to display correct message
-    my $coll_has_items = $co->count_all_items_for_coll($coll_id) >0;
+    my $coll_has_items = ($co->count_all_items_for_coll($coll_id) > 0);
     $act->set_transient_facade_member_data($C, 'coll_has_items', $coll_has_items);
 
-
-    my $config = $C->get_object('MdpConfig');
-    my $filename = $config->get('solr_index_maint_lock_file');
     my $solr_error_msg;
-
-    if (-e  $filename)
-    {
-        # set INDEX_NOT_AVAILABLE in some kind of persistent data!
-        $solr_error_msg = qq{INDEX_NOT_AVAILABLE};
-        $act->set_transient_facade_member_data($C, 'solr_error', $solr_error_msg);
-
-        my $empty_pager=$self->get_empty_pager($C,$cgi);
-        $act->set_transient_facade_member_data($C, 'pager', $empty_pager);
-
-        return;
-    }
 
     # Result object
     my $ses = $C->get_object('Session');
@@ -192,14 +177,13 @@ sub execute_operation
     my $temp_result_id_arrayref = $rs->get_result_ids();
     my @deleted_ids;
 
-    foreach my $item_id (@{$temp_result_id_arrayref})
-    {
-        if (! $co->item_in_collection($item_id,$coll_id))
-        {
-            push (@deleted_ids,$item_id);
+    foreach my $id (@{$temp_result_id_arrayref}) {
+        if (! $co->item_in_collection($id, $coll_id)) {
+            push (@deleted_ids, $id);
         }
     }
-    $rs->remove_result_ids_for($coll_id,\@deleted_ids);
+    $rs->remove_result_ids_for($coll_id, \@deleted_ids) 
+      if (scalar(@deleted_ids > 0));
 
     # get total number of records
     my $all_count = $rs ? $rs->get_total_hits() : 0;
@@ -220,18 +204,15 @@ sub execute_operation
     # get total number of full-text records and thieir ids regardless
     # of slicing
     my $result_id_arrayref = $rs->get_result_ids();
-    my $full_text_count=0;
-    if (scalar (@{$result_id_arrayref}) >0)
-    {
+    my $full_text_count = 0;
+    if (scalar(@$result_id_arrayref) > 0) {
         $full_text_count = $co->count_full_text($coll_id, $rights_ref, $result_id_arrayref);
     }
-
-        $act->set_transient_facade_member_data($C, 'full_text_count', $full_text_count);
+    $act->set_transient_facade_member_data($C, 'full_text_count', $full_text_count);
 
 
     my $pager_count = $all_count;
-    if ($cgi->param('lmt') eq 'ft')
-    {
+    if ($cgi->param('lmt') eq 'ft') {
         $pager_count = $full_text_count;
     }
 
@@ -301,7 +282,7 @@ sub get_final_rs_data
     my $result_id_arrayref = $rs->get_result_ids();
     my $result_scores_hashref = $rs->get_result_scores();
     my $temp_rs_data = [];
-    my $final_rs_data = [];
+
     my @sorted;
 
     if ($sortkey eq 'rel_a'|| $sortkey eq 'rel_d')
@@ -321,18 +302,16 @@ sub get_final_rs_data
         if ($limit eq 'ft')
         {
             # get list of ids containing full-text. These are not sorted by relevance!
-            my $temp_aryref = $co->get_full_text_ids($result_id_arrayref,$rights_ref);
+            my $temp_aryref = $co->get_full_text_ids($result_id_arrayref, $rights_ref);
             #set total items pager to current number
-            $pager->total_entries( scalar(@{$temp_aryref}));
+            $pager->total_entries(scalar(@{$temp_aryref}));
 
             # sort only the full-text entries by relevance score and put back in $result_id_arrayref
-            $result_id_arrayref=[];
-            if ($sortkey eq 'rel_a')
-            {
+            $result_id_arrayref = [];
+            if ($sortkey eq 'rel_a') {
                 @sorted = sort {$result_scores_hashref->{$a} <=> $result_scores_hashref->{$b} } @{$temp_aryref};
             }
-            else
-            {
+            else {
                 @sorted = sort {$result_scores_hashref->{$b} <=> $result_scores_hashref->{$a} } @{$temp_aryref};
             }
             $result_id_arrayref = \@sorted;
@@ -351,7 +330,7 @@ sub get_final_rs_data
         $last_item = $last_item -1;
 
         my @ids_on_page = @{$result_id_arrayref}[$first_item .. $last_item];
-        ASSERT(scalar(@ids_on_page) >0,qq{ problem with @ids_on_page});
+        ASSERT(scalar(@ids_on_page) > 0, qq{ problem with @ids_on_page});
 
         my $norm_rel_hashref
             = MBooks::Relevance::get_normalized_relevance($rs, \@ids_on_page, 'absolute');
@@ -361,7 +340,7 @@ sub get_final_rs_data
             ASSERT (defined ($id),qq{id not defined from ids on page});
             my $metadata_hashref = $co->get_metadata_for_item($id);
             $metadata_hashref->{'rel'} = $norm_rel_hashref->{$id};
-            push(@{$temp_rs_data}, $metadata_hashref);
+            push(@$temp_rs_data, $metadata_hashref);
         }
     }
     else
@@ -372,24 +351,18 @@ sub get_final_rs_data
 
         $temp_rs_data = $self->get_item_data($C, $rights_ref, $pager, $id_arr_ref);
 
-        foreach my $hashref (@{$temp_rs_data})
-        {
-            my $id = $$hashref{'item_id'};
-            # we need to normalize scores within this loop one at a time because
-            # we don't have an array of just the item ids on this page
-            my @id = ($id);
-            my $norm_rel_hashref
-                = MBooks::Relevance::get_normalized_relevance($rs, \@id, 'absolute');
-
-            $$hashref{'rel'} = $$norm_rel_hashref{$id};
+        foreach my $hashref (@$temp_rs_data) {
+            my $id = $hashref->{'extern_item_id'};
+            my $norm_rel_hashref = MBooks::Relevance::get_normalized_relevance($rs, [$id], 'absolute');
+            $hashref->{'rel'} = $norm_rel_hashref->{$id};
         }
     }
 
     # we now have array of hashes with itme metadata including rel
-    # score, but need to add more stuff XXX
-    # add "full-text/view_only and list of collections owned by user that item is in
-    # this method in OpListUtils.pl
-    $final_rs_data = $self->get_final_item_arr_ref($C, $temp_rs_data, $rights_ref);
+    # score, but need to add more stuff. add "full-text/view_only and
+    # list of collections owned by user that item is in this method in
+    # OpListUtils.pl
+    my $final_rs_data = $self->get_final_item_arr_ref($C, $temp_rs_data, $rights_ref);
 
     # return some array of hashes with item metadata as well as id and
     # rel rank containing id elements

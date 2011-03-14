@@ -471,12 +471,12 @@
 
       <xsl:call-template name="HiddenDebug"/>
       <input type="hidden" name="a" value="srch"/>
-      <input type = "hidden" name="c">
+      <input type="hidden" name="c">
         <xsl:attribute name="value">
           <xsl:value-of select="$CollId"/>
         </xsl:attribute>
       </input>
-      <label > 
+      <label> 
         <xsl:attribute name="for">
           <xsl:value-of select="$SearchFormId"/>
         </xsl:attribute>

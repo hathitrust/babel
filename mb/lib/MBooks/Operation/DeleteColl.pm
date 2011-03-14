@@ -33,6 +33,7 @@ use Debug::DUtils;
 use Search::Constants;  # for index status constants
 
 use MBooks::Operation::Status;
+use MBooks::Operation::Manager qw(ManageDeleteCollection);
 
 sub new
 {
@@ -76,8 +77,7 @@ Perform the database Operations necessary for the DeleteColl action
 =cut
 
 # ---------------------------------------------------------------------
-sub execute_operation
-{
+sub execute_operation {
     my $self = shift;
     my $C = shift;
     
@@ -87,7 +87,6 @@ sub execute_operation
 
     my $act = $self->get_action();
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
-    my $cs = $act->get_transient_facade_member_data($C, 'collection_set_object');
     my $cgi = $C->get_object('CGI');
     my $auth = $C->get_object('Auth');
     
@@ -98,32 +97,8 @@ sub execute_operation
     return
         if (! $co->coll_owned_by_user($coll_id, $owner));
 
-    # We need to get list of item ids before we delete the collection (all entries in coll_items table) so
-    # that we can set  set isindexed back to not indexed for each item in the collection for Solr
-    my $config = $C->get_object('MdpConfig');
-    my $style = $config->get('mbooks_filter_query_style');
-    if ($style eq 'coll_id')
-    {
-        # get array of item id in the collection and reset solr indexed flag to not indexed
-        my $item_id_ref =$co->get_item_ids_for_coll($coll_id);
-        # check to make sure there is at least one item in the collection 
-        if (  scalar(@{$item_id_ref})    )
-        {
-            # add item to queue
-            my $priority = scalar(@{$item_id_ref});
-            $co->add_to_queue($item_id_ref, $priority);
-        }
-    }
-    
-    eval
-    {
-        $cs->delete_coll($coll_id);
-    };
-    die $@ if ($@);
-
-    
-    
-
+    my $ok = ManageDeleteCollection($C, $co, $coll_id);
+    ASSERT($ok, qq{Operation DeleteColl error:$@});
 
     return $ST_OK;
 }
