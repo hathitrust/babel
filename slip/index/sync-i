@@ -45,9 +45,6 @@ use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use Result::SLIP;
 
-# Friend
-use LS::Result::FullText;
-
 # ---------------------------------------------------------------------
 
 =item sync_get_usage
@@ -176,7 +173,7 @@ sub handle_synchronization {
 
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $searcher = new Search::Searcher($engine_uri, undef, 1);
-    my $rs = new LS::Result::FullText();
+    my $rs = new Result::SLIP();
 
     my ($ok, $coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
     __handle_rc($ok, qq{Failed to get coll_ids\n});
@@ -194,7 +191,7 @@ sub handle_synchronization {
         my $query = qq{q=coll_id:$coll_id&start=0&rows=0};
         $rs = __handle_query($C, $query, $searcher, $rs);
 
-        if ($rs->get_num_found() == 0) {
+        if ($rs->get_rows_returned() == 0) {
             $s = $NOOP ? '' : "\n\t--> queue all ids";
             __output(qq{\tALL ids MISSING from Solr index: coll_id=$coll_id$s\n});
 
@@ -213,7 +210,7 @@ sub handle_synchronization {
                 my $query_1 = qq{q=coll_id:$coll_id+AND+id=$id&start=0&rows=0};
                 $rs = __handle_query($C, $query_1, $searcher, $rs);
 
-                if ($rs->get_num_found() == 0) {
+                if ($rs->get_rows_returned() == 0) {
                     $s = $NOOP ? '' : "\n\t--> queue id";
                     __output(qq{\tMISSING id from Solr index: id=$id in coll_id=$coll_id $s\n});
 
@@ -235,7 +232,7 @@ sub handle_synchronization {
 
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
     $s = $NOOP ? '' : "$total_ids_queued added to shared queue";
-    __output(qq{Phase I processed $coll_ct coll_ids having $missing_ids missing ids $s\n});
+    __output(qq{Phase I processed $coll_ct coll_ids in MySQL having $missing_ids missing ids in Solr $s\n});
 }
 
 # ---------------------------------------------------------------------
@@ -252,13 +249,12 @@ sub __parse_result_docs {
 
     my %id_to_coll_id_hash = ();
 
-    my $result_docs_arr_ref = $rs->get_result_docs();
-    foreach my $doc_data (@$result_docs_arr_ref) {
-        my ($str_coll_ids) = ($doc_data =~ m,<arr name="coll_id">(.*?)</arr>,gos);
-        my (@coll_ids) = ($str_coll_ids =~ m,<long[^>]*>(.*?)</long>,gos);
+    my $ret_to_arr_of_hashref = $rs->get_complete_result();
+    foreach my $hashref (@$ret_to_arr_of_hashref) {
+        my $coll_ids_arr_ref = $hashref->{coll_ids};
+        my $id = $hashref->{id};
 
-        my ($id) = ($doc_data =~ m,<str name="id">(.*?)</str>,os);
-        $id_to_coll_id_hash{$id} = \@coll_ids;
+        $id_to_coll_id_hash{$id} = $coll_ids_arr_ref;
     }
 
     # Optimization: If any of the coll_ids don't exist, add the id to
@@ -311,7 +307,7 @@ sub handle_inverse_synchronization {
 
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $searcher = new Search::Searcher($engine_uri, undef, 1);
-    my $rs = new LS::Result::FullText();
+    my $rs = new Result::SLIP();
 
     my $s;
     my $ok;
@@ -319,14 +315,14 @@ sub handle_inverse_synchronization {
     my $start = 0;
 
     while (1) {
-        # Get of Solr slice of documents with non-empty coll_id field(s)
+        # Get a slice of Solr documents with non-empty coll_id field(s)
         my $query = qq{q=coll_id:[* TO *]&start=$start&rows=$SLICE_SIZE&fl=coll_id,id};
         $rs = __handle_query($C, $query, $searcher, $rs);
 
-        my $num_found = $rs->get_num_found();
-        last if ($num_found == 0);
+        my $rows_returned = $rs->get_rows_returned();
+        last if ($rows_returned == 0);
         $start += $SLICE_SIZE;
-        __output(qq{$num_found ids in Solr slice});
+        __output(qq{$rows_returned ids in Solr slice\n});
 
 
         # Parse and return optimized list of ids to test
@@ -371,7 +367,7 @@ sub handle_inverse_synchronization {
 
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
     $s = $NOOP ? '' : "$total_ids_queued added to shared queue";
-    __output(qq{Phase II processed $id_ct ids not in indicated collection $s\n\n});
+    __output(qq{Phase II processed $id_ct ids in Solr not belonging to any collection in MySQL $s\n\n});
 }
 
 
