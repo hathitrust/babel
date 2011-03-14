@@ -60,7 +60,7 @@ Description
 sub sync_get_usage {
     my $s .= qq{Usage: sync-i -r run [-s <slice_size>][-d][-n]
                   where -s is slice size of Solr and Mysql id query
-                        -n ids a renot queued, just reported\n};
+                        -n ids are not queued, just reported\n};
     return $s;
 }
 
