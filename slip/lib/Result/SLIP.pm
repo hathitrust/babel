@@ -94,9 +94,16 @@ sub AFTER_ingest_Solr_search_response
     foreach my $node ($doc->findnodes($xpath_doc)) {
         my $id = $node->findvalue(q{child::str[@name='id']});
         my $rights = $node->findvalue(q{child::int[@name='rights']});
+
+        my @coll_ids = ();
+        foreach my $coll_id_node ($node->findnodes(q{child::arr[@name='coll_id']/long})) {
+            push(@coll_ids, $coll_id_node->textContent());
+        }
+
         my $hash_ref = {
                         'id' => $id,
                         'rights' => $rights,
+                        'coll_ids' => \@coll_ids,
                        };
         push(@complete_result, $hash_ref);
         push(@result_ids, $id);
