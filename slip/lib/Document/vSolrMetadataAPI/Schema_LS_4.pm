@@ -10,13 +10,11 @@ This class creates an VuFind Solr type 4 schema document for indexing
 using the VuFind API and the VuFind Solr schema for facets.
 
 Maps VuFind id to "record_no"
+
 Maps the publishDate field to the stored date field for display
-Processes the Vufind FullText field (MARC21 MARCXML for record) to create the "allfields"
- field which concatentates all MARC fields over 99
 
-=head1 VERSION
-
-$Id$
+Processes the Vufind FullText field (MARC21 MARCXML for record) to
+create the "allfields" field which concatentates all MARC fields over 99
 
 =head1 SYNOPSIS
 
@@ -30,74 +28,69 @@ Coding example
 
 use strict;
 
-
 # App
 use Utils;
 use Search::Constants;
-
+use SharedQueue;
 
 # SLIP
 use Db;
 use base qw(Document::vSolrMetadataAPI);
 
-
-
 # ------------------------  Field List  -------------------------------
 #
-# So far all are multi-valued (arr)  
+# So far all are multi-valued (arr)
 #
 
-#add rest of vufind fields here!
-my @g_FIELD_LIST = 
-    (
-
-	'author',
-#	'author2', #remove for January index rebuild. For next rebuild include this here and in schema.xml
-	'availability',
-	'callnumber',
-	'countryOfPubStr',
-	'ctrlnum',
-	'dateSpan',
-	'era',
-	'format',
-	'fullgenre',
-	'fullrecord',
-	'genre',
-	'geographicStr',
-         'hlb3Str',
-	'hlb3Delimited',
-	'ht_availability',
-	'ht_availability_intl',
-	'ht_id_display',
-	'htsource',
-	'id',
-	'isbn',
-	'issn',
-	'language',
-	'lccn',
-	'oclc',
-	'publishDate',
-	'publishDateRange',
-	'record_no',
-	'rptnum',
-	'sdrnum',
-	'serialTitle',
-	'serialTitle_a',
-	'serialTitle_ab',
-	'series',
-	'series2',
-	# 'spelling',   use our allfields->spelling conversion instead of VuFinds
-	'subgeographic',
-	'sudoc',
-	'title',
-	'title_ab',
-	'title_rest',
-	'title_restProper',
-	'titleSort',
-	'title_top',
-	'title_topProper',
-	'topicStr',
-    );
+my @g_FIELD_LIST =
+  (
+   'author',
+   #	'author2', # remove for January index rebuild. For next rebuild include this here and in schema.xml
+   'availability',
+   'callnumber',
+   'countryOfPubStr',
+   'ctrlnum',
+   'dateSpan',
+   'era',
+   'format',
+   'fullgenre',
+   'fullrecord',
+   'genre',
+   'geographicStr',
+   'hlb3Str',
+   'hlb3Delimited',
+   'ht_availability',
+   'ht_availability_intl',
+   'ht_id_display',
+   'htsource',
+   'id',
+   'isbn',
+   'issn',
+   'language',
+   'lccn',
+   'oclc',
+   'publishDate',
+   'publishDateRange',
+   'record_no',
+   'rptnum',
+   'sdrnum',
+   'serialTitle',
+   'serialTitle_a',
+   'serialTitle_ab',
+   'series',
+   'series2',
+   # 'spelling',   use our allfields->spelling conversion instead of VuFinds
+   'subgeographic',
+   'sudoc',
+   'title',
+   'title_ab',
+   'title_rest',
+   'title_restProper',
+   'titleSort',
+   'title_top',
+   'title_topProper',
+   'topicStr',
+  );
 
 
 # ---------------------------------------------------------------------
@@ -112,6 +105,33 @@ Description
 sub get_field_list {
     return \@g_FIELD_LIST;
 }
+
+
+# ---------------------------------------------------------------------
+
+=item get_auxiliary_field_data
+
+Over-rides base class method, which see.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_auxiliary_field_data {
+    my $self = shift;
+    my ($C, $dbh, $item_id, $primary_metadata_hashref) = @_;
+
+    my ($status, $coll_id_arr_ref) = SharedQueue::get_coll_ids_for_id($C, $dbh, $item_id);
+    if ($status) {
+        $status = IX_NO_ERROR;
+        $primary_metadata_hashref->{coll_id} = $coll_id_arr_ref;
+    }
+    else {
+        $status = IX_METADATA_FAILURE;
+    }
+
+    return ($primary_metadata_hashref, $status);
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -129,40 +149,33 @@ sub post_process_metadata {
     my $self = shift;
     my ($C, $item_id, $metadata_hashref) = @_;
 
-
-    # get marc xml and concatenate text contents of all fields >99
-    # ie no control 0xx fields!  
+    # get MARC XML and concatenate text contents of all fields > 99
+    # i.e. no control 0xx fields!
 
     $metadata_hashref->{'allfields'} = getAllFields($metadata_hashref->{'fullrecord'});
     delete $metadata_hashref->{'fullrecord'};
-    
-    # map VuFind id to LS bib_id
-    # PIFiller/ListSearchResults uses $record_no so we use that for now.  Is it worth changing here and in ls UI code?
 
-    $metadata_hashref->{'record_no'}=    $metadata_hashref->{'id'};
+    # map VuFind id to LS bib_id PIFiller/ListSearchResults uses
+    # $record_no so we use that for now.  Is it worth changing here
+    # and in ls UI code?
+
+    $metadata_hashref->{'record_no'} = $metadata_hashref->{'id'};
     delete $metadata_hashref->{'id'};
-   
-
-    my @titles = @{$metadata_hashref->{'title'}};
 
     # Title is used as a proxy for metadata validity
+    my @titles = @{$metadata_hashref->{'title'}};
     return unless (scalar(@titles) > 0);
 
     # save title as Vtitle before Mbooks specific processing reserved for "title" field
-     $metadata_hashref->{'Vtitle'} = $metadata_hashref->{'title'};
-                                                  
-    
+    $metadata_hashref->{'Vtitle'} = $metadata_hashref->{'title'};
+
     # save author to Vauthor for vufind processed field
-    if (defined($metadata_hashref->{'author'}))
-    { 
+    if (defined($metadata_hashref->{'author'})) {
         $metadata_hashref->{'Vauthor'} = $metadata_hashref->{'author'}
     }
-    
-
-
 
     my @hathiTrust_str = grep(/^$item_id\|.*/, @{$metadata_hashref->{'ht_id_display'}});
-    # 0      1            2          3  
+    # 0      1            2          3
     # htid | ingestDate | enumcron | rightsCodeForThisItem
     my @ht_id_display = split(/\|/, $hathiTrust_str[0]);
     my $volume_enumcron = $ht_id_display[2];
@@ -170,64 +183,58 @@ sub post_process_metadata {
         $metadata_hashref->{'title'}[0] .= qq{, $volume_enumcron};
     }
     delete $metadata_hashref->{'ht_id_display'};
-    
+
     # copy publishDate into date field
     if (defined($metadata_hashref->{'publishDate'})) {
         $metadata_hashref->{'date'}[0] = $metadata_hashref->{'publishDate'}[0];
     }
-    # dont    delete $metadata_hashref->{'publishDate'};
 }
 
 
 # ---------------------------------------------------------------------
-#
-# sub getAllFields
-# 
-# input is the VuFind "FullText" field which is the MARC21 MARCXML for the record,
-# output is concatenation of all the MARC fields above 99
-# Note that an earlier process escaped the xml so we reverse the process
+
+=item getAllFields
+
+input is the VuFind "FullText" field which is the MARC21 MARCXML for the record,
+output is concatenation of all the MARC fields above 99
+Note that an earlier process escaped the xml so we reverse the process
+
+=cut
+
 # ---------------------------------------------------------------------
 sub getAllFields{
-
     my $xmlref = shift;
     my $xml=$xmlref->[0];
     # clean up escaped xml until we find out where its escaped
     $xml =~s/\&lt\;/\</g;
     $xml =~s/\&gt\;/\>/g;
 
-
-
-    
     my $g_PARSER = XML::LibXML->new();
     my $doc = $g_PARSER->parse_string($xml);
     my @nodelist= $doc->getElementsByTagName('datafield');
     my $bigstring;
     my $content;
-    
-    foreach my $node (@nodelist) 
-    {
-        my $tag=$node->getAttribute('tag');
-              
-        if ($tag >99)
-        {
-            if ( $node->hasChildNodes()  )
-            {
+
+    foreach my $node (@nodelist) {
+        my $tag = $node->getAttribute('tag');
+
+        if ($tag > 99) {
+            if ($node->hasChildNodes()) {
                 my @childnodes = $node->childNodes();
-                foreach my $child (@childnodes)
-                {
+                foreach my $child (@childnodes) {
                     $content =$child->textContent;
                     $bigstring .= $content . " ";
                 }
             }
-            else 
-            {
-                $content =$node->textContent;
+            else {
+                $content = $node->textContent;
                 $bigstring .= $content . " ";
             }
         }
     }
-    my $aryref=[];
-    $aryref->[0]=$bigstring;
+
+    my $aryref = [];
+    $aryref->[0]= $bigstring;
     return $aryref;
 }
 

@@ -1,0 +1,411 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+sync-i
+
+=head1 USAGE
+
+% sync-i -r run [-s <slice_size>][-d][-n]
+
+=head1 DESCRIPTION
+
+Synchronize the LS index with the CB database tables.
+
+=head1 OPTIONS
+
+=cut
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Database;
+use SharedQueue;
+use Search::Searcher;
+use Collection;
+use CollectionSet;
+
+# Local
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use Result::SLIP;
+
+# Friend
+use LS::Result::FullText;
+
+# ---------------------------------------------------------------------
+
+=item sync_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub sync_get_usage {
+    my $s .= qq{Usage: sync-i -r run [-s <slice_size>][-d][-n]
+                  where -s is slice size of Solr and Mysql id query
+                        -n ids a renot queued, just reported\n};
+    return $s;
+}
+
+our ($opt_r, $opt_s, $opt_d, $opt_n, $opt_T);
+
+my $ops = getopts('r:s:dnT');
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $s = sync_get_usage();
+    print $s;
+    exit 0;
+}
+
+use constant DEFAULT_SLICE_SIZE => 1000;
+my $SLICE_SIZE = defined($opt_s) ? $opt_s : DEFAULT_SLICE_SIZE; # optional
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
+}
+
+my $NOOP = defined($opt_n); # optional
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+my $config = SLIP_Utils::Common::gen_run_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $db;
+eval {
+    $db = new Database($config);
+};
+if ($@) {
+    SLIP_Utils::Common::Log_database_connection_error($C, 'sync-i', $@);
+    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+}
+
+$C->set_object('Database', $db);
+
+my $DBH = $db->get_DBH();
+my $CO = new Collection($DBH, $config, undef);
+my $CS = new CollectionSet($DBH, $config, undef);
+
+handle_synchronization($C);
+handle_inverse_synchronization($C);
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item __handle_query
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_query {
+    my ($C, $query, $searcher, $rs) = @_;
+
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+    if (! $rs->http_status_ok()) {
+        my $status = $rs->get_status_line();
+        __output(qq{Solr query=$query failed: $status\nError exit\n});
+        exit 1;
+    }
+
+    return $rs;
+}
+
+# ---------------------------------------------------------------------
+
+=item __handle_rc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_rc {
+    my ($rc, $msg) = @_;
+
+    if (! $rc) {
+        __output(qq{$msg\nError exit\n});
+        exit 1;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_synchronization
+
+Test that every id in a MySQL CB large collection is in LS Solr
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_synchronization {
+    my $C = shift;
+
+    __output(qq{\n***\n*** Begin Phase I synchronization ...\n***\n\n});
+    
+    my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
+
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
+    my $searcher = new Search::Searcher($engine_uri, undef, 1);
+    my $rs = new LS::Result::FullText();
+
+    my ($ok, $coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
+    __handle_rc($ok, qq{Failed to get coll_ids\n});
+
+    my $s;
+    my $coll_ct = 0;
+    my $missing_ids = 0;
+
+    foreach my $coll_id (@$coll_id_arr_ref) {
+        __output(qq{Processing coll_id=$coll_id\n});
+        $coll_ct++;
+        my $missing_ids_in_coll = 0;
+
+        # Make sure the coll_id itself exists for at least one id
+        my $query = qq{q=coll_id:$coll_id&start=0&rows=0};
+        $rs = __handle_query($C, $query, $searcher, $rs);
+
+        if ($rs->get_num_found() == 0) {
+            $s = $NOOP ? '' : "\n\t--> queue all ids";
+            __output(qq{\tALL ids MISSING from Solr index: coll_id=$coll_id$s\n});
+
+            if (! $NOOP) {
+                $ok = SharedQueue::enqueue_all_ids($C, $DBH, $coll_id);
+                __handle_rc($ok, qq{Failed to enqueue all ids for coll_id=$coll_id\n});
+            }
+
+            my $missing = $CO->count_all_items_for_coll_from_coll_items($coll_id);
+            $missing_ids += $missing;
+            $missing_ids_in_coll += $missing;
+        }
+        else {
+            my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
+            foreach my $id (@$id_arr_ref) {
+                my $query_1 = qq{q=coll_id:$coll_id+AND+id=$id&start=0&rows=0};
+                $rs = __handle_query($C, $query_1, $searcher, $rs);
+
+                if ($rs->get_num_found() == 0) {
+                    $s = $NOOP ? '' : "\n\t--> queue id";
+                    __output(qq{\tMISSING id from Solr index: id=$id in coll_id=$coll_id $s\n});
+
+                    $missing_ids++;
+                    $missing_ids_in_coll++;
+
+                    if (! $NOOP) {
+                        $ok = SharedQueue::enqueue_item_ids($C, $DBH, [$id]);
+                        __handle_rc($ok, qq{Failed to enqueue all id=$id for coll_id=$coll_id\n});
+                    }
+                }
+            }
+        }
+        $s = $missing_ids_in_coll
+          ? qq{coll_id=$coll_id had $missing_ids_in_coll missing ids in Solr\n}
+            : qq{All ids present in Solr for coll_id=$coll_id};
+        __output(qq{$s\n});
+    }
+
+    my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
+    $s = $NOOP ? '' : "$total_ids_queued added to shared queue";
+    __output(qq{Phase I processed $coll_ct coll_ids having $missing_ids missing ids $s\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item __parse_result_docs
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __parse_result_docs {
+    my ($C, $rs) = @_;
+
+    my %id_to_coll_id_hash = ();
+
+    my $result_docs_arr_ref = $rs->get_result_docs();
+    foreach my $doc_data (@$result_docs_arr_ref) {
+        my ($str_coll_ids) = ($doc_data =~ m,<arr name="coll_id">(.*?)</arr>,gos);
+        my (@coll_ids) = ($str_coll_ids =~ m,<long[^>]*>(.*?)</long>,gos);
+
+        my ($id) = ($doc_data =~ m,<str name="id">(.*?)</str>,os);
+        $id_to_coll_id_hash{$id} = \@coll_ids;
+    }
+
+    # Optimization: If any of the coll_ids don't exist, add the id to
+    # the "to be re-indexed" list so we don't have to query MySQL
+    # redundantly for every id that's in a non-existent collection.
+    my @ids_to_enqueue = ();
+    my %non_existent_coll_ids = ();
+    foreach my $id (keys %id_to_coll_id_hash) {
+        my $coll_id = $id_to_coll_id_hash{$id};
+
+        if (
+            $non_existent_coll_ids{$coll_id}
+            ||
+            (! $CS->exists_coll_id($id_to_coll_id_hash{$id}))
+           ) {
+            push(@ids_to_enqueue, $id);
+            $non_existent_coll_ids{$coll_id} = 1;
+        }
+    }
+
+    foreach my $id (@ids_to_enqueue) {
+        delete $id_to_coll_id_hash{$id};
+    }
+
+    return (\%id_to_coll_id_hash, \@ids_to_enqueue);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item handle_inverse_synchronization
+
+Should follow handle_synchronization.
+
+We now know that every id in a CB large collection is in Solr.
+
+Check that the ids of every Solr doc that has collection coll_id
+fields are in those collections in CB database.  If not, enqueue the
+id for re-indexing so it will acquire the correct list of coll_ids.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_inverse_synchronization {
+    my $C = shift;
+
+    __output(qq{\n***\n*** Begin Phase II synchronization ...\n***\n\n});
+
+    my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
+
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
+    my $searcher = new Search::Searcher($engine_uri, undef, 1);
+    my $rs = new LS::Result::FullText();
+
+    my $s;
+    my $ok;
+    my $id_ct = 0;
+    my $start = 0;
+
+    while (1) {
+        # Get of Solr slice of documents with non-empty coll_id field(s)
+        my $query = qq{q=coll_id:[* TO *]&start=$start&rows=$SLICE_SIZE&fl=coll_id,id};
+        $rs = __handle_query($C, $query, $searcher, $rs);
+
+        my $num_found = $rs->get_num_found();
+        last if ($num_found == 0);
+        $start += $SLICE_SIZE;
+        __output(qq{$num_found ids in Solr slice});
+
+
+        # Parse and return optimized list of ids to test
+        my ($id_hashref_of_coll_id_arr_ref, $ids_to_enqueue_arr_ref) = __parse_result_docs($C, $rs);
+        my $num_ids_from_missing_coll_ids = scalar(@$ids_to_enqueue_arr_ref);
+        
+        $id_ct += $num_ids_from_missing_coll_ids;
+    
+        if ($num_ids_from_missing_coll_ids) {
+            $s = $NOOP ? '' : "\n\t--> queue $num_ids_from_missing_coll_ids ids";
+            __output(qq{\tSolr has $num_ids_from_missing_coll_ids ids in MISSING coll_ids $s\n});
+            if (! $NOOP) {
+                $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
+                __handle_rc($ok, qq{Failed to enqueue ids from optimize step\n});
+            }
+        }
+        
+        $ids_to_enqueue_arr_ref = [];
+        
+        foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
+            my $coll_id_arr_ref = $id_hashref_of_coll_id_arr_ref->{$id};
+
+            $s = join(', ', @$coll_id_arr_ref);
+            __output(qq{Testing id=$id is in coll_id(s)=$s\n});
+
+            $id_ct++;
+
+            # Check that this id is in each of these coll_ids
+            foreach my $coll_id (@$coll_id_arr_ref) {
+                if (! $CO->one_or_more_items_in_coll($coll_id, [$id])) {
+                    $s = $NOOP ? '' : "\n\t--> queue id";
+                    __output(qq{\tid NOT IN COLLECTION: id=$id, coll_id=$coll_id $s\n});
+                }
+                push(@$ids_to_enqueue_arr_ref, $id);
+            }
+            if (! $NOOP) {
+                $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
+                __handle_rc($ok, qq{Failed to enqueue ids not in collection\n});
+            }
+        }
+    }
+
+    my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
+    $s = $NOOP ? '' : "$total_ids_queued added to shared queue";
+    __output(qq{Phase II processed $id_ct ids not in indicated collection $s\n\n});
+}
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2011 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+

@@ -268,8 +268,8 @@ sub Test_rightsNINindexed {
             __output(qq{$s0\n}); 
             Log_sync($C, $run, $s0);
 
-            Db::insert_queue_items($C, $dbh, $run, [{'id' => $id}])
-                    unless($CHECK);
+            Db::insert_queue_items($C, $dbh, $run, [$id])
+                unless($CHECK);
         }
     }
 

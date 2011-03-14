@@ -537,7 +537,7 @@ used for static testing.
 
 # ---------------------------------------------------------------------
 sub insert_queue_items {
-    my ($C, $dbh, $run, $ref_to_ary_of_hashref) = @_;
+    my ($C, $dbh, $run, $ref_to_ary_of_ids) = @_;
 
     my $sth;
     my $statement;
@@ -547,8 +547,7 @@ sub insert_queue_items {
     DEBUG('lsdb', qq{DEBUG: $statement});
     $sth = DbUtils::prep_n_execute($dbh, $statement);
 
-    foreach my $ref (@$ref_to_ary_of_hashref) {
-        my $id = $ref->{'id'};
+    foreach my $id (@$ref_to_ary_of_ids) {
         $statement = qq{REPLACE INTO j_queue SET run=$run, id='$id', pid=0, host='', proc_status=$SLIP_Utils::States::Q_AVAILABLE};
         DEBUG('lsdb', qq{DEBUG: $statement});
         $sth = DbUtils::prep_n_execute($dbh, $statement);

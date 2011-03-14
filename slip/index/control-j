@@ -89,7 +89,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub cont_get_usage {
-    my $s .= qq{Usage: control-j -k stop|start -r run [-R shard][-h host]
+    my $s .= qq{Usage: control-j -k stop|start -r run [-R shard|A][-h host]
 
        control-j -k stop|start -r run -e
           -e starts/stops enqueuer-j
@@ -187,7 +187,7 @@ my $uber_configfile = Utils::get_uber_config_path('slip');
 my $config = new MdpConfig($uber_configfile, $common_configfile, $run_configfile);
 $C->set_object('MdpConfig', $config);
 
-my @NUM_SHARDS_LIST = $RIGHTS ? () : $C->get_object('MdpConfig')->get('num_shards_list');
+my @NUM_SHARDS_LIST = $C->get_object('MdpConfig')->get('num_shards_list');
 
 my $db;
 eval {
@@ -301,7 +301,14 @@ eval {
         else {
             my $shard = $opt_R; # optional
             my $host = $opt_h; # optional
-            c_producer_control($C, $DBH, $RUN, $shard, $host, $enabled);
+            if ($shard eq 'A') {
+                foreach my $_shard (@NUM_SHARDS_LIST) {
+                    c_producer_control($C, $DBH, $RUN, $_shard, $host, $enabled);
+                }
+            }
+            else {
+                c_producer_control($C, $DBH, $RUN, $shard, $host, $enabled);
+            }
         }
     }
     elsif ($KOMMAND eq 'init') {
