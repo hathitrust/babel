@@ -1,6 +1,7 @@
 #!/l/local/bin/perl
 
 use strict;
+#use warnings;
 
 =head1 NAME
 
@@ -9,10 +10,15 @@ batch-collection
 =head1 USAGE
 
 % batch-collection [-P][-i] -t title -d description -o userid file
+                   or
+                   -a coll_id -o userid file
+                   or
+                   -t title -o userid
 
 =head1 DESCRIPTION
 
-Create an MBooks collection prior to fulltext indexing (carried out by manage-index)
+Create an MBooks collection prior to SLIP fulltext indexing (for
+"large" collections).  Throughput appears to be 20,000 items / hour.
 
 =head1 OPTIONS
 
@@ -38,6 +44,10 @@ uniqname that will own the collection
 
 id list is internal. default is external (mdp) ids
 
+=item -a
+
+append id list to collection=coll_id
+
 =back
 
 =cut
@@ -51,171 +61,337 @@ use Vendors;
 use Getopt::Std;
 use CGI;
 
+use Utils;
+use Utils::Time;
 use Context;
 use Identifier;
 use MdpConfig;
 use Collection;
 use Access::Rights;
 use MirlynGlobals;
-use Debug::DUtils; 
+use Debug::DUtils;
+use SharedQueue;
 
 # Support DEBUG calls
 Debug::DUtils::setup_debug_environment();
 
 my @allowed_uniqnames =
-(
- 'suzchap',
- 'tburtonw',
- 'pfarber',
- 'jweise',
- 'sooty',
- 'khage',
- 'kshawkin',
- 'rwelzenb',
-);
+  (
+   'suzchap',
+   'tburtonw',
+   'pfarber',
+   'jweise',
+   'sooty',
+   'khage',
+   'kshawkin',
+   'rwelzenb',
+  );
 
+sub bc_Usage {
+    print qq{Usage: batch-collection [-P] -t title -d description -o userid -f file_of_ids\n};
+    print qq{         or\n};
+    print qq{       batch-collection -a coll_id -o userid -f file_of_ids\n};
+    print qq{         or\n};
+    print qq{       batch-collection -c -t title -o userid\n\n};
+    print qq{Options:\n};
+    print qq{  -f file of HathiTrust IDs, one per line\n};
+    print qq{  -P make collection public.  default is private\n};
+    print qq{  -o userid (must match your kerberos uniqname)\n};
+    print qq{  -a coll_id append IDs to collid (obtain coll_id from batch_collection.pl -c option)\n\n};
+    print qq{  -c returns the coll_id for collection with title and owner\n\n};
+    print qq{Notes:\n};
+    print qq{       IDs are HathiTrust IDs, e.g. mdp.39015012345\n};
+    print qq{       Blank lines or lines beginning with a '#' are ignored\n\n};
 
-our ($opt_P, $opt_t, $opt_d, $opt_o, $opt_i, $opt_f);
-getopts( 'iPt:d:o:f:');
+}
 
-if ((! $opt_t) || (! $opt_d) || (! $opt_o) || (! $opt_f))
-{
-    print qq{Usage: batch-collection [-P][-i] -t title -d description -o userid -f file_of_mdp_ids\n};
-    print qq{-i ids are internal. default is external (mdp) id\n};
-    print qq{-P make collection public.  default is private\n};
-    print qq{-o userid (must match your kerberos uniqname)\n};
+if ($ENV{SDRVIEW} ne 'full') {
+    Log_print( qq{ERROR: batch-collection.pl only functions in the full HTDE environment\n} );
     exit 1;
 }
 
-# $ENV{'DEBUG'} = 'doc';
+our ($opt_P, $opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c);
+getopts('cPt:d:o:f:a:');
 
-open(INPUTFILE, "$opt_f") || die $@;
+my $APPEND = $opt_a;
+my $COLL_ID = $opt_c;
 
-my ($c_name, $c_desc, $c_owner, $c_owner_name, $c_public) =
-    (
-     $opt_t,
-     $opt_d,
-     get_owner($opt_o),
-     get_owner($opt_o),
-     $opt_P,
-    );
+if ($APPEND) {
+    if ($APPEND !~ m,\d+,) {
+        Log_print( qq{ERROR: invalid coll_id arg to append (-a) option\n\n} );
+        bc_Usage();
+        exit 1;
+    }    
+    if ((! $opt_o) || (!$opt_f)) {
+        Log_print( qq{ERROR: missing -o or -f options for append (-a) operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+    if ($opt_t || $opt_d || $opt_P) {
+        Log_print( qq{ERROR: options -t or -d or -P options are not supported for append (-a) operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+}
+elsif ($COLL_ID) {
+    if ((! $opt_o) || (!$opt_t)) {
+        Log_print( qq{ERROR: missing -o or -t options for coll_id query (-c) operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+    if ($opt_a || $opt_d || $opt_P) {
+        Log_print( qq{ERROR: options -a or -d or -P options are not supported for coll_id query (-c) operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+}
+else {
+    if ((! $opt_t) || (! $opt_d) || (! $opt_o) || (! $opt_f)) {
+        Log_print( qq{missing -t or -d or -o or -f options for colelction creation operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+}
 
+my $USE_MIRLYN = 0;
+$ENV{'BATCH_COLLECTION_OPERATION'} = 1;
+
+my $INPUT_FILE = $opt_f;
+
+my $date = Utils::Time::iso_Time('date');
+my $time = Utils::Time::iso_Time('time');
+my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
+
+my ($C_NAME, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_PUBLIC, $C_COLL_ID);
+if ($APPEND) {
+    ($C_OWNER, $C_OWNER_NAME, $C_COLL_ID) =
+      (
+       bc_get_owner($opt_o),
+       bc_get_owner($opt_o),
+       $opt_a,
+      );
+}
+else {
+    ($C_NAME, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_PUBLIC) =
+      (
+       $opt_t,
+       $opt_d,
+       bc_get_owner($opt_o),
+       bc_get_owner($opt_o),
+       $opt_P,
+      );
+}
 
 my $C = new Context;
 
 my $config = new MdpConfig(
-                           Utils::get_uber_config_path('mdp-misc')
+                           Utils::get_uber_config_path('mdp-misc'),
+                           $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
                           );
 $C->set_object('MdpConfig', $config);
 
 my $cgi = new CGI;
 $C->set_object('CGI', $cgi);
 
-my $db = new Database($config);
-$C->set_object('Database', $db);
+my $DB = new Database($config);
+$C->set_object('Database', $DB);
+my $dsn = $DB->get_dsn();
 
-my $co = new Collection($db->get_DBH(), $config, $c_owner);
-$C->set_object('Collection', $co);
+my $CO = new Collection($DB->get_DBH(), $config, $C_OWNER);
+$C->set_object('Collection', $CO);
 
-my $cs = CollectionSet->new($db->get_DBH(), $config, $c_owner) ;
-$C->set_object('CollectionSet', $cs);
+my $CS = CollectionSet->new($DB->get_DBH(), $config, $C_OWNER) ;
+$C->set_object('CollectionSet', $CS);
 
-my $dsn = $db->get_dsn();
-print qq{Begin "$opt_t" collection creation using db connection $dsn\n};
+open(INPUTFILE, $INPUT_FILE) || die $@;
 
-if ($cs->exists_coll_name_for_owner($c_name, $c_owner))
-{
-    print qq{You already have a collection named "$c_name"\n};
-    exit 1;
-}
+my $INITIAL_COLLECTION_SIZE = 0;
+my $small_collection_max_items = $config->get('filter_query_max_item_ids');
+my $SMALLEST_LARGE_COLLECTION = $small_collection_max_items + 1;
+my $SMALL_TO_LARGE_TRANSITION = 0;
 
-#
-# Create the (empty) collection
-#
-my $collid = add_collection();
-# POSSIBLY NOTREACHED
+if ($APPEND) {
+    my $existing_coll_id = $APPEND;
+    my $coll_name = 'undefined';
 
-#
-# Add items to the collection
-#
-
-my @IDS = <INPUTFILE>;
-my $num_ids = scalar(@IDS);
-
-my $ct = 0;
-foreach my $id (@IDS)
-{
-    chomp($id);
-    $id =~ s,\s,,g;
-
-    my $use_id;
-    if ($opt_i)
-    {
-        $use_id = $co->get_extern_id_from_item_id($id);
-        if (! $use_id)
-        {
-            print qq{Could not map internal id="$id" to external MDP id ... skipping\n};
-            next;
+    if (! $CS->exists_coll_id($existing_coll_id)) {
+        Log_print( qq{ERROR: coll_id=$existing_coll_id does not exist. Cannot append ids to non-existent collection\n} );
+        exit 1;
+    }
+    else {
+        $coll_name = $CO->get_coll_name($existing_coll_id);
+        if (! $CS->exists_coll_name_for_owner($coll_name, $C_OWNER)) {
+            Log_print( qq{ERROR: You are apparently not the owner of the collection named "$coll_name"\n} );
+            exit 1;
         }
     }
-    else
-    {
-        $use_id = $id;
-    }
 
-    # Check existence in repository
-    my $exists = `curl 'http://services.hathitrust.org/htd/pagemeta/$use_id/1' 2>/dev/null`;
-    if (! $exists) {
-        print qq{id="$use_id" is not in the repository ... skipping\n};
-        next;
-    }
-    
-    $cgi->param('id', $use_id);
+    Log_print( qq{Begin appending IDs to "$coll_name" collection using db connection $dsn\n} );
 
-    if (! Identifier::validate_mbooks_id($use_id))
-    {
-        print qq{invalid MDP id="$use_id" ... skipping\n};
-        next;
-    }
+    $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($existing_coll_id);
 
-    my ($metadata_ref, $metadata_failed) =
-        GetMetadata_Mirlyn($C, $use_id);
+    # Add items to the collection
+    my $added = bc_handle_add_items_to($C, $existing_coll_id);
 
-    if ($metadata_failed)
-    {
-        print qq{Could not read Mirlyn metadata for "$use_id" ... skipping\n};
-        next;
-    }
+    Log_print( qq{Done.\n} );
+}
+elsif ($COLL_ID) {
+    my $coll_id = $CO->get_coll_id_for_collname_and_user($C_NAME, $C_OWNER_NAME);
+    Log_print( qq{\nCollection id = $coll_id for collection="$C_NAME" and owner="$C_OWNER_NAME"\n} );
+}
+else {
+    Log_print( qq{Begin "$C_NAME" collection creation using db connection $dsn\n} );
 
-    print qq{Adding item $ct "$use_id" ...\n};
+    # Create the (empty) collection
+    my $new_coll_id = bc_create_collection();
 
-    my $ar = new Access::Rights($C, $use_id);
-    my $rights = $ar->get_rights_attribute($C, $use_id);
+    # Add items to the collection
+    my $added = bc_handle_add_items_to($C, $new_coll_id);
 
-    my $item_id;
-    if ($item_id = add_item($use_id, $collid, $rights, $metadata_ref))
-    {
-       $ct++;
-       add_item_to_queue($item_id, $num_ids);
-       print qq{\tQueuing item $ct "$use_id" for indexing ...\n};
-    }
+    Log_print( qq{Done. coll_id for "$C_NAME" collection is: $new_coll_id\n} );
 }
 
-print qq{Done. Added $ct items\n};
+close(INPUTFILE);
 
 exit 0;
 
-
 # ---------------------------------------------------------------------
 
-=item GetMetadata_Mirlyn
+=item Log_print(
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub GetMetadata_Mirlyn {
+sub Log_print {
+    my $s = shift;
+
+    print qq{$s};
+
+    if (open(LOG, ">>$LOGFILE")) {
+        print LOG qq{$time: $s};
+        close(LOG);
+        chmod(0666, $LOGFILE) if (-o $LOGFILE);
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item bc_handle_add_items_to
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_handle_add_items_to {
+    my $C = shift;
+    my $coll_id = shift;
+
+    my $num_ids = 0;
+
+    my $ct = 1;
+    my $added = 0;
+    my $queued = 0;
+
+    foreach my $id (<INPUTFILE>) {
+        chomp($id);
+        $id =~ s,\s,,g;
+
+        # comment or blank line
+        if ((! $id) || ($id =~ m,^\s*#,)) {
+            next;
+        }
+        $num_ids++;
+
+        # Check existence in repository
+        my $file_sys_location = Identifier::get_item_location($id);
+        if (! -e $file_sys_location) {
+            Log_print( qq{id="$id" is not in the repository, SKIPPING\n} );
+            next;
+        }
+
+        my ($metadata_ref, $metadata_failed);
+        if ($USE_MIRLYN) {
+            ($metadata_ref, $metadata_failed) = bc_get_metadata_mirlyn($C, $id);
+        }
+        else {
+            ($metadata_ref, $metadata_failed) = bc_get_metadata_vufind($C, $id);
+        }
+        
+        if ($metadata_failed) {
+            Log_print( qq{Could not read metadata for "$id", SKIPPING\n} );
+            next;
+        }
+
+        Log_print( qq{Adding item $ct "$id"\n} );
+
+        my $rights = Access::Rights->new($C, $id)->get_rights_attribute($C, $id);
+
+        my ($ok, $item_added) = bc_add_item($id, $coll_id, $rights, $metadata_ref);
+        if (! $ok) {
+            Log_print( qq{ERROR: Failed to add "$id" to collection\n} );
+            exit 1;
+        }
+        else {
+            $added += $item_added;
+            if ($item_added) {
+                # only enqueue new items, not ones that are just
+                # metadata updates. Also handle large vs. small
+                # collection logic
+                my ($ok, $num_enqueued) = bc_do_enqueue($C, $coll_id, $id);
+                if (! $ok) {
+                    Log_print( qq{ERROR: Failed to enqueue "$id" for indexing\n} );
+                    exit 1;
+                }
+                else {
+                    $queued += $num_enqueued;
+                }
+            }
+        }
+
+        $ct++;
+    }
+
+    $ct--;
+    my $using = $USE_MIRLYN ? 'using bc2meta' : 'using vufind';
+    
+    Log_print( qq{Processed $ct of $num_ids items from $INPUT_FILE $using, added $added, enqueued $queued for indexing\n} );
+    if ($added) {
+        my $not_queued = max($added - $queued, 0);
+        # If collection started out large, $added items should have
+        # been queued. If collection became large, more items would be
+        # queued than were added.
+        if (
+            ($INITIAL_COLLECTION_SIZE >= $SMALLEST_LARGE_COLLECTION)
+            ||
+            $SMALL_TO_LARGE_TRANSITION
+           ) {
+            if ($not_queued) {
+                Log_print( qq{WARN: $not_queued added items could not be queued for indexing\n} );
+            }
+            else {
+                $SMALL_TO_LARGE_TRANSITION 
+                  ? Log_print( qq{All added items + existing small collection items were queued for indexing\n} )
+                    : Log_print( qq{All added items were queued for indexing\n} );
+            }
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item bc_get_metadata_mirlyn
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_get_metadata_mirlyn {
     my ($C, $id) = @_;
 
     my $metadata = undef;
@@ -244,50 +420,81 @@ sub GetMetadata_Mirlyn {
     return (\$metadata, $metadata_failed);
 }
 
+
 # ---------------------------------------------------------------------
 
-=item add_collection
+=item bc_get_metadata_vufind
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub add_collection
-{
-    my $coll_data_hashref = {
-                             'collname'    => $c_name,
-                             'description' => $c_desc,
-                             'shared'      => $c_public ? 1 : 0,
-                             'owner'       => $c_owner,
-                             'owner_name'  => $c_owner_name,
-                            };
+sub bc_get_metadata_vufind {
+    my ($C, $id) = @_;
 
-    my $added_coll_id;
-    eval
-    {
-        $added_coll_id = $cs->add_coll($coll_data_hashref);
-    };
-    if ($@)
-    {
-        print qq{Could not create collection "$c_name": $@\n};
+    my $url = $C->get_object('MdpConfig')->get('engine_for_vSolr') . qq{/select?fl=fullrecord&q=ht_id:$id};
+    my $metadata = `curl --silent '$url'`;
+    my $rc = $?;
+    my $metadata_failed = ($rc > 0);
+    
+    if (! $metadata_failed) {
+        $metadata = Encode::decode_utf8($metadata);
+        $metadata =~ s,&lt;,<,g;
+        $metadata =~ s,&gt;,>,g;
+    }
+
+    return (\$metadata, $metadata_failed);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item bc_create_collection
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_create_collection {
+
+    if ($CS->exists_coll_name_for_owner($C_NAME, $C_OWNER)) {
+        Log_print( qq{ERROR: You already have a collection named "$C_NAME"\n} );
         exit 1;
     }
 
-    return $added_coll_id;
+    my $coll_data_hashref = {
+                             'collname'    => $C_NAME,
+                             'description' => $C_DESC,
+                             'shared'      => $C_PUBLIC ? 1 : 0,
+                             'owner'       => $C_OWNER,
+                             'owner_name'  => $C_OWNER_NAME,
+                            };
+
+    my $new_coll_id;
+    eval {
+        $new_coll_id = $CS->add_coll($coll_data_hashref);
+    };
+    if ($@) {
+        Log_print( qq{ERROR: Could not create collection "$C_NAME": $@\n} );
+        exit 1;
+    }
+
+    return $new_coll_id;
 }
+
 
 # ---------------------------------------------------------------------
 
-=item get_fields_from_mdp_metadata
+=item bc_get_fields_from_mdp_metadata
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_fields_from_mdp_metadata
-{
+sub bc_get_fields_from_mdp_metadata {
     my $id = shift;
     my $metadata_ref = shift;
 
@@ -303,12 +510,6 @@ sub get_fields_from_mdp_metadata
     $m_title .= ' ' . $title_b if $title_b;
     my ($title_c) = ($data_245 =~ m,<subfield label="c">(.*?)</subfield>,is);
     $m_title .= ' ' . $title_c if $title_c;
-
-    # <varfield id="MDP" i1=" " i2=" ">
-    #   <subfield label="u">mdp.39015009999635</subfield>
-    #   <subfield label="z">v.5-6 1961-1963</subfield>
-    # </varfield>
-    #  subfields won't necessarily be in order!
 
     my ($MDP_Vol)  = ($$metadata_ref =~ m,<varfield id="MDP"[^>]*>(.*?)</varfield>,is);
     my ($vol_string) = ($MDP_Vol =~ m,<subfield label="z">(.*?)</subfield>,is);
@@ -356,32 +557,89 @@ sub get_fields_from_mdp_metadata
 
 # ---------------------------------------------------------------------
 
-=item get_fields_from_miun_metadata
+=item bc_get_fields_from_mdp_metadata
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_fields_from_miun_metadata
-{
+sub bc_get_fields_from_mdp_metadata_marc21 {
+    my $id = shift;
     my $metadata_ref = shift;
 
+    # I2
+    my ($m_i2) = ($$metadata_ref =~ m,<datafield tag="245".*?ind2="(\d+)">,s);
 
+    # Title
+    my $m_title;
+    my ($data_245) = ($$metadata_ref =~ m,<datafield tag="245"[^>]*>(.*?)</datafield>,is);
+    my ($title_a) = ($data_245 =~ m,<subfield code="a">(.*?)</subfield>,is);
+    $m_title .= $title_a;
+    my ($title_b) = ($data_245 =~ m,<subfield code="b">(.*?)</subfield>,is);
+    $m_title .= ' ' . $title_b if $title_b;
+    my ($title_c) = ($data_245 =~ m,<subfield code="c">(.*?)</subfield>,is);
+    $m_title .= ' ' . $title_c if $title_c;
 
+    my (@MDP_Vols)  = ($$metadata_ref =~ m,<datafield tag="974"[^>]*>(.*?)</datafield>,gis);
+    foreach my $vol (@MDP_Vols) {
+        my ($mdp_id) = ($vol =~ m,<subfield code="u">(.*?)</subfield>,is);
+        if ($mdp_id eq $id) {
+            my ($vol_string) = ($vol =~ m,<subfield code="z">(.*?)</subfield>,is);
+            $m_title .= ' ' . $vol_string if $vol_string;
+            last;
+        }
+    }
+
+    # Author
+    my $m_author;
+    my ($data_100) = ($$metadata_ref =~ m,<datafield tag="100"[^>]*>(.*?)</datafield>,is);
+    my ($author_a) = ($data_100 =~ m,<subfield code="a">(.*?)</subfield>,is);
+    $m_author .= $author_a;
+    my ($author_b) = ($data_100 =~ m,<subfield code="b">(.*?)</subfield>,is);
+    $m_author .= ' ' . $author_b if $author_b;
+    my ($author_c) = ($data_100 =~ m,<subfield code="c">(.*?)</subfield>,is);
+    $m_author .= ' ' . $author_c if $author_c;
+    my ($author_e) = ($data_100 =~ m,<subfield code="e">(.*?)</subfield>,is);
+    $m_author .= ' ' . $author_e if $author_e;
+    my ($author_q) = ($data_100 =~ m,<subfield code="q">(.*?)</subfield>,is);
+    $m_author .= ' ' . $author_q if $author_q;
+    my ($author_d) = ($data_100 =~ m,<subfield code="d">(.*?)</subfield>,is);
+    $m_author .= ' ' . $author_d if $author_d;
+
+    my ($data_110) = ($$metadata_ref =~ m,<datafield tag="110"[^>]*>(.*?)</datafield>,is);
+    my ($author_a1) = ($data_110 =~ m,<subfield code="a">(.*?)</subfield>,is);
+    $m_author .= $author_a1;
+    my ($author_b1) = ($data_110 =~ m,<subfield code="b">(.*?)</subfield>,is);
+    if ($author_b1) {
+        my ($author_c1) = ($data_110 =~ m,<subfield code="c">(.*?)</subfield>,is);
+        $m_author .= ' ' . $author_c1;
+    }
+
+    my ($data_111) = ($$metadata_ref =~ m,<datafield tag="111"[^>]*>(.*?)</datafield>,is);
+    my ($author_a11) = ($data_111 =~ m,<subfield code="a">(.*?)</subfield>,is);
+    $m_author .= $author_a11 if $author_a11;
+
+    # Date
+    my $m_date;
+    my ($fixed_008_data) = ($$metadata_ref =~ m,<controlfield tag="008">(.*?)</controlfield>,s);
+    $m_date = substr($fixed_008_data, 7, 4);
+    $m_date =~ s,[^0-9],0,g;
+
+    return ($m_title, $m_author, $m_date, $m_i2);
 }
 
 
 # ---------------------------------------------------------------------
 
-=item get_sort_title
+=item bc_get_sort_title
 
 MARC 245 indicator 2 indicates how many positions to skip
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_sort_title
+sub bc_get_sort_title
 {
     my ($display_title, $i2) = @_;
 
@@ -396,152 +654,162 @@ sub get_sort_title
 
 # ---------------------------------------------------------------------
 
-=item add_item
+=item bc_add_item
 
-Description
+Description ($ok, $added) = bc_add_item()
 
 =cut
 
 # ---------------------------------------------------------------------
-sub add_item
-{
+sub bc_add_item {
     my $id = shift;
-    my $collid = shift;
+    my $coll_id = shift;
     my $rights = shift;
     my $metadata_ref = shift;
 
-    my ($m_title, $m_author, $m_date, $m_i2) =
-        get_fields_from_mdp_metadata($id, $metadata_ref);
+    my ($m_title, $m_author, $m_date, $m_i2);
+    if ($USE_MIRLYN) {
+        ($m_title, $m_author, $m_date, $m_i2) =
+          bc_get_fields_from_mdp_metadata($id, $metadata_ref);
+    }
+    else {
+        ($m_title, $m_author, $m_date, $m_i2) =
+          bc_get_fields_from_mdp_metadata_marc21($id, $metadata_ref);
+    }
 
     # Make XML compliant
     Utils::map_chars_to_cers(\$m_title, [q{"}, q{'}]);
     Utils::map_chars_to_cers(\$m_author, [q{"}, q{'}]);
 
     my $metadata_hashref;
-    $$metadata_hashref{'extern_item_id'} = $id;
 
-    $$metadata_hashref{'sort_title'} = get_sort_title($m_title, $m_i2);
+    $$metadata_hashref{'extern_item_id'} = $id;
+    $$metadata_hashref{'sort_title'} = bc_get_sort_title($m_title, $m_i2);
     $$metadata_hashref{'display_title'} = $m_title;
     $$metadata_hashref{'author'} = $m_author;
-    $$metadata_hashref{'date'} = normalize_date($m_date);
+    $$metadata_hashref{'date'} = bc_normalize_date($m_date);
     $$metadata_hashref{'rights'} = $rights;
 
-    my $item_id;
-    eval
-    {
-        $item_id = $co->create_or_update_item_metadata($metadata_hashref);
-    };
-    if ($@)
-    {
-        print qq{Could not create of update item="$id" to collection: $@};
-        return 0;
-    }
-
-    if (! $cs->exists_coll_id($collid))
-    {
-        print qq{to_coll_id="$collid" does not exist\n};
-        return 0;
-    }
-
-    if (! $co->item_exists($item_id))
-    {
-        print qq{Invalid id="$item_id"};
-        return 0;
-    }
-
-    if ($co->item_in_collection($item_id, $collid))
-    {
-        print qq{Item id="$item_id" is already in the collection};
-        return 0;
-    }
-
-    eval
-    {
-        $co->copy_items($collid, [$item_id]);
-    };
-    if  ($@)
-    {
-        print qq{Could not put item="$id" into collection: $@};
-        return 0;
-    }
-
-    return $item_id;
-}
-
-# ---------------------------------------------------------------------
-
-=item add_item_to_queue
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub add_item_to_queue {
-    my $item_id = shift;
-    my $priority = shift;
-    
-    # Add to queue for indexing
     eval {
-        $co->add_to_queue([$item_id], $priority);
+        $CO->create_or_update_item_metadata($metadata_hashref);
     };
-    if  ($@) {
-        print qq{Could not add item="$item_id" to indexing queue: $@};
+    if ($@) {
+        Log_print( qq{Could not create of update item="$id" to collection: $@} );
+        return (0, 0);
     }
+
+    if ($CO->item_in_collection($id, $coll_id)) {
+        Log_print( qq{Item id="$id" is already in the collection. Just updated metadata\n} );
+        return (1, 0);
+    }
+
+    eval {
+        $CO->copy_items($coll_id, [$id]);
+    };
+    if ($@) {
+        Log_print( qq{Could not put item="$id" into collection: $@} );
+        return (0, 0);
+    }
+
+    return (1, 1);
 }
 
 # ---------------------------------------------------------------------
 
-=item normalize_date
+=item bc_do_enqueue
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub normalize_date
-{
+sub bc_do_enqueue {
+    my $C = shift;
+    my $coll_id = shift;
+    my $item_id = shift;
+
+    my $ok = 1;
+    my $num_queued = 1;
+    my $dbh = $DB->get_DBH();
+
+    if ($INITIAL_COLLECTION_SIZE >= $SMALLEST_LARGE_COLLECTION) {
+        # All items less than max have been handled in previous runs.
+        # Just queue this one item.
+        $ok = SharedQueue::enqueue_item_ids($C, $dbh, [$item_id]);
+    }
+    else {
+        # Handle the transition from small to large collection
+        my $curr_coll_size = $CO->count_all_items_for_coll($coll_id);
+        if ($curr_coll_size == $SMALLEST_LARGE_COLLECTION) {
+            # Adding this item made the collection large.  Queue ALL
+            # items already added (but that were not queued because
+            # the collection was small when they were added)
+            $ok = SharedQueue::enqueue_all_ids($C, $dbh, $coll_id);
+
+            $num_queued = $curr_coll_size;
+            $SMALL_TO_LARGE_TRANSITION = $curr_coll_size;
+
+            Log_print( qq{LARGE COLLECTION TRANSITION POINT ($curr_coll_size) REACHED at "$item_id"\n} );
+        }
+        elsif ($curr_coll_size < $SMALLEST_LARGE_COLLECTION) {
+            # Adding this item will NOT make collection large.  Nothing to queue.
+            $num_queued = 0;
+        }
+        else { # $curr_coll_size > $SMALLEST_LARGE_COLLECTION)
+            # Collection surpassed the small collection max items
+            # somewhere earlier in this run so catch-up enqueuing has
+            # already occured.  Just queue this one item.
+
+            $ok = SharedQueue::enqueue_item_ids($C, $dbh, [$item_id]);
+        }
+    }
+
+    return ($ok, $num_queued);
+}
+
+# ---------------------------------------------------------------------
+
+=item bc_normalize_date
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_normalize_date {
     my $date = shift;
 
-    if ($date =~ m,(1\d{3}|20\d{2}),)
-    {
+    if ($date =~ m,(1\d{3}|20\d{2}),) {
         $date = $1;
         # mysql needs month and day so put in fake
         $date .= '-00-00';
     }
-    else
-    {
+    else {
         $date = '0000-00-00';
     }
 
     return $date;
 }
 
-
-
 # ---------------------------------------------------------------------
 
-=item get_owner
+=item bc_get_owner
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_owner
-{
+sub bc_get_owner {
     my $candidate = shift;
 
-    if (! grep(/^$candidate$/, @allowed_uniqnames))
-    {
-        print qq{$candidate is not in the list of supported uniqnames\n};
+    if (! grep(/^$candidate$/, @allowed_uniqnames)) {
+        Log_print( qq{ERROR: $candidate is not in the list of supported uniqnames\n} );
         exit 1;
     }
 
     return $candidate;
 }
-
-
 
 exit 0;
 
@@ -551,7 +819,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2007 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2007-11 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
