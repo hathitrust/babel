@@ -68,29 +68,35 @@ sub get_metadata_fields {
 
     my $metadata_fields;
     if ($status == IX_NO_ERROR) {
-        # Field mapping
-        $self->post_process_metadata($C, $item_id, $metadata_hashref);
+        # Add aux data
+        ($metadata_hashref, $status) = 
+          $self->get_auxiliary_field_data($C, $dbh, $item_id, $metadata_hashref);
 
-        foreach my $field_name (keys(%$metadata_hashref)) {
-            # If multi-valued field
-            if (scalar(@{$metadata_hashref->{$field_name}}) > 1) {
-                my @field_vals = @{$metadata_hashref->{$field_name}};
-                foreach my $field_val (@field_vals) {
-                    $metadata_fields .=
-                        wrap_string_in_tag(
-                                           $field_val,
-                                           'field',
-                                           [['name', $field_name]]
-                                          );
+        if ($status == IX_NO_ERROR) {
+            # Field mapping
+            $self->post_process_metadata($C, $item_id, $metadata_hashref);
+
+            foreach my $field_name (keys(%$metadata_hashref)) {
+                # If multi-valued field
+                if (scalar(@{$metadata_hashref->{$field_name}}) > 1) {
+                    my @field_vals = @{$metadata_hashref->{$field_name}};
+                    foreach my $field_val (@field_vals) {
+                        $metadata_fields .=
+                          wrap_string_in_tag(
+                                             $field_val,
+                                             'field',
+                                             [['name', $field_name]]
+                                            );
+                    }
                 }
-            }
-            else {
-                $metadata_fields .=
-                    wrap_string_in_tag(
-                                       $metadata_hashref->{$field_name}[0],
-                                       'field',
-                                       [['name', $field_name]]
-                                      );
+                else {
+                    $metadata_fields .=
+                      wrap_string_in_tag(
+                                         $metadata_hashref->{$field_name}[0],
+                                         'field',
+                                         [['name', $field_name]]
+                                        );
+                }
             }
         }
     }
@@ -110,6 +116,30 @@ List of Solr fields to ask for
 # ---------------------------------------------------------------------
 sub get_field_list {
     ASSERT(0, qq{get_field_list() in __PACKAGE__ is pure virtual});
+}
+
+
+# ---------------------------------------------------------------------
+
+=item get_auxiliary_field_data
+
+Supplement primary metadata with field data.  This method can be overridden to go
+to a variety of sources for additional field data, e.g. MySQL.
+
+Nominally, it returns status and the primary hashref supplemeted with
+additional data:
+
+   {
+     'field_name' => [ field_val, ... ]
+   },
+   ...
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_auxiliary_field_data {
+    my ($C, $dbh, $item_id, $primary_metadata_hashref);
+    return ($primary_metadata_hashref, IX_NO_ERROR);
 }
 
 # ---------------------------------------------------------------------
