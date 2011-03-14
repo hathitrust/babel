@@ -137,6 +137,22 @@ my $dbh = DBI->connect
     $sth = DbUtils::prep_n_execute($dbh, $statement);
 
     
+    print "drop o_item\n";
+
+    $statement = qq{DROP TABLE IF EXISTS o_item};
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    print "drop o_coll_item\n";
+
+    $statement = qq{DROP TABLE IF EXISTS o_coll_item};
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    print "drop o_collection\n";
+
+    $statement = qq{DROP TABLE IF EXISTS o_collection};
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+
     print "renaming from test_item to o_item\n";
 
     $statement = qq{RENAME TABLE test_item TO o_item};
