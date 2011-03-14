@@ -1,7 +1,7 @@
 #!/l/local/bin/perl
 
 use strict;
-use warnings;
+#use warnings;
 
 =head1 NAME
 
@@ -85,15 +85,25 @@ sub bc_Usage {
     print qq{         or\n};
     print qq{       batch-collection -c -t title -o userid\n\n};
     print qq{Options:\n};
-    print qq{  -f file of HathiTrust IDs, one per line\n};
-    print qq{  -o userid (must match your kerberos uniqname)\n};
-    print qq{  -a coll_id append IDs to collid (obtain coll_id from batch_collection.pl -c option)\n};
-    print qq{  -c returns the coll_id for collection with title and owner\n\n};
+    print qq{  -f <filename> file of HathiTrust IDs, one per line\n};
+    print qq{  -t '<title>' collection title as a quoted string\n};
+    print qq{  -d '<description>' collection description as a quoted string\n};
+    print qq{  -o <userid> (must match your kerberos uniqname)\n};
+    print qq{  -a <coll_id> append IDs to collid. Obtain <coll_id> using batch_collection.pl -c option\n};
+    print qq{  -c returns the coll_id for collection with -t '<title>' owned by -o <userid>\n\n};
     print qq{Notes:\n};
     print qq{       IDs are HathiTrust IDs, e.g. mdp.39015012345\n};
     print qq{       Blank lines or lines beginning with a '#' are ignored\n\n};
 
 }
+
+my $WHO_I_AM = `whoami`;
+chomp($WHO_I_AM);
+if (! grep(/^$WHO_I_AM$/, @allowed_uniqnames)) {
+    qq{ERROR: $WHO_I_AM is not in the list of permitted users\n};
+    exit 1;
+}
+
 
 if ($ENV{SDRVIEW} ne 'full') {
     Log_print( qq{ERROR: batch-collection.pl only functions in the full HTDE environment\n} );
@@ -105,13 +115,14 @@ getopts('ct:d:o:f:a:');
 
 my $APPEND = $opt_a;
 my $COLL_ID = $opt_c;
+my $CREATE = 0;
 
 if ($APPEND) {
     if ($APPEND !~ m,\d+,) {
         Log_print( qq{ERROR: invalid coll_id arg to append (-a) option\n\n} );
         bc_Usage();
         exit 1;
-    }    
+    }
     if ((! $opt_o) || (!$opt_f)) {
         Log_print( qq{ERROR: missing -o or -f options for append (-a) operation\n\n} );
         bc_Usage();
@@ -160,6 +171,7 @@ else {
         bc_Usage();
         exit 0;
     }
+    $CREATE = 1;
 }
 
 my $USE_MIRLYN = 0;
@@ -172,20 +184,11 @@ my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
 my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID);
 if ($APPEND) {
     ($C_OWNER, $C_OWNER_NAME, $C_COLL_ID) =
-      (
-       bc_get_owner($opt_o),
-       bc_get_owner($opt_o),
-       $opt_a,
-      );
+      ($opt_o, $opt_o, $opt_a,);
 }
 else {
     ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME) =
-      (
-       $opt_t,
-       $opt_d,
-       bc_get_owner($opt_o),
-       bc_get_owner($opt_o),
-      );
+      ($opt_t, $opt_d, $opt_o, $opt_o,);
 }
 
 Utils::map_chars_to_cers(\$C_DESC, [q{"}, q{'}]);
@@ -212,7 +215,9 @@ $C->set_object('Collection', $CO);
 my $CS = CollectionSet->new($DB->get_DBH(), $config, $C_OWNER) ;
 $C->set_object('CollectionSet', $CS);
 
-open(INPUTFILE, $INPUT_FILE) || die $@;
+if ($APPEND || $CREATE) {
+    open(INPUTFILE, $INPUT_FILE) || die $@;
+}
 
 my $INITIAL_COLLECTION_SIZE = 0;
 my $small_collection_max_items = $config->get('filter_query_max_item_ids');
@@ -229,8 +234,13 @@ if ($APPEND) {
     }
     else {
         $coll_name = $CO->get_coll_name($existing_coll_id);
+        if ($WHO_I_AM ne $C_OWNER) {
+            Log_print( qq{ERROR: $WHO_I_AM is not the owner of $coll_name. You can append only to collections you own\n} );
+            exit 1;
+        }
+
         if (! $CS->exists_coll_name_for_owner($coll_name, $C_OWNER)) {
-            Log_print( qq{ERROR: You are apparently not the owner of the collection named "$coll_name"\n} );
+            Log_print( qq{ERROR: $C_OWNER is apparently not the owner of the collection named "$coll_name"\n} );
             exit 1;
         }
     }
@@ -246,10 +256,15 @@ if ($APPEND) {
 }
 elsif ($COLL_ID) {
     my $coll_id = $CO->get_coll_id_for_collname_and_user($C_TITLE, $C_OWNER_NAME);
-    Log_print( qq{\nCollection id = $coll_id for collection="$C_TITLE" and owner="$C_OWNER_NAME"\n} );
+    if ($coll_id) {
+        Log_print( qq{\nCollection id = $coll_id for collection="$C_TITLE" and owner="$C_OWNER_NAME"\n} );
+    }
+    else {
+        Log_print( qq{\nERROR: could not determine Collection id for collection="$C_TITLE" and owner="$C_OWNER_NAME"\n} );
+    }
 }
 else {
-    Log_print( qq{Begin "$C_TITLE" collection creation using db connection $dsn\n} );
+    Log_print( qq{Begin "$C_TITLE" collection creation using database: $dsn\n} );
 
     # Create the (empty) collection
     my $new_coll_id = bc_create_collection();
@@ -328,7 +343,7 @@ sub bc_handle_add_items_to {
         else {
             ($metadata_ref, $metadata_failed) = bc_get_metadata_vufind($C, $id);
         }
-        
+
         if ($metadata_failed) {
             Log_print( qq{Could not read metadata for "$id", SKIPPING\n} );
             next;
@@ -365,7 +380,7 @@ sub bc_handle_add_items_to {
 
     $ct--;
     my $using = $USE_MIRLYN ? 'using bc2meta' : 'using vufind';
-    
+
     Log_print( qq{Processed $ct of $num_ids items from $INPUT_FILE $using, added $added, enqueued $queued for indexing\n} );
     if ($added) {
         my $not_queued = max($added - $queued, 0);
@@ -381,7 +396,7 @@ sub bc_handle_add_items_to {
                 Log_print( qq{WARN: $not_queued added items could not be queued for indexing\n} );
             }
             else {
-                $SMALL_TO_LARGE_TRANSITION 
+                $SMALL_TO_LARGE_TRANSITION
                   ? Log_print( qq{All added items + existing small collection items were queued for indexing\n} )
                     : Log_print( qq{All added items were queued for indexing\n} );
             }
@@ -445,7 +460,7 @@ sub bc_get_metadata_vufind {
     my $metadata = `curl --silent '$url'`;
     my $rc = $?;
     my $metadata_failed = ($rc > 0);
-    
+
     if (! $metadata_failed) {
         $metadata = Encode::decode_utf8($metadata);
         $metadata =~ s,&lt;,<,g;
@@ -466,6 +481,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub bc_create_collection {
+
+    if ($WHO_I_AM ne $C_OWNER) {
+        Log_print( qq{ERROR: $WHO_I_AM does not match -o argument value: $C_OWNER\n} );
+        exit 1;
+    }
 
     if ($CS->exists_coll_name_for_owner($C_TITLE, $C_OWNER)) {
         Log_print( qq{ERROR: You already have a collection named "$C_TITLE"\n} );
@@ -800,25 +820,6 @@ sub bc_normalize_date {
     return $date;
 }
 
-# ---------------------------------------------------------------------
-
-=item bc_get_owner
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub bc_get_owner {
-    my $candidate = shift;
-
-    if (! grep(/^$candidate$/, @allowed_uniqnames)) {
-        Log_print( qq{ERROR: $candidate is not in the list of supported uniqnames\n} );
-        exit 1;
-    }
-
-    return $candidate;
-}
 
 =head1 AUTHOR
 
