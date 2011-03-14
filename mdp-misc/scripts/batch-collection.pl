@@ -1,7 +1,7 @@
 #!/l/local/bin/perl
 
 use strict;
-#use warnings;
+use warnings;
 
 =head1 NAME
 
@@ -9,24 +9,19 @@ batch-collection
 
 =head1 USAGE
 
-% batch-collection [-P][-i] -t title -d description -o userid file
-                   or
-                   -a coll_id -o userid file
-                   or
-                   -t title -o userid
+See Usage below
 
 =head1 DESCRIPTION
 
 Create an MBooks collection prior to SLIP fulltext indexing (for
 "large" collections).  Throughput appears to be 20,000 items / hour.
 
+Collection creation is private by default.  Use Collection Builder to
+change to Public.  Id list is expected to be HathiTrust id format.
+
 =head1 OPTIONS
 
 =over 8
-
-=item -P
-
-make the collection Public.  Default is private
 
 =item -t
 
@@ -39,10 +34,6 @@ collection description (can be edited later in Collection Builder)
 =item -o
 
 uniqname that will own the collection
-
-=item -i
-
-id list is internal. default is external (mdp) ids
 
 =item -a
 
@@ -88,16 +79,15 @@ my @allowed_uniqnames =
   );
 
 sub bc_Usage {
-    print qq{Usage: batch-collection [-P] -t title -d description -o userid -f file_of_ids\n};
+    print qq{Usage: batch-collection -t 'quoted title' -d 'quoted description text' -o userid -f <filename>\n};
     print qq{         or\n};
-    print qq{       batch-collection -a coll_id -o userid -f file_of_ids\n};
+    print qq{       batch-collection -a coll_id -o userid -f <filename>\n};
     print qq{         or\n};
     print qq{       batch-collection -c -t title -o userid\n\n};
     print qq{Options:\n};
     print qq{  -f file of HathiTrust IDs, one per line\n};
-    print qq{  -P make collection public.  default is private\n};
     print qq{  -o userid (must match your kerberos uniqname)\n};
-    print qq{  -a coll_id append IDs to collid (obtain coll_id from batch_collection.pl -c option)\n\n};
+    print qq{  -a coll_id append IDs to collid (obtain coll_id from batch_collection.pl -c option)\n};
     print qq{  -c returns the coll_id for collection with title and owner\n\n};
     print qq{Notes:\n};
     print qq{       IDs are HathiTrust IDs, e.g. mdp.39015012345\n};
@@ -110,8 +100,8 @@ if ($ENV{SDRVIEW} ne 'full') {
     exit 1;
 }
 
-our ($opt_P, $opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c);
-getopts('cPt:d:o:f:a:');
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c);
+getopts('ct:d:o:f:a:');
 
 my $APPEND = $opt_a;
 my $COLL_ID = $opt_c;
@@ -127,42 +117,59 @@ if ($APPEND) {
         bc_Usage();
         exit 1;
     }
-    if ($opt_t || $opt_d || $opt_P) {
-        Log_print( qq{ERROR: options -t or -d or -P options are not supported for append (-a) operation\n\n} );
+    if ($opt_t || $opt_d) {
+        Log_print( qq{ERROR: options -t or -d options are not supported for append (-a) operation\n\n} );
         bc_Usage();
         exit 1;
     }
 }
 elsif ($COLL_ID) {
-    if ((! $opt_o) || (!$opt_t)) {
+    if ((! $opt_o) || (! $opt_t)) {
         Log_print( qq{ERROR: missing -o or -t options for coll_id query (-c) operation\n\n} );
         bc_Usage();
         exit 1;
     }
-    if ($opt_a || $opt_d || $opt_P) {
-        Log_print( qq{ERROR: options -a or -d or -P options are not supported for coll_id query (-c) operation\n\n} );
+    if ($opt_a || $opt_d) {
+        Log_print( qq{ERROR: options -a or -d options are not supported for coll_id query (-c) operation\n\n} );
         bc_Usage();
         exit 1;
     }
 }
 else {
-    if ((! $opt_t) || (! $opt_d) || (! $opt_o) || (! $opt_f)) {
-        Log_print( qq{missing -t or -d or -o or -f options for colelction creation operation\n\n} );
+    if ($opt_t && ((! $opt_d) || (! $opt_o) || (! $opt_f))) {
+        Log_print( qq{missing -d or -o or -f options for collection creation operation\n\n} );
         bc_Usage();
         exit 1;
+    }
+    if ($opt_d && ((! $opt_t) || (! $opt_o) || (! $opt_f))) {
+        Log_print( qq{missing -t or -o or -f options for collection creation operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+    if ($opt_o && ((! $opt_t) || (! $opt_d) || (! $opt_f))) {
+        Log_print( qq{missing -t or -d or -f options for collection creation operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+    if ($opt_f && ((! $opt_t) || (! $opt_d) || (! $opt_o))) {
+        Log_print( qq{missing -t or -d or -o options for collection creation operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+    if ((! $opt_t) || (! $opt_d) || (! $opt_o) || (! $opt_f)) {
+        bc_Usage();
+        exit 0;
     }
 }
 
 my $USE_MIRLYN = 0;
-$ENV{'BATCH_COLLECTION_OPERATION'} = 1;
-
 my $INPUT_FILE = $opt_f;
 
 my $date = Utils::Time::iso_Time('date');
 my $time = Utils::Time::iso_Time('time');
 my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
 
-my ($C_NAME, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_PUBLIC, $C_COLL_ID);
+my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID);
 if ($APPEND) {
     ($C_OWNER, $C_OWNER_NAME, $C_COLL_ID) =
       (
@@ -172,18 +179,19 @@ if ($APPEND) {
       );
 }
 else {
-    ($C_NAME, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_PUBLIC) =
+    ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME) =
       (
        $opt_t,
        $opt_d,
        bc_get_owner($opt_o),
        bc_get_owner($opt_o),
-       $opt_P,
       );
 }
 
-my $C = new Context;
+Utils::map_chars_to_cers(\$C_DESC, [q{"}, q{'}]);
+Utils::map_chars_to_cers(\$C_TITLE, [q{"}, q{'}]);
 
+my $C = new Context;
 my $config = new MdpConfig(
                            Utils::get_uber_config_path('mdp-misc'),
                            $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
@@ -227,7 +235,7 @@ if ($APPEND) {
         }
     }
 
-    Log_print( qq{Begin appending IDs to "$coll_name" collection using db connection $dsn\n} );
+    Log_print( qq{Begin appending IDs to "$coll_name" collection using database: $dsn\n} );
 
     $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($existing_coll_id);
 
@@ -237,11 +245,11 @@ if ($APPEND) {
     Log_print( qq{Done.\n} );
 }
 elsif ($COLL_ID) {
-    my $coll_id = $CO->get_coll_id_for_collname_and_user($C_NAME, $C_OWNER_NAME);
-    Log_print( qq{\nCollection id = $coll_id for collection="$C_NAME" and owner="$C_OWNER_NAME"\n} );
+    my $coll_id = $CO->get_coll_id_for_collname_and_user($C_TITLE, $C_OWNER_NAME);
+    Log_print( qq{\nCollection id = $coll_id for collection="$C_TITLE" and owner="$C_OWNER_NAME"\n} );
 }
 else {
-    Log_print( qq{Begin "$C_NAME" collection creation using db connection $dsn\n} );
+    Log_print( qq{Begin "$C_TITLE" collection creation using db connection $dsn\n} );
 
     # Create the (empty) collection
     my $new_coll_id = bc_create_collection();
@@ -249,7 +257,7 @@ else {
     # Add items to the collection
     my $added = bc_handle_add_items_to($C, $new_coll_id);
 
-    Log_print( qq{Done. coll_id for "$C_NAME" collection is: $new_coll_id\n} );
+    Log_print( qq{Done. coll_id for "$C_TITLE" collection is: $new_coll_id\n} );
 }
 
 close(INPUTFILE);
@@ -459,15 +467,15 @@ Description
 # ---------------------------------------------------------------------
 sub bc_create_collection {
 
-    if ($CS->exists_coll_name_for_owner($C_NAME, $C_OWNER)) {
-        Log_print( qq{ERROR: You already have a collection named "$C_NAME"\n} );
+    if ($CS->exists_coll_name_for_owner($C_TITLE, $C_OWNER)) {
+        Log_print( qq{ERROR: You already have a collection named "$C_TITLE"\n} );
         exit 1;
     }
 
     my $coll_data_hashref = {
-                             'collname'    => $C_NAME,
+                             'collname'    => $C_TITLE,
                              'description' => $C_DESC,
-                             'shared'      => $C_PUBLIC ? 1 : 0,
+                             'shared'      => 0,
                              'owner'       => $C_OWNER,
                              'owner_name'  => $C_OWNER_NAME,
                             };
@@ -477,7 +485,7 @@ sub bc_create_collection {
         $new_coll_id = $CS->add_coll($coll_data_hashref);
     };
     if ($@) {
-        Log_print( qq{ERROR: Could not create collection "$C_NAME": $@\n} );
+        Log_print( qq{ERROR: Could not create collection "$C_TITLE": $@\n} );
         exit 1;
     }
 
@@ -639,8 +647,7 @@ MARC 245 indicator 2 indicates how many positions to skip
 =cut
 
 # ---------------------------------------------------------------------
-sub bc_get_sort_title
-{
+sub bc_get_sort_title {
     my ($display_title, $i2) = @_;
 
     # Remap XML charents so I2 makes sense
@@ -729,13 +736,14 @@ sub bc_do_enqueue {
     my $item_id = shift;
 
     my $ok = 1;
-    my $num_queued = 1;
+    my $num_queued = 0;
     my $dbh = $DB->get_DBH();
 
     if ($INITIAL_COLLECTION_SIZE >= $SMALLEST_LARGE_COLLECTION) {
         # All items less than max have been handled in previous runs.
         # Just queue this one item.
         $ok = SharedQueue::enqueue_item_ids($C, $dbh, [$item_id]);
+        $num_queued = 1;
     }
     else {
         # Handle the transition from small to large collection
@@ -761,6 +769,7 @@ sub bc_do_enqueue {
             # already occured.  Just queue this one item.
 
             $ok = SharedQueue::enqueue_item_ids($C, $dbh, [$item_id]);
+            $num_queued = 1;
         }
     }
 
@@ -810,8 +819,6 @@ sub bc_get_owner {
 
     return $candidate;
 }
-
-exit 0;
 
 =head1 AUTHOR
 
