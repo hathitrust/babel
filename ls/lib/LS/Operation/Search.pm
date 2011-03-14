@@ -29,6 +29,7 @@ use Utils;
 use Debug::DUtils;
 use Utils::Logger;
 use Operation::Status;
+use Search::Searcher;
 
 use LS::Query::FullText;
 use LS::Result::FullText;
@@ -94,10 +95,10 @@ sub execute_operation
 
     my $config = $C->get_object('MdpConfig');
     # Randomize primary shard
-    my $engine_uri = $self->get_solr_engine_uri($C);
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $timeout = $config->get('ls_searcher_timeout');
-    my $searcher = new LS::Searcher::FullText($engine_uri, $timeout);
-
+    my $searcher = new LS::Searcher::FullText($engine_uri, $timeout, 1);
+    
     # Paging: Solr doc number is 0-relative
     my ($solr_start_row, $solr_num_rows) = $self->get_solr_page_values($C);
     # Limited to Full-text?
@@ -153,58 +154,6 @@ sub execute_operation
 
     return $ST_OK;
 }
-
-# ---------------------------------------------------------------------
-
-=item force_head_node_DEBUG
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub force_head_node_DEBUG {
-    my ($head_node_debug) = grep(/^head\d+/, split(',', $ENV{'DEBUG'}));
-    my ($head_node) = ($head_node_debug =~ m,(\d+),);
-    DEBUG($head_node_debug, qq{head node FORCED to: $head_node});
-    
-    return $head_node;
-}
-
-
-# ---------------------------------------------------------------------
-
-=item get_solr_engine_uri
-
-Randomize the primary Solr instance for multishard queries to
-distribute the result merge load.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub get_solr_engine_uri {
-    my $self = shift;
-    my $C = shift;
-
-    my $config = $C->get_object('MdpConfig');
-    my @engine_uris = $config->get('mbooks_solr_engines');
-    my @num_shards_list = $config->get('num_shards_list');
-
-    # an integer between 0 and number of shards in @num_shards_list - 1
-    my $index_of_shard_in_list; 
-    my $forced_node = force_head_node_DEBUG();
-    if ($forced_node) {
-        $index_of_shard_in_list = $forced_node - 1;
-    }
-    else {
-        $index_of_shard_in_list = int(rand(scalar(@num_shards_list)));
-    }
-    
-    my $random_shard = $num_shards_list[$index_of_shard_in_list];
-    
-    return $engine_uris[$random_shard-1];
-}
-
 
 
 # ---------------------------------------------------------------------
