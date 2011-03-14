@@ -26,12 +26,13 @@ use DbUtils;
 my $db_server = 'mysql-sdr';
 my $dsn = qq{DBI:mysql:mdp:$db_server};
 
+my $user = query("Enter user $dsn: ");
 my $passwd = query("Enter password for pfarber at $dsn: ");
 
 my $dbh = DBI->connect
   (
    $dsn, 
-   'pfarber', 
+   $user, 
    $passwd, 
  {RaiseError => 1,}
   );
