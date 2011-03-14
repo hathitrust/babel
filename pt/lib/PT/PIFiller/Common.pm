@@ -636,14 +636,13 @@ sub handle_COLLECTION_LIST_PI
     my $co = $C->get_object('Collection');
 
     my $cgi = $C->get_object('CGI');
-    my $extern_id = $cgi->param('id');
-    my $intern_id = $co->get_item_id_from_extern_id($extern_id);
+    my $id = $cgi->param('id');
 
     my $coll_list;
-    if ($co->item_exists($intern_id))
+    if ($co->item_exists($id))
     {
         my $coll_data_arrayref =
-            $co->get_coll_data_for_item_and_user($intern_id, $user_id);
+            $co->get_coll_data_for_item_and_user($id, $user_id);
 
         foreach my $coll_hashref (@$coll_data_arrayref)
         {
@@ -679,8 +678,7 @@ sub handle_COLLECTION_SELECT_PI
     my $cs = $C->get_object('CollectionSet');
 
     my $cgi = $C->get_object('CGI');
-    my $extern_id = $cgi->param('id');
-    my $intern_id = $co->get_item_id_from_extern_id($extern_id);
+    my $id = $cgi->param('id');
 
     my (%coll_names, @coll_vals);
 
@@ -697,12 +695,12 @@ sub handle_COLLECTION_SELECT_PI
     # Add collections not containing the item to the pulldown.  If the
     # item has never been added by anyone it will not 'exist' so it will
     # be ok to show all this user's collections as in the pulldown
-    my $item_exists = $co->item_exists($intern_id);
+    my $item_exists = $co->item_exists($id);
     foreach my $coll_hashref (@$coll_data_arrayref)
     {
         if ((! $item_exists)
             ||
-            (! $co->item_in_collection($intern_id, $$coll_hashref{'MColl_ID'})))
+            (! $co->item_in_collection($id, $$coll_hashref{'MColl_ID'})))
         {
             push(@coll_vals, $$coll_hashref{'MColl_ID'});
             $coll_names{$$coll_hashref{'MColl_ID'}} = $$coll_hashref{'collname'};
