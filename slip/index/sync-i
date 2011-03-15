@@ -106,7 +106,7 @@ my $DBH = $db->get_DBH();
 my $CO = new Collection($DBH, $config, undef);
 my $CS = new CollectionSet($DBH, $config, undef);
 
-#handle_synchronization($C);
+handle_synchronization($C);
 handle_inverse_synchronization($C);
 
 exit 0;
