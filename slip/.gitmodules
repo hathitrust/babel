@@ -4,6 +4,3 @@
 [submodule "web/common-web"]
 	path = web/common-web
 	url = /htapps/repos/mdp-web.git
-[submodule "vendor/ls-lib"]
-	path = vendor/ls-lib
-	url = /htapps/repos/ls.git
