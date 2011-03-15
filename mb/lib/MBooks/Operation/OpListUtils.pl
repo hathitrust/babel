@@ -231,9 +231,9 @@ sub get_final_item_arr_ref {
             # 'uc1.$b776044' ($BARCODE) when interpolating Perl
             # variables and uc2.ark:/13960/t0dv1g69b (colon causes
             # Solr parse error)
-            $extern_id =~ s,ark:,ark\\:,;
+            $id =~ s,ark:,ark\\:,;
             my $solr_response = 
-            `curl -s 'http://solr-vufind:8026/solr/biblio/select?q=ht_id:$extern_id&start=0&rows=1&fl=id'`;
+            `curl -s 'http://solr-vufind:8026/solr/biblio/select?q=ht_id:$id&start=0&rows=1&fl=id'`;
             ($record_no) = ($solr_response =~ m,<str name="id">(.*?)</str>,);
         }        
         $item_hashref->{'record_no'} = $record_no;
