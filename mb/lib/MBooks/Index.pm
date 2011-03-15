@@ -72,9 +72,9 @@ sub __get_counts_for_coll_id {
 
     my $config = $C->get_object('MdpConfig');
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
-    my $searcher = new MBooks::Searcher::FullText($engine_uri);
+    my $searcher = new MBooks::Searcher::FullText($engine_uri, undef, 1);
 
-    my $query_string = qq{q=coll_id:$coll_id&fl=id&rows=0};
+    my $query_string = qq{q=coll_id:$coll_id&fl=id&start=0&rows=0};
 
     my $rs = new MBooks::Result::FullText();
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
