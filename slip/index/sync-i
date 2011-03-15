@@ -106,7 +106,7 @@ my $DBH = $db->get_DBH();
 my $CO = new Collection($DBH, $config, undef);
 my $CS = new CollectionSet($DBH, $config, undef);
 
-handle_synchronization($C);
+#handle_synchronization($C);
 handle_inverse_synchronization($C);
 
 exit 0;
@@ -179,21 +179,22 @@ sub handle_synchronization {
     __handle_rc($ok, qq{Failed to get coll_ids\n});
 
     my $s;
+    my $id_ct = 0;
     my $coll_ct = 0;
     my $missing_ids = 0;
 
     foreach my $coll_id (@$coll_id_arr_ref) {
-        __output(qq{Processing coll_id=$coll_id\n});
+        __output(qq{\nProcessing coll_id=$coll_id\n});
         $coll_ct++;
         my $missing_ids_in_coll = 0;
 
-        # Make sure the coll_id itself exists for at least one id
+        # Make sure the coll_id itself exists in Solr for at least one id
         my $query = qq{q=coll_id:$coll_id&start=0&rows=0};
         $rs = __handle_query($C, $query, $searcher, $rs);
 
-        if ($rs->get_rows_returned() == 0) {
+        if ($rs->get_num_found() == 0) {
             $s = $NOOP ? '' : "\n\t--> queue all ids";
-            __output(qq{\tALL ids MISSING from Solr index: coll_id=$coll_id$s\n});
+            __output(qq{\n\tALL ids MISSING from Solr index: coll_id=$coll_id$s\n});
 
             if (! $NOOP) {
                 $ok = SharedQueue::enqueue_all_ids($C, $DBH, $coll_id);
@@ -207,12 +208,17 @@ sub handle_synchronization {
         else {
             my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
             foreach my $id (@$id_arr_ref) {
-                my $query_1 = qq{q=coll_id:$coll_id+AND+id=$id&start=0&rows=0};
+                $id =~ s,ark:,ark\\:,;
+                my $query_1 = qq{q=coll_id:$coll_id+AND+id:$id&start=0&rows=0};
                 $rs = __handle_query($C, $query_1, $searcher, $rs);
-
-                if ($rs->get_rows_returned() == 0) {
+                $id_ct++;
+                
+                (($id_ct % 100) == 0) ? __output($id_ct) : '';
+                (($id_ct % 10) == 0) ? __output('.') : '';
+                
+                if ($rs->get_num_found() == 0) {
                     $s = $NOOP ? '' : "\n\t--> queue id";
-                    __output(qq{\tMISSING id from Solr index: id=$id in coll_id=$coll_id $s\n});
+                    __output(qq{\n\tMISSING: id=$id coll_id=$coll_id $s\n});
 
                     $missing_ids++;
                     $missing_ids_in_coll++;
@@ -225,8 +231,8 @@ sub handle_synchronization {
             }
         }
         $s = $missing_ids_in_coll
-          ? qq{coll_id=$coll_id had $missing_ids_in_coll missing ids in Solr\n}
-            : qq{All ids present in Solr for coll_id=$coll_id};
+          ? qq{\ncoll_id=$coll_id had $missing_ids_in_coll missing ids in Solr\n}
+            : qq{\nAll ids present in Solr for coll_id=$coll_id};
         __output(qq{$s\n});
     }
 
@@ -263,15 +269,15 @@ sub __parse_result_docs {
     my @ids_to_enqueue = ();
     my %non_existent_coll_ids = ();
     foreach my $id (keys %id_to_coll_id_hash) {
-        my $coll_id = $id_to_coll_id_hash{$id};
-
-        if (
-            $non_existent_coll_ids{$coll_id}
-            ||
-            (! $CS->exists_coll_id($id_to_coll_id_hash{$id}))
-           ) {
-            push(@ids_to_enqueue, $id);
-            $non_existent_coll_ids{$coll_id} = 1;
+        foreach my $coll_id (@{ $id_to_coll_id_hash{$id} }) {
+            if ($non_existent_coll_ids{$coll_id}) {
+                push(@ids_to_enqueue, $id);
+            }
+            elsif (! $CS->exists_coll_id($coll_id)) {
+                $non_existent_coll_ids{$coll_id} = 1;
+                push(@ids_to_enqueue, $id);
+                __output(qq{\tSolr id=$id has coll_id=$coll_id MISSING from MySQL\n});
+            }
         }
     }
 
@@ -312,7 +318,14 @@ sub handle_inverse_synchronization {
     my $s;
     my $ok;
     my $id_ct = 0;
+    my $total_ids_in_missing_coll_ids = 0;
+    
     my $start = 0;
+
+    my $item_query = qq{q=coll_id:[* TO *]&start=0&rows=0&fl=coll_id,id};
+    $rs = __handle_query($C, $item_query, $searcher, $rs);
+    my $num_found = $rs->get_num_found();
+    __output(qq{Solr has $num_found items in collections\n});
 
     while (1) {
         # Get a slice of Solr documents with non-empty coll_id field(s)
@@ -322,18 +335,18 @@ sub handle_inverse_synchronization {
         my $rows_returned = $rs->get_rows_returned();
         last if ($rows_returned == 0);
         $start += $SLICE_SIZE;
-        __output(qq{$rows_returned ids in Solr slice\n});
-
+        __output(qq{\n$rows_returned ids in Solr slice\n});
 
         # Parse and return optimized list of ids to test
         my ($id_hashref_of_coll_id_arr_ref, $ids_to_enqueue_arr_ref) = __parse_result_docs($C, $rs);
         my $num_ids_from_missing_coll_ids = scalar(@$ids_to_enqueue_arr_ref);
         
         $id_ct += $num_ids_from_missing_coll_ids;
+        $total_ids_in_missing_coll_ids += $num_ids_from_missing_coll_ids;
     
         if ($num_ids_from_missing_coll_ids) {
             $s = $NOOP ? '' : "\n\t--> queue $num_ids_from_missing_coll_ids ids";
-            __output(qq{\tSolr has $num_ids_from_missing_coll_ids ids in MISSING coll_ids $s\n});
+            __output(qq{\tSolr has $num_ids_from_missing_coll_ids ids in MISSING MySQL coll_ids $s\n});
             if (! $NOOP) {
                 $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
                 __handle_rc($ok, qq{Failed to enqueue ids from optimize step\n});
@@ -345,16 +358,16 @@ sub handle_inverse_synchronization {
         foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
             my $coll_id_arr_ref = $id_hashref_of_coll_id_arr_ref->{$id};
 
-            $s = join(', ', @$coll_id_arr_ref);
-            __output(qq{Testing id=$id is in coll_id(s)=$s\n});
-
             $id_ct++;
+
+            (($id_ct % 100) == 0) ? __output($id_ct) : '';
+            (($id_ct % 10) == 0) ? __output('.') : '';
 
             # Check that this id is in each of these coll_ids
             foreach my $coll_id (@$coll_id_arr_ref) {
                 if (! $CO->one_or_more_items_in_coll($coll_id, [$id])) {
                     $s = $NOOP ? '' : "\n\t--> queue id";
-                    __output(qq{\tid NOT IN COLLECTION: id=$id, coll_id=$coll_id $s\n});
+                    __output(qq{\n\tid NOT IN COLLECTION: id=$id, coll_id=$coll_id $s\n});
                 }
                 push(@$ids_to_enqueue_arr_ref, $id);
             }
@@ -367,7 +380,7 @@ sub handle_inverse_synchronization {
 
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
     $s = $NOOP ? '' : "$total_ids_queued added to shared queue";
-    __output(qq{Phase II processed $id_ct ids in Solr not belonging to any collection in MySQL $s\n\n});
+    __output(qq{\n\nPhase II processed $id_ct ids, had $total_ids_in_missing_coll_ids in Solr not belonging to any collection in MySQL $s\n\n});
 }
 
 
