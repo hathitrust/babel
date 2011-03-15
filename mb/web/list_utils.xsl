@@ -283,23 +283,21 @@
     </span>
   </xsl:template>
 
-
+  
   <xsl:template name="DisplayContent">
     
-		<div id="ColContainer">
-
+    <div id="ColContainer">      
       <xsl:call-template name="EditCollectionWidget"/>
-
 
       <div class="ColContent">
         <h3 class="SkipLink">List of items and actions</h3>
         
-        <!--Special case show index status message only for listsrch page -->
+        <!-- Special case show index status message only for listsrch page -->
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
           <xsl:variable name="AllIndexedStatus">
             <xsl:value-of select="/MBooksTop/SearchWidget/AllItemsIndexed"/>
           </xsl:variable>
-          <div  id="ListSearchInfoAlert">            
+          <div id="ListSearchInfoAlert">            
             <xsl:if test="$AllIndexedStatus = 'FALSE'">
               <xsl:attribute name="class">
                 <xsl:text>infoAlert</xsl:text>
@@ -311,13 +309,11 @@
                 <xsl:with-param name="IndexMsg">Not all items in your collection are currently available for searching. Try again soon.</xsl:with-param>
                 <xsl:with-param name="IndexMsgClass">IndexMsgSearchResults</xsl:with-param>
               </xsl:call-template>
-              
             </xsl:if>  
           </div>
         </xsl:if>
         <!-- End special case for list search results -->
-
-
+      
         <!--ADDITION: Added: overlay is displayed here-->
         <div id="errormsg">
           <div class="bd"></div>
@@ -329,7 +325,6 @@
           </div>
         </xsl:if>
         <xsl:call-template name="ItemList"/>
-
       </div>  <!-- end div ColContent -->
     </div>  <!-- end div ColContainer -->
   </xsl:template>
@@ -941,7 +936,7 @@
       <xsl:with-param name="AllIndexedStatus">
         <xsl:value-of select= "/MBooksTop/SearchWidget/AllItemsIndexed"/>
         </xsl:with-param>
-      <xsl:with-param name="IndexMsg"> Not all items in coll indexed</xsl:with-param>
+      <xsl:with-param name="IndexMsg"> Not all FOO3 items in coll indexed</xsl:with-param>
       <xsl:with-param name="IndexMsgClass">IndexMsgSearchWidget</xsl:with-param>
     </xsl:call-template>
   </xsl:template>
