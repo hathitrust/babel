@@ -160,23 +160,8 @@
   <xsl:template name="NoResults">    
     <div id="ColContainer">
       <div class="ColContent">
-        <xsl:variable name="AllIndexedStatus">
-          <xsl:value-of select="/MBooksTop/SearchWidget/AllItemsIndexed"/>
-        </xsl:variable>
-        <div id="ListSearchInfoAlert">            
-          <xsl:if test="$AllIndexedStatus = 'FALSE'">
-            <xsl:attribute name="class">
-              <xsl:text>infoAlert</xsl:text>
-            </xsl:attribute>
-            <xsl:call-template name="AllIndexedMsg">
-              <xsl:with-param name="AllIndexedStatus">
-                <xsl:value-of select="/MBooksTop/SearchWidget/AllItemsIndexed"/>
-              </xsl:with-param>
-              <xsl:with-param name="IndexMsg">Not all items in your collection are currently available for searching. Try again soon.</xsl:with-param>
-              <xsl:with-param name="IndexMsgClass">IndexMsgSearchResults</xsl:with-param>
-            </xsl:call-template>
-          </xsl:if>
-        </div>
+        <xsl:call-template name="IndexingStatusMsg"/>
+
         <div class="error">
           <xsl:text>Your search for "</xsl:text>
           <xsl:value-of select="/MBooksTop/QueryString"/>

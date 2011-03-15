@@ -481,39 +481,31 @@
           <xsl:value-of select="$SearchFormId"/>
         </xsl:attribute>
         
-        <xsl:call-template name="AllIndexedMsg">
-          <xsl:with-param name="AllIndexedStatus">
-            <xsl:value-of select= "AllItemsIndexed"/>
-            </xsl:with-param>
-            <xsl:with-param name="IndexMsg">Not all items indexed</xsl:with-param>
-            <xsl:with-param name="IndexMsgClass">IndexMsgListColls</xsl:with-param> 
-          </xsl:call-template>
-          
-          <span class="SearchLabel">
-            <xsl:value-of select="concat('Search ', CollName)"/>
-          </span>
-          <input type="text" size="15" maxlength="40" name="q1" />
-        </label>
+        <span class="SearchLabel">
+          <xsl:value-of select="concat('Search ', CollName)"/>
+        </span>
+        <input type="text" size="15" maxlength="40" name="q1" />
+      </label>
   
-        <button type="submit">
-          <xsl:attribute name="id">
-            <xsl:text>button_</xsl:text>
-            <xsl:value-of select="$CollId"/>
-          </xsl:attribute>
-          Search</button>
-      </form>
-  
-      <!-- search error message-->
-      
-      <div>
+      <button type="submit">
         <xsl:attribute name="id">
-          <xsl:text>search_errormsg_</xsl:text>
-          <xsl:value-of select="$SearchFormId"/>
+          <xsl:text>button_</xsl:text>
+          <xsl:value-of select="$CollId"/>
         </xsl:attribute>
-        <div class="bd"></div>
-      </div>
-      
+        Search
+      </button>
+    </form>
+  
+    <!-- search error message-->     
+    <div>
+      <xsl:attribute name="id">
+        <xsl:text>search_errormsg_</xsl:text>
+        <xsl:value-of select="$SearchFormId"/>
+      </xsl:attribute>
+      <div class="bd"></div>
+    </div>      
     </xsl:template>
+
 
     <!--# search form #-->
     <xsl:template name="subnav_header">

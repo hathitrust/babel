@@ -283,9 +283,43 @@
     </span>
   </xsl:template>
 
+  <xsl:template name="IndexingStatusMsg">
+    <xsl:variable name="all_items_indexed">
+      <xsl:value-of select="/MBooksTop/SearchWidget/AllItemsIndexed"/>
+    </xsl:variable>
+
+    <xsl:variable name="num_in_collection">
+      <xsl:value-of select="/MBooksTop/SearchWidget/NumItemsInCollection"/>
+    </xsl:variable>
+
+    <xsl:variable name="num_not_indexed">
+      <xsl:value-of select="/MBooksTop/SearchWidget/NumNotIndexed"/>
+    </xsl:variable>
+
+    <xsl:if test="$all_items_indexed='FALSE'">
+      <xsl:element name="div">
+        <xsl:attribute name="id">
+          <xsl:text>ListSearchInfoAlert</xsl:text>
+        </xsl:attribute>
+        <xsl:attribute name="class">
+          <xsl:text>infoAlert</xsl:text>
+        </xsl:attribute>
+
+        <xsl:element name="span">
+          <xsl:attribute name="class">
+            <xsl:text>IndexMsgSearchResults</xsl:text>
+          </xsl:attribute>
+          <xsl:text>Some items in your collection are not currently available for searching. Of </xsl:text>
+          <xsl:value-of select="$num_in_collection"/>
+          <xsl:text> items, </xsl:text>
+          <xsl:value-of select="$num_not_indexed"/>
+          <xsl:text> are queued to be indexed, usually within 48 hours.</xsl:text>
+        </xsl:element>      
+      </xsl:element>
+    </xsl:if>  
+  </xsl:template>
   
-  <xsl:template name="DisplayContent">
-    
+  <xsl:template name="DisplayContent">    
     <div id="ColContainer">      
       <xsl:call-template name="EditCollectionWidget"/>
 
@@ -294,25 +328,8 @@
         
         <!-- Special case show index status message only for listsrch page -->
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
-          <xsl:variable name="AllIndexedStatus">
-            <xsl:value-of select="/MBooksTop/SearchWidget/AllItemsIndexed"/>
-          </xsl:variable>
-          <div id="ListSearchInfoAlert">            
-            <xsl:if test="$AllIndexedStatus = 'FALSE'">
-              <xsl:attribute name="class">
-                <xsl:text>infoAlert</xsl:text>
-              </xsl:attribute>
-              <xsl:call-template name="AllIndexedMsg">
-                <xsl:with-param name="AllIndexedStatus">
-                  <xsl:value-of select="/MBooksTop/SearchWidget/AllItemsIndexed"/>
-                </xsl:with-param>
-                <xsl:with-param name="IndexMsg">Not all items in your collection are currently available for searching. Try again soon.</xsl:with-param>
-                <xsl:with-param name="IndexMsgClass">IndexMsgSearchResults</xsl:with-param>
-              </xsl:call-template>
-            </xsl:if>  
-          </div>
+          <xsl:call-template name="IndexingStatusMsg"/>
         </xsl:if>
-        <!-- End special case for list search results -->
       
         <!--ADDITION: Added: overlay is displayed here-->
         <div id="errormsg">
@@ -903,11 +920,6 @@
 
     
   <xsl:template name="SearchWidget">
-    <!-- for now only indicate all indexed status on search results page -->
-    <!--XXX after release move this to separate PI so we can use PI to determine which pages it shows up on-->
-    <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
-      <xsl:call-template name="AllIndexed"/>
-    </xsl:if>
     <div id="LSformCont">
       <form id="itemlist_searchform" method="get" action="mb" name="searchcoll">
         <xsl:call-template name="HiddenDebug"/>
@@ -928,30 +940,6 @@
       <xsl:copy-of select="$hidden_c_param"/>
     </form>
   </div>
-  </xsl:template>
-
-  <!--tbw this class does not seem to be used except in js_utils.xsl for use with debug flag-->
-  <xsl:template name="AllIndexed">
-    <xsl:call-template name="AllIndexedMsg">
-      <xsl:with-param name="AllIndexedStatus">
-        <xsl:value-of select= "/MBooksTop/SearchWidget/AllItemsIndexed"/>
-        </xsl:with-param>
-      <xsl:with-param name="IndexMsg"> Not all FOO3 items in coll indexed</xsl:with-param>
-      <xsl:with-param name="IndexMsgClass">IndexMsgSearchWidget</xsl:with-param>
-    </xsl:call-template>
-  </xsl:template>
-
-
-  <xsl:template name="AllIndexedMsg">
-    <xsl:param name="AllIndexedStatus"></xsl:param>
-    <xsl:param name="IndexMsg">Default Message Goes Here</xsl:param>
-    <xsl:param name="IndexMsgClass">IndexMsg</xsl:param>
-    
-    <xsl:if test="$AllIndexedStatus='FALSE'">
-      <span>
-        <xsl:attribute name="class"><xsl:value-of select="$IndexMsgClass"/></xsl:attribute>
-        <xsl:value-of select="$IndexMsg"/></span>
-      </xsl:if>
   </xsl:template>
     
 
