@@ -31,6 +31,7 @@ use LS::Utils;
 BEGIN
 {
     require "PIFiller/Common/Globals.pm";
+    require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
     require "LS/PIFiller/Globals.pm";
 }
 
