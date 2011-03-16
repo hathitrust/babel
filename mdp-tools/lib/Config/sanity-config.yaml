@@ -163,5 +163,6 @@ slip:
   - /htapps/__CMD_STAGE__/slip/index/rights-j -T -B -n __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/sizer-j -r1 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/sync-j -r1 -mrightsNINindexed -T __LOCAL__
+  - /htapps/__CMD_STAGE__/slip/index/sync-i -r1 -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/timeouts-j -r1 -l1 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/check-j -r11 -R1 -O2 -n -C __LOCAL__

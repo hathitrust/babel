@@ -54,11 +54,12 @@ foreach my $app (@apps) {
         exit 1;
     }
 
-    my $branch = `git branch`;
-    if ($branch !~ m,\* master,s) {
-        PrintN("\nMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n");
-        next;
-    }
+# May want latest submodules regardless of which branch is checked out
+#     my $branch = `git branch`;
+#     if ($branch !~ m,\* master,s) {
+#         PrintN("\nMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n");
+#         next;
+#     }
 
     my $submodule_path;
     if ($SUBMODULE) {
