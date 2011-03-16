@@ -322,7 +322,9 @@ sub handle_inverse_synchronization {
     
     my $start = 0;
 
-    my $item_query = qq{q=coll_id:[* TO *]&start=0&rows=0&fl=coll_id,id};
+    # zero is reserved for the coll_id field for items that are not in
+    # any collection
+    my $item_query = qq{q=coll_id:[1 TO *]&start=0&rows=0&fl=coll_id,id};
     $rs = __handle_query($C, $item_query, $searcher, $rs);
     my $num_found = $rs->get_num_found();
     __output(qq{Solr has $num_found items in collections\n});
