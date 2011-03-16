@@ -84,19 +84,32 @@ if ($help) {
 my $BRANCH = $opt_b;
 my $ALL = $opt_A;
 
+my @all_apps = `cat $LOCATION/../app-list.txt`;
+chomp(@all_apps);
+
 my @apps;
 if (defined($BRANCH)) {
     @apps = shift;
 }
 else {
     if ($ALL) {
-        @apps = `cat $LOCATION/../app-list.txt`;
-        chomp(@apps);
+        @apps = @all_apps;
     }
     else {
         @apps = @ARGV;
     }
 }
+
+foreach my $a (@apps) {
+    if (! grep(/^$a$/, @all_apps)) {
+        PrintN("$a is not a valid app\n");
+        my $apps = join(', ', @all_apps);
+        print "Valid apps are: $apps\n";
+        print stage_app_usage();
+        exit 1;
+    }
+}
+
 
 if (! scalar(@apps)) {
     print stage_app_usage();
