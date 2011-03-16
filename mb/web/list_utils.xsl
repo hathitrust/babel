@@ -198,7 +198,6 @@
     <xsl:if test="$AllItemsCount&gt;1">
       <xsl:choose>
         <xsl:when test="$FullTextCount&gt;0">
-
           <xsl:choose>
             <xsl:when test="$AllItemsCount = $FullTextCount">
               <!-- either they are all full text or all view-only so don't display widget-->
@@ -207,32 +206,23 @@
                 <xsl:call-template name="Refine"/>
             </xsl:otherwise>
           </xsl:choose>
-
         </xsl:when>
-
         <xsl:otherwise>
-			
-        <xsl:text>There are no Full Text items in this collection</xsl:text>
-			
+          <xsl:text>There are no Full Vext items in this collection</xsl:text>
         </xsl:otherwise>
-
       </xsl:choose>
-
     </xsl:if>
   </xsl:template>
 
   <xsl:template name="Refine">
-
     <span>
       <xsl:variable name="Limit">
         <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
       </xsl:variable>
 
       <xsl:choose>
-
         <xsl:when test ="$Limit = 'YES'">
           <!-- we are currently showing the result of narrow to full text so we want a URL to all -->
-          
           <ul class="refineTabs">
             <li class="viewall inactive">
               <xsl:element name="a">
