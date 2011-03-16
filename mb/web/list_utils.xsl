@@ -208,7 +208,7 @@
           </xsl:choose>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:text>There are no Full Vext items in this collection</xsl:text>
+          <xsl:text>There are no Full View items in this collection</xsl:text>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:if>
