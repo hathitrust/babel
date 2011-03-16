@@ -123,7 +123,14 @@ sub get_auxiliary_field_data {
     my ($status, $coll_id_arr_ref) = SharedQueue::get_coll_ids_for_id($C, $dbh, $item_id);
     if ($status) {
         $status = IX_NO_ERROR;
-        $primary_metadata_hashref->{coll_id} = $coll_id_arr_ref;
+        # If item is in one or more collections
+        if (scalar(@$coll_id_arr_ref)) {
+            $primary_metadata_hashref->{coll_id} = $coll_id_arr_ref;
+        }
+        else {
+            # O reserved for coll_id field of item not in any collection
+            $primary_metadata_hashref->{coll_id} = [0];
+        }
     }
     else {
         $status = IX_METADATA_FAILURE;
