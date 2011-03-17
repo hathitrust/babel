@@ -111,10 +111,23 @@ my $DBH = $db->get_DBH();
 my $CO = new Collection($DBH, $config, undef);
 my $CS = new CollectionSet($DBH, $config, undef);
 
+# Only sync with solr index if it is "new", i.e. if released for
+# today. Otherwise, we would see missing ids in yesterday's index
+my $today = `date +%Y-%m-%d`;
+chomp($today);
+
+my $release_flag = "$ENV{SDRROOT}/flags/web/lss-release-$today";
+my $index_released = (-e $release_flag);
+
 my $process_start = time();
 
-handle_synchronization($C);
-handle_inverse_synchronization($C);
+if ($index_released || $INTERACTIVE) {
+    handle_synchronization($C);
+    handle_inverse_synchronization($C);
+}
+else {
+    l__output("Release flag=$release_flag not present. Skipping sync-i run on $today\n");
+}
 
 sy_final_report($C, $DBH, $process_start);
 
