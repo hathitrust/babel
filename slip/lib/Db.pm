@@ -1001,6 +1001,30 @@ sub Select_error_ids {
     return $id_arr_hashref;
 }
 
+# ---------------------------------------------------------------------
+
+=item Select_id_from_j_errors
+
+Sniff error queue
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Select_id_from_j_errors {
+    my ($C, $dbh, $run, $id) = @_;
+
+    my $sth;
+    my $statement;
+
+    $statement = qq{SELECT reason FROM j_errors WHERE run=$run AND id='$id'};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    my $reason = $sth->fetchrow_array() || $C_NO_ERROR;
+
+    return $reason;
+}
+
 
 # ---------------------------------------------------------------------
 
