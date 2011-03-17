@@ -286,6 +286,17 @@
       <xsl:value-of select="/MBooksTop/SearchWidget/NumNotIndexed"/>
     </xsl:variable>
 
+    <xsl:variable name="num_not_indexed_verb">
+      <xsl:choose>
+        <xsl:when test="$num_not_indexed > 1">
+          <xsl:text> are</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text> is</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
     <xsl:if test="$all_items_indexed='FALSE'">
       <xsl:element name="div">
         <xsl:attribute name="id">
@@ -299,11 +310,11 @@
           <xsl:attribute name="class">
             <xsl:text>IndexMsgSearchResults</xsl:text>
           </xsl:attribute>
-          <xsl:text>Some items in your collection are not currently available for searching. Of </xsl:text>
+          <xsl:text>Not all items in this collection are currently available for searching. Of </xsl:text>
           <xsl:value-of select="$num_in_collection"/>
           <xsl:text> items, </xsl:text>
-          <xsl:value-of select="$num_not_indexed"/>
-          <xsl:text> are queued to be indexed, usually within 48 hours.</xsl:text>
+          <xsl:value-of select="$num_not_indexed"/><xsl:value-of select="$num_not_indexed_verb"/>
+          <xsl:text> queued to be indexed, usually within 48 hours.</xsl:text>
         </xsl:element>      
       </xsl:element>
     </xsl:if>  
