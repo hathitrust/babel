@@ -113,9 +113,11 @@ use Utils::GlobalSwitch;
 # Local
 use Db;
 use vSolr;
+use Result::vSolrRaw;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::Solr;
 
 my $INTERACTIVE = $ENV{TERM};
 
@@ -139,6 +141,8 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 sub r_get_usage {
     my $s;
     $s .= qq{Usage: rights-j [-T][[-B|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{     -T test compilation only. No operations\n};
+    $s .= qq{     -I insert one ID (missing from j_rights)\n};
     $s .= qq{     -B build from last vSolr timestamp\n};
     $s .= qq{           where -n is check_only, no inserts to j_rights\n};
     $s .= qq{     -R re-build j_rights_temp from 0000000\n};
@@ -153,9 +157,9 @@ sub r_get_usage {
     return $s;
 }
 
-our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T);
+our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_I);
 
-my $ops = getopts('BRd:nT');
+my $ops = getopts('BRd:nTI:');
 
 if ($opt_d) {
     if ($opt_d == 1) {
@@ -183,11 +187,16 @@ use constant STOPSLIP_SLEEP_WAIT => 60;
 my $BUILD = 0;
 my $REBUILD = 0;
 my $CHECK = 0;
+my $INSERT_ID;
+
 if (defined($opt_n)) {
     $CHECK = 1;
 }
 
-if (defined($opt_B)) {
+if (defined($opt_I)){
+    $INSERT_ID = $opt_I;
+}
+elsif (defined($opt_B)) {
     $BUILD = 1;
 }
 elsif (defined($opt_R)) {
@@ -250,7 +259,11 @@ eval {
     if (r_rights_enabled($C, $DBH) || $INTERACTIVE) {
         my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
         
-        if ($BUILD) {
+        if ($INSERT_ID) {
+            __confirm("\nInsert $INSERT_ID into j_rights? [N] ");
+         insert_id($C, $DBH, $INSERT_ID, $CHECK);
+        }
+        elsif ($BUILD) {
             # Build from last timestamp
             my $last_timestamp = Db::Select_vSolr_timestamp($C, $DBH);
             my $lag = $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
@@ -316,6 +329,68 @@ exit 0;
 # --------------------- S u b r o t i n e s   -------------------------
 #
 
+
+# ---------------------------------------------------------------------
+
+=item insert_id
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub insert_id {
+    my ($C, $dbh, $nid, $Check) = @_;
+
+    my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+    my $rs = new Result::vSolrRaw();
+
+    my $query = qq{q=ht_id:$nid&start=0&rows=1&fl=id,ht_id_display};
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+
+    my $ref_to_vSolr_response;
+    
+    if ($rs->http_status_ok()) {
+        if ($rs->get_num_found() > 0) {
+            $ref_to_vSolr_response = $rs->get_complete_result();
+            DEBUG('vufind', qq{VuFind: response="$$ref_to_vSolr_response"});
+        }
+        else {
+            DEBUG('vufind', qq{VuFind: response="EMPTY" code=} . $rs->get_response_code());
+            my $status = $rs->get_status_line();
+            __output(qq{Solr $nid not found, fail query="$query"\n});
+
+            return;
+        }
+    }
+    else {
+        DEBUG('vufind', qq{VuFind: bad HTTP response code=} . $rs->get_response_code());
+        my $status = $rs->get_status_line();
+        __output("Solr bad HTTP response ($query): $status\n");
+
+        return;
+    }
+
+    my ($namespace, $barcode) = split(/\./, $nid);
+    my $rights_hashref = Db::Select_latest_rights_row($C, $dbh, $namespace, $barcode);
+
+    my $insert_hashref = $rights_hashref;
+
+    my ($ht_update_time) = ($$ref_to_vSolr_response =~ m,<arr name="ht_id_display"><str>.*?\|(20100228)\|</str></arr>,s);
+    my ($sysid) = ($$ref_to_vSolr_response =~ m,<str name="id">(.*?)</str>,s);
+    
+    $insert_hashref->{'sysid'} = $sysid;
+    $insert_hashref->{'timestamp_of_nid'} = $ht_update_time;
+
+    my $case = Db::Replace_j_rights_id($C, $dbh, $insert_hashref, $Check, 0);
+    if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
+        my $s = qq{SOftware error: invalid case value=$case } . Utils::Time::iso_Time();
+        r_rights_Log($C, $s, , 'bad_$RIGHTS_LOGFILE_KEY');
+    }
+    else {
+        __output("Processed $nid, case=$case\n");
+    }
+}
 
 # ---------------------------------------------------------------------
 
