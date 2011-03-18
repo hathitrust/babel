@@ -43,6 +43,7 @@ use CollectionSet;
 # Local
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
+use SLIP_Utils::Released;
 use Result::SLIP;
 
 # ---------------------------------------------------------------------
@@ -82,6 +83,8 @@ if (defined($opt_d)) {
 
 my $MESSAGE_BUFFER;
 my $INTERACTIVE = $ENV{TERM};
+my $HOST = `hostname`;
+$HOST =~ s,\..*$,,s;
 
 my $NOOP = defined($opt_n); # optional
 my $VERBOSE = (! defined($opt_q));
@@ -111,22 +114,26 @@ my $DBH = $db->get_DBH();
 my $CO = new Collection($DBH, $config, undef);
 my $CS = new CollectionSet($DBH, $config, undef);
 
-# Only sync with solr index if it is "new", i.e. if released for
-# today. Otherwise, we would see missing ids in yesterday's index
-my $today = `date +%Y-%m-%d`;
-chomp($today);
-
-my $release_flag = "$ENV{SDRROOT}/flags/web/lss-release-$today";
-my $index_released = (-e $release_flag);
-
 my $process_start = time();
 
-if ($index_released || $INTERACTIVE) {
-    handle_synchronization($C);
-    handle_inverse_synchronization($C);
+# Only sync with solr index if it is "new", i.e. if released for
+# today. Otherwise, we would see missing ids in yesterday's index
+my ($index_released, $r_msg) = SLIP_Utils::Released::released();
+l__output("\n$r_msg on $HOST\n");
+
+if ($index_released) {
+    do_Sync($C);
 }
 else {
-    l__output("Release flag=$release_flag not present. Skipping sync-i run on $today\n");
+    if ($INTERACTIVE) {
+        if (! $NOOP) {
+            l__output("Proceeding to queue today's IDs early\n");
+        }
+        do_Sync($C);
+    }
+    else {  
+        l__output("$r_msg Skipping sync-i run\n");
+    }
 }
 
 sy_final_report($C, $DBH, $process_start);
@@ -137,6 +144,22 @@ exit 0;
 # --------------------- S u b r o t i n e s   -------------------------
 #
 
+# ---------------------------------------------------------------------
+
+=item do_Sync
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+    sub do_Sync {
+        my $C = shift;
+        
+        handle_synchronization($C);
+        handle_inverse_synchronization($C);
+    }
+    
 # ---------------------------------------------------------------------
 
 =item Log_sync_i
@@ -177,8 +200,6 @@ sub sy_final_report {
     Log_sync_i($C, $RUN, $s);
 
     if (! $INTERACTIVE) {
-        my $HOST = `hostname`;
-        $HOST =~ s,\..*$,,s;
         my $subj = qq{[SLIP] sync-i report ($HOST)};
         SLIP_Utils::Common::Send_email($C, 'report', $subj, $s);
     }

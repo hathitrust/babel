@@ -65,6 +65,7 @@ use SLIP_Utils::States;
 use SLIP_Utils::Solr;
 use SLIP_Utils::Db_driver;
 use SLIP_Utils::Log;
+use SLIP_Utils::Released;
 
 
 my $INTERACTIVE = $ENV{TERM};
@@ -81,15 +82,19 @@ else {
 
 
 sub sz_get_usage {
-    my $s .= qq{Usage: sizer-j -r run [-S][-z]
+    my $s .= qq{Usage: sizer-j -r run [-S][-z][-T]
                   where -S updates the snapshot status
+                        -T test compilation
                         -z updates the index size\n};
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_S, $opt_z);
+our ($opt_d, $opt_r, $opt_S, $opt_z, $opt_T);
 
-my $ops = getopts('dr:Sz');
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+my $ops = getopts('dr:STz');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -236,19 +241,18 @@ Description: If it is after 6 a.m. today and there is not a snapshot with
 
 # ---------------------------------------------------------------------
 sub __get_release_status {
-    my ($C, $shard) = @_;
+    my ($C) = @_;
 
     my $status;
-    
-    my $directory = $C->get_object('MdpConfig')->get('dir_for_shard_' . $shard);
+
     my $todays_iso_date = `date '+%F'`;
     chomp($todays_iso_date);
     my $unix_today_at_6am = Utils::Time::unix_Time($todays_iso_date . 'T06:00:00'); 
     my $unix_now = time();
     
     if ($unix_now > $unix_today_at_6am) {
-        my $snapshot = `ls "$directory/.snapshot/serve-$todays_iso_date" 2> /dev/null`;
-        if ($snapshot) {
+        my ($index_released, $m) = SLIP_Utils::Released::released();
+        if ($index_released) {
             $status = $SLIP_Utils::States::Srl_Rel_Ok;
         }
         else {
@@ -259,7 +263,7 @@ sub __get_release_status {
         $status = $SLIP_Utils::States::Srl_Rel_Pending;
     }
     
-    __output(qq{.snapshot status=$status for shard=$shard dir=$directory\n});
+    __output(qq{Release status=$status\n});
 
     return $status;
 }
@@ -276,14 +280,15 @@ Description
 sub sz_update_release_status {
     my ($C, $dbh, $run) = @_;
 
+    my $status = __get_release_status($C);
+
     my $config = $C->get_object('MdpConfig');
     my @shards = $config->get('num_shards_list');
 
-    # check/update the release status
+    # update the release status
     foreach my $shard (@shards) {
-        my $status = __get_release_status($C, $shard);
         Db::set_shard_release_state($C, $dbh, $run, $shard, $status) 
-                unless ($status == $SLIP_Utils::States::Srl_Rel_Wrong_Host);
+            unless ($status == $SLIP_Utils::States::Srl_Rel_Wrong_Host);
     }
 }
 
