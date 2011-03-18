@@ -79,6 +79,28 @@ sub create_shard_Searcher_by_alias {
 
 # ---------------------------------------------------------------------
 
+=item create_prod_shard_Searcher_by_alias
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub create_prod_shard_Searcher_by_alias {
+    my $C = shift;
+    my $shard = shift;
+    my $timeout = shift;
+
+    my $config = $C->get_object('MdpConfig');
+    my $engine_uri = $config->get('prod_engine_for_shard_' . $shard);
+
+    my $searcher = new Search::Searcher($engine_uri, $timeout);
+
+    return $searcher;
+}
+
+# ---------------------------------------------------------------------
+
 =item create_VuFind_Solr_Searcher_by_alias
 
 Description
