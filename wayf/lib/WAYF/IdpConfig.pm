@@ -175,6 +175,12 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/ucmerced?target=___TARGET___',
                    'enabled'   => '1',
                   },
+   'mit'       => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'Massachusetts Institute of Technology',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/mit?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
    
    # Waiting
    'upenn'     => {
@@ -259,12 +265,6 @@ package WAYF::IdpConfig;
                    'authtype'  => 'shibboleth',
                    'link_text' => 'Harvard University',
                    'template'  => 'https://___HOST___/Shibboleth.sso/harvard?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'mit'       => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'Massachusetts Institute of Technology',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/mit?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'nyu'       => {
