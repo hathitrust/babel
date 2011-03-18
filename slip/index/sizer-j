@@ -319,17 +319,10 @@ sub sz_update_indexdir_size {
     use constant COMMIT_TIMEOUT => 43200;
 
     foreach my $shard (@shards) {
-        my $enabled = Db::Select_shard_enabled($C, $dbh, $run, $shard);
+        # Goal is to suspend shard if it has grown to the max allowed
+        # but to un-suspend them if they have shrunk due to commits or
+        # an optimize.
         my $suspended = Db::shard_is_suspended($C, $dbh, $run, $shard);
-        
-        # Skip totally disabled shards. Process only enabled
-        # shards. The goal is to suspend them if the shard has grown
-        # to the max allowed but to un-suspend them if they have
-        # shrunk due to commits or an optimize. In INTERACTIVE mode
-        # run (carefully) anyway to get the size.
-        if (! $enabled) {
-            next unless ($INTERACTIVE);
-        }
 
         my $index_dir = $config->get('dir_for_shard_' . $shard);
 
@@ -357,7 +350,7 @@ sub sz_update_indexdir_size {
         __output("shard=$shard size=$size_now ($size_now_GB GB)\n");
 
         if ($size_now_GB > $max_size_GB) {
-            # If it was not suspended and now suould be.
+            # If it was not suspended and now should be.
             if (! $suspended) {
                 Db::suspend_shard($C, $dbh, $run, $shard);
                 __output("shard=$shard suspended\n");
