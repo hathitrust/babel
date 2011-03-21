@@ -57,6 +57,9 @@ sub handle_OCR_DATA_PI
     my $ses = $C->get_object('Session');
     my $ssd = $ses->get_persistent_subkey('ssd', $id);
     
+    # As of Fri Mar 18 14:32:00 2011, JPW authorized ssd to provied
+    # the full OCR of books in the public domain to all users, not
+    # just SSD users ...
     if ($ssd ne 'allowed') {
         return '';
     }
