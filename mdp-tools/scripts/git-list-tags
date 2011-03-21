@@ -54,7 +54,7 @@ if (! $app) {
     exit 1;
 }
 
-my ($repo_root, $app_root) = get_HTDE_roots();
+my ($repo_root, $app_root) = get_HTDE_roots('test');
 my $fail_msg = qq{Failed to stage application ($app)\n};
 my $app_dir = "$app_root/$app";
     
