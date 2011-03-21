@@ -302,8 +302,12 @@
         <Map><From>U+0510</From><To>U+0511</To></Map>
         <Map><From>U+0512</From><To>U+0513</To></Map>
 
-        <!-- Punctuation mappings -->
+        <!-- Punctuation mappings: EM DASH -->
         <Map><From>U+2014</From><To> </To></Map>
+        <!-- Punctuation mappings: LEFT-POINTING DOUBLE ANGLE QUOTATION MARK -->
+        <Map><From>U+00AB</From><To> </To></Map>
+        <!-- Punctuation mappings: RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK -->
+        <Map><From>U+00BB</From><To> </To></Map>
 
         <!-- More mappings: use
         http://unicode.org/Public/UNIDATA/CaseFolding.txt as a
