@@ -104,9 +104,9 @@ if (! grep(/^$WHO_I_AM$/, @allowed_uniqnames)) {
     exit 1;
 }
 
-
-if ($ENV{SDRVIEW} ne 'full') {
-    Log_print( qq{ERROR: batch-collection.pl only functions in the full HTDE environment\n} );
+my $allowed = ($ENV{SDRVIEW} eq 'full') || (-e '/htapps/babel');
+if (! $allowed) {
+    Log_print( qq{ERROR: batch-collection.pl only functions in the full HTDE environment or production\n} );
     exit 1;
 }
 
