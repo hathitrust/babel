@@ -180,6 +180,7 @@ sub get_metadata_f_item_id {
 
         # Test for title.
         if (! defined($metadata_struct_hashref->{'title'})) {
+            DEBUG('doc', qq{METADATA: ERROR missing title for item_id=$item_id});
             $status = IX_METADATA_FAILURE;
         }
     }
