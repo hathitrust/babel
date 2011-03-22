@@ -100,7 +100,7 @@ sub bc_Usage {
 my $WHO_I_AM = `whoami`;
 chomp($WHO_I_AM);
 if (! grep(/^$WHO_I_AM$/, @allowed_uniqnames)) {
-    qq{ERROR: $WHO_I_AM is not in the list of permitted users\n};
+    Log_print( qq{ERROR: $WHO_I_AM is not in the list of permitted users\n} );
     exit 1;
 }
 
@@ -294,7 +294,8 @@ sub Log_print {
     print qq{$s};
 
     if (open(LOG, ">>$LOGFILE")) {
-        print LOG qq{$time: $s};
+        my $logtime = Utils::Time::iso_Time('time');
+        print LOG qq{$logtime: $s};
         close(LOG);
         chmod(0666, $LOGFILE) if (-o $LOGFILE);
     }
