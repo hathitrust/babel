@@ -1188,55 +1188,32 @@
       <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
         <li style="padding-left: 1.5em; text-indent: -1.5em; width: 110px">
           <xsl:choose>
-            <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-              <xsl:call-template name="BuildFullPdfDownloadLink">
-                <xsl:with-param name="href" select="$pViewTypeList/ViewTypeFullPdfLink" />
-                <xsl:with-param name="linktext" select="'Partners login for full PDF'" />
-              </xsl:call-template>
-            </xsl:when>
-            <xsl:when test="$gLoggedIn = 'YES' and $gFullPdfAccess = 'allow'">
+            <xsl:when test="$gFullPdfAccess = 'allow'">
+              <!-- Good to go for a variety of reasons such as Creative Commons 
+                   or from Open sources or proper authentication  -->
               <xsl:call-template name="BuildFullPdfDownloadLink">
                 <xsl:with-param name="href" select="$pViewTypeList/ViewTypeFullPdfLink" />
                 <xsl:with-param name="linktext" select="'full PDF'" />
               </xsl:call-template>
             </xsl:when>
-            <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+            <xsl:when test="$gLoggedIn = 'NO'">
+              <!-- You might be a partner but you have to authenticate for us to know -->
+              <xsl:call-template name="BuildFullPdfDownloadLink">
+                <xsl:with-param name="href" select="$pViewTypeList/ViewTypeFullPdfLink" />
+                <xsl:with-param name="linktext" select="'Partners login for full PDF'" />
+              </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$gLoggedIn = 'YES' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+            <!-- You must be using a 'friend' account ... sorry -->
               <p style="padding-left: 0; text-indent: 0">Full PDF available only to authenticated users from <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions</a>.</p>
             </xsl:when>
+            <!-- placeholder not currently used: there is not currently a NOT_PD message -->
             <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
               <p style="padding-left: 0; text-indent: 0">In-copyright books cannot be downloaded.</p>
             </xsl:when>
           </xsl:choose>
         </li>
       </xsl:if>
-      
-      <!-- <xsl:if test="$gFullPdfAccess='allow'">
-        <li>
-          <xsl:element name="a">
-            <xsl:attribute name="class">ViewAsIcon</xsl:attribute>
-            <xsl:attribute name="title">Download full PDF</xsl:attribute>
-            <xsl:attribute name="id">pdfLink</xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
-            </xsl:attribute>
-          </xsl:element>
-          <xsl:element name="img">
-            <xsl:attribute name="alt">Download book as PDF</xsl:attribute>
-            <xsl:attribute name="title">Download book as PDF</xsl:attribute>
-            <xsl:attribute name="src">
-              <xsl:value-of select="'//common-web/graphics/icon_pdf.gif'"/>
-            </xsl:attribute>
-          </xsl:element>
-          <xsl:element name="a">
-            <xsl:attribute name="class">ViewAsLabel</xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
-            </xsl:attribute>
-            <xsl:attribute name="title">Download book as PDF</xsl:attribute>
-            <xsl:text>full PDF</xsl:text>
-          </xsl:element>
-        </li>
-      </xsl:if> -->
 
     </ul>
   </xsl:template>
