@@ -457,6 +457,9 @@ Description
 sub bc_get_metadata_vufind {
     my ($C, $id) = @_;
 
+    # sanitize id for Solr
+    $id =~ s,:,\\:,g;
+    
     my $url = $C->get_object('MdpConfig')->get('engine_for_vSolr') . qq{/select?fl=fullrecord&q=ht_id:$id};
     my $metadata = `curl --silent '$url'`;
     my $rc = $?;
