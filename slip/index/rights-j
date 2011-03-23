@@ -43,7 +43,7 @@ the above example, ht_id_update would be 20090701.
 rights-j does a query based on timestamp=D, where D is 2 days earlier
 than the last run of rights-j.  The lag is to avoid overlooking
 records than could have been added to the VuFind Solr index after
-j-rights ran that day 
+j-rights ran that day
 
 =over 4
 
@@ -155,7 +155,8 @@ sub r_get_usage {
     $s .= qq{           3: me,vsolr\n};
     $s .= qq{           4: me,vsolrlibxml\n};
     $s .= qq{           5: me,query\n};
-    $s .= qq{           6: me,response\n};
+    $s .= qq{           6: me,query,response\n};
+    $s .= qq{           7: me,lsdb,repair\n};
     return $s;
 }
 
@@ -181,6 +182,9 @@ if ($opt_d) {
     }
     elsif ($opt_d == 6) {
         $ENV{'DEBUG'} .= 'me,query,response';
+    }
+    elsif ($opt_d == 7) {
+        $ENV{'DEBUG'} .= 'me,lsdb,repair';
     }
 }
 
@@ -266,17 +270,17 @@ my $INIT_MSG;
 eval {
     if (r_rights_enabled($C, $DBH) || $INTERACTIVE) {
         my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
-        
+
         if ($ID_INSERT) {
             __confirm("\nInsert $ID_INSERT into j_rights? [N] ");
-         insert_id_helper($C, $DBH, $ID_INSERT, $CHECK);
+         repair_insert_id_helper($C, $DBH, $ID_INSERT, $CHECK);
         }
         elsif ($BUILD) {
             # Build from last timestamp
             my $last_timestamp = Db::Select_vSolr_timestamp($C, $DBH);
             my $lag = $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
             my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($last_timestamp, $lag);
-            
+
             $INIT_MSG = qq{Today is $now_timestamp.\n}
                 . qq{Last run set MAX(update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
 
@@ -339,42 +343,46 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
-=item insert_id_helper
+=item repair_insert_id_helper
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub insert_id_helper {
+sub repair_insert_id_helper {
     my ($C, $dbh, $nid, $Check) = @_;
 
     my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
     my $rs = new Result::vSolrRaw();
 
-    insert_id($C, $dbh, $nid, $Check, $searcher, $rs);
+    repair_insert_id($C, $dbh, $nid, $Check, $searcher, $rs);
 }
 
 # ---------------------------------------------------------------------
 
-=item insert_id
+=item repair_insert_id
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub insert_id {
+sub repair_insert_id {
     my ($C, $dbh, $nid, $Check, $searcher, $rs) = @_;
 
     my $s;
+
+    $s = "Repair: start process $nid";
+    __output("$s\n");
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
     $nid = Identifier::get_safe_Solr_id($nid);
     my $query = qq{q=ht_id:$nid&start=0&rows=1&fl=id,ht_id_display};
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
     my $ref_to_vSolr_response;
-    
+
     if ($rs->http_status_ok()) {
         if ($rs->get_num_found() > 0) {
             $ref_to_vSolr_response = $rs->get_complete_result();
@@ -382,7 +390,7 @@ sub insert_id {
         }
         else {
             DEBUG('vufind', qq{VuFind: response="EMPTY" code=} . $rs->get_response_code());
-            my $status = $rs->get_status_line(); 
+            my $status = $rs->get_status_line();
             $s = qq{Repair: Solr $nid not found, status=$status, fail query="$query"};
             __output("$s\n");
             r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
@@ -396,7 +404,7 @@ sub insert_id {
         $s = "Repair: Solr bad HTTP response ($query): $status";
         __output("$s\n");
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-        
+
         return 0;
     }
 
@@ -405,9 +413,9 @@ sub insert_id {
 
     my $insert_hashref = $rights_hashref;
 
-    my ($ht_update_time) = ($$ref_to_vSolr_response =~ m,<arr name="ht_id_display"><str>.*?\|(20100228)\|</str></arr>,s);
+    my ($ht_update_time) = ($$ref_to_vSolr_response =~ m,<arr name="ht_id_display">.*?<str>\Q$nid\E\|(.*?)\|.*?</str>,s);
     my ($sysid) = ($$ref_to_vSolr_response =~ m,<str name="id">(.*?)</str>,s);
-    
+
     $insert_hashref->{'sysid'} = $sysid;
     $insert_hashref->{'timestamp_of_nid'} = $ht_update_time;
 
@@ -420,9 +428,9 @@ sub insert_id {
     }
     else {
         $s = "Repair: processed $nid, case=$case";
-        __output("$s\n");
+        __output("$s\n\n");
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-        
+
         return 1;
     }
 }
@@ -442,7 +450,7 @@ use constant LOG_BUFFER_MAX => 1000;
 
 sub r_rights_Log {
     my ($C, $s, $key) = @_;
-    
+
     my $ss = qq{$s at: } . Utils::Time::iso_Time() . qq{\n};
     $LOG_BUFFER .= $ss;
     $Log_buffer_size++;
@@ -519,34 +527,34 @@ short of totally rebuilding rights-j table.
 # ---------------------------------------------------------------------
 sub process_rights_from_errors {
     my ($C, $dbh, $run, $Check, $totals_hashref) = @_;
-    
+
     while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
         __output("  wait Rights done: STOPSLIP\n");
         sleep STOPSLIP_SLEEP_WAIT;
     }
-    
+
     my $s;
-    
+
     $totals_hashref->{num_m_errors} = 0;
     $totals_hashref->{num_m_errors_repaired} = 0;
     $totals_hashref->{num_m_errors_failed} = 0;
-    
+
     my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
     my $num_metadata_errors = scalar(@$id_arr_hashref);
     if ($num_metadata_errors) {
         $s = qq{Repair: Trying to repair $num_metadata_errors ids from j_errors };
         __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-        
+
         $totals_hashref->{num_m_errors} = $num_metadata_errors;
-        
+
         my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
         my $rs = new Result::vSolrRaw();
-        
+
         foreach my $hashref (@$id_arr_hashref) {
             my $id = $hashref->{'id'};
-            
-            if (insert_id($C, $dbh, $id, $Check, $searcher, $rs)) {
+
+            if (repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs)) {
                 $totals_hashref->{num_m_errors_repaired}++;
             }
             else {
@@ -606,7 +614,9 @@ sub process_rights {
          'MOVED' => 0,
          'UPDATED' => 0,
         );
-    
+
+    goto REPAIR if (DEBUG('repair'));
+
     my $offset = 0;
     my $slice = 0;
     while (1) {
@@ -642,7 +652,7 @@ sub process_rights {
 
             last;
         }
-        
+
         $totals{'ids'} += $ids;
 
         my $s2 = qq{[SLICE $slice] offset=$offset ids_in_slice=$ids vq_time=$query_timestamp };
@@ -674,6 +684,7 @@ sub process_rights {
     Db::update_vSolr_timestamp($C, $dbh, $Rebuild)
         unless $Check;
 
+  REPAIR:
     process_rights_from_errors($C, $dbh, $run, $Check, \%totals)
       unless $Rebuild;
 
@@ -804,7 +815,7 @@ sub r_event_report {
     my $timestamp_of_nid = $hashref->{'timestamp_of_nid'};
     my $timestamp_in_j_rights = $hashref->{'timestamp_in_j_rights'};
     my $sysid_in_j_rights = $hashref->{'sysid_in_j_rights'};
-    
+
     my $s =
         qq{$event: nid=$nid attr=$attr reason=$reason source=$source user=$user time=$time timestamp_of_nid=$timestamp_of_nid timestamp_in_j_rights=$timestamp_in_j_rights j_rights_sysid=$sysid_in_j_rights vsolr_sysid=$sysid };
     DEBUG('vsolr', qq{DEBUG: $s} . Utils::Time::iso_Time() . qq{\n});
@@ -834,7 +845,7 @@ sub r_final_report {
     }
 
     my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
-    
+
     my $run_total = $tref->{'NEW'} + $tref->{'UPDATED'} + $tref->{'MOVED'};
     my $s =
         qq{\nUpdate: j_rights size=$size j_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
