@@ -45,6 +45,7 @@ use MdpConfig;
 use Database;
 use Search::Constants;
 use Utils::GlobalSwitch;
+use SharedQueue;
 
 # Local
 use Db;
@@ -481,7 +482,10 @@ Description
 sub report_queue_state {
     my ($C, $dbh, $run) = @_;
 
-    __Print qq{\n * queue state: \n\tsize=$Q_size num_available=$Q_num_available in_process=$Q_num_in_process\n};
+    my $shared_q_size = SharedQueue::count_shared_queue_ids($C, $dbh);
+
+    __Print qq{\n * queue state: \n\tPrimary: size=$Q_size num_available=$Q_num_available in_process=$Q_num_in_process\n};
+    __Print qq{\t Shared: size=$shared_q_size\n};
 }
 
 # ---------------------------------------------------------------------
