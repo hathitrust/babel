@@ -303,8 +303,8 @@ sub handle_synchronization {
         else {
             my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
             foreach my $id (@$id_arr_ref) {
-                $id = Identifier::get_safe_Solr_id($id);
-                my $query_1 = qq{q=coll_id:$coll_id+AND+id:$id&start=0&rows=0};
+                my $safe_id = Identifier::get_safe_Solr_id($id);
+                my $query_1 = qq{q=coll_id:$coll_id+AND+id:$safe_id&start=0&rows=0};
                 $rs = __handle_query($C, $query_1, $searcher, $rs);
                 $id_ct++;
 
