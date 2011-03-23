@@ -35,6 +35,7 @@ use Debug::DUtils;
 use Context;
 use MdpConfig;
 use Database;
+use Identifier;
 use SharedQueue;
 use Search::Searcher;
 use Collection;
@@ -302,7 +303,7 @@ sub handle_synchronization {
         else {
             my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
             foreach my $id (@$id_arr_ref) {
-                $id =~ s,ark:,ark\\:,;
+                $id = Identifier::get_safe_Solr_id($id);
                 my $query_1 = qq{q=coll_id:$coll_id+AND+id:$id&start=0&rows=0};
                 $rs = __handle_query($C, $query_1, $searcher, $rs);
                 $id_ct++;

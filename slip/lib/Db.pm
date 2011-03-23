@@ -989,10 +989,10 @@ Description: for reporting ids of errors, by type
 sub Select_error_ids {
     my ($C, $dbh, $run, $shard, $reason) = @_;
 
+    my $AND_shard_clause = defined($shard) ? qq{AND shard=$shard} : '';
+    
     my $sth;
-    my $statement;
-
-    $statement = qq{SELECT id, pid, host, error_time FROM j_errors WHERE run=$run AND shard=$shard AND reason=$reason};
+    my $statement = qq{SELECT id, pid, host, error_time FROM j_errors WHERE run=$run AND reason=$reason $AND_shard_clause};
     DEBUG('lsdb', qq{DEBUG: $statement});
     $sth = DbUtils::prep_n_execute($dbh, $statement);
 

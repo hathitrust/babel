@@ -107,7 +107,9 @@ use Debug::DUtils;
 use Context;
 use MdpConfig;
 use Database;
+use Identifier;
 use Search::Site;
+use Search::Constants;
 use Utils::GlobalSwitch;
 
 # Local
@@ -140,10 +142,10 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j [-T][[-B|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j [-T][[-B -r run|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -I insert one ID (missing from j_rights)\n};
-    $s .= qq{     -B build from last vSolr timestamp\n};
+    $s .= qq{     -B build from last vSolr timestamp for -r run\n};
     $s .= qq{           where -n is check_only, no inserts to j_rights\n};
     $s .= qq{     -R re-build j_rights_temp from 0000000\n};
     $s .= qq{           where -n is check_only, NO DROP of j_rights\n};
@@ -157,9 +159,9 @@ sub r_get_usage {
     return $s;
 }
 
-our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_I);
+our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_I, $opt_r);
 
-my $ops = getopts('BRd:nTI:');
+my $ops = getopts('BRd:nTI:r:');
 
 if ($opt_d) {
     if ($opt_d == 1) {
@@ -185,19 +187,26 @@ if ($opt_d) {
 use constant STOPSLIP_SLEEP_WAIT => 60;
 
 my $BUILD = 0;
+my $RUN = $opt_r;
 my $REBUILD = 0;
 my $CHECK = 0;
-my $INSERT_ID;
+my $ID_INSERT;
 
 if (defined($opt_n)) {
     $CHECK = 1;
 }
 
 if (defined($opt_I)){
-    $INSERT_ID = $opt_I;
+    $ID_INSERT = $opt_I;
 }
 elsif (defined($opt_B)) {
     $BUILD = 1;
+    # Required for Build
+    if (! defined($opt_r)) {
+        my $s = r_get_usage();
+        __output($s);
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
 }
 elsif (defined($opt_R)) {
     $REBUILD = 1;
@@ -233,7 +242,6 @@ END {
 $| = 1;
 
 my $SLICE_SIZE = ($REBUILD ? 100 : 1000);
-my $INTERACTIVE = $ENV{'TERM'};
 
 my $C = new Context;
 
@@ -259,9 +267,9 @@ eval {
     if (r_rights_enabled($C, $DBH) || $INTERACTIVE) {
         my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
         
-        if ($INSERT_ID) {
-            __confirm("\nInsert $INSERT_ID into j_rights? [N] ");
-         insert_id($C, $DBH, $INSERT_ID, $CHECK);
+        if ($ID_INSERT) {
+            __confirm("\nInsert $ID_INSERT into j_rights? [N] ");
+         insert_id_helper($C, $DBH, $ID_INSERT, $CHECK);
         }
         elsif ($BUILD) {
             # Build from last timestamp
@@ -280,7 +288,7 @@ eval {
             }
 
             # Go
-            process_rights($C, $DBH, $last_timestamp, $CHECK, 0);
+            process_rights($C, $DBH, $RUN, $last_timestamp, $CHECK, 0);
         }
         elsif ($REBUILD) {
             # Build from 00000000
@@ -297,7 +305,7 @@ eval {
             # DROP/CREATE j_rights_temp
             initialize_j_rights_temp($C, $DBH);
             # Always insert into j_rights_temp by forcing CHECK=0 here
-            process_rights($C, $DBH, '00000000', 0, 1);
+            process_rights($C, undef, $DBH, '00000000', 0, 1);
             # DO NOT DROP j_rights if CHECK==1. j_rights_temp is left
             # behind until next (-R) run.
             if (! $CHECK) {
@@ -329,6 +337,23 @@ exit 0;
 # --------------------- S u b r o t i n e s   -------------------------
 #
 
+# ---------------------------------------------------------------------
+
+=item insert_id_helper
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub insert_id_helper {
+    my ($C, $dbh, $nid, $Check) = @_;
+
+    my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+    my $rs = new Result::vSolrRaw();
+
+    insert_id($C, $dbh, $nid, $Check, $searcher, $rs);
+}
 
 # ---------------------------------------------------------------------
 
@@ -340,11 +365,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub insert_id {
-    my ($C, $dbh, $nid, $Check) = @_;
+    my ($C, $dbh, $nid, $Check, $searcher, $rs) = @_;
 
-    my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
-    my $rs = new Result::vSolrRaw();
+    my $s;
 
+    $nid = Identifier::get_safe_Solr_id($nid);
     my $query = qq{q=ht_id:$nid&start=0&rows=1&fl=id,ht_id_display};
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
@@ -357,18 +382,22 @@ sub insert_id {
         }
         else {
             DEBUG('vufind', qq{VuFind: response="EMPTY" code=} . $rs->get_response_code());
-            my $status = $rs->get_status_line();
-            __output(qq{Solr $nid not found, fail query="$query"\n});
+            my $status = $rs->get_status_line(); 
+            $s = qq{Repair: Solr $nid not found, status=$status, fail query="$query"};
+            __output("$s\n");
+            r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
-            return;
+            return 0;
         }
     }
     else {
         DEBUG('vufind', qq{VuFind: bad HTTP response code=} . $rs->get_response_code());
         my $status = $rs->get_status_line();
-        __output("Solr bad HTTP response ($query): $status\n");
-
-        return;
+        $s = "Repair: Solr bad HTTP response ($query): $status";
+        __output("$s\n");
+        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+        
+        return 0;
     }
 
     my ($namespace, $barcode) = split(/\./, $nid);
@@ -384,11 +413,17 @@ sub insert_id {
 
     my $case = Db::Replace_j_rights_id($C, $dbh, $insert_hashref, $Check, 0);
     if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
-        my $s = qq{SOftware error: invalid case value=$case } . Utils::Time::iso_Time();
-        r_rights_Log($C, $s, , 'bad_$RIGHTS_LOGFILE_KEY');
+        $s = qq{Repair: Software error: invalid case value=$case } . Utils::Time::iso_Time();
+        r_rights_Log($C, $s, , "bad_$RIGHTS_LOGFILE_KEY");
+
+        return 0;
     }
     else {
-        __output("Processed $nid, case=$case\n");
+        $s = "Repair: processed $nid, case=$case";
+        __output("$s\n");
+        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+        
+        return 1;
     }
 }
 
@@ -468,6 +503,63 @@ sub DROP_j_rights_RENAME_j_rights_temp {
     Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
 }
 
+# ---------------------------------------------------------------------
+
+=item process_rights_from_errors
+
+Check errors-j for metadata errors that may have been due to the id
+missing from rights-j [because of various types of errors] and, if we
+can get the metadata, add that id to rights-j.
+
+This at least allows Collection Builder indexing for these missing ids
+short of totally rebuilding rights-j table.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub process_rights_from_errors {
+    my ($C, $dbh, $run, $Check, $totals_hashref) = @_;
+    
+    while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        __output("  wait Rights done: STOPSLIP\n");
+        sleep STOPSLIP_SLEEP_WAIT;
+    }
+    
+    my $s;
+    
+    $totals_hashref->{num_m_errors} = 0;
+    $totals_hashref->{num_m_errors_repaired} = 0;
+    $totals_hashref->{num_m_errors_failed} = 0;
+    
+    my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
+    my $num_metadata_errors = scalar(@$id_arr_hashref);
+    if ($num_metadata_errors) {
+        $s = qq{Repair: Trying to repair $num_metadata_errors ids from j_errors };
+        __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
+        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+        
+        $totals_hashref->{num_m_errors} = $num_metadata_errors;
+        
+        my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+        my $rs = new Result::vSolrRaw();
+        
+        foreach my $hashref (@$id_arr_hashref) {
+            my $id = $hashref->{'id'};
+            
+            if (insert_id($C, $dbh, $id, $Check, $searcher, $rs)) {
+                $totals_hashref->{num_m_errors_repaired}++;
+            }
+            else {
+                $totals_hashref->{num_m_errors_failed}++;
+            }
+        }
+    }
+    else {
+        $s = qq{Repair: No j_errors ids to repair };
+        __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
+        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+    }
+}
 
 # ---------------------------------------------------------------------
 
@@ -493,7 +585,7 @@ corrected manually.
 
 # ---------------------------------------------------------------------
 sub process_rights {
-    my ($C, $dbh, $timestamp, $Check, $Rebuild) = @_;
+    my ($C, $dbh, $run, $timestamp, $Check, $Rebuild) = @_;
 
     my $process_start = __hiresTime();
 
@@ -514,7 +606,8 @@ sub process_rights {
          'MOVED' => 0,
          'UPDATED' => 0,
         );
-
+    goto FOO;
+    
     my $offset = 0;
     my $slice = 0;
     while (1) {
@@ -561,8 +654,8 @@ sub process_rights {
             my $case = Db::Replace_j_rights_id($C, $dbh, $hashref, $Check, $Rebuild);
 
             if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
-                my $s3 = qq{SOftware error: invalid case value=$case } . Utils::Time::iso_Time();
-                r_rights_Log($C, $s3, , 'bad_$RIGHTS_LOGFILE_KEY');
+                my $s3 = qq{Software error: invalid case value=$case } . Utils::Time::iso_Time();
+                r_rights_Log($C, $s3, , "bad_$RIGHTS_LOGFILE_KEY");
                 die $s3;
             }
 
@@ -577,10 +670,13 @@ sub process_rights {
     }
 
     # Update the vSolr timestamp to the MAX(update_time) in
-    # j_rights{_temp}. We will backtrack by 2 days from this value when
-    # next we run.
+    # j_rights{_temp}. We will backtrack by 2 days from this value
+    # when next we run.
     Db::update_vSolr_timestamp($C, $dbh, $Rebuild)
-            unless $Check;
+        unless $Check;
+  FOO:
+    process_rights_from_errors($C, $dbh, $run, $Check, \%totals)
+      unless $Rebuild;
 
     r_final_report($C, $dbh, $process_start, \%totals);
 }
@@ -745,7 +841,8 @@ sub r_final_report {
         qq{\nUpdate: j_rights size=$size j_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
             . qq{\tthis_run_total=$run_total :: total_new=$tref->{'NEW'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'}\n}
                 . qq{\ttotal_noop=$tref->{'NOOP'} total_anom=$tref->{'anomalies'}\n}
-                    . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min };
+                    . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min\n}
+                      . qq{Repair: candidates=$tref->{num_m_errors} succeeded=$tref->{num_m_errors_repaired} failed=$tref->{num_m_errors_failed} };
 
     __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
