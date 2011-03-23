@@ -268,6 +268,7 @@ sub Replace_j_rights_id {
 
     # See what we already have in $J_RIGHTS_TABLE_NAME
     $statement = qq{SELECT nid, update_time, sysid FROM $J_RIGHTS_TABLE_NAME WHERE nid='$nid'};
+    DEBUG('lsdb', qq{DEBUG: $statement});
     $sth = DbUtils::prep_n_execute($dbh, $statement);
 
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
@@ -313,12 +314,12 @@ sub Replace_j_rights_id {
         }
     }
 
+    $statement = qq{REPLACE INTO $J_RIGHTS_TABLE_NAME SET nid='$nid', attr=$attr, reason=$reason, source=$source, user='$user', time='$time', sysid='$sysid', update_time=$updateTime_in_vSolr};
+    DEBUG('lsdb', qq{DEBUG [Check=$Check_only, case=$case]: $statement});
+
     if (! $Check_only) {
         if ($case ne 'NOOP') {
             # insert or replace
-            $statement =
-                qq{REPLACE INTO $J_RIGHTS_TABLE_NAME SET nid='$nid', attr=$attr, reason=$reason, source=$source, user='$user', time='$time', sysid='$sysid', update_time=$updateTime_in_vSolr};
-            DEBUG('lsdb', qq{DEBUG: $statement});
             $sth = DbUtils::prep_n_execute($dbh, $statement);
         }
     }
