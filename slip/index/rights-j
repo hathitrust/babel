@@ -377,8 +377,8 @@ sub repair_insert_id {
     __output("$s\n");
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
-    $nid = Identifier::get_safe_Solr_id($nid);
-    my $query = qq{q=ht_id:$nid&start=0&rows=1&fl=id,ht_id_display};
+    my $safe_nid = Identifier::get_safe_Solr_id($nid);
+    my $query = qq{q=ht_id:$safe_nid&start=0&rows=1&fl=id,ht_id_display};
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
     my $ref_to_vSolr_response;
