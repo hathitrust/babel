@@ -606,7 +606,6 @@ sub process_rights {
          'MOVED' => 0,
          'UPDATED' => 0,
         );
-    goto FOO;
     
     my $offset = 0;
     my $slice = 0;
@@ -674,7 +673,7 @@ sub process_rights {
     # when next we run.
     Db::update_vSolr_timestamp($C, $dbh, $Rebuild)
         unless $Check;
-  FOO:
+
     process_rights_from_errors($C, $dbh, $run, $Check, \%totals)
       unless $Rebuild;
 
