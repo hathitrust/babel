@@ -110,7 +110,7 @@ sub i_get_usage {
                   -v turns on verbose logging
                   -d sets the debug level
                       where 1=default
-                            2=add vufind response
+                            2=add vufind + HTTP response 
                             3=add docfulldebug (no delete of zip tmpdir)\n};
     return $s;
 }
