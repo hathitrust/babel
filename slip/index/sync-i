@@ -57,16 +57,17 @@ Description
 
 # ---------------------------------------------------------------------
 sub sync_get_usage {
-    my $s .= qq{Usage: sync-i -r run [-s <slice_size>][-d][-n][-q]
+    my $s .= qq{Usage: sync-i -r run [-s <slice_size>][-d][-n][-q][-P 1|2]
                   where -s is slice size of Solr and Mysql id query
                         -q quiet: just print missing ids
+                        -P run only phase 1 or 2
                         -n ids are not queued, just reported\n};
     return $s;
 }
 
-our ($opt_r, $opt_s, $opt_d, $opt_n, $opt_T, $opt_q);
+our ($opt_r, $opt_s, $opt_d, $opt_n, $opt_T, $opt_q, $opt_P);
 
-my $ops = getopts('r:s:dnTq');
+my $ops = getopts('r:s:dnTqP:');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -89,6 +90,7 @@ $HOST =~ s,\..*$,,s;
 
 my $NOOP = defined($opt_n); # optional
 my $VERBOSE = (! defined($opt_q));
+my $PHASE = $opt_P;
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
@@ -123,16 +125,16 @@ my ($index_released, $r_msg) = SLIP_Utils::Released::released();
 l__output("\n$r_msg on $HOST\n");
 
 if ($index_released) {
-    do_Sync($C);
+    do_Sync($C, $PHASE);
 }
 else {
     if ($INTERACTIVE) {
         if (! $NOOP) {
             l__output("Proceeding to queue today's IDs early\n");
         }
-        do_Sync($C);
+        do_Sync($C, $PHASE);
     }
-    else {  
+    else {
         l__output("$r_msg Skipping sync-i run\n");
     }
 }
@@ -154,13 +156,20 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-    sub do_Sync {
-        my $C = shift;
-        
+sub do_Sync {
+    my $C = shift;
+    my $phase = shift;
+    
+    if ($phase) {
+        handle_synchronization($C) if ($phase == 1);
+        handle_inverse_synchronization($C) if ($phase == 2);
+    }
+    else {
         handle_synchronization($C);
         handle_inverse_synchronization($C);
-    }
-    
+    }    
+}
+
 # ---------------------------------------------------------------------
 
 =item Log_sync_i
@@ -261,19 +270,22 @@ sub handle_synchronization {
     l__output(qq{\n***\n*** Begin Phase I synchronization ...\n***\n\n});
 
     my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
+    l__output(qq{Initial shared queue count=$initial_shared_queue_ct\n});
 
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $searcher = new Search::Searcher($engine_uri, undef, 1);
     my $rs = new Result::SLIP();
 
     my ($ok, $coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
-    __handle_rc($ok, qq{Failed to get coll_ids\n});
+    __handle_rc($ok, qq{Failed to get large coll_ids\n});
 
     my $s;
-    my $id_ct = 0;
+    my $ct = 0;
     my $coll_ct = 0;
-    my $missing_ids = 0;
+    my $missing_ids_over_colls = 0;
     my $ids_in_colls = 0;
+
+    my %uniq_hash = ();
 
     foreach my $coll_id (@$coll_id_arr_ref) {
         l__output(qq{\nProcessing coll_id=$coll_id for ids missing in Solr\n});
@@ -281,8 +293,14 @@ sub handle_synchronization {
         my $missing_ids_in_coll = 0;
 
         my $coll_name = $CO->get_coll_name($coll_id);
-        my $num_ids_in_coll = $CO->count_all_items_for_coll_from_coll_items($coll_id);
-        $ids_in_colls += $num_ids_in_coll;
+        my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
+        my $num_ids_in_coll = scalar(@$id_arr_ref);
+
+        foreach my $uid (@$id_arr_ref) {
+            $uniq_hash{$uid} = 1;
+        }
+        my $uniq_ids_in_coll = scalar(keys(%uniq_hash)) - $ids_in_colls;
+        $ids_in_colls += $uniq_ids_in_coll;
 
         # Make sure the coll_id itself exists in Solr for at least one id
         my $query = qq{q=coll_id:$coll_id&start=0&rows=0};
@@ -296,8 +314,8 @@ sub handle_synchronization {
                 $ok = SharedQueue::enqueue_all_ids($C, $DBH, $coll_id);
                 __handle_rc($ok, qq{Failed to enqueue all ids for coll_id=$coll_id\n});
             }
-
-            $missing_ids += $num_ids_in_coll;
+            
+            $missing_ids_over_colls += $uniq_ids_in_coll;
             $missing_ids_in_coll += $num_ids_in_coll;
         }
         else {
@@ -306,11 +324,11 @@ sub handle_synchronization {
                 my $safe_id = Identifier::get_safe_Solr_id($id);
                 my $query_1 = qq{q=coll_id:$coll_id+AND+id:$safe_id&start=0&rows=0};
                 $rs = __handle_query($C, $query_1, $searcher, $rs);
-                $id_ct++;
 
+                $ct++;
                 if ($VERBOSE) {
-                    (($id_ct % 100) == 0) ? l__output($id_ct) : '';
-                    (($id_ct % 10) == 0) ? l__output('.') : '';
+                    (($ct % 100) == 0) ? l__output($ct) : '';
+                    (($ct % 10) == 0) ? l__output('.') : '';
                 }
 
                 if ($rs->get_num_found() == 0) {
@@ -320,7 +338,7 @@ sub handle_synchronization {
                     $s = $NOOP ? '' : "\n\t--> queue id";
                     l__output(qq{\n\tcoll_id=$coll_id ($coll_name): missing id=$id $r $s\n});
 
-                    $missing_ids++;
+                    $missing_ids_over_colls++;
                     $missing_ids_in_coll++;
 
                     if (! $NOOP) {
@@ -338,7 +356,7 @@ sub handle_synchronization {
 
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
     $s = $NOOP ? '' : ", $total_ids_queued added to shared queue";
-    l__output(qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls missing=$missing_ids in Solr$s\n});
+    l__output(qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls missing=$missing_ids_over_colls in Solr$s\n});
 }
 
 # ---------------------------------------------------------------------
@@ -351,9 +369,16 @@ Description
 
 # ---------------------------------------------------------------------
 sub __parse_result_docs {
-    my ($C, $rs) = @_;
+    my (
+        $C, $rs, $large_coll_id_arr_ref,
+        $missing_coll_ids_hashref,
+        $small_coll_ids_hashref
+       ) = @_;
 
     my %id_to_coll_id_hash = ();
+
+    my %local_small_ids_to_enqueue = ();
+    my %local_missing_ids_to_enqueue = ();
 
     my $ret_to_arr_of_hashref = $rs->get_complete_result();
     foreach my $hashref (@$ret_to_arr_of_hashref) {
@@ -363,29 +388,42 @@ sub __parse_result_docs {
         $id_to_coll_id_hash{$id} = $coll_ids_arr_ref;
     }
 
-    # Optimization: If any of the coll_ids don't exist, add the id to
-    # the "to be re-indexed" list so we don't have to query MySQL
-    # redundantly for every id that's in a non-existent collection.
-    my @ids_to_enqueue = ();
-    my %non_existent_coll_ids = ();
+    # Optimization: If any of the coll_ids don't exist or are a
+    # coll_id that is not "large", add the id to the "to be
+    # re-indexed" list so we don't have to query MySQL redundantly for
+    # every id that's in a non-existent or non-large collection.
     foreach my $id (keys %id_to_coll_id_hash) {
         foreach my $coll_id (@{ $id_to_coll_id_hash{$id} }) {
-            if ($non_existent_coll_ids{$coll_id}) {
-                push(@ids_to_enqueue, $id);
+            if ($small_coll_ids_hashref->{$coll_id}) {
+                $local_small_ids_to_enqueue{$id} = 1;
+            }
+            elsif ($missing_coll_ids_hashref->{$coll_id}) {
+                $local_missing_ids_to_enqueue{$id} = 1;
             }
             elsif (! $CS->exists_coll_id($coll_id)) {
-                $non_existent_coll_ids{$coll_id} = 1;
-                push(@ids_to_enqueue, $id);
-                l__output(qq{\tSolr doc w/id=$id has coll_id=$coll_id MISSING from MySQL\n});
+                $missing_coll_ids_hashref->{$coll_id} = 1;
+                $local_missing_ids_to_enqueue{$id} = 1;
+                l__output(qq{\n\tSolr doc w/id=$id has coll_id=$coll_id MISSING from MySQL });
+            }
+            elsif (! grep(/^$coll_id$/, @$large_coll_id_arr_ref)) {
+                $small_coll_ids_hashref->{$coll_id} = 1;
+                $local_small_ids_to_enqueue{$id} = 1;
+                l__output(qq{\n\tSolr doc w/id=$id has coll_id=$coll_id that is NOT LARGE in MySQL });
             }
         }
     }
 
-    foreach my $id (@ids_to_enqueue) {
+    foreach my $id (keys %local_missing_ids_to_enqueue) {
+        delete $id_to_coll_id_hash{$id};
+    }
+    foreach my $id (keys %local_missing_ids_to_enqueue) {
         delete $id_to_coll_id_hash{$id};
     }
 
-    return (\%id_to_coll_id_hash, \@ids_to_enqueue);
+    my @small_ids_to_enqueue = keys %local_small_ids_to_enqueue;
+    my @missing_ids_to_enqueue = keys %local_missing_ids_to_enqueue;
+
+    return (\%id_to_coll_id_hash, \@small_ids_to_enqueue, \@missing_ids_to_enqueue);
 }
 
 
@@ -410,6 +448,7 @@ sub handle_inverse_synchronization {
     l__output(qq{\n***\n*** Begin Phase II synchronization ...\n***\n\n});
 
     my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
+    l__output(qq{Initial shared queue count=$initial_shared_queue_ct\n});
 
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $searcher = new Search::Searcher($engine_uri, undef, 1);
@@ -418,9 +457,10 @@ sub handle_inverse_synchronization {
     my $s;
     my $ok;
     my $id_ct = 0;
-    my $total_ids_in_missing_coll_ids = 0;
-
     my $start = 0;
+
+    my $num_ids_from_missing_coll_ids = 0;
+    my $num_ids_from_small_coll_ids = 0;
 
     # zero is reserved for the coll_id field for items that are not in
     # any collection
@@ -428,6 +468,12 @@ sub handle_inverse_synchronization {
     $rs = __handle_query($C, $item_query, $searcher, $rs);
     my $num_found = $rs->get_num_found();
     l__output(qq{Solr has $num_found items in collections\n});
+
+    my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
+    __handle_rc($_ok, qq{Failed to get large coll_ids\n});
+
+    my %missing_coll_ids = ();
+    my %small_coll_ids = ();
 
     while (1) {
         # Get a slice of Solr documents with non-empty coll_id field(s)
@@ -439,25 +485,47 @@ sub handle_inverse_synchronization {
         $start += $SLICE_SIZE;
         l__output(qq{$rows_returned ids.}) if ($VERBOSE);
 
+
         # Parse and return optimized list of ids to test
-        my ($id_hashref_of_coll_id_arr_ref, $ids_to_enqueue_arr_ref) = __parse_result_docs($C, $rs);
-        my $num_ids_from_missing_coll_ids = scalar(@$ids_to_enqueue_arr_ref);
+        my ($id_hashref_of_coll_id_arr_ref, $small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref) 
+          = __parse_result_docs(
+                                $C, $rs, $large_coll_id_arr_ref,
+                                \%missing_coll_ids,
+                                \%small_coll_ids
+                               );
 
-        $id_ct += $num_ids_from_missing_coll_ids;
-        $total_ids_in_missing_coll_ids += $num_ids_from_missing_coll_ids;
+        my $num_ids_missing = scalar(@$missing_ids_to_enqueue_arr_ref);
+        $num_ids_from_missing_coll_ids += $num_ids_missing;
+        l__output(qq{\nSolr now has $num_ids_from_missing_coll_ids ids in MISSING MySQL coll_ids\n})
+          if ($num_ids_from_missing_coll_ids);
 
-        if ($num_ids_from_missing_coll_ids) {
-            $s = $NOOP ? '' : "\n\t--> queue $num_ids_from_missing_coll_ids ids";
-            l__output(qq{\n\tSolr has $num_ids_from_missing_coll_ids ids in MISSING MySQL coll_ids $s\n});
+        if ($num_ids_missing) {
             if (! $NOOP) {
-                $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
-                __handle_rc($ok, qq{Failed to enqueue ids from optimize step\n});
+                l__output("\n\t--> queue $num_ids_missing ids\n");
+                $ok = SharedQueue::enqueue_item_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref);
+                __handle_rc($ok, qq{Failed to enqueue ids from missing optimize step\n});
             }
         }
 
-        $ids_to_enqueue_arr_ref = [];
+        my $num_ids_small = scalar(@$small_ids_to_enqueue_arr_ref);
+        $num_ids_from_small_coll_ids += $num_ids_small;
+        l__output(qq{\nSolr now has $num_ids_from_small_coll_ids ids in SMALL MySQL coll_ids\n})
+          if ($num_ids_from_small_coll_ids);
+
+        if ($num_ids_small) {
+            if (! $NOOP) {
+                l__output("\n\t--> queue $num_ids_small ids\n");
+                $ok = SharedQueue::enqueue_item_ids($C, $DBH, $small_ids_to_enqueue_arr_ref);
+                __handle_rc($ok, qq{Failed to enqueue ids from small optimize step\n});
+            }
+        }
+
+        $small_ids_to_enqueue_arr_ref = [];
+        $missing_ids_to_enqueue_arr_ref = [];
 
         foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
+            my $ids_to_enqueue_arr_ref = [];
+            
             my $coll_id_arr_ref = $id_hashref_of_coll_id_arr_ref->{$id};
 
             $id_ct++;
@@ -471,7 +539,7 @@ sub handle_inverse_synchronization {
             foreach my $coll_id (@$coll_id_arr_ref) {
                 if (! $CO->one_or_more_items_in_coll($coll_id, [$id])) {
                     $s = $NOOP ? '' : "\n\t--> queue id";
-                    l__output(qq{\n\tid NOT IN COLLECTION: id=$id, coll_id=$coll_id $s\n});
+                    l__output(qq{\n\tid NOT IN MySQL COLLECTION: id=$id, coll_id=$coll_id $s\n});
 
                     push(@$ids_to_enqueue_arr_ref, $id);
                 }
@@ -486,8 +554,11 @@ sub handle_inverse_synchronization {
     }
 
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
-    $s = $NOOP ? '' : ", $total_ids_queued added to shared queue";
-    l__output(qq{\n\nPhase II processed $id_ct ids, had $total_ids_in_missing_coll_ids in Solr not belonging to any collection in MySQL$s\n\n});
+    my $total_ids_processed = $id_ct + $num_ids_from_missing_coll_ids + $num_ids_from_small_coll_ids;
+    
+    $s = $NOOP ? '' : "$total_ids_queued added to shared queue";
+    l__output(qq{\n\nPhase II processed $total_ids_processed id occurrences in colls\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n});
+
 }
 
 # ---------------------------------------------------------------------
