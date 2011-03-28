@@ -111,7 +111,14 @@ sub get_field_list {
 
 =item get_auxiliary_field_data
 
-Over-rides base class method, which see.
+Over-rides base class method, which see. Get the list of coll_ids for
+the given id that are large so those coll_ids can be added as
+<coll_id> fields of the Solr doc.
+
+So, if sync-i found an id to have, erroneously, a *small* coll_id
+field in its Solr doc and queued it for re-indexing, this routine
+would create a Solr doc not containing that coll_id among its
+<coll_id> fields.
 
 =cut
 
@@ -120,16 +127,30 @@ sub get_auxiliary_field_data {
     my $self = shift;
     my ($C, $dbh, $item_id, $primary_metadata_hashref) = @_;
 
-    my ($status, $coll_id_arr_ref) = SharedQueue::get_coll_ids_for_id($C, $dbh, $item_id);
-    if ($status) {
-        $status = IX_NO_ERROR;
-        # If item is in one or more collections
-        if (scalar(@$coll_id_arr_ref)) {
-            $primary_metadata_hashref->{coll_id} = $coll_id_arr_ref;
+    my $status = IX_NO_ERROR;
+
+    my ($ok, $coll_id_arr_ref) = SharedQueue::get_coll_ids_for_id($C, $dbh, $item_id);
+    if ($ok) {
+        # If item is in one or more collections see if any of those collections are "large"
+        my ($ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $dbh);
+        if ($ok) {
+            my $valid_coll_id_arr_ref = [];
+            foreach my $coll_id (@$coll_id_arr_ref) {
+                if (grep(/^$coll_id$/, @$large_coll_id_arr_ref)) {
+                    push(@$valid_coll_id_arr_ref, $coll_id);
+                }
+            }
+
+            if (scalar(@$valid_coll_id_arr_ref)) {
+                $primary_metadata_hashref->{coll_id} = $valid_coll_id_arr_ref;
+            }
+            else {
+                # O reserved for coll_id field of item not in any collection
+                $primary_metadata_hashref->{coll_id} = [0];
+            }
         }
         else {
-            # O reserved for coll_id field of item not in any collection
-            $primary_metadata_hashref->{coll_id} = [0];
+            $status = IX_METADATA_FAILURE;
         }
     }
     else {
