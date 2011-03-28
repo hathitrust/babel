@@ -142,7 +142,8 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j [-T][[-B -r run|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j [-f][-T][[-B -r run|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{     -f force email\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -I insert one ID (missing from j_rights)\n};
     $s .= qq{     -B build from last vSolr timestamp for -r run\n};
@@ -160,9 +161,10 @@ sub r_get_usage {
     return $s;
 }
 
-our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_I, $opt_r);
+our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_I, $opt_r, $opt_f);
 
-my $ops = getopts('BRd:nTI:r:');
+my $ops = getopts('BRd:nTI:r:f');
+my $FORCE_EMAIL = defined($opt_f);
 
 if ($opt_d) {
     if ($opt_d == 1) {
@@ -391,21 +393,21 @@ sub repair_insert_id {
         else {
             DEBUG('vufind', qq{VuFind: response="EMPTY" code=} . $rs->get_response_code());
             my $status = $rs->get_status_line();
-            $s = qq{Repair: Solr $nid not found, status=$status, fail query="$query"};
+            $s = qq{Repair: Solr $nid not found in VuFind, status=$status, fail query="$query"};
             __output("$s\n");
             r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
-            return 0;
+            return 'VuFind_MISSING';
         }
     }
     else {
         DEBUG('vufind', qq{VuFind: bad HTTP response code=} . $rs->get_response_code());
         my $status = $rs->get_status_line();
-        $s = "Repair: Solr bad HTTP response ($query): $status";
+        $s = "Repair: Solr bad VuFind HTTP response ($query): $status";
         __output("$s\n");
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
-        return 0;
+        return 'VuFind_BADHTTP';
     }
 
     my ($namespace, $barcode) = split(/\./, $nid);
@@ -424,14 +426,14 @@ sub repair_insert_id {
         $s = qq{Repair: Software error: invalid case value=$case } . Utils::Time::iso_Time();
         r_rights_Log($C, $s, , "bad_$RIGHTS_LOGFILE_KEY");
 
-        return 0;
+        return 'rights-j_SOFTWARE';
     }
     else {
         $s = "Repair: processed $nid, case=$case";
         __output("$s\n\n");
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
-        return 1;
+        return $case;
     }
 }
 
@@ -516,7 +518,7 @@ sub DROP_j_rights_RENAME_j_rights_temp {
 =item process_rights_from_errors
 
 Check errors-j for metadata errors that may have been due to the id
-missing from rights-j [because of various types of errors] and, if we
+MISSING FROM rights-j [because of various types of errors] and, if we
 can get the metadata, add that id to rights-j.
 
 This at least allows Collection Builder indexing for these missing ids
@@ -537,7 +539,10 @@ sub process_rights_from_errors {
 
     $totals_hashref->{num_m_errors} = 0;
     $totals_hashref->{num_m_errors_repaired} = 0;
-    $totals_hashref->{num_m_errors_failed} = 0;
+    $totals_hashref->{num_m_not_missing} = 0;
+    $totals_hashref->{num_m_anomalies} = 0;
+    $totals_hashref->{num_m_vufind_http} = 0;
+    $totals_hashref->{num_m_missing_vufind} = 0;
 
     my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
     my $num_metadata_errors = scalar(@$id_arr_hashref);
@@ -554,12 +559,23 @@ sub process_rights_from_errors {
         foreach my $hashref (@$id_arr_hashref) {
             my $id = $hashref->{'id'};
 
-            if (repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs)) {
-                $totals_hashref->{num_m_errors_repaired}++;
+            my $case = repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs);
+            if ($case eq 'NEW') {
+                # Repair succeeded: ID added to j_rights
+                $totals_hashref->{num_m_errors_repaired}++;                
             }
-            else {
-                $totals_hashref->{num_m_errors_failed}++;
+            elsif ($case eq 'NOOP') {
+                $totals_hashref->{num_m_not_missing}++;
             }
+            elsif (grep(/^$case$/, ('MOVED', 'UPDATED'))) {
+                $totals_hashref->{num_m_anomalies}++;
+            }
+            elsif ($case eq 'VuFind_BADHTTP') {
+                $totals_hashref->{num_m_vufind_http}++;
+            }
+            elsif ($case eq 'VuFind_MISSING') {
+                $totals_hashref->{num_m_missing_vufind}++;
+            }    
         }
     }
     else {
@@ -824,6 +840,28 @@ sub r_event_report {
 
 # ---------------------------------------------------------------------
 
+=item __get_repair_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_repair_report {
+    my $tr = shift;
+    my $s = 
+      qq{Repair metadata errors from j_rights:}
+        . qq{\n\tj_errors_candidates=$tr->{num_m_errors} }
+          . qq{\n\tj_rights_repaired=$tr->{num_m_errors_repaired} }
+            . qq{\n\tj_rights_not_missing=$tr->{num_m_not_missing} }
+              . qq{\n\tanomalies=$tr->{num_m_anomalies} }
+                . qq{\n\tvufind_http_error=$tr->{num_m_vufind_http} }
+                  . qq{\n\tvufind_not_present=$tr->{num_m_missing_vufind} };
+    return $s;
+}
+
+# ---------------------------------------------------------------------
+
 =item r_final_report
 
 Description
@@ -847,17 +885,19 @@ sub r_final_report {
     my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
 
     my $run_total = $tref->{'NEW'} + $tref->{'UPDATED'} + $tref->{'MOVED'};
+    my $repair_report = __get_repair_report($tref);
+    
     my $s =
         qq{\nUpdate: j_rights size=$size j_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
             . qq{\tthis_run_total=$run_total :: total_new=$tref->{'NEW'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'}\n}
                 . qq{\ttotal_noop=$tref->{'NOOP'} total_anom=$tref->{'anomalies'}\n}
                     . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min\n}
-                      . qq{Repair: candidates=$tref->{num_m_errors} succeeded=$tref->{num_m_errors_repaired} failed=$tref->{num_m_errors_failed} };
+                      . qq{$repair_report};
 
     __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
-    if (! $INTERACTIVE) {
+    if (! $INTERACTIVE || $FORCE_EMAIL) {
         my $HOST = `hostname`;
         $HOST =~ s,\..*$,,s;
         my $subj = qq{[SLIP] j-rights report ($HOST)};
