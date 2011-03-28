@@ -163,9 +163,7 @@
       <xsl:attribute name="property">dc:title</xsl:attribute>
       <xsl:attribute name="rel">dc:type</xsl:attribute>
       <xsl:attribute name="href">http://purl.org/dc/dcmitype/Text</xsl:attribute>
-      <xsl:attribute name="content">
-        <xsl:value-of select="$gFullTitleString"/>        
-      </xsl:attribute>
+      <xsl:value-of select="$gFullTitleString"/>        
     </xsl:element>
   </xsl:template>
 
@@ -178,19 +176,25 @@
     <xsl:choose>
       <xsl:when test="$gItemFormat='BK'">
         <!-- visible -->
-        <xsl:value-of select="$author"/>
+        <!-- <xsl:value-of select="$author"/> -->
         <!-- CC attribution, creator -->
         <xsl:element name="span">
-          <xsl:attribute name="property">cc:attributionName dc:creator</xsl:attribute>
+          <xsl:attribute name="property">cc:attributionName</xsl:attribute>
           <xsl:attribute name="rel">cc:attributionURL</xsl:attribute>
           <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
           <xsl:attribute name="content">
             <xsl:value-of select="$author"/>
           </xsl:attribute>
         </xsl:element>
+        <xsl:element name="span">
+          <xsl:attribute name="property">dc:creator</xsl:attribute>
+          <xsl:attribute name="content">
+            <xsl:value-of select="$author"/>
+          </xsl:attribute>
+        </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="$author"/>    
+        <!-- <xsl:value-of select="$author"/> -->    
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -202,7 +206,7 @@
     </xsl:variable>
 
     <!-- visible -->
-    <xsl:value-of select="$published"/>
+    <!-- <xsl:value-of select="$published"/> -->
     <!-- published -->
     <xsl:element name="span">
       <xsl:attribute name="property">dc:publisher</xsl:attribute>
@@ -218,19 +222,33 @@
       <xsl:value-of select="$gAccessUseHeader"/><xsl:text>. </xsl:text>
     </xsl:variable>
     
-    <xsl:choose>
-      <xsl:when test="$gItemFormat='BK'">
-        <xsl:element name="span">
-          <xsl:attribute name="href"><xsl:value-of select="$gAccessUseAuxLink"/></xsl:attribute>
-          <xsl:attribute name="rel">license</xsl:attribute>
+    <!-- Link text to the default HT.org page -->
+    <xsl:element name="a">
+      <xsl:attribute name="target">
+        <xsl:text>_blank</xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:value-of select="$gAccessUseLink"/>
+      </xsl:attribute>
+      <!-- <xsl:text>Read access and use policy.</xsl:text> -->
+      <xsl:choose>
+        <xsl:when test="$gItemFormat='BK'">
+          <xsl:element name="span">
+            <xsl:attribute name="href"><xsl:value-of select="$gAccessUseAuxLink"/></xsl:attribute>
+            <xsl:attribute name="rel">license</xsl:attribute>
+            <xsl:value-of select="$access_use_header"/>
+          </xsl:element>
+        </xsl:when>
+        <xsl:otherwise>
           <xsl:value-of select="$access_use_header"/>
-        </xsl:element>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$access_use_header"/>
-      </xsl:otherwise>
-    </xsl:choose>
-    <br/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:element>
+
+    <xsl:if test="$gAccessUseIcon != '' or ( $gAccessUseAuxLink != '' and $gAccessUseAuxIcon != '' )">
+      <br /><br />
+    </xsl:if>
+    
     <!-- If there's a default icon, link it default HT.org page -->
     <xsl:if test="$gAccessUseIcon!=''">
       <xsl:element name="a">
@@ -264,17 +282,6 @@
         </xsl:element>        
       </xsl:element>
     </xsl:if>
-
-    <!-- Link text to the default HT.org page -->
-    <xsl:element name="a">
-      <xsl:attribute name="target">
-        <xsl:text>_blank</xsl:text>
-      </xsl:attribute>
-      <xsl:attribute name="href">
-        <xsl:value-of select="$gAccessUseLink"/>
-      </xsl:attribute>
-      <xsl:text>Read access and use policy.</xsl:text>
-    </xsl:element>
 
   </xsl:template>
   
@@ -969,7 +976,10 @@
     <div class="bibLinks">
       <h2>About this Book</h2>
       <p>
-        <xsl:value-of select="$gFullTitleString" />
+        <!-- <xsl:value-of select="$gFullTitleString" /> -->
+        <xsl:call-template name="BuildRDFaWrappedTitle" />
+        <xsl:call-template name="BuildRDFaWrappedAuthor" />
+        <xsl:call-template name="BuildRDFaWrappedPublished" />
       </p>
       <p>
         <xsl:element name="a">
@@ -987,8 +997,8 @@
         </xsl:element>
       </p>
 			<p class="smaller">
-				Access &amp; Use: 
-				<xsl:element name="a">
+        <!-- Access &amp; Use: 
+        <xsl:element name="a">
           <xsl:attribute name="class">tracked</xsl:attribute>
           <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Access Use Link</xsl:attribute>
@@ -997,7 +1007,8 @@
             <xsl:value-of select="$gAccessUseLink"/>
           </xsl:attribute>
           <xsl:value-of select="$gAccessUseHeader" />
-        </xsl:element>
+        </xsl:element> -->
+        <xsl:call-template name="BuildRDFaCCLicenseMarkup" />
 			</p>
     </div>
   </xsl:template>
