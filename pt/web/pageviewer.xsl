@@ -145,7 +145,6 @@
   </xsl:template>
     
   <xsl:template match="/MBooksTop" mode="reader">
-    <!-- <xsl:param name="gCurrentReaderMode" select="'full'" /> -->
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
     <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
     <xsl:variable name="min-width">
@@ -169,7 +168,7 @@
       <xsl:if test="$gUsingBookReader = 'true'">
         <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
       </xsl:if>
-      <xsl:attribute name="gUsingBookReader"><xsl:value-of select="$gUsingBookReader" /> :: <xsl:value-of select="$gFinalView" /></xsl:attribute>
+
       <head profile="http://www.w3.org/1999/xhtml/vocab">
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
@@ -212,7 +211,7 @@
           HT.params.view = "<xsl:value-of select="$gCurrentView" />";
           HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
         </script>
-        
+
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
@@ -279,7 +278,7 @@
           HT.params.view = "<xsl:value-of select="$gCurrentView" />";
           HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
         </script>
-
+        
       </head>
 
       <body class="yui-skin-sam">
