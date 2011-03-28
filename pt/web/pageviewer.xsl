@@ -358,7 +358,6 @@
   </xsl:template>
 
   <xsl:template name="online_assessment">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
     <script xmlns="" type="text/javascript" src="/pt/web/js/jQuery-Notify-bar/jquery.notifyBar.js"></script>
     <script xmlns="" type="text/javascript" src="/pt/web/js/jquery.cookie.js"></script>
 
@@ -1446,38 +1445,6 @@
     
   </xsl:template>
   
-  <xsl:template name="BuildFullPdfDownloadLink">
-    <xsl:param name="href" />
-    <xsl:param name="linktext" />
-    
-    <xsl:element name="a">
-      <xsl:attribute name="class">ViewAsIcon</xsl:attribute>
-      <xsl:attribute name="title">Download full PDF</xsl:attribute>
-      <xsl:attribute name="id">pdfLink</xsl:attribute>
-      <xsl:attribute name="href">
-        <xsl:value-of select="$href"/>
-      </xsl:attribute>
-      <xsl:element name="img">
-        <xsl:attribute name="alt">Download book as PDF</xsl:attribute>
-        <xsl:attribute name="title">Download book as PDF</xsl:attribute>
-        <xsl:attribute name="src">
-          <xsl:value-of select="'//common-web/graphics/icon_pdf.gif'"/>
-        </xsl:attribute>
-      </xsl:element>
-    </xsl:element>
-    <xsl:element name="a">
-      <xsl:attribute name="class">ViewAsLabel</xsl:attribute>
-      <xsl:attribute name="style">width:120%</xsl:attribute>
-      <xsl:attribute name="href">
-        <xsl:value-of select="$href"/>
-      </xsl:attribute>
-      <xsl:attribute name="title">Download book as PDF</xsl:attribute>
-      <!-- <xsl:text>full PDF</xsl:text> -->
-      <xsl:value-of select="$linktext" />
-    </xsl:element>
-    
-  </xsl:template>
-
   <!-- FORM: Image Resize -->
   <xsl:template name="BuildResizeForm">
     <xsl:param name="pResizeForm"/>
