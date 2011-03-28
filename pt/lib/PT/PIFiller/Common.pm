@@ -1155,7 +1155,6 @@ sub BuildSearchResultsUrl
     
     return $href;
 }
->>>>>>> 6260cd3... fixes for analytics; better back-to-referer tracking
 
 # ---------------------------------------------------------------------
 sub handle_FULL_PDF_ACCESS_MESSAGE_PI
