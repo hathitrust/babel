@@ -53,7 +53,6 @@
   <xsl:variable name="gContactEmail" select="/MBooksTop/MBooksGlobals/ContactEmail"/>
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
   <xsl:variable name="gVolumeTitleFragment" select="concat(' ', /MBooksTop/MBooksGlobals/VolCurrTitleFrag)"/>
-  <xsl:variable name="gTitleTruncAmt">
 
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
   <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
@@ -62,7 +61,7 @@
 
   <xsl:variable name="gUsingSearch" select="string(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='page'] = 'search')"/>
 
-  <xsl:variable name="gTitleTrunc">
+  <xsl:variable name="gTitleTruncAmt">
     <xsl:choose>
       <xsl:when test="$gVolumeTitleFragment!=' '">
         <xsl:value-of select="'40'"/>
@@ -72,7 +71,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  
+
   <xsl:variable name="gFullTitleString">
     <xsl:if test="$gMdpMetadata/varfield[@id='245']/subfield[@label='a']">
       <xsl:value-of select="$gMdpMetadata/varfield[@id='245']/subfield[@label='a']"/>
@@ -1366,7 +1365,7 @@
     <xsl:call-template name="GetMaybeTruncatedTitle">
       <xsl:with-param name="titleString" select="$gFullTitleString"/>
       <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-      <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
+      <xsl:with-param name="maxLength" select="$gTitleTruncAmt"/>
     </xsl:call-template>
   </xsl:template>
   
