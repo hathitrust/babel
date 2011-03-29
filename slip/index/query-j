@@ -54,9 +54,9 @@ Description
 # ---------------------------------------------------------------------
 sub query_get_usage {
     my $s .= qq{Usage: query-j -r run -P|-D [-R shard] [-N] [-d] [-T] -q query
-                  where -q query should be well-formed shell quoted
+                  where -q query should be well-formed shell escaped
                           if running from command line, e.g.:
-                             -q'q=id:"mdp.390150*"&start=0&rows=20'
+                             -qq=id:mdp.39015002*\&start=0\&rows=3
                         -N is silent mode (no status printed)
                   Warning: In -D mode: Run /l/local/bin/tomcat-build-restart on all
                            Solr build hosts before and after querying to restore java heap\n};
