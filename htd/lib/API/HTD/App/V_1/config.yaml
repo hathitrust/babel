@@ -427,6 +427,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: restricted
       minn-hist-soc: restricted
+      utah_state_univ: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -435,6 +436,7 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
+      utah_state_univ: restricted
   pageocr:
     free:
       google: limited
@@ -444,6 +446,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -452,6 +455,7 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
+      utah_state_univ: restricted
   pagecoordocr:
     free:
       google: limited
@@ -461,6 +465,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -469,6 +474,7 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
+      utah_state_univ: restricted
   aggregate:
     free:
       google: free_bulk_restricted
@@ -478,6 +484,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: restricted
       minn-hist-soc: restricted
+      utah_state_univ: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -486,6 +493,7 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
+      utah_state_univ: restricted
   structure:
     free:
       google: open
@@ -495,6 +503,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -503,6 +512,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
   meta:
     free:
       google: open
@@ -512,6 +522,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -520,6 +531,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
   pagemeta:
     free:
       google: open
@@ -529,6 +541,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -537,6 +550,7 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
+      utah_state_univ: open
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights_current.attr field values to names
@@ -557,12 +571,6 @@ rights_name_map:
   13: cc-by-nc
   14: cc-by-nc-sa
   15: cc-by-sa
-
-# -----------------------------------------------------------------------
-# Mapping from rights name to URI for same
-# -----------------------------------------------------------------------
-#rights_uri_map:
-#http://schemas.hathitrust.org/htd/2009#pdus
 
 # ---------------------------------------------------------------------
 # List of name that equate to open access
@@ -590,6 +598,7 @@ sources_name_map:
   5: yale
   6: minn-dig-lib
   7: minn-hist-soc
+  8: utah_state_univ
 
 # ---------------------------------------------------------------------
 # MIME type map
