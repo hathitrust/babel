@@ -2,11 +2,6 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
       <xsl:output method="html"/>
        
-<<<<<<< HEAD
-  <xsl:template name="load_concat_js_file">    <script type="text/javascript" src="/pt/js/concatenated_common-min.js"></script>
-  </xsl:template> 
-  <xsl:template name="load_concat_css_file">    <link rel="stylesheet" type="text/css" href="/pt/concatenated_common-min.css"/>
-=======
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/pt/js/concatenated_common-min.js"></script>
     <xsl:if test="$gUsingSearch='false'">
@@ -21,7 +16,6 @@
     <xsl:if test="$gUsingSearch='true'">
         <link rel="stylesheet" type="text/css" href="/pt/concatenated_SEARCH_CSS-min.css" />
     </xsl:if>
->>>>>>> 9a9598f... added google analytics support
   </xsl:template> 
 
   <xsl:template name="load_uncompressed_js">
@@ -39,9 +33,6 @@
  <script type="text/javascript" src="//common-web/js/overlayUtils.js"></script>
  <script type="text/javascript" src="//common-web/js/listUtils.js"></script>
  <script type="text/javascript" src="//common-web/js/pageturner.js"></script>
-<<<<<<< HEAD
- </xsl:template>
-=======
  <script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js"></script>
  <script type="text/javascript" src="/pt/js/init.js"></script>
  <script type="text/javascript" src="/pt/js/download_helper.js"></script>
@@ -61,7 +52,6 @@
  <script type="text/javascript" src="/pt/js/classic.js"></script>
     </xsl:if>
 </xsl:template>
->>>>>>> 9a9598f... added google analytics support
  
 
  <xsl:template name="load_uncompressed_css">
@@ -72,15 +62,11 @@
  <link rel="stylesheet" type="text/css" href="//common-web/feedback.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/pageviewer.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css"/>
-<<<<<<< HEAD
-
-=======
  <link rel="stylesheet" type="text/css" href="/pt/harmony.css"/>
  <link rel="stylesheet" type="text/css" href="/pt/jquery/boxy/boxy.css"/>
  <link rel="stylesheet" type="text/css" href="/pt/download_helper.css"/>
     <xsl:if test="$gUsingSearch='true'">
  <link rel="stylesheet" type="text/css" href="/pt/searchresults.css"/>
     </xsl:if>
->>>>>>> 9a9598f... added google analytics support
 </xsl:template>
 </xsl:stylesheet>
