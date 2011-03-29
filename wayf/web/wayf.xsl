@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
+  <xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
+
   <!-- Main template -->
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
@@ -16,6 +18,10 @@
           <xsl:call-template name="WAYF_PageContent"/>
           <!-- <xsl:call-template name="cancel"/> -->
         </div>
+
+        <xsl:if test="$gEnableGoogleAnalytics='true'">
+          <xsl:call-template name="google_analytics" />
+        </xsl:if>
       </body>
     </html>
   </xsl:template>
@@ -98,6 +104,26 @@
         </div>
       </div>
     </div>
+  </xsl:template>
+
+  <xsl:template name="google_analytics">
+    <xsl:variable name="tracker_id" select="'UA-954893-23'"/>
+    <xsl:variable name="accessType" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
+    <xsl:if test="$gEnableGoogleAnalytics='true'">
+      <script type="text/javascript">var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+      </script>
+      <xsl:text disable-output-escaping="yes">
+        &lt;script type="text/javascript"&gt;
+        try {
+        var pageTracker = _gat._getTracker("</xsl:text>
+        <xsl:value-of select="$tracker_id"/>
+        <xsl:text disable-output-escaping="yes">");
+        pageTracker._setDomainName(".hathitrust.org");
+        pageTracker._trackPageview();
+        } catch(err) {}&lt;/script&gt;
+      </xsl:text>
+    </xsl:if>
   </xsl:template>
 
 </xsl:stylesheet>
