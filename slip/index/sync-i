@@ -241,8 +241,10 @@ sub __handle_query {
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
     if (! $rs->http_status_ok()) {
         my $status = $rs->get_status_line();
-        l__output(qq{Solr query=$query failed: $status\nError exit\n});
-        exit 1;
+        my $dump = $rs->get_failed_HTTP_dump();
+        my $s = qq{Solr query=$query failed: \n$dump\n};
+        __handle_rc($SLIP_Utils::States::RC_CRITICAL_ERROR, $s);
+        # NOTREACHED
     }
 
     return $rs;
@@ -260,9 +262,10 @@ Description
 sub __handle_rc {
     my ($rc, $msg) = @_;
 
-    if (! $rc) {
+    if ($rc > 0) {
         l__output(qq{$msg\nError exit\n});
-        exit 1;
+        __non_interactive_err_output($rc, $msg);
+        exit $rc;
     }
 }
 
@@ -288,7 +291,8 @@ sub handle_synchronization {
     my $rs = new Result::SLIP();
 
     my ($ok, $coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
-    __handle_rc($ok, qq{Failed to get large coll_ids\n});
+    __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+                qq{Failed to get large coll_ids\n});
 
     my $s;
     my $ct = 0;
@@ -323,7 +327,8 @@ sub handle_synchronization {
 
             if (! $NOOP) {
                 $ok = SharedQueue::enqueue_all_ids($C, $DBH, $coll_id);
-                __handle_rc($ok, qq{Failed to enqueue all ids for coll_id=$coll_id\n});
+                __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+                            qq{Failed to enqueue all ids for coll_id=$coll_id\n});
             }
             
             $missing_ids_over_colls += $uniq_ids_in_coll;
@@ -354,7 +359,8 @@ sub handle_synchronization {
 
                     if (! $NOOP) {
                         $ok = SharedQueue::enqueue_item_ids($C, $DBH, [$id]);
-                        __handle_rc($ok, qq{Failed to enqueue id=$id for coll_id=$coll_id\n});
+                        __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+                                    qq{Failed to enqueue id=$id for coll_id=$coll_id\n});
                     }
                 }
             }
@@ -481,7 +487,8 @@ sub handle_inverse_synchronization {
     l__output(qq{Solr has $num_found items in collections\n});
 
     my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
-    __handle_rc($_ok, qq{Failed to get large coll_ids\n});
+    __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+                qq{Failed to get large coll_ids\n});
 
     my %missing_coll_ids = ();
     my %small_coll_ids = ();
@@ -514,7 +521,8 @@ sub handle_inverse_synchronization {
             if (! $NOOP) {
                 l__output("\n\t--> queue $num_ids_missing ids\n");
                 $ok = SharedQueue::enqueue_item_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref);
-                __handle_rc($ok, qq{Failed to enqueue ids from missing optimize step\n});
+                __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+                            qq{Failed to enqueue ids from missing optimize step\n});
             }
         }
 
@@ -527,7 +535,8 @@ sub handle_inverse_synchronization {
             if (! $NOOP) {
                 l__output("\n\t--> queue $num_ids_small ids\n");
                 $ok = SharedQueue::enqueue_item_ids($C, $DBH, $small_ids_to_enqueue_arr_ref);
-                __handle_rc($ok, qq{Failed to enqueue ids from small optimize step\n});
+                __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+                            qq{Failed to enqueue ids from small optimize step\n});
             }
         }
 
@@ -558,7 +567,8 @@ sub handle_inverse_synchronization {
             if (! $NOOP) {
                 if (scalar(@$ids_to_enqueue_arr_ref)) {
                     $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
-                    __handle_rc($ok, qq{Failed to enqueue ids not in collection\n});
+                    __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+                                qq{Failed to enqueue ids not in collection\n});
                 }
             }
         }
