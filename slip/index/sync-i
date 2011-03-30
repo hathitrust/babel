@@ -487,7 +487,7 @@ sub handle_inverse_synchronization {
     l__output(qq{Solr has $num_found items in collections\n});
 
     my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
-    __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
+    __handle_rc($_ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
                 qq{Failed to get large coll_ids\n});
 
     my %missing_coll_ids = ();
