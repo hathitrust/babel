@@ -867,39 +867,56 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
 //________
 // Update the location hash from the current parameters.  Call this instead of manually
 // using window.location.replace
+
+HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
+    if ( params.page ) {
+        var pageParam;
+        pageParam = "num=" + params.page;
+        if ( href.indexOf("num=") > -1 ) {
+            href = href.replace(/num=\d+(;?)/, pageParam + "$1");
+        } else {
+            href += ";" + pageParam;
+        }
+    } else {
+        href = href.replace(/num=\d+(;?)/, "");
+    }
+
+    if ( params.index ) {
+        var indexParam;
+        indexParam = "seq=" + ( params.index + 1 );
+        if ( href.indexOf("seq=") > -1 ) {
+            href = href.replace(/seq=\d+(;?)/, indexParam + "$1");
+        } else {
+            href += ";" + indexParam;
+        }
+    } else {
+        href = href.replace(/seq=\d+(;?)/, "");
+    }
+    
+    if ( options && options.view && params.mode ) {
+        var viewParam;
+        viewParam = "view=" + this.getMode(params);
+        if ( href.indexOf("view=") > -1 ) {
+            href = href.replace(/view=\w+(;?)/, viewParam + "$1");
+        } else {
+            href += ";" + viewParam;
+        }
+    }
+    
+    return href;
+}
+
 HTBookReader.prototype.updateLocationHash = function() {
+    var self = this;
     
     // update the classic view link to reflect the current page number
     var params = this.paramsFromCurrent();
     
-    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink" ], function(idx, id) {
+    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#loginLink" ], function(idx, id) {
         var $a = $(id);
         var href = $a.attr('href');
         if ( href != null ) {
-            if ( params.page ) {
-                var pageParam;
-                pageParam = "num=" + params.page;
-                if ( href.indexOf("num=") > -1 ) {
-                    href = href.replace(/num=\d+(;?)/, pageParam + "$1");
-                } else {
-                    href += ";" + pageParam;
-                }
-            } else {
-                href = href.replace(/num=\d+(;?)/, "");
-            }
-
-            if ( params.index ) {
-                var indexParam;
-                indexParam = "seq=" + ( params.index + 1 );
-                if ( href.indexOf("seq=") > -1 ) {
-                    href = href.replace(/seq=\d+(;?)/, indexParam + "$1");
-                } else {
-                    href += ";" + indexParam;
-                }
-            } else {
-                href = href.replace(/seq=\d+(;?)/, "");
-            }
-            
+            href = self._updateUrlFromParams(href, params);
             if ( id == "#pagePdfLink" ) {
                 $a.attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
             } else {
@@ -908,9 +925,15 @@ HTBookReader.prototype.updateLocationHash = function() {
         }
     })
     
-    var newHash = '#' + this.fragmentFromParams(params);
-    window.location.replace(newHash);
-
+    if ( window.history && window.history.replaceState != null) {
+        var new_href = this._updateUrlFromParams(window.location.search, params, { view : true });
+        window.history.replaceState(null, document.title, new_href);
+    } else {
+        var newHash = '#' + this.fragmentFromParams(params);
+        window.location.replace(newHash); // replace blocks the back button!
+        // window.location.hash = newHash; // clutters the browser history?
+    }
+    
     if ( this.last_index != params.index ) {
         if ( this.last_index != null ) {
             if ( pageTracker != null ) {
@@ -1068,6 +1091,24 @@ HTBookReader.prototype.nextReduce = function( currentReduce, direction, reductio
 //________
 // Create a fragment string from the params object.
 // See http://openlibrary.org/dev/docs/bookurls for an explanation of the fragment syntax.
+HTBookReader.prototype.getMode = function(params) {
+    var retval;
+    if (params.mode == this.constMode1up) {
+        if ( params.displayMode == "text" ) {
+            retval = 'text';
+        } else {
+            retval = '1up';
+        }
+    } else if (params.mode == this.constMode2up) {
+        retval = '2up';
+    } else if (params.mode == this.constModeThumb) {
+        retval = 'thumb';
+    } else {
+        throw 'getMode called with unknown mode ' + params.mode;
+    }
+    return retval;
+}
+
 HTBookReader.prototype.fragmentFromParams = function(params) {
     var separator = '/';
 
@@ -1084,20 +1125,8 @@ HTBookReader.prototype.fragmentFromParams = function(params) {
     // $$$ region
     
     // mode
-    if ('undefined' != typeof(params.mode)) {    
-        if (params.mode == this.constMode1up) {
-            if ( params.displayMode == "text" ) {
-                fragments.push('mode', 'text');
-            } else {
-                fragments.push('mode', '1up');
-            }
-        } else if (params.mode == this.constMode2up) {
-            fragments.push('mode', '2up');
-        } else if (params.mode == this.constModeThumb) {
-            fragments.push('mode', 'thumb');
-        } else {
-            throw 'fragmentFromParams called with unknown mode ' + params.mode;
-        }
+    if ('undefined' != typeof(params.mode)) {   
+        fragments.push(this.getMode(params)) ;
     }
     
     // search
@@ -1575,10 +1604,10 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
         return true;
     })
 
-	$("#BRpageControls").hover(
-		function() { $(this).addClass("hovered"); },
-		function() { $(this).removeClass("hovered"); }
-	);
+    $("#BRpageControls").hover(
+        function() { $(this).addClass("hovered"); },
+        function() { $(this).removeClass("hovered"); }
+    );
     
     $("div.BRpagediv1up:has(img)").live("mouseover mouseleave", function(event) {
         var h = $(this).height();

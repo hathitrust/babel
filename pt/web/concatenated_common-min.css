@@ -3037,7 +3037,7 @@ span.prompt {
        position:absolute; top:0px; overflow:hidden;
        border:solid 1px #929292; border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px; 
        box-shadow: 5px 5px 5px #888; -moz-box-shadow: 1px 1px 3px #555; -webkit-box-shadow: 5px 5px 5px #888; white-space: nowrap;
-       left:-1000;
+       left:-1000px;
        opacity: 0.2; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)"; filter:alpha(opacity=20);
 }
        
