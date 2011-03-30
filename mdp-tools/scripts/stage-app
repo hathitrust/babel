@@ -57,12 +57,6 @@ sub stage_app_usage {
                  -s staging area: test (default), beta-1, beta-2, beta-3
                  -A all apps
                  -v verbose
-                 -h print help
-
-       stage-app [options] -b<branch> <app>
-           Bring <branch> of <app> up-to-date for testing under one of beta-*.babel
-                 -s staging area: beta-1, beta-2, beta-3 (ONLY)
-                 -v verbose
                  -h print help \n};
     return $s;
 }
