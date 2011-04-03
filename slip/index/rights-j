@@ -311,7 +311,7 @@ eval {
             # DROP/CREATE j_rights_temp
             initialize_j_rights_temp($C, $DBH);
             # Always insert into j_rights_temp by forcing CHECK=0 here
-            process_rights($C, undef, $DBH, '00000000', 0, 1);
+            process_rights($C, $DBH, undef, '00000000', 0, 1);
             # DO NOT DROP j_rights if CHECK==1. j_rights_temp is left
             # behind until next (-R) run.
             if (! $CHECK) {
