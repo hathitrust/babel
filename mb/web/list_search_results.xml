@@ -19,7 +19,7 @@
    </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->
-  <CustomXml><?CHUNK filename="list_search_results_extra.xml" optional="1"?></CustomXml>
+  <CustomXml></CustomXml>
 
   <?CHUNK filename="mbooks_globals.xml"?>
   <?CHUNK filename="header.xml"?>

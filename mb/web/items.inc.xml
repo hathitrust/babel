@@ -1,0 +1,21 @@
+  <CollectionOwner><?COLLECTION_OWNER?></CollectionOwner>
+  <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
+  <EditCollectionWidget><?EDIT_COLLECTION_WIDGET?></EditCollectionWidget>
+
+  <CollectionName><?COLLECTION_NAME?></CollectionName>
+  <OperationResults><?OPERATION_RESULTS?></OperationResults>
+  <ItemList><?ITEM_LIST?></ItemList>
+
+  <TitleSortHref><?TITLE_SORT_HREF?></TitleSortHref>
+  <AuthorSortHref><?AUTHOR_SORT_HREF?></AuthorSortHref>
+  <DateSortHref><?DATE_SORT_HREF?></DateSortHref>
+
+  <SelectCollectionWidget><?SELECT_COLLECTION_WIDGET?></SelectCollectionWidget>
+  <SortWidget><?SORT_WIDGET?></SortWidget>
+  <Paging><?PAGING?></Paging>
+
+  <SearchWidget><?SEARCH_WIDGET?></SearchWidget>
+
+  <LimitToFullText><?LIMIT_TO_FULL_TEXT?></LimitToFullText>
+
+  <?CHUNK filename="add_items_warning.xml"?>
