@@ -102,7 +102,7 @@
 
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
-        <xsl:call-template name="online_assessment"/>
+        <!-- xsl:call-template name="online_assessment"/-->
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
