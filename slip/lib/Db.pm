@@ -75,7 +75,34 @@ sub initialize_j_rights_temp {
     DEBUG('lsdb', qq{DEBUG: $statement});
     $sth = DbUtils::prep_n_execute($dbh, $statement);
 
-    $statement = qq{CREATE TABLE `j_rights_temp` (`nid` varchar(32) NOT NULL default '', `attr` tinyint(4) NOT NULL default '0', `reason` tinyint(4) NOT NULL default '0', `source` tinyint(4) NOT NULL default '0', `user` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, `sysid` varchar(32) NOT NULL default '', `update_time` int NOT NULL default '00000000', PRIMARY KEY (`nid`), KEY `update_time` (`update_time`), KEY `attr` (`attr`))};
+    $statement = qq{CREATE TABLE `j_rights_temp` (`nid` varchar(32) NOT NULL default '', `attr` tinyint(4) NOT NULL default '0', `reason` tinyint(4) NOT NULL default '0', `source` tinyint(4) NOT NULL default '0', `user` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, `sysid` varchar(32) NOT NULL default '', `update_time` int NOT NULL default '00000000')};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+}
+
+# ---------------------------------------------------------------------
+
+=item add_indexes_j_rights_temp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub add_indexes_j_rights_temp {
+    my($C, $dbh) = @_;
+    
+    my ($statement, $sth);
+
+    $statement = qq{ALTER TABLE `j_rights_temp` ADD PRIMARY KEY `nid`};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    $statement = qq{ALTER TABLE `j_rights_temp` ADD KEY `attr`};
+    DEBUG('lsdb', qq{DEBUG: $statement});
+    $sth = DbUtils::prep_n_execute($dbh, $statement);
+
+    $statement = qq{ALTER TABLE `j_rights_temp` ADD KEY `update_time`};
     DEBUG('lsdb', qq{DEBUG: $statement});
     $sth = DbUtils::prep_n_execute($dbh, $statement);
 }

@@ -139,13 +139,10 @@ CREATE TABLE `j_rights_temp` (
         `user`        varchar(32) NOT NULL default '',
         `time`        timestamp   NOT NULL default CURRENT_TIMESTAMP,
         `sysid`       varchar(32) NOT NULL default '',
-        `update_time` int         NOT NULL default '00000000',
-                PRIMARY KEY (`nid`),
-                KEY `update_time` (`update_time`),
-                KEY `attr` (`attr`)
+        `update_time` int         NOT NULL default '00000000'
         );
 
-CREATE TABLE `j_rights_temp` (`nid` varchar(32) NOT NULL default '', `attr` tinyint(4) NOT NULL default '0', `reason` tinyint(4) NOT NULL default '0', `source` tinyint(4) NOT NULL default '0', `user` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, `sysid` varchar(32) NOT NULL default '', `update_time` int NOT NULL default '00000000', PRIMARY KEY (`nid`), KEY `update_time` (`update_time`), KEY `attr` (`attr`));
+CREATE TABLE `j_rights_temp` (`nid` varchar(32) NOT NULL default '', `attr` tinyint(4) NOT NULL default '0', `reason` tinyint(4) NOT NULL default '0', `source` tinyint(4) NOT NULL default '0', `user` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, `sysid` varchar(32) NOT NULL default '', `update_time` int NOT NULL default '00000000');
 
 --
 

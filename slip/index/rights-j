@@ -316,6 +316,7 @@ eval {
             # behind until next (-R) run.
             if (! $CHECK) {
                 DROP_j_rights_RENAME_j_rights_temp($C, $DBH);
+                ALTER_j_rights_temp_ADD_INDEXES($C, $DBH);
             }
         }
 
@@ -511,6 +512,34 @@ Description
 sub DROP_j_rights_RENAME_j_rights_temp {
     my ($C, $dbh) = @_;
     Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
+
+    my $s = "Rebuild: dropped j_rights rename j_rights_temp";
+    __output("$s\n");
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+}
+
+# ---------------------------------------------------------------------
+
+=item ALTER_j_rights_temp_ADD_INDEXES
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ALTER_j_rights_temp_ADD_INDEXES {
+    my ($C, $dbh) = @_;
+
+    my $s;
+    $s = "Rebuild: begin add indexes to j_rights_temp";
+    __output("$s\n");
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+
+    Db::add_indexes_j_rights_temp($C, $dbh);
+
+    $s = "Rebuild: end add indexes to j_rights_temp";
+    __output("$s\n");
+    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 }
 
 # ---------------------------------------------------------------------
