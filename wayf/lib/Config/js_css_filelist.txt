@@ -47,6 +47,7 @@ Section:LOCAL_JS
 
 Section:CSS
 # css files, note last one overides earlier
+//common-web/MBooksCol.css
 //common-web/smallheader.css
 /wayf/web/loginStyles.css
 

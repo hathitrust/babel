@@ -96,10 +96,11 @@
               </div>
               <h4>Logging in will allow you to:</h4>
               <p class="loggedinAccess">Create permanent public &amp; private collections</p>
+              <p class="friendNoAccess">Does NOT provide access to full PDF downloads of public domain &amp; open access items where not publically available</p>
               <p>Read more about <a href="http://www.hathitrust.org/help_digital_library#FriendAccount">friend accounts</a>.</p>
             </div>
           </div>
-          <p class="msg">Note: Logging in does NOT provide access to page images of "Limited (search-only)" items.</p>
+          <p class="msg">Note: Logging in does NOT provide access to page images of "<span class="viewonly"/>Limited (search-only)" items.</p>
           
         </div>
       </div>

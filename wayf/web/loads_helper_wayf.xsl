@@ -13,6 +13,7 @@
  
 
  <xsl:template name="load_uncompressed_css">
+ <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/smallheader.css"/>
  <link rel="stylesheet" type="text/css" href="/wayf/loginStyles.css"/>
 </xsl:template>
