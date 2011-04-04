@@ -285,6 +285,9 @@ sub insert_j_indexed_temp_j_indexed {
         my $elapsed = time() - $begin;
         # Let replication catch up
         sleep $elapsed/2;
+
+        $start += C_INSERT_SIZE;
+        
     } until ($num_inserted <= 0);
     
     $statement = qq{ALTER TABLE j_indexed ENABLE KEYS};
