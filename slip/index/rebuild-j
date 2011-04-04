@@ -185,14 +185,15 @@ Description
 sub __rb_commit {
     my ($C, $run, $shard, $indexer) = @_;
 
-    my ($s, $s1);
+    my $s;
     
-    $s1 = qq{commit shard=$shard ...};
-    __output(qq{$s1});
+    $s = qq{commit shard=$shard ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
     my ($index_state, $stats_ref) = $indexer->commit_updates($C);
-    $s =  qq{Done.};
+    $s = qq{Done.};
     __output(qq{$s\n});
-    Log_rebuild($C, $run, $s1);
+    Log_rebuild($C, $run, $s);
 
     if (Search::Constants::indexing_failed($index_state)) {
         $s = qq{commit failed shard=$shard index_state=}
@@ -216,18 +217,19 @@ For each shard, add its ids to j_indexed[shard] for this run
 sub rebuild_indexed {
     my ($C, $dbh, $run) = @_;
 
-    my ($s, $s1);
+    my $s;
 
     $s = qq{Begin j_indexed rebuild run=$run $C_MSG};
     __output(qq{\n\n ***** $s ***** \n\n});
     Log_rebuild($C, $run, $s);
 
-    $s1 = qq{Initialize j_indexed_temp ...};
-    __output(qq{$s1});
+    $s = qq{Initialize j_indexed_temp ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
     SLIP_Utils::Db_sync::init_j_indexed_temp($C, $dbh);
     $s = qq{Done.};
     __output(qq{$s\n});
-    Log_rebuild($C, $run, $s1);
+    Log_rebuild($C, $run, $s);
 
     my $total_item_ct = 0;
     my $R_SLICE_SIZE = 100000;
@@ -283,9 +285,10 @@ sub rebuild_indexed {
         $s = qq{Delete Duplicate j_indexed_temp rows, duplicate Solr docs ...};
         __output(qq{$s\n});
     }
+    Log_rebuild($C, $run, $s);
     
     my ($total_dupl_id_item_ct, $total_Delete_ct) = Delete_duplicates($C, $run, $dbh);
-    $s = qq{Done. duplicated j_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
+    $s = qq{Done. \n\tduplicated j_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
     __output(qq{$s\n});
     Log_rebuild($C, $run, $s);
     
@@ -298,32 +301,36 @@ sub rebuild_indexed {
     
     # Clear the rows from j_indexed for this run
     if ($CHECK) {        
-        $s1 = qq{SKIP Delete j_indexed rows};
-        __output(qq{$s1\n});
+        $s = qq{SKIP Delete j_indexed rows};
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
     }
     else {
-        $s1 = qq{Delete j_indexed rows ...};
-        __output(qq{$s1});
+        $s = qq{Delete j_indexed rows ...};
+        __output(qq{$s});
+        Log_rebuild($C, $run, $s);
         Db::Delete_indexed($C, $dbh, $run);
         $s = qq{Done.};
         __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
     }
-    Log_rebuild($C, $run, $s1);
+
     
     # Insert the rows from j_indexed_temp
     if ($CHECK) {
-        $s1 = qq{SKIP Insert j_indexed_temp rows into j_indexed};
-        __output(qq{$s1\n});
+        $s = qq{SKIP Insert j_indexed_temp rows into j_indexed};
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
     }
     else {
-        $s1 = qq{Insert j_indexed_temp rows into j_indexed ...};
-        __output(qq{$s1});
+        $s = qq{Insert j_indexed_temp rows into j_indexed ...};
+        __output(qq{$s});
+        Log_rebuild($C, $run, $s);
         SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
         $s = qq{Done.};
         __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
     }
-    Log_rebuild($C, $run, $s1);
-    
     
     $s = qq{rebuild-j $C_MSG: checked=$total_item_ct deleted=$total_Delete_ct};
     __output(qq{\n$s\n});
