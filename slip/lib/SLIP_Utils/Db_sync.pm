@@ -266,7 +266,6 @@ sub insert_j_indexed_temp_j_indexed {
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     DEBUG('lsdb', qq{DEBUG: $statement});
     
-    my $SELECT_clause = qq{SELECT $run, `shard`, `id`, '$MYSQL_ZERO_TIMESTAMP', 1 FROM j_indexed_temp LIMIT $start, $offset};
     do {
         my $begin = time();
         
@@ -274,6 +273,8 @@ sub insert_j_indexed_temp_j_indexed {
         $sth = DbUtils::prep_n_execute($dbh, $statement);
         DEBUG('lsdb', qq{DEBUG: $statement});
 
+        my $SELECT_clause = qq{SELECT $run, `shard`, `id`, '$MYSQL_ZERO_TIMESTAMP', 1 FROM j_indexed_temp LIMIT $start, $offset};
+        
         $statement = qq{INSERT INTO j_indexed (`run`, `shard`, `id`, `time`, `indexed_ct`) ($SELECT_clause)};
         $sth = DbUtils::prep_n_execute($dbh, $statement, \$num_inserted);
         DEBUG('lsdb', qq{DEBUG: $statement});
