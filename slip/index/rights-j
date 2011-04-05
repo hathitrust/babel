@@ -270,7 +270,7 @@ my $DBH = $C->get_object('Database')->get_DBH();
 my $INIT_MSG;
 
 eval {
-    if (r_rights_enabled($C, $DBH) || $INTERACTIVE) {
+    if (r_rights_enabled($C, $DBH) || $INTERACTIVE || $REBUILD) {
         my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
 
         if ($ID_INSERT) {
