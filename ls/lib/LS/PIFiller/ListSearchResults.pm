@@ -557,16 +557,8 @@ sub _ls_wrap_result_data {
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
         $s .= wrap_string_in_tag($fulltext_flag, 'fulltext');
 
-        # Catalog record number.  Beware of ids like 'uc1.$b776044'
-        # ($BARCODE) when interpolating Perl variables and
-        # uc2.ark:/13960/t0dv1g69b (colon causes Solr parse error)
-        $id = Identifier::get_safe_Solr_id($id);
-         my $solr_response = 
-             `curl -s 'http://solr-vufind:8026/solr/biblio/select?q=ht_id:$id&start=0&rows=1&fl=id'`;
-         my ($record_no) = ($solr_response =~ m,<str name="id">(.*?)</str>,);
+        my ($record_no) = ($doc_data =~ m,<str name="record_no">(.*?)</str>,s);
         $s .= wrap_string_in_tag($record_no, 'record');
-
-
         $output .= wrap_string_in_tag($s, 'Item');
     }
 
