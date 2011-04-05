@@ -271,7 +271,7 @@ sub insert_j_indexed_temp_j_indexed {
         my $begin = time();
         
         $statement = qq{LOCK TABLES j_indexed_temp WRITE, j_indexed WRITE};
-        $sth = prep_n_execute($dbh, $statement);
+        $sth = DbUtils::prep_n_execute($dbh, $statement);
         DEBUG('lsdb', qq{DEBUG: $statement});
 
         $statement = qq{INSERT INTO j_indexed (`run`, `shard`, `id`, `time`, `indexed_ct`) ($SELECT_clause)};
@@ -279,7 +279,7 @@ sub insert_j_indexed_temp_j_indexed {
         DEBUG('lsdb', qq{DEBUG: $statement});
 
         $statement = qq{UNLOCK TABLES};
-        $sth = prep_n_execute($dbh, $statement);
+        $sth = DbUtils::prep_n_execute($dbh, $statement);
         DEBUG('lsdb', qq{DEBUG: $statement});
 
         my $elapsed = time() - $begin;
