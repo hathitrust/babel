@@ -1303,7 +1303,7 @@ img.SearchArrow {
 
     #formWidget .bd {
         overflow:auto;
-        height:360px;
+/*        height:360px; */
         padding:10px;
     }
 
