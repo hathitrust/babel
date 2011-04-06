@@ -207,7 +207,7 @@ function doYouReally(collname)
 
 function confirmLarge(collSize, addNumItems) {
     if (collSize + addNumItems <= 1000) {
-        alert("Coll will remain small ...");
+        //alert("Coll will remain small ...");
         return true;
     }
     else if (collSize <= 1000) {
@@ -223,16 +223,16 @@ function confirmLarge(collSize, addNumItems) {
         var answer = confirm(msg);
     
         if (answer) {
-            alert("Ok adding ...");
+            //alert("Ok adding ...");
             return true;
         }
         else {
-            alert ("Not adding ....");
+            //alert ("Not adding ....");
             return false;
         }
     }
     else {
-        alert("Coll already large ...");
+        //alert("Coll already large ...");
         return true;
     }
 }
