@@ -22,7 +22,7 @@ sub Usage {
     OPTIONS
       -A lists all apps
       -h help
-      -f show only for <branch> (implies -A) \n";
+      -f show only for apps having <branch> (implies -A) \n";
 }
 
 if ($opt_h) {
@@ -61,7 +61,7 @@ foreach my $app (@apps) {
     my ($branches, $curr_branch) = get_branches();
 
     if ($filter_branch) {
-        if ($curr_branch eq $filter_branch) {
+        if ($branches =~ m,$filter_branch,s) {
             $filter_branch_match++;
         }
         else {
@@ -96,7 +96,7 @@ foreach my $app (@apps) {
 }
 
 if ($filter_branch && (! $filter_branch_match)) {
-    PrintN("branch=$filter_branch not checked out for any of your apps\n");
+    PrintN("branch=$filter_branch does not exist for any of your apps\n");
 }
 
 exit 0;
