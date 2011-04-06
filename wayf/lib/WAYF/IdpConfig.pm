@@ -181,6 +181,24 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/mit?target=___TARGET___',
                    'enabled'   => '1',
                   },
+   'berkeley'  => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'University of California, Berkeley',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/berkeley?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
+   'uci'       => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'University of California, Irvine',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/uci?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
+   'ucm'       => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'Universidad Complutense Madrid',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/ucm?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
    
    # Waiting
    'upenn'     => {
@@ -207,22 +225,10 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/osu?target=___TARGET___',
                    'enabled'   => '0',
                   },
-   'berkeley'  => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'University of California, Berkeley',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/berkeley?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
    'ucdavis'   => {
                    'authtype'  => 'shibboleth',
                    'link_text' => 'University of California, Davis',
                    'template'  => 'https://___HOST___/Shibboleth.sso/ucdavis?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'uci'       => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'University of California, Irvine',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/uci?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'ucr'       => {
@@ -277,12 +283,6 @@ package WAYF::IdpConfig;
                    'authtype'  => 'shibboleth',
                    'link_text' => 'North Carolina State University',
                    'template'  => 'https://___HOST___/Shibboleth.sso/ncsu?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'ucm'       => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'Universidad Complutense Madrid',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/ucm?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'umaryland' => {
