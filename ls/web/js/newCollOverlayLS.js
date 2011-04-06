@@ -180,8 +180,16 @@ var addItemsToCollection = function(o) {
     YAHOO.util.Event.preventDefault(o);
   }
   else  {
-    initExistingCollUrl();
-    processRequest();
+      YAHOO.util.Event.preventDefault(o);
+
+      var addNumItems = ITEMS_SELECTED.length;
+      var COLL_SIZE_ARRAY = getCollSizeArray();
+      var coll_id = getCollMenuVal();
+      var collSize = COLL_SIZE_ARRAY[coll_id];
+      if (confirmLarge(collSize, addNumItems)) {
+          initExistingCollUrl();
+          processRequest();
+      }
   }
 };
 

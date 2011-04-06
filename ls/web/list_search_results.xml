@@ -19,15 +19,17 @@
    </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->
-  <CustomXml><?CHUNK filename="list_search_results_extra.xml" optional="1"?></CustomXml>
+  <CustomXml></CustomXml>
 
   <?CHUNK filename="mbooks_globals.xml"?>
   
   <!-- Minimal header.xml -->
 
   <?CHUNK filename="header.xml"?>
+
   <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
-  
+  <CollectionSizesJs><?COLLECTION_SIZES_JS?></CollectionSizesJs>  
+
   <!-- Main -->
   <OperationResults><?OPERATION_RESULTS?></OperationResults>
 

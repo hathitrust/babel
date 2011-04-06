@@ -169,25 +169,19 @@
         </div>
       </form>
 
-      <!--tbw -->
-      <!--      <xsl:if test= "/MBooksTop/MBooksGlobals/LoggedIn = 'YES'">-->
-        <div id="form_lsCB" name="form_lsCB" >
-          <div id="actionsRow2">
-            <div class="selectAll">Select all on page <input type="checkbox" id="checkAll"/></div>
-            <xsl:call-template name="BuildItemSelectActions"/>
-          </div>
+      <div id="form_lsCB" name="form_lsCB" >
+        <div id="actionsRow2">
+          <div class="selectAll">Select all on page <input type="checkbox" id="checkAll"/></div>
+          <xsl:call-template name="BuildItemSelectActions"/>
         </div>
-        <!--      </xsl:if> -->
-      <!--tbw -->
+      </div>
     
       <table id="itemTable" class="itemTable">
         <xsl:for-each select="SearchResults/Item">
           <xsl:call-template name="BuildItemChunk"/>
         </xsl:for-each>
       </table>
-    
-      <!--      </form>-->
-      
+          
       <div id="listisFooter">
         <form id="form_ls2" name="form_ls2" method="get" action="ls?">
           <xsl:call-template name="GetHiddenParams"/>
@@ -701,10 +695,6 @@
        -->
  <xsl:template name="BuildItemSelectActions">
     <div class="SelectedItemActions">
-
-
-      <!--XXX foobar only if logged in -->
-
       <div id="errormsg">
         <div class="bd"></div>
       </div>
@@ -712,10 +702,8 @@
       <div class="overlay" id="overlay"></div>
       <span id="addCollectionWidgetLS"></span>
       <xsl:call-template name="BuildCollectionSelect"/>
-      <!--      <input type="hidden" name="a" id="a" value="addits">-->
       <input type="hidden" name="page" value="ajax"/>
       <button id="LSaddItemsBtn" >Add Selected</button>
-
     </div>
   </xsl:template>
 
@@ -732,8 +720,9 @@
       </option>
 
       <!--tbw XXX this code assumes a PI used by CB. Can we reuse it?
-           alternative is that somehow the header already knows the collections because if you are logged in you get the jump to collection widget-->
-      <!--      <xsl:for-each select="MBooksTop/SelectCollectionWidget/Coll">-->
+           alternative is that somehow the header already knows the
+           collections because if you are logged in you get the jump
+           to collection widget-->
       <xsl:for-each select="SelectCollectionWidget/Coll">
         <xsl:element name="option">
           <xsl:attribute name="value">
