@@ -1,5 +1,7 @@
   <CollectionOwner><?COLLECTION_OWNER?></CollectionOwner>
   <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
+  <CollectionSizesJs><?COLLECTION_SIZES_JS?></CollectionSizesJs>  
+
   <EditCollectionWidget><?EDIT_COLLECTION_WIDGET?></EditCollectionWidget>
 
   <CollectionName><?COLLECTION_NAME?></CollectionName>
@@ -17,5 +19,3 @@
   <SearchWidget><?SEARCH_WIDGET?></SearchWidget>
 
   <LimitToFullText><?LIMIT_TO_FULL_TEXT?></LimitToFullText>
-
-  <?CHUNK filename="add_items_warning.xml"?>

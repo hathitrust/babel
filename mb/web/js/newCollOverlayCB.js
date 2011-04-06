@@ -183,10 +183,17 @@ var interceptNewCollMenu = function(e)
 	}
 	else 
 	{
-          YAHOO.mbooks.errormsg.hide();
-	  
-         //tbw IE6 workaround
-          myForm.submit();
+            YAHOO.mbooks.errormsg.hide();
+	    YAHOO.util.Event.preventDefault(e);
+
+            //tbw IE6 workaround
+            var addNumItems = ITEMS_SELECTED.length;
+            var COLL_SIZE_ARRAY = getCollSizeArray();
+            var coll_id = selectedCollectionNameVal;
+            var collSize = COLL_SIZE_ARRAY[coll_id];
+            if (confirmLarge(collSize, addNumItems)) {
+                myForm.submit();
+            }
 	}
 }
 
