@@ -32,6 +32,7 @@
   <Blog><?BLOG?></Blog>
   <!-- this is needed so concatenated javascript doesn't blow up-->
   <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>  
+  <CollectionSizesJs><?COLLECTION_SIZES_JS?></CollectionSizesJs>  
   
   
   <?CHUNK filename="footer.xml"?>

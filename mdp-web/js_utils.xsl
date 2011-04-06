@@ -16,6 +16,9 @@
     <xsl:value-of select="/MBooksTop/CollectionsOwnedJs"/>
     <xsl:text disable-output-escaping="yes"> &lt;/script&gt;</xsl:text>
 
+    <xsl:text disable-output-escaping="yes">&lt;script type="text/javascript"&gt;</xsl:text>
+    <xsl:value-of select="/MBooksTop/CollectionSizesJs"/>
+    <xsl:text disable-output-escaping="yes"> &lt;/script&gt;</xsl:text>
 
     <xsl:text disable-output-escaping="yes">&lt;script type="text/javascript"&gt;</xsl:text>
     <xsl:value-of select="/MBooksTop/MBooksGlobals/LoggedInJs"/>
