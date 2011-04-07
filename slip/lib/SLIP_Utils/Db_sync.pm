@@ -76,8 +76,7 @@ Description
 sub Select_j_rights_NIN_j_indexed {
     my ($C, $dbh, $run) = @_;
 
-    my $statement = 
-        qq{SELECT nid FROM j_rights LEFT JOIN j_indexed_temp ON j_rights.nid = j_indexed_temp.id WHERE j_indexed_temp.id IS NULL};
+    my $statement = qq{SELECT nid FROM j_rights WHERE nid NOT IN (SELECT id FROM j_indexed_temp)};
     DEBUG('lsdb', qq{DEBUG: $statement});
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
 
@@ -98,8 +97,7 @@ Description
 sub Select_j_indexed_NIN_j_rights {
     my ($C, $dbh, $run) = @_;
 
-    my $statement = 
-        qq{SELECT id FROM j_indexed_temp LEFT JOIN j_rights ON j_indexed_temp.id = j_rights.nid WHERE j_rights.nid IS NULL};
+    my $statement = qq{SELECT id FROM j_indexed_temp WHERE id NOT IN (SELECT nid FROM j_rights)};
     DEBUG('lsdb', qq{DEBUG: $statement});
     my $sth = DbUtils::prep_n_execute($dbh, $statement);
 
@@ -308,7 +306,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-11 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
