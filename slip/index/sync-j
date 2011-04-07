@@ -239,7 +239,8 @@ sub Test_rightsNINindexed {
     my $j_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
     my $j_rights_size = Db::Select_count_from_j_rights($C, $dbh);
 
-    my $s0 = qq{Find ids from j_rights (size=$j_rights_size) not in j_indexed (size=$j_indexed_size) run=$run $Q_MSG};
+    my $s0;
+    $s0 = qq{Find ids from j_rights (size=$j_rights_size) not in j_indexed (size=$j_indexed_size) run=$run $Q_MSG};
     __output(qq{\n$s0\n}); 
     Log_sync($C, $run, $s0);
 
@@ -247,6 +248,11 @@ sub Test_rightsNINindexed {
 
     my $ref_to_arr_of_hashref = 
         SLIP_Utils::Db_sync::Select_j_rights_NIN_j_indexed($C, $dbh, $run);
+    
+    my $ct = scalar(@$ref_to_arr_of_hashref);
+    $s0 = qq{Query returned $ct ids from j_rights LEFT JOIN j_indexed_temp};
+    __output(qq{$s0\n}); 
+    Log_sync($C, $run, $s0);
 
     my ($missing_ct, $item_ct, $errors_ct) = (0, 0, 0);
 
