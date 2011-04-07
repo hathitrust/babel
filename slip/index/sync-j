@@ -150,7 +150,7 @@ else {
 }
 
 if ($opt_d) {
-    $ENV{'DEBUG'} .= 'full';
+    $ENV{'DEBUG'} .= 'lsdb';
 }
 
 my $TEST_ONLY = defined($opt_T);
