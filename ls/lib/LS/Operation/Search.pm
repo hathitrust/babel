@@ -31,7 +31,8 @@ use Utils::Logger;
 use Operation::Status;
 use Search::Searcher;
 
-use LS::Query::FullText;
+#use LS::Query::FullText;
+use LS::Query::Facets;
 use LS::Result::FullText;
 use LS::Searcher::FullText;
 
@@ -111,7 +112,8 @@ sub execute_operation
     # ----------- Full-text query (ft) ------------
     my ($solr_ft_start_row, $solr_ft_num_rows) =
         $ft_limited ? ($solr_start_row, $solr_num_rows) : (0, 0);
-    my $Q_ft = new LS::Query::FullText($C, $user_query_string, undef, 
+#    my $Q_ft = new LS::Query::FullText($C, $user_query_string, undef, 
+    my $Q_ft = new LS::Query::Facets($C, $user_query_string, undef, 
                                        {
                                         'solr_start_row' => $solr_ft_start_row,
                                         'solr_num_rows' => $solr_ft_num_rows,
