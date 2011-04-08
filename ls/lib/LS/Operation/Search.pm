@@ -33,8 +33,8 @@ use Search::Searcher;
 
 #use LS::Query::FullText;
 use LS::Query::Facets;
-use LS::Result::FullText;
-use LS::Searcher::FullText;
+use LS::Result::Facets;
+use LS::Searcher::Facets;
 
 sub new
 {
@@ -98,7 +98,7 @@ sub execute_operation
     # Randomize primary shard
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $timeout = $config->get('ls_searcher_timeout');
-    my $searcher = new LS::Searcher::FullText($engine_uri, $timeout, 1);
+    my $searcher = new LS::Searcher::Facets($engine_uri, $timeout, 1);
     
     # Paging: Solr doc number is 0-relative
     my ($solr_start_row, $solr_num_rows) = $self->get_solr_page_values($C);
@@ -120,7 +120,7 @@ sub execute_operation
                                         'full_text_query' => 1,
                                        });
 
-    my $rs_ft = new LS::Result::FullText();
+    my $rs_ft = new LS::Result::Facets();
     $rs_ft = $searcher->get_populated_Solr_query_result($C, $Q_ft, $rs_ft);
     
     # Log
@@ -129,13 +129,13 @@ sub execute_operation
     # ----------- All unrestricted (all) -----------
     my ($solr_all_start_row, $solr_all_num_rows) =
         $ft_limited ? (0, 0) : ($solr_start_row, $solr_num_rows);
-    my $Q_all = new LS::Query::FullText($C, $user_query_string, undef, 
+    my $Q_all = new LS::Query::Facets($C, $user_query_string, undef, 
                                         {
                                          'solr_start_row' => $solr_all_start_row,
                                          'solr_num_rows' => $solr_all_num_rows,
                                          'full_text_query' => 0,
                                         });
-    my $rs_all = new LS::Result::FullText();
+    my $rs_all = new LS::Result::Facets();
     $rs_all = $searcher->get_populated_Solr_query_result($C, $Q_all, $rs_all);
 
     # Log
