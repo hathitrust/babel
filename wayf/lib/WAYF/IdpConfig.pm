@@ -195,7 +195,7 @@ package WAYF::IdpConfig;
                   },
    'ucm'       => {
                    'authtype'  => 'shibboleth',
-                   'link_text' => 'Universidad Complutense Madrid',
+                   'link_text' => 'Universidad Complutense de Madrid',
                    'template'  => 'https://___HOST___/Shibboleth.sso/ucm?target=___TARGET___',
                    'enabled'   => '1',
                   },
