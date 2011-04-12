@@ -201,6 +201,7 @@ sub get_Solr_query_string
         ($solr_start, $solr_rows) =
             ($self->get_start_row($C), $self->get_solr_num_rows($C));
     }
+
     my $START_ROWS = qq{&start=$solr_start&rows=$solr_rows};
 
     # Full-text filter query (fq)
@@ -219,10 +220,11 @@ sub get_Solr_query_string
 # XXX should we subclass FullText and just overide this method??
     my $FACETS;
     $FACETS ='&facet.field=genreStr&facet=true&facet.field=language&facet.limit=30&facet.field=hlb3Str';
+    my $WRITER ='&wt=json&json.nl=arrarr';
     
 
     # q=dog*&fl=id,rights,author,title,score&$version=2.2,&start=0&rows=20&indent=off
-    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS;
+    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER;
 
     DEBUG('all,query',
           sub

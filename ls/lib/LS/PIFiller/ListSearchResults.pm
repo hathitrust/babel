@@ -513,33 +513,35 @@ sub _ls_wrap_result_data {
 
     my $output;
 
-    # This parse will be replaced with A DOM when the Facet data come online.
+    ### Replace xml parsing with regex's with processing the json object fragment T
     my $result_docs_arr_ref = $rs->get_result_docs();
     foreach my $doc_data (@$result_docs_arr_ref) {
         my $s = '';
 
-        my ($str_titles) = ($doc_data =~ m,<arr name="title">(.*?)</arr>,gs);
-        my (@display_titles) = ($str_titles =~ m,<str[^>]*>(.*?)</str>,);
-        my $display_title = join(',', @display_titles);
+        my ($display_titles_ary_ref) = $doc_data->{'title'};
+        
+        my $display_title = join(',', @{$display_titles_ary_ref});
         $display_title = Encode::decode_utf8($display_title);
         $s .= wrap_string_in_tag($display_title, 'Title');
 
-        my ($str_authors) = ($doc_data =~ m,<arr name="author">(.*?)</arr>,gs);
-        my (@authors) = ($str_authors =~ m,<str[^>]*>(.*?)</str>,gs);
-        my $author = join(',', @authors);
-        $author = Encode::decode_utf8($author);
-        $s .= wrap_string_in_tag($author, 'Author');
-
-        my ($date) = ($doc_data =~ m,<str name="date">(.*?)</str>,s);
+        my ($authors_ary_ref) = $doc_data->{'author'};
+        if (defined ($authors_ary_ref))
+        {
+            my $author = join(',', @{$authors_ary_ref});
+            $author = Encode::decode_utf8($author);
+            $s .= wrap_string_in_tag($author, 'Author');
+        }
+            
+        my ($date) = ($doc_data->{'date'});
         $s .= wrap_string_in_tag($date, 'Date');
 
-        my ($id) = ($doc_data =~ m,<str name="id">(.*?)</str>,s);
+        my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');
 
-        my ($rights) = ($doc_data =~ m,<int name="rights">(.*?)</int>,s);
+        my $rights = $doc_data->{'rights'};
         $s .= wrap_string_in_tag($rights, 'rights');
 
-        my ($score) = ($doc_data =~ m,<float name="score">(.*?)</float>,s);
+        my ($score) = $doc_data->{'score'};
         $s .= wrap_string_in_tag($score, 'relevance');
 
         # Link to Pageturner
@@ -557,7 +559,8 @@ sub _ls_wrap_result_data {
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
         $s .= wrap_string_in_tag($fulltext_flag, 'fulltext');
 
-        my ($record_no) = ($doc_data =~ m,<str name="record_no">(.*?)</str>,s);
+        my $record_no = $doc_data->{'record_no'};
+        
         $s .= wrap_string_in_tag($record_no, 'record');
         $output .= wrap_string_in_tag($s, 'Item');
     }
