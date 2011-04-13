@@ -915,7 +915,8 @@
             <label for="curved">Curved or distorted text</label>
           </div>
           <div class="mdpFbSubSubtitle">
-            <input type="checkbox" name="other" value="1" id="other" alt="Other problem"/>
+            <!-- pfarber: lose the checkbox beside the text field -->
+            <!-- input type="checkbox" name="other" value="1" id="other" alt="Other problem"/-->
             <label for="other">Other problem<!-- see: $FBGlobals::gOtherDescLimit --></label>
             <span><input name="other" value="" class="overlay" maxlength="50" alt="Other problem fill in"/></span>
           </div>
