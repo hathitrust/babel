@@ -95,6 +95,7 @@
 
           <div id="mbContentContainer" class="mbSearchResultsContainer">
           <h2 class="SkipLink">Main Content</h2>
+
             <div id="main">
               <div class="betasearch">
                 <xsl:call-template name="SearchWidget"/>
@@ -126,7 +127,12 @@
               </xsl:choose>
             </div>
           </div>
-
+          <!-- for debugging facets-->
+          <div id="sidebarContainer">
+          <h1>DEBUG:</h1>
+                    <xsl:value-of select="/MBooksTop/Facets"/>
+          <!-- for debugging facets-->
+        </div>
           <xsl:call-template name="footer"/>
           <xsl:call-template name="google_analytics" />
 

@@ -108,6 +108,13 @@ $g_late_operations = [
                                  'template' => 'home.xml',
                                  'filler'   => 'LS::PIFiller::Home',
                                 },
+                                
+#                     'advanced'  => {
+#                                 'builders' => [],
+#                                 'template' => 'advanced.xml',
+#                                 'filler'   => 'LS::PIFiller::Advanced',
+#                                },
+
                     },
  },
   );

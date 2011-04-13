@@ -69,13 +69,8 @@ sub AFTER_ingest_Solr_search_response
 #XXX or should the following code be a method in LS::Result::JSON?
     my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
     my $parsed = $coder->decode ($$Solr_response_ref);
-
-
-
-#XXX rewrite these to get json results!!!
     
     my $docs = $parsed->{'response'}->{'docs'};
-
     
     # check to see if there is at least one doc
     if (defined($docs->[0]))
@@ -102,11 +97,70 @@ sub AFTER_ingest_Solr_search_response
         #XXX this is expecting xml docs 
         $self->__set_result_docs($docs); 
     }
+    #XXX  need to ingest facet data and save it (i.e. get/set_facet_data)
+    # check for facets first
+    my $facet_hash;
+    $facet_hash = $parsed->{facet_counts}->{facet_fields};
+        
+    if (defined($facet_hash))
+    {
+        #XXX do we want to parse this or just pass on a data structure?
+        # the below is more work but would isolate any changes necessary if we change the json response format i.e. json.nl=??
+        #my $clean_facet_hash=self->clean_facets($facet_hash)
+
+        $self->__set_facet_hash($facet_hash);
+        #my @facets =keys %{$facet_hash};
+#        foreach my $facet (@facets)
+#        {
+
+#           # my ($key,$value)=getFacetKeyValues($facet,$facet_hash);
+            
+#        }
+    }
     
 }
 
 
+
+
 # ---------------------------------------------------------------------
+
+=item PRIVATE: __set_facet_hash
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __set_facet_hash
+{
+    my $self = shift;
+    my $hash_ref = shift;
+    $self->{'facet_hash_ref'} = $hash_ref;
+}
+
+
+
+# ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
+
+=item :get_facet_hash
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_facet_hash
+{
+    my $self = shift;
+    return     $self->{'facet_hash_ref'} ;
+}
+
+
+
+
 
 =item PRIVATE: __set_result_docs
 

@@ -346,12 +346,52 @@ sub handle_QUERY_STRING_PI
     return $query_string;
 }
 
+# ---------------------------------------------------------------------
+sub handle_FACETS_PI
+    : PI_handler(FACETS) 
+{
+        #XXX do we need to register this in a config somewhere or is it magic?
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $facet_chunk;
+    $facet_chunk='<H1>Facets go here</H1>';
+
+
+    # get data  the facet data should have been inserted in the search result data in Result::Facet.pm
+    my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
+    # XXX do we want the all result object or the full text result object? or do we need to know if query is ft or not?
+    my $facet_hash =$result_data->{'all_result_object'}->{'facet_hash_ref'};
+    #XXX do we want to have a sub that is responsible for cleaning the hash ref?
+    foreach my $key (keys %{$facet_hash})
+    {
+        my $html=_ls_process_facet_data($key,$facet_hash);
+        $facet_chunk .= "\n$html\n";
+    }
+    
+
+    
+    return $facet_chunk
+}
+
+# ---------------------------------------------------------------------
 
 #======================================================================
 #
 #              P I    H a n d l e r   H e l p e r s
 #
 #======================================================================
+
+sub _ls_process_facet_data
+{
+    my $facet = shift;
+    my $facet_hash = shift;
+    my @facetlist=$facet_hash->{$facet};
+    my $html = '<h1>facet list for ' . $facet . ' goes here </h1>';
+    return $html;
+    
+}
+
+
 
 # ---------------------------------------------------------------------
 
