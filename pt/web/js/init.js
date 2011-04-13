@@ -155,6 +155,9 @@ $(document).ready(function() {
             // tracking beacon can be relayed
             
             if ( $(this).is("a") ) {
+                if ( $(this).attr('target') ) {
+                  return true;
+                }
                 var href = $(this).attr('href');
                 setTimeout(function() {
                     window.location.href = href;
