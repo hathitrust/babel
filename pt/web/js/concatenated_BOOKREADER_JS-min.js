@@ -5189,7 +5189,16 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
 // using window.location.replace
 
 HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
-    if ( params.page ) {
+    
+    was_escaped = null;
+    if ( href.indexOf("target=") > -1 ) {
+        // escaped href, like the login link
+        var tmp = href.split("target=");
+        was_escaped = tmp.shift();
+        href = unescape(tmp.join("target=")); // long shot
+    }
+    
+    if ( params.page && ( typeof(params.page) == "number" || params.page.slice(0,1) != 'n' ) ) {
         var pageParam;
         pageParam = "num=" + params.page;
         if ( href.indexOf("num=") > -1 ) {
@@ -5221,6 +5230,10 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
         } else {
             href += ";" + viewParam;
         }
+    }
+    
+    if ( was_escaped != null ) {
+        href = was_escaped + "target=" + escape(href);
     }
     
     return href;
