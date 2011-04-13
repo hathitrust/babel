@@ -99,7 +99,7 @@ HT.pdf_helpers = {
                 },
                 error : function(req, textStatus, errorThrown) {
                     // console.log("FAILED: ", req, "/", textStatus, "/", errorThrown);
-                    if ( req.status == 404 && (idx > 5 || processed > 0) ) {
+                    if ( ( req.status == 404 || req.status == 503 ) && (idx > 5 || processed > 0) ) {
                         clearInterval(inter);
                         $notice.hide();
                     }
