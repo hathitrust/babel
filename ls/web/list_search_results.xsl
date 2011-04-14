@@ -127,12 +127,6 @@
               </xsl:choose>
             </div>
           </div>
-          <!-- for debugging facets-->
-          <div id="sidebarContainer">
-          <h1>DEBUG:</h1>
-                    <xsl:value-of select="/MBooksTop/Facets"/>
-          <!-- for debugging facets-->
-        </div>
           <xsl:call-template name="footer"/>
           <xsl:call-template name="google_analytics" />
 
@@ -148,6 +142,12 @@
 
   <!-- TEMPLATE -->
   <xsl:template name="DisplayContent">
+          <!-- for debugging facets-->
+          <div id="lsSidebarContainer">
+          <h1 class="facet">DEBUxG:</h1>
+          <xsl:call-template name="facets"/>
+        </div>
+
     <div id="ColContainer">
       <div class="ColContent">
 
@@ -760,7 +760,48 @@
     <xsl:copy-of select="$hidden_q1_param"/>
     <input type="hidden" name="page" value="srchresults"/>
   </xsl:template>
-  
+
+
+  <!--############### facet templates ########################################-->
+  <!--#################################################
+     Will need to redo to create links and or check boxes with proper attributes to be in a form or
+      addressable by ajax js
+       ################################################-->
+  <xsl:template name="facets">
+    <div id="facetlist">
+      <ul>
+        <xsl:for-each select="/MBooksTop/Facets/facetField">
+          <xsl:text>             
+          </xsl:text>
+          <li class="facetField"><xsl:value-of select="@name"/></li>
+          <xsl:text>                
+          </xsl:text>
+          <xsl:call-template name="facetFields"/>
+        </xsl:for-each>
+      </ul>
+    </div>
+  </xsl:template>
+
+
+  <xsl:template name="facetFields">
+    <ul>
+      <xsl:text>
+      </xsl:text>
+      <xsl:for-each select="facetValue">
+        <xsl:text>
+        </xsl:text>
+        <li>
+          <xsl:value-of select="@name"/>
+          <xsl:text> (</xsl:text>
+          <xsl:value-of select="."/>
+          <xsl:text>) </xsl:text>
+        </li>
+      </xsl:for-each>
+    </ul>
+  </xsl:template>
+
+
+
   
   
 </xsl:stylesheet>

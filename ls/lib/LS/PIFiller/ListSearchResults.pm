@@ -362,10 +362,15 @@ sub handle_FACETS_PI
     # XXX do we want the all result object or the full text result object? or do we need to know if query is ft or not?
     my $facet_hash =$result_data->{'all_result_object'}->{'facet_hash_ref'};
     #XXX do we want to have a sub that is responsible for cleaning the hash ref?
+
+#XXX instead of spitting out html we should spit out good xml for the xslt to deal with!
+# on the other hand javascript will want json!
+    my $xml;
+    
     foreach my $key (keys %{$facet_hash})
     {
-        my $html=_ls_process_facet_data($key,$facet_hash);
-        $facet_chunk .= "\n$html\n";
+        $xml=_ls_process_facet_data($key,$facet_hash);
+        $facet_chunk .= "\n$xml\n";
     }
     
 
@@ -383,11 +388,26 @@ sub handle_FACETS_PI
 
 sub _ls_process_facet_data
 {
-    my $facet = shift;
+    my $facet_name = shift;
     my $facet_hash = shift;
-    my @facetlist=$facet_hash->{$facet};
-    my $html = '<h1>facet list for ' . $facet . ' goes here </h1>';
-    return $html;
+    my $facet_list_ref=$facet_hash->{$facet_name};
+    my $xml = '<facetField name="' . $facet_name . '" >';
+    my $count;
+    my $value;
+    my $string;
+    
+    foreach my $facet (@{$facet_list_ref})
+    {
+        $value=$facet->[0];
+        $count=$facet->[1];
+        $string= '<facetValue name="'. $value . ' ">' . $count . '</facetValue>';
+        $xml .=$string;
+        
+    }
+    
+    $xml .= "\n" . '</facetField>' . "\n";
+    
+    return $xml;
     
 }
 
