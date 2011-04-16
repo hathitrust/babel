@@ -179,7 +179,14 @@ sub get_Solr_query_string
 {
     my $self = shift;
     my $C = shift;
+    
+    #XXX should we do some cleaning of facet param coming in on url?
+    my $cgi = $C->get_object('CGI');
+    my $facetquery=$cgi->{'facet'};
+    #XXX figure out what to do with array
 
+    
+    
     # Cache to avoid repeated MySQL calls in Access::Rights
     if ($self->get_cached_Solr_query_string()) {
         return $self->get_cached_Solr_query_string();
@@ -220,14 +227,45 @@ sub get_Solr_query_string
 # XXX should we subclass FullText and just overide this method??
 # note facet limit now set to 5 for debugging.  Should set to 30 and use js/css to hide
 # these two values should be parameterized!
+    my $FACET_LIMIT=2;
+    
     my $FACETS;
-    $FACETS ='&facet.field=genreStr&facet=true&facet.field=language&facet.limit=5&facet.field=hlb3Str';
+    $FACETS ='&facet.field=genreStr&facet=true&facet.field=language&facet.field=hlb3Str&facet.limit='. $FACET_LIMIT ;
     my $WRITER ='&wt=json&json.nl=arrarr';
     
-
     # q=dog*&fl=id,rights,author,title,score&$version=2.2,&start=0&rows=20&indent=off
-    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER;
+#    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER;
 
+#XXX change to edismax query for testing
+
+    # add debug flag to ask solr for an explain query and need to change output somewhere
+
+#XXX MONSTROUS HACK for temporary debugging of rel ranking
+#  Need a much better mechanisim
+    my $DISMAX="";    
+    if ($USER_Q =~/dismax/i)
+    {
+        $DISMAX  = $self->_getDismaxString();
+        $USER_Q=~s/dismax//i;
+        
+        
+    }
+    my $FACETQUERY="";
+    
+    if (defined ($facetquery))
+    {
+        foreach my $fquery (@{$facetquery})
+        {
+            $FACETQUERY.='&fq=' . $fquery;
+        }
+    }
+    
+    
+    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY;    
+
+#XXX for debugging
+#    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
+    
     DEBUG('all,query',
           sub
           {
@@ -242,6 +280,24 @@ sub get_Solr_query_string
 }
 
 
+# ---------------------------------------------------------------------
+
+=item _getDismaxString
+
+Hardcoded for now but will read yaml config file later
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub _getDismaxString
+{
+    my $self =shift;
+#XXX need to insert tie parameter with correct url escapeing!!!
+    my $string='&defType=dismax&pf=title_ab^10000+title_a^8000+author^1600&qf=ocr^100000+title_ab^1000+title_a^800+author^1600&mm="2-25%" ';
+    return $string;
+    
+}
 
 # ---------------------------------------------------------------------
 

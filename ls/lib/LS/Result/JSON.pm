@@ -23,18 +23,24 @@ sub ingest_Solr_search_response
 
     my ($max_score, $num_found, $query_time) = (0, 0, 0.0);
 
+
+    my $parsed; #parsed json Solr response object
+    
     if ($http_status_ok)
     {
+         $parsed = $self->parse_JSON_results($Solr_response_ref);
 
-        ($query_time,$max_score,$num_found) = $self->parse_JSON_results($Solr_response_ref);
-        #XXX what if these are undefined when returning?
-        # QTime (query time in milliseconds)
+    
+       # QTime (query time in milliseconds)
+        $query_time = $parsed->{responseHeader}->{QTime};
         $query_time = sprintf("%.3f", $query_time/1000);
 
         # Max score
+        ($max_score) = ($parsed->{response}->{maxScore});
         $max_score = $max_score ? $max_score : 0.0;
 
         # Hits
+        ($num_found) = ($parsed->{response}->{numFound});
         $num_found = $num_found ? $num_found : 0;
     }
 
@@ -51,7 +57,7 @@ sub ingest_Solr_search_response
     # In Subclass:
     if ($http_status_ok)
     {
-        $self->AFTER_ingest_Solr_search_response($Solr_response_ref);
+        $self->AFTER_ingest_Solr_search_response($parsed);
     }
 }
 
@@ -61,19 +67,15 @@ sub parse_JSON_results
 {   
     my $self = shift;
     my $Solr_response_ref = shift;
-    my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
+
+#    my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
+    #XXX removed ascii since we want utf8 but what is allow_nonref??
+    #XXX Warning json won't escape xml entities such as "&" ">" etc.
+    my $coder = JSON::XS->new->pretty->allow_nonref;
     my $parsed = $coder->decode ($$Solr_response_ref);
+
+    return $parsed;
     
-       # QTime (query time in milliseconds)
-         my  $query_time = $parsed->{responseHeader}->{QTime};
-
-        # Max score
-        my ($max_score) = ($parsed->{response}->{maxScore});
-        # Hits
-        my ($num_found) = ($parsed->{response}->{numFound});
-
-    return ($query_time,$max_score,$num_found);
-
 }
 
 # ---------------------------------------------------------------------

@@ -352,6 +352,9 @@ sub handle_FACETS_PI
 {
         #XXX do we need to register this in a config somewhere or is it magic?
     my ($C, $act, $piParamHashRef) = @_;
+    my $cgi = $C->get_object('CGI');
+
+    
 
     my $facet_chunk;
     $facet_chunk='<H1>Facets go here</H1>';
@@ -369,7 +372,7 @@ sub handle_FACETS_PI
     
     foreach my $key (keys %{$facet_hash})
     {
-        $xml=_ls_process_facet_data($key,$facet_hash);
+        $xml=_ls_process_facet_data($key,$facet_hash, $cgi);
         $facet_chunk .= "\n$xml\n";
     }
     
@@ -390,17 +393,37 @@ sub _ls_process_facet_data
 {
     my $facet_name = shift;
     my $facet_hash = shift;
+    my $cgi = shift;
+    my $current_url = $cgi->url(-relative=>1,-query=>1);    
+    my @cgi_facets = $cgi->param('facet');
+    
     my $facet_list_ref=$facet_hash->{$facet_name};
     my $xml = '<facetField name="' . $facet_name . '" >';
     my $count;
     my $value;
     my $string;
+    my $class="good";
     
+    #XXX   insert another attribute here if the facet is in the current cgi URL!!
+    # and then fix broken code in the xsl!
     foreach my $facet (@{$facet_list_ref})
     {
         $value=$facet->[0];
         $count=$facet->[1];
-        $string= '<facetValue name="'. $value . ' ">' . $count . '</facetValue>';
+        if (defined (@cgi_facets))
+        {
+            foreach  my $f (@cgi_facets)
+            {
+                if ($f=~/$value/)
+                {
+                    #this facet value is in the cgi
+                    $class="bad";
+                }
+            }
+        }
+        
+        
+        $string= '<facetValue name="'. $value . '" class="' . "$class" . ' ">' . $count . '</facetValue>';
         $xml .=$string;
         
     }
@@ -574,6 +597,9 @@ sub _ls_wrap_result_data {
     my $output;
 
     ### Replace xml parsing with regex's with processing the json object fragment T
+    ##  XXX since json might contain unescaped xml entities i.e. "&" we need to filter
+    #   any strings.  Is there a better place to do this?
+
     my $result_docs_arr_ref = $rs->get_result_docs();
     foreach my $doc_data (@$result_docs_arr_ref) {
         my $s = '';
@@ -582,6 +608,8 @@ sub _ls_wrap_result_data {
         
         my $display_title = join(',', @{$display_titles_ary_ref});
         $display_title = Encode::decode_utf8($display_title);
+        Utils::map_chars_to_cers(\$display_title);
+
         $s .= wrap_string_in_tag($display_title, 'Title');
 
         my ($authors_ary_ref) = $doc_data->{'author'};
@@ -589,6 +617,7 @@ sub _ls_wrap_result_data {
         {
             my $author = join(',', @{$authors_ary_ref});
             $author = Encode::decode_utf8($author);
+            Utils::map_chars_to_cers(\$author);
             $s .= wrap_string_in_tag($author, 'Author');
         }
             

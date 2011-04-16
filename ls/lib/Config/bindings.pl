@@ -18,6 +18,7 @@
    'sz'     => '\d+',
    'start'  => '\d+',
    'lmt'    => 'ft|all',
+   'facet'  => '.*',
   );
 
 # Specification of global *database* operations to be executed before

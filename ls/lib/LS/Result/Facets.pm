@@ -63,14 +63,12 @@ Example Solr result is:
 sub AFTER_ingest_Solr_search_response
 {
     my $self = shift;
-    my $Solr_response_ref = shift;
+    # since this is a subclass of LS::Result::JSON we expect a parsed json object rather than
+    # a Solr XML response string
+    my $Parsed_Solr_response_ref = shift;
 
-#XXX Should we expect a parsed json object since we are a subclass of LS::Result::JSON
-#XXX or should the following code be a method in LS::Result::JSON?
-    my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
-    my $parsed = $coder->decode ($$Solr_response_ref);
     
-    my $docs = $parsed->{'response'}->{'docs'};
+    my $docs = $Parsed_Solr_response_ref->{'response'}->{'docs'};
     
     # check to see if there is at least one doc
     if (defined($docs->[0]))
@@ -100,7 +98,7 @@ sub AFTER_ingest_Solr_search_response
     #XXX  need to ingest facet data and save it (i.e. get/set_facet_data)
     # check for facets first
     my $facet_hash;
-    $facet_hash = $parsed->{facet_counts}->{facet_fields};
+    $facet_hash = $Parsed_Solr_response_ref->{facet_counts}->{facet_fields};
         
     if (defined($facet_hash))
     {
