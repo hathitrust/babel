@@ -15,7 +15,7 @@
   <?CHUNK filename="header.xml"?>
 
   <!-- Include -->
-  <?CHUNK filename="list_items.inc.xml" optional="0"?>
+  <?CHUNK filename="items.inc.xml" optional="0"?>
 
   <GoogleAnalytics/>
 
