@@ -353,12 +353,20 @@ sub handle_FACETS_PI
         #XXX do we need to register this in a config somewhere or is it magic?
     my ($C, $act, $piParamHashRef) = @_;
     my $cgi = $C->get_object('CGI');
-
+    my $current_url = $cgi->url(-relative=>1,-query=>1);    
+    my @cgi_facets = $cgi->param('facet');
+    my $cgi_facets_hashref;
+    if (defined (@cgi_facets))
+    {
+        foreach my $facet_string(@cgi_facets)
+        {
+            $cgi_facets_hashref->{$facet_string}=1;
+        }
+    }
     
-
+    
     my $facet_chunk;
     $facet_chunk='<H1>Facets go here</H1>';
-
 
     # get data  the facet data should have been inserted in the search result data in Result::Facet.pm
     my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
@@ -369,14 +377,69 @@ sub handle_FACETS_PI
 #XXX instead of spitting out html we should spit out good xml for the xslt to deal with!
 # on the other hand javascript will want json!
     my $xml;
-    
-    foreach my $key (keys %{$facet_hash})
-    {
-        $xml=_ls_process_facet_data($key,$facet_hash, $cgi);
-        $facet_chunk .= "\n$xml\n";
-    }
-    
+    my ($selected,$unselected,$facet_order)=needName($facet_hash,$cgi_facets_hashref);
+    # $selected= array ref of hashes
+    #        $hash->{'value'}      
+#            $hash->{'count'}      
+#            $hash->{'facet_name'} 
+#            $hash->{'selected'}= "false"|"true";
+# unselected= hash key= facet name, values = array of hashes as above
+# order = array of facet names in order
+#XXX if we want facets in a different order we could read a config file
 
+
+#XXX Replace lots of hand coded stuff with wrap string in tag!!!
+
+    $xml='<SelectedFacets>' . "\n";
+    my $unselect_url;
+    
+    foreach my $facet (@{$selected})
+    {
+        # output some xml so we can make links to unselect these facets/facet values
+
+        #  <facetValue name="German" class="selected" ><fieldName>language</fieldName><URL></URL></facetValue>
+        # should we instead just pass cgi
+        $unselect_url=_get_unselect_url($facet,$current_url);
+
+        $xml .= '<facetValue name="' . $facet->{value} .'" class="selected">'  . "\n";; 
+        $xml .= '<fieldName>' .$facet->{facet_name} .'</fieldName>' . "\n"; 
+        $xml .= '<unselectURL>' . $unselect_url . '</unselectURL>' . "\n";   
+        $xml .='</facetValue>' ."\n";
+        
+    }
+    $xml .= '</SelectedFacets>' . "\n";
+    
+    my $facet_url;
+    
+    #-------- unselected Facets
+    $xml .=  '<unselectedFacets>' . "\n";
+
+    foreach my $facet_name (@{$facet_order})
+    {
+        $xml .='<facetField name="' . $facet_name . '" >' . "\n";
+        
+        my $ary_ref=$unselected->{$facet_name};
+        
+        foreach my $value (@{$ary_ref})
+        {
+            my $facet_url= $current_url . '&amp;facet="' . $value->{'facet_name'} . ':' . $value->{value} . '"';
+            $xml .='<facetValue name="' . $value->{'value'} . '" > ' . "\n";
+            $xml .='<facetCount>' . $value->{'count'} . '</facetCount>'. "\n";
+            $xml .='<url>' . $facet_url . '</url>'  . "\n";
+            $xml .='<selected>' . $value->{'selected'} . '</selected>' . "\n";
+            
+            $xml .='</facetValue>' ."\n";
+        }
+        $xml.='</facetField>' . "\n"
+        # output facet name stuff
+        # output list of values for that facet  where do we put url
+#           <facetField name="language">
+#  <facetValue name="German" ><facetCount>785019</facetCount><URL></URL></facetValue>
+#<   facetValue name="English">95479</facetValue> 
+    }
+    $xml .='</unselectedFacets>' . "\n";
+    
+    $facet_chunk .=$xml;
     
     return $facet_chunk
 }
@@ -388,6 +451,78 @@ sub handle_FACETS_PI
 #              P I    H a n d l e r   H e l p e r s
 #
 #======================================================================
+sub _get_unselect_url
+
+
+{
+    my $facet = shift;
+    my $current_url= shift;
+    return "www.google.com";
+}
+
+
+
+sub needName 
+
+{
+    my $facet_hash = shift;
+    my $cgi_facets_hashref = shift;
+    
+    my @selected;
+    my $unselected={};
+    
+    my $facet_order_array;
+    
+    foreach my $facet_name (keys %{$facet_hash})
+    {
+        push (@{$facet_order_array},$facet_name);
+        my $ary_for_this_facet=[];
+        
+        my $facet_list_ref=$facet_hash->{$facet_name};
+        foreach my $facet (@{$facet_list_ref})
+        {
+            my $hash                 = {};
+            $hash->{'value'}      = $facet->[0];
+            $hash->{'count'}      = $facet->[1];
+            $hash->{'facet_name'} = $facet_name;
+            $hash->{'selected'}   = "false";
+            #facet=language:German
+            my $facet_string      = $facet_name . ':' . $hash->{'value'};
+
+            if (defined ($cgi_facets_hashref)){    
+                $hash->{'selected'} = facetSelected($facet_string,$cgi_facets_hashref);
+            }
+            
+            if ($hash->{'selected'} eq "true")
+            {
+                push (@selected,$hash);
+            }
+            # unselected needs array of array of hashes
+            # facet1->hashes for facet 1
+            # facet2->hashes for facet 2
+
+            push (@{$ary_for_this_facet},$hash); 
+        }
+        $unselected->{$facet_name}=$ary_for_this_facet;
+    }
+    return (\@selected,$unselected,$facet_order_array);
+}
+
+
+sub facetSelected
+{
+    my $facet_string= shift;
+    my $cgi_facet_hashref = shift;
+    #facet=language:German
+    if ($cgi_facet_hashref->{$facet_string}==1)
+    {
+        return "true"
+    }
+    return "false";
+}
+        
+
+
 
 sub _ls_process_facet_data
 {
