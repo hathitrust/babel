@@ -293,7 +293,7 @@ package WAYF::IdpConfig;
                   },
    'unc'       => {
                    'authtype'  => 'shibboleth',
-                   'link_text' => 'University of North Carolina, Chapel Hill',
+                   'link_text' => 'University of North Carolina at Chapel Hill',
                    'template'  => 'https://___HOST___/Shibboleth.sso/unc?target=___TARGET___',
                    'enabled'   => '0',
                   },
