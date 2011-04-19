@@ -358,8 +358,11 @@ sub handle_FACETS_PI
     my $cgi_facets_hashref;
     if (defined (@cgi_facets))
     {
-        foreach my $facet_string(@cgi_facets)
+        foreach my $facet_string (@cgi_facets)
         {
+            #remove quotes
+            $facet_string=~s/\"//g;
+            
             $cgi_facets_hashref->{$facet_string}=1;
         }
     }
@@ -399,7 +402,7 @@ sub handle_FACETS_PI
 
         #  <facetValue name="German" class="selected" ><fieldName>language</fieldName><URL></URL></facetValue>
         # should we instead just pass cgi
-        $unselect_url=_get_unselect_url($facet,$current_url);
+        $unselect_url=_get_unselect_url($facet,$cgi);
 
         $xml .= '<facetValue name="' . $facet->{value} .'" class="selected">'  . "\n";; 
         $xml .= '<fieldName>' .$facet->{facet_name} .'</fieldName>' . "\n"; 
@@ -422,7 +425,7 @@ sub handle_FACETS_PI
         
         foreach my $value (@{$ary_ref})
         {
-            my $facet_url= $current_url . '&amp;facet="' . $value->{'facet_name'} . ':' . $value->{value} . '"';
+            my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $value->{value} . '&quot;';
             $xml .='<facetValue name="' . $value->{'value'} . '" > ' . "\n";
             $xml .='<facetCount>' . $value->{'count'} . '</facetCount>'. "\n";
             $xml .='<url>' . $facet_url . '</url>'  . "\n";
@@ -456,8 +459,40 @@ sub _get_unselect_url
 
 {
     my $facet = shift;
-    my $current_url= shift;
-    return "www.google.com";
+    #add qoutes to the facet string
+    my $facet_string=$facet->{facet_name} . ':"' . $facet->{'value'}. '"';
+    
+    my $cgi= shift;
+    my $temp_cgi= CGI->new($cgi);
+    my @facets= $temp_cgi->param('facet');
+    my @new_facets;
+    my $debug;
+    
+    #get list of all facet params except the one we got as an argument    
+    #XXX check that this regex works properly and won't get false matches
+    foreach my $f (@facets)
+    {
+        if ($facet_string =~/$f/)
+        {
+            $debug=$1;
+            
+        }
+        else
+        {
+            #escape quotes
+      #      $f=~s/\"/\&quot\;/g;
+            
+            push (@new_facets,$f);
+        }
+    }
+    #delete all facet params
+    $temp_cgi->delete('facet');
+    #$query->param(-name=>'foo',-values=>['an','array','of','values']);
+
+    $temp_cgi->param(-name=>'facet',-values=>\@new_facets);
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    return $url;
+    
 }
 
 
@@ -512,9 +547,12 @@ sub needName
 sub facetSelected
 {
     my $facet_string= shift;
-    my $cgi_facet_hashref = shift;
+    my $cgi_facets_hashref = shift;
+    #remove quotes from facet string
+    $facet_string=~s/\"//g;
+    
     #facet=language:German
-    if ($cgi_facet_hashref->{$facet_string}==1)
+    if ($cgi_facets_hashref->{$facet_string}==1)
     {
         return "true"
     }

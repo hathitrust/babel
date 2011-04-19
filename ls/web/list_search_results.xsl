@@ -766,20 +766,52 @@
   <!--#################################################
      Will need to redo to create links and or check boxes with proper attributes to be in a form or
       addressable by ajax js
+XXX REDO push work for creating urls and separating selected vs unselected back to pi handler!
 
 for now create an href with current_url . &fq=facetname:value
        ################################################-->
   <xsl:template name="facets">
+
+    <div id="selectedFacets">
+      <ul>
+        <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
+
+          <xsl:text>
+          </xsl:text>
+          <li>
+            <xsl:variable name="value">
+              <xsl:value-of select="@name"/>
+            </xsl:variable>
+            
+            <xsl:value-of select="fieldName"/>
+            <xsl:text>:</xsl:text>
+            <xsl:value-of select="@name"/>
+            
+            <xsl:element name="a">
+              <xsl:attribute name="href">
+                <!-- current cgi -->
+                <!-- &we need to remove this facet from the cgi -->
+                <xsl:value-of select="unselectURL"/>
+              </xsl:attribute>
+              <xsl:text>(remove)</xsl:text>
+            </xsl:element>
+            
+          </li>
+        </xsl:for-each>
+      </ul>
+    </div>
+    
+    <h2>refine search</h2>
     <div id="facetlist">
       <ul>
-        <xsl:for-each select="/MBooksTop/Facets/facetField">
-          <xsl:text>             
+        <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
+
+          <xsl:text>    
           </xsl:text>
           <li class="facetField"><xsl:value-of select="@name"/></li>
           <xsl:text>                
           </xsl:text>
-          <!-- we may have to call the below with the param name of the field
-               WARNING!  waht we label the field in the html and the field name could be different
+          <!--   WARNING!  waht we label the field in the html and the field name could be different
                Where should the name/label mapping exist?
                -->
           <xsl:call-template name="facetFields">
@@ -798,7 +830,7 @@ for now create an href with current_url . &fq=facetname:value
     <ul>
       <xsl:text>
       </xsl:text>
-      <xsl:for-each select="facetValue">
+      <xsl:for-each select="facetValue"> 
         <xsl:text>
         </xsl:text>
         <li>
@@ -806,34 +838,31 @@ for now create an href with current_url . &fq=facetname:value
             <xsl:value-of select="@name"/>
           </xsl:variable>
 
+          <xsl:variable name="selected">
+            <xsl:value-of select="selected"/>
+          </xsl:variable>
 
-          <!--Need to do something different with already used facets
-               for now just put a class attibute on the link element of the url
-               later need to actually make a different url so already selected facets 
-               when clicked on trigger a remove
-               need to test whether facet is in the cgi
-               XXX Code below does not work!!!!
-               consider doing something instead at the pi handler level!
-
-                -->
-          <xsl:attribute name="class">
-            <xsl:value-of select="@class"/>
-          </xsl:attribute>
-          <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <!-- current cgi -->
-                  <!-- &amp;facetname: -->
-                  <xsl:call-template name="GetCurrentCGI"/>
-                  <xsl:text>&amp;facet=</xsl:text>
-                  <xsl:value-of select="$fieldName"/>
-                  <xsl:text>:</xsl:text>
-                  <xsl:value-of select="@name"/>
-                </xsl:attribute>
-                <xsl:value-of select="@name"/>
+          <xsl:choose>
+            <xsl:when test="$selected='true'">
+                <xsl:value-of select="$value"/>
                 <xsl:text> (</xsl:text>
-                <xsl:value-of select="."/>
+                <xsl:value-of select="facetCount"/>
+                <xsl:text>) </xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="url"/>
+                </xsl:attribute>
+                
+                <xsl:value-of select="$value"/>
+                <xsl:text> (</xsl:text>
+                <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>
               </xsl:element>
+              
+            </xsl:otherwise>
+          </xsl:choose>
 
         </li>
       </xsl:for-each>
