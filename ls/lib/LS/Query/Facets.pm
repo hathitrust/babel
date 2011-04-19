@@ -227,10 +227,30 @@ sub get_Solr_query_string
 # XXX should we subclass FullText and just overide this method??
 # note facet limit now set to 5 for debugging.  Should set to 30 and use js/css to hide
 # these two values should be parameterized!
-    my $FACET_LIMIT=5;
-    
+    my $FACET_LIMIT=30;
     my $FACETS;
-    $FACETS ='&facet.mincount=1&facet.field=genreStr&facet=true&facet.field=language&facet.field=hlb3Str&facet.limit='. $FACET_LIMIT ;
+    #WARNING can't use TopicStr in production due to lucene/solr bug
+    my @facetfields= ('genreStr',
+                      'language',
+                      'hlb3Str',
+                      'ht_availability',
+                      'format',
+                      'authorStr',
+                      'publishDate',
+                      'publishDateRange',
+                      'countryOfPubStr',
+                      'era',
+                      'geographicStr' );
+    
+    foreach my $field (@facetfields)
+    {
+        $FACETS .='&facet.field=' . $field;
+        
+    }
+    
+        
+    
+    $FACETS .='&facet.mincount=1&facet=true&facet.limit='. $FACET_LIMIT ;
     my $WRITER ='&wt=json&json.nl=arrarr';
     
     # q=dog*&fl=id,rights,author,title,score&$version=2.2,&start=0&rows=20&indent=off

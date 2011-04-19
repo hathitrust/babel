@@ -350,7 +350,8 @@ sub handle_QUERY_STRING_PI
 sub handle_FACETS_PI
     : PI_handler(FACETS) 
 {
-        #XXX do we need to register this in a config somewhere or is it magic?
+    #XXX TODO: refactor into smaller subroutines!
+
     my ($C, $act, $piParamHashRef) = @_;
     my $cgi = $C->get_object('CGI');
     my $current_url = $cgi->url(-relative=>1,-query=>1);    
@@ -362,11 +363,13 @@ sub handle_FACETS_PI
         {
             #remove quotes
             $facet_string=~s/\"//g;
-            
             $cgi_facets_hashref->{$facet_string}=1;
         }
     }
+    # This belongs in a config
+    my $MINFACETS = 5; #number of facets to show before clicking on more
     
+
     
     my $facet_chunk;
     $facet_chunk='<H1>Facets go here</H1>';
@@ -412,26 +415,37 @@ sub handle_FACETS_PI
     }
     $xml .= '</SelectedFacets>' . "\n";
     
-    my $facet_url;
-    
-    #-------- unselected Facets
-    $xml .=  '<unselectedFacets>' . "\n";
 
+
+    #----------------------------------------------------------------------
+    #-------- unselected Facets-------------------------------------------
+
+    
+    $xml .=  '<unselectedFacets>' . "\n";
+    
     foreach my $facet_name (@{$facet_order})
     {
         $xml .='<facetField name="' . $facet_name . '" >' . "\n";
         
         my $ary_ref=$unselected->{$facet_name};
-        
+        my $counter=0;
         foreach my $value (@{$ary_ref})
         {
             my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $value->{value} . '&quot;';
-            $xml .='<facetValue name="' . $value->{'value'} . '" > ' . "\n";
+            my $class=' class ="showfacet" ';
+            
+            if ($counter >= $MINFACETS)
+            {
+                $class=' class ="hidefacet" ';
+            }
+            
+            $xml .='<facetValue name="' . $value->{'value'} . '" '.$class . '> ' . "\n";
             $xml .='<facetCount>' . $value->{'count'} . '</facetCount>'. "\n";
             $xml .='<url>' . $facet_url . '</url>'  . "\n";
             $xml .='<selected>' . $value->{'selected'} . '</selected>' . "\n";
-            
             $xml .='</facetValue>' ."\n";
+            $counter++;
+            
         }
         $xml.='</facetField>' . "\n"
         # output facet name stuff
@@ -517,9 +531,9 @@ sub needName
         foreach my $facet (@{$facet_list_ref})
         {
             my $hash                 = {};
-            $hash->{'value'}      = $facet->[0];
+            $hash->{'value'}      = clean($facet->[0]);
             $hash->{'count'}      = $facet->[1];
-            $hash->{'facet_name'} = $facet_name;
+            $hash->{'facet_name'} = clean($facet_name);
             $hash->{'selected'}   = "false";
             #facet=language:German
             my $facet_string      = $facet_name . ':' . $hash->{'value'};
@@ -541,6 +555,17 @@ sub needName
         $unselected->{$facet_name}=$ary_for_this_facet;
     }
     return (\@selected,$unselected,$facet_order_array);
+}
+
+#XXX this should be replaced by a utility routine
+#CERs?
+sub clean
+{
+    my $value=shift;
+             $value = Encode::decode_utf8($value);
+    Utils::map_chars_to_cers(\$value);
+    return $value;
+    
 }
 
 

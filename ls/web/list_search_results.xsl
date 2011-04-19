@@ -789,7 +789,7 @@ for now create an href with current_url . &fq=facetname:value
             
             <xsl:element name="a">
               <xsl:attribute name="href">
-                <!-- current cgi -->
+
                 <!-- &we need to remove this facet from the cgi -->
                 <xsl:value-of select="unselectURL"/>
               </xsl:attribute>
@@ -800,12 +800,13 @@ for now create an href with current_url . &fq=facetname:value
         </xsl:for-each>
       </ul>
     </div>
+
+    <!--  unselected facets ##########################################################   -->
     
     <h2>refine search</h2>
     <div id="facetlist">
       <ul>
         <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
-
           <xsl:text>    
           </xsl:text>
           <li class="facetField"><xsl:value-of select="@name"/></li>
@@ -819,6 +820,9 @@ for now create an href with current_url . &fq=facetname:value
               <xsl:value-of select="@name"/>
             </xsl:with-param>
           </xsl:call-template>
+          <a class="morefacets" href="">Show More</a>
+          <a class="lessfacets" href="">Show Fewer</a>
+
         </xsl:for-each>
       </ul>
     </div>
@@ -834,6 +838,11 @@ for now create an href with current_url . &fq=facetname:value
         <xsl:text>
         </xsl:text>
         <li>
+
+          <xsl:attribute name ="class">
+            <xsl:value-of select="@class"/>
+          </xsl:attribute>
+
           <xsl:variable name="value">
             <xsl:value-of select="@name"/>
           </xsl:variable>
