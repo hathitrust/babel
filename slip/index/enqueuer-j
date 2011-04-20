@@ -61,6 +61,7 @@ use Search::Site;
 
 # Local
 use SLIP_Utils::Log;
+use SLIP_Utils::Load;
 use SLIP_Utils::Common;
 use Db;
 
@@ -198,47 +199,6 @@ exit 0;
 #
 
 
-# ---------------------------------------------------------------------
-
-=item __load_ids_from_file
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __load_ids_from_file {
-    my $C = shift;
-    my $filename = shift;
-
-    my @arr;
-    my $ok;
-    eval {
-        $ok = open(IDS, $filename);
-    };
-    if ($@) {
-        my $s0 = qq{i/o ERROR:($@) reading file="$filename"\n};
-        __output($s0);
-
-        exit $SLIP_Utils::States::RC_BAD_ARGS;
-    }
-
-    if (! $ok) {
-        my $s1 = qq{could not open file="$filename"\n};
-        __output($s1);
-
-        exit $SLIP_Utils::States::RC_BAD_ARGS;
-    }
-
-    while (my $id = <IDS>) {
-        chomp($id);
-        push(@arr, $id)
-            if($id);
-    }
-    close (IDS);
-
-    return \@arr;
-}
 
 
 # ---------------------------------------------------------------------
@@ -290,7 +250,7 @@ Description
 sub enqueue_from_FILE {
     my ($C, $dbh, $run) = @_;
 
-    my $ref_to_arr_of_ids = __load_ids_from_file($C, $ID_FILENAME);
+    my $ref_to_arr_of_ids = SLIP_Utils::Load::load_ids_from_file($C, $ID_FILENAME);
     my $num_loaded = scalar(@$ref_to_arr_of_ids);
 
     if ($num_loaded > 0) {
