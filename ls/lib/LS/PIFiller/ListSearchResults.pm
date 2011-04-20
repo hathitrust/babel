@@ -28,6 +28,7 @@ use base qw(PIFiller);
 use Utils;
 use Identifier;
 use LS::Utils;
+use LS::FacetConfig;
 
 BEGIN
 {
@@ -353,6 +354,8 @@ sub handle_FACETS_PI
     #XXX TODO: refactor into smaller subroutines!
 
     my ($C, $act, $piParamHashRef) = @_;
+    my $fconfig=$C->get_object('FacetConfig');
+
     my $cgi = $C->get_object('CGI');
     my $current_url = $cgi->url(-relative=>1,-query=>1);    
     my @cgi_facets = $cgi->param('facet');
@@ -367,7 +370,10 @@ sub handle_FACETS_PI
         }
     }
     # This belongs in a config
-    my $MINFACETS = 5; #number of facets to show before clicking on more
+    my $MINFACETS = $fconfig->get_facet_initial_show;
+    my $facet2label=$fconfig->get_facet_mapping;
+    
+#5; #number of facets to show before clicking on more
     
 
     
@@ -406,9 +412,12 @@ sub handle_FACETS_PI
         #  <facetValue name="German" class="selected" ><fieldName>language</fieldName><URL></URL></facetValue>
         # should we instead just pass cgi
         $unselect_url=_get_unselect_url($facet,$cgi);
+        my $facet_name=$facet->{facet_name};
+        my $field_name=$facet2label->{$facet_name};
+        
 
         $xml .= '<facetValue name="' . $facet->{value} .'" class="selected">'  . "\n";; 
-        $xml .= '<fieldName>' .$facet->{facet_name} .'</fieldName>' . "\n"; 
+        $xml .= '<fieldName>' .$field_name .'</fieldName>' . "\n"; 
         $xml .= '<unselectURL>' . $unselect_url . '</unselectURL>' . "\n";   
         $xml .='</facetValue>' ."\n";
         
@@ -422,10 +431,12 @@ sub handle_FACETS_PI
 
     
     $xml .=  '<unselectedFacets>' . "\n";
-    
+
     foreach my $facet_name (@{$facet_order})
     {
-        $xml .='<facetField name="' . $facet_name . '" >' . "\n";
+        my $facet_label = $facet2label->{$facet_name};
+        
+        $xml .='<facetField name="' . $facet_label . '" >' . "\n";
         
         my $ary_ref=$unselected->{$facet_name};
         my $counter=0;

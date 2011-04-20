@@ -75,6 +75,7 @@ use Auth::Auth;
 use Access::Rights;
 
 use LS::Controller;
+use LS::FacetConfig;
 
 
 $::VERSION = 0.2000;
@@ -105,6 +106,10 @@ my $config = new MdpConfig(
                            $ENV{SDRROOT} . "/ls/lib/Config/local.conf"
                           );
 $C->set_object('MdpConfig', $config);
+
+# additional configuration for facets and relevance weighting
+my $facet_config= new LS::FacetConfig($ENV{SDRROOT} . "/ls/lib/Config/facetconfig.pl");
+$C->set_object('FacetConfig', $facet_config);
 
 # Database connection
 my $db = new Database($config);

@@ -23,6 +23,7 @@ use strict;
 
 use Utils;
 use Debug::DUtils;
+use LS::FacetConfig;
 
 use base qw(Search::Query);
 
@@ -43,11 +44,17 @@ sub AFTER_Query_initialize
     my $C = shift;
     my $internal = shift;
     my $config_hashref = shift;
-
+    
     $self->{'query_configuration'} = $config_hashref;
+    my $facet_config=$C->get_object('FacetConfig');
+    $self->{'facet_config'}=$facet_config;
 }
-
-
+# ---------------------------------------------------------------------
+sub get_facet_config
+{
+    my $self = shift;
+    return $self->{'facet_config'}
+}
 
 # ---------------------------------------------------------------------
 
@@ -224,25 +231,30 @@ sub get_Solr_query_string
     }
 
 # Facet aspects of query added here
-# XXX should we subclass FullText and just overide this method??
-# note facet limit now set to 5 for debugging.  Should set to 30 and use js/css to hide
-# these two values should be parameterized!
-    my $FACET_LIMIT=30;
+
+
+    my $facet_config = $self->get_facet_config;
+    my $FACET_LIMIT=$facet_config->get_facet_limit;
     my $FACETS;
     #WARNING can't use TopicStr in production due to lucene/solr bug
-    my @facetfields= ('genreStr',
-                      'language',
-                      'hlb3Str',
-                      'ht_availability',
-                      'format',
-                      'authorStr',
-                      'publishDate',
-                      'publishDateRange',
-                      'countryOfPubStr',
-                      'era',
-                      'geographicStr' );
+#    my @facetfields= (
+#                   #   'topicStr',
+#                      'genreStr',
+#                      'language',
+#                      'hlb3Str',
+#                      'ht_availability',
+#                      'format',
+#                      'authorStr',
+#         #             'publishDate',
+#                      'publishDateRange',
+#                      'countryOfPubStr',
+#                      'era',
+#                      'geographicStr' );
+    my $facet_config = $self->get_facet_config;
+    #XXX this is not right!
+    my $facetfields = $facet_config->get_facet_order();
     
-    foreach my $field (@facetfields)
+    foreach my $field (@{$facetfields})
     {
         $FACETS .='&facet.field=' . $field;
         
@@ -262,14 +274,7 @@ sub get_Solr_query_string
 
 #XXX MONSTROUS HACK for temporary debugging of rel ranking
 #  Need a much better mechanisim
-    my $DISMAX="";    
-    if ($USER_Q =~/dismax/i)
-    {
-        $DISMAX  = $self->_getDismaxString();
-        $USER_Q=~s/dismax//i;
-        
-        
-    }
+
     my $FACETQUERY="";
     
     if (defined ($facetquery))
@@ -281,7 +286,23 @@ sub get_Solr_query_string
     }
     
     
-    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY;    
+    my $EXPLAIN="";
+    if ($USER_Q =~/dismax/i)
+    {
+        $EXPLAIN='&debugQuery=on';
+        # turn off facets
+        $FACETS="";
+        
+    }
+
+    my $DISMAX="";    
+    if ($USER_Q =~/dismax/i)
+    {
+        $DISMAX  = $self->_getDismaxString();
+        $USER_Q=~s/dismax//i;
+    }
+# end MONSTROUS HACK    
+    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY . $EXPLAIN;    
 
 #XXX for debugging
 #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;

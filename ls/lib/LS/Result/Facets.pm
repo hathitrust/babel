@@ -66,8 +66,15 @@ sub AFTER_ingest_Solr_search_response
     # since this is a subclass of LS::Result::JSON we expect a parsed json object rather than
     # a Solr XML response string
     my $Parsed_Solr_response_ref = shift;
-
     
+    my $solr_debug;
+    $solr_debug=$Parsed_Solr_response_ref->{'debug'};
+    if (defined $solr_debug)
+    {
+        $self->__set_result_solr_debug($solr_debug);
+    }
+    
+
     my $docs = $Parsed_Solr_response_ref->{'response'}->{'docs'};
     
     # check to see if there is at least one doc
@@ -107,13 +114,7 @@ sub AFTER_ingest_Solr_search_response
         #my $clean_facet_hash=self->clean_facets($facet_hash)
 
         $self->__set_facet_hash($facet_hash);
-        #my @facets =keys %{$facet_hash};
-#        foreach my $facet (@facets)
-#        {
-
-#           # my ($key,$value)=getFacetKeyValues($facet,$facet_hash);
-            
-#        }
+    
     }
     
 }
@@ -135,6 +136,37 @@ sub __set_facet_hash
     my $self = shift;
     my $hash_ref = shift;
     $self->{'facet_hash_ref'} = $hash_ref;
+}
+
+# ---------------------------------------------------------------------
+
+=item PRIVATE:__set_result_solr_debug
+
+Description: results of a solr debug/explain query parsed from the json response
+
+=cut
+
+# ---------------------------------------------------------------------
+sub  __set_result_solr_debug
+{
+    my $self = shift;
+    my $solr_debug = shift;
+    $self->{'result_solr_debug'} = $solr_debug;
+}
+
+# ---------------------------------------------------------------------
+
+=item :get_result_solr_debug
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_result_solr_debug
+{
+    my $self = shift;
+    return     $self->{'result_solr_debug'} ;
 }
 
 
