@@ -574,7 +574,7 @@
 			</div>
 			</xsl:if>
 			<div id="mdpToolbarNav">
-			  <form action="/cgi/pt" method="GET" id="mdpSectionForm">
+			  <form action="pt" method="GET" id="mdpSectionForm">
   				<ul id="mdpSectionOptions">
             <xsl:if test="$gFeatureList/Feature">
               <xsl:call-template name="BuildContentsList"/>
@@ -1031,7 +1031,7 @@
 			      </xsl:otherwise>
 			    </xsl:choose>
 			  </xsl:variable>
-				<form method="GET" action="/cgi/pt" id="mdpPageForm">
+				<form method="GET" action="pt" id="mdpPageForm">
 				  <input type="hidden" name="u" id="u" value="1" />
 				  
 				  <label for="BRpagenum">Jump to </label>

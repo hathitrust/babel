@@ -25,17 +25,18 @@ use strict;
 umask 0000;
 
 # ----------------------------------------------------------------------
-# Set up paths for local libraries -- must come first
-# ----------------------------------------------------------------------
-use lib "$ENV{SDRROOT}/mdp-lib/Utils";
-use Vendors;
-
-# ----------------------------------------------------------------------
 # Performance measurement
 # ----------------------------------------------------------------------
 BEGIN {
     ( $main::realSTART ) = time;
+    $ENV{DEBUG_LOCAL} = 1;
 }
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
 
 # ----------------------------------------------------------------------
 # enable strict, only under development
