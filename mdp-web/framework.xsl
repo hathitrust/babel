@@ -752,7 +752,7 @@
       <xsl:attribute name="method">get</xsl:attribute>
       <xsl:attribute name="action">
         <!-- fix when rewrite rules are okay -->
-        <xsl:value-of select="'/cgi/pt/search'"/>
+        <xsl:value-of select="'pt/search'"/>
       </xsl:attribute>
       
       <h2 class="SkipLink">Search and page navigation options</h2>
