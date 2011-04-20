@@ -143,10 +143,11 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j [-f][-T][[-B -r run|-R] [-n]][-F<file>] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j [-n][-f][-T][-B -r run | -R | -F<file>] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -f force email\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -F insert IDs from file (missing from j_rights)\n};
+    $s .= qq{           where -n is check_only, no inserts to j_rights\n};
     $s .= qq{     -B build from last vSolr timestamp for -r run\n};
     $s .= qq{           where -n is check_only, no inserts to j_rights\n};
     $s .= qq{     -R re-build j_rights_temp from 0000000\n};
@@ -164,7 +165,7 @@ sub r_get_usage {
 
 our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_F, $opt_r, $opt_f);
 
-my $ops = getopts('BRd:nTI:r:f');
+my $ops = getopts('BRd:nTI:r:fF:');
 my $FORCE_EMAIL = defined($opt_f);
 
 if ($opt_d) {
@@ -275,8 +276,10 @@ eval {
         my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
 
         if ($ID_INSERT_FILE) {
-            __confirm("\nInsert Ids from $ID_INSERT_FILE into j_rights? [N] ");
-         repair_insert_id_helper($C, $DBH, $ID_INSERT_FILE, $CHECK, 'file');
+            my $i = $CHECK ? 'CHECK (NO insert)' : 'INSERT';
+
+            __confirm("\nProcess j_rights: $i IDs from $ID_INSERT_FILE? [N] ");
+            repair_insert_id_helper($C, $DBH, $ID_INSERT_FILE, $CHECK);
         }
         elsif ($BUILD) {
             # Build from last timestamp
@@ -360,7 +363,7 @@ Description
 # ---------------------------------------------------------------------
 sub repair_insert_id_helper {
     my ($C, $dbh, $filename, $Check) = @_;
-    
+
     my $id_arr_ref = SLIP_Utils::Load::load_ids_from_file($C, $filename);
     __output(scalar(@$id_arr_ref) . qq{ ids loaded from $filename\n});
 
@@ -423,6 +426,14 @@ sub repair_insert_id {
 
     my ($namespace, $barcode) = split(/\./, $nid);
     my $rights_hashref = Db::Select_latest_rights_row($C, $dbh, $namespace, $barcode);
+    if (! $rights_hashref) {
+        $s = "Repair: Rights lookup $nid fail";
+        DEBUG('vufind', $s);
+        __output("$s\n");
+        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
+
+        return 'Rights_FAIL';
+    }
 
     my $insert_hashref = $rights_hashref;
 
@@ -435,7 +446,7 @@ sub repair_insert_id {
     my $case = Db::Replace_j_rights_id($C, $dbh, $insert_hashref, $Check, 0);
     if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
         $s = qq{Repair: Software error: invalid case value=$case } . Utils::Time::iso_Time();
-        r_rights_Log($C, $s, , "bad_$RIGHTS_LOGFILE_KEY");
+        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
         return 'rights-j_SOFTWARE';
     }
@@ -464,6 +475,8 @@ use constant LOG_BUFFER_MAX => 1000;
 sub r_rights_Log {
     my ($C, $s, $key) = @_;
 
+    return if ($CHECK);
+
     my $ss = qq{$s at: } . Utils::Time::iso_Time() . qq{\n};
     $LOG_BUFFER .= $ss;
     $Log_buffer_size++;
@@ -474,6 +487,9 @@ sub r_rights_Log {
 
 sub flush_r_rights_Log {
     my ($C, $key) = @_;
+
+    return if ($CHECK);
+
     SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $key, '___RUN___', 'rights', 'no_newline');
     $LOG_BUFFER = '';
     $Log_buffer_size = 0;
@@ -559,6 +575,7 @@ sub process_rights_from_errors {
     $totals_hashref->{num_m_anomalies} = 0;
     $totals_hashref->{num_m_vufind_http} = 0;
     $totals_hashref->{num_m_missing_vufind} = 0;
+    $totals_hashref->{num_m_missing_rights} = 0;
 
     my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
     my $num_metadata_errors = scalar(@$id_arr_hashref);
@@ -578,7 +595,7 @@ sub process_rights_from_errors {
             my $case = repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs);
             if ($case eq 'NEW') {
                 # Repair succeeded: ID added to j_rights
-                $totals_hashref->{num_m_errors_repaired}++;                
+                $totals_hashref->{num_m_errors_repaired}++;
             }
             elsif ($case eq 'NOOP') {
                 $totals_hashref->{num_m_not_missing}++;
@@ -591,7 +608,10 @@ sub process_rights_from_errors {
             }
             elsif ($case eq 'VuFind_MISSING') {
                 $totals_hashref->{num_m_missing_vufind}++;
-            }    
+            }
+            elsif ($case eq 'Rights_FAIL') {
+                $totals_hashref->{num_m_missing_rights}++;
+            }
         }
     }
     else {
@@ -696,7 +716,7 @@ sub process_rights {
 
             if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
                 my $s3 = qq{Software error: invalid case value=$case } . Utils::Time::iso_Time();
-                r_rights_Log($C, $s3, , "bad_$RIGHTS_LOGFILE_KEY");
+                r_rights_Log($C, $s3, , $RIGHTS_LOGFILE_KEY);
                 die $s3;
             }
 
@@ -865,14 +885,15 @@ Description
 # ---------------------------------------------------------------------
 sub __get_repair_report {
     my $tr = shift;
-    my $s = 
+    my $s =
       qq{Repair metadata errors from j_rights:}
         . qq{\n\tj_errors_candidates=$tr->{num_m_errors} }
           . qq{\n\tj_rights_repaired=$tr->{num_m_errors_repaired} }
             . qq{\n\tj_rights_not_missing=$tr->{num_m_not_missing} }
               . qq{\n\tanomalies=$tr->{num_m_anomalies} }
                 . qq{\n\tvufind_http_error=$tr->{num_m_vufind_http} }
-                  . qq{\n\tvufind_not_present=$tr->{num_m_missing_vufind} };
+                  . qq{\n\tvufind_not_present=$tr->{num_m_missing_vufind} } 
+                    . qq{\n\trights_not_present=$tr->{num_m_missing_rights} };
     return $s;
 }
 
@@ -903,7 +924,7 @@ sub r_final_report {
     my $run_total = $tref->{'NEW'} + $tref->{'UPDATED'} + $tref->{'MOVED'};
     my $repair_report = __get_repair_report($tref)
 	unless($Rebuild);
-    
+
     my $r = $Rebuild ? '(before j_rights_temp rename)' : '';
     my $s =
         qq{\nUpdate$r: j_rights size=$size j_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
