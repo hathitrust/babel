@@ -48,6 +48,7 @@ use Search::Constants;
 # Local
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
+use SLIP_Utils::Load;
 
 our ($opt_r, $opt_F, $opt_d, $opt_I);
 
@@ -61,7 +62,7 @@ if (defined($opt_r)) {
 else {
     my $s = d_get_usage();
     print $s;
-    exit 1;
+    $SLIP_Utils::States::RC_BAD_ARGS;
 }
 # Required: filename
 my $ID_FILENAME;
@@ -75,7 +76,7 @@ else {
     if (! $ID) {
         my $s = d_get_usage();
         print $s;
-        exit 1;
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
 }
 
@@ -109,7 +110,7 @@ $| = 1;
 
 my $id_arr_ref;
 if ($ID_FILENAME) {
-    $id_arr_ref = d__load_ids_from_file($ID_FILENAME);
+    $id_arr_ref = SLIP_Utils::Load::load_ids_from_file($C, $ID_FILENAME);
     print scalar(@$id_arr_ref) . qq{ ids loaded from $ID_FILENAME\n};
 }
 else {
