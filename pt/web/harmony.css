@@ -9,6 +9,10 @@ html, body {
   height: 100%;
 }
 
+html {
+  overflow: auto;
+}
+
 #BRcontainer {
   left:0px;
 }
@@ -50,7 +54,7 @@ html, body {
 
 html {
 	min-width:0px;
-	overflow: hidden;
+	/*overflow: hidden;*/
 }
 
 html, body {

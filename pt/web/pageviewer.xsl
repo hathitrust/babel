@@ -150,10 +150,10 @@
     <xsl:variable name="min-width">
       <xsl:choose>
         <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
-          <xsl:value-of select="235 + (1100 * ( $currentSize div 100 ))" />
+          <xsl:value-of select="270 + (1100 * ( $currentSize div 100 ))" />
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="235 + (680 * ( $currentSize div 100 ))" />
+          <xsl:value-of select="270 + (680 * ( $currentSize div 100 ))" />
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -184,11 +184,11 @@
           <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
-        <xsl:call-template name="online_assessment"/>
+        <!-- <xsl:call-template name="online_assessment"/> -->
 
         <xsl:if test="$gCurrentView = 'image'">
           <style>
-            html {
+            html, body {
               min-width: <xsl:value-of select="$min-width" />px;
             }
           </style>
