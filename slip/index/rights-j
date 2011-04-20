@@ -119,6 +119,7 @@ use Result::vSolrRaw;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::Load;
 use SLIP_Utils::Solr;
 
 my $INTERACTIVE = $ENV{TERM};
@@ -142,10 +143,10 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j [-f][-T][[-B -r run|-R] [-n]] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j [-f][-T][[-B -r run|-R] [-n]][-F<file>] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -f force email\n};
     $s .= qq{     -T test compilation only. No operations\n};
-    $s .= qq{     -I insert one ID (missing from j_rights)\n};
+    $s .= qq{     -F insert IDs from file (missing from j_rights)\n};
     $s .= qq{     -B build from last vSolr timestamp for -r run\n};
     $s .= qq{           where -n is check_only, no inserts to j_rights\n};
     $s .= qq{     -R re-build j_rights_temp from 0000000\n};
@@ -161,7 +162,7 @@ sub r_get_usage {
     return $s;
 }
 
-our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_I, $opt_r, $opt_f);
+our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_F, $opt_r, $opt_f);
 
 my $ops = getopts('BRd:nTI:r:f');
 my $FORCE_EMAIL = defined($opt_f);
@@ -196,14 +197,14 @@ my $BUILD = 0;
 my $RUN = $opt_r;
 my $REBUILD = 0;
 my $CHECK = 0;
-my $ID_INSERT;
+my $ID_INSERT_FILE;
 
 if (defined($opt_n)) {
     $CHECK = 1;
 }
 
-if (defined($opt_I)){
-    $ID_INSERT = $opt_I;
+if (defined($opt_F)){
+    $ID_INSERT_FILE = $opt_F;
 }
 elsif (defined($opt_B)) {
     $BUILD = 1;
@@ -273,9 +274,9 @@ eval {
     if (r_rights_enabled($C, $DBH) || $INTERACTIVE || $REBUILD) {
         my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
 
-        if ($ID_INSERT) {
-            __confirm("\nInsert $ID_INSERT into j_rights? [N] ");
-         repair_insert_id_helper($C, $DBH, $ID_INSERT, $CHECK);
+        if ($ID_INSERT_FILE) {
+            __confirm("\nInsert Ids from $ID_INSERT_FILE into j_rights? [N] ");
+         repair_insert_id_helper($C, $DBH, $ID_INSERT_FILE, $CHECK, 'file');
         }
         elsif ($BUILD) {
             # Build from last timestamp
@@ -284,7 +285,7 @@ eval {
             my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($last_timestamp, $lag);
 
             $INIT_MSG = qq{Today is $now_timestamp.\n}
-                . qq{Last run set MAX(update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
+                . qq{Last run set j_rights MAX(update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
 
             if ($CHECK) {
                 __confirm("\n$INIT_MSG\nCheck j_rights table: NO j_rights INSERT? [N] ");
@@ -358,12 +359,17 @@ Description
 
 # ---------------------------------------------------------------------
 sub repair_insert_id_helper {
-    my ($C, $dbh, $nid, $Check) = @_;
+    my ($C, $dbh, $filename, $Check) = @_;
+    
+    my $id_arr_ref = SLIP_Utils::Load::load_ids_from_file($C, $filename);
+    __output(scalar(@$id_arr_ref) . qq{ ids loaded from $filename\n});
 
     my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
     my $rs = new Result::vSolrRaw();
 
-    repair_insert_id($C, $dbh, $nid, $Check, $searcher, $rs);
+    foreach my $id (@$id_arr_ref) {
+        repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs);
+    }
 }
 
 # ---------------------------------------------------------------------
