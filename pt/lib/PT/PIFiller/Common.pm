@@ -70,25 +70,28 @@ sub BuildImageServerPDFUrl
     
     my $tempCgi = new CGI ("");
     
+    my $path;
     # copy params
     foreach my $p (qw(id orient size attr src u)) {
         $tempCgi->param($p, $cgi->param($p));
     }
     if ( $view eq 'fpdf' ) {
         # pass
+        $action = "download";
     } elsif ( $view eq 'pdf' ) {
         # don't force download;
         # let the PDF open in the browser if possible
         $tempCgi->param('seq', $cgi->param('seq'));
         $tempCgi->param('num', $cgi->param('num'));
         $tempCgi->param('attachment', 0);
+        $action = "pdf";
     }
     
     if ( $cgi->param('debug') ) {
         $tempCgi->param('debug', $cgi->param('debug'));
     }
     
-    my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/pdf");
+    my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
     return $href;
 }
 

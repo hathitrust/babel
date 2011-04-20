@@ -9,8 +9,8 @@
 		padding: 0;
 }
 
-.meter-wrap, .meter-value {
-    background: #cccccc;
+.meter-wrap, .meter-value, .download_wrap {
+    background: #F6F6F6;
 }
 
 .meter-text {
@@ -27,7 +27,13 @@
 }
 
 .fullPdfAlert {
-	width: 13em;
+	/*width: 13em;*/
+	/*min-width: 85%;*/
+	background: #F6F6F6;
+}
+
+.fullPdfAlert > div {
+  text-align: center;
 }
 
 #noPdfAccess {
