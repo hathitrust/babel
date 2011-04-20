@@ -852,7 +852,7 @@
     <xsl:variable name="debug" select="//CurrentCgi/Param[@name='debug']" />
     
     <xsl:variable name="href">
-      <xsl:value-of select="concat('/cgi/pt?id=', $id, ';ui=classic;seq=', $seq, ';size=', $size, ';view=', $view)" />
+      <xsl:value-of select="concat('/cgi/pt?id=', $id, ';seq=', $seq, ';size=', $size, ';view=', $view)" />
       <xsl:if test="normalize-space($debug)"><xsl:value-of select="concat(';debug=', $debug)" /></xsl:if>
     </xsl:variable>
     <xsl:value-of select="normalize-space($href)" />
