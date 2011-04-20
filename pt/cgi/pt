@@ -30,6 +30,7 @@ umask 0000;
 # ----------------------------------------------------------------------
 BEGIN {
     ( $main::realSTART ) = time;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 
@@ -76,8 +77,7 @@ BEGIN {
 use PTGlobals;
 
 use PT::MdpItem;
-use PT::PageTurnerUtils;
-use PT::PageTurnerSearchUtils;
+use Search::Utils;
 use PT::Prolog;
 
 $::VERSION = 1.1200;
@@ -124,19 +124,20 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq '
         print $gCgi->redirect($redirect_url);
         exit;
     }
-    elsif ( $gCgi->param( 'view' ) eq 'text' ) {
+    elsif ( $gCgi->param( 'view' ) eq 'text' || $gCgi->param( 'view' ) eq 'plaintext' ) {
+        # "text" view will eventually be handled by BookReader
         $gMdpItem->OcrHandler();
         
         my $q1 = $gCgi->param( 'q1' );
         if ( $q1 ) {
-            my ( $numberOfFinalQs, $parsedQsCgi, $x ) =
-              PT::PageTurnerSearchUtils::ParseSearchTerms($C, \$q1 );
-            PT::PageTurnerUtils::HighlightMultipleQs($C,
+            my ( $numberOfFinalQs, $parsedQsCgi ) = Search::Utils::ParseSearchTerms($C, \$q1);
+            Search::Utils::HighlightMultipleQs($C,
                                                      $parsedQsCgi,
                                                      $gMdpItem->GetOcrTextRef() );
         }
     }
 }
+
 
 # ----------------------------------------------------------------------
 # get XML template and process its PIs

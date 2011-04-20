@@ -38,6 +38,64 @@ require "PIFiller/Common/Group_HEADER.pm";
 #
 # ---------------------------------------------------------------------
 
+# ---------------------------------------------------------------------
+
+=item BuildViewTypeUrl
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub BuildViewTypeUrl
+{
+    my ( $cgi, $view ) = @_;
+
+    my $tempCgi = new CGI( $cgi );
+
+    if ( $view eq 'fpdf' || $view eq 'pdf' ) {
+        return BuildImageServerPDFUrl($cgi, $view);
+    }
+
+    $tempCgi->delete('ui'); # clear ui=embed
+    $tempCgi->param( 'view', $view );
+    my $href = Utils::url_to($tempCgi);
+
+    return $href;
+}
+
+sub BuildImageServerPDFUrl
+{
+    my ( $cgi, $view ) = @_;
+    
+    my $tempCgi = new CGI ("");
+    
+    my $path;
+    # copy params
+    foreach my $p (qw(id orient size attr src u)) {
+        $tempCgi->param($p, $cgi->param($p));
+    }
+    if ( $view eq 'fpdf' ) {
+        # pass
+        $action = "download";
+    } elsif ( $view eq 'pdf' ) {
+        # don't force download;
+        # let the PDF open in the browser if possible
+        $tempCgi->param('seq', $cgi->param('seq'));
+        $tempCgi->param('num', $cgi->param('num'));
+        $tempCgi->param('attachment', 0);
+        $action = "pdf";
+    }
+    
+    if ( $cgi->param('debug') ) {
+        $tempCgi->param('debug', $cgi->param('debug'));
+    }
+    
+    my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
+    return $href;
+}
+
+
 =item BuildItemHandle
 
 Description
@@ -178,6 +236,18 @@ sub handle_HIDDEN_Q1_PI
     my $cgi = $C->get_object('CGI');
     return Utils::build_hidden_var_XML($cgi, 'q1');
 }
+
+sub handle_QVAL_ENCODED_PI
+    : PI_handler(QVAL_ENCODED)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $sess = $C->get_object('Session');
+    my $qval = $sess->get_transient('qvalsHash');
+    return CGI::escape($qval);
+}
+
 
 
 # ---------------------------------------------------------------------
@@ -935,6 +1005,159 @@ Handler for FULL_PDF_ACCESS_MESSAGE. Returns the reason that full book PDF
 download is not available.
 
 =cut
+=item handle_VIEW_TYPE_FULL_PDF_LINK_PI : PI_handler(VIEW_TYPE_FULL_PDF_LINK)
+
+Handler for VIEW_TYPE_FULL_PDF_LINK.  In the absence of authentication
+as a HathiTrust affilliate, this PI is a link to the WAYF.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_VIEW_TYPE_FULL_PDF_LINK_PI
+    : PI_handler(VIEW_TYPE_FULL_PDF_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $href;
+
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    my $status = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    if ($status eq 'allow') {
+        $href = BuildViewTypeUrl($cgi, 'fpdf');
+    }
+    else {
+        my $return_to_url = $cgi->self_url;
+        my $auth = $C->get_object('Auth');
+        $href = $auth->get_WAYF_login_href($C, $return_to_url);
+    }
+
+    return $href;
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_ALLOW_FULL_PDF_PI : PI_handler(ALLOW_FULL_PDF)
+
+Handler for ALLOW_FULL_PDF. 
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_ALLOW_FULL_PDF_PI
+    : PI_handler(ALLOW_FULL_PDF)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    return $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_FULL_PDF_ACCESS_MESSAGE_PI : PI_handler(FULL_PDF_ACCESS_MESSAGE)
+
+Handler for FULL_PDF_ACCESS_MESSAGE. Returns the reason that full book PDF
+download is not available.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_FULL_PDF_ACCESS_MESSAGE_PI
+    : PI_handler(FULL_PDF_ACCESS_MESSAGE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    my ( $message, $status ) = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    return $message;
+}
+
+sub handle_DOWNLOAD_PROGRESS_BASE
+    : PI_handler(DOWNLOAD_PROGRESS_BASE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my $cache_dir = $config->get('download_progress_base');
+    my $true_cache_component = ($ENV{SDRVIEW} eq 'full') ? 'cache-full' : 'cache';
+    $cache_dir =~ s,___CACHE___,$true_cache_component,;
+    
+    return $cache_dir;
+}
+
+sub handle_SEARCH_RESULTS_LINK_PI
+    : PI_handler(SEARCH_RESULTS_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $ses = $C->get_object('Session');
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    
+    my $href;
+    if ( my $referer = $ses->get_transient('referer') ) {
+        $href = $referer;
+        $href =~ s,&,&amp;,g;
+    } else {
+        $href = BuildSearchResultsUrl($cgi);
+    }
+
+    return $href;
+}
+
+sub handle_SEARCH_RESULTS_LABEL_PI
+    : PI_handler(SEARCH_RESULTS_LABEL)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $ses = $C->get_object('Session');
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    
+    my $script_name = $cgi->script_name;
+    
+    my $label;
+    if ( my $referer = $ses->get_transient('referer') ) {
+        if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
+            $label = qq{catalog search results};
+        } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
+            $label = qq{catalog record};
+        } elsif ( $referer =~ m,$PTGlobals::gCollectionBuilderPattern, ) {
+            $label = qq{collection};
+            my $co = $C->get_object('Collection');
+            my ( $collid ) = ( $referer =~ m,c=(\d+), );
+            if ( $collid ) {
+                my $collname = $co->get_coll_name($collid);
+                $collname =~ s,^\s+,,; $collname =~ s,\s+$,,;
+                ## $label = qq{&#x201c;$collname&#x201d; collection};
+                $label = qq{<em>$collname</em> $label};
+            }
+            
+        }
+    } elsif ( $cgi->param('q1') && $script_name !~ m,$PTGlobals::gPageturnerSearchCgiRoot, ) {
+        $label = qq{"Search in this text" results};
+    }
+
+    return $label;
+}
+
+sub BuildSearchResultsUrl
+{
+    my ( $cgi, $view ) = @_;
+    
+    my $href;
+    
+    if ( $cgi->param('q1') ) {
+        my $tempCgi;
+        $tempCgi = new CGI( $cgi );
+        $tempCgi->param('page', 'search');
+        $tempCgi->delete('view');
+        $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
+    }
+    
+    return $href;
+}
 
 # ---------------------------------------------------------------------
 sub handle_FULL_PDF_ACCESS_MESSAGE_PI

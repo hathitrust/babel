@@ -30,67 +30,13 @@ use Search::XPat::Simple;
 use Search::XPat::Result;
 use Search::XPat::ResultSet;
 
+use Search::Utils;
+
 use Session;
 use Utils;
 use Utils::Logger;
 use Debug::DUtils;
 use Identifier;
-
-
-# ---------------------------------------------------------------------
-
-=item clean_user_query_string
-
-Do several mappings to make the string compatible with XPAT query
-syntax.
-
-Note this process preserves double quotes to support a mixture of
-quoted strings (phrases) and single terms all of which can then be
-conjoined or disjoined in a web-style query
-
-=cut
-
-# ---------------------------------------------------------------------
-sub clean_user_query_string
-{
-    my $s_ref = shift;
-
-    # remove Perl metacharacters that interfere with the
-    # regular expressions we build to highlight hits and to
-    # parenthesize XPat queries.
-    $$s_ref =~ s,[\\\(\)\[\]\?\$\^\+\|], ,g;
-
-    # remove variations on wild card searches that resolve to
-    # searching for the empty string to prevent runaway
-    # searches
-    $$s_ref =~ s,^\*+,,g;  # no leading '*'
-    $$s_ref =~ s,\*+,*,g;  # only a single trailing '*'
-
-    # We now support AND, OR operators in the Solr interface. Remove
-    # those so they are not searched as words in the XPAT query.
-    $$s_ref =~ s,(\s+AND\s+|\s+OR\s+), ,g;
-    
-    Utils::trim_spaces($s_ref);
-}
-
-# ---------------------------------------------------------------------
-
-=item limit_operand_length
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub limit_operand_length {
-    my $op_ref = shift;
-    
-    # XPAT accepts a maximum of 256 chars in a query operand.
-    if (length($$op_ref) > 256)
-    {
-        $$op_ref = substr($$op_ref, 0, 255);
-    }
-}
 
 # ---------------------------------------------------------------------
 
@@ -341,71 +287,14 @@ sub XPAT_truncation_handler
 sub ParseSearchTerms
 {
     my ($C, $s_ref) = @_;
-
-    clean_user_query_string($s_ref);
-
-    my @finalQs;
-    # fix unpaired double quotes
-
-    # yank out quoted terms
-    my @quotedTerms = ( $$s_ref =~ m,\"(.*?)\",gis );
-    $$s_ref =~ s,\"(.*?)\",,gis;
-    @quotedTerms = grep( !/^\s*$/, @quotedTerms );
-
-    # yank out leftover single instance of double quote, if any
-    $$s_ref =~ s,\",,gs;
-    Utils::trim_spaces($s_ref);
-
-    # yank out single word terms
-    my @singleWords = split( /\s+/, $$s_ref );
-
-    push( @finalQs, @quotedTerms, @singleWords );
-
-    my $cgi = $C->get_object('CGI');
-    my $parsedQsCgi = new CGI($cgi);
-
+    
+    my ( $numberOfCgiQs, $parsedQsCgi ) = Search::Utils::ParseSearchTerms($C, $s_ref);
+    
     my @xPatSearchExpressions = ();
-
-    my $numberOfCgiQs = 0;
-    my $numberOfFinalQs = scalar( @finalQs );
-    foreach ( my $i = 0; $i < $numberOfFinalQs; $i++ )
-    {
-        my $qTerm = $finalQs[$i];
-
-        # Remove punctuation in the term usually mapped to ' ' by XPAT
-        # causing searches on the null string (finds all pages) when
-        # term is only punctuation. Preserve wildcard (*).
-        my $wildcard = ($qTerm =~ m,.+\*$,);
-        $qTerm =~ s,\p{Punctuation}, ,g;
-        next 
-          if ($qTerm =~ m,^\s*$,);
-        $qTerm .= '*' 
-          if ($wildcard);
-
-        limit_operand_length(\$qTerm);
-        PT::Document::ISO8859_1_Map::iso8859_1_mapping(\$qTerm);
-
-        # if the term is empty, remove it
-        if ( $qTerm &&
-             $qTerm ne '*' )
-        {
-            my $qNumber = 'q' . ( $numberOfCgiQs + 1 );
-            $numberOfCgiQs++;
-            push(@xPatSearchExpressions, XPAT_truncation_handler($C, $qTerm));
-            $parsedQsCgi->param($qNumber, $qTerm);
-        }
+    foreach my $qNumber ( grep(/^q[0-9]/, $parsedQsCgi->param) ) {
+        my $qTerm = $parsedQsCgi->param($qNumber);
+        push(@xPatSearchExpressions, XPAT_truncation_handler($C, $qTerm));
     }
-
-    # tack on $numberOfFinalTerms onto the transient cgi, so that it
-    # will be available downstream
-    $parsedQsCgi->param( 'numberofqs', $numberOfCgiQs );
-
-    DEBUG('search,all',
-          sub
-          {
-              my $s = $parsedQsCgi->as_string();
-              return qq{<h3>CGI after parsing into separate terms: $s</h3>};
-          });
 
     return ( $numberOfCgiQs, $parsedQsCgi, \@xPatSearchExpressions );
 }

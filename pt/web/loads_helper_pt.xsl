@@ -2,9 +2,20 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:template name="load_concat_js_file">    <script type="text/javascript" src="/pt/js/concatenated_common-min.js"></script>
+  <xsl:template name="load_concat_js_file">
+    <script type="text/javascript" src="/pt/js/concatenated_common-min.js"></script>
+    <xsl:if test="$gUsingSearch='false'">
+        <script type="text/javascript" src="/pt/js/concatenated_PAGETURNER_JS-min.js"></script>
+    </xsl:if>
+    <xsl:if test="$gUsingBookReader='true'">
+        <script type="text/javascript" src="/pt/js/concatenated_BOOKREADER_JS-min.js"></script>
+    </xsl:if>
   </xsl:template> 
-  <xsl:template name="load_concat_css_file">    <link rel="stylesheet" type="text/css" href="/pt/concatenated_common-min.css"/>
+  <xsl:template name="load_concat_css_file">
+    <link rel="stylesheet" type="text/css" href="/pt/concatenated_common-min.css"/>
+    <xsl:if test="$gUsingSearch='true'">
+        <link rel="stylesheet" type="text/css" href="/pt/concatenated_SEARCH_CSS-min.css" />
+    </xsl:if>
   </xsl:template> 
 
   <xsl:template name="load_uncompressed_js">
@@ -21,8 +32,25 @@
  <script type="text/javascript" src="/pt/js/newCollOverlayPT.js"></script>
  <script type="text/javascript" src="//common-web/js/overlayUtils.js"></script>
  <script type="text/javascript" src="//common-web/js/listUtils.js"></script>
- <script type="text/javascript" src="/pt/js/section108.js"></script>
  <script type="text/javascript" src="//common-web/js/pageturner.js"></script>
+ <script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js"></script>
+ <script type="text/javascript" src="/pt/js/init.js"></script>
+ <script type="text/javascript" src="/pt/js/download_helper.js"></script>
+    <xsl:if test="$gUsingBookReader='true'">
+ <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js"></script>
+ <script type="text/javascript" src="/pt/jquery/jquery.color.js"></script>
+ <script type="text/javascript" src="/pt/jquery/jquery.textfill.js"></script>
+ <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js"></script>
+ <script type="text/javascript" src="/pt/js/HTBookReader.js"></script>
+ <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js"></script>
+ <script type="text/javascript" src="/pt/js/lscache.js"></script>
+    </xsl:if>
+    <xsl:if test="$gUsingSearch='false'">
+ <script type="text/javascript" src="/pt/js/section108.js"></script>
+ <script type="text/javascript" src="/pt/jquery/jquery.tmpl.js"></script>
+ <script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js"></script>
+ <script type="text/javascript" src="/pt/js/classic.js"></script>
+    </xsl:if>
 </xsl:template>
  
 
@@ -34,5 +62,11 @@
  <link rel="stylesheet" type="text/css" href="//common-web/feedback.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/pageviewer.css"/>
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css"/>
+ <link rel="stylesheet" type="text/css" href="/pt/harmony.css"/>
+ <link rel="stylesheet" type="text/css" href="/pt/jquery/boxy/boxy.css"/>
+ <link rel="stylesheet" type="text/css" href="/pt/download_helper.css"/>
+    <xsl:if test="$gUsingSearch='true'">
+ <link rel="stylesheet" type="text/css" href="/pt/searchresults.css"/>
+    </xsl:if>
 </xsl:template>
 </xsl:stylesheet>

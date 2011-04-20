@@ -31,9 +31,9 @@
   <XslFileList>
     <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>coins.xsl</Filename>
-    <Filename>framework.xsl</Filename>
     <Filename>header.xsl</Filename>
     <Filename>footer.xsl</Filename>
+    <Filename>framework.xsl</Filename>
     <Filename>js_utils.xsl</Filename>
     <Filename>loads.xsl</Filename>
     <Filename>loads_helper_pt.xsl</Filename>
@@ -52,6 +52,8 @@
     <CurrentPageImageHeight><?CURRENT_PAGE_IMG_HEIGHT?></CurrentPageImageHeight>
     <CurrentPageOcr><?CURRENT_PAGE_OCR?></CurrentPageOcr>
     <CurrentView><?CURRENT_VIEW?></CurrentView>
+    <UrlRoots><?URL_ROOTS?></UrlRoots>
+    <PageLink><?PAGE_LINK?></PageLink>
   </MBooksGlobals>
 
   <?CHUNK filename="header.xml"?>
@@ -86,11 +88,17 @@
       </HiddenVars>
     </ViewTypeForm>
 
+    <QValsHash><?QVAL_ENCODED?></QValsHash>
+    
     <ViewTypeLinks>
       <ViewTypeFullPdfLink><?VIEW_TYPE_FULL_PDF_LINK?></ViewTypeFullPdfLink>
       <ViewTypePdfLink><?VIEW_TYPE_PDF_LINK?></ViewTypePdfLink>
       <ViewTypeImageLink><?VIEW_TYPE_IMAGE_LINK?></ViewTypeImageLink>
+      <ViewType1UpLink><?VIEW_TYPE_1UP_LINK?></ViewType1UpLink>
+      <ViewType2UpLink><?VIEW_TYPE_2UP_LINK?></ViewType2UpLink>
+      <ViewTypeThumbnailLink><?VIEW_TYPE_THUMBNAIL_LINK?></ViewTypeThumbnailLink>
       <ViewTypeTextLink><?VIEW_TYPE_TEXT_LINK?></ViewTypeTextLink>
+      <ViewTypePlainTextLink><?VIEW_TYPE_PLAINTEXT_LINK?></ViewTypePlainTextLink>
     </ViewTypeLinks>
 
     <ResizeForm>
@@ -135,11 +143,15 @@
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
       </HiddenVars>
+      <SearchResultsLink><?SEARCH_RESULTS_LINK?></SearchResultsLink>
+      <SearchResultsLabel><?SEARCH_RESULTS_LABEL?></SearchResultsLabel>
     </SearchForm>
 
     <FeedbackForm>
       <?FEEDBACK_CGI_URL?>
     </FeedbackForm>
+
+    <DownloadProgressBase><?DOWNLOAD_PROGRESS_BASE?></DownloadProgressBase>
 
   </MdpApp>
 

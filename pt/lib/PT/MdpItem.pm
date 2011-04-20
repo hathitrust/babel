@@ -150,17 +150,18 @@ sub DetermineAndSetContentHandler {
 
     my $requestedPageView = $self->GetRequestedView();
 
-    if ( $requestedPageView eq 'text' ) {
+    if ( $requestedPageView eq 'plaintext' || $requestedPageView eq 'text' ) {
+        ### BookReader will eventually serve "text" view
         $self->SetContentHandler( 'OcrHandler' );
     }
     elsif ( $requestedPageView eq 'fpdf' ) {
         my $handler = $self->GetFormatHandler('nul', 'fpdf');
         $self->SetContentHandler($handler);
     }
-    elsif ( $requestedPageView eq 'image' || $requestedPageView eq 'pdf' ) {
+    elsif ( $requestedPageView eq 'image' || $requestedPageView eq '1up' || $requestedPageView eq '2up' || $requestedPageView eq 'thumb' || $requestedPageView eq 'text' ) {
         my $requestedPageSequence = $self->GetRequestedPageSequence();
         my $storedFileType = $self->GetStoredFileType( $requestedPageSequence );
-        my $handler = $self->GetFormatHandler( $storedFileType, $requestedPageView );
+        my $handler = $self->GetFormatHandler( $storedFileType, 'image' ); # all variations on image
         $self->SetContentHandler( $handler );
 
         DEBUG('image,pt,all', qq{ContentHandler set to: $handler});
@@ -209,7 +210,7 @@ sub OcrHandler {
             $doc->clean_xml($ocrTextRef);
             
             # XMLify line breaks using <br/>
-            $$ocrTextRef =~ s,\n,<br />\n,g;
+        	$$ocrTextRef =~ s!^([^\n]+)\n!<span>$1</span><br />\n!gsm;
             
             $self->{'ocrtextref'} =  $ocrTextRef;
         }

@@ -413,6 +413,7 @@ sub WrapSearchResultsInXml
                 if ( $number );
             $tempCgi->delete( 'orient' );
             $tempCgi->delete( 'u' );
+            $tempCgi->param('view','text');
             my $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
 
             $resultsToReturn .= wrap_string_in_tag( $href, 'Link');

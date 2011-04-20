@@ -259,6 +259,12 @@ $gCgiPathComponent         = ($ENV{'AUTH_TYPE'} eq 'shibboleth') ? '/shcgi' : '/
 $gCollectionBuilderCgiRoot = $gCgiPathComponent . '/mb';
 $gPageturnerCgiRoot        = $gCgiPathComponent . '/pt';
 $gImgsrvCgiRoot            = $gCgiPathComponent . '/imgsrv';
+$gPageturnerSearchCgiRoot            = $gCgiPathComponent . '/pt/search';
+$gCatalogSearchPattern = "catalog.hathitrust.org/Search/";
+$gCatalogRecordPattern = "catalog.hathitrust.org/Record/";
+$gCollectionBuilderPattern = qq{$gCgiPathComponent/mb};
+$gTrackableReferers = qq{$gCatalogSearchPattern|$gCatalogRecordPattern|$gCollectionBuilderPattern};
+$gTrackableLimit = 100;
 
 # ---------------------------------------------------------------------
 #
@@ -277,7 +283,7 @@ $gDefaultSize         = '100';
 $gDefaultSeq          = '1';
 $gDefaultNum          = '1';
 $gDefaultView         = 'image';
-$gDefaultSsdView      = 'text';
+$gDefaultSsdView      = 'plaintext';
 $gDefaultOrientation  = '0';
 $gDefaultRotation     = '0';
 
@@ -320,7 +326,7 @@ $gStandardPixelWidthAmount = 680;
     );
 
 # Views open to all
-@gViewTypes = ( 'image', 'text', 'pdf', );
+@gViewTypes = ( 'image', 'text', '1up', '2up', 'thumb', 'plaintext' );
 # Views open to some
 @gAuthdViewTypes = ( 'fpdf' );
 

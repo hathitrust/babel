@@ -150,8 +150,57 @@ sub Run {
         SetDefaultPage( $cgi, $mdpItem );
     }
 
+    # Support for tracking long-lived "Back to results..." links
+    # to catalog searches
+    SetBackToResultsReferer($cgi, $ses);
+    
     # Emit OWNERID if debug=ownerid. No-op otherwise
     PT::PageTurnerUtils::_get_OWNERID($C, $id);
+}
+
+
+sub SetBackToResultsReferer {
+    my ( $cgi, $ses ) = @_;
+    my $referer = $cgi->referer();
+    my $id = $cgi->param('id');
+    
+    my $script_name = $cgi->script_name;
+    
+    # copy referer stack; keep track of us
+    my $stack = $ses->get_persistent('referers') || {};
+        
+    if ( $referer =~ m,$PTGlobals::gTrackableReferers, ) {
+        # we want to track these referers
+        $$stack{$script_name,$id} = { referer => $referer, timestamp => time() };
+    } elsif ( $referer =~ m,$PTGlobals::gPageturnerCgiRoot, ) {
+        # referer is us (e.g. changing views, paging)
+        # update current timestamp if we're already tracking
+        # a referer for this id
+        if ( exists($$stack{$script_name,$id}) ) {
+            $$stack{$script_name,$id}{timestamp} = time();
+        }
+    } else {
+        # not trackable, not pt, so blank the key
+        delete $$stack{$script_name,$id};
+    }
+    
+    # now prune old entries if necessary
+    if ( scalar keys %$stack > $PTGlobals::gTrackableLimit ) {
+        my @timestamps = ();
+        foreach ( sort { $$stack{$a}{timestamp} <=> $$stack{$b}{timestamp} } keys %$stack ) {
+            push @timestamps, [$$stack{$_}{timestamp}, $_];
+        }
+        
+        while ( scalar @timestamps > $PTGlobals::gTrackableLimit ) {
+            my ($timestamp, $key) = @{ shift @timestamps };
+            delete $$stack{$key};
+        }
+    }
+    
+    $ses->set_persistent('referers', $stack);
+    if ( exists($$stack{$script_name,$id}) ) {
+        $ses->set_transient('referer', $$stack{$script_name,$id}{referer});
+    }
 }
 
 # ----------------------------------------------------------------------

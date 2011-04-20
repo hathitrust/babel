@@ -5,10 +5,10 @@
     (
      'id'       => '.*',
      'orient'   => '[0-3]',
-     'page'     => 'root',
+     'page'     => 'root|search',
      'seq'      => '\d+',
      'size'     => '\d+',
-     'view'     => 'image|text|pdf|fpdf',
+     'view'     => 'image|text|1up|2up|thumb|plaintext|search',
      'debug'    => '.*',
      'newsid'   => '1|[a-z0-9]{32}',
      'attr'     => '\d+',
@@ -19,6 +19,7 @@
      'skin'     => '.*',
      'q1'       => '.*',
      'u'        => '1',
+     'ui'       => 'reader|embed',
     );
 
 # Specification of global *database* operations to be executed before
@@ -49,5 +50,19 @@ $g_late_operations = [
                                       },
                         },
      },     
+
+     # ----- UI action -----
+     'ACTION_SEARCH'  =>
+     {'action_param' => 'page',
+      'action_type'  => 'UI',
+      'operations'   => [],
+      'view'         => {'search' => {
+                                       'builders' => [],
+                                       'template' => 'searchresults.xml',
+                                       'filler'   => 'PT::PIFiller::Search',
+                                      },
+                        },
+     },     
+
     );
 

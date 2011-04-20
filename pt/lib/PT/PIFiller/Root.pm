@@ -35,54 +35,23 @@ use PT::PIFiller::Common;
 #
 
 
-# ---------------------------------------------------------------------
-
-=item BuildViewTypeUrl
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub BuildViewTypeUrl
-{
-    my ( $cgi, $view ) = @_;
-
-    my $tempCgi = new CGI( $cgi );
-
-    if ( $view eq 'fpdf' || $view eq 'pdf' ) {
-        return BuildImageServerPDFUrl($cgi, $view);
-    }
-
-    $tempCgi->param( 'view', $view );
-    my $href = Utils::url_to($tempCgi);
-
-    return $href;
-}
-
-sub BuildImageServerPDFUrl
-{
-    my ( $cgi, $view ) = @_;
-    
-    my $tempCgi = new CGI ("");
-    
-    # copy params
-    foreach my $p (qw(id orient size attr src u)) {
-        $tempCgi->param($p, $cgi->param($p));
-    }
-    if ( $view eq 'fpdf' ) {
-        # pass
-    } elsif ( $view eq 'pdf' ) {
-        # don't force download;
-        # let the PDF open in the browser if possible
-        $tempCgi->param('seq', $cgi->param('seq'));
-        $tempCgi->param('num', $cgi->param('num'));
-        $tempCgi->param('attachment', 0);
-    }
-    my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/pdf");
-    return $href;
-}
-
+# sub BuildSearchResultsUrl
+# {
+#     my ( $cgi, $view ) = @_;
+#     
+#     my $href;
+#     
+#     if ( $cgi->param('q1') ) {
+#         my $tempCgi;
+#         $tempCgi = new CGI( $cgi );
+#         $tempCgi->param('page', 'search');
+#         $tempCgi->delete('view');
+#         $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
+#     }
+#     
+#     return $href;
+# }
+# 
 # ---------------------------------------------------------------------
 
 =item BuildRotateLink
@@ -428,7 +397,88 @@ sub handle_VIEW_TYPE_TEXT_LINK_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $cgi = $C->get_object('CGI');
-    return BuildViewTypeUrl($cgi, 'text');
+    return PT::PIFiller::Common::BuildViewTypeUrl($cgi, 'text');
+}
+
+sub handle_VIEW_TYPE_PLAINTEXT_LINK_PI
+    : PI_handler(VIEW_TYPE_PLAINTEXT_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return PT::PIFiller::Common::BuildViewTypeUrl($cgi, 'plaintext');
+}
+
+# sub handle_SEARCH_RESULTS_LINK_PI
+#     : PI_handler(SEARCH_RESULTS_LINK)
+# {
+#     my ($C, $act, $piParamHashRef) = @_;
+# 
+#     my $ses = $C->get_object('Session');
+#     my $cgi = $C->get_object('CGI');
+#     my $id = $cgi->param('id');
+#     
+#     my $href;
+#     if ( my $referer = $ses->get_transient('referer') ) {
+#         $href = $referer;
+#         $href =~ s,&,&amp;,g;
+#     } else {
+#         $href = BuildSearchResultsUrl($cgi);
+#     }
+# 
+#     return $href;
+# }
+# 
+# sub handle_SEARCH_RESULTS_LABEL_PI
+#     : PI_handler(SEARCH_RESULTS_LABEL)
+# {
+#     my ($C, $act, $piParamHashRef) = @_;
+# 
+#     my $ses = $C->get_object('Session');
+#     my $cgi = $C->get_object('CGI');
+#     my $id = $cgi->param('id');
+#     
+#     my $label;
+#     if ( my $referer = $ses->get_transient('referer') ) {
+#         if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
+#             $label = qq{catalog search results};
+#         } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
+#             $label = qq{catalog record};
+#         } elsif ( $referer =~ m,$PTGlobals::gCollectionBuilderPattern, ) {
+#             $label = qq{collection};
+#         }
+#     } elsif ( $cgi->param('q1') ) {
+#         $label = qq{"Search in this text" results};
+#     }
+# 
+#     return $label;
+# }
+
+sub handle_VIEW_TYPE_2UP_LINK_PI
+    : PI_handler(VIEW_TYPE_2UP_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return PT::PIFiller::Common::BuildViewTypeUrl($cgi, '2up');
+}
+
+sub handle_VIEW_TYPE_1UP_LINK_PI
+    : PI_handler(VIEW_TYPE_1UP_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return PT::PIFiller::Common::BuildViewTypeUrl($cgi, '1up');
+}
+
+sub handle_VIEW_TYPE_THUMBNAIL_LINK_PI
+    : PI_handler(VIEW_TYPE_THUMBNAIL_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    return PT::PIFiller::Common::BuildViewTypeUrl($cgi, 'thumb');
 }
 
 
@@ -447,7 +497,7 @@ sub handle_VIEW_TYPE_IMAGE_LINK_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $cgi = $C->get_object('CGI');
-    return BuildViewTypeUrl($cgi, 'image');
+    return PT::PIFiller::Common::BuildViewTypeUrl($cgi, 'image');
 }
 
 # ---------------------------------------------------------------------
@@ -465,58 +515,21 @@ sub handle_VIEW_TYPE_PDF_LINK_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $cgi = $C->get_object('CGI');
-    return BuildViewTypeUrl($cgi, 'pdf');
+    return PT::PIFiller::Common::BuildViewTypeUrl($cgi, 'pdf');
 }
 
-
-# ---------------------------------------------------------------------
-
-=item handle_VIEW_TYPE_FULL_PDF_LINK_PI : PI_handler(VIEW_TYPE_FULL_PDF_LINK)
-
-Handler for VIEW_TYPE_FULL_PDF_LINK.  In the absence of authentication
-as a HathiTrust affilliate, this PI is a link to the WAYF.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_VIEW_TYPE_FULL_PDF_LINK_PI
-    : PI_handler(VIEW_TYPE_FULL_PDF_LINK)
+sub handle_URL_ROOTS_PI
+    : PI_handler(URL_ROOTS)
 {
     my ($C, $act, $piParamHashRef) = @_;
+    
+    my $toReturn = '';
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gCollectionBuilderCgiRoot, 'Variable', [ [ 'name', 'cgi/mb' ] ] );
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gPageturnerCgiRoot, 'Variable', [ [ 'name', 'cgi/pt' ] ] );
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gImgsrvCgiRoot, 'Variable', [ [ 'name', 'cgi/imgsrv' ] ] );
+    $toReturn .= wrap_string_in_tag( $PTGlobals::gPageturnerSearchCgiRoot, 'Variable', [ [ 'name', 'cgi/ptsearch' ] ] );
 
-    my $href;
-
-    my $cgi = $C->get_object('CGI');
-    my $id = $cgi->param('id');
-    my $status = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
-    if ($status eq 'allow') {
-        $href = BuildViewTypeUrl($cgi, 'fpdf');
-    }
-    else {
-        my $return_to_url = $cgi->self_url;
-        my $auth = $C->get_object('Auth');
-        $href = $auth->get_WAYF_login_href($C, $return_to_url);
-    }
-
-    return $href;
-}
-
-# ---------------------------------------------------------------------
-
-=item handle_ALLOW_FULL_PDF_PI : PI_handler(ALLOW_FULL_PDF)
-
-Handler for ALLOW_FULL_PDF. 
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_ALLOW_FULL_PDF_PI
-    : PI_handler(ALLOW_FULL_PDF)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $id = $C->get_object('CGI')->param('id');
-    return $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    return $toReturn;
 }
 
 
@@ -763,6 +776,22 @@ sub handle_LAST_PAGE_LINK_PI
     my $mdpItem = $C->get_object('MdpItem');
 
     return BuildPageNavLink($cgi, $mdpItem, 'last');
+}
+
+
+sub handle_PAGE_LINK_PI
+    : PI_handler(PAGE_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $tempCgi = new CGI($C->get_object('CGI'));
+    $tempCgi->delete('q1');
+    $tempCgi->delete('start');
+    if ( $tempCgi->param('orient') == 0 ) {
+        $tempCgi->delete('orient');
+    }
+    
+    return Utils::url_to($tempCgi);
 }
 
 

@@ -58,8 +58,27 @@ Section:LOCAL_JS
 /pt/web/js/newCollOverlayPT.js
 //common-web/js/overlayUtils.js
 //common-web/js/listUtils.js
-/pt/web/js/section108.js
 //common-web/js/pageturner.js
+/pt/web/jquery/boxy/jquery.boxy.js
+/pt/web/js/init.js
+/pt/web/js/download_helper.js
+
+Section:PAGETURNER_JS
+Test:$gUsingSearch='false'
+/pt/web/js/section108.js
+/pt/web/jquery/jquery.tmpl.js
+/pt/web/jquery/jquery.tmplPlus.js
+/pt/web/js/classic.js
+
+Section:BOOKREADER_JS
+Test:$gUsingBookReader='true'
+/pt/web/jquery/jquery.easing.1.3.js
+/pt/web/jquery/jquery.color.js
+/pt/web/jquery/jquery.textfill.js
+/pt/web/bookreader/BookReader/BookReader.js
+/pt/web/js/HTBookReader.js
+/pt/web/bookreader/BookReader/dragscrollable.js
+/pt/web/js/lscache.js
 
 Section:CSS
 # css files, note last one overides earlier
@@ -70,3 +89,15 @@ Section:CSS
 //common-web/feedback.css
 //common-web/pageviewer.css
 //common-web/MBooksCol.css
+/pt/web/harmony.css
+/pt/web/jquery/boxy/boxy.css
+/pt/web/download_helper.css
+
+Section:SEARCH_CSS
+Test:$gUsingSearch='true'
+/pt/web/searchresults.css
+
+# Section:BOOKREADER_CSS
+# NOTE: BookReader.css doesn't appear to work when minified.
+# Test:$gUsingBookReader='true'
+# /pt/web/bookreader/BookReader/BookReader.css
