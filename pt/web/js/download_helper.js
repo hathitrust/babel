@@ -12,7 +12,7 @@ HT.pdf_helpers = {
       
       // this means the PDF has been located so...
       var $contents = $("div#fullPdfFrame").find("iframe").contents();
-      HT.pdf_helpers.update_progress($contents);
+      HT.pdf_helpers.update_progress($contents, total);
       
       var inter;
       var idx = 0;
@@ -101,7 +101,9 @@ HT.pdf_helpers = {
       var html =
       '<div class="fullPdfAlert">' +
       '<p>' +
-      'There was a problem building your PDF; staff have been notified. ' +
+      'There was a problem building your PDF; staff have been notified.' +
+      '</p>' + 
+      '<p>' + 
       'Please try again in 24 hours.' +
       '</p>' +
       '<p class="align-right">' +
@@ -127,6 +129,12 @@ HT.pdf_helpers = {
       var status = { done : false, error : false };
       
       var percent;
+      
+      if ( HT.pdf_helpers.currrent == -1 ) {
+        window.guts = contents;
+      }
+      
+      
       var current = $(contents).find("#current").data("value");
       if ( current == "EOT" ) {
         status.done = true;
@@ -135,6 +143,9 @@ HT.pdf_helpers = {
         current = parseInt(current);
         percent = 100 * (current / total);
       }
+      
+      // track current
+      HT.pdf_helpers.current = current;
       
       if ( self.last_percent != percent ) {
         self.last_percent = percent;
@@ -147,7 +158,6 @@ HT.pdf_helpers = {
         status.error = true;
       }
       
-      console.log(percent);
       HT.pdf_helpers.$content.find(".meter-value").css('width', percent + "%");
       
       return status;
@@ -175,6 +185,16 @@ HT.pdf_helpers = {
       });
 
       HT.pdf_helpers.$content = HT.pdf_helpers.$notice.getContent();
+      HT.pdf_helpers.current = -1;
+      
+      // set a timer in case the iframe fails to load!
+      setTimeout(function() {
+        if ( HT.pdf_helpers.current == -1 ) {
+          HT.pdf_helpers.$notice.hide(function() {
+            HT.pdf_helpers.show_error();
+          })
+        }
+      }, 2500);
       
       // empty out the iframe and create a new blank one pointing to the actual
       /// PDF download.
