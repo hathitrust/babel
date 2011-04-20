@@ -109,26 +109,6 @@ my $gId = $gCgi->param('id');
 if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
     # set up text, image or pdf handlers for this request
     $gMdpItem->DetermineAndSetContentHandler();
-
-    # ## STASH THE SESSION HERE; just for convenience right now
-    # my $q1 = $gCgi->param( 'q1' );
-    # if ( $q1 ) {
-    #     my ( $numberOfFinalQs, $parsedQsCgi, $x ) =
-    #       PT::PageTurnerSearchUtils::ParseSearchTerms($C, \$q1 );
-    #     my $qvalsHash = PT::PageTurnerUtils::HighlightMultipleQs($C,
-    #                                            $parsedQsCgi,
-    #                                            undef, 1 );
-    #     
-    #       
-    #     use Data::Dumper;
-    #     $gDso->set_transient('qvalsHash', Dumper($qvalsHash));
-    #       
-    # } else {
-    #     
-    #     $gDso->set_transient('qvalsHash', undef);
-    #     
-    # }
-
     
     # There will only be a "requested rotation" value if the user
     # clicked on a "rotate image" button
