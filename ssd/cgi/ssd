@@ -99,13 +99,13 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'a
     # the OCR_DATA PI handler.
 
     my $ssd_session = ($ses->get_persistent_subkey('ssd', $id) eq 'allowed');
-    my $pdpdusworld = $C->get_object('Access::Rights')->public_domain_world($C, $id);
+    my $pd_pdus_world_cc = $C->get_object('Access::Rights')->public_domain_world_creative_commons($C, $id);
     my $authenticated = $C->get_object('Auth')->affiliation_is_hathitrust($C);
     my $allow_full_ocr =  
       (
        $ssd_session
        ||
-       ($authenticated && $pdpdusworld)
+       ($authenticated && $pd_pdus_world_cc)
       );
 
     if ($allow_full_ocr) {
