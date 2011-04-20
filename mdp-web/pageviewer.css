@@ -44,10 +44,11 @@
   float: left;
   display: block;
   width: 12em;
-  margin: 10px 10px 0 10px;
   padding: 0;
   color: #333333;
   z-index: 1;
+  background-color: #f6f6f6;
+  margin: 0 10px;
 }
 .mdpMetaText img 
 {
@@ -427,10 +428,12 @@ select.mdpSelectMenu
 
 div#mdpContentContainer
 {
-  position: relative;
-  width: 70%;
-  float: left;
-  padding-bottom: 15px;
+    margin-left: 16.5em; /* 17em*/
+    border: 2px solid #666;
+    padding: 4px;
+    margin-right: 10px;
+    text-align: center;
+    position: relative;
 }
 
 #mdpImage
@@ -546,15 +549,15 @@ img.imgFloat {
 #mdpTextDeny {
   font-weight: normal;
   font-size: 1.1em;
-  margin: 10px 0 20px 0;
-  padding: 3em 2em 2em 4em;
+  margin: 10px 0 4px 0;
+  padding: 0.75em 1em 0.5em 1em; /*3em 2em 2em 4em;*/
   border: 1px solid #999;
   color: #333;
   background-color: #FFF;
   text-align: left;
-  height: 38em;
-  float: left;
-  position: relative; top: 10px; left:10px;
+  /*height: 38em;*/
+  /*float: left;*/
+  /*position: relative; top: 10px; left:10px;*/
 }
 
 #mdpTextDeny div {
@@ -770,7 +773,7 @@ img.imgFloat {
 
 .ptSelectBox {
   border-top: 1px dashed #BBB;
-  border-bottom: 1px dashed #BBB;
+  /*border-bottom: 1px dashed #BBB;*/
   padding: 6px 1px;
 }
 
@@ -800,5 +803,5 @@ img.imgFloat {
 
 select.mdpColSelectMenu 
 {
-  width: 140px;
-  }
+    width: 14em;
+}

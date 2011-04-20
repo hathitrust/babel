@@ -194,6 +194,9 @@
            <xsl:attribute name="href">
              <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
            </xsl:attribute>
+           <xsl:attribute name="id">
+             <xsl:text>loginLink</xsl:text>
+           </xsl:attribute>
            <xsl:text>Login</xsl:text>
          </xsl:element>
        </xsl:when>
@@ -204,6 +207,9 @@
              <xsl:if test="/MBooksTop/Header/LoginLink!=''">
                <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
              </xsl:if>
+           </xsl:attribute>
+           <xsl:attribute name="id">
+             <xsl:text>loginLink</xsl:text>
            </xsl:attribute>
            <xsl:if test="/MBooksTop/Header/LoginLink=''">
              <xsl:attribute name="onClick">

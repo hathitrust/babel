@@ -1,117 +1,105 @@
-// Script: feedbackForm.js
-YAHOO.namespace("mbooks");
-
-var FBhtml = "";
-
-function initPTFBFormHTML() {
-    var frm = document.getElementById("mdpFeedbackForm");
-    FBhtml = frm.innerHTML;
-    frm.innerHTML = "";
-}
-
-function getPTFBFormHTML() {
-    return FBhtml;
-}
-
-function initPTFeedback() {
-    // Populate the overlay with the HTML generated from the XSL
-    // stylesheet.  The Panel burns through the iframe containing the
-    // pdf plugin when Panel.hide() is used.  Solution was to use
-    // Panel.destroy().
-
-    // If pdf view, make iframe
-    var view = getURLParam('view', location.href);
-
-    var browser = navigator.appName;
-
-    if (browser == "Microsoft Internet Explorer" && view =="pdf") {
-        // Make non-modal iframe for IE pdf
-        YAHOO.mbooks.PTFeedbackForm =
-            new YAHOO.widget.Panel("formWidget", { width:'550px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:false, iframe: true } );
+var displayPTFeedback = function() {
+    
+    var DEFAULT_EMAIL_VALUE = "[Your email address]";
+    
+    // empty out the form
+    var frm = $("#mdpFeedbackForm form").get(0);
+    $("#emptyFBError").hide();
+    
+    for (var i=0; i < frm.length; i++)
+    {
+        if ((frm.elements[i].type == 'checkbox' || frm.elements[i].type == 'radio')
+            && frm.elements[i].checked) {
+            frm.elements[i].checked = false;
+        }
+        if ((frm.elements[i].type == 'text' || frm.elements[i].type == 'textarea')
+            && (frm.elements[i].value.length > 0)) {
+        
+            frm.elements[i].value = "";
+            if ( frm.elements[i].id == "email" ) {
+                frm.elements[i].value = DEFAULT_EMAIL_VALUE;
+            }
+        }
     }
-    else if (browser == "Microsoft Internet Explorer" && (view != "pdf" || view === null)) {
-        // Make non-modal non-iframe for IE non-pdf
-        YAHOO.mbooks.PTFeedbackForm =
-            new YAHOO.widget.Panel("formWidget", { width:'550px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:false } );
-    }
-    else if (view == "pdf") {
-        YAHOO.mbooks.PTFeedbackForm =
-            new YAHOO.widget.Panel("formWidget", { width:'550px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:true, iframe: true } );
-    }
-    else {
-        YAHOO.mbooks.PTFeedbackForm =
-            new YAHOO.widget.Panel("formWidget", { width:'550px', visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:true} );
-    }
-
-    YAHOO.mbooks.PTFeedbackForm.setHeader("Feedback");
-    YAHOO.mbooks.PTFeedbackForm.setBody(getPTFBFormHTML());
-    YAHOO.mbooks.PTFeedbackForm.render("feedbackDiv");
-
-    // Hide the old form since the HTML was extracted onDOMReady
-    YAHOO.mbooks.mdpFeedbackForm = new YAHOO.widget.Module("mdpFeedbackForm");
-    YAHOO.mbooks.mdpFeedbackForm.hide();
-
-    // Panel Close button is a different event than Submit/Cancel
-    var closeElem = YAHOO.util.Dom.getElementsByClassName("container-close", null, YAHOO.mbooks.PTFeedbackForm.element[0]);
-    YAHOO.util.Event.on(closeElem, "click",  destroyPTFeedbackForm);
-}
-
-var interceptPTFBSubmit = function(e) {
-    YAHOO.mbooks.emptyPTFBError.hide();
-
-    if (this.id == "mdpFBcancel") {
-        YAHOO.mbooks.PTFeedbackForm.destroy();
-        YAHOO.util.Event.preventDefault(e);
-    }
-    else {
+    
+    // $("#mdpFeedbackForm").boxy();
+    var dialog = new Boxy("#mdpFeedbackForm", {
+        show : false,
+        modal: true,
+        draggable : false,
+        closeable : false,
+        clone : false,
+        unloadOnHide: false
+    });
+    dialog.getContent().find("input[type=submit], #mdpFBcancel").click(function(e) {
+        var clicked = this;
+        e.preventDefault();
+        
+        if ( $(this).attr('id') == "mdpFBcancel" ) {
+            dialog.hide();
+            return false;
+        }
+        
         var isEmpty = 1;
-        var frm = document.getElementById("mdpFBform");
+        var frm = $(this).parents("form").get(0); // document.getElementById("mdpFBform");
+        
+        var postData = {};
 
         for (var i=0; i < frm.length; i++)
         {
             if ((frm.elements[i].type == 'checkbox' || frm.elements[i].type == 'radio')
                 && frm.elements[i].checked) {
                 isEmpty = 0;
+                postData[frm.elements[i].name] = frm.elements[i].value;
             }
             if ((frm.elements[i].type == 'text' || frm.elements[i].type == 'textarea')
                 && (frm.elements[i].value.length > 0)
-                && (frm.elements[i].value != "[Your email address]")) {
+                && (frm.elements[i].value != DEFAULT_EMAIL_VALUE)) {
                 isEmpty = 0;
+                postData[frm.elements[i].name] = frm.elements[i].value;
             }
         }
 
         if (isEmpty == 1) {
-            YAHOO.util.Event.preventDefault(e);
-            YAHOO.mbooks.emptyPTFBError.show();
-            YAHOO.mbooks.PTFeedbackForm.render();
+            $(frm).find("#emptyFBError").show();
+        } else {
+            // post the form
+            var href = $(frm).attr('action');
+            $.post(href, postData);
+            dialog.hide();
         }
-    }
+
+        return false;
+    })
+    dialog.show();
+
+    // initPTFeedback();
+    // 
+    // // Error message displayed if user tries to submit empty feedback.
+    // YAHOO.mbooks.emptyPTFBError = new YAHOO.widget.Module("emptyFBError", { visible: false });
+    // YAHOO.mbooks.emptyPTFBError.render();
+    // 
+    // // Add listener to form submit and cancel button
+    // YAHOO.util.Event.addListener("mdpFBcancel", "click", interceptPTFBSubmit);
+    // YAHOO.util.Event.addListener("mdpFBform", "submit", interceptPTFBSubmit);
+    // 
+    // YAHOO.mbooks.PTFeedbackForm.show();
+    
+    return false;
 };
 
-var destroyPTFeedbackForm = function(e) {
-    YAHOO.mbooks.PTFeedbackForm.destroy();
-}
+$(document).ready(function() {
+    
+    $("#feedback").click(function(e) {
+        e.preventDefault();
+        displayPTFeedback();
+        return false;
+    })
 
-var displayPTFeedback = function(e) {
-    YAHOO.util.Event.preventDefault(e);
+    $("#feedback_footer").click(function(e) {
+        e.preventDefault();
+        displayPTFeedback();
+        return false;
+    })
 
-    initPTFeedback();
-
-    // Error message displayed if user tries to submit empty feedback.
-    YAHOO.mbooks.emptyPTFBError = new YAHOO.widget.Module("emptyFBError", { visible: false });
-    YAHOO.mbooks.emptyPTFBError.render();
-
-    // Add listener to form submit and cancel button
-    YAHOO.util.Event.addListener("mdpFBcancel", "click", interceptPTFBSubmit);
-    YAHOO.util.Event.addListener("mdpFBform", "submit", interceptPTFBSubmit);
-
-    YAHOO.mbooks.PTFeedbackForm.show();
-};
-
-YAHOO.util.Event.onDOMReady(initPTFBFormHTML);
-
-YAHOO.util.Event.addListener("feedback", "click", displayPTFeedback);
-YAHOO.util.Event.addListener("feedback_footer", "click", displayPTFeedback);
-
-// End feedbackForm.js
-
+})
