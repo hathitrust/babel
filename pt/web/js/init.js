@@ -164,9 +164,13 @@ $(document).ready(function() {
                 }, 500);
             } else if ( $(this).is("input[type=submit]") ) {
                 var frm = $(this).parents("form");
-                setTimeout(function() {
-                    frm.submit();
-                }, 500);
+                if ( $.data(frm.get(0), 'events').submit == undefined ) {
+                  setTimeout(function() {
+                      frm.submit();
+                  }, 500);
+                } else {
+                  return true;
+                }
             }
         }
         
