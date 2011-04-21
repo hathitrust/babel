@@ -468,7 +468,7 @@ HTBookReader.prototype.init = function() {
       setTimeout(function() {
         self.lazyDelay = origLazyDelay;
         self.thumbMaxLoading = origMaxLoading;
-      }, 5000);
+      }, init_delay * 5);
     }
 
     if ( self.notice != null ){
