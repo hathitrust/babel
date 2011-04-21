@@ -4783,7 +4783,7 @@ HTBookReader.prototype.init = function() {
       this.lazyDelay = 1500;
       setTimeout(function() {
         self.lazyDelay = 500;
-      }, 5000);
+      }, 1500 * 5);
     }
     console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
     
