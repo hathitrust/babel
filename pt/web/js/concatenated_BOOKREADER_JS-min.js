@@ -4770,6 +4770,11 @@ HTBookReader.prototype.init = function() {
     console.log("BOOK READER INIT", now);
     
     var init_delay = 0;
+
+    if ('undefined' != typeof(params.mode)) {
+        this.mode = params.mode;
+    }
+    
     if ( this.mode == this.constModeThumb ) {
       init_delay = 2500;
     }
