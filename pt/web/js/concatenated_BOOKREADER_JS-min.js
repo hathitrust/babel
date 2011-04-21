@@ -4749,6 +4749,15 @@ HTBookReader.prototype.init = function() {
       }
     }
     
+    // force thumbnails to load SLOWER if the user 
+    // is loading bookreader from scratch
+    if ( this.displayMode == this.constModeThumb ) {
+      this.lazyDelay = 1500;
+      setTimeout(function() {
+        self.lazyDelay = 500;
+      }, 2000);
+    }
+    
     var now = Date();
 
     if (! this.complete && do_wait) {
