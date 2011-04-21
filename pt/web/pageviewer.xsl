@@ -150,7 +150,7 @@
     <xsl:variable name="min-width">
       <xsl:choose>
         <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
-          <xsl:value-of select="270 + (1100 * ( $currentSize div 100 ))" />
+          <xsl:value-of select="350 + (1100 * ( $currentSize div 100 ))" />
         </xsl:when>
         <xsl:otherwise>
           <xsl:value-of select="270 + (680 * ( $currentSize div 100 ))" />
@@ -584,19 +584,27 @@
             </xsl:if>
   				</ul>
   			</form>
-  				<ul id="mdpZoomOptions">
+  				<ul id="mdpPageWidgets">
       			<xsl:if test="$gFinalView != 'plaintext'">
   					<li class="PTiconButton">
   						<xsl:call-template name="build-zoomout-button" />
   					</li>
-            <!-- <li>
-              <div id="mdpZoomStatus"><xsl:value-of select="//ResizeForm/ResizeValuesSelect/Option[Focus='true']/Label" /></div>
-            </li> -->
   					<li class="PTiconButton">
   						<xsl:call-template name="build-zoomin-button" />
   					</li>
-          </xsl:if>
+            <li class="paddingLeftRight">&#160;</li>
+				    <li class="PTiconButton">
+              <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/CounterClockwiseLink" />
+              <a href="{$href}" id="rotate-counterclockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left"><img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+            </li>
+  			    <li class="PTiconButton">
+  			      <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/ClockwiseLink" />
+              <a href="{$href}" id="rotate-clockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
+  			    </li>
+
+            </xsl:if>
   				</ul>
+  				  				
 				<xsl:call-template name="BuildPageLinks">
           <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
         </xsl:call-template>
