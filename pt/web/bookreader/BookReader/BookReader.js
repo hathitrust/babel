@@ -752,7 +752,6 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
     var img = new Image();
     var self = this;
     
-    console.log(dummyImage);
     $(img)
         .addClass('BRlazyloading')
         .one('load', function() {

@@ -156,12 +156,13 @@ a.PTbutton:hover, a.PTbuttonActive {
 
 a.PTbuttonDisabled {
   color: #ccc;
-  opacity: 0.75;
+  opacity: 0.4;
 }
 
 a.PTbuttonDisabled:hover {
   color: #ccc !important;
   background-color: #eaebec !important;
+  border-bottom: 2px #eaebec !important;
 }
 
 #btnClassicView {
@@ -252,13 +253,26 @@ span.prompt {
   margin-top: -1px;
 }
 
-#mdpZoomOptions {
+#mdpZoomOptions, #mdpPageWidgets {
   margin-left: auto !important;
   margin-right: auto;
   width: 10em;
   padding-right: 0;
   padding-left: 0;
   white-space: nowrap;
+}
+
+.paddingLeft {
+  padding-left: 0.5em !important;
+}
+
+.paddingRight {
+  padding-right: 0.5em !important;
+}
+
+.paddingLeftRight {
+  padding-left: 0.5em !important;
+  padding-right: 0.5em !important;
 }
 
 #mdpPageOptions li {

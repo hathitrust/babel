@@ -809,7 +809,7 @@
       <xsl:when test="$zoom">
         <xsl:element name="a">
           <xsl:attribute name="id"><xsl:text>mdpZoomOut</xsl:text></xsl:attribute>
-          <xsl:attribute name="class">tracked interactive </xsl:attribute>
+          <xsl:attribute name="class">tracked interactive zoomAction </xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Zoom Out</xsl:attribute>
           <xsl:attribute name="title"><xsl:text>Zoom Out: </xsl:text><xsl:value-of select="$zoom/Value" /><xsl:text>%</xsl:text></xsl:attribute>
@@ -833,7 +833,7 @@
       <xsl:when test="$zoom">
         <xsl:element name="a">
           <xsl:attribute name="id"><xsl:text>mdpZoomIn</xsl:text></xsl:attribute>
-          <xsl:attribute name="class">tracked interactive </xsl:attribute>
+          <xsl:attribute name="class">tracked interactive zoomAction </xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Zoom In</xsl:attribute>
           <xsl:attribute name="title"><xsl:text>Zoom In: </xsl:text><xsl:value-of select="$zoom/Value" /><xsl:text>%</xsl:text></xsl:attribute>

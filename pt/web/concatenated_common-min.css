@@ -2909,12 +2909,13 @@ a.PTbutton:hover, a.PTbuttonActive {
 
 a.PTbuttonDisabled {
   color: #ccc;
-  opacity: 0.75;
+  opacity: 0.4;
 }
 
 a.PTbuttonDisabled:hover {
   color: #ccc !important;
   background-color: #eaebec !important;
+  border-bottom: 2px #eaebec !important;
 }
 
 #btnClassicView {

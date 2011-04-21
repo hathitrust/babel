@@ -1230,7 +1230,6 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
     var img = new Image();
     var self = this;
     
-    console.log(dummyImage);
     $(img)
         .addClass('BRlazyloading')
         .one('load', function() {
@@ -5024,13 +5023,22 @@ HTBookReader.prototype.switchToolbarMode = function(mode) {
     if ( 1 == mode ) {
         if ( this.displayMode == 'text' ) {
             $e = $("#btnBookReaderText").addClass("PTbuttonActive");
+            this.toggleZoomHandlers(false);
+            this.toggleRotateHandlers(false);
+            
         } else {
             $e = $("#btnBookReader1up").addClass("PTbuttonActive");
+            this.toggleZoomHandlers(true);
+            this.toggleRotateHandlers(true);
         }
     } else if ( 2 == mode ) {
         $e = $("#btnBookReader2up").addClass("PTbuttonActive");
+        this.toggleZoomHandlers(true);
+        this.toggleRotateHandlers(false);
     } else if ( 3 == mode ) {
         $e = $("#btnBookReaderThumbnail").addClass("PTbuttonActive");
+        this.toggleZoomHandlers(true);
+        this.toggleRotateHandlers(false);
     }
     var title = $e.attr('title') + " is the current view";
     $e.attr('title', title).find("img").attr("title", title);
@@ -5903,6 +5911,32 @@ HTBookReader.prototype.rotatePage = function(idx, delta) {
     this.drawLeafs();
     var self = this;
     setTimeout(function() { self.jumpToIndex(idx); }, 150);
+}
+
+HTBookReader.prototype.toggleZoomHandlers = function(on) {
+  var self = this;
+  var $buttons = $(".zoomAction");
+  if ( on === undefined ) {
+    on = ! $buttons.hasClass("PTbuttonDisabled");
+  }
+  if ( on ) {
+    $buttons.removeClass("PTbuttonDisabled");
+  } else {
+    $buttons.addClass("PTbuttonDisabled");
+  }
+}
+
+HTBookReader.prototype.toggleRotateHandlers = function(on) {
+  var self = this;
+  var $buttons = $(".rotateAction");
+  if ( on === undefined ) {
+    on = ! $buttons.hasClass("PTbuttonDisabled");
+  }
+  if ( on ) {
+    $buttons.removeClass("PTbuttonDisabled");
+  } else {
+    $buttons.addClass("PTbuttonDisabled");
+  }
 }
 
 HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
