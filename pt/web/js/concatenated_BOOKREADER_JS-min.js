@@ -4782,7 +4782,7 @@ HTBookReader.prototype.init = function() {
     if ( this.mode == this.constModeThumb ) {
       this.lazyDelay = 2500;
       setTimeout(function() {
-        self.lazyDelay = 500;
+        self.lazyDelay = 1500;
       }, this.lazyDelay * 5);
     }
     console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
