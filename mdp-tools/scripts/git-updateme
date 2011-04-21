@@ -13,7 +13,7 @@ my $ops = getopts('Ah');
 
 sub Usage {
     return "git-updateme [<app> [<app>]+ | -A] ] | -h
-  Fetches origin for <app> and, if working directory is clean, executes 'git pull origin master' 
+    If <app>'s working directory is clean, executes 'git pull origin master' 
     and 'git submodule update'
     OPTIONS
       -A process all apps you have
@@ -56,11 +56,6 @@ foreach my $app (@apps) {
     }
     elsif (! working_directory_clean()) {
         PrintN("Working directory $app_dir has uncommitted changes. Not updating. Skipping.\n");
-        next;
-    }
-
-    print "FETCH ...";
-    if (! G_fetch_origin($app_dir)) {
         next;
     }
 
