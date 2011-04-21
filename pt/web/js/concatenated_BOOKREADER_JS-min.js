@@ -4751,13 +4751,13 @@ HTBookReader.prototype.init = function() {
     
     // force thumbnails to load SLOWER if the user 
     // is loading bookreader from scratch
-    if ( this.displayMode == this.constModeThumb ) {
+    if ( this.mode == this.constModeThumb ) {
       this.lazyDelay = 1500;
       setTimeout(function() {
         self.lazyDelay = 500;
       }, 5000);
     }
-    console.log("INITIAL DISPLAY MODE =", this.displayMode, "/", this.lazyDelay);
+    console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
     
     var now = Date();
 
