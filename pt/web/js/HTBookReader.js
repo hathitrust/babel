@@ -456,10 +456,19 @@ HTBookReader.prototype.init = function() {
         this.mode = params.mode;
     }
     
+    var origMaxLoading = this.thumbMaxLoading;
+    var origLazyDelay = this.lazyDelay;
     if ( this.mode == this.constModeThumb ) {
       init_delay = 2500;
-      this.lazyDelay = 2500;
-      this.thumbMaxLoading = 2;
+      this.lazyDelay = origLazyDelay * 1.5;
+      this.thumbMaxLoading = Math.round(origMaxLoading / 2);
+    }
+    
+    if ( init_delay ) {
+      setTimeout(function() {
+        self.lazyDelay = origLazyDelay;
+        self.thumbMaxLoading = origMaxLoading;
+      })
     }
 
     if ( self.notice != null ){
