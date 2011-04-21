@@ -458,7 +458,7 @@ HTBookReader.prototype.init = function() {
     
     var origMaxLoading = this.thumbMaxLoading;
     var origLazyDelay = this.lazyDelay;
-    if ( (this.mode == this.constModeThumb) && (window.location.href.indexOf("size=105") > -1) ) {
+    if ( (this.mode == this.constModeThumb) && (window.location.href.indexOf("size=105") < 0) ) {
       init_delay = 2500;
       this.lazyDelay = origLazyDelay * 4;
       this.thumbMaxLoading = Math.round(origMaxLoading / 2);
