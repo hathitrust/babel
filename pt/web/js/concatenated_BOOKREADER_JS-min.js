@@ -4749,16 +4749,6 @@ HTBookReader.prototype.init = function() {
       }
     }
     
-    // force thumbnails to load SLOWER if the user 
-    // is loading bookreader from scratch
-    if ( this.mode == this.constModeThumb ) {
-      this.lazyDelay = 1500;
-      setTimeout(function() {
-        self.lazyDelay = 500;
-      }, 5000);
-    }
-    console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
-    
     var now = Date();
 
     if (! this.complete && do_wait) {
@@ -4785,7 +4775,17 @@ HTBookReader.prototype.init = function() {
     }
 
     console.log("BOOK READER INIT", now);
+
     BookReader.prototype.init.call(this);
+    // force thumbnails to load SLOWER if the user 
+    // is loading bookreader from scratch
+    if ( this.mode == this.constModeThumb ) {
+      this.lazyDelay = 1500;
+      setTimeout(function() {
+        self.lazyDelay = 500;
+      }, 5000);
+    }
+    console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
     
     if ( this.ui == 'full' ) {
         
