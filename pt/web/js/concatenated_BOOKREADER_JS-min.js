@@ -4777,7 +4777,7 @@ HTBookReader.prototype.init = function() {
     
     var origMaxLoading = this.thumbMaxLoading;
     var origLazyDelay = this.lazyDelay;
-    if ( this.mode == this.constModeThumb ) {
+    if ( (this.mode == this.constModeThumb) && (params.debug != 'throttle') ) {
       init_delay = 2500;
       this.lazyDelay = origLazyDelay * 4;
       this.thumbMaxLoading = Math.round(origMaxLoading / 2);
@@ -5377,6 +5377,9 @@ HTBookReader.prototype.paramsFromFragment = function(urlFragment) {
         params.displayMode = 'text';
         params.mode = this.constMode1up;
     }
+
+    params.debug = urlHash['debug'];
+
     return params;
 }
 
