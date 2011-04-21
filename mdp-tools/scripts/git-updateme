@@ -13,9 +13,10 @@ my $ops = getopts('Ah');
 
 sub Usage {
     return "git-updateme [<app> [<app>]+ | -A] ] | -h
-  Fetches origin for <app> and, if working directory is clean, executes 'git pull origin master
+  Fetches origin for <app> and, if working directory is clean, executes 'git pull origin master' 
+    and 'git submodule update'
     OPTIONS
-      -A process all apps you've cloned
+      -A process all apps you have
       -h help \n";
 }
 
