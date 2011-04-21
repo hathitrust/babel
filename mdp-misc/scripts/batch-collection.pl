@@ -200,8 +200,8 @@ Utils::map_chars_to_cers(\$C_TITLE, [q{"}, q{'}]);
 my $C = new Context;
 my $config = new MdpConfig(
                            Utils::get_uber_config_path('mdp-misc'),
-                           $LOCATION . "../../mb/lib/Config/global.conf",
-                           $LOCATION . "../../mb/lib/Config/local.conf"
+                           $LOCATION . "/../../mb/lib/Config/global.conf",
+                           $LOCATION . "/../../mb/lib/Config/local.conf"
                           );
 $C->set_object('MdpConfig', $config);
 
