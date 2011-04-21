@@ -199,7 +199,8 @@ Utils::map_chars_to_cers(\$C_TITLE, [q{"}, q{'}]);
 
 my $C = new Context;
 my $config = new MdpConfig(
-                           Utils::get_uber_config_path('mdp-misc'),
+                           # circumvent debug=local for uber.conf
+                           $LOCATION . "/../../mb/vendor/common-lib/lib/Config/uber.conf",
                            $LOCATION . "/../../mb/lib/Config/global.conf",
                            $LOCATION . "/../../mb/lib/Config/local.conf"
                           );
