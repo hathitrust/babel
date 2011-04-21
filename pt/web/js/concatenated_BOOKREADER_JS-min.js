@@ -4767,25 +4767,34 @@ HTBookReader.prototype.init = function() {
         }
     }
     
+    console.log("BOOK READER INIT", now);
+    
+    var init_delay = 0;
+    if ( this.mode == this.constModeThumb ) {
+      init_delay = 2500;
+    }
+
     if ( self.notice != null ){
         self.notice.setTitle("All finished").setContent("<span>Enjoy!</span>");
         setTimeout(function() {
           self.notice.hide();
-        }, 1000);
+        }, init_delay + 1000);
     }
+    
+    setTimeout(function() {
+      BookReader.prototype.init.call(self);
+    }, init_delay)
 
-    console.log("BOOK READER INIT", now);
-
-    BookReader.prototype.init.call(this);
-    // force thumbnails to load SLOWER if the user 
-    // is loading bookreader from scratch
-    if ( this.mode == this.constModeThumb ) {
-      this.lazyDelay = 2500;
-      setTimeout(function() {
-        self.lazyDelay = 1500;
-      }, this.lazyDelay * 5);
-    }
-    console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
+    // BookReader.prototype.init.call(this);
+    // // force thumbnails to load SLOWER if the user 
+    // // is loading bookreader from scratch
+    // if ( this.mode == this.constModeThumb ) {
+    //   this.lazyDelay = 2500;
+    //   setTimeout(function() {
+    //     self.lazyDelay = 1500;
+    //   }, this.lazyDelay * 5);
+    // }
+    // console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
     
     if ( this.ui == 'full' ) {
         
