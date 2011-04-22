@@ -84,13 +84,26 @@ sub _initialize
         $self->__set_facet_mapping($facet_to_label_map);
         $self->__set_facet_limit($facet_limit);
         $self->__set_facet_initial_show($facet_initial_show);
+        $self->__set_rel_weights($rel_weights);
         
     };
         
-    my $weights= $self->__read_yaml();
-    $self->__set_weights($weights);    
-}
+} 
 
+# ---------------------------------------------------------------------
+sub __set_rel_weights
+{
+    my $self = shift;
+    my $rel_weights = shift;
+    
+    $self->{'rel_weights'} = $rel_weights;
+}
+# ---------------------------------------------------------------------
+sub get_rel_weights
+{
+    my $self = shift;
+    my $rel_weights = $self->{'rel_weights'};
+}
 
 
 # ---------------------------------------------------------------------
@@ -126,23 +139,7 @@ sub get_facet_initial_show
 # ---------------------------------------------------------------------
         
 
-# ---------------------------------------------------------------------
-#XXX we need to know location and name of yaml file!
-sub __read_yaml
-{
-   my $self = shift;
-   my $weights={};
-   return ($weights);
-   
-}
 
-# ---------------------------------------------------------------------
-sub __set_weights
-{
-    my $self=shift;
-    my $weights = shift;
-    $self->{'weights'}={$weights};
-}
 
 # ---------------------------------------------------------------------
 sub __set_facet_order
@@ -178,24 +175,29 @@ sub get_facet_mapping
 sub get_all_weights
 {
    my $self = shift;
+   return $self->{'rel_weights'}->{'all'};
+   
 }
 
 # ---------------------------------------------------------------------
 sub get_title_weights
 {
    my $self = shift;
+   return $self->{'rel_weights'}->{'title'};
 }
 
 # ---------------------------------------------------------------------
 sub get_author_weights
 {
    my $self = shift;
+   return $self->{'rel_weights'}->{'author'};
 }
 
 # ---------------------------------------------------------------------
 sub get_subject_weight
 {
    my $self = shift;
+   return $self->{'rel_weights'}->{'subject'};
 }
 
 

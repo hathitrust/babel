@@ -272,8 +272,6 @@ sub get_Solr_query_string
 
     # add debug flag to ask solr for an explain query and need to change output somewhere
 
-#XXX MONSTROUS HACK for temporary debugging of rel ranking
-#  Need a much better mechanisim
 
     my $FACETQUERY="";
     
@@ -285,23 +283,29 @@ sub get_Solr_query_string
         }
     }
     
-    
+#XXX MONSTROUS HACK for temporary debugging of rel ranking
+#  Need a much better mechanisim
+#   Replace all this with a debug flag    
     my $EXPLAIN="";
-    if ($USER_Q =~/dismax/i)
-    {
-        $EXPLAIN='&debugQuery=on';
-        # turn off facets
-        $FACETS="";
+#    if ($USER_Q =~/dismax/i)
+#    {
+#        $EXPLAIN='&debugQuery=on';
+#        # turn off facets
+#        $FACETS="";
         
-    }
+#    }
 
-    my $DISMAX="";    
-    if ($USER_Q =~/dismax/i)
-    {
-        $DISMAX  = $self->_getDismaxString();
-        $USER_Q=~s/dismax//i;
-    }
+#    my $DISMAX="";    
+#    if ($USER_Q =~/dismax/i)
+#    {
+#        $DISMAX  = $self->_getDismaxString($facet_config);
+#        $USER_Q=~s/dismax//i;
+#    }
 # end MONSTROUS HACK    
+# for now make default dismax!
+
+    my   $DISMAX  = $self->_getDismaxString($facet_config);
+
     my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY . $EXPLAIN;    
 
 #XXX for debugging
@@ -325,7 +329,9 @@ sub get_Solr_query_string
 
 =item _getDismaxString
 
-Hardcoded for now but will read yaml config file later
+Reads yaml config file 
+Currently only for an all fields search
+Could be modified for advanced searches to weight properly full-text + (author|title|subject)
 
 =cut
 
@@ -334,8 +340,36 @@ Hardcoded for now but will read yaml config file later
 sub _getDismaxString
 {
     my $self =shift;
+    my $config=shift;
+    my $all_weights = $config->get_all_weights;
+    my $string='&defType=dismax';
+    
+    foreach my $key (keys %{$all_weights})
+    {
+         $string.= '&' . $key . '=';
+        if (ref($all_weights->{$key}) eq 'ARRAY')
+        {
+            
+            my $aryref= $all_weights->{$key};
+           
+            foreach my $el (@{$aryref})
+            {
+               my $field=$el->[0];
+               my $weight=$el->[1];
+               $string.=$field . '^' . $weight . '+'; 
+            }
+        }
+        else
+        {
+            $string.= $all_weights->{$key};
+            
+        }
+        
+    }
+    
+    
 #XXX need to insert tie parameter with correct url escapeing!!!
-    my $string='&defType=dismax&pf=title_ab^10000+title_a^8000+author^1600&qf=ocr^100000+title_ab^1000+title_a^800+author^1600&mm="2-25%" ';
+#    $string='&defType=dismax&pf=title_ab^10000+title_a^8000+author^1600&qf=ocr^100000+title_ab^1000+title_a^800+author^1600&mm="2-25%"&tie=0.1 ';
     return $string;
     
 }

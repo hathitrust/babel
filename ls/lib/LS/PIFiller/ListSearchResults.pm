@@ -382,8 +382,18 @@ sub handle_FACETS_PI
 
     # get data  the facet data should have been inserted in the search result data in Result::Facet.pm
     my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
-    # XXX do we want the all result object or the full text result object? or do we need to know if query is ft or not?
-    my $facet_hash =$result_data->{'all_result_object'}->{'facet_hash_ref'};
+    my $facet_hash;
+    
+    if ($cgi->param('lmt') eq 'ft')
+    {
+       $facet_hash =$result_data->{'full_text_result_object'}->{'facet_hash_ref'};
+    }
+    else
+    {
+        $facet_hash =$result_data->{'all_result_object'}->{'facet_hash_ref'};
+    }
+    
+    
     #XXX do we want to have a sub that is responsible for cleaning the hash ref?
 
 #XXX instead of spitting out html we should spit out good xml for the xslt to deal with!
