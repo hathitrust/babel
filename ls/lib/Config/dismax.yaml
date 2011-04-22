@@ -134,6 +134,7 @@ all:
     - [hlb3, 200]
     - [allfieldsProper, 100]    
   qf:
+    - [ocr,150000]
     - [allfieldsProper, 2]
     - [allfields, 1]
     - [titleProper, 50]
