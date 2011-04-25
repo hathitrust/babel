@@ -54,15 +54,23 @@ foreach my $app (@apps) {
         PrintN("Waster branch not checked out for $app @ $app_dir. Skipping.\n");
         next;
     }
-    elsif (! working_directory_clean()) {
-        PrintN("Working directory $app_dir has uncommitted changes. Not updating. Skipping.\n");
-        next;
-    }
+    else {
+        # Update submodules for clean directory check to agree with pre-update status
 
-    if (! update_app($app_dir)) {
-        PrintN("Failed to update $app @ $app_dir. ");
+        if (! G_update_submodules($app_dir)) {
+            PrintN("Could not update submodules for $app. Not updating $app. Skipping.\n");
+            next;
+        }
+
+        if (! working_directory_clean()) {
+            PrintN("Working directory $app_dir has uncommitted changes. Not updating. Skipping.\n");
+            next;
+        }
+
+        if (! update_app($app_dir)) {
+            PrintN("Failed to update $app @ $app_dir. ");
+        }
     }
-    
 }
 
 exit 0;
@@ -79,6 +87,9 @@ Description
 sub working_directory_clean {    
     my @output = qx(git status);
     my $clean = (grep(/working directory clean/, @output));
+    if (! $clean) {
+        $clean = (! grep(/Changed but not updated/, @output));
+    }
 
     return $clean;
 }
