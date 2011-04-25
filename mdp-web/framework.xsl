@@ -1018,7 +1018,7 @@
           </xsl:attribute>
           <xsl:value-of select="$gAccessUseHeader" />
         </xsl:element> -->
-        <xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+        <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
 			</p>
     </div>
   </xsl:template>
