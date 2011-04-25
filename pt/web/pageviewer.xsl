@@ -1025,7 +1025,8 @@
 			        <xsl:value-of select="$gCurrentPageNum" />
 			      </xsl:when>
 			      <xsl:otherwise>
-			        <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
+			        <!-- not making this visible -->
+              <!-- <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" /> -->
 			      </xsl:otherwise>
 			    </xsl:choose>
 			  </xsl:variable>
