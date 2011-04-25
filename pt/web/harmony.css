@@ -605,6 +605,10 @@ div.mdpScrollableContainer {
     color: #CCC;
 }
 
+#pageRightPdfLink {
+  display: block;
+}
+
 #fullPdfProgress {
   display: none;
 }

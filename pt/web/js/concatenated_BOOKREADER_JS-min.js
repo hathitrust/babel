@@ -4802,7 +4802,7 @@ HTBookReader.prototype.init = function() {
     }
 
     if ( self.notice != null ){
-        self.notice.setTitle("All finished").setContent("<span>Enjoy!</span>");
+        self.notice.setTitle("&#160;").setContent("<span>All finished</span>");
         setTimeout(function() {
           self.notice.hide();
         }, init_delay + 1000);
@@ -4810,6 +4810,7 @@ HTBookReader.prototype.init = function() {
     
     setTimeout(function() {
       BookReader.prototype.init.call(self);
+      self.saveReduce();
     }, init_delay)
 
     // BookReader.prototype.init.call(this);
@@ -5045,6 +5046,7 @@ HTBookReader.prototype.initToolbar = function(mode, ui) {
 
     // Switch to requested mode -- binds other click handlers
     this.switchToolbarMode(mode);
+    this.switchCurrentPageDownloadLinks();
     
 }
 
@@ -5191,9 +5193,10 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
     this.reduce = this.getSavedReduce();
 
     // reinstate scale if moving from thumbnail view
-    if (this.pageScale != this.reduce) {
-        this.reduce = this.pageScale;
-    }
+    // $$$ TODO obsoleted by savedReduce tracking??
+    // if (this.pageScale != this.reduce) {
+    //     this.reduce = this.pageScale;
+    // }
     
     // $$$ TODO preserve center of view when switching between mode
     //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
@@ -5234,7 +5237,29 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
+    this.switchCurrentPageDownloadLinks();
 
+}
+
+HTBookReader.prototype.switchCurrentPageDownloadLinks = function() {
+    var $link = $("#pagePdfLink");
+    var caption = $link.text();
+    $link.removeClass("disabled");
+    if ( this.mode == this.constMode2up ) {
+        // add left/right download links
+        var $rightLink = $link.clone().insertAfter($link).text(caption.replace("this page", "right page")).attr("id", "pageRightPdfLink");
+        $link.text(caption.replace("this page", "left page"));
+        
+        var href = $rightLink.attr('href');
+        href = this._updateUrlFromParams(href, { seq : this.currentIndex() }, { id : '#' + $link.attr('id') });
+        $rightLink.attr('href', href);
+    } else if ( this.mode == this.constMode1up ) {
+        $("#pageRightPdfLink").remove();
+        $link.text(caption.replace("left page", "this page"));
+    } else {
+        $("#pageRightPdfLink").remove();
+        $link.addClass('disabled');
+    }
 }
 
 // updateLocationHash
@@ -5244,6 +5269,10 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
 
 HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
     
+    if ( options === null ) {
+        options = {};
+    }
+    
     was_escaped = null;
     if ( href.indexOf("target=") > -1 ) {
         // escaped href, like the login link
@@ -5252,21 +5281,25 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
         href = unescape(tmp.join("target=")); // long shot
     }
     
-    if ( params.page && ( typeof(params.page) == "number" || params.page.slice(0,1) != 'n' ) ) {
+    if ( params.page && ( typeof(params.page) == "number" || params.page.slice(0,1) != 'n' ) && ( options.id != '#pageRightPdfLink') ) {
         var pageParam;
         pageParam = "num=" + params.page;
         if ( href.indexOf("num=") > -1 ) {
-            href = href.replace(/num=\d+(;?)/, pageParam + "$1");
+            href = href.replace(/num=\w+(;?)/, pageParam + "$1");
         } else {
             href += ";" + pageParam;
         }
     } else {
-        href = href.replace(/num=\d+(;?)/, "");
+        href = href.replace(/num=\w+(;?)/, "");
     }
-
+    
     if ( params.index ) {
         var indexParam;
-        indexParam = "seq=" + ( params.index + 1 );
+        var seq = params.index + 1;
+        if ( options && options.id == "#pageRightPdfLink" ) {
+            seq += 1;
+        }
+        indexParam = "seq=" + seq;
         if ( href.indexOf("seq=") > -1 ) {
             href = href.replace(/seq=\d+(;?)/, indexParam + "$1");
         } else {
@@ -5287,8 +5320,11 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
     }
     
     if ( was_escaped != null ) {
-        console.log("REPLACED", options.id, href);
         href = was_escaped + "target=" + escape(href);
+    } else if ( options.id == "#fullPdfLink" ) {
+        // strip the seq and num from this link
+        href = href.replace(/seq=\d+(;?)/, "");
+        href = href.replace(/num=\w+(;?)/, "");
     }
     
     return href;
@@ -5300,7 +5336,7 @@ HTBookReader.prototype.updateLocationHash = function() {
     // update the classic view link to reflect the current page number
     var params = this.paramsFromCurrent();
     
-    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#fullPdfLink", "#loginLink" ], function(idx, id) {
+    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#pageRightPdfLink", "#fullPdfLink", "#loginLink" ], function(idx, id) {
         var $a = $(id);
         var href = $a.attr('href');
         if ( href != null ) {
@@ -5309,11 +5345,12 @@ HTBookReader.prototype.updateLocationHash = function() {
               options.view = true;
             }
             href = self._updateUrlFromParams(href, params, options);
-            if ( id == "#pagePdfLink" ) {
-                $a.attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
-            } else {
-                $a.attr('href', href);
-            }
+            // if ( id == "#pagePdfLink" || id == "#pageRightPdfLink" ) {
+            //     $a.attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
+            // } else {
+            //     $a.attr('href', href);
+            // }
+            $a.attr('href', href);
         }
     })
     
@@ -6014,20 +6051,20 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
       return false;
     });
 
-    $("a#rotate-left").click(function(e) {
-        var index = self._pageTarget.attr("id").replace("pagediv", "");
-        // $pageControl.fadeOut(250, function() { $pageControl.appendTo("body") });
-        $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
-        self.rotatePage(index, -90);
-        return false;
-    });
-        
-    $("a#rotate-right").click(function(e) {
-        var index = self._pageTarget.attr("id").replace("pagediv", "");
-        $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
-        self.rotatePage(index, 90);
-        return false;
-    });
+    // $("a#rotate-left").click(function(e) {
+    //     var index = self._pageTarget.attr("id").replace("pagediv", "");
+    //     // $pageControl.fadeOut(250, function() { $pageControl.appendTo("body") });
+    //     $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
+    //     self.rotatePage(index, -90);
+    //     return false;
+    // });
+    //     
+    // $("a#rotate-right").click(function(e) {
+    //     var index = self._pageTarget.attr("id").replace("pagediv", "");
+    //     $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
+    //     self.rotatePage(index, 90);
+    //     return false;
+    // });
 
     $("a#rotate-clockwise").click(function(e) {
       var index = self.currentIndex();
@@ -6036,76 +6073,76 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
       return false;
     });
     
-    $("a#print-page").click(function(e) {
-        var index = self._pageTarget.attr("id").replace("pagediv", "");
-        $pageControl.fadeOut(250).appendTo("body");
-        
-        var pdf_uri = $("#pagePdfLink").attr('href');
-        pdf_uri = pdf_uri.replace(/seq=\d+/, "seq=" + ( parseInt(index) + 1 )).replace(/num=\d+(;?)/, "");
-        
-        $(this).attr('href', pdf_uri);
-        $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
-        
-        return true;
-    })
-
-    $("#BRpageControls").hover(
-        function() { $(this).addClass("hovered"); },
-        function() { $(this).removeClass("hovered"); }
-    );
-    
-    $("div.BRpagediv1up:has(img)").live("mouseover mouseleave", function(event) {
-        var h = $(this).height();
-        var w = $(this).width();
-        // var $pageControl = $("#BRpageControls");
-        if ( event.type == 'mouseover' ) {
-            
-            if ( $("#BRpageControls", this).length > 0 ) {
-                // already appended, ignore...
-                return true;
-            }
-            
-            // var top = offset.top + h - 75;
-            // var left = offset.left + w - 75;
-            // var top = h - 75;
-            // var left = w - 150;
-            var left = w - $pageControl.width() - 20; // vertical
-            var top = h - $pageControl.height() - 20; // vertical
-            
-
-            // if top is below the fold, pull back
-            var $bookReaderDiv = $("#BookReader");
-            
-            var offset = $(this).offset();
-            // console.log("TOP", top, "/", ooffset.top, "/", $bookReaderDiv.offset().top + $bookReaderDiv.height());
-            
-            while (( top + offset.top + $pageControl.height() ) > ($bookReaderDiv.offset().top + $bookReaderDiv.height()) ) {
-                top -= 100;
-            }
-            
-            //br._rotateWidget.appendTo($(this)).css("top", top).css("left", left).fadeIn(500)
-            //$pageControl.css("top", top).css("left", left).fadeIn(250);
-            //$pageControl.appendTo($(this)).css("top", top).css("left", left).addClass("waiting").fadeIn(250);
-            //$pageControl.appendTo($(this)).css("top", top).css("left", left).css({ opacity: 0, display: 'block' }).animate({ opacity: 0.3 }, 250);
-            $pageControl.appendTo($(this)).css("top", top).css("left", left);
-            self._pageTarget = $(this);
-            
-        } else {
-            // if ( ! (( event.pageX >= position.left && event.pageX <= ( offset.left + w ) ) && 
-            //      ( event.pageY >= offset.top && event.pageY <= offset.top + h )) ) {
-            //      $pageControl.fadeOut(250);
-            //      self._pageTarget = null;
-            // }
-            
-            if ( $("#BRpageControls", this).length > 0 ) {
-                //$pageControl.fadeOut(250).css("left", -1000).appendTo("body");
-                $pageControl.css("left", -1000).appendTo("body");
-                self._pageTarget = null;
-            }
-            
-        }
-        return true;
-    })
+    // $("a#print-page").click(function(e) {
+    //     var index = self._pageTarget.attr("id").replace("pagediv", "");
+    //     $pageControl.fadeOut(250).appendTo("body");
+    //     
+    //     var pdf_uri = $("#pagePdfLink").attr('href');
+    //     pdf_uri = pdf_uri.replace(/seq=\d+/, "seq=" + ( parseInt(index) + 1 )).replace(/num=\w+(;?)/, "");
+    //     
+    //     $(this).attr('href', pdf_uri);
+    //     $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
+    //     
+    //     return true;
+    // })
+    // 
+    // $("#BRpageControls").hover(
+    //     function() { $(this).addClass("hovered"); },
+    //     function() { $(this).removeClass("hovered"); }
+    // );
+    // 
+    // $("div.BRpagediv1up:has(img)").live("mouseover mouseleave", function(event) {
+    //     var h = $(this).height();
+    //     var w = $(this).width();
+    //     // var $pageControl = $("#BRpageControls");
+    //     if ( event.type == 'mouseover' ) {
+    //         
+    //         if ( $("#BRpageControls", this).length > 0 ) {
+    //             // already appended, ignore...
+    //             return true;
+    //         }
+    //         
+    //         // var top = offset.top + h - 75;
+    //         // var left = offset.left + w - 75;
+    //         // var top = h - 75;
+    //         // var left = w - 150;
+    //         var left = w - $pageControl.width() - 20; // vertical
+    //         var top = h - $pageControl.height() - 20; // vertical
+    //         
+    // 
+    //         // if top is below the fold, pull back
+    //         var $bookReaderDiv = $("#BookReader");
+    //         
+    //         var offset = $(this).offset();
+    //         // console.log("TOP", top, "/", ooffset.top, "/", $bookReaderDiv.offset().top + $bookReaderDiv.height());
+    //         
+    //         while (( top + offset.top + $pageControl.height() ) > ($bookReaderDiv.offset().top + $bookReaderDiv.height()) ) {
+    //             top -= 100;
+    //         }
+    //         
+    //         //br._rotateWidget.appendTo($(this)).css("top", top).css("left", left).fadeIn(500)
+    //         //$pageControl.css("top", top).css("left", left).fadeIn(250);
+    //         //$pageControl.appendTo($(this)).css("top", top).css("left", left).addClass("waiting").fadeIn(250);
+    //         //$pageControl.appendTo($(this)).css("top", top).css("left", left).css({ opacity: 0, display: 'block' }).animate({ opacity: 0.3 }, 250);
+    //         $pageControl.appendTo($(this)).css("top", top).css("left", left);
+    //         self._pageTarget = $(this);
+    //         
+    //     } else {
+    //         // if ( ! (( event.pageX >= position.left && event.pageX <= ( offset.left + w ) ) && 
+    //         //      ( event.pageY >= offset.top && event.pageY <= offset.top + h )) ) {
+    //         //      $pageControl.fadeOut(250);
+    //         //      self._pageTarget = null;
+    //         // }
+    //         
+    //         if ( $("#BRpageControls", this).length > 0 ) {
+    //             //$pageControl.fadeOut(250).css("left", -1000).appendTo("body");
+    //             $pageControl.css("left", -1000).appendTo("body");
+    //             self._pageTarget = null;
+    //         }
+    //         
+    //     }
+    //     return true;
+    // })
     
 }
 
