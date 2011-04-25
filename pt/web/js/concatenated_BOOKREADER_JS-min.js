@@ -953,7 +953,8 @@ BookReader.prototype.drawLeafsOnePage = function() {
     this.updateSearchHilites();
     
     if (null != this.getPageNum(firstIndexToDraw))  {
-        $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+        this.updatePageNumBox();
+        // $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
         $("#BRpagenum").val('');
     }
@@ -1201,7 +1202,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     this.updateToolbarZoom(this.reduce); 
 }
 
-BookReader.prototype.lazyLoadThumbnails = function() {
+BookReader.prototype.lazyLoadThumbnails = function(ts) {
 
     // console.log('lazy load');
 
@@ -1215,10 +1216,19 @@ BookReader.prototype.lazyLoadThumbnails = function() {
     // console.log('  this.thumbMaxLoading ' + this.thumbMaxLoading);
     
     var self = this;
+    if ( self.load_counter == null ) {
+      self.load_counter = 0;
+    }
         
     if (toLoad > 0) {
+      self.load_counter += 1;
+      var now = new Date();
+      var delta = now.getTime() - ts;
+      var stamp = [ now.getHours(), now.getMinutes(), now.getSeconds() ];
         // $$$ TODO load those near top (but not beyond) page view first
+        var self = this;
         $('#BRpageview img.BRlazyload').filter(':lt(' + toLoad + ')').each( function() {
+          console.log("THUMBNAIL:", self.load_counter, ":", stamp.join(":"), delta, ":", loading, "/", toLoad, "<", self.thumbMaxLoading);
             self.lazyLoadImage(this);
         });
     }
@@ -1240,7 +1250,8 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
             // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
             //     we call the function after a slight delay.  Also the img.complete property
             //     is not yet set in IE8 inside this onload handler
-            setTimeout(function() { self.lazyLoadThumbnails(); }, self.lazyDelay);
+            var now = (new Date()).getTime();
+            setTimeout(function() { self.lazyLoadThumbnails(now); }, self.lazyDelay);
         })
         .one('error', function() {
             // Remove class so we no longer count as loading
@@ -1333,7 +1344,8 @@ BookReader.prototype.drawLeafsTwoPage = function() {
 //______________________________________________________________________________
 BookReader.prototype.updatePageNumBox2UP = function() {
     if (null != this.getPageNum(this.twoPage.currentIndexL))  {
-        $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+        this.updatePageNumBox();
+        // $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
         $("#BRpagenum").val('');
     }
@@ -1753,7 +1765,6 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             // Preserve left position
             leafLeft = $('#BRcontainer').scrollLeft();
         }
-
         //$('#BRcontainer').attr('scrollTop', leafTop);
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
     }
@@ -5276,6 +5287,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
     }
     
     if ( was_escaped != null ) {
+        console.log("REPLACED", options.id, href);
         href = was_escaped + "target=" + escape(href);
     }
     
@@ -5288,11 +5300,15 @@ HTBookReader.prototype.updateLocationHash = function() {
     // update the classic view link to reflect the current page number
     var params = this.paramsFromCurrent();
     
-    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#loginLink" ], function(idx, id) {
+    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#fullPdfLink", "#loginLink" ], function(idx, id) {
         var $a = $(id);
         var href = $a.attr('href');
         if ( href != null ) {
-            href = self._updateUrlFromParams(href, params);
+            var options = { id : id };
+            if ( ( id == "#loginLink" ) || ( id == "#fullPdfLink") ) {
+              options.view = true;
+            }
+            href = self._updateUrlFromParams(href, params, options);
             if ( id == "#pagePdfLink" ) {
                 $a.attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
             } else {
@@ -5538,10 +5554,19 @@ HTBookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     // })
     
     $iframe.attr('src', ocr_url).addClass('loading');
-    $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+    this.updatePageNumBox();
     this.updateLocationHash();
     
 }
+
+HTBookReader.prototype.updatePageNumBox = function() {
+  var num = this.getPageNum(this.currentIndex());
+  if ( (typeof(num) == "string") && (num.substr(0, 1) == "n" )) {
+    num = '';
+  }
+  $("#BRpagenum").val(num);
+}
+
 
 function fireEvent(element,event) {
    if (document.createEvent) {
@@ -5811,9 +5836,10 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
 
     // Update page number box.  $$$ refactor to function
     if (null !== this.getPageNum(this.currentIndex()))  {
-        $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+      this.updatePageNumBox();
+      // $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
-        $("#BRpagenum").val('');
+      $("#BRpagenum").val('');
     }
 
     this.updateToolbarZoom(this.reduce); 

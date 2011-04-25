@@ -475,7 +475,8 @@ BookReader.prototype.drawLeafsOnePage = function() {
     this.updateSearchHilites();
     
     if (null != this.getPageNum(firstIndexToDraw))  {
-        $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+        this.updatePageNumBox();
+        // $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
         $("#BRpagenum").val('');
     }
@@ -723,7 +724,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     this.updateToolbarZoom(this.reduce); 
 }
 
-BookReader.prototype.lazyLoadThumbnails = function() {
+BookReader.prototype.lazyLoadThumbnails = function(ts) {
 
     // console.log('lazy load');
 
@@ -737,10 +738,19 @@ BookReader.prototype.lazyLoadThumbnails = function() {
     // console.log('  this.thumbMaxLoading ' + this.thumbMaxLoading);
     
     var self = this;
+    if ( self.load_counter == null ) {
+      self.load_counter = 0;
+    }
         
     if (toLoad > 0) {
+      self.load_counter += 1;
+      var now = new Date();
+      var delta = now.getTime() - ts;
+      var stamp = [ now.getHours(), now.getMinutes(), now.getSeconds() ];
         // $$$ TODO load those near top (but not beyond) page view first
+        var self = this;
         $('#BRpageview img.BRlazyload').filter(':lt(' + toLoad + ')').each( function() {
+          console.log("THUMBNAIL:", self.load_counter, ":", stamp.join(":"), delta, ":", loading, "/", toLoad, "<", self.thumbMaxLoading);
             self.lazyLoadImage(this);
         });
     }
@@ -762,7 +772,8 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
             // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
             //     we call the function after a slight delay.  Also the img.complete property
             //     is not yet set in IE8 inside this onload handler
-            setTimeout(function() { self.lazyLoadThumbnails(); }, self.lazyDelay);
+            var now = (new Date()).getTime();
+            setTimeout(function() { self.lazyLoadThumbnails(now); }, self.lazyDelay);
         })
         .one('error', function() {
             // Remove class so we no longer count as loading
@@ -855,7 +866,8 @@ BookReader.prototype.drawLeafsTwoPage = function() {
 //______________________________________________________________________________
 BookReader.prototype.updatePageNumBox2UP = function() {
     if (null != this.getPageNum(this.twoPage.currentIndexL))  {
-        $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+        this.updatePageNumBox();
+        // $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
         $("#BRpagenum").val('');
     }
@@ -1275,7 +1287,6 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             // Preserve left position
             leafLeft = $('#BRcontainer').scrollLeft();
         }
-
         //$('#BRcontainer').attr('scrollTop', leafTop);
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
     }

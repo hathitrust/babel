@@ -354,7 +354,7 @@
         HT.reader.flags.has_ocr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
         HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
         HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
-        HT.reader.lazyDelay = 500;
+        HT.reader.lazyDelay = 1500;
     </script>
     <script type="text/javascript" src="/pt/js/bookreader_startup.js?ts={generate-id(.)}"/> 
   </xsl:template>

@@ -969,11 +969,15 @@ HTBookReader.prototype.updateLocationHash = function() {
     // update the classic view link to reflect the current page number
     var params = this.paramsFromCurrent();
     
-    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#loginLink" ], function(idx, id) {
+    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#fullPdfLink", "#loginLink" ], function(idx, id) {
         var $a = $(id);
         var href = $a.attr('href');
         if ( href != null ) {
-            href = self._updateUrlFromParams(href, params);
+            var options = { id : id };
+            if ( ( id == "#loginLink" ) || ( id == "#fullPdfLink") ) {
+              options.view = true;
+            }
+            href = self._updateUrlFromParams(href, params, options);
             if ( id == "#pagePdfLink" ) {
                 $a.attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
             } else {
@@ -1219,10 +1223,19 @@ HTBookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     // })
     
     $iframe.attr('src', ocr_url).addClass('loading');
-    $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+    this.updatePageNumBox();
     this.updateLocationHash();
     
 }
+
+HTBookReader.prototype.updatePageNumBox = function() {
+  var num = this.getPageNum(this.currentIndex());
+  if ( (typeof(num) == "string") && (num.substr(0, 1) == "n" )) {
+    num = '';
+  }
+  $("#BRpagenum").val(num);
+}
+
 
 function fireEvent(element,event) {
    if (document.createEvent) {
@@ -1492,9 +1505,10 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
 
     // Update page number box.  $$$ refactor to function
     if (null !== this.getPageNum(this.currentIndex()))  {
-        $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+      this.updatePageNumBox();
+      // $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
-        $("#BRpagenum").val('');
+      $("#BRpagenum").val('');
     }
 
     this.updateToolbarZoom(this.reduce); 
