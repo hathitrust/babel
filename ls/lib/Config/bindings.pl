@@ -19,6 +19,12 @@
    'start'  => '\d+',
    'lmt'    => 'ft|all',
    'facet'  => '.*',
+   'q2'     => '.*',
+   'q3'     => '.*',
+   'op1'    => 'AND|OR',
+   'op2'    => 'AND|OR',
+   'field1'    => '.*',
+   'field2'    => '.*',
   );
 
 # Specification of global *database* operations to be executed before

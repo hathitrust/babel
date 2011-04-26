@@ -186,6 +186,18 @@ sub get_Solr_query_string
 {
     my $self = shift;
     my $C = shift;
+    my $cgi = $C->get_object('CGI');
+    
+    #advanced search
+    my $ADVANCED= "";
+    my $q2 = $cgi->param('q2');
+
+    
+    if (defined($q2))
+    {
+        $ADVANCED = $self->__get_advanced_query($cgi);
+        
+    }
     
     
     # Cache to avoid repeated MySQL calls in Access::Rights
@@ -241,7 +253,7 @@ sub get_Solr_query_string
 
     my $FACETQUERY="";
     #XXX should we do some cleaning of facet param coming in on url?
-    my $cgi = $C->get_object('CGI');
+
     my $facetquery=$cgi->{'facet'};
 
     if (defined ($facetquery))
@@ -262,8 +274,9 @@ sub get_Solr_query_string
     my $facet_config = $self->get_facet_config;  #XXX do we need to rename facet_config since it contains more than just facet config info?
     my   $DISMAX  = $self->_getDismaxString($facet_config);
 
-    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY . $EXPLAIN;    
-
+   my $solr_query_string = $USER_Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY . $EXPLAIN;    
+#    my $solr_query_string = $USER_Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT .  $WRITER . $FACETQUERY .$EXPLAIN;
+    
 #XXX for debugging
 #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
     
@@ -280,6 +293,76 @@ sub get_Solr_query_string
     return $solr_query_string;
 }
 
+
+# ---------------------------------------------------------------------
+# __get_advanced_query
+
+#
+#  Do we want solr syntax in the cgi param i.e.  q2=Vtitle:foobar
+#  Do we want instead to have a searchfield1 and 2 param and a value?
+#  Do we want a mapping so we can have qtitle and change whether its a Vtitle or a title_ab?
+# ---------------------------------------------------------------------
+sub __get_advanced_query
+{
+    my $self = shift;
+    my $cgi = shift;
+    my $ADVANCED;
+    
+    my $op1 = $cgi->param('op1');
+    my $op2 = $cgi->param('op2');
+    my $q2 = $cgi->param('q2');
+    my $q3 = $cgi->param('q3');
+    my $field1 = $cgi->param('field1');
+    my $field2 = $cgi->param('field2');
+    my @valid_fields=('author','title','subject','callrange');  #XXX this should be read from a config file!
+    #XXX read from config file.  check marc mapping for proper field for subject searching and hlb3 searching
+    my $field_hash={
+                   'author'=>'author',
+                   'title'=>'Vtitle',
+                   'subject'=>'hlb3', 
+                   'topic'=>'hlb3',
+                   };
+    
+
+    
+    if (!defined($q2))
+    {
+        return "";
+    }
+    # do we also check that field1, and op1 are defined and reasonable or provide defaults
+    my $processed_q2 = $self->get_processed_user_query_string($q2);
+    my $FIELD1="";
+    
+# XXX redo with a subroutine and fix so we can have up to 3 fields like in catalog
+
+    if (defined ($field_hash->{$field1} ))
+    {
+        $FIELD1=$field_hash->{$field1} . ':'     
+    }
+    
+    my $Q2= ' ' .$op1 . ' ' . $FIELD1 . $processed_q2;
+    my $Q3;
+    
+    if (defined ($q3))
+    {
+        my $processed_q3 = $self->get_processed_user_query_string($q3);
+        my $FIELD2="";
+    
+        if (defined ($field_hash->{$field2} ))
+        {
+            $FIELD2=$field_hash->{$field2} . ':'     
+        }
+        $Q3= ' ' .$op2 . ' ' . $FIELD2 . $processed_q3;
+    }
+    
+    $ADVANCED = $Q2 ." ". $Q3;
+    
+    
+
+
+    return $ADVANCED;
+    
+}
 
 # ---------------------------------------------------------------------
 # XXX think about how this might be refactored to also allow Blacklight style showing paged,sorted values for a particular facet
@@ -319,7 +402,7 @@ sub _getDismaxString
     my $self =shift;
     my $config=shift;
     my $all_weights = $config->get_all_weights;
-    my $string='&defType=dismax';
+    my $string='&defType=edismax'; #dismax|edismax, dismax won't work with normal adv search syntax, but see naomi stuff if needed
     
     foreach my $key (keys %{$all_weights})
     {
