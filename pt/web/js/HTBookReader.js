@@ -1662,6 +1662,7 @@ $(window).scroll(function() {
 
 HTBookReader.prototype.rotationCache = {};
 HTBookReader.prototype.rotatePage = function(idx, delta) {
+    
     if (idx == null) {
         idx = this.currentIndex();
     }
@@ -1672,8 +1673,13 @@ HTBookReader.prototype.rotatePage = function(idx, delta) {
     if ( r == null ) {
         r = 0;
     }
-    r += 90;
-    if ( r == 360 || r < 0 ) { r = 0 ; }
+    r += delta;
+    
+    if ( r < 0 ) {
+        r += 360;
+    }
+    
+    if ( r == 360 ) { r = 0 ; }
     this.rotationCache[idx] = r;
 
     $("div.BRpagediv1up").remove();
@@ -1716,7 +1722,6 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
     
     $("a#rotate-counterclockwise").click(function(e) {
       var index = self.currentIndex();
-      $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
       self.rotatePage(index, -90);
       return false;
     });
@@ -1738,7 +1743,6 @@ HTBookReader.prototype.bindPageControlHandlers = function($pageControl) {
 
     $("a#rotate-clockwise").click(function(e) {
       var index = self.currentIndex();
-      $pageControl.fadeOut(250).css("left", -1000).appendTo("body");
       self.rotatePage(index, 90);
       return false;
     });
