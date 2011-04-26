@@ -1,3 +1,89 @@
+var HT = HT || {};
+
+HT.monitor = {
+  
+  inter : null,
+  
+  run : function() {
+    var self = this;
+    
+    if ( this.inter != null ) {
+      return;
+    }
+    
+    var ping = function() {
+      $.ajax({
+          url : "/common/robots.txt",
+          data : { ts : (new Date).getTime() },
+          cache : false,
+          success: function(data) {
+            // NOOP
+          },
+          error : function(req, textStatus, errorThrown) {
+            // stop for any error (e.g. network down)
+            self.stop();
+            if ( req.status == 503 ) {
+              var tmp = req.responseText.match(/for the next (\d+) seconds/);
+              var timeout = tmp[1];
+
+              // var html = '<div>' + 
+              //               '<p>Our apologies, but the librarians are dealing with a disturbance in the 8-bit archives.</p>' + 
+              //               '<p>Things should be back to normal in <span id="throttle-timeout">' + timeout + '</span> seconds.</p>' + 
+              //            '</div>';
+
+              var html = 
+                '<div>' + 
+                  '<p>You have temporarily exceeded download limits. You may proceed in <span id="throttle-timeout">' + timeout + '</span> seconds.</p>' + 
+                  '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' + 
+                '</div>';
+                                                  
+              var countdown = timeout;
+              var countdown_inter;
+              
+              var $notice = new Boxy(html, {
+                  show: true,
+                  modal: true,
+                  draggable: true,
+                  closeable: false,
+                  title: "",
+                  behaviours: function(r) {
+                    setTimeout(function() {
+                      Boxy.get(r).hide();
+                      
+                      // and restart the timer!
+                      self.run();
+                      
+                    }, timeout * 1000);
+                    
+                    countdown_inter = setInterval(function() {
+                      countdown -= 1;
+                      $(r).find("#throttle-timeout").text(countdown);
+                      if ( countdown == 0 ) {
+                        clearInterval(countdown_inter);
+                      }
+                    }, 1000);
+                    
+                  }
+              });
+
+            }
+          }
+        });
+    }
+    
+    this.inter = setInterval(ping, 2500);
+    
+  },
+  
+  stop: function() {
+    clearInterval(this.inter);
+    this.inter = null;
+  },
+  
+  EOT : null
+    
+}
+
 $(document).ready(function() {
     
     // hide section navigation submit buttons
@@ -33,5 +119,8 @@ $(document).ready(function() {
         $("#mdpToolbar")
             .click(function() { return false; });
     }
+    
+    //// don't need this running for classic yet
+    // HT.monitor.run();
     
 })

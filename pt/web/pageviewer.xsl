@@ -358,6 +358,9 @@
         HT.reader.lazyDelay = 500;
     </script>
     <script type="text/javascript" src="/pt/js/bookreader_startup.js?ts={generate-id(.)}"/> 
+    <script type="text/javascript">
+        HT.monitor.run();
+    </script>
   </xsl:template>
 
   <xsl:template name="online_assessment">

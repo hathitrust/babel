@@ -2,19 +2,27 @@
 var HT = HT || {};
 
 HT.pdf_helpers = {
+    
+    is_running: false,
+    inter: null,
   
     open_progress: function(progress_url, download_url, total) {
+        
+      if ( HT.pdf_helpers.inter ) {
+        // already polling
+        return;
+      }
       
       HT.pdf_helpers.progress_url = progress_url;
       HT.pdf_helpers.download_url = download_url;
       HT.pdf_helpers.total = total;
+      HT.pdf_helpers.is_running = true;
       
       
       // this means the PDF has been located so...
       var $contents = $("div#fullPdfFrame").find("iframe").contents();
       HT.pdf_helpers.update_progress($contents, total);
       
-      var inter;
       var idx = 0;
       var processed = 0;
       var run = function() {
@@ -33,14 +41,14 @@ HT.pdf_helpers = {
                     HT.pdf_helpers.$notice.hide(function() {
                       HT.pdf_helpers.show_download_link(download_url);
                     })
-                    clearInterval(inter);
+                    clearInterval(HT.pdf_helpers.inter);
                     
                   } else if ( status.error ) {
                     HT.pdf_helpers.$notice.hide(function() {
                       HT.pdf_helpers.show_error();
                     })
                     
-                    clearInterval(inter);
+                    clearInterval(HT.pdf_helpers.inter);
                     
                   }
               },
@@ -49,13 +57,13 @@ HT.pdf_helpers = {
                   
                   if ( req.status == 503 ) {
                     // throttling error; clear interval and try again later
-                    clearInterval(inter);
+                    clearInterval(HT.pdf_helpers.inter);
                     setTimeout(function() {
-                      inter = setInterval(run, 2000);
+                      HT.pdf_helpers.inter = setInterval(run, 2000);
                     }, 1000);
                   } else if ( ( eq.status == 404 ) && (idx > 25 || processed > 0) ) {
                       
-                      clearInterval(inter);
+                      clearInterval(HT.pdf_helpers.inter);
                       HT.pdf_helpers.$notice.hide(function() {
                         HT.pdf_helpers.show_error();
                       });
@@ -65,7 +73,7 @@ HT.pdf_helpers = {
       }
 
       // first run is in half a millisecond
-      inter = setInterval(run, 2000);
+      HT.pdf_helpers.inter = setInterval(run, 2000);
       
     },
     
