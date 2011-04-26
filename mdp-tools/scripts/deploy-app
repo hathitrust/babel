@@ -342,7 +342,7 @@ sub __rdist_to_production {
     my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
 
     print qq{Now starting rdist to production ...\n};
-    print qx(rdist -f $app_dir/bin/rdist.app -s sdr);
+    print qx(rdist -f $app_dir/bin/rdist.app);
 
     if ($?) {
         PrintN("ERROR: rdist failure\n");
