@@ -187,12 +187,6 @@ sub get_Solr_query_string
     my $self = shift;
     my $C = shift;
     
-    #XXX should we do some cleaning of facet param coming in on url?
-    my $cgi = $C->get_object('CGI');
-    my $facetquery=$cgi->{'facet'};
-    #XXX figure out what to do with array
-
-    
     
     # Cache to avoid repeated MySQL calls in Access::Rights
     if ($self->get_cached_Solr_query_string()) {
@@ -231,50 +225,25 @@ sub get_Solr_query_string
     }
 
 # Facet aspects of query added here
-
-
-    my $facet_config = $self->get_facet_config;
-    my $FACET_LIMIT=$facet_config->get_facet_limit;
-    my $FACETS;
-    #WARNING can't use TopicStr in production due to lucene/solr bug
-#    my @facetfields= (
-#                   #   'topicStr',
-#                      'genreStr',
-#                      'language',
-#                      'hlb3Str',
-#                      'ht_availability',
-#                      'format',
-#                      'authorStr',
-#         #             'publishDate',
-#                      'publishDateRange',
-#                      'countryOfPubStr',
-#                      'era',
-#                      'geographicStr' );
-    my $facet_config = $self->get_facet_config;
-    #XXX this is not right!
-    my $facetfields = $facet_config->get_facet_order();
+#
+#    if we implement show all facets by A-Z we need to set facet.sort param
+#    but how does Blacklight implement paging?
     
-    foreach my $field (@{$facetfields})
-    {
-        $FACETS .='&facet.field=' . $field;
-        
-    }
-    
-        
-    
-    $FACETS .='&facet.mincount=1&facet=true&facet.limit='. $FACET_LIMIT ;
+    my $FACETS= $self->__get_facets;
     my $WRITER ='&wt=json&json.nl=arrarr';
     
     # q=dog*&fl=id,rights,author,title,score&$version=2.2,&start=0&rows=20&indent=off
 #    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER;
-
-#XXX change to edismax query for testing
-
+    #XXX change to edismax query for testing
     # add debug flag to ask solr for an explain query and need to change output somewhere
 
+    # This builds a filter query based on the values of the facet paraameter in the cgi
 
     my $FACETQUERY="";
-    
+    #XXX should we do some cleaning of facet param coming in on url?
+    my $cgi = $C->get_object('CGI');
+    my $facetquery=$cgi->{'facet'};
+
     if (defined ($facetquery))
     {
         foreach my $fquery (@{$facetquery})
@@ -283,27 +252,14 @@ sub get_Solr_query_string
         }
     }
     
-#XXX MONSTROUS HACK for temporary debugging of rel ranking
-#  Need a much better mechanisim
+#XXX for temporary debugging of rel ranking
+    #  Need a much better mechanisim
 #   Replace all this with a debug flag    
     my $EXPLAIN="";
-#    if ($USER_Q =~/dismax/i)
-#    {
 #        $EXPLAIN='&debugQuery=on';
-#        # turn off facets
-#        $FACETS="";
-        
-#    }
 
-#    my $DISMAX="";    
-#    if ($USER_Q =~/dismax/i)
-#    {
-#        $DISMAX  = $self->_getDismaxString($facet_config);
-#        $USER_Q=~s/dismax//i;
-#    }
-# end MONSTROUS HACK    
 # for now make default dismax!
-
+    my $facet_config = $self->get_facet_config;  #XXX do we need to rename facet_config since it contains more than just facet config info?
     my   $DISMAX  = $self->_getDismaxString($facet_config);
 
     my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY . $EXPLAIN;    
@@ -326,7 +282,28 @@ sub get_Solr_query_string
 
 
 # ---------------------------------------------------------------------
+# XXX think about how this might be refactored to also allow Blacklight style showing paged,sorted values for a particular facet
+# or is that a different api call?
+# ---------------------------------------------------------------------
+sub __get_facets
+{
+    my $self = shift;
+    my $FACETS;
+    my $facet_config = $self->get_facet_config;
+    my $FACET_LIMIT=$facet_config->get_facet_limit;
+    my $facetfields = $facet_config->get_facet_order();    
+    my $FACET_FIELDS;
+    
+    foreach my $field (@{$facetfields})
+    {
+        $FACET_FIELDS .='&facet.field=' . $field;
+    }
+    
+    $FACETS .='&facet.mincount=1&facet=true&facet.limit='. $FACET_LIMIT . $FACET_FIELDS;
+    return $FACETS;
+}
 
+# ---------------------------------------------------------------------
 =item _getDismaxString
 
 Reads yaml config file 
