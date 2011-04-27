@@ -25,11 +25,12 @@ HT.monitor = {
             if ( req.status == 503 ) {
               var tmp = req.responseText.match(/for the next (\d+) seconds/);
               var timeout = tmp[1];
-
-              // var html = '<div>' + 
-              //               '<p>Our apologies, but the librarians are dealing with a disturbance in the 8-bit archives.</p>' + 
-              //               '<p>Things should be back to normal in <span id="throttle-timeout">' + timeout + '</span> seconds.</p>' + 
-              //            '</div>';
+              
+              if ( timeout <= 5 ) {
+                  // just punt and wait it out
+                  self.run();
+                  return;
+              }
 
               var html = 
                 '<div>' + 

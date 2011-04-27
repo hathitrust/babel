@@ -997,6 +997,8 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
         href = href.replace(/num=\w+(;?)/, "");
     }
     
+    href = href.replace(/;+$/g, "");
+    
     return href;
 }
 

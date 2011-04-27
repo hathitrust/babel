@@ -10,6 +10,7 @@ HT.pdf_helpers = {
         
       if ( HT.pdf_helpers.inter ) {
         // already polling
+        console.log("ALREADY POLLING!");
         return;
       }
       
@@ -42,6 +43,7 @@ HT.pdf_helpers = {
                       HT.pdf_helpers.show_download_link(download_url);
                     })
                     clearInterval(HT.pdf_helpers.inter);
+                    HT.pdf_helpers.inter = null;
                     
                   } else if ( status.error ) {
                     HT.pdf_helpers.$notice.hide(function() {
@@ -49,6 +51,7 @@ HT.pdf_helpers = {
                     })
                     
                     clearInterval(HT.pdf_helpers.inter);
+                    HT.pdf_helpers.inter = null;
                     
                   }
               },
@@ -58,12 +61,17 @@ HT.pdf_helpers = {
                   if ( req.status == 503 ) {
                     // throttling error; clear interval and try again later
                     clearInterval(HT.pdf_helpers.inter);
+                    HT.pdf_helpers.inter = null;
+
                     setTimeout(function() {
                       HT.pdf_helpers.inter = setInterval(run, 2000);
                     }, 1000);
+
                   } else if ( ( eq.status == 404 ) && (idx > 25 || processed > 0) ) {
                       
                       clearInterval(HT.pdf_helpers.inter);
+                      HT.pdf_helpers.inter = null;
+
                       HT.pdf_helpers.$notice.hide(function() {
                         HT.pdf_helpers.show_error();
                       });
@@ -198,11 +206,12 @@ HT.pdf_helpers = {
       // set a timer in case the iframe fails to load!
       setTimeout(function() {
         if ( HT.pdf_helpers.current == -1 ) {
+          console.log("DOWNLOAD STARTUP NOT DETECTED");
           HT.pdf_helpers.$notice.hide(function() {
             HT.pdf_helpers.show_error();
           })
         }
-      }, 2500);
+      }, 5000);
       
       // empty out the iframe and create a new blank one pointing to the actual
       /// PDF download.
@@ -232,7 +241,7 @@ HT.pdf_helpers = {
   
 // depends on jQuery
 $(document).ready(function() {
-    $("a#fullPdfLink").addClass("dialog").click(function() {
+    $("a#fullPdfLink").addClass("dialog").addClass("interactive").click(function() {
         if ( $(this).attr('rel') == 'allow' ) {
             // if there's no progress base, punt on the progress bar
             if ( HT.config.download_progress_base == null ) {
