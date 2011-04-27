@@ -9,7 +9,6 @@ mdp-misc
 mdp-tools
 mdp-web
 pt
-ptsearch
 slip
 ssd
 wayf
