@@ -170,7 +170,8 @@ $(document).ready(function() {
             } else if ( $(this).is("input[type=submit]") ) {
                 var frm = $(this).parents("form");
                 retval = false;
-                if ( $.data(frm.get(0), 'events').submit == undefined ) {
+                var events = $.data(frm.get(0), 'events');
+                if ( events && events.submit == undefined ) {
                   setTimeout(function() {
                       frm.submit();
                   }, 500);
