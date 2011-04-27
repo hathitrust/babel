@@ -281,8 +281,6 @@
           HT.params.view = "<xsl:value-of select="$gCurrentView" />";
           HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
         </script>
-        
->>>>>>> bookreader
       </head>
 
       <body class="yui-skin-sam">
