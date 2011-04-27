@@ -149,6 +149,10 @@ $(document).ready(function() {
         if ( $(this).hasClass("dialog") ) {
             return false;
         }
+        
+        // return true so click event bubbles to any other
+        // event handlers; will be set to false on the exceptions
+        var retval = true;
 
         if ( HT.reader == null || ! $(this).hasClass("interactive") ) {
             // delay events that change the current document so the
@@ -158,12 +162,14 @@ $(document).ready(function() {
                 if ( $(this).attr('target') ) {
                   return true;
                 }
+                retval = false;
                 var href = $(this).attr('href');
                 setTimeout(function() {
                     window.location.href = href;
                 }, 500);
             } else if ( $(this).is("input[type=submit]") ) {
                 var frm = $(this).parents("form");
+                retval = false;
                 if ( $.data(frm.get(0), 'events').submit == undefined ) {
                   setTimeout(function() {
                       frm.submit();
@@ -174,7 +180,7 @@ $(document).ready(function() {
             }
         }
         
-        return false;
+        return retval;
         
     })
 })
