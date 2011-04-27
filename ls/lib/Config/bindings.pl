@@ -21,10 +21,13 @@
    'facet'  => '.*',
    'q2'     => '.*',
    'q3'     => '.*',
-   'op1'    => 'AND|OR',
+   'q4'     => '.*',
    'op2'    => 'AND|OR',
-   'field1'    => '.*',
+   'op3'    => 'AND|OR',
+   'op4'    => 'AND|OR',
    'field2'    => '.*',
+   'field3'    => '.*',
+   'field4'    => '.*',
   );
 
 # Specification of global *database* operations to be executed before

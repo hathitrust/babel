@@ -190,16 +190,12 @@ sub get_Solr_query_string
     
     #advanced search
     my $ADVANCED= "";
-    my $q2 = $cgi->param('q2');
 
-    
-    if (defined($q2))
+    if ( $self->is_advanced($cgi) )
     {
         $ADVANCED = $self->__get_advanced_query($cgi);
-        
     }
-    
-    
+        
     # Cache to avoid repeated MySQL calls in Access::Rights
     if ($self->get_cached_Solr_query_string()) {
         return $self->get_cached_Solr_query_string();
@@ -245,10 +241,9 @@ sub get_Solr_query_string
     my $WRITER ='&wt=json&json.nl=arrarr';
     
     # q=dog*&fl=id,rights,author,title,score&$version=2.2,&start=0&rows=20&indent=off
-#    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER;
+    #    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER;
     #XXX change to edismax query for testing
     # add debug flag to ask solr for an explain query and need to change output somewhere
-
     # This builds a filter query based on the values of the facet paraameter in the cgi
 
     my $FACETQUERY="";
@@ -295,76 +290,114 @@ sub get_Solr_query_string
 
 
 # ---------------------------------------------------------------------
+#  is_advanced
+#  returns true if there is one or more of q2, q3, or q4
+# ---------------------------------------------------------------------
+sub is_advanced
+{
+    my $self = shift;
+    my $cgi = shift;
+    my $q;
+    
+    for my $i (2..4)
+    {
+        $q = 'q' . $i;
+        if ( defined($cgi->param("$q") )   )
+        {
+            return "true";
+        }
+    }
+    #perl best practices: return with no arg always returns false for context of calling routine
+    return;
+}
+
+
+
+
+# ---------------------------------------------------------------------
 # __get_advanced_query
 
-#
-#  Do we want solr syntax in the cgi param i.e.  q2=Vtitle:foobar
-#  Do we want instead to have a searchfield1 and 2 param and a value?
-#  Do we want a mapping so we can have qtitle and change whether its a Vtitle or a title_ab?
 # ---------------------------------------------------------------------
 sub __get_advanced_query
 {
     my $self = shift;
     my $cgi = shift;
-    my $ADVANCED;
     
-    my $op1 = $cgi->param('op1');
-    my $op2 = $cgi->param('op2');
-    my $q2 = $cgi->param('q2');
-    my $q3 = $cgi->param('q3');
-    my $field1 = $cgi->param('field1');
-    my $field2 = $cgi->param('field2');
-    my @valid_fields=('author','title','subject','callrange');  #XXX this should be read from a config file!
-    #XXX read from config file.  check marc mapping for proper field for subject searching and hlb3 searching
-    my $field_hash={
-                   'author'=>'author',
-                   'title'=>'Vtitle',
-                   'subject'=>'hlb3', 
-                   'topic'=>'hlb3',
-                   };
+    my $ADVANCED="";
     
-
-    
-    if (!defined($q2))
+    #There is no longer any op1  the number of the op goes with the number of the query
+    my $q;
+    my $clause;
+    my $Q;
+        
+    for my $i (2..4)
     {
-        return "";
-    }
-    # do we also check that field1, and op1 are defined and reasonable or provide defaults
-    my $processed_q2 = $self->get_processed_user_query_string($q2);
-    my $FIELD1="";
-    
-# XXX redo with a subroutine and fix so we can have up to 3 fields like in catalog
-
-    if (defined ($field_hash->{$field1} ))
-    {
-        $FIELD1=$field_hash->{$field1} . ':'     
-    }
-    
-    my $Q2= ' ' .$op1 . ' ' . $FIELD1 . $processed_q2;
-    my $Q3;
-    
-    if (defined ($q3))
-    {
-        my $processed_q3 = $self->get_processed_user_query_string($q3);
-        my $FIELD2="";
-    
-        if (defined ($field_hash->{$field2} ))
+        $q = 'q' . $i;
+        if (defined $cgi->param($q))
         {
-            $FIELD2=$field_hash->{$field2} . ':'     
+            $clause=$self-> make_query_clause($i,$cgi);
+            $ADVANCED.= ' ' .$clause;
         }
-        $Q3= ' ' .$op2 . ' ' . $FIELD2 . $processed_q3;
     }
-    
-    $ADVANCED = $Q2 ." ". $Q3;
-    
-    
-
+    # replace multiple leading spaces with one space
+    $ADVANCED=~s/^\s+/ /;
 
     return $ADVANCED;
     
 }
 
+
 # ---------------------------------------------------------------------
+# do we also check that field1, and op1 are defined and reasonable or provide defaults
+
+#
+#  XXX as currently implemented this makes one huge q param
+#  q=fulltext AND field1:something AND field2 somethingelse
+#
+#   We need to actually use local params to make a bunch of dismax queries with
+# the OPs tieing them together and move the default dismax parameters appropriately
+
+sub make_query_clause{
+    my $self = shift;
+    my $i    = shift;
+    my $cgi  = shift;
+    
+    my $q     = $cgi->param('q' . $i);
+    my $field = $cgi->param('field' . $i);
+    my $op    = $cgi->param('op' . $i);
+    my $Q;
+    
+
+    if (!defined($op))
+    {
+        $op='AND';
+    }
+    if (!defined($field))
+    {
+        return "";
+    }
+    
+    my $config = $self->get_facet_config;    
+    my $field_hash = $config->get_param_2_solr_map;
+    
+    my $processed_q =$self->get_processed_user_query_string($q);
+    my $clause;
+    my $FIELD;
+    
+    # do we need something more user friendly than an assert out?
+    ASSERT (defined ($field_hash->{$field} ),qq{LS::Query::Facets: $field is not a legal type of field});
+    
+    $FIELD = $field_hash->{$field} . ':' ;    
+    
+    $Q= ' ' .$op . ' ' . $FIELD . $processed_q;
+    return $Q;
+    
+}
+
+# ---------------------------------------------------------------------w
+
+
+# ---------------------------------------------------------------------w
 # XXX think about how this might be refactored to also allow Blacklight style showing paged,sorted values for a particular facet
 # or is that a different api call?
 # ---------------------------------------------------------------------

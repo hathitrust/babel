@@ -67,18 +67,42 @@ $rel_weights= getRelWeights("$rel_weights_file");
 #      'realauth'
 #      'title'
 
-
-
-
 $all_weights     = $rel_weights->{'all'};
+$title_weights   = $rel_weights->{'title'};
+$author_weights  = $rel_weights->{'author'};
+$subject_weights = $rel_weights->{'subject'};
 
-#my $title_weights   = $rel_weights->{'title'};
-#my $author_weights  = $rel_weights->{'author'};
-#my $subject_weights = $rel_weights->{'subject'};
+# Advanced search config stuff here
+
+
+# cgi params for type of search mapped to the solr field name that we want
+# XXX which Solr subject field is appropriate for keyword searching?
+#XXX read from config file.  check marc mapping for proper field for subject searching and hlb3 searching
+    
+$param_2_solr_map = {
+                           'author'=>'author',
+                           'title'=>'Vtitle',
+                           'subject'=>'topicStr', 
+                           'topic'=>'hlb3',
+                          };
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+#----------------------------------------------------------------------
 sub getRelWeights
 {
     my $yamlfile = shift;

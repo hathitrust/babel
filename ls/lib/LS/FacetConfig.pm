@@ -85,10 +85,28 @@ sub _initialize
         $self->__set_facet_limit($facet_limit);
         $self->__set_facet_initial_show($facet_initial_show);
         $self->__set_rel_weights($rel_weights);
-        
+        $self->__set_param_2_solr_map($param_2_solr_map);
     };
         
 } 
+
+
+
+
+# ---------------------------------------------------------------------
+sub __set_param_2_solr_map
+{
+    my $self = shift;
+    my $map = shift;
+    
+    $self->{'param_2_solr_map'} = $map;
+}
+# ---------------------------------------------------------------------
+sub get_param_2_solr_map
+{
+    my $self = shift;
+    return  $self->{'param_2_solr_map'};
+}
 
 # ---------------------------------------------------------------------
 sub __set_rel_weights
@@ -102,7 +120,7 @@ sub __set_rel_weights
 sub get_rel_weights
 {
     my $self = shift;
-    my $rel_weights = $self->{'rel_weights'};
+    return  $self->{'rel_weights'};
 }
 
 
