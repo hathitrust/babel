@@ -59,6 +59,7 @@ use ToolLib;
 sub deploy_app_usage {
     my $s = qq{Usage: deploy-app [options] [<app> [<app>]+]
            where <app> is the application to tag and deploy or re-deploy from an existing tag
+                 -m ictc|macc deploy using 'rdist -m {macc|ictc}.umdl.umich.edu'
                  -v verbose
                  -A all apps
                  -T maj(or|min(or|ter(tiary
@@ -67,8 +68,8 @@ sub deploy_app_usage {
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_T, $opt_A);
-my $ops = getopts('hvT:A');
+our ($opt_h, $opt_v, $opt_T, $opt_A, $opt_m);
+my $ops = getopts('hvT:Am:');
 
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
@@ -86,19 +87,42 @@ if ($ALL) {
 }
 else {
     @apps = @ARGV;
-    if (! scalar(@apps)) {
+}
+
+if (! scalar(@apps)) {
+    if (defined($opt_T) || defined($opt_m) || defined($opt_v)) {
+        PrintN(qq{ERROR: missing app arg\n});
         print deploy_app_usage();
         exit 1;
     }
+    print deploy_app_usage();
+    exit 0;
 }
 
+my @ver_incrs = ('maj', 'min', 'ter',);
 my $VERSION_INCREMENT;
-if ($opt_T) {
-    if (! grep(/^$opt_T$/, 'maj', 'min', 'ter', )) {
+if (defined($opt_T)) {
+    if (! grep(/^$opt_T$/, @ver_incrs)) {
+        PrintN(qq{ERROR: -T arg must be one of: } . join(', ', @ver_incrs) . "\n");
         print deploy_app_usage();
         exit 1;
     }
     $VERSION_INCREMENT = $opt_T;
+}
+
+my $domain = '.umdl.umich.edu';
+my $prefix = 'nas-';
+
+my @sites = ('macc', 'ictc');
+my $SITE = $opt_m;
+if (defined($SITE)) {
+    if (! grep(/^$SITE$/, @sites)) {
+        PrintN(qq{ERROR: -m arg must be one of: } . join(', ', @sites) . "\n");
+        print deploy_app_usage();
+        exit 1;
+    }
+    $SITE .= $domain;
+    $SITE = $prefix . $SITE;
 }
 
 my ($repo_root, $app_root) = get_HTDE_roots('test');
@@ -156,7 +180,7 @@ foreach my $app (@apps) {
         }
     }
 
-    if (! __rdist_to_production($app_dir)) {
+    if (! __rdist_to_production($app_dir, $SITE)) {
         PrintN($fail_msg);
         next;
         $rc |= 1;
@@ -268,7 +292,7 @@ sub __get_auto_increment_version {
     if (! $last_tag){
         return "0 0 1";
     }
-    
+
     my @version_arr = ($last_tag =~ m,(\d+)\.(\d+)\.(\d+),);
 
     if ($increment eq 'maj') {
@@ -338,11 +362,15 @@ Description
 # ---------------------------------------------------------------------
 sub __rdist_to_production {
     my $app_dir = shift;
+    my $site = shift;
 
     my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
 
-    print qq{Now starting rdist to production ...\n};
-    print qx(rdist -f $app_dir/bin/rdist.app);
+    my $s = defined($site) ? qq{ONLY TO $site} : '';
+    print qq{Now starting rdist to production $s...\n};
+
+    my $opt = defined($site) ? qq{-m $site} : '';
+    print qx(rdist -f $app_dir/bin/rdist.app $opt);
 
     if ($?) {
         PrintN("ERROR: rdist failure\n");
