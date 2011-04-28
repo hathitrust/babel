@@ -57,7 +57,7 @@
       }
       
       .mdpControlContainer {
-        margin-top: 2em;
+        margin-top: 3em;
       }
       
       .mdpControlContainer div {
