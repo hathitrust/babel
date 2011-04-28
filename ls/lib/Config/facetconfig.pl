@@ -36,7 +36,7 @@ $facet_to_label_map =
                 hlb3Str
                 authorStr 
                 language 
-                countryOfPubStr 
+1                countryOfPubStr 
                 publishDateRange 
                 format 
                 htsource 
@@ -68,9 +68,6 @@ $rel_weights= getRelWeights("$rel_weights_file");
 #      'title'
 
 $all_weights     = $rel_weights->{'all'};
-$title_weights   = $rel_weights->{'title'};
-$author_weights  = $rel_weights->{'author'};
-$subject_weights = $rel_weights->{'subject'};
 
 # Advanced search config stuff here
 
@@ -81,8 +78,8 @@ $subject_weights = $rel_weights->{'subject'};
     
 $param_2_solr_map = {
                            'author'=>'author',
-                           'title'=>'Vtitle',
-                           'subject'=>'topicStr', 
+                           'title'=>'title',
+                           'subject'=>'subject', 
                            'topic'=>'hlb3',
                           };
 

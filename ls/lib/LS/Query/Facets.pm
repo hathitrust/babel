@@ -187,14 +187,25 @@ sub get_Solr_query_string
     my $self = shift;
     my $C = shift;
     my $cgi = $C->get_object('CGI');
-    
+   
+    #XXX do we need to rename facet_config since it contains more than just facet config info?
+    #XXX if there is an advanced query we want the dismax entered 
+    my $config = $self->get_facet_config;        
     #advanced search
+    my $DISMAX="";
+    
     my $ADVANCED= "";
 
+    #XXX once we get this working we need to redo advanced so it also takes q1 and makes the proper dismax query
     if ( $self->is_advanced($cgi) )
     {
         $ADVANCED = $self->__get_advanced_query($cgi);
     }
+    else
+    {
+        $DISMAX  = $self->_getDismaxString($config);
+    }
+    
         
     # Cache to avoid repeated MySQL calls in Access::Rights
     if ($self->get_cached_Solr_query_string()) {
@@ -266,8 +277,7 @@ sub get_Solr_query_string
 #        $EXPLAIN='&debugQuery=on';
 
 # for now make default dismax!
-    my $facet_config = $self->get_facet_config;  #XXX do we need to rename facet_config since it contains more than just facet config info?
-    my   $DISMAX  = $self->_getDismaxString($facet_config);
+   
 
    my $solr_query_string = $USER_Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY . $EXPLAIN;    
 #    my $solr_query_string = $USER_Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT .  $WRITER . $FACETQUERY .$EXPLAIN;
@@ -363,39 +373,64 @@ sub make_query_clause{
     my $cgi  = shift;
     
     my $q     = $cgi->param('q' . $i);
-    my $field = $cgi->param('field' . $i);
     my $op    = $cgi->param('op' . $i);
-    my $Q;
-    
-
     if (!defined($op))
     {
         $op='AND';
     }
+
+    my $field = $cgi->param('field' . $i);
     if (!defined($field))
     {
         return "";
     }
-    
-    my $config = $self->get_facet_config;    
-    my $field_hash = $config->get_param_2_solr_map;
-    
     my $processed_q =$self->get_processed_user_query_string($q);
-    my $clause;
-    my $FIELD;
+
+    my $config = $self->get_facet_config;    
     
+    my $field_hash = $config->get_param_2_solr_map;
     # do we need something more user friendly than an assert out?
     ASSERT (defined ($field_hash->{$field} ),qq{LS::Query::Facets: $field is not a legal type of field});
+    my $solr_field = $field_hash->{$field};
+
+    my $weights = $config->get_weights_for_field($solr_field);
     
-    $FIELD = $field_hash->{$field} . ':' ;    
+    my $qf = $self->dismax_2_string($weights->{'qf'});
+    my $pf = $self->dismax_2_string($weights->{'pf'});
+    my $mm=$weights->{'mm'};
+    my $tie=$weights->{'tie'};
+    $mm =~s,\%,\%25,g; #url encode any percent sign should this be a named sub? 
     
-    $Q= ' ' .$op . ' ' . $FIELD . $processed_q;
+    my $QF = qq{ qf='} . $qf . qq{' };
+    my $PF = qq{ pf='} . $pf . qq{' };
+    my $MM = qq{ mm='} . $mm . qq{' };
+    my $TIE = qq{ tie='} . $tie . qq{' };
+
+    my $Q;
+
+    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' . $solr_field  .':'. $processed_q .'"';
+
     return $Q;
     
 }
 
 # ---------------------------------------------------------------------w
 
+sub dismax_2_string
+{
+    my $self = shift;
+    
+    my $aryref = shift;
+    my $string;
+    
+    foreach my $el (@{$aryref})
+    {
+        my $field=$el->[0];
+        my $weight=$el->[1];
+        $string.=$field . '^' . $weight . '+'; 
+    }
+    return $string;
+}
 
 # ---------------------------------------------------------------------w
 # XXX think about how this might be refactored to also allow Blacklight style showing paged,sorted values for a particular facet
@@ -432,10 +467,10 @@ Could be modified for advanced searches to weight properly full-text + (author|t
 
 sub _getDismaxString
 {
-    my $self =shift;
-    my $config=shift;
+    my $self = shift;
+    my $config = shift;
     my $all_weights = $config->get_all_weights;
-    my $string='&defType=edismax'; #dismax|edismax, dismax won't work with normal adv search syntax, but see naomi stuff if needed
+  my $string = '&defType=edismax';   #dismax|edismax, dismax won't work with normal adv search syntax, but see naomi stuff if needed
     
     foreach my $key (keys %{$all_weights})
     {

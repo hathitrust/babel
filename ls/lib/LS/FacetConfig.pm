@@ -190,6 +190,19 @@ sub get_facet_mapping
    return $self->{'facet_mapping'};
 }
 # ---------------------------------------------------------------------
+sub get_weights_for_field
+{
+    my $self = shift;
+    my $field = shift;
+    my $weights = $self->get_rel_weights;
+    ASSERT (defined($weights->{$field}),qq{no weights for $field field});
+    return $weights->{$field};
+}
+
+
+
+# ---------------------------------------------------------------------
+
 sub get_all_weights
 {
    my $self = shift;
@@ -198,25 +211,6 @@ sub get_all_weights
 }
 
 # ---------------------------------------------------------------------
-sub get_title_weights
-{
-   my $self = shift;
-   return $self->{'rel_weights'}->{'title'};
-}
-
-# ---------------------------------------------------------------------
-sub get_author_weights
-{
-   my $self = shift;
-   return $self->{'rel_weights'}->{'author'};
-}
-
-# ---------------------------------------------------------------------
-sub get_subject_weight
-{
-   my $self = shift;
-   return $self->{'rel_weights'}->{'subject'};
-}
 
 
 1;

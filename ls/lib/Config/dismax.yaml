@@ -14,6 +14,19 @@ serialtitle:
     - [serialTitle_rest, 10]
   mm: "2<-1 5<67%"
   tie: 0.1
+# for testing rename this to title and title to footitle
+debugtitle:
+  pf:
+    - [title_ab, 25000]
+    - [title_a, 15000]
+  qf:
+    - [titleProper, 120]
+    - [title_topProper, 60]
+  mm: "2<-1 5<67%"
+  tie: 0.1
+
+
+
 
 title:
   pf:
