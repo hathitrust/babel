@@ -928,6 +928,7 @@ HTBookReader.prototype.switchCurrentPageDownloadLinks = function() {
         $link.text(caption.replace("left page", "this page"));
     } else {
         $("#pageRightPdfLink").remove();
+        $link.text(caption.replace("this page", "left page"));
         $link.addClass('disabled');
     }
 }
