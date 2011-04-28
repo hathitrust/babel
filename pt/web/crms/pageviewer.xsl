@@ -206,7 +206,7 @@
 
       <li>
         <xsl:choose>
-          <xsl:when test="$pPageLinks/PreviousPageLink=''">
+          <xsl:when test="$pPageLinks/PreviousPageLink='XX'">
 
             <xsl:element name="span">
               <xsl:element name="img">
@@ -239,7 +239,7 @@
 
       <li>
         <xsl:choose>
-          <xsl:when test="$pPageLinks/NextPageLink=''">
+          <xsl:when test="$pPageLinks/NextPageLink='XX'">
 
 
             <xsl:element name="span">
