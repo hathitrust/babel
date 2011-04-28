@@ -189,13 +189,13 @@ foreach my $app (@apps) {
         }
     }
 
-    if (! __rdist_to_production($app_dir, $SITE)) {
+    if (! __rdist_to_production($app_dir, $SITE, $tag)) {
         PrintN($fail_msg);
         next;
         $rc |= 1;
     }
 
-    PrintY("Successful deployment of application ($app) from $app_dir\n");
+    PrintY("Successful deployment of application ($app @ $tag) from $app_dir\n");
 }
 
 exit $rc;
@@ -372,15 +372,16 @@ Description
 sub __rdist_to_production {
     my $app_dir = shift;
     my $site = shift;
-
+    my $tag = shift;
+    
     my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
 
     my $s = defined($site) ? qq{ONLY TO $site} : '';
     print qq{Now starting rdist to production $s ...\n};
 
     my $ts = qq{$app_dir/$TIMESTAMP_PATH};
-    print qq{  -> touch $ts\n};
-    print qx(touch $ts);
+    print qq{  -> update $ts @ $tag\n};
+    print qx(echo $tag > $ts);
     
     my $opt = defined($site) ? qq{-m $site} : '';
     print qx(rdist -f $app_dir/bin/rdist.app $opt);
