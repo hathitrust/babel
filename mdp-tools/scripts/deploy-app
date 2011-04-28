@@ -42,6 +42,14 @@ using rdist.app for the given app.
 
 If the B<-v> option is supplied, the output will be verbose.
 
+NOTE: plackup monitors a configurable list of files for changes bsed
+  on timestamp.  We want plackup to reload app whenever any app file
+  changes, not just the cgi.  git checkout gives a new timestamp to
+  files, so files in the HTDE, e.g. in beta-{1,2,3}, will satisfy this
+  requirement.  However, rdist only updates timestamps on files that
+  change so B<deploy-app> touches $appdir/bin/rdist.timestamp
+  (monitored by plackup) to ensure the reload of the cgi.
+
 =cut
 
 use strict;
@@ -53,6 +61,7 @@ use File::Basename;
 use Date::Calc qw(Today_and_Now Delta_DHMS);
 
 my $LOCATION = dirname(__FILE__);
+my $TIMESTAMP_PATH = 'bin/rdist.timestamp';
 
 use ToolLib;
 
@@ -367,8 +376,11 @@ sub __rdist_to_production {
     my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
 
     my $s = defined($site) ? qq{ONLY TO $site} : '';
-    print qq{Now starting rdist to production $s...\n};
+    print qq{Now starting rdist to production $s ...\n};
 
+    my $ts = qq{$app_dir/$TIMESTAMP_PATH};
+    print qx(touch $ts);
+    
     my $opt = defined($site) ? qq{-m $site} : '';
     print qx(rdist -f $app_dir/bin/rdist.app $opt);
 
