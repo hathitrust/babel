@@ -52,11 +52,14 @@ var displayPTFeedback = function() {
                 isEmpty = 0;
                 postData[frm.elements[i].name] = frm.elements[i].value;
             }
-            if ((frm.elements[i].type == 'text' || frm.elements[i].type == 'textarea')
+            else if ((frm.elements[i].type == 'text' || frm.elements[i].type == 'textarea')
                 && (frm.elements[i].value.length > 0)
                 && (frm.elements[i].value != DEFAULT_EMAIL_VALUE)) {
                 isEmpty = 0;
                 postData[frm.elements[i].name] = frm.elements[i].value;
+            }
+            else if ( frm.elements[i].type == 'hidden' ) {
+              postData[frm.elements[i].name] = frm.elements[i].value;
             }
         }
 
@@ -65,6 +68,7 @@ var displayPTFeedback = function() {
         } else {
             // post the form
             var href = $(frm).attr('action');
+            
             $.post(href, postData);
             dialog.hide();
         }
