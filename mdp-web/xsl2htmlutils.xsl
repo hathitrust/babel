@@ -99,6 +99,15 @@
         </xsl:attribute>
       </xsl:element>
     </xsl:for-each>
+    <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='skin']">
+      <xsl:element name="input">
+        <xsl:attribute name="type">hidden</xsl:attribute>
+        <xsl:attribute name="name">skin</xsl:attribute>
+        <xsl:attribute name="value">
+          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='skin']"/>
+        </xsl:attribute>
+      </xsl:element>
+    </xsl:if>
   </xsl:template>
 
 
