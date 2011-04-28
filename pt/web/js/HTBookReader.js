@@ -50,6 +50,10 @@ HTBookReader.prototype.hasPageFeature = function(index, feature) {
     var slice = this.sliceFromIndex(index);
     if ( this.bookData[slice.slice] != undefined ) {
         var features = this.bookData[slice.slice]['features'][slice.index];
+        if ( features == undefined ) {
+          console.log("MISSING FEATURE", slice, index, feature);
+          return ( feature == "MISSING_PAGE" );
+        }
         return ( features.indexOf(feature) >= 0 );
     }
     return false;
@@ -305,6 +309,10 @@ HTBookReader.prototype.uniquifyPageNums = function() {
 }
  
 HTBookReader.prototype.cleanupMetadata = function() {
+    if ( this.numLeafs > this.total_items ) {
+      console.log("RESIZING LEAFS", this.numLeafs, this.total_items);
+      this.numLeafs = this.total_items;
+    }
     this.uniquifyPageNums();
 }
 
@@ -357,6 +365,12 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
         this.slices = [];
         this.numLeafs = 0;
     }
+    
+    if ( this.bookData[slice_index] != null ) {
+      console.log("REPEAT INSTALLATION??", slice_index);
+      return;
+    }
+    
     this.bookData[slice_index] = data;
     this.slices.push(slice_index);
     
@@ -371,6 +385,7 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
         this.flags.download_progress_base = data['download_progress_base'];
     }
     
+    // console.log("INSTALLING", this.numLeafs, "/", slice_index, "/", this.bookData[slice_index]['seq'].length);
     this.numLeafs += this.bookData[slice_index]['seq'].length;
     this.cleanupMetadata();
     this.complete = this.slices.length == this.total_slices;
@@ -386,6 +401,7 @@ HTBookReader.prototype.loadBookDataSlice = function(next_slice, callback) {
         } else {
             self.updateViewSettings();
         }
+        // console.log("GRABBING NEXT SLICE", next_slice);
         self.loadBookDataSlice(next_slice + 1);
     }
     
@@ -519,9 +535,9 @@ HTBookReader.prototype.init = function() {
     //     return true;
     // });
     
-    if ( ! this.complete ) {
-      this.loadBookDataSlice(this.slices.length);
-    }
+    // if ( ! this.complete ) {
+    //   this.loadBookDataSlice(this.slices.length);
+    // }
     
 }
 
@@ -914,7 +930,7 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
 HTBookReader.prototype.switchCurrentPageDownloadLinks = function() {
     var $link = $("#pagePdfLink");
     var caption = $link.text();
-    $link.removeClass("disabled");
+    $link.removeClass("disabled").fadeTo(0, 1.0);
     if ( this.mode == this.constMode2up ) {
         // add left/right download links
         var $rightLink = $link.clone().insertAfter($link).text(caption.replace("this page", "right page")).attr("id", "pageRightPdfLink");
@@ -928,8 +944,8 @@ HTBookReader.prototype.switchCurrentPageDownloadLinks = function() {
         $link.text(caption.replace("left page", "this page"));
     } else {
         $("#pageRightPdfLink").remove();
-        $link.text(caption.replace("this page", "left page"));
-        $link.addClass('disabled');
+        $link.text(caption.replace("left page", "this page"));
+        $link.addClass('disabled').fadeTo(0, 0.4);
     }
 }
 
@@ -1231,7 +1247,7 @@ HTBookReader.prototype.fragmentFromParams = function(params) {
     
     // mode
     if ('undefined' != typeof(params.mode)) {   
-        fragments.push(this.getMode(params)) ;
+        fragments.push("mode", this.getMode(params)) ;
     }
     
     // search
@@ -1439,7 +1455,7 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
             for (j=0; j<leafMap[row].leafs.length; j++) {
                 index = j;
                 leaf = leafMap[row].leafs[j].num;
-
+                
                 leafWidth = this.thumbWidth;
                 leafHeight = parseInt((this.getPageHeight(leaf)*this.thumbWidth)/this.getPageWidth(leaf), 10);
                 leafTop = leafMap[row].top;
@@ -1524,9 +1540,14 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     // console.log('least visible ' + leastVisible + ' most visible ' + mostVisible);
     if (currentIndex < leastVisible) {
         this.setCurrentIndex(leastVisible);
-    } else if (currentIndex > mostVisible) {
-        this.setCurrentIndex(mostVisible);
+    } else if (currentIndex > mostVisible ) {
+      this.setCurrentIndex(mostVisible);
     }
+    
+    // if ( this.currentIndex() >= this.numLeafs ) {
+    //   console.log("REDUCING THE CURRENT INDEX!!!");
+    //   this.currentIndex(this.numLeafs - 1);
+    // }
 
     this.displayedRows = rowsToDisplay.slice();
     

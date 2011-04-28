@@ -750,7 +750,7 @@ BookReader.prototype.lazyLoadThumbnails = function(ts) {
         // $$$ TODO load those near top (but not beyond) page view first
         var self = this;
         $('#BRpageview img.BRlazyload').filter(':lt(' + toLoad + ')').each( function() {
-          console.log("THUMBNAIL:", self.load_counter, ":", stamp.join(":"), delta, ":", loading, "/", toLoad, "<", self.thumbMaxLoading);
+          //console.log("THUMBNAIL:", self.load_counter, ":", stamp.join(":"), delta, ":", loading, "/", toLoad, "<", self.thumbMaxLoading);
             self.lazyLoadImage(this);
         });
     }

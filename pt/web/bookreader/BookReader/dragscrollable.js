@@ -133,7 +133,7 @@ $.fn.dragscrollable = function( options ) {
 		dragStartHandler : function(event) {
 			
 			// mousedown, left click, check propagation
-			console.log("TARGET", event.target);
+      // console.log("TARGET", event.target);
 			if (event.which > 1 ||
 				(!event.data.acceptPropagatedEvent && event.target != this)){ 
 				return false; 
@@ -141,28 +141,25 @@ $.fn.dragscrollable = function( options ) {
 			
 			var do_continue = true;
 			if (settings.ignoreTargets !== null && event.target != this) {
-			    console.log("HEY:", settings.ignoreTargets);
 			    $.each(settings.ignoreTargets, function() {
-		        console.log("IGNORE", this, "/", $(event.target).hasClass(this), "/", $(event.target).parents("." + this));
+            // console.log("IGNORE", this, "/", $(event.target).hasClass(this), "/", $(event.target).parents("." + this));
 			        if ( $(event.target).hasClass(this) || $(event.target).parents("." + this).size() > 0 ) {
-    			        console.log("IGNORE", this, "/", $(event.target).hasClass(this), "/", $(event.target).parents("." + this));
+                  // console.log("IGNORE", this, "/", $(event.target).hasClass(this), "/", $(event.target).parents("." + this));
 			            do_continue = false;
 			        }
 			    })
 			}
 			
 			if ( ! do_continue && ! event.shiftKey ) {
-			    console.log("RETURNING? short-circuit dragcontinue?", event.target, this, handling_element);
+          // console.log("RETURNING? short-circuit dragcontinue?", event.target, this, handling_element);
 			    // unbind the events from handling_element to short-circuit drag/scrolling
 			    event.stopPropagation();
                 // handling_element
                 //  .unbind(settings.dragcontinue)
                 //  .unbind(settings.dragend);
-    			console.log("UNBOUND");
+          // console.log("UNBOUND");
 	            return;
 			}
-			
-			console.log("DRAG SCROLLING");
 			
 			event.data.firstCoord = left_top(event);
 			// Initial coordinates will be the last when dragging

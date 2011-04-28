@@ -72,7 +72,7 @@ HT.monitor = {
         });
     }
     
-    this.inter = setInterval(ping, 2500);
+    this.inter = setInterval(ping, 5000);
     
   },
   
