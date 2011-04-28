@@ -751,8 +751,14 @@
       </xsl:attribute>
       <xsl:attribute name="method">get</xsl:attribute>
       <xsl:attribute name="action">
-        <!-- fix when rewrite rules are okay -->
-        <xsl:value-of select="'pt/search'"/>
+        <xsl:choose>
+          <xsl:when test="$gUsingSearch = 'true'">
+            <xsl:text>search</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>pt/search</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:attribute>
       
       <h2 class="SkipLink">Search and page navigation options</h2>
