@@ -379,6 +379,7 @@ sub __rdist_to_production {
     print qq{Now starting rdist to production $s ...\n};
 
     my $ts = qq{$app_dir/$TIMESTAMP_PATH};
+    print qq{  -> touch $ts\n};
     print qx(touch $ts);
     
     my $opt = defined($site) ? qq{-m $site} : '';
