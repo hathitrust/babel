@@ -33,7 +33,21 @@
         <script type="text/javascript">
           HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
         </script>
-        
+
+        <script type="text/javascript">
+          HT.params = {};
+          <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
+            <xsl:choose>
+              <xsl:when test="@name = 'seq'">
+                HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
+              </xsl:when>
+              <xsl:otherwise>
+                HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+          HT.params.view = "search";
+        </script>
         
       </head>
 
