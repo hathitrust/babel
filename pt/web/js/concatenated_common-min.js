@@ -2116,24 +2116,30 @@ HT.pdf_helpers = {
       HT.pdf_helpers.current = -1;
       
       // set a timer in case the iframe fails to load!
-      setTimeout(function() {
-        if ( HT.pdf_helpers.current == -1 ) {
-          console.log("DOWNLOAD STARTUP NOT DETECTED");
-          HT.pdf_helpers.$notice.hide(function() {
-            HT.pdf_helpers.show_error();
-          })
-        }
-      }, 5000);
+      // setTimeout(function() {
+      //   if ( HT.pdf_helpers.current == -1 ) {
+      //     console.log("DOWNLOAD STARTUP NOT DETECTED");
+      //     HT.pdf_helpers.$notice.hide(function() {
+      //       HT.pdf_helpers.show_error();
+      //     })
+      //   }
+      // }, 5000);
       
       // empty out the iframe and create a new blank one pointing to the actual
       /// PDF download.
       //// $("div#fullPdfFrame").empty().append('<iframe src="' + src + ';callback=HT.pdf_helpers.open_progress"></iframe>');
       
-      /// do this with javascript!!!
-      $.getScript(src + ';callback=HT.pdf_helpers.open_progress', function() {
-        alert('PDF was requested');
-      });
-      
+      /// start PDF download via <script> callback
+      $.ajax({
+        url: src + ';callback=HT.pdf_helpers.open_progress',
+        dataType: 'script',
+        error: function() {
+          console.log("DOWNLOAD STARTUP NOT DETECTED");
+          HT.pdf_helpers.$notice.hide(function() {
+            HT.pdf_helpers.show_error();
+          })
+        }
+      })
       
     },
   
