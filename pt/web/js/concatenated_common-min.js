@@ -1862,6 +1862,11 @@ HT.track_event = function(args, async) {
 }
 
 $(document).ready(function() {
+  
+    $.ajaxSetup({
+      cache: false
+    });  
+
     // bind click events
     $(".tracked").click(function(e) {
         var label = $(this).data('tracking-label');
@@ -1909,6 +1914,7 @@ $(document).ready(function() {
         
     })
 })
+
 /* /htapps/roger.babel/pt/web/js/init.js */
 // avoid polluting the global namespace
 var HT = HT || {};
