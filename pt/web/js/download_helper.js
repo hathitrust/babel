@@ -215,7 +215,13 @@ HT.pdf_helpers = {
       
       // empty out the iframe and create a new blank one pointing to the actual
       /// PDF download.
-      $("div#fullPdfFrame").empty().append('<iframe src="' + src + ';callback=HT.pdf_helpers.open_progress"></iframe>');
+      //// $("div#fullPdfFrame").empty().append('<iframe src="' + src + ';callback=HT.pdf_helpers.open_progress"></iframe>');
+      
+      /// do this with javascript!!!
+      $.getScript(src + ';callback=HT.pdf_helpers.open_progress', function() {
+        alert('PDF was requested');
+      });
+      
       
     },
   
