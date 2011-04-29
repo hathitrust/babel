@@ -146,10 +146,9 @@ HT.pdf_helpers = {
       
       var percent;
       
-      if ( HT.pdf_helpers.currrent == -1 ) {
-        window.guts = contents;
+      if ( HT.pdf_helpers.current == -1 ) {
+        HT.pdf_helpers.$content.find(".meter-text").text('Building PDF');
       }
-      
       
       var current = $(contents).find("#current").data("value");
       if ( current == "EOT" ) {
@@ -187,7 +186,7 @@ HT.pdf_helpers = {
       '<div class="meter-wrap">' +
           '<div class="meter-value" style="background-color: #EF7A06; width: 0%">' +
               '<div class="meter-text">' +
-                  'Building PDF...' +
+                  'Setting up PDF...' +
               '</div>' +
           '</div>' +
       '</div>';
