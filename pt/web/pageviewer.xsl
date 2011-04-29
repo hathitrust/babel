@@ -177,7 +177,7 @@
         </title>
 
         <!-- jQuery from the Google CDN -->
-    		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:if test="$gUsingBookReader='true'">
@@ -193,6 +193,28 @@
             }
           </style>
         </xsl:if>
+
+        <xsl:comment><![CDATA[[if IE 7]>
+        <style>
+          #mdpNewStarburst {
+            margin-left: -25px;
+          }
+          
+          .prompt {
+            margin-left: 0;
+          }
+          
+          #mdpBookReaderViews {
+            margin-left: 30px;
+          }
+          
+          #mdpToolbarNav > ul {
+            padding-left: 0;
+          }
+          
+        </style>
+        <![endif]]]></xsl:comment>
+
         
         <xsl:call-template name="bookreader-toolbar-items" />
         
@@ -257,7 +279,7 @@
         </title>
 
         <!-- jQuery from the Google CDN -->
-    		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
         <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
@@ -475,7 +497,7 @@
   
   <xsl:template name="BookReaderEmbeddedToolbar">
     <div id="mdpToolbarViews">
-    	<div id="mdpToolbarNav">
+      <div id="mdpToolbarNav">
         <div class="branding">
           <div class="brandingLogo">
             <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/></a>
@@ -492,7 +514,7 @@
             </xsl:call-template>
           </xsl:element>
         </div>  
-				<xsl:call-template name="BuildPageLinks">
+        <xsl:call-template name="BuildPageLinks">
           <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
         </xsl:call-template>
       </div>
@@ -502,116 +524,116 @@
   <xsl:template name="BookReaderToolbar">
     <xsl:param name="pViewTypeList"/>
 
-		<div id="mdpToolbar">
-		  <xsl:if test="$gFinalAccessStatus != 'allow'">
-		    <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
-		  </xsl:if>
-			
-			<xsl:if test="$gCurrentReaderMode = 'full'">
-			<div id="mdpToolbarViews">
-				<ul>
-					<li>
-					  <xsl:element name="a">
-					    <xsl:attribute name="id"><xsl:text>btnClassicView</xsl:text></xsl:attribute>
+    <div id="mdpToolbar">
+      <xsl:if test="$gFinalAccessStatus != 'allow'">
+        <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
+      </xsl:if>
+      
+      <xsl:if test="$gCurrentReaderMode = 'full'">
+      <div id="mdpToolbarViews">
+        <ul>
+          <li>
+            <xsl:element name="a">
+              <xsl:attribute name="id"><xsl:text>btnClassicView</xsl:text></xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Classic View</xsl:attribute>
-						  <xsl:attribute name="title">
-						    <xsl:choose>
-    					    <xsl:when test="$gCurrentView = 'image'">
-    					      <xsl:text>Classic View is the current view</xsl:text>
-    					    </xsl:when>
-    					    <xsl:otherwise>
-    					      <xsl:text>Classic View</xsl:text>
-    					    </xsl:otherwise>
-    					  </xsl:choose>
-    					</xsl:attribute>
-					    <xsl:attribute name="href">
+              <xsl:attribute name="title">
+                <xsl:choose>
+                  <xsl:when test="$gCurrentView = 'image'">
+                    <xsl:text>Classic View is the current view</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>Classic View</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypeImageLink"/>
-					    </xsl:attribute>
-					    <xsl:attribute name="class">
-					      <xsl:text>tracked </xsl:text>
-					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = 'image'">
-  					      <xsl:text>PTbuttonActive</xsl:text>
-  					    </xsl:if>
-  					  </xsl:attribute>
-							<img src="//common-web/graphics/harmony/icon_classicview.png">
-							  <xsl:attribute name="alt"></xsl:attribute>
+              </xsl:attribute>
+              <xsl:attribute name="class">
+                <xsl:text>tracked </xsl:text>
+                <xsl:text>PTbutton </xsl:text>
+                <xsl:if test="$gCurrentView = 'image'">
+                  <xsl:text>PTbuttonActive</xsl:text>
+                </xsl:if>
+              </xsl:attribute>
+              <img src="//common-web/graphics/harmony/icon_classicview.png">
+                <xsl:attribute name="alt"></xsl:attribute>
                 <!-- <xsl:attribute name="alt">
                   <xsl:text>Classic View</xsl:text>
                 </xsl:attribute>
                 <xsl:attribute name="title"><xsl:text>Classic View</xsl:text></xsl:attribute> -->
-							</img>
-							<span>Classic View</span>
-					  </xsl:element>
-					</li>
-					<li id="mdpPlainTextView">
-					  <xsl:element name="a">
-					    <xsl:attribute name="id"><xsl:text>btnClassicText</xsl:text></xsl:attribute>
+              </img>
+              <span>Classic View</span>
+            </xsl:element>
+          </li>
+          <li id="mdpPlainTextView">
+            <xsl:element name="a">
+              <xsl:attribute name="id"><xsl:text>btnClassicText</xsl:text></xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Plain Text</xsl:attribute>
-					    <xsl:attribute name="href">
-					      <xsl:value-of select="$pViewTypeList/ViewTypePlainTextLink"/>
-					    </xsl:attribute>
-					    <xsl:attribute name="class">
-					      <xsl:text>tracked </xsl:text>
-					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = 'plaintext' or $gCurrentView = 'text'">
-  					      <xsl:text>PTbuttonActive</xsl:text>
-  					    </xsl:if>
-  					  </xsl:attribute>
-						  <xsl:attribute name="title">
-						    <xsl:choose>
-    					    <xsl:when test="$gCurrentView = 'plaintext' or $gCurrentView = 'text'">
-    					      <xsl:text>Plain Text is the current view</xsl:text>
-    					    </xsl:when>
-    					    <xsl:otherwise>
-    					      <xsl:text>Plain Text</xsl:text>
-    					    </xsl:otherwise>
-    					  </xsl:choose>
-    					</xsl:attribute>
-							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
-							<span>Plain Text</span>
-							<img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
-					  </xsl:element>
-					</li>
-				</ul>
-			</div>
-			</xsl:if>
-			<div id="mdpToolbarNav">
-			  <form action="pt" method="GET" id="mdpSectionForm">
-  				<ul id="mdpSectionOptions">
+              <xsl:attribute name="href">
+                <xsl:value-of select="$pViewTypeList/ViewTypePlainTextLink"/>
+              </xsl:attribute>
+              <xsl:attribute name="class">
+                <xsl:text>tracked </xsl:text>
+                <xsl:text>PTbutton </xsl:text>
+                <xsl:if test="$gCurrentView = 'plaintext' or $gCurrentView = 'text'">
+                  <xsl:text>PTbuttonActive</xsl:text>
+                </xsl:if>
+              </xsl:attribute>
+              <xsl:attribute name="title">
+                <xsl:choose>
+                  <xsl:when test="$gCurrentView = 'plaintext' or $gCurrentView = 'text'">
+                    <xsl:text>Plain Text is the current view</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>Plain Text</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
+              <span>Plain Text</span>
+              <img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
+            </xsl:element>
+          </li>
+        </ul>
+      </div>
+      </xsl:if>
+      <div id="mdpToolbarNav">
+        <form action="pt" method="GET" id="mdpSectionForm">
+          <ul id="mdpSectionOptions">
             <xsl:if test="$gFeatureList/Feature">
               <xsl:call-template name="BuildContentsList"/>
             </xsl:if>
-  				</ul>
-  			</form>
-  				<ul id="mdpPageWidgets">
-      			<xsl:if test="$gFinalView != 'plaintext'">
-  					<li class="PTiconButton">
-  						<xsl:call-template name="build-zoomout-button" />
-  					</li>
-  					<li class="PTiconButton">
-  						<xsl:call-template name="build-zoomin-button" />
-  					</li>
-            <li class="paddingLeftRight">&#160;</li>
-				    <li class="PTiconButton">
-              <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/CounterClockwiseLink" />
-              <a href="{$href}" id="rotate-counterclockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left"><img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
-            </li>
-  			    <li class="PTiconButton">
-  			      <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/ClockwiseLink" />
-              <a href="{$href}" id="rotate-clockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
-  			    </li>
-
-            </xsl:if>
-  				</ul>
-  				  				
-				<xsl:call-template name="BuildPageLinks">
+          </ul>
+        </form>
+        <xsl:call-template name="BuildPageLinks">
           <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
         </xsl:call-template>
-			</div>
-		</div>
+        <ul id="mdpPageWidgets">
+          <xsl:if test="$gFinalView != 'plaintext'">
+          <li class="PTiconButton">
+            <xsl:call-template name="build-zoomout-button" />
+          </li>
+          <li class="PTiconButton">
+            <xsl:call-template name="build-zoomin-button" />
+          </li>
+          <li class="paddingLeftRight">&#160;</li>
+          <li class="PTiconButton">
+            <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/CounterClockwiseLink" />
+            <a href="{$href}" id="rotate-counterclockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left"><img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+          </li>
+          <li class="PTiconButton">
+            <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/ClockwiseLink" />
+            <a href="{$href}" id="rotate-clockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
+          </li>
+
+          </xsl:if>
+        </ul>
+                    
+      </div>
+    </div>
   </xsl:template>
   
   <xsl:template name="bookreader-page-items">
@@ -630,121 +652,121 @@
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     <script id="bookreader-toolbar-items" type="text/x-jquery-tmpl">
       <li>
-				<ul id="mdpBookReaderViews">
-					<li>
-						<img alt="NEW!" id="mdpNewStarburst" src="//common-web/graphics/harmony/NewStarburst.png" height="44" width="40" />
-					</li>
-					<li>
-						<span class="prompt">Try our new views!</span>
-					</li>
-					<li>
-					  <xsl:variable name="title">
-					    <xsl:choose>
-  					    <xsl:when test="$gCurrentView = '1up'">
-  					      <xsl:text>Scroll View is the current view</xsl:text>
-  					    </xsl:when>
-  					    <xsl:otherwise>
-  					      <xsl:text>Scroll View</xsl:text>
-  					    </xsl:otherwise>
-  					  </xsl:choose>
-  					</xsl:variable>
-					  <xsl:element name="a">
-					    <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
+        <ul id="mdpBookReaderViews">
+          <li>
+            <img alt="NEW!" id="mdpNewStarburst" src="//common-web/graphics/harmony/NewStarburst.png" height="44" width="40" />
+          </li>
+          <li>
+            <span class="prompt">Try our new views!</span>
+          </li>
+          <li>
+            <xsl:variable name="title">
+              <xsl:choose>
+                <xsl:when test="$gCurrentView = '1up'">
+                  <xsl:text>Scroll View is the current view</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:text>Scroll View</xsl:text>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:element name="a">
+              <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Scroll View</xsl:attribute>
-						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
-					    <xsl:attribute name="href">
+              <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+              <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewType1UpLink"/>
-					    </xsl:attribute>
-					    <xsl:attribute name="class">
-					      <xsl:text>tracked interactive </xsl:text>
-					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = '1up'">
-  					      <xsl:text>PTbuttonActive</xsl:text>
-  					    </xsl:if>
-  					  </xsl:attribute>
-							<img src="//common-web/graphics/harmony/icon_scroll.png">
-							  <xsl:attribute name="alt"></xsl:attribute>
+              </xsl:attribute>
+              <xsl:attribute name="class">
+                <xsl:text>tracked interactive </xsl:text>
+                <xsl:text>PTbutton </xsl:text>
+                <xsl:if test="$gCurrentView = '1up'">
+                  <xsl:text>PTbuttonActive</xsl:text>
+                </xsl:if>
+              </xsl:attribute>
+              <img src="//common-web/graphics/harmony/icon_scroll.png">
+                <xsl:attribute name="alt"></xsl:attribute>
                 <!-- <xsl:attribute name="alt">
                   <xsl:text>Scroll View</xsl:text>
                 </xsl:attribute>
                 <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute> -->
-      				</img>
-							<span>Scroll</span>
-					  </xsl:element>
-					</li>
-					<li>
-					  <xsl:variable name="title">
-					    <xsl:choose>
-  					    <xsl:when test="$gCurrentView = '2up'">
-  					      <xsl:text>Flip View is the current view</xsl:text>
-  					    </xsl:when>
-  					    <xsl:otherwise>
-  					      <xsl:text>Flip View</xsl:text>
-  					    </xsl:otherwise>
-  					  </xsl:choose>
-					  </xsl:variable>
-					  <xsl:element name="a">
-					    <xsl:attribute name="id"><xsl:text>btnBookReader2up</xsl:text></xsl:attribute>
+              </img>
+              <span>Scroll</span>
+            </xsl:element>
+          </li>
+          <li>
+            <xsl:variable name="title">
+              <xsl:choose>
+                <xsl:when test="$gCurrentView = '2up'">
+                  <xsl:text>Flip View is the current view</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:text>Flip View</xsl:text>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:element name="a">
+              <xsl:attribute name="id"><xsl:text>btnBookReader2up</xsl:text></xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Flip View</xsl:attribute>
-						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
-					    <xsl:attribute name="href">
+              <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+              <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewType2UpLink"/>
-					    </xsl:attribute>
-					    <xsl:attribute name="class">
-					      <xsl:text>tracked interactive </xsl:text>
-					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = '2up'">
-  					      <xsl:text>PTbuttonActive</xsl:text>
-  					    </xsl:if>
-  					  </xsl:attribute>
-							<img src="//common-web/graphics/harmony/icon_flip_25.png">
-							  <xsl:attribute name="alt"></xsl:attribute>
+              </xsl:attribute>
+              <xsl:attribute name="class">
+                <xsl:text>tracked interactive </xsl:text>
+                <xsl:text>PTbutton </xsl:text>
+                <xsl:if test="$gCurrentView = '2up'">
+                  <xsl:text>PTbuttonActive</xsl:text>
+                </xsl:if>
+              </xsl:attribute>
+              <img src="//common-web/graphics/harmony/icon_flip_25.png">
+                <xsl:attribute name="alt"></xsl:attribute>
                 <!-- <xsl:attribute name="alt">
                   <xsl:text>Flip View</xsl:text>
                 </xsl:attribute>
                 <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute> -->
-							</img>
-							<span>Flip</span>
-					  </xsl:element>
-					</li>
-					<li>
-					  <xsl:variable name="title">
-					    <xsl:choose>
-  					    <xsl:when test="$gCurrentView = 'thumb'">
-  					      <xsl:text>Thumbnail View is the current view</xsl:text>
-  					    </xsl:when>
-  					    <xsl:otherwise>
-  					      <xsl:text>Thumbnail View</xsl:text>
-  					    </xsl:otherwise>
-  					  </xsl:choose>
-					  </xsl:variable>
-					  <xsl:element name="a">
-					    <xsl:attribute name="id"><xsl:text>btnBookReaderThumbnail</xsl:text></xsl:attribute>
+              </img>
+              <span>Flip</span>
+            </xsl:element>
+          </li>
+          <li>
+            <xsl:variable name="title">
+              <xsl:choose>
+                <xsl:when test="$gCurrentView = 'thumb'">
+                  <xsl:text>Thumbnail View is the current view</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:text>Thumbnail View</xsl:text>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:variable>
+            <xsl:element name="a">
+              <xsl:attribute name="id"><xsl:text>btnBookReaderThumbnail</xsl:text></xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Thumbnail View</xsl:attribute>
-						  <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
-					    <xsl:attribute name="href">
+              <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute>
+              <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypeThumbnailLink"/>
-					    </xsl:attribute>
-					    <xsl:attribute name="class">
-					      <xsl:text>tracked interactive </xsl:text>
-					      <xsl:text>PTbutton </xsl:text>
-  					    <xsl:if test="$gCurrentView = 'thumb'">
-  					      <xsl:text>PTbuttonActive</xsl:text>
-  					    </xsl:if>
-  					  </xsl:attribute>
-							<img src="//common-web/graphics/harmony/icon_thumbnails.png">
-							  <xsl:attribute name="alt"></xsl:attribute>
+              </xsl:attribute>
+              <xsl:attribute name="class">
+                <xsl:text>tracked interactive </xsl:text>
+                <xsl:text>PTbutton </xsl:text>
+                <xsl:if test="$gCurrentView = 'thumb'">
+                  <xsl:text>PTbuttonActive</xsl:text>
+                </xsl:if>
+              </xsl:attribute>
+              <img src="//common-web/graphics/harmony/icon_thumbnails.png">
+                <xsl:attribute name="alt"></xsl:attribute>
                 <!-- <xsl:attribute name="alt">
                   <xsl:text>Thumbnail View</xsl:text>
                 </xsl:attribute>
                 <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute> -->
-							</img>
-							<span>Thumbnails</span>
-					  </xsl:element>
-					</li>
+              </img>
+              <span>Thumbnails</span>
+            </xsl:element>
+          </li>
           <!-- <li>
             <xsl:element name="a">
               <xsl:attribute name="id"><xsl:text>btnBookReaderText</xsl:text></xsl:attribute>
@@ -772,7 +794,7 @@
                 </xsl:choose>
               </xsl:attribute>
               <xsl:attribute name="class">
-				        <xsl:text>tracked interactive </xsl:text>
+                <xsl:text>tracked interactive </xsl:text>
                 <xsl:text>PTbutton </xsl:text>
                 <xsl:if test="$gCurrentView = 'text'">
                   <xsl:text>PTbuttonActive</xsl:text>
@@ -786,8 +808,8 @@
               <img src="//common-web/graphics/harmony/1x1.png" height="25" width="1" alt="" />
             </xsl:element>
           </li> -->
-				</ul>
-			</li>
+        </ul>
+      </li>
     </script>
   </xsl:template>
   
@@ -1019,22 +1041,22 @@
       
       <xsl:if test="$gCurrentReaderMode = 'full'">
       
-			<li>
-			  <xsl:variable name="pageNum">
-			    <xsl:choose>
-			      <xsl:when test="$gCurrentPageNum">
-			        <xsl:value-of select="$gCurrentPageNum" />
-			      </xsl:when>
-			      <xsl:otherwise>
-			        <!-- not making this visible -->
+      <li>
+        <xsl:variable name="pageNum">
+          <xsl:choose>
+            <xsl:when test="$gCurrentPageNum">
+              <xsl:value-of select="$gCurrentPageNum" />
+            </xsl:when>
+            <xsl:otherwise>
+              <!-- not making this visible -->
               <!-- <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" /> -->
-			      </xsl:otherwise>
-			    </xsl:choose>
-			  </xsl:variable>
-				<form method="GET" action="pt" id="mdpPageForm">
-				  <input type="hidden" name="u" id="u" value="1" />
-				  
-				  <label for="BRpagenum">Jump to </label>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        <form method="GET" action="pt" id="mdpPageForm">
+          <input type="hidden" name="u" id="u" value="1" />
+          
+          <label for="BRpagenum">Jump to </label>
 
           <xsl:element name="input">
             <xsl:attribute name="id">BRpagenum</xsl:attribute>
@@ -1047,7 +1069,7 @@
             </xsl:attribute>
           </xsl:element>
 
-				  <xsl:element name="input">
+          <xsl:element name="input">
             <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
             <xsl:attribute name="type">submit</xsl:attribute>
             <xsl:attribute name="value">Go</xsl:attribute>
@@ -1067,16 +1089,16 @@
             <input type="hidden" name="seq" value="" />
           </xsl:if>
           <xsl:call-template name="HiddenDebug" />
-				  
-				</form>
-				
-			</li>
-			
-			</xsl:if>
-			
-			<li class="PTiconButton">
-			  <xsl:choose>
-			    <xsl:when test="$pPageLinks/FirstPageLink">
+          
+        </form>
+        
+      </li>
+      
+      </xsl:if>
+      
+      <li class="PTiconButton">
+        <xsl:choose>
+          <xsl:when test="$pPageLinks/FirstPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpFirstPageLink</xsl:attribute>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
@@ -1110,10 +1132,10 @@
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
-			</li>
-			<li class="PTiconButton">
-			  <xsl:choose>
-			    <xsl:when test="$pPageLinks/PreviousPageLink">
+      </li>
+      <li class="PTiconButton">
+        <xsl:choose>
+          <xsl:when test="$pPageLinks/PreviousPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpPreviousPageLink</xsl:attribute>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
@@ -1147,10 +1169,10 @@
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
-			</li>
-			<li class="PTiconButton">
-			  <xsl:choose>
-			    <xsl:when test="$pPageLinks/NextPageLink">
+      </li>
+      <li class="PTiconButton">
+        <xsl:choose>
+          <xsl:when test="$pPageLinks/NextPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpNextPageLink</xsl:attribute>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
@@ -1184,10 +1206,10 @@
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
-			</li>
-			<li class="PTiconButton">
-			  <xsl:choose>
-			    <xsl:when test="$pPageLinks/LastPageLink">
+      </li>
+      <li class="PTiconButton">
+        <xsl:choose>
+          <xsl:when test="$pPageLinks/LastPageLink">
             <xsl:element name="a">
               <xsl:attribute name="id">mdpLastPageLink</xsl:attribute>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
@@ -1221,7 +1243,7 @@
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
-			</li>
+      </li>
     </ul>
 
   </xsl:template>

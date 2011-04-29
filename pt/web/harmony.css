@@ -24,6 +24,7 @@ html {
 .footerFixed {
     position: absolute;
     bottom: 0;
+    left: 0;
     width: 100%;
 }
 
@@ -254,16 +255,20 @@ span.prompt {
 
 #mdpPageOptions {
   float: right;
-  margin-top: -1px;
+  /*margin-top: -1px;*/
 }
 
 #mdpZoomOptions, #mdpPageWidgets {
   margin-left: auto !important;
   margin-right: auto;
-  width: 10em;
+  /*width: 10em;*/
   padding-right: 0;
   padding-left: 0;
   white-space: nowrap;
+}
+
+#mdpPageWidgets li {
+  float: none;
 }
 
 .paddingLeft {
@@ -476,7 +481,7 @@ button.active {
  border: 2px solid #494949;
  position:relative;
  font-family: arial, sans-serif;
- width: 100%;
+ /*width: 100%;*/
 }
 
 .hideContentContainer {
@@ -675,3 +680,8 @@ div.mdpScrollableContainer {
   margin-left: 0px; 
   background-color: #fffeff
 }
+
+#mdpSectionForm, #mdpPageForm {
+  float: left;
+}
+
