@@ -31,14 +31,43 @@
             <tr>
               <td></td>
               <td>
+<!-- remove first box only OCR for now
                 <label class="SkipLink" for="srch">Full-text Search </label>
                 <input type="text" size="30" maxlength="150" name="q1" value="" />
                   <input id="fullonly" type="checkbox" name="lmt" value="ft" />
                     <label for="fullonly">Full view only</label>
                     <input type="hidden" name="a" value="srchls" />
+-->
                       
               </td>
             </tr>
+
+            <tr>
+
+              <td >
+                <select name="field1">
+                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
+                  <option value="title" >Title</option>
+                  <option value="author" >Author</option>
+
+                  <option value="subject" >Subject</option>
+                 <option value="hlb3" >Academic Discipline</option>
+                  <!-- <option value="toc" >Table of Contents</option>
+                  <option value="callnumber" >Call Number</option>-->
+                  <option value="publisher" >Publisher</option>
+                  <option value="series" >Series Title</option>
+                  <option value="year" >Year of Publication</option>
+                  <option value="isn" >ISBN/ISSN</option>
+
+                </select>
+              </td>
+              <td><input type="text" name="q1" size="50" value=""></td>
+              
+            </tr>
+
+
+
+                    
             <tr>
               <td>
                 <select name="op2">
@@ -50,11 +79,12 @@
 
               <td >
                 <select name="field2">
-                  <option value="all"  selected>All Fields</option>
+                      
+                  <option value="all"  selected>All MARC Fields</option>
                   <option value="title" >Title</option>
                   <option value="author" >Author</option>
-
                   <option value="subject" >Subject</option>
+                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
                  <option value="hlb3" >Academic Discipline</option>
                   <!-- <option value="toc" >Table of Contents</option>
                   <option value="callnumber" >Call Number</option>-->
@@ -80,11 +110,11 @@
               </td>
               <td >
                 <select name="field3">
-                  <option value="all" >All Fields</option>
+                  <option value="all" >All MARC Fields</option>
                   <option value="title" >Title</option>
-
                   <option value="author"  selected>Author</option>
                   <option value="subject" >Subject</option>
+                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
                   <!--<option value="hlb" >Academic Discipline</option>
                   <option value="toc" >Table of Contents</option>
                   <option value="callnumber" >Call Number</option>-->
@@ -110,11 +140,12 @@
               </td>
               <td >
                 <select name="field4">
-                  <option value="all" >All Fields</option>
+                  <option value="all" >All MARC Fields</option>
                   <option value="title" >Title</option>
 
                   <option value="author"  selected>Author</option>
                   <option value="subject" >Subject</option>
+                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
                   <!--<option value="hlb" >Academic Discipline</option>
                   <option value="toc" >Table of Contents</option>
                   <option value="callnumber" >Call Number</option>-->
@@ -743,7 +774,7 @@
     <address><a href="mailto:tburtonw@umich.edu">Tom  Burton-West</a></address>
 <!-- Created: Fri Apr 15 14:29:07 EDT 2011 -->
 <!-- hhmts start -->
-Last modified: Wed Apr 27 12:50:42 EDT 2011
+Last modified: Fri Apr 29 19:00:14 EDT 2011
 <!-- hhmts end -->
   </body>
 </html>

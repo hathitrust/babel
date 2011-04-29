@@ -25,7 +25,7 @@ $facet_to_label_map =
 'geographicStr' =>'Place',
 'era' =>'Era',
 'genreStr'=>'genre',
-#''=>'',
+
 };
 
 
@@ -34,9 +34,10 @@ $facet_to_label_map =
 @facet_order=qw{
                 ht_availability 
                 hlb3Str
+                topicStr
                 authorStr 
                 language 
-1                countryOfPubStr 
+                countryOfPubStr 
                 publishDateRange 
                 format 
                 htsource 
@@ -75,12 +76,22 @@ $all_weights     = $rel_weights->{'all'};
 # cgi params for type of search mapped to the solr field name that we want
 # XXX which Solr subject field is appropriate for keyword searching?
 #XXX read from config file.  check marc mapping for proper field for subject searching and hlb3 searching
+# XXX this map is probably not needed if we put the right field name in the html forms
+
+# need to compare dismax.yaml with searchspecs.yaml
     
 $param_2_solr_map = {
                            'author'=>'author',
                            'title'=>'title',
                            'subject'=>'subject', 
-                           'topic'=>'hlb3',
+                           'hlb3'=>'hlb',
+                            'ocr'=>'ocr',
+                            'all'=>'all',
+                            'callnumber'=>'callnumber',
+                            'publisher'=>'publisher',
+                            'series'=>'serialtitle',
+                            'year'=>'year',
+                            'isn'=>'isn',
                           };
 
 

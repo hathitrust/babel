@@ -25,6 +25,7 @@
    'op2'    => 'AND|OR',
    'op3'    => 'AND|OR',
    'op4'    => 'AND|OR',
+   'field1'    => '.*',
    'field2'    => '.*',
    'field3'    => '.*',
    'field4'    => '.*',

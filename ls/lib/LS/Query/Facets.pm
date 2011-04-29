@@ -190,21 +190,15 @@ sub get_Solr_query_string
    
     #XXX do we need to rename facet_config since it contains more than just facet config info?
     #XXX if there is an advanced query we want the dismax entered 
-    my $config = $self->get_facet_config;        
+    my $config = $self->get_facet_config;  
+    
+    #XXX For now we hard code a constant to decide whether to allow anything other than full-text in q1
+      
     #advanced search
-    my $DISMAX="";
     
     my $ADVANCED= "";
 
-    #XXX once we get this working we need to redo advanced so it also takes q1 and makes the proper dismax query
-    if ( $self->is_advanced($cgi) )
-    {
-        $ADVANCED = $self->__get_advanced_query($cgi);
-    }
-    else
-    {
-        $DISMAX  = $self->_getDismaxString($config);
-    }
+    $ADVANCED = $self->__get_advanced_query($cgi);
     
         
     # Cache to avoid repeated MySQL calls in Access::Rights
@@ -212,12 +206,9 @@ sub get_Solr_query_string
         return $self->get_cached_Solr_query_string();
     }
 
-    # Massage the raw query string from the user
-    my $user_query_string = $self->get_processed_user_query_string();
-
     # The common Solr query parameters
-    my $USER_Q = qq{q=$user_query_string};
-    my $FL = qq{&fl=title,author,date,rights,id,record_no,score};
+    my $Q ='q=';
+        my $FL = qq{&fl=title,author,date,rights,id,record_no,score};
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INDENT = $ENV{'TERM'} ? qq{&indent=on} : qq{&indent=off};
 
@@ -279,10 +270,10 @@ sub get_Solr_query_string
 # for now make default dismax!
    
 
-   my $solr_query_string = $USER_Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $DISMAX . $FACETQUERY . $EXPLAIN;    
+   my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY . $EXPLAIN;    
 #    my $solr_query_string = $USER_Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT .  $WRITER . $FACETQUERY .$EXPLAIN;
     
-#XXX for debugging
+#XXX for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
 #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
     
     DEBUG('all,query',
@@ -293,32 +284,11 @@ sub get_Solr_query_string
               return qq{Solr query="$s"}
           });
 
+
+
     $self->cache_Solr_query_string($solr_query_string);
 
     return $solr_query_string;
-}
-
-
-# ---------------------------------------------------------------------
-#  is_advanced
-#  returns true if there is one or more of q2, q3, or q4
-# ---------------------------------------------------------------------
-sub is_advanced
-{
-    my $self = shift;
-    my $cgi = shift;
-    my $q;
-    
-    for my $i (2..4)
-    {
-        $q = 'q' . $i;
-        if ( defined($cgi->param("$q") )   )
-        {
-            return "true";
-        }
-    }
-    #perl best practices: return with no arg always returns false for context of calling routine
-    return;
 }
 
 
@@ -326,7 +296,9 @@ sub is_advanced
 
 # ---------------------------------------------------------------------
 # __get_advanced_query
-
+#
+# 
+#
 # ---------------------------------------------------------------------
 sub __get_advanced_query
 {
@@ -340,7 +312,7 @@ sub __get_advanced_query
     my $clause;
     my $Q;
         
-    for my $i (2..4)
+    for my $i (1..4)
     {
         $q = 'q' . $i;
         if (defined $cgi->param($q))
@@ -359,13 +331,11 @@ sub __get_advanced_query
 
 # ---------------------------------------------------------------------
 # do we also check that field1, and op1 are defined and reasonable or provide defaults
+#
+#  Note special case handling if there is a q1 that automatically deals with op and field
+# so we can actually implement regular search as if it is an advanced search
+#
 
-#
-#  XXX as currently implemented this makes one huge q param
-#  q=fulltext AND field1:something AND field2 somethingelse
-#
-#   We need to actually use local params to make a bunch of dismax queries with
-# the OPs tieing them together and move the default dismax parameters appropriately
 
 sub make_query_clause{
     my $self = shift;
@@ -378,8 +348,19 @@ sub make_query_clause{
     {
         $op='AND';
     }
-
+    if ($i ==1)
+    {
+        $op="";
+    }
+    
     my $field = $cgi->param('field' . $i);
+
+    # default to ocr if there is not field for field 1
+    if ($i ==1 && (!defined($field))  )
+    {
+        $field='ocr';
+    }
+    #XXX is this what we want?
     if (!defined($field))
     {
         return "";
@@ -407,6 +388,19 @@ sub make_query_clause{
     my $TIE = qq{ tie='} . $tie . qq{' };
 
     my $Q;
+    #XXX MONSROUS HACK
+    #  Replace this with proper mapping of field to be searched
+    # after resolving diffs between dismaxspecs.yaml and searchspecs.yaml
+
+    if ($solr_field eq "subject")
+    {
+        $solr_field ="topic";
+    }
+    if ($solr_field eq "all")
+    {
+        $solr_field ="allfields";
+    }
+    
 
     $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' . $solr_field  .':'. $processed_q .'"';
 
@@ -464,7 +458,7 @@ Could be modified for advanced searches to weight properly full-text + (author|t
 =cut
 
 # ---------------------------------------------------------------------
-
+#XXX  this needs to get allocr weights not all weights if we keep using it
 sub _getDismaxString
 {
     my $self = shift;
