@@ -5,12 +5,13 @@ use Getopt::Std;
 use File::Basename;
 
 my %opts;
-getopts('c:f:x:hvD', \%opts);
+getopts('c:f:x:hvDz', \%opts);
 
 # Note: global variables are UPPERCASE
 my $VERBOSE = $opts{v} || '';
 my $PROGRAM = $opts{c} || '';
 my $DEVELOPMENT = $opts{D} || ''; # See Usage below.
+my $NO_COMPRESS = $opts{z} || '';
 
 if ($ENV{'SDRROOT'} !~ /[a-z]+\.babel/) {
     die "This program should only be run in a development environment";
@@ -60,6 +61,8 @@ open (my $OUT_CSS_FH,'>', $OUT_CSS_FILE) or die "can't open $OUT_CSS_FILE $!";
 open (my $OUT_JS_FH,'>', $OUT_JS_FILE) or die "can't open $OUT_JS_FILE $!";
 open (my $XSL_FH,'>', $XSL_OUT) or die "can't open $XSL_OUT $!";
 
+my %OPTIONAL_JS = (); my %OPTIONAL_CSS = (); my @OPTIONAL_CSS_LIST = (); my @OPTIONAL_JS_LIST = ();
+
 print STDERR "reading $FILELIST\n";
 open (FILELIST_FH, "$FILELIST") || die $!;
 
@@ -69,6 +72,12 @@ my %CSS_REPLACE_REGEXPS =
    '\./graphics/' => 'common-web/graphics/',
    '../../../../assets/skins/sam/sprite.png' => 'yui2-lib/build/assets/skins/sam/sprite.png',
   );
+  
+if ( $DEVELOPMENT ) {
+    foreach my $expr ( keys %CSS_REPLACE_REGEXPS ) {
+        $CSS_REPLACE_REGEXPS{$expr} =~ s!common-web!/mdp-web!;
+    }
+}
 
 my $TO_REMOVE_REF = [];
         
@@ -97,16 +106,38 @@ The input filename is a fully-qualified filesystem path.
 
 # ---------------------------------------------------------------------
 sub add_to_xsl_lists {
-    my ($filename, $jsfiles_ref, $cssfiles_ref) = @_;
+    my ($filename, $jsfiles_ref, $cssfiles_ref, $section_test) = @_;
     
     my $web_path = $filename;
     $web_path =~ s,/web/,/,;
 
     if ($filename =~ /js$/) {
-        push (@{$jsfiles_ref}, $web_path);
+        if ( ref($section_test) ) {
+            my ( $label, $test ) = @$section_test;
+            unless(exists($OPTIONAL_JS{$label})) {
+                $OPTIONAL_JS{$label} = { test => $test, filenames => [] };
+                $OPTIONAL_JS{$label}{filename} = $WEB_PATH . qq{/js/concatenated_$label-min.js};
+                open($OPTIONAL_JS{$label}{fh}, ">", $OPTIONAL_JS{$label}{filename});
+                push @OPTIONAL_JS_LIST, $label;
+            }
+            push @{$OPTIONAL_JS{$label}{filenames}}, $web_path;
+        } else {
+            push (@{$jsfiles_ref}, $web_path);
+        }
     }
     elsif ($filename =~ /css$/) {
-        push (@{$cssfiles_ref}, $web_path);
+        if ( ref($section_test) ) {
+            my ( $label, $test ) = @$section_test;
+            unless(exists($OPTIONAL_CSS{$label})) {
+                $OPTIONAL_CSS{$label} = { test => $test, filenames => [] };
+                $OPTIONAL_CSS{$label}{filename} = $WEB_PATH . qq{/concatenated_$label-min.css};
+                open($OPTIONAL_CSS{$label}{fh}, ">", $OPTIONAL_CSS{$label}{filename});
+                push @OPTIONAL_CSS_LIST, $label;
+            }
+            push @{$OPTIONAL_CSS{$label}{filenames}}, $web_path;
+        } else {
+            push (@{$cssfiles_ref}, $web_path);
+        }
     }
     else {
         die "add_to_lists: filename $filename not css or js file";
@@ -124,6 +155,10 @@ Description
 # ---------------------------------------------------------------------
 sub compress_file {
     my ($fq_filename) = @_;
+    
+    if ( $NO_COMPRESS ) {
+        return $fq_filename;
+    }
     
     # js files go in /web/js, css in /web
     my $is_js = ($fq_filename =~ m,\.js$,);
@@ -171,19 +206,31 @@ lands.
 # ---------------------------------------------------------------------
 sub smart_concat {
     my $filename = shift;
+    my $section_test = shift;
 
     print STDERR "concatenating $filename \n" if $VERBOSE;
     open (my $in,'<', $filename) or die "can't open $filename $!";
     my $slurped = do {local $/; <$in>};
     $slurped .=  "\n/* $filename */\n";
+        
     if ($filename =~ /js$/) {
-        print {$OUT_JS_FH} $slurped;
+        if ( ref($section_test) ) {
+            my ( $label, $test ) = @$section_test;
+            print {$OPTIONAL_JS{$label}{fh}} $slurped;
+        } else {
+            print {$OUT_JS_FH} $slurped;
+        }
     }
     elsif ($filename =~ /css$/) {
         foreach my $old (keys %CSS_REPLACE_REGEXPS) {
             $slurped =~ s,$old,$CSS_REPLACE_REGEXPS{$old},g;
         }
-        print {$OUT_CSS_FH} $slurped;
+        if ( ref($section_test) ) {
+            my ( $label, $test ) = @$section_test;
+            print {$OPTIONAL_CSS{$label}{fh}} $slurped;
+        } else {
+            print {$OUT_CSS_FH} $slurped;
+        }
     }
     else {
         print STDERR "filename $filename not css or js file\n";
@@ -216,12 +263,24 @@ sub write_xsl_file{
     
     print {$XSL_FH} "$start_xsl\n";
     
-    print {$XSL_FH} qq{  <xsl:template name="load_concat_js_file">};
+    print {$XSL_FH} qq{  <xsl:template name="load_concat_js_file">\n};
     print {$XSL_FH} qq{    <script type="text/javascript" src="/$PROGRAM/js/concatenated_common-min.js"></script>\n};
+    
+    foreach my $key ( @OPTIONAL_JS_LIST ) {
+        print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_JS{$key}{'test'}">\n};
+        print {$XSL_FH} qq{        <script type="text/javascript" src="/$PROGRAM/js/concatenated_${key}-min.js"></script>\n};
+        print {$XSL_FH} qq{    </xsl:if>\n};
+    }
+    
     print {$XSL_FH} qq{  </xsl:template> \n};
     
-    print {$XSL_FH} qq{  <xsl:template name="load_concat_css_file">};
+    print {$XSL_FH} qq{  <xsl:template name="load_concat_css_file">\n};
     print {$XSL_FH} qq{    <link rel="stylesheet" type="text/css" href="/$PROGRAM/concatenated_common-min.css"/>\n};
+    foreach my $key ( @OPTIONAL_CSS_LIST ) {
+        print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_CSS{$key}{test}">\n};
+        print {$XSL_FH} qq{        <link rel="stylesheet" type="text/css" href="/$PROGRAM/concatenated_${key}-min.css" />\n};
+        print {$XSL_FH} qq{    </xsl:if>\n};
+    }
     print {$XSL_FH} qq{  </xsl:template> \n};
     
     # write js template for uncompressed unconcatenated files
@@ -231,6 +290,15 @@ sub write_xsl_file{
         my $js_include = make_js_include($filename);
         print {$XSL_FH} "$js_include\n";
     }
+    foreach my $key ( keys %OPTIONAL_JS ) {
+        next unless ( $key );
+        print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_JS{$key}{'test'}">\n};
+        foreach my $filename (@{$OPTIONAL_JS{$key}{filenames}}) {
+            my $js_include = make_js_include($filename);
+            print {$XSL_FH} "$js_include\n";
+        }
+        print {$XSL_FH} qq{    </xsl:if>\n};
+    }
     print {$XSL_FH} qq{</xsl:template>\n};
     
     # CSS
@@ -238,7 +306,14 @@ sub write_xsl_file{
     foreach my $filename (@{$cssfiles_ref}) {
         my $css_include = make_css_include($filename);
         print {$XSL_FH} "$css_include\n";
-        
+    }
+    foreach my $key ( keys %OPTIONAL_CSS ) {
+        print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_CSS{$key}{test}">\n};
+        foreach my $filename (@{$OPTIONAL_CSS{$key}{filenames}}) {
+            my $css_include = make_css_include($filename);
+            print {$XSL_FH} "$css_include\n";
+        }
+        print {$XSL_FH} qq{    </xsl:if>\n};
     }
     print {$XSL_FH} qq{</xsl:template>\n};
     print {$XSL_FH} qq{</xsl:stylesheet>};
@@ -337,6 +412,8 @@ sub make_concatenated_files {
 
     my $count = 0;
     my $in_YUI_section = 0;
+    my $section_test = undef;
+    my $section_label = '';
     
     while (<FILELIST_FH>) {
         next if /^\s*$/;
@@ -351,6 +428,13 @@ sub make_concatenated_files {
             else {
                 $in_YUI_section = 0;
             }
+            $section_label = $section_name;
+            $section_test = undef;
+            next; 
+        }
+        my ($check) = ($_ =~ /^Test:\s*(.+)\s*$/);
+        if ($check) {
+            $section_test = [$section_label, $check];
             next; 
         }
         
@@ -380,7 +464,7 @@ sub make_concatenated_files {
             print STDERR "$count.";
         }
         
-        add_to_xsl_lists($xsl_helper_filename, $jsfiles_ref, $cssfiles_ref);
+        add_to_xsl_lists($xsl_helper_filename, $jsfiles_ref, $cssfiles_ref, $section_test);
         
         # Yahoo YUI js files assumed to be minimized so skip compression
         if ($in_YUI_section) {
@@ -388,7 +472,7 @@ sub make_concatenated_files {
         }
         else {
             my $min_filename = compress_file($filesystem_filename);
-            smart_concat($min_filename);
+            smart_concat($min_filename, $section_test);
         }
     }   
     
@@ -417,7 +501,7 @@ Description
 sub usage {
     my $msg = <<USAGE_MSG;
   Usage:
-   \t$0 [-v][-x][-f][-h][-D] -c mb|pt|ls|ptsearch|wayf configure for these apps
+   \t$0 [-v][-x][-f][-h][-D][-z] -c mb|pt|ls|ptsearch|wayf configure for these apps
 
    \tRead .../lib/Config/js_css_filelist.txt and concatenate and minimize js and css files. 
    \tNormally, transform "//common-web" to "/{pt,ls,mb}/web/common-web" but see -D option
@@ -432,6 +516,7 @@ sub usage {
    \t\t-v verbose
    \t\t-D transform //common-web to /mdp-web for development ease. No git push/pull 
    \t\t   required to see changes made in mdp-web under web/common-web
+   \t\t-z do NOT minimize files
 
    \tDefaults:
    \t\t filelist = ...lib//Config/js_css_filelist.txt
