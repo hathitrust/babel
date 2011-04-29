@@ -56,7 +56,7 @@ HT.pdf_helpers = {
                   }
               },
               error : function(req, textStatus, errorThrown) {
-                  // console.log("FAILED: ", req, "/", textStatus, "/", errorThrown);
+                  console.log("FAILED: ", req, "/", textStatus, "/", errorThrown);
                   
                   if ( req.status == 503 ) {
                     // throttling error; clear interval and try again later
@@ -220,6 +220,7 @@ HT.pdf_helpers = {
       $.ajax({
         url: src + ';callback=HT.pdf_helpers.open_progress',
         dataType: 'script',
+        cache: false,
         error: function() {
           console.log("DOWNLOAD STARTUP NOT DETECTED");
           HT.pdf_helpers.$notice.hide(function() {
