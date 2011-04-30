@@ -214,9 +214,11 @@
       <xsl:text> items found for </xsl:text>
       <xsl:choose>
         <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
-          <span>
+          <!--  Skip this for now but this choose needs reimiplentation in advanced template
+               <span>
             <xsl:value-of select="/MBooksTop/QueryString"/>
           </span>
+          -->
         </xsl:when>
         <xsl:otherwise>
           <span>
@@ -225,9 +227,16 @@
         </xsl:otherwise>
       </xsl:choose>
 
-      <xsl:text> in the full text of all items (in </xsl:text>
+      <!-- <xsl:text>x in the full text of all items </xsl:text>-->
+
+      <xsl:call-template name="advanced"/>
+
+      <br></br>
+      <xsl:text>
+        (in </xsl:text>
       <xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>
       <xsl:text> sec.)</xsl:text>
+
 
       <xsl:if test="$debug='YES'">
         <span class="debug">DEBUG </span>
@@ -235,6 +244,32 @@
 
     </div>
   </xsl:template>
+
+  <xsl:template name="advanced">
+    <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="OP"/><xsl:text> </xsl:text>
+      <!-- XXX figure out what the well formed stuff is above and put it here-->
+      <span>
+        <xsl:value-of select="Query"/>
+      </span>
+      <xsl:text> in </xsl:text>
+      <!-- replace em with css -->
+      <em>
+        <xsl:value-of select="Field"/>
+      </em>
+    </xsl:for-each>
+  </xsl:template>
+
+
+
+
+
+
+
+
+
+
 
   <!-- TEMPLATE -->
   <xsl:template name="QueryRewrite">

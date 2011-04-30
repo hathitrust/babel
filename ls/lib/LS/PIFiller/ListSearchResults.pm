@@ -483,7 +483,67 @@ sub handle_FACETS_PI
 }
 
 # ---------------------------------------------------------------------
+#XXX hack for now need to redo
+sub handle_ADVANCED_SEARCH_PI
+    : PI_handler(ADVANCED_SEARCH) 
+{
+    #XXX TODO: refactor into smaller subroutines!
 
+    my ($C, $act, $piParamHashRef) = @_;
+    my $fconfig=$C->get_object('FacetConfig');
+    my $cgi = $C->get_object('CGI');
+
+# move this map to the config object
+    my $param2userMap={
+                           'author'=>'author',
+                           'title'=>'title',
+                           'subject'=>'subject', 
+                           'hlb3'=>'Academic Discipline',
+                           'ocr'=> 'full text',
+                            'all'=>'all marc',
+                            'callnumber'=>'callnumber',
+                            'publisher'=>'publisher',
+                            'series'=>'serialtitle',
+                            'year'=>'year',
+                            'isn'=>'isn',
+                          };
+    #get query params from cgi and map to user friendly fields using config
+    # put the stuff inside the for loop in a subroutine!
+    my $output;
+    for my $i (1..4)
+    {
+        my $q     = $cgi->param('q' . $i);
+        my $op    = $cgi->param('op' . $i);
+        if (!defined($op))
+        {
+            $op='AND';
+        }
+        if ($i ==1)
+        {
+            $op="";
+        }
+    
+        my $field = $cgi->param('field' . $i);
+        my $user_field= $param2userMap->{$field} ;
+
+        my $clause;
+        if (defined ($q))
+        {
+            
+            $clause .=wrap_string_in_tag($i, 'Qnum');
+            $clause .=wrap_string_in_tag($q ,'Query');
+            $clause .=wrap_string_in_tag($op, 'OP');
+            $clause .=wrap_string_in_tag($user_field, 'Field');
+            $output .= wrap_string_in_tag($clause, 'Clause');
+        }
+        
+    }
+    return $output;
+    
+}
+
+
+# ---------------------------------------------------------------------
 #======================================================================
 #
 #              P I    H a n d l e r   H e l p e r s

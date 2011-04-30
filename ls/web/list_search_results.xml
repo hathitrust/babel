@@ -35,6 +35,7 @@
 
   <QueryString><?QUERY_STRING?></QueryString>
   <SearchResults><?SEARCH_RESULTS?></SearchResults>
+<AdvancedSearch><?ADVANCED_SEARCH?></AdvancedSearch>
    <Facets><?FACETS?></Facets>
   <Paging><?PAGING?></Paging>
  <SelectCollectionWidget><?SELECT_COLLECTION_WIDGET?></SelectCollectionWidget>
