@@ -75,6 +75,9 @@
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
         <title>Hathi Trust Digital Library - Full-text Search</title>
+        <!-- jQuery from the Google CDN -->
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>
         <xsl:call-template name="debug_CSS"/>
@@ -131,6 +134,15 @@
           <xsl:call-template name="google_analytics" />
 
         </div>
+
+        <!-- this is where we are supposed to put jquery javascript, check with roger -->
+        <script type="text/javascript" src="../ls/web/js/ls_misc.js"></script>
+
+        <!--
+    <xsl:text disable-output-escaping="yes">&lt;script type="text/javascript"&gt;</xsl:text>
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/LoggedInJs"/>
+    <xsl:text disable-output-escaping="yes"> &lt;/script&gt;</xsl:text>
+-->
       </body>
     </html>
   </xsl:template>
@@ -855,7 +867,13 @@ for now create an href with current_url . &fq=facetname:value
               <xsl:value-of select="@name"/>
             </xsl:with-param>
           </xsl:call-template>
-          <a class="morefacets" href="">Show More</a>
+          <a  href="">
+            <xsl:attribute name="class">
+            <!-- need to process name so there are no spaces i.e. "place of publication"-->
+              <xsl:value-of select="@name"/>
+              <xsl:text> morefacets</xsl:text>
+            </xsl:attribute>
+            Show More</a>
           <a class="lessfacets" href="">Show Fewer</a>
 
         </xsl:for-each>
@@ -876,6 +894,9 @@ for now create an href with current_url . &fq=facetname:value
 
           <xsl:attribute name ="class">
             <xsl:value-of select="@class"/>
+            <xsl:text> </xsl:text>
+            <!-- need to process fieldname so there are no spaces -->
+            <xsl:value-of select="$fieldName"/>
           </xsl:attribute>
 
           <xsl:variable name="value">
