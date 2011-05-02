@@ -199,18 +199,18 @@ package WAYF::IdpConfig;
                    'template'  => 'https://___HOST___/Shibboleth.sso/ucm?target=___TARGET___',
                    'enabled'   => '1',
                   },
+   'uic'       => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'University of Illinois at Chicago',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/uic?target=___TARGET___',
+                   'enabled'   => '1',
+                  },
    
    # Waiting
    'upenn'     => {
                    'authtype'  => 'shibboleth',
                    'link_text' => 'University of Pennsylvania',
                    'template'  => 'https://___HOST___/Shibboleth.sso/upenn?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'uic'       => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'University of Illinois at Chicago',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/uic?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'uva'       => {
