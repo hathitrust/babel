@@ -26,6 +26,7 @@ Coding example
 use strict;
 
 use Utils;
+use Debug::DUtils;
 use JSON::XS;
 use base qw(LS::Result::JSON);
 
@@ -55,8 +56,6 @@ sub AFTER_Result_initialize
 Example Solr result is:
 
 
-
-
 =cut
 
 # ---------------------------------------------------------------------
@@ -69,11 +68,17 @@ sub AFTER_ingest_Solr_search_response
     
     my $solr_debug;
     $solr_debug=$Parsed_Solr_response_ref->{'debug'};
+    if (DEBUG('explain'))
+    {
+        my $processed_explain= $self->__process_expain_data($solr_debug);
+        DEBUG('explain', $processed_explain); 
+    }
+    # do we want the raw debug stuff from solr stored on self or the processed data?    
+    
     if (defined $solr_debug)
     {
         $self->__set_result_solr_debug($solr_debug);
     }
-    
 
     my $docs = $Parsed_Solr_response_ref->{'response'}->{'docs'};
     
@@ -120,7 +125,41 @@ sub AFTER_ingest_Solr_search_response
 }
 
 
+# ---------------------------------------------------------------------
 
+=item PRIVATE: __process_expain_data
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __process_expain_data
+{
+    my $self       = shift;
+    my $solr_debug = shift;
+    
+    #XXX  we might also want some data besides the explain part as in the parsed query
+    #XXX  we need to link some metadata with the explain data
+    #  we could actually provide a mouseover to inspect the explain data for each item
+
+    require Data::Dumper;
+    my $d = Data::Dumper::Dumper($solr_debug->{'explain'});
+    # need to make this xml safe.  Check methods in DEBUG or other code
+    Utils::map_chars_to_cers(\$d) if Debug::DUtils::under_server();
+    $d= qq{<pre>$d</pre>};
+
+    return $d;
+
+    # do we need to use this code?  
+    #    # protect entities and turn naked & into &amp;
+    #    $dump =~ s/&([^;]+);/ENTITY:$1:ENTITY/gis;
+    #    $dump =~ s/&/&amp;/gis;
+    #    $dump =~ s/ENTITY:([a-z0-9]+):ENTITY/&$1;/gis;
+    
+    #    return qq{<pre style="text-align: left">$dump</pre>};
+
+}
 
 # ---------------------------------------------------------------------
 

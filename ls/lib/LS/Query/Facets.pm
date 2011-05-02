@@ -261,25 +261,32 @@ sub get_Solr_query_string
         }
     }
     
-#XXX for temporary debugging of rel ranking
+    #XXX for temporary debugging of rel ranking
     #  Need a much better mechanisim
-#   Replace all this with a debug flag    
+    #   Replace all this with a debug flag    
+
     my $EXPLAIN="";
-#        $EXPLAIN='&debugQuery=on';
+    if (DEBUG('explain')) {
+        $EXPLAIN='&debugQuery=on';
+    }
 
-# for now make default dismax!
-   
-
-   my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY . $EXPLAIN;    
-#    my $solr_query_string = $USER_Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT .  $WRITER . $FACETQUERY .$EXPLAIN;
+    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY . $EXPLAIN;    
     
-#XXX for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
-#    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
-    
+    #XXX for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
+    #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
+    my $sq;     #solr_query_string with or without dismax
+    if (DEBUG('nodismax')) 
+    {
+        $sq = $self->__hide_dismax($solr_query_string);
+    }
+    else
+    {
+        $sq = $solr_query_string;
+    }
+        
     DEBUG('all,query',
           sub
-          {
-              my $s = $solr_query_string;
+          {   my $s = $sq;
               Utils::map_chars_to_cers(\$s) if Debug::DUtils::under_server();
               return qq{Solr query="$s"}
           });
@@ -388,21 +395,9 @@ sub make_query_clause{
     my $TIE = qq{ tie='} . $tie . qq{' };
 
     my $Q;
-    #XXX MONSROUS HACK
-    #  Replace this with proper mapping of field to be searched
-    # after resolving diffs between dismaxspecs.yaml and searchspecs.yaml
-
-    if ($solr_field eq "subject")
-    {
-        $solr_field ="topic";
-    }
-    if ($solr_field eq "all")
-    {
-        $solr_field ="allfields";
-    }
     
 
-    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' . $solr_field  .':'. $processed_q .'"';
+    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
 
     return $Q;
     
@@ -425,8 +420,21 @@ sub dismax_2_string
     }
     return $string;
 }
+# ---------------------------------------------------------------------w
+sub __hide_dismax
+{
+    my $self = shift;
+    my $sq = shift;  #solr query string
+    # try to just include the first dismax param so we can see which one?
+    $sq =~s ,_query_\:,,g;
+    $sq =~s,\{\![^\}]+\},dismax,g;
+    
+    return $sq;
+#     _query_:"{!edismax ...}
+}
 
 # ---------------------------------------------------------------------w
+
 # XXX think about how this might be refactored to also allow Blacklight style showing paged,sorted values for a particular facet
 # or is that a different api call?
 # ---------------------------------------------------------------------
