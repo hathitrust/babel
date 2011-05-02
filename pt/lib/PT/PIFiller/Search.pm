@@ -29,6 +29,8 @@ use PT::PIFiller::Common;
 use PT::PageTurnerUtils;
 use PT::Document::XPAT;
 
+use Search::Utils;
+
 
 # ---------------------------  Utilities  -----------------------------
 #
@@ -431,7 +433,10 @@ sub WrapSearchResultsInXml
             CleanKwic( $textRef, $currentSeq );
 
             # munge cgi to have multiple q's
-            PT::PageTurnerUtils::HighlightMultipleQs($C, $parsedQsCgi, $textRef );
+            ## PT::PageTurnerUtils::HighlightMultipleQs($C, $parsedQsCgi, $textRef );
+            Search::Utils::HighlightMultipleQs($C,
+                                                     $parsedQsCgi,
+                                                     $textRef);
 
             $resultsToReturn .= wrap_string_in_tag_by_ref( $textRef, 'Kwic');
         }

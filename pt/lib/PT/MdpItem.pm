@@ -210,7 +210,7 @@ sub OcrHandler {
             $doc->clean_xml($ocrTextRef);
             
             # XMLify line breaks using <br/>
-        	$$ocrTextRef =~ s!^([^\n]+)\n!<span>$1</span><br />\n!gsm;
+        	### $$ocrTextRef =~ s!^([^\n]+)\n!<span>$1</span><br />\n!gsm;
             
             $self->{'ocrtextref'} =  $ocrTextRef;
         }
@@ -219,6 +219,11 @@ sub OcrHandler {
     return $self->{'ocrtextref'};
 }
 
+sub FormatOcrText {
+    my $self = shift;
+    my $ocrTextRef = $self->GetOcrTextRef();
+    $$ocrTextRef =~ s!^([^\n]+)\n!<span>$1</span><br />\n!gsm;
+}
 
 # ---------------------------------------------------------------------
 
