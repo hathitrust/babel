@@ -55,21 +55,117 @@
       .mdpPageLinks, .mdpPageLinks > ul {
         float: none;
       }
-      
-      .mdpControlContainer {
-        margin-top: 3em;
-      }
-      
+            
       .mdpControlContainer div {
         padding-top: 8px;
       }
       
+      #mdpSectionForm, #mdpPageForm {
+        float: none;
+      }
+      
+      #BottomNav {
+        left: 14px;
+      }
+      
+      .mdpPageLinksBottom ul li {
+        padding-right: 4px !important;
+      }
+      
+      .mdpPageLinksBottom ul li a img {
+        background: none;
+      }
+      
+      .mdpPageXofYBottom {
+        margin-left: 80px;
+      }
+      
     </style>
     
-    <div class="mdpPageLinks">
+    <div class="controls">
+      <p>
+        <xsl:element name="a">
+          <xsl:variable name="href">
+            <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+          </xsl:variable>
+          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
+          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
+          <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
+          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+          <xsl:text>View full catalog record</xsl:text>
+        </xsl:element>
+      </p>
+
+		  <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
+      <p>
+        <xsl:element name="a">
+          <xsl:attribute name="id">pagePdfLink</xsl:attribute>
+          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Download PDF - this page</xsl:attribute>
+          <xsl:attribute name="href">
+            <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
+          </xsl:attribute>
+          <xsl:attribute name="target">
+            <xsl:text>pdf</xsl:text>
+          </xsl:attribute>
+          <xsl:text>Download PDF - this page</xsl:text>
+        </xsl:element>
+      </p>
+      </xsl:if>
+      
+      <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
+        <p>
+          <xsl:element name="a">
+            <xsl:attribute name="title">Download full PDF</xsl:attribute>
+            <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+            <xsl:attribute name="class">tracked</xsl:attribute>
+            <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+            <xsl:attribute name="data-tracking-action">PT Download PDF - whole book</xsl:attribute>
+            <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+            <xsl:attribute name="href">
+              <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+            </xsl:attribute>
+            <xsl:text>Download PDF - whole book</xsl:text>
+          </xsl:element>
+        
+          <xsl:if test="$gFullPdfAccess = 'deny'">
+            <div id="noPdfAccess">
+              <p>
+                <xsl:choose>
+                  <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                    <xsl:text> to determine whether you can download this book.</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <xsl:text>Full PDF available only to authenticated users from </xsl:text>
+                    <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions.</a>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+                    <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
+                    <xsl:text>This book cannot be downloaded.</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>Sorry.</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </p>
+            </div>
+          </xsl:if>
+        </p>
+      </xsl:if>
+    </div>
+    
+    <div class="mdpPageLinks controls">
       <xsl:call-template name="BuildPageLinks">
         <xsl:with-param name="pPageLinks" select="MdpApp/PageLinks"/>
       </xsl:call-template>
+      <br clear="both" />
     </div>
     
     <div class="controls">
@@ -129,6 +225,7 @@
         </xsl:if>
         <xsl:call-template name="HiddenDebug" />
 			  
+			  <br clear="both" />
 			</form>
 
     </div>
@@ -311,8 +408,8 @@
         padding-right: 4px;
       }
       
-      .PTbutton {
-        width: 5.5em;
+      .PTbutton, #btnClassicView {
+        width: 8em;
       }
       
     </style>
@@ -467,7 +564,7 @@
           <span>Flip</span>
         </xsl:element>
       </li>
-      <xsl:if test="false()">
+      <xsl:if test="true()">
       <li>
         <xsl:variable name="title">
           <xsl:choose>

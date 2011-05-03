@@ -6,6 +6,27 @@
   version="1.0">
 
   <xsl:import href="../common-web/framework.xsl"/>
+
+  <xsl:variable name="gTitleTruncAmt">
+    <xsl:choose>
+      <xsl:when test="$gVolumeTitleFragment!=' '">
+        <xsl:value-of select="'40'"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="'50'"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <xsl:template name="BuildRDFaWrappedTitle">
+    <xsl:element name="span">
+      <xsl:attribute name="about"><xsl:value-of select="$gFOAFPrimaryTopicId"/></xsl:attribute>
+      <xsl:attribute name="property">dc:title</xsl:attribute>
+      <xsl:attribute name="rel">dc:type</xsl:attribute>
+      <xsl:attribute name="href">http://purl.org/dc/dcmitype/Text</xsl:attribute>
+      <xsl:attribute name="content"><xsl:value-of select="$gFullTitleString"/></xsl:attribute>
+    </xsl:element>
+  </xsl:template>
   
   <xsl:template name="BuildRDFaWrappedAuthor">
     <xsl:variable name="author">

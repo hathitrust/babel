@@ -82,7 +82,8 @@
             <xsl:element name="img">
               <xsl:attribute name="alt">First</xsl:attribute>
               <xsl:attribute name="src">
-                <xsl:value-of select="'//common-web/graphics/first_bottom.gif'"/>
+                <!-- <xsl:value-of select="'//common-web/graphics/first_bottom.gif'"/> -->
+                <xsl:value-of select="'//common-web/graphics/harmony/icon_first.png'"/>
               </xsl:attribute>
             </xsl:element>
           </xsl:element>
@@ -96,7 +97,8 @@
               <xsl:element name="img">
                 <xsl:attribute name="alt">Previous</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/prev_bottom_gray.gif'"/>
+                  <!-- <xsl:value-of select="'//common-web/graphics/prev_bottom_gray.gif'"/> -->
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous_grayed.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -110,7 +112,8 @@
               <xsl:element name="img">
                 <xsl:attribute name="alt">Previous</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/prev_bottom.gif'"/>
+                  <!-- <xsl:value-of select="'//common-web/graphics/prev_bottom.gif'"/> -->
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -125,7 +128,8 @@
               <xsl:element name="img">
                 <xsl:attribute name="alt">Next</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/next_bottom_gray.gif'"/>
+                  <!-- <xsl:value-of select="'//common-web/graphics/next_bottom_gray.gif'"/> -->
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next_grayed.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -139,7 +143,8 @@
               <xsl:element name="img">
                 <xsl:attribute name="alt">Next</xsl:attribute>
                 <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/next_bottom.gif'"/>
+                  <!-- <xsl:value-of select="'//common-web/graphics/next_bottom.gif'"/> -->
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next.png'"/>
                 </xsl:attribute>
               </xsl:element>
             </xsl:element>
@@ -157,7 +162,8 @@
             <xsl:element name="img">
               <xsl:attribute name="alt">Last</xsl:attribute>
               <xsl:attribute name="src">
-                <xsl:value-of select="'//common-web/graphics/last_bottom.gif'"/>
+                <!-- <xsl:value-of select="'//common-web/graphics/last_bottom.gif'"/> -->
+                <xsl:text>//common-web/graphics/harmony/icon_last.png</xsl:text>
               </xsl:attribute>
             </xsl:element>
           </xsl:element>
