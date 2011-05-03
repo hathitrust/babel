@@ -136,8 +136,8 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq '
                                                      $gMdpItem->GetOcrTextRef() );
             
             # add spans and line breaks to text with highlights                                         
-            $gMdpItem->FormatOcrText();                                         
         }
+        $gMdpItem->FormatOcrText();                                         
     }
 }
 
