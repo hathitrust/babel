@@ -108,18 +108,17 @@ pt:
   - http://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015051323379;view=text;seq=100;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;view=pdf;__LOCAL__
 
-ptsearch:
   - EMPTY_CACHE
-  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=uc1.\$b699489 q1=drama __LOCAL__
-  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=uc1.\$b699489 q1=__EMPTYOCR__ __LOCAL__
-  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=mdp.39015062775989 q1=medecine __LOCAL__
-  - /htapps/__CMD_STAGE__/ptsearch/cgi/ptsearch id=mdp.39015062775989 q1=foobar __LOCAL__
+  - /htapps/__CMD_STAGE__/pt/cgi/search id=uc1.\$b699489 q1=drama __LOCAL__
+  - /htapps/__CMD_STAGE__/pt/cgi/search id=uc1.\$b699489 q1=__EMPTYOCR__ __LOCAL__
+  - /htapps/__CMD_STAGE__/pt/cgi/search id=mdp.39015062775989 q1=medecine __LOCAL__
+  - /htapps/__CMD_STAGE__/pt/cgi/search id=mdp.39015062775989 q1=foobar __LOCAL__
 
   - EMPTY_CACHE
-  - http://__URL_STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489;q1=drama;__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/cgi/ptsearch?id=uc1.$b699489;q1=__EMPTYOCR__;__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989;q1=medecine;__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/cgi/ptsearch?id=mdp.39015062775989;q1=foobar;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=uc1.$b699489;q1=drama;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=uc1.$b699489;q1=__EMPTYOCR__;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=mdp.39015062775989;q1=medecine;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=mdp.39015062775989;q1=foobar;__LOCAL__
 
 ssd:
   - EMPTY_CACHE
