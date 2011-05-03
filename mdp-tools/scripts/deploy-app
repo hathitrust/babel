@@ -91,7 +91,7 @@ if ($help) {
 my $ALL = $opt_A;
 my @apps;
 if ($ALL) {
-    @apps = `cat $LOCATION/../app-list.txt`;
+    @apps = `cat $LOCATION/../lib/Config/app-list.txt`;
     chomp(@apps);
 }
 else {

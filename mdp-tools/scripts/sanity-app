@@ -54,7 +54,8 @@ my $LOCAL = $opt_L;
 my @staging_hosts = ('test', 'beta-1', 'beta-2', 'beta-3', );
 
 my $ALL = $opt_A;
-my @app_list = `cat $LOCATION/../app-list.txt`;
+my $app_list = "$LOCATION/../lib/Config/app-list.txt";
+my @app_list = `cat $app_list`;
 chomp(@app_list);
 
 my @apps;
@@ -82,7 +83,7 @@ foreach my $app (@apps) {
     }
 
     if (! grep(/^$app$/, @app_list)) {
-        PrintN(qq{App not recognized in app-list.txt: $app\n});
+        PrintN(qq{App not recognized in $app_list: $app\n});
         next;
     }
 
