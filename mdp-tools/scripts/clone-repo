@@ -103,7 +103,7 @@ sub __validate_clone_app {
             else {
                 print "Removing $app_dir ... ";
                 `rm -rf $app_dir`;
-                print "Done\n";
+                PrintY(qq{OK\n});
             }
         }
         else {
