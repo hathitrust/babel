@@ -818,85 +818,96 @@ XXX REDO push work for creating urls and separating selected vs unselected back 
 for now create an href with current_url . &fq=facetname:value
        ################################################-->
   <xsl:template name="facets">
+    <div class="narrow">
+      <h3>Narrow Search</h3>
+      <div id="selectedFacets">
+        <ul class="filters">
+          <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
+            
+            <xsl:text>
+            </xsl:text>
+            <li>
+              <xsl:variable name="value">
+                <xsl:value-of select="@name"/>
+              </xsl:variable>
+              
+              
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  
+                  <!-- &we need to remove this facet from the cgi -->
+                  <xsl:value-of select="unselectURL"/>
+                </xsl:attribute>
+                <xsl:attribute name ="class">
+                  unselect
+                </xsl:attribute>
+     
+                <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
 
-    <div id="selectedFacets">
-      <ul>
-        <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
+              </xsl:element>
 
-          <xsl:text>
-          </xsl:text>
-          <li>
-            <xsl:variable name="value">
+              <xsl:value-of select="fieldName"/>
+              <xsl:text>:</xsl:text>
               <xsl:value-of select="@name"/>
-            </xsl:variable>
-            
-            <xsl:value-of select="fieldName"/>
-            <xsl:text>:</xsl:text>
-            <xsl:value-of select="@name"/>
-            
-            <xsl:element name="a">
-              <xsl:attribute name="href">
+              
+            </li>
+          </xsl:for-each>
+        </ul>
+      </div>
+      
+      <!--  unselected facets ##########################################################   -->
+      
 
-                <!-- &we need to remove this facet from the cgi -->
-                <xsl:value-of select="unselectURL"/>
-              </xsl:attribute>
-              <xsl:text>(remove)</xsl:text>
-            </xsl:element>
-            
-          </li>
-        </xsl:for-each>
-      </ul>
-    </div>
+      <div id="facetlist">
+        <dl>
+          <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
 
-    <!--  unselected facets ##########################################################   -->
-    
-    <h2>refine search</h2>
-    <div id="facetlist">
-      <ul>
-        <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
-          <xsl:text>    
+           
+            <xsl:text>    
           </xsl:text>
-          <li class="facetField"><xsl:value-of select="@name"/></li>
+          <dt class="facetField"><xsl:value-of select="@name"/></dt>
           <xsl:text>                
-          </xsl:text>
-          <!--   WARNING!  waht we label the field in the html and the field name could be different
-               Where should the name/label mapping exist?
-               -->
-          <xsl:call-template name="facetFields">
-            <xsl:with-param name="fieldName">
-              <xsl:value-of select="@name"/>
-            </xsl:with-param>
-          </xsl:call-template>
+        </xsl:text>
+        <!--   WARNING!  waht we label the field in the html and the field name could be different
+             Where should the name/label mapping exist?
+             -->
+        <xsl:call-template name="facetFields">
+          <xsl:with-param name="fieldName">
+            <xsl:value-of select="@name"/>
+          </xsl:with-param>
+        </xsl:call-template>
+        
+        <dd>
+          <!-- the more/less widgets should not show up if there are less than 5 (or N) facets
+               this should be handled by the perl but currently is not -->
           <a  href="">
             <xsl:attribute name="class">
-            <!-- need to process name so there are no spaces i.e. "place of publication"-->
-              <xsl:value-of select="@name"/>
+              <!-- need to process name so there are no spaces i.e. "place of publication"-->
+              <xsl:value-of select="@normName"/>
               <xsl:text> morefacets</xsl:text>
             </xsl:attribute>
-            Show More</a>
-          <a class="lessfacets" href="">Show Fewer</a>
-
+            <i>more...</i></a>
+            <a class="lessfacets" href="">Show Fewer</a>
+          </dd>
         </xsl:for-each>
-      </ul>
+      </dl>
     </div>
-  </xsl:template>
+  </div>
+</xsl:template>
 
 
   <xsl:template name="facetFields">
     <xsl:param name="fieldName">Unknown facet</xsl:param>
-    <ul>
+
       <xsl:text>
       </xsl:text>
       <xsl:for-each select="facetValue"> 
         <xsl:text>
         </xsl:text>
-        <li>
+        <dd>
 
           <xsl:attribute name ="class">
             <xsl:value-of select="@class"/>
-            <xsl:text> </xsl:text>
-            <!-- need to process fieldname so there are no spaces -->
-            <xsl:value-of select="$fieldName"/>
           </xsl:attribute>
 
           <xsl:variable name="value">
@@ -921,17 +932,17 @@ for now create an href with current_url . &fq=facetname:value
                 </xsl:attribute>
                 
                 <xsl:value-of select="$value"/>
+              </xsl:element>
                 <xsl:text> (</xsl:text>
                 <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>
-              </xsl:element>
               
             </xsl:otherwise>
           </xsl:choose>
 
-        </li>
+        </dd>
       </xsl:for-each>
-    </ul>
+
   </xsl:template>
 
   <xsl:template name="GetCurrentCGI">

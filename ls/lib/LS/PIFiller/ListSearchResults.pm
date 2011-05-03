@@ -445,20 +445,27 @@ sub handle_FACETS_PI
     foreach my $facet_name (@{$facet_order})
     {
         my $facet_label = $facet2label->{$facet_name};
+        # normalize filed name by replacing spaces with underscores
+        my $norm_field_name = $facet_label;
+        $norm_field_name =~s,\s+,\_,g;
         
-        $xml .='<facetField name="' . $facet_label . '" >' . "\n";
+        $xml .='<facetField name="' . $facet_label . '" '. 'normName='.'"'.  "$norm_field_name" . '" '   .     ' >' . "\n";
         
+
         my $ary_ref=$unselected->{$facet_name};
         my $counter=0;
         foreach my $value (@{$ary_ref})
         {
             my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $value->{value} . '&quot;';
-            my $class=' class ="showfacet" ';
+            my $class=' class ="showfacet';
             
             if ($counter >= $MINFACETS)
             {
-                $class=' class ="hidefacet" ';
+                $class=' class ="hidefacet';
             }
+            
+            # add normalized facet field to class
+            $class .= ' ' . $norm_field_name . '" ';
             
             $xml .='<facetValue name="' . $value->{'value'} . '" '.$class . '> ' . "\n";
             $xml .='<facetCount>' . $value->{'count'} . '</facetCount>'. "\n";
