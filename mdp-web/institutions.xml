@@ -1,0 +1,54 @@
+<!-- institutions.xml XML include file should agree with /htapps/babel/wayf/lib/WAYF/IdpConfig.pm -->
+
+<Institutions>
+  <Inst sdrinst='testshib'>University of Michigan Test Shibboleth</Inst>
+  <Inst sdrinst='uom'>University of Michigan</Inst>
+  <Inst sdrinst='msu'>Michigan State University</Inst>
+  <Inst sdrinst='nwu'>Northwestern University</Inst>
+  <Inst sdrinst='chi'>University of Chicago</Inst>
+  <Inst sdrinst='ind'>Indiana University</Inst>
+  <Inst sdrinst='iowa'>University of Iowa</Inst>
+  <Inst sdrinst='purd'>Purdue University</Inst>
+  <Inst sdrinst='uiuc'>University of Illinois at Urbana-Champaign</Inst>
+  <Inst sdrinst='wisc'>University of Wisconsin - Madison</Inst>
+  <Inst sdrinst='columbia'>Columbia University</Inst>
+  <Inst sdrinst='minn'>University of Minnesota</Inst>
+  <Inst sdrinst='psu'>Pennsylvania State University</Inst>
+  <Inst sdrinst='prnc'>Princeton University</Inst>
+  <Inst sdrinst='jhu'>Johns Hopkins University</Inst>
+  <Inst sdrinst='ucsd'>University of California, San Diego</Inst>
+  <Inst sdrinst='stanford'>Stanford University</Inst>
+  <Inst sdrinst='cornell'>Cornell University</Inst>
+  <Inst sdrinst='tamu'>Texas A&amp;M University</Inst>
+  <Inst sdrinst='dart'>Dartmouth College</Inst>
+  <Inst sdrinst='washington'>University of Washington</Inst>
+  <Inst sdrinst='ucla'>University of California, Los Angeles</Inst>
+  <Inst sdrinst='utah'>University of Utah</Inst>
+  <Inst sdrinst='baylor'>Baylor University</Inst>
+  <Inst sdrinst='umd'>University of Maryland, College Park</Inst>
+  <Inst sdrinst='asu'>Arizona State University</Inst>
+  <Inst sdrinst='usu'>Utah State University</Inst>
+  <Inst sdrinst='ucmerced'>University of California, Merced</Inst>
+  <Inst sdrinst='mit'>Massachusetts Institute of Technology</Inst>
+  <Inst sdrinst='berkeley'>University of California, Berkeley</Inst>
+  <Inst sdrinst='uci'>University of California, Irvine</Inst>
+  <Inst sdrinst='ucm'>Universidad Complutense de Madrid</Inst>
+  <Inst sdrinst='uic'>University of Illinois at Chicago</Inst>
+  <Inst sdrinst='upenn'>University of Pennsylvania</Inst>
+  <Inst sdrinst='uva'>University of Virginia</Inst>
+  <Inst sdrinst='osu'>Ohio State University</Inst>
+  <Inst sdrinst='ucdavis'>University of California, Davis</Inst>
+  <Inst sdrinst='ucr'>University of California, Riverside</Inst>
+  <Inst sdrinst='ucsf'>University of California, San Francisco</Inst>
+  <Inst sdrinst='ucsb'>University of California, Santa Barbara</Inst>
+  <Inst sdrinst='ucsc'>University of California, Santa Cruz</Inst>
+  <Inst sdrinst='duke'>Duke University</Inst>
+  <Inst sdrinst='emory'>Emory University</Inst>
+  <Inst sdrinst='harvard'>Harvard University</Inst>
+  <Inst sdrinst='nyu'>New York University</Inst>
+  <Inst sdrinst='ncsu'>North Carolina State University</Inst>
+  <Inst sdrinst='umaryland'>University of Maryland, Baltimore</Inst>
+  <Inst sdrinst='unc'>University of North Carolina at Chapel Hill</Inst>
+  <Inst sdrinst='yale'>Yale University</Inst>
+  <Inst sdrinst='nccu'>North Carolina Central University</Inst>
+</Institutions>
