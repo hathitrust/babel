@@ -3,8 +3,10 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
 
-<xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
-<xsl:variable name="gGoogleOnclickTracking" select="'true'"/>
+  <xsl:key name="institution-names" match="/MBooksTop/MBooksGlobals/Institutions/Inst" use="@sdrinst"/> 
+
+  <xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
+  <xsl:variable name="gGoogleOnclickTracking" select="'true'"/>
 
   <xsl:template name="footer">
     <xsl:param name="gUsingBookReader" select="'false'" />
@@ -38,65 +40,16 @@
    </div>
  </xsl:template>
 
-
  <xsl:template name="footerBrandingLinks">
    <xsl:variable name="sdrinst" select="/MBooksTop/MBooksGlobals/EnvSDRINST"/>
    <div class="footerBrandingLinks">
      <xsl:choose>
-       <xsl:when test="$sdrinst='uom'">
-         <xsl:text>University of Michigan</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='wisc'">
-         <xsl:text>University of Wisconsin</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='ucal'">
-         <xsl:text>University of California</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='ind'">
-         <xsl:text>Indiana University</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='purdue'">
-         <xsl:text>Purdue University</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='chi'">
-         <xsl:text>The University of Chicago</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='uic'">
-         <xsl:text>University of Illinois at Chicago</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='uiuc'">
-         <xsl:text>University of Illinois</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='iowa'">
-         <xsl:text>University of Iowa</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='minn'">
-         <xsl:text>University of Minnesota</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='msu'">
-         <xsl:text>Michigan State University</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='nwu'">
-         <xsl:text>Northwestern University</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='osu'">
-         <xsl:text>The Ohio State University</xsl:text>
-       </xsl:when>
-       <xsl:when test="$sdrinst='psu'">
-         <xsl:text>Penn State University</xsl:text>
-       </xsl:when>
-       <xsl:otherwise>
-         <xsl:text></xsl:text>
-       </xsl:otherwise>
-     </xsl:choose>
-     <br />
-     <xsl:choose>
-       <xsl:when test="$sdrinst=''">
-         <xsl:text></xsl:text>
-       </xsl:when>
-       <xsl:otherwise>
+       <xsl:when test="$sdrinst!=''">
+         <xsl:value-of select="key('institution-names', $sdrinst)"/>
+         <br />
          <em>Member, HathiTrust</em>
-       </xsl:otherwise>
+       </xsl:when>
+       <xsl:otherwise></xsl:otherwise>
      </xsl:choose>
    </div>
  </xsl:template>
