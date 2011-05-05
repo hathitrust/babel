@@ -163,7 +163,7 @@
       <xsl:attribute name="property">dc:title</xsl:attribute>
       <xsl:attribute name="rel">dc:type</xsl:attribute>
       <xsl:attribute name="href">http://purl.org/dc/dcmitype/Text</xsl:attribute>
-      <xsl:value-of select="$gFullTitleString"/>        
+      <xsl:value-of select="$gFullTitleString"/>
     </xsl:element>
   </xsl:template>
 
@@ -775,6 +775,11 @@
         <li class="asearchform">
           <xsl:apply-templates select="$pSearchForm/HiddenVars"/>
           <xsl:element name="input">
+            <xsl:attribute name="type">hidden</xsl:attribute>
+            <xsl:attribute name="name">view</xsl:attribute>
+            <xsl:attribute name="value"><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" /></xsl:attribute>
+          </xsl:element>
+          <xsl:element name="input">
             <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
             <xsl:attribute name="name">q1</xsl:attribute>
@@ -994,6 +999,9 @@
       <p>
         <!-- <xsl:value-of select="$gFullTitleString" /> -->
         <xsl:call-template name="BuildRDFaWrappedTitle" />
+        <xsl:if test="$gVolumeTitleFragment != ' '">
+          <br /><span><xsl:value-of select="$gVolumeTitleFragment" /></span>
+        </xsl:if>
         <xsl:call-template name="BuildRDFaWrappedAuthor" />
         <xsl:call-template name="BuildRDFaWrappedPublished" />
       </p>
