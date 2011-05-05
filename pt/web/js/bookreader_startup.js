@@ -12,7 +12,12 @@ HT.resizeBookReader = function() {
   if ( $("#mdpToolbar").is(":visible")) {
     chromeHeight += $("#mdpToolbar").height();
   }
-  $("#BookReader").height(viewportHeight - chromeHeight - textDenyHeight - 25);
+  
+  var bookreader_height = viewportHeight - chromeHeight - textDenyHeight - 25;
+  if ( HT.reader.ui == 'embed' ) {
+    bookreader_height -= 32; // crollbar
+  }
+  $("#BookReader").height(bookreader_height);
   
   var $scrollable = $("div.mdpScrollableContainer");
   if ( $scrollable.length > 0 ) {

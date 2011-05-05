@@ -218,22 +218,8 @@
         
         <xsl:call-template name="bookreader-toolbar-items" />
         
-        <script type="text/javascript">
-          HT.params = {};
-          <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
-            <xsl:choose>
-              <xsl:when test="@name = 'seq'">
-                HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
-              </xsl:when>
-              <xsl:otherwise>
-                HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:for-each>
-          HT.params.view = "<xsl:value-of select="$gCurrentView" />";
-          HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
-        </script>
-
+        <xsl:call-template name="setup-ht-params" />
+        
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
@@ -288,21 +274,8 @@
 
         <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
         
-        <script type="text/javascript">
-          HT.params = {};
-          <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
-            <xsl:choose>
-              <xsl:when test="@name = 'seq'">
-                HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
-              </xsl:when>
-              <xsl:otherwise>
-                HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:for-each>
-          HT.params.view = "<xsl:value-of select="$gCurrentView" />";
-          HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
-        </script>
+        <xsl:call-template name="setup-ht-params" />
+        
       </head>
 
       <body class="yui-skin-sam">
@@ -322,6 +295,24 @@
 
       </body>
     </html>
+  </xsl:template>
+
+  <xsl:template name="setup-ht-params">
+    <script type="text/javascript">
+      HT.params = {};
+      <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
+        <xsl:choose>
+          <xsl:when test="@name = 'seq'">
+            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
+          </xsl:when>
+          <xsl:otherwise>
+            HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+      HT.params.view = "<xsl:value-of select="$gCurrentView" />";
+      HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
+    </script>
   </xsl:template>
 
   <xsl:template name="bookreader-javascript-init">
@@ -503,6 +494,9 @@
             <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/></a>
           </div>
         </div>
+        <xsl:call-template name="BuildPageLinks">
+          <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
+        </xsl:call-template>
         <div class="embedLink">
           <xsl:element name="a">
             <xsl:attribute name="href"><xsl:value-of select="//ViewType1UpLink" /></xsl:attribute>
@@ -514,9 +508,6 @@
             </xsl:call-template>
           </xsl:element>
         </div>  
-        <xsl:call-template name="BuildPageLinks">
-          <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
-        </xsl:call-template>
       </div>
     </div>
   </xsl:template>
