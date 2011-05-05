@@ -877,7 +877,7 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
     this.mode = mode;
     this.switchToolbarMode(mode);
     this.reduce = this.getSavedReduce();
-
+    
     // reinstate scale if moving from thumbnail view
     // $$$ TODO obsoleted by savedReduce tracking??
     // if (this.pageScale != this.reduce) {
@@ -924,7 +924,13 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
     this.switchCurrentPageDownloadLinks();
+    this.updateViewFields();
 
+}
+
+HTBookReader.prototype.updateViewFields = function() {
+  var view = this.getViewParam({ mode : this.mode });
+  $("input[name=view]").val(view);
 }
 
 HTBookReader.prototype.switchCurrentPageDownloadLinks = function() {
@@ -998,7 +1004,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
     
     if ( options && options.view && params.mode ) {
         var viewParam;
-        viewParam = "view=" + this.getMode(params);
+        viewParam = "view=" + this.getViewParam(params);
         if ( href.indexOf("view=") > -1 ) {
             href = href.replace(/view=\w+(;?)/, viewParam + "$1");
         } else {
@@ -1212,7 +1218,7 @@ HTBookReader.prototype.nextReduce = function( currentReduce, direction, reductio
 //________
 // Create a fragment string from the params object.
 // See http://openlibrary.org/dev/docs/bookurls for an explanation of the fragment syntax.
-HTBookReader.prototype.getMode = function(params) {
+HTBookReader.prototype.getViewParam = function(params) {
     var retval;
     if (params.mode == this.constMode1up) {
         if ( params.displayMode == "text" ) {
@@ -1247,7 +1253,7 @@ HTBookReader.prototype.fragmentFromParams = function(params) {
     
     // mode
     if ('undefined' != typeof(params.mode)) {   
-        fragments.push("mode", this.getMode(params)) ;
+        fragments.push("mode", this.getViewParam(params)) ;
     }
     
     // search
