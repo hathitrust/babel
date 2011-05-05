@@ -887,7 +887,16 @@ for now create an href with current_url . &fq=facetname:value
               <xsl:text> morefacets</xsl:text>
             </xsl:attribute>
             <i>more...</i></a>
-            <a class="lessfacets" href="">Show Fewer</a>
+
+            <a  href="">    
+            <xsl:attribute name="class">
+              <xsl:value-of select="@normName"/>
+              <xsl:text> lessfacets</xsl:text>
+            </xsl:attribute>
+
+            <i>less...</i></a>
+
+
           </dd>
         </xsl:for-each>
       </dl>

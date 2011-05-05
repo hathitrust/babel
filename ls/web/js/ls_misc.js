@@ -1,8 +1,8 @@
 /*ls_misc.js*/
 
 //alert("this is ls_misc.js");
+/** consider using jquery toggle for the less and more buttons **/
 
-/**$("li.hidequery").addClass("showquery");**/
 //$(document).ready(function()  below is jquery shortcut for document.ready...
 
 $(function()
@@ -12,20 +12,57 @@ $(function()
         Note that there is probably a better jquery way to do this than to get an array and look at the first element
         We should be able to look for "not morefacets"
     **/
-    $("a.morefacets").css("color","blue").bind('click',function(event)
-                                               {
-                                                 alert('Im clicked');
-                                                 var ary=$(this).attr("class").split(" ");
-                                                   // need only one that isn't morefacets or lessfacets
-                                                 // for now rely on order so morefacets =1
-                                                 var c=ary[0];
+    
+    //    $("a.lessfacets").css("color","green");
+    
+    $("a.lessfacets").hide();
+    
+    $("a.morefacets")
+      .bind('click',function(event)
+            {
 
-                                                 var myclass= "dd." +c;
-                                                 $(myclass).css("display","block").css("visibility","visible");
-                                                 // need to hide more button and show fewer button
-                                                 // stuff goes here
-                                                 event.preventDefault();
-                                               }
-                                               );
+              var c = getFacetClass(this);
+              var myclass= "dd." +c;
+              $(myclass).css("display","block").css("visibility","visible");
+              // need to hide more button and show fewer button
+
+              var moreSelector="a.morefacets." + c;
+              $(moreSelector).hide();
+
+              var lessSelector="a.lessfacets." + c;
+              $(lessSelector).show();
+              event.preventDefault();
+            }
+            );
+
+    $("a.lessfacets")
+      .bind('click',function(event)
+            {
+
+              var c = getFacetClass(this);
+              var myclass= "dd." +c;
+              $(myclass).hide();
+              var moreSelector="a.morefacets." + c;
+              $(moreSelector).show();
+
+              var lessSelector="a.lessfacets." + c;
+              $(lessSelector).hide();
+
+              event.preventDefault();
+            }
+            );
   }
+
   );
+
+function getFacetClass(selected)
+{
+
+              var ary=$(selected).attr("class").split(" ");
+              // need only one that isn't morefacets or lessfacets
+              // for now rely on order so morefacets =1
+              var c=ary[0];
+              return c;
+}
+
+
