@@ -775,6 +775,11 @@
         <li class="asearchform">
           <xsl:apply-templates select="$pSearchForm/HiddenVars"/>
           <xsl:element name="input">
+            <xsl:attribute name="type">hidden</xsl:attribute>
+            <xsl:attribute name="name">view</xsl:attribute>
+            <xsl:attribute name="value"><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" /></xsl:attribute>
+          </xsl:element>
+          <xsl:element name="input">
             <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
             <xsl:attribute name="name">q1</xsl:attribute>
