@@ -163,7 +163,7 @@
       <xsl:attribute name="property">dc:title</xsl:attribute>
       <xsl:attribute name="rel">dc:type</xsl:attribute>
       <xsl:attribute name="href">http://purl.org/dc/dcmitype/Text</xsl:attribute>
-      <xsl:value-of select="$gFullTitleString"/>        
+      <xsl:value-of select="$gFullTitleString"/>
     </xsl:element>
   </xsl:template>
 
@@ -994,6 +994,9 @@
       <p>
         <!-- <xsl:value-of select="$gFullTitleString" /> -->
         <xsl:call-template name="BuildRDFaWrappedTitle" />
+        <xsl:if test="$gVolumeTitleFragment != ' '">
+          <br /><span><xsl:value-of select="$gVolumeTitleFragment" /></span>
+        </xsl:if>
         <xsl:call-template name="BuildRDFaWrappedAuthor" />
         <xsl:call-template name="BuildRDFaWrappedPublished" />
       </p>
