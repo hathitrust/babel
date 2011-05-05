@@ -48,6 +48,12 @@ our ($opt_s, $opt_A, $opt_v, $opt_L);
 my $ops = getopts('LAs:v');
 
 my $STAGE = $opt_s || 'test';
+# If stage==test set correct environment for running scripts at the command line 
+if ($STAGE eq 'test') {
+    $ENV{SDRROOT} = '/htapps/test.babel/';
+    delete $ENV{HT_DEV};
+}
+
 my $VERBOSE = $opt_v;
 my $LOCAL = $opt_L;
 
