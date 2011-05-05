@@ -204,8 +204,14 @@ package WAYF::IdpConfig;
                    'link_text' => 'University of Illinois at Chicago',
                    'template'  => 'https://___HOST___/Shibboleth.sso/uic?target=___TARGET___',
                    'enabled'   => '1',
+                  },   
+   'yale'      => {
+                   'authtype'  => 'shibboleth',
+                   'link_text' => 'Yale University',
+                   'template'  => 'https://___HOST___/Shibboleth.sso/yale?target=___TARGET___',
+                   'enabled'   => '1',
                   },
-   
+
    # Waiting
    'upenn'     => {
                    'authtype'  => 'shibboleth',
@@ -295,12 +301,6 @@ package WAYF::IdpConfig;
                    'authtype'  => 'shibboleth',
                    'link_text' => 'University of North Carolina at Chapel Hill',
                    'template'  => 'https://___HOST___/Shibboleth.sso/unc?target=___TARGET___',
-                   'enabled'   => '0',
-                  },
-   'yale'      => {
-                   'authtype'  => 'shibboleth',
-                   'link_text' => 'Yale University',
-                   'template'  => 'https://___HOST___/Shibboleth.sso/yale?target=___TARGET___',
                    'enabled'   => '0',
                   },
    'nccu'      => {
