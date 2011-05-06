@@ -54,10 +54,6 @@ $gXPATBLDU  = "$local_bin_dir/xpatbldu";
 $gMULTIRGN  = "$local_bin_dir/multirgn";
 $gXPATU     = "$local_bin_dir/xpatu";
 
-$gPtLibMiscDir = $LOCATION . '/misc';
-$gDd        = $gPtLibMiscDir . '/MBooksXPatDataDictionary.xml';
-$gMdpTags   = $gPtLibMiscDir . '/mdp-regions.tags';
-
 $gPsetOffset = 200;
 $gPsetOffsetString = $gPsetOffset . qq{ shift.-} . int($gPsetOffset / 2);
 

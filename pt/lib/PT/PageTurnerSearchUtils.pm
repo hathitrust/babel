@@ -467,11 +467,11 @@ sub MaybeBuildDdFile
         $force_rebuild
        )
     {
-        DEBUG('index,all', qq{<h5>Creating dd file: $outputDdFile from $PTGlobals::gDd</h5>});
+        DEBUG('index,all', qq{<h5>Creating dd file: $outputDdFile from $Search::Utils::gDd</h5>});
 
         # read in blank xpat dd file for use in indexing, make
         # replacements in useable dd file, and save to cache dir
-        open( DDFILE, "<$PTGlobals::gDd" );
+        open( DDFILE, "<$Search::Utils::gDd" );
         my $ddText = join( '', <DDFILE> );
         close( DDFILE );
 
@@ -623,7 +623,7 @@ sub BuildRgnIndex
         my $currentDir = $ENV{'PWD'};
         chdir $PTGlobals::gIndexCacheDir;
 
-        my @command = ($PTGlobals::gMULTIRGN, "-f", "-D", $outputDdFile, "-t", $PTGlobals::gMdpTags);
+        my @command = ($PTGlobals::gMULTIRGN, "-f", "-D", $outputDdFile, "-t", $Search::Utils::gMdpTags);
         my $command = join(' ', @command);
         my $result = system(@command) / 256;
         ASSERT(($result == 0), qq{[ERROR] result="$result" index command=$command});
