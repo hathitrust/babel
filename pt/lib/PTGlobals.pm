@@ -259,11 +259,12 @@ $gCgiPathComponent         = ($ENV{'AUTH_TYPE'} eq 'shibboleth') ? '/shcgi' : '/
 $gCollectionBuilderCgiRoot = $gCgiPathComponent . '/mb';
 $gPageturnerCgiRoot        = $gCgiPathComponent . '/pt';
 $gImgsrvCgiRoot            = $gCgiPathComponent . '/imgsrv';
+$gLsSearchCgiRoot                = $gCgiPathComponent . '/ls';
 $gPageturnerSearchCgiRoot            = $gCgiPathComponent . '/pt/search';
 $gCatalogSearchPattern = "catalog.hathitrust.org/Search/";
 $gCatalogRecordPattern = "catalog.hathitrust.org/Record/";
 $gCollectionBuilderPattern = qq{$gCgiPathComponent/mb};
-$gTrackableReferers = qq{$gCatalogSearchPattern|$gCatalogRecordPattern|$gCollectionBuilderPattern};
+$gTrackableReferers = qq{$gCatalogSearchPattern|$gCatalogRecordPattern|$gCollectionBuilderPattern|$gLsSearchCgiRoot};
 $gTrackableLimit = 100;
 
 # ---------------------------------------------------------------------

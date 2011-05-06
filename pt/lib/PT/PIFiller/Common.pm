@@ -1134,6 +1134,8 @@ sub handle_SEARCH_RESULTS_LABEL_PI
                 $label = qq{<em>$collname</em> $label};
             }
             
+        } elsif ( $referer =~ m,$PTGlobals::gLsSearchCgiRoot, ) {
+            $label = qq{"Full text search" results};
         }
     } elsif ( $cgi->param('q1') && $script_name !~ m,$PTGlobals::gPageturnerSearchCgiRoot, ) {
         $label = qq{"Search in this text" results};
