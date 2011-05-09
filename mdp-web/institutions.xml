@@ -1,54 +1,257 @@
 <!-- institutions.xml XML include file should agree with /htapps/babel/wayf/lib/WAYF/IdpConfig.pm -->
 
 <Institutions>
-  <Inst sdrinst='testshib'>University of Michigan Test Shibboleth</Inst>
-  <Inst sdrinst='uom'>University of Michigan</Inst>
-  <Inst sdrinst='msu'>Michigan State University</Inst>
-  <Inst sdrinst='nwu'>Northwestern University</Inst>
-  <Inst sdrinst='chi'>University of Chicago</Inst>
-  <Inst sdrinst='ind'>Indiana University</Inst>
-  <Inst sdrinst='iowa'>University of Iowa</Inst>
-  <Inst sdrinst='purd'>Purdue University</Inst>
-  <Inst sdrinst='uiuc'>University of Illinois at Urbana-Champaign</Inst>
-  <Inst sdrinst='wisc'>University of Wisconsin - Madison</Inst>
-  <Inst sdrinst='columbia'>Columbia University</Inst>
-  <Inst sdrinst='minn'>University of Minnesota</Inst>
-  <Inst sdrinst='psu'>Pennsylvania State University</Inst>
-  <Inst sdrinst='prnc'>Princeton University</Inst>
-  <Inst sdrinst='jhu'>Johns Hopkins University</Inst>
-  <Inst sdrinst='ucsd'>University of California, San Diego</Inst>
-  <Inst sdrinst='stanford'>Stanford University</Inst>
-  <Inst sdrinst='cornell'>Cornell University</Inst>
-  <Inst sdrinst='tamu'>Texas A&amp;M University</Inst>
-  <Inst sdrinst='dart'>Dartmouth College</Inst>
-  <Inst sdrinst='washington'>University of Washington</Inst>
-  <Inst sdrinst='ucla'>University of California, Los Angeles</Inst>
-  <Inst sdrinst='utah'>University of Utah</Inst>
-  <Inst sdrinst='baylor'>Baylor University</Inst>
-  <Inst sdrinst='umd'>University of Maryland, College Park</Inst>
-  <Inst sdrinst='asu'>Arizona State University</Inst>
-  <Inst sdrinst='usu'>Utah State University</Inst>
-  <Inst sdrinst='ucmerced'>University of California, Merced</Inst>
-  <Inst sdrinst='mit'>Massachusetts Institute of Technology</Inst>
-  <Inst sdrinst='berkeley'>University of California, Berkeley</Inst>
-  <Inst sdrinst='uci'>University of California, Irvine</Inst>
-  <Inst sdrinst='ucm'>Universidad Complutense de Madrid</Inst>
-  <Inst sdrinst='uic'>University of Illinois at Chicago</Inst>
-  <Inst sdrinst='upenn'>University of Pennsylvania</Inst>
-  <Inst sdrinst='uva'>University of Virginia</Inst>
-  <Inst sdrinst='osu'>Ohio State University</Inst>
-  <Inst sdrinst='ucdavis'>University of California, Davis</Inst>
-  <Inst sdrinst='ucr'>University of California, Riverside</Inst>
-  <Inst sdrinst='ucsf'>University of California, San Francisco</Inst>
-  <Inst sdrinst='ucsb'>University of California, Santa Barbara</Inst>
-  <Inst sdrinst='ucsc'>University of California, Santa Cruz</Inst>
-  <Inst sdrinst='duke'>Duke University</Inst>
-  <Inst sdrinst='emory'>Emory University</Inst>
-  <Inst sdrinst='harvard'>Harvard University</Inst>
-  <Inst sdrinst='nyu'>New York University</Inst>
-  <Inst sdrinst='ncsu'>North Carolina State University</Inst>
-  <Inst sdrinst='umaryland'>University of Maryland, Baltimore</Inst>
-  <Inst sdrinst='unc'>University of North Carolina at Chapel Hill</Inst>
-  <Inst sdrinst='yale'>Yale University</Inst>
-  <Inst sdrinst='nccu'>North Carolina Central University</Inst>
+  <Inst
+      sdrinst="testshib"
+      template="https://___HOST___/Shibboleth.sso/uom?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Michigan Test Shibboleth</Inst>
+  <Inst
+      sdrinst="uom"
+      template="___TARGET___"
+      authtype="cosign"
+      enabled="1">University of Michigan</Inst>
+  <Inst
+      sdrinst="msu"
+      template="https://___HOST___/Shibboleth.sso/msu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Michigan State University</Inst>
+  <Inst
+      sdrinst="nwu"
+      template="https://___HOST___/Shibboleth.sso/nwu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Northwestern University</Inst>
+  <Inst
+      sdrinst="chi"
+      template="https://___HOST___/Shibboleth.sso/chi?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Chicago</Inst>
+  <Inst
+      sdrinst="ind"
+      template="https://___HOST___/Shibboleth.sso/ind?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Indiana University</Inst>
+  <Inst
+      sdrinst="iowa"
+      template="https://___HOST___/Shibboleth.sso/iowa?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Iowa</Inst>
+  <Inst
+      sdrinst="purd"
+      template="https://___HOST___/Shibboleth.sso/purd?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Purdue University</Inst>
+  <Inst
+      sdrinst="uiuc"
+      template="https://___HOST___/Shibboleth.sso/uiuc?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Illinois at Urbana-Champaign</Inst>
+  <Inst
+      sdrinst="wisc"
+      template="https://___HOST___/Shibboleth.sso/wisc?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Wisconsin - Madison</Inst>
+  <Inst
+      sdrinst="columbia"
+      template="https://___HOST___/Shibboleth.sso/columbia?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Columbia University</Inst>
+  <Inst
+      sdrinst="minn"
+      template="https://___HOST___/Shibboleth.sso/minn?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Minnesota</Inst>
+  <Inst
+      sdrinst="psu"
+      template="https://___HOST___/Shibboleth.sso/psu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Pennsylvania State University</Inst>
+  <Inst
+      sdrinst="prnc"
+      template="https://___HOST___/Shibboleth.sso/prnc?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Princeton University</Inst>
+  <Inst
+      sdrinst="jhu"
+      template="https://___HOST___/Shibboleth.sso/jhu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Johns Hopkins University</Inst>
+  <Inst
+      sdrinst="ucsd"
+      template="https://___HOST___/Shibboleth.sso/ucsd?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of California, San Diego</Inst>
+  <Inst
+      sdrinst="stanford"
+      template="https://___HOST___/Shibboleth.sso/stanford?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Stanford University</Inst>
+  <Inst
+      sdrinst="cornell"
+      template="https://___HOST___/Shibboleth.sso/cornell?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Cornell University</Inst>
+  <Inst
+      sdrinst="tamu"
+      template="https://___HOST___/Shibboleth.sso/tamu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Texas A&amp;M University</Inst>
+  <Inst
+      sdrinst="dart"
+      template="https://___HOST___/Shibboleth.sso/dart?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Dartmouth College</Inst>
+  <Inst
+      sdrinst="washington"
+      template="https://___HOST___/Shibboleth.sso/washington?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Washington</Inst>
+  <Inst
+      sdrinst="ucla"
+      template="https://___HOST___/Shibboleth.sso/ucla?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of California, Los Angeles</Inst>
+  <Inst
+      sdrinst="utah"
+      template="https://___HOST___/Shibboleth.sso/utah?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Utah</Inst>
+  <Inst
+      sdrinst="baylor"
+      template="https://___HOST___/Shibboleth.sso/baylor?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Baylor University</Inst>
+  <Inst
+      sdrinst="umd"
+      template="https://___HOST___/Shibboleth.sso/umd?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Maryland, College Park</Inst>
+  <Inst
+      sdrinst="asu"
+      template="https://___HOST___/Shibboleth.sso/asu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Arizona State University</Inst>
+  <Inst
+      sdrinst="usu"
+      template="https://___HOST___/Shibboleth.sso/usu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Utah State University</Inst>
+  <Inst
+      sdrinst="ucmerced"
+      template="https://___HOST___/Shibboleth.sso/ucmerced?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of California, Merced</Inst>
+  <Inst
+      sdrinst="mit"
+      template="https://___HOST___/Shibboleth.sso/mit?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Massachusetts Institute of Technology</Inst>
+  <Inst
+      sdrinst="berkeley"
+      template="https://___HOST___/Shibboleth.sso/berkeley?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of California, Berkeley</Inst>
+  <Inst
+      sdrinst="uci"
+      template="https://___HOST___/Shibboleth.sso/uci?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of California, Irvine</Inst>
+  <Inst
+      sdrinst="ucm"
+      template="https://___HOST___/Shibboleth.sso/ucm?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Universidad Complutense de Madrid</Inst>
+  <Inst
+      sdrinst="uic"
+      template="https://___HOST___/Shibboleth.sso/uic?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of Illinois at Chicago</Inst>
+  <Inst
+      sdrinst="yale"
+      template="https://___HOST___/Shibboleth.sso/yale?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Yale University</Inst>
+
+  <!-- waiting -->
+
+  <Inst
+      sdrinst="upenn"
+      template="https://___HOST___/Shibboleth.sso/upenn?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of Pennsylvania</Inst>
+  <Inst
+      sdrinst="uva"
+      template="https://___HOST___/Shibboleth.sso/uva?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of Virginia</Inst>
+  <Inst
+      sdrinst="osu"
+      template="https://___HOST___/Shibboleth.sso/osu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">Ohio State University</Inst>
+  <Inst
+      sdrinst="ucdavis"
+      template="https://___HOST___/Shibboleth.sso/ucdavis?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of California, Davis</Inst>
+  <Inst
+      sdrinst="ucr"
+      template="https://___HOST___/Shibboleth.sso/ucr?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of California, Riverside</Inst>
+  <Inst
+      sdrinst="ucsf"
+      template="https://___HOST___/Shibboleth.sso/ucsf?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of California, San Francisco</Inst>
+  <Inst
+      sdrinst="ucsb"
+      template="https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of California, Santa Barbara</Inst>
+  <Inst
+      sdrinst="ucsc"
+      template="https://___HOST___/Shibboleth.sso/ucsc?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of California, Santa Cruz</Inst>
+  <Inst
+      sdrinst="duke"
+      template="https://___HOST___/Shibboleth.sso/duke?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">Duke University</Inst>
+  <Inst
+      sdrinst="emory"
+      template="https://___HOST___/Shibboleth.sso/emory?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">Emory University</Inst>
+  <Inst
+      sdrinst="harvard"
+      template="https://___HOST___/Shibboleth.sso/harvard?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">Harvard University</Inst>
+  <Inst
+      sdrinst="nyu"
+      template="https://___HOST___/Shibboleth.sso/nyu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">New York University</Inst>
+  <Inst
+      sdrinst="ncsu"
+      template="https://___HOST___/Shibboleth.sso/ncsu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">North Carolina State University</Inst>
+  <Inst
+      sdrinst="umaryland"
+      template="https://___HOST___/Shibboleth.sso/umaryland?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of Maryland, Baltimore</Inst>
+  <Inst
+      sdrinst="unc"
+      template="https://___HOST___/Shibboleth.sso/unc?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of North Carolina at Chapel Hill</Inst>
+  <Inst
+      sdrinst="nccu"
+      template="https://___HOST___/Shibboleth.sso/nccu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">North Carolina Central University</Inst>
 </Institutions>
