@@ -50,7 +50,7 @@ my $ops = getopts('LAs:v');
 my $STAGE = $opt_s || 'test';
 # If stage==test set correct environment for running scripts at the command line 
 if ($STAGE eq 'test') {
-    $ENV{SDRROOT} = '/htapps/test.babel/';
+    $ENV{SDRROOT} = '/htapps/test.babel';
     delete $ENV{HT_DEV};
 }
 
