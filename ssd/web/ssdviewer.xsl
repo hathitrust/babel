@@ -144,7 +144,7 @@
         </xsl:element>
 
         <div id="SSDcontact">
-          <xsl:text>For questions or comments, contact DLPS: </xsl:text>
+          <xsl:text>For questions or comments, contact HathiTrust.org: </xsl:text>
           <xsl:element name="a">
             <xsl:attribute name="href">mailto:feedback@issues.hathitrust.org</xsl:attribute>
             <xsl:text>feedback@issues.hathitrust.org</xsl:text><br/>
