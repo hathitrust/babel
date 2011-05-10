@@ -146,8 +146,8 @@
         <div id="SSDcontact">
           <xsl:text>For questions or comments, contact DLPS: </xsl:text>
           <xsl:element name="a">
-            <xsl:attribute name="href">mailto:dlps-help@umich.edu</xsl:attribute>
-            <xsl:text>dlps-help@umich.edu</xsl:text><br/>
+            <xsl:attribute name="href">mailto:feedback@issues.hathitrust.org</xsl:attribute>
+            <xsl:text>feedback@issues.hathitrust.org</xsl:text><br/>
           </xsl:element>
         </div>
 
