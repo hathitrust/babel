@@ -5,7 +5,7 @@
       sdrinst="testshib"
       template="https://___HOST___/Shibboleth.sso/uom?target=___TARGET___"
       authtype="shibboleth"
-      enabled="1">University of Michigan Test Shibboleth</Inst>
+      enabled="0">University of Michigan Test Shibboleth</Inst>
   <Inst
       sdrinst="uom"
       template="___TARGET___"
