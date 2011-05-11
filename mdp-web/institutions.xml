@@ -171,6 +171,11 @@
       template="https://___HOST___/Shibboleth.sso/yale?target=___TARGET___"
       authtype="shibboleth"
       enabled="1">Yale University</Inst>
+  <Inst
+      sdrinst="unc"
+      template="https://___HOST___/Shibboleth.sso/unc?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">University of North Carolina at Chapel Hill</Inst>
 
   <!-- waiting -->
 
@@ -244,11 +249,6 @@
       template="https://___HOST___/Shibboleth.sso/umaryland?target=___TARGET___"
       authtype="shibboleth"
       enabled="0">University of Maryland, Baltimore</Inst>
-  <Inst
-      sdrinst="unc"
-      template="https://___HOST___/Shibboleth.sso/unc?target=___TARGET___"
-      authtype="shibboleth"
-      enabled="0">University of North Carolina at Chapel Hill</Inst>
   <Inst
       sdrinst="nccu"
       template="https://___HOST___/Shibboleth.sso/nccu?target=___TARGET___"
