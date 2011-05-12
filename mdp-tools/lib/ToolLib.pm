@@ -19,6 +19,7 @@ use Exporter ();
                 get_app_list
 
                 G_list_tags
+                G_last_tag
                 G_sync_local_master
                 G_sync_local_deployment
                 G_checkout_branch
@@ -42,6 +43,21 @@ $ToolLib::VERBOSE = 0;
 #                         Git (G_) Utilities
 #
 # ====================================================================
+
+# ---------------------------------------------------------------------
+
+=item G_last_tag
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub G_last_tag {
+    my $tags = G_list_tags(1);
+    my ($last_tag) = ($tags =~ m,Tag:\s*(.*),);
+    return $last_tag;
+}
 
 # ---------------------------------------------------------------------
 
@@ -528,7 +544,7 @@ sub G_list_tags {
 
     $num = $num ? $num : 3;
 
-    my $cmd = qq{git for-each-ref --count=$num --sort='-taggerdate' --format='%09Tag: %(refname) %(*body)%0a%09%09Date: %(taggerdate)%0a%09Commit: %(*objectname) %0a%09%09Author: %(*authorname) %0a%09%09Date: %(*authordate) %0a' 'refs/tags'};
+    my $cmd = qq{git for-each-ref --count=$num --sort='-taggerdate' --format='%0a%09Tag: %(refname)%(*body)%0a%09%09Date: %(taggerdate)%0a%09Commit: %(*objectname)%0a%09%09Author: %(*authorname)%0a%09%09Date: %(*authordate)' 'refs/tags'};
 
     my $list;
     if (execute_command_w_output($cmd, \$list)) {

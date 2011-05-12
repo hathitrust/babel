@@ -54,17 +54,26 @@ use ToolLib;
 
 sub stage_app_usage {
     my $s = qq{Usage: stage-app [options] [<app> [<app>]+]
-           Bring master branch of <app> up-to-date for testing under test.babel (default) or beta-{1,2,3}
-                 -s <staging area>: test (default), beta-{1,2,3}
-                 -b <branch> at /htapps/whoami.babel/<app> where <staging area> must be one of beta-{1,2,3}
-                 -A all apps
-                 -v verbose
-                 -h print help \n};
+      For <app>:
+        bring master branch up-to-date for testing under test.babel (default) or beta-{1,2,3}
+        bring local topic branch up-to-date for testing under beta-{1,2,3} only
+
+         When staging a single app at test.babel, prompts to display diff between
+         staged commit and last deployed commit. Invokes \$EDITOR to display diff
+
+         Options:
+            -s <staging area>: test (default), beta-{1,2,3}
+            -b <branch> at /htapps/whoami.babel/<app> where <staging area> must be one of beta-{1,2,3}
+            -A all apps
+            -d prompt to show diffs when staging multiple apps
+                 (always prompts when staging a single app)
+            -v verbose
+            -h print help \n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_s, $opt_A, $opt_b);
-my $ops = getopts('hvs:Ab:');
+our ($opt_h, $opt_v, $opt_s, $opt_A, $opt_b, $opt_d);
+my $ops = getopts('hvs:Ab:d');
 
 my @valid_beta_stages = qw(beta-1 beta-2 beta-3);
 my @all_valid_stages = (@valid_beta_stages, 'test');
@@ -79,39 +88,11 @@ if ($help) {
     exit 0;
 }
 
+my $FORCE_DIFF = defined($opt_d);
 my $BRANCH = $opt_b;
-my $ALL = $opt_A;
+my $all = $opt_A;
 
-my @all_apps = `cat $LOCATION/../lib/Config/app-list.txt`;
-chomp(@all_apps);
-
-my @apps;
-if (defined($BRANCH)) {
-    @apps = shift;
-}
-else {
-    if ($ALL) {
-        @apps = @all_apps;
-    }
-    else {
-        @apps = @ARGV;
-    }
-}
-
-foreach my $a (@apps) {
-    if (! grep(/^$a$/, @all_apps)) {
-        PrintN("$a is not a valid app\n");
-        my $apps = join(', ', @all_apps);
-        print "Valid apps are: $apps\n";
-        print stage_app_usage();
-        exit 1;
-    }
-}
-
-if (! scalar(@apps)) {
-    print stage_app_usage();
-    exit 1;
-}
+my @APPS = __handle_APPS($BRANCH, $all);
 
 my $STAGE = $opt_s;
 if ($BRANCH) {
@@ -139,13 +120,64 @@ else {
 my $rc;
 
 if ($BRANCH) {
-    $rc = stage_topic_branch($apps[0], $BRANCH);
+    $rc = stage_topic_branch($APPS[0], $BRANCH);
 }
 else {
-    $rc = stage_origin_master_branch(@apps);
+    $rc = stage_origin_master_branch(@APPS);
 }
 
 exit $rc;
+
+#
+# ------- Subroutines ------
+#
+
+# ---------------------------------------------------------------------
+
+=item __handle_APPS
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_APPS {
+    my $branch = shift;
+    my $all = shift;
+
+    my @all_apps = `cat $LOCATION/../lib/Config/app-list.txt`;
+    chomp(@all_apps);
+
+    my @apps;
+    if (defined($branch)) {
+        @apps = shift;
+    }
+    else {
+        if ($all) {
+            @apps = @all_apps;
+        }
+        else {
+            @apps = @ARGV;
+        }
+    }
+
+    foreach my $a (@apps) {
+        if (! grep(/^$a$/, @all_apps)) {
+            PrintN("$a is not a valid app\n");
+            my $apps = join(', ', @all_apps);
+            print "Valid apps are: $apps\n";
+            print stage_app_usage();
+            exit 1;
+        }
+    }
+
+    if (! scalar(@apps)) {
+        print stage_app_usage();
+        exit 1;
+    }
+
+    return @apps;
+}
 
 # ---------------------------------------------------------------------
 
@@ -172,6 +204,81 @@ sub list_submodule_dependencies {
 
 # ---------------------------------------------------------------------
 
+=item write_data
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub write_data {
+    my ($data_ref, $filename) = @_;
+
+    open(OUTFILE, ">:utf8", $filename) || die qq{Cannot open $filename for writing};
+    print OUTFILE $$data_ref;
+    close( OUTFILE );
+}
+
+# ---------------------------------------------------------------------
+
+=item __handle_diff
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_diff {
+    my ($app, $app_dir) = @_;
+
+    return 0
+      if (! chdir_to_app_dir($app_dir));
+
+    my $last_tag = G_last_tag();
+    PrintY("Begin diff generation: diff vs. tag ($last_tag) ... ");
+
+    my $diff;
+    return 0
+      if (! execute_command_w_output(qq{git diff --submodule=log $last_tag}, \$diff));
+
+    # Clean up submodule log entries. we only want the SHA1s
+    my @submodule_lines = ($diff =~ m,^(Submodule.*?:),gm);
+    $diff =~ s,^Submodule.*,,gms;
+    foreach my $sml (@submodule_lines) {
+        next
+          if ($sml =~ m,yui2-lib,);
+
+        my ($path_arg, $sha1_arg) = ($sml =~ m,Submodule (.*?) ([0-9a-f]+\.\.[0-9-a-f]+),);
+        # print "$path_arg $sha1_arg\n";
+
+        return 0
+          if (! chdir_to_app_dir("$app_dir/$path_arg"));
+
+        my $sub_diff;
+        return 0
+          if (! execute_command_w_output(qq{git diff $sha1_arg}, \$sub_diff));
+
+        $diff .= "\n#\n# ***** SUBMODULE $path_arg DIFF *****\n#\n\n" . $sub_diff;
+    }
+
+    if (! $diff) {
+        $diff = "No difference between tag=$last_tag and app=$app staged at $app_dir";
+    }
+    
+    my $diff_file = "/tmp/git-$last_tag-$$.diff";
+    write_data(\$diff, $diff_file);
+    
+    system( "$ENV{EDITOR}", $diff_file );
+    # system( "more", $diff_file );
+
+    PrintY("OK\n");
+
+    return 1;
+}
+
+
+# ---------------------------------------------------------------------
+
 =item stage_origin_master_branch
 
 Description
@@ -182,8 +289,12 @@ Description
 sub stage_origin_master_branch {
     my @apps = @_;
 
-    my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
     my $rc = 0;
+    my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
+
+    my $num_apps = scalar @apps;
+    my $prompt_for_diff = $FORCE_DIFF || ($num_apps == 1);
+
     foreach my $app (@apps) {
         my $fail_msg = qq{Failed to stage application ($app)\n};
         my $app_dir = "$app_root/$app";
@@ -222,6 +333,19 @@ sub stage_origin_master_branch {
         $rc |= $?;
 
         PrintY(qq{Staging succeeds\n}) unless ($rc);
+
+        if ($STAGE eq 'test') {
+            if ($prompt_for_diff) {
+                if (query_yn("\nSee diff of staged commit vs. last deployment?", 'n')) {
+                    if (! __handle_diff($app, $app_dir)) {
+                        PrintN(qq{Could not generate diff for application=$app at $app_dir\n});
+                    }
+                }
+                else {
+                    PrintY("OK\n");
+                }
+            }
+        }
     }
 
     return $rc;

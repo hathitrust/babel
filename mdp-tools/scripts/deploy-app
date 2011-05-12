@@ -67,22 +67,24 @@ use ToolLib;
 
 sub deploy_app_usage {
     my $s = qq{Usage: deploy-app [options] [<app> [<app>]+]
-           where <app> is the application to tag and deploy or re-deploy from an existing tag
-                 -m ictc|macc deploy using 'rdist -m {macc|ictc}.umdl.umich.edu'
-                 -v verbose
-                 -A all apps
-                 -T maj(or|min(or|ter(tiary
-                      increment the indicated version number component when tagging
-                 -h print help\n};
+      where <app> is the application to tag and deploy or re-deploy from an existing tag
+         -m ictc|macc deploy just to ictc or macc (rdist -m {macc|ictc}.umdl.umich.edu)
+         -v verbose
+         -A all apps
+         -T maj(or|min(or|ter(tiary
+              automatically build tag by incrementing the indicated version number component
+         -h print help\n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_T, $opt_A, $opt_m);
-my $ops = getopts('hvT:Am:');
+our ($opt_h, $opt_v, $opt_T, $opt_A, $opt_m, $opt_d);
+my $ops = getopts('hvT:Am:d');
 
-my $help = $opt_h;
+my $FORCE_DIFF = defined($opt_d);
+
 $ToolLib::VERBOSE = $opt_v;
 
+my $help = $opt_h;
 if ($help) {
     print deploy_app_usage();
     exit 0;
@@ -108,37 +110,15 @@ if (! scalar(@apps)) {
     exit 0;
 }
 
-my @ver_incrs = ('maj', 'min', 'ter',);
-my $VERSION_INCREMENT;
-if (defined($opt_T)) {
-    if (! grep(/^$opt_T$/, @ver_incrs)) {
-        PrintN(qq{ERROR: -T arg must be one of: } . join(', ', @ver_incrs) . "\n");
-        print deploy_app_usage();
-        exit 1;
-    }
-    $VERSION_INCREMENT = $opt_T;
-}
-
-my $domain = '.umdl.umich.edu';
-my $prefix = 'nas-';
-
-my @sites = ('macc', 'ictc');
-my $SITE = $opt_m;
-if (defined($SITE)) {
-    if (! grep(/^$SITE$/, @sites)) {
-        PrintN(qq{ERROR: -m arg must be one of: } . join(', ', @sites) . "\n");
-        print deploy_app_usage();
-        exit 1;
-    }
-    $SITE .= $domain;
-    $SITE = $prefix . $SITE;
-}
+my $VERSION_INCREMENT = __handle_VERSION_INCREMENT($opt_T);
+my $SITE = __handle_SITE($opt_m);
 
 my ($repo_root, $app_root) = get_HTDE_roots('test');
 my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to deploy application ($app)\n};
     my $app_dir = "$app_root/$app";
+    
 
     PrintY(qq{\nDeploying application ($app) from $app_dir\n});
 
@@ -203,6 +183,64 @@ exit $rc;
 #
 # Subroutines
 #
+
+# ---------------------------------------------------------------------
+
+=item __handle_SITE
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_SITE {
+    my $opt = shift;
+    
+    my @sites = ('macc', 'ictc');
+    my $site = $opt;
+
+    if (defined($site)) {
+        if (! grep(/^$site$/, @sites)) {
+            PrintN(qq{ERROR: -m arg must be one of: } . join(', ', @sites) . "\n");
+            print deploy_app_usage();
+            exit 1;
+        }
+
+        my $domain = '.umdl.umich.edu';
+        my $prefix = 'nas-';
+
+        $site .= $domain;
+        $site = $prefix . $site;
+    }
+    
+    return $site;
+}
+
+# ---------------------------------------------------------------------
+
+=item __handle_VERSION_INCREMENT
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_VERSION_INCREMENT {
+    my $opt = shift;
+    
+    my @ver_incrs = ('maj', 'min', 'ter',);
+
+    if (defined($opt)) {
+        if (! grep(/^$opt$/, @ver_incrs)) {
+            PrintN(qq{ERROR: -T arg must be one of: } . join(', ', @ver_incrs) . "\n");
+            print deploy_app_usage();
+            exit 1;
+        }
+    }
+    
+    return $opt;
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -296,7 +334,7 @@ Description
 # ---------------------------------------------------------------------
 sub __get_auto_increment_version {
     my $increment = shift;
-    my $last_tag = __last_tag();
+    my $last_tag = G_last_tag();
 
     if (! $last_tag){
         return "0 0 1";
@@ -346,7 +384,7 @@ sub __get_tag {
         $new = 1;
     }
     elsif (query_yn("Deploy using new tag?", 'y')) {
-        print qq{Ok. Last tag was: } . __last_tag() . qq{\n};
+        print qq{Ok. Last tag was: } . G_last_tag() . qq{\n};
 
         $tag = __build_tag($app);
         $new = 1;
@@ -405,21 +443,6 @@ sub __rdist_to_production {
 
 # ---------------------------------------------------------------------
 
-=item __last_tag
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __last_tag {
-    my $tags = G_list_tags(1);
-    my ($last_tag) = ($tags =~ m,Tag:\s*(.*),);
-    return $last_tag;
-}
-
-# ---------------------------------------------------------------------
-
 =item __validate_tag
 
 Description
@@ -449,7 +472,7 @@ sub __validate_tag {
         }
         if (! __tag_is_greater($tag)) {
             PrintN(qq{ERROR: new tag="$tag" is less than or equal last tag in chronological order\n});
-            print qq{Last tag was: }. __last_tag() . qq{\n};
+            print qq{Last tag was: }. G_last_tag() . qq{\n};
             $rc = 'notvalid';
         }
     }
