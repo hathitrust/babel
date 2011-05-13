@@ -587,7 +587,7 @@ sub __getConfigVal {
 =item __getFreedomVal
 
 Attempt to determine freedom based on IPADDR.  However, we can't trust
-remote address due to proxying.
+remote address due to proxying so test mdp.proxies for IPADDR.
 
 =cut
 
@@ -603,12 +603,21 @@ sub __getFreedomVal {
     if (($freedom eq 'free') && ($rights eq 'pdus')) {
         my $IPADDR = shift || $ENV{'REMOTE_ADDR'};
 
-        my $geoIP = Geo::IP->new();
-        my $country_code = $geoIP->country_code_by_addr($IPADDR);
-        my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
-
-        if (! grep(/$country_code/, @$pdusCountryCodesRef)) {
+        my $dbh = $self->__get_DBH();
+        my $statement = qq{SELECT ip FROM proxies WHERE ip='$IPADDR'};
+        my $sth = DbUtils::prep_n_execute($dbh, $statement);
+        my $ip = $sth->fetchrow_array || 0;
+        if ($ip) {
             $freedom = 'nonfree';
+        }
+        else {
+            my $geoIP = Geo::IP->new();
+            my $country_code = $geoIP->country_code_by_addr($IPADDR);
+            my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
+
+            if (! grep(/$country_code/, @$pdusCountryCodesRef)) {
+                $freedom = 'nonfree';
+            }
         }
     }
 
