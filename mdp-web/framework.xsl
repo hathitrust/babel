@@ -466,11 +466,11 @@
               <xsl:when test="$ssd = 'true'">
                 <a>
                   <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
-                  <xsl:value-of select="$gItemHandle"/>	  
+                  <xsl:value-of select="$gItemHandle"/>   
                 </a>
               </xsl:when>
               <xsl:otherwise>
-                <xsl:value-of select="$gItemHandle"/>	  
+                <xsl:value-of select="$gItemHandle"/>   
               </xsl:otherwise>
             </xsl:choose>
           </xsl:otherwise>
@@ -1020,7 +1020,7 @@
           <xsl:text>View full catalog record</xsl:text>
         </xsl:element>
       </p>
-			<p class="smaller">
+      <p class="smaller">
         <!-- Access &amp; Use: 
         <xsl:element name="a">
           <xsl:attribute name="class">tracked</xsl:attribute>
@@ -1033,7 +1033,7 @@
           <xsl:value-of select="$gAccessUseHeader" />
         </xsl:element> -->
         <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
-			</p>
+      </p>
     </div>
   </xsl:template>
   
@@ -1108,7 +1108,7 @@
           </li>
         </xsl:if>
         
-  		  <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
+        <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
         <li>
           <xsl:element name="a">
             <xsl:attribute name="id">pagePdfLink</xsl:attribute>
@@ -1166,7 +1166,7 @@
                 </p>
               </div>
             </xsl:if>
-						<div id="fullPdfFrame"></div>
+            <div id="fullPdfFrame"></div>
           </li>
         </xsl:if>
      </ul>
@@ -1184,7 +1184,7 @@
     <div class="shareLinks">
       <h2>Share</h2>
       <form action="" name="urlForm" id="urlForm">
-				<label class="smaller" for="permURL">Permanent link to this book</label>
+        <label class="smaller" for="permURL">Permanent link to this book</label>
         <!-- <input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" /> -->
         <xsl:element name="input">
           <xsl:attribute name="type">text</xsl:attribute>
@@ -1203,13 +1203,13 @@
         </xsl:element>
 
         <xsl:if test="$gUsingSearch = 'false'">
-				<br />
+        <br />
 
-				<label class="smaller" for="pageURL">Link to this page</label>
-				<xsl:variable name="pageLink">
-          <xsl:text>http://</xsl:text>
-          <xsl:value-of select="//HttpHost" />
-          <xsl:value-of select="//PageLink"/>
+        <label class="smaller" for="pageURL">Link to this page</label>
+        <xsl:variable name="pageLink">
+          <xsl:value-of select="$gItemHandle" />
+          <xsl:text>?urlappend=%3Bseq=</xsl:text>
+          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
         </xsl:variable>
 
         <xsl:element name="input">
