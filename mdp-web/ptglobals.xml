@@ -28,3 +28,4 @@
 <HasOcr><?HAS_OCR?></HasOcr>
 <AccessUse><?ACCESS_USE?></AccessUse>
 <HtId><?HT_ID?></HtId>
+<?CHUNK filename="institutions.xml"?>
