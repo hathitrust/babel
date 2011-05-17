@@ -60,11 +60,16 @@ function addItemToCollList(params) {
         var collID = params.coll_id;
         var collName = params.coll_name;
         var collectionList = document.getElementById('PTcollectionList');
+        
+        var mbCgi = "/cgi/mb";
+        if ( window.location.href.indexOf("/shcgi/") > -1 ) {
+          mbCgi = "/shcgi/mb";
+        } 
 
         var listLabel = document.getElementById('PTitemInCollLabel');
         listLabel.innerHTML = IN_YOUR_COLLS_LABEL;
         collectionList.innerHTML +=
-                '<li><a href="mb?a=listis;c=' + collID + '">' + collName + '</a></li>';
+                '<li><a href="' + mbCgi + '?a=listis;c=' + collID + '">' + collName + '</a></li>';
 
         var selectList = document.getElementById('PTaddItemSelect');
         for (var j=0; j < selectList.options.length; j++) {

@@ -63,6 +63,9 @@
         <!-- Feedback form -->
         <div id="feedbackDiv"></div>
 
+        <!-- New collection overlay -->
+        <div id="overlay"></div>
+
         <!-- Feedback -->
         <xsl:call-template name="Feedback"/>
 
