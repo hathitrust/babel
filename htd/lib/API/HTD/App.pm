@@ -99,6 +99,7 @@ use API::Utils;
 use API::DbIF;
 
 use API::HTD::Rights;
+use Geo::IP;
 
 my $DEBUG = '';
 
@@ -598,22 +599,23 @@ sub __getFreedomVal {
     my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
     my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
 
-    # Limit pdus volumes to un-proxied "U.S." clients
+    # Limit pdus volumes to "U.S." clients
     if (($freedom eq 'free') && ($rights eq 'pdus')) {
         my $IPADDR = shift || $ENV{'REMOTE_ADDR'};
 
-        require "Geo/IP.pm";
-        my $geoIP = Geo::IP->new();
-        my $country_code = $geoIP->country_code_by_addr($IPADDR);
-        my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
-
-        if (! grep(/^$country_code$/, @$pdusCountryCodesRef)) {
+        my $dbh = $self->__get_DBH();
+        my $statement = qq{SELECT ip FROM proxies WHERE ip='$IPADDR'};
+        my $sth = DbUtils::prep_n_execute($dbh, $statement);
+        my $ip = $sth->fetchrow_array || 0;
+        if ($ip) {
             $freedom = 'nonfree';
         }
         else {
-            # veryify this is not a US proxy for a non-US request
-            require "Access/Proxy.pm";
-            if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
+            my $geoIP = Geo::IP->new();
+            my $country_code = $geoIP->country_code_by_addr($IPADDR);
+            my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
+
+            if (! grep(/$country_code/, @$pdusCountryCodesRef)) {
                 $freedom = 'nonfree';
             }
         }
