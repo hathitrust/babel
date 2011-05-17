@@ -26,9 +26,14 @@ function setReferrer(ref) { referrer = ref; }
 function getReferrer() { return referrer; }
 
 function getNewCollForm () {
+    var mbCgi = "/cgi/mb";
+    if ( window.location.href.indexOf("/shcgi/") > -1 ) {
+      mbCgi = "/shcgi/mb";
+    } 
+  
     var width = formWidth - 100;
     var formHTML = 
-        "<form method='get' id='newcoll' name='newcoll' action='mb'><table>";
+        "<form method='get' id='newcoll' name='newcoll' action='" + mbCgi + "'><table>";
     
     formHTML = 
         formHTML + 

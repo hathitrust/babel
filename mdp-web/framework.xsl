@@ -1324,7 +1324,15 @@
     </xsl:variable>
 
     <xsl:variable name="ajax_request_partial_url">
-          <xsl:value-of select="concat('mb?', 'page=ajax', ';id=', $id )"/>
+        <xsl:choose>
+          <xsl:when test="$gUsingSearch = 'true'">
+            <xsl:text>../</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text></xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:value-of select="concat('mb?', 'page=ajax', ';id=', $id )"/>
     </xsl:variable>
 
     <div id="PTajaxAddItemPartialUrl" class="hidden">
