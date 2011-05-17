@@ -373,7 +373,7 @@ sub handle_FACETS_PI
     my $MINFACETS = $fconfig->get_facet_initial_show;
     my $facet2label=$fconfig->get_facet_mapping;
     
-#5; #number of facets to show before clicking on more
+
     
 
     
@@ -444,6 +444,8 @@ sub handle_FACETS_PI
 
     foreach my $facet_name (@{$facet_order})
     {
+        my $SHOW_MORE_LESS="false";
+        
         my $facet_label = $facet2label->{$facet_name};
         # normalize filed name by replacing spaces with underscores
         my $norm_field_name = $facet_label;
@@ -462,6 +464,8 @@ sub handle_FACETS_PI
             if ($counter >= $MINFACETS)
             {
                 $class=' class ="hidefacet';
+                #
+                $SHOW_MORE_LESS="true";
             }
             
             # add normalized facet field to class
@@ -475,7 +479,11 @@ sub handle_FACETS_PI
             $counter++;
             
         }
-        $xml.='</facetField>' . "\n"
+        $xml .="\n" .'<showmoreless>'. $SHOW_MORE_LESS . '</showmoreless>' ."\n";
+        
+            
+        $xml.='</facetField>' . "\n";
+        
         # output facet name stuff
         # output list of values for that facet  where do we put url
 #           <facetField name="language">

@@ -876,10 +876,13 @@ for now create an href with current_url . &fq=facetname:value
             <xsl:value-of select="@name"/>
           </xsl:with-param>
         </xsl:call-template>
-        
+
+        <!-- the more/less widgets should not show up if there are less than 5 (or N) facets
+             this should be handled by the perl but currently is not -->
+
+        <xsl:if test="showmoreless='true'">        
         <dd>
-          <!-- the more/less widgets should not show up if there are less than 5 (or N) facets
-               this should be handled by the perl but currently is not -->
+
           <a  href="">
             <xsl:attribute name="class">
               <!-- need to process name so there are no spaces i.e. "place of publication"-->
@@ -896,8 +899,8 @@ for now create an href with current_url . &fq=facetname:value
 
             <i>less...</i></a>
 
-
           </dd>
+        </xsl:if>
         </xsl:for-each>
       </dl>
     </div>
