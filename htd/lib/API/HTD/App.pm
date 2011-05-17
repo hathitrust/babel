@@ -615,6 +615,7 @@ sub __getFreedomVal {
             require "Access/Proxy.pm";
             if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
                 $freedom = 'nonfree';
+                if ($DEBUG eq 'access') { print qq{proxy blocked $IPADDR<br/>\n} }
             }
         }
     }
