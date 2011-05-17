@@ -43,7 +43,6 @@ $::VERSION = 0.2000;
 
 # Highest API version supported
 use constant HIGHEST_API_VERSION => 1;
-my @SUPPORTED_VERSIONS = (HIGHEST_API_VERSION);
 
 # ============================ Main ===================================
 
@@ -59,8 +58,6 @@ if ($action) {
 my $API_version = __determineVersion($Q);
 
 if (! $API_version) {
-    __errorExit($Q, '400 BAD REQUEST Invalid version');
-    # NOTREACHED
 }
 else {
     my $classPackage = qq{API::HTD::App::V_${API_version}::Plugin};
@@ -70,7 +67,7 @@ else {
         require $classPath;
     };
     if ($@) {
-        __errorExit($Q, '500 INTERNAL ERROR');
+        __errorExit($Q);
         # NOTREACHED
     }
     
@@ -92,9 +89,7 @@ Description
 # ---------------------------------------------------------------------
 sub __errorExit {
     my $Q = shift;
-    my $msg = shift;
-
-    print $Q->header(-Status => $msg);
+    print $Q->header(-Status => '400 BAD REQUEST Invalid version');
     exit 1;
 }
 
@@ -112,8 +107,8 @@ sub __determineVersion {
 
     # Default and validate the version param
     my $ver = $Q->param('v') ? $Q->param('v') : HIGHEST_API_VERSION;
-    if (! grep(/^$ver$/, @SUPPORTED_VERSIONS)) {
-        return undef;
+    if ($ver > HIGHEST_API_VERSION) {
+        return 0;
     }
 
     return $ver;
