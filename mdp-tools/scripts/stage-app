@@ -239,7 +239,7 @@ sub __handle_diff {
 
     my $diff;
     return 0
-      if (! execute_command_w_output(qq{git diff --submodule=log $last_tag}, \$diff));
+      if (! execute_command_w_output(qq{git diff --ignore-all-space --submodule=log $last_tag}, \$diff));
 
     # Clean up submodule log entries. we only want the SHA1s
     my @submodule_lines = ($diff =~ m,^(Submodule.*?:),gm);
@@ -256,7 +256,7 @@ sub __handle_diff {
 
         my $sub_diff;
         return 0
-          if (! execute_command_w_output(qq{git diff $sha1_arg}, \$sub_diff));
+          if (! execute_command_w_output(qq{git diff --ignore-all-space $sha1_arg}, \$sub_diff));
 
         $diff .= "\n#\n# ***** SUBMODULE $path_arg DIFF *****\n#\n\n" . $sub_diff;
     }
