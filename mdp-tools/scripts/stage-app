@@ -235,7 +235,8 @@ sub __handle_diff {
       if (! chdir_to_app_dir($app_dir));
 
     my $last_tag = G_last_tag();
-    PrintY("Begin diff generation: diff between HEAD and tag ($last_tag) ... ");
+    my $diff_file = "/tmp/git-$last_tag-$$.diff";
+    PrintY("Begin diff generation: diff between HEAD and tag ($last_tag), diff file: $diff_file ... ");
 
     my $diff;
     return 0
@@ -265,7 +266,6 @@ sub __handle_diff {
         $diff = "No difference between tag=$last_tag and app=$app staged at $app_dir";
     }
     
-    my $diff_file = "/tmp/git-$last_tag-$$.diff";
     write_data(\$diff, $diff_file);
     
     system( "$ENV{EDITOR}", $diff_file );
