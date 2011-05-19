@@ -12,7 +12,7 @@
      'c'        => '\d+',
      'c2'       => '\d+',
      'cn'       => '.*',
-     'iid'      => '\d+',
+     'iid'      => '.*',
      'q1'       => '.*',
      'desc'     => '.*',
      'page'     => 'addc|ajax|srchresults|opac_srchresults|srch|help|faq|mbookshome|home|colls_owned_json',
