@@ -21,6 +21,11 @@ html {
   overflow: hidden;
 }
 
+.htmlNoOverflowX {
+  overflow: hidden;
+  overflow-y: auto;
+}
+
 .footerFixed {
     position: absolute;
     bottom: 0;
@@ -46,6 +51,11 @@ html {
   margin: 0 0 0 0;
   padding:0;
   width:100%;
+}
+
+.overflowContentContainer {
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 
 #ControlContentContainer {
@@ -92,6 +102,14 @@ body {
   min-width: 660px;
 }
 
+#mdpBottomToolbar {
+  height: 100px;
+  margin-right: 10px;
+  margin-left: 16.5em;
+  margin-top: 0.5em;
+  min-width: 660px;
+}
+
 #mdpToolbarViews {
   height: 48px;
   margin-bottom: 0.5em;
@@ -110,7 +128,7 @@ body {
   padding-right: 4px;
 }
 
-#mdpToolbarNav {
+.mdpToolbarNav {
   height: 48px;
   background-color: #efefef;
   border-top: 1px solid ;
@@ -118,17 +136,17 @@ body {
   text-align: center;
 }
 
-#mdpToolbarNav form {
+.mdpToolbarNav form {
   margin: 0;
 }
 
-#mdpToolbarNav > ul, #mdpToolbarNav > form > ul {
+.mdpToolbarNav > ul, .mdpToolbarNav > form > ul {
   white-space: nowrap;
   margin-left: 0;
   padding-left: 10px;
 }
 
-#mdpToolbarNav li {
+.mdpToolbarNav li {
   list-style-type: none;
   display: inline;
   float: left;
@@ -253,12 +271,12 @@ span.prompt {
   border-bottom: 2px solid #666;
 }
 
-#mdpPageOptions {
+.mdpPageOptions {
   float: right;
   /*margin-top: -1px;*/
 }
 
-#mdpZoomOptions, #mdpPageWidgets {
+.mdpZoomOptions, .mdpPageWidgets {
   margin-left: auto !important;
   margin-right: auto;
   /*width: 10em;*/
@@ -267,7 +285,7 @@ span.prompt {
   white-space: nowrap;
 }
 
-#mdpPageWidgets li {
+.mdpPageWidgets li {
   float: none;
 }
 
@@ -284,17 +302,17 @@ span.prompt {
   padding-right: 0.5em !important;
 }
 
-#mdpPageOptions li {
+.mdpPageOptions li {
   padding-right: 8px;
 }
 
-#BRpagenum {
+.BRpagenum {
   width: 3em;
   border: 1px solid #d5d5d5;
   text-align: center;
 }
 
-#mdpZoomStatus {
+.mdpZoomStatus {
   cursor: pointer;
   width: 3.5em;
   background-color: white;
@@ -664,6 +682,7 @@ div.mdpScrollableContainer {
 
 #mdpText p {
   border: 1px solid #eee;
+  width: auto;
 }
 
 .disabled {
@@ -681,7 +700,7 @@ div.mdpScrollableContainer {
   background-color: #fffeff
 }
 
-#mdpSectionForm, #mdpPageForm {
+.mdpSectionForm, .mdpPageForm {
   float: left;
 }
 

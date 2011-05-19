@@ -85,6 +85,9 @@ function subclass(constructor, superConstructor)
 var HT = HT || {};
 HT.config = HT.config || {};
 
+HT.config.ARBITRARY_PADDING = 260;
+HT.config.ARBITRARY_WINDOW_WIDTH = 915;
+
 // bookreader utility
 // seed hash based on URL parameters as needed
 HT.init_from_params = function() {

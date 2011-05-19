@@ -27,6 +27,20 @@ HT.resizeBookReader = function() {
         $scrollable.height(checkHeight);
       }
   }
+
+  var $body = $("body");
+  var $container = $("#mdpContentContainer");
+
+  if ( $.browser.msie && parseInt($.browser.version) < 8 ) {
+    var $window = $(window);
+    if ( $window.width() >= HT.config.ARBITRARY_WINDOW_WIDTH ) {
+      $body.width($window.width());
+    } else if ( $body.width() < HT.config.ARBITRARY_WINDOW_WIDTH ) {
+      $body.width(HT.config.ARBITRARY_WINDOW_WIDTH);
+    }
+  }
+
+  var container_w = $body.width() - HT.config.ARBITRARY_WIDTH;
   
   if ( HT.reader.ui == 'embed' ) {
       var $branding = $(".branding");
@@ -36,9 +50,14 @@ HT.resizeBookReader = function() {
       var fixed = $branding.width() + $pageOptions.width() + 50;
       while (  fixed + $embedLink.width()  > w ) {
           $embedLink.width( $embedLink.width() - 5 );
-          console.log("MUST NARROW:", $embedLink.width(), w);
+          // console.log("MUST NARROW:", $embedLink.width(), w);
       }
+      // restore the ARBITRARY_WIDTH
+      container_w = $body.width();
   }
+  
+  $container.width(container_w);
+
 }
 
 

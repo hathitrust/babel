@@ -147,7 +147,7 @@
   <xsl:template match="/MBooksTop" mode="reader">
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
     <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
-    <xsl:variable name="min-width">
+    <!-- <xsl:variable name="min-width">
       <xsl:choose>
         <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
           <xsl:value-of select="350 + (1100 * ( $currentSize div 100 ))" />
@@ -156,6 +156,10 @@
           <xsl:value-of select="270 + (680 * ( $currentSize div 100 ))" />
         </xsl:otherwise>
       </xsl:choose>
+    </xsl:variable> -->
+
+    <xsl:variable name="min-width">
+      <xsl:value-of select="270 + (680 * ( $currentSize div 100 ))" />
     </xsl:variable>
 
     <html lang="en" xml:lang="en" 
@@ -165,9 +169,15 @@
       xmlns:foaf="http://xmlns.com/foaf/0.1/"
       version="XHTML+RDFa 1.0"
       >
-      <xsl:if test="$gUsingBookReader = 'true'">
-        <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="$gUsingBookReader = 'true'">
+          <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
+        </xsl:when>
+        <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
+          <xsl:attribute name="class"><xsl:text>htmlNoOverflowX</xsl:text></xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise/>
+      </xsl:choose>
 
       <head profile="http://www.w3.org/1999/xhtml/vocab">
         <!-- RDFa -->
@@ -186,15 +196,17 @@
         <xsl:call-template name="load_js_and_css"/>
         <!-- <xsl:call-template name="online_assessment"/> -->
 
-        <xsl:if test="$gCurrentView = 'image'">
+        <!-- <xsl:if test="$gCurrentView = 'image'">
           <style>
             html, body {
               min-width: <xsl:value-of select="$min-width" />px;
             }
           </style>
-        </xsl:if>
-
-        <xsl:comment><![CDATA[[if IE 7]>
+        </xsl:if> -->
+        
+        <xsl:text disable-output-escaping="yes">
+        <![CDATA[<!--[if IE 7]>]]>
+        </xsl:text>
         <style>
           #mdpNewStarburst {
             margin-left: -25px;
@@ -212,9 +224,14 @@
             padding-left: 0;
           }
           
+          body {
+            width: <xsl:value-of select="$min-width" />px;
+          }
+          
         </style>
-        <![endif]]]></xsl:comment>
-
+        <xsl:text disable-output-escaping="yes">
+        <![CDATA[<![endif]-->]]>
+        </xsl:text>
         
         <xsl:call-template name="bookreader-toolbar-items" />
         
@@ -243,9 +260,20 @@
           <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
         </xsl:call-template>
         
-        <xsl:if test="$gUsingBookReader = 'true'">
+        <!-- <xsl:if test="$gUsingBookReader = 'true'">
           <xsl:call-template name="bookreader-javascript-init" />
-        </xsl:if>
+        </xsl:if> -->
+        
+        <xsl:choose>
+          <xsl:when test="$gUsingBookReader = 'true'">
+            <xsl:call-template name="bookreader-javascript-init" />
+          </xsl:when>
+          <xsl:when test="$gCurrentView = 'image'">
+            <xsl:call-template name="classic-javascript-init" />
+          </xsl:when>
+          <xsl:otherwise />
+        </xsl:choose>
+        
         <xsl:call-template name="GetAddItemRequestUrl"/>
 
         <xsl:if test="$gEnableGoogleAnalytics='true'">
@@ -368,10 +396,14 @@
         HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
         HT.reader.lazyDelay = 500;
     </script>
-    <script type="text/javascript" src="/pt/js/bookreader_startup.js?ts={generate-id(.)}"/> 
+    <script type="text/javascript" src="/pt/js/bookreader_startup.js"/> 
     <script type="text/javascript">
         HT.monitor.run();
     </script>
+  </xsl:template>
+  
+  <xsl:template name="classic-javascript-init">
+    <script type="text/javascript" src="/pt/js/classic_startup.js"/> 
   </xsl:template>
 
   <xsl:template name="online_assessment">
@@ -458,6 +490,14 @@
         <xsl:attribute name="id">skipNav</xsl:attribute>
       </xsl:element>
       <xsl:call-template name="ContentContainer"/>
+      
+      <xsl:if test="$gUsingBookReader = 'false'">
+        <div id="mdpBottomToolbar">
+          <xsl:call-template name="build-toolbar-nav">
+            <xsl:with-param name="target">footer</xsl:with-param>
+          </xsl:call-template>
+        </div>
+      </xsl:if>
 
     </div>
 
@@ -591,39 +631,7 @@
         </ul>
       </div>
       </xsl:if>
-      <div id="mdpToolbarNav">
-        <form action="pt" method="GET" id="mdpSectionForm">
-          <ul id="mdpSectionOptions">
-            <xsl:if test="$gFeatureList/Feature">
-              <xsl:call-template name="BuildContentsList"/>
-            </xsl:if>
-          </ul>
-        </form>
-        <xsl:call-template name="BuildPageLinks">
-          <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
-        </xsl:call-template>
-        <ul id="mdpPageWidgets">
-          <xsl:if test="$gFinalView != 'plaintext'">
-          <li class="PTiconButton">
-            <xsl:call-template name="build-zoomout-button" />
-          </li>
-          <li class="PTiconButton">
-            <xsl:call-template name="build-zoomin-button" />
-          </li>
-          <li class="paddingLeftRight">&#160;</li>
-          <li class="PTiconButton">
-            <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/CounterClockwiseLink" />
-            <a href="{$href}" id="rotate-counterclockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left"><img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
-          </li>
-          <li class="PTiconButton">
-            <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/ClockwiseLink" />
-            <a href="{$href}" id="rotate-clockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
-          </li>
-
-          </xsl:if>
-        </ul>
-                    
-      </div>
+      <xsl:call-template name="build-toolbar-nav" />
     </div>
   </xsl:template>
   
@@ -870,9 +878,15 @@
   <!-- Image -->
   <xsl:template name="ContentContainer">
     <div id="mdpContentContainer">
-      <xsl:if test="$gUsingBookReader = 'true'">
-        <xsl:attribute name="class"><xsl:text>hideContentContainer</xsl:text></xsl:attribute>
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="$gUsingBookReader = 'true'">
+          <xsl:attribute name="class"><xsl:text>hideContentContainer</xsl:text></xsl:attribute>
+        </xsl:when>
+        <xsl:when test="$gCurrentView = 'image'">
+          <xsl:attribute name="class"><xsl:text>overflowContentContainer</xsl:text></xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise/>
+      </xsl:choose>
 
       <!-- Error message set from addItemToCollection javascript -->
       <div id="errormsg">
@@ -893,12 +907,82 @@
 
 
   </xsl:template>
+  
+  <xsl:template name="build-toolbar-nav">
+    <xsl:param name="target" select="'header'" />
+    <div class="mdpToolbarNav">
+      <xsl:if test="$target = 'header'">
+        <xsl:attribute name="id">mdpToolbarNav</xsl:attribute>
+      </xsl:if>
+      <form action="pt" method="GET" class="mdpSectionForm">
+        <xsl:if test="$target = 'header'">
+          <xsl:attribute name="id">mdpSectionForm</xsl:attribute>
+        </xsl:if>
+        <ul class="mdpSectionOptions">
+          <xsl:if test="$gFeatureList/Feature">
+            <xsl:call-template name="BuildContentsList">
+              <xsl:with-param name="target" select="$target" />
+            </xsl:call-template>
+          </xsl:if>
+        </ul>
+      </form>
+      <xsl:call-template name="BuildPageLinks">
+        <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
+        <xsl:with-param name="target" select="$target" />
+      </xsl:call-template>
+      <ul class="mdpPageWidgets">
+        <xsl:if test="$target = 'header'">
+          <xsl:attribute name="id">mdpPageWidgets</xsl:attribute>
+        </xsl:if>
+        <xsl:if test="$gFinalView != 'plaintext'">
+        <li class="PTiconButton">
+          <xsl:call-template name="build-zoomout-button">
+            <xsl:with-param name="target" select="$target" />
+          </xsl:call-template>
+        </li>
+        <li class="PTiconButton">
+          <xsl:call-template name="build-zoomin-button">
+            <xsl:with-param name="target" select="$target" />
+          </xsl:call-template>
+        </li>
+        <li class="paddingLeftRight">&#160;</li>
+        <li class="PTiconButton">
+          <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/CounterClockwiseLink" />
+          <a href="{$href}" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left">
+            <xsl:if test="$target = 'header'">
+              <xsl:attribute name="id">rotate-counterclockwise</xsl:attribute>
+            </xsl:if>
+            <img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" />
+          </a>
+        </li>
+        <li class="PTiconButton">
+          <xsl:variable name="href" select="/MBooksTop/MdpApp/RotateLinks/ClockwiseLink" />
+          <a href="{$href}" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right">
+            <xsl:if test="$target = 'header'">
+              <xsl:attribute name="id">rotate-clockwise</xsl:attribute>
+            </xsl:if>
+            <img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" />
+          </a>
+        </li>
+
+        </xsl:if>
+      </ul>
+                  
+    </div>
+  </xsl:template>
 
   <!-- CONTROL: Contents List -->
   
   <xsl:template name="BuildContentsList">
-    <label for="mdpJumpToSection" class="SkipLink">Jump to a section</label>
-    <select id="mdpJumpToSection" size="1" name="seq">
+    <xsl:param name="target" select="'header'" />
+    <xsl:variable name="formId">
+      <xsl:choose>
+        <xsl:when test="$target = 'header'">mdpJumpToSection</xsl:when>
+        <xsl:otherwise>mdpJumpToSectionFooter</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <label for="{$formId}" class="SkipLink">Jump to a section</label>
+    <select id="{$formId}" size="1" name="seq">
       <option value="" alt="">Jump to Section</option>
       <xsl:for-each select="$gFeatureList/Feature">
         <xsl:element name="option">
@@ -923,7 +1007,10 @@
         </xsl:element>
       </xsl:for-each>
     </select>
-    <input type="submit" value="Go" id="mdpJumpToSectionSubmit">
+    <input type="submit" value="Go">
+      <xsl:if test="$target = 'header'">
+        <xsl:attribute name="id">mdpJumpToSectionSubmit</xsl:attribute>
+      </xsl:if>
       <xsl:attribute name="class">tracked interactive </xsl:attribute>
       <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
       <xsl:attribute name="data-tracking-action">PT Jump to Section</xsl:attribute>
@@ -1028,7 +1115,12 @@
   <!-- CONTROL: Page Links -->
   <xsl:template name="BuildPageLinks">
     <xsl:param name="pPageLinks"/>
-    <ul id="mdpPageOptions">
+    <xsl:param name="target" select="'header'" />
+    <ul class="mdpPageOptions">
+      <xsl:if test="$target = 'header'">
+        <xsl:attribute name="id">mdpPageOptions</xsl:attribute>
+      </xsl:if>
+      
       
       <xsl:if test="$gCurrentReaderMode = 'full'">
       
@@ -1044,13 +1136,24 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:variable>
-        <form method="GET" action="pt" id="mdpPageForm">
+        <form method="GET" action="pt" class="mdpPageForm">
+          <xsl:if test="$target = 'header'">
+            <xsl:attribute name="id">mdpPageForm</xsl:attribute>
+          </xsl:if>
+          
+          <xsl:variable name="jumpToId">
+            <xsl:choose>
+              <xsl:when test="$target = 'header'">BRpagenum</xsl:when>
+              <xsl:otherwise>BRPagenumFooter</xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          
           <input type="hidden" name="u" id="u" value="1" />
           
-          <label for="BRpagenum">Jump to </label>
+          <label for="{$jumpToId}">Jump to </label>
 
           <xsl:element name="input">
-            <xsl:attribute name="id">BRpagenum</xsl:attribute>
+            <xsl:attribute name="id"><xsl:value-of select="$jumpToId" /></xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
             <xsl:attribute name="size">8</xsl:attribute>
             <xsl:attribute name="name">num</xsl:attribute>
@@ -1061,7 +1164,10 @@
           </xsl:element>
 
           <xsl:element name="input">
-            <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
+            <xsl:attribute name="class">mdpGotoButton</xsl:attribute>
+            <xsl:if test="$target = 'header'">
+              <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
+            </xsl:if>
             <xsl:attribute name="type">submit</xsl:attribute>
             <xsl:attribute name="value">Go</xsl:attribute>
             <xsl:attribute name="title">Go</xsl:attribute>
@@ -1091,7 +1197,10 @@
         <xsl:choose>
           <xsl:when test="$pPageLinks/FirstPageLink">
             <xsl:element name="a">
-              <xsl:attribute name="id">mdpFirstPageLink</xsl:attribute>
+              <xsl:attribute name="class">mdpFirstPageLink</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="id">mdpFirstPageLink</xsl:attribute>
+              </xsl:if>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT First Page</xsl:attribute>
@@ -1128,7 +1237,10 @@
         <xsl:choose>
           <xsl:when test="$pPageLinks/PreviousPageLink">
             <xsl:element name="a">
-              <xsl:attribute name="id">mdpPreviousPageLink</xsl:attribute>
+              <xsl:attribute name="class">mdpPreviousPageLink</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="id">mdpPreviousPageLink</xsl:attribute>
+              </xsl:if>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Previous Page</xsl:attribute>
@@ -1165,7 +1277,10 @@
         <xsl:choose>
           <xsl:when test="$pPageLinks/NextPageLink">
             <xsl:element name="a">
-              <xsl:attribute name="id">mdpNextPageLink</xsl:attribute>
+              <xsl:attribute name="class">mdpNextPageLink</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="id">mdpNextPageLink</xsl:attribute>
+              </xsl:if>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Next Page</xsl:attribute>
@@ -1202,7 +1317,10 @@
         <xsl:choose>
           <xsl:when test="$pPageLinks/LastPageLink">
             <xsl:element name="a">
-              <xsl:attribute name="id">mdpLastPageLink</xsl:attribute>
+              <xsl:attribute name="class">mdpLastPageLink</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="id">mdpLastPageLink</xsl:attribute>
+              </xsl:if>
               <xsl:attribute name="class">tracked interactive </xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Last Page</xsl:attribute>
