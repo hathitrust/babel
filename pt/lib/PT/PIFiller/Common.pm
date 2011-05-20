@@ -1094,13 +1094,18 @@ sub handle_SEARCH_RESULTS_LINK_PI
     my $ses = $C->get_object('Session');
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
+
+    my $script_name = $cgi->script_name;
     
     my $href;
     if ( my $referer = $ses->get_transient('referer') ) {
         $href = $referer;
         $href =~ s,&,&amp;,g;
-    } else {
+    } elsif ( $script_name !~ m,/search, ) {
+        # $script_name at this point is /pt/cgi/search NOT /cgi/pt/search
         $href = BuildSearchResultsUrl($cgi);
+    } else {
+        $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
     }
 
     return $href;
@@ -1137,8 +1142,13 @@ sub handle_SEARCH_RESULTS_LABEL_PI
         } elsif ( $referer =~ m,$PTGlobals::gLsSearchCgiRoot, ) {
             $label = qq{"Full text search" results};
         }
-    } elsif ( $cgi->param('q1') && $script_name !~ m,$PTGlobals::gPageturnerSearchCgiRoot, ) {
-        $label = qq{"Search in this text" results};
+    } elsif ( $cgi->param('q1') ) {
+        # $script_name at this point is /pt/cgi/search NOT /cgi/pt/search
+        if ( $script_name !~ m,/search, ) {
+            $label = qq{"Search in this text" results};            
+        } else {
+            $label = qq{page};
+        }
     }
 
     return $label;
@@ -1200,7 +1210,4 @@ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-=cut
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH T
