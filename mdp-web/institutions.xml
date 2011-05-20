@@ -254,4 +254,9 @@
       template="https://___HOST___/Shibboleth.sso/nccu?target=___TARGET___"
       authtype="shibboleth"
       enabled="0">North Carolina Central University</Inst>
+  <Inst
+      sdrinst="udel"
+      template="https://___HOST___/Shibboleth.sso/udel?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of Delaware</Inst>
 </Institutions>
