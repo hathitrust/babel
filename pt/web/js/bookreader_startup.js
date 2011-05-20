@@ -18,16 +18,18 @@ HT.resizeBookReader = function() {
   if ( HT.reader.ui == 'embed' ) {
     bookreader_height -= 32; // scrollbar
   }
-  
-  if ( bookreader_height < 500 || $("#mbHeader").is(":hidden") ) {
-    $("#mbFooter").hide().css('z-index', 10);
-    $("#mbHeader").hide();
-    $(".MBooksNav").css('margin-right', "20px");
-    $("#mbToggleHeader").show();
+
+  console.log("HEIGHT 1", bookreader_height);
+  if ( $("#mbHeader").is(":hidden") ) {
+    // $("#mbFooter").hide().css('z-index', 10);
+    // $("#mbHeader").hide();
+    // $(".MBooksNav").css('margin-right', "20px");
+    // $("#mbToggleHeader").show();
     bookreader_height += $("#mbHeader").height() + $("#mbFooter").height();
     innerHeight = 0;
   }
-  
+  console.log("HEIGHT 2", bookreader_height);
+    
   $("#BookReader").height(bookreader_height);
   
   var $scrollable = $("div.mdpScrollableContainer");
@@ -128,8 +130,33 @@ $(document).ready(function() {
     $("#mbToggleHeader").click(function() {
       $("#mbHeader").toggle("blind");
       $("#mbFooter").toggle("blind");
+      $(".mdpControlContainer").toggle("blind");
       $(this).toggleClass("active");
+      
+      $("#mdpUberContainer").toggleClass("fullscreen");
+      
+      setTimeout(function() {
+        HT.resizeBookReader();
+        
+        // need to refresh to center the page
+        $(window).trigger('resize');
+      }, 500);
+      
+      //HT.resizeBookReader();
+      
+      // if ( bookreader_height < 500 || $("#mbHeader").is(":hidden") ) {
+      //   $("#mbFooter").hide().css('z-index', 10);
+      //   $("#mbHeader").hide();
+      //   $(".MBooksNav").css('margin-right', "20px");
+      //   $("#mbToggleHeader").show();
+      //   bookreader_height += $("#mbHeader").height() + $("#mbFooter").height();
+      //   innerHeight = 0;
+      // }
+      
+      
       return false;
     })
+    
+    $("#mbToggleHeader").show();
     
 })

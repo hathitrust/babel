@@ -102,6 +102,10 @@ body {
   min-width: 660px;
 }
 
+.fullscreen #mdpToolbar, .fullscreen #mdpContentContainer {
+  margin-left: 10px;
+}
+
 #mdpBottomToolbar {
   height: 100px;
   margin-right: 10px;
