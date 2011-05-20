@@ -779,6 +779,20 @@
             <xsl:attribute name="name">view</xsl:attribute>
             <xsl:attribute name="value"><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" /></xsl:attribute>
           </xsl:element>
+          <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+            <xsl:element name="input">
+              <xsl:attribute name="type">hidden</xsl:attribute>
+              <xsl:attribute name="name">seq</xsl:attribute>
+              <xsl:attribute name="value"><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" /></xsl:attribute>
+            </xsl:element>
+          </xsl:if>
+          <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
+            <xsl:element name="input">
+              <xsl:attribute name="type">hidden</xsl:attribute>
+              <xsl:attribute name="name">num</xsl:attribute>
+              <xsl:attribute name="value"><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']" /></xsl:attribute>
+            </xsl:element>
+          </xsl:if>
           <xsl:element name="input">
             <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
