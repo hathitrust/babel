@@ -246,6 +246,10 @@
           </div>
         </xsl:if>
         
+        <xsl:if test="$gUsingBookReader = 'true'">
+          <a href="#" title="Pull Down Header" id="mbToggleHeader">Show Header&#160;</a>
+        </xsl:if>
+        
         <xsl:call-template name="header"/>
 
         <xsl:call-template name="BookReaderContainer" />

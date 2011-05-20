@@ -2,6 +2,7 @@
 
 HT.resizeBookReader = function() {
   var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
+  
   var innerHeight = $("#mbFooter").height() + $("#mbHeader").height();
   var textDenyHeight = 0;
   var $textDeny = $("#mdpTextDeny");
@@ -15,8 +16,18 @@ HT.resizeBookReader = function() {
   
   var bookreader_height = viewportHeight - chromeHeight - textDenyHeight - 25;
   if ( HT.reader.ui == 'embed' ) {
-    bookreader_height -= 32; // crollbar
+    bookreader_height -= 32; // scrollbar
   }
+  
+  if ( bookreader_height < 500 || $("#mbHeader").is(":hidden") ) {
+    $("#mbFooter").hide().css('z-index', 10);
+    $("#mbHeader").hide();
+    $(".MBooksNav").css('margin-right', "20px");
+    $("#mbToggleHeader").show();
+    bookreader_height += $("#mbHeader").height() + $("#mbFooter").height();
+    innerHeight = 0;
+  }
+  
   $("#BookReader").height(bookreader_height);
   
   var $scrollable = $("div.mdpScrollableContainer");
@@ -113,5 +124,12 @@ $(document).ready(function() {
     //       // }, 500);
     //     }
     // }
+    
+    $("#mbToggleHeader").click(function() {
+      $("#mbHeader").toggle("blind");
+      $("#mbFooter").toggle("blind");
+      $(this).toggleClass("active");
+      return false;
+    })
     
 })

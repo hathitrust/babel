@@ -708,3 +708,33 @@ div.mdpScrollableContainer {
   float: left;
 }
 
+#mbToggleHeader {
+  display: none;
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  height: 29px;
+  /*width: 32px;*/
+  width: auto;
+  padding-right: 32px;
+  padding-left: 8px;
+  
+  background: #EF7C22 url(/pt/pulldown.png) no-repeat right;
+/*  background: #DDD url() repeat/repeat-x/repeat-y/no-repeat scroll/fixed top left/top center/top right/center left/center center/center right/bottom left/bottom center/bottom right/x-% y-%/x-pos y-pos;
+*/  color: #EEE;
+  font-weight: bold;
+  z-index: 5;
+/*  border-left: 2px solid #666;
+  border-bottom: 2px solid black;
+  border-top: 1px solid #666;
+  border-right: 0;*/
+  text-decoration: none;
+}
+
+#mbToggleHeader.active {
+  background: #EF7C22 url(/pt/pullup.png) no-repeat;
+}
+
+#mbToggleHeader:hover {
+  border-bottom: 4px solid #666;
+}
