@@ -80,6 +80,10 @@
         margin-left: 80px;
       }
       
+      #mdpBottomToolbar {
+        display: none;
+      }
+      
     </style>
     
     <div class="controls">
