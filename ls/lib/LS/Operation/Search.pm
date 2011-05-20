@@ -102,53 +102,48 @@ sub execute_operation
     
     # Paging: Solr doc number is 0-relative
     my ($solr_start_row, $solr_num_rows) = $self->get_solr_page_values($C);
-    # Limited to Full-text?
-    my $ft_limited = ($cgi->param('lmt') eq 'ft');
 
-    # Always do both full-text and unresticted queries to get counts.
-    # Get actual rows back for just full text or for all items using a
-    # filter query based on the 'lmt' url param.
+# 1 determine primary query rows = > 0
+# 2 determine secondary query rows = 0
+#query types = full_text|search_only| all
+# move this hash to config file
 
-    # ----------- Full-text query (ft) ------------
-    my ($solr_ft_start_row, $solr_ft_num_rows) =
-        $ft_limited ? ($solr_start_row, $solr_num_rows) : (0, 0);
-#    my $Q_ft = new LS::Query::FullText($C, $user_query_string, undef, 
-    my $Q_ft = new LS::Query::Facets($C, $user_query_string, undef, 
-                                       {
-                                        'solr_start_row' => $solr_ft_start_row,
-                                        'solr_num_rows' => $solr_ft_num_rows,
-                                        'full_text_query' => 1,
-                                       });
-
-    my $rs_ft = new LS::Result::Facets();
-    $rs_ft = $searcher->get_populated_Solr_query_result($C, $Q_ft, $rs_ft);
+    my  $lmt_2_query_type = {
+                        'ft'=>'full_text',
+                        'so'=>'search_only',
+                        'all'=>'all',
+                         'default'=>'all',
+                            };
     
-    # Log
-    $Q_ft->log_query($C, $searcher, $rs_ft, 'ls');
+    my $primary_type; # primary type to get actual search results
+    if (defined ($cgi->param('lmt') ) )
+    {
+        $primary_type = $lmt_2_query_type->{$cgi->param('lmt')}
+    }
+    else
+    {
+        $primary_type= $lmt_2_query_type->{'default'}
+    }
+    my $secondary_type ='full_text';  # secondary type to just get counts, default=full_text use math to get so
+    if ($primary_type ne 'all')
+    {
+        $secondary_type = 'all';
+    }
 
-    # ----------- All unrestricted (all) -----------
-    my ($solr_all_start_row, $solr_all_num_rows) =
-        $ft_limited ? (0, 0) : ($solr_start_row, $solr_num_rows);
-    my $Q_all = new LS::Query::Facets($C, $user_query_string, undef, 
-                                        {
-                                         'solr_start_row' => $solr_all_start_row,
-                                         'solr_num_rows' => $solr_all_num_rows,
-                                         'full_text_query' => 0,
-                                        });
-    my $rs_all = new LS::Result::Facets();
-    $rs_all = $searcher->get_populated_Solr_query_result($C, $Q_all, $rs_all);
-
-    # Log
-    $Q_all->log_query($C, $searcher, $rs_all, 'ls');
+# consider refactoring so we only ask for rs and Q?
+    my ($primary_rs, $primary_well_formed,$primary_processed)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows);
+    my ($secondary_rs, $secondary_well_formed,$secondary_processed) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0);
     
+
     my %search_result_data =
         (
-         'full_text_result_object' => $rs_ft,
-         'all_result_object' => $rs_all,
+         'primary_result_object'   => $primary_rs,
+         'secondary_result_object' =>$secondary_rs,
          'well_formed' => {
-                           'ft'  => $Q_ft->well_formed(),
-                           'all' => $Q_all->well_formed(),
-                           'processed_query_string' => $Q_all->get_processed_query_string(),
+
+                           'primary'                => $primary_well_formed ,
+                           'secondary'              => $secondary_well_formed ,
+                           'processed_query_string' =>$primary_processed ,
                           },
         );
 
@@ -159,6 +154,33 @@ sub execute_operation
 
 
 # ---------------------------------------------------------------------
+sub do_query{
+    my $self= shift;
+    my $C = shift;
+    my $searcher = shift;
+    my $user_query_string = shift;
+    my $query_type = shift;
+    my $start_rows =shift;
+    my $num_rows = shift;
+    
+    my $Q = new LS::Query::Facets($C, $user_query_string, undef, 
+                                       {
+                                        'solr_start_row' => $start_rows,
+                                        'solr_num_rows' => $num_rows,
+                                        'query_type' => $query_type ,
+                                       });
+
+    my $rs = new LS::Result::Facets($query_type);
+    $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs);
+    
+    #    Log
+    #XXX will not having $rs_ft break the log? it shoudnt
+    $Q->log_query($C, $searcher, $rs, 'ls');
+    return ($rs,$Q->well_formed(),$Q->get_processed_query_string());
+}
+
+# ---------------------------------------------------------------------
+
 
 =item get_solr_page_values
 

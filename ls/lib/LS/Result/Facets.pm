@@ -43,6 +43,9 @@ Subclass Initialize LS::Result::FullText object.
 sub AFTER_Result_initialize
 {
     my $self = shift;
+    my $result_type = shift;
+    $self->__set_result_type($result_type);
+    
 }
 
 
@@ -324,6 +327,39 @@ sub get_result_docs
     my $self = shift;
     return $self->{'result_response_docs_arr_ref'};
 }
+
+
+# ---------------------------------------------------------------------
+
+=item __set_result_type
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __set_result_type
+{
+    my $self = shift;
+    my $type = shift;
+    $self->{'result_type'} = $type;
+}
+
+# ---------------------------------------------------------------------
+
+=item get_result_type
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_result_type
+{
+    my $self = shift;
+    return $self->{'result_type'};
+}
+
 
 
 1;

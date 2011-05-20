@@ -73,9 +73,29 @@ sub get_id_arr_ref
 
 # ---------------------------------------------------------------------
 
+=item get_query_type
+
+Description: returns what was passed in on config: (full_text_query|search_only_query|all_query)
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_query_type
+{
+    my $self = shift;
+    my $C = shift;
+
+    my %query_config = %{ $self->{'query_configuration'} };
+    return ($query_config{'query_type'});
+}
+# ---------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------
+
 =item full_text_query
 
-Description
+Description: returns 1 if this is a full text query and 0 otherwise
 
 =cut
 
@@ -87,6 +107,23 @@ sub full_text_query
 
     my %query_config = %{ $self->{'query_configuration'} };
     return ($query_config{'full_text_query'});
+}
+# ---------------------------------------------------------------------
+
+=item search_only_text_query
+
+Description returns 1 if this is a search only query and 0 otherwise
+
+=cut
+
+# ---------------------------------------------------------------------
+sub search_only_query
+{
+    my $self = shift;
+    my $C = shift;
+
+    my %query_config = %{ $self->{'query_configuration'} };
+    return ($query_config{'search_only_query'});
 }
 
 # ---------------------------------------------------------------------
@@ -219,19 +256,32 @@ sub get_Solr_query_string
         ($solr_start, $solr_rows) =
             ($self->get_start_row($C), $self->get_solr_num_rows($C));
     }
+#XXX temp set rows to one
+#    my $START_ROWS = qq{&start=$solr_start&rows=1};
 
     my $START_ROWS = qq{&start=$solr_start&rows=$solr_rows};
 
-    # Full-text filter query (fq)
+    my $query_type=$self->get_query_type($C);
+    
+    # filter query (fq) for Full text or search only
     my $FQ = '';
-    if ($self->full_text_query($C)) {
+    my $RIGHTS;
+    
+    if ( $query_type ne 'all') {
         # Get list of attrs that equate to 'allow' for this user. This
         # is mainly for GeoIP check to add '9' to the list
         my $attr_list_aryref = [1,7];
         eval {
             $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
         };
-        $FQ = '&fq=rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
+        $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
+        my $OP="";
+        if ( $query_type eq 'search_only') 
+        {
+            $OP='-';
+        }
+        
+        $FQ = '&fq='.$OP . $RIGHTS;
     }
 
 # Facet aspects of query added here
@@ -257,7 +307,16 @@ sub get_Solr_query_string
     {
         foreach my $fquery (@{$facetquery})
         {
-            $FACETQUERY.='&fq=' . $fquery;
+            # XXXthis should probably be moved to a sub clean_facet_query
+            #facet=language:%22German%22
+            my ($field,@rest)=split(/\:/,$fquery);
+            my $string=join(':',@rest);
+            # Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+            $string =~ s,([!&:?\[\]\\^{\|}~]),\\$1,g;
+#            $string =~s/\s+/%20/g;
+             my $cleaned_fquery=$field . ':' . $string;
+            
+            $FACETQUERY.='&fq=' . $cleaned_fquery;
         }
     }
     
@@ -271,6 +330,9 @@ sub get_Solr_query_string
     }
 
     my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY . $EXPLAIN;    
+#XXX temp remove facets
+#    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT .  $WRITER .     
+
     
     #XXX for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
     #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
@@ -373,7 +435,11 @@ sub make_query_clause{
         return "";
     }
     my $processed_q =$self->get_processed_user_query_string($q);
-
+    #XXX current processing will remove unbalenced quotes but leave in balenced quotes
+    # since the dismax query needs to be quoted, we need to escape any quotes in the query
+    #  ie  "foo" => \"foo\"
+    $processed_q =~s,\",\\\",g;
+    
     my $config = $self->get_facet_config;    
     
     my $field_hash = $config->get_param_2_solr_map;
@@ -397,8 +463,9 @@ sub make_query_clause{
     my $Q;
     
 
-    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
-
+#    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
+# try dismax instead of edismax
+    $Q= ' ' . $op  . ' _query_:"{!dismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
     return $Q;
     
 }

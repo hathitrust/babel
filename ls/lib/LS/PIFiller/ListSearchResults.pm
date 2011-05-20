@@ -244,9 +244,17 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     my $cgi = $C->get_object('CGI');
     my $temp_cgi = new CGI($cgi);
     my $limit_text = "";
-
+#foobar XXX check these
+# we have primary and secondary counts and types
     my $num_full_text = $act->get_transient_facade_member_data($C, 'full_text_count');
     my $num_all = $act->get_transient_facade_member_data($C, 'all_count');
+    
+    my $num_search_only = $num_all;
+    if ($num_full_text > 0){
+       $num_search_only = $num_all - $num_full_text;
+    }
+    
+    # XXX redo for lmt can equal ft or so
     my $is_limit_on = ($cgi->param('lmt') eq 'ft') ? 'YES' : 'NO';
 
     if ($is_limit_on eq 'NO')
@@ -266,7 +274,7 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     $s .= wrap_string_in_tag($full_text_href, 'FullTextHref');
     $s .= wrap_string_in_tag($num_full_text, 'FullTextCount');
     $s .= wrap_string_in_tag($num_all, 'AllItemsCount');
-
+    $s .= wrap_string_in_tag($num_search_only, 'SearchOnlyCount');
     return $s;
 }
 
@@ -294,22 +302,25 @@ sub handle_SEARCH_RESULTS_PI
 
     my $output;
     my ($query_time, $solr_error_msg);
+    my $cgi = $C->get_object('CGI');
+    my $limit = $cgi->param('lmt');
+    my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');
+    my $primary_rs = $$search_result_data_hashref{'primary_result_object'};
+    my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
 
-    my $rs_hash_ref = LS::Utils::get_result_object_pair($C, $act);
-    my $primary_rs = $rs_hash_ref->{'primary'};
-    my $secondary_rs = $rs_hash_ref->{'secondary'};
+
+
 
     # Was there a search?
-    my $search_result_data_hashref =
-        $act->get_transient_facade_member_data($C, 'search_result_data');
     if ($search_result_data_hashref->{'undefined_query_string'}) {
         $query_time = 0;
         $solr_error_msg = '';
     }
     else {
+        # we can just add up all 3 query times. Forget primary secondary
         $query_time = $primary_rs->get_query_time() + $secondary_rs->get_query_time();
-        $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
 
+        $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
         my $result_ref = _ls_wrap_result_data($C, $primary_rs);
         $output .= $$result_ref;
     }
@@ -319,7 +330,7 @@ sub handle_SEARCH_RESULTS_PI
 
     # Is the query a well-formed-formula (WFF)?
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
-    my $well_formed = ($wff_hashref->{'ft'} && $wff_hashref->{'all'});
+    my $well_formed = ($wff_hashref->{'primary'} && $wff_hashref->{'secondary'});
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
     $output .= wrap_string_in_tag($wff_hashref->{'processed_query_string'}, 'ProcessedQueryString');
 
@@ -381,17 +392,11 @@ sub handle_FACETS_PI
     $facet_chunk='<H1>Facets go here</H1>';
 
     # get data  the facet data should have been inserted in the search result data in Result::Facet.pm
+    #XXX replace with primary
     my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
     my $facet_hash;
     
-    if ($cgi->param('lmt') eq 'ft')
-    {
-       $facet_hash =$result_data->{'full_text_result_object'}->{'facet_hash_ref'};
-    }
-    else
-    {
-        $facet_hash =$result_data->{'all_result_object'}->{'facet_hash_ref'};
-    }
+    $facet_hash =$result_data->{'primary_result_object'}->{'facet_hash_ref'};
     
     
     #XXX do we want to have a sub that is responsible for cleaning the hash ref?

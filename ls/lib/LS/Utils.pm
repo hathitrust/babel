@@ -21,7 +21,7 @@ use CGI;
 
 use Context;
 use LS::Action;
-
+use Utils;
 # ---------------------------------------------------------------------
 
 =item get_result_object_pair
@@ -34,7 +34,7 @@ Description
 sub get_result_object_pair {
     my $C = shift;
     my $act = shift;
-
+    ASSERT(0,qq{Utils::get_result_object_pair should not be called});
     my %rs_hash;
 
     my $config = $C->get_object('MdpConfig');
@@ -42,15 +42,8 @@ sub get_result_object_pair {
 
     my $search_result_data_hashref =
         $act->get_transient_facade_member_data($C, 'search_result_data');
-    my $ft_limited = ($cgi->param('lmt') eq 'ft');
-    if ($ft_limited) {
-        $rs_hash{'primary'} = $$search_result_data_hashref{'full_text_result_object'};
-        $rs_hash{'secondary'} = $$search_result_data_hashref{'all_result_object'};
-    }
-    else {
-        $rs_hash{'primary'} = $$search_result_data_hashref{'all_result_object'};
-        $rs_hash{'secondary'} = $$search_result_data_hashref{'full_text_result_object'};
-    }
+        $rs_hash{'primary'} = $$search_result_data_hashref{'primary_result_object'};
+        $rs_hash{'secondary'} = $$search_result_data_hashref{'secondary_result_object'};
 
     return \%rs_hash;
 }
@@ -68,11 +61,12 @@ sub get_full_text_result_object
 {
     my $C = shift;
     my $act = shift;
-
+    ASSERT(0,qq{Utils::get_full_text_result object should not be called});
     my $search_result_data_hashref =
         $act->get_transient_facade_member_data($C, 'search_result_data');
     my $rs = $$search_result_data_hashref{'full_text_result_object'};
 
+    
     return $rs;
 }
 
@@ -89,7 +83,7 @@ sub get_all_result_object
 {
     my $C = shift;
     my $act = shift;
-
+    ASSERT(0,qq{Utils::get_all_text_result object should not be called});
     my $search_result_data_hashref =
         $act->get_transient_facade_member_data($C, 'search_result_data');
     my $rs = $$search_result_data_hashref{'all_result_object'};

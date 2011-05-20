@@ -93,9 +93,11 @@ sub execute_operation
     ASSERT(defined($act), qq{action not defined});
 
     # Result object
-    my $rs_hash_ref = LS::Utils::get_result_object_pair($C, $act);
-    my $primary_rs = $rs_hash_ref->{'primary'};
-    
+
+    my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
+    my $primary_rs = $result_data->{'primary_result_object'};
+    my $secondary_rs= $result_data->{'secondary_result_object'};
+
     if (! $primary_rs->http_status_ok())
     {
         my $solr_error_msg = qq{SEARCH_FAILED};
@@ -131,13 +133,33 @@ sub execute_operation
     my $pager = $self->do_paging($C, $cgi, $primary_count);
     $act->set_transient_facade_member_data($C, 'pager', $pager);
 
-    # Get total number of records
-    my $all_count = LS::Utils::get_all_result_object($C, $act)->get_total_hits();
-    $act->set_transient_facade_member_data($C, 'all_count', $all_count);
+    #XXX foobar TODO: either rewrite the utils or get all and ft count somewhere else
+## where are these used?
+# probably want this in a subroutine rather than in utils or maybe put get_count(result_type) in utils
+    
+    my $primary_rs_type   = $primary_rs->get_result_type();
+    my $secondary_rs_type = $secondary_rs->get_result_type();
+    
+    my $counts={};
+    
+    $counts->{$primary_rs_type}= $primary_rs->get_total_hits;
+    $counts->{$secondary_rs_type}= $secondary_rs->get_total_hits;
+    foreach my $key (keys %{$counts})
+    {
+        if ($key eq 'full_text')
+        {
+            $counts->{'search-only'} = $counts->{'all'} - $counts->{'full_text'};
+        }
+        elsif ($key eq 'search_only')
+        {
+            $counts->{'full_text'} = $counts->{'all'} - $counts->{'search_only'};
+        }
 
-    # Get number of ft records
-    my $ft_count = LS::Utils::get_full_text_result_object($C, $act)->get_total_hits();
-    $act->set_transient_facade_member_data($C, 'full_text_count', $ft_count);
+    }
+
+    $act->set_transient_facade_member_data($C, 'all_count', $counts->{'all'});
+    $act->set_transient_facade_member_data($C, 'full_text_count', $counts->{'full_text'});
+    $act->set_transient_facade_member_data($C, 'search_only_count', $counts->{'search_only'});
 
     return $ST_OK;
 }
