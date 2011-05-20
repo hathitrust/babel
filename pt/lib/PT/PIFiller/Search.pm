@@ -374,10 +374,10 @@ sub WrapSearchResultsInXml
     my $cgi = $C->get_object('CGI');
 
     my $tempCgi = new CGI( $cgi );
-    $tempCgi->param( 'view', 'image' );
+    $tempCgi->delete( 'view' );
     $tempCgi->delete( 'type' );
     
-    my $view = $cgi->param('view') || 'text';
+    my $view = $cgi->param('view'); # just use the default pt view
     if ( $view eq 'thumb' ) { $view = '1up'; }
 
     $rset->init_iterator();
@@ -418,7 +418,7 @@ sub WrapSearchResultsInXml
                 if ( $number );
             $tempCgi->delete( 'orient' );
             $tempCgi->delete( 'u' );
-            $tempCgi->param('view',$view);
+            $tempCgi->param('view',$view) if ( $view );
             my $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
 
             $resultsToReturn .= wrap_string_in_tag( $href, 'Link');
