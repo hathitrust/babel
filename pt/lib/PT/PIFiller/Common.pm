@@ -1105,7 +1105,12 @@ sub handle_SEARCH_RESULTS_LINK_PI
         # $script_name at this point is /pt/cgi/search NOT /cgi/pt/search
         $href = BuildSearchResultsUrl($cgi);
     } else {
-        $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
+        # check the original CGI parameters before
+        # Prolog added default seq, etc.
+        my $tempCgi = new CGI();
+        if ( $tempCgi->param('seq') ) {
+            $href = Utils::url_to($cgi, $PTGlobals::gPageturnerCgiRoot);
+        }
     }
 
     return $href;
@@ -1146,7 +1151,7 @@ sub handle_SEARCH_RESULTS_LABEL_PI
         # $script_name at this point is /pt/cgi/search NOT /cgi/pt/search
         if ( $script_name !~ m,/search, ) {
             $label = qq{"Search in this text" results};            
-        } else {
+        } elsif ( $cgi->param('seq') ) {
             $label = qq{page};
         }
     }
