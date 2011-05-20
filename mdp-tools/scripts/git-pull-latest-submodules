@@ -63,7 +63,7 @@ foreach my $app (@apps) {
 
     my $submodule_path;
     if ($SUBMODULE) {
-        my @submodule_paths = qx{git submodule --quiet foreach 'echo \$path'};
+        my @submodule_paths = qx{git submodule --quiet foreach 'echo \$name'};
         
         if (($submodule_path) = grep(/$SUBMODULE/, @submodule_paths)) {
             PrintY("\npulling ONLY $SUBMODULE submodule from origin into $app_dir\n");
@@ -79,7 +79,6 @@ foreach my $app (@apps) {
         PrintY("\n--- pulling all submodules from origin into $app_dir ---\n");
     }
     
-    execute_command("git submodule update --init");
     print "\tPull ...\n";
 
     if ($SUBMODULE) {
