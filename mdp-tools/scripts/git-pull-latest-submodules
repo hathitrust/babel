@@ -66,10 +66,12 @@ foreach my $app (@apps) {
         my @submodule_paths = qx{git submodule --quiet foreach 'echo \$path'};
         
         if (($submodule_path) = grep(/$SUBMODULE/, @submodule_paths)) {
-            PrintY("\n--- pulling ONLY $SUBMODULE submodule from origin into $app_dir ---\n");
+            PrintY("\npulling ONLY $SUBMODULE submodule from origin into $app_dir\n");
         }
         else {
-            PrintM("\n--- $SUBMODULE is not a submodule of $app_dir ---\n");
+            PrintN(qq{\n"$SUBMODULE" is not a submodule of $app_dir\n});
+            my $submodules = "\n\t\t" . join("\t\t", @submodule_paths);
+            PrintY("\t$app submodules are:$submodules\n");
             next;
         }
     }
