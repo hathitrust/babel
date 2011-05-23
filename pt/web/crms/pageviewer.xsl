@@ -86,6 +86,12 @@
       
     </style>
     
+    <script>
+      $(document).ready(function() {
+        $("#mdpBottomToolbar").remove();
+      })
+    </script>
+    
     <div class="controls">
       <p>
         <xsl:element name="a">
