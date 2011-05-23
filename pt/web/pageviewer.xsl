@@ -1208,7 +1208,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/FirstPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">f</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">f</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
@@ -1248,7 +1250,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/PreviousPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">p</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">p</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
@@ -1288,7 +1292,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/NextPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">n</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">n</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
@@ -1328,7 +1334,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/LastPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">l</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">l</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
