@@ -493,6 +493,9 @@
       
       <xsl:if test="$gUsingBookReader = 'false'">
         <div id="mdpBottomToolbar">
+          <xsl:if test="$gFinalAccessStatus != 'allow'">
+            <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
+          </xsl:if>
           <xsl:call-template name="build-toolbar-nav">
             <xsl:with-param name="target">footer</xsl:with-param>
           </xsl:call-template>

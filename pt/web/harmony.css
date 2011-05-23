@@ -179,6 +179,8 @@ a.PTbutton:hover, a.PTbuttonActive {
 
 a.PTbuttonDisabled {
   color: #ccc;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40); 
   opacity: 0.4;
 }
 
@@ -686,6 +688,8 @@ div.mdpScrollableContainer {
 }
 
 .disabled {
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40); 
   opacity: 0.4;
 }
 
