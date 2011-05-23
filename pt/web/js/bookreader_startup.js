@@ -1,6 +1,6 @@
 // UTILITIES
 
-HT.resizeBookReader = function() {
+HT._getBookReaderHeight = function(is_fullscreen) {
   var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
   
   var innerHeight = $("#mbFooter").height() + $("#mbHeader").height();
@@ -10,8 +10,10 @@ HT.resizeBookReader = function() {
     textDenyHeight = $textDeny.outerHeight() + 8;
   }
   var chromeHeight = innerHeight;
-  if ( $("#mdpToolbar").is(":visible")) {
+  if ( $("#mdpToolbar").is(":visible") ) {
     chromeHeight += $("#mdpToolbar").height();
+  } else if ( HT.cache && HT.cache.mdpToolbar ) {
+    chromeHeight += HT.cache.mdpToolbar;
   }
   
   var bookreader_height = viewportHeight - chromeHeight - textDenyHeight - 25;
@@ -19,8 +21,8 @@ HT.resizeBookReader = function() {
     bookreader_height -= 32; // scrollbar
   }
 
-  console.log("HEIGHT 1", bookreader_height);
-  if ( $("#mbHeader").is(":hidden") ) {
+  console.log("HEIGHT 1", bookreader_height, $("#mbHeader").is(":hidden"), is_fullscreen, $("#mbFooter").height());
+  if ( $("#mbHeader").is(":hidden") || is_fullscreen ) {
     // $("#mbFooter").hide().css('z-index', 10);
     // $("#mbHeader").hide();
     // $(".MBooksNav").css('margin-right', "20px");
@@ -29,14 +31,24 @@ HT.resizeBookReader = function() {
     innerHeight = 0;
   }
   console.log("HEIGHT 2", bookreader_height);
-    
-  $("#BookReader").height(bookreader_height);
+  return { bookreader_height : bookreader_height, 
+          viewportHeight : viewportHeight,
+          innerHeight : innerHeight };
+}
+
+HT.resizeBookReader = function(is_fullscreen) {
+  
+  var dims = HT._getBookReaderHeight(is_fullscreen);
+  $("#BookReader").height(dims.bookreader_height);
   
   var $scrollable = $("div.mdpScrollableContainer");
   if ( $scrollable.length > 0 ) {
-      var checkHeight = viewportHeight - innerHeight - $("div.bibLinks").height() - 50;
+      var checkHeight = dims.viewportHeight - dims.innerHeight - $("div.bibLinks").height() - 50;
+      var scrollable_height = $scrollable.height();
       $scrollable.removeAttr('style');
-      if ( $scrollable.height() > checkHeight ) {
+      console.log("SCROLL", scrollable_height, checkHeight);
+      if ( scrollable_height >= checkHeight ) {
+        // $scrollable.data('height', $scrollable.height);
         $scrollable.height(checkHeight);
       }
   }
@@ -109,54 +121,60 @@ $(document).ready(function() {
     HT.reader.openNotice();
     HT.reader.loadBookDataSlice(0);
     
-    // if(false) {
-    //     var data = lscache.get(HT.reader.bookId + "-0");
-    //     console.log("CACHE:", HT.reader.bookId, "0", data);
-    //     if ( data ) {
-    //       HT.reader.init();
-    //     } else {
-    //       HT.reader.openNotice();
-    //       HT.reader.loadBookDataSlice(0);
-    //       // var params = HT.reader.getMetaUrlParams(0);
-    //       // setTimeout(function() {
-    //       //     $.getJSON(HT.reader.metaURL, params, function(data) {
-    //       //       HT.reader.installBookDataSlice(0, data, true);
-    //       //       HT.reader.init();
-    //       //     });
-    //       // }, 500);
-    //     }
-    // }
+    // add toggle header!!!
+    $('<a href="#" id="mbToggleHeader" title="Enter Full Screen"></a>')
+      .prependTo("#mdpToolbarViews");
     
     $("#mbToggleHeader").click(function() {
-      $("#mbHeader").toggle("blind");
-      $("#mbFooter").toggle("blind");
-      $(".mdpControlContainer").toggle("blind");
-      $(this).toggleClass("active");
+
+      var speed = "fast";
+      var $toggleButton = $(this);
       
-      $("#mdpUberContainer").toggleClass("fullscreen");
+      var fx_in = { opacity: 0.0 };
+      var fx_out = { opacity: 1.0 };
       
-      setTimeout(function() {
-        HT.resizeBookReader();
-        
-        // need to refresh to center the page
-        $(window).trigger('resize');
-      }, 500);
-      
-      //HT.resizeBookReader();
-      
-      // if ( bookreader_height < 500 || $("#mbHeader").is(":hidden") ) {
-      //   $("#mbFooter").hide().css('z-index', 10);
-      //   $("#mbHeader").hide();
-      //   $(".MBooksNav").css('margin-right', "20px");
-      //   $("#mbToggleHeader").show();
-      //   bookreader_height += $("#mbHeader").height() + $("#mbFooter").height();
-      //   innerHeight = 0;
+      // if ( $.browser.msie ) {
+      //   fx_in = { visibility: 'hidden' };
+      //   fx_out = { visibility: 'visible' };
       // }
       
+      var zindex = $("#BookReader").css('z-index');
+      if ( $.browser.msie ) {
+        $("#BookReader").css('z-index', -10);
+      }
+
+      $("#mdpUberContainer").animate(fx_in, speed, function() {
+        console.log("UBER FADED");
+        $("#mdpUberContainer").toggleClass("fullscreen");
+        console.log("UBER TOGGLED");
+        $("#mbFooter").toggle("blind", speed, function() {
+          console.log("FOOTER TOGGLED");
+          $("#mbHeader").toggle("blind", function() {
+            console.log("HEADER TOGGLED");
+            // $(".mdbControlContainer").hide();
+            //$("div.mdpScrollableContainer").removeAttr('style');
+            HT.resizeBookReader(true);
+            console.log("AUTOFIT", HT.reader.twoPage.autofit);
+            console.log("BRCONTAINER", $('#BRcontainer').attr('clientWidth'), $("#BRcontainer").attr('clientHeight'));
+            console.log("BRCONTAINER", $('#BRcontainer').width(), $("#BRcontainer").height());
+            $toggleButton.toggleClass("active");
+            if ( $toggleButton.hasClass("active") ) {
+              $toggleButton.data("original-title", $toggleButton.attr("title"));
+              $toggleButton.attr("title", $toggleButton.attr("title").replace("Enter", "Exit"));
+            } else {
+              $toggleButton.attr("title", $toggleButton.data("original-title"));
+            }
+            $(window).trigger('resize');
+            $("#mdpUberContainer").animate(fx_out, speed, function() {
+              if ( $.browser.msie ) {
+                $("#BookReader").css('z-index', zindex);
+              }
+            });
+          });
+        })
+      })
       
       return false;
     })
-    
-    $("#mbToggleHeader").show();
-    
+        
 })

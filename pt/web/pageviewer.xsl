@@ -187,7 +187,8 @@
         </title>
 
         <!-- jQuery from the Google CDN -->
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:if test="$gUsingBookReader='true'">
@@ -246,9 +247,9 @@
           </div>
         </xsl:if>
         
-        <xsl:if test="$gUsingBookReader = 'true'">
+        <!-- <xsl:if test="$gUsingBookReader = 'true'">
           <a href="#" title="Pull Down Header" id="mbToggleHeader">Show Header&#160;</a>
-        </xsl:if>
+        </xsl:if> -->
         
         <xsl:call-template name="header"/>
 
@@ -297,7 +298,7 @@
         </title>
 
         <!-- jQuery from the Google CDN -->
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
         <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>

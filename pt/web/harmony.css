@@ -15,6 +15,7 @@ html {
 
 #BRcontainer {
   left:0px;
+  /*zoom: 1;*/
 }
 
 .htmlNoOverflow {
@@ -105,6 +106,8 @@ body {
 .fullscreen #mdpToolbar, .fullscreen #mdpContentContainer {
   margin-left: 10px;
 }
+
+.fullscreen .mdpControlContainer { display: none;}
 
 #mdpBottomToolbar {
   height: 100px;
@@ -713,32 +716,21 @@ div.mdpScrollableContainer {
 }
 
 #mbToggleHeader {
-  display: none;
-  position: absolute;
-  top: 0px;
-  right: 10px;
-  height: 29px;
-  /*width: 32px;*/
-  width: auto;
-  padding-right: 32px;
-  padding-left: 8px;
-  
-  background: #EF7C22 url(/pt/pulldown.png) no-repeat right;
-/*  background: #DDD url() repeat/repeat-x/repeat-y/no-repeat scroll/fixed top left/top center/top right/center left/center center/center right/bottom left/bottom center/bottom right/x-% y-%/x-pos y-pos;
-*/  color: #EEE;
-  font-weight: bold;
-  z-index: 5;
-/*  border-left: 2px solid #666;
-  border-bottom: 2px solid black;
-  border-top: 1px solid #666;
-  border-right: 0;*/
-  text-decoration: none;
+  display: block;
+  float: right;
+  height: 24px;
+  width: 24px;
+  padding-bottom: 4px;
+  margin-top: 8px;
+  background: transparent url(/pt/fullscreen_24x24.png) no-repeat; /* scroll/fixed top left/top center/top right/center left/center center/center right/bottom left/bottom center/bottom right/x-% y-%/x-pos y-pos;*/
 }
 
 #mbToggleHeader.active {
-  background: #EF7C22 url(/pt/pullup.png) no-repeat;
+  /*background: #EF7C22 url(/pt/pullup.png) no-repeat;*/
+  background: url(/pt/fullscreen_exit_24x24.png) no-repeat;
 }
 
 #mbToggleHeader:hover {
   border-bottom: 4px solid #666;
 }
+
