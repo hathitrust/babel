@@ -31,6 +31,9 @@ umask 0000;
 BEGIN {
     ( $main::realSTART ) = time;
     ## $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{TEST_BLACKLIST} = 1;
+    ## $ENV{SDRINST} = "foo";
+    ## $ENV{SDRLIB} = "0";
 }
 
 
