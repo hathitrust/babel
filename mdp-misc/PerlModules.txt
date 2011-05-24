@@ -16,6 +16,7 @@ Apache::Session::Store::DBI
 Apache::Session::Store::MySQL 
 Archive::Zip
 Attribute::Handlers 
+CGI::Application
 CGI::Carp::DebugScreen
 Compress::Zlib 
 Config::Tiny 
@@ -25,6 +26,7 @@ DBI
 DBI::Const::GetInfo::ANSI 
 DBI::Const::GetInfo::ODBC 
 DBI::Const::GetInfoType 
+FCGI::ProcManager
 File::Slurp 
 Geo::IP
 HTML::Template
@@ -45,6 +47,7 @@ LWP::UserAgent
 Mail::Mailer
 Net::HTTP 
 Net::HTTP::Methods 
+Plack
 Proc::ProcessList
 Term::ReadLine 
 Term::ReadLine::Perl 
