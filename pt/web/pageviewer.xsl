@@ -542,7 +542,7 @@
             <xsl:attribute name="href"><xsl:value-of select="//ViewType1UpLink" /></xsl:attribute>
             <xsl:attribute name="target"><xsl:text>_blank</xsl:text></xsl:attribute>
             <xsl:call-template name="GetMaybeTruncatedTitle">
-              <xsl:with-param name="titleString" select="$gFullTitleString"/>
+              <xsl:with-param name="titleString" select="$gTitleString"/>
               <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
               <xsl:with-param name="maxLength" select="'20'"/>
             </xsl:call-template>

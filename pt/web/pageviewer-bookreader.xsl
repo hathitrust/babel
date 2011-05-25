@@ -110,7 +110,7 @@
           </xsl:otherwise>
         </xsl:choose>
         <xsl:call-template name="GetMaybeTruncatedTitle">
-        <xsl:with-param name="titleString" select="$gFullTitleString"/>
+        <xsl:with-param name="titleString" select="$gTitleString"/>
         <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
         <xsl:with-param name="maxLength" select="$gTitleTrunc"/>
       </xsl:call-template>
@@ -239,7 +239,7 @@
 
            br = new FrankenBookReader();
            br.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
-           br.bookTitle = "<xsl:value-of select="str:replace(string($gFullTitleString), '&quot;', '\&quot;')"/>";
+           br.bookTitle = "<xsl:value-of select="str:replace(string($gTitleString), '&quot;', '\&quot;')"/>";
            br.reduce = 1;
            br.pageProgression = 'lr';
            // specifying our own reductionFactors seems to mess with zooming out
