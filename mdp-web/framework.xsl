@@ -160,7 +160,7 @@
     </xsl:element>
   </xsl:template>
 
-  <!-- RDFa: title wrapped in content-less span as an attribute if $visible != 'visible' -->
+  <!-- RDFa: hidden_title_string wrapped in content-less span -->
   <xsl:template name="BuildRDFaWrappedTitle">
     <xsl:param name="visible_title_string"/>
     <xsl:param name="hidden_title_string"/>
@@ -1042,17 +1042,14 @@
     <div class="bibLinks">
       <h2>About this Book</h2>
       <p>
-        <!-- <xsl:value-of select="$gFullTitleString" /> -->
-
         <xsl:call-template name="BuildRDFaWrappedTitle">
           <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
           <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
         </xsl:call-template>
 
-        <!--xsl:if test="$gVolumeTitleFragment != ' '">
-          <br /><span><xsl:value-of select="$gVolumeTitleFragment" /></span>
-        </xsl:if-->
+        <!-- not visible -->
         <xsl:call-template name="BuildRDFaWrappedAuthor"/>
+        <!-- not visible -->
         <xsl:call-template name="BuildRDFaWrappedPublished"/>
       </p>
       <p>
