@@ -27,10 +27,13 @@ p.Image {
   margin-bottom: 3px;
 }
 
-.mdpMetaDataRegionHead, .mdpMetaDataRow span {
+.mdpMetaDataRegionHead {
   float: left;
   padding-right: 3px;
   font-weight: bold;
+}
+
+.mdpMetaDataRow {
 }
 
 .mdpMetaText {}

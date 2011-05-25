@@ -14,7 +14,7 @@
   <xsl:variable name="gItemHandle" select="/MBooksTop/MBooksGlobals/ItemHandle"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gSSDFullTitleString">
-    <xsl:value-of select="concat($gFullTitleString, ', ', $gVolumeTitleFragment)"/>
+    <xsl:value-of select="$gFullTitleString"/>
   </xsl:variable>
 
   <xsl:variable name="gFinalView">
@@ -200,10 +200,7 @@
             <xsl:text>Full Bibliographic Information</xsl:text>
           </xsl:element>
 
-          <div class="mdpMetaDataRow">
-            <xsl:call-template name="FullTitle"/>
-          </div>
-
+          <xsl:call-template name="FullTitle"/>
           <xsl:call-template name="BookMetadata"/>
           
         </div>
@@ -220,9 +217,17 @@
   
   
   <xsl:template name="FullTitle">
-    <xsl:call-template name="BuildRDFaWrappedTitle"/>
-    <span><xsl:text>Title: </xsl:text></span>
-    <xsl:value-of select="$gSSDFullTitleString"/>    
+    <div class="mdpMetaDataRow">
+      <div class="mdpMetaDataRegionHead">
+        <xsl:text>Title</xsl:text>
+      </div>
+      <div class="mdpMetaText">
+        <xsl:call-template name="BuildRDFaWrappedTitle">
+          <xsl:with-param name="visible_title_string" select="$gSSDFullTitleString"/>
+          <xsl:with-param name="hidden_title_string" select="$gSSDFullTitleString"/>
+        </xsl:call-template>
+      </div>
+    </div>
   </xsl:template>
   
   <!-- Control Container -->
