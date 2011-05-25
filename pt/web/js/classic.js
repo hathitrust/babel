@@ -118,7 +118,9 @@ $(document).ready(function() {
     // if the toolbar is disabled, punt
     if ( $("#mdpToolbar").is(".disabled") ) {
         $("#mdpToolbar")
-            .click(function() { return false; });
+            .click(function() { return false; })
+        $("#mdpBottomToolbar")
+            .click(function() { return false; })
     }
     
     //// don't need this running for classic yet

@@ -493,6 +493,9 @@
       
       <xsl:if test="$gUsingBookReader = 'false'">
         <div id="mdpBottomToolbar">
+          <xsl:if test="$gFinalAccessStatus != 'allow'">
+            <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
+          </xsl:if>
           <xsl:call-template name="build-toolbar-nav">
             <xsl:with-param name="target">footer</xsl:with-param>
           </xsl:call-template>
@@ -1208,7 +1211,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/FirstPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">f</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">f</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
@@ -1248,7 +1253,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/PreviousPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">p</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">p</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
@@ -1288,7 +1295,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/NextPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">n</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">n</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
@@ -1328,7 +1337,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pPageLinks/LastPageLink"/>
               </xsl:attribute>
-              <xsl:attribute name="accesskey">l</xsl:attribute>
+              <xsl:if test="$target = 'header'">
+                <xsl:attribute name="accesskey">l</xsl:attribute>
+              </xsl:if>
               <xsl:element name="img">
                 <xsl:attribute name="height">25</xsl:attribute>
                 <xsl:attribute name="width">17</xsl:attribute>
