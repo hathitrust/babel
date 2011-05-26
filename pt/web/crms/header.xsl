@@ -30,7 +30,6 @@
 
     <!-- Navigation bar -->
     <xsl:template name="subnav_header_short">
-
       <div id="mdpItemBar">
         <div id="ItemBarContainer">
           <xsl:call-template name="ItemMetadata"/>
