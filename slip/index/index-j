@@ -272,15 +272,15 @@ sub i_processing_loop {
             # Get the correct indexer for this id.  If this is a
             # re-index and the shard it belongs in is suspended, the
             # id will be added to the error list.
-            my ($index_state, $ocr_status, $metadata_status, $stats_ref);
+            my ($index_state, $data_status, $metadata_status, $stats_ref);
             my ($indexer, $shard, $random) = get_Next_indexer($C, $DBH, $RUN, $PID, $HOST, $id);
             if ($indexer) {
                 # Index
-                ($index_state, $ocr_status, $metadata_status, $stats_ref) =
+                ($index_state, $data_status, $metadata_status, $stats_ref) =
                     process_one_id($C, $DBH, $RUN, $id, $indexer);
             }
             else {
-                ($index_state, $ocr_status, $metadata_status) =
+                ($index_state, $data_status, $metadata_status) =
                     (IX_NO_INDEXER_AVAIL, IX_NO_ERROR, IX_NO_ERROR);
             }
 
@@ -288,7 +288,7 @@ sub i_processing_loop {
 
             my $item_is_Solr_indexed =
                 handle_i_result($C, $DBH, $RUN, $shard, $id, $PID, $HOST,
-                                $index_state, $ocr_status, $metadata_status);
+                                $index_state, $data_status, $metadata_status);
 
             my $reindexed = 0;
             if ($item_is_Solr_indexed) {
@@ -296,7 +296,7 @@ sub i_processing_loop {
             }
 
             Log_item($C, $RUN, $shard, $id, $PID, $HOST, $stats_ref, $item_ct,
-                     $index_state, $ocr_status, $metadata_status, $random, $reindexed);
+                     $index_state, $data_status, $metadata_status, $random, $reindexed);
 
             # Item is now recorded in either mdp.j_errors or
             # mdp.j_indexed or in mdp.j_indexed AND mdp.j_timeouts.
@@ -376,9 +376,9 @@ sub process_one_id {
                                     },
                    );
     my $doc = $of->create_instance($C, \%of_attrs);
-    my ($ocr_status, $metadata_status) = $doc->get_document_status();
+    my ($data_status, $metadata_status) = $doc->get_document_status();
 
-    my $doc_build_failure = ($ocr_status != IX_NO_ERROR) || ($metadata_status != IX_NO_ERROR);
+    my $doc_build_failure = ($data_status != IX_NO_ERROR) || ($metadata_status != IX_NO_ERROR);
     my $index_state = IX_NO_ERROR;
 
     # --------------------  Index Document  --------------------
@@ -391,7 +391,7 @@ sub process_one_id {
         %merged_stats = (%merged_stats, %$idx_stats_ref);
     }
 
-    return ($index_state, $ocr_status, $metadata_status, \%merged_stats);
+    return ($index_state, $data_status, $metadata_status, \%merged_stats);
 }
 
 
@@ -806,14 +806,14 @@ Timesouts
 
 # ---------------------------------------------------------------------
 sub handle_i_result {
-    my ($C, $dbh, $run, $shard, $id, $pid, $host, $index_state, $ocr_status, $metadata_status) = @_;
+    my ($C, $dbh, $run, $shard, $id, $pid, $host, $index_state, $data_status, $metadata_status) = @_;
 
     # Optimistic
     my $item_is_Solr_indexed = 1;
 
     # determine reason code in priority order: 1)indexing, 2)ocr, 3)metadata.
     my $index_ok = (! Search::Constants::indexing_failed($index_state));
-    my $ocr_ok = ($ocr_status == IX_NO_ERROR);
+    my $ocr_ok = ($data_status == IX_NO_ERROR);
     my $metadata_ok = ($metadata_status == IX_NO_ERROR);
 
     my $reason;
@@ -822,7 +822,7 @@ sub handle_i_result {
         $item_is_Solr_indexed = 0;
     }
     elsif (! $ocr_ok) {
-        $reason = $ocr_status;
+        $reason = $data_status;
         $item_is_Solr_indexed = 0;
     }
     elsif (! $metadata_ok) {
@@ -1070,7 +1070,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub Log_item {
-    my ($C, $run, $shard, $id, $pid, $host, $stats_ref, $ct, $index_state, $ocr_status, $metadata_status, $random, $reindexed) = @_;
+    my ($C, $run, $shard, $id, $pid, $host, $stats_ref, $ct, $index_state, $data_status, $metadata_status, $random, $reindexed) = @_;
 
     my $buf;
 
@@ -1090,8 +1090,8 @@ sub Log_item {
     my $error = '';
     $error .= ' - ' . SLIP_Utils::Common::IXconstant2string($index_state)
         if (Search::Constants::indexing_failed($index_state));
-    $error .= ' - ' . SLIP_Utils::Common::IXconstant2string($ocr_status)
-        if ($ocr_status != IX_NO_ERROR);
+    $error .= ' - ' . SLIP_Utils::Common::IXconstant2string($data_status)
+        if ($data_status != IX_NO_ERROR);
     $error .= ' - ' . SLIP_Utils::Common::IXconstant2string($metadata_status)
         if ($metadata_status != IX_NO_ERROR);
 

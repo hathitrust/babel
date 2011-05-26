@@ -131,9 +131,9 @@ foreach my $id (@$id_arr_ref) {
                                     },
                    );
     my $doc = $of->create_instance($C, \%of_attrs);
-    my ($ocr_status, $metadata_status) = $doc->get_document_status();
+    my ($data_status, $metadata_status) = $doc->get_document_status();
 
-    if ($ocr_status != IX_NO_ERROR) {
+    if ($data_status != IX_NO_ERROR) {
         print qq{-----> OCR error\n};
     }
     if ($metadata_status != IX_NO_ERROR) {

@@ -4,3 +4,6 @@
 [submodule "web/common-web"]
 	path = web/common-web
 	url = /htapps/repos/mdp-web.git
+[submodule "vendor/slip-lib/lib"]
+	path = vendor/slip-lib/lib
+	url = /htapps/repos/slip-lib.git

@@ -733,7 +733,7 @@ sub c_report_errors {
 
     my $reason;
     if ($errors eq 'o') {
-        $reason = IX_OCR_FAILURE;
+        $reason = IX_DATA_FAILURE;
     }
     elsif ($errors eq 'i') {
         $reason = IX_INDEX_FAILURE;
