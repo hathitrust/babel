@@ -156,6 +156,28 @@ sub BuildPageNavLink
 
 }
 
+sub BuildImageServerImageUrl
+{
+    my ( $cgi ) = @_;
+    
+    my $tempCgi = new CGI ("");
+    
+    my $path;
+    my $action = 'image';
+    # copy params
+    foreach my $p (qw(id orient size attr src u seq num)) {
+        $tempCgi->param($p, $cgi->param($p));
+    }
+    
+    if ( $cgi->param('debug') ) {
+        $tempCgi->param('debug', $cgi->param('debug'));
+    }
+    
+    my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
+    return $href;
+}
+
+
 
 # ---------------------------  Handlers  ------------------------------
 #
@@ -176,12 +198,14 @@ sub handle_CURRENT_PAGE_IMG_SRC_PI
     my $id = $C->get_object('CGI')->param('id');
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+        
+    my $cgi = $C->get_object('CGI');
 
     my $href = '';
 
     if ( $finalAccessStatus eq 'allow' )
     {
-        $href = $C->get_object('MdpItem')->GetTargetImageFile();
+        $href = BuildImageServerImageUrl($cgi);
     }
 
     return $href;

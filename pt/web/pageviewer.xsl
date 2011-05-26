@@ -629,6 +629,10 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypePlainTextLink"/>
               </xsl:attribute>
+              <!-- remove this if we ever do scrolling text view -->
+              <xsl:if test="$gHasOcr='YES'">
+                <xsl:attribute name="accesskey">5</xsl:attribute>
+              </xsl:if>
               <xsl:attribute name="class">
                 <xsl:text>tracked </xsl:text>
                 <xsl:text>PTbutton </xsl:text>
@@ -1523,26 +1527,8 @@
           <xsl:attribute name="alt">image of individual page</xsl:attribute>
           <xsl:attribute name="id">mdpImage</xsl:attribute>
           <xsl:attribute name="src">
-            <xsl:value-of select="$gImgsrvUrlRoot" />
-            <xsl:text>/image?id=</xsl:text>
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
-            <xsl:text>;size=</xsl:text>
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='size']"/>
-            <xsl:text>;seq=</xsl:text>
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
-            <xsl:text>;orient=</xsl:text>
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='orient']"/>
-            <xsl:text>;force=1</xsl:text>
-          </xsl:attribute>
-          <!-- <xsl:attribute name="src">
             <xsl:value-of select="$pCurrentPageImageSource"/>
-          </xsl:attribute> -->
-          <!-- <xsl:attribute name="width">
-            <xsl:value-of select="$gCurrentPageImageWidth"/>
           </xsl:attribute>
-          <xsl:attribute name="height">
-            <xsl:value-of select="$gCurrentPageImageHeight"/>
-          </xsl:attribute> -->
         </xsl:element>
       </xsl:when>
       

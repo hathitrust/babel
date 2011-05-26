@@ -1,6 +1,5 @@
 html {
   min-width:0px;
-  /*min-width: 910px;*/
 }
 
 html, body {
@@ -78,7 +77,7 @@ html, body {
 
 body {
     /* maybe we don't need a min-width any longer? */
-    /*min-width: 1074px;*/
+    /* works better to avoid the toolbar from warping */
     width: auto;
     min-width: 900px;
 }
@@ -91,13 +90,11 @@ body {
 
 #mdpUberContainer {
   margin-top: -10px;
-  /*height: 100%;*/
   width: 100%;
   clear: both;
 }
 
 #mdpContentContainer {
-  /*height: 100%;*/
   width: 70%;
 }
 
@@ -108,7 +105,7 @@ body {
   margin-right: 10px;
   margin-left: 16.5em;
   margin-bottom: 0.5em;
-  min-width: 645px; /*660px;*/
+  min-width: 645px;
 }
 
 .fullscreen #mdpToolbar, .fullscreen #mdpContentContainer {
@@ -122,8 +119,7 @@ body {
   margin-right: 10px;
   margin-left: 16.5em;
   margin-top: 0.5em;
-  /*min-width: 660px;*/
-  min-width: 645px; /*660px;*/
+  min-width: 645px;
 }
 
 #mdpToolbarViews {
@@ -291,13 +287,11 @@ span.prompt {
 
 .mdpPageOptions {
   float: right;
-  /*margin-top: -1px;*/
 }
 
 .mdpZoomOptions, .mdpPageWidgets {
   margin-left: auto !important;
   margin-right: auto;
-  /*width: 10em;*/
   padding-right: 0;
   padding-left: 0;
   white-space: nowrap;
@@ -731,12 +725,11 @@ div.mdpScrollableContainer {
   width: 24px;
   padding-bottom: 4px;
   margin-top: 8px;
-  background: transparent url(/pt/fullscreen_24x24.png) no-repeat; /* scroll/fixed top left/top center/top right/center left/center center/center right/bottom left/bottom center/bottom right/x-% y-%/x-pos y-pos;*/
+  background: transparent url(./graphics/fullscreen_24x24.png) no-repeat; /* scroll/fixed top left/top center/top right/center left/center center/center right/bottom left/bottom center/bottom right/x-% y-%/x-pos y-pos;*/
 }
 
 #mbToggleHeader.active {
-  /*background: #EF7C22 url(/pt/pullup.png) no-repeat;*/
-  background: url(/pt/fullscreen_exit_24x24.png) no-repeat;
+  background: url(./graphics/fullscreen_exit_24x24.png) no-repeat;
 }
 
 #mbToggleHeader:hover {

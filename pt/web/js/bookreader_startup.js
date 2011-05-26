@@ -21,7 +21,6 @@ HT._getBookReaderHeight = function(is_fullscreen) {
     bookreader_height -= 32; // scrollbar
   }
 
-  console.log("HEIGHT 1", bookreader_height, $("#mbHeader").is(":hidden"), is_fullscreen, $("#mbFooter").height());
   if ( $("#mbHeader").is(":hidden") || is_fullscreen ) {
     // $("#mbFooter").hide().css('z-index', 10);
     // $("#mbHeader").hide();
@@ -30,7 +29,7 @@ HT._getBookReaderHeight = function(is_fullscreen) {
     bookreader_height += $("#mbHeader").height() + $("#mbFooter").height();
     innerHeight = 0;
   }
-  console.log("HEIGHT 2", bookreader_height);
+
   return { bookreader_height : bookreader_height, 
           viewportHeight : viewportHeight,
           innerHeight : innerHeight };
@@ -56,15 +55,6 @@ HT.resizeBookReader = function(is_fullscreen) {
   var $body = $("body");
   var $container = $("#mdpContentContainer");
 
-  // if ( $.browser.msie && parseInt($.browser.version) < 8 ) {
-  //   var $window = $(window);
-  //   if ( $window.width() >= HT.config.ARBITRARY_WINDOW_WIDTH ) {
-  //     $body.width($window.width());
-  //   } else if ( $body.width() < HT.config.ARBITRARY_WINDOW_WIDTH ) {
-  //     $body.width(HT.config.ARBITRARY_WINDOW_WIDTH);
-  //   }
-  // }
-
   var padding = HT.config.ARBITRARY_PADDING;
   if ( HT.reader.ui == 'embed' ) {
       var $branding = $(".branding");
@@ -76,7 +66,6 @@ HT.resizeBookReader = function(is_fullscreen) {
           $embedLink.width( $embedLink.width() - 5 );
           // console.log("MUST NARROW:", $embedLink.width(), w);
       }
-      // restore the ARBITRARY_WIDTH
       padding = 0;
   } else if ( $body.hasClass("fullscreen") ) {
     // for the scrollbar
@@ -84,7 +73,6 @@ HT.resizeBookReader = function(is_fullscreen) {
   }
   
   // add 10 for the padding we turn off for BookReader
-  console.log("PADDING: ", $body.width() + padding + 10);
   $container.width($body.width() - padding + 10);
 
 }
@@ -125,7 +113,7 @@ $(document).ready(function() {
     HT.reader.openNotice();
     HT.reader.loadBookDataSlice(0);
     
-    // add toggle header!!!
+    // SETUP FULL SCREEN MODE
     $('<a href="#" id="mbToggleHeader" title="Enter Full Screen"></a>')
       .prependTo("#mdpToolbarViews");
     
@@ -137,30 +125,16 @@ $(document).ready(function() {
       var fx_in = { opacity: 0.0 };
       var fx_out = { opacity: 1.0 };
       
-      // if ( $.browser.msie ) {
-      //   fx_in = { visibility: 'hidden' };
-      //   fx_out = { visibility: 'visible' };
-      // }
-      
       var zindex = $("#BookReader").css('z-index');
       if ( $.browser.msie ) {
         $("#BookReader").css('z-index', -10);
       }
 
       $("#mdpUberContainer").animate(fx_in, speed, function() {
-        console.log("UBER FADED");
         $("body").toggleClass("fullscreen");
-        console.log("UBER TOGGLED");
         $("#mbFooter").toggle("blind", speed, function() {
-          console.log("FOOTER TOGGLED");
           $("#mbHeader").toggle("blind", function() {
-            console.log("HEADER TOGGLED");
-            // $(".mdbControlContainer").hide();
-            //$("div.mdpScrollableContainer").removeAttr('style');
             HT.resizeBookReader(true);
-            console.log("AUTOFIT", HT.reader.twoPage.autofit);
-            console.log("BRCONTAINER", $('#BRcontainer').attr('clientWidth'), $("#BRcontainer").attr('clientHeight'));
-            console.log("BRCONTAINER", $('#BRcontainer').width(), $("#BRcontainer").height());
             $toggleButton.toggleClass("active");
             if ( $toggleButton.hasClass("active") ) {
               $toggleButton.data("original-title", $toggleButton.attr("title"));
