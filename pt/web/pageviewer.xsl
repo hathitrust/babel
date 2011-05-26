@@ -126,6 +126,19 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
+  
+  <xsl:variable name="gMinImageHeight">
+    <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
+    <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
+    <xsl:choose>
+      <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
+        <xsl:value-of select="(680 * ( $currentSize div 100 ))" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="(1024 * ( $currentSize div 100 ))" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
 
   <!-- root template -->
   <!-- root template -->
@@ -208,6 +221,7 @@
         <xsl:text disable-output-escaping="yes">
         <![CDATA[<!--[if IE 7]>]]>
         </xsl:text>
+        <!-- <script src="//ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script> -->
         <style>
           #mdpNewStarburst {
             margin-left: -25px;
@@ -226,7 +240,8 @@
           }
           
           body {
-            width: <xsl:value-of select="$min-width" />px;
+            /* width: <xsl:value-of select="$min-width" />px; */
+            width: auto;
           }
           
         </style>
@@ -892,6 +907,11 @@
         </xsl:when>
         <xsl:when test="$gCurrentView = 'image'">
           <xsl:attribute name="class"><xsl:text>overflowContentContainer</xsl:text></xsl:attribute>
+          <xsl:attribute name="style">
+            <xsl:text>min-height: </xsl:text>
+            <xsl:value-of select="$gMinImageHeight" />
+            <xsl:text>px</xsl:text>
+          </xsl:attribute>
         </xsl:when>
         <xsl:otherwise/>
       </xsl:choose>
@@ -1503,14 +1523,26 @@
           <xsl:attribute name="alt">image of individual page</xsl:attribute>
           <xsl:attribute name="id">mdpImage</xsl:attribute>
           <xsl:attribute name="src">
-            <xsl:value-of select="$pCurrentPageImageSource"/>
+            <xsl:value-of select="$gImgsrvUrlRoot" />
+            <xsl:text>/image?id=</xsl:text>
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
+            <xsl:text>;size=</xsl:text>
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='size']"/>
+            <xsl:text>;seq=</xsl:text>
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
+            <xsl:text>;orient=</xsl:text>
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='orient']"/>
+            <xsl:text>;force=1</xsl:text>
           </xsl:attribute>
-          <xsl:attribute name="width">
+          <!-- <xsl:attribute name="src">
+            <xsl:value-of select="$pCurrentPageImageSource"/>
+          </xsl:attribute> -->
+          <!-- <xsl:attribute name="width">
             <xsl:value-of select="$gCurrentPageImageWidth"/>
           </xsl:attribute>
           <xsl:attribute name="height">
             <xsl:value-of select="$gCurrentPageImageHeight"/>
-          </xsl:attribute>
+          </xsl:attribute> -->
         </xsl:element>
       </xsl:when>
       

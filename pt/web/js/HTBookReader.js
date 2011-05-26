@@ -1040,14 +1040,13 @@ HTBookReader.prototype.updateLocationHash = function() {
               options.view = true;
             }
             href = self._updateUrlFromParams(href, params, options);
-            // if ( id == "#pagePdfLink" || id == "#pageRightPdfLink" ) {
-            //     $a.attr('href', href.replace("/pt", "/imgsrv/pdf") + ";attachment=0");
-            // } else {
-            //     $a.attr('href', href);
-            // }
             $a.attr('href', href);
         }
     })
+    
+    var $pageURL = $("#pageURL");
+    var pageurl_text = $pageURL.val();
+    $pageURL.val(pageurl_text.replace(/seq=\d+/, "seq=" + params.index));
     
     if ( window.history && window.history.replaceState != null) {
         var new_href = this._updateUrlFromParams(window.location.search, params, { view : true });

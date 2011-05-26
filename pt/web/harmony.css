@@ -73,13 +73,14 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
+    width: 100%;
 }
 
 body {
     /* maybe we don't need a min-width any longer? */
     /*min-width: 1074px;*/
     width: auto;
-    min-width: 500px;
+    min-width: 900px;
 }
 
 #container {
@@ -90,7 +91,14 @@ body {
 
 #mdpUberContainer {
   margin-top: -10px;
+  /*height: 100%;*/
+  width: 100%;
   clear: both;
+}
+
+#mdpContentContainer {
+  /*height: 100%;*/
+  width: 70%;
 }
 
 /* @group TOOLBAR */
@@ -100,7 +108,7 @@ body {
   margin-right: 10px;
   margin-left: 16.5em;
   margin-bottom: 0.5em;
-  min-width: 660px;
+  min-width: 645px; /*660px;*/
 }
 
 .fullscreen #mdpToolbar, .fullscreen #mdpContentContainer {
@@ -114,7 +122,8 @@ body {
   margin-right: 10px;
   margin-left: 16.5em;
   margin-top: 0.5em;
-  min-width: 660px;
+  /*min-width: 660px;*/
+  min-width: 645px; /*660px;*/
 }
 
 #mdpToolbarViews {

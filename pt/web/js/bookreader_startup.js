@@ -56,17 +56,16 @@ HT.resizeBookReader = function(is_fullscreen) {
   var $body = $("body");
   var $container = $("#mdpContentContainer");
 
-  if ( $.browser.msie && parseInt($.browser.version) < 8 ) {
-    var $window = $(window);
-    if ( $window.width() >= HT.config.ARBITRARY_WINDOW_WIDTH ) {
-      $body.width($window.width());
-    } else if ( $body.width() < HT.config.ARBITRARY_WINDOW_WIDTH ) {
-      $body.width(HT.config.ARBITRARY_WINDOW_WIDTH);
-    }
-  }
+  // if ( $.browser.msie && parseInt($.browser.version) < 8 ) {
+  //   var $window = $(window);
+  //   if ( $window.width() >= HT.config.ARBITRARY_WINDOW_WIDTH ) {
+  //     $body.width($window.width());
+  //   } else if ( $body.width() < HT.config.ARBITRARY_WINDOW_WIDTH ) {
+  //     $body.width(HT.config.ARBITRARY_WINDOW_WIDTH);
+  //   }
+  // }
 
-  var container_w = $body.width() - HT.config.ARBITRARY_WIDTH;
-  
+  var padding = HT.config.ARBITRARY_PADDING;
   if ( HT.reader.ui == 'embed' ) {
       var $branding = $(".branding");
       var $embedLink = $(".embedLink");
@@ -78,10 +77,15 @@ HT.resizeBookReader = function(is_fullscreen) {
           // console.log("MUST NARROW:", $embedLink.width(), w);
       }
       // restore the ARBITRARY_WIDTH
-      container_w = $body.width();
+      padding = 0;
+  } else if ( $body.hasClass("fullscreen") ) {
+    // for the scrollbar
+    padding = 32;
   }
   
-  $container.width(container_w);
+  // add 10 for the padding we turn off for BookReader
+  console.log("PADDING: ", $body.width() + padding + 10);
+  $container.width($body.width() - padding + 10);
 
 }
 
@@ -145,7 +149,7 @@ $(document).ready(function() {
 
       $("#mdpUberContainer").animate(fx_in, speed, function() {
         console.log("UBER FADED");
-        $("#mdpUberContainer").toggleClass("fullscreen");
+        $("body").toggleClass("fullscreen");
         console.log("UBER TOGGLED");
         $("#mbFooter").toggle("blind", speed, function() {
           console.log("FOOTER TOGGLED");
