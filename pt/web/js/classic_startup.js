@@ -15,4 +15,16 @@ $(window).bind("resize", function() {
 
 $(document).ready(function() {
   HT.resizeBookReader();
+  
+  $("#mdpImage").load(function() {
+    var $container = $("#mdpContentContainer");
+    if ( $(this).height() < $container.height() ) {
+      var h = $(this).height() + 10;
+      $container.height($container.height())
+                .css('min-height', '')
+                .removeClass('fakeContentLoader')
+                .animate({ height: h }, 150);
+    }
+  })
+  
 })

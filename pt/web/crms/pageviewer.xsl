@@ -84,6 +84,10 @@
         display: none;
       }
       
+      #mbToggleHeader {
+        display: none;
+      }
+      
     </style>
     
     <script>

@@ -135,7 +135,7 @@
         <xsl:value-of select="(680 * ( $currentSize div 100 ))" />
       </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="(1024 * ( $currentSize div 100 ))" />
+        <xsl:value-of select="(680 * ( $currentSize div 100 ))" />
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -910,7 +910,7 @@
           <xsl:attribute name="class"><xsl:text>hideContentContainer</xsl:text></xsl:attribute>
         </xsl:when>
         <xsl:when test="$gCurrentView = 'image'">
-          <xsl:attribute name="class"><xsl:text>overflowContentContainer</xsl:text></xsl:attribute>
+          <xsl:attribute name="class"><xsl:text>overflowContentContainer fakeContentLoader</xsl:text></xsl:attribute>
           <xsl:attribute name="style">
             <xsl:text>min-height: </xsl:text>
             <xsl:value-of select="$gMinImageHeight" />

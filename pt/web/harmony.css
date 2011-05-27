@@ -98,6 +98,14 @@ body {
   width: 70%;
 }
 
+.fakeContentLoader {
+  background-image: url(./graphics/ajax-loader.gif);
+  background-repeat: no-repeat;
+  background-position: 50% 150px;
+/*  background-position-x: 50%;
+  background-position-y: 150px;*/
+}
+
 /* @group TOOLBAR */
 
 #mdpToolbar {  
