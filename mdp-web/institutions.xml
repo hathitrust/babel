@@ -177,11 +177,6 @@
       authtype="shibboleth"
       enabled="1">University of North Carolina at Chapel Hill</Inst>
   <Inst
-      sdrinst="duke"
-      template="https://___HOST___/Shibboleth.sso/duke?target=___TARGET___"
-      authtype="shibboleth"
-      enabled="1">Duke University</Inst>
-  <Inst
       sdrinst="nyu"
       template="https://___HOST___/Shibboleth.sso/nyu?target=___TARGET___"
       authtype="shibboleth"
@@ -189,6 +184,11 @@
 
   <!-- waiting -->
 
+  <Inst
+      sdrinst="duke"
+      template="https://___HOST___/Shibboleth.sso/duke?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">Duke University</Inst>
   <Inst
       sdrinst="upenn"
       template="https://___HOST___/Shibboleth.sso/upenn?target=___TARGET___"
