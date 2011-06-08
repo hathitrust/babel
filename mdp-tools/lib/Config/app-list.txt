@@ -10,6 +10,7 @@ mdp-tools
 mdp-web
 pt
 slip
+slip-lib
 ssd
 wayf
 feedback
