@@ -49,16 +49,15 @@ use Context;
 use MdpConfig;
 use Database;
 use Search::Site;
+use Search::Result::SLIP;
+use Search::Searcher::SLIP;
 
-# Local
 use Db;
 use SLIP_Utils::Db_sync;
 use SLIP_Utils::Db_driver;
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use SLIP_Utils::Log;
-use Result::SLIP;
-use Searcher::SLIP;
 
 my $INTERACTIVE = $ENV{TERM};
 
