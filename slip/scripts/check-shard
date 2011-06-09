@@ -97,8 +97,8 @@ elsif ($NUMSEGS < 1) {
     exit $rc;
 }    
 
-my $run_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+my $run_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$RUN.conf};
+my $common_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
 my $config = new MdpConfig($common_configfile, $run_configfile);
 
 my $rc = 0;
