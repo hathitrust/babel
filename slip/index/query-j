@@ -36,11 +36,11 @@ use Debug::DUtils;
 use Context;
 use MdpConfig;
 use Database;
+use Search::Result::SLIP_Raw;
 
 # Local
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
-use Result::SLIP_Raw;
 
 
 # ---------------------------------------------------------------------
@@ -58,7 +58,9 @@ sub query_get_usage {
                           if running from command line, e.g.:
                              -qq=id:mdp.39015002*\&start=0\&rows=3
                         -N is silent mode (no status printed)
-                  Warning: In -D mode: Run /l/local/bin/tomcat-build-restart on all
+                        -P query production index
+                        -D query development index
+                  Warning: In -D mode: Possibly run /l/local/bin/tomcat-build-restart on all
                            Solr build hosts before and after querying to restore java heap\n};
     return $s;
 }
@@ -149,7 +151,7 @@ sub query_Solr {
           ? SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, $shard)
             : SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
 
-        my $rs = new Result::SLIP_Raw();
+        my $rs = new Search::Result::SLIP_Raw();
         
         my $full_query = 
             $INTERACTIVE 
