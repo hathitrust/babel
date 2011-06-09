@@ -62,9 +62,9 @@ sub stage_app_usage {
          staged commit and last deployed commit. Invokes \$EDITOR to display diff
 
          Options:
-            -s <staging area>: test (default), beta-{1,2,3}
-            -b <branch> at /htapps/whoami.babel/<app> where <staging area> must be one of beta-{1,2,3}
-            -A all apps
+            -s <staging area>: test (default), beta-{1,2,3}, e.g. 'beta-2'
+            -b <branch> at /htapps/whoami.babel/<app>. Note: <staging area> must be one of beta-{1,2,3}
+            -A all apps. If -b <branch>, skip apps without a <branch> 
             -d prompt to show diffs when staging multiple apps
                  (always prompts when staging a single app)
             -v verbose
@@ -92,7 +92,7 @@ my $FORCE_DIFF = defined($opt_d);
 my $BRANCH = $opt_b;
 my $all = $opt_A;
 
-my @APPS = __handle_APPS($BRANCH, $all);
+my @APPS = __handle_APPS($all);
 
 my $STAGE = $opt_s;
 if ($BRANCH) {
@@ -117,10 +117,12 @@ else {
     }
 }
 
-my $rc;
+my $rc = 0;
 
 if ($BRANCH) {
-    $rc = stage_topic_branch($APPS[0], $BRANCH);
+    foreach my $a (@APPS) {
+        $rc |= stage_topic_branch($a, $BRANCH);
+    }
 }
 else {
     $rc = stage_origin_master_branch(@APPS);
@@ -142,23 +144,17 @@ Description
 
 # ---------------------------------------------------------------------
 sub __handle_APPS {
-    my $branch = shift;
     my $all = shift;
 
     my @all_apps = `cat $LOCATION/../lib/Config/app-list.txt`;
     chomp(@all_apps);
 
     my @apps;
-    if (defined($branch)) {
-        @apps = shift;
+    if ($all) {
+        @apps = @all_apps;
     }
     else {
-        if ($all) {
-            @apps = @all_apps;
-        }
-        else {
-            @apps = @ARGV;
-        }
+        @apps = @ARGV;
     }
 
     foreach my $a (@apps) {
@@ -172,6 +168,7 @@ sub __handle_APPS {
     }
 
     if (! scalar(@apps)) {
+        PrintN("Missing <app> argument\n");
         print stage_app_usage();
         exit 1;
     }
@@ -378,14 +375,17 @@ sub stage_topic_branch {
     my $dest_app_dir = "$dest_app_root/$app";
     PrintY(qq{\nStaging application=$app branch=$branch from $src_app_dir at $dest_app_root\n});
 
-    if (! (
-           G_checkout_branch($dest_app_dir, 'master')
-           &&
-           execute_command("git pull $src_app_dir $branch -v")
-           &&
-           G_update_submodules($dest_app_dir)
-          )
-       ) {
+    if (! G_checkout_branch($dest_app_dir, 'master')){
+        PrintN($fail_msg);
+        return 1;
+    }
+
+    if (! execute_command("git pull $src_app_dir $branch")) {
+        PrintM(qq{Could not pull $branch at $src_app_dir ... skipping\n});
+        return 0;
+    }
+
+    if (! G_update_submodules($dest_app_dir)) {
         PrintN($fail_msg);
         return 1;
     }
