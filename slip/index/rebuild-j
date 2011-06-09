@@ -49,8 +49,9 @@ use Context;
 use MdpConfig;
 use Database;
 use Search::Site;
+use Search::Searcher;
 use Search::Result::SLIP;
-use Search::Searcher::SLIP;
+
 
 use Db;
 use SLIP_Utils::Db_sync;

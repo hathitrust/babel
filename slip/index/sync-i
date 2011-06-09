@@ -37,15 +37,16 @@ use MdpConfig;
 use Database;
 use Identifier;
 use SharedQueue;
-use Search::Searcher;
-use Collection;
-use CollectionSet;
 
-# Local
+use Search::Searcher;
+use Search::Result::SLIP;
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use SLIP_Utils::Released;
-use Result::SLIP;
+
+use Collection;
+use CollectionSet;
+
 
 # ---------------------------------------------------------------------
 
