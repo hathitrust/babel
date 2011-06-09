@@ -43,6 +43,7 @@ if ($ALL) {
 else {
     @apps = @ARGV;
     if (! scalar(@apps)) {
+        PrintN("Missing <app> argument\n");
         print clone_app_usage();
         exit 1;
     }
@@ -54,7 +55,9 @@ foreach my $app (@apps) {
     my $app_dir = "$app_root/$app";    
     my $app_repo = $app . '.git';
     
-    print qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE removal" : "") . qq{\n};
+    my $cmsg = qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE removal" : "") . qq{\n};
+    
+    PrintY($cmsg);
 
     if (! __validate_clone_app($repo_root, $app_root, $app_repo, $app_dir, $app)) {
         next;
