@@ -28,14 +28,17 @@ see help
 
 =cut
 
+
+use strict;
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
-
-
-use strict;
 
 # Perl
 use Getopt::Std;

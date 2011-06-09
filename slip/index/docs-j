@@ -27,14 +27,16 @@ see help
 
 
 use strict;
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
+
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
-
-
 
 # Perl
 use Getopt::Std;
@@ -49,6 +51,9 @@ use Search::Constants;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Load;
+
+# Lib
+use Document::Generator;
 
 our ($opt_r, $opt_F, $opt_d, $opt_I);
 
@@ -117,27 +122,20 @@ else {
     $id_arr_ref = [$ID];
 }
 
-
 foreach my $id (@$id_arr_ref) {
-    # --------------------  Create Document  --------------------
-    my $of = new ObjFactory;
-    my $document_subclass = $C->get_object('MdpConfig')->get('document_subclass');
-    my %of_attrs = (
-                    'class_name' => $document_subclass,
-                    'parameters' => {
-                                     'C'  => $C,
-                                     'dbh' => $dbh,
-                                     'id' => $id,
-                                    },
-                   );
-    my $doc = $of->create_instance($C, \%of_attrs);
-    my ($data_status, $metadata_status) = $doc->get_document_status();
 
-    if ($data_status != IX_NO_ERROR) {
-        print qq{-----> OCR error\n};
-    }
-    if ($metadata_status != IX_NO_ERROR) {
-        print qq{-----> metadata error\n};
+    my $dGen = new Document::Generator($C, $id);
+
+    my $doc;
+    while ( $doc = $dGen->generate_next($C) ) {
+        my ($data_status, $metadata_status) = $doc->get_document_status();
+
+        if ($data_status != IX_NO_ERROR) {
+            print qq{-----> data error: $data_status\n};
+        }
+        if ($metadata_status != IX_NO_ERROR) {
+            print qq{-----> metadata error: $metadata_status\n};
+        }
     }
 }
 

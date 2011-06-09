@@ -32,14 +32,17 @@ see help
 
 =cut
 
+
+use strict;
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
-
-
-use strict;
 
 # Perl
 use Getopt::Std;
@@ -180,8 +183,8 @@ if (defined($opt_d)) {
 
 my $C = new Context;
 
-my $run_configfile = $RIGHTS ? undef : $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+my $run_configfile = $RIGHTS ? undef : $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$RUN.conf};
+my $common_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
 my $uber_configfile = Utils::get_uber_config_path('slip');
 
 my $config = new MdpConfig($uber_configfile, $common_configfile, $run_configfile);

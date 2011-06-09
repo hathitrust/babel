@@ -45,6 +45,9 @@ see help
 =cut
 
 use strict;
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -69,7 +72,6 @@ use MdpConfig;
 use Database;
 use Search::Indexer;
 use Search::Constants;
-use ObjFactory;
 use Utils::GlobalSwitch;
 
 # Local
@@ -80,6 +82,10 @@ use SLIP_Utils::IndexerPool;
 use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+
+# Lib
+use Document::Generator;
+use Document::Wrapper;
 
 my $INTERACTIVE = $ENV{TERM};
 
@@ -349,7 +355,6 @@ sub remove_id_from_backup_list {
     my $id = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref;
 }
 
-
 # ---------------------------------------------------------------------
 
 =item process_one_id
@@ -364,33 +369,44 @@ sub process_one_id {
 
     my %merged_stats;
 
-    # --------------------  Create Document  --------------------
-    my $of = new ObjFactory;
-    my $document_subclass = $C->get_object('MdpConfig')->get('document_subclass');
-    my %of_attrs = (
-                    'class_name' => $document_subclass,
-                    'parameters' => {
-                                     'C'   => $C,
-                                     'dbh' => $dbh,
-                                     'id'  => $id,
-                                    },
-                   );
-    my $doc = $of->create_instance($C, \%of_attrs);
-    my ($data_status, $metadata_status) = $doc->get_document_status();
+    my $dGen = new Document::Generator($C, $id);
 
-    my $doc_build_failure = ($data_status != IX_NO_ERROR) || ($metadata_status != IX_NO_ERROR);
-    my $index_state = IX_NO_ERROR;
+    my $doc;
+    my $doc_arr_ref = [];
+    my $doc_build_failure = 0;
 
-    # --------------------  Index Document  --------------------
-    if (! $doc_build_failure) {
-        my $idx_stats_ref;
-        ($index_state, $idx_stats_ref) = $indexer->index_document($C, $doc);
+    my ($index_state, $data_status, $metadata_status) = (IX_NO_ERROR, IX_NO_ERROR, IX_NO_ERROR);
+    #
+    # --------------------  Create Document(s)  --------------------
+    #
+    while ( $doc = $dGen->generate_next($C) ) {
 
         my $doc_stats_ref = $doc->get_document_stats($C);
-        %merged_stats = %$doc_stats_ref;
-        %merged_stats = (%merged_stats, %$idx_stats_ref);
-    }
+        SLIP_Utils::Common::merge_stats($C, \%merged_stats, $doc_stats_ref);
 
+        ($data_status, $metadata_status) = $doc->get_document_status();
+        $doc_build_failure = ($data_status != IX_NO_ERROR) || ($metadata_status != IX_NO_ERROR);
+
+        if ($doc_build_failure) {
+            last;
+        }
+        else {
+            my $doc_content_ref = $doc->get_document_content($C);
+            push(@$doc_arr_ref, $doc_content_ref);
+        }
+    }
+    
+    #
+    # --------------------  Index Document  --------------------
+    #
+    if (! $doc_build_failure) {
+        my $full_Solr_doc_ref = Document::Wrapper::wrap($C, $doc_arr_ref);
+
+        my $idx_stats_ref;
+        ($index_state, $idx_stats_ref) = $indexer->index_Solr_document($C, $full_Solr_doc_ref);    
+        SLIP_Utils::Common::merge_stats($C, \%merged_stats, $idx_stats_ref);
+    }
+    
     return ($index_state, $data_status, $metadata_status, \%merged_stats);
 }
 
@@ -573,7 +589,7 @@ sub update_stats {
 
     my $tot_Time = Time::HiRes::time() - $start;
 
-    my $doc_size = $$stats_ref{'update'}{'doc_size'};
+    my $doc_size = $$stats_ref{'create'}{'doc_size'};
     my $doc_Time = $$stats_ref{'create'}{'elapsed'};
     my $idx_Time = $$stats_ref{'update'}{'elapsed'};
 
@@ -1083,7 +1099,7 @@ sub Log_item {
 
     # IDX i_t = sec i_mbs = Mb/sec
     my $i_t = $$stats_ref{'update'}{'elapsed'};
-    my $i_mbs = ($i_t > 0) ? $$stats_ref{'update'}{'doc_size'}/1024/1024/$i_t : 0;
+    my $i_mbs = ($i_t > 0) ? $$stats_ref{'create'}{'doc_size'}/1024/1024/$i_t : 0;
 
     $buf .= sprintf(qq{ i_t=%.2f i_mbs=%.2f}, $i_t, $i_mbs);
 
