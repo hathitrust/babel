@@ -369,7 +369,7 @@
       <xsl:variable name="Limit">
         <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
       </xsl:variable>
-
+      <!--  XXX this logic foobar needs to go in pseudo facet which change that limit can be ft or so (or all) -->
       <xsl:choose>
         <xsl:when test="$Limit='YES'">
           <!-- we are currently showing the result of narrow to full view so we want a URL to all -->
@@ -822,6 +822,51 @@ for now create an href with current_url . &fq=facetname:value
       <h3>Narrow Search</h3>
       <div id="selectedFacets">
         <ul class="filters">
+          <!-- hack to insert pseudo facet availability here based on actual rights queries-->
+          
+          <!-- XXX hard code now and then move to a template       
+               if LimitType = so or ft show appropriate text with link to remove facet i.e. lmt=all
+               -->
+          <xsl:variable name="limitType">
+            <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+          </xsl:variable>
+
+          <xsl:choose>
+            <xsl:when test="$limitType = 'so'">
+              <li>
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
+                </xsl:attribute>
+                <xsl:attribute name ="class">
+                  unselect
+                </xsl:attribute>
+                <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
+              </xsl:element>
+              <xsl:text>Viewability:Search Only</xsl:text>
+            </li>
+
+            </xsl:when>
+            <xsl:when test="$limitType = 'ft'">
+              <li>
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
+                </xsl:attribute>
+                <xsl:attribute name ="class">
+                  unselect
+                </xsl:attribute>
+                <img alt="Delete" src="/ls/common-web/graphics/delete.png" />           
+                </xsl:element>
+              <xsl:text>Viewability:Full Text</xsl:text>
+            </li>
+            </xsl:when>
+
+            <xsl:otherwise>
+
+            </xsl:otherwise>
+          </xsl:choose>
+
           <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
             
             <xsl:text>
@@ -860,6 +905,14 @@ for now create an href with current_url . &fq=facetname:value
 
       <div id="facetlist">
         <dl>
+          <!-- hack to insert pseudo facet availability here based on actual rights queries-->
+          <!--  XXX hard code now and then move to a template       
+               show ft and so facets unless one is selected. then don't show selected facet
+               What happens if user clicks both? NO! we are doing AND with all facets so selecting english and german means works with both
+               -->
+          <xsl:call-template name="pseudofacet"/>
+
+          <!--XXX end hack-->
           <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
 
            
@@ -905,6 +958,66 @@ for now create an href with current_url . &fq=facetname:value
       </dl>
     </div>
   </div>
+</xsl:template>
+
+
+<xsl:template name="pseudofacet">
+  <xsl:text>    
+  </xsl:text>
+  <dt class="facetField">Viewability</dt>
+  <xsl:text>                
+  </xsl:text>
+
+  <xsl:variable name="limitType">
+    <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+  </xsl:variable>
+  
+  <xsl:variable name="fakeFullTextFacet">
+    <dd>
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
+        </xsl:attribute>
+        <xsl:attribute name ="class">
+          
+        </xsl:attribute>
+        <xsl:text>Full Text </xsl:text>
+      </xsl:element>
+      <xsl:text> (</xsl:text>
+      <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
+      <xsl:text>) </xsl:text>
+    </dd>
+  </xsl:variable>
+  
+  <xsl:variable name="fakeSearchOnlyFacet">
+    <dd>
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
+        </xsl:attribute>
+        <xsl:attribute name ="class">
+          
+        </xsl:attribute>
+        <xsl:text>Search Only </xsl:text>
+      </xsl:element>
+      <xsl:text> (</xsl:text>
+      <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCount"/>
+      <xsl:text>) </xsl:text>
+    </dd>
+  </xsl:variable>
+    
+  <xsl:choose>    
+   <xsl:when test="$limitType = 'so'">
+     <xsl:copy-of select="$fakeFullTextFacet"/>
+   </xsl:when>
+   <xsl:when test="$limitType = 'ft'">
+     <xsl:copy-of select="$fakeSearchOnlyFacet"/>
+   </xsl:when>
+   <xsl:otherwise>
+     <xsl:copy-of select="$fakeFullTextFacet"/>
+     <xsl:copy-of select="$fakeSearchOnlyFacet"/>
+   </xsl:otherwise>
+ </xsl:choose>
 </xsl:template>
 
 

@@ -31,10 +31,14 @@ $facet_to_label_map =
 
 # temporary replace topicStr (Subject) with hlb3Str until we patch
 # production for the too many words topicStr bug
+
+# XXX  WARNING removed   topicStr due to bug while pointing in production
+# removed ht_availability since the Mirlyn/Catalog info is based on bib not item
+# use correct filter query for rights instead and create pseudo facet in xsl
 @facet_order=qw{
-                ht_availability 
+
                 hlb3Str
-                topicStr
+
                 authorStr 
                 language 
                 countryOfPubStr 

@@ -261,17 +261,33 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     {
         $temp_cgi->delete('pn');
     }
-        
+    #XXX    
+    my $limit_type = 'all'; #default
+    if (defined $cgi->param('lmt'))
+    {
+        $limit_type = $cgi->param('lmt');
+    }  
+              
+    #XXX
     $temp_cgi->param('lmt', 'ft');
     my $full_text_href = $temp_cgi->self_url();
 
     $temp_cgi->param('lmt', 'all');
     my $all_href = $temp_cgi->self_url();
 
+    $temp_cgi->param('lmt', 'so');
+    my $search_only_href = $temp_cgi->self_url();
+    
+
+
     my $s;
-    $s .= wrap_string_in_tag($is_limit_on, 'Limit');
+        # XXX redo for lmt can equal ft or so ?
+    $s .= wrap_string_in_tag($is_limit_on, 'Limit'); #XXX leave now for debugging
+    $s .= wrap_string_in_tag($limit_type, 'LimitType');
+    
     $s .= wrap_string_in_tag($all_href, 'AllHref');
     $s .= wrap_string_in_tag($full_text_href, 'FullTextHref');
+    $s .= wrap_string_in_tag($search_only_href, 'SearchOnlyHref');
     $s .= wrap_string_in_tag($num_full_text, 'FullTextCount');
     $s .= wrap_string_in_tag($num_all, 'AllItemsCount');
     $s .= wrap_string_in_tag($num_search_only, 'SearchOnlyCount');

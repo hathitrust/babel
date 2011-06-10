@@ -130,7 +130,7 @@ sub execute_operation
         $secondary_type = 'all';
     }
 
-# consider refactoring so we only ask for rs and Q?
+    # consider refactoring so we only ask for rs and Q?
     my ($primary_rs, $primary_well_formed,$primary_processed)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows);
     my ($secondary_rs, $secondary_well_formed,$secondary_processed) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0);
     
