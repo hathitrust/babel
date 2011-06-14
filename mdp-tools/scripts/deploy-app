@@ -118,7 +118,7 @@ my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to deploy application ($app)\n};
     my $app_dir = "$app_root/$app";
-    
+
 
     PrintY(qq{\nDeploying application ($app) from $app_dir\n});
 
@@ -195,7 +195,7 @@ Description
 # ---------------------------------------------------------------------
 sub __handle_SITE {
     my $opt = shift;
-    
+
     my @sites = ('macc', 'ictc');
     my $site = $opt;
 
@@ -212,7 +212,7 @@ sub __handle_SITE {
         $site .= $domain;
         $site = $prefix . $site;
     }
-    
+
     return $site;
 }
 
@@ -227,7 +227,7 @@ Description
 # ---------------------------------------------------------------------
 sub __handle_VERSION_INCREMENT {
     my $opt = shift;
-    
+
     my @ver_incrs = ('maj', 'min', 'ter',);
 
     if (defined($opt)) {
@@ -237,7 +237,7 @@ sub __handle_VERSION_INCREMENT {
             exit 1;
         }
     }
-    
+
     return $opt;
 }
 
@@ -385,16 +385,16 @@ sub __get_tag {
     }
     elsif (query_yn("Deploy using new tag?", 'y')) {
         print qq{Ok. Last tag was: } . G_last_tag() . qq{\n};
-        
+
         $tag = __build_tag($app);
         $new = 1;
     }
     else {
         print qq{Ok. Last 3 tags were:\n} . G_list_tags() . qq{\n};
-        
+
         $tag = __build_tag($app);
     }
-    
+
     return ($tag, $new);
 }
 
@@ -410,7 +410,7 @@ Description
 sub ___create_timestamp {
     my $app_dir = shift;
     my $tag = shift;
-    
+
     my $ts = qq{$app_dir/$TIMESTAMP_PATH};
     print qx(echo $tag > $ts);
     print qq{  -> update $ts @ $tag\n};
@@ -429,52 +429,53 @@ sub __rdist_app_to_production {
     my $app_dir = shift;
     my $site = shift;
     my $tag = shift;
-    
+
     my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
-    
+
     # Plack timestamp logic
     my $timestamp_rdist_script = qq{$app_dir/bin/rdist.app.timestamp};
     if (! -e $timestamp_rdist_script) {
         # create timestamp now and rdist it using rdist.app script
         ___create_timestamp($app_dir, $tag);
     }
-    
+
     my $s = defined($site) ? qq{ONLY TO $site} : '';
     print qq{Now starting APP rdist to production $s ...\n};
-    
+
     my $opt = defined($site) ? qq{-m $site} : '';
     print qx(rdist -f $app_dir/bin/rdist.app $opt);
-    
+
     if ($?) {
         PrintN("ERROR: rdist APP failure\n");
         return 0;
     }
-    
+
     # non-Plack timestamp logic
     if (-e $timestamp_rdist_script) {
+        print qq{Now starting separate TIMESTAMP rdist to production $s ...\n};
+
         # create timestamp *after* app rdist has finished and rdist it
         # using rdist.app.timestamp script
         ___create_timestamp($app_dir, $tag);
-        
-        print qq{Now starting separate TIMESTAMP rdist to production $s ...\n};
+
         print qx(rdist -f $timestamp_rdist_script $opt);
-        
+
         if ($?) {
             PrintN("ERROR: rdist TIMESTAMP failure\n");
             return 0;
         }
     }
-    
+
     my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
-    
+
     my ($Dd,$Dh,$Dm,$Ds) =
       Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
                  $year2,$month2,$day2,$hour2,$min2,$sec2);
-    
+
     my $e = sprintf("Rdist succeeds. Elapsed=%02d:%02d ", $Dm, $Ds);
     PrintY($e);
-    
-    
+
+
     return 1;
 }
 
