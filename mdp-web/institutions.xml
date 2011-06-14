@@ -181,19 +181,19 @@
       template="https://___HOST___/Shibboleth.sso/nyu?target=___TARGET___"
       authtype="shibboleth"
       enabled="1">New York University</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="lafayette"
       template="https://___HOST___/Shibboleth.sso/lafayette?target=___TARGET___"
       authtype="shibboleth"
-      enabled="1">Lafayette College</Inst>
+      enabled="0">Lafayette College</Inst>
   <Inst
       sdrinst="ucop"
       template="https://___HOST___/Shibboleth.sso/ucop?target=___TARGET___"
       authtype="shibboleth"
-      enabled="1">University of California, Office of the President</Inst>
-
-  <!-- waiting -->
-
+      enabled="0">University of California, Office of the President</Inst>
   <Inst
       sdrinst="duke"
       template="https://___HOST___/Shibboleth.sso/duke?target=___TARGET___"
