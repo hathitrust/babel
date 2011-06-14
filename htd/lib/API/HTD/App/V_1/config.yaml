@@ -428,6 +428,7 @@ accessibility_matrix:
       minn-dig-lib: restricted
       minn-hist-soc: restricted
       utah_state_univ: open
+      univ_madrid: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -437,6 +438,7 @@ accessibility_matrix:
       minn-dig-lib: restricted
       minn-hist-soc: restricted
       utah_state_univ: restricted
+      univ_madrid: restricted
   pageocr:
     free:
       google: limited
@@ -447,6 +449,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -456,6 +459,7 @@ accessibility_matrix:
       minn-dig-lib: restricted
       minn-hist-soc: restricted
       utah_state_univ: restricted
+      univ_madrid: restricted
   pagecoordocr:
     free:
       google: limited
@@ -466,6 +470,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -475,6 +480,7 @@ accessibility_matrix:
       minn-dig-lib: restricted
       minn-hist-soc: restricted
       utah_state_univ: restricted
+      univ_madrid: restricted
   aggregate:
     free:
       google: free_bulk_restricted
@@ -485,6 +491,7 @@ accessibility_matrix:
       minn-dig-lib: restricted
       minn-hist-soc: restricted
       utah_state_univ: open
+      univ_madrid: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -494,6 +501,7 @@ accessibility_matrix:
       minn-dig-lib: restricted
       minn-hist-soc: restricted
       utah_state_univ: restricted
+      univ_madrid: restricted
   structure:
     free:
       google: open
@@ -504,6 +512,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -513,6 +522,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
   meta:
     free:
       google: open
@@ -523,6 +533,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -532,6 +543,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
   pagemeta:
     free:
       google: open
@@ -542,6 +554,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -551,6 +564,7 @@ accessibility_matrix:
       minn-dig-lib: open
       minn-hist-soc: open
       utah_state_univ: open
+      univ_madrid: open
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights_current.attr field values to names
@@ -599,6 +613,7 @@ sources_name_map:
   6: minn-dig-lib
   7: minn-hist-soc
   8: utah_state_univ
+  9: univ_madrid
 
 # ---------------------------------------------------------------------
 # MIME type map
