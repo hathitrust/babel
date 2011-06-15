@@ -829,7 +829,7 @@
             <xsl:attribute name="type">text</xsl:attribute>
             <xsl:attribute name="name">q1</xsl:attribute>
             <xsl:attribute name="maxlength">150</xsl:attribute>
-            <xsl:attribute name="size">20</xsl:attribute>
+            <xsl:attribute name="size">30</xsl:attribute>
             <xsl:if test="$gHasOcr!='YES'">
               <xsl:attribute name="disabled">disabled</xsl:attribute>
             </xsl:if>
