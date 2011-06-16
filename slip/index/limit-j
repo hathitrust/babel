@@ -370,7 +370,7 @@ Description
 sub Log_limit {
     my ($C, $run, $shard, $s) = @_;
 
-    my $s0 = qq{***LIMIT: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
+    my $s0 = qq{***LIMIT: } . Utils::Time::iso_Time() . qq{ run=$run shard=$shard $s};
     SLIP_Utils::Log::this_string($C, $s0, 'limit_logfile', '___RUN___', $run);
 }
 
