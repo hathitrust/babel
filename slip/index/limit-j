@@ -1,0 +1,428 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+limit-j
+
+=head1 USAGE
+
+% limit-j -r run -L <num_docs>
+
+=head1 DESCRIPTION
+
+Limit a Solr index to num_docs by querying for oldest timestamp and
+marching forward by some delta (minutes?) counting docs until count
+equals num_docs then delete the volumes containing those docs older
+than or equal to that last timestamp.
+
+Currently, only works with 1-shard indexes that have vol_id and
+timestamp fields in their schemas.
+
+=head1 OPTIONS
+
+=cut
+
+use strict;
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+use Date::Calc qw(Add_Delta_YMDHMS);
+use Date::Parse;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Identifier;
+
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Log;
+use Search::Result::SLIP_Raw;
+use Search::Constants;
+
+
+# ---------------------------------------------------------------------
+
+=item limit_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub limit_get_usage {
+    my $s .= qq{Usage: limit-j -r run [-P|-D] -L <num_docs> [-i <seconds>] [-n] [-d] [-T]
+                  where -L num_docs are to be deleted
+                        -n count but do not delete
+                        -i <seconds> by which to increment when counting, default = 60
+                        -P query production index
+                        -D query development index (default)\n};
+    return $s;
+}
+
+our ($opt_r, $opt_L, $opt_n, $opt_d, $opt_T, $opt_D, $opt_P, $opt_i);
+
+my $ops = getopts('r:L:ndTDPi:');
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $s = limit_get_usage();
+    print STDERR $s;
+    exit 1;
+}
+
+my $MODE; # Required
+if (defined($opt_P)) {
+    $MODE = 'production';
+}
+elsif (defined($opt_D)) {
+    $MODE = 'development';
+}
+else {
+    $MODE = 'development';
+}
+
+my $LIMIT = $opt_L; # Required
+if (! defined($LIMIT)) {
+    my $s = limit_get_usage();
+    print STDERR $s;
+    exit 1;
+}
+
+my $INTERVAL = defined($opt_i) ? $opt_i : 60;
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= 'me';
+}
+
+my $NOOP;
+if (defined($opt_n)) {
+    $NOOP = 1;
+}
+
+my $INTERACTIVE = (defined($ENV{TERM}));
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $CONFIG = SLIP_Utils::Common::gen_run_config($RUN);
+$C->set_object('MdpConfig', $CONFIG);
+
+limit_Solr($C, $LIMIT, $INTERVAL);
+
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item limit_Solr
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub limit_Solr {
+    my ($C, $limit, $interval) = @_;
+    
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    ASSERT(scalar(@num_shards_list) == 1, qq{limit-j only functions on 1-shard indexes});
+    
+    my $searcher = ($MODE eq 'development') 
+      ? SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1)
+        : SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, 1);
+
+    my $rs = new Search::Result::SLIP_Raw();
+
+    my $oldest_timestamp = __get_oldest_timestamp($C, $searcher, $rs);
+    my $num_docs_in_index = __get_num_docs_in_index($C, $searcher, $rs);
+
+    my $s = qq{mode=$MODE num_docs=$num_docs_in_index limit=$LIMIT};
+    __output(qq{$s\n});
+    Log_limit($C, $RUN, 1, $s);
+
+    if (defined($oldest_timestamp) && defined($num_docs_in_index)) {
+        my $limiting_timestamp = '';
+        my ($num_docs, $this_timestamp) = (0, $oldest_timestamp);
+
+        if ($num_docs_in_index > $LIMIT) {
+            while (1) {
+                $this_timestamp = __increment_timestamp($this_timestamp);
+                
+                my $num_docs = __count_docs_between($C, $searcher, $rs, $oldest_timestamp, $this_timestamp);
+                if ($num_docs_in_index - $num_docs <= $LIMIT) { 
+                    $limiting_timestamp = $this_timestamp;
+                    last;
+                }
+            }
+
+            __delete_docs_by_vol_id($C, $searcher, $oldest_timestamp, $limiting_timestamp);
+
+            my $num_docs_post_delete = __get_num_docs_in_index($C, $searcher, $rs);
+            $s = qq{mode=$MODE num_docs post-delete=$num_docs_post_delete limit=$LIMIT};
+            __output(qq{$s\n});
+            Log_limit($C, $RUN, 1, $s);
+        }
+        else {
+            my $s = qq{mode=$MODE NO deletions};
+            __output(qq{$s\n});
+            Log_limit($C, $RUN, 1, $s);
+        }
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __delete_docs
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __delete_docs_by_vol_id {
+    my ($C, $searcher, $oldest_timestamp, $limiting_timestamp) = @_;
+    
+    return if ($NOOP);
+
+    # Log
+    my $s = qq{mode=$MODE delete interval=[$oldest_timestamp TO $limiting_timestamp]};
+    __output(qq{$s\n});
+    Log_limit($C, $RUN, 1, $s);
+
+    # get vol_ids that cover this time interval
+    my $v_query = qq{q=timestamp:[$oldest_timestamp TO $limiting_timestamp]&start=0&rows=10000&fl=vol_id};
+    my $rs = new Search::Result::SLIP_Raw();
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $v_query, $rs);
+
+    my %vol_ids;
+    my $result_docs_arr_ref = $rs->get_result_docs();
+    foreach my $doc_data (@$result_docs_arr_ref) {
+        my ($vol_id) = ($doc_data =~ m,<str name="vol_id">(.*?)</str>,is);
+        $vol_ids{$vol_id}++;
+    }
+    
+    my $indexer = ($MODE eq 'development') 
+      ? SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, 1)
+        : SLIP_Utils::Solr::create_prod_shard_Indexer_by_alias($C, 1);
+
+    my ($index_state, $stats_hashref);
+    foreach my $vol_id (keys %vol_ids) {
+        my $safe_id = Identifier::get_safe_Solr_id($vol_id);
+        my $d_query = qq{vol_id:$safe_id};
+        ($index_state, $stats_hashref) = $indexer->delete_by_query($C, $d_query);
+
+        if (Search::Constants::indexing_failed($index_state)) {
+            $s = qq{mode=$MODE delete vol_id=$vol_id failed index_state=$index_state};
+            Log_limit_error($C, $RUN, 1, $s);
+        }
+        else {
+            $s = qq{mode=$MODE delete vol_id=$vol_id};
+            Log_limit($C, $RUN, 1, $s);
+        }
+        __output(qq{$s\n});
+        __non_interactive_err_output(1, qq{$s\n});
+    }
+
+    ($index_state, $stats_hashref) = $indexer->commit_updates($C);
+}
+
+# ---------------------------------------------------------------------
+
+=item __increment_timestamp
+
+For example: 2011-06-10T19:19:36.708Z + $INTERVAL
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __increment_timestamp {
+    my $timestamp = shift;
+
+    my ($ss, $mm, $hh, $dd, $mo, $yy, $zone) = Date::Parse::strptime($timestamp);
+    my ($year, $month, $day, $hour, $min, $sec) = Add_Delta_YMDHMS($yy+1900, $mo+1, $dd, $hh, $mm, $ss,
+                                                                   0,        0,     0,   0,   0,   $INTERVAL);
+    
+    return sprintf("%d-%02d-%02dT%02d:%02d:%02dZ", $year, $month, $day, $hour, $min, $sec);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __count_docs_between
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __count_docs_between {
+    my ($C, $searcher, $rs, $oldest_timestamp, $this_timestamp) = @_;
+
+    my $query = qq{q=timestamp:[$oldest_timestamp TO $this_timestamp]&start=0&rows=0&fl=timestamp};
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+
+    my $num_docs = $rs->get_num_found();
+
+    __output( qq{Num docs @ timestamp:[$oldest_timestamp TO $this_timestamp] = $num_docs\n} );
+
+    return $num_docs;
+}
+
+# ---------------------------------------------------------------------
+
+=item __get_oldest_timestamp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_oldest_timestamp {
+    my ($C, $searcher, $rs) = @_;
+    
+    my $timestamp;
+    my $query = q{q=*:*&sort=timestamp+asc&start=0&rows=1&fl=timestamp};
+    
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+
+    __output( qq{Oldest timestamp:\t} );
+        
+    if ($rs->get_num_found() == 0) {
+        __output( qq{EMPTY result\n} );
+    }
+    else {
+        my $result_docs_arr_ref = $rs->get_result_docs();
+
+        my $doc_data = $result_docs_arr_ref->[0];
+        ($timestamp) = ($doc_data =~ m,<date name="timestamp">(.*?)</date>,is);
+        
+        __output( qq{$timestamp\n} );
+    }
+
+    return $timestamp;
+}
+  
+# ---------------------------------------------------------------------
+
+=item __get_num_docs_in_index
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_num_docs_in_index {
+    my ($C, $searcher, $rs) = @_;
+    
+    my $num_docs;
+    my $query = q{q=*:*&start=0&rows=0};
+    
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+
+    __output( qq{Num docs in index:\t} );
+        
+    if ($rs->get_num_found() == 0) {
+        __output( qq{EMPTY result\n} );
+    }
+    else {
+        $num_docs = $rs->get_num_found();
+
+        __output( qq{$num_docs\n} );
+    }
+
+    return $num_docs;
+}
+  
+
+# ---------------------------------------------------------------------
+
+=item Log_limit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_limit {
+    my ($C, $run, $shard, $s) = @_;
+
+    my $s0 = qq{***LIMIT: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
+    SLIP_Utils::Log::this_string($C, $s0, 'limit_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_limit_error
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_limit_error {
+    my ($C, $run, $shard, $error) = @_;
+
+    my $s = qq{***LIMIT [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard $error};
+    SLIP_Utils::Log::this_string($C, $s, 'limit_logfile', '___RUN___', $run);
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2011 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
+
