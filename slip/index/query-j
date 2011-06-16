@@ -53,13 +53,13 @@ Description
 
 # ---------------------------------------------------------------------
 sub query_get_usage {
-    my $s .= qq{Usage: query-j -r run -P|-D [-R shard] [-N] [-d] [-T] -q query
+    my $s .= qq{Usage: query-j -r run [-P|-D] [-R shard] [-N] [-d] [-T] -q query
                   where -q query should be well-formed shell escaped
                           if running from command line, e.g.:
                              -qq=id:mdp.39015002*\&start=0\&rows=3
                         -N is silent mode (no status printed)
                         -P query production index
-                        -D query development index
+                        -D query development index (default)
                   Warning: In -D mode: Possibly run /l/local/bin/tomcat-build-restart on all
                            Solr build hosts before and after querying to restore java heap\n};
     return $s;
@@ -79,7 +79,7 @@ if (! $RUN) {
     exit 1;
 }
 
-my $MODE; # Required
+my $MODE; # Optional
 if (defined($opt_P)) {
     $MODE = 'production';
 }
@@ -87,9 +87,7 @@ elsif (defined($opt_D)) {
     $MODE = 'development';
 }
 else {
-    my $s = query_get_usage();
-    print "Missing -D or -P option\n\n$s";
-    exit 1;
+    $MODE = 'development';
 }
 
 my $SHARD = $opt_R; # optional
