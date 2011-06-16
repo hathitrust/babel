@@ -186,6 +186,11 @@
       template="https://___HOST___/Shibboleth.sso/lafayette?target=___TARGET___"
       authtype="shibboleth"
       enabled="1">Lafayette College</Inst>
+  <Inst
+      sdrinst="duke"
+      template="https://___HOST___/Shibboleth.sso/duke?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">Duke University</Inst>
 
   <!-- waiting -->
 
@@ -194,11 +199,6 @@
       template="https://___HOST___/Shibboleth.sso/ucop?target=___TARGET___"
       authtype="shibboleth"
       enabled="0">University of California, Office of the President</Inst>
-  <Inst
-      sdrinst="duke"
-      template="https://___HOST___/Shibboleth.sso/duke?target=___TARGET___"
-      authtype="shibboleth"
-      enabled="0">Duke University</Inst>
   <Inst
       sdrinst="upenn"
       template="https://___HOST___/Shibboleth.sso/upenn?target=___TARGET___"
