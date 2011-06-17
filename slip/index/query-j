@@ -53,21 +53,21 @@ Description
 
 # ---------------------------------------------------------------------
 sub query_get_usage {
-    my $s .= qq{Usage: query-j -r run [-P|-D] [-R shard] [-N] [-d] [-T] -q query
+    my $s .= qq{Usage: query-j -r run [-V|-B] [-R shard] [-N] [-d] [-T] -q query
                   where -q query should be well-formed shell escaped
                           if running from command line, e.g.:
                              -qq=id:mdp.39015002*\&start=0\&rows=3
                         -N is silent mode (no status printed)
-                        -P query production index
-                        -D query development index (default)
-                  Warning: In -D mode: Possibly run /l/local/bin/tomcat-build-restart on all
+                        -V query serving index
+                        -B query build index (default) (may be sthe same as serving index)
+                  Warning: In -B mode: Possibly run /l/local/bin/tomcat-build-restart on all
                            Solr build hosts before and after querying to restore java heap\n};
     return $s;
 }
 
-our ($opt_r, $opt_R, $opt_q, $opt_N, $opt_d, $opt_T, $opt_D, $opt_P);
+our ($opt_r, $opt_R, $opt_q, $opt_N, $opt_d, $opt_T, $opt_B, $opt_V);
 
-my $ops = getopts('r:R:q:NdTDP');
+my $ops = getopts('r:R:q:NdTBV');
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
@@ -80,14 +80,14 @@ if (! $RUN) {
 }
 
 my $MODE; # Optional
-if (defined($opt_P)) {
-    $MODE = 'production';
+if (defined($opt_V)) {
+    $MODE = 'serving';
 }
-elsif (defined($opt_D)) {
-    $MODE = 'development';
+elsif (defined($opt_B)) {
+    $MODE = 'build';
 }
 else {
-    $MODE = 'development';
+    $MODE = 'build';
 }
 
 my $SHARD = $opt_R; # optional
@@ -145,7 +145,7 @@ sub query_Solr {
     my ($C, $query) = @_;
     
     foreach my $shard (@SHARDS) {
-        my $searcher = ($MODE eq 'development') 
+        my $searcher = ($MODE eq 'build') 
           ? SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, $shard)
             : SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
 
@@ -181,36 +181,36 @@ sub query_Solr {
 
 1;
 
-#
-# =head1 AUTHOR
-#
-# Phillip Farber, University of Michigan, pfarber@umich.edu
-#
-# =head1 COPYRIGHT
-#
-# Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject
-# to the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-# =cut
-#
-#
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
 
 
