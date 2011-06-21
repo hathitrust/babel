@@ -180,8 +180,11 @@ sub limit_Solr {
 
             __delete_docs_by_vol_id($C, $searcher, $oldest_timestamp, $limiting_timestamp);
 
+            # Wait for new Searchers to autowarm
+            sleep 10;
+            
             my $num_docs_post_delete = __get_num_docs_in_index($C, $searcher, $rs);
-            $s = qq{num_docs post-delete=$num_docs_post_delete limit=$LIMIT};
+            $s = qq{num_docs post-delete:\t$num_docs_post_delete \tlimit=$LIMIT};
             __output(qq{$s\n});
             Log_limit($C, $RUN, 1, $s);
         }
@@ -204,28 +207,47 @@ Description
 # ---------------------------------------------------------------------
 sub __delete_docs_by_vol_id {
     my ($C, $searcher, $oldest_timestamp, $limiting_timestamp) = @_;
-    
-    return if ($NOOP);
 
-    # Log
+    use constant INDEXER_TIMEOUT => 600;
+    use constant SLICE_SIZE => 10000;
+    
     my $s = qq{delete interval=[$oldest_timestamp TO $limiting_timestamp]};
+    __output(qq{$s\n});
+
+    return if ($NOOP);
+    # Log
+    Log_limit($C, $RUN, 1, $s);
+
+    # get vol_ids (~300 per volume) that cover this time interval in slices
+    my %vol_ids;
+    my $start = 0;
+    my $rows = SLICE_SIZE;
+    while (1) {
+        my $v_query = qq{q=timestamp:[$oldest_timestamp TO $limiting_timestamp]&start=$start&rows=$rows&fl=vol_id};
+        my $rs = new Search::Result::SLIP_Raw();
+        $rs = $searcher->get_Solr_raw_internal_query_result($C, $v_query, $rs);
+
+        my $returned = $rs->get_rows_returned();
+        last if ($returned == 0);
+    
+        $s = qq{Slice of $returned};
+        __output(qq{$s\n});
+        Log_limit($C, $RUN, 1, $s);
+
+        my $result_docs_arr_ref = $rs->get_result_docs();
+        foreach my $doc_data (@$result_docs_arr_ref) {
+            my ($vol_id) = ($doc_data =~ m,<str name="vol_id">(.*?)</str>,is);
+            $vol_ids{$vol_id}++;
+        }
+        $start += $rows;
+    }
+    
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, 1, );
+    
+    $s = qq{Preparing to delete volumes=} . scalar keys %vol_ids;
     __output(qq{$s\n});
     Log_limit($C, $RUN, 1, $s);
 
-    # get vol_ids that cover this time interval
-    my $v_query = qq{q=timestamp:[$oldest_timestamp TO $limiting_timestamp]&start=0&rows=10000&fl=vol_id};
-    my $rs = new Search::Result::SLIP_Raw();
-    $rs = $searcher->get_Solr_raw_internal_query_result($C, $v_query, $rs);
-
-    my %vol_ids;
-    my $result_docs_arr_ref = $rs->get_result_docs();
-    foreach my $doc_data (@$result_docs_arr_ref) {
-        my ($vol_id) = ($doc_data =~ m,<str name="vol_id">(.*?)</str>,is);
-        $vol_ids{$vol_id}++;
-    }
-    
-    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, 1);
-    
     my ($index_state, $stats_hashref);
     foreach my $vol_id (keys %vol_ids) {
         my $safe_id = Identifier::get_safe_Solr_id($vol_id);
@@ -237,7 +259,7 @@ sub __delete_docs_by_vol_id {
             Log_limit_error($C, $RUN, 1, $s);
         }
         else {
-            $s = qq{delete vol_id=$vol_id};
+            $s = qq{delete vol_id=$vol_id from index};
             Db::Delete_id_from_shard($C, $DBH, $RUN, $vol_id, 1);
             __output(qq{Deleted id=$vol_id, shard=1 run=$RUN from mdp.j_indexed\n});
             Log_limit($C, $RUN, 1, $s);
@@ -247,6 +269,9 @@ sub __delete_docs_by_vol_id {
     }
 
     ($index_state, $stats_hashref) = $indexer->commit_updates($C);
+    __output(qq{commit status=$index_state\n});
+    __non_interactive_err_output(Search::Constants::indexing_failed($index_state), 
+                                 qq{commit fail, index_state=$index_state\n});
 }
 
 # ---------------------------------------------------------------------
@@ -337,21 +362,11 @@ Description
 sub __get_num_docs_in_index {
     my ($C, $searcher, $rs) = @_;
     
-    my $num_docs;
-    my $query = q{q=*:*&start=0&rows=0};
-    
+    my $query = q{q=*:*&start=0&rows=0};    
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
-    __output( qq{Num docs in index:\t} );
-        
-    if ($rs->get_num_found() == 0) {
-        __output( qq{EMPTY result\n} );
-    }
-    else {
-        $num_docs = $rs->get_num_found();
-
-        __output( qq{$num_docs\n} );
-    }
+    my $num_docs = $rs->get_num_found();
+    __output( qq{Num docs in index:\t$num_docs\n} );
 
     return $num_docs;
 }
