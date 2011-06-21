@@ -269,4 +269,9 @@
       template="https://___HOST___/Shibboleth.sso/udel?target=___TARGET___"
       authtype="shibboleth"
       enabled="0">University of Delaware</Inst>
+  <Inst
+      sdrinst="miami"
+      template="https://___HOST___/Shibboleth.sso/miami?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="0">University of Miami</Inst>
 </Institutions>
