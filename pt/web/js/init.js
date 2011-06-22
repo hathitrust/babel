@@ -93,7 +93,7 @@ HT.config.ARBITRARY_WINDOW_WIDTH = 915;
 HT.init_from_params = function() {
     if ( ! window.location.hash ) {
       var hash = "mode/" + HT.params.view;
-      if ( HT.params.seq ) {
+      if ( typeof(HT.params.seq) != 'undefined' ) {
         hash = "page/n" + HT.params.seq + "/" + hash;
       }
       window.location.hash = "#" + hash;

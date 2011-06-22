@@ -986,7 +986,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
         href = href.replace(/num=\w+(;?)/, "");
     }
     
-    if ( params.index ) {
+    if ( typeof(params.index) != 'undefined' ) {
         var indexParam;
         var seq = params.index + 1;
         if ( options && options.id == "#pageRightPdfLink" ) {
@@ -1047,7 +1047,7 @@ HTBookReader.prototype.updateLocationHash = function() {
     var $pageURL = $("#pageURL");
     if ( $pageURL.length ) {
       var pageurl_text = $pageURL.val();
-      $pageURL.val(pageurl_text.replace(/seq=\d+/, "seq=" + params.index));
+      $pageURL.val(pageurl_text.replace(/seq=\d+/, "seq=" + (params.index + 1)));
     }
     
     if ( window.history && window.history.replaceState != null) {
@@ -1075,7 +1075,7 @@ HTBookReader.prototype.updateLocationHash = function() {
                     args.push("num=", num);
                 }
                 
-                args.push("seq=" + params_.seq);
+                args.push("seq=" + ( params_.seq + 1 ));
                 href += args.join(";");
                 _gaq.push(["_trackPageview", href])
             }
