@@ -98,28 +98,35 @@ sub execute_operation
     my $colltype = $cgi->param('colltype');
     # 'colltype'  => 'pub|priv|class',
     
-    my $pub_coll_arr_ref;
-    if (   (! defined ($colltype))  ||  ($colltype eq "pub")   )
-    {
-        eval
-        {
-            $pub_coll_arr_ref = $cs->list_colls('pub_colls', $sortkey,$dir );
-        };
-        die $@ if ($@);
-    }    
-    my $my_coll_arr_ref;
-    if  (   (! defined ($colltype))  || ($colltype eq "priv") )
-    {
-        eval
-        {
-            $my_coll_arr_ref = $cs->list_colls('my_colls', $sortkey,$dir);
-        };
-        die $@ if ($@);
-    }
+    my $coll_arr_ref;
+    eval {
+        $coll_arr_ref = $cs->list_colls('all_colls', $sortkey,$dir );
+    };
+    die $@ if ( $@ );
+    
+    # my $pub_coll_arr_ref;
+    # if (   (! defined ($colltype))  ||  ($colltype eq "pub")   )
+    # {
+    #     eval
+    #     {
+    #         # $pub_coll_arr_ref = $cs->list_colls('pub_colls', $sortkey,$dir );
+    #         $pub_coll_arr_ref = $cs->list_colls('all_colls', $sortkey,$dir );
+    #     };
+    #     die $@ if ($@);
+    # }    
+    # my $my_coll_arr_ref;
+    # if  (   (! defined ($colltype))  || ($colltype eq "priv") )
+    # {
+    #     eval
+    #     {
+    #         $my_coll_arr_ref = $cs->list_colls('my_colls', $sortkey,$dir);
+    #     };
+    #     die $@ if ($@);
+    # }
     
 
-    $act->set_transient_facade_member_data($C, 'public_list_colls_data', $pub_coll_arr_ref);
-    $act->set_transient_facade_member_data($C, 'my_list_colls_data', $my_coll_arr_ref);
+    $act->set_transient_facade_member_data($C, 'public_list_colls_data', $coll_arr_ref);
+    $act->set_transient_facade_member_data($C, 'my_list_colls_data', $coll_arr_ref);
 
     return $ST_OK;
 }
