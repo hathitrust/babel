@@ -107,6 +107,7 @@ my $NOOP;
 if (defined($opt_n)) {
     $NOOP = 1;
 }
+my $noop = $NOOP ? 'NOOP ' : '';
 
 my $INTERACTIVE = (defined($ENV{TERM}));
 
@@ -148,10 +149,10 @@ Description
 # ---------------------------------------------------------------------
 sub limit_Solr {
     my ($C, $limit, $interval) = @_;
-    
+
     my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
     ASSERT(scalar(@num_shards_list) == 1, qq{limit-j only functions on 1-shard indexes});
-    
+
     my $searcher = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
 
     my $rs = new Search::Result::SLIP_Raw();
@@ -159,7 +160,7 @@ sub limit_Solr {
     my $oldest_timestamp = __get_oldest_timestamp($C, $searcher, $rs);
     my $num_docs_in_index = __get_num_docs_in_index($C, $searcher, $rs);
 
-    my $s = qq{num_docs=$num_docs_in_index limit=$LIMIT};
+    my $s = qq{${noop}num_docs(pages)=$num_docs_in_index limit=$LIMIT};
     __output(qq{$s\n});
     Log_limit($C, $RUN, 1, $s);
 
@@ -170,9 +171,9 @@ sub limit_Solr {
         if ($num_docs_in_index > $LIMIT) {
             while (1) {
                 $this_timestamp = __increment_timestamp($this_timestamp);
-                
+
                 my $num_docs = __count_docs_between($C, $searcher, $rs, $oldest_timestamp, $this_timestamp);
-                if ($num_docs_in_index - $num_docs <= $LIMIT) { 
+                if ($num_docs_in_index - $num_docs <= $LIMIT) {
                     $limiting_timestamp = $this_timestamp;
                     last;
                 }
@@ -182,14 +183,15 @@ sub limit_Solr {
 
             # Wait for new Searchers to autowarm
             sleep 10;
-            
+            __output(qq{${noop}sleep 10 while new searchers autowarm\n});
+
             my $num_docs_post_delete = __get_num_docs_in_index($C, $searcher, $rs);
-            $s = qq{num_docs post-delete:\t$num_docs_post_delete \tlimit=$LIMIT};
+            $s = qq{${noop}num_docs post-delete:\t$num_docs_post_delete \tlimit=$LIMIT};
             __output(qq{$s\n});
             Log_limit($C, $RUN, 1, $s);
         }
         else {
-            my $s = qq{NO deletions};
+            my $s = qq{${noop}NO deletions};
             __output(qq{$s\n});
             Log_limit($C, $RUN, 1, $s);
         }
@@ -198,7 +200,7 @@ sub limit_Solr {
 
 # ---------------------------------------------------------------------
 
-=item __delete_docs
+=item __delete_docs_by_vol_id
 
 Description
 
@@ -210,11 +212,10 @@ sub __delete_docs_by_vol_id {
 
     use constant INDEXER_TIMEOUT => 600;
     use constant SLICE_SIZE => 10000;
-    
-    my $s = qq{delete interval=[$oldest_timestamp TO $limiting_timestamp]};
+
+    my $s = qq{${noop}delete interval=[$oldest_timestamp TO $limiting_timestamp]};
     __output(qq{$s\n});
 
-    return if ($NOOP);
     # Log
     Log_limit($C, $RUN, 1, $s);
 
@@ -229,8 +230,8 @@ sub __delete_docs_by_vol_id {
 
         my $returned = $rs->get_rows_returned();
         last if ($returned == 0);
-    
-        $s = qq{Slice of $returned};
+
+        $s = qq{${noop}Slice of $returned Solr docs(pages)};
         __output(qq{$s\n});
         Log_limit($C, $RUN, 1, $s);
 
@@ -241,38 +242,72 @@ sub __delete_docs_by_vol_id {
         }
         $start += $rows;
     }
-    
+
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, 1, );
-    
-    $s = qq{Preparing to delete volumes=} . scalar keys %vol_ids;
+
+    $s = qq{${noop}Preparing to delete volume count=} . scalar keys %vol_ids;
     __output(qq{$s\n});
     Log_limit($C, $RUN, 1, $s);
 
+    if ($NOOP) {
+        $s = qq{${noop}Skip actual doc deletion};
+        __output("$s\n");
+    }
+    else {
+        __do_delete_docs($C, \%vol_ids, $indexer);
+    }
+
+    my ($index_state, $stats_hashref) = $indexer->commit_updates($C);
+    $s = qq{${noop}commit status=$index_state};
+    __output("$s\n");
+    if (Search::Constants::indexing_failed($index_state)) {
+        $s = qq{commit fail, index_state=$index_state};
+        __non_interactive_err_output(1, $s);
+        Log_limit_error($C, $RUN, 1, $s);
+    }
+    else {
+        Log_limit($C, $RUN, 1, $s);
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __do_delete_docs
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __do_delete_docs {
+    my ($C, $vol_ids_hashref, $indexer) = @_;
+
+    my $s;
     my ($index_state, $stats_hashref);
-    foreach my $vol_id (keys %vol_ids) {
+    foreach my $vol_id (keys %$vol_ids_hashref) {
         my $safe_id = Identifier::get_safe_Solr_id($vol_id);
         my $d_query = qq{vol_id:$safe_id};
         ($index_state, $stats_hashref) = $indexer->delete_by_query($C, $d_query);
 
         if (Search::Constants::indexing_failed($index_state)) {
-            $s = qq{delete vol_id=$vol_id failed index_state=$index_state};
+            $s = qq{${noop}delete vol_id=$vol_id failed index_state=$index_state};
+            __output(qq{$s\n});
+            __non_interactive_err_output(1, qq{$s\n});
             Log_limit_error($C, $RUN, 1, $s);
         }
         else {
-            $s = qq{delete vol_id=$vol_id from index};
+            $s = qq{${noop}delete vol_id=$vol_id from index};
+            __output(qq{$s\n});
+            Log_limit($C, $RUN, 1, $s);
+
             Db::Delete_id_from_shard($C, $DBH, $RUN, $vol_id, 1);
-            __output(qq{Deleted id=$vol_id, shard=1 run=$RUN from mdp.j_indexed\n});
+            $s = qq{${noop}Deleted id=$vol_id, shard=1 run=$RUN from mdp.j_indexed};
+            __output(qq{$s\n});
             Log_limit($C, $RUN, 1, $s);
         }
-        __output(qq{$s\n});
-        __non_interactive_err_output(1, qq{$s\n});
     }
-
-    ($index_state, $stats_hashref) = $indexer->commit_updates($C);
-    __output(qq{commit status=$index_state\n});
-    __non_interactive_err_output(Search::Constants::indexing_failed($index_state), 
-                                 qq{commit fail, index_state=$index_state\n});
 }
+
 
 # ---------------------------------------------------------------------
 
@@ -289,7 +324,7 @@ sub __increment_timestamp {
     my ($ss, $mm, $hh, $dd, $mo, $yy, $zone) = Date::Parse::strptime($timestamp);
     my ($year, $month, $day, $hour, $min, $sec) = Add_Delta_YMDHMS($yy+1900, $mo+1, $dd, $hh, $mm, $ss,
                                                                    0,        0,     0,   0,   0,   $INTERVAL);
-    
+
     return sprintf("%d-%02d-%02dT%02d:%02d:%02dZ", $year, $month, $day, $hour, $min, $sec);
 }
 
@@ -310,8 +345,7 @@ sub __count_docs_between {
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
     my $num_docs = $rs->get_num_found();
-
-    __output( qq{Num docs @ timestamp:[$oldest_timestamp TO $this_timestamp] = $num_docs\n} );
+    __output( qq{${noop}Num docs @ timestamp:[$oldest_timestamp TO $this_timestamp] = $num_docs\n} );
 
     return $num_docs;
 }
@@ -327,29 +361,29 @@ Description
 # ---------------------------------------------------------------------
 sub __get_oldest_timestamp {
     my ($C, $searcher, $rs) = @_;
-    
+
     my $timestamp;
     my $query = q{q=*:*&sort=timestamp+asc&start=0&rows=1&fl=timestamp};
-    
+
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
-    __output( qq{Oldest timestamp:\t} );
-        
+    __output( qq{${noop}Oldest timestamp:\t} );
+
     if ($rs->get_num_found() == 0) {
-        __output( qq{EMPTY result\n} );
+        __output( qq{${noop}EMPTY result\n} );
     }
     else {
         my $result_docs_arr_ref = $rs->get_result_docs();
 
         my $doc_data = $result_docs_arr_ref->[0];
         ($timestamp) = ($doc_data =~ m,<date name="timestamp">(.*?)</date>,is);
-        
+
         __output( qq{$timestamp\n} );
     }
 
     return $timestamp;
 }
-  
+
 # ---------------------------------------------------------------------
 
 =item __get_num_docs_in_index
@@ -361,16 +395,16 @@ Description
 # ---------------------------------------------------------------------
 sub __get_num_docs_in_index {
     my ($C, $searcher, $rs) = @_;
-    
-    my $query = q{q=*:*&start=0&rows=0};    
+
+    my $query = q{q=*:*&start=0&rows=0};
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
     my $num_docs = $rs->get_num_found();
-    __output( qq{Num docs in index:\t$num_docs\n} );
+    __output( qq{${noop}Num docs in index:\t$num_docs\n} );
 
     return $num_docs;
 }
-  
+
 
 # ---------------------------------------------------------------------
 
