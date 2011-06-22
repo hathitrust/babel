@@ -85,7 +85,7 @@ function subclass(constructor, superConstructor)
 var HT = HT || {};
 HT.config = HT.config || {};
 
-HT.config.ARBITRARY_PADDING = 260;
+HT.config.ARBITRARY_PADDING = 270;
 HT.config.ARBITRARY_WINDOW_WIDTH = 915;
 
 // bookreader utility
