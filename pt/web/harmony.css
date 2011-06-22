@@ -94,8 +94,9 @@ body {
   clear: both;
 }
 
-#mdpContentContainer {
+div#mdpContentContainer {
   width: 70%;
+  margin-right: 0;
 }
 
 .fakeContentLoader {
