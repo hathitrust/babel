@@ -182,8 +182,9 @@ sub limit_Solr {
             __delete_docs_by_vol_id($C, $searcher, $oldest_timestamp, $limiting_timestamp);
 
             # Wait for new Searchers to autowarm
-            sleep 10;
             __output(qq{${noop}sleep 10 while new searchers autowarm\n});
+            sleep 10;
+
 
             my $num_docs_post_delete = __get_num_docs_in_index($C, $searcher, $rs);
             $s = qq{${noop}num_docs post-delete:\t$num_docs_post_delete \tlimit=$LIMIT};
@@ -223,6 +224,7 @@ sub __delete_docs_by_vol_id {
     my %vol_ids;
     my $start = 0;
     my $rows = SLICE_SIZE;
+    my $slice_ct = 0;
     while (1) {
         my $v_query = qq{q=timestamp:[$oldest_timestamp TO $limiting_timestamp]&start=$start&rows=$rows&fl=vol_id};
         my $rs = new Search::Result::SLIP_Raw();
@@ -231,16 +233,20 @@ sub __delete_docs_by_vol_id {
         my $returned = $rs->get_rows_returned();
         last if ($returned == 0);
 
-        $s = qq{${noop}Slice of $returned Solr docs(pages)};
-        __output(qq{$s\n});
-        Log_limit($C, $RUN, 1, $s);
-
+        my $vol_ct = scalar(keys %vol_ids);
         my $result_docs_arr_ref = $rs->get_result_docs();
         foreach my $doc_data (@$result_docs_arr_ref) {
             my ($vol_id) = ($doc_data =~ m,<str name="vol_id">(.*?)</str>,is);
             $vol_ids{$vol_id}++;
         }
+        
+        $s = qq{${noop}[$slice_ct] Slice of $returned Solr docs(pages) from num_vols=} 
+          . (scalar(keys %vol_ids) - $vol_ct);
+        __output(qq{$s\n});
+        Log_limit($C, $RUN, 1, $s);
+
         $start += $rows;
+        $slice_ct++;
     }
 
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, 1, );

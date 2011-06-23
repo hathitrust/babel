@@ -371,7 +371,7 @@ sub c_optimize {
             }
             my $segs = " limit_to_segments=$limit_segs";
             my $s1 = qq{OPTIMIZE: [start] run=$RUN shard=$shard staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
-            __output($s1);
+            __output("$s1\n");
             Log_optimize($C, $run, $shard, $s1);
 
             # Optimize
@@ -394,7 +394,7 @@ sub c_optimize {
             my $e = sprintf(qq{elapsed=%.3f total=%.3f}, $elapsed, $total_elapsed);
             my $s2 = qq{OPTIMIZE: [done] run=$RUN shard=$shard index_state=$success_str $e staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
             Log_optimize($C, $run, $shard, $s2);
-            __output($s2);
+            __output("$s2\n");
             __non_interactive_err_output($rc, $s2);
 
             last if ($rc > 0);
