@@ -108,24 +108,33 @@ sub show_shards {
     my $merge_factor = `cat $index_dir/../../conf/solrconfig.xml | grep '<mergeFactor>'`;
     ($merge_factor) = ($merge_factor =~ m,<mergeFactor>(.*?)</mergeFactor>,); 
 
+    my $max_merge = `cat $index_dir/../../conf/solrconfig.xml | grep '<double name="maxMergeMB">'`;
+    ($max_merge) = ($max_merge =~ m,<double[^>]*>(.*?)</double>,); 
+
     my @segment_ids = `ls $index_dir/*.prx`;
     @segment_ids = map { $_ =~ m,.*/(.*?)\....$, } @segment_ids;
     
     my $num_segs = scalar @segment_ids;
-    __output("num segments=$num_segs merge_factor=$merge_factor\n\n");
+    __output("num segments=$num_segs merge_factor=$merge_factor max_merge=${max_merge}M\n\n");
     
+    my $index_size = 0;
     my %segsizes;
     foreach my $seg_id (@segment_ids) {
-        my $segsize = `du -c $index_dir/$seg_id*|grep total| cut -f1`;
+        my $segsize = `du -c --block-size=1 $index_dir/$seg_id*|grep total| cut -f1`;
         chomp($segsize);
         
         my $sz = length($segsize);
         my $sz_arr_ref = $segsizes{$sz} || [];
         push(@$sz_arr_ref, {'id' => $seg_id, 'sz' => $segsize});
         $segsizes{$sz} = $sz_arr_ref;
+
+        $index_size += $segsize;
     }
 
     my $levels = keys %segsizes;
+
+    use constant ONE_GB => 1024*1024*1024;    
+    my ($_m, $_g) = ('M', 'G');
     
     foreach my $size (reverse sort { $a <=> $b } keys %segsizes) {
         my $a_ref = $segsizes{$size};
@@ -134,16 +143,40 @@ sub show_shards {
         __output("Level=$levels segs=$seg_ct\n");
         $levels--;
 
+        
         foreach my $h_ref (@$a_ref) {
-            my $size_bytes = $h_ref->{sz};
-            my $size_MB = sprintf("%.2f", $size_bytes/1024/1024);
 
-            my $s = $h_ref->{id} . ' ' . $size_MB;
-            __output("\t${s}M\n");
+            my $size_bytes = $h_ref->{sz};
+            my $size_d;
+            my $base;
+            
+            if ($size_bytes > ONE_GB) {
+                $size_d = sprintf("%.1f", $size_bytes/1024/1024/1024);
+                $base = $_g;
+            }
+            else {
+                $size_d = sprintf("%.1f", $size_bytes/1024/1024);
+                $base = $_m;
+            }
+
+            my $s = $h_ref->{id} . ' ' . $size_d;
+            __output("\t${s}$base\n");
         }
 
         __output("\n");        
     }
+    
+    my ($ts, $szz);
+    if ($index_size > ONE_GB) {
+        $szz = sprintf("%.1f", $index_size/1024/1024/1024);
+        $ts = $_g;
+    }
+    else {
+        $szz = sprintf("%.1f", $index_size/1024/1024);
+        $ts = $_m; 
+    }
+    
+    __output("total size=$szz$ts\n\n");
 
     return 1;    
 }
