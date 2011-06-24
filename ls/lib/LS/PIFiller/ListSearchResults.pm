@@ -419,8 +419,12 @@ sub handle_FACETS_PI
 
 #XXX instead of spitting out html we should spit out good xml for the xslt to deal with!
 # on the other hand javascript will want json!
+
+#XXX remove $result_facet_order from here and in subroutine unless we really need it for some reason!
+      
+
     my $xml;
-    my ($selected,$unselected,$facet_order)=needName($facet_hash,$cgi_facets_hashref);
+    my ($selected,$unselected,$result_facet_order)=needName($facet_hash,$cgi_facets_hashref);
     # $selected= array ref of hashes
     #        $hash->{'value'}      
 #            $hash->{'count'}      
@@ -463,6 +467,8 @@ sub handle_FACETS_PI
     
     $xml .=  '<unselectedFacets>' . "\n";
 
+
+    my $facet_order=$fconfig->{'facet_order'};
     foreach my $facet_name (@{$facet_order})
     {
         my $SHOW_MORE_LESS="false";
