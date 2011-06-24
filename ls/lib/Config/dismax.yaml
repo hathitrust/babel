@@ -202,7 +202,7 @@ ocr:
     - [hlb3, 200]
     - [allfieldsProper, 100]    
   qf:
-    - [ocr, 50000]
+    - [ocr, 500000]
     - [allfieldsProper, 2]
     - [allfields, 1]
     - [titleProper, 50]
@@ -233,7 +233,7 @@ ocr:
     - [fullgenre, 1]
     - [era, 1]
   mm: "2<-1 5<67%"
-  tie: 0.5
+  tie: 0.9
 
 #
 # XXX Experimental!!!  attempt to translate boost queries with special
