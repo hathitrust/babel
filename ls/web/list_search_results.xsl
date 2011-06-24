@@ -156,7 +156,7 @@
   <xsl:template name="DisplayContent">
           <!-- for debugging facets-->
           <div id="lsSidebarContainer">
-          <h1 class="facet">DEBUxG:</h1>
+            <br></br>
           <xsl:call-template name="facets"/>
         </div>
 
@@ -221,8 +221,8 @@
       <span>
         <xsl:text>Search Results: </xsl:text>
       </span>
-
-      <xsl:value-of select="$all_items_count"/>
+      <!-- this should be all/so/or ft cound depending -->
+      <xsl:call-template name="getTotalCount"/>
       <xsl:text> items found for </xsl:text>
       <xsl:choose>
         <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
@@ -240,7 +240,7 @@
       </xsl:choose>
 
       <!-- <xsl:text>x in the full text of all items </xsl:text>-->
-
+      <!--XXX this is causing an extra "in" we also need to say whether its full text/all/ or search only!-->
       <xsl:call-template name="advanced"/>
 
       <br></br>
@@ -256,6 +256,26 @@
 
     </div>
   </xsl:template>
+
+  <xsl:template name="getTotalCount">
+    <xsl:variable name="limitType">
+      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+    </xsl:variable>
+
+    <xsl:choose>    
+    <xsl:when test="$limitType = 'so'">
+      <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCount"/>
+    </xsl:when>
+    <xsl:when test="$limitType = 'ft'">
+            <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCount"/>
+    </xsl:otherwise>
+  </xsl:choose>
+  
+</xsl:template>
+
 
   <xsl:template name="advanced">
     <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
@@ -352,7 +372,8 @@
               <!-- either they are all full text or all view-only so don't display widget-->
             </xsl:when>
             <xsl:otherwise>
-                <xsl:call-template name="Refine"/>
+              <!-- XXX foobar    <xsl:call-template name="Refine"/> -->
+
             </xsl:otherwise>
           </xsl:choose>
         </xsl:when>
@@ -369,7 +390,7 @@
       <xsl:variable name="Limit">
         <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
       </xsl:variable>
-      <!--  XXX this logic foobar needs to go in pseudo facet which change that limit can be ft or so (or all) -->
+
       <xsl:choose>
         <xsl:when test="$Limit='YES'">
           <!-- we are currently showing the result of narrow to full view so we want a URL to all -->
@@ -1005,7 +1026,7 @@ for now create an href with current_url . &fq=facetname:value
       <xsl:text>) </xsl:text>
     </dd>
   </xsl:variable>
-    
+
   <xsl:choose>    
    <xsl:when test="$limitType = 'so'">
      <xsl:copy-of select="$fakeFullTextFacet"/>
