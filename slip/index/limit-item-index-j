@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-limit-j
+limit-item-index-j
 
 =head1 USAGE
 
-% limit-j -r run -L <num_docs>
+% limit-item-index-j -r run -L <num_docs>
 
 =head1 DESCRIPTION
 
@@ -69,7 +69,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub limit_get_usage {
-    my $s .= qq{Usage: limit-j -r run -L <num_docs> [-i <seconds>] [-n] [-d] [-T]
+    my $s .= qq{Usage: limit-item-index-j -r run -L <num_docs> [-i <seconds>] [-n] [-d] [-T]
                   where -L num_docs are to be deleted
                         -n count but do not delete
                         -i <seconds> by which to increment when counting, default = 60\n};
@@ -124,7 +124,7 @@ eval {
     $db = new Database($config);
 };
 if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, 'limit-j', $@);
+    SLIP_Utils::Common::Log_database_connection_error($C, 'limit-item-index-j', $@);
     exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
 }
 my $DBH = $db->get_DBH();
@@ -151,7 +151,7 @@ sub limit_Solr {
     my ($C, $limit, $interval) = @_;
 
     my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
-    ASSERT(scalar(@num_shards_list) == 1, qq{limit-j only functions on 1-shard indexes});
+    ASSERT(scalar(@num_shards_list) == 1, qq{limit-item-index-j only functions on 1-shard indexes});
 
     my $searcher = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
 
