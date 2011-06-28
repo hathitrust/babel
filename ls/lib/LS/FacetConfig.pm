@@ -34,8 +34,6 @@ BEGIN
 }
 
 
-
-
 use Utils;
 
 sub new
@@ -62,9 +60,6 @@ Initialize
 sub _initialize
 {
     my $self = shift;
- 
-# XXX do we need context object?
-#   my $C = shift;
     my $config_filename = shift;
 
     ASSERT(-e "$config_filename",
@@ -89,9 +84,6 @@ sub _initialize
     };
         
 } 
-
-
-
 
 # ---------------------------------------------------------------------
 sub __set_param_2_solr_map
@@ -155,11 +147,6 @@ sub get_facet_initial_show
 }
 
 # ---------------------------------------------------------------------
-        
-
-
-
-# ---------------------------------------------------------------------
 sub __set_facet_order
 {
    my $self = shift;
@@ -174,7 +161,6 @@ sub __set_facet_mapping
     my $maphash  =shift;
     $self->{'facet_mapping'} = $maphash;
 }
-
 
 # ---------------------------------------------------------------------
 sub get_facet_order
