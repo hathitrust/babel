@@ -142,7 +142,7 @@ sub execute_operation
     {
         if ($key eq 'full_text')
         {
-            $counts->{'search-only'} = $counts->{'all'} - $counts->{'full_text'};
+            $counts->{'search_only'} = $counts->{'all'} - $counts->{'full_text'};
         }
         elsif ($key eq 'search_only')
         {
