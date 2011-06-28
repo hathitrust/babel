@@ -68,8 +68,6 @@ sub _initialize
     $self->SUPER::_initialize($C, $act);
 }
 
-
-
 # ---------------------------------------------------------------------
 
 =item execute_operation
@@ -133,10 +131,6 @@ sub execute_operation
     my $pager = $self->do_paging($C, $cgi, $primary_count);
     $act->set_transient_facade_member_data($C, 'pager', $pager);
 
-    #XXX foobar TODO: either rewrite the utils or get all and ft count somewhere else
-## where are these used?
-# probably want this in a subroutine rather than in utils or maybe put get_count(result_type) in utils
-    
     my $primary_rs_type   = $primary_rs->get_result_type();
     my $secondary_rs_type = $secondary_rs->get_result_type();
     
@@ -240,6 +234,7 @@ __END__
 =head1 AUTHOR
 
 Phillip Farber, University of Michigan, pfarber@umich.edu
+Tom Burton-West  University of Michigan, tburtonw@umich.edu
 
 =head1 COPYRIGHT
 
