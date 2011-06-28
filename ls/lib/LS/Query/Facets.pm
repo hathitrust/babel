@@ -144,7 +144,6 @@ sub rows_requested
     return ($query_config{'solr_num_rows'} > 0);
 }
 
-
 # ---------------------------------------------------------------------
 
 =item get_start_row
@@ -299,23 +298,14 @@ sub get_Solr_query_string
     # This builds a filter query based on the values of the facet paraameter in the cgi
 
     my $FACETQUERY="";
-    #XXX should we do some cleaning of facet param coming in on url?
 
     my $facetquery=$cgi->{'facet'};
-
+    
     if (defined ($facetquery))
     {
         foreach my $fquery (@{$facetquery})
         {
-            # XXXthis should probably be moved to a sub clean_facet_query
-            #facet=language:%22German%22
-            my ($field,@rest)=split(/\:/,$fquery);
-            my $string=join(':',@rest);
-            # Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
-            $string =~ s,([!&:?\[\]\\^{\|}~]),\\$1,g;
-#            $string =~s/\s+/%20/g;
-             my $cleaned_fquery=$field . ':' . $string;
-            
+            my $cleaned_fquery = $self->__clean_facet_query($fquery);
             $FACETQUERY.='&fq=' . $cleaned_fquery;
         }
     }
@@ -360,7 +350,31 @@ sub get_Solr_query_string
     return $solr_query_string;
 }
 
-
+# ---------------------------------------------------------------------
+sub __clean_facet_query
+{
+    my $self = shift;
+    my $fquery = shift;
+    
+    my $cleaned;
+    #facet=language:%22German%22
+    my ($field,@rest)=split(/\:/,$fquery);
+    my $string=join(':',@rest);
+    # Note: facet fields mostly? all? type string which is not analyzed
+    # So we should hexencode url chars and then escape the rest
+    # Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+    #XXX do we want to hex encode them first before escaping them since both ampersand and question mark are special in terms of url processing?
+    # $string =~ s,([!&:\[\]\\^{\|}~]),\\$1,g;
+    
+    # Need to hex escape question mark and then protect it with a backslash, note Solr is ok if fed a question mark
+    # code in Search::Searcher::__get_request_object splits a URL on "?" so leaving a non-hex-escaped queston mark
+    # will cause the split to truncate the query
+    $string =~s,\?,\\%3F,g;
+            
+    #            $string =~s/\s+/%20/g;
+    $cleaned=$field . ':' . $string;
+    return $cleaned;
+}
 
 
 # ---------------------------------------------------------------------
@@ -394,9 +408,7 @@ sub __get_advanced_query
     $ADVANCED=~s/^\s+/ /;
 
     return $ADVANCED;
-    
 }
-
 
 # ---------------------------------------------------------------------
 # do we also check that field1, and op1 are defined and reasonable or provide defaults
@@ -404,7 +416,6 @@ sub __get_advanced_query
 #  Note special case handling if there is a q1 that automatically deals with op and field
 # so we can actually implement regular search as if it is an advanced search
 #
-
 
 sub make_query_clause{
     my $self = shift;
@@ -561,8 +572,7 @@ sub _getDismaxString
             $string.= $all_weights->{$key};
             
         }
-        
-    }
+     }
     
     
 #XXX need to insert tie parameter with correct url escapeing!!!
