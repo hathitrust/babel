@@ -99,21 +99,6 @@ $param_2_solr_map = {
                           };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #----------------------------------------------------------------------
 sub getRelWeights
 {
@@ -130,8 +115,5 @@ sub getRelWeights
     my $parsed = Load $yaml;
     return $parsed;
 }
-
-
-
 
 1;
