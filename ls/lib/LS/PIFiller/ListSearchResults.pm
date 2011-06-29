@@ -244,31 +244,20 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     my $cgi = $C->get_object('CGI');
     my $temp_cgi = new CGI($cgi);
     my $limit_text = "";
-#foobar XXX check these
-# we have primary and secondary counts and types
+
     my $num_full_text = $act->get_transient_facade_member_data($C, 'full_text_count');
     my $num_all = $act->get_transient_facade_member_data($C, 'all_count');
+    my $num_search_only  = $act->get_transient_facade_member_data($C, 'search_only_count');
     
-    my $num_search_only = $num_all;
-    if ($num_full_text > 0){
-       $num_search_only = $num_all - $num_full_text;
-    }
-    
-    # XXX redo for lmt can equal ft or so
-    my $is_limit_on = ($cgi->param('lmt') eq 'ft') ? 'YES' : 'NO';
-
-    if ($is_limit_on eq 'NO')
-    {
-        $temp_cgi->delete('pn');
-    }
-    #XXX    
+    #always remove the page number from any url that switches context
+    # i.e. changing from lmt=x to lmt=y changes ordering/result set and therefore pages
+    $temp_cgi->delete('pn');
+   
     my $limit_type = 'all'; #default
     if (defined $cgi->param('lmt'))
     {
         $limit_type = $cgi->param('lmt');
     }  
-              
-    #XXX
     $temp_cgi->param('lmt', 'ft');
     my $full_text_href = $temp_cgi->self_url();
 
@@ -278,13 +267,9 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     $temp_cgi->param('lmt', 'so');
     my $search_only_href = $temp_cgi->self_url();
     
-
-
     my $s;
-        # XXX redo for lmt can equal ft or so ?
-    $s .= wrap_string_in_tag($is_limit_on, 'Limit'); #XXX leave now for debugging
+
     $s .= wrap_string_in_tag($limit_type, 'LimitType');
-    
     $s .= wrap_string_in_tag($all_href, 'AllHref');
     $s .= wrap_string_in_tag($full_text_href, 'FullTextHref');
     $s .= wrap_string_in_tag($search_only_href, 'SearchOnlyHref');
@@ -324,9 +309,6 @@ sub handle_SEARCH_RESULTS_PI
     my $primary_rs = $$search_result_data_hashref{'primary_result_object'};
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
 
-
-
-
     # Was there a search?
     if ($search_result_data_hashref->{'undefined_query_string'}) {
         $query_time = 0;
@@ -346,7 +328,7 @@ sub handle_SEARCH_RESULTS_PI
 
     # Is the query a well-formed-formula (WFF)?
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
-    my $well_formed = ($wff_hashref->{'primary'} && $wff_hashref->{'secondary'});
+    my $well_formed = ($wff_hashref->{'primary'} );
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
     $output .= wrap_string_in_tag($wff_hashref->{'processed_query_string'}, 'ProcessedQueryString');
 
@@ -378,13 +360,11 @@ sub handle_QUERY_STRING_PI
 sub handle_FACETS_PI
     : PI_handler(FACETS) 
 {
-    #XXX TODO: refactor into smaller subroutines!
-
     my ($C, $act, $piParamHashRef) = @_;
     my $fconfig=$C->get_object('FacetConfig');
 
     my $cgi = $C->get_object('CGI');
-    my $current_url = $cgi->url(-relative=>1,-query=>1);    
+
     my @cgi_facets = $cgi->param('facet');
     my $cgi_facets_hashref;
     if (defined (@cgi_facets))
@@ -396,83 +376,77 @@ sub handle_FACETS_PI
             $cgi_facets_hashref->{$facet_string}=1;
         }
     }
-    # This belongs in a config
-    my $MINFACETS = $fconfig->get_facet_initial_show;
-    my $facet2label=$fconfig->get_facet_mapping;
-    
 
-    
-
-    
-    my $facet_chunk;
-    $facet_chunk='<H1>Facets go here</H1>';
-
-    # get data  the facet data should have been inserted in the search result data in Result::Facet.pm
-    #XXX replace with primary
     my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
-    my $facet_hash;
+    my $facet_hash =$result_data->{'primary_result_object'}->{'facet_hash_ref'};
     
-    $facet_hash =$result_data->{'primary_result_object'}->{'facet_hash_ref'};
-    
-    
-    #XXX do we want to have a sub that is responsible for cleaning the hash ref?
-
-#XXX instead of spitting out html we should spit out good xml for the xslt to deal with!
-# on the other hand javascript will want json!
-
-#XXX remove $result_facet_order from here and in subroutine unless we really need it for some reason!
-      
-
     my $xml;
-    my ($selected,$unselected,$result_facet_order)=needName($facet_hash,$cgi_facets_hashref);
+    my ($selected,$unselected)= get_selected_unselected($facet_hash,$cgi_facets_hashref);
     # $selected= array ref of hashes
     #        $hash->{'value'}      
-#            $hash->{'count'}      
-#            $hash->{'facet_name'} 
-#            $hash->{'selected'}= "false"|"true";
-# unselected= hash key= facet name, values = array of hashes as above
-# order = array of facet names in order
-#XXX if we want facets in a different order we could read a config file
+    #        $hash->{'count'}      
+    #        $hash->{'facet_name'} 
+    #        $hash->{'selected'}= "false"|"true";
+    # unselected= hash key= facet name, values = array of hashes as above
 
+    my $selected_facets_xml = make_selected_facets_xml($selected,$fconfig,$cgi);
+    $xml .= $selected_facets_xml;
 
-#XXX Replace lots of hand coded stuff with wrap string in tag!!!
+    my $unselected_facets_xml = make_unselected_facets_xml($unselected,$fconfig, $cgi);
+    $xml .= $unselected_facets_xml;
+    
+    return $xml
+}
+
+#----------------------------------------------------------------------    
+sub make_selected_facets_xml
+{
+    my $selected = shift;
+    my $fconfig = shift;
+    my $cgi = shift;
+
+    my $facet2label=$fconfig->get_facet_mapping;
+    my $xml;
+    my $unselect_url;
 
     $xml='<SelectedFacets>' . "\n";
-    my $unselect_url;
     
     foreach my $facet (@{$selected})
     {
-        # output some xml so we can make links to unselect these facets/facet values
-
-        #  <facetValue name="German" class="selected" ><fieldName>language</fieldName><URL></URL></facetValue>
-        # should we instead just pass cgi
         $unselect_url=_get_unselect_url($facet,$cgi);
         my $facet_name=$facet->{facet_name};
         my $field_name=$facet2label->{$facet_name};
         
-
         $xml .= '<facetValue name="' . $facet->{value} .'" class="selected">'  . "\n";; 
-        $xml .= '<fieldName>' .$field_name .'</fieldName>' . "\n"; 
-        $xml .= '<unselectURL>' . $unselect_url . '</unselectURL>' . "\n";   
+        $xml .= wrap_string_in_tag($field_name,'fieldName') . "\n"; 
+        $xml .= wrap_string_in_tag($unselect_url,'unselectURL') . "\n"; 
         $xml .='</facetValue>' ."\n";
-        
     }
+ 
     $xml .= '</SelectedFacets>' . "\n";
+    return $xml;
+}
+
+#----------------------------------------------------------------------
+
+sub  make_unselected_facets_xml
+{
+    my $unselected = shift;
+    my $fconfig = shift;
+    my $cgi = shift;
     
-
-
-    #----------------------------------------------------------------------
-    #-------- unselected Facets-------------------------------------------
-
-    
-    $xml .=  '<unselectedFacets>' . "\n";
-
-
+    my $facet2label=$fconfig->get_facet_mapping;
     my $facet_order=$fconfig->{'facet_order'};
+    my $MINFACETS = $fconfig->get_facet_initial_show;
+
+    my $current_url = $cgi->url(-relative=>1,-query=>1);    
+    # remove page number since changing facets changes facet count
+    $current_url =~s,[\;\&]pn=\d+,,g;
+
+    my $xml =  '<unselectedFacets>' . "\n";
+
     foreach my $facet_name (@{$facet_order})
     {
-        my $SHOW_MORE_LESS="false";
-        
         my $facet_label = $facet2label->{$facet_name};
         # normalize filed name by replacing spaces with underscores
         my $norm_field_name = $facet_label;
@@ -480,51 +454,60 @@ sub handle_FACETS_PI
         
         $xml .='<facetField name="' . $facet_label . '" '. 'normName='.'"'.  "$norm_field_name" . '" '   .     ' >' . "\n";
         
-
-        my $ary_ref=$unselected->{$facet_name};
-        my $counter=0;
-        foreach my $value (@{$ary_ref})
-        {
-            my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $value->{value} . '&quot;';
-            my $class=' class ="showfacet';
-            
-            if ($counter >= $MINFACETS)
-            {
-                $class=' class ="hidefacet';
-                #
-                $SHOW_MORE_LESS="true";
-            }
-            
-            # add normalized facet field to class
-            $class .= ' ' . $norm_field_name . '" ';
-            
-            $xml .='<facetValue name="' . $value->{'value'} . '" '.$class . '> ' . "\n";
-            $xml .='<facetCount>' . $value->{'count'} . '</facetCount>'. "\n";
-            $xml .='<url>' . $facet_url . '</url>'  . "\n";
-            $xml .='<selected>' . $value->{'selected'} . '</selected>' . "\n";
-            $xml .='</facetValue>' ."\n";
-            $counter++;
-            
-        }
+        my ($xml_for_facet_field,$SHOW_MORE_LESS)= make_xml_for_facet_field ($facet_name,$norm_field_name,$unselected,$current_url,$MINFACETS);
+        $xml .= $xml_for_facet_field;
+ 
         $xml .="\n" .'<showmoreless>'. $SHOW_MORE_LESS . '</showmoreless>' ."\n";
-        
-            
         $xml.='</facetField>' . "\n";
         
-        # output facet name stuff
-        # output list of values for that facet  where do we put url
-#           <facetField name="language">
-#  <facetValue name="German" ><facetCount>785019</facetCount><URL></URL></facetValue>
-#<   facetValue name="English">95479</facetValue> 
     }
     $xml .='</unselectedFacets>' . "\n";
-    
-    $facet_chunk .=$xml;
-    
-    return $facet_chunk
+    return $xml;
 }
 
+#----------------------------------------------------------------------
+sub make_xml_for_facet_field 
+{
+    my $facet_name = shift;
+    my $norm_field_name = shift;
+    my $unselected = shift;
+    my $current_url = shift;
+    my $MINFACETS = shift;
+    
+    my $SHOW_MORE_LESS = "false";
+    my $xml;
+    
+    my $ary_ref=$unselected->{$facet_name};    
+    my $counter=0;
+    foreach my $value (@{$ary_ref})
+    {
+        my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $value->{value} . '&quot;';
+        my $class=' class ="showfacet';
+        
+        if ($counter >= $MINFACETS)
+        {
+            $class=' class ="hidefacet';
+            $SHOW_MORE_LESS="true";
+        }
+        
+        # add normalized facet field to class
+        $class .= ' ' . $norm_field_name . '" ';
+        
+        $xml .='<facetValue name="' . $value->{'value'} . '" '.$class . '> ' . "\n";
+        $xml .='<facetCount>' . $value->{'count'} . '</facetCount>'. "\n";
+        $xml .='<url>' . $facet_url . '</url>'  . "\n";
+        $xml .='<selected>' . $value->{'selected'} . '</selected>' . "\n";
+        $xml .='</facetValue>' ."\n";
+        $counter++;
+        
+    }
+    return ($xml,$SHOW_MORE_LESS);
+}
+
+
 # ---------------------------------------------------------------------
+
+
 #XXX hack for now need to redo
 sub handle_ADVANCED_SEARCH_PI
     : PI_handler(ADVANCED_SEARCH) 
@@ -601,6 +584,8 @@ sub _get_unselect_url
     
     my $cgi= shift;
     my $temp_cgi= CGI->new($cgi);
+    # remove paging since selecting/unselecting facets causes result set changes and reordering
+    $temp_cgi->delete('pn');
     my @facets= $temp_cgi->param('facet');
     my @new_facets;
     my $debug;
@@ -634,7 +619,7 @@ sub _get_unselect_url
 
 
 
-sub needName 
+sub get_selected_unselected 
 
 {
     my $facet_hash = shift;
@@ -643,13 +628,9 @@ sub needName
     my @selected;
     my $unselected={};
     
-    my $facet_order_array;
-    
     foreach my $facet_name (keys %{$facet_hash})
     {
-        push (@{$facet_order_array},$facet_name);
         my $ary_for_this_facet=[];
-        
         my $facet_list_ref=$facet_hash->{$facet_name};
         foreach my $facet (@{$facet_list_ref})
         {
@@ -677,7 +658,7 @@ sub needName
         }
         $unselected->{$facet_name}=$ary_for_this_facet;
     }
-    return (\@selected,$unselected,$facet_order_array);
+    return (\@selected,$unselected);
 }
 
 #XXX this should be replaced by a utility routine
@@ -685,10 +666,9 @@ sub needName
 sub clean
 {
     my $value=shift;
-             $value = Encode::decode_utf8($value);
+    $value = Encode::decode_utf8($value);
     Utils::map_chars_to_cers(\$value);
     return $value;
-    
 }
 
 
