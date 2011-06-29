@@ -661,8 +661,6 @@ sub get_selected_unselected
     return (\@selected,$unselected);
 }
 
-#XXX this should be replaced by a utility routine
-#CERs?
 sub clean
 {
     my $value=shift;
@@ -690,50 +688,7 @@ sub facetSelected
 
 
 
-sub _ls_process_facet_data
-{
-    my $facet_name = shift;
-    my $facet_hash = shift;
-    my $cgi = shift;
-    my $current_url = $cgi->url(-relative=>1,-query=>1);    
-    my @cgi_facets = $cgi->param('facet');
-    
-    my $facet_list_ref=$facet_hash->{$facet_name};
-    my $xml = '<facetField name="' . $facet_name . '" >';
-    my $count;
-    my $value;
-    my $string;
-    my $class="good";
-    
-    #XXX   insert another attribute here if the facet is in the current cgi URL!!
-    # and then fix broken code in the xsl!
-    foreach my $facet (@{$facet_list_ref})
-    {
-        $value=$facet->[0];
-        $count=$facet->[1];
-        if (defined (@cgi_facets))
-        {
-            foreach  my $f (@cgi_facets)
-            {
-                if ($f=~/$value/)
-                {
-                    #this facet value is in the cgi
-                    $class="bad";
-                }
-            }
-        }
-        
-        
-        $string= '<facetValue name="'. $value . '" class="' . "$class" . ' ">' . $count . '</facetValue>';
-        $xml .=$string;
-        
-    }
-    
-    $xml .= "\n" . '</facetField>' . "\n";
-    
-    return $xml;
-    
-}
+
 
 
 
@@ -897,7 +852,7 @@ sub _ls_wrap_result_data {
 
     my $output;
 
-    ### Replace xml parsing with regex's with processing the json object fragment T
+
     ##  XXX since json might contain unescaped xml entities i.e. "&" we need to filter
     #   any strings.  Is there a better place to do this?
 
