@@ -103,16 +103,11 @@ sub execute_operation
     # Paging: Solr doc number is 0-relative
     my ($solr_start_row, $solr_num_rows) = $self->get_solr_page_values($C);
 
-# 1 determine primary query rows = > 0
-# 2 determine secondary query rows = 0
-#query types = full_text|search_only| all
-# move this hash to config file
-
     my  $lmt_2_query_type = {
-                        'ft'=>'full_text',
-                        'so'=>'search_only',
-                        'all'=>'all',
-                         'default'=>'all',
+                             'ft'=>'full_text',
+                             'so'=>'search_only',
+                             'all'=>'all',
+                             'default'=>'all',
                             };
     
     my $primary_type; # primary type to get actual search results
@@ -124,26 +119,25 @@ sub execute_operation
     {
         $primary_type= $lmt_2_query_type->{'default'}
     }
-    my $secondary_type ='full_text';  # secondary type to just get counts, default=full_text use math to get so
+    # secondary type to just get counts, default=full_text and can use math to get search only:
+    #  all - full_text = search_only.   We just need to make sure we have an "all" count and one or the other of so|ft
+    my $secondary_type ='full_text';  
     if ($primary_type ne 'all')
     {
         $secondary_type = 'all';
     }
 
-    # consider refactoring so we only ask for rs and Q?
-    my ($primary_rs, $primary_well_formed,$primary_processed)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows);
-    my ($secondary_rs, $secondary_well_formed,$secondary_processed) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0);
-    
+
+    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows);
+    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0);
 
     my %search_result_data =
         (
          'primary_result_object'   => $primary_rs,
          'secondary_result_object' =>$secondary_rs,
          'well_formed' => {
-
-                           'primary'                => $primary_well_formed ,
-                           'secondary'              => $secondary_well_formed ,
-                           'processed_query_string' =>$primary_processed ,
+                           'primary'                => $primary_Q->well_formed() ,
+                           'processed_query_string' => $primary_Q->get_processed_query_string() ,
                           },
         );
 
@@ -174,9 +168,8 @@ sub do_query{
     $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs);
     
     #    Log
-    #XXX will not having $rs_ft break the log? it shoudnt
     $Q->log_query($C, $searcher, $rs, 'ls');
-    return ($rs,$Q->well_formed(),$Q->get_processed_query_string());
+    return ($rs,$Q);
 }
 
 # ---------------------------------------------------------------------
