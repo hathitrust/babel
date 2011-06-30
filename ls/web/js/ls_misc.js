@@ -40,7 +40,10 @@ $(function()
             {
 
               var c = getFacetClass(this);
-              var myclass= "dd." +c;
+              // we want to hide only the
+              // 1) facets in this group
+              // 2) that also belong to the class hidefacet
+              var myclass= "dd." +c +'.hidefacet';
               $(myclass).hide();
               var moreSelector="a.morefacets." + c;
               $(moreSelector).show();
