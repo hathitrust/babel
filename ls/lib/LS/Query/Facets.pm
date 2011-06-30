@@ -222,29 +222,27 @@ sub get_Solr_query_string
 {
     my $self = shift;
     my $C = shift;
+    
+    # Cache to avoid repeated MySQL calls in Access::Rights
+    if ($self->get_cached_Solr_query_string()) {
+        return $self->get_cached_Solr_query_string();
+    }
+    
     my $cgi = $C->get_object('CGI');
    
     #XXX do we need to rename facet_config since it contains more than just facet config info?
-    #XXX if there is an advanced query we want the dismax entered 
     my $config = $self->get_facet_config;  
     
-    #XXX For now we hard code a constant to decide whether to allow anything other than full-text in q1
-      
     #advanced search
     
     my $ADVANCED= "";
 
     $ADVANCED = $self->__get_advanced_query($cgi);
-    
         
-    # Cache to avoid repeated MySQL calls in Access::Rights
-    if ($self->get_cached_Solr_query_string()) {
-        return $self->get_cached_Solr_query_string();
-    }
-
+  
     # The common Solr query parameters
     my $Q ='q=';
-        my $FL = qq{&fl=title,author,date,rights,id,record_no,score};
+    my $FL = qq{&fl=title,author,date,rights,id,record_no,score};
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INDENT = $ENV{'TERM'} ? qq{&indent=on} : qq{&indent=off};
 
@@ -255,8 +253,6 @@ sub get_Solr_query_string
         ($solr_start, $solr_rows) =
             ($self->get_start_row($C), $self->get_solr_num_rows($C));
     }
-#XXX temp set rows to one
-#    my $START_ROWS = qq{&start=$solr_start&rows=1};
 
     my $START_ROWS = qq{&start=$solr_start&rows=$solr_rows};
 
@@ -275,6 +271,7 @@ sub get_Solr_query_string
         };
         $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
         my $OP="";
+        # this inverts the rights query i.e. filter query on all docs that do not match fq
         if ( $query_type eq 'search_only') 
         {
             $OP='-';
@@ -291,11 +288,7 @@ sub get_Solr_query_string
     my $FACETS= $self->__get_facets;
     my $WRITER ='&wt=json&json.nl=arrarr';
     
-    # q=dog*&fl=id,rights,author,title,score&$version=2.2,&start=0&rows=20&indent=off
-    #    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER;
-    #XXX change to edismax query for testing
-    # add debug flag to ask solr for an explain query and need to change output somewhere
-    # This builds a filter query based on the values of the facet paraameter in the cgi
+    # This builds a filter query based on the values of the facet parameter(s) in the cgi
 
     my $FACETQUERY="";
 
@@ -312,7 +305,6 @@ sub get_Solr_query_string
     
     #XXX for temporary debugging of rel ranking
     #  Need a much better mechanisim
-    #   Replace all this with a debug flag    
 
     my $EXPLAIN="";
     if (DEBUG('explain')) {
@@ -320,9 +312,6 @@ sub get_Solr_query_string
     }
 
     my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY . $EXPLAIN;    
-#XXX temp remove facets
-#    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT .  $WRITER .     
-
     
     #XXX for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
     #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
@@ -342,8 +331,6 @@ sub get_Solr_query_string
               Utils::map_chars_to_cers(\$s) if Debug::DUtils::under_server();
               return qq{Solr query="$s"}
           });
-
-
 
     $self->cache_Solr_query_string($solr_query_string);
 
@@ -475,7 +462,7 @@ sub make_query_clause{
     
 
 #    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
-# try dismax instead of edismax
+# XXX try dismax instead of edismax
     $Q= ' ' . $op  . ' _query_:"{!dismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
     return $Q;
     
@@ -534,52 +521,6 @@ sub __get_facets
     return $FACETS;
 }
 
-# ---------------------------------------------------------------------
-=item _getDismaxString
-
-Reads yaml config file 
-Currently only for an all fields search
-Could be modified for advanced searches to weight properly full-text + (author|title|subject)
-
-=cut
-
-# ---------------------------------------------------------------------
-#XXX  this needs to get allocr weights not all weights if we keep using it
-sub _getDismaxString
-{
-    my $self = shift;
-    my $config = shift;
-    my $all_weights = $config->get_all_weights;
-  my $string = '&defType=edismax';   #dismax|edismax, dismax won't work with normal adv search syntax, but see naomi stuff if needed
-    
-    foreach my $key (keys %{$all_weights})
-    {
-         $string.= '&' . $key . '=';
-        if (ref($all_weights->{$key}) eq 'ARRAY')
-        {
-            
-            my $aryref= $all_weights->{$key};
-           
-            foreach my $el (@{$aryref})
-            {
-               my $field=$el->[0];
-               my $weight=$el->[1];
-               $string.=$field . '^' . $weight . '+'; 
-            }
-        }
-        else
-        {
-            $string.= $all_weights->{$key};
-            
-        }
-     }
-    
-    
-#XXX need to insert tie parameter with correct url escapeing!!!
-#    $string='&defType=dismax&pf=title_ab^10000+title_a^8000+author^1600&qf=ocr^100000+title_ab^1000+title_a^800+author^1600&mm="2-25%"&tie=0.1 ';
-    return $string;
-    
-}
 
 # ---------------------------------------------------------------------
 
