@@ -1,0 +1,96 @@
+#!/usr/bin/env /l/local/bin/plackup
+
+use strict;
+use warnings;
+
+# Dur: pong has to UPDATE THE AUTHENTICATION SESSION
+
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'DLPS_DEV'} ) {
+        require "strict.pm";
+        strict::import();
+
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ping/cgi');
+    }
+}
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+# MDP specfic
+use Debug::DUtils;
+use MdpGlobals;
+use Identifier;
+
+use MdpConfig;
+use Auth::Auth;
+use Utils;
+use Database;
+use Session;
+
+
+use Plack::Request;
+use Plack::Response;
+
+my $app = sub {
+    my $env = shift;
+    my $request = Plack::Request->new($env);
+    my $response;
+    
+    # configuration; do we need our own config?
+    my $config = new MdpConfig(
+                               Utils::get_uber_config_path('mb'),
+                               $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                              );
+    
+    
+    # now need to hit the database
+    my $C = new Context;
+
+    $C->set_object('MdpConfig', $config);
+
+    my $cgi = new CGI;
+    $C->set_object('CGI', $cgi);
+
+    # Database connection
+    my $db = new Database($config);
+    $C->set_object('Database', $db);
+
+    # Session
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+
+    # get an Auth object to trigger cgi/shcgi redirection
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+    
+    my $cookie_name = $config->get('cookie_name');
+    my $target_url = $request->param('t');
+    $response = Plack::Response->new(302);
+    $response->cookies->{$cookie_name} = { 
+        'value' => $ses->get_session_id(), 
+        'path' => '/',
+        'domain' => Session::get_cookie_domain()
+    };
+    $response->redirect($target_url);
+    
+    # explicitly close the session to save any updates
+    $ses->close();
+    return $response->finalize;
+};
+
