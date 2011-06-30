@@ -285,13 +285,68 @@
           }
         </style>
         
-        <div class="results"></div>
+        <div class="results">
+          <xsl:for-each select="$list_node/Collection">
+            <xsl:variable name="class">
+              <xsl:text>collection </xsl:text>
+              <xsl:choose>
+                <xsl:when test="( position() - 1 ) mod 2 = 0">even </xsl:when>
+                <xsl:otherwise>odd </xsl:otherwise>
+              </xsl:choose>
+              <xsl:if test="Owner = $g_user_id">mine </xsl:if>
+              <xsl:if test="Shared = '0'">private </xsl:if>
+            </xsl:variable>
+            
+            <div class="{$class}" position="{position() - 1} / {(position() - 1) mod 2}">
+              <div class="left">
+                <p class="collname">
+                  <a href="?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
+                </p>
+                <xsl:if test="normalize-space(Description)">
+                  <p class="description"><xsl:value-of select="Description" /></p>
+                </xsl:if>
+                <p class="meta">
+                  <span class="owner_name">Owner: <xsl:value-of select="OwnerString" /></span>
+                  <xsl:if test="Owner = $g_user_id">
+                    <xsl:variable name="shared">
+                      <xsl:choose>
+                        <xsl:when test="Sharing = '1'">Public</xsl:when>
+                        <xsl:otherwise>Private</xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:variable>
+                    <xsl:variable name="altshared">
+                      <xsl:choose>
+                        <xsl:when test="Sharing = '1'">Private</xsl:when>
+                        <xsl:otherwise>Public</xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:variable>
+                    <span class="options">
+                      <a href="mb?a=editst;shrd={Sharing};c={CollId};colltype=priv;debug={//CurrentCgi/Param[@name='debug']}" class="awesome thin small grey toggle-sharing">
+                        <span class="sharing-status {translate($shared, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')}"><xsl:value-of select="$shared" /></span> : Make <xsl:value-of select="$altshared" />
+                      </a>
+                      <xsl:text>&#160;&#160;</xsl:text>
+                      <a href="#" data-delete-href="{DeleteCollHref}" class="awesome thin small grey delete-collection">Delete Collection</a>
+                    </span>
+                  </xsl:if>
+                </p>
+              </div>
+              <div class="right">
+                <p class="num_items">
+                  <xsl:value-of select="NumItems" /> item<xsl:if test="number(NumItems) > 1">s</xsl:if>
+                </p>
+                <p class="updated">
+                  last updated: <xsl:value-of select="Updated_Display" />
+                </p>
+              </div>
+            </div>
+          </xsl:for-each>
+        </div>
         
     	  <xsl:variable name="quote" select='"&apos;"' />
     	  <xsl:variable name="amp" select='"&amp;"' />
         <script type="text/javascript" disable-output-escaping="yes">
           console.log("HEY");
-          var bucket = { 'cache': [], 'featured': [] };
+          var bucket = { 'html': [], 'featured': [] };
           window.bucket = bucket;
           var html; var cols; var featured;
         </script>
@@ -302,21 +357,22 @@
             <xsl:if test="false()">
               html.push('<xsl:value-of select="str:replace(str:replace(string(CollName), $quote, concat('\', $quote)), $amp, ' and ')" />');
             </xsl:if>
-            html.push(unescape('<xsl:value-of select="CollName/@e" />'));
-            html.push(unescape('<xsl:value-of select="Description/@e" />'));
+            html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
+            html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
             html.push('<xsl:value-of select="NumItems" />');
+            html.push('<xsl:value-of select="OwnerString" />');
             html.push('<xsl:value-of select="Updated" />');
             html.push('<xsl:value-of select="Updated_Display" />');
             featured = '<xsl:value-of select="Featured" />';
             html.push(featured);
             if ( featured ) {
-              bucket.featured.push(<xsl:value-of select="position()" />);
+              bucket.featured.push(<xsl:value-of select="position() - 1" />);
             }
             html.push('<xsl:value-of select="Shared" />');
             html.push('<xsl:value-of select="DeleteCollHref" />');
-            bucket.cache.push(html);
+            bucket.html.push(html);
           </script>
-          </xsl:for-each>
+        </xsl:for-each>
         
         <table class="collectionData">
           <thead>
@@ -550,7 +606,7 @@
           <h4>Featured Collection</h4>
           <div>
             <h5>
-              {{html collname}}
+              <a href="mb?a=listis;c=${{collid}}">${collname}</a>
             </h5>
             <a href="mb?a=listis;c=${{collid}}">
               <img alt="" class="imgLeft" src="${{featured}}" />

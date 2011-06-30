@@ -1,0 +1,25 @@
+.results, .collection { display: block; }
+
+.right, .left { 
+	display: inline;
+	zoom: 1;
+}
+
+.collection {
+  padding-left: 0;
+}
+
+.large.g-button {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#q { width: 90%; }
+
+.find-collection {
+  width: 35%;
+}
+
+.controls .filters {
+  width: 31.25em;
+}
