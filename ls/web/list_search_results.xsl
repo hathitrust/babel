@@ -113,7 +113,7 @@
               <div class="SearchAndRefine">
                 <xsl:call-template name="SearchResults_status"/>
                 <div class="refine">
-                  <xsl:call-template name="DecideDisplayRefine"/>
+
                 </div>
               </div>
               
@@ -226,11 +226,9 @@
       <xsl:text> items found for </xsl:text>
       <xsl:choose>
         <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
-          <!--  Skip this for now but this choose needs reimiplentation in advanced template
-               <span>
+          <span>
             <xsl:value-of select="/MBooksTop/QueryString"/>
           </span>
-          -->
         </xsl:when>
         <xsl:otherwise>
           <span>
@@ -239,9 +237,9 @@
         </xsl:otherwise>
       </xsl:choose>
 
-      <!-- <xsl:text>x in the full text of all items </xsl:text>-->
-      <!--XXX this is causing an extra "in" we also need to say whether its full text/all/ or search only!-->
-      <xsl:call-template name="advanced"/>
+      <xsl:text> in the full text of all items </xsl:text>
+      <!-- When advanced search is implemented the logic above needs to be reconciled with the template name=advanced-->
+      <!--xsl:call-template name="advanced"/-->
 
       <br></br>
       <xsl:text>
@@ -281,7 +279,7 @@
     <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
       <xsl:text> </xsl:text>
       <xsl:value-of select="OP"/><xsl:text> </xsl:text>
-      <!-- XXX figure out what the well formed stuff is above and put it here-->
+      <!--  figure out what the well formed stuff is above and put it here-->
       <span>
         <xsl:value-of select="Query"/>
       </span>
@@ -316,15 +314,27 @@
   </xsl:template>
 
   <!-- TEMPLATE -->
+
   <xsl:template name="NoResults">
+    
     <div id="ColContainer">
       <div class="ColContent">
         <div class="error">
-          <xsl:text>Your search for "</xsl:text>
-          <xsl:value-of select="/MBooksTop/QueryString"/>
-          <xsl:text>" in the </xsl:text>
-          <span class="colName"><xsl:value-of select="$coll_name"/></span>
-          <xsl:text> returned zero hits.</xsl:text>
+          <xsl:choose>
+            <!-- XXXchange this, we only care if lmt=ft!!! -->
+            <xsl:when test="($all_items_count &gt; 0) and ($full_text_count = 0)">
+              <xsl:text>There are no Full View items in this collection</xsl:text>
+              <!--XXX give option to look at search only items -->
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>Your search for "</xsl:text>
+              <xsl:value-of select="/MBooksTop/QueryString"/>
+              <xsl:text>" in the </xsl:text>
+              <span class="colName"><xsl:value-of select="$coll_name"/></span>
+              <xsl:text> returned zero hits.</xsl:text>
+            </xsl:otherwise>      
+          </xsl:choose>
+
         </div>
       </div>
     </div>
@@ -349,96 +359,12 @@
     </xsl:choose>
   </xsl:template>
 
-  <!-- TEMPLATE -->
-  <xsl:template name="DecideDisplayRefine">
-
-    <!-- need to handle cases:
-         no results    don't display widget
-         one result    don't display widget
-         all full text  ""
-         all view-only  ""
-         no full text   ""   display message
-         -->
-
-    <!-- only display refine widget if there are more than one items in this collection
-         0 or 1 item limit does not make sense
-         -->
-
-    <xsl:if test="$all_items_count > 1">
-      <xsl:choose>
-        <xsl:when test="$full_text_count > 0">
-          <xsl:choose>
-            <xsl:when test="$all_items_count = $full_text_count">
-              <!-- either they are all full text or all view-only so don't display widget-->
-            </xsl:when>
-            <xsl:otherwise>
-              <!-- XXX foobar    <xsl:call-template name="Refine"/> -->
-
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>There are no Full View items in this collection</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:if>
-  </xsl:template>
-
-  <!-- TEMPLATE -->
-  <xsl:template name="Refine">
-    <span>
-      <xsl:variable name="Limit">
-        <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
-      </xsl:variable>
-
-      <xsl:choose>
-        <xsl:when test="$Limit='YES'">
-          <!-- we are currently showing the result of narrow to full view so we want a URL to all -->
-          <ul class="refineTabs">
-            <li class="viewall inactive">
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
-                </xsl:attribute>
-                <xsl:text>All Items (</xsl:text>
-                <xsl:value-of select="$all_items_count"/>
-                <xsl:text>)</xsl:text>
-              </xsl:element>
-            </li>
-            <li class="fulltext active">
-              <xsl:text>Only Full view (</xsl:text>
-              <xsl:value-of select="$full_text_count"/>
-              <xsl:text>)</xsl:text>
-            </li>
-          </ul>
-        </xsl:when>
-        <xsl:otherwise>
-          <!-- we are currently showing all so we want to show a url for  narrow to full text  -->
-          <ul class="refineTabs">
-            <li class="viewall active">
-              <xsl:text>All Items (</xsl:text>
-              <xsl:value-of select="$all_items_count"/>
-              <xsl:text>)</xsl:text>
-            </li>
-            <li class="inactive">
-              <xsl:element name="a">
-                <xsl:attribute name="class">fulltext</xsl:attribute>
-                <xsl:attribute name="title">full view</xsl:attribute>
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
-                </xsl:attribute>
-                <xsl:text>Only Full view (</xsl:text>
-                <xsl:value-of select="$full_text_count"/>
-                <xsl:text>)</xsl:text>
-              </xsl:element>
-            </li>
-          </ul>
-        </xsl:otherwise>
-      </xsl:choose>
-    </span>
-  </xsl:template>
 
 
+
+
+ 
+ 
 
   <!--##  PAGING-related ##-->
 
@@ -831,72 +757,20 @@
 
 
   <!--############### facet templates ########################################-->
-  <!--#################################################
-     Will need to redo to create links and or check boxes with proper attributes to be in a form or
-      addressable by ajax js
-XXX REDO push work for creating urls and separating selected vs unselected back to pi handler!
-
-for now create an href with current_url . &fq=facetname:value
-       ################################################-->
+  
   <xsl:template name="facets">
     <div class="narrow">
       <h3>Narrow Search</h3>
       <div id="selectedFacets">
         <ul class="filters">
-          <!-- hack to insert pseudo facet availability here based on actual rights queries-->
-          
-          <!-- XXX hard code now and then move to a template       
-               if LimitType = so or ft show appropriate text with link to remove facet i.e. lmt=all
-               -->
-          <xsl:variable name="limitType">
-            <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
-          </xsl:variable>
-
-          <xsl:choose>
-            <xsl:when test="$limitType = 'so'">
-              <li>
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
-                </xsl:attribute>
-                <xsl:attribute name ="class">
-                  unselect
-                </xsl:attribute>
-                <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
-              </xsl:element>
-              <xsl:text>Viewability:Search Only</xsl:text>
-            </li>
-
-            </xsl:when>
-            <xsl:when test="$limitType = 'ft'">
-              <li>
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
-                </xsl:attribute>
-                <xsl:attribute name ="class">
-                  unselect
-                </xsl:attribute>
-                <img alt="Delete" src="/ls/common-web/graphics/delete.png" />           
-                </xsl:element>
-              <xsl:text>Viewability:Full Text</xsl:text>
-            </li>
-            </xsl:when>
-
-            <xsl:otherwise>
-
-            </xsl:otherwise>
-          </xsl:choose>
-
+          <xsl:call-template name="selectedViewabilityFacet"/>
           <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
-            
             <xsl:text>
             </xsl:text>
             <li>
               <xsl:variable name="value">
                 <xsl:value-of select="@name"/>
               </xsl:variable>
-              
               
               <xsl:element name="a">
                 <xsl:attribute name="href">
@@ -927,15 +801,9 @@ for now create an href with current_url . &fq=facetname:value
       <div id="facetlist">
         <dl>
           <!-- hack to insert pseudo facet availability here based on actual rights queries-->
-          <!--  XXX hard code now and then move to a template       
-               show ft and so facets unless one is selected. then don't show selected facet
-               What happens if user clicks both? NO! we are doing AND with all facets so selecting english and german means works with both
-               -->
           <xsl:call-template name="pseudofacet"/>
 
-          <!--XXX end hack-->
           <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
-
            
             <xsl:text>    
           </xsl:text>
@@ -950,9 +818,6 @@ for now create an href with current_url . &fq=facetname:value
             <xsl:value-of select="@name"/>
           </xsl:with-param>
         </xsl:call-template>
-
-        <!-- the more/less widgets should not show up if there are less than 5 (or N) facets
-             this should be handled by the perl but currently is not -->
 
         <xsl:if test="showmoreless='true'">        
         <dd>
@@ -982,6 +847,54 @@ for now create an href with current_url . &fq=facetname:value
 </xsl:template>
 
 
+<xsl:template name="selectedViewabilityFacet">
+
+  <!--if LimitType = so or ft show appropriate text with link to remove facet i.e. lmt=all  -->
+  <xsl:variable name="limitType">
+    <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+  </xsl:variable>
+
+  <xsl:choose>
+    <xsl:when test="$limitType = 'so'">
+      <li>
+        <xsl:element name="a">
+          <xsl:attribute name="href">
+            <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
+          </xsl:attribute>
+          <xsl:attribute name ="class">
+            unselect
+          </xsl:attribute>
+          <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
+        </xsl:element>
+        <xsl:text>Viewability:Search Only</xsl:text>
+      </li>
+      
+    </xsl:when>
+    <xsl:when test="$limitType = 'ft'">
+      <li>
+        <xsl:element name="a">
+          <xsl:attribute name="href">
+            <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
+          </xsl:attribute>
+          <xsl:attribute name ="class">
+            unselect
+          </xsl:attribute>
+          <img alt="Delete" src="/ls/common-web/graphics/delete.png" />           
+        </xsl:element>
+        <xsl:text>Viewability:Full View</xsl:text>
+      </li>
+    </xsl:when>
+    
+    <xsl:otherwise>
+      
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+
+
+
+<!--######################################################################-->
 <xsl:template name="pseudofacet">
   <xsl:text>    
   </xsl:text>
@@ -993,24 +906,40 @@ for now create an href with current_url . &fq=facetname:value
     <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
   </xsl:variable>
   
+
+  <xsl:variable name ="SearchOnlyCount">
+        <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCount"/>
+  </xsl:variable>
+
+  <xsl:variable name ="FullTextCount">
+        <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
+  </xsl:variable>
+
+
   <xsl:variable name="fakeFullTextFacet">
-    <dd>
-      <xsl:element name="a">
-        <xsl:attribute name="href">
-          <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
-        </xsl:attribute>
-        <xsl:attribute name ="class">
-          
-        </xsl:attribute>
-        <xsl:text>Full Text </xsl:text>
-      </xsl:element>
-      <xsl:text> (</xsl:text>
-      <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
-      <xsl:text>) </xsl:text>
-    </dd>
+    <xsl:text> </xsl:text>
+    <xsl:if test="$FullTextCount > 0">
+      <dd>
+        <xsl:element name="a">
+          <xsl:attribute name="href">
+            <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
+          </xsl:attribute>
+          <xsl:attribute name ="class">
+            
+          </xsl:attribute>
+          <xsl:text>Full Text </xsl:text>
+        </xsl:element>
+        <xsl:text> (</xsl:text>
+        <xsl:value-of select="$FullTextCount"/>
+        <xsl:text>) </xsl:text>
+      </dd>
+    </xsl:if>
   </xsl:variable>
   
   <xsl:variable name="fakeSearchOnlyFacet">
+    <xsl:text> </xsl:text>
+    <xsl:if test="$SearchOnlyCount > 0">
+
     <dd>
       <xsl:element name="a">
         <xsl:attribute name="href">
@@ -1022,10 +951,12 @@ for now create an href with current_url . &fq=facetname:value
         <xsl:text>Search Only </xsl:text>
       </xsl:element>
       <xsl:text> (</xsl:text>
-      <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCount"/>
+      <xsl:value-of select="$SearchOnlyCount"/>
       <xsl:text>) </xsl:text>
     </dd>
+  </xsl:if>
   </xsl:variable>
+
 
   <xsl:choose>    
    <xsl:when test="$limitType = 'so'">
