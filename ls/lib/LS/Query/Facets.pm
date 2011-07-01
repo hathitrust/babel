@@ -558,6 +558,7 @@ __END__
 =head1 AUTHOR
 
 Phillip Farber, University of Michigan, pfarber@umich.edu
+Tom Burton-West,University of Michigan, tburtonw@umich.edu
 
 =head1 COPYRIGHT
 

@@ -508,12 +508,10 @@ sub make_xml_for_facet_field
 # ---------------------------------------------------------------------
 
 
-#XXX hack for now need to redo
+# 
 sub handle_ADVANCED_SEARCH_PI
     : PI_handler(ADVANCED_SEARCH) 
 {
-    #XXX TODO: refactor into smaller subroutines!
-
     my ($C, $act, $piParamHashRef) = @_;
     my $fconfig=$C->get_object('FacetConfig');
     my $cgi = $C->get_object('CGI');
@@ -564,9 +562,7 @@ sub handle_ADVANCED_SEARCH_PI
         
     }
     return $output;
-    
-}
-
+  }
 
 # ---------------------------------------------------------------------
 #======================================================================
@@ -575,7 +571,6 @@ sub handle_ADVANCED_SEARCH_PI
 #
 #======================================================================
 sub _get_unselect_url
-
 
 {
     my $facet = shift;
@@ -591,13 +586,12 @@ sub _get_unselect_url
     my $debug;
     
     #get list of all facet params except the one we got as an argument    
-    #XXX check that this regex works properly and won't get false matches
+    # this regex will break if a facet field name is a substring of another facet field name
     foreach my $f (@facets)
     {
         if ($facet_string =~/$f/)
         {
             $debug=$1;
-            
         }
         else
         {
@@ -853,8 +847,8 @@ sub _ls_wrap_result_data {
     my $output;
 
 
-    ##  XXX since json might contain unescaped xml entities i.e. "&" we need to filter
-    #   any strings.  Is there a better place to do this?
+    # since json might contain unescaped xml entities i.e. "&" we need to filter
+    # any strings.  Is there a better place to do this?
 
     my $result_docs_arr_ref = $rs->get_result_docs();
     foreach my $doc_data (@$result_docs_arr_ref) {
@@ -922,6 +916,7 @@ __END__
 =head1 AUTHOR
 
 Phillip Farber, University of Michigan, pfarber@umich.edu
+Tom Burton-West,University of Michigan, tburtonw@umich.edu
 
 =head1 COPYRIGHT
 
