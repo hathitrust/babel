@@ -23,7 +23,7 @@ use strict;
 
 use base qw(Search::Searcher);
 
-use LS::Result::Facets;
+use LS::Result::JSON::Facets;
 use LS::Query::Facets;
 
 

@@ -33,7 +33,7 @@ use Search::Searcher;
 
 #use LS::Query::FullText;
 use LS::Query::Facets;
-use LS::Result::Facets;
+use LS::Result::JSON::Facets;
 use LS::Searcher::Facets;
 
 sub new
@@ -164,7 +164,7 @@ sub do_query{
                                         'query_type' => $query_type ,
                                        });
 
-    my $rs = new LS::Result::Facets($query_type);
+    my $rs = new LS::Result::JSON::Facets($query_type);
     $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs);
     
     #    Log

@@ -1,4 +1,4 @@
-package LS::Result::Facets;
+package LS::Result::JSON::Facets;
 
 
 =head1 NAME
