@@ -40,7 +40,9 @@
               <xsl:value-of select="/MBooksTop/QueryString"/>
             </xsl:attribute>
           </input>
+          <!-- make checkbox sticky based on lmt=ft -->
           <input id="fullonly" type="checkbox" name="lmt" value="ft">
+            <xsl:call-template name="getCheckedStatus"/>
           </input>
           <label for="fullonly">Full view only</label>
           <input type="hidden" name="a" value="srchls"/>
@@ -52,4 +54,15 @@
       </div>
     </div>
   </xsl:template>
+
+  <xsl:template name="getCheckedStatus">
+    <xsl:variable name="limitType">
+      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+    </xsl:variable>
+    
+    <xsl:if test="$limitType='ft'">
+      <xsl:attribute name="checked"/>
+    </xsl:if>
+  </xsl:template>
+
 </xsl:stylesheet>
