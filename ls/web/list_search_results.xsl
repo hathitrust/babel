@@ -292,15 +292,6 @@
   </xsl:template>
 
 
-
-
-
-
-
-
-
-
-
   <!-- TEMPLATE -->
   <xsl:template name="QueryRewrite">
     <div class="SearchResults_status">
@@ -316,22 +307,32 @@
   <!-- TEMPLATE -->
 
   <xsl:template name="NoResults">
-    
+     <xsl:variable name="limitType">
+      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+    </xsl:variable>
+
     <div id="ColContainer">
       <div class="ColContent">
         <div class="error">
           <xsl:choose>
-            <!-- XXXchange this, we only care if lmt=ft!!! -->
-            <xsl:when test="($all_items_count &gt; 0) and ($full_text_count = 0)">
-              <xsl:text>There are no Full View items in this collection</xsl:text>
-              <!--XXX give option to look at search only items -->
+            <!-- if the ft checkbox was checked and there are no ft but some so then display stuff below -->
+            <xsl:when test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
+              <xsl:text>There are no Full View items matching your search</xsl:text>
+              <br></br>
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
+                </xsl:attribute>
+                <xsl:attribute name ="class">
+                  
+                </xsl:attribute>
+                <xsl:text> See Search Only items matching your search </xsl:text>
+              </xsl:element>
             </xsl:when>
             <xsl:otherwise>
               <xsl:text>Your search for "</xsl:text>
               <xsl:value-of select="/MBooksTop/QueryString"/>
-              <xsl:text>" in the </xsl:text>
-              <span class="colName"><xsl:value-of select="$coll_name"/></span>
-              <xsl:text> returned zero hits.</xsl:text>
+              <xsl:text>" in the full text of all items returned zero hits.</xsl:text>
             </xsl:otherwise>      
           </xsl:choose>
 
@@ -359,12 +360,6 @@
     </xsl:choose>
   </xsl:template>
 
-
-
-
-
- 
- 
 
   <!--##  PAGING-related ##-->
 
@@ -689,16 +684,12 @@
   </xsl:template>
 
 
-  <!-- copied from CB list utils tbw-->
-  <!--XXX problem is that this is inside a form calling the ls cgi not the mb cgi
-       we need a form with the action calling mb additems!
-       -->
  <xsl:template name="BuildItemSelectActions">
     <div class="SelectedItemActions">
       <div id="errormsg">
         <div class="bd"></div>
       </div>
-      <!--XXX choose either class is overlay or id for hook for javascript to focus widget-->
+
       <div class="overlay" id="overlay"></div>
       <span id="addCollectionWidgetLS"></span>
       <xsl:call-template name="BuildCollectionSelect"/>
@@ -719,10 +710,6 @@
         <xsl:text>[CREATE NEW COLLECTION]</xsl:text>
       </option>
 
-      <!--tbw XXX this code assumes a PI used by CB. Can we reuse it?
-           alternative is that somehow the header already knows the
-           collections because if you are logged in you get the jump
-           to collection widget-->
       <xsl:for-each select="SelectCollectionWidget/Coll">
         <xsl:element name="option">
           <xsl:attribute name="value">
@@ -1041,10 +1028,5 @@
       
     </xsl:for-each>
   </xsl:template>
-  
-
-
-
-  
   
 </xsl:stylesheet>
