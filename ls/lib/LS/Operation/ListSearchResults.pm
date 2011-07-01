@@ -116,21 +116,35 @@ sub execute_operation
     # POSSIBLY NOTREACHED
 
     my $primary_count = $primary_rs->get_total_hits();
-    if ($primary_count == 0)
+    my $pager;
+    
+    if ($primary_count > 0)
+    {
+        $pager = $self->do_paging($C, $cgi, $primary_count);
+    }
+    else
     {
         # No search results so set create pager with total_entries set
-        # to 0 and return No need to do the rest of the logic below
-        # this since we won't display any results
-        my $empty_pager = $self->get_empty_pager($C,$cgi);
-        $act->set_transient_facade_member_data($C, 'pager', $empty_pager);
-
-        return $ST_OK;
+        # to 0 and return 
+        $pager = $self->get_empty_pager($C,$cgi);
     }
-    # POSSIBLY NOTREACHED
 
-    my $pager = $self->do_paging($C, $cgi, $primary_count);
     $act->set_transient_facade_member_data($C, 'pager', $pager);
 
+    my $counts = $self->__get_counts($primary_rs,$secondary_rs);
+    $act->set_transient_facade_member_data($C, 'all_count', $counts->{'all'});
+    $act->set_transient_facade_member_data($C, 'full_text_count', $counts->{'full_text'});
+    $act->set_transient_facade_member_data($C, 'search_only_count', $counts->{'search_only'});
+
+    return $ST_OK;
+    
+}
+
+sub __get_counts
+{
+    my $self = shift;
+    my $primary_rs = shift;
+    my $secondary_rs = shift;
     my $primary_rs_type   = $primary_rs->get_result_type();
     my $secondary_rs_type = $secondary_rs->get_result_type();
     
@@ -150,14 +164,8 @@ sub execute_operation
         }
 
     }
-
-    $act->set_transient_facade_member_data($C, 'all_count', $counts->{'all'});
-    $act->set_transient_facade_member_data($C, 'full_text_count', $counts->{'full_text'});
-    $act->set_transient_facade_member_data($C, 'search_only_count', $counts->{'search_only'});
-
-    return $ST_OK;
+    return $counts;
 }
-
 
 # ---------------------------------------------------------------------
 
