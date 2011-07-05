@@ -27,8 +27,9 @@ use Data::Page;
 use base qw(PIFiller);
 use Utils;
 use Identifier;
-use LS::Utils;
 use LS::FacetConfig;
+#use Encode;
+
 
 BEGIN
 {
@@ -578,14 +579,16 @@ sub _get_unselect_url
     my $facet_string=$facet->{facet_name} . ':"' . $facet->{'value'}. '"';
     
     my $cgi= shift;
+    my @facets= $cgi->param('facet');
+
     my $temp_cgi= CGI->new($cgi);
     # remove paging since selecting/unselecting facets causes result set changes and reordering
     $temp_cgi->delete('pn');
-    my @facets= $temp_cgi->param('facet');
+
     my @new_facets;
     my $debug;
     
-    #get list of all facet params except the one we got as an argument    
+    # get list of all facet params except the one we got as an argument    
     # this regex will break if a facet field name is a substring of another facet field name
     foreach my $f (@facets)
     {
@@ -608,7 +611,6 @@ sub _get_unselect_url
     $temp_cgi->param(-name=>'facet',-values=>\@new_facets);
     my $url = $temp_cgi->url(-relative=>1,-query=>1);  
     return $url;
-    
 }
 
 
