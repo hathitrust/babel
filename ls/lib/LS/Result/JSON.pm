@@ -7,10 +7,9 @@ use Utils;
 use base qw(Search::Result);
 
 # ---------------------------------------------------------------------
-#  Overide base class because we need to parse json to get these things
-# XXX tbw
-#   maybe base class should use methods to parse these things and call a parser object that
-# would know how to parse the response
+# Overide base class because we need to parse json to get these things
+# maybe base class should use methods to parse these things and call a parser object that
+# would know how to parse the response instead of subclassing
 
 
 # ---------------------------------------------------------------------
@@ -69,8 +68,8 @@ sub parse_JSON_results
     my $Solr_response_ref = shift;
 
 #    my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
-    #XXX removed ascii since we want utf8 but what is allow_nonref??
-    #XXX Warning json won't escape xml entities such as "&" ">" etc.
+    #XXX  do we want ->utf8?
+    # Warning json won't escape xml entities such as "&" ">" etc.
     my $coder = JSON::XS->new->pretty->allow_nonref;
     my $parsed = $coder->decode ($$Solr_response_ref);
 
