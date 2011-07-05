@@ -230,7 +230,7 @@ sub get_Solr_query_string
     
     my $cgi = $C->get_object('CGI');
    
-    #XXX do we need to rename facet_config since it contains more than just facet config info?
+    # do we need to rename facet_config since it contains more than just facet config info?
     my $config = $self->get_facet_config;  
     
     #advanced search
@@ -303,7 +303,7 @@ sub get_Solr_query_string
         }
     }
     
-    #XXX for temporary debugging of rel ranking
+    # for temporary debugging of rel ranking
     #  Need a much better mechanisim
 
     my $EXPLAIN="";
@@ -313,7 +313,7 @@ sub get_Solr_query_string
 
     my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY . $EXPLAIN;    
     
-    #XXX for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
+    # for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
     #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
     my $sq;     #solr_query_string with or without dismax
     if (DEBUG('nodismax')) 
