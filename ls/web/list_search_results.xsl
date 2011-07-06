@@ -769,8 +769,8 @@
                   unselect
                 </xsl:attribute>
      
-                <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
-
+                               <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
+                               <!-- <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />-->
               </xsl:element>
 
               <xsl:value-of select="fieldName"/>
