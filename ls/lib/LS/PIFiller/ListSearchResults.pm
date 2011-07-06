@@ -589,10 +589,10 @@ sub _get_unselect_url
     my $debug;
     
     # get list of all facet params except the one we got as an argument    
-    # this regex will break if a facet field name is a substring of another facet field name
+
     foreach my $f (@facets)
     {
-        if ($facet_string =~/$f/)
+        if ($facet_string eq $f)
         {
             $debug=$1;
         }
