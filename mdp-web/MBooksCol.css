@@ -3,6 +3,109 @@ When this CSS is concatenated into concatenated-min.css it lives under web.
 images are under web/common-web/graphics/ Use ./graphics/foo.gif so make_concat can fix pathis correctly
 ***/
 
+/***
+Tom temporary css styles to be put in single css or integrated.  Ask Suz
+***/
+
+/** copied from HT Catalog **/
+ol, ul {
+         list-style:none outside none;
+}
+
+img, a img {
+             border:medium none;
+}
+
+ul.filters li {
+                text-indent:-20px;
+}
+
+ul li, ul.menu li, .item-list ul li, li.leaf {
+                                               list-style-image:none;
+                                               list-style-type:none;
+                                               }
+
+
+.narrow dd {
+             color:#999999;
+/**  }
+make it all one style for now  no separate navmenu
+.navmenu dd {
+**/
+              border-bottom:1px solid #E3E3E3;
+              list-style-type:none;
+              padding:0.1em 0 0.1em 0.5em;
+              }
+
+
+dl dd {
+        margin:0 0 0.5em 1.5em;
+        }
+
+dt {
+     font-weight:bold;
+     margin-top:0.75em;
+}
+
+.ls_box
+{ 
+  background-color:#FFFFFF;
+  border:1px solid #CCCCCC;
+  font-size:85%;
+  margin-left:15px;
+  margin-bottom:2.5em;
+  margin-top:11px;
+  padding:5px;
+  padding-top:15px;
+
+} 
+
+
+/** end of bunch of stuff copied from HT Vufind **/
+
+/** temporary.  Need to change id of this div unless javascript is useing it.  In catalog similar region named searchbox **/
+#main
+{
+  width:100%;
+  height:6em;
+  line-height:1em;
+  padding:10px 15px 20px 0;
+  color:#333333;
+  background-color:#FFFFFF;
+  border:1px solid #CCCCCC
+}
+
+#lsSidebarContainer
+{ 
+  float: left;
+  position: relative;
+  width:27%;
+
+}
+
+/** temp to see if css is working**/
+*.showfacet
+{ 
+  color: red;
+  }
+*.hidefacet
+{ 
+  display: none;
+  visibility: hidden;
+}
+a.morefacets{ 
+             color:red; 
+ } 
+a.lessfacets,a.lessfacets:active{ 
+             color:red; 
+/**  display: none;
+  visibility: hidden;**/
+ }
+
+.facet{ 
+       color: red;
+} 
+/** end tom temp files **/
 .PTerror 
 {
   background:#FEEEEE url(./graphics/icon_x.gif) no-repeat scroll 15px 50%;
@@ -971,12 +1074,12 @@ li.viewall {
 .mbListItemsContainer {
 	
 }
-
+/*tbw XXX */
 #ColContainer {
   position: relative;
-  float: left;
+  float: right;
   margin: 10px 0 10px 10px;
-  width: 100%;
+  width: 68%;
 }
 
 /* List Items Left side options */
@@ -1303,7 +1406,7 @@ img.SearchArrow {
 
     #formWidget .bd {
         overflow:auto;
-/*        height:360px; */
+        height:360px;
         padding:10px;
     }
 
