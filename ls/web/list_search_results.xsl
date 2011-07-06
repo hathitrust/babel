@@ -155,7 +155,7 @@
   <!-- TEMPLATE -->
   <xsl:template name="DisplayContent">
           <!-- for debugging facets-->
-          <div id="lsSidebarContainer">
+          <div id="lsSidebarContainer" class="ls_box">
             <br></br>
           <xsl:call-template name="facets"/>
         </div>
