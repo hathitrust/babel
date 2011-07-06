@@ -14,18 +14,6 @@ serialtitle:
     - [serialTitle_rest, 10]
   mm: "2<-1 5<67%"
   tie: 0.1
-# for testing rename this to title and title to footitle
-debugtitle:
-  pf:
-    - [title_ab, 25000]
-    - [title_a, 15000]
-  qf:
-    - [titleProper, 120]
-    - [title_topProper, 60]
-  mm: "2<-1 5<67%"
-  tie: 0.1
-
-
 
 
 title:
@@ -48,6 +36,15 @@ title:
     - [title_rest, 10]
   mm: "2<-1 5<67%"
   tie: 0.1
+
+debugtitle:
+  pf:
+  qf:
+    - [title, 300]
+    - [Vtitle,300] 
+  mm: "2<-1 5<67%"
+  tie: 0.1
+
 
 journaltitle:
   pf:
@@ -182,8 +179,67 @@ all:
 # may want to rename this to allocr to imply its OCR plus all MARC
 #fields   
 
-
+#  ocr = 500,000 give OCR higher relative rankings
+# ocr = 50,000  MARC fields get higher relative ankings
+# tie =0.9  sum weights for each field instead of using only the
+# resulting score for the highest match i.e. tie = 0.1
 ocr:
+  pf:
+    - [title_ab, 10000]
+    - [title_a, 8000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [author2, 800]
+    - [author_top, 100]
+    - [author_rest, 50]
+    - [fullgeographic, 200]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  qf:
+    - [ocr, 50000]
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [author2, 50]
+    - [author_top, 30]
+    - [author_rest, 15]
+    - [issn, 1]
+    - [isbn, 1]
+    - [lccn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [ht_id, 1]
+    - [isn_related, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "2<-1 5<67%"
+  tie: 0.9
+
+# 
+#  This is here so we can switch between two sets of weightings
+# for now its using ocr = 500,000 which should weight OCR higher
+# relative to MARC
+ocr2:
   pf:
     - [title_ab, 10000]
     - [title_a, 8000]
@@ -234,6 +290,63 @@ ocr:
     - [era, 1]
   mm: "2<-1 5<67%"
   tie: 0.9
+
+
+
+#This is here to experiment with
+debugocr:
+  pf:
+    - [title_ab, 10000]
+    - [title_a, 8000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [author2, 800]
+    - [author_top, 100]
+    - [author_rest, 50]
+    - [fullgeographic, 200]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  qf:
+    - [ocr, 500000]
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [author2, 50]
+    - [author_top, 30]
+    - [author_rest, 15]
+    - [issn, 1]
+    - [isbn, 1]
+    - [lccn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [ht_id, 1]
+    - [isn_related, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "2<-1 5<67%"
+  tie: 0.9
+
+
 
 #
 # XXX Experimental!!!  attempt to translate boost queries with special
