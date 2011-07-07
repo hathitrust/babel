@@ -169,7 +169,7 @@ foreach my $app (@apps) {
         }
     }
 
-    if (! __rdist_app_to_production($app_dir, $SITE)) {
+    if (! __rdist_app_to_production($app_dir, $SITE, $tag)) {
         PrintN($fail_msg);
         next;
         $rc |= 1;
