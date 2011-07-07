@@ -13,7 +13,7 @@ use ToolLib;
 sub clone_app_usage {
     my $s = qq{Usage: clone-repo [options] [<app>[<app>+]]
            where <app> is the application of which to clone its central repo, init and update its submodules.
-                 -s clone under staging area: test, beta-1, beta-2, beta-3 (e.g. /htapps/test.babel)
+                 -s clone under staging area: test, beta-{1,2,3,4} (e.g. /htapps/test.babel or /htapps/beta-3.babel )
                     instead of /htapps/user.babel
                  -f force remove existing clone, then clone
                  -A all apps

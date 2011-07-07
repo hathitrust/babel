@@ -45,7 +45,7 @@ If the B<-v> option is supplied, the output will be verbose.
 NOTE: plackup monitors a configurable list of files for changes bsed
   on timestamp.  We want plackup to reload app whenever any app file
   changes, not just the cgi.  git checkout gives a new timestamp to
-  files, so files in the HTDE, e.g. in beta-{1,2,3}, will satisfy this
+  files, so files in the HTDE, e.g. in beta-{1,2,3,4}, will satisfy this
   requirement.  However, rdist only updates timestamps on files that
   change so B<deploy-app> touches $appdir/bin/rdist.timestamp
   (monitored by plackup) to ensure the reload of the cgi.
