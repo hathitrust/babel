@@ -24,6 +24,7 @@ use strict;
 use Utils;
 use Debug::DUtils;
 use LS::FacetConfig;
+use URI::Escape;
 
 use base qw(Search::Query);
 
@@ -292,11 +293,11 @@ sub get_Solr_query_string
 
     my $FACETQUERY="";
 
-    my $facetquery=$cgi->{'facet'};
+    my @facetquery = $cgi->param('facet');
     
-    if (defined ($facetquery))
+    if (defined (@facetquery))
     {
-        foreach my $fquery (@{$facetquery})
+        foreach my $fquery (@facetquery)
         {
             my $cleaned_fquery = $self->__clean_facet_query($fquery);
             $FACETQUERY.='&fq=' . $cleaned_fquery;
@@ -347,6 +348,9 @@ sub __clean_facet_query
     #facet=language:%22German%22
     my ($field,@rest)=split(/\:/,$fquery);
     my $string=join(':',@rest);
+    #replace spaces with a plus or percent 20?
+   # $string=~s/\s+/\+/g;
+    
     # Note: facet fields mostly? all? type string which is not analyzed
     # So we should hexencode url chars and then escape the rest
     # Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
@@ -356,9 +360,20 @@ sub __clean_facet_query
     # Need to hex escape question mark and then protect it with a backslash, note Solr is ok if fed a question mark
     # code in Search::Searcher::__get_request_object splits a URL on "?" so leaving a non-hex-escaped queston mark
     # will cause the split to truncate the query
-    $string =~s,\?,\\%3F,g;
-            
-    #            $string =~s/\s+/%20/g;
+        $string =~s,\?,\\%3F,g;
+    
+#XXX replace above with code below which does uri escaping for any characters
+#     $string =~s/\s+/%20/g;
+    
+# XXX do we need to test to determine if we have utf8 chars or bytes or utf8 flag or something
+# i.e use URI::uri_escape instead or even specify a charset
+# see http://search.cpan.org/~gaas/URI-1.58/URI/Escape.pm
+    #backslach escape ampersand so lucene doesn't choke
+#    $string=~s,&,\\&,g;
+
+
+    #my $escaped_string=URI::Escape::uri_escape_utf8($string);
+    
     $cleaned=$field . ':' . $string;
     return $cleaned;
 }
