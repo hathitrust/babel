@@ -291,7 +291,7 @@ sub G_checkout_branch {
 
     my $cmd;
     my $output;
-    print qq{Checkout local branch=$branch ...\n};
+    print qq{Checkout local branch=$branch from $app_dir ...\n};
 
     return 0
       if (! chdir_to_app_dir($app_dir));
