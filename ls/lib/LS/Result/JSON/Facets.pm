@@ -28,6 +28,7 @@ use strict;
 use Utils;
 use Debug::DUtils;
 use JSON::XS;
+use URI::Escape;
 use base qw(LS::Result::JSON);
 
 
@@ -115,9 +116,9 @@ sub AFTER_ingest_Solr_search_response
     {
         #XXX do we want to parse this or just pass on a data structure?
         # the below is more work but would isolate any changes necessary if we change the json response format i.e. json.nl=??
-        #my $clean_facet_hash=self->clean_facets($facet_hash)
-
-        $self->__set_facet_hash($facet_hash);
+        my $clean_facet_hash = $self->__clean_facets($facet_hash);
+        
+        $self->__set_facet_hash($clean_facet_hash);
     
     }
     
@@ -158,6 +159,49 @@ sub __process_expain_data
     
     #    return qq{<pre style="text-align: left">$dump</pre>};
 
+}
+# ---------------------------------------------------------------------
+sub __clean_facets
+{
+    my $self = shift;
+    my $hash =shift;
+    # key =facetname
+    #value=array of arrays where ary->[0]=facet value and ary->[1]=facet count
+    
+    my $cleaned={};
+    foreach my $facetfield (keys %{$hash})
+    {
+        my $cleaned_aryary=[];
+       
+        my  $aryary = $hash->{$facetfield};
+        foreach my $ary (@{$aryary})
+        {
+            my $cleaned_ary=[];
+            
+            my $value = $ary->[0];
+            my $count = $ary->[1];
+            my $cleaned;
+ 
+            #XXX test for now by encoding only stuf with an ampersand           
+            if ($value=~/\&/)
+            {
+                 $cleaned = URI::Escape::uri_escape_utf8($value);
+            }
+            else
+            {
+                $cleaned=$value;
+            }
+            
+            $cleaned_ary->[0] =$cleaned;
+            $cleaned_ary->[1] = $count;
+            push (@{$cleaned_aryary},$cleaned_ary)
+        }
+        $cleaned->{$facetfield} =$cleaned_aryary;
+    }
+#XXX  This is for debugging so unless this line is commented out this just returns the input hash!                            
+    $cleaned =$hash;
+    
+    return $cleaned;
 }
 
 # ---------------------------------------------------------------------
