@@ -191,6 +191,16 @@
       template="https://___HOST___/Shibboleth.sso/duke?target=___TARGET___"
       authtype="shibboleth"
       enabled="1">Duke University</Inst>
+  <Inst
+      sdrinst="osu"
+      template="https://___HOST___/Shibboleth.sso/osu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">The Ohio State University</Inst>
+  <Inst
+      sdrinst="ncsu"
+      template="https://___HOST___/Shibboleth.sso/ncsu?target=___TARGET___"
+      authtype="shibboleth"
+      enabled="1">North Carolina State University</Inst>
 
   <!-- waiting -->
 
@@ -209,11 +219,6 @@
       template="https://___HOST___/Shibboleth.sso/uva?target=___TARGET___"
       authtype="shibboleth"
       enabled="0">University of Virginia</Inst>
-  <Inst
-      sdrinst="osu"
-      template="https://___HOST___/Shibboleth.sso/osu?target=___TARGET___"
-      authtype="shibboleth"
-      enabled="0">Ohio State University</Inst>
   <Inst
       sdrinst="ucdavis"
       template="https://___HOST___/Shibboleth.sso/ucdavis?target=___TARGET___"
@@ -249,11 +254,6 @@
       template="https://___HOST___/Shibboleth.sso/harvard?target=___TARGET___"
       authtype="shibboleth"
       enabled="0">Harvard University</Inst>
-  <Inst
-      sdrinst="ncsu"
-      template="https://___HOST___/Shibboleth.sso/ncsu?target=___TARGET___"
-      authtype="shibboleth"
-      enabled="0">North Carolina State University</Inst>
   <Inst
       sdrinst="umaryland"
       template="https://___HOST___/Shibboleth.sso/umaryland?target=___TARGET___"
