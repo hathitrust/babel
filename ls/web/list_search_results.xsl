@@ -748,92 +748,124 @@
 
 
   <!--############### facet templates ########################################-->
-  
-  <xsl:template name="facets">
-    <div class="narrow">
-      <h3>Narrow Search</h3>
-      <div id="selectedFacets">
-        <ul class="filters">
-          <xsl:call-template name="selectedViewabilityFacet"/>
-          <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
-            <xsl:text>
-            </xsl:text>
-            <li>
-              <xsl:variable name="value">
-                <xsl:value-of select="@name"/>
-              </xsl:variable>
-              
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  
-                  <!-- &we need to remove this facet from the cgi -->
-                  <xsl:value-of select="unselectURL"/>
-                </xsl:attribute>
-                <xsl:attribute name ="class">
-                  unselect
-                </xsl:attribute>
-     
-                               <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
-                               <!-- <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />-->
-              </xsl:element>
 
-              <xsl:value-of select="fieldName"/>
-              <xsl:text>:</xsl:text>
-              <xsl:value-of select="@name"/>
-              
-            </li>
-          </xsl:for-each>
-        </ul>
-      </div>
+  <!--XXX replace this whole thing by adding some xml in the PIfiller that is true or false -->
+ <xsl:template name="facetsSelected">  
+   <xsl:variable name="selected">
+    <xsl:value-of select="count(/MBooksTop/Facets/SelectedFacets/facetValue)"/>
+  </xsl:variable>
+
+  <xsl:variable name="VlimitType">
+      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+  </xsl:variable>
+
+  <xsl:choose>
+    <xsl:when test="($selected &gt; 0)or (not($VlimitType = 'all'))">
+    <xsl:text>true</xsl:text>      
+    </xsl:when>
+    <xsl:otherwise>
+          <xsl:text>false</xsl:text>
+    </xsl:otherwise>
+  </xsl:choose>
+
+</xsl:template>
+
+  <xsl:template name="facets">
+    <div class="facets">
+      <xsl:variable name="facetsSelected">
+        <xsl:call-template name="facetsSelected"/>
+      </xsl:variable>
+      <xsl:if test="$facetsSelected = 'true'">
+        <xsl:call-template name="showSelected"/>
+      </xsl:if>
+
       
       <!--  unselected facets ##########################################################   -->
-      
-
-      <div id="facetlist">
-        <dl>
-          <!-- hack to insert pseudo facet availability here based on actual rights queries-->
-          <xsl:call-template name="pseudofacet"/>
-
-          <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
-           
-            <xsl:text>    
+      <div class="narrow">
+        <h1 class="narrowsearch">Limit your search</h1>
+        <div id="facetlist">
+          <dl>
+            <!-- hack to insert pseudo facet availability here based on actual rights queries-->
+            <xsl:call-template name="pseudofacet"/>
+            
+            <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
+              
+              <xsl:text>    
+            </xsl:text>
+            <dt class="facetField"><xsl:value-of select="@name"/></dt>
+            <xsl:text>                
           </xsl:text>
-          <dt class="facetField"><xsl:value-of select="@name"/></dt>
-          <xsl:text>                
-        </xsl:text>
-        <!--   WARNING!  waht we label the field in the html and the field name could be different
-             Where should the name/label mapping exist?
-             -->
-        <xsl:call-template name="facetFields">
-          <xsl:with-param name="fieldName">
-            <xsl:value-of select="@name"/>
-          </xsl:with-param>
-        </xsl:call-template>
-
-        <xsl:if test="showmoreless='true'">        
-        <dd>
-
-          <a  href="">
-            <xsl:attribute name="class">
-              <!-- need to process name so there are no spaces i.e. "place of publication"-->
-              <xsl:value-of select="@normName"/>
-              <xsl:text> morefacets</xsl:text>
-            </xsl:attribute>
-            <i>more...</i></a>
-
-            <a  href="">    
-            <xsl:attribute name="class">
-              <xsl:value-of select="@normName"/>
-              <xsl:text> lessfacets</xsl:text>
-            </xsl:attribute>
-
-            <i>less...</i></a>
-
-          </dd>
-        </xsl:if>
+          <!--   WARNING!  waht we label the field in the html and the field name could be different
+               Where should the name/label mapping exist?
+               -->
+          <xsl:call-template name="facetFields">
+            <xsl:with-param name="fieldName">
+              <xsl:value-of select="@name"/>
+            </xsl:with-param>
+          </xsl:call-template>
+          
+          <xsl:if test="showmoreless='true'">        
+          <dd>
+            
+            <a  href="">
+              <xsl:attribute name="class">
+                <!-- need to process name so there are no spaces i.e. "place of publication"-->
+                <xsl:value-of select="@normName"/>
+                <xsl:text> morefacets</xsl:text>
+              </xsl:attribute>
+              <i>more...</i></a>
+              
+              <a  href="">    
+              <xsl:attribute name="class">
+                <xsl:value-of select="@normName"/>
+                <xsl:text> lessfacets</xsl:text>
+              </xsl:attribute>
+              
+              <i>less...</i></a>
+              
+            </dd>
+          </xsl:if>
         </xsl:for-each>
       </dl>
     </div>
+  </div>
+  </div>
+</xsl:template>
+
+
+<xsl:template name="showSelected">
+ 
+  <div id="selectedFacets">
+            <h1>Your current search limits</h1>
+    <ul class="filters">
+      <xsl:call-template name="selectedViewabilityFacet"/>
+      <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
+        <xsl:text>
+        </xsl:text>
+        <li>
+          <xsl:variable name="value">
+            <xsl:value-of select="@name"/>
+          </xsl:variable>
+          
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
+            </xsl:attribute>
+            <xsl:attribute name ="class">
+              unselect
+            </xsl:attribute>
+            
+            <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />
+          </xsl:element>
+          
+          <xsl:value-of select="fieldName"/>
+          <xsl:text>:</xsl:text>
+          <xsl:value-of select="@name"/>
+          
+        </li>
+      </xsl:for-each>
+    </ul>
   </div>
 </xsl:template>
 
@@ -855,7 +887,8 @@
           <xsl:attribute name ="class">
             unselect
           </xsl:attribute>
-          <img alt="Delete" src="/ls/common-web/graphics/delete.png" />
+
+          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />
         </xsl:element>
         <xsl:text>Viewability:Search Only</xsl:text>
       </li>
@@ -870,7 +903,7 @@
           <xsl:attribute name ="class">
             unselect
           </xsl:attribute>
-          <img alt="Delete" src="/ls/common-web/graphics/delete.png" />           
+          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />
         </xsl:element>
         <xsl:text>Viewability:Full View</xsl:text>
       </li>
