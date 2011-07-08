@@ -241,12 +241,12 @@
       <!-- When advanced search is implemented the logic above needs to be reconciled with the template name=advanced-->
       <!--xsl:call-template name="advanced"/-->
 
-      <br></br>
+      <span class="debug">
       <xsl:text>
         (in </xsl:text>
       <xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>
       <xsl:text> sec.)</xsl:text>
-
+    </span>
 
       <xsl:if test="$debug='YES'">
         <span class="debug">DEBUG </span>
@@ -311,9 +311,10 @@
       <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
     </xsl:variable>
 
-    <div id="ColContainer">
+    <!--    <div id="ColContainer">-->
       <div class="ColContent">
-        <div class="error">
+
+        <div class="LSerror">
           <xsl:choose>
             <!-- if the ft checkbox was checked and there are no ft but some so then display stuff below -->
             <xsl:when test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
@@ -326,7 +327,7 @@
                 <xsl:attribute name ="class">
                   
                 </xsl:attribute>
-                <xsl:text> See Search Only items matching your search </xsl:text>
+                <xsl:text> See Limited (search only) items matching your search </xsl:text>
               </xsl:element>
             </xsl:when>
             <xsl:otherwise>
@@ -336,9 +337,10 @@
             </xsl:otherwise>      
           </xsl:choose>
 
-        </div>
-      </div>
+          <!--foobar-->        </div>
+          <!--   </div>-->
     </div>
+   
   </xsl:template>
 
   <!-- TEMPLATE -->
@@ -346,6 +348,7 @@
     <span class="debug">
       <xsl:value-of select="/MBooksTop/SearchResults/SolrError"/>
     </span>
+    <div class="ColContent">
     <xsl:choose>
       <xsl:when test="contains(/MBooksTop/SearchResults/SolrError, 'timeout')">
         <div class="error">
@@ -358,6 +361,7 @@
         </div>
       </xsl:otherwise>
     </xsl:choose>
+  </div>
   </xsl:template>
 
 
@@ -914,7 +918,7 @@
           <xsl:attribute name ="class">
             
           </xsl:attribute>
-          <xsl:text>Full Text </xsl:text>
+          <xsl:text>Full View </xsl:text>
         </xsl:element>
         <xsl:text> (</xsl:text>
         <xsl:value-of select="$FullTextCount"/>
@@ -935,7 +939,7 @@
         <xsl:attribute name ="class">
           
         </xsl:attribute>
-        <xsl:text>Search Only </xsl:text>
+        <xsl:text>Limited (search only) </xsl:text>
       </xsl:element>
       <xsl:text> (</xsl:text>
       <xsl:value-of select="$SearchOnlyCount"/>
@@ -953,11 +957,23 @@
      <xsl:copy-of select="$fakeSearchOnlyFacet"/>
    </xsl:when>
    <xsl:otherwise>
-     <xsl:copy-of select="$fakeFullTextFacet"/>
-     <xsl:copy-of select="$fakeSearchOnlyFacet"/>
+     <!-- put facet with highest count first -->
+     <xsl:choose>
+       <xsl:when test="$SearchOnlyCount &gt; $FullTextCount">
+         <xsl:copy-of select="$fakeSearchOnlyFacet"/>
+         <xsl:copy-of select="$fakeFullTextFacet"/>
+       </xsl:when>
+       <xsl:otherwise>
+         <xsl:copy-of select="$fakeFullTextFacet"/>
+         <xsl:copy-of select="$fakeSearchOnlyFacet"/>
+       </xsl:otherwise>
+     </xsl:choose>
    </xsl:otherwise>
  </xsl:choose>
 </xsl:template>
+
+
+
 
 
   <xsl:template name="facetFields">
