@@ -107,6 +107,18 @@ a.lessfacets,a.lessfacets:active{
        color: red;
 } 
 
+#selectedFacets
+{ 
+ 
+  border:1px solid #EBECE4;
+ /**
+  width:auto;
+  padding:5px 5px 5px 50px;
+**/
+ 
+
+} 
+
 
  
 /** end tom temp files **/
@@ -1201,11 +1213,17 @@ li.viewall {
 } 
 
 #PageWidget li {
+/** Suz says change this to match ht catalog
   border: 1px solid #CCC;
   float: left;
   line-height: 1.1em;
   margin: 0 0 0 0.3em;
   padding: 0 .5em 0 .5em;
+**/
+  float: left;
+  line-height: 1.1em;
+  margin: 0 0 0 0.3em;
+
 }
 
 .greyedOut { 
