@@ -160,7 +160,7 @@
           <xsl:call-template name="facets"/>
         </div>
 
-    <div id="ColContainer">
+    <div id="ColContainer" class="ls">
       <div class="ColContent">
 
         <!-- Added: YUI overlay is displayed here -->
