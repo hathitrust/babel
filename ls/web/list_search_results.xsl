@@ -373,14 +373,14 @@
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/PrevPage='None'">
-            <span class="greyedOut">Previous</span>
+            <span class="greyedOut">Prev</span>
           </xsl:when>
           <xsl:otherwise>
             <xsl:element name ="a">
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/PrevPage/Href"/>
               </xsl:attribute>
-              Previous Page
+             &lt;&lt;  Prev
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
@@ -405,11 +405,32 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/NextPage/Href"/>
               </xsl:attribute>
-              Next
+              &gt;&gt; Next
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
       </li>
+      <!-- foobar suz says make it look like catalog XXX this is a Hack!-->
+
+      <!-- This doesnt work right!###############################
+    <xsl:for-each select="/MBooksTop/Paging/EndPageLinks/PageURL">
+
+        <xsl:call-template name="output_page_link_or_current_page"/>
+
+        <li>
+          <xsl:text>[ </xsl:text>
+          <xsl:element name ="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="Href"/>
+            </xsl:attribute>
+            <xsl:value-of select="Content"/>
+          </xsl:element>
+          <xsl:text> ]</xsl:text>
+        </li>
+    </xsl:for-each>
+##############################################################-->
+
+
     </ul>
   </xsl:template>
 
@@ -462,16 +483,22 @@
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
 
+
+    <!--
+         suz says make it look like catalog-->
     <xsl:if test="/MBooksTop/Paging/EndPageLinks/PageURL">
       <li class="elipsis">
         <xsl:text>...</xsl:text>
       </li>
     </xsl:if>
-
+    
+    
     <xsl:for-each select="/MBooksTop/Paging/EndPageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
+    <!--    ##########################################################################-->
   </xsl:template>
+
 
   <!-- TEMPLATE -->
   <xsl:template name="output_page_link_or_current_page">

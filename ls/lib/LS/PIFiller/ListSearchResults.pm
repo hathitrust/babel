@@ -81,8 +81,8 @@ sub handle_PAGING_PI
     my $end;
 
     # Set this so page links fit on one line
-    my $MAX_PAGE_LINKS = 8;
-    my $NUM_END_LINKS = 2 ;
+    my $MAX_PAGE_LINKS = 11;
+    my $NUM_END_LINKS = 1 ;
 
     if ($pager->last_page <= $MAX_PAGE_LINKS)
     {
