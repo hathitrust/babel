@@ -111,7 +111,8 @@
               </xsl:if>
 
               <div class="SearchAndRefine">
-                <xsl:call-template name="SearchResults_status"/>
+                <!--XXX this is moved into search results area.  What do we do with these two divs? -->
+                <!--<xsl:call-template name="SearchResults_status"/>-->
                 <div class="refine">
 
                 </div>
@@ -176,6 +177,10 @@
   <!-- TEMPLATE -->
   <xsl:template name="SearchResultList">
     <div class="actions">
+
+      <!-- 7/7/11 suz wants message about how many found in search result box-->
+      <xsl:call-template name="SearchResults_status"/>
+
       <form id="form_ls1" name="form_ls1" method="get" action="ls?">
         <xsl:call-template name="GetHiddenParams"/>
 
