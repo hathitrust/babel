@@ -91,6 +91,12 @@ dt {
   width:225px;
 }
 
+
+li.URHere
+{  
+  background-color:#FFF;
+}
+
 /** temp to see if css is working**/
 *.showfacet
 { 
@@ -1240,7 +1246,8 @@ li.viewall {
   float: left;
   line-height: 1.1em;
   margin: 0 0 0 0.3em;
-
+  padding:0.2em 0.3em;
+                 
 }
 
 .greyedOut { 
