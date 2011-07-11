@@ -28,6 +28,8 @@ ul li, ul.menu li, .item-list ul li, li.leaf {
 
 
 .narrow dd {
+/**suz change**/
+             padding:0.2em 0.2em 0.5em;
              color:#999999;
 /**  }
 make it all one style for now  no separate navmenu
@@ -44,8 +46,10 @@ dl dd {
         }
 
 dt {
-     font-weight:bold;
+/**suz change**/  
+   font-weight:bold;
      margin-top:0.75em;
+     margin:1em 0.3em 0;
 }
 
 .ls_box
@@ -72,16 +76,19 @@ dt {
   line-height:1em;
   padding:10px 15px 20px 0;
   color:#333333;
-  background-color:#FFFFFF;
-  border:1px solid #CCCCCC
+/** suz ls change**/
+/** uncomment this to check that this is included in pt and cb:  background-color:#0000FF;**/
+  /**  background-color:#FFFFFF; **/
+/** suz remove  border:1px solid #CCCCCC **/
 }
 
 #lsSidebarContainer
 { 
   float: left;
   position: relative;
-  width:27%;
-
+/**suz change**/
+/**  width:27%;**/
+  width:225px;
 }
 
 /** temp to see if css is working**/
@@ -197,7 +204,9 @@ Navigational links should only have border-bottom on :hover
 body {
   color: #333333;
   font-size: 90%;
-  background-color: #FAFAFA;
+/**orig:  background-color: #FAFAFA;**/
+/** suz ls change**/
+  background-color: #FFF;
   font-family: Arial, Verdana, Helvetica, sans-serif;
   line-height: 1.2em;
 	min-width: 1000px;
@@ -230,7 +239,10 @@ h2 {
 }
 
 h3 {
-  font-size: 0.95em;
+  /**suze change**/
+     font-weight:normal;
+     font-size:130%;
+/**     font-size: 0.95em;**/
   margin: 0;
   padding-bottom: 2px;
 }
@@ -1097,11 +1109,16 @@ li.viewall {
 	
 }
 /*tbw XXX */
+#ColContainer.ls
+{ 
+  float:left;
+  width: 68%;
+} 
 #ColContainer {
   position: relative;
-  float: right;
+  float: left;
   margin: 10px 0 10px 10px;
-  width: 68%;
+  width: 100%;
 }
 
 /* List Items Left side options */
@@ -1302,11 +1319,16 @@ td.ItemData {
 } 
 
 .ItemTitle {
-  font-weight: normal;
+/**suz change**/
+  line-height:1.5em; 
+ font-weight: normal;
   font-size: 1.15em;
 }
 
+
 .ItemAuthor, .ItemDate { 
+/**suz change**/
+ line-height:1.5em;                         
  text-indent:3%;
  font-size: .9em;
  color: #666;
