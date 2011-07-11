@@ -1391,7 +1391,9 @@ span#currCollName {
   position: relative;
   font-size: 1.2em;
   color: #333333;
-  margin: 10px 0 0 10px;
+  margin: 10px 0  10px 0;
+  padding: 10px 5px 10px 5px;
+                        
 }
 
 .SearchResults_status span {
