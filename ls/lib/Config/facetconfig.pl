@@ -33,11 +33,11 @@ $facet_to_label_map =
 
 # temporary replace topicStr (Subject) with hlb3Str until we patch
 # production for the too many words topicStr bug
+# removed                 hlb3Str per Suz email 7/7/11
 
 
 @facet_order=qw{
                 topicStr
-                hlb3Str
                 authorStr 
                 language 
                 countryOfPubStr 
