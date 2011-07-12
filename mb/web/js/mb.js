@@ -353,7 +353,6 @@ jQuery(function($) {
         if ( data.shared == "Private" ) {
           cls += " private";
         }
-        //cls += " cf";
         if ( data.featured ) {
           cls += " featured";
         }
@@ -365,14 +364,18 @@ jQuery(function($) {
         $div.addClass(cls);
         
         var html = [];
-        if ( data.featured && $.browser.msie && ( parseInt($.browser.version) < 8 ) ) {
+        var add_featured_ribbon = data.featured;
+        if ( add_featured_ribbon && $.browser.msie && ( parseInt($.browser.version) < 8 ) ) {
           html.push('<div title="featured collection" class="ribbon featured"></div>');
-          data.featured = false;
+          add_featured_ribbon = false;
         }
         
         html.push('<div class="left">');
         html.push('<p class="collname">');
         html.push('<a href="mb?a=listis;c=' + data.collid + '">' + data.collname + '</a>');
+        if ( data.featured ) {
+          html.push('<span class="featured"> (Featured Collection)</span>');
+        }
         html.push('</p>');
         
         if ( $.trim(data.description) && $.trim(data.description) != "&nbsp;" ) {
@@ -407,41 +410,20 @@ jQuery(function($) {
         }
         html.push('</p>');
 
-        //$leftDiv.append($p);
-        
         html.push('</div>');
-        html.push('<div class="right">');
+        
         if ( data.featured ) {
-          if ( $.browser.mozilla || $.browser.safari ) {
-            html.push('<div class="wrapper">');
-          }
-          html.push('<div title="featured collection" class="ribbon featured"></div>');
+          html.push('<div class="right featured">');
+        } else {
+          html.push('<div class="right">');
         }
 
-        
-        
-        // p = document.createElement("p");
-        // $p = $(p);
-        // $p.addClass("num_items");
         var innerHTML = data.num_items + " item";
         if ( data.num_items > 1 ) { innerHTML += "s"; }
-        // $p.append(innerHTML);
-        // $rightDiv.append($p);
         
         html.push('<p class="num_items">' + innerHTML + '</p>');
         
-        // p = document.createElement("p");
-        // $p = $(p);
-        // $p.addClass("updated");
-        // var innerHTML = "last updated: " + data.updated;
-        // $p.append(innerHTML);
-        // $rightDiv.append($p);
-        
         html.push('<p class="updated">last updated: ' + data.updated + '</p>');
-        
-        if ( $.browser.mozilla || $.browser.safari ) {
-          html.push('</div>'); // wrapper
-        }
         html.push('</div>');
         div.innerHTML = html.join('\n');
         
@@ -450,7 +432,7 @@ jQuery(function($) {
       } //)
       
       resultDiv.appendChild(fragment.cloneNode(true));
-      if ( $.browser.mozilla || $.browser.safari ) {
+      if ( 0 && $.browser.mozilla || $.browser.safari ) {
         $(".wrapper").each(function() {
           var h = $(this).parent().height();
           var h2 = $(this).height();

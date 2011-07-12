@@ -23,3 +23,7 @@
 .controls .filters {
   width: 31.25em;
 }
+
+div.right.featured {
+  background: none;
+}
