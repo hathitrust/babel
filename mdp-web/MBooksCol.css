@@ -78,7 +78,7 @@ dt {
   color:#333333;
 /** suz ls change**/
 /** uncomment this to check that this is included in pt and cb:  background-color:#0000FF;**/
-  /**  background-color:#FFFFFF; **/
+/**   background-color:#0000FF;**/
 /** suz remove  border:1px solid #CCCCCC **/
 }
 
@@ -124,6 +124,7 @@ a.lessfacets,a.lessfacets:active{
 { 
  
   border:1px solid #EBECE4;
+padding:5px;
  /**
   width:auto;
   padding:5px 5px 5px 50px;
@@ -132,6 +133,13 @@ a.lessfacets,a.lessfacets:active{
 
 } 
 
+
+.removeFacetIcon
+{  
+  position:relative;
+  top:3px;
+  padding-right:3px;
+}
 
  
 /** end tom temp files **/
@@ -212,7 +220,7 @@ body {
   font-size: 90%;
 /**orig:  background-color: #FAFAFA;**/
 /** suz ls change**/
-  background-color: #FFF;
+  background-color: #FAFAFA;
   font-family: Arial, Verdana, Helvetica, sans-serif;
   line-height: 1.2em;
 	min-width: 1000px;
@@ -1298,8 +1306,10 @@ table.itemTable {
   font-size: 1em;
 }
 
+/** Suz email 7/12/11 **/
 .itemTable a {
-  text-decoration: underline;
+/**  text-decoration: underline;**/
+
 }
 
 .itemTable tr.rowodd {
@@ -1327,7 +1337,7 @@ td.ItemData {
 
 .ItemTitle {
 /**suz change**/
-  line-height:1.5em; 
+  line-height:1.3em; 
  font-weight: normal;
   font-size: 1.15em;
 }
@@ -1391,8 +1401,10 @@ span#currCollName {
   position: relative;
   font-size: 1.2em;
   color: #333333;
-  margin: 10px 0  10px 0;
-  padding: 10px 5px 10px 5px;
+  margin:0;
+  padding:0 5px 10px;
+ /** margin: 2px 0  2px 0;**/
+/**  padding: 10px 5px 10px 5px;**/
                         
 }
 
