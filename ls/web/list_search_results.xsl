@@ -100,11 +100,11 @@
           <h2 class="SkipLink">Main Content</h2>
 
             <div id="main">
-              <div class="betasearch">
+              <!--     XXX          <div class="betasearch">-->
                 <xsl:call-template name="SearchWidget"/>
-              </div>
-              <div class="betasearchinfo">  
-              </div>
+                <!--</div>-->
+                <!--XXX              <div class="betasearchinfo">  
+              </div>-->
 
               <xsl:if test="SearchResults/WellFormed!=1">
                 <xsl:call-template name="QueryRewrite"/>
@@ -157,7 +157,7 @@
   <xsl:template name="DisplayContent">
           <!-- for debugging facets-->
           <div id="lsSidebarContainer" class="ls_box">
-            <br></br>
+
           <xsl:call-template name="facets"/>
         </div>
 
@@ -814,7 +814,7 @@
       
       <!--  unselected facets ##########################################################   -->
       <div class="narrow">
-        <h1 class="narrowsearch">Limit your search</h1>
+        <h1 class="narrowsearch">Refine Results</h1>
         <div id="facetlist">
           <dl>
             <!-- hack to insert pseudo facet availability here based on actual rights queries-->
@@ -868,7 +868,7 @@
 <xsl:template name="showSelected">
  
   <div id="selectedFacets">
-            <h1>Your current search limits</h1>
+            <h1>Results refined by:</h1>
     <ul class="filters">
       <xsl:call-template name="selectedViewabilityFacet"/>
       <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
@@ -888,7 +888,7 @@
             </xsl:attribute>
             
             <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
-            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
           </xsl:element>
           
           <xsl:value-of select="fieldName"/>
@@ -920,7 +920,7 @@
             unselect
           </xsl:attribute>
 
-          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />
+          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
         </xsl:element>
         <xsl:text>Viewability:Search Only</xsl:text>
       </li>
@@ -935,7 +935,7 @@
           <xsl:attribute name ="class">
             unselect
           </xsl:attribute>
-          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" />
+          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
         </xsl:element>
         <xsl:text>Viewability:Full View</xsl:text>
       </li>
