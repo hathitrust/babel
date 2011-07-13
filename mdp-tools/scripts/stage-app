@@ -33,12 +33,11 @@ testing before deployment.
 Note: B<stage-app> MUST be the only script that fetches origin for
 /htapps/test.babel apps.
 
-B<stage-app> -b<branch> will attempt merge the local branch=<branch>
+B<stage-app> -b<branch> will destroy the local repo for <app> and clone the local branch=<branch>
 of the given developer's local repo,
-i.e. /htapps/whoami.babel/<app> with master at beta-1,2,3,4.babel for
+e.g. /htapps/whoami.babel/<app> at beta-1,2,3,4.babel for
 an existing application <app>. This allows staging of topic branches
-without the need to push to the central repo before pulling into a
-beta repo.
+without the need to push to the branch to the central repo.
 
 =cut
 
@@ -64,7 +63,7 @@ sub stage_app_usage {
          Options:
             -s <staging area>: test (default), beta-{1,2,3,4}, e.g. 'beta-2'
             -b <branch> at /htapps/whoami.babel/<app>. Note: <staging area> must be one of beta-{1,2,3,4}
-            -A all apps. If -b <branch>, skip apps without a <branch> 
+            -A all apps. If -b <branch>, skip apps without a branch=<branch> 
             -d prompt to show diffs when staging multiple apps
                  (always prompts when staging a single app)
             -v verbose
@@ -363,8 +362,8 @@ sub stage_topic_branch {
 
     my ($src_repo_root, $src_app_root) = get_HTDE_roots();
 
-    my $fail_msg = qq{Failed to stage application=$app from $src_app_root branch=$branch at $STAGE\n};
     my $src_app_dir = "$src_app_root/$app";
+    my $fail_msg = qq{Failed to stage app=$app from repo=$src_app_dir branch=$branch at $STAGE\n};
 
     if (! validate_existing_app($src_repo_root, $src_app_root, $app)) {
         PrintN($fail_msg);
@@ -373,28 +372,29 @@ sub stage_topic_branch {
 
     my ($dest_repo_root, $dest_app_root) = get_HTDE_roots($STAGE);
     my $dest_app_dir = "$dest_app_root/$app";
-    PrintY(qq{\nStaging application=$app branch=$branch from $src_app_dir at $dest_app_root\n});
 
-    if (! G_checkout_branch($dest_app_dir, 'master')){
-        PrintN($fail_msg);
-        return 1;
-    }
+    PrintY(qq{\nStaging via clone app=$app branch=$branch from $src_app_dir at $dest_app_root\n});
 
-    if (! execute_command("git pull $src_app_dir $branch")) {
-        PrintM(qq{Could not pull $branch at $src_app_dir ... skipping\n});
+    if (! query_yn("\nWARN: This will force removal of existing repo for app=$app under $dest_app_root. \n\tContinue?", 'y')) {
         return 0;
     }
-
-    if (! G_update_submodules($dest_app_dir)) {
-        PrintN($fail_msg);
-        return 1;
+    else {
+        print "Removing $dest_app_dir ... ";
+        `rm -rf $dest_app_dir`;
+        PrintY(qq{OK\n});
     }
 
-    PrintY("Begin sanity checks ...\n");
-    print `$LOCATION/sanity-app -s$STAGE $app`;
-    my $rc = $?;
+    if (! G_clone($dest_app_root, $src_app_root, $app, $dest_app_dir, $branch)) {
+        $rc |= 1;
+    }
+    if (! G_init_submodules($dest_app_dir)) {
+        $rc |= 1;
+    }
+    if (! G_update_submodules($dest_app_dir)) {
+        $rc |= 1;
+    }
 
-    PrintY(qq{Staging succeeds\n}) unless ($rc);
+    PrintY(qq{Staging via clone succeeds\n}) unless ($rc);
 
     return $rc;
 }

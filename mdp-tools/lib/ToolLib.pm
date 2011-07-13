@@ -69,14 +69,16 @@ Clone an app.
 
 # ---------------------------------------------------------------------
 sub G_clone {
-    my ($app_root, $repo_root, $app_repo, $app_dir) = @_;
+    my ($app_root, $repo_root, $app_repo, $app_dir, $branch) = @_;
 
-    print qq{Clone $app_repo under $app_dir ...};
+    print qq{Clone $app_repo at $app_dir ...};
 
     return 0
       if (! chdir_to_app_dir($app_root));
 
-    my $cmd_1 = "git clone $repo_root/$app_repo";
+    my $branch_cmd = " --branch $branch" if (defined($branch));
+    my $cmd_1 = "git clone $repo_root/$app_repo $branch_cmd";
+        
     return 0
       if (! execute_command($cmd_1));
 
