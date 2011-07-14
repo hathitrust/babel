@@ -120,11 +120,19 @@ a.lessfacets,a.lessfacets:active{
        color: red;
 } 
 
+.narrow
+{ 
+  padding:5px;
+
+} 
+
 #selectedFacets
 { 
  
   border:1px solid #EBECE4;
-padding:5px;
+  padding:5px;
+  background-color:#FAFAFA
+
  /**
   width:auto;
   padding:5px 5px 5px 50px;
