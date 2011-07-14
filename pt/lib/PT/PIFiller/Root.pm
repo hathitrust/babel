@@ -350,6 +350,25 @@ sub handle_CURRENT_PAGE_OCR_PI
     return $mdpItem->GetOcrTextRef();
 }
 
+# ---------------------------------------------------------------------
+
+=item handle_ORPHAN_CANDIDATE_PI : PI_handler(ORPHAN_CANDIDATE)
+
+Handler for ORPHAN_CANDIDATE
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_ORPHAN_CANDIDATE_PI
+    : PI_handler(ORPHAN_CANDIDATE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    my $is_orphcand = $C->get_object('Access::Rights')->orphan_candidate($C, $id);
+
+    return $is_orphcand ? 'true' : 'false';
+}
 
 
 # ---------------------------------------------------------------------

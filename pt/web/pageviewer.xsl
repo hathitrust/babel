@@ -9,6 +9,7 @@
   <xsl:import href="str.replace.function.xsl" />
 
   <!-- Global Variables -->
+  <xsl:variable name="gOrphanCandidate" select="/MBooksTop/MBooksGlobals/OrphanCandidate"/>
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
   <xsl:variable name="gCurrentPageImageSource" select="/MBooksTop/MBooksGlobals/CurrentPageImageSource"/>
   <xsl:variable name="gCurrentPageImageWidth" select="/MBooksTop/MBooksGlobals/CurrentPageImageWidth"/>
@@ -1403,6 +1404,15 @@
     <xsl:param name="pCurrentPageOcr"/>
     <xsl:param name="pAccessStatus"/>
 
+    <xsl:variable name="orphan_canditate_msg">
+      <strong>This volume is an Orphan Works candidate.</strong> <ul><li>The Orphan Works Project is a framework for libraries to determine whether books in their collections are subject to copyright but whose copyright holders cannot be identified or contacted.</li><li>If you are a bona fide copyright holder of this volume, please contact us at the
+      <a title="Orphan Works Project" href="http://www.lib.umich.edu/orphan-works/copyright-holders-we-want-hear-you"> Orphan Works Project.</a></li></ul>
+    </xsl:variable>
+
+    <xsl:variable name="copyright_restricted_msg">
+      Full view is not available for this item<br/> due to copyright &#169; restrictions.
+    </xsl:variable>
+
     <!-- now handle the view type -->
     <xsl:choose>
       <xsl:when test="$gFinalView='pdf'">
@@ -1457,10 +1467,20 @@
               </div>
             </xsl:when>
             <xsl:otherwise>
-              <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions.</p>
+              <xsl:choose>
+                <xsl:when test="$gOrphanCandidate='true'">
+                  <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/></p>
+                  <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
+                  <p class="centertext"><xsl:copy-of select="$orphan_canditate_msg"/></p>
+                </xsl:when>
+                <xsl:otherwise>
+                  <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/></p>
+                  <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
+                </xsl:otherwise>
+              </xsl:choose>              
             </xsl:otherwise>
           </xsl:choose>
-          <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
+
           <div>
               <img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>
               <p>What you <strong>CAN</strong> do:
@@ -1471,8 +1491,8 @@
               </p>
               (<a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">More information</a>)
             </div>
-        </xsl:element>
-      </xsl:when>
+          </xsl:element>
+        </xsl:when>
 
       <xsl:when test="$gFinalView='restricted-with-thumbnails'">
         <xsl:element name="div">
@@ -1494,8 +1514,18 @@
             </xsl:when>
             <xsl:otherwise>
               <h2>
-                <img src="//common-web/graphics/LimitedLink.png" alt="" class="imgFloat" />
-                Full view is not available for this item <br/>due to copyright &#169; restrictions.
+                <p class="centertext">
+                  <xsl:choose>
+                    <xsl:when test="$gOrphanCandidate='true'">
+                      <xsl:copy-of select="$copyright_restricted_msg"/>
+                      <img src="//common-web/graphics/LimitedLink.png" alt="" class="imgFloat" />
+                      <xsl:copy-of select="$orphan_canditate_msg"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:copy-of select="$copyright_restricted_msg"/>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </p>
               </h2>
             </xsl:otherwise>
           </xsl:choose>
