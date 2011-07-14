@@ -82,6 +82,62 @@ my $app = sub {
         return $affiliation;
     }
     
+    sub _body {
+        # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
+        my ( $callback, $logged_in, $displayName, $affiliation, $auth_type, $msg ) = @_;
+        my $retval = <<JAVASCRIPT;
+var HT = HT || {};
+HT.login_status = {};
+HT.login_status.logged_in = $logged_in;
+HT.login_status.displayName = decodeURIComponent('$displayName');
+HT.login_status.affiliation = decodeURIComponent('$affiliation');
+HT.login_status.authType = "$auth_type";
+HT.login_status.message = "$msg";
+JAVASCRIPT
+        
+        if ( $callback ) {
+            $retval .= "\n" . qq{$callback(HT.login_status);} . "\n";
+        }
+        
+        $retval .= <<JAVASCRIPT;
+HT.shibboleth_alert = function() {
+    alert("Please quit your browser to log out of Shibboleth.");
+    return false;
+}
+
+HT.login_href = function() {
+    if ( HT.login_status.logged_in ) {
+        if ( HT.login_status.authType == 'shibboleth' ) {
+            return "";
+        } else {
+            return "https://$ENV{SERVER_NAME}/cgi/logout?" + window.location.href;
+        }
+    }
+    // not logged in
+    var target_1 = encodeURIComponent("https://$ENV{SERVER_NAME}/cgi/ping/pong?target=");
+    return "http://$ENV{SERVER_NAME}/cgi/wayf?target=" + target_1 + encodeURIComponent(window.location.href);
+}
+
+HT.login_link = function() {
+    var href = HT.login_href();
+    var link;
+    if ( HT.login_status.logged_in ) {
+        link = 'Hi ' + HT.login_status.displayName + '! ';
+        link += '<a href="' + href + '"';
+        if ( HT.login_status.authType == 'shibboleth' ) {
+            link += ' onclick="return HT.shibboleth_alert();"';
+        }
+        link += ' id="loginLink">(logout)</a>';
+    } else {
+        link = '<a href="' + href + '">Login</a>';
+    }
+    
+    return link;
+}
+JAVASCRIPT
+        
+    }
+    
     my $C = new Context;
     my $auth = new Auth::Auth($C);
     
@@ -112,7 +168,8 @@ my $app = sub {
         }
         $displayName = uri_escape($displayName);
         $affiliation = uri_escape($affiliation);
-        $response->body(qq{$callback(true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN");});
+        # $response->body(qq{$callback(true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN");});
+        $response->body(_body($callback, 'true', $displayName, $affiliation, $auth_type, "LOGGED IN"));
         return $response->finalize;
     }
     
@@ -129,7 +186,7 @@ my $app = sub {
     unless ( $$cookies{$config->get('cookie_name')} ) {
         $response = Plack::Response->new(200);
         $response->content_type('text/javascript');
-        $response->body(qq{$callback(false, "", "", null, "NOT LOGGED IN: NO SESSION");});
+        $response->body(_body($callback, 'false', "", "", 'null', "NOT LOGGED IN: NO SESSION"));
         return $response->finalize;
     }
     
@@ -155,7 +212,7 @@ my $app = sub {
     if ( $$env{HTTPS} eq 'on' && ! $auth_type ) {
         $response = Plack::Response->new(200);
         $response->content_type('text/javascript');
-        $response->body(qq{$callback(false, "", "", null, "NOT LOGGED IN: SESSION BUT NO AUTH");});
+        $response->body(_body($callback, 'false', "", "", 'null', "NOT LOGGED IN: SESSION BUT NO AUTH"));
         return $response->finalize;
     }
 
@@ -166,7 +223,7 @@ my $app = sub {
     # deciededly not authenticated
     $response = Plack::Response->new(200);
     $response->content_type('text/javascript');
-    $response->body(qq{$callback(false, "", "", null, "NOT LOGGED IN: NO AUTHENTICATED VIA");});
+    $response->body(_body($callback, 'false', "", "", 'null', "NOT LOGGED IN: NO AUTHENTICATED VIA"));
     return $response->finalize;
     
 };

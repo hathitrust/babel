@@ -80,7 +80,7 @@ my $app = sub {
     $C->set_object('Auth', $auth);
     
     my $cookie_name = $config->get('cookie_name');
-    my $target_url = $request->param('t');
+    my $target_url = $request->param('target');
     $response = Plack::Response->new(302);
     $response->cookies->{$cookie_name} = { 
         'value' => $ses->get_session_id(), 
