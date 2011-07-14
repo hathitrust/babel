@@ -30,14 +30,70 @@ use Search::Query;
 use LS::Query::TestHarness;
 
 
+#TODO:
+
+#1 Redo so we can specfy query, expected result and class of test
+#2 Rewrite to use with Test::More or Test::Class
 
 my $C = new Context;
 
 my $user_query_string="dummy_initialize";
 
 my $Q = new LS::Query::TestHarness($C, $user_query_string, undef,"arraygoeshere");
-my $q="test query";
 
-my $out=$Q->get_processed_user_query_string($q);
+my $queries = [];
+$queries=getQueries();
 
-print "out is $out\n";
+foreach my $query (@{$queries})
+{
+    testQuery($query,$Q);
+    
+}
+
+
+sub getQueries
+{
+    my @q;
+   #=('rain ? spain','foo*bar',
+#           'foo( AND bar) OR baz',
+#           'foo &amp; ampersand entity',
+#           'foo & bare ampersand',
+#           'two ampersands && foo',
+#          );
+
+    while (<DATA>)
+    {
+        next if /^\s*\#/;
+        next if /^s*$/;
+        chomp;
+        push (@q,$_ );
+    }
+    
+    return \@q;
+}
+sub testQuery
+{
+    my $q = shift;
+    my $Q = shift;
+    my $out=$Q->get_processed_user_query_string($q);
+    print "---\n\tsent: $q\n\tgot: $out\n";
+    
+    if ( $Q->well_formed() )    { }
+    else     
+    {
+        print "\tNot well formed\n";
+        
+    }
+
+    
+}
+    
+__DATA__
+
+foo "bar" baz
+morgan & york
+    ampersand entity &amp; foo
+this && that
+unbalenced" double" quotes"
+unbalenced (parens ()
+balenced ( parens )
