@@ -36,7 +36,7 @@
             <li>
               <!-- Resize & Rotate -->
               <xsl:if test="$gCurrentView='image'">
-                <div class="mdpItemResizeBottom">
+                <div class="mdpViewType" style="padding-right:15px;">
                   <xsl:call-template name="BuildResizeForm">
                     <xsl:with-param name="pResizeForm" select="MdpApp/ResizeForm"/>
                   </xsl:call-template>

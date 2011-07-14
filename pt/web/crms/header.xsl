@@ -30,12 +30,32 @@
 
     <!-- Navigation bar -->
     <xsl:template name="subnav_header_short">
-      <div id="mdpItemBar">
+      <div id="mdpItemBar" style="top:2px;">
         <div id="ItemBarContainer">
           <xsl:call-template name="ItemMetadata"/>
         </div>
       </div>
-
+      <div style="margin-top:-5px;">
+      <!-- Override mbooksnav to suppress Logout link and adjust
+           interelement spacing. -->
+      <style>
+        #loginLink {
+          display: none;
+        }
+        #feedback {
+          padding: 0;
+        }
+        .MBooksNav ul li {
+          padding-right: 10px;
+          text-align: left;
+        }
+        .MBooksNav ul li a {
+          padding: 0;
+          text-align: left;
+        }
+      </style>
+        <xsl:call-template name="mbooksnav"/>
+      </div>
     </xsl:template>
 
 
