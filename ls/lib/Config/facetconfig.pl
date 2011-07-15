@@ -34,6 +34,7 @@ $facet_to_label_map =
 # temporary replace topicStr (Subject) with hlb3Str until we patch
 # production for the too many words topicStr bug
 # removed                 hlb3Str per Suz email 7/7/11
+# removed                 geographicStr per Suz
 
 
 @facet_order=qw{
@@ -42,7 +43,6 @@ $facet_to_label_map =
                 language 
                 countryOfPubStr 
                 publishDateRange 
-                geographicStr
                 format 
                 htsource 
             };
