@@ -332,7 +332,10 @@ sub handle_SEARCH_RESULTS_PI
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
     my $well_formed = ($wff_hashref->{'primary'} );
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
-    $output .= wrap_string_in_tag($wff_hashref->{'processed_query_string'}, 'ProcessedQueryString');
+    #need to fix any xml chars before output
+    my $processed=$wff_hashref->{'processed_query_string'};
+  #  $processed =clean($processed);
+    $output .= wrap_string_in_tag($processed, 'ProcessedQueryString');
 
     return $output;
 }
