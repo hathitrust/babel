@@ -206,14 +206,14 @@
       template="https://___HOST___/Shibboleth.sso/upenn?target=___TARGET___"
       authtype="shibboleth"
       enabled="1">University of Pennsylvania</Inst>
-
-  <!-- waiting -->
-
   <Inst
       sdrinst="ucop"
       template="https://___HOST___/Shibboleth.sso/ucop?target=___TARGET___"
       authtype="shibboleth"
-      enabled="0">University of California, Office of the President</Inst>
+      enabled="1">University of California, Office of the President</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="uva"
       template="https://___HOST___/Shibboleth.sso/uva?target=___TARGET___"
