@@ -57,7 +57,7 @@ if ($STAGE eq 'test') {
 my $VERBOSE = $opt_v;
 my $LOCAL = $opt_L;
 
-my @staging_hosts = ('test', 'beta-1', 'beta-2', 'beta-3', );
+my @staging_hosts = ('test', 'beta-1', 'beta-2', 'beta-3', 'beta-4');
 
 my $ALL = $opt_A;
 my $app_list = "$LOCATION/../lib/Config/app-list.txt";
