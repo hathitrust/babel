@@ -1,9 +1,0 @@
-[submodule "vendor/common-lib/lib"]
-	path = vendor/common-lib/lib
-	url = /htapps/repos/mdp-lib.git
-[submodule "web/common-web"]
-	path = web/common-web
-	url = /htapps/tburtonw.babel/mdp-web
-[submodule "web/yui2-lib"]
-	path = web/yui2-lib
-	url = git://github.com/yui/yui2.git
