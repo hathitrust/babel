@@ -29,6 +29,7 @@ use Utils;
 use Identifier;
 use LS::FacetConfig;
 #use Encode;
+use URI::Escape;
 
 
 BEGIN
@@ -482,7 +483,9 @@ sub make_xml_for_facet_field
     my $counter=0;
     foreach my $value (@{$ary_ref})
     {
-        my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $value->{value} . '&quot;';
+        # need to url escape the facet value for the url
+        my $escaped_value= uri_escape_utf8($value->{value});
+        my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $escaped_value . '&quot;';
         my $class=' class ="showfacet';
         
         if ($counter >= $MINFACETS)
