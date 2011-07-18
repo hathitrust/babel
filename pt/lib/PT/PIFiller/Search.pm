@@ -56,7 +56,8 @@ sub BuildPrevNextHitsLink_XML
 
     my $href = '';
 
-    my $tempCgi = new CGI( $cgi );
+    # my $tempCgi = new CGI( $cgi );
+    my $tempCgi = new CGI( );
 
     if ( $direction eq 'prev' )
     {
