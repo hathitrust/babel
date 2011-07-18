@@ -447,6 +447,10 @@ sub make_query_clause{
     {
         return "";
     }
+    #XXX temporary fix until we refactor Search::Query in mdp-lib so it behaves properly
+    # currently it deals with balencing of quotes and eliminates 
+    Utils::remap_cers_to_chars(\$q);
+    
     my $processed_q =$self->get_processed_user_query_string($q);
     #XXX current processing will remove unbalenced quotes but leave in balenced quotes
     # since the dismax query needs to be quoted, we need to escape any quotes in the query
