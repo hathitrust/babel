@@ -351,11 +351,16 @@ sub __clean_facet_query
     # remove leading and trailing quotes
     $string=~s/^\"//;
     $string=~s/\"$//;
-    # back slash escape any quotes or backslashes
+    #XXX order dependent.  Must remove escape backslashes in string before adding backslashes to double or single quotes
+    # backslash
+    $string=~s/\\/\\\\/g;  
+
+  # back slash escape any quotes or backslashes
     # XXX what about other lucene chars?
     $string=~s/\"/\\\"/g;
-    # backslash
-    $string=~s/\\/\\\\/g;
+    #single quotes
+   # $string=~s/\'/\\\'/g;  
+  
     # replace leading and trailing quotes
     $string = '"'. $string . '"';
         
