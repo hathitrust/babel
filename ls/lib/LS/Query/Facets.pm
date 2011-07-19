@@ -348,12 +348,22 @@ sub __clean_facet_query
     #facet=language:%22German%22
     my ($field,@rest)=split(/\:/,$fquery);
     my $string=join(':',@rest);
+    # remove leading and trailing quotes
+    $string=~s/^\"//;
+    $string=~s/\"$//;
+    # back slash escape any quotes or backslashes
+    # XXX what about other lucene chars?
+    $string=~s/\"/\\\"/g;
+    # backslash
+    $string=~s/\\/\\\\/g;
+    # replace leading and trailing quotes
+    $string = '"'. $string . '"';
+        
     Utils::remap_cers_to_chars(\$string);
     # XXX Need to hex escape question mark and then protect it with a backslash, note Solr is ok if fed a question mark
     # code in Search::Searcher::__get_request_object splits a URL on "?" so leaving a non-hex-escaped queston mark
-    # will cause the split to truncate the query. Remove this hack when Search::Searcher fixed
-    $string =~s,\?,\\%3F,g;
-
+    # will cause the split to truncate the query. uri escape will take care of it
+  
     # Note: facet fields mostly? all? type string which is not analyzed
     # So we should hexencode url chars and then escape the rest
     # Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
