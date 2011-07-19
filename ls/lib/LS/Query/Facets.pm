@@ -348,33 +348,19 @@ sub __clean_facet_query
     #facet=language:%22German%22
     my ($field,@rest)=split(/\:/,$fquery);
     my $string=join(':',@rest);
-    #replace spaces with a plus or percent 20?
-   # $string=~s/\s+/\+/g;
-    
+    Utils::remap_cers_to_chars(\$string);
+    # XXX Need to hex escape question mark and then protect it with a backslash, note Solr is ok if fed a question mark
+    # code in Search::Searcher::__get_request_object splits a URL on "?" so leaving a non-hex-escaped queston mark
+    # will cause the split to truncate the query. Remove this hack when Search::Searcher fixed
+    $string =~s,\?,\\%3F,g;
+
     # Note: facet fields mostly? all? type string which is not analyzed
     # So we should hexencode url chars and then escape the rest
     # Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
-    #XXX do we want to hex encode them first before escaping them since both ampersand and question mark are special in terms of url processing?
-    # $string =~ s,([!&:\[\]\\^{\|}~]),\\$1,g;
+    # dismax seems to not have problems with lucene special chars in fq esp if they are url encoded
+    my $escaped_string=URI::Escape::uri_escape_utf8($string);
     
-    # Need to hex escape question mark and then protect it with a backslash, note Solr is ok if fed a question mark
-    # code in Search::Searcher::__get_request_object splits a URL on "?" so leaving a non-hex-escaped queston mark
-    # will cause the split to truncate the query
-        $string =~s,\?,\\%3F,g;
-    
-#XXX replace above with code below which does uri escaping for any characters
-#     $string =~s/\s+/%20/g;
-    
-# XXX do we need to test to determine if we have utf8 chars or bytes or utf8 flag or something
-# i.e use URI::uri_escape instead or even specify a charset
-# see http://search.cpan.org/~gaas/URI-1.58/URI/Escape.pm
-    #backslach escape ampersand so lucene doesn't choke
-#    $string=~s,&,\\&,g;
-
-
-    #my $escaped_string=URI::Escape::uri_escape_utf8($string);
-    
-    $cleaned=$field . ':' . $string;
+    $cleaned=$field . ':' . $escaped_string;
     return $cleaned;
 }
 
