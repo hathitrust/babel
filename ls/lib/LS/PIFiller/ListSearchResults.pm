@@ -334,7 +334,7 @@ sub handle_SEARCH_RESULTS_PI
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
     #need to fix any xml chars before output
     my $processed=$wff_hashref->{'processed_query_string'};
-  #  $processed =clean($processed);
+  #  $processed =clean_for_xml($processed);
     $output .= wrap_string_in_tag($processed, 'ProcessedQueryString');
 
     return $output;
@@ -378,7 +378,8 @@ sub handle_FACETS_PI
         {
             #remove quotes
             $facet_string=~s/\"//g;
-            $cgi_facets_hashref->{$facet_string}=1;
+            my    $cleaned=clean_for_xml($facet_string);
+            $cgi_facets_hashref->{$cleaned}=1;
         }
     }
 
@@ -587,7 +588,11 @@ sub _get_unselect_url
     my $facet = shift;
     #add qoutes to the facet string
     my $facet_string=$facet->{facet_name} . ':"' . $facet->{'value'}. '"';
-    
+    # convert from xml friendly to url friendly 
+
+    Utils::remap_cers_to_chars(\$facet_string);       
+#        my $escaped_value= uri_escape_utf8($url_value);
+
     my $cgi= shift;
     my @facets= $cgi->param('facet');
 
@@ -602,6 +607,7 @@ sub _get_unselect_url
 
     foreach my $f (@facets)
     {
+        Utils::remap_cers_to_chars(\$f);       
         if ($facet_string eq $f)
         {
             $debug=$1;
@@ -641,9 +647,9 @@ sub get_selected_unselected
         foreach my $facet (@{$facet_list_ref})
         {
             my $hash                 = {};
-            $hash->{'value'}      = clean($facet->[0]);
+            $hash->{'value'}      = clean_for_xml($facet->[0]);
             $hash->{'count'}      = $facet->[1];
-            $hash->{'facet_name'} = clean($facet_name);
+            $hash->{'facet_name'} = clean_for_xml($facet_name);
             $hash->{'selected'}   = "false";
             #facet=language:German
             my $facet_string      = $facet_name . ':' . $hash->{'value'};
@@ -667,7 +673,8 @@ sub get_selected_unselected
     return (\@selected,$unselected);
 }
 
-sub clean
+# convert from perl internal to utf8 and map xml chars to character entities so we can output good xml
+sub clean_for_xml
 {
     my $value=shift;
     $value = Encode::decode_utf8($value);
