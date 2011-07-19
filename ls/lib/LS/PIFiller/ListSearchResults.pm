@@ -484,11 +484,15 @@ sub make_xml_for_facet_field
     
     my $ary_ref=$unselected->{$facet_name};    
     my $counter=0;
-    foreach my $value (@{$ary_ref})
+    foreach my $value_hash (@{$ary_ref})
     {
-        # need to url escape the facet value for the url
-        my $escaped_value= uri_escape_utf8($value->{value});
-        my $facet_url= $current_url . '&amp;facet='  . $value->{'facet_name'} . ':&quot;' . $escaped_value . '&quot;';
+        my $value=$value_hash->{'value'};
+        
+        # XXX we convert cers back to chars and then url escape them for the url string
+        my $url_value=$value;
+        Utils::remap_cers_to_chars(\$url_value);       
+        my $escaped_value= uri_escape_utf8($url_value);
+        my $facet_url= $current_url . '&amp;facet='  . $value_hash->{'facet_name'} . ':&quot;' . $escaped_value . '&quot;';
         my $class=' class ="showfacet';
         
         if ($counter >= $MINFACETS)
@@ -500,10 +504,10 @@ sub make_xml_for_facet_field
         # add normalized facet field to class
         $class .= ' ' . $norm_field_name . '" ';
         
-        $xml .='<facetValue name="' . $value->{'value'} . '" '.$class . '> ' . "\n";
-        $xml .='<facetCount>' . $value->{'count'} . '</facetCount>'. "\n";
+        $xml .='<facetValue name="' . $value . '" '.$class . '> ' . "\n";
+        $xml .='<facetCount>' . $value_hash->{'count'} . '</facetCount>'. "\n";
         $xml .='<url>' . $facet_url . '</url>'  . "\n";
-        $xml .='<selected>' . $value->{'selected'} . '</selected>' . "\n";
+        $xml .='<selected>' . $value_hash->{'selected'} . '</selected>' . "\n";
         $xml .='</facetValue>' ."\n";
         $counter++;
         
