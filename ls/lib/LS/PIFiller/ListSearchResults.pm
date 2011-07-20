@@ -370,29 +370,20 @@ sub handle_FACETS_PI
 
     my $cgi = $C->get_object('CGI');
 
-    my @cgi_facets = $cgi->param('facet');
-    my $cgi_facets_hashref;
-    if (defined (@cgi_facets))
-    {
-        foreach my $facet_string (@cgi_facets)
-        {
-            #remove quotes
-            $facet_string=~s/\"//g;
-            my    $cleaned=clean_for_xml($facet_string);
-            $cgi_facets_hashref->{$cleaned}=1;
-        }
-    }
 
     my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
     my $facet_hash =$result_data->{'primary_result_object'}->{'facet_hash_ref'};
     
     my $xml;
-    my ($selected,$unselected)= get_selected_unselected($facet_hash,$cgi_facets_hashref);
+    my ($selected,$unselected)= get_selected_unselected($facet_hash,$cgi);
     # $selected= array ref of hashes
     #        $hash->{'value'}      
     #        $hash->{'count'}      
     #        $hash->{'facet_name'} 
     #        $hash->{'selected'}= "false"|"true";
+    #        $hash->{'select_url'}   url for unselected facets on click will select it
+    #        $hash->{'unselect_url'}   url for selected facets on click will unselect it
+
     # unselected= hash key= facet name, values = array of hashes as above
 
     my $selected_facets_xml = make_selected_facets_xml($selected,$fconfig,$cgi);
@@ -405,6 +396,70 @@ sub handle_FACETS_PI
 }
 
 #----------------------------------------------------------------------    
+#----------------------------------------------------------------------    
+
+sub get_selected_unselected 
+
+{
+    my $facet_hash = shift; # from JSON 
+    my $cgi = shift;
+    
+    my @cgi_facets = $cgi->param('facet');
+    my $cgi_facets_hashref={};
+    
+    if (defined (@cgi_facets))
+    {
+       $cgi_facets_hashref= __clean_cgi_facets(\@cgi_facets);
+    }
+
+    my @selected;
+    my $unselected={};
+    
+    foreach my $facet_name (keys %{$facet_hash})
+    {
+        my $ary_for_this_facet=[];
+        my $facet_list_ref=$facet_hash->{$facet_name};
+        foreach my $facet (@{$facet_list_ref})
+        {
+            my $hash                 = {};
+            $hash->{'value'}      = clean_for_xml($facet->[0]);
+            $hash->{'count'}      = $facet->[1];
+            $hash->{'facet_name'} = clean_for_xml($facet_name);
+            $hash->{'selected'}   = "false";
+            #facet=language:German
+            my $facet_string      = $facet_name . ':' . $hash->{'value'};
+            #  should this happen before  we clean facets from JSON?
+            # should facetSelected be called before or after we clean for XML above?
+            if (defined ($cgi_facets_hashref)){    
+                $hash->{'selected'} = facetSelected($facet_string,$cgi_facets_hashref);
+            }
+            
+            if ($hash->{'selected'} eq "true")
+            {
+                # add the unselect url to the hash
+                $hash->{'unselect_url'}=__get_unselect_url($hash,$cgi);
+            
+                push (@selected,$hash);
+                
+            }
+            else
+            {
+                # add the selected url
+                $hash->{'select_url'}=__get_select_url($hash,$cgi);
+            }
+            
+            # unselected needs array of array of hashes
+            # facet1->hashes for facet 1
+            # facet2->hashes for facet 2
+
+            push (@{$ary_for_this_facet},$hash); 
+        }
+        $unselected->{$facet_name}=$ary_for_this_facet;
+    }
+    return (\@selected,$unselected);
+}
+
+
 sub make_selected_facets_xml
 {
     my $selected = shift;
@@ -419,7 +474,7 @@ sub make_selected_facets_xml
     
     foreach my $facet (@{$selected})
     {
-        $unselect_url=_get_unselect_url($facet,$cgi);
+        $unselect_url=$facet->{'unselect_url'};
         my $facet_name=$facet->{facet_name};
         my $field_name=$facet2label->{$facet_name};
         
@@ -472,6 +527,7 @@ sub  make_unselected_facets_xml
 }
 
 #----------------------------------------------------------------------
+# change name to for unselected facet field
 sub make_xml_for_facet_field 
 {
     my $facet_name = shift;
@@ -489,11 +545,18 @@ sub make_xml_for_facet_field
     {
         my $value=$value_hash->{'value'};
         
-        # XXX we convert cers back to chars and then url escape them for the url string
-        my $url_value=$value;
-        Utils::remap_cers_to_chars(\$url_value);       
-        my $escaped_value= uri_escape_utf8($url_value);
-        my $facet_url= $current_url . '&amp;facet='  . $value_hash->{'facet_name'} . ':&quot;' . $escaped_value . '&quot;';
+        # XXX Move this out of here and just get url from hash!!
+        #this is an unselected facet so we need the url for selecting it
+        #        my $facet_url=$value_hash->{'select_url'}
+
+#        #we convert cers back to chars and then url escape them for the url string
+#        my $url_value=$value;
+#        Utils::remap_cers_to_chars(\$url_value);       
+#        my $escaped_value= uri_escape_utf8($url_value);
+#        my $facet_url= $current_url . '&amp;facet='  . $value_hash->{'facet_name'} . ':&quot;' . $escaped_value . '&quot;';
+
+        my $facet_url=$value_hash->{'select_url'};
+        
         my $class=' class ="showfacet';
         
         if ($counter >= $MINFACETS)
@@ -582,9 +645,33 @@ sub handle_ADVANCED_SEARCH_PI
 #              P I    H a n d l e r   H e l p e r s
 #
 #======================================================================
-sub _get_unselect_url
+#----------------------------------------------------------------------
+
+sub __clean_cgi_facets
+{
+    my $facet_aryref=shift;
+    my $cgi_facets_hashref={};
+    foreach my $facet_string (@${facet_aryref})
+    {
+        #remove quotes  #XXX shouldn't we only remove :" and trailing quote?
+        $facet_string=~s/\"//g;
+        # #           my    $cleaned=clean_for_xml($facet_string);
+        
+        my    $cleaned=$facet_string;
+        #XXX why are we mapping chars to cers instead of the reverse?
+        Utils::map_chars_to_cers(\$cleaned);            
+        $cgi_facets_hashref->{$cleaned}=1;
+    }
+    return $cgi_facets_hashref;
+    
+}
+
+
+
+sub __get_unselect_url
 
 {
+    #XXX rename to facet_hash
     my $facet = shift;
     #add qoutes to the facet string
     my $facet_string=$facet->{facet_name} . ':"' . $facet->{'value'}. '"';
@@ -629,49 +716,28 @@ sub _get_unselect_url
     return $url;
 }
 
-
-
-sub get_selected_unselected 
-
+sub __get_select_url
 {
-    my $facet_hash = shift;
-    my $cgi_facets_hashref = shift;
+    my $hashref = shift;
+    my $cgi = shift;
+    my $facet_name=$hashref->{'facet_name'};
+    my $value=$hashref->{'value'};
     
-    my @selected;
-    my $unselected={};
+    # remove page number since changing facets changes facet count
+    my $current_url = $cgi->url(-relative=>1,-query=>1);    
+    $current_url =~s,[\;\&]pn=\d+,,g;
+
+
+    my $url_value=$value;
+    Utils::remap_cers_to_chars(\$url_value);       
+    my $escaped_value= uri_escape_utf8($url_value);
+    my $facet_url= $current_url . '&amp;facet='  . $facet_name . ':&quot;' . $escaped_value . '&quot;';
+    return $facet_url;
     
-    foreach my $facet_name (keys %{$facet_hash})
-    {
-        my $ary_for_this_facet=[];
-        my $facet_list_ref=$facet_hash->{$facet_name};
-        foreach my $facet (@{$facet_list_ref})
-        {
-            my $hash                 = {};
-            $hash->{'value'}      = clean_for_xml($facet->[0]);
-            $hash->{'count'}      = $facet->[1];
-            $hash->{'facet_name'} = clean_for_xml($facet_name);
-            $hash->{'selected'}   = "false";
-            #facet=language:German
-            my $facet_string      = $facet_name . ':' . $hash->{'value'};
-
-            if (defined ($cgi_facets_hashref)){    
-                $hash->{'selected'} = facetSelected($facet_string,$cgi_facets_hashref);
-            }
-            
-            if ($hash->{'selected'} eq "true")
-            {
-                push (@selected,$hash);
-            }
-            # unselected needs array of array of hashes
-            # facet1->hashes for facet 1
-            # facet2->hashes for facet 2
-
-            push (@{$ary_for_this_facet},$hash); 
-        }
-        $unselected->{$facet_name}=$ary_for_this_facet;
-    }
-    return (\@selected,$unselected);
 }
+
+
+
 
 # convert from perl internal to utf8 and map xml chars to character entities so we can output good xml
 sub clean_for_xml
@@ -697,13 +763,6 @@ sub facetSelected
     }
     return "false";
 }
-        
-
-
-
-
-
-
 
 # ---------------------------------------------------------------------
 
