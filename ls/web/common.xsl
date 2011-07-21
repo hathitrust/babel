@@ -47,7 +47,7 @@
           <label for="fullonly">Full view only</label>
           <input type="hidden" name="a" value="srchls"/>
           <!--XXX temporarily add debug=local switch-->
-          <input type="hidden" name="debug" value="local"/>
+          <!--<input type="hidden" name="debug" value="local"/>-->
           <xsl:call-template name="HiddenDebug"/>
           <button type="submit" name="a" id="srch" value="srchls">Find</button> 
         </xsl:element>
