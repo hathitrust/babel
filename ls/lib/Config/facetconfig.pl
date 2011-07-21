@@ -46,6 +46,8 @@ $facet_to_label_map =
                 format 
                 htsource 
             };
+# for debugging
+
 
 #@facet_order=qw{
 #                ht_availability 
@@ -106,7 +108,7 @@ $param_2_solr_map = {
 sub getRelWeights
 {
     my $yamlfile = shift;
-    print STDERR "yamlfile is $yamlfile\n";
+#    print STDERR "yamlfile is $yamlfile\n";
     
     my $yaml = do 
     {
