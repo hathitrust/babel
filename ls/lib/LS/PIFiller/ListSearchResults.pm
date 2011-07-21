@@ -642,35 +642,11 @@ sub handle_ADVANCED_SEARCH_PI
 #
 #======================================================================
 #----------------------------------------------------------------------
-#XXX this is no longer used remove soon
-sub __clean_cgi_facets
-{
-    my $facet_aryref=shift;
-    my $cgi_facets_hashref={};
-    foreach my $facet_string (@${facet_aryref})
-    {
-        #remove quotes  #XXX shouldn't we only remove :" and trailing quote?
-        $facet_string=~s/\"//g;
-        # #           my    $cleaned=clean_for_xml($facet_string);
-        
-        my    $cleaned=$facet_string;
-        #XXX why are we mapping chars to cers instead of the reverse?
-        Utils::map_chars_to_cers(\$cleaned);            
-        $cgi_facets_hashref->{$cleaned}=1;
-    }
-    return $cgi_facets_hashref;
-    
-}
-
-
-
 sub __get_unselect_url
-
 {
-    #XXX rename to facet_hash
-    my $facet = shift;
+    my $facet_hash = shift;
     #add qoutes to the facet string
-    my $facet_string=$facet->{facet_name} . ':"' . $facet->{'value'}. '"';
+    my $facet_string=$facet_hash->{facet_name} . ':"' . $facet_hash->{'value'}. '"';
     # convert from xml friendly to url friendly 
 
     Utils::remap_cers_to_chars(\$facet_string);       
