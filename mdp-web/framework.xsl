@@ -989,7 +989,7 @@
         
         <div class="mdpFbSubtitle">
           <xsl:text>Problem with access rights? </xsl:text>
-          <span>(See also: <a href="http://www.lib.umich.edu/policies/takedown.html"
+          <span>(See also: <a href="http://www.hathitrust.org/take_down_policy"
           target="_blank">take-down policy</a>)</span>
         </div>
         <div id="mdpFlexible_2_Rights">
