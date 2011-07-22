@@ -481,9 +481,9 @@ sub make_query_clause{
     my $Q;
     
 
-#    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
-# XXX try dismax instead of edismax
-    $Q= ' ' . $op  . ' _query_:"{!dismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
+    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
+# dismax instead of edismax
+#    $Q= ' ' . $op  . ' _query_:"{!dismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
     return $Q;
     
 }
