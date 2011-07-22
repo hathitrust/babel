@@ -56,13 +56,53 @@ sub get_owner_string
         $owner_string = $parts[0];
         if (scalar(@parts) > 1)
         {
-            $owner_string .= " (*)";
+            $owner_string; #  .= " (*)";
         }
     }
     
 
     return $owner_string;
 }
+
+# ---------------------------------------------------------------------
+sub get_owner_affiliation
+{
+    my $C = shift;
+    my $owner_string = shift;
+    
+    my $owner_affiliation = '';
+
+    my $config = $C->get_object('MdpConfig');
+    my $temp_coll_owner_string = $config->get('temp_coll_owner_string');
+    
+    if (
+        (length($owner_string) == 32)
+        &&
+        ($owner_string =~ m,^[0-9a-f]+$,g)
+       )
+    {
+        # The only time owner will be 32 characters and all hex digits
+        # is if its a session_id
+        # noop
+        $owner_string = $temp_coll_owner_string;
+    } 
+
+    # Obfuscate
+    if ($owner_string ne $temp_coll_owner_string)
+    {
+        my @parts = split('@', $owner_string);
+        if (scalar(@parts) > 1)
+        {
+            $owner_affiliation = $parts[1];
+        } else {
+            $owner_affiliation = 'umich.edu';
+        }
+    }
+    
+
+    return $owner_affiliation;
+}
+
 
 # ---------------------------------------------------------------------
 

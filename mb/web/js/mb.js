@@ -32,7 +32,6 @@ jQuery(function($) {
     
     elements: {
       ".PublicCollections" : "collections"
-      , ".collectionData" : "collectionData"
       , ".results" : "results"
       , ".status": "status"
       , ".active_filters" : "active_filters"
@@ -51,47 +50,31 @@ jQuery(function($) {
       this.recent_timepoint = (1).month().ago().toString("yyyy-MM-dd hh:mm:ss");
       this.default_min_items = 0;
 
-      this.collectionData.hide();
       this.installed_controls = false;
-
-      console.log("INIT BEGIN: ", ( new Date() ).getTime());
 
       this._build_cache();
       this.clear_filters();
 
-      console.log("SORT ARRAYS: ", ( new Date() ).getTime());
-      
-
-      console.log("INIT: ", ( new Date() ).getTime());
-      
-
-      console.log("RENDERED: ", ( new Date() ).getTime());
-      
       this.view = "all";
       
       this.routes({
         "updated" : function() {
-          console.log("VIEW: UPDATED");
           this.filter_view("updated");
           this.apply_filters();
         },
         "featured": function() {
-          console.log("VIEW: FEATURED");
           this.filter_view("featured");
           this.apply_filters();
         },
         "my-collections": function() {
-          console.log("VIEW: MINE");
           this.filter_view("my-collections");
           this.apply_filters();
         },
         "all" : function() {
-          console.log("VIEW: ALL");
           this.filter_view("all");
           this.apply_filters();
         },
         "" : function() {
-          console.log("VIEW: ALL");
           this.filter_view("all");
           this.apply_filters();
         }
@@ -105,13 +88,8 @@ jQuery(function($) {
         else if ( colltype == "pub" ) { colltype = "all"; }
         this.navigate(colltype, true);
       }
-      // if ( colltype == "priv" || colltype == "my-collections" ) {
-      //   Spine.Route.navigate("my-collections", true);
-      // } else if ( colltype == "featured" ) {
-      //   Spine.Route.navigate("featured", true);
-      // } else if ( colltype == "updated" ) {
-      //   Spine.Route.navigate("featured", true);
-      // }
+
+      Spine.Route.setup();
       
     },
     
@@ -124,90 +102,34 @@ jQuery(function($) {
       var self = this;
       
       this.idx = {};
-      // this.collectionData.find("th").each(function(i, e) {
-      //   self.idx[$(this).attr("class")] = i;
-      // })
       
-      this.idx["collid"] = 0;
-      this.idx["collname"] = 1;
-      this.idx["description"] = 2;
-      this.idx["num_items"] = 3;
-      this.idx["owner_name"] = 4;
-      this.idx["updated"] = 5;
-      this.idx["updated_display"] = 6;
-      this.idx["featured"] = 7;
-      this.idx["shared"] = 8;
-      this.idx["mine"] = 9;
+      for(var i = 0, n = bucket.cols.length; i < n; i++) {
+        this.idx[bucket.cols[i]] = i;
+      }
       
-      self.cache = {
-        html: [],
-        normalized: [],
-        featured: []
-      };
-      
+      self.cache = {};
       self.cache.html = bucket.html;
       self.cache.featured = bucket.featured;
-      
-      var t0 = new Date();
-      
+      self.cache.normalized = [];
       
       var num_cells = self.cache.html[0].length;
       for(var i = 0, num_rows=self.cache.html.length; i < num_rows; i++) {
         var cols = [];
         var html = self.cache.html[i];
+        if ( html[self.idx.OwnerAffiliation] ) {
+          // hack to get around libxml2 emitting CDATA...
+          html[self.idx.OwnerAffiliation] = html[self.idx.OwnerAffiliation].replace('__amp;', '&amp;');
+        }
         for (var j = 0; j < num_cells; j++) {
           cols.push(html[j].toLowerCase());
         }
-        if ( cols[self.idx.description] ) {
-          cols[self.idx.collname] += " " + cols[self.idx.description];
+        if ( cols[self.idx.Description] ) {
+          cols[self.idx.CollName] += " " + cols[self.idx.Description];
         }
-        cols[self.idx.collname] += " " + cols[self.idx.owner_name];
+        cols[self.idx.CollName] += " " + cols[self.idx.OwnerString] + " " + cols[self.idx.OwnerAffiliation];
         cols.push(self.cache.normalized.length); // add position for rowCache
         self.cache.normalized.push(cols);
       }
-      
-      var t1 = new Date();      
-      console.log("TABLESORTER: ", t0, "/", t1, "/", ( t1.getTime() - t0.getTime() ));
-      return;
-
-      var t0 = new Date();
-      
-      var idx_owner_name = self.idx.owner_name;
-      var idx_featured = self.idx.featured;
-      
-      var table = self.collectionData.get(0);
-      var num_rows = table.tBodies[0].rows.length;
-      var num_cells = table.tBodies[0].rows[0].cells.length;
-      var tBody = table.tBodies[0];
-      for ( var i = 0; i < num_rows; i++ ) {
-        var tr = table.tBodies[0].rows[i];
-        var cols = [];
-        var html = [];
-        for ( var j = 0; j < num_cells; j++ ) {
-          var $cell = $(tr.cells[j]);
-          var text = $cell.text();
-          cols.push(text.toLowerCase()); // .toLowerCase());
-          if ( j > 0 ) { html.push(text); }
-          else { html.push($cell.html()); }
-          // html.push($cell.html());
-        }
-        // combine description with collname
-        if( cols[1] ) {
-          cols[0] += " " + cols[1];
-        }
-        cols[0] += " " + cols[idx_owner_name];
-        cols.push(self.cache.normalized.length); // add position for rowCache
-        self.cache.normalized.push(cols);
-        self.cache.html.push(html);
-        
-        if ( cols[idx_featured] ) {
-          self.cache.featured.push(html);
-        }
-        
-      }
-            
-      var t1 = new Date();      
-      console.log("TABLESORTER: ", t0, "/", t1, "/", ( t1.getTime() - t0.getTime() ));
       
     },
     
@@ -216,7 +138,6 @@ jQuery(function($) {
       
       if ( ! this.installed_controls ){
         this.installed_controls = true;
-        console.log($("#controls-template"));
         var $html = $("#controls-template").tmpl({});
         $html.insertBefore(self.results);
         self.refreshElements();
@@ -230,7 +151,6 @@ jQuery(function($) {
         self.controls.find("select[name=sort_by]").bind("change", function() {
           var key = $(this).val();
           var rel = $(this).find("option:selected").attr("rel");
-          console.log(key, rel);
           self.sort_by(key, rel);
           self.apply_filters();
         })
@@ -289,10 +209,10 @@ jQuery(function($) {
         var featured = this.cache.html[this.cache.featured[random_idx]];
         
         var tmplData = {
-          collid : featured[this.idx.collid],
-          collname : featured[this.idx.collname],
-          description : featured[this.idx.description],
-          featured : featured[this.idx.featured]
+          collid : featured[this.idx.CollId],
+          collname : featured[this.idx.CollName],
+          description : featured[this.idx.Description],
+          featured : featured[this.idx.Featured]
         };
         
         $("#featured-template").tmpl(tmplData).appendTo(this.sidebar);
@@ -308,7 +228,7 @@ jQuery(function($) {
           f = c.filtered,
           checkCell = (n[0].length - 1),
           totalRows = f.length;
-      //this.collectionData.find(".selected").each(function(i, e) {
+
       var i = -1;
       
       for(var j = 0; j < totalRows; j++) {
@@ -323,15 +243,16 @@ jQuery(function($) {
         i += 1;
         data.stripe = i % 2 == 0 ? "even" : "odd";
         
-        data.collid = row[self.idx.collid];
-        data.collname = row[self.idx.collname];
-        data.description = row[self.idx.description];
-        data.num_items = row[self.idx.num_items];
-        data.owner_name = row[self.idx.owner_name];
-        data.mine = row[self.idx.mine].replace(/colltype=([a-z-]+)/, "colltype=" + self.view);
-        data.shared = row[self.idx.shared];
-        data.featured = row[self.idx.featured];
-        data.updated = row[self.idx.updated_display];
+        data.collid = row[self.idx.CollId];
+        data.collname = row[self.idx.CollName];
+        data.description = row[self.idx.Description];
+        data.num_items = row[self.idx.NumItems];
+        data.owner_name = row[self.idx.OwnerString];
+        data.owner_affiliation = row[self.idx.OwnerAffiliation];
+        data.mine = row[self.idx.DeleteCollHref].replace(/colltype=([a-z-]+)/, "colltype=" + self.view);
+        data.shared = row[self.idx.Shared];
+        data.featured = row[self.idx.Featured];
+        data.updated = row[self.idx.Updated_Display];
         
         if ( data.shared == 1 ) { // $this.data('shared')
           data.shared = "Public";
@@ -383,7 +304,12 @@ jQuery(function($) {
         }
 
         html.push('<p class="meta">');
-        html.push('<span class="owner_name">Owner: ' + data.owner_name + '</span>');
+        var owner_name_html = '<span class="owner_name">Owner: ' + data.owner_name;
+        if ( data.owner_affiliation ) {
+          owner_name_html += ' (' + data.owner_affiliation + ')';
+        }
+        owner_name_html += '</span>';
+        html.push(owner_name_html);
 
         if ( data.mine != '' ) {
           var href="mb?a=editst;shrd=" + ( data.shared == 'Public' ? 0 : 1 ) + ";c=" + data.collid + ";colltype=" + this.view;
@@ -447,8 +373,8 @@ jQuery(function($) {
 
 
       this.active_filters.empty();
+      var total = $("div.collection").length;
       if ( this.filters.length > 0 ) {
-        var total = $("div.collection").length;
         var message = "Showing " + total;
         if ( this.has_filter("view") ) {
           if ( this.view == "updated" ) {
@@ -470,11 +396,16 @@ jQuery(function($) {
           html.push("matching \"" + this.q + "\"");
         }
         this.active_filters.text(message + " " + html.join(" and "));
-        if ( this.view != "all" || html.length > 0 ) {
-          this.status.show();
-        }
+        this.status.addClass("with-filters");
+        this.reset_filters_link.show();
+        // if ( this.view != "all" || html.length > 0 ) {
+        //   this.status.show();
+        // }
       } else {
-        this.status.hide();
+        this.active_filters.text("Showing " + total + " collections");
+        this.reset_filters_link.hide();
+        this.status.removeClass("with-filters");
+        this.status.show();
       }
 
     },
@@ -491,6 +422,9 @@ jQuery(function($) {
     reset_filters: function() {
       this.clear_filters();
       this.clear_sort();
+      
+      var navigate_or_apply = ( this.view == "all" );
+      
       this.filter_min_items(this.default_min_items);
       this.filter_view("all");
       
@@ -502,7 +436,12 @@ jQuery(function($) {
       $buttons.removeClass("active").filter("button[rel=all]").addClass("active");
       
       //this.apply_filters();
-      this.navigate("all", true);
+      if ( navigate_or_apply ) {
+        // trigger redraw
+        this.apply_filters();
+      } else {
+        this.navigate("all", true);
+      }
       return false; // this seems lame
     },
     
@@ -558,11 +497,11 @@ jQuery(function($) {
       
       self.add_filter({ type : "view", fn: function(tr) {
         if ( self.view == "updated" ) {
-          return ( tr[self.idx.updated] >= self.recent_timepoint );
+          return ( tr[self.idx.Updated] >= self.recent_timepoint );
         } else if ( self.view == "featured" ) {
-          return ( tr[self.idx.featured] != '' );
+          return ( tr[self.idx.Featured] != '' );
         } else if ( self.view == "my-collections" ) {
-          return ( tr[self.idx.mine] != '' );
+          return ( tr[self.idx.DeleteCollHref] != '' );
         } else if ( self.view == "all" ) {
           return true;
         }
@@ -582,7 +521,7 @@ jQuery(function($) {
       }
       
       this.add_filter({ type : "min_items", fn : function(tr) {
-        var num_items = parseInt(tr[self.idx.num_items]);
+        var num_items = parseInt(tr[self.idx.NumItems]);
         return ( num_items >= self.min_items );
       }})
     },
@@ -593,7 +532,7 @@ jQuery(function($) {
         this.owner_name = owner_name;
       }
       this.add_filter({ type: "owner_name", fn: function(tr) {
-        return ( tr[self.idx.owner_name].indexOf(self.owner_name) > -1 );
+        return ( tr[self.idx.OwnerString].indexOf(self.owner_name) > -1 );
       }})
     },
     
@@ -606,7 +545,7 @@ jQuery(function($) {
         this.remove_filter({ type: "search" });
       } else {
         this.add_filter({ type: "search", fn: function(tr) {
-          return ( tr[self.idx.collname].match(q) );
+          return ( tr[self.idx.CollName].match(q) );
         }})
       }
       
@@ -625,9 +564,7 @@ jQuery(function($) {
         sorting.push([this.idx['collname'], delta]);
       }
       
-      console.log("SORT SETUP: ", ( new Date() ).getTime());
       this._apply_sorting(sorting);
-      console.log("SORT DONE: ", ( new Date() ).getTime());
       
     },
     
@@ -638,14 +575,6 @@ jQuery(function($) {
       var num_filters = this.filters.length;
       var filters = this.filters;
       var f = self.cache.filtered;
-      
-      var t0 = new Date();
-            
-      var t1 = new Date();
-      
-      console.log("FILTERS CLEARED: ", t0, "/", t1, "/", ( t1.getTime() - t0.getTime() ));
-      
-      t0 = t1;
       
       cache.filtered = [];
       var checkIndex = cache.normalized[0].length - 1;
@@ -673,19 +602,12 @@ jQuery(function($) {
           cache.filtered.push(pos);
         }
       }
-      
-      t1 = new Date();      
-      console.log("FILTERS APPLIED: ", t0, "/", t1, "/", ( t1.getTime() - t0.getTime() ));
 
-      t0 = t1;
       this.render();
-
-      t1 = new Date();      
-      console.log("RENDERED: ", t0, "/", t1, "/", ( t1.getTime() - t0.getTime() ));
-
     },
     
     _apply_sorting: function(sorting) {
+      // EXAMPLE FROM TABLESORTER MODULE
       // var sortWrapper = function (a, b) {
       //         var e0 = (a[3] == b[3] ? 0 : (a[3] === null ? Number.POSITIVE_INFINITY : (b[3] === null ? Number.NEGATIVE_INFINITY : (a[3] < b[3]) ? -1 : 1)));
       //         if (e0) {
@@ -700,8 +622,6 @@ jQuery(function($) {
       //         };
       //         return 0;
       //     };
-      
-      console.log("AHOY", sorting);
       
       var self = this;
       var checkIdx = self.cache.normalized.length - 1;
@@ -723,7 +643,7 @@ jQuery(function($) {
           var idx = sort[0];
           var avalue = a[idx];
           var bvalue = b[idx];
-          if ( idx == self.idx.num_items ) {
+          if ( idx == self.idx.NumItems ) {
             if ( avalue !== null ) {
               avalue = parseInt(avalue);
             }
@@ -747,7 +667,6 @@ jQuery(function($) {
       if ( view === undefined ) {
         view = this.view;
       }
-      console.log("UPDATING TO", view, this.view);
       if ( window.location.protocol == "http:" ) {
         // update the Login link; this is escaped as a target to the WAYF URL
         var $loginLink = $("#loginLink");
@@ -768,8 +687,5 @@ jQuery(function($) {
     
         
   })
-  
-  window.App = ColListApp.init(); 
-  Spine.Route.setup();
   
 });

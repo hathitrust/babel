@@ -176,6 +176,7 @@
           
         </div>      
       </xsl:element> <!-- end body -->
+      
     </html>
   </xsl:template>
   
@@ -284,9 +285,53 @@
             margin-right: 1.5em;
           }
         </style>
+
+        <script type="text/javascript" disable-output-escaping="yes">
+          var bucket = { 'html': [], 'featured': [], 'cols':[] };
+          var html; var featured;
+          bucket.cols = [ 
+            'CollId', 
+            'CollName', 
+            'Description', 
+            'NumItems', 
+            'OwnerString', 
+            'OwnerAffiliation',
+            'Updated',
+            'Updated_Display',
+            'Featured',
+            'Shared',
+            'DeleteCollHref'
+          ];
+        </script>
+
+        <xsl:variable name="insts" select="//Inst" />
         
         <div class="results">
           <xsl:for-each select="$list_node/Collection">
+
+            <script type="text/javascript">
+              html = []; 
+              html.push('<xsl:value-of select="CollId" />');
+              html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
+              html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
+              html.push('<xsl:value-of select="NumItems" />');
+              html.push('<xsl:value-of select="OwnerString" />');
+
+              <xsl:variable name="owner_affiliation" select="string($insts[contains(current()/OwnerAffiliation, @domain)])" />
+
+              html.push('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
+              html.push('<xsl:value-of select="Updated" />');
+              html.push('<xsl:value-of select="Updated_Display" />');
+              featured = '<xsl:value-of select="Featured" />';
+              html.push(featured);
+              if ( featured ) {
+                bucket.featured.push(<xsl:value-of select="position() - 1" />);
+              }
+              html.push('<xsl:value-of select="Shared" />');
+              html.push('<xsl:value-of select="DeleteCollHref" />');
+              bucket.html.push(html);
+            </script>
+
             <xsl:variable name="class">
               <xsl:text>collection </xsl:text>
               <xsl:choose>
@@ -342,85 +387,17 @@
           </xsl:for-each>
         </div>
         
-    	  <xsl:variable name="quote" select='"&apos;"' />
-    	  <xsl:variable name="amp" select='"&amp;"' />
-        <script type="text/javascript" disable-output-escaping="yes">
-          console.log("HEY");
-          var bucket = { 'html': [], 'featured': [] };
-          window.bucket = bucket;
-          var html; var cols; var featured;
+        <script type="text/javascript">
+          $(document).ready(function() {
+            var HT = HT || {};
+            HT.cbBrowser = ColListApp.init(bucket);
+          })
         </script>
-          <xsl:for-each select="$list_node/Collection">
-            <script type="text/javascript" disable-output-escaping="no">
-            html = []; cols = [];
-            html.push('<xsl:value-of select="CollId" />');
-            <xsl:if test="false()">
-              html.push('<xsl:value-of select="str:replace(str:replace(string(CollName), $quote, concat('\', $quote)), $amp, ' and ')" />');
-            </xsl:if>
-            html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
-            html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
-            html.push('<xsl:value-of select="NumItems" />');
-            html.push('<xsl:value-of select="OwnerString" />');
-            html.push('<xsl:value-of select="Updated" />');
-            html.push('<xsl:value-of select="Updated_Display" />');
-            featured = '<xsl:value-of select="Featured" />';
-            html.push(featured);
-            if ( featured ) {
-              bucket.featured.push(<xsl:value-of select="position() - 1" />);
-            }
-            html.push('<xsl:value-of select="Shared" />');
-            html.push('<xsl:value-of select="DeleteCollHref" />');
-            bucket.html.push(html);
-          </script>
-        </xsl:for-each>
-        
-        <table class="collectionData">
-          <thead>
-            <tr>
-              <th class="collname">Collection Name</th>
-              <th class="description">Description</th>
-              <th class="num_items">Items</th>
-              <th class="owner_name">Owner</th>
-              <th class="updated">Updated</th>
-              <th class="updated_display">Updated (Display)</th>
-              <th class="featured">Featured</th>
-              <th class="shared">Shared</th>
-              <th class="mine">Mine</th>
-              <th class="collid">Coll ID</th>
-            </tr>
-          </thead>
-          <tbody>
-            <xsl:for-each select="$list_node/Collection">
-              <tr>
-                <td>
-                  <a href="?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
-                </td>
-                <td><xsl:value-of select="Description" /></td>
-                <td><xsl:value-of select="NumItems" /></td>
-                <td><xsl:value-of select="OwnerString" /></td>
-                <td><xsl:value-of select="Updated" /></td>
-                <td><xsl:value-of select="Updated_Display" /></td>
-                <td><xsl:value-of select="Featured" /></td>
-                <td><xsl:value-of select="Shared" /></td>
-                <td>
-                  <xsl:if test="Owner = $g_user_id"><xsl:value-of select="DeleteCollHref" /></xsl:if>
-                </td>
-                <td><xsl:value-of select="CollId" /></td>
-              </tr>
-            </xsl:for-each>
-          </tbody>
-        </table>
-        
-        <noscript>
-          <style>
-            .collectionData { display: table; }
-          </style>
-        </noscript>
         
         <br class="clr" />
-        <div class="footnoteMsg">
+        <!-- <div class="footnoteMsg">
           <p>* = abbreviated account names for <a href="http://www.itd.umich.edu/itcsdocs/s4316/">UM Friend guest account</a> users.</p>
-        </div>        
+        </div>         -->
       </xsl:element>
       
       <xsl:call-template name="FeaturedCollection" />
