@@ -375,10 +375,9 @@
         </div>
         
         <script type="text/javascript">
-          <!-- instantiate cbBrowser app -->
+          <!-- setup cbBrowser app -->
           $(document).ready(function() {
-            var HT = HT || {};
-            HT.cbBrowser = CollListApp.init(bucket);
+            HT.cbBrowser.setup(bucket);
           })
         </script>
         

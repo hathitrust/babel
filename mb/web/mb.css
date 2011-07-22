@@ -76,11 +76,10 @@ span.owner_name {
 
 .options {
   font-size: 11px;
-  /*position: absolute;
-    right: 25px*/;
   bottom: 2px;
   position: static;
-  padding-left: 40px;
+  padding-top: 8px;
+  display: block;
 }
 
 /*.mozilla .options {

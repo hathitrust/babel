@@ -1,3 +1,5 @@
+var HT = HT || {};
+
 // define a console if not exists
 if ( window.console === undefined ) {
     window.console = {
@@ -6,12 +8,11 @@ if ( window.console === undefined ) {
 }
 
 $(document).ready(function() {
-  $(".delete-collection").live("click", function() {
+  $(".delete-collection").live("click", function(e) {
     var collname = $(this).parents(".collection").find("p.collname").text();
     var check = doYouReally(collname);
-    var href = $(this).data('delete-href');
-    href += "#" + App.view;
     if ( check ) {
+      var href = $(this).data('delete-href');
       $(this).attr('href', href);
       return true;
     }
@@ -52,8 +53,8 @@ jQuery(function($) {
 
       this.installed_controls = false;
 
-      this._build_cache();
-      this.clear_filters();
+      // this._build_cache();
+      // this.clear_filters();
 
       this.view = "all";
       
@@ -81,6 +82,13 @@ jQuery(function($) {
         
       })
       
+      
+    },
+    
+    setup: function(bucket) {
+      this._build_cache(bucket);
+      this.clear_filters();
+
       var colltype = window.location.href.match(/colltype=([a-z-]+)/);
       if ( colltype !== null && ! window.location.hash ) {
         colltype = colltype[1];
@@ -90,7 +98,6 @@ jQuery(function($) {
       }
 
       Spine.Route.setup();
-      
     },
     
     navigate: function(view, invoke_events) {
@@ -98,7 +105,7 @@ jQuery(function($) {
       this.update_login_link(view);
     },
     
-    _build_cache: function() {
+    _build_cache: function(bucket) {
       var self = this;
       
       this.idx = {};
@@ -689,3 +696,7 @@ jQuery(function($) {
   })
   
 });
+
+$(document).ready(function() {
+  HT.cbBrowser = CollListApp.init();
+})
