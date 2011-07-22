@@ -517,51 +517,6 @@
 
     <xsl:template name="FeaturedCollection">
       
-      <style>
-      #Sidebar {
-        width: 24%;
-        float: left;
-      }
-      
-      .Box {
-        border: 1px solid #F1F1F1;
-        background: #FFF;
-      }
-      
-      .Box h4 {
-        background: #F1F1F1;
-        color: #666;
-        font-size: 110%;
-        padding: 4px;
-        margin: 0;
-      }
-      
-      .Box img {
-        float: left;
-        border: 1px solid #CCC;
-        padding: 2px;
-        margin-right: 10px;
-        margin-bottom: 2px;
-      }
-      
-      .Box h5 {
-        font-size: 100%;
-        font-weight: bold;
-        margin: 0;
-        margin-bottom: 0.75em;
-      }
-      
-      .Box p {
-        font-size: 90%;
-        word-break: hyphenate;
-      }
-      
-      .Box div {
-        padding: 1em;
-      }
-      
-      </style>
-      
       <script id="featured-template" type="text/x-template">
         <div class="Box">
           <h4>Featured Collection</h4>
