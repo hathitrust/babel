@@ -27,24 +27,11 @@
         <title>
           <xsl:call-template name="get_page_title"/>
         </title>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
-        
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
-        <script type="text/javascript" src="/mb/js/jquery.tmpl.js"></script>
-        <script type="text/javascript" src="/mb/js/spine.js"></script>
-        <script type="text/javascript" src="/mb/js/lib/spine.route.js"></script>
-    		<script type='text/javascript' src='/mb/js/common.js'></script>
-    		<script type='text/javascript' src='/mb/js/css.js'></script>
-        <script type="text/javascript" src="/mb/js/jquery.placeholder.js"></script>
-        <script type="text/javascript" src="/mb/js/date.js"></script>
-        <script type="text/javascript" src="/mb/js/jquery.ba-hashchange.js" />
-        <script type="text/javascript" src="/mb/js/mb.js"></script>
-        <script type="text/javascript" src="/mb/js/hyphenator.js"></script>
 
-        <link rel="stylesheet" type="text/css" href="/mb/mb.css" />
-        <link rel="stylesheet" type="text/css" href="/mb/awesome.css" />
-        
         <!-- overide debug style if debug flag is on -->
         <xsl:call-template name="debug_CSS"/>
         
@@ -388,6 +375,7 @@
         </div>
         
         <script type="text/javascript">
+          <!-- instantiate cbBrowser app -->
           $(document).ready(function() {
             var HT = HT || {};
             HT.cbBrowser = ColListApp.init(bucket);
@@ -395,9 +383,6 @@
         </script>
         
         <br class="clr" />
-        <!-- <div class="footnoteMsg">
-          <p>* = abbreviated account names for <a href="http://www.itd.umich.edu/itcsdocs/s4316/">UM Friend guest account</a> users.</p>
-        </div>         -->
       </xsl:element>
       
       <xsl:call-template name="FeaturedCollection" />

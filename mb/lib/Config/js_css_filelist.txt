@@ -55,6 +55,19 @@ Section:LOCAL_JS
 //common-web/js/overlayUtils.js
 //common-web/js/search.js
 
+Section:COLLLIST_JS
+Test://CurrentCgi/Param[@name='a'] = 'listcs'
+/mb/web/js/jquery.tmpl.js
+/mb/web/js/spine.js
+/mb/web/js/lib/spine.route.js
+/mb/web/js/common.js
+/mb/web/js/css.js
+/mb/web/js/jquery.placeholder.js
+/mb/web/js/date.js
+/mb/web/js/jquery.ba-hashchange.js
+/mb/web/js/mb.js
+/mb/web/js/hyphenator.js
+
 # XXX after decision to go directly to the search results page and not
 # do ajax search is finalized remove this comment and the next two lines
 #/mb/web/js/searchAjaxCommon.js
@@ -65,3 +78,8 @@ Section:CSS
 /mb/web/yui2-lib/build/fonts/fonts-min.css
 /mb/web/yui2-lib/build/container/assets/skins/sam/container.css
 //common-web/MBooksCol.css
+
+Section:COLLLIST_CSS
+Test://CurrentCgi/Param[@name='a'] = 'listcs'
+/mb/web/mb.css
+/mb/web/awesome.css

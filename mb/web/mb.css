@@ -282,6 +282,10 @@ p.description {
   list-style-type: none;
 }
 
+.controls ul.filters li {
+  text-indent: 0px;
+}
+
 .clearfix:after {
      visibility: hidden;
      display: block;
@@ -332,7 +336,7 @@ p.description {
   margin-bottom: 1em;
 }
 
-ul.filters .g-button {
+.controls ul.filters .g-button {
   margin: 0;
   margin-left: -1px;
 }
