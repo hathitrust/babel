@@ -229,33 +229,39 @@
       authtype="shibboleth"
       domain="duke.edu"
       enabled="1">Duke University</Inst>
-
-  <!-- waiting -->
-
   <Inst
-      sdrinst="ucop"
-      template="https://___HOST___/Shibboleth.sso/ucop?target=___TARGET___"
+      sdrinst="osu"
+      template="https://___HOST___/Shibboleth.sso/osu?target=___TARGET___"
       authtype="shibboleth"
-      domain="ucop.edu"
-      enabled="0">University of California, Office of the President</Inst>
+      domain="osu.edu"
+      enabled="1">The Ohio State University</Inst>
+  <Inst
+      sdrinst="ncsu"
+      template="https://___HOST___/Shibboleth.sso/ncsu?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ncsu.edu"
+      enabled="1">North Carolina State University</Inst>
   <Inst
       sdrinst="upenn"
       template="https://___HOST___/Shibboleth.sso/upenn?target=___TARGET___"
       authtype="shibboleth"
       domain="upenn.edu"
-      enabled="0">University of Pennsylvania</Inst>
+      enabled="1">University of Pennsylvania</Inst>
+  <Inst
+      sdrinst="ucop"
+      template="https://___HOST___/Shibboleth.sso/ucop?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ucop.edu"
+      enabled="1">University of California, Office of the President</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="uva"
       template="https://___HOST___/Shibboleth.sso/uva?target=___TARGET___"
       authtype="shibboleth"
       domain="virginia.edu"
       enabled="0">University of Virginia</Inst>
-  <Inst
-      sdrinst="osu"
-      template="https://___HOST___/Shibboleth.sso/osu?target=___TARGET___"
-      authtype="shibboleth"
-      domain="osu.edu"
-      enabled="0">Ohio State University</Inst>
   <Inst
       sdrinst="ucdavis"
       template="https://___HOST___/Shibboleth.sso/ucdavis?target=___TARGET___"
@@ -298,12 +304,6 @@
       authtype="shibboleth"
       domain="harvard.edu"
       enabled="0">Harvard University</Inst>
-  <Inst
-      sdrinst="ncsu"
-      template="https://___HOST___/Shibboleth.sso/ncsu?target=___TARGET___"
-      authtype="shibboleth"
-      domain="ncsu.edu"
-      enabled="0">North Carolina State University</Inst>
   <Inst
       sdrinst="umaryland"
       template="https://___HOST___/Shibboleth.sso/umaryland?target=___TARGET___"
