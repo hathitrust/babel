@@ -453,10 +453,14 @@ sub make_query_clause{
     Utils::remap_cers_to_chars(\$q);
     
     my $processed_q =$self->get_processed_user_query_string($q);
+    
+    my $boolean_q = $self->__get_boolean_query($processed_q)   ;
+    
+    #XXX does the following need to happen before or after booleanizing the query
     #XXX current processing will remove unbalenced quotes but leave in balenced quotes
     # since the dismax query needs to be quoted, we need to escape any quotes in the query
     #  ie  "foo" => \"foo\"
-    $processed_q =~s,\",\\\",g;
+    $boolean_q =~s,\",\\\",g;
     
     my $config = $self->get_facet_config;    
     
@@ -481,9 +485,8 @@ sub make_query_clause{
     my $Q;
     
 
-    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
-# dismax instead of edismax
-#    $Q= ' ' . $op  . ' _query_:"{!dismax' . $QF . $PF . $MM .$TIE  . '} ' .  $processed_q .'"';
+    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $boolean_q .'"';
+
     return $Q;
     
 }
@@ -570,6 +573,112 @@ sub get_Solr_internal_query_string
 
     return $solr_query_string;
 }
+
+# ---------------------------------------------------------------------
+
+=item __get_boolean_query
+
+Since dismax and edismax don't seem to honor the default query operator, we need to convert queries to AND queries
+WARNING! need to be careful with quotes and input AND queries
+WARNING! currently makes assumptions about query being run through base class 
+Search::Query::get_processed_user_query_string
+
+
+=cut
+
+
+
+# ---------------------------------------------------------------------
+sub __get_boolean_query
+{
+    my $self = shift;
+    my $q = shift;
+    my $bq =$q;
+    # remove leading and trailing spaces
+    $bq =~s,^\s+,,g;
+    $bq =~s,\s+$,,g;
+
+    # for now if the query contains an allowed boolean operator, don't mess with it
+    # later we might try being more sophisticated and ANDing any two words
+    # We operate with these assumptions about the query being run through Search::Query::get_processed_user_query_strin
+    #    1 At this point double quotes are balanced. Lower-case AND|OR
+    #      embedded in phrases and replace phrase-embedded parentheses with
+    #       spaces.
+    #    2   process_user_query in base class  already removed any plus or minus that is not leading a word
+
+    # put a couple of assertions here asserting our assumptions aobut what Search::Query did
+    
+    # there should be no upper case AND|OR inside of quotes
+    if ($q=~/\"[^\"]*(AND|OR)[^\"]*\"/)
+    {
+        ASSERT(0,qq{boolean in caps inside phrase});
+    }
+
+    if ($bq=~/AND|OR|\+|\-/)
+    {
+        #leave it alone for now
+        #XXX TODO: look at modifying handle_phrases to deal with these properly
+    }
+    elsif ($bq =~ /\"/)
+    {
+        $bq = __handle_phrases($bq);
+    }        
+    else
+    {
+        $bq =~s,\s+, AND ,g;
+    }
+    
+    #replace multiple spaces with single spaces
+    $bq =~s,\s+, ,g;
+    
+    return $bq;
+}
+#----------------------------------------------------------------------
+sub __handle_phrases
+{
+    my $q = shift;
+    my $bq=$q;
+    my @tokens = split(/\s+/,$bq);
+    
+    my $INQUOTE = "false";
+    my $out;
+    
+    foreach my $token (@tokens)
+    {
+        if ($token =~/\"/)
+        {
+            if ($INQUOTE eq "true")
+            {
+                $INQUOTE = "false";
+                $out .= " $token AND ";
+            }
+            else
+            {
+                $INQUOTE = "true";
+                 $out .= " $token "
+            }
+        }
+        else
+        {
+            if ($INQUOTE eq "true")
+            {
+                $out .= " " . $token;
+            }
+            else
+            {
+                $out .="$token AND ";
+            }
+        }
+    }
+    # remove any leading or tailing AND
+    $out =~s/^\s*AND\s*//g;
+    $out =~s/\s*AND\s*$//g;
+    
+    return $out;
+}
+
+
+
 
 1;
 
