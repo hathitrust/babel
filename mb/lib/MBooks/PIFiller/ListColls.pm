@@ -110,14 +110,22 @@ sub get_coll_xml
     my $coll_hashref = shift;
     my $s = '';
     
-    $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName');
+    use URI::Escape;
+    
+    $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName', [['e', uri_escape_utf8($$coll_hashref{'collname'})]]);
     my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'});
+    my $owner_affiliation = MBooks::PIFiller::ListUtils::get_owner_affiliation($C, $$coll_hashref{'owner_name'});
     $s .= wrap_string_in_tag($owner_string, 'OwnerString');
+    $s .= wrap_string_in_tag($owner_affiliation, 'OwnerAffiliation');
     $s .= wrap_string_in_tag($$coll_hashref{'owner'}, 'Owner');
     $s .= wrap_string_in_tag($$coll_hashref{'MColl_ID'},    'CollId');
-    $s .= wrap_string_in_tag($$coll_hashref{'description'}, 'Description');
+    $s .= wrap_string_in_tag($$coll_hashref{'description'}, 'Description', [['e', uri_escape_utf8($$coll_hashref{'description'})]]);
     $s .= wrap_string_in_tag($$coll_hashref{'num_items'},   'NumItems');
     $s .= wrap_string_in_tag($$coll_hashref{'shared'},      'Shared');
+    $s .= wrap_string_in_tag($$coll_hashref{'modified'},      'Updated');
+    $s .= wrap_string_in_tag($$coll_hashref{'modified_display'},      'Updated_Display');
+    $s .= wrap_string_in_tag($$coll_hashref{'featured'},      'Featured');
+    
     
     my $all_indexed = "FALSE";
 

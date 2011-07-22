@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  version="1.0">
+  version="1.0"
+  extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings" xmlns:exsl="http://exslt.org/common">
+  
+  <xsl:import href="str.replace.function.xsl" />
   
   <xsl:variable name="g_current_sort_param" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='sort']"/>
   <!-- need to separate sort and dir from sort param i.e. title_d = sort=title dir=d -->
@@ -27,8 +30,85 @@
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
         
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+        <script type="text/javascript" src="/mb/js/jquery.tmpl.js"></script>
+        <script type="text/javascript" src="/mb/js/spine.js"></script>
+        <script type="text/javascript" src="/mb/js/lib/spine.route.js"></script>
+    		<script type='text/javascript' src='/mb/js/common.js'></script>
+    		<script type='text/javascript' src='/mb/js/css.js'></script>
+        <script type="text/javascript" src="/mb/js/jquery.placeholder.js"></script>
+        <script type="text/javascript" src="/mb/js/date.js"></script>
+        <script type="text/javascript" src="/mb/js/jquery.ba-hashchange.js" />
+        <script type="text/javascript" src="/mb/js/mb.js"></script>
+        <script type="text/javascript" src="/mb/js/hyphenator.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="/mb/mb.css" />
+        <link rel="stylesheet" type="text/css" href="/mb/awesome.css" />
+        
         <!-- overide debug style if debug flag is on -->
         <xsl:call-template name="debug_CSS"/>
+        
+        <script id="controls-template" type="text/x-template">
+          <div class="controls clearfix" style="text-align: center">
+            <div class="clearfix">
+              <ul class="filters">
+                <li><button rel="all" class="g-button large active">All</button></li>
+                <li><button rel="updated" class="g-button large">Recently Updated</button></li>
+                <li><button rel="featured" class="g-button large">Featured</button></li>
+                <li><button rel="my-collections" class="g-button large">My Collections</button></li>
+              </ul>
+              <div class="find-collection">
+                <input style="width: 99%" class="q" type="text" placeholder="Find a collection" name="q" id="q" size="15" />
+              </div>
+            </div>
+            <div class="clearfix" style="margin-top: 0.5em">
+              <div class="num_items_control" style="width: 33%; white-space: nowrap">
+                Collections with at least 
+                  <select size="1" name="min_items" id="min_items">
+                    <option value="0" selected="selected">(all items)</option>
+                    <option value="1000">1000 items</option>
+                    <option value="500">500 items</option>
+                    <option value="250">250 items</option>
+                    <option value="100">100 items</option>
+                    <option value="50">50 items</option>
+                    <option value="25">25 items</option>
+                  </select>
+              </div>
+              <div style="float:right; width: 33%; text-align: right">
+                  Sort by: <select size="1" name="sort_by" id="sort_by">
+                    <option value="collname">Collection Title</option>
+                    <option value="owner_name">Owner</option>
+                    <option value="updated">Last Updated</option>
+                    <option value="num_items">Items (low to high)</option>
+                    <option value="num_items" rel="desc">Items (high to low)</option>
+                  </select>
+              </div>
+              &#160;
+              <!-- <div style="text-align: center">
+                <input type="checkbox" name="toggle_descriptions" checked="checked" /> Show descriptions
+              </div> -->
+            </div>
+            <!-- <div class="clearfix" style="text-align: left">
+            </div> -->
+            <div class="status">
+              <span class="active_filters"></span>
+              <a class="awesome small reset_filters_link" href="#">Reset</a>
+            </div>
+          </div>
+        </script>
+
+                <xsl:text>
+
+        </xsl:text>
+
+                <xsl:comment><![CDATA[[if lt IE 8]>
+                  <link rel="stylesheet" type="text/css" href="/mb/ie7.css" />
+                <![endif]]]></xsl:comment>
+
+                        <xsl:text>
+
+                </xsl:text>
+
 
       </head>
 
@@ -40,7 +120,8 @@
       
       <xsl:element name="body">
         <xsl:attribute name="class">yui-skin-sam</xsl:attribute>
-        <xsl:choose>
+        <xsl:attribute name="id">PubCollPage</xsl:attribute>
+        <!-- <xsl:choose>
           <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='pub'">
             <xsl:attribute name="id">PubCollPage</xsl:attribute>
           </xsl:when>
@@ -48,7 +129,7 @@
             <xsl:attribute name="id">PrivCollPage</xsl:attribute>
           </xsl:when>
           <xsl:otherwise></xsl:otherwise>
-        </xsl:choose>
+        </xsl:choose> -->
 
         <div id="mbMasterContainer">
           
@@ -95,6 +176,7 @@
           
         </div>      
       </xsl:element> <!-- end body -->
+      
     </html>
   </xsl:template>
   
@@ -176,7 +258,8 @@
     <xsl:variable name="list_class">
       <xsl:choose>
         <xsl:when test="$which_list='mycolls'">
-          <xsl:text>ColList MyCollections</xsl:text>
+          <!-- <xsl:text>ColList MyCollections</xsl:text> -->
+          <xsl:text>ColList PublicCollections</xsl:text>
         </xsl:when>
         <xsl:otherwise>
           <xsl:text>ColList PublicCollections</xsl:text>
@@ -186,268 +269,158 @@
         
     <div id="mbContentContainer" class="mbColListContainer">
       <h2 class="SkipLink">Main Content</h2>
+
+      <xsl:call-template name="LoginMsg"/>
+      
       <xsl:element name="div">
         <xsl:attribute name="class">
           <xsl:value-of select="$list_class"/>
         </xsl:attribute>
         
-        <xsl:call-template name="LoginMsg"/>
+        <style>
+          .ColList {
+            width: 72%;
+            float: left;
+            margin: 0px;
+            margin-right: 1.5em;
+          }
+        </style>
+
+        <script type="text/javascript" disable-output-escaping="yes">
+          var bucket = { 'html': [], 'featured': [], 'cols':[] };
+          var html; var featured;
+          bucket.cols = [ 
+            'CollId', 
+            'CollName', 
+            'Description', 
+            'NumItems', 
+            'OwnerString', 
+            'OwnerAffiliation',
+            'Updated',
+            'Updated_Display',
+            'Featured',
+            'Shared',
+            'DeleteCollHref'
+          ];
+        </script>
+
+        <xsl:variable name="insts" select="//Inst" />
         
-        <div class="colTable">
-          <ul class="row colheader">
-            <li class="CollName">
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/CollNameSortHref"/>
-                </xsl:attribute>
-                <xsl:text>Collection Name&#x00A0;</xsl:text>
-                <xsl:call-template name="get_sort_arrow">
-                  <xsl:with-param name="which_sort" select="'cn'"/>
-                </xsl:call-template>
-              </xsl:element>
-            </li>
-            
-            <xsl:if test="$debug='1'">
-              <xsl:element name="li">
-                <xsl:attribute name="class">CollId debug</xsl:attribute>
-                <xsl:text>Coll Id</xsl:text>
-              </xsl:element>
-            </xsl:if>
-            
-            <li class="Action">Action</li>
-            <li class="NoItems">
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/NumItemsSortHref"/>
-                </xsl:attribute>
-                <xsl:text>Items</xsl:text>
-                <xsl:call-template name="get_sort_arrow">
-                  <xsl:with-param name="which_sort" select="'num'"/>
-                </xsl:call-template>
-              </xsl:element>
-            </li>
-            <li class="Access">
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/SharedSortHref"/>
-                </xsl:attribute>
-                <xsl:text>Public</xsl:text>
-                <xsl:call-template name="get_sort_arrow">
-                  <xsl:with-param name="which_sort" select="'shrd'"/>
-                </xsl:call-template>
-              </xsl:element>
-            </li>
-            <li class="Owner">
-              <xsl:choose>
-                <xsl:when test="$which_list='pubcolls'">
-                  <xsl:element name="a">
-                    <xsl:attribute name="href">
-                      <xsl:value-of select="/MBooksTop/OwnerSortHref"/>
-                    </xsl:attribute>
-                    <xsl:text>Owner</xsl:text>
-                    <xsl:call-template name="get_sort_arrow">
-                      <xsl:with-param name="which_sort" select="'own'"/>
-                    </xsl:call-template>
-                  </xsl:element>
-                </xsl:when>
-                <xsl:otherwise><xsl:text>Owner</xsl:text></xsl:otherwise>
-              </xsl:choose>
-            </li>
-            <!-- Removed, may revisit <li class="Search">Search</li>-->
-            <li class="clr"></li>
-          </ul>
-          
+        <div class="results">
           <xsl:for-each select="$list_node/Collection">
-            <xsl:variable name="CollId">
-              <xsl:value-of select="CollId"/>
-            </xsl:variable>
-            
-            <xsl:variable name="row_class">
+
+            <script type="text/javascript">
+              html = []; 
+              html.push('<xsl:value-of select="CollId" />');
+              html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
+              html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
+              html.push('<xsl:value-of select="NumItems" />');
+              html.push('<xsl:value-of select="OwnerString" />');
+
+              <xsl:variable name="owner_affiliation" select="string($insts[contains(current()/OwnerAffiliation, @domain)])" />
+
+              html.push('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
+              html.push('<xsl:value-of select="Updated" />');
+              html.push('<xsl:value-of select="Updated_Display" />');
+              featured = '<xsl:value-of select="Featured" />';
+              html.push(featured);
+              if ( featured ) {
+                bucket.featured.push(<xsl:value-of select="position() - 1" />);
+              }
+              html.push('<xsl:value-of select="Shared" />');
+              html.push('<xsl:value-of select="DeleteCollHref" />');
+              bucket.html.push(html);
+            </script>
+
+            <xsl:variable name="class">
+              <xsl:text>collection </xsl:text>
               <xsl:choose>
-                <xsl:when test="(position() mod 2) = 0">
-                  <xsl:value-of select="'row roweven'"/>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:value-of select="'row rowodd'"/>
-                </xsl:otherwise>
+                <xsl:when test="( position() - 1 ) mod 2 = 0">even </xsl:when>
+                <xsl:otherwise>odd </xsl:otherwise>
               </xsl:choose>
+              <xsl:if test="Owner = $g_user_id">mine </xsl:if>
+              <xsl:if test="Shared = '0'">private </xsl:if>
             </xsl:variable>
             
-            <xsl:element name="ul">
-              <xsl:attribute name="class">
-                <xsl:value-of select="$row_class"/>
-                
-                <xsl:if test="Owner=$g_user_id">
-                  <!-- if user is owner of this collection add css class = owned-->
-                  <xsl:text> owned</xsl:text>
+            <div class="{$class}" position="{position() - 1} / {(position() - 1) mod 2}">
+              <div class="left">
+                <p class="collname">
+                  <a href="?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
+                </p>
+                <xsl:if test="normalize-space(Description)">
+                  <p class="description"><xsl:value-of select="Description" /></p>
                 </xsl:if>
-              </xsl:attribute>
-              
-              <xsl:element name="li">
-                <xsl:attribute name="class">CollName</xsl:attribute>
-                <a>
-                  <xsl:attribute name="href">
-                    <xsl:text>mb?a=listis;c=</xsl:text>
-                    <xsl:value-of select="$CollId"/>
-                    <xsl:if test="$debug_switch!=''">
-                      <xsl:text>;debug=</xsl:text>
-                      <xsl:value-of select="$debug_switch"/>
-                    </xsl:if>
-                  </xsl:attribute>
-                  <xsl:value-of select="CollName"/>
-                </a>
-              </xsl:element>
-              
-              <xsl:if test="$debug='1'">
-                <xsl:element name="li">
-                  <xsl:attribute name="class">CollId debug</xsl:attribute>
-                  <xsl:choose>
-                    <xsl:when test="$CollId=''">
-                      <xsl:text>not set</xsl:text>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:value-of select="$CollId"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                </xsl:element>
-              </xsl:if>
-              
-              <xsl:element name="li">
-                <xsl:attribute name="class">Action</xsl:attribute>
-                
-                <xsl:element name="a">
-                  <xsl:attribute name="href">
-                    <xsl:text>mb?a=listis;c=</xsl:text>
-                    <xsl:value-of select="$CollId"/>
-                    <xsl:if test="$debug_switch!=''">
-                      <xsl:text>;debug=</xsl:text>
-                      <xsl:value-of select="$debug_switch"/>
-                    </xsl:if>
-                  </xsl:attribute>
-                  <xsl:choose>
-                    <xsl:when test="Owner=$g_user_id or Owner=/MBooksTop/MBooksGlobals/SessionId" >
-                      <xsl:text>view/edit</xsl:text>
-                    </xsl:when>
-                    <xsl:otherwise><xsl:text>view</xsl:text></xsl:otherwise>
-                  </xsl:choose>
-                </xsl:element>
-                
-                <xsl:if test="Owner=$g_user_id or Owner=/MBooksTop/MBooksGlobals/SessionId">
-                  <xsl:text>&#x00A0;|&#x00A0;</xsl:text>
-                  <xsl:element name="a">
-                    <xsl:attribute name="href">
-                      <xsl:value-of select="DeleteCollHref"/>
-                    </xsl:attribute>
-                    <xsl:attribute name="onClick">
-                      <xsl:text>return doYouReally(&quot;</xsl:text>
-                      <xsl:value-of select="CollName"/>
-                      <xsl:text>&quot;)</xsl:text>
-                    </xsl:attribute>
-                    <xsl:text>delete</xsl:text>
-                  </xsl:element>
-                </xsl:if>
-              </xsl:element>
-              
-              <xsl:element name="li">
-                <xsl:attribute name="class">NoItems</xsl:attribute>
-                <xsl:choose>
-                  <xsl:when test="NumItems=''">
-                    <xsl:text>0</xsl:text>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:value-of select="NumItems"/>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:element>
-              
-              <xsl:element name="li">
-                <xsl:attribute name="class">Access</xsl:attribute>
-                <xsl:choose>
-                  <xsl:when test="Shared='1'">
-                    <xsl:text>yes</xsl:text>
-                    <xsl:if test="Owner=$g_user_id" >
-                      <xsl:text>&#x00A0;|&#x00A0;</xsl:text>
-                      <xsl:element name="a">
-                        <xsl:attribute name="href">
-                          <xsl:text>mb?a=editst;shrd=0;c=</xsl:text>
-                          <xsl:value-of select="$CollId"/>
-                          <xsl:text>;colltype=</xsl:text>
-                          <!--XXX ask suz, if we are in public coll and make private, should we go to mycolls?-->
-                          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']"/>
-                          <xsl:if test="$debug_switch!=''">
-                            <xsl:text>;debug=</xsl:text>
-                            <xsl:value-of select="$debug_switch"/>
-                          </xsl:if>
-                        </xsl:attribute>
-                        <xsl:text>make private</xsl:text>
-                      </xsl:element>
-                    </xsl:if>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:text>no</xsl:text>
-                    <xsl:if test="Owner=$g_user_id" >
-                      <xsl:text>&#x00A0;|&#x00A0;</xsl:text>
-                      <xsl:element name="a">
-                        <xsl:attribute name="href">
-                          <xsl:text>mb?a=editst;shrd=1;c=</xsl:text>
-                          <xsl:value-of select="$CollId"/>
-                          <xsl:text>;colltype=</xsl:text>
-                          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']"/>
-                          <xsl:if test="$debug_switch!=''">
-                            <xsl:text>;debug=</xsl:text>
-                            <xsl:value-of select="$debug_switch"/>
-                          </xsl:if>
-                        </xsl:attribute>
-                        <xsl:text>make public</xsl:text>
-                      </xsl:element>
-                    </xsl:if>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:element>
-              
-              <!--XXX replace this with better logic in the PIFiller.
-              The PIFiller should provide Owner and OwnerString and
-              OwnerString should be whatever is in the config file if
-              there the owner is a session_id -->
-              
-              <xsl:element name="li">
-                <xsl:attribute name="class">Owner</xsl:attribute>
-                <xsl:value-of select="OwnerString"/>                
-              </xsl:element>
-
-              <!-- <li class="Search">
-
-                <xsl:choose>
-                  <xsl:when test="NumItems='0'"> -->
-                    <!--
-                         The above is correct code. below is to allow testing of debugging ajax call by
-                         searching collections with no items
-                         -->
-                    <!--<xsl:when test="NumItems=''">  -->
-                    <!--<span class="noItems">Add items to collection to make it searchable</span>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:call-template name="searchform">
-                      <xsl:with-param name="CollId" select="$CollId"/>
-                      <xsl:with-param name="pub_priv" select="$pub_priv"/>
-                    </xsl:call-template>
-                    
-                  </xsl:otherwise>
-                </xsl:choose>
-
-              </li> -->
-
-              <li class="clr"></li>
-            </xsl:element>
-            
+                <p class="meta">
+                  <span class="owner_name">Owner: <xsl:value-of select="OwnerString" /></span>
+                  <xsl:if test="Owner = $g_user_id">
+                    <xsl:variable name="shared">
+                      <xsl:choose>
+                        <xsl:when test="Sharing = '1'">Public</xsl:when>
+                        <xsl:otherwise>Private</xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:variable>
+                    <xsl:variable name="altshared">
+                      <xsl:choose>
+                        <xsl:when test="Sharing = '1'">Private</xsl:when>
+                        <xsl:otherwise>Public</xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:variable>
+                    <span class="options">
+                      <a href="mb?a=editst;shrd={Sharing};c={CollId};colltype=priv;debug={//CurrentCgi/Param[@name='debug']}" class="awesome thin small grey toggle-sharing">
+                        <span class="sharing-status {translate($shared, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')}"><xsl:value-of select="$shared" /></span> : Make <xsl:value-of select="$altshared" />
+                      </a>
+                      <xsl:text>&#160;&#160;</xsl:text>
+                      <a href="#" data-delete-href="{DeleteCollHref}" class="awesome thin small grey delete-collection">Delete Collection</a>
+                    </span>
+                  </xsl:if>
+                </p>
+              </div>
+              <div class="right">
+                <p class="num_items">
+                  <xsl:value-of select="NumItems" /> item<xsl:if test="number(NumItems) > 1">s</xsl:if>
+                </p>
+                <p class="updated">
+                  last updated: <xsl:value-of select="Updated_Display" />
+                </p>
+              </div>
+            </div>
           </xsl:for-each>
         </div>
+        
+        <script type="text/javascript">
+          $(document).ready(function() {
+            var HT = HT || {};
+            HT.cbBrowser = ColListApp.init(bucket);
+          })
+        </script>
+        
         <br class="clr" />
-        <div class="footnoteMsg">
+        <!-- <div class="footnoteMsg">
           <p>* = abbreviated account names for <a href="http://www.itd.umich.edu/itcsdocs/s4316/">UM Friend guest account</a> users.</p>
-        </div>        
+        </div>         -->
       </xsl:element>
+      
+      <xsl:call-template name="FeaturedCollection" />
+      
     </div>
+    
+  </xsl:template>
+  
+  <xsl:template name="LoginMsg">
+    <xsl:choose>
+      <xsl:when test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO'">
+        <div class="login_status">
+          <strong>
+            <a>
+              <xsl:attribute name="href"><xsl:value-of select="/MBooksTop/Header/LoginLink"/></xsl:attribute>
+              Login
+            </a>
+          </strong> to create and save permanent collections or see your private
+          collections.
+        </div>
+      </xsl:when>
+      <xsl:otherwise></xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- # search form # -->
@@ -514,9 +487,9 @@
         <!-- Collections Table Title -->
         <h2>
           <xsl:call-template name="get_page_title"/>
-          <xsl:if test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO' and /MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='priv'">
+          <!-- <xsl:if test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO' and /MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='priv'">
             <xsl:text> (login to save them)</xsl:text>
-          </xsl:if>
+          </xsl:if> -->
         </h2>
         
         <xsl:if test="$debug='1'">
@@ -540,8 +513,8 @@
       <xsl:variable name="pubpriv">
         <xsl:call-template name="get_which_list"/>
       </xsl:variable>
-      <xsl:text>HathiTrust Digital Library - </xsl:text>
-      <xsl:choose>
+      <xsl:text>HathiTrust Digital Library - Collections</xsl:text>
+      <!-- <xsl:choose>
         <xsl:when test="$pubpriv='pubcolls'">
           <xsl:text>Public Collections</xsl:text>
         </xsl:when>
@@ -555,7 +528,76 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:otherwise>
-      </xsl:choose>    
+      </xsl:choose>     -->
+    </xsl:template>
+
+    <xsl:template name="FeaturedCollection">
+      
+      <style>
+      #Sidebar {
+        width: 24%;
+        float: left;
+      }
+      
+      .Box {
+        border: 1px solid #F1F1F1;
+        background: #FFF;
+      }
+      
+      .Box h4 {
+        background: #F1F1F1;
+        color: #666;
+        font-size: 110%;
+        padding: 4px;
+        margin: 0;
+      }
+      
+      .Box img {
+        float: left;
+        border: 1px solid #CCC;
+        padding: 2px;
+        margin-right: 10px;
+        margin-bottom: 2px;
+      }
+      
+      .Box h5 {
+        font-size: 100%;
+        font-weight: bold;
+        margin: 0;
+        margin-bottom: 0.75em;
+      }
+      
+      .Box p {
+        font-size: 90%;
+        word-break: hyphenate;
+      }
+      
+      .Box div {
+        padding: 1em;
+      }
+      
+      </style>
+      
+      <script id="featured-template" type="text/x-template">
+        <div class="Box">
+          <h4>Featured Collection</h4>
+          <div>
+            <h5>
+              <a href="mb?a=listis;c=${{collid}}">${collname}</a>
+            </h5>
+            <a href="mb?a=listis;c=${{collid}}">
+              <img alt="" class="imgLeft" src="${{featured}}" />
+            </a>
+            <p class="hyphenate">
+              ${description}
+            </p>
+            <br clear="both" />
+          </div>
+        </div>
+      </script>
+      
+      <div id="Sidebar">
+      </div>
     </xsl:template>
     
   </xsl:stylesheet>

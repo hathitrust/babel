@@ -1,0 +1,390 @@
+/*body {
+  font-family: Arial, Verdana, Helvetica, sans-serif;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+}*/
+
+#mbContentContainer {
+  padding: 8px;
+  margin: 8px;
+}
+
+body {
+  min-width: 100px;
+}
+
+#mbMasterContainer {
+  min-width: 815px;
+}
+
+.mbColListContainer {
+}
+
+.ColList {
+  /*min-width: 605px;*/
+  width: auto;
+}
+
+.collection p {
+  margin-bottom: 0.5em;
+  margin-top: 0.25em;
+}
+
+a.collname {
+  font-size: 110%; /* 125 */
+}
+
+a.collname:link, a.collname:visited {
+  color: #C4630F;
+  text-decoration: none;
+}
+
+a.collname:hover {
+  text-decoration: underline;
+}
+
+a.awesome {
+  color: white;
+}
+
+.mine .owner_name {
+  font-weight: bold;
+}
+
+p.collname {
+  padding-top: 4px; /* 8 */
+}
+
+p.meta {
+  margin-top: 4px;
+  margin-bottom: 0px;
+  padding-bottom: 4px;
+}
+
+span.num_items {
+  float: left;
+  width: 150px;
+}
+
+span.owner_name {
+  /*float: left;*/
+  width: auto; /* 250px */
+  overflow: hidden;
+  font-size: 90%;
+}
+
+.options {
+  font-size: 11px;
+  /*position: absolute;
+    right: 25px*/;
+  bottom: 2px;
+  position: static;
+  padding-left: 40px;
+}
+
+/*.mozilla .options {
+  position: static;
+  padding-left: 32px;
+}*/
+
+.collectionData {
+  display: none;
+}
+
+.find-collection {
+  float:right; width: 35%;
+  text-align: right;
+}
+
+span.sharing-status.public {
+  color: green;
+}
+
+span.sharing-status.private {
+  color: #666;
+}
+
+span.active_filters {
+  padding-right: 8px;
+}
+
+div.ribbon.featured {
+  position: absolute;
+  /*right: -5px;
+    top: -5px;*/
+  height: 68px;
+  width: 68px;
+  right: 0px;
+  top: 0px;
+  background: url(HT_FEATURED_ribbon-corner-flat.png) no-repeat;
+}
+
+div.right.featured {
+  background: url(HT_FEATURED_ribbon-corner-flat.png) no-repeat scroll right top;
+}
+
+span.featured {
+  position: absolute;
+  left: -5000px;
+}
+
+.xxcollection {
+  border-left: 16px solid transparent;
+  padding-left: 8px;
+  padding-bottom: 3px; /* 5px */
+  margin-bottom: 8px; /* from 2px */
+  position: relative;
+  /*margin-top: -10px;*/
+  clear: both;
+  display: table-row;
+}
+
+.collection {
+  border-left: 16px solid transparent;
+  display: table-row; 
+  padding-bottom: 3px; /* 5px */
+  margin-bottom: 8px; /* from 2px */
+  position: relative;
+}
+
+.results {
+  border-spacing: 0em .5em;
+  border-collapse: separate;
+  display: table;
+  width: 100%;
+}
+
+.collection.featured {
+  min-height: 68px;
+}
+
+.left {
+  /*float: left;*/
+  width: 65%;
+  padding-left: 16px;
+  /*border: 1px dashed green;*/
+  position: relative;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.right p {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.right {
+  /*float: left;*/
+  width: 29%;
+  /* padding-top: 4px; */
+  font-size: 90%;
+  display: table-cell;
+  vertical-align: middle;
+  position: relative;
+  height: auto;
+  /*border: 1px dashed blue;*/
+}
+
+.wrapper {
+  height: auto;
+  position: relative;
+}
+
+/*.floater {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  background: #666;
+  color: white;
+  height: 25px;
+  font-size: 11px;
+}*/
+
+.distance {
+  width: 1px;
+  height: 50%;
+  background-color: black;
+  margin-bottom: -1em;
+  float: left;
+}
+
+.container {
+  margin: 0 auto;
+  position: relative;
+  text-align: left;
+  height: 2em;
+  clear: left;
+  border: 1px dashed red;
+}
+
+.collection p {
+  margin-right: 1em;
+}
+
+p.description {
+  font-size: 90%;
+  color: #666;
+  padding-bottom: 2px;
+}
+
+.odd {
+	background-color: #EBEBEB;
+}
+
+.even {
+	background-color: #F5F6F1;
+}
+
+.private {
+  /*border-left: 16px solid #666;*/
+  /*border-left: 16px solid #DDD;*/
+}
+
+.page_navigation {
+  float:right;
+}
+
+.selected {
+  /* display: block !important; */
+}
+
+.controls {
+  text-align: right;
+  margin-bottom: 2em;
+  /*min-width: 600px;*/
+}
+
+
+.controls > div > div {
+  margin-right: 0.25em;
+}
+
+.controls .num_items_control {
+  /*width: 250px;*/
+  text-align: left;
+  float: left;
+}
+
+.controls .filters {
+  float: left;
+  text-align: left;  
+  margin: 0;
+  padding: 0;
+  /*margin-right: 0.25em;*/
+  width: 27em;
+  white-space: nowrap;
+}
+
+.controls .filters li {
+  display: block;
+  float: left;
+  list-style-type: none;
+}
+
+.clearfix:after {
+     visibility: hidden;
+     display: block;
+     font-size: 0;
+     content: " ";
+     clear: both;
+     height: 0;
+     }
+.clearfix { display: inline-block; }
+/* start commented backslash hack \*/
+* html .clearfix { height: 1%; }
+.clearfix { display: block; }
+/* close commented backslash hack */
+
+/* For modern browsers */
+.cf:before,
+.cf:after {
+    content:"";
+    display:table;
+}
+
+.cf:after {
+    clear:both;
+}
+
+/* For IE 6/7 (trigger hasLayout) */
+.cf {
+    zoom:1;
+}
+
+.status, .login_status {
+  margin-top: 8px;
+  padding: 8px;
+  background: #ddd;
+  text-align: left;
+  font-weight: bold;
+  font-size: 90%;
+}
+
+.status.with-filters {
+  background: #F18F38;
+}
+
+.login_status {
+  background: #FEEEEE;
+  border: 1px solid #FFCC99;
+  font-weight: normal;
+  margin-bottom: 1em;
+}
+
+ul.filters .g-button {
+  margin: 0;
+  margin-left: -1px;
+}
+
+input.q {
+  font-size: 120%;
+}
+
+.placeholder {color: #aaa;}
+
+/*--- THE MAGIC ---*/
+/*
+This is the best bit!
+*/
+[placeholder]{
+	cursor:pointer;
+	/*color:#999;
+	 padding:5px;*/
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 2px;
+	border:1px solid #999;
+	
+	-moz-border-radius:2px;
+	-webkit-border-radius:2px;
+	border-radius:2px;
+}
+[placeholder]:active,
+[placeholder]:focus{
+	cursor:text;
+	color:#333;
+	border:1px solid #0a0;
+	
+	-moz-box-shadow:0 0 5px #0a0, 0 0 5px rgba(0,0,0,0.25) inset;
+	-webkit-box-shadow:0 0 5px #0a0, 0 0 5px rgba(0,0,0,0.25) inset;
+	box-shadow:0 0 5px #0a0, 0 0 5px rgba(0,0,0,0.25) inset;
+}
+/*
+If the input has placeholder="" AND value="" darken its appearance to show it is pre-populated and not a form hint.
+*/
+[placeholder][value]{
+	color:#333;
+}
+
+/*\*//*/
+* html .results, * html .collection {
+  display: block;
+}
+* html .right, * html .left {
+  display: inline-block;
+}
+*html .right {
+  margin-left: -1px;
+}
+/**/

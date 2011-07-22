@@ -32,7 +32,7 @@
      'solridx'  => 'text|author|title|subject|isbn',
      'solrfct'  => '.*',
      'start'    => '\d+',
-     'colltype' => 'pub|priv|class',
+     'colltype' => 'pub|priv|updated|class|all|my-collections|updated|featured',
      'undo'     => '.*',  #XXX consider limiting to values of a param
      'skin'     => '.*',
      'testUser' => '.*',
