@@ -63,11 +63,11 @@
               </div>
               <div style="float:right; width: 33%; text-align: right">
                   Sort by: <select size="1" name="sort_by" id="sort_by">
-                    <option value="collname">Collection Title</option>
-                    <option value="owner_name">Owner</option>
-                    <option value="updated">Last Updated</option>
-                    <option value="num_items">Items (low to high)</option>
-                    <option value="num_items" rel="desc">Items (high to low)</option>
+                    <option value="CollName">Collection Title</option>
+                    <option value="OwnerString">Owner</option>
+                    <option value="Updated">Last Updated</option>
+                    <option value="NumItems">Items (low to high)</option>
+                    <option value="NumItems" rel="desc">Items (high to low)</option>
                   </select>
               </div>
               &#160;

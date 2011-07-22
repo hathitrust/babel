@@ -567,8 +567,8 @@ jQuery(function($) {
       
       var idx = this.idx[key];
       sorting.push([idx, delta]);
-      if ( key != "collname" ) {
-        sorting.push([this.idx['collname'], delta]);
+      if ( key != "CollName" ) {
+        sorting.push([this.idx['CollName'], delta]);
       }
       
       this._apply_sorting(sorting);
@@ -695,8 +695,8 @@ jQuery(function($) {
         
   })
   
+  // initiate the app
+  HT.cbBrowser = CollListApp.init();
+  
 });
 
-$(document).ready(function() {
-  HT.cbBrowser = CollListApp.init();
-})
