@@ -378,7 +378,7 @@
           <!-- instantiate cbBrowser app -->
           $(document).ready(function() {
             var HT = HT || {};
-            HT.cbBrowser = ColListApp.init(bucket);
+            HT.cbBrowser = CollListApp.init(bucket);
           })
         </script>
         

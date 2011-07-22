@@ -21,7 +21,7 @@ $(document).ready(function() {
 
 jQuery(function($) {
   
-  window.ColListApp = Spine.Controller.create({
+  window.CollListApp = Spine.Controller.create({
     el: $("#mbContentContainer"),
     
     proxied: [],
