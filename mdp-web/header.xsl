@@ -127,7 +127,7 @@
              <xsl:attribute name="href">
                <xsl:value-of select="/MBooksTop/Header/PubCollLink"/>
              </xsl:attribute>
-             <span title="Public Collections">Public Collections</span>
+             <span title="Collections">Collections</span>
            </xsl:element>
          </li>
          <li id="PrivCollLink">
