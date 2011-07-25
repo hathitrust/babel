@@ -890,9 +890,10 @@
             <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
             <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
           </xsl:element>
-          
+          <span class="selectedfieldname">
           <xsl:value-of select="fieldName"/>
-          <xsl:text>:</xsl:text>
+          </span>
+          <xsl:text>:  </xsl:text>
           <xsl:value-of select="@name"/>
           
         </li>
@@ -922,7 +923,10 @@
 
           <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
         </xsl:element>
-        <xsl:text>Viewability:Search Only</xsl:text>
+        <span class="selectedfieldname">
+          <xsl:text>Viewability</xsl:text>
+      </span>
+        <xsl:text>:  Search Only</xsl:text>
       </li>
       
     </xsl:when>
@@ -937,7 +941,10 @@
           </xsl:attribute>
           <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
         </xsl:element>
-        <xsl:text>Viewability:Full View</xsl:text>
+        <span class="selectedfieldname">
+          <xsl:text>Viewability</xsl:text>
+      </span>
+        <xsl:text>:  Full View</xsl:text>
       </li>
     </xsl:when>
     

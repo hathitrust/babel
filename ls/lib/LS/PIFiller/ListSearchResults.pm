@@ -551,6 +551,8 @@ sub make_xml_for_unselected_facet_field
     my $counter=0;
     foreach my $value_hash (@{$ary_ref})
     {
+        #instead of displaying selected facets greyed out don't display them per Suz email 7/22/11
+        next if ($value_hash->{'selected'} eq "true");
         my $value=$value_hash->{'value'};
         my $facet_url=$value_hash->{'select_url'};
         my $class=' class ="showfacet';
