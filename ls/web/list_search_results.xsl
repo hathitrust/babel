@@ -1058,9 +1058,12 @@
           <xsl:choose>
             <xsl:when test="$selected='true'">
                 <xsl:value-of select="$value"/>
+
+                <span dir="LTR">
                 <xsl:text> (</xsl:text>
                 <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>
+              </span>
             </xsl:when>
             <xsl:otherwise>
               <xsl:element name="a">
@@ -1070,10 +1073,11 @@
                 
                 <xsl:value-of select="$value"/>
               </xsl:element>
+              <span dir="LTR">
                 <xsl:text> (</xsl:text>
                 <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>
-              
+              </span>
             </xsl:otherwise>
           </xsl:choose>
 
