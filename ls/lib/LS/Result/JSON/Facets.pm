@@ -115,8 +115,11 @@ sub AFTER_ingest_Solr_search_response
     if (defined($facet_hash))
     {
         #XXX do we want to parse this or just pass on a data structure?
-        # the below is more work but would isolate any changes necessary if we change the json response format i.e. json.nl=??
+        # This routine currently doesn't do anything due to line near the bottom that says $cleaned=$hash
+        # consider removing
         my $clean_facet_hash = $self->__clean_facets($facet_hash);
+        $clean_facet_hash = $self->__remove_Electronic_Resources_facet_value($clean_facet_hash);
+        
         
         $self->__set_facet_hash($clean_facet_hash);
     
@@ -161,13 +164,41 @@ sub __process_expain_data
 
 }
 # ---------------------------------------------------------------------
-sub __clean_facets
+
+#XXX this is only here until bill removes this from metadata in vufind and we reindex
+sub __remove_Electronic_Resources_facet_value
 {
     my $self = shift;
     my $hash =shift;
     # key =facetname
     #value=array of arrays where ary->[0]=facet value and ary->[1]=facet count
+    my $format_aryary= $hash->{'format'};
+    my $cleaned_aryary =[];
+    foreach my $ary (@{$format_aryary})
+    {
+        my $cleaned_ary=[];
+        #XXX HACK to remove format::Electronic Resource until bill removes it from Vufind Index
+        next if ($ary->[0] =~/Electronic Resource/);
+        $cleaned_ary->[0] =$ary->[0];
+        $cleaned_ary->[1] =$ary->[1];
+        
+        push (@{$cleaned_aryary},$cleaned_ary)
+    }
+    $hash->{'format'} =$cleaned_aryary;
+    return $hash;
+}
+
+
+# ---------------------------------------------------------------------
+sub __clean_facets
+{
+    my $self = shift;
+    my $hash =shift;
+
+    # key =facetname
+    #value=array of arrays where ary->[0]=facet value and ary->[1]=facet count
     
+#XXX WARNING  this entire rountine not used right now.  Consider removing it!
     my $cleaned={};
     foreach my $facetfield (keys %{$hash})
     {
@@ -177,6 +208,9 @@ sub __clean_facets
         foreach my $ary (@{$aryary})
         {
             my $cleaned_ary=[];
+            #XXX HACK to remove format::Electronic Resource until bill removes it from Vufind Index
+            next if ($ary->[0] =~/Electronic Resource/);
+                
             
             my $value = $ary->[0];
             my $count = $ary->[1];
