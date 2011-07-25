@@ -251,7 +251,8 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     my $num_full_text = $act->get_transient_facade_member_data($C, 'full_text_count');
     my $num_all = $act->get_transient_facade_member_data($C, 'all_count');
     my $num_search_only  = $act->get_transient_facade_member_data($C, 'search_only_count');
-    
+
+
     #always remove the page number from any url that switches context
     # i.e. changing from lmt=x to lmt=y changes ordering/result set and therefore pages
     $temp_cgi->delete('pn');
@@ -269,6 +270,22 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
 
     $temp_cgi->param('lmt', 'so');
     my $search_only_href = $temp_cgi->self_url();
+    my $num_total;
+    if ($limit_type eq 'all')
+    {
+        $num_total=$num_all;
+    }
+    elsif($limit_type eq 'so')
+    {
+        $num_total=$num_search_only;
+    }
+    else
+    {
+        $num_total=$num_full_text;
+    }
+    
+    $num_total=commify($num_total);
+    
     
     my $s;
 
@@ -276,9 +293,21 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     $s .= wrap_string_in_tag($all_href, 'AllHref');
     $s .= wrap_string_in_tag($full_text_href, 'FullTextHref');
     $s .= wrap_string_in_tag($search_only_href, 'SearchOnlyHref');
+
+    my $ft_display=commify($num_full_text);
     $s .= wrap_string_in_tag($num_full_text, 'FullTextCount');
+    $s .= wrap_string_in_tag($ft_display, 'FullTextCountDisplay');
+
+    my $all_display=commify($num_all);
     $s .= wrap_string_in_tag($num_all, 'AllItemsCount');
+    $s .= wrap_string_in_tag($all_display, 'AllItemsCountDisplay');
+
+    my $so_display=commify($num_search_only);
     $s .= wrap_string_in_tag($num_search_only, 'SearchOnlyCount');
+    $s .= wrap_string_in_tag($so_display, 'SearchOnlyCountDisplay');
+
+    $s .= wrap_string_in_tag($num_total, 'TotalCount');
+
     return $s;
 }
 
@@ -565,9 +594,11 @@ sub make_xml_for_unselected_facet_field
         
         # add normalized facet field to class
         $class .= ' ' . $norm_field_name . '" ';
+
+        my $count=commify($value_hash->{'count'});
         
         $xml .='<facetValue name="' . $value . '" '.$class . '> ' . "\n";
-        $xml .='<facetCount>' . $value_hash->{'count'} . '</facetCount>'. "\n";
+        $xml .='<facetCount>' . $count . '</facetCount>'. "\n";
         $xml .='<url>' . $facet_url . '</url>'  . "\n";
         $xml .='<selected>' . $value_hash->{'selected'} . '</selected>' . "\n";
         $xml .='</facetValue>' ."\n";
@@ -644,6 +675,15 @@ sub handle_ADVANCED_SEARCH_PI
 #
 #======================================================================
 #----------------------------------------------------------------------
+#XXX this should probably be moved to Utils, but I don't want to mess with submodule stuff now!
+sub commify
+{
+    my $text = reverse $_[0];       
+    $text =~s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+    return scalar reverse $text
+}
+
+
 sub __get_unselect_url
 {
     my $facet_hash = shift;

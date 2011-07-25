@@ -261,22 +261,7 @@
   </xsl:template>
 
   <xsl:template name="getTotalCount">
-    <xsl:variable name="limitType">
-      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
-    </xsl:variable>
-
-    <xsl:choose>    
-    <xsl:when test="$limitType = 'so'">
-      <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCount"/>
-    </xsl:when>
-    <xsl:when test="$limitType = 'ft'">
-            <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCount"/>
-    </xsl:otherwise>
-  </xsl:choose>
-  
+      <xsl:value-of select="/MBooksTop/LimitToFullText/TotalCount"/>
 </xsl:template>
 
 
@@ -993,7 +978,7 @@
           <xsl:text>Full View </xsl:text>
         </xsl:element>
         <xsl:text> (</xsl:text>
-        <xsl:value-of select="$FullTextCount"/>
+        <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCountDisplay"/>
         <xsl:text>) </xsl:text>
       </dd>
     </xsl:if>
@@ -1014,7 +999,7 @@
         <xsl:text>Limited (search only) </xsl:text>
       </xsl:element>
       <xsl:text> (</xsl:text>
-      <xsl:value-of select="$SearchOnlyCount"/>
+      <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCountDisplay"/>
       <xsl:text>) </xsl:text>
     </dd>
   </xsl:if>
