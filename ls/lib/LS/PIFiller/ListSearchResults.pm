@@ -916,8 +916,14 @@ sub _ls_wrap_result_data {
         my $s = '';
 
         my ($display_titles_ary_ref) = $doc_data->{'title'};
+        #XXX WARNING  Second title in Solr title field is either 
+        #  a) title without the initial article
+        #  b) title in the vernacular from a linked 880 field
+        # Until we fix indexing and what fields we get from VuFind we will only use the first 245
+        # thus we won't display title in vernacular
+        #   my $display_title = join(',', @{$display_titles_ary_ref});
+        my $display_title = $display_titles_ary_ref->[0];
         
-        my $display_title = join(',', @{$display_titles_ary_ref});
         $display_title = Encode::decode_utf8($display_title);
         Utils::map_chars_to_cers(\$display_title);
 
