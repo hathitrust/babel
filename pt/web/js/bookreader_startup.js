@@ -45,7 +45,6 @@ HT.resizeBookReader = function(is_fullscreen) {
       var checkHeight = dims.viewportHeight - dims.innerHeight - $("div.bibLinks").height() - 50;
       var scrollable_height = $scrollable.height();
       $scrollable.removeAttr('style');
-      console.log("SCROLL", scrollable_height, checkHeight);
       if ( scrollable_height >= checkHeight ) {
         // $scrollable.data('height', $scrollable.height);
         $scrollable.height(checkHeight);
