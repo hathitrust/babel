@@ -1286,6 +1286,7 @@ li.viewall {
 .selectAll {
   float: left;
   padding-right: 15px;
+  padding-top: 5px;
 }
 
 .SelectedItemActions select {
@@ -1293,18 +1294,18 @@ li.viewall {
   margin-right: 8px;
 }
 
-#movit, #copyit {
+/*#movit, #copyit {
   padding:0 .25em 0 .25em;
   width:auto;
   overflow:visible;
-	margin-right: 5px;
+  margin-right: 5px;
 }
 
 #delit {
   padding:0 .25em 0 .25em;
   width:auto;
   overflow:visible;
-}
+}*/
 
 /* Item Table */
 
