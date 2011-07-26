@@ -253,6 +253,12 @@
       authtype="shibboleth"
       domain="ucop.edu"
       enabled="1">University of California, Office of the President</Inst>
+  <Inst
+      sdrinst="miami"
+      template="https://___HOST___/Shibboleth.sso/miami?target=___TARGET___"
+      authtype="shibboleth"
+      domain="miami.edu"
+      enabled="1">University of Miami</Inst>
 
   <!-- waiting -->
 
@@ -322,10 +328,4 @@
       authtype="shibboleth"
       domain="udel.edu"
       enabled="0">University of Delaware</Inst>
-  <Inst
-      sdrinst="miami"
-      template="https://___HOST___/Shibboleth.sso/miami?target=___TARGET___"
-      authtype="shibboleth"
-      domain="miami.edu"
-      enabled="0">University of Miami</Inst>
 </Institutions>
