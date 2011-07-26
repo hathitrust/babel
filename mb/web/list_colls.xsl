@@ -65,7 +65,7 @@
                   Sort by: <select size="1" name="sort_by" id="sort_by">
                     <option value="CollName">Collection Title</option>
                     <option value="OwnerString">Owner</option>
-                    <option value="Updated">Last Updated</option>
+                    <option value="Updated" rel="desc">Last Updated</option>
                     <option value="NumItems">Items (low to high)</option>
                     <option value="NumItems" rel="desc">Items (high to low)</option>
                   </select>
