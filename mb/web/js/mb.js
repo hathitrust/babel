@@ -679,6 +679,9 @@ jQuery(function($) {
         var $loginLink = $("#loginLink");
         var login_href = $loginLink.attr("href").split('target=');
         var href = unescape(login_href[1]);
+        var delim;
+        if ( href.indexOf("?") < 0 ) { delim = "?"; }
+        else { delim = href.indexOf(";") < 0 ? '&' : ';'; }
         var delim = href.indexOf(";") < 0 ? '&' : ';';
         if ( href.indexOf("colltype=") < 0 ) {
           href += delim + "colltype=" + view;
