@@ -548,13 +548,13 @@
 
       <input type="hidden" name="a" id="a"/>
 
-      <button id="copyit" value="copyit">Copy Selected</button>
+      <button class="awesome small" id="copyit" value="copyit">Copy Selected</button>
 
       <!-- if they don't own the collection they shouldn't be able to delete (or move) items -->
       <xsl:choose>
         <xsl:when test="/MBooksTop/EditCollectionWidget/OwnedByUser='yes' ">
-          <button id="movit" value="movit">Move Selected</button>
-          <button id="delit" value="delit">Remove Selected</button>
+          <button class="awesome small" id="movit" value="movit">Move Selected</button>
+          <button class="awesome small" id="delit" value="delit">Remove Selected</button>
         </xsl:when>
         <xsl:otherwise></xsl:otherwise>
       </xsl:choose>
