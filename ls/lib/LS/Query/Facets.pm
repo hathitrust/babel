@@ -453,8 +453,9 @@ sub make_query_clause{
     Utils::remap_cers_to_chars(\$q);
     
     my $processed_q =$self->get_processed_user_query_string($q);
-    
-    my $boolean_q = $self->__get_boolean_query($processed_q)   ;
+    my $boolean_q= $processed_q;
+    # only use below if dismax is not working right
+#    my $boolean_q = $self->__get_boolean_query($processed_q)   ;
     
     #XXX does the following need to happen before or after booleanizing the query
     #XXX current processing will remove unbalenced quotes but leave in balenced quotes
