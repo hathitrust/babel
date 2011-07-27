@@ -186,7 +186,7 @@ jQuery(function($) {
         
         self.input_filter = self.controls.find("input[name=q]");
         self.input_filter.bind('keyup', function(e) {
-          if ( this.value != self.q ) {
+          if ( this.value.toLowerCase() != self.q ) {
             self.filter_search(this.value);
             self.apply_filters();
           }
@@ -546,13 +546,13 @@ jQuery(function($) {
     filter_search: function(q) {
       var self = this;
       
-      this.q = $.trim(q);
+      this.q = $.trim(q).toLowerCase();
       
       if ( this.q == "" ) {
         this.remove_filter({ type: "search" });
       } else {
         this.add_filter({ type: "search", fn: function(tr) {
-          return ( tr[self.idx.CollName].match(q) );
+          return ( tr[self.idx.CollName].match(self.q) );
         }})
       }
       
