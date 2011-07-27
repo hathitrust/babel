@@ -232,7 +232,7 @@ ocr:
     - [fullgeographic, 1]
     - [fullgenre, 1]
     - [era, 1]
-  mm: "10<90%"
+  mm: "100%"
   tie: 0.9
 
 # 
