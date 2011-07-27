@@ -13,7 +13,7 @@ use ToolLib;
 sub clone_app_usage {
     my $s = qq{Usage: clone-repo [options] [<app>[<app>+]]
            where <app> is the application of which to clone its central repo, init and update its submodules.
-                 -s clone under staging area: test, beta-{1,2,3,4} (e.g. /htapps/test.babel or /htapps/beta-3.babel )
+                 -s clone under staging area: test, beta-{1,2,...} (e.g. /htapps/test.babel or /htapps/beta-3.babel )
                     instead of /htapps/user.babel
                  -f force remove existing clone, then clone
                  -A all apps
@@ -26,7 +26,14 @@ my $ops = getopts('hs:fA');
 
 my $help = $opt_h;
 $ToolLib::VERBOSE = 1;
+
 my $STAGE = $opt_s;
+my @staging_areas = (@ToolLib::all_valid_stages, @ToolLib::valid_developers);
+if (! grep (/^$STAGE$/, @staging_areas)) {
+    PrintN("Invalid staging area=$STAGE\n");
+    exit 1;
+}
+
 my $FORCE = $opt_f;
 
 if ($help) {

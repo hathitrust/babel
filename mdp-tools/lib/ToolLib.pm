@@ -39,6 +39,34 @@ use Exporter ();
 
 $ToolLib::VERBOSE = 0;
 
+@ToolLib::valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4);
+@ToolLib::all_valid_stages = (@ToolLib::valid_beta_stages, 'test');
+
+@ToolLib::valid_developers =
+  qw (
+         aelkiss 
+         besmit 
+         bkammin 
+         ezbrooks 
+         jgmorse 
+         jjyork 
+         moseshll 
+         pfarber 
+         pulintz 
+         roger 
+         rrotter 
+         scollett 
+         sethajoh 
+         skorner 
+         sooty 
+         stampy 
+         tburtonw 
+         nasirg
+    );
+ 
+@ToolLib::valid_dev_repos = map { "/htapps/$_.babel" } @ToolLib::valid_developers;
+
+
 # ====================================================================
 #
 #                         Git (G_) Utilities

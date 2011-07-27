@@ -35,7 +35,7 @@ Note: B<stage-app> MUST be the only script that fetches origin for
 
 B<stage-app> -b<branch> will destroy the local repo for <app> and clone the local branch=<branch>
 of the given developer's local repo,
-e.g. /htapps/whoami.babel/<app> at beta-1,2,3,4.babel for
+e.g. /htapps/whoami.babel/<app> at beta-1,2,....babel for
 an existing application <app>. This allows staging of topic branches
 without the need to push to the branch to the central repo.
 
@@ -54,15 +54,15 @@ use ToolLib;
 sub stage_app_usage {
     my $s = qq{Usage: stage-app [options] [<app> [<app>]+]
       For <app>:
-        bring master branch up-to-date for testing under test.babel (default) or beta-{1,2,3,4}
-        bring local topic branch up-to-date for testing under beta-{1,2,3,4} only
+        bring master branch up-to-date for testing under test.babel (default) or beta-{1,2,...}
+        bring local topic branch up-to-date for testing under beta-{1,2,...} only
 
          When staging a single app at test.babel, prompts to display diff between
          staged commit and last deployed commit. Invokes \$EDITOR to display diff
 
          Options:
-            -s <staging area>: test (default), beta-{1,2,3,4}, e.g. 'beta-2'
-            -b <branch> at /htapps/whoami.babel/<app>. Note: <staging area> must be one of beta-{1,2,3,4}
+            -s <staging area>: test (default), beta-{1,2,...}, e.g. 'beta-2'
+            -b <branch> at /htapps/whoami.babel/<app>. Note: <staging area> must be one of beta-{1,2,...}
             -A all apps. If -b <branch>, skip apps without a branch=<branch> 
             -d prompt to show diffs when staging multiple apps
                  (always prompts when staging a single app)
@@ -74,10 +74,10 @@ sub stage_app_usage {
 our ($opt_h, $opt_v, $opt_s, $opt_A, $opt_b, $opt_d);
 my $ops = getopts('hvs:Ab:d');
 
-my @valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4);
-my @all_valid_stages = (@valid_beta_stages, 'test');
+my @valid_beta_stages = @ToolLib::valid_beta_stages;
+my @all_valid_stages = @ToolLib::all_valid_stages;
 
-my @valid_dev_repos = map { "/htapps/$_.babel" } qw(aelkiss besmit bkammin ezbrooks jgmorse jjyork moseshll pfarber pulintz roger rrotter scollett sethajoh skorner sooty stampy tburtonw );
+my @valid_dev_repos = @ToolLib::valid_dev_repos;
 
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
