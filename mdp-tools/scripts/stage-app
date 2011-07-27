@@ -198,80 +198,6 @@ sub list_submodule_dependencies {
     }
 }
 
-# ---------------------------------------------------------------------
-
-=item write_data
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub write_data {
-    my ($data_ref, $filename) = @_;
-
-    open(OUTFILE, ">:utf8", $filename) || die qq{Cannot open $filename for writing};
-    print OUTFILE $$data_ref;
-    close( OUTFILE );
-}
-
-# ---------------------------------------------------------------------
-
-=item __handle_diff
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __handle_diff {
-    my ($app, $app_dir) = @_;
-
-    return 0
-      if (! chdir_to_app_dir($app_dir));
-
-    my $last_tag = G_last_tag();
-    my $diff_file = "/tmp/git-$last_tag-$$.diff";
-    PrintY("Begin diff generation: diff between HEAD and tag ($last_tag), diff file: $diff_file ... ");
-
-    my $diff;
-    return 0
-      if (! execute_command_w_output(qq{git diff --ignore-all-space --submodule=log $last_tag}, \$diff));
-
-    # Clean up submodule log entries. we only want the SHA1s
-    my @submodule_lines = ($diff =~ m,^(Submodule.*?:),gm);
-    $diff =~ s,^Submodule.*,,gms;
-    foreach my $sml (@submodule_lines) {
-        next
-          if ($sml =~ m,yui2-lib,);
-
-        my ($path_arg, $sha1_arg) = ($sml =~ m,Submodule (.*?) ([0-9a-f]+\.\.[0-9-a-f]+),);
-        # print "$path_arg $sha1_arg\n";
-
-        return 0
-          if (! chdir_to_app_dir("$app_dir/$path_arg"));
-
-        my $sub_diff;
-        return 0
-          if (! execute_command_w_output(qq{git diff --ignore-all-space $sha1_arg}, \$sub_diff));
-
-        $diff .= "\n#\n# ***** SUBMODULE $path_arg DIFF *****\n#\n\n" . $sub_diff;
-    }
-
-    if (! $diff) {
-        $diff = "No difference between tag=$last_tag and app=$app staged at $app_dir";
-    }
-    
-    write_data(\$diff, $diff_file);
-    
-    system( "$ENV{EDITOR}", $diff_file );
-    # system( "more", $diff_file );
-
-    PrintY("OK\n");
-
-    return 1;
-}
-
 
 # ---------------------------------------------------------------------
 
@@ -333,7 +259,7 @@ sub stage_origin_master_branch {
         if ($STAGE eq 'test') {
             if ($prompt_for_diff) {
                 if (query_yn("\nSee diff of staged commit vs. last deployment?", 'n')) {
-                    if (! __handle_diff($app, $app_dir)) {
+                    if (! G_handle_diff($app, $app_dir)) {
                         PrintN(qq{Could not generate diff for application=$app at $app_dir\n});
                     }
                 }
