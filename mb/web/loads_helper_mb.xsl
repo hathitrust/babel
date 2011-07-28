@@ -3,53 +3,53 @@
       <xsl:output method="html"/>
        
   <xsl:template name="load_concat_js_file">
-    <script type="text/javascript" src="/mb/js/concatenated_common-min.js?_=1311805507"></script>
+    <script type="text/javascript" src="/mb/js/concatenated_common-min.js?_=1311884340"></script>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
-        <script type="text/javascript" src="/mb/js/concatenated_COLLLIST_JS-min.js?_=1311805507"></script>
+        <script type="text/javascript" src="/mb/js/concatenated_COLLLIST_JS-min.js?_=1311884340"></script>
     </xsl:if>
   </xsl:template> 
   <xsl:template name="load_concat_css_file">
-    <link rel="stylesheet" type="text/css" href="/mb/concatenated_common-min.css?_=1311805507"/>
+    <link rel="stylesheet" type="text/css" href="/mb/concatenated_common-min.css?_=1311884340"/>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
-        <link rel="stylesheet" type="text/css" href="/mb/concatenated_COLLLIST_CSS-min.css?_=1311805507" />
+        <link rel="stylesheet" type="text/css" href="/mb/concatenated_COLLLIST_CSS-min.css?_=1311884340" />
     </xsl:if>
   </xsl:template> 
 
   <xsl:template name="load_uncompressed_js">
- <script type="text/javascript" src="/mb/yui2-lib/build/yahoo/yahoo-min.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/yui2-lib/build/event/event-min.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/yui2-lib/build/dom/dom-min.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/yui2-lib/build/dragdrop/dragdrop-min.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/yui2-lib/build/container/container-min.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/yui2-lib/build/connection/connection-min.js?_=1311805507"></script>
- <script type="text/javascript" src="//common-web/js/feedbackCBForm.js?_=1311805507"></script>
- <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/newCollOverlayCB.js?_=1311805507"></script>
- <script type="text/javascript" src="//common-web/js/listUtils.js?_=1311805507"></script>
- <script type="text/javascript" src="//common-web/js/overlayUtils.js?_=1311805507"></script>
- <script type="text/javascript" src="//common-web/js/search.js?_=1311805507"></script>
+ <script type="text/javascript" src="/mb/yui2-lib/build/yahoo/yahoo-min.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/yui2-lib/build/event/event-min.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/yui2-lib/build/dom/dom-min.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/yui2-lib/build/dragdrop/dragdrop-min.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/yui2-lib/build/container/container-min.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/yui2-lib/build/connection/connection-min.js?_=1311884340"></script>
+ <script type="text/javascript" src="//common-web/js/feedbackCBForm.js?_=1311884340"></script>
+ <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/newCollOverlayCB.js?_=1311884340"></script>
+ <script type="text/javascript" src="//common-web/js/listUtils.js?_=1311884340"></script>
+ <script type="text/javascript" src="//common-web/js/overlayUtils.js?_=1311884340"></script>
+ <script type="text/javascript" src="//common-web/js/search.js?_=1311884340"></script>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
- <script type="text/javascript" src="/mb/js/jquery.tmpl.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/spine.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/lib/spine.route.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/common.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/css.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/jquery.placeholder.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/date.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/jquery.ba-hashchange.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/mb.js?_=1311805507"></script>
- <script type="text/javascript" src="/mb/js/hyphenator.js?_=1311805507"></script>
+ <script type="text/javascript" src="/mb/js/jquery.tmpl.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/spine.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/lib/spine.route.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/common.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/css.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/jquery.placeholder.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/date.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/jquery.ba-hashchange.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/mb.js?_=1311884340"></script>
+ <script type="text/javascript" src="/mb/js/hyphenator.js?_=1311884340"></script>
     </xsl:if>
 </xsl:template>
  
 
  <xsl:template name="load_uncompressed_css">
- <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/fonts/fonts-min.css?_=1311805507"/>
- <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/container/assets/skins/sam/container.css?_=1311805507"/>
- <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css?_=1311805507"/>
+ <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/fonts/fonts-min.css?_=1311884340"/>
+ <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/container/assets/skins/sam/container.css?_=1311884340"/>
+ <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css?_=1311884340"/>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
- <link rel="stylesheet" type="text/css" href="/mb/mb.css?_=1311805507"/>
- <link rel="stylesheet" type="text/css" href="/mb/awesome.css?_=1311805507"/>
+ <link rel="stylesheet" type="text/css" href="/mb/mb.css?_=1311884340"/>
+ <link rel="stylesheet" type="text/css" href="/mb/awesome.css?_=1311884340"/>
     </xsl:if>
 </xsl:template>
 </xsl:stylesheet>

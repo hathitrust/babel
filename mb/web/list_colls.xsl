@@ -273,6 +273,8 @@
           }
         </style>
 
+        <xsl:variable name="insts" select="//Inst" />
+
         <script type="text/javascript" disable-output-escaping="yes">
           var bucket = { 'html': [], 'featured': [], 'cols':[] };
           var html; var featured;
@@ -289,14 +291,8 @@
             'Shared',
             'DeleteCollHref'
           ];
-        </script>
 
-        <xsl:variable name="insts" select="//Inst" />
-        
-        <div class="results">
           <xsl:for-each select="$list_node/Collection">
-
-            <script type="text/javascript">
               html = []; 
               html.push('<xsl:value-of select="CollId" />');
               html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
@@ -317,7 +313,35 @@
               html.push('<xsl:value-of select="Shared" />');
               html.push('<xsl:value-of select="DeleteCollHref" />');
               bucket.html.push(html);
-            </script>
+          </xsl:for-each>
+
+        </script>
+
+        <div class="results">
+          <xsl:for-each select="$list_node/Collection">
+
+            <!-- <script type="text/javascript">
+              html = []; 
+              html.push('<xsl:value-of select="CollId" />');
+              html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
+              html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
+              html.push('<xsl:value-of select="NumItems" />');
+              html.push('<xsl:value-of select="OwnerString" />');
+
+              <xsl:variable name="owner_affiliation" select="string($insts[contains(current()/OwnerAffiliation, @domain)])" />
+
+              html.push('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
+              html.push('<xsl:value-of select="Updated" />');
+              html.push('<xsl:value-of select="Updated_Display" />');
+              featured = '<xsl:value-of select="Featured" />';
+              html.push(featured);
+              if ( featured ) {
+                bucket.featured.push(<xsl:value-of select="position() - 1" />);
+              }
+              html.push('<xsl:value-of select="Shared" />');
+              html.push('<xsl:value-of select="DeleteCollHref" />');
+              bucket.html.push(html);
+            </script> -->
 
             <xsl:variable name="class">
               <xsl:text>collection </xsl:text>
@@ -377,7 +401,10 @@
         <script type="text/javascript">
           <!-- setup cbBrowser app -->
           $(document).ready(function() {
-            HT.cbBrowser.setup(bucket);
+            console.log("SETTING UP BROWSER");
+            HT.params = {};
+            HT.params.bucket = bucket;
+            HT.cbBrowser.setup();
           })
         </script>
         

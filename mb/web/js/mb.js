@@ -85,8 +85,9 @@ jQuery(function($) {
       
     },
     
-    setup: function(bucket) {
-      this._build_cache(bucket);
+    setup: function() {
+      this._build_cache(HT.params.bucket);
+      console.log("SETUP: ", ( new Date ).getTime() );
       this.clear_filters();
 
       var colltype = window.location.href.match(/colltype=([a-z-]+)/);
@@ -94,13 +95,19 @@ jQuery(function($) {
         colltype = colltype[1];
         if ( colltype == "priv" ) { colltype = "my-collections"; }
         else if ( colltype == "pub" ) { colltype = "all"; }
-        this.navigate(colltype, true);
+        this.navigate2(colltype, true);
       }
 
+      var t0 = ( new Date ).getTime();
+      console.log("PRE-ROUTED: ", ( new Date ).getTime() );
       Spine.Route.setup();
+      console.log("ROUTED: ", ( new Date ).getTime() );
+      // if ( window.location.hash.indexOf("alert") > -1 ) {
+      //   alert((new Date).getTime() - t0);
+      // }
     },
     
-    navigate: function(view, invoke_events) {
+    navigate2: function(view, invoke_events) {
       Spine.Route.navigate(view, invoke_events);
       this.update_login_link(view);
     },
@@ -175,7 +182,7 @@ jQuery(function($) {
           $this.parents("ul").find("button").removeClass("active");
           $this.addClass("active");
           var view = $this.attr('rel');
-          self.navigate(view, true);
+          self.navigate2(view, true);
         })
         
         // fix the active button
@@ -228,7 +235,7 @@ jQuery(function($) {
       
       this.results.empty();
       var resultDiv = this.results.get(0);
-      var fragment = document.createDocumentFragment();
+      //var fragment = document.createDocumentFragment();
       var c = this.cache,
           h = c.html,
           n = c.normalized,
@@ -238,13 +245,16 @@ jQuery(function($) {
 
       var i = -1;
       
+      var t0 = (new Date).getTime();
+      
+      // build a single HTML array for the entire listing
+      // and slam it onto the resultsDiv
+      var html = [];
       for(var j = 0; j < totalRows; j++) {
 
-        //var pos = n[j][checkCell];
         var pos = f[j];
         
         var row = h[pos];
-        //if ( ! $this.hasClass("selected") ) { continue; }
 
         var data = {};
         i += 1;
@@ -256,7 +266,10 @@ jQuery(function($) {
         data.num_items = row[self.idx.NumItems];
         data.owner_name = row[self.idx.OwnerString];
         data.owner_affiliation = row[self.idx.OwnerAffiliation];
-        data.mine = row[self.idx.DeleteCollHref].replace(/colltype=([a-z-]+)/, "colltype=" + self.view);
+        data.mine = row[self.idx.DeleteCollHref];
+        if ( data.mine ) {
+          data.mine = data.mine.replace(/colltype=([a-z-]+)/, "colltype=" + self.view);
+        }
         data.shared = row[self.idx.Shared];
         data.featured = row[self.idx.Featured];
         data.updated = row[self.idx.Updated_Display];
@@ -269,9 +282,6 @@ jQuery(function($) {
           data.altshared = "Public";
         }
 
-        // painful but faster!
-        var div = document.createElement("div");
-        var $div = $(div);
         var cls = "collection";
         if ( i % 2 == 0 ) { cls += " even"; }
         else { cls += " odd"; };
@@ -287,11 +297,9 @@ jQuery(function($) {
         if ( $.browser.mozilla ) {
           cls += " mozilla";
         }
+                
+        html.push('<div class="' + cls + '">');
         
-        
-        $div.addClass(cls);
-        
-        var html = [];
         var add_featured_ribbon = data.featured;
         if ( add_featured_ribbon && $.browser.msie && ( parseInt($.browser.version) < 8 ) ) {
           html.push('<div title="featured collection" class="ribbon featured"></div>');
@@ -358,26 +366,12 @@ jQuery(function($) {
         
         html.push('<p class="updated">last updated: ' + data.updated + '</p>');
         html.push('</div>');
-        div.innerHTML = html.join('\n');
-        
-        fragment.appendChild(div);
-        
-      } //)
-      
-      resultDiv.appendChild(fragment.cloneNode(true));
-      if ( 0 && $.browser.mozilla || $.browser.safari ) {
-        $(".wrapper").each(function() {
-          var h = $(this).parent().height();
-          var h2 = $(this).height();
-          var $ribbon = $(this).children(".ribbon");
-          $ribbon.css('top', (-Math.ceil(h/2) + Math.ceil(h2/2) - 5) + "px");
-          // var $p = $(this).parent();
-          // var h = $p.height();
-          // $(this).height(h); // .css({'margin-bottom': Math.floor(h/2) * -1});
-          // $(this).find("p.num_items").css('padding-top', Math.floor(h/4) + "px");
-        })
+
+        html.push('</div>');
+
       }
 
+      resultDiv.innerHTML = html.join("\n");
 
       this.active_filters.empty();
       var total = $("div.collection").length;
@@ -447,7 +441,7 @@ jQuery(function($) {
         // trigger redraw
         this.apply_filters();
       } else {
-        this.navigate("all", true);
+        this.navigate2("all", true);
       }
       return false; // this seems lame
     },
@@ -500,6 +494,12 @@ jQuery(function($) {
         // not a filter; punt
         self.remove_filter({ type: "view" });
         return;
+      }
+
+      if ( self.view == "my-collections" ) {
+        $("body").attr('id', 'PrivCollPage');
+      } else {
+        $("body").attr('id', 'PubCollPage');
       }
       
       self.add_filter({ type : "view", fn: function(tr) {
