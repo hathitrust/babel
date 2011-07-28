@@ -496,11 +496,11 @@ jQuery(function($) {
         return;
       }
 
-      if ( self.view == "my-collections" ) {
-        $("body").attr('id', 'PrivCollPage');
-      } else {
-        $("body").attr('id', 'PubCollPage');
-      }
+      // if ( self.view == "my-collections" ) {
+      //   $("body").attr('id', 'PrivCollPage');
+      // } else {
+      //   $("body").attr('id', 'PubCollPage');
+      // }
       
       self.add_filter({ type : "view", fn: function(tr) {
         if ( self.view == "updated" ) {
