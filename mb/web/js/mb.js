@@ -95,7 +95,7 @@ jQuery(function($) {
         colltype = colltype[1];
         if ( colltype == "priv" ) { colltype = "my-collections"; }
         else if ( colltype == "pub" ) { colltype = "all"; }
-        this.navigate2(colltype, true);
+        this.navigate(colltype, true);
       }
 
       var t0 = ( new Date ).getTime();
@@ -106,8 +106,8 @@ jQuery(function($) {
       //   alert((new Date).getTime() - t0);
       // }
     },
-    
-    navigate2: function(view, invoke_events) {
+
+    navigate: function(view, invoke_events) {
       Spine.Route.navigate(view, invoke_events);
       this.update_login_link(view);
     },
@@ -182,7 +182,7 @@ jQuery(function($) {
           $this.parents("ul").find("button").removeClass("active");
           $this.addClass("active");
           var view = $this.attr('rel');
-          self.navigate2(view, true);
+          self.navigate(view, true);
         })
         
         // fix the active button
@@ -441,7 +441,7 @@ jQuery(function($) {
         // trigger redraw
         this.apply_filters();
       } else {
-        this.navigate2("all", true);
+        this.navigate("all", true);
       }
       return false; // this seems lame
     },
