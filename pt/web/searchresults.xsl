@@ -345,7 +345,7 @@
         <li> <xsl:text>You searched in a language not currently supported by "search within 
         a book"</xsl:text>
       </li>
-        <li><xsl:text> "Your term(s) do not appear on pages in this book but are present in 
+        <li><xsl:text> Your term(s) do not appear on pages in this book but are present in 
 the bibliographic metadata for this book (not shown): </xsl:text>
 
         <xsl:element name="a">
