@@ -453,6 +453,10 @@ sub make_query_clause{
     Utils::remap_cers_to_chars(\$q);
     
     my $processed_q =$self->get_processed_user_query_string($q);
+    #XXX temporary fix until we refactor Search::Query::_get_processed_user_query_string
+    # remove any string consisting only of ascii punctuation
+    $processed_q = $self->remove_tokens_with_only_punctuation($processed_q);
+    
     my $boolean_q= $processed_q;
     # only use below if dismax is not working right
 #    my $boolean_q = $self->__get_boolean_query($processed_q)   ;
@@ -493,6 +497,44 @@ sub make_query_clause{
 }
 
 # ---------------------------------------------------------------------w
+
+sub remove_tokens_with_only_punctuation
+{
+    my $self = shift;
+    my $q = shift;
+    my $pq;
+    
+    my @tokens = split(/\s+/,$q);
+    my @out=();
+        
+    foreach my $token (@tokens)
+    {
+        # if token has at least one character not in ascii punctuation
+        if ($token =~/[\-\`~!@\#\$\%\^&*\(\)_+=-\\\|\]\}\[\{\'\"\;\:\/\?\.\>\,\<]/)
+        {
+            my $temp = $token;
+            # remove ascii punct
+            while ($temp =~s/[\-\`~!@\#\$\%\^&*\(\)_+=-\\\|\]\}\[\{\'\"\;\:\/\?\.\>\,\<]//g)        { }
+            
+            if ($temp =~/^\s*$/)
+            {
+                # if after removing all ascii punctuation we have nothing or nothing but spaces then don't output token
+            }
+            else
+            {
+                push (@out,$token);
+            }
+        }
+        else
+        {
+            push (@out,$token);
+        }
+    }
+    $pq = join (' ',@out);
+    return $pq;
+}
+
+#----------------------------------------------------------------------
 
 sub dismax_2_string
 {
