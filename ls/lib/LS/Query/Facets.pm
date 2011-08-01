@@ -507,14 +507,50 @@ sub remove_tokens_with_only_punctuation
     my @tokens = split(/\s+/,$q);
     my @out=();
         
+    my $regex=qr/
+                 [\-
+                 \`
+                 ~
+                 !
+                 @
+                 \#
+                 \$
+                 \%
+                 \^
+                 &
+                 \*
+                 \(
+                 \)
+                 \_
+                 \+
+                 =
+                 \\
+                 \|
+                 \]
+                 \}
+                 \[
+                 \{
+                 \'
+                 \"
+                 \;
+                 \:
+                 \/
+                 \?
+                 \.
+                 \>
+                 \,\<
+                ]/x;
+    
+
     foreach my $token (@tokens)
     {
         # if token has at least one character not in ascii punctuation
-        if ($token =~/[\-\`~!@\#\$\%\^&*\(\)_+=-\\\|\]\}\[\{\'\"\;\:\/\?\.\>\,\<]/)
+        
+        if ($token =~/$regex/)
         {
             my $temp = $token;
             # remove ascii punct
-            while ($temp =~s/[\-\`~!@\#\$\%\^&*\(\)_+=-\\\|\]\}\[\{\'\"\;\:\/\?\.\>\,\<]//g)        { }
+            while ($temp =~s/$regex//g)        { }
             
             if ($temp =~/^\s*$/)
             {
