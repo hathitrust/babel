@@ -478,12 +478,28 @@ sub make_query_clause{
     
     my $qf = $self->dismax_2_string($weights->{'qf'});
     my $pf = $self->dismax_2_string($weights->{'pf'});
+    my $pf3;
+    my $pf2;
+    
+    if ($field =~/ocrpf/)
+    {
+        $pf3= $self->dismax_2_string($weights->{'pf3'});
+        $pf2= $self->dismax_2_string($weights->{'pf2'});
+    }
+    
     my $mm=$weights->{'mm'};
     my $tie=$weights->{'tie'};
     $mm =~s,\%,\%25,g; #url encode any percent sign should this be a named sub? 
     
     my $QF = qq{ qf='} . $qf . qq{' };
+
     my $PF = qq{ pf='} . $pf . qq{' };
+    #XXX with pf 2 and 3.  XXX need to write this so we only put these in if they are in the config
+    if (defined ($pf2))
+    {
+        $PF = qq{ pf='} . $pf . qq{' } . qq{ pf3='} . $pf3 . qq{' } .qq{ pf2='} . $pf2 . qq{' };
+    }
+    
     my $MM = qq{ mm='} . $mm . qq{' };
     my $TIE = qq{ tie='} . $tie . qq{' };
 
@@ -519,8 +535,6 @@ sub remove_tokens_with_only_punctuation
                  \^
                  &
                  \*
-                 \(
-                 \)
                  \_
                  \+
                  =
