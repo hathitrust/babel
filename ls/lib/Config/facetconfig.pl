@@ -95,6 +95,7 @@ $param_2_solr_map = {
                            'hlb3'=>'hlb',
                             'ocr'=>'ocr',
                             'ocr2'=>'ocr2',
+                            'ocrpf'=>'ocrpf',
                             'all'=>'all',
                             'callnumber'=>'callnumber',
                             'publisher'=>'publisher',
