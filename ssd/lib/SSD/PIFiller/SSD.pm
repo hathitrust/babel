@@ -55,14 +55,13 @@ sub handle_OCR_DATA_PI
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
     my $ses = $C->get_object('Session');
-    my $ssd = $ses->get_persistent_subkey('ssd', $id);
+    my $full_ocr_allowed = ($ses->get_transient_subkey('full_ocr', $id) eq 'allowed');
     
-    # As of Fri Mar 18 14:32:00 2011, JPW authorized ssd to provied
-    # the full OCR of books in the public domain to all users, not
-    # just SSD users ...
-    if ($ssd ne 'allowed') {
-        return '';
-    }
+    # As of Fri Mar 18 14:32:00 2011, JPW authorized ssd cgi to
+    # provide the full OCR of books in the public domain to all users,
+    # not just SSD users.  Other cases may equate to
+    # $full_ocr_allowed==1 too.
+    return '' unless ($full_ocr_allowed);
     
     my $mdpItem = $C->get_object('MdpItem');
     

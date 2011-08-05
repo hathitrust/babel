@@ -15,7 +15,7 @@
      'src'      => '[1-4]',
      'num'      => '.*',
      'start'    => '\d+',
-     'ssd'      => '1',
+     'ssd'      => '1', # backwards compatible but obsolete
      'skin'     => '.*',
      'q1'       => '.*',
      'u'        => '1',

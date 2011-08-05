@@ -397,7 +397,7 @@
       <xsl:when test="$gFinalView='restricted'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>Access to this page requires that you have the book checked out.
+          <p>If you have print-disability credentials you may have full-text access to this item. Check with your institution.
           Keyword searchable (no full-text) access to this item is also
           available via our regular Hathi Trust Digital Library system.</p>
           <p>
@@ -414,9 +414,7 @@
       <xsl:when test="$gFinalAccessStatus='allow' and /MBooksTop/MBooksGlobals/SSDSession='false'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>This item is in the public domain. You may use this page to view
-          the OCR page by page with additional accessability features.
-          Access to the full OCR requires that you have the book checked out.
+          <p>You have full-text access to this item.  Note that there are additional accessability features to aid navigation.
           Full-text access to this item is also available via our regular Hathi Trust Digital Library
           system.</p>
           <p>
