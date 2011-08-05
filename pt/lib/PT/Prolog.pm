@@ -117,11 +117,6 @@ sub Run {
     PT::PageTurnerUtils::Debug( $cgi, $ses );
 
     my $id = $cgi->param( 'id' );
-
-    # Tests for ssd user access
-    $self->SSD_user_login_trap($C, $id);
-    # POSSIBLY NOTREACHED
-
     my $dbh = $db->get_DBH();
     my $user_id = $auth->get_user_name($C);
 
@@ -218,37 +213,6 @@ sub SetDefaultPage {
     }
     elsif ($seq = $mdpItem->HasTOCFeature()) {
         $cgi->param('seq', $seq );
-    }
-}
-
-
-# ----------------------------------------------------------------------
-# NAME         : SSD_user_login_trap
-# PURPOSE      :
-# NOTES        : Force login in ssd cases
-# ----------------------------------------------------------------------
-sub SSD_user_login_trap {
-    my $self = shift;
-
-    my ($C, $id) = @_; 
-
-    my $force_login = 0;
-
-    my $logged_in = $C->get_object('Auth')->is_logged_in();
-    my $ssd_requested = $C->get_object('CGI')->param('ssd');
-    
-    # SSD user access requires the user to be authenticated
-    if ($ssd_requested) {
-        $force_login = (! $logged_in);
-    }
-
-    if ($force_login) {
-        # Force login to get identity for further validation
-        my $login_url = $C->get_object('CGI')->self_url();
-        $login_url = Utils::url_over_SSL_to($login_url);
-        my $login_cgi = new CGI('');
-        print $login_cgi->redirect($login_url);
-        exit;
     }
 }
 
