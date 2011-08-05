@@ -73,7 +73,7 @@
             <xsl:value-of select="gHttpHost"/>ssd?id=<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
           </xsl:attribute>
           text-only view
-        </xsl:element> of this public domain book.
+        </xsl:element> of this book.
       </div>
     </xsl:if>
   </xsl:template>
