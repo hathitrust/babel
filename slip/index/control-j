@@ -108,11 +108,11 @@ sub cont_get_usage {
 
        control-j -kQtimestamp -r run [-tYYYYMMDD]
           set queue timestamp to 00000000 or value of -t
-            re-queue ids in j_rights newer than timestamp, to be re-indexed
+            re-queue ids in j_rights newer than that timestamp, to be re-indexed
 
-       control-j -kVtimestamp -r run [-tYYYY-MM-DD]
-          set vSolr timestamp to 0000-00-00 or value of -t
-            re-query vSolr for ids newer that timestamp, to be re-added j_rights 
+       control-j -kVtimestamp -r run [-tYYYYMMDD]
+          set vSolr timestamp to 00000000 or value of -t
+            re-query vSolr for ids newer than that timestamp, to be re-added j_rights 
 
        control-j -k stop|start -V
           -V starts/stops rights-j
