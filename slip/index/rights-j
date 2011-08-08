@@ -259,7 +259,7 @@ my $SLICE_SIZE = ($REBUILD ? 100 : 1000);
 my $C = new Context;
 
 # Any run number will do to grab common.conf
-my $config = SLIP_Utils::Common::gen_run_config(0);
+my $config = SLIP_Utils::Common::gen_run_config('slip', 0);
 $C->set_object('MdpConfig', $config);
 
 my $db;

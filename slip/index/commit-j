@@ -132,7 +132,7 @@ if (defined($opt_d)) {
 
 my $C = new Context;
 
-my $config = SLIP_Utils::Common::gen_run_config($RUN);
+my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 my $db;

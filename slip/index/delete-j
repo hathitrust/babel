@@ -92,7 +92,7 @@ $| = 1;
 
 my $C = new Context;
 
-my $CONFIG = SLIP_Utils::Common::gen_run_config($RUN);
+my $CONFIG = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $CONFIG);
 
 my $db;
