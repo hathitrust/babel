@@ -21,25 +21,34 @@ sub clone_app_usage {
     return $s;
 }
 
+if (! scalar @ARGV) {
+    print clone_app_usage();
+    exit 0;
+}
+
 our ($opt_h, $opt_s, $opt_f, $opt_A);
 my $ops = getopts('hs:fA');
 
 my $help = $opt_h;
 $ToolLib::VERBOSE = 1;
 
-my $STAGE = $opt_s;
-my @staging_areas = (@ToolLib::all_valid_stages, @ToolLib::valid_developers);
-if (! grep (/^$STAGE$/, @staging_areas)) {
-    PrintN("Invalid staging area=$STAGE\n");
-    exit 1;
-}
-
-my $FORCE = $opt_f;
-
 if ($help) {
     print clone_app_usage();
     exit 0;
 }
+
+
+my $STAGE = $opt_s;
+if ($STAGE) {
+    my @staging_areas = (@ToolLib::all_valid_stages, @ToolLib::valid_developers);
+    if (! grep (/^$STAGE$/, @staging_areas)) {
+        PrintN("Invalid staging area=$STAGE\n");
+        print clone_app_usage();
+        exit 1;
+    }
+}
+
+my $FORCE = $opt_f;
 
 my $ALL = $opt_A;
 my @apps;
