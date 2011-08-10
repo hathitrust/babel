@@ -1,7 +1,7 @@
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 BEGIN
 {
-    $ENV{DEBUG_LOCAL}="true";
+#    $ENV{DEBUG_LOCAL}="true";
 }
 use Vendors;
 
@@ -90,17 +90,22 @@ sub testQuery
     
 __DATA__
 #
-(dog AND cat AND bear)
+( dog AND cat AND bear)
 dog AND cat
 dog AND cat AND bear
 dog cat AND bear
 dog cat OR bear
+dog (cat OR bear)
 (dog cat) bear
+(dog OR cat) AND food
+(dog OR cat OR bear) AND (food OR water OR feeding)
+dog AND and bear
+dog AND AND bear
 
 #foo "bar" baz
 #morgan & york
 #    ampersand entity &amp; foo
 #this && that
-#unbalenced" double" quotes"
-#unbalenced (parens ()
-3balenced ( parens )
+unbalenced" double" quotes"
+unbalenced (parens ()
+balenced ( parens )
