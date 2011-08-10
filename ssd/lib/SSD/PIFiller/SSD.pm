@@ -37,6 +37,26 @@ BEGIN {
 
 # ---------------------------  Handlers  ------------------------------
 #
+
+# ---------------------------------------------------------------------
+
+=item handle_CURRENT_PAGE_OCR_PI : PI_handler(CURRENT_PAGE_OCR)
+
+Handler for CURRENT_PAGE_OCR
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_CURRENT_PAGE_OCR_PI
+    : PI_handler(CURRENT_PAGE_OCR)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $mdpItem = $C->get_object('MdpItem');
+    return $mdpItem->GetOcrTextRef();
+}
+
+
 # ---------------------------------------------------------------------
 
 =item handle_OCR_DATA_PI : PI_handler(OCR_DATA)

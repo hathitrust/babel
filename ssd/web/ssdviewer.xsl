@@ -163,12 +163,14 @@
         <!--If TOC exists, add link to skip TOC and go to first page. If no TOC, just go to first page-->
         <xsl:choose>
           <xsl:when test="$gFeatureList/Feature">
-            <xsl:element name="a">
-              <xsl:attribute name="href">#toc</xsl:attribute>
-              <xsl:text>Go to table of contents</xsl:text>
-            </xsl:element>
-            <xsl:element name="br"/>
-            
+            <xsl:if test="$gFinalAccessStatus='allow'">
+              <xsl:element name="a">
+                <xsl:attribute name="href">#toc</xsl:attribute>
+                <xsl:text>Go to table of contents</xsl:text>
+              </xsl:element>
+              <xsl:element name="br"/>
+            </xsl:if>
+
             <xsl:choose>
               <!--If using page by page view, skip to current page instead of first -->
               <xsl:when test="$gFinalAccessStatus='allow' and /MBooksTop/MBooksGlobals/SSDSession='false'">
@@ -178,10 +180,12 @@
                 </xsl:element>
               </xsl:when>
               <xsl:otherwise>
-                <xsl:element name="a">
-                  <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
-                  <xsl:text>Skip table of contents and go to first page</xsl:text>
-                </xsl:element>
+                <xsl:if test="$gFinalAccessStatus='allow'">
+                  <xsl:element name="a">
+                    <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                    <xsl:text>Skip table of contents and go to first page</xsl:text>
+                  </xsl:element>
+                </xsl:if>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:when>
@@ -397,9 +401,7 @@
       <xsl:when test="$gFinalView='restricted'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>If you have print-disability credentials you may have full-text access to this item. Check with your institution.
-          Keyword searchable (no full-text) access to this item is also
-          available via our regular Hathi Trust Digital Library system.</p>
+          <p>If you have print-disability credentials you may have full-text access to this item. Check with your institution. Keyword searchable (no full-text) access to this item is also available via our regular Hathi Trust Digital Library system.</p>
           <p>
             <a>
               <xsl:attribute name="href">
@@ -414,9 +416,7 @@
       <xsl:when test="$gFinalAccessStatus='allow' and /MBooksTop/MBooksGlobals/SSDSession='false'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>You have full-text access to this item.  Note that there are additional accessability features to aid navigation.
-          Full-text access to this item is also available via our regular Hathi Trust Digital Library
-          system.</p>
+          <p>You have one page at a time access to this item. If you have print-disability credentials you may have full-text access to this item and use additional accessability features to aid navigation.  Page at a time access to this item is also available via our regular Hathi Trust Digital Library system.</p>
           <p>
             <a>
               <xsl:attribute name="href">
