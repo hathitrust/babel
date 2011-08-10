@@ -76,24 +76,31 @@ sub testQuery
     my $q = shift;
     my $Q = shift;
     my $out=$Q->get_processed_user_query_string($q);
-    print "---\n\tsent: $q\n\tgot: $out\n";
+  #  print "---\n\tsent: $q\n\tgot: $out\n";
     
     if ( $Q->well_formed() )    { }
     else     
     {
-        print "\tNot well formed\n";
-        
+        print "\nNot well formed\n";
+        print "\tsent: $q\n\tgot: $out\n";
     }
 
     
 }
     
 __DATA__
+#
+(dog AND cat AND bear)
+dog AND cat
+dog AND cat AND bear
+dog cat AND bear
+dog cat OR bear
+(dog cat) bear
 
-foo "bar" baz
-morgan & york
-    ampersand entity &amp; foo
-this && that
-unbalenced" double" quotes"
-unbalenced (parens ()
-balenced ( parens )
+#foo "bar" baz
+#morgan & york
+#    ampersand entity &amp; foo
+#this && that
+#unbalenced" double" quotes"
+#unbalenced (parens ()
+3balenced ( parens )
