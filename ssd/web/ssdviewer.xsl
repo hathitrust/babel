@@ -9,11 +9,14 @@
   <xsl:variable name="gCurrentPageOcr" select="/MBooksTop/MBooksGlobals/CurrentPageOcr"/>
   <xsl:variable name="gCurrentPageNum" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']"/>
   <xsl:variable name="gCurrentPageSeq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
+  <xsl:variable name="gCurrentDebug" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
+  <xsl:variable name="gCurrentAttr" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='attr']"/>
   <xsl:variable name="gItemId" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
   <xsl:variable name="gFeatureList" select="/MBooksTop/MdpApp/FeatureList"/>
   <xsl:variable name="gItemHandle" select="/MBooksTop/MBooksGlobals/ItemHandle"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
+  <xsl:variable name="gLoggedIn" select="/MBooksTop/MBooksGlobals/LoggedIn"/>
   <xsl:variable name="gSSDFullTitleString">
     <xsl:value-of select="$gFullTitleString"/>
   </xsl:variable>
@@ -290,6 +293,12 @@
                   <xsl:value-of select="$SectionTitleAttr"/>
                 </xsl:when>
                 <xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'">ssd?id=<xsl:value-of select="$gItemId"/>;seq=<xsl:value-of select="Seq"/>;num=<xsl:value-of select="Page"/>
+                <xsl:if test="$gCurrentDebug!=''">
+                  <xsl:text>;debug=</xsl:text><xsl:value-of select="$gCurrentDebug"/>
+                </xsl:if>
+                <xsl:if test="$gCurrentAttr!=''">
+                  <xsl:text>;attr=</xsl:text><xsl:value-of select="$gCurrentAttr"/>
+                </xsl:if>
                 </xsl:when>
               </xsl:choose>
             </xsl:attribute>
@@ -312,7 +321,7 @@
     <xsl:param name="pOcr"/>
     <!-- now handle the view type -->
     <xsl:choose>
-      <xsl:when test="$gSSD_Session='true'">
+      <xsl:when test="$gSSD_Session='true' or ($gFinalAccessStatus='allow' and $gLoggedIn='YES')">
         <h2 class="SkipLink">Book Text</h2>
         <xsl:element name="div">
           <xsl:attribute name="id">mdpText</xsl:attribute>
@@ -320,7 +329,7 @@
           <p>End of text. Return to <a href="#top">beginning</a>.</p>
         </xsl:element>
       </xsl:when>
-      <!--If public domain and not SSD session, display single page-->
+      <!--If public domain and not SSD session, display single page (unless LoggedIn then full-text if allowed)-->
       <xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'">
         <xsl:choose>
           <xsl:when test="$gFeatureList/Feature">
@@ -414,7 +423,8 @@
         </xsl:element>
       </xsl:when>
 
-      <xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'">
+      <xsl:when test="$gSSD_Session='false' and ($gFinalAccessStatus='allow' and $gLoggedIn!='YES')">
+      <!-- xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'" -->
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           <p>You have one page at a time access to this item. Affiliates of HathiTrust partner institutions who have a print disability may have full-text access to this item. For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Page at a time access to this item is also available via our regular Hathi Trust Digital Library system.</p>
