@@ -88,17 +88,14 @@
   
   <xsl:template name="OSSDlink">
     <div class="SkipLink">
-      <xsl:text>Special text versions of all items can be made accessible to to University of Michigan students whose disabilities do not allow them to use printed books. Go to the </xsl:text>
-      <a href="http://www.umich.edu/~sswd/resources/local/mbooks.html">SSD website</a>
-      <xsl:text> for more information.</xsl:text>
+      <xsl:text>Special text-only versions of materials may be available to affiliates of HathiTrust partner institutions who have a print disability. For more information, see </xsl:text><a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a>
     </div>
   </xsl:template>
 
  <xsl:template name="Accessibilitylink">
    <div class="SkipLink">
-     <xsl:text>Go to the </xsl:text>
-     <a href="//common-web/accessibility.html">web accessibility page</a> 
-     <xsl:text> for access keys and other accessibility related information.</xsl:text>
+     <xsl:text>Go to the </xsl:text><a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>
+     <xsl:text> page for access keys and other accessibility related information.</xsl:text>
    </div>
  </xsl:template>
 
