@@ -482,6 +482,14 @@ a .colName {
   color:red;
 }
 
+/* Style for SSD banner in pageviewer.xsl */
+#ssdBanner {
+  background-color: #fce9a8;
+  color: #000000;
+  text-align: center;
+  padding: 6px 0px;
+}
+
 /*========== Header ==========*/
 
 #mbHeader {
