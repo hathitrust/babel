@@ -402,7 +402,7 @@
       <xsl:when test="$gFinalView='restricted'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>If you have print-disability credentials you may have full-text access to this item. Check with your institution. Keyword searchable (no full-text) access to this item is also available via our regular Hathi Trust Digital Library system.</p>
+          <p>Affiliates of HathiTrust partner institutions who have a print disability may have full-text access to this item. For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Keyword searchable (no full-text) access to this item is also available via our regular Hathi Trust Digital Library system.</p>
           <p>
             <a>
               <xsl:attribute name="href">
@@ -417,7 +417,7 @@
       <xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>You have one page at a time access to this item. If you have print-disability credentials you may have full-text access to this item and use additional accessability features to aid navigation.  Page at a time access to this item is also available via our regular Hathi Trust Digital Library system.</p>
+          <p>You have one page at a time access to this item. Affiliates of HathiTrust partner institutions who have a print disability may have full-text access to this item. For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Page at a time access to this item is also available via our regular Hathi Trust Digital Library system.</p>
           <p>
             <a>
               <xsl:attribute name="href">
