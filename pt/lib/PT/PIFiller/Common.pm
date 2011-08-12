@@ -248,27 +248,6 @@ sub handle_QVAL_ENCODED_PI
     return CGI::escape($qval);
 }
 
-
-
-# ---------------------------------------------------------------------
-
-=item handle_HIDDEN_SSD_PI : PI_handler(HIDDEN_SSD)
-
-Handler for HIDDEN_SSD
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_HIDDEN_SSD_PI
-    : PI_handler(HIDDEN_SSD)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $cgi = $C->get_object('CGI');
-
-    return Utils::build_hidden_var_XML($cgi, 'ssd');
-}
-
 # ---------------------------------------------------------------------
 
 =item handle_HIDDEN_ID_PI : PI_handler(HIDDEN_ID)
@@ -866,11 +845,12 @@ sub handle_SSD_SESSION_PI
     my ($C, $act, $piParamHashRef) = @_;
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
-    my $ses = $C->get_object('Session');
-    my $ssd = $ses->get_persistent_subkey('ssd', $id);
+    my $auth = $C->get_object('Auth');
+    my $ssd_authenticated = $auth->get_eduPersonEntitlement_print_disabled($C);
 
-    return ($ssd eq 'allowed') ? 'true' : 'false';
+    return $ssd_authenticated ? 'true' : 'false';
 }
+
 # ---------------------------------------------------------------------
 
 =item BuildContentsItemLink
