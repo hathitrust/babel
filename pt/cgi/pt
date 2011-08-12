@@ -222,7 +222,8 @@ sub ValidityChecks {
     
     if ( ! $view ||
          ! grep(/^$view$/, (@PTGlobals::gViewTypes, @PTGlobals::gAuthdViewTypes))) {
-        if ( $cgi->param( 'ssd' ) ) {
+        if ( $cgi->param( 'ssd' ) ) { 
+            # 'ssd' URL param is deprecated
             $cgi->param( 'view', $PTGlobals::gDefaultSsdView );
         }
         else {

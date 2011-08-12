@@ -82,7 +82,6 @@
         <?HIDDEN_NUM?>
         <?HIDDEN_SIZE?>
         <?HIDDEN_ID?>
-        <?HIDDEN_SSD?>
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
         <?HIDDEN_Q1?>
@@ -109,7 +108,6 @@
         <?HIDDEN_NUM?>
         <?HIDDEN_VIEW_TYPE?>
         <?HIDDEN_ID?>
-        <?HIDDEN_SSD?>
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
         <?HIDDEN_Q1?>
@@ -131,7 +129,6 @@
         <?HIDDEN_VIEW_TYPE?>
         <?HIDDEN_SIZE?>
         <?HIDDEN_ID?>
-        <?HIDDEN_SSD?>
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
         <?HIDDEN_Q1?>
@@ -140,7 +137,6 @@
     <SearchForm>
       <HiddenVars>
         <?HIDDEN_ID?>
-        <?HIDDEN_SSD?>
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
       </HiddenVars>

@@ -58,7 +58,6 @@
     <SearchForm>
       <HiddenVars>
         <?HIDDEN_ID?>
-        <?HIDDEN_SSD?>
         <?HIDDEN_ATTR?>
         <?HIDDEN_DATAROOT?>
       </HiddenVars>
