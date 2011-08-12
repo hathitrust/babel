@@ -131,6 +131,9 @@ $.fn.dragscrollable = function( options ) {
 
 	var dragscroll= {
 		dragStartHandler : function(event) {
+			//console.log("dragscrollable START");
+			//console.log("Start Scrolling... Target ID: " + $(event.target).attr('id') );
+			//console.log("Start Scrolling... HTML: " + $(event.target).html());
 			
 			// mousedown, left click, check propagation
       // console.log("TARGET", event.target);
@@ -175,18 +178,42 @@ $.fn.dragscrollable = function( options ) {
             }
 		},
 		dragContinueHandler : function(event) { // User is dragging
+			//console.log("dragscrollable MOVE : " + event.type);
 			
 			var lt = left_top(event);
+			
+			//console.log("dragscrollable MOVE : " + event.type + " ..... " + lt.left + "/" + lt.top);			
+			
+			if((lt.left==0) &&  (lt.top==0)){ // this is a kluge fix for ipad - kept getting 0/0 coordinate event which was screwing
+				// up the scrolling
+				//console.log("Error Event: " + $(event.currentTarget).attr('id'));
+				return false;
+			}
 			
 			// How much did the mouse move?
 			var delta = {left: (lt.left - event.data.lastCoord.left),
 						 top: (lt.top - event.data.lastCoord.top)};
 			
+			var newtop=(event.data.scrollable.scrollTop() - delta.top);			
+			var maxTop= $(event.data.scrollable).attr("scrollHeight") - $(event.data.scrollable).height();
+
+			if(newtop<0){
+				newtop=0;
+			}else if(newtop>=maxTop){
+				newtop=maxTop;
+			}
+			
 			// Set the scroll position relative to what ever the scroll is now
 			event.data.scrollable.scrollLeft(
 							event.data.scrollable.scrollLeft() - delta.left);
+			/*
 			event.data.scrollable.scrollTop(
 							event.data.scrollable.scrollTop() - delta.top);
+		    */
+			
+			if(delta.top!=0){
+				event.data.scrollable.scrollTop(newtop);
+			}
 			
 			// Save where the cursor is
 			event.data.lastCoord = lt;
@@ -198,7 +225,9 @@ $.fn.dragscrollable = function( options ) {
 
 		},
 		dragEndHandler : function(event) { // Stop scrolling
-		
+			//console.log("dragscrollable END");
+			
+			
 			handling_element
 				.unbind(settings.dragcontinue)
 				.unbind(settings.dragend);
