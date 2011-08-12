@@ -262,23 +262,32 @@ sub get_Solr_query_string
     # filter query (fq) for Full text or search only
     my $FQ = '';
     my $RIGHTS;
-    
+    my $attr_list_aryref;    
+
     if ( $query_type ne 'all') {
-        # Get list of attrs that equate to 'allow' for this user. This
-        # is mainly for GeoIP check to add '9' to the list
-        my $attr_list_aryref = [1,7];
-        eval {
-            $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
-        };
-        $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
-        my $OP="";
-        # this inverts the rights query i.e. filter query on all docs that do not match fq
         if ( $query_type eq 'search_only') 
         {
-            $OP='-';
+            eval 
+            {
+                $attr_list_aryref = Access::Rights::get_no_fulltext_attr_list($C);
+            };
+            
+        }
+        elsif ( $query_type eq 'full_text') 
+        {
+            eval 
+            {
+                $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
+            };
+        }
+        else
+        {
+            ASSERT(0,qq{LS::Query::Facets::get_solr_query_string: wrong query type $query_type});
         }
         
-        $FQ = '&fq='.$OP . $RIGHTS;
+        $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
+        
+        $FQ = '&fq=' . $RIGHTS;
     }
 
 # Facet aspects of query added here
