@@ -482,12 +482,14 @@ a .colName {
   color:red;
 }
 
-/* Style for SSD banner in pageviewer.xsl */
-#ssdBanner {
+/* Style for special access message in pageviewer.xsl */
+#accessBanner {
   background-color: #fce9a8;
   color: #000000;
   text-align: center;
   padding: 6px 0px;
+  font-size: 1.2em;
+  line-height: 1.2em;
 }
 
 /*========== Header ==========*/
