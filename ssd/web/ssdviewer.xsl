@@ -423,7 +423,7 @@
       <xsl:when test="$gFinalView='restricted'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. Login <xsl:call-template name="loginlink"/> to determine if you have access and see all volumes that are available when searching. For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>. Keyword searchable (no full-text) access to this item is also available via the link below.</p>
+          <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. <xsl:call-template name="loginlink"/> to determine if you have access and see all volumes that are available when searching. For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>. Keyword searchable (no full-text) access to this item is also available via the link below.</p>
           <p>
             <a>
               <xsl:attribute name="href">
