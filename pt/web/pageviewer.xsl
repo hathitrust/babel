@@ -23,6 +23,8 @@
   <xsl:variable name="gBackNavLinkHref" select="/MBooksTop/MdpApp/BackNavInfo/Href"/>
   <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
   <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
+  <xsl:variable name="gUserName" select="/MBooksTop/Header/UserName"/>
+  <xsl:variable name="gInCopyright" select="/MBooksTop/MBooksGlobals/InCopyright"/>
   
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
@@ -211,9 +213,11 @@
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
         <!-- <xsl:call-template name="online_assessment"/> -->
-        <xsl:if test="$gSSD_Session='true'">
-          <xsl:call-template name="ssd_banner"/>
+
+        <xsl:if test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
+          <xsl:call-template name="access_banner"/>
         </xsl:if>
+
         <!-- <xsl:if test="$gCurrentView = 'image'">
           <style>
             html, body {
@@ -452,8 +456,8 @@
     <link xmlns="" rel="stylesheet" href="/pt/js/jQuery-Notify-bar/jquery.notifyBar.css" type="text/css" media="screen" />
   </xsl:template>
 
-  <xsl:template name="ssd_banner">
-    <div id="ssdBanner">Special text-only versions of materials may be available to affiliates of HathiTrust partner institutions who have a print disability. For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></div>
+  <xsl:template name="access_banner">
+    <div id="accessBanner">Hi <xsl:value-of select="$gUserName"/>! You have full view access to this item based on your account privileges.  A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available.  This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#section108">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></div>
   </xsl:template>
 
   <!-- Top Level Container DIV -->
