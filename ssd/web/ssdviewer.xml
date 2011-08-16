@@ -40,6 +40,7 @@
     <CurrentPageOcr><?CURRENT_PAGE_OCR?></CurrentPageOcr>
     <Ocr><?OCR_DATA?></Ocr>
     <CurrentView><?CURRENT_VIEW?></CurrentView>
+    <InCopyright><?IN_COPYRIGHT?></InCopyright>
   </MBooksGlobals>
 
   <MdpApp>

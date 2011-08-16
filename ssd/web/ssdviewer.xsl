@@ -17,6 +17,7 @@
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
   <xsl:variable name="gLoggedIn" select="/MBooksTop/MBooksGlobals/LoggedIn"/>
+  <xsl:variable name="gInCopyright" select="/MBooksTop/MBooksGlobals/InCopyright"/>
   <xsl:variable name="gSSDFullTitleString">
     <xsl:value-of select="$gFullTitleString"/>
   </xsl:variable>
@@ -436,9 +437,7 @@
       </xsl:when>
 
       <xsl:when test="$gSSD_Session='false' and ($gFinalAccessStatus='allow' and $gLoggedIn!='YES')">
-      <!-- xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'" -->
         <xsl:element name="div">
-          <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           <p>You have one page at a time access to this item. Authenticated members of HathiTrust institutions who have a print disability may have full-text access to this item. <xsl:call-template name="loginlink"/> to determine if you have access and see all volumes that are available when searching.  For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Page at a time access to this item is also available via our fully-styled HathiTrust interface.</p>
           <p>
             <a>
@@ -450,6 +449,21 @@
           </p>
         </xsl:element>
       </xsl:when>
+      
+      <xsl:when test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
+        <xsl:element name="div">
+          <p>You have full view access to this item based on your account privileges. This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#section108">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p>
+          <p>
+            <a>
+              <xsl:attribute name="href">
+                <xsl:value-of select="$gItemHandle"/>
+              </xsl:attribute>
+              View this item in the fully-styled HathiTrust interface.
+            </a>
+          </p>
+        </xsl:element>
+      </xsl:when>
+
       <xsl:otherwise>
         <p/>
       </xsl:otherwise>
