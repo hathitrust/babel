@@ -23,7 +23,7 @@
       <body>
       	<div id="frontpage">
       	<div class="header">
-    		<a href="http://bkammin.vufind.lib.umich.edu" class="htlogobutton" ></a> <!-- todo - un-hardcode the href? -->
+    		<a href="http://m.catalog.hathitrust.org" class="htlogobutton" ></a> <!-- todo - un-hardcode the href? -->
 			<!-- <a href="">&lt;&lt;&nbsp;Results</a> -->
 		</div>
       
@@ -42,7 +42,7 @@
   <xsl:template name="WAYF_SelectPage">
   	<div id="selectinst" style="display:none">
       	<div class="header">
-    		<a href="http://bkammin.vufind.lib.umich.edu" class="htlogobutton" ></a> <!-- todo - un-hardcode the href? -->
+    		<a href="http://m.catalog.hathitrust.org" class="htlogobutton" ></a> <!-- todo - un-hardcode the href? -->
     		<!-- <a href="#" class="htlogobutton" ></a> -->
 			<a href="#" onclick="return loginHomeClick();"><xsl:text disable-output-escaping="yes">&lt;&lt; Login Home</xsl:text></a>
 		</div>  	
