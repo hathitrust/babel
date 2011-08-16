@@ -44,10 +44,18 @@ Section:LOCAL_JS
 # These should be listed with the unminimized name.
 # The script will run yuicompress on them
 /wayf/web/js/login.js
+/wayf/web/mobile/loginMobile.js
+
+#Section:MOBILE_JS
+#Test:$gSkin='mobilewayf'
+#/wayf/web/mobile/loginMobile.js
 
 Section:CSS
 # css files, note last one overides earlier
-//common-web/MBooksCol.css
 //common-web/smallheader.css
 /wayf/web/loginStyles.css
+/wayf/web/mobile/loginStylesMobile.css
 
+#Section:MOBILE_CSS
+#Test:$gSkin='mobilewayf'
+#/wayf/web/mobile/loginStylesMobile.css
