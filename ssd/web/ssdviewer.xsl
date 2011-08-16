@@ -94,7 +94,7 @@
 
       <body>
         <div id="DebugMessages">
-          <xsl:value-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
+          <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
         </div>
 
         <xsl:call-template name="UberContainer"/>
