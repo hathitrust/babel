@@ -60,6 +60,7 @@ use Utils::GlobalSwitch;
 use Db;
 use SLIP_Utils::Db_driver;
 use SLIP_Utils::States;
+use SLIP_Utils::Common;
 
 
 # ============================ Main ===================================
@@ -155,8 +156,7 @@ sub get_run_context {
     my $run = shift;
     
     my $C = new Context;
-    my $global_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$run.conf};
-    my $config = new MdpConfig($COMMON_CONFIGFILE, $global_configfile);
+    my $config = SLIP_Utils::Common::gen_run_config('slip', $run);
     $C->set_object('MdpConfig', $config);
     
     return $C;
