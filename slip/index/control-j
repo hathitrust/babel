@@ -166,14 +166,12 @@ if (! $KOMMAND) {
 }
 
 if (! $RUN) {
-    if (! $RIGHTS) {
-        my $s = cont_get_usage();
-        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-        __output($s);
-        __non_interactive_err_output($rc, $s);
-
-        exit $rc;
-    }
+    my $s = cont_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+    
+    exit $rc;
 }
 
 if (defined($opt_d)) {
@@ -185,11 +183,7 @@ exit 0 if ($TEST_ONLY);
 
 my $C = new Context;
 
-my $run_configfile = $RIGHTS ? undef : $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
-my $uber_configfile = Utils::get_uber_config_path('slip');
-
-my $config = new MdpConfig($uber_configfile, $common_configfile, $run_configfile);
+my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 my @NUM_SHARDS_LIST = $C->get_object('MdpConfig')->get('num_shards_list');
