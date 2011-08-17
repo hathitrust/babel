@@ -32,14 +32,17 @@ see help
 
 =cut
 
+
+use strict;
+BEGIN {
+    #$ENV{DEBUG_LOCAL} = 1;
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
-
-
-use strict;
 
 # Perl
 use Getopt::Std;
@@ -105,11 +108,11 @@ sub cont_get_usage {
 
        control-j -kQtimestamp -r run [-tYYYYMMDD]
           set queue timestamp to 00000000 or value of -t
-            re-queue ids in j_rights newer than timestamp, to be re-indexed
+            re-queue ids in j_rights newer than that timestamp, to be re-indexed
 
-       control-j -kVtimestamp -r run [-tYYYY-MM-DD]
-          set vSolr timestamp to 0000-00-00 or value of -t
-            re-query vSolr for ids newer that timestamp, to be re-added j_rights 
+       control-j -kVtimestamp -r run [-tYYYYMMDD]
+          set vSolr timestamp to 00000000 or value of -t
+            re-query vSolr for ids newer than that timestamp, to be re-added j_rights 
 
        control-j -k stop|start -V
           -V starts/stops rights-j
@@ -180,8 +183,8 @@ if (defined($opt_d)) {
 
 my $C = new Context;
 
-my $run_configfile = $RIGHTS ? undef : $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+my $run_configfile = $RIGHTS ? undef : $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$RUN.conf};
+my $common_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
 my $uber_configfile = Utils::get_uber_config_path('slip');
 
 my $config = new MdpConfig($uber_configfile, $common_configfile, $run_configfile);

@@ -146,7 +146,7 @@ END{
     `rm -f $Child_Err_File` if (-z $Child_Err_File);
 }
 
-my $config = SLIP_Utils::Common::gen_run_config($RUN);
+my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 my $db;

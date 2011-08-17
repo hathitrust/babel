@@ -25,6 +25,9 @@ see help
 =cut
 
 use strict;
+BEGIN {
+    #$ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -117,7 +120,7 @@ if (defined($opt_d)) {
 
 my $C = new Context;
 
-my $config = SLIP_Utils::Common::gen_run_config($RUN);
+my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 my $db;
@@ -733,7 +736,7 @@ sub c_report_errors {
 
     my $reason;
     if ($errors eq 'o') {
-        $reason = IX_OCR_FAILURE;
+        $reason = IX_DATA_FAILURE;
     }
     elsif ($errors eq 'i') {
         $reason = IX_INDEX_FAILURE;

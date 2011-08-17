@@ -33,7 +33,7 @@ use SLIP_Utils::Log;
 use Db;
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
-use Result::vSolr;
+use Seaarch::Result::vSolr;
 
 # ---------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ sub get_item_updated_nid_slice_as_of {
     my $anomalies = 0;
     my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
     
-    my $rs = new Result::vSolr();
+    my $rs = new Search::Result::vSolr();
     my $query = qq{q=ht_id_update:[$query_timestamp TO *]&start=$offset&rows=$slice_size&fl=ht_id_display,id };
     
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);

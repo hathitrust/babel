@@ -80,7 +80,7 @@ my %run_tasks =
 
 my $N = "\n";
 
-my $COMMON_CONFIGFILE = $ENV{'SDRROOT'} . qq{/slip/lib/Config/common.conf};
+my $COMMON_CONFIGFILE = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
 
 my $CONFIG = new MdpConfig($COMMON_CONFIGFILE);
 my $db = new Database($CONFIG);
@@ -155,7 +155,7 @@ sub get_run_context {
     my $run = shift;
     
     my $C = new Context;
-    my $global_configfile = $ENV{'SDRROOT'} . qq{/slip/lib/Config/run-$run.conf};
+    my $global_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$run.conf};
     my $config = new MdpConfig($COMMON_CONFIGFILE, $global_configfile);
     $C->set_object('MdpConfig', $config);
     

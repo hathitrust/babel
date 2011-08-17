@@ -87,6 +87,9 @@ see help
 =cut
 
 use strict;
+BEGIN {
+    #$ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -102,20 +105,22 @@ use Time::HiRes;
 # App
 use Utils;
 use Utils::Time;
+use Utils::GlobalSwitch;
 use Debug::DUtils;
 
 use Context;
 use MdpConfig;
 use Database;
 use Identifier;
+
 use Search::Site;
 use Search::Constants;
-use Utils::GlobalSwitch;
+use Search::Result::vSolrRaw;
+
 
 # Local
 use Db;
 use vSolr;
-use Result::vSolrRaw;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
@@ -254,7 +259,7 @@ my $SLICE_SIZE = ($REBUILD ? 100 : 1000);
 my $C = new Context;
 
 # Any run number will do to grab common.conf
-my $config = SLIP_Utils::Common::gen_run_config(0);
+my $config = SLIP_Utils::Common::gen_run_config('slip', 0);
 $C->set_object('MdpConfig', $config);
 
 my $db;
@@ -368,7 +373,7 @@ sub repair_insert_id_helper {
     __output(scalar(@$id_arr_ref) . qq{ ids loaded from $filename\n});
 
     my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
-    my $rs = new Result::vSolrRaw();
+    my $rs = new Search::Result::vSolrRaw();
 
     foreach my $id (@$id_arr_ref) {
         repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs);
@@ -587,7 +592,7 @@ sub process_rights_from_errors {
         $totals_hashref->{num_m_errors} = $num_metadata_errors;
 
         my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
-        my $rs = new Result::vSolrRaw();
+        my $rs = new Search::Result::vSolrRaw();
 
         foreach my $hashref (@$id_arr_hashref) {
             my $id = $hashref->{'id'};
