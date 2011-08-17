@@ -53,9 +53,9 @@ my $app = sub {
     
     # configuration; do we need our own config?
     my $config = new MdpConfig(
-                               Utils::get_uber_config_path('mb'),
-                               $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
-                               $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                               Utils::get_uber_config_path('ping'),
+                               $ENV{SDRROOT} . "/ping/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/ping/lib/Config/local.conf"
                               );
     
     
