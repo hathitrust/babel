@@ -55,6 +55,7 @@
     <CurrentView><?CURRENT_VIEW?></CurrentView>
     <UrlRoots><?URL_ROOTS?></UrlRoots>
     <PageLink><?PAGE_LINK?></PageLink>
+    <InCopyright><?IN_COPYRIGHT?></InCopyright>
   </MBooksGlobals>
 
   <?CHUNK filename="header.xml"?>
