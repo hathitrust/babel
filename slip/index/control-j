@@ -92,7 +92,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub cont_get_usage {
-    my $s .= qq{Usage: control-j -k stop|start -r run [-R shard|A][-h host]
+    my $s .= qq{Usage: control-j -k stop|start -r run [-R shard|A][-h host][-T]
 
        control-j -k stop|start -r run -e
           -e starts/stops enqueuer-j
@@ -140,9 +140,9 @@ sub cont_get_usage {
     return $s;
 }
 
-our ($opt_k, $opt_r, $opt_R, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_L, $opt_C );
+our ($opt_k, $opt_r, $opt_R, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_L, $opt_C,$opt_T);
 
-my $ops = getopts('k:r:R:n:h:edDVOt:C');
+my $ops = getopts('k:r:R:n:h:edDVOt:CT');
 
 # Required
 my $KOMMAND = $opt_k;
@@ -180,6 +180,8 @@ if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
 
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 my $C = new Context;
 
