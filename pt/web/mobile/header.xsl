@@ -57,7 +57,7 @@
          <xsl:element name="a">
            <xsl:attribute name="id">mobilelogin</xsl:attribute>
            <xsl:attribute name="href">
-             <xsl:value-of select="/MBooksTop/Header/LoginLink"/>;skin=mobile;
+             <xsl:value-of select="/MBooksTop/Header/LoginLink"/>;skin=mobilewayf;
            </xsl:attribute>
            <xsl:text>Login</xsl:text>
          </xsl:element>
@@ -68,7 +68,7 @@
          <xsl:element name="a">
            <xsl:attribute name="href">
              <xsl:if test="/MBooksTop/Header/LoginLink!=''">
-               <xsl:value-of select="/MBooksTop/Header/LoginLink"/>;skin=mobile;
+               <xsl:value-of select="/MBooksTop/Header/LoginLink"/>;skin=mobilewayf;
              </xsl:if>
            </xsl:attribute>
            <xsl:if test="/MBooksTop/Header/LoginLink=''">
@@ -106,11 +106,8 @@
  	<!-- <div style="display:none"> -->
      <xsl:element name="a">
        <xsl:attribute name="href"/>
-       <xsl:attribute name="id">mobilefeedback</xsl:attribute>
-       <xsl:attribute name="title">Feedback form for problems or comments</xsl:attribute>
-       <xsl:element name="span">
-         <xsl:text>Feedback</xsl:text>
-       </xsl:element>
+       <xsl:attribute name="class">mobilefeedback</xsl:attribute>
+       <xsl:text>Feedback</xsl:text>
      </xsl:element>
  	<!-- </div> -->
  </xsl:template>

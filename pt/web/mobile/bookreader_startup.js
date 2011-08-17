@@ -167,7 +167,7 @@ window.onorientationchange = function() {
 			//HT.reader.mode=3;
 			if(HT.reader.mode!=HT.reader.constMode2up && HT.reader.displayMode!='text' && screen.width>320){
 			//	console.log("switching to 2up");
-				console.log("orientation change - switching to 2up");
+			//	console.log("orientation change - switching to 2up");
 				HT.resizeBookReader();
 				HT.reader.switchMode(HT.reader.constMode2up);
 			}else{
@@ -177,7 +177,7 @@ window.onorientationchange = function() {
         case 0:
         case 180:
         	if(HT.reader.mode!=HT.reader.constMode1up){
-        		console.log("orientation change - switching to 1up");
+        	//	console.log("orientation change - switching to 1up");
         		HT.resizeBookReader();
         		HT.reader.switchMode(HT.reader.constMode1up);
         	}else{

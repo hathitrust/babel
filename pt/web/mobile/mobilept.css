@@ -15,8 +15,16 @@ body{
 	display:none !important;
 }
 
+#mdpBottomToolbar{
+	display:none !important;
+}
+
 #mdpUberContainer{
 	margin-top:0px !important;
+	
+	/*
+	height:100%;
+	background-color:#555;*/
 }
 
 #mdpToolbar{
@@ -27,6 +35,20 @@ body{
 div#mdpContentContainer{
 	margin:0px !important;
 	width:100% !important;
+	padding:0px !important;
+	border:none !important;
+	/*height:100%;*/
+}
+
+#mdpTextDeny{
+	margin:0px !important;
+	width:100% !important;
+	padding:0px !important;
+	border:none !important;
+}
+
+#mdpTextDeny div.header{
+	margin:0px !important;
 }
 
 #BookReader{
@@ -206,7 +228,8 @@ div#BRnavline {
     background-color: #555;
     opacity:.95;
     position: absolute;
-    right: 20px;
+    /*right: 20px;*/
+    left:20px;
     width: 40px;
     height: 30px;
     cursor: pointer;
@@ -239,23 +262,37 @@ div#BRnavline {
 #BRnavCntlTop.BRup,#BRnavCntlTop.BRdn {
     background-position: 8px 4px;
 }
-
+/*
 #BRtoolbar {
     position:fixed;
     top: 0;
     left: 0;
-   /* padding-top: 5px;
-    padding-bottom:5px;*/
     width: 100%;
     z-index: 100;
     background-color: #555;
     opacity:.95;
     -webkit-box-shadow: 0 1px 3px #999;
-    /* Shadow here on FF causes scroll bars */
     overflow: hidden;
     margin:0;
     border-style:none;
     line-height:100%;
+}
+*/
+#BRtoolbar {
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: #555;
+    opacity:.95;
+    -webkit-box-shadow: 0 1px 3px #999;
+    overflow: hidden;
+    margin:0;
+    border-style:none;
+    line-height:100%;
+    height:47px;
+    padding:0;
 }
 
 .booktitle{
@@ -282,24 +319,24 @@ div#BRnavline {
 	padding:5px;
 }
 
-/*#mdpCatalogLink,*/#read{
+/*#mdpCatalogLink,*//*#read{
 	float:left;
 	padding:5px;
 	border:solid 1px #ccc;
 	-moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     margin-right:5px;
-}
-
+}*/
+/*
 #mdpCatalogLink{
 	float:left;
-	/*margin-left:10px;*/
 	background-image:url(mobile/images/record-back.png);
 	background-position:right center;
 	background-repeat:no-repeat;  
 	width:49px;
 	height:24px;
 }
+*/
 /*
 #toc{
 	padding:5px;
@@ -315,11 +352,12 @@ div#BRnavline {
 #toc{
 	float:right;
 	margin-right:10px;
+	margin-top:10px;
 	background-image:url(mobile/images/contents-button.png);
 	background-position:right center;
 	background-repeat:no-repeat;  
-	width:54px;
-	height:24px;
+	width:58px;
+	height:27px;
 }
 
 a#mdpCatalogLink:link,  a#mdpCatalogLink:visited,
@@ -570,7 +608,8 @@ div.ocrScrollBar{
 	background-repeat:no-repeat;        
 }
 
-/*#fittopage,*/ #feedback, #mdpCatalogLinkInfoForm, .worldcat, #fullPdfLink, #epubLink{   
+/*#fittopage,*/ #feedback, #mdpCatalogLinkInfoForm, .worldcat, #fullPdfLink, #epubLink,
+#mdpLimitedSearchInside{   
 	background-image:url(mobile/images/Arrow_rightcircle.png);
 	background-position:right center;
 	background-repeat:no-repeat;    
@@ -583,7 +622,8 @@ content:url(mobile/images/Arrow_rightcircle.png);
 
 #feedback,
 #mdpCatalogLinkInfoForm,
-.worldcat
+.worldcat,
+#mdpLimitedSearchInside
 {
 	border:solid 1px #ccc;
 	padding:.5em;
@@ -596,7 +636,8 @@ content:url(mobile/images/Arrow_rightcircle.png);
 	-moz-border-radius: 2px;
     -webkit-border-radius: 2px;
 }
-.worldcat{
+.worldcat,
+#mdpLimitedSearchInside{
 	width:80%;
 }
 #feedback, #mdpCatalogLinkInfoForm{
@@ -609,7 +650,8 @@ a#mdpCatalogLinkInfoForm:link,  a#mdpCatalogLinkInfoForm:visited,
 a#feedback:link,  a#feedback:visited,
 a.worldcat:link,  a.worldcat:visited,
 a#fullPdfLink:link,  a#fullPdfLink:visited,
-a#epubLink:link,  a#epubLink:visited  {
+a#epubLink:link,  a#epubLink:visited,
+a#mdpLimitedSearchInside:link, a#mdpLimitedSearchInside:visited  {
 	color:#000;
 	text-decoration:none;
 }
@@ -898,11 +940,15 @@ a#epubLink:link,  a#epubLink:visited  {
     	
 }
 
-#mdpSearchResultsFooter{
+#mdpFooter{
 	background-color:#555;
 	/*height:100%;*/
 }
-
+/*
+#mdpContentContainer #mdpFooter{
+	height:100%;
+}
+*/
 #footerlogin {
 color:#000000;
 font-size:1.2em;
@@ -930,14 +976,12 @@ color:white;
 /* 1pgup up/down buttons */
 #BRupdownnavbar{
     position:fixed;
-   /* top: 45%; */
+
     top:50px;
     right: 0;
-   /* padding-top: 5px;
-    padding-bottom:5px;*/
-    /*width: 100%;*/
     z-index: 99;
-    background-color: #555;
+    /*background-color: #555;*/
+    background-color:transparent;
     opacity:.95;
     -webkit-box-shadow: 0 1px 3px #999;
     /* Shadow here on FF causes scroll bars */
@@ -945,7 +989,7 @@ color:white;
     margin:0;
     border-style:none;
     line-height:100%;
-    padding:20px;
+    /* padding:20px; */
     -moz-border-radius-topleft: 8px;
     -webkit-border-top-left-radius: 8px;    
     -moz-border-radius-bottomleft: 8px;
@@ -954,19 +998,102 @@ color:white;
 }
 
 #pageup{
-	background-image:url(mobile/images/black_nav_control-up.png);
+	background-image:url(mobile/images/nav_control-up.png);
 	background-position:center center;
 	background-repeat:no-repeat;  
 	height:24px;
 	width:24px;
 	display:block;
-	margin-bottom:20px;
+	margin-bottom:10px;
+	padding:10px;
+	background-color:#555;
+    -moz-border-radius-topleft: 8px;
+    -webkit-border-top-left-radius: 8px;    
+    -moz-border-radius-bottomleft: 8px;
+    -webkit-border-bottom-left-radius: 8px;  	
 }
 #pagedown{
-	background-image:url(mobile/images/black_nav_control-dn.png);
+	background-image:url(mobile/images/nav_control-dn.png);
 	background-position:center center;
 	background-repeat:no-repeat;
 	height:24px;
 	width:24px;
 	display:block;
+	padding:10px;
+	background-color:#555;
+    -moz-border-radius-topleft: 8px;
+    -webkit-border-top-left-radius: 8px;    
+    -moz-border-radius-bottomleft: 8px;
+    -webkit-border-bottom-left-radius: 8px;  	
+}
+
+
+/* limited view CSS */
+.htlogobutton{
+	background-image:url(mobile/images/HTLogo.png);
+	float:left;
+	width:50px;
+	height:47px;	
+}
+
+.header {
+    background-color:#6a6a6a;
+    height:47px;
+    text-align:center;
+    padding-right:50px;
+}
+
+.header a:visited,
+.header a:link{
+	color:white;
+	font-weight:bold;
+	line-height:3em;
+	text-decoration:none;
+}
+
+.header a.backlink{
+	display:block;
+	margin-left:50px;
+	font-size:1.3em;
+}
+
+#mdpTextDeny div#limitedviewoptions{
+	margin:10px;
+	border:solid 1px #ccc;
+	padding:10px;
+	background-color:#fff;
+}
+
+
+#mdpTextDeny div#limitedviewoptions ul li .worldcat,
+#mdpTextDeny div#limitedviewoptions ul li #mdpLimitedSearchInside{
+	color: #C4630F; /* hathitrust orange */
+	margin:10px 0 10px 0;
+	
+}
+
+
+
+/* HIDE EPUB FOR NOW.... */
+#fullEpubLinkP{
+	display:none;
+}
+
+#fullPdfLink{
+	border-bottom:solid 1px #ccc;
+
+	-moz-border-radius-bottomright: 2px;
+    -webkit-border-bottom-right-radius: 2px;
+    -moz-border-radius-bottomleft: 2px;
+    -webkit-border-bottom-left-radius: 2px; 
+}
+/* END HIDE EPUB */
+
+
+#mdpFBform{
+	text-align:left;
+}
+
+#comments{
+	margin-left:0;
 }

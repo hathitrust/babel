@@ -82,13 +82,11 @@ Test:$gUsingBookReader='true'
 
 Section:MOBILE_JS
 Test:$gSkin='mobile'
+Test:$gUsingBookReader='true'
 /pt/web/mobile/epub_download_helper.js
 /pt/web/mobile/jquery.url.js
 /pt/web/mobile/jquery-ui-1.8.5.custom.min.js
-#/pt/web/bookreader/BookReader/BookReader.js
-#/pt/web/js/HTBookReader.js
 /pt/web/mobile/HTMobileBookReader.js
-#/pt/web/bookreader/BookReader/dragscrollable.js
 /pt/web/mobile/jquery.ui.ipad.js
 /pt/web/mobile/jquery.jswipe-0.1.2.js
 

@@ -72,8 +72,8 @@
               			     <xsl:choose>
                 			 <xsl:when test="$gFinalAccessStatus='allow'">
                 			        <xsl:element name="a">
-                    			  		<xsl:attribute name="href"> -->
-                      			  			<xsl:value-of select="$pageLink"/> -->
+                    			  		<xsl:attribute name="href"> 
+                      			  			<xsl:value-of select="$pageLink"/>
                     			  		</xsl:attribute>
                     			  	</xsl:element>
                     			  	

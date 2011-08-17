@@ -28,7 +28,7 @@
 	  	<xsl:call-template name="MobileItemMetadata" />
 	  	<xsl:call-template name="BuildCatalogLink" />
 	  </div>
-	  <div id="BRsearch" >
+	  <div id="BRsearch" data-scroll="true" >
 	  	<xsl:call-template name="MobileBuildSearchForm" />
 	  	
 	  </div>
@@ -66,7 +66,7 @@
 	<xsl:element name="a">
           <xsl:attribute name="id">mdpCatalogLinkInfoForm</xsl:attribute>
           <xsl:variable name="href">
-            <xsl:text>http://bkammin.vufind.lib.umich.edu/Record/</xsl:text>
+            <xsl:text>http://m.catalog.hathitrust.org/Record/</xsl:text>
             <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
           </xsl:variable>
           <xsl:attribute name="class">tracked</xsl:attribute>
@@ -300,7 +300,7 @@
         <xsl:element name="a">
           <xsl:attribute name="id">mdpCatalogLink</xsl:attribute>
           <xsl:variable name="href">
-            <xsl:text>http://bkammin.vufind.lib.umich.edu/Record/</xsl:text>
+            <xsl:text>http://m.catalog.hathitrust.org/Record/</xsl:text>
             <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
           </xsl:variable>
           <xsl:attribute name="class">tracked</xsl:attribute>
@@ -310,7 +310,7 @@
           <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
           <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
           <!--<xsl:text>View full catalog record</xsl:text>-->
-          <!-- <xsl:text>Record</xsl:text> -->
+          <xsl:text disable-output-escaping="yes">&lt;&lt; Record</xsl:text>
         </xsl:element>
       </p>
 
@@ -358,7 +358,7 @@
               <p>
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink};skin=mobile;">Login</a></strong>
+                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink};skin=mobilewayf;">Login</a></strong>
                     <xsl:text> to determine whether you can download this book.</xsl:text>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
@@ -406,7 +406,7 @@
               <p>
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink};skin=mobile;">Login</a></strong>
+                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink};skin=mobilewayf;">Login</a></strong>
                     <xsl:text> to determine whether you can download this book.</xsl:text>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
@@ -1392,6 +1392,7 @@
       <xsl:call-template name="HiddenDebug"/>
     </xsl:element>
 -->    
+<!--
 	<div id="mdpSearchResultsFooter">
 	<div id="footerDiv" class="footer">
 		  
@@ -1408,8 +1409,217 @@
 
 	</div>
 	</div>
+-->
+	<xsl:call-template name="BuildMobileFooter"/>
   </xsl:template>
   
+  
+  <xsl:template name="BuildMobileFooter">
+	  <div id="mdpFooter">
+		<div id="footerDiv" class="footer">
+			  
+			    <div id="footerlogin">
+					<xsl:call-template name="loginlink"/>
+	    		</div>
+	    		
+				<span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
+				<br />    		
+				
+				<xsl:call-template name="feedbacklink"/>  | <xsl:call-template name="footertakedownlink"/>
+				<br />
+				
+	
+		</div>
+		</div>
+  </xsl:template>
+  
+  <!-- | <xsl:call-template name="helplink"/> -->
+<!-- VIEWING AREA -->
+  <xsl:template name="Viewport">
+    <xsl:param name="pCurrentPageImageSource"/>
+    <xsl:param name="pCurrentPageOcr"/>
+    <xsl:param name="pAccessStatus"/>
+
+    <!-- now handle the view type -->
+    <xsl:choose>
+      <xsl:when test="$gFinalView='pdf'">
+        <xsl:element name="iframe">
+          <xsl:attribute name="id">mdpPdf</xsl:attribute>
+          <xsl:attribute name="src">
+            <xsl:value-of select="$pCurrentPageImageSource"/>
+          </xsl:attribute>
+        </xsl:element>
+      </xsl:when>
+
+      <xsl:when test="$gFinalView='plaintext'">
+        <xsl:element name="div">
+          <xsl:attribute name="id">mdpText</xsl:attribute>
+          <p>
+            <xsl:apply-templates select="$pCurrentPageOcr"/>
+          </p>
+        </xsl:element>
+      </xsl:when>
+
+      <xsl:when test="$gFinalView='empty'">
+        <div id="mdpTextEmpty">
+          <xsl:choose>
+            <xsl:when test="$gHasOcr='YES'">
+              <div class="mdpTMPhead">NO TEXT ON PAGE</div>
+              <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine</div>
+            </xsl:when>
+            <xsl:otherwise>
+              <div class="mdpTMPhead">NO TEXT IN THIS ITEM</div>
+              <div class="mdpTMPtext">This item consists only of page images without any OCR text</div>           
+            </xsl:otherwise>
+          </xsl:choose>
+        </div>
+      </xsl:when>
+
+      <xsl:when test="$gFinalView='restricted'">
+        <xsl:element name="div">
+          <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
+          
+          <div class="header">
+		      <a class="htlogobutton" href="http://m.catalog.hathitrust.org"></a>
+		      <xsl:element name="a">
+		          <xsl:attribute name="id">mdpCatalogLinkLimited</xsl:attribute>
+		          <xsl:variable name="href">
+		            <xsl:text>http://m.catalog.hathitrust.org/Record/</xsl:text>
+		            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+		          </xsl:variable>
+		          <xsl:attribute name="class">tracked</xsl:attribute>
+		          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+		          <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
+		          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
+		          <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
+		          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+		          <!--<xsl:text>View full catalog record</xsl:text>-->
+		          <xsl:text disable-output-escaping="yes">&lt;&lt; Record</xsl:text>
+        		</xsl:element>
+          </div>
+          <br />
+          
+          <xsl:choose>
+            <!-- If opb (attr=3) + affiliated user then tell them when -->
+            <!-- current accessor's exclusive access expires -->
+            <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
+              <div class="Specialtext">
+                <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
+                <ul>
+                  <li><strong>Unlimited</strong> use via University of Michigan Library computers</li>
+                  <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
+                </ul>
+                <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
+                <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
+
+              </div>
+            </xsl:when>
+            <xsl:otherwise>
+              <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions.</p>
+            </xsl:otherwise>
+          </xsl:choose>
+          <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
+          <div style="background-color:#f6f6f6;margin:0;padding:10px">
+          <div id="limitedviewoptions">
+              <!--<img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>-->
+              <p>What you <strong>CAN</strong> do:
+                <ul>
+                  <li>
+                      <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
+	                  <xsl:element name="a">
+	                  	<xsl:attribute name="id">mdpLimitedSearchInside</xsl:attribute>
+		           	  	<xsl:attribute name="href">
+      						<xsl:value-of select="concat('/cgi/pt?id=', $id)" />
+      					</xsl:attribute>
+      					<xsl:text>Search inside on Regular (non-mobile) Website</xsl:text>
+		              </xsl:element>
+                  <!--Find the frequency and page numbers of specific words and phrases to help you decide if the book would be useful to you.-->
+                  </li>
+                  <li>
+                  <xsl:call-template name="MobileGetBook"/>
+                  <!-- Find this item in a library near you using WorldCat. -->
+                  </li>
+                </ul>
+              </p>
+              <p>Or <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">learn more</a> about HathiTrust copyright regulations</p>
+            </div>
+            </div>
+        </xsl:element>
+        <xsl:call-template name="BuildMobileFooter"/>
+      </xsl:when>
+
+      <xsl:when test="$gFinalView='restricted-with-thumbnails'">
+        <xsl:element name="div">
+          <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
+          <xsl:choose>
+            <!-- If opb (attr=3) + affiliated user then tell them when -->
+            <!-- current accessor's exclusive access expires -->
+            <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
+              <div class="Specialtext">
+                <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
+                <ul>
+                  <li><strong>Unlimited</strong> use via University of Michigan Library computers</li>
+                  <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
+                </ul>
+                <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
+                <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
+
+              </div>
+            </xsl:when>
+            <xsl:otherwise>
+              <h2>
+                <img src="//common-web/graphics/LimitedLink.png" alt="" class="imgFloat" />
+                Full view is not available for this item <br/>due to copyright &#169; restrictions.
+              </h2>
+            </xsl:otherwise>
+          </xsl:choose>
+          <!-- <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p> -->
+          <div>
+              <img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>
+              <p>What you <strong>CAN</strong> do:
+                <ul>
+                  <li>Use the "Search in this text" search box above to find frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, or when working with a book that does not have an index.</li>
+                  <li>Click the "Find in a library" link to find this item in a library near you.</li>
+                </ul>
+              </p>
+              (<a href="http://www.hathitrust.org/faq#RestrictedAccess">More information</a>)
+            </div>
+        </xsl:element>
+        <div id="BookReader"></div>
+      </xsl:when>
+
+      <xsl:when test="$gFinalView='missing'">
+        <div id="mdpTextMissingPage">
+          <div class="mdpTMPhead">MISSING PAGE</div>
+          <div class="mdpTMPtext">This page is missing in the original.  Use the arrows and links to continue to available pages.</div>
+          <div class="mdpTMPtext"><a href="http://www.hathitrust.org/faq#PageNotAvailable">See the Help page for more information.</a></div>
+        </div>
+      </xsl:when>
+
+      <xsl:when test="$gFinalView = 'image'">
+        <xsl:element name="img">
+          <xsl:attribute name="alt">image of individual page</xsl:attribute>
+          <xsl:attribute name="id">mdpImage</xsl:attribute>
+          <xsl:attribute name="src">
+            <xsl:value-of select="$pCurrentPageImageSource"/>
+          </xsl:attribute>
+          <xsl:attribute name="width">
+            <xsl:value-of select="$gCurrentPageImageWidth"/>
+          </xsl:attribute>
+          <xsl:attribute name="height">
+            <xsl:value-of select="$gCurrentPageImageHeight"/>
+          </xsl:attribute>
+        </xsl:element>
+      </xsl:when>
+      
+      <xsl:otherwise>
+        <div id="BookReader"></div>
+      </xsl:otherwise>
+      
+    </xsl:choose>
+  </xsl:template>
+  
+    
   
   
 </xsl:stylesheet>

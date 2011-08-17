@@ -97,13 +97,7 @@ HTMobileBookReader.prototype.paramsForTracking = function(params) {
 
 //brk - make some adjustments to the original calculations...
 HTMobileBookReader.prototype.calculateSpreadSize = function() {
-	/* brk 2011.07.22
-	if(this.twoPage.autofit=='zoom'){
-		this.twoPage.autofit=null;
-	}else{
-		this.twoPage.autofit='auto';
-	}
-	*/
+
 	HTBookReader.prototype.calculateSpreadSize.call(this);
 	
 	this.twoPage.totalHeight = this.twoPage.height;
@@ -123,9 +117,12 @@ HTMobileBookReader.prototype.calculateSpreadSize = function() {
 HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
 	// Contents
 	$("#BookReader").append("<div id='BRtoolbar'>"
-        + "<a href='' id='toc' style='float: right'></a>"
-        + "<a href='' id='read' style='display:none' >Back</a>"
-        + "<span class='booktitle'>" + $("#mdpTitle").html() + "</span>"        
+			+ "<div class='header'>"
+			+ "<a class='htlogobutton' href='http://m.catalog.hathitrust.org'></a>"
+       + "<a href='' id='toc' style='float: right'></a>"
+       + "<a href='' id='read' class='backlink' style='display:none' >&lt;&lt; Back</a>"
+       // + "<span class='booktitle'>" + $("#mdpTitle").html() + "</span>"
+			+ "</div>"
         + "</div>");
     
     this.updateToolbarZoom(this.reduce); // Pretty format
@@ -208,12 +205,17 @@ HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
     
     
     $('#BRsearch').appendTo('#BookReader');
+    
+
+    
     //$('#BRsearch').appendTo('body');
     
     $('#fullPdfLinkP').appendTo('#BRgetbook');
     $('#fullEpubLinkP').appendTo('#BRgetbook');
     
-    $('#mdpCatalogLink').prependTo('#BRtoolbar');
+    //$('#mdpCatalogLink').prependTo('#BRtoolbar .header');
+    $('#mdpCatalogLink').appendTo('#BRtoolbar .header');
+    $('#mdpCatalogLink').addClass("backlink");
      
     var link=$('#epubLink').attr('href_epub');
     link=link.replace('download','epub');
@@ -225,7 +227,6 @@ HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
     
     // brk scrollingtodo
     $('#mdpMobileTableOfContents').dragscrollable({dragSelector : 'div', acceptPropagatedEvent : true, preventDefault : false});
-    //console.log("Skipping TOC dragscrollable");
     
     $("#BookReader").append("<div id='BRocr'></div>");
     $("#BRocr").append("<div id='BRocrcontainer' class='hidebr'></div>"); // default to wrapped text
@@ -333,7 +334,7 @@ HTMobileBookReader.prototype.initNavbar = function() {
     
     
     $('#BookReader').append(
-            '<div id="BRupdownnavbar">'
+            '<div id="BRupdownnavbar" >'
                 +     "<a id='pageup'></a>"
                // +	  "<br />"
                 +     "<a id='pagedown'></a>"
@@ -407,8 +408,11 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 	    			if($("#BRocrcontainer").hasClass('hidebr')){
 	    				$(r).find("#wraptext").addClass("selectedwrap");
 	    				$(r).find("#unwraptext").removeClass("selectedwrap");
+	    			}else{
+	    				$(r).find("#wraptext").removeClass("selectedwrap");
+	    				$(r).find("#unwraptext").addClass("selectedwrap");
 	    			}
-	    		
+
 	    			$(r).find("#ocrzoomin").click(function() {	    				
 	    				self.changeFont(1);
                         return false;
@@ -422,8 +426,6 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
                     	//$("unwraptext").addClass("selectedwrap");
                     	 $(r).find("#unwraptext").removeClass("selectedwrap");
                     	 $(r).find("#wraptext").addClass("selectedwrap");
-                    	 
-                    	//self.wraptext=true;
                         return false;
                     })
                     $(r).find("#unwraptext").click(function() {	    				
@@ -431,8 +433,6 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
                     	//$("wraptext").addClass("selectedwrap");
                     	$(r).find("#wraptext").removeClass("selectedwrap");
                     	$(r).find("#unwraptext").addClass("selectedwrap");
-                    	
-                    	//self.wraptext=false;
                         return false;
                     })
                 }
@@ -520,6 +520,8 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     $('#toc').click(function(e) {
     	// brktoctodo
     	
+    	$('#BRupdownnavbar').css('display','none');		
+    	
     	self.showToolbars();
     	
 		$('#BRcontainer').css('z-index','-1');
@@ -600,6 +602,8 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 
     $('#booksearch').click(function(e) {
     	
+    	$('#BRupdownnavbar').css('display','none');		
+    	
     	self.showToolbars();
     	
 		$('#mdpMobileTableOfContents').css('z-index','-1');
@@ -636,6 +640,9 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 			$('#BRocr').css('z-index','-1');
 			$('#BRocr').css('display','none');
 			$('#BRcontainer').css('z-index','1');
+			if(self.mode==self.constMode1up){
+				$('#BRupdownnavbar').css('display','');
+			}
 		}else{
 			$('#BRcontainer').css('z-index','-1');
 			$('#BRocr').css('display','');
@@ -664,7 +671,9 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     		$('#BRcontainer').css('z-index','-1');
     		$('#BRocr').css('display','');
     		$('#BRocr').css('z-index','1');
-			
+    		
+    		$('#BRupdownnavbar').css('display','none');
+    		
     		var pagesExist=false;
     		var currentPageLoaded=false;
     		
@@ -693,6 +702,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     );
 
     $('#image').click(function(e) {
+    	
     	$('#read').click();
 		
 		if(self.displayMode!='image'){
@@ -756,6 +766,8 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     	return false;
     });
     
+
+
     $('#mdpSearchButton').click(function(e) {
     		var valid=true;
     		var searchValue = $("#mdpSearchInputBox").val();
@@ -778,6 +790,42 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     			self.searchText("#mdpSearchButton");
     		}
     });
+
+    $(".mobilefeedback").click(function (e) {
+    	console.log("Feedback Click!");
+    	try{
+    		var html = "<div>" + $("#mdpFeedbackForm").html() + "</div>";
+	    	var $notice = new Boxy(html, {
+	            show : true,
+	            modal : true,
+	            draggable : true,
+	            closeable : true,
+	            title : "Feedback",
+	            behaviours: function(r) {
+	    			$(r).find("#mdpFBinputbutton").click(function() {	    				
+	    				// check to make sure comments field is populated
+	    				var comments = $(r).find("#comments").val();
+	    				var valid=false;
+
+	    				if ( comments === "" ) {
+	    	    	        alert( "Please enter comments." );
+	    	    	        valid=false;;
+	    	    	    }else{
+	    	    	    	valid=true;
+	    	    	    	$.post("feedback", $(r).find("#mdpFBform").serialize());
+	    	    	    	Boxy.get(r).hide();
+	    	    	    	//return true;
+	    	    	    }
+	    				return false;
+	    			});
+                },
+
+	         });
+    	}catch(err){alert(err.toString())};
+    	return false;
+    });
+    
+
     
     jIcons.filter('.book_right').click(function(e) {
         // brk self.ttsStop();
@@ -1014,24 +1062,18 @@ HTMobileBookReader.prototype.flipFwdToIndex = function(index) {
 	this.updateNavIndex(this.currentIndex());
 }
 
-// brk - add in new divs for OCR
+// brk - still needed?
+/*
 HTMobileBookReader.prototype.init = function(index) {
 	HTBookReader.prototype.init.call(this);
-	
-	//console.log("HTMobileBookReader.prototype.init() -- adding ocr divs");
-	/*
-	$("#BookReader").append("<div id='BRocr'></div>");
-	$("#BRocr").append("<div id='BRocrcontainer'></div>");
-	
-	$('#BRocr').dragscrollable({dragSelector : '#BRocrcontainer', acceptPropagatedEvent : true, preventDefault : false });
-	*/	
-
 }
-
+*/
 // brk - still needed?
 
 HTMobileBookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPercentageY){
 	try{
+		$('#BRupdownnavbar').css('display','none');		
+		
 		if(this.twoPage.preparing==false || this.twoPage.preparing==undefined){ // this is to prevent unwanted recursion
 			this.twoPage.preparing=true;
 			HTBookReader.prototype.prepareTwoPageView.call(this,centerPercentageX, centerPercentageY);
@@ -1045,11 +1087,9 @@ HTMobileBookReader.prototype.prepareTwoPageView = function(centerPercentageX, ce
 					y: 33
 				 },
 			     swipeLeft: function() { 
-					//console.log("swipe left");
 					self.right();
 				 },
 			     swipeRight: function() { 
-					 //console.log("swipe right") 
 					 self.left();
 				 },
 			});
@@ -1353,7 +1393,6 @@ HTMobileBookReader.prototype.getPageURI = function(index, reduce, rotate) {
 	 var _targetWidth = Math.round(this.getMedianPageSize().width / _reduce);
 	 var page_uri;
 	 if ( (this.displayMode == 'text' /*&& this.mode == 1*/) ) {
-	    // page_uri = "http://bkammin.babel.hathitrust.org" + this.url_config.text;
 		 page_uri = this.url_config.text;
 	 } else if ( this.mode == 3 ) {
 	     // thumbnail
@@ -1408,6 +1447,8 @@ HTMobileBookReader.prototype.switchDisplayMode = function() {
   if (1 == this.mode) {
       this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'), $('#BRcontainer').attr('clientHeight'));
       this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
+      $('#BRupdownnavbar').css('display','');
+      
       this.prepareOnePageView();
   } else if (3 == this.mode) {
       this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
@@ -1417,6 +1458,8 @@ HTMobileBookReader.prototype.switchDisplayMode = function() {
       this.twoPage.autofit = false; // Take zoom level from other mode
       this.twoPageCalculateReductionFactors();
       this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+      $('#BRupdownnavbar').css('display','none');
+      
       this.prepareTwoPageView();
       this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center      
   }
@@ -1491,7 +1534,7 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	
 	var self=this;
 
-	var url="/cgi/pt/search?skin=mobile;id=" + HT.params['id'] + "&q1=\"" + self.searchValue + "\";";
+	var url="/cgi/pt/search?skin=mobile;id=" + HT.params['id'] + "&q1=" + self.searchValue + ";";
 	if(self.searchStart){
 		url+="start=" + self.searchStart + ";";
 	}
@@ -1522,18 +1565,19 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	            	var lData = $("<div>" + data + "</div>");
 	            	
 	            	// brk not sure on this... $('div').remove("#mdpResultsContainer");
-	            	//$("#mdpSearchResultsFooter").css('display','none');
-	            	var footer=$("#mdpSearchResultsFooter").detach();
+
+	            	var footer=$("#mdpFooter").detach();
 	            	
 	            	// if no results container exists, add it...
 	            	if( ! $("#mdpResultsContainer")[0]){
 	            		
-	            		$("#mdpResultsContainer",lData).appendTo("#BRsearch");	
-	            		//$("#mdpResultsContainer",lData).insertBefore("#mdpSearchResultsFooter");
-	            			            		
+	            		$("#mdpResultsContainer",lData).appendTo("#BRsearch");
+	            		
+	            		// brk scrollingtodo
 	            		$('#BRsearch').dragscrollable({dragSelector : '#mdpResultsContainer', acceptPropagatedEvent : true, preventDefault : false });
 	            		//$('#BRsearch').dragscrollable({dragSelector : 'div', acceptPropagatedEvent : true, preventDefault : false });
 	            		//$('#BookReader').dragscrollable({dragSelector : '#BRsearch', acceptPropagatedEvent : true, preventDefault : false });
+	            		//$('#BRsearch').dragScroller();
 	            	}else{
 	            		// o/w -- add list items to existing list...
 	            		$("#mdpOuterList").html( $("#mdpOuterList").html() + $(data).find("#mdpOuterList").html() );
@@ -1550,17 +1594,14 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	            	
             		// i have no idea where this height is set, but it needs to be cleared to push the footer to bottom of screen
             		$("#mdpResultsContainer").css('height',''); 
-	            	
 	            	$(footer).appendTo("#BRsearch");	
-	            	//$("#mdpSearchResultsFooter").css('display','');
 	            	
 	            	//$(".mdpGoToBeginning").remove();
 	            	
 	            	$('#mdpOuterList > li > a').click(function(event){
+	            		
 	            	      try{
 		            	      var url = $.url($(this).attr('href'));
-		            	      
-		            	     // self.switchDisplayMode();
 		            	      if(self.displayMode=='image'){
 		            	    	  $('#image').click();
 		            	      }else{
@@ -1980,3 +2021,13 @@ HTMobileBookReader.prototype.bindMozTouchHandlers = function() {
 }
 
 
+HTMobileBookReader.prototype.switchMode = function(mode, btn) {
+	if(mode==2){
+		$('#BRupdownnavbar').css('display','none');		
+	}else{
+		if(this.displayMode != 'text'){
+			$('#BRupdownnavbar').css('display','');
+		}
+	}
+	HTBookReader.prototype.switchMode.call(this,mode, btn);
+}
