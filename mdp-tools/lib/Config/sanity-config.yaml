@@ -151,7 +151,7 @@ slip:
   - http://__URL_STAGE__.hathitrust.org/cgi/slip?r=11;__LOCAL__
 
   - /htapps/__CMD_STAGE__/slip/index/commit-j -r1 -T __LOCAL__
-  - /htapps/__CMD_STAGE__/slip/index/control-j -r1 -kstop __LOCAL__
+  - /htapps/__CMD_STAGE__/slip/index/control-j -r1 -T -kstop __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/delete-j -r1 -Ifoo -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/docs-j -r11 -Iuc1.\$b699489 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/driver-j -r1 -T __LOCAL__
