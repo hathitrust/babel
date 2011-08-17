@@ -24,7 +24,7 @@ and timestamp fields in their schemas, i.e. for run=20,21
 
 use strict;
 BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
+    #$ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
