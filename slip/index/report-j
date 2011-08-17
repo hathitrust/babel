@@ -420,11 +420,11 @@ sub _report_shard {
     my $doc_size = $srf->{$shard}{'doc_size'};
     my $idx_size = $srf->{$shard}{'idx_size'};
 
-    my $doc_psec = $doc_Time ? sprintf("%.2f", $num_docs_processed/$doc_Time) : 0;
-    my $doc_kpsec = $doc_Time ? sprintf("%.1f", $doc_size/1024/$doc_Time) : 0;
+    my $doc_psec = ($doc_Time > 0) ? sprintf("%.2f", $num_docs_processed/$doc_Time) : 0;
+    my $doc_kpsec = ($doc_Time > 0) ? sprintf("%.1f", $doc_size/1024/$doc_Time) : 0;
     my $idx_size_g = sprintf("%.1f", $idx_size/1024/1024/1024);
-    my $idx_kpsec = $idx_Time ? sprintf("%.1f", $doc_size/1024/$idx_Time) : 0;
-    my $ratio =  $doc_kpsec ? sprintf("%.2f", $idx_kpsec/$doc_kpsec) : 'undef';
+    my $idx_kpsec = ($idx_Time > 0) ? sprintf("%.1f", $doc_size/1024/$idx_Time) : 0;
+    my $ratio =  ($doc_kpsec > 0) ? sprintf("%.2f", $idx_kpsec/$doc_kpsec) : 'undef';
     my $doc_ph = sprintf("%.0f", $srf->{$shard}{'rate'});
 
     my $committed;
