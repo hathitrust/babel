@@ -48,7 +48,8 @@ our ($opt_s, $opt_A, $opt_v, $opt_L);
 my $ops = getopts('LAs:v');
 
 my $STAGE = $opt_s || 'test';
-my @staging_areas = @ToolLib::all_valid_stages;
+
+my @staging_areas = (@ToolLib::all_valid_stages, @ToolLib::valid_developers);
 if (! grep (/^$STAGE$/, @staging_areas)) {
     PrintN("Invalid staging area=$STAGE\n");
     print sanity_app_usage();
