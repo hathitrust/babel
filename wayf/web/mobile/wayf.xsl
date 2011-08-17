@@ -44,7 +44,7 @@
       	<div class="header">
     		<a href="http://m.catalog.hathitrust.org" class="htlogobutton" ></a> <!-- todo - un-hardcode the href? -->
     		<!-- <a href="#" class="htlogobutton" ></a> -->
-			<a href="#" onclick="return loginHomeClick();"><xsl:text disable-output-escaping="yes">&lt;&lt; Login Home</xsl:text></a>
+			<a class="backlink" href="#" onclick="return loginHomeClick();"><xsl:text disable-output-escaping="yes">&lt;&lt; Login Home</xsl:text></a>
 		</div>  	
   	
 		<div class="instheading">Select Your Institution:</div>
