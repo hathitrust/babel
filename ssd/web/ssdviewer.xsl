@@ -407,16 +407,19 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template name="loginlink">
-    <xsl:element name="a">
-      <xsl:attribute name="href">
-        <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
-      </xsl:attribute>
-      <xsl:attribute name="id">
-        <xsl:text>loginLink</xsl:text>
-      </xsl:attribute>
-      <xsl:text>Login</xsl:text>
-    </xsl:element>
+  <xsl:template name="maybe_login">
+    <xsl:if test="$gLoggedIn!='YES'">
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
+        </xsl:attribute>
+        <xsl:attribute name="id">
+          <xsl:text>loginLink</xsl:text>
+        </xsl:attribute>
+        <xsl:text>Login</xsl:text>
+      </xsl:element>
+      <xsl:text> to determine if you have access and see all volumes that are available when searching.</xsl:text>      
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="Access">
@@ -424,7 +427,7 @@
       <xsl:when test="$gFinalView='restricted'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. <xsl:call-template name="loginlink"/> to determine if you have access and see all volumes that are available when searching. For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>. Keyword searchable (no full-text) access to this item is also available via the link below.</p>
+          <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. <xsl:call-template name="maybe_login"/> For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>. Keyword searchable (no full-text) access to this item is also available via the link below.</p>
           <p>
             <a>
               <xsl:attribute name="href">
@@ -438,7 +441,7 @@
 
       <xsl:when test="$gSSD_Session='false' and ($gFinalAccessStatus='allow' and $gLoggedIn!='YES')">
         <xsl:element name="div">
-          <p>You have one page at a time access to this item. Authenticated members of HathiTrust institutions who have a print disability may have full-text access to this item. <xsl:call-template name="loginlink"/> to determine if you have access and see all volumes that are available when searching.  For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Page at a time access to this item is also available via our fully-styled HathiTrust interface.</p>
+          <p>You have one page at a time access to this item. Authenticated members of HathiTrust institutions who have a print disability may have full-text access to this item. <xsl:call-template name="maybe_login"/>  For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Page at a time access to this item is also available via our fully-styled HathiTrust interface.</p>
           <p>
             <a>
               <xsl:attribute name="href">
