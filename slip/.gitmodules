@@ -1,9 +1,17 @@
+#[submodule "vendor/common-lib/lib"]
+#	path = vendor/common-lib/lib
+#	url = /htapps/repos/mdp-lib.git
+#[submodule "web/common-web"]
+#	path = web/common-web
+#	url = /htapps/repos/mdp-web.git
+
 [submodule "vendor/common-lib/lib"]
 	path = vendor/common-lib/lib
-	url = /htapps/repos/mdp-lib.git
+	url = /htapps/pfarber.babel/mdp-lib
 [submodule "web/common-web"]
 	path = web/common-web
-	url = /htapps/repos/mdp-web.git
+	url = /htapps/pfarber.babel/mdp-web
+
 [submodule "vendor/slip-lib/lib"]
 	path = vendor/slip-lib/lib
 	url = /htapps/repos/slip-lib.git
