@@ -4,6 +4,7 @@
   
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
   <xsl:variable name="gHttpHost" select="/MBooksTop/MBooksGlobals/HttpHost"/>
+  <xsl:variable name="gHtId" select="/MBooksTop/MBooksGlobals/HtId"/>
   
   <xsl:template name="header">
     <div id="mbHeader">
