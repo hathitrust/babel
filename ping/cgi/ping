@@ -7,9 +7,9 @@ use File::Basename qw(dirname);
 use IO::File;
 autoflush STDOUT 1;
 
-BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
-}
+# BEGIN {
+#     $ENV{DEBUG_LOCAL} = 1;
+# }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors __FILE__;
