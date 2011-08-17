@@ -81,12 +81,6 @@ my %run_tasks =
 
 my $N = "\n";
 
-my $COMMON_CONFIGFILE = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
-
-my $CONFIG = new MdpConfig($COMMON_CONFIGFILE);
-my $db = new Database($CONFIG);
-my $DBH = $db->get_DBH();
-
 my $cgi = new CGI;
 Utils::clean_cgi_params($cgi);
 
@@ -123,7 +117,12 @@ print div({-class=>"brandingLogo"},
             img({-src=>"/slip/common-web/graphics/HathiTrust.gif", -style=>"border:0"}),
             span("Digital Library - SLIP status - $date")));
 
-print report_globals();
+# config for DB
+my $tempC = get_run_context(0);
+my $db = new Database($tempC->get_object('MdpConfig'));
+my $dbh = $db->get_DBH();
+
+print report_globals($dbh);
 
 eval {
     foreach my $run (@runs) {
@@ -176,19 +175,21 @@ sub report_run {
     my $run = shift;
     
     my $C = get_run_context($run);
+    my $db = new Database($C->get_object('MdpConfig'));
+    my $dbh = $db->get_DBH();
     
     my $driver_driven = $C->get_object('MdpConfig')->get('driver_driven');
-    my $_Enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $DBH, $run);
+    my $_Enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $dbh, $run);
     my $dr_s = '';
     if ($driver_driven) {
-        my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $DBH, $run);
+        my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
         my $stage_class = 
           (($_Stage eq $SLIP_Utils::States::St_Driver_ERROR)
            ||
            ($_Stage eq $SLIP_Utils::States::St_Undefined))
             ? 'error' : 'neutral';
         my $stage = qq{<span class="$stage_class">$_Stage</span>};
-        my $_Enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $DBH, $run);
+        my $_Enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $dbh, $run);
         my $enabled = $_Enabled 
           ? qq{<span class='enabled'>Enabled</span>}
             : qq{<span class='not-enabled'>Disabled</span>};
@@ -200,9 +201,9 @@ sub report_run {
           $N,
           h2("Run $run - $run_tasks{$run}$dr_s"),
           $N,
-          report_shards($C, $run),
-          report_producer_hosts($C, $run),
-          report_queue($C, $run),
+          report_shards($C, $run, $dbh),
+          report_producer_hosts($C, $run, $dbh),
+          report_queue($C, $run, $dbh),
          );
     
     return $content;
@@ -272,7 +273,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub report_shards {
-    my ($C, $run) = @_;
+    my ($C, $run, $dbh) = @_;
     
     my $content;
     my $caption = "Shards" . $N;
@@ -296,27 +297,27 @@ sub report_shards {
         $engine =~ s,\.umdl\.umich\.edu,,;
         my ($host) = ($engine =~ m,^(.*?):.*,); 
         my $directory = $config->get('dir_for_shard_' . $shard);
-        my ($num_docs) = Db::Select_indexed_count($C, $DBH, $run, $shard);        
+        my ($num_docs) = Db::Select_indexed_count($C, $dbh, $run, $shard);        
         
-        my $shard_enabled = Db::Select_shard_enabled($C, $DBH, $run, $shard);
+        my $shard_enabled = Db::Select_shard_enabled($C, $dbh, $run, $shard);
         my $shard_class = $shard_enabled ? 'enabled' : 'not-enabled';
         my $e;
         if (! $shard_enabled) {
             $e = 'dis';
         }
         else {
-            $e = Db::shard_is_suspended($C, $DBH, $run, $shard) ? 'sus' : 'enb';
+            $e = Db::shard_is_suspended($C, $dbh, $run, $shard) ? 'sus' : 'enb';
         }
         my $enabled = td({-class=>"$shard_class"}, ["$e"]);
         
-        my $opt_enabled = Db::Select_optimize_enabled($C, $DBH, $run, $shard);
+        my $opt_enabled = Db::Select_optimize_enabled($C, $dbh, $run, $shard);
         my $opt_class = $opt_enabled ? 'enabled' : 'not-enabled';
         if ($driver_driven) {
             my $opt_en = td({-class=>"$opt_class"}, ["$opt_enabled"]);
             $enabled .= $opt_en;
         }
 
-        my $ck_enabled = Db::Select_check_enabled($C, $DBH, $run, $shard);
+        my $ck_enabled = Db::Select_check_enabled($C, $dbh, $run, $shard);
         my $ck_class = $ck_enabled ? 'enabled' : 'not-enabled';
         
         if ($driver_driven) {
@@ -327,9 +328,9 @@ sub report_shards {
         my $states = '';
         if ($driver_driven) {
             # Neutral unless error or building and the queue is empty (then, good)
-            my $buildDoneTime = Db::Select_shard_build_done($C, $DBH, $run, $shard); 
+            my $buildDoneTime = Db::Select_shard_build_done($C, $dbh, $run, $shard); 
             my $bs_s = td({-class=>'neutral'}, ["$buildDoneTime"]);
-            my $build_state = Db::Select_shard_build_state($C, $DBH, $run, $shard);
+            my $build_state = Db::Select_shard_build_state($C, $dbh, $run, $shard);
             if ($build_state == $SLIP_Utils::States::Sht_Build_Error) {
                 $bs_s = td({-class=>'error'}, ["$buildDoneTime"]);
             }
@@ -341,8 +342,8 @@ sub report_shards {
                     $bs_s = td({-class=>'pending'}, ["$buildDoneTime"]);
                 }
             }
-            my $optimizeDoneTime = Db::Select_shard_optimize_done($C, $DBH, $run, $shard); 
-            my $optimize_state = Db::Select_shard_optimize_state($C, $DBH, $run, $shard);
+            my $optimizeDoneTime = Db::Select_shard_optimize_done($C, $dbh, $run, $shard); 
+            my $optimize_state = Db::Select_shard_optimize_state($C, $dbh, $run, $shard);
             my $os_s = td({-class=>'neutral'}, ["$optimizeDoneTime"]);
             if ($optimize_state == $SLIP_Utils::States::Sht_Optimize_Error) {
                 $os_s = td({-class=>'error'}, ["$optimizeDoneTime"]);
@@ -355,8 +356,8 @@ sub report_shards {
                     $os_s = td({-class=>'pending'}, ["$optimizeDoneTime"]);
                 }
             }
-            my $checkDoneTime = Db::Select_shard_check_done($C, $DBH, $run, $shard); 
-            my $check_state = Db::Select_shard_check_state($C, $DBH, $run, $shard);
+            my $checkDoneTime = Db::Select_shard_check_done($C, $dbh, $run, $shard); 
+            my $check_state = Db::Select_shard_check_state($C, $dbh, $run, $shard);
             my $os_c = td({-class=>'neutral'}, ["$checkDoneTime"]);
             if ($check_state == $SLIP_Utils::States::Sht_Check_Error) {
                 $os_c = td({-class=>'error'}, ["$checkDoneTime"]);
@@ -370,7 +371,7 @@ sub report_shards {
                 }
             }
             my $rs_s;
-            my $release_state = Db::Select_shard_release_state($C, $DBH, $run, $shard);
+            my $release_state = Db::Select_shard_release_state($C, $dbh, $run, $shard);
             if ($release_state == $SLIP_Utils::States::Srl_Rel_Error) {
                 $rs_s = td({-class=>'error'}, ["err"]);
             }
@@ -388,12 +389,12 @@ sub report_shards {
         }
         
         my ($total_errs, $index, $ocr, $meta, $critical, $server) =
-          Db::Select_error_data($C, $DBH, $run, $shard);
+          Db::Select_error_data($C, $dbh, $run, $shard);
         
         my $crit =  $critical ? td({-class=>'error'}, ["$critical"]) : td(["0"]);
         my $machines = a({-href=>$engine_url}, "$engine");
         
-        my $size = Db::Select_indexdir_size($C, $DBH, $run, $shard);
+        my $size = Db::Select_indexdir_size($C, $dbh, $run, $shard);
         my $size_GB = sprintf("%.3f", $size/1024/1024/1024);
         
         my $max = $config->get('default_max_shard_size_GB');
@@ -469,18 +470,18 @@ Description
 # ---------------------------------------------------------------------
 sub report_queue
 {
-    my ($C, $run) = @_;
+    my ($C, $run, $dbh) = @_;
     
     my $content;
     my $caption = "Indexing Input Queue" . $N;
     
     my $config = $C->get_object('MdpConfig');
     
-    my ($size, $avail, $process) = Db::Select_queue_data($C, $DBH, $run);
-    my $enabled = Db::Select_enqueuer_enabled($C, $DBH, $run);
+    my ($size, $avail, $process) = Db::Select_queue_data($C, $dbh, $run);
+    my $enabled = Db::Select_enqueuer_enabled($C, $dbh, $run);
     my $class = $enabled ? 'enabled' : 'not-enabled';
-    my $v_timestamp = Db::Select_vSolr_timestamp($C, $DBH);
-    my $r_timestamp = Db::Select_j_rights_timestamp($C, $DBH, $run);
+    my $v_timestamp = Db::Select_vSolr_timestamp($C, $dbh);
+    my $r_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
     
     my $row =
       td({-class=>$class}, ["$enabled"])
@@ -523,7 +524,7 @@ sub report_solr_hosts {
     my @rows;
     
     foreach my $host (@solr_hosts) {
-        my $enabled = Db::Select_host_enabled($C, $DBH, $run, $host);
+        my $enabled = Db::Select_host_enabled($C, $dbh, $run, $host);
         my $class = $enabled ? 'enabled' : 'not-enabled';
         
         push(@rows, td(["$host"]) . td({-class=>$class}, ["$enabled"]) . $N);
@@ -553,13 +554,13 @@ Description
 
 # ---------------------------------------------------------------------
 sub report_producer_hosts {
-    my ($C, $run) = @_;
+    my ($C, $run, $dbh) = @_;
     
     my $content;
     my $caption = "Document Producer Hosts" . $N;
     
     my $config = $C->get_object('MdpConfig');
-    my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $DBH, $run);
+    my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
     
     my @rows;
     
@@ -622,15 +623,17 @@ Description
 
 # ---------------------------------------------------------------------
 sub report_globals {
+    my $dbh = shift;
+    
     my $content;
     my $caption = "Globals" . $N;
     
-    my $r_enabled = Db::Select_rights_enabled(undef, $DBH) ? 'enabled' : 'disabled';
+    my $r_enabled = Db::Select_rights_enabled(undef, $dbh) ? 'enabled' : 'disabled';
     my $c_enabled = Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP') ? 'STOP file' : 'no STOP file';
     my $r_class = ($r_enabled eq 'enabled') ? 'enabled' : 'alert';
     my $c_class = ($c_enabled eq 'no STOP file') ? 'enabled' : 'alert';
     
-    my $rights_ct = Db::Select_count_from_j_rights(undef, $DBH);
+    my $rights_ct = Db::Select_count_from_j_rights(undef, $dbh);
     
     my $row = td({-class=>$c_class}, ["$c_enabled"]) . td({-class=>$r_class}, ["$r_enabled ($rights_ct)"]) . $N;
     
