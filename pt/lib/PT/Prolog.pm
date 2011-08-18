@@ -77,10 +77,10 @@ sub Run {
     my $cgi = new CGI;    
 
     # TEMP: don't expose mobile UI in production yet.
-    if ($cgi->param('skin') eq 'mobile') {
-        $cgi->delete('skin')
-          unless (defined($ENV{HT_DEV}));
-    }
+    #if ($cgi->param('skin') eq 'mobile') {
+    #    $cgi->delete('skin')
+    #      unless (defined($ENV{HT_DEV}));
+    #}
     
     $C->set_object('CGI', $cgi);
 
