@@ -358,7 +358,7 @@
               <p>
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink};skin=mobilewayf;">Login</a></strong>
+                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}&amp;skin=mobilewayf;">Login</a></strong>
                     <xsl:text> to determine whether you can download this book.</xsl:text>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
@@ -406,7 +406,7 @@
               <p>
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink};skin=mobilewayf;">Login</a></strong>
+                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}&amp;skin=mobilewayf;">Login</a></strong>
                     <xsl:text> to determine whether you can download this book.</xsl:text>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">

@@ -218,8 +218,10 @@ HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
     $('#mdpCatalogLink').addClass("backlink");
      
     var link=$('#epubLink').attr('href_epub');
-    link=link.replace('download','epub');
-    $('#epubLink').attr('href_epub',link);
+    if(link){
+    	link=link.replace('download','epub');
+    	$('#epubLink').attr('href_epub',link);
+    }
     
     $('#BRiteminfo').css('display','none');
     $('#mdpMobileTableOfContents').css('display','none');
@@ -1557,10 +1559,12 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 		url:url,
 		cache:true,
 		success:function(data) {
-    		try{
+    		try{    			
 	    		if ( ! data ) {
+	    			var footer=$("#mdpFooter").detach();
 	                data = '<div id="ajaxerror">No data retrieved</div>';
-	                $(data).appendTo("#BRsearch");	
+	                $(data).appendTo("#BRsearch");
+	                $(footer).appendTo("#BRsearch");
 	            }else{	            	
 	            	var lData = $("<div>" + data + "</div>");
 	            	
@@ -1641,8 +1645,10 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	    	}catch(err){alert(err.toString())}			    	
     	},
     	error:function(jqXHR, textStatus, errorThrown){
+    		var footer=$("#mdpFooter").detach();
     		var data = '<div id="ajaxerror">Search failed: ' + textStatus + '</div>';
-            $(data).appendTo("#BRsearch");	
+            $(data).appendTo("#BRsearch");
+            $(footer).appendTo("#BRsearch");
     	},
     	complete:function(){
     		if(busyElement){

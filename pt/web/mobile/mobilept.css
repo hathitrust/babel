@@ -976,25 +976,25 @@ color:white;
 /* 1pgup up/down buttons */
 #BRupdownnavbar{
     position:fixed;
-
     top:50px;
     right: 0;
     z-index: 99;
     /*background-color: #555;*/
     background-color:transparent;
-    opacity:.95;
-    -webkit-box-shadow: 0 1px 3px #999;
+    /* opacity:.95; */
+    /* -webkit-box-shadow: 0 1px 3px #999; */
     /* Shadow here on FF causes scroll bars */
-    overflow: hidden;
+    /* overflow: hidden; */
     margin:0;
     border-style:none;
     line-height:100%;
     /* padding:20px; */
+    /*
     -moz-border-radius-topleft: 8px;
     -webkit-border-top-left-radius: 8px;    
     -moz-border-radius-bottomleft: 8px;
     -webkit-border-bottom-left-radius: 8px;  
-	
+	*/
 }
 
 #pageup{
@@ -1040,7 +1040,7 @@ color:white;
     background-color:#6a6a6a;
     height:47px;
     text-align:center;
-    padding-right:50px;
+    /*padding-right:50px;*/
 }
 
 .header a:visited,
@@ -1096,4 +1096,8 @@ color:white;
 
 #comments{
 	margin-left:0;
+}
+
+#ajaxerror{
+	background-color:#fff;
 }

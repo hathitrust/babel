@@ -57,7 +57,8 @@
          <xsl:element name="a">
            <xsl:attribute name="id">mobilelogin</xsl:attribute>
            <xsl:attribute name="href">
-             <xsl:value-of select="/MBooksTop/Header/LoginLink"/>;skin=mobilewayf;
+             <xsl:value-of select="/MBooksTop/Header/LoginLink"/><xsl:text disable-output-escaping="yes">&amp;skin=mobilewayf;</xsl:text>
+             <!-- ;skin=mobilewayf; -->
            </xsl:attribute>
            <xsl:text>Login</xsl:text>
          </xsl:element>
@@ -68,7 +69,8 @@
          <xsl:element name="a">
            <xsl:attribute name="href">
              <xsl:if test="/MBooksTop/Header/LoginLink!=''">
-               <xsl:value-of select="/MBooksTop/Header/LoginLink"/>;skin=mobilewayf;
+               <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
+               <!-- ;skin=mobilewayf; -->
              </xsl:if>
            </xsl:attribute>
            <xsl:if test="/MBooksTop/Header/LoginLink=''">
