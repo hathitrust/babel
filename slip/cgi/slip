@@ -118,8 +118,8 @@ print div({-class=>"brandingLogo"},
             span("Digital Library - SLIP status - $date")));
 
 # config for DB
-my $tempC = get_run_context(0);
-my $db = new Database($tempC->get_object('MdpConfig'));
+my $config = new MdpConfig(Utils::get_uber_config_path('mb'));
+my $db = new Database($config);
 my $dbh = $db->get_DBH();
 
 print report_globals($dbh);
