@@ -352,12 +352,12 @@ div#BRnavline {
 #toc{
 	float:right;
 	margin-right:10px;
-	margin-top:10px;
+	margin-top:7px;
 	background-image:url(mobile/images/contents-button.png);
 	background-position:right center;
 	background-repeat:no-repeat;  
-	width:58px;
-	height:27px;
+	width:78px;
+	height:36px;
 }
 
 a#mdpCatalogLink:link,  a#mdpCatalogLink:visited,
@@ -569,8 +569,9 @@ div.ocrScrollBar{
 	border-left:solid 1px #ccc;
 	border-bottom:none;
 	padding:0;
-	width:80%;
-	height:2em;
+	width:90%;
+	height:2.4em;
+	font-size:1.2em;
 	
 	-moz-border-radius-topright: 2px;
     -webkit-border-top-right-radius: 2px;
@@ -584,8 +585,9 @@ div.ocrScrollBar{
 #unwraptext{	
 	border:solid 1px #ccc;
 	padding:0;
-	width:80%;
-	height:2em;
+	width:90%;
+	height:2.4em;
+	font-size:1.2em;
 	
 	-moz-border-radius-bottomright: 2px;
     -webkit-border-bottom-right-radius: 2px;
@@ -596,9 +598,12 @@ div.ocrScrollBar{
 #fittopage{
 	border:solid 1px #ccc;
 	padding:0;
-	width:80%;
-	height:2em;
+	width:90%;
+	/*height:2.3em;*/
 	margin-top:1em;
+	
+	height:2.4em;
+	font-size:1.2em;
 	
 	-moz-border-radius: 2px;
     -webkit-border-radius: 2px;
@@ -609,7 +614,7 @@ div.ocrScrollBar{
 }
 
 /*#fittopage,*/ #feedback, #mdpCatalogLinkInfoForm, .worldcat, #fullPdfLink, #epubLink,
-#mdpLimitedSearchInside{   
+#mdpLimitedSearchInside, #mobilefeedbackdiv a.mobilefeedback {   
 	background-image:url(mobile/images/Arrow_rightcircle.png);
 	background-position:right center;
 	background-repeat:no-repeat;    
@@ -623,7 +628,8 @@ content:url(mobile/images/Arrow_rightcircle.png);
 #feedback,
 #mdpCatalogLinkInfoForm,
 .worldcat,
-#mdpLimitedSearchInside
+#mdpLimitedSearchInside,
+#mobilefeedbackdiv a.mobilefeedback
 {
 	border:solid 1px #ccc;
 	padding:.5em;
@@ -640,10 +646,15 @@ content:url(mobile/images/Arrow_rightcircle.png);
 #mdpLimitedSearchInside{
 	width:80%;
 }
-#feedback, #mdpCatalogLinkInfoForm{
+#feedback, #mdpCatalogLinkInfoForm, #mobilefeedbackdiv a.mobilefeedback {
 	margin-top:1em;
 	width:90%;
 	/*display:none;*/
+}
+
+.boxy-content #mdpCatalogLinkInfoForm{
+	font-size:1.2em;
+	line-height:1.2em;
 }
 
 a#mdpCatalogLinkInfoForm:link,  a#mdpCatalogLinkInfoForm:visited,
@@ -651,7 +662,9 @@ a#feedback:link,  a#feedback:visited,
 a.worldcat:link,  a.worldcat:visited,
 a#fullPdfLink:link,  a#fullPdfLink:visited,
 a#epubLink:link,  a#epubLink:visited,
-a#mdpLimitedSearchInside:link, a#mdpLimitedSearchInside:visited  {
+a#mdpLimitedSearchInside:link, a#mdpLimitedSearchInside:visited,
+#mobilefeedbackdiv a.mobilefeedback:link,
+#mobilefeedbackdiv a.mobilefeedback:visited  {
 	color:#000;
 	text-decoration:none;
 }
@@ -711,6 +724,8 @@ a#mdpLimitedSearchInside:link, a#mdpLimitedSearchInside:visited  {
 	margin-right:auto;
 	padding:5px;
 	
+	font-size:1.2em;
+	
 	-moz-border-radius-topright: 2px;
     -webkit-border-top-right-radius: 2px;
     -moz-border-radius-topleft: 2px;
@@ -729,6 +744,8 @@ a#mdpLimitedSearchInside:link, a#mdpLimitedSearchInside:visited  {
 	margin-left:auto;
 	margin-right:auto;
 	padding:5px;
+	
+	font-size:1.2em;
 	
 	-moz-border-radius-bottomright: 2px;
     -webkit-border-bottom-right-radius: 2px;
@@ -1090,14 +1107,49 @@ color:white;
 /* END HIDE EPUB */
 
 
-#mdpFBform{
+.boxy-content #mdpFBform{
 	text-align:left;
+	/*max-width:200px;*/
+	max-width:auto;
+	/*max-height:auto;*/
+	height:auto;
+	
 }
+
 
 #comments{
 	margin-left:0;
+	width:100%;
 }
 
 #ajaxerror{
 	background-color:#fff;
+}
+.boxy-content .worldcat,
+.boxy-content p #fullPdfLink,
+#mobilefeedbackdiv a.mobilefeedback {
+	font-size:1.2em;
+	line-height:1.2em;
+}
+
+input#email{
+	width:100%;
+}
+
+/* Boxy pop-up custom CSS */
+.boxy-wrapper .title-bar h2, 
+.boxy-wrapper .title-bar .close {
+	font-size:1.25em;
+}
+
+.boxy-wrapper .title-bar{
+	text-align:left;
+}
+/*
+.boxy-inner{
+	opacity:.5;
+}
+*/
+.boxy-modal-blackout{
+	opacity:.3 !important;
 }

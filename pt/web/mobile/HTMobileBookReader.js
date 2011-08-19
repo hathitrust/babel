@@ -118,7 +118,7 @@ HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
 	// Contents
 	$("#BookReader").append("<div id='BRtoolbar'>"
 			+ "<div class='header'>"
-			+ "<a class='htlogobutton' href='http://m.catalog.hathitrust.org'></a>"
+			+ "<a class='htlogobutton' href='http://m.hathitrust.org'></a>"
        + "<a href='' id='toc' style='float: right'></a>"
        + "<a href='' id='read' class='backlink' style='display:none' >&lt;&lt; Back</a>"
        // + "<span class='booktitle'>" + $("#mdpTitle").html() + "</span>"
@@ -386,9 +386,14 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 	            modal : true,
 	            draggable : true,
 	            closeable : true,
-	            title : "About this book",
+	            title : "Info",
 	            behaviours: function(r) {
-	    			$(r).find('#feedback').css('display','');
+	    			$(r).find('#feedback').css('display',''); // still needed???
+	    			
+	    			$(r).find('#mobilefeedbackdiv a.mobilefeedback').click(function() {
+	    				Boxy.get(r).hide();
+	    				return self.feedback();
+	    			});
                 },
 
 	         });
@@ -794,37 +799,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     });
 
     $(".mobilefeedback").click(function (e) {
-    	console.log("Feedback Click!");
-    	try{
-    		var html = "<div>" + $("#mdpFeedbackForm").html() + "</div>";
-	    	var $notice = new Boxy(html, {
-	            show : true,
-	            modal : true,
-	            draggable : true,
-	            closeable : true,
-	            title : "Feedback",
-	            behaviours: function(r) {
-	    			$(r).find("#mdpFBinputbutton").click(function() {	    				
-	    				// check to make sure comments field is populated
-	    				var comments = $(r).find("#comments").val();
-	    				var valid=false;
-
-	    				if ( comments === "" ) {
-	    	    	        alert( "Please enter comments." );
-	    	    	        valid=false;;
-	    	    	    }else{
-	    	    	    	valid=true;
-	    	    	    	$.post("feedback", $(r).find("#mdpFBform").serialize());
-	    	    	    	Boxy.get(r).hide();
-	    	    	    	//return true;
-	    	    	    }
-	    				return false;
-	    			});
-                },
-
-	         });
-    	}catch(err){alert(err.toString())};
-    	return false;
+    	return self.feedback();
     });
     
 
@@ -1401,7 +1376,8 @@ HTMobileBookReader.prototype.getPageURI = function(index, reduce, rotate) {
 	     page_uri = this.url_config.thumb;
 	 } else {
 	     //page_uri = "http://babel.hathitrust.org/" +  this.url_config.image;
-		 page_uri = "http://babel.hathitrust.org" +  this.url_config.image;
+		 //page_uri = "http://babel.hathitrust.org" +  this.url_config.image;
+		 page_uri = this.url_config.image;
 	 }
 	 page_uri += '?id='+this.bookId+';seq='+(index+1);
 	 
@@ -2036,4 +2012,41 @@ HTMobileBookReader.prototype.switchMode = function(mode, btn) {
 		}
 	}
 	HTBookReader.prototype.switchMode.call(this,mode, btn);
+}
+
+
+HTMobileBookReader.prototype.feedback = function(){
+	try{
+		var html = "<div>" + $("#mdpFeedbackForm").html() + "</div>";
+    	var $notice = new Boxy(html, {
+            show : true,
+            modal : true,
+            draggable : true,
+            closeable : true,
+            title : "Feedback",
+            behaviours: function(r) {
+				console.log("Adding boxytest..." + $(r).parent().attr("class"));
+				//$($(r).parent()).find(".title-bar").addClass("boxytest");
+				console.log("Finding..." + $(r).parent().find(".title-bar").attr("class"));
+			
+    			$(r).find("#mdpFBinputbutton").click(function() {
+    				// check to make sure comments field is populated
+    				var comments = $(r).find("#comments").val();
+    				var valid=false;
+
+    				if ( comments === "" ) {
+    	    	        alert( "Please enter comments." );
+    	    	        valid=false;;
+    	    	    }else{
+    	    	    	valid=true;
+    	    	    	$.post("feedback", $(r).find("#mdpFBform").serialize());
+    	    	    	Boxy.get(r).hide();
+    	    	    }
+    				return false;
+    			});
+            },
+
+         });
+	}catch(err){alert(err.toString())};
+	return false;	
 }

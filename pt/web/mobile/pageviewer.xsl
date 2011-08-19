@@ -27,6 +27,7 @@
 	  	
 	  	<xsl:call-template name="MobileItemMetadata" />
 	  	<xsl:call-template name="BuildCatalogLink" />
+	  	<div id="mobilefeedbackdiv"><xsl:call-template name="feedbacklink"/></div>
 	  </div>
 	  <div id="BRsearch" data-scroll="true" >
 	  	<xsl:call-template name="MobileBuildSearchForm" />
@@ -980,7 +981,7 @@
           <xsl:call-template name="GetMaybeTruncatedTitle">
             <xsl:with-param name="titleString" select="$gFullTitleString"/>
             <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="250"/>
+            <xsl:with-param name="maxLength" select="30"/>
           </xsl:call-template>
         </div>
 
@@ -1247,6 +1248,7 @@
 		<link rel="alternate" media="handheld" href="" />
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
 		<meta name="format-detection" content="telephone=no" />
+		<meta name="apple-mobile-web-app-capable" content="yes" /> 
       
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
@@ -1480,7 +1482,7 @@
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           
           <div class="header">
-		      <a class="htlogobutton" href="http://m.catalog.hathitrust.org"></a>
+		      <a class="htlogobutton" href="http://m.hathitrust.org"></a>
 		      <xsl:element name="a">
 		          <xsl:attribute name="id">mdpCatalogLinkLimited</xsl:attribute>
 		          <xsl:variable name="href">
