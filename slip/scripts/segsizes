@@ -88,7 +88,8 @@ my $err = '';
 
 
 foreach my $shard (@SHARDS) {
-    my $index_dir = $CONFIG->get('dir_for_shard_' . $shard);
+    my $key = 'dir_for_shard_';
+    my $index_dir = $CONFIG->get($key' . $shard);
     show_shards($index_dir);
 }
 
