@@ -71,7 +71,7 @@
     <SearchTerms><?SEARCH_TERMS?></SearchTerms>
     <SearchSummary>
       <TotalPages><?TOTAL_PAGES?></TotalPages>
-      <QueryType><?QUERY_TYPE?></QueryType>
+      <QueryTime><?QUERY_TIME?></QueryTime>
     </SearchSummary>
     <SliceNavigationLinks><?SLICE_NAVIGATION_LINKS?></SliceNavigationLinks>
     <SearchResults><?ITEM_SEARCH_RESULTS?></SearchResults>

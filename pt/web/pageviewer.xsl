@@ -1583,7 +1583,7 @@
   <!-- -->
   <xsl:template match="CurrentPageOcr">
     <!-- handle Highlight element children in the OCR -->
-    <xsl:apply-templates/>
+    <xsl:copy-of select="."/>
   </xsl:template>
 
   <!-- FORM: Page X of Y -->

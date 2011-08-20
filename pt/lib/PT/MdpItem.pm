@@ -21,23 +21,17 @@ our $AUTOLOAD;
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+use SLIP_Utils::Common;
 
 # Define the PTGlobals namespace
 use PTGlobals;
 
 # MDP
-use Debug::DUtils;
 use Utils;
-use Utils::Serial;
-use Utils::Extract;
+use Debug::DUtils;
 use Context;
-use Auth::Auth;
-use Identifier;
 
-use PT::Document::XPAT;
-
-use PT::PageTurnerUtils;
-use XML::LibXML;
+use PT::SearchUtils;
 
 
 # **********************************************************************
@@ -172,57 +166,44 @@ sub DetermineAndSetContentHandler {
     }
 }
 
-# ----------------------------------------------------------------------
-# NAME         :
-# PURPOSE      :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------
+
+=item OcrHandler
+
+When q's are present, get OCR from Solr to support consistent highlighting.
+
+=cut
+
+# ---------------------------------------------------------------------
 sub OcrHandler {
     my $self = shift;
+    my $C = shift;
 
-    my $hOCR = $self->HasCoordOCR();
-    my $fileType = $hOCR ? 'coordocrfile' : 'ocrfile';
-
-    my $ocrFile = $self->GetFilePathMaybeExtract( $self->GetRequestedPageSequence(), $fileType );
-    if (! $ocrFile) {
         my $text = '';
-        $self->{'ocrtextref'} = \$text;
-    }
-    else {
-        my $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
-        DEBUG('all', qq{ocr file is: $ocrFile});
+    my $ocrTextRef = \$text;
 
-        if ($hOCR) {
-            my ($hOCR_Body) = ($$ocrTextRef =~ m,<body[^>]*>(.*?)</body>,is);
-            # Aaaiiiieee!!!
-            $hOCR_Body =~ s,\&shy;,\&\#173;,gis;
-            $hOCR_Body =~ s,<br>,<br/>,gis;
+    my $q1 = $C->get_object('CGI')->param('q1');
+    my $seq = $self->GetRequestedPageSequence();
             
-            $self->{'ocrtextref'} =  \$hOCR_Body;
+    if ($q1) {
+        my $id = $self->Get('id');
+        $ocrTextRef = PT::SearchUtils::Solr_retrieve_OCR_page($C, $id, $seq);
+        DEBUG('all', qq{Solr retrieve OCR for seq=$seq});
         }
         else {
-            my $doc = new PT::Document::XPAT;
-            $doc->clean_xml($ocrTextRef);
+        my $ocrFile = $self->GetFilePathMaybeExtract($seq, 'ocrfile') ;
             
-            # XMLify line breaks using <br/>
-        	### $$ocrTextRef =~ s!^([^\n]+)\n!<span>$1</span><br />\n!gsm;
-            
-            $self->{'ocrtextref'} =  $ocrTextRef;
+        if ($ocrFile) {
+            $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
+            SLIP_Utils::Common::clean_xml($ocrTextRef);
         }
+        DEBUG('all', qq{zip retrieve ocr from file="$ocrFile" for seq=$seq});
     }
 
-    return $self->{'ocrtextref'};
-}
+    $self->{'ocrtextref'} =  $ocrTextRef;
 
-sub FormatOcrText {
-    my $self = shift;
-    my $ocrTextRef = $self->GetOcrTextRef();
-    $$ocrTextRef =~ s!^([^\n]+)\n!<span>$1</span><br />\n!gsm;
+
+    return $self->{'ocrtextref'};
 }
 
 # ---------------------------------------------------------------------
@@ -268,8 +249,7 @@ sub GetOcrBySequence {
 
     DEBUG('all', qq{ocr file is: $ocrFile});
 
-    my $doc = new PT::Document::XPAT;
-    $doc->clean_xml($ocrTextRef);
+    SLIP_Utils::Common::clean_xml_xml($ocrTextRef);
 
     $$ocrTextRef =~ s,\n\n,<br /><br />\n,g;
 
