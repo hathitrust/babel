@@ -35,6 +35,7 @@ use Vendors;
 use Getopt::Std;
 
 # App
+use Context;
 use Utils;
 use Debug::DUtils;
 
@@ -97,9 +98,10 @@ elsif ($NUMSEGS < 1) {
     exit $rc;
 }    
 
-my $run_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
-my $config = new MdpConfig($common_configfile, $run_configfile);
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
+$C->set_object('MdpConfig', $config);
 
 my $rc = 0;
 my $err = '';
