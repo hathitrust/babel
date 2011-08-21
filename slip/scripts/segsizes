@@ -34,6 +34,7 @@ use Vendors;
 use Getopt::Std;
 
 # App
+use Context;
 use Utils;
 use Debug::DUtils;
 use MdpConfig;
@@ -46,7 +47,7 @@ use SLIP_Utils::States;
 $| = 1;
 
 sub sg_usage {
-    my $s .= qq{Usage: check-shard -r run [-R shard]\n};
+    my $s .= qq{Usage: segsizes -r run [-R shard]\n};
     return $s;
 }
 
@@ -68,9 +69,10 @@ if (! $RUN) {
 
 my $SHARD = $opt_R; # Optional
 
-my $run_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/run-$RUN.conf};
-my $common_configfile = $ENV{'SDRROOT'} . qq{/slip-lib/Config/common.conf};
-my $CONFIG = new MdpConfig($common_configfile, $run_configfile);
+my $C = new Context;
+
+my $CONFIG = SLIP_Utils::Common::gen_run_config('slip', $RUN);
+$C->set_object('MdpConfig', $CONFIG);
 
 my @SHARDS;
 
@@ -89,7 +91,7 @@ my $err = '';
 
 foreach my $shard (@SHARDS) {
     my $key = 'dir_for_shard_';
-    my $index_dir = $CONFIG->get($key' . $shard);
+    my $index_dir = $CONFIG->get($key . $shard);
     show_shards($index_dir);
 }
 
