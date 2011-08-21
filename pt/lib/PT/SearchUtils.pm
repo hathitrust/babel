@@ -209,23 +209,15 @@ sub Solr_search_item {
         my $safe_id = Identifier::get_safe_Solr_id($id);
         my $fls = $config->get('default_Solr_search_fields');
         
-        # Default to the solrconfig.xml default unless debugging
-        my $op;
-        if (DEBUG('ptsop')) {
-            if (DEBUG('OR')) {
-                $op = 'q.op=OR';
-            }
-            elsif (DEBUG('AND')) {
-                $op = 'q.op=AND';
-            }
-        }
+        # Default to the solrconfig.xml default unless specified on the URL
+        my $op = $cgi->param('ptsop') || 'OR';
+        my $solr_q_op_param = 'q.op=' . uc($op);
         
         # highlighting sizes
         my $snip = $config->get('solr_hl_snippets');
         my $frag = $config->get('solr_hl_fragsize');
 
-        my $query = qq{q=ocr:$q_str&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag};
-        $query .= (defined $op) ? "&$op" : '';
+        my $query = qq{q=ocr:$q_str&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag&$solr_q_op_param};
         
         $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 

@@ -280,7 +280,7 @@
               <xsl:value-of select="$ppSearchHits"/>
             </span>
             <xsl:value-of select="$page_string"/>
-            <i>Best matching pages appear first.</i>
+            <i> Best matching pages appear first.</i>
           </xsl:when>
           <xsl:otherwise>
             <xsl:choose>
