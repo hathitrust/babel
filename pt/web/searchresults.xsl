@@ -25,7 +25,7 @@
         </title>
 
         <!-- jQuery from the Google CDN -->
-    		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
@@ -165,7 +165,7 @@
                   </xsl:choose>
                 </xsl:when>
                 <xsl:otherwise>
-                  <xsl:text>sequence #</xsl:text>
+                  <xsl:text>sequence No.</xsl:text>
                   <xsl:value-of select="Sequence"/>
                 </xsl:otherwise>
               </xsl:choose>
@@ -242,14 +242,7 @@
 
     <xsl:variable name="vNatLangQuery">
       <xsl:for-each select="$ppSearchTerms/Term">
-        <xsl:choose>
-          <xsl:when test="contains(., ' ')">
-            <xsl:text>"</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="."/><xsl:text> </xsl:text>
-         </xsl:otherwise>
-        </xsl:choose>
+        <xsl:value-of select="."/><xsl:text></xsl:text>
         <xsl:if test="position()!=last()">
           <xsl:value-of select="$separator"/>
         </xsl:if>
@@ -259,12 +252,10 @@
     <div class="mdpSearchSummary">
       <xsl:if test="$gFinalAccessStatus!='allow'">
         <xsl:element name="div">
-<!--          <xsl:attribute name="id">mdpTextDeny</xsl:attribute> -->
-
-            <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions. </p>
-            <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-         </xsl:element>
-       </xsl:if>
+          <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions. </p>
+          <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
+        </xsl:element>
+      </xsl:if>
 
       <xsl:variable name="page_string">
         <xsl:choose>
@@ -277,27 +268,10 @@
         </xsl:choose>
       </xsl:variable>
 
-      <xsl:variable name="query_explanation">
-        <xsl:choose>
-          <xsl:when test="/MBooksTop/MdpApp/SearchSummary/QueryType='OR'">
-            <span class="mdpEmp">Note:</span> No page contained all of your search terms.  Results are for pages containing <span class="mdpEmp">at least one</span> of your terms.
-          </xsl:when>
-          <xsl:otherwise></xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-
       <span>
         <xsl:choose>
           <xsl:when test="$ppSearchHits > 0">
-            <xsl:text>Your search for the </xsl:text>
-            <xsl:choose>
-              <xsl:when test="$numTerms > 1">
-                <xsl:text>terms: </xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>term: </xsl:text>
-              </xsl:otherwise>
-            </xsl:choose>
+            <xsl:text>Your search for </xsl:text>
             <span class="mdpEmp">
               <xsl:value-of select="$vNatLangQuery"/>
             </span>
@@ -306,20 +280,33 @@
               <xsl:value-of select="$ppSearchHits"/>
             </span>
             <xsl:value-of select="$page_string"/>
-            <span class="smallMessage">
-              <xsl:copy-of select="$query_explanation"/>
-            </span>
+            <i>Best matching pages appear first.</i>
           </xsl:when>
           <xsl:otherwise>
+            <xsl:choose>
+              <xsl:when test="$vNatLangQuery!=''">
+                <span class="infoAlert">                
             <span class="mdpEmp">&#x25b8;&#xa0;No </span>
-            <xsl:text>pages matched your search for </xsl:text>
+                  <xsl:text>pages contained any of the terms in your search for </xsl:text>
             <span class="mdpEmp">
               <xsl:value-of select="$vNatLangQuery"/>
             </span>
-            <xsl:text> in this item.</xsl:text>
-            <xsl:call-template name="NoResultsAdditionalMessage"/>
+                </span>
+              </xsl:when>
+              <xsl:otherwise>
+                <span class="infoAlert">
+                  <xsl:text>No pages matched because your search resulted in a query for the empty string.</xsl:text>
+                </span>
+              </xsl:otherwise>
+            </xsl:choose>
           </xsl:otherwise>
         </xsl:choose>
+
+        <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
+          <xsl:text> query time (ms) =</xsl:text>
+        <xsl:value-of select="MdpApp/SearchSummary/QueryTime"/>
+        </xsl:if>
+
       </span>
     </div>
 
@@ -345,7 +332,7 @@
         <li> <xsl:text>You searched in a language not currently supported by "search within 
         a book"</xsl:text>
       </li>
-        <li><xsl:text> Your term(s) do not appear on pages in this book but are present in 
+        <li><xsl:text> "Your term(s) do not appear on pages in this book but are present in 
 the bibliographic metadata for this book (not shown): </xsl:text>
 
         <xsl:element name="a">
@@ -375,7 +362,7 @@ the bibliographic metadata for this book (not shown): </xsl:text>
 
   <!-- -->
   <xsl:template match="Kwic">
-    <xsl:apply-templates/>
+    <xsl:copy-of select="."/>
   </xsl:template>
 
   <!-- -->
