@@ -205,6 +205,12 @@ my $REBUILD = 0;
 my $CHECK = 0;
 my $ID_INSERT_FILE;
 
+if (! defined($RUN)) {
+    my $s = r_get_usage();
+    __output(qq{Missing run (-r) argument\n} . $s);
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+
 if (defined($opt_n)) {
     $CHECK = 1;
 }
@@ -214,19 +220,12 @@ if (defined($opt_F)){
 }
 elsif (defined($opt_B)) {
     $BUILD = 1;
-    # Required for Build
-    if (! defined($opt_r)) {
-        my $s = r_get_usage();
-        __output($s);
-        exit $SLIP_Utils::States::RC_BAD_ARGS;
-    }
 }
 elsif (defined($opt_R)) {
     $REBUILD = 1;
 }
 else {
     print r_get_usage();
-    exit 0;
 }
 
 my $TEST_ONLY = defined($opt_T);
@@ -259,7 +258,7 @@ my $SLICE_SIZE = ($REBUILD ? 100 : 1000);
 my $C = new Context;
 
 # Any run number will do to grab common.conf
-my $config = SLIP_Utils::Common::gen_run_config('slip', 0);
+my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 my $db;
