@@ -271,6 +271,12 @@
       authtype="shibboleth"
       domain="ucsf.edu"
       enabled="1">University of California, San Francisco</Inst>
+  <Inst
+      sdrinst="ucr"
+      template="https://___HOST___/Shibboleth.sso/ucr?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ucr.edu"
+      enabled="1">University of California, Riverside</Inst>
 
   <!-- waiting -->
 
@@ -280,12 +286,6 @@
       authtype="shibboleth"
       domain="ucdavis.edu"
       enabled="0">University of California, Davis</Inst>
-  <Inst
-      sdrinst="ucr"
-      template="https://___HOST___/Shibboleth.sso/ucr?target=___TARGET___"
-      authtype="shibboleth"
-      domain="ucr.edu"
-      enabled="0">University of California, Riverside</Inst>
   <Inst
       sdrinst="ucsb"
       template="https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___"
