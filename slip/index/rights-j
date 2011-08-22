@@ -226,6 +226,7 @@ elsif (defined($opt_R)) {
 }
 else {
     print r_get_usage();
+    exit 0;
 }
 
 my $TEST_ONLY = defined($opt_T);
