@@ -10,6 +10,7 @@
   <xsl:variable name="gLastPageturnerLink" select="/MBooksTop/MdpApp/LastPageturnerLink"/>
   <xsl:variable name="gBeginningLink" select="/MBooksTop/MdpApp/BeginningLink"/>
   <xsl:variable name="gHasPageNumbers" select="/MBooksTop/MdpApp/HasPageNumbers"/>
+  <xsl:variable name="gSearchFatalError" select="/MBooksTop/MdpApp/SearchResults/SearchError"/>
 
   <xsl:variable name="gUsingBookReader" select="'false'"/>
 
@@ -256,7 +257,7 @@
           <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
         </xsl:element>
       </xsl:if>
-
+      
       <xsl:variable name="page_string">
         <xsl:choose>
           <xsl:when test="$ppSearchHits > 1">
@@ -267,9 +268,14 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
-
+      
       <span>
         <xsl:choose>
+          <xsl:when test="$gSearchFatalError='true'">
+            <span class="error">
+              <xsl:text>Sorry! There was an error performing your search.  Please check back later.</xsl:text>
+            </span>
+          </xsl:when>
           <xsl:when test="$ppSearchHits > 0">
             <xsl:text>Your search for </xsl:text>
             <span class="mdpEmp">
@@ -286,11 +292,11 @@
             <xsl:choose>
               <xsl:when test="$vNatLangQuery!=''">
                 <span class="infoAlert">                
-            <span class="mdpEmp">&#x25b8;&#xa0;No </span>
+                  <span class="mdpEmp">&#x25b8;&#xa0;No </span>
                   <xsl:text>pages contained any of the terms in your search for </xsl:text>
-            <span class="mdpEmp">
-              <xsl:value-of select="$vNatLangQuery"/>
-            </span>
+                  <span class="mdpEmp">
+                    <xsl:value-of select="$vNatLangQuery"/>
+                  </span>
                 </span>
               </xsl:when>
               <xsl:otherwise>
@@ -301,12 +307,12 @@
             </xsl:choose>
           </xsl:otherwise>
         </xsl:choose>
-
+      
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
           <xsl:text> query time (ms) =</xsl:text>
-        <xsl:value-of select="MdpApp/SearchSummary/QueryTime"/>
+          <xsl:value-of select="MdpApp/SearchSummary/QueryTime"/>
         </xsl:if>
-
+      
       </span>
     </div>
 

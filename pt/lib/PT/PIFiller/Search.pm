@@ -296,6 +296,12 @@ sub WrapSearchResultsInXml {
 
     my $XML_result = '';
 
+    # Server/Query/Network error
+    if (! $rs->http_status_ok()) {
+        $XML_result = wrap_string_in_tag('true', 'SearchError');
+        return $XML_result;
+    }
+
     $rs->init_iterator();
     while (my $Page_result = $rs->get_next_Page_result()) {
 
