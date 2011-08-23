@@ -825,19 +825,6 @@
             </xsl:element>
           </xsl:if>
 
-          <xsl:if test="contains(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug'], 'ptsop')">
-            <xsl:choose>
-              <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ptsop']='AND'">
-                <input type="radio" name="ptsop" value="OR"/> ANY of
-                <input type="radio" name="ptsop" value="AND" checked="checked"/> ALL of these terms            
-              </xsl:when>
-              <xsl:otherwise>
-                <input type="radio" name="ptsop" value="OR" checked="checked"/> ANY of
-                <input type="radio" name="ptsop" value="AND"/> ALL of these terms            
-              </xsl:otherwise>
-            </xsl:choose>            
-          </xsl:if>
-
           <xsl:element name="input">
             <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
