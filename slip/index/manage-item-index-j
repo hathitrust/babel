@@ -99,7 +99,7 @@ my $BASE_SCRIPT_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my $INTERACTIVE = $ENV{'TERM'};
 
 my $NOOP = defined($opt_n); # optional
-my $RUN = defined($opt_r); # Required
+my $RUN = $opt_r; # Required
 if (! $RUN) {
     my $s = qq{run (-r) parameter missing } . mii_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
