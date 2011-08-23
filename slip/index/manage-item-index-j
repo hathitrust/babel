@@ -86,9 +86,9 @@ sub mii_get_usage {
     return $s;
 }
 
-our ($opt_r, $opt_d, $opt_n, $opt_D);
+our ($opt_r, $opt_d, $opt_n, $opt_D, $opt_T);
 
-my $ops = getopts('r:dnD');
+my $ops = getopts('r:dnDT');
 use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
 use constant TOMCAT_MAX_TRIES => 10;
 use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
@@ -110,6 +110,9 @@ if (! $RUN) {
 }
 
 my $DELETE = defined($opt_D);
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 if ($INTERACTIVE) {
     my $s = q{Are you on the Solr host (for ls and /etc/init.d/tomcat-ptsearch start|stop ? [N] };
