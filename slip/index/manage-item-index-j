@@ -356,19 +356,33 @@ sub mii_do_delete_index {
     # to restart on this index.
     my $key = 'dir_for_shard_1';
     my $index_dir = $C->get_object('MdpConfig')->get($key);
-    my $deleted_index_dir = "$index_dir" . "-DELETEME*";
+    my $index_dir_parent = "$index_dir/..";
     
-    my $rc = system("rm", "-r", "-f", "$deleted_index_dir");
-
-    if ($rc > 0) {
-        my $s = qq{manage-item-index-j failed to delete $deleted_index_dir: rc=$rc, $!};
+    if (! opendir(DIR, $index_dir_parent)) {
+        my $s = qq{manage-item-index-j failed to open $index_dir_parent: $!};
         __output("$s\n");
         Log_manage_error($C, $run, $s);
+        return 0;
     }
-    else {
-        my $s = qq{manage-item-index-j deleted $deleted_index_dir success};
-        __output("$s\n");
-        Log_manage($C, $run, $s);
+
+    my @dir_list = map { "$index_dir_parent/$_" } grep(! /^(\.|\..)/, readdir(DIR));
+    closedir(DIR);
+
+    foreach my $dir (@dir_list) {
+        if ($dir =~ m,DELETEME,) {
+            my $rc = system("rm", "-r", "-f", "$dir");
+
+            if ($rc > 0) {
+                my $s = qq{manage-item-index-j failed to delete $dir: rc=$rc, $!};
+                __output("$s\n");
+                Log_manage_error($C, $run, $s);
+            }
+            else {
+                my $s = qq{manage-item-index-j deleted $dir success};
+                __output("$s\n");
+                Log_manage($C, $run, $s);
+            }
+        }
     }
 
     return 0;
