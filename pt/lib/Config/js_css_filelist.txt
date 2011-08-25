@@ -110,7 +110,7 @@ Test:$gUsingSearch='true'
 Section:MOBILE_CSS
 Test:$gSkin='mobile'
 /pt/web/mobile/mobilept.css
-/pt/web/mobile/epub_download_helper.css
+#/pt/web/mobile/epub_download_helper.css
 
 # Section:BOOKREADER_CSS
 # NOTE: BookReader.css doesn't appear to work when minified.
