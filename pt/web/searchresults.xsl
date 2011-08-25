@@ -403,7 +403,7 @@
         </xsl:variable>
         <xsl:attribute name="class">tracked</xsl:attribute>
         <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-        <xsl:attribute name="data-tracking-action">PT Search no results</xsl:attribute>
+        <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
         <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
         <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
         <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
