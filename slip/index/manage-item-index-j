@@ -81,14 +81,14 @@ Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
 $| = 1;
 
 sub mii_get_usage {
-    my $s .= qq{Usage: manage-item-index-j -r run [-D][-d][-n]
+    my $s .= qq{Usage: manage-item-index-j -r run [-D][-d][-n][-f]
        where -n runs without calling start, stop or move/delete.\n};
     return $s;
 }
 
-our ($opt_r, $opt_d, $opt_n, $opt_D, $opt_T);
+our ($opt_r, $opt_d, $opt_n, $opt_D, $opt_T, $opt_f);
 
-my $ops = getopts('r:dnDT');
+my $ops = getopts('r:dnDTf');
 use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
 use constant TOMCAT_MAX_TRIES => 10;
 use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
@@ -98,6 +98,7 @@ my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 my $BASE_SCRIPT_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my $INTERACTIVE = $ENV{'TERM'};
 
+my $FORCE_EMAIL = defined($opt_f);
 my $NOOP = defined($opt_n); # optional
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -243,6 +244,8 @@ Description
 # ---------------------------------------------------------------------
 sub mii_email_stats_report {
     my ($C, $run) = @_;
+
+    return unless($FORCE_EMAIL || (! $INTERACTIVE));
 
     my $subj = qq{[SLIP] Manage item-level report ($HOST) -r$run};
     SLIP_Utils::Common::Send_email($C, 'report', $subj, $REPORT_BUFFER);
@@ -508,6 +511,7 @@ sub Log_manage {
     my ($C, $run, $s) = @_;
 
     my $s0 = qq{***MANAGE: } . Utils::Time::iso_Time() . qq{ r=$run, $s};
+    $REPORT_BUFFER .= $s0 . "\n";
     SLIP_Utils::Log::this_string($C, $s0, 'manage_logfile', '___RUN___', $run);
 }
 
