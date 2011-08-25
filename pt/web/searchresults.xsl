@@ -272,7 +272,7 @@
   
   <!-- -->
   <xsl:template name="msgRepeatSearchWithOR">      
-    <div class="repeatSearchMessage">
+    <div class="searchSubMessage">
       <xsl:element name="a">
         <xsl:attribute name="href">
           <xsl:call-template name="href_OP">
@@ -288,7 +288,7 @@
   
   <!-- -->
   <xsl:template name="msgRepeatSearchWithAND">
-    <div class="repeatSearchMessage">
+    <div class="searchSubMessage">
       <xsl:element name="a">
         <xsl:attribute name="href">
           <xsl:call-template name="href_OP">
@@ -372,6 +372,11 @@
           </xsl:otherwise>
         </xsl:choose>
       
+        <!-- if even a broad query returned no pages ... -->
+        <xsl:if test="$gPagesFound=0 and $gSearchOp='OR'">
+          <xsl:call-template name="NoResultsAdditionalMessage"/>
+        </xsl:if>
+
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
           <xsl:text> query time (ms) =</xsl:text>
           <xsl:value-of select="MdpApp/SearchSummary/QueryTime"/>
@@ -389,45 +394,24 @@
   <!-- -->
   <xsl:template name="NoResultsAdditionalMessage">
     <!-- If the query came from the ls application and there are no hits show this message-->
-    <xsl:variable name="refstring">
-      <xsl:value-of select="/MBooksTop/MBooksGlobals/ReferrerHref"/>      
-    </xsl:variable>
-    <xsl:if test="contains($refstring,'ls?q1')">
-      <div class="NoResultsLS">
-        
-        <xsl:text>You may have received no results because:</xsl:text>
-      <ul> 
-        <li> <xsl:text>You searched in a language not currently supported by "search within 
-        a book"</xsl:text>
-      </li>
-        <li><xsl:text> "Your term(s) do not appear on pages in this book but are present in 
-the bibliographic metadata for this book (not shown): </xsl:text>
-
-        <xsl:element name="a">
-          <xsl:variable name="href">
-            <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
-            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
-          </xsl:variable>
-          <xsl:attribute name="class">tracked</xsl:attribute>
-          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-          <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
-          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
-          <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-          <xsl:text>see the  catalog record</xsl:text>
-        </xsl:element>
-
-      </li>
-</ul>
-</div>
-            <!-- we need a link to the catalog record as well-->
-    </xsl:if>
-
-
+    <div class="searchSubMessage">
+      <xsl:text>Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included its bibliographic metadata.  However, this search includes only the item's pages. </xsl:text>
+      <xsl:element name="a">
+        <xsl:variable name="href">
+          <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+          <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+        </xsl:variable>
+        <xsl:attribute name="class">tracked</xsl:attribute>
+        <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+        <xsl:attribute name="data-tracking-action">PT Search no results</xsl:attribute>
+        <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
+        <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
+        <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+        <xsl:text>See the  catalog record</xsl:text>
+      </xsl:element>
+    </div>
   </xsl:template>
-
-
-
+    
   <!-- -->
   <xsl:template match="Kwic">
     <xsl:copy-of select="."/>
