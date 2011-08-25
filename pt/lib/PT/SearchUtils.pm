@@ -28,7 +28,7 @@ use Debug::DUtils;
 use MdpConfig;
 
 use Db;
-use Search::Utils;
+use Search::Query;
 use Search::Constants;
 use SLIP_Utils::Solr;
 use Search::Result::SLIP_Raw;
@@ -68,7 +68,7 @@ Description
 # ---------------------------------------------------------------------
 sub __timer {
     my $start = shift;
-    
+
     my $elapsed = Time::HiRes::time() - $start;
     return $elapsed;
 }
@@ -84,7 +84,7 @@ Description
 # ---------------------------------------------------------------------
 sub __index_item_ok {
     my ($index_state, $data_status, $metadata_status) = @_;
-    
+
     my $ok = (
               (! Search::Constants::indexing_failed($index_state))
               &&
@@ -92,7 +92,7 @@ sub __index_item_ok {
               &&
               ($metadata_status == IX_NO_ERROR)
              );
-    
+
     return $ok;
 }
 
@@ -124,7 +124,7 @@ sub maybe_Solr_index_item {
 
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
     $g_stats_ref->{update}{check} = __timer($start_0);
-    
+
     my $indexed = $rs->get_num_found();
 
     my ($index_state, $data_status, $metadata_status, $stats_ref ) =
@@ -139,7 +139,7 @@ sub maybe_Solr_index_item {
         SLIP_Utils::Common::merge_stats($C, $g_stats_ref, $stats_ref);
 
         if (__index_item_ok($index_state, $data_status, $metadata_status)) {
-            my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, 1);    
+            my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, 1);
             my ($index_state, $commit_stats_ref) = $indexer->commit_updates($C);
 
             SLIP_Utils::Common::merge_stats($C, $g_stats_ref, $commit_stats_ref);
@@ -169,7 +169,7 @@ sub Solr_index_one_item {
 
     my $dbh = $C->get_object('Database')->get_DBH($C);
 
-    my ($index_state, $data_status, $metadata_status, $stats_ref) = 
+    my ($index_state, $data_status, $metadata_status, $stats_ref) =
       Index_Module::Service_ID($C, $dbh, $run, $$, $HOST, $id, 1);
 
     return ($index_state, $data_status, $metadata_status, $stats_ref);
@@ -193,8 +193,22 @@ sub Solr_search_item {
     my $config = $C->get_object('MdpConfig');
 
     my $q1 = $cgi->param('q1');
-    my $parsed_terms_arr_ref = Search::Utils::ParseSearchTerms($C, \$q1);
-    my $q_str = join(' ', @$parsed_terms_arr_ref);
+
+    my $Q = new PT::Query($C, $q1);
+    my $processed_q1 = $Q->get_processed_user_query_string();
+
+    $C->set_object('Query', $Q);
+
+    my $q_str;
+    my $parsed_terms_arr_ref;
+    if ($Q->parse_was_valid_boolean_expression()) {
+        $parsed_terms_arr_ref = [$processed_q1];
+        $q_str = $processed_q1;
+    }
+    else {
+        $parsed_terms_arr_ref = __parse_search_terms($C, $processed_q1);
+        $q_str = join(' ', @$parsed_terms_arr_ref);
+    }
 
     # Solr paging is zero-relative
     my $start = max($cgi->param('start') - 1, 0);
@@ -205,32 +219,32 @@ sub Solr_search_item {
 
     if (scalar(@$parsed_terms_arr_ref) > 0) {
         my $searcher = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
-        
+
         my $safe_id = Identifier::get_safe_Solr_id($id);
         my $fls = $config->get('default_Solr_search_fields');
-        
+
         # Default to the solrconfig.xml default unless specified on the URL
-        my $op = $cgi->param('ptsop') || 'OR';
+        my $op = $cgi->param('ptsop') || 'AND';
         my $solr_q_op_param = 'q.op=' . uc($op);
-        
+
         # highlighting sizes
         my $snip = $config->get('solr_hl_snippets');
         my $frag = $config->get('solr_hl_fragsize');
 
         my $query = qq{q=ocr:$q_str&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag&$solr_q_op_param};
-        
+
         $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
         $g_stats_ref->{query}{qtime} = $rs->get_query_time();
         $g_stats_ref->{query}{num_found} = $rs->get_num_found();
         $g_stats_ref->{query}{elapsed} = __timer($start_0);
         $g_stats_ref->{cgi}{elapsed} = __timer($main::realSTART);
-        
+
         my $Solr_url = $searcher->get_engine_uri() . '?' . $query;
         $Solr_url =~ s, ,+,g;
 
-        my $Q = new PT::Query($C, $Solr_url);
-        $Q->log_query($C, $g_stats_ref);
+        my $Q = new PT::Query($C);
+        $Q->log_query($C, $g_stats_ref, $Solr_url);
     }
 
     return $rs;
@@ -254,8 +268,19 @@ sub Solr_retrieve_OCR_page {
     my $cgi = $C->get_object('CGI');
     my $q1 = $cgi->param('q1');
 
-    my $parsed_terms_arr_ref = Search::Utils::ParseSearchTerms($C, \$q1);
-    my $q_str = join(' ', @$parsed_terms_arr_ref);
+    my $Q = new PT::Query($C, $q1);
+    my $processed_q1 = $Q->get_processed_user_query_string();
+
+    $C->set_object('Query', $Q);
+
+    my $q_str;
+    if ($Q->parse_was_valid_boolean_expression()) {
+        $q_str = $processed_q1;
+    }
+    else {
+        my $parsed_terms_arr_ref = __parse_search_terms($C, $processed_q1);
+        $q_str = join(' ', @$parsed_terms_arr_ref);
+    }
 
     my $rs = new Search::Result::Page;
     my $searcher = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
@@ -305,6 +330,55 @@ sub __get_id_timestamp {
     return $rights_hashref->{time};
 }
 
+
+# ---------------------------------------------------------------------
+
+=item __parse_search_terms
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __trim_spaces {
+    my $s = shift;
+    $s =~ s,^\s*,,; $s =~ s,\s*$,,; return $s;
+}
+
+sub __parse_search_terms {
+    my ($C, $q) = @_;
+
+    my $parsed_terms_arr_ref = [];
+
+    # yank out quoted terms
+    my @quotedTerms = ( $q =~ m,\"(.*?)\",gis );
+    $q =~ s,\"(.*?)\",,gis;
+    # remove empty strings between quotes
+    @quotedTerms = grep( !/^\s*$/, @quotedTerms );
+    # remove leading and trailing spaces within quotes
+    @quotedTerms = map { __trim_spaces($_) } @quotedTerms;
+
+    # yank out single word terms w/o leading/trailing space
+    $q = __trim_spaces($q);
+    my @singleWords = split(/\s+/, $q);
+
+    foreach my $sTerm (@singleWords) {
+        push(@$parsed_terms_arr_ref, $sTerm);
+    }
+
+    foreach my $qTerm (@quotedTerms) {
+        push(@$parsed_terms_arr_ref, qq{"$qTerm"});
+    }
+
+    DEBUG('query,all',
+          sub
+          {
+              my $s = join(' ', @$parsed_terms_arr_ref);
+              return qq{<h3>CGI after parsing into separate terms: $s</h3>};
+          });
+
+    return $parsed_terms_arr_ref;
+}
 
 1;
 

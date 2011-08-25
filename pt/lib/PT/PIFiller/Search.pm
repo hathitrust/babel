@@ -27,7 +27,6 @@ use base qw(PIFiller);
 use PT::PIFiller::Common;
 use PT::PageTurnerUtils;
 
-use Search::Utils;
 use SLIP_Utils::Common;
 
 
@@ -302,6 +301,10 @@ sub WrapSearchResultsInXml {
         return $XML_result;
     }
 
+    my $Q = $C->get_object('Query'); 
+    my $valid_boolean = $Q->parse_was_valid_boolean_expression();
+    $XML_result .= wrap_string_in_tag($valid_boolean, 'ValidBooleanExpression');
+
     $rs->init_iterator();
     while (my $Page_result = $rs->get_next_Page_result()) {
 
@@ -337,7 +340,6 @@ sub WrapSearchResultsInXml {
     }
 
     return $XML_result;
-
 }
 
 

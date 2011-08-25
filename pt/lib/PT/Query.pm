@@ -83,12 +83,11 @@ Override base class
 # ---------------------------------------------------------------------
 sub log_query {
     my $self = shift;
-    my ($C, $stats_ref) = @_;
+    my ($C, $stats_ref, $Solr_url) = @_;
 
     # Log
     my $ipaddr = $ENV{'REMOTE_ADDR'};
     my $session_id = $C->get_object('Session')->get_session_id();
-    my $Solr_url = $self->get_query_string();
     
     my $cgi_elapsed     = qq{cgi:elapsed=}    . __format_time($stats_ref->{cgi}{elapsed}, 1);
     my $create_doc_size = qq{create:docsize=} . sprintf("%.0f", $stats_ref->{create}{doc_size}/1024) . qq{K};
