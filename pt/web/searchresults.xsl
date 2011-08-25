@@ -395,7 +395,7 @@
   <xsl:template name="NoResultsAdditionalMessage">
     <!-- If the query came from the ls application and there are no hits show this message-->
     <div class="searchSubMessage">
-      <xsl:text>Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included its bibliographic metadata.  However, this search includes only the item's pages. </xsl:text>
+      <xsl:text>Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included bibliographic metadata.  However, this search includes only the item's pages. </xsl:text>
       <xsl:element name="a">
         <xsl:variable name="href">
           <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
