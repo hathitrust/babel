@@ -86,7 +86,7 @@
         </xsl:otherwise>
       </xsl:choose>
       <xsl:element name="htd:imgfmt">
-        <xsl:variable name="fileId" select="METS:fptr[1]/@FILEID"/>
+        <xsl:variable name="fileId" select="METS:fptr[starts-with(@FILEID,'IMG')]/@FILEID"/>
         <xsl:value-of select="key('Mimetype', $fileId)/@MIMETYPE"/>
       </xsl:element>
     </xsl:element>
