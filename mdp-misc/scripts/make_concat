@@ -23,7 +23,7 @@ if ( defined ($opts{h}) || scalar(keys %opts) == 0 ) {
     exit;
 }
 
-my @ALLOWED_APPS = ('ls', 'pt', 'mb', 'ptsearch', 'wayf');
+my @ALLOWED_APPS = ('ls', 'pt', 'mb', 'wayf');
 
 if (! grep(/$PROGRAM/, @ALLOWED_APPS)) {
     print STDERR "argument -c must be one of: " . join(' ', @ALLOWED_APPS) . "\n";
@@ -504,7 +504,7 @@ Description
 sub usage {
     my $msg = <<USAGE_MSG;
   Usage:
-   \t$0 [-v][-x][-f][-h][-D][-z] -c mb|pt|ls|ptsearch|wayf configure for these apps
+   \t$0 [-v][-x][-f][-h][-D][-z] -c mb|pt|ls|wayf configure for these apps
 
    \tRead .../lib/Config/js_css_filelist.txt and concatenate and minimize js and css files. 
    \tNormally, transform "//common-web" to "/{pt,ls,mb}/web/common-web" but see -D option
