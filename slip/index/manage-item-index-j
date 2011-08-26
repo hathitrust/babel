@@ -486,6 +486,10 @@ sub mii_gather_statistics {
     # Get num docs in index
     my $num = mii_num_docs_in_index($C);
     $REPORT_BUFFER .= qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/200) . qq{ estimated at 200 pages/vol\n};
+
+    if ($INTERACTIVE && $REPORT) {
+        __output("$REPORT_BUFFER\n");
+    }
 }
 
 
