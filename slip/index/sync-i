@@ -341,10 +341,14 @@ sub handle_synchronization {
                 my $safe_id = Identifier::get_safe_Solr_id($id);
                 my $query_1 = qq{q=coll_id:$coll_id+AND+id:$safe_id&start=0&rows=0};
                 $rs = __handle_query($C, $query_1, $searcher, $rs);
-
+                
                 $ct++;
                 if ($VERBOSE) {
-                    (($ct % 100) == 0) ? l__output($ct) : '';
+                    if (($ct % 100) == 0) {
+                        l__output($ct.'s');
+                        # throttle solr requests to prevent 500's
+                        sleep 1;
+                    }
                     (($ct % 10) == 0) ? l__output('.') : '';
                 }
 
