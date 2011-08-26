@@ -96,7 +96,7 @@ sub handle_IDP_LIST_PI
     }
     
     # To preselect user's institution in list. Option 0 is in the xsl
-    my $inst = $C->get_object('Auth')->get_institution();
+    my $inst = $C->get_object('Auth')->get_institution_by_ip_address();
     foreach my $idp_key (sort 
                          {
                              $WAYF::IdpConfig::HT{$a}{'link_text'} cmp $WAYF::IdpConfig::HT{$b}{'link_text'}
