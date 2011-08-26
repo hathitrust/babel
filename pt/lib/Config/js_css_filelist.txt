@@ -81,8 +81,7 @@ Test:$gUsingBookReader='true'
 /pt/web/js/lscache.js
 
 Section:MOBILE_JS
-Test:$gSkin='mobile'
-Test:$gUsingBookReader='true'
+Test:$gSkin='mobile' and $gUsingBookReader='true'
 /pt/web/mobile/epub_download_helper.js
 /pt/web/mobile/jquery.url.js
 /pt/web/mobile/jquery-ui-1.8.5.custom.min.js
