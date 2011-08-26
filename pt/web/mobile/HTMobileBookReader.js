@@ -228,7 +228,12 @@ HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
     $('#BRsearch').css('display','none');
     
     // brk scrollingtodo
-    $('#mdpMobileTableOfContents').dragscrollable({dragSelector : 'div', acceptPropagatedEvent : true, preventDefault : false});
+    $('#mdpMobileTableOfContents').dragscrollable({	dragStart: 'touchstart',
+    												dragcontinue: 'touchmove',
+    												dragend: 'touchend', 
+    												dragSelector : 'div', 
+    												acceptPropagatedEvent : true, 
+    												preventDefault : false});
     
     $("#BookReader").append("<div id='BRocr'></div>");
     $("#BRocr").append("<div id='BRocrcontainer' class='hidebr'></div>"); // default to wrapped text
@@ -1554,7 +1559,12 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	            		$("#mdpResultsContainer",lData).appendTo("#BRsearch");
 	            		
 	            		// brk scrollingtodo
-	            		$('#BRsearch').dragscrollable({dragSelector : '#mdpResultsContainer', acceptPropagatedEvent : true, preventDefault : false });
+	            		$('#BRsearch').dragscrollable({	dragStart: 'touchstart',
+														dragcontinue: 'touchmove',
+														dragend: 'touchend', 
+	            										dragSelector : '#mdpResultsContainer', 
+	            										acceptPropagatedEvent : true, 
+	            										preventDefault : false });
 	            		//$('#BRsearch').dragscrollable({dragSelector : 'div', acceptPropagatedEvent : true, preventDefault : false });
 	            		//$('#BookReader').dragscrollable({dragSelector : '#BRsearch', acceptPropagatedEvent : true, preventDefault : false });
 	            		//$('#BRsearch').dragScroller();
@@ -2025,9 +2035,9 @@ HTMobileBookReader.prototype.feedback = function(){
             closeable : true,
             title : "Feedback",
             behaviours: function(r) {
-				console.log("Adding boxytest..." + $(r).parent().attr("class"));
+				//console.log("Adding boxytest..." + $(r).parent().attr("class"));
 				//$($(r).parent()).find(".title-bar").addClass("boxytest");
-				console.log("Finding..." + $(r).parent().find(".title-bar").attr("class"));
+				//console.log("Finding..." + $(r).parent().find(".title-bar").attr("class"));
 			
     			$(r).find("#mdpFBinputbutton").click(function() {
     				// check to make sure comments field is populated

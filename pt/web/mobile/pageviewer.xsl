@@ -386,15 +386,16 @@
           <xsl:element name="a">
             <xsl:attribute name="title">Download EPUB</xsl:attribute>
             <xsl:attribute name="id">epubLink</xsl:attribute>
-            <xsl:attribute name="linktype">epub</xsl:attribute>
-            <xsl:attribute name="bookId"><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']" /></xsl:attribute>
-            <xsl:attribute name="proxy">false</xsl:attribute>
+            <!--<xsl:attribute name="linktype">epub</xsl:attribute>-->
+            <!--<xsl:attribute name="bookId"><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']" /></xsl:attribute>-->
+            <!--<xsl:attribute name="proxy">false</xsl:attribute>-->
             <xsl:attribute name="class">tracked</xsl:attribute>
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
             <xsl:attribute name="data-tracking-action">PT Download EPUB</xsl:attribute>
             <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
-            <xsl:attribute name="href">#</xsl:attribute>
-            <xsl:attribute name="href_epub">
+            <!--<xsl:attribute name="href">#</xsl:attribute>-->
+            <!--<xsl:attribute name="href_epub">-->
+            <xsl:attribute name="href">
               <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
             </xsl:attribute>
             <xsl:text>Download EPUB</xsl:text>
@@ -1427,7 +1428,7 @@
 				<span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
 				<br />    		
 				
-				<xsl:call-template name="feedbacklink"/>  | <xsl:call-template name="footertakedownlink"/>
+				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> |<xsl:call-template name="footertakedownlink"/>
 				<br />
 				
 	
@@ -1620,8 +1621,6 @@
       
     </xsl:choose>
   </xsl:template>
-  
-    
   
   
 </xsl:stylesheet>

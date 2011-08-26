@@ -1092,6 +1092,7 @@ color:white;
 
 
 /* HIDE EPUB FOR NOW.... */
+/*
 #fullEpubLinkP{
 	display:none;
 }
@@ -1104,6 +1105,7 @@ color:white;
     -moz-border-radius-bottomleft: 2px;
     -webkit-border-bottom-left-radius: 2px; 
 }
+*/
 /* END HIDE EPUB */
 
 
@@ -1127,6 +1129,7 @@ color:white;
 }
 .boxy-content .worldcat,
 .boxy-content p #fullPdfLink,
+.boxy-content p #epubLink,
 #mobilefeedbackdiv a.mobilefeedback {
 	font-size:1.2em;
 	line-height:1.2em;
