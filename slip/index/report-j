@@ -82,20 +82,22 @@ sub __Print {
 }
 
 sub rep_get_usage {
-    my $s = qq{Usage: report-j  -r run [-C][-f][-E o|i|m|c|s|A][-d]
+    my $s = qq{Usage: report-j  -r run [-S][-C][-f][-E o|i|m|c|s|A][-d]
            where -C queries build index for num committed
+                 -S statistics only
                  -f forces an email of the report
                  -E reports error ids
                       o=ocr i=indexing m=metadata c=critical s=server A=all\n};
     return $s;
 }
 
-our ($opt_r, $opt_f, $opt_E, $opt_d, $opt_C);
+our ($opt_r, $opt_f, $opt_E, $opt_d, $opt_C, $opt_S);
 
-my $ops = getopts('fr:E:dC');
+my $ops = getopts('fr:E:dCS');
 
 # Required
 my $RUN = $opt_r;
+my $STATISTICS_ONLY = defined($opt_S); # optionsl
 my $FORCE_EMAIL = $opt_f; # optionsl
 $INTERACTIVE = 0 if ($FORCE_EMAIL);
 my $COMMITTED = defined($opt_C);
@@ -457,8 +459,6 @@ sub report_statistics {
     my $dbh = shift;
     my $run = shift;
 
-    my $config = $C->get_object('MdpConfig');
-
     __Print qq{\n * statistics: \n};
 
     my $stats_ref = _load_stats_hash($C, $dbh, $run);
@@ -709,15 +709,20 @@ sub c_report {
                       );
     }
 
-    __Print qq{\n ------- Report ($HOST): run=$run ------\n};
+    if ($STATISTICS_ONLY) {
+        report_statistics($C, $dbh, $run);
+    }
+    else {
+        __Print qq{\n ------- Report ($HOST): run=$run ------\n};
 
-    report_statistics($C, $dbh, $run);
+        report_statistics($C, $dbh, $run);
 
-    report_configuration($C, $dbh, $run);
+        report_configuration($C, $dbh, $run);
 
-    report_queue_state($C, $dbh, $run);
+        report_queue_state($C, $dbh, $run);
 
-    report_flags_state($C, $run);
+        report_flags_state($C, $run);
+    }
 
     __Print qq{\n};
 }

@@ -374,6 +374,14 @@ sub mii_do_delete_index {
 
     return 0 if $NOOP;
 
+    # Reset statistics
+    my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats 2>/dev/null};
+    my $rep = `$cmd`;
+    __output("$rep\n");
+    Log_manage($C, $run, $rep);
+    $REPORT_BUFFER .= "$rep\n";
+
+
     # Remove files- if failure just report it and allow tomcat to try
     # to restart on this index.
     my $key = 'dir_for_shard_1';
@@ -444,7 +452,7 @@ Description
 sub mii_report_errors {
     my ($C, $dbh, $run) = @_;
 
-    my $buf = "*errors\n";
+    my $buf = " *errors\n";
     my $shard = 1;
     my $error_ct = 0;
     
@@ -479,13 +487,18 @@ sub mii_gather_statistics {
     $REPORT_BUFFER .= mii_report_errors($C, $dbh, $run); 
 
     # Get segment sizes
-    my $cmd = $BASE_SCRIPT_DIR . qq{segsizes -r$run 2>/dev/null};
-    my $sizes = `$cmd`;
+    my $cmd_1 = $BASE_SCRIPT_DIR . qq{segsizes -r$run 2>/dev/null};
+    my $sizes = `$cmd_1`;
     $REPORT_BUFFER .= $sizes;
 
     # Get num docs in index
     my $num = mii_num_docs_in_index($C);
     $REPORT_BUFFER .= qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/200) . qq{ estimated at 200 pages/vol\n};
+
+    # Get report-j statistics
+    my $cmd_2 = $BASE_DIR . qq{report-j -r$run -S 2>/dev/null};
+    my $rep = `$cmd_2`;
+    $REPORT_BUFFER .= $rep;
 
     if ($INTERACTIVE && $REPORT) {
         __output("$REPORT_BUFFER\n");
@@ -506,9 +519,6 @@ Stop, delete, start
 # ---------------------------------------------------------------------
 sub mii_manage {
     my ($C, $run, $dbh) = @_;
-
-    # Errors, sizes
-    mii_gather_statistics($C, $dbh, $run);
 
     # Try to stop a tomcat to free up memory
     my $rc = mii_run_s_tomcat($C, $run, 'stop');
