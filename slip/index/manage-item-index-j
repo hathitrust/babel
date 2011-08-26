@@ -91,7 +91,7 @@ sub mii_get_usage {
 
 our ($opt_r, $opt_d, $opt_n, $opt_D, $opt_T, $opt_f, $opt_R);
 
-my $ops = getopts('r:dnDTf');
+my $ops = getopts('r:dnDTfR');
 use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
 use constant TOMCAT_MAX_TRIES => 10;
 use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
