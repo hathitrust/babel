@@ -168,7 +168,7 @@ if ($DELETE) {
         Log_manage($C, $RUN, $s);
 
         handle_mii_rc($C, $DBH, $RUN, $HOST,
-                      mii_do_delete_index($C, $DBH, $DBH));
+                      mii_do_delete_index($C, $DBH, $RUN));
     };
     if ($@) {
         Log_manage_error($C, $RUN, "Critical error: $@");
@@ -216,7 +216,7 @@ sub handle_mii_rc {
     }
 
     # Log
-    my $s = SLIP_Utils::Common::stage_rc_to_string($rc) . qq{ run=$run host=$host \n$REPORT_BUFFER};
+    my $s = SLIP_Utils::Common::stage_rc_to_string($rc) . qq{ run=$run host=$host};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
 
