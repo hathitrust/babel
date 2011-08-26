@@ -256,7 +256,7 @@ prepend $PROGRAM depend on Apache rewrite rules:
 sub write_xsl_file{
     my ($jsfiles_ref, $cssfiles_ref)=@_;
     
-    my $qs = qq{?_=} . time();
+    my $ts = time();
     my $start_xsl = qq{<?xml version="1.0" encoding="utf-8"?>
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
       <xsl:output method="html"/>
@@ -264,22 +264,24 @@ sub write_xsl_file{
     
     print {$XSL_FH} "$start_xsl\n";
     
+    print {$XSL_FH} qq{  <xsl:variable name="timestamp" select="'?_=$ts'" />\n};
+    
     print {$XSL_FH} qq{  <xsl:template name="load_concat_js_file">\n};
-    print {$XSL_FH} qq{    <script type="text/javascript" src="/$PROGRAM/js/concatenated_common-min.js$qs"></script>\n};
+    print {$XSL_FH} qq{    <script type="text/javascript" src="/$PROGRAM/js/concatenated_common-min.js{\$timestamp}"></script>\n};
     
     foreach my $key ( @OPTIONAL_JS_LIST ) {
         print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_JS{$key}{'test'}">\n};
-        print {$XSL_FH} qq{        <script type="text/javascript" src="/$PROGRAM/js/concatenated_${key}-min.js$qs"></script>\n};
+        print {$XSL_FH} qq{        <script type="text/javascript" src="/$PROGRAM/js/concatenated_${key}-min.js{\$timestamp}"></script>\n};
         print {$XSL_FH} qq{    </xsl:if>\n};
     }
     
     print {$XSL_FH} qq{  </xsl:template> \n};
     
     print {$XSL_FH} qq{  <xsl:template name="load_concat_css_file">\n};
-    print {$XSL_FH} qq{    <link rel="stylesheet" type="text/css" href="/$PROGRAM/concatenated_common-min.css$qs"/>\n};
+    print {$XSL_FH} qq{    <link rel="stylesheet" type="text/css" href="/$PROGRAM/concatenated_common-min.css{\$timestamp}"/>\n};
     foreach my $key ( @OPTIONAL_CSS_LIST ) {
         print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_CSS{$key}{test}">\n};
-        print {$XSL_FH} qq{        <link rel="stylesheet" type="text/css" href="/$PROGRAM/concatenated_${key}-min.css$qs" />\n};
+        print {$XSL_FH} qq{        <link rel="stylesheet" type="text/css" href="/$PROGRAM/concatenated_${key}-min.css{\$timestamp}" />\n};
         print {$XSL_FH} qq{    </xsl:if>\n};
     }
     print {$XSL_FH} qq{  </xsl:template> \n};
@@ -288,14 +290,14 @@ sub write_xsl_file{
     print {$XSL_FH}  qq{\n  <xsl:template name="load_uncompressed_js">\n};
     
     foreach my $filename (@{$jsfiles_ref}) {
-        my $js_include = make_js_include($filename, $qs);
+        my $js_include = make_js_include($filename);
         print {$XSL_FH} "$js_include\n";
     }
     foreach my $key ( keys %OPTIONAL_JS ) {
         next unless ( $key );
         print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_JS{$key}{'test'}">\n};
         foreach my $filename (@{$OPTIONAL_JS{$key}{filenames}}) {
-            my $js_include = make_js_include($filename, $qs);
+            my $js_include = make_js_include($filename);
             print {$XSL_FH} "$js_include\n";
         }
         print {$XSL_FH} qq{    </xsl:if>\n};
@@ -305,13 +307,13 @@ sub write_xsl_file{
     # CSS
     print {$XSL_FH} qq { \n\n <xsl:template name="load_uncompressed_css">\n};
     foreach my $filename (@{$cssfiles_ref}) {
-        my $css_include = make_css_include($filename, $qs);
+        my $css_include = make_css_include($filename);
         print {$XSL_FH} "$css_include\n";
     }
     foreach my $key ( keys %OPTIONAL_CSS ) {
         print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_CSS{$key}{test}">\n};
         foreach my $filename (@{$OPTIONAL_CSS{$key}{filenames}}) {
-            my $css_include = make_css_include($filename, $qs);
+            my $css_include = make_css_include($filename);
             print {$XSL_FH} "$css_include\n";
         }
         print {$XSL_FH} qq{    </xsl:if>\n};
@@ -359,9 +361,8 @@ sub make_js_include
 {
     
     my $filename = shift;
-    my $qs = shift;
     my $include = qq{ <script type="text/javascript" src="};
-    $include    .= qq{$filename$qs">};
+    $include    .= qq|$filename\{\$timestamp\}">|;
     $include    .= qq{</script>};
     return $include;
 }
@@ -377,9 +378,8 @@ Description
 # ---------------------------------------------------------------------
 sub make_css_include {
     my $filename = shift;
-    my $qs = shift;
     my $include = qq{ <link rel="stylesheet" type="text/css" href="};
-    $include    .= qq{$filename$qs};
+    $include    .= qq|$filename\{\$timestamp\}|;
     $include    .= qq{"/>};
     return $include;
 }
