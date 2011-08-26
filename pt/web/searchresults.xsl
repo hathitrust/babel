@@ -395,20 +395,9 @@
   <xsl:template name="NoResultsAdditionalMessage">
     <!-- If the query came from the ls application and there are no hits show this message-->
     <div class="searchSubMessage">
-      <xsl:text>Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included bibliographic metadata.  However, this search includes only the item's pages. </xsl:text>
-      <xsl:element name="a">
-        <xsl:variable name="href">
-          <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
-          <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
-        </xsl:variable>
-        <xsl:attribute name="class">tracked</xsl:attribute>
-        <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-        <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
-        <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
-        <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-        <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-        <xsl:text>See the  catalog record</xsl:text>
-      </xsl:element>
+      <xsl:text>Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included bibliographic metadata. </xsl:text>
+      <br/>
+      <xsl:text>"Search in this text" only searches the contents of the pages. </xsl:text>
     </div>
   </xsl:template>
     
