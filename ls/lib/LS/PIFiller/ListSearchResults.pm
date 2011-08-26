@@ -992,6 +992,7 @@ sub _ls_wrap_result_data {
 
         # Link to Pageturner
         $s .= wrap_string_in_tag(PT_HREF_helper($C, $id, 'pt_search'), 'PtSearchHref');
+        $s .= wrap_string_in_tag(PT_HREF_helper($C, $id, 'pt'), 'PtHref');
 
         # Access rights
         my $access_status;

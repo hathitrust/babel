@@ -689,7 +689,8 @@
               </span>
               <xsl:element name="a">
                 <xsl:attribute name="href">
-                  <xsl:value-of select="PtSearchHref"/>
+                  <!-- link to page instead of a search -->
+                  <xsl:value-of select="PtHref"/>
                 </xsl:attribute>
                 <xsl:attribute name="class">
                   <xsl:value-of select="$fulltext_class"/>
