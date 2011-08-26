@@ -796,7 +796,7 @@
       <ul class="searchForm">
         <li id="mdpSearchFormLabel">
           <label for="mdpSearchInputBox">
-            <xsl:text>Find pages in this item with</xsl:text>
+            <xsl:text>Search in this text</xsl:text>
           </label>
           <xsl:element name="a">
             <xsl:attribute name="class">SkipLink</xsl:attribute>
