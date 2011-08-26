@@ -490,6 +490,8 @@ sub mii_gather_statistics {
     if ($INTERACTIVE && $REPORT) {
         __output("$REPORT_BUFFER\n");
     }
+
+    return 0;
 }
 
 
