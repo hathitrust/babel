@@ -393,7 +393,7 @@ sub mii_do_delete_index {
     my $index_dir_parent = "$index_dir/..";
     
     if (! opendir(DIR, $index_dir_parent)) {
-        my $s = qq{manage-item-index-j failed to open $index_dir_parent: $!};
+        my $s = qq{manage-item-index-j $HOST failed to open $index_dir_parent: $!};
         __output("$s\n");
         Log_manage_error($C, $run, $s);
         return 0;
@@ -407,12 +407,12 @@ sub mii_do_delete_index {
             my $rc = system("rm", "-r", "-f", "$dir");
 
             if ($rc > 0) {
-                my $s = qq{manage-item-index-j failed to delete $dir: rc=$rc, $!};
+                my $s = qq{manage-item-index-j $HOST failed to delete $dir: rc=$rc, $!};
                 __output("$s\n");
                 Log_manage_error($C, $run, $s);
             }
             else {
-                my $s = qq{manage-item-index-j deleted $dir success};
+                my $s = qq{manage-item-index-j $HOST deleted $dir success};
                 __output("$s\n");
                 Log_manage($C, $run, $s);
             }
