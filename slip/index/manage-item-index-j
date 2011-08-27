@@ -311,13 +311,15 @@ sub mii_run_s_tomcat {
 
     if ($tries > TOMCAT_MAX_TRIES) {
         $rc = $fail_rc;
-        my $s = qq{manage-item-index-j tomcat failed to $action};
+        my $total_wait_time = $tries * TOMCAT_MAX_TRIES;
+        
+        my $s = qq{manage-item-index-j tomcat failed to $action after waiting $total_wait_time sec.\ninit.d output="$output"};
         __output("$s\n");
         __non_interactive_err_output($rc, $s);
         Log_manage_error($C, $run, $s);
     }
     else {
-        my $s = qq{manage-item-index-j success: tomcat action=$action};
+        my $s = qq{manage-item-index-j success: tomcat action=$action\ninit.d output="$output"};
         __output("$s\n");
         Log_manage($C, $run, "mii_run_s_tomcat (action=$action): " . $output);
     }
