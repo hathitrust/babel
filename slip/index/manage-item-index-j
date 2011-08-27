@@ -296,7 +296,8 @@ sub mii_run_s_tomcat {
     # Try to act on a tomcat
     my $cmd = qq{sudo  /etc/init.d/tomcat-ptsearch $action};
     my $output = `$cmd 2> /dev/null`;
-
+    chomp($output);
+    
     # The rc from tomcat-build is unreliable. Test result by looking at
     # process table to make sure sure it stopped or started
     my $tomcat_pattern = $C->get_object('MdpConfig')->get('tomcat_pattern');
