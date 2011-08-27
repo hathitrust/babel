@@ -96,6 +96,8 @@ use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
 use constant TOMCAT_MAX_TRIES => 10;
 use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
 
+my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
+
 my $REPORT_BUFFER = '';
 my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 my $BASE_SCRIPT_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
@@ -140,19 +142,18 @@ eval {
 if ($@) {
     my $s = qq{manage-item-index-j run=$RUN} . $@;
     Log_manage_error($C, $RUN, $s);
-    SLIP_Utils::Common::Log_database_connection_error($C, qq{manage-item-index-j run=$RUN}, $@);
+    SLIP_Utils::Common::Log_database_connection_error($C, qq{manage-item-index-j run=$RUN host=$HOST}, $@);
     exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
 }
 $C->set_object('Database', $db);
 
 my $DBH = $db->get_DBH();
-my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
 
 # Do not try to manage while I am running already
 my $Lock_File = "/tmp/manage-item-index-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
-    my $s = "Could not get semaphore file: $Lock_File";
+    my $s = "Could not get semaphore file: $Lock_File at host=$HOST";
     __output("$s\n");
     Log_manage_error($C, $RUN, $s);
     exit 0;
@@ -266,7 +267,7 @@ sub mii_email_stats_report {
 
     return unless($FORCE_EMAIL || (! $INTERACTIVE));
 
-    my $subj = qq{[SLIP] Manage item-level report ($HOST) -r$run};
+    my $subj = qq{[SLIP] manage-item-index-j report ($HOST) -r$run};
     SLIP_Utils::Common::Send_email($C, 'report', $subj, $REPORT_BUFFER);
 }
 
@@ -545,7 +546,7 @@ Description
 sub Log_manage {
     my ($C, $run, $s) = @_;
 
-    my $s0 = qq{***MANAGE: } . Utils::Time::iso_Time() . qq{ r=$run, $s};
+    my $s0 = qq{***MANAGE: } . Utils::Time::iso_Time() . qq{ r=$run, $HOST, $s};
     $REPORT_BUFFER .= $s0 . "\n";
     SLIP_Utils::Log::this_string($C, $s0, 'manage_logfile', '___RUN___', $run);
 }
@@ -563,7 +564,7 @@ Description
 sub Log_manage_error {
     my ($C, $run, $error) = @_;
 
-    my $s = qq{***MANAGE [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run, $error};
+    my $s = qq{***MANAGE [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run, $HOST, $error};
     $REPORT_BUFFER .= $s . "\n";
 
     SLIP_Utils::Log::this_string($C, $s, 'manage_logfile', '___RUN___', $run);
