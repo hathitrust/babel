@@ -101,7 +101,7 @@ use constant TOMCAT_TRIES_WAIT    => 30; # 0.5 minute
 
 my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
 
-my $SOLR_HOSTS = qw( slurm-1 duff-1 alamo );
+my @SOLR_HOSTS = ('slurm-1', 'duff-1', 'alamo');
 
 my $REPORT_BUFFER = '';
 my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
@@ -198,9 +198,9 @@ if ($INTERACTIVE) {
         }
     }
     else {
-        if (! grep(/^$HOST$/, $SOLR_HOSTS)) {
+        if (! grep(/^$HOST$/, @SOLR_HOSTS)) {
             if (! $NOOP) {
-                my $s = qq{$HOST not in solr host list for restart.\nExit.\n};
+                my $s = qq{$HOST not in solr host list (} . join(', ', @SOLR_HOSTS) . qq{) for restart.\nExit.\n};
                 __output($s);
                 exit 0;
             }
