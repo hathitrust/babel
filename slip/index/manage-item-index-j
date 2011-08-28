@@ -81,31 +81,40 @@ Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
 $| = 1;
 
 sub mii_get_usage {
-    my $s .= qq{Usage: manage-item-index-j -r run [-D][-R][-d][-n][-f]
+    my $s .= qq{Usage: manage-item-index-j -r run -M|-D|-R [-d][-n][-f]
        where -n runs without calling start, stop or move/delete.
              -D deletes the moved index
+             -M performs stop-move-start cycle
              -f forces email in interactive mode
              -R reports the status/sizes of the index\n};
     return $s;
 }
 
-our ($opt_r, $opt_d, $opt_n, $opt_D, $opt_T, $opt_f, $opt_R);
+our ($opt_r, $opt_d, $opt_n, $opt_D, $opt_T, $opt_f, $opt_R, $opt_M);
 
-my $ops = getopts('r:dnDTfR');
-use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
-use constant TOMCAT_MAX_TRIES => 10;
-use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
+my $ops = getopts('r:dnDTfRM');
+
+use constant STOPSLIP_CSLEEP_WAIT => 60; # 1 minute
+
+use constant TOMCAT_MAX_TRIES     => 10;
+use constant TOMCAT_TRIES_WAIT    => 30; # 0.5 minute
 
 my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
+
+my $SOLR_HOSTS = qw( slurm-1 duff-1 alamo );
 
 my $REPORT_BUFFER = '';
 my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 my $BASE_SCRIPT_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my $INTERACTIVE = $ENV{'TERM'};
 
-my $REPORT = defined($opt_R);
+my $REPORT = defined($opt_R); # Required
+my $DELETE = defined($opt_D); # Required
+my $MANAGE = defined($opt_M); # Required
+
 my $FORCE_EMAIL = defined($opt_f);
 my $NOOP = defined($opt_n); # optional
+
 my $RUN = $opt_r; # Required
 if (! $RUN) {
     my $s = qq{run (-r) parameter missing } . mii_get_usage();
@@ -116,14 +125,25 @@ if (! $RUN) {
     exit $rc;
 }
 
-my $DELETE = defined($opt_D);
-
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-if ($INTERACTIVE) {
-    my $s = q{Are you on the Solr host (for ls and /etc/init.d/tomcat-ptsearch start|stop ? [N] };
-    __confirm($s) unless($NOOP);
+if (! $RUN) {
+    my $s = qq{run (-r) parameter missing } . mii_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+if (! ($MANAGE || $REPORT || $DELETE)) {
+    my $s = qq{-M or -D or -R parameter missing } . mii_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
 }
 
 if (defined($opt_d)) {
@@ -166,7 +186,32 @@ END {
 my $SEARCHER = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
 my $engine_uri = $SEARCHER->get_engine_uri();
 
+if ($INTERACTIVE) {
+    if ($REPORT || $DELETE) {
+        my $index_dir = $C->get_object('MdpConfig')->get('dir_for_shard_1');        
+        if (! -e $index_dir) {
+            if (! $NOOP) {
+                my $s = qq{$HOST cannot see $index_dir.\nExit.\n};
+                __output($s);
+                exit 0;
+            }
+        }
+    }
+    else {
+        if (! grep(/^$HOST$/, $SOLR_HOSTS)) {
+            if (! $NOOP) {
+                my $s = qq{$HOST not in solr host list for restart.\nExit.\n};
+                __output($s);
+                exit 0;
+            }
+        }
+    }
+}
+
+my $KOMMAND = 'no command';
+
 if ($REPORT) {
+    $KOMMAND = 'report';    
     eval {
         my $s = "manage-item-index-j ($HOST $engine_uri): MANAGE [REPORT]" . ($NOOP ? " ---> NOOP" : "") ;
         __output("$s\n");
@@ -182,6 +227,7 @@ if ($REPORT) {
     }
 }
 elsif ($DELETE) {
+    $KOMMAND = 'delete';
     eval {
         my $s = "manage-item-index-j ($HOST $engine_uri): MANAGE [DELETE]" . ($NOOP ? " ---> NOOP" : "") ;
         __output("$s\n");
@@ -196,9 +242,10 @@ elsif ($DELETE) {
         # NOTREACHED
     }
 }
-else {
+elsif ($MANAGE) {  
+    $KOMMAND = 'manage';  
     eval {
-        my $s = "manage-item-index-j ($HOST $engine_uri): MANAGE" . ($NOOP ? " ---> NOOP" : "") ;
+        my $s = "manage-item-index-j ($HOST $engine_uri): MANAGE [MANAGE]" . ($NOOP ? " ---> NOOP" : "") ;
         __output("$s\n");
         Log_manage($C, $RUN, $s);
         
@@ -267,7 +314,7 @@ sub mii_email_stats_report {
 
     return unless($FORCE_EMAIL || (! $INTERACTIVE));
 
-    my $subj = qq{[SLIP] manage-item-index-j report ($HOST) -r$run};
+    my $subj = qq{[SLIP] manage-item-index-j $KOMMAND ($HOST) -r$run};
     SLIP_Utils::Common::Send_email($C, 'report', $subj, $REPORT_BUFFER);
 }
 
@@ -312,15 +359,15 @@ sub mii_run_s_tomcat {
 
     if ($tries > TOMCAT_MAX_TRIES) {
         $rc = $fail_rc;
-        my $total_wait_time = $tries * TOMCAT_MAX_TRIES;
+        my $total_wait_time = $tries * TOMCAT_TRIES_WAIT;
         
-        my $s = qq{manage-item-index-j tomcat failed to $action after waiting $total_wait_time sec.\ninit.d output="$output"};
+        my $s = qq{manage-item-index-j tomcat failed to $action after waiting $total_wait_time sec. init.d output="$output"};
         __output("$s\n");
         __non_interactive_err_output($rc, $s);
         Log_manage_error($C, $run, $s);
     }
     else {
-        my $s = qq{manage-item-index-j success: tomcat action=$action\ninit.d output="$output"};
+        my $s = qq{manage-item-index-j success: tomcat action=$action init.d output="$output"};
         __output("$s\n");
         Log_manage($C, $run, "mii_run_s_tomcat (action=$action): " . $output);
     }
@@ -381,10 +428,9 @@ sub mii_do_delete_index {
     # Reset statistics
     my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats 2>/dev/null};
     my $rep = `$cmd`;
+    $rep = ($rep ? $rep : "$cmd failed");
     __output("$rep\n");
     Log_manage($C, $run, $rep);
-    $REPORT_BUFFER .= "$rep\n";
-
 
     # Remove files- if failure just report it and allow tomcat to try
     # to restart on this index.
@@ -402,8 +448,10 @@ sub mii_do_delete_index {
     my @dir_list = map { "$index_dir_parent/$_" } grep(! /^(\.|\..)/, readdir(DIR));
     closedir(DIR);
 
+    my $DELS_present = 0;
     foreach my $dir (@dir_list) {
         if ($dir =~ m,DELETEME,) {
+            $DELS_present = 1;
             my $rc = system("rm", "-r", "-f", "$dir");
 
             if ($rc > 0) {
@@ -417,6 +465,12 @@ sub mii_do_delete_index {
                 Log_manage($C, $run, $s);
             }
         }
+    }
+
+    if (! $DELS_present) {
+        my $s = qq{manage-item-index-j $HOST 0 DELETEME directories present at $index_dir_parent};
+        __output("$s\n");
+        Log_manage($C, $run, $s);
     }
 
     return 0;
@@ -493,7 +547,7 @@ sub mii_gather_statistics {
     # Get segment sizes
     my $cmd_1 = $BASE_SCRIPT_DIR . qq{segsizes -r$run 2>/dev/null};
     my $sizes = `$cmd_1`;
-    $REPORT_BUFFER .= $sizes;
+    $REPORT_BUFFER .= ($sizes || "$cmd_1 failed\n");
 
     # Get num docs in index
     my $num = mii_num_docs_in_index($C);
@@ -502,9 +556,9 @@ sub mii_gather_statistics {
     # Get report-j statistics
     my $cmd_2 = $BASE_DIR . qq{report-j -r$run -S 2>/dev/null};
     my $rep = `$cmd_2`;
-    $REPORT_BUFFER .= $rep;
+    $REPORT_BUFFER .= ($rep || "$cmd_2 failed");
 
-    if ($INTERACTIVE && $REPORT) {
+    if ($INTERACTIVE) {
         __output("$REPORT_BUFFER\n");
     }
 
