@@ -342,8 +342,11 @@ sub mii_run_s_tomcat {
 
     # Try to act on a tomcat
     my $cmd = qq{sudo  /etc/init.d/tomcat-ptsearch $action};
-    my $output = `$cmd 2> /dev/null`;
+    my $output = `$cmd 2>&1`;
+    my $sysrc = $? >> 8;
+    
     chomp($output);
+    
     
     # The rc from tomcat-build is unreliable. Test result by looking at
     # process table to make sure sure it stopped or started
@@ -357,17 +360,17 @@ sub mii_run_s_tomcat {
         last if ($tries > TOMCAT_MAX_TRIES);
     }
 
+    my $total_wait_time = $tries * TOMCAT_TRIES_WAIT;
+        
     if ($tries > TOMCAT_MAX_TRIES) {
         $rc = $fail_rc;
-        my $total_wait_time = $tries * TOMCAT_TRIES_WAIT;
-        
-        my $s = qq{manage-item-index-j tomcat failed to $action after waiting $total_wait_time sec. init.d output="$output"};
+        my $s = qq{manage-item-index-j tomcat failed action=$action, wait time=$total_wait_time sec. output="$output" sysrc=$sysrc};
         __output("$s\n");
         __non_interactive_err_output($rc, $s);
         Log_manage_error($C, $run, $s);
     }
     else {
-        my $s = qq{manage-item-index-j success: tomcat action=$action init.d output="$output"};
+        my $s = qq{manage-item-index-j success: tomcat action=$action wait time=$total_wait_time sec. output="$output" sysrc=$sysrc};
         __output("$s\n");
         Log_manage($C, $run, "mii_run_s_tomcat (action=$action): " . $output);
     }
@@ -426,11 +429,14 @@ sub mii_do_delete_index {
     return 0 if $NOOP;
 
     # Reset statistics
-    my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats 2>/dev/null};
-    my $rep = `$cmd`;
-    $rep = ($rep ? $rep : "$cmd failed");
-    __output("$rep\n");
-    Log_manage($C, $run, $rep);
+    my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats};
+    my $rep = `$cmd 2>&1`;
+    my $sysrc = $? >> 8;
+    
+    my $s = qq{manage-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s .= ($sysrc > 0) ? "$rep" : '';
+    __output("$s\n");
+    Log_manage($C, $run, $s);
 
     # Remove files- if failure just report it and allow tomcat to try
     # to restart on this index.
@@ -455,7 +461,7 @@ sub mii_do_delete_index {
             my $rc = system("rm", "-r", "-f", "$dir");
 
             if ($rc > 0) {
-                my $s = qq{manage-item-index-j $HOST failed to delete $dir: rc=$rc, $!};
+                my $s = qq{manage-item-index-j $HOST failed to delete $dir: sysrc=$rc, $!};
                 __output("$s\n");
                 Log_manage_error($C, $run, $s);
             }
@@ -542,25 +548,35 @@ sub mii_gather_statistics {
     my ($C, $dbh, $run) = @_;
 
     # Get error report
-    $REPORT_BUFFER .= mii_report_errors($C, $dbh, $run); 
+    my $errors = mii_report_errors($C, $dbh, $run); 
+    __output("$errors");
+    Log_manage($C, $run, $errors);
 
     # Get segment sizes
-    my $cmd_1 = $BASE_SCRIPT_DIR . qq{segsizes -r$run 2>/dev/null};
-    my $sizes = `$cmd_1`;
-    $REPORT_BUFFER .= ($sizes || "$cmd_1 failed\n");
+    my $cmd_1 = $BASE_SCRIPT_DIR . qq{segsizes -r$run};
+    my $sizes = `$cmd_1 2>&1`;
+    my $sysrc_1 = $? >> 8;
+    
+    my $s1 = qq{manage-item-index-j cmd="$cmd_1" sysrc=$sysrc_1};
+    $s1 .= "\n$sizes";
+    __output("$s1");
+    Log_manage($C, $run, $s1);
 
     # Get num docs in index
     my $num = mii_num_docs_in_index($C);
-    $REPORT_BUFFER .= qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/200) . qq{ estimated at 200 pages/vol\n};
+    my $s3 = qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/200) . qq{ estimated at 200 pages/vol\n};
+    __output("$s3");
+    Log_manage($C, $run, $s3);
 
     # Get report-j statistics
-    my $cmd_2 = $BASE_DIR . qq{report-j -r$run -S 2>/dev/null};
-    my $rep = `$cmd_2`;
-    $REPORT_BUFFER .= ($rep || "$cmd_2 failed");
-
-    if ($INTERACTIVE) {
-        __output("$REPORT_BUFFER\n");
-    }
+    my $cmd_2 = $BASE_DIR . qq{report-j -r$run -S};
+    my $rep = `$cmd_2 2>&1`;
+    my $sysrc_2 = $? >> 8;
+    
+    my $s2 = qq{manage-item-index-j cmd="$cmd_2" sysrc=$sysrc_2};
+    $s2 .= "$rep";
+    __output("$s2");
+    Log_manage($C, $run, $s2);
 
     return 0;
 }
