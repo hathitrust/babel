@@ -177,8 +177,10 @@ else {
 if (! $INTERACTIVE) {
     if ($MESSAGE_BUFFER) {
         print($MESSAGE_BUFFER);
-        my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
-        SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
+        if (! $STATISTICS_ONLY) {
+            my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
+            SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
+        }
     }
 }
 
