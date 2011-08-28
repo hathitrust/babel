@@ -77,7 +77,6 @@ sub __Print {
         print qq{$msg};
     }
     else {
-        print qq{$msg};        
         $MESSAGE_BUFFER .= $msg;
     }
 }
@@ -175,9 +174,12 @@ else {
 }
 
 
-if (! $INTERACTIVE && $MESSAGE_BUFFER) {
-    my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
-    SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
+if (! $INTERACTIVE) {
+    if ($MESSAGE_BUFFER) {
+        print($MESSAGE_BUFFER);
+        my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
+        SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
+    }
 }
 
 exit 0;
@@ -202,7 +204,7 @@ sub __commit {
 
     use constant COMMIT_TIMEOUT => 10000;
 
-    __output(qq{commit shard=$shard\n});
+    __Print(qq{commit shard=$shard\n});
     
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, COMMIT_TIMEOUT);
     my ($index_state, $stats_ref) = $indexer->commit_updates($C);
@@ -707,6 +709,7 @@ sub c_report {
         return unless (
                        (($num_shards_enabled > 0) && ($non_error_ids_queued_f_indexing))
                        || $FORCE_EMAIL
+                       || $STATISTICS_ONLY
                       );
     }
 
