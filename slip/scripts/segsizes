@@ -118,7 +118,9 @@ sub show_shards {
     @segment_ids = map { $_ =~ m,.*/(.*?)\....$, } @segment_ids;
     
     my $num_segs = scalar @segment_ids;
-    __output("num segments=$num_segs merge_factor=$merge_factor max_merge=${max_merge}M\n\n");
+    my $s1 = qq{num segments=$num_segs merge_factor=$merge_factor max_merge=${max_merge}M\n\n};
+    __output($s1);
+    __output_non_interactive($s1);
     
     my $index_size = 0;
     my %segsizes;
@@ -130,12 +132,12 @@ sub show_shards {
         my $sz_arr_ref = $segsizes{$sz} || [];
         push(@$sz_arr_ref, {'id' => $seg_id, 'sz' => $segsize});
         $segsizes{$sz} = $sz_arr_ref;
-
+        
         $index_size += $segsize;
     }
-
+    
     my $levels = keys %segsizes;
-
+    
     use constant ONE_GB => 1024*1024*1024;    
     my ($_m, $_g) = ('M', 'G');
     
@@ -143,12 +145,12 @@ sub show_shards {
         my $a_ref = $segsizes{$size};
         my $seg_ct = scalar @$a_ref;
         
-        __output("Level=$levels segs=$seg_ct\n");
+        my $s = "Level=$levels segs=$seg_ct\n";
+        __output($s);
+        __output_non_interactive($s);
         $levels--;
-
         
-        foreach my $h_ref (@$a_ref) {
-
+        foreach my $h_ref (@$a_ref) {            
             my $size_bytes = $h_ref->{sz};
             my $size_d;
             my $base;
@@ -161,30 +163,35 @@ sub show_shards {
                 $size_d = sprintf("%.1f", $size_bytes/1024/1024);
                 $base = $_m;
             }
-
-            my $s = $h_ref->{id} . ' ' . $size_d;
-            __output("\t${s}$base\n");
+            
+            my $s0 = $h_ref->{id} . ' ' . $size_d;
+            my $s2 = "\t${s0}$base\n";
+            __output($s2);
+            __output_non_interactive($s2);
         }
-
-        __output("\n");        
+        
+        my $s3 = "\n";
+        __output($s3);
+        __output_non_interactive($s3);
+        
+        my ($ts, $szz);
+        if ($index_size > ONE_GB) {
+            $szz = sprintf("%.1f", $index_size/1024/1024/1024);
+            $ts = $_g;
+        }
+        else {
+            $szz = sprintf("%.1f", $index_size/1024/1024);
+            $ts = $_m; 
+        }
+        
+        my $s4 = "total size=$szz$ts\n\n";
+        __output($s4);
+        __output_non_interactive($s4);
+        
+        return 1;    
     }
+}    
     
-    my ($ts, $szz);
-    if ($index_size > ONE_GB) {
-        $szz = sprintf("%.1f", $index_size/1024/1024/1024);
-        $ts = $_g;
-    }
-    else {
-        $szz = sprintf("%.1f", $index_size/1024/1024);
-        $ts = $_m; 
-    }
-    
-    __output("total size=$szz$ts\n\n");
-
-    return 1;    
-}
-
-
 exit $rc;
 
 
