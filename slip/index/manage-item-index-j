@@ -417,11 +417,11 @@ sub mii_manage {
 
     # Try to re-start a tomcat
     $rc = mii_run_s_tomcat($C, $run, 'start');
-    return $rc;
+    return $rc if ($rc > 0);
 
     # Delete index
     $rc = mii_do_delete_index($C, $dbh, $run);
-    return $rc if ($rc > 0);
+    return $rc;
 }
 
 # ---------------------------------------------------------------------
