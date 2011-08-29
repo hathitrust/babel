@@ -75,8 +75,6 @@ use SLIP_Utils::Log;
 use Search::Result::SLIP_Raw;
 use SLIP_Utils::Solr;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
-
 # Flush i/o
 $| = 1;
 
@@ -93,8 +91,6 @@ sub mii_get_usage {
 our ($opt_r, $opt_d, $opt_n, $opt_D, $opt_T, $opt_f, $opt_R, $opt_M);
 
 my $ops = getopts('r:dnDTfRM');
-
-use constant STOPSLIP_CSLEEP_WAIT => 60; # 1 minute
 
 use constant TOMCAT_MAX_TRIES     => 10;
 use constant TOMCAT_TRIES_WAIT    => 30; # 0.5 minute
@@ -276,11 +272,6 @@ Description
 # ---------------------------------------------------------------------
 sub handle_mii_rc {
     my ($C, $dbh, $run, $host, $rc) = @_;
-
-    while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
-        __output("  wait Manage done: STOPSLIP\n");
-        sleep STOPSLIP_CSLEEP_WAIT;
-    }
 
     # Log
     my $s = SLIP_Utils::Common::stage_rc_to_string($rc) . qq{ run=$run host=$host};
