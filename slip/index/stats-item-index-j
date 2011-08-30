@@ -68,6 +68,7 @@ use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 use Search::Result::SLIP_Raw;
+use Search::Site;
 use SLIP_Utils::Solr;
 
 # Flush i/o
@@ -85,8 +86,6 @@ our ($opt_r, $opt_d, $opt_n, $opt_f, $opt_T);
 my $ops = getopts('r:dnfT');
 
 my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
-
-my @SOLR_HOSTS = ('slurm-1', 'duff-1', 'alamo');
 
 my $REPORT_BUFFER = '';
 my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
@@ -126,6 +125,18 @@ my $C = new Context;
 
 my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
+
+# constrain to proper site
+my $hosting_site = $config->get('hosting_site');        
+my $site = Search::Site::get_server_site_name();
+if ($site ne $hosting_site) {
+    my $s = qq{stats-item-index-j run=$RUN wrong site: $site is not $hosting_site};
+    Log_stats_error($C, $RUN, $s);
+    __output("$s\n");
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
+}
 
 my $db;
 eval {
