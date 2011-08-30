@@ -135,7 +135,7 @@ my $hosting_site = $config->get('hosting_site');
 my $site = Search::Site::get_server_site_name();
 if ($site ne $hosting_site) {
     my $s = qq{stats-item-index-j run=$RUN wrong site: $site is not $hosting_site};
-    Log_stats_error($C, $RUN, $s);
+    Log_manage_error($C, $RUN, $s);
     __output("$s\n");
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __non_interactive_err_output($rc, $s);
