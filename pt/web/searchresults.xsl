@@ -397,7 +397,7 @@
     <div class="searchSubMessage">
       Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included bibliographic metadata <span class="mdpEmp">about</span> the item.
       <br/>
-      "Search in this text" only searches word that occur <span class="mdpEmp">within</span> the item.
+      "Search in this text" only searches words that occur <span class="mdpEmp">within</span> the item.
     </div>
   </xsl:template>
     
