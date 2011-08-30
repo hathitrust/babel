@@ -150,6 +150,8 @@
 
     <div id="mdpResultsContainer">
 
+      <xsl:call-template name="backToBeginning" />
+
       <xsl:call-template name="BuildSearchSummary">
         <xsl:with-param name="ppSearchTerms" select="$pSearchTerms"/>
         <xsl:with-param name="ppSearchHits" select="$pSearchHits"/>
@@ -384,8 +386,6 @@
       </span>
     </div>
 
-    <xsl:call-template name="backToBeginning" />
-
     <xsl:if test="$ppSearchHits > 0">
       <xsl:call-template name="BuildFisheyeTable"/>
     </xsl:if>
@@ -395,9 +395,9 @@
   <xsl:template name="NoResultsAdditionalMessage">
     <!-- If the query came from the ls application and there are no hits show this message-->
     <div class="searchSubMessage">
-      <xsl:text>Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included bibliographic metadata. </xsl:text>
+      Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included bibliographic metadata <span class="mdpEmp">about</span> the item.
       <br/>
-      <xsl:text>"Search in this text" only searches the contents of the pages. </xsl:text>
+      "Search in this text" only searches word that occur <span class="mdpEmp">within</span> the item.
     </div>
   </xsl:template>
     
