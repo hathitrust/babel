@@ -809,11 +809,11 @@ sub c_Reset_driver {
         $s = `rm $busy_file`;
     }
     else {
-        if ($host =~ m,bubble,) {
+        if ($host =~ m,earlgrey-1,) {
             $s = "No busy file\n";
         }
         else {
-            $s = "Host=$host (not bubble): cannot see busy file=$busy_file: MUST HAND REMOVE!!\n";
+            $s = "Host=$host (not earlgrey-1): cannot see busy file=$busy_file: MUST HAND REMOVE!!\n";
         }
     }
     __output($s);
@@ -822,11 +822,11 @@ sub c_Reset_driver {
         $s = `rm $driver_Lock_File`;
     }
     else {
-        if ($host =~ m,bubble,) {
+        if ($host =~ m,earlgrey-1,) {
             $s = "No semaphore file\n";
         }
         else {
-            $s = "Host=$host (not bubble): cannot see semaphore file=$driver_Lock_File: MUST HAND REMOVE!!\n";
+            $s = "Host=$host (not earlgrey-1): cannot see semaphore file=$driver_Lock_File: MUST HAND REMOVE!!\n";
         }
     }
     __output($s);

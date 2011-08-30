@@ -515,7 +515,7 @@ sub report_flags_state {
     my $busy = (-e "$shared_flags_dir/busy") ? 'YES' : 'no';
     my $stop = (-e "$ENV{SDRROOT}/slip/etc/STOPSLIP") ? 'YES' : 'no';
     if ($DRIVER) {
-        $busy = ($HOST eq 'bubble') ? $busy : qq{Undetermined: $HOST is not bubble};
+        $busy = ($HOST eq 'earlgrey-1') ? $busy : qq{Undetermined: $HOST is not earlgrey-1};
     }
     else {
         $busy = 'Not driver driven';
@@ -527,7 +527,7 @@ sub report_flags_state {
     my $ck = "check index support=$cksup";
 
     my $fo;
-    if ($HOST eq 'bubble') {
+    if ($HOST eq 'earlgrey-1') {
         $fo = "full optimize=not configured for run=$run";
         if (Scheduler::full_optimize_supported($C, $run)) {
             my $schedule_filepath = Scheduler::get_schedule_filepath($C, $run);
@@ -540,7 +540,7 @@ sub report_flags_state {
         }
     }
     else {
-        $fo = qq{full optimize=Undetermined: $HOST is not bubble};
+        $fo = qq{full optimize=Undetermined: $HOST is not earlgrey-1};
     }
           
     __Print qq{\n * flags state: \n\tbusy=$busy \n\tstopped=$stop\n\t$fo\n\t$ck\n};
