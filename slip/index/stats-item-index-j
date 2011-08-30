@@ -360,7 +360,7 @@ sub Log_stats {
 
     my $s0 = qq{***ITEM REPORT: } . Utils::Time::iso_Time() . qq{ r=$run, $HOST, $s};
     $REPORT_BUFFER .= $s0 . "\n";
-    SLIP_Utils::Log::this_string($C, $s0, 'manage_logfile', '___RUN___', $run);
+    SLIP_Utils::Log::this_string($C, $s0, 'stats_logfile', '___RUN___', $run);
 }
 
 
@@ -379,7 +379,7 @@ sub Log_stats_error {
     my $s = qq{***ITEM REPORT [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run, $HOST, $error};
     $REPORT_BUFFER .= $s . "\n";
 
-    SLIP_Utils::Log::this_string($C, $s, 'manage_logfile', '___RUN___', $run);
+    SLIP_Utils::Log::this_string($C, $s, 'stats_logfile', '___RUN___', $run);
 }
 
 1;
