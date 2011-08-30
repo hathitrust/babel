@@ -214,27 +214,27 @@ sub handle_mis_rc {
     }
 
     # Report stats
-    mis_email_stats_report($C, $run);
+    mis_email_report($C, $run);
 
     exit $rc if ($rc > 0);
 }
 
 # ---------------------------------------------------------------------
 
-=item mis_email_stats_report
+=item mis_email_report
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub mis_email_stats_report {
+sub mis_email_report {
     my ($C, $run) = @_;
 
     return unless($FORCE_EMAIL || (! $INTERACTIVE));
 
     my $subj = qq{[SLIP] stats-item-index-j ($HOST) -r$run};
-    SLIP_Utils::Common::Send_email($C, 'statistics', $subj, $REPORT_BUFFER);
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $REPORT_BUFFER);
 }
 
 # ---------------------------------------------------------------------

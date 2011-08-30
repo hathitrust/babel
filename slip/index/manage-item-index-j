@@ -217,27 +217,27 @@ sub handle_mii_rc {
     }
 
     # Report stats
-    mii_email_stats_report($C, $run);
+    mii_email_report($C, $run);
 
     exit $rc if ($rc > 0);
 }
 
 # ---------------------------------------------------------------------
 
-=item mii_email_stats_report
+=item mii_email_report
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub mii_email_stats_report {
+sub mii_email_report {
     my ($C, $run) = @_;
 
     return unless($FORCE_EMAIL || (! $INTERACTIVE));
 
     my $subj = qq{[SLIP] manage-item-index-j ($HOST) -r$run};
-    SLIP_Utils::Common::Send_email($C, 'manage', $subj, $REPORT_BUFFER);
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $REPORT_BUFFER);
 }
 
 
