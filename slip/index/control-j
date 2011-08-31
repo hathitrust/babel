@@ -215,12 +215,7 @@ eval {
             exit $rc;
         }
         else {
-            my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
-            if (! grep(/^$host$/, @host_list)) {
-                __output(qq{\nhost="$host" is not in the config for run=$RUN\n});
-                __confirm("\n\tPossible typo.  Proceed anyway? [N] ");
-            }
-
+            __validate_hostname($C, $RUN, $host);
             c_configure($C, $DBH, $RUN, $num_producers, $host);
         }
     }
@@ -300,6 +295,11 @@ eval {
         else {
             my $shard = $opt_R; # optional
             my $host = $opt_h; # optional
+
+            if (defined($host)) {
+                __validate_hostname($C, $RUN, $host);
+            }
+            
             if ($shard eq 'A') {
                 foreach my $_shard (@NUM_SHARDS_LIST) {
                     c_producer_control($C, $DBH, $RUN, $_shard, $host, $enabled);
@@ -345,6 +345,27 @@ exit 0;
 #
 # --------------------- Controls -------------------------
 #
+
+# ---------------------------------------------------------------------
+
+=item __validate_hostname
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_hostname {
+    my $C = shift;
+    my $run = shift;
+    my $host = shift;
+
+    my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
+    if (! grep(/^$host$/, @host_list)) {
+        __output(qq{\nhost="$host" is not in the config for run=$run\n});
+        __confirm("\n\tPossible typo.  Proceed anyway? [N] ");
+    }
+}
 
 # ---------------------------------------------------------------------
 
