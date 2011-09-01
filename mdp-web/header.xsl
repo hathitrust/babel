@@ -1,34 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
-
+  
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
   <xsl:variable name="gHttpHost" select="/MBooksTop/MBooksGlobals/HttpHost"/>
-
+  <xsl:variable name="gHtId" select="/MBooksTop/MBooksGlobals/HtId"/>
+  
   <xsl:template name="header">
     <div id="mbHeader">
       <!--All pages use Header-->
       <xsl:call-template name="skipNavLink"/>
       <xsl:call-template name="heading1"/>
-      <xsl:call-template name="SSDinterfaceLink"/>
-      <xsl:call-template name="OSSDlink"/>
-      <xsl:call-template name="Accessibilitylink"/>
-
+      <xsl:call-template name="AccessStatement"/>
+      
       <div id="masthead">
         <xsl:call-template name="branding"/>
         <xsl:call-template name="mbooksnav"/>
         <!--<xsl:call-template name="Survey"/>-->
         <!--<xsl:call-template name="SpecialHeaderLink"/>-->
       </div>
-
+      
       <xsl:call-template name="cbnavcontainer"/>
       <xsl:call-template name="subnavheaderWrapper"/>
     </div>
     <xsl:call-template name="skipNavAnchor"/>
     
   </xsl:template>
-
-
+  
+  
   <xsl:template name="skipNavLink">
     <xsl:element name="a">
       <xsl:attribute name="class">SkipLink</xsl:attribute>
@@ -44,74 +43,55 @@
       <xsl:attribute name="id">skipNav</xsl:attribute>
     </xsl:element>
   </xsl:template>
-
+  
   <xsl:template name="heading1">
     <xsl:element name="h1">
       <xsl:attribute name="class">SkipLink</xsl:attribute>
       <xsl:text>HathiTrust Digital Library</xsl:text>
     </xsl:element>
   </xsl:template>
-
+  
   <xsl:template name="mbooksnav">
     <div class="MBooksNav">
       <h2 class="SkipLink">Navigation links for login, help, feedback, etc.</h2>
-        <ul>
-          <xsl:call-template name="loginlink"/>
-          <xsl:call-template name="helplink"/>
-          <xsl:call-template name="feedbacklink"/>
-        </ul>
+      <ul>
+        <xsl:call-template name="loginlink"/>
+        <xsl:call-template name="helplink"/>
+        <xsl:call-template name="feedbacklink"/>
+      </ul>
     </div>
   </xsl:template>
-
-
-  <xsl:template name="SSDinterfaceLink">
-    <xsl:if test="$gFinalAccessStatus='allow'">
-      <div class="SkipLink">
-        <xsl:text>Go to the </xsl:text>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="gHttpHost"/>ssd?id=<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>
-          </xsl:attribute>
-          text-only view
-        </xsl:element> of this public domain book.
-      </div>
-    </xsl:if>
-  </xsl:template>
-
+  
+  <xsl:template name="AccessStatement">
+    <div class="SkipLink">
+      <p><xsl:call-template name="loginlink"/></p>
+      <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
+      <ul>
+        <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
+        <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
+        <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
+      </ul>
+    </div>
+  </xsl:template>  
+  
   <xsl:template name="Survey">
     <div id="surveylink"><a href="http://www.surveygizmo.com/s/107495/hathi-trust-digital-library">Take our survey!</a></div>
   </xsl:template>
   
   <xsl:template name="SpecialHeaderLink">
     <div id="LSsearch"><a href="ls">Try our experimental full-text search!</a></div>
-  </xsl:template>
+  </xsl:template>  
   
-  <xsl:template name="OSSDlink">
-    <div class="SkipLink">
-      <xsl:text>Special text versions of all items can be made accessible to to University of Michigan students whose disabilities do not allow them to use printed books. Go to the </xsl:text>
-      <a href="http://www.umich.edu/~sswd/resources/local/mbooks.html">SSD website</a>
-      <xsl:text> for more information.</xsl:text>
+  <xsl:template name="branding">
+    <div class="branding">
+      <div class="brandingLogo">
+        <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/>
+        <span>Digital Library</span></a>
+      </div>
     </div>
   </xsl:template>
-
- <xsl:template name="Accessibilitylink">
-   <div class="SkipLink">
-     <xsl:text>Go to the </xsl:text>
-     <a href="//common-web/accessibility.html">web accessibility page</a> 
-     <xsl:text> for access keys and other accessibility related information.</xsl:text>
-   </div>
- </xsl:template>
-
- <xsl:template name="branding">
-   <div class="branding">
-     <div class="brandingLogo">
-       <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/>
-        <span>Digital Library</span></a>
-     </div>
-   </div>
- </xsl:template>
-
- <xsl:template name="cbnavcontainer">
+  
+  <xsl:template name="cbnavcontainer">
    <div id="CBNavContainer">
      <div id="CBNav">
        <h2 class="SkipLink">Navigation links for search and collections</h2>

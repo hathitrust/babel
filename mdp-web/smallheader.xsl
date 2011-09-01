@@ -25,9 +25,8 @@
 
  <xsl:template name="Accessibilitylink">
    <div class="SkipLink">
-     <xsl:text>Go to the </xsl:text>
-     <a href="//common-web/accessibility.html">web accessibility page</a> 
-     <xsl:text> for access keys and other accessibility related information.</xsl:text>
+     <xsl:text>Go to the </xsl:text><a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>
+     <xsl:text> page for access keys and other accessibility related information.</xsl:text>
    </div>
  </xsl:template>
 

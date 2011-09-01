@@ -68,6 +68,21 @@ dt {
 
 /** end of bunch of stuff copied from HT Vufind **/
 
+.NoResultsLS
+{  
+  margin: 20px 5px 2px 2px;
+  border:5px ;
+  font-size:85%;
+ 
+}
+
+ 
+.NoResultsLS li 
+{  
+
+  list-style-type:disc;
+}
+
 /** temporary.  Need to change id of this div unless javascript is useing it.  In catalog similar region named searchbox **/
 #main
 {
@@ -465,6 +480,16 @@ a .colName {
   border-style:solid;
   border-width:1pt 1px;
   color:red;
+}
+
+/* Style for special access message in pageviewer.xsl */
+#accessBanner {
+  background-color: #fce9a8;
+  color: #000000;
+  text-align: center;
+  padding: 6px 0px;
+  font-size: 1.2em;
+  line-height: 1.2em;
 }
 
 /*========== Header ==========*/

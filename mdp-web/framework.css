@@ -300,39 +300,3 @@ p.error {
   font-weight: bold
   }
 
-/* multi-color highlighting support */
-.hilite1
-{
-  color: #000000;
-  background-color: #ffff00;
-}
-
-.hilite2
-{
-  color: #000000;
-  background-color: #00ff00;
-}
-
-.hilite3
-{
-  color: #000000;
-  background-color: #ff9900;
-}
-
-.hilite4
-{
-  color: #000000;
-  background-color: #00ffcc;
-}
-
-.hilite5
-{
-  color: #000000;
-  background-color: #00cccc;
-}
-
-.hilite6
-{
-  color: #000000;
-  background-color: #0099cc;
-}

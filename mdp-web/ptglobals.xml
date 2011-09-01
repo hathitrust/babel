@@ -10,7 +10,7 @@
 <CurrentCgi><?CGI_GLOBALS?></CurrentCgi>
 <CurrentUrl><?CURRENT_URL?></CurrentUrl>
 <UserAgent><?ENV_VAR variable="HTTP_USER_AGENT"?></UserAgent>
-<ReferrerHref><?ENV_VAR variable="HTTP_REFERRER"?></ReferrerHref>
+<ReferrerHref><?ENV_VAR variable="HTTP_REFERER"?></ReferrerHref>
 <HttpHost><?ENV_VAR variable="HTTP_HOST"?></HttpHost>
 <EnvHT_DEV><?ENV_VAR variable="HT_DEV"?></EnvHT_DEV>
 <EnvSDRINST><?ENV_VAR variable="SDRINST"?></EnvSDRINST>
