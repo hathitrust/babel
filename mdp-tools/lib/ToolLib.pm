@@ -62,6 +62,7 @@ $ToolLib::VERBOSE = 0;
          stampy 
          tburtonw 
          nasirg
+         sethip
     );
  
 @ToolLib::valid_dev_repos = map { "/htapps/$_.babel" } @ToolLib::valid_developers;
