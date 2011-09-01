@@ -24,7 +24,7 @@ Diff against this tag else last tag
 
 =head1 DESCRIPTION
 
-B<git-diff-vs-tag> will show a diff in $EDITOR vs the last tak or tag argument.
+B<git-diff-vs-tag> will show a diff in $EDITOR vs the last tag or tag argument.
 
 =cut
 
@@ -36,17 +36,18 @@ use Vendors;
 
 use ToolLib;
 
-our ($opt_h);
-my $ops = getopts('h');
+our ($opt_h, $opt_r);
+my $ops = getopts('hr:');
 
 my $help = $opt_h;
+my $repo = $opt_r;
 
 if ($help) {
     print git_diff_vs_usage();
     exit 0;
 }
 
-my ($repo_root, $app_root) = get_HTDE_roots('test');
+my ($repo_root, $app_root) = get_HTDE_roots($repo);
 my $app = shift;
 if (! validate_existing_app($repo_root, $app_root, $app)) {
     print git_diff_vs_usage();
@@ -65,10 +66,12 @@ exit 0;
 
 # ---------------------------------------------------------------------
 sub git_diff_vs_usage {
-    my $s = qq{Usage: git-diff-vs-tag [-h] <app> [<tag>]
+    my $s = qq{Usage: git-diff-vs-tag [-h][-r <repo>] <app> [<tag>]
            where <app> is the application to diff against last deployed tag or <tag>
-             List of tags is available from git-list-tags command.
-                 -h print help\n};
+             -r <repo> is where the HEAD is taken from. Defaults to users local repo for <app>.
+                Other options are e.g. 'test', 'beta-{1,2,...}' etc. 
+             -h print help
+                Note: a list of tags is available from git-list-tags command\n};
     return $s;
 }
 
