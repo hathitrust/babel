@@ -345,7 +345,8 @@ $gStandardPixelWidthAmount = 680;
               },
     );
 
-$gDefaultSliceSize = 25;
+$gDefaultSliceSize = 10;
+$gDefaultMaxSliceSize = 25;
 
 
 # ------------------------------------------------------------

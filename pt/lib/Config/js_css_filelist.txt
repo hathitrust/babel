@@ -80,6 +80,15 @@ Test:$gUsingBookReader='true'
 /pt/web/bookreader/BookReader/dragscrollable.js
 /pt/web/js/lscache.js
 
+Section:MOBILE_JS
+Test:$gSkin='mobile' and $gUsingBookReader='true'
+/pt/web/mobile/epub_download_helper.js
+/pt/web/mobile/jquery.url.js
+/pt/web/mobile/jquery-ui-1.8.5.custom.min.js
+/pt/web/mobile/HTMobileBookReader.js
+/pt/web/mobile/jquery.ui.ipad.js
+/pt/web/mobile/jquery.jswipe-0.1.2.js
+
 Section:CSS
 # css files, note last one overides earlier
 /pt/web/yui2-lib/build/fonts/fonts-min.css
@@ -96,6 +105,11 @@ Section:CSS
 Section:SEARCH_CSS
 Test:$gUsingSearch='true'
 /pt/web/searchresults.css
+
+Section:MOBILE_CSS
+Test:$gSkin='mobile'
+/pt/web/mobile/mobilept.css
+#/pt/web/mobile/epub_download_helper.css
 
 # Section:BOOKREADER_CSS
 # NOTE: BookReader.css doesn't appear to work when minified.

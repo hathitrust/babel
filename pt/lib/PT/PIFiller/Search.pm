@@ -25,56 +25,48 @@ use PIFiller;
 use base qw(PIFiller);
 
 use PT::PIFiller::Common;
-
 use PT::PageTurnerUtils;
-use PT::Document::XPAT;
 
-use Search::Utils;
+use SLIP_Utils::Common;
 
 
 # ---------------------------  Utilities  -----------------------------
 #
 
-# ----------------------------------------------------------------------
-# NAME         : BuildPrevNextHitsLink_XML
-# PURPOSE      :
-#
-# CALLED BY    :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub BuildPrevNextHitsLink_XML
-{
-    my ( $cgi, $totalMatches, $direction, $cgiRoot ) = @_;
+# ---------------------------------------------------------------------
 
-    my $interval  = $cgi->param( 'size' );
-    my $start     = $cgi->param( 'start' );
+=item BuildPrevNextHitsLink_XML
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub BuildPrevNextHitsLink_XML {
+    my ($cgi, $totalMatches, $direction, $cgiRoot) = @_;
+
+    my $interval  = $cgi->param('size');
+    my $start = $cgi->param('start');
 
     my $href = '';
+    my $tempCgi = new CGI($cgi);
 
-    # my $tempCgi = new CGI( $cgi );
-    my $tempCgi = new CGI( );
-
-    if ( $direction eq 'prev' )
+    if ($direction eq 'prev')
     {
         my $prevStart = $start - $interval;
 
-        if ( ( $prevStart ) >= 1 )
+        if (($prevStart) >= 1)
         {
-            $tempCgi->param( 'start', $prevStart );
+            $tempCgi->param('start', $prevStart);
             $href = $tempCgi->self_url();
         }
     }
-    elsif ( $direction eq 'next' )
+    elsif ($direction eq 'next')
     {
         my $nextStart =  $start + $interval;
-        if ( $totalMatches >= $nextStart  )
+        if ($totalMatches >= $nextStart )
         {
-            $tempCgi->param( 'start', $nextStart );
+            $tempCgi->param('start', $nextStart);
             $href = $tempCgi->self_url();
         }
     }
@@ -82,131 +74,110 @@ sub BuildPrevNextHitsLink_XML
     return $href;
 }
 
-# ----------------------------------------------------------------------
-# NAME         : _BuildFisheyeLinks_XML
-# PURPOSE      :
-#
-# CALLED BY    :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub _BuildFisheyeLinks_XML
-{
-    my ( $focus, $hits, $interval, $cgi ) = @_;
+# ---------------------------------------------------------------------
 
-    if ( $hits == 0 )
-    {	return '';   }
+=item _BuildFisheyeLinks_XML
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _BuildFisheyeLinks_XML {
+    my ($focus, $hits, $interval, $cgi) = @_;
+
+    if ($hits == 0) { return ''; }
 
     my $factor = 2;
-
     my $firstStartPoint = 1;
 
-    my ( $x, $y );
-    $x = $focus;
-    $y = 0;
-
+    my ($x, $y) = ($focus, 0);
     my @a;
 
     my $rightDistance = $hits - $focus;
     my $leftDistance = $focus - $firstStartPoint;
 
-    if ( $rightDistance == 0 )
-    {    $rightDistance = 1;   }
-
-    if ( $leftDistance == 0 )
-    {    $leftDistance = 1;   }
+    if ($rightDistance == 0) { $rightDistance = 1; }
+    if ($leftDistance == 0) { $leftDistance = 1; }
 
     # definitely include next "slice"
-    push ( @a, $interval );
+    push (@a, $interval);
 
     my $basePercent = $interval / $rightDistance;
-    for ( $x = $basePercent; $y < $hits; $x = $x * $factor )
-    {
-        $y = $y + ( $x * $rightDistance );
-        $y = int ( $y );
-        push ( @a, $y );
+    for ($x = $basePercent; $y < $hits; $x = $x * $factor) {
+        $y = $y + ($x * $rightDistance);
+        $y = int ($y);
+        push (@a, $y);
     }
 
     # now do left side
     $x = $focus;
     $y = 0;
     $basePercent = $interval / $leftDistance;
-    for ( $x = $basePercent; $y > $firstStartPoint; $x = $x * $factor )
-    {
-        $y += $y - ( $x * $leftDistance );
-        $y = int ( $y );
-        push ( @a, $y );
+    for ($x = $basePercent; $y > $firstStartPoint; $x = $x * $factor) {
+        $y += $y - ($x * $leftDistance);
+        $y = int ($y);
+        push (@a, $y);
     }
 
-    # duplicate the numbers but negative to get a mirror image
-    # of the parabolic curve away from the starting number
+    # duplicate the numbers but negative to get a mirror image of the
+    # parabolic curve away from the starting number
     my @b = map { 0 - $_ } @a ;
-    push ( @a , @b );
+    push (@a , @b);
 
     # add 0, so that when $focus is added to all, there exists in the
     # list a number for the current slice
-    push ( @a, 0 );
+    push (@a, 0);
 
     # get actual numbers by adding focus to all numbers
     @a = map { $_ + $focus  }  @a;
 
-    my ( @linkNumbersArray, $linkNumber );
+    my (@linkNumbersArray, $linkNumber);
 
-    foreach $linkNumber ( @a )
-    {
-        if ( $linkNumber >= $firstStartPoint  &&
-             $linkNumber <= $hits )
-        {   push ( @linkNumbersArray, $linkNumber );      }
+    foreach $linkNumber (@a) {
+        if ($linkNumber >= $firstStartPoint && $linkNumber <= $hits) {
+            push (@linkNumbersArray, $linkNumber);
+        }
     }
 
-    # build up ends of slices
-    # always include the focus
-    push ( @linkNumbersArray, $focus);
+    # build up ends of slices always include the focus
+    push (@linkNumbersArray, $focus);
 
     # always include the first "slice"
-    push ( @linkNumbersArray, $firstStartPoint);
+    push (@linkNumbersArray, $firstStartPoint);
 
     # sort
     Utils::sort_uniquify_list(\@linkNumbersArray, 'numeric');
 
-    # check to see if last currently included slice would include the last item.
-    # if so, we are done. Otherwise, we need to add a slice that includes
-    # the last $interval items, so that the last slice shown does in fact
-    # get the user to the last item
+    # check to see if last currently included slice would include the
+    # last item.  if so, we are done. Otherwise, we need to add a
+    # slice that includes the last $interval items, so that the last
+    # slice shown does in fact get the user to the last item
     my $possibleLastSliceNumber = $hits - $interval + 1 ;
-    if ( $possibleLastSliceNumber > $linkNumbersArray[ scalar(@linkNumbersArray)-1 ] )
-    {   push ( @linkNumbersArray, $possibleLastSliceNumber );    }
+    if ($possibleLastSliceNumber > $linkNumbersArray[ scalar(@linkNumbersArray)-1 ]) {
+        push (@linkNumbersArray, $possibleLastSliceNumber);
+    }
 
     my $toReturn = '';
-    my ( @linksArray, $link );
+    my (@linksArray, $link);
 
     # make links for each number in the array, only if there is more than one slice
-    if ( scalar( @linkNumbersArray > 1 ) )
-    {
-        foreach $linkNumber ( @linkNumbersArray )
-        {
+    if (scalar(@linkNumbersArray > 1)) {
+        foreach $linkNumber (@linkNumbersArray) {
             my $href = undef;
 
-            my $linkNumberElement = wrap_string_in_tag( $linkNumber, 'LinkNumber' );
-            if ( $linkNumber == $focus )
-            {
+            my $linkNumberElement = wrap_string_in_tag($linkNumber, 'LinkNumber');
+            if ($linkNumber == $focus) {
                 add_attribute(\$linkNumberElement, 'focus', 'true');
             }
-            else
-            {
-                my $tempCgi = new CGI( $cgi );
-                $tempCgi->param( 'start', $linkNumber );
+            else {
+                my $tempCgi = new CGI($cgi);
+                $tempCgi->param('start', $linkNumber);
                 $href = $tempCgi->self_url();
             }
 
             my $hrefElement = wrap_string_in_tag($href, 'Href');
-            $toReturn .=
-                wrap_string_in_tag( $linkNumberElement . qq{\n} . $hrefElement,
-                                    'FisheyeLink' );
+            $toReturn .= wrap_string_in_tag($linkNumberElement . qq{\n} . $hrefElement, 'FisheyeLink');
         }
     }
     wrap_string_in_tag_by_ref(\$toReturn, 'FisheyeLinks');
@@ -214,145 +185,88 @@ sub _BuildFisheyeLinks_XML
     return $toReturn;
 }
 
+# ---------------------------------------------------------------------
 
+=item _BuildMatchesString_XML
 
-# ----------------------------------------------------------------------
-# NAME         : _BuildMatchesString_XML
-# PURPOSE      :
-#
-# CALLED BY    :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub _BuildMatchesString_XML
-{
-    my ( $start, $sliceSize, $occurrences, $occurrenceType ) = @_;
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _BuildMatchesString_XML {
+    my ($start, $sliceSize, $occurrences) = @_;
 
     my $toReturn = '';
 
     my $end = $start + $sliceSize - 1;
+    if ($end > $occurrences) {
+        $end = $occurrences;
+    }
 
-    if ( $end > $occurrences )
-    {        $end = $occurrences;      }
+    wrap_string_in_tag_by_ref(\$start, 'Start');
+    wrap_string_in_tag_by_ref(\$end, 'End');
 
-    wrap_string_in_tag_by_ref( \$start, 'Start' );
-    wrap_string_in_tag_by_ref( \$end, 'End' );
-    wrap_string_in_tag_by_ref( \$occurrenceType, 'OccurrenceType' );
-
-    $toReturn = $start . qq{\n} . $end . qq{\n} . $occurrenceType;
+    $toReturn = $start . qq{\n} . $end . qq{\n};
 
     return $toReturn;
 }
 
 
-# ----------------------------------------------------------------------
-# NAME         : BuildFisheyeString_XML
-# PURPOSE      :
-#
-# CALLED BY    :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub BuildFisheyeString_XML
-{
-    my ( $cgi, $numOccurrences, $occurrenceType ) = @_;
+# ---------------------------------------------------------------------
 
-    # size and start should also be checked higher up in validity checks,
-    # but a double-check here might avoid an extremely long run. Not sure why.
-    my $sliceSize = $cgi->param( 'size' ) || 25;
-    my $start     = $cgi->param( 'start' ) || 0;
+=item BuildFisheyeString_XML
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub BuildFisheyeString_XML {
+    my ($cgi, $numOccurrences) = @_;
+
+    my $sliceSize = $cgi->param('size');
+    my $start     = $cgi->param('start');
 
     my $toReturn;
 
     my $matchesString =
-        _BuildMatchesString_XML( $start, $sliceSize, $numOccurrences, $occurrenceType );
+      _BuildMatchesString_XML($start, $sliceSize, $numOccurrences);
     my $fisheyeLinks =
-        _BuildFisheyeLinks_XML( $start, $numOccurrences, $sliceSize, $cgi );
+      _BuildFisheyeLinks_XML($start, $numOccurrences, $sliceSize, $cgi);
     my $nextHitsLink
-        = BuildPrevNextHitsLink_XML( $cgi, $numOccurrences, 'next' );
+      = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'next');
     my $prevHitsLink
-        = BuildPrevNextHitsLink_XML( $cgi, $numOccurrences, 'prev' );
+      = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'prev');
 
-    wrap_string_in_tag_by_ref( \$nextHitsLink, 'NextHitsLink' );
-    wrap_string_in_tag_by_ref( \$prevHitsLink, 'PrevHitsLink' );
+    wrap_string_in_tag_by_ref(\$nextHitsLink, 'NextHitsLink');
+    wrap_string_in_tag_by_ref(\$prevHitsLink, 'PrevHitsLink');
 
-    $toReturn = join( qq{\n}, $matchesString, $fisheyeLinks, $nextHitsLink, $prevHitsLink );
+    $toReturn = join(qq{\n}, $matchesString, $fisheyeLinks, $nextHitsLink, $prevHitsLink);
 
     return $toReturn;
 }
 
-# ----------------------------------------------------------------------
-# NAME         : BuildSliceNavigationLinks
-# PURPOSE      :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub BuildSliceNavigationLinks
-{
-    my ( $cgi, $totalPages ) = @_;
+# ---------------------------------------------------------------------
 
-    my $toReturn;
+=item BuildSliceNavigationLinks
 
-    my $numOccurrences = $totalPages;
-    my $occurrenceType = 'page';
+Description
 
-    if( $numOccurrences >= 0 )
-    {
-        $toReturn = BuildFisheyeString_XML
-            (
-             $cgi,
-             $numOccurrences,
-             $occurrenceType,
-            );
+=cut
 
-        $toReturn =
-            wrap_string_in_tag( $numOccurrences, 'TotalPages' ) . $toReturn;
+# ---------------------------------------------------------------------
+sub BuildSliceNavigationLinks {
+    my ($cgi, $total_pages) = @_;
+
+    my $toReturn = '';
+
+    if($total_pages >= 0) {
+        my $fe_str = BuildFisheyeString_XML ($cgi, $total_pages);
+        $toReturn = wrap_string_in_tag($total_pages, 'TotalPages') . $fe_str;
     }
 
     return $toReturn;
-}
-
-
-# ----------------------------------------------------------------------
-# NAME         : CleanKwic
-# PURPOSE      :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# We don't need to clean this data at the character/byte level
-# because is is derived from the XML we generate for searching
-# which has already been cleaned
-# ----------------------------------------------------------------------
-sub CleanKwic
-{
-    my ( $sRef, $currentSeq ) = @_;
-
-    Utils::remove_truncated_cers($sRef);
-    Utils::remove_truncated_tags($sRef);
-
-    # $currentSeq is an aid to allow us to trim material that follows
-    # the end of the page or preceeds the beginning of the page for
-    # the current seq if pr.200 shift.-100 grabbed such
-
-    my $nextSeq = $currentSeq + 1;
-    $$sRef =~ s,<page SEQ="$nextSeq"[^>]*>.*,,is;
-
-    $$sRef =~ s,.*?<page SEQ="$currentSeq"[^>]*>(.*),$1,is;
-
-    Utils::remove_tags($sRef);
-
-    my $doc = new PT::Document::XPAT;
-    $doc->clean_xml($sRef);
 }
 
 
@@ -365,94 +279,67 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub WrapSearchResultsInXml
-{
-    my ( $C, $rset, $parsedQsCgi, $pageHitCountsRef, $finalAccessStatus ) = @_;
-
-    my ( $label, $textRef, $byte, $xpat );
-    my ( $resultsToReturn, $lastLevel, $currentSeq );
+sub WrapSearchResultsInXml {
+    my ($C, $rs, $finalAccessStatus) = @_;
 
     my $cgi = $C->get_object('CGI');
 
-    my $tempCgi = new CGI( $cgi );
-    $tempCgi->delete( 'view' );
-    $tempCgi->delete( 'type' );
-    
-    my $view = $cgi->param('view'); # just use the default pt view
-    if ( $view eq 'thumb' ) { $view = '1up'; }
+    my $tempCgi = new CGI($cgi);
+    my $view = $tempCgi->param('view');
+    if ($view eq 'thumb') {
+        $tempCgi->param('view', '1up');
+    }
+    $tempCgi->delete('type');
+    $tempCgi->delete('orient');
+    $tempCgi->delete('u');
 
-    $rset->init_iterator();
+    my $XML_result = '';
 
-    while ( ( $label, $textRef, $byte, $xpat ) = $rset->get_Next_result() )
-    {
-        last if ( ! $label );
-
-        # Page info
-        if ( $label eq 'page' )
-        {
-            $resultsToReturn .= qq{</Page>\n}
-                if ( $lastLevel eq 'kwic' );
-
-            $resultsToReturn .= qq{<Page>\n};
-
-            my ( $sequence, $number );
-
-            if ( $$textRef =~ m,<page(.*?)>,is )
-            {
-                my $attrs = $1;
-                my ( $seq ) =( $attrs =~ m,SEQ="(.*?)", );
-                my ( $num ) =( $attrs =~ m,NUM="(.*?)", );
-
-                $currentSeq = $sequence = $seq;
-                $number = $num;
-            }
-
-            my $pageHitCount = shift @$pageHitCountsRef;
-
-            $resultsToReturn .=
-                wrap_string_in_tag( $sequence, 'Sequence' ) .
-                    wrap_string_in_tag( $number, 'PageNumber' ) .
-                        wrap_string_in_tag( $pageHitCount, 'Hits' );
-
-            $tempCgi->param( 'seq', $sequence );
-            $tempCgi->param( 'num', $number )
-                if ( $number );
-            $tempCgi->delete( 'orient' );
-            $tempCgi->delete( 'u' );
-            $tempCgi->param('view',$view) if ( $view );
-            my $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
-
-            $resultsToReturn .= wrap_string_in_tag( $href, 'Link');
-        }
-
-        elsif ( $label eq 'kwic' )
-        {
-            $lastLevel = 'kwic';
-
-            #if not authorized we don't show content
-            next unless
-                ( $finalAccessStatus eq 'allow' );
-
-            # remove page tags and doc tags
-            CleanKwic( $textRef, $currentSeq );
-
-            # munge cgi to have multiple q's
-            ## PT::PageTurnerUtils::HighlightMultipleQs($C, $parsedQsCgi, $textRef );
-            Search::Utils::HighlightMultipleQs($C,
-                                                     $parsedQsCgi,
-                                                     $textRef);
-
-            $resultsToReturn .= wrap_string_in_tag_by_ref( $textRef, 'Kwic');
-        }
+    # Server/Query/Network error
+    if (! $rs->http_status_ok()) {
+        $XML_result = wrap_string_in_tag('true', 'SearchError');
+        return $XML_result;
     }
 
-    # don't close the element if there is no content
-    # (there should be no opening tag here if there were no results)
-    $resultsToReturn .= qq{</Page>\n}
-        if ( $resultsToReturn );
+    my $Q = $C->get_object('Query'); 
+    my $valid_boolean = $Q->parse_was_valid_boolean_expression();
+    $XML_result .= wrap_string_in_tag($valid_boolean, 'ValidBooleanExpression');
 
-    return $resultsToReturn;
+    $rs->init_iterator();
+    while (my $Page_result = $rs->get_next_Page_result()) {
 
+        my $snip_list = $Page_result->{snip_list};
+        my $pgnum = $Page_result->{pgnum};
+        my $seq = $Page_result->{seq};
+        my $id = $Page_result->{id};
+        my $vol_id = $Page_result->{vol_id};
+
+        $XML_result .=
+          qq{<Page>\n} .
+            wrap_string_in_tag($seq, 'Sequence') .
+              wrap_string_in_tag($pgnum, 'PageNumber');
+
+        $tempCgi->param('seq', $seq);
+        $tempCgi->param('num', $pgnum) if ($pgnum);
+
+            my $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
+        $XML_result .= wrap_string_in_tag($href, 'Link');
+
+        my $term_hit_ct = 0;
+        foreach my $snip_ref (@$snip_list) {
+            $term_hit_ct += () = $$snip_ref =~ m,{lt:}.*?{gt:},g;
+
+            if ($finalAccessStatus eq 'allow') {
+                PT::PageTurnerUtils::format_OCR_text( $snip_ref );
+                $XML_result .= wrap_string_in_tag_by_ref($snip_ref, 'Kwic')
+        }
+    }
+        $XML_result .= wrap_string_in_tag($term_hit_ct/2, 'Hits');
+
+        $XML_result .= qq{</Page>\n};
+    }
+
+    return $XML_result;
 }
 
 
@@ -473,17 +360,13 @@ sub handle_SEARCH_TERMS_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $cgi = $C->get_object('CompositeResult')->get_parsed_qs_cgi();
+    my $parsed_terms_arr_ref =
+      $C->get_object('Search::Result::Page')->get_auxillary_data('parsed_query_terms');
 
     my $toReturn = '';
 
-    my $i;
-    my $numberOfFinalQs = $cgi->param( 'numberofqs' );
-
-    for ($i = 1; $i <= $numberOfFinalQs; $i++)
-    {
-        my $q = $cgi->param('q' . $i);
-        $toReturn .= wrap_string_in_tag( $q, 'Term');
+    foreach my $term (@$parsed_terms_arr_ref) {
+        $toReturn .= wrap_string_in_tag($term, 'Term');
     }
 
     return $toReturn;
@@ -504,27 +387,27 @@ sub handle_TOTAL_PAGES_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $total_pages = $C->get_object('CompositeResult')->get_total_pages();
+    my $total_pages = $C->get_object('Search::Result::Page')->get_num_found();
     return $total_pages;
 }
 
 
 # ---------------------------------------------------------------------
 
-=item handle_QUERY_TYPE_PI : PI_handler(QUERY_TYPE)
+=item handle_QUERY_TIME_PI : PI_handler(QUERY_TIME)
 
-Handler for QUERY_TYPE
+Handler for QUERY_TIME
 
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_QUERY_TYPE_PI
-    : PI_handler(QUERY_TYPE)
+sub handle_QUERY_TIME_PI
+  : PI_handler(QUERY_TIME)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $was_secondary = $C->get_object('CompositeResult')->get_secondary_query();
-    return $was_secondary ? 'OR' : 'AND';
+    my $query_time = $C->get_object('Search::Result::Page')->get_query_time();
+    return $query_time;
 }
 
 
@@ -543,7 +426,7 @@ sub handle_SLICE_NAVIGATION_LINKS_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $cgi = $C->get_object('CGI');
-    my $total_pages = $C->get_object('CompositeResult')->get_total_pages();
+    my $total_pages = $C->get_object('Search::Result::Page')->get_num_found();
 
     return BuildSliceNavigationLinks($cgi, $total_pages);
 }
@@ -615,7 +498,7 @@ sub handle_BEGINNING_LINK_PI
 
 Handler for ITEM_SEARCH_RESULTS
 
-If there is a valid XPatResultSet from the search, use it to populate
+If there is a valid Result object from the search, use it to populate
 the XML.  If there is not, send out a simple string that the XSL can
 test in order to put out a user friendly explanation.
 
@@ -628,24 +511,15 @@ sub handle_ITEM_SEARCH_RESULTS_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $id = $C->get_object('CGI')->param('id');
-    my $rset = $C->get_object('CompositeResult')->get_rset();
-    my $parsed_qs_cgi = $C->get_object('CompositeResult')->get_parsed_qs_cgi();
-    my $rset = $C->get_object('CompositeResult')->get_rset();
-    my $page_hit_counts_ref = $C->get_object('CompositeResult')->get_page_hit_counts_ref();
+    my $rs = $C->get_object('Search::Result::Page');
 
     my $final_access_status =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
 
-    if ( $rset )
-    {
-        return WrapSearchResultsInXml($C,
-                                      $rset,
-                                      $parsed_qs_cgi,
-                                      $page_hit_counts_ref,
-                                      $final_access_status);
+    if ($rs) {
+        return WrapSearchResultsInXml($C, $rs, $final_access_status);
     }
-    else
-    {
+    else {
         return 'INVALID_SEARCH_TERMS';
     }
 }
@@ -681,7 +555,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-11 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

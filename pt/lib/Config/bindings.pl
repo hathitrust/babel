@@ -15,11 +15,12 @@
      'src'      => '\d+',
      'num'      => '.*',
      'start'    => '\d+',
-     'ssd'      => '1',
+     'ssd'      => '1', # backwards compatible but obsolete
      'skin'     => '.*',
      'q1'       => '.*',
      'u'        => '1',
      'ui'       => 'reader|embed',
+     'ptsop'    => 'AND|OR|and|or',
     );
 
 # Specification of global *database* operations to be executed before

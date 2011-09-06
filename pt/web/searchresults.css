@@ -103,8 +103,8 @@
 }
 
 .mdpGoToBeginning {
-  margin-left: 2.5em;
-  margin-bottom: 1.5em;
+  margin-left: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .mdpHitCount
@@ -115,6 +115,12 @@
 
 .smallMessage {
   margin:0;
+}
+
+.searchSubMessage {
+  margin-left:  0em;
+  padding-top: 1em;
+  font-size: 0.8em;
 }
 
 div.mdpControlContainer {

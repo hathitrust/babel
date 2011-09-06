@@ -183,6 +183,28 @@ sub BuildImageServerImageUrl
 #
 # ---------------------------------------------------------------------
 
+=item handle_IN_COPYRIGHT_PI : PI_handler(IN_COPYRIGHT)
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_IN_COPYRIGHT_PI
+  : PI_handler(IN_COPYRIGHT) 
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    if ($C->get_object('Access::Rights')->public_domain_world_creative_commons($C, $id)) {
+        return 'false'
+    }
+    return 'true';
+}
+  
+      
+# ---------------------------------------------------------------------
+
 =item handle_CURRENT_PAGE_IMG_SRC_PI : PI_handler(CURRENT_PAGE_IMG_SRC)
 
 Handler for CURRENT_PAGE_IMG_SRC

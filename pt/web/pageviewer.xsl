@@ -22,6 +22,9 @@
   <xsl:variable name="gBackNavLinkType" select="/MBooksTop/MdpApp/BackNavInfo/Type"/>
   <xsl:variable name="gBackNavLinkHref" select="/MBooksTop/MdpApp/BackNavInfo/Href"/>
   <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
+  <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
+  <xsl:variable name="gUserName" select="/MBooksTop/Header/UserName"/>
+  <xsl:variable name="gInCopyright" select="/MBooksTop/MBooksGlobals/InCopyright"/>
   
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
@@ -210,6 +213,10 @@
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
         <!-- <xsl:call-template name="online_assessment"/> -->
+
+        <xsl:if test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
+          <xsl:call-template name="access_banner"/>
+        </xsl:if>
 
         <!-- <xsl:if test="$gCurrentView = 'image'">
           <style>
@@ -447,6 +454,10 @@
       });
     </script>
     <link xmlns="" rel="stylesheet" href="/pt/js/jQuery-Notify-bar/jquery.notifyBar.css" type="text/css" media="screen" />
+  </xsl:template>
+
+  <xsl:template name="access_banner">
+    <div id="accessBanner">Hi <xsl:value-of select="$gUserName"/>! You have full view access to this item based on your account privileges.  A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available.<br />  This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#section108">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></div>
   </xsl:template>
 
   <!-- Top Level Container DIV -->
@@ -1064,7 +1075,7 @@
     <xsl:param name="defaultFoldPosition" select="20" />
     <xsl:variable name="foldPosition">
       <xsl:choose>
-        <xsl:when test="/MBooksTop/MBooksGlobals/SSDSession='true'">
+        <xsl:when test="$gSSD_Session='true'">
           <!-- Do not fold for ssd; it hides some content -->
           <xsl:value-of select="9999"/>
         </xsl:when>
@@ -1109,7 +1120,7 @@
               </xsl:element>
             </td>
             <td class="mdpContentsPageNumber">
-              <xsl:if test="/MBooksTop/MBooksGlobals/SSDSession='false'">
+              <xsl:if test="$gSSD_Session='false'">
                 <!-- Do not repeat the page number already emitted CSS -->
                 <!-- invisibly above for screen readers                -->
                 <xsl:value-of select="Page"/>
@@ -1572,7 +1583,7 @@
   <!-- -->
   <xsl:template match="CurrentPageOcr">
     <!-- handle Highlight element children in the OCR -->
-    <xsl:apply-templates/>
+    <xsl:copy-of select="."/>
   </xsl:template>
 
   <!-- FORM: Page X of Y -->

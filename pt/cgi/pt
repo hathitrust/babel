@@ -32,8 +32,6 @@ BEGIN {
     ( $main::realSTART ) = time;
     ## $ENV{DEBUG_LOCAL} = 1;
     ## $ENV{TEST_BLACKLIST} = 1;
-    ## $ENV{SDRINST} = "foo";
-    ## $ENV{SDRLIB} = "0";
 }
 
 
@@ -69,6 +67,7 @@ use PI;
 use View;
 use Identifier;
 use MdpGlobals;
+use SLIP_Utils::Common;
 
 BEGIN {
     Debug::DUtils::setup_DebugScreen();
@@ -80,7 +79,6 @@ BEGIN {
 use PTGlobals;
 
 use PT::MdpItem;
-use Search::Utils;
 use PT::Prolog;
 
 $::VERSION = 1.1200;
@@ -101,6 +99,11 @@ my $gMdpItem = $C->get_object('MdpItem');
 # Order matters. Any information specific to this request (page,
 # possibly new handler, etc.) is done after initialization
 $gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues);
+
+my $config = $C->get_object('MdpConfig');
+my $run_config = SLIP_Utils::Common::merge_run_config('slip', $config);
+# Stomp $config in Context object
+$C->set_object('MdpConfig', $run_config);
 
 # Order matters, Save the current URL in the session so that later we
 # can build a "back" link
@@ -129,18 +132,10 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq '
     }
     elsif ( $gCgi->param( 'view' ) eq 'text' || $gCgi->param( 'view' ) eq 'plaintext' ) {
         # "text" view will eventually be handled by BookReader
-        $gMdpItem->OcrHandler();
-        
-        my $q1 = $gCgi->param( 'q1' );
-        if ( $q1 ) {
-            my ( $numberOfFinalQs, $parsedQsCgi ) = Search::Utils::ParseSearchTerms($C, \$q1);
-            Search::Utils::HighlightMultipleQs($C,
-                                                     $parsedQsCgi,
-                                                     $gMdpItem->GetOcrTextRef() );
+        $gMdpItem->OcrHandler($C);
             
-            # add spans and line breaks to text with highlights                                         
-        }
-        $gMdpItem->FormatOcrText();                                         
+        # add line breaks to text with highlights and map special highlight chars
+        PT::PageTurnerUtils::format_OCR_text( $gMdpItem->GetOcrTextRef(), 1 );
     }
 }
 
@@ -222,7 +217,8 @@ sub ValidityChecks {
     
     if ( ! $view ||
          ! grep(/^$view$/, (@PTGlobals::gViewTypes, @PTGlobals::gAuthdViewTypes))) {
-        if ( $cgi->param( 'ssd' ) ) {
+        if ( $cgi->param( 'ssd' ) ) { 
+            # 'ssd' URL param is deprecated
             $cgi->param( 'view', $PTGlobals::gDefaultSsdView );
         }
         else {
