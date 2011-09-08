@@ -5,7 +5,8 @@ HT.resizeBookReader = function() {
   var $container = $("#mdpContentContainer");
   var $body = $("body");
 
-  $container.width($body.width() - HT.config.ARBITRARY_PADDING);
+  var w = $body.width() - $(".mdpControlContainer").width() - HT.config.ARBITRARY_PADDING;
+  $container.width(w);
 }
 
 
