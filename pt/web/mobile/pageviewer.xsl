@@ -1254,7 +1254,9 @@
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
-          <xsl:call-template name="PageTitle" />
+          <xsl:call-template name="PageTitle">
+            <xsl:with-param name="prefix" select="'HathiTrust Mobile'" />
+          </xsl:call-template>
         </title>
 
         <!-- jQuery from the Google CDN -->
@@ -1621,8 +1623,7 @@
       
     </xsl:choose>
   </xsl:template>
-  
-  
+    
 </xsl:stylesheet>
 
 
