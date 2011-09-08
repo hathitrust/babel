@@ -54,7 +54,7 @@ HT.resizeBookReader = function(is_fullscreen) {
   var $body = $("body");
   var $container = $("#mdpContentContainer");
 
-  var padding = HT.config.ARBITRARY_PADDING;
+  var padding = HT.config.ARBITRARY_PADDING + $(".mdpControlContainer").width();
   if ( HT.reader.ui == 'embed' ) {
       var $branding = $(".branding");
       var $embedLink = $(".embedLink");
