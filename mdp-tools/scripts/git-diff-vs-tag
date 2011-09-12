@@ -56,9 +56,9 @@ if (! validate_existing_app($repo_root, $app_root, $app)) {
 
 my $tag = shift || G_last_tag();
 
-G_handle_diff($app, "$app_root/$app");
+my $rc = G_handle_diff($app, "$app_root/$app");
 
-exit 0;
+exit $rc;
 
 #
 # Subroutines
