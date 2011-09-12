@@ -106,6 +106,9 @@ sub cont_get_usage {
        control-j -kresetstats -r run
           zeros j_shard_stats and j_rate_stats for incremental recording
 
+       control-j -kreseterrors -r run
+          zeros j_errors
+
        control-j -kQtimestamp -r run [-tYYYYMMDD]
           set queue timestamp to 00000000 or value of -t
             re-queue ids in j_rights newer than that timestamp, to be re-indexed
@@ -251,6 +254,9 @@ eval {
     }
     elsif ($KOMMAND eq 'resetstats') {
         c_Reset_stats($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'reseterrors') {
+        c_Reset_errors($C, $DBH, $RUN);
     }
     elsif (($KOMMAND eq 'start') || ($KOMMAND eq 'stop')) {
         my $enabled = ($KOMMAND eq 'start') ? 1 : 0;
@@ -677,6 +683,25 @@ sub c_Reset_stats {
     __output(qq{\tSTATS RESET run=$run\n});
 }
 
+
+# ---------------------------------------------------------------------
+
+=item c_Reset_errors
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_Reset_errors {
+    my ($C, $dbh, $run) = @_;
+
+    my $ct = Db::Delete_errors($C, $dbh, $run);
+
+    Log_errors_reset($C, $run, $ct);
+    __output(qq{\tERRORS RESET run=$run reset=$ct\n});
+}
+
 # ---------------------------------------------------------------------
 
 =item c_unstick
@@ -999,6 +1024,23 @@ sub Log_stats {
     my ($C, $run) = @_;
 
     my $s = qq{***STATS RESET: } . Utils::Time::iso_Time() . qq{ r=$run };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_errors_reset
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_errors_reset {
+    my ($C, $run, $ct) = @_;
+
+    my $s = qq{***ERRORS RESET: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
