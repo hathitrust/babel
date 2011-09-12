@@ -69,7 +69,7 @@ sub getItemDir {
     my $self = shift;
     my $id = shift;
 
-    my $path = id2ppath($id) . s2ppchars($id);
+    my $path = File::Pairtree::id2ppath($id) . File::Pairtree::s2ppchars($id);
     return $path;
 }
 
