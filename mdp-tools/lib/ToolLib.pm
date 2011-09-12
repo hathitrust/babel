@@ -173,9 +173,13 @@ sub G_clone {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd_2 = "git remote show origin";
+    my $cmd_2 = "git init --shared=group";
     return 0
       if (! execute_command($cmd_2));
+
+    my $cmd_3 = "git remote show origin";
+    return 0
+      if (! execute_command($cmd_3));
     
     PrintY("OK\n");
     return 1;
@@ -505,9 +509,13 @@ sub G_update_submodules {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd = "git submodule update --init";
+    my $cmd_1 = "git submodule update --init";
     return 0
-      if (! execute_command($cmd));
+      if (! execute_command($cmd_1));
+
+    my $cmd_2 = "git submodule foreach 'git init --shared=group'";
+    return 0
+      if (! execute_command($cmd_2));
 
     PrintY("OK\n");
     return 1;
@@ -530,9 +538,9 @@ sub G_init_submodules {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd = "git submodule init";
+    my $cmd_1 = "git submodule init";
     return 0
-      if (! execute_command($cmd));
+      if (! execute_command($cmd_1));
 
     PrintY("OK\n");
     return 1;
