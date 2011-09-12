@@ -19,6 +19,7 @@ valid_query_params:
   - debug
   - v
   - alt
+  - ak
 
 force_array_format:
   - link
@@ -585,6 +586,7 @@ rights_name_map:
   13: cc-by-nc
   14: cc-by-nc-sa
   15: cc-by-sa
+  16: orphcand
 
 # ---------------------------------------------------------------------
 # List of name that equate to open access
