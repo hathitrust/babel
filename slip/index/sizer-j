@@ -148,6 +148,14 @@ $C->set_object('Database', $db);
 
 my $DBH = $db->get_DBH();
 
+# Only size a run that exists.  When re-numbering from re-indexing run 10 to production run 11, run 11 will first be deleted.  Don't try to zize it.
+
+my $ct = Db::Test_j_rights_timestamp($C, $DBH, $RUN);
+if ($ct > 0) {
+    __output(qq{Looks like run=$RUN still exists.  Exit.});
+    exit 0;
+}
+
 eval {
     # Only commit to determine index size during the Building and
     # Build_Wait stages.
