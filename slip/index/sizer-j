@@ -152,7 +152,7 @@ my $DBH = $db->get_DBH();
 
 my $ct = Db::Test_j_rights_timestamp($C, $DBH, $RUN);
 if ($ct == 0) {
-    __output(qq{Nothing to size: run=$RUN not in db tables.  Exit.});
+    __output(qq{Nothing to size: run=$RUN not in db tables.  Exit.\n});
     exit 0;
 }
 

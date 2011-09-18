@@ -193,20 +193,6 @@ CREATE TABLE `j_rights_timestamp` (`run` smallint(3) NOT NULL default '0', `time
 ---------------------------------------------------------------------
 --
 ---------------------------------------------------------------------
-CREATE TABLE `j_control` (
-        `run`           smallint(3) NOT NULL default '0',
-        `shard`         smallint(2) NOT NULL default '0',
-        `host`          varchar(32) NOT NULL default '',
-        `num_producers` smallint(2) NOT NULL default '1',
-        `enabled`  tinyint(1)  NOT NULL default '0',
-                PRIMARY KEY  (`run`, `shard`, `host`)
-       );
-
-CREATE TABLE `j_control` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `host` varchar(32) NOT NULL default '', `num_producers` smallint(2) NOT NULL default '1', `enabled` tinyint(1) NOT NULL default '0', PRIMARY KEY  (`run`, `shard`, `host`));
-
----------------------------------------------------------------------
---
----------------------------------------------------------------------
 CREATE TABLE `j_host_control` (
         `run`           smallint(3) NOT NULL default '0',
         `host`          varchar(32) NOT NULL default '',

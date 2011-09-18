@@ -186,14 +186,12 @@ exit 0 if ($TEST_ONLY);
 
 my $C = new Context;
 
-my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
-$C->set_object('MdpConfig', $config);
-
-my @NUM_SHARDS_LIST = $C->get_object('MdpConfig')->get('num_shards_list');
+my $CONFIG = SLIP_Utils::Common::gen_run_config('slip', $RUN);
+$C->set_object('MdpConfig', $CONFIG);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database($CONFIG);
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'control-j', $@);
@@ -239,7 +237,7 @@ eval {
         __output(qq{\tset vSolr timestamp to } . ($time ? $time : '00000000') . qq{\n});
     }
     elsif ($KOMMAND eq 'resetdriver') {
-        my $driver_driven = $config->get('driver_driven');
+        my $driver_driven = $CONFIG->get('driver_driven');
         if ($driver_driven) {
             c_Reset_driver($C, $DBH, $RUN);
         }
@@ -306,8 +304,10 @@ eval {
                 __validate_hostname($C, $RUN, $host);
             }
             
+            my @num_shards_list = $CONFIG->get('num_shards_list');
+
             if ($shard eq 'A') {
-                foreach my $_shard (@NUM_SHARDS_LIST) {
+                foreach my $_shard (@num_shards_list) {
                     c_producer_control($C, $DBH, $RUN, $_shard, $host, $enabled);
                 }
             }
@@ -373,25 +373,6 @@ sub __validate_hostname {
     }
 }
 
-# ---------------------------------------------------------------------
-
-=item __Reset_shards
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __Reset_shards {
-    my ($C, $dbh, $run) = @_;
-
-    foreach my $__shard (@NUM_SHARDS_LIST) {
-        __output(qq{\treset states and disable shard=$__shard ... });
-        Db::Reset_shard_control($C, $dbh, $run, $__shard);
-        __output(qq{Done.\n});
-    }
-}
-
 
 # ---------------------------------------------------------------------
 
@@ -405,7 +386,9 @@ Description
 sub __Initialize_shards {
     my ($C, $dbh, $run) = @_;
 
-    foreach my $__shard (@NUM_SHARDS_LIST) {
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+
+    foreach my $__shard (@num_shards_list) {
         __output(qq{\tinitialize shard control for shard=$__shard ...});
         Db::init_shard_control($C, $dbh, $run, $__shard);
         __output(qq{Done.\n});
@@ -426,6 +409,9 @@ Description
 sub driver_initialization {
     my ($C, $dbh, $run) = @_;
 
+    my $config = $C->get_object('MdpConfig');
+    my @num_shards_list = $config->get('num_shards_list');
+
     my $driver_driven = $config->get('driver_driven');
     if (! $driver_driven) {
         __output(qq{run=$run not configured for driver-j management ... exit. });
@@ -438,7 +424,7 @@ sub driver_initialization {
 
      __Initialize_shards($C, $dbh, $run);
 
-    foreach my $__shard (@NUM_SHARDS_LIST) {
+    foreach my $__shard (@num_shards_list) {
         __output(qq{\tdisable optimize-j scripts for shard=$__shard ...});
         Db::set_optimize_enabled($C, $dbh, $run, $__shard, 0);
         __output(qq{Done.\n});
@@ -455,6 +441,24 @@ sub driver_initialization {
     __c_host_control($C, $dbh, $run, undef, 0);
 }
 
+
+# ---------------------------------------------------------------------
+
+=item non_driver_initialization
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub non_driver_initialization {
+    my ($C, $dbh, $run) = @_;
+
+    # Just shards and hosts according to run-N.conf
+    __Initialize_shards($C, $dbh, $run);
+    __configure_init_hosts($C, $dbh, $run);
+}
+
 # ---------------------------------------------------------------------
 
 =item __configure_init_hosts
@@ -465,15 +469,17 @@ Description
 
 # ---------------------------------------------------------------------
 sub __configure_init_hosts {
-    my $C = shift;
-    my ($dbh, $run) = @_;
+    my ($C, $dbh, $run) = @_;
     
+    my $config = $C->get_object('MdpConfig');
+
     my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
     my $producers_per_host = $config->get('producers_per_host');
     foreach my $host (@host_list) {
         c_configure($C, $dbh, $run, $producers_per_host, $host);
     }
 }
+
 
 # ---------------------------------------------------------------------
 
@@ -498,12 +504,10 @@ sub c_init {
     __output(qq{Done.\n});
 
     __output(qq{\tdelete errors ... });
-    __confirm("This will lose the record of errors. REALLY? [N] ");
     Db::Delete_errors($C, $dbh, $run);
     __output(qq{Done.\n});
 
     __output(qq{\tdelete indexed ... });
-    __confirm("This will lose the record of in which shard an ID was indexed. REALLY? [N] ");
     Db::Delete_indexed($C, $dbh, $run);
     __output(qq{Done.\n});
 
@@ -532,6 +536,8 @@ sub c_init {
     __output(qq{Done.\n});
 
     # If run is driver_driven
+    my $config = $C->get_object('MdpConfig');
+
     my $driver_driven = $config->get('driver_driven');
     if ($driver_driven) {
         # Lots of stuff including shards.
@@ -539,9 +545,7 @@ sub c_init {
     }
     else {
         # Just shards and hosts according to run-N.conf
-        __Initialize_shards($C, $dbh, $run);
-        __configure_init_hosts($C, $dbh, $run);
-
+        non_driver_initialization($C, $dbh, $run);
     }
 
     Log_init($C, $run);
@@ -563,7 +567,6 @@ sub c_delete {
     __confirm("\n\n!!!(This will delete ALL RECORD of the run from the database for Run=$run !!!\n\n\t ARE YOU ABSOLUTELY 100% SURE ABOUT THIS!? [N] ");
     
     __confirm("\n\t\t\tREALLY? [N] ");
-    __confirm("\n\t\t\tREALLY, REALLY? [N] ");
     
     __output(qq{\n\tdelete queue timestamp ... });
     Db::delete_j_rights_timestamp($C, $dbh, $run);
@@ -924,11 +927,13 @@ Description
 sub __c_shard_control {
     my ($C, $dbh, $run, $shard, $enabled) = @_;
 
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+
     my $what = $enabled ? 'ENABLE' : 'DISABLE';
 
     if (! $shard) {
         # Enable or disable all shards
-        foreach my $__shard (@NUM_SHARDS_LIST) {
+        foreach my $__shard (@num_shards_list) {
             Db::update_shard_enabled($C, $dbh, $run, $__shard, $enabled);
             Log_control($C, $run, 'shard', $__shard, $enabled);
             __output(qq{\t$what run=$run shard=$__shard\n});
@@ -1204,8 +1209,10 @@ Description
 sub shards_enabled {
     my ($C, $dbh, $run) = @_;
 
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+
     my $any_shard_enabled = 0;
-    foreach my $__shard (@NUM_SHARDS_LIST) {
+    foreach my $__shard (@num_shards_list) {
         my $shard_enabled = Db::Select_shard_enabled($C, $dbh, $run, $__shard);
         $any_shard_enabled |= $shard_enabled;
     }
