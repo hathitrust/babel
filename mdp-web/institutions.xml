@@ -281,6 +281,12 @@
   <!-- waiting -->
 
   <Inst
+      sdrinst="missouri"
+      template="https://___HOST___/Shibboleth.sso/missouri?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ufl.edu"
+      enabled="0">University of Missouri</Inst>
+  <Inst
       sdrinst="ufl"
       template="https://___HOST___/Shibboleth.sso/ufl?target=___TARGET___"
       authtype="shibboleth"
