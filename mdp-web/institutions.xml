@@ -277,27 +277,27 @@
       authtype="shibboleth"
       domain="ucr.edu"
       enabled="1">University of California, Riverside</Inst>
-
-  <!-- waiting -->
-
-  <Inst
-      sdrinst="missouri"
-      template="https://___HOST___/Shibboleth.sso/missouri?target=___TARGET___"
-      authtype="shibboleth"
-      domain="ufl.edu"
-      enabled="0">University of Missouri</Inst>
   <Inst
       sdrinst="ufl"
       template="https://___HOST___/Shibboleth.sso/ufl?target=___TARGET___"
       authtype="shibboleth"
       domain="ufl.edu"
-      enabled="0">University of Florida</Inst>
+      enabled="1">University of Florida</Inst>
+  <Inst
+      sdrinst="missouri"
+      template="https://___HOST___/Shibboleth.sso/missouri?target=___TARGET___"
+      authtype="shibboleth"
+      domain="missouri.edu"
+      enabled="1">University of Missouri - Columbia</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="unl"
       template="https://___HOST___/Shibboleth.sso/unl?target=___TARGET___"
       authtype="shibboleth"
       domain="unl.edu"
-      enabled="0">University of Nebraska–Lincoln</Inst>
+      enabled="0">University of Nebraska - Lincoln</Inst>
   <Inst
       sdrinst="ucdavis"
       template="https://___HOST___/Shibboleth.sso/ucdavis?target=___TARGET___"
