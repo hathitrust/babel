@@ -80,7 +80,8 @@ sub ___core_initialize {
 
     my $action = $cgi->param('a');
     my $q1 = $cgi->param('q1');
-    if (! $action || ! $q1) {
+    my $page = $cgi->param('page');
+    if (! $action || ! $page || $q1) {
         my $params = $config->get('ls_default_params');
         my $temp_cgi = new CGI($params);
         # Preserve debug params
