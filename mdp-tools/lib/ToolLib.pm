@@ -518,9 +518,10 @@ sub G_update_submodules {
       if (! execute_command($cmd_2));
 
     my $cmd_3 = "git submodule foreach 'chmod g+w .'";
-    return 0
-      if (! execute_command($cmd_3));
-
+#    return 0
+#      if (! execute_command($cmd_3));
+    execute_command($cmd_3);
+    
     PrintY("OK\n");
     return 1;
 }
