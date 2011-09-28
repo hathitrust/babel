@@ -249,7 +249,7 @@ sub GetOcrBySequence {
 
     DEBUG('all', qq{ocr file is: $ocrFile});
 
-    SLIP_Utils::Common::clean_xml_xml($ocrTextRef);
+    SLIP_Utils::Common::clean_xml($ocrTextRef);
 
     $$ocrTextRef =~ s,\n\n,<br /><br />\n,g;
 
