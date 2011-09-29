@@ -1432,7 +1432,7 @@
         <!-- <span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
         <br />         -->
 				
-				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> |<xsl:call-template name="footertakedownlink"/>
+				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> | <xsl:call-template name="footertakedownlink"/>
 				<br />
 				
 	
