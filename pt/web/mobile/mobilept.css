@@ -1093,10 +1093,10 @@ color:white;
 
 /* HIDE EPUB FOR NOW.... */
 
-#fullEpubLinkP{
-	display:none;
+/*#fullEpubLinkP{
+  display:none;
 }
-
+*/
 #fullPdfLink{
 	border-bottom:solid 1px #ccc;
 
