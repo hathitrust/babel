@@ -1426,9 +1426,10 @@
 			    <div id="footerlogin">
 					<xsl:call-template name="loginlink"/>
 	    		</div>
-	    		
-				<span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
-				<br />    		
+
+	    	<!-- 2011-09-29: "regular site" link shouldn't take you to the catalog -->
+        <!-- <span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
+        <br />         -->
 				
 				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> |<xsl:call-template name="footertakedownlink"/>
 				<br />

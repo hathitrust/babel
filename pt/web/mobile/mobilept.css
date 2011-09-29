@@ -1156,3 +1156,7 @@ input#email{
 .boxy-modal-blackout{
 	opacity:.3 !important;
 }
+
+.contentContainerWrap {
+  width: 100%;
+}
