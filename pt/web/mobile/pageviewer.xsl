@@ -1097,7 +1097,8 @@
             <xsl:text>Copyright:</xsl:text>
           </span>
           <span class="mdpMetaText">
-            <xsl:element name="a">
+            <xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+            <!-- <xsl:element name="a">
               <xsl:attribute name="href">http://www.hathitrust.org/faq#RightsCodes</xsl:attribute>
               <xsl:choose>
                 <xsl:when test="$gRightsAttribute='1'">
@@ -1130,7 +1131,7 @@
                 </xsl:when>
                 <xsl:otherwise/>
               </xsl:choose> 
-            </xsl:element>
+            </xsl:element> -->
           </span>
         </div>
       </xsl:if>

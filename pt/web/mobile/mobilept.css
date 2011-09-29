@@ -652,7 +652,7 @@ content:url(mobile/images/Arrow_rightcircle.png);
 	/*display:none;*/
 }
 
-.boxy-content button:active {
+.boxy-content button:active, .boxy-content a:active {
   background-color: #eee;
 }
 
