@@ -510,29 +510,33 @@
 
     <div id="mdpUberContainer">
       <xsl:call-template name="BookReaderSidebar" />
+      
+      <div class="contentContainerWrap">
 
-      <xsl:call-template name="BookReaderToolbar">
-        <xsl:with-param name="pViewTypeList" select="$pViewTypeList"/>
-      </xsl:call-template>
+        <xsl:call-template name="BookReaderToolbar">
+          <xsl:with-param name="pViewTypeList" select="$pViewTypeList"/>
+        </xsl:call-template>
       
 
-      <!-- Image -->
-      <xsl:element name="a">
-        <xsl:attribute name="name">skipNav</xsl:attribute>
-        <xsl:attribute name="id">skipNav</xsl:attribute>
-      </xsl:element>
-      <xsl:call-template name="ContentContainer"/>
+        <!-- Image -->
+        <xsl:element name="a">
+          <xsl:attribute name="name">skipNav</xsl:attribute>
+          <xsl:attribute name="id">skipNav</xsl:attribute>
+        </xsl:element>
+        <xsl:call-template name="ContentContainer"/>
       
-      <xsl:if test="$gUsingBookReader = 'false'">
-        <div id="mdpBottomToolbar">
-          <xsl:if test="$gFinalAccessStatus != 'allow'">
-            <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
-          </xsl:if>
-          <xsl:call-template name="build-toolbar-nav">
-            <xsl:with-param name="target">footer</xsl:with-param>
-          </xsl:call-template>
-        </div>
-      </xsl:if>
+        <xsl:if test="$gUsingBookReader = 'false'">
+          <div id="mdpBottomToolbar">
+            <xsl:if test="$gFinalAccessStatus != 'allow'">
+              <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
+            </xsl:if>
+            <xsl:call-template name="build-toolbar-nav">
+              <xsl:with-param name="target">footer</xsl:with-param>
+            </xsl:call-template>
+          </div>
+        </xsl:if>
+        
+      </div>
 
     </div>
 

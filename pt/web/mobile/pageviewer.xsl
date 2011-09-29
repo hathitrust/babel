@@ -1097,7 +1097,8 @@
             <xsl:text>Copyright:</xsl:text>
           </span>
           <span class="mdpMetaText">
-            <xsl:element name="a">
+            <xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+            <!-- <xsl:element name="a">
               <xsl:attribute name="href">http://www.hathitrust.org/faq#RightsCodes</xsl:attribute>
               <xsl:choose>
                 <xsl:when test="$gRightsAttribute='1'">
@@ -1130,7 +1131,7 @@
                 </xsl:when>
                 <xsl:otherwise/>
               </xsl:choose> 
-            </xsl:element>
+            </xsl:element> -->
           </span>
         </div>
       </xsl:if>
@@ -1426,11 +1427,12 @@
 			    <div id="footerlogin">
 					<xsl:call-template name="loginlink"/>
 	    		</div>
-	    		
-				<span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
-				<br />    		
+
+	    	<!-- 2011-09-29: "regular site" link shouldn't take you to the catalog -->
+        <!-- <span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
+        <br />         -->
 				
-				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> |<xsl:call-template name="footertakedownlink"/>
+				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> | <xsl:call-template name="footertakedownlink"/>
 				<br />
 				
 	

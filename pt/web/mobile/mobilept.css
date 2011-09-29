@@ -652,6 +652,10 @@ content:url(mobile/images/Arrow_rightcircle.png);
 	/*display:none;*/
 }
 
+.boxy-content button:active, .boxy-content a:active {
+  background-color: #eee;
+}
+
 .boxy-content #mdpCatalogLinkInfoForm{
 	font-size:1.2em;
 	line-height:1.2em;
@@ -1093,10 +1097,10 @@ color:white;
 
 /* HIDE EPUB FOR NOW.... */
 
-#fullEpubLinkP{
-	display:none;
+/*#fullEpubLinkP{
+  display:none;
 }
-
+*/
 #fullPdfLink{
 	border-bottom:solid 1px #ccc;
 
@@ -1156,3 +1160,21 @@ input#email{
 .boxy-modal-blackout{
 	opacity:.3 !important;
 }
+
+.contentContainerWrap {
+  width: 100%;
+}
+
+.metaDataRegionHead {
+  width: 25%;
+}
+
+.mdpMetaText {
+  width: 75%;
+}
+
+.mdpMetaDataRow {
+  overflow: hidden;
+}
+
+#mdpMobileItemMetadata .mdpMobileMetaText { text-align: left; }
