@@ -447,6 +447,7 @@ Boxy.prototype = {
                         jQuery(document.body).unbind('keypress.boxy');
                     }
                 });
+                this.modalBlackout.bind('click', function() { self.hide(); });
             }
         }
         this.boxy.stop().css({opacity: 1}).show();

@@ -619,7 +619,8 @@ div.mdpScrollableContainer {
 }
 
 .ptSelectBox {
-  text-align: right;
+  /* align left to accommodate sidebar based on % */
+  text-align: left;
 }
 
 .ptSelectBox select {

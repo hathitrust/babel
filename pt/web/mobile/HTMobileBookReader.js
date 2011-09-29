@@ -383,26 +383,25 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     });
     
     $('#bookinfo').click(function(e) {
-    	try{
-    		self.getBookOption=0;
-    		var html = "<div>" + $("#BRiteminfo").html() + "</div>";
-	    	var $notice = new Boxy(html, {
-	            show : true,
-	            modal : true,
-	            draggable : true,
-	            closeable : true,
-	            title : "Info",
-	            behaviours: function(r) {
-	    			$(r).find('#feedback').css('display',''); // still needed???
-	    			
-	    			$(r).find('#mobilefeedbackdiv a.mobilefeedback').click(function() {
-	    				Boxy.get(r).hide();
-	    				return self.feedback();
-	    			});
-                },
-
+      try{
+        self.getBookOption=0;
+        var html = "<div>" + $("#BRiteminfo").html() + "</div>";
+        var $notice = new Boxy(html, {
+              show : true,
+              modal : true,
+              draggable : true,
+              closeable : true,
+              title : "Info",
+              behaviours: function(r) {
+                $(r).find('#feedback').css('display',''); // still needed???
+            
+                $(r).find('#mobilefeedbackdiv a.mobilefeedback').click(function() {
+                  Boxy.get(r).hide();
+                  return self.feedback();
+                });
+              },
 	         });
-    	}catch(err){alert(err.toString())};
+     }catch(err){alert(err.toString())};
     	
     });
     
