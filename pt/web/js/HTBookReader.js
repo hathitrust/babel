@@ -7,7 +7,7 @@ function HTBookReader() {
     this.defaultReduce = 4;
     this.savedReduce = {'1.text' : 1};
     this.total_slices = 9999;
-    this.cache_age = 60;
+    this.cache_age = -1;
     this.restricted_width = this.restricted_height = 75;
 }
 
@@ -17,10 +17,11 @@ HTBookReader.prototype.sliceFromIndex = function(index) {
 
 HTBookReader.prototype.getMetaUrlParams = function(start) {
     // var params = { id : this.bookId, noscale: 0, format: "list", limit : this.slice_size };
-    var params = { id : this.bookId, size: '100', format: "list", limit : this.slice_size };
+    var params = { id : this.bookId, size: '100', format: "list", limit : this.slice_size, method : 'fudged' };
     if ( this.flags.force !== undefined ) {
         params["force"] = this.force
     }
+    params['force'] = 1;
     params['start'] = start;
     
     if ( this.flags.debug ) {
@@ -55,6 +56,22 @@ HTBookReader.prototype.hasPageFeature = function(index, feature) {
           return ( feature == "MISSING_PAGE" );
         }
         return ( features.indexOf(feature) >= 0 );
+    }
+    return false;
+}
+
+HTBookReader.prototype.removePageFeature = function(index, feature) {
+    var slice = this.sliceFromIndex(index);
+    if ( this.bookData[slice.slice] != undefined ) {
+        var features = this.bookData[slice.slice]['features'][slice.index];
+        if ( features == undefined ) {
+          console.log("MISSING FEATURE", slice, index, feature);
+          return ( feature == "MISSING_PAGE" );
+        }
+        var feature_idx = features.indexOf(feature);
+        if ( feature_idx >= 0 ) {
+          features.splice(feature_idx, 1);
+        }
     }
     return false;
 }
@@ -182,7 +199,7 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
             page_uri += ";q1=" + this.q1;
         }
     } else {
-        page_uri += ';width=' + _targetWidth + ';orient=' + _orient;
+        page_uri += ';width=' + _targetWidth + ';height=' + _targetWidth + ';orient=' + _orient;
     }
     
     if ( this.flags.debug ) {
@@ -374,7 +391,7 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
     this.bookData[slice_index] = data;
     this.slices.push(slice_index);
     
-    if ( do_cache ) {
+    if ( do_cache && this.cache_age > 0 ) {
         lscache.set(this.bookId + "-" + slice_index, data, this.cache_age);
     }
     
@@ -1648,10 +1665,46 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
         e = document.createElement("img");
         $(e).css('width', width+'px');
         $(e).css('height', height+'px');
+        $(e).data('index', index);
 
         var title = "image of page " + this.getPageNum(index);
         $(e).attr({ alt : title, title : title});
-        e.src = url;
+        e.src = this.imagesBaseURL + 'transparent.png';
+        
+        console.log("CREATING IMAGE", url);
+        var lazy = new Image();
+        $(lazy).one('load', function() {
+          if ( self.hasPageFeature(index, "FUDGED") ) {
+            var slice = self.sliceFromIndex(index);
+            var natural_height = this.height;
+            var natural_width = this.width;
+            var true_height = natural_height * self.reduce;
+            var true_width = natural_width * self.reduce;
+            self.bookData[slice.slice]['height'][slice.index] = true_height;
+            self.bookData[slice.slice]['width'][slice.index] = true_width;
+            self.removePageFeature(index, 'FUDGED');
+            
+            var width = natural_width;
+            var height = natural_height;
+            var left;
+            
+            if ( width > height && $("#BRpageview").width() < width ) {
+              var r = ( $("#BRpageview").width() - 20 ) / width;
+              width = ( $("#BRpageview").width() - 20 );
+              height = Math.floor(height * r);
+              left = ($("#BRpageview").width() - width) / 2;
+            }
+            
+            $(e).parent().andSelf().css({ width : width + 'px', height : height + 'px' });
+            if ( left ) {
+              $(e).parent().css({ left : left });
+            }
+            console.log("RESIZED", index, $(e).data('index'));
+          }
+          console.log("HEY: SETTING ", index, " TO ", this.src);
+          e.src = this.src;
+        });
+        lazy.src = url;
 
     } else {
 

@@ -387,9 +387,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
         this.firstIndex = index;
         if ( this.firstIndex != this.lastUpdatedIndex ) {
           this.lastUpdatedIndex = this.firstIndex;
-          // if ( this.ui == 'full' ) {
-          //     $.jGrowl("Updating current index: " + index);
-          // }
         }
       }
     }

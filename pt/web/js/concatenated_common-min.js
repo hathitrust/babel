@@ -73,21 +73,2141 @@ YAHOO.util.Easing={easeNone:function(B,A,D,C){return D*B/C+A;},easeIn:function(B
 }}if(this.get("maxX")){if((H+P)>this.get("maxX")){H=(this.get("maxX")-P);}}}}}if(!K){var N=this.fireEvent("beforeResize",{ev:"beforeResize",target:this,height:J,width:P,top:Q,left:H});if(N===false){return false;}}this._updateStatus(J,P,Q,H);if(this._positioned){if(this._proxy&&F){}else{if(Q){E.setY(G,Q);this._cache.top=Q;}if(H){E.setX(G,H);this._cache.left=H;}}}if(J){if(!I){O=true;if(this._proxy&&F){if(!this.get("setSize")){O=false;}}if(O){G.style.height=J+"px";}if((this._proxy&&F)||!this._proxy){if(this._wrap!=this.get("element")){this.get("element").style.height=J+"px";}}}this._cache.height=J;}if(P){this._cache.width=P;if(!I){O=true;if(this._proxy&&F){if(!this.get("setSize")){O=false;}}if(O){G.style.width=P+"px";}if((this._proxy&&F)||!this._proxy){if(this._wrap!=this.get("element")){this.get("element").style.width=P+"px";}}}}if(I){if(YAHOO.util.Anim){var D=new YAHOO.util.Anim(G,{height:{to:this._cache.height},width:{to:this._cache.width}},this.get("animateDuration"),this.get("animateEasing"));if(this._positioned){if(Q){D.attributes.top={to:parseInt(Q,10)};}if(H){D.attributes.left={to:parseInt(H,10)};}}if(this._wrap!=this.get("element")){D.onTween.subscribe(function(){this.get("element").style.height=G.style.height;this.get("element").style.width=G.style.width;},this,true);}D.onComplete.subscribe(function(){this.set("height",J);this.set("width",P);this.fireEvent("resize",{ev:"resize",target:this,height:J,width:P,top:Q,left:H});},this,true);D.animate();}}else{if(this._proxy&&!F){this.fireEvent("proxyResize",{ev:"proxyresize",target:this,height:J,width:P,top:Q,left:H});}else{this.fireEvent("resize",{ev:"resize",target:this,height:J,width:P,top:Q,left:H});}}return this;},_handle_for_br:function(F){var G=this._setWidth(F.e);var D=this._setHeight(F.e);this.resize(F.e,D,G,0,0);},_handle_for_bl:function(G){var H=this._setWidth(G.e,true);var F=this._setHeight(G.e);var D=(H-this._cache.width);this.resize(G.e,F,H,0,D);},_handle_for_tl:function(G){var I=this._setWidth(G.e,true);var F=this._setHeight(G.e,true);var H=(F-this._cache.height);var D=(I-this._cache.width);this.resize(G.e,F,I,H,D);},_handle_for_tr:function(F){var H=this._setWidth(F.e);var D=this._setHeight(F.e,true);var G=(D-this._cache.height);this.resize(F.e,D,H,G,0);},_handle_for_r:function(D){this._dds.r.setYConstraint(0,0);var F=this._setWidth(D.e);this.resize(D.e,0,F,0,0);},_handle_for_l:function(F){this._dds.l.setYConstraint(0,0);var G=this._setWidth(F.e,true);var D=(G-this._cache.width);this.resize(F.e,0,G,0,D);},_handle_for_b:function(F){this._dds.b.setXConstraint(0,0);var D=this._setHeight(F.e);this.resize(F.e,D,0,0,0);},_handle_for_t:function(F){this._dds.t.setXConstraint(0,0);var D=this._setHeight(F.e,true);var G=(D-this._cache.height);this.resize(F.e,D,0,G,0);},_setWidth:function(H,J){var I=this._cache.xy[0],G=this._cache.width,D=A.getPageX(H),F=(D-I);if(J){F=(I-D)+parseInt(this.get("width"),10);}F=this._snapTick(F,this.get("xTicks"));F=this._checkWidth(F);return F;},_checkWidth:function(D){if(this.get("minWidth")){if(D<=this.get("minWidth")){D=this.get("minWidth");}}if(this.get("maxWidth")){if(D>=this.get("maxWidth")){D=this.get("maxWidth");}}return D;},_checkHeight:function(D){if(this.get("minHeight")){if(D<=this.get("minHeight")){D=this.get("minHeight");}}if(this.get("maxHeight")){if(D>=this.get("maxHeight")){D=this.get("maxHeight");}}return D;},_setHeight:function(G,I){var H=this._cache.xy[1],F=this._cache.height,J=A.getPageY(G),D=(J-H);if(I){D=(H-J)+parseInt(this.get("height"),10);}D=this._snapTick(D,this.get("yTicks"));D=this._checkHeight(D);return D;},_snapTick:function(G,F){if(!G||!F){return G;}var H=G;var D=G%F;if(D>0){if(D>(F/2)){H=G+(F-D);}else{H=G-D;}}return H;},init:function(H,F){this._locked=false;this._cache={xy:[],height:0,width:0,top:0,left:0,offsetHeight:0,offsetWidth:0,start:{height:0,width:0,top:0,left:0}};B.superclass.init.call(this,H,F);this.set("setSize",this.get("setSize"));if(F.height){this.set("height",parseInt(F.height,10));}else{var G=this.getStyle("height");if(G=="auto"){this.set("height",parseInt(this.get("element").offsetHeight,10));}}if(F.width){this.set("width",parseInt(F.width,10));}else{var D=this.getStyle("width");if(D=="auto"){this.set("width",parseInt(this.get("element").offsetWidth,10));}}var I=H;if(!C.isString(I)){I=E.generateId(I);}B._instances[I]=this;this._active=false;this._createWrap();this._createProxy();this._createHandles();},getProxyEl:function(){return this._proxy;},getWrapEl:function(){return this._wrap;},getStatusEl:function(){return this._status;},getActiveHandleEl:function(){return this._handles[this._currentHandle];},isActive:function(){return((this._active)?true:false);},initAttributes:function(D){B.superclass.initAttributes.call(this,D);this.setAttributeConfig("useShim",{value:((D.useShim===true)?true:false),validator:YAHOO.lang.isBoolean,method:function(F){for(var G in this._dds){if(C.hasOwnProperty(this._dds,G)){this._dds[G].useShim=F;}}if(this.dd){this.dd.useShim=F;}}});this.setAttributeConfig("setSize",{value:((D.setSize===false)?false:true),validator:YAHOO.lang.isBoolean});this.setAttributeConfig("wrap",{writeOnce:true,validator:YAHOO.lang.isBoolean,value:D.wrap||false});this.setAttributeConfig("handles",{writeOnce:true,value:D.handles||["r","b","br"],validator:function(F){if(C.isString(F)&&F.toLowerCase()=="all"){F=["t","b","r","l","bl","br","tl","tr"];}if(!C.isArray(F)){F=F.replace(/, /g,",");F=F.split(",");}this._configs.handles.value=F;}});this.setAttributeConfig("width",{value:D.width||parseInt(this.getStyle("width"),10),validator:YAHOO.lang.isNumber,method:function(F){F=parseInt(F,10);if(F>0){if(this.get("setSize")){this.setStyle("width",F+"px");}this._cache.width=F;this._configs.width.value=F;}}});this.setAttributeConfig("height",{value:D.height||parseInt(this.getStyle("height"),10),validator:YAHOO.lang.isNumber,method:function(F){F=parseInt(F,10);if(F>0){if(this.get("setSize")){this.setStyle("height",F+"px");}this._cache.height=F;this._configs.height.value=F;
 }}});this.setAttributeConfig("minWidth",{value:D.minWidth||15,validator:YAHOO.lang.isNumber});this.setAttributeConfig("minHeight",{value:D.minHeight||15,validator:YAHOO.lang.isNumber});this.setAttributeConfig("maxWidth",{value:D.maxWidth||10000,validator:YAHOO.lang.isNumber});this.setAttributeConfig("maxHeight",{value:D.maxHeight||10000,validator:YAHOO.lang.isNumber});this.setAttributeConfig("minY",{value:D.minY||false});this.setAttributeConfig("minX",{value:D.minX||false});this.setAttributeConfig("maxY",{value:D.maxY||false});this.setAttributeConfig("maxX",{value:D.maxX||false});this.setAttributeConfig("animate",{value:D.animate||false,validator:function(G){var F=true;if(!YAHOO.util.Anim){F=false;}return F;}});this.setAttributeConfig("animateEasing",{value:D.animateEasing||function(){var F=false;if(YAHOO.util.Easing&&YAHOO.util.Easing.easeOut){F=YAHOO.util.Easing.easeOut;}return F;}()});this.setAttributeConfig("animateDuration",{value:D.animateDuration||0.5});this.setAttributeConfig("proxy",{value:D.proxy||false,validator:YAHOO.lang.isBoolean});this.setAttributeConfig("ratio",{value:D.ratio||false,validator:YAHOO.lang.isBoolean});this.setAttributeConfig("ghost",{value:D.ghost||false,validator:YAHOO.lang.isBoolean});this.setAttributeConfig("draggable",{value:D.draggable||false,validator:YAHOO.lang.isBoolean,method:function(F){if(F&&this._wrap&&!this.dd){this._setupDragDrop();}else{if(this.dd){if(F){E.addClass(this._wrap,this.CSS_DRAG);this.dd.DDM.regDragDrop(this.dd,"default");}else{E.removeClass(this._wrap,this.CSS_DRAG);this.dd.unreg();}}}}});this.setAttributeConfig("hover",{value:D.hover||false,validator:YAHOO.lang.isBoolean});this.setAttributeConfig("hiddenHandles",{value:D.hiddenHandles||false,validator:YAHOO.lang.isBoolean});this.setAttributeConfig("knobHandles",{value:D.knobHandles||false,validator:YAHOO.lang.isBoolean});this.setAttributeConfig("xTicks",{value:D.xTicks||false});this.setAttributeConfig("yTicks",{value:D.yTicks||false});this.setAttributeConfig("status",{value:D.status||false,validator:YAHOO.lang.isBoolean});this.setAttributeConfig("autoRatio",{value:D.autoRatio||false,validator:YAHOO.lang.isBoolean});},destroy:function(){for(var F in this._handles){if(C.hasOwnProperty(this._handles,F)){A.purgeElement(this._handles[F]);this._handles[F].parentNode.removeChild(this._handles[F]);}}if(this._proxy){this._proxy.parentNode.removeChild(this._proxy);}if(this._status){this._status.parentNode.removeChild(this._status);}if(this.dd){this.dd.unreg();E.removeClass(this._wrap,this.CSS_DRAG);}if(this._wrap!=this.get("element")){this.setStyle("position",(this._positioned?"absolute":"relative"));this.setStyle("top",E.getStyle(this._wrap,"top"));this.setStyle("left",E.getStyle(this._wrap,"left"));this._wrap.parentNode.replaceChild(this.get("element"),this._wrap);}this.removeClass(this.CSS_RESIZE);delete YAHOO.util.Resize._instances[this.get("id")];for(var D in this){if(C.hasOwnProperty(this,D)){this[D]=null;delete this[D];}}},toString:function(){if(this.get){return"Resize (#"+this.get("id")+")";}return"Resize Utility";}});YAHOO.util.Resize=B;})();YAHOO.register("resize",YAHOO.util.Resize,{version:"@VERSION@",build:"@BUILD@"});
 /* /htapps/roger.babel/pt/web/yui2-lib/build/resize/resize-min.js */
-var displayPTFeedback=function(){var f="[Your email address]";var a=$("#mdpFeedbackForm");var e=a.find("form");var d=e.get(0);var c=new Boxy(a,{show:false,modal:true,draggable:false,closeable:false,clone:false,unloadOnHide:false});if(!e.data("initialized")){$("input[type=submit], #mdpFBcancel",e).click(function(m){var l=this;m.preventDefault();var k=Boxy.get(this);if($(this).attr("id")=="mdpFBcancel"){k.hide();return false}var n=1;var g={};for(var j=0;j<d.length;j++){if((d.elements[j].type=="checkbox"||d.elements[j].type=="radio")&&d.elements[j].checked){n=0;g[d.elements[j].name]=d.elements[j].value}else{if((d.elements[j].type=="text"||d.elements[j].type=="textarea")&&(d.elements[j].value.length>0)&&(d.elements[j].value!=f)){n=0;g[d.elements[j].name]=d.elements[j].value}else{if(d.elements[j].type=="hidden"){g[d.elements[j].name]=d.elements[j].value}}}}if(n==1){$(d).find("#emptyFBError").show()}else{var h=$(d).attr("action");$.post(h,g);k.hide()}return false});e.data("initialized",true)}$("#emptyFBError").hide();for(var b=0;b<d.length;b++){if((d.elements[b].type=="checkbox"||d.elements[b].type=="radio")&&d.elements[b].checked){d.elements[b].checked=false}if((d.elements[b].type=="text"||d.elements[b].type=="textarea")&&(d.elements[b].value.length>0)){d.elements[b].value="";if(d.elements[b].id=="email"){d.elements[b].value=f}}}c.show();return false};$(document).ready(function(){$("#feedback").click(function(a){a.preventDefault();displayPTFeedback();return false});$("#feedback_footer").click(function(a){a.preventDefault();displayPTFeedback();return false})});
-/* /htapps/roger.babel/pt/web/js/feedbackForm-min.js */
-var DEFAULT_COLL_NAME="Collection Name";var DEFAULT_DESC="Description";var COLL_NAME=[];var maxCharsColl=32;var charsTypedColl=0;var charsRemainingColl=maxCharsColl-charsTypedColl;var maxCharsDesc=80;var charsTypedDesc=0;var charsRemainingDesc=maxCharsDesc-charsTypedDesc;var formWidth=400;var URL=null;var referrer="";var dup=0;YAHOO.namespace("mbooks");function setPostURL(a){URL=a}function getPostURL(){return URL}function setReferrer(a){referrer=a}function getReferrer(){return referrer}function getNewCollForm(){var c="/cgi/mb";if(window.location.href.indexOf("/shcgi/")>-1){c="/shcgi/mb"}var b=formWidth-100;var a="<form method='get' id='newcoll' name='newcoll' action='"+c+"'><table>";a=a+"<tr><td><div><input name='cn' type='text' style='width:"+b+"px' maxlength='"+maxCharsColl+"' class='overlay' id='cn' onclick=\"clickclear(this, 'Collection Name')\" onfocus=\"clickclear(this, 'Collection Name')\" onblur=\"clickrecall(this,'Collection Name')\" onKeyUp=\"CheckCollLength()\" value='Collection Name'/> </div></td><td><div id='charsRemainingColl'><div class='bd'></div></div></td></tr><tr><td><div><textarea style='width:"+b+"px;margin-left:0px;' name='desc' id='desc' class='overlay' rows='4' onclick=\"clickclear(this, 'Description')\" onfocus=\"clickclear(this, 'Description')\" onblur=\"clickrecall(this,'Description')\" style=\"font-family:Arial\" onKeyUp=\"CheckDescLength()\">Description</textarea></div></td><td><div id='charsRemainingDesc'><div class='bd'></div></div></td></tr></table>"+getSharedOptions()+"<div id='collType'><div class='bd'></div></div> <div id='searchParams'><div class='bd'></div></div> <div id='invalidName'><div class='bd'></div></div> <div id='itemsSelected'><div class='bd'></div></div><div id='defaultCollParams'><div class='bd'></div></div><table name='buttons'> <tr> <td id='addC'><button id='addc' type='submit'>Add</button></td> <td id='addI'><button id='additnc' type='submit'>Add</button></td><td id='addItems'><button id='additsnc' type='submit'>Add</button></td><td id='copy'><button id='copyitnc' type='submit'>Copy</button></td> <td id='move'><button id='movitnc' type='submit'>Move</button></td> <input id='action' type='hidden' name='a' value='?'></td><td width='100px' align='right'><a id='cancel' href=''>Cancel</a></td> </tr> </table></form>";return a}function getSharedOptions(){var a="<table><tr><td><INPUT type='radio' name='shrd' id='shrd_priv' value='0' checked='yes'/>Private</td>";if(isLoggedIn()===true){a=a+"<td>&nbsp;</td><td><INPUT type='radio' name='shrd' id='shrd_publ' value='1'/>Public</td>";a=a+"</tr></table>"}else{a=a+"</tr></table>";a=a+"<span class='loginNC' style='color:#FF4040'>Login to create public and/or permanent collections</span>"}return a}function getLS_COLL_NAME(){var c=document.getElementById("LSaddItemSelect");var a=c.options;var d=new Array();for(var b=0;b<a.length;b++){d[b]=a[b].text}return d}function init(){var e=getURLParam("page",location.href);if(e!="home"){var d=getURLParam("a",location.href);if(d==="srchls"){COLL_NAME=getLS_COLL_NAME()}else{COLL_NAME=getCollArray()}var b=formWidth+"px";var a=getURLParam("view",location.href);var c=navigator.appName;if(c=="Microsoft Internet Explorer"&&a=="pdf"){YAHOO.mbooks.newCollectionPanel=new YAHOO.widget.Panel("newCollectionPanel",{width:b,visible:false,draggable:true,constraintoviewport:true,fixedcenter:true,close:true,modal:false,x:100,y:200,iframe:true})}else{if(c=="Microsoft Internet Explorer"&&a!="pdf"){YAHOO.mbooks.newCollectionPanel=new YAHOO.widget.Panel("newCollectionPanel",{width:b,visible:false,draggable:true,constraintoviewport:true,fixedcenter:true,close:true,modal:false,x:100,y:200})}else{if(a=="pdf"){YAHOO.mbooks.newCollectionPanel=new YAHOO.widget.Panel("newCollectionPanel",{width:b,visible:false,draggable:true,constraintoviewport:true,fixedcenter:true,close:true,modal:true,x:100,y:200,iframe:true})}else{YAHOO.mbooks.newCollectionPanel=new YAHOO.widget.Panel("newCollectionPanel",{width:b,visible:false,draggable:true,constraintoviewport:true,fixedcenter:true,close:true,modal:true,x:100,y:200})}}}if(isLoggedIn()===true){YAHOO.mbooks.newCollectionPanel.setHeader("New Collection")}else{YAHOO.mbooks.newCollectionPanel.setHeader("New Temporary Collection")}YAHOO.mbooks.newCollectionPanel.setBody(getNewCollForm());YAHOO.mbooks.newCollectionPanel.render("overlay");YAHOO.mbooks.collChars=new YAHOO.widget.Module("collChars",{visible:true});YAHOO.mbooks.collChars.render();YAHOO.mbooks.descChars=new YAHOO.widget.Module("descChars",{visible:true});YAHOO.mbooks.descChars.render();YAHOO.mbooks.invalidName=new YAHOO.widget.Module("invalidName",{visible:false});YAHOO.mbooks.invalidName.render();YAHOO.mbooks.errormsg=new YAHOO.widget.Module("errormsg",{visible:false});YAHOO.mbooks.errormsg.render();YAHOO.mbooks.itemsSelected=new YAHOO.widget.Module("itemsSelected",{visible:false});YAHOO.mbooks.itemsSelected.render();YAHOO.mbooks.defaultCollParams=new YAHOO.widget.Module("defaultCollParams",{visible:false});YAHOO.mbooks.defaultCollParams.render();YAHOO.mbooks.collType=new YAHOO.widget.Module("collType",{visible:false});YAHOO.mbooks.collType.hide();YAHOO.mbooks.collType.render();YAHOO.mbooks.searchParams=new YAHOO.widget.Module("searchParams",{visible:false});YAHOO.mbooks.searchParams.hide();YAHOO.mbooks.searchParams.render();YAHOO.mbooks.charsRemainingColl=new YAHOO.widget.Module("charsRemainingColl",{visible:true});YAHOO.mbooks.charsRemainingColl.setBody(charsRemainingColl+"");YAHOO.mbooks.charsRemainingColl.render();YAHOO.mbooks.charsRemainingDesc=new YAHOO.widget.Module("charsRemainingDesc",{visible:true});YAHOO.mbooks.charsRemainingDesc.setBody(charsRemainingDesc+"");YAHOO.mbooks.charsRemainingDesc.render();YAHOO.mbooks.addC=new YAHOO.widget.Module("addC",{visible:false});YAHOO.mbooks.addC.render();YAHOO.mbooks.addI=new YAHOO.widget.Module("addI",{visible:false});YAHOO.mbooks.addI.render();YAHOO.mbooks.addItems=new YAHOO.widget.Module("addItems",{visible:false});YAHOO.mbooks.addItems.render();YAHOO.mbooks.copy=new YAHOO.widget.Module("copy",{visible:false});YAHOO.mbooks.copy.render();YAHOO.mbooks.move=new YAHOO.widget.Module("move",{visible:false});YAHOO.mbooks.move.render();YAHOO.util.Event.addListener("newcoll","submit",interceptNewCollSubmit);YAHOO.util.Event.addListener("cancel","click",interceptNewCollSubmit)}}function SetCharsRemainingColl(a){YAHOO.mbooks.charsRemainingColl.setBody(a+"")}function CheckCollLength(){if(maxCharsColl<=0){return}if(charsRemainingColl<=0){document.newcoll.cn.value=document.newcoll.cn.value.substring(0,maxCharsColl);charsRemainingColl=0}var a=document.newcoll.cn.value;charsTypedColl=a.length;charsRemainingColl=maxCharsColl-charsTypedColl;SetCharsRemainingColl(charsRemainingColl);document.newcoll.cn.focus()}function SetCharsRemainingDesc(a){YAHOO.mbooks.charsRemainingDesc.setBody(a+"")}function CheckDescLength(){if(maxCharsDesc<=0){return}if(charsRemainingDesc<=0){document.newcoll.desc.value=document.newcoll.desc.value.substring(0,maxCharsDesc);charsRemainingDesc=0}var a=document.newcoll.desc.value;charsTypedDesc=a.length;charsRemainingDesc=maxCharsDesc-charsTypedDesc;SetCharsRemainingDesc(charsRemainingDesc);document.newcoll.desc.focus()}function checkIt(c,b){var a=c.indexOf(b)+1;return a}function initializeButtons(){YAHOO.mbooks.addC.hide();YAHOO.mbooks.addI.hide();YAHOO.mbooks.addItems.hide();YAHOO.mbooks.copy.hide();YAHOO.mbooks.move.hide()}function initializeInputs(){document.newcoll.cn.value=DEFAULT_COLL_NAME;document.newcoll.desc.value=DEFAULT_DESC;charsRemainingDesc=maxCharsDesc;SetCharsRemainingDesc(charsRemainingDesc);charsRemainingColl=maxCharsColl;SetCharsRemainingColl(charsRemainingColl)}var interceptNewCollSubmit=function(h){var g=document.newcoll.cn.value;YAHOO.mbooks.errormsg.hide();YAHOO.mbooks.invalidName.hide();if(this.id=="cancel"){YAHOO.mbooks.newCollectionPanel.hide();YAHOO.util.Event.preventDefault(h);initializeInputs()}else{var a=trimString(g);if(g==DEFAULT_COLL_NAME||g==""||a==""){YAHOO.util.Event.preventDefault(h);YAHOO.mbooks.invalidName.setBody("<br/><b>You must enter a collection name</b><br/>");YAHOO.mbooks.invalidName.show()}else{if(g.indexOf('"')>-1){YAHOO.util.Event.preventDefault(h);YAHOO.mbooks.invalidName.setBody("<br/><b>You can use single quotes but not double quotes. </b><br/>");YAHOO.mbooks.invalidName.show()}else{dup=0;for(var c=0;c<COLL_NAME.length;c++){if(g==COLL_NAME[c]){dup=1}}if(dup==1){YAHOO.util.Event.preventDefault(h);YAHOO.mbooks.invalidName.setBody("<br/><b>A collection with that name already exists</b><br/>");YAHOO.mbooks.invalidName.show()}else{var d=document.newcoll.desc.value;if(d==DEFAULT_DESC){d=""}if(getReferrer()=="CB"||getReferrer()=="CV"){if(d==DEFAULT_DESC||d==""){document.newcoll.desc.value=""}var b=getURLParam("a",location.href);var j=getURLParam("q1",location.href);if(getReferrer()=="CV"&&b!="listsrch"){YAHOO.mbooks.collType.setBody("<INPUT type='hidden' name='colltype' id='coll_type' value='priv'/>");YAHOO.mbooks.collType.show()}if(b=="listsrch"){YAHOO.mbooks.searchParams.setBody("<INPUT type='hidden' name='page' id='page_type' value='srchresults'/><INPUT type='hidden' name='q1' id='page_type' value='"+j+"'/>");YAHOO.mbooks.searchParams.show();YAHOO.mbooks.collType.hide()}}else{if(getReferrer()=="PT"||getReferrer()=="LS"){var k=document.newcoll.shrd_priv.checked;var f;if(k===true){f=0}else{f=1}initializeInputs();YAHOO.util.Event.preventDefault(h);g=encodeURIComponent(g);d=encodeURIComponent(d);setPostURL(getPostURL()+";cn="+g+";desc="+d+";shrd="+f);YAHOO.mbooks.newCollectionPanel.hide();setRequestUrl(getPostURL());processRequest()}}}}}}};
-/* /htapps/roger.babel/pt/web/js/newCollOverlayCore-min.js */
-var IN_YOUR_COLLS_LABEL="This item is in your collection(s):";var SELECT_COLL_MENU_VALUE="a";var NEW_COLL_MENU_VALUE="b";var rUrl;YAHOO.namespace("mbooks");YAHOO.mbooks.loadingPT=new YAHOO.widget.Overlay("loading",{context:["PTcollectionList","tl","bl"],visible:false,width:"150px"});var handleSuccess=function(g){YAHOO.mbooks.loadingPT.hide();if(g.responseText!=undefined){g.responseText=g.responseText.replace(/\n/g,"");g.responseText=stripXMLPI(g.responseText);var f={};var d=g.responseText.split(/\|/);for(var c=0;c<d.length;c++){var a=d[c].split(/\=/);var b=a[0];var e=a[1];f[b]=e}if(f.result=="ADD_ITEM_SUCCESS"){addItemToCollList(f)}else{if(f.result=="ADD_ITEM_FAILURE"){YAHOO.mbooks.errormsg.setBody("<div class='PTerror'>Database problem. Could not add item to your collection.</div>");YAHOO.mbooks.errormsg.show()}else{debugWindowWrite(g.responseText)}}}setRequestUrl("")};function debugWindowWrite(b){var a=window.document;a.open();a.writeln(b);a.close()}function addItemToCollList(h){var a=h.coll_id;var d=h.coll_name;var f=document.getElementById("PTcollectionList");var e="/cgi/mb";if(window.location.href.indexOf("/shcgi/")>-1){e="/shcgi/mb"}var g=document.getElementById("PTitemInCollLabel");g.innerHTML=IN_YOUR_COLLS_LABEL;f.innerHTML+='<li><a href="'+e+"?a=listis;c="+a+'">'+d+"</a></li>";var c=document.getElementById("PTaddItemSelect");for(var b=0;b<c.options.length;b++){if(c.options[b].text==d){c.options[b]=null;break}}}var handleFailure=function(a){YAHOO.mbooks.loadingPT.hide();YAHOO.mbooks.errormsg.setBody("<div class='PTerror'>Communication failure. Could not add this item to your collection.</div>");YAHOO.mbooks.errormsg.show();setRequestUrl("")};var callback={success:handleSuccess,failure:handleFailure};var addItemToCollection=function(a){init();YAHOO.mbooks.errormsg.hide();YAHOO.mbooks.loadingPT.setBody("<div class='PTloading'>Loading, please wait ...</div>");YAHOO.mbooks.loadingPT.render(document.body);if(getCollMenuVal()==NEW_COLL_MENU_VALUE){initNewCollUrl();setReferrer("PT");YAHOO.mbooks.newCollectionPanel.moveTo(100,250);addToNewCollection(getRequestUrl())}else{if(getCollMenuVal()==SELECT_COLL_MENU_VALUE){YAHOO.mbooks.errormsg.setBody("<div class='PTerror'>Please select a collection to add this item to</div>");YAHOO.mbooks.errormsg.show();YAHOO.util.Event.preventDefault(a)}else{initExistingCollUrl();processRequest()}}};function processRequest(){YAHOO.mbooks.loadingPT.show();YAHOO.util.Connect.asyncRequest("GET",getRequestUrl(),callback);return false}function initExistingCollUrl(){var a=getCollMenuVal();rUrl=constructAddItemUrl()+";a=addits;c2="+a}function constructAddItemUrl(){var a=document.getElementById("PTajaxAddItemPartialUrl").textContent;if(a==undefined){a=document.getElementById("PTajaxAddItemPartialUrl").innerHTML}return a}function initNewCollUrl(){rUrl=rUrl=constructAddItemUrl()+";a=additsnc"}function setRequestUrl(a){rUrl=a}function getRequestUrl(){return rUrl}function getCollMenuVal(){var a=document.getElementById("PTaddItemSelect").selectedIndex;var b=document.getElementById("PTaddItemSelect")[a].value;return b}function addToNewCollection(a){setPostURL(a);initializeButtons();YAHOO.mbooks.addI.show();YAHOO.util.Event.addListener("cancel","click",interceptNewCollSubmit);YAHOO.mbooks.newCollectionPanel.show()}YAHOO.util.Event.addListener("PTaddItemBtn","click",addItemToCollection);
-/* /htapps/roger.babel/pt/web/js/newCollOverlayPT-min.js */
-function clickclear(b,a){if(b.value==a){b.value=""}}function clickrecall(b,a){if(b.value==""){b.value=a}}function getURLParam(e,d){var c="";var f="";if(d!==null){f=d}if(f.indexOf("?")>-1){var b=f.substr(f.indexOf("?")).toLowerCase();var g;if(d.indexOf("&")>-1){g=b.split("&")}else{g=b.split(";")}for(var a=0;a<g.length;a++){if(g[a].indexOf(e+"=")>-1){var h=g[a].split("=");c=h[1];break}}}return c}function stripXMLPI(b){var a=b.replace(/<\?xml.*\?>/,"");return a}function trimString(a){return a.replace(/^\s+/g,"").replace(/\s+$/g,"")};
-/* /htapps/roger.babel/pt/web/js/overlayUtils-min.js */
-function get_selected(d){var c=document.getElementById(d);var a=c.selectedIndex;var b=c.options[a].value;return b}function jumpToColl(){var a=window.location;var j=a.host;var m=a.pathname;var i=a.protocol;var b=a.search;var f=get_selected("jumpToColl");var e="a=listis;c="+f;var g;var h=/(sz=[^\&\;]+)[\&\;]/;var k=b.match(h);if(k!==null){g=k[1];e=e+";"+g+";"}m=m.replace(/ptsearch/g,"mb");m=m.replace(/pt/g,"mb");m=m.replace(/ls/g,"mb");var d=i+"//"+j+m+"?"+e;window.location=d}function doSort(){var b=window.location.toString();var c=get_selected("SortWidgetSort");var a;if(/sort/.test(b)){a=b.replace(/sort=(title|auth|date|rel)_[ad]/,"sort="+c)}else{a=b+";sort="+c}window.location=a}function get_new_size(d){var b=document.getElementById(d);var a=b.selectedIndex;var c=b.options[a].value;return c}function redisplay_new_slice_size(d){var e=d;var b=window.location.toString();var c=get_new_size(e);var a;var f;if(/a=listsrchm/.test(b)){a=b.replace(/a=listsrchm/,"a=srchm");b=a}if(/sz/.test(b)){a=b.replace(/sz=(\d+)/,"sz="+c)}else{a=b+";sz="+c}if(/pn/.test(a)){f=a.replace(/pn=(\d+)/,"pn=1")}else{f=a+";pn=1"}location=f}var root=document.getElementById("itemTable");var checkboxes;var checkIt=function(a){a.checked=true};var unCheckIt=function(a){a.checked=false};var checkAll=function(){checkboxes=YAHOO.util.Dom.getElementsByClassName("iid","input",root,checkIt)};var uncheckAll=function(){checkboxes=YAHOO.util.Dom.getElementsByClassName("iid","input",root,unCheckIt)};var changeAllCheckboxes=function(b){var a;if(typeof b.currentTarget!="undefined"){a=b.currentTarget}else{a=b.srcElement}if(a.checked===true){checkAll()}else{uncheckAll()}};function initCheckall(){YAHOO.util.Event.addListener("checkAll","click",changeAllCheckboxes)}function doYouReally(a){return confirm("Really delete collection: "+a+"?")}function confirmLarge(a,e){if(a+e<=1000){return true}else{if(a<=1000){var c;if(e>1){c="these "+e+" items"}else{c="this item"}var d="Note: Your collection contains "+a+" items.  Adding "+c+" to your collection will increase its size to more than 1000 items.  This means your collection will not be searchable until it is indexed, usually within 48 hours.  After that, just newly added items will see this delay before they can be searched. \n\nDo you want to proceed?";var b=confirm(d);if(b){return true}else{return false}}else{return true}}};
-/* /htapps/roger.babel/pt/web/js/listUtils-min.js */
-function FormValidation(a,c){var b=a.value;b=b.replace(/^\s*|\s*$/g,"");if(b===""){alert(c);return false}else{return true}}function Bookmark(c,b){var a="Copy & Paste the permanent url string to your bookmarks.";if(document.all){window.external.AddFavorite(b,c)}else{if(window.sidebar){window.sidebar.addPanel(c,b,"")}else{alert(a)}}}function ToggleCitationSize(){var a=document.getElementById("mdpFlexible_1");var b=document.getElementById("mdpFlexible_1_1");if(a.style.display=="none"||a.style.display==""){a.style.display="block";b.firstChild.nodeValue="\u00AB less"}else{a.style.display="none";b.firstChild.nodeValue="more \u00BB"}}function getElementsByClassName(f,b,k){var e;var d;var h=new Array();if(b==null){b=document}if(k==null){k="*"}var c=b.getElementsByTagName(k);var a=c.length;var g=new RegExp("(^|\\s)"+f+"(\\s|$)");for(e=0,d=0;e<a;e++){if(g.test(c[e].className)){h[d]=c[e];d++}}return h}function ToggleContentListSize(){var d=document.getElementById("mdpFlexible_3_2");var b;var f;if(!d){return}if(d.firstChild.nodeValue.indexOf("less")>0){b="none";f="5pt";d.firstChild.nodeValue="more \u00BB"}else{b="";f="0pt";d.firstChild.nodeValue="\u00AB less"}var e=getElementsByClassName("mdpFlexible_3_1",document,"TR");var a=getElementsByClassName("mdpContentsPageNumber",document,"TD");var c;for(c=0;c<e.length;c++){e[c].style.display=b}for(c=0;c<a.length;c++){a[c].style.paddingRight=f}for(c=0;c<e.length;c++){e[c].style.display=b}}function ClickClear(b,a){if(b.value==a){b.value=""}};
-/* /htapps/roger.babel/pt/web/js/pageturner-min.js */
-jQuery.fn.boxy=function(a){a=a||{};return this.each(function(){var c=this.nodeName.toLowerCase(),b=this;if(c=="a"){jQuery(this).click(function(){var h=Boxy.linkedTo(this),e=this.getAttribute("href"),g=jQuery.extend({actuator:this,title:this.title},a);if(h){h.show()}else{if(e.indexOf("#")>=0){var f=jQuery(e.substr(e.indexOf("#"))),d=f.clone(true);f.remove();g.unloadOnHide=false;new Boxy(d,g)}else{if(!g.cache){g.unloadOnHide=true}Boxy.load(this.href,g)}}return false})}else{if(c=="form"){jQuery(this).bind("submit.boxy",function(){Boxy.confirm(a.message||"Please confirm:",function(){jQuery(b).unbind("submit.boxy").submit()});return false})}}})};function Boxy(b,a){this.boxy=jQuery(Boxy.WRAPPER);jQuery.data(this.boxy[0],"boxy",this);this.visible=false;this.options=jQuery.extend({},Boxy.DEFAULTS,a||{});if(this.options.modal){this.options=jQuery.extend(this.options,{center:true,draggable:false})}if(this.options.actuator){jQuery.data(this.options.actuator,"active.boxy",this)}this.setContent(b||"<div></div>");this._setupTitleBar();this.boxy.css("display","none").appendTo(document.body);this.toTop();if(this.options.fixed){if(jQuery.browser.msie&&jQuery.browser.version<7){this.options.fixed=false}else{this.boxy.addClass("fixed")}}if(this.options.center&&Boxy._u(this.options.x,this.options.y)){this.center()}else{this.moveTo(Boxy._u(this.options.x)?this.options.x:Boxy.DEFAULT_X,Boxy._u(this.options.y)?this.options.y:Boxy.DEFAULT_Y)}if(this.options.show){this.show()}}Boxy.EF=function(){};jQuery.extend(Boxy,{WRAPPER:"<table cellspacing='0' cellpadding='0' border='0' class='boxy-wrapper'><tr><td class='top-left'></td><td class='top'></td><td class='top-right'></td></tr><tr><td class='left'></td><td class='boxy-inner'></td><td class='right'></td></tr><tr><td class='bottom-left'></td><td class='bottom'></td><td class='bottom-right'></td></tr></table>",DEFAULTS:{title:null,closeable:true,draggable:true,clone:false,actuator:null,center:true,show:true,modal:false,fixed:true,closeText:"[close]",unloadOnHide:false,clickToFront:false,behaviours:Boxy.EF,afterDrop:Boxy.EF,afterShow:Boxy.EF,afterHide:Boxy.EF,beforeUnload:Boxy.EF},DEFAULT_X:50,DEFAULT_Y:50,zIndex:1337,dragConfigured:false,resizeConfigured:false,dragging:null,load:function(b,a){a=a||{};var c={url:b,type:"GET",dataType:"html",cache:false,success:function(d){d=jQuery(d);if(a.filter){d=jQuery(a.filter,d)}new Boxy(d,a)}};jQuery.each(["type","cache"],function(){if(this in a){c[this]=a[this];delete a[this]}});jQuery.ajax(c)},get:function(a){var b=jQuery(a).parents(".boxy-wrapper");return b.length?jQuery.data(b[0],"boxy"):null},linkedTo:function(a){return jQuery.data(a,"active.boxy")},alert:function(b,c,a){return Boxy.ask(b,["OK"],c,a)},confirm:function(b,c,a){return Boxy.ask(b,["OK","Cancel"],function(d){if(d=="OK"){c()}},a)},ask:function(c,f,j,l){l=jQuery.extend({modal:true,closeable:false},l||{},{show:true,unloadOnHide:true});var e=jQuery("<div></div>").append(jQuery('<div class="question"></div>').html(c));var a={},h=[];if(f instanceof Array){for(var d=0;d<f.length;d++){a[f[d]]=f[d];h.push(f[d])}}else{for(var b in f){a[f[b]]=b;h.push(f[b])}}var g=jQuery('<form class="answers"></form>');g.html(jQuery.map(h,function(i){return"<input type='button' value='"+i+"' />"}).join(" "));jQuery("input[type=button]",g).click(function(){var i=this;Boxy.get(this).hide(function(){if(j){j(a[i.value])}})});e.append(g);new Boxy(e,l)},isModalVisible:function(){return jQuery(".boxy-modal-blackout").length>0},_u:function(){for(var a=0;a<arguments.length;a++){if(typeof arguments[a]!="undefined"){return false}}return true},_handleResize:function(a){var b=jQuery(document);jQuery(".boxy-modal-blackout").css("display","none").css({width:b.width(),height:b.height()}).css("display","block")},_handleDrag:function(a){var b;if(b=Boxy.dragging){b[0].boxy.css({left:a.pageX-b[1],top:a.pageY-b[2]})}},_nextZ:function(){return Boxy.zIndex++},_viewport:function(){var e=document.documentElement,a=document.body,c=window;return jQuery.extend(jQuery.browser.msie?{left:a.scrollLeft||e.scrollLeft,top:a.scrollTop||e.scrollTop}:{left:c.pageXOffset,top:c.pageYOffset},!Boxy._u(c.innerWidth)?{width:c.innerWidth,height:c.innerHeight}:(!Boxy._u(e)&&!Boxy._u(e.clientWidth)&&e.clientWidth!=0?{width:e.clientWidth,height:e.clientHeight}:{width:a.clientWidth,height:a.clientHeight}))}});Boxy.prototype={estimateSize:function(){this.boxy.css({visibility:"hidden",display:"block"});var a=this.getSize();this.boxy.css("display","none").css("visibility","visible");return a},getSize:function(){return[this.boxy.width(),this.boxy.height()]},getContentSize:function(){var a=this.getContent();return[a.width(),a.height()]},getPosition:function(){var a=this.boxy[0];return[a.offsetLeft,a.offsetTop]},getCenter:function(){var b=this.getPosition();var a=this.getSize();return[Math.floor(b[0]+a[0]/2),Math.floor(b[1]+a[1]/2)]},getInner:function(){return jQuery(".boxy-inner",this.boxy)},getContent:function(){return jQuery(".boxy-content",this.boxy)},setContent:function(a){a=jQuery(a).css({display:"block"}).addClass("boxy-content");if(this.options.clone){a=a.clone(true)}this.getContent().remove();this.getInner().append(a);this._setupDefaultBehaviours(a);this.options.behaviours.call(this,a);return this},moveTo:function(a,b){this.moveToX(a).moveToY(b);return this},moveToX:function(a){if(typeof a=="number"){this.boxy.css({left:a})}else{this.centerX()}return this},moveToY:function(a){if(typeof a=="number"){this.boxy.css({top:a})}else{this.centerY()}return this},centerAt:function(a,c){var b=this[this.visible?"getSize":"estimateSize"]();if(typeof a=="number"){this.moveToX(a-b[0]/2)}if(typeof c=="number"){this.moveToY(c-b[1]/2)}return this},centerAtX:function(a){return this.centerAt(a,null)},centerAtY:function(a){return this.centerAt(null,a)},center:function(b){var a=Boxy._viewport();var c=this.options.fixed?[0,0]:[a.left,a.top];if(!b||b=="x"){this.centerAt(c[0]+a.width/2,null)}if(!b||b=="y"){this.centerAt(null,c[1]+a.height/2)}return this},centerX:function(){return this.center("x")},centerY:function(){return this.center("y")},resize:function(b,a,d){if(!this.visible){return}var c=this._getBoundsForResize(b,a);this.boxy.css({left:c[0],top:c[1]});this.getContent().css({width:c[2],height:c[3]});if(d){d(this)}return this},tween:function(c,a,e){if(!this.visible){return}var d=this._getBoundsForResize(c,a);var b=this;this.boxy.stop().animate({left:d[0],top:d[1]});this.getContent().stop().animate({width:d[2],height:d[3]},function(){if(e){e(b)}});return this},isVisible:function(){return this.visible},show:function(){if(this.visible){return}if(this.options.modal){var a=this;if(!Boxy.resizeConfigured){Boxy.resizeConfigured=true;jQuery(window).resize(function(){Boxy._handleResize()})}this.modalBlackout=jQuery('<div class="boxy-modal-blackout"></div>').css({zIndex:Boxy._nextZ(),opacity:0.7,width:jQuery(document).width(),height:jQuery(document).height()}).appendTo(document.body);this.toTop();if(this.options.closeable){jQuery(document.body).bind("keypress.boxy",function(b){var c=b.which||b.keyCode;if(c==27){a.hide();jQuery(document.body).unbind("keypress.boxy")}});this.modalBlackout.bind("click",function(){a.hide()})}}this.boxy.stop().css({opacity:1}).show();this.visible=true;this._fire("afterShow");return this},hide:function(b){if(!this.visible){return}var a=this;if(this.options.modal){jQuery(document.body).unbind("keypress.boxy");this.modalBlackout.animate({opacity:0},function(){jQuery(this).remove()})}this.boxy.stop().animate({opacity:0},300,function(){a.boxy.css({display:"none"});a.visible=false;a._fire("afterHide");if(b){b(a)}if(a.options.unloadOnHide){a.unload()}});return this},toggle:function(){this[this.visible?"hide":"show"]();return this},hideAndUnload:function(a){this.options.unloadOnHide=true;this.hide(a);return this},unload:function(){this._fire("beforeUnload");this.boxy.remove();if(this.options.actuator){jQuery.data(this.options.actuator,"active.boxy",false)}},toTop:function(){this.boxy.css({zIndex:Boxy._nextZ()});return this},getTitle:function(){return jQuery("> .title-bar h2",this.getInner()).html()},setTitle:function(a){jQuery("> .title-bar h2",this.getInner()).html(a);return this},_getBoundsForResize:function(c,a){var b=this.getContentSize();var e=[c-b[0],a-b[1]];var d=this.getPosition();return[Math.max(d[0]-e[0]/2,0),Math.max(d[1]-e[1]/2,0),c,a]},_setupTitleBar:function(){if(this.options.title){var b=this;var a=jQuery("<div class='title-bar'></div>").html("<h2>"+this.options.title+"</h2>");if(this.options.closeable){a.append(jQuery("<a href='#' class='close'></a>").html(this.options.closeText))}if(this.options.draggable){a[0].onselectstart=function(){return false};a[0].unselectable="on";a[0].style.MozUserSelect="none";if(!Boxy.dragConfigured){jQuery(document).mousemove(Boxy._handleDrag);Boxy.dragConfigured=true}a.mousedown(function(c){b.toTop();Boxy.dragging=[b,c.pageX-b.boxy[0].offsetLeft,c.pageY-b.boxy[0].offsetTop];jQuery(this).addClass("dragging")}).mouseup(function(){jQuery(this).removeClass("dragging");Boxy.dragging=null;b._fire("afterDrop")})}this.getInner().prepend(a);this._setupDefaultBehaviours(a)}},_setupDefaultBehaviours:function(a){var b=this;if(this.options.clickToFront){a.click(function(){b.toTop()})}jQuery(".close",a).click(function(){b.hide();return false}).mousedown(function(c){c.stopPropagation()})},_fire:function(a){this.options[a].call(this)}};
-/* /htapps/roger.babel/pt/web/js/jquery.boxy-min.js */
-if(!Array.indexOf){Array.prototype.indexOf=function(b){for(var a=0;a<this.length;a++){if(this[a]==b){return a}}return -1}}if(!Array.prototype.reduce){Array.prototype.reduce=function(b){var a=this.length;if(typeof b!="function"){throw new TypeError()}if(a==0&&arguments.length==1){throw new TypeError()}var c=0;if(arguments.length>=2){var d=arguments[1]}else{do{if(c in this){d=this[c++];break}if(++c>=a){throw new TypeError()}}while(true)}for(;c<a;c++){if(c in this){d=b.call(null,d,this[c],c,this)}}return d}}if(window.console===undefined){window.console={log:function(){}}}window.unload=function(a){HT.unloading=true};function subclass(b,d){function a(){}a.prototype=d.prototype;var c=new a();c.constructor=b;b.prototype=c}var HT=HT||{};HT.config=HT.config||{};HT.config.ARBITRARY_PADDING=65;HT.config.ARBITRARY_WINDOW_WIDTH=915;HT.init_from_params=function(){if(!window.location.hash){var a="mode/"+HT.params.view;if(typeof(HT.params.seq)!="undefined"){a="page/n"+HT.params.seq+"/"+a}window.location.hash="#"+a}};HT.track_event=function(a,c){a=$.extend({},{category:"PT"},a);c=true;if(pageTracker!=null){if(a.label==null){var d=(HT.reader!=null)?HT.reader.paramsForTracking():HT.params;a.label=d.id+" "+d.seq+" "+d.size+" "+d.orient+" "+d.view}var b=function(){try{pageTracker._trackEvent(a.category,a.action,a.label)}catch(f){console.log(f)}};if(c){_gaq.push(b)}else{b()}}};$(document).ready(function(){$.ajaxSetup({cache:false});$(".tracked").click(function(i){var c=$(this).data("tracking-label");var f=$(this).data("tracking-category")||"PT";var h=$(this).data("tracking-action");HT.track_event({label:c,category:f,action:h});if($(this).hasClass("dialog")){return false}var a=true;if(HT.reader==null||!$(this).hasClass("interactive")){if($(this).is("a")){if($(this).attr("target")){return true}a=false;var b=$(this).attr("href");setTimeout(function(){window.location.href=b},500)}else{if($(this).is("input[type=submit]")){var g=$(this).parents("form");a=false;var d=$.data(g.get(0),"events");if(d&&d.submit==undefined){setTimeout(function(){g.submit()},500)}else{return true}}}}return a})});
-/* /htapps/roger.babel/pt/web/js/init-min.js */
-var HT=HT||{};HT.pdf_helpers={is_running:false,inter:null,open_progress:function(c,b,e){if(HT.pdf_helpers.inter){console.log("ALREADY POLLING!");return}HT.pdf_helpers.progress_url=c;HT.pdf_helpers.download_url=b;HT.pdf_helpers.total=e;HT.pdf_helpers.is_running=true;var d=$("div#fullPdfFrame").find("iframe").contents();HT.pdf_helpers.update_progress(d,e);var a=0;var g=0;var f=function(){a+=1;$.ajax({url:c,data:{ts:(new Date).getTime()},cache:false,dataType:"html",success:function(j){var h=HT.pdf_helpers.update_progress(j,e);var i=$.trim(j).split("\n").reverse();g+=1;if(h.done){HT.pdf_helpers.$notice.hide(function(){HT.pdf_helpers.show_download_link(b)});clearInterval(HT.pdf_helpers.inter);HT.pdf_helpers.inter=null}else{if(h.error){HT.pdf_helpers.$notice.hide(function(){HT.pdf_helpers.show_error()});clearInterval(HT.pdf_helpers.inter);HT.pdf_helpers.inter=null}}},error:function(h,j,i){console.log("FAILED: ",h,"/",j,"/",i);if(h.status==503){clearInterval(HT.pdf_helpers.inter);HT.pdf_helpers.inter=null;setTimeout(function(){HT.pdf_helpers.inter=setInterval(f,2000)},1000)}else{if((eq.status==404)&&(a>25||g>0)){clearInterval(HT.pdf_helpers.inter);HT.pdf_helpers.inter=null;HT.pdf_helpers.$notice.hide(function(){HT.pdf_helpers.show_error()})}}}})};HT.pdf_helpers.inter=setInterval(f,2000)},show_download_link:function(a){var b='<div class="fullPdfAlert"><div><p><strong>Your PDF is ready!</strong></p><p><a href="'+a+'">Download PDF</a></p></div></div>';var c=new Boxy(b,{show:true,modal:true,draggable:true,closeable:false,title:"",behaviours:function(d){$(d).find("a").click(function(){setTimeout(function(){Boxy.get(d).hide()},500);return true})}})},show_error:function(){var a='<div class="fullPdfAlert"><p>There was a problem building your PDF; staff have been notified.</p><p>Please try again in 24 hours.</p><p class="align-right"><button>OK</button></p></div>';var b=new Boxy(a,{show:true,modal:true,draggable:true,closeable:false,title:"",behaviours:function(c){$(c).find("button").click(function(){Boxy.get(c).hide()})}})},update_progress:function(d,c){var a={done:false,error:false};var b;if(HT.pdf_helpers.current==-1){HT.pdf_helpers.$content.find(".meter-text").text("Building PDF")}var e=$(d).find("#current").data("value");if(e=="EOT"){a.done=true;b=100}else{e=parseInt(e);b=100*(e/c)}HT.pdf_helpers.current=e;if(self.last_percent!=b){self.last_percent=b;self.attempts=0}else{self.attempts+=1}if(self.attempts>5){a.error=true}HT.pdf_helpers.$content.find(".meter-value").css("width",b+"%");return a},download_pdf:function(a){var c=$(a).attr("href");var b='<div class="meter-wrap"><div class="meter-value" style="background-color: #EF7A06; width: 0%"><div class="meter-text">Setting up PDF...</div></div></div>';HT.pdf_helpers.$notice=new Boxy(b,{show:true,modal:true,draggable:true,closeable:false,title:""});HT.pdf_helpers.$content=HT.pdf_helpers.$notice.getContent();HT.pdf_helpers.current=-1;$.ajax({url:c+";callback=HT.pdf_helpers.open_progress",dataType:"script",cache:false,error:function(){console.log("DOWNLOAD STARTUP NOT DETECTED");HT.pdf_helpers.$notice.hide(function(){HT.pdf_helpers.show_error()})}})},explain_pdf_access:function(a){var b=new Boxy($("#noPdfAccess").html(),{show:true,modal:true,draggable:true,closeable:false,clone:true,title:"",behaviours:function(c){$('<p class="align-right"><button>OK</button></p>').appendTo(c).find("button").click(function(){Boxy.get(c).hide()})}})}};$(document).ready(function(){$("a#fullPdfLink").addClass("dialog").addClass("interactive").click(function(){if($(this).attr("rel")=="allow"){if(HT.config.download_progress_base==null){return true}HT.pdf_helpers.download_pdf(this)}else{HT.pdf_helpers.explain_pdf_access(this)}return false})});
-/* /htapps/roger.babel/pt/web/js/download_helper-min.js */
+var displayPTFeedback = function() {
+    
+    var DEFAULT_EMAIL_VALUE = "[Your email address]";
+
+    var $div = $("#mdpFeedbackForm");
+    var $frm = $div.find("form");
+    var frm = $frm.get(0);
+
+    var dialog = new Boxy($div, {
+        show : false,
+        modal: true,
+        draggable : false,
+        closeable : false,
+        clone : false,
+        unloadOnHide: false
+    });
+    
+    if ( ! $frm.data('initialized') ) {
+      // bind the events in the closure in order to share the DEFAULT_EMAIL_VALUE variable
+      $("input[type=submit], #mdpFBcancel", $frm).click(function(e) {
+          var clicked = this;
+          e.preventDefault();
+          
+          // get a version of the dialog that 
+          // has the most current visibility settings
+          var dialog = Boxy.get(this);
+
+          if ( $(this).attr('id') == "mdpFBcancel" ) {
+              dialog.hide();
+              return false;
+          }
+
+          var isEmpty = 1;
+
+          var postData = {};
+
+          for (var i=0; i < frm.length; i++)
+          {
+              if ((frm.elements[i].type == 'checkbox' || frm.elements[i].type == 'radio')
+                  && frm.elements[i].checked) {
+                  isEmpty = 0;
+                  postData[frm.elements[i].name] = frm.elements[i].value;
+              }
+              else if ((frm.elements[i].type == 'text' || frm.elements[i].type == 'textarea')
+                  && (frm.elements[i].value.length > 0)
+                  && (frm.elements[i].value != DEFAULT_EMAIL_VALUE)) {
+                  isEmpty = 0;
+                  postData[frm.elements[i].name] = frm.elements[i].value;
+              }
+              else if ( frm.elements[i].type == 'hidden' ) {
+                postData[frm.elements[i].name] = frm.elements[i].value;
+              }
+          }
+
+          if (isEmpty == 1) {
+              $(frm).find("#emptyFBError").show();
+          } else {
+              // post the form
+              var href = $(frm).attr('action');
+
+              $.post(href, postData);
+              dialog.hide();
+          }
+
+          return false;
+      });
+      $frm.data('initialized', true);
+    }
+    
+    // empty out the form
+    $("#emptyFBError").hide();
+    
+    for (var i=0; i < frm.length; i++)
+    {
+        if ((frm.elements[i].type == 'checkbox' || frm.elements[i].type == 'radio')
+            && frm.elements[i].checked) {
+            frm.elements[i].checked = false;
+        }
+        if ((frm.elements[i].type == 'text' || frm.elements[i].type == 'textarea')
+            && (frm.elements[i].value.length > 0)) {
+        
+            frm.elements[i].value = "";
+            if ( frm.elements[i].id == "email" ) {
+                frm.elements[i].value = DEFAULT_EMAIL_VALUE;
+            }
+        }
+    }
+    
+    dialog.show();
+
+    // initPTFeedback();
+    // 
+    // // Error message displayed if user tries to submit empty feedback.
+    // YAHOO.mbooks.emptyPTFBError = new YAHOO.widget.Module("emptyFBError", { visible: false });
+    // YAHOO.mbooks.emptyPTFBError.render();
+    // 
+    // // Add listener to form submit and cancel button
+    // YAHOO.util.Event.addListener("mdpFBcancel", "click", interceptPTFBSubmit);
+    // YAHOO.util.Event.addListener("mdpFBform", "submit", interceptPTFBSubmit);
+    // 
+    // YAHOO.mbooks.PTFeedbackForm.show();
+    
+    return false;
+};
+
+$(document).ready(function() {
+    
+    $("#feedback").click(function(e) {
+        e.preventDefault();
+        displayPTFeedback();
+        return false;
+    })
+
+    $("#feedback_footer").click(function(e) {
+        e.preventDefault();
+        displayPTFeedback();
+        return false;
+    })
+
+})
+/* /htapps/roger.babel/pt/web/common-web/js/feedbackForm.js */
+//Script: newCollOverlayCore.js
+
+var DEFAULT_COLL_NAME = "Collection Name";
+var DEFAULT_DESC = "Description";
+var COLL_NAME = [];
+
+var maxCharsColl = 32;
+var charsTypedColl = 0;
+var charsRemainingColl = maxCharsColl - charsTypedColl;
+var maxCharsDesc = 80;
+var charsTypedDesc = 0;
+var charsRemainingDesc = maxCharsDesc - charsTypedDesc;
+
+var formWidth = 400;
+var URL = null;
+var referrer = "";
+var dup = 0;
+
+
+YAHOO.namespace("mbooks");
+
+function setPostURL(url) { URL = url; }
+function getPostURL() { return URL; }
+
+function setReferrer(ref) { referrer = ref; }
+function getReferrer() { return referrer; }
+
+function getNewCollForm () {
+    var mbCgi = "/cgi/mb";
+    if ( window.location.href.indexOf("/shcgi/") > -1 ) {
+      mbCgi = "/shcgi/mb";
+    } 
+  
+    var width = formWidth - 100;
+    var formHTML = 
+        "<form method='get' id='newcoll' name='newcoll' action='" + mbCgi + "'><table>";
+    
+    formHTML = 
+        formHTML + 
+        "<tr><td>" +
+	"<div><input name='cn' type='text' style='width:" 
+        + width + 
+        "px' maxlength='" 
+        + maxCharsColl + 
+        "' " +   
+	"class='overlay' id='cn' onclick=\"clickclear(this, 'Collection Name')\" onfocus=\"clickclear(this, 'Collection Name')\" onblur=\"clickrecall(this,'Collection Name')\" onKeyUp=\"CheckCollLength()\" value='Collection Name'/> " +
+	"</div></td><td><div id='charsRemainingColl'>" +
+	"<div class='bd'></div></div></td></tr>"+
+	"<tr><td><div><textarea style='width:" 
+        + width +
+        "px;margin-left:0px;' name='desc' id='desc' class='overlay' rows='4' onclick=\"clickclear(this, 'Description')\" onfocus=\"clickclear(this, 'Description')\" onblur=\"clickrecall(this,'Description')\" style=\"font-family:Arial\" onKeyUp=\"CheckDescLength()\">" + 
+	"Description</textarea></div></td>" +
+	"<td><div id='charsRemainingDesc'><div class='bd'></div></div>" +
+	"</td></tr></table>" 
+        + getSharedOptions() +
+	"<div id='collType'><div class='bd'></div></div> " +
+	"<div id='searchParams'><div class='bd'></div></div> " +
+	"<div id='invalidName'><div class='bd'></div></div> " +
+	"<div id='itemsSelected'><div class='bd'></div></div>" +
+	"<div id='defaultCollParams'><div class='bd'></div></div>" +
+	"<table name='buttons'> <tr> " +
+	"<td id='addC'><button id='addc' type='submit'>Add</button></td> " +
+	"<td id='addI'><button id='additnc' type='submit'>Add</button></td>"+
+        //tbw test for ls
+	"<td id='addItems'><button id='additsnc' type='submit'>Add</button></td>"+
+	"<td id='copy'><button id='copyitnc' type='submit'>Copy</button></td> "+
+	"<td id='move'><button id='movitnc' type='submit'>Move</button></td> "+
+	"<input id='action' type='hidden' name='a' value='?'></td>" +
+	"<td width='100px' align='right'><a id='cancel' href=''>Cancel</a></td> "+
+	"</tr> </table>" +
+        "</form>";
+    return formHTML;
+}
+
+function getSharedOptions() {
+    var options = "<table><tr><td><INPUT type='radio' name='shrd' id='shrd_priv' value='0' checked='yes'/>Private</td>";
+    if(isLoggedIn()===true) 
+    {
+	options = options + "<td>&nbsp;</td><td><INPUT type='radio' name='shrd' id='shrd_publ' value='1'/>Public</td>";
+	options = options + "</tr></table>";		
+    }
+    else 
+    {
+	options = options + "</tr></table>";
+	options = options + "<span class='loginNC' style='color:#FF4040'>Login to create public and/or permanent collections</span>";
+    }
+    
+    return options;
+}
+
+//tbw LS hack
+function getLS_COLL_NAME(){
+    var CollWidget= document.getElementById('LSaddItemSelect');
+    var Opts=CollWidget.options;
+    var collname = new Array();
+    for (var i=0; i<Opts.length; i++){
+        collname[i]=Opts[i].text;
+    }
+    return collname;
+}
+
+
+function init() {
+    // Init array of existing coll names to prevent duplication
+    var pg = getURLParam('page', location.href);
+    
+    if (pg != "home") 
+    {	
+	
+        //XXX tbw hack for LS here
+        var action = getURLParam('a', location.href);
+        if (action === "srchls"){
+            COLL_NAME = getLS_COLL_NAME();
+        }
+        else{
+            COLL_NAME = getCollArray();// regular way to get array from embedded javascript 
+        }
+        
+        
+        
+        var widthInPixels = formWidth + "px";
+        
+        var view = getURLParam('view', location.href);
+        
+        var browser = navigator.appName;
+        
+        if (browser =="Microsoft Internet Explorer" && view =="pdf") //Make non-modal iframe for IE pdf 
+        {
+            YAHOO.mbooks.newCollectionPanel = new YAHOO.widget.Panel("newCollectionPanel", { width:widthInPixels, visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:false, x:100, y:200, iframe: true} );
+        }
+        else if (browser =="Microsoft Internet Explorer" && view !="pdf")  //Make non-modal non-iframe for IE non-pdf
+        {
+            YAHOO.mbooks.newCollectionPanel = new YAHOO.widget.Panel("newCollectionPanel", { width:widthInPixels, visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:false, x:100, y:200} );
+        }
+        else if(view =="pdf")  //Make modal iframe for pdf view in other browsers 
+        {
+            YAHOO.mbooks.newCollectionPanel = new YAHOO.widget.Panel("newCollectionPanel", { width:widthInPixels, visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:true, x:100, y:200, iframe: true} );
+        }
+        else //Make modal non-iframe for non-pdf view in other browsers 
+        {
+            YAHOO.mbooks.newCollectionPanel = new YAHOO.widget.Panel("newCollectionPanel", { width:widthInPixels, visible:false, draggable:true, constraintoviewport:true, fixedcenter:true, close:true, modal:true, x:100, y:200} );
+        }		
+        
+        if(isLoggedIn()===true) {
+            YAHOO.mbooks.newCollectionPanel.setHeader("New Collection");			
+        }
+        else 
+        {
+            YAHOO.mbooks.newCollectionPanel.setHeader("New Temporary Collection");				
+        }
+        YAHOO.mbooks.newCollectionPanel.setBody(getNewCollForm());		
+        YAHOO.mbooks.newCollectionPanel.render("overlay");
+        
+        //Character counts
+        YAHOO.mbooks.collChars = new YAHOO.widget.Module("collChars", { visible: true });
+        YAHOO.mbooks.collChars.render();
+        YAHOO.mbooks.descChars = new YAHOO.widget.Module("descChars", { visible: true });
+        YAHOO.mbooks.descChars.render();
+        
+        //Hide error messages
+        YAHOO.mbooks.invalidName = new YAHOO.widget.Module("invalidName", { visible: false });
+        YAHOO.mbooks.invalidName.render();
+        YAHOO.mbooks.errormsg = new YAHOO.widget.Module("errormsg", { visible: false });
+        YAHOO.mbooks.errormsg.render();
+        
+        //Hide selected items and params
+        YAHOO.mbooks.itemsSelected = new YAHOO.widget.Module("itemsSelected", { visible: false });
+        YAHOO.mbooks.itemsSelected.render();
+        YAHOO.mbooks.defaultCollParams = new YAHOO.widget.Module("defaultCollParams", { visible: false });
+        YAHOO.mbooks.defaultCollParams.render();
+        YAHOO.mbooks.collType = new YAHOO.widget.Module("collType", { visible: false});
+        YAHOO.mbooks.collType.hide();
+        YAHOO.mbooks.collType.render();
+        YAHOO.mbooks.searchParams = new YAHOO.widget.Module("searchParams", { visible: false });
+        YAHOO.mbooks.searchParams.hide();
+        YAHOO.mbooks.searchParams.render();	
+	
+	
+        //Hide character counts upon submit
+        YAHOO.mbooks.charsRemainingColl = new YAHOO.widget.Module("charsRemainingColl", { visible: true });
+        YAHOO.mbooks.charsRemainingColl.setBody(charsRemainingColl + "");
+        YAHOO.mbooks.charsRemainingColl.render();
+        YAHOO.mbooks.charsRemainingDesc = new YAHOO.widget.Module("charsRemainingDesc", { visible: true });
+        YAHOO.mbooks.charsRemainingDesc.setBody(charsRemainingDesc + "");
+        YAHOO.mbooks.charsRemainingDesc.render();
+        
+        //Hide unrelated buttons
+        YAHOO.mbooks.addC = new YAHOO.widget.Module("addC", { visible: false });
+        YAHOO.mbooks.addC.render();
+        YAHOO.mbooks.addI = new YAHOO.widget.Module("addI", { visible: false });
+        YAHOO.mbooks.addI.render();
+        YAHOO.mbooks.addItems = new YAHOO.widget.Module("addItems", { visible: false });
+        YAHOO.mbooks.addItems.render();
+        
+        YAHOO.mbooks.copy = new YAHOO.widget.Module("copy", { visible: false });
+        YAHOO.mbooks.copy.render();
+        YAHOO.mbooks.move = new YAHOO.widget.Module("move", { visible: false });
+        YAHOO.mbooks.move.render();
+        
+        //Add listener to form submit: This will cover when the form is submitted by clicking any of the submit buttons on the form or by enter in Safari
+        YAHOO.util.Event.addListener("newcoll", "submit", interceptNewCollSubmit);
+        
+        //Add listener to cancel link
+        YAHOO.util.Event.addListener("cancel", "click", interceptNewCollSubmit);
+    }
+}
+
+function SetCharsRemainingColl(charsRemaining) {
+    YAHOO.mbooks.charsRemainingColl.setBody(charsRemaining + "");
+}
+function CheckCollLength() {
+    if(maxCharsColl <= 0) { return; }
+    if(charsRemainingColl <= 0) { 
+	document.newcoll.cn.value = document.newcoll.cn.value.substring(0, maxCharsColl);	
+	charsRemainingColl = 0;
+    }
+    
+    var textfield = document.newcoll.cn.value;
+    charsTypedColl = textfield.length;
+    charsRemainingColl = maxCharsColl - charsTypedColl;
+    SetCharsRemainingColl(charsRemainingColl);	
+    document.newcoll.cn.focus();
+}
+
+function SetCharsRemainingDesc(charsRemaining) {
+    YAHOO.mbooks.charsRemainingDesc.setBody(charsRemaining + "");
+}
+
+function CheckDescLength() {
+    if(maxCharsDesc <= 0) { return; }
+    if(charsRemainingDesc <= 0) { 
+	document.newcoll.desc.value = document.newcoll.desc.value.substring(0, maxCharsDesc);	
+	charsRemainingDesc = 0;
+    }
+    
+    var textfield = document.newcoll.desc.value;
+    charsTypedDesc = textfield.length;
+    charsRemainingDesc = maxCharsDesc - charsTypedDesc;
+    SetCharsRemainingDesc(charsRemainingDesc);	
+    document.newcoll.desc.focus();
+} 
+
+function checkIt(agent, string) {
+    var place = agent.indexOf(string) + 1;
+    return place;
+}
+
+function initializeButtons() {
+    YAHOO.mbooks.addC.hide();
+    YAHOO.mbooks.addI.hide();
+    YAHOO.mbooks.addItems.hide();
+    YAHOO.mbooks.copy.hide();
+    YAHOO.mbooks.move.hide();
+}
+
+function initializeInputs() {
+    document.newcoll.cn.value = DEFAULT_COLL_NAME;
+    document.newcoll.desc.value = DEFAULT_DESC;
+    charsRemainingDesc = maxCharsDesc;
+    SetCharsRemainingDesc(charsRemainingDesc);
+    charsRemainingColl = maxCharsColl;
+    SetCharsRemainingColl(charsRemainingColl);
+}
+
+var interceptNewCollSubmit = function(e) {
+    var newCollName = document.newcoll.cn.value;
+    
+    YAHOO.mbooks.errormsg.hide();
+    YAHOO.mbooks.invalidName.hide();
+    
+    if (this.id=="cancel") {
+	YAHOO.mbooks.newCollectionPanel.hide();
+	YAHOO.util.Event.preventDefault(e);
+	initializeInputs();
+    }
+    else {
+	var trimmedName = trimString(newCollName);
+	
+	if (newCollName==DEFAULT_COLL_NAME || newCollName=="" || trimmedName=="") {
+	    YAHOO.util.Event.preventDefault(e);
+	    YAHOO.mbooks.invalidName.setBody("<br/><b>You must enter a collection name</b><br/>");
+	    YAHOO.mbooks.invalidName.show();
+	}
+	else if (newCollName.indexOf('"') > -1) {
+	    YAHOO.util.Event.preventDefault(e);
+	    YAHOO.mbooks.invalidName.setBody("<br/><b>You can use single quotes but not double quotes. </b><br/>");
+	    YAHOO.mbooks.invalidName.show();
+	}
+	else {
+	    dup = 0;
+	    for (var i=0; i<COLL_NAME.length; i++) {
+		if (newCollName==COLL_NAME[i]) {
+		    dup = 1;
+		}
+	    }
+            
+	    if (dup==1) {
+		YAHOO.util.Event.preventDefault(e);
+		YAHOO.mbooks.invalidName.setBody("<br/><b>A collection with that name already exists</b><br/>");
+		YAHOO.mbooks.invalidName.show();
+	    }
+	    else {
+		var desc = document.newcoll.desc.value;
+		if(desc==DEFAULT_DESC) {
+		    desc = "";
+		}							
+		if (getReferrer() == "CB" || getReferrer() == "CV") { 
+		    if (desc==DEFAULT_DESC || desc=="") {
+			document.newcoll.desc.value = "";
+		    }
+		    
+		    var action = getURLParam('a', location.href);
+		    var query = getURLParam('q1', location.href);
+		    
+		    //Return to personal collection view after creating a new collection from collection builder
+		    if (getReferrer() == "CV" && action != "listsrch") {					
+			YAHOO.mbooks.collType.setBody(
+			    "<INPUT type='hidden' name='colltype' id='coll_type' value='priv'/>");
+			YAHOO.mbooks.collType.show();
+		    }					
+		    
+		    //If search results page, hide coll type and preserve query params 
+		    if (action == "listsrch") {					
+			YAHOO.mbooks.searchParams.setBody(
+			    "<INPUT type='hidden' name='page' id='page_type' value='srchresults'/>" +
+				"<INPUT type='hidden' name='q1' id='page_type' value='" + query + "'/>");
+			YAHOO.mbooks.searchParams.show();						
+			YAHOO.mbooks.collType.hide();
+		    }					
+		}
+		else if (getReferrer() == "PT"  || getReferrer() == "LS") {
+                    
+                    var priv = document.newcoll.shrd_priv.checked;
+                    var shrd;
+                    if (priv === true) {
+                        shrd = 0;
+                    }
+                    else {
+                        shrd = 1;
+                    }
+		    initializeInputs();
+	            
+		    YAHOO.util.Event.preventDefault(e);
+		    
+		    newCollName = encodeURIComponent(newCollName);
+		    desc = encodeURIComponent(desc);
+		    
+		    //Set URL here
+		    setPostURL(getPostURL() + ";cn=" + newCollName + ";desc=" + desc + ";shrd=" + shrd);
+		    YAHOO.mbooks.newCollectionPanel.hide();
+                    
+		    setRequestUrl(getPostURL());
+		    processRequest();
+		}
+		//else { alert("other referrer"); }				
+		
+	    }
+	}
+    }
+}
+
+//Init method is now called by newCollOverlayPT and newCollOverlayCB so that
+//overlay is hidden from screenheaders until invoked
+//YAHOO.util.Event.addListener(window, "load", init); 
+
+
+//End newCollOverlayCore.js
+
+/* /htapps/roger.babel/pt/web/common-web/js/newCollOverlayCore.js */
+// newCollOverlayPT.js
+// Javascript supporting AJAX add pageturner item currently being viewed to collection
+// $Id: newCollOverlayPT.js,v 1.27 2009/08/26 19:24:26 tburtonw Exp $
+//
+
+// Must match text in pageviewer.xsl
+var IN_YOUR_COLLS_LABEL = 'This item is in your collection(s):';
+
+var SELECT_COLL_MENU_VALUE = 'a';
+var NEW_COLL_MENU_VALUE = 'b';
+var rUrl;
+
+YAHOO.namespace("mbooks");
+
+YAHOO.mbooks.loadingPT = 
+        new YAHOO.widget.Overlay("loading", 
+                                 { context:["PTcollectionList","tl","bl"], visible:false, width:"150px" } );
+
+var handleSuccess = function(o) {
+	YAHOO.mbooks.loadingPT.hide();
+        if (o.responseText != undefined) {
+                o.responseText = o.responseText.replace(/\n/g, "");
+                o.responseText = stripXMLPI(o.responseText);
+
+                var params = {};
+                var returnPairs = o.responseText.split(/\|/);
+                for (var i=0; i < returnPairs.length; i++) {
+                        var keyvalue = returnPairs[i].split(/\=/);
+                        var key = keyvalue[0];
+                        var value = keyvalue[1];
+                        params[key] = value;
+                }
+
+                if (params.result == "ADD_ITEM_SUCCESS") {
+                        addItemToCollList(params);
+                }
+                else if (params.result == "ADD_ITEM_FAILURE") {
+                  // don't add the item to the coll list if there was a failure
+                  //addItemToCollList(params);
+                        YAHOO.mbooks.errormsg.setBody("<div class='PTerror'>Database problem. Could not add item to your collection.</div>");
+                        YAHOO.mbooks.errormsg.show();
+                }
+                else {
+                        debugWindowWrite(o.responseText);
+                }
+        }
+        setRequestUrl("");
+}
+
+
+function debugWindowWrite(html) {
+        var w = window.document;
+        w.open();
+        w.writeln(html);
+        w.close();
+}
+
+
+function addItemToCollList(params) {
+        var collID = params.coll_id;
+        var collName = params.coll_name;
+        var collectionList = document.getElementById('PTcollectionList');
+        
+        var mbCgi = "/cgi/mb";
+        if ( window.location.href.indexOf("/shcgi/") > -1 ) {
+          mbCgi = "/shcgi/mb";
+        } 
+
+        var listLabel = document.getElementById('PTitemInCollLabel');
+        listLabel.innerHTML = IN_YOUR_COLLS_LABEL;
+        collectionList.innerHTML +=
+                '<li><a href="' + mbCgi + '?a=listis;c=' + collID + '">' + collName + '</a></li>';
+
+        var selectList = document.getElementById('PTaddItemSelect');
+        for (var j=0; j < selectList.options.length; j++) {
+                if (selectList.options[j].text == collName) {
+                        selectList.options[j] = null;
+                        break;
+                }
+        }
+}
+
+var handleFailure = function(o) {
+        YAHOO.mbooks.loadingPT.hide();
+        YAHOO.mbooks.errormsg.setBody("<div class='PTerror'>Communication failure. Could not add this item to your collection.</div>");
+        YAHOO.mbooks.errormsg.show();
+
+        setRequestUrl("");
+}
+
+var callback = {
+        success:handleSuccess,
+        failure:handleFailure
+};
+
+
+
+var addItemToCollection = function(o) {
+        init(); //init new coll widget
+	YAHOO.mbooks.errormsg.hide();
+	YAHOO.mbooks.loadingPT.setBody("<div class='PTloading'>Loading, please wait ...</div>");
+	YAHOO.mbooks.loadingPT.render(document.body);
+
+        if (getCollMenuVal()==NEW_COLL_MENU_VALUE) {
+		initNewCollUrl();
+                setReferrer("PT");
+		//Set position of new collection widget, done to reset position after drag-drop.
+		YAHOO.mbooks.newCollectionPanel.moveTo(100,250);
+                addToNewCollection(getRequestUrl());
+        }
+        else if (getCollMenuVal()==SELECT_COLL_MENU_VALUE) {
+		YAHOO.mbooks.errormsg.setBody("<div class='PTerror'>Please select a collection to add this item to</div>");
+		YAHOO.mbooks.errormsg.show();
+		YAHOO.util.Event.preventDefault(o);
+        }
+        else  {
+                initExistingCollUrl();
+                processRequest();
+        }
+}
+
+
+function processRequest() 
+{
+	YAHOO.mbooks.loadingPT.show();
+	YAHOO.util.Connect.asyncRequest('GET', getRequestUrl(), callback);
+  	return false;
+}
+
+function initExistingCollUrl() 
+{
+	var existingCollid = getCollMenuVal();	
+	rUrl = constructAddItemUrl() + ';a=addits;c2=' + existingCollid;		
+}
+
+
+function constructAddItemUrl() 
+{
+	var urlTemp = document.getElementById('PTajaxAddItemPartialUrl').textContent;		
+	
+	if(urlTemp == undefined)
+	{
+		urlTemp = document.getElementById('PTajaxAddItemPartialUrl').innerHTML;
+	}
+	return urlTemp;
+}
+
+
+function initNewCollUrl() 
+{
+  rUrl = rUrl = constructAddItemUrl() + ';a=additsnc';
+}
+
+function setRequestUrl(url)  
+{
+	rUrl = url;
+}
+
+function getRequestUrl() 
+{
+	return rUrl;
+}
+
+function getCollMenuVal() 
+{
+        var selectedIndex = document.getElementById('PTaddItemSelect').selectedIndex;
+        var value = document.getElementById('PTaddItemSelect')[selectedIndex].value;
+        return value;
+}
+
+function addToNewCollection(url) 
+{
+	setPostURL(url);
+
+	initializeButtons();
+
+	YAHOO.mbooks.addI.show();
+
+	//Add listener to cancel link
+	YAHOO.util.Event.addListener("cancel", "click", interceptNewCollSubmit);
+
+	YAHOO.mbooks.newCollectionPanel.show();
+}
+
+YAHOO.util.Event.addListener("PTaddItemBtn", "click", addItemToCollection);
+
+//end of newCollOverlayPT.js
+
+/* /htapps/roger.babel/pt/web/js/newCollOverlayPT.js */
+//Script: overlayUtils.js
+
+function clickclear(thisfield, defaulttext) {
+    if (thisfield.value == defaulttext) {
+        thisfield.value = "";
+    }
+}
+
+function clickrecall(thisfield, defaulttext) {  
+    if (thisfield.value == "") {
+        thisfield.value = defaulttext;
+    }
+}
+
+//Javascript function below adapted from http://snipplr.com/view/463/get-url-params-2-methods/ 
+function getURLParam(strParamName, strHref) {
+    var strReturn = "";
+    var link ="";
+    if (strHref !== null) {
+	link = strHref;
+    }
+    
+    if ( link.indexOf("?") > -1 ) {
+	var strQueryString = link.substr(link.indexOf("?")).toLowerCase();
+	var aQueryString;
+	
+	//If URL contains &, split on &. If not, assume ;
+	//This is here to catch the two types of URLs in MBooks
+	//The prev, next buttons use ;
+	//The page number form for image and ocr view uses &
+	if (strHref.indexOf("&") > -1) { 
+	    aQueryString = strQueryString.split("&");
+	}
+	else {
+	    aQueryString = strQueryString.split(";");
+	}
+        
+	for ( var iParam = 0; iParam < aQueryString.length; iParam++ ) {			
+	    if (aQueryString[iParam].indexOf(strParamName + "=") > -1 ) {
+		var aParam = aQueryString[iParam].split("=");
+		strReturn = aParam[1];
+		break;
+	    }
+	}
+    }
+    
+    return strReturn;
+}
+
+
+//Strip xml PI <?xml ...?> from input string
+function stripXMLPI(inputText) {
+    var returnText = inputText.replace(/<\?xml.*\?>/, "");
+    return returnText;
+}
+
+function trimString (str) {
+    return str.replace(/^\s+/g, '').replace(/\s+$/g, '');
+}
+
+//end of overlayUtils.js
+
+/* /htapps/roger.babel/pt/web/common-web/js/overlayUtils.js */
+
+function get_selected(id)
+{
+  var s=document.getElementById(id);
+  var indexSelected = s.selectedIndex;
+  var selected = s.options[indexSelected].value;
+  return selected;
+
+}
+
+function jumpToColl()
+{
+  var l = window.location;
+  var host = l.host;
+  var path = l.pathname;
+  var prot = l.protocol;
+  var params = l.search;
+
+  //  alert("input host is "+ host + " path is " + path +" params is " + params + "proto is " + prot);
+
+  var c = get_selected('jumpToColl');
+
+  var new_params = 'a=listis;c=' + c ;
+
+  /** right now we only get sz param.  Do we want sort param as well**/
+  var sz;
+  var regex =/(sz=[^\&\;]+)[\&\;]/;
+    
+  var result = params.match(regex);
+  if (result !== null)
+  {
+    sz = result[1];
+    // alert("sz is now " + sz + "[1] is " + result[1] + "2" + result[2] + "0" +result[0]);
+    new_params = new_params + ';' + sz +';';
+  }
+
+  /* When called from pageturner or LS (pt or ls) go to collection builder (mb) */
+  path = path.replace(/ptsearch/g, "mb");
+  path = path.replace(/pt/g, "mb");
+  path = path.replace(/ls/g, "mb");
+
+  var newloc = prot +'//'+ host + path +'?' + new_params;
+  //  alert("newloc is "+ newloc);
+  window.location = newloc;
+
+}
+
+
+
+/**Functions for sorting widget  **/
+function doSort()
+{
+  var temploc= window.location.toString();
+  var new_sort = get_selected('SortWidgetSort');
+  var new_loc;
+
+  //if there is a sort replace it
+  if (/sort/.test(temploc))
+  {
+    new_loc = temploc.replace(/sort=(title|auth|date|rel)_[ad]/,"sort="+new_sort);
+  }
+  else
+  {
+    // otherwise add it  do we need to add & or ; ?
+    new_loc = temploc + ";sort=" + new_sort;
+  }
+  window.location=new_loc;
+}
+
+/**End functions for sort widget   **/
+
+/** 
+Slice widget code
+When user changes slice size in slice size widget, initiate a redisplay the list with only that number of records/slice
+**/
+
+/**  can't discover how to do an "onChange" in YUI so using regular javascript in the XSL/HTML instead of YUI**/
+//YAHOO.util.Event.addListener("sz", "click", redisplay_new_slice_size);
+
+function get_new_size(which)
+{
+  var s=document.getElementById(which);
+  var indexSelected = s.selectedIndex;
+  var new_size = s.options[indexSelected].value;
+  return new_size;
+}
+
+
+function redisplay_new_slice_size(which_paging)
+{
+  var which = which_paging;
+  var temploc = window.location.toString();
+  var new_size = get_new_size(which);
+  var new_loc1;
+  var new_loc2;
+
+  //fix for fac bac solr  if there is a new size we need to redo solr search because solr is doing the paging
+  if (/a=listsrchm/.test(temploc))
+  {
+    // alert("temloc is "+temploc);
+     new_loc1=temploc.replace(/a=listsrchm/,"a=srchm");
+     temploc=new_loc1;
+  }
+
+  //if there is a sz replace it
+  if (/sz/.test(temploc))
+  {
+     new_loc1=temploc.replace(/sz=(\d+)/,"sz="+new_size);
+  }
+  else
+  {
+    // otherwise add it  do we need to add & or ; ?
+    new_loc1=temploc+ ";sz=" + new_size;
+  }
+
+  if (/pn/.test(new_loc1))
+    {
+      new_loc2=new_loc1.replace(/pn=(\d+)/,"pn=1"); 
+      //reset page to first page
+    }
+    else
+    {
+      new_loc2=new_loc1 + ";pn=1";
+    }
+
+  //   alert("new_loc1 is " + new_loc1 +"\ncurrent loc is "+ temploc + "\nnew size is" + new_size + "\nnew_loc2 is " + new_loc2 );
+
+    location=new_loc2;
+}
+
+
+
+/**  End slice size code **/
+
+
+/** XXX  now this does not only contain the checkall code so these global vars are probably not ok **/
+/***
+
+var tag='input' ;//checkbox
+var class='iid';
+***/
+var root=document.getElementById('itemTable');
+
+var checkboxes;
+
+var  checkIt= function(el)
+{
+  el.checked=true;
+};
+
+var  unCheckIt= function(el)
+{
+  el.checked=false;
+};
+  
+var checkAll =function()
+{
+  checkboxes = YAHOO.util.Dom.getElementsByClassName('iid','input',root,checkIt);
+};
+
+
+var uncheckAll =function()
+{
+  checkboxes = YAHOO.util.Dom.getElementsByClassName('iid','input',root,unCheckIt);
+};
+
+var changeAllCheckboxes  =  function(e)
+{
+  var master;
+  if (typeof e.currentTarget != 'undefined')
+  {
+     master=e.currentTarget;
+  }
+  else
+  {
+    //DOM workaround for I.E.
+          master=e.srcElement;
+  }
+ 
+  if (master.checked === true)
+  {
+    checkAll();
+  }
+  else
+  {
+    uncheckAll();
+  }
+};
+
+
+function initCheckall()
+{
+  YAHOO.util.Event.addListener("checkAll", "click", changeAllCheckboxes);
+
+}
+
+// this is how to do a body onload in YUI : YAHOO.util.Event.addListener(window, "load", initCheckall);
+
+/****************************************************************************************/
+/** general js utility function**/
+
+
+function doYouReally(collname)
+{
+  return  confirm("Really delete collection: " + collname + "?");
+}
+
+function confirmLarge(collSize, addNumItems) {
+    if (collSize + addNumItems <= 1000) {
+        //alert("Coll will remain small ...");
+        return true;
+    }
+    else if (collSize <= 1000) {
+        var numStr;
+        if (addNumItems > 1) {
+            numStr = "these " + addNumItems + " items";
+        }
+        else {
+            numStr = "this item";
+        }
+        var msg = "Note: Your collection contains " + collSize + " items.  Adding " + numStr + " to your collection will increase its size to more than 1000 items.  This means your collection will not be searchable until it is indexed, usually within 48 hours.  After that, just newly added items will see this delay before they can be searched. \n\nDo you want to proceed?"
+    
+        var answer = confirm(msg);
+    
+        if (answer) {
+            //alert("Ok adding ...");
+            return true;
+        }
+        else {
+            //alert ("Not adding ....");
+            return false;
+        }
+    }
+    else {
+        //alert("Coll already large ...");
+        return true;
+    }
+}
+
+
+//End listUtils.js
+
+/* /htapps/roger.babel/pt/web/common-web/js/listUtils.js */
+
+function FormValidation( input, msg ) {
+    var stripped = input.value;
+    stripped = stripped.replace(/^\s*|\s*$/g, '');
+    
+    if ( stripped === "" ) {
+        alert( msg );
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+
+function Bookmark( title, url ) {
+    var otherBrowsers = "Copy & Paste the permanent url string to your bookmarks.";
+    
+    if ( document.all ) {
+        window.external.AddFavorite( url, title );
+    }
+    else if ( window.sidebar ) {
+        window.sidebar.addPanel( title, url, "");
+    }
+    else {
+        alert( otherBrowsers );
+    }
+}
+
+function ToggleCitationSize( ) {
+    var me = document.getElementById( "mdpFlexible_1" );
+    var me_text = document.getElementById( "mdpFlexible_1_1" );
+    
+    // alert( me.style.display );    
+    if ( me.style.display == "none" ||  me.style.display == "" ) {
+        /* state is collapsed */
+        me.style.display = "block";
+        me_text.firstChild.nodeValue = "\u00AB less";
+        
+    }
+    else {
+        /* state is expanded */
+        me.style.display = "none"
+        me_text.firstChild.nodeValue = "more \u00BB";
+    }
+}
+
+function getElementsByClassName( searchClass, node, tag ) {
+    var i; 
+    var j;
+    var classElements = new Array();
+    if ( node == null )
+        node = document;
+    if ( tag == null )
+        tag = '*';
+    var els = node.getElementsByTagName(tag);
+    var elsLen = els.length;
+    var pattern = new RegExp('(^|\\s)'+searchClass+'(\\s|$)');
+    for (i = 0, j = 0; i < elsLen; i++) {
+        if ( pattern.test(els[i].className) ) {
+            classElements[j] = els[i];
+            j++;
+        }
+    }
+    return classElements;
+}
+
+function ToggleContentListSize( ) {
+    var toggleCtrl = document.getElementById( "mdpFlexible_3_2" );
+    var disp;
+    var pad;
+    
+    if ( ! toggleCtrl ) {
+        return;
+    }
+    
+    if ( toggleCtrl.firstChild.nodeValue.indexOf( "less" ) > 0 ) {
+        /* state is expanded */
+        disp = "none";
+        pad = "5pt";
+        toggleCtrl.firstChild.nodeValue = "more \u00BB";
+        
+    }
+    else {
+        /* state is collapsed */
+        disp = "";
+        pad = "0pt";
+        toggleCtrl.firstChild.nodeValue = "\u00AB less";
+    }
+    
+    var rows = getElementsByClassName( "mdpFlexible_3_1", document, "TR" );
+    var numbers = getElementsByClassName( "mdpContentsPageNumber", document, "TD" );
+    var i;
+    for ( i=0; i < rows.length; i++ ) {
+        rows[i].style.display = disp;  
+    }
+    for ( i=0; i < numbers.length; i++ ) {
+        numbers[i].style.paddingRight = pad;  
+    }
+    for ( i=0; i < rows.length; i++ ) {
+        rows[i].style.display = disp;  
+    }
+}
+
+
+function ClickClear( thisfield, defaulttext ) {
+    if ( thisfield.value == defaulttext ) {
+        thisfield.value = "";
+    }
+}
+
+
+/* /htapps/roger.babel/pt/web/common-web/js/pageturner.js */
+/**
+ * Boxy 0.1.4 - Facebook-style dialog, with frills
+ *
+ * (c) 2008 Jason Frame
+ * Licensed under the MIT License (LICENSE)
+ */
+ 
+/*
+ * jQuery plugin
+ *
+ * Options:
+ *   message: confirmation message for form submit hook (default: "Please confirm:")
+ * 
+ * Any other options - e.g. 'clone' - will be passed onto the boxy constructor (or
+ * Boxy.load for AJAX operations)
+ */
+jQuery.fn.boxy = function(options) {
+    options = options || {};
+    return this.each(function() {      
+        var node = this.nodeName.toLowerCase(), self = this;
+        if (node == 'a') {
+            jQuery(this).click(function() {
+                var active = Boxy.linkedTo(this),
+                    href = this.getAttribute('href'),
+                    localOptions = jQuery.extend({actuator: this, title: this.title}, options);
+                    
+                if (active) {
+                    active.show();
+                } else if (href.indexOf('#') >= 0) {
+                    var content = jQuery(href.substr(href.indexOf('#'))),
+                        newContent = content.clone(true);
+                    content.remove();
+                    localOptions.unloadOnHide = false;
+                    new Boxy(newContent, localOptions);
+                } else { // fall back to AJAX; could do with a same-origin check
+                    if (!localOptions.cache) localOptions.unloadOnHide = true;
+                    Boxy.load(this.href, localOptions);
+                }
+                
+                return false;
+            });
+        } else if (node == 'form') {
+            jQuery(this).bind('submit.boxy', function() {
+                Boxy.confirm(options.message || 'Please confirm:', function() {
+                    jQuery(self).unbind('submit.boxy').submit();
+                });
+                return false;
+            });
+        }
+    });
+};
+
+//
+// Boxy Class
+
+function Boxy(element, options) {
+    
+    this.boxy = jQuery(Boxy.WRAPPER);
+    jQuery.data(this.boxy[0], 'boxy', this);
+    
+    this.visible = false;
+    this.options = jQuery.extend({}, Boxy.DEFAULTS, options || {});
+    
+    if (this.options.modal) {
+        this.options = jQuery.extend(this.options, {center: true, draggable: false});
+    }
+    
+    // options.actuator == DOM element that opened this boxy
+    // association will be automatically deleted when this boxy is remove()d
+    if (this.options.actuator) {
+        jQuery.data(this.options.actuator, 'active.boxy', this);
+    }
+    
+    this.setContent(element || "<div></div>");
+    this._setupTitleBar();
+    
+    this.boxy.css('display', 'none').appendTo(document.body);
+    this.toTop();
+
+    if (this.options.fixed) {
+        if (jQuery.browser.msie && jQuery.browser.version < 7) {
+            this.options.fixed = false; // IE6 doesn't support fixed positioning
+        } else {
+            this.boxy.addClass('fixed');
+        }
+    }
+    
+    if (this.options.center && Boxy._u(this.options.x, this.options.y)) {
+        this.center();
+    } else {
+        this.moveTo(
+            Boxy._u(this.options.x) ? this.options.x : Boxy.DEFAULT_X,
+            Boxy._u(this.options.y) ? this.options.y : Boxy.DEFAULT_Y
+        );
+    }
+    
+    if (this.options.show) this.show();
+
+};
+
+Boxy.EF = function() {};
+
+jQuery.extend(Boxy, {
+    
+    WRAPPER:    "<table cellspacing='0' cellpadding='0' border='0' class='boxy-wrapper'>" +
+                "<tr><td class='top-left'></td><td class='top'></td><td class='top-right'></td></tr>" +
+                "<tr><td class='left'></td><td class='boxy-inner'></td><td class='right'></td></tr>" +
+                "<tr><td class='bottom-left'></td><td class='bottom'></td><td class='bottom-right'></td></tr>" +
+                "</table>",
+    
+    DEFAULTS: {
+        title:                  null,           // titlebar text. titlebar will not be visible if not set.
+        closeable:              true,           // display close link in titlebar?
+        draggable:              true,           // can this dialog be dragged?
+        clone:                  false,          // clone content prior to insertion into dialog?
+        actuator:               null,           // element which opened this dialog
+        center:                 true,           // center dialog in viewport?
+        show:                   true,           // show dialog immediately?
+        modal:                  false,          // make dialog modal?
+        fixed:                  true,           // use fixed positioning, if supported? absolute positioning used otherwise
+        closeText:              '[close]',      // text to use for default close link
+        unloadOnHide:           false,          // should this dialog be removed from the DOM after being hidden?
+        clickToFront:           false,          // bring dialog to foreground on any click (not just titlebar)?
+        behaviours:             Boxy.EF,        // function used to apply behaviours to all content embedded in dialog.
+        afterDrop:              Boxy.EF,        // callback fired after dialog is dropped. executes in context of Boxy instance.
+        afterShow:              Boxy.EF,        // callback fired after dialog becomes visible. executes in context of Boxy instance.
+        afterHide:              Boxy.EF,        // callback fired after dialog is hidden. executed in context of Boxy instance.
+        beforeUnload:           Boxy.EF         // callback fired after dialog is unloaded. executed in context of Boxy instance.
+    },
+    
+    DEFAULT_X:          50,
+    DEFAULT_Y:          50,
+    zIndex:             1337,
+    dragConfigured:     false, // only set up one drag handler for all boxys
+    resizeConfigured:   false,
+    dragging:           null,
+    
+    // load a URL and display in boxy
+    // url - url to load
+    // options keys (any not listed below are passed to boxy constructor)
+    //   type: HTTP method, default: GET
+    //   cache: cache retrieved content? default: false
+    //   filter: jQuery selector used to filter remote content
+    load: function(url, options) {
+        
+        options = options || {};
+        
+        var ajax = {
+            url: url, type: 'GET', dataType: 'html', cache: false, success: function(html) {
+                html = jQuery(html);
+                if (options.filter) html = jQuery(options.filter, html);
+                new Boxy(html, options);
+            }
+        };
+        
+        jQuery.each(['type', 'cache'], function() {
+            if (this in options) {
+                ajax[this] = options[this];
+                delete options[this];
+            }
+        });
+        
+        jQuery.ajax(ajax);
+        
+    },
+    
+    // allows you to get a handle to the containing boxy instance of any element
+    // e.g. <a href='#' onclick='alert(Boxy.get(this));'>inspect!</a>.
+    // this returns the actual instance of the boxy 'class', not just a DOM element.
+    // Boxy.get(this).hide() would be valid, for instance.
+    get: function(ele) {
+        var p = jQuery(ele).parents('.boxy-wrapper');
+        return p.length ? jQuery.data(p[0], 'boxy') : null;
+    },
+    
+    // returns the boxy instance which has been linked to a given element via the
+    // 'actuator' constructor option.
+    linkedTo: function(ele) {
+        return jQuery.data(ele, 'active.boxy');
+    },
+    
+    // displays an alert box with a given message, calling optional callback
+    // after dismissal.
+    alert: function(message, callback, options) {
+        return Boxy.ask(message, ['OK'], callback, options);
+    },
+    
+    // displays an alert box with a given message, calling after callback iff
+    // user selects OK.
+    confirm: function(message, after, options) {
+        return Boxy.ask(message, ['OK', 'Cancel'], function(response) {
+            if (response == 'OK') after();
+        }, options);
+    },
+    
+    // asks a question with multiple responses presented as buttons
+    // selected item is returned to a callback method.
+    // answers may be either an array or a hash. if it's an array, the
+    // the callback will received the selected value. if it's a hash,
+    // you'll get the corresponding key.
+    ask: function(question, answers, callback, options) {
+        
+        options = jQuery.extend({modal: true, closeable: false},
+                                options || {},
+                                {show: true, unloadOnHide: true});
+        
+        var body = jQuery('<div></div>').append(jQuery('<div class="question"></div>').html(question));
+        
+        // ick
+        var map = {}, answerStrings = [];
+        if (answers instanceof Array) {
+            for (var i = 0; i < answers.length; i++) {
+                map[answers[i]] = answers[i];
+                answerStrings.push(answers[i]);
+            }
+        } else {
+            for (var k in answers) {
+                map[answers[k]] = k;
+                answerStrings.push(answers[k]);
+            }
+        }
+        
+        var buttons = jQuery('<form class="answers"></form>');
+        buttons.html(jQuery.map(answerStrings, function(v) {
+            return "<input type='button' value='" + v + "' />";
+        }).join(' '));
+        
+        jQuery('input[type=button]', buttons).click(function() {
+            var clicked = this;
+            Boxy.get(this).hide(function() {
+                if (callback) callback(map[clicked.value]);
+            });
+        });
+        
+        body.append(buttons);
+        
+        new Boxy(body, options);
+        
+    },
+    
+    // returns true if a modal boxy is visible, false otherwise
+    isModalVisible: function() {
+        return jQuery('.boxy-modal-blackout').length > 0;
+    },
+    
+    _u: function() {
+        for (var i = 0; i < arguments.length; i++)
+            if (typeof arguments[i] != 'undefined') return false;
+        return true;
+    },
+    
+    _handleResize: function(evt) {
+        var d = jQuery(document);
+        jQuery('.boxy-modal-blackout').css('display', 'none').css({
+            width: d.width(), height: d.height()
+        }).css('display', 'block');
+    },
+    
+    _handleDrag: function(evt) {
+        var d;
+        if (d = Boxy.dragging) {
+            d[0].boxy.css({left: evt.pageX - d[1], top: evt.pageY - d[2]});
+        }
+    },
+    
+    _nextZ: function() {
+        return Boxy.zIndex++;
+    },
+    
+    _viewport: function() {
+        var d = document.documentElement, b = document.body, w = window;
+        return jQuery.extend(
+            jQuery.browser.msie ?
+                { left: b.scrollLeft || d.scrollLeft, top: b.scrollTop || d.scrollTop } :
+                { left: w.pageXOffset, top: w.pageYOffset },
+            !Boxy._u(w.innerWidth) ?
+                { width: w.innerWidth, height: w.innerHeight } :
+                (!Boxy._u(d) && !Boxy._u(d.clientWidth) && d.clientWidth != 0 ?
+                    { width: d.clientWidth, height: d.clientHeight } :
+                    { width: b.clientWidth, height: b.clientHeight }) );
+    }
+
+});
+
+Boxy.prototype = {
+    
+    // Returns the size of this boxy instance without displaying it.
+    // Do not use this method if boxy is already visible, use getSize() instead.
+    estimateSize: function() {
+        this.boxy.css({visibility: 'hidden', display: 'block'});
+        var dims = this.getSize();
+        this.boxy.css('display', 'none').css('visibility', 'visible');
+        return dims;
+    },
+                
+    // Returns the dimensions of the entire boxy dialog as [width,height]
+    getSize: function() {
+        return [this.boxy.width(), this.boxy.height()];
+    },
+    
+    // Returns the dimensions of the content region as [width,height]
+    getContentSize: function() {
+        var c = this.getContent();
+        return [c.width(), c.height()];
+    },
+    
+    // Returns the position of this dialog as [x,y]
+    getPosition: function() {
+        var b = this.boxy[0];
+        return [b.offsetLeft, b.offsetTop];
+    },
+    
+    // Returns the center point of this dialog as [x,y]
+    getCenter: function() {
+        var p = this.getPosition();
+        var s = this.getSize();
+        return [Math.floor(p[0] + s[0] / 2), Math.floor(p[1] + s[1] / 2)];
+    },
+                
+    // Returns a jQuery object wrapping the inner boxy region.
+    // Not much reason to use this, you're probably more interested in getContent()
+    getInner: function() {
+        return jQuery('.boxy-inner', this.boxy);
+    },
+    
+    // Returns a jQuery object wrapping the boxy content region.
+    // This is the user-editable content area (i.e. excludes titlebar)
+    getContent: function() {
+        return jQuery('.boxy-content', this.boxy);
+    },
+    
+    // Replace dialog content
+    setContent: function(newContent) {
+        newContent = jQuery(newContent).css({display: 'block'}).addClass('boxy-content');
+        if (this.options.clone) newContent = newContent.clone(true);
+        this.getContent().remove();
+        this.getInner().append(newContent);
+        this._setupDefaultBehaviours(newContent);
+        this.options.behaviours.call(this, newContent);
+        return this;
+    },
+    
+    // Move this dialog to some position, funnily enough
+    moveTo: function(x, y) {
+        this.moveToX(x).moveToY(y);
+        return this;
+    },
+    
+    // Move this dialog (x-coord only)
+    moveToX: function(x) {
+        if (typeof x == 'number') this.boxy.css({left: x});
+        else this.centerX();
+        return this;
+    },
+    
+    // Move this dialog (y-coord only)
+    moveToY: function(y) {
+        if (typeof y == 'number') this.boxy.css({top: y});
+        else this.centerY();
+        return this;
+    },
+    
+    // Move this dialog so that it is centered at (x,y)
+    centerAt: function(x, y) {
+        var s = this[this.visible ? 'getSize' : 'estimateSize']();
+        if (typeof x == 'number') this.moveToX(x - s[0] / 2);
+        if (typeof y == 'number') this.moveToY(y - s[1] / 2);
+        return this;
+    },
+    
+    centerAtX: function(x) {
+        return this.centerAt(x, null);
+    },
+    
+    centerAtY: function(y) {
+        return this.centerAt(null, y);
+    },
+    
+    // Center this dialog in the viewport
+    // axis is optional, can be 'x', 'y'.
+    center: function(axis) {
+        var v = Boxy._viewport();
+        var o = this.options.fixed ? [0, 0] : [v.left, v.top];
+        if (!axis || axis == 'x') this.centerAt(o[0] + v.width / 2, null);
+        if (!axis || axis == 'y') this.centerAt(null, o[1] + v.height / 2);
+        return this;
+    },
+    
+    // Center this dialog in the viewport (x-coord only)
+    centerX: function() {
+        return this.center('x');
+    },
+    
+    // Center this dialog in the viewport (y-coord only)
+    centerY: function() {
+        return this.center('y');
+    },
+    
+    // Resize the content region to a specific size
+    resize: function(width, height, after) {
+        if (!this.visible) return;
+        var bounds = this._getBoundsForResize(width, height);
+        this.boxy.css({left: bounds[0], top: bounds[1]});
+        this.getContent().css({width: bounds[2], height: bounds[3]});
+        if (after) after(this);
+        return this;
+    },
+    
+    // Tween the content region to a specific size
+    tween: function(width, height, after) {
+        if (!this.visible) return;
+        var bounds = this._getBoundsForResize(width, height);
+        var self = this;
+        this.boxy.stop().animate({left: bounds[0], top: bounds[1]});
+        this.getContent().stop().animate({width: bounds[2], height: bounds[3]}, function() {
+            if (after) after(self);
+        });
+        return this;
+    },
+    
+    // Returns true if this dialog is visible, false otherwise
+    isVisible: function() {
+        return this.visible;    
+    },
+    
+    // Make this boxy instance visible
+    show: function() {
+        if (this.visible) return;
+        if (this.options.modal) {
+            var self = this;
+            if (!Boxy.resizeConfigured) {
+                Boxy.resizeConfigured = true;
+                jQuery(window).resize(function() { Boxy._handleResize(); });
+            }
+            this.modalBlackout = jQuery('<div class="boxy-modal-blackout"></div>')
+                .css({zIndex: Boxy._nextZ(),
+                      opacity: 0.7,
+                      width: jQuery(document).width(),
+                      height: jQuery(document).height()})
+                .appendTo(document.body);
+            this.toTop();
+            if (this.options.closeable) {
+                jQuery(document.body).bind('keypress.boxy', function(evt) {
+                    var key = evt.which || evt.keyCode;
+                    if (key == 27) {
+                        self.hide();
+                        jQuery(document.body).unbind('keypress.boxy');
+                    }
+                });
+                this.modalBlackout.bind('click', function() { self.hide(); });
+            }
+        }
+        this.boxy.stop().css({opacity: 1}).show();
+        this.visible = true;
+        this._fire('afterShow');
+        return this;
+    },
+    
+    // Hide this boxy instance
+    hide: function(after) {
+        if (!this.visible) return;
+        var self = this;
+        if (this.options.modal) {
+            jQuery(document.body).unbind('keypress.boxy');
+            this.modalBlackout.animate({opacity: 0}, function() {
+                jQuery(this).remove();
+            });
+        }
+        this.boxy.stop().animate({opacity: 0}, 300, function() {
+            self.boxy.css({display: 'none'});
+            self.visible = false;
+            self._fire('afterHide');
+            if (after) after(self);
+            if (self.options.unloadOnHide) self.unload();
+        });
+        return this;
+    },
+    
+    toggle: function() {
+        this[this.visible ? 'hide' : 'show']();
+        return this;
+    },
+    
+    hideAndUnload: function(after) {
+        this.options.unloadOnHide = true;
+        this.hide(after);
+        return this;
+    },
+    
+    unload: function() {
+        this._fire('beforeUnload');
+        this.boxy.remove();
+        if (this.options.actuator) {
+            jQuery.data(this.options.actuator, 'active.boxy', false);
+        }
+    },
+    
+    // Move this dialog box above all other boxy instances
+    toTop: function() {
+        this.boxy.css({zIndex: Boxy._nextZ()});
+        return this;
+    },
+    
+    // Returns the title of this dialog
+    getTitle: function() {
+        return jQuery('> .title-bar h2', this.getInner()).html();
+    },
+    
+    // Sets the title of this dialog
+    setTitle: function(t) {
+        jQuery('> .title-bar h2', this.getInner()).html(t);
+        return this;
+    },
+    
+    //
+    // Don't touch these privates
+    
+    _getBoundsForResize: function(width, height) {
+        var csize = this.getContentSize();
+        var delta = [width - csize[0], height - csize[1]];
+        var p = this.getPosition();
+        return [Math.max(p[0] - delta[0] / 2, 0),
+                Math.max(p[1] - delta[1] / 2, 0), width, height];
+    },
+    
+    _setupTitleBar: function() {
+        if (this.options.title) {
+            var self = this;
+            var tb = jQuery("<div class='title-bar'></div>").html("<h2>" + this.options.title + "</h2>");
+            if (this.options.closeable) {
+                tb.append(jQuery("<a href='#' class='close'></a>").html(this.options.closeText));
+            }
+            if (this.options.draggable) {
+                tb[0].onselectstart = function() { return false; }
+                tb[0].unselectable = 'on';
+                tb[0].style.MozUserSelect = 'none';
+                if (!Boxy.dragConfigured) {
+                    jQuery(document).mousemove(Boxy._handleDrag);
+                    Boxy.dragConfigured = true;
+                }
+                tb.mousedown(function(evt) {
+                    self.toTop();
+                    Boxy.dragging = [self, evt.pageX - self.boxy[0].offsetLeft, evt.pageY - self.boxy[0].offsetTop];
+                    jQuery(this).addClass('dragging');
+                }).mouseup(function() {
+                    jQuery(this).removeClass('dragging');
+                    Boxy.dragging = null;
+                    self._fire('afterDrop');
+                });
+            }
+            this.getInner().prepend(tb);
+            this._setupDefaultBehaviours(tb);
+        }
+    },
+    
+    _setupDefaultBehaviours: function(root) {
+        var self = this;
+        if (this.options.clickToFront) {
+            root.click(function() { self.toTop(); });
+        }
+        jQuery('.close', root).click(function() {
+            self.hide();
+            return false;
+        }).mousedown(function(evt) { evt.stopPropagation(); });
+    },
+    
+    _fire: function(event) {
+        this.options[event].call(this);
+    }
+    
+};
+
+/* /htapps/roger.babel/pt/web/jquery/boxy/jquery.boxy.js */
+if(!Array.indexOf){
+  Array.prototype.indexOf = function(obj){
+   for(var i=0; i<this.length; i++){
+    if(this[i]==obj){
+     return i;
+    }
+   }
+   return -1;
+  }
+}
+
+// add Array.reduce if necessary
+
+if (!Array.prototype.reduce)
+{
+  Array.prototype.reduce = function(fun /*, initial*/)
+  {
+    var len = this.length;
+    if (typeof fun != "function")
+      throw new TypeError();
+
+    // no value to return if no initial value and an empty array
+    if (len == 0 && arguments.length == 1)
+      throw new TypeError();
+
+    var i = 0;
+    if (arguments.length >= 2)
+    {
+      var rv = arguments[1];
+    }
+    else
+    {
+      do
+      {
+        if (i in this)
+        {
+          rv = this[i++];
+          break;
+        }
+
+        // if array contains no values, no initial value to return
+        if (++i >= len)
+          throw new TypeError();
+      }
+      while (true);
+    }
+
+    for (; i < len; i++)
+    {
+      if (i in this)
+        rv = fun.call(null, rv, this[i], i, this);
+    }
+
+    return rv;
+  };
+}
+
+// define a console if not exists
+if ( window.console === undefined ) {
+    window.console = {
+        log : function() { }
+    }
+}
+
+window.unload = function(e) {
+    HT.unloading = true;
+}
+
+// class constructors for bookreader
+function subclass(constructor, superConstructor)
+{
+  function surrogateConstructor()
+  {
+  }
+
+  surrogateConstructor.prototype = superConstructor.prototype;
+
+  var prototypeObject = new surrogateConstructor();
+  prototypeObject.constructor = constructor;
+
+  constructor.prototype = prototypeObject;
+}
+
+// define a namespace
+var HT = HT || {};
+HT.config = HT.config || {};
+
+HT.config.ARBITRARY_PADDING = 65;
+HT.config.ARBITRARY_WINDOW_WIDTH = 915;
+
+// bookreader utility
+// seed hash based on URL parameters as needed
+HT.init_from_params = function() {
+    if ( ! window.location.hash ) {
+      var hash = "mode/" + HT.params.view;
+      if ( typeof(HT.params.seq) != 'undefined' ) {
+        hash = "page/n" + HT.params.seq + "/" + hash;
+      }
+      window.location.hash = "#" + hash;
+    }
+}
+
+HT.track_event = function(args, async) {
+    args = $.extend({}, { category : 'PT' }, args)
+    // has to be sync?
+    async = true;
+    if ( pageTracker != null ) {
+
+        if ( args.label == null ) {
+            var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+            args.label = params.id + " " + params.seq + " " + params.size + " " + params.orient + " " + params.view;
+        }
+
+        var fn = function() {
+            try {
+                pageTracker._trackEvent(args.category, args.action, args.label);
+            } catch(e) { console.log(e); }
+
+            // // local tracking
+            // $.ajax({
+            //     url : "/cgi/feedback",
+            //     data : { category : args.category, action : args.action, label : args.label },
+            //     error : function(xhr, textStatus, err) {
+            //         console.log("ERROR", textStatus, "/", err);
+            //         return false;
+            //     },
+            //     success : function(data, textStatus, xhr) {
+            //     },
+            //     async : async
+            // })
+            // console.log(args);
+        };
+        
+        if ( async ) {
+            _gaq.push(fn);
+        } else {
+            fn();
+        }
+        
+    }
+}
+
+$(document).ready(function() {
+  
+    $.ajaxSetup({
+      cache: false
+    });  
+
+    // bind click events
+    $(".tracked").click(function(e) {
+        var label = $(this).data('tracking-label');
+        var category = $(this).data('tracking-category') || 'PT';
+        var action = $(this).data('tracking-action');
+        
+        HT.track_event({ label : label, category : category, action : action });
+        
+        if ( $(this).hasClass("dialog") ) {
+            return false;
+        }
+        
+        // return true so click event bubbles to any other
+        // event handlers; will be set to false on the exceptions
+        var retval = true;
+
+        if ( HT.reader == null || ! $(this).hasClass("interactive") ) {
+            // delay events that change the current document so the
+            // tracking beacon can be relayed
+            
+            if ( $(this).is("a") ) {
+                if ( $(this).attr('target') ) {
+                  return true;
+                }
+                retval = false;
+                var href = $(this).attr('href');
+                setTimeout(function() {
+                    window.location.href = href;
+                }, 500);
+            } else if ( $(this).is("input[type=submit]") ) {
+                var frm = $(this).parents("form");
+                retval = false;
+                var events = $.data(frm.get(0), 'events');
+                if ( events && events.submit == undefined ) {
+                  setTimeout(function() {
+                      frm.submit();
+                  }, 500);
+                } else {
+                  return true;
+                }
+            }
+        }
+        
+        return retval;
+        
+    })
+})
+
+/* /htapps/roger.babel/pt/web/js/init.js */
+// avoid polluting the global namespace
+var HT = HT || {};
+
+HT.pdf_helpers = {
+    
+    is_running: false,
+    inter: null,
+  
+    open_progress: function(progress_url, download_url, total) {
+        
+      if ( HT.pdf_helpers.inter ) {
+        // already polling
+        console.log("ALREADY POLLING!");
+        return;
+      }
+      
+      HT.pdf_helpers.progress_url = progress_url;
+      HT.pdf_helpers.download_url = download_url;
+      HT.pdf_helpers.total = total;
+      HT.pdf_helpers.is_running = true;
+      
+      
+      // this means the PDF has been located so...
+      var $contents = $("div#fullPdfFrame").find("iframe").contents();
+      HT.pdf_helpers.update_progress($contents, total);
+      
+      var idx = 0;
+      var processed = 0;
+      var run = function() {
+          idx += 1;
+          $.ajax({
+              url : progress_url,
+              data : { ts : (new Date).getTime() },
+              cache : false,
+              dataType : "html",
+              success : function(data) {
+                  var status = HT.pdf_helpers.update_progress(data, total);
+                  var log = $.trim(data).split("\n").reverse();
+                  processed += 1;
+                  
+                  if ( status.done ) {
+                    HT.pdf_helpers.$notice.hide(function() {
+                      HT.pdf_helpers.show_download_link(download_url);
+                    })
+                    clearInterval(HT.pdf_helpers.inter);
+                    HT.pdf_helpers.inter = null;
+                    
+                  } else if ( status.error ) {
+                    HT.pdf_helpers.$notice.hide(function() {
+                      HT.pdf_helpers.show_error();
+                    })
+                    
+                    clearInterval(HT.pdf_helpers.inter);
+                    HT.pdf_helpers.inter = null;
+                    
+                  }
+              },
+              error : function(req, textStatus, errorThrown) {
+                  console.log("FAILED: ", req, "/", textStatus, "/", errorThrown);
+                  
+                  if ( req.status == 503 ) {
+                    // throttling error; clear interval and try again later
+                    clearInterval(HT.pdf_helpers.inter);
+                    HT.pdf_helpers.inter = null;
+
+                    setTimeout(function() {
+                      HT.pdf_helpers.inter = setInterval(run, 2000);
+                    }, 1000);
+
+                  } else if ( ( eq.status == 404 ) && (idx > 25 || processed > 0) ) {
+                      
+                      clearInterval(HT.pdf_helpers.inter);
+                      HT.pdf_helpers.inter = null;
+
+                      HT.pdf_helpers.$notice.hide(function() {
+                        HT.pdf_helpers.show_error();
+                      });
+                  }
+              }
+          });
+      }
+
+      // first run is in half a millisecond
+      HT.pdf_helpers.inter = setInterval(run, 2000);
+      
+    },
+    
+    show_download_link : function(download_url) {
+      // need to change color of .meter-value to make change obvious!!!
+      var html = 
+      '<div class="fullPdfAlert">' +
+        '<div>' +
+          '<p><strong>Your PDF is ready!</strong></p>' +
+          '<p><a href="' + download_url + '">Download PDF</a></p>' +
+        '</div>' +
+      '</div>';
+      
+      var $notice = new Boxy(html, {
+          show: true,
+          modal: true,
+          draggable: true,
+          closeable: false,
+          title: "",
+          behaviours: function(r) {
+              $(r).find("a").click(function() {
+                  setTimeout(function() {
+                    Boxy.get(r).hide();
+                  }, 500);
+                  return true;
+              })
+          }
+      });
+      
+    },
+    
+    show_error : function() {
+      var html =
+      '<div class="fullPdfAlert">' +
+      '<p>' +
+      'There was a problem building your PDF; staff have been notified.' +
+      '</p>' + 
+      '<p>' + 
+      'Please try again in 24 hours.' +
+      '</p>' +
+      '<p class="align-right">' +
+      '<button>OK</button>' +
+      '</p>' +
+      '</div>';
+
+      var $notice = new Boxy(html, {
+          show: true,
+          modal: true,
+          draggable: true,
+          closeable: false,
+          title: "",
+          behaviours: function(r) {
+              $(r).find("button").click(function() {
+                  Boxy.get(r).hide();
+              })
+          }
+      });
+    },
+  
+    update_progress: function(contents, total) {
+      var status = { done : false, error : false };
+      
+      var percent;
+      
+      if ( HT.pdf_helpers.current == -1 ) {
+        HT.pdf_helpers.$content.find(".meter-text").text('Building PDF');
+      }
+      
+      var current = $(contents).find("#current").data("value");
+      if ( current == "EOT" ) {
+        status.done = true;
+        percent = 100;
+      } else {
+        current = parseInt(current);
+        percent = 100 * (current / total);
+      }
+      
+      // track current
+      HT.pdf_helpers.current = current;
+      
+      if ( self.last_percent != percent ) {
+        self.last_percent = percent;
+        self.attempts = 0;
+      } else {
+        self.attempts += 1;
+      }
+      
+      if ( self.attempts > 5 ) {
+        status.error = true;
+      }
+      
+      HT.pdf_helpers.$content.find(".meter-value").css('width', percent + "%");
+      
+      return status;
+    },
+  
+    download_pdf : function(self) {
+      
+      var src = $(self).attr('href');
+      
+      var html = 
+      '<div class="meter-wrap">' +
+          '<div class="meter-value" style="background-color: #EF7A06; width: 0%">' +
+              '<div class="meter-text">' +
+                  'Setting up PDF...' +
+              '</div>' +
+          '</div>' +
+      '</div>';
+
+      HT.pdf_helpers.$notice = new Boxy(html, {
+         show : true,
+         modal : true,
+         draggable : true,
+         closeable : false,
+         title : "" 
+      });
+
+      HT.pdf_helpers.$content = HT.pdf_helpers.$notice.getContent();
+      HT.pdf_helpers.current = -1;
+      
+      // set a timer in case the iframe fails to load!
+      // setTimeout(function() {
+      //   if ( HT.pdf_helpers.current == -1 ) {
+      //     console.log("DOWNLOAD STARTUP NOT DETECTED");
+      //     HT.pdf_helpers.$notice.hide(function() {
+      //       HT.pdf_helpers.show_error();
+      //     })
+      //   }
+      // }, 5000);
+      
+      // empty out the iframe and create a new blank one pointing to the actual
+      /// PDF download.
+      //// $("div#fullPdfFrame").empty().append('<iframe src="' + src + ';callback=HT.pdf_helpers.open_progress"></iframe>');
+      
+      /// start PDF download via <script> callback
+      $.ajax({
+        url: src + ';callback=HT.pdf_helpers.open_progress',
+        dataType: 'script',
+        cache: false,
+        error: function() {
+          console.log("DOWNLOAD STARTUP NOT DETECTED");
+          HT.pdf_helpers.$notice.hide(function() {
+            HT.pdf_helpers.show_error();
+          })
+        }
+      })
+      
+    },
+  
+    explain_pdf_access : function(self) {
+        var $notice = new Boxy($("#noPdfAccess").html(), {
+            show: true,
+            modal: true,
+            draggable: true,
+            closeable: false,
+            clone: true,
+            title: "",
+            behaviours: function(r) {
+                $('<p class="align-right"><button>OK</button></p>')
+                    .appendTo(r)
+                    .find("button").click(function() {
+                        Boxy.get(r).hide();
+                    })
+            }
+        });
+    }
+    
+};
+  
+// depends on jQuery
+$(document).ready(function() {
+    $("a#fullPdfLink").addClass("dialog").addClass("interactive").click(function() {
+        if ( $(this).attr('rel') == 'allow' ) {
+            // if there's no progress base, punt on the progress bar
+            if ( HT.config.download_progress_base == null ) {
+                return true;
+            }
+            HT.pdf_helpers.download_pdf(this);
+        } else {
+            HT.pdf_helpers.explain_pdf_access(this);
+        }
+        return false;
+    });
+});
+
+/* /htapps/roger.babel/pt/web/js/download_helper.js */
