@@ -212,6 +212,8 @@
           <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
+        <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js"></script>
+        
         <!-- <xsl:call-template name="online_assessment"/> -->
 
         <xsl:if test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
@@ -376,7 +378,7 @@
       
        HT.init_from_params();
 
-       HT.reader = new HTBookReader();
+       HT.reader = new FudgingBookReader();
        HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
        <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
        HT.reader.bookTitle = document.title;

@@ -740,3 +740,22 @@ div.mdpScrollableContainer {
   border-bottom: 4px solid #666;
 }
 
+.debugIndex {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-weight: bold;
+  background-color: #eee;
+  padding: 10px;
+  border: 1px dotted #666;
+  text-align: center;
+}
+
+.page1up {
+  border: 1px solid #666;
+  background-color: #eee;
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 10px
+}
+

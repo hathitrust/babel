@@ -407,22 +407,38 @@ BookReader.prototype.drawLeafsOnePage = function() {
         indicesToDisplay.push(lastIndexToDraw+1);
     }
     
+    //var viewWidth = $('#BRpageview').width(); //includes scroll bar width
+    var viewWidth = $('#BRcontainer').attr('scrollWidth');
+
     leafTop = 0;
     var i;
     for (i=0; i<firstIndexToDraw; i++) {
-        leafTop += parseInt(this._getPageHeight(i)/this.reduce) +10;
+      var height = this._getPageHeight(i) / this.reduce;
+      var width = this._getPageWidth(i) / this.reduce;
+      if ( viewWidth < width ) {
+        var r = ( viewWidth - 20 ) / width;
+        width = ( viewWidth - 20 );
+        height = Math.floor(height * r);
+      }
+        // leafTop += parseInt(this._getPageHeight(i)/this.reduce) +10;
+        leafTop += height + 10;
     }
 
-    //var viewWidth = $('#BRpageview').width(); //includes scroll bar width
-    var viewWidth = $('#BRcontainer').attr('scrollWidth');
+    this.onePage.firstIndexToDraw = firstIndexToDraw;
 
 
     for (i=0; i<indicesToDisplay.length; i++) {
         var index = indicesToDisplay[i];    
         var height  = parseInt(this._getPageHeight(index)/this.reduce); 
+        var width   = parseInt(this._getPageWidth(index)/this.reduce); 
+
+        if ( viewWidth < width ) {
+          var r = ( viewWidth - 20 ) / width;
+          width = ( viewWidth - 20 );
+          height = Math.floor(height * r);
+        }
 
         if (BookReader.util.notInArray(indicesToDisplay[i], this.displayedIndices)) {            
-            var width   = parseInt(this._getPageWidth(index)/this.reduce); 
             //console.log("displaying leaf " + indicesToDisplay[i] + ' leafTop=' +leafTop);
             var div = document.createElement("div");
             div.className = 'BRpagediv1up';
@@ -437,11 +453,14 @@ BookReader.prototype.drawLeafsOnePage = function() {
             //$(div).text('loading...');
             
             $('#BRpageview').append(div);
+            $.data(div, 'index', index);
 
             var img = this.createContentElement(index, this.reduce, width, height);
             // $(img).css('width', width+'px');
             // $(img).css('height', height+'px');
             $(div).append(img);
+            
+            $('<div class="debugIndex">' + index + '</div>').appendTo(div);
 
             // var img = document.createElement("img");
             // img.src = this._getPageURI(index, this.reduce, 0);
