@@ -93,6 +93,7 @@ $param_2_solr_map = {
                            'debugocr'=>'debugocr',
                            'subject'=>'subject', 
                            'hlb3'=>'hlb',
+                            'ocronly'=>'ocronly',
                             'ocr'=>'ocr',
                             'ocr2'=>'ocr2',
                             'ocrpf'=>'ocrpf',
