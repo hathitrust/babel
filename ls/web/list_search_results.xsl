@@ -668,7 +668,8 @@
           </span>
         </div>
 
-
+        <xsl:text>DEBUG</xsl:text>
+        <xsl:copy-of select="explain"/>
 
 
         <!-- SEARCH needs relevance -->

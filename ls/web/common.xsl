@@ -50,8 +50,19 @@
           <!--<input type="hidden" name="debug" value="local"/>-->
           <xsl:call-template name="HiddenDebug"/>
           <button type="submit" name="a" id="srch" value="srchls">Find</button> 
+          <a>
+            <xsl:attribute name="href">
+              <xsl:value-of select="AdvancedSearch/AdvancedSearchURL"/>
+            </xsl:attribute>
+            <xsl:text>Advanced Full-text Search</xsl:text>
+          </a>
+    
+             
+
         </xsl:element>
+
       </div>
+
     </div>
   </xsl:template>
 

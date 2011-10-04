@@ -665,6 +665,9 @@ sub handle_ADVANCED_SEARCH_PI
         }
         
     }
+    # 
+    my $advURL=getAdvancedSearchURL($cgi);
+    $output .= wrap_string_in_tag($advURL, 'AdvancedSearchURL');
     return $output;
   }
 
@@ -675,6 +678,17 @@ sub handle_ADVANCED_SEARCH_PI
 #
 #======================================================================
 #----------------------------------------------------------------------
+sub getAdvancedSearchURL
+{
+    my $cgi=shift;
+#    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
+    my $url=$cgi->url(-relative=>1);
+    $url.='?a=page&amp;page=advanced';
+    return $url;
+}
+
+
+
 #XXX this should probably be moved to Utils, but I don't want to mess with submodule stuff now!
 sub commify
 {
@@ -946,8 +960,13 @@ sub _ls_wrap_result_data {
     my $rs = shift;
 
     my $output;
-
-
+    my $solr_debug;
+    
+    if (DEBUG('explain'))
+    {
+        $solr_debug=$rs->get_result_solr_debug();
+    }
+    
     # since json might contain unescaped xml entities i.e. "&" we need to filter
     # any strings.  Is there a better place to do this?
 
@@ -1009,6 +1028,16 @@ sub _ls_wrap_result_data {
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');
 
+        # use id to look up explain data
+        if (DEBUG('explain'))
+        {
+
+            #XXX do we need to do any id normalizing/denormalizing
+            my $explain = $solr_debug->{explain}->{$id};
+            ASSERT(defined($explain),qq{no explain data for id $id});
+            $s .= wrap_string_in_tag($explain, 'explain');
+        }
+        
         my $rights = $doc_data->{'rights'};
         $s .= wrap_string_in_tag($rights, 'rights');
 
@@ -1034,6 +1063,7 @@ sub _ls_wrap_result_data {
         my $record_no = $doc_data->{'record_no'};
         
         $s .= wrap_string_in_tag($record_no, 'record');
+
         $output .= wrap_string_in_tag($s, 'Item');
     }
 
