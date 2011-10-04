@@ -187,6 +187,14 @@ all:
 #XXX removed fields not currently in index schema.  put back in when
 # reindex happens  see ocr_with_missing_fields below 
 
+# ocr only
+ocronly:
+  qf:
+    - [ocr, 500000]
+  mm: "100%"
+  tie: 0.9
+
+#ocr only
 ocr:
   pf:
     - [title_ab, 10000]
