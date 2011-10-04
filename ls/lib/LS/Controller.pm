@@ -81,7 +81,14 @@ sub ___core_initialize {
     my $action = $cgi->param('a');
     my $q1 = $cgi->param('q1');
     my $page = $cgi->param('page');
-    if (! $action || ! $page || $q1) {
+    
+    #XXX  redo this with cleaner logic
+    if ($action eq "page")
+    {
+        # we need this to display a page even when there is no query
+    }
+    elsif (! $action || ! $q1) 
+    {
         my $params = $config->get('ls_default_params');
         my $temp_cgi = new CGI($params);
         # Preserve debug params

@@ -94,6 +94,8 @@ $g_late_operations = [
    
    # ----- UI (page) production action -----
    # e.g. a=page;page=error
+#  XXX This contains dead code. Check for pages listed that no longer have a pifiller or xml page!
+# code no longer seems to exist for these pages
    'ACTION_DISP_PAGE'   =>
  {'action_param' => 'page',
   'action_type'  => 'UI',
@@ -120,11 +122,11 @@ $g_late_operations = [
                                  'filler'   => 'LS::PIFiller::Home',
                                 },
                                 
-#                     'advanced'  => {
-#                                 'builders' => [],
-#                                 'template' => 'advanced.xml',
-#                                 'filler'   => 'LS::PIFiller::Advanced',
-#                                },
+                     'advanced'  => {
+                                 'builders' => [],
+                                 'template' => 'advanced.xml',
+                                 'filler'   => 'LS::PIFiller::Advanced',
+                                },
 
                     },
  },
