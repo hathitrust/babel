@@ -86,11 +86,14 @@ FudgingBookReader.prototype.setupPageLeafs = function() {
         '<div class="page1up" id="pagediv{i}" style="height: {height}px; width: {width}px"><div class="debugIndex">{i}</div></div>'
         .replace(/{i}/g, i).replace('{height}', height).replace('{width}', width)
       );
+      $(leafs[0]).appendTo($("#BRpageview"));
+      leafs = [];
       if (width>viewWidth) viewWidth=width;
   }
   // $('#BRpageview').height(viewHeight);
   $('#BRpageview').width(viewWidth).css('margin', '0 auto');
-  $('#BRpageview').get(0).innerHTML = leafs.join("\n");
+  // $('#BRpageview').get(0).innerHTML = leafs.join("\n");
+  //$(leafs.join("\n")).appendTo($("#BRpageview"));
   
 }
 
@@ -430,7 +433,7 @@ FudgingBookReader.prototype.createContentElement = function(index, reduce, width
               }
             });
           }
-          e.src = this.src;
+          //e.src = this.src;
           
           console.log("HEY: SETTING ", index, " TO ", this.src);
           this.e = undefined;
