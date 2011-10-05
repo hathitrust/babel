@@ -49,12 +49,17 @@
       	<button id="wraptext" class="selectedwrap">Wrapped Text</button><br />
       	<button id="unwraptext" >Unwrapped Text</button>
       	
+        <br />
+      	<a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
+      	
       </div>
       
       <div id="BRimagesettings">
       	<button id="imagezoomin" class="bigger">Zoom In</button><br />
       	<button id="imagezoomout" class="smaller">Zoom Out</button><br />
       	<button id="fittopage" >Fit to Page</button>
+        <br />
+      	<a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
       </div>
       
       <div id="BRabout">About</div>

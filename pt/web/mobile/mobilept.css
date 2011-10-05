@@ -567,6 +567,7 @@ div.ocrScrollBar{
 	border-top:solid 1px #ccc;
 	border-right:solid 1px #ccc;
 	border-left:solid 1px #ccc;
+	background-color: #eee;
 	border-bottom:none;
 	padding:0;
 	width:90%;
@@ -584,6 +585,7 @@ div.ocrScrollBar{
 #ocrzoomout,
 #unwraptext{	
 	border:solid 1px #ccc;
+	background-color: #eee;
 	padding:0;
 	width:90%;
 	height:2.4em;
@@ -611,10 +613,11 @@ div.ocrScrollBar{
 	background-image:url(mobile/images/PT-settings-fitscreen.png);
 	background-position:right center;
 	background-repeat:no-repeat;        
+	background-color: #eee;
 }
 
 /*#fittopage,*/ #feedback, #mdpCatalogLinkInfoForm, .worldcat, #fullPdfLink, #epubLink,
-#mdpLimitedSearchInside, #mobilefeedbackdiv a.mobilefeedback {   
+#mdpLimitedSearchInside, #mobilefeedbackdiv a.mobilefeedback, .PTregularLink {   
 	background-image:url(mobile/images/Arrow_rightcircle.png);
 	background-position:right center;
 	background-repeat:no-repeat;    
@@ -625,7 +628,7 @@ padding-left:20px;
 content:url(mobile/images/Arrow_rightcircle.png);
 }*/
 
-#feedback,
+#feedback, .PTregularLink,
 #mdpCatalogLinkInfoForm,
 .worldcat,
 #mdpLimitedSearchInside,
@@ -642,10 +645,16 @@ content:url(mobile/images/Arrow_rightcircle.png);
 	-moz-border-radius: 2px;
     -webkit-border-radius: 2px;
 }
-.worldcat,
+.worldcat, 
 #mdpLimitedSearchInside{
 	width:80%;
 }
+
+.PTregularLink {
+  margin-top: 1em;
+  width: 82%;
+}
+
 #feedback, #mdpCatalogLinkInfoForm, #mobilefeedbackdiv a.mobilefeedback {
 	margin-top:1em;
 	width:90%;
@@ -653,7 +662,7 @@ content:url(mobile/images/Arrow_rightcircle.png);
 }
 
 .boxy-content button:active, .boxy-content a:active {
-  background-color: #eee;
+  background-color: #CCE6EF !important;
 }
 
 .boxy-content #mdpCatalogLinkInfoForm{
@@ -663,7 +672,7 @@ content:url(mobile/images/Arrow_rightcircle.png);
 
 a#mdpCatalogLinkInfoForm:link,  a#mdpCatalogLinkInfoForm:visited,
 a#feedback:link,  a#feedback:visited,
-a.worldcat:link,  a.worldcat:visited,
+a.worldcat:link,  a.worldcat:visited, a.PTregularLink:link, a.PTregularLink:visited,
 a#fullPdfLink:link,  a#fullPdfLink:visited,
 a#epubLink:link,  a#epubLink:visited,
 a#mdpLimitedSearchInside:link, a#mdpLimitedSearchInside:visited,
@@ -1131,7 +1140,7 @@ color:white;
 #ajaxerror{
 	background-color:#fff;
 }
-.boxy-content .worldcat,
+.boxy-content .worldcat, .boxy-content .PTregularLink,
 .boxy-content p #fullPdfLink,
 .boxy-content p #epubLink,
 #mobilefeedbackdiv a.mobilefeedback {
