@@ -31,22 +31,6 @@ HTBookReader.prototype.getMetaUrlParams = function(start) {
     return params;
 }
 
-HTBookReader.prototype.getPageWidth = function(index) {
-    var r = this.rotationCache[index] || 0;
-    var w = this.__getPageWidth(index);
-    return w;
-}
-
-HTBookReader.prototype.getPageHeight = function(index) {
-    var r = this.rotationCache[index] || 0;
-    var h = this.__getPageHeight(index);
-    if ( this.displayMode == 'image' && 2 !== this.mode && ( r == 90 || r == 270 )) {
-        var w = this.__getPageWidth(index);
-        h = Math.ceil(w * ( w / h ));
-    }
-    return h;
-}
-
 HTBookReader.prototype.hasPageFeature = function(index, feature) {
     var slice = this.sliceFromIndex(index);
     if ( this.bookData[slice.slice] != undefined ) {
@@ -74,6 +58,22 @@ HTBookReader.prototype.removePageFeature = function(index, feature) {
         }
     }
     return false;
+}
+
+HTBookReader.prototype.getPageWidth = function(index) {
+    var r = this.rotationCache[index] || 0;
+    var w = this.__getPageWidth(index);
+    return w;
+}
+
+HTBookReader.prototype.getPageHeight = function(index) {
+    var r = this.rotationCache[index] || 0;
+    var h = this.__getPageHeight(index);
+    if ( this.displayMode == 'image' && 2 !== this.mode && ( r == 90 || r == 270 )) {
+        var w = this.__getPageWidth(index);
+        h = Math.ceil(w * ( w / h ));
+    }
+    return h;
 }
 
 HTBookReader.prototype.__getPageWidth = function(index) {
@@ -183,6 +183,7 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
     var q1 = this.getURLParameter("q1");
 
     var _targetWidth = Math.round(this.getMedianPageSize().width / _reduce);
+    console.log("GET PAGE URI", index, _targetWidth, this.getMedianPageSize().width, _reduce);
     var page_uri;
     if ( this.displayMode == 'text' && this.mode == 1 ) {
         page_uri = this.url_config.text;
@@ -1862,7 +1863,8 @@ HTBookReader.prototype.rotatePage = function(idx, delta) {
     if ( r == 360 ) { r = 0 ; }
     this.rotationCache[idx] = r;
 
-    $("div.BRpagediv1up").remove();
+    // $("div.BRpagediv1up").remove();
+    $("#BRpageview").empty();
     this.displayedIndices = [];
     
     this.drawLeafs();

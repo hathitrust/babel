@@ -1431,9 +1431,9 @@ BookReader.prototype.zoom1up = function(direction) {
     this.onePage.autofit = reduceFactor.autofit;
         
     this.pageScale = this.reduce; // preserve current reduce
-    this.resizePageView();
 
     $('#BRpageview').empty()
+    this.resizePageView();
     this.displayedIndices = [];
     this.loadLeafs();
     
@@ -3014,11 +3014,11 @@ BookReader.prototype.pruneUnusedImgs = function() {
     for (var key in this.prefetchedImgs) {
         //console.log('key is ' + key);
         if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
-            //console.log('removing key '+ key);
-            $(this.prefetchedImgs[key]).remove();
+            console.log('removing key '+ key);
+            $(this.prefetchedImgs[key]).detach();
         }
         if ((key < this.twoPage.currentIndexL-4) || (key > this.twoPage.currentIndexR+4)) {
-            //console.log('deleting key '+ key);
+            console.log('deleting key '+ key);
             delete this.prefetchedImgs[key];
         }
     }
@@ -4276,7 +4276,7 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     if (index < 0 || index >= this.numLeafs) { // Synthesize page
         return this.imagesBaseURL + "/transparent.png";
     }
-    
+
     if ('undefined' == typeof(reduce)) {
         // reduce not passed in
         // $$$ this probably won't work for thumbnail mode
@@ -4296,6 +4296,7 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
         } else {
             scale = 32;
         }
+        console.log("_GET PAGE URI", index, this.getPageHeight(index), this.twoPage.height, ratio, scale);
         reduce = scale;
     }
     
@@ -4377,22 +4378,6 @@ HTBookReader.prototype.getMetaUrlParams = function(start) {
     return params;
 }
 
-HTBookReader.prototype.getPageWidth = function(index) {
-    var r = this.rotationCache[index] || 0;
-    var w = this.__getPageWidth(index);
-    return w;
-}
-
-HTBookReader.prototype.getPageHeight = function(index) {
-    var r = this.rotationCache[index] || 0;
-    var h = this.__getPageHeight(index);
-    if ( this.displayMode == 'image' && 2 !== this.mode && ( r == 90 || r == 270 )) {
-        var w = this.__getPageWidth(index);
-        h = Math.ceil(w * ( w / h ));
-    }
-    return h;
-}
-
 HTBookReader.prototype.hasPageFeature = function(index, feature) {
     var slice = this.sliceFromIndex(index);
     if ( this.bookData[slice.slice] != undefined ) {
@@ -4420,6 +4405,22 @@ HTBookReader.prototype.removePageFeature = function(index, feature) {
         }
     }
     return false;
+}
+
+HTBookReader.prototype.getPageWidth = function(index) {
+    var r = this.rotationCache[index] || 0;
+    var w = this.__getPageWidth(index);
+    return w;
+}
+
+HTBookReader.prototype.getPageHeight = function(index) {
+    var r = this.rotationCache[index] || 0;
+    var h = this.__getPageHeight(index);
+    if ( this.displayMode == 'image' && 2 !== this.mode && ( r == 90 || r == 270 )) {
+        var w = this.__getPageWidth(index);
+        h = Math.ceil(w * ( w / h ));
+    }
+    return h;
 }
 
 HTBookReader.prototype.__getPageWidth = function(index) {
@@ -4529,6 +4530,7 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
     var q1 = this.getURLParameter("q1");
 
     var _targetWidth = Math.round(this.getMedianPageSize().width / _reduce);
+    console.log("GET PAGE URI", index, _targetWidth, this.getMedianPageSize().width, _reduce);
     var page_uri;
     if ( this.displayMode == 'text' && this.mode == 1 ) {
         page_uri = this.url_config.text;
@@ -6208,7 +6210,8 @@ HTBookReader.prototype.rotatePage = function(idx, delta) {
     if ( r == 360 ) { r = 0 ; }
     this.rotationCache[idx] = r;
 
-    $("div.BRpagediv1up").remove();
+    // $("div.BRpagediv1up").remove();
+    $("#BRpageview").empty();
     this.displayedIndices = [];
     
     this.drawLeafs();

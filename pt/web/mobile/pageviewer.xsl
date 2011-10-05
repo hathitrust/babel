@@ -171,7 +171,7 @@
          
        HT.init_from_params();
 
-       HT.reader = new HTMobileBookReader();
+       HT.reader = new FudgingMobileBookReader(); // new HTMobileBookReader();
        HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
        <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
        HT.reader.bookTitle = document.title;
@@ -203,7 +203,7 @@
           ping  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ping",
           thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
         };
-        HT.reader.slice_size = 100;
+        HT.reader.slice_size = 999999; // 100;
         HT.reader.total_slices = 1;
         HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
         if ( HT.reader.ui == 'embed' ) {

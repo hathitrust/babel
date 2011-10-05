@@ -749,6 +749,7 @@ div.mdpScrollableContainer {
   padding: 10px;
   border: 1px dotted #666;
   text-align: center;
+  z-index: 999;
 }
 
 .page1up {
@@ -759,3 +760,8 @@ div.mdpScrollableContainer {
   margin-bottom: 10px
 }
 
+.page1up .content {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
