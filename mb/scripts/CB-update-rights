@@ -1,0 +1,284 @@
+#!/l/local/bin/perl
+
+=head1 NAME
+
+CB-update-rights
+
+=head1 USAGE
+
+/htapps/babel/mb/scripts/CB-update-rights
+
+=head1 DESCRIPTION
+
+Update mdp.o_item.rights from mdp.rights_current.namespace,id
+
+=head1 OPTIONS
+
+=over 8
+
+=item -n
+
+Debug options
+
+=back
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+my $INTERACTIVE = $ENV{TERM};
+
+our ($opt_e);
+
+my $ops = getopts('e');
+my $EMAIL = $opt_e;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use Utils;
+use Context;
+use Database;
+use MdpConfig;
+use Debug::DUtils;
+use Identifier;
+use Mail::Mailer;
+
+#
+# Establish and populate the Context.  Order dependent.
+#
+my $C = new Context;
+my $CONFIG = new MdpConfig(
+                           Utils::get_uber_config_path('mb'),
+                           #$ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                           #$ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $CONFIG);
+# Database connection
+my $db = new Database($C->get_object('MdpConfig'));
+my $DBH = $db->get_DBH($C);
+
+
+
+CB_delete_extras($C);
+CB_do_update_rights($C);
+
+email_report()
+  if ($EMAIL);
+
+
+exit 0;
+
+# ---------------------------------------------------------------------
+
+=item __P
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+my $EMAIL_BUFFER = '';
+
+sub __P {
+    my $msg = shift;
+
+    $EMAIL_BUFFER .= $msg;
+    
+    return if (! $ENV{'TERM'});
+    print STDOUT qq{$msg};
+}
+
+# ---------------------------------------------------------------------
+
+=item email_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub email_report {
+    my $g_assert_email_to_addr   = q{pfarber@umich.edu};
+    my $g_assert_email_from_addr = q{"CB Mailer" <dlps-help@umich.edu>};
+
+    my $when = Utils::Time::iso_Time();
+    my $email_subject = qq{[CB] Rights update ($when)};
+
+    my $mailer = new Mail::Mailer('sendmail');
+    $mailer->open({
+                   'To'      => $g_assert_email_to_addr,
+                   'From'    => $g_assert_email_from_addr,
+                   'Subject' => $email_subject,
+                  });
+    print $mailer($EMAIL_BUFFER);
+    $mailer->close;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item CB_delete_extras
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CB_delete_extras {
+    my($C) = @_;
+
+    my $size = 100;
+    
+    my ($statement, $sth);
+
+    my $num_o_item = 0;
+    my $num_deleted_from_o_item = 0;
+
+    __P(qq{delete extras:\n});
+
+    while (1) {
+        $statement = qq{LOCK TABLES o_item WRITE, o_coll_item WRITE};
+        $sth = DbUtils::prep_n_execute($DBH, $statement);
+
+        # One hundred at a time so we don't race/block with Collection Builder users
+        $statement = 
+          qq{SELECT extern_item_id FROM o_item WHERE extern_item_id NOT IN (SELECT DISTINCT extern_item_id FROM o_coll_item) LIMIT $size};
+        $sth = DbUtils::prep_n_execute($DBH, $statement);
+        my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+
+        my $num = (scalar @$ref_to_arr_of_hashref);
+        if (! $num) {
+            $statement = qq{UNLOCK TABLES};
+            $sth = DbUtils::prep_n_execute($DBH, $statement);
+            last;
+        }
+        
+        foreach my $hashref (@$ref_to_arr_of_hashref) {
+            $num_o_item++;
+            my $extern_item_id = $hashref->{extern_item_id};
+
+            __P( qq{A: o_item not in o_coll_item: $extern_item_id\n});
+            $statement = qq{DELETE FROM o_item WHERE extern_item_id='$extern_item_id'};
+            $sth = DbUtils::prep_n_execute($DBH, $statement);
+                
+            $num_deleted_from_o_item++;
+        }
+
+        $statement = qq{UNLOCK TABLES};
+        $sth = DbUtils::prep_n_execute($DBH, $statement);
+    }
+
+    __P(qq{num o_item not in o_coll_item=$num_o_item\n});
+    __P(qq{num deleted in o_item=$num_deleted_from_o_item\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item CB_do_update_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CB_do_update_rights {
+    my($C) = @_;
+
+    my $offset = 0;
+    my $size = 1000;
+    my ($statement, $sth);
+
+    __P(qq{update rights:\n});
+
+    my $num_missing = 0;
+    my $num_updated = 0;
+    
+    while (1) {
+        $statement = qq{SELECT extern_item_id, rights FROM mdp.o_item LIMIT $offset, $size};
+        $sth = DbUtils::prep_n_execute($DBH, $statement);
+        DEBUG('lsdb', qq{DEBUG: $statement});
+        my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+
+        last unless (scalar @$ref_to_arr_of_hashref);
+
+        print(qq{count=$offset\n}) if ($INTERACTIVE);
+
+        foreach my $hashref (@$ref_to_arr_of_hashref) {
+            my $extern_item_id = $hashref->{extern_item_id};
+            my $rights = $hashref->{rights};
+
+            my $namespace = Identifier::the_namespace($extern_item_id);
+            my $id = Identifier::get_id_wo_namespace($extern_item_id);
+
+            $statement = qq{SELECT attr FROM rights_current WHERE namespace='$namespace' AND id='$id'};
+            $sth = DbUtils::prep_n_execute($DBH, $statement);
+            my $attr = $sth->fetchrow_array || 0;
+
+            if ($attr) {
+                if ($attr != $rights) {
+                    $statement = qq{UPDATE o_item SET rights=$attr WHERE extern_item_id='$extern_item_id'};
+                    $sth = DbUtils::prep_n_execute($DBH, $statement);
+                    $num_updated++;
+                    
+                    __P(qq{$extern_item_id o_item.rights=$rights rights_current.attr=$attr\n});
+
+                    $statement = qq{SELECT MColl_ID FROM o_coll_item WHERE extern_item_id='$extern_item_id'};
+                    $sth = DbUtils::prep_n_execute($DBH, $statement);
+                    my @coll_arr = $sth->fetchrow_array;
+
+                    if (scalar @coll_arr) {
+                        my $colls = join(', ', @coll_arr);
+                        __P(qq{affected MColl_ID(s)=$colls\n});
+                    }
+                }
+            }
+            else {
+                __P(qq{$extern_item_id in o_item missing from rights_current\n});
+                $num_missing++;
+            }
+        }
+        $offset += $size;
+    }
+    __P(qq{num o_item updated=$num_updated\n});
+    __P(qq{num o_item missing from rights_current=$num_missing\n});
+
+}
+
+exit 0;
+
+
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2011 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
