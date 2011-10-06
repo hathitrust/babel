@@ -33,6 +33,7 @@
        <xsl:call-template name="footeraboutlink"/>
        <xsl:call-template name="helplink"/>
        <xsl:call-template name="footerfeedbacklink"/>
+       <xsl:call-template name="mobilelink" />
        <xsl:call-template name="footertakedownlink"/>
        <xsl:call-template name="footerprivacylink"/>
        <xsl:call-template name="footercontactlink"/>
@@ -61,6 +62,12 @@
      <a href="http://www.hathitrust.org/about" title="About Hathi Trust">About</a>
    </li>
  </xsl:template>
+ 
+ <xsl:template name="mobilelink">
+   <li>
+     <a href="http://m.hathitrust.org/" title="HathiTrust Mobile">Mobile</a>
+   </li>
+</xsl:template>
 
  <xsl:template name="footertakedownlink">
    <li>
