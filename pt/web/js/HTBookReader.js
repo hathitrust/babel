@@ -9,6 +9,7 @@ function HTBookReader() {
     this.total_slices = 9999;
     this.cache_age = -1;
     this.restricted_width = this.restricted_height = 75;
+    this.catalog_method = 'unzip';
 }
 
 HTBookReader.prototype.sliceFromIndex = function(index) {
@@ -17,7 +18,7 @@ HTBookReader.prototype.sliceFromIndex = function(index) {
 
 HTBookReader.prototype.getMetaUrlParams = function(start) {
     // var params = { id : this.bookId, noscale: 0, format: "list", limit : this.slice_size };
-    var params = { id : this.bookId, size: '100', format: "list", limit : this.slice_size, method : 'fudged' };
+    var params = { id : this.bookId, size: '100', format: "list", limit : this.slice_size, method : this.catalog_method };
     if ( this.flags.force !== undefined ) {
         params["force"] = this.force
     }
@@ -513,7 +514,9 @@ HTBookReader.prototype.init = function() {
     }
     
     setTimeout(function() {
+      self.initializing = true;
       BookReader.prototype.init.call(self);
+      self.initializing = false;
       self.saveReduce();
     }, init_delay)
 
@@ -1643,7 +1646,7 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
     var e;
     var url = this._getPageURI(index, reduce, 0);
     
-    if ( this.hasPageFeature(index, "MISSING_PAGE") ) {
+    if ( 0 && this.hasPageFeature(index, "MISSING_PAGE") ) {
 
         e = this._createTextElement(width, height);
         
