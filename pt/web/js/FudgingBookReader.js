@@ -359,8 +359,9 @@ if ( fudgingMonkeyPatch ) {
   HTBookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     if ( this.mode == this.constMode1up ) {
       var $div = $("#pagediv" + index);
+      var top = $div.length ? $div.offset().top : 0;
       var $container = $("#BRcontainer");
-      $container.animate({ scrollTop : ($container.scrollTop() + $div.offset().top - $container.offset().top ) }, "fast");
+      $container.animate({ scrollTop : ($container.scrollTop() + top - $container.offset().top ) }, "fast");
     } else {
       // HTBookReader.prototype.jumpToIndex.call(this, index, pageX, pageY);
       // HTBookReader jumpToIndex obsessed with text mode
@@ -644,125 +645,12 @@ if ( fudgingMonkeyPatch ) {
     // instance, but the clicking punts
     var $pagediv = $("#pagediv" + index);
     if ( ! $pagediv.length ) {
-      alert("COULD NOT FIND", index);
       return;
     }
     $("#pagediv" + index).attr('src', lazy.src);
-    self.prepareTwoPageView();
-    return;
-
-    var $img = $("#pagediv" + index);
-    var $cover = $("#BRbookcover");
-    var $view = $("#BRtwopageview");
-    var $edgeR = $(".BRleafEdgeR");
-    var $edgeL = $(".BRleafEdgeL");
-    var $spine = $("#BRbookspine");
-
-    // we need to respect the height of the img in 2up
-    var r = $img.height() / lazy.height;
-    var width = lazy.width * r;
-
-    var delta = width - $img.width();
-
-    var cover_width = $cover.width() + delta;
-    var cover_left = parseInt($cover.css('left'));
-
-    // this happens all the time
-    if ( $view.width() < $view.width() + delta ) {
-      $view.width($view.width() + delta);
-
-    }
-
-    this.twoPage.bookCoverDivWidth = cover_width;
-    self.twoPage.totalWidth = $view.width();
-    self.twoPage.middle = self.twoPage.totalWidth >> 1;
-    self.twoPage.gutter = self.twoPage.middle + self.gutterOffsetForIndex(self.twoPage.currentIndexL);
-    this.twoPage.scaledWL = this.getPageWidth2UP(self.twoPage.currentIndexL);
-    this.twoPage.scaledWR = this.getPageWidth2UP(self.twoPage.currentIndexR);
-    this.twoPage.bookCoverDivLeft = this.twoPage.gutter - this.twoPage.scaledWL - this.twoPage.leafEdgeWidthL - this.twoPage.coverInternalPadding;
-    // Book spine
-    this.twoPage.bookSpineDivLeft = this.twoPage.middle - (this.twoPage.bookSpineDivWidth >> 1);
-
-    this.twoPage.leafEdgeWidthL = this.leafEdgeWidth(this.twoPage.currentIndexL);
-    this.twoPage.leafEdgeWidthR = this.twoPage.edgeWidth - this.twoPage.leafEdgeWidthL;
-
-    var leftGutterOffset = this.gutterOffsetForIndex(this.twoPage.currentIndexL);
-    var leftWidthFromCenter = this.twoPage.scaledWL - leftGutterOffset + this.twoPage.leafEdgeWidthL;
-    var rightWidthFromCenter = this.twoPage.scaledWR + leftGutterOffset + this.twoPage.leafEdgeWidthR;
-    var largestWidthFromCenter = Math.max( leftWidthFromCenter, rightWidthFromCenter );
-    this.twoPage.totalWidth = 2 * (largestWidthFromCenter + this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding);
-
-    if ( index == self.twoPage.currentIndexL ) {
-      // moving to the left
-      var right_delta = 0;
-      cover_left = cover_left - delta;
-      console.log("FUDGE LEFT", index, width, lazy, lazy.complete, lazy.width, $img.width(), delta, "/", cover_left);
-
-      if ( cover_left < 0 ) {
-        right_delta = -cover_left;
-        delta = 0;
-        cover_left = 0;
-        console.log("TWEAKED", index, width, $img.width(), delta);
-      }
-
-      $cover.animate({ width : cover_width, left : cover_left + 'px' }, "fast", function() {
-        $edgeL.animate({ left : (parseInt($edgeL.css('left')) - delta ) + 'px' }, "fast", function() {
-          $img.animate({ left : (parseInt($img.css('left')) - delta ) + 'px', width : width + 'px' }, "fast", function() {
-            if ( right_delta ) {
-              $spine.animate({ left : (parseInt($spine.css('left')) + right_delta) + 'px' }, "fast", function() {
-                $edgeR.animate({ left : (parseInt($edgeR.css('left')) + right_delta) + 'px' }, "fast", function() {
-                  var $img2 = $("#pagediv" + self.twoPage.currentIndexR);
-                  $img2.animate({ left : (parseInt($img2.css('left')) + right_delta) + 'px' }, "fast");
-                })
-              })
-            }
-            $img.attr('src', lazy.src);
-          })
-        })
-      })
-
-    } else {
-      $img.attr("src", lazy.src);
-      return;
-      console.log("FUDGING RIGHT:", index, width, $img.width(), delta);
-      $cover.animate({ width : cover_width }, "fast", function() {
-        $edgeR.animate({ left : (parseInt($edgeR.css('left')) + delta ) + 'px' }, "fast", function() {
-          $img.animate({ width : width + 'px' }, "fast", function() {
-            $img.attr('src', lazy.src);
-          })
-        })
-      })
-    }
-
-    // if ( index == self.twoPage.currentIndexL ) {
-    //   // fudging the left index
-    //   console.log("FUDGING LEFT:", index, width, $img.width(), -delta);
-    //   $edge = $(".BRleafEdgeL");
-    //   $cover.animate({ width : $cover.width() + delta, left : (parseInt($cover.css('left')) - delta ) + 'px' }, "fast", function() {
-    //     $edge.animate({ left : (parseInt($edge.css('left')) - delta ) + 'px' }, "fast", function() {
-    //       $img.animate({ left : (parseInt($img.css('left')) - delta ) + 'px', width : width + 'px' }, "fast", function() {
-    //         $img.attr('src', lazy.src);
-    //         if ( $view.width() < $view.width() + delta ) {
-    //           $view.width($view.width() + delta);
-    //         }
-    //       })
-    //     })
-    //   })
-    // } else {
-    //   // fudging the right index
-    //   console.log("FUDGING RIGHT:", index, width, $img.width(), delta);
-    //   $edge = $(".BRleafEdgeR");
-    //   $cover.animate({ width : $cover.width() + delta }, "fast", function() {
-    //     $edge.animate({ left : (parseInt($edge.css('left')) + delta ) + 'px' }, "fast", function() {
-    //       $img.animate({ width : width + 'px' }, "fast", function() {
-    //         $img.attr('src', lazy.src);
-    //         if ( $view.width() < $view.width() + delta ) {
-    //           $view.width($view.width() + delta);
-    //         }
-    //       })
-    //     })
-    //   })
-    // }
+    
+    var oldCenter = this.twoPageGetViewCenter();
+    self.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
 
   }
 

@@ -5272,7 +5272,7 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
         this.prepareThumbnailView();
     } else {
         // $$$ why don't we save autofit?
-        this.twoPage.autofit = null; // Take zoom level from other mode; RRE: we'd rather it didn't
+        this.twoPage.autofit = "auto"; // Take zoom level from other mode; RRE: we'd rather it didn't
         this.twoPageCalculateReductionFactors();
         
         if ( this.savedReduce[this.mode] == null ) {

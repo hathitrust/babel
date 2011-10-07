@@ -25,6 +25,14 @@ HT.resizeBookReader = function() {
   }
   //try{console.log("Resize 3: " + bookreader_height);console.log("Window height: " + $(window).height());}catch(err){}
   $("#BookReader").height(bookreader_height);
+  if ( $("#BRcontainer").height() > bookreader_height ) {
+    $("#BRcontainer").height(bookreader_height);
+  }
+  
+  // roger - rotating the device sometimes leaves BRcontainer with the old height
+  if ( $("#BRcontainer").width() > $("#BookReader").width() ) {
+    $("#BRcontainer").width($("#BookReader".width()));
+  }
   
   //HT.reader.setScreenSize();
   
@@ -170,6 +178,8 @@ window.onorientationchange = function() {
 			//	console.log("orientation change - switching to 2up");
 				HT.resizeBookReader();
 				HT.reader.switchMode(HT.reader.constMode2up);
+				var spreadSize = HT.reader.getSpreadSizeFromReduce(HT.reader.twoPage.currentIndexL, HT.reader.twoPage.currentIndexR, HT.reader.reduce);
+				var spreadSize = HT.reader.getIdealSpreadSize(HT.reader.twoPage.currentIndexL, HT.reader.twoPage.currentIndexR);
 			}else{
 				HT.resizeBookReader();
 			}
@@ -190,7 +200,4 @@ window.onorientationchange = function() {
 	}
 	}catch(err){alert(err.toString())}
 }
-
-
-
 
