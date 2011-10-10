@@ -1,12 +1,29 @@
-var fudgingMonkeyPatch = true;
-if ( navigator.appVersion.indexOf("MSIE 7.") != -1 ) {
-  fudgingMonkeyPatch = false;
-} else if ( navigator.userAgent.indexOf("Firefox/") != -1 ) {
-  var version = navigator.userAgent.split("/");
-  version = version.pop()
-  if ( version < "3.6" ) {
-    fudgingMonkeyPatch = false;
+// var fudgingMonkeyPatch = true;
+// if ( navigator.appVersion.indexOf("MSIE 7.") != -1 ) {
+//   fudgingMonkeyPatch = false;
+// } else if ( navigator.userAgent.indexOf("Firefox/") != -1 ) {
+//   var version = navigator.userAgent.split("/");
+//   version = version.pop()
+//   if ( version < "3.6" ) {
+//     fudgingMonkeyPatch = false;
+//   }
+// }
+
+var fudgingMonkeyPatch = false;
+if ( navigator.appVersion.indexOf("MSIE 7.") == -1 && navigator.appVersion.indexOf("MSIE 6") == -1 ) {
+  // IE 8+
+  fudgingMonkeyPatch = true;
+} else if ( navigator.userAgent.indexOf("Gecko/") != -1 ) {
+  var match = navigator.userAgent.match(/rv:([\w+\.])\)/)
+  if ( match != null && match[1] >= "1.9" ) {
+    // FF3.6+
+    fudgingMonkeyPatch = true;
   }
+} else if ( navigator.userAgent.indexOf("WebKit") != -1 ) {
+  // Webkit
+  fudgingMonkeyPatch = true;
+} else if ( navigator.userAgent.indexOf("Opera") != -1 ) {
+  fudgingMonkeyPatch = true;
 }
 
 
@@ -613,14 +630,21 @@ if ( fudgingMonkeyPatch ) {
                 console.log("FUDGED TRUE HEIGHT", index, self.reduce, old_height, true_height);
                 fudged = true;
               }
-
+              
               if ( fudged ) {
-                console.log("FUDGING", index);
-                self.fudge2up(index, this);
-              } else {
-                // should really animate to the new dimensions...
-                e.src = this.src;
+                self.fudge2up(index);
               }
+              
+              e.src = this.src; // updates the img in the prefetch
+              
+              // if ( fudged ) {
+              //   console.log("FUDGING", index);
+              //   self.fudge2up(index, this);
+              // } else {
+              //   // should really animate to the new dimensions...
+              //   e.src = this.src;
+              // }
+
               this.e = null;
             }).attr('src', pageURI);
           }
@@ -646,16 +670,21 @@ if ( fudgingMonkeyPatch ) {
       return;
     }
 
-    // this works, but can mess up the twoPage reduction --- fits this
-    // instance, but the clicking punts
-    var $pagediv = $("#pagediv" + index);
-    if ( ! $pagediv.length ) {
-      return;
-    }
-    $("#pagediv" + index).attr('src', lazy.src);
-    
+    // redraw the page
     var oldCenter = this.twoPageGetViewCenter();
     self.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
+    return;
+
+    // // this works, but can mess up the twoPage reduction --- fits this
+    // // instance, but the clicking punts
+    // var $pagediv = $("#pagediv" + index);
+    // if ( ! $pagediv.length ) {
+    //   return;
+    // }
+    // $("#pagediv" + index).attr('src', lazy.src);
+    // 
+    // var oldCenter = this.twoPageGetViewCenter();
+    // self.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
 
   }
 
