@@ -1254,14 +1254,61 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
     //console.log(' lazy load started for ' + $(dummyImage).data('srcURL').match('([0-9]{4}).jp2')[1] );
         
     var img = new Image();
+    img.dummyImage = dummyImage;
     var self = this;
     
+    $(dummyImage).removeClass("BRlazyload"); // since it's not being immediately removed
     $(img)
         .addClass('BRlazyloading')
         .one('load', function() {
             //if (console) { console.log(' onload ' + $(this).attr('src').match('([0-9]{4}).jp2')[1]); };
             
             $(this).removeClass('BRlazyloading');
+            
+            // roger
+            var $dummyImage = $(this.dummyImage);
+            this.dummyImage = null;
+            if ( ! $dummyImage.length ) {
+              // original image has vanished from DOM; bail
+              return;
+            }
+
+            var height = $dummyImage.height();
+            var width = $dummyImage.width();
+            var index = $dummyImage.data('index');
+            var reduce = $dummyImage.data('reduce');
+            var target_height = height;
+            var target_width = width;
+            
+            var fudged = false;
+            if ( self.hasPageFeature(index, "FUDGED") ) {
+              var slice = self.sliceFromIndex(index);
+              var true_height = this.height * reduce;
+              var true_width = this.width * reduce;
+              self.bookData[slice.slice]['height'][slice.index] = true_height;
+              self.bookData[slice.slice]['width'][slice.index] = true_width;
+              self.removePageFeature(index, 'FUDGED');
+              target_height = this.height;
+              target_width = this.width;
+              fudged = true;
+            }
+            
+            $(this).attr({ width : width, height : height });
+            $dummyImage.before(this).remove();
+            
+            if ( fudged ) {
+              var r = width / target_width;
+              var original_height = target_height;
+              var original_width = target_width;
+              target_width = width;
+              target_height = target_height * r;
+              var squished = false;
+              if ( target_height > height ) {
+                target_height = height;
+                squished = true;
+              }
+              $(this).parents(".BRpagedivthumb").andSelf().animate({ height : target_height, width : target_width }, "fast");
+            }
             
             // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
             //     we call the function after a slight delay.  Also the img.complete property
@@ -1273,15 +1320,16 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
             // Remove class so we no longer count as loading
             $(this).removeClass('BRlazyloading');
         })
-        .attr( { width: $(dummyImage).width(),
-                   height: $(dummyImage).height(),
+        .attr( { 
+                   // width: $(dummyImage).width(),
+                   // height: $(dummyImage).height(),
                    src: $(dummyImage).data('srcURL'),
                    title : $(dummyImage).attr('title'), // UM
                    alt : $(dummyImage).attr('alt')
         });
                  
     // replace with the new img
-    $(dummyImage).before(img).remove();
+    // // $(dummyImage).before(img).remove();
     
     img = null; // tidy up closure
 }
@@ -4296,7 +4344,6 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
         } else {
             scale = 32;
         }
-        console.log("_GET PAGE URI", index, this.getPageHeight(index), this.twoPage.height, ratio, scale);
         reduce = scale;
     }
     
@@ -4531,7 +4578,6 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
     var q1 = this.getURLParameter("q1");
 
     var _targetWidth = Math.round(this.getMedianPageSize().width / _reduce);
-    console.log("GET PAGE URI", index, _targetWidth, this.getMedianPageSize().width, _reduce);
     var page_uri;
     if ( this.displayMode == 'text' && this.mode == 1 ) {
         page_uri = this.url_config.text;
@@ -5878,7 +5924,9 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                     .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
                     .addClass('BRlazyload')
                     // Store the URL of the image that will replace this one
-                    .data('srcURL',  this._getPageURI(leaf, thumbReduce));
+                    .data('srcURL',  this._getPageURI(leaf, thumbReduce))
+                    .data('index', leaf).
+                    data('reduce', thumbReduce);
                 $(link).append(img);
                 //console.log('displaying thumbnail: ' + leaf);
             }   
@@ -6013,74 +6061,19 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
 
     } else if ( this.displayMode == 'image' ) {
 
-        var viewWidth = $('#BRcontainer').attr('scrollWidth');
+      e = document.createElement("img");
+      $(e).css('width', width+'px');
+      $(e).css('height', height+'px');
 
-        e = document.createElement("img");
-        $(e).css('width', width+'px');
-        $(e).css('height', height+'px');
-        $(e).data('index', index);
+      var title = "image of page " + this.getPageNum(index);
+      $(e).attr({ alt : title, title : title});
+      e.src = url;
 
-        var title = "image of page " + this.getPageNum(index);
-        $(e).attr({ alt : title, title : title});
-        e.src = this.imagesBaseURL + 'transparent.png';
-        
-        console.log("CREATING IMAGE", url);
-        var lazy = new Image();
-        lazy.e = e;
-        lazy.index = index;
-        $(lazy).one('load', function() {
-          var index = this.index;
-          var e = this.e;
-          var natural_height = this.height;
-          var natural_width = this.width;
-          var fudged = false;
-          if ( self.hasPageFeature(index, "FUDGED") ) {
-            var slice = self.sliceFromIndex(index);
-            var true_height = natural_height * self.reduce;
-            var true_width = natural_width * self.reduce;
-            self.bookData[slice.slice]['height'][slice.index] = true_height;
-            self.bookData[slice.slice]['width'][slice.index] = true_width;
-            self.removePageFeature(index, 'FUDGED');
-            fudged = true;
-          }
-            
-          var width = natural_width;
-          var height = natural_height;
-          var left;
-          
-          if ( viewWidth < width ) {
-            var r = ( viewWidth - 20 ) / width;
-            width = ( viewWidth - 20 );
-            height = Math.floor(height * r);
-          }
-          
-          if ( width > height ) {
-            left = (viewWidth - width) / 2;
-          }
-          
-          if ( left ) {
-            $(e).parent().css({ left : left });
-          }
-          
-          if ( fudged ) {
-            $.data($(e).parent().get(0), 'fudging', { width : width, height : height, src : this.src });
-            // $(e).parent().andSelf().css({ width : width + 'px', height : height + 'px' });
-            if ( self.onePage.fudgeTimer === undefined ) {
-              console.log("SETTING FUDGE TIMER!!!");
-              self.onePage.fudgeTimer = setTimeout(function() {
-                self.reflow1up();
-                console.log("CONTENT REFLOWED");
-                delete self.onePage.fudgeTimer;
-              }, 500);
-            }
-          } else {
-            e.src = this.src;
-          }
-          
-          console.log("HEY: SETTING ", index, " TO ", this.src);
-          delete this;
-        });
-        lazy.src = url;
+      $.data(e, 'index', index);
+
+      $(e).one('error', function(evt) {
+        self._handle_image_error(this);
+      })
 
     } else {
 
@@ -6106,77 +6099,6 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
         
     }
     return e;
-}
-
-HTBookReader.prototype.reflow1up = function() {
-  // first, calculate the new leafTop
-  var self = this;
-  var viewWidth = $('#BRcontainer').attr('scrollWidth');
-
-  var leafTop = 0;
-  var i;
-  
-  var firstIndexToDraw = this.onePage.firstIndexToDraw;
-  for (i=0; i<firstIndexToDraw; i++) {
-    var height = this._getPageHeight(i) / this.reduce;
-    var width = this._getPageWidth(i) / this.reduce;
-    if ( viewWidth < width ) {
-      var r = ( viewWidth - 20 ) / width;
-      width = ( viewWidth - 20 );
-      height = Math.floor(height * r);
-    }
-      // leafTop += parseInt(this._getPageHeight(i)/this.reduce) +10;
-      leafTop += height + 10;
-  }
-  
-  var indicesToDisplay = self.displayedIndices;
-  var delta = 0;
-  for (i=0; i<indicesToDisplay.length; i++) {
-      var this_index = indicesToDisplay[i];    
-      var $div = $("#pagediv" + this_index);
-      
-      var src;
-      
-      var fudged = $.data($div.get(0), 'fudging');
-      if ( fudged !== undefined ) {
-        height = fudged.height;
-        width = fudged.width;
-        src = fudged.src;
-      } else {
-        height = $div.height();
-        width = $div.width();
-      }
-      
-      
-      // var height  = parseInt(self._getPageHeight(this_index)/self.reduce); 
-      // var width   = parseInt(self._getPageWidth(this_index)/self.reduce); 
-
-      if ( viewWidth < width ) {
-        var r = ( viewWidth - 20 ) / width;
-        width = ( viewWidth - 20 );
-        height = Math.floor(height * r);
-      }
-
-      var lastTop = parseInt($div.css('top'));
-      // var scrollTop = $("#BRcontainer").scrollTop();
-      // if ( lastTop > leafTop ) {
-      //   $("#BRcontainer").scrollTop(scrollTop - (lastTop - leafTop));
-      // } else {
-      //   $("#BRcontainer").scrollTop(scrollTop + (leafTop - lastTop));
-      // }
-      $div.css({'top' : leafTop + 'px', width : width + 'px', height : height + 'px'});
-      $div.find("img").css({ width : width + 'px', height : height + 'px' });
-      
-      if ( src ) {
-        $div.find("img").attr('src', src);
-      }
-
-      console.log("FLOWING", this_index, leafTop, lastTop);
-      
-      leafTop += height +10;
-
-  }
-  
 }
 
 HTBookReader.prototype.tweakDragParams = function() {

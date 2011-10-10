@@ -373,7 +373,7 @@
       </xsl:for-each>
       HT.params.view = "<xsl:value-of select="$gCurrentView" />";
       var fudgingMonkeyPatch = fudgingMonkeyPatch || false;
-      HT.params.fudging = fudgingMonkeyPatch !== undefined;
+      HT.params.fudging = fudgingMonkeyPatch;
       HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
     </script>
   </xsl:template>

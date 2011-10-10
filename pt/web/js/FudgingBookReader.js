@@ -374,7 +374,8 @@ if ( fudgingMonkeyPatch ) {
       var e;
       var url = this._getPageURI(index, reduce, 0);
 
-      if ( this.hasPageFeature(index, "MISSING_PAGE") ) {
+      if ( 0 && this.hasPageFeature(index, "MISSING_PAGE") ) {
+        // don't generate the text version; use the image served by imgsrv
 
           e = this._createTextElement(width, height);
 
@@ -412,6 +413,7 @@ if ( fudgingMonkeyPatch ) {
           $(lazy).one('load', function() {
             var index = this.index;
             var e = this.e;
+            this.e = null;
             var natural_height = this.height;
             var natural_width = this.width;
             var fudged = false;
@@ -423,6 +425,11 @@ if ( fudgingMonkeyPatch ) {
               self.bookData[slice.slice]['width'][slice.index] = true_width;
               self.removePageFeature(index, 'FUDGED');
               fudged = true;
+            }
+            
+            if ( ! $(e).length ) {
+              // image is gone
+              return;
             }
 
             var width = natural_width;
@@ -436,7 +443,6 @@ if ( fudgingMonkeyPatch ) {
             }
 
             if ( fudged ) {
-              // $(e).parent().andSelf().css({ width : width + 'px', height : height + 'px' });
               $(e).parent().andSelf().animate({ height : height + 'px', width : width + 'px'}, "fast", function() {
                 // did this scroll off screen? that's the question
                 if ( index == self.firstIndex ) {
@@ -445,11 +451,10 @@ if ( fudgingMonkeyPatch ) {
               });
             }
             e.src = this.src;
+          })
+          .attr({ src : url });
 
-            console.log("HEY: SETTING ", index, " TO ", this.src);
-            this.e = undefined;
-          });
-          lazy.src = url;
+          lazy = null;
 
       } else {
 
