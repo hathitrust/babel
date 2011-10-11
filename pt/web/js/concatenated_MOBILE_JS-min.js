@@ -1759,7 +1759,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 		$('#BRsearch').css('display','none');
 		$('#BRreadonly').css('display','none');
 		$("#BRnavCntlBtm").css('bottom', $("#BRnav").css('height'));
-		$('#mdpMobileTableOfContents').css('display','');
+		$('#mdpMobileTableOfContents').css('display','block');
 		$('#mdpMobileTableOfContents').css('z-index','1');
     	$('#BRnav').css('display','none');
     	$('#toc').css('display','none');
