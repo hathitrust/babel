@@ -158,8 +158,6 @@ sub delete_Solr_doc {
     if ($ok) {
         Db::Delete_id_from_shard($C, $DBH, $run, $id, $shard);
         __output(qq{Deleted id=$id, shard=$shard run=$run from mdp.j_indexed\n});
-        Db::Delete_id_from_j_rights($C, $DBH, $id);
-        __output(qq{Deleted nid=$id from mdp.j_rights\n});
         Db::Delete_id_from_j_queue($C, $DBH, $run, $id);
         __output(qq{Deleted nid=$id run=$run from mdp.j_queue\n});
         SharedQueue::Delete_id_from_j_shared_queue($C, $DBH, $id);
@@ -184,7 +182,11 @@ sub __del_Delete_document {
 
     __output(qq{Solr delete id=$id shard=$shard ...});
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
-    ($index_state, $dummy) = $indexer->delete_document($C, $id);
+
+    my $delete_field = $C->get_object('MdpConfig')->get('default_Solr_delete_field');
+    my $query = qq{$delete_field:$id};
+    
+    ($index_state, $dummy) = $indexer->delete_by_query($C, $query);
 
     if (Search::Constants::indexing_failed($index_state)) {
         my $s =
