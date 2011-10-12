@@ -85,6 +85,8 @@ our ($opt_r, $opt_t, $opt_d, $opt_T);
 
 my $ops = getopts('r:t:Td');
 
+my $INDEX_SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/index/';
+
 # Required
 my $FROM_RUN = $opt_r;
 my $TO_RUN = $opt_t;
@@ -105,6 +107,12 @@ if (defined($opt_d)) {
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
+my $logdir = Utils::get_tmp_logdir();
+my $Child_Err_File = qq{$logdir/renumber_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
+END{
+    `rm -f $Child_Err_File` if (-z $Child_Err_File);
+}
+
 my $C = new Context;
 
 my $config = SLIP_Utils::Common::gen_run_config('slip', $TO_RUN);
@@ -120,7 +128,6 @@ if ($@) {
 }
 
 $C->set_object('Database', $db);
-
 my $DBH = $db->get_DBH();
 
 # Go
@@ -205,10 +212,18 @@ sub c_renumber {
     SLIP_Utils::Db_driver::Renumber_driver($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
 
-    __output(qq{\tinit driver: set stage=Build_Wait, disabled for run=$to_run ... });
-    SLIP_Utils::Db_driver::init_driver($C, $dbh, $to_run, $SLIP_Utils::States::St_Build_Wait);
-    __output(qq{Done.\n\n});
-
+    __output(qq{\tDRIVER RESET for $to_run ... });
+    my $cmd = qq{$INDEX_SCRIPTS_DIR/control-j -r$to_run -kresetdriver};
+    my $output = `$cmd 2> $Child_Err_File`;
+    my $sysrc = $? >> 8;
+    if ($sysrc > 0) {
+        my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
+        my $s = qq{-----> renumber-j error system_rc=$sysrc attempting $cmd error:$$s_ref\n};
+        __output($s);
+    }
+    else {
+        __output(qq{Done.\n\n});
+    }
 
     Log_renumber($C, $from_run, $to_run);
     __output(qq{\n\tRe-numbered from run $from_run to run $to_run\n\n});
