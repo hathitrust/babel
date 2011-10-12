@@ -57,6 +57,7 @@ use Vendors;
 
 # Perl
 use Getopt::Std;
+use Date::Calc qw(:all);
 
 # App
 use Utils;
@@ -111,10 +112,16 @@ if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,me';
 }
 
-my $SKIP_CHECKINDEX = defined($opt_X);
-
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
+
+my $SKIP_CHECKINDEX = defined($opt_X);
+if ($INTERACTIVE) {
+    if (! $SKIP_CHECKINDEX) {
+        my $s = qq{You are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
+        __confirm($s);
+    }
+}
 
 my $C = new Context;
 
@@ -126,6 +133,9 @@ eval {
     my $msg;
     if (Scheduler::driver_do_full_optimize($C, $RUN, \$msg)) {
         $FULL_OPTIMIZE_RUN = 1;
+        # Avoid checkIndex on full optimize days -- takes too long
+        $SKIP_CHECKINDEX = 1;
+        
         __output("$msg\n");
         Log_sched($C, $RUN, $msg);
     }
@@ -553,19 +563,20 @@ sub handle_Optimizing {
         $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
 
         if ($rc == 0) {
-            my $_Next_Stage;
-            my $check_index_supported = $C->get_object('MdpConfig')->get('check_index_supported');
-            if (
-                $check_index_supported
-                &&
-                (! $SKIP_CHECKINDEX)
-               ) {
-                # Enable checkers to start running from cron
-                $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
-                $_Next_Stage = $SLIP_Utils::States::St_Checking;
-            }
-            else {
-                $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+            my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+
+            my $config = $C->get_object('MdpConfig');
+            my $check_index_supported = $config->get('check_index_supported');
+            if ($check_index_supported) {
+                if (! $SKIP_CHECKINDEX) {
+                    my $day_of_week = Day_of_Week_to_Text(Day_of_Week(Today()));
+                    my $check_index_day = $config->get('check_index_day_of_week');
+                    if ($day_of_week eq $check_index_day) {
+                        # Enable checkers to start running from cron
+                        $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
+                        $_Next_Stage = $SLIP_Utils::States::St_Checking;
+                    }
+                }
             }
 
             # Proceed to next stage.
