@@ -346,4 +346,10 @@
       authtype="shibboleth"
       domain="udel.edu"
       enabled="0">University of Delaware</Inst>
+  <Inst
+      sdrinst="bu"
+      template="https://___HOST___/Shibboleth.sso/bu?target=___TARGET___"
+      authtype="shibboleth"
+      domain="bu.edu"
+      enabled="0">Boston University</Inst>
 </Institutions>
