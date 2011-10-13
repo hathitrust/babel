@@ -1251,7 +1251,8 @@
 		<link rel="alternate" media="handheld" href="" />
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
 		<meta name="format-detection" content="telephone=no" />
-		<meta name="apple-mobile-web-app-capable" content="yes" /> 
+		<!-- this causes bookmarked-to-home to open without browser chrome; don't do that -->
+		<!-- <meta name="apple-mobile-web-app-capable" content="yes" />  -->
       
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
