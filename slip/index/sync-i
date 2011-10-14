@@ -37,12 +37,14 @@ use MdpConfig;
 use Database;
 use Identifier;
 use SharedQueue;
+use RightsGlobals;
 
 use Search::Searcher;
 use Search::Result::SLIP;
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use SLIP_Utils::Released;
+use Db;
 
 use Collection;
 use CollectionSet;
@@ -304,19 +306,20 @@ sub handle_synchronization {
     my %uniq_hash = ();
 
     foreach my $coll_id (@$coll_id_arr_ref) {
-        l__output(qq{\nProcessing coll_id=$coll_id for ids missing in Solr\n});
         $coll_ct++;
         my $missing_ids_in_coll = 0;
+        my $num_ignored_as_deleted = 0;
 
         my $coll_name = $CO->get_coll_name($coll_id);
         my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
         my $num_ids_in_coll = scalar(@$id_arr_ref);
+        l__output(qq{\nProcessing coll_id=$coll_id ($coll_name) (num in coll=$num_ids_in_coll) for ids missing in Solr\n});
+
+        $ids_in_colls += $num_ids_in_coll;
 
         foreach my $uid (@$id_arr_ref) {
             $uniq_hash{$uid} = 1;
         }
-        my $uniq_ids_in_coll = scalar(keys(%uniq_hash)) - $ids_in_colls;
-        $ids_in_colls += $uniq_ids_in_coll;
 
         # Make sure the coll_id itself exists in Solr for at least one id
         my $query = qq{q=coll_id:$coll_id&start=0&rows=0};
@@ -324,7 +327,7 @@ sub handle_synchronization {
 
         if ($rs->get_num_found() == 0) {
             $s = $NOOP ? '' : "\n\t--> queue all ids";
-            l__output(qq{\n\tcoll_id=$coll_id ($coll_name): missing=$num_ids_in_coll$s\n});
+            l__output(qq{\n\tcoll_id=$coll_id ($coll_name): coll_id not in Solr so missing ids=$num_ids_in_coll$s\n});
 
             if (! $NOOP) {
                 $ok = SharedQueue::enqueue_all_ids($C, $DBH, $coll_id);
@@ -332,20 +335,24 @@ sub handle_synchronization {
                             qq{Failed to enqueue all ids for coll_id=$coll_id\n});
             }
             
-            $missing_ids_over_colls += $uniq_ids_in_coll;
+            $missing_ids_over_colls += $num_ids_in_coll;
             $missing_ids_in_coll += $num_ids_in_coll;
         }
         else {
+            my $id_ct = 0;
             my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
+            
             foreach my $id (@$id_arr_ref) {
                 my $safe_id = Identifier::get_safe_Solr_id($id);
                 my $query_1 = qq{q=coll_id:$coll_id+AND+id:$safe_id&start=0&rows=0};
                 $rs = __handle_query($C, $query_1, $searcher, $rs);
                 
                 $ct++;
+                $id_ct++;
+                
                 if ($VERBOSE) {
                     if (($ct % 100) == 0) {
-                        l__output($ct.'s');
+                        l__output("$ct($id_ct)" .'s');
                         # throttle solr requests to prevent 500's
                         sleep 1;
                     }
@@ -353,6 +360,17 @@ sub handle_synchronization {
                 }
 
                 if ($rs->get_num_found() == 0) {
+                    # Do not report ids missing from Solr is the
+                    # attr=8 (nobody) -- these will never be in Solr
+                    # due to Deletes handling
+                    my ($namespace, $barcode) = split(/\./, $id);
+                    my $rights_hashref = Db::Select_latest_rights_row($C, $DBH, $namespace, $barcode);
+                    my $attr = $rights_hashref->{attr};
+                    if ($attr == $RightsGlobals::g_available_to_no_one_attribute_value) {
+                        $num_ignored_as_deleted++;
+                        next;
+                    }
+
                     my $reason = Db::Select_id_from_j_errors($C, $DBH, $RUN, $id);
 
                     my $r = $reason ? "reason=" . SLIP_Utils::Common::IXconstant2string($reason) : '';
@@ -371,14 +389,18 @@ sub handle_synchronization {
             }
         }
         $s = $missing_ids_in_coll
-          ? qq{\nSolr missing ids=$missing_ids_in_coll for collid=$coll_id ($coll_name) [$num_ids_in_coll]\n}
-            : qq{\n\tAll Solr ids present for coll_id=$coll_id ($coll_name) [$num_ids_in_coll]};
-        l__output(qq{$s\n});
+          ? qq{\n\tSolr missing ids=$missing_ids_in_coll for collid=$coll_id ($coll_name) [num in coll=$num_ids_in_coll]\n}
+            : qq{\n\tAll Solr ids present for coll_id=$coll_id ($coll_name) [num in coll=$num_ids_in_coll]\n};
+        my $ig = qq{\tnum idnored due to Deletes=$num_ignored_as_deleted\n};
+        
+        l__output(qq{$s$ig\n});
     }
+
+    my $uniq_ids_in_colls = scalar(keys %uniq_hash);
 
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
     $s = $NOOP ? '' : ", $total_ids_queued added to shared queue";
-    l__output(qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls missing=$missing_ids_over_colls in Solr$s\n});
+    l__output(qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls unique items=$uniq_ids_in_colls\n\twhere missing in Solr over all colls=$missing_ids_over_colls$s\n});
 }
 
 # ---------------------------------------------------------------------
