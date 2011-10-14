@@ -122,6 +122,8 @@ sub Run {
 
     PT::PageTurnerUtils::Debug( $cgi, $ses );
 
+    Identifier::randomize_id($C, $cgi);
+    
     my $id = $cgi->param( 'id' );
     my $dbh = $db->get_DBH();
     my $user_id = $auth->get_user_name($C);
