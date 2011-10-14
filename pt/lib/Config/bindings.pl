@@ -21,6 +21,7 @@
      'u'        => '1',
      'ui'       => 'reader|embed',
      'ptsop'    => 'AND|OR|and|or',
+     'index'    => '1',
     );
 
 # Specification of global *database* operations to be executed before

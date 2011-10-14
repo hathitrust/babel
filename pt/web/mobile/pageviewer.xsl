@@ -6,39 +6,39 @@
   version="1.0">
 
   <xsl:import href="../pageviewer.xsl"/>
-    
+
   <xsl:variable name="gCurrentView">
   	<xsl:value-of select="'1up'" >
   	</xsl:value-of>
   </xsl:variable>
-  
+
   <xsl:template name="BookReaderSidebar">
     <div class="mdpControlContainer">
 
-      <xsl:call-template name="crmsPageControls" />    
+      <xsl:call-template name="crmsPageControls" />
 <!--
-      <xsl:call-template name="crmsModeControls" />      
+      <xsl:call-template name="crmsModeControls" />
 -->
 
 	  <div id="mdpMobileTableOfContents">
       	<xsl:call-template name="BuildContentsList" />
       </div>
 	  <div id="BRiteminfo" >
-	  	
+
 	  	<xsl:call-template name="MobileItemMetadata" />
 	  	<xsl:call-template name="BuildCatalogLink" />
 	  	<div id="mobilefeedbackdiv"><xsl:call-template name="feedbacklink"/></div>
 	  </div>
 	  <div id="BRsearch" data-scroll="true" >
 	  	<xsl:call-template name="MobileBuildSearchForm" />
-	  	
+
 	  </div>
-      
+
       <div id="BRgetbook">
      	 <div id="fullEpubDownload"></div>
       	<xsl:call-template name="MobileGetBook" />
       </div>
-      
+
       <div id="BRocrsettings">
       	<button id="ocrzoomin" class="bigger">Bigger Text</button><br />
       	<button id="ocrzoomout" class="smaller">Smaller Text</button><br /><br />
@@ -48,12 +48,12 @@
       	-->
       	<button id="wraptext" class="selectedwrap">Wrapped Text</button><br />
       	<button id="unwraptext" >Unwrapped Text</button>
-      	
+
         <br />
       	<a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
-      	
+
       </div>
-      
+
       <div id="BRimagesettings">
       	<button id="imagezoomin" class="bigger">Zoom In</button><br />
       	<button id="imagezoomout" class="smaller">Zoom Out</button><br />
@@ -61,13 +61,13 @@
         <br />
       	<a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
       </div>
-      
+
       <div id="BRabout">About</div>
-      
+
     </div>
   </xsl:template>
-  
-  
+
+
 <xsl:template name="BuildCatalogLink">
 	<xsl:element name="a">
           <xsl:attribute name="id">mdpCatalogLinkInfoForm</xsl:attribute>
@@ -87,7 +87,7 @@
 </xsl:template>
 
 <xsl:template name="MobileGetBook">
-		
+
         <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
           <xsl:element name="a">
             <xsl:attribute name="class">worldcat</xsl:attribute>
@@ -128,34 +128,34 @@
 
           </xsl:element>
         </xsl:for-each>
-		
-	 
+
+
 </xsl:template>
 
 
 
-  
-  
-  
-  
-  
-  
-  
 
 
-  
-  
+
+
+
+
+
+
+
+
+
 <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
-    
-    
+
+
     //console.log("pageview.xsl - checkpoint init_from_params");
     /*
        		var myScroll;
 			function loaded() {
-				console.log("Setting iScroll Timeout");			
+				console.log("Setting iScroll Timeout");
 				setTimeout(function () {
-					console.log("Initializing TOC iScroll");			
+					console.log("Initializing TOC iScroll");
 					myScroll = new iScroll('mdpMobileTableOfContents');
 				}, 100);
 			}
@@ -171,9 +171,9 @@
 	document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
 	document.addEventListener('DOMContentLoaded', loaded, false);
        */
-       
+
     //console.log("pageview.xsl - document.addEventListener for loaded method");
-         
+
        HT.init_from_params();
 
        HT.reader = new HTMobileBookReader(); // new HTMobileBookReader();
@@ -182,7 +182,7 @@
        HT.reader.bookTitle = document.title;
        HT.reader.reduce = 1;
        HT.reader.pageProgression = 'lr';
-       
+
        HT.reader.track_event = HT.track_event;
 
        // reduce: 4 == thumbnails; too small for normal page browsing
@@ -192,12 +192,12 @@
                                  {reduce: 4/3, autofit: null}, // 1.5 = 66%, 1.25 == 80%
                                  {reduce: 2, autofit: null}
                              ];
-       
-       
+
+
         <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
-          <xsl:if test="position() = 1">   
+          <xsl:if test="position() = 1">
         // The index of the title page.
-        HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;  
+        HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;
           </xsl:if>
         </xsl:for-each>
         HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
@@ -233,72 +233,72 @@
         HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
         //HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
         HT.reader.lazyDelay = 500;
-        //console.log("pageview.xsl - checkpoint lazyDelay");        
+        //console.log("pageview.xsl - checkpoint lazyDelay");
     </script>
-    <script type="text/javascript" src="/pt/mobile/bookreader_startup.js?ts={generate-id(.)}">;</script> 
+    <script type="text/javascript" src="/pt/mobile/bookreader_startup.js?ts={generate-id(.)}">;</script>
     <script type="text/javascript">
         HT.monitor.run();
     </script>
-  </xsl:template>  
-  
+  </xsl:template>
+
   <xsl:template name="BookReaderToolbar">
   </xsl:template>
-  
+
   <xsl:template name="crmsPageControls">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
-    
+
     <style>
-      
+
       #mdpItemMetadata {
         z-index: 9999;
       }
-      
+
       #mdpUberContainer {
         margin-top: 0px;
       }
-      
+
       .controls {
         margin-top, margin-bottom: 0.5em;
         border-bottom: 1px dashed #666;
         clear: both;
       }
-      
+
       .sizeLabel {
         font-weight: bold;
       }
-      
+
       .mdpPageNumberInputBox {
         width: 5em;
       }
-      
+
       .mdpPageLinks, .mdpPageLinks > ul {
         float: none;
       }
-            
+
       .mdpControlContainer div {
         padding-top: 8px;
       }
-      
+
       #mdpSectionForm, #mdpPageForm {
         float: none;
       }
-      
+
       #BottomNav {
         left: 14px;
       }
-      
+
       .mdpPageLinksBottom ul li {
         padding-right: 4px !important;
       }
-      
+
       .mdpPageLinksBottom ul li a img {
         background: none;
       }
-      
+
       .mdpPageXofYBottom {
         margin-left: 80px;
       }
-      
+
     </style>
 
     <div class="controls" style="display:none">
@@ -342,10 +342,10 @@
       </p>
       </xsl:if>
 
-      
+
       <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
-      
-      
+
+
         <p id="fullPdfLinkP">
           <xsl:element name="a">
             <xsl:attribute name="title">Download full PDF</xsl:attribute>
@@ -359,7 +359,7 @@
             </xsl:attribute>
             <xsl:text>Download PDF</xsl:text>
           </xsl:element>
-        
+
           <xsl:if test="$gFullPdfAccess = 'deny'">
             <div id="noPdfAccess">
               <p>
@@ -386,7 +386,7 @@
             </div>
           </xsl:if>
         </p>
-        
+
 		<p id="fullEpubLinkP">
 
           <xsl:element name="a">
@@ -406,9 +406,9 @@
             </xsl:attribute>
             <xsl:text>Download EPUB</xsl:text>
           </xsl:element>
-          
 
-		  
+
+
           <xsl:if test="$gFullPdfAccess = 'deny'">
             <div id="noEpubAccess">
               <p>
@@ -434,8 +434,8 @@
               </p>
             </div>
           </xsl:if>
-        </p>        
-          
+        </p>
+
 
       </xsl:if>
 
@@ -448,17 +448,17 @@
       <br clear="both" />
     </div>
 -->
-<!--    
+<!--
     <div class="controls">
 -->
-<!-- 
+<!--
       <xsl:call-template name="BuildPageXofYForm">
         <xsl:with-param name="pPageXofYForm" select="MdpApp/PageXOfYForm"/>
         <xsl:with-param name="pPageXofYFormId" select="'PageNumberJump_1'"/>
         <xsl:with-param name="pPageXofYId" select="'PageNumberJump_1_Form'"/>
-      </xsl:call-template> 
+      </xsl:call-template>
 -->
-<!--     
+<!--
       <xsl:variable name="pageNum">
 		    <xsl:choose>
 		      <xsl:when test="$gCurrentPageNum">
@@ -472,11 +472,11 @@
 		      </xsl:otherwise>
 		    </xsl:choose>
 		  </xsl:variable>
--->		  
+-->
 <!--
 			<form method="GET" action="pt" id="mdpPageForm">
 			  <input type="hidden" name="u" id="u" value="1" />
-			  
+
 			  <label for="BRpagenum">Jump to </label>
 
         <xsl:element name="input">
@@ -496,23 +496,23 @@
           <xsl:attribute name="value">Go</xsl:attribute>
           <xsl:attribute name="title">Go</xsl:attribute>
           <xsl:attribute name="alt">Jump</xsl:attribute>
--->  
+-->
         <!-- <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
           <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute> -->
-<!--   
+<!--
        <xsl:attribute name="class">tracked interactive </xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Jump to Page</xsl:attribute>
         </xsl:element>
-        
+
         &#160;
-        
+
         <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
         <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
           <input type="hidden" name="seq" value="" />
         </xsl:if>
         <xsl:call-template name="HiddenDebug" />
-			  
+
 			  <br clear="both" />
 			</form>
 -->
@@ -535,11 +535,11 @@
       <xsl:variable name="href-clockwise" select="/MBooksTop/MdpApp/RotateLinks/ClockwiseLink" />
       <a href="{$href-clockwise}" id="rotate-clockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
     </div>
--->    
+-->
     </xsl:if>
-    		
+
   </xsl:template>
-  
+
   <!-- FORM: Image Resize -->
   <xsl:template name="BuildResizeForm">
     <xsl:param name="pResizeForm"/>
@@ -552,7 +552,7 @@
 -->
       <!-- <ul>
         <li class="asearchform"> -->
-<!-- 
+<!--
          <xsl:apply-templates select="$pResizeForm/HiddenVars"/>
           <xsl:for-each select="$pResizeForm/ResizeValuesSelect">
             <span class="sizeLabel" title="Change size">size&#xa0;</span>
@@ -561,7 +561,7 @@
               <xsl:with-param name="key" select="'this.form.submit()'"/>
             </xsl:call-template>
           </xsl:for-each>
---> 
+-->
        <!-- </li>
       </ul> -->
 <!--
@@ -569,16 +569,16 @@
     </xsl:element>
 -->
   </xsl:template>
-  
+
   <xsl:template name="BuildPageLinks">
     <xsl:param name="pPageLinks"/>
-    
+
     <style>
       .mdpPageLinks ul li a img {
         background-color: transparent;
       }
     </style>
-    
+
     <ul>
       <li>
         <xsl:if test="$pPageLinks/FirstPageLink">
@@ -688,38 +688,38 @@
     </ul>
 
   </xsl:template>
-  
+
   <xsl:template name="crmsModeControls">
-  
+
 <!--
 
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
-    
+
     <style>
-      
+
       #mdpToolbarViews {
         height: auto;
         margin-top: 0.5em;
       }
-      
+
       #mdpToolbarViews li {
         list-style-type: none;
         display: block;
         float: none;
         padding-right: 4px;
       }
-      
+
       .PTbutton, #btnClassicView {
         width: 8em;
       }
-      
+
     </style>
 
     <div id="mdpToolbarViews">
       <xsl:if test="$gFinalAccessStatus != 'allow'">
         <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
       </xsl:if>
-      
+
       <ul>
         <li>
           <xsl:element name="a">
@@ -788,7 +788,7 @@
     -->
 
   </xsl:template>
-  
+
   <xsl:template name="bookreader-toolbar-items">
     <!--
 
@@ -897,7 +897,7 @@
    -->
 
   </xsl:template>
-  
+
   <xsl:template name="BuildContentsList2">
   	<div id="scrolltest" >
   	<ul>
@@ -919,8 +919,8 @@
   	</ul>
   	</div>
   </xsl:template>
-  
-  
+
+
   <!-- CONTROL: Contents List -->
   <xsl:template name="BuildContentsList">
     <div >
@@ -935,9 +935,9 @@
 
         <xsl:for-each select="$gFeatureList/Feature">
           <xsl:element name="li">
-			
+
 			<xsl:attribute name="class">mdpFeatureListItem</xsl:attribute>
-            
+
             <xsl:element name="a">
             	<xsl:attribute name="class"><xsl:text>mdpFeatureListItemLink</xsl:text></xsl:attribute>
 				<xsl:attribute name="href">
@@ -954,16 +954,16 @@
 	              </xsl:element>
 	            </xsl:if>
 	        </xsl:element>
-	        
+
 	        <div class="toctext">
             <xsl:element name="span">
             	<xsl:attribute name="class"><xsl:text>mdpContentsName</xsl:text></xsl:attribute>
             	<xsl:value-of select="Label"/>
             </xsl:element>
-            
+
            	<xsl:element name="span">
            	  <xsl:attribute name="class"><xsl:text>mdpContentsPageNumber</xsl:text></xsl:attribute>
-              <xsl:if test="/MBooksTop/MBooksGlobals/SSDSession='false'"> 
+              <xsl:if test="/MBooksTop/MBooksGlobals/SSDSession='false'">
                 <!-- Do not repeat the page number already emitted CSS -->
                 <!-- invisibly above for screen readers                -->
                 <xsl:if test="Page!=''">
@@ -971,11 +971,11 @@
                 </xsl:if>
                 <xsl:value-of select="Page"/>
               </xsl:if>
-			</xsl:element> 
+			</xsl:element>
 			</div>
 			<!-- </xsl:element> -->
-			
-			
+
+
           </xsl:element>
         </xsl:for-each>
     </xsl:element>
@@ -992,18 +992,18 @@
           </xsl:call-template>
         </div>
 
-      
+
       <!-- Author, Edition, Published, Description -->
       <xsl:call-template name="MdpMetadataHelper"/>
     </div>
-    
+
   </xsl:template>
-  
-  
+
+
 <!-- METADATA: MDP-style metadata helper -->
   <xsl:template name="MdpMetadataHelper">
     <xsl:param name="ssd"/>
-    
+
       <!--
       <xsl:if test="$gMdpMetadata/varfield[@id='100']/subfield or $gMdpMetadata/varfield[@id='110']/subfield or $gMdpMetadata/varfield[@id='111']/subfield">
         <div class="mdpMetaDataRow">
@@ -1016,7 +1016,7 @@
         </div>
       </xsl:if>
       -->
-      
+
       <!--
       <xsl:if test="$gMdpMetadata/varfield[@id='250']/subfield">
         <div class="mdpMetaDataRow">
@@ -1029,7 +1029,7 @@
         </div>
       </xsl:if>
       -->
-      
+
       <!--
       <div class="mdpMetaDataRow">
         <span class="mdpMetaDataRegionHead">
@@ -1050,7 +1050,7 @@
         </span>
       </div>
       -->
-      
+
       <!--
       <xsl:choose>
         <xsl:when test="$gMdpMetadata/varfield[@id='MDP']/subfield[@label='h']">
@@ -1076,10 +1076,10 @@
               </span>
             </div>
           </xsl:if>
-        </xsl:otherwise>  
+        </xsl:otherwise>
       </xsl:choose>
       -->
-      
+
       <!--
       <xsl:if test="$gMdpMetadata/varfield[@id='300']/subfield">
         <div class="mdpMetaDataRow">
@@ -1096,7 +1096,7 @@
         </div>
       </xsl:if>
       -->
-      
+
       <xsl:if test="$gRightsAttribute">
         <div class="mdpMetaDataRow">
           <span class="mdpMetaDataRegionHead">
@@ -1136,12 +1136,12 @@
                   <xsl:text>Public domain only when viewed in the US</xsl:text>
                 </xsl:when>
                 <xsl:otherwise/>
-              </xsl:choose> 
+              </xsl:choose>
             </xsl:element> -->
           </span>
         </div>
       </xsl:if>
-      
+
       <!--
       <xsl:if test="$gSourceAttribute">
         <div class="mdpMetaDataRow">
@@ -1162,7 +1162,7 @@
                 </xsl:choose>
               </xsl:when>
               <xsl:when test="$gRightsAttribute='2' or $gRightsAttribute='3' or $gRightsAttribute='4'">
-                <xsl:text>This item is keyword searchable only. Page images and full text are not available due to copyright restrictions.</xsl:text> 
+                <xsl:text>This item is keyword searchable only. Page images and full text are not available due to copyright restrictions.</xsl:text>
               </xsl:when>
               <xsl:when test="$gRightsAttribute='6'">
                 <xsl:text>This item is keyword searchable only. The copyright status is undetermined and it is treated as though it were in copyright.</xsl:text>
@@ -1176,7 +1176,7 @@
         </div>
       </xsl:if>
       -->
-      
+
       <!-- allow SSD user to link from SSDviewer to pageturner if desired -->
       <!--
       <xsl:choose>
@@ -1190,9 +1190,9 @@
         </xsl:otherwise>
       </xsl:choose>
       -->
-      
+
   </xsl:template>
-  
+
     <xsl:template name="PermanentURL">
   <!--
     <xsl:param name="ssd"/>
@@ -1210,11 +1210,11 @@
               <xsl:when test="$ssd = 'true'">
                 <a>
                   <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
-                  <xsl:value-of select="$gItemHandle"/>	  
+                  <xsl:value-of select="$gItemHandle"/>
                 </a>
               </xsl:when>
               <xsl:otherwise>
-                <xsl:value-of select="$gItemHandle"/>	  
+                <xsl:value-of select="$gItemHandle"/>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:otherwise>
@@ -1222,9 +1222,9 @@
       </span>
     </div>
     -->
-  </xsl:template>  
-  
-  
+  </xsl:template>
+
+
   <xsl:template match="/MBooksTop" mode="reader">
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
     <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
@@ -1239,7 +1239,7 @@
       </xsl:choose>
     </xsl:variable>
 
-    <html lang="en" xml:lang="en" 
+    <html lang="en" xml:lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
       xmlns:cc="http://creativecommons.org/ns#"
@@ -1258,7 +1258,7 @@
 		<meta name="format-detection" content="telephone=no" />
 		<!-- this causes bookmarked-to-home to open without browser chrome; don't do that -->
 		<!-- <meta name="apple-mobile-web-app-capable" content="yes" />  -->
-      
+
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
@@ -1292,27 +1292,27 @@
           #mdpNewStarburst {
             margin-left: -25px;
           }
-          
+
           .prompt {
             margin-left: 0;
           }
-          
+
           #mdpBookReaderViews {
             margin-left: 30px;
           }
-          
+
           #mdpToolbarNav > ul {
             padding-left: 0;
           }
-          
+
         </style>
         <![endif]]]></xsl:comment>
 
-        
+
         <xsl:call-template name="bookreader-toolbar-items" />
-        
+
         <xsl:call-template name="setup-ht-params" />
-        
+
       </head>
 
 	<!-- scrollTo(0,1);ToggleContentListSize(); -->
@@ -1322,7 +1322,7 @@
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
           </div>
         </xsl:if>
-        
+
         <xsl:call-template name="header"/>
 
         <xsl:call-template name="BookReaderContainer" />
@@ -1336,7 +1336,7 @@
         <xsl:call-template name="footer">
           <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
         </xsl:call-template>
-        
+
         <xsl:if test="$gUsingBookReader = 'true'">
           <xsl:call-template name="bookreader-javascript-init" />
         </xsl:if>
@@ -1348,12 +1348,12 @@
 
       </body>
     </html>
-  </xsl:template>  
-  
-  
+  </xsl:template>
+
+
   <!-- FORM: Search -->
   <xsl:template name="MobileBuildSearchForm">
-    
+
 <!--
     <xsl:param name="pSearchForm"/>
     <xsl:element name="form">
@@ -1364,7 +1364,7 @@
       <xsl:attribute name="action">
         <xsl:value-of select="'ptsearch'"/>
       </xsl:attribute>
-      
+
       <h2 class="SkipLink">Search and page navigation options</h2>
 -->
       <!--<ul>
@@ -1380,7 +1380,7 @@
         <form method="get" onsubmit='return false;' action='pt/search'>
         <div class="asearchform">
           <!--<xsl:apply-templates select="$pSearchForm/HiddenVars"/>-->
-                    
+
           <xsl:element name="input">
             <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
@@ -1403,36 +1403,36 @@
         </form>
         <!--</li>
       </ul>-->
-<!--      
+<!--
       <xsl:call-template name="HiddenDebug"/>
     </xsl:element>
--->    
+-->
 <!--
 	<div id="mdpSearchResultsFooter">
 	<div id="footerDiv" class="footer">
-		  
+
 		    <div id="footerlogin">
 				<xsl:call-template name="loginlink"/>
     		</div>
-    		
+
 			<span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
-			<br />    		
-			
+			<br />
+
 			<xsl:call-template name="feedbacklink"/> | <xsl:call-template name="helplink"/> | <xsl:call-template name="footertakedownlink"/>
 			<br />
-			
+
 
 	</div>
 	</div>
 -->
 	<xsl:call-template name="BuildMobileFooter"/>
   </xsl:template>
-  
-  
+
+
   <xsl:template name="BuildMobileFooter">
 	  <div id="mdpFooter">
 		<div id="footerDiv" class="footer">
-			  
+
 			    <div id="footerlogin">
 					<xsl:call-template name="loginlink"/>
 	    		</div>
@@ -1440,15 +1440,15 @@
 	    	<!-- 2011-09-29: "regular site" link shouldn't take you to the catalog -->
         <!-- <span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
         <br />         -->
-				
+
 				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> | <xsl:call-template name="footertakedownlink"/>
 				<br />
-				
-	
+
+
 		</div>
 		</div>
   </xsl:template>
-  
+
   <!-- | <xsl:call-template name="helplink"/> -->
 <!-- VIEWING AREA -->
   <xsl:template name="Viewport">
@@ -1485,7 +1485,7 @@
             </xsl:when>
             <xsl:otherwise>
               <div class="mdpTMPhead">NO TEXT IN THIS ITEM</div>
-              <div class="mdpTMPtext">This item consists only of page images without any OCR text</div>           
+              <div class="mdpTMPtext">This item consists only of page images without any OCR text</div>
             </xsl:otherwise>
           </xsl:choose>
         </div>
@@ -1494,7 +1494,7 @@
       <xsl:when test="$gFinalView='restricted'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          
+
           <div class="header">
 		      <a class="htlogobutton" href="http://m.hathitrust.org"></a>
 		      <xsl:element name="a">
@@ -1514,7 +1514,7 @@
         		</xsl:element>
           </div>
           <br />
-          
+
           <xsl:choose>
             <!-- If opb (attr=3) + affiliated user then tell them when -->
             <!-- current accessor's exclusive access expires -->
@@ -1627,15 +1627,15 @@
           </xsl:attribute>
         </xsl:element>
       </xsl:when>
-      
+
       <xsl:otherwise>
         <div id="BookReader"></div>
       </xsl:otherwise>
-      
+
     </xsl:choose>
   </xsl:template>
-    
+
 </xsl:stylesheet>
 
 
- 
+
