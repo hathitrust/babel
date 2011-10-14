@@ -112,14 +112,10 @@ sub __determineVersion {
 
     # Default and validate the version param
     my $ver = $Q->param('v') ? $Q->param('v') : HIGHEST_API_VERSION;
-    print STDERR "DETERMINING VERSION :: $ver\n";
     if (! grep(/^$ver$/, @SUPPORTED_VERSIONS)) {
-        print STDERR "ER...\n";
         return undef;
     }
     
-    print STDERR "USING VERSION: $ver\n";
-
     return $ver;
 }
 

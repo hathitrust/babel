@@ -1,0 +1,32 @@
+#!/l/local/bin/perl
+
+use Data::Dumper;
+
+use Plack::Util;
+use Plack::Handler::CGI;
+use Plack::Builder;
+use Plack::Middleware::Debug;
+
+use CGI::Emulate::PSGI;
+use CGI::Compile;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use API::RESTApp;
+use API::RESTApp::Patches;
+
+my $script_filename = __FILE__;
+$script_filename =~ s,\.choke,,;
+my $sub = CGI::Compile->compile($script_filename);
+
+my $app = sub {
+    my ( $env ) = shift;
+    $API::HTD::env = $env;
+    my $resp = $sub->();
+    return $resp;
+};
+
+
+Plack::Handler::CGI->new->run($app);
+
