@@ -544,7 +544,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 		$('#BRsearch').css('display','none');
 		$('#BRreadonly').css('display','none');
 		$("#BRnavCntlBtm").css('bottom', $("#BRnav").css('height'));
-		$('#mdpMobileTableOfContents').css('display','');
+		$('#mdpMobileTableOfContents').css('display','block');
 		$('#mdpMobileTableOfContents').css('z-index','1');
     	$('#BRnav').css('display','none');
     	$('#toc').css('display','none');
@@ -1017,6 +1017,50 @@ HTMobileBookReader.prototype.updateNavIndex = function(index) {
     // triggers jumpToIndex which triggers this method
 	//$('#displayindex').html("Current Index:" + index);
     $('#BRpager').data('swallowchange', true).slider('value', index);
+  	this.updateLocationHash();
+}
+
+HTMobileBookReader.prototype.updateLocationHash = function() {
+    var self = this;
+    
+    // update the classic view link to reflect the current page number
+    var params = this.paramsFromCurrent();
+    
+    // iOS doesn't allow passive use of replaceState
+    var newHash = window.location.protocol + "//" + 
+                  window.location.host + 
+                  window.location.pathname + 
+                  window.location.search + 
+                  '#' + this.fragmentFromParams(params);
+    window.location.replace(newHash); // replace blocks the back button!
+    
+    // if ( this.last_index != params.index ) {
+    //     if ( this.last_index != null ) {
+    //         if ( pageTracker != null ) {
+    //             // window.location.origin?
+    //             var params_ = this.paramsForTracking(params);
+    //             var href = window.location.protocol + "//" + window.location.host + window.location.pathname + "?";
+    //             var args = ["id=" + params_.id];
+    //             args.push("view=" + params_.view);
+    //             args.push("orient=" + params_.orient);
+    //             args.push("size=" + params_.size);
+    //             
+    //             var num = this.getPageNum(params_.seq);
+    //             if ( typeof(num) == "number" ) {
+    //                 args.push("num=", num);
+    //             }
+    //             
+    //             args.push("seq=" + ( params_.seq + 1 ));
+    //             href += args.join(";");
+    //             _gaq.push(["_trackPageview", href])
+    //         }
+    //     }
+    //     this.last_index = params.index;
+    // }
+    
+    // This is the variable checked in the timer.  Only user-generated changes
+    // to the URL will trigger the event.
+    this.oldLocationHash = newHash;
 }
 
 // jumpToIndex()
@@ -1285,6 +1329,41 @@ HTMobileBookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
 
 HTMobileBookReader.prototype.paramsFromFragment = function(urlFragment){
 	var params = HTBookReader.prototype.paramsFromFragment.call(this,urlFragment);
+	
+	// want to be fudging params based on orientation
+	if (typeof window.orientation != 'undefined'){
+		switch(window.orientation){
+			case 0:
+			case 180:
+				// this.switchMode(HT.reader.constMode1up);
+				params.mode = HT.reader.constMode1up;
+				break;
+			case 90:
+			case -90:
+				if(this.displayMode == undefined){
+					this.displayMode='image';
+					params.displayMode = 'image';
+				}
+				
+				if(this.displayMode=='image'){
+					//
+					if(screen.width>320){
+						//this.switchMode(HT.reader.constMode2up);
+						params.mode = HT.reader.constMode2up;
+					}else{
+						//this.switchMode(HT.reader.constMode1up);
+						params.mode = HT.reader.constMode1up;
+					}
+				}else{
+					// this.switchMode(HT.reader.constMode1up);
+					params.mode = HT.reader.constMode1up;
+				}
+				break;
+		}
+	} else if ( navigator.userAgent.indexOf("iPad") < 0 ) {
+	  params.mode = this.constMode1up;
+	}
+	return params;
 
 	// brk
 	// set mode based on landscape/portrait

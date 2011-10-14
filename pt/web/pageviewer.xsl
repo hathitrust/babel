@@ -212,6 +212,11 @@
           <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
+        
+        <xsl:if test="$gUsingBookReader='true'">
+        <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script>
+        </xsl:if>
+        
         <!-- <xsl:call-template name="online_assessment"/> -->
 
         <xsl:if test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
@@ -367,6 +372,8 @@
         </xsl:choose>
       </xsl:for-each>
       HT.params.view = "<xsl:value-of select="$gCurrentView" />";
+      var fudgingMonkeyPatch = fudgingMonkeyPatch || false;
+      HT.params.fudging = fudgingMonkeyPatch;
       HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
     </script>
   </xsl:template>
@@ -409,6 +416,10 @@
           thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
         };
         HT.reader.slice_size = 100;
+        if ( HT.params.fudging ) {
+          HT.reader.slice_size = 999999;
+          HT.reader.catalog_method = 'fudged';
+        }
         HT.reader.total_slices = 1;
         HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
         if ( HT.reader.ui == 'embed' ) {
@@ -426,7 +437,7 @@
     </script>
     <script type="text/javascript" src="/pt/js/bookreader_startup.js"/> 
     <script type="text/javascript">
-        HT.monitor.run();
+        // HT.monitor.run();
     </script>
   </xsl:template>
   

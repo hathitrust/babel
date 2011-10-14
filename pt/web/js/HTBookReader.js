@@ -7,8 +7,9 @@ function HTBookReader() {
     this.defaultReduce = 4;
     this.savedReduce = {'1.text' : 1};
     this.total_slices = 9999;
-    this.cache_age = 60;
+    this.cache_age = -1;
     this.restricted_width = this.restricted_height = 75;
+    this.catalog_method = 'unzip';
 }
 
 HTBookReader.prototype.sliceFromIndex = function(index) {
@@ -17,10 +18,11 @@ HTBookReader.prototype.sliceFromIndex = function(index) {
 
 HTBookReader.prototype.getMetaUrlParams = function(start) {
     // var params = { id : this.bookId, noscale: 0, format: "list", limit : this.slice_size };
-    var params = { id : this.bookId, size: '100', format: "list", limit : this.slice_size };
+    var params = { id : this.bookId, size: '100', format: "list", limit : this.slice_size, method : this.catalog_method };
     if ( this.flags.force !== undefined ) {
         params["force"] = this.force
     }
+    params['force'] = 1;
     params['start'] = start;
     
     if ( this.flags.debug ) {
@@ -28,6 +30,35 @@ HTBookReader.prototype.getMetaUrlParams = function(start) {
     }
     
     return params;
+}
+
+HTBookReader.prototype.hasPageFeature = function(index, feature) {
+    var slice = this.sliceFromIndex(index);
+    if ( this.bookData[slice.slice] != undefined ) {
+        var features = this.bookData[slice.slice]['features'][slice.index];
+        if ( features == undefined ) {
+          console.log("MISSING FEATURE", slice, index, feature);
+          return ( feature == "MISSING_PAGE" );
+        }
+        return ( features.indexOf(feature) >= 0 );
+    }
+    return false;
+}
+
+HTBookReader.prototype.removePageFeature = function(index, feature) {
+    var slice = this.sliceFromIndex(index);
+    if ( this.bookData[slice.slice] != undefined ) {
+        var features = this.bookData[slice.slice]['features'][slice.index];
+        if ( features == undefined ) {
+          console.log("MISSING FEATURE", slice, index, feature);
+          return ( feature == "MISSING_PAGE" );
+        }
+        var feature_idx = features.indexOf(feature);
+        if ( feature_idx >= 0 ) {
+          features.splice(feature_idx, 1);
+        }
+    }
+    return false;
 }
 
 HTBookReader.prototype.getPageWidth = function(index) {
@@ -44,19 +75,6 @@ HTBookReader.prototype.getPageHeight = function(index) {
         h = Math.ceil(w * ( w / h ));
     }
     return h;
-}
-
-HTBookReader.prototype.hasPageFeature = function(index, feature) {
-    var slice = this.sliceFromIndex(index);
-    if ( this.bookData[slice.slice] != undefined ) {
-        var features = this.bookData[slice.slice]['features'][slice.index];
-        if ( features == undefined ) {
-          console.log("MISSING FEATURE", slice, index, feature);
-          return ( feature == "MISSING_PAGE" );
-        }
-        return ( features.indexOf(feature) >= 0 );
-    }
-    return false;
 }
 
 HTBookReader.prototype.__getPageWidth = function(index) {
@@ -182,7 +200,7 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
             page_uri += ";q1=" + this.q1;
         }
     } else {
-        page_uri += ';width=' + _targetWidth + ';orient=' + _orient;
+        page_uri += ';width=' + _targetWidth + ';height=' + _targetWidth + ';orient=' + _orient;
     }
     
     if ( this.flags.debug ) {
@@ -374,7 +392,7 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
     this.bookData[slice_index] = data;
     this.slices.push(slice_index);
     
-    if ( do_cache ) {
+    if ( do_cache && this.cache_age > 0 ) {
         lscache.set(this.bookId + "-" + slice_index, data, this.cache_age);
     }
     
@@ -495,7 +513,9 @@ HTBookReader.prototype.init = function() {
     }
     
     setTimeout(function() {
+      self.initializing = true;
       BookReader.prototype.init.call(self);
+      self.initializing = false;
       self.saveReduce();
     }, init_delay)
 
@@ -904,7 +924,7 @@ HTBookReader.prototype.switchMode = function(mode, btn) {
         this.prepareThumbnailView();
     } else {
         // $$$ why don't we save autofit?
-        this.twoPage.autofit = null; // Take zoom level from other mode; RRE: we'd rather it didn't
+        this.twoPage.autofit = "auto"; // Take zoom level from other mode; RRE: we'd rather it didn't
         this.twoPageCalculateReductionFactors();
         
         if ( this.savedReduce[this.mode] == null ) {
@@ -1510,7 +1530,9 @@ HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                     .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
                     .addClass('BRlazyload')
                     // Store the URL of the image that will replace this one
-                    .data('srcURL',  this._getPageURI(leaf, thumbReduce));
+                    .data('srcURL',  this._getPageURI(leaf, thumbReduce))
+                    .data('index', leaf).
+                    data('reduce', thumbReduce);
                 $(link).append(img);
                 //console.log('displaying thumbnail: ' + leaf);
             }   
@@ -1625,7 +1647,7 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
     var e;
     var url = this._getPageURI(index, reduce, 0);
     
-    if ( this.hasPageFeature(index, "MISSING_PAGE") ) {
+    if ( 0 && this.hasPageFeature(index, "MISSING_PAGE") ) {
 
         e = this._createTextElement(width, height);
         
@@ -1645,13 +1667,19 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
 
     } else if ( this.displayMode == 'image' ) {
 
-        e = document.createElement("img");
-        $(e).css('width', width+'px');
-        $(e).css('height', height+'px');
+      e = document.createElement("img");
+      $(e).css('width', width+'px');
+      $(e).css('height', height+'px');
 
-        var title = "image of page " + this.getPageNum(index);
-        $(e).attr({ alt : title, title : title});
-        e.src = url;
+      var title = "image of page " + this.getPageNum(index);
+      $(e).attr({ alt : title, title : title});
+      e.src = url;
+
+      $.data(e, 'index', index);
+
+      $(e).one('error', function(evt) {
+        self._handle_image_error(this);
+      })
 
     } else {
 
@@ -1713,7 +1741,8 @@ HTBookReader.prototype.rotatePage = function(idx, delta) {
     if ( r == 360 ) { r = 0 ; }
     this.rotationCache[idx] = r;
 
-    $("div.BRpagediv1up").remove();
+    // $("div.BRpagediv1up").remove();
+    $("#BRpageview").empty();
     this.displayedIndices = [];
     
     this.drawLeafs();

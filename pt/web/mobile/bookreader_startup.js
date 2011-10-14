@@ -25,6 +25,14 @@ HT.resizeBookReader = function() {
   }
   //try{console.log("Resize 3: " + bookreader_height);console.log("Window height: " + $(window).height());}catch(err){}
   $("#BookReader").height(bookreader_height);
+  if ( $("#BRcontainer").height() > bookreader_height ) {
+    $("#BRcontainer").height(bookreader_height);
+  }
+  
+  // roger - rotating the device sometimes leaves BRcontainer with the old height
+  if ( $("#BRcontainer").width() > $("#BookReader").width() ) {
+    $("#BRcontainer").width($("#BookReader".width()));
+  }
   
   //HT.reader.setScreenSize();
   
@@ -134,9 +142,6 @@ $(document).ready(function() {
     HT.reader.openNotice();
     HT.reader.loadBookDataSlice(0);
     
-    
-
-    
     // if(false) {
     //     var data = lscache.get(HT.reader.bookId + "-0");
     //     console.log("CACHE:", HT.reader.bookId, "0", data);
@@ -155,28 +160,76 @@ $(document).ready(function() {
     //     }
     // }
     
-    
-    
 })
 
 window.onorientationchange = function() {
+    var redisplay_contents = $("#mdpMobileTableOfContents").is(":visible");
+    if ( redisplay_contents ) {
+      $("#mdpMobileTableOfContents").hide();
+    }
     try{
     switch(window.orientation){
+   case 90:
+   case -90:
+     //HT.reader.mode=3;
+     if(HT.reader.mode!=HT.reader.constMode2up && HT.reader.displayMode!='text' && screen.width>320){
+     //  console.log("switching to 2up");
+     //  console.log("orientation change - switching to 2up");
+       HT.resizeBookReader();
+       HT.reader.switchMode(HT.reader.constMode2up);
+     }else{
+       HT.resizeBookReader();
+     }
+         break;
+        case 0:
+        case 180:
+         if(HT.reader.mode!=HT.reader.constMode1up){
+         //  console.log("orientation change - switching to 1up");
+           HT.resizeBookReader();
+           HT.reader.switchMode(HT.reader.constMode1up);
+         }else{
+           HT.resizeBookReader();
+         }
+         break;
+        default:
+         // ("no switch: " + window.orientation);
+         break;
+ }
+ }catch(err){alert(err.toString())}
+ // if ( redisplay_contents ) {
+ //   setTimeout(function() {
+ //     $("#toc").click();
+ //   }, 500);
+ // }
+}
+
+window.mockrotate = function(orientation) {
+  
+    HT.mock_mode = ( orientation == 0 ) ? 1 : 2;
+  
+    var redisplay_contents = $("#mdpMobileTableOfContents").is(":visible");
+    if ( redisplay_contents ) {
+      $("#read").click();
+    }
+    try{
+    switch(orientation){
 		case 90:
 		case -90:
 			//HT.reader.mode=3;
-			if(HT.reader.mode!=HT.reader.constMode2up && HT.reader.displayMode!='text' && screen.width>320){
+			if(HT.mock_mode == 2){
 			//	console.log("switching to 2up");
 			//	console.log("orientation change - switching to 2up");
 				HT.resizeBookReader();
 				HT.reader.switchMode(HT.reader.constMode2up);
+				var spreadSize = HT.reader.getSpreadSizeFromReduce(HT.reader.twoPage.currentIndexL, HT.reader.twoPage.currentIndexR, HT.reader.reduce);
+				var spreadSize = HT.reader.getIdealSpreadSize(HT.reader.twoPage.currentIndexL, HT.reader.twoPage.currentIndexR);
 			}else{
 				HT.resizeBookReader();
 			}
         	break;
         case 0:
         case 180:
-        	if(HT.reader.mode!=HT.reader.constMode1up){
+        	if(HT.mock_mode == 1){
         	//	console.log("orientation change - switching to 1up");
         		HT.resizeBookReader();
         		HT.reader.switchMode(HT.reader.constMode1up);
@@ -185,12 +238,15 @@ window.onorientationchange = function() {
         	}
         	break;
         default:
-        	("no switch: " + window.orientation);
+        	("no switch: " + orientation);
         	break;
 	}
 	}catch(err){alert(err.toString())}
+	if ( redisplay_contents ) {
+	  setTimeout(function() {
+  	  $("#toc").click();
+	  }, 500);
+	}
+
 }
-
-
-
 

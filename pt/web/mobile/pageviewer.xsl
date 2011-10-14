@@ -176,7 +176,7 @@
          
        HT.init_from_params();
 
-       HT.reader = new HTMobileBookReader();
+       HT.reader = new HTMobileBookReader(); // new HTMobileBookReader();
        HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
        <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
        HT.reader.bookTitle = document.title;
@@ -208,7 +208,8 @@
           ping  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ping",
           thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
         };
-        HT.reader.slice_size = 100;
+        HT.reader.slice_size = 999999; // 100;
+        HT.reader.catalog_method = 'fudged';
         HT.reader.total_slices = 1;
         HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
         if ( HT.reader.ui == 'embed' ) {
@@ -1255,7 +1256,8 @@
 		<link rel="alternate" media="handheld" href="" />
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
 		<meta name="format-detection" content="telephone=no" />
-		<meta name="apple-mobile-web-app-capable" content="yes" /> 
+		<!-- this causes bookmarked-to-home to open without browser chrome; don't do that -->
+		<!-- <meta name="apple-mobile-web-app-capable" content="yes" />  -->
       
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
@@ -1273,6 +1275,7 @@
           <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
+        <script type="text/javascript" src="/pt/js/FudgingBookReader.js"></script>
         <!-- <xsl:call-template name="online_assessment"/> -->
 
         <xsl:if test="$gCurrentView = 'image'">

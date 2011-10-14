@@ -98,7 +98,7 @@ sub Run {
                                $ENV{SDRROOT} . "/$app_name/lib/Config/local.conf"
                               );
     $C->set_object('MdpConfig', $config);
-
+    
     # Database connection -- order matters
     my $db = new Database($config);
     $C->set_object('Database', $db);
