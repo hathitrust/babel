@@ -437,7 +437,7 @@
     </script>
     <script type="text/javascript" src="/pt/js/bookreader_startup.js"/> 
     <script type="text/javascript">
-        // HT.monitor.run();
+        HT.monitor.run();
     </script>
   </xsl:template>
   
