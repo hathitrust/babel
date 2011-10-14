@@ -252,70 +252,6 @@ if ( fudgingMonkeyPatch ) {
           }
       }
 
-      if ( false ) {
-        for (i=0; i<indicesToDisplay.length; i++) {
-            var index = indicesToDisplay[i];    
-            var height  = parseInt(this._getPageHeight(index)/this.reduce); 
-            var width   = parseInt(this._getPageWidth(index)/this.reduce); 
-
-            if ( viewWidth < width ) {
-              var r = ( viewWidth - 20 ) / width;
-              width = ( viewWidth - 20 );
-              height = Math.floor(height * r);
-            }
-
-            if (BookReader.util.notInArray(indicesToDisplay[i], this.displayedIndices)) {            
-                //console.log("displaying leaf " + indicesToDisplay[i] + ' leafTop=' +leafTop);
-                var div = document.createElement("div");
-                div.className = 'BRpagediv1up';
-                div.id = 'pagediv'+index;
-                div.style.position = "absolute";
-                $(div).css('top', leafTop + 'px');
-                var left = (viewWidth-width)>>1;
-                if (left<0) left = 0;
-                $(div).css('left', left+'px');
-                $(div).css('width', width+'px');
-                $(div).css('height', height+'px');
-                //$(div).text('loading...');
-
-                $('#BRpageview').append(div);
-                $.data(div, 'index', index);
-
-                var img = this.createContentElement(index, this.reduce, width, height);
-                // $(img).css('width', width+'px');
-                // $(img).css('height', height+'px');
-                $(div).append(img);
-
-                $('<div class="debugIndex">' + index + '</div>').appendTo(div);
-
-                // var img = document.createElement("img");
-                // img.src = this._getPageURI(index, this.reduce, 0);
-                // $(img).css('width', width+'px');
-                // $(img).css('height', height+'px');
-                // $(div).append(img);
-
-            } else {
-                //console.log("not displaying " + indicesToDisplay[i] + ' score=' + jQuery.inArray(indicesToDisplay[i], this.displayedIndices));            
-            }
-
-            leafTop += height +10;
-
-        }
-
-        for (i=0; i<this.displayedIndices.length; i++) {
-            if (BookReader.util.notInArray(this.displayedIndices[i], indicesToDisplay)) {
-                var index = this.displayedIndices[i];
-                //console.log('Removing leaf ' + index);
-                //console.log('id='+'#pagediv'+index+ ' top = ' +$('#pagediv'+index).css('top'));
-                $('#pagediv'+index).remove();
-            } else {
-                //console.log('NOT Removing leaf ' + this.displayedIndices[i]);
-            }
-        }
-
-      }
-
-
       this.displayedIndices = indicesToDisplay.slice();
       this.updateSearchHilites();
 
@@ -423,7 +359,6 @@ if ( fudgingMonkeyPatch ) {
 
           var viewWidth = self.getViewWidth();
 
-          console.log("CREATING IMAGE", url);
           var lazy = new Image();
           lazy.e = e;
           lazy.index = index;

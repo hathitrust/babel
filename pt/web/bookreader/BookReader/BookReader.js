@@ -460,7 +460,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
             // $(img).css('height', height+'px');
             $(div).append(img);
             
-            $('<div class="debugIndex">' + index + '</div>').appendTo(div);
+            // $('<div class="debugIndex">' + index + '</div>').appendTo(div);
 
             // var img = document.createElement("img");
             // img.src = this._getPageURI(index, this.reduce, 0);
@@ -2584,11 +2584,11 @@ BookReader.prototype.pruneUnusedImgs = function() {
     for (var key in this.prefetchedImgs) {
         //console.log('key is ' + key);
         if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
-            console.log('removing key '+ key);
+            // console.log('removing key '+ key);
             $(this.prefetchedImgs[key]).detach();
         }
         if ((key < this.twoPage.currentIndexL-4) || (key > this.twoPage.currentIndexR+4)) {
-            console.log('deleting key '+ key);
+            // console.log('deleting key '+ key);
             delete this.prefetchedImgs[key];
         }
     }
