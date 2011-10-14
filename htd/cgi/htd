@@ -43,19 +43,19 @@ $::VERSION = 0.2000;
 
 # Highest API version supported
 use constant HIGHEST_API_VERSION => 1;
-my @SUPPORTED_VERSIONS = (HIGHEST_API_VERSION);
+our @SUPPORTED_VERSIONS = (HIGHEST_API_VERSION);
 
 # ============================ Main ===================================
 
 # Determine which version of API to load and run
-my $Q = CGI->new();
+our $Q = CGI->new();
 # get path_info + query_string from command line
 my $action = $Q->param('action');
 if ($action) {
     $Q->delete('action');
     $Q->path_info($action);
 }
-    
+ 
 my $API_version = __determineVersion($Q);
 
 if (! $API_version) {
@@ -75,7 +75,7 @@ else {
     }
     
     my $API_version_instance = $classPackage->new(('CGI' => $Q));    
-    $API_version_instance->run();
+    return $API_version_instance->run();
 }
 
 exit 0;
@@ -112,9 +112,13 @@ sub __determineVersion {
 
     # Default and validate the version param
     my $ver = $Q->param('v') ? $Q->param('v') : HIGHEST_API_VERSION;
+    print STDERR "DETERMINING VERSION :: $ver\n";
     if (! grep(/^$ver$/, @SUPPORTED_VERSIONS)) {
+        print STDERR "ER...\n";
         return undef;
     }
+    
+    print STDERR "USING VERSION: $ver\n";
 
     return $ver;
 }
