@@ -43,7 +43,7 @@ $app = builder {
                             return ( "search-index-id", $id );
                         }
                     },
-                    credit_rate    => [ 0.5, 'min' ],
+                    credit_rate    => [ 0.25, 'min' ],
                     max_debt       => [ 1, '+2 min' ],
                     response       => { filename => qq{$ENV{SDRROOT}/pt/web/503_index.html},
                                         content_type => 'text/html' }

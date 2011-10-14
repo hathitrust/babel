@@ -4,6 +4,14 @@
     <title>Hathi Trust Digital Library - Indexing in Progress</title>
     <link rel="stylesheet" href="./faq.css" type="text/css" />
     <link rel="stylesheet" href="./MBooksCol.css" type="text/css" /> 
+    <style type="text/css" media="screen">
+      .message {
+        position: absolute;
+        bottom: 0;
+        left: 10;
+        color: #ddd;
+      }
+    </style>
   </head>
   
   <body class="staticPage"> 
@@ -35,9 +43,18 @@
           
         <p>Indexing should be complete soon.</p>
         
-        <p><strong><a href="QUERY_URL">Try your query again</a></strong>
+        <p><strong><a id="request_url" href="__REQUEST_URL__">Try your query again</a></strong>
+          
+        <pre class="message">___MESSAGE___</pre>
       
     </div>
+    <script>
+      // rewrite the request_url and remove the index parameter
+      var a = document.getElementById("request_url");
+      var href = a.getAttribute('href');
+      href = href.replace(/index=\d+[;&]?/, '');
+      a.setAttribute('href', href);
+    </script>
   </body>
 </html>
 
