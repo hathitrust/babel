@@ -102,7 +102,7 @@ div#mdpContentContainer {
 
 /* @group TOOLBAR */
 
-#mdpToolbar {  
+#mdpToolbar {
   height: 100px;
   margin-right: 10px;
   margin-left: 0;
@@ -179,7 +179,7 @@ a.PTbutton {
   height: 2em;
   padding: 4px;
   text-align: center;
-  
+
   font-size: 95%;
   margin-top: 4px;
 
@@ -194,7 +194,7 @@ a.PTbutton:hover, a.PTbuttonActive {
 a.PTbuttonDisabled {
   color: #ccc;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
-  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40); 
+  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40);
   opacity: 0.4;
 }
 
@@ -338,17 +338,17 @@ span.prompt {
 
 /* @group PAGE CONTROLS */
 
-#BRpageControls {z-index: 999; padding:5px; background-color:#f5f5f5; display:block; 
+#BRpageControls {z-index: 999; padding:5px; background-color:#f5f5f5; display:block;
        zoom:1;
        position:absolute; top:0px; overflow:hidden;
-       border:solid 1px #929292; border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px; 
+       border:solid 1px #929292; border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px;
        box-shadow: 5px 5px 5px #888; -moz-box-shadow: 1px 1px 3px #555; -webkit-box-shadow: 5px 5px 5px #888; white-space: nowrap;
        left:-1000px;
        opacity: 0.2; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)"; filter:alpha(opacity=20);
 }
-       
+
 /*.waiting {
-  opacity: 0.4; filter:alpha(opacity=40); -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)"; 
+  opacity: 0.4; filter:alpha(opacity=40); -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
 }
 
 .waiting a {
@@ -356,14 +356,14 @@ span.prompt {
 }*/
 
 .hovered, .hovered a, .hovered label {
-  opacity: 1.0 !important; 
+  opacity: 1.0 !important;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)" !important;
-  filter:alpha(opacity=100) !important; 
+  filter:alpha(opacity=100) !important;
 }
 
-/*#BRpageControls {z-index: 999; padding:5px; background-color:#f5f5f5;background-color:rgba(245, 245, 245, 0.6); display:none; 
+/*#BRpageControls {z-index: 999; padding:5px; background-color:#f5f5f5;background-color:rgba(245, 245, 245, 0.6); display:none;
        position:absolute; top:0px; left:0px; overflow:hidden;
-       border:solid 1px #929292; border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px; 
+       border:solid 1px #929292; border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px;
        box-shadow: 5px 5px 5px #888; -moz-box-shadow: 1px 1px 3px #555; -webkit-box-shadow: 5px 5px 5px #888; white-space: nowrap;}
 #BRpageControls:hover {background-color:rgba(245, 245, 245, 1);}
 */
@@ -375,7 +375,7 @@ span.prompt {
 #BRpageControls a img { /*background-color: black;*/ height: 25px; width: 25px; }
 #BRpageControls a:hover { border-bottom: 2px solid #666; }
 #BRpageControls > div { float: left; text-align: center;}
-#BRpageControls label { 
+#BRpageControls label {
   font-size: 80%; display: block; font-weight: bold;
   opacity: 0.6; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)"; filter:alpha(opacity=60);
 }
@@ -458,7 +458,7 @@ div#mdpTextFrame p {
     bottom:0px;
     width:100%;
     overflow-x:auto;
-    overflow-y:scroll;    
+    overflow-y:scroll;
     background-color: #FCFCFC;
     position:absolute;
     background-color: #eee;
@@ -564,7 +564,7 @@ div.mdpScrollableContainer {
 .mdpControlContainer h2 {
   padding-left: 20px;
   font-weight:bold;
-  border-bottom: 1px solid #ddd;  
+  border-bottom: 1px solid #ddd;
 }
 
 .mdpControlContainer ul {
@@ -703,7 +703,7 @@ div.mdpScrollableContainer {
 
 .disabled {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
-  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40); 
+  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40);
   opacity: 0.4;
 }
 
@@ -714,7 +714,7 @@ div.mdpScrollableContainer {
 
 #mdpFeedbackForm
 {
-  margin-left: 0px; 
+  margin-left: 0px;
   background-color: #fffeff
 }
 
@@ -750,6 +750,7 @@ div.mdpScrollableContainer {
   border: 1px dotted #666;
   text-align: center;
   z-index: 999;
+  display: none;
 }
 
 .page1up {
