@@ -45,8 +45,11 @@ use Context;
 use Database;
 use MdpConfig;
 use Debug::DUtils;
+use Collection;
 use Identifier;
 use Mail::Mailer;
+use MetadataQueue;
+use MBooks::MetaDataGetter;
 
 #
 # Establish and populate the Context.  Order dependent.
@@ -54,18 +57,21 @@ use Mail::Mailer;
 my $C = new Context;
 my $CONFIG = new MdpConfig(
                            Utils::get_uber_config_path('mb'),
-                           #$ENV{SDRROOT} . "/mb/lib/Config/global.conf",
-                           #$ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                           $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
                           );
 $C->set_object('MdpConfig', $CONFIG);
 # Database connection
 my $db = new Database($C->get_object('MdpConfig'));
 my $DBH = $db->get_DBH($C);
+$C->set_object('Database', $db);
 
 
+my $CO = new Collection($DBH, $CONFIG, 'no_owner');
+$C->set_object('Collection', $CO);
 
 CB_delete_extras($C);
-CB_do_update_rights($C);
+CB_do_update_metadata($C);
 
 email_report()
   if ($EMAIL);
@@ -103,11 +109,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub email_report {
-    my $g_assert_email_to_addr   = q{pfarber@umich.edu};
-    my $g_assert_email_from_addr = q{"CB Mailer" <dlps-help@umich.edu>};
+    my $g_assert_email_to_addr   = q{pfarber@umich.edu,tburtonw@umich.edu};
+    my $g_assert_email_from_addr = q{"Collection Builder Mailer" <dlps-help@umich.edu>};
 
     my $when = Utils::Time::iso_Time();
-    my $email_subject = qq{[CB] Rights update ($when)};
+    my $email_subject = qq{[CB] Metadata update ($when)};
 
     my $mailer = new Mail::Mailer('sendmail');
     $mailer->open({
@@ -179,75 +185,116 @@ sub CB_delete_extras {
 
 # ---------------------------------------------------------------------
 
-=item CB_do_update_rights
+=item Name 
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub CB_do_update_rights {
+sub __cb_get_metadata_hashref {
+    my $C = shift;
+    my $id = shift;
+
+    my $mdg = new MBooks::MetaDataGetter($C, [$id]);
+    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, [$id]);
+
+    if ($metadata_aryref) {
+        my $metadata_hashref = $metadata_aryref->[0];
+        $metadata_hashref = $mdg->normalize_metadata($metadata_hashref);
+        
+        return $metadata_hashref;
+    }
+    else {
+        return undef;
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __cb_update_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __cb_update_metadata {
+    my $id = shift;
+    my $metadata_hashref = shift;
+
+    eval {
+        $CO->create_or_update_item_metadata($metadata_hashref);
+    };
+    if ($@) {
+        __P( qq{Could not update item="$id": $@} );
+
+        return 0;
+    }
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item CB_do_update_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CB_do_update_metadata {
     my($C) = @_;
 
-    my $offset = 0;
-    my $size = 1000;
-    my ($statement, $sth);
+    __P(qq{update metadata:\n});
 
-    __P(qq{update rights:\n});
-
-    my $num_missing = 0;
+    my $queue_error = 0;
+    
     my $num_updated = 0;
+    my $num_fetch_failed = 0;
+    my $num_update_failed = 0;
     
     while (1) {
-        $statement = qq{SELECT extern_item_id, rights FROM mdp.o_item LIMIT $offset, $size};
-        $sth = DbUtils::prep_n_execute($DBH, $statement);
-        DEBUG('lsdb', qq{DEBUG: $statement});
-        my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+        my ($ok, $id) = MetadataQueue::get_next_metadata_item_id($C, $DBH);
 
-        last unless (scalar @$ref_to_arr_of_hashref);
-
-        print(qq{count=$offset\n}) if ($INTERACTIVE);
-
-        foreach my $hashref (@$ref_to_arr_of_hashref) {
-            my $extern_item_id = $hashref->{extern_item_id};
-            my $rights = $hashref->{rights};
-
-            my $namespace = Identifier::the_namespace($extern_item_id);
-            my $id = Identifier::get_id_wo_namespace($extern_item_id);
-
-            $statement = qq{SELECT attr FROM rights_current WHERE namespace='$namespace' AND id='$id'};
-            $sth = DbUtils::prep_n_execute($DBH, $statement);
-            my $attr = $sth->fetchrow_array || 0;
-
-            if ($attr) {
-                if ($attr != $rights) {
-                    $statement = qq{UPDATE o_item SET rights=$attr WHERE extern_item_id='$extern_item_id'};
-                    $sth = DbUtils::prep_n_execute($DBH, $statement);
-                    $num_updated++;
-                    
-                    __P(qq{$extern_item_id o_item.rights=$rights rights_current.attr=$attr\n});
-
-                    $statement = qq{SELECT MColl_ID FROM o_coll_item WHERE extern_item_id='$extern_item_id'};
-                    $sth = DbUtils::prep_n_execute($DBH, $statement);
-                    my @coll_arr = $sth->fetchrow_array;
-
-                    if (scalar @coll_arr) {
-                        my $colls = join(', ', @coll_arr);
-                        __P(qq{affected MColl_ID(s)=$colls\n});
+        if ($ok) {
+            if ($id) {
+                __P(qq{updating: $id\n});
+        
+                my $metadata_hashref = __cb_get_metadata_hashref($C, $id);
+                my $fetch_ok = $metadata_hashref ? 1 : 0;
+         
+                if ($fetch_ok) {
+                    my $update_ok = __cb_update_metadata($id, $metadata_hashref);
+                    if ($update_ok) {
+                        $num_updated++;
+                        MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     }
+                    else {
+                        # Leave the ID in the queue
+                        $num_update_failed++;
+                    }
+                }
+                else {
+                    # Leave the ID in the queue
+                    $num_fetch_failed++;
                 }
             }
             else {
-                __P(qq{$extern_item_id in o_item missing from rights_current\n});
-                $num_missing++;
+                last;
             }
         }
-        $offset += $size;
+        else {
+            $queue_error = 1;
+            last;
+        }
     }
-    __P(qq{num o_item updated=$num_updated\n});
-    __P(qq{num o_item missing from rights_current=$num_missing\n});
-
+    __P(qq{Report: num_updated=$num_updated\n\tqueue_error=$queue_error num_fetch_failed=$num_fetch_failed num_update_failed=$num_update_failed\n});
 }
+
+
 
 exit 0;
 

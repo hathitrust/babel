@@ -84,10 +84,10 @@ sub metadata_getter_get_metadata {
     my $self = shift;
     my $C = shift;
 
-    my $metadata_aryref = [];
-    my $vufind_aryref = $self->get_vufind_metadata($C);
-    $metadata_aryref = $self->add_rights_data($C, $vufind_aryref);
-    $metadata_aryref = $vufind_aryref;
+    my $metadata_aryref = $self->get_vufind_metadata($C);
+    if ($metadata_aryref) {
+        $self->add_rights_data($C, $metadata_aryref);
+    }
 
     return $metadata_aryref;
 }
@@ -113,8 +113,6 @@ sub add_rights_data {
         ASSERT($rc == RightsGlobals::OK_ID, qq{bad rights data $rc });
         $meta_hashref->{'rights'} = $rights;
     }
-
-    return $ary_of_hashrefs;
 }
 
 # ---------------------------------------------------------------------
@@ -207,6 +205,92 @@ sub create_VuFind_Solr_Searcher_by_alias {
     my $searcher = new MBooks::Searcher::VuFindSolr($engine_uri);
 
     return $searcher;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item normalize_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub normalize_metadata {
+    my $self = shift;
+    my $metadata_hashref = shift;
+
+    my $metadata_clean_ref = {};
+
+    foreach my $key (keys %{$metadata_hashref}) {
+        my $value = $self->maybe_concat_array($$metadata_hashref{$key});
+        $$metadata_clean_ref{$key} = $value;
+    }
+
+    my $date = $$metadata_clean_ref{'date'};
+    $$metadata_clean_ref{'date'} = $self->normalize_date($date);
+
+    if (! defined($$metadata_clean_ref{'author'})) {
+        $$metadata_clean_ref{'author'} = '';
+    }
+
+    return $metadata_clean_ref;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item maybe_concat_array
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub maybe_concat_array {
+    my $self = shift;
+    my $couldBeArrayRef = shift;
+
+    my $ref_type = ref($couldBeArrayRef);
+    my $concatenated;
+
+    if ($ref_type eq "ARRAY") {
+        $concatenated = join (" ", @{$couldBeArrayRef});
+        return $concatenated;
+    }
+    else {
+        return $couldBeArrayRef;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item normalize_date
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub normalize_date {
+    my $self = shift;
+    my $date = shift;
+
+    # XXX what kind of error to throw if can't figure out how to
+    # normalize date.  Consider logging somewhere and inserting fake
+    # date such as 3000 chk mysql for possible fake date value try
+    # 0000
+    if ($date =~ m,(1\d{3}|20\d{2}),) {
+        $date = $1;
+        # mysql needs month and day so put in fake
+        $date .= '-00-00';
+    }
+    else {
+        $date = '0000-00-00';
+    }
+
+    return $date;
 }
 
 # ---------------------------------------------------------------------

@@ -132,8 +132,7 @@ sub execute_operation
         }
 
         foreach my $metadata_hashref (@$metadata_aryref) {
-            my $metadata_ref = $self->normalize_metadata($metadata_hashref);
-            my $id = $self->add_item_metadata_to_database($C, $metadata_ref);
+            my $id = $self->add_item_metadata_to_database($C, $metadata_hashref);
             if (defined($id)) {
                 $added_count ++;
                 push (@added_or_updated, $metadata_hashref->{'extern_item_id'});
@@ -187,12 +186,23 @@ sub get_metadata_via_metadata_getter {
     my $C = shift;
     my $id_aryref = shift;
 
-    my $metadata_aryref= [];
-
     my $mdg = new MBooks::MetaDataGetter($C,$id_aryref);
     my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, $id_aryref);
 
-    return $metadata_aryref;
+    my $normed_metadata_aryref = [];
+    
+    if ($metadata_aryref) {
+        foreach my $metadata_hashref (@$metadata_aryref) {
+            my $metadata_ref = $mdg->normalize_metadata($metadata_hashref);
+            push(@$normed_metadata_aryref, $metadata_ref);
+        }
+    }
+    else {
+        return undef;
+    }
+    
+
+    return $normed_metadata_aryref;
 }
 
 # ---------------------------------------------------------------------
@@ -222,119 +232,6 @@ sub add_item_metadata_to_database {
     return $id;
 }
 
-
-
-# ---------------------------------------------------------------------
-
-=item get_sort_title
-
-MARC 245 indicator 2 indicates how many positions to skip
-
-=cut
-
-# ---------------------------------------------------------------------
-sub get_sort_title
-{
-    my $self = shift;
-    my ($display_title, $i2) = @_;
-
-    # Remap XML charents so I2 makes sense
-    Utils::remap_cers_to_chars(\$display_title);
-    my $sort_title = substr($display_title, $i2);
-    Utils::map_chars_to_cers(\$sort_title);
-
-    return $sort_title;
-}
-
-
-# ---------------------------------------------------------------------
-
-=item normalize_metadata
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub normalize_metadata
-{
-    my $self = shift;
-    my $metadata_hashref = shift;
-
-    my $metadata_clean_ref = {};
-
-    foreach my $key (keys %{$metadata_hashref})
-    {
-        my $value = $self->dealWithArray($$metadata_hashref{$key});
-        $$metadata_clean_ref{$key} = $value;
-    }
-    my $date = $$metadata_clean_ref{'date'};
-    $$metadata_clean_ref{'date'} = $self->normalize_date($date);
-    if (! defined($$metadata_clean_ref{'author'}))
-    {
-        $$metadata_clean_ref{'author'}='';
-    }
-    return $metadata_clean_ref;
-}
-
-
-# ---------------------------------------------------------------------
-sub dealWithArray
-{
-    #XXX Do we need smarter processing?
-    my $self = shift;
-    my $couldBeArrayRef = shift;
-    my $ref_type=ref($couldBeArrayRef);
-    my $concatenated;
-
-    ASSERT(defined($couldBeArrayRef),qq{value not defined});
-    if ($ref_type eq "ARRAY")
-    {
-        $concatenated = join (" ",@{$couldBeArrayRef});
-        return $concatenated;
-    }
-    else
-    {
-        return $couldBeArrayRef;
-    }
-}
-
-# ---------------------------------------------------------------------
-
-# ---------------------------------------------------------------------
-=item Name
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub normalize_date
-{
-    my $self = shift;
-    my $date = shift;
-
-    # XXX what kind of error to throw if can't figure out how to
-    # normalize date.  Consider logging somewhere and inserting fake
-    # date such as 3000 chk mysql for possible fake date value try
-    # 0000
-    if ($date =~ m,(1\d{3}|20\d{2}),)
-    {
-        $date = $1;
-        # mysql needs month and day so put in fake
-        $date .= '-00-00';
-    }
-    else
-    {
-        $date = '0000-00-00';
-    }
-
-    return $date;
-}
-
-
-
-# ---------------------------------------------------------------------
 1;
 
 __END__
