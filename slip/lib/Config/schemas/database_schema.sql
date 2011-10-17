@@ -116,7 +116,8 @@ CREATE TABLE `j_queue` (
 CREATE TABLE `j_queue` (`run` smallint(3) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `pid` int NOT NULL default '0', `host` varchar(32) NOT NULL default '', `proc_status` smallint(1) NOT NULL default '0', KEY `run` (`run`), KEY `id` (`id`), KEY `pid` (`pid`), KEY `host` (`host`), KEY `proc_status` (`proc_status`), KEY `runstatus` (`run`,`proc_status`));
 
 ---------------------------------------------------------------------
--- No primary key. Useful to allows duplicates in queue. 
+-- IDs to re-index with a coll_id field when added to a "Large"
+-- Personal Collection
 ---------------------------------------------------------------------
 CREATE TABLE `j_shared_queue` (
         `id`   varchar(32) NOT NULL default '',
@@ -126,6 +127,17 @@ CREATE TABLE `j_shared_queue` (
 
 CREATE TABLE `j_shared_queue` (`id` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, PRIMARY KEY `id` (`id`));
 
+---------------------------------------------------------------------
+-- List of IDs for Collection Builder metadata update. No primary
+-- key. Useful to allow duplicates in queue.
+---------------------------------------------------------------------
+CREATE TABLE `j_metadata_update_queue` (
+        `id`          varchar(32) NOT NULL default '',
+        `time`        timestamp   NOT NULL default CURRENT_TIMESTAMP,
+            KEY (`id`)
+       );
+
+CREATE TABLE `j_metadata_update_queue` (`id` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, KEY (`id`));
 
 ---------------------------------------------------------------------
 -- Changes to j_rights MUST be made to j_rights_temp also!  
@@ -164,7 +176,6 @@ CREATE TABLE `j_rights` (
         );
 
 CREATE TABLE `j_rights` (`nid` varchar(32) NOT NULL default '', `attr` tinyint(4) NOT NULL default '0', `reason` tinyint(4) NOT NULL default '0', `source` tinyint(4) NOT NULL default '0', `user` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, `sysid` varchar(32) NOT NULL default '', `update_time` int NOT NULL default '00000000', PRIMARY KEY (`nid`), KEY `update_time` (`update_time`), KEY `attr` (`attr`));
-
 
 
 ---------------------------------------------------------------------
