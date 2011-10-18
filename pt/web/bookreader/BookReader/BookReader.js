@@ -826,7 +826,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
               target_height = target_height * r;
               var squished = false;
               if ( target_height > height ) {
-                target_height = height;
+                // target_height = height;
                 squished = true;
               }
               $(this).parents(".BRpagedivthumb").andSelf().addClass("squished").animate({ height : target_height, width : target_width }, "fast");

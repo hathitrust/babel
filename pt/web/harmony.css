@@ -766,3 +766,23 @@ div.mdpScrollableContainer {
   top: 0;
   left: 0;
 }
+
+.thumbRow {
+  position: relative;
+  /*border-bottom: 2px solid black;*/
+}
+
+.pageThumb {
+  float: left;
+  margin: 10px;
+  margin-right: 0px;
+  position: relative;
+  border: 1px dotted #666;
+}
+
+.pageThumb .content {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+

@@ -308,6 +308,275 @@ if ( fudgingMonkeyPatch ) {
       var clientHeight = $('#BRcontainer').attr('clientHeight') || $("#BookReader").attr("clientHeight");
       return (this.getMedianPageSize().height + 0.0) / (clientHeight - this.padding * 2); // make sure a little of adjacent pages show
   }
+  
+  // drawLeafsThumbnail()
+  //______________________________________________________________________________
+  // If seekIndex is defined, the view will be drawn with that page visible (without any
+  // animated scrolling)
+  HTBookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
+      //alert('drawing leafs!');
+      this.timer = null;
+      
+      var viewWidth = $('#BRcontainer').attr('scrollWidth') - 20; // width minus buffer
+
+      //console.log('top=' + scrollTop + ' bottom='+scrollBottom);
+
+      var i;
+      var leafWidth;
+      var leafHeight;
+      var rightPos = 0;
+      var bottomPos = 0;
+      var maxRight = 0;
+      var currentRow = 0;
+      var leafIndex = 0;
+      var leafMap = [];
+
+      var self = this;
+
+      // Will be set to top of requested seek index, if set
+      var seekTop;
+      
+      var $container = $('#BRpageview');
+      var leafs = [];
+
+      var viewHeight = 0;
+      var rowHeights = [];
+      // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
+      for (i=0; i<this.numLeafs; i++) {
+          leafWidth = this.thumbWidth;
+
+          if ( i % this.thumbColumns == 0 ) {
+            leafs.push('<div class="thumbRow">');
+          }
+          
+          if (leafMap[currentRow]===undefined) { leafMap[currentRow] = {}; }
+          if (leafMap[currentRow].leafs===undefined) {
+              leafMap[currentRow].leafs = [];
+              leafMap[currentRow].height = 0;
+              leafMap[currentRow].top = 0;
+          }
+          leafMap[currentRow].leafs[leafIndex] = {};
+          leafMap[currentRow].leafs[leafIndex].num = i;
+          leafMap[currentRow].leafs[leafIndex].left = rightPos;
+
+          leafHeight = parseInt((this.getPageHeight(leafMap[currentRow].leafs[leafIndex].num)*this.thumbWidth)/this.getPageWidth(leafMap[currentRow].leafs[leafIndex].num), 10);
+          if (leafHeight > leafMap[currentRow].height) {
+              leafMap[currentRow].height = leafHeight;
+          }
+          if (leafIndex===0) { bottomPos += this.padding + leafMap[currentRow].height; }
+          rightPos += leafWidth + this.padding;
+          if (rightPos > maxRight) { maxRight = rightPos; }
+          leafIndex++;
+
+          if (i == seekIndex) {
+              seekTop = bottomPos - this.padding - leafMap[currentRow].height;
+          }
+
+          rowHeights.push(leafHeight);
+          
+          leafs.push(
+            '<div class="pageThumb BRpagedivthumb" id="pagediv{i}" style="height: {height}px; width: {width}px"><div class="debugIndex">{i}</div></div>'
+            .replace(/{i}/g, i).replace('{height}', leafHeight).replace('{width}', leafWidth)
+          );
+          
+          if ( i % this.thumbColumns == ( this.thumbColumns - 1 ) ) {
+            leafs.push('<br clear="both" /></div>');
+            viewHeight += Math.max.apply(Math, rowHeights);
+            rowHeights = [];
+            currentRow += 1;
+            leafIndex = 0;
+            in_row = false;
+          }
+          
+      }
+      
+      if ( rowHeights.length ) {
+        leafs.push('<br clear="both" /></div>');
+        viewHeight += Math.max.apply(Math, rowHeights);
+      }
+      leafs.push('<br clear="both" />');
+
+      // reset the bottom position based on thumbnails
+      $('#BRpageview').height(viewHeight);
+      
+      if ( ! $(".pageThumb").length ) {
+        $container.get(0).innerHTML = leafs.join("\n");
+      }
+
+      var pageViewBuffer = Math.floor(($('#BRcontainer').attr('scrollWidth') - maxRight) / 2) - 14;
+
+      // If seekTop is defined, seeking was requested and target found
+      if (typeof(seekTop) != 'undefined') {
+          $('#BRcontainer').scrollTop( seekTop );
+      }
+
+      var scrollTop = $('#BRcontainer').attr('scrollTop');
+      var scrollBottom = scrollTop + $('#BRcontainer').height();
+
+      var leafTop = 0;
+      var leafBottom = 0;
+      var rowsToDisplay = [];
+
+      // Visible leafs with least/greatest index
+      var leastVisible = this.numLeafs - 1;
+      var mostVisible = 0;
+
+      // Determine the thumbnails in view
+      for (i=0; i<leafMap.length; i++) {
+          leafBottom += this.padding + leafMap[i].height;
+          var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
+          var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
+          var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
+          if (topInView | bottomInView | middleInView) {
+              //console.log('row to display: ' + j);
+              rowsToDisplay.push(i);
+              if (leafMap[i].leafs[0].num < leastVisible) {
+                  leastVisible = leafMap[i].leafs[0].num;
+              }
+              if (leafMap[i].leafs[leafMap[i].leafs.length - 1].num > mostVisible) {
+                  mostVisible = leafMap[i].leafs[leafMap[i].leafs.length - 1].num;
+              }
+          }
+          if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
+          leafTop = leafBottom;
+      }
+      
+      // create a buffer of preloaded rows before and after the visible rows
+      var firstRow = rowsToDisplay[0];
+      var lastRow = rowsToDisplay[rowsToDisplay.length-1];
+      for (i=1; i<this.thumbRowBuffer+1; i++) {
+          if (lastRow+i < leafMap.length) { rowsToDisplay.push(lastRow+i); }
+      }
+      for (i=1; i<this.thumbRowBuffer+1; i++) {
+          if (firstRow-i >= 0) { rowsToDisplay.push(firstRow-i); }
+      }
+
+      // Create the thumbnail divs and images (lazy loaded)
+      var j;
+      var row;
+      var left;
+      var index;
+      var div;
+      var link;
+      var img;
+      var page;
+      for (i=0; i<rowsToDisplay.length; i++) {
+          if (BookReader.util.notInArray(rowsToDisplay[i], this.displayedRows)) {    
+              row = rowsToDisplay[i];
+
+              for (j=0; j<leafMap[row].leafs.length; j++) {
+                  index = j;
+                  leaf = leafMap[row].leafs[j].num;
+                  
+                  leafWidth = this.thumbWidth;
+                  leafHeight = parseInt((this.getPageHeight(leaf)*this.thumbWidth)/this.getPageWidth(leaf), 10);
+                  // if ('rl' == this.pageProgression){
+                  //     left = viewWidth - leafWidth - left;
+                  // }
+
+                  var $pagediv = $("#pagediv" + leaf);
+                  if ( $pagediv.find(".content").length ) {
+                    // already has image...
+                    continue;
+                  }
+                  // $pagediv.addClass("BRpagedivthumb");
+
+                  // link to page in single page mode
+                  link = document.createElement("a");
+                  $(link).data('leaf', leaf).addClass("content");
+                  $(link).bind('click', function(event) {
+                      self.firstIndex = $(this).data('leaf');
+                      self.switchMode(self.constMode1up);
+                      event.preventDefault();
+                  });
+
+                  // $$$ we don't actually go to this URL (click is handled in handler above)
+                  var title = "image of page " + this.getPageNum(leaf);
+                  link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
+                  $(link).attr({ title : title });
+                  $pagediv.append(link);
+
+                  img = document.createElement("img");
+                  var thumbReduce = Math.floor(this.getPageWidth(leaf) / this.thumbWidth);
+
+                  $(img).attr('src', this.imagesBaseURL + 'transparent.png')
+                      .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
+                      .addClass('BRlazyload')
+                      // Store the URL of the image that will replace this one
+                      .data('srcURL',  this._getPageURI(leaf, thumbReduce))
+                      .data('index', leaf).
+                      data('reduce', thumbReduce);
+                  $(link).append(img);
+                  //console.log('displaying thumbnail: ' + leaf);
+              }   
+          }
+      }
+      
+      // Remove thumbnails that are not to be displayed
+      var k;
+      for (i=0; i<this.displayedRows.length; i++) {
+          if (BookReader.util.notInArray(this.displayedRows[i], rowsToDisplay)) {
+              row = this.displayedRows[i];
+
+              // $$$ Safari doesn't like the comprehension
+              //var rowLeafs =  [leaf.num for each (leaf in leafMap[row].leafs)];
+              //console.log('Removing row ' + row + ' ' + rowLeafs);
+
+              for (k=0; k<leafMap[row].leafs.length; k++) {
+                  index = leafMap[row].leafs[k].num;
+                  //console.log('Removing leaf ' + index);
+                  $('#pagediv'+index).find(".content").remove();
+              }
+          } else {
+              /*
+              var mRow = this.displayedRows[i];
+              var mLeafs = '[' +  [leaf.num for each (leaf in leafMap[mRow].leafs)] + ']';
+              console.log('NOT Removing row ' + mRow + ' ' + mLeafs);
+              */
+          }
+      }
+
+      // Update which page is considered current to make sure a visible page is the current one
+      var currentIndex = this.currentIndex();
+      // console.log('current ' + currentIndex);
+      // console.log('least visible ' + leastVisible + ' most visible ' + mostVisible);
+      if (currentIndex < leastVisible) {
+          this.setCurrentIndex(leastVisible);
+      } else if (currentIndex > mostVisible ) {
+        this.setCurrentIndex(mostVisible);
+      }
+
+      // if ( this.currentIndex() >= this.numLeafs ) {
+      //   console.log("REDUCING THE CURRENT INDEX!!!");
+      //   this.currentIndex(this.numLeafs - 1);
+      // }
+
+      this.displayedRows = rowsToDisplay.slice();
+
+      // Update hash, but only if we're currently displaying a leaf
+      // Hack that fixes #365790
+      if (this.displayedRows.length > 0) {
+          this.updateLocationHash();
+      }
+
+      // remove previous highlights
+      $('.BRpagedivthumb_highlight').removeClass('BRpagedivthumb_highlight');
+
+      // highlight current page
+      $('#pagediv'+this.currentIndex()).addClass('BRpagedivthumb_highlight');
+
+      this.lazyLoadThumbnails();
+
+      // Update page number box.  $$$ refactor to function
+      if (null !== this.getPageNum(this.currentIndex()))  {
+        this.updatePageNumBox();
+        // $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+      } else {
+        $("#BRpagenum").val('');
+      }
+
+      this.updateToolbarZoom(this.reduce); 
+  }
 
   HTBookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     if ( this.mode == this.constMode1up ) {
