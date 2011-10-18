@@ -115,10 +115,8 @@ if ( fudgingMonkeyPatch ) {
     }
     // $('#BRpageview').height(viewHeight);
     $('#BRpageview').width(viewWidth).css('margin', '0 auto');
-    
-    if ( this.pageProgression == "rl" ) {
-      leafs.reverse();
-    }
+
+    // what does rl mean with scroll??
     
     $('#BRpageview').get(0).innerHTML = leafs.join("\n");
     //$(leafs.join("\n")).appendTo($("#BRpageview"));
@@ -396,9 +394,9 @@ if ( fudgingMonkeyPatch ) {
           
           if ( i % this.thumbColumns == ( this.thumbColumns - 1 ) ) {
             
-            // if ( this.pageProgression == "rl" ) {
-            //   rowLeafs.reverse();
-            // }
+            if ( this.pageProgression == "rl" ) {
+              rowLeafs.reverse();
+            }
             
             leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" /></div>');
             
@@ -425,11 +423,6 @@ if ( fudgingMonkeyPatch ) {
         // leafs.push('<br clear="both" /></div>');
 
         viewHeight += Math.max.apply(Math, rowHeights);
-      }
-      
-      if ( this.pageProgression == "rl" ) {
-        // reverse the rows?
-        leafs.reverse();
       }
       
       leafs.push('<br clear="both" />');
