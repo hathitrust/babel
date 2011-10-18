@@ -963,13 +963,31 @@ sub _ls_wrap_result_data {
         # thus we won't display title in vernacular
         #   my $display_title = join(',', @{$display_titles_ary_ref});
         my $display_title = $display_titles_ary_ref->[0];
-        
+        # add 245c, assume only one!
+        if (defined ($doc_data->{'title_c'})){
+            $display_title.= $doc_data->{'title_c'}->[0];
+        }    
         $display_title = Encode::decode_utf8($display_title);
         Utils::map_chars_to_cers(\$display_title);
 
         $s .= wrap_string_in_tag($display_title, 'Title');
 
+        # how do we display vernacular title?
+        if (defined ($doc_data->{'vtitle'})){
+            my  $vtitle.=  $doc_data->{'vtitle'};
+            $vtitle = Encode::decode_utf8($vtitle);
+            Utils::map_chars_to_cers(\$vtitle);
+            $s .= wrap_string_in_tag($vtitle, 'VernacularTitle');
+        }   
+        
         my ($authors_ary_ref) = $doc_data->{'author'};
+        #XXX  HT catalog does not display non-1xx author fields
+        # Mirlyn displays them as "contributor"
+        #    if (defined ($doc_data->{'author2'}))
+        #    {
+        #        push (@{$authors_ary_ref},@{$doc_data->{'author2'}})
+        #    }
+            
         if (defined ($authors_ary_ref))
         {
             my $author = join(',', @{$authors_ary_ref});

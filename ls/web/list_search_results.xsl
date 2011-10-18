@@ -621,6 +621,18 @@
           </span>
         </div>
 
+
+        <!-- Vernacular Title -->
+
+        <div class="ItemTitle">
+          <span class="Title">
+            <xsl:value-of select="VernacularTitle" disable-output-escaping="yes" />
+          </span>
+        </div>
+
+
+
+
         <!-- Author -->
         <!-- single '-' is a pageturner token for "no author" -->
         <xsl:if test="Author!=''">

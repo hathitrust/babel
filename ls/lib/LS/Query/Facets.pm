@@ -243,7 +243,7 @@ sub get_Solr_query_string
   
     # The common Solr query parameters
     my $Q ='q=';
-    my $FL = qq{&fl=title,author,date,rights,id,record_no,score};
+    my $FL = qq{&fl=title,title_c,vtitle,author,author2,date,rights,id,record_no,score};
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INDENT = $ENV{'TERM'} ? qq{&indent=on} : qq{&indent=off};
 
