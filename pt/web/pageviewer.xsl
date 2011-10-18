@@ -434,6 +434,7 @@
         HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
         HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
         HT.reader.lazyDelay = 500;
+        // HT.reader.pageProgression = "rl";
     </script>
     <script type="text/javascript" src="/pt/js/bookreader_startup.js"/> 
     <script type="text/javascript">

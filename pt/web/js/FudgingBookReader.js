@@ -115,6 +115,11 @@ if ( fudgingMonkeyPatch ) {
     }
     // $('#BRpageview').height(viewHeight);
     $('#BRpageview').width(viewWidth).css('margin', '0 auto');
+    
+    if ( this.pageProgression == "rl" ) {
+      leafs.reverse();
+    }
+    
     $('#BRpageview').get(0).innerHTML = leafs.join("\n");
     //$(leafs.join("\n")).appendTo($("#BRpageview"));
 
@@ -165,7 +170,7 @@ if ( fudgingMonkeyPatch ) {
 
           var $pagediv = $("#pagediv" + i);
           var leafTop = scrollTop + $pagediv.offset().top - 256;
-          leafBottom += height;
+          leafBottom = leafTop + height;
 
           // console.log('leafTop = '+leafTop+ ' pageH = ' + this.pageH[i] + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
           var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
@@ -175,6 +180,7 @@ if ( fudgingMonkeyPatch ) {
           if (topInView | bottomInView | middleInView) {
               //console.log('displayed: ' + this.displayedIndices);
               //console.log('to display: ' + i);
+              // console.log("DISPLAY:", i, topInView, bottomInView, middleInView, ":", leafTop, "x", leafBottom, "/", scrollTop, "x", scrollBottom, indicesToDisplay.join(":"));
               indicesToDisplay.push(i);
               if ( leafTop <= scrollTop ) {
                 // leaf is scrolling off
@@ -188,7 +194,7 @@ if ( fudgingMonkeyPatch ) {
           leafTop += height +10;      
           leafBottom += 10;
       }
-
+      
       var firstIndexToDraw  = indicesToDisplay[0];
       this.firstIndex      = firstIndexToDraw;
 
@@ -205,12 +211,12 @@ if ( fudgingMonkeyPatch ) {
         }
       }
 
-      // Update hash, but only if we're currently displaying a leaf
-      // Hack that fixes #365790
-      if (this.displayedIndices.length > 0) {
-          this.updateLocationHash();
-      }
-
+      // // Update hash, but only if we're currently displaying a leaf
+      // // Hack that fixes #365790
+      // if (this.displayedIndices.length > 0) {
+      //     this.updateLocationHash();
+      // }
+      // 
       if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
           firstIndexToDraw--;
           indicesToDisplay.unshift(firstIndexToDraw);
@@ -253,6 +259,14 @@ if ( fudgingMonkeyPatch ) {
       }
 
       this.displayedIndices = indicesToDisplay.slice();
+
+      // Update hash, but only if we're currently displaying a leaf
+      // Hack that fixes #365790
+      // update after we finally determine the visible pages?
+      if (this.displayedIndices.length > 0) {
+          this.updateLocationHash();
+      }
+
       this.updateSearchHilites();
 
       if (null != this.getPageNum(firstIndexToDraw))  {
@@ -338,6 +352,7 @@ if ( fudgingMonkeyPatch ) {
       
       var $container = $('#BRpageview');
       var leafs = [];
+      var rowLeafs = [];
 
       var viewHeight = 0;
       var rowHeights = [];
@@ -345,9 +360,9 @@ if ( fudgingMonkeyPatch ) {
       for (i=0; i<this.numLeafs; i++) {
           leafWidth = this.thumbWidth;
 
-          if ( i % this.thumbColumns == 0 ) {
-            leafs.push('<div class="thumbRow">');
-          }
+          // if ( i % this.thumbColumns == 0 ) {
+          //   leafs.push('<div class="thumbRow">');
+          // }
           
           if (leafMap[currentRow]===undefined) { leafMap[currentRow] = {}; }
           if (leafMap[currentRow].leafs===undefined) {
@@ -374,26 +389,49 @@ if ( fudgingMonkeyPatch ) {
 
           rowHeights.push(leafHeight);
           
-          leafs.push(
+          rowLeafs.push(
             '<div class="pageThumb BRpagedivthumb" id="pagediv{i}" style="height: {height}px; width: {width}px"><div class="debugIndex">{i}</div></div>'
             .replace(/{i}/g, i).replace('{height}', leafHeight).replace('{width}', leafWidth)
           );
           
           if ( i % this.thumbColumns == ( this.thumbColumns - 1 ) ) {
-            leafs.push('<br clear="both" /></div>');
+            
+            // if ( this.pageProgression == "rl" ) {
+            //   rowLeafs.reverse();
+            // }
+            
+            leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" /></div>');
+            
+            // leafs.push(rowLeafs.join("\n"));
+            // leafs.push('<br clear="both" /></div>');
+
             viewHeight += Math.max.apply(Math, rowHeights);
             rowHeights = [];
+            rowLeafs = [];
             currentRow += 1;
             leafIndex = 0;
-            in_row = false;
           }
           
       }
       
       if ( rowHeights.length ) {
-        leafs.push('<br clear="both" /></div>');
+        if ( this.pageProgression == "rl" ) {
+          rowLeafs.reverse();
+        }
+        //leafs.push('<div class="thumbRow">' + rowLeafs.join("\n") + '<br clear="both" /></div>');
+        leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" /></div>');
+        
+        // leafs.push(rowLeafs.join("\n"));
+        // leafs.push('<br clear="both" /></div>');
+
         viewHeight += Math.max.apply(Math, rowHeights);
       }
+      
+      if ( this.pageProgression == "rl" ) {
+        // reverse the rows?
+        leafs.reverse();
+      }
+      
       leafs.push('<br clear="both" />');
 
       // reset the bottom position based on thumbnails
@@ -423,7 +461,12 @@ if ( fudgingMonkeyPatch ) {
 
       // Determine the thumbnails in view
       for (i=0; i<leafMap.length; i++) {
-          leafBottom += this.padding + leafMap[i].height;
+        
+          var $row = $("#thumbrow" + i);
+          var leafTop = $row.offset().top;
+          var leafBottom = leafTop + $row.height();
+        
+          // leafBottom += this.padding + leafMap[i].height;
           var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
           var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
           var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
