@@ -8,6 +8,7 @@
 %g_validator_for_param =
   (
    'a'      => 'srchls|page',
+   'qa'     => '.*',
    'q1'     => '.*',
    'debug'  => '.*',
    'newsid' => '1|[a-z0-9]{32}',
@@ -127,6 +128,12 @@ $g_late_operations = [
                                  'template' => 'advanced.xml',
                                  'filler'   => 'LS::PIFiller::Advanced',
                                 },
+                     'advanced2'  => {
+                                 'builders' => [],
+                                 'template' => 'advanced2.xml',
+                                 'filler'   => 'LS::PIFiller::Advanced',
+                                },
+
 
                     },
  },

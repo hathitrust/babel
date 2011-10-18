@@ -1,73 +1,33 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-  <head>
-    <title>test </title>
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-  </head>
 
-  <body>
-    <h1>test.html </h1>
-
-<hr>
-    <div id='header'>
-      The Header goes here
-     
-    </div>
-    <div class='colmask leftmenu'>
-      <div class='colleft'>
-        <div class='col1'>
-          <h1>Main content</h1>
 <div id="LSformCont">
-
 
 <form id="itemlist_searchform" action="http://tburtonw-full.babel.hathitrust.org/cgi/ls" name="searchcoll" >
 
 <!--<input type="hidden" name="debug" value="local"/>-->
-
+<input type="hidden" name="a" value="srchls"/>
 
           <h2>Advanced  Search:</h2>
-           <div id="showquery">     
-                  
-                </div>                
         
           <table style="width: auto">
+<!-- XXX need to change this so it will only add to existing debug values-->
+Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
 
-                        
             <tr>
               <td></td>
               <td>
-<!-- remove first box only OCR for now
-                <label class="SkipLink" for="srch">Full-text Search </label>
-                <input type="text" size="30" maxlength="150" name="q1" value="" />
-                  <input id="fullonly" type="checkbox" name="lmt" value="ft" />
-                    <label for="fullonly">Full view only</label>
                     <input type="hidden" name="a" value="srchls" />
--->
+
                       
               </td>
             </tr>
 
             <tr>
-                    <div id="clause1" class="clause1">
+            <td></td>
               <td >
-                <select name="field1">
-                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
-                  <option value="title" >Title</option>
-                  <option value="author" >Author</option>
-
-                  <option value="subject" >Subject</option>
-                 <option value="hlb3" >Academic Discipline</option>
-                  <!-- <option value="toc" >Table of Contents</option>
-                  <option value="callnumber" >Call Number</option>-->
-                  <option value="publisher" >Publisher</option>
-                  <option value="series" >Series Title</option>
-                  <option value="year" >Year of Publication</option>
-                  <option value="isn" >ISBN/ISSN</option>
-
-                </select>
+       Search In Full Text
               </td>
-              <td><input type="text" name="q1" size="50" value=""></td>
-</div>
+         <td><input type="text" name="q1" size="50" value=""/></td>
+
             </tr>
 
 
@@ -75,22 +35,22 @@
                     
             <tr>
               <td>
-<div id="clause2" class="searchgroup">
-                <select name="op2" >
-                  <option value="AND"  selected>AND</option>
+                <select name="op2">
+                  <option value="AND"  selected="selected" >AND</option>
 
                   <option value="OR" >OR</option>
                   <!-- <option value="NOT" >NOT</option> -->
+               </select>
               </td>
 
               <td >
                 <select name="field2">
                       
-                  <option value="all"  selected>All MARC Fields</option>
+                  <option value="all"  selected="selected" >All MARC Fields</option>
                   <option value="title" >Title</option>
                   <option value="author" >Author</option>
                   <option value="subject" >Subject</option>
-                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
+                  <option value="ocr"  >OCR plus All MARC Fields</option>
                  <option value="hlb3" >Academic Discipline</option>
                   <!-- <option value="toc" >Table of Contents</option>
                   <option value="callnumber" >Call Number</option>-->
@@ -101,15 +61,14 @@
 
                 </select>
               </td>
-              <td><input type="text" name="q2" size="50" value=""></td>
-</div>
+              <td><input type="text" name="q2" size="50" value=""/></td>
+              
             </tr>
             
             <tr>
               <td>
- <div id="clause3" class="searchgroup">
                 <select name="op3">
-                  <option value="AND"  selected>AND</option>
+                  <option value="AND"  selected="selected" >AND</option>
 
                   <option value="OR" >OR</option>
                   <!-- <option value="NOT" >NOT</option> -->
@@ -119,9 +78,9 @@
                 <select name="field3">
                   <option value="all" >All MARC Fields</option>
                   <option value="title" >Title</option>
-                  <option value="author"  selected>Author</option>
+                  <option value="author"  >Author</option>
                   <option value="subject" >Subject</option>
-                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
+                  <option value="ocr"  >OCR plus All MARC Fields</option>
                   <!--<option value="hlb" >Academic Discipline</option>
                   <option value="toc" >Table of Contents</option>
                   <option value="callnumber" >Call Number</option>-->
@@ -132,16 +91,14 @@
                   <option value="isn" >ISBN/ISSN</option>
                 </select>
               </td>
-              <td><input type="text" name="q3" size="50" value=""></td>
-          </div>
+              <td><input type="text" name="q3" size="50" value=""/></td>
             </tr>
 
 
 <tr>
               <td>
-<div id="clause4" class="searchgroup">
                 <select name="op4">
-                  <option value="AND"  selected>AND</option>
+                  <option value="AND"  selected="selected" >AND</option>
 
                   <option value="OR" >OR</option>
                   <!-- <option value="NOT" >NOT</option> -->
@@ -152,9 +109,9 @@
                   <option value="all" >All MARC Fields</option>
                   <option value="title" >Title</option>
 
-                  <option value="author"  selected>Author</option>
+                  <option value="author"  >Author</option>
                   <option value="subject" >Subject</option>
-                  <option value="ocr"  selected>OCR plus All MARC Fields</option>
+                  <option value="ocr"   > OCR plus All MARC Fields</option>
                   <!--<option value="hlb" >Academic Discipline</option>
                   <option value="toc" >Table of Contents</option>
                   <option value="callnumber" >Call Number</option>-->
@@ -165,12 +122,8 @@
                   <option value="isn" >ISBN/ISSN</option>
                 </select>
               </td>
-              <td><input type="text" name="q4" size="50" value=""></td>
-</div>
+              <td><input type="text" name="q4" size="50" value=""/></td>
             </tr>
-
-
-
 
 
 
@@ -182,27 +135,29 @@
                     
           <br/>
           <h3>Limit To:</h3>
-          
-
+<input type="checkbox" value="ft" name="lmt" id="fullonly"/>
+<label for="fullonly">Full view only</label>        
 
 
               <span style="margin-left: 4em">
 
-                <span style="margin-right: 1em;">Year of publication:</span> 
+                <span style="margin-right: 1em;">Year of publication:
+(not working)</span> 
 
-
-<!--                <select id="yop" name="yop" onchange="changeRange('yop')">
+<!--
+               <select id="yop" name="yop" onchange="changeRange('yop')">
                 <option value="before">Before or during</option>
-                <option value="after" selected="selected">During or after</option>
+                <option value="after" selected="selected" >During or after</option>
                 <option value="between">Between</option>
                 <option value="in">Only during</option>
               </select>
 
 
-              <input class="yop" id="yop-start" type="text" size="4" name="fqrange-start-publishDateTrie-1">
+              <input class="yop" id="yop-start" type="text" size="4"
+name="fqrange-start-publishDateTrie-1" />
               <span class="yop" id="yop-between" > and </span>
-              <input class="yop"  id="yop-end" type="text" size="4" name="fqrange-end-publishDateTrie-1">
-              <input class="yop" id="yop-in" type="text" size="4" name="fqor-publishDateTrie[]">
+              <input class="yop"  id="yop-end" type="text" size="4" name="fqrange-end-publishDateTrie-1"/>
+              <input class="yop" id="yop-in" type="text" size="4" name="fqor-publishDateTrie[]"/>
 -->
             </span>
 
@@ -211,11 +166,11 @@
             <tr>
 
               <th>Language: </th>
-              <th>Format: </th>
+              <th>Original Format: </th>
             </tr>
             <tr> 
               <td>
-                <select multiple  name="facet" size="10">
+                <select multiple="multiple"  name="facet" size="10">
                   <option value="">All</option>
                                     <option value="Abkhazian">Abkhazian</option>
 
@@ -700,7 +655,7 @@
                                   </select>
               </td>
               <td>
-                <select multiple name="facet" size="10">
+                <select multiple="multiple" name="facet" size="10">
                   <option value="">All</option>                  
                                     <option value="format:Archive">Archive</option>
 
@@ -729,7 +684,7 @@
                                     <option value="format:Music">Music</option>
                                     <option value="format:Musical Score">Musical Score</option>
                                     <option value="format:Newspaper">Newspaper</option>
-                                    <option value="format:Photographs & Pictorial Works">Photographs &amp; Pictorial Works</option>
+                                    <option value="format:Photographs &amp; Pictorial Works">Photographs &amp; Pictorial Works</option>
 
                                     <option value="format:Serial">Serial</option>
                                     <option value="format:Statistics">Statistics</option>
@@ -750,8 +705,18 @@
 
 
         </div>
-      </div>
-    </div>
-        <script type="text/javascript" src="../js/ls_advanced.js"></script>
-  </body>
-</html>
+<!--
+        <div class='col2 box'>
+
+
+          <h2>Sidebar foobar</h2>
+          <ul>
+            <li>one</li>
+          </ul>
+
+        </div>
+-->
+
+
+
+

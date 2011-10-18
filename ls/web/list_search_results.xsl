@@ -229,22 +229,28 @@
       <!-- this should be all/so/or ft cound depending -->
       <xsl:call-template name="getTotalCount"/>
       <xsl:text> items found for </xsl:text>
+
+      <xsl:variable name="isAdvanced">
+        <xsl:value-of select="MBooksTop/AdvancedSearch/Clause/Field"/>
+      </xsl:variable>
+      <!--      <xsl:text>test adv: </xsl:text>
+      <xsl:value-of select="$isAdvanced"/>
+      <xsl:text> foo</xsl:text>
+      -->
+
+
       <xsl:choose>
-        <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
-          <span>
-            <xsl:value-of select="/MBooksTop/QueryString"/>
-          </span>
+        <xsl:when test="foobar">
+                  <xsl:call-template name="basicSearch"/>       
         </xsl:when>
         <xsl:otherwise>
-          <span>
-            <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>
-          </span>
+          <xsl:call-template name="advanced"/>          
         </xsl:otherwise>
       </xsl:choose>
 
-      <xsl:text> in the full text of all items </xsl:text>
-      <!-- When advanced search is implemented the logic above needs to be reconciled with the template name=advanced-->
-      <!--xsl:call-template name="advanced"/-->
+
+      
+
 
       <span class="debug">
       <xsl:text>
@@ -265,7 +271,26 @@
 </xsl:template>
 
 
+      <xsl:template name="basicSearch">
+      <xsl:choose>
+        <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
+          <span>
+            <xsl:value-of select="/MBooksTop/QueryString"/>
+          </span>
+        </xsl:when>
+        <xsl:otherwise>
+          <span>
+            <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>
+          </span>
+        </xsl:otherwise>
+      </xsl:choose>
+
+      <xsl:text> in the full text of all items </xsl:text>  
+      </xsl:template>
+
+
   <xsl:template name="advanced">
+    <!-- maybe need special processing for first one if no field chosen -->
     <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
       <xsl:text> </xsl:text>
       <xsl:value-of select="OP"/><xsl:text> </xsl:text>
@@ -275,6 +300,7 @@
       </span>
       <xsl:text> in </xsl:text>
       <!-- replace em with css -->
+
       <em>
         <xsl:value-of select="Field"/>
       </em>

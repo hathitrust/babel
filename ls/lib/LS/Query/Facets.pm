@@ -413,6 +413,20 @@ sub __clean_facet_query
 }
 
 
+
+# ---------------------------------------------------------------------
+# __process_qa_query
+#
+#  If query is produced by javascript widget decode it
+#
+#
+#
+# ---------------------------------------------------------------------
+sub __process_qa_query
+{
+}
+
+
 # ---------------------------------------------------------------------
 # __get_advanced_query
 #
@@ -430,19 +444,26 @@ sub __get_advanced_query
     my $q;
     my $clause;
     my $Q;
-        
-    for my $i (1..4)
+    
+    if (defined $cgi->param('qa'))
     {
-        $q = 'q' . $i;
-        if (defined $cgi->param($q))
-        {
-            $clause=$self-> make_query_clause($i,$cgi);
-            $ADVANCED.= ' ' .$clause;
-        }
+       $ADVANCED = $self->_process_qa_query($cgi);
+        
     }
-    # replace multiple leading spaces with one space
-    $ADVANCED=~s/^\s+/ /;
-
+    else{
+        for my $i (1..4)
+        {
+            $q = 'q' . $i;
+            if (defined $cgi->param($q))
+            {
+                $clause=$self-> make_query_clause($i,$cgi);
+                $ADVANCED.= ' ' .$clause;
+            }
+        }
+        # replace multiple leading spaces with one space
+        $ADVANCED=~s/^\s+/ /;
+    }
+    
     return $ADVANCED;
 }
 
@@ -471,6 +492,8 @@ sub make_query_clause{
     
     my $field = $cgi->param('field' . $i);
 
+    
+    
     # default to ocr if there is not field for field 1
     if ($i ==1 && (!defined($field))  )
     {
