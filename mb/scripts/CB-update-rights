@@ -109,7 +109,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub email_report {
-    my $g_assert_email_to_addr   = q{pfarber@umich.edu,tburtonw@umich.edu};
+    my $email_to_addr_ref = [ q{pfarber@umich.edu}, q{tburtonw@umich.edu} ];
     my $g_assert_email_from_addr = q{"Collection Builder Mailer" <dlps-help@umich.edu>};
 
     my $when = Utils::Time::iso_Time();
@@ -117,7 +117,7 @@ sub email_report {
 
     my $mailer = new Mail::Mailer('sendmail');
     $mailer->open({
-                   'To'      => $g_assert_email_to_addr,
+                   'To'      => $email_to_addr_ref,
                    'From'    => $g_assert_email_from_addr,
                    'Subject' => $email_subject,
                   });
@@ -253,16 +253,23 @@ sub CB_do_update_metadata {
 
     my $queue_error = 0;
     
+    my $num_processed = 0;
     my $num_updated = 0;
     my $num_fetch_failed = 0;
     my $num_update_failed = 0;
     
     while (1) {
         my ($ok, $id) = MetadataQueue::get_next_metadata_item_id($C, $DBH);
-
+        
         if ($ok) {
             if ($id) {
-                next unless ($CO->item_exists($id));
+                $num_processed++;
+
+                if (! $CO->item_exists($id)) {
+                    # Only update ids that are in collections -- remove from queue
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+                    next;
+                }
                 
                 __P(qq{updating: $id\n});
         
@@ -286,6 +293,7 @@ sub CB_do_update_metadata {
                 }
             }
             else {
+                # Queue empty
                 last;
             }
         }
@@ -294,7 +302,7 @@ sub CB_do_update_metadata {
             last;
         }
     }
-    __P(qq{Report: num_updated=$num_updated\n\tqueue_error=$queue_error num_fetch_failed=$num_fetch_failed num_update_failed=$num_update_failed\n});
+    __P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_fetch_failed=$num_fetch_failed num_update_failed=$num_update_failed\n});
 }
 
 
