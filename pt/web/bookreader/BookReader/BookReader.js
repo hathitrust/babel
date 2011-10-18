@@ -829,7 +829,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
                 target_height = height;
                 squished = true;
               }
-              $(this).parents(".BRpagedivthumb").andSelf().animate({ height : target_height, width : target_width }, "fast");
+              $(this).parents(".BRpagedivthumb").andSelf().addClass("squished").animate({ height : target_height, width : target_width }, "fast");
             }
             
             // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
@@ -1001,6 +1001,8 @@ BookReader.prototype.zoom1up = function(direction) {
     this.onePage.autofit = reduceFactor.autofit;
         
     this.pageScale = this.reduce; // preserve current reduce
+    
+    var currentIndex = this.currentIndex();
 
     $('#BRpageview').empty()
     this.resizePageView();
@@ -1012,6 +1014,8 @@ BookReader.prototype.zoom1up = function(direction) {
     // Recalculate search hilites
     this.removeSearchHilites(); 
     this.updateSearchHilites();
+    
+    this.jumpToIndex(currentIndex);
 
 }
 
