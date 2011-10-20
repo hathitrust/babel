@@ -67,9 +67,9 @@ sub BuildViewTypeUrl
 sub BuildImageServerPDFUrl
 {
     my ( $cgi, $view ) = @_;
-    
+
     my $tempCgi = new CGI ("");
-    
+
     my $path;
     # copy params
     foreach my $p (qw(id orient size attr src u)) {
@@ -86,11 +86,11 @@ sub BuildImageServerPDFUrl
         $tempCgi->param('attachment', 0);
         $action = "pdf";
     }
-    
+
     if ( $cgi->param('debug') ) {
         $tempCgi->param('debug', $cgi->param('debug'));
     }
-    
+
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
     return $href;
 }
@@ -134,13 +134,13 @@ sub handle_RIGHTS_ATTRIBUTE_PI
 
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
-    
+
     if (defined($id))
     {
         my $ar = new Access::Rights($C, $id);
         $rights_attribute = $ar->get_rights_attribute($C, $id);
     }
-    
+
     return $rights_attribute;
 }
 
@@ -163,13 +163,13 @@ sub handle_SOURCE_ATTRIBUTE_PI
 
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
-    
+
     if (defined($id))
     {
         my $ar = new Access::Rights($C, $id);
         $source_attribute = $ar->get_source_attribute($C, $id);
     }
-    
+
     return $source_attribute;
 }
 
@@ -183,22 +183,22 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_POD_DATA_PI 
+sub handle_POD_DATA_PI
     :  PI_handler(POD_DATA)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     my $dbh = $C->get_object('Database')->get_DBH($C);
     my $id = $C->get_object('CGI')->param('id');
 
-    my $statement = qq{SELECT url FROM pod WHERE id='$id' LIMIT 1};
-    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+    my $statement = qq{SELECT url FROM pod WHERE id=? LIMIT 1};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
 
     my $url = $sth->fetchrow_array();
     $url = Utils::escape_url_separators($url);
-    
+
     return wrap_string_in_tag($url, 'Url');
-}        
+}
 
 # ---------------------------------------------------------------------
 
@@ -568,9 +568,9 @@ sub handle_MBOOKS_ENABLED_PI
     : PI_handler(MBOOKS_ENABLED)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     my $app = $C->get_object('App');
-    
+
     $app->__test_MBooks_enabled() ? 'true' : 'false';
 }
 
@@ -628,7 +628,7 @@ sub handle_MY_SKIN_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $skin = new View::Skin($C);
-    
+
     return $skin->get_skin_name($C);
 }
 
@@ -696,7 +696,7 @@ sub handle_COLLECTION_LIST_PI
         foreach my $coll_hashref (@$coll_data_arrayref)
         {
             my $MBooks_url
-                = $PTGlobals::gCollectionBuilderCgiRoot 
+                = $PTGlobals::gCollectionBuilderCgiRoot
                     . qq{?a=listis;c=$$coll_hashref{'MColl_ID'}};
             $coll_list .=
                 wrap_string_in_tag
@@ -887,29 +887,29 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_FEATURE_LIST_PI
-  : PI_handler(FEATURE_LIST) 
+  : PI_handler(FEATURE_LIST)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
-    
+
     my $featureXML;
-    
+
     $mdpItem->InitFeatureIterator();
     my $featureRef;
-    
+
     my $seenFirstTOC = 0;
     my $seenFirstIndex = 0;
     my $seenSection = 0;
-    
+
     my $i = 1;
     while ($featureRef = $mdpItem->GetNextFeature(), $$featureRef) {
         my $tag   = $$$featureRef{'tag'};
         my $label = $$$featureRef{'label'};
         my $page  = $$$featureRef{'pg'};
         my $seq   = $$$featureRef{'seq'};
-        
+
         if  ($tag =~ m,FIRST_CONTENT_CHAPTER_START|1STPG,) {
             $label = qq{$label } . $i++;
             $seenSection = 1;
@@ -922,7 +922,7 @@ sub handle_FEATURE_LIST_PI
             # Suppress redundant link on MULTIWORK_BOUNDARY seq+1
             # if its seq matches the next CHAPTER seq.
             my $nextFeatureRef = $mdpItem->PeekNextFeature();
-            if ($$nextFeatureRef 
+            if ($$nextFeatureRef
                 && (
                     ($$$nextFeatureRef{'tag'} =~ m,^CHAPTER_START$,)
                     &&
@@ -939,28 +939,28 @@ sub handle_FEATURE_LIST_PI
             $seenFirstTOC = 0;
             $seenFirstIndex = 0;
         }
-        
+
         # Repetition suppression
         if  ($tag =~ m,TABLE_OF_CONTENTS|TOC,) {
             $seenSection = 0;
-            if ($seenFirstTOC) {   
-                next;   
+            if ($seenFirstTOC) {
+                next;
             }
-            else {   
-                $seenFirstTOC = 1;   
+            else {
+                $seenFirstTOC = 1;
             }
         }
-        
+
         if  ($tag =~ m,INDEX|IND,) {
             $seenSection = 0;
-            if ($seenFirstIndex) {   
-                next;   
+            if ($seenFirstIndex) {
+                next;
             }
-            else {   
-                $seenFirstIndex = 1;   
+            else {
+                $seenFirstIndex = 1;
             }
         }
-        
+
         my $url = BuildContentsItemLink($cgi, $seq, $page);
 
         my $featureItem =
@@ -1019,7 +1019,7 @@ sub handle_VIEW_TYPE_FULL_PDF_LINK_PI
 
 =item handle_ALLOW_FULL_PDF_PI : PI_handler(ALLOW_FULL_PDF)
 
-Handler for ALLOW_FULL_PDF. 
+Handler for ALLOW_FULL_PDF.
 
 =cut
 
@@ -1062,7 +1062,7 @@ sub handle_DOWNLOAD_PROGRESS_BASE
     my $cache_dir = $config->get('download_progress_base');
     my $true_cache_component = ($ENV{SDRVIEW} eq 'full') ? 'cache-full' : 'cache';
     $cache_dir =~ s,___CACHE___,$true_cache_component,;
-    
+
     return $cache_dir;
 }
 
@@ -1076,7 +1076,7 @@ sub handle_SEARCH_RESULTS_LINK_PI
     my $id = $cgi->param('id');
 
     my $script_name = $cgi->script_name;
-    
+
     my $href;
     if ( my $referer = $ses->get_transient('referer') ) {
         $href = $referer;
@@ -1104,9 +1104,9 @@ sub handle_SEARCH_RESULTS_LABEL_PI
     my $ses = $C->get_object('Session');
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
-    
+
     my $script_name = $cgi->script_name;
-    
+
     my $label;
     if ( my $referer = $ses->get_transient('referer') ) {
         if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
@@ -1123,14 +1123,14 @@ sub handle_SEARCH_RESULTS_LABEL_PI
                 ## $label = qq{&#x201c;$collname&#x201d; collection};
                 $label = qq{<em>$collname</em> $label};
             }
-            
+
         } elsif ( $referer =~ m,$PTGlobals::gLsSearchCgiRoot, ) {
             $label = qq{"Full text search" results};
         }
     } elsif ( $cgi->param('q1') ) {
         # $script_name at this point is /pt/cgi/search NOT /cgi/pt/search
         if ( $script_name !~ m,/search, ) {
-            $label = qq{"Search in this text" results};            
+            $label = qq{"Search in this text" results};
         } elsif ( $cgi->param('seq') ) {
             $label = qq{page};
         }
@@ -1142,9 +1142,9 @@ sub handle_SEARCH_RESULTS_LABEL_PI
 sub BuildSearchResultsUrl
 {
     my ( $cgi, $view ) = @_;
-    
+
     my $href;
-    
+
     if ( $cgi->param('q1') ) {
         my $tempCgi;
         $tempCgi = new CGI( $cgi );
@@ -1152,7 +1152,7 @@ sub BuildSearchResultsUrl
         $tempCgi->delete('view');
         $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
     }
-    
+
     return $href;
 }
 
