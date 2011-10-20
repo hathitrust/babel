@@ -137,8 +137,8 @@ sub __get_rights_attribute_for_id {
 
     my $row_hashref;
     my $statement =
-        qq{SELECT id, attr FROM rights_current WHERE id='$stripped_id' AND namespace='$namespace';};
-    my $sth = DbUtils::prep_n_execute($dbh, $statement);
+        qq{SELECT id, attr FROM rights_current WHERE id=? AND namespace=?;};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $stripped_id, $namespace);
 
     $row_hashref = $sth->fetchrow_hashref();
     $sth->finish;

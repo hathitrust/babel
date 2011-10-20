@@ -163,8 +163,8 @@ sub CB_delete_extras {
             my $extern_item_id = $hashref->{extern_item_id};
 
             __P( qq{A: o_item not in o_coll_item: $extern_item_id\n});
-            $statement = qq{DELETE FROM o_item WHERE extern_item_id='$extern_item_id'};
-            $sth = DbUtils::prep_n_execute($DBH, $statement);
+            $statement = qq{DELETE FROM o_item WHERE extern_item_id=?};
+            $sth = DbUtils::prep_n_execute($DBH, $statement, $extern_item_id);
                 
             $num_deleted_from_o_item++;
         }
@@ -215,20 +215,20 @@ sub CB_do_update_rights {
             my $namespace = Identifier::the_namespace($extern_item_id);
             my $id = Identifier::get_id_wo_namespace($extern_item_id);
 
-            $statement = qq{SELECT attr FROM rights_current WHERE namespace='$namespace' AND id='$id'};
-            $sth = DbUtils::prep_n_execute($DBH, $statement);
+            $statement = qq{SELECT attr FROM rights_current WHERE namespace=? AND id=?};
+            $sth = DbUtils::prep_n_execute($DBH, $statement, $namespace, $id);
             my $attr = $sth->fetchrow_array || 0;
 
             if ($attr) {
                 if ($attr != $rights) {
-                    $statement = qq{UPDATE o_item SET rights=$attr WHERE extern_item_id='$extern_item_id'};
-                    $sth = DbUtils::prep_n_execute($DBH, $statement);
+                    $statement = qq{UPDATE o_item SET rights=? WHERE extern_item_id=?};
+                    $sth = DbUtils::prep_n_execute($DBH, $statement, $attr, $extern_item_id);
                     $num_updated++;
                     
                     __P(qq{$extern_item_id o_item.rights=$rights rights_current.attr=$attr\n});
 
-                    $statement = qq{SELECT MColl_ID FROM o_coll_item WHERE extern_item_id='$extern_item_id'};
-                    $sth = DbUtils::prep_n_execute($DBH, $statement);
+                    $statement = qq{SELECT MColl_ID FROM o_coll_item WHERE extern_item_id=?};
+                    $sth = DbUtils::prep_n_execute($DBH, $statement, $extern_item_id);
                     my @coll_arr = $sth->fetchrow_array;
 
                     if (scalar @coll_arr) {
