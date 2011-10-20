@@ -55,7 +55,7 @@ if ($action) {
     $Q->delete('action');
     $Q->path_info($action);
 }
- 
+
 my $API_version = __determineVersion($Q);
 
 if (! $API_version) {
@@ -65,7 +65,7 @@ if (! $API_version) {
 else {
     my $classPackage = qq{API::HTD::App::V_${API_version}::Plugin};
     my $classPath = __packageToPath($classPackage);
-    
+
     eval {
         require $classPath;
     };
@@ -73,8 +73,8 @@ else {
         __errorExit($Q, '500 INTERNAL ERROR');
         # NOTREACHED
     }
-    
-    my $API_version_instance = $classPackage->new(('CGI' => $Q));    
+
+    my $API_version_instance = $classPackage->new(('CGI' => $Q));
     return $API_version_instance->run();
 }
 
@@ -112,13 +112,9 @@ sub __determineVersion {
 
     # Default and validate the version param
     my $ver = $Q->param('v') ? $Q->param('v') : HIGHEST_API_VERSION;
-    print STDERR "DETERMINING VERSION :: $ver\n";
     if (! grep(/^$ver$/, @SUPPORTED_VERSIONS)) {
-        print STDERR "ER...\n";
         return undef;
     }
-    
-    print STDERR "USING VERSION: $ver\n";
 
     return $ver;
 }
