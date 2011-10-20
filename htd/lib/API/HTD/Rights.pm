@@ -79,8 +79,8 @@ sub _initialize
     my ($dbh, $namespace, $barcode) = @_;
 
     my $statement =
-        qq{SELECT namespace, id, attr, reason, source, user, time, note FROM rights_current WHERE id='$barcode' AND namespace='$namespace'};
-    my $sth = API::DbIF::prepAndExecute($dbh, $statement);
+        qq{SELECT namespace, id, attr, reason, source, user, time, note FROM rights_current WHERE id=? AND namespace=?};
+    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $barcode, $namespace);
     my $row_hashref = $sth->fetchrow_hashref();
 
     if (defined($row_hashref)) {

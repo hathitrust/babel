@@ -62,12 +62,12 @@ Description
 # ---------------------------------------------------------------------
 sub prepAndExecute
 {
-    my ($dbh, $statement) = @_;
+    my ($dbh, $statement, @params) = @_;
 
     my $count;
     my $sth = $dbh->prepare($statement);
     if ($sth) {
-        $count = $sth->execute();
+        $count = $sth->execute(@params);
     }
 
     return $sth;
