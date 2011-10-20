@@ -44,14 +44,14 @@ my $g_assert_email_to_addr   = q{dlxs-system@umich.edu};
 my $g_assert_email_from_addr = q{"UMDL Mailer" <dlps-help@umich.edu>};
 my $g_email_file             = qq{$ENV{SDRROOT}/logs/tmp/hathitrust-email-file.eml};
 
-
+my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
 
 if (-e $g_email_file) {
     my $text_ref = Utils::read_file($g_email_file, 1, 0);
 
     if ($text_ref && $$text_ref) {
         my $when = Utils::Time::iso_Time();
-        my $email_subject = qq{[MAFR] HathiTrust assert fail Digest ($when)};
+        my $email_subject = qq{[MAFR] HathiTrust assert fail Digest ($when)($HOST)};
 
         my $mailer = new Mail::Mailer('sendmail');
         $mailer->open({
