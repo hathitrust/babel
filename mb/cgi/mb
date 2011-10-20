@@ -37,9 +37,9 @@ BEGIN{
     }
 }
 
-BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
-}
+# BEGIN {
+#     $ENV{DEBUG_LOCAL} = 1;
+# }
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
