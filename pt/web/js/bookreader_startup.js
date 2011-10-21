@@ -38,7 +38,7 @@ HT._getBookReaderHeight = function(is_fullscreen) {
 HT.resizeBookReader = function(is_fullscreen) {
   
   var dims = HT._getBookReaderHeight(is_fullscreen);
-  $("#BookReader").height(dims.bookreader_height);
+  $("#BookReader,#BRcontainer").height(dims.bookreader_height);
   
   var $scrollable = $("div.mdpScrollableContainer");
   if ( $scrollable.length > 0 ) {
@@ -52,7 +52,7 @@ HT.resizeBookReader = function(is_fullscreen) {
   }
 
   var $body = $("body");
-  var $container = $("#mdpContentContainer");
+  var $container = $(".contentContainerWrap"); // $("#mdpContentContainer");
 
   var padding = HT.config.ARBITRARY_PADDING + $(".mdpControlContainer").width();
   if ( HT.reader.ui == 'embed' ) {
