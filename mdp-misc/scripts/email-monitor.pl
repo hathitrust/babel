@@ -41,8 +41,9 @@ use Utils::Time;
 # Addresses NOTE: Must coordinate with Debug::Email
 #
 my $g_assert_email_to_addr   = q{dlxs-system@umich.edu};
-my $g_assert_email_from_addr = q{"UMDL Mailer" <dlps-help@umich.edu>};
-my $g_email_file             = qq{$ENV{SDRROOT}/logs/tmp/hathitrust-email-file.eml};
+my $g_assert_email_from_addr = q{"HathiTrust Mailer" <dlps-help@umich.edu>};
+my $g_email_file             = qq{$ENV{SDRROOT}/logs/assert/hathitrust-email-digest-current};
+my $g_email_subject          = qq{[MAFR] HathiTrust assert fail Digest};
 
 my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
 
@@ -51,7 +52,7 @@ if (-e $g_email_file) {
 
     if ($text_ref && $$text_ref) {
         my $when = Utils::Time::iso_Time();
-        my $email_subject = qq{[MAFR] HathiTrust assert fail Digest ($when)($HOST)};
+        my $email_subject = $g_email_subject . qq{ ($when)($HOST)};
 
         my $mailer = new Mail::Mailer('sendmail');
         $mailer->open({
@@ -62,7 +63,11 @@ if (-e $g_email_file) {
         print $mailer($$text_ref);
         $mailer->close;
 
-        system("rm", "-f", "$g_email_file");
+        my $archive_file = $g_email_file;
+        $archive_file =~ s,current,$when,;
+        $archive_file =~ s, ,_,;
+        
+        system("mv", "-f", "$g_email_file", "$archive_file");
     }
 }
 
