@@ -965,7 +965,7 @@ sub _ls_wrap_result_data {
         my $display_title = $display_titles_ary_ref->[0];
         # add 245c, assume only one!
         if (defined ($doc_data->{'title_c'})){
-            $display_title.= $doc_data->{'title_c'}->[0];
+            $display_title.=" ". $doc_data->{'title_c'}->[0];
         }    
         $display_title = Encode::decode_utf8($display_title);
         Utils::map_chars_to_cers(\$display_title);
