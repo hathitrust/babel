@@ -212,13 +212,26 @@ sub c_renumber {
     SLIP_Utils::Db_driver::Renumber_driver($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
 
-    __output(qq{\tDRIVER RESET for $to_run ... });
-    my $cmd = qq{$INDEX_SCRIPTS_DIR/control-j -r$to_run -kresetdriver};
-    my $output = `$cmd 2> $Child_Err_File`;
-    my $sysrc = $? >> 8;
-    if ($sysrc > 0) {
+    __output(qq{\tDRIVER RESET for run=$to_run ... });
+    my $cmd_1 = qq{$INDEX_SCRIPTS_DIR/control-j -r$to_run -kresetdriver};
+    my $output_1 = `$cmd_1 2> $Child_Err_File`;
+    my $sysrc_1 = $? >> 8;
+    if ($sysrc_1 > 0) {
         my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
-        my $s = qq{-----> renumber-j error system_rc=$sysrc attempting $cmd error:$$s_ref\n};
+        my $s = qq{-----> renumber-j error system_rc=$sysrc_1 attempting $cmd_1 error:$$s_ref\n};
+        __output($s);
+    }
+    else {
+        __output(qq{Done.\n\n});
+    }
+
+    __output(qq{\tre-INITIALIZE run=$from_run ... });
+    my $cmd_2 = qq{echo "y\ny\n" | $INDEX_SCRIPTS_DIR/control-j -r$from_run -kinit};
+    my $output_2 = `$cmd_2 2> $Child_Err_File`;
+    my $sysrc_2 = $? >> 8;
+    if ($sysrc_2 > 0) {
+        my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
+        my $s = qq{-----> renumber-j error system_rc=$sysrc_2 attempting $cmd_2 error:$$s_ref\n};
         __output($s);
     }
     else {
