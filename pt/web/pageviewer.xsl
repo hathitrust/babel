@@ -215,6 +215,11 @@
         
         <xsl:if test="$gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script>
+        <!-- <style>
+          .debugIndex {
+            display: block;
+          }
+        </style> -->
         </xsl:if>
         
         <!-- <xsl:call-template name="online_assessment"/> -->

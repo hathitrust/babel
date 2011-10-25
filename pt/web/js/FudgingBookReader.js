@@ -398,12 +398,13 @@ if ( fudgingMonkeyPatch ) {
               rowLeafs.reverse();
             }
             
-            leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" /></div>');
+            // leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" /></div>');
+            leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" />' + '<div class="debugIndex">' + currentRow + '</div>'  +  '</div>');
             
             // leafs.push(rowLeafs.join("\n"));
             // leafs.push('<br clear="both" /></div>');
 
-            viewHeight += Math.max.apply(Math, rowHeights);
+            viewHeight += Math.max.apply(Math, rowHeights) + 20; // css padding
             rowHeights = [];
             rowLeafs = [];
             currentRow += 1;
@@ -411,13 +412,13 @@ if ( fudgingMonkeyPatch ) {
           }
           
       }
-      
+
       if ( rowHeights.length ) {
         if ( this.pageProgression == "rl" ) {
           rowLeafs.reverse();
         }
         //leafs.push('<div class="thumbRow">' + rowLeafs.join("\n") + '<br clear="both" /></div>');
-        leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" /></div>');
+        leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" />' + '<div class="debugIndex">' + currentRow + '</div>'  +  '</div>');
         
         // leafs.push(rowLeafs.join("\n"));
         // leafs.push('<br clear="both" /></div>');
@@ -456,13 +457,16 @@ if ( fudgingMonkeyPatch ) {
       for (i=0; i<leafMap.length; i++) {
         
           var $row = $("#thumbrow" + i);
-          var leafTop = $row.offset().top;
+          var leafTop = scrollTop + $row.offset().top - $("#BRcontainer").offset().top;
           var leafBottom = leafTop + $row.height();
         
           // leafBottom += this.padding + leafMap[i].height;
           var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
           var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
           var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
+          
+          // console.log("THUMB", i, leafTop, leafBottom, "|", scrollTop, scrollBottom, "|", topInView, middleInView, bottomInView);
+          
           if (topInView | bottomInView | middleInView) {
               //console.log('row to display: ' + j);
               rowsToDisplay.push(i);
@@ -476,7 +480,6 @@ if ( fudgingMonkeyPatch ) {
           if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
           leafTop = leafBottom;
       }
-      
       // create a buffer of preloaded rows before and after the visible rows
       var firstRow = rowsToDisplay[0];
       var lastRow = rowsToDisplay[rowsToDisplay.length-1];
