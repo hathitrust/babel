@@ -72,12 +72,6 @@ HT.resizeBookReader = function() {
       }
   }
   
-  if ( currentIndex != null ) {
-    setTimeout(function() {
-      HT.reader.jumpToIndex(currentIndex);
-    }, 500);
-  }
-  
 }
 
 
@@ -173,6 +167,9 @@ window.onorientationchange = function() {
     if ( redisplay_contents ) {
       $("#mdpMobileTableOfContents").hide();
     }
+    
+    var currentIndex = HT.reader.currentIndex();
+    
     try{
     switch(window.orientation){
    case 90:
@@ -207,6 +204,14 @@ window.onorientationchange = function() {
  //     $("#toc").click();
  //   }, 500);
  // }
+ 
+ 
+ if ( currentIndex != null ) {
+   setTimeout(function() {
+     HT.reader.jumpToIndex(currentIndex);
+   }, 500);
+ }
+ 
 }
 
 window.mockrotate = function(orientation) {
