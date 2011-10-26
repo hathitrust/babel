@@ -1276,7 +1276,6 @@
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
         <script type="text/javascript" src="/pt/js/FudgingBookReader.js"></script>
-        <script type="text/javascript" src="http://localhost:8080/target/target-script-min.js#anonymous"></script>
         
         <!-- <xsl:call-template name="online_assessment"/> -->
 

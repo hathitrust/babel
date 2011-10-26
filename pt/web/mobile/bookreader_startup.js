@@ -18,7 +18,6 @@ HT.resizeBookReader = function() {
   }
   
   var currentIndex = HT.reader.currentIndex();
-  console.log("CURRENT INDEX", currentIndex);
   
   //var bookreader_height = viewportHeight - chromeHeight - textDenyHeight - 25;
   var bookreader_height = viewportHeight;
