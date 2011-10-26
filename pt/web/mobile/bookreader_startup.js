@@ -209,7 +209,7 @@ window.onorientationchange = function() {
  if ( currentIndex != null ) {
    setTimeout(function() {
      HT.reader.jumpToIndex(currentIndex);
-   }, 500);
+   }, 750);
  }
  
 }
