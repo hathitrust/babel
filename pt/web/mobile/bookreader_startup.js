@@ -17,6 +17,9 @@ HT.resizeBookReader = function() {
     chromeHeight += $("#mdpToolbar").height();
   }
   
+  var currentIndex = HT.reader.currentIndex();
+  console.log("CURRENT INDEX", currentIndex);
+  
   //var bookreader_height = viewportHeight - chromeHeight - textDenyHeight - 25;
   var bookreader_height = viewportHeight;
   //var bookreader_height=$(window).height();
@@ -69,6 +72,13 @@ HT.resizeBookReader = function() {
           console.log("MUST NARROW:", $embedLink.width(), w);
       }
   }
+  
+  if ( currentIndex != null ) {
+    setTimeout(function() {
+      HT.reader.jumpToIndex(currentIndex);
+    }, 500);
+  }
+  
 }
 
 
