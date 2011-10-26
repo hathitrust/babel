@@ -24,10 +24,7 @@ HT.resizeBookReader = function() {
     bookreader_height -= 32; // crollbar
   }
   //try{console.log("Resize 3: " + bookreader_height);console.log("Window height: " + $(window).height());}catch(err){}
-  $("#BookReader").height(bookreader_height);
-  if ( $("#BRcontainer").height() > bookreader_height ) {
-    $("#BRcontainer").height(bookreader_height);
-  }
+  $("#BookReader, #BRcontainer").height(bookreader_height);
   
   // roger - rotating the device sometimes leaves BRcontainer with the old height
   if ( $("#BRcontainer").width() > $("#BookReader").width() ) {
