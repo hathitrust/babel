@@ -186,7 +186,7 @@ sub CB_delete_extras {
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item __cb_get_metadata_hashref
 
 Description
 
@@ -207,7 +207,7 @@ sub __cb_get_metadata_hashref {
         return $metadata_hashref;
     }
     else {
-        __P( qq{Could not get metadata for id="$id"} );
+        __P( qq{\tCould not get metadata for id="$id"\n} );
         return undef;
     }
 }
@@ -223,6 +223,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub __cb_update_metadata {
+    my $C = shift;
     my $id = shift;
     my $metadata_hashref = shift;
 
@@ -230,12 +231,62 @@ sub __cb_update_metadata {
         $CO->create_or_update_item_metadata($metadata_hashref);
     };
     if ($@) {
-        __P( qq{Could not update id="$id": $@} );
+        __P( qq{\tCould not update id="$id": $@\n} );
 
         return 0;
     }
 
     return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item __get_o_item_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_o_item_metadata {
+    my ($C, $id) = @_;
+
+    my $statement = qq{SELECT * FROM mdp.o_item WHERE extern_item_id=?};
+    my $sth = DbUtils::prep_n_execute($DBH, $statement, $id);
+
+    my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+
+    return $ref_to_arr_of_hashref->[0];
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __format_metadata_diff
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __format_metadata_diff {
+    my $prior_metadata_hashref = shift;
+    my $updated_metadata_hashref = shift;
+    
+    my @diffs;
+    foreach my $md (keys %$updated_metadata_hashref) {
+        next if ($md eq 'extern_item_id');
+        my $prior = $prior_metadata_hashref->{$md};
+        my $updated = $updated_metadata_hashref->{$md};
+        $md =~ s,_title,,;
+        
+        if ($prior ne $updated) {
+            my $s = sprintf("%-7s", $md);
+            push(@diffs, qq{$s: prior="$prior" updated="$updated"});
+        }
+    }
+    
+    return (scalar(@diffs) ? join("\n\t", @diffs) : undef);
 }
 
 # ---------------------------------------------------------------------
@@ -272,14 +323,15 @@ sub CB_do_update_metadata {
                     next;
                 }
                 
-                __P(qq{updating: $id\n});
-        
                 my $metadata_hashref = __cb_get_metadata_hashref($C, $id);
                 my $fetch_ok = $metadata_hashref ? 1 : 0;
          
                 if ($fetch_ok) {
-                    my $update_ok = __cb_update_metadata($id, $metadata_hashref);
+                    my $o_item_hashref =  __get_o_item_metadata($C, $id);
+                    my $update_ok = __cb_update_metadata($C, $id, $metadata_hashref);
                     if ($update_ok) {
+                        my $delta = __format_metadata_diff($o_item_hashref, $metadata_hashref);
+                        __P(qq{updated: $id delta=} . ($delta ? "\n\t$delta\n" : "none\n"));
                         $num_updated++;
                         MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     }
