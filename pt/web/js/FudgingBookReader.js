@@ -827,10 +827,10 @@ if ( fudgingMonkeyPatch ) {
       // Load image if not loaded or URI has changed (e.g. due to scaling)
       var loadImage = false;
       if (undefined == this.prefetchedImgs[index]) {
-          console.log('no image for ' + index);
+          // console.log('no image for ' + index);
           loadImage = true;
       } else if (pageURI != this.prefetchedImgs[index].uri) {
-          console.log('uri changed for ' + index, pageURI, this.prefetchedImgs[index].uri);
+          // console.log('uri changed for ' + index, pageURI, this.prefetchedImgs[index].uri);
           loadImage = true;
       }
 
@@ -860,7 +860,7 @@ if ( fudgingMonkeyPatch ) {
               var natural_width = this.width;
               var fudged = false;
 
-              console.log("LOADING", index, this.src, e.src);
+              // console.log("LOADING", index, this.src, e.src);
 
               if ( self.hasPageFeature(index, "FUDGED") ) {
                 var slice = self.sliceFromIndex(index);
@@ -870,7 +870,7 @@ if ( fudgingMonkeyPatch ) {
                 self.bookData[slice.slice]['height'][slice.index] = true_height;
                 self.bookData[slice.slice]['width'][slice.index] = true_width;
                 self.removePageFeature(index, 'FUDGED');
-                console.log("FUDGED TRUE HEIGHT", index, self.reduce, old_height, true_height);
+                // console.log("FUDGED TRUE HEIGHT", index, self.reduce, old_height, true_height);
                 fudged = true;
               }
               
