@@ -90,11 +90,16 @@ sub get_owner_affiliation
     # Obfuscate
     if ($owner_string ne $temp_coll_owner_string)
     {
-        my @parts = split('@', $owner_string);
-        if (scalar(@parts) > 1)
-        {
-            $owner_affiliation = $parts[1];
-        } else {
+        my @parts;
+        if ( $owner_string =~ m,@, ) {
+           @parts = split('@', $owner_string);
+           $owner_affiliation = $parts[-1];
+        } elsif ( $owner_string =~ m,urn:mace:incommon:, ) {
+            @parts = split('!', $owner_string);
+            $owner_affiliation = $parts[0];
+            $owner_affiliation =~ s,urn:mace:incommon:,,;
+        } elsif ( $owner_string =~ m,[a-z]+, ) {
+            # uniqname, likely
             $owner_affiliation = 'umich.edu';
         }
     }
