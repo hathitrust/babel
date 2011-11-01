@@ -1,84 +1,222 @@
 var HT = HT || {};
 
+// HT.monitor = {
+//   
+//   inter : null,
+//   
+//   run : function() {
+//     var self = this;
+//     
+//     if ( this.inter != null ) {
+//       return;
+//     }
+//     
+//     var ping = function() {
+//       $.ajax({
+//           url : "/common/robots.txt",
+//           data : { ts : (new Date).getTime() },
+//           cache : false,
+//           success: function(data) {
+//             // NOOP
+//           },
+//           error : function(req, textStatus, errorThrown) {
+//             // stop for any error (e.g. network down)
+//             self.stop();
+//             if ( req.status == 503 ) {
+//               var tmp = req.responseText.match(/for the next (\d+) seconds/);
+//               var timeout = tmp[1];
+//               
+//               if ( timeout <= 5 ) {
+//                   // just punt and wait it out
+//                   self.run();
+//                   return;
+//               }
+// 
+//               var html = 
+//                 '<div>' + 
+//                   '<p>You have temporarily exceeded download limits. You may proceed in <span id="throttle-timeout">' + timeout + '</span> seconds.</p>' + 
+//                   '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' + 
+//                 '</div>';
+//                                                   
+//               var countdown = timeout;
+//               var countdown_inter;
+//               
+//               var $notice = new Boxy(html, {
+//                   show: true,
+//                   modal: true,
+//                   draggable: true,
+//                   closeable: false,
+//                   title: "",
+//                   behaviours: function(r) {
+//                     setTimeout(function() {
+//                       Boxy.get(r).hide();
+//                       
+//                       // and restart the timer!
+//                       self.run();
+//                       
+//                     }, timeout * 1000);
+//                     
+//                     countdown_inter = setInterval(function() {
+//                       countdown -= 1;
+//                       $(r).find("#throttle-timeout").text(countdown);
+//                       if ( countdown == 0 ) {
+//                         clearInterval(countdown_inter);
+//                       }
+//                     }, 1000);
+//                     
+//                   }
+//               });
+// 
+//             }
+//           }
+//         });
+//     }
+//     
+//     this.inter = setInterval(ping, 5000);
+//     
+//   },
+//   
+//   stop: function() {
+//     clearInterval(this.inter);
+//     this.inter = null;
+//   },
+//   
+//   EOT : null
+//     
+// }
+
 HT.monitor = {
   
-  inter : null,
+  countdown_timer : null,
   
-  run : function() {
+  run : function(url) {
     var self = this;
     
-    if ( this.inter != null ) {
+    if ( this.countdown_timer != null ) {
       return;
     }
     
-    var ping = function() {
-      $.ajax({
-          url : "/common/robots.txt",
-          data : { ts : (new Date).getTime() },
-          cache : false,
-          success: function(data) {
-            // NOOP
-          },
-          error : function(req, textStatus, errorThrown) {
-            // stop for any error (e.g. network down)
-            self.stop();
-            if ( req.status == 503 ) {
-              var tmp = req.responseText.match(/for the next (\d+) seconds/);
-              var timeout = tmp[1];
-              
-              if ( timeout <= 5 ) {
-                  // just punt and wait it out
-                  self.run();
-                  return;
-              }
-
-              var html = 
-                '<div>' + 
-                  '<p>You have temporarily exceeded download limits. You may proceed in <span id="throttle-timeout">' + timeout + '</span> seconds.</p>' + 
-                  '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' + 
-                '</div>';
-                                                  
-              var countdown = timeout;
-              var countdown_inter;
-              
-              var $notice = new Boxy(html, {
-                  show: true,
-                  modal: true,
-                  draggable: true,
-                  closeable: false,
-                  title: "",
-                  behaviours: function(r) {
-                    setTimeout(function() {
-                      Boxy.get(r).hide();
-                      
-                      // and restart the timer!
-                      self.run();
-                      
-                    }, timeout * 1000);
-                    
-                    countdown_inter = setInterval(function() {
-                      countdown -= 1;
-                      $(r).find("#throttle-timeout").text(countdown);
-                      if ( countdown == 0 ) {
-                        clearInterval(countdown_inter);
-                      }
-                    }, 1000);
-                    
-                  }
-              });
-
-            }
-          }
-        });
+    if ( this.check_url != null ) {
+      return;
     }
     
-    this.inter = setInterval(ping, 5000);
+    // find out how long we have to wait
+    if ( url.indexOf(";") > -1 ) {
+      url += ";ping=status";
+    } else {
+      url += "&ping=status";
+    }
+    
+    self.check_url = url;
+    
+    self.check_status();
     
   },
   
+  check_status : function() {
+    var self = this;
+    
+    $.ajax({
+      url : self.check_url,
+      cache : false,
+      success : function(data) {
+        // NOOP; should not be choked
+        console.log("TURNING EVERYTHING OFF", self);
+        self.hide_warning();
+        self.retry_choked();
+      },
+      error : function(req, textStatus, errorThrown) {
+        console.log("CHECKED STATUS", self.check_url, req.status);
+        if ( req.status == 503 ) {
+          self.display_warning(req);
+          // self.setup_monitoring(req);
+        } else {
+          // something worse has happened!!!
+        }
+      }
+    })
+  },
+  
+  retry_choked : function() {
+    var self = this;
+    
+    // just reload the page so normal fudging behavior is possible
+    HT.total_choke_hack = true;
+    HT.reader.drawLeafs();
+    this.check_url = null;
+    this.countdown_timer = null;
+  },
+  
+  hide_warning : function() {
+    var self = this;
+    
+    if ( self.notice != null  ) {
+      console.log("HIDING THE WARNING", self.notice);
+      self.notice.hide();
+      self.notice = null;
+    }
+  },
+  
+  display_warning : function(req) {
+    var self = this;
+    
+    if ( self.countdown_timer != null ) {
+      return;
+    }
+
+    var timeout = parseInt(req.getResponseHeader('X-Choke-UntilEpoch'));
+    
+    if ( timeout <= 5 ) {
+        // just punt and wait it out
+        setTimeout(function() {
+          self.retry_choked();
+        }, 5000);
+        return;
+    }
+
+    timeout *= 1000;
+    var now = (new Date).getTime();
+    var countdown = ( Math.ceil((timeout - now) / 1000) )
+    
+    var html = 
+      '<div>' + 
+        '<p>You have temporarily exceeded download limits. You may proceed in <span id="throttle-timeout">' + countdown + '</span> seconds.</p>' + 
+        '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' + 
+      '</div>';
+                                        
+    self.notice = new Boxy(html, {
+        show: true,
+        modal: true,
+        draggable: true,
+        closeable: false,
+        title: "",
+        behaviours: function(r) {
+          setTimeout(function() {
+            
+            // and restart the timer!
+            // self.countdown_timer = setInterval(function() { self.recheck(); }, 500);
+            console.log("COUNTDOWN IS OVER");
+            self.check_status();
+            
+          }, countdown * 1000 + 1000);
+          
+          self.countdown_timer = setInterval(function() {
+            countdown -= 1;
+            $(r).find("#throttle-timeout").text(countdown);
+            if ( countdown == 0 ) {
+              clearInterval(self.countdown_timer);
+            }
+            console.log("TIC TOC", countdown);
+          }, 1000);
+          
+        }
+    });
+    
+  },
+
   stop: function() {
-    clearInterval(this.inter);
-    this.inter = null;
+    // clearInterval(this.inter);
+    // this.inter = null;
   },
   
   EOT : null

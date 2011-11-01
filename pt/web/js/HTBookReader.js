@@ -210,6 +210,10 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
         page_uri += ';attr=' + this.flags.attr;
     }
     
+    if ( HT.total_choke_hack ) {
+      page_uri += ";ping=recheck";
+    }
+    
     return page_uri
 }
 
@@ -1670,16 +1674,24 @@ HTBookReader.prototype.createContentElement = function(index, reduce, width, hei
       e = document.createElement("img");
       $(e).css('width', width+'px');
       $(e).css('height', height+'px');
+      
+      var lazy = new Image();
+      $(lazy).one('load', function() {
+        
+        if ( this.height == HT.config.CHOKE_DIM && this.width == HT.config.CHOKE_DIM ) {
+          $(e).addClass("choked");
+          HT.monitor.run(this.src);
+        }
+        
+        e.src = this.src;
+      })
+      .attr('src', url);
 
       var title = "image of page " + this.getPageNum(index);
       $(e).attr({ alt : title, title : title});
-      e.src = url;
+      e.src = this.imagesBaseURL + 'transparent.png';
 
       $.data(e, 'index', index);
-
-      $(e).one('error', function(evt) {
-        self._handle_image_error(this);
-      })
 
     } else {
 

@@ -470,6 +470,11 @@ BookReader.prototype.drawLeafsOnePage = function() {
             
         } else {
             //console.log("not displaying " + indicesToDisplay[i] + ' score=' + jQuery.inArray(indicesToDisplay[i], this.displayedIndices));            
+            var $pagediv = $("#pagediv" + index);
+            if ( $pagediv.has('.choked').length ) {
+              var img = this.createContentElement(index, this.reduce, width, height);
+              $(img).replaceAll($pagediv.find(".choked"));
+            }
         }
 
         leafTop += height +10;
@@ -803,16 +808,23 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
             var target_width = width;
             
             var fudged = false;
-            if ( self.hasPageFeature(index, "FUDGED") ) {
-              var slice = self.sliceFromIndex(index);
-              var true_height = this.height * reduce;
-              var true_width = this.width * reduce;
-              self.bookData[slice.slice]['height'][slice.index] = true_height;
-              self.bookData[slice.slice]['width'][slice.index] = true_width;
-              self.removePageFeature(index, 'FUDGED');
-              target_height = this.height;
-              target_width = this.width;
-              fudged = true;
+            if ( this.height == HT.config.CHOKE_DIM && this.width == HT.config.CHOKE_DIM ) {
+              $(this).addClass("choked");
+              HT.monitor.run(this.src);
+            } else {
+              
+              if ( self.hasPageFeature(index, "FUDGED") ) {
+                var slice = self.sliceFromIndex(index);
+                var true_height = this.height * reduce;
+                var true_width = this.width * reduce;
+                self.bookData[slice.slice]['height'][slice.index] = true_height;
+                self.bookData[slice.slice]['width'][slice.index] = true_width;
+                self.removePageFeature(index, 'FUDGED');
+                target_height = this.height;
+                target_width = this.width;
+                fudged = true;
+              }
+              
             }
             
             $(this).attr({ width : width, height : height });
@@ -2422,7 +2434,7 @@ BookReader.prototype.prefetchImg = function(index) {
     if (undefined == this.prefetchedImgs[index]) {
         //console.log('no image for ' + index);
         loadImage = true;
-    } else if (pageURI != this.prefetchedImgs[index].uri) {
+    } else if (pageURI != this.prefetchedImgs[index].uri || this.prefetchedImgs[index].choked) {
         //console.log('uri changed for ' + index);
         loadImage = true;
     }
@@ -2436,6 +2448,16 @@ BookReader.prototype.prefetchImg = function(index) {
             $(img).css({
                 'background-color': 'transparent'
             });
+        } else {
+          var lazy = new Image();
+          $(lazy).one('load', function() {
+            if ( this.height == HT.config.CHOKE_DIM && this.width == HT.config.CHOKE_DIM ) {
+              $(img).addClass("choked");
+              HT.monitor.run(this.src);
+            }
+            img.src = this.src;
+          })
+          .attr('src', pageURI);
         }
         // UM
         var title = "image of page " + this.getPageNum(index);

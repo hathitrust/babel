@@ -26,7 +26,6 @@ if ( navigator.appVersion.indexOf("MSIE 7.") == -1 && navigator.appVersion.index
   fudgingMonkeyPatch = true;
 }
 
-
 if ( fudgingMonkeyPatch ) {
 
   HTBookReader.prototype.resizePageView1up = function() {
@@ -239,9 +238,13 @@ if ( fudgingMonkeyPatch ) {
           $pagediv.animate({ height : height + 'px', width : width + 'px'}, "fast");
         }
 
-        if ( ! $pagediv.has(".content").length ) {
+        if ( ! $pagediv.has(".content").length || $pagediv.has(".choked").length ) {
           var content = this.createContentElement(index, this.reduce, width, height);
-          $(content).appendTo($pagediv).addClass("content");
+          if ( $pagediv.has(".choked").length ) {
+            $(content).replaceAll($pagediv.find(".choked"));
+          } else {
+            $(content).appendTo($pagediv).addClass("content");
+          }
         }
       }
 
@@ -399,7 +402,7 @@ if ( fudgingMonkeyPatch ) {
             }
             
             // leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" /></div>');
-            leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" />' + '<div class="debugIndex">' + currentRow + '</div>'  +  '</div>');
+            leafs.push('<div id="thumbrow{currentRow}" data-rowIndex="{currentRow}" class="thumbRow">'.replace(/{currentRow}/g, currentRow) + rowLeafs.join("\n") + '<br clear="both" />' + '<div class="debugIndex">' + currentRow + '</div>'  +  '</div>');
             
             // leafs.push(rowLeafs.join("\n"));
             // leafs.push('<br clear="both" /></div>');
@@ -418,7 +421,7 @@ if ( fudgingMonkeyPatch ) {
           rowLeafs.reverse();
         }
         //leafs.push('<div class="thumbRow">' + rowLeafs.join("\n") + '<br clear="both" /></div>');
-        leafs.push('<div id="thumbrow{currentRow}" class="thumbRow">'.replace('{currentRow}', currentRow) + rowLeafs.join("\n") + '<br clear="both" />' + '<div class="debugIndex">' + currentRow + '</div>'  +  '</div>');
+        leafs.push('<div id="thumbrow{currentRow}" data-rowIndex="{currentRow}" class="thumbRow">'.replace(/{currentRow}/g, currentRow) + rowLeafs.join("\n") + '<br clear="both" />' + '<div class="debugIndex">' + currentRow + '</div>'  +  '</div>');
         
         // leafs.push(rowLeafs.join("\n"));
         // leafs.push('<br clear="both" /></div>');
@@ -499,9 +502,22 @@ if ( fudgingMonkeyPatch ) {
       var link;
       var img;
       var page;
+      
+      $(".thumbRow:has(.choked)").each(function() {
+        var i = $(this).data('rowIndex');
+        console.log("CHECKING DISPLAY OF", i);
+        if ( BookReader.util.notInArray(i, rowsToDisplay) ) {
+          console.log("ADDING TO ROWS TO DISPLAY", i);
+          rowsToDisplay.push(i);
+        }
+      })
+      
+      console.log("ROWS TO DISPLAY", rowsToDisplay.join(" / "));
+      
       for (i=0; i<rowsToDisplay.length; i++) {
-          if (BookReader.util.notInArray(rowsToDisplay[i], this.displayedRows)) {    
-              row = rowsToDisplay[i];
+        row = rowsToDisplay[i];
+        var $thumbrow = $("#thumbrow" + row);
+          if (BookReader.util.notInArray(rowsToDisplay[i], this.displayedRows) || $thumbrow.has(".choked").length ) {    
 
               for (j=0; j<leafMap[row].leafs.length; j++) {
                   index = j;
@@ -514,11 +530,15 @@ if ( fudgingMonkeyPatch ) {
                   // }
 
                   var $pagediv = $("#pagediv" + leaf);
-                  if ( $pagediv.find(".content").length ) {
+                  if ( $pagediv.find(".content").length && ! $pagediv.has(".choked").length ) {
                     // already has image...
                     continue;
                   }
                   // $pagediv.addClass("BRpagedivthumb");
+                  
+                  if ( $pagediv.has(".choked").length ) {
+                    $pagediv.find("a").remove();
+                  }
 
                   // link to page in single page mode
                   link = document.createElement("a");
@@ -537,12 +557,14 @@ if ( fudgingMonkeyPatch ) {
 
                   img = document.createElement("img");
                   var thumbReduce = Math.floor(this.getPageWidth(leaf) / this.thumbWidth);
+                  
+                  var srcURL = this._getPageURI(leaf, thumbReduce);
 
                   $(img).attr('src', this.imagesBaseURL + 'transparent.png')
                       .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
                       .addClass('BRlazyload')
                       // Store the URL of the image that will replace this one
-                      .data('srcURL',  this._getPageURI(leaf, thumbReduce))
+                      .data('srcURL',  srcURL)
                       .data('index', leaf).
                       data('reduce', thumbReduce);
                   $(link).append(img);
@@ -668,14 +690,33 @@ if ( fudgingMonkeyPatch ) {
           var viewWidth = self.getViewWidth();
 
           var lazy = new Image();
+          
+          lazy.onerror = function(evt) {
+            console.log("ERROR: ", this, evt);
+          }
+          
           lazy.e = e;
           lazy.index = index;
           $(lazy).one('load', function() {
+            console.log("LOADING", this.index);
             var index = this.index;
             var e = this.e;
             this.e = null;
             var natural_height = this.height;
             var natural_width = this.width;
+            
+            // check for a throttled image
+            // this is so lame
+            if ( natural_height == HT.config.CHOKE_DIM && natural_width == HT.config.CHOKE_DIM ) {
+              // start the choke timer
+              console.log("TREAT THIS AS AN ERROR:", this);
+              // but show this image
+              $(e).addClass("choked");
+              e.src = this.src;
+              HT.monitor.run(this.src);
+              return;
+            }
+            
             var fudged = false;
             if ( self.hasPageFeature(index, "FUDGED") ) {
               var slice = self.sliceFromIndex(index);
@@ -829,7 +870,7 @@ if ( fudgingMonkeyPatch ) {
       if (undefined == this.prefetchedImgs[index]) {
           // console.log('no image for ' + index);
           loadImage = true;
-      } else if (pageURI != this.prefetchedImgs[index].uri) {
+      } else if (pageURI != this.prefetchedImgs[index].uri || this.prefetchedImgs[index].choked ) {
           // console.log('uri changed for ' + index, pageURI, this.prefetchedImgs[index].uri);
           loadImage = true;
       }
@@ -852,6 +893,7 @@ if ( fudgingMonkeyPatch ) {
             lazy.e = img;
             lazy.index = index;
             lazy.reduce = reduce;
+            
             $(lazy).one('load', function() {
               var index = this.index;
               var e = this.e;
@@ -860,7 +902,18 @@ if ( fudgingMonkeyPatch ) {
               var natural_width = this.width;
               var fudged = false;
 
-              // console.log("LOADING", index, this.src, e.src);
+              // check for a throttled image
+              // this is so lame
+              if ( natural_height == HT.config.CHOKE_DIM && natural_width == HT.config.CHOKE_DIM ) {
+                // start the choke timer
+                console.log("TREAT THIS AS AN ERROR:", this);
+                // but show this image
+                $(e).addClass("choked");
+                e.choked = true;
+                e.src = this.src;
+                HT.monitor.run(this.src);
+                return;
+              }
 
               if ( self.hasPageFeature(index, "FUDGED") ) {
                 var slice = self.sliceFromIndex(index);
