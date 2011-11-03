@@ -330,8 +330,16 @@ sub CB_do_update_metadata {
                     my $o_item_hashref =  __get_o_item_metadata($C, $id);
                     my $update_ok = __cb_update_metadata($C, $id, $metadata_hashref);
                     if ($update_ok) {
+                        my $coll_ids_ary_ref = $CO->get_coll_ids_for_item($id);
+                        my @buf;
+                        foreach my $coll_id (@$coll_ids_ary_ref) {
+                            my $coll_name = $CO->get_coll_name($coll_id);
+                            push(@buf, qq{($coll_id)=[$coll_name]});
+                        } 
+                        my $affected = join(', ', @buf);
+
                         my $delta = __format_metadata_diff($o_item_hashref, $metadata_hashref);
-                        __P(qq{updated: $id delta=} . ($delta ? "\n\t$delta\n" : "none\n"));
+                        __P(qq{updated: $id affected=$affected\n\tdelta=} . ($delta ? "\n\t$delta\n" : "none\n"));
                         $num_updated++;
                         MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     }
