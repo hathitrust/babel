@@ -29,11 +29,14 @@ my $sub = CGI::Compile->compile($script_filename);
 my $app = CGI::Emulate::PSGI->handler($sub);
 
 $app = builder {
+
+    enable "PopulateENV";
+    
+    enable 'Choke::Cache::Filesystem';
     
     enable
         match_if param('index'),
             'Choke::Requests', 
-                    app_name       => 'pt',
                     key            => 'search-index',
                     cache_dir_key  => 'choke_shared_cache_dir',
                     client_identifier_sub => sub {
@@ -53,7 +56,6 @@ $app = builder {
     enable
         match_if unchoked(),
             'Choke::Requests', 
-                    app_name       => 'pt',
                     key            => 'search',
                     credit_rate    => [ 0.125, 'sec' ],
                     max_debt       => [ 100, 'min' ]
