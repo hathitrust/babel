@@ -223,6 +223,7 @@
         </xsl:if>
         
         <!-- <xsl:call-template name="online_assessment"/> -->
+        <xsl:call-template name="choke_testing" />
 
         <xsl:if test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
           <xsl:call-template name="access_banner"/>
@@ -449,6 +450,59 @@
   
   <xsl:template name="classic-javascript-init">
     <script type="text/javascript" src="/pt/js/classic_startup.js"/> 
+  </xsl:template>
+
+  <xsl:template name="choke_testing">
+    <script xmlns="" type="text/javascript" src="/pt/web/js/jquery.cookie.js"></script>
+    <script xmlns="" type="text/javascript" src="https://raw.github.com/btburnett3/jquery.ui.spinner/master/ui.spinner.js"></script>
+  	<link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/themes/ui-lightness/jquery-ui.css" />
+    <style>
+      .ui-spinner {position: relative; border: 0px solid white;  }
+      .ui-spinner-buttons {position: absolute}
+      .ui-spinner-button {overflow: hidden}
+      input.choke-input { width: 64px }
+      #choke-testing-panel p { text-align: right; margin-bottom: 25px; clear:both; }
+      #choke-testing-panel span.label { float: left; width: 50%; text-align: left; }
+    </style>
+    
+    <script id="choke-testing-panel-tmpl" type="text/x-jquery-tmpl">
+      <div id="choke-testing-panel" class="shareLinks">
+        <h2>Configure Choke Multipliers</h2>
+        <p><span class="label">Image: <small>1req/min</small></span> <input type="text" size="5" class="choke-input" id="choke-imgsrv-imgsrv" value="1" /></p>
+        <p><span class="label">Thumbnail: <small>100req/30sec</small></span> <input type="text" size="5" class="choke-input" id="choke-imgsrv-thumbnail" value="1" /></p>
+        <p><span class="label">Plain Text: <small>5req/2min</small></span> <input type="text" size="5" class="choke-input" id="choke-pt-plaintext" value="1" /></p>
+        <p><span class="label">PDFs (this page): <small>1req/min</small></span> <input type="text" size="5" class="choke-input" id="choke-imgsrv-pdf" value="1" /></p>
+        <p><span class="label">PDF (whole book): <small>1req/5min</small></span> <input type="text" size="5" class="choke-input" id="choke-imgsrv-download" value="1" /></p>
+      </div>
+    </script>
+    <script>
+      $(document).ready(function() {
+        $("#choke-testing-panel-tmpl").tmpl().insertBefore(".mdpScrollableContainer");
+        HT.disable_updates = true;
+        $(".choke-input").each(function() {
+          var cookie_name = $(this).attr('id').toUpperCase();
+          var cookie_value = $.cookie(cookie_name);
+          if ( cookie_value !== null ) {
+            if ( cookie_value != '' ) {
+              console.log("SETTING FROM COOKIE", cookie_name, cookie_value);
+              var parts = cookie_value.split(":");
+              $(this).val(parts[0]);
+            }
+          }
+        })
+        HT.disable_updates = null;
+        $(".choke-input").spinner({ min: -10, max : 10 , step : "1.00" });
+        $(".choke-input").change(function() {
+          if ( HT.disable_updates === true ) { return; }
+          var cookie_name = $(this).attr('id').toUpperCase();
+          var value = $(this).val();
+          var timestamp = Math.floor((new Date).getTime() / 1000);
+          $.cookie(cookie_name, value + ":" + timestamp, { path: '/' });
+          $(this).data('last', value);
+          console.log("SET COOKIE:", cookie_name, value + ":" + timestamp);
+        })
+      })
+    </script>
   </xsl:template>
 
   <xsl:template name="online_assessment">
