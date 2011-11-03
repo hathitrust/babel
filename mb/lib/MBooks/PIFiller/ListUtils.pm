@@ -69,11 +69,18 @@ sub get_owner_affiliation
 {
     my $C = shift;
     my $owner_string = shift;
+    my $owner_name = shift;
     
     my $owner_affiliation = '';
 
     my $config = $C->get_object('MdpConfig');
     my $temp_coll_owner_string = $config->get('temp_coll_owner_string');
+    
+    ## short cut --- if $owner_name is in the format member@somewhere.edu
+    ## use *that* to divine affiliation
+    if ( $owner_name =~ m,\@,i ) {
+        $owner_string = $owner_name;
+    }
     
     if (
         (length($owner_string) == 32)
@@ -94,11 +101,21 @@ sub get_owner_affiliation
         if ( $owner_string =~ m,@, ) {
            @parts = split('@', $owner_string);
            $owner_affiliation = $parts[-1];
-        } elsif ( $owner_string =~ m,urn:mace:incommon:, ) {
+        } elsif ( $owner_string =~ m,!, ) {
             @parts = split('!', $owner_string);
             $owner_affiliation = $parts[0];
-            $owner_affiliation =~ s,urn:mace:incommon:,,;
-        } elsif ( $owner_string =~ m,[a-z]+, ) {
+            if ( $owner_affiliation =~ m,urn:mace:incommin:, ) {
+                $owner_affiliation =~ s,urn:mace:incommon:,,;
+            } elsif ( $owner_affiliation =~ m,https:, ) {
+                # well, this is tedious
+                $owner_affiliation =~ s,^https://,,;
+                @parts = split('/', $owner_affiliation);
+                @parts = split('\.', $parts[0]);
+                if ( scalar @parts ) {
+                    $owner_affiliation = join('.', reverse(pop @parts, pop @parts));
+                }
+            }
+        } elsif ( $owner_string =~ m,[a-z]+, && $owner_string eq $owner_name ) {
             # uniqname, likely
             $owner_affiliation = 'umich.edu';
         }
