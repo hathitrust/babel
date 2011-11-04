@@ -60,10 +60,216 @@
     <div class="LsAdvancedPageContent">
       <div id="LS_main">
         <div class="betasearch">
-            <xsl:copy-of select="/MBooksTop/CustomXml"/>
-        </div>
-      </div>
-    </div>
+          <form id="itemlist_searchform" action="http://tburtonw-full.babel.hathitrust.org/cgi/ls" name="searchcoll" >
+            
+            <!--<input type="hidden" name="debug" value="local"/>-->
+            <input type="hidden" name="a" value="srchls"/>
+            
+            <h2>Advanced  Search:</h2>
+        
+            <table style="width: auto">
+              <!-- XXX need to change this so it will only add to existing debug values-->
+              Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
+              
+              <tr>
+                <td></td>
+                <td>
+                  <input type="hidden" name="a" value="srchls" />
+                </td>
+              </tr>
+              <!--XXX replace this with one call to generate N rows -->
+                <!-- need to call these with a count param-->
+                <xsl:for-each  select="AdvancedSearch/rows/row">
+                  <tr>
+                    <xsl:call-template name="queryRow">
+                      <xsl:with-param name="rowNum" select="position()"/>
+                    </xsl:call-template>
+                  </tr>
+                </xsl:for-each>
+             
+                
+              </table>
+              <br/>
+            <h3>Limit To:</h3>
+            <input type="checkbox" value="ft" name="lmt" id="fullonly"/>
+            <label for="fullonly">Full view only</label>        
+            
+            
+            <span style="margin-left: 4em">
+              
+              <span style="margin-right: 1em;">Year of publication:
+              (not working)</span> 
+              
+              <!--
+                   <select id="yop" name="yop" onchange="changeRange('yop')">
+                     <option value="before">Before or during</option>
+                     <option value="after" selected="selected" >During or after</option>
+                     <option value="between">Between</option>
+                     <option value="in">Only during</option>
+                   </select>
+                   
+                   
+                   <input class="yop" id="yop-start" type="text" size="4"
+                     name="fqrange-start-publishDateTrie-1" />
+                   <span class="yop" id="yop-between" > and </span>
+                   <input class="yop"  id="yop-end" type="text" size="4" name="fqrange-end-publishDateTrie-1"/>
+                   <input class="yop" id="yop-in" type="text" size="4" name="fqor-publishDateTrie[]"/>
+                   -->
+                 </span>
+
+                 
+                 <table style="width: auto">
+                   <tr>
+                     <th>Language: </th>
+                     <th>Original Format: </th>
+                   </tr>
+                   <tr>
+                     <td>
+                       <xsl:copy-of select="LanguageChunk"/>
+                     </td>
+                     <td>
+                       <xsl:copy-of select="FormatChunk"/>
+                     </td>
+                   </tr>
+                 </table>
+                 <button type="submit" name="a" id="srch" value="srchls">Find</button>
+               </form>
+             </div>
+           </div>
+         </div>
+     </xsl:template>
+
+
+
+     <xsl:template name="queryRow">
+       <xsl:param name="rowNum"/>
+       <xsl:variable name="opNum">
+         <xsl:text>op</xsl:text><xsl:value-of select="$rowNum"/>
+       </xsl:variable>
+       <xsl:variable name="fieldNum">
+         <xsl:text>field</xsl:text><xsl:value-of select="$rowNum"/>
+       </xsl:variable>
+       <xsl:variable name="qNum">
+         <xsl:text>q</xsl:text><xsl:value-of select="$rowNum"/>
+       </xsl:variable>
+
+       <!-- fix to read the row/op entry instead -->       
+       <xsl:if test="$rowNum=1">
+         <td></td>
+       </xsl:if>
+       <xsl:if test="$rowNum!=1">
+         <td>
+           <select>
+             <xsl:attribute name="name" >
+               <xsl:value-of select="$opNum"/>
+             </xsl:attribute>
+             <xsl:variable name="op">
+               <xsl:value-of select="op"/>
+             </xsl:variable>
+
+             <option value="AND" >         
+             <xsl:if test="$op  = 'AND'">
+               <xsl:attribute name="selected"/>
+             </xsl:if>             
+             <xsl:text>AND</xsl:text>
+             </option>
+             
+             <option value="OR" >         
+             <xsl:if test="$op  = 'OR'">
+               <xsl:attribute name="selected"></xsl:attribute>
+             </xsl:if>             
+             <xsl:text>OR</xsl:text>
+             </option>
+
+             <!-- <option value="NOT" >NOT</option> -->
+           </select>
+         </td>
+       </xsl:if>
+       
+       <td>
+         
+
+         <xsl:for-each  select="/MBooksTop/AdvancedSearch/fieldlist">
+             <xsl:call-template name="BuildHtmlSelectCustom">
+               <xsl:with-param name="id">
+                 <xsl:value-of select="$fieldNum"/>
+               </xsl:with-param>
+               <xsl:with-param name="class" select="'fieldWidget'"/>
+               <!--  <xsl:with-param name="selected" select="AdvancedSearch/rows/row[$rownum]/field"/>-->
+               <xsl:with-param name="selected">
+                 <xsl:value-of select="/MBooksTop/AdvancedSearch/rows/row[$rowNum]/field"/>
+               </xsl:with-param>
+               <xsl:with-param name="name">
+                 <xsl:value-of select="$fieldNum"/>
+               </xsl:with-param>
+             </xsl:call-template>
+           </xsl:for-each>
+       
+            </td>
+       <td>
+         <input type="text"  size="50" >
+           <xsl:attribute name="name">
+             <xsl:value-of select="$qNum"/>
+           </xsl:attribute>
+           <xsl:attribute name="value">
+             <xsl:value-of select="q"/>             
+           </xsl:attribute>
+
+         </input>
+       </td>
+       
+     </xsl:template>
+
+     <!--XXX######################################################################-->
+     <!-- Overide xsl2htmlutils.xsl because we want to specify selected option as a parameter rather than in the xml
+          Talk with phil about whether this should go in the utils-->
+          <!--XXX######################################################################-->
+  <xsl:template name="BuildHtmlSelectCustom">
+    <xsl:param name="id"/>
+    <xsl:param name="class"/>
+    <xsl:param name="name"/>
+    <xsl:param name="selected"/>
+    <xsl:param name="key"/>
+    <!-- create main "select" element -->
+    <xsl:element name="select">
+      <xsl:attribute name="name">
+        <xsl:value-of select="$name"/>
+      </xsl:attribute>
+
+      <xsl:if test="$id">
+        <xsl:attribute name="id">
+          <xsl:value-of select="$id"/>
+        </xsl:attribute>
+      </xsl:if>
+
+      <xsl:if test="$class">
+        <xsl:attribute name="class">
+          <xsl:value-of select="$class"/>
+        </xsl:attribute>
+      </xsl:if>
+
+      <!-- onchange attribute -->
+      <xsl:if test="$key">
+        <xsl:attribute name="onchange">
+          <xsl:value-of select="$key"/>
+        </xsl:attribute>
+      </xsl:if>
+
+      <xsl:for-each select="Option">
+        <!-- create "option" element -->
+                 
+        <xsl:element name="option">
+        <xsl:attribute name="value">
+           <xsl:value-of select="Value"/>
+        </xsl:attribute>
+          <xsl:if test="Value = $selected">
+            <xsl:attribute name="selected"/>
+          </xsl:if>
+          <xsl:value-of select="Label"/>
+        </xsl:element>
+
+      </xsl:for-each>
+    </xsl:element>
   </xsl:template>
 
 </xsl:stylesheet>

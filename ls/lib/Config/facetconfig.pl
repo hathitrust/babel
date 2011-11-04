@@ -2,15 +2,13 @@
 #$Id$#
 #facetconfig.pl
 #
-# perl data structures needed for faceting
+# perl data structures needed for faceting and advanced search
 use YAML::XS;
 
 
 my $rel_weights_file = $ENV{SDRROOT} . '/ls/lib/Config/dismax.yaml';
 $facet_limit=30;
 $facet_initial_show=5;
-
-
 
 
 $facet_to_label_map =
@@ -104,6 +102,49 @@ $param_2_solr_map = {
                             'year'=>'year',
                             'isn'=>'isn',
                           };
+#----------------------------------------------------------------------
+#
+#Advanced Search config
+#
+#----------------------------------------------------------------------
+
+$field_2_display={
+                  'author'=>'Author',
+                  'title'=>'Title',
+                  'subject'=>'Subject', 
+                  'hlb3'=>'Academic Discipline',
+                  'ocronly'=>'Just Full Text',
+                  'ocr'=>'Everything',
+                  'ocr2'=>'ocr2',
+                  'ocrpf'=>'ocrpf',
+                  'all'=>'All Metadata',
+                  'callnumber'=>'Callnumber',
+                  'publisher'=>'Publisher',
+                  'series'=>'Series Title',
+                  'year'=>'Year of Publication',
+                  'isn'=>'ISBN/ISSN',
+                 };
+
+$field_order=['ocronly',
+              'ocr',
+              'title',
+              'author',
+              'subject',
+              'hlb3',
+              'publisher',
+              'series',
+              'year',
+              'isn',
+             ];
+
+$op_order=['AND','OR'];
+
+# default field for each row starting with fisrt row
+$default_fields = ['ocronly',
+                 'title',
+                 'author',
+                 'subject',
+                 ];
 
 
 #----------------------------------------------------------------------

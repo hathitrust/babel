@@ -16,10 +16,18 @@
     <Filename>common.xsl</Filename>
     <Filename>advanced.xsl</Filename>
     <Filename>xsl2htmlutils.xsl</Filename>
+
+
    </XslFileList>
 
+<AdvancedSearch><?ADVANCED_SEARCH?></AdvancedSearch>
   <!-- Custom OPTIONAL XML for top-level file -->
-  <CustomXml><?CHUNK filename="advanced_extra.xml" optional="0"?></CustomXml>
+
+
+
+<LanguageChunk><?CHUNK filename="languageChunk.xml"?></LanguageChunk>
+<FormatChunk><?CHUNK filename="formatChunk.xml"?> </FormatChunk>
+
 
   <?CHUNK filename="mbooks_globals.xml"?>
   

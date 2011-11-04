@@ -40,6 +40,99 @@ BEGIN
 #
 #======================================================================
 
+# ---------------------------------------------------------------------
+sub handle_ADVANCED_SEARCH_PI
+    : PI_handler(ADVANCED_SEARCH)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi =             $C->get_object('CGI');
+    my $fconfig =         $C->get_object('FacetConfig');
+    my $default_fields =  $fconfig->{default_fields};
+    my $field_order =     $fconfig->{field_order};
+    my $field_hash =      $fconfig->{field_2_display};
+    
+    my $op;
+    my $q;
+    my $field;
+    my $qParams="";
+    my $xml;
+    
+    # do we want to allow more fields than the number specified in the defaults?
+    my $MAXFIELDS  = scalar(@{$default_fields});
+
+    # Generate one row without saying what is selected or do we want to use an html util routine?
+    my $field_list;
+    foreach my $fieldname (@{$field_order})
+    {
+        my $pair .= wrap_string_in_tag($fieldname,'Value') . "\n";         
+        $pair .= wrap_string_in_tag($field_hash->{$fieldname},'Label') . "\n";
+        $field_list .=wrap_string_in_tag($pair,'Option') . "\n";         
+    }
+    $xml .=wrap_string_in_tag($field_list,'fieldlist') . "\n";
+
+
+
+    # this sets the default selected value for each op or field or if there is an existing query inserts the 
+    # existing values
+    my $rows;
+    
+    for my $i (1..$MAXFIELDS)
+    {
+        my $row = getRow($i,$cgi,$fconfig);
+        $rows .= wrap_string_in_tag($row,'row') . "\n";         
+    }
+    $xml.=wrap_string_in_tag($rows,'rows') . "\n";         
+    # read any search parameters
+    # might want to read some kind of config here
+    return $xml;
+    
+    
+}
+#----------------------------------------------------------------------
+# helpers
+
+sub getRow
+{
+    # get defaults
+    # replace default with cgi param if there
+    
+    my $i =         shift;
+    my $cgi=        shift;
+    my $fconfig =   shift;
+    my $row;
+
+    my $opname =    'op' . $i;
+    my $fieldname = 'field'. $i;
+    my $qname=       'q' . $i;
+    # first value in array is the default
+
+    my $op=$fconfig->{op_order}->[0];
+    if (defined ($cgi->param($opname)))
+    {
+        $op= $cgi->param($opname);
+    }
+    $row .= wrap_string_in_tag($op,'op') . "\n";         
+
+    my $field = $fconfig->{default_fields}->[$i-1];
+    if (defined ($cgi->param($fieldname)))
+    {
+        $field= $cgi->param($fieldname);
+    }
+    $row .= wrap_string_in_tag($field,'field') . "\n";         
+
+ 
+    my $q ="";
+    if (defined ($cgi->param($qname)))
+    {
+        $q = $cgi->param($qname);
+    }
+    $row .= wrap_string_in_tag($q,'q') . "\n";         
+    return $row;
+}
+
+
+
 1;
 
 
@@ -47,7 +140,7 @@ __END__
 
 =head1 AUTHOR
 
-Phillip Farber, University of Michigan, pfarber@umich.edu
+Tom Burton-West, University of Michigan, tburtonw@umich.edu
 
 =head1 COPYRIGHT
 
