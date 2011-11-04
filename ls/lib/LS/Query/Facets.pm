@@ -256,39 +256,8 @@ sub get_Solr_query_string
     }
 
     my $START_ROWS = qq{&start=$solr_start&rows=$solr_rows};
-
-    my $query_type=$self->get_query_type($C);
+    my $FQ = $self->__get_full_or_limited_filter_query($C);
     
-    # filter query (fq) for Full text or search only
-    my $FQ = '';
-    my $RIGHTS;
-    my $attr_list_aryref;    
-
-    if ( $query_type ne 'all') {
-        if ( $query_type eq 'search_only') 
-        {
-            eval 
-            {
-                $attr_list_aryref = Access::Rights::get_no_fulltext_attr_list($C);
-            };
-            
-        }
-        elsif ( $query_type eq 'full_text') 
-        {
-            eval 
-            {
-                $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
-            };
-        }
-        else
-        {
-            ASSERT(0,qq{LS::Query::Facets::get_solr_query_string: wrong query type $query_type});
-        }
-        
-        $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
-        
-        $FQ = '&fq=' . $RIGHTS;
-    }
 
 # Facet aspects of query added here
 #
@@ -345,6 +314,55 @@ sub get_Solr_query_string
     $self->cache_Solr_query_string($solr_query_string);
 
     return $solr_query_string;
+}
+
+#----------------------------------------------------------------------
+#
+#  __get_full_or_limited_filter_query
+#
+#      filter query (fq) for Full text or search only
+# ---------------------------------------------------------------------
+sub __get_full_or_limited_filter_query
+{
+
+    my $self = shift;
+    my $C    = shift;
+    
+    my $query_type=$self->get_query_type($C);
+        
+    my $FQ = '';
+    my $RIGHTS;
+    my $attr_list_aryref;    
+
+    if ( $query_type ne 'all') {
+        if ( $query_type eq 'search_only') 
+        {
+            eval 
+            {
+                $attr_list_aryref = Access::Rights::get_no_fulltext_attr_list($C);
+            };
+            
+        }
+        elsif ( $query_type eq 'full_text') 
+        {
+            eval 
+            {
+                $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
+            };
+        }
+        else
+        {
+            ASSERT(0,qq{LS::Query::Facets::get_solr_query_string: wrong query type $query_type});
+        }
+        
+        $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
+        
+        $FQ = '&fq=' . $RIGHTS;
+    }
+   
+    
+    return $FQ;
+
 }
 
 # ---------------------------------------------------------------------
