@@ -168,6 +168,7 @@ HT.monitor = {
     
     if ( timeout <= 5 ) {
         // just punt and wait it out
+        console.log("PUNTING AND WAITING IT OUT...");
         setTimeout(function() {
           self.retry_choked();
         }, 5000);
@@ -180,6 +181,7 @@ HT.monitor = {
     
     if ( countdown < 0 ) {
       // we had been throttled but now are okay...
+      console.log("CHOKE ALREDY DONE?...", countdown);
       setTimeout(function() {
         self.retry_choked();
       }, 100);
