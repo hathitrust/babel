@@ -906,7 +906,7 @@ if ( fudgingMonkeyPatch ) {
               // this is so lame
               if ( natural_height == HT.config.CHOKE_DIM && natural_width == HT.config.CHOKE_DIM ) {
                 // start the choke timer
-                console.log("TREAT THIS AS AN ERROR:", this);
+                console.log("TREAT THIS AS AN ERROR (2UP):", this);
                 // but show this image
                 $(e).addClass("choked");
                 e.choked = true;

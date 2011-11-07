@@ -109,7 +109,10 @@ HT.monitor = {
     
     self.check_url = url;
     
-    self.check_status();
+    setTimeout(function() {
+      self.check_status();
+    }, 500);
+    
     
   },
   
@@ -118,7 +121,7 @@ HT.monitor = {
     
     $.ajax({
       url : self.check_url,
-      cache : false,
+      cache : true,
       success : function(data) {
         // NOOP; should not be choked
         console.log("TURNING EVERYTHING OFF", self.check_url);
@@ -126,7 +129,7 @@ HT.monitor = {
         self.retry_choked();
       },
       error : function(req, textStatus, errorThrown) {
-        console.log("CHECKED STATUS", self.check_url, req.status);
+        console.log("CHECKED STATUS", self.check_url, req);
         if ( req.status == 503 ) {
           self.display_warning(req);
           // self.setup_monitoring(req);
