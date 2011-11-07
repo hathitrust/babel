@@ -121,7 +121,7 @@ HT.monitor = {
       cache : false,
       success : function(data) {
         // NOOP; should not be choked
-        console.log("TURNING EVERYTHING OFF", self);
+        console.log("TURNING EVERYTHING OFF", self.check_url);
         self.hide_warning();
         self.retry_choked();
       },
