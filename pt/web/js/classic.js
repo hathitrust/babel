@@ -178,6 +178,13 @@ HT.monitor = {
     var now = (new Date).getTime();
     var countdown = ( Math.ceil((timeout - now) / 1000) )
     
+    if ( countdown < 0 ) {
+      // we had been throttled but now are okay...
+      setTimeout(function() {
+        self.retry_choked();
+      }, 100);
+    }
+    
     var html = 
       '<div>' + 
         '<p>You have temporarily exceeded download limits. You may proceed in <span id="throttle-timeout">' + countdown + '</span> seconds.</p>' + 
