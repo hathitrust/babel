@@ -121,7 +121,8 @@ HT.monitor = {
     
     $.ajax({
       url : self.check_url,
-      cache : true,
+      cache : false,
+      data : {},
       success : function(data) {
         // NOOP; should not be choked
         console.log("TURNING EVERYTHING OFF", self.check_url);
