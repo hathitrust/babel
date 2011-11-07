@@ -820,6 +820,8 @@ HT.monitor = {
     var now = (new Date).getTime();
     var countdown = ( Math.ceil((timeout - now) / 1000) )
     
+    console.log("CHOKING:", timeout, now, countdown);
+    
     if ( countdown < 0 ) {
       // we had been throttled but now are okay...
       console.log("CHOKE ALREDY DONE?...", countdown);
@@ -853,7 +855,7 @@ HT.monitor = {
           self.countdown_timer = setInterval(function() {
             countdown -= 1;
             $(r).find("#throttle-timeout").text(countdown);
-            if ( countdown == 0 ) {
+            if ( countdown <= 0 ) {
               clearInterval(self.countdown_timer);
             }
             console.log("TIC TOC", countdown);
