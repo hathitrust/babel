@@ -57,6 +57,25 @@ BEGIN {
     Debug::DUtils::setup_DebugScreen();
 }
 
+
+{
+    package App;
+    
+    sub new {
+        my $class = shift;
+
+        my $self = {};
+        bless $self, $class;
+        return $self;
+    }
+    
+    sub get_app_name {
+        my $self = shift;
+        return "ping";
+    }
+    
+}
+
 my $app = sub {
     my $env = shift;
     my $request = Plack::Request->new($env);
@@ -142,6 +161,7 @@ JAVASCRIPT
     }
     
     my $C = new Context;
+    $C->set_object('App', new App);
     my $auth = new Auth::Auth($C);
     
     my $callback = $request->param('callback') || qq{ping_handler};
