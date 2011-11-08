@@ -28,6 +28,24 @@ BEGIN {
     }
 }
 
+{
+    package App;
+    
+    sub new {
+        my $class = shift;
+
+        my $self = {};
+        bless $self, $class;
+        return $self;
+    }
+    
+    sub get_app_name {
+        my $self = shift;
+        return "ping";
+    }
+    
+}
+
 # Permit created directories at 777 and created files at 666.
 umask 0000;
 
@@ -63,6 +81,7 @@ my $app = sub {
     my $C = new Context;
 
     $C->set_object('MdpConfig', $config);
+    $C->set_object('App', new App);
 
     my $cgi = new CGI;
     $C->set_object('CGI', $cgi);
