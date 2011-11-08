@@ -156,6 +156,12 @@ HT.monitor = {
     
     if ( self.notice != null  ) {
       console.log("HIDING THE WARNING", self.notice);
+      
+      if ( self.countdown_timer != null ) {
+        clearTimeout(self.countdown_timer);
+        self.countdown_timer = null;
+      }
+      
       self.notice.hide();
       self.notice = null;
     }
@@ -180,8 +186,15 @@ HT.monitor = {
     }
 
     timeout *= 1000;
+    
     var now = (new Date).getTime();
     var countdown = ( Math.ceil((timeout - now) / 1000) )
+
+    if ( HT.reader.mode == 2 ) {
+      // two page mode
+      // pad!
+      countdown *= 5;
+    }
     
     console.log("CHOKING:", timeout, now, countdown);
     
@@ -211,6 +224,7 @@ HT.monitor = {
             // and restart the timer!
             // self.countdown_timer = setInterval(function() { self.recheck(); }, 500);
             console.log("COUNTDOWN IS OVER");
+            self.hide_warning();
             self.check_status();
             
           }, countdown * 1000 + 1000);

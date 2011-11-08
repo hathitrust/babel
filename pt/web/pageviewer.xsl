@@ -491,7 +491,7 @@
           }
         })
         HT.disable_updates = null;
-        $(".choke-input").spinner({ min: -10, max : 10 , step : "1.00" });
+        $(".choke-input").spinner({ min: -10, max : 100 , step : "1.00" });
         $(".choke-input").change(function() {
           if ( HT.disable_updates === true ) { return; }
           var cookie_name = $(this).attr('id').toUpperCase();

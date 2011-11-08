@@ -918,13 +918,18 @@ if ( fudgingMonkeyPatch ) {
               if ( self.hasPageFeature(index, "FUDGED") ) {
                 var slice = self.sliceFromIndex(index);
                 var old_height = self.getPageHeight(index);
+                var old_width = self.getPageWidth(index);
                 var true_height = natural_height * reduce;
                 var true_width = natural_width * reduce;
+                var delta = { height : natural_height * 0.25 , width : natural_width * 0.25 };
                 self.bookData[slice.slice]['height'][slice.index] = true_height;
                 self.bookData[slice.slice]['width'][slice.index] = true_width;
                 self.removePageFeature(index, 'FUDGED');
                 // console.log("FUDGED TRUE HEIGHT", index, self.reduce, old_height, true_height);
-                fudged = true;
+                if ( Math.abs(old_width - true_width) > delta.width || Math.abs(old_height - true_height) > delta.width ) {
+                  // only fudge if we're really going to notice it...
+                  fudged = true;
+                }
               }
               
               if ( fudged ) {
