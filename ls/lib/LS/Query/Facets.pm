@@ -225,9 +225,10 @@ sub get_Solr_query_string
     my $C = shift;
     
     # Cache to avoid repeated MySQL calls in Access::Rights
-    if ($self->get_cached_Solr_query_string()) {
-        return $self->get_cached_Solr_query_string();
-    }
+#XXX tbw commented this out for testing 
+#    if ($self->get_cached_Solr_query_string()) {
+#        return $self->get_cached_Solr_query_string();
+#    }
     
     my $cgi = $C->get_object('CGI');
    
@@ -331,12 +332,14 @@ sub __get_full_or_limited_filter_query
     my $query_type=$self->get_query_type($C);
         
     my $FQ = '';
+    my $RQuery;
     my $RIGHTS;
     my $attr_list_aryref;    
 
     if ( $query_type ne 'all') {
         if ( $query_type eq 'search_only') 
         {
+            $RQuery = $self->get_Solr_no_fulltext_filter_query($C);
             eval 
             {
                 $attr_list_aryref = Access::Rights::get_no_fulltext_attr_list($C);
@@ -345,6 +348,7 @@ sub __get_full_or_limited_filter_query
         }
         elsif ( $query_type eq 'full_text') 
         {
+            $RQuery = $self->get_Solr_fulltext_filter_query($C);
             eval 
             {
                 $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
@@ -356,10 +360,30 @@ sub __get_full_or_limited_filter_query
         }
         
         $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
-        
+        #old
         $FQ = '&fq=' . $RIGHTS;
+#        #new
+        $FQ = '&' . $RQuery;
+#        # debug hack
+#        # pretend rights=3 opb is really orphan rights attribute (i.e. 4)
+#        if (DEBUG('orphans'))
+#        {
+#            $FQ=~s/rights:4/rights:3/g;
+#        }        
+
     }
    
+
+    DEBUG('rights',
+          sub
+          {  
+              my $rq = qq{Solr rights query="$query_type = $FQ"};
+              Utils::map_chars_to_cers(\$rq) if Debug::DUtils::under_server();
+              return $rq;
+              
+          });
+
+
     
     return $FQ;
 
