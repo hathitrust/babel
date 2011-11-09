@@ -237,7 +237,7 @@
     </script>
     <script type="text/javascript" src="/pt/mobile/bookreader_startup.js?ts={generate-id(.)}">;</script>
     <script type="text/javascript">
-        HT.monitor.run();
+        // HT.monitor.run();
     </script>
   </xsl:template>
 
