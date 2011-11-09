@@ -2905,7 +2905,14 @@ BookReader.prototype.setMouseHandlers2UP = function() {
 // prefetchImg()
 //______________________________________________________________________________
 BookReader.prototype.prefetchImg = function(index) {
+    var self = this;
     var pageURI = this._getPageURI(index);
+
+    if ( this.twoPage.queue_halted ) {
+      // console.log("PREFETCHIMG HALTED; SKIPPING", index);
+      this.twoPage.queue.push(index);
+      return;
+    }
 
     // Load image if not loaded or URI has changed (e.g. due to scaling)
     var loadImage = false;
@@ -2934,6 +2941,7 @@ BookReader.prototype.prefetchImg = function(index) {
               HT.monitor.run(this.src);
             }
             img.src = this.src;
+            self.processPrefetchQueue();
           })
           .attr('src', pageURI);
         }
@@ -2944,6 +2952,12 @@ BookReader.prototype.prefetchImg = function(index) {
         $(img).attr({ title : title, alt : title });
         this.prefetchedImgs[index] = img;
     }
+    
+    if ( $(this.prefetchedImgs[index]).hasClass("choked") ) {
+      this.prefetchedImgs[index].src = this.imagesBaseURL + 'transparent.png';
+      this.prefetchedImgs[index].src = pageURI;
+    }
+    
 }
 
 
@@ -3098,6 +3112,54 @@ BookReader.prototype.pruneUnusedImgs = function() {
     }
 }
 
+BookReader.prototype.queuePrefetchImg = function(index) {
+  var self = this;
+  
+  if ( this.twoPage.queue === undefined ) {
+    this.twoPage.queue = [];
+  }
+  this.twoPage.queue.push(index);
+  
+  // if ( this.twoPage.queueTimer === undefined ) {
+  //   this.twoPage.queueTimer = setInterval(function() {
+  //     self.processPrefetchQueue();
+  //   }, 500);
+  // }
+}
+
+BookReader.prototype.processPrefetchQueue = function() {
+  if ( this.twoPage.queue === undefined ) {
+    return;
+  }
+  if ( this.twoPage.queue.length == 0 ) {
+    return;
+  }
+  if ( this.twoPage.queue_halted ) {
+    // just in case we're halted?
+    console.log("PREFETCH IS HALTED!!");
+    return;
+  }
+  
+  var n = $(".prefetch2up").length;
+  if ( n >= 2 ) {
+    // don't fetch too many at once!
+    console.log("TOO MANY BEING FETCHED: ", n);
+    return;
+  }
+  
+  var index = this.twoPage.queue.pop();
+  console.log("PREFETCHING:", index, n);
+  this.prefetchImg(index);
+}
+
+BookReader.prototype.suspendQueue = function() {
+  this.twoPage.queue_halted = true;
+}
+
+BookReader.prototype.resumeQueue = function() {
+  this.twoPage.queue_halted = false;
+}
+
 // prefetch()
 //______________________________________________________________________________
 BookReader.prototype.prefetch = function() {
@@ -3122,13 +3184,17 @@ BookReader.prototype.prefetch = function() {
     for (var i = 1; i <= adjacentPagesToLoad; i++) {
         var goingDown = lowCurrent - i;
         if (goingDown >= start) {
-            this.prefetchImg(goingDown);
+            //this.prefetchImg(goingDown);
+            this.queuePrefetchImg(goingDown);
         }
         var goingUp = highCurrent + i;
         if (goingUp <= end) {
-            this.prefetchImg(goingUp);
+            //this.prefetchImg(goingUp);
+            this.queuePrefetchImg(goingUp);
         }
     }
+    
+    this.processPrefetchQueue();
 
     /*
     var lim = this.twoPage.currentIndexL-4;
@@ -4457,7 +4523,6 @@ HTBookReader.prototype.hasPageFeature = function(index, feature) {
     if ( this.bookData[slice.slice] != undefined ) {
         var features = this.bookData[slice.slice]['features'][slice.index];
         if ( features == undefined ) {
-          console.log("MISSING FEATURE", slice, index, feature);
           return ( feature == "MISSING_PAGE" );
         }
         return ( features.indexOf(feature) >= 0 );
@@ -4470,7 +4535,6 @@ HTBookReader.prototype.removePageFeature = function(index, feature) {
     if ( this.bookData[slice.slice] != undefined ) {
         var features = this.bookData[slice.slice]['features'][slice.index];
         if ( features == undefined ) {
-          console.log("MISSING FEATURE", slice, index, feature);
           return ( feature == "MISSING_PAGE" );
         }
         var feature_idx = features.indexOf(feature);
@@ -4630,10 +4694,6 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
         page_uri += ';attr=' + this.flags.attr;
     }
     
-    if ( HT.total_choke_hack ) {
-      page_uri += ";ping=recheck";
-    }
-    
     return page_uri
 }
 
@@ -4752,7 +4812,6 @@ HTBookReader.prototype.uniquifyPageNums = function() {
  
 HTBookReader.prototype.cleanupMetadata = function() {
     if ( this.numLeafs > this.total_items ) {
-      console.log("RESIZING LEAFS", this.numLeafs, this.total_items);
       this.numLeafs = this.total_items;
     }
     this.uniquifyPageNums();
@@ -4809,7 +4868,6 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
     }
     
     if ( this.bookData[slice_index] != null ) {
-      console.log("REPEAT INSTALLATION??", slice_index);
       return;
     }
     

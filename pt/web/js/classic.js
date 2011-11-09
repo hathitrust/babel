@@ -101,10 +101,12 @@ HT.monitor = {
     }
     
     // find out how long we have to wait
-    if ( url.indexOf(";") > -1 ) {
-      url += ";ping=status";
-    } else {
-      url += "&ping=status";
+    if ( url.indexOf("ping=") < 0 ) {
+      if ( url.indexOf(";") > -1 ) {
+        url += ";ping=status";
+      } else {
+        url += "&ping=status";
+      }
     }
     
     self.check_url = url;
@@ -132,6 +134,7 @@ HT.monitor = {
       error : function(req, textStatus, errorThrown) {
         console.log("CHECKED STATUS", self.check_url, req);
         if ( req.status == 503 ) {
+          HT.reader.suspendQueue();
           self.display_warning(req);
           // self.setup_monitoring(req);
         } else {
@@ -146,6 +149,7 @@ HT.monitor = {
     
     // just reload the page so normal fudging behavior is possible
     HT.total_choke_hack = true;
+    HT.reader.resumeQueue();
     HT.reader.drawLeafs();
     this.check_url = null;
     this.countdown_timer = null;
@@ -190,11 +194,11 @@ HT.monitor = {
     var now = (new Date).getTime();
     var countdown = ( Math.ceil((timeout - now) / 1000) )
 
-    if ( HT.reader.mode == 2 ) {
-      // two page mode
-      // pad!
-      countdown *= 5;
-    }
+    // if ( HT.reader.mode == 2 ) {
+    //   // two page mode
+    //   // pad!
+    //   countdown *= 2;
+    // }
     
     console.log("CHOKING:", timeout, now, countdown);
     
@@ -235,7 +239,7 @@ HT.monitor = {
             if ( countdown <= 0 ) {
               clearInterval(self.countdown_timer);
             }
-            console.log("TIC TOC", countdown);
+            // console.log("TIC TOC", countdown);
           }, 1000);
           
         }

@@ -26,6 +26,7 @@ if ( navigator.appVersion.indexOf("MSIE 7.") == -1 && navigator.appVersion.index
   fudgingMonkeyPatch = true;
 }
 
+// fudgingMonkeyPatch = false;
 if ( fudgingMonkeyPatch ) {
 
   HTBookReader.prototype.resizePageView1up = function() {
@@ -47,8 +48,6 @@ if ( fudgingMonkeyPatch ) {
       } else {
           var scrollRatio = 0;
       }
-
-      console.log("INITIAL REDUCE", this.reduce);
 
       // Recalculate 1up reduction factors
       this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'),
@@ -844,6 +843,13 @@ if ( fudgingMonkeyPatch ) {
   //______________________________________________________________________________
   HTBookReader.prototype.prefetchImg = function(index) {
       var self = this;
+      
+      if ( this.twoPage.queue_halted ) {
+        // console.log("PREFETCHIMG HALTED; SKIPPING", index);
+        this.twoPage.queue.push(index);
+        return;
+      }
+      
       var pageURI = this._getPageURI(index);
 
       // track this?
@@ -867,15 +873,19 @@ if ( fudgingMonkeyPatch ) {
 
       // Load image if not loaded or URI has changed (e.g. due to scaling)
       var loadImage = false;
+      var chokedImage = false;
       if (undefined == this.prefetchedImgs[index]) {
           // console.log('no image for ' + index);
           loadImage = true;
-      } else if (pageURI != this.prefetchedImgs[index].uri || this.prefetchedImgs[index].choked ) {
+      } else if (pageURI != this.prefetchedImgs[index].uri ) {
           // console.log('uri changed for ' + index, pageURI, this.prefetchedImgs[index].uri);
           loadImage = true;
+      } else if ( this.prefetchedImgs[index].choked ) {
+          // console.log('image is choked for ' + index);
+          chokedImage = true;
       }
 
-      if (loadImage) {
+      if (loadImage || chokedImage) {
           //console.log('prefetching ' + index);
           var img = $("#pagediv" + index).get(0);
           if ( img === undefined ) {
@@ -894,7 +904,14 @@ if ( fudgingMonkeyPatch ) {
             lazy.index = index;
             lazy.reduce = reduce;
             
-            $(lazy).one('load', function() {
+            var suffix = "";
+            // if ( chokedImage ) {
+            //   suffix += ";_=" + ( new Date ).getTime();
+            // }
+            
+            $(lazy).one('error', function() {
+                console.log("WHAT? ACTUAL 503 ERROR?", arguments);
+              }).one('load', function() {
               var index = this.index;
               var e = this.e;
               var reduce = this.reduce || self.reduce;
@@ -906,14 +923,17 @@ if ( fudgingMonkeyPatch ) {
               // this is so lame
               if ( natural_height == HT.config.CHOKE_DIM && natural_width == HT.config.CHOKE_DIM ) {
                 // start the choke timer
-                console.log("TREAT THIS AS AN ERROR (2UP):", this);
+                // console.log("TREAT THIS AS AN ERROR (2UP):", this);
                 // but show this image
                 $(e).addClass("choked");
                 e.choked = true;
                 e.src = this.src;
+                self.suspendQueue();
                 HT.monitor.run(this.src);
                 return;
               }
+              
+              // console.log("LOADING", index, natural_height, natural_width);
 
               if ( self.hasPageFeature(index, "FUDGED") ) {
                 var slice = self.sliceFromIndex(index);
@@ -937,30 +957,25 @@ if ( fudgingMonkeyPatch ) {
               }
               
               e.src = this.src; // updates the img in the prefetch
+              $(e).removeClass("prefetch2up");
               
-              // if ( fudged ) {
-              //   console.log("FUDGING", index);
-              //   self.fudge2up(index, this);
-              // } else {
-              //   // should really animate to the new dimensions...
-              //   e.src = this.src;
-              // }
-
+              self.processPrefetchQueue();
+              
               this.e = null;
-            }).attr('src', pageURI);
+            }).attr('src', pageURI + suffix);
           }
           // UM
           var title = "image of page " + this.getPageNum(index);
           img.uri = pageURI;
           img.src = this.imagesBaseURL + 'transparent.png'; // pageURI; // browser may rewrite src so we stash raw URI here
-          $(img).attr({ title : title, alt : title });
+          $(img).attr({ title : title, alt : title }).addClass('prefetch2up');
           this.prefetchedImgs[index] = img;
-      } else if ( index > -1 ) {
-        var $pagediv = $("#pagediv" + index);
-        if ( $pagediv.length &&  $pagediv.attr('src').indexOf("transparent.png") > -1 ) {
-          $pagediv.attr('src', pageURI);
-        }
-        // console.log("NOT LOADING IMAGE", index, $pagediv.attr('src'), pageURI);
+      // } else if ( index > -1 ) {
+      //   var $pagediv = $("#pagediv" + index);
+      //   if ( $pagediv.length &&  $pagediv.attr('src').indexOf("transparent.png") > -1 ) {
+      //     $pagediv.attr('src', pageURI);
+      //   }
+      //   console.log("NOT LOADING IMAGE", index, $pagediv.attr('src'), pageURI, chokedImage);
       }
   }
 

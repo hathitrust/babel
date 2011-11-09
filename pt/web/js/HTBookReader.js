@@ -37,7 +37,6 @@ HTBookReader.prototype.hasPageFeature = function(index, feature) {
     if ( this.bookData[slice.slice] != undefined ) {
         var features = this.bookData[slice.slice]['features'][slice.index];
         if ( features == undefined ) {
-          console.log("MISSING FEATURE", slice, index, feature);
           return ( feature == "MISSING_PAGE" );
         }
         return ( features.indexOf(feature) >= 0 );
@@ -50,7 +49,6 @@ HTBookReader.prototype.removePageFeature = function(index, feature) {
     if ( this.bookData[slice.slice] != undefined ) {
         var features = this.bookData[slice.slice]['features'][slice.index];
         if ( features == undefined ) {
-          console.log("MISSING FEATURE", slice, index, feature);
           return ( feature == "MISSING_PAGE" );
         }
         var feature_idx = features.indexOf(feature);
@@ -210,10 +208,6 @@ HTBookReader.prototype.getPageURI = function(index, reduce, rotate) {
         page_uri += ';attr=' + this.flags.attr;
     }
     
-    if ( HT.total_choke_hack ) {
-      page_uri += ";ping=recheck";
-    }
-    
     return page_uri
 }
 
@@ -332,7 +326,6 @@ HTBookReader.prototype.uniquifyPageNums = function() {
  
 HTBookReader.prototype.cleanupMetadata = function() {
     if ( this.numLeafs > this.total_items ) {
-      console.log("RESIZING LEAFS", this.numLeafs, this.total_items);
       this.numLeafs = this.total_items;
     }
     this.uniquifyPageNums();
@@ -389,7 +382,6 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
     }
     
     if ( this.bookData[slice_index] != null ) {
-      console.log("REPEAT INSTALLATION??", slice_index);
       return;
     }
     
