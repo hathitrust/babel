@@ -956,6 +956,12 @@ if ( fudgingMonkeyPatch ) {
                 self.fudge2up(index);
               }
               
+              if ( e.src == this.src ) {
+                // was a choked image...
+                console.log("RESETTING IMAGE TO TRANSPARENT");
+                e.src = self.imagesBaseURL + 'transparent.png';
+              }
+              
               e.src = this.src; // updates the img in the prefetch
               $(e).removeClass("prefetch2up");
               
@@ -970,12 +976,12 @@ if ( fudgingMonkeyPatch ) {
           img.src = this.imagesBaseURL + 'transparent.png'; // pageURI; // browser may rewrite src so we stash raw URI here
           $(img).attr({ title : title, alt : title }).addClass('prefetch2up');
           this.prefetchedImgs[index] = img;
-      // } else if ( index > -1 ) {
-      //   var $pagediv = $("#pagediv" + index);
-      //   if ( $pagediv.length &&  $pagediv.attr('src').indexOf("transparent.png") > -1 ) {
-      //     $pagediv.attr('src', pageURI);
-      //   }
-      //   console.log("NOT LOADING IMAGE", index, $pagediv.attr('src'), pageURI, chokedImage);
+      } else if ( index > -1 ) {
+        var $pagediv = $("#pagediv" + index);
+        if ( $pagediv.length &&  $pagediv.attr('src').indexOf("transparent.png") > -1 ) {
+          $pagediv.attr('src', pageURI);
+        }
+        console.log("NOT LOADING IMAGE", index, $pagediv.attr('src'), pageURI, chokedImage);
       }
   }
 
