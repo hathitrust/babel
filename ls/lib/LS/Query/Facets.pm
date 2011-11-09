@@ -356,13 +356,19 @@ sub __get_full_or_limited_filter_query
         }
         
         $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
-        
-        $FQ = '&fq=' . $RIGHTS;
-    }
-   
-    
-    return $FQ;
 
+        $FQ = '&fq=' . $RIGHTS;
+
+    }
+    DEBUG('rights',
+          sub
+          {  
+              my $rq = qq{Solr rights query="$query_type = $FQ"};
+              Utils::map_chars_to_cers(\$rq) if Debug::DUtils::under_server();
+              return $rq;
+              
+          });
+    return $FQ;
 }
 
 # ---------------------------------------------------------------------
