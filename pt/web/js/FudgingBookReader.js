@@ -885,6 +885,9 @@ if ( fudgingMonkeyPatch ) {
           chokedImage = true;
       }
 
+// if ( chokedImage ) {
+//   alert("CHOKED: " + index);
+// }
       if (loadImage || chokedImage) {
           //console.log('prefetching ' + index);
           var img = $("#pagediv" + index).get(0);
@@ -905,9 +908,9 @@ if ( fudgingMonkeyPatch ) {
             lazy.reduce = reduce;
             
             var suffix = "";
-            // if ( chokedImage ) {
-            //   suffix += ";_=" + ( new Date ).getTime();
-            // }
+            if ( chokedImage ) {
+              suffix += ";_=" + ( new Date ).getTime();
+            }
             
             $(lazy).one('error', function() {
                 console.log("WHAT? ACTUAL 503 ERROR?", arguments);
@@ -956,7 +959,7 @@ if ( fudgingMonkeyPatch ) {
                 self.fudge2up(index);
               }
               
-              if ( e.src == this.src ) {
+              if ( e.choked === true ) {
                 // was a choked image...
                 console.log("RESETTING IMAGE TO TRANSPARENT");
                 e.src = self.imagesBaseURL + 'transparent.png';

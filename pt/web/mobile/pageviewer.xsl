@@ -236,6 +236,8 @@
         //console.log("pageview.xsl - checkpoint lazyDelay");
     </script>
     <script type="text/javascript" src="/pt/mobile/bookreader_startup.js?ts={generate-id(.)}">;</script>
+    <!-- <script src="http://localhost:8080/target/target-script-min.js#anonymous"></script> -->
+    
     <script type="text/javascript">
         // HT.monitor.run();
     </script>

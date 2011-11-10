@@ -14,6 +14,10 @@ HTMobileBookReader.prototype.twoPageTop = function() {
 
 // brk - subclassed to remove code adding extra height/width
 
+HTMobileBookReader.prototype.init = function() {
+  HTBookReader.prototype.init.call(this, function() { $(window).unbind("resize") });
+}
+
 HTMobileBookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
 	
     var ideal = {};
@@ -116,7 +120,8 @@ HTMobileBookReader.prototype.calculateSpreadSize = function() {
 
 HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
 	// Contents
-	$("#BookReader").append("<div id='BRtoolbar'>"
+	// #BookReader
+	$("body").append("<div id='BRtoolbar'>"
 			+ "<div class='header'>"
 			+ "<a class='htlogobutton' href='http://m.hathitrust.org'></a>"
        + "<a href='' id='toc' style='float: right'></a>"
@@ -255,7 +260,8 @@ HTMobileBookReader.prototype.initNavbar = function() {
 		author="<div>By " + $("#mdpAuthor").html() + "</div>";
 	}
     
-    $('#BookReader').append(
+    // #BookReader
+    $('body').append(
         '<div id="BRnav">'
             +     '<span>'
             +     "<button id='ocr'></button>"
@@ -936,19 +942,35 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
     $('.BRnavCntl').click(
         function(){
             if ($('#BRnavCntlBtm').hasClass('BRdn')) {
-            	$('#BRtoolbar').animate({top:-55});
-            	$('#BRnav').animate({bottom: '-' + $('#BRnav').css('height') });
-                $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
-                $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
-                $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
-                //$('.BRnavCntl').delay(1000).animate({opacity:.25},1000);
+            	// $('#BRtoolbar').animate({top:-55});
+              // $('#BRnav').animate({bottom: '-' + $('#BRnav').css('height') });
+              //                 $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+              //                 $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
+              //                 $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
+              //                 //$('.BRnavCntl').delay(1000).animate({opacity:.25},1000);
+
+$('#BRtoolbar').animate({top:-55});
+$("#BRnav").animate({bottom: '-' + $('#BRnav').css('height') }, function() {
+  $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+  $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
+  $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
+});
+
+
             } else {
                 $('#BRtoolbar').animate({top:0});
-                $('#BRnav').animate({bottom:0});
-                $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
-                $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
-                $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
+                // $('#BRnav').animate({bottom:0});
+                // $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                // $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
+                // $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
                 //$('.BRvavCntl').animate({opacity:1})
+
+                $('#BRnav').animate({bottom:0}, function() {
+                  $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                  $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
+                  $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
+                });
+
             };
         }
     );

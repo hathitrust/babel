@@ -128,6 +128,7 @@ HT.monitor = {
       success : function(data) {
         // NOOP; should not be choked
         console.log("TURNING EVERYTHING OFF", self.check_url);
+        // alert("EVERYTHING IS OKAY");
         self.hide_warning();
         self.retry_choked();
       },
@@ -150,6 +151,7 @@ HT.monitor = {
     // just reload the page so normal fudging behavior is possible
     HT.total_choke_hack = true;
     HT.reader.resumeQueue();
+    // alert("AM SUPPOSED TO BE DRAWING LEAFS");
     HT.reader.drawLeafs();
     this.check_url = null;
     this.countdown_timer = null;
@@ -183,6 +185,7 @@ HT.monitor = {
     if ( timeout <= 5 ) {
         // just punt and wait it out
         console.log("PUNTING AND WAITING IT OUT...");
+        // alert("PUNTING", timeout);
         setTimeout(function() {
           self.retry_choked();
         }, 5000);
@@ -205,6 +208,7 @@ HT.monitor = {
     if ( countdown < 0 ) {
       // we had been throttled but now are okay...
       console.log("CHOKE ALREDY DONE?...", countdown);
+      // alert("CHOKING DONE? " + countdown);
       setTimeout(function() {
         self.retry_choked();
       }, 100);

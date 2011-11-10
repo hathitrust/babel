@@ -4924,7 +4924,7 @@ HTBookReader.prototype.loadBookDataSlice = function(next_slice, callback) {
     }
 }
 
-HTBookReader.prototype.init = function() {
+HTBookReader.prototype.init = function(callback) {
     var self = this;
     var startIndex = undefined;
     var params = this.paramsFromFragment(window.location.hash);
@@ -4999,6 +4999,9 @@ HTBookReader.prototype.init = function() {
       BookReader.prototype.init.call(self);
       self.initializing = false;
       self.saveReduce();
+      if ( callback !== undefined ) {
+        callback();
+      }
     }, init_delay)
 
     // BookReader.prototype.init.call(this);
