@@ -641,6 +641,10 @@ if ( fudgingMonkeyPatch ) {
   HTBookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     if ( this.mode == this.constMode1up ) {
       var $div = $("#pagediv" + index);
+      if ( ! $div.length ) {
+        // no div, so punt
+        return;
+      }
       var top = $div.length ? $div.offset().top : 0;
       var $container = $("#BRcontainer");
       $container.animate({ scrollTop : ($container.scrollTop() + top - $container.offset().top ) }, "fast");
