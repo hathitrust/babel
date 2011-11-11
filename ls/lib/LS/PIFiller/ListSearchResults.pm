@@ -668,6 +668,9 @@ sub handle_ADVANCED_SEARCH_PI
     # 
     my $advURL=getAdvancedSearchURL($cgi);
     $output .= wrap_string_in_tag($advURL, 'AdvancedSearchURL');
+    my $modURL=getModifyAdvancedSearchURL($cgi);
+    $output .= wrap_string_in_tag($modURL, 'ModifyAdvancedSearchURL');
+
     return $output;
   }
 
@@ -683,9 +686,23 @@ sub getAdvancedSearchURL
     my $cgi=shift;
 #    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
     my $url=$cgi->url(-relative=>1);
-    $url.='?a=page&amp;page=advanced';
+        $url.='?a=page&amp;page=advanced';
     return $url;
 }
+
+sub getModifyAdvancedSearchURL
+{
+    my $cgi=shift;
+    my $temp_cgi = new CGI($cgi);
+    ## do we need to delete a and page params first?
+    $temp_cgi->param('a','page');
+    $temp_cgi->param('page','advanced');
+    my $url=$temp_cgi->self_url();
+    
+    return $url;
+}
+
+
 
 
 

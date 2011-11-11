@@ -1,140 +1,70 @@
-//alert("this is ls_advanced.js");
-
-/** bind on change handler to all the selects and all the text boxes**/
-              $("#showquery").html("message:");
-
-
-
-function setCurrentValues(num,op,field)
-{
-  var  opname="op" + num;
-  op[num]= $("select[name=" + opname +"]").val();
-  var fieldname= "field"+num;
-  field[num]=$("select.[name=" + fieldname + "]").val();
-
-}
-
-function getNum (x)
-{
-  //  num=s/op|field/g
-  var num;
-  num=x.replace(/op|field|q/,"");
-  return num;
-}
-
-function displayQuery(q, op, field)
-{
-  var buffer="";
-  for (var i=1; i<5; i++)
-  {
-    if (i === 1)
-    {
-      // no op1 because ops join with preceding field
-      buffer = buffer + " " + field[i]  + ' (' + q[i] + ') ' ;
-    }
-    else{
-      buffer = buffer + op[i] + " " + field[i]  + ' (' + q[i] + ') ' ;
-    }
-  }
-  return buffer;
-}
+alert("this is ls_advanced.js");
 /**
-Set up buffer for each group i.e. q1/field1/
-set up something to logically figure out operators and where they go
-buffer1 OP2 buffer2 OP2 buffer3 OP3
-
-
-
+1) remove all parameters for any rows with a blank query box
+2) do we want to bother renumbering them?
+3) change the language and format multiselect queries to OR queries facet=language:(English OR French)
+4) handle basic validation, i.e. if there is nothing in any query box
+This may be a problem because the YUI library is already doing this.
+Can we not includ YUI library or do we need it for cb functionality?
+Look at concatenate script with Rogers rewrite.
+Need to be able to exclude a javascript call? or rename form?
 **/
-function setBuffer(name,value,q,op,field)
-{
-  /**
-if its a select:
-name = op1|field1|anything else is a facet
-  **/
-  var num=getNum(name);
-  if (/op/.test(name))
-    {
-      op[num]=value;
-    }
-  else if (/field/.test(name))
-  {
-    field[num]=value;
-  }
-  else if (/q/.test(name))
-  {
-    q[num]=value;
-  }
-  else
-  {
-    // its a facet what do we return?
-  }
 
-}
-
+// process stuff and then submit
 
 $(function()
   {
-    var q=[];
-    var op=[];
-    var field=[];
-    var buffer=[];
 
-    // can we initialize this to empty string
-    for (var i=0;i<5;i++)
-    {
-     q[i]="";
-     op[i]="";
-     field[i]="";
-     buffer[i]="";
-    }
-
-
-    // select boxes are either op or field or facet
-    $("select")
-      .bind('change',function(event)
-            {
-              var s=$(this).val();
-              var name=$(this).attr("name");
-              // we don't want to pass q,op,field around all the time, maybe pass an object? or make global vars
-              setBuffer(name,s,q,op,field);
-              var toDisplay=displayQuery(q,op,field)
-                $("#showquery").html(toDisplay);
-              
-            }
-            );
-
-
-    $("input:text")
+    $("#srch")
       .bind('click',function(event)
             {
-              //              alert("textbox change");
+
+              //rewriteOrFacets();  //doesn't work can do at perl end or fix jquery
+              removeBlankRows();
+              redirect();
+    
+              event.preventDefault();
             }
             );
-
-    $("input:text")
-      .bind('keyup',function(event)
-            {
-              var value=$(this).val();
-              var name=$(this).attr("name");
-              var num =getNum(name);
-              q[num]=value;
-              //set field and op to whatever they are currently
-              setCurrentValues(num,op, field);
-              setBuffer(name,value,q,op,field);
-              var toDisplay=displayQuery(q,op,field)
-                $("#showquery").html(toDisplay);
-              // this is the q variable q[num]
-              //              buffer[num]= value;
-              // $("#showquery").html('<div>'+ value + '</div>');
-             
-              //                            alert("textbox key change"+value );
-            }
-            );
-
-
-
 
   }
-
   );
+
+function rewriteOrFacets()
+{
+  var str="";
+  var orstuff=$("select.orFacet option:selected");
+  $(orstuff).each(function()
+    {
+      var p= $("this.parent().attr(name)");
+      str += $(this).text() + " ";
+    }  
+                );
+
+ alert(str +"\n");
+
+
+  $("select.orFacet").each(function(index)
+  {
+    alert("this is " + this +"index is " +index);
+    var s=$("this option:selected");
+    alert("s is " + s +"index is " +index);
+  }
+
+                           
+                           );
+}
+
+function removeBlankRows()
+{
+ var q= $(":input.querybox');
+
+if ()
+{
+
+}
+
+}
+function redirect()
+{
+}

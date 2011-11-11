@@ -1,6 +1,6 @@
 
 
-                <select multiple="multiple" name="facet" size="10">
+                <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="10">
                   <option value="">All</option>                  
                                     <option value="format:Archive">Archive</option>
 

@@ -264,6 +264,16 @@
       </xsl:if>
 
     </div>
+    <div>
+      <a>
+        <xsl:attribute name="href">
+          <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+        </xsl:attribute>
+        <xsl:text>Revise this search</xsl:text>
+      </a>
+
+    </div>
+
   </xsl:template>
 
   <xsl:template name="getTotalCount">

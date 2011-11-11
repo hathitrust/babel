@@ -16,6 +16,7 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
         <title>Hathi Trust Digital Library - Experimental Search - v0.2</title>
         <xsl:call-template name="load_js_and_css"/>
       </head>
@@ -44,7 +45,7 @@
           <xsl:call-template name="footer"/>
         </div>
       </body>
-        <script type="text/javascript" src="../js/ls_advanced.js"></script>
+      <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>
 
 
     </html>
@@ -207,7 +208,8 @@
        
             </td>
        <td>
-         <input type="text"  size="50" >
+         <input type="text"  size="50" class="querybox" >
+
            <xsl:attribute name="name">
              <xsl:value-of select="$qNum"/>
            </xsl:attribute>

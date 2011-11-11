@@ -1,5 +1,5 @@
 
-                <select multiple="multiple"  name="facet" size="10">
+                <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="10">
                   <option value="">All</option>
                                     <option value="Abkhazian">Abkhazian</option>
 

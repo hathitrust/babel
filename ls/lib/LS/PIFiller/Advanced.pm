@@ -39,13 +39,16 @@ BEGIN
 #                        P I    H a n d l e r s
 #
 #======================================================================
-
 # ---------------------------------------------------------------------
-sub handle_ADVANCED_SEARCH_PI
-    : PI_handler(ADVANCED_SEARCH)
+#
+#   
+# ---------------------------------------------------------------------
+sub handle_ADVANCED_SEARCH_FORM_PI
+    : PI_handler(ADVANCED_SEARCH_FORM)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
+    
     my $cgi =             $C->get_object('CGI');
     my $fconfig =         $C->get_object('FacetConfig');
     my $default_fields =  $fconfig->{default_fields};

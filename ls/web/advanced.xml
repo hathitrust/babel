@@ -20,7 +20,7 @@
 
    </XslFileList>
 
-<AdvancedSearch><?ADVANCED_SEARCH?></AdvancedSearch>
+<AdvancedSearch><?ADVANCED_SEARCH_FORM?></AdvancedSearch>
   <!-- Custom OPTIONAL XML for top-level file -->
 
 
