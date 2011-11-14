@@ -2,14 +2,14 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0"
   extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings" xmlns:exsl="http://exslt.org/common">
-  
+
   <xsl:import href="str.replace.function.xsl" />
-  
+
   <xsl:variable name="g_current_sort_param" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='sort']"/>
   <!-- need to separate sort and dir from sort param i.e. title_d = sort=title dir=d -->
   <xsl:variable name="g_current_sort" select="substring-before($g_current_sort_param,'_')"/>
   <xsl:variable name="g_current_sort_dir" select="substring-after($g_current_sort_param,'_')"/>
-  
+
   <xsl:variable name="debug" select="'1'"/>
 
   <xsl:variable name="g_user_name">
@@ -19,7 +19,7 @@
   <xsl:variable name="g_user_id">
     <xsl:value-of select="/MBooksTop/Header/UserId"/>
   </xsl:variable>
-  
+
   <!-- Main template -->
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
@@ -34,7 +34,7 @@
 
         <!-- overide debug style if debug flag is on -->
         <xsl:call-template name="debug_CSS"/>
-        
+
         <script id="controls-template" type="text/x-template">
           <div class="controls clearfix" style="text-align: center">
             <div class="clearfix">
@@ -50,7 +50,7 @@
             </div>
             <div class="clearfix" style="margin-top: 0.5em">
               <div class="num_items_control" style="width: 33%; white-space: nowrap">
-                Collections with at least 
+                Collections with at least
                   <select size="1" name="min_items" id="min_items">
                     <option value="0" selected="selected">(all items)</option>
                     <option value="1000">1000 items</option>
@@ -104,7 +104,7 @@
       need it-->
 
       <!-- <body class="yui-skin-sam" onload="setHandlers()"> -->
-      
+
       <xsl:element name="body">
         <xsl:attribute name="class">yui-skin-sam</xsl:attribute>
         <xsl:attribute name="id">PubCollPage</xsl:attribute>
@@ -119,20 +119,20 @@
         </xsl:choose> -->
 
         <div id="mbMasterContainer">
-          
+
           <div id="DlpsDev">
             <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
           </div>
-          
+
           <div>
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
           </div>
-          
+
           <xsl:call-template name="header"/>
           <xsl:variable name="list_type">
             <xsl:call-template name="get_which_list"/>
           </xsl:variable>
-          
+
           <xsl:choose>
             <xsl:when test="$list_type='mycolls'">
               <xsl:choose>
@@ -143,11 +143,11 @@
                   </xsl:call-template>
                 </xsl:when>
                 <xsl:otherwise>
-                  <xsl:call-template name="NoPrivateColl"/>              
+                  <xsl:call-template name="NoPrivateColl"/>
                 </xsl:otherwise>
               </xsl:choose>
             </xsl:when>
-            
+
             <xsl:otherwise>
               <xsl:call-template name="coll_list">
                 <xsl:with-param name="which_list" select="'pubcolls'"/>
@@ -155,19 +155,19 @@
               </xsl:call-template>
             </xsl:otherwise>
           </xsl:choose>
-          
+
           <div id="overlay"></div>
           <xsl:call-template name="footer"/>
-          
+
           <xsl:call-template name="google_analytics" />
-          
-        </div>      
+
+        </div>
       </xsl:element> <!-- end body -->
-      
+
     </html>
   </xsl:template>
-  
-  
+
+
   <xsl:template name="get_which_list">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='pub'">
@@ -178,27 +178,27 @@
       </xsl:when>
     </xsl:choose>
   </xsl:template>
-  
-  
+
+
   <!--XXX Suz this is where the messages go for when there are no private collections -->
   <xsl:template name="NoPrivateColl">
     <xsl:choose>
       <xsl:when test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO'">
         <!-- if not logged in user can save temporary collections or log in to see permanent collections-->
         <div class="loginpromt">
-          <span>You are not logged in. 
+          <span>You are not logged in.
           <a class="inlineLink">
             <xsl:attribute name="href">
               <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
             </xsl:attribute>
             Log in</a> now.
-          </span> 
+          </span>
           <p>Logging in lets you create and save permanent collections.<br/>
-          Or, use the "Create New Collection" link above to create temporary collections. </p>     
+          Or, use the "Create New Collection" link above to create temporary collections. </p>
         </div>
       </xsl:when>
       <xsl:otherwise>
-        <!-- if logged in, user just hasn't added any collections -->                
+        <!-- if logged in, user just hasn't added any collections -->
         <h3>
           <xsl:text> Currently </xsl:text>
           <xsl:value-of select="$g_user_name"/>
@@ -209,7 +209,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
   <!-- Sort direction pointer -->
   <xsl:template name="get_sort_arrow">
     <xsl:param name="which_sort"/>
@@ -225,23 +225,23 @@
       </xsl:choose>
     </xsl:if>
   </xsl:template>
-  
+
   <!-- Collection List -->
   <xsl:template name="coll_list">
     <xsl:param name="which_list"/>
     <xsl:param name="list_node"/>
-    
+
     <xsl:variable name="debug_switch">
       <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
     </xsl:variable>
 
     <xsl:variable name="pub_priv">
       <xsl:choose>
-        <xsl:when test="$which_list='mycolls'">private</xsl:when>          
+        <xsl:when test="$which_list='mycolls'">private</xsl:when>
         <xsl:otherwise>public</xsl:otherwise>
-      </xsl:choose>      
+      </xsl:choose>
     </xsl:variable>
-    
+
     <xsl:variable name="list_class">
       <xsl:choose>
         <xsl:when test="$which_list='mycolls'">
@@ -253,17 +253,17 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-        
+
     <div id="mbContentContainer" class="mbColListContainer">
       <h2 class="SkipLink">Main Content</h2>
 
       <xsl:call-template name="LoginMsg"/>
-      
+
       <xsl:element name="div">
         <xsl:attribute name="class">
           <xsl:value-of select="$list_class"/>
         </xsl:attribute>
-        
+
         <style>
           .ColList {
             width: 72%;
@@ -278,12 +278,12 @@
         <script type="text/javascript" disable-output-escaping="yes">
           var bucket = { 'html': [], 'featured': [], 'cols':[] };
           var html; var featured;
-          bucket.cols = [ 
-            'CollId', 
-            'CollName', 
-            'Description', 
-            'NumItems', 
-            'OwnerString', 
+          bucket.cols = [
+            'CollId',
+            'CollName',
+            'Description',
+            'NumItems',
+            'OwnerString',
             'OwnerAffiliation',
             'Updated',
             'Updated_Display',
@@ -293,14 +293,24 @@
           ];
 
           <xsl:for-each select="$list_node/Collection">
-              html = []; 
+              html = [];
               html.push('<xsl:value-of select="CollId" />');
               html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
               html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
               html.push('<xsl:value-of select="NumItems" />');
               html.push('<xsl:value-of select="OwnerString" />');
 
-              <xsl:variable name="owner_affiliation" select="string($insts[contains(current()/OwnerAffiliation, @domain)])" />
+              <xsl:variable name="owner_affiliation">
+                <xsl:choose>
+                  <xsl:when test="$insts[current()/OwnerAffiliation = @domain]">
+                    <xsl:value-of select="string($insts[current()/OwnerAffiliation = @domain])" />
+                  </xsl:when>
+                  <xsl:when test="$insts[contains(current()/OwnerAffiliation, concat('.', @domain))]">
+                    <xsl:value-of select="string($insts[contains(current()/OwnerAffiliation, concat('.', @domain))])" />
+                  </xsl:when>
+                  <xsl:otherwise><xsl:text></xsl:text></xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
 
               html.push('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
               html.push('<xsl:value-of select="Updated" />');
@@ -321,7 +331,7 @@
           <xsl:for-each select="$list_node/Collection">
 
             <!-- <script type="text/javascript">
-              html = []; 
+              html = [];
               html.push('<xsl:value-of select="CollId" />');
               html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
               html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
@@ -352,7 +362,7 @@
               <xsl:if test="Owner = $g_user_id">mine </xsl:if>
               <xsl:if test="Shared = '0'">private </xsl:if>
             </xsl:variable>
-            
+
             <div class="{$class}" position="{position() - 1} / {(position() - 1) mod 2}">
               <div class="left">
                 <p class="collname">
@@ -397,7 +407,7 @@
             </div>
           </xsl:for-each>
         </div>
-        
+
         <script type="text/javascript">
           <!-- setup cbBrowser app -->
           $(document).ready(function() {
@@ -407,16 +417,16 @@
             HT.cbBrowser.setup();
           })
         </script>
-        
+
         <br class="clr" />
       </xsl:element>
-      
+
       <xsl:call-template name="FeaturedCollection" />
-      
+
     </div>
-    
+
   </xsl:template>
-  
+
   <xsl:template name="LoginMsg">
     <xsl:choose>
       <xsl:when test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO'">
@@ -441,13 +451,13 @@
 
     <!-- The form label element is for accessibility.  The CSS
          hides it with display:none. -->
-    
+
     <xsl:variable name = "SearchFormId">
       <xsl:value-of select="$pub_priv"/>
       <xsl:text>_srch_</xsl:text>
       <xsl:value-of select="$CollId"/>   <!-- change to append public/private here -->
     </xsl:variable>
-    
+
     <form  method="GET" action="mb" class="searchform">
       <xsl:attribute name="id">
         <xsl:value-of select="$SearchFormId"/>
@@ -460,17 +470,17 @@
           <xsl:value-of select="$CollId"/>
         </xsl:attribute>
       </input>
-      <label> 
+      <label>
         <xsl:attribute name="for">
           <xsl:value-of select="$SearchFormId"/>
         </xsl:attribute>
-        
+
         <span class="SearchLabel">
           <xsl:value-of select="concat('Search ', CollName)"/>
         </span>
         <input type="text" size="15" maxlength="40" name="q1" />
       </label>
-  
+
       <button type="submit">
         <xsl:attribute name="id">
           <xsl:text>button_</xsl:text>
@@ -479,15 +489,15 @@
         Search
       </button>
     </form>
-  
-    <!-- search error message-->     
+
+    <!-- search error message-->
     <div>
       <xsl:attribute name="id">
         <xsl:text>search_errormsg_</xsl:text>
         <xsl:value-of select="$SearchFormId"/>
       </xsl:attribute>
       <div class="bd"></div>
-    </div>      
+    </div>
     </xsl:template>
 
 
@@ -502,13 +512,13 @@
             <xsl:text> (login to save them)</xsl:text>
           </xsl:if> -->
         </h2>
-        
+
         <xsl:if test="$debug='1'">
           <span class="debug">DEBUG </span>
         </xsl:if>
       </div>
       <!--  </div>-->
-      
+
       <div class="newCol">
         <xsl:element name="a">
           <xsl:attribute name="href">
@@ -517,9 +527,9 @@
           <xsl:attribute name="id">createNewColl</xsl:attribute>
           <xsl:text>Create New Collection</xsl:text>
         </xsl:element>
-      </div>    
+      </div>
     </xsl:template>
-    
+
     <xsl:template name="get_page_title">
       <xsl:variable name="pubpriv">
         <xsl:call-template name="get_which_list"/>
@@ -535,7 +545,7 @@
               <xsl:text>Temporary Collections</xsl:text>
             </xsl:when>
             <xsl:otherwise>
-              <xsl:value-of select='concat($g_user_name, "&apos;s Collections")'/>         
+              <xsl:value-of select='concat($g_user_name, "&apos;s Collections")'/>
             </xsl:otherwise>
           </xsl:choose>
         </xsl:otherwise>
@@ -543,7 +553,7 @@
     </xsl:template>
 
     <xsl:template name="FeaturedCollection">
-      
+
       <script id="featured-template" type="text/x-template">
         <div class="Box">
           <h4>Featured Collection</h4>
@@ -561,9 +571,9 @@
           </div>
         </div>
       </script>
-      
+
       <div id="Sidebar">
       </div>
     </xsl:template>
-    
+
   </xsl:stylesheet>
