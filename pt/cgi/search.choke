@@ -31,12 +31,19 @@ my $app = CGI::Emulate::PSGI->handler($sub);
 $app = builder {
 
     enable "PopulateENV";
-    
+
+    enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
+        "HTErrorDocument", 500 => "/mdp-web/production_error.html";
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 1;
+
     enable 'Choke::Cache::Filesystem';
-    
+
     enable
         match_if param('index'),
-            'Choke::Requests', 
+            'Choke::Requests',
                     key            => 'search-index',
                     cache_dir_key  => 'choke_shared_cache_dir',
                     client_identifier_sub => sub {
@@ -51,14 +58,14 @@ $app = builder {
                     response       => { filename => qq{$ENV{SDRROOT}/pt/web/503_index.html},
                                         content_type => 'text/html' }
             ;
-    
+
     # probably do some generous throttling
     enable
         match_if unchoked(),
-            'Choke::Requests', 
+            'Choke::Requests',
                     key            => 'search',
-                    credit_rate    => [ 0.125, 'sec' ],
-                    max_debt       => [ 100, 'min' ]
+                    credit_rate    => [ 0.5, 'sec' ],
+                    max_debt       => [ 50, '+30 sec' ]
             ;
 
     $app;

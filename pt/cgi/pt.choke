@@ -29,26 +29,26 @@ my $sub = CGI::Compile->compile($script_filename);
 my $app = CGI::Emulate::PSGI->handler($sub);
 
 $app = builder {
-    
+
     enable "PopulateENV";
-    
+
     enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
-    
+
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
         "HTErrorDocument", 500 => "/mdp-web/production_error.html";
 
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 1;
-    
+
     enable 'Choke::Cache::Filesystem';
-    
+
     enable
         match_if any( param('view', 'plaintext'), param('view', 'text') ),
-            'Choke::Requests', 
+            'Choke::Requests',
                     key            => 'plaintext',
-                    credit_rate    => [ 0.25, 'min' ],
-                    max_debt       => [ 5, '+2 min' ],
+                    credit_rate    => [ 0.5, 'sec' ],
+                    max_debt       => [ 50, '+30 sec' ],
             ;
-    
+
     # probably do some generous throttling
     enable
         match_if unchoked(),
