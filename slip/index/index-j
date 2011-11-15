@@ -165,9 +165,9 @@ my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 # put ns2label map on context object
-my $ns_url = $config->get(namespace_mapping_url);
+my $ns_url = $config->get('namespace_mapping_url');
 my $ns2label_hash= SLIP_Utils::Common::get_ns2label_hashref($ns_url);
-$C->set_object('ns2label', $ns2label_hashref);
+$C->set_object('ns2label', $ns2label_hash);
 
 my $db;
 eval {
