@@ -77,6 +77,7 @@ use SLIP_Utils::Db_driver;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::Yaml;
 
 use Index_Module;
 
@@ -165,9 +166,10 @@ my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 # put ns2label map on context object
+
 my $ns_url = $config->get('namespace_mapping_url');
-my $ns2label_hash= SLIP_Utils::Common::get_ns2label_hashref($ns_url);
-$C->set_object('ns2label', $ns2label_hash);
+my $yaml_config = new SLIP_Utils::Yaml($ns_url);
+$C->set_object('yaml_config', $yaml_config);
 
 my $db;
 eval {
