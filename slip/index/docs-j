@@ -109,7 +109,7 @@ $C->set_object('MdpConfig', $config);
 
 my $ns_url = $config->get('namespace_mapping_url');
 my $yaml_config = new SLIP_Utils::Yaml($ns_url);
-$C->set_object('yaml_config', $yaml_config);
+$C->set_object('Yaml', $yaml_config);
 
 
 my $db = new Database($config);
