@@ -43,11 +43,10 @@ $app = builder {
 
     # probably do some generous throttling
     enable
-        match_if unchoked(),
-            'Choke::Requests',
-                    credit_rate    => [ 0.5, 'min' ],
-                    max_debt       => [ 50, '+30 sec' ]
-            ;
+        'Choke::Requests',
+                credit_rate    => [ 0.5, 'min' ],
+                max_debt       => [ 50, '+30 sec' ]
+        ;
 
     $app;
 };
