@@ -1,18 +1,26 @@
-#!/l/local/bin/perl
+#!/usr/bin/env perl
 
-use Data::Dumper;
+use strict;
+use warnings;
 
-use Plack::Util;
-use Plack::Handler::CGI;
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
 use Plack::Builder;
-use Plack::Middleware::Debug;
+use Plack::Builder::Conditionals::Choke;
+
+use Plack::Handler::CGI;
 
 use CGI::Emulate::PSGI;
 use CGI::Compile;
 
-use lib "$ENV{SDRROOT}/mdp-lib/Utils";
-use Vendors;
-
+# API::RESTApp::Patches API::RESTApp
+# for compatibility with being wrapped
+# by Plack
 use API::RESTApp;
 use API::RESTApp::Patches;
 
@@ -25,6 +33,29 @@ my $app = sub {
     $API::HTD::env = $env;
     my $resp = $sub->();
     return $resp;
+};
+
+$app = builder {
+
+    enable "PopulateENV";
+
+    enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
+        "HTErrorDocument", 500 => "/mdp-web/production_error.html";
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 1;
+
+    enable 'Choke::Cache::Filesystem';
+
+    # probably do some generous throttling
+    enable
+        'Choke::Requests',
+                credit_rate    => [ 0.5, 'min' ],
+                max_debt       => [ 50, '+30 sec' ]
+        ;
+
+    $app;
 };
 
 
