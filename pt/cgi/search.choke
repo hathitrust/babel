@@ -64,7 +64,7 @@ $app = builder {
         match_if unchoked(),
             'Choke::Requests',
                     key            => 'search',
-                    credit_rate    => [ 0.5, 'sec' ],
+                    credit_rate    => [ 0.5, 'min' ],
                     max_debt       => [ 50, '+30 sec' ]
             ;
 

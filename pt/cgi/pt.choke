@@ -45,7 +45,7 @@ $app = builder {
         match_if any( param('view', 'plaintext'), param('view', 'text') ),
             'Choke::Requests',
                     key            => 'plaintext',
-                    credit_rate    => [ 0.5, 'sec' ],
+                    credit_rate    => [ 0.5, 'min' ],
                     max_debt       => [ 50, '+30 sec' ],
             ;
 
