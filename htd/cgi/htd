@@ -75,10 +75,11 @@ else {
     }
 
     my $API_version_instance = $classPackage->new(('CGI' => $Q));
-    # return $API_version_instance->run();
-    # we need the return for PSGI, but it gets in the way of
-    # staging right now.
-    $API_version_instance->run();
+
+    # for Plack/PSGI, return the run instance
+    my $retval = $API_version_instance->run();
+    return $retval if ( defined($ENV{'psgi.version'}) );
+    
 }
 
 exit 0;
@@ -118,7 +119,6 @@ sub __determineVersion {
     if (! grep(/^$ver$/, @SUPPORTED_VERSIONS)) {
         return undef;
     }
-
     return $ver;
 }
 
