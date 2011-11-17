@@ -53,6 +53,8 @@ use Plack::Response;
 
 use URI::Escape;
 
+use Ping::Utils;
+
 BEGIN {
     Debug::DUtils::setup_DebugScreen();
 }
@@ -81,30 +83,9 @@ my $app = sub {
     my $request = Plack::Request->new($env);
     my $response;
     
-    sub _expand_affiliation {
-        my ( $affiliation ) = @_;
-        # can we assume that institutions.xml is always going to be well formatted??
-        require File::Slurp;
-        my $institutions_filename = qq{$ENV{SDRROOT}/ping/web/common-web/institutions.xml};
-        my $match;
-        my $in_affiliation = 0;
-        foreach my $line ( File::Slurp::read_file($institutions_filename) ) {
-            if ( $line =~ m,"$affiliation", ) {
-                $in_affiliation = 1;
-            } elsif ( $line =~ m,enabled=, && $in_affiliation ) {
-                chomp $line;
-                $match = $line;
-                $match =~ s,^.*>([^<]+)<.*,$1,;
-                return $match;
-            }
-        }
-        return $affiliation;
-    }
-    
     sub _body {
         # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
         my ( $callback, $logged_in, $displayName, $affiliation, $auth_type, $print_disabled, $msg ) = @_;
-        print STDERR "EH? $print_disabled\n";
         $print_disabled = $print_disabled ? 'true' : 'false';
         my $retval = <<JAVASCRIPT;
 var HT = HT || {};
@@ -162,39 +143,27 @@ JAVASCRIPT
     
     my $C = new Context;
     $C->set_object('App', new App);
-    my $auth = new Auth::Auth($C);
     
     my $callback = $request->param('callback') || qq{ping_handler};
     
     # if REMOTE_USER is set, we're done; don't bother with hitting
     # the database!
     if ( $$env{REMOTE_USER} ) {
-        my $displayName = $$env{REMOTE_USER};
-        my $affiliation;
-        my $auth_type = lc $$env{AUTH_TYPE};
-        if ( $auth_type eq 'shibboleth' ) {
-            $displayName = $$env{displayName} || $auth->__get_prioritized_scoped_affiliation();
-            ## $affiliation = $auth->__get_prioritized_scoped_affiliation();
-            $affiliation = _expand_affiliation($auth->get_institution());
-        } elsif ( $displayName !~ m,@,) {
-            $affiliation = 'University of Michigan';
-        }
-        
-        my $print_disabled = $auth->get_eduPersonEntitlement_print_disabled($C);
-        
+        my $info = Ping::Utils::identify_user($C, $env);
+
         $response = Plack::Response->new(200);
         $response->content_type('text/javascript');
-        if ( $auth_type eq 'shibboleth' && ! $request->cookies->{HT_AUTHTYPE} ) {
+        if ( $$info{auth_type} eq 'shibboleth' && ! $request->cookies->{HT_AUTHTYPE} ) {
             $response->cookies->{HT_AUTHTYPE} = { 
                 'value' => 'shibboleth', 
                 'path' => '/',
                 'domain' => '.hathitrust.org'
             };
         }
-        $displayName = uri_escape($displayName);
-        $affiliation = uri_escape($affiliation);
+        my $displayName = uri_escape($$info{displayName});
+        my $affiliation = uri_escape($$info{affiliation});
         # $response->body(qq{$callback(true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN");});
-        $response->body(_body($callback, 'true', $displayName, $affiliation, $auth_type, $print_disabled, "LOGGED IN"));
+        $response->body(_body($callback, 'true', $displayName, $affiliation, $$info{auth_type}, $$info{print_disabled}, "LOGGED IN"));
         return $response->finalize;
     }
     
@@ -242,7 +211,7 @@ JAVASCRIPT
     }
 
     # get an Auth object to trigger cgi/shcgi redirection
-    $auth = new Auth::Auth($C);
+    my $auth = new Auth::Auth($C);
     $C->set_object('Auth', $auth);
     
     # deciededly not authenticated

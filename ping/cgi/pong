@@ -60,9 +60,11 @@ use Utils;
 use Database;
 use Session;
 
-
 use Plack::Request;
 use Plack::Response;
+
+use Ping::Utils;
+use JSON::XS;
 
 my $app = sub {
     my $env = shift;
@@ -101,11 +103,22 @@ my $app = sub {
     my $cookie_name = $config->get('cookie_name');
     my $target_url = $request->param('target');
     $response = Plack::Response->new(302);
+    
+    # return session cookie
     $response->cookies->{$cookie_name} = { 
         'value' => $ses->get_session_id(), 
         'path' => '/',
         'domain' => Session::get_cookie_domain()
     };
+    
+    # return session information
+    my $info = Ping::Utils::identify_user($C, $env);
+    $response->cookies->{'HTstatus'} = {
+        'value' => encode_json($info),
+        'path'  => '/',
+        'domain' => Session::get_cookie_domain()
+    };
+
     $response->redirect($target_url);
     
     # explicitly close the session to save any updates
