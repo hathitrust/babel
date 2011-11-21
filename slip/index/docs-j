@@ -108,7 +108,8 @@ my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
 my $ns_url = $config->get('namespace_mapping_url');
-my $yaml_config = new SLIP_Utils::YamlConfig($ns_url);
+my $ns_temp_file= $config->get('namespace_mapping_temp_filename');
+my $yaml_config = new SLIP_Utils::YamlConfig($ns_url, $ns_temp_file);
 $C->set_object('YamlConfig', $yaml_config);
 
 

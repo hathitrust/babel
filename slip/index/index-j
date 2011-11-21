@@ -168,7 +168,8 @@ $C->set_object('MdpConfig', $config);
 # put ns2label map on context object
 
 my $ns_url = $config->get('namespace_mapping_url');
-my $yaml_config = new SLIP_Utils::YamlConfig($ns_url);
+my $ns_temp_file= $config->get('namespace_mapping_temp_filename');
+my $yaml_config = new SLIP_Utils::YamlConfig($ns_url, $ns_temp_file);
 $C->set_object('YamlConfig', $yaml_config);
 
 my $db;
