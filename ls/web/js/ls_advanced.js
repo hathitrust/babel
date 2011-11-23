@@ -1,7 +1,7 @@
 alert("this is ls_advanced.js");
 /**
-1) remove all parameters for any rows with a blank query box
-2) do we want to bother renumbering them?
+1) remove all parameters for any rows with a blank query box   DONE
+2) do we want to bother renumbering them?                    yes DONE
 3) change the language and format multiselect queries to OR queries facet=language:(English OR French)
 4) handle basic validation, i.e. if there is nothing in any query box
 This may be a problem because the YUI library is already doing this.
@@ -14,27 +14,33 @@ Need to be able to exclude a javascript call? or rename form?
 
 $(function()
   {
+    var rows= new Array();
 
-    $("#srch")
-      .bind('click',function(event)
+
+    $('#advanced_searchform').submit(function(event) 
             {
 
               //rewriteOrFacets();  //doesn't work can do at perl end or fix jquery
-              removeBlankRows();
-              redirect();
-    
+              
+              // check that at least one querybox has text in it
+              // checkForQuery();
+              //               $(':input.querybox') length or something
+              
+              rows = removeBlankRows(rows);
+              redirect(rows);
               event.preventDefault();
             }
-            );
-
+                                     );
   }
   );
+
+
 
 function rewriteOrFacets()
 {
   var str="";
   var orstuff=$("select.orFacet option:selected");
-  $(orstuff).each(function()
+   $(orstuff).each(function()
     {
       var p= $("this.parent().attr(name)");
       str += $(this).text() + " ";
@@ -55,16 +61,122 @@ function rewriteOrFacets()
                            );
 }
 
-function removeBlankRows()
-{
- var q= $(":input.querybox');
+function removeBlankRows(rows)
+{ 
+  var count=0;
+  $(':input.querybox').each(function(index)
+                             {
+                               var qnum=index+1;
+                               //alert("count= " +count + " qnum= " + qnum + " index= " +index);
 
-if ()
-{
 
+                               var query=$(this).val();
+                               if (query ==="")
+                               {
+                                 //alert ("no query for q number " + qnum );
+                               }
+                               else{
+                                 //XXX redo this so we don't have to rewrite the query if it doesn't need it
+                                 count++; 
+                                 if (qnum !== count){
+                                   //  alert("q number " + qnum +" has query " + query + " rewrite to q " +count );
+                                   rows[count]=rewriteQuery(query,qnum,count);
+                                 }
+                                 else
+                                 {
+                                   //XXX redo this so we don't have to rewrite the query if it doesn't need it
+                                   //alert("dontRewriteQuery");
+                                   rows[count]=rewriteQuery(query,qnum,count);
+                                 }
+                               }
+                                 
+                             });
+  return rows;
 }
 
-}
-function redirect()
+// rewrite query from query number qnum to query number toNum
+function rewriteQuery(query,qnum,toNum)
 {
+  var row="";
+    //op
+  // if this is the first row there is no op so must remove it
+  // XXX add logic
+  var newOp = "op" + toNum; 
+  var oldOpID="#op" + qnum;
+  var newOpValue= $(oldOpID).val();
+  //field
+  var newField = "field" + toNum; 
+  var oldFieldID="#field" + qnum;
+  var newFieldValue= $(oldFieldID).val();
+
+  //query
+
+  var newQuery = "q" + toNum; 
+  var newQueryValue= query;
+  var OpClause="";
+  if(toNum >1)
+  {
+    OpClause=newOp + "=" +newOpValue + "&";
+  }
+  row = row+ OpClause + newField + "=" + newFieldValue + "&" + newQuery +"=" +newQueryValue;
+  return row;
+}
+
+// create new query with modified rows
+//http://tburtonw-full.babel.hathitrust.org/cgi/ls?
+//a=srchls&a=srchls
+//&field1=ocronly&q1=art&op2=AND&field2=title&q2=history&op3=AND&field3=author&q3=&op4=AND&field4=subject&q4=
+//&facet stuf maybe
+
+function redirect(rows)
+{
+  // get serialized form object, i.e. suitable for url
+
+  var formValues= ($("#advanced_searchform").serialize());
+  var rest= replaceRows(formValues,rows)
+  var host=window.location.host;
+  var path=window.location.pathname;
+  var URL= host + path +"?" +rest;
+
+  alert ("url would be " + URL);
+  //  window.location.(URL);
+  var href='http://' +URL;
+  location.href=href;
+}
+
+
+function replaceRows(formValues,rows)
+{
+  var newURLString="";
+
+  var newParms= new Array();
+  var pairs=formValues.split(/\&/);
+  for (var i=0; i < pairs.length; i++)
+  {
+      var keyvalue = pairs[i].split(/\=/);
+      var key = keyvalue[0];
+      var value = keyvalue[1];
+      // convert from perl to js regex
+      if (key.match(/(op|field|q)[1-4]/)) 
+      {
+        //skipit
+      }
+      else
+      {
+        //add to output
+        newURLString=newURLString + pairs[i] +"&";
+      }
+  }
+  for (var j=0; j < rows.length; j++)
+  {
+    if ( (rows[j]))
+    {
+      var URLrow="&" + rows[j];
+      newURLString=newURLString+URLrow;
+    }
+  }
+  //get rid of any double ampersands
+  newURLString=newURLString.replace(/&&/g,"&");
+
+  return newURLString;
 }

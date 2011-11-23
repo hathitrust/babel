@@ -20,6 +20,8 @@
    'start'  => '\d+',
    'lmt'    => 'ft|all|so',
    'facet'  => '.*',
+   'facet_format'  => '.*',
+   'facet_lang'  => '.*',
    'q2'     => '.*',
    'q3'     => '.*',
    'q4'     => '.*',

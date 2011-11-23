@@ -61,10 +61,8 @@
     <div class="LsAdvancedPageContent">
       <div id="LS_main">
         <div class="betasearch">
-          <form id="itemlist_searchform" action="http://tburtonw-full.babel.hathitrust.org/cgi/ls" name="searchcoll" >
+          <form id="advanced_searchform" action="http://tburtonw-full.babel.hathitrust.org/cgi/ls" name="searchcoll" >
             
-            <!--<input type="hidden" name="debug" value="local"/>-->
-            <input type="hidden" name="a" value="srchls"/>
             
             <h2>Advanced  Search:</h2>
         
@@ -133,7 +131,7 @@
                      </td>
                    </tr>
                  </table>
-                 <button type="submit" name="a" id="srch" value="srchls">Find</button>
+                 <button type="submit" name="findbutton" id="srch" >Find</button>
                </form>
              </div>
            </div>
@@ -162,6 +160,9 @@
          <td>
            <select>
              <xsl:attribute name="name" >
+               <xsl:value-of select="$opNum"/>
+             </xsl:attribute>
+             <xsl:attribute name="id" >
                <xsl:value-of select="$opNum"/>
              </xsl:attribute>
              <xsl:variable name="op">
