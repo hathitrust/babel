@@ -210,6 +210,9 @@
             </td>
        <td>
          <input type="text"  size="50" class="querybox" >
+           <xsl:attribute name="id">
+             <xsl:value-of select="$qNum"/>
+           </xsl:attribute>
 
            <xsl:attribute name="name">
              <xsl:value-of select="$qNum"/>

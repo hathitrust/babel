@@ -26,6 +26,7 @@ $(function()
               // checkForQuery();
               //               $(':input.querybox') length or something
               
+              //              rows = removeAndConsolidateBlankRows(rows);
               rows = removeBlankRows(rows);
               redirect(rows);
               event.preventDefault();
@@ -61,15 +62,71 @@ function rewriteOrFacets()
                            );
 }
 
+
+
+/**
+
+ write a removeBlankRows function that only removes the blank rows and does no renumbering
+ so possibly leaving only a q2 and q4
+ Also  remove the operator preceding the first row that has a query in it
+ **/
+
 function removeBlankRows(rows)
+{ 
+  var count=0;
+  $(':input.querybox').each(function(index)
+                            {
+                              var rownum=index+1
+                              var query=$(this).val();
+                               if (query ==="")
+                               {
+                                 //alert ("no query for q number " + qnum );
+                               }
+                               else
+                               {
+                                 count++;
+                                 rows[index]=getRow(rownum,count)
+                               }
+                            });
+  return rows;
+}
+
+
+function getRow(qnum,count)
+{
+  var row="";
+
+  var OpID="#op" + qnum;
+  var OpValue= $(OpID).val();
+
+  var FieldID="#field" + qnum;
+  var FieldValue= $(FieldID).val();
+
+  var QueryID = "#q" + qnum; 
+  var QueryValue= $(QueryID).val();
+
+  // no op for first query in set
+  var OpClause="";
+  if(count !== 1)
+  {
+    OpClause= "op" + qnum + "=" +OpValue + "&";
+  }
+  row = row+ OpClause + "field" + qnum + "=" + FieldValue + "&" + "q" +qnum +"=" +QueryValue;
+  return row;
+}
+
+
+/**
+ function removeAndConsolidateBlankRows(rows)
+ This will consolidate rows and move them starting with moving the first non-blank row to q1
+**/
+
+function removeAndConsolidateBlankRows(rows)
 { 
   var count=0;
   $(':input.querybox').each(function(index)
                              {
                                var qnum=index+1;
-                               //alert("count= " +count + " qnum= " + qnum + " index= " +index);
-
-
                                var query=$(this).val();
                                if (query ==="")
                                {
@@ -93,6 +150,8 @@ function removeBlankRows(rows)
                              });
   return rows;
 }
+
+
 
 // rewrite query from query number qnum to query number toNum
 function rewriteQuery(query,qnum,toNum)
@@ -122,6 +181,9 @@ function rewriteQuery(query,qnum,toNum)
   return row;
 }
 
+
+
+
 // create new query with modified rows
 //http://tburtonw-full.babel.hathitrust.org/cgi/ls?
 //a=srchls&a=srchls
@@ -134,6 +196,7 @@ function redirect(rows)
 
   var formValues= ($("#advanced_searchform").serialize());
   var rest= replaceRows(formValues,rows)
+    // removeRows
   var host=window.location.host;
   var path=window.location.pathname;
   var URL= host + path +"?" +rest;
@@ -143,6 +206,9 @@ function redirect(rows)
   var href='http://' +URL;
   location.href=href;
 }
+
+
+
 
 
 function replaceRows(formValues,rows)
