@@ -483,10 +483,11 @@ sub make_query_clause{
     my $op    = $cgi->param('op' . $i);
     if (!defined($op))
     {
-        $op='AND';
-    }
-    if ($i ==1)
-    {
+        #XXX don't try to insert any default operator!
+   #     $op='AND';
+    #}
+    #if ($i ==1)
+    #{
         $op="";
     }
     
