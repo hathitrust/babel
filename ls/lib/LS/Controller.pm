@@ -79,7 +79,8 @@ sub ___core_initialize {
     my $cgi = $C->get_object('CGI');
 
     my $action = $cgi->param('a');
-    my $q1 = $cgi->param('q1');
+    my $query = $self->__get_user_query_string($cgi);
+    
     my $page = $cgi->param('page');
     
     #XXX  redo this with cleaner logic
@@ -87,7 +88,7 @@ sub ___core_initialize {
     {
         # we need this to display a page even when there is no query
     }
-    elsif (! $action || ! $q1) 
+    elsif (! $action || ! $query) 
     {
         my $params = $config->get('ls_default_params');
         my $temp_cgi = new CGI($params);
@@ -180,7 +181,7 @@ sub run_controller {
     # Execute the Action's Operations if there is a query to perform
     my $act = $self->get_action();
     my $cgi = $C->get_object('CGI');
-    my $user_query_string = $cgi->param('q1');
+    my $user_query_string = $self->__get_user_query_string($cgi);
 
     # Undefined query string? No query to perform.  Just present the
     # initial view.
@@ -283,6 +284,16 @@ sub handle_error {
 
     $self->___core_initialize($C);
     $self->core_execute_view($C);
+}
+#----------------------------------------------------------------------
+sub __get_user_query_string
+{
+    my $self = shift;
+    my $cgi  = shift;
+    
+    my $user_query_string = $cgi->param('q1')||$cgi->param('q2')||$cgi->param('q3')||$cgi->param('q4');
+
+    return $user_query_string;
 }
 
 
