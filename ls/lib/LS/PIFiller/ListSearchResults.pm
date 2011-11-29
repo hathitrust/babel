@@ -415,7 +415,17 @@ sub handle_FACETS_PI
     #        $hash->{'unselect_url'}   url for selected facets on click will unselect it
 
     # unselected= hash key= facet name, values = array of hashes as above
-
+    
+    # output whether any facets are selected include the multivalued and the psuedo facet full-view/limited i.e. lmt param
+    if (defined ($cgi->param('facet')) || 
+        defined ($cgi->param('facet_lang'))
+        ||defined ($cgi->param('facet_format'))
+        || $cgi->param('lmt') ne "all"
+       )
+    {
+        $xml .= wrap_string_in_tag('true','facetsSelected') . "\n"; 
+    }
+    
     my $selected_facets_xml = make_selected_facets_xml($selected,$fconfig,$cgi);
     $xml .= $selected_facets_xml;
 
@@ -508,7 +518,12 @@ sub make_selected_facets_xml
     my $unselect_url;
 
     $xml='<SelectedFacets>' . "\n";
+#   insert any advanced search multiselect OR facets on top of list
+    my $multiselect_xml = __get_multiselect_xml($fconfig, $cgi);
     
+    $xml .= $multiselect_xml;
+    
+
     foreach my $facet (@{$selected})
     {
         $unselect_url=$facet->{'unselect_url'};
@@ -523,6 +538,98 @@ sub make_selected_facets_xml
  
     $xml .= '</SelectedFacets>' . "\n";
     return $xml;
+}
+
+#----------------------------------------------------------------------
+sub __get_multiselect_xml
+{
+    my $fconfig = shift;
+    my  $cgi = shift ;
+    my $xml;
+    my $multiselect;
+    # XXX should read names of multiselect facets from config file for now hard code
+    my @lang= $cgi->param('facet_lang');
+    my @format = $cgi->param('facet_format');
+    my $lang=get_multifacet_xml(\@lang,$cgi,$fconfig);
+    my $format=get_multifacet_xml(\@format,$cgi,$fconfig);
+    $multiselect= $lang . $format;
+    $xml .= wrap_string_in_tag($multiselect,'multiselect') . "\n"; 
+    return $xml
+}
+
+sub get_multifacet_xml
+{
+    my $ary = shift;
+    my $cgi = shift;
+    my $fconfig = shift;
+    
+    my $xml;
+    
+    
+    if (! defined($ary)|| scalar(@{$ary})<1 )
+    {
+        # return blank
+        return "";
+    }
+
+    my $clause;
+    my $field;
+    
+    foreach my $fquery (@{$ary})
+    {
+
+        my @rest;
+        ($field,@rest)=split(/\:/,$fquery);
+        my $string=join(':',@rest);
+        # &fq=language:( foo OR bar OR baz)
+        $clause.= $string . " OR ";
+    }
+    # remove last OR and add &fq=field:
+    $clause =~s/OR\s*$//g;
+    $clause= '(' . $clause . ' )';
+    my $facetValueXML=wrap_string_in_tag($clause,'facetValue') . "\n"; 
+
+    #XXX need to map url param field name to dispay value
+    # so language= Language  see regular facet code for this, is there a lookup?
+    
+    my $facet2label=$fconfig->get_facet_mapping;
+    my $field_label=$facet2label->{$field};
+    my $fieldnameXML= wrap_string_in_tag($field_label,'fieldName') . "\n"; 
+
+    my $unselectURL=getMultiUnselectURL($field,$cgi);
+    
+    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n"; 
+    $clause.= $facetValueXML . $fieldnameXML . $unselectURLXML;
+    
+    $xml .= wrap_string_in_tag($clause,'multiselectClause') . "\n"; 
+    return $xml;
+    
+}
+
+
+sub getMultiUnselectURL{
+    my $field = shift;
+    my $cgi = shift;
+
+    # we just need to remove either facet_lang or facet_format parameters
+    #XXX this is a hard coded solution for now and will require adding any other multiselect params
+    #delete all facet params
+
+    my $temp_cgi= CGI->new($cgi);
+    $temp_cgi->delete('pn');
+    # change line below to delete either facet_lang or facet_format
+    if ($field =~/language/)
+    {
+        $temp_cgi->delete('facet_lang');
+    }
+    elsif ($field =~/format/)
+    {
+        $temp_cgi->delete('facet_format');
+    }
+    
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    return $url;
+
 }
 
 #----------------------------------------------------------------------

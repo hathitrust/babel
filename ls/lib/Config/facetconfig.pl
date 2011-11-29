@@ -26,6 +26,8 @@ $facet_to_label_map =
 'era' =>'Era',
 'genreStr'=>'genre',
 'geographicStr' =>'Region',
+'facet_lang' =>'Language',
+'facet_format' =>'Original Format',
 };
 
 

@@ -816,31 +816,10 @@
 
   <!--############### facet templates ########################################-->
 
-  <!--XXX replace this whole thing by adding some xml in the PIfiller that is true or false -->
- <xsl:template name="facetsSelected">  
-   <xsl:variable name="selected">
-    <xsl:value-of select="count(/MBooksTop/Facets/SelectedFacets/facetValue)"/>
-  </xsl:variable>
-
-  <xsl:variable name="VlimitType">
-      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
-  </xsl:variable>
-
-  <xsl:choose>
-    <xsl:when test="($selected &gt; 0)or (not($VlimitType = 'all'))">
-    <xsl:text>true</xsl:text>      
-    </xsl:when>
-    <xsl:otherwise>
-          <xsl:text>false</xsl:text>
-    </xsl:otherwise>
-  </xsl:choose>
-
-</xsl:template>
-
   <xsl:template name="facets">
     <div class="facets">
       <xsl:variable name="facetsSelected">
-        <xsl:call-template name="facetsSelected"/>
+        <xsl:value-of select="/MBooksTop/Facets/facetsSelected"/>
       </xsl:variable>
       <xsl:if test="$facetsSelected = 'true'">
         <xsl:call-template name="showSelected"/>
@@ -905,6 +884,7 @@
   <div id="selectedFacets">
             <h1>Results refined by:</h1>
     <ul class="filters">
+      <xsl:call-template name="multiselectFacets"/>
       <xsl:call-template name="selectedViewabilityFacet"/>
       <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
         <xsl:text>
@@ -936,6 +916,41 @@
     </ul>
   </div>
 </xsl:template>
+
+
+<xsl:template name="multiselectFacets">
+  <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/multiselect/multiselectClause">
+    
+        <xsl:text>
+        </xsl:text>
+
+        <li>
+          <xsl:variable name="value">
+            <xsl:value-of select="@name"/>
+          </xsl:variable>
+          
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
+            </xsl:attribute>
+            <xsl:attribute name ="class">
+              unselect
+            </xsl:attribute>
+
+
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
+          </xsl:element>
+          <span class="selectedfieldname">
+          <xsl:value-of select="fieldName"/>
+          </span>
+          <xsl:text>:  </xsl:text>
+          <!--<xsl:value-of select="@name"/>-->
+          <xsl:value-of select ="facetValue"/>
+        </li>
+
+  </xsl:for-each>
+</xsl:template>
+
 
 
 <xsl:template name="selectedViewabilityFacet">

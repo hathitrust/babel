@@ -282,6 +282,10 @@ sub get_Solr_query_string
         }
     }
     
+    # move this to subroutine that returns either empty string or good query
+    my $FACET_OR_QUERY=$self->__get_facet_OR_query($cgi);
+    
+    
     # for temporary debugging of rel ranking
     #  Need a much better mechanisim
 
@@ -290,7 +294,7 @@ sub get_Solr_query_string
         $EXPLAIN='&debugQuery=on';
     }
 
-    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY . $EXPLAIN;    
+    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY . $EXPLAIN;    
     
     # for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
     #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
@@ -372,6 +376,73 @@ sub __get_full_or_limited_filter_query
 }
 
 # ---------------------------------------------------------------------
+
+sub __get_facet_OR_query
+{
+    my $self = shift;
+    my $cgi = shift;
+    
+    my $query ="";
+    
+    my @lang= $cgi->param('facet_lang');
+    my @format = $cgi->param('facet_format');
+    my $clause1;
+    my $clause2;
+
+    my   $clause1 = $self->__getClause(\@lang);
+    my   $clause2 = $self->__getClause(\@format);
+    $query = $clause1 . $clause2;
+    
+    return $query;
+}
+
+sub __getClause
+{
+    my $self = shift;
+    my $ary = shift;
+
+    
+    if (! defined($ary)|| scalar(@{$ary})<1 )
+    {
+        # return blank
+        return "";
+    }
+    my $clause;
+    my $field;
+    
+    foreach my $fquery (@{$ary})
+    {
+        my $cleaned_fquery = $self->__clean_facet_query($fquery);
+        my @rest;
+        ($field,@rest)=split(/\:/,$cleaned_fquery);
+        my $string=join(':',@rest);
+        # &fq=language:( foo OR bar OR baz)
+        $clause.= $string . " OR ";
+    }
+    # remove last OR and add &fq=field:
+    $clause =~s/OR\s*$//g;
+    $clause='&fq=' . $field . ':(' . $clause . ' )';
+
+    
+    return $clause;
+}
+
+#foobar       
+
+    #if (defined (@facetquery))
+#    {
+#        foreach my $fquery (@facetquery)
+#        {
+#            my $cleaned_fquery = $self->__clean_facet_query($fquery);
+#            $FACETQUERY.='&fq=' . $cleaned_fquery;
+#        }
+#    }
+
+#}
+
+
+# ---------------------------------------------------------------------
+
 sub __clean_facet_query
 {
     my $self = shift;

@@ -20,7 +20,7 @@ $(function()
     $('#advanced_searchform').submit(function(event) 
             {
 
-              //rewriteOrFacets();  //doesn't work can do at perl end or fix jquery
+              //              rewriteOrFacets();  //doesn't work can do at perl end or fix jquery
               
               // check that at least one querybox has text in it
               // checkForQuery();
@@ -39,29 +39,50 @@ $(function()
 
 function rewriteOrFacets()
 {
+ 
   var str="";
-  var orstuff=$("select.orFacet option:selected");
-   $(orstuff).each(function()
-    {
-      var p= $("this.parent().attr(name)");
-      str += $(this).text() + " ";
-    }  
-                );
+  //   var orstuff=$("select.orFacet option:selected");
 
- alert(str +"\n");
+  var orstuff=$("select.orFacet");
+  
+  $(orstuff).each(function(index,element)
+                  {
+                    var clause="";
+                    var facetName = $(this).attr('name');
+                    var selected = $(this).find("option:selected");
+                    $(selected).each(function()
+                                     {
+                                       var facetValue = $(this).val();
+                                       clause += facetValue + " OR "; 
+                                     }
+                                     );
+                    clause=clause.replace(/OR$/,"");
+                    str+='(' + clause + ') AND (' ;                                     
+                  }
+  
+                  );
+  str=str.replace(/\'\)\s+AND\s+\($/,"");
+  alert("str is " + str);
 
-
-  $("select.orFacet").each(function(index)
-  {
-    alert("this is " + this +"index is " +index);
-    var s=$("this option:selected");
-    alert("s is " + s +"index is " +index);
-  }
-
+  /**
+  var facetOp=$("#facet_lang");
+  
+  var langstuff= $(facetOp).filter(orstuff);
+  
+  $(langstuff).each(function(index)
+                    {
+                      var facet=$(this).val();
+                      
+                      str += $(this).text() + " OR ";
+                    }  
+                    );
+  
+  alert(str +"\n");
+  
+  **/  
                            
-                           );
-}
 
+}
 
 
 /**
