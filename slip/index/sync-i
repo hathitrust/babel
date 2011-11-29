@@ -6,7 +6,7 @@ sync-i
 
 =head1 USAGE
 
-% sync-i -r run [-s <slice_size>][-d][-n][-q][-P 1|2]
+% sync-i -r run [-C coll_id] [-s <slice_size>][-d][-n][-q][-P 1|2]
 
 =head1 DESCRIPTION
 
@@ -60,17 +60,18 @@ Description
 
 # ---------------------------------------------------------------------
 sub sync_get_usage {
-    my $s .= qq{Usage: sync-i -r run [-s <slice_size>][-d][-n][-q][-P 1|2]
+    my $s .= qq{Usage: sync-i -r run [-C LARGE_coll_id] [-s <slice_size>][-d][-n][-q][-P 1|2]
                   where -s is slice size of Solr and Mysql id query
                         -q quiet: just print missing ids
                         -P run only phase 1 or 2
+                        -C just do one LARGE coll_id. This forces Phase=1
                         -n ids are not queued, just reported\n};
     return $s;
 }
 
-our ($opt_r, $opt_s, $opt_d, $opt_n, $opt_T, $opt_q, $opt_P);
+our ($opt_r, $opt_s, $opt_d, $opt_n, $opt_T, $opt_q, $opt_P, $opt_C);
 
-my $ops = getopts('r:s:dnTqP:');
+my $ops = getopts('r:s:dnTqP:C:');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -91,9 +92,10 @@ my $INTERACTIVE = $ENV{TERM};
 my $HOST = `hostname`;
 $HOST =~ s,\..*$,,s;
 
+my $COLL_ID = $opt_C; # optional
 my $NOOP = defined($opt_n); # optional
 my $VERBOSE = (! defined($opt_q));
-my $PHASE = $opt_P;
+my $PHASE = defined($COLL_ID) ? 1 : $opt_P;
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
@@ -293,7 +295,13 @@ sub handle_synchronization {
     my $searcher = new Search::Searcher($engine_uri, undef, 1);
     my $rs = new Result::SLIP();
 
-    my ($ok, $coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
+    my ($ok, $coll_id_arr_ref);
+    if ($COLL_ID) {
+        ($ok, $coll_id_arr_ref) = (1, [$COLL_ID]);
+    }
+    else {
+        ($ok, $coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
+    }
     __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR, 
                 qq{Failed to get large coll_ids\n});
 
@@ -340,7 +348,6 @@ sub handle_synchronization {
         }
         else {
             my $id_ct = 0;
-            my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
             
             foreach my $id (@$id_arr_ref) {
                 my $safe_id = Identifier::get_safe_Solr_id($id);
@@ -360,7 +367,7 @@ sub handle_synchronization {
                 }
 
                 if ($rs->get_num_found() == 0) {
-                    # Do not report ids missing from Solr is the
+                    # Do not report ids missing from Solr if the
                     # attr=8 (nobody) -- these will never be in Solr
                     # due to Deletes handling
                     my ($namespace, $barcode) = split(/\./, $id);
