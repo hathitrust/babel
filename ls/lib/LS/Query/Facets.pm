@@ -322,6 +322,7 @@ sub get_Solr_query_string
 #  __get_full_or_limited_filter_query
 #
 #      filter query (fq) for Full text or search only
+#      based on holdings 
 # ---------------------------------------------------------------------
 sub __get_full_or_limited_filter_query
 {
@@ -340,37 +341,17 @@ sub __get_full_or_limited_filter_query
         if ( $query_type eq 'search_only') 
         {
             $RQuery = $self->get_Solr_no_fulltext_filter_query($C);
-            eval 
-            {
-                $attr_list_aryref = Access::Rights::get_no_fulltext_attr_list($C);
-            };
-            
         }
         elsif ( $query_type eq 'full_text') 
         {
             $RQuery = $self->get_Solr_fulltext_filter_query($C);
-            eval 
-            {
-                $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
-            };
         }
         else
         {
             ASSERT(0,qq{LS::Query::Facets::get_solr_query_string: wrong query type $query_type});
         }
         
-        $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
-        #old
-        $FQ = '&fq=' . $RIGHTS;
-#        #new
         $FQ = '&' . $RQuery;
-#        # debug hack
-#        # pretend rights=3 opb is really orphan rights attribute (i.e. 4)
-#        if (DEBUG('orphans'))
-#        {
-#            $FQ=~s/rights:4/rights:3/g;
-#        }        
-
     }
    
 
@@ -382,11 +363,7 @@ sub __get_full_or_limited_filter_query
               return $rq;
               
           });
-
-
-    
     return $FQ;
-
 }
 
 # ---------------------------------------------------------------------
