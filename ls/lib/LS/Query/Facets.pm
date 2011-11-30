@@ -225,10 +225,10 @@ sub get_Solr_query_string
     my $C = shift;
     
     # Cache to avoid repeated MySQL calls in Access::Rights
-#XXX tbw commented this out for testing 
-#    if ($self->get_cached_Solr_query_string()) {
-#        return $self->get_cached_Solr_query_string();
-#    }
+
+    if ($self->get_cached_Solr_query_string()) {
+        return $self->get_cached_Solr_query_string();
+    }
     
     my $cgi = $C->get_object('CGI');
    
