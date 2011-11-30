@@ -726,44 +726,48 @@ sub handle_ADVANCED_SEARCH_PI
     my ($C, $act, $piParamHashRef) = @_;
     my $fconfig=$C->get_object('FacetConfig');
     my $cgi = $C->get_object('CGI');
+    
+    my $param2userMap =      $fconfig->{field_2_display};
 
-# move this map to the config object
-    my $param2userMap={
-                           'author'=>'author',
-                           'title'=>'title',
-                           'subject'=>'subject', 
-                           'hlb3'=>'Academic Discipline',
-                           'ocr'=> 'full text',
-                            'all'=>'all marc',
-                            'callnumber'=>'callnumber',
-                            'publisher'=>'publisher',
-                            'series'=>'serialtitle',
-                            'year'=>'year',
-                            'isn'=>'isn',
-                          };
+    
     #get query params from cgi and map to user friendly fields using config
     # put the stuff inside the for loop in a subroutine!
     my $output;
+    my $qcount=0;
+    
     for my $i (1..4)
     {
         my $q     = $cgi->param('q' . $i);
+        if (defined($q) && $q ne "")
+        {
+            $qcount++;
+        }
+        
         my $op    = $cgi->param('op' . $i);
         if (!defined($op))
         {
             $op='AND';
         }
-        if ($i ==1)
+        # is this the first op with a populated query? if so don't put in an op
+        if ($qcount ==1)
         {
             $op="";
         }
     
         my $field = $cgi->param('field' . $i);
+        # XXX hack.  Should at least read default field from config file
+        # special case for basic search where there is no field  param
+        if ( $i ==1 && defined($q) && (!defined ($field)))
+             {
+                 $field='ocr';
+             }
+                                      
         my $user_field= $param2userMap->{$field} ;
 
         my $clause;
         if (defined ($q))
         {
-            
+
             $clause .=wrap_string_in_tag($i, 'Qnum');
             $clause .=wrap_string_in_tag($q ,'Query');
             $clause .=wrap_string_in_tag($op, 'OP');

@@ -21,20 +21,43 @@ $(function()
             {
 
               //              rewriteOrFacets();  //doesn't work can do at perl end or fix jquery
-              
               // check that at least one querybox has text in it
-              // checkForQuery();
-              //               $(':input.querybox') length or something
-              
-              //              rows = removeAndConsolidateBlankRows(rows);
-              rows = removeBlankRows(rows);
-              redirect(rows);
+               var queryExists = checkForQuery();
+                            
+               if (queryExists === true)
+               {
+                 //              rows = removeAndConsolidateBlankRows(rows);
+                 rows = removeBlankRows(rows);
+                 redirect(rows);
+               }
               event.preventDefault();
             }
                                      );
   }
   );
 
+//--------------------------------------------------------------------------------------
+
+function checkForQuery()
+{
+  var queryExists=false;
+  var queries = $(":input.querybox");
+  $(queries).each (function (index,element)
+                   {
+                     var value=$(element).val();
+                     if (value !== "")
+                     {
+                       queryExists=true;
+                     }
+                   }
+                   );
+  if (queryExists === false)
+  {
+    // alert for now.  Change to nicer styled message written to div like other error messages
+    alert("you must enter a query");
+  }
+  return queryExists;
+}
 
 
 function rewriteOrFacets()
