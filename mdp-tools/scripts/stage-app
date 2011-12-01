@@ -50,6 +50,7 @@ use File::Basename;
 my $LOCATION = dirname(__FILE__);
 
 use ToolLib;
+use Date::Calc qw(Today_and_Now Delta_DHMS);
 
 sub stage_app_usage {
     my $s = qq{Usage: stage-app [options] [<app> [<app>]+]
@@ -250,6 +251,8 @@ sub stage_origin_master_branch {
 
         list_submodule_dependencies($app_dir);
 
+        handle_staging_rdist_hook($app);
+
         PrintY("Begin sanity checks ...\n");
         print `$LOCATION/sanity-app -s$STAGE $app`;
         $rc |= $?;
@@ -322,7 +325,63 @@ sub stage_topic_branch {
 
     PrintY(qq{Staging via clone succeeds\n}) unless ($rc);
 
+    handle_staging_rdist_hook($app, $STAGE, $dest_app_root);
+
     return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item handle_staging_rdist_hook
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_staging_rdist_hook {
+    my $app = shift;
+    my $server = shift;
+    my $dest_app_root = shift;
+
+    my ($src_repo_root, $src_app_root) = get_HTDE_roots();
+
+    my $stage_rdist_script = qq{$src_app_root/$app/bin/rdist.app.stage};
+
+    if (! -e $stage_rdist_script) {
+        PrintY(qq{No stage rdist script ... skip\n});
+    }
+    else {
+        my $opt;
+        if ($server) {
+            $opt .= " -d SERVER=$server.babel.hathitrust.org ";
+        }
+        if ($dest_app_root) {
+            $opt .= " -d APP_dest_root=$dest_app_root";
+        }
+
+        my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
+
+        PrintY(qq{Now running stage rdist script=$stage_rdist_script options="$opt"...\n});
+        print qx(rdist $opt -f $stage_rdist_script);
+
+        if ($?) {
+            PrintN("ERROR: rdist stage script failure\n");
+            return 0;
+        }
+        
+        my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
+        
+        my ($Dd,$Dh,$Dm,$Ds) =
+          Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
+                     $year2,$month2,$day2,$hour2,$min2,$sec2);
+        
+        my $e = sprintf("Stage rdist succeeds. Elapsed=%02d:%02d\n", $Dm, $Ds);
+        PrintY($e);
+    }
+
+    return 1;
 }
 
 __END__;
