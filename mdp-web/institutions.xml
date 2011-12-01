@@ -307,6 +307,12 @@
       authtype="shibboleth"
       domain="emory.edu"
       enabled="1">Emory University</Inst>
+  <Inst
+      sdrinst="ucsc"
+      template="https://___HOST___/Shibboleth.sso/ucsc?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ucsc.edu"
+      enabled="1">University of California, Santa Cruz</Inst>
 
   <!-- waiting -->
 
@@ -322,12 +328,6 @@
       authtype="shibboleth"
       domain="ucsb.edu"
       enabled="0">University of California, Santa Barbara</Inst>
-  <Inst
-      sdrinst="ucsc"
-      template="https://___HOST___/Shibboleth.sso/ucsc?target=___TARGET___"
-      authtype="shibboleth"
-      domain="ucsc.edu"
-      enabled="0">University of California, Santa Cruz</Inst>
   <Inst
       sdrinst="harvard"
       template="https://___HOST___/Shibboleth.sso/harvard?target=___TARGET___"
