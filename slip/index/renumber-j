@@ -77,7 +77,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub renum_get_usage {
-    my $s = qq{Usage: renumber-j -r run -t run [-d][-T]\n};
+    my $s = qq{Usage: renumber-j -r run -t run [-d][-T]
+             where:
+                -r = run number to be renumbered (probably a re-indexing run)
+                -t = number to renumber to (probably a production run)\n};
     return $s;
 }
 
@@ -154,7 +157,7 @@ sub c_renumber {
     # Make sure.
     my $ct = Db::Test_j_rights_timestamp($C, $dbh, $to_run);
     if ($ct > 0) {
-        __output(qq{Looks like run=$to_run still exists.  Exit.});
+        __output(qq{Looks like run=$to_run still exists.  Exit.\n});
         exit 0;
     }
     
@@ -240,6 +243,7 @@ sub c_renumber {
 
     Log_renumber($C, $from_run, $to_run);
     __output(qq{\n\tRe-numbered from run $from_run to run $to_run\n\n});
+    __output(qq{\nWARN: update production configuration (run-${to_run}.conf) to match re-indexing configuration (run-${from_run}.conf)\n\n});
 }
 
 
