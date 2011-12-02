@@ -1,4 +1,4 @@
-alert("this is ls_advanced.js");
+alert("this is ls_advanced.js edited");
 /**
 1) remove all parameters for any rows with a blank query box   DONE
 2) do we want to bother renumbering them?                    yes DONE
@@ -14,30 +14,85 @@ Need to be able to exclude a javascript call? or rename form?
 
 $(function()
   {
+
+    // hide extra yop boxes
+    $(".yop").val('').hide();
+    // show yop-start
+    $('#yop-start').show().val("");
+
+
     var rows= new Array();
-
-
     $('#advanced_searchform').submit(function(event) 
             {
 
               //              rewriteOrFacets();  //doesn't work can do at perl end or fix jquery
               // check that at least one querybox has text in it
                var queryExists = checkForQuery();
-                            
+               
                if (queryExists === true)
                {
-                 //              rows = removeAndConsolidateBlankRows(rows);
-                 rows = removeBlankRows(rows);
-                 redirect(rows);
+                 var validOrBlankPdate=checkPdate();
+                 if (validOrBlankPdate === false)
+                 {
+
+                 }
+                 else
+                 {
+                   //              rows = removeAndConsolidateBlankRows(rows);
+                   rows = removeBlankRows(rows);
+                   redirect(rows);
+                 }
                }
-              event.preventDefault();
+               event.preventDefault();
             }
                                      );
   }
   );
 
 //--------------------------------------------------------------------------------------
+function checkPdate()
+{
+  var isValid=true;
+  // get any non blank pdate param and check that it is \d+ (allow 0-9999as a date since we have some cataloged at 494 and 9999)
+  // 
+  /***
+      TODO:
+1) limit to numbers up to 9999
+2) make sure start date is less than end date
+   ***/
+  
+  var pdates = $(":input.yop");
 
+  $(pdates).each (function (index,element)
+                   {
+                     var value=$(element).val();
+                     
+                     if ( ( value.match(/^\s*\d+\s*$/))|| (value === "") )
+                     {
+                       // its ok if its blank or a number
+                     }
+                     else{
+                       alert("You must enter a number from 0 to 9999 for the publication date");
+                       isValid = false;
+                       return isValid;
+                     }
+                   });
+  if (isValid === true){
+
+    var startDate = $("#yop-start").val();
+    var endDate= $("#yop-end").val();
+    
+    if ( startDate  > endDate  )
+    {
+      alert("start date must be less than end date");
+      return false;
+    }
+    
+  }  
+  return isValid;
+}
+  
+  //--------------------------------------------------------------------------------------
 function checkForQuery()
 {
   var queryExists=false;
@@ -290,3 +345,33 @@ function replaceRows(formValues,rows)
 
   return newURLString;
 }
+
+
+//------------copied from Bill/Jeremy catalog code
+// why is yop hard coded in the hide and nowhere else?
+
+function changeRange(id) 
+{
+      sel = $('#' + id);
+      name = sel.attr('name');
+      val = sel.val();
+      $(".yop").val('').hide();
+      if (val == 'before') {
+        $('#' + name + '-end').val('').show().val("");
+      }
+      if (val == 'after') {
+        $('#' + name + '-start').show().val("");
+      }
+      
+      if (val == 'between') {
+        $('#' + name + '-start').show().val("");
+        $('#' + name + '-between').show();
+        $('#' + name + '-end').show().val("");
+      }
+      
+      if (val == 'in') {
+       $('#' + name + '-in').show().val(''); 
+      }
+      
+}
+

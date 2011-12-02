@@ -284,6 +284,7 @@ sub get_Solr_query_string
     
     # move this to subroutine that returns either empty string or good query
     my $FACET_OR_QUERY=$self->__get_facet_OR_query($cgi);
+    my $DATE_RANGE = $self->__get_date_range($cgi);
     
     
     # for temporary debugging of rel ranking
@@ -294,7 +295,7 @@ sub get_Solr_query_string
         $EXPLAIN='&debugQuery=on';
     }
 
-    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY . $EXPLAIN;    
+    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY .$DATE_RANGE .  $EXPLAIN;    
     
     # for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
     #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;
@@ -319,6 +320,7 @@ sub get_Solr_query_string
 
     return $solr_query_string;
 }
+
 
 #----------------------------------------------------------------------
 #
@@ -743,6 +745,52 @@ sub __hide_dismax
 }
 
 # ---------------------------------------------------------------------w
+
+#----------------------------------------------------------------------
+#
+#  __get_date_range($cgi);
+#
+#      filter query (fq) for date ranges 
+# ---------------------------------------------------------------------
+sub __get_date_range
+{
+    my $self = shift;
+    my $cgi =  shift;
+    my $q="";
+    my $fq="";
+    
+    my $start = $cgi->param('pdate_start');
+    my $end =   $cgi->param('pdate_end');
+    my $pdate = $cgi->param('pdate');
+    # do we need to trim these values?
+
+    if (defined($pdate)&& $pdate ne "")
+    {
+        $fq='publishDateTrie:' . $pdate;
+    }
+    elsif ( (defined($start)&& $start ne "")    || (defined($end) && $end ne "") )
+    {
+        if ($start eq "")
+        {
+            $start='*';
+            
+        }
+        elsif ($end eq "")
+        {
+            $end = '*';
+        }
+        
+        $fq='publishDateTrie:[ ' . $start . ' TO ' . $end . ' ]'; 
+    }
+    
+    $q='&fq=' . $fq;
+    
+    return  $q;
+    
+}
+
+
+# ---------------------------------------------------------------------
 
 # XXX think about how this might be refactored to also allow Blacklight style showing paged,sorted values for a particular facet
 # or is that a different api call?

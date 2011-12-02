@@ -32,6 +32,10 @@
    'field2'    => '.*',
    'field3'    => '.*',
    'field4'    => '.*',
+   'yop'    => '.*',
+   'pdate'    => '\d+',
+   'pdate_start'    => '\d+',
+   'pdate_end'    => '\d+',
   );
 
 # Specification of global *database* operations to be executed before

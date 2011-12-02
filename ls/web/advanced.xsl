@@ -96,10 +96,6 @@
             
             <span style="margin-left: 4em">
               
-              <span style="margin-right: 1em;">Year of publication:
-              (not working)</span> 
-              
-              <!--
                    <select id="yop" name="yop" onchange="changeRange('yop')">
                      <option value="before">Before or during</option>
                      <option value="after" selected="selected" >During or after</option>
@@ -108,12 +104,11 @@
                    </select>
                    
                    
-                   <input class="yop" id="yop-start" type="text" size="4"
-                     name="fqrange-start-publishDateTrie-1" />
+                   <input class="yop" id="yop-start" type="text" size="4"  name="pdate_start" />
                    <span class="yop" id="yop-between" > and </span>
-                   <input class="yop"  id="yop-end" type="text" size="4" name="fqrange-end-publishDateTrie-1"/>
-                   <input class="yop" id="yop-in" type="text" size="4" name="fqor-publishDateTrie[]"/>
-                   -->
+                   <input class="yop"  id="yop-end" type="text" size="4" name="pdate_end"/>
+                   <input class="yop" id="yop-in" type="text" size="4" name="pdate"/>
+
                  </span>
 
                  
