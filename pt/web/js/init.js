@@ -87,6 +87,7 @@ HT.config = HT.config || {};
 
 HT.config.ARBITRARY_PADDING = 65;
 HT.config.ARBITRARY_WINDOW_WIDTH = 915;
+HT.config.CHOKE_DIM = 937;
 
 // bookreader utility
 // seed hash based on URL parameters as needed

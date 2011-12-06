@@ -19,8 +19,16 @@ $(document).ready(function() {
   
   $("#mdpImage").load(function() {
     var $container = $("#mdpContentContainer");
-    if ( $(this).height() < $container.height() ) {
-      var h = $(this).height() + 10;
+    var height = $(this).height();
+    var width = $(this).width();
+    if ( height == HT.config.CHOKE_DIM && width == HT.config.CHOKE_DIM ) {
+      // throttled!!
+      height = 930;
+      width = 640;
+      $(this).css({ height : height, width : width });
+    }
+    if ( height < $container.height() ) {
+      var h = height + 10;
       $container.height($container.height())
                 .css('min-height', '')
                 .removeClass('fakeContentLoader')

@@ -10,3 +10,6 @@
 [submodule "vendor/slip-lib/lib"]
 	path = vendor/slip-lib/lib
 	url = /htapps/repos/slip-lib.git
+[submodule "vendor/plack-lib/lib"]
+	path = vendor/plack-lib/lib
+	url = /htapps/repos/plack-lib.git

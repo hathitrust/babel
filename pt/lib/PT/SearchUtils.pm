@@ -154,6 +154,28 @@ sub maybe_Solr_index_item {
     return ($index_state, $data_status, $metadata_status, $g_stats_hashref);
 }
 
+sub has_Solr_index_item {
+    my ($C, $run, $id, $g_stats_ref) = @_;
+
+    use constant COMMIT_TIMEOUT => 60;
+
+    my $start_0 = Time::HiRes::time();
+
+    # Indexed ?
+    my $do_index = 0;
+
+    my $rs = new Search::Result::SLIP_Raw;
+    my $searcher = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
+    my $safe_id = Identifier::get_safe_Solr_id($id);
+    my $query = qq{q=vol_id:$safe_id&start=0&rows=1&fl=timestamp};
+
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+    $g_stats_ref->{update}{check} = __timer($start_0);
+
+    my $indexed = $rs->get_num_found();
+    
+    return $indexed;
+}
 
 # ---------------------------------------------------------------------
 

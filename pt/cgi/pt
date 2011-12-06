@@ -30,7 +30,7 @@ umask 0000;
 # ----------------------------------------------------------------------
 BEGIN {
     ( $main::realSTART ) = time;
-    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
     ## $ENV{TEST_BLACKLIST} = 1;
 }
 
@@ -142,7 +142,7 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq '
     
     # set up text, image or pdf handlers for this request
     $gMdpItem->DetermineAndSetContentHandler();
-    
+
     # There will only be a "requested rotation" value if the user
     # clicked on a "rotate image" button
     if ( $gCgi->param( 'view' ) eq 'image' ) {
@@ -160,7 +160,7 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq '
     elsif ( $gCgi->param( 'view' ) eq 'text' || $gCgi->param( 'view' ) eq 'plaintext' ) {
         # "text" view will eventually be handled by BookReader
         $gMdpItem->OcrHandler($C);
-            
+
         # add line breaks to text with highlights and map special highlight chars
         PT::PageTurnerUtils::format_OCR_text( $gMdpItem->GetOcrTextRef(), 1 );
     }
@@ -203,23 +203,23 @@ exit 0;
 # ----------------------------------------------------------------------
 sub ValidityChecks {
     my ( $cgi ) = @_;
-    
+
     my $rc = PT::Prolog::ST_EMPTY;
     my $id = $cgi->param('id');
-    
+
     # There must be a valid id of an item to view
     Utils::silent_ASSERT(Identifier::validate_mbooks_id($cgi),
                          qq{Invalid document id provided.});
-    
+
     # lose any image map params
     $cgi->delete( 'x' );
     $cgi->delete( 'y' );
-    
+
     my $page = $cgi->param( 'page' );
     if (! grep(/^$page$/, @PTGlobals::gValidPageValues )) {
         $cgi->param( 'page', 'root' );
     }
-    
+
     my $seq = $cgi->param( 'seq' );
     my $num = $cgi->param( 'num' );
     if (! ($seq || $num) )
@@ -227,7 +227,7 @@ sub ValidityChecks {
         # Support for starting at the title page
         $rc |= PT::Prolog::ST_SEQ_NOT_SUPPLIED;
     }
-    
+
     # Set defaults to be overridden if processing for missing seq and
     # num is available downstream
     $seq =~ s,^[^0-9]*?(\d+).*?$,$1,;
@@ -237,14 +237,14 @@ sub ValidityChecks {
     else {
         $cgi->param( 'seq', $seq );
     }
-    
+
     my $view = $cgi->param( 'view' );
     my $size = $cgi->param( 'size' );
     my $orient = $cgi->param( 'orient' );
-    
+
     if ( ! $view ||
          ! grep(/^$view$/, (@PTGlobals::gViewTypes, @PTGlobals::gAuthdViewTypes))) {
-        if ( $cgi->param( 'ssd' ) ) { 
+        if ( $cgi->param( 'ssd' ) ) {
             # 'ssd' URL param is deprecated
             $cgi->param( 'view', $PTGlobals::gDefaultSsdView );
         }
@@ -252,18 +252,18 @@ sub ValidityChecks {
             $cgi->param( 'view', $PTGlobals::gDefaultView );
         }
     }
-    
+
     if (! $size ||
         ! exists($PTGlobals::gSizes{$size})) {
         $cgi->param( 'size', $PTGlobals::gDefaultSize );
     }
-    
+
     ## assume defaults later down the road
     # if (! defined($orient) ||
     #     ! exists( $PTGlobals::gValidRotationValues{$orient})) {
     #     $cgi->param( 'orient', $PTGlobals::gDefaultOrientation );
     # }
-    
+
     return $rc;
 }
 

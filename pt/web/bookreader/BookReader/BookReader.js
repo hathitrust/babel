@@ -470,6 +470,11 @@ BookReader.prototype.drawLeafsOnePage = function() {
             
         } else {
             //console.log("not displaying " + indicesToDisplay[i] + ' score=' + jQuery.inArray(indicesToDisplay[i], this.displayedIndices));            
+            var $pagediv = $("#pagediv" + index);
+            if ( $pagediv.has('.choked').length ) {
+              var img = this.createContentElement(index, this.reduce, width, height);
+              $(img).replaceAll($pagediv.find(".choked"));
+            }
         }
 
         leafTop += height +10;
@@ -803,16 +808,23 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
             var target_width = width;
             
             var fudged = false;
-            if ( self.hasPageFeature(index, "FUDGED") ) {
-              var slice = self.sliceFromIndex(index);
-              var true_height = this.height * reduce;
-              var true_width = this.width * reduce;
-              self.bookData[slice.slice]['height'][slice.index] = true_height;
-              self.bookData[slice.slice]['width'][slice.index] = true_width;
-              self.removePageFeature(index, 'FUDGED');
-              target_height = this.height;
-              target_width = this.width;
-              fudged = true;
+            if ( this.height == HT.config.CHOKE_DIM && this.width == HT.config.CHOKE_DIM ) {
+              $(this).addClass("choked");
+              HT.monitor.run(this.src);
+            } else {
+              
+              if ( self.hasPageFeature(index, "FUDGED") ) {
+                var slice = self.sliceFromIndex(index);
+                var true_height = this.height * reduce;
+                var true_width = this.width * reduce;
+                self.bookData[slice.slice]['height'][slice.index] = true_height;
+                self.bookData[slice.slice]['width'][slice.index] = true_width;
+                self.removePageFeature(index, 'FUDGED');
+                target_height = this.height;
+                target_width = this.width;
+                fudged = true;
+              }
+              
             }
             
             $(this).attr({ width : width, height : height });
@@ -2415,14 +2427,21 @@ BookReader.prototype.setMouseHandlers2UP = function() {
 // prefetchImg()
 //______________________________________________________________________________
 BookReader.prototype.prefetchImg = function(index) {
+    var self = this;
     var pageURI = this._getPageURI(index);
+
+    if ( this.twoPage.queue_halted ) {
+      // console.log("PREFETCHIMG HALTED; SKIPPING", index);
+      this.twoPage.queue.push(index);
+      return;
+    }
 
     // Load image if not loaded or URI has changed (e.g. due to scaling)
     var loadImage = false;
     if (undefined == this.prefetchedImgs[index]) {
         //console.log('no image for ' + index);
         loadImage = true;
-    } else if (pageURI != this.prefetchedImgs[index].uri) {
+    } else if (pageURI != this.prefetchedImgs[index].uri || this.prefetchedImgs[index].choked) {
         //console.log('uri changed for ' + index);
         loadImage = true;
     }
@@ -2436,6 +2455,17 @@ BookReader.prototype.prefetchImg = function(index) {
             $(img).css({
                 'background-color': 'transparent'
             });
+        } else {
+          var lazy = new Image();
+          $(lazy).one('load', function() {
+            if ( this.height == HT.config.CHOKE_DIM && this.width == HT.config.CHOKE_DIM ) {
+              $(img).addClass("choked");
+              HT.monitor.run(this.src);
+            }
+            img.src = this.src;
+            self.processPrefetchQueue();
+          })
+          .attr('src', pageURI);
         }
         // UM
         var title = "image of page " + this.getPageNum(index);
@@ -2444,6 +2474,12 @@ BookReader.prototype.prefetchImg = function(index) {
         $(img).attr({ title : title, alt : title });
         this.prefetchedImgs[index] = img;
     }
+    
+    if ( $(this.prefetchedImgs[index]).hasClass("choked") ) {
+      this.prefetchedImgs[index].src = this.imagesBaseURL + 'transparent.png';
+      this.prefetchedImgs[index].src = pageURI;
+    }
+    
 }
 
 
@@ -2598,6 +2634,54 @@ BookReader.prototype.pruneUnusedImgs = function() {
     }
 }
 
+BookReader.prototype.queuePrefetchImg = function(index) {
+  var self = this;
+  
+  if ( this.twoPage.queue === undefined ) {
+    this.twoPage.queue = [];
+  }
+  this.twoPage.queue.push(index);
+  
+  // if ( this.twoPage.queueTimer === undefined ) {
+  //   this.twoPage.queueTimer = setInterval(function() {
+  //     self.processPrefetchQueue();
+  //   }, 500);
+  // }
+}
+
+BookReader.prototype.processPrefetchQueue = function() {
+  if ( this.twoPage.queue === undefined ) {
+    return;
+  }
+  if ( this.twoPage.queue.length == 0 ) {
+    return;
+  }
+  if ( this.twoPage.queue_halted ) {
+    // just in case we're halted?
+    console.log("PREFETCH IS HALTED!!");
+    return;
+  }
+  
+  var n = $(".prefetch2up").length;
+  if ( n >= 2 ) {
+    // don't fetch too many at once!
+    console.log("TOO MANY BEING FETCHED: ", n);
+    return;
+  }
+  
+  var index = this.twoPage.queue.pop();
+  console.log("PREFETCHING:", index, n);
+  this.prefetchImg(index);
+}
+
+BookReader.prototype.suspendQueue = function() {
+  this.twoPage.queue_halted = true;
+}
+
+BookReader.prototype.resumeQueue = function() {
+  this.twoPage.queue_halted = false;
+}
+
 // prefetch()
 //______________________________________________________________________________
 BookReader.prototype.prefetch = function() {
@@ -2622,13 +2706,17 @@ BookReader.prototype.prefetch = function() {
     for (var i = 1; i <= adjacentPagesToLoad; i++) {
         var goingDown = lowCurrent - i;
         if (goingDown >= start) {
-            this.prefetchImg(goingDown);
+            //this.prefetchImg(goingDown);
+            this.queuePrefetchImg(goingDown);
         }
         var goingUp = highCurrent + i;
         if (goingUp <= end) {
-            this.prefetchImg(goingUp);
+            //this.prefetchImg(goingUp);
+            this.queuePrefetchImg(goingUp);
         }
     }
+    
+    this.processPrefetchQueue();
 
     /*
     var lim = this.twoPage.currentIndexL-4;
