@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
@@ -44,7 +44,7 @@ $app = builder {
     # probably do some generous throttling
     enable
         'Choke::Requests',
-                credit_rate    => [ 0.5, 'min' ],
+                credit_rate    => [ 0.5, 'sec' ],
                 max_debt       => [ 50, '+30 sec' ]
         ;
 
