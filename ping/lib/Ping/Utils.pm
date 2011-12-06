@@ -39,7 +39,11 @@ sub identify_user {
     
     my $print_disabled = $auth->get_eduPersonEntitlement_print_disabled($C);
     
-    return { auth_type => $auth_type, displayName => $displayName, affiliation => $affiliation, print_disabled => $print_disabled };
+    return { authType => $auth_type, 
+             displayName => $displayName, 
+             affiliation => $affiliation, 
+             institution => $auth->get_institution(),
+             u => $print_disabled };
 
 }
 

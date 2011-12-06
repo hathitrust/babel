@@ -163,7 +163,7 @@ JAVASCRIPT
         my $displayName = uri_escape($$info{displayName});
         my $affiliation = uri_escape($$info{affiliation});
         # $response->body(qq{$callback(true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN");});
-        $response->body(_body($callback, 'true', $displayName, $affiliation, $$info{auth_type}, $$info{print_disabled}, "LOGGED IN"));
+        $response->body(_body($callback, 'true', $displayName, $affiliation, $$info{authType}, $$info{u}, "LOGGED IN"));
         return $response->finalize;
     }
     

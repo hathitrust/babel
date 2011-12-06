@@ -116,7 +116,7 @@ my $app = sub {
     $response->cookies->{'HTstatus'} = {
         'value' => encode_json($info),
         'path'  => '/',
-        'domain' => Session::get_cookie_domain()
+        'domain' => Utils::get_cookie_domain()
     };
 
     $response->redirect($target_url);
