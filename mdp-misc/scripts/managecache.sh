@@ -23,6 +23,7 @@
 
 # maximum number of days since last use to keep files
 MAXDAYS=7
+CHOKE_DIR=/ram/choke
 
 # minimum amount of space that must be free (KB)
 #MINFREE=2000000
@@ -31,7 +32,7 @@ renice 19 $$ > /dev/null 2>&1
 
 EXIT=0
 
-for CACHEDIR in `dirname $0`/../../cache; do
+for CACHEDIR in `dirname $0`/../../cache $CHOKE_DIR; do
   if [ ! -d $CACHEDIR ]; then
     echo "warning: cache directory $CACHEDIR does not exist"
 
