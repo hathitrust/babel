@@ -73,7 +73,10 @@ my $CO = new Collection($DBH, $CONFIG, 'no_owner');
 $C->set_object('Collection', $CO);
 
 CB_delete_extras($C);
-CB_do_update_metadata($C);
+my ($num_processed, $num_updated, $queue_error, $num_fetch_failed, $num_update_failed) 
+  = CB_do_update_metadata($C);
+
+__P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_fetch_failed=$num_fetch_failed num_update_failed=$num_update_failed\n});
 
 email_report()
   if ($EMAIL);
@@ -367,7 +370,8 @@ sub CB_do_update_metadata {
             last;
         }
     }
-    __P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_fetch_failed=$num_fetch_failed num_update_failed=$num_update_failed\n});
+
+    return ($num_processed, $num_updated, $queue_error, $num_fetch_failed, $num_update_failed);
 }
 
 
