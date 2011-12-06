@@ -51,7 +51,7 @@ use Mail::Mailer;
 use MetadataQueue;
 use MBooks::MetaDataGetter;
 
-my $MSG_BUFFER = '';
+my $EMAIL_BUFFER = '';
 
 #
 # Establish and populate the Context.  Order dependent.
@@ -78,8 +78,6 @@ CB_do_update_metadata($C);
 email_report()
   if ($EMAIL);
 
-Utils::Logger::__Log_string($C, $MSG_BUFFER, 'metadata_update_logfile', '___QUERY___', 'mb');
-
 exit 0;
 
 # ---------------------------------------------------------------------
@@ -94,10 +92,16 @@ Description
 sub __P {
     my $msg = shift;
 
-    $MSG_BUFFER .= $msg;
+    if ($EMAIL) {
+        $EMAIL_BUFFER .= $msg;
+    }
+
+    if ($ENV{'TERM'}) {
+        print STDOUT qq{$msg};
+    }
     
-    return if (! $ENV{'TERM'});
-    print STDOUT qq{$msg};
+    chomp($msg);
+    Utils::Logger::__Log_string($C, $msg, 'metadata_update_logfile', '___QUERY___', 'mb');
 }
 
 # ---------------------------------------------------------------------
@@ -122,7 +126,7 @@ sub email_report {
                    'From'    => $g_assert_email_from_addr,
                    'Subject' => $email_subject,
                   });
-    print $mailer($MSG_BUFFER);
+    print $mailer($EMAIL_BUFFER);
     $mailer->close;
 }
 
