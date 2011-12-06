@@ -225,6 +225,7 @@ sub get_Solr_query_string
     my $C = shift;
     
     # Cache to avoid repeated MySQL calls in Access::Rights
+
     if ($self->get_cached_Solr_query_string()) {
         return $self->get_cached_Solr_query_string();
     }
@@ -321,6 +322,7 @@ sub get_Solr_query_string
 #  __get_full_or_limited_filter_query
 #
 #      filter query (fq) for Full text or search only
+#      based on holdings 
 # ---------------------------------------------------------------------
 sub __get_full_or_limited_filter_query
 {
@@ -331,35 +333,26 @@ sub __get_full_or_limited_filter_query
     my $query_type=$self->get_query_type($C);
         
     my $FQ = '';
-    my $RIGHTS;
+    my $RQuery;
     my $attr_list_aryref;    
 
     if ( $query_type ne 'all') {
         if ( $query_type eq 'search_only') 
         {
-            eval 
-            {
-                $attr_list_aryref = Access::Rights::get_no_fulltext_attr_list($C);
-            };
-            
+            $RQuery = $self->get_Solr_no_fulltext_filter_query($C);
         }
         elsif ( $query_type eq 'full_text') 
         {
-            eval 
-            {
-                $attr_list_aryref = Access::Rights::get_fulltext_attr_list($C);
-            };
+            $RQuery = $self->get_Solr_fulltext_filter_query($C);
         }
         else
         {
             ASSERT(0,qq{LS::Query::Facets::get_solr_query_string: wrong query type $query_type});
         }
-        
-        $RIGHTS ='rights:(' . join(' OR ', @$attr_list_aryref) .  ')';
-
-        $FQ = '&fq=' . $RIGHTS;
-
     }
+    
+    $FQ = '&' . $RQuery;
+    
     DEBUG('rights',
           sub
           {  
@@ -368,6 +361,7 @@ sub __get_full_or_limited_filter_query
               return $rq;
               
           });
+
     return $FQ;
 }
 
