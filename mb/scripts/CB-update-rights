@@ -29,10 +29,11 @@ use Getopt::Std;
 
 my $INTERACTIVE = $ENV{TERM};
 
-our ($opt_e);
+our ($opt_e, $opt_I);
 
-my $ops = getopts('e');
+my $ops = getopts('eI:');
 my $EMAIL = $opt_e;
+my $ID = $opt_I;
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -74,7 +75,7 @@ $C->set_object('Collection', $CO);
 
 CB_delete_extras($C);
 my ($num_processed, $num_updated, $queue_error, $num_fetch_failed, $num_update_failed) 
-  = CB_do_update_metadata($C);
+  = CB_do_update_metadata($C, $ID);
 
 __P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_fetch_failed=$num_fetch_failed num_update_failed=$num_update_failed\n});
 
@@ -193,21 +194,21 @@ sub CB_delete_extras {
 
 # ---------------------------------------------------------------------
 
-=item __cb_get_metadata_hashref
+=item __cb_get_vufind_metadata_hashref
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __cb_get_metadata_hashref {
+sub __cb_get_vufind_metadata_hashref {
     my $C = shift;
     my $id = shift;
 
     my $mdg = new MBooks::MetaDataGetter($C, [$id]);
     my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, [$id]);
 
-    if ($metadata_aryref) {
+    if (scalar @$metadata_aryref) {
         my $metadata_hashref = $metadata_aryref->[0];
         $metadata_hashref = $mdg->normalize_metadata($metadata_hashref);
         
@@ -296,6 +297,39 @@ sub __format_metadata_diff {
     return (scalar(@diffs) ? join("\n\t", @diffs) : undef);
 }
 
+
+# ---------------------------------------------------------------------
+
+=item fetch_next_item
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+my $single_fetched = 0;
+
+sub fetch_next_item {
+    my ($C, $single_id) = @_;
+    
+    my ($ok, $id);
+    
+    if (defined($single_id)) {
+        if ($single_fetched) {
+            ($ok, $id) = (1, undef);
+        }
+        else {
+            ($ok, $id) = (1, $single_id);
+            $single_fetched = 1;
+        }
+    }
+    else {
+        ($ok, $id) = MetadataQueue::get_next_metadata_item_id($C, $DBH);
+    }
+    
+    return ($ok, $id);
+}
+
 # ---------------------------------------------------------------------
 
 =item CB_do_update_metadata
@@ -306,7 +340,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub CB_do_update_metadata {
-    my($C) = @_;
+    my($C, $single_id) = @_;
 
     __P(qq{update metadata:\n});
 
@@ -318,7 +352,7 @@ sub CB_do_update_metadata {
     my $num_update_failed = 0;
     
     while (1) {
-        my ($ok, $id) = MetadataQueue::get_next_metadata_item_id($C, $DBH);
+        my ($ok, $id) = fetch_next_item($C, $single_id);
         
         if ($ok) {
             if ($id) {
@@ -326,11 +360,12 @@ sub CB_do_update_metadata {
 
                 if (! $CO->item_exists($id)) {
                     # Only update ids that are in collections -- remove from queue
-                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id)
+                        if (! defined($single_id));
                     next;
                 }
                 
-                my $metadata_hashref = __cb_get_metadata_hashref($C, $id);
+                my $metadata_hashref = __cb_get_vufind_metadata_hashref($C, $id);
                 my $fetch_ok = $metadata_hashref ? 1 : 0;
          
                 if ($fetch_ok) {
