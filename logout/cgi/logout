@@ -7,9 +7,6 @@ use CGI;
 my $central = "https://weblogin.umich.edu/cgi-bin/logout";
 my $query_string = "";
 
-# expire and nullify service cookie
-print( "Set-Cookie: $ENV{ COSIGN_SERVICE }=null; path=/; expires=Wednesday, 27-Jan-77 00:00:00 GMT; secure\n" );
-
 if ( $ENV{ QUERY_STRING } =~ m|^(https?://.*)$| ) {
     $query_string = "?$1";
 }
@@ -54,6 +51,13 @@ if (defined($cookies{$cookie_name}))
 }            
 
 # redirect to central weblogin server
-print( "Location: $central$query_string\n\n" );
+print "Status: 302" . $CGI::CRLF;
+
+# expire and nullify service cookie
+my $cookie_domain = Utils::get_cookie_domain();
+print( "Set-Cookie: $ENV{ COSIGN_SERVICE }=null; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
+print( "Set-Cookie: HTstatus=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
+
+print( "Location: $central$query_string" . $CGI::CRLF . $CGI::CRLF );
 
 exit( 0 );
