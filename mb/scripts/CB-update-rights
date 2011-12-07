@@ -76,10 +76,21 @@ my $CO = new Collection($DBH, $CONFIG, 'no_owner');
 $C->set_object('Collection', $CO);
 
 CB_delete_extras($C);
-my ($num_processed, $num_updated, $queue_error, $num_fetch_failed, $num_update_failed) 
+my (
+    $num_processed,
+    $num_updated,
+    $queue_error,
+    $num_metadata_missing,
+    $num_update_failed,
+    $failed_metadata_missing_ids_ref,
+    $failed_metadata_update_ids_ref
+   )
   = CB_do_update_metadata($C, $ID);
 
-__P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_fetch_failed=$num_fetch_failed num_update_failed=$num_update_failed\n});
+my $mm = join("\n", @$failed_metadata_missing_ids_ref);
+my $mu = join("\n", @$failed_metadata_update_ids_ref);
+
+__P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_metadata_missing=$num_metadata_missing num_update_failed=$num_update_failed\n\tmissing_metadata=$mm\n\tfailed_update=$mu});
 
 email_report()
   if ($EMAIL);
@@ -350,8 +361,11 @@ sub CB_do_update_metadata {
     
     my $num_processed = 0;
     my $num_updated = 0;
-    my $num_fetch_failed = 0;
+    my $num_metadata_missing = 0;
     my $num_update_failed = 0;
+
+    my @failed_metadata_missing_ids = ();
+    my @failed_metadata_update_ids = ();
     
     while (1) {
         my ($ok, $id) = fetch_next_item($C, $single_id);
@@ -362,15 +376,14 @@ sub CB_do_update_metadata {
 
                 if (! $CO->item_exists($id)) {
                     # Only update ids that are in collections -- remove from queue
-                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id)
-                        if (! defined($single_id));
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     next;
                 }
                 
                 my $metadata_hashref = __cb_get_vufind_metadata_hashref($C, $id);
-                my $fetch_ok = $metadata_hashref ? 1 : 0;
+                my $metadata_ok = $metadata_hashref ? 1 : 0;
          
-                if ($fetch_ok) {
+                if ($metadata_ok) {
                     my $o_item_hashref =  __get_o_item_metadata($C, $id);
                     my $update_ok = __cb_update_metadata($C, $id, $metadata_hashref);
                     if ($update_ok) {
@@ -388,13 +401,15 @@ sub CB_do_update_metadata {
                         MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     }
                     else {
-                        # Leave the ID in the queue
+                        push(@failed_metadata_update_ids, $id);
+                        MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                         $num_update_failed++;
                     }
                 }
                 else {
-                    # Leave the ID in the queue
-                    $num_fetch_failed++;
+                    push(@failed_metadata_missing_ids, $id);
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+                    $num_metadata_missing++;
                 }
             }
             else {
@@ -403,12 +418,14 @@ sub CB_do_update_metadata {
             }
         }
         else {
+            MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
             $queue_error = 1;
             last;
         }
     }
-
-    return ($num_processed, $num_updated, $queue_error, $num_fetch_failed, $num_update_failed);
+    
+    return ($num_processed, $num_updated, $queue_error, $num_metadata_missing, $num_update_failed,
+            \@failed_metadata_missing_ids, \@failed_metadata_update_ids);
 }
 
 
