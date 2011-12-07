@@ -27,6 +27,8 @@ Debug options
 use strict;
 use Getopt::Std;
 
+binmode(STDOUT, ":utf8");
+
 my $INTERACTIVE = $ENV{TERM};
 
 our ($opt_e, $opt_I);
