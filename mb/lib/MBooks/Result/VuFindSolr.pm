@@ -356,22 +356,21 @@ sub __get_fieldmap
 sub __set_fieldmap
 {
     my $self = shift;
-    my $fieldmap = shift;
     
     #XXX replace this with something from a conf file in after_initialize
     # key = vuFindSolr field name from schema
     # value = MBooks CB field name
-    my $fieldmap = { 'author'=>'author',
-                     'title'=>'display_title',                     
-                     'titleSort'=>'sort_title',
-                     'publishDate'=>'date',
-                     'ht_id_display'=>'extern_item_id',
-                     'id'=>'bib_id',
-                   };
-    $self->{'fieldmap'}=$fieldmap;
-    
+    $self->{'fieldmap'} = { 'author'        => 'author',
+                            'title'         => 'display_title',                     
+                            'titleSort'     => 'sort_title',
+                            'publishDate'   => 'date',
+                            'ht_id_display' => 'extern_item_id',
+                            'id'            => 'bib_id',
+                          };
 }
+
 # ---------------------------------------------------------------------
+
 =item PRIVATE: __set_result_ids
 
 Description
