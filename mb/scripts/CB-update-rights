@@ -90,7 +90,7 @@ my (
 my $mm = join("\n", @$failed_metadata_missing_ids_ref);
 my $mu = join("\n", @$failed_metadata_update_ids_ref);
 
-__P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_metadata_missing=$num_metadata_missing num_update_failed=$num_update_failed\n\tmissing_metadata=$mm\n\tfailed_update=$mu});
+__P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_metadata_missing=$num_metadata_missing num_update_failed=$num_update_failed\n\tmissing_metadata=$mm\n\tfailed_update=$mu\n});
 
 email_report()
   if ($EMAIL);
