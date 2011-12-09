@@ -44,6 +44,7 @@ use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
 
 use Utils;
+use Utils::Time;
 use Context;
 use Database;
 use MdpConfig;
@@ -396,7 +397,8 @@ sub CB_do_update_metadata {
                         my $affected = join(', ', @buf);
 
                         my $delta = __format_metadata_diff($o_item_hashref, $metadata_hashref);
-                        __P(qq{updated: $id affected=$affected\n\tdelta=} . ($delta ? "\n\t$delta\n" : "none\n"));
+                        my $time = Utils::Time::iso_Time('time');
+                        __P(qq{update [$time]: $id affected=$affected\n\tdelta=} . ($delta ? "\n\t$delta\n" : "none\n"));
                         $num_updated++ if ($delta);
                         MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     }
