@@ -313,15 +313,15 @@
       authtype="shibboleth"
       domain="ucsc.edu"
       enabled="1">University of California, Santa Cruz</Inst>
-
-  <!-- waiting -->
-
   <Inst
       sdrinst="unl"
       template="https://___HOST___/Shibboleth.sso/unl?target=___TARGET___"
       authtype="shibboleth"
       domain="unl.edu"
-      enabled="0">University of Nebraska - Lincoln</Inst>
+      enabled="1">University of Nebraska - Lincoln</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="ucsb"
       template="https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___"
