@@ -39,7 +39,7 @@ my $app = sub {
 
 $app = builder {
 
-    enable "PopulateENV";
+    enable "PopulateENV", app_name => 'htd';
 
     enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
