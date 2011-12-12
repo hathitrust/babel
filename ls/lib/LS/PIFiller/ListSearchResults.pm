@@ -416,11 +416,15 @@ sub handle_FACETS_PI
 
     # unselected= hash key= facet name, values = array of hashes as above
     
-    # output whether any facets are selected include the multivalued and the psuedo facet full-view/limited i.e. lmt param
+    # output whether any facets are selected include the multivalued and the psuedo facet full-view/limited i.e. lmt param  add the date_range facets pdate_start or end but one must be 
+
+
+             
     if (defined ($cgi->param('facet')) || 
         defined ($cgi->param('facet_lang'))
         ||defined ($cgi->param('facet_format'))
         || $cgi->param('lmt') ne "all"
+        || pdate_selected($cgi)
        )
     {
         $xml .= wrap_string_in_tag('true','facetsSelected') . "\n"; 
@@ -434,7 +438,18 @@ sub handle_FACETS_PI
     
     return $xml
 }
-
+#----------------------------------------------------------------------    
+sub pdate_selected
+{
+    my $cgi = shift;
+    
+    # if either pdate_start or pdate_end is defined and non-blank return ture
+    return ( 
+            (! __IsUndefOrBlank($cgi->param('pdate_start')))
+            ||
+            (! __IsUndefOrBlank($cgi->param('pdate_end')))
+              );
+}
 
 #----------------------------------------------------------------------    
 
@@ -520,10 +535,19 @@ sub make_selected_facets_xml
     $xml='<SelectedFacets>' . "\n";
 #   insert any advanced search multiselect OR facets on top of list
     my $multiselect_xml = __get_multiselect_xml($fconfig, $cgi);
-    
     $xml .= $multiselect_xml;
     
-
+    my $daterange_xml;
+    if ( __IsUndefOrBlank($cgi->param('pdate_start')) && __IsUndefOrBlank( $cgi->param('pdate_end')) )
+    {
+        # if they are both blank/undef don't bother getting the xml
+    }
+    else
+    {
+        $daterange_xml= __get_daterange_xml($fconfig, $cgi);
+        $xml .=$daterange_xml;
+    }
+    
     foreach my $facet (@{$selected})
     {
         $unselect_url=$facet->{'unselect_url'};
@@ -538,6 +562,68 @@ sub make_selected_facets_xml
  
     $xml .= '</SelectedFacets>' . "\n";
     return $xml;
+}
+
+#----------------------------------------------------------------------
+
+sub __get_daterange_xml
+{
+    my $fconfig = shift;
+    my  $cgi    = shift;
+   
+    my $xml ="";
+    my $start = $cgi->param('pdate_start');
+    my $end = $cgi->param('pdate_end');
+    my $msg;
+    # pdate already replaced with normal date facet so we only need to deal with start/end pdates
+
+
+   
+    if (__IsUndefOrBlank($start))
+    {
+        $msg= "Before or during $end";
+    }
+    elsif (__IsUndefOrBlank($end))
+    {
+
+       $msg = "During or after $start"
+    }
+    else
+    {
+        $msg =    "Between $start and $end";
+    }
+    
+    my $facetXML = wrap_string_in_tag($msg,'facetString') . "\n"; 
+
+    $xml .= $facetXML;
+    
+    my $unselectURL = get_daterange_unselectURL($fconfig,$cgi);
+    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n"; 
+    $xml .= $unselectURLXML;
+     
+    my    $daterange_xml .= wrap_string_in_tag($xml,'daterange') . "\n"; 
+    return $daterange_xml;
+    
+}
+#----------------------------------------------------------------------
+sub get_daterange_unselectURL
+{
+    my $fconfig = shift;
+    my $cgi = shift;
+    my $temp_cgi= CGI->new($cgi);
+    $temp_cgi->delete('pdate_start');
+    $temp_cgi->delete('pdate_end');
+    $temp_cgi->delete('pdate');
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    return $url;
+}
+
+#----------------------------------------------------------------------
+sub __IsUndefOrBlank
+{
+    my $var = shift;
+    $var =~s/\s+//g;
+    return ( (!defined($var)) || $var eq "")
 }
 
 #----------------------------------------------------------------------
@@ -603,7 +689,6 @@ sub get_multifacet_xml
     
     $xml .= wrap_string_in_tag($clause,'multiselectClause') . "\n"; 
     return $xml;
-    
 }
 
 

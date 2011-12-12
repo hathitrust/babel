@@ -885,6 +885,7 @@
             <h1>Results refined by:</h1>
     <ul class="filters">
       <xsl:call-template name="multiselectFacets"/>
+      <xsl:call-template name="daterangeFacets"/>
       <xsl:call-template name="selectedViewabilityFacet"/>
       <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
         <xsl:text>
@@ -916,6 +917,36 @@
     </ul>
   </div>
 </xsl:template>
+
+
+<xsl:template name="daterangeFacets">
+  <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/daterange">
+    
+        <xsl:text>
+        </xsl:text>
+
+        <li>
+          
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
+            </xsl:attribute>
+            <xsl:attribute name ="class">
+              unselect
+            </xsl:attribute>
+
+
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
+          </xsl:element>
+          <span class="selectedfieldname">
+            <xsl:text>Date: </xsl:text>
+          </span>
+          <xsl:value-of select ="facetString"/>
+        </li>
+
+  </xsl:for-each>
+</xsl:template>
+
 
 
 <xsl:template name="multiselectFacets">

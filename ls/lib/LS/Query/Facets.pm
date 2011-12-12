@@ -266,11 +266,11 @@ sub get_Solr_query_string
     
     my $FACETS= $self->__get_facets;
     my $WRITER ='&wt=json&json.nl=arrarr';
-    
+
+    #WARNING  this can set an additional facet parameter on the cgi so must come before we figure out the facet query
+    my $DATE_RANGE = $self->__get_date_range($C);    
     # This builds a filter query based on the values of the facet parameter(s) in the cgi
-
     my $FACETQUERY="";
-
     my @facetquery = $cgi->param('facet');
     
     if (defined (@facetquery))
@@ -284,7 +284,7 @@ sub get_Solr_query_string
     
     # move this to subroutine that returns either empty string or good query
     my $FACET_OR_QUERY=$self->__get_facet_OR_query($cgi);
-    my $DATE_RANGE = $self->__get_date_range($cgi);
+
     
     
     # for temporary debugging of rel ranking
@@ -755,7 +755,9 @@ sub __hide_dismax
 sub __get_date_range
 {
     my $self = shift;
-    my $cgi =  shift;
+    my $C = shift;
+    my $cgi = $C->get_object('CGI');
+    
     my $q="";
     my $fq="";
     
@@ -764,16 +766,28 @@ sub __get_date_range
     my $pdate = $cgi->param('pdate');
     # do we need to trim these values?
 
-    if (defined($pdate)&& $pdate ne "")
+    my $facet;
+    
+    
+    if (defined($pdate) && $pdate ne "")
     {
-        $fq='publishDateTrie:' . $pdate;
+        $facet='publishDateRange:"' . $pdate . '"';
+        #remove pdate param
+        $cgi->delete('pdate');
+        # remove the other pdate params since we can only either have a pdate or a date range from the advanced search form
+        $cgi->delete('pdate_start');
+        $cgi->delete('pdate_end');
+        # set cgi param facet since a single date is the same
+        $cgi->append(-name=>'facet',-values=>[$facet]);
+        $C->set_object('CGI',$cgi);
+        
+        return $q
     }
     elsif ( (defined($start)&& $start ne "")    || (defined($end) && $end ne "") )
     {
         if ($start eq "")
         {
             $start='*';
-            
         }
         elsif ($end eq "")
         {
@@ -789,6 +803,13 @@ sub __get_date_range
     
 }
 
+#XXX below is very buggy needs work!!
+sub isUndefOrBlank
+{
+    my $var = shift;
+    $var=s/\s+//g;
+    return ( (!defined($var)) || $var eq "")
+}
 
 # ---------------------------------------------------------------------
 

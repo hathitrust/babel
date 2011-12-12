@@ -81,7 +81,15 @@ function checkPdate()
 
     var startDate = $("#yop-start").val();
     var endDate= $("#yop-end").val();
-    
+    // replace blank date with minimum/maximum for testing
+    if (startDate === "")
+    {
+      startDate=0;
+    }
+    if (endDate === "")
+    {
+      endDate=10000;
+    }
     if ( startDate  > endDate  )
     {
       alert("start date must be less than end date");
