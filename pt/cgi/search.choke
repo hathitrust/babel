@@ -30,7 +30,7 @@ my $app = CGI::Emulate::PSGI->handler($sub);
 
 $app = builder {
 
-    enable "PopulateENV";
+    enable "PopulateENV", app_name => 'pt';
 
     enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
