@@ -1124,7 +1124,12 @@ HTBookReader.prototype.paramsForTracking = function(params) {
     retval.size = size;
     retval.orient = orient;
 
-    retval.view = $(".PTbuttonActive").attr('href').replace(/.*view=(\w+).*/, '$1');
+    var $btn = $(".PTbuttonActive");
+    if ( $btn.length ) {
+      retval.view = $(".PTbuttonActive").attr('href').replace(/.*view=(\w+).*/, '$1');
+    } else {
+      retval.view = document.location.href.replace(/.*view=(\w+).*/, '$1');
+    }
     
     return retval;
 }

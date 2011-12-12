@@ -338,6 +338,15 @@
         <xsl:call-template name="load_js_and_css"/>
         <!-- xsl:call-template name="online_assessment"/-->
 
+        <xsl:if test="$gUsingBookReader='true'">
+        <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script>
+        <!-- <style>
+          .debugIndex {
+            display: block;
+          }
+        </style> -->
+        </xsl:if>
+
         <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
         
         <xsl:call-template name="setup-ht-params" />
