@@ -89,7 +89,7 @@ div#BRpage {
 }
 
 div#BRnav {
-    position:fixed;
+    position:absolute; /* fixed; */
     bottom: 0;
     left: 0;
     width: 100%;
@@ -279,7 +279,7 @@ div#BRnavline {
 }
 */
 #BRtoolbar {
-    position:fixed;
+    position:absolute; /* fixed */
     top: 0;
     left: 0;
     width: 100%;

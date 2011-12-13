@@ -140,6 +140,67 @@ HT.pdf_helpers = {
           }
       });
     },
+    
+    display_warning : function(req) {
+      var self = this;
+
+      var timeout = parseInt(req.getResponseHeader('X-Choke-UntilEpoch'));
+      var rate = req.getResponseHeader('X-Choke-Rate')
+
+      if ( timeout <= 5 ) {
+          // just punt and wait it out
+          setTimeout(function() {
+            self.retry_download();
+          }, 5000);
+          return;
+      }
+
+      timeout *= 1000;
+      var now = (new Date).getTime();
+      var countdown = ( Math.ceil((timeout - now) / 1000) )
+
+      var html = 
+        ('<div>' + 
+          '<p>You have exceeded the download rate of {rate}. You may proceed in <span id="throttle-timeout">{countdown}</span> seconds.</p>' + 
+          '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' + 
+          '<p><button> OK </button></p>' + 
+        '</div>').replace('{rate}', rate).replace('{countdown}', countdown);
+
+      self.notice = new Boxy(html, {
+          show: true,
+          modal: true,
+          draggable: true,
+          closeable: true,
+          title: "",
+          behaviours: function(r) {
+            
+            $(r).find("button").click(function() {
+              clearTimeout(self.countdown_timer);
+              Boxy.get(r).hideAndUnload();
+            })
+            
+            setTimeout(function() {
+
+              // and restart the timer!
+              // self.countdown_timer = setInterval(function() { self.recheck(); }, 500);
+              
+              // wait for user to click...
+
+            }, countdown * 1000 + 1000);
+
+            self.countdown_timer = setInterval(function() {
+              countdown -= 1;
+              $(r).find("#throttle-timeout").text(countdown);
+              if ( countdown == 0 ) {
+                clearInterval(self.countdown_timer);
+              }
+              console.log("TIC TOC", countdown);
+            }, 1000);
+
+          }
+      });
+
+    },
   
     update_progress: function(contents, total) {
       var status = { done : false, error : false };
@@ -218,13 +279,17 @@ HT.pdf_helpers = {
       
       /// start PDF download via <script> callback
       $.ajax({
-        url: src + ';callback=HT.pdf_helpers.open_progress',
+        url: src + ';callback=HT.pdf_helpers.open_progress;seq=10;seq=15;seq=25;seq=35',
         dataType: 'script',
         cache: false,
-        error: function() {
+        error: function(req, textStatus, errorThrown) {
           console.log("DOWNLOAD STARTUP NOT DETECTED");
           HT.pdf_helpers.$notice.hide(function() {
-            HT.pdf_helpers.show_error();
+            if ( req.status == 503 ) {
+              HT.pdf_helpers.display_warning(req);
+            } else {
+              HT.pdf_helpers.show_error();
+            }
           })
         }
       })

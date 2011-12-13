@@ -1,8 +1,13 @@
 // UTILITIES
 
+window.console = {
+    log : function() { }
+}
+
 HT.resizeBookReader = function() {
 	//console.log("HT.resizeBookReader()");
-	
+	//   alert("RESIZING");
+  
 	
 	
   var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
@@ -75,9 +80,10 @@ HT.resizeBookReader = function() {
 }
 
 
-$(window).bind("resize", function() {
-  HT.resizeBookReader();
-})
+// $(window).bind("resize", function() {
+//   alert("RESIZING");
+//   HT.resizeBookReader();
+// })
 
 // PREPPING AND LOADING SECTION
 // override slice size from params

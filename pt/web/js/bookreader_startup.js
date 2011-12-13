@@ -113,45 +113,47 @@ $(document).ready(function() {
     HT.reader.loadBookDataSlice(0);
     
     // SETUP FULL SCREEN MODE
-    $('<a href="#" id="mbToggleHeader" title="Enter Full Screen"></a>')
-      .prependTo("#mdpToolbarViews");
-    
-    $("#mbToggleHeader").click(function() {
+    if ( HT.params.ui && HT.params.ui != "embed" ) {
+      $('<a href="#" id="mbToggleHeader" title="Enter Full Screen"></a>')
+        .prependTo("#mdpToolbarViews");
 
-      var speed = "fast";
-      var $toggleButton = $(this);
-      
-      var fx_in = { opacity: 0.0 };
-      var fx_out = { opacity: 1.0 };
-      
-      var zindex = $("#BookReader").css('z-index');
-      if ( $.browser.msie ) {
-        $("#BookReader").css('z-index', -10);
-      }
+      $("#mbToggleHeader").click(function() {
 
-      $("#mdpUberContainer").animate(fx_in, speed, function() {
-        $("body").toggleClass("fullscreen");
-        $("#mbFooter").toggle("blind", speed, function() {
-          $("#mbHeader").toggle("blind", function() {
-            HT.resizeBookReader(true);
-            $toggleButton.toggleClass("active");
-            if ( $toggleButton.hasClass("active") ) {
-              $toggleButton.data("original-title", $toggleButton.attr("title"));
-              $toggleButton.attr("title", $toggleButton.attr("title").replace("Enter", "Exit"));
-            } else {
-              $toggleButton.attr("title", $toggleButton.data("original-title"));
-            }
-            $(window).trigger('resize');
-            $("#mdpUberContainer").animate(fx_out, speed, function() {
-              if ( $.browser.msie ) {
-                $("#BookReader").css('z-index', zindex);
+        var speed = "fast";
+        var $toggleButton = $(this);
+
+        var fx_in = { opacity: 0.0 };
+        var fx_out = { opacity: 1.0 };
+
+        var zindex = $("#BookReader").css('z-index');
+        if ( $.browser.msie ) {
+          $("#BookReader").css('z-index', -10);
+        }
+
+        $("#mdpUberContainer").animate(fx_in, speed, function() {
+          $("body").toggleClass("fullscreen");
+          $("#mbFooter").toggle("blind", speed, function() {
+            $("#mbHeader").toggle("blind", function() {
+              HT.resizeBookReader(true);
+              $toggleButton.toggleClass("active");
+              if ( $toggleButton.hasClass("active") ) {
+                $toggleButton.data("original-title", $toggleButton.attr("title"));
+                $toggleButton.attr("title", $toggleButton.attr("title").replace("Enter", "Exit"));
+              } else {
+                $toggleButton.attr("title", $toggleButton.data("original-title"));
               }
+              $(window).trigger('resize');
+              $("#mdpUberContainer").animate(fx_out, speed, function() {
+                if ( $.browser.msie ) {
+                  $("#BookReader").css('z-index', zindex);
+                }
+              });
             });
-          });
+          })
         })
+
+        return false;
       })
-      
-      return false;
-    })
+    }
         
 })

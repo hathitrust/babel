@@ -88,7 +88,6 @@ my $cgi = $C->get_object('CGI');
 # handler, etc.) is done after initialization
 $gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues );
 
-
 # ----------------------------------------------------------------------
 #                          Handle search
 # ----------------------------------------------------------------------
@@ -99,8 +98,24 @@ my $id = $cgi->param('id');
 # indexing of the same id will be serialized at the Tomcat
 # instance. This may become a service.
 my $stats_ref = {};
+    
+my $is_indexed = PT::SearchUtils::has_Solr_index_item($C, SLIP_Utils::Common::get_run_number($run_config), $id, $stats_ref);
+if ( ! $is_indexed && ! $cgi->param('index') ) {
+    _redirect_to_index($cgi);
+}
+
+# if ( $cgi->param('index') ) {
+#     sleep(30) if ( ! $is_indexed );
+#     # we don't need this going forward
+#     $cgi->delete('index');
+# }
 
 PT::SearchUtils::maybe_Solr_index_item($C, SLIP_Utils::Common::get_run_number($run_config), $id, $stats_ref);
+
+if ( $cgi->param('index') ) {
+    # we've indexed, so bounce to get rid of the index parameter
+    _redirect_to_browse($cgi);
+}
 
 # Search
 my $rs = PT::SearchUtils::Solr_search_item($C, $id, $stats_ref);
@@ -122,7 +137,7 @@ $vw->output($C);
 
 $C->dispose();
 
-exit 0;
+##  exit 0;
 
 
 # ---------------------------------------------------------------------
@@ -167,9 +182,43 @@ sub ValidityChecks
         $cgi->param ( 'size', $PTGlobals::gDefaultMaxSliceSize );
     }
 
-    $cgi->param( 'page', 'search' );
+    unless ( $cgi->param('page') ) {
+        $cgi->param( 'page', 'search' );
+    }
 
     return PT::Prolog::ST_EMPTY;
+}
+
+sub _redirect_to_index {
+    my ( $cgi ) = @_;
+    my $idx = $cgi->param('index') || 1;
+    
+    $cgi->param('index', $idx);
+    my $url = $cgi->self_url();
+    # my $url = $ENV{REQUEST_URI};
+    # my $join = ";";
+    # if ( $url =~ m,&, ) {
+    #     $join = '&';
+    # }
+    # $url .= $join . qq{index=1};
+    print STDERR "REDIRECTING TO INDEX $url\n";
+    print CGI::redirect($url);
+    exit;
+}
+
+sub _redirect_to_browse {
+    my ( $cgi ) = @_;
+    $cgi->delete('index');
+    my $url = $cgi->self_url();
+    # my $url = $ENV{REQUEST_URI};
+    # my $join = ";";
+    # if ( $url =~ m,&, ) {
+    #     $join = '&';
+    # }
+    # $url .= $join . qq{index=1};
+    print STDERR "REDIRECTING TO BROWSE $url\n";
+    print CGI::redirect($url);
+    exit;
 }
 
 __END__

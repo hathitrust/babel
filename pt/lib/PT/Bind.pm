@@ -52,7 +52,7 @@ sub set_action_name
     {
         $action_name = 'ACTION_VIEW';
     }
-    elsif ($page eq 'search')
+    elsif ($page eq 'search' || $page eq 'index')
     {
         $action_name = 'ACTION_SEARCH';
     }
