@@ -59,6 +59,10 @@
               <xsl:when test="@name = 'seq'">
                 HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
               </xsl:when>
+              <!-- prevent XSS exploit when q1 is displayed in result page -->
+              <xsl:when test="@name = 'q1'">
+                HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="'foo'" />;
+              </xsl:when>
               <xsl:otherwise>
                 HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
               </xsl:otherwise>
