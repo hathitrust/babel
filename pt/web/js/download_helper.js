@@ -279,7 +279,7 @@ HT.pdf_helpers = {
       
       /// start PDF download via <script> callback
       $.ajax({
-        url: src + ';callback=HT.pdf_helpers.open_progress;seq=10;seq=15;seq=25;seq=35',
+        url: src + ';callback=HT.pdf_helpers.open_progress',
         dataType: 'script',
         cache: false,
         error: function(req, textStatus, errorThrown) {
