@@ -19,7 +19,7 @@ YAHOO.mbooks.loadingPT =
 var handleSuccess = function(o) {
 	YAHOO.mbooks.loadingPT.hide();
         if (o.responseText != undefined) {
-                o.responseText = o.responseText.replace(/\n/g, "");
+                o.responseText = o.responseText.replace(/[\n\r]/g, "");
                 o.responseText = stripXMLPI(o.responseText);
 
                 var params = {};
