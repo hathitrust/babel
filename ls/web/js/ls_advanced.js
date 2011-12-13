@@ -211,6 +211,9 @@ function getRow(qnum,count)
 
   var QueryID = "#q" + qnum; 
   var QueryValue= $(QueryID).val();
+  
+  var AnyAllId ="#anyall" + qnum;
+  var AnyAllValue= $(AnyAllId).val();
 
   // no op for first query in set
   var OpClause="";
@@ -218,7 +221,7 @@ function getRow(qnum,count)
   {
     OpClause= "op" + qnum + "=" +OpValue + "&";
   }
-  row = row+ OpClause + "field" + qnum + "=" + FieldValue + "&" + "q" +qnum +"=" +QueryValue;
+  row = row+ OpClause + "anyall" + qnum + "=" + AnyAllValue + '&' +"field" + qnum + "=" + FieldValue + "&" + "q" +qnum +"=" +QueryValue ;
   return row;
 }
 
@@ -330,7 +333,7 @@ function replaceRows(formValues,rows)
       var key = keyvalue[0];
       var value = keyvalue[1];
       // convert from perl to js regex
-      if (key.match(/(op|field|q)[1-4]/)) 
+      if (key.match(/(op|anyall|field|q)[1-4]/)) 
       {
         //skipit
       }

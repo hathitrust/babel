@@ -147,7 +147,17 @@ $default_fields = ['ocronly',
                  'author',
                  'subject',
                  ];
-
+# default any all phrase
+$default_anyall = ['any',
+                   'all',
+                   'any',
+                   'phrase',
+                  ];
+# mappings of anyall to user strings
+$anyall_2_display = {"any"=>"any of these words",
+                     "all"=>"all of these words", 
+                     "phrase"=>"this exact phrase"
+                    };
 
 #----------------------------------------------------------------------
 sub getRelWeights

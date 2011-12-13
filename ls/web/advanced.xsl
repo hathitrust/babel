@@ -146,6 +146,10 @@
        <xsl:variable name="qNum">
          <xsl:text>q</xsl:text><xsl:value-of select="$rowNum"/>
        </xsl:variable>
+       <xsl:variable name="anyallNum">
+         <xsl:text>anyall</xsl:text><xsl:value-of select="$rowNum"/>
+       </xsl:variable>
+
 
        <!-- fix to read the row/op entry instead -->       
        <xsl:if test="$rowNum=1">
@@ -182,9 +186,29 @@
            </select>
          </td>
        </xsl:if>
+
+         <!--XXX hard-code all/any widget for testing -->
+         <td>
+           <xsl:for-each  select="/MBooksTop/AdvancedSearch/AnyAll">
+   
+             <xsl:call-template name="BuildHtmlSelectCustom">
+               <xsl:with-param name="id">
+                 <xsl:value-of select="$anyallNum"/>
+               </xsl:with-param>
+               <xsl:with-param name="class" select="'anyallWidget'"/>
+               <xsl:with-param name="selected">
+                 <!--XXX need to put this in the xml from a config file somewhere hardcode them all to all for now-->
+                 <xsl:value-of select="/MBooksTop/AdvancedSearch/rows/row[$rowNum]/anyall"/>
+               </xsl:with-param>
+               <xsl:with-param name="name">
+                 <xsl:value-of select="$anyallNum"/>
+               </xsl:with-param>
+             </xsl:call-template>
+           </xsl:for-each>
+         </td>
+
        
        <td>
-         
 
          <xsl:for-each  select="/MBooksTop/AdvancedSearch/fieldlist">
              <xsl:call-template name="BuildHtmlSelectCustom">

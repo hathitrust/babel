@@ -527,6 +527,7 @@ sub __get_advanced_query
         for my $i (1..4)
         {
             $q = 'q' . $i;
+            # do we also want to check for a defined but blank query?
             if (defined $cgi->param($q))
             {
                 $clause=$self-> make_query_clause($i,$cgi);
@@ -565,7 +566,7 @@ sub make_query_clause{
     }
     
     my $field = $cgi->param('field' . $i);
-
+    my $anyall = $cgi->param('anyall' . $i);
     
     
     # default to ocr if there is not field for field 1
@@ -581,7 +582,27 @@ sub make_query_clause{
     #XXX temporary fix until we refactor Search::Query in mdp-lib so it behaves properly
     # currently it deals with balencing of quotes and eliminates 
     Utils::remap_cers_to_chars(\$q);
+
+    #XXX  insert   any|all|phrase processing  might move to subroutine
+   
+    if (defined($anyall))
+    {
+        if ($anyall ne "all")
+        {
+            if ($anyall eq "phrase")
+            {
+                $q = "\"" . $q . "\"";
+            }
+            elsif ($anyall eq "any")
+            {
+                $q = $self-> __convert_to_Boolean_OR($q);
+            }
+            
+        }
+        
+    }
     
+
     my $processed_q =$self->get_processed_user_query_string($q);
     #XXX temporary fix until we refactor Search::Query::_get_processed_user_query_string
     # remove any string consisting only of ascii punctuation
@@ -643,7 +664,18 @@ sub make_query_clause{
 }
 
 # ---------------------------------------------------------------------w
+sub __convert_to_Boolean_OR
+{
+    my $self = shift;
+    my $q = shift;
+    $q =~s/\s+/ OR /g;
+    $q = '( ' . $q .' )';
+        
+    return $q;
+}
 
+
+# ---------------------------------------------------------------------w
 sub remove_tokens_with_only_punctuation
 {
     my $self = shift;

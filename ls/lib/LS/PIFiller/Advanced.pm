@@ -74,6 +74,22 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     }
     $xml .=wrap_string_in_tag($field_list,'fieldlist') . "\n";
 
+#  list for any all widget
+# XXX redo to read config file
+    my $bool2display = $fconfig->{'anyall_2_display'};
+    my @booleans = keys (%{$bool2display});
+    
+    my $anyall;
+    
+    foreach my $bool (@booleans)
+    {
+        my $pair .= wrap_string_in_tag($bool,'Value') . "\n";         
+        $pair .= wrap_string_in_tag($bool2display->{$bool},'Label') . "\n";
+        $anyall .=wrap_string_in_tag($pair,'Option') . "\n";         
+
+    }        
+    $xml .= wrap_string_in_tag($anyall,'AnyAll') . "\n";
+    
 
 
     # this sets the default selected value for each op or field or if there is an existing query inserts the 
@@ -123,8 +139,17 @@ sub getRow
         $field= $cgi->param($fieldname);
     }
     $row .= wrap_string_in_tag($field,'field') . "\n";         
-
- 
+    
+    #XXX defaults for any all phrase selector
+    # XXX need better name than anyall but boolean risks confusion with the op which is also boolean
+    my $anyallname= 'anyall' . $i;
+    my $anyall =$fconfig->{default_anyall}->[$i-1];
+    if (defined ($cgi->param($anyallname)))
+    {
+        $anyall= $cgi->param($anyallname);
+    }
+    $row .= wrap_string_in_tag($anyall,'anyall') . "\n";         
+    
     my $q ="";
     if (defined ($cgi->param($qname)))
     {

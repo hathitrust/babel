@@ -813,8 +813,8 @@ sub handle_ADVANCED_SEARCH_PI
     my $cgi = $C->get_object('CGI');
     
     my $param2userMap =      $fconfig->{field_2_display};
+    my $anyall_2_display = $fconfig->{'anyall_2_display'};
 
-    
     #get query params from cgi and map to user friendly fields using config
     # put the stuff inside the for loop in a subroutine!
     my $output;
@@ -838,7 +838,10 @@ sub handle_ADVANCED_SEARCH_PI
         {
             $op="";
         }
-    
+        my $anyall = $cgi->param('anyall' . $i);
+        my $anyall_string= $anyall_2_display->{$anyall}; 
+
+
         my $field = $cgi->param('field' . $i);
         # XXX hack.  Should at least read default field from config file
         # special case for basic search where there is no field  param
@@ -857,6 +860,7 @@ sub handle_ADVANCED_SEARCH_PI
             $clause .=wrap_string_in_tag($q ,'Query');
             $clause .=wrap_string_in_tag($op, 'OP');
             $clause .=wrap_string_in_tag($user_field, 'Field');
+            $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');
             $output .= wrap_string_in_tag($clause, 'Clause');
         }
         

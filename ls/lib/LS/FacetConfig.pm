@@ -86,7 +86,8 @@ sub _initialize
         $self->__set_field_order($field_order);
         $self->__set_op_order($op_order);
         $self->__set_default_fields($default_fields);
-        
+        $self->__set_default_anyall($default_anyall);
+        $self->__set_anyall_2_display($anyall_2_display);
 
     };
         
@@ -95,6 +96,17 @@ sub _initialize
 # ---------------------------------------------------------------------
  
 #Advanced Search
+
+
+# ---------------------------------------------------------------------
+sub __set_anyall_2_display
+{
+    my $self = shift;
+    my $a2d = shift;
+    
+    $self->{'anyall_2_display'} = $a2d;
+}
+
 # ---------------------------------------------------------------------
 sub __set_field_2_display
 {
@@ -128,6 +140,15 @@ sub __set_default_fields
     my $fields = shift;
     
     $self->{'default_fields'} = $fields;
+}
+
+# ---------------------------------------------------------------------
+sub __set_default_anyall
+{
+    my $self = shift;
+    my $anyall = shift;
+    
+    $self->{'default_anyall'} = $anyall;
 }
 # ---------------------------------------------------------------------
 # Facets

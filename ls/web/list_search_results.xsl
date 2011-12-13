@@ -229,15 +229,7 @@
       <!-- this should be all/so/or ft cound depending -->
       <xsl:call-template name="getTotalCount"/>
       <xsl:text> items found for </xsl:text>
-
-      <xsl:variable name="isAdvanced">
-        <xsl:value-of select="MBooksTop/AdvancedSearch/Clause/Field"/>
-      </xsl:variable>
-      <!--      <xsl:text>test adv: </xsl:text>
-      <xsl:value-of select="$isAdvanced"/>
-      <xsl:text> foo</xsl:text>
-      -->
-
+      
 
       <xsl:choose>
         <xsl:when test="foobar">
@@ -247,10 +239,6 @@
           <xsl:call-template name="advanced"/>          
         </xsl:otherwise>
       </xsl:choose>
-
-
-      
-
 
       <span class="debug">
       <xsl:text>
@@ -300,11 +288,24 @@
 
 
   <xsl:template name="advanced">
+
     <!-- maybe need special processing for first one if no field chosen -->
     <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
-      <xsl:text> </xsl:text>
+      <div class="advancedClause">
+      <xsl:text></xsl:text>
+
       <xsl:value-of select="OP"/><xsl:text> </xsl:text>
-      <!--  figure out what the well formed stuff is above and put it here-->
+      <!--XXX   figure out what the well formed stuff from basic template is above and put it here
+           Also need to make the punctuation only happen if there is an anyall
+           -->
+
+      <!--span class="anyAll"-->
+        <em>
+        <xsl:value-of select="AnyAll"/>
+        <!-- only display the semicolon if AnyAll is not empty-->
+        <xsl:text>: </xsl:text>
+        </em>
+      <!--/span-->
       <span>
         <xsl:value-of select="Query"/>
       </span>
@@ -314,6 +315,7 @@
       <em>
         <xsl:value-of select="Field"/>
       </em>
+    </div>
     </xsl:for-each>
   </xsl:template>
 
