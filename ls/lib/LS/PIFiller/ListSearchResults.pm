@@ -461,9 +461,38 @@ sub get_selected_unselected
 
     my @selected;
     my $unselected={};
+
+    #XXX hack to cause pdate facet to show up as selected if pdate was used in advanced search
+    #XXX if facet_hash is empty because we got zero results
     
     foreach my $facet_name (keys %{$facet_hash})
     {
+        #--------------------------------------------------
+        #XXX hack for pdate and no results
+        # how do we know no results?
+        # 
+        
+#        if ($facet_name eq 'publishDateRange')
+#          {
+#            # pdate param removed by now and put back in Facet:publishDateRange
+#            my @facets = $cgi->param('facet');
+#            my $pdate= $facets[0];
+#            if (defined($pdate) && $pdate ne "")
+#            {
+                
+#                # need test for zero results and pdate param
+#                my $hash={};
+#                $hash->{'selected'}   = "true";
+#                $hash->{'count'}      = 0;
+#                $hash->{'facet_name'} = $facet_name;
+                
+#                my ($junk, $facet_value) = split(/\:/,$pdate); #fix this
+#                $hash->{'value'}      = clean_for_xml($facet_value);
+#                $hash->{'unselect_url'}=__get_unselect_url($hash,$cgi);
+#                push (@selected,$hash);
+#            }
+#        }
+        
         my $ary_for_this_facet_name=[];
         my $facet_list_ref=$facet_hash->{$facet_name};
         foreach my $facet_ary (@{$facet_list_ref})
@@ -497,7 +526,7 @@ sub get_selected_unselected
                     }
                 }
             }
-
+            
             if ($hash->{'selected'} eq "true")
             {
                 # add the unselect url to the hash
@@ -819,6 +848,8 @@ sub handle_ADVANCED_SEARCH_PI
     # put the stuff inside the for loop in a subroutine!
     my $output;
     my $qcount=0;
+    my $isAdvanced="false";
+    my $field1;
     
     for my $i (1..4)
     {
@@ -826,6 +857,20 @@ sub handle_ADVANCED_SEARCH_PI
         if (defined($q) && $q ne "")
         {
             $qcount++;
+            if ($i == 1)
+            {
+                #if there is a populated q1 and field1 then its advanced since we don't put a field param for basic
+                $field1 =$cgi->param('field1');
+                if (defined($field1) && $field1 ne "")
+                {
+                    $isAdvanced="true";
+                }
+            }
+            if ($i > 1)
+            {
+                #if there is a populated q2,3 or 4 then it is and advanced search
+                $isAdvanced="true";
+            }
         }
         
         my $op    = $cgi->param('op' . $i);
@@ -871,6 +916,7 @@ sub handle_ADVANCED_SEARCH_PI
     my $modURL=getModifyAdvancedSearchURL($cgi);
     $output .= wrap_string_in_tag($modURL, 'ModifyAdvancedSearchURL');
 
+    $output .= wrap_string_in_tag($isAdvanced, 'isAdvanced');
     return $output;
   }
 

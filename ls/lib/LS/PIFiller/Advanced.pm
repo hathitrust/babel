@@ -74,11 +74,10 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     }
     $xml .=wrap_string_in_tag($field_list,'fieldlist') . "\n";
 
-#  list for any all widget
-# XXX redo to read config file
+    #  list for any all widget
     my $bool2display = $fconfig->{'anyall_2_display'};
     my @booleans = keys (%{$bool2display});
-    
+
     my $anyall;
     
     foreach my $bool (@booleans)

@@ -288,36 +288,52 @@
 
 
   <xsl:template name="advanced">
-
-    <!-- maybe need special processing for first one if no field chosen -->
     <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
-      <div class="advancedClause">
-      <xsl:text></xsl:text>
+      <xsl:choose>
+        <xsl:when test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
+          <div class="advancedClause">        
+          <xsl:call-template  name= "advancedContent"/>        
+          </div>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template  name= "advancedContent"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+    </xsl:template>
 
+    <xsl:template name= "advancedContent">
+      
+      <xsl:text></xsl:text>
       <xsl:value-of select="OP"/><xsl:text> </xsl:text>
       <!--XXX   figure out what the well formed stuff from basic template is above and put it here
            Also need to make the punctuation only happen if there is an anyall
            -->
-
+      
       <!--span class="anyAll"-->
-        <em>
+      <em>
         <xsl:value-of select="AnyAll"/>
         <!-- only display the semicolon if AnyAll is not empty-->
         <xsl:text>: </xsl:text>
-        </em>
+      </em>
       <!--/span-->
       <span>
         <xsl:value-of select="Query"/>
       </span>
       <xsl:text> in </xsl:text>
       <!-- replace em with css -->
-
+      
       <em>
         <xsl:value-of select="Field"/>
       </em>
-    </div>
-    </xsl:for-each>
-  </xsl:template>
+      
+    </xsl:template>
+    
+    
+
+
+
+
 
 
   <!-- TEMPLATE -->
@@ -358,16 +374,38 @@
                 <xsl:text> See Limited (search only) items matching your search </xsl:text>
               </xsl:element>
             </xsl:when>
+
+            <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'">
+              <xsl:text>Your search for </xsl:text>
+              <xsl:call-template name="advanced"/>          
+              <xsl:text> returned zero hits.</xsl:text>
+              <!-- need styling-->
+              <xsl:text>With these limits </xsl:text>
+              <xsl:call-template name="showSelected">
+                <xsl:with-param name="noResults">
+                  <xsl:value-of select="true"/>
+                </xsl:with-param>
+              </xsl:call-template>
+              <div>
+                <a>
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+                  </xsl:attribute>
+                  <xsl:text>Revise this search</xsl:text>
+                </a>
+              </div>
+            </xsl:when>
+            
             <xsl:otherwise>
               <xsl:text>Your search for "</xsl:text>
               <xsl:value-of select="/MBooksTop/QueryString"/>
-              <xsl:text>" in the full text of all items returned zero hits.</xsl:text>
+              <xsl:text>" in Everything returned zero hits.</xsl:text>
             </xsl:otherwise>      
           </xsl:choose>
-
-          <!--foobar-->        </div>
-          <!--   </div>-->
-    </div>
+            
+        </div>
+        <!--   </div>-->
+      </div>
    
   </xsl:template>
 
@@ -706,7 +744,6 @@
           </span>
         </div>
 
-        <xsl:text>DEBUG</xsl:text>
         <xsl:copy-of select="explain"/>
 
 
@@ -882,9 +919,13 @@
 
 
 <xsl:template name="showSelected">
- 
+  <xsl:param name="isAdvanced" value="false"/>
   <div id="selectedFacets">
-            <h1>Results refined by:</h1>
+    <xsl:if test="$isAdvanced = 'false'">
+      <h1>Results refined by:</h1>
+    </xsl:if>
+
+      
     <ul class="filters">
       <xsl:call-template name="multiselectFacets"/>
       <xsl:call-template name="daterangeFacets"/>

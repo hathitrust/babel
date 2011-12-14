@@ -36,10 +36,14 @@
         <xsl:attribute name="name">searchcoll</xsl:attribute>
           <label class="SkipLink" for="srch">Full-text Search </label>
           <input type="text" size="30" maxlength="150" name="q1" >
-            <xsl:attribute name="value">
-              <xsl:value-of select="/MBooksTop/QueryString"/>
-            </xsl:attribute>
+          <!-- if this is not an advanced search populate the query box-->
+            <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced = 'false'">
+              <xsl:attribute name="value">
+                <xsl:value-of select="/MBooksTop/QueryString"/>
+              </xsl:attribute>
+            </xsl:if>
           </input>
+
           <!-- make checkbox sticky based on lmt=ft -->
           <input id="fullonly" type="checkbox" name="lmt" value="ft">
             <xsl:call-template name="getCheckedStatus"/>

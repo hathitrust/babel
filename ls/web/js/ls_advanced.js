@@ -1,4 +1,4 @@
-alert("this is ls_advanced.js edited");
+//alert("this is ls_advanced.js edited");
 /**
 1) remove all parameters for any rows with a blank query box   DONE
 2) do we want to bother renumbering them?                    yes DONE
@@ -311,7 +311,7 @@ function redirect(rows)
   var path=window.location.pathname;
   var URL= host + path +"?" +rest;
 
-  alert ("url would be " + URL);
+  //  alert ("url would be " + URL);
   //  window.location.(URL);
   var href='http://' +URL;
   location.href=href;
