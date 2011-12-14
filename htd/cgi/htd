@@ -24,7 +24,7 @@ Debug options
 =back
 
 =cut
-
+umask 0000;
 BEGIN {
     my $enabled = $ENV{'HT_DEV'} ? 1 : 1;
     exit 0 if (! $enabled);
