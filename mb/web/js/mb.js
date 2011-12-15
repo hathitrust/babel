@@ -274,12 +274,17 @@ jQuery(function($) {
         data.featured = row[self.idx.Featured];
         data.updated = row[self.idx.Updated_Display];
         
-        if ( data.shared == 1 ) { // $this.data('shared')
-          data.shared = "Public";
-          data.altshared = "Private";
+        if ( data.owner_affiliation ) {
+          if ( data.shared == 1 ) { // $this.data('shared')
+            data.shared = "Public";
+            data.altshared = "Private";
+          } else {
+            data.shared = "Private";
+            data.altshared = "Public";
+          }
         } else {
           data.shared = "Private";
-          data.altshared = "Public";
+          data.altshared = "Private";
         }
 
         var cls = "collection";
@@ -333,10 +338,12 @@ jQuery(function($) {
           }
           href += "#" + self.view;
           
+          var change_sharing = ( data.owner_affiliation 
+                                 ?  
+                                 '<a href="${href}" class="awesome thin small grey toggle-sharing"><span class="sharing-status ${status}">${shared}</span> : Make ${altshared}</a>' + '&#160;&#160;' 
+                                 : "" );
           var options = 
-            '<span class="options">' + 
-              '<a href="${href}" class="awesome thin small grey toggle-sharing"><span class="sharing-status ${status}">${shared}</span> : Make ${altshared}</a>' +
-              '&#160;&#160;<a href="#" data-delete-href="${mine}" class="awesome thin small grey delete-collection">Delete Collection</a>' +
+            '<span class="options">' + change_sharing + '<a href="#" data-delete-href="${mine}" class="awesome thin small grey delete-collection">Delete Collection</a>' +
             '</span>'
           options = options.
                       replace('${collid}',data.collid).

@@ -28,6 +28,7 @@ use Utils;
 use Debug::DUtils;
 
 use MBooks::Operation::Status;
+use MBooks::Utils::TempColl;
 
 sub new
 {
@@ -112,7 +113,13 @@ sub execute_operation
     }
     elsif ($shared_code == 1)
     {
-        $shared = 'public';
+        # Do not allow edits to make a temporary collection public -- security
+        if (MBooks::Utils::TempColl::coll_is_temporary($C, $co, $coll_id)) {
+            $shared = 'private';
+        }
+        else {
+            $shared = 'public';
+        }
     }
     else
     {
@@ -124,7 +131,7 @@ sub execute_operation
     {
         eval
         {
-            $co->edit_status($coll_id,$shared);
+            $co->edit_status($coll_id, $shared);
         };
         die $@  if ($@);
     }
@@ -163,7 +170,6 @@ sub execute_operation
 
     return $ST_OK;
 }
-
 
 
 1;
