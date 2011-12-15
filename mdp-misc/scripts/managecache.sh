@@ -32,7 +32,7 @@ renice 19 $$ > /dev/null 2>&1
 
 EXIT=0
 
-for CACHEDIR in `dirname $0`/../../cache $CHOKE_DIR; do
+for CACHEDIR in `dirname $0`/../../cache /ram/choke; do
   if [ ! -d $CACHEDIR ]; then
     echo "warning: cache directory $CACHEDIR does not exist"
 
