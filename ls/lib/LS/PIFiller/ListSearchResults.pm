@@ -986,6 +986,14 @@ sub _ls_wrap_result_data {
             Utils::map_chars_to_cers(\$vtitle);
             $s .= wrap_string_in_tag($vtitle, 'VernacularTitle');
         }   
+        my $enum=$doc_data->{'volume_enumcron'}->[0];
+        
+        if (defined ($enum))
+        {
+            $enum   = Encode::decode_utf8($enum);
+            Utils::map_chars_to_cers(\$enum);
+        }
+        $s .= wrap_string_in_tag($enum, 'VolEnumCron');
         
         my ($authors_ary_ref) = $doc_data->{'author'};
         #XXX  HT catalog does not display non-1xx author fields

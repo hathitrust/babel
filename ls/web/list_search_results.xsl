@@ -611,26 +611,29 @@
 
         <!-- Title -->
         <div class="ItemTitle">
-
-          <!--          <span class="ItemTitleLabel">
-            <xsl:text>Title:  </xsl:text>
-          </span>-->
-
           <span class="Title">
             <xsl:value-of select="Title" disable-output-escaping="yes" />
           </span>
-        </div>
+                  
+          <!-- Vernacular Title -->
+          <xsl:choose>
 
+            <xsl:when test="normalize-space(VernacularTitle)">
+              <div class="ItemTitle">
+                <span class="Title">
+                  <xsl:value-of select="VernacularTitle" disable-output-escaping="yes" />
+                </span>
+                <xsl:call-template name="EnumCron"/>
+            </div>
+          </xsl:when>
 
-        <!-- Vernacular Title -->
-
-        <div class="ItemTitle">
-          <span class="Title">
-            <xsl:value-of select="VernacularTitle" disable-output-escaping="yes" />
-          </span>
-        </div>
-
-
+          <xsl:otherwise>
+                <xsl:call-template name="EnumCron"/>
+          </xsl:otherwise>
+        </xsl:choose>          
+        
+        </div>          
+          
 
 
         <!-- Author -->
@@ -715,6 +718,15 @@
           
       </td>
     </tr>
+  </xsl:template>
+
+  <xsl:template name="EnumCron">
+    <xsl:if test="normalize-space(VolEnumCron)">
+      <span class="Title">
+        <xsl:text> </xsl:text>
+        <xsl:value-of select="VolEnumCron" disable-output-escaping="yes" />
+      </span>
+    </xsl:if>
   </xsl:template>
 
 
