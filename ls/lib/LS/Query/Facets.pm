@@ -537,7 +537,9 @@ sub __get_advanced_query
         # replace multiple leading spaces with one space
         $ADVANCED=~s/^\s+/ /;
     }
-    
+    #remove operator from beginning of query string if there is one
+    # i.e. if user unselects row 1
+    $ADVANCED=~s/^\s*(AND|OR|NOT)//;
     return $ADVANCED;
 }
 

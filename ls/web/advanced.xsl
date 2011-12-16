@@ -95,7 +95,7 @@
             
             
             <span style="margin-left: 4em">
-              
+              <label for="yop">Date</label>        
                    <select id="yop" name="yop" onchange="changeRange('yop')">
                      <option value="before">Before or during</option>
                      <option value="after" selected="selected" >During or after</option>

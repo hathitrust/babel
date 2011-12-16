@@ -897,6 +897,10 @@ sub handle_ADVANCED_SEARCH_PI
                                       
         my $user_field= $param2userMap->{$field} ;
 
+        # unselect url for this row
+        my $unselectURL=getUnselectAdvancedClauseURL($cgi,$i);
+        
+
         my $clause;
         if (defined ($q))
         {
@@ -906,6 +910,7 @@ sub handle_ADVANCED_SEARCH_PI
             $clause .=wrap_string_in_tag($op, 'OP');
             $clause .=wrap_string_in_tag($user_field, 'Field');
             $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');
+            $clause .=wrap_string_in_tag($unselectURL, 'unselectURL');
             $output .= wrap_string_in_tag($clause, 'Clause');
         }
         
@@ -945,6 +950,27 @@ sub getModifyAdvancedSearchURL
     $temp_cgi->param('page','advanced');
     my $url=$temp_cgi->self_url();
     
+    return $url;
+}
+
+sub getUnselectAdvancedClauseURL
+{
+    my $cgi =    shift;
+    my $row =      shift;
+    
+    my $temp_cgi = new CGI($cgi);
+    # delete this clause
+    my $q ='q' . $row;
+    my $op = 'op' . $row;
+    my $anyall = 'anyall' .  $row;
+    my $field = 'field' .  $row;
+    
+    $temp_cgi->delete("$q");
+    $temp_cgi->delete("$op");
+    $temp_cgi->delete("$anyall");
+    $temp_cgi->delete("$field");
+
+    my $url=$temp_cgi->self_url();
     return $url;
 }
 

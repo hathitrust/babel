@@ -303,7 +303,16 @@
     </xsl:template>
 
     <xsl:template name= "advancedContent">
-      
+
+      <xsl:if test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:value-of select="unselectURL"/>          
+          </xsl:attribute>
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
+        </a>
+      </xsl:if>
+
       <xsl:text></xsl:text>
       <xsl:value-of select="OP"/><xsl:text> </xsl:text>
       <!--XXX   figure out what the well formed stuff from basic template is above and put it here
