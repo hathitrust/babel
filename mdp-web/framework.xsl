@@ -1188,6 +1188,9 @@
               </xsl:attribute>
               <xsl:text>Download PDF - whole book</xsl:text>
             </xsl:element>
+            <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+              <p class="pdfPartnerLoginLinkMessage">Partner login required</p>
+            </xsl:if>
           
             <xsl:if test="$gFullPdfAccess = 'deny'">
               <div id="noPdfAccess">

@@ -300,3 +300,6 @@ p.error {
   font-weight: bold
   }
 
+.pdfPartnerLoginLinkMessage {
+  color: #666; font-style: italic; font-weight: bold;
+}
