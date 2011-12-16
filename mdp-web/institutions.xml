@@ -323,6 +323,12 @@
   <!-- waiting -->
 
   <Inst
+      sdrinst="nd"
+      template="https://___HOST___/Shibboleth.sso/nd?target=___TARGET___"
+      authtype="shibboleth"
+      domain="nd.edu"
+      enabled="0">University of Notre Dame</Inst>
+  <Inst
       sdrinst="ucsb"
       template="https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___"
       authtype="shibboleth"
