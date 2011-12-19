@@ -67,17 +67,18 @@ sub ___core_initialize {
     }
 
     # Filter bad targets -- security
-    use URI;
-    my $target = $cgi->param('target');
-    my $url = URI->new($target);
-    my $host = $url->host();
-    my $host_pattern = $C->get_object('MdpConfig')->get('target_host_pattern');
-
+    if (Debug::DUtils::under_server()) {
+        require URI;
+        my $target = $cgi->param('target');
+        my $url = URI->new($target);
+        my $host = $url->host();
+        my $host_pattern = $C->get_object('MdpConfig')->get('target_host_pattern');
     
-    if ($host !~ m,$host_pattern,) {
-        $cgi->delete('target');
-        require Utils::Logger;
-        Utils::Logger::__Log_simple( "vhost=$host target deleted\n" );
+        if ($host !~ m,$host_pattern,) {
+            $cgi->delete('target');
+            require Utils::Logger;
+            Utils::Logger::__Log_simple( "vhost=$host target deleted\n" );
+        }
     }
 
     # Bind)ings
