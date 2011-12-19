@@ -573,6 +573,8 @@ div.ocrScrollBar{
 	width:90%;
 	height:2.4em;
 	font-size:1.2em;
+	padding-left: 20px;
+	padding-right: 20px;
 	
 	-moz-border-radius-topright: 2px;
     -webkit-border-top-right-radius: 2px;
@@ -622,6 +624,12 @@ div.ocrScrollBar{
 	background-position:right center;
 	background-repeat:no-repeat;    
 }
+
+.worldcat, #epubLink, #fullPdfLink {
+  padding-left: 20px !important;
+	padding-right: 20px !important;
+}
+
 /*
 #fittopage:after{
 padding-left:20px;

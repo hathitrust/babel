@@ -340,7 +340,6 @@
           </xsl:attribute>
           <xsl:text>Download PDF - this page</xsl:text>
         </xsl:element>
-
       </p>
       </xsl:if>
 
@@ -360,6 +359,10 @@
               <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
             </xsl:attribute>
             <xsl:text>Download PDF</xsl:text>
+            <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+              <br />
+              <span class="pdfPartnerLoginLinkMessage" style="font-size: 80%">Partner login required</span>
+            </xsl:if>
           </xsl:element>
 
           <xsl:if test="$gFullPdfAccess = 'deny'">
@@ -407,8 +410,12 @@
               <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
             </xsl:attribute>
             <xsl:text>Download EPUB</xsl:text>
-          </xsl:element>
+            <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+              <br />
+              <span class="pdfPartnerLoginLinkMessage" style="font-size: 80%">Partner login required</span>
+            </xsl:if>
 
+          </xsl:element>
 
 
           <xsl:if test="$gFullPdfAccess = 'deny'">

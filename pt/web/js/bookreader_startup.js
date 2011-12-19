@@ -113,7 +113,7 @@ $(document).ready(function() {
     HT.reader.loadBookDataSlice(0);
     
     // SETUP FULL SCREEN MODE
-    if ( HT.params.ui && HT.params.ui != "embed" ) {
+    if ( HT.params.ui == "reader" ) {
       $('<a href="#" id="mbToggleHeader" title="Enter Full Screen"></a>')
         .prependTo("#mdpToolbarViews");
 

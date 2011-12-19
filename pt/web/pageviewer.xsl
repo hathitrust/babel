@@ -375,6 +375,7 @@
   <xsl:template name="setup-ht-params">
     <script type="text/javascript">
       HT.params = {};
+      HT.params.ui = 'reader';
       <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
         <xsl:choose>
           <xsl:when test="@name = 'seq'">
