@@ -328,7 +328,7 @@ sub __getFileResourceRepresentation {
             my $toExtract = $po->getPairtreeFilename($P_Ref->{'bc'}) . qq{/$filename};
             my $unzip_prog = $self->__getConfigVal('unzip_prog');
 
-            $representation = `$unzip_prog -p $zipFile $toExtract`;
+            $representation = `$unzip_prog -p '$zipFile' '$toExtract'`;
         }
     }
 
