@@ -13,6 +13,7 @@ use Utils::Sort;
 use Collection;
 
 use MBooks::Utils::Sort;
+use MBooks::Utils::TempColl;
 use MBooks::Index;
 
 BEGIN {
@@ -259,6 +260,7 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
     my $spaced_coll_name = getSpacedCollName($coll_name,16);
 
     my $coll_desc = $co->get_description($coll_id);
+    my $is_temporary = MBooks::Utils::TempColl::coll_is_temporary($C, $co, $coll_id);
 
     my $s = "";
     $s .= wrap_string_in_tag($coll_id, 'CollId');
@@ -268,6 +270,7 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
     $s .= wrap_string_in_tag($status, 'Status');
     $s .= wrap_string_in_tag($coll_owned_by_user, 'OwnedByUser');
     $s .= wrap_string_in_tag($status, 'PublicStatus');
+    $s .= wrap_string_in_tag($is_temporary, 'Temporary');
 
     return $s;
 }

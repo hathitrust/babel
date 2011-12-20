@@ -140,14 +140,16 @@
             </input>
           </label>
           
-          <label for="public_radio">
-            <xsl:text>Public</xsl:text>
-            <input type="radio" name="shrd" id="public_radio" value="1">
-              <xsl:if test="EditCollectionWidget/Status='public'">
-                <xsl:attribute name="checked">checked</xsl:attribute>
-              </xsl:if>
-            </input>
-          </label>
+          <xsl:if test="EditCollectionWidget/Temporary!='1'">
+            <label for="public_radio">
+              <xsl:text>Public</xsl:text>
+              <input type="radio" name="shrd" id="public_radio" value="1">
+                <xsl:if test="EditCollectionWidget/Status='public'">
+                  <xsl:attribute name="checked">checked</xsl:attribute>
+                </xsl:if>
+              </input>
+            </label>
+          </xsl:if>
         </div>
         
         <button id="editc" value="editc">
