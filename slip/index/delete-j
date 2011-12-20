@@ -36,6 +36,7 @@ use Search::Constants;
 use Context;
 use MdpConfig;
 use Database;
+use Identifier;
 use SharedQueue;
 
 # Local
@@ -184,7 +185,8 @@ sub __del_Delete_document {
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
 
     my $delete_field = $C->get_object('MdpConfig')->get('default_Solr_delete_field');
-    my $query = qq{$delete_field:$id};
+    my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
+    my $query = qq{$delete_field:$safe_id};
     
     ($index_state, $dummy) = $indexer->delete_by_query($C, $query);
 
