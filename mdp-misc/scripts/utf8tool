@@ -1,4 +1,4 @@
-#!/l/local/bin/perl -w
+#!/usr/bin/env perl
 
 #
 # Copyright 2004
@@ -9,6 +9,8 @@
 # Phillip Farber, DLPS, University of Michigan, pfarber@umich.edu Fri
 # Feb 17 16:25:49 2006 Modifications to create a command-line tool
 #
+
+use warnings;
 
 my $UnicodeData = '/usr/lib/perl5/5.8.8/unicore/UnicodeData.txt';
 

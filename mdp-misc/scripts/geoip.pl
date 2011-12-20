@@ -1,4 +1,4 @@
-#! /l/local/bin/perl
+#!/usr/bin/env perl
 
 my $IP = $ARGV[0];
 

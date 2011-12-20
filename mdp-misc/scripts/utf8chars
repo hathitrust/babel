@@ -1,10 +1,11 @@
-#!/l/local/bin/perl -w
+#!/usr/bin/env perl
 
 require 5.8.3;
 
 $| = 1;           ## flush stdio
 
 use strict;
+use warnings;
 use Encode;
 %main::charName = (
 '0000' => 'NULL',
