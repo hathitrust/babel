@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    # $ENV{DEBUG_LOCAL} = 1;
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
@@ -43,7 +43,7 @@ $app = builder {
 
     enable
         match_if param('index'),
-            'Choke::Requests',
+            'Choke::Requests::Indexer',
                     key            => 'search-index',
                     cache_dir_key  => 'choke_shared_cache_dir',
                     client_identifier_sub => sub {
@@ -53,8 +53,10 @@ $app = builder {
                             return ( "search-index-id", $id );
                         }
                     },
-                    credit_rate    => [ 0.25, 'min' ],
-                    max_debt       => [ 1, '+2 min' ],
+                    # credit_rate    => [ 0.25, 'hour' ],
+                    # max_debt < 1 to allow the first (0) request
+                    # and then throttle after that
+                    max_debt       => [ 0.9, '+2 min' ],
                     response       => { filename => qq{$ENV{SDRROOT}/pt/web/503_index.html},
                                         content_type => 'text/html' }
             ;
