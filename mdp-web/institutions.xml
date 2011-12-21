@@ -358,4 +358,11 @@
       authtype="shibboleth"
       domain="udel.edu"
       enabled="0">University of Delaware</Inst>
+  <Inst
+      sdrinst="mcgill"
+      template="https://___HOST___/Shibboleth.sso/mcgill?target=___TARGET___"
+      authtype="shibboleth"
+      domain="mcgill.ca"
+      enabled="0">McGill University</Inst>
+      
 </Institutions>
