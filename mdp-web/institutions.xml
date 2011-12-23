@@ -319,6 +319,12 @@
       authtype="shibboleth"
       domain="unl.edu"
       enabled="1">University of Nebraska - Lincoln</Inst>
+  <Inst
+      sdrinst="mcgill"
+      template="https://___HOST___/Shibboleth.sso/mcgill?target=___TARGET___"
+      authtype="shibboleth"
+      domain="mcgill.ca"
+      enabled="1">McGill University</Inst>
 
   <!-- waiting -->
 
@@ -358,11 +364,5 @@
       authtype="shibboleth"
       domain="udel.edu"
       enabled="0">University of Delaware</Inst>
-  <Inst
-      sdrinst="mcgill"
-      template="https://___HOST___/Shibboleth.sso/mcgill?target=___TARGET___"
-      authtype="shibboleth"
-      domain="mcgill.ca"
-      enabled="0">McGill University</Inst>
       
 </Institutions>
