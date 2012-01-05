@@ -325,15 +325,15 @@
       authtype="shibboleth"
       domain="mcgill.ca"
       enabled="1">McGill University</Inst>
-
-  <!-- waiting -->
-
   <Inst
       sdrinst="wustl"
       template="https://___HOST___/Shibboleth.sso/wustl?target=___TARGET___"
       authtype="shibboleth"
       domain="wustl.edu"
-      enabled="0">Washington University in St. Louis</Inst>
+      enabled="1">Washington University in St. Louis</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="nd"
       template="https://___HOST___/Shibboleth.sso/nd?target=___TARGET___"
