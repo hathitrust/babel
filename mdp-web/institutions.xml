@@ -335,6 +335,12 @@
   <!-- waiting -->
 
   <Inst
+      sdrinst="arizona"
+      template="https://___HOST___/Shibboleth.sso/arizona?target=___TARGET___"
+      authtype="shibboleth"
+      domain="arizona.edu"
+      enabled="0">University of Arizona</Inst>
+  <Inst
       sdrinst="nd"
       template="https://___HOST___/Shibboleth.sso/nd?target=___TARGET___"
       authtype="shibboleth"
