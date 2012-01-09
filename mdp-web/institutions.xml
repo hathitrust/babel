@@ -331,6 +331,12 @@
       authtype="shibboleth"
       domain="wustl.edu"
       enabled="1">Washington University in St. Louis</Inst>
+  <Inst
+      sdrinst="nd"
+      template="https://___HOST___/Shibboleth.sso/nd?target=___TARGET___"
+      authtype="shibboleth"
+      domain="nd.edu"
+      enabled="1">University of Notre Dame</Inst>
 
   <!-- waiting -->
 
@@ -340,12 +346,6 @@
       authtype="shibboleth"
       domain="arizona.edu"
       enabled="0">University of Arizona</Inst>
-  <Inst
-      sdrinst="nd"
-      template="https://___HOST___/Shibboleth.sso/nd?target=___TARGET___"
-      authtype="shibboleth"
-      domain="nd.edu"
-      enabled="0">University of Notre Dame</Inst>
   <Inst
       sdrinst="ucsb"
       template="https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___"
