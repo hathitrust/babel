@@ -333,7 +333,7 @@ jQuery(function($) {
 
         if ( data.mine != '' ) {
           var href="mb?a=editst;shrd=" + ( data.shared == 'Public' ? 0 : 1 ) + ";c=" + data.collid + ";colltype=" + this.view;
-          if ( window.location.href.indexOf("debug=") > -1 ) {
+          if ( window.location.href.indexOf("debug=") > -1 && window.location.href.indexOf("local") > -1 ) {
             href += ";debug=local";
           }
           href += "#" + self.view;
