@@ -948,6 +948,10 @@ sub getModifyAdvancedSearchURL
     ## do we need to delete a and page params first?
     $temp_cgi->param('a','page');
     $temp_cgi->param('page','advanced');
+    #XXX until we do sticky facets remove facet_lang and facet_format params 
+    # alternative is javascript to grab the url and do a POST instead of a get.
+    $temp_cgi->delete('facet_lang');
+    $temp_cgi->delete('facet_format');
     my $url=$temp_cgi->self_url();
     
     return $url;

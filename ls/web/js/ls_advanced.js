@@ -12,6 +12,7 @@ Need to be able to exclude a javascript call? or rename form?
 
 // process stuff and then submit
 
+
 $(function()
   {
 
@@ -21,11 +22,10 @@ $(function()
     $('#yop-start').show().val("");
 
 
-    var rows= new Array();
+   
     $('#advanced_searchform').submit(function(event) 
             {
-
-              //              rewriteOrFacets();  //doesn't work can do at perl end or fix jquery
+              
               // check that at least one querybox has text in it
                var queryExists = checkForQuery();
                
@@ -39,8 +39,9 @@ $(function()
                  else
                  {
                    //              rows = removeAndConsolidateBlankRows(rows);
-                   rows = removeBlankRows(rows);
-                   redirect(rows);
+                   var rowNums = new Array();
+                   rowNums = getRowNums();
+                   redirect(rowNums);
                  }
                }
                event.preventDefault();
@@ -123,67 +124,24 @@ function checkForQuery()
 }
 
 
-function rewriteOrFacets()
-{
- 
-  var str="";
-  //   var orstuff=$("select.orFacet option:selected");
-
-  var orstuff=$("select.orFacet");
-  
-  $(orstuff).each(function(index,element)
-                  {
-                    var clause="";
-                    var facetName = $(this).attr('name');
-                    var selected = $(this).find("option:selected");
-                    $(selected).each(function()
-                                     {
-                                       var facetValue = $(this).val();
-                                       clause += facetValue + " OR "; 
-                                     }
-                                     );
-                    clause=clause.replace(/OR$/,"");
-                    str+='(' + clause + ') AND (' ;                                     
-                  }
-  
-                  );
-  str=str.replace(/\'\)\s+AND\s+\($/,"");
-  alert("str is " + str);
-
-  /**
-  var facetOp=$("#facet_lang");
-  
-  var langstuff= $(facetOp).filter(orstuff);
-  
-  $(langstuff).each(function(index)
-                    {
-                      var facet=$(this).val();
-                      
-                      str += $(this).text() + " OR ";
-                    }  
-                    );
-  
-  alert(str +"\n");
-  
-  **/  
-                           
-
-}
-
-
+//##################################################################
 /**
-
- write a removeBlankRows function that only removes the blank rows and does no renumbering
- so possibly leaving only a q2 and q4
- Also  remove the operator preceding the first row that has a query in it
+   look for rows with blank query box
+   return array with only the non-blank row numbers i.e.
+   if q2 and q3 are the only non-blank query boxes return array:
+   rowNum[0]=2
+   rowNum[1]=3
  **/
 
-function removeBlankRows(rows)
-{ 
+
+
+function getRowNums()
+{
+  var rowNums = new Array();
   var count=0;
   $(':input.querybox').each(function(index)
                             {
-                              var rownum=index+1
+                              var rownum=index+1;
                               var query=$(this).val();
                                if (query ==="")
                                {
@@ -191,171 +149,129 @@ function removeBlankRows(rows)
                                }
                                else
                                {
+                                 rowNums[count]=rownum;
                                  count++;
-                                 rows[index]=getRow(rownum,count)
                                }
                             });
-  return rows;
+  return rowNums
 }
 
 
-function getRow(qnum,count)
+
+function redirect(rowNums)
 {
-  var row="";
 
-  var OpID="#op" + qnum;
-  var OpValue= $(OpID).val();
+  // create new form
 
-  var FieldID="#field" + qnum;
-  var FieldValue= $(FieldID).val();
+  var newform = document.createElement("form");
+  newform.id= "newform" ; // IE won't work with setAttribute
 
-  var QueryID = "#q" + qnum; 
-  var QueryValue= $(QueryID).val();
+  //  Test length of url on only post if its longer than 2000 characters  (IE limit about 2048)
+  // See:http://www.boutell.com/newfaq/misc/urllength.html
+  var serialized= ($("#advanced_searchform").serialize());
+  if (serialized.length > 2000)
+  {
+    newform.method="post";
+  }
+  // append to doc
+  document.body.appendChild(newform);
+
+  //copy input elements  
+  $(":input").each(function (index,element)
+                   {
+                     var value= $(element).val();
+                     var name = $(element).attr('name');
+                     
+                     // code to only copy checked checkboxes
+                     var type=$(element).attr('type');
+                     if (type === "checkbox" )
+                     {
+                       var checked=$(element).attr('checked');
+                       if ( checked)
+                       {
+                         addInput(name,value);
+                       }
+                     }
+                     else
+                     {
+                       // remove blank rows
+
+                       var result = name.match(/(op|anyall|field|q)([1-4])/);
+
+                       if (result)
+                       {
+                         // remove blank rows
+                         // if number is in rowNums (i.e. non-blank query) add this row
+                         var number=result[2];
+                         var i=0;
+                         for (i=0;i<=rowNums.length;i++)
+                         {
+                           
+                           if ( number == rowNums[i])
+                           {
+                             addInput(name,value);
+                           }
+                         }
+                       }
+                       else
+                       {
+                         //this handles everything else
+                         //alert(name + "=" + value );
+                         addInput(name,value);
+                       }
+                     }
+                                          
+                   });
   
-  var AnyAllId ="#anyall" + qnum;
-  var AnyAllValue= $(AnyAllId).val();
+  // for debugging
+  /**
+     var formValues= ($("#newform").serialize());
+     alert("newform=" + formValues);
+  **/
 
-  // no op for first query in set
-  var OpClause="";
-  if(count !== 1)
-  {
-    OpClause= "op" + qnum + "=" +OpValue + "&";
-  }
-  row = row+ OpClause + "anyall" + qnum + "=" + AnyAllValue + '&' +"field" + qnum + "=" + FieldValue + "&" + "q" +qnum +"=" +QueryValue ;
-  return row;
+  // submit form
+  $("#newform").submit();
 }
 
 
-/**
- function removeAndConsolidateBlankRows(rows)
- This will consolidate rows and move them starting with moving the first non-blank row to q1
-**/
+// add a hidden input to the new form with given name and value
+// do we want/need any other attributes?
 
-function removeAndConsolidateBlankRows(rows)
-{ 
-  var count=0;
-  $(':input.querybox').each(function(index)
-                             {
-                               var qnum=index+1;
-                               var query=$(this).val();
-                               if (query ==="")
-                               {
-                                 //alert ("no query for q number " + qnum );
-                               }
-                               else{
-                                 //XXX redo this so we don't have to rewrite the query if it doesn't need it
-                                 count++; 
-                                 if (qnum !== count){
-                                   //  alert("q number " + qnum +" has query " + query + " rewrite to q " +count );
-                                   rows[count]=rewriteQuery(query,qnum,count);
-                                 }
-                                 else
-                                 {
-                                   //XXX redo this so we don't have to rewrite the query if it doesn't need it
-                                   //alert("dontRewriteQuery");
-                                   rows[count]=rewriteQuery(query,qnum,count);
-                                 }
-                               }
-                                 
-                             });
-  return rows;
-}
-
-
-
-// rewrite query from query number qnum to query number toNum
-function rewriteQuery(query,qnum,toNum)
+function addInput(name,value)
 {
-  var row="";
-    //op
-  // if this is the first row there is no op so must remove it
-  // XXX add logic
-  var newOp = "op" + toNum; 
-  var oldOpID="#op" + qnum;
-  var newOpValue= $(oldOpID).val();
-  //field
-  var newField = "field" + toNum; 
-  var oldFieldID="#field" + qnum;
-  var newFieldValue= $(oldFieldID).val();
-
-  //query
-
-  var newQuery = "q" + toNum; 
-  var newQueryValue= query;
-  var OpClause="";
-  if(toNum >1)
+  if (value === null || value === "")
   {
-    OpClause=newOp + "=" +newOpValue + "&";
+    return;
   }
-  row = row+ OpClause + newField + "=" + newFieldValue + "&" + newQuery +"=" +newQueryValue;
-  return row;
-}
+  var val= value;
+  var type = typeof value;
+  //  alert (name +  "is type " +type);
 
-
-
-
-// create new query with modified rows
-//http://tburtonw-full.babel.hathitrust.org/cgi/ls?
-//a=srchls&a=srchls
-//&field1=ocronly&q1=art&op2=AND&field2=title&q2=history&op3=AND&field3=author&q3=&op4=AND&field4=subject&q4=
-//&facet stuf maybe
-
-function redirect(rows)
-{
-  // get serialized form object, i.e. suitable for url
-
-  var formValues= ($("#advanced_searchform").serialize());
-  var rest= replaceRows(formValues,rows)
-    // removeRows
-  var host=window.location.host;
-  var path=window.location.pathname;
-  var URL= host + path +"?" +rest;
-
-  //  alert ("url would be " + URL);
-  //  window.location.(URL);
-  var href='http://' +URL;
-  location.href=href;
-}
-
-
-
-
-
-function replaceRows(formValues,rows)
-{
-  var newURLString="";
-
-  var newParms= new Array();
-  var pairs=formValues.split(/\&/);
-  for (var i=0; i < pairs.length; i++)
+  if (type === "string")
   {
-      var keyvalue = pairs[i].split(/\=/);
-      var key = keyvalue[0];
-      var value = keyvalue[1];
-      // convert from perl to js regex
-      if (key.match(/(op|anyall|field|q)[1-4]/)) 
-      {
-        //skipit
-      }
-      else
-      {
-        //add to output
-        newURLString=newURLString + pairs[i] +"&";
-      }
+      $('<input>').attr({
+        type: 'hidden',
+            name: name,
+            value: value,
+            }).appendTo("#newform");
   }
-  for (var j=0; j < rows.length; j++)
+
+  else
   {
-    if ( (rows[j]))
+    var i=0;
+    for (i=0;i<=value.length;i++)
     {
-      var URLrow="&" + rows[j];
-      newURLString=newURLString+URLrow;
+      $('<input>').attr({
+        type: 'hidden',
+            name: name,
+            value: value[i],
+            }).appendTo("#newform");
     }
   }
-  //get rid of any double ampersands
-  newURLString=newURLString.replace(/&&/g,"&");
 
-  return newURLString;
 }
+
+
 
 
 //------------copied from Bill/Jeremy catalog code
