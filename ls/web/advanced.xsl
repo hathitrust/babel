@@ -45,8 +45,7 @@
           <xsl:call-template name="footer"/>
         </div>
       </body>
-      <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>
-
+      <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>  
 
     </html>
   </xsl:template>
@@ -127,6 +126,7 @@
                    </tr>
                  </table>
                  <button type="submit" name="findbutton" id="srch" >Find</button>
+                 <button type="reset" name="reset" id="reset" >Clear/reset</button>
                </form>
              </div>
            </div>
