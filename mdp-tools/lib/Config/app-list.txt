@@ -20,3 +20,4 @@ plack-lib
 qual
 feed
 ping
+register
