@@ -87,6 +87,7 @@
              
                 
               </table>
+              <div id="queryErrMsg"></div>
               <br/>
             <h3>Limit To:</h3>
             <input type="checkbox" value="ft" name="lmt" id="fullonly"/>
@@ -109,7 +110,7 @@
                    <input class="yop" id="yop-in" type="text" size="4" name="pdate"/>
 
                  </span>
-
+                 <div id="yopErrMsg"></div>
                  
                  <table style="width: auto">
                    <tr>
@@ -127,6 +128,7 @@
                  </table>
                  <button type="submit" name="findbutton" id="srch" >Find</button>
                  <button type="reset" name="reset" id="reset" >Clear/reset</button>
+                 <div id="submitErrMsg"></div>
                </form>
              </div>
            </div>

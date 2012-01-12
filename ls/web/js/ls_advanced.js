@@ -73,7 +73,8 @@ function checkPdate()
                        // its ok if its blank or a number
                      }
                      else{
-                       alert("You must enter a number from 0 to 9999 for the publication date");
+                       var Msg = 'You must enter a number from 0 to 9999 for the publication date';
+                       showErrMsg(Msg,'yopErrMsg');
                        isValid = false;
                        return isValid;
                      }
@@ -93,7 +94,8 @@ function checkPdate()
     }
     if ( startDate  > endDate  )
     {
-      alert("start date must be less than end date");
+      var Msg = 'start date must be less than end date';
+      showErrMsg(Msg,'yopErrMsg');
       return false;
     }
     
@@ -117,12 +119,20 @@ function checkForQuery()
                    );
   if (queryExists === false)
   {
-    // alert for now.  Change to nicer styled message written to div like other error messages
-    alert("you must enter a query");
+    var Msg = 'Please enter a search term.';
+    showErrMsg(Msg,'submitErrMsg');
+    showErrMsg(Msg,'queryErrMsg');
   }
   return queryExists;
 }
 
+
+function showErrMsg(Msg,id)
+{
+  var target= '#' + id;
+  $("<div  class='error' ></div>").html(Msg).appendTo(target);
+
+}
 
 //##################################################################
 /**
