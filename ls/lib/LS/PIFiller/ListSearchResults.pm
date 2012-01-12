@@ -358,6 +358,7 @@ sub handle_SEARCH_RESULTS_PI
     $output .= wrap_string_in_tag($query_time, 'QueryTime');
     $output .= wrap_string_in_tag($solr_error_msg, 'SolrError');
 
+    #XXX  Replace data here assuming only one query with data assuming an array or hashref for 1-4 possible queries tbw 2012 Advanced Search
     # Is the query a well-formed-formula (WFF)?
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
     my $well_formed = ($wff_hashref->{'primary'} );
@@ -1252,6 +1253,8 @@ sub _ls_wrap_result_data {
     my $C = shift;
     my $rs = shift;
 
+    my $cgi = $C->get_object('CGI');
+
     my $output;
     my $solr_debug;
     
@@ -1338,8 +1341,28 @@ sub _ls_wrap_result_data {
         $s .= wrap_string_in_tag($score, 'relevance');
 
         # Link to Pageturner
-        $s .= wrap_string_in_tag(PT_HREF_helper($C, $id, 'pt_search'), 'PtSearchHref');
-        $s .= wrap_string_in_tag(PT_HREF_helper($C, $id, 'pt'), 'PtHref');
+        # Remove q1 if this is an advanced search
+        my $pt_search_URL = PT_HREF_helper($C, $id, 'pt_search');
+        my $pt_URL = PT_HREF_helper($C, $id, 'pt');
+        my $isAdvanced;
+        
+        if(defined($cgi->param('field1'))|| 
+           defined($cgi->param('field1'))||
+           defined($cgi->param('field1'))||
+           defined($cgi->param('field1')))
+        {
+            $isAdvanced="true";
+        }
+        if ($isAdvanced)
+        {
+            $pt_search_URL=~s/q1=[^\&\;]+/q1=/g;
+        }
+        if($isAdvanced)
+        {
+            $pt_URL=~s/q1=[^\&\;]+/q1=/g;
+        }
+        $s .= wrap_string_in_tag($pt_search_URL, 'PtSearchHref');
+        $s .= wrap_string_in_tag($pt_URL, 'PtHref');
 
         # Access rights
         my $access_status;
