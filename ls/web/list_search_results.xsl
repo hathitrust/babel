@@ -78,9 +78,16 @@
         <!-- jQuery from the Google CDN -->
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
+
+        
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>
         <xsl:call-template name="debug_CSS"/>
+        <!-- local css to be incorporated in global MBooks css later
+             added here to overide common-web/MBooksCol.css-->
+        <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
+
+
       </head>
 
       <body class="yui-skin-sam" onLoad="initCheckall()">
@@ -239,6 +246,20 @@
           <xsl:call-template name="advanced"/>          
         </xsl:otherwise>
       </xsl:choose>
+      <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
+        <div class="modify_link" id="modify_link">
+          <a>
+            <xsl:attribute name="href">
+              <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+            </xsl:attribute>
+            <xsl:text> Revise this advanced search</xsl:text>
+          </a>
+          
+        </div>
+        
+      </xsl:if>
+      
+
 
       <span class="debug">
       <xsl:text>
@@ -250,15 +271,6 @@
       <xsl:if test="$debug='YES'">
         <span class="debug">DEBUG </span>
       </xsl:if>
-
-    </div>
-    <div>
-      <a>
-        <xsl:attribute name="href">
-          <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
-        </xsl:attribute>
-        <xsl:text>Revise this search</xsl:text>
-      </a>
 
     </div>
 
@@ -335,7 +347,7 @@
       <em>
         <xsl:value-of select="Field"/>
       </em>
-      
+      <xsl:text>. </xsl:text>
     </xsl:template>
     
     
