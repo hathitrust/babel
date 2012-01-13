@@ -358,16 +358,20 @@ sub handle_SEARCH_RESULTS_PI
     $output .= wrap_string_in_tag($query_time, 'QueryTime');
     $output .= wrap_string_in_tag($solr_error_msg, 'SolrError');
 
-    #XXX  Replace data here assuming only one query with data assuming an array or hashref for 1-4 possible queries tbw 2012 Advanced Search
+    #XXX  get first element of array for basic search See xxx for advanced search
     # Is the query a well-formed-formula (WFF)?
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
-    my $well_formed = ($wff_hashref->{'primary'} );
+    my $well_formed_ary = ($wff_hashref->{'primary'} );
+    my $processed_aryref=$wff_hashref->{'processed_query_string'};
+    
+    my $well_formed = ($well_formed_ary->[1]);
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
+    $output .= wrap_string_in_tag($processed_aryref->[1], 'ProcessedQueryString');
+    
     #need to fix any xml chars before output
-    my $processed=$wff_hashref->{'processed_query_string'};
+    
   #  $processed =clean_for_xml($processed);
-    $output .= wrap_string_in_tag($processed, 'ProcessedQueryString');
-
+    
     return $output;
 }
 
@@ -841,9 +845,16 @@ sub handle_ADVANCED_SEARCH_PI
     my ($C, $act, $piParamHashRef) = @_;
     my $fconfig=$C->get_object('FacetConfig');
     my $cgi = $C->get_object('CGI');
-    
+
     my $param2userMap =      $fconfig->{field_2_display};
     my $anyall_2_display = $fconfig->{'anyall_2_display'};
+
+    #XXX add result data so we can put well formed/processed string here instead of someplace else
+    my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');    
+    my $wff_hashref = $search_result_data_hashref->{'well_formed'};
+    my $well_formed_aryref = ($wff_hashref->{'primary'} );
+    my $processed_aryref=$wff_hashref->{'processed_query_string'};
+
 
     #get query params from cgi and map to user friendly fields using config
     # put the stuff inside the for loop in a subroutine!
@@ -901,6 +912,8 @@ sub handle_ADVANCED_SEARCH_PI
         # unselect url for this row
         my $unselectURL=getUnselectAdvancedClauseURL($cgi,$i);
         
+        my $well_formed = $well_formed_aryref->[$i]; 
+        my $processed_query = $processed_aryref->[$i];
 
         my $clause;
         if (defined ($q))
@@ -908,6 +921,8 @@ sub handle_ADVANCED_SEARCH_PI
 
             $clause .=wrap_string_in_tag($i, 'Qnum');
             $clause .=wrap_string_in_tag($q ,'Query');
+            $clause .=wrap_string_in_tag($well_formed ,'WellFormed');
+            $clause .=wrap_string_in_tag($processed_query ,'ProcessedQuery');
             $clause .=wrap_string_in_tag($op, 'OP');
             $clause .=wrap_string_in_tag($user_field, 'Field');
             $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');

@@ -113,8 +113,12 @@
                 <!--XXX              <div class="betasearchinfo">  
               </div>-->
 
-              <xsl:if test="SearchResults/WellFormed!=1">
-                <xsl:call-template name="QueryRewrite"/>
+              <xsl:if test="(SearchResults/WellFormed!=1) and (/MBooksTop/AdvancedSearch/isAdvanced='false')">
+                <xsl:call-template name="QueryRewrite">
+                  <xsl:with-param name="ProcessedQueryString">
+                    <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
+                  </xsl:with-param>
+                </xsl:call-template>
               </xsl:if>
 
               <div class="SearchAndRefine">
@@ -299,6 +303,7 @@
       </xsl:template>
 
 
+
   <xsl:template name="advanced">
     <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
       <xsl:choose>
@@ -341,6 +346,8 @@
       <span>
         <xsl:value-of select="Query"/>
       </span>
+     
+
       <xsl:text> in </xsl:text>
       <!-- replace em with css -->
       
@@ -348,6 +355,17 @@
         <xsl:value-of select="Field"/>
       </em>
       <xsl:text>. </xsl:text>
+      <!--foobar -->
+      <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (WellFormed!=1)">
+        <div class="advancedMsg">
+        <xsl:call-template name="QueryRewrite">
+          <xsl:with-param name="ProcessedQueryString">
+            <xsl:value-of select="ProcessedQuery"/>                    
+          </xsl:with-param>
+        </xsl:call-template>     
+      </div>
+      </xsl:if>
+
     </xsl:template>
     
     
@@ -359,11 +377,13 @@
 
   <!-- TEMPLATE -->
   <xsl:template name="QueryRewrite">
+    <xsl:param name="ProcessedQueryString"/>
     <div class="SearchResults_status">
       <div class="infoAlert">
         One of the operators: <span>AND</span>, <span>OR</span>, <span>)</span>, or <span>(</span> was missing or placed incorrectly in your query. Your query was changed and submitted as: 
         <span>
-          <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>
+          <xsl:value-of select="$ProcessedQueryString"/>
+          <!--xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/-->
         </span>
       </div>
     </div>

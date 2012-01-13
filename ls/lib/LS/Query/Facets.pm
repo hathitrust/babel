@@ -604,8 +604,8 @@ sub make_query_clause{
         
     }
     
-
-    my $processed_q =$self->get_processed_user_query_string($q);
+    
+    my $processed_q =$self->get_processed_user_query_string($q,$i);
     #XXX temporary fix until we refactor Search::Query::_get_processed_user_query_string
     # remove any string consisting only of ascii punctuation
     $processed_q = $self->remove_tokens_with_only_punctuation($processed_q);
@@ -917,6 +917,7 @@ sub __get_boolean_query
 {
     my $self = shift;
     my $q = shift;
+    
     my $bq =$q;
     # remove leading and trailing spaces
     $bq =~s,^\s+,,g;
@@ -1000,7 +1001,200 @@ sub __handle_phrases
     
     return $out;
 }
+#----------------------------------------------------------------------
+#XXX hack to store/use processed user query for q1-4 instead of just q1
+#XXX  After this is working migrate appropriate parts to base class slip-lib/Search::Query
 
+
+=item get_processed_user_query_string
+
+Perform some common ops on the user query string to make it work with
+Solr.  Support for very simple useer entered queries
+
+1) '"' chars must be balanced or the query is treated as without '"'
+
+2) leading "+" and "-" are supported
+
+3) stemming via "*" is supported
+
+NOTE: as of Tue Nov 17 13:26:52 2009, stemming is causing timeouts in
+the 12/4 configuration.  Not supported
+
+NOTE: as of Fri Dec 4 12:21:44 2009 AND|OR and "(", ")" balanced
+parentheses are supported. However, if a boolean query si not a
+well-formed formula, all operators and parens are removed. This means
+the query will devolve to the default AND query.
+
+4) All other punctuation is _removed_
+
+5) added code to allow query string as an argument for advanced search
+processing (tbw)
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_processed_user_query_string {
+    my $self = shift;
+    my $query_string = shift;
+    my $query_num = shift;
+    
+    my $user_query_string;
+
+    if (defined ($query_string))
+    {
+        $user_query_string= $query_string;
+    }
+    else
+    {
+        $user_query_string = $self->get_query_string();
+    }
+
+
+    # Replace sequences of 2 or more double-quotes (") with a single
+    # double-quote
+    $user_query_string =~ s,["]+,",g;
+    # Remove all double-quote (") if any are unbalanced
+    my $num_chars = $user_query_string =~ tr/"//;
+    $user_query_string =~ s,", ,g
+        if ($num_chars % 2);
+
+# stemming
+# stemming    # Asterisk (*) must follow wordchars and be followed by whitespace
+# stemming    # or EOL.  In other words, a free standing, leading or embedded *
+# stemming    # is ignored
+# stemming    while ($user_query_string =~ s,(\w)\*+(\w),$1 $2,){}
+# stemming    while ($user_query_string =~ s,(^|\s)\*+,$1,){}
+# stemming
+# stemming    # If any asterisk (*) remains, we have right stemming. Solr right
+# stemming    # stemmed query strings have to be lowercase
+# stemming    if ($user_query_string =~ m,\*,) {
+# stemming        $user_query_string = lc($user_query_string);
+# stemming    }
+# stemming
+
+    # Temporarily disable stemming
+    $user_query_string =~ s,\*, ,g;
+
+    # Preserve only word-leading plus and minus (+) (-)
+    while ($user_query_string =~ s,(^|\W)[-+]+(\W|$),$1 $2,){}
+
+    # Note: Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+
+    # Note: See "stemming note" above. Except for + - * " ( ) special
+    # chars are removed to prevent query parsing errors.  Other
+    # punctuation, (e.g. ' . , @) is more likely to appear in normal
+    # text) is left in place, (e.g. 1,000) because the
+    # PunctFilterFactory will tokenize the punctuated term as a single
+    # token whereas if we remove the punctuation, the query parser
+    # will see 2 or more operands and perform a boolean AND which is
+    # slow.
+    $user_query_string =~ s/[!:?\[\]\\^{~}]/ /g;
+    $user_query_string =~ s/\|\|/ /g;
+    $user_query_string =~ s/\&\&/ /g;
+           #XXX  temporarily remove single ampersand
+           # Solr ICUTokenizer will remove it anyway and current code that displays processed
+           # query string assumes &amp; and blows up with unescaped &
+           # Need to work through code and determine just where and when to change &amp; to & and
+           # vice versa
+           $user_query_string =~ s/\&/ /g;
+
+
+    # Remove leading and trailing whitespace
+    Utils::trim_spaces(\$user_query_string);
+
+    # At this point double quotes are balanced. Lower-case AND|OR
+    # embedded in phrases and replace phrase-embedded parentheses with
+    # spaces.
+    my @tokens = Search::Query::parse_preprocess($user_query_string);
+
+    #XXX add code to store q1-4 stuff here tbw 2012
+
+    # If user is not attempting a boolean query skip the parse here
+    my $valid = 1;
+    if (grep(/^(AND|OR)$/, @tokens)) {
+        # Attempt to parse the query as a boolean expression.
+        $valid = Search::Query::valid_boolean_expression(@tokens);
+        if ($valid) {
+            $self->set_was_valid_boolean_expression($query_num);
+        }
+    }
+
+    if (! $valid) {
+        $self->set_well_formed(0,$query_num);
+
+        # The parse fails. remove parentheses and lower case _all_
+        # occurrences of AND|OR and compose a default AND query.
+        my @final_tokens = ();
+        foreach my $t (@tokens) {
+            my $f = get_final_token($t);
+            push(@final_tokens, $f) if ($f);
+        }
+        $user_query_string = join(' ', @final_tokens);
+    }
+    else {
+        $self->set_well_formed(1,$query_num);
+    }
+
+    $self->set_processed_query_string($user_query_string,$query_num);
+    DEBUG('parse', sub {return qq{Final processed user query: $user_query_string qnumber: $query_num}});
+
+    return $user_query_string;
+}
+
+sub get_final_token {
+    my $s = shift;
+    if ($s =~ m,([\(\)]|^AND$|^OR$),) {
+        return '';
+    }
+    return $s;
+}
+
+# ---------------------------------------------------------------------
+# overide base class to deal with q1-4
+# ---------------------------------------------------------------------
+sub set_well_formed {
+    my $self = shift;
+    my $well_formed = shift;
+    my $query_number = shift;
+    $self->{'wellformedformula'}->[$query_number] = $well_formed;
+}
+
+# ---------------------------------------------------------------------
+sub well_formed {
+    my $self = shift;
+    return $self->{'wellformedformula'};
+}
+
+# ---------------------------------------------------------------------
+
+sub set_was_valid_boolean_expression {
+    my $self = shift;
+    my $query_number = shift;
+    $self->{'wasvalidbooleanexpression'}->[$query_number] = 1;
+}
+# ---------------------------------------------------------------------
+sub parse_was_valid_boolean_expression {
+    my $self = shift;
+    return $self->{'wasvalidbooleanexpression'};
+}
+
+
+# ---------------------------------------------------------------------
+sub get_processed_query_string {
+    my $self = shift;
+    return $self->{'processedquerystring'};
+}
+# ---------------------------------------------------------------------
+sub set_processed_query_string {
+    my $self = shift;
+    my $s = shift;    
+    my $query_number = shift;
+    $self->{'processedquerystring'}->[$query_number] = $s;
+}
+
+
+
+#----------------------------------------------------------------------
 
 
 
