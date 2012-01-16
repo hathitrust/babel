@@ -241,6 +241,7 @@
         </xsl:text>
         <!-- <script src="//ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script> -->
         <style>
+          <xsl:text disable-output-escaping="yes">
           #mdpNewStarburst {
             margin-left: -25px;
           }
@@ -258,10 +259,9 @@
           }
           
           body {
-            /* width: <xsl:value-of select="$min-width" />px; */
             width: auto;
           }
-          
+          </xsl:text>
         </style>
         <xsl:text disable-output-escaping="yes">
         <![CDATA[<![endif]-->]]>
@@ -451,7 +451,9 @@
         HT.reader.flags.attr = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='attr']"/>';
         HT.reader.flags.has_ocr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
         HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
+        <xsl:text disable-output-escaping="yes">
         HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
+        </xsl:text>
         HT.reader.lazyDelay = 500;
         // HT.reader.pageProgression = "rl";
     </script>
