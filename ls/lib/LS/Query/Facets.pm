@@ -517,7 +517,9 @@ sub __get_advanced_query
     my $q;
     my $clause;
     my $Q;
+    my @clause_ary=();
     
+
     if (defined $cgi->param('qa'))
     {
        $ADVANCED = $self->_process_qa_query($cgi);
@@ -581,45 +583,16 @@ sub make_query_clause{
     {
         return "";
     }
-    #XXX temporary fix until we refactor Search::Query in mdp-lib so it behaves properly
-    # currently it deals with balencing of quotes and eliminates 
-    Utils::remap_cers_to_chars(\$q);
+    #XXX this is in middle of a for i loop!!!
+    my $QUERY = $self->process_query($q,$i,$anyall);
+        DEBUG('query_q',
+          sub
+          {   my $s = $QUERY;
+              Utils::map_chars_to_cers(\$s) if Debug::DUtils::under_server();
+              return qq{Solr query q $i ="$s"}
+          });
 
-    #XXX  insert   any|all|phrase processing  might move to subroutine
-   
-    if (defined($anyall))
-    {
-        if ($anyall ne "all")
-        {
-            if ($anyall eq "phrase")
-            {
-                $q = "\"" . $q . "\"";
-            }
-            elsif ($anyall eq "any")
-            {
-                $q = $self-> __convert_to_Boolean_OR($q);
-            }
-            
-        }
-        
-    }
-    
-    
-    my $processed_q =$self->get_processed_user_query_string($q,$i);
-    #XXX temporary fix until we refactor Search::Query::_get_processed_user_query_string
-    # remove any string consisting only of ascii punctuation
-    $processed_q = $self->remove_tokens_with_only_punctuation($processed_q);
-    
-    my $boolean_q= $processed_q;
-    # only use below if dismax is not working right
-#    my $boolean_q = $self->__get_boolean_query($processed_q)   ;
-    
-    #XXX does the following need to happen before or after booleanizing the query
-    #XXX current processing will remove unbalenced quotes but leave in balenced quotes
-    # since the dismax query needs to be quoted, we need to escape any quotes in the query
-    #  ie  "foo" => \"foo\"
-    $boolean_q =~s,\",\\\",g;
-    
+
     my $config = $self->get_facet_config;    
     
     my $field_hash = $config->get_param_2_solr_map;
@@ -659,22 +632,156 @@ sub make_query_clause{
     my $Q;
     
 
-    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $boolean_q .'"';
+    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
 
     return $Q;
     
 }
 
-# ---------------------------------------------------------------------w
+# ---------------------------------------------------------------------
+sub process_query
+{
+    my $self = shift;
+    my $q = shift;    
+    my $i = shift;
+    my $anyall = shift;
+    #XXX temporary fix until we refactor Search::Query in mdp-lib so it behaves properly
+    # currently it deals with balencing of quotes and eliminates 
+    Utils::remap_cers_to_chars(\$q);
+
+    
+    my $processed_q =$self->get_processed_user_query_string($q,$i);
+    # if query was not valid change the anyall operator to all
+    if (! $self->well_formed->[$i])
+    {
+        $anyall='all';
+    }
+            
+    #XXX  clean query above so we can assume balenced quotes and any operators are ok
+    #XXX WARNING  but the above has the effect of ignoring the anyall operator right??
+    #  insert   any|all|phrase processing  might move to subroutine
+    #XXX test for Boolean operators.  If there are any then we ignore anyall
+    # This may change if UX changes mind
+    # this should be subroutine if (isBoolean) or something
+    my $isBoolean;
+    
+    if ($processed_q=~/AND|OR/)
+    {
+        $isBoolean="true";
+    }
+    #XXX check for leading + or -
+
+
+
+    # if entire q is quoted and there are no other quotes, treat as if its a phrase query i.e. set anyall = phrase
+    #check for leading and trailing quotes
+    # and no other quotes
+    if ($processed_q=~/^\".+\"$/)
+    {
+        my $num_quotes = $processed_q =~ tr/"//;
+        if ($num_quotes == 2)
+        {
+            $anyall='phrase';
+        }
+        
+    }
+
+    
+    if (defined($anyall) && (!defined($isBoolean)) )
+    {
+        if ($anyall ne "all")
+        {
+            if ($anyall eq "phrase")
+            {
+                #XXX what if already has quotes around whole phrase?
+                # what if something like "dog food" AND cat
+                $processed_q = "\"" . $processed_q . "\"";
+                
+            }
+            elsif ($anyall eq "any")
+            {
+                $processed_q = $self-> __convert_to_Boolean_OR($processed_q);
+            }
+            
+        }
+        
+    }
+    
+    
+   
+    #XXX temporary fix until we refactor Search::Query::_get_processed_user_query_string
+    # remove any string consisting only of ascii punctuation
+    $processed_q = $self->remove_tokens_with_only_punctuation($processed_q);
+    
+    my $boolean_q= $processed_q;
+    # only use below if dismax is not working right
+#    my $boolean_q = $self->__get_boolean_query($processed_q)   ;
+    
+    #XXX does the following need to happen before or after booleanizing the query
+    #XXX current processing will remove unbalenced quotes but leave in balenced quotes
+    # since the dismax query needs to be quoted, we need to escape any quotes in the query
+    #  ie  "foo" => \"foo\"
+    $boolean_q =~s,\",\\\",g;
+    return $boolean_q;
+    
+}
+#----------------------------------------------------------------------
+
+
+#XXX need to not split up words within quotes
+# i.e.  [unique "New York"] should be [unique OR "New York"] not [unique OR New OR York]
+
+#XXX hacked copied version of Search::Query::parse_preprocess used to only insert OR if not inside quotes
+
 sub __convert_to_Boolean_OR
 {
     my $self = shift;
     my $q = shift;
-    $q =~s/\s+/ OR /g;
-    $q = '( ' . $q .' )';
-        
+    
+    my $query = $q;
+    my @token_array = ();
+
+    # Set parens off from operands for parsing ease
+    $query =~ s,\(, \( ,g;
+    $query =~ s,\), \) ,g;
+
+    Utils::trim_spaces(\$query);
+    my @PreTokens = split(/\s+/, $query);
+
+    # 
+    # XXX We assume balanced quotes at this point in the processing.
+    #  Probably should run query through parse_preprocess is valid first!
+    while (1) {
+        my $t = shift @PreTokens;
+        last if (! $t);
+        if ($t =~ m,^",) {
+            my $quote;
+            $quote .= $t;#suppress_boolean_in_phrase($t);
+            while (($t !~ m,"$,) && ($t)) {
+                $t =  shift @PreTokens;
+                $quote .= " $t";#suppress_boolean_in_phrase($t);
+            }
+            push(@token_array, $quote);
+        }
+        else {
+
+            push(@token_array, $t);
+        }
+        push(@token_array, "OR");
+    }
+    my $q=join(" ",@token_array);
+    
+    # return @token_array;
+   # $q =~s/\s+/ OR /g;
+    #$q = '( ' . $q .' )';
+     #remove last OR
+    $q=~s/OR$//;
+    
     return $q;
 }
+
+
+
 
 
 # ---------------------------------------------------------------------w
