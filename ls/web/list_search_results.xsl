@@ -380,8 +380,8 @@
     <xsl:param name="ProcessedQueryString"/>
     <div class="SearchResults_status">
       <div class="infoAlert">
-        One of the operators: <span>AND</span>, <span>OR</span>, <span>)</span>, or <span>(</span> was missing or placed incorrectly in your query. Your query was changed and submitted as: 
-        <span>
+        One of the operators: <span>AND</span>, <span>OR</span>, <span>)</span>, or <span>(</span> was missing or placed incorrectly in your query. Your query was changed and submitted as: <em>all of these words: </em>
+      <span>
           <xsl:value-of select="$ProcessedQueryString"/>
           <!--xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/-->
         </span>
