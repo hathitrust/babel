@@ -308,8 +308,10 @@ sub stage_topic_branch {
         return 0;
     }
     else {
-        print "Removing $dest_app_dir ... ";
-        `rm -rf $dest_app_dir`;
+        my $time = time();
+        my $backup = "${dest_app_dir}.$time";
+        print "Moving $dest_app_dir to $backup ... ";
+        `mv $dest_app_dir $backup`;
         PrintY(qq{OK\n});
     }
 
