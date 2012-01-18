@@ -37,7 +37,7 @@ $app = builder {
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
         "HTErrorDocument", 500 => "/mdp-web/production_error.html";
 
-    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 1;
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
 
     enable 'Choke::Cache::Filesystem';
 
