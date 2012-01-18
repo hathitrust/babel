@@ -67,8 +67,9 @@
         
             <table style="width: auto">
               <!-- XXX need to change this so it will only add to existing debug values-->
+              <!--
               Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
-              
+              -->
               <tr>
                 <td></td>
                 <td>
