@@ -142,13 +142,13 @@ $field_order=['ocronly',
 $op_order=['AND','OR'];
 
 # default field for each row starting with fisrt row
-$default_fields = ['ocronly',
+$default_fields = ['ocr',
                  'title',
                  'author',
                  'subject',
                  ];
 # default any all phrase
-$default_anyall = ['any',
+$default_anyall = ['all',
                    'all',
                    'any',
                    'phrase',
