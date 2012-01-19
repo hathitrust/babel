@@ -17,7 +17,7 @@
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-        <title>Hathi Trust Digital Library - Experimental Search - v0.2</title>
+        <title>Hathi Trust Digital Library - Full-text Search - v3</title>
         <xsl:call-template name="load_js_and_css"/>
       </head>
 
