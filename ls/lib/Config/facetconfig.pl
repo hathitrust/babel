@@ -3,7 +3,7 @@
 #facetconfig.pl
 #
 # perl data structures needed for faceting
-use YAML::XS;
+use YAML::Any;
 
 
 my $rel_weights_file = $ENV{SDRROOT} . '/ls/lib/Config/dismax.yaml';
