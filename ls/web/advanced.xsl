@@ -212,7 +212,25 @@
 
        
        <td>
+         <input type="text"  size="50" class="querybox" >
+           <xsl:attribute name="id">
+             <xsl:value-of select="$qNum"/>
+           </xsl:attribute>
 
+           <xsl:attribute name="name">
+             <xsl:value-of select="$qNum"/>
+           </xsl:attribute>
+           <xsl:attribute name="value">
+             <xsl:value-of select="q"/>             
+           </xsl:attribute>
+
+         </input>
+       </td>
+          
+       <td>
+         <xsl:text> in </xsl:text>
+       </td>
+       <td>
          <xsl:for-each  select="/MBooksTop/AdvancedSearch/fieldlist">
              <xsl:call-template name="BuildHtmlSelectCustom">
                <xsl:with-param name="id">
@@ -229,22 +247,8 @@
              </xsl:call-template>
            </xsl:for-each>
        
-            </td>
-       <td>
-         <input type="text"  size="50" class="querybox" >
-           <xsl:attribute name="id">
-             <xsl:value-of select="$qNum"/>
-           </xsl:attribute>
+         </td>
 
-           <xsl:attribute name="name">
-             <xsl:value-of select="$qNum"/>
-           </xsl:attribute>
-           <xsl:attribute name="value">
-             <xsl:value-of select="q"/>             
-           </xsl:attribute>
-
-         </input>
-       </td>
        
      </xsl:template>
 
