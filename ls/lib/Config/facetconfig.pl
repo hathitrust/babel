@@ -144,9 +144,7 @@ $op_order=['AND','OR'];
 # default field for each row starting with fisrt row
 $default_fields = ['ocr',
                  'title',
-                 'author',
-                 'subject',
-                 ];
+                  ];
 # default any all phrase
 $default_anyall = ['all',
                    'all',
