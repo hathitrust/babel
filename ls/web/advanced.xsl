@@ -19,6 +19,7 @@
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
         <title>Hathi Trust Digital Library - Full-text Search - v3</title>
         <xsl:call-template name="load_js_and_css"/>
+        <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
       </head>
 
       <body class="yui-skin-sam" onLoad="initCheckall()">
@@ -160,7 +161,7 @@
        </xsl:if>
        <xsl:if test="$rowNum!=1">
          <td>
-           <select>
+           <select class="AndOr">
              <xsl:attribute name="name" >
                <xsl:value-of select="$opNum"/>
              </xsl:attribute>
@@ -227,7 +228,7 @@
          </input>
        </td>
           
-       <td>
+       <td id="in">
          <xsl:text> in </xsl:text>
        </td>
        <td>

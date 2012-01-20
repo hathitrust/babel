@@ -367,7 +367,9 @@ sub handle_SEARCH_RESULTS_PI
     my $well_formed = ($well_formed_ary->[1]);
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
     $output .= wrap_string_in_tag($processed_aryref->[1], 'ProcessedQueryString');
-    
+    #XXX tbw add unbalenced parens here foobar
+    my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[1];
+    $output.= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
     #need to fix any xml chars before output
     
   #  $processed =clean_for_xml($processed);
@@ -914,6 +916,8 @@ sub handle_ADVANCED_SEARCH_PI
         
         my $well_formed = $well_formed_aryref->[$i]; 
         my $processed_query = $processed_aryref->[$i];
+        my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[$i];
+        
 
         my $clause;
         if (defined ($q))
@@ -923,6 +927,7 @@ sub handle_ADVANCED_SEARCH_PI
             $clause .=wrap_string_in_tag($q ,'Query');
             $clause .=wrap_string_in_tag($well_formed ,'WellFormed');
             $clause .=wrap_string_in_tag($processed_query ,'ProcessedQuery');
+            $clause .= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
             $clause .=wrap_string_in_tag($op, 'OP');
             $clause .=wrap_string_in_tag($user_field, 'Field');
             $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');

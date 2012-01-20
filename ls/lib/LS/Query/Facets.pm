@@ -672,16 +672,18 @@ sub process_query
     #XXX check for leading + or -
 
 
-
+    #XXX do we want to actually reset the cgi parameter anyall so the user message will mention "as a phrase"?
     # if entire q is quoted and there are no other quotes, treat as if its a phrase query i.e. set anyall = phrase
-    #check for leading and trailing quotes
-    # and no other quotes
+    #check for leading and trailing quotes    # and no other quotes
+    # once we set anyall to phrase, we need to remove the quotes so we don't double quote later in processing
     if ($processed_q=~/^\".+\"$/)
     {
         my $num_quotes = $processed_q =~ tr/"//;
         if ($num_quotes == 2)
         {
             $anyall='phrase';
+            $processed_q=~s,",,g;
+            
         }
         
     }
@@ -1161,9 +1163,21 @@ sub get_processed_user_query_string {
     # double-quote
     $user_query_string =~ s,["]+,",g;
     # Remove all double-quote (") if any are unbalanced
+    #XXX should probably set separate unbalenced quote indicator for better error message
     my $num_chars = $user_query_string =~ tr/"//;
-    $user_query_string =~ s,", ,g
-        if ($num_chars % 2);
+    if ($num_chars % 2)
+    {
+        $user_query_string =~ s,", ,g;
+        $self->set_unbalanced_quotes(1,$query_num);
+        $self->set_processed_query_string($user_query_string,$query_num);
+    }
+    else
+    {
+        $self->set_unbalanced_quotes(0,$query_num);
+    }
+    
+    
+
 
 # stemming
 # stemming    # Asterisk (*) must follow wordchars and be followed by whitespace
@@ -1212,9 +1226,29 @@ sub get_processed_user_query_string {
     # At this point double quotes are balanced. Lower-case AND|OR
     # embedded in phrases and replace phrase-embedded parentheses with
     # spaces.
+    
+    #  tbw need to add test for all caps that is multilingual!
+    # if all caps then assume not boolean and lower case
+    # or we just lower case AND/OR
+    if ($user_query_string =~/AND|OR/)
+    {
+        # test for all caps and if all caps lc the AND and the ORs
+        # If there is not  a single lower case character then its  all upper case
+        if ($user_query_string =~/\p{Lowercase_Letter}/)
+        {
+            #found at least one lower case letter
+        }
+        else
+        {
+            $user_query_string =~s,AND,and,g;
+            $user_query_string =~s,OR,or,g;
+            $self->set_processed_query_string($user_query_string,$query_num);
+        }
+    }
+    
     my @tokens = Search::Query::parse_preprocess($user_query_string);
 
-    #XXX add code to store q1-4 stuff here tbw 2012
+
 
     # If user is not attempting a boolean query skip the parse here
     my $valid = 1;
@@ -1254,6 +1288,21 @@ sub get_final_token {
         return '';
     }
     return $s;
+}
+
+# ---------------------------------------------------------------------
+sub set_unbalanced_quotes
+{
+    my $self = shift;
+    my $unbalanced = shift;
+    my $query_number = shift;
+    $self->{'unbalanced_quotes'}->[$query_number] = $unbalanced;
+}
+# ---------------------------------------------------------------------
+sub get_unbalanced_quotes
+{
+    my $self = shift;
+    return $self->{'unbalanced_quotes'};
 }
 
 # ---------------------------------------------------------------------

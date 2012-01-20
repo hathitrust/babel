@@ -138,6 +138,7 @@ sub execute_operation
          'well_formed' => {
                            'primary'                => $primary_Q->well_formed() ,
                            'processed_query_string' => $primary_Q->get_processed_query_string() ,
+                           'unbalanced_quotes' =>$primary_Q->get_unbalanced_quotes() ,
                           },
         );
 

@@ -112,15 +112,26 @@
                 <!--</div>-->
                 <!--XXX              <div class="betasearchinfo">  
               </div>-->
+              <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='false'">
+                <xsl:choose>
+                  <xsl:when test="SearchResults/WellFormed!=1">
+                    <xsl:call-template name="QueryRewrite">
+                      <xsl:with-param name="ProcessedQueryString">
+                        <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
+                      </xsl:with-param>
+                    </xsl:call-template>
+                  </xsl:when>
 
-              <xsl:if test="(SearchResults/WellFormed!=1) and (/MBooksTop/AdvancedSearch/isAdvanced='false')">
-                <xsl:call-template name="QueryRewrite">
-                  <xsl:with-param name="ProcessedQueryString">
-                    <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
-                  </xsl:with-param>
-                </xsl:call-template>
-              </xsl:if>
-
+                  <xsl:when test="SearchResults/UnBalancedQuotes=1">
+                    <xsl:call-template name="QueryRewriteUnbalanced">
+                        <xsl:with-param name="ProcessedQueryString">
+                          <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
+                        </xsl:with-param>
+                      </xsl:call-template>     
+                    </xsl:when>
+                </xsl:choose>
+                
+            </xsl:if>
               <div class="SearchAndRefine">
                 <!--XXX this is moved into search results area.  What do we do with these two divs? -->
                 <!--<xsl:call-template name="SearchResults_status"/>-->
@@ -366,6 +377,21 @@
       </div>
       </xsl:if>
 
+      <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (UnBalancedQuotes=1)">
+      <!-- <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (UnBalancedQuotes=1)">-->
+   
+ 
+        <h1>foobar</h1>
+        <div class="advancedMsg">
+        <xsl:call-template name="QueryRewriteUnbalanced">
+          <xsl:with-param name="ProcessedQueryString">
+            <xsl:value-of select="ProcessedQuery"/>                    
+          </xsl:with-param>
+        </xsl:call-template>     
+      </div>
+      </xsl:if>
+      
+
     </xsl:template>
     
     
@@ -381,6 +407,19 @@
     <div class="SearchResults_status">
       <div class="infoAlert">
         One of the operators: <span>AND</span>, <span>OR</span>, <span>)</span>, or <span>(</span> was missing or placed incorrectly in your query. Your query was changed and submitted as: <em>all of these words: </em>
+      <span>
+          <xsl:value-of select="$ProcessedQueryString"/>
+          <!--xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/-->
+        </span>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="QueryRewriteUnbalanced">
+    <xsl:param name="ProcessedQueryString"/>
+    <div class="SearchResults_status">
+      <div class="infoAlert">
+        Your query contained ambiguous quotes. Your query was changed and submitted as: 
       <span>
           <xsl:value-of select="$ProcessedQueryString"/>
           <!--xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/-->
