@@ -22,7 +22,7 @@ B<sanity-app> will attempt a curl on a list of URLs for the app.
 $| = 1;
 
 use strict;
-use YAML::XS;
+use YAML::Any;
 use Getopt::Std;
 use IPC::Run;
 
@@ -87,7 +87,7 @@ else {
 }
 
 my ($repo_root, $app_root) = get_HTDE_roots();
-my $CONFIG = YAML::XS::LoadFile("$LOCATION/../lib/Config/sanity-config.yaml");
+my $CONFIG = YAML::Any::LoadFile("$LOCATION/../lib/Config/sanity-config.yaml");
 my $rc = 0;
 foreach my $app (@apps) {
     $rc = 0;
