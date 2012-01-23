@@ -1240,8 +1240,11 @@ sub get_processed_user_query_string {
         }
         else
         {
-            $user_query_string =~s,AND,and,g;
-            $user_query_string =~s,OR,or,g;
+            # lower case doesn't work with edismax so we surround op with "=" which then make qparser
+            # think its a word but analyzer strips out the equals
+            #
+            $user_query_string =~s,AND,=and=,g;
+            $user_query_string =~s,OR,=or=,g;
             $self->set_processed_query_string($user_query_string,$query_num);
         }
     }
