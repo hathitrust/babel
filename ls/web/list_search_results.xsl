@@ -366,7 +366,7 @@
         <xsl:value-of select="Field"/>
       </em>
       <xsl:text>. </xsl:text>
-      <!--foobar -->
+
       <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (WellFormed!=1)">
         <div class="advancedMsg">
         <xsl:call-template name="QueryRewrite">
@@ -378,10 +378,7 @@
       </xsl:if>
 
       <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (UnBalancedQuotes=1)">
-      <!-- <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (UnBalancedQuotes=1)">-->
-   
- 
-        <h1>foobar</h1>
+
         <div class="advancedMsg">
         <xsl:call-template name="QueryRewriteUnbalanced">
           <xsl:with-param name="ProcessedQueryString">
@@ -390,7 +387,6 @@
         </xsl:call-template>     
       </div>
       </xsl:if>
-      
 
     </xsl:template>
     
