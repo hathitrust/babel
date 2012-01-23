@@ -594,6 +594,7 @@ rights_name_map:
   14: cc-by-nc-sa
   15: cc-by-sa
   16: orphcand
+  17: cc-zero
 
 # ---------------------------------------------------------------------
 # List of name that equate to open access
@@ -608,6 +609,7 @@ open_access_names:
   - cc-by-nc 
   - cc-by-nc-sa 
   - cc-by-sa
+  - cc-zero
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights.source field values to names used in

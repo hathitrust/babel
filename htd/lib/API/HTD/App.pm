@@ -86,7 +86,7 @@ use base qw(API::RESTApp);
 
 # Perl
 use DBI;
-use YAML::XS;
+use YAML::Any;
 use XML::LibXML;
 use XML::Simple;
 use XML::SAX;
@@ -124,7 +124,7 @@ sub setup {
     # config
     my $config;
     eval {
-        $config = YAML::XS::LoadFile($ENV{'SDRROOT'} . '/htd/lib/API/HTD/base-config.yaml');
+        $config = YAML::Any::LoadFile($ENV{'SDRROOT'} . '/htd/lib/API/HTD/base-config.yaml');
     };
     if ($@) {
         $self->__setErrorResponseCode('500');
@@ -143,7 +143,7 @@ sub setup {
     my $ver_config;
     my $ver = $self->getVersion();
     eval {
-        $ver_config = YAML::XS::LoadFile($ENV{'SDRROOT'} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml});
+        $ver_config = YAML::Any::LoadFile($ENV{'SDRROOT'} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml});
     };
     if ($@) {
         $self->__setErrorResponseCode('500');
