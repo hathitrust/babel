@@ -86,7 +86,7 @@ sub getPairtreeFilename {
     my $self = shift;
     my $id = shift;
 
-    my $filename = s2ppchars($id);
+    my $filename = File::Pairtree::s2ppchars($id);
     return $filename;
 }
 
