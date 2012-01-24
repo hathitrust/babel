@@ -1,7 +1,7 @@
 
 
                 <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="10">
-                  <option value="">All</option>                  
+                  <option value="All" selected="selected">All</option>                  
                                     <option value="format:Archive">Archive</option>
 
                                     <option value="format:Audio">Audio</option>

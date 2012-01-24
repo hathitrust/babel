@@ -225,9 +225,15 @@ function redirect(rowNums)
                        }
                        else
                        {
-                         //this handles everything else
-                         //alert(name + "=" + value );
-                         addInput(name,value);
+                         if (name.match(/(facet_lang|facet_format)/))
+                         {
+                           processMultiSelectFacet(name,value);
+                         }
+                         // this handles everything else
+                         else
+                         {
+                           addInput(name,value);
+                         }
                        }
                      }
                                           
@@ -242,6 +248,35 @@ function redirect(rowNums)
   // submit form
   $("#newform").submit();
 }
+
+//----------------------------------------------------------------------
+
+function processMultiSelectFacet(name,value)
+{
+  // remove the All facet because we only have it to indicate the default to the user.
+  // test for value[0]= All
+  // and scalar(value)> 1foobar
+  
+  if(value[0] === "All" && typeof value !== "string")
+  {
+    var newValues = new Array();
+    var i=1;
+    for (i=0;i< value.length-1;i++)
+    {
+      newValues[i]=value[i+1];
+    }
+    addInput(name,newValues);
+  }
+  else if (value ==="All")
+  {
+    // don't add if only the All is selected
+  }
+  else
+  {
+    addInput(name,value);
+  }
+                         }
+//----------------------------------------------------------------------
 
 
 // add a hidden input to the new form with given name and value
