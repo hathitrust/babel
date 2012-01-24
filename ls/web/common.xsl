@@ -48,16 +48,19 @@
           <input id="fullonly" type="checkbox" name="lmt" value="ft">
             <xsl:call-template name="getCheckedStatus"/>
           </input>
-          <label for="fullonly">Full view only</label>
+          <label for="fullonly" id="fullOnlyLabel">Full view only</label>
           <input type="hidden" name="a" value="srchls"/>
           <!--XXX temporarily add debug=local switch-->
           <!--<input type="hidden" name="debug" value="local"/>-->
           <xsl:call-template name="HiddenDebug"/>
           <button type="submit" name="a" id="srch" value="srchls">Find</button> 
+          <xsl:text> </xsl:text>
           <a>
             <xsl:attribute name="href">
               <xsl:value-of select="AdvancedSearch/AdvancedSearchURL"/>
             </xsl:attribute>
+            <xsl:attribute name="id">AdvancedLink</xsl:attribute>
+
             <xsl:text>Advanced Full-text Search</xsl:text>
           </a>
     

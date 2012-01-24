@@ -259,20 +259,21 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:call-template name="advanced"/>          
-        </xsl:otherwise>
-      </xsl:choose>
-      <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
-        <div class="modify_link" id="modify_link">
-          <a>
-            <xsl:attribute name="href">
-              <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+          <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
+            <div class="modify_link" id="modify_link">
+              <a>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
             </xsl:attribute>
             <xsl:text> Revise this advanced search</xsl:text>
           </a>
-          
         </div>
-        
       </xsl:if>
+
+
+        </xsl:otherwise>
+      </xsl:choose>
+
       
 
 
@@ -365,8 +366,13 @@
       <em>
         <xsl:value-of select="Field"/>
       </em>
-      <xsl:text>. </xsl:text>
-
+      <!--XXX Dont put in period at all or  only put period in if search succeeded -->
+      <!--
+      <xsl:if test="/MBooksTop/SearchResults/Item">
+        <xsl:text>.  </xsl:text>
+      </xsl:if>
+      -->
+      
       <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (WellFormed!=1)">
         <div class="advancedMsg">
         <xsl:call-template name="QueryRewrite">
@@ -434,55 +440,72 @@
     <!--    <div id="ColContainer">-->
       <div class="ColContent">
 
-        <div class="LSerror">
+        <!--       <div class="LSerror">-->
           <xsl:choose>
             <!-- if the ft checkbox was checked and there are no ft but some so then display stuff below -->
             <xsl:when test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
-              <xsl:text>There are no Full View items matching your search</xsl:text>
-              <br></br>
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
-                </xsl:attribute>
-                <xsl:attribute name ="class">
+              <div class="LSerror">
+                <xsl:text>There are no Full View items matching your search</xsl:text>
+                <br></br>
+                <xsl:element name="a">
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
+                  </xsl:attribute>
+                  <xsl:attribute name ="class">
                   
-                </xsl:attribute>
-                <xsl:text> See Limited (search only) items matching your search </xsl:text>
-              </xsl:element>
+                  </xsl:attribute>
+                  <xsl:text> See Limited (search only) items matching your search </xsl:text>
+                </xsl:element>
+              </div>
             </xsl:when>
-
-            <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'">
+            
+            <!-- advanced search with either limits or both boxes
+                 Should this logic be in the PI filler instead of the XSL?
+                 -->
+            
+            <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'"> 
+            <div class="AdvancedLSerror">
               <xsl:text>Your search for </xsl:text>
               <xsl:call-template name="advanced"/>          
               <xsl:text> returned zero hits.</xsl:text>
               <!-- need styling-->
-              <xsl:text>With these limits </xsl:text>
-              <xsl:call-template name="showSelected">
-                <xsl:with-param name="noResults">
-                  <xsl:value-of select="true"/>
-                </xsl:with-param>
-              </xsl:call-template>
-              <div>
-                <a>
-                  <xsl:attribute name="href">
-                    <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
-                  </xsl:attribute>
-                  <xsl:text>Revise this search</xsl:text>
-                </a>
-              </div>
-            </xsl:when>
-            
-            <xsl:otherwise>
-              <xsl:text>Your search for "</xsl:text>
-              <xsl:value-of select="/MBooksTop/QueryString"/>
-              <xsl:text>" in Everything returned zero hits.</xsl:text>
-            </xsl:otherwise>      
-          </xsl:choose>
-            
-        </div>
-        <!--   </div>-->
-      </div>
-   
+              <!--XXX test for limits-->
+              <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
+                <div id="LimitsError">
+                <xsl:text>With these limits </xsl:text>
+                <xsl:call-template name="showSelected">
+                  <xsl:with-param name="noResults">
+                    <xsl:value-of select="true"/>
+                  </xsl:with-param>
+                </xsl:call-template>
+                </div>
+              </xsl:if> <!--foobar-->
+              
+
+              <div class="modify_link" id="modify_link">
+              <a>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+                </xsl:attribute>
+                <xsl:text>Revise this advanced search</xsl:text>
+              </a>
+            </div>
+          </div>
+        </xsl:when>
+        
+        <xsl:otherwise>
+          <div class="LSerror">
+            <xsl:text>Your search for "</xsl:text>
+            <xsl:value-of select="/MBooksTop/QueryString"/>
+            <xsl:text>" in Everything returned zero hits.</xsl:text>
+          </div>
+        </xsl:otherwise>      
+      </xsl:choose>
+      
+      <!-- </div>-->
+      
+    </div>
+    
   </xsl:template>
 
   <!-- TEMPLATE -->
@@ -996,7 +1019,19 @@
 
 <xsl:template name="showSelected">
   <xsl:param name="isAdvanced" value="false"/>
-  <div id="selectedFacets">
+  <div>
+    <xsl:attibute name="id">selectedFacets</xsl:attibute>
+    <xsl:attribute name="class">
+      <xsl:choose>
+        <xsl:when test="$isAdvanced = 'false'">
+          <xsl:text>selectedFacets"</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>advancedSelectedFacets</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:attribute>
+
     <xsl:if test="$isAdvanced = 'false'">
       <h1>Results refined by:</h1>
     </xsl:if>

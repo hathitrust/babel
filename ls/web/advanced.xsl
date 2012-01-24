@@ -97,7 +97,7 @@
             
             
             <span style="margin-left: 4em">
-              <label for="yop">Date</label>        
+              <label for="yop">Year of publication:  </label>        
                    <select id="yop" name="yop" onchange="changeRange('yop')">
                      <option value="before">Before or during</option>
                      <option value="after" selected="selected" >During or after</option>
@@ -117,7 +117,7 @@
                  <table style="width: auto">
                    <tr>
                      <th>Language: </th>
-                     <th>Original Format: </th>
+                     <th>Format: </th>
                    </tr>
                    <tr>
                      <td>
