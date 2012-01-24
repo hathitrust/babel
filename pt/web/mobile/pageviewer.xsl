@@ -367,15 +367,26 @@
 
           <xsl:if test="$gFullPdfAccess = 'deny'">
             <div id="noPdfAccess">
-              <p>
+              <p style="text-align: left">
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <!--
                     <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}&amp;skin=mobilewayf;">Login</a></strong>
                     <xsl:text> to determine whether you can download this book.</xsl:text>
+                    -->
+                    <xsl:text>Partner institution members: </xsl:text>
+                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                    <xsl:text> to download this book.</xsl:text>
+                    <br />
+                    <br />
+                    <em>If you are not a member of a partner institution,
+                    <br />
+                    whole book download is not available.
+                    (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                     <xsl:text>Full PDF available only to authenticated users from </xsl:text>
-                    <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions.</a>
+                    <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
                     <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
@@ -423,8 +434,19 @@
               <p>
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <!--
                     <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}&amp;skin=mobilewayf;">Login</a></strong>
                     <xsl:text> to determine whether you can download this book.</xsl:text>
+                    -->
+                    <xsl:text>Partner institution members: </xsl:text>
+                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                    <xsl:text> to download this book.</xsl:text>
+                    <br />
+                    <br />
+                    <em>If you are not a member of a partner institution,
+                    <br />
+                    whole book download is not available.
+                    (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                     <xsl:text>Full EPUB available only to authenticated users from </xsl:text>
