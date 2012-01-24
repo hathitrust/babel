@@ -92,7 +92,7 @@ sub execute_operation
 
     # Execute the Action's Operations if there is a query to
     # perform. At this point there will be due to COntroller.
-    my $user_query_string = $cgi->param('q1');
+    my $user_query_string = $self->__get_user_query_string($cgi);
 
     my $config = $C->get_object('MdpConfig');
     # Randomize primary shard
@@ -138,6 +138,7 @@ sub execute_operation
          'well_formed' => {
                            'primary'                => $primary_Q->well_formed() ,
                            'processed_query_string' => $primary_Q->get_processed_query_string() ,
+                           'unbalanced_quotes' =>$primary_Q->get_unbalanced_quotes() ,
                           },
         );
 
@@ -201,6 +202,18 @@ sub get_solr_page_values
 
 
 # ---------------------------------------------------------------------
+
+sub __get_user_query_string
+{
+    my $self = shift;
+    my $cgi  = shift;
+    
+    my $user_query_string = $cgi->param('q1')||$cgi->param('q2')||$cgi->param('q3')||$cgi->param('q4');
+
+    return $user_query_string;
+}
+#----------------------------------------------------------------------
+
 
 1;
 

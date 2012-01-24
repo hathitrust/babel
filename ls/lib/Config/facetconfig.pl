@@ -2,15 +2,15 @@
 #$Id$#
 #facetconfig.pl
 #
-# perl data structures needed for faceting
+
+# perl data structures needed for faceting and advanced search
 use YAML::Any;
+
 
 
 my $rel_weights_file = $ENV{SDRROOT} . '/ls/lib/Config/dismax.yaml';
 $facet_limit=30;
 $facet_initial_show=5;
-
-
 
 
 $facet_to_label_map =
@@ -28,6 +28,8 @@ $facet_to_label_map =
 'era' =>'Era',
 'genreStr'=>'genre',
 'geographicStr' =>'Region',
+'facet_lang' =>'Language',
+'facet_format' =>'Original Format',
 };
 
 
@@ -92,7 +94,8 @@ $param_2_solr_map = {
                            'debugtitle' =>'debugtitle',
                            'debugocr'=>'debugocr',
                            'subject'=>'subject', 
-                           'hlb3'=>'hlb',
+                           'hlb3'=>'hlb3',
+                            'ocronly'=>'ocronly',
                             'ocr'=>'ocr',
                             'ocr2'=>'ocr2',
                             'ocrpf'=>'ocrpf',
@@ -103,7 +106,58 @@ $param_2_solr_map = {
                             'year'=>'year',
                             'isn'=>'isn',
                           };
+#----------------------------------------------------------------------
+#
+#Advanced Search config
+#
+#----------------------------------------------------------------------
 
+$field_2_display={
+                  'author'=>'Author',
+                  'title'=>'Title',
+                  'subject'=>'Subject', 
+                  'hlb3'=>'Academic Discipline',
+                  'ocronly'=>'Just Full Text',
+                  'ocr'=>'Everything',
+                  'ocr2'=>'ocr2',
+                  'ocrpf'=>'ocrpf',
+                  'all'=>'All Metadata',
+                  'callnumber'=>'Callnumber',
+                  'publisher'=>'Publisher',
+                  'series'=>'Series Title',
+                  'year'=>'Year of Publication',
+                  'isn'=>'ISBN/ISSN',
+                 };
+
+$field_order=['ocronly',
+              'ocr',
+              'title',
+              'author',
+              'subject',
+              'hlb3',
+              'publisher',
+              'series',
+              'year',
+              'isn',
+             ];
+
+$op_order=['AND','OR'];
+
+# default field for each row starting with fisrt row
+$default_fields = ['ocr',
+                 'title',
+                  ];
+# default any all phrase
+$default_anyall = ['all',
+                   'all',
+                   'any',
+                   'phrase',
+                  ];
+# mappings of anyall to user strings
+$anyall_2_display = {"any"=>"any of these words",
+                     "all"=>"all of these words", 
+                     "phrase"=>"this exact phrase"
+                    };
 
 #----------------------------------------------------------------------
 sub getRelWeights

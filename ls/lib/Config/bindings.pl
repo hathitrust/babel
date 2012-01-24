@@ -8,6 +8,7 @@
 %g_validator_for_param =
   (
    'a'      => 'srchls|page',
+   'qa'     => '.*',
    'q1'     => '.*',
    'debug'  => '.*',
    'newsid' => '1|[a-z0-9]{32}',
@@ -19,6 +20,8 @@
    'start'  => '\d+',
    'lmt'    => 'ft|all|so',
    'facet'  => '.*',
+   'facet_format'  => '.*',
+   'facet_lang'  => '.*',
    'q2'     => '.*',
    'q3'     => '.*',
    'q4'     => '.*',
@@ -28,7 +31,15 @@
    'field1'    => '.*',
    'field2'    => '.*',
    'field3'    => '.*',
-   'field4'    => '.*',
+   'field4'    => '.*',   
+   'anyall1'    => 'any|all|phrase',
+   'anyall2'    => 'any|all|phrase',
+   'anyall3'    => 'any|all|phrase',
+   'anyall4'    => 'any|all|phrase',
+   'yop'    => '.*',
+   'pdate'    => '\d+',
+   'pdate_start'    => '\d+',
+   'pdate_end'    => '\d+',
   );
 
 # Specification of global *database* operations to be executed before
@@ -94,6 +105,8 @@ $g_late_operations = [
    
    # ----- UI (page) production action -----
    # e.g. a=page;page=error
+#  XXX This contains dead code. Check for pages listed that no longer have a pifiller or xml page!
+# code no longer seems to exist for these pages
    'ACTION_DISP_PAGE'   =>
  {'action_param' => 'page',
   'action_type'  => 'UI',
@@ -120,11 +133,17 @@ $g_late_operations = [
                                  'filler'   => 'LS::PIFiller::Home',
                                 },
                                 
-#                     'advanced'  => {
-#                                 'builders' => [],
-#                                 'template' => 'advanced.xml',
-#                                 'filler'   => 'LS::PIFiller::Advanced',
-#                                },
+                     'advanced'  => {
+                                 'builders' => [],
+                                 'template' => 'advanced.xml',
+                                 'filler'   => 'LS::PIFiller::Advanced',
+                                },
+                     'advanced2'  => {
+                                 'builders' => [],
+                                 'template' => 'advanced2.xml',
+                                 'filler'   => 'LS::PIFiller::Advanced',
+                                },
+
 
                     },
  },

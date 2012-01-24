@@ -78,9 +78,16 @@
         <!-- jQuery from the Google CDN -->
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
+
+        
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>
         <xsl:call-template name="debug_CSS"/>
+        <!-- local css to be incorporated in global MBooks css later
+             added here to overide common-web/MBooksCol.css-->
+        <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
+
+
       </head>
 
       <body class="yui-skin-sam" onLoad="initCheckall()">
@@ -105,11 +112,26 @@
                 <!--</div>-->
                 <!--XXX              <div class="betasearchinfo">  
               </div>-->
+              <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='false'">
+                <xsl:choose>
+                  <xsl:when test="SearchResults/WellFormed!=1">
+                    <xsl:call-template name="QueryRewrite">
+                      <xsl:with-param name="ProcessedQueryString">
+                        <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
+                      </xsl:with-param>
+                    </xsl:call-template>
+                  </xsl:when>
 
-              <xsl:if test="SearchResults/WellFormed!=1">
-                <xsl:call-template name="QueryRewrite"/>
-              </xsl:if>
-
+                  <xsl:when test="SearchResults/UnBalancedQuotes=1">
+                    <xsl:call-template name="QueryRewriteUnbalanced">
+                        <xsl:with-param name="ProcessedQueryString">
+                          <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
+                        </xsl:with-param>
+                      </xsl:call-template>     
+                    </xsl:when>
+                </xsl:choose>
+                
+            </xsl:if>
               <div class="SearchAndRefine">
                 <!--XXX this is moved into search results area.  What do we do with these two divs? -->
                 <!--<xsl:call-template name="SearchResults_status"/>-->
@@ -229,22 +251,31 @@
       <!-- this should be all/so/or ft cound depending -->
       <xsl:call-template name="getTotalCount"/>
       <xsl:text> items found for </xsl:text>
+      
+
       <xsl:choose>
-        <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
-          <span>
-            <xsl:value-of select="/MBooksTop/QueryString"/>
-          </span>
+        <xsl:when test="foobar">
+                  <xsl:call-template name="basicSearch"/>       
         </xsl:when>
         <xsl:otherwise>
-          <span>
-            <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>
-          </span>
+          <xsl:call-template name="advanced"/>          
+          <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
+            <div class="modify_link" id="modify_link">
+              <a>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+            </xsl:attribute>
+            <xsl:text> Revise this advanced search</xsl:text>
+          </a>
+        </div>
+      </xsl:if>
+
+
         </xsl:otherwise>
       </xsl:choose>
 
-      <xsl:text> in the full text of all items </xsl:text>
-      <!-- When advanced search is implemented the logic above needs to be reconciled with the template name=advanced-->
-      <!--xsl:call-template name="advanced"/-->
+      
+
 
       <span class="debug">
       <xsl:text>
@@ -258,6 +289,7 @@
       </xsl:if>
 
     </div>
+
   </xsl:template>
 
   <xsl:template name="getTotalCount">
@@ -265,30 +297,134 @@
 </xsl:template>
 
 
+      <xsl:template name="basicSearch">
+      <xsl:choose>
+        <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
+          <span>
+            <xsl:value-of select="/MBooksTop/QueryString"/>
+          </span>
+        </xsl:when>
+        <xsl:otherwise>
+          <span>
+            <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>
+          </span>
+        </xsl:otherwise>
+      </xsl:choose>
+
+      <xsl:text> in the full text of all items </xsl:text>  
+      </xsl:template>
+
+
+
   <xsl:template name="advanced">
     <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
-      <xsl:text> </xsl:text>
+      <xsl:choose>
+        <xsl:when test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
+          <div class="advancedClause">        
+          <xsl:call-template  name= "advancedContent"/>        
+          </div>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template  name= "advancedContent"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name= "advancedContent">
+
+      <xsl:if test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:value-of select="unselectURL"/>          
+          </xsl:attribute>
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
+        </a>
+      </xsl:if>
+
+      <xsl:text></xsl:text>
       <xsl:value-of select="OP"/><xsl:text> </xsl:text>
-      <!--  figure out what the well formed stuff is above and put it here-->
+      <!--XXX   figure out what the well formed stuff from basic template is above and put it here
+           Also need to make the punctuation only happen if there is an anyall
+           -->
+      
+      <!--span class="anyAll"-->
+      <em>
+        <xsl:value-of select="AnyAll"/>
+        <!-- only display the semicolon if AnyAll is not empty-->
+        <xsl:text>: </xsl:text>
+      </em>
+      <!--/span-->
       <span>
         <xsl:value-of select="Query"/>
       </span>
+     
+
       <xsl:text> in </xsl:text>
       <!-- replace em with css -->
+      
       <em>
         <xsl:value-of select="Field"/>
       </em>
-    </xsl:for-each>
-  </xsl:template>
+      <!--XXX Dont put in period at all or  only put period in if search succeeded -->
+      <!--
+      <xsl:if test="/MBooksTop/SearchResults/Item">
+        <xsl:text>.  </xsl:text>
+      </xsl:if>
+      -->
+      
+      <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (WellFormed!=1)">
+        <div class="advancedMsg">
+        <xsl:call-template name="QueryRewrite">
+          <xsl:with-param name="ProcessedQueryString">
+            <xsl:value-of select="ProcessedQuery"/>                    
+          </xsl:with-param>
+        </xsl:call-template>     
+      </div>
+      </xsl:if>
+
+      <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (UnBalancedQuotes=1)">
+
+        <div class="advancedMsg">
+        <xsl:call-template name="QueryRewriteUnbalanced">
+          <xsl:with-param name="ProcessedQueryString">
+            <xsl:value-of select="ProcessedQuery"/>                    
+          </xsl:with-param>
+        </xsl:call-template>     
+      </div>
+      </xsl:if>
+
+    </xsl:template>
+    
+    
+
+
+
+
 
 
   <!-- TEMPLATE -->
   <xsl:template name="QueryRewrite">
+    <xsl:param name="ProcessedQueryString"/>
     <div class="SearchResults_status">
       <div class="infoAlert">
-        One of the operators: <span>AND</span>, <span>OR</span>, <span>)</span>, or <span>(</span> was missing or placed incorrectly in your query. Your query was changed and submitted as: 
-        <span>
-          <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>
+        One of the operators: <span>AND</span>, <span>OR</span>, <span>)</span>, or <span>(</span> was missing or placed incorrectly in your query. Your query was changed and submitted as: <em>all of these words: </em>
+      <span>
+          <xsl:value-of select="$ProcessedQueryString"/>
+          <!--xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/-->
+        </span>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="QueryRewriteUnbalanced">
+    <xsl:param name="ProcessedQueryString"/>
+    <div class="SearchResults_status">
+      <div class="infoAlert">
+        Your query contained ambiguous quotes. Your query was changed and submitted as: 
+      <span>
+          <xsl:value-of select="$ProcessedQueryString"/>
+          <!--xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/-->
         </span>
       </div>
     </div>
@@ -304,33 +440,72 @@
     <!--    <div id="ColContainer">-->
       <div class="ColContent">
 
-        <div class="LSerror">
+        <!--       <div class="LSerror">-->
           <xsl:choose>
             <!-- if the ft checkbox was checked and there are no ft but some so then display stuff below -->
             <xsl:when test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
-              <xsl:text>There are no Full View items matching your search</xsl:text>
-              <br></br>
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
-                </xsl:attribute>
-                <xsl:attribute name ="class">
+              <div class="LSerror">
+                <xsl:text>There are no Full View items matching your search</xsl:text>
+                <br></br>
+                <xsl:element name="a">
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
+                  </xsl:attribute>
+                  <xsl:attribute name ="class">
                   
-                </xsl:attribute>
-                <xsl:text> See Limited (search only) items matching your search </xsl:text>
-              </xsl:element>
+                  </xsl:attribute>
+                  <xsl:text> See Limited (search only) items matching your search </xsl:text>
+                </xsl:element>
+              </div>
             </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>Your search for "</xsl:text>
-              <xsl:value-of select="/MBooksTop/QueryString"/>
-              <xsl:text>" in the full text of all items returned zero hits.</xsl:text>
-            </xsl:otherwise>      
-          </xsl:choose>
+            
+            <!-- advanced search with either limits or both boxes
+                 Should this logic be in the PI filler instead of the XSL?
+                 -->
+            
+            <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'"> 
+            <div class="AdvancedLSerror">
+              <xsl:text>Your search for </xsl:text>
+              <xsl:call-template name="advanced"/>          
+              <xsl:text> returned zero hits.</xsl:text>
+              <!-- need styling-->
+              <!--XXX test for limits-->
+              <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
+                <div id="LimitsError">
+                <xsl:text>With these limits </xsl:text>
+                <xsl:call-template name="showSelected">
+                  <xsl:with-param name="noResults">
+                    <xsl:value-of select="true"/>
+                  </xsl:with-param>
+                </xsl:call-template>
+                </div>
+              </xsl:if> <!--foobar-->
+              
 
-          <!--foobar-->        </div>
-          <!--   </div>-->
+              <div class="modify_link" id="modify_link">
+              <a>
+                <xsl:attribute name="href">
+                  <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+                </xsl:attribute>
+                <xsl:text>Revise this advanced search</xsl:text>
+              </a>
+            </div>
+          </div>
+        </xsl:when>
+        
+        <xsl:otherwise>
+          <div class="LSerror">
+            <xsl:text>Your search for "</xsl:text>
+            <xsl:value-of select="/MBooksTop/QueryString"/>
+            <xsl:text>" in Everything returned zero hits.</xsl:text>
+          </div>
+        </xsl:otherwise>      
+      </xsl:choose>
+      
+      <!-- </div>-->
+      
     </div>
-   
+    
   </xsl:template>
 
   <!-- TEMPLATE -->
@@ -671,7 +846,7 @@
           </span>
         </div>
 
-
+        <xsl:copy-of select="explain"/>
 
 
         <!-- SEARCH needs relevance -->
@@ -791,31 +966,10 @@
 
   <!--############### facet templates ########################################-->
 
-  <!--XXX replace this whole thing by adding some xml in the PIfiller that is true or false -->
- <xsl:template name="facetsSelected">  
-   <xsl:variable name="selected">
-    <xsl:value-of select="count(/MBooksTop/Facets/SelectedFacets/facetValue)"/>
-  </xsl:variable>
-
-  <xsl:variable name="VlimitType">
-      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
-  </xsl:variable>
-
-  <xsl:choose>
-    <xsl:when test="($selected &gt; 0)or (not($VlimitType = 'all'))">
-    <xsl:text>true</xsl:text>      
-    </xsl:when>
-    <xsl:otherwise>
-          <xsl:text>false</xsl:text>
-    </xsl:otherwise>
-  </xsl:choose>
-
-</xsl:template>
-
   <xsl:template name="facets">
     <div class="facets">
       <xsl:variable name="facetsSelected">
-        <xsl:call-template name="facetsSelected"/>
+        <xsl:value-of select="/MBooksTop/Facets/facetsSelected"/>
       </xsl:variable>
       <xsl:if test="$facetsSelected = 'true'">
         <xsl:call-template name="showSelected"/>
@@ -876,10 +1030,28 @@
 
 
 <xsl:template name="showSelected">
- 
-  <div id="selectedFacets">
-            <h1>Results refined by:</h1>
+  <xsl:param name="isAdvanced" value="false"/>
+  <div>
+    <xsl:attibute name="id">selectedFacets</xsl:attibute>
+    <xsl:attribute name="class">
+      <xsl:choose>
+        <xsl:when test="$isAdvanced = 'false'">
+          <xsl:text>selectedFacets"</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>advancedSelectedFacets</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:attribute>
+
+    <xsl:if test="$isAdvanced = 'false'">
+      <h1>Results refined by:</h1>
+    </xsl:if>
+
+      
     <ul class="filters">
+      <xsl:call-template name="multiselectFacets"/>
+      <xsl:call-template name="daterangeFacets"/>
       <xsl:call-template name="selectedViewabilityFacet"/>
       <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
         <xsl:text>
@@ -911,6 +1083,71 @@
     </ul>
   </div>
 </xsl:template>
+
+
+<xsl:template name="daterangeFacets">
+  <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/daterange">
+    
+        <xsl:text>
+        </xsl:text>
+
+        <li>
+          
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
+            </xsl:attribute>
+            <xsl:attribute name ="class">
+              unselect
+            </xsl:attribute>
+
+
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
+          </xsl:element>
+          <span class="selectedfieldname">
+            <xsl:text>Date: </xsl:text>
+          </span>
+          <xsl:value-of select ="facetString"/>
+        </li>
+
+  </xsl:for-each>
+</xsl:template>
+
+
+
+<xsl:template name="multiselectFacets">
+  <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/multiselect/multiselectClause">
+    
+        <xsl:text>
+        </xsl:text>
+
+        <li>
+          <xsl:variable name="value">
+            <xsl:value-of select="@name"/>
+          </xsl:variable>
+          
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
+            </xsl:attribute>
+            <xsl:attribute name ="class">
+              unselect
+            </xsl:attribute>
+
+
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
+          </xsl:element>
+          <span class="selectedfieldname">
+          <xsl:value-of select="fieldName"/>
+          </span>
+          <xsl:text>:  </xsl:text>
+          <!--<xsl:value-of select="@name"/>-->
+          <xsl:value-of select ="facetValue"/>
+        </li>
+
+  </xsl:for-each>
+</xsl:template>
+
 
 
 <xsl:template name="selectedViewabilityFacet">

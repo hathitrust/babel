@@ -17,9 +17,7 @@
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
         <title>Hathi Trust Digital Library - Experimental Search - v0.2</title>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
         <xsl:call-template name="load_js_and_css"/>
-
       </head>
 
       <body class="yui-skin-sam" onLoad="initCheckall()">
@@ -41,11 +39,8 @@
             <div id="errormsg">
               <div class="bd"></div>
             </div>
-
-            <xsl:call-template name="HomePageContent"/>
+            <xsl:call-template name="PageContent"/>
           </div>
-          <hr></hr>
-          <h4>This page for demo purposes it is home.xml/home.xsl</h4>
           <xsl:call-template name="footer"/>
         </div>
       </body>
@@ -58,14 +53,11 @@
   </xsl:template>
 
   <!-- TEMPLATE -->
-  <xsl:template name="HomePageContent">
-    <div class="LsHomePageContent">
-      <div id="main">
+  <xsl:template name="PageContent">
+    <div class="LsAdvancedPageContent">
+      <div id="LS_main">
         <div class="betasearch">
-          <xsl:call-template name="SearchWidget"/>
-          <div class="betasearchinfo">
-            <p>Please enter a search.</p>
-          </div>
+            <xsl:copy-of select="/MBooksTop/CustomXml"/>
         </div>
       </div>
     </div>

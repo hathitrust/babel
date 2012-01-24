@@ -358,15 +358,22 @@ sub handle_SEARCH_RESULTS_PI
     $output .= wrap_string_in_tag($query_time, 'QueryTime');
     $output .= wrap_string_in_tag($solr_error_msg, 'SolrError');
 
+    #XXX  get first element of array for basic search See xxx for advanced search
     # Is the query a well-formed-formula (WFF)?
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
-    my $well_formed = ($wff_hashref->{'primary'} );
+    my $well_formed_ary = ($wff_hashref->{'primary'} );
+    my $processed_aryref=$wff_hashref->{'processed_query_string'};
+    
+    my $well_formed = ($well_formed_ary->[1]);
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
+    $output .= wrap_string_in_tag($processed_aryref->[1], 'ProcessedQueryString');
+    #XXX tbw add unbalenced parens here foobar
+    my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[1];
+    $output.= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
     #need to fix any xml chars before output
-    my $processed=$wff_hashref->{'processed_query_string'};
+    
   #  $processed =clean_for_xml($processed);
-    $output .= wrap_string_in_tag($processed, 'ProcessedQueryString');
-
+    
     return $output;
 }
 
@@ -415,7 +422,21 @@ sub handle_FACETS_PI
     #        $hash->{'unselect_url'}   url for selected facets on click will unselect it
 
     # unselected= hash key= facet name, values = array of hashes as above
+    
+    # output whether any facets are selected include the multivalued and the psuedo facet full-view/limited i.e. lmt param  add the date_range facets pdate_start or end but one must be 
 
+
+             
+    if (defined ($cgi->param('facet')) || 
+        defined ($cgi->param('facet_lang'))
+        ||defined ($cgi->param('facet_format'))
+        || $cgi->param('lmt') ne "all"
+        || pdate_selected($cgi)
+       )
+    {
+        $xml .= wrap_string_in_tag('true','facetsSelected') . "\n"; 
+    }
+    
     my $selected_facets_xml = make_selected_facets_xml($selected,$fconfig,$cgi);
     $xml .= $selected_facets_xml;
 
@@ -424,7 +445,18 @@ sub handle_FACETS_PI
     
     return $xml
 }
-
+#----------------------------------------------------------------------    
+sub pdate_selected
+{
+    my $cgi = shift;
+    
+    # if either pdate_start or pdate_end is defined and non-blank return ture
+    return ( 
+            (! __IsUndefOrBlank($cgi->param('pdate_start')))
+            ||
+            (! __IsUndefOrBlank($cgi->param('pdate_end')))
+              );
+}
 
 #----------------------------------------------------------------------    
 
@@ -436,9 +468,38 @@ sub get_selected_unselected
 
     my @selected;
     my $unselected={};
+
+    #XXX hack to cause pdate facet to show up as selected if pdate was used in advanced search
+    #XXX if facet_hash is empty because we got zero results
     
     foreach my $facet_name (keys %{$facet_hash})
     {
+        #--------------------------------------------------
+        #XXX hack for pdate and no results
+        # how do we know no results?
+        # 
+        
+#        if ($facet_name eq 'publishDateRange')
+#          {
+#            # pdate param removed by now and put back in Facet:publishDateRange
+#            my @facets = $cgi->param('facet');
+#            my $pdate= $facets[0];
+#            if (defined($pdate) && $pdate ne "")
+#            {
+                
+#                # need test for zero results and pdate param
+#                my $hash={};
+#                $hash->{'selected'}   = "true";
+#                $hash->{'count'}      = 0;
+#                $hash->{'facet_name'} = $facet_name;
+                
+#                my ($junk, $facet_value) = split(/\:/,$pdate); #fix this
+#                $hash->{'value'}      = clean_for_xml($facet_value);
+#                $hash->{'unselect_url'}=__get_unselect_url($hash,$cgi);
+#                push (@selected,$hash);
+#            }
+#        }
+        
         my $ary_for_this_facet_name=[];
         my $facet_list_ref=$facet_hash->{$facet_name};
         foreach my $facet_ary (@{$facet_list_ref})
@@ -472,7 +533,7 @@ sub get_selected_unselected
                     }
                 }
             }
-
+            
             if ($hash->{'selected'} eq "true")
             {
                 # add the unselect url to the hash
@@ -508,6 +569,20 @@ sub make_selected_facets_xml
     my $unselect_url;
 
     $xml='<SelectedFacets>' . "\n";
+#   insert any advanced search multiselect OR facets on top of list
+    my $multiselect_xml = __get_multiselect_xml($fconfig, $cgi);
+    $xml .= $multiselect_xml;
+    
+    my $daterange_xml;
+    if ( __IsUndefOrBlank($cgi->param('pdate_start')) && __IsUndefOrBlank( $cgi->param('pdate_end')) )
+    {
+        # if they are both blank/undef don't bother getting the xml
+    }
+    else
+    {
+        $daterange_xml= __get_daterange_xml($fconfig, $cgi);
+        $xml .=$daterange_xml;
+    }
     
     foreach my $facet (@{$selected})
     {
@@ -523,6 +598,159 @@ sub make_selected_facets_xml
  
     $xml .= '</SelectedFacets>' . "\n";
     return $xml;
+}
+
+#----------------------------------------------------------------------
+
+sub __get_daterange_xml
+{
+    my $fconfig = shift;
+    my  $cgi    = shift;
+   
+    my $xml ="";
+    my $start = $cgi->param('pdate_start');
+    my $end = $cgi->param('pdate_end');
+    my $msg;
+    # pdate already replaced with normal date facet so we only need to deal with start/end pdates
+
+
+   
+    if (__IsUndefOrBlank($start))
+    {
+        $msg= "Before or during $end";
+    }
+    elsif (__IsUndefOrBlank($end))
+    {
+
+       $msg = "During or after $start"
+    }
+    else
+    {
+        $msg =    "Between $start and $end";
+    }
+    
+    my $facetXML = wrap_string_in_tag($msg,'facetString') . "\n"; 
+
+    $xml .= $facetXML;
+    
+    my $unselectURL = get_daterange_unselectURL($fconfig,$cgi);
+    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n"; 
+    $xml .= $unselectURLXML;
+     
+    my    $daterange_xml .= wrap_string_in_tag($xml,'daterange') . "\n"; 
+    return $daterange_xml;
+    
+}
+#----------------------------------------------------------------------
+sub get_daterange_unselectURL
+{
+    my $fconfig = shift;
+    my $cgi = shift;
+    my $temp_cgi= CGI->new($cgi);
+    $temp_cgi->delete('pdate_start');
+    $temp_cgi->delete('pdate_end');
+    $temp_cgi->delete('pdate');
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    return $url;
+}
+
+#----------------------------------------------------------------------
+sub __IsUndefOrBlank
+{
+    my $var = shift;
+    $var =~s/\s+//g;
+    return ( (!defined($var)) || $var eq "")
+}
+
+#----------------------------------------------------------------------
+sub __get_multiselect_xml
+{
+    my $fconfig = shift;
+    my  $cgi = shift ;
+    my $xml;
+    my $multiselect;
+    # XXX should read names of multiselect facets from config file for now hard code
+    my @lang= $cgi->param('facet_lang');
+    my @format = $cgi->param('facet_format');
+    my $lang=get_multifacet_xml(\@lang,$cgi,$fconfig);
+    my $format=get_multifacet_xml(\@format,$cgi,$fconfig);
+    $multiselect= $lang . $format;
+    $xml .= wrap_string_in_tag($multiselect,'multiselect') . "\n"; 
+    return $xml
+}
+
+sub get_multifacet_xml
+{
+    my $ary = shift;
+    my $cgi = shift;
+    my $fconfig = shift;
+    
+    my $xml;
+    
+    
+    if (! defined($ary)|| scalar(@{$ary})<1 )
+    {
+        # return blank
+        return "";
+    }
+
+    my $clause;
+    my $field;
+    
+    foreach my $fquery (@{$ary})
+    {
+
+        my @rest;
+        ($field,@rest)=split(/\:/,$fquery);
+        my $string=join(':',@rest);
+        # &fq=language:( foo OR bar OR baz)
+        $clause.= $string . " OR ";
+    }
+    # remove last OR and add &fq=field:
+    $clause =~s/OR\s*$//g;
+    $clause= '(' . $clause . ' )';
+    my $facetValueXML=wrap_string_in_tag($clause,'facetValue') . "\n"; 
+
+    #XXX need to map url param field name to dispay value
+    # so language= Language  see regular facet code for this, is there a lookup?
+    
+    my $facet2label=$fconfig->get_facet_mapping;
+    my $field_label=$facet2label->{$field};
+    my $fieldnameXML= wrap_string_in_tag($field_label,'fieldName') . "\n"; 
+
+    my $unselectURL=getMultiUnselectURL($field,$cgi);
+    
+    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n"; 
+    $clause.= $facetValueXML . $fieldnameXML . $unselectURLXML;
+    
+    $xml .= wrap_string_in_tag($clause,'multiselectClause') . "\n"; 
+    return $xml;
+}
+
+
+sub getMultiUnselectURL{
+    my $field = shift;
+    my $cgi = shift;
+
+    # we just need to remove either facet_lang or facet_format parameters
+    #XXX this is a hard coded solution for now and will require adding any other multiselect params
+    #delete all facet params
+
+    my $temp_cgi= CGI->new($cgi);
+    $temp_cgi->delete('pn');
+    # change line below to delete either facet_lang or facet_format
+    if ($field =~/language/)
+    {
+        $temp_cgi->delete('facet_lang');
+    }
+    elsif ($field =~/format/)
+    {
+        $temp_cgi->delete('facet_format');
+    }
+    
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    return $url;
+
 }
 
 #----------------------------------------------------------------------
@@ -620,51 +848,101 @@ sub handle_ADVANCED_SEARCH_PI
     my $fconfig=$C->get_object('FacetConfig');
     my $cgi = $C->get_object('CGI');
 
-# move this map to the config object
-    my $param2userMap={
-                           'author'=>'author',
-                           'title'=>'title',
-                           'subject'=>'subject', 
-                           'hlb3'=>'Academic Discipline',
-                           'ocr'=> 'full text',
-                            'all'=>'all marc',
-                            'callnumber'=>'callnumber',
-                            'publisher'=>'publisher',
-                            'series'=>'serialtitle',
-                            'year'=>'year',
-                            'isn'=>'isn',
-                          };
+    my $param2userMap =      $fconfig->{field_2_display};
+    my $anyall_2_display = $fconfig->{'anyall_2_display'};
+
+    #XXX add result data so we can put well formed/processed string here instead of someplace else
+    my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');    
+    my $wff_hashref = $search_result_data_hashref->{'well_formed'};
+    my $well_formed_aryref = ($wff_hashref->{'primary'} );
+    my $processed_aryref=$wff_hashref->{'processed_query_string'};
+
+
     #get query params from cgi and map to user friendly fields using config
     # put the stuff inside the for loop in a subroutine!
     my $output;
+    my $qcount=0;
+    my $isAdvanced="false";
+    my $field1;
+    
     for my $i (1..4)
     {
         my $q     = $cgi->param('q' . $i);
+        if (defined($q) && $q ne "")
+        {
+            $qcount++;
+            if ($i == 1)
+            {
+                #if there is a populated q1 and field1 then its advanced since we don't put a field param for basic
+                $field1 =$cgi->param('field1');
+                if (defined($field1) && $field1 ne "")
+                {
+                    $isAdvanced="true";
+                }
+            }
+            if ($i > 1)
+            {
+                #if there is a populated q2,3 or 4 then it is and advanced search
+                $isAdvanced="true";
+            }
+        }
+        
         my $op    = $cgi->param('op' . $i);
         if (!defined($op))
         {
             $op='AND';
         }
-        if ($i ==1)
+        # is this the first op with a populated query? if so don't put in an op
+        if ($qcount ==1)
         {
             $op="";
         }
-    
+        my $anyall = $cgi->param('anyall' . $i);
+        my $anyall_string= $anyall_2_display->{$anyall}; 
+
+
         my $field = $cgi->param('field' . $i);
+        # XXX hack.  Should at least read default field from config file
+        # special case for basic search where there is no field  param
+        if ( $i ==1 && defined($q) && (!defined ($field)))
+             {
+                 $field='ocr';
+             }
+                                      
         my $user_field= $param2userMap->{$field} ;
+
+        # unselect url for this row
+        my $unselectURL=getUnselectAdvancedClauseURL($cgi,$i);
+        
+        my $well_formed = $well_formed_aryref->[$i]; 
+        my $processed_query = $processed_aryref->[$i];
+        my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[$i];
+        
 
         my $clause;
         if (defined ($q))
         {
-            
+
             $clause .=wrap_string_in_tag($i, 'Qnum');
             $clause .=wrap_string_in_tag($q ,'Query');
+            $clause .=wrap_string_in_tag($well_formed ,'WellFormed');
+            $clause .=wrap_string_in_tag($processed_query ,'ProcessedQuery');
+            $clause .= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
             $clause .=wrap_string_in_tag($op, 'OP');
             $clause .=wrap_string_in_tag($user_field, 'Field');
+            $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');
+            $clause .=wrap_string_in_tag($unselectURL, 'unselectURL');
             $output .= wrap_string_in_tag($clause, 'Clause');
         }
         
     }
+    # 
+    my $advURL=getAdvancedSearchURL($cgi);
+    $output .= wrap_string_in_tag($advURL, 'AdvancedSearchURL');
+    my $modURL=getModifyAdvancedSearchURL($cgi);
+    $output .= wrap_string_in_tag($modURL, 'ModifyAdvancedSearchURL');
+
+    $output .= wrap_string_in_tag($isAdvanced, 'isAdvanced');
     return $output;
   }
 
@@ -675,6 +953,56 @@ sub handle_ADVANCED_SEARCH_PI
 #
 #======================================================================
 #----------------------------------------------------------------------
+sub getAdvancedSearchURL
+{
+    my $cgi=shift;
+#    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
+    my $url=$cgi->url(-relative=>1);
+        $url.='?a=page&amp;page=advanced';
+    return $url;
+}
+
+sub getModifyAdvancedSearchURL
+{
+    my $cgi=shift;
+    my $temp_cgi = new CGI($cgi);
+    ## do we need to delete a and page params first?
+    $temp_cgi->param('a','page');
+    $temp_cgi->param('page','advanced');
+    #XXX until we do sticky facets remove facet_lang and facet_format params 
+    # alternative is javascript to grab the url and do a POST instead of a get.
+    $temp_cgi->delete('facet_lang');
+    $temp_cgi->delete('facet_format');
+    my $url=$temp_cgi->self_url();
+    
+    return $url;
+}
+
+sub getUnselectAdvancedClauseURL
+{
+    my $cgi =    shift;
+    my $row =      shift;
+    
+    my $temp_cgi = new CGI($cgi);
+    # delete this clause
+    my $q ='q' . $row;
+    my $op = 'op' . $row;
+    my $anyall = 'anyall' .  $row;
+    my $field = 'field' .  $row;
+    
+    $temp_cgi->delete("$q");
+    $temp_cgi->delete("$op");
+    $temp_cgi->delete("$anyall");
+    $temp_cgi->delete("$field");
+
+    my $url=$temp_cgi->self_url();
+    return $url;
+}
+
+
+
+
+
 #XXX this should probably be moved to Utils, but I don't want to mess with submodule stuff now!
 sub commify
 {
@@ -945,9 +1273,16 @@ sub _ls_wrap_result_data {
     my $C = shift;
     my $rs = shift;
 
+    my $cgi = $C->get_object('CGI');
+
     my $output;
-
-
+    my $solr_debug;
+    
+    if (DEBUG('explain'))
+    {
+        $solr_debug=$rs->get_result_solr_debug();
+    }
+    
     # since json might contain unescaped xml entities i.e. "&" we need to filter
     # any strings.  Is there a better place to do this?
 
@@ -1017,6 +1352,16 @@ sub _ls_wrap_result_data {
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');
 
+        # use id to look up explain data
+        if (DEBUG('explain'))
+        {
+
+            #XXX do we need to do any id normalizing/denormalizing
+            my $explain = $solr_debug->{explain}->{$id};
+            ASSERT(defined($explain),qq{no explain data for id $id});
+            $s .= wrap_string_in_tag($explain, 'explain');
+        }
+        
         my $rights = $doc_data->{'rights'};
         $s .= wrap_string_in_tag($rights, 'rights');
 
@@ -1024,8 +1369,28 @@ sub _ls_wrap_result_data {
         $s .= wrap_string_in_tag($score, 'relevance');
 
         # Link to Pageturner
-        $s .= wrap_string_in_tag(PT_HREF_helper($C, $id, 'pt_search'), 'PtSearchHref');
-        $s .= wrap_string_in_tag(PT_HREF_helper($C, $id, 'pt'), 'PtHref');
+        # Remove q1 if this is an advanced search
+        my $pt_search_URL = PT_HREF_helper($C, $id, 'pt_search');
+        my $pt_URL = PT_HREF_helper($C, $id, 'pt');
+        my $isAdvanced;
+        
+        if(defined($cgi->param('field1'))|| 
+           defined($cgi->param('field1'))||
+           defined($cgi->param('field1'))||
+           defined($cgi->param('field1')))
+        {
+            $isAdvanced="true";
+        }
+        if ($isAdvanced)
+        {
+            $pt_search_URL=~s/q1=[^\&\;]+/q1=/g;
+        }
+        if($isAdvanced)
+        {
+            $pt_URL=~s/q1=[^\&\;]+/q1=/g;
+        }
+        $s .= wrap_string_in_tag($pt_search_URL, 'PtSearchHref');
+        $s .= wrap_string_in_tag($pt_URL, 'PtHref');
 
         # Access rights
         my $access_status;
@@ -1042,6 +1407,7 @@ sub _ls_wrap_result_data {
         my $record_no = $doc_data->{'record_no'};
         
         $s .= wrap_string_in_tag($record_no, 'record');
+
         $output .= wrap_string_in_tag($s, 'Item');
     }
 

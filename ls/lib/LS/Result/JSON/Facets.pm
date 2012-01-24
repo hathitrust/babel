@@ -145,7 +145,10 @@ sub __process_expain_data
     #XXX  we might also want some data besides the explain part as in the parsed query
     #XXX  we need to link some metadata with the explain data
     #  we could actually provide a mouseover to inspect the explain data for each item
+    
 
+    #XXX  TODO:  add query parsing stuff to beginning
+    
     require Data::Dumper;
     my $d = Data::Dumper::Dumper($solr_debug->{'explain'});
     # need to make this xml safe.  Check methods in DEBUG or other code

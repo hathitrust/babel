@@ -1,0 +1,91 @@
+/***
+ls.css
+  Tom temporary css styles to be put in single css or integrated.  Ask Suz
+***/
+/**
+.SearchResults_status  {
+                         color:#333666;
+                         font-size:1.2em;
+                         margin:0;
+                         position:relative;
+                         border:2px solid #CCCCCC;
+                         padding:0 5px 20px;
+                         }
+**/
+#modify_link  { 
+              font-weight:normal;
+                font-size:90%;
+} 
+.advancedMsg
+{ 
+  font-size:70%;
+} 
+
+#Op3bool 
+{
+  margin:3;
+  background-color:#FFFFFF;
+  padding:10px ;
+
+
+} 
+
+#modify_link{ 
+              margin:3px;
+              padding:3px;
+ }
+.advancedClause
+{ 
+  padding:3px;
+  margin:3px 3px 3px 5%;
+
+/**  background-color:#FDFDFD;
+  background-color:#0000FF;**/
+  background-color:#EFEFEF;
+} 
+
+
+/** this should instead inherit from LSerror with one change of witdth**/
+.AdvancedLSerror
+{
+  background:#FEEEEE url(./common-web/graphics/icon_x.gif) no-repeat scroll 15px 50%;
+  border:1px solid #FF4040;
+  color:#000000;
+  margin-top:10px;
+  margin-bottom: 10px;
+  margin-right:10px;
+  margin-left:10px;
+  padding:10px 5px 5px 50px;
+
+  width:50%;
+} 
+
+.AdvancedLSerror .advancedClause
+{ 
+
+  margin:3px 3px 3px 5%;
+
+ }
+
+#in{ 
+     font-size:110%;
+} 
+
+#LimitsError
+{ 
+              
+  border:1px solid #EBECE4;
+  padding:5px;
+  background-color:#FAFAFA
+
+ }
+
+select, input { 
+        margin-left:1em;
+ }
+
+/** XXX fix this**/
+#itemlist_searchform
+{
+  align:bottom;
+ } 

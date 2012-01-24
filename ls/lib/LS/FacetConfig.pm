@@ -81,10 +81,77 @@ sub _initialize
         $self->__set_facet_initial_show($facet_initial_show);
         $self->__set_rel_weights($rel_weights);
         $self->__set_param_2_solr_map($param_2_solr_map);
+        #advanced search additions
+        $self->__set_field_2_display($field_2_display);
+        $self->__set_field_order($field_order);
+        $self->__set_op_order($op_order);
+        $self->__set_default_fields($default_fields);
+        $self->__set_default_anyall($default_anyall);
+        $self->__set_anyall_2_display($anyall_2_display);
+
     };
         
 } 
 
+# ---------------------------------------------------------------------
+ 
+#Advanced Search
+
+
+# ---------------------------------------------------------------------
+sub __set_anyall_2_display
+{
+    my $self = shift;
+    my $a2d = shift;
+    
+    $self->{'anyall_2_display'} = $a2d;
+}
+
+# ---------------------------------------------------------------------
+sub __set_field_2_display
+{
+    my $self = shift;
+    my $f2d = shift;
+    
+    $self->{'field_2_display'} = $f2d;
+}
+
+# ---------------------------------------------------------------------
+sub __set_field_order
+{
+    my $self = shift;
+    my $order = shift;
+    
+    $self->{'field_order'} = $order;
+}
+
+# ---------------------------------------------------------------------
+sub __set_op_order
+{
+    my $self = shift;
+    my $order = shift;
+    
+    $self->{'op_order'} = $order;
+}
+# ---------------------------------------------------------------------
+sub __set_default_fields
+{
+    my $self = shift;
+    my $fields = shift;
+    
+    $self->{'default_fields'} = $fields;
+}
+
+# ---------------------------------------------------------------------
+sub __set_default_anyall
+{
+    my $self = shift;
+    my $anyall = shift;
+    
+    $self->{'default_anyall'} = $anyall;
+}
+# ---------------------------------------------------------------------
+# Facets
 # ---------------------------------------------------------------------
 sub __set_param_2_solr_map
 {
