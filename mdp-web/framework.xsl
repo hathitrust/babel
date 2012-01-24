@@ -1205,11 +1205,11 @@
                       <em>If you are not a member of a partner institution, 
                         <br />
                         whole book download is not available. 
-                        (<a href="http://www.hathitrust.org/help_digital_library#Download">why not?</a>)</em>
+                        (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
                     </xsl:when>
                     <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                       <xsl:text>Full PDF available only to authenticated users from </xsl:text>
-                      <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions.</a>
+                      <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
                     </xsl:when>
                     <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
                       <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
