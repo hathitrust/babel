@@ -437,8 +437,8 @@
       <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
     </xsl:variable>
 
-    <!--    <div id="ColContainer">-->
-      <div class="ColContent">
+
+      <div class="ColContent" id="ColContentLSerror">
 
         <!--       <div class="LSerror">-->
           <xsl:choose>
@@ -465,9 +465,10 @@
             
             <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'"> 
             <div class="AdvancedLSerror">
+
+              <img alt="Error" src="/ls/common-web/graphics/icon_x.gif" id="x_icon"  />
               <xsl:text>Your search for </xsl:text>
               <xsl:call-template name="advanced"/>          
-              <xsl:text> returned zero hits.</xsl:text>
               <!-- need styling-->
               <!--XXX test for limits-->
               <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
@@ -479,9 +480,13 @@
                   </xsl:with-param>
                 </xsl:call-template>
                 </div>
-              </xsl:if> <!--foobar-->
-              
+              </xsl:if> 
 
+              
+              <span id="zeroHits">
+                <xsl:text> returned zero hits.</xsl:text>
+              </span>
+              
               <div class="modify_link" id="modify_link">
               <a>
                 <xsl:attribute name="href">

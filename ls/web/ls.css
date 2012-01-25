@@ -12,10 +12,6 @@ ls.css
                          padding:0 5px 20px;
                          }
 **/
-#modify_link  { 
-              font-weight:normal;
-                font-size:90%;
-} 
 .advancedMsg
 { 
   font-size:70%;
@@ -30,42 +26,119 @@ ls.css
 
 } 
 
-#modify_link{ 
-              margin:3px;
-              padding:3px;
- }
-.advancedClause
-{ 
-  padding:3px;
-  margin:3px 3px 3px 5%;
 
-/**  background-color:#FDFDFD;
-  background-color:#0000FF;**/
-  background-color:#EFEFEF;
+#modify_link
+{ 
+  font-weight:normal;
+  font-size:90%;
 } 
 
+.AdvancedLSerror #modify_link
+{ 
+  margin-top:1%;
+  }
+
+
+#queryRows
+{ 
+  
+} 
+#advancedLabel
+{ 
+ 
+ /** margin:3px;
+  padding:10px;**/
+  font-size: 150%;
+  font-weight:normal;
+} 
+
+#limits h3
+{ 
+  font-size: 130%;
+  margin-bottom:10px;
+  color:#000000;
+}
+
+.orFacet
+{ 
+  /**
+  border:1px;
+  margin-left:1px;**/
+  }
+
+.multiFacets th
+{  
+  margin-left:1em;
+  padding-left:1em;
+  padding-top:1em;
+  text-align:left;
+}
+#queryArea
+{ 
+/**  background-color **/
+  margin:3px;
+  padding:3px;
+} 
+
+#limits
+{ 
+
+  /**border:1px solid #D8D8D8;**/
+
+  /**#0000FF;**/
+} 
+
+
+.advancedClause
+{ 
+
+  margin:1px 8px;
+  font-size:80%; 
+  line-height:100%;
+} 
+
+.advancedClause .infoAlert
+{ 
+  margin:15px 15px 0;
+} 
+
+
+.AdvancedLSerror .advancedClause
+{ 
+
+  margin:1px 3%;
+  font-size:100%;
+
+ }
+
+#x_icon
+{ 
+  margin:0px 10px 0px 10px;
+  padding:0px;
+
+ }
 
 /** this should instead inherit from LSerror with one change of witdth**/
 .AdvancedLSerror
 {
-  background:#FEEEEE url(./common-web/graphics/icon_x.gif) no-repeat scroll 15px 50%;
+  background:#FEEEEE  scroll 15px 90%;
   border:1px solid #FF4040;
   color:#000000;
   margin-top:10px;
   margin-bottom: 10px;
   margin-right:10px;
   margin-left:10px;
-  padding:10px 5px 5px 50px;
+  padding:10px;
 
-  width:50%;
+
 } 
 
-.AdvancedLSerror .advancedClause
+
+#zeroHits
 { 
-
-  margin:3px 3px 3px 5%;
-
+  line-height:2;
  }
+
 
 #in{ 
      font-size:110%;
@@ -76,9 +149,17 @@ ls.css
               
   border:1px solid #EBECE4;
   padding:5px;
-  background-color:#FAFAFA
+  background-color:#FAFAFA;
+  margin:10px 0px; 
+
+ 
 
  }
+
+#ColContentLSerror
+{ 
+  margin-top:10px;
+  }
 
 select, input { 
         margin-left:1em;
@@ -89,3 +170,8 @@ select, input {
 {
   align:bottom;
  } 
+
+.SearchResults_status
+{ 
+  line-height:120%
+ }

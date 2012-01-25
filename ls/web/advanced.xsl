@@ -63,10 +63,10 @@
         <div class="betasearch">
           <form id="advanced_searchform" action="http://tburtonw-full.babel.hathitrust.org/cgi/ls" name="searchcoll" >
             
-            
-            <h2>Advanced  Search:</h2>
+            <div id="queryArea">
+            <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
         
-            <table style="width: auto">
+            <table id="queryRows" style="width: auto">
               <!-- XXX need to change this so it will only add to existing debug values-->
               <!--
               Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
@@ -77,8 +77,6 @@
                   <input type="hidden" name="a" value="srchls" />
                 </td>
               </tr>
-              <!--XXX replace this with one call to generate N rows -->
-                <!-- need to call these with a count param-->
                 <xsl:for-each  select="AdvancedSearch/rows/row">
                   <tr>
                     <xsl:call-template name="queryRow">
@@ -91,6 +89,9 @@
               </table>
               <div id="queryErrMsg"></div>
               <br/>
+            </div>
+              <!-- Limit area starts here ############################################   -->
+              <div id="limits">
             <h3>Limit To:</h3>
             <input type="checkbox" value="ft" name="lmt" id="fullonly"/>
             <label for="fullonly">Full view only</label>        
@@ -114,7 +115,7 @@
                  </span>
                  <div id="yopErrMsg"></div>
                  
-                 <table style="width: auto">
+                 <table id="multiFacets" class="multiFacets" style="width: auto">
                    <tr>
                      <th>Language: </th>
                      <th>Format: </th>
@@ -128,6 +129,7 @@
                      </td>
                    </tr>
                  </table>
+               </div>
                  <button type="submit" name="findbutton" id="srch" >Find</button>
                  <button type="reset" name="reset" id="reset" >Clear/reset</button>
                  <div id="submitErrMsg"></div>
