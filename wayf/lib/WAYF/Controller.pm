@@ -72,13 +72,20 @@ sub ___core_initialize {
         if ($target) {
             require URI;
             my $url = URI->new($target);
-            my $host = $url->host();
-            my $host_pattern = $C->get_object('MdpConfig')->get('target_host_pattern');
+            my $host;
+            # No host -> Shib in memory relay identifier is the target, 
+            # e.g. target=ss:Amem:2f9c62608d121b14bdb0ff030bb2c44b30cc3899
+            eval {
+                $host = $url->host();
+            };
+            if ($host) {
+                my $host_pattern = $C->get_object('MdpConfig')->get('target_host_pattern');
     
-            if ($host !~ m,$host_pattern,) {
-                $cgi->delete('target');
-                require Utils::Logger;
-                Utils::Logger::__Log_simple( "vhost=$host target deleted\n" );
+                if ($host !~ m,$host_pattern,) {
+                    $cgi->delete('target');
+                    require Utils::Logger;
+                    Utils::Logger::__Log_simple( "vhost=$host target deleted\n" );
+                }
             }
         }
     }
