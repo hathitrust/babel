@@ -44,8 +44,6 @@
 
             <xsl:call-template name="HomePageContent"/>
           </div>
-          <hr></hr>
-          <h4>This page for demo purposes it is home.xml/home.xsl</h4>
           <xsl:call-template name="footer"/>
         </div>
       </body>
