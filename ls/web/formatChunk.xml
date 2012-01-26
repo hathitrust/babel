@@ -1,4 +1,4 @@
-
+                 <label for="facet_format" class="SearchLabel">Limit to Original Format</label>
 
                 <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="10">
                   <option value="All" selected="selected">All</option>                  

@@ -93,8 +93,11 @@
               <!-- Limit area starts here ############################################   -->
               <div id="limits">
             <h3>Limit To:</h3>
-            <input type="checkbox" value="ft" name="lmt" id="fullonly"/>
+
+            <!--XXX hardcoded accessability stuff-->
             <label for="fullonly">Full view only</label>        
+            <input type="checkbox" value="ft" name="lmt" id="fullonly"/>
+
             
             
             <span style="margin-left: 4em">
@@ -106,10 +109,13 @@
                      <option value="in">Only during</option>
                    </select>
                    
-                   
+                   <!-- XXX these boxes need labels for accessability -->
+                   <label for="yop-start" class="SearchLabel">Starting Year  </label>        
                    <input class="yop" id="yop-start" type="text" size="4"  name="pdate_start" />
                    <span class="yop" id="yop-between" > and </span>
+                   <label for="yop-end" class="SearchLabel">Ending Year</label>        
                    <input class="yop"  id="yop-end" type="text" size="4" name="pdate_end"/>
+                   <label for="yop-in" class="SearchLabel">In Year</label>        
                    <input class="yop" id="yop-in" type="text" size="4" name="pdate"/>
 
                  </span>
@@ -118,7 +124,7 @@
                  <table id="multiFacets" class="multiFacets" style="width: auto">
                    <tr>
                      <th>Language: </th>
-                     <th>Format: </th>
+                     <th>Original Format: </th>
                    </tr>
                    <tr>
                      <td>
@@ -130,10 +136,15 @@
                    </tr>
                  </table>
                </div>
-                 <button type="submit" name="findbutton" id="srch" >Find</button>
-                 <button type="reset" name="reset" id="reset" >Clear/reset</button>
-                 <div id="submitErrMsg"></div>
-               </form>
+
+
+               
+               <button type="submit" name="findbutton" id="srch" >Find</button>
+
+               
+               <button type="reset" name="reset" id="reset">Clear/reset</button>
+               <div id="submitErrMsg"></div>
+             </form>
              </div>
            </div>
          </div>
@@ -163,6 +174,21 @@
        </xsl:if>
        <xsl:if test="$rowNum!=1">
          <td>
+           <!-- XXX fix label for this -->
+
+           <!--XXX accessability following code should be a template call-->
+           <xsl:element name="label" >
+             <xsl:attribute name="class">
+               <xsl:text>SearchLabel</xsl:text>
+             </xsl:attribute>
+             <xsl:attribute name="for">
+               <xsl:value-of select="$opNum"/>
+             </xsl:attribute>
+             <xsl:text>Operator </xsl:text>
+           </xsl:element>
+
+
+
            <select class="AndOr">
              <xsl:attribute name="name" >
                <xsl:value-of select="$opNum"/>
@@ -193,7 +219,7 @@
          </td>
        </xsl:if>
 
-         <!--XXX hard-code all/any widget for testing -->
+
          <td>
            <xsl:for-each  select="/MBooksTop/AdvancedSearch/AnyAll">
    
@@ -209,12 +235,33 @@
                <xsl:with-param name="name">
                  <xsl:value-of select="$anyallNum"/>
                </xsl:with-param>
+               <xsl:with-param name="labelbase">
+                 <xsl:text>search precision</xsl:text>
+               </xsl:with-param>
+               <xsl:with-param name="rowNum">
+                 <xsl:value-of select="$rowNum"/>
+               </xsl:with-param>
+
+
              </xsl:call-template>
            </xsl:for-each>
          </td>
 
        
        <td>
+         <!--XXX replace this by a call to a template -->
+         <xsl:element name="label" >
+          <xsl:attribute name="class">
+            <xsl:text>SearchLabel</xsl:text>
+          </xsl:attribute>
+          <xsl:attribute name="for">
+            <xsl:value-of select="$qNum"/>
+          </xsl:attribute>
+          <xsl:text>search box </xsl:text>
+          <xsl:value-of select="$rowNum"/>
+        </xsl:element>
+
+
          <input type="text"  size="50" class="querybox" >
            <xsl:attribute name="id">
              <xsl:value-of select="$qNum"/>
@@ -247,6 +294,13 @@
                <xsl:with-param name="name">
                  <xsl:value-of select="$fieldNum"/>
                </xsl:with-param>
+               <xsl:with-param name="labelbase">
+                 <xsl:text>search field</xsl:text>
+               </xsl:with-param>
+               <xsl:with-param name="rowNum">
+                 <xsl:value-of select="$rowNum"/>
+               </xsl:with-param>
+
              </xsl:call-template>
            </xsl:for-each>
        
@@ -265,7 +319,37 @@
     <xsl:param name="name"/>
     <xsl:param name="selected"/>
     <xsl:param name="key"/>
+    <xsl:param name="labelbase"/>
+    <xsl:param name="rowNum"/>
     <!-- create main "select" element -->
+    <!-- accessability 
+         add label for id where?
+         -->
+    
+      <xsl:if test="$labelbase">
+
+        <xsl:element name="label" >
+          <xsl:attribute name="class">
+            <xsl:text>SearchLabel</xsl:text>
+          </xsl:attribute>
+          
+          <xsl:attribute name="for">
+            <xsl:value-of select="$id"/>
+          </xsl:attribute>
+            <xsl:value-of select="$labelbase"/>
+            <xsl:if test="$rowNum">
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="$rowNum"/>
+            </xsl:if>
+
+          </xsl:element>
+        
+
+      </xsl:if>
+
+
+
+    
     <xsl:element name="select">
       <xsl:attribute name="name">
         <xsl:value-of select="$name"/>

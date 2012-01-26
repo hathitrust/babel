@@ -1178,7 +1178,7 @@
         <span class="selectedfieldname">
           <xsl:text>Viewability</xsl:text>
       </span>
-        <xsl:text>:  Search Only</xsl:text>
+        <xsl:text>:  Limited (search only)</xsl:text>
       </li>
       
     </xsl:when>
