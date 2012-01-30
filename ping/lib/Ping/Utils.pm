@@ -42,7 +42,7 @@ sub identify_user {
     return { authType => $auth_type, 
              displayName => $displayName, 
              affiliation => $affiliation, 
-             institution => $auth->get_institution(),
+             institution => $auth->get_institution($C),
              u => $print_disabled };
 
 }
