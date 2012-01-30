@@ -1081,11 +1081,10 @@ sub __get_select_url
 
 
 
-# convert from perl internal to utf8 and map xml chars to character entities so we can output good xml
+#  map xml chars to character entities so we can output good xml
 sub clean_for_xml
 {
     my $value=shift;
-    $value = Encode::decode_utf8($value);
     Utils::map_chars_to_cers(\$value);
     return $value;
 }
@@ -1095,9 +1094,7 @@ sub isFacetSelected
 {
 
     my $facet_value = shift;
-    #XXX not sure if the cgi is double encoded or facet value from json never got encoded
-    # but this seems to put fv and cgi fv in same encodings
-    $facet_value = Encode::decode_utf8($facet_value);
+
     # following is how the cgi is processed in clean_cgi.  We process json facet value to match
     Utils::map_chars_to_cers(\$facet_value , [qq{"}, qq{'}]);
     my $cgi_facet_value = shift;
@@ -1302,7 +1299,7 @@ sub _ls_wrap_result_data {
         if (defined ($doc_data->{'title_c'})){
             $display_title.=" ". $doc_data->{'title_c'}->[0];
         }    
-        $display_title = Encode::decode_utf8($display_title);
+
         Utils::map_chars_to_cers(\$display_title);
 
         $s .= wrap_string_in_tag($display_title, 'Title');
@@ -1316,8 +1313,6 @@ sub _ls_wrap_result_data {
                 $vtitle.= $doc_data->{'title_c'}->[1];
             }    
 
-
-            $vtitle = Encode::decode_utf8($vtitle);
             Utils::map_chars_to_cers(\$vtitle);
             $s .= wrap_string_in_tag($vtitle, 'VernacularTitle');
         }   
@@ -1325,7 +1320,6 @@ sub _ls_wrap_result_data {
         
         if (defined ($enum))
         {
-            $enum   = Encode::decode_utf8($enum);
             Utils::map_chars_to_cers(\$enum);
         }
         $s .= wrap_string_in_tag($enum, 'VolEnumCron');
@@ -1341,7 +1335,6 @@ sub _ls_wrap_result_data {
         if (defined ($authors_ary_ref))
         {
             my $author = join(',', @{$authors_ary_ref});
-            $author = Encode::decode_utf8($author);
             Utils::map_chars_to_cers(\$author);
             $s .= wrap_string_in_tag($author, 'Author');
         }

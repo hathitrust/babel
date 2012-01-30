@@ -67,12 +67,10 @@ sub parse_JSON_results
     my $self = shift;
     my $Solr_response_ref = shift;
 
-#    my $coder = JSON::XS->new->ascii->pretty->allow_nonref;
-    #XXX  do we want ->utf8?
     # Warning json won't escape xml entities such as "&" ">" etc.
-    my $coder = JSON::XS->new->pretty->allow_nonref;
+    my $coder = JSON::XS->new->utf8->pretty->allow_nonref;
     my $parsed = $coder->decode ($$Solr_response_ref);
-
+    
     return $parsed;
     
 }

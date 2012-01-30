@@ -218,7 +218,7 @@ sub __clean_facets
             my $value = $ary->[0];
             my $count = $ary->[1];
             my $cleaned;
-            $cleaned = Encode::decode_utf8($value);
+
             #XXX test for now by encoding only stuf with an ampersand           
             if ($value=~/\&/)
             {
