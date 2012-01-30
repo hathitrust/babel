@@ -134,8 +134,8 @@ $field_order=['ocronly',
               'title',
               'author',
               'subject',
+              'publisher',
               'series',
-              'year',
               'isn',
              ];
 

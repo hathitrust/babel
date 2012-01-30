@@ -1,6 +1,21 @@
 # dismax stuff; for now, just all
 
 
+#
+
+year:
+  qf:
+    - [publishDateRange, 25000]
+  mm: "100%"
+  tie: 0.9
+
+publisher:
+  qf:
+    - [publisher, 25000]
+  mm: "100%"
+  tie: 0.9
+
+
 serialtitle:
   pf:
     - [serialTitle_ab, 25000]
