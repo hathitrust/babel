@@ -139,7 +139,7 @@
 
 
                
-               <button type="submit" name="findbutton" id="srch" >Find</button>
+               <button type="submit" name="srch" id="srch" >Find</button>
 
                
                <button type="reset" name="reset" id="reset">Clear/reset</button>

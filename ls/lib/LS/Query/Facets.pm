@@ -235,7 +235,13 @@ sub get_Solr_query_string
     # do we need to rename facet_config since it contains more than just facet config info?
     my $config = $self->get_facet_config;  
     
-    #advanced search
+    #advanced search foobar
+    #XXX consider refactoring and putting in subroutine
+    # remove facet_lang or facet_format = "All" in case javascript did not work
+    if(defined ($cgi->param('facet_lang')) || defined ($cgi->param('facet_format')))
+    {
+        $cgi =__remove_All($cgi);
+    }
     
     my $ADVANCED= "";
 
@@ -320,6 +326,57 @@ sub get_Solr_query_string
     $self->cache_Solr_query_string($solr_query_string);
 
     return $solr_query_string;
+}
+#----------------------------------------------------------------------
+#
+#  If javascript does not remove the "All" value from facet_lang or facet_format
+#  we remove it here
+#
+sub __remove_All
+{
+    my $cgi = shift;
+            
+    my @lang = $cgi->param('facet_lang');        
+    my @format = $cgi->param('facet_format');        
+    my ($wasAll,$lang_cleaned) = __clean_all(\@lang);
+    if ($wasAll)
+    {
+        $cgi->delete('facet_lang');
+        $cgi->param('facet_lang',@{$lang_cleaned});
+    }
+    my $format_cleaned;
+    
+    ($wasAll, $format_cleaned) = __clean_all(\@format);
+    if ($wasAll)
+    {
+        $cgi->delete('facet_format');
+        $cgi->param('facet_format',@{$format_cleaned});
+    }
+    return $cgi;
+}
+
+#----------------------------------------------------------------------
+#  removes "All" from array and indicates if All was found
+#
+sub __clean_all
+{
+    my $aryref=shift;
+    my $cleaned=[];
+    my $wasAll;
+    
+    foreach my $value (@{$aryref})
+    {
+        if ($value eq "All")
+        {
+            $wasAll="true";
+        }
+        else
+        {
+            push (@{$cleaned},$value);
+        }
+        
+    }
+    return ($wasAll,$cleaned);
 }
 
 
