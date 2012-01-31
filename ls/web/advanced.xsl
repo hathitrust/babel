@@ -61,7 +61,7 @@
     <div class="LsAdvancedPageContent">
       <div id="LS_main">
         <div class="betasearch">
-          <form id="advanced_searchform" action="http://tburtonw-full.babel.hathitrust.org/cgi/ls" name="searchcoll" >
+          <form id="advanced_searchform" action="ls" name="searchcoll" >
             
             <div id="queryArea">
             <h2 id="advancedLabel">Advanced  Full-text Search:</h2>

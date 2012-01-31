@@ -1,7 +1,7 @@
 
 <div id="LSformCont">
 
-<form id="advanced_searchform" action="http://tburtonw-full.babel.hathitrust.org/cgi/ls" name="searchcoll" >
+<form id="advanced_searchform" action="ls" name="searchcoll" >
 
 <!--<input type="hidden" name="debug" value="local"/>-->
 <input type="hidden" name="a" value="srchls"/>
