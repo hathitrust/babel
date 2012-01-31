@@ -40,6 +40,7 @@
    'pdate'    => '\d+',
    'pdate_start'    => '\d+',
    'pdate_end'    => '\d+',
+   'srch'   =>'*',
   );
 
 # Specification of global *database* operations to be executed before

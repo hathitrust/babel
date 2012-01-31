@@ -297,7 +297,7 @@ function addInput(name,value)
       $('<input>').attr({
         type: 'hidden',
             name: name,
-            value: value,
+            value: value
             }).appendTo("#newform");
   }
 
@@ -309,7 +309,7 @@ function addInput(name,value)
       $('<input>').attr({
         type: 'hidden',
             name: name,
-            value: value[i],
+            value: value[i]
             }).appendTo("#newform");
     }
   }
