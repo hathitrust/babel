@@ -30,7 +30,7 @@ var handleSuccess = function(o) {
   dMsg("handle success called");
   YAHOO.mbooks.loadingLS.hide();
   if (o.responseText !== undefined) {
-    o.responseText = o.responseText.replace(/\n/g, "");
+    o.responseText = o.responseText.replace(/[\n\r]/g, "");
     o.responseText = stripXMLPI(o.responseText);
     
     var params = {};
