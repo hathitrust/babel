@@ -32,7 +32,7 @@ sub identify_user {
     if ( $auth_type eq 'shibboleth' ) {
         $displayName = $$env{displayName} || $auth->__get_prioritized_scoped_affiliation();
         ## $affiliation = $auth->__get_prioritized_scoped_affiliation();
-        $affiliation = expand_affiliation($auth->get_institution());
+        $affiliation = expand_affiliation($auth->get_institution($C));
     } elsif ( $displayName !~ m,@,) {
         $affiliation = 'University of Michigan';
     }
