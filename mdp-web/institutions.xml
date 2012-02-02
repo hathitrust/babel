@@ -337,15 +337,15 @@
       authtype="shibboleth"
       domain="nd.edu"
       enabled="1">University of Notre Dame</Inst>
-
-  <!-- waiting -->
-
   <Inst
       sdrinst="arizona"
       template="https://___HOST___/Shibboleth.sso/arizona?target=___TARGET___"
       authtype="shibboleth"
       domain="arizona.edu"
-      enabled="0">University of Arizona</Inst>
+      enabled="1">University of Arizona</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="ucsb"
       template="https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___"
