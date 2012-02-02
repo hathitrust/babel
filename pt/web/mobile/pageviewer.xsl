@@ -1418,6 +1418,7 @@
             <xsl:attribute name="name">q1</xsl:attribute>
             <xsl:attribute name="maxlength">150</xsl:attribute>
             <xsl:attribute name="size">20</xsl:attribute>
+            <xsl:attribute name="onclick"><xsl:text>this.focus();</xsl:text></xsl:attribute>
             <xsl:attribute name="value">
               <xsl:value-of select="$gCurrentQ1"/>
             </xsl:attribute>
