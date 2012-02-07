@@ -584,7 +584,7 @@ rights_name_map:
   4: orph
   5: und
   6: umall
-  7: world
+  7: ic-world
   8: nobody
   9: pdus
   10: cc-by
@@ -595,6 +595,7 @@ rights_name_map:
   15: cc-by-sa
   16: orphcand
   17: cc-zero
+  18: und-world
 
 # ---------------------------------------------------------------------
 # List of name that equate to open access
@@ -602,7 +603,7 @@ rights_name_map:
 open_access_names: 
   - pd 
   - pdus 
-  - world 
+  - ic-world 
   - cc-by 
   - cc-by-nd 
   - cc-by-nc-nd 
@@ -610,6 +611,7 @@ open_access_names:
   - cc-by-nc-sa 
   - cc-by-sa
   - cc-zero
+  - und-world
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights.source field values to names used in
