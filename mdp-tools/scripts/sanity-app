@@ -129,6 +129,24 @@ foreach my $app (@apps) {
 
 exit $rc;
 
+# ---------------------------------------------------------------------
+
+=item __get_staging_area
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_staging_area {
+    if (grep(/$STAGE/, @ToolLib::valid_developers)) {
+        return $STAGE . '-full';
+    }
+    else {
+        return $STAGE;
+    }
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -143,7 +161,7 @@ sub _test_url {
     my $app = shift;
     my $url = shift;
 
-    my $stage = (grep(/$STAGE/, @staging_areas)) ? $STAGE : $STAGE . '-full';
+    my $stage = __get_staging_area();
     $url =~ s,__URL_STAGE__,$stage.babel,g;
 
     if ($LOCAL) {
@@ -192,7 +210,7 @@ sub _test_cmd {
     my $app = shift;
     my $cmd = shift;
 
-    my $stage = (grep(/$STAGE/, @staging_areas)) ? $STAGE : $STAGE . '-full';
+    my $stage = __get_staging_area();
 
     $cmd =~ s,__CMD_STAGE__,$stage.babel,g;
 

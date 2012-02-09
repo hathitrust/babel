@@ -46,7 +46,6 @@ $ToolLib::VERBOSE = 0;
   qw (
          aelkiss 
          besmit 
-         bkammin 
          ezbrooks 
          jgmorse 
          jjyork 
