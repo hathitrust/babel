@@ -82,7 +82,7 @@ my $ops = getopts('hvT:Am:d');
 
 my $FORCE_DIFF = defined($opt_d);
 
-$ToolLib::VERBOSE = $opt_v;
+my $VERBOSE = $ToolLib::VERBOSE = $opt_v;
 
 my $help = $opt_h;
 if ($help) {
@@ -443,7 +443,9 @@ sub __rdist_app_to_production {
     print qq{Now starting APP rdist to production $s ...\n};
 
     my $opt = defined($site) ? qq{-m $site} : '';
-    print qx(rdist -f $app_dir/bin/rdist.app $opt);
+    my $cmd = qq{rdist -f $app_dir/bin/rdist.app $opt};
+    print qq{$cmd\n} if $VERBOSE;
+    print qx($cmd);
 
     if ($?) {
         PrintN("ERROR: rdist APP failure\n");
