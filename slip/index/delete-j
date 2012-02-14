@@ -10,7 +10,7 @@ delete-j
 
 =head1 DESCRIPTION
 
-Delete a document from the index
+Delete a document from the build index
 
 =head1 OPTIONS
 
