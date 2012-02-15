@@ -1037,7 +1037,7 @@
 <xsl:template name="showSelected">
   <xsl:param name="isAdvanced" value="false"/>
   <div>
-    <xsl:attibute name="id">selectedFacets</xsl:attibute>
+    <xsl:attribute name="id">selectedFacets</xsl:attribute>
     <xsl:attribute name="class">
       <xsl:choose>
         <xsl:when test="$isAdvanced = 'false'">
