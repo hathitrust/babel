@@ -44,6 +44,7 @@
             <xsl:call-template name="PageContent"/>
           </div>
           <xsl:call-template name="footer"/>
+          <xsl:call-template name="google_analytics" />
         </div>
       </body>
       <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>  
