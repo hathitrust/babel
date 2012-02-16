@@ -1548,6 +1548,10 @@
           <br />
 
           <xsl:choose>
+            <!-- TOMBSTONE -->
+            <xsl:when test="$gRightsAttribute='8'">
+              <p class="centertext">Full view is not available for this item<br/> due to copyright &#169; restrictions. -- TOMBSTONE --</p>
+            </xsl:when>
             <!-- If opb (attr=3) + affiliated user then tell them when -->
             <!-- current accessor's exclusive access expires -->
             <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
@@ -1563,40 +1567,44 @@
               </div>
             </xsl:when>
             <xsl:otherwise>
-              <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions.</p>
+              <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions. -- TOMBSTONE --</p>
             </xsl:otherwise>
           </xsl:choose>
-          <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-          <div style="background-color:#f6f6f6;margin:0;padding:10px">
-          <div id="limitedviewoptions">
-              <!--<img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>-->
-              <p>What you <strong>CAN</strong> do:
+         
+          <xsl:if test="$gRightsAttribute!='8'">
+            <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
+            <div style="background-color:#f6f6f6;margin:0;padding:10px">
+              <div id="limitedviewoptions">
+                <!--<img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>-->
+                <p>What you <strong>CAN</strong> do:
                 <ul>
                   <li>
-                      <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
-	                  <xsl:element name="a">
-	                  	<xsl:attribute name="id">mdpLimitedSearchInside</xsl:attribute>
-		           	  	<xsl:attribute name="href">
-      						<xsl:value-of select="concat('/cgi/pt?id=', $id)" />
-      					</xsl:attribute>
-      					<xsl:text>Search inside on Regular (non-mobile) Website</xsl:text>
-		              </xsl:element>
-                  <!--Find the frequency and page numbers of specific words and phrases to help you decide if the book would be useful to you.-->
+                    <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
+                    <xsl:element name="a">
+                      <xsl:attribute name="id">mdpLimitedSearchInside</xsl:attribute>
+                      <xsl:attribute name="href">
+                        <xsl:value-of select="concat('/cgi/pt?id=', $id)" />
+                      </xsl:attribute>
+                      <xsl:text>Search inside on Regular (non-mobile) Website</xsl:text>
+                    </xsl:element>
+                    <!--Find the frequency and page numbers of specific words and phrases -->
+                    <!-- to help you decide if the book would be useful to you.-->
                   </li>
                   <li>
-                  <xsl:call-template name="MobileGetBook"/>
-                  <!-- Find this item in a library near you using WorldCat. -->
+                    <xsl:call-template name="MobileGetBook"/>
+                    <!-- Find this item in a library near you using WorldCat. -->
                   </li>
                 </ul>
               </p>
               <p>Or <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">learn more</a> about HathiTrust copyright regulations</p>
             </div>
-            </div>
-        </xsl:element>
-        <xsl:call-template name="BuildMobileFooter"/>
-      </xsl:when>
+          </div>
+        </xsl:if>
+      </xsl:element>
+      <xsl:call-template name="BuildMobileFooter"/>
+    </xsl:when>
 
-      <xsl:when test="$gFinalView='restricted-with-thumbnails'">
+    <xsl:when test="$gFinalView='restricted-with-thumbnails'">
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           <xsl:choose>

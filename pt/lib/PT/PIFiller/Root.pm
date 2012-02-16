@@ -343,7 +343,7 @@ sub handle_CURRENT_PAGE_FEATURES_PI
     my $mdpItem = $C->get_object('MdpItem');
     my $seq = $mdpItem->GetRequestedPageSequence() || 1;
 
-    my $pageFeatureXML;
+    my $pageFeatureXML = '';
     my @pageFeatures = $mdpItem->GetPageFeatures( $seq );
 
     foreach my $feature ( @pageFeatures )
