@@ -413,11 +413,14 @@ Description
 # ---------------------------------------------------------------------
 sub __getPairtreeFilename {
     my $self = shift;
-    my ($P_Ref, $extension) = @_;
+    my ($P_Ref, $extension, $bare) = @_;
 
     my $po = $self->__getPathObject();
-    my $dir = $po->getItemDir($P_Ref->{'bc'});
-    my $filename = qq{$dir/} . $po->getPairtreeFilename($P_Ref->{'bc'}) . qq{.$extension};
+    my $filename = $po->getPairtreeFilename($P_Ref->{'bc'}) . qq{.$extension};
+    if (! $bare) { 
+        my $dir = $po->getItemDir($P_Ref->{'bc'});
+        $filename = qq{$dir/} . $filename;
+    }
 
     return $filename;
 }

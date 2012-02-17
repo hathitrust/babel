@@ -507,7 +507,7 @@ sub GET_aggregate {
     my $dataRef = $self->__readPairtreeFile($P_Ref, 'zip', 'binary');
     if (defined($dataRef) && $$dataRef) {
         $representation = $dataRef;
-        my $filename = $self->__getPairtreeFilename($P_Ref, 'zip');
+        my $filename = $self->__getPairtreeFilename($P_Ref, 'zip', 1);
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('aggregate', 'zip');
         my $msg = $self->__getHeaderAccessUseMsg();
