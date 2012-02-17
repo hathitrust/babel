@@ -508,14 +508,17 @@ sub GET_aggregate {
     if (defined($dataRef) && $$dataRef) {
         $representation = $dataRef;
         my $filename = $self->__getPairtreeFilename($P_Ref, 'zip', 1);
+        # prevent Google Chrome error 346
+        $filename =~ s/,/\./g;
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('aggregate', 'zip');
         my $msg = $self->__getHeaderAccessUseMsg();
+        
         my %header =
             (
              -Status => $statusLine,
              -Content_type => $mimetype,
-             -Content_Disposition => qq{filename=$filename},
+             -Content_Disposition => qq{attachment; filename=$filename},
              -X_HathiTrust_Notice => $msg,
             );
         $self->header(\%header);
