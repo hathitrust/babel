@@ -165,42 +165,42 @@
           <xsl:element name="br"/>
         </div>
 
-        <!--If TOC exists, add link to skip TOC and go to first page. If no TOC, just go to first page-->
-        <xsl:choose>
-          <xsl:when test="$gFeatureList/Feature">
-            <xsl:if test="$gFinalAccessStatus='allow'">
+        <xsl:if test="$gFinalAccessStatus='allow'">
+          <xsl:choose>
+            <!--If TOC exists, add link to skip TOC and go to first page. If no TOC, just go to first page-->
+            <xsl:when test="$gFeatureList/Feature">
               <xsl:element name="a">
                 <xsl:attribute name="href">#toc</xsl:attribute>
                 <xsl:text>Go to table of contents</xsl:text>
               </xsl:element>
               <xsl:element name="br"/>
-            </xsl:if>
+              
+              <xsl:choose>
+                <!--If using page by page view, skip to current page instead of first -->
+                <xsl:when test="$gSSD_Session='false'">
+                  <xsl:element name="a">
+                    <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                    <xsl:text>Skip table of contents and go to current page</xsl:text>
+                  </xsl:element>
+                </xsl:when>
 
-            <xsl:choose>
-              <!--If using page by page view, skip to current page instead of first -->
-              <xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'">
-                <xsl:element name="a">
-                  <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
-                  <xsl:text>Skip table of contents and go to current page</xsl:text>
-                </xsl:element>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:if test="$gFinalAccessStatus='allow'">
+                <xsl:otherwise>
                   <xsl:element name="a">
                     <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
                     <xsl:text>Skip table of contents and go to first page</xsl:text>
                   </xsl:element>
-                </xsl:if>
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:element name="a">
-              <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
-              <xsl:text>Go to First Page</xsl:text>
-            </xsl:element>
-          </xsl:otherwise>
-        </xsl:choose>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:when>
+
+            <xsl:otherwise>
+              <xsl:element name="a">
+                <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                <xsl:text>Go to First Page</xsl:text>
+              </xsl:element>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:if>
 
         <div id="mdpItemMetadata">
           <xsl:element name="h2">
@@ -425,18 +425,26 @@
   <xsl:template name="Access">
     <xsl:choose>
       <xsl:when test="$gFinalView='restricted'">
-        <xsl:element name="div">
-          <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. <xsl:call-template name="maybe_login"/> For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>. Keyword searchable (no full-text) access to this item is also available via the link below.</p>
-          <p>
-            <a>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$gItemHandle"/>
-              </xsl:attribute>
-              Search within this item
-            </a>
-          </p>
-        </xsl:element>
+        <xsl:choose>
+          <xsl:when test="$gRightsAttribute='8'">
+            <!-- TOMBSTONE -->
+            <p>-- TOMBSTONE --</p>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:element name="div">
+              <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
+              <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. <xsl:call-template name="maybe_login"/> For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>. Keyword searchable (no full-text) access to this item is also available via the link below.</p>
+              <p>
+                <a>
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="$gItemHandle"/>
+                  </xsl:attribute>
+                  Search within this item
+                </a>
+              </p>
+            </xsl:element>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:when>
 
       <xsl:when test="$gSSD_Session='false' and ($gFinalAccessStatus='allow' and $gLoggedIn!='YES')">
