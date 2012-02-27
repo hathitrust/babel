@@ -97,20 +97,25 @@
 
             <!--XXX hardcoded accessability stuff-->
             <label for="fullonly">Full view only</label>        
-            <input type="checkbox" value="ft" name="lmt" id="fullonly"/>
+            <input type="checkbox"  name="lmt" id="fullonly"  value='ft'>
+              <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='lmt']='ft'">
+                <xsl:attribute name="checked">
+                  <xsl:text>checked</xsl:text>
+                </xsl:attribute>
+              </xsl:if>
+            </input>
 
             
             
             <span style="margin-left: 4em">
               <label for="yop">Year of publication:  </label>        
                    <select id="yop" name="yop" onchange="changeRange('yop')">
-                     <option value="before">Before or during</option>
-                     <option value="after" selected="selected" >During or after</option>
-                     <option value="between">Between</option>
-                     <option value="in">Only during</option>
+                     <xsl:copy-of select="AdvancedSearch/yop/yopOptions"/>
                    </select>
-                   
-                   <!-- XXX these boxes need labels for accessability -->
+
+                     <xsl:copy-of select="AdvancedSearch/yop/span[@name='yopInputs']"/>
+
+                   <!--
                    <label for="yop-start" class="SearchLabel">Starting Year  </label>        
                    <input class="yop" id="yop-start" type="text" size="4"  name="pdate_start" />
                    <span class="yop" id="yop-between" > and </span>
@@ -118,9 +123,10 @@
                    <input class="yop"  id="yop-end" type="text" size="4" name="pdate_end"/>
                    <label for="yop-in" class="SearchLabel">In Year</label>        
                    <input class="yop" id="yop-in" type="text" size="4" name="pdate"/>
-
+                   -->
                  </span>
                  <div id="yopErrMsg"></div>
+                 
                  
                  <table id="multiFacets" class="multiFacets" style="width: auto">
                    <tr>
@@ -129,10 +135,17 @@
                    </tr>
                    <tr>
                      <td>
-                       <xsl:copy-of select="LanguageChunk"/>
+                       <label for="facet_lang" class="SearchLabel">Limit to Language</label>
+                       <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="10">
+                         <xsl:copy-of select="AdvancedSearch/facets/language_list"/>
+                       </select>
                      </td>
                      <td>
-                       <xsl:copy-of select="FormatChunk"/>
+                       <label for="facet_format" class="SearchLabel">Limit to Original Format</label>
+
+                       <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="10">
+                         <xsl:copy-of select="AdvancedSearch/facets/formats_list"/>
+                       </select>
                      </td>
                    </tr>
                  </table>

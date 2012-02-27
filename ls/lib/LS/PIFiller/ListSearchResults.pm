@@ -966,13 +966,30 @@ sub getModifyAdvancedSearchURL
 {
     my $cgi=shift;
     my $temp_cgi = new CGI($cgi);
+    my $LIMIT="2000"; #IE limit about 2048 chars 
+    
     ## do we need to delete a and page params first?
     $temp_cgi->param('a','page');
     $temp_cgi->param('page','advanced');
-    #XXX until we do sticky facets remove facet_lang and facet_format params 
+    #XXX for now see if url is too long for a safe GET and delete long facets if it is
     # alternative is javascript to grab the url and do a POST instead of a get.
-    $temp_cgi->delete('facet_lang');
-    $temp_cgi->delete('facet_format');
+    my $tempurl=$temp_cgi->self_url();
+    my $facet_lang_string = join(' ',$temp_cgi->param('facet_lang'));
+    my $facet_format_string = join(' ',$temp_cgi->param('facet_format'));
+    
+
+    if (length($tempurl ) > $LIMIT)
+    {
+        if (length($facet_lang_string) > $LIMIT/3)
+        {
+            $temp_cgi->delete('facet_lang');
+        }
+        if (length ($facet_format_string) > $LIMIT/3)
+        {
+            $temp_cgi->delete('facet_format');
+        }
+    }
+    
     my $url=$temp_cgi->self_url();
     
     return $url;

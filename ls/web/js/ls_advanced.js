@@ -16,13 +16,23 @@ Need to be able to exclude a javascript call? or rename form?
 $(function()
   {
 
-    // hide extra yop boxes
-    $(".yop").val('').hide();
-    // show yop-start
-    $('#yop-start').show().val("");
+    showHidePdates();
 
+  
+    $('#reset').click(function(event) 
+                      {
+                        /**
+                           overide default reset button to actually clear values
+                           XXX WARNING!!  We hard-code the defaults here so if 
+                           defaults change in the config files/perl
+                           these will need to be redone!
+                        **/
+                        doReset(event);
+                        event.preventDefault();
+                      }
+                      );
+    
 
-   
     $('#advanced_searchform').submit(function(event) 
             {
               
@@ -50,6 +60,44 @@ $(function()
   }
   );
 
+//--------------------------------------------------------------------------------------
+function doReset (event)
+{ 
+  //clear all text boxes
+  var boxes=  $("input:text");
+  $(boxes).val("");
+  
+  // set formats to "All"
+  var selectedOpt = $(".orFacet :selected");
+  selectedOpt.attr("selected", false);
+  $(".orFacet [value='language:All']").attr("selected", true);
+  $(".orFacet [value='format:All']").attr("selected", true);
+  
+  //uncheck any check boxes
+  $("input:checked").attr("checked",false);
+  
+  // set search widgets back to defaults See warning above re hard-coding
+  // unselect whatever is selected and then select
+  $("#anyall1 option").attr("selected", false);
+  $("#anyall1 option[value='all']").attr("selected", true);
+  
+  $("#anyall2 option").attr("selected", false);//default value=all
+  $("#anyall2 option[value='all']").attr("selected", true);
+  
+  $("#op2 option").attr("selected", false); 
+  $("#op2 option[value='AND'] ").attr("selected", true); 
+    
+  $("#field1 option").attr("selected", false);
+  $("#field1 option[value='ocr']").attr("selected", true);
+  
+  $("#field2 option").attr("selected", false);
+  $("#field2 option[value='title']").attr("selected", true);
+  
+  // yop
+  $("#yop option").attr("selected", false);
+  $("#yop option[value='after']").attr("selected", true);
+
+}
 //--------------------------------------------------------------------------------------
 function checkPdate()
 {
@@ -257,7 +305,7 @@ function processMultiSelectFacet(name,value)
   // test for value[0]= All
   // and scalar(value)> 1foobar
   
-  if(value[0] === "All" && typeof value !== "string")
+  if( (value[0] === "language:All"|| value[0] === "format:All") && typeof value !== "string")
   {
     var newValues = new Array();
     var i=1;
@@ -267,9 +315,9 @@ function processMultiSelectFacet(name,value)
     }
     addInput(name,newValues);
   }
-  else if (value ==="All")
+  else if( value[0] === "language:All"|| value[0] === "format:All") 
   {
-    // don't add if only the All is selected
+         // don't add if only the All is selected
   }
   else
   {
@@ -345,5 +393,44 @@ function changeRange(id)
        $('#' + name + '-in').show().val(''); 
       }
       
+}
+
+
+
+function showHidePdates(){
+  // hide the "and" in "yop-between"
+  if ($("#yop").val() == 'between')
+  {
+    $("#yop-between").show();
+  }
+  else
+  {
+    $("#yop-between").val("").hide();
+  }
+  
+  var allBlank=true;
+  var pdates = $(":input.yop");
+  
+  $(pdates).each (function (index,element)
+                  {
+                    var value=$(element).val();
+                    
+                    if (value.match(/^\s*\d+\s*$/) )
+                    {
+                      // if it has a value show it
+                      allBlank=false;
+                    }
+                    else
+                    {
+                      // hide it
+                      $(element).hide();
+                    }
+                  });
+  if (allBlank)
+  {
+      // does this make sense or should we check the widget to determine which box to show
+    $('#yop-start').show().val("");
+  }
+  
 }
 
