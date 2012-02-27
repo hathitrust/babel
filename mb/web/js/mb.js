@@ -1,11 +1,55 @@
-var HT = HT || {};
-
 // define a console if not exists
 if ( window.console === undefined ) {
     window.console = {
         log : function() { }
     }
 }
+
+var HT = HT || {};
+
+HT.track_pageview = function(args) {
+  if ( window.location.hash ) {
+    args = $.extend({}, { colltype : window.location.hash.substr(1) }, args);
+  }
+  var params = $.param(args);
+  if ( params ) { params = "?" + params; }
+  if ( pageTracker != null ) {
+    var fn = function() {
+        try {
+            pageTracker._trackPageview(window.location.pathname + params);
+        } catch(e) { console.log(e); }
+    };
+    
+    _gaq.push(fn);
+  }
+}
+
+// **** NOT CURRENTLY USED; NEEDS TO BE ADAPTED FROM BOOKREADER CODE
+// HT.track_event = function(args, async) {
+//     args = $.extend({}, { category : 'MB' }, args)
+//     // has to be sync?
+//     async = true;
+//     if ( pageTracker != null ) {
+// 
+//         if ( args.label == null ) {
+//             var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+//             args.label = params.id + " " + params.seq + " " + params.size + " " + params.orient + " " + params.view;
+//         }
+// 
+//         var fn = function() {
+//             try {
+//                 pageTracker._trackEvent(args.category, args.action, args.label);
+//             } catch(e) { console.log(e); }
+//         };
+//         
+//         if ( async ) {
+//             _gaq.push(fn);
+//         } else {
+//             fn();
+//         }
+//         
+//     }
+// }
 
 $(document).ready(function() {
   $(".delete-collection").live("click", function(e) {
@@ -99,9 +143,7 @@ jQuery(function($) {
       }
 
       var t0 = ( new Date ).getTime();
-      console.log("PRE-ROUTED: ", ( new Date ).getTime() );
       Spine.Route.setup();
-      console.log("ROUTED: ", ( new Date ).getTime() );
       // if ( window.location.hash.indexOf("alert") > -1 ) {
       //   alert((new Date).getTime() - t0);
       // }
@@ -160,6 +202,7 @@ jQuery(function($) {
           var min_items = $(this).val();
           self.filter_min_items(min_items);
           self.apply_filters();
+          self.track_pageview();
         })
 
         self.controls.find("select[name=sort_by]").bind("change", function() {
@@ -167,6 +210,7 @@ jQuery(function($) {
           var rel = $(this).find("option:selected").attr("rel");
           self.sort_by(key, rel);
           self.apply_filters();
+          self.track_pageview();
         })
         
         self.controls.find("input[name=toggle_descriptions]").bind("click", function() {
@@ -183,6 +227,7 @@ jQuery(function($) {
           $this.addClass("active");
           var view = $this.attr('rel');
           self.navigate(view, true);
+          self.track_pageview();
         })
         
         // fix the active button
@@ -196,6 +241,14 @@ jQuery(function($) {
           if ( this.value.toLowerCase() != self.q ) {
             self.filter_search(this.value);
             self.apply_filters();
+            if ( self.q_timeout == null ) {
+              self.q_timeout = setTimeout(function() {
+                if ( self.q ) {
+                  self.track_pageview();
+                  self.q_timeout = null;
+                }
+              }, 1000);
+            }
           }
         })
         self.input_filter.bind('keypress', function(e) {
@@ -205,6 +258,10 @@ jQuery(function($) {
             $(this).val('');
             self.filter_search('');
             self.apply_filters();
+            if ( self.q_timeout ) {
+              clearTimeout(self.q_timeout);
+              self.q_timeout = null;
+            }
             return false;
           }
         })
@@ -415,7 +472,19 @@ jQuery(function($) {
         this.status.removeClass("with-filters");
         this.status.show();
       }
-
+      
+    },
+    
+    track_pageview: function() {
+      var args = {};
+      if ( this.has_filter("min_items") && this.min_items > 0 ) {
+        args.min_items = this.min_items;
+      }
+      if ( this.has_filter("search") && this.q ) {
+        args.q = this.q;
+      }
+      args.sortby = this.controls.find("select[name=sort_by]").val();
+      HT.track_pageview(args);
     },
     
     clear_filters: function() {
