@@ -603,7 +603,8 @@ sub __getFreedomVal {
 
     # Limit pdus volumes to un-proxied "U.S." clients
     if (($freedom eq 'free') && ($rights eq 'pdus')) {
-        my $IPADDR = shift || $ENV{'REMOTE_ADDR'};
+        # Use forwarded IP address if proxied, else UA IP addr
+        my $IPADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
 
         require "Geo/IP.pm";
         my $geoIP = Geo::IP->new();
@@ -614,7 +615,8 @@ sub __getFreedomVal {
             $freedom = 'nonfree';
         }
         else {
-            # veryify this is not a US proxy for a non-US request
+            # veryify this is not a blacklisted US proxy that does not
+            # set HTTP_X_FORWARDED_FOR for a non-US request
             require "Access/Proxy.pm";
             if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
                 $freedom = 'nonfree';
