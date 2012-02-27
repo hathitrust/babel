@@ -9,6 +9,8 @@ use YAML::Any;
 
 
 my $rel_weights_file = $ENV{SDRROOT} . '/ls/lib/Config/dismax.yaml';
+my $lang_format_file = $ENV{SDRROOT} . '/ls/lib/Config/langformat.yaml';
+
 $facet_limit=30;
 $facet_initial_show=5;
 
@@ -64,6 +66,7 @@ $facet_to_label_map =
 
 # rel ranking
 $rel_weights= getRelWeights("$rel_weights_file");
+
 
 # HT/mirlyn out of the box yaml file contains these keys
 #      'subject2'
@@ -156,9 +159,57 @@ $anyall_2_display = {"any"=>"any of these words",
                      "all"=>"all of these words", 
                      "phrase"=>"this exact phrase"
                     };
+#----------------------------------------------------------------------
+# yop defaults and mappings
+$yop_default ='after';
+$yop_order =["before","after","between","in"];
+
+$yop_map = {
+            "before" => "Before or during",
+            "after" => "During or after",
+            "between" => "Between",
+            "in" => "Only during",
+           };
+$yop_input_order = ['yop-start','yop-end','yop-in'];
+$yop2label={
+            'yop-start'=>"Starting Year",
+            'yop-end'=>"Ending Year",
+            'yop-in'=>"In Year",
+};
+$yop2name={
+            'yop-start'=>"pdate_start",
+            'yop-end'=>"pdate_end",
+            'yop-in'=>"pdate",
+};
+
+
+#----------------------------------------------------------------------
+# load list of languages and formats for dropdown in advanced search menu
+($language_list,$formats_list) = getLangFormats($lang_format_file);
+
+#----------------------------------------------------------------------
+sub getLangFormats
+{
+    my $yamlfile = shift;
+    my ($language_list,$formats_list);
+    my $parsed = readYamlFile($yamlfile);
+    $language_list= $parsed->{'languages'};
+    $formats_list = $parsed->{'formats'};
+    return ($language_list,$formats_list);
+}
+
 
 #----------------------------------------------------------------------
 sub getRelWeights
+{
+    my $yamlfile = shift;
+    my $weights = readYamlFile($yamlfile);
+    return $weights;
+}
+
+
+#----------------------------------------------------------------------
+sub readYamlFile
 {
     my $yamlfile = shift;
 #    print STDERR "yamlfile is $yamlfile\n";
@@ -173,5 +224,7 @@ sub getRelWeights
     my $parsed = Load $yaml;
     return $parsed;
 }
+
+
 
 1;
