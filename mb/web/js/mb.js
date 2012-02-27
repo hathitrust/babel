@@ -24,32 +24,19 @@ HT.track_pageview = function(args) {
   }
 }
 
-// **** NOT CURRENTLY USED; NEEDS TO BE ADAPTED FROM BOOKREADER CODE
-// HT.track_event = function(args, async) {
-//     args = $.extend({}, { category : 'MB' }, args)
-//     // has to be sync?
-//     async = true;
-//     if ( pageTracker != null ) {
-// 
-//         if ( args.label == null ) {
-//             var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
-//             args.label = params.id + " " + params.seq + " " + params.size + " " + params.orient + " " + params.view;
-//         }
-// 
-//         var fn = function() {
-//             try {
-//                 pageTracker._trackEvent(args.category, args.action, args.label);
-//             } catch(e) { console.log(e); }
-//         };
-//         
-//         if ( async ) {
-//             _gaq.push(fn);
-//         } else {
-//             fn();
-//         }
-//         
-//     }
-// }
+HT.track_event = function(args) {
+    args = $.extend({}, { category : 'MB' }, args)
+    if ( pageTracker != null ) {
+
+        var fn = function() {
+            try {
+                pageTracker._trackEvent(args.category, args.action, args.label, undefined, true);
+            } catch(e) { console.log(e); }
+        };
+        
+        _gaq.push(fn);
+    }
+}
 
 $(document).ready(function() {
   $(".delete-collection").live("click", function(e) {
@@ -58,9 +45,18 @@ $(document).ready(function() {
     if ( check ) {
       var href = $(this).data('delete-href');
       $(this).attr('href', href);
+      HT.track_event({ action : 'MB Collection Delete', label : '"' + collname + '"' + " " + href.replace(/.*c=(\d+).*/, "$1")})
       return true;
     }
     return false;
+  })
+  
+  $(".toggle-sharing").live("click", function(e) {
+    var collname = $(this).parents(".collection").find("p.collname").text();
+    var href = $(this).attr('href');
+    var label = ( href.indexOf("shrd=1") < 0 ) ? "Make Private" : "Make Public";
+    HT.track_event({ action : 'MB Collection Status', label : (label + " " + href.replace(/.*c=(\d+).*/, "$1"))});
+    return true;
   })
 })
 
