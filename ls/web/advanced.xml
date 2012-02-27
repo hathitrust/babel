@@ -23,12 +23,6 @@
 <AdvancedSearch><?ADVANCED_SEARCH_FORM?></AdvancedSearch>
   <!-- Custom OPTIONAL XML for top-level file -->
 
-
-
-<LanguageChunk><?CHUNK filename="languageChunk.xml"?></LanguageChunk>
-<FormatChunk><?CHUNK filename="formatChunk.xml"?> </FormatChunk>
-
-
   <?CHUNK filename="mbooks_globals.xml"?>
   
   <!-- Minimal header.xml -->
