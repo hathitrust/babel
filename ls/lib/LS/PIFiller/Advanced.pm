@@ -95,12 +95,14 @@ sub handle_ADVANCED_SEARCH_FORM_PI
 
     # this sets the default selected value for each op or field or if there is an existing query inserts the 
     # existing values
+    #XXX here we hard-code that we will have 2 groups of 2 rows each so the $i..$MAXFIELDS is moot!!!
     my $rows;
+
     
     for my $i (1..$MAXFIELDS)
     {
         my $row = getRow($i,$cgi,$fconfig);
-        $rows .= wrap_string_in_tag($row,'row') . "\n";         
+        $rows .= wrap_string_in_tag($row,'row') . "\n";
     }
     $xml.=wrap_string_in_tag($rows,'rows') . "\n";         
 

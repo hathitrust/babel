@@ -12,7 +12,61 @@ ls.css
                          padding:0 5px 20px;
                          }
 **/
+.advrow{ 
+         width:100%;
+         /**background-color:grey;**/
+ }
+.advrow ul{ 
+            margin:0;
+            padding:0;
+            float: left;
+}
+.advrow ul li { 
+                float:left;
+                text-decoration:none;
 
+                padding: 1.5px 1px;
+            /**    background-color:grey;**/
+ }
+
+
+
+.AndOr { 
+              border:dash;
+  width:4em;
+         margin-left:auto;
+         margin-right: auto;
+       
+} 
+.andOR  { 
+       /**  float:left;**/
+         width:4em;
+         margin-left:auto;
+         margin-right: auto;
+
+ }
+
+.betasearch{ 
+             border:1px solid;
+             border-color:#grey;
+ }
+ul.row{ 
+        float:center;
+ }
+
+.row
+{
+   color:#333666;
+} 
+.col li
+{ 
+  display: inline;
+  padding-left: 3px;
+  padding-right: 7px;
+  border-right: 1px dotted #066;
+
+ color:#333222;
+} 
 
 #reset{ 
         margin-left:10%;
