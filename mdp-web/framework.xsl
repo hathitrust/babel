@@ -190,9 +190,9 @@
         <xsl:attribute name="property">cc:attributionName</xsl:attribute>
         <xsl:attribute name="rel">cc:attributionURL</xsl:attribute>
         <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
-        <xsl:attribute name="content">
+        <!--xsl:attribute name="content"--> <!-- So it will be seen by CC scraper -->
           <xsl:value-of select="$author"/>
-        </xsl:attribute>
+        <!--/xsl:attribute-->
       </xsl:element>
     </xsl:if>
 
@@ -255,20 +255,15 @@
       <xsl:attribute name="href">
         <xsl:value-of select="$gAccessUseLink"/>
       </xsl:attribute>
-      <!-- <xsl:text>Read access and use policy.</xsl:text> -->
-      <xsl:choose>
-        <xsl:when test="$gItemFormat='BK'">
-          <xsl:element name="span">
-            <xsl:attribute name="href"><xsl:value-of select="$gAccessUseAuxLink"/></xsl:attribute>
-            <xsl:attribute name="rel">license</xsl:attribute>
-            <xsl:value-of select="$access_use_header"/>
-          </xsl:element>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$access_use_header"/>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:value-of select="$access_use_header"/>
     </xsl:element>
+
+    <xsl:if test="$gItemFormat='BK' and $gAccessUseAuxLink!=''">
+      <xsl:element name="a">
+        <xsl:attribute name="href"><xsl:value-of select="$gAccessUseAuxLink"/></xsl:attribute>
+        <xsl:attribute name="rel">license</xsl:attribute>
+      </xsl:element>
+    </xsl:if>
 
     <xsl:if test="$gAccessUseIcon != '' or ( $gAccessUseAuxLink != '' and $gAccessUseAuxIcon != '' )">
       <br /><br />
