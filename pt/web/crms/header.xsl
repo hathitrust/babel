@@ -39,7 +39,7 @@
       <!-- Override mbooksnav to suppress Logout link and adjust
            interelement spacing. -->
       <style>
-        #loginLink {
+        .loginLink {
           display: none;
         }
         #feedback {
