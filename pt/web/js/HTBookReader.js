@@ -1050,12 +1050,12 @@ HTBookReader.prototype.updateLocationHash = function() {
     // update the classic view link to reflect the current page number
     var params = this.paramsFromCurrent();
     
-    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#pageRightPdfLink", "#fullPdfLink", "#loginLink" ], function(idx, id) {
+    $.each([ "#btnClassicView", "#btnClassicText", "#pagePdfLink", "#pageRightPdfLink", "#fullPdfLink", ".loginLink" ], function(idx, id) {
         var $a = $(id);
         var href = $a.attr('href');
         if ( href != null ) {
             var options = { id : id };
-            if ( ( id == "#loginLink" ) || ( id == "#fullPdfLink") ) {
+            if ( ( id == ".loginLink" ) || ( id == "#fullPdfLink") ) {
               options.view = true;
             }
             href = self._updateUrlFromParams(href, params, options);
