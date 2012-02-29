@@ -42,9 +42,9 @@
           <xsl:attribute name="property">cc:attributionName</xsl:attribute>
           <xsl:attribute name="rel">cc:attributionURL</xsl:attribute>
           <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
-          <xsl:attribute name="content">
+          <!-- xsl:attribute name="content"-->
             <xsl:value-of select="$author"/>
-          </xsl:attribute>
+          <!--/xsl:attribute-->
         </xsl:element>
         <xsl:element name="span">
           <xsl:attribute name="property">dc:creator</xsl:attribute>

@@ -1501,6 +1501,11 @@
         <xsl:element name="div">
           <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
           <xsl:choose>
+            <!-- TOMBSTONE -->
+            <xsl:when test="$gRightsAttribute='8'">
+              <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/> -- TOMBSTONE --</p>
+            </xsl:when>
+
             <!-- If opb (attr=3) + affiliated user then tell them when -->
             <!-- current accessor's exclusive access expires -->
             <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
@@ -1512,9 +1517,9 @@
                 </ul>
                 <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
                 <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
-
               </div>
             </xsl:when>
+
             <xsl:otherwise>
               <xsl:choose>
                 <xsl:when test="$gOrphanCandidate='true'">
@@ -1530,7 +1535,8 @@
             </xsl:otherwise>
           </xsl:choose>
 
-          <div>
+          <xsl:if test="$gRightsAttribute!='8'">
+            <div>
               <img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>
               <p>What you <strong>CAN</strong> do:
                 <ul>
@@ -1540,8 +1546,9 @@
               </p>
               (<a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">More information</a>)
             </div>
-          </xsl:element>
-        </xsl:when>
+          </xsl:if>
+        </xsl:element>
+      </xsl:when>
 
       <xsl:when test="$gFinalView='restricted-with-thumbnails'">
         <xsl:element name="div">
