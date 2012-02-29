@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  version="1.0">
+  version="1.0"
+  xmlns:exsl="http://exslt.org/common"
+  extension-element-prefixes="exsl">
   
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
   <xsl:variable name="gHttpHost" select="/MBooksTop/MBooksGlobals/HttpHost"/>
@@ -63,8 +65,12 @@
   </xsl:template>
   
   <xsl:template name="AccessStatement">
+    <xsl:variable name="loginlink">
+      <xsl:call-template name="loginlink" />
+    </xsl:variable>
+    <xsl:variable name="li" select="exsl:node-set($loginlink)/li" />
     <div class="SkipLink">
-      <p><xsl:call-template name="loginlink"/></p>
+      <p><xsl:copy-of select="$li/*|$li/text()" /></p>
       <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
       <ul>
         <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
@@ -174,7 +180,7 @@
            <xsl:attribute name="href">
              <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
            </xsl:attribute>
-           <xsl:attribute name="id">
+           <xsl:attribute name="class">
              <xsl:text>loginLink</xsl:text>
            </xsl:attribute>
            <xsl:text>Login</xsl:text>
@@ -188,7 +194,7 @@
                <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
              </xsl:if>
            </xsl:attribute>
-           <xsl:attribute name="id">
+           <xsl:attribute name="class">
              <xsl:text>loginLink</xsl:text>
            </xsl:attribute>
            <xsl:if test="/MBooksTop/Header/LoginLink=''">
