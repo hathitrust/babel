@@ -748,7 +748,7 @@ jQuery(function($) {
       }
       if ( window.location.protocol == "http:" ) {
         // update the Login link; this is escaped as a target to the WAYF URL
-        var $loginLink = $("#loginLink");
+        var $loginLink = $(".loginLink");
         var login_href = $loginLink.attr("href").split('target=');
         var href = unescape(login_href[1]);
         var delim;
