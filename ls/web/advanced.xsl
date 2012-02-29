@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  version="1.0">
 
+  version="1.0">
+  <xsl:output indent="yes"/>
   <!--## Global Variables ##-->
 
   <xsl:variable name="coll_name">
@@ -46,9 +47,8 @@
           <xsl:call-template name="footer"/>
           <xsl:call-template name="google_analytics" />
         </div>
+        <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>  
       </body>
-      <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>  
-
     </html>
   </xsl:template>
 
@@ -65,7 +65,7 @@
           <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
           <form id="advanced_searchform" action="ls" name="searchcoll" >
             <fieldset>
-              <legend></legend>
+              <legend>Search for: </legend>
             <div id="queryArea">
        
         
@@ -81,25 +81,50 @@
                 </td>
               </tr>
               <!--XXX lets start by converting the query rows from a table to css and then do the rest-->
-              <tr>
-                <xsl:for-each  select="AdvancedSearch/rows/row">
-                  <xsl:variable name="rowNum">
-                    <xsl:value-of select="position()"/>
-                </xsl:variable>
-                
-                  <div class="andOR">
-                  <xsl:call-template name="andOr">
-                    <xsl:with-param name="rowNum" select="position()"/>
-                  </xsl:call-template>
-                </div>
+              <tr><td>
+                <xsl:for-each select="AdvancedSearch/groups/group">
+                  
+                  <!-- insert an and widget here if this is row 3 -->
+                  <!-- XXX this is lame, what is the correct way to pass the context without misusing a foreach? -->
+                  <!--                  <xsl:for-each select="row[@rownum ='3']">-->
+                  <xsl:for-each select="row[@rownum='3']">
+                       <div class="andOR">
+                          <xsl:call-template name="andOr">
+                            <xsl:with-param name="rowNum" select="3"/>
+                          </xsl:call-template>
+                        </div>
+                  </xsl:for-each>
 
-
-                    <xsl:call-template name="queryRow">
-                      <xsl:with-param name="rowNum" select="position()"/>
-                    </xsl:call-template>
+                  <fieldset>
+                    <legend></legend>
+                    <xsl:text>(</xsl:text>
+                    <xsl:for-each select="row">
+                      <xsl:variable name="rowNum">
+                        <xsl:value-of select="@rownum"/>
+                      </xsl:variable>
+                      
+                      <xsl:choose>
+                      <xsl:when test="$rowNum = 3">
+                        <!-- rewrite because we just want to skip 3 -->
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <div class="andOR">
+                          <xsl:call-template name="andOr">
+                            <xsl:with-param name="rowNum" select="$rowNum"/>
+                          </xsl:call-template>
+                        </div>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                      <xsl:call-template name="queryRow">
+                        <xsl:with-param name="rowNum" select="$rowNum"/>
+                      </xsl:call-template>
+                    </xsl:for-each>
+                                        <xsl:text>)</xsl:text>
+                  </fieldset>
 
                 </xsl:for-each>
-             </tr>
+              </td>
+            </tr>
                 
               </table>
               <div id="queryErrMsg"></div>
@@ -127,8 +152,8 @@
             
             <span style="margin-left: 4em">
               <label for="yop">Year of publication:  </label>        
-                   <select id="yop" name="yop" onchange="changeRange('yop')">
-                     <xsl:copy-of select="AdvancedSearch/yop/yopOptions"/>
+                   <select id="yop" name="yop" onchange="changeRange('yop')"  >
+                     <xsl:copy-of select="AdvancedSearch/yop/yopOptions/*" />
                    </select>
 
                      <xsl:copy-of select="AdvancedSearch/yop/span[@name='yopInputs']"/>
@@ -155,14 +180,14 @@
                      <td>
                        <label for="facet_lang" class="SearchLabel">Limit to Language</label>
                        <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="10">
-                         <xsl:copy-of select="AdvancedSearch/facets/language_list"/>
+                         <xsl:copy-of select="AdvancedSearch/facets/language_list/*"/>
                        </select>
                      </td>
                      <td>
                        <label for="facet_format" class="SearchLabel">Limit to Original Format</label>
 
                        <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="10">
-                         <xsl:copy-of select="AdvancedSearch/facets/formats_list"/>
+                         <xsl:copy-of select="AdvancedSearch/facets/formats_list/*"/>
                        </select>
                      </td>
                    </tr>
@@ -170,11 +195,10 @@
                </div>
 </fieldset>
 
-               
+<div id="findbuttons">
                <button type="submit" name="srch" id="srch" >Find</button>
-
-               
                <button type="reset" name="reset" id="reset">Clear/reset</button>
+             </div>
                <div id="submitErrMsg"></div>
              </form>
              </div>
@@ -243,7 +267,10 @@
    <ul class="advrow">
      <!-- fix to read the row/op entry instead -->       
      <xsl:if test="$rowNum=1">
-       <li class="col"><xsl:text>(   </xsl:text> </li>
+       <li class="col"></li>
+         <!--XXX don't need this now 
+         <xsl:text>(   </xsl:text> 
+         -->
      </xsl:if>
      <xsl:if test="$rowNum!=1">
        <li class="col">
@@ -268,7 +295,6 @@
      
      <li class="col">
        <xsl:for-each  select="/MBooksTop/AdvancedSearch/AnyAll">
-         
          <xsl:call-template name="BuildHtmlSelectCustom">
            <xsl:with-param name="id">
              <xsl:value-of select="$anyallNum"/>
@@ -276,7 +302,7 @@
            <xsl:with-param name="class" select="'anyallWidget'"/>
            <xsl:with-param name="selected">
              <!--XXX need to put this in the xml from a config file somewhere hardcode them all to all for now-->
-             <xsl:value-of select="/MBooksTop/AdvancedSearch/rows/row[$rowNum]/anyall"/>
+             <xsl:value-of select="/MBooksTop/AdvancedSearch/groups/group/row[@rownum=$rowNum]/anyall"/>
            </xsl:with-param>
            <xsl:with-param name="name">
                  <xsl:value-of select="$anyallNum"/>
@@ -323,7 +349,7 @@
          </input>
        </li>
           
-       <li id="in">
+       <li class="in">
          <xsl:text> in </xsl:text>
        </li>
        <li class="col">
@@ -335,7 +361,7 @@
                <xsl:with-param name="class" select="'fieldWidget'"/>
                <!--  <xsl:with-param name="selected" select="AdvancedSearch/rows/row[$rownum]/field"/>-->
                <xsl:with-param name="selected">
-                 <xsl:value-of select="/MBooksTop/AdvancedSearch/rows/row[$rowNum]/field"/>
+                 <xsl:value-of select="/MBooksTop/AdvancedSearch/groups/group/row[@rownum=$rowNum]/field"/>
                </xsl:with-param>
                <xsl:with-param name="name">
                  <xsl:value-of select="$fieldNum"/>
@@ -372,7 +398,8 @@
     <!-- accessability 
          add label for id where?
          -->
-    
+
+
       <xsl:if test="$labelbase">
 
         <xsl:element name="label" >

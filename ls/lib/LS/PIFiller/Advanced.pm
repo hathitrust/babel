@@ -96,15 +96,24 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     # this sets the default selected value for each op or field or if there is an existing query inserts the 
     # existing values
     #XXX here we hard-code that we will have 2 groups of 2 rows each so the $i..$MAXFIELDS is moot!!!
+    # plan is to put rownum in an attribute and then have 2groups of 2 rows
     my $rows;
-
+    my $rownum ;
+    my $groups;
     
-    for my $i (1..$MAXFIELDS)
+    for my $i (0,2)
     {
-        my $row = getRow($i,$cgi,$fconfig);
-        $rows .= wrap_string_in_tag($row,'row') . "\n";
+        $rows="";
+        
+        for my $j (1..2)
+        {
+            $rownum= $i +$j;
+            my $row = getRow($rownum,$cgi,$fconfig);
+            $rows .= '<row rownum="' . $rownum . '" >' . $row . '</row>' . "\n";
+        }
+        $groups.=wrap_string_in_tag($rows,'group') . "\n";         
     }
-    $xml.=wrap_string_in_tag($rows,'rows') . "\n";         
+    $xml.=wrap_string_in_tag($groups,'groups') . "\n";         
 
     # read any search parameters
     # might want to read some kind of config here
