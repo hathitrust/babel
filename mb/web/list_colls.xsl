@@ -434,6 +434,7 @@
           <strong>
             <a>
               <xsl:attribute name="href"><xsl:value-of select="/MBooksTop/Header/LoginLink"/></xsl:attribute>
+              <xsl:attribute name="class">loginLink</xsl:attribute>
               Login
             </a>
           </strong> to create and save permanent collections or see your private
