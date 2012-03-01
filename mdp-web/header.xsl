@@ -65,19 +65,21 @@
   </xsl:template>
   
   <xsl:template name="AccessStatement">
-    <xsl:variable name="loginlink">
-      <xsl:call-template name="loginlink" />
-    </xsl:variable>
-    <xsl:variable name="li" select="exsl:node-set($loginlink)/li" />
-    <div class="SkipLink">
-      <p><xsl:copy-of select="$li/*|$li/text()" /></p>
-      <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
-      <ul>
-        <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
-        <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
-        <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
-      </ul>
-    </div>
+    <xsl:if test="$gHtId">
+      <xsl:variable name="loginlink">
+        <xsl:call-template name="loginlink" />
+      </xsl:variable>
+      <xsl:variable name="li" select="exsl:node-set($loginlink)/li" />
+      <div class="SkipLink">
+        <p><xsl:copy-of select="$li/*|$li/text()" /></p>
+        <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
+        <ul>
+          <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
+          <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
+          <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
+        </ul>
+      </div>
+    </xsl:if>
   </xsl:template>  
   
   <xsl:template name="Survey">
