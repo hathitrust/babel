@@ -1729,6 +1729,8 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	            	$("#mdpResultsContainer").css('height', $("#mdpResultsContainer").height() + "px");
 	            }
 	    	}catch(err){alert(err.toString())}			    	
+	    	// and log the event
+	    	HT.track_pageview(url);
     	},
     	error:function(jqXHR, textStatus, errorThrown){
     		var footer=$("#mdpFooter").detach();

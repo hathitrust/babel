@@ -101,6 +101,24 @@ HT.init_from_params = function() {
     }
 }
 
+HT.track_pageview = function(args) {
+  if ( window.location.hash ) {
+    args = $.extend({}, { colltype : window.location.hash.substr(1) }, args);
+  }
+  var params = $.param(args);
+  if ( params ) { params = "?" + params; }
+  if ( pageTracker != null ) {
+    var fn = function() {
+        try {
+            pageTracker._trackPageview(window.location.pathname + params);
+        } catch(e) { console.log(e); }
+    };
+    
+    _gaq.push(fn);
+  }
+}
+
+
 HT.track_event = function(args, async) {
     args = $.extend({}, { category : 'PT' }, args)
     // has to be sync?
