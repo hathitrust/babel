@@ -12,6 +12,13 @@ ls.css
                          padding:0 5px 20px;
                          }
 **/
+
+.op{ 
+     width:4em;
+      margin-left:auto;
+      margin-right: auto;
+     
+ }
 .advrow{ 
          width:100%;
          /**background-color:grey;**/

@@ -51,6 +51,8 @@ $(function()
                    //              rows = removeAndConsolidateBlankRows(rows);
                    var rowNums = new Array();
                    rowNums = getRowNums();
+                   // this actually removes blank rows as well as changing the url
+                   // XXX consider renaming it!
                    redirect(rowNums);
                  }
                }
@@ -63,7 +65,7 @@ $(function()
 //--------------------------------------------------------------------------------------
 function doReset (event)
 { 
-  //clear all text boxes
+  //clear all text boxess
   var boxes=  $("input:text");
   $(boxes).val("");
   
@@ -260,6 +262,14 @@ function redirect(rowNums)
                        {
                          // remove blank rows
                          // if number is in rowNums (i.e. non-blank query) add this row
+
+                         //hard-coded exception fof op3, because with boolean parens op3 is no longer tied to q3/row3
+                         
+                         if (name === "op3")
+                         {
+                           addInput(name,value);
+                         }
+
                          var number=result[2];
                          var i=0;
                          for (i=0;i<=rowNums.length;i++)

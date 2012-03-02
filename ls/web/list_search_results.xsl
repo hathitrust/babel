@@ -317,23 +317,113 @@
 
 
   <xsl:template name="advanced">
-    <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
+
+
+      <!--XXX have to implement something like this
+           # will have to do something like this in the xsl    
+#    if ($query_group_1 =~/\S/ )
+#    {
+#        if  ($query_group_2 =~/\S/)
+#        {
+#            # if both have at least one non-blank character 
+#            $advanced = $paren_1 . $op_ary->[3] . $paren_2;
+#        }
+#        else
+#        {
+#            $advanced = ' ' . $query_group_1 .' ';
+#        }
+#    }
+#    else
+#    {
+#        $advanced = ' ' . $query_group_2 .' ';
+#    }
+
+
+
+-->
+
+      <xsl:variable name="SingleQuery">
+        <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) = 1">
+          <xsl:text>true</xsl:text>
+        </xsl:if>
+      </xsl:variable>
+      <xsl:variable name="SingleGroup">
+        <xsl:if test="count(/MBooksTop/AdvancedSearch/group) = 1">
+          <xsl:text>true</xsl:text>
+        </xsl:if>
+      </xsl:variable>
+
       <xsl:choose>
-        <xsl:when test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
-          <div class="advancedClause">        
-          <xsl:call-template  name= "advancedContent"/>        
-          </div>
+        <xsl:when test="$SingleGroup='true'">
+          <xsl:for-each select="/MBooksTop/AdvancedSearch/group">
+            <xsl:call-template  name= "advancedGroup"/>
+          </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:call-template  name= "advancedContent"/>
+          <xsl:for-each select="/MBooksTop/AdvancedSearch/group[1]">
+            <div class="advancedGroup">        
+            <xsl:call-template  name= "advancedGroup"/>        
+            </div>
+          </xsl:for-each>
+
+          <div class="op3">
+            <xsl:value-of select="/MBooksTop/AdvancedSearch/OP3"/>
+          </div>
+
+          <xsl:for-each select="/MBooksTop/AdvancedSearch/group[2]">
+            <div class="advancedGroup">        
+            <xsl:call-template  name= "advancedGroup"/>        
+            </div>
+          </xsl:for-each>
+
+        </xsl:otherwise>          
+        </xsl:choose>
+
+    </xsl:template>
+
+    <xsl:template name="advancedGroup">
+      <!-- call template then op then template? -->
+      <!-- this deals with grouping then calls template "advancedContent" for each clause
+           if there is only 1 clause in the group just spit it out
+           else add parens and the op properly formatted
+           -->
+      <xsl:choose>
+        <xsl:when test="count(Clause)= 1">
+          <xsl:for-each select="Clause">
+            <xsl:call-template name="advancedContent"/>        
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <div class="advGroupFoo">
+          <xsl:text> ( </xsl:text>
+
+          <xsl:for-each select="Clause[1]">
+            <xsl:call-template name="advancedContent"/>        
+          </xsl:for-each>
+
+          <!-- op goes here-->
+          <div class="op">
+            <xsl:value-of select="OP"/>
+          </div>
+
+            <xsl:for-each select="Clause[2]">
+              <xsl:call-template name="advancedContent"/>        
+            </xsl:for-each>
+       
+            <xsl:text> ) </xsl:text>
+          </div>
+            
           </xsl:otherwise>
         </xsl:choose>
-      </xsl:for-each>
+        
+
+
     </xsl:template>
 
     <xsl:template name= "advancedContent">
 
-      <xsl:if test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
+
+      <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) &gt; 1">
         <a>
           <xsl:attribute name="href">
             <xsl:value-of select="unselectURL"/>          
@@ -342,8 +432,6 @@
         </a>
       </xsl:if>
 
-      <xsl:text></xsl:text>
-      <xsl:value-of select="OP"/><xsl:text> </xsl:text>
       <!--XXX   figure out what the well formed stuff from basic template is above and put it here
            Also need to make the punctuation only happen if there is an anyall
            -->
