@@ -343,15 +343,15 @@
       authtype="shibboleth"
       domain="arizona.edu"
       enabled="1">University of Arizona</Inst>
-
-  <!-- waiting -->
-
   <Inst
       sdrinst="ucsb"
       template="https://___HOST___/Shibboleth.sso/ucsb?target=___TARGET___"
       authtype="shibboleth"
       domain="ucsb.edu"
-      enabled="0">University of California, Santa Barbara</Inst>
+      enabled="1">University of California, Santa Barbara</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="harvard"
       template="https://___HOST___/Shibboleth.sso/harvard?target=___TARGET___"
