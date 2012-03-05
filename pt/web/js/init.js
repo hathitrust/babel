@@ -102,15 +102,21 @@ HT.init_from_params = function() {
 }
 
 HT.track_pageview = function(args) {
-  if ( window.location.hash ) {
-    args = $.extend({}, { colltype : window.location.hash.substr(1) }, args);
+  var url;
+  if ( args.url ) {
+    url = args.url;
+  } else {
+    if ( window.location.hash ) {
+      args = $.extend({}, { colltype : window.location.hash.substr(1) }, args);
+    }
+    var params = $.param(args);
+    if ( params ) { params = "?" + params; }
+    url = window.location.pathname + params;
   }
-  var params = $.param(args);
-  if ( params ) { params = "?" + params; }
   if ( pageTracker != null ) {
     var fn = function() {
         try {
-            pageTracker._trackPageview(window.location.pathname + params);
+            pageTracker._trackPageview(url);
         } catch(e) { console.log(e); }
     };
     

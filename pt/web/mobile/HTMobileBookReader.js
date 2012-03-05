@@ -1730,7 +1730,7 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	            }
 	    	}catch(err){alert(err.toString())}			    	
 	    	// and log the event
-	    	HT.track_pageview(url);
+	    	HT.track_pageview({url:url});
     	},
     	error:function(jqXHR, textStatus, errorThrown){
     		var footer=$("#mdpFooter").detach();
