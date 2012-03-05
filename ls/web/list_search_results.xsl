@@ -204,8 +204,9 @@
       <xsl:call-template name="SearchResults_status"/>
 
       <form id="form_ls1" name="form_ls1" method="get" action="ls?">
-        <xsl:call-template name="GetHiddenParams"/>
-
+        <div name="hiddenParams">
+          <xsl:call-template name="GetHiddenParams"/>
+        </div>
         <div id="actionsRow1">
           <xsl:call-template name="BuildSortWidget"/>
           <xsl:call-template name="BuildPagingControls">
@@ -229,7 +230,9 @@
           
       <div id="listisFooter">
         <form id="form_ls2" name="form_ls2" method="get" action="ls?">
-          <xsl:call-template name="GetHiddenParams"/>
+          <div name="hiddenParams">
+            <xsl:call-template name="GetHiddenParams"/>
+          </div>
           <xsl:call-template name="BuildPagingControls">
             <xsl:with-param name="which_paging" select="'bottom_paging'"/>
           </xsl:call-template>
@@ -1414,7 +1417,7 @@
             <xsl:when test="$selected='true'">
                 <xsl:value-of select="$value"/>
 
-                <span dir="LTR">
+                <span dir="ltr">
                 <xsl:text> (</xsl:text>
                 <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>
@@ -1428,7 +1431,7 @@
                 
                 <xsl:value-of select="$value"/>
               </xsl:element>
-              <span dir="LTR">
+              <span dir="ltr">
                 <xsl:text> (</xsl:text>
                 <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>
