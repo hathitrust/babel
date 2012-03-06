@@ -88,10 +88,10 @@ my (
    )
   = CB_do_update_metadata($C, $ID);
 
-my $mm = join("\n", @$failed_metadata_missing_ids_ref);
-my $mu = join("\n", @$failed_metadata_update_ids_ref);
+my $mm = join("\n", @$failed_metadata_missing_ids_ref) || 'none';
+my $mu = join("\n", @$failed_metadata_update_ids_ref) || 'none';
 
-__P(qq{Report: num_processed=$num_processed num_updated=$num_updated\n\tqueue_error=$queue_error num_metadata_missing=$num_metadata_missing num_update_failed=$num_update_failed\n\tmissing_metadata=$mm\n\tfailed_update=$mu\n});
+__P(qq{Report: num_processed=$num_processed num_updated=$num_updated queue_error=$queue_error\n\tnum_metadata_missing=$num_metadata_missing missing_metadata_ids=$mm\n\tnum_update_failed=$num_update_failed failed_update_ids=$mu\n});
 
 email_report()
   if ($EMAIL);
@@ -117,7 +117,7 @@ sub __P {
     if ($ENV{'TERM'}) {
         print STDOUT qq{$msg};
     }
-    
+
     chomp($msg);
     Utils::Logger::__Log_string($C, $msg, 'metadata_update_logfile', '___QUERY___', 'mb');
 }
@@ -162,7 +162,7 @@ sub CB_delete_extras {
     my($C) = @_;
 
     my $size = 100;
-    
+
     my ($statement, $sth);
 
     my $num_o_item = 0;
@@ -175,7 +175,7 @@ sub CB_delete_extras {
         $sth = DbUtils::prep_n_execute($DBH, $statement);
 
         # One hundred at a time so we don't race/block with Collection Builder users
-        $statement = 
+        $statement =
           qq{SELECT extern_item_id FROM o_item WHERE extern_item_id NOT IN (SELECT DISTINCT extern_item_id FROM o_coll_item) LIMIT $size};
         $sth = DbUtils::prep_n_execute($DBH, $statement);
         my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
@@ -186,7 +186,7 @@ sub CB_delete_extras {
             $sth = DbUtils::prep_n_execute($DBH, $statement);
             last;
         }
-        
+
         foreach my $hashref (@$ref_to_arr_of_hashref) {
             $num_o_item++;
             my $extern_item_id = $hashref->{extern_item_id};
@@ -194,7 +194,7 @@ sub CB_delete_extras {
             __P( qq{A: o_item not in o_coll_item: $extern_item_id\n});
             $statement = qq{DELETE FROM o_item WHERE extern_item_id=?};
             $sth = DbUtils::prep_n_execute($DBH, $statement, $extern_item_id);
-                
+
             $num_deleted_from_o_item++;
         }
 
@@ -225,7 +225,7 @@ sub __cb_get_vufind_metadata_hashref {
     if (scalar @$metadata_aryref) {
         my $metadata_hashref = $metadata_aryref->[0];
         $metadata_hashref = $mdg->normalize_metadata($metadata_hashref);
-        
+
         return $metadata_hashref;
     }
     else {
@@ -294,20 +294,20 @@ Description
 sub __format_metadata_diff {
     my $prior_metadata_hashref = shift;
     my $updated_metadata_hashref = shift;
-    
+
     my @diffs;
     foreach my $md (keys %$updated_metadata_hashref) {
         next if ($md eq 'extern_item_id');
         my $prior = $prior_metadata_hashref->{$md};
         my $updated = $updated_metadata_hashref->{$md};
         $md =~ s,_title,,;
-        
+
         if ($prior ne $updated) {
             my $s = sprintf("%-7s", $md);
             push(@diffs, qq{$s: prior="$prior" updated="$updated"});
         }
     }
-    
+
     return (scalar(@diffs) ? join("\n\t", @diffs) : undef);
 }
 
@@ -325,9 +325,9 @@ my $single_fetched = 0;
 
 sub fetch_next_item {
     my ($C, $single_id) = @_;
-    
+
     my ($ok, $id);
-    
+
     if (defined($single_id)) {
         if ($single_fetched) {
             ($ok, $id) = (1, undef);
@@ -340,7 +340,7 @@ sub fetch_next_item {
     else {
         ($ok, $id) = MetadataQueue::get_next_metadata_item_id($C, $DBH);
     }
-    
+
     return ($ok, $id);
 }
 
@@ -359,7 +359,7 @@ sub CB_do_update_metadata {
     __P(qq{update metadata:\n});
 
     my $queue_error = 0;
-    
+
     my $num_processed = 0;
     my $num_updated = 0;
     my $num_metadata_missing = 0;
@@ -367,10 +367,10 @@ sub CB_do_update_metadata {
 
     my @failed_metadata_missing_ids = ();
     my @failed_metadata_update_ids = ();
-    
+
     while (1) {
         my ($ok, $id) = fetch_next_item($C, $single_id);
-        
+
         if ($ok) {
             if ($id) {
                 $num_processed++;
@@ -380,26 +380,30 @@ sub CB_do_update_metadata {
                     MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     next;
                 }
-                
+
                 my $metadata_hashref = __cb_get_vufind_metadata_hashref($C, $id);
                 my $metadata_ok = $metadata_hashref ? 1 : 0;
-         
+
                 if ($metadata_ok) {
                     my $o_item_hashref =  __get_o_item_metadata($C, $id);
                     my $update_ok = __cb_update_metadata($C, $id, $metadata_hashref);
                     if ($update_ok) {
-                        my $coll_ids_ary_ref = $CO->get_coll_ids_for_item($id);
-                        my @buf;
-                        foreach my $coll_id (@$coll_ids_ary_ref) {
-                            my $coll_name = $CO->get_coll_name($coll_id);
-                            push(@buf, qq{($coll_id)=[$coll_name]});
-                        } 
-                        my $affected = join(', ', @buf);
-
                         my $delta = __format_metadata_diff($o_item_hashref, $metadata_hashref);
-                        my $time = Utils::Time::iso_Time('time');
-                        __P(qq{update [$time]: $id affected=$affected\n\tdelta=} . ($delta ? "\n\t$delta\n" : "none\n"));
-                        $num_updated++ if ($delta);
+                        if ($delta) {
+                            # Get affected coll_ids
+                            my $coll_ids_ary_ref = $CO->get_coll_ids_for_item($id);
+                            my @buf;
+                            foreach my $coll_id (@$coll_ids_ary_ref) {
+                                my $coll_name = $CO->get_coll_name($coll_id);
+                                push(@buf, qq{($coll_id)=[$coll_name]});
+                            }
+                            my $affected = join(', ', @buf);
+
+                            my $time = Utils::Time::iso_Time('time');
+                            __P(qq{update [$time]: $id affected=$affected\n\tdelta=\n\t$delta\n"});
+                            $num_updated++;
+                        }
+
                         MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     }
                     else {
@@ -425,7 +429,7 @@ sub CB_do_update_metadata {
             last;
         }
     }
-    
+
     return ($num_processed, $num_updated, $queue_error, $num_metadata_missing, $num_update_failed,
             \@failed_metadata_missing_ids, \@failed_metadata_update_ids);
 }
