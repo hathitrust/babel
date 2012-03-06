@@ -1,0 +1,11 @@
+<div>
+  <div id="masthead">
+    <div class="branding">
+      <div class="brandingLogo">
+        <a href="http://hathitrust.org">
+          <img src="/mdp-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo" />
+          <span>Digital Library - Key Service</span></a>
+      </div>
+    </div>
+  </div>
+</div>

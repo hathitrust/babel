@@ -1,0 +1,22 @@
+If you are not ___REQUESTOR_TO_ADDRESS___ please disregard this email
+with our apologies.
+
+Follow this link to view your HathiTrust Data API keys.
+
+___CONFIRM_LINK___
+
+Please note:
+
+* Be sure to make secure copies of your keys.
+
+* This is a one-time and time-sensitive link. You will not be able to
+follow this link a second time.  Please be prepared to complete the
+process within 24 hours.
+
+* Another request for keys using ___REQUESTOR_TO_ADDRESS___ will be
+not be honored. Please contact us at feedback@issues.hathitrust.org for
+assistance.
+        
+
+Regards,
+  - HathiTrust.org

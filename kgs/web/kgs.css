@@ -1,0 +1,128 @@
+
+
+label {
+  float            : right;
+  font-weight      : bold; 
+}
+
+label.error {
+  float            : none;
+  color            : red;
+  padding-left     : .5em;
+  vertical-align   : top;
+  font-size        : 0.5em;
+}
+
+p.error {
+  font-weight      : bold;
+}
+
+b {
+  font-weight      : bold; 
+}
+
+i { 
+  font-style       : italic; 
+}
+
+a {
+  color            : #ef7a06;
+  text-decoration  : none;
+}
+
+a:hover, a:focus, a:active {
+  color            : #ef7a06;
+  text-decoration  : underline;
+}
+
+fieldset {        
+  border           : 1px solid #ccc;
+  background-color : #fafafa;
+}
+
+legend {
+  text-align       :center;
+}
+
+.submit {
+  margin-left      : 20em;
+
+}
+
+#req { 
+  font-weight      : bold;
+  color            : red;
+  padding-right    : 1em;
+  vertical-align   : top; 
+}
+
+.brandingLogo span {
+  color            : #6A6B6E;
+  font-size        : 1.7em;
+  font-weight      : bold;
+  left             : 10px;
+  position         : relative;
+  top              : -15px; 
+}
+
+.brandingLogo a {
+  text-decoration  : none;
+}
+
+.heading {
+  font-weight      : bold;
+  font-size        : 1.2em;
+}
+
+#KGSMasterContainer {
+  width            : 680px;
+  font-family      : Arial,Verdana,Helvetica,sans-serif;
+  font-size        : 12pt; 
+  font-weight      : normal; 
+}
+
+#KGScontainer {
+  text-align       : left;
+  margin-top       : 20px;
+  padding-top      : 1.5em;
+  padding-left     : 1.5em;
+  padding-right    : 1.5em;
+  padding-bottom   : 1.5em;
+
+  border-top       : solid 4px #ccc;
+  border-left      : solid 1px #ccc;
+  border-right     : solid 1px #ccc;
+  border-bottom    : solid 1px #ccc; 
+}
+
+p.flip {
+  margin           : 0px;
+  padding          : 0.5em;
+  background       : #fafafa;
+  text-align       : center;
+  border           : solid 1px #ccc;
+  font-weight      : bold;
+}
+
+div.panel {
+  font-size        : 1.8em;
+  text-align       : left;
+  background       : #ffdbdf;
+  border           : solid 1px #ccc;
+  padding-left     : 1em;       
+  display          : none;
+  white-space      : nowrap;
+  line-height      : 0.3em;
+}
+
+.key {
+  font-weight      : bold;
+  font-family      : courier; 
+}
+
+.key_label {
+  font-size        : 0.6em;
+  font-weight      : normal; 
+}
+
+

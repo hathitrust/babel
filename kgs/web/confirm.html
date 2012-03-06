@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>  
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>HathiTrust Key Service - Keys Activated</title>
+    <meta http-equiv="Content-Language" content="en-us" />
+    <link rel="stylesheet" type="text/css" href="/kgs/kgs.css"/>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript">   
+      $(document).ready(function(){
+        $(function() {
+          $(".flip").click(function () {
+            $(".panel").slideToggle("slow"); 
+
+            var text = $('.flip').text();
+            $('.flip').text(
+              text == "Click here to show keys" ? "Click here to hide keys" : "Click here to show keys");
+          });
+        });  
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="mbMasterContainer">
+      ___HEADER_CHUNK___
+    <div id="KGScontainer">
+      <div class="KGStext_1">
+        Here are the HathiTrust Data API keys you requested.
+      </div>
+      <p class="flip">Click here to show keys</p>
+      <div class="panel">
+        <p><span class="key_label">Access key:</span> <span class="key">___ACCESS_KEY___</span></p>
+        <p><span class="key_label">Secret key:</span> <span class="key">___SECRET_KEY___</span></p>
+      </div>
+      <p>These keys have been activated and are ready for use.  Click below to show or hide them from view.</p>
+        <p><b>Note:</b></p>
+        <ul>
+          <li>You will not be able to view this page again if you reload it or close your browser.</li>
+          <li>Be sure to make secure copies of these keys.</li>
+          <li>There is a limit of five keys outstanding for <b>___REQUESTOR_TO_ADDRESS___</b>.  Contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> for assistance.</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
