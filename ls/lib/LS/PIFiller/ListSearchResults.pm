@@ -1042,9 +1042,15 @@ sub __isAdvanced{
 sub getAdvancedSearchURL
 {
     my $cgi=shift;
-#    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
+    #    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
     my $url=$cgi->url(-relative=>1);
-        $url.='?a=page&amp;page=advanced';
+    $url.='?a=page&amp;page=advanced';
+    # add rogers change i.e. populate query box from previous basic search?
+    # but if this is an advanced search just do a blank query box
+    if ( __isAdvanced($cgi) ne "true")
+    {
+        $url.='&amp;q1=' . $cgi->param('q1');
+    }
     return $url;
 }
 
@@ -1468,15 +1474,8 @@ sub _ls_wrap_result_data {
         # Remove q1 if this is an advanced search
         my $pt_search_URL = PT_HREF_helper($C, $id, 'pt_search');
         my $pt_URL = PT_HREF_helper($C, $id, 'pt');
-        my $isAdvanced;
+        my $isAdvanced = __isAdvanced($cgi);
         
-        if(defined($cgi->param('field1'))|| 
-           defined($cgi->param('field2'))||
-           defined($cgi->param('field3'))||
-           defined($cgi->param('field4')))
-        {
-            $isAdvanced="true";
-        }
         #XXX tbw for Roger's suggestion instead of q1= blank
         # call subroutine which checks to see if it should be blank or should be
         # a boolean of any searches where the field is ocr or ocronly 
