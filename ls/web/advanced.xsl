@@ -88,6 +88,8 @@
                   <!-- XXX this is lame, what is the correct way to pass the context without misusing a foreach? -->
                   <!--                  <xsl:for-each select="row[@rownum ='3']">-->
                   <xsl:for-each select="row[@rownum='3']">
+                    <a href="_blank" id="addGroup">+ More</a>
+                    <a href="_blank" id="removeGroup">- Less</a>
                        <div class="andOR">
                           <xsl:call-template name="andOr">
                             <xsl:with-param name="rowNum" select="3"/>
@@ -96,31 +98,23 @@
                   </xsl:for-each>
 
                   <fieldset>
+                    <xsl:attribute name="id">
+                      <xsl:text>group</xsl:text>
+                      <xsl:value-of select ="position()"/>
+                    </xsl:attribute>
                     <legend></legend>
-                    <xsl:text>(</xsl:text>
+
                     <xsl:for-each select="row">
                       <xsl:variable name="rowNum">
                         <xsl:value-of select="@rownum"/>
                       </xsl:variable>
                       
-                      <xsl:choose>
-                      <xsl:when test="$rowNum = 3">
-                        <!-- rewrite because we just want to skip 3 -->
-                      </xsl:when>
-                      <xsl:otherwise>
-                        <div class="andOR">
-                          <xsl:call-template name="andOr">
-                            <xsl:with-param name="rowNum" select="$rowNum"/>
-                          </xsl:call-template>
-                        </div>
-                      </xsl:otherwise>
-                    </xsl:choose>
-                      <xsl:call-template name="queryRow">
-                        <xsl:with-param name="rowNum" select="$rowNum"/>
-                      </xsl:call-template>
-                    </xsl:for-each>
-                                        <xsl:text>)</xsl:text>
-                  </fieldset>
+                    <xsl:call-template name="queryRow">
+                      <xsl:with-param name="rowNum" select="$rowNum"/>
+                    </xsl:call-template>
+                  </xsl:for-each>
+                  
+                </fieldset>
 
                 </xsl:for-each>
               </td>
@@ -133,7 +127,7 @@
           </fieldset>
               <!-- Limit area starts here ############################################   -->
             
-            <fieldset>
+            <fieldset class="limits">
               <legend>Limit to: </legend>
            <div id="limits">
            
@@ -197,7 +191,8 @@
 
 <div id="findbuttons">
                <button type="submit" name="srch" id="srch" >Find</button>
-               <button type="reset" name="reset" id="reset">Clear/reset</button>
+               <!-- <button type="reset" name="reset" id="reset">Clear/reset</button>-->
+               <a href="" id="reset">Clear/reset</a>
              </div>
                <div id="submitErrMsg"></div>
              </form>
@@ -263,32 +258,47 @@
      <xsl:text>anyall</xsl:text><xsl:value-of select="$rowNum"/>
    </xsl:variable>
 
+    
+
    <div class="advrow">
+
    <ul class="advrow">
      <!-- fix to read the row/op entry instead -->       
-     <xsl:if test="$rowNum=1">
-       <li class="col"></li>
-         <!--XXX don't need this now 
-         <xsl:text>(   </xsl:text> 
-         -->
+
+     <!--XXX lose the parens for now
+     <xsl:if test="$rowNum = 1 or $rowNum =3">
+       <li>
+       <span class="p">
+         <xsl:text> ( </xsl:text>
+       </span>
+       </li>
      </xsl:if>
-     <xsl:if test="$rowNum!=1">
+     -->
+
+     <xsl:if test="$rowNum=1 or  $rowNum = 3" >
        <li class="col">
-         <!-- XXX fix label for this -->
-         
+         <div class="spacer"></div>
+       </li>
+     </xsl:if>
+
+     <xsl:if test="$rowNum=2 or $rowNum=4 ">
+       <li class="col">
          <!--XXX accessability following code should be a template call-->
-         <xsl:element name="label" >
-           <xsl:attribute name="class">
-             <xsl:text>SearchLabel</xsl:text>
-           </xsl:attribute>
-           <xsl:attribute name="for">
-             <xsl:value-of select="$opNum"/>
-           </xsl:attribute>
-           <xsl:text>Operator </xsl:text>
-         </xsl:element>
-
-
+         <div class="andOR">
+           <xsl:element name="label" >
+             <xsl:attribute name="class">
+               <xsl:text>SearchLabel</xsl:text>
+             </xsl:attribute>
+             <xsl:attribute name="for">
+               <xsl:value-of select="$opNum"/>
+             </xsl:attribute>
+             <xsl:text>Operator </xsl:text>
+           </xsl:element>
            
+           <xsl:call-template name="andOr">
+             <xsl:with-param name="rowNum" select="$rowNum"/>
+           </xsl:call-template>
+         </div>
        </li>
      </xsl:if>
      
@@ -377,6 +387,15 @@
            </xsl:for-each>
        
          </li>
+         <!-- XXX lose the parens for now
+     <xsl:if test="$rowNum = 2 or $rowNum =4">
+       <li>
+       <span class="p">
+         <xsl:text>  ) </xsl:text>
+       </span>
+       </li>
+     </xsl:if>
+     -->
 
        </ul>
      </div>

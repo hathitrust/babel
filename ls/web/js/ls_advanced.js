@@ -18,7 +18,31 @@ $(function()
 
     showHidePdates();
 
-  
+    if($('#q3').val() == "" && $('#q4').val() == "")
+    {
+      hideGroup2();
+      $('#removeGroup').hide();
+    }
+    
+    $('#addGroup').click(function(event) 
+                     {
+                       showGroup2();
+                       $('#removeGroup').show();
+                       $('#addGroup').hide();
+                       event.preventDefault();
+                     }
+                     );
+
+    $('#removeGroup').click(function(event) 
+                     {
+                       hideGroup2();
+                       $('#removeGroup').hide();
+                       $('#addGroup').show();
+                       event.preventDefault();
+                     }
+                     );
+
+
     $('#reset').click(function(event) 
                       {
                         /**
@@ -405,6 +429,18 @@ function changeRange(id)
       
 }
 
+function hideGroup2(){
+  // hide them unless there are values to show
+  // test for non-blank q3 or q4 if they are non-blank then we don't hide
+  $("#op3").hide();
+  $("#group2").hide();
+}
+
+
+function showGroup2(){
+  $("#op3").show();
+  $("#group2").show();
+}
 
 
 function showHidePdates(){

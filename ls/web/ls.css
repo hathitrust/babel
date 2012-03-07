@@ -13,6 +13,33 @@ ls.css
                          }
 **/
 
+
+//** for debugging uncomment this**/
+
+div { outline:1px dashed red; } 
+
+
+
+#findbuttons  
+{ 
+  margin-top:10px;
+
+  margin-left:30%;
+
+
+  }
+
+.limits{ 
+    /**     width:60%;**/
+} 
+/** span class = p for parenthesis**/
+
+.p{ 
+    color:green;
+
+    font-size:150%;
+ }
+
 .op{ 
      width:4em;
       margin-left:auto;
@@ -21,6 +48,7 @@ ls.css
  }
 .advrow{ 
          width:100%;
+
          /**background-color:grey;**/
  }
 .advrow ul{ 
@@ -39,31 +67,40 @@ ls.css
 
 
 #op3{ 
-      width:4em;
+      width:5em;
       margin-top:10px;
       margin-bottom:10px;
       margin-left:auto;
       margin-right: auto;
 
  }
-.AndOr { 
-         border:dash;
+
+.spacer{ 
+
          width:4em;
          margin-left:auto;
          margin-right: auto;
-       
+
+} 
+
+.AndOr { 
+
+         width:5em;
+         margin-left:auto;
+         margin-right: auto;
 } 
 .andOR  { 
-       /**  float:left;**/
-         width:4em;
-         margin-left:auto;
+         /**float:left;**/
+         width:5em;
+        margin-left:auto;
          margin-right: auto;
 
  }
 
 .betasearch{ 
-             border:1px solid;
+     /**        border:1px solid;
              border-color:#grey;
+**/
  }
 ul.row{ 
         float:center;
