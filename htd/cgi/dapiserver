@@ -1,0 +1,43 @@
+#!/usr/bin/env perl 
+
+use strict;
+use warnings;
+
+use Data::Dumper;
+use CGI;
+use OAuth::Lite::ServerUtil;
+
+
+my $cgi = new CGI;
+
+my $util = OAuth::Lite::ServerUtil->new;
+$util->support_signature_method('HMAC-SHA1');
+$util->allow_extra_params(qw/hello/);
+
+my $oauth_params = $cgi->Vars();
+my $request_uri = $cgi->url(
+                            -path_info => 1,
+                            #-query     => 1,
+                           );
+
+unless ($util->validate_params($oauth_params)) {
+    print $cgi->header(-Status => '400 ' . $util->errstr);
+    exit 1;
+}
+
+unless ($util->verify_signature
+        (
+         method          => 'GET',
+         params          => $oauth_params,
+         url             => $request_uri,
+         consumer_secret => 'YOUR_CONSUMER_SECRET',
+         token_secret    => '',
+        )) {
+    print $cgi->header(-Status => '401 ' . $util->errstr);
+    exit 1;
+}
+
+print $cgi->header(-Status => '200 OK');
+print $oauth_params;
+
+exit 0;

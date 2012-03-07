@@ -1,0 +1,106 @@
+#!/usr/bin/env perl 
+
+=head1 NAME
+
+dapiclient
+
+=head1 DESCRIPTION
+
+This program is an example perl client.  It can serve as a starting
+point to make requests to a sample server that shares the same secret
+key (YOUR_CONSUMER_SECRET). This may be especially useful if you are
+using other languages and HMAC_SHA1 OAuth libraries.
+
+=head1 SYNOPSIS
+
+For example:
+
+Browser:
+
+http://yourhost/dapiclient
+
+Command line:
+
+$ /usr/local/bin/dapiclient
+
+=head1 OUTPUT
+
+On success:
+
+Server responds:
+
+Content-Type: 200 OK
+hello
+world
+oauth_consumer_key
+YOUR_CONSUMER_KEY
+oauth_nonce
+85273b701de309600f48
+oauth_signature
+7upuCRDXL7fClZ9AD3/FVuXOZrM=
+oauth_signature_method
+HMAC-SHA1
+oauth_timestamp
+1331153859
+oauth_version
+1.0
+
+On failure:
+
+
+
+=cut
+
+use strict;
+use warnings;
+
+use CGI;
+use Data::Dumper;
+use OAuth::Lite::Consumer;
+use OAuth::Lite::AuthMethod;
+
+
+my $consumer_key = 'YOUR_CONSUMER_KEY';
+my $consumer_secret = 'YOUR_CONSUMER_SECRET';
+
+my $request_url = 'http://pfarber-full.babel.hathitrust.org/cgi/htd/dapiserver';
+
+my $consumer = OAuth::Lite::Consumer->new
+  (
+   consumer_key    => $consumer_key,
+   consumer_secret => $consumer_secret,
+   auth_method     => OAuth::Lite::AuthMethod::URL_QUERY,
+  );
+
+my $token = new OAuth::Lite::Token;
+$token->token('YOUR_CONSUMER_KEY');
+$token->secret('YOUR_CONSUMER_SECRET');
+
+my $query = $consumer->gen_auth_query('GET', $request_url, $token);
+my $signed_url = $request_url . '?' . $query;
+
+my $response = $consumer->request
+  (
+   method  => 'GET',
+   url     => $request_url,
+   params  => {
+               hello => 'world'
+              }
+  );
+
+my $cgi = new CGI;
+print $cgi->header();
+
+print "<p><b>Client requests:</b></p>\n";
+print "$signed_url\n";
+
+
+print "<p><b>Server responds:\n</b></p>";
+
+if ($response->is_success) {
+    print $response->status_line . $response->decoded_content;
+} else {
+    print $response->status_line;
+}
+
+exit 0;
