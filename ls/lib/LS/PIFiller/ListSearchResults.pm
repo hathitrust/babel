@@ -985,7 +985,7 @@ sub getGroup{
             $clause .=wrap_string_in_tag($well_formed ,'WellFormed');
             $clause .=wrap_string_in_tag($processed_query ,'ProcessedQuery');
             $clause .= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
-#            $clause .=wrap_string_in_tag($op, 'OP');
+            $clause .=wrap_string_in_tag($op, 'OP');
             $clause .=wrap_string_in_tag($user_field, 'Field');
             $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');
             $clause .=wrap_string_in_tag($unselectURL, 'unselectURL');

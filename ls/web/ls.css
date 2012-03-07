@@ -19,6 +19,22 @@ ls.css
 div { outline:1px dashed red; } 
 
 
+fieldset.group{ 
+                border:none;
+                background-color:#E9E9E9;
+                
+                /**#E9E9E9;
+                   #F6F6F6;
+                   **/
+} 
+
+
+#addGroup{ 
+           margin-left:70%;
+ }
+#removeGroup{ 
+              margin-left:70%;
+             }
 
 #findbuttons  
 { 
@@ -40,11 +56,18 @@ div { outline:1px dashed red; }
     font-size:150%;
  }
 
-.op{ 
-     width:4em;
-      margin-left:auto;
+.advGroupFoo{ 
+              
+ }
+.removeFacetIcon{ 
+                  margin-left:2em;
+ }
+span.op{ 
+     width: 4em;
+   /**   margin-left:auto;
       margin-right: auto;
-     
+**/
+     font-weight:normal;
  }
 .advrow{ 
          width:100%;
@@ -66,22 +89,15 @@ div { outline:1px dashed red; }
  }
 
 
-#op3{ 
-      width:5em;
-      margin-top:10px;
-      margin-bottom:10px;
-      margin-left:auto;
-      margin-right: auto;
-
- }
-
+/**XXX combine this with rule for AndOr **/
 .spacer{ 
 
-         width:4em;
+         width:5em;
          margin-left:auto;
          margin-right: auto;
 
 } 
+
 
 .AndOr { 
 
@@ -90,12 +106,21 @@ div { outline:1px dashed red; }
          margin-right: auto;
 } 
 .andOR  { 
-         /**float:left;**/
-         width:5em;
-        margin-left:auto;
-         margin-right: auto;
 
+          width:5em;
+  
  }
+
+#op3{ 
+      width:5em;
+      margin-top:10px;
+      margin-bottom:10px;
+      margin-left:-1em;
+      }
+
+
+
+
 
 .betasearch{ 
      /**        border:1px solid;

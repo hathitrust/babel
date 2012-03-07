@@ -88,21 +88,26 @@
                   <!-- XXX this is lame, what is the correct way to pass the context without misusing a foreach? -->
                   <!--                  <xsl:for-each select="row[@rownum ='3']">-->
                   <xsl:for-each select="row[@rownum='3']">
-                    <a href="_blank" id="addGroup">+ More</a>
-                    <a href="_blank" id="removeGroup">- Less</a>
+                    <a href="_blank" id="addGroup">+ Add a pair of search fields</a>
                        <div class="andOR">
                           <xsl:call-template name="andOr">
                             <xsl:with-param name="rowNum" select="3"/>
                           </xsl:call-template>
                         </div>
                   </xsl:for-each>
+                 
+               
 
-                  <fieldset>
+                  <fieldset class="group">
                     <xsl:attribute name="id">
                       <xsl:text>group</xsl:text>
                       <xsl:value-of select ="position()"/>
                     </xsl:attribute>
-                    <legend></legend>
+                    <legend class="SkipLink">
+                      <xsl:text>group</xsl:text>
+                      <xsl:value-of select ="position()"/>
+                        <xsl:text> Group of two rows of entry boxes</xsl:text>
+                    </legend>
 
                     <xsl:for-each select="row">
                       <xsl:variable name="rowNum">
@@ -116,9 +121,13 @@
                   
                 </fieldset>
 
+                <xsl:for-each select="row[@rownum='4']">
+                  <a href="_blank" id="removeGroup">- Remove this pair of search fields</a>
                 </xsl:for-each>
-              </td>
-            </tr>
+                
+              </xsl:for-each>
+            </td>
+          </tr>
                 
               </table>
               <div id="queryErrMsg"></div>

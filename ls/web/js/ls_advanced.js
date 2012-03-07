@@ -23,7 +23,10 @@ $(function()
       hideGroup2();
       $('#removeGroup').hide();
     }
-    
+    else
+    {
+      $('#addGroup').hide();
+    }
     $('#addGroup').click(function(event) 
                      {
                        showGroup2();

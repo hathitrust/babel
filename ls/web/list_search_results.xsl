@@ -322,29 +322,6 @@
   <xsl:template name="advanced">
 
 
-      <!--XXX have to implement something like this
-           # will have to do something like this in the xsl    
-#    if ($query_group_1 =~/\S/ )
-#    {
-#        if  ($query_group_2 =~/\S/)
-#        {
-#            # if both have at least one non-blank character 
-#            $advanced = $paren_1 . $op_ary->[3] . $paren_2;
-#        }
-#        else
-#        {
-#            $advanced = ' ' . $query_group_1 .' ';
-#        }
-#    }
-#    else
-#    {
-#        $advanced = ' ' . $query_group_2 .' ';
-#    }
-
-
-
--->
-
       <xsl:variable name="SingleQuery">
         <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) = 1">
           <xsl:text>true</xsl:text>
@@ -384,7 +361,10 @@
 
     </xsl:template>
 
-    <xsl:template name="advancedGroup">
+
+
+    <!--XXX old template with OP separated from clauses-->
+    <xsl:template name="advancedGroupOld">
       <!-- call template then op then template? -->
       <!-- this deals with grouping then calls template "advancedContent" for each clause
            if there is only 1 clause in the group just spit it out
@@ -418,10 +398,32 @@
             
           </xsl:otherwise>
         </xsl:choose>
-        
-
-
     </xsl:template>
+
+    <!-- version with OP being part of 2nd clause in group -->
+    <xsl:template name="advancedGroup">
+      <!-- this deals with grouping then calls template "advancedContent" for each clause
+           if there is only 1 clause in the group just spit it out
+           else add parens and the op properly formatted
+           -->
+      <xsl:choose>
+        <xsl:when test="count(Clause)= 1">
+          <xsl:for-each select="Clause">
+            <xsl:call-template name="advancedContent"/>        
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <div class="advGroupFoo">
+            <xsl:for-each select="Clause">
+              <div class="clause">
+              <xsl:call-template name="advancedContent"/>        
+            </div>
+          </xsl:for-each>
+          </div>
+          </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
 
     <xsl:template name= "advancedContent">
 
@@ -433,7 +435,22 @@
           </xsl:attribute>
             <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
         </a>
+
+        <xsl:if test="count(../Clause) &gt; 1">
+          <span class="op">
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="OP"/>
+            <xsl:text> </xsl:text>
+          </span>
+        </xsl:if>
+          
+
       </xsl:if>
+
+      <!-- debug
+      <h2>debug:clauses in this group
+      <xsl:value-of select="count(../Clause)"/>
+    </h2>-->
 
       <!--XXX   figure out what the well formed stuff from basic template is above and put it here
            Also need to make the punctuation only happen if there is an anyall
