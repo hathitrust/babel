@@ -400,7 +400,7 @@ sub CB_do_update_metadata {
                             my $affected = join(', ', @buf);
 
                             my $time = Utils::Time::iso_Time('time');
-                            __P(qq{update [$time]: $id affected=$affected\n\tdelta=\n\t$delta\n"});
+                            __P(qq{update [$time]: $id affected=$affected\n\tdelta=\n\t$delta\n});
                             $num_updated++;
                         }
 
