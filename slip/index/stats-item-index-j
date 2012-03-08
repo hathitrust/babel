@@ -318,38 +318,50 @@ sub mis_gather_statistics {
     __output("$errors");
     Log_stats($C, $run, $errors);
 
-    # Get segment sizes
-    my $cmd_1 = $BASE_SCRIPT_DIR . qq{segsizes -r$run};
-    my $sizes = `$cmd_1 2>&1`;
-    my $sysrc_1 = $? >> 8;
+    my ($cmd, $sysrc, $s, $rep);
     
-    my $s1 = qq{stats-item-index-j cmd="$cmd_1" sysrc=$sysrc_1};
-    $s1 .= "\n$sizes";
-    __output("$s1");
-    Log_stats($C, $run, $s1);
+    # Get segment sizes
+    $cmd = $BASE_SCRIPT_DIR . qq{segsizes -r$run};
+    my $sizes = `$cmd 2>&1`;
+    $sysrc = $? >> 8;
+    
+    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s .= "\n$sizes";
+    __output("$s");
+    Log_stats($C, $run, $s);
 
     # Get num docs in index
     my $num = mis_num_docs_in_index($C);
-    my $s3 = qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/200) . qq{ estimated at 200 pages/vol\n};
-    __output("$s3");
-    Log_stats($C, $run, $s3);
+    $s = qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/200) . qq{ estimated at 200 pages/vol\n};
+    __output("$s");
+    Log_stats($C, $run, $s);
 
     # Get report-j statistics
-    my $cmd_2 = $BASE_DIR . qq{report-j -r$run -S};
-    my $rep = `$cmd_2 2>&1`;
-    my $sysrc_2 = $? >> 8;
+    $cmd = $BASE_DIR . qq{report-j -r$run -S};
+    $rep = `$cmd 2>&1`;
+    $sysrc = $? >> 8;
     
-    my $s2 = qq{stats-item-index-j cmd="$cmd_2" sysrc=$sysrc_2};
-    $s2 .= "$rep";
-    __output("$s2");
-    Log_stats($C, $run, $s2);
+    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s .= "$rep";
+    __output("$s");
+    Log_stats($C, $run, $s);
 
     # Reset statistics
-    my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats};
-    my $rep = `$cmd 2>&1`;
-    my $sysrc = $? >> 8;
+    $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats};
+    $rep = `$cmd 2>&1`;
+    $sysrc = $? >> 8;
 
-    my $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s .= ($sysrc > 0) ? "$rep" : '';
+    __output("$s\n");
+    Log_stats($C, $run, $s);
+
+    # Reset daily errors after report
+    $cmd = $BASE_DIR . qq{control-j -r$run -kreseterrors};
+    $rep = `$cmd 2>&1`;
+    $sysrc = $? >> 8;
+
+    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
     $s .= ($sysrc > 0) ? "$rep" : '';
     __output("$s\n");
     Log_stats($C, $run, $s);
