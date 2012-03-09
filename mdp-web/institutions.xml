@@ -376,5 +376,11 @@
       authtype="shibboleth"
       domain="udel.edu"
       enabled="0">University of Delaware</Inst>
+  <Inst
+      sdrinst="loc"
+      template="https://___HOST___/Shibboleth.sso/loc?target=___TARGET___"
+      authtype="shibboleth"
+      domain="loc.gov"
+      enabled="0">Library of Congress</Inst>
       
 </Institutions>
