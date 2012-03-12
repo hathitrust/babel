@@ -18,6 +18,30 @@ ls.css
 div { outline:1px dashed red; } 
 
 
+
+/*Parenthesis  */
+div.parenGroup{  
+/*                outline:1px dashed red;*/
+
+                }
+
+div.group{ 
+/*           outline:1px dotted blue;*/
+           margin-left:15%;
+           margin-right:15%;
+ }
+div.paren{ 
+ /*          outline:1px dashed green;*/
+           width:1em;
+           font-size:400%;
+
+ }
+div.parenLeft{ 
+               float: left;
+ }
+div.parenRight{ 
+                float:right;
+ }
 /* fieldset formatting*/
 
 fieldset { 
@@ -65,13 +89,13 @@ select.orFacet{
 
 fieldset.group{ 
                 border:none;
-                background-color:#E9E9E9;
+         /*       background-color:#E9E9E9;*/
                 
                 /**#E9E9E9;
                    #F6F6F6;
                    **/
-                top:0;
-                bottom:0;
+/*                top:0;
+                bottom:0;*/
                 width:90%;
 } 
 
@@ -117,7 +141,7 @@ span.op{
      font-weight:normal;
  }
 .advrow{ 
-         width:100%;
+        /* width:100%;*/
 
          /**background-color:grey;**/
  }

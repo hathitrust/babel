@@ -107,12 +107,14 @@
                     </legend>
 
                     <!-- uncomment below for parenthesis-->
-                    <!--#########################################
-                         <div class="paren parenLeft"> ( </div>
-                    <div class="paren parenRight"> ) </div>
-                    #######################################-->
-                    <div class="group">
-                      <!--                    <xsl:attribute name="id">
+                     <div class="parenGroup">
+
+                      <div class="paren parenLeft"> ( </div>
+                      <div class="paren parenRight"> ) </div>
+
+                      <div class="group">
+                      
+                        <!--                    <xsl:attribute name="id">
                       <xsl:text>group</xsl:text>
                       <xsl:value-of select ="position()"/>
                     </xsl:attribute> -->
@@ -128,7 +130,7 @@
                     </xsl:call-template>
                   </xsl:for-each>
                   </div>
-
+                    </div>
                 </fieldset>
 
                 <xsl:for-each select="row[@rownum='4']">
@@ -140,7 +142,7 @@
 
               <div id="queryErrMsg"></div>
               <br/>
-            </div>
+              </div> 
           </fieldset>
               <!-- Limit area starts here ############################################   -->
             
