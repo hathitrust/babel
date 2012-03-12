@@ -1550,7 +1550,7 @@
           <xsl:choose>
             <!-- TOMBSTONE -->
             <xsl:when test="$gRightsAttribute='8'">
-              <p class="centertext">Full view is not available for this item<br/> due to copyright &#169; restrictions. -- TOMBSTONE --</p>
+              <p class="centertext">Full view is not available for this item<br/> due to copyright &#169; restrictions.</p>
             </xsl:when>
             <!-- If opb (attr=3) + affiliated user then tell them when -->
             <!-- current accessor's exclusive access expires -->
@@ -1567,7 +1567,7 @@
               </div>
             </xsl:when>
             <xsl:otherwise>
-              <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions. -- TOMBSTONE --</p>
+              <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions.</p>
             </xsl:otherwise>
           </xsl:choose>
          
