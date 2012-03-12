@@ -65,23 +65,19 @@
           <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
           <form id="advanced_searchform" action="ls" name="searchcoll" >
             <fieldset>
-              <legend>Search for: </legend>
+              <legend class="SkipLink">Search for: </legend>
             <div id="queryArea">
        
         
-            <table id="queryRows" style="width: auto">
+
               <!-- XXX need to change this so it will only add to existing debug values-->
               <!--
               Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
               -->
-              <tr>
-                <td></td>
-                <td>
                   <input type="hidden" name="a" value="srchls" />
-                </td>
-              </tr>
+
               <!--XXX lets start by converting the query rows from a table to css and then do the rest-->
-              <tr><td>
+
                 <xsl:for-each select="AdvancedSearch/groups/group">
                   
                   <!-- insert an and widget here if this is row 3 -->
@@ -100,14 +96,27 @@
 
                   <fieldset class="group">
                     <xsl:attribute name="id">
-                      <xsl:text>group</xsl:text>
+                      <xsl:text>fieldsetGroup</xsl:text>
                       <xsl:value-of select ="position()"/>
                     </xsl:attribute>
+
                     <legend class="SkipLink">
                       <xsl:text>group</xsl:text>
                       <xsl:value-of select ="position()"/>
                         <xsl:text> Group of two rows of entry boxes</xsl:text>
                     </legend>
+
+                    <!-- uncomment below for parenthesis-->
+                    <!--#########################################
+                         <div class="paren parenLeft"> ( </div>
+                    <div class="paren parenRight"> ) </div>
+                    #######################################-->
+                    <div class="group">
+                      <!--                    <xsl:attribute name="id">
+                      <xsl:text>group</xsl:text>
+                      <xsl:value-of select ="position()"/>
+                    </xsl:attribute> -->
+
 
                     <xsl:for-each select="row">
                       <xsl:variable name="rowNum">
@@ -118,7 +127,8 @@
                       <xsl:with-param name="rowNum" select="$rowNum"/>
                     </xsl:call-template>
                   </xsl:for-each>
-                  
+                  </div>
+
                 </fieldset>
 
                 <xsl:for-each select="row[@rownum='4']">
@@ -126,10 +136,8 @@
                 </xsl:for-each>
                 
               </xsl:for-each>
-            </td>
-          </tr>
                 
-              </table>
+
               <div id="queryErrMsg"></div>
               <br/>
             </div>
@@ -137,12 +145,13 @@
               <!-- Limit area starts here ############################################   -->
             
             <fieldset class="limits">
-              <legend>Limit to: </legend>
+              <legend class="limitTo">Limit to: </legend>
+
+
            <div id="limits">
-           
 
             <!--XXX hardcoded accessability stuff-->
-            <label for="fullonly">Full view only</label>        
+            <label for="fullonly" >Full view only</label>        
             <input type="checkbox"  name="lmt" id="fullonly"  value='ft'>
               <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='lmt']='ft'">
                 <xsl:attribute name="checked">
@@ -155,53 +164,41 @@
             
             <span style="margin-left: 4em">
               <label for="yop">Year of publication:  </label>        
-                   <select id="yop" name="yop" onchange="changeRange('yop')"  >
-                     <xsl:copy-of select="AdvancedSearch/yop/yopOptions/*" />
-                   </select>
-
-                     <xsl:copy-of select="AdvancedSearch/yop/span[@name='yopInputs']"/>
-
-                   <!--
-                   <label for="yop-start" class="SearchLabel">Starting Year  </label>        
-                   <input class="yop" id="yop-start" type="text" size="4"  name="pdate_start" />
-                   <span class="yop" id="yop-between" > and </span>
-                   <label for="yop-end" class="SearchLabel">Ending Year</label>        
-                   <input class="yop"  id="yop-end" type="text" size="4" name="pdate_end"/>
-                   <label for="yop-in" class="SearchLabel">In Year</label>        
-                   <input class="yop" id="yop-in" type="text" size="4" name="pdate"/>
-                   -->
-                 </span>
-                 <div id="yopErrMsg"></div>
-                 
-                 
-                 <table id="multiFacets" class="multiFacets" style="width: auto">
-                   <tr>
-                     <th>Language: </th>
-                     <th>Original Format: </th>
-                   </tr>
-                   <tr>
-                     <td>
-                       <label for="facet_lang" class="SearchLabel">Limit to Language</label>
-                       <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="10">
-                         <xsl:copy-of select="AdvancedSearch/facets/language_list/*"/>
-                       </select>
-                     </td>
-                     <td>
-                       <label for="facet_format" class="SearchLabel">Limit to Original Format</label>
-
-                       <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="10">
-                         <xsl:copy-of select="AdvancedSearch/facets/formats_list/*"/>
-                       </select>
-                     </td>
-                   </tr>
-                 </table>
-               </div>
-</fieldset>
-
+              <select id="yop" name="yop" onchange="changeRange('yop')"  >
+                <xsl:copy-of select="AdvancedSearch/yop/yopOptions/*" />
+              </select>
+              
+              <xsl:copy-of select="AdvancedSearch/yop/span[@name='yopInputs']"/>
+              
+            </span>
+            <div id="yopErrMsg"></div>
+            
+            
+            
+            <div id="multiFacets">
+              <div class="multiFacets" id="language">
+                
+                <label for="facet_lang" class="xSearchLabel">Language</label>
+                <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="8">
+                  <xsl:copy-of select="AdvancedSearch/facets/language_list/*"/>
+                </select>
+              </div>
+              
+              <div class="multiFacets" id="format">
+                <label for="facet_format" class="xSearchLabel">Limit to Original Format</label>
+                
+                <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="8">
+                  <xsl:copy-of select="AdvancedSearch/facets/formats_list/*"/>
+                </select>
+              </div>
+            </div>
+          </div><!-- end multiFacets -->
+        </fieldset>
+        
 <div id="findbuttons">
-               <button type="submit" name="srch" id="srch" >Find</button>
                <!-- <button type="reset" name="reset" id="reset">Clear/reset</button>-->
                <a href="" id="reset">Clear/reset</a>
+               <button type="submit" name="srch" id="srch" >Find</button>
              </div>
                <div id="submitErrMsg"></div>
              </form>
@@ -353,7 +350,7 @@
         </xsl:element>
 
 
-         <input type="text"  size="80" class="querybox" >
+         <input type="text"   class="querybox" >
            <xsl:attribute name="id">
              <xsl:value-of select="$qNum"/>
            </xsl:attribute>

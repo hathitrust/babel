@@ -436,13 +436,13 @@ function hideGroup2(){
   // hide them unless there are values to show
   // test for non-blank q3 or q4 if they are non-blank then we don't hide
   $("#op3").hide();
-  $("#group2").hide();
+  $("#fieldsetGroup2").hide();
 }
 
 
 function showGroup2(){
   $("#op3").show();
-  $("#group2").show();
+  $("#fieldsetGroup2").show();
 }
 
 

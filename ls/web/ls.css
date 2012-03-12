@@ -15,8 +15,52 @@ ls.css
 
 
 //** for debugging uncomment this**/
-
 div { outline:1px dashed red; } 
+
+
+/* fieldset formatting*/
+
+fieldset { 
+           border:none;
+ }
+
+
+legend.limitTo{ 
+               font-size:150%;
+
+ }
+
+
+
+
+/* facet formatting */
+label.xSearchLabel
+{ 
+/*  margin-left:1em;*/
+  display:block;
+  }
+
+#format{ 
+         float:right;
+ }
+
+#language{ 
+           float:left;
+ }
+
+select.orFacet{ 
+                margin-left:0;
+ }
+#multiFacets{ 
+              margin-top:10px;
+              width:50%;
+              /**outline:1px dashed red;**/
+ }
+
+
+
+/* end facet formatting*/
+
 
 
 fieldset.group{ 
@@ -26,6 +70,9 @@ fieldset.group{
                 /**#E9E9E9;
                    #F6F6F6;
                    **/
+                top:0;
+                bottom:0;
+                width:90%;
 } 
 
 
@@ -40,7 +87,7 @@ fieldset.group{
 { 
   margin-top:10px;
 
-  margin-left:30%;
+  margin-left:60%;
 
 
   }
@@ -146,8 +193,8 @@ ul.row{
 } 
 
 #reset{ 
-        margin-left:10%;
-
+        margin-right:10%;
+        font-size:90%;
 } 
 .advancedMsg
 { 
@@ -203,13 +250,7 @@ ul.row{
   margin-left:1px;**/
   }
 
-.multiFacets th
-{  
-  margin-left:1em;
-  padding-left:1em;
-  padding-top:1em;
-  text-align:left;
-}
+
 #queryArea
 { 
 /**  background-color **/
@@ -217,13 +258,6 @@ ul.row{
   padding:3px;
 } 
 
-#limits
-{ 
-
-  /**border:1px solid #D8D8D8;**/
-
-  /**#0000FF;**/
-} 
 
 
 .advancedClause
