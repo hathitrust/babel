@@ -30,7 +30,14 @@ use MdpConfig;
 
 use Keys;
 use Signature;
+
+use KGS_Db;
 use KGS_Utils;
+use KGS_Pages;
+use KGS_Log;
+
+use constant REQUEST_METHOD => 'GET';
+
 
 # ---------------------------------------------------------------------
 
@@ -52,11 +59,6 @@ sub setup {
        '/confirm'  => 'ConfirmHandler',
       );
 
-    # only enable test output in dev
-    #push (@routes, '/test'=> 'test') if $ENV{HT_DEV};
-    ## 18 March 2011: temporarily enable this everywhere
-    #push (@routes, '/test'=> 'test');
-
     $self->query->charset('UTF-8');
 
     $self->routes([@routes]);
@@ -67,8 +69,8 @@ sub setup {
 
 =item RequestHandler
 
-Default handler. Present key request form. Force https so form
-submission is protected.
+Default handler. Present key request form. Server forces public https
+so form submission is protected.
 
 =cut
 
@@ -76,30 +78,12 @@ submission is protected.
 sub RequestHandler {
     my $self = shift;
     my $C = $self->param('_context');
+
     my $config = $C->get_object('MdpConfig');
+    $self->header_type('header');
 
-    my $page_ref;
-    my $protocol = $ENV{TERM} ? 'https' : $self->query()->protocol();
-
-    if (lc($protocol) ne 'https') {
-        # redirect
-
-        my $url = $self->query()->url();
-        $url =~ s,^$protocol,https,;
-
-        $self->header_type('redirect');
-        $self->header_props('url' => $url);
-    }
-    else {
-        # serve Request page
-        my $filename = $config->get('request_html_file');
-        $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
-        __insert_chunk($C, $page_ref, 'header_chunk');
-
-        $self->header_type('header');
-    }
-
-    return $page_ref;
+    LOG($C, qq{*** RequestHandler});
+    return KGS_Pages::get_request_page($C);
 }
 
 # ---------------------------------------------------------------------
@@ -113,70 +97,49 @@ Handle request form post data.
 # ---------------------------------------------------------------------
 sub RegisterHandler {
     my $self = shift;
+
     my $C = $self->param('_context');
     my $config = $C->get_object('MdpConfig');
-
     my $dbh = $self->param('_dbh');
-    
-    my $q = $self->query();
-    KGS_Utils::kgs_clean_cgi($q);
-    
-    # test validity of params server-side
-    my ($name_miss, $org_miss, $email_miss);    
-    my $requestor_name = $q->param('name') ;
-    $name_miss = 1 if (! $requestor_name);    
-    my $requestor_org = $q->param('org');
-    $org_miss = 1 if (! $requestor_org);
-    my $requestor_email = $q->param('email');
-    $email_miss = 1 if (! $requestor_email);
 
-    if ($name_miss || $org_miss || $email_miss) {
-        my $page_ref = __handle_missing_params($C, $name_miss, $org_miss, $email_miss);
-        $self->header_type('header');
+    my $Q = $self->query();
+    LOG($C, qq{*** RegisterHandler: url=} . $Q->self_url);
+    KGS_Utils::kgs_clean_cgi($Q);
 
-        return $page_ref;
-        # NOTREACHED
+    my $client_data = KGS_Utils::make_client_data($Q);
+
+    my ($valid, $errors);
+    $self->header_type('header');
+
+    # do server-side backup of javascript form validation
+    ($valid, $errors) = KGS_Validate::validate_form_params($C, $client_data);
+    if (! $valid) {
+        return KGS_Pages::get_missing_params_page($C, $errors);
     }
-    
-    # XXX prevent resend repeat registration
-#    my $client_data_ref = KGS_Db::get_client_data_by_email($dbh, $requestor_email);
 
-    my $key_pair = Keys::get_key_pair();
+    # do not allow another registration if MAX_ATTEMPTED_REGISTRATIONS have been made
+    ($valid) = KGS_Validate::validate_max_registration_attempts($C, $dbh, $client_data);
+    if (! $valid) {
+        return KGS_Pages::get_max_registrations_page($C, $client_data);
+    }
+
+    #
+    # Good to go
+    #
+    my $key_pair = Keys::make_random_key_pair();
     my $access_key = $key_pair->token;
     my $secret_key = $key_pair->secret;
 
-    my $confirm_link = __get_confirm_link($C, $key_pair,
-                                          {
-                                           'name' => $requestor_name, 
-                                           'org' => $requestor_org, 
-                                           'email' => $requestor_email,
-                                           });
+    KGS_Db::insert_client_data($C, $dbh, $client_data, $access_key, $secret_key);
 
-#    my $params = $consumer->gen_auth_params($http_method, $request_url);
-#     say $params->{oauth_consumer_key};
-#     say $params->{oauth_timestamp};
-#     say $params->{oauth_nonce};
-#     say $params->{oauth_signature_method};
-#     say $params->{oauth_signature};
-#     say $params->{oauth_version};
+    my $confirm_link = __get_confirm_link($C);
+    my $request_method = REQUEST_METHOD;
+    my $signed_url = Signature::S_get_signed_request_URL($confirm_link, $key_pair, $request_method, ''); #XXX
 
-    KGS_Db::insert_client_data($dbh, $requestor_name, $requestor_org, $requestor_email, 
-                               $access_key, $secret_key);
+    __email_confirmation_link($C, $Q, $client_data, $signed_url);
+    LOG($C, qq{__email_confirmation_link: link=$signed_url email=} . $client_data->{email});
 
-
-
-
-    __email_confirmation_link($C, $requestor_name, $requestor_org, $requestor_email, $confirm_link);
-
-    my $filename = $config->get('request_reply_html_file');
-    my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
-    __insert_chunk($C, $page_ref, 'header_chunk');
-    
-    $$page_ref =~ s,___REQUESTOR_TO_ADDRESS___,$requestor_email,g;
-
-    $self->header_type('header');
-    
-    return $page_ref;
+    return KGS_Pages::get_request_reply_page($C, $client_data);
 }
 
 # ---------------------------------------------------------------------
@@ -190,97 +153,60 @@ Description
 # ---------------------------------------------------------------------
 sub ConfirmHandler {
     my $self = shift;
+
     my $C = $self->param('_context');
     my $config = $C->get_object('MdpConfig');
+    my $dbh = $self->param('_dbh');
 
-    my $page_ref;
-    my $protocol = $ENV{TERM} ? 'https' : $self->query()->protocol();
+    my ($valid, $errors);
+    my $extra = ''; #XXX
 
-    if (lc($protocol) ne 'https') {
-        # redirect
-        my $url = $self->query()->url();
-        $url =~ s,^$protocol,https,;
+    $self->header_type('header');
 
-        $self->header_type('redirect');
-        $self->header_props('url' => $url);
+    my $Q = $self->query();
+    KGS_Utils::kgs_clean_cgi($Q);
+
+    my $access_key = $Q->param('oauth_consumer_key');
+
+    my $client_data = KGS_Db::get_client_data_by_access_key($C, $dbh, $access_key);
+    my $secret_key = $client_data->{secret_key};
+    my $key_pair = Keys::make_key_pair_from($access_key, $secret_key);
+
+    # validate signature before we can test the other parameters for validity
+    my $signed_url = $Q->self_url;
+    LOG($C, qq{ConfirmHandler: url=$signed_url});
+
+    ($valid, $errors) = Signature::S_validate($signed_url, $key_pair, REQUEST_METHOD, $extra);
+    LOG($C, qq{S_validate [valid=$valid]});
+    if (! $valid) {
+        return KGS_Pages::get_invalid_signature_page($C, $signed_url, $errors);
     }
-    else {
-        # validate signature
-        
 
-
-        # serve Confirmation page
-        my $filename = $config->get('confirm_html_file');
-        $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
-        __insert_chunk($C, $page_ref, 'header_chunk');
-
-        $$page_ref =~ s,___REQUESTOR_TO_ADDRESS___,fixme,g;
-
-        $self->header_type('header');
+    # do not activate more than MAX_ACTIVE_REGISTRATIONS
+    ($valid) = KGS_Validate::validate_max_active_registrations($C, $dbh, $client_data);
+    if (! $valid) {
+        return KGS_Pages::get_max_confirmations_page($C, $client_data);
     }
 
-    return $page_ref;
+    # do not accept a confirmation link older than LINK_LIFETIME
+    ($valid) = KGS_Validate::validate_confirmation_link_timestamp($C, $Q, $client_data);
+    if (! $valid) {
+        return KGS_Pages::get_stale_timestamp_page($C, $Q, $client_data);
+    }
+
+    # do not accept a confirmation link for an already activated registration
+    ($valid) = KGS_Validate::validate_confirmation_replay($C, $dbh, $key_pair);
+    if (! $valid) {
+        return KGS_Pages::get_confirmation_replay_page($C, $client_data);
+    }
+
+    #
+    # Good to go
+    #
+    KGS_Db::activate_client_access_key($C, $dbh, $access_key);
+
+    return KGS_Pages::get_confirmation_page($C, $key_pair, $client_data);
 }
-
-# ---------------------------------------------------------------------
-
-=item __handle_missing_params
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __handle_missing_params {
-    my ($C, $name_miss, $org_miss, $email_miss) = @_;    
-
-    my $config = $C->get_object('MdpConfig');
-
-    my $filename = $config->get('request_fail_html_file');
-    my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
-    __insert_chunk($C, $page_ref, 'header_chunk');
-
-    __insert_chunk($C, $page_ref, 'missing_params_msg');
-
-    my @msg_elems;
-    push(@msg_elems, '<b>name</b>') if ($name_miss);
-    push(@msg_elems, '<b>organization or location</b>') if ($org_miss);
-    push(@msg_elems, '<b>email address</b>') if ($email_miss);
-
-    my $msg = join(', ', @msg_elems);
-    $$page_ref =~ s,___MISSING_PARAMS___,$msg,g;
-
-    my $uri = $config->get('kgs_request_uri'); 
-    my $pathinfo = $config->get('kgs_request_pathinfo');      
-    my $url = 'https://' . $ENV{HTTP_HOST} . $uri . $pathinfo;
-    $$page_ref =~ s,___REQUEST_URL___,$url,g;
-    
-    return $$page_ref;
-}
-
-# ---------------------------------------------------------------------
-
-=item __insert_chunk
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __insert_chunk {
-    my $C = shift;
-    my $page_ref = shift;
-    my $chunk_name = shift;
-    
-    my $config = $C->get_object('MdpConfig');
-
-    my $pattern =  $config->get($chunk_name .'_pat');
-    my $filename = $config->get($chunk_name .'_file');
-    my $chunk_ref = Utils::read_file($ENV{SDRROOT} . $filename);
-
-    $$page_ref =~ s,$pattern,$$chunk_ref,;
-}
-
 
 # ---------------------------------------------------------------------
 
@@ -292,7 +218,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub __email_confirmation_link {
-    my ($C, $requestor_name, $requestor_org, $requestor_email, $confirm_link) = @_;
+    my ($C, $cgi, $client_data, $confirm_link) = @_;
 
     my $config = $C->get_object('MdpConfig');
 
@@ -303,9 +229,18 @@ sub __email_confirmation_link {
     my $email_template_ref = Utils::read_file($ENV{SDRROOT} . $template_name);
 
     $$email_template_ref =~ s,___CONFIRM_LINK___,$confirm_link,;
-    $$email_template_ref =~ s,___REQUESTOR_TO_ADDRESS___,$requestor_email,g;
+    $$email_template_ref =~ s,___REQUESTOR_TO_ADDRESS___,$client_data->{email},g;
 
-    KGS_Utils::email_something($C, $requestor_email, $from_addr, $subject, $email_template_ref);
+    my $timestamp = $cgi->param('oauth_timestamp');
+    my $expires = Utils::Time::iso_Time('datetime', $timestamp);
+    $$email_template_ref =~ s,___URL_EXPIRE_DATE___,$expires,g;
+
+    my $max_1 = KGS_Validate::MAX_ATTEMPTED_REGISTRATIONS;
+    $$email_template_ref =~ s,___MAX_ATTEMPTED_REGISTRATIONS___,$max_1,g;
+    my $max_2 = KGS_Validate::MAX_ACTIVE_REGISTRATIONS;
+    $$email_template_ref =~ s,___MAX_ACTIVE_REGISTRATIONS___,$max_2,g;
+
+    KGS_Utils::email_something($C, $client_data->{email}, $from_addr, $subject, $email_template_ref);
 }
 
 
@@ -319,31 +254,15 @@ Description
 
 # ---------------------------------------------------------------------
 sub __get_confirm_link {
-    my ($C, $key_pair, $extra) = @_;
+    my $C = shift;
 
     my $config = $C->get_object('MdpConfig');
-    
-    my $request_method = 'GET';
-    my $uniq = defined($ENV{HT_DEV}) ? "$ENV{HT_DEV}-full." : "";
-    my $endpoint = $config->get('kgs_endpoint');
-    $endpoint =~ s,___UNIQ___,$uniq,;
+
+    my $endpoint = KGS_Utils::get_endpoint($C);
     my $request_uri = $config->get('kgs_request_uri');
     my $pathinfo = $config->get('kgs_confirm_link_pathinfo');
 
-    my $uri = 'https://' . $endpoint . $request_uri . $pathinfo;
-
-    use OAuth::Lite::Consumer;
-    my $consumer = 
-      OAuth::Lite::Consumer->new
-          (
-           consumer_key    => $key_pair->token,
-           consumer_secret => $key_pair->secret,
-           realm           => 'foo',
-           auth_method     => OAuth::Lite::AuthMethod::URL_QUERY,
-          );
-    
-    my $query = $consumer->gen_auth_query($request_method, $uri, $key_pair, $extra);
-    my $url = $uri . '?' . $query;
+    my $url = 'http://' . $endpoint . $request_uri . $pathinfo;
 
     return $url;
 }

@@ -1,21 +1,4 @@
-
-
-label {
-  float            : right;
-  font-weight      : bold; 
-}
-
-label.error {
-  float            : none;
-  color            : red;
-  padding-left     : .5em;
-  vertical-align   : top;
-  font-size        : 0.5em;
-}
-
-p.error {
-  font-weight      : bold;
-}
+/* Global Styles */
 
 b {
   font-weight      : bold; 
@@ -36,24 +19,12 @@ a:hover, a:focus, a:active {
 }
 
 fieldset {        
-  border           : 1px solid #ccc;
   background-color : #fafafa;
 }
 
 legend {
-  text-align       :center;
-}
-
-.submit {
-  margin-left      : 20em;
-
-}
-
-#req { 
   font-weight      : bold;
-  color            : red;
-  padding-right    : 1em;
-  vertical-align   : top; 
+  text-align       : center;
 }
 
 .brandingLogo span {
@@ -95,6 +66,66 @@ legend {
   border-bottom    : solid 1px #ccc; 
 }
 
+
+
+/* Request page styles */
+
+input.request {
+  display          : block;
+  width            : 18em;
+  float            : left;
+  margin-bottom    : 10px;
+}
+
+label.request {
+  display          : block;
+  text-align       : right;
+  width            : 10em;
+  font-weight      : bold;
+  color            : #999;
+  float            :left;
+}
+
+div.request {
+  width            : 35em;
+}
+
+fieldset.request {
+  width            : 36em;
+}
+
+#request {
+  margin-left      : 14em;
+
+}
+
+#req { 
+  font-weight      : bold;
+  color            : red;
+  padding-right    : 1em;
+  vertical-align   : top; 
+}
+
+
+/* Error page styles */
+
+label.error {
+  float            : right;
+  color            : red;
+  vertical-align   : top;
+}
+
+p.error {
+  font-weight      : bold;
+}
+
+
+/* Confirmation page styles */
+
+#confirm_intro {
+  padding-bottom   : 1.0em;
+}
+
 p.flip {
   margin           : 0px;
   padding          : 0.5em;
@@ -102,27 +133,41 @@ p.flip {
   text-align       : center;
   border           : solid 1px #ccc;
   font-weight      : bold;
+  cursor           : pointer;
+  color            : #ef7a06;
+  text-decoration  : none;
+}
+p.flip:hover, p.flip:focus, p.flip:active {
+  color            : #ef7a06;
+  text-decoration  : underline;
 }
 
 div.panel {
-  font-size        : 1.8em;
-  text-align       : left;
   background       : #ffdbdf;
   border           : solid 1px #ccc;
   padding-left     : 1em;       
   display          : none;
   white-space      : nowrap;
-  line-height      : 0.3em;
+  line-height      : 2.5em;
+}
+
+div.confirm {
+
 }
 
 .key {
+  width            : 16em;
+  font-size        : 1.8em;
   font-weight      : bold;
   font-family      : courier; 
 }
 
 .key_label {
-  font-size        : 0.6em;
-  font-weight      : normal; 
+  float            : left;
+  font-weight      : bold;
+  width            : 6em;
+  text-align       : right;
+  margin-right     : 1em;  
 }
 
 

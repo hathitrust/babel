@@ -19,35 +19,40 @@
       ___HEADER_CHUNK___
       <div id="KGScontainer">
         <div class="heading">HathiTrust Data API key request</div>
-        <p>The HathiTrust Data API provides access to data and metadata resources. Data API request URLs for data resources, such as page images and OCR files, must include an access key and be signed with a secret key. An access key and signature are <b>not</b> required to request <i>metadata</i> resources. </p>
-        <p>For more information on how to use the Data API to request HathiTrust resources please consult the <a href="http://www.hathitrust.org/data_api">HathiTrust Data API documentation</a>. Contact <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> regarding enhanced access privileges.</p>
-        <form class="kgs_request_form" id="kgs_request" method="GET" action="/cgi/kgs/register">
-          <fieldset>
-            <legend><b>Please submit the following information to request keys</b></legend>
-            <table>
-              <tr>
-                <td><label for="htname">name</label></td>
-                <td><input id="htname" name="name" size="30" class="required" minlength="2" /><span id="req">*</span></td>
-              </tr>
-              <tr>
-                <td><label for="htorg">organization or location</label></td>
-                <td><input id="htorg" name="org" size="30" class="required" minlength="2" /><span id="req">*</span></td>
-              </tr>
-              <tr>
-                <td><label for="htemail">e-mail</label></td>
-                <td><input id="htemail" name="email" size="30"  class="required email" /><span id="req">*</span></td>
-              </tr>
-            </table>
-            <input class="submit" type="submit" value="Submit"/>
-          </fieldset>
-        </form>
+        <p>The HathiTrust Data API provides access to data and metadata resources. Data API URLs to request data resources, such as page images and OCR files, must include an access key and be signed with a secret key. An access key and signature are <b>not</b> required to request <i>metadata</i> resources. </p>
+        <p>Consult the <a href="http://www.hathitrust.org/data_api">HathiTrust Data API documentation</a> to see an example program to produce a signed Data API resource request.  Copy and edit it to use the keys you request here as a starting point to access the Data API using signed URLs.</p>
+        <p>Contact <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> regarding enhanced access privileges.</p>
+        
+        <center>
+          <form class="kgs_request_form" id="kgs_request" method="GET" action="/cgi/kgs/register">
+            <fieldset class="request">
+              <legend>Please submit the following information to request keys</legend>
+              <div class="request">
+                <label class="request" for="htname">name <span id="req">* </span></label>
+                <input id="htname" name="name" class="request required" minlength="2" />
+              </div>
+              <div class="request">
+                <label class="request" for="htorg">organization <span id="req">* </span></label>
+                <input id="htorg" name="org" class="request required" minlength="2" />
+              </div>
+              <div class="request">
+                <label class="request" for="htemail">e-mail <span id="req">* </span></label>
+                <input id="htemail" name="email" class="request required email" />
+              </div>
+              <div class="request">
+                <input class="submit" id="request" type="submit" value="Submit"/>
+              </div>
+            </fieldset>
+          </form>
+        </center>
+        
         <p><b>Instructions</b></p>
         <ul>
-          <li>When we receive your information, we'll send email containing a link to the registration page. You may need to allow <b>feedback@issues.hathitrust.org</b> to pass your spam filter.</li>
+          <li>When we receive your information, we'll send email containing a link to the registration page. You may need to allow <b>___HATHITRUST_EMAIL_ADDRESS___</b> to pass your spam filter.</li>
           <li>Follow the registration link in the email to view your keys.  Copy them to a secure location and treat them the same as passwords.</li>
           <li>The registration link is <i>time-sensitive</i> and <i>one-time-only</i>.  It expires after the first visit and absolutely after 24 hours.</li>    
           <li>There is a limit of five keys per email address. Keys granting enhanced access expire six months from the date of issue.</li>
-          <l1>Please contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> if you need assistance. </li>
+          <l1>Please contact us at <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> if you need assistance. </li>
         </ul>
       </div>
     </div>

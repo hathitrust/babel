@@ -1,5 +1,4 @@
-If you are not ___REQUESTOR_TO_ADDRESS___ please disregard this email
-with our apologies.
+If you are not ___REQUESTOR_TO_ADDRESS___ please disregard this email with our apologies.
 
 Follow this link to view your HathiTrust Data API keys.
 
@@ -7,16 +6,15 @@ ___CONFIRM_LINK___
 
 Please note:
 
-* Be sure to make secure copies of your keys.
+* This is a one-time link. It will not work if you follow it a second time.
+ 
+* This is time-sensitive link.  It expires in 24 hours from ___URL_EXPIRE_DATE___. 
 
-* This is a one-time and time-sensitive link. You will not be able to
-follow this link a second time.  Please be prepared to complete the
-process within 24 hours.
+* Note that ___REQUESTOR_TO_ADDRESS___ is allowed to make up to ___MAX_ATTEMPTED_REGISTRATIONS___ key requests and confirm up to ___MAX_ACTIVE_REGISTRATIONS___ of them.
 
-* Another request for keys using ___REQUESTOR_TO_ADDRESS___ will be
-not be honored. Please contact us at feedback@issues.hathitrust.org for
-assistance.
+* Please contact us at feedback@issues.hathitrust.org if you need assistance.
         
 
 Regards,
-  - HathiTrust.org
+  
+HathiTrust.org

@@ -22,65 +22,9 @@ use strict;
 use DBI;
 
 use Utils;
+use DbUtils;
 
-
-# ---------------------------------------------------------------------
-
-=item kgs_database_connect
-
-DBI::connect will become Apache::DBI::connect
-
-=cut
-
-# ---------------------------------------------------------------------
-sub kgs_database_connect {
-    my $C = shift;
-
-    my $config = $C->get_object('MdpConfig');
-
-    my ($db_name, $db_user, $db_passwd, $db_server) =
-      (
-       $config->get('db_name'),
-       $config->get('db_user'),
-       $config->get('db_passwd'),
-       $config->get('db_server')
-      );
-
-    my $dsn = qq{DBI:mysql:$db_name:$db_server};
-    my $dbh = DBI->connect(
-                           $dsn,
-                           $db_user,
-                           $db_passwd,
-                         {
-                          PrintError => 1,
-                          RaiseError => 0,
-                          AutoCommit => 1,
-                         }
-                          );
-    return $dbh;
-}
-
-# ---------------------------------------------------------------------
-
-=item kgs_prep_execute
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub kgs_prep_execute {
-    my ($dbh, $statement) = @_;
-
-    my $count;
-    my $sth = $dbh->prepare($statement);
-    if ($sth) {
-        $count = $sth->execute();
-    }
-
-    return $sth;
-}
-
+use KGS_Log;
 
 # ---------------------------------------------------------------------
 
@@ -92,12 +36,112 @@ Description
 
 # ---------------------------------------------------------------------
 sub insert_client_data {
-    my ($dbh, $requestor_name, $requestor_org, $requestor_email, $access_key, $secret_key) = @_;
+    my ($C, $dbh, $client_data, $access_key, $secret_key) = @_;
 
-    my $statement = qq{INSERT INTO da_authentication SET access_key=?, secret_key=?, name=?, org=? email=?};
-#    my $sth = kgs_prep_execute($dbh, $statement);
+    my ($name, $org, $email) = ($client_data->{name}, $client_data->{org}, $client_data->{email});
+    
+    my $statement = qq{INSERT INTO da_authentication SET access_key=?, secret_key=?, name=?, org=?, email=?};
+    LOG($C, qq{insert_client_data: $statement : $access_key, SECRET_KEY, $name, $org, $email});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, 
+                                      $access_key, $secret_key, $name, $org, $email);
 }
 
+# ---------------------------------------------------------------------
+
+=item count_client_registrations
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub count_client_registrations {
+    my ($C, $dbh, $email, $activated) = @_;
+
+    my $statement = qq{SELECT count(*) FROM da_authentication WHERE email=? AND activated=?};
+    LOG($C, qq{count_client_registrations: $statement, $email, $activated});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $email, $activated);
+    my $num = $sth->fetchrow_array || 0;
+
+    return $num;
+}
+
+# ---------------------------------------------------------------------
+
+=item activate_client_access_key
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub activate_client_access_key {
+    my ($C, $dbh, $access_key) = @_;
+    
+    my $statement = qq{UPDATE da_authentication SET activated=? WHERE access_key=?};
+    LOG($C, qq{activate_client_access_key: $statement, 1, $access_key});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, 1, $access_key);
+}  
+
+# ---------------------------------------------------------------------
+
+=item access_key_is_active
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub access_key_is_active {
+    my ($C, $dbh, $access_key) = @_;
+    
+    my $statement = qq{SELECT activated FROM da_authentication WHERE access_key=?};
+    LOG($C, qq{access_key_is_active: $statement, $access_key});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+    my $active = $sth->fetchrow_array || 0;
+
+    return $active;
+}  
+
+# ---------------------------------------------------------------------
+
+=item client_access_key_exists
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub client_access_key_exists {
+    my ($C, $dbh, $access_key) = @_;
+    
+    my $statement = qq{SELECT count(*) FROM da_authentication WHERE access_key=?};
+    LOG($C, qq{client_access_key_exists: $statement, $access_key});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+    my $exists = $sth->fetchrow_array || 0;
+
+    return $exists;
+}
+  
+# ---------------------------------------------------------------------
+
+=item get_client_data_by_access_key
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_client_data_by_access_key {
+    my ($C, $dbh, $access_key) = @_;
+
+    my $statement = qq{SELECT secret_key, name, org, email FROM da_authentication WHERE access_key=?};
+    LOG($C, qq{get_client_data_by_access_key: $statement, $access_key});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+    my $arr_ref_of_hashref = $sth->fetchall_arrayref({});
+
+    return $arr_ref_of_hashref->[0];
+}
 
 
 1;

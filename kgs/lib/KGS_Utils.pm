@@ -9,6 +9,54 @@ use Mail::Mailer;
 
 use Utils;
 use Context;
+use MdpConfig;
+
+# ---------------------------------------------------------------------
+
+=item get_endpoint
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_endpoint {
+    my $C = shift;
+    
+    my $config = $C->get_object('MdpConfig');
+    my $endpoint;
+    
+    if ($ENV{TERM}) {
+        return $config->get('kgs_terminal_endpoint');
+    }
+    else {
+        my $uniq = defined($ENV{HT_DEV}) ? "$ENV{HT_DEV}-full." : "";
+        $endpoint = $config->get('kgs_web_endpoint');
+        $endpoint =~ s,___UNIQ___,$uniq,;
+    }
+    
+    return $endpoint;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item make_client_data
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub make_client_data {
+    my $q = shift;
+    
+    return {
+            'name'  => $q->param('name'),
+            'org'   => $q->param('org'),
+            'email' => $q->param('email'),
+           };
+}
 
 
 # ---------------------------------------------------------------------
@@ -27,20 +75,10 @@ sub kgs_clean_cgi {
         my @vals = $cgi->param($p);
         my @newvals = ();
         foreach my $v (@vals) {
-            if (defined($v) && ($v !~ m,^\s*$,)) {
-                $v = Encode::decode_utf8($v);
-                Utils::remove_nonprinting_chars(\$v);
-                Utils::trim_spaces(\$v);
-                push(@newvals, $v);
-            }
+            $v = Encode::decode_utf8($v);
+            push(@newvals, $v);
         }
-
-        if (scalar(@newvals) > 0) {
-            $cgi->param($p, @newvals);
-        }
-        else {
-            $cgi->delete($p);
-        }
+        $cgi->param($p, @newvals);
     }
 }
 
