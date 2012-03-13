@@ -93,7 +93,6 @@
                   </xsl:for-each>
                  
                
-
                   <fieldset class="group">
                     <xsl:attribute name="id">
                       <xsl:text>fieldsetGroup</xsl:text>
@@ -106,12 +105,14 @@
                         <xsl:text> Group of two rows of entry boxes</xsl:text>
                     </legend>
 
+
                     <!-- uncomment below for parenthesis-->
                      <div class="parenGroup">
 
-                      <div class="paren parenLeft"> ( </div>
-                      <div class="paren parenRight"> ) </div>
-
+                       <div class="paren parenLeft"> 
+                       <xsl:text disable-output-escaping="yes">  &amp;nbsp;( &amp;nbsp;</xsl:text>
+                     </div>
+                     
                       <div class="group">
                       
                         <!--                    <xsl:attribute name="id">
@@ -130,8 +131,11 @@
                     </xsl:call-template>
                   </xsl:for-each>
                   </div>
+                  <div class="paren parenRight"><xsl:text disable-output-escaping="yes">  &amp;nbsp;) &amp;nbsp;</xsl:text> </div>
+                      
+
                     </div>
-                </fieldset>
+                  </fieldset> 
 
                 <xsl:for-each select="row[@rownum='4']">
                   <a href="_blank" id="removeGroup">- Remove this pair of search fields</a>

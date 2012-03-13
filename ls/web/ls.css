@@ -2,45 +2,43 @@
 ls.css
   Tom temporary css styles to be put in single css or integrated.  Ask Suz
 ***/
-/**
-.SearchResults_status  {
-                         color:#333666;
-                         font-size:1.2em;
-                         margin:0;
-                         position:relative;
-                         border:2px solid #CCCCCC;
-                         padding:0 5px 20px;
-                         }
-**/
 
 
-//** for debugging uncomment this**/
-div { outline:1px dashed red; } 
+/** for debugging uncomment this**/
+/*div { outline:1px dashed red; } */
 
 
 
 /*Parenthesis  */
 div.parenGroup{  
-/*                outline:1px dashed red;*/
-
+                /*             outline:1px dashed red;*/
+             display:table-row;
+              
                 }
 
 div.group{ 
-/*           outline:1px dotted blue;*/
-           margin-left:15%;
+           /*           outline:1px dotted blue;*/
+           display:table-cell;
+           vertical-align:middle;
+/*           margin-left:15%;
            margin-right:15%;
+*/
  }
 div.paren{ 
- /*          outline:1px dashed green;*/
-           width:1em;
-           font-size:400%;
+         /* outline:1px dashed green;*/
+           display:table-cell;
+           font-size:300%;
+           vertical-align:middle;
+           
 
  }
 div.parenLeft{ 
-               float: left;
+              /* float: left;*/
+         
  }
 div.parenRight{ 
-                float:right;
+               /* float:right;*/
+         
  }
 /* fieldset formatting*/
 
@@ -88,15 +86,18 @@ select.orFacet{
 
 
 fieldset.group{ 
-                border:none;
+         
          /*       background-color:#E9E9E9;*/
-                
+                padding:0;
+                margin:0;
+                border:0;
+
                 /**#E9E9E9;
                    #F6F6F6;
                    **/
 /*                top:0;
                 bottom:0;*/
-                width:90%;
+        
 } 
 
 
@@ -155,7 +156,7 @@ span.op{
                 float:left;
                 text-decoration:none;
 
-                padding: 1.5px 1px;
+               padding: 1.5px 1px;
             /**    background-color:grey;**/
  }
 
@@ -199,7 +200,7 @@ span.op{
 **/
  }
 ul.row{ 
-        float:center;
+
  }
 
 .row
@@ -227,7 +228,7 @@ ul.row{
 
 #Op3bool 
 {
-  margin:3;
+  margin:3px;
   background-color:#FFFFFF;
   padding:10px ;
 
@@ -363,7 +364,7 @@ select, input {
 /** XXX fix this**/
 #itemlist_searchform
 {
-  align:bottom;
+
  } 
 
 .SearchResults_status
