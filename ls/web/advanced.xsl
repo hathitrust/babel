@@ -93,7 +93,7 @@
                   </xsl:for-each>
                  
                
-                  <fieldset class="group">
+                   <fieldset class="group">
                     <xsl:attribute name="id">
                       <xsl:text>fieldsetGroup</xsl:text>
                       <xsl:value-of select ="position()"/>
@@ -104,6 +104,7 @@
                       <xsl:value-of select ="position()"/>
                         <xsl:text> Group of two rows of entry boxes</xsl:text>
                     </legend>
+
 
 
                     <!-- uncomment below for parenthesis-->
@@ -135,7 +136,7 @@
                       
 
                     </div>
-                  </fieldset> 
+                    </fieldset> 
 
                 <xsl:for-each select="row[@rownum='4']">
                   <a href="_blank" id="removeGroup">- Remove this pair of search fields</a>

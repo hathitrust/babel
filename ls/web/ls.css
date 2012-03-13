@@ -11,21 +11,22 @@ ls.css
 
 /*Parenthesis  */
 div.parenGroup{  
-                /*             outline:1px dashed red;*/
-             display:table-row;
-              
+/*                outline:1px dashed red;*/
+                display:table-row;
+                text-align:left;
                 }
 
 div.group{ 
-           /*           outline:1px dotted blue;*/
+        /*   outline:1px dotted blue;*/
            display:table-cell;
            vertical-align:middle;
+          /* width:80%;*/
 /*           margin-left:15%;
            margin-right:15%;
 */
  }
 div.paren{ 
-         /* outline:1px dashed green;*/
+      /*    outline:1px dashed green;*/
            display:table-cell;
            font-size:300%;
            vertical-align:middle;
@@ -34,10 +35,12 @@ div.paren{
  }
 div.parenLeft{ 
               /* float: left;*/
+               text-align:right;
          
  }
 div.parenRight{ 
                /* float:right;*/
+                text-align:left;
          
  }
 /* fieldset formatting*/
@@ -87,11 +90,11 @@ select.orFacet{
 
 fieldset.group{ 
          
-         /*       background-color:#E9E9E9;*/
+            /*    background-color:#E9E9E9;*/
                 padding:0;
                 margin:0;
                 border:0;
-
+                width:80%;
                 /**#E9E9E9;
                    #F6F6F6;
                    **/
