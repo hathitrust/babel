@@ -1,14 +1,13 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-                    "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>  
     <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
     <title>HathiTrust Key Service - Key Request</title>
     <meta http-equiv="Content-Language" content="en-us" />
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <!--script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script-->
+    <script  type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
     <link rel="stylesheet" type="text/css" href="/kgs/kgs.css"/>    
-    <script>
+    <script type="text/javascript">
       $(document).ready(function(){
       $("#kgs_request").validate();
       });
@@ -23,29 +22,27 @@
         <p>Consult the <a href="http://www.hathitrust.org/data_api">HathiTrust Data API documentation</a> to see an example program to produce a signed Data API resource request.  Copy and edit it to use the keys you request here as a starting point to access the Data API using signed URLs.</p>
         <p>Contact <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> regarding enhanced access privileges.</p>
         
-        <center>
-          <form class="kgs_request_form" id="kgs_request" method="GET" action="/cgi/kgs/register">
-            <fieldset class="request">
-              <legend>Please submit the following information to request keys</legend>
-              <div class="request">
-                <label class="request" for="htname">name <span id="req">* </span></label>
-                <input id="htname" name="name" class="request required" minlength="2" />
-              </div>
-              <div class="request">
-                <label class="request" for="htorg">organization <span id="req">* </span></label>
-                <input id="htorg" name="org" class="request required" minlength="2" />
-              </div>
-              <div class="request">
-                <label class="request" for="htemail">e-mail <span id="req">* </span></label>
-                <input id="htemail" name="email" class="request required email" />
-              </div>
-              <div class="request">
-                <input class="submit" id="request" type="submit" value="Submit"/>
-              </div>
-            </fieldset>
+        <form class="kgs_request_form" id="kgs_request" method="get" action="/cgi/kgs/register">
+          <fieldset class="request">
+            <legend>Please submit the following information to request keys</legend>
+            <div class="request">
+              <label class="request" for="htname">name <span class="req">* </span></label>
+              <input id="htname" name="name" class="request required"/>
+            </div>
+            <div class="request">
+              <label class="request" for="htorg">organization <span class="req">* </span></label>
+              <input id="htorg" name="org" class="request required"/>
+            </div>
+            <div class="request">
+              <label class="request" for="htemail">e-mail <span class="req">* </span></label>
+              <input id="htemail" name="email" class="request required email" />
+            </div>
+            <div class="request">
+              <input class="submit" id="request" type="submit" value="Submit"/>
+            </div>
             <input type="hidden" name="debug" value="___DEBUG___"/>
-          </form>
-        </center>
+          </fieldset>
+        </form>
         
         <p><b>Instructions</b></p>
         <ul>
@@ -53,7 +50,7 @@
           <li>Follow the registration link in the email to view your keys.  Copy them to a secure location and treat them the same as passwords.</li>
           <li>The registration link is <i>time-sensitive</i> and <i>one-time-only</i>.  It expires after the first visit and absolutely after 24 hours.</li>    
           <li>There is a limit of five keys per email address. Keys granting enhanced access expire six months from the date of issue.</li>
-          <l1>Please contact us at <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> if you need assistance. </li>
+          <li>Please contact us at <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> if you need assistance. </li>
         </ul>
       </div>
     </div>

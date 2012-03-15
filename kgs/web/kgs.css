@@ -99,7 +99,7 @@ fieldset.request {
 
 }
 
-#req { 
+.req { 
   font-weight      : bold;
   color            : red;
   padding-right    : 1em;
