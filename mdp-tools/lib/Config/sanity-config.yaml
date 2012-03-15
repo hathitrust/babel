@@ -74,6 +74,11 @@ ls:
   - http://__URL_STAGE__.hathitrust.org/cgi/ls?q1=fungible;a=srchls;lmt=all;pn=2;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/ls?q1=dog;a=srchls;lmt=ft;__LOCAL__
 
+kgs:
+  - /htapps/__CMD_STAGE__/kgs/cgi/kgs action=request __LOCAL__
+
+  - http://__URL_STAGE__.hathitrust.org/cgi/kgs/request?__LOCAL__
+
 mb:
   - /htapps/__CMD_STAGE__/mb/cgi/mb __LOCAL__
   - /htapps/__CMD_STAGE__/mb/cgi/mb a=listis c=1276272457 __LOCAL__
