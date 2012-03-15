@@ -27,6 +27,9 @@ legend {
   text-align       : center;
 }
 
+.brandingLogo {
+}
+
 .brandingLogo span {
   color            : #6A6B6E;
   font-size        : 1.7em;
@@ -88,6 +91,7 @@ label.request {
 
 div.request {
   width            : 35em;
+  clear            : both;
 }
 
 fieldset.request {

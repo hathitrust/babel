@@ -2,7 +2,7 @@
   <div id="masthead">
     <div class="branding">
       <div class="brandingLogo">
-        <a href="http://hathitrust.org">
+        <a id="htlogo" href="http://hathitrust.org">
           <img src="/mdp-web/graphics/HathiTrustDL_logo.png" alt="Hathi Trust Logo" />
           <span></span></a>
       </div>
