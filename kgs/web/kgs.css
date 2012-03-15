@@ -156,8 +156,8 @@ div.confirm {
 }
 
 .key {
-  width            : 16em;
-  font-size        : 1.8em;
+  width            : 18em;
+  font-size        : 18pt;
   font-weight      : bold;
   font-family      : courier; 
 }
