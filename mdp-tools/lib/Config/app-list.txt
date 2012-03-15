@@ -21,3 +21,4 @@ qual
 feed
 ping
 register
+kgs
