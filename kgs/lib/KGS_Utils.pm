@@ -11,6 +11,8 @@ use Utils;
 use Context;
 use MdpConfig;
 
+use KGS_Db;
+
 # ---------------------------------------------------------------------
 
 =item get_endpoint
@@ -49,13 +51,39 @@ Description
 
 # ---------------------------------------------------------------------
 sub make_client_data {
-    my $q = shift;
+    my ($Q, $supported) = @_;
     
-    return {
-            'name'  => $q->param('name'),
-            'org'   => $q->param('org'),
-            'email' => $q->param('email'),
-           };
+    my $cd;
+    foreach my $p ($Q->param) {
+        if (grep(/^$p$/, @$supported)) {
+            $cd->{$p} = $Q->param($p);
+        }
+    }
+    
+    return $cd;
+}
+
+# ---------------------------------------------------------------------
+
+=item remake_client_data
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub remake_client_data {
+    my ($C, $Q, $dbh, $access_key, $optional) = @_;
+    
+    my $client_data = KGS_Db::get_client_data_by_access_key($C, $dbh, $access_key);
+    
+    foreach my $p ($Q->param) {
+        if (grep(/^$p$/, @$optional)) {
+            $client_data->{$p} = $Q->param($p);
+        }
+    }
+    
+    return $client_data;
 }
 
 
@@ -103,6 +131,26 @@ sub email_something {
     print $mailer($$body_ref);
     $mailer->close;
 }
+
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub pluralize {
+    my $s = shift;
+    my $ct = shift;
+    
+    if (($ct == 0) || ($ct > 1)) {
+        $s .= 's';
+    }
+    return $s;
+}
+
 
 1;
 

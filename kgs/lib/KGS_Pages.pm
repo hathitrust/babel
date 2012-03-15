@@ -26,8 +26,8 @@ use Utils;
 use Utils::Time;
 use MdpConfig;
 
-use Keys;
-use Signature;
+use HOAuth::Keys;
+use HOAuth::Signature;
 use KGS_Db;
 use KGS_Utils;
 use KGS_Validate;
@@ -42,7 +42,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub get_request_page {
-    my $C = shift;
+    my ($C, $Q) = @_;
     
     my $config = $C->get_object('MdpConfig');
 
@@ -50,6 +50,9 @@ sub get_request_page {
     my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
     __insert_chunk($C, $page_ref, 'header_chunk');
 
+    my $debug = $Q->param('debug');
+    $$page_ref =~ s,___DEBUG___,$debug,g;
+    
     return $page_ref;
 }
 
@@ -87,8 +90,9 @@ Description
 
 # ---------------------------------------------------------------------
 sub get_confirmation_page {
-    my ($C, $key_pair, $client_data) = @_;
+    my ($C, $dbh, $key_pair, $client_data) = @_;
     
+    my $s;
     my $config = $C->get_object('MdpConfig');
 
     my $filename = $config->get('confirm_html_file');
@@ -106,6 +110,17 @@ sub get_confirmation_page {
     $$page_ref =~ s,___MAX_ATTEMPTED_REGISTRATIONS___,$max_1,g;
     my $max_2 = KGS_Validate::MAX_ACTIVE_REGISTRATIONS;
     $$page_ref =~ s,___MAX_ACTIVE_REGISTRATIONS___,$max_2,g;
+
+    my $email = $client_data->{email};
+    my $registrations = KGS_Db::count_client_registrations($C, $dbh, $email, 0);
+    $$page_ref =~ s,___ACTUAL_REGRISTRATIONS___,$registrations,g;
+    $s = KGS_Utils::pluralize('request', $registrations);
+    $$page_ref =~ s,___UREQ___,$s,g;
+
+    my $confirmations = KGS_Db::count_client_registrations($C, $dbh, $email, 1);
+    $$page_ref =~ s,___ACTUAL_CONFIRMATIONS___,$confirmations,g;
+    $s = KGS_Utils::pluralize('request', $confirmations);
+    $$page_ref =~ s,___CREQ___,$s,g;
 
     return $page_ref;
 }
@@ -129,9 +144,9 @@ sub get_missing_params_page {
     __insert_chunk($C, $page_ref, 'missing_params_msg');
 
     my @msg_elems;
-    push(@msg_elems, 'name') if ($errors->{name});
-    push(@msg_elems, 'organization or location') if ($errors->{org});
-    push(@msg_elems, 'email address') if ($errors->{email});
+    foreach my $e (keys %$errors) {
+        push(@msg_elems, $e) if ($errors->{$e});
+    }
 
     my $msg = join(', ', @msg_elems);
     $$page_ref =~ s,___MISSING_PARAMS___,$msg,g;

@@ -66,6 +66,7 @@ sub count_client_registrations {
     return $num;
 }
 
+
 # ---------------------------------------------------------------------
 
 =item activate_client_access_key
@@ -135,12 +136,32 @@ Description
 sub get_client_data_by_access_key {
     my ($C, $dbh, $access_key) = @_;
 
-    my $statement = qq{SELECT secret_key, name, org, email FROM da_authentication WHERE access_key=?};
+    my $statement = qq{SELECT name, org, email FROM da_authentication WHERE access_key=?};
     LOG($C, qq{get_client_data_by_access_key: $statement, $access_key});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
     my $arr_ref_of_hashref = $sth->fetchall_arrayref({});
 
     return $arr_ref_of_hashref->[0];
+}
+
+# ---------------------------------------------------------------------
+
+=item get_secret_by_access_key
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_secret_by_access_key {
+    my ($C, $dbh, $access_key) = @_;
+
+    my $statement = qq{SELECT secret_key FROM da_authentication WHERE access_key=?};
+    LOG($C, qq{get_secret_by_access_key: $statement, $access_key});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+    my $secret_key = $sth->fetchrow_array();
+
+    return $secret_key;
 }
 
 

@@ -25,8 +25,8 @@ use Database;
 use Utils;
 use MdpConfig;
 
-use Keys;
-use Signature;
+use HOAuth::Keys;
+use HOAuth::Signature;
 use KGS_Db;
 use KGS_Utils;
 use KGS_Log;
@@ -45,23 +45,20 @@ Test validity of params server-side
 
 # ---------------------------------------------------------------------
 sub validate_form_params {
-    my ($C, $client_data) = @_;
-
-    my $name = $client_data->{name};
-    my $org = $client_data->{org};
-    my $email = $client_data->{email};
+    my ($C, $client_data, $required) = @_;
 
     my $valid = 1;
     my $errors;
-    $errors->{name} = 1 if (! $client_data->{name});
-    $errors->{org} = 1 if (! $client_data->{org});
-    $errors->{email} = 1 if (! $client_data->{email});
+    foreach my $p (@$required) {
+        $errors->{$p} = 1 if (! $client_data->{$p});
+    }
 
     if (scalar keys %$errors) {
         $valid = 0;
     }
 
-    LOG($C, qq{validate_form_params [valid=$valid]: name=$name org=$org email=$email});
+    my $missing = join(', ', keys %$errors);
+    LOG($C, qq{validate_form_params [valid=$valid]: missing: $missing});
     return ($valid, $errors);
 }
 
