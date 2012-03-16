@@ -25,16 +25,12 @@ Description
 sub get_endpoint {
     my $C = shift;
     
-    my $config = $C->get_object('MdpConfig');
-    my $endpoint;
-    
+    my $endpoint;    
     if ($ENV{TERM}) {
-        return $config->get('kgs_terminal_endpoint');
+        return 'localhost';
     }
     else {
-        my $uniq = defined($ENV{HT_DEV}) ? "$ENV{HT_DEV}-full." : "";
-        $endpoint = $config->get('kgs_web_endpoint');
-        $endpoint =~ s,___UNIQ___,$uniq,;
+        $endpoint = $ENV{HTTP_HOST};
     }
     
     return $endpoint;
