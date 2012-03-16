@@ -252,7 +252,7 @@ sub __email_confirmation_link {
     $$page_ref =~ s,___REQUESTOR_TO_ADDRESS___,$client_data->{email},g;
     
     my $timestamp = $cgi->param('oauth_timestamp');
-    my $expires = Utils::Time::iso_Time('datetime', $timestamp);
+    my $expires = Utils::Time::iso_Time('zdatetime', $timestamp);
     $$page_ref =~ s,___URL_EXPIRE_DATE___,$expires,g;
     
     my $max_1 = KGS_Validate::MAX_ATTEMPTED_REGISTRATIONS;

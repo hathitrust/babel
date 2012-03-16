@@ -198,7 +198,7 @@ sub get_stale_timestamp_page {
     __insert_chunk($C, $page_ref, 'stale_timestamp_msg');
     
     my $timestamp = $cgi->param('oauth_timestamp');
-    my $expired = Utils::Time::iso_Time('datetime', $timestamp);
+    my $expired = Utils::Time::iso_Time('zdatetime', $timestamp);
 
     $$page_ref =~ s,___URL_EXPIRE_DATE___,$expired,g;
 
