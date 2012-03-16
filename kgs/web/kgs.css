@@ -13,6 +13,10 @@ a {
   text-decoration  : none;
 }
 
+img { 
+  border           : 0px; 
+} 
+
 a:hover, a:focus, a:active {
   color            : #ef7a06;
   text-decoration  : underline;
