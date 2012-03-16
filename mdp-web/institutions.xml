@@ -353,6 +353,18 @@
   <!-- waiting -->
 
   <Inst
+      sdrinst="uconn"
+      template="https://___HOST___/Shibboleth.sso/uconn?target=___TARGET___"
+      authtype="shibboleth"
+      domain="uconn.edu"
+      enabled="0">University of Connecticut</Inst>
+  <Inst
+      sdrinst="fsu"
+      template="https://___HOST___/Shibboleth.sso/fsu?target=___TARGET___"
+      authtype="shibboleth"
+      domain="fsu.edu"
+      enabled="0">Florida State University</Inst>
+  <Inst
       sdrinst="harvard"
       template="https://___HOST___/Shibboleth.sso/harvard?target=___TARGET___"
       authtype="shibboleth"
