@@ -239,39 +239,15 @@ Description
 sub __email_confirmation_link {
     my ($C, $dbh, $cgi, $client_data, $confirm_link) = @_;
 
-    my $s;
     my $config = $C->get_object('MdpConfig');
     
+    my $to_addr = $client_data->{email};
     my $from_addr = $config->get('confirm_from_address');
     my $subject = $config->get('confirm_email_subj_line');
-    
-    my $template_name = $config->get('confirm_email_template');
-    my $page_ref = Utils::read_file($ENV{SDRROOT} . $template_name);
-    
-    $$page_ref =~ s,___CONFIRM_LINK___,$confirm_link,;
-    $$page_ref =~ s,___REQUESTOR_TO_ADDRESS___,$client_data->{email},g;
-    
-    my $timestamp = $cgi->param('oauth_timestamp');
-    my $expires = Utils::Time::iso_Time('zdatetime', $timestamp);
-    $$page_ref =~ s,___URL_EXPIRE_DATE___,$expires,g;
-    
-    my $max_1 = KGS_Validate::MAX_ATTEMPTED_REGISTRATIONS;
-    $$page_ref =~ s,___MAX_ATTEMPTED_REGISTRATIONS___,$max_1,g;
-    my $max_2 = KGS_Validate::MAX_ACTIVE_REGISTRATIONS;
-    $$page_ref =~ s,___MAX_ACTIVE_REGISTRATIONS___,$max_2,g;
-    
-    my $email = $client_data->{email};
-    my $registrations = KGS_Db::count_client_registrations($C, $dbh, $email, 0);
-    $$page_ref =~ s,___ACTUAL_REGRISTRATIONS___,$registrations,g;
-    $s = KGS_Utils::pluralize('request', $registrations);
-    $$page_ref =~ s,___UREQ___,$s,g;
 
-    my $confirmations = KGS_Db::count_client_registrations($C, $dbh, $email, 1);
-    $$page_ref =~ s,___ACTUAL_CONFIRMATIONS___,$confirmations,g;
-    $s = KGS_Utils::pluralize('request', $confirmations);
-    $$page_ref =~ s,___CREQ___,$s,g;
+    my $page_ref = KGS_Pages::get_email_page($C, $dbh, $cgi, $to_addr, $confirm_link);
 
-    KGS_Utils::email_something($C, $client_data->{email}, $from_addr, $subject, $page_ref);
+    KGS_Utils::email_something($C, $to_addr, $from_addr, $subject, $page_ref);
 }
 
 

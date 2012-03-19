@@ -52,9 +52,50 @@ sub get_request_page {
 
     my $debug = $Q->param('debug');
     $$page_ref =~ s,___DEBUG___,$debug,g;
+
+    ___subst_max_request_snippet($page_ref);
     
     return $page_ref;
 }
+
+# ---------------------------------------------------------------------
+
+=item get_email_page
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_email_page {
+    my ($C, $dbh, $cgi, $to_addr, $confirm_link) = @_;
+
+    my $s;    
+    my $template_name = $C->get_object('MdpConfig')->get('confirm_email_template');
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . $template_name);
+    
+    $$page_ref =~ s,___CONFIRM_LINK___,$confirm_link,;
+    $$page_ref =~ s,___REQUESTOR_TO_ADDRESS___,$to_addr,g;
+    
+    my $timestamp = $cgi->param('oauth_timestamp');
+    my $expires = Utils::Time::iso_Time('zdatetime', $timestamp);
+    $$page_ref =~ s,___URL_EXPIRE_DATE___,$expires,g;
+    
+    ___subst_max_request_snippet($page_ref);
+        
+    my $registrations = KGS_Db::count_client_registrations($C, $dbh, $to_addr, 0);
+    $$page_ref =~ s,___ACTUAL_REGRISTRATIONS___,$registrations,g;
+    $s = KGS_Utils::pluralize('request', $registrations);
+    $$page_ref =~ s,___UREQ___,$s,g;
+
+    my $confirmations = KGS_Db::count_client_registrations($C, $dbh, $to_addr, 1);
+    $$page_ref =~ s,___ACTUAL_CONFIRMATIONS___,$confirmations,g;
+    $s = KGS_Utils::pluralize('request', $confirmations);
+    $$page_ref =~ s,___CREQ___,$s,g;
+
+    return $page_ref;
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -309,14 +350,32 @@ sub __get_request_fail_page {
 
 # ---------------------------------------------------------------------
 
-=item __insert_hathitrust_email
+=item ___subst_max_request_snippet
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __insert_hathitrust_email {
+sub ___subst_max_request_snippet {
+    my $page_ref = shift;
+    
+    my $max_1 = KGS_Validate::MAX_ATTEMPTED_REGISTRATIONS;
+    $$page_ref =~ s,___MAX_ATTEMPTED_REGISTRATIONS___,$max_1,g;
+    my $max_2 = KGS_Validate::MAX_ACTIVE_REGISTRATIONS;
+    $$page_ref =~ s,___MAX_ACTIVE_REGISTRATIONS___,$max_2,g;
+}
+
+# ---------------------------------------------------------------------
+
+=item ___insert_hathitrust_email
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ___insert_hathitrust_email {
     my $C = shift;
     my $page_ref = shift;
     
@@ -349,7 +408,7 @@ sub __insert_chunk {
 
     $$page_ref =~ s,$pattern,$$chunk_ref,;
 
-    __insert_hathitrust_email($C, $page_ref);
+    ___insert_hathitrust_email($C, $page_ref);
 }
 
 1;

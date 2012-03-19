@@ -1,5 +1,5 @@
 
-We have received a request to send a confirmation email for HathiTrust Data API keys to ___REQUESTOR_TO_ADDRESS___.   If you did not initiate this request please disregard this this email with our apologies. Otherwise, follow the link below to view your HathiTrust Data API keys.
+We have received a request to send ___REQUESTOR_TO_ADDRESS___ this confirmation email for HathiTrust Data API keys.   If you did not initiate this request please disregard this this email with our apologies. Otherwise, follow the link below to view your HathiTrust Data API keys.
 
 ___CONFIRM_LINK___
 
