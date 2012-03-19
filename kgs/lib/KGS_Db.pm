@@ -22,6 +22,7 @@ use strict;
 use DBI;
 
 use Utils;
+use Utils::Time;
 use DbUtils;
 
 use KGS_Log;
@@ -79,9 +80,11 @@ Description
 sub activate_client_access_key {
     my ($C, $dbh, $access_key) = @_;
     
-    my $statement = qq{UPDATE da_authentication SET activated=? WHERE access_key=?};
-    LOG($C, qq{activate_client_access_key: $statement, 1, $access_key});
-    my $sth = DbUtils::prep_n_execute($dbh, $statement, 1, $access_key);
+    my $last_access = Utils::Time::iso_Time();
+
+    my $statement = qq{UPDATE da_authentication SET activated=?, last_access=? WHERE access_key=?};
+    LOG($C, qq{activate_client_access_key: $statement, 1, $last_access, $access_key});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, 1, $last_access, $access_key);
 }  
 
 # ---------------------------------------------------------------------
