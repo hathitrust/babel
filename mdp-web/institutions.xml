@@ -349,6 +349,12 @@
       authtype="shibboleth"
       domain="ucsb.edu"
       enabled="1">University of California, Santa Barbara</Inst>
+  <Inst
+      sdrinst="udel"
+      template="https://___HOST___/Shibboleth.sso/udel?target=___TARGET___"
+      authtype="shibboleth"
+      domain="udel.edu"
+      enabled="1">University of Delaware</Inst>
 
   <!-- waiting -->
 
@@ -382,12 +388,6 @@
       authtype="shibboleth"
       domain="nccu.edu"
       enabled="0">North Carolina Central University</Inst>
-  <Inst
-      sdrinst="udel"
-      template="https://___HOST___/Shibboleth.sso/udel?target=___TARGET___"
-      authtype="shibboleth"
-      domain="udel.edu"
-      enabled="0">University of Delaware</Inst>
   <Inst
       sdrinst="loc"
       template="https://___HOST___/Shibboleth.sso/loc?target=___TARGET___"
