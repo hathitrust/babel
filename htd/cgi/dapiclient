@@ -6,48 +6,44 @@ dapiclient
 
 =head1 DESCRIPTION
 
-This program is an example perl client.  It can serve as a starting
-point to make requests to a sample server that shares the same secret
-key (YOUR_CONSUMER_SECRET). This may be especially useful if you are
-using other languages and HMAC_SHA1 OAuth libraries.
+This is an example perl 2-legged oauth client that shares the secret
+key "PUBLIC_OAUTH_CONSUMER_SECRET" with dapiserver.  It is intended to
+aid development of a fully function Data API client in Perl or other
+languages that implement HMAC_SHA1 OAuth libraries.
 
 =head1 SYNOPSIS
 
 For example:
 
-Browser:
-
-http://yourhost/dapiclient
-
-Command line:
-
-$ /usr/local/bin/dapiclient
+http://yourhost/path_to_client/dapiclient
 
 =head1 OUTPUT
 
-On success:
+ [CLIENT] sent this URL to server:
+ 
+   http://pfarber-full.babel.hathitrust.org/cgi/htd/dapiserver?hello=world&oauth_consumer_key=PUBLIC_OAUTH_CONSUMER_KEY&oauth_nonce=47b8186be439110b4f98&oauth_signature=2cQYAM%2BYek%2BiOexZKMObM%2B3B2w4%3D&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1332184191&oauth_version=1.0
+ 
+ [CLIENT] received this HTTP response from server:
+   200 OK
 
-Server responds:
+ [CLIENT] received this content response from server:
 
-Content-Type: 200 OK
-hello
-world
-oauth_consumer_key
-YOUR_CONSUMER_KEY
-oauth_nonce
-85273b701de309600f48
-oauth_signature
-7upuCRDXL7fClZ9AD3/FVuXOZrM=
-oauth_signature_method
-HMAC-SHA1
-oauth_timestamp
-1331153859
-oauth_version
-1.0
+    [SERVER] received client request. echoing request parameters:
 
-On failure:
-
-
+    hello
+      world    
+    oauth_consumer_key
+      PUBLIC_OAUTH_CONSUMER_KEY
+    oauth_nonce
+      47b8186be439110b4f98
+    oauth_signature
+      2cQYAM+Yek+iOexZKMObM+3B2w4=
+    oauth_signature_method
+      HMAC-SHA1
+    oauth_timestamp
+      1332184191
+    oauth_version
+      1.0
 
 =cut
 
@@ -55,52 +51,40 @@ use strict;
 use warnings;
 
 use CGI;
-use Data::Dumper;
 use OAuth::Lite::Consumer;
 use OAuth::Lite::AuthMethod;
 
 
-my $consumer_key = 'YOUR_CONSUMER_KEY';
-my $consumer_secret = 'YOUR_CONSUMER_SECRET';
+my $access_key = 'PUBLIC_OAUTH_CONSUMER_KEY';
+my $secret_key = 'PUBLIC_OAUTH_CONSUMER_SECRET';
 
-my $request_url = 'http://pfarber-full.babel.hathitrust.org/cgi/htd/dapiserver';
+my $request_url = 'http://babel.hathitrust.org/cgi/htd/dapiserver';
 
 my $consumer = OAuth::Lite::Consumer->new
   (
-   consumer_key    => $consumer_key,
-   consumer_secret => $consumer_secret,
+   consumer_key    => $access_key,
+   consumer_secret => $secret_key,
    auth_method     => OAuth::Lite::AuthMethod::URL_QUERY,
   );
-
-my $token = new OAuth::Lite::Token;
-$token->token('YOUR_CONSUMER_KEY');
-$token->secret('YOUR_CONSUMER_SECRET');
-
-my $query = $consumer->gen_auth_query('GET', $request_url, $token);
-my $signed_url = $request_url . '?' . $query;
 
 my $response = $consumer->request
   (
    method  => 'GET',
    url     => $request_url,
    params  => {
-               hello => 'world'
-              }
+               'hello' => 'world',
+              },
   );
 
-my $cgi = new CGI;
-print $cgi->header();
+print CGI::header();
 
-print "<p><b>Client requests:</b></p>\n";
-print "$signed_url\n";
+print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
+print $consumer->oauth_request->uri;
 
-
-print "<p><b>Server responds:\n</b></p>";
-
+print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
+print $response->status_line;
 if ($response->is_success) {
-    print $response->status_line . $response->decoded_content;
-} else {
-    print $response->status_line;
+    print "<br/><b>[CLIENT] received this content response from server:</b><blockquote>" . $response->decoded_content . "</blockquote>";
 }
 
 exit 0;
