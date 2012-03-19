@@ -20,6 +20,7 @@ Coding example
 
 use Context;
 use Utils;
+use Utils::Time;
 use MdpConfig;
 
 use base qw(Exporter);
@@ -49,7 +50,7 @@ sub LOG {
 
     my $logfile_path = $logdir . '/' . $logfile;
     
-    $s = time . " $ENV{REMOTE_ADDR} " . $s; 
+    $s = Utils::Time::iso_Time('time') . " $ENV{REMOTE_ADDR} " . $s; 
     if (open(KLOG, ">>:encoding(UTF-8)", $logfile_path)) {
         KLOG->autoflush(1);
         print KLOG qq{$s\n};
