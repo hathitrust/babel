@@ -52,6 +52,11 @@ legend {
   font-size        : 1.2em;
 }
 
+.subheading {
+  font-weight      : bold;
+  font-size        : 1em;
+}
+
 #KGSMasterContainer {
   width            : 680px;
   font-family      : Arial,Verdana,Helvetica,sans-serif;

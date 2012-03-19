@@ -49,6 +49,7 @@ sub get_request_page {
     my $filename = $config->get('request_html_file');
     my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
     __insert_chunk($C, $page_ref, 'header_chunk');
+    __insert_chunk($C, $page_ref, 'ga_chunk');
 
     my $debug = $Q->param('debug');
     $$page_ref =~ s,___DEBUG___,$debug,g;
@@ -114,6 +115,7 @@ sub get_request_reply_page {
     my $filename = $config->get('request_reply_html_file');
     my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
     __insert_chunk($C, $page_ref, 'header_chunk');
+    __insert_chunk($C, $page_ref, 'ga_chunk');
 
     my $email = $client_data->{email};
     $$page_ref =~ s,___REQUESTOR_TO_ADDRESS___,$email,g;
@@ -139,6 +141,7 @@ sub get_confirmation_page {
     my $filename = $config->get('confirm_html_file');
     my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
     __insert_chunk($C, $page_ref, 'header_chunk');
+    __insert_chunk($C, $page_ref, 'ga_chunk');
 
     my ($access_key, $secret_key) = ($key_pair->token, $key_pair->secret);
 
@@ -344,6 +347,7 @@ sub __get_request_fail_page {
     my $filename = $config->get('request_fail_html_file');
     my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
     __insert_chunk($C, $page_ref, 'header_chunk');
+    __insert_chunk($C, $page_ref, 'ga_chunk');
 
     return $page_ref;
 }
