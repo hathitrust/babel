@@ -363,10 +363,10 @@ sub handle_SEARCH_RESULTS_PI
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
     my $well_formed_ary = ($wff_hashref->{'primary'} );
     my $processed_aryref=$wff_hashref->{'processed_query_string'};
-    
+    my $processed_query_string = clean_for_xml($processed_aryref->[1]);
     my $well_formed = ($well_formed_ary->[1]);
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');
-    $output .= wrap_string_in_tag($processed_aryref->[1], 'ProcessedQueryString');
+    $output .= wrap_string_in_tag($processed_query_string, 'ProcessedQueryString');
     #XXX tbw add unbalenced parens here foobar
     my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[1];
     $output.= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
@@ -916,6 +916,8 @@ sub handle_ADVANCED_SEARCH_PI
         
         my $well_formed = $well_formed_aryref->[$i]; 
         my $processed_query = $processed_aryref->[$i];
+
+        $processed_query = clean_for_xml($processed_query);
         my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[$i];
         
 
