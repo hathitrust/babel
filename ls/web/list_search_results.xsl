@@ -250,7 +250,7 @@
       </span>
       <!-- this should be all/so/or ft cound depending -->
       <xsl:call-template name="getTotalCount"/>
-      <xsl:text> items found for </xsl:text>
+      <xsl:text> items found for</xsl:text>
       
 
       <xsl:choose>
@@ -342,18 +342,24 @@
         </a>
       </xsl:if>
 
-      <xsl:text></xsl:text>
-      <xsl:value-of select="OP"/><xsl:text> </xsl:text>
+      <xsl:variable name="myOP">
+        <xsl:value-of select="OP"/>
+      </xsl:variable>
+        <xsl:value-of select="$myOP"/>
+      <xsl:if test=" string($myOP)">
+        <xsl:text> </xsl:text>        
+      </xsl:if>
+
       <!--XXX   figure out what the well formed stuff from basic template is above and put it here
            Also need to make the punctuation only happen if there is an anyall
            -->
       
       <!--span class="anyAll"-->
-      <em>
+
         <xsl:value-of select="AnyAll"/>
         <!-- only display the semicolon if AnyAll is not empty-->
         <xsl:text>: </xsl:text>
-      </em>
+
       <!--/span-->
       <span>
         <xsl:value-of select="Query"/>
