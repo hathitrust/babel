@@ -1263,14 +1263,7 @@ sub get_processed_user_query_string {
     $user_query_string =~ s/[!:?\[\]\\^{~}]/ /g;
     $user_query_string =~ s/\|\|/ /g;
     $user_query_string =~ s/\&\&/ /g;
-           #XXX  temporarily remove single ampersand
-           # Solr ICUTokenizer will remove it anyway and current code that displays processed
-           # query string assumes &amp; and blows up with unescaped &
-           # Need to work through code and determine just where and when to change &amp; to & and
-           # vice versa
-           $user_query_string =~ s/\&/ /g;
-
-
+           
     # Remove leading and trailing whitespace
     Utils::trim_spaces(\$user_query_string);
 
@@ -1331,7 +1324,11 @@ sub get_processed_user_query_string {
     }
 
     $self->set_processed_query_string($user_query_string,$query_num);
-    DEBUG('parse', sub {return qq{Final processed user query: $user_query_string qnumber: $query_num}});
+    my $debug_user_query_string = $user_query_string;
+    DEBUG('parse', sub {
+              Utils::map_chars_to_cers(\$debug_user_query_string) if Debug::DUtils::under_server();
+              return qq{Final processed user query: $debug_user_query_string qnumber: $query_num}
+          });
 
     return $user_query_string;
 }
