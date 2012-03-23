@@ -88,9 +88,14 @@ $mdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues);
 # they want access.  They are not forced to login.
 
 if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'allow' ) {
-    # We reached this point either because (1) authed ssd user of ic
-    # or pd materials or (2) authed user of OPB ic or (3) authed user
-    # of pd or (4) unauthed user of pd
+    # We reached this point because 
+    # (1) authed SSD user of ic on US soil or of pd where pd for non-US affiliates does not include pdus
+    # or
+    # (2) authed normal user of OPB ic on US soil
+    # or 
+    # (3) authed normal user of pd where pd for non-US affiliates does not include pdus
+    # or 
+    # (4) any unauthed user of pd where pdus access must be on US soil
 
     # As of Fri Mar 18 14:32:00 2011, JPW authorized ssd cgi to
     # provide access to full book OCR for (3) in addition to
