@@ -253,7 +253,9 @@ sub Solr_search_item {
         my $snip = $config->get('solr_hl_snippets');
         my $frag = $config->get('solr_hl_fragsize');
 
-        my $query = qq{q=ocr:$q_str&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag&$solr_q_op_param};
+        # Must wrap query string with outermost parens so that +-
+        # operators are handled as ocr:(-foo +bar) -ocr:foo +ocr:bar
+        my $query = qq{q=ocr:($q_str)&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag&$solr_q_op_param};
 
         $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
