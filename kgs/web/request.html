@@ -19,9 +19,9 @@
       ___HEADER_CHUNK___
       <div id="KGScontainer">
         <h1 class="heading">HathiTrust Data API key request</h1>
-        <p>The HathiTrust Data API provides access to data and metadata resources. Data API URLs to request data resources, such as page images and OCR files, must include an access key and be signed with a secret key. An access key and signature are <b>not</b> required to request <i>metadata</i> resources. </p>
+        <p>The HathiTrust Data API provides access to data and metadata resources. URLs for restricted data or higher data rates must include an access key and be signed with a secret key. An access key and signature are <b>not</b> required to request <i>metadata</i> resources or <i>unrestricted</i> data resources. </p>
         <p>Consult the <a href="http://www.hathitrust.org/data_api">HathiTrust Data API documentation</a> to see an example program to produce a signed Data API resource request.  Copy and edit it to use the keys you request here as a starting point to access the Data API using signed URLs.</p>
-        <p>Enhanced access to data or metadata resources (for example, faster download rates to facilitate development of applications), may be requested. Those interested should contact <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> with a brief but detailed description of the intended use.</p>
+        <p>Access to restricted data resources may be requested. Some restricted data use cases we envision can be found in the <a target="top" href="http://docs.google.com/document/d/1DJcOtQh17340Kt5Bg9BhUAjPOP55YZxUAAJdGd227QI/edit?authkey=CPaT59oB#heading=h.fq8064ovwgaz">HathiTrust Data API security document</a>.  Those interested should contact <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> with a brief but detailed description of the intended use. </p>
         
         <form class="kgs_request_form" id="kgs_request" method="get" action="/cgi/kgs/register">
           <fieldset class="request">
@@ -51,7 +51,6 @@
           <li>Follow the registration link in the email to view your keys.  Copy them to a secure location and treat them the same as passwords.</li>
           <li>The registration link is <b>time-sensitive</b> and <b>one-time-only</b>.  It expires after the first visit and absolutely after 24 hours.</li>    
           <li>A given email address is limited to ___MAX_ATTEMPTED_REGISTRATIONS___ unconfirmed requests and up to ___MAX_ACTIVE_REGISTRATIONS___ confirmed requests.</li>
-          <li>Keys granting enhanced access expire six months from the date of issue.</li>
           <li>Please contact us at <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> if you need assistance. </li>
         </ul>
       </div>

@@ -155,7 +155,8 @@ sub RegisterHandler {
     
     my $confirm_link = __get_confirm_link($C);
     my $request_method = REQUEST_METHOD;
-    my $signed_url = HOAuth::Signature::S_get_signed_request_URL($confirm_link, $key_pair, $request_method, $client_data);
+    my $signed_url = 
+      HOAuth::Signature::S_get_signed_request_URL($confirm_link, $access_key, $secret_key, $request_method, $client_data);
     
     __email_confirmation_link($C, $dbh, $Q, $client_data, $signed_url);
     LOG($C, qq{__email_confirmation_link: link=$signed_url email=} . $client_data->{email});
@@ -195,7 +196,7 @@ sub ConfirmHandler {
     my $signed_url = $Q->self_url;
     LOG($C, qq{ConfirmHandler: url=$signed_url});
     
-    ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $key_pair, REQUEST_METHOD, $client_data);
+    ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
     LOG($C, qq{S_validate [valid=$valid] errors=$errors});
     if (! $valid) {
         return KGS_Pages::get_invalid_signature_page($C, $signed_url, $errors);
