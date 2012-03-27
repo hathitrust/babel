@@ -1603,7 +1603,6 @@
       <xsl:when test="$gFinalView='missing'">
         <div id="mdpTextMissingPage">
           <div class="mdpTMPhead">PAGE NOT AVAILABLE</div>
-          <div class="mdpTMPtext">This page is missing in the original.  Use the arrows and links to continue to available pages.</div>
           <div class="mdpTMPtext"><a target="_blank" href="http://www.hathitrust.org/help_digital_library#PageNotAvailable">Learn more.</a></div>
         </div>
       </xsl:when>
