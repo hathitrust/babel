@@ -25,6 +25,7 @@ use Utils;
 use Debug::DUtils;
 use Collection;
 use base qw(Search::Query);
+use URI::Escape;
 
 
 # ---------------------------------------------------------------------
@@ -108,7 +109,10 @@ sub get_Solr_query_string
 
     # Massage the raw query string from the user
     my $user_query_string = $self->get_processed_user_query_string();
-
+    #XXXtbw prepare query string to function as part of an http request to Solr i.e. not xml and url escaped
+    Utils::remap_cers_to_chars(\$user_query_string);
+    $user_query_string = uri_escape_utf8( $user_query_string );
+    
     # The common Solr query parameters
     my $USER_Q = qq{q=$user_query_string};
     my $FL = qq{&fl=id,score};
@@ -134,8 +138,13 @@ sub get_Solr_query_string
 
     my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT;
 
-    DEBUG('all,query', qq{Solr query="$solr_query_string"});
 
+if (DEBUG('query')||DEBUG('all')) {
+    my $debug_solr_query_string = $solr_query_string;
+    Utils::map_chars_to_cers(\$debug_solr_query_string, [q{"}, q{'}]) if Debug::DUtils::under_server();
+    DEBUG('query', qq{Solr query="$debug_solr_query_string"});
+        
+    }
     return $solr_query_string;
 }
 
