@@ -57,8 +57,8 @@ sub validate_form_params {
         $valid = 0;
     }
 
-    my $missing = join(', ', keys %$errors);
-    LOG($C, qq{validate_form_params [valid=$valid]: missing: $missing});
+    my $missing = join(',', keys %$errors);
+    LOG($C, qq{validate_form_params [valid=$valid]: missing=$missing});
     return ($valid, $errors);
 }
 
@@ -77,7 +77,7 @@ sub validate_max_registration_attempts {
     my $valid = 0;
     my $email = $client_data->{email};
 
-    my $reg_ct = KGS_Db::count_client_registrations($C, $dbh, $email, 0);
+    my $reg_ct = KGS_Db::count_client_registrations($dbh, $email, 0);
     if ($reg_ct < MAX_ATTEMPTED_REGISTRATIONS) {
         $valid = 1;
     }
@@ -101,7 +101,7 @@ sub validate_max_active_registrations {
     my $valid = 0;
     my $email = $client_data->{email};
 
-    my $reg_ct = KGS_Db::count_client_registrations($C, $dbh, $email, 1);
+    my $reg_ct = KGS_Db::count_client_registrations($dbh, $email, 1);
     if ($reg_ct < MAX_ACTIVE_REGISTRATIONS) {
         $valid = 1;
     }
@@ -151,7 +151,7 @@ sub validate_confirmation_replay {
     my ($C, $dbh, $key_pair) = @_;
     
     my $access_key = $key_pair->token;
-    my $valid = (! KGS_Db::access_key_is_active($C, $dbh, $access_key));
+    my $valid = (! KGS_Db::access_key_is_active($dbh, $access_key));
 
     LOG($C, qq{validate_confirmation_replay [valid=$valid]: access_key=$access_key});
     return $valid;

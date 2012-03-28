@@ -151,7 +151,7 @@ sub RegisterHandler {
     my $access_key = $key_pair->token;
     my $secret_key = $key_pair->secret;
     
-    KGS_Db::insert_client_data($C, $dbh, $client_data, $access_key, $secret_key);
+    KGS_Db::insert_client_data($dbh, $client_data, $access_key, $secret_key);
     
     my $confirm_link = __get_confirm_link($C);
     my $request_method = REQUEST_METHOD;
@@ -189,12 +189,12 @@ sub ConfirmHandler {
     my $access_key = $Q->param('oauth_consumer_key');
     
     my $client_data = KGS_Utils::remake_client_data($C, $Q, $dbh, $access_key, $self->get_client_opt_params);
-    my $secret_key = KGS_Db::get_secret_by_access_key($C, $dbh, $access_key);
+    my $secret_key = KGS_Db::get_secret_by_access_key($dbh, $access_key);
     my $key_pair = HOAuth::Keys::make_key_pair_from($access_key, $secret_key);
     
     # validate signature before we can test the other parameters for validity
     my $signed_url = $Q->self_url;
-    LOG($C, qq{ConfirmHandler: url=$signed_url});
+    LOG($C, qq{ConfirmHandler: signed url=$signed_url});
     
     ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
     LOG($C, qq{S_validate [valid=$valid] errors=$errors});
@@ -223,7 +223,7 @@ sub ConfirmHandler {
     #
     # Good to go
     #
-    KGS_Db::activate_client_access_key($C, $dbh, $access_key);
+    KGS_Db::activate_client_access_key($dbh, $access_key);
     
     return KGS_Pages::get_confirmation_page($C, $dbh, $key_pair, $client_data);
 }

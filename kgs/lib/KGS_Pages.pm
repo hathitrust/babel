@@ -84,12 +84,12 @@ sub get_email_page {
     
     ___subst_max_request_snippet($page_ref);
         
-    my $registrations = KGS_Db::count_client_registrations($C, $dbh, $to_addr, 0);
+    my $registrations = KGS_Db::count_client_registrations($dbh, $to_addr, 0);
     $$page_ref =~ s,___ACTUAL_REGRISTRATIONS___,$registrations,g;
     $s = KGS_Utils::pluralize('request', $registrations);
     $$page_ref =~ s,___UREQ___,$s,g;
 
-    my $confirmations = KGS_Db::count_client_registrations($C, $dbh, $to_addr, 1);
+    my $confirmations = KGS_Db::count_client_registrations($dbh, $to_addr, 1);
     $$page_ref =~ s,___ACTUAL_CONFIRMATIONS___,$confirmations,g;
     $s = KGS_Utils::pluralize('request', $confirmations);
     $$page_ref =~ s,___CREQ___,$s,g;
@@ -156,12 +156,12 @@ sub get_confirmation_page {
     $$page_ref =~ s,___MAX_ACTIVE_REGISTRATIONS___,$max_2,g;
 
     my $email = $client_data->{email};
-    my $registrations = KGS_Db::count_client_registrations($C, $dbh, $email, 0);
+    my $registrations = KGS_Db::count_client_registrations($dbh, $email, 0);
     $$page_ref =~ s,___ACTUAL_REGRISTRATIONS___,$registrations,g;
     $s = KGS_Utils::pluralize('request', $registrations);
     $$page_ref =~ s,___UREQ___,$s,g;
 
-    my $confirmations = KGS_Db::count_client_registrations($C, $dbh, $email, 1);
+    my $confirmations = KGS_Db::count_client_registrations($dbh, $email, 1);
     $$page_ref =~ s,___ACTUAL_CONFIRMATIONS___,$confirmations,g;
     $s = KGS_Utils::pluralize('request', $confirmations);
     $$page_ref =~ s,___CREQ___,$s,g;

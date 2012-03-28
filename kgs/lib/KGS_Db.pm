@@ -23,6 +23,7 @@ use DBI;
 
 use Utils;
 use Utils::Time;
+use Debug::DUtils;
 use DbUtils;
 
 use KGS_Log;
@@ -37,12 +38,12 @@ Description
 
 # ---------------------------------------------------------------------
 sub insert_client_data {
-    my ($C, $dbh, $client_data, $access_key, $secret_key) = @_;
+    my ($dbh, $client_data, $access_key, $secret_key) = @_;
 
     my ($name, $org, $email) = ($client_data->{name}, $client_data->{org}, $client_data->{email});
     
     my $statement = qq{INSERT INTO da_authentication SET access_key=?, secret_key=?, name=?, org=?, email=?};
-    LOG($C, qq{insert_client_data: $statement : $access_key, SECRET_KEY, $name, $org, $email});
+    DEBUG('db', qq{insert_client_data: $statement : $access_key, SECRET_KEY, $name, $org, $email});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, 
                                       $access_key, $secret_key, $name, $org, $email);
 }
@@ -57,10 +58,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub count_client_registrations {
-    my ($C, $dbh, $email, $activated) = @_;
+    my ($dbh, $email, $activated) = @_;
 
     my $statement = qq{SELECT count(*) FROM da_authentication WHERE email=? AND activated=?};
-    LOG($C, qq{count_client_registrations: $statement, $email, $activated});
+    DEBUG('db', qq{count_client_registrations: $statement, $email, $activated});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, $email, $activated);
     my $num = $sth->fetchrow_array || 0;
 
@@ -78,12 +79,12 @@ Description
 
 # ---------------------------------------------------------------------
 sub activate_client_access_key {
-    my ($C, $dbh, $access_key) = @_;
+    my ($dbh, $access_key) = @_;
     
     my $last_access = Utils::Time::iso_Time();
 
     my $statement = qq{UPDATE da_authentication SET activated=?, last_access=? WHERE access_key=?};
-    LOG($C, qq{activate_client_access_key: $statement, 1, $last_access, $access_key});
+    DEBUG('db', qq{activate_client_access_key: $statement, 1, $last_access, $access_key});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, 1, $last_access, $access_key);
 }  
 
@@ -97,10 +98,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub access_key_is_active {
-    my ($C, $dbh, $access_key) = @_;
+    my ($dbh, $access_key) = @_;
     
     my $statement = qq{SELECT activated FROM da_authentication WHERE access_key=?};
-    LOG($C, qq{access_key_is_active: $statement, $access_key});
+    DEBUG('db', qq{access_key_is_active: $statement, $access_key});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
     my $active = $sth->fetchrow_array || 0;
 
@@ -117,10 +118,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub client_access_key_exists {
-    my ($C, $dbh, $access_key) = @_;
+    my ($dbh, $access_key) = @_;
     
     my $statement = qq{SELECT count(*) FROM da_authentication WHERE access_key=?};
-    LOG($C, qq{client_access_key_exists: $statement, $access_key});
+    DEBUG('db', qq{client_access_key_exists: $statement, $access_key});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
     my $exists = $sth->fetchrow_array || 0;
 
@@ -137,10 +138,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub get_client_data_by_access_key {
-    my ($C, $dbh, $access_key) = @_;
+    my ($dbh, $access_key) = @_;
 
     my $statement = qq{SELECT name, org, email FROM da_authentication WHERE access_key=?};
-    LOG($C, qq{get_client_data_by_access_key: $statement, $access_key});
+    DEBUG('db', qq{get_client_data_by_access_key: $statement, $access_key});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
     my $arr_ref_of_hashref = $sth->fetchall_arrayref({});
 
@@ -157,10 +158,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub get_secret_by_access_key {
-    my ($C, $dbh, $access_key) = @_;
+    my ($dbh, $access_key) = @_;
 
     my $statement = qq{SELECT secret_key FROM da_authentication WHERE access_key=?};
-    LOG($C, qq{get_secret_by_access_key: $statement, $access_key});
+    DEBUG('db', qq{get_secret_by_access_key: $statement, $access_key});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
     my $secret_key = $sth->fetchrow_array();
 

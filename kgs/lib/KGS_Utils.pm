@@ -71,7 +71,7 @@ Description
 sub remake_client_data {
     my ($C, $Q, $dbh, $access_key, $optional) = @_;
     
-    my $client_data = KGS_Db::get_client_data_by_access_key($C, $dbh, $access_key);
+    my $client_data = KGS_Db::get_client_data_by_access_key($dbh, $access_key);
     
     foreach my $p ($Q->param) {
         if (grep(/^$p$/, @$optional)) {
