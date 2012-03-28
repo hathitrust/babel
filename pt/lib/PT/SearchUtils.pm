@@ -20,6 +20,8 @@ Coding example
 =cut
 
 use Time::HiRes;
+use URI::Escape;
+
 
 use Utils;
 use Utils::Time;
@@ -231,6 +233,11 @@ sub Solr_search_item {
         $parsed_terms_arr_ref = __parse_search_terms($C, $processed_q1);
         $q_str = join(' ', @$parsed_terms_arr_ref);
     }
+    
+    #Convert user query from xml escaped string to regular characters and then url encode it so we can
+    # send it to Solr in an http request
+    Utils::remap_cers_to_chars(\$q_str);
+    $q_str= uri_escape_utf8( $q_str );
 
     # Solr paging is zero-relative
     my $start = max($cgi->param('start') - 1, 0);
@@ -393,14 +400,18 @@ sub __parse_search_terms {
     foreach my $qTerm (@quotedTerms) {
         push(@$parsed_terms_arr_ref, qq{"$qTerm"});
     }
-
-    DEBUG('query,all',
+    
+    if (DEBUG('query')||DEBUG('all')) 
+    {
+        my $s = join(' ', @$parsed_terms_arr_ref);
+        Utils::map_chars_to_cers(\$s, [q{"}, q{'}]) if Debug::DUtils::under_server();;
+        DEBUG('query,all',
           sub
           {
-              my $s = join(' ', @$parsed_terms_arr_ref);
               return qq{<h3>CGI after parsing into separate terms: $s</h3>};
           });
-
+    };
+    
     return $parsed_terms_arr_ref;
 }
 
