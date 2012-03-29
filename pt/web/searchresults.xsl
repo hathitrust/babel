@@ -264,28 +264,13 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-- -->
-  <xsl:template name="href_OP">
-    <xsl:param name="op_op"/>
-    <xsl:text>/cgi/pt/search?</xsl:text>
-    <xsl:for-each select="//CurrentCgi/Param">
-      <xsl:if test="@name!='ptsop'">
-        <xsl:value-of select="@name"/>=<xsl:value-of select="."/><xsl:value-of select="';'"/>
-      </xsl:if>
-    </xsl:for-each>
-    <xsl:text>ptsop=</xsl:text><xsl:value-of select="$op_op"/>
-  </xsl:template>
   
   <!-- -->
   <xsl:template name="msgRepeatSearchWithOR">      
     <div class="searchSubMessage">
       <xsl:element name="a">
         <xsl:attribute name="href">
-          <xsl:call-template name="href_OP">
-            <xsl:with-param name="op_op">
-              <xsl:value-of select="'OR'"/>
-            </xsl:with-param>
-          </xsl:call-template>
+          <xsl:value-of select="/MBooksTop/MdpApp/RepeatSearchLink"/>
         </xsl:attribute>
         Broaden your search to pages having just <span class="mdpEmp">one or more</span> of your terms.
       </xsl:element>
@@ -297,11 +282,7 @@
     <div class="searchSubMessage">
       <xsl:element name="a">
         <xsl:attribute name="href">
-          <xsl:call-template name="href_OP">
-            <xsl:with-param name="op_op">
-              <xsl:value-of select="'AND'"/>
-            </xsl:with-param>
-          </xsl:call-template>
+          <xsl:value-of select="/MBooksTop/MdpApp/RepeatSearchLink"/>
         </xsl:attribute>
         Narrow your search to just pages having <span class="mdpEmp">all</span> of your terms.
       </xsl:element>

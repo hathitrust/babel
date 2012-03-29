@@ -65,6 +65,8 @@
       <SearchResultsLabel><?SEARCH_RESULTS_LABEL?></SearchResultsLabel>
     </SearchForm>
 
+    <RepeatSearchLink><?REPEAT_SEARCH_LINK?></RepeatSearchLink>
+
     <CollectionList><?COLLECTION_LIST?></CollectionList>
     <FeatureList><?FEATURE_LIST?></FeatureList>
     <HasPageNumbers><?HAS_PAGE_NUMBERS?></HasPageNumbers>

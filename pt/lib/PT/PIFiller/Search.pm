@@ -28,6 +28,7 @@ use PT::PIFiller::Common;
 use PT::PageTurnerUtils;
 
 use SLIP_Utils::Common;
+use URI::Escape;
 
 
 # ---------------------------  Utilities  -----------------------------
@@ -542,8 +543,46 @@ sub handle_HAS_PAGE_NUMBERS_PI
     my $has = $C->get_object('MdpItem')->HasPageNumbers();
     return $has ? 'true' : 'false';
 }
+# ---------------------------------------------------------------------
+
+=item handle_REPEAT_SEARCH_LINK    : PI_handler(REPEAT_SEARCH_LINK)
+
+Handler to create the link to broaden or narrow your search.
+Replaces the URL construction in searchresults.xsl templates msgRepeatSearchWithAND and OR
+Needed because we need to convert CERS back to chars in the url
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_REPEAT_SEARCH_LINK
+    : PI_handler(REPEAT_SEARCH_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $cgi = $C->get_object('CGI');
+    my $tempCgi = new CGI($cgi);
+    $tempCgi->delete('op');
+    
+    # default operator is AND so to broaden a search we use OR
+    $tempCgi->param('ptsop','OR');
+    
+    if ($cgi->param('ptsop') eq "OR")
+    {
+        $tempCgi->param('ptsop','AND');
+    }
+    my $q = $cgi->param('q1');
+    Utils::remap_cers_to_chars(\$q);
+    $tempCgi->delete('q1');
+    $tempCgi->param('q1',$q);
+    
+  #  $tempCgi->param('q1',$escaped_q1);    
+    
+    my    $href = $tempCgi->self_url();
+    
+    return $href;
+}
 
 
+# ---------------------------------------------------------------------
 
 1;
 
