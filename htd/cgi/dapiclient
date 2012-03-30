@@ -78,7 +78,7 @@ my $response = $consumer->request
 
 print CGI::header();
 
-print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
+print "<p><b>[CLIENT] sent this URL to server using secret=$secret_key :</b><br/>";
 print $consumer->oauth_request->uri;
 
 print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";

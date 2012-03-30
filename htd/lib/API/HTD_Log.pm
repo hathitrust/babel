@@ -1,12 +1,12 @@
-package API::DbIF;
+package API::HTD_Log;
 
 =head1 NAME
 
-API::DbIF;
+KGS_Log
 
 =head1 DESCRIPTION
 
-This package contains database DBI utilities
+This package implements simple logging.
 
 =head1 SYNOPSIS
 
@@ -18,57 +18,42 @@ Coding example
 
 =cut
 
-use strict;
-use DBI;
+use Context;
+use Utils;
+use Utils::Time;
 
-
-# ---------------------------------------------------------------------
-
-=item databaseConnect
-
-Description:
-
-=cut
-
-# ---------------------------------------------------------------------
-sub databaseConnect {
-    my ($db_name, $db_user, $db_passwd, $db_server) = @_;
-
-    my $dsn = qq{DBI:mysql:$db_name:$db_server};
-    my $dbh = DBI->connect(
-                           $dsn,
-                           $db_user,
-                           $db_passwd,
-                           {
-                            PrintError => 1,
-                            RaiseError => 0,
-                            AutoCommit => 1,
-                           }
-                          );
-    return $dbh;
-}
-
+use base qw(Exporter);
+our @EXPORT = qw( hLOG );
 
 # ---------------------------------------------------------------------
 
-=item prepAndExecute
+=item hLOG
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub prepAndExecute {
-    my ($dbh, $statement, @params) = @_;
+sub hLOG {
+    my $s = shift;
 
-    my $count;
-    my $sth = $dbh->prepare($statement);
-    if ($sth) {
-        $count = $sth->execute(@params);
+    my $date = Utils::Time::iso_Time('date');
+
+    my $logdir = $ENV{'SDRROOT'} . '/logs/htd';
+    my $logfile = "$date.log";
+    
+    Utils::mkdir_path($logdir);
+    my $logfile_path = $logdir . '/' . $logfile;
+    
+    $s = Utils::Time::iso_Time('time') . " $ENV{REMOTE_ADDR} " . $s; 
+    if (open(HLOG, ">>:encoding(UTF-8)", $logfile_path)) {
+        HLOG->autoflush(1);
+        print HLOG qq{$s\n};
+        close(HLOG);
+        chmod(0666, $logfile_path) if (-o $logfile_path);
     }
-
-    return $sth;
 }
+
 
 1;
 
@@ -80,7 +65,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009-12 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

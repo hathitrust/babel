@@ -37,7 +37,9 @@ use strict;
 use base qw(API::HTD::App);
 use Access::Statements;
 
-use constant API_VERSION => 1; 
+use constant API_VERSION => 1;
+
+use API::HTD_Log;
 
 # =====================================================================
 # =====================================================================
@@ -75,7 +77,7 @@ sub validateQueryParams {
     foreach my $p (@params) {
         if (! grep(/^$p$/, @$validParamsRef)) {
             # Invalid param: set HTTP status line and bail
-            $self->__setErrorResponseCode('400U');
+            $self->__errorDescription("invalid query parameter $p");
             return 0;
         }
     }
@@ -83,7 +85,7 @@ sub validateQueryParams {
 
     if ($Q->param('alt') && ($Q->param('alt') ne 'json')) {
         # Invalid param: set HTTP status line and bail
-        $self->__setErrorResponseCode('400U');
+        $self->__errorDescription("alt parameter value not json");
         return 0;
     }
     # POSSIBLY NOTREACHED
@@ -158,15 +160,15 @@ Expects a hashref. Stores requested fields.
 sub __setAccessUseFields {
     my $self = shift;
     my $fieldHashRef = shift;
-    
+
     my $ro = $self->__getRightsObject();
     my $dbh = $self->__get_DBH();
-    
+
     my ($attr, $source) = (
                            $ro->getRightsFieldVal('attr'),
                            $ro->getRightsFieldVal('source')
                           );
-    my $ref_to_arr_of_hashref = 
+    my $ref_to_arr_of_hashref =
       Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $source, $fieldHashRef);
     my $hashref = $ref_to_arr_of_hashref->[0];
 
@@ -195,6 +197,38 @@ sub __makeParamsRef {
      'bc'       => $barcode,
      'seq'      => $seq,
     };
+}
+
+# ---------------------------------------------------------------------
+
+=item __getIdParamsRef
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getIdParamsRef {
+    my $self = shift;
+    my $P_Ref = shift;
+
+    return join('.', ($P_Ref->{'ns'}, $P_Ref->{'bc'}));
+}
+
+# ---------------------------------------------------------------------
+
+=item __getParamsRefStr
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getParamsRefStr {
+    my $self = shift;
+    my $P_Ref = shift;
+
+    return join(", ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref);
 }
 
 
@@ -361,10 +395,12 @@ sub GET_structure {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
+    hLOG(qq{GET_structure: } . $self->__getParamsRefStr($P_Ref));
+
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('structure', $P_Ref, $parser);
     if (! defined($doc)) {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
         return undef;
     }
     # POSSIBLY NOTREACHED
@@ -385,7 +421,7 @@ sub GET_structure {
             );
     }
     else {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
     }
 
     return $representationRef;
@@ -405,10 +441,12 @@ sub GET_meta {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
+    hLOG(qq{GET_meta: } . $self->__getParamsRefStr($P_Ref));
+
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('meta', $P_Ref, $parser);
     if (! defined($doc)) {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
         return undef;
     }
     # POSSIBLY NOTREACHED
@@ -433,7 +471,7 @@ sub GET_meta {
             );
     }
     else {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
     }
 
     return $representationRef;
@@ -453,10 +491,12 @@ sub GET_pagemeta {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
+    hLOG(qq{GET_pagemeta: } . $self->__getParamsRefStr($P_Ref));
+
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('pagemeta', $P_Ref, $parser);
     if (! defined($doc)) {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
         return undef;
     }
     # POSSIBLY NOTREACHED
@@ -482,7 +522,7 @@ sub GET_pagemeta {
             );
     }
     else {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
     }
 
     return $representationRef;
@@ -502,6 +542,8 @@ sub GET_aggregate {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
+    hLOG(qq{GET_aggregate: } . $self->__getParamsRefStr($P_Ref));
+
     my $representation;
 
     my $dataRef = $self->__readPairtreeFile($P_Ref, 'zip', 'binary');
@@ -513,7 +555,7 @@ sub GET_aggregate {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('aggregate', 'zip');
         my $msg = $self->__getHeaderAccessUseMsg();
-        
+
         my %header =
             (
              -Status => $statusLine,
@@ -525,7 +567,7 @@ sub GET_aggregate {
 
     }
     else {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
     }
 
     return $representation;
@@ -545,6 +587,8 @@ sub GET_pageocr {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
+    hLOG(qq{GET_pageocr: } . $self->__getParamsRefStr($P_Ref));
+
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'ocr');
     if (defined($representationRef)) {
@@ -560,7 +604,7 @@ sub GET_pageocr {
         $self->header(\%header);
     }
     else {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
     }
 
     return $representationRef;
@@ -580,6 +624,8 @@ sub GET_pagecoordocr {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
+    hLOG(qq{GET_pagecoordocr: } . $self->__getParamsRefStr($P_Ref));
+
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'coordOCR');
     if (defined($representationRef)) {
@@ -596,7 +642,7 @@ sub GET_pagecoordocr {
         $self->header(\%header);
     }
     else {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
     }
 
     return $representationRef;
@@ -615,14 +661,16 @@ sub GET_pageimage {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
+    hLOG(qq{GET_pageimage: } . $self->__getParamsRefStr($P_Ref));
+
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'image');
     if (defined($representationRef))
     {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageimage', $extension);
-        my $msg = $self->__getHeaderAccessUseMsg();        
-        my %header = 
+        my $msg = $self->__getHeaderAccessUseMsg();
+        my %header =
             (
              -Status => $statusLine,
              -Content_type => $mimetype,
@@ -632,7 +680,7 @@ sub GET_pageimage {
         $self->header(\%header);
     }
     else {
-        $self->__setErrorResponseCode('404');
+        $self->__setErrorResponseCode(404);
     }
 
     return $representationRef;
@@ -650,7 +698,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-12 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

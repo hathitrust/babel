@@ -35,7 +35,7 @@ unless ($util->verify_signature
 }
 
 print $cgi->header(-Status => '200 OK');
-print '<div style="color: blue;"><b>[SERVER] received client request. echoing request parameters:</b>';
+print qq{<div style="color: blue;"><b>[SERVER] received client request. Using secret=$secret_key<br/>echoing request parameters:</b>};
 print $cgi->as_string();
 print '</div>';
 
