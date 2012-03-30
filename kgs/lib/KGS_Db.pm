@@ -73,7 +73,7 @@ sub count_client_registrations {
 
 =item activate_client_access_key
 
-Description
+Also set default authorization to "open", i.e. free|limited, i.e. 1
 
 =cut
 
@@ -81,11 +81,16 @@ Description
 sub activate_client_access_key {
     my ($dbh, $access_key) = @_;
     
-    my $last_access = Utils::Time::iso_Time();
+    my ($statement, $sth);
 
-    my $statement = qq{UPDATE da_authentication SET activated=?, last_access=? WHERE access_key=?};
-    DEBUG('db', qq{activate_client_access_key: $statement, 1, $last_access, $access_key});
-    my $sth = DbUtils::prep_n_execute($dbh, $statement, 1, $last_access, $access_key);
+    $statement = qq{UPDATE da_authentication SET activated=? WHERE access_key=?};
+    DEBUG('db', qq{activate_client_access_key: $statement, 1, $access_key});
+    $sth = DbUtils::prep_n_execute($dbh, $statement, 1, $access_key);
+
+    # default authorization
+    $statement = qq{INSERT INTO da_authorization SET access_key=?, code=?};
+    DEBUG('db', qq{activate_client_access_key: $statement, $access_key, 1});
+    $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key, 1);
 }  
 
 # ---------------------------------------------------------------------
