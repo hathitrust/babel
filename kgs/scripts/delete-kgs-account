@@ -1,0 +1,113 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use CGI;
+
+use Context;
+use Database;
+use Utils;
+use DbUtils;
+use MdpConfig;
+
+use KGS_Log;
+# make sure cache files/dirs are group writable
+umask 0002;
+
+# MDP stuff
+my $C = new Context;
+
+# configuration
+my $config = new MdpConfig(
+                           Utils::get_uber_config_path('kgs'),
+                           $ENV{SDRROOT} . "/kgs/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/kgs/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $config);
+
+# Database connection
+my $db = new Database($config);
+my $dbh = $db->get_DBH();
+
+
+# ---------------------------------------------------------------------
+
+=item __get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_usage {
+    my $s = qq{Usage: delete-kgs-account [ -e email-address | -a access_key ]\n};
+    return $s;
+}
+
+our ($opt_e, $opt_a);
+
+my $ops = getopts('e:a:');
+
+my ($EMAIL_ADDR, $ACCESS_KEY);
+
+if (defined $opt_e) {
+    $EMAIL_ADDR = $opt_e;
+}
+elsif (defined $opt_a) {
+    $ACCESS_KEY = $opt_a;
+}
+else {
+    print __get_usage();
+    exit 0;
+}
+
+my $access_key;
+my ($statement, $sth, $s);
+
+if ($EMAIL_ADDR) {
+    $statement = qq{SELECT access_key FROM da_authentication WHERE email=?};
+    $sth = DbUtils::prep_n_execute($dbh, $statement, $EMAIL_ADDR);
+    $access_key = $sth->fetchrow_array() || 'not found';
+    $s = qq{Deleting account by email="$EMAIL_ADDR" to find access_key="$access_key"}
+}
+else {
+    $access_key = $ACCESS_KEY;
+    $s = qq{Deleting account by access_key="$access_key"};
+}
+
+print "$s\n";
+LOG($C, $s);
+
+print "Clean da_authentication\n";
+$statement = qq{DELETE FROM da_authentication WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+
+print "Clean da_authorization\n";
+$statement = qq{DELETE FROM da_authorization WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+
+print "Clean da_requests\n";
+$statement = qq{DELETE FROM da_requests WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+
+print "Clean da_statistics\n";
+$statement = qq{DELETE FROM da_statistics WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+
+exit 0;
+
+
+
+
+    
+    
+
+
+
+
