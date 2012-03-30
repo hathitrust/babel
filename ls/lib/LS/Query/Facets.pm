@@ -636,12 +636,23 @@ sub make_query_clause{
     }
     #XXX this is in middle of a for i loop!!!
     my $QUERY = $self->process_query($q,$i,$anyall);
-        DEBUG('query_q',
+    Utils::remap_cers_to_chars(\$QUERY);
+    
+    DEBUG('query_q',
           sub
           {   my $s = $QUERY;
-              Utils::map_chars_to_cers(\$s) if Debug::DUtils::under_server();
+              Utils::map_chars_to_cers(\$s, [q{"}, q{'}], 1) if Debug::DUtils::under_server();
               return qq{Solr query q $i ="$s"}
           });
+    
+    $QUERY = uri_escape_utf8( $QUERY );
+    
+    DEBUG('query_uri',
+          sub
+          {   my $s = $QUERY;
+              return qq{Solr query q $i ="$s"}
+          });
+    
 
 
     my $config = $self->get_facet_config;    
@@ -696,11 +707,7 @@ sub process_query
     my $q = shift;    
     my $i = shift;
     my $anyall = shift;
-    #XXX temporary fix until we refactor Search::Query in mdp-lib so it behaves properly
-    # currently it deals with balencing of quotes and eliminates 
-    Utils::remap_cers_to_chars(\$q);
 
-    
     my $processed_q =$self->get_processed_user_query_string($q,$i);
     # if query was not valid change the anyall operator to all
     if (! $self->well_formed->[$i])
@@ -764,9 +771,13 @@ sub process_query
    
     #XXX temporary fix until we refactor Search::Query::_get_processed_user_query_string
     # remove any string consisting only of ascii punctuation
+    # Why is this here?  
+    # Turns out we need this because of the dismax bug
+    # http://bibwild.wordpress.com/2011/06/15/more-dismax-gotchas-varying-field-analysis-and-mm/
     $processed_q = $self->remove_tokens_with_only_punctuation($processed_q);
     
     my $boolean_q= $processed_q;
+    #XXX What is the code/subroutine/note below about??
     # only use below if dismax is not working right
 #    my $boolean_q = $self->__get_boolean_query($processed_q)   ;
     
@@ -837,16 +848,23 @@ sub __convert_to_Boolean_OR
 
 
 
-# ---------------------------------------------------------------------w
+# ---------------------------------------------------------------------
+#  
+# ---------------------------------------------------------------------
 sub remove_tokens_with_only_punctuation
 {
     my $self = shift;
     my $q = shift;
+    Utils::remap_cers_to_chars(\$q);
     my $pq;
     
     my @tokens = split(/\s+/,$q);
     my @out=();
-        
+    
+    #XXX We remove any punctuation including a lone ampersand because of the dismax bug
+    # http://bibwild.wordpress.com/2011/06/15/more-dismax-gotchas-varying-field-analysis-and-mm/
+    # There may be another reason, so if dismax bug is fixed need to verify that we don't need this!
+
     my $regex=qr/
                  [\-
                  \`
@@ -905,6 +923,9 @@ sub remove_tokens_with_only_punctuation
         }
     }
     $pq = join (' ',@out);
+    
+    Utils::map_chars_to_cers(\$pq, [q{"}, q{'}], 1);
+        
     return $pq;
 }
 
@@ -1209,6 +1230,7 @@ sub get_processed_user_query_string {
         $user_query_string = $self->get_query_string();
     }
 
+    #XXX this is inside of filter_lucene_chars in Query.pm in slip-lib.  Consider redoing?
 
     # Replace sequences of 2 or more double-quotes (") with a single
     # double-quote
@@ -1227,45 +1249,10 @@ sub get_processed_user_query_string {
         $self->set_unbalanced_quotes(0,$query_num);
     }
     
+
+
+    $user_query_string = $self->filter_lucene_chars($user_query_string);
     
-
-
-# stemming
-# stemming    # Asterisk (*) must follow wordchars and be followed by whitespace
-# stemming    # or EOL.  In other words, a free standing, leading or embedded *
-# stemming    # is ignored
-# stemming    while ($user_query_string =~ s,(\w)\*+(\w),$1 $2,){}
-# stemming    while ($user_query_string =~ s,(^|\s)\*+,$1,){}
-# stemming
-# stemming    # If any asterisk (*) remains, we have right stemming. Solr right
-# stemming    # stemmed query strings have to be lowercase
-# stemming    if ($user_query_string =~ m,\*,) {
-# stemming        $user_query_string = lc($user_query_string);
-# stemming    }
-# stemming
-
-    # Temporarily disable stemming
-    $user_query_string =~ s,\*, ,g;
-
-    # Preserve only word-leading plus and minus (+) (-)
-    while ($user_query_string =~ s,(^|\W)[-+]+(\W|$),$1 $2,){}
-
-    # Note: Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
-
-    # Note: See "stemming note" above. Except for + - * " ( ) special
-    # chars are removed to prevent query parsing errors.  Other
-    # punctuation, (e.g. ' . , @) is more likely to appear in normal
-    # text) is left in place, (e.g. 1,000) because the
-    # PunctFilterFactory will tokenize the punctuated term as a single
-    # token whereas if we remove the punctuation, the query parser
-    # will see 2 or more operands and perform a boolean AND which is
-    # slow.
-    $user_query_string =~ s/[!:?\[\]\\^{~}]/ /g;
-    $user_query_string =~ s/\|\|/ /g;
-    $user_query_string =~ s/\&\&/ /g;
-           
-    # Remove leading and trailing whitespace
-    Utils::trim_spaces(\$user_query_string);
 
     # At this point double quotes are balanced. Lower-case AND|OR
     # embedded in phrases and replace phrase-embedded parentheses with
@@ -1296,8 +1283,9 @@ sub get_processed_user_query_string {
     my @tokens = Search::Query::parse_preprocess($user_query_string);
 
 
-
+# XXX check Phil/s code, do we need to add parens?
     # If user is not attempting a boolean query skip the parse here
+#    if (grep(/^(AND|OR|\(|\))$/, @tokens)) {
     my $valid = 1;
     if (grep(/^(AND|OR)$/, @tokens)) {
         # Attempt to parse the query as a boolean expression.
@@ -1340,6 +1328,58 @@ sub get_final_token {
     }
     return $s;
 }
+
+# ---------------------------------------------------------------------
+sub filter_lucene_chars{
+    my $self = shift;
+    my $user_query_string = shift;
+
+    Utils::remap_cers_to_chars(\$user_query_string);
+    
+    # stemming
+    # stemming    # Asterisk (*) must follow wordchars and be followed by whitespace
+    # stemming    # or EOL.  In other words, a free standing, leading or embedded *
+    # stemming    # is ignored
+    # stemming    while ($user_query_string =~ s,(\w)\*+(\w),$1 $2,){}
+    # stemming    while ($user_query_string =~ s,(^|\s)\*+,$1,){}
+    # stemming
+    # stemming    # If any asterisk (*) remains, we have right stemming. Solr right
+    # stemming    # stemmed query strings have to be lowercase
+    # stemming    if ($user_query_string =~ m,\*,) {
+    # stemming        $user_query_string = lc($user_query_string);
+    # stemming    }
+    # stemming
+    
+    # Temporarily disable stemming
+    $user_query_string =~ s,\*, ,g;
+    
+    # Preserve only word-leading plus and minus (+) (-)
+    while ($user_query_string =~ s,(^|\W)[-+]+(\W|$),$1 $2,){}
+    
+    # Note: Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+
+    # Note: See "stemming note" above. Except for + - * " ( ) special
+    # chars are removed to prevent query parsing errors.  Other
+    # punctuation, (e.g. ' . , @) is more likely to appear in normal
+    # text) is left in place, (e.g. 1,000) because the
+    # PunctFilterFactory will tokenize the punctuated term as a single
+    # token whereas if we remove the punctuation, the query parser
+    # will see 2 or more operands and perform a boolean AND which is
+    # slow.
+    $user_query_string =~ s/[!:?\[\]\\^{~}]/ /g;
+    $user_query_string =~ s/\|\|/ /g;
+    $user_query_string =~ s/\&\&/ /g;
+           
+    # Remove leading and trailing whitespace
+    Utils::trim_spaces(\$user_query_string);
+
+    # convert the xml special characters  < > & back to character entities
+    Utils::map_chars_to_cers(\$user_query_string, [q{"}, q{'}], 1);
+
+    return $user_query_string;
+    
+}
+
 
 # ---------------------------------------------------------------------
 sub set_unbalanced_quotes
