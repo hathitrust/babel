@@ -228,7 +228,7 @@ sub __getParamsRefStr {
     my $self = shift;
     my $P_Ref = shift;
 
-    return join(", ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref);
+    return join(" ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref);
 }
 
 

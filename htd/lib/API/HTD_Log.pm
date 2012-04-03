@@ -23,7 +23,23 @@ use Utils;
 use Utils::Time;
 
 use base qw(Exporter);
-our @EXPORT = qw( hLOG );
+our @EXPORT = qw( hLOG hLOG_DEBUG);
+
+# ---------------------------------------------------------------------
+
+=item hLOG_DEBUG
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub hLOG_DEBUG {
+    my $s = shift;
+    
+    return if (! defined $ENV{HT_DEV});
+    hLOG('DEBUG: ' . $s);
+}
 
 # ---------------------------------------------------------------------
 

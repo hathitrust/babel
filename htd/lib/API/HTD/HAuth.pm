@@ -25,7 +25,7 @@ Coding example
 use strict;
 use warnings;
 
-use base 'Class::ErrorHandler';
+use base qw(Class::ErrorHandler);
 
 use CGI;
 use OAuth::Lite::Problems qw(:all);
@@ -36,14 +36,29 @@ use HOAuth::Signature;
 use API::HTD::AuthDb;
 use API::HTD_Log;
 
+# So we can drive unit testing
+$ENV{FORCE_NONCE_USED} = 0;
+$ENV{FORCE_NONCE_UNUSED} = 0;
+
+$ENV{FORCE_VALID_TIMESTAMP} = 0;
+$ENV{FORCE_INVALID_TIMESTAMP} = 0;
+
+$ENV{FORCE_VALID_SIGNATURE} = 0;
+$ENV{FORCE_INVALID_SIGNATURE} = 0;
+
+$ENV{FORCE_AUTHROIZATION_SUCCESS} = 0;
+$ENV{FORCE_AUTHROIZATION_FAILURE} = 0;
+
+$ENV{FORCE_SUCCESS} = 0;
+$ENV{ALLOW_DEVELOPMENT_OVERRIDE} = 0;
+
+my $DEBUG;
 
 use constant REQUEST_METHOD => 'GET';
-# seconds in 5 minutes. To force an expired timestamp in development
-# use flags below.
-use constant TIMESTAMP_WINDOW => ((defined $ENV{HT_DEV}) ? 302400 : 5*60);
+# Number of production seconds in 5 minutes. To force an expired
+# timestamp in development use flags below.
+use constant TIMESTAMP_WINDOW => (defined $ENV{HT_DEV} ? 302400 : 5*60);
 
-my $FORCE_TIMESTAMP_EXPIRATION = 0;
-my $FORCE_VALID_SIGNATURE = 0;
 
 sub new {
     my $class = shift;
@@ -67,9 +82,15 @@ Initialize object.
 # ---------------------------------------------------------------------
 sub _initialize {
     my $self = shift;
-    my ($Q, $dbh) = @_;
+    my $args = shift;
+
+    return if $ENV{FORCE_SUCCESS};
     
-    API::HTD::AuthDb::update_access($dbh, $Q->param('oauth_consumer_key'));
+    my $oauth_consumer_key = $args->{_query}->param('oauth_consumer_key');
+    API::HTD::AuthDb::update_access($args->{_dbh}, $oauth_consumer_key)
+        if (defined $oauth_consumer_key);
+
+    $DEBUG = $args->{_debug};
 }
 
 # ---------------------------------------------------------------------
@@ -92,9 +113,30 @@ sub H_auth_valid {
     return $self->{_authentication_valid};
 }
 
+
 # ---------------------------------------------------------------------
 
-=item __check_nonce_and_timestamp
+=item H_allowDevelopmentAuth
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub H_allowDevelopmentAuth {
+    my $self = shift;
+
+    my $dev = ($ENV{ALLOW_DEVELOPMENT_OVERRIDE} && (defined $ENV{HT_DEV})) ? 1 : 0;
+
+    if ($DEBUG eq 'auth') { print qq{dev authnz overridden=$dev<br/>\n} }
+    return $dev;
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item __check_timestamp
 
 Reject request if:
 
@@ -102,43 +144,60 @@ Reject request if:
 future. This allows us to expire old timestamps and to support some
 measure of non-synchronization between us and our clients.
 
-2) nonce repeats within this window to defeat replay attacks.
-
 =cut
 
 # ---------------------------------------------------------------------
-sub __check_nonce_and_timestamp {
+sub __check_timestamp {
     my $self = shift;
-    my ($dbh, $access_key, $nonce, $timestamp) = @_;
-
-    if ($FORCE_TIMESTAMP_EXPIRATION) {
-        $timestamp = 0;
-    }
+    my ($dbh, $access_key, $timestamp) = @_;
 
     my $delta = time() - $timestamp;
     if (abs($delta) > TIMESTAMP_WINDOW) {
         # wayward clock (past or future) or stale timestamp
-        hLOG(qq{H_authenticate: timestamp refused oauth_timestamp=$timestamp oauth_nonce=$nonce oauth_consumer_key=$access_key});
-        return $self->error(TIMESTAMP_REFUSED);
+        return
+          hLOG(qq{__check_timestamp: timestamp refused oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
+            $self->error(TIMESTAMP_REFUSED)
+              unless ($ENV{FORCE_VALID_TIMESTAMP});
     }
     else {
-        my $invalid = API::HTD::AuthDb::invalid_timestamp_for_access_key($dbh, $access_key, $timestamp);
-        if ($invalid) {
-            hLOG(qq{H_authenticate: invalid timestamp nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
-            return $self->error(TIMESTAMP_REFUSED);
-        }
-
-        my $used = API::HTD::AuthDb::nonce_used_by_access_key($dbh, $access_key, $nonce, $timestamp, TIMESTAMP_WINDOW);
-        if ($used) {
-            hLOG(qq{H_authenticate: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
-            return $self->error(NONCE_USED);
+        my $valid = API::HTD::AuthDb::valid_timestamp_for_access_key($dbh, $access_key, $timestamp);
+        if (! $valid) {
+            return
+              hLOG(qq{H_authenticate: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
+                $self->error(TIMESTAMP_REFUSED)
+                  unless ($ENV{FORCE_VALID_TIMESTAMP});
         }
     }
 
-    # record
-    API::HTD::AuthDb::insert_nonce_timestamp($dbh, $access_key, $nonce, $timestamp);
+    return ($ENV{FORCE_INVALID_TIMESTAMP} ? 0 : 1);
+}
 
-    return 1;
+
+# ---------------------------------------------------------------------
+
+=item __check_nonce
+
+Reject request if:
+
+nonce repeats within a time window delta over past or
+future to defeat replay attacks.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __check_nonce {
+    my $self = shift;
+    my ($dbh, $access_key, $nonce, $timestamp) = @_;
+
+    my $used = API::HTD::AuthDb::nonce_used_by_access_key($dbh, $access_key, $nonce, $timestamp, TIMESTAMP_WINDOW);
+    if ($used) {
+        return
+          hLOG(qq{H_authenticate: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
+            $self->error(NONCE_USED)
+              unless ($ENV{FORCE_NONCE_UNUSED});
+    }
+
+    return ($ENV{FORCE_NONCE_USED} ? 0 : 1);
 }
 
 # ---------------------------------------------------------------------
@@ -154,22 +213,18 @@ sub __check_signature {
     my $self = shift;
     my ($Q, $dbh, $access_key, $client_data) = @_;
 
-    return 1 if ($FORCE_VALID_SIGNATURE);
-
     my $signed_url = $Q->url({
                               -path_info=>1,
                               -query=>1
                              });
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
-    my ($valid, $errors) =
-      HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
+    my ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
     if (! $valid) {
-        my $s = qq{};
-        hLOG(qq{H_authenticate: $errors url=$signed_url});
-        return $self->error($errors);
+        my $s = qq{H_authenticate: $errors url=$signed_url};
+        return hLOG($s), $self->error($errors) unless ($ENV{FORCE_VALID_SIGNATURE});
     }
 
-    return 1;
+    return ($ENV{FORCE_INVALID_SIGNATURE} ? 0 : 1);
 }
 
 
@@ -187,7 +242,7 @@ sub H_request_is_oauth {
     my $Q = shift;
 
     my $access_key = $Q->param('oauth_consumer_key') || 0;
-    return (defined $access_key);
+    return $access_key;
 }
 
 
@@ -204,22 +259,29 @@ sub H_authenticate {
     my $self = shift;
     my ($Q, $dbh, $client_data) = @_;
 
+    return 1 if ($ENV{FORCE_SUCCESS});
+    
     my $authenticated = 0;
 
     my $access_key = $Q->param('oauth_consumer_key') || 0;
     my $nonce = $Q->param('oauth_nonce') || 0;
     my $timestamp = $Q->param('oauth_timestamp') || 0;
 
-    # replay attempt?
-    if ($self->__check_nonce_and_timestamp($dbh, $access_key, $nonce, $timestamp)) {
-        # signature ok?
-        if ($self->__check_signature($Q, $dbh, $access_key, $client_data)) {
-            $authenticated = 1;
+    # stale timestamp?
+    if ($self->__check_timestamp($dbh, $access_key, $timestamp)) {
+        # replay attempt?
+        if ($self->__check_nonce($dbh, $access_key, $nonce, $timestamp)) {
+            # signature ok?
+            if ($self->__check_signature($Q, $dbh, $access_key, $client_data)) {
+                $authenticated = 1;
+            }
         }
     }
 
     $self->H_auth_valid($authenticated);
 
+    # record
+    API::HTD::AuthDb::insert_nonce_timestamp($dbh, $access_key, $nonce, $timestamp);
     # track
     API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 1) if (! $authenticated);
 
@@ -278,15 +340,15 @@ use constant RATE_MASK            => 8;
 my %authorization_map =
   (
    'open'            => OPEN_MASK,
+   'limited'         => OPEN_MASK,
    'open_restricted' => OPEN_RESTRICTED_MASK,
    'restricted'      => RESTRICTED_MASK,
   );
 
 sub __access_is_authorized {
-    my $self = shift;
-    my ($code, $acces_type) = @_;
+    my ($code, $access_type) = @_;
 
-    my $mask = $authorization_map{$acces_type};
+    my $mask = $authorization_map{$access_type};
 
     return ($code & $mask) > 0;
 }
@@ -304,6 +366,8 @@ sub H_authorized {
     my $self = shift;
     my ($Q, $dbh, $resource, $access_type) = @_;
 
+    return 1 if ($ENV{FORCE_SUCCESS});
+
     if (! $self->H_auth_valid) {
         return $self->error('cannot authorize. not authenticated');
     }
@@ -311,7 +375,7 @@ sub H_authorized {
     if ($access_type =~ m,restricted,) {
         # First this has to be HTTPS ...
         if ($ENV{SERVER_PORT} ne '443') {
-            return $self->error('SSL required');
+            return $self->error('SSL required') unless ($ENV{FORCE_AUTHROIZATION_SUCCESS});
         }
     }
 
@@ -319,11 +383,11 @@ sub H_authorized {
     my $access_key = $Q->param('oauth_consumer_key');
     my $code = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
     if (__access_is_authorized($code, $access_type)) {
-        return 1;
+        return 1 unless ($ENV{FORCE_AUTHROIZATION_FAILURE});
     }
     else {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        return $self->error("$access_key not authorized for resource=$resource");
+        return $self->error("$access_key not authorized. resource=$resource type=$access_type") unless ($ENV{FORCE_AUTHROIZATION_SUCCESS});
     }
 }
 

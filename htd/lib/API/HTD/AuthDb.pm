@@ -23,9 +23,8 @@ use warnings;
 
 use DBI;
 
-use Debug::DUtils;
-
 use API::DbIF;
+use API::HTD_Log;
 
 # ---------------------------------------------------------------------
 
@@ -42,6 +41,7 @@ sub get_secret_by_active_access_key {
     my $statement = qq{SELECT secret_key FROM da_authentication WHERE access_key=? AND activated=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, 1);
     my $secret_key = $sth->fetchrow_array();
+    hLOG_DEBUG(qq{get_secret_by_active_access_key: $statement: $access_key 1 ::: SECRET_KEY});
 
     return $secret_key;
 }
@@ -67,7 +67,7 @@ sub nonce_used_by_access_key {
     my $timestamp_CLAUSE = qq{(stamptime > UNIX_TIMESTAMP()+?) OR (stamptime < UNIX_TIMESTAMP()-?)};
 
     $statement = qq{DELETE FROM da_requests WHERE access_key=? AND ($timestamp_CLAUSE)};
-    DEBUG('db', qq{nonce_used_by_access_key: $statement, $access_key, $window});
+    hLOG_DEBUG(qq{nonce_used_by_access_key: $statement: $access_key $window});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $window, $window);
 
     # any remaining nonce values must be inside the window and are
@@ -76,7 +76,7 @@ sub nonce_used_by_access_key {
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $nonce);
 
     my $ct = $sth->fetchrow_array() || 0;
-    DEBUG('db', qq{nonce_used_by_access_key: $statement, $access_key, $nonce ::: $ct});
+    hLOG_DEBUG(qq{nonce_used_by_access_key: $statement: $access_key $nonce ::: $ct});
 
     $statement = qq{UNLOCK TABLES};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
@@ -86,14 +86,14 @@ sub nonce_used_by_access_key {
 
 # ---------------------------------------------------------------------
 
-=item invalid_timestamp_for_access_key
+=item valid_timestamp_for_access_key
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub invalid_timestamp_for_access_key {
+sub valid_timestamp_for_access_key {
     my ($dbh, $access_key, $timestamp) = @_;
 
     my ($statement, $sth);
@@ -106,12 +106,12 @@ sub invalid_timestamp_for_access_key {
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
 
     my $max = $sth->fetchrow_array() || 0;
-    DEBUG('db', qq{invalid_timestamp_for_access_key: $statement, $access_key, $timestamp ::: $max});
+    hLOG_DEBUG(qq{valid_timestamp_for_access_key: $statement: $access_key $timestamp ::: $max});
 
     $statement = qq{UNLOCK TABLES};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
-    return ($max > 0) ? ($timestamp <= $max) : 0;
+    return ($timestamp > $max);
 }
 
 # ---------------------------------------------------------------------
@@ -132,7 +132,7 @@ sub insert_nonce_timestamp {
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
     $statement = qq{INSERT INTO da_requests SET access_key=?, nonce=?, stamptime=?};
-    DEBUG('db', qq{insert_nonce_timestamp: $statement, $access_key, $nonce, $timestamp});
+    hLOG_DEBUG(qq{insert_nonce_timestamp: $statement: $access_key $nonce $timestamp});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $nonce, $timestamp);
 
     $statement = qq{UNLOCK TABLES};
@@ -158,7 +158,7 @@ sub update_access {
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
     $statement = qq{INSERT INTO da_statistics SET access_key=? ON DUPLICATE KEY UPDATE accesses=accesses+1, last_access=?};
-    DEBUG('db', qq{update_access: $statement, $access_key, $last_access});
+    hLOG_DEBUG(qq{update_access: $statement: $access_key $last_access});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $last_access);
 
     $statement = qq{UNLOCK TABLES};
@@ -184,7 +184,7 @@ sub update_fail_ct {
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
     $statement = qq{UPDATE da_statistics SET $field=$field+1 WHERE access_key=?};
-    DEBUG('db', qq{update_fail_ct: $statement, $access_key});
+    hLOG_DEBUG(qq{update_fail_ct: $statement: $access_key});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
 
     $statement = qq{UNLOCK TABLES};
@@ -207,7 +207,7 @@ sub get_privileges_by_access_key {
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
     my $code = $sth->fetchrow_array() || 0;
 
-    DEBUG('db', qq{get_privileges_by_access_key: $statement, $access_key ::: $code});
+    hLOG_DEBUG(qq{get_privileges_by_access_key: $statement: $access_key ::: $code});
     return $code;
 }
 

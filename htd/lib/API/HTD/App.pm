@@ -86,7 +86,7 @@ use base qw(API::RESTApp);
 
 # Perl
 use DBI;
-use YAML::Any;
+#use YAML::Any;
 use XML::LibXML;
 use XML::Simple;
 use XML::SAX;
@@ -101,6 +101,8 @@ use API::HTD_Log;
 
 use API::HTD::Rights;
 use API::HTD::HAuth;
+use API::HTD::HConf;
+use API::HTD::AccessTypes;
 
 my $DEBUG = '';
 
@@ -124,47 +126,22 @@ sub setup {
     my $self = shift;
 
     # config
-    my $config;
-    eval {
-        $config = YAML::Any::LoadFile($ENV{'SDRROOT'} . '/htd/lib/API/HTD/base-config.yaml');
-    };
-    if ($@) {
-        $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(500, "1 - cannot load $config");
-        return 0;
-    }
-    # POSSIBLY NOTREACHED
-
-    if (! defined($config)) {
-        $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(500, "2 - cannot load $config");
-        return 0;
-    }
-
-    # Load version plugin class and its config
-    my $ver_config;
     my $ver = $self->getVersion();
-    eval {
-        $ver_config = YAML::Any::LoadFile($ENV{'SDRROOT'} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml});
-    };
-    if ($@) {
+    my $config_object = new API::HTD::HConf(
+                                            [
+                                             $ENV{'SDRROOT'} . '/htd/lib/API/HTD/base-config.yaml',
+                                             $ENV{'SDRROOT'} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml},
+                                            ]
+                                           );
+    if ($config_object->initSuccess) {
+        $self->__setMember('config', $config_object);
+    }
+    else {
         $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(500, "1 - cannot load $ver_config");
+        $self->__setErrorResponseCode(500, $config_object->errstr);
         return 0;
     }
-    # POSSIBLY NOTREACHED
-
-    if (! defined($ver_config)) {
-        $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(500, "2 - cannot load $ver_config");
-        return 0;
-    }
-    # POSSIBLY NOTREACHED
-
-    # Merge version config into base config for totality
-    @$config{keys %$ver_config} = values %$ver_config;
-    $self->__setMember('config', $config);
-
+    
     $self->__debugging();
     # POSSIBLY NOTREACHED
 
@@ -264,7 +241,7 @@ sub preHandler {
 
     # Did the handlers bind OK?
     if (! $self->handlerBindingOk()) {
-        $self->__setErrorResponseCode(400, "cannot bind handler for URI");
+        $self->__setErrorResponseCode(400, "invalid URI");
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
@@ -280,11 +257,18 @@ sub preHandler {
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
-
     $self->__setMember('rights', $ro);
 
-    # Authenticate and authorize
+    # Get an access type object
+    my $ato = new API::HTD::AccessTypes({
+                                         _rights => $ro,
+                                         _config => $self->__getConfObject,
+                                         _debug  => $DEBUG,
+                                        });
+    $self->__setMember('access', $ato);
+    
 
+    # Authenticate and authorize
     if (! $self->__authNZ_Success($P_Ref)) {
         return $defaultHandler;
     }
@@ -323,7 +307,7 @@ sub __debugging {
     my $self = shift;
 
     # Debug only allowed in development
-    if ($self->__allowDevelopment()) {
+    if ($self->__allowDevelopmentDebugging()) {
         $DEBUG = $self->query()->param('debug') || $ENV{'DEBUG'} || '';
     }
 
@@ -561,6 +545,16 @@ sub __getRightsObject {
     return $self->{'rights'};
 }
 
+sub __getConfObject {
+    my $self = shift;
+    return $self->{'config'};
+}
+
+sub __getAccessObject {
+    my $self = shift;
+    return $self->{'access'};
+}
+
 sub __getHAuthObject {
     my $self = shift;
     return $self->{'hauth'};
@@ -589,26 +583,13 @@ sub __setMember {
 
 sub __getConfigVal {
     my $self = shift;
-    my ($key, $sub_1_key, $sub_2_key, $sub_3_key, $sub_4_key, $sub_5_key) = @_;
+    return $self->__getConfObject()->getConfigVal(@_);
+}
 
-    if ($sub_5_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key}{$sub_3_key}{$sub_4_key}{$sub_5_key};
-    }
-    elsif ($sub_4_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key}{$sub_3_key}{$sub_4_key};
-    }
-    elsif ($sub_3_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key}{$sub_3_key};
-    }
-    elsif ($sub_2_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key};
-    }
-    elsif ($sub_1_key) {
-        return $self->{'config'}->{$key}{$sub_1_key};
-    }
-    else {
-        return $self->{'config'}->{$key};
-    }
+sub __getAccessTypeByResource {
+    my $self = shift;
+    return $self->__getAccessObject()->getAccessTypeByResource(@_);
+
 }
 
 # =====================================================================
@@ -641,77 +622,6 @@ sub __getClientQueryParams {
     }
 
     return $hashRef;
-}
-
-# ---------------------------------------------------------------------
-
-=item __getFreedomVal
-
-Attempt to determine freedom based on IPADDR.  However, we can't trust
-remote address due to proxying so test mdp.proxies for IPADDR.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getFreedomVal {
-    my $self = shift;
-    my $rights = shift;
-
-    my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
-    my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
-
-    # Limit pdus volumes to un-proxied "U.S." clients
-    if (($freedom eq 'free') && ($rights eq 'pdus')) {
-        # Use forwarded IP address if proxied, else UA IP addr
-        my $IPADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
-
-        require "Geo/IP.pm";
-        my $geoIP = Geo::IP->new();
-        my $country_code = $geoIP->country_code_by_addr($IPADDR);
-        my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
-
-        if (! grep(/^$country_code$/, @$pdusCountryCodesRef)) {
-            $freedom = 'nonfree';
-        }
-        else {
-            # veryify this is not a blacklisted US proxy that does not
-            # set HTTP_X_FORWARDED_FOR for a non-US request
-            require "Access/Proxy.pm";
-            if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
-                $freedom = 'nonfree';
-                if ($DEBUG eq 'access') { print qq{proxy blocked $IPADDR<br/>\n} }
-            }
-        }
-    }
-
-    return $freedom;
-}
-
-
-# ---------------------------------------------------------------------
-
-=item __getAccessTypeByResource
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getAccessTypeByResource {
-    my $self = shift;
-    my $resource = shift;
-
-    my $ro = $self->__getRightsObject();
-
-    my $source = $self->__getConfigVal('sources_name_map', $ro->getRightsFieldVal('source'));
-    my $rights = $self->__getConfigVal('rights_name_map', $ro->getRightsFieldVal('attr'));
-
-    my $freedom = $self->__getFreedomVal($rights);
-    my $accessType = $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
-
-    if ($DEBUG eq 'access') { print qq{resource=$resource rights=$freedom access_type=$accessType<br/>\n} }
-
-    return $accessType;
 }
 
 # ---------------------------------------------------------------------
@@ -834,18 +744,21 @@ use constant OCT_1_2012 => 1349049600;
 
 sub __authNZ_Success {
     my $self = shift;
-    my $P_Ref = shift;
-    
+    my $P_Ref = shift;    
+
+    # Get an authentication object.
+    my $hauth = new API::HTD::HAuth({
+                                     _query => $self->query, 
+                                     _dbh   => $self->__get_DBH,
+                                     _debug => $DEBUG,
+                                    });
+    $self->__setMember('hauth', $hauth);
+
     # Allow through back door?
-    my $allowed = $self->__allowDevelopment();
-    if ($allowed) {
+    if ($hauth->H_allowDevelopmentAuth()) {
         return 1;
     }
     # POSSIBLY NOTREACHED
-
-    # Get an authentication object.
-    my $hauth = new API::HTD::HAuth($self->query, $self->__get_DBH);
-    $self->__setMember('hauth', $hauth);
 
     my $Success = 0;
     
@@ -875,25 +788,22 @@ sub __authNZ_Success {
     return $Success;
 }
 
+
 # ---------------------------------------------------------------------
 
-=item __allowDevelopment
+=item __allowDevelopmentDebugging
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-use constant SUPPRESS_DEVELOPMENT => 1;
-
-sub __allowDevelopment {
+sub __allowDevelopmentDebugging {
     my $self = shift;
 
-    my $dev = SUPPRESS_DEVELOPMENT ? 0 : (defined $ENV{HT_DEV} ? 1 : 0);
-
-    if ($DEBUG eq 'auth') { print qq{dev access=$dev<br/>\n} }
-    return $dev;
+    return (defined $ENV{HT_DEV} ? 1 : 0);
 }
+
 
 # ---------------------------------------------------------------------
 
@@ -922,7 +832,7 @@ sub __authenticated {
     }
 
     if ($DEBUG eq 'auth') {print qq{authenticated=$authenticated error="} . $hauth->errstr . qq{"<br/>\n}};
-
+    
     return $authenticated;
 }
 
@@ -965,7 +875,10 @@ sub __authorized {
         $self->__setErrorResponseCode(403, $error);
     }
 
-    if ($DEBUG eq 'auth') { print qq{resource=$resource access_type=$accessType authorized=$authorized error="$error"<br/>\n} }
+    if ($DEBUG eq 'auth') { 
+        print qq{resource=$resource access_type=$accessType authorized=$authorized error="$error"<br/>\n};
+        exit 0;
+    }
 
     return $authorized;
 }
