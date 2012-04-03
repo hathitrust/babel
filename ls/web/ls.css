@@ -8,6 +8,9 @@ ls.css
 /*div { outline:1px dashed red; } */
 
 
+.querybox{ 
+           width:25em;
+ }
 
 /*Parenthesis  */
 div.parenGroup{  
@@ -17,9 +20,10 @@ div.parenGroup{
                 }
 
 div.group{ 
-        /*   outline:1px dotted blue;*/
+      /*     outline:1px dotted blue;*/
            display:table-cell;
            vertical-align:middle;
+           
           /* width:80%;*/
 /*           margin-left:15%;
            margin-right:15%;
@@ -28,9 +32,9 @@ div.group{
 div.paren{ 
       /*    outline:1px dashed green;*/
            display:table-cell;
-           font-size:300%;
+           font-size:700%;
            vertical-align:middle;
-           
+           font-family:monospace;
 
  }
 div.parenLeft{ 
@@ -59,6 +63,8 @@ legend.limitTo{
 
 
 /* facet formatting */
+/* we use xSearchLabel to avoid conflict with MBooksCol.css*/
+
 label.xSearchLabel
 { 
 /*  margin-left:1em;*/
@@ -79,7 +85,7 @@ select.orFacet{
 #multiFacets{ 
               margin-top:10px;
               width:50%;
-              /**outline:1px dashed red;**/
+            /*  outline:1px dashed red;*/
  }
 
 
@@ -94,7 +100,7 @@ fieldset.group{
                 padding:0;
                 margin:0;
                 border:0;
-                width:80%;
+/**                width:80%;**/
                 /**#E9E9E9;
                    #F6F6F6;
                    **/
@@ -105,17 +111,17 @@ fieldset.group{
 
 
 #addGroup{ 
-           margin-left:70%;
+           margin-left:50%;
  }
 #removeGroup{ 
-              margin-left:70%;
+              margin-left:50%;
              }
 
 #findbuttons  
 { 
   margin-top:10px;
 
-  margin-left:60%;
+  margin-left:50%;
 
 
   }
@@ -123,65 +129,59 @@ fieldset.group{
 .limits{ 
     /**     width:60%;**/
 } 
-/** span class = p for parenthesis**/
 
-.p{ 
-    color:green;
 
-    font-size:150%;
- }
-
-.advGroupFoo{ 
-              
- }
 .removeFacetIcon{ 
                   margin-left:2em;
  }
-span.op{ 
-     width: 4em;
-   /**   margin-left:auto;
-      margin-right: auto;
-**/
-     font-weight:normal;
- }
-.advrow{ 
-        /* width:100%;*/
 
-         /**background-color:grey;**/
- }
+
 .advrow ul{ 
-            margin:0;
+
+            margin:0 0 5px 0;
             padding:0;
-            float: left;
+        /*    float: left;*/
             list-style:none;
 }
 .advrow ul li { 
-                float:left;
+
+               
+                display: inline;
+                list-style-type: none;
                 text-decoration:none;
 
-               padding: 1.5px 1px;
-            /**    background-color:grey;**/
+                padding: 1.5px 1px;
+                /**    background-color:grey;**/
  }
 
 
 /**XXX combine this with rule for AndOr **/
 .spacer{ 
-
          width:5em;
-         margin-left:auto;
-         margin-right: auto;
-
+        /* color:green;
+         backround-color:green;*/
+         display:inline-block;
+         margin-left:1em;
+         margin-right:1em;
 } 
+
+#anyall1 { 
+/*          margin-left:8em;*/
+ }
+
+#anyall3 { 
+
+ }
 
 
 .AndOr { 
-
+  
          width:5em;
-         margin-left:auto;
-         margin-right: auto;
+      /*   margin-left:auto;
+         margin-right: auto;*/
 } 
 .andOR  { 
-
+          display:inline;
           width:5em;
   
  }
@@ -196,29 +196,11 @@ span.op{
 
 
 
-
-.betasearch{ 
-     /**        border:1px solid;
-             border-color:#grey;
-**/
- }
 ul.row{ 
 
  }
 
-.row
-{
-   color:#333666;
-} 
-.col li
-{ 
-  display: inline;
-  padding-left: 3px;
-  padding-right: 7px;
-  border-right: 1px dotted #066;
 
- color:#333222;
-} 
 
 #reset{ 
         margin-right:10%;
@@ -251,10 +233,7 @@ ul.row{
   }
 
 
-#queryRows
-{ 
-  
-} 
+
 #advancedLabel
 { 
  
@@ -271,12 +250,6 @@ ul.row{
   color:#000000;
 }
 
-.orFacet
-{ 
-  /**
-  border:1px;
-  margin-left:1px;**/
-  }
 
 
 #queryArea
@@ -361,7 +334,8 @@ ul.row{
   }
 
 select, input { 
-        margin-left:1em;
+                margin-left:1em;
+                margin-right:1em;
  }
 
 /** XXX fix this**/

@@ -111,7 +111,8 @@
                      <div class="parenGroup">
 
                        <div class="paren parenLeft"> 
-                       <xsl:text disable-output-escaping="yes">  &amp;nbsp;( &amp;nbsp;</xsl:text>
+                       <!--  <xsl:text disable-output-escaping="yes">  &amp;nbsp;( &amp;nbsp;</xsl:text>-->
+                       <xsl:text disable-output-escaping="yes">(</xsl:text>
                      </div>
                      
                       <div class="group">
@@ -132,8 +133,11 @@
                     </xsl:call-template>
                   </xsl:for-each>
                   </div>
-                  <div class="paren parenRight"><xsl:text disable-output-escaping="yes">  &amp;nbsp;) &amp;nbsp;</xsl:text> </div>
-                      
+                  <!--               <div class="paren parenRight"><xsl:text disable-output-escaping="yes">  &amp;nbsp;) &amp;nbsp;</xsl:text> </div>
+
+-->
+                  <div class="paren parenRight"><xsl:text disable-output-escaping="yes">)</xsl:text> </div>
+
 
                     </div>
                     </fieldset> 
@@ -290,7 +294,8 @@
 
      <xsl:if test="$rowNum=1 or  $rowNum = 3" >
        <li class="col">
-         <div class="spacer"></div>
+         <div class="spacer">
+         </div>
        </li>
      </xsl:if>
 
@@ -400,15 +405,6 @@
            </xsl:for-each>
        
          </li>
-         <!-- XXX lose the parens for now
-     <xsl:if test="$rowNum = 2 or $rowNum =4">
-       <li>
-       <span class="p">
-         <xsl:text>  ) </xsl:text>
-       </span>
-       </li>
-     </xsl:if>
-     -->
 
        </ul>
      </div>
