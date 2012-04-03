@@ -8,9 +8,9 @@ mets_meta_xsl:     /htd/lib/API/HTD/App/V_1/mets-meta.xsl
 
 # resource ids must coordinate with da_authorization db table.
 patterns:
-  meta:         /(meta)/((.*?)\.(.*))$
-  structure:    /(structure)/((.*?)\.(.*))$
-  aggregate:    /(aggregate)/((.*?)\.(.*))$
+  meta:         /(meta)/((.*?)\.([^/]+))$
+  structure:    /(structure)/((.*?)\.([^/]+))$
+  aggregate:    /(aggregate)/((.*?)\.([^/]+))$
   pageimage:    /(pageimage)/((.*?)\.(.*))/(\d+)$
   pageocr:      /(pageocr)/((.*?)\.(.*))/(\d+)$
   pagecoordocr: /(pagecoordocr)/((.*?)\.(.*))/(\d+)$
