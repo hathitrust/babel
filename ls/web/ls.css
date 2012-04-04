@@ -9,7 +9,11 @@ ls.css
 
 
 .querybox{ 
-           width:25em;
+           /* if we don't set the width, it gets a default width (which I can't find any reference to) but the side effect is that with no width set on any inline element in the <ul> the rowsw won't resize*/
+/* we would like to set the width to 25-35 characters to encourage users to use several query terms (See: Belkin et. al. "Query length in interactive information retrieval"  http://dx.doi.org/10.1145/860435.860474 )
+   If we set width to 20 em it seems allright but over x em it starts to wrap the row
+*/
+           width:20em;
  }
 
 /*Parenthesis  */
@@ -30,21 +34,32 @@ div.group{
 */
  }
 div.paren{ 
-      /*    outline:1px dashed green;*/
+         /* outline:1px dashed green;*/
            display:table-cell;
            font-size:700%;
            vertical-align:middle;
            font-family:monospace;
 
  }
+
+/* XXXtest this after converting the div to a block  (IE7 only supports this on regular inline elements)
+span.paren{ 
+           display:inline-block;
+           font-size:700%;
+           vertical-align:middle;
+           font-family:monospace;
+
+} 
+*/
+
 div.parenLeft{ 
-              /* float: left;*/
-               text-align:right;
+              /*  float: left;*/
+              text-align:right;/
          
  }
 div.parenRight{ 
-               /* float:right;*/
-                text-align:left;
+              /*  float:right;*/
+               text-align:left;
          
  }
 /* fieldset formatting*/
@@ -72,7 +87,8 @@ label.xSearchLabel
   }
 
 #format{ 
-         float:right;
+         float:left;
+         margin-left:5em;
  }
 
 #language{ 
@@ -82,13 +98,10 @@ label.xSearchLabel
 select.orFacet{ 
                 margin-left:0;
  }
+
 #multiFacets{ 
               margin-top:10px;
-              width:50%;
-            /*  outline:1px dashed red;*/
  }
-
-
 
 /* end facet formatting*/
 
@@ -97,37 +110,43 @@ select.orFacet{
 fieldset.group{ 
          
             /*    background-color:#E9E9E9;*/
-                padding:0;
-                margin:0;
+           /*     padding:0;*/
+                margin-bottom:1em;
+                margin-top:1em;
                 border:0;
 /**                width:80%;**/
-                /**#E9E9E9;
-                   #F6F6F6;
-                   **/
-/*                top:0;
-                bottom:0;*/
+
         
 } 
 
 
 #addGroup{ 
-           margin-left:50%;
+/*           border:dashed;
+           margin-top:10px;      
+   
+           padding-top:10px;   */
  }
 #removeGroup{ 
-              margin-left:50%;
+     
              }
+
 
 #findbuttons  
 { 
   margin-top:10px;
-
-  margin-left:50%;
-
-
+  margin-left:35em;
   }
 
+#reset{ 
+        margin-right:5em;
+        font-size:90%;
+} 
+
+
+
+
 .limits{ 
-    /**     width:60%;**/
+        
 } 
 
 
@@ -202,10 +221,7 @@ ul.row{
 
 
 
-#reset{ 
-        margin-right:10%;
-        font-size:90%;
-} 
+
 .advancedMsg
 { 
   font-size:70%;
@@ -242,6 +258,11 @@ ul.row{
   font-size: 150%;
   font-weight:normal;
 } 
+
+#limits{ 
+          margin-bottom:3em;
+        margin-top:1em;
+ }
 
 #limits h3
 { 

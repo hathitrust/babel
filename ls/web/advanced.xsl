@@ -294,8 +294,8 @@
 
      <xsl:if test="$rowNum=1 or  $rowNum = 3" >
        <li class="col">
-         <div class="spacer">
-         </div>
+         <span class="spacer">
+         </span>
        </li>
      </xsl:if>
 
