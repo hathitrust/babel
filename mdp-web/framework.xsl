@@ -52,7 +52,15 @@
   <xsl:variable name="gCurrentQ1" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
   <xsl:variable name="gContactEmail" select="/MBooksTop/MBooksGlobals/ContactEmail"/>
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
-  <xsl:variable name="gVolumeTitleFragment" select="concat(' ', /MBooksTop/MBooksGlobals/VolCurrTitleFrag)"/>
+
+  <xsl:variable name="gVolumeTitleFragment">
+    <xsl:choose>
+      <xsl:when test="/MBooksTop/MBooksGlobals/VolCurrTitleFrag!=' '">
+        <xsl:value-of select="concat(' ', /MBooksTop/MBooksGlobals/VolCurrTitleFrag, '.')"/>
+      </xsl:when>
+      <xsl:otherwise><xsl:value-of select="' '"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
 
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
   <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
@@ -1042,6 +1050,8 @@
           <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
           <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
         </xsl:call-template>
+        <!-- set author off from title with a space -->
+        <xsl:value-of select="' '"/>
 
         <!-- not visible -->
         <xsl:call-template name="BuildRDFaWrappedAuthor"/>
