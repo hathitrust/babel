@@ -21,7 +21,12 @@
         <title>Hathi Trust Digital Library - Full-text Search - v3</title>
         <xsl:call-template name="load_js_and_css"/>
         <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
+        <xsl:call-template name="IE7hack"/>
+
       </head>
+
+
+
 
       <body class="yui-skin-sam" onLoad="initCheckall()">
 
@@ -53,9 +58,32 @@
   </xsl:template>
 
   <!-- TEMPLATE -->
-  <xsl:template name="subnav_header">
-    <xsl:call-template name="HathiCol"/>
-  </xsl:template>
+
+  <xsl:template name="IE7hack">
+
+    <xsl:text disable-output-escaping="yes">
+      <![CDATA[<!--[if IE 7]>]]>
+      </xsl:text>
+      
+      <style>
+        <xsl:text disable-output-escaping="yes">
+          /*hide searchform until after we insert table and parens so user doesn't see form elements
+          moving around */
+          #advanced_searchform{
+              
+          visibility:hidden;
+          }
+        </xsl:text>
+      </style>
+      <xsl:text disable-output-escaping="yes">
+        <![CDATA[<![endif]-->]]>
+      </xsl:text>
+    </xsl:template>
+    
+    <!-- TEMPLATE -->
+    <xsl:template name="subnav_header">
+      <xsl:call-template name="HathiCol"/>
+    </xsl:template>
 
   <!-- TEMPLATE -->
   <xsl:template name="PageContent">
@@ -109,38 +137,32 @@
 
                     <!-- uncomment below for parenthesis-->
                      <div class="parenGroup">
-
-                       <div class="paren parenLeft"> 
+                       <div class="IErow">
+                       <div class="paren parenLeft IEcell"> 
                        <!--  <xsl:text disable-output-escaping="yes">  &amp;nbsp;( &amp;nbsp;</xsl:text>-->
                        <xsl:text disable-output-escaping="yes">(</xsl:text>
                      </div>
                      
-                      <div class="group">
-                      
-                        <!--                    <xsl:attribute name="id">
-                      <xsl:text>group</xsl:text>
-                      <xsl:value-of select ="position()"/>
-                    </xsl:attribute> -->
+                      <div class="group IEmiddleCell" >
+                        
+                        <xsl:for-each select="row">
+                          <xsl:variable name="rowNum">
+                            <xsl:value-of select="@rownum"/>
+                          </xsl:variable>
+                          
+                          <xsl:call-template name="queryRow">
+                            <xsl:with-param name="rowNum" select="$rowNum"/>
+                          </xsl:call-template>
+                        </xsl:for-each>
+                      </div>
 
 
-                    <xsl:for-each select="row">
-                      <xsl:variable name="rowNum">
-                        <xsl:value-of select="@rownum"/>
-                      </xsl:variable>
-                      
-                    <xsl:call-template name="queryRow">
-                      <xsl:with-param name="rowNum" select="$rowNum"/>
-                    </xsl:call-template>
-                  </xsl:for-each>
-                  </div>
-                  <!--               <div class="paren parenRight"><xsl:text disable-output-escaping="yes">  &amp;nbsp;) &amp;nbsp;</xsl:text> </div>
-
--->
-                  <div class="paren parenRight"><xsl:text disable-output-escaping="yes">)</xsl:text> </div>
+                      <div class="paren parenRight IEcell"><xsl:text disable-output-escaping="yes">)</xsl:text> </div>
 
 
                     </div>
-                    </fieldset> 
+                  </div>
+                </fieldset> 
 
                 <xsl:for-each select="row[@rownum='4']">
                   <a href="_blank" id="removeGroup">- Remove this pair of search fields</a>

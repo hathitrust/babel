@@ -17,6 +17,20 @@ ls.css
  }
 
 /*Parenthesis  */
+
+/* IE7 hacks  see ls.advanced.js where we wrap classes IEcell IErow and parenGroup with html table code with jquery*/
+tr.IEtr{ 
+
+
+ }
+td.IEtd.paren{ 
+               font-size:600%;
+               vertical-align:middle;
+               line-height:100%;
+               font-family:monospaced;
+ }
+
+/*end IE7 hacks*/
 div.parenGroup{  
 /*                outline:1px dashed red;*/
                 display:table-row;
@@ -100,7 +114,7 @@ select.orFacet{
  }
 
 #multiFacets{ 
-              margin-top:10px;
+              margin-top:20px;
  }
 
 /* end facet formatting*/
@@ -209,7 +223,7 @@ fieldset.group{
       width:5em;
       margin-top:10px;
       margin-bottom:10px;
-      margin-left:-1em;
+    /*  margin-left:-1em; removed for IE7*/
       }
 
 

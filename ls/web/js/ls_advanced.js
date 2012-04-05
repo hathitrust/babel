@@ -16,6 +16,28 @@ Need to be able to exclude a javascript call? or rename form?
 $(function()
   {
 
+  if ($.browser.msie && $.browser.version < 8)
+  {
+    //    alert("IE x detected version prior to IE8");
+    $("#advanced_searchform").css('visibility','visible');
+
+    /**  Generic code
+         $(".tablecell").wrap("<td />");
+         $(".tablerow").wrap("<tr />");
+         $(".table").wrapInner("<table />");
+**/
+    // we need to replace the div.IEcell with a td not wrap it
+    //     $(".IEcell").wrap('<td class="IEtd"/>');
+    $(".IEcell.parenRight").replaceWith('<td class="IEtd paren">)</td>');
+    $(".IEcell.parenLeft").replaceWith('<td class="IEtd paren">(</td>');
+    // ok to wrap the group div in the middle
+    $(".IEmiddleCell").wrap('<td class="IEtd"/>');
+    $(".IErow").wrap('<tr class="IEtr"/>');
+    $(".parenGroup").wrapInner('<table class="IEtable" />');
+
+  }
+
+
     showHidePdates();
 
     if($('#q3').val() == "" && $('#q4').val() == "")
