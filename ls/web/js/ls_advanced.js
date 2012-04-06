@@ -16,13 +16,72 @@ Need to be able to exclude a javascript call? or rename form?
 $(function()
   {
 
-    // hide extra yop boxes
-    $(".yop").val('').hide();
-    // show yop-start
-    $('#yop-start').show().val("");
+  if ($.browser.msie && $.browser.version < 8)
+  {
+    //    alert("IE x detected version prior to IE8");
+    $("#advanced_searchform").css('visibility','visible');
+
+    /**  Generic code
+         $(".tablecell").wrap("<td />");
+         $(".tablerow").wrap("<tr />");
+         $(".table").wrapInner("<table />");
+**/
+    // we need to replace the div.IEcell with a td not wrap it
+    //     $(".IEcell").wrap('<td class="IEtd"/>');
+    $(".IEcell.parenRight").replaceWith('<td class="IEtd paren">)</td>');
+    $(".IEcell.parenLeft").replaceWith('<td class="IEtd paren">(</td>');
+    // ok to wrap the group div in the middle
+    $(".IEmiddleCell").wrap('<td class="IEtd"/>');
+    $(".IErow").wrap('<tr class="IEtr"/>');
+    $(".parenGroup").wrapInner('<table class="IEtable" />');
+
+  }
 
 
-   
+    showHidePdates();
+
+    if($('#q3').val() == "" && $('#q4').val() == "")
+    {
+      hideGroup2();
+      $('#removeGroup').hide();
+    }
+    else
+    {
+      $('#addGroup').hide();
+    }
+    $('#addGroup').click(function(event) 
+                     {
+                       showGroup2();
+                       $('#removeGroup').show();
+                       $('#addGroup').hide();
+                       event.preventDefault();
+                     }
+                     );
+
+    $('#removeGroup').click(function(event) 
+                     {
+                       hideGroup2();
+                       $('#removeGroup').hide();
+                       $('#addGroup').show();
+                       event.preventDefault();
+                     }
+                     );
+
+
+    $('#reset').click(function(event) 
+                      {
+                        /**
+                           overide default reset button to actually clear values
+                           XXX WARNING!!  We hard-code the defaults here so if 
+                           defaults change in the config files/perl
+                           these will need to be redone!
+                        **/
+                        doReset(event);
+                        event.preventDefault();
+                      }
+                      );
+    
+
     $('#advanced_searchform').submit(function(event) 
             {
               
@@ -41,6 +100,8 @@ $(function()
                    //              rows = removeAndConsolidateBlankRows(rows);
                    var rowNums = new Array();
                    rowNums = getRowNums();
+                   // this actually removes blank rows as well as changing the url
+                   // XXX consider renaming it!
                    redirect(rowNums);
                  }
                }
@@ -50,6 +111,44 @@ $(function()
   }
   );
 
+//--------------------------------------------------------------------------------------
+function doReset (event)
+{ 
+  //clear all text boxess
+  var boxes=  $("input:text");
+  $(boxes).val("");
+  
+  // set formats to "All"
+  var selectedOpt = $(".orFacet :selected");
+  selectedOpt.attr("selected", false);
+  $(".orFacet [value='language:All']").attr("selected", true);
+  $(".orFacet [value='format:All']").attr("selected", true);
+  
+  //uncheck any check boxes
+  $("input:checked").attr("checked",false);
+  
+  // set search widgets back to defaults See warning above re hard-coding
+  // unselect whatever is selected and then select
+  $("#anyall1 option").attr("selected", false);
+  $("#anyall1 option[value='all']").attr("selected", true);
+  
+  $("#anyall2 option").attr("selected", false);//default value=all
+  $("#anyall2 option[value='all']").attr("selected", true);
+  
+  $("#op2 option").attr("selected", false); 
+  $("#op2 option[value='AND'] ").attr("selected", true); 
+    
+  $("#field1 option").attr("selected", false);
+  $("#field1 option[value='ocr']").attr("selected", true);
+  
+  $("#field2 option").attr("selected", false);
+  $("#field2 option[value='title']").attr("selected", true);
+  
+  // yop
+  $("#yop option").attr("selected", false);
+  $("#yop option[value='after']").attr("selected", true);
+
+}
 //--------------------------------------------------------------------------------------
 function checkPdate()
 {
@@ -212,6 +311,14 @@ function redirect(rowNums)
                        {
                          // remove blank rows
                          // if number is in rowNums (i.e. non-blank query) add this row
+
+                         //hard-coded exception fof op3, because with boolean parens op3 is no longer tied to q3/row3
+                         
+                         if (name === "op3")
+                         {
+                           addInput(name,value);
+                         }
+
                          var number=result[2];
                          var i=0;
                          for (i=0;i<=rowNums.length;i++)
@@ -257,7 +364,7 @@ function processMultiSelectFacet(name,value)
   // test for value[0]= All
   // and scalar(value)> 1foobar
   
-  if(value[0] === "All" && typeof value !== "string")
+  if( (value[0] === "language:All"|| value[0] === "format:All") && typeof value !== "string")
   {
     var newValues = new Array();
     var i=1;
@@ -267,9 +374,9 @@ function processMultiSelectFacet(name,value)
     }
     addInput(name,newValues);
   }
-  else if (value ==="All")
+  else if( value[0] === "language:All"|| value[0] === "format:All") 
   {
-    // don't add if only the All is selected
+         // don't add if only the All is selected
   }
   else
   {
@@ -345,5 +452,56 @@ function changeRange(id)
        $('#' + name + '-in').show().val(''); 
       }
       
+}
+
+function hideGroup2(){
+  // hide them unless there are values to show
+  // test for non-blank q3 or q4 if they are non-blank then we don't hide
+  $("#op3").hide();
+  $("#fieldsetGroup2").hide();
+}
+
+
+function showGroup2(){
+  $("#op3").show();
+  $("#fieldsetGroup2").show();
+}
+
+
+function showHidePdates(){
+  // hide the "and" in "yop-between"
+  if ($("#yop").val() == 'between')
+  {
+    $("#yop-between").show();
+  }
+  else
+  {
+    $("#yop-between").val("").hide();
+  }
+  
+  var allBlank=true;
+  var pdates = $(":input.yop");
+  
+  $(pdates).each (function (index,element)
+                  {
+                    var value=$(element).val();
+                    
+                    if (value.match(/^\s*\d+\s*$/) )
+                    {
+                      // if it has a value show it
+                      allBlank=false;
+                    }
+                    else
+                    {
+                      // hide it
+                      $(element).hide();
+                    }
+                  });
+  if (allBlank)
+  {
+      // does this make sense or should we check the widget to determine which box to show
+    $('#yop-start').show().val("");
+  }
+  
 }
 

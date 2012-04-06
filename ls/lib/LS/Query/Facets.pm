@@ -568,7 +568,9 @@ sub __get_advanced_query
     my $q;
     my $clause;
     my $Q;
-    my @clause_ary=();
+    my @clause_ary = ();
+    my @op_ary = ();
+    my $op;
     
 
     if (defined $cgi->param('qa'))
@@ -583,15 +585,29 @@ sub __get_advanced_query
             # do we also want to check for a defined but blank query?
             if (defined $cgi->param($q))
             {
-                $clause=$self-> make_query_clause($i,$cgi);
-                $ADVANCED.= ' ' .$clause;
+                $clause_ary[$i] = $self-> make_query_clause($i,$cgi);
             }
+            $op = 'op' . $i;
+            $op_ary[$i] =$cgi->param($op); 
         }
-        # replace multiple leading spaces with one space
+        # string clauses together with proper parens 
+        # and move cleanup stuff here
+        # (q1 and/or q2) op3 (q3 and/or q4)
+        if (scalar(@clause_ary) == 1)
+        {
+            $ADVANCED = $clause_ary[0];
+        }
+        else
+        {
+            $ADVANCED = $self->getParenQuery(\@clause_ary,\@op_ary);
+        }
+        
+        # XXX move this into sub above
         $ADVANCED=~s/^\s+/ /;
     }
     #remove operator from beginning of query string if there is one
     # i.e. if user unselects row 1
+    #XXX move this into getParenQuery
     $ADVANCED=~s/^\s*(AND|OR|NOT)//;
     return $ADVANCED;
 }
@@ -609,17 +625,6 @@ sub make_query_clause{
     my $cgi  = shift;
     
     my $q     = $cgi->param('q' . $i);
-    my $op    = $cgi->param('op' . $i);
-    if (!defined($op))
-    {
-        #XXX don't try to insert any default operator!
-   #     $op='AND';
-    #}
-    #if ($i ==1)
-    #{
-        $op="";
-    }
-    
     my $field = $cgi->param('field' . $i);
     my $anyall = $cgi->param('anyall' . $i);
     
@@ -694,10 +699,85 @@ sub make_query_clause{
     my $Q;
     
 
-    $Q= ' ' . $op  . ' _query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
+    $Q= ' '.  '_query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
 
     return $Q;
     
+}
+
+# ---------------------------------------------------------------------
+
+sub getParenQuery
+{
+    my $self = shift;
+    my $clause_ary    = shift;
+    my $op_ary  = shift;
+    my $parenQ;
+    my $advanced;
+    
+    my $query_group_1 = __make_group(1,$clause_ary,$op_ary); # q1 and q2
+    my $query_group_2 = __make_group(3,$clause_ary,$op_ary); # q3 and q4
+    my $paren_1 = ' ( ' . $query_group_1 . ' ) ';
+    my $paren_2 = ' ( ' . $query_group_2 . ' ) ';
+    
+    if ($query_group_1 =~/\S/ )
+    {
+        if  ($query_group_2 =~/\S/)
+        {
+            # if both have at least one non-blank character 
+            $advanced = $paren_1 . $op_ary->[3] . $paren_2;
+        }
+        else
+        {
+            $advanced = ' ' . $query_group_1 .' ';
+        }
+    }
+    else
+    {
+        $advanced = ' ' . $query_group_2 .' ';
+    }
+    
+    return $advanced;
+}
+# ---------------------------------------------------------------------
+
+#   q1 op q2
+#    just q1 or just q2
+#   
+
+sub __make_group
+{
+    my $start = shift;
+    my $clause_ary = shift;
+    my $op_ary = shift;
+    my $group;
+    my $op;
+    
+    # do we need to test for non-blank not just defined?
+    if (defined ($clause_ary->[$start]) && defined ($clause_ary->[$start+1]))
+    {
+        for my $i ($start, $start+1)
+        {
+            #hard-coded to only look at op2 or op 4
+            if ($i == 2 || $i == 4)
+            {
+                $op = $op_ary->[$i];
+            }
+        }
+        $group = $clause_ary->[$start] . ' '. $op . ' ' . $clause_ary->[$start+1] ;        
+    }
+    else
+    {
+        for my $i ($start, $start+1)
+        {
+            if (defined ($clause_ary->[$i]))
+            {
+                $group = $clause_ary->[$i];
+            }
+        }
+    }
+    # remove any leading or trailing spaces?
+    return $group;
 }
 
 # ---------------------------------------------------------------------

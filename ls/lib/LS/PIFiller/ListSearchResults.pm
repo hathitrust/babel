@@ -845,11 +845,80 @@ sub handle_ADVANCED_SEARCH_PI
     : PI_handler(ADVANCED_SEARCH) 
 {
     my ($C, $act, $piParamHashRef) = @_;
+
+
+    my $cgi = $C->get_object('CGI');
+    #get query params from cgi and map to user friendly fields using config
+    # put the stuff inside the for loop in a subroutine!
+    my $output;
+    my $groups;
+    my $isAdvanced =__isAdvanced($cgi);
+
+    my $start; # first query number in group, ie we want queries 1&2   and 3 &4  so starts are 1 and 3
+    $start =1;
+    my $group_1 = getGroup($C,$act,$start);
+    $start = 3;
+    my $group_2 = getGroup($C,$act,$start);
+    my $op3 = $cgi->param('op3');
+    $output .=  wrap_string_in_tag($op3, 'OP3');
+    if (defined $group_1)
+    {
+        $output .=  wrap_string_in_tag($group_1, 'group');
+    }
+    if (defined $group_2)
+    {
+        $output .=  wrap_string_in_tag($group_2, 'group');
+    }
+    
+
+    
+# will have to do something like this in the xsl    
+#    if ($query_group_1 =~/\S/ )
+#    {
+#        if  ($query_group_2 =~/\S/)
+#        {
+#            # if both have at least one non-blank character 
+#            $advanced = $paren_1 . $op_ary->[3] . $paren_2;
+#        }
+#        else
+#        {
+#            $advanced = ' ' . $query_group_1 .' ';
+#        }
+#    }
+#    else
+#    {
+#        $advanced = ' ' . $query_group_2 .' ';
+#    }
+
+    
+
+    
+    my $advURL=getAdvancedSearchURL($cgi);
+    $output .= wrap_string_in_tag($advURL, 'AdvancedSearchURL');
+    my $modURL=getModifyAdvancedSearchURL($cgi);
+    $output .= wrap_string_in_tag($modURL, 'ModifyAdvancedSearchURL');
+
+    $output .= wrap_string_in_tag($isAdvanced, 'isAdvanced');
+    return $output;
+  }
+
+# ---------------------------------------------------------------------
+#======================================================================
+#
+#              P I    H a n d l e r   H e l p e r s
+#
+#======================================================================
+#----------------------------------------------------------------------
+
+sub getGroup{
+    my $C = shift;
+    my $act = shift;
+    my $start =shift;
+    
+    
     my $fconfig=$C->get_object('FacetConfig');
     my $cgi = $C->get_object('CGI');
 
-    my $param2userMap =      $fconfig->{field_2_display};
-    my $anyall_2_display = $fconfig->{'anyall_2_display'};
 
     #XXX add result data so we can put well formed/processed string here instead of someplace else
     my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');    
@@ -857,12 +926,92 @@ sub handle_ADVANCED_SEARCH_PI
     my $well_formed_aryref = ($wff_hashref->{'primary'} );
     my $processed_aryref=$wff_hashref->{'processed_query_string'};
 
+    my $param2userMap =      $fconfig->{field_2_display};
+    my $anyall_2_display = $fconfig->{'anyall_2_display'};
 
-    #get query params from cgi and map to user friendly fields using config
-    # put the stuff inside the for loop in a subroutine!
-    my $output;
     my $qcount=0;
+    my $field1;
+    my $output;
+
+    my $isAdvanced =__isAdvanced($cgi);
+    
+    my $op;
+    my $GROUP_NOT_EMPTY;
+    
+    for my $i ($start, $start+1)
+    {
+        #XXX hardcoded op logic
+        if ($i == 2 || $i == 4)
+        {
+            $op    = $cgi->param('op' . $i);
+            $output .=wrap_string_in_tag($op, 'OP');
+        }
+        
+        my $q     = $cgi->param('q' . $i);
+        if (defined($q))
+        {
+            $GROUP_NOT_EMPTY="true";
+        }
+            
+        my $anyall = $cgi->param('anyall' . $i);
+        my $anyall_string= $anyall_2_display->{$anyall}; 
+        
+        
+        my $field = $cgi->param('field' . $i);
+        # XXX hack.  Should at least read default field from config file
+        # special case for basic search where there is no field  param
+        if ( $i ==1 && defined($q) && (!defined ($field)))
+        {
+                 $field='ocr';
+             }
+        
+        my $user_field= $param2userMap->{$field} ;
+        
+        # unselect url for this row
+        my $unselectURL=getUnselectAdvancedClauseURL($cgi,$i);
+        
+        my $well_formed = $well_formed_aryref->[$i]; 
+        my $processed_query = $processed_aryref->[$i];
+
+        $processed_query = clean_for_xml($processed_query);
+        my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[$i];
+        
+        #  we need to pull op out of clauses and group clauses into groups
+        #    my $query_group_1 = __make_group(1,$clause_ary,$op_ary); # q1 and q2
+        my $clause;
+        if (defined ($q))
+        {
+            
+            $clause .=wrap_string_in_tag($i, 'Qnum');
+            $clause .=wrap_string_in_tag($q ,'Query');
+            $clause .=wrap_string_in_tag($well_formed ,'WellFormed');
+            $clause .=wrap_string_in_tag($processed_query ,'ProcessedQuery');
+            $clause .= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
+            $clause .=wrap_string_in_tag($op, 'OP');
+            $clause .=wrap_string_in_tag($user_field, 'Field');
+            $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');
+            $clause .=wrap_string_in_tag($unselectURL, 'unselectURL');
+            $output .= wrap_string_in_tag($clause, 'Clause');
+        }
+        
+    }
+    if (defined ($GROUP_NOT_EMPTY))
+    {
+        return ($output);
+    }
+    else
+    {
+        return undef;
+    }
+    
+
+}
+#----------------------------------------------------------------------
+
+sub __isAdvanced{
+    my $cgi = shift;
     my $isAdvanced="false";
+    my $qcount = 0;
     my $field1;
     
     for my $i (1..4)
@@ -886,81 +1035,24 @@ sub handle_ADVANCED_SEARCH_PI
                 $isAdvanced="true";
             }
         }
-        
-        my $op    = $cgi->param('op' . $i);
-        if (!defined($op))
-        {
-            $op='AND';
-        }
-        # is this the first op with a populated query? if so don't put in an op
-        if ($qcount ==1)
-        {
-            $op="";
-        }
-        my $anyall = $cgi->param('anyall' . $i);
-        my $anyall_string= $anyall_2_display->{$anyall}; 
-
-
-        my $field = $cgi->param('field' . $i);
-        # XXX hack.  Should at least read default field from config file
-        # special case for basic search where there is no field  param
-        if ( $i ==1 && defined($q) && (!defined ($field)))
-             {
-                 $field='ocr';
-             }
-                                      
-        my $user_field= $param2userMap->{$field} ;
-
-        # unselect url for this row
-        my $unselectURL=getUnselectAdvancedClauseURL($cgi,$i);
-        
-        my $well_formed = $well_formed_aryref->[$i]; 
-        my $processed_query = $processed_aryref->[$i];
-
-        $processed_query = clean_for_xml($processed_query);
-        my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[$i];
-        
-
-        my $clause;
-        if (defined ($q))
-        {
-
-            $clause .=wrap_string_in_tag($i, 'Qnum');
-            $clause .=wrap_string_in_tag($q ,'Query');
-            $clause .=wrap_string_in_tag($well_formed ,'WellFormed');
-            $clause .=wrap_string_in_tag($processed_query ,'ProcessedQuery');
-            $clause .= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
-            $clause .=wrap_string_in_tag($op, 'OP');
-            $clause .=wrap_string_in_tag($user_field, 'Field');
-            $clause .=wrap_string_in_tag($anyall_string, 'AnyAll');
-            $clause .=wrap_string_in_tag($unselectURL, 'unselectURL');
-            $output .= wrap_string_in_tag($clause, 'Clause');
-        }
-        
     }
-    # 
-    my $advURL=getAdvancedSearchURL($cgi);
-    $output .= wrap_string_in_tag($advURL, 'AdvancedSearchURL');
-    my $modURL=getModifyAdvancedSearchURL($cgi);
-    $output .= wrap_string_in_tag($modURL, 'ModifyAdvancedSearchURL');
+    return $isAdvanced;
+}
 
-    $output .= wrap_string_in_tag($isAdvanced, 'isAdvanced');
-    return $output;
-  }
 
-# ---------------------------------------------------------------------
-#======================================================================
-#
-#              P I    H a n d l e r   H e l p e r s
-#
-#======================================================================
 #----------------------------------------------------------------------
 sub getAdvancedSearchURL
 {
     my $cgi=shift;
-#    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
+    #    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
     my $url=$cgi->url(-relative=>1);
-        $url.='?a=page&amp;page=advanced';
+    $url.='?a=page&amp;page=advanced';
+    # add rogers change i.e. populate query box from previous basic search?
+    # but if this is an advanced search just do a blank query box
+    if ( __isAdvanced($cgi) ne "true")
+    {
+        $url.='&amp;q1=' . $cgi->param('q1');
+    }
     return $url;
 }
 
@@ -968,13 +1060,30 @@ sub getModifyAdvancedSearchURL
 {
     my $cgi=shift;
     my $temp_cgi = new CGI($cgi);
+    my $LIMIT="2000"; #IE limit about 2048 chars 
+    
     ## do we need to delete a and page params first?
     $temp_cgi->param('a','page');
     $temp_cgi->param('page','advanced');
-    #XXX until we do sticky facets remove facet_lang and facet_format params 
+    #XXX for now see if url is too long for a safe GET and delete long facets if it is
     # alternative is javascript to grab the url and do a POST instead of a get.
-    $temp_cgi->delete('facet_lang');
-    $temp_cgi->delete('facet_format');
+    my $tempurl=$temp_cgi->self_url();
+    my $facet_lang_string = join(' ',$temp_cgi->param('facet_lang'));
+    my $facet_format_string = join(' ',$temp_cgi->param('facet_format'));
+    
+
+    if (length($tempurl ) > $LIMIT)
+    {
+        if (length($facet_lang_string) > $LIMIT/3)
+        {
+            $temp_cgi->delete('facet_lang');
+        }
+        if (length ($facet_format_string) > $LIMIT/3)
+        {
+            $temp_cgi->delete('facet_format');
+        }
+    }
+    
     my $url=$temp_cgi->self_url();
     
     return $url;
@@ -1367,15 +1476,12 @@ sub _ls_wrap_result_data {
         # Remove q1 if this is an advanced search
         my $pt_search_URL = PT_HREF_helper($C, $id, 'pt_search');
         my $pt_URL = PT_HREF_helper($C, $id, 'pt');
-        my $isAdvanced;
+        my $isAdvanced = __isAdvanced($cgi);
         
-        if(defined($cgi->param('field1'))|| 
-           defined($cgi->param('field1'))||
-           defined($cgi->param('field1'))||
-           defined($cgi->param('field1')))
-        {
-            $isAdvanced="true";
-        }
+        #XXX tbw for Roger's suggestion instead of q1= blank
+        # call subroutine which checks to see if it should be blank or should be
+        # a boolean of any searches where the field is ocr or ocronly 
+        # $pt_search_URL = get_advanced_PT_url($cgi, $pt_search_URL)
         if ($isAdvanced)
         {
             $pt_search_URL=~s/q1=[^\&\;]+/q1=/g;
@@ -1409,7 +1515,21 @@ sub _ls_wrap_result_data {
     return \$output;
 }
 
-
+sub get_advanced_PT_url
+{
+    my $cgi = shift;
+    my  $pt_search_URL =shift;
+    #check if any of the fields are ocr or ocronly
+    # if not set q1 to blank
+    # if so, combine them in a proper boolean query
+    # this means we need to honor the anyall operator
+    # which means to insert "OR"s for an anyall=any or surround with parens for phrase
+    # and put in the parens and the boolean ops with precedence
+    # actually if the ops are a boolean AND and we have a non ocr field then do we skip it
+    # or ignore the non-ocr field
+    return $pt_search_URL;
+    
+}
 
 1;
 

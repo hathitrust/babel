@@ -204,8 +204,9 @@
       <xsl:call-template name="SearchResults_status"/>
 
       <form id="form_ls1" name="form_ls1" method="get" action="ls?">
-        <xsl:call-template name="GetHiddenParams"/>
-
+        <div name="hiddenParams">
+          <xsl:call-template name="GetHiddenParams"/>
+        </div>
         <div id="actionsRow1">
           <xsl:call-template name="BuildSortWidget"/>
           <xsl:call-template name="BuildPagingControls">
@@ -229,7 +230,9 @@
           
       <div id="listisFooter">
         <form id="form_ls2" name="form_ls2" method="get" action="ls?">
-          <xsl:call-template name="GetHiddenParams"/>
+          <div name="hiddenParams">
+            <xsl:call-template name="GetHiddenParams"/>
+          </div>
           <xsl:call-template name="BuildPagingControls">
             <xsl:with-param name="which_paging" select="'bottom_paging'"/>
           </xsl:call-template>
@@ -317,31 +320,135 @@
 
 
   <xsl:template name="advanced">
-    <xsl:for-each select="/MBooksTop/AdvancedSearch/Clause">
+
+
+      <xsl:variable name="SingleQuery">
+        <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) = 1">
+          <xsl:text>true</xsl:text>
+        </xsl:if>
+      </xsl:variable>
+      <xsl:variable name="SingleGroup">
+        <xsl:if test="count(/MBooksTop/AdvancedSearch/group) = 1">
+          <xsl:text>true</xsl:text>
+        </xsl:if>
+      </xsl:variable>
+
       <xsl:choose>
-        <xsl:when test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
-          <div class="advancedClause">        
-          <xsl:call-template  name= "advancedContent"/>        
-          </div>
+        <xsl:when test="$SingleGroup='true'">
+          <xsl:for-each select="/MBooksTop/AdvancedSearch/group">
+            <xsl:call-template  name= "advancedGroup"/>
+          </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:call-template  name= "advancedContent"/>
+          <xsl:for-each select="/MBooksTop/AdvancedSearch/group[1]">
+            <div class="advancedGroup">        
+            <xsl:call-template  name= "advancedGroup"/>        
+            </div>
+          </xsl:for-each>
+
+          <div class="op3">
+            <xsl:value-of select="/MBooksTop/AdvancedSearch/OP3"/>
+          </div>
+
+          <xsl:for-each select="/MBooksTop/AdvancedSearch/group[2]">
+            <div class="advancedGroup">        
+            <xsl:call-template  name= "advancedGroup"/>        
+            </div>
+          </xsl:for-each>
+
+        </xsl:otherwise>          
+        </xsl:choose>
+
+    </xsl:template>
+
+
+
+    <!--XXX old template with OP separated from clauses-->
+    <xsl:template name="advancedGroupOld">
+      <!-- call template then op then template? -->
+      <!-- this deals with grouping then calls template "advancedContent" for each clause
+           if there is only 1 clause in the group just spit it out
+           else add parens and the op properly formatted
+           -->
+      <xsl:choose>
+        <xsl:when test="count(Clause)= 1">
+          <xsl:for-each select="Clause">
+            <xsl:call-template name="advancedContent"/>        
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <div class="advGroupFoo">
+          <xsl:text> ( </xsl:text>
+
+          <xsl:for-each select="Clause[1]">
+            <xsl:call-template name="advancedContent"/>        
+          </xsl:for-each>
+
+          <!-- op goes here-->
+          <div class="op">
+            <xsl:value-of select="OP"/>
+          </div>
+
+            <xsl:for-each select="Clause[2]">
+              <xsl:call-template name="advancedContent"/>        
+            </xsl:for-each>
+       
+            <xsl:text> ) </xsl:text>
+          </div>
+            
           </xsl:otherwise>
         </xsl:choose>
-      </xsl:for-each>
     </xsl:template>
+
+    <!-- version with OP being part of 2nd clause in group -->
+    <xsl:template name="advancedGroup">
+      <!-- this deals with grouping then calls template "advancedContent" for each clause
+           if there is only 1 clause in the group just spit it out
+           else add parens and the op properly formatted
+           -->
+      <xsl:choose>
+        <xsl:when test="count(Clause)= 1">
+          <xsl:for-each select="Clause">
+            <xsl:call-template name="advancedContent"/>        
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <div class="advGroupFoo">
+            <xsl:for-each select="Clause">
+              <div class="clause">
+              <xsl:call-template name="advancedContent"/>        
+            </div>
+          </xsl:for-each>
+          </div>
+          </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
 
     <xsl:template name= "advancedContent">
 
-      <xsl:if test="count(/MBooksTop/AdvancedSearch/Clause) &gt; 1">
+
+      <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) &gt; 1">
         <a>
           <xsl:attribute name="href">
             <xsl:value-of select="unselectURL"/>          
           </xsl:attribute>
             <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
         </a>
+        <!--XXXmerge this code from MASTER? probably shouldn't be here-->
+        <!--
+        <xsl:if test="count(../Clause) &gt; 1">
+          <span class="op">
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="OP"/>
+            <xsl:text> </xsl:text>
+          </span>
+        </xsl:if>
+          -->
+
       </xsl:if>
 
+      <!--XXXmerge this code from parens is probably right-->
       <xsl:variable name="myOP">
         <xsl:value-of select="OP"/>
       </xsl:variable>
@@ -349,6 +456,7 @@
       <xsl:if test=" string($myOP)">
         <xsl:text> </xsl:text>        
       </xsl:if>
+
 
       <!--XXX   figure out what the well formed stuff from basic template is above and put it here
            Also need to make the punctuation only happen if there is an anyall
@@ -1332,7 +1440,7 @@
             <xsl:when test="$selected='true'">
                 <xsl:value-of select="$value"/>
 
-                <span dir="LTR">
+                <span dir="ltr">
                 <xsl:text> (</xsl:text>
                 <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>
@@ -1346,7 +1454,7 @@
                 
                 <xsl:value-of select="$value"/>
               </xsl:element>
-              <span dir="LTR">
+              <span dir="ltr">
                 <xsl:text> (</xsl:text>
                 <xsl:value-of select="facetCount"/>
                 <xsl:text>) </xsl:text>

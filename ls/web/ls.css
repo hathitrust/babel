@@ -2,22 +2,240 @@
 ls.css
   Tom temporary css styles to be put in single css or integrated.  Ask Suz
 ***/
-/**
-.SearchResults_status  {
-                         color:#333666;
-                         font-size:1.2em;
-                         margin:0;
-                         position:relative;
-                         border:2px solid #CCCCCC;
-                         padding:0 5px 20px;
-                         }
-**/
 
 
-#reset{ 
-        margin-left:10%;
+/** for debugging uncomment this**/
+/*div { outline:1px dashed red; } */
+
+
+.querybox{ 
+           /* if we don't set the width, it gets a default width (which I can't find any reference to) but the side effect is that with no width set on any inline element in the <ul> the rowsw won't resize*/
+/* we would like to set the width to 25-35 characters to encourage users to use several query terms (See: Belkin et. al. "Query length in interactive information retrieval"  http://dx.doi.org/10.1145/860435.860474 )
+   If we set width to 20 em it seems allright but over x em it starts to wrap the row
+*/
+           width:20em;
+ }
+
+/*Parenthesis  */
+
+/* IE7 hacks  see ls.advanced.js where we wrap classes IEcell IErow and parenGroup with html table code with jquery*/
+tr.IEtr{ 
+
+
+ }
+td.IEtd.paren{ 
+               font-size:600%;
+               vertical-align:middle;
+               line-height:100%;
+               font-family:monospaced;
+ }
+
+/*end IE7 hacks*/
+div.parenGroup{  
+/*                outline:1px dashed red;*/
+                display:table-row;
+                text-align:left;
+                }
+
+div.group{ 
+      /*     outline:1px dotted blue;*/
+           display:table-cell;
+           vertical-align:middle;
+           
+          /* width:80%;*/
+/*           margin-left:15%;
+           margin-right:15%;
+*/
+ }
+div.paren{ 
+         /* outline:1px dashed green;*/
+           display:table-cell;
+           font-size:700%;
+           vertical-align:middle;
+           font-family:monospace;
+
+ }
+
+/* XXXtest this after converting the div to a block  (IE7 only supports this on regular inline elements)
+span.paren{ 
+           display:inline-block;
+           font-size:700%;
+           vertical-align:middle;
+           font-family:monospace;
 
 } 
+*/
+
+div.parenLeft{ 
+              /*  float: left;*/
+              text-align:right;/
+         
+ }
+div.parenRight{ 
+              /*  float:right;*/
+               text-align:left;
+         
+ }
+/* fieldset formatting*/
+
+fieldset { 
+           border:none;
+ }
+
+
+legend.limitTo{ 
+               font-size:150%;
+
+ }
+
+
+
+
+/* facet formatting */
+/* we use xSearchLabel to avoid conflict with MBooksCol.css*/
+
+label.xSearchLabel
+{ 
+/*  margin-left:1em;*/
+  display:block;
+  }
+
+#format{ 
+         float:left;
+         margin-left:5em;
+ }
+
+#language{ 
+           float:left;
+ }
+
+select.orFacet{ 
+                margin-left:0;
+ }
+
+#multiFacets{ 
+              margin-top:20px;
+ }
+
+/* end facet formatting*/
+
+
+
+fieldset.group{ 
+         
+            /*    background-color:#E9E9E9;*/
+           /*     padding:0;*/
+                margin-bottom:1em;
+                margin-top:1em;
+                border:0;
+/**                width:80%;**/
+
+        
+} 
+
+
+#addGroup{ 
+/*           border:dashed;
+           margin-top:10px;      
+   
+           padding-top:10px;   */
+ }
+#removeGroup{ 
+     
+             }
+
+
+#findbuttons  
+{ 
+  margin-top:10px;
+  margin-left:35em;
+  }
+
+#reset{ 
+        margin-right:5em;
+        font-size:90%;
+} 
+
+
+
+
+.limits{ 
+        
+} 
+
+
+.removeFacetIcon{ 
+                  margin-left:2em;
+ }
+
+
+.advrow ul{ 
+
+            margin:0 0 5px 0;
+            padding:0;
+        /*    float: left;*/
+            list-style:none;
+}
+.advrow ul li { 
+
+               
+                display: inline;
+                list-style-type: none;
+                text-decoration:none;
+
+                padding: 1.5px 1px;
+                /**    background-color:grey;**/
+ }
+
+
+/**XXX combine this with rule for AndOr **/
+.spacer{ 
+         width:5em;
+        /* color:green;
+         backround-color:green;*/
+         display:inline-block;
+         margin-left:1em;
+         margin-right:1em;
+} 
+
+#anyall1 { 
+/*          margin-left:8em;*/
+ }
+
+#anyall3 { 
+
+ }
+
+
+.AndOr { 
+  
+         width:5em;
+      /*   margin-left:auto;
+         margin-right: auto;*/
+} 
+.andOR  { 
+          display:inline;
+          width:5em;
+  
+ }
+
+#op3{ 
+      width:5em;
+      margin-top:10px;
+      margin-bottom:10px;
+    /*  margin-left:-1em; removed for IE7*/
+      }
+
+
+
+
+ul.row{ 
+
+ }
+
+
+
+
 .advancedMsg
 { 
   font-size:70%;
@@ -25,7 +243,7 @@ ls.css
 
 #Op3bool 
 {
-  margin:3;
+  margin:3px;
   background-color:#FFFFFF;
   padding:10px ;
 
@@ -45,10 +263,7 @@ ls.css
   }
 
 
-#queryRows
-{ 
-  
-} 
+
 #advancedLabel
 { 
  
@@ -58,6 +273,11 @@ ls.css
   font-weight:normal;
 } 
 
+#limits{ 
+          margin-bottom:3em;
+        margin-top:1em;
+ }
+
 #limits h3
 { 
   font-size: 130%;
@@ -65,20 +285,8 @@ ls.css
   color:#000000;
 }
 
-.orFacet
-{ 
-  /**
-  border:1px;
-  margin-left:1px;**/
-  }
 
-.multiFacets th
-{  
-  margin-left:1em;
-  padding-left:1em;
-  padding-top:1em;
-  text-align:left;
-}
+
 #queryArea
 { 
 /**  background-color **/
@@ -86,13 +294,6 @@ ls.css
   padding:3px;
 } 
 
-#limits
-{ 
-
-  /**border:1px solid #D8D8D8;**/
-
-  /**#0000FF;**/
-} 
 
 
 .advancedClause
@@ -168,13 +369,14 @@ ls.css
   }
 
 select, input { 
-        margin-left:1em;
+                margin-left:1em;
+                margin-right:1em;
  }
 
 /** XXX fix this**/
 #itemlist_searchform
 {
-  align:bottom;
+
  } 
 
 .SearchResults_status

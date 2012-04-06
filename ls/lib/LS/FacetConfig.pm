@@ -7,6 +7,7 @@ LS::FacetConfig;
 
 =head1 DESCRIPTION
 
+Reads config file (fconfig.pl) and sets appropriate member data
 
 =head1 VERSION
 
@@ -71,7 +72,7 @@ sub _initialize
     };
     ASSERT(!$@, qq{Invalid config file $config_filename. Error: $@});
 
-    # turn of strict
+    # turn off strict
     do 
     {
         no strict;
@@ -88,7 +89,15 @@ sub _initialize
         $self->__set_default_fields($default_fields);
         $self->__set_default_anyall($default_anyall);
         $self->__set_anyall_2_display($anyall_2_display);
+        $self->__set_yop_default($yop_default);
+        $self->__set_yop_order($yop_order);
+        $self->__set_yop_map($yop_map);
+        $self->__set_yop_input_order($yop_input_order);
+        $self->__set_yop2label($yop2label);
+        $self->__set_yop2name($yop2name);
 
+        $self->__set_format_list($formats_list);
+        $self->__set_language_list($language_list);
     };
         
 } 
@@ -96,6 +105,73 @@ sub _initialize
 # ---------------------------------------------------------------------
  
 #Advanced Search
+
+
+# ---------------------------------------------------------------------
+sub __set_yop_default
+{
+    my $self = shift;
+    my $yop_default = shift;
+    $self->{'yop_default'} = $yop_default;
+}
+# ---------------------------------------------------------------------
+sub __set_yop_order
+{
+    my $self = shift;
+    my $yop_order = shift;
+    $self->{'yop_order'} = $yop_order;
+}
+# ---------------------------------------------------------------------
+sub __set_yop_map
+{
+    my $self = shift;
+    my $yop_map = shift;
+    
+    $self->{'yop_map'} = $yop_map;
+}
+
+
+# ---------------------------------------------------------------------
+sub __set_yop_input_order
+{
+    my $self = shift;
+    my $in = shift;
+    
+    $self->{'yop_input_order'} = $in;
+}
+# ---------------------------------------------------------------------
+sub __set_yop2label
+{
+    my $self = shift;
+    my $in= shift;
+    
+    $self->{'yop2label'} = $in;
+}
+# ---------------------------------------------------------------------
+sub __set_yop2name
+{
+    my $self = shift;
+    my $in = shift;
+    
+    $self->{'yop2name'} = $in;
+}
+# ---------------------------------------------------------------------
+sub __set_language_list
+{
+    my $self = shift;
+    my $language_list = shift;
+    
+    $self->{'language_list'} = $language_list;
+}
+
+# ---------------------------------------------------------------------
+sub __set_format_list
+{
+    my $self = shift;
+    my $formats_list = shift;
+    
+    $self->{'formats_list'} = $formats_list;
+}
 
 
 # ---------------------------------------------------------------------

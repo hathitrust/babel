@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  version="1.0">
 
+  version="1.0">
+  <xsl:output indent="yes"/>
   <!--## Global Variables ##-->
 
   <xsl:variable name="coll_name">
@@ -20,7 +21,12 @@
         <title>Hathi Trust Digital Library - Full-text Search - v3</title>
         <xsl:call-template name="load_js_and_css"/>
         <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
+        <xsl:call-template name="IE7hack"/>
+
       </head>
+
+
+
 
       <body class="yui-skin-sam" onLoad="initCheckall()">
 
@@ -46,104 +52,187 @@
           <xsl:call-template name="footer"/>
           <xsl:call-template name="google_analytics" />
         </div>
+        <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>  
       </body>
-      <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>  
-
     </html>
   </xsl:template>
 
   <!-- TEMPLATE -->
-  <xsl:template name="subnav_header">
-    <xsl:call-template name="HathiCol"/>
-  </xsl:template>
+
+  <xsl:template name="IE7hack">
+
+    <xsl:text disable-output-escaping="yes">
+      <![CDATA[<!--[if IE 7]>]]>
+      </xsl:text>
+      
+      <style>
+        <xsl:text disable-output-escaping="yes">
+          /*hide searchform until after we insert table and parens so user doesn't see form elements
+          moving around */
+          #advanced_searchform{
+              
+          visibility:hidden;
+          }
+        </xsl:text>
+      </style>
+      <xsl:text disable-output-escaping="yes">
+        <![CDATA[<![endif]-->]]>
+      </xsl:text>
+    </xsl:template>
+    
+    <!-- TEMPLATE -->
+    <xsl:template name="subnav_header">
+      <xsl:call-template name="HathiCol"/>
+    </xsl:template>
 
   <!-- TEMPLATE -->
   <xsl:template name="PageContent">
     <div class="LsAdvancedPageContent">
       <div id="LS_main">
         <div class="betasearch">
+          <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
           <form id="advanced_searchform" action="ls" name="searchcoll" >
-            
+            <fieldset>
+              <legend class="SkipLink">Search for: </legend>
             <div id="queryArea">
-            <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
+       
         
-            <table id="queryRows" style="width: auto">
+
               <!-- XXX need to change this so it will only add to existing debug values-->
               <!--
               Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
               -->
-              <tr>
-                <td></td>
-                <td>
                   <input type="hidden" name="a" value="srchls" />
-                </td>
-              </tr>
-                <xsl:for-each  select="AdvancedSearch/rows/row">
-                  <tr>
-                    <xsl:call-template name="queryRow">
-                      <xsl:with-param name="rowNum" select="position()"/>
-                    </xsl:call-template>
-                  </tr>
+
+              <!--XXX lets start by converting the query rows from a table to css and then do the rest-->
+
+                <xsl:for-each select="AdvancedSearch/groups/group">
+                  
+                  <!-- insert an and widget here if this is row 3 -->
+                  <!-- XXX this is lame, what is the correct way to pass the context without misusing a foreach? -->
+                  <!--                  <xsl:for-each select="row[@rownum ='3']">-->
+                  <xsl:for-each select="row[@rownum='3']">
+                    <a href="_blank" id="addGroup">+ Add a pair of search fields</a>
+                       <div class="andOR">
+                          <xsl:call-template name="andOr">
+                            <xsl:with-param name="rowNum" select="3"/>
+                          </xsl:call-template>
+                        </div>
+                  </xsl:for-each>
+                 
+               
+                   <fieldset class="group">
+                    <xsl:attribute name="id">
+                      <xsl:text>fieldsetGroup</xsl:text>
+                      <xsl:value-of select ="position()"/>
+                    </xsl:attribute>
+
+                    <legend class="SkipLink">
+                      <xsl:text>group</xsl:text>
+                      <xsl:value-of select ="position()"/>
+                        <xsl:text> Group of two rows of entry boxes</xsl:text>
+                    </legend>
+
+
+
+                    <!-- uncomment below for parenthesis-->
+                     <div class="parenGroup">
+                       <div class="IErow">
+                       <div class="paren parenLeft IEcell"> 
+                       <!--  <xsl:text disable-output-escaping="yes">  &amp;nbsp;( &amp;nbsp;</xsl:text>-->
+                       <xsl:text disable-output-escaping="yes">(</xsl:text>
+                     </div>
+                     
+                      <div class="group IEmiddleCell" >
+                        
+                        <xsl:for-each select="row">
+                          <xsl:variable name="rowNum">
+                            <xsl:value-of select="@rownum"/>
+                          </xsl:variable>
+                          
+                          <xsl:call-template name="queryRow">
+                            <xsl:with-param name="rowNum" select="$rowNum"/>
+                          </xsl:call-template>
+                        </xsl:for-each>
+                      </div>
+
+
+                      <div class="paren parenRight IEcell"><xsl:text disable-output-escaping="yes">)</xsl:text> </div>
+
+
+                    </div>
+                  </div>
+                </fieldset> 
+
+                <xsl:for-each select="row[@rownum='4']">
+                  <a href="_blank" id="removeGroup">- Remove this pair of search fields</a>
                 </xsl:for-each>
-             
                 
-              </table>
+              </xsl:for-each>
+                
+
               <div id="queryErrMsg"></div>
               <br/>
-            </div>
+              </div> 
+          </fieldset>
               <!-- Limit area starts here ############################################   -->
-              <div id="limits">
-            <h3>Limit To:</h3>
+            
+            <fieldset class="limits">
+              <legend class="limitTo">Limit to: </legend>
+
+
+           <div id="limits">
 
             <!--XXX hardcoded accessability stuff-->
-            <label for="fullonly">Full view only</label>        
-            <input type="checkbox" value="ft" name="lmt" id="fullonly"/>
+            <label for="fullonly" >Full view only</label>        
+            <input type="checkbox"  name="lmt" id="fullonly"  value='ft'>
+              <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='lmt']='ft'">
+                <xsl:attribute name="checked">
+                  <xsl:text>checked</xsl:text>
+                </xsl:attribute>
+              </xsl:if>
+            </input>
 
             
             
             <span style="margin-left: 4em">
               <label for="yop">Year of publication:  </label>        
-                   <select id="yop" name="yop" onchange="changeRange('yop')">
-                     <option value="before">Before or during</option>
-                     <option value="after" selected="selected" >During or after</option>
-                     <option value="between">Between</option>
-                     <option value="in">Only during</option>
-                   </select>
-                   
-                   <!-- XXX these boxes need labels for accessability -->
-                   <label for="yop-start" class="SearchLabel">Starting Year  </label>        
-                   <input class="yop" id="yop-start" type="text" size="4"  name="pdate_start" />
-                   <span class="yop" id="yop-between" > and </span>
-                   <label for="yop-end" class="SearchLabel">Ending Year</label>        
-                   <input class="yop"  id="yop-end" type="text" size="4" name="pdate_end"/>
-                   <label for="yop-in" class="SearchLabel">In Year</label>        
-                   <input class="yop" id="yop-in" type="text" size="4" name="pdate"/>
-
-                 </span>
-                 <div id="yopErrMsg"></div>
-                 
-                 <table id="multiFacets" class="multiFacets" style="width: auto">
-                   <tr>
-                     <th>Language: </th>
-                     <th>Original Format: </th>
-                   </tr>
-                   <tr>
-                     <td>
-                       <xsl:copy-of select="LanguageChunk"/>
-                     </td>
-                     <td>
-                       <xsl:copy-of select="FormatChunk"/>
-                     </td>
-                   </tr>
-                 </table>
-               </div>
-
-
-               
+              <select id="yop" name="yop" onchange="changeRange('yop')"  >
+                <xsl:copy-of select="AdvancedSearch/yop/yopOptions/*" />
+              </select>
+              
+              <xsl:copy-of select="AdvancedSearch/yop/span[@name='yopInputs']"/>
+              
+            </span>
+            <div id="yopErrMsg"></div>
+            
+            
+            
+            <div id="multiFacets">
+              <div class="multiFacets" id="language">
+                
+                <label for="facet_lang" class="xSearchLabel">Language</label>
+                <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="8">
+                  <xsl:copy-of select="AdvancedSearch/facets/language_list/*"/>
+                </select>
+              </div>
+              
+              <div class="multiFacets" id="format">
+                <label for="facet_format" class="xSearchLabel">Limit to Original Format</label>
+                
+                <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="8">
+                  <xsl:copy-of select="AdvancedSearch/facets/formats_list/*"/>
+                </select>
+              </div>
+            </div>
+          </div><!-- end multiFacets -->
+        </fieldset>
+        
+<div id="findbuttons">
+               <!-- <button type="reset" name="reset" id="reset">Clear/reset</button>-->
+               <a href="" id="reset">Clear/reset</a>
                <button type="submit" name="srch" id="srch" >Find</button>
-
-               
-               <button type="reset" name="reset" id="reset">Clear/reset</button>
+             </div>
                <div id="submitErrMsg"></div>
              </form>
              </div>
@@ -151,33 +240,91 @@
          </div>
      </xsl:template>
 
-
-
-     <xsl:template name="queryRow">
+     <!-- ###################################################################### -->
+     <xsl:template name="andOr">
        <xsl:param name="rowNum"/>
        <xsl:variable name="opNum">
          <xsl:text>op</xsl:text><xsl:value-of select="$rowNum"/>
        </xsl:variable>
-       <xsl:variable name="fieldNum">
-         <xsl:text>field</xsl:text><xsl:value-of select="$rowNum"/>
-       </xsl:variable>
-       <xsl:variable name="qNum">
-         <xsl:text>q</xsl:text><xsl:value-of select="$rowNum"/>
-       </xsl:variable>
-       <xsl:variable name="anyallNum">
-         <xsl:text>anyall</xsl:text><xsl:value-of select="$rowNum"/>
-       </xsl:variable>
+       
+       <!-- skip first row -->
+       <xsl:if test="$rowNum != 1">
 
+         <select class="AndOr">
+         <xsl:attribute name="name" >
+           <xsl:value-of select="$opNum"/>
+         </xsl:attribute>
+         <xsl:attribute name="id" >
+           <xsl:value-of select="$opNum"/>
+         </xsl:attribute>
+         <xsl:variable name="op">
+           <xsl:value-of select="op"/>
+         </xsl:variable>
+         
+         <option value="AND" >         
+         <xsl:if test="$op  = 'AND'">
+           <xsl:attribute name="selected"/>
+         </xsl:if>             
+         <xsl:text>AND</xsl:text>
+       </option>
+       
+       <option value="OR" >         
+       <xsl:if test="$op  = 'OR'">
+         <xsl:attribute name="selected"></xsl:attribute>
+       </xsl:if>             
+       <xsl:text>OR</xsl:text>
+     </option>
+     
+     <!-- <option value="NOT" >NOT</option> -->
+   </select>
+   
+ </xsl:if>   
+ </xsl:template>
+ 
+ 
+ <xsl:template name="queryRow">
+   <xsl:param name="rowNum"/>
+   <xsl:variable name="opNum">
+     <xsl:text>op</xsl:text><xsl:value-of select="$rowNum"/>
+   </xsl:variable>
+   <xsl:variable name="fieldNum">
+     <xsl:text>field</xsl:text><xsl:value-of select="$rowNum"/>
+   </xsl:variable>
+   <xsl:variable name="qNum">
+     <xsl:text>q</xsl:text><xsl:value-of select="$rowNum"/>
+   </xsl:variable>
+   <xsl:variable name="anyallNum">
+     <xsl:text>anyall</xsl:text><xsl:value-of select="$rowNum"/>
+   </xsl:variable>
 
-       <!-- fix to read the row/op entry instead -->       
-       <xsl:if test="$rowNum=1">
-         <td></td>
-       </xsl:if>
-       <xsl:if test="$rowNum!=1">
-         <td>
-           <!-- XXX fix label for this -->
+    
 
-           <!--XXX accessability following code should be a template call-->
+   <div class="advrow">
+
+   <ul class="advrow">
+     <!-- fix to read the row/op entry instead -->       
+
+     <!--XXX lose the parens for now
+     <xsl:if test="$rowNum = 1 or $rowNum =3">
+       <li>
+       <span class="p">
+         <xsl:text> ( </xsl:text>
+       </span>
+       </li>
+     </xsl:if>
+     -->
+
+     <xsl:if test="$rowNum=1 or  $rowNum = 3" >
+       <li class="col">
+         <span class="spacer">
+         </span>
+       </li>
+     </xsl:if>
+
+     <xsl:if test="$rowNum=2 or $rowNum=4 ">
+       <li class="col">
+         <!--XXX accessability following code should be a template call-->
+         <div class="andOR">
            <xsl:element name="label" >
              <xsl:attribute name="class">
                <xsl:text>SearchLabel</xsl:text>
@@ -187,53 +334,27 @@
              </xsl:attribute>
              <xsl:text>Operator </xsl:text>
            </xsl:element>
-
-
-
-           <select class="AndOr">
-             <xsl:attribute name="name" >
-               <xsl:value-of select="$opNum"/>
-             </xsl:attribute>
-             <xsl:attribute name="id" >
-               <xsl:value-of select="$opNum"/>
-             </xsl:attribute>
-             <xsl:variable name="op">
-               <xsl:value-of select="op"/>
-             </xsl:variable>
-
-             <option value="AND" >         
-             <xsl:if test="$op  = 'AND'">
-               <xsl:attribute name="selected"/>
-             </xsl:if>             
-             <xsl:text>AND</xsl:text>
-             </option>
-             
-             <option value="OR" >         
-             <xsl:if test="$op  = 'OR'">
-               <xsl:attribute name="selected"></xsl:attribute>
-             </xsl:if>             
-             <xsl:text>OR</xsl:text>
-             </option>
-
-             <!-- <option value="NOT" >NOT</option> -->
-           </select>
-         </td>
-       </xsl:if>
-
-
-         <td>
-           <xsl:for-each  select="/MBooksTop/AdvancedSearch/AnyAll">
-   
-             <xsl:call-template name="BuildHtmlSelectCustom">
-               <xsl:with-param name="id">
-                 <xsl:value-of select="$anyallNum"/>
-               </xsl:with-param>
-               <xsl:with-param name="class" select="'anyallWidget'"/>
-               <xsl:with-param name="selected">
-                 <!--XXX need to put this in the xml from a config file somewhere hardcode them all to all for now-->
-                 <xsl:value-of select="/MBooksTop/AdvancedSearch/rows/row[$rowNum]/anyall"/>
-               </xsl:with-param>
-               <xsl:with-param name="name">
+           
+           <xsl:call-template name="andOr">
+             <xsl:with-param name="rowNum" select="$rowNum"/>
+           </xsl:call-template>
+         </div>
+       </li>
+     </xsl:if>
+     
+     
+     <li class="col">
+       <xsl:for-each  select="/MBooksTop/AdvancedSearch/AnyAll">
+         <xsl:call-template name="BuildHtmlSelectCustom">
+           <xsl:with-param name="id">
+             <xsl:value-of select="$anyallNum"/>
+           </xsl:with-param>
+           <xsl:with-param name="class" select="'anyallWidget'"/>
+           <xsl:with-param name="selected">
+             <!--XXX need to put this in the xml from a config file somewhere hardcode them all to all for now-->
+             <xsl:value-of select="/MBooksTop/AdvancedSearch/groups/group/row[@rownum=$rowNum]/anyall"/>
+           </xsl:with-param>
+           <xsl:with-param name="name">
                  <xsl:value-of select="$anyallNum"/>
                </xsl:with-param>
                <xsl:with-param name="labelbase">
@@ -246,10 +367,10 @@
 
              </xsl:call-template>
            </xsl:for-each>
-         </td>
+         </li>
 
        
-       <td>
+       <li class="col">
          <!--XXX replace this by a call to a template -->
          <xsl:element name="label" >
           <xsl:attribute name="class">
@@ -263,7 +384,7 @@
         </xsl:element>
 
 
-         <input type="text"  size="50" class="querybox" >
+         <input type="text"   class="querybox" >
            <xsl:attribute name="id">
              <xsl:value-of select="$qNum"/>
            </xsl:attribute>
@@ -276,12 +397,12 @@
            </xsl:attribute>
 
          </input>
-       </td>
+       </li>
           
-       <td id="in">
+       <li class="in">
          <xsl:text> in </xsl:text>
-       </td>
-       <td>
+       </li>
+       <li class="col">
          <xsl:for-each  select="/MBooksTop/AdvancedSearch/fieldlist">
              <xsl:call-template name="BuildHtmlSelectCustom">
                <xsl:with-param name="id">
@@ -290,7 +411,7 @@
                <xsl:with-param name="class" select="'fieldWidget'"/>
                <!--  <xsl:with-param name="selected" select="AdvancedSearch/rows/row[$rownum]/field"/>-->
                <xsl:with-param name="selected">
-                 <xsl:value-of select="/MBooksTop/AdvancedSearch/rows/row[$rowNum]/field"/>
+                 <xsl:value-of select="/MBooksTop/AdvancedSearch/groups/group/row[@rownum=$rowNum]/field"/>
                </xsl:with-param>
                <xsl:with-param name="name">
                  <xsl:value-of select="$fieldNum"/>
@@ -305,9 +426,10 @@
              </xsl:call-template>
            </xsl:for-each>
        
-         </td>
+         </li>
 
-       
+       </ul>
+     </div>
      </xsl:template>
 
      <!--XXX######################################################################-->
@@ -326,7 +448,8 @@
     <!-- accessability 
          add label for id where?
          -->
-    
+
+
       <xsl:if test="$labelbase">
 
         <xsl:element name="label" >
