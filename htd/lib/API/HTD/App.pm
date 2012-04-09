@@ -740,22 +740,24 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-use constant OCT_1_2012 => 1349049600;
 
 sub __authNZ_Success {
     my $self = shift;
     my $P_Ref = shift;    
 
+    my $Q = $self->query;
+    my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
+    
     # Get an authentication object.
     my $hauth = new API::HTD::HAuth({
-                                     _query => $self->query, 
-                                     _dbh   => $self->__get_DBH,
-                                     _debug => $DEBUG,
+                                     _query       => $Q,
+                                     _dbh         => $self->__get_DBH,
+                                     _debug       => $DEBUG,
                                     });
     $self->__setMember('hauth', $hauth);
 
     # Allow through back door?
-    if ($hauth->H_allowDevelopmentAuth()) {
+    if ($hauth->H_allow_development_auth()) {
         return 1;
     }
     # POSSIBLY NOTREACHED
@@ -763,25 +765,14 @@ sub __authNZ_Success {
     my $Success = 0;
     
     # Authenticate and authorize an OAuth request
-    if ($hauth->H_request_is_oauth($self->query)) {
+    if ($hauth->H_request_is_oauth($Q)) {
         $Success = ($self->__authenticated() && $self->__authorized($P_Ref));
     }
+    elsif (! $hauth->H_allow_non_oauth_by_grace($accessType)) {
+        $self->__setErrorResponseCode(403, "access_type=$accessType in non-oauth request not allowed in grace period");    
+    }
     else {
-        if (time() < OCT_1_2012) {
-            # Special support if not OAuth and in grace period
-            my $resource = $P_Ref->{'resource'};
-            my $accessType = $self->__getAccessTypeByResource($resource);
-            if (grep(/^$accessType$/, ('open', 'limited'))) {
-                $Success = 1;
-            }
-            else {
-                $self->__setErrorResponseCode(403, "access_type=$accessType not authorized in grace period");
-            }
-        }
-        else {
-            # Inevitable failure
-            $Success = ($self->__authenticated() && $self->__authorized($P_Ref));
-        }
+        $Success = 1;
     }
     
     exit 0 if ($DEBUG eq 'auth');

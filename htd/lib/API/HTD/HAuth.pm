@@ -51,8 +51,10 @@ $ENV{FORCE_AUTHROIZATION_FAILURE} = 0;
 
 $ENV{FORCE_SUCCESS} = 0;
 $ENV{ALLOW_DEVELOPMENT_OVERRIDE} = 0;
+$ENV{DISALLOW_GRACE_PERIOD} = 0;
 
-my $DEBUG;
+
+my $DEBUG = '';
 
 use constant REQUEST_METHOD => 'GET';
 # Number of production seconds in 5 minutes. To force an expired
@@ -86,12 +88,15 @@ sub _initialize {
 
     return if $ENV{FORCE_SUCCESS};
     
-    my $oauth_consumer_key = $args->{_query}->param('oauth_consumer_key');
-    API::HTD::AuthDb::update_access($args->{_dbh}, $oauth_consumer_key)
-        if (defined $oauth_consumer_key);
-
     $DEBUG = $args->{_debug};
+
+    my $dbh = $args->{_dbh};
+    my $oauth_consumer_key = $args->{_query}->param('oauth_consumer_key');
+
+    API::HTD::AuthDb::update_access($dbh, $oauth_consumer_key)
+        if (defined $oauth_consumer_key);
 }
+
 
 # ---------------------------------------------------------------------
 
@@ -116,14 +121,14 @@ sub H_auth_valid {
 
 # ---------------------------------------------------------------------
 
-=item H_allowDevelopmentAuth
+=item H_allow_development_auth
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub H_allowDevelopmentAuth {
+sub H_allow_development_auth {
     my $self = shift;
 
     my $dev = ($ENV{ALLOW_DEVELOPMENT_OVERRIDE} && (defined $ENV{HT_DEV})) ? 1 : 0;
@@ -133,6 +138,32 @@ sub H_allowDevelopmentAuth {
 }
 
 
+# ---------------------------------------------------------------------
+
+=item H_allow_non_oauth_by_grace
+
+Special support for grace period if OAuth params absent
+
+=cut
+
+# ---------------------------------------------------------------------
+use constant OCT_1_2012 => 1349049600;
+
+sub H_allow_non_oauth_by_grace {
+    my $self = shift;
+    my $accessType = shift;
+    
+    return 1 if ($ENV{FORCE_SUCCESS});
+    return 0 if ($ENV{DISALLOW_GRACE_PERIOD});
+    
+    if (time() < OCT_1_2012) {
+        if (grep(/^$accessType$/, ('open', 'limited'))) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 # ---------------------------------------------------------------------
 
@@ -214,8 +245,8 @@ sub __check_signature {
     my ($Q, $dbh, $access_key, $client_data) = @_;
 
     my $signed_url = $Q->url({
-                              -path_info=>1,
-                              -query=>1
+                              -path_info => 1,
+                              -query     => 1
                              });
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
     my ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
@@ -241,8 +272,8 @@ sub H_request_is_oauth {
     my $self = shift;
     my $Q = shift;
 
-    my $access_key = $Q->param('oauth_consumer_key') || 0;
-    return $access_key;
+    my @params = map { lc($_) } $Q->param;
+    return grep(/^oauth/, @params);
 }
 
 

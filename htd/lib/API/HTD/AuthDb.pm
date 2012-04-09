@@ -38,10 +38,12 @@ Description
 sub get_secret_by_active_access_key {
     my ($dbh, $access_key) = @_;
 
+    my $l_access_key = ($access_key ? $access_key : 0);
+    
     my $statement = qq{SELECT secret_key FROM da_authentication WHERE access_key=? AND activated=?};
-    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, 1);
+    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $l_access_key, 1);
     my $secret_key = $sth->fetchrow_array();
-    hLOG_DEBUG(qq{get_secret_by_active_access_key: $statement: $access_key 1 ::: SECRET_KEY});
+    hLOG_DEBUG(qq{get_secret_by_active_access_key: $statement: $l_access_key 1 ::: SECRET_KEY});
 
     return $secret_key;
 }
@@ -209,6 +211,26 @@ sub get_privileges_by_access_key {
 
     hLOG_DEBUG(qq{get_privileges_by_access_key: $statement: $access_key ::: $code});
     return $code;
+}
+
+# ---------------------------------------------------------------------
+
+=item get_access_key_by_userid
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_access_key_by_userid {
+    my ($dbh, $userid) = @_;
+
+    my $statement = qq{SELECT access_key FROM da_authentication WHERE userid=?};
+    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $userid);
+    my $access_key = $sth->fetchrow_array() || 0;
+
+    hLOG_DEBUG(qq{get_access_key_by_userid: $statement: $userid ::: $access_key});
+    return $access_key;
 }
 
 1;

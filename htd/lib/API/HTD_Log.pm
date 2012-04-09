@@ -63,7 +63,6 @@ sub hLOG {
     
     $s = Utils::Time::iso_Time('time') . " $ENV{REMOTE_ADDR} " . $s; 
     if (open(HLOG, ">>:encoding(UTF-8)", $logfile_path)) {
-        HLOG->autoflush(1);
         print HLOG qq{$s\n};
         close(HLOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);
