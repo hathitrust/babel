@@ -18,7 +18,7 @@ $(function()
 
   if ($.browser.msie && $.browser.version < 8)
   {
-    //    alert("IE x detected version prior to IE8");
+    //    alert("IE xxxx detected version prior to IE8");
     $("#advanced_searchform").css('visibility','visible');
 
     /**  Generic code
@@ -28,6 +28,10 @@ $(function()
 **/
     // we need to replace the div.IEcell with a td not wrap it
     //     $(".IEcell").wrap('<td class="IEtd"/>');
+    // need to copy group number
+    $(".IEcell.parenRight.parenGroup1").replaceWith('<td class="IEtd paren parenGroup1">)</td>');
+    $(".IEcell.parenLeft.parenGroup1").replaceWith('<td class="IEtd paren  parenGroup1">(</td>');
+
     $(".IEcell.parenRight").replaceWith('<td class="IEtd paren">)</td>');
     $(".IEcell.parenLeft").replaceWith('<td class="IEtd paren">(</td>');
     // ok to wrap the group div in the middle
@@ -37,21 +41,30 @@ $(function()
 
   }
 
+  //hide first paren group until we have two sets of rows
+  // jquery hide does both display:hidden and visibility:invisible
+   
+  //$(".parenGroup1").hide();
 
     showHidePdates();
 
+    
     if($('#q3').val() == "" && $('#q4').val() == "")
     {
+      $(".parenGroup1").css('visibility','hidden');
       hideGroup2();
       $('#removeGroup').hide();
     }
     else
     {
       $('#addGroup').hide();
+      // make 
     }
     $('#addGroup').click(function(event) 
                      {
                        showGroup2();
+                       //                         $(".parenGroup1").show();
+                       $(".parenGroup1").css('visibility','visible');
                        $('#removeGroup').show();
                        $('#addGroup').hide();
                        event.preventDefault();
@@ -60,7 +73,13 @@ $(function()
 
     $('#removeGroup').click(function(event) 
                      {
+                       // remove any q3/q4 since we are "removing the group"
+                       //$("XXX#q3").val("");
+                       //$("XXX#q4").val("");
                        hideGroup2();
+                       
+                       //                       $(".parenGroup1").hide();
+                       $(".parenGroup1").css('visibility','hidden');
                        $('#removeGroup').hide();
                        $('#addGroup').show();
                        event.preventDefault();
@@ -339,7 +358,15 @@ function redirect(rowNums)
                          // this handles everything else
                          else
                          {
-                           addInput(name,value);
+                           if (name == "srch")
+                           {
+                             //  alert("IE 7 trying to add srch=value" + name +" " + value);
+                           }
+
+                           else
+                           {
+                             addInput(name,value);
+                           }
                          }
                        }
                      }
@@ -414,7 +441,7 @@ function addInput(name,value)
     for (i=0;i<=value.length;i++)
     {
       $('<input>').attr({
-        type: 'hidden',
+        type:  'hidden',
             name: name,
             value: value[i]
             }).appendTo("#newform");
@@ -456,9 +483,9 @@ function changeRange(id)
 
 function hideGroup2(){
   // hide them unless there are values to show
-  // test for non-blank q3 or q4 if they are non-blank then we don't hide
   $("#op3").hide();
   $("#fieldsetGroup2").hide();
+  
 }
 
 

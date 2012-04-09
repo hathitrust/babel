@@ -138,12 +138,17 @@
                     <!-- uncomment below for parenthesis-->
                      <div class="parenGroup">
                        <div class="IErow">
-                       <div class="paren parenLeft IEcell"> 
-                       <!--  <xsl:text disable-output-escaping="yes">  &amp;nbsp;( &amp;nbsp;</xsl:text>-->
-                       <xsl:text disable-output-escaping="yes">(</xsl:text>
-                     </div>
+                         <!--                         <div class="paren parenLeft IEcell"> -->
+                         <div>
+                         <xsl:attribute name="class">
+                           <xsl:text>parenGroup</xsl:text>
+                           <xsl:value-of select="position()"/>
+                           <xsl:text> paren parenLeft IEcell</xsl:text>
+                         </xsl:attribute>
+                         <xsl:text disable-output-escaping="yes">(</xsl:text>
+                       </div>
                      
-                      <div class="group IEmiddleCell" >
+                       <div class="group IEmiddleCell" >
                         
                         <xsl:for-each select="row">
                           <xsl:variable name="rowNum">
@@ -157,8 +162,15 @@
                       </div>
 
 
-                      <div class="paren parenRight IEcell"><xsl:text disable-output-escaping="yes">)</xsl:text> </div>
+                      <div>
+                         <xsl:attribute name="class">
+                           <xsl:text>parenGroup</xsl:text>
+                           <xsl:value-of select="position()"/>
+                           <xsl:text> paren parenRight IEcell</xsl:text>
+                         </xsl:attribute>
 
+                         <xsl:text disable-output-escaping="yes">)</xsl:text> 
+                       </div>
 
                     </div>
                   </div>

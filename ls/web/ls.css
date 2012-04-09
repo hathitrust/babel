@@ -28,9 +28,11 @@ td.IEtd.paren{
                vertical-align:middle;
                line-height:100%;
                font-family:monospaced;
+               color:#bfbfbf ;
  }
 
 /*end IE7 hacks*/
+
 div.parenGroup{  
 /*                outline:1px dashed red;*/
                 display:table-row;
@@ -53,6 +55,7 @@ div.paren{
            font-size:700%;
            vertical-align:middle;
            font-family:monospace;
+           color:#bfbfbf ;
 
  }
 
