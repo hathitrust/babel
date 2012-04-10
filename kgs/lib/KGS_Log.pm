@@ -52,7 +52,6 @@ sub LOG {
     
     $s = Utils::Time::iso_Time('time') . " $ENV{REMOTE_ADDR} " . $s; 
     if (open(KLOG, ">>:encoding(UTF-8)", $logfile_path)) {
-        KLOG->autoflush(1);
         print KLOG qq{$s\n};
         close(KLOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);

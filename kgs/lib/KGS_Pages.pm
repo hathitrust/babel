@@ -28,9 +28,38 @@ use MdpConfig;
 
 use HOAuth::Keys;
 use HOAuth::Signature;
+use KGS;
 use KGS_Db;
 use KGS_Utils;
 use KGS_Validate;
+
+# ---------------------------------------------------------------------
+
+=item get_portal_page
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_portal_page {
+    my $C = shift;
+    
+    my $config = $C->get_object('MdpConfig');
+
+    my $filename = $config->get('portal_html_file');
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
+    __insert_chunk($C, $page_ref, 'header_chunk');
+    __insert_chunk($C, $page_ref, 'ga_chunk');
+
+    my $kgs_link = KGS_Portal::get_kgs_link($C);
+    $$page_ref =~ s,___KGS___,$kgs_link,g;
+
+    my $wayf_link = KGS_Portal::get_portal_wayf_link($C);
+    $$page_ref =~ s,___WAYF___,$wayf_link,g;
+
+    return $page_ref;
+}
 
 # ---------------------------------------------------------------------
 
@@ -123,6 +152,37 @@ sub get_request_reply_page {
     return $page_ref;
 }
 
+
+# ---------------------------------------------------------------------
+
+=item get_auth_reply_page
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_auth_reply_page {
+    my $C = shift;
+    
+    my $config = $C->get_object('MdpConfig');
+    
+    my $filename = $config->get('auth_reply_html_file');
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . $filename);
+    __insert_chunk($C, $page_ref, 'header_chunk');
+    __insert_chunk($C, $page_ref, 'ga_chunk');
+
+    ___insert_hathitrust_email($C, $page_ref);
+
+    my $htdc_link = KGS::get_data_api_client_link($C);
+    $$page_ref =~ s,___DATA_API_CLIENT___,$htdc_link,g;
+
+    my $portal_link = KGS_Portal::get_portal_link($C);
+    $$page_ref =~ s,___PORTAL___,$portal_link,g;
+
+    return $page_ref;
+}
+
 # ---------------------------------------------------------------------
 
 =item get_confirmation_page
@@ -195,9 +255,7 @@ sub get_missing_params_page {
     my $msg = join(', ', @msg_elems);
     $$page_ref =~ s,___MISSING_PARAMS___,$msg,g;
 
-    my $uri = $config->get('kgs_request_uri');
-    my $pathinfo = $config->get('kgs_request_pathinfo');
-    my $url = 'https://' . $ENV{HTTP_HOST} . $uri . $pathinfo;
+    my $url = __get_request_link($C);
     $$page_ref =~ s,___REQUEST_URL___,$url,g;
 
     return $page_ref;
@@ -289,9 +347,7 @@ sub get_max_registrations_page {
     my $max = KGS_Validate::MAX_ATTEMPTED_REGISTRATIONS;
     $$page_ref =~ s,___MAX_ATTEMPTED_REGISTRATIONS___,$max,g;
 
-    my $uri = $config->get('kgs_request_uri');
-    my $pathinfo = $config->get('kgs_request_pathinfo');
-    my $url = 'https://' . $ENV{HTTP_HOST} . $uri . $pathinfo;
+    my $url = __get_request_link($C);
     $$page_ref =~ s,___REQUEST_URL___,$url,g;
 
     return $page_ref;
@@ -320,14 +376,32 @@ sub get_max_confirmations_page {
     my $max = KGS_Validate::MAX_ACTIVE_REGISTRATIONS;
     $$page_ref =~ s,___MAX_ACTIVE_REGISTRATIONS___,$max,g;
 
-    my $uri = $config->get('kgs_request_uri');
-    my $pathinfo = $config->get('kgs_request_pathinfo');
-    my $url = 'https://' . $ENV{HTTP_HOST} . $uri . $pathinfo;
+    my $url = __get_request_link($C);
     $$page_ref =~ s,___REQUEST_URL___,$url,g;
 
     return $page_ref;
 }
 
+
+# ---------------------------------------------------------------------
+
+=item __get_request_link
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_request_link {
+    my $C = shift;
+    
+    my $config = $C->get_object('MdpConfig');
+    my $pathinfo = $config->get('kgs_request_pathinfo');
+    
+    my $url = 'http://' . $ENV{HTTP_HOST} . $pathinfo;
+    
+    return KGS_Utils::adjust_url($url);
+}
 
 
 # ---------------------------------------------------------------------

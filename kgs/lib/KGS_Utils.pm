@@ -13,29 +13,40 @@ use MdpConfig;
 
 use KGS_Db;
 
+
 # ---------------------------------------------------------------------
 
-=item get_endpoint
+=item adjust_url
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_endpoint {
-    my $C = shift;
-    
-    my $endpoint;    
-    if ($ENV{TERM}) {
-        return 'localhost';
+sub adjust_url {
+    my $url = shift;
+
+    if ($ENV{AUTH_TYPE} eq 'shibboleth') {
+        $url =~ s,/cgi,/shcgi,g;
     }
-    else {
-        $endpoint = $ENV{HTTP_HOST};
+    if (defined $ENV{AUTH_TYPE}) {
+        $url =~ s,^http(:|%3A),https$1,;
     }
     
-    return $endpoint;
+    return $url;
 }
 
+sub get_client_supported_params {
+    return [ @{ get_client_req_params() }, @{ get_client_opt_params() } ];
+}
+
+sub get_client_req_params {
+    return [ qw(name org email) ];
+}
+
+sub get_client_opt_params {
+    return [ qw(debug) ];
+}
 
 # ---------------------------------------------------------------------
 
@@ -54,6 +65,30 @@ sub make_client_data {
         if (grep(/^$p$/, @$supported)) {
             $cd->{$p} = $Q->param($p);
         }
+    }
+    
+    return $cd;
+}
+
+# ---------------------------------------------------------------------
+
+=item make_empty_client_data
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub make_empty_client_data {
+    my $supported = shift;
+    my $injected = shift;
+    
+    my $cd;
+    foreach my $p (@$supported) {
+        $cd->{$p} = ' ';
+    }
+    foreach my $i (keys %$injected) {
+        $cd->{$i} = $injected->{$i};
     }
     
     return $cd;

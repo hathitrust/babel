@@ -35,6 +35,8 @@ use Context;
 use Database;
 use Utils;
 use MdpConfig;
+use Session;
+use Auth::Auth;
 
 use KGS;
 use KGS_Db;

@@ -5,8 +5,8 @@
     <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
     <title>HathiTrust Key Service - Key Request</title>
     <meta http-equiv="Content-Language" content="en-us" />
-    <script  type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
-    <script  type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
+    <script  type="text/javascript" src="//code.jquery.com/jquery-latest.js"></script>
+    <script  type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
     <link rel="stylesheet" type="text/css" href="/kgs/kgs.css"/>    
     <script type="text/javascript">
       $(document).ready(function(){
@@ -27,25 +27,25 @@
           <fieldset class="request">
             <legend>Please submit the following information to request keys</legend>
             <div class="request">
-              <label class="request">required field <span class="req">&#x2022 </span></label>
+              <label class="request">required field <span class="req">* </span></label>
             </div>
             <br/><br/>
             <div class="request">
-              <label class="request" for="htname">name <span class="req">&#x2022 </span></label>
+              <label class="request" for="htname">name <span class="req">* </span></label>
               <input id="htname" name="name" class="request required"/>
             </div>
             <div class="request">
-              <label class="request" for="htorg">organization <span class="req">&#x2022 </span></label>
+              <label class="request" for="htorg">organization <span class="req">* </span></label>
               <input id="htorg" name="org" class="request required"/>
             </div>
             <div class="request">
-              <label class="request" for="htemail">e-mail <span class="req">&#x2022 </span></label>
+              <label class="request" for="htemail">e-mail <span class="req">* </span></label>
               <input id="htemail" name="email" class="request required email" />
             </div>
             <div class="request">
               <input class="submit" id="request" type="submit" value="Submit"/>
             </div>
-            <input type="hidden" name="debug" value="___DEBUG___"/>
+
           </fieldset>
         </form>
         

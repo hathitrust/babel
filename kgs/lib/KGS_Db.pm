@@ -40,12 +40,17 @@ Description
 sub insert_client_data {
     my ($dbh, $client_data, $access_key, $secret_key) = @_;
 
-    my ($name, $org, $email) = ($client_data->{name}, $client_data->{org}, $client_data->{email});
+    my ($name, $org, $email, $userid) = ($client_data->{name}, $client_data->{org}, $client_data->{email}, $client_data->{userid});
     
-    my $statement = qq{INSERT INTO da_authentication SET access_key=?, secret_key=?, name=?, org=?, email=?};
-    DEBUG('db', qq{insert_client_data: $statement : $access_key, SECRET_KEY, $name, $org, $email});
-    my $sth = DbUtils::prep_n_execute($dbh, $statement, 
-                                      $access_key, $secret_key, $name, $org, $email);
+    my $statement = 
+      qq{INSERT INTO da_authentication SET access_key=?, secret_key=?, name=?, org=?, email=?}
+        . ((defined $userid) ?', userid=?' : '' );
+    
+    my @values = ($access_key, $secret_key, $name, $org, $email);
+    push(@values, $userid) if (defined $userid);
+ 
+    DEBUG('db', qq{insert_client_data: $statement : $access_key, SECRET_KEY, $name, $org, $email, $userid});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, @values);
 }
 
 # ---------------------------------------------------------------------
@@ -63,6 +68,26 @@ sub count_client_registrations {
     my $statement = qq{SELECT count(*) FROM da_authentication WHERE email=? AND activated=?};
     DEBUG('db', qq{count_client_registrations: $statement, $email, $activated});
     my $sth = DbUtils::prep_n_execute($dbh, $statement, $email, $activated);
+    my $num = $sth->fetchrow_array || 0;
+
+    return $num;
+}
+
+# ---------------------------------------------------------------------
+
+=item count_client_auth_registrations
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub count_client_auth_registrations{
+    my ($dbh, $userid) = @_;
+
+    my $statement = qq{SELECT count(*) FROM da_authentication WHERE userid=?};
+    DEBUG('db', qq{count_client_registrations: $statement, $userid});
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $userid);
     my $num = $sth->fetchrow_array || 0;
 
     return $num;

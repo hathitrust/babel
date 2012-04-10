@@ -19,6 +19,7 @@ This package provides the handlers for the HathiTrust Key Generation Service.
 use strict;
 
 use CGI;
+use URI;
 
 use base qw(CGI::Application);
 use CGI::Application::Plugin::Routes;
@@ -63,33 +64,15 @@ sub setup {
     
     $self->routes([@routes]);
     $self->start_mode('RequestHandler');
-    
-    $self->{_client_req_params} = [ qw(name org email) ];
-    $self->{_client_opt_params} = [ qw(debug) ];
-    $self->{_supported_params} = 
-      [ @{ $self->{_client_req_params} }, @{ $self->{_client_opt_params} } ];
 }
 
-sub get_client_supported_params {
-    my $self = shift;
-    return $self->{_supported_params};
-}
 
-sub get_client_req_params {
-    my $self = shift;
-    return $self->{_client_req_params};
-}
-
-sub get_client_opt_params {
-    my $self = shift;
-    return $self->{_client_opt_params};
-}
 
 # ---------------------------------------------------------------------
 
 =item RequestHandler
 
-Default handler. Present key request form. Server forces public https
+Present key request form. Server forces public https
 so form submission is protected.
 
 =cut
@@ -127,13 +110,13 @@ sub RegisterHandler {
     KGS_Utils::kgs_clean_cgi($Q);
     
     # filter
-    my $client_data = KGS_Utils::make_client_data($Q, $self->get_client_supported_params);
+    my $client_data = KGS_Utils::make_client_data($Q, KGS_Utils::get_client_supported_params);
     
     my ($valid, $errors);
     $self->header_type('header');
     
     # do server-side backup of javascript form validation
-    ($valid, $errors) = KGS_Validate::validate_form_params($C, $client_data, $self->get_client_req_params);
+    ($valid, $errors) = KGS_Validate::validate_form_params($C, $client_data, KGS_Utils::get_client_req_params);
     if (! $valid) {
         return KGS_Pages::get_missing_params_page($C, $errors);
     }
@@ -164,6 +147,7 @@ sub RegisterHandler {
     return KGS_Pages::get_request_reply_page($C, $client_data);
 }
 
+
 # ---------------------------------------------------------------------
 
 =item ConfirmHandler
@@ -188,7 +172,7 @@ sub ConfirmHandler {
     
     my $access_key = $Q->param('oauth_consumer_key');
     
-    my $client_data = KGS_Utils::remake_client_data($C, $Q, $dbh, $access_key, $self->get_client_opt_params);
+    my $client_data = KGS_Utils::remake_client_data($C, $Q, $dbh, $access_key, KGS_Utils::get_client_opt_params);
     my $secret_key = KGS_Db::get_secret_by_access_key($dbh, $access_key);
     my $key_pair = HOAuth::Keys::make_key_pair_from($access_key, $secret_key);
     
@@ -230,6 +214,27 @@ sub ConfirmHandler {
 
 # ---------------------------------------------------------------------
 
+=item get_data_api_client_link
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_data_api_client_link {
+    my $C = shift;
+    
+    my $config = $C->get_object('MdpConfig');
+    
+    my $uri = $config->get('data_api_client_uri');
+    my $url = 'http://' . $ENV{HTTP_HOST} . $uri;
+    
+    return KGS_Utils::adjust_url($url);
+}
+
+
+# ---------------------------------------------------------------------
+
 =item __email_confirmation_link
 
 Description
@@ -264,16 +269,14 @@ Description
 sub __get_confirm_link {
     my $C = shift;
     
-    my $config = $C->get_object('MdpConfig');
-    
-    my $endpoint = KGS_Utils::get_endpoint($C);
-    my $request_uri = $config->get('kgs_request_uri');
+    my $config = $C->get_object('MdpConfig');    
     my $pathinfo = $config->get('kgs_confirm_link_pathinfo');
     
-    my $url = 'http://' . $endpoint . $request_uri . $pathinfo;
+    my $url = 'https://' . $ENV{HTTP_HOST} . $pathinfo;
     
     return $url;
 }
+
 
 1;
 

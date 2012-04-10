@@ -88,6 +88,25 @@ sub validate_max_registration_attempts {
 
 # ---------------------------------------------------------------------
 
+=item validate_auth_registration_attempts
+
+Prevent authentication registration with same userid
+
+=cut
+
+# ---------------------------------------------------------------------
+sub validate_auth_registration_attempts {
+    my ($C, $dbh, $userid) = @_;
+
+    my $reg_ct = KGS_Db::count_client_auth_registrations($dbh, $userid);
+    my $registered = ($reg_ct > 0);
+
+    LOG($C, qq{validate_auth_registration_attempts: registered=$registered userid=$userid});
+    return $registered;
+}
+
+# ---------------------------------------------------------------------
+
 =item validate_max_active_registrations
 
 Prevent > MAX_ACTIVE_REGISTRATIONS for this email address
