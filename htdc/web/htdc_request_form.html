@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>HathiTrust Web Client Request Form</title>
+    <meta http-equiv="Content-Language" content="en-us" />
+    <script  type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script  type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
+    <link rel="stylesheet" type="text/css" href="/htdc/htdc.css"/>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $("#htdc_request").validate();
+        $("#htseqdiv").hide();
+
+        eventHandlerHS = function () {
+          if($("#pageimageid").is(":checked")
+             ||
+             $("#pagemetaid").is(":checked")
+             ||
+             $("#pageocrid").is(":checked")
+             ||
+             $("#pagecoordocrid").is(":checked")) {
+               $("#htseqdiv").show();
+           } else {
+               $("#htseqdiv").hide();
+           }
+        };
+        $('input').bind("click", eventHandlerHS);
+      });
+    </script>
+  </head>
+  <body>
+    <div id="HTDCMasterContainer">
+      ___HEADER_CHUNK___
+      <div id="HTDCcontainer">
+        <h1 class="heading">HathiTrust Data API request</h1>
+
+        <ul>
+          <li>An example ID is <b>mdp.39015011716761</b></li>
+          <li>Use the "back" button to return to this page after your data arrives.</li>
+        </ul>
+
+        <form class="htdc_request_form" id="htdc_request" method="get" action="/cgi/htdc">
+          <fieldset class="request">
+            <legend>Request parameters</legend>
+            <div class="request">
+              <label class="request">required field <span class="req">*</span></label>
+            </div>
+            <br/><br/>
+            <div class="request">
+              <label class="request" for="htid">id <span class="req">*</span></label>
+              <input id="htid" name="id" class="request required"/>
+            </div>
+            <div class="request">
+              <label class="request" for="htresource">resource <span class="req">*</span></label>
+              <div id="resource_radio">
+                <input id="structureid"    type="radio" name="resource" class="htresource request required" value="structure">METS file</input><br/>
+                <input id="aggregateid"    type="radio" name="resource" class="htresource request required" value="aggregate">entire object</input><br/>
+                <input id="metaid"         type="radio" name="resource" class="htresource request required" value="meta">object metadata</input><br/>
+                <input id="pagemetaid"     type="radio" name="resource" class="htresource request required" value="pagemeta">page metadata</input><br/>
+                <input id="pageimageid"    type="radio" name="resource" class="htresource request required" value="pageimage">page image</input><br/>
+                <input id="pageocrid"      type="radio" name="resource" class="htresource request required" value="pageocr">page OCR</input><br/>
+                <input id="pagecoordocrid" type="radio" name="resource" class="htresource request required" value="pagecoordocr">page coordinate OCR</input><br/>
+              </div>
+            </div>
+            <div id="htseqdiv" class="request">
+              <label class="request" for="htseq">sequence <span class="req">&#x00A0</span></label>
+              <input id="htseq" name="seq" class="request digits" />
+            </div>
+            <div class="request">
+              <input class="htsubmit" type="submit" value="Submit" />
+            </div>
+          </fieldset>
+        </form>
+
+      </div>
+    </div>
+    ___GOOGLE_ANALYTICS___
+  </body>
+</html>

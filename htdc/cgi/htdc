@@ -1,0 +1,481 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+htdc
+
+=head1 DESCRIPTION
+
+This is a perl 2-legged oauth client that uses their auth credentials
+as a proxy for the oauth keys and constructs a signed Data API
+request.
+
+=head1 SYNOPSIS
+
+For example:
+
+http://babel.hathitrust.org/cgi/htdc (present the data entry form)
+
+http://babel.hathitrust.org/cgi/htdc?resource=pagemeta&id=mdp.39015063764644&seq=5 (send a request to Data API)
+
+=head1 OUTPUT
+
+The form or the resource
+
+=cut
+
+use strict;
+use warnings;
+
+umask 0000;
+BEGIN {
+    my $enabled = $ENV{'HT_DEV'} ? 1 : 1;
+    exit 0 if (! $enabled);
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use CGI;
+use URI;
+use YAML::Any;
+use Encode;
+
+use OAuth::Lite::Consumer;
+use OAuth::Lite::AuthMethod;
+
+use Context;
+use Utils;
+
+use API::DbIF;
+use API::HTD::AuthDb;
+use API::HTD::HConf;
+
+use API::HTD::Rights;
+use API::HTD::AccessTypes;
+
+
+my $DEBUG = 0;
+
+my $REQUEST_BASE_URL;
+if ($ENV{HT_DEV}) {
+    my ($dev) = ($ENV{SDRROOT} =~ m,/htapps/(.*?).babel,);
+    my $vhost = $dev . q{-full.babel.hathitrust.org};
+
+    $REQUEST_BASE_URL = $vhost . q{/cgi/htd};
+}
+else {
+    # There will be a redirect from services.hathitrust.org/htd
+    $REQUEST_BASE_URL = q{babel.hathitrust.org/cgi/htd};
+}
+
+my $Q = new CGI;
+my $userid;
+
+$DEBUG = $Q->param('debug') if (defined $Q->param('debug'));
+
+if (! defined $ENV{REMOTE_USER}) {
+    print STDERR "htdc: REMOTE_USER not set\n";
+    serve_login_page();
+}
+elsif (! $Q->param) {    
+    serve_request_form_page();
+    # NOTREACHED
+}
+else {
+    my $config = Call_Handler(_get_config(), 'System configuration error');
+    # POSSIBLY NOTREACHED
+
+    my $dbh = Call_Handler(_htdc_connect($config), 'Database error');
+    # POSSIBLY NOTREACHED    
+
+    my $access_key = validate_request($Q, $dbh, $config);
+    # POSSIBLY NOTREACHED
+
+    serve_Data_API_response($Q, $dbh, $config, $access_key);
+    # NOTREACHED
+}
+
+
+exit 0;
+
+
+# ---------------------------------------------------------------------
+
+=item Call_Handler
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Call_Handler {
+    my $return_from_call = shift;
+    my $in_case_of_error = shift;
+    
+    if (! $return_from_call) {
+        serve_error_page($in_case_of_error);
+    }
+    
+    return $return_from_call;
+}
+
+# ---------------------------------------------------------------------
+
+=item validate_request
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub validate_request {
+    my ($Q, $dbh, $config) = @_;
+    
+    # forced upstream
+    my $userid = $ENV{REMOTE_USER};
+    
+    # known?
+    my $access_key = Call_Handler(API::HTD::AuthDb::get_access_key_by_userid($dbh, $userid), 
+                                  qq{Your user ID is not registered. Please visit the <a href="/cgi/kgs/authed">registration page</a> to record your user id});
+
+    # all params present?
+    Call_Handler($Q->param('id'), 'Please specify an ID');
+
+    my $resource = $Q->param('resource');
+    Call_Handler($resource, 'Please specify a resource');
+
+    if (grep(/^$resource$/, qw( pagemeta pageimage pageocr pagecoordocr ))) {
+        my $seq = $Q->param('seq');
+        if (! $seq) {
+            Call_Handler(0, 'Please specify a sequence number');
+        }
+        elsif ($seq !~ m,^\d+$,) {
+            Call_Handler(0, 'Please specify a sequence number that consists of only digits');
+        }
+    }
+    else {
+        $Q->Delete('seq');
+    }
+
+    return $access_key;
+}
+
+# ---------------------------------------------------------------------
+
+=item serve_login_page 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub serve_login_page {
+    
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_login.html');    
+
+    my $wayf_link = _get_htdc_wayf_link();    
+    $$page_ref =~ s,___WAYF_LINK___,$wayf_link,;
+
+    _standard_replacements($page_ref);
+
+    print CGI::header('text/html');
+    print $$page_ref;
+    exit 0;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item ___adjust_url
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ___adjust_url {
+    my $url = shift;
+
+    if ($ENV{AUTH_TYPE} eq 'shibboleth') {
+        $url =~ s,/cgi,/shcgi,g;
+    }
+    if (defined $ENV{AUTH_TYPE}) {
+        $url =~ s,http://,https://,;
+    }
+    
+    return $url;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item serve_error_page 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub serve_error_page {
+    my $error_message = shift;
+    
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_error.html');    
+    $$page_ref =~ s,___FAIL_REASON___,$error_message,;
+
+    _standard_replacements($page_ref);
+
+    print CGI::header('text/html');
+    print $$page_ref;
+    exit 0;
+}
+
+# ---------------------------------------------------------------------
+
+=item serve_request_form_page 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub serve_request_form_page {
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_request_form.html');
+
+    _standard_replacements($page_ref);
+
+    print CGI::header('text/html');
+    print $$page_ref;
+    exit 0;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item _get_htdc_wayf_link
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _get_htdc_wayf_link {
+    my $C = shift;
+    
+    my $target = 'https://' . $ENV{HTTP_HOST} . '/cgi/kgs/authed';
+    # wayf will change target /cgi into /shcgi, depending
+    my $url = 'http://' . $ENV{HTTP_HOST} . '/cgi/wayf' . '?target=' . CGI::escape($target);
+
+    return $url;
+}
+
+# ---------------------------------------------------------------------
+
+=item _print_encoded_output
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _print_encoded_output {
+    my ($Q, $response) = @_;
+    
+    my $resource = $Q->param('resource');
+    if (grep(/^$resource$/, qw(aggregate pageimage))) {
+        # Do not encode binary types
+        print $response->content;
+    }
+    else {
+        print Encode::encode_utf8($response->content)
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item serve_Data_API_response
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub serve_Data_API_response {
+    my ($Q, $dbh, $config, $access_key) = @_;
+
+    my $consumer =  _get_consumer($dbh, $access_key);
+    my $access_type = _get_access_type($Q, $dbh, $config);
+    # POSSIBLY NOTREACHED
+    
+    my $request_url = _make_Data_API_request_url($Q, $access_type);
+    my $extra = { };
+
+    my $response = $consumer->request
+      (
+       method  => 'GET',
+       url     => $request_url,
+       params  => $extra,
+      );
+
+    if ($response->is_success) {
+        print CGI::header(join(';', $response->content_type()));
+        _print_encoded_output($Q, $response);
+    }
+    else {
+        if ($ENV{HT_DEV} || $DEBUG) {
+            print CGI::header('text/html');
+            print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
+            print $consumer->oauth_request->uri;
+            
+            print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
+            print $response->status_line;
+            print "<br/>";
+            print $response->content;
+        }
+        else {
+            Call_Handler(0, 'Data API error: ' . $response->status_line);
+        }
+    }
+    
+    exit 0;
+}
+
+# ---------------------------------------------------------------------
+
+=item _get_config
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _get_config {
+    my $ver = 1;
+    my $config = new API::HTD::HConf(
+                                     [
+                                      $ENV{SDRROOT} . '/htd/lib/API/HTD/base-config.yaml',
+                                      $ENV{SDRROOT} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml},
+                                     ]
+                                    );
+    return ($config->initSuccess ? $config : 0);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item _get_access_type
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _get_access_type {
+    my ($Q, $dbh, $config) = @_;
+    
+    my ($id, $resource) = ($Q->param('id'), $Q->param('resource'));
+
+    my ($namespace, $barcode) = split(/\./, $id);
+    my $P_Ref;
+    $P_Ref->{ns} = $namespace;
+    $P_Ref->{bc} = $barcode;
+    
+    my $ro = Call_Handler(API::HTD::Rights::createRightsObject($dbh, $P_Ref), 
+                          "rights information not found for $id");
+    # POSSIBLY NOTREACHED
+
+    # Get an access type object
+    my $ato = Call_Handler(API::HTD::AccessTypes->new({_rights => $ro, _config => $config, _debug => $DEBUG}),
+                           'cannot determine access type');
+    # POSSIBLY NOTREACHED
+
+    return $ato->getAccessTypeByResource($resource);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item _htdc_connect
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _htdc_connect {
+    my $config = shift;
+
+    return
+      API::DbIF::databaseConnect
+          (
+           $config->getConfigVal('database', 'name'),
+           $config->getConfigVal('database', 'user'),
+           $config->getConfigVal('database', 'passwd'),
+           $config->getConfigVal('database', 'server'),
+          );
+}
+
+# ---------------------------------------------------------------------
+
+=item _get_consumer
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _get_consumer {
+    my $dbh = shift;
+    my $access_key = shift;
+
+    my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
+    my $consumer = OAuth::Lite::Consumer->new
+      (
+       consumer_key    => $access_key,
+       consumer_secret => $secret_key,
+       auth_method     => OAuth::Lite::AuthMethod::URL_QUERY,
+      );
+
+    return $consumer;
+}
+
+# ---------------------------------------------------------------------
+
+=item _make_Data_API_request_url
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _make_Data_API_request_url {
+    my $Q = shift;
+    my $access_type = shift;
+    
+    my ($id, $resource, $seq) = ($Q->param('id'), $Q->param('resource'), $Q->param('seq'));
+    my $protocol = (grep(/^$access_type$/, ('open', 'limited')) ? 'http://' : 'https://');
+
+    my $url = $protocol . $REQUEST_BASE_URL  . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
+    
+    return $url;
+}
+
+# ---------------------------------------------------------------------
+
+=item _standard_replacements
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _standard_replacements {
+    my $page_ref = shift;
+
+    my $header_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/header.chunk');
+    $$page_ref =~ s,___HEADER_CHUNK___,$$header_ref,;
+
+    my $analytics_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/google_analytics.chunk');
+    $$page_ref =~ s,___GOOGLE_ANALYTICS___,$$analytics_ref,;
+}
