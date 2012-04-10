@@ -74,8 +74,8 @@ $(function()
     $('#removeGroup').click(function(event) 
                      {
                        // remove any q3/q4 since we are "removing the group"
-                       //$("XXX#q3").val("");
-                       //$("XXX#q4").val("");
+                       $("#q3").val("");
+                       $("#q4").val("");
                        hideGroup2();
                        
                        //                       $(".parenGroup1").hide();
