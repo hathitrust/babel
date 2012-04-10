@@ -242,10 +242,15 @@ sub run {
     my $repr = $self->loadResource(@_);
     $self->postRun($repr); # A no-op by default.
 
+    if ($ENV{UNDER_TEST}) {
+        my $header = $self->getHeaders();        
+        print $header;
+    }
+
     # Get the headers and body and emit unless we're told not to by
     # the environment. Rewritten to avoid concatenation of header to
     # representation before writing to stdout.
-    if (! $ENV{REST_APP_RETURN_ONLY})
+    elsif (! $ENV{REST_APP_RETURN_ONLY})
     {
         my $header = $self->getHeaders();
         print $header;

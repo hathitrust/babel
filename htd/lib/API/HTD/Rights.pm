@@ -29,6 +29,8 @@ if ($ro)
 =cut
 
 use strict;
+use warnings;
+
 use API::DbIF;
 
 # ---------------------------------------------------------------------
@@ -106,12 +108,16 @@ Public method on rights object
 =cut
 
 # ---------------------------------------------------------------------
-sub getRightsFieldVal
-{
+sub getRightsFieldVal {
     my $self = shift;
     my $field = shift;
 
-    return $field ? $self->{'rights'}{$field} : $self->{'rights'};
+    if ($ENV{UNDER_TEST}) {
+        return $ENV{TEST_ATTR} if ($field eq 'attr');
+        return $ENV{TEST_SOURCE} if ($field eq 'source');
+    }
+
+    return $self->{'rights'}{$field};
 }
 
 # ---------------------------------------------------------------------

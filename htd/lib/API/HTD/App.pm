@@ -86,7 +86,7 @@ use base qw(API::RESTApp);
 
 # Perl
 use DBI;
-use YAML::Any;
+#use YAML::Any;
 use XML::LibXML;
 use XML::Simple;
 use XML::SAX;
@@ -97,8 +97,12 @@ use XML::LibXSLT;
 use API::Path;
 use API::Utils;
 use API::DbIF;
+use API::HTD_Log;
 
 use API::HTD::Rights;
+use API::HTD::HAuth;
+use API::HTD::HConf;
+use API::HTD::AccessTypes;
 
 my $DEBUG = '';
 
@@ -122,54 +126,29 @@ sub setup {
     my $self = shift;
 
     # config
-    my $config;
-    eval {
-        $config = YAML::Any::LoadFile($ENV{'SDRROOT'} . '/htd/lib/API/HTD/base-config.yaml');
-    };
-    if ($@) {
-        $self->__setErrorResponseCode('500');
-        $self->__setMember('setup_error', 1);
-        return 0;
-    }
-    # POSSIBLY NOTREACHED
-
-    if (! defined($config)) {
-        $self->__setErrorResponseCode('500');
-        $self->__setMember('setup_error', 1);
-        return 0;
-    }
-
-    # Load version plugin class and its config
-    my $ver_config;
     my $ver = $self->getVersion();
-    eval {
-        $ver_config = YAML::Any::LoadFile($ENV{'SDRROOT'} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml});
-    };
-    if ($@) {
-        $self->__setErrorResponseCode('500');
+    my $config_object = new API::HTD::HConf(
+                                            [
+                                             $ENV{'SDRROOT'} . '/htd/lib/API/HTD/base-config.yaml',
+                                             $ENV{'SDRROOT'} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml},
+                                            ]
+                                           );
+    if ($config_object->initSuccess) {
+        $self->__setMember('config', $config_object);
+    }
+    else {
         $self->__setMember('setup_error', 1);
+        $self->__setErrorResponseCode(500, $config_object->errstr);
         return 0;
     }
-    # POSSIBLY NOTREACHED
-
-    if (! defined($ver_config)) {
-        $self->__setErrorResponseCode('500');
-        $self->__setMember('setup_error', 1);
-        return 0;
-    }
-    # POSSIBLY NOTREACHED
-
-    # Merge version config into base config for totality
-    @$config{keys %$ver_config} = values %$ver_config;
-    $self->__setMember('config', $config);
-
+    
     $self->__debugging();
     # POSSIBLY NOTREACHED
 
     # We only support HTTP GET
     if ($self->getRequestMethod() ne 'GET') {
-        $self->__setErrorResponseCode('400H');
         $self->__setMember('setup_error', 1);
+        $self->__setErrorResponseCode(405, $self->getRequestMethod() . " method not supported");
         return 0;
     }
     # POSSIBLY NOTREACHED
@@ -177,14 +156,13 @@ sub setup {
     # Query parameter validation.  Failure is fobbed off to the
     # defaultResourceHandler to deal with the mess
     if (! $self->validateQueryParams()) {
-        $self->__setErrorResponseCode('400U');
         $self->__setMember('setup_error', 1);
+        $self->__setErrorResponseCode(400);
         return 0;
     }
     # POSSIBLY NOTREACHED
 
-    # We need a database connection from this point on. Note ||= for
-    # persistent connectivity under mod_perl
+    # We need a database connection from this point on.
     my $DBH = API::DbIF::databaseConnect
       (
        $self->__getConfigVal('database', 'name'),
@@ -194,13 +172,13 @@ sub setup {
       );
 
     if (! $DBH) {
-        $self->__setErrorResponseCode('503');
         $self->__setMember('setup_error', 1);
+        $self->__setErrorResponseCode(500, "database connect error");
         return 0;
     }
     # POSSIBLY NOTREACHED
 
-    $self->__setMember('dbh', $DBH);    
+    $self->__setMember('dbh', $DBH);
 
     # Map to requested version of resource handlers.
     $self->__mapURIsToHandlers();
@@ -224,10 +202,10 @@ sub defaultResourceHandler {
     # Some conditions will already have set the header so preserve
     # that otherwise assume a 500
     if (! $self->header()) {
-        $self->__setErrorResponseCode('500');
+        $self->__setErrorResponseCode(500);
     }
 
-    return '';
+    return $self->__errorDescription;
 }
 
 # ---------------------------------------------------------------------
@@ -263,8 +241,7 @@ sub preHandler {
 
     # Did the handlers bind OK?
     if (! $self->handlerBindingOk()) {
-        # Probably Bad URI
-        $self->__setErrorResponseCode('400U');
+        $self->__setErrorResponseCode(400, "invalid URI");
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
@@ -275,21 +252,31 @@ sub preHandler {
     # fill in response data for unrestricted resource.
     my $ro = API::HTD::Rights::createRightsObject($self->__get_DBH(), $P_Ref);
     if (! defined($ro)) {
-        $self->__setErrorResponseCode('404');
+        my $id = $self->__getIdParamsRef($P_Ref);
+        $self->__setErrorResponseCode(404, "rights information not found for $id");
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
-
     $self->__setMember('rights', $ro);
 
-    # Authorize
-    if (! $self->__authorized($P_Ref)) {
+    # Get an access type object
+    my $ato = new API::HTD::AccessTypes({
+                                         _rights => $ro,
+                                         _config => $self->__getConfObject,
+                                         _debug  => $DEBUG,
+                                        });
+    $self->__setMember('access', $ato);
+    
+
+    # Authenticate and authorize
+    if (! $self->__authNZ_Success($P_Ref)) {
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
 
     # Create bindings to tokens in the YAML
     if (! $self->__bindYAMLTokens($P_Ref)) {
+        $self->__setErrorResponseCode(500, "token binding failure");
         return $defaultHandler;
     }
 
@@ -319,8 +306,8 @@ Description
 sub __debugging {
     my $self = shift;
 
-    # Debug only allowed by IP
-    if ($self->__allowByIPAddress()) {
+    # Debug only allowed in development
+    if ($self->__allowDevelopmentDebugging()) {
         $DEBUG = $self->query()->param('debug') || $ENV{'DEBUG'} || '';
     }
 
@@ -417,7 +404,7 @@ sub __getPairtreeFilename {
 
     my $po = $self->__getPathObject();
     my $filename = $po->getPairtreeFilename($P_Ref->{'bc'}) . qq{.$extension};
-    if (! $bare) { 
+    if (! $bare) {
         my $dir = $po->getItemDir($P_Ref->{'bc'});
         $filename = qq{$dir/} . $filename;
     }
@@ -460,13 +447,31 @@ Set the HTTP status line in the header
 # ---------------------------------------------------------------------
 sub __setErrorResponseCode {
     my $self = shift;
-    my $code = shift;
+    my ($code, $msg) = @_;
+
+    $self->resetHeader();
 
     my $statusLine = $self->__getConfigVal('httpstatus', $code) || $code;
-    $self->resetHeader();
     $self->header(
-                  -Status => $statusLine,
+                  -status => $statusLine,
                  );
+
+    $self->__errorDescription($msg) if ($msg);
+
+    my $desc = $self->__errorDescription;
+    if ($desc) {
+        $self->header(
+                      -type           => q{text/plain; charset=utf8},
+                      -content_length => bytes::length($desc),
+                     );
+        if (OAuth::Lite::Problems->match($desc)) {
+            my $header = "OAuth $desc";
+            $self->header(
+                          -WWW_Authenticate => $header,
+                         );
+        }
+    }
+    hLOG(qq{__setErrorResponseCode: code=$code description=$desc});
 }
 
 
@@ -528,9 +533,31 @@ sub __bindYAMLTokens {
 # =====================================================================
 # =====================================================================
 
+sub __errorDescription {
+    my $self = shift;
+    my $desc = shift;
+    $self->{error_description} = $desc if (defined $desc);
+    return $self->{error_description};
+}
+
 sub __getRightsObject {
     my $self = shift;
     return $self->{'rights'};
+}
+
+sub __getConfObject {
+    my $self = shift;
+    return $self->{'config'};
+}
+
+sub __getAccessObject {
+    my $self = shift;
+    return $self->{'access'};
+}
+
+sub __getHAuthObject {
+    my $self = shift;
+    return $self->{'hauth'};
 }
 
 sub __get_DBH {
@@ -556,26 +583,13 @@ sub __setMember {
 
 sub __getConfigVal {
     my $self = shift;
-    my ($key, $sub_1_key, $sub_2_key, $sub_3_key, $sub_4_key, $sub_5_key) = @_;
+    return $self->__getConfObject()->getConfigVal(@_);
+}
 
-    if ($sub_5_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key}{$sub_3_key}{$sub_4_key}{$sub_5_key};
-    }
-    elsif ($sub_4_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key}{$sub_3_key}{$sub_4_key};
-    }
-    elsif ($sub_3_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key}{$sub_3_key};
-    }
-    elsif ($sub_2_key) {
-        return $self->{'config'}->{$key}{$sub_1_key}{$sub_2_key};
-    }
-    elsif ($sub_1_key) {
-        return $self->{'config'}->{$key}{$sub_1_key};
-    }
-    else {
-        return $self->{'config'}->{$key};
-    }
+sub __getAccessTypeByResource {
+    my $self = shift;
+    return $self->__getAccessObject()->getAccessTypeByResource(@_);
+
 }
 
 # =====================================================================
@@ -584,76 +598,30 @@ sub __getConfigVal {
 # =====================================================================
 # =====================================================================
 
+
 # ---------------------------------------------------------------------
 
-=item __getFreedomVal
+=item __getClientQueryParams
 
-Attempt to determine freedom based on IPADDR.  However, we can't trust
-remote address due to proxying so test mdp.proxies for IPADDR.
+Extract a hash of the query string parameters that are not
+OAuth-related, e.g. 'v'
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __getFreedomVal {
+sub __getClientQueryParams {
     my $self = shift;
-    my $rights = shift;
 
-    my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
-    my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
+    my $hashRef = {};
 
-    # Limit pdus volumes to un-proxied "U.S." clients
-    if (($freedom eq 'free') && ($rights eq 'pdus')) {
-        # Use forwarded IP address if proxied, else UA IP addr
-        my $IPADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
-
-        require "Geo/IP.pm";
-        my $geoIP = Geo::IP->new();
-        my $country_code = $geoIP->country_code_by_addr($IPADDR);
-        my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
-
-        if (! grep(/^$country_code$/, @$pdusCountryCodesRef)) {
-            $freedom = 'nonfree';
-        }
-        else {
-            # veryify this is not a blacklisted US proxy that does not
-            # set HTTP_X_FORWARDED_FOR for a non-US request
-            require "Access/Proxy.pm";
-            if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
-                $freedom = 'nonfree';
-                if ($DEBUG eq 'access') { print qq{proxy blocked $IPADDR<br/>\n} }
-            }
-        }
+    my $clientParamsRef  = $self->__getConfigVal('client_query_params');
+    my $Q = $self->query();
+    foreach my $p (@$clientParamsRef) {
+        my $val = $Q->param($p);
+        $hashRef->{$p} = $val if ($val);
     }
 
-    return $freedom;
-}
-
-
-# ---------------------------------------------------------------------
-
-=item __getAccessTypeByResource
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getAccessTypeByResource {
-    my $self = shift;
-    my $resource = shift;
-
-    my $ro = $self->__getRightsObject();
-
-    my $source = $self->__getConfigVal('sources_name_map', $ro->getRightsFieldVal('source'));
-    my $rights = $self->__getConfigVal('rights_name_map', $ro->getRightsFieldVal('attr'));
-
-    my $freedom = $self->__getFreedomVal($rights);
-    my $val =
-        $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
-
-    if ($DEBUG eq 'access') { print qq{resource=$resource rights=$freedom access_type=$val<br/>\n} }
-
-    return $val;
+    return $hashRef;
 }
 
 # ---------------------------------------------------------------------
@@ -670,11 +638,10 @@ sub __getDownloadability {
     my $self = shift;
     my $resource = shift;
 
-    my $downloadability = $self->__getAccessTypeByResource($resource);
+    my $accessType = $self->__getAccessTypeByResource($resource);
+    # support 'free_restricted'
+    my $downloadability = 'restricted' if ($accessType =~ m,restricted,);
 
-    if ($downloadability eq 'free_bulk_restricted') {
-        $downloadability = 'restricted';
-    }
     if ($DEBUG eq 'access') { print qq{resource=$resource download=$downloadability<br/>\n} }
 
     return $downloadability;
@@ -764,93 +731,114 @@ sub __getMimetype {
 # =====================================================================
 # =====================================================================
 
-
 # ---------------------------------------------------------------------
 
-=item __allowByIPAddress
+=item __authNZ_Success
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __allowByIPAddress {
+
+sub __authNZ_Success {
     my $self = shift;
+    my $P_Ref = shift;    
 
-    my $remote_addr = $ENV{'REMOTE_ADDR'};
+    my $Q = $self->query;
+    my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
+    
+    # Get an authentication object.
+    my $hauth = new API::HTD::HAuth({
+                                     _query       => $Q,
+                                     _dbh         => $self->__get_DBH,
+                                     _debug       => $DEBUG,
+                                    });
+    $self->__setMember('hauth', $hauth);
 
-    my $internalRef = $self->__getConfigVal('allowed_ip_addresses', 'internal');
-    foreach my $addrRegexp (@$internalRef) {
-        if ($remote_addr =~ m,$addrRegexp,) {
-            if ($DEBUG eq 'auth') { print qq{internal access allowed by IP=$remote_addr<br/>\n} }
-            return 'internal';
-        }
+    # Allow through back door?
+    if ($hauth->H_allow_development_auth()) {
+        return 1;
     }
+    # POSSIBLY NOTREACHED
 
-    my $allow_external = $self->__getConfigVal('allow_external');
-    if ($allow_external) {
-        my $externalRef = $self->__getConfigVal('allowed_ip_addresses', 'external');
-        foreach my $addrRegexp (@$externalRef) {
-            if ($remote_addr =~ m,$addrRegexp,) {
-                if ($DEBUG eq 'auth') { print qq{external access allowed by IP=$remote_addr<br/>\n} }
-                return 'external';
-            }
-        }
+    my $Success = 0;
+    
+    # Authenticate and authorize an OAuth request
+    if ($hauth->H_request_is_oauth($Q)) {
+        $Success = ($self->__authenticated() && $self->__authorized($P_Ref));
     }
-
-    if ($DEBUG eq 'auth') { print qq{no access by IP=$remote_addr<br/>\n} }
-    return 'notallowed';
-}
-
-# ---------------------------------------------------------------------
-
-=item __allowByRegistration
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __allowByRegistration {
-    my $self = shift;
-
-    my $allow = 0;
-
-    if ($DEBUG eq 'auth') { print qq{HTTPS=$ENV{'HTTPS'} DN=$ENV{'SL_CLIENT_S_DN'}<br/>\n} }
-    # First this has to be HTTPS ...
-    if ($ENV{'HTTPS'} eq 'on') {
-        # ... then their DN has to exist and be registered
-        my $DN = $ENV{'SL_CLIENT_S_DN'};
-        if ($DN) {
-            if ($self->__lookupDN($DN)) {
-                $allow = 1;
-            }
-            else {
-                if ($DEBUG eq 'auth') { print qq{DB lookup failed<br/>\n} }
-                # DN not registered
-                $self->__setErrorResponseCode('401');
-            }
-        }
-        else {
-            # Authentication required
-            $self->__setErrorResponseCode('403');
-        }
+    elsif (! $hauth->H_allow_non_oauth_by_grace($accessType)) {
+        $self->__setErrorResponseCode(403, "access_type=$accessType in non-oauth request not allowed in grace period");    
     }
     else {
-        # Invalid protocol
-        $self->__setErrorResponseCode('403P');
+        $Success = 1;
     }
-    if ($DEBUG eq 'auth') { print qq{registered access=$allow<br/>\n} }
-
-    return $allow;
+    
+    exit 0 if ($DEBUG eq 'auth');
+    return $Success;
 }
+
+
+# ---------------------------------------------------------------------
+
+=item __allowDevelopmentDebugging
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __allowDevelopmentDebugging {
+    my $self = shift;
+
+    return (defined $ENV{HT_DEV} ? 1 : 0);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __authenticated
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __authenticated {
+    my $self = shift;
+
+    my $authenticated = 0;
+    my $hauth = $self->__getHAuthObject();
+
+    my $Q = $self->query();
+    my $dbh = $self->__get_DBH();
+    my $client_data = $self->__getClientQueryParams();
+
+    if ($hauth->H_authenticate($Q, $dbh, $client_data)) {
+        $authenticated = 1;
+    }
+    else {
+        $self->__setErrorResponseCode(401, $hauth->errstr);
+    }
+
+    if ($DEBUG eq 'auth') {print qq{authenticated=$authenticated error="} . $hauth->errstr . qq{"<br/>\n}};
+    
+    return $authenticated;
+}
+
 
 # ---------------------------------------------------------------------
 
 =item __authorized
 
 See if the client is authorized to access the resource being
-requested.  This is a function of rights, source and resource.
+requested.  This is a function of access type which is in turn a
+function of rights, source and resource.
+
+i.e.
+
+authorization = f(access_type = g(rights, source, resource))
 
 =cut
 
@@ -859,54 +847,32 @@ sub __authorized {
     my $self = shift;
     my $P_Ref = shift;
 
+    my $error;
     my $authorized = 0;
 
-    # Access types: open, limited, free_bulk_restricted, restricted
+    # Access types: open, limited, open_restricted, restricted
     my $resource = $P_Ref->{'resource'};
     my $accessType = $self->__getAccessTypeByResource($resource);
-    if ($DEBUG eq 'auth') { print qq{resource=$resource access_type=$accessType<br/>\n} }
 
-    # Back door?
-    my $ip_allowed = $self->__allowByIPAddress();
-    if ($ip_allowed eq 'internal') {
-        # Allow all
+    my $hauth = $self->__getHAuthObject();
+    my $Q = $self->query();
+    my $dbh = $self->__get_DBH();
+
+    if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {
         $authorized = 1;
     }
-    elsif ($ip_allowed eq 'external') {
-        # Allow open, limited, free_bulk_restricted
-        if (
-            ($accessType eq 'open')
-            ||
-            ($accessType eq 'limited')
-            ||
-            ($accessType eq 'free_bulk_restricted')
-           ) {
-            $authorized = 1;
-        }
-    }
     else {
-        # Normal access testing
-        if (
-            ($accessType eq 'restricted')
-            ||
-            ($accessType eq 'free_bulk_restricted')
-           ) {
-            # For any "restricted" type: restricted, free_bulk_restricted
-            if ($self->__allowByRegistration()) {
-                $authorized = 1;
-            }
-        }
-        else {
-            $authorized = 1;
-        }
+        $error = $hauth->errstr;
+        $self->__setErrorResponseCode(403, $error);
     }
 
-    exit 0
-        if ($DEBUG eq 'auth');
+    if ($DEBUG eq 'auth') { 
+        print qq{resource=$resource access_type=$accessType authorized=$authorized error="$error"<br/>\n};
+        exit 0;
+    }
 
     return $authorized;
 }
-
 
 
 # =====================================================================
@@ -1216,10 +1182,10 @@ sub __getBase_DOMtreeFor {
     if (! $self->p__processXIncludes($doc, $parser, $P_Ref)) {
         return undef;
     }
-    
+
     exit 0
         if (($DEBUG eq 'tree') || ($DEBUG eq 'access'));
-    
+
     return $doc;
 }
 

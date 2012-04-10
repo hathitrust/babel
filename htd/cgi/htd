@@ -70,7 +70,7 @@ else {
         require $classPath;
     };
     if ($@) {
-        __errorExit($Q, '500 INTERNAL ERROR');
+        __errorExit($Q, '500 INTERNAL SERVER ERROR');
         # NOTREACHED
     }
 
@@ -131,6 +131,7 @@ sub __packageToPath {
 
     return $path;
 }
+
 =head1 AUTHOR
 
 Phillip Farber, University of Michigan, pfarber@umich.edu
