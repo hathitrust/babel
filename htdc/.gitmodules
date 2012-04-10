@@ -1,0 +1,6 @@
+[submodule "vendor/common-lib/lib"]
+	path = vendor/common-lib/lib
+	url = /htapps/repos/mdp-lib.git
+[submodule "vendor/htd-lib"]
+	path = vendor/htd-lib
+	url = /htapps/repos/htd.git
