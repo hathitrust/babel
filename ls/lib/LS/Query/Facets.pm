@@ -1338,34 +1338,16 @@ sub get_processed_user_query_string {
     # embedded in phrases and replace phrase-embedded parentheses with
     # spaces.
     
-    #  tbw need to add test for all caps that is multilingual!
-    # if all caps then assume not boolean and lower case
-    # or we just lower case AND/OR
-    if ($user_query_string =~/AND|OR/)
-    {
-        # test for all caps and if all caps lc the AND and the ORs
-        # If there is not  a single lower case character then its  all upper case
-        if ($user_query_string =~/\p{Lowercase_Letter}/)
-        {
-            #found at least one lower case letter
-        }
-        else
-        {
-            # lower case doesn't work with edismax so we surround op with "=" which then make qparser
-            # think its a word but analyzer strips out the equals
-            #
-            $user_query_string =~s,AND,=and=,g;
-            $user_query_string =~s,OR,=or=,g;
-            $self->set_processed_query_string($user_query_string,$query_num);
-        }
-    }
-    
+    # if user searches for [pride and prejudice] don't treat the "and" as an operator unless
+    # it is upper case and the query is not all upper case
+    #XXX temp fix until we change schema
+    $user_query_string = $self->escapeNonBooleanAndOR($user_query_string,$query_num);
     my @tokens = Search::Query::parse_preprocess($user_query_string);
 
 
-# XXX check Phil/s code, do we need to add parens?
+    # XXX check Phil/s code, do we need to add parens?
     # If user is not attempting a boolean query skip the parse here
-#    if (grep(/^(AND|OR|\(|\))$/, @tokens)) {
+    #    if (grep(/^(AND|OR|\(|\))$/, @tokens)) {
     my $valid = 1;
     if (grep(/^(AND|OR)$/, @tokens)) {
         # Attempt to parse the query as a boolean expression.
@@ -1408,6 +1390,52 @@ sub get_final_token {
     }
     return $s;
 }
+
+
+# ---------------------------------------------------------------------
+sub escapeNonBooleanAndOR
+{
+    my $self = shift;
+    my $user_query_string = shift;
+    my $query_num =shift;
+        
+    
+    #XXX temporary fix for edismax.  Move to subroutine!
+    # won't need if we put following in the request handler for edismax
+    # see bill email 4/11/2012
+    #    # <bool name="lowercaseOperators">false</bool>
+    
+    if (/\s+(and|or)\s+/)
+    {
+        $user_query_string =~s,\s+and\s+, =and= ,g;
+        $user_query_string =~s,\s+or\s+, =or= ,g;
+        $self->set_processed_query_string($user_query_string,$query_num);    
+    }
+    
+    #  tbw need to add test for all caps that is multilingual!
+    # if all caps then assume not boolean and lower case
+    # or we just lower case AND/OR
+    if ($user_query_string =~/AND|OR/)
+    {
+        
+        # If there is not  a single lower case character then its  all upper case
+        if ($user_query_string =~/\p{Lowercase_Letter}/)
+        {
+            
+        }
+        else
+        {
+            # lower case doesn't work with edismax so we surround op with "=" which then make qparser
+            # think its a word but analyzer strips out the equals
+            #
+            $user_query_string =~s,\s+AND\s+, =and= ,g;
+            $user_query_string =~s,\s+OR\s+, =or= ,g;
+            $self->set_processed_query_string($user_query_string,$query_num);
+        }
+    }
+    return $user_query_string
+}
+
 
 # ---------------------------------------------------------------------
 sub filter_lucene_chars{
