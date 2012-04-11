@@ -11,21 +11,26 @@
     <script type="text/javascript">
       $(document).ready(function(){
         $("#htdc_request").validate();
-        $("#htseqdiv").hide();
+        function hide_show_seq() {
+          if (
+            $("#pageimageid").is(":checked")
+            ||
+            $("#pagemetaid").is(":checked")
+            ||
+            $("#pageocrid").is(":checked")
+            ||
+            $("#pagecoordocrid").is(":checked")) {
+              $("#htseqdiv").show();
+            } else {
+              $("#htseqdiv").hide();
+            }
+        }
 
         eventHandlerHS = function () {
-          if($("#pageimageid").is(":checked")
-             ||
-             $("#pagemetaid").is(":checked")
-             ||
-             $("#pageocrid").is(":checked")
-             ||
-             $("#pagecoordocrid").is(":checked")) {
-               $("#htseqdiv").show();
-           } else {
-               $("#htseqdiv").hide();
-           }
+          hide_show_seq();
         };
+
+        hide_show_seq();
         $('input').bind("click", eventHandlerHS);
       });
     </script>
@@ -65,7 +70,7 @@
               </div>
             </div>
             <div id="htseqdiv" class="request">
-              <label class="request" for="htseq">sequence <span class="req">&#x00A0</span></label>
+              <label class="request" for="htseq">sequence <span class="req">*</span></label>
               <input id="htseq" name="seq" class="request digits" />
             </div>
             <div class="request">
