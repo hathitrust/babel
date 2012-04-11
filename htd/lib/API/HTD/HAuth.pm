@@ -437,7 +437,7 @@ sub H_authorized_protocol {
 
             return ($ENV{FORCE_AUTHROIZATION_SUCCESS}
                     ||
-                    (hLOG(qq{H_authorized: access_type=restricted port=$ENV{SERVER_PORT}}),
+                    (hLOG(qq{H_authorized: access_type=$access_type port=$ENV{SERVER_PORT}}),
                      $self->error('redirect to SSL required')));
         }
     }
