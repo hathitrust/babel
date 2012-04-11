@@ -120,6 +120,26 @@ sub parse_output {
 
 # ---------------------------------------------------------------------
 
+=item Name 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __assert {
+    my $condition = shift;
+    if (! $condition) {
+        PrintN('FAIL');
+    }
+    else {
+        PrintY('ok');
+    }
+}
+
+    
+# ---------------------------------------------------------------------
+
 =item assertions
 
 Description
@@ -128,7 +148,14 @@ Description
 
 # ---------------------------------------------------------------------
 sub assertions {
-    my ($output, $attr, $source, $addr, $port, $resource) = @_;
+    my ($code, $attr, $source, $addr, $port, $resource) = @_;
+
+    my $metadata_resource = grep(/^$resource$/, qw(meta pagemeta structure));
+    my $pdus = ($test_attrs{$attr} eq 'pdus');
+    my $us = ($test_addrs{$addr} eq 'us');
+    my $open_source = ($test_sources{$source} eq 'open');
+    
+    __assert($us) if ($pdus);
 }
 
 
@@ -169,7 +196,31 @@ foreach my $attr (keys %test_attrs) {
     }
 }
 
-exit;
+
+
+sub on {
+    return unless ($ENV{TERM} eq 'xterm');
+    my $color = shift;
+    print "\033[1;${color}m";
+}
+sub off {
+    return unless ($ENV{TERM} eq 'xterm');
+    print "\033[0m";
+}
+
+sub PrintY {
+    my $s = shift;
+    on(30);
+    print $s;
+    off();
+}
+sub PrintN {
+    my $s = shift;
+    on(31);
+    print $s;
+    off();
+}
+
 
 =head1 AUTHOR
 

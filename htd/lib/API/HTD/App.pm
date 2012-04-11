@@ -86,7 +86,8 @@ use base qw(API::RESTApp);
 
 # Perl
 use DBI;
-#use YAML::Any;
+use CGI;
+
 use XML::LibXML;
 use XML::Simple;
 use XML::SAX;
@@ -455,22 +456,29 @@ sub __setErrorResponseCode {
     $self->header(
                   -status => $statusLine,
                  );
-
     $self->__errorDescription($msg) if ($msg);
-
     my $desc = $self->__errorDescription;
-    if ($desc) {
-        $self->header(
-                      -type           => q{text/plain; charset=utf8},
-                      -content_length => bytes::length($desc),
-                     );
-        if (OAuth::Lite::Problems->match($desc)) {
-            my $header = "OAuth $desc";
+
+    if ($code == 303) {
+        my $Q = new CGI($self->query);
+        my $url = $self->__getHAuthObject()->H_make_ssl_redirect_url($Q);
+        $self->setRedirect($url);
+    }
+    else {
+        if ($desc) {
             $self->header(
-                          -WWW_Authenticate => $header,
+                          -type           => q{text/plain; charset=utf8},
+                          -content_length => bytes::length($desc),
                          );
+            if (OAuth::Lite::Problems->match($desc)) {
+                my $header = "OAuth $desc";
+                $self->header(
+                              -WWW_Authenticate => $header,
+                             );
+            }
         }
     }
+    
     hLOG(qq{__setErrorResponseCode: code=$code description=$desc});
 }
 
@@ -858,12 +866,18 @@ sub __authorized {
     my $Q = $self->query();
     my $dbh = $self->__get_DBH();
 
-    if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {
-        $authorized = 1;
+    if (! $hauth->H_authorized_protocol($Q, $dbh, $accessType)) {
+        $error = $hauth->errstr;
+        $self->__setErrorResponseCode(303, $error);
     }
     else {
-        $error = $hauth->errstr;
-        $self->__setErrorResponseCode(403, $error);
+        if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {
+            $authorized = 1;
+        }
+        else {
+            $error = $hauth->errstr;
+            $self->__setErrorResponseCode(403, $error);
+        }
     }
 
     if ($DEBUG eq 'auth') { 

@@ -367,6 +367,7 @@ responses:
 # ---------------------------------------------------------------------
 httpstatus:
   200: 200 OK
+  303: 303 SEE OTHER
   400: 400 BAD REQUEST
   401: 401 UNAUTHORIZED
   403: 403 FORBIDDEN
