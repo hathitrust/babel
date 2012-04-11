@@ -219,7 +219,7 @@ sub __check_timestamp {
         if (! $valid) {
             return ($ENV{FORCE_VALID_TIMESTAMP}
                     ||
-                    (hLOG(qq{H_authenticate: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
+                    (hLOG(qq{__check_timestamp: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
                      $self->error(TIMESTAMP_REFUSED)));
         }
     }
@@ -248,7 +248,7 @@ sub __check_nonce {
     if ($used) {
         return ($ENV{FORCE_NONCE_UNUSED}
                 ||
-                (hLOG(qq{H_authenticate: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
+                (hLOG(qq{__check_nonce: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
                  $self->error(NONCE_USED)));
     }
 
@@ -275,7 +275,7 @@ sub __check_signature {
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
     my ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
     if (! $valid) {
-        my $s = qq{H_authenticate: $errors url=$signed_url};
+        my $s = qq{__check_signature: $errors url=$signed_url};
         return ($ENV{FORCE_VALID_SIGNATURE}
                 ||
                 (hLOG($s), $self->error($errors)));
