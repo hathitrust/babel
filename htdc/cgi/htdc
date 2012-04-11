@@ -323,7 +323,7 @@ sub serve_Data_API_response {
         _print_encoded_output($Q, $response);
     }
     else {
-        if ($ENV{HT_DEV} || $DEBUG) {
+        if ($ENV{HT_DEV} && $DEBUG) {
             print CGI::header('text/html');
             print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
             print $consumer->oauth_request->uri;
@@ -334,7 +334,12 @@ sub serve_Data_API_response {
             print $response->content;
         }
         else {
-            Call_Handler(0, 'Data API error: ' . $response->status_line);
+            my $code = $response->code;
+            my $status = $response->status_line;
+            
+            $status .= ' - Insufficient authorization' if (grep(/$code/, qw( 401 403)));
+            
+            Call_Handler(0, 'Data API error: ' . $status);
         }
     }
     

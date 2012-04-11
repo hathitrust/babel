@@ -119,6 +119,20 @@ fieldset.request {
 
 #htseq {
   width            : 5em;
+  font-family      : courier,monospace;
+  font-size        : 1.2em;
+  font-weight      : bold;
+}
+
+#htid {
+  font-family      : courier,monospace;
+  font-size        : 1.2em;
+  font-weight      : bold;
+}
+
+#sampleid {
+  font-family      : courier,monospace;
+  font-weight      : bold;
 }
 
 .req { 
