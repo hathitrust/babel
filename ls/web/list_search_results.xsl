@@ -256,28 +256,17 @@
       <xsl:text> items found for</xsl:text>
       
 
-      <xsl:choose>
-        <xsl:when test="foobar">
-                  <xsl:call-template name="basicSearch"/>       
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:call-template name="advanced"/>          
-          <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
-            <div class="modify_link" id="modify_link">
-              <a>
-                <xsl:attribute name="href">
-                  <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+      <xsl:call-template name="advanced"/>          
+      <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
+        <div class="modify_link" id="modify_link">
+          <a>
+            <xsl:attribute name="href">
+              <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
             </xsl:attribute>
             <xsl:text> Revise this advanced search</xsl:text>
           </a>
         </div>
       </xsl:if>
-
-
-        </xsl:otherwise>
-      </xsl:choose>
-
-      
 
 
       <span class="debug">
@@ -300,27 +289,8 @@
 </xsl:template>
 
 
-      <xsl:template name="basicSearch">
-      <xsl:choose>
-        <xsl:when test="/MBooksTop/SearchResults/WellFormed=1">
-          <span>
-            <xsl:value-of select="/MBooksTop/QueryString"/>
-          </span>
-        </xsl:when>
-        <xsl:otherwise>
-          <span>
-            <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>
-          </span>
-        </xsl:otherwise>
-      </xsl:choose>
-
-      <xsl:text> in the full text of all items </xsl:text>  
-      </xsl:template>
-
-
 
   <xsl:template name="advanced">
-
 
       <xsl:variable name="SingleQuery">
         <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) = 1">
@@ -361,46 +331,6 @@
 
     </xsl:template>
 
-
-
-    <!--XXX old template with OP separated from clauses-->
-    <xsl:template name="advancedGroupOld">
-      <!-- call template then op then template? -->
-      <!-- this deals with grouping then calls template "advancedContent" for each clause
-           if there is only 1 clause in the group just spit it out
-           else add parens and the op properly formatted
-           -->
-      <xsl:choose>
-        <xsl:when test="count(Clause)= 1">
-          <xsl:for-each select="Clause">
-            <xsl:call-template name="advancedContent"/>        
-          </xsl:for-each>
-        </xsl:when>
-        <xsl:otherwise>
-          <div class="advGroupFoo">
-          <xsl:text> ( </xsl:text>
-
-          <xsl:for-each select="Clause[1]">
-            <xsl:call-template name="advancedContent"/>        
-          </xsl:for-each>
-
-          <!-- op goes here-->
-          <div class="op">
-            <xsl:value-of select="OP"/>
-          </div>
-
-            <xsl:for-each select="Clause[2]">
-              <xsl:call-template name="advancedContent"/>        
-            </xsl:for-each>
-       
-            <xsl:text> ) </xsl:text>
-          </div>
-            
-          </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-
-    <!-- version with OP being part of 2nd clause in group -->
     <xsl:template name="advancedGroup">
       <!-- this deals with grouping then calls template "advancedContent" for each clause
            if there is only 1 clause in the group just spit it out
@@ -435,8 +365,8 @@
           </xsl:attribute>
             <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
         </a>
-        <!--XXXmerge this code from MASTER? probably shouldn't be here-->
-        <!--
+   
+   
         <xsl:if test="count(../Clause) &gt; 1">
           <span class="op">
             <xsl:text> </xsl:text>
@@ -444,31 +374,23 @@
             <xsl:text> </xsl:text>
           </span>
         </xsl:if>
-          -->
+   
 
       </xsl:if>
 
-      <!--XXXmerge this code from parens is probably right-->
-      <xsl:variable name="myOP">
-        <xsl:value-of select="OP"/>
-      </xsl:variable>
-        <xsl:value-of select="$myOP"/>
-      <xsl:if test=" string($myOP)">
-        <xsl:text> </xsl:text>        
-      </xsl:if>
-
-
-      <!--XXX   figure out what the well formed stuff from basic template is above and put it here
+   
+      <!--XXX  check well formed stuff?
            Also need to make the punctuation only happen if there is an anyall
            -->
       
-      <!--span class="anyAll"-->
-
+      <xsl:text> </xsl:text>      
+      <xsl:if test="normalize-space(AnyAll)">
+        <span class="AnyAll" >
         <xsl:value-of select="AnyAll"/>
-        <!-- only display the semicolon if AnyAll is not empty-->
+        </span>
         <xsl:text>: </xsl:text>
+      </xsl:if>
 
-      <!--/span-->
       <span>
         <xsl:value-of select="Query"/>
       </span>
@@ -581,7 +503,11 @@
             <div class="AdvancedLSerror">
 
               <img alt="Error" src="/ls/common-web/graphics/icon_x.gif" id="x_icon"  />
-              <xsl:text>Your search for </xsl:text>
+              <span id="zeroHits">
+                <xsl:text>Your search returned Zero hits.   </xsl:text>
+              </span>
+              <div id="AdvancedLSerrorSearchStuff">
+              <xsl:text>You searched for:</xsl:text>
               <xsl:call-template name="advanced"/>          
               <!-- need styling-->
               <!--XXX test for limits-->
@@ -597,10 +523,7 @@
               </xsl:if> 
 
               
-              <span id="zeroHits">
-                <xsl:text> returned zero hits.</xsl:text>
-              </span>
-              
+              </div>
               <div class="modify_link" id="modify_link">
               <a>
                 <xsl:attribute name="href">

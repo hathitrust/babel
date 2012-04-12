@@ -201,6 +201,11 @@ fieldset.group{
          margin-right:1em;
 } 
 
+span.AnyAll  {  
+               font-weight:normal;
+               font-style:italic; 
+               }
+
 #anyall1 { 
 /*          margin-left:8em;*/
  }
@@ -347,8 +352,12 @@ ul.row{
 #zeroHits
 { 
   line-height:2;
+  font-style:bold;
+  color:red
  }
-
+#AdvancedLSerrorSearchStuff{ 
+                             margin-top:3px;
+ }
 
 #in{ 
      font-size:110%;
