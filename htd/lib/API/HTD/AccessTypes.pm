@@ -23,11 +23,10 @@ use warnings;
 
 use base qw(Class::ErrorHandler);
 
+use API::HTD_Log;
 use API::HTD::Rights;
 use API::HTD::HConf;
 
-
-my $DEBUG;
 
 sub new {
     my $class = shift;
@@ -55,8 +54,6 @@ sub _initialize {
     
     $self->{_rights} = $args->{_rights};
     $self->{_config} = $args->{_config};
-    
-    $DEBUG = $args->{_debug};
 }
 
 
@@ -105,8 +102,7 @@ sub getAccessTypeByResource {
     my $freedom = $self->__getFreedomVal($rights);
     my $accessType = $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
 
-    if ($DEBUG eq 'access') { print qq{resource=$resource rights=$freedom access_type=$accessType<br/>\n} }
-
+    hLOG_DEBUG('API: ' . qq{getAccessTypeByResource: resource=$resource rights=$freedom access_type=$accessType});
     return $accessType;
 }
 
@@ -150,7 +146,7 @@ sub __getFreedomVal {
             require "Access/Proxy.pm";
             if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
                 $freedom = 'nonfree';
-                if ($DEBUG eq 'access') { print qq{proxy blocked $IPADDR<br/>\n} }
+                hLOG('API: ' . qq{proxy blocked $IPADDR});
             }
         }
     }

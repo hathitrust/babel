@@ -46,15 +46,13 @@ delete $ENV{FORCE_INVALID_TIMESTAMP}     unless (defined $ENV{FORCE_INVALID_TIME
 delete $ENV{FORCE_VALID_SIGNATURE}       unless (defined $ENV{FORCE_VALID_SIGNATURE});
 delete $ENV{FORCE_INVALID_SIGNATURE}     unless (defined $ENV{FORCE_INVALID_SIGNATURE});
 
-delete $ENV{FORCE_AUTHROIZATION_SUCCESS} unless (defined $ENV{FORCE_AUTHROIZATION_SUCCESS});
-delete $ENV{FORCE_AUTHROIZATION_FAILURE} unless (defined $ENV{FORCE_AUTHROIZATION_FAILURE});
+delete $ENV{FORCE_AUTHORIZATION_SUCCESS} unless (defined $ENV{FORCE_AUTHORIZATION_SUCCESS});
+delete $ENV{FORCE_AUTHORIZATION_FAILURE} unless (defined $ENV{FORCE_AUTHORIZATION_FAILURE});
 
 delete $ENV{FORCE_SUCCESS}               unless (defined $ENV{FORCE_SUCCESS});
 delete $ENV{ALLOW_DEVELOPMENT_OVERRIDE}  unless (defined $ENV{ALLOW_DEVELOPMENT_OVERRIDE});
 delete $ENV{DISALLOW_GRACE_PERIOD}       unless (defined $ENV{DISALLOW_GRACE_PERIOD});
 
-
-my $DEBUG = '';
 
 use constant REQUEST_METHOD => 'GET';
 # Number of production seconds in 5 minutes. To force an expired
@@ -87,8 +85,6 @@ sub _initialize {
     my $args = shift;
 
     return if $ENV{FORCE_SUCCESS};
-
-    $DEBUG = $args->{_debug};
 
     my $dbh = $args->{_dbh};
     my $oauth_consumer_key = $args->{_query}->param('oauth_consumer_key');
@@ -133,7 +129,7 @@ sub H_allow_development_auth {
 
     my $dev = ($ENV{ALLOW_DEVELOPMENT_OVERRIDE} && (defined $ENV{HT_DEV})) ? 1 : 0;
 
-    if ($DEBUG eq 'auth') { print qq{dev authnz overridden=$dev<br/>\n} }
+    hLOG_DEBUG('API: ' . qq{H_allow_development_auth: dev authnz overridden=$dev});
     return $dev;
 }
 
@@ -186,6 +182,7 @@ sub H_allow_non_oauth_by_grace {
         }
     }
 
+    $self->__setErrorResponseCode(403, "access_type=$accessType in non-oauth request not allowed in grace period");
     return 0;
 }
 
@@ -209,18 +206,14 @@ sub __check_timestamp {
     my $delta = time() - $timestamp;
     if (abs($delta) > TIMESTAMP_WINDOW) {
         # wayward clock (past or future) or stale timestamp
-        return ($ENV{FORCE_VALID_TIMESTAMP}
-                ||
-                (hLOG(qq{__check_timestamp: timestamp refused oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
-                 $self->error(TIMESTAMP_REFUSED)));
+        hLOG(qq{__check_timestamp: timestamp refused oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+        return $self->error(TIMESTAMP_REFUSED) unless ($ENV{FORCE_VALID_TIMESTAMP});
     }
     else {
         my $valid = API::HTD::AuthDb::valid_timestamp_for_access_key($dbh, $access_key, $timestamp);
         if (! $valid) {
-            return ($ENV{FORCE_VALID_TIMESTAMP}
-                    ||
-                    (hLOG(qq{__check_timestamp: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
-                     $self->error(TIMESTAMP_REFUSED)));
+            hLOG(qq{__check_timestamp: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+            return $self->error(TIMESTAMP_REFUSED) unless ($ENV{FORCE_VALID_TIMESTAMP});
         }
     }
 
@@ -246,10 +239,8 @@ sub __check_nonce {
 
     my $used = API::HTD::AuthDb::nonce_used_by_access_key($dbh, $access_key, $nonce, $timestamp, TIMESTAMP_WINDOW);
     if ($used) {
-        return ($ENV{FORCE_NONCE_UNUSED}
-                ||
-                (hLOG(qq{__check_nonce: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key}),
-                 $self->error(NONCE_USED)));
+        hLOG(qq{__check_nonce: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+        return $self->error(NONCE_USED) unless ($ENV{FORCE_NONCE_UNUSED});
     }
 
     return ($ENV{FORCE_NONCE_USED} ? 0 : 1);
@@ -275,12 +266,10 @@ sub __check_signature {
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
     my ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
     if (! $valid) {
-        my $s = qq{__check_signature: $errors url=$signed_url};
-        return ($ENV{FORCE_VALID_SIGNATURE}
-                ||
-                (hLOG($s), $self->error($errors)));
+        hLOG(qq{__check_signature: $errors url=$signed_url});
+        return $self->error($errors) unless ($ENV{FORCE_VALID_SIGNATURE});
     }
-
+    
     return ($ENV{FORCE_INVALID_SIGNATURE} ? 0 : 1);
 }
 
@@ -435,10 +424,8 @@ sub H_authorized_protocol {
             my $access_key = $Q->param('oauth_consumer_key');
             API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
 
-            return ($ENV{FORCE_AUTHROIZATION_SUCCESS}
-                    ||
-                    (hLOG(qq{H_authorized: access_type=$access_type port=$ENV{SERVER_PORT}}),
-                     $self->error('redirect to SSL required')));
+            hLOG(qq{H_authorized_protocol: FAIL access_type=$access_type port=$ENV{SERVER_PORT}});
+            return $self->error('redirect to SSL required') unless $ENV{FORCE_AUTHORIZATION_SUCCESS};
         }
     }
 
@@ -468,16 +455,14 @@ sub H_authorized {
     my $access_key = $Q->param('oauth_consumer_key');
     my $code = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
     if (__access_is_authorized($code, $access_type)) {
-        return ($ENV{FORCE_AUTHROIZATION_FAILURE}
+        return ($ENV{FORCE_AUTHORIZATION_FAILURE}
                 ||
                 1);
     }
     else {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        return ($ENV{FORCE_AUTHROIZATION_SUCCESS}
-                ||
-                (hLOG(qq{H_authorized: $access_key not authorized. resource=$resource type=$access_type}),
-                 $self->error("access key not authorized")));
+        hLOG(qq{H_authorized: $access_key not authorized. resource=$resource type=$access_type});
+        return $self->error("access key not authorized") unless ($ENV{FORCE_AUTHORIZATION_SUCCESS});
     }
 }
 

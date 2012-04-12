@@ -264,7 +264,6 @@ sub preHandler {
     my $ato = new API::HTD::AccessTypes({
                                          _rights => $ro,
                                          _config => $self->__getConfObject,
-                                         _debug  => $DEBUG,
                                         });
     $self->__setMember('access', $ato);
     
@@ -306,20 +305,7 @@ Description
 # ---------------------------------------------------------------------
 sub __debugging {
     my $self = shift;
-
-    # Debug only allowed in development
-    if ($self->__allowDevelopmentDebugging()) {
-        $DEBUG = $self->query()->param('debug') || $ENV{'DEBUG'} || '';
-    }
-
-    if ($DEBUG) {
-        print CGI::header() unless ($DEBUG eq 'local');
-    }
-
-    if ($DEBUG eq 'env') {
-        print $self->__printEnv();
-        exit 0;
-    }
+    hLOG_DEBUG('API: ' . $self->__getEnv());
 }
 
 
@@ -332,12 +318,11 @@ Format the %ENV hash
 =cut
 
 # ---------------------------------------------------------------------
-sub __printEnv {
+sub __getEnv {
     my $self = shift;
     my $s;
-    foreach my $key (sort keys(%ENV)) {
-        my $e = $ENV{$key};
-        $s .= qq{<b>$key = $e</b><br/>\n};
+    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV )) {
+        $s .= qq{$key="$ENV{$key}" };
     }
     return $s;
 }
@@ -650,7 +635,7 @@ sub __getDownloadability {
     # support 'free_restricted'
     my $downloadability = 'restricted' if ($accessType =~ m,restricted,);
 
-    if ($DEBUG eq 'access') { print qq{resource=$resource download=$downloadability<br/>\n} }
+    hLOG_DEBUG('API: ' . qq{__getDownloadability: resource=$resource download=$downloadability});
 
     return $downloadability;
 }
@@ -670,7 +655,7 @@ sub __getProtocol {
 
     my $accessType = $self->__getAccessTypeByResource($resource);
     my $protocol = ($accessType =~ m,restricted,) ? 'https' : 'http';
-    if ($DEBUG eq 'access') { print qq{resource=$resource protocol="$protocol"<br/>\n} }
+    hLOG_DEBUG('API: ' . qq{__getProtocol: resource=$resource protocol="$protocol"});
 
     return $protocol;
 }
@@ -760,7 +745,6 @@ sub __authNZ_Success {
     my $hauth = new API::HTD::HAuth({
                                      _query       => $Q,
                                      _dbh         => $self->__get_DBH,
-                                     _debug       => $DEBUG,
                                     });
     $self->__setMember('hauth', $hauth);
 
@@ -776,31 +760,14 @@ sub __authNZ_Success {
     if ($hauth->H_request_is_oauth($Q)) {
         $Success = ($self->__authenticated() && $self->__authorized($P_Ref));
     }
-    elsif (! $hauth->H_allow_non_oauth_by_grace($accessType)) {
-        $self->__setErrorResponseCode(403, "access_type=$accessType in non-oauth request not allowed in grace period");    
-    }
-    else {
+    elsif ($hauth->H_allow_non_oauth_by_grace($accessType)) {
         $Success = 1;
     }
-    
-    exit 0 if ($DEBUG eq 'auth');
+    else {
+        $Success = 0;
+    }
+
     return $Success;
-}
-
-
-# ---------------------------------------------------------------------
-
-=item __allowDevelopmentDebugging
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __allowDevelopmentDebugging {
-    my $self = shift;
-
-    return (defined $ENV{HT_DEV} ? 1 : 0);
 }
 
 
@@ -830,8 +797,7 @@ sub __authenticated {
         $self->__setErrorResponseCode(401, $hauth->errstr);
     }
 
-    if ($DEBUG eq 'auth') {print qq{authenticated=$authenticated error="} . $hauth->errstr . qq{"<br/>\n}};
-    
+    hLOG_DEBUG('API: ' . qq{__authenticated: authenticated=$authenticated error=} . $hauth->errstr);
     return $authenticated;
 }
 
@@ -880,11 +846,7 @@ sub __authorized {
         }
     }
 
-    if ($DEBUG eq 'auth') { 
-        print qq{resource=$resource access_type=$accessType authorized=$authorized error="$error"<br/>\n};
-        exit 0;
-    }
-
+    hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=$authorized error="$error"});
     return $authorized;
 }
 
@@ -929,7 +891,9 @@ sub p__processValue {
         $val =~ s,$token,$replacement,;
     }
 
-    if ($DEBUG eq 'tree') { print "&nbsp;" x (5*$level), "<b>p__processValue:</b> $orig_val => $val<br/>\n"; }
+    if ($DEBUG eq 'tree') { 
+        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__processValue: $orig_val => $val");
+    }
 
     return $val;
 }
@@ -949,7 +913,9 @@ sub p__handleAttributes {
 
     if (ref($attrRef) eq 'HASH') {
         foreach my $aName (keys %{ $attrRef }) {
-            if ($DEBUG eq 'tree') { print "&nbsp;" x (5*$level), "<b>p__handleAttributes:</b> elem=" . ($elem ? $elem->nodeName : '') . " attribute=$aName" . "<br/>\n"; }
+            if ($DEBUG eq 'tree') {
+                hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleAttributes: elem=" . ($elem ? $elem->nodeName : '') . " attribute=$aName");
+            }
             my $attrVal = $attrRef->{$aName};
             $attrVal = $self->p__processValue($attrVal, $P_Ref, $level+1);
             $elem->setAttribute($aName, $attrVal);
@@ -970,7 +936,9 @@ sub p__handleContent {
     my $self = shift;
     my ($doc, $parentElem, $elem, $P_Ref, $ref, $level) = @_;
 
-    if ($DEBUG eq 'tree') { print "&nbsp;" x (5*$level),  "<b>p__handleContent:</b> elem=" . ($parentElem ? $parentElem->nodeName : '') . "<br/>\n"; }
+    if ($DEBUG eq 'tree') {
+        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__handleContent: elem=" . ($parentElem ? $parentElem->nodeName : ''));
+    }
 
     if ($parentElem) {
         $parentElem->appendChild($elem);
@@ -1002,7 +970,9 @@ sub p__handleElement {
     my $self = shift;
     my ($doc, $parentElem, $eName, $P_Ref, $ref, $level) = @_;
 
-    if ($DEBUG eq 'tree') { print "&nbsp;" x (5*$level), "<b>p__handleElement:</b> parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName" . "<br/>\n"; }
+    if ($DEBUG eq 'tree') { 
+        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleElement: parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName");
+    }
 
     my $elem = $doc->createElement($eName);
 
@@ -1026,7 +996,9 @@ sub p__buildXML {
     my $self = shift;
     my ($doc, $parentElem, $P_Ref, $responsesRef, $level) = @_;
 
-    if ($DEBUG eq 'tree') { print "&nbsp;" x (5*$level),  "<b>p__buildXML:</b> " . ($parentElem ? $parentElem->nodeName : '') . "<br/>\n"; }
+    if ($DEBUG eq 'tree') { 
+        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__buildXML: " . ($parentElem ? $parentElem->nodeName : ''));
+    }
 
     foreach my $eName (keys %$responsesRef) {
         my $eRef = $responsesRef->{$eName};
@@ -1196,9 +1168,6 @@ sub __getBase_DOMtreeFor {
     if (! $self->p__processXIncludes($doc, $parser, $P_Ref)) {
         return undef;
     }
-
-    exit 0
-        if (($DEBUG eq 'tree') || ($DEBUG eq 'access'));
 
     return $doc;
 }
