@@ -187,29 +187,6 @@ sub serve_login_page {
 
 # ---------------------------------------------------------------------
 
-=item ___adjust_url
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub ___adjust_url {
-    my $url = shift;
-
-    if ($ENV{AUTH_TYPE} eq 'shibboleth') {
-        $url =~ s,/cgi,/shcgi,g;
-    }
-    if (defined $ENV{AUTH_TYPE}) {
-        $url =~ s,http://,https://,;
-    }
-    
-    return $url;
-}
-
-
-# ---------------------------------------------------------------------
-
 =item serve_error_page 
 
 Description
@@ -287,7 +264,7 @@ sub _print_encoded_output {
         print $response->content;
     }
     else {
-        print Encode::encode_utf8($response->content)
+        print Encode::encode_utf8(Encode::decode_utf8($response->content));
     }
 }
 
@@ -329,15 +306,13 @@ sub serve_Data_API_response {
             print $consumer->oauth_request->uri;
             
             print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
-            print $response->status_line;
+            print "Status: " . $response->status_line;
             print "<br/>";
-            print $response->content;
+            print "Content: " . $response->content;
         }
         else {
             my $code = $response->code;
-            my $status = $response->status_line;
-            
-            $status .= ' - Insufficient authorization' if (grep(/$code/, qw( 401 403)));
+            my $status = $response->status_line . " " . $response->content;
             
             Call_Handler(0, 'Data API error: ' . $status);
         }
@@ -391,7 +366,7 @@ sub _get_access_type {
     # POSSIBLY NOTREACHED
 
     # Get an access type object
-    my $ato = Call_Handler(API::HTD::AccessTypes->new({_rights => $ro, _config => $config, _debug => $DEBUG}),
+    my $ato = Call_Handler(API::HTD::AccessTypes->new({_rights => $ro, _config => $config}),
                            'cannot determine access type');
     # POSSIBLY NOTREACHED
 
