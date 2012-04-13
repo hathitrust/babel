@@ -182,8 +182,7 @@ sub H_allow_non_oauth_by_grace {
         }
     }
 
-    $self->__setErrorResponseCode(403, "access_type=$accessType in non-oauth request not allowed in grace period");
-    return 0;
+    return $self->error("access_type=$accessType in non-oauth request not allowed in grace period");
 }
 
 # ---------------------------------------------------------------------
@@ -415,16 +414,12 @@ sub H_authorized_protocol {
 
     return 1 if ($ENV{FORCE_SUCCESS});
 
-    if (! $self->H_auth_valid) {
-        return $self->error('cannot authorize. not authenticated');
-    }
+    $ENV{SERVER_PORT} = 80 if (! defined $ENV{SERVER_PORT});
     
     if ($access_type =~ m,restricted,) {
         if ($ENV{SERVER_PORT} ne '443') {
-            my $access_key = $Q->param('oauth_consumer_key');
-            API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-
             hLOG(qq{H_authorized_protocol: FAIL access_type=$access_type port=$ENV{SERVER_PORT}});
+
             return $self->error('redirect to SSL required') unless $ENV{FORCE_AUTHORIZATION_SUCCESS};
         }
     }

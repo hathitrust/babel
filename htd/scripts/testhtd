@@ -68,14 +68,140 @@ my %test_ports = (
                  );
 
 my %resources = (
-                 structure    => 0,
-                 aggregate    => 0,
-                 meta         => 0,
-                 pagemeta     => 1,
-                 pageimage    => 1,
-                 pageocr      => 1,
-                 pagecoordocr => 1,
-                ); 
+#                  structure    => 0,
+#                  aggregate    => 0,
+#                  meta         => 0,
+#                  pagemeta     => 1,
+#                  pageimage    => 1,
+#                  pageocr      => 1,
+                  pagecoordocr => 1,
+                );
+
+my $COMMAND;
+
+$ENV{UNDER_TEST} = 1;
+
+foreach my $attr (keys %test_attrs) {
+    $ENV{TEST_ATTR} = $attr;
+
+    foreach my $source (keys %test_sources) {
+        $ENV{TEST_SOURCE} = $source;        
+
+        foreach my $addr (keys %test_addrs) {
+            $ENV{REMOTE_ADDR} = $addr;
+            
+            foreach my $port (keys %test_ports) {
+                $ENV{SERVER_PORT} = $port;
+                
+                foreach my $resource (keys %resources) {
+                    printf("%-15s %-18s %-25s %-10s %-21s", 
+                           qq{attr=$attr ($test_attrs{$attr})},
+                           qq{source=$source ($test_sources{$source})},
+                           qq{addr=$addr ($test_addrs{$addr})},
+                           qq{port=$test_ports{$port}},
+                           qq{resource=$resource},
+                          );
+                    
+                    $COMMAND = make_cmd($resource, $resources{$resource}, 1);
+                    
+                    my $output = `$COMMAND`;
+                    $output = parse_output($output);
+                    print qq{ code=$output};
+                    
+                    my $assertion = assertions(
+                                               $output, 
+                                               $test_attrs{$attr}, 
+                                               $test_sources{$source}, 
+                                               $test_addrs{$addr}, 
+                                               $test_ports{$port}, 
+                                               $resource
+                                              );
+                    $assertion  ? PrintY(" [ok]\n") : PrintN(" [FAIL]\n");
+                    
+                }                
+            }
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __assert {
+    my $condition = shift;
+    return $condition;
+}
+
+# ---------------------------------------------------------------------
+
+=item assertions
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub assertions {
+    my ($code, $attr, $source, $addr, $port, $resource) = @_;
+
+    my $metadata_resource = grep(/^$resource$/, qw(meta pagemeta structure));
+    my $pdus = ($attr eq 'pdus');
+    my $us = ($addr eq 'us');
+    my $open_source = ($source eq 'open');
+    my $pd = grep(/^$attr$/, qw(pd cc));
+    my $nobody = ($attr eq 'nobody');
+    my $google_source = ($source eq 'google');
+    my $pagecoordocr = ($resource eq 'pagecoordocr');
+
+    
+    my $val = 1;
+    
+    print "$COMMAND\n" if ($code eq '500');
+                 
+    # no metadata constraints
+    if ($metadata_resource) {
+        $val &&= __assert($code eq '200');
+    }
+    else {
+        # attr constraints
+        if ($pdus) {
+            $val &&= __assert($us && $code eq '200');
+        }
+        if ($pd) {
+            if ($open_source) {
+                $val &&= __assert(
+                                  ($code eq '200')
+                                  ||
+                                  (($code eq '404') && $pagecoordocr)
+                                 );
+            }
+            elsif ($google_source) {
+                if ($resource eq 'aggregate') {
+                    $val &&= __assert(($port eq 'http') && ($code eq '303'));
+                    $val &&= __assert(($port eq 'https') && ($code eq '200'));
+                }
+            }
+        }
+        if ($nobody) {
+            $val &&= __assert(
+                              (($port eq 'http') && ($code eq '303'))
+                              ||
+                              (($port eq 'https') && ($code eq '403'))
+                             );
+        }
+        
+        
+    }
+    
+    return $val;
+}
 
 
 # ---------------------------------------------------------------------
@@ -118,83 +244,6 @@ sub parse_output {
     return $output;
 }
 
-# ---------------------------------------------------------------------
-
-=item Name 
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __assert {
-    my $condition = shift;
-    if (! $condition) {
-        PrintN('FAIL');
-    }
-    else {
-        PrintY('ok');
-    }
-}
-
-    
-# ---------------------------------------------------------------------
-
-=item assertions
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub assertions {
-    my ($code, $attr, $source, $addr, $port, $resource) = @_;
-
-    my $metadata_resource = grep(/^$resource$/, qw(meta pagemeta structure));
-    my $pdus = ($test_attrs{$attr} eq 'pdus');
-    my $us = ($test_addrs{$addr} eq 'us');
-    my $open_source = ($test_sources{$source} eq 'open');
-    
-    __assert($us) if ($pdus);
-}
-
-
-$ENV{UNDER_TEST} = 1;
-
-foreach my $attr (keys %test_attrs) {
-    $ENV{TEST_ATTR} = $attr;
-
-    foreach my $source (keys %test_sources) {
-        $ENV{TEST_SOURCE} = $source;        
-
-        foreach my $addr (keys %test_addrs) {
-            $ENV{REMOTE_ADDR} = $addr;
-            
-            foreach my $port (keys %test_ports) {
-                $ENV{SERVER_PORT} = $port;
-                
-                foreach my $resource (keys %resources) {
-                    printf("%-15s %-18s %-25s %s", 
-                           qq{attr=$attr ($test_attrs{$attr})},
-                           qq{source=$source ($test_sources{$source})},
-                           qq{addr=$addr ($test_addrs{$addr})},
-                           qq{port=$port ($test_ports{$port})},
-                          );
-                    
-                    my $cmd = make_cmd($resource, $resources{$resource}, 1);
-                    
-                    my $output = `$cmd`;
-                    $output = parse_output($output);
-                    print qq{ = $output};
-                    
-                    my $assertion = assertions($output, $attr, $source, $addr, $port, $resource);
-                    print qq{ [$assertion]\n};
-                    
-                }                
-            }
-        }
-    }
-}
 
 
 

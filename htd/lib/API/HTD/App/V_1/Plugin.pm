@@ -400,7 +400,7 @@ sub GET_structure {
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('structure', $P_Ref, $parser);
     if (! defined($doc)) {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot parse structure DOM tree');
         return undef;
     }
     # POSSIBLY NOTREACHED
@@ -421,7 +421,7 @@ sub GET_structure {
             );
     }
     else {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot fetch structure representation');
     }
 
     return $representationRef;
@@ -446,7 +446,7 @@ sub GET_meta {
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('meta', $P_Ref, $parser);
     if (! defined($doc)) {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot parse meta DOM tree');
         return undef;
     }
     # POSSIBLY NOTREACHED
@@ -471,7 +471,7 @@ sub GET_meta {
             );
     }
     else {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot fetch meta representation');
     }
 
     return $representationRef;
@@ -496,7 +496,7 @@ sub GET_pagemeta {
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('pagemeta', $P_Ref, $parser);
     if (! defined($doc)) {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot parse pagemeta DOM tree');
         return undef;
     }
     # POSSIBLY NOTREACHED
@@ -522,7 +522,7 @@ sub GET_pagemeta {
             );
     }
     else {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot fetch pagemeta representation');
     }
 
     return $representationRef;
@@ -567,7 +567,7 @@ sub GET_aggregate {
 
     }
     else {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot fetch aggregate resource');
     }
 
     return $representation;
@@ -604,7 +604,7 @@ sub GET_pageocr {
         $self->header(\%header);
     }
     else {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot fetch pageocr resource');
     }
 
     return $representationRef;
@@ -642,7 +642,7 @@ sub GET_pagecoordocr {
         $self->header(\%header);
     }
     else {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot fetch pagecoordocr resource');
     }
 
     return $representationRef;
@@ -680,7 +680,7 @@ sub GET_pageimage {
         $self->header(\%header);
     }
     else {
-        $self->__setErrorResponseCode(404);
+        $self->__setErrorResponseCode(404, 'cannot fetch pageimage resource');
     }
 
     return $representationRef;

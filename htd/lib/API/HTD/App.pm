@@ -105,7 +105,7 @@ use API::HTD::HAuth;
 use API::HTD::HConf;
 use API::HTD::AccessTypes;
 
-my $DEBUG = '';
+my $DEBUG = ''; # e.g. 'tree'
 
 # =====================================================================
 # =====================================================================
@@ -142,14 +142,14 @@ sub setup {
         $self->__setErrorResponseCode(500, $config_object->errstr);
         return 0;
     }
-    
+
     $self->__debugging();
     # POSSIBLY NOTREACHED
 
     # We only support HTTP GET
     if ($self->getRequestMethod() ne 'GET') {
         $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(405, $self->getRequestMethod() . " method not supported");
+        $self->__setErrorResponseCode(405, $self->getRequestMethod() . ' method not supported');
         return 0;
     }
     # POSSIBLY NOTREACHED
@@ -158,7 +158,7 @@ sub setup {
     # defaultResourceHandler to deal with the mess
     if (! $self->validateQueryParams()) {
         $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(400);
+        $self->__setErrorResponseCode(400, 'query parameter validation fails');
         return 0;
     }
     # POSSIBLY NOTREACHED
@@ -174,7 +174,7 @@ sub setup {
 
     if (! $DBH) {
         $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(500, "database connect error");
+        $self->__setErrorResponseCode(500, 'database connect error');
         return 0;
     }
     # POSSIBLY NOTREACHED
@@ -203,7 +203,7 @@ sub defaultResourceHandler {
     # Some conditions will already have set the header so preserve
     # that otherwise assume a 500
     if (! $self->header()) {
-        $self->__setErrorResponseCode(500);
+        $self->__setErrorResponseCode(500, $self->__errorDescription);
     }
 
     return $self->__errorDescription;
@@ -242,7 +242,7 @@ sub preHandler {
 
     # Did the handlers bind OK?
     if (! $self->handlerBindingOk()) {
-        $self->__setErrorResponseCode(400, "invalid URI");
+        $self->__setErrorResponseCode(400, 'invalid URI');
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
@@ -266,7 +266,7 @@ sub preHandler {
                                          _config => $self->__getConfObject,
                                         });
     $self->__setMember('access', $ato);
-    
+
 
     # Authenticate and authorize
     if (! $self->__authNZ_Success($P_Ref)) {
@@ -276,7 +276,7 @@ sub preHandler {
 
     # Create bindings to tokens in the YAML
     if (! $self->__bindYAMLTokens($P_Ref)) {
-        $self->__setErrorResponseCode(500, "token binding failure");
+        $self->__setErrorResponseCode(500, 'token binding failure');
         return $defaultHandler;
     }
 
@@ -321,7 +321,7 @@ Format the %ENV hash
 sub __getEnv {
     my $self = shift;
     my $s;
-    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV )) {
+    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV SCRIPT_URI QUERY_STRING)) {
         $s .= qq{$key="$ENV{$key}" };
     }
     return $s;
@@ -437,33 +437,30 @@ sub __setErrorResponseCode {
 
     $self->resetHeader();
 
-    my $statusLine = $self->__getConfigVal('httpstatus', $code) || $code;
-    $self->header(
-                  -status => $statusLine,
-                 );
     $self->__errorDescription($msg) if ($msg);
     my $desc = $self->__errorDescription;
 
-    if ($code == 303) {
+    my $statusLine = $self->__getConfigVal('httpstatus', $code) || $code;
+    $self->header(
+                  -status         => $statusLine,
+                  -type           => q{text/plain; charset=utf8},
+                  -content_length => bytes::length($desc),
+                 );
+
+    if ($code =~ m,^30[1-7],) {
         my $Q = new CGI($self->query);
         my $url = $self->__getHAuthObject()->H_make_ssl_redirect_url($Q);
         $self->setRedirect($url);
     }
     else {
-        if ($desc) {
+        if (OAuth::Lite::Problems->match($desc)) {
+            my $oauth_desc = "OAuth $desc";
             $self->header(
-                          -type           => q{text/plain; charset=utf8},
-                          -content_length => bytes::length($desc),
+                          -WWW_Authenticate => $oauth_desc,
                          );
-            if (OAuth::Lite::Problems->match($desc)) {
-                my $header = "OAuth $desc";
-                $self->header(
-                              -WWW_Authenticate => $header,
-                             );
-            }
         }
     }
-    
+
     hLOG(qq{__setErrorResponseCode: code=$code description=$desc});
 }
 
@@ -631,9 +628,9 @@ sub __getDownloadability {
     my $self = shift;
     my $resource = shift;
 
+    # support 'open_restricted'
     my $accessType = $self->__getAccessTypeByResource($resource);
-    # support 'free_restricted'
-    my $downloadability = 'restricted' if ($accessType =~ m,restricted,);
+    my $downloadability = ($accessType =~ m,restricted,) ? 'restricted' : $accessType;
 
     hLOG_DEBUG('API: ' . qq{__getDownloadability: resource=$resource download=$downloadability});
 
@@ -733,18 +730,18 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-
 sub __authNZ_Success {
     my $self = shift;
-    my $P_Ref = shift;    
+    my $P_Ref = shift;
 
     my $Q = $self->query;
+    my $dbh = $self->__get_DBH;
     my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
-    
+
     # Get an authentication object.
     my $hauth = new API::HTD::HAuth({
-                                     _query       => $Q,
-                                     _dbh         => $self->__get_DBH,
+                                     _query => $Q,
+                                     _dbh   => $dbh,
                                     });
     $self->__setMember('hauth', $hauth);
 
@@ -754,19 +751,29 @@ sub __authNZ_Success {
     }
     # POSSIBLY NOTREACHED
 
+    # Check proper protocol for restricted types.  May need to
+    # redirect this URL so skip recording nonce, timestamp.
+    if (! $hauth->H_authorized_protocol($Q, $dbh, $accessType)) {
+        $self->__setErrorResponseCode(303, $hauth->errstr);
+        hLOG('API: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr);
+        return 0;
+    }
+
     my $Success = 0;
-    
+
     # Authenticate and authorize an OAuth request
     if ($hauth->H_request_is_oauth($Q)) {
         $Success = ($self->__authenticated() && $self->__authorized($P_Ref));
     }
-    elsif ($hauth->H_allow_non_oauth_by_grace($accessType)) {
-        $Success = 1;
-    }
-    else {
+    elsif (! $hauth->H_allow_non_oauth_by_grace($accessType)) {
+        $self->__setErrorResponseCode(403, $hauth->errstr);
         $Success = 0;
     }
+    else {
+        $Success = 1;
+    }
 
+    hLOG('API: ' . qq{__authNZ_Success: Success=$Success } . $hauth->errstr) if (! $Success);
     return $Success;
 }
 
@@ -795,6 +802,7 @@ sub __authenticated {
     }
     else {
         $self->__setErrorResponseCode(401, $hauth->errstr);
+        hLOG('API: ' . qq{__authenticated: authenticated=0} . $hauth->errstr);
     }
 
     hLOG_DEBUG('API: ' . qq{__authenticated: authenticated=$authenticated error=} . $hauth->errstr);
@@ -821,7 +829,7 @@ sub __authorized {
     my $self = shift;
     my $P_Ref = shift;
 
-    my $error;
+    my $error = '';
     my $authorized = 0;
 
     # Access types: open, limited, open_restricted, restricted
@@ -832,18 +840,13 @@ sub __authorized {
     my $Q = $self->query();
     my $dbh = $self->__get_DBH();
 
-    if (! $hauth->H_authorized_protocol($Q, $dbh, $accessType)) {
-        $error = $hauth->errstr;
-        $self->__setErrorResponseCode(303, $error);
+    if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {
+        $authorized = 1;
     }
     else {
-        if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {
-            $authorized = 1;
-        }
-        else {
-            $error = $hauth->errstr;
-            $self->__setErrorResponseCode(403, $error);
-        }
+        $error = $hauth->errstr;
+        $self->__setErrorResponseCode(403, $error);
+        hLOG('API: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=0 error="$error"});
     }
 
     hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=$authorized error="$error"});
@@ -891,7 +894,7 @@ sub p__processValue {
         $val =~ s,$token,$replacement,;
     }
 
-    if ($DEBUG eq 'tree') { 
+    if ($DEBUG eq 'tree') {
         hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__processValue: $orig_val => $val");
     }
 
@@ -970,7 +973,7 @@ sub p__handleElement {
     my $self = shift;
     my ($doc, $parentElem, $eName, $P_Ref, $ref, $level) = @_;
 
-    if ($DEBUG eq 'tree') { 
+    if ($DEBUG eq 'tree') {
         hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleElement: parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName");
     }
 
@@ -996,7 +999,7 @@ sub p__buildXML {
     my $self = shift;
     my ($doc, $parentElem, $P_Ref, $responsesRef, $level) = @_;
 
-    if ($DEBUG eq 'tree') { 
+    if ($DEBUG eq 'tree') {
         hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__buildXML: " . ($parentElem ? $parentElem->nodeName : ''));
     }
 
