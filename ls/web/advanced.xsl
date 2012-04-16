@@ -90,12 +90,19 @@
     <div class="LsAdvancedPageContent">
       <div id="LS_main">
         <div class="betasearch">
+          <div class="AdvancedLabelRow">
           <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
+            <!--XXX should probably have a PI instead of being hard-coded-->
+            <span id="search_tips">
+              <a  href="http://www.hathitrust.org/help_digital_library#SearchTips">Search Tips</a>
+            </span>
+       </div>
           <form id="advanced_searchform" action="ls" name="searchcoll" >
             <fieldset>
               <legend class="SkipLink">Search for: </legend>
-            <div id="queryArea">
-       
+            
+          <div id="queryArea">
+
         
 
               <!-- XXX need to change this so it will only add to existing debug values-->

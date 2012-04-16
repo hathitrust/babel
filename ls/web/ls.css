@@ -4,6 +4,14 @@ ls.css
 ***/
 
 
+
+#search_tips{ 
+              font-size:100%;
+              
+ }
+#fieldsetGroup1{ 
+                 margin-top:.3em;
+ }
 /** for debugging uncomment this**/
 /*div { outline:1px dashed red; } */
 
@@ -168,7 +176,7 @@ fieldset.group{
 
 
 .removeFacetIcon{ 
-                  margin-left:2em;
+                /*  margin-left:2em;*/
  }
 
 

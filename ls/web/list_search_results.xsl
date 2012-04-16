@@ -504,7 +504,7 @@
 
               <img alt="Error" src="/ls/common-web/graphics/icon_x.gif" id="x_icon"  />
               <span id="zeroHits">
-                <xsl:text>Your search returned Zero hits.   </xsl:text>
+                <xsl:text>Your search returned 0 results.   </xsl:text>
               </span>
               <div id="AdvancedLSerrorSearchStuff">
               <xsl:text>You searched for:</xsl:text>
