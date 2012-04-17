@@ -420,7 +420,7 @@ sub GET_structure {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG(qq{GET_structure: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_structure: } . $self->__getParamsRefStr($P_Ref));
 
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('structure', $P_Ref, $parser);
@@ -465,7 +465,7 @@ sub GET_meta {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG(qq{GET_meta: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_meta: } . $self->__getParamsRefStr($P_Ref));
 
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('meta', $P_Ref, $parser);
@@ -514,7 +514,7 @@ sub GET_pagemeta {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG(qq{GET_pagemeta: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_pagemeta: } . $self->__getParamsRefStr($P_Ref));
 
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('pagemeta', $P_Ref, $parser);
@@ -564,7 +564,7 @@ sub GET_aggregate {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG(qq{GET_aggregate: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_aggregate: } . $self->__getParamsRefStr($P_Ref));
 
     my $representation;
 
@@ -606,7 +606,7 @@ sub GET_pageocr {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG(qq{GET_pageocr: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_pageocr: } . $self->__getParamsRefStr($P_Ref));
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'ocr');
@@ -643,7 +643,7 @@ sub GET_pagecoordocr {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG(qq{GET_pagecoordocr: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_pagecoordocr: } . $self->__getParamsRefStr($P_Ref));
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'coordOCR');
@@ -678,7 +678,7 @@ sub GET_pageimage {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG(qq{GET_pageimage: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_pageimage: } . $self->__getParamsRefStr($P_Ref));
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'image');
