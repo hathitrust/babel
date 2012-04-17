@@ -52,7 +52,9 @@ $app = builder {
     # probably do some generous throttling
     enable
         match_if unchoked(),
-            'Choke::Null'
+            'Choke::Requests',
+                  credit_rate    => [ 0.5, 'sec' ],
+                  max_debt       => [ 50, '+30 sec' ],
             ;
 
     enable "SSO";
