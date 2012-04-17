@@ -23,7 +23,7 @@ $util->support_signature_method('HMAC-SHA1');
 $util->allow_extra_params(qw/hello/);
 
 my $oauth_params = $cgi->Vars();
-my $request_uri = $cgi->url(-path_info => 1);
+my $request_uri = $cgi->self_url;
 
 hLOG(qq{dapiserver: request url=$request_uri});
 

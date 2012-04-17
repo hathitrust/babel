@@ -58,7 +58,7 @@ use OAuth::Lite::AuthMethod;
 my $access_key = 'PUBLIC_OAUTH_CONSUMER_KEY';
 my $secret_key = 'PUBLIC_OAUTH_CONSUMER_SECRET';
 
-my $request_url = 'http://babel.hathitrust.org/cgi/htd/dapiserver';
+my $request_url = 'http://babel.hathitrust.org/cgi/htdc/dapiserver';
 
 my $consumer = OAuth::Lite::Consumer->new
   (
