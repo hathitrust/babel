@@ -1403,9 +1403,10 @@ sub escapeNonBooleanAndOR
     #XXX temporary fix for edismax.  Move to subroutine!
     # won't need if we put following in the request handler for edismax
     # see bill email 4/11/2012
-    #    # <bool name="lowercaseOperators">false</bool>
+    # <bool name="lowercaseOperators">false</bool>
     
-    if (/\s+(and|or)\s+/)
+
+    if ($user_query_string =~/\s+(and|or)\s+/)
     {
         $user_query_string =~s,\s+and\s+, =and= ,g;
         $user_query_string =~s,\s+or\s+, =or= ,g;
