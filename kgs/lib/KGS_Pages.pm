@@ -180,6 +180,9 @@ sub get_auth_reply_page {
     my $portal_link = KGS_Portal::get_portal_link($C);
     $$page_ref =~ s,___PORTAL___,$portal_link,g;
 
+    my $request_link = KGS_Pages::get_request_link($C);
+    $$page_ref =~ s,___REQUEST_URL___,$request_link,g;
+
     return $page_ref;
 }
 
@@ -255,7 +258,7 @@ sub get_missing_params_page {
     my $msg = join(', ', @msg_elems);
     $$page_ref =~ s,___MISSING_PARAMS___,$msg,g;
 
-    my $url = __get_request_link($C);
+    my $url = get_request_link($C);
     $$page_ref =~ s,___REQUEST_URL___,$url,g;
 
     return $page_ref;
@@ -347,7 +350,7 @@ sub get_max_registrations_page {
     my $max = KGS_Validate::MAX_ATTEMPTED_REGISTRATIONS;
     $$page_ref =~ s,___MAX_ATTEMPTED_REGISTRATIONS___,$max,g;
 
-    my $url = __get_request_link($C);
+    my $url = get_request_link($C);
     $$page_ref =~ s,___REQUEST_URL___,$url,g;
 
     return $page_ref;
@@ -376,7 +379,7 @@ sub get_max_confirmations_page {
     my $max = KGS_Validate::MAX_ACTIVE_REGISTRATIONS;
     $$page_ref =~ s,___MAX_ACTIVE_REGISTRATIONS___,$max,g;
 
-    my $url = __get_request_link($C);
+    my $url = get_request_link($C);
     $$page_ref =~ s,___REQUEST_URL___,$url,g;
 
     return $page_ref;
@@ -385,14 +388,14 @@ sub get_max_confirmations_page {
 
 # ---------------------------------------------------------------------
 
-=item __get_request_link
+=item get_request_link
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __get_request_link {
+sub get_request_link {
     my $C = shift;
     
     my $config = $C->get_object('MdpConfig');
