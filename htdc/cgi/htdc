@@ -28,10 +28,6 @@ use strict;
 use warnings;
 
 umask 0000;
-BEGIN {
-    my $enabled = $ENV{'HT_DEV'} ? 1 : 1;
-    exit 0 if (! $enabled);
-}
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
@@ -48,14 +44,16 @@ use Context;
 use Utils;
 
 use API::DbIF;
+use API::HTD_Log;
+
 use API::HTD::AuthDb;
 use API::HTD::HConf;
-
 use API::HTD::Rights;
 use API::HTD::AccessTypes;
 
 
 my $DEBUG = 0;
+$ENV{HTTP_HOST} = 'localhost' if (! defined $ENV{HTTP_HOST});
 
 my $REQUEST_BASE_URL;
 if ($ENV{HT_DEV}) {
@@ -75,7 +73,6 @@ my $userid;
 $DEBUG = $Q->param('debug') if (defined $Q->param('debug'));
 
 if (! defined $ENV{REMOTE_USER}) {
-    print STDERR "htdc: REMOTE_USER not set\n";
     serve_login_page();
 }
 elsif (! $Q->param) {    
@@ -171,6 +168,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub serve_login_page {
+    hLOG(qq{htdc: serve login page});
     
     my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_login.html');    
 
@@ -197,6 +195,8 @@ Description
 sub serve_error_page {
     my $error_message = shift;
     
+    hLOG(qq{htdc: serve error page: $error_message});
+
     my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_error.html');    
     $$page_ref =~ s,___FAIL_REASON___,$error_message,;
 
@@ -217,8 +217,9 @@ Description
 
 # ---------------------------------------------------------------------
 sub serve_request_form_page {
-    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_request_form.html');
+    hLOG(qq{htdc: serve request form});
 
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_request_form.html');
     _standard_replacements($page_ref);
 
     print CGI::header('text/html');
@@ -286,6 +287,8 @@ sub serve_Data_API_response {
     # POSSIBLY NOTREACHED
     
     my $request_url = _make_Data_API_request_url($Q, $access_type);
+    hLOG(qq{htdc: serve API response, request url=$request_url});
+
     my $extra = { };
 
     my $response = $consumer->request
@@ -295,27 +298,30 @@ sub serve_Data_API_response {
        params  => $extra,
       );
 
+    # Debug block
+    if ($ENV{HT_DEV} && $DEBUG) {
+        print CGI::header('text/html');
+        print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
+        print $consumer->oauth_request->uri;
+        
+        print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
+        print "<b>Status:</b> " . $response->status_line;
+        print "<br/>";
+        print "<b>Header:</b> " . $response->headers->as_string;
+        print "<br/>";
+        print "<b>Content:</b> " . $response->content;
+        exit 0;
+    }
+
     if ($response->is_success) {
         print CGI::header(join(';', $response->content_type()));
         _print_encoded_output($Q, $response);
     }
     else {
-        if ($ENV{HT_DEV} && $DEBUG) {
-            print CGI::header('text/html');
-            print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
-            print $consumer->oauth_request->uri;
-            
-            print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
-            print "Status: " . $response->status_line;
-            print "<br/>";
-            print "Content: " . $response->content;
-        }
-        else {
-            my $code = $response->code;
-            my $status = $response->status_line . " " . $response->content;
-            
-            Call_Handler(0, 'Data API error: ' . $status);
-        }
+        my $code = $response->code;
+        my $status = $response->status_line . " " . (($code !~ m,^5\d\d,) ? $response->content : '');
+        
+        Call_Handler(0, 'Data API error: ' . $status);
     }
     
     exit 0;
