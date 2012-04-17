@@ -21,7 +21,7 @@ http://yourhost/path_to_client/dapiclient
 
  [CLIENT] sent this URL to server:
  
-   http://pfarber-full.babel.hathitrust.org/cgi/htd/dapiserver?hello=world&oauth_consumer_key=PUBLIC_OAUTH_CONSUMER_KEY&oauth_nonce=47b8186be439110b4f98&oauth_signature=2cQYAM%2BYek%2BiOexZKMObM%2B3B2w4%3D&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1332184191&oauth_version=1.0
+   http://babel.hathitrust.org/cgi/htd/dapiserver?hello=world&oauth_consumer_key=PUBLIC_OAUTH_CONSUMER_KEY&oauth_nonce=47b8186be439110b4f98&oauth_signature=2cQYAM%2BYek%2BiOexZKMObM%2B3B2w4%3D&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1332184191&oauth_version=1.0
  
  [CLIENT] received this HTTP response from server:
    200 OK

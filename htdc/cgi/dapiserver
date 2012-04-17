@@ -6,6 +6,8 @@ use warnings;
 use CGI;
 use OAuth::Lite::ServerUtil;
 
+use API::HTD_Log;
+
 # Shared with sample dapiclient
 my $secret_key = 'PUBLIC_OAUTH_CONSUMER_SECRET';
 
@@ -17,6 +19,8 @@ $util->allow_extra_params(qw/hello/);
 
 my $oauth_params = $cgi->Vars();
 my $request_uri = $cgi->url(-path_info => 1);
+
+hLOG(qq{dapiserver: request url=$request_url});
 
 unless ($util->validate_params($oauth_params)) {
     print $cgi->header(-Status => '400 ' . $util->errstr);
