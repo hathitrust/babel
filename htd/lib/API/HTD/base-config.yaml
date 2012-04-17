@@ -7,12 +7,4 @@ database:
 
 unzip_prog: /l/local/bin/unzip
 
-# ---------------------------------------------------------------------
-#  United States, United States Minor Outlying Islands, Virgin Islands, U.S.
-# ---------------------------------------------------------------------
-pdus_country_codes:
-  - 'US'
-  - 'UM'
-  - 'VI'
-
 access_use_intro: Please view access and use restrictions at

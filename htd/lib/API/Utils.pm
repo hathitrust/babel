@@ -16,9 +16,48 @@ specific dependencies.  Let's keep it that way.
 =cut
 
 use strict;
+use warnings;
+
 use FileHandle;
 use POSIX ();
 use Time::HiRes ();
+
+use base qw(Exporter);
+our @EXPORT = qw( signature_safe_url );
+
+use API::HTD_Log;
+
+# ---------------------------------------------------------------------
+
+=item signature_safe_url
+
+CGI.pm 3.51 mis-handles pathinfo when it contains a URL escaped character,
+e.g. /pagemeta/uc1.%24b759628/1
+
+AFAICT, CGI::[self_]url do not properly unescape path_info and also
+doubles it so instead of
+
+http://host/cgi/htd/pagemeta/uc1.$b759628/1
+
+you get
+
+http://host/cgi/htd/pagemeta/uc1.%24b759628/1/pagemeta/uc1.%24b759628/1
+
+Signatures fail on this account. Ugh.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub signature_safe_url {
+    my $Q = shift;
+    
+    return $Q->self_url if ($ENV{TERM});
+
+    my $ss_self_url = $ENV{SCRIPT_URI} . '?' . $ENV{QUERY_STRING};    
+    hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$ss_self_url});
+    
+    return $ss_self_url;
+}
 
 # ---------------------------------------------------------------------
 

@@ -6,7 +6,7 @@ HathiTrust Repository Data API (htd)
 
 =head1 USAGE
 
-http://services.hathitrust.org/api/htd/<URI>? ... URL parameters ...
+http://services.hathitrust.org/htd/<URI>? ... URL parameters ...
 
 =head1 DESCRIPTION
 
@@ -25,10 +25,6 @@ Debug options
 
 =cut
 umask 0000;
-BEGIN {
-    my $enabled = $ENV{'HT_DEV'} ? 1 : 1;
-    exit 0 if (! $enabled);
-}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -49,6 +45,7 @@ our @SUPPORTED_VERSIONS = (HIGHEST_API_VERSION);
 
 # Determine which version of API to load and run
 our $Q = CGI->new();
+
 # get path_info + query_string from command line
 my $action = $Q->param('action');
 if ($action) {
@@ -79,7 +76,6 @@ else {
     # for Plack/PSGI, return the run instance
     my $retval = $API_version_instance->run();
     return $retval if ( defined($ENV{'psgi.version'}) );
-    
 }
 
 exit 0;

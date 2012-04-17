@@ -33,8 +33,10 @@ use OAuth::Lite::Problems qw(:all);
 use Context;
 use HOAuth::Signature;
 
-use API::HTD::AuthDb;
 use API::HTD_Log;
+use API::Utils;
+
+use API::HTD::AuthDb;
 
 # So we can drive unit testing
 delete $ENV{FORCE_NONCE_USED}            unless (defined $ENV{FORCE_NONCE_USED});
@@ -82,13 +84,12 @@ Initialize object.
 # ---------------------------------------------------------------------
 sub _initialize {
     my $self = shift;
-    my $args = shift;
+    my $Q = shift;
+    my $dbh = shift;
 
     return if $ENV{FORCE_SUCCESS};
 
-    my $dbh = $args->{_dbh};
-    my $oauth_consumer_key = $args->{_query}->param('oauth_consumer_key');
-
+    my $oauth_consumer_key = $Q->param('oauth_consumer_key');
     API::HTD::AuthDb::update_access($dbh, $oauth_consumer_key)
         if (defined $oauth_consumer_key);
 }
@@ -258,14 +259,13 @@ sub __check_signature {
     my $self = shift;
     my ($Q, $dbh, $access_key, $client_data) = @_;
 
-    my $signed_url = $Q->url({
-                              -path_info => 1,
-                              -query     => 1
-                             });
+    my $signed_url = signature_safe_url($Q);    
+    hLOG_DEBUG(qq{__check_signature: signature safe signed url=$signed_url});
+
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
     my ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
     if (! $valid) {
-        hLOG(qq{__check_signature: $errors url=$signed_url});
+        hLOG(qq{__check_signature: $errors oauth_consumer_key=$access_key url=$signed_url});
         return $self->error($errors) unless ($ENV{FORCE_VALID_SIGNATURE});
     }
     
@@ -348,55 +348,58 @@ sub H_authenticate {
 #    xxxxxxxxxxxxxxxxxxxxx --+ | | | | | | |
 #    xxxxxxxxxxxxxxxxxxxxx ----+ | | | | | |
 #    xxxxxxxxxxxxxxxxxxxxx ------+ | | | | |
-#    xxxxxxxxxxxxxxxxxxxxx --------+ | | | |
-#    rate ---------------------------+ | | |
+#    rate -------------------------+ | | | |
+#    restricted_forbidden -----------+ | | |
 #    restricted -----------------------+ | |
 #    open_restricted --------------------+ |
 #    open ---------------------------------+
 #
-#    masks
+#    codes below assume that authorization to restricted implies
+#    authorization to less restricted
+#    
+#    code       mask
 #
-#    0  = 0000: NOT AUTHORIZED
-#    1  = 0001: open
-#    2  = 0010: open_restricted
-#    3  = 0011: open|open_restricted
-#    4  = 0100:                      restricted
-#    5  = 0101: open                |restricted
-#    6  = 0110:      open_restricted|restricted
-#    7  = 0111: open|open_restricted|restricted
-#    8  = 1000:                                 rate
-#    9  = 1001: open                           |rate
-#    10 = 1010: open_restricted                |rate
-#    11 = 1011: open|open_restricted           |rate
-#    12 = 1100:                      restricted|rate
-#    13 = 1101: open                |restricted|rate
-#    14 = 1110:      open_restricted|restricted|rate
-#    15 = 1111: open|open_restricted|restricted|rate
+#    0          0000: NOT AUTHORIZED
+#    1  0001    0001: open
+#    3  0011    0010: open|open_restricted
+#    7  0111    0100: open|open_restricted|restricted
+#    15 1111    1000: open|open_restricted|restricted|restricted_forbidden
+#
+#    codes when rate agreements apply
+#
+#    17 10001  10000: open                                                |rate
+#    19 10011  10000: open|open_restricted                                |rate
+#    23 10111  10000: open|open_restricted|restricted                     |rate
+#    31 11111  10000: open|open_restricted|restricted|restricted_forbidden|rate
 #
 
 =cut
 
 # ---------------------------------------------------------------------
 
-use constant OPEN_MASK            => 1;
-use constant OPEN_RESTRICTED_MASK => 2;
-use constant RESTRICTED_MASK      => 4;
-use constant RATE_MASK            => 8;
+use constant OPEN_MASK                 =>  1;
+use constant OPEN_RESTRICTED_MASK      =>  2;
+use constant RESTRICTED_MASK           =>  4;
+use constant RESTRICTED_FORBIDDEN_MASK =>  8;
+use constant RATE_MASK                 => 16;
 
 my %authorization_map =
   (
-   'open'            => OPEN_MASK,
-   'limited'         => OPEN_MASK,
-   'open_restricted' => OPEN_RESTRICTED_MASK,
-   'restricted'      => RESTRICTED_MASK,
+   'open'                 => OPEN_MASK,
+   'limited'              => OPEN_MASK,
+   'open_restricted'      => OPEN_RESTRICTED_MASK,
+   'restricted'           => RESTRICTED_MASK,
+   'restricted_forbidden' => RESTRICTED_FORBIDDEN_MASK,
   );
 
 sub __access_is_authorized {
     my ($code, $access_type) = @_;
 
     my $mask = $authorization_map{$access_type};
-
-    return ($code & $mask) > 0;
+    my $result = ($code & $mask);
+    
+    hLOG_DEBUG('API: ' . qq{__access_is_authorized: access_type=$access_type code=$code mask=$mask result=$result});
+    return ($result > 0);
 }
 
 # ---------------------------------------------------------------------
@@ -456,8 +459,8 @@ sub H_authorized {
     }
     else {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        hLOG(qq{H_authorized: $access_key not authorized. resource=$resource type=$access_type});
-        return $self->error("access key not authorized") unless ($ENV{FORCE_AUTHORIZATION_SUCCESS});
+        hLOG(qq{H_authorized: $access_key insufficient privilege. resource=$resource type=$access_type});
+        return $self->error("insufficient privilege") unless ($ENV{FORCE_AUTHORIZATION_SUCCESS});
     }
 }
 

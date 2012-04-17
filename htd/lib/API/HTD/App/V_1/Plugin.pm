@@ -40,6 +40,7 @@ use Access::Statements;
 use constant API_VERSION => 1;
 
 use API::HTD_Log;
+use API::HTD::AccessTypes;
 
 # =====================================================================
 # =====================================================================
@@ -100,23 +101,47 @@ sub validateQueryParams {
 # =====================================================================
 # =====================================================================
 
-
 # ---------------------------------------------------------------------
 
-=item __getHeaderAccessUseMsg
+=item __addHeaderInCopyrightMsg
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __getHeaderAccessUseMsg {
+sub __addHeaderInCopyrightMsg {
+    my $self = shift;
+    
+    my $Header_Key = 'X-HathiTrust-InCopyright';
+    
+    my ($in_copyright, $attr) = $self->__getAccessObject()->getInCopyrightStatus();
+    if ($in_copyright) {
+        my $access_key = $self->query->param('oauth_consumer_key') || 0;
+        $self->header(
+                      $Header_Key => "user=$access_key;attr=$attr;access=data_api_user");
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __addHeaderAccessUseMsg
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __addHeaderAccessUseMsg {
     my $self = shift;
 
     my $url = $self->{stmt_url};
     my $access_use_message = $self->__getConfigVal('access_use_intro') . " " . qq{$url};
 
-    return $access_use_message;
+    $self->header(
+                  -X_HathiTrust_Notice => $access_use_message,
+                 );
 }
 
 # ---------------------------------------------------------------------
@@ -412,13 +437,12 @@ sub GET_structure {
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('structure', $format);
-        my $msg = $self->__getHeaderAccessUseMsg();
         $self->header
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
-             -X_HathiTrust_Notice => $msg,
             );
+        $self->__addHeaderAccessUseMsg();
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch structure representation');
@@ -462,13 +486,12 @@ sub GET_meta {
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('meta', $format);
-        my $msg = $self->__getHeaderAccessUseMsg();
         $self->header
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
-             -X_HathiTrust_Notice => $msg,
             );
+        $self->__addHeaderAccessUseMsg();
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch meta representation');
@@ -513,13 +536,12 @@ sub GET_pagemeta {
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pagemeta', $format);
-        my $msg = $self->__getHeaderAccessUseMsg();
         $self->header
             (
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
-             -X_HathiTrust_Notice => $msg,
             );
+        $self->__addHeaderAccessUseMsg();
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch pagemeta representation');
@@ -554,17 +576,14 @@ sub GET_aggregate {
         $filename =~ s/,/\./g;
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('aggregate', 'zip');
-        my $msg = $self->__getHeaderAccessUseMsg();
-
-        my %header =
-            (
-             -Status => $statusLine,
-             -Content_type => $mimetype,
-             -Content_Disposition => qq{attachment; filename=$filename},
-             -X_HathiTrust_Notice => $msg,
-            );
-        $self->header(\%header);
-
+        
+        $self->header(
+                      -Status => $statusLine,
+                      -Content_type => $mimetype,
+                      -Content_Disposition => qq{attachment; filename=$filename},
+                     );
+        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderInCopyrightMsg();
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch aggregate resource');
@@ -594,14 +613,14 @@ sub GET_pageocr {
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageocr', $extension);
-        my $msg = $self->__getHeaderAccessUseMsg();
-        my %header =
-            (
-             -Status => $statusLine,
-             -Content_type => $mimetype . '; charset=utf8',
-             -Content_Disposition => qq{filename=$filename},
-             -X_HathiTrust_Notice => $msg,           );
-        $self->header(\%header);
+
+        $self->header(             
+                      -Status => $statusLine,
+                      -Content_type => $mimetype . '; charset=utf8',
+                      -Content_Disposition => qq{filename=$filename},
+                     );
+        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderInCopyrightMsg();
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch pageocr resource');
@@ -631,15 +650,13 @@ sub GET_pagecoordocr {
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pagecoordocr', $extension);
-        my $msg = $self->__getHeaderAccessUseMsg();
-        my %header =
-            (
-             -Status => $statusLine,
-             -Content_type => $mimetype . '; charset=utf8',
-             -Content_Disposition => qq{filename=$filename},
-             -X_HathiTrust_Notice => $msg,
-            );
-        $self->header(\%header);
+        $self->header(
+                      -Status => $statusLine,
+                      -Content_type => $mimetype . '; charset=utf8',
+                      -Content_Disposition => qq{filename=$filename},
+                     );
+        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderInCopyrightMsg();
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch pagecoordocr resource');
@@ -665,19 +682,17 @@ sub GET_pageimage {
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'image');
-    if (defined($representationRef))
-    {
+    if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageimage', $extension);
-        my $msg = $self->__getHeaderAccessUseMsg();
-        my %header =
-            (
-             -Status => $statusLine,
-             -Content_type => $mimetype,
-             -Content_Disposition => qq{filename=$filename},
-             -X_HathiTrust_Notice => $msg,
-            );
-        $self->header(\%header);
+
+        $self->header( 
+                      -Status => $statusLine,
+                      -Content_type => $mimetype,
+                      -Content_Disposition => qq{filename=$filename},
+                     );
+        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderInCopyrightMsg();
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch pageimage resource');

@@ -321,7 +321,7 @@ Format the %ENV hash
 sub __getEnv {
     my $self = shift;
     my $s;
-    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV SCRIPT_URI QUERY_STRING)) {
+    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV SCRIPT_URI QUERY_STRING PATH_INFO REQUEST_URI)) {
         $s .= qq{$key="$ENV{$key}" };
     }
     return $s;
@@ -628,11 +628,9 @@ sub __getDownloadability {
     my $self = shift;
     my $resource = shift;
 
-    # support 'open_restricted'
+    # support 'open_restricted', 'restricted_forbidden'
     my $accessType = $self->__getAccessTypeByResource($resource);
     my $downloadability = ($accessType =~ m,restricted,) ? 'restricted' : $accessType;
-
-    hLOG_DEBUG('API: ' . qq{__getDownloadability: resource=$resource download=$downloadability});
 
     return $downloadability;
 }
@@ -652,7 +650,6 @@ sub __getProtocol {
 
     my $accessType = $self->__getAccessTypeByResource($resource);
     my $protocol = ($accessType =~ m,restricted,) ? 'https' : 'http';
-    hLOG_DEBUG('API: ' . qq{__getProtocol: resource=$resource protocol="$protocol"});
 
     return $protocol;
 }
@@ -739,10 +736,7 @@ sub __authNZ_Success {
     my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
 
     # Get an authentication object.
-    my $hauth = new API::HTD::HAuth({
-                                     _query => $Q,
-                                     _dbh   => $dbh,
-                                    });
+    my $hauth = new API::HTD::HAuth($Q, $dbh);
     $self->__setMember('hauth', $hauth);
 
     # Allow through back door?
@@ -763,7 +757,7 @@ sub __authNZ_Success {
 
     # Authenticate and authorize an OAuth request
     if ($hauth->H_request_is_oauth($Q)) {
-        $Success = ($self->__authenticated() && $self->__authorized($P_Ref));
+        $Success = ($self->__authenticated($Q) && $self->__authorized($Q, $P_Ref));
     }
     elsif (! $hauth->H_allow_non_oauth_by_grace($accessType)) {
         $self->__setErrorResponseCode(403, $hauth->errstr);
@@ -789,11 +783,11 @@ Description
 # ---------------------------------------------------------------------
 sub __authenticated {
     my $self = shift;
+    my $Q = shift;
 
     my $authenticated = 0;
     my $hauth = $self->__getHAuthObject();
 
-    my $Q = $self->query();
     my $dbh = $self->__get_DBH();
     my $client_data = $self->__getClientQueryParams();
 
@@ -802,7 +796,7 @@ sub __authenticated {
     }
     else {
         $self->__setErrorResponseCode(401, $hauth->errstr);
-        hLOG('API: ' . qq{__authenticated: authenticated=0} . $hauth->errstr);
+        hLOG('API: ' . qq{__authenticated: authenticated=0 } . $hauth->errstr);
     }
 
     hLOG_DEBUG('API: ' . qq{__authenticated: authenticated=$authenticated error=} . $hauth->errstr);
@@ -827,17 +821,16 @@ authorization = f(access_type = g(rights, source, resource))
 # ---------------------------------------------------------------------
 sub __authorized {
     my $self = shift;
-    my $P_Ref = shift;
+    my ($Q, $P_Ref) = @_;
 
     my $error = '';
     my $authorized = 0;
 
-    # Access types: open, limited, open_restricted, restricted
+    # Access types: open, limited, open_restricted, restricted, forbidden
     my $resource = $P_Ref->{'resource'};
     my $accessType = $self->__getAccessTypeByResource($resource);
 
     my $hauth = $self->__getHAuthObject();
-    my $Q = $self->query();
     my $dbh = $self->__get_DBH();
 
     if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {

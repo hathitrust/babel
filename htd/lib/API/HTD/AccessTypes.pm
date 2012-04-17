@@ -23,6 +23,8 @@ use warnings;
 
 use base qw(Class::ErrorHandler);
 
+use RightsGlobals;
+
 use API::HTD_Log;
 use API::HTD::Rights;
 use API::HTD::HConf;
@@ -83,6 +85,41 @@ sub __getConfigVal {
 
 # ---------------------------------------------------------------------
 
+=item getInCopyrightStatus
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub getInCopyrightStatus {
+    my $self = shift;
+    
+    # pessimistic
+    my $in_copyright = 1;
+    my $ro = $self->__getRightsObject();
+    my $attribute = $ro->getRightsFieldVal('attr');    
+    my $rights = $self->__getConfigVal('rights_name_map', $attribute);
+
+    if ($rights eq 'pdus') {
+        if ($self->__geo_location_is_US()) {
+            $in_copyright = 0;
+        }
+    }
+    else {
+        my @freely_available = (
+                                @RightsGlobals::g_creative_commons_attribute_values, 
+                                @RightsGlobals::g_public_domain_world_attribute_values,
+                               );
+        $in_copyright = (! grep(/^$attribute$/, @freely_available));        
+    }
+
+    return ($in_copyright, $attribute);
+}
+
+
+# ---------------------------------------------------------------------
+
 =item getAccessTypeByResource
 
 Description
@@ -100,15 +137,59 @@ sub getAccessTypeByResource {
     my $rights = $self->__getConfigVal('rights_name_map', $ro->getRightsFieldVal('attr'));
 
     my $freedom = $self->__getFreedomVal($rights);
-    my $accessType = $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
+    my $accessType = 
+      ($freedom =~ m,forbidden,) 
+        ? $freedom
+          : $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
 
-    hLOG_DEBUG('API: ' . qq{getAccessTypeByResource: resource=$resource rights=$freedom access_type=$accessType});
     return $accessType;
 }
 
 # =====================================================================
 #  Private Methods
 # =====================================================================
+
+# ---------------------------------------------------------------------
+
+=item __geo_location_is_US
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __geo_location_is_US {
+    my $self = shift;
+
+    my $is_us = 1;
+    
+    # Limit pdus volumes to un-proxied "U.S." clients. Use forwarded
+    # IP address if proxied, else UA IP addr
+    my $IPADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
+
+    require "Geo/IP.pm";
+    my $geoIP = Geo::IP->new();
+    my $country_code = $geoIP->country_code_by_addr($IPADDR);
+    my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
+
+    if (! grep(/^$country_code$/, @RightsGlobals::g_pdus_country_codes)) {
+        $is_us = 0;
+        hLOG('API: ' . qq{non-US pdus access attempt $IPADDR});
+    }
+    else {
+        # veryify this is not a blacklisted US proxy that does not
+        # set HTTP_X_FORWARDED_FOR for a non-US request
+        require "Access/Proxy.pm";
+        if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
+            $is_us = 0;
+            hLOG('API: ' . qq{proxy blocked $IPADDR});
+        }
+    }
+
+    return $is_us;
+}
+
+
 
 # ---------------------------------------------------------------------
 
@@ -127,27 +208,12 @@ sub __getFreedomVal {
     my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
     my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
 
-    # Limit pdus volumes to un-proxied "U.S." clients
-    if (($freedom eq 'free') && ($rights eq 'pdus')) {
-        # Use forwarded IP address if proxied, else UA IP addr
-        my $IPADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
-
-        require "Geo/IP.pm";
-        my $geoIP = Geo::IP->new();
-        my $country_code = $geoIP->country_code_by_addr($IPADDR);
-        my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
-
-        if (! grep(/^$country_code$/, @$pdusCountryCodesRef)) {
+    if (($freedom eq 'nonfree') && ($rights eq 'nobody')) {
+        $freedom = 'restricted_forbidden';
+    }
+    elsif (($freedom eq 'free') && ($rights eq 'pdus')) {
+        if (! $self->__geo_location_is_US()) {
             $freedom = 'nonfree';
-        }
-        else {
-            # veryify this is not a blacklisted US proxy that does not
-            # set HTTP_X_FORWARDED_FOR for a non-US request
-            require "Access/Proxy.pm";
-            if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
-                $freedom = 'nonfree';
-                hLOG('API: ' . qq{proxy blocked $IPADDR});
-            }
         }
     }
 
