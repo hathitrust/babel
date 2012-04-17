@@ -55,6 +55,8 @@ $app = builder {
             'Choke::Null'
             ;
 
+    enable "SSO";
+
     $app;
 };
 
