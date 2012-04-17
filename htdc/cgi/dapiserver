@@ -3,6 +3,11 @@
 use strict;
 use warnings;
 
+umask 0000;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
 use CGI;
 use OAuth::Lite::ServerUtil;
 
@@ -20,7 +25,7 @@ $util->allow_extra_params(qw/hello/);
 my $oauth_params = $cgi->Vars();
 my $request_uri = $cgi->url(-path_info => 1);
 
-hLOG(qq{dapiserver: request url=$request_url});
+hLOG(qq{dapiserver: request url=$request_uri});
 
 unless ($util->validate_params($oauth_params)) {
     print $cgi->header(-Status => '400 ' . $util->errstr);
