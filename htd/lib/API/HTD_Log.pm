@@ -62,7 +62,7 @@ sub hLOG {
     Utils::mkdir_path($logdir);
     my $logfile_path = $logdir . '/' . $logfile;
     
-    my $string = sprintf("%s %-16s %s\n", Utils::Time::iso_Time('time'), $ENV{REMOTE_ADDR}, $s); 
+    my $string = sprintf("%-16s %8s %s\n", $ENV{REMOTE_ADDR}, Utils::Time::iso_Time('time'), $s); 
     if (open(HLOG, ">>:encoding(UTF-8)", $logfile_path)) {
         print HLOG qq{$string};
         close(HLOG);
