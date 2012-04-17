@@ -1,5 +1,6 @@
 gr
 htd
+htdc
 imgsrv
 logout
 ls

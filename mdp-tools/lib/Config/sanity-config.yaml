@@ -53,14 +53,7 @@ htd:
   - /htapps/__CMD_STAGE__/htd/cgi/htd action=/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22 __LOCAL__
   - /htapps/__CMD_STAGE__/htd/cgi/htd action=/pagemeta/uc1.\$b699489/1 __LOCAL__
 
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/pagemeta/mdp.39015004314111/37?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/meta/mdp.39015004314111?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/structure/mdp.39015004314111?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/aggregate/mdp.39015004314111?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/pageimage/inu.30000000123830/19?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/pageocr/mdp.39015004314111/51?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/pagemeta/uc1.$b699489/1?__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/__CGI__/htd/dapiclient
 
 logout:
   - /htapps/__CMD_STAGE__/logout/cgi/logout __LOCAL__
