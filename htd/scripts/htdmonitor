@@ -28,26 +28,23 @@ else {
 print "log file = $today_log_file\n\n";
 
 # Total GET_* requests
-my $total_GET_requests = `ack GET_ $today_log_file|wc -l`;
-chomp $total_GET_requests;
-print "total_GET_requests=$total_GET_requests\n\n";
+chomp(my $total_GET_requests = `ack GET_ $today_log_file|wc -l`);
+print "total_GET_requests=$total_GET_requests\n";
 
 # Total GET_ requests by resource
 foreach my $r (keys %resource_requests) {
-    $resource_requests{$r} = `ack GET_$r $today_log_file|wc -l`;
-    chomp %resource_requests;
+    chomp($resource_requests{$r} = `ack GET_$r $today_log_file|wc -l`);
     print "$r = " . $resource_requests{$r} . "\n";
 }
 print "\n";
 
 # Total API ERRORS
-my $total_ERRORS =  `ack ERROR $today_log_file|wc -l`;
+chomp(my $total_ERRORS =  `ack ERROR $today_log_file|wc -l`);
 print "errors=$total_ERRORS\n";
 
 # Total ERRORS requests by resource
 foreach my $r (keys %resource_errors) {
-    $resource_errors{$r} = `ack 'ERROR.*?GET_$r' $today_log_file|wc -l`;
-    chomp %resource_errors;
+    chomp($resource_errors{$r} = `ack 'ERROR.*?GET_$r' $today_log_file|wc -l`);
     print "$r errors = " . $resource_errors{$r} . "\n";
 }
 print "\n";
@@ -60,11 +57,11 @@ print "unique ip = " . scalar(@unique_IP) . "\n\n";
 # Total requests per IP addr
 my %resource_requests_ip;
 foreach my $ip (@unique_IP) {
-    $resource_requests_ip{$ip} = `ack $ip $today_log_file|wc -l`;
-    chomp %resource_requests;
-    my $country = `$geoip $ip`;
-    chomp $country;
-    print "ip $ip ($country) = " . $resource_requests_ip{$ip};
+    chomp($resource_requests_ip{$ip} = `ack $ip $today_log_file|wc -l`);
+    chomp(my $country = `$geoip $ip`);
+    chomp(my @list_resources = `ack $ip.*?GET_ $today_log_file| cut -f4 -d' '|sort|uniq`);
+    my $list = join(' ', @list_resources);
+    print "ip $ip ($country) = " . $resource_requests_ip{$ip} . " $list\n";
 }
 print "\n";
 
