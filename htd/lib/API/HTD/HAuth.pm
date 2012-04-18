@@ -206,13 +206,13 @@ sub __check_timestamp {
     my $delta = time() - $timestamp;
     if (abs($delta) > TIMESTAMP_WINDOW) {
         # wayward clock (past or future) or stale timestamp
-        hLOG('API: ' . qq{__check_timestamp: timestamp refused oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+        hLOG('API ERROR: ' . qq{__check_timestamp: timestamp refused oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
         return $self->error(TIMESTAMP_REFUSED) unless ($ENV{FORCE_VALID_TIMESTAMP});
     }
     else {
         my $valid = API::HTD::AuthDb::valid_timestamp_for_access_key($dbh, $access_key, $timestamp);
         if (! $valid) {
-            hLOG('API: ' . qq{__check_timestamp: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+            hLOG('API ERROR: ' . qq{__check_timestamp: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
             return $self->error(TIMESTAMP_REFUSED) unless ($ENV{FORCE_VALID_TIMESTAMP});
         }
     }
@@ -239,7 +239,7 @@ sub __check_nonce {
 
     my $used = API::HTD::AuthDb::nonce_used_by_access_key($dbh, $access_key, $nonce, $timestamp, TIMESTAMP_WINDOW);
     if ($used) {
-        hLOG('API: ' . qq{__check_nonce: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+        hLOG('API ERROR: ' . qq{__check_nonce: oauth_nonce=$nonce used oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
         return $self->error(NONCE_USED) unless ($ENV{FORCE_NONCE_UNUSED});
     }
 
@@ -265,7 +265,7 @@ sub __check_signature {
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
     my ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
     if (! $valid) {
-        hLOG('API: ' . qq{__check_signature: $errors oauth_consumer_key=$access_key url=$signed_url});
+        hLOG('API ERROR: ' . qq{__check_signature: $errors oauth_consumer_key=$access_key url=$signed_url});
         return $self->error($errors) unless ($ENV{FORCE_VALID_SIGNATURE});
     }
     
@@ -421,7 +421,7 @@ sub H_authorized_protocol {
     
     if ($access_type =~ m,restricted,) {
         if ($ENV{SERVER_PORT} ne '443') {
-            hLOG('API: ' . qq{H_authorized_protocol: FAIL access_type=$access_type port=$ENV{SERVER_PORT}});
+            hLOG('API ERROR: ' . qq{H_authorized_protocol: FAIL access_type=$access_type port=$ENV{SERVER_PORT}});
 
             return $self->error('redirect to SSL required') unless $ENV{FORCE_AUTHORIZATION_SUCCESS};
         }
@@ -459,7 +459,7 @@ sub H_authorized {
     }
     else {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        hLOG('API: ' . qq{H_authorized: $access_key insufficient privilege. resource=$resource type=$access_type});
+        hLOG('API ERROR: ' . qq{H_authorized: $access_key insufficient privilege. resource=$resource type=$access_type});
         return $self->error("insufficient privilege") unless ($ENV{FORCE_AUTHORIZATION_SUCCESS});
     }
 }

@@ -461,7 +461,7 @@ sub __setErrorResponseCode {
         }
     }
 
-    hLOG('API :' . qq{__setErrorResponseCode: code=$code description=$desc});
+    hLOG('API ERROR: ' . qq{__setErrorResponseCode: code=$code description=$desc});
 }
 
 
@@ -749,7 +749,7 @@ sub __authNZ_Success {
     # redirect this URL so skip recording nonce, timestamp.
     if (! $hauth->H_authorized_protocol($Q, $dbh, $accessType)) {
         $self->__setErrorResponseCode(303, $hauth->errstr);
-        hLOG('API: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr);
+        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr);
         return 0;
     }
 
@@ -767,7 +767,7 @@ sub __authNZ_Success {
         $Success = 1;
     }
 
-    hLOG('API: ' . qq{__authNZ_Success: Success=$Success } . $hauth->errstr) if (! $Success);
+    hLOG('API ERROR: ' . qq{__authNZ_Success: Success=$Success } . $hauth->errstr) if (! $Success);
     return $Success;
 }
 
@@ -796,7 +796,7 @@ sub __authenticated {
     }
     else {
         $self->__setErrorResponseCode(401, $hauth->errstr);
-        hLOG('API: ' . qq{__authenticated: authenticated=0 } . $hauth->errstr);
+        hLOG('API ERROR: ' . qq{__authenticated: authenticated=0 } . $hauth->errstr);
     }
 
     hLOG_DEBUG('API: ' . qq{__authenticated: authenticated=$authenticated error=} . $hauth->errstr);
@@ -839,7 +839,7 @@ sub __authorized {
     else {
         $error = $hauth->errstr;
         $self->__setErrorResponseCode(403, $error);
-        hLOG('API: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=0 error="$error"});
+        hLOG('API ERROR: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=0 error="$error"});
     }
 
     hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=$authorized error="$error"});
