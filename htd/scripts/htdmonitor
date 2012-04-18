@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+
+
+# --------- Monitor htd logs ---------
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use API::HTD_Log;
+
+my $geoip = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
+
+my %resource_requests = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,);
+my %resource_errors = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,);
+
+
+my ($logdir, $today_log_file);
+if ($ARGV[0]) {
+    $today_log_file = $ARGV[0];
+}
+else {
+    ($logdir, $today_log_file) = API::HTD_Log::hlog_path();
+}
+
+print "log file = $today_log_file\n\n";
+
+# Total GET_* requests
+my $total_GET_requests = `ack GET_ $today_log_file|wc -l`;
+chomp $total_GET_requests;
+print "total_GET_requests=$total_GET_requests\n\n";
+
+# Total GET_ requests by resource
+foreach my $r (keys %resource_requests) {
+    $resource_requests{$r} = `ack GET_$r $today_log_file|wc -l`;
+    chomp %resource_requests;
+    print "$r = " . $resource_requests{$r} . "\n";
+}
+print "\n";
+
+# Total API ERRORS
+my $total_ERRORS =  `ack ERROR $today_log_file|wc -l`;
+print "errors=$total_ERRORS\n";
+
+# Total ERRORS requests by resource
+foreach my $r (keys %resource_errors) {
+    $resource_errors{$r} = `ack 'ERROR.*?GET_$r' $today_log_file|wc -l`;
+    chomp %resource_errors;
+    print "$r errors = " . $resource_errors{$r} . "\n";
+}
+print "\n";
+
+# Unique IP addresses and geo location
+my @unique_IP = `cat $today_log_file|cut -f1 -d' '|sort|uniq`;
+chomp @unique_IP;
+print "unique ip = " . scalar(@unique_IP) . "\n\n";
+
+# Total requests per IP addr
+my %resource_requests_ip;
+foreach my $ip (@unique_IP) {
+    $resource_requests_ip{$ip} = `ack $ip $today_log_file|wc -l`;
+    chomp %resource_requests;
+    my $country = `$geoip $ip`;
+    chomp $country;
+    print "ip $ip ($country) = " . $resource_requests_ip{$ip};
+}
+print "\n";
+
+# List of X-HathiTrust-InCopyright requests
+my $ic_requests = `ack 'X-HathiTrust-InCopyright' $today_log_file|wc -l`;
+print "ic requests = $ic_requests\n";
+
+exit 0;

@@ -54,13 +54,8 @@ Description
 sub hLOG {
     my $s = shift;
 
-    my $date = Utils::Time::iso_Time('date');
-
-    my $logdir = $ENV{'SDRROOT'} . '/logs/htd';
-    my $logfile = "$date.log";
-    
+    my ($logdir, $logfile_path) = hlog_path();    
     Utils::mkdir_path($logdir);
-    my $logfile_path = $logdir . '/' . $logfile;
     
     my $string = sprintf("%-16s %8s %s\n", $ENV{REMOTE_ADDR}, Utils::Time::iso_Time('time'), $s); 
     if (open(HLOG, ">>:encoding(UTF-8)", $logfile_path)) {
@@ -69,6 +64,26 @@ sub hLOG {
         chmod(0666, $logfile_path) if (-o $logfile_path);
     }
 }
+
+# ---------------------------------------------------------------------
+
+=item hlog_path
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub hlog_path {
+    my $date = Utils::Time::iso_Time('date');
+
+    my $logdir = $ENV{'SDRROOT'} . '/logs/htd';
+    my $logfile = "$date.log";
+    my $logfile_path = $logdir . '/' . $logfile;
+
+    return ($logdir, $logfile_path);
+}
+
 
 
 1;
