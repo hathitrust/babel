@@ -112,6 +112,7 @@ Description
 # ---------------------------------------------------------------------
 sub __addHeaderInCopyrightMsg {
     my $self = shift;
+    my $resource_str = shift;
     
     my $Header_Key = 'X-HathiTrust-InCopyright';
     
@@ -120,6 +121,7 @@ sub __addHeaderInCopyrightMsg {
         my $access_key = $self->query->param('oauth_consumer_key') || 0;
         $self->header(
                       $Header_Key => "user=$access_key;attr=$attr;access=data_api_user");
+        hLOG('API: ' . qq{X-HathiTrust-InCopyright: access key=$access_key } . $resource_str);
     }
 }
 
@@ -564,7 +566,8 @@ sub GET_aggregate {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_aggregate: } . $self->__getParamsRefStr($P_Ref));
+    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    hLOG('API: ' . qq{GET_aggregate: } . $resource_str);
 
     my $representation;
 
@@ -583,7 +586,7 @@ sub GET_aggregate {
                       -Content_Disposition => qq{attachment; filename=$filename},
                      );
         $self->__addHeaderAccessUseMsg();
-        $self->__addHeaderInCopyrightMsg();
+        $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch aggregate resource');
@@ -606,7 +609,8 @@ sub GET_pageocr {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_pageocr: } . $self->__getParamsRefStr($P_Ref));
+    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    hLOG('API: ' . qq{GET_pageocr: } . $resource_str);
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'ocr');
@@ -620,7 +624,7 @@ sub GET_pageocr {
                       -Content_Disposition => qq{filename=$filename},
                      );
         $self->__addHeaderAccessUseMsg();
-        $self->__addHeaderInCopyrightMsg();
+        $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch pageocr resource');
@@ -643,7 +647,8 @@ sub GET_pagecoordocr {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_pagecoordocr: } . $self->__getParamsRefStr($P_Ref));
+    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    hLOG('API: ' . qq{GET_pagecoordocr: } . $resource_str);
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'coordOCR');
@@ -656,7 +661,7 @@ sub GET_pagecoordocr {
                       -Content_Disposition => qq{filename=$filename},
                      );
         $self->__addHeaderAccessUseMsg();
-        $self->__addHeaderInCopyrightMsg();
+        $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch pagecoordocr resource');
@@ -678,7 +683,8 @@ sub GET_pageimage {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_pageimage: } . $self->__getParamsRefStr($P_Ref));
+    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    hLOG('API: ' . qq{GET_pageimage: } . $resource_str);
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'image');
@@ -692,7 +698,7 @@ sub GET_pageimage {
                       -Content_Disposition => qq{filename=$filename},
                      );
         $self->__addHeaderAccessUseMsg();
-        $self->__addHeaderInCopyrightMsg();
+        $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch pageimage resource');
