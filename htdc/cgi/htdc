@@ -183,7 +183,7 @@ Description
 sub serve_error_page {
     my $error_message = shift;
     
-    hLOG(qq{htdc: serve error page: $error_message});
+    hLOG(qq{htdc ERROR: serve error page: $error_message});
 
     my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_error.html');    
     $$page_ref =~ s,___FAIL_REASON___,$error_message,;
