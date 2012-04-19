@@ -45,17 +45,27 @@ http://host/cgi/htd/pagemeta/uc1.%24b759628/1/pagemeta/uc1.%24b759628/1
 
 Signatures fail on this account. Ugh.
 
+Due to the network architecture that includes the net scaler, to do
+secure transport over SSL we use http:// over port 443, NOT https://
+
 =cut
 
 # ---------------------------------------------------------------------
 sub signature_safe_url {
     my $Q = shift;
-    
+
     return $Q->self_url if ($ENV{TERM});
 
-    my $ss_self_url = $ENV{SCRIPT_URI} . '?' . $ENV{QUERY_STRING};    
+    my $ss_self_url = $ENV{SCRIPT_URI};
+    if (! defined $ENV{HT_DEV}) {
+        if (defined $ENV{SERVER_PORT} && ($ENV{SERVER_PORT} eq '443')) {
+            $ss_self_url .= ':443';
+        }
+    }
+    $ss_self_url .= '?' . $ENV{QUERY_STRING};
+
     hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$ss_self_url});
-    
+
     return $ss_self_url;
 }
 
