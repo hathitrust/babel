@@ -9,15 +9,23 @@ use strict;
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
 
-use API::HTD_Log;
+use RightsGlobals;
 
-my $geoip = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
+use API::HTD_Log;
+use API::DbIF;
+
+
+my $ACK = '/l/local/bin/ack --no-filename';
+my $GEOIP = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
 
 my %resource_requests = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,);
 my %resource_errors = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,);
-
-
+my @freely_available = (
+                        @RightsGlobals::g_creative_commons_attribute_values, 
+                        @RightsGlobals::g_public_domain_world_attribute_values,
+                       );
 my ($logdir, $today_log_file);
+
 if ($ARGV[0]) {
     $today_log_file = $ARGV[0];
 }
@@ -28,45 +36,113 @@ else {
 print "log file = $today_log_file\n\n";
 
 # Total GET_* requests
-chomp(my $total_GET_requests = `ack GET_ $today_log_file|wc -l`);
+chomp(my $total_GET_requests = `grep GET_ $today_log_file|wc -l`);
 print "total_GET_requests=$total_GET_requests\n";
 
 # Total GET_ requests by resource
 foreach my $r (keys %resource_requests) {
-    chomp($resource_requests{$r} = `ack GET_$r $today_log_file|wc -l`);
+    chomp($resource_requests{$r} = `grep GET_$r $today_log_file|wc -l`);
     print "$r = " . $resource_requests{$r} . "\n";
 }
 print "\n";
 
 # Total API ERRORS
-chomp(my $total_ERRORS =  `ack ERROR $today_log_file|wc -l`);
+chomp(my $total_ERRORS =  `grep ERROR $today_log_file|wc -l`);
 print "errors=$total_ERRORS\n";
 
 # Total ERRORS requests by resource
 foreach my $r (keys %resource_errors) {
-    chomp($resource_errors{$r} = `ack 'ERROR.*?GET_$r' $today_log_file|wc -l`);
+    chomp($resource_errors{$r} = `egrep 'ERROR.*?GET_$r' $today_log_file|wc -l`);
     print "$r errors = " . $resource_errors{$r} . "\n";
 }
 print "\n";
 
 # Unique IP addresses and geo location
-my @unique_IP = `cat $today_log_file|cut -f1 -d' '|sort|uniq`;
+my @unique_IP = `grep GET_ $today_log_file|cut -f1 -d' '|sort|uniq`;
 chomp @unique_IP;
 print "unique ip = " . scalar(@unique_IP) . "\n\n";
 
 # Total requests per IP addr
 my %resource_requests_ip;
 foreach my $ip (@unique_IP) {
-    chomp($resource_requests_ip{$ip} = `ack $ip $today_log_file|wc -l`);
-    chomp(my $country = `$geoip $ip`);
-    chomp(my @list_resources = `ack $ip.*?GET_ $today_log_file| cut -f4 -d' '|sort|uniq`);
+    chomp($resource_requests_ip{$ip} = `egrep "$ip.*?GET_" $today_log_file|wc -l`);
+    chomp(my $country = `$GEOIP $ip`);
+    chomp(my @list_resources = `egrep $ip.*?GET_ $today_log_file| cut -f4 -d' '|sort|uniq`);
+    map { s,:|GET_,,g } @list_resources;
     my $list = join(' ', @list_resources);
     print "ip $ip ($country) = " . $resource_requests_ip{$ip} . " $list\n";
 }
 print "\n";
 
 # List of X-HathiTrust-InCopyright requests
-my $ic_requests = `ack 'X-HathiTrust-InCopyright' $today_log_file|wc -l`;
+my $ic_requests = `grep 'X-HathiTrust-InCopyright' $today_log_file|wc -l`;
 print "ic requests = $ic_requests\n";
 
+# Cross-check for IC
+print "cross-check ic data requests";
+my $DBH = API::DbIF::databaseConnect
+  (
+   'mdp',
+   'mdp',
+   'II4md-py',
+   'mysql-sdr',
+  );
+my $check_ok = 1;
+
+foreach my $ip (@unique_IP) {
+    print "\nchecking ip = $ip data resource = "; 
+    foreach my $resource (qw( pageimage pageocr pagecoordocr aggregate )) {
+        print "$resource ";
+        if (my $fail = _test_resource_by_ip_for_ic($resource, $ip)) {
+            print $fail;
+            $check_ok = 0;
+        }
+    }
+}
+
+$check_ok ? print "\nOK\n" : print "\n*** FAIL ***\n";
+
+
 exit 0;
+
+# ---------------------------------------------------------------------
+
+=item _test_resource_by_ip_for_ic
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _test_resource_by_ip_for_ic {
+    my $resource = shift;
+    my $ip = shift;
+
+    my ($statement, $sth);
+    my $failures = '';
+    
+    chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file|cut -f8 -d' '|cut -f2 -d'"'|sort|uniq`);
+    foreach my $id (@uniq_resource_ids_by_ip) {
+        $statement = qq{SELECT attr FROM j_rights WHERE nid=?};
+        $sth = API::DbIF::prepAndExecute($DBH, $statement, $id);
+        my $attr = $sth->fetchrow_array();
+        if (! grep(/^$attr$/, @freely_available)) {
+            # check access key X-HathiTrust-InCopyright
+            chomp(my $access_line = `egrep "$ip.*?X-HathiTrust-InCopyright.*?$resource" ../../logs/htd/2012-04-19.log|cut -f6,10 -d' '|sort|uniq`);
+
+            my ($key) = ($access_line =~ m,key=(.*?) ,); 
+            $statement = qq{SELECT code FROM da_authorization WHERE access_key=?};
+            $sth = API::DbIF::prepAndExecute($DBH, $statement, $key);
+            my $code = $sth->fetchrow_array();
+
+            if ($code <= 1) {
+                # unique lines without 'seq=' 
+                chomp(my $full_line = `egrep "$ip.*?GET_$resource.*?$id" $today_log_file|cut -f1,3,4,5,6,7,8 -d' '|sort|uniq`);
+                $failures .= "\n!--> $full_line ATTR=$attr access_key=$key code=$code ";
+            }
+        }
+    }
+    
+    return $failures;
+}
+    
