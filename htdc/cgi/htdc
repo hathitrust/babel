@@ -55,22 +55,6 @@ use API::HTD::AccessTypes;
 my $DEBUG = 0;
 $ENV{HTTP_HOST} = 'localhost' if (! defined $ENV{HTTP_HOST});
 
-# Due to the network architecture that includes the net scaler, to do
-# secure transport over SSL we use http:// over port 443, NOT https://
-# but only for production.  This also means thaqt test.babel will fail
-# SSL negotiation wf SSL is involved.
-my $REQUEST_BASE_URL;
-if ($ENV{HT_DEV}) {
-    my ($dev) = ($ENV{SDRROOT} =~ m,/htapps/(.*?).babel,);
-    my $vhost = $dev . q{-full.babel.hathitrust.org};
-
-    $REQUEST_BASE_URL = $vhost . q{/cgi/htd};
-}
-else {
-    # There will be a redirect from services.hathitrust.org/htd
-    $REQUEST_BASE_URL = q{babel.hathitrust.org/cgi/htd};
-}
-
 my $Q = new CGI;
 my $userid;
 
@@ -434,7 +418,10 @@ sub _get_consumer {
 
 =item _make_Data_API_request_url
 
-See note re: port 443 at top of file.
+Due to the network architecture that includes the net scaler, to do
+secure transport over SSL we use http:// over port 443, NOT https://
+but only for production.  This also means thaqt test.babel will fail
+SSL negotiation wf SSL is involved.
 
 =cut
 
@@ -442,12 +429,12 @@ See note re: port 443 at top of file.
 sub _make_Data_API_request_url {
     my $Q = shift;
     my $access_type = shift;
-    
+
     my $port = '';
     my $protocol = 'http://';
 
     if (! grep(/^$access_type$/, ('open', 'limited'))) {
-        # require secure transport in production
+        # use 443 for SSl transport in production
         if ($ENV{HT_DEV}) {
             $protocol = 'https://';
         }
@@ -457,7 +444,7 @@ sub _make_Data_API_request_url {
     }
 
     my ($id, $resource, $seq) = ($Q->param('id'), $Q->param('resource'), $Q->param('seq'));
-    my $url = $protocol . $REQUEST_BASE_URL . $port . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
+    my $url = $protocol . $ENV{HTTP_HOST} . $port . '/cgi/htd' . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
     
     return $url;
 }
