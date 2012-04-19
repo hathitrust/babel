@@ -58,7 +58,7 @@ sub signature_safe_url {
 
     my $protocol = 'http://';
     if (defined $ENV{HT_DEV}) {
-        $protocol = 'https://';
+        $protocol = 'https://' if ($ENV{SERVER_PORT} eq '443');
     }
 
     my $url = $protocol . $ENV{HTTP_HOST} . $ENV{REQUEST_URI};
