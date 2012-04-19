@@ -166,7 +166,12 @@ function doReset (event)
   // yop
   $("#yop option").attr("selected", false);
   $("#yop option[value='after']").attr("selected", true);
-
+  
+  //hide yop-end box or 
+    $("#yop-between").val("").hide();
+    $("#yop-end").val("").hide();
+  //show pdate_start box
+    $("#yop-start").val("").show();
 }
 //--------------------------------------------------------------------------------------
 function checkPdate()
