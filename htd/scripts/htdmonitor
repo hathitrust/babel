@@ -15,7 +15,6 @@ use API::HTD_Log;
 use API::DbIF;
 
 
-my $ACK = '/l/local/bin/ack --no-filename';
 my $GEOIP = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
 
 my %resource_requests = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,);
