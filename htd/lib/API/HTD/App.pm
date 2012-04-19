@@ -321,7 +321,7 @@ Format the %ENV hash
 sub __getEnv {
     my $self = shift;
     my $s;
-    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV SCRIPT_URI QUERY_STRING PATH_INFO REQUEST_URI)) {
+    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV SCRIPT_URI  SCRIPT_URL QUERY_STRING PATH_INFO REQUEST_URI)) {
         $s .= qq{$key="$ENV{$key}" };
     }
     return $s;

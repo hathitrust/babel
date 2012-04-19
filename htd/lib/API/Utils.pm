@@ -56,17 +56,20 @@ sub signature_safe_url {
 
     return $Q->self_url if ($ENV{TERM});
 
-    my $ss_self_url = $ENV{SCRIPT_URI};
-    if (! defined $ENV{HT_DEV}) {
-        if (defined $ENV{SERVER_PORT} && ($ENV{SERVER_PORT} eq '443')) {
-            $ss_self_url .= ':443';
-        }
+    my $port = '';
+    my $protocol = 'http://';
+
+    if (defined $ENV{HT_DEV}) {
+        $protocol = 'https://';
     }
-    $ss_self_url .= '?' . $ENV{QUERY_STRING};
+    else {
+        $port = (defined $ENV{SERVER_PORT} && ($ENV{SERVER_PORT} eq '443')) ? '443' : '';
+    }
 
-    hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$ss_self_url});
+    my $url = $protocol . $ENV{HTTP_HOST} . $port . $ENV{REQUEST_URI};
 
-    return $ss_self_url;
+    hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$url});
+    return $url;
 }
 
 # ---------------------------------------------------------------------
