@@ -56,12 +56,18 @@ sub _initialize {
     
     $self->{_rights} = $args->{_rights};
     $self->{_config} = $args->{_config};
+    $self->{_ua_ip} = $args->{_ua_ip};
 }
 
 
 # =====================================================================
 #  Accessors
 # =====================================================================
+
+sub __get_UAIP {
+    my $self = shift;
+    return $self->{_ua_ip};
+}
 
 sub __getRightsObject {
     my $self = shift;
@@ -151,6 +157,29 @@ sub getAccessTypeByResource {
 
 # ---------------------------------------------------------------------
 
+=item __trusted_client
+
+We trust the value of the ip URL parameter as being that of the
+useragent when set by clients whose IP address is in our whitelist.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __trusted_client {
+    my $self = shift;
+    
+    my $clientWhitelistRef  = $self->__getConfigVal('client_whitelist');
+    my $client_REMOTE_ADDR = $ENV{REMOTE_ADDR};
+    
+    my $trusted = (grep(/$client_REMOTE_ADDR/, @$clientWhitelistRef));
+    
+    hLOG('API: ' . qq{__trusted_client: trusted=$trusted ip=$client_REMOTE_ADDR});
+    return $trusted;
+}
+
+
+# ---------------------------------------------------------------------
+
 =item __geo_location_is_US
 
 Description
@@ -160,6 +189,21 @@ Description
 # ---------------------------------------------------------------------
 sub __geo_location_is_US {
     my $self = shift;
+    
+    # Set trusted-client UA IP address as input to pdus geoip
+    # determination below. Untrusted clients must be treated as
+    # blacklisted -- no way to be sure they are not serving non-US
+    # users
+    if ($self->__trusted_client()) {
+        my $UA_ip = $self->__get_UAIP;
+        if (defined $UA_ip) {
+            $ENV{HTTP_X_FORWARDED_FOR} = $UA_ip;
+        }
+    }
+    else {
+        return 0;
+    }
+    # POSSIBLY NOTREACHED
 
     my $is_us = 1;
     

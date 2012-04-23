@@ -17,6 +17,7 @@ patterns:
   pagemeta:     /(pagemeta)/((.*?)\.(.*))/(\d+)$
 
 valid_query_params:
+  - ip
   - debug
   - v
   - alt
@@ -29,10 +30,24 @@ valid_query_params:
   - oauth_version
 
 client_query_params:
+  - ip
   - debug
   - v
   - alt
   - callback
+
+# ---------------------------------------------------------------------
+# trusted client servers: lassi, sharbat, moxie-1, moxie-2 + dev
+# ---------------------------------------------------------------------
+client_whitelist:
+  - 134.68.125.196
+  - 134.68.125.197
+  - 141.213.128.192
+  - 141.213.128.193
+  - 141.213.128.184
+  - 141.213.128.185
+  - 141.213.128.186
+  - 141.213.128.187
 
 force_array_format:
   - link

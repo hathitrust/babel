@@ -186,7 +186,6 @@ sub setup {
 }
 
 
-
 # ---------------------------------------------------------------------
 
 =item defaultResourceHandler
@@ -264,6 +263,7 @@ sub preHandler {
     my $ato = new API::HTD::AccessTypes({
                                          _rights => $ro,
                                          _config => $self->__getConfObject,
+                                         _ua_ip  => $self->query->param('ip'),
                                         });
     $self->__setMember('access', $ato);
 
