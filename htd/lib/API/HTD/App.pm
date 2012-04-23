@@ -735,6 +735,9 @@ sub __authNZ_Success {
     my $dbh = $self->__get_DBH;
     my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
 
+    # single logging point
+    $self->__getAccessObject->logClientTrust();
+
     # Get an authentication object.
     my $hauth = new API::HTD::HAuth($Q, $dbh);
     $self->__setMember('hauth', $hauth);

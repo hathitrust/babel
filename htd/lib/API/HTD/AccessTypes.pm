@@ -151,6 +151,24 @@ sub getAccessTypeByResource {
     return $accessType;
 }
 
+# ---------------------------------------------------------------------
+
+=item logClientTrust
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub logClientTrust {
+    my $self = shift;
+
+    # single logging point
+    my $trusted = $self->__trusted_client();
+    my $ua_ip = $self->__get_UAIP;
+    hLOG('API: ' . sprintf(qq{logClientTrust: trusted=%d UA ip=%s Client ip=%s}, $trusted, $ua_ip, $ENV{REMOTE_ADDR}));
+}
+
 # =====================================================================
 #  Private Methods
 # =====================================================================
@@ -173,7 +191,6 @@ sub __trusted_client {
     
     my $trusted = (grep(/$client_REMOTE_ADDR/, @$clientWhitelistRef));
     
-    hLOG('API: ' . qq{__trusted_client: trusted=$trusted ip=$client_REMOTE_ADDR});
     return $trusted;
 }
 
