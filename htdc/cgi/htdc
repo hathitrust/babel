@@ -55,6 +55,9 @@ use API::HTD::AccessTypes;
 my $DEBUG = 0;
 $ENV{HTTP_HOST} = 'localhost' if (! defined $ENV{HTTP_HOST});
 
+# non-US testing
+# $ENV{REMOTE_ADDR} = '147.96.1.135';
+
 my $Q = new CGI;
 my $userid;
 
@@ -275,9 +278,10 @@ sub serve_Data_API_response {
     # POSSIBLY NOTREACHED
     
     my $request_url = _make_Data_API_request_url($Q, $access_type);
-    hLOG(qq{htdc: serve API response, request url=$request_url});
+    hLOG(qq{htdc: serve API response, request url=$request_url} . "?ip=$ENV{REMOTE_ADDR}");
 
-    my $extra = { };
+    # so API can do geo ip lookup for this user
+    my $extra = { ip => $ENV{REMOTE_ADDR} };
 
     my $response = $consumer->request
       (
@@ -360,7 +364,11 @@ sub _get_access_type {
     # POSSIBLY NOTREACHED
 
     # Get an access type object
-    my $ato = Call_Handler(API::HTD::AccessTypes->new({_rights => $ro, _config => $config}),
+    my $ato = Call_Handler(API::HTD::AccessTypes->new({
+                                                       _rights => $ro,
+                                                       _config => $config,
+                                                       _ua_ip  => $ENV{REMOTE_ADDR},
+                                                      }),
                            'cannot determine access type');
     # POSSIBLY NOTREACHED
 
