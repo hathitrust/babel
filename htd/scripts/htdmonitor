@@ -57,8 +57,7 @@ foreach my $r (keys %resource_errors) {
 print "\n";
 
 # Unique IP addresses and geo location
-my @unique_IP = `grep GET_ $today_log_file|cut -f1 -d' '|sort|uniq`;
-chomp @unique_IP;
+chomp(my @unique_IP = `grep GET_ $today_log_file|cut -f1 -d' '|sort|uniq`);
 print "unique ip = " . scalar(@unique_IP) . "\n\n";
 
 # Total requests per IP addr
@@ -69,7 +68,7 @@ foreach my $ip (@unique_IP) {
     chomp(my @list_resources = `egrep $ip.*?GET_ $today_log_file| cut -f4 -d' '|sort|uniq`);
     map { s,:|GET_,,g } @list_resources;
     my $list = join(' ', @list_resources);
-    print "ip $ip ($country) = " . $resource_requests_ip{$ip} . " $list\n";
+    print "ip countries $ip ($country) = " . $resource_requests_ip{$ip} . " $list\n";
 }
 print "\n";
 
@@ -77,8 +76,19 @@ print "\n";
 my $ic_requests = `grep 'X-HathiTrust-InCopyright' $today_log_file|wc -l`;
 print "ic requests = $ic_requests\n";
 
+# List of non-US attempts
+my $nonus_attempts = `grep 'non-US' $today_log_file|wc -l`;
+print "non-US attempts = $nonus_attempts\n";
+
+# non-US attempts by country
+chomp(my @unique_nonus = `grep non-US $today_log_file|cut -f1 -d':'|sort|uniq`);
+foreach my $ip (@unique_nonus) {
+    chomp(my $country = `$GEOIP $ip`);
+    print "non-US attempt country = $country\n";
+}
+
 # Cross-check for IC
-print "cross-check ic data requests";
+print "\ncross-check ic data requests";
 my $DBH = API::DbIF::databaseConnect
   (
    'mdp',
