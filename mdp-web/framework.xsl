@@ -52,6 +52,7 @@
   <xsl:variable name="gCurrentQ1" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
   <xsl:variable name="gContactEmail" select="/MBooksTop/MBooksGlobals/ContactEmail"/>
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
+  <xsl:variable name="gVersionLabel" select="/MBooksTop/MBooksGlobals/VersionLabel"/>
 
   <xsl:variable name="gVolumeTitleFragment">
     <xsl:choose>
@@ -1292,6 +1293,12 @@
         </xsl:if>
 
       </form>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="versionLabel">
+    <div id="versionLabel">
+      <span style="font-weight:bold">Version: </span><xsl:value-of select="$gVersionLabel"/>
     </div>
   </xsl:template>
 
