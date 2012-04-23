@@ -1482,13 +1482,10 @@ sub _ls_wrap_result_data {
         # call subroutine which checks to see if it should be blank or should be
         # a boolean of any searches where the field is ocr or ocronly 
         # $pt_search_URL = get_advanced_PT_url($cgi, $pt_search_URL)
-        if ($isAdvanced)
+        if ($isAdvanced eq "true")
         {
-            $pt_search_URL=~s/q1=[^\&\;]+/q1=/g;
-        }
-        if($isAdvanced)
-        {
-            $pt_URL=~s/q1=[^\&\;]+/q1=/g;
+            $pt_search_URL=~s/q1=[^\&\;]+//g;
+            $pt_URL=~s/q1=[^\&\;]+//g;
         }
         $s .= wrap_string_in_tag($pt_search_URL, 'PtSearchHref');
         $s .= wrap_string_in_tag($pt_URL, 'PtHref');
