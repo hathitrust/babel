@@ -591,7 +591,7 @@
         <xsl:call-template name="getThisBook" />
         <xsl:call-template name="addToCollection" />
         <xsl:call-template name="shareThisBook" />
-
+        <xsl:call-template name="versionLabel" />
 
       </div> <!-- scrollable -->
       

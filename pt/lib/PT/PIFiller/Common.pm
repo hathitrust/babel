@@ -17,6 +17,9 @@ use PIFiller::Common;
 =over 8
 
 =cut
+
+use Date::Manip::Date;
+
 use base qw(PIFiller);
 
 use App;
@@ -428,6 +431,34 @@ sub handle_CONTACT_TEXT_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     return $MdpGlobals::adminText;
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_VERSION_LABEL_PI : PI_handler(VERSION_LABEL)
+
+Handler for VERSION_LABEL
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_VERSION_LABEL_PI
+    : PI_handler(VERSION_LABEL)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    
+    my $mdpItem = $C->get_object('MdpItem');
+    
+    # massage for final output: we get 2010-09-28T13:43:24 but want
+    # 2010-09-28 17:43 UTC
+    my $ver = $mdpItem->Version();
+
+    my $date = new Date::Manip::Date;
+    $date->parse($ver);
+    $date->convert('UTC');
+    $ver = $date->printf("%Y-%m-%d %H:%M UTC");
+
+    return $ver;
 }
 
 
