@@ -304,7 +304,3 @@ p.error {
   color: #666; font-style: italic; font-weight: bold;
 }
 
-#versionLabel {
-  padding-top: 40px;
-  font-style: 0.9em;
-}
