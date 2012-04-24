@@ -1297,8 +1297,11 @@
   </xsl:template>
 
   <xsl:template name="versionLabel">
-    <div id="versionLabel">
-      <span style="font-weight:bold">Version: </span><xsl:value-of select="$gVersionLabel"/>
+    <div class="version">
+      <span class="versionStr">
+        <span class="versionLabel">Version: </span><xsl:value-of select="$gVersionLabel"/>
+        <span id="versionQuestion"><img src="//common-web/graphics/harmony/icon_question.png" alt="version label for this book"/></span>
+      </span>
     </div>
   </xsl:template>
 
