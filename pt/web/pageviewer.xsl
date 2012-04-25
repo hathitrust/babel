@@ -270,6 +270,8 @@
 
         <xsl:call-template name="bookreader-toolbar-items" />
 
+        <xsl:call-template name="setup-ht-params" />
+
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
