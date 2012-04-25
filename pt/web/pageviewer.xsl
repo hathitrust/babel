@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<xsl:stylesheet version="1.0" 
+<xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
@@ -25,7 +25,7 @@
   <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
   <xsl:variable name="gUserName" select="/MBooksTop/Header/UserName"/>
   <xsl:variable name="gInCopyright" select="/MBooksTop/MBooksGlobals/InCopyright"/>
-  
+
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
@@ -54,14 +54,14 @@
     </xsl:choose>
   </xsl:variable>
   <!-- <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']"/> -->
-  
+
   <xsl:variable name="gCurrentReaderMode">
     <xsl:choose>
       <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when>
       <xsl:otherwise>full</xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  
+
   <xsl:variable name="gUsingBookReader">
     <xsl:choose>
       <xsl:when test="$gFinalAccessStatus!='allow'"><xsl:value-of select="'false'" /></xsl:when>
@@ -130,7 +130,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  
+
   <xsl:variable name="gMinImageHeight">
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
     <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
@@ -147,7 +147,7 @@
   <!-- root template -->
   <!-- root template -->
   <xsl:template match="/MBooksTop">
-    
+
     <xsl:choose>
       <xsl:when test="$gCurrentUi = 'reader'">
         <xsl:apply-templates select="." mode="reader" />
@@ -160,7 +160,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-    
+
   <xsl:template match="/MBooksTop" mode="reader">
     <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
     <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
@@ -179,7 +179,7 @@
       <xsl:value-of select="270 + (680 * ( $currentSize div 100 ))" />
     </xsl:variable>
 
-    <html lang="en" xml:lang="en" 
+    <html lang="en" xml:lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
       xmlns:cc="http://creativecommons.org/ns#"
@@ -204,6 +204,7 @@
         </title>
 
         <!-- jQuery from the Google CDN -->
+        <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css"/>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
 
@@ -212,7 +213,7 @@
           <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         </xsl:if>
         <xsl:call-template name="load_js_and_css"/>
-        
+
         <xsl:if test="$gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script>
         <!-- <style>
@@ -221,7 +222,7 @@
           }
         </style> -->
         </xsl:if>
-        
+
         <!-- <xsl:call-template name="online_assessment"/> -->
 
         <xsl:if test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
@@ -235,7 +236,7 @@
             }
           </style>
         </xsl:if> -->
-        
+
         <xsl:text disable-output-escaping="yes">
         <![CDATA[<!--[if IE 7]>]]>
         </xsl:text>
@@ -245,19 +246,19 @@
           #mdpNewStarburst {
             margin-left: -25px;
           }
-          
+
           .prompt {
             margin-left: 0;
           }
-          
+
           #mdpBookReaderViews {
             margin-left: 30px;
           }
-          
+
           #mdpToolbarNav > ul {
             padding-left: 0;
           }
-          
+
           body {
             width: auto;
           }
@@ -266,11 +267,9 @@
         <xsl:text disable-output-escaping="yes">
         <![CDATA[<![endif]-->]]>
         </xsl:text>
-        
+
         <xsl:call-template name="bookreader-toolbar-items" />
-        
-        <xsl:call-template name="setup-ht-params" />
-        
+
       </head>
 
       <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
@@ -279,11 +278,11 @@
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
           </div>
         </xsl:if>
-        
+
         <!-- <xsl:if test="$gUsingBookReader = 'true'">
           <a href="#" title="Pull Down Header" id="mbToggleHeader">Show Header&#160;</a>
         </xsl:if> -->
-        
+
         <xsl:call-template name="header"/>
 
         <xsl:call-template name="BookReaderContainer" />
@@ -297,11 +296,11 @@
         <xsl:call-template name="footer">
           <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
         </xsl:call-template>
-        
+
         <!-- <xsl:if test="$gUsingBookReader = 'true'">
           <xsl:call-template name="bookreader-javascript-init" />
         </xsl:if> -->
-        
+
         <xsl:choose>
           <xsl:when test="$gUsingBookReader = 'true'">
             <xsl:call-template name="bookreader-javascript-init" />
@@ -311,7 +310,7 @@
           </xsl:when>
           <xsl:otherwise />
         </xsl:choose>
-        
+
         <xsl:call-template name="GetAddItemRequestUrl"/>
 
         <xsl:if test="$gEnableGoogleAnalytics='true'">
@@ -333,7 +332,7 @@
         <!-- jQuery from the Google CDN -->
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 
-        <xsl:call-template  name="include_local_javascript"/>
+        <xsl:call-template name="include_local_javascript"/>
         <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         <xsl:call-template name="load_js_and_css"/>
         <!-- xsl:call-template name="online_assessment"/-->
@@ -348,9 +347,9 @@
         </xsl:if>
 
         <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
-        
+
         <xsl:call-template name="setup-ht-params" />
-        
+
       </head>
 
       <body class="yui-skin-sam">
@@ -359,7 +358,7 @@
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
           </div>
         </xsl:if>
-        
+
         <xsl:call-template name="BookReaderEmbeddedContainer" />
 
         <xsl:call-template name="bookreader-javascript-init" />
@@ -399,7 +398,7 @@
 
   <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
-      
+
        HT.init_from_params();
 
        HT.reader = new HTBookReader();
@@ -408,7 +407,7 @@
        HT.reader.bookTitle = document.title;
        HT.reader.reduce = 1;
        HT.reader.pageProgression = 'lr';
-       
+
        HT.reader.track_event = HT.track_event;
 
        // reduce: 4 == thumbnails; too small for normal page browsing
@@ -418,12 +417,12 @@
                                  {reduce: 4/3, autofit: null}, // 1.5 = 66%, 1.25 == 80%
                                  {reduce: 2, autofit: null}
                              ];
-       
-       
+
+
         <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
-          <xsl:if test="position() = 1">   
+          <xsl:if test="position() = 1">
         // The index of the title page.
-        HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;  
+        HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;
           </xsl:if>
         </xsl:for-each>
         HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
@@ -457,14 +456,14 @@
         HT.reader.lazyDelay = 500;
         // HT.reader.pageProgression = "rl";
     </script>
-    <script type="text/javascript" src="/pt/js/bookreader_startup.js"/> 
+    <script type="text/javascript" src="/pt/js/bookreader_startup.js"/>
     <script type="text/javascript">
         // HT.monitor.run();
     </script>
   </xsl:template>
-  
+
   <xsl:template name="classic-javascript-init">
-    <script type="text/javascript" src="/pt/js/classic_startup.js"/> 
+    <script type="text/javascript" src="/pt/js/classic_startup.js"/>
   </xsl:template>
 
   <xsl:template name="online_assessment">
@@ -538,18 +537,18 @@
   <!-- Top Level Container DIV -->
   <xsl:template name="BookReaderContainer">
     <!-- <xsl:param name="gCurrentReaderMode" select="'full'" /> -->
-    
+
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
 
     <div id="mdpUberContainer">
       <xsl:call-template name="BookReaderSidebar" />
-      
+
       <div class="contentContainerWrap">
 
         <xsl:call-template name="BookReaderToolbar">
           <xsl:with-param name="pViewTypeList" select="$pViewTypeList"/>
         </xsl:call-template>
-      
+
 
         <!-- Image -->
         <xsl:element name="a">
@@ -557,7 +556,7 @@
           <xsl:attribute name="id">skipNav</xsl:attribute>
         </xsl:element>
         <xsl:call-template name="ContentContainer"/>
-      
+
         <xsl:if test="$gUsingBookReader = 'false'">
           <div id="mdpBottomToolbar">
             <xsl:if test="$gFinalAccessStatus != 'allow'">
@@ -568,7 +567,7 @@
             </xsl:call-template>
           </div>
         </xsl:if>
-        
+
       </div>
 
     </div>
@@ -580,24 +579,24 @@
     <div id="overlay"></div>
 
   </xsl:template>
-  
+
   <xsl:template name="BookReaderSidebar">
     <div class="mdpControlContainer">
 
       <xsl:call-template name="aboutThisBook" />
-      
+
       <div class="mdpScrollableContainer">
-        
+
         <xsl:call-template name="getThisBook" />
         <xsl:call-template name="addToCollection" />
         <xsl:call-template name="shareThisBook" />
         <xsl:call-template name="versionLabel" />
 
       </div> <!-- scrollable -->
-      
+
     </div>
   </xsl:template>
-  
+
   <xsl:template name="BookReaderEmbeddedToolbar">
     <div id="mdpToolbarViews">
       <div id="mdpToolbarNav">
@@ -619,11 +618,11 @@
               <xsl:with-param name="maxLength" select="'20'"/>
             </xsl:call-template>
           </xsl:element>
-        </div>  
+        </div>
       </div>
     </div>
   </xsl:template>
-  
+
   <xsl:template name="BookReaderToolbar">
     <xsl:param name="pViewTypeList"/>
 
@@ -631,7 +630,7 @@
       <xsl:if test="$gFinalAccessStatus != 'allow'">
         <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
       </xsl:if>
-      
+
       <xsl:if test="$gCurrentReaderMode = 'full'">
       <div id="mdpToolbarViews">
         <ul>
@@ -710,7 +709,7 @@
       <xsl:call-template name="build-toolbar-nav" />
     </div>
   </xsl:template>
-  
+
   <xsl:template name="bookreader-page-items">
     <div id="BRpageControls">
       <div>
@@ -887,7 +886,7 @@
       </li>
     </script>
   </xsl:template>
-  
+
   <xsl:template name="build-zoomout-button">
     <xsl:variable name="zoom" select="//ResizeForm/ResizeValuesSelect/Option[following-sibling::Option[Focus='true']][last()]" />
     <xsl:choose>
@@ -938,13 +937,13 @@
 
   <xsl:template name="build-zoom-href">
     <xsl:param name="size" />
-    
+
     <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
     <xsl:variable name="seq" select="//CurrentCgi/Param[@name='seq']" />
     <xsl:variable name="view" select="//CurrentCgi/Param[@name='view']" />
     <xsl:variable name="debug" select="//CurrentCgi/Param[@name='debug']" />
     <xsl:variable name="pt" select="//UrlRoots/Variable[@name='cgi/pt']" />
-    
+
     <xsl:variable name="href">
       <xsl:value-of select="concat($pt, '?id=', $id, ';seq=', $seq, ';size=', $size, ';view=', $view)" />
       <xsl:if test="normalize-space($debug)"><xsl:value-of select="concat(';debug=', $debug)" /></xsl:if>
@@ -989,7 +988,7 @@
 
 
   </xsl:template>
-  
+
   <xsl:template name="build-toolbar-nav">
     <xsl:param name="target" select="'header'" />
     <div class="mdpToolbarNav">
@@ -1049,12 +1048,12 @@
 
         </xsl:if>
       </ul>
-                  
+
     </div>
   </xsl:template>
 
   <!-- CONTROL: Contents List -->
-  
+
   <xsl:template name="BuildContentsList">
     <xsl:param name="target" select="'header'" />
     <xsl:variable name="formId">
@@ -1097,7 +1096,7 @@
       <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
       <xsl:attribute name="data-tracking-action">PT Jump to Section</xsl:attribute>
     </input>
-    
+
     <xsl:for-each select="//CurrentCgi/Param">
       <xsl:choose>
         <xsl:when test="@name != 'num' and @name != 'seq'">
@@ -1106,9 +1105,9 @@
         <xsl:otherwise />
       </xsl:choose>
     </xsl:for-each>
-    
+
   </xsl:template>
-  
+
   <xsl:template name="OldBuildContentsList">
     <xsl:param name="defaultFoldPosition" select="20" />
     <xsl:variable name="foldPosition">
@@ -1202,10 +1201,10 @@
       <xsl:if test="$target = 'header'">
         <xsl:attribute name="id">mdpPageOptions</xsl:attribute>
       </xsl:if>
-      
-      
+
+
       <xsl:if test="$gCurrentReaderMode = 'full'">
-      
+
       <li>
         <xsl:variable name="pageNum">
           <xsl:choose>
@@ -1222,16 +1221,16 @@
           <xsl:if test="$target = 'header'">
             <xsl:attribute name="id">mdpPageForm</xsl:attribute>
           </xsl:if>
-          
+
           <xsl:variable name="jumpToId">
             <xsl:choose>
               <xsl:when test="$target = 'header'">BRpagenum</xsl:when>
               <xsl:otherwise>BRPagenumFooter</xsl:otherwise>
             </xsl:choose>
           </xsl:variable>
-          
+
           <input type="hidden" name="u" id="u" value="1" />
-          
+
           <label for="{$jumpToId}">Jump to </label>
 
           <xsl:element name="input">
@@ -1260,21 +1259,21 @@
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
             <xsl:attribute name="data-tracking-action">PT Jump to Page</xsl:attribute>
           </xsl:element>
-          
+
           &#160;
-          
+
           <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
           <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
             <input type="hidden" name="seq" value="" />
           </xsl:if>
           <xsl:call-template name="HiddenDebug" />
-          
+
         </form>
-        
+
       </li>
-      
+
       </xsl:if>
-      
+
       <li class="PTiconButton">
         <xsl:choose>
           <xsl:when test="$pPageLinks/FirstPageLink">
@@ -1491,7 +1490,7 @@
             </xsl:when>
             <xsl:otherwise>
               <div class="mdpTMPhead">NO TEXT IN THIS ITEM</div>
-              <div class="mdpTMPtext">This item consists only of page images without any OCR text</div>           
+              <div class="mdpTMPtext">This item consists only of page images without any OCR text</div>
             </xsl:otherwise>
           </xsl:choose>
         </div>
@@ -1531,7 +1530,7 @@
                   <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/></p>
                   <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
                 </xsl:otherwise>
-              </xsl:choose>              
+              </xsl:choose>
             </xsl:otherwise>
           </xsl:choose>
 
@@ -1616,11 +1615,11 @@
           </xsl:attribute>
         </xsl:element>
       </xsl:when>
-      
+
       <xsl:otherwise>
         <div id="BookReader"></div>
       </xsl:otherwise>
-      
+
     </xsl:choose>
   </xsl:template>
 
@@ -1635,7 +1634,7 @@
     <xsl:param name="pPageXofYForm"/>
     <xsl:param name="pPageXofYFormId"/>
     <xsl:param name="pPageXofYId"/>
-    
+
     <xsl:element name="form">
       <xsl:attribute name="onsubmit">
         <xsl:value-of select="'return FormValidation(this.num, &quot;Please enter a page number in the box.&quot;)'"/>
@@ -1647,18 +1646,18 @@
       <xsl:attribute name="id">
         <xsl:value-of select="$pPageXofYId"/>
       </xsl:attribute>
-      
+
       <ul>
         <li class="asearchform">
           <xsl:apply-templates select="$pPageXofYForm/HiddenVars"/>
-          
+
           <!-- this hidden variable exists to differentiate page
                numbers entered by users via form submission where it is
                possible for them to enter an incorrect number and page
                numbers on links the middleware builds which will always
                correspond, if present, to a physical page. -->
           <input type="hidden" name="u" id="u" value="1"/>
-          
+
           <xsl:element name="input">
             <xsl:attribute name="class">mdpGotoButton</xsl:attribute>
             <xsl:attribute name="type">submit</xsl:attribute>
@@ -1666,7 +1665,7 @@
             <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
             <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute>
           </xsl:element>
-          
+
           <xsl:element name="label">
             <xsl:attribute name="for">
               <xsl:value-of select="$pPageXofYFormId"/>
@@ -1675,7 +1674,7 @@
             <xsl:text>Enter page number to jump</xsl:text>
           </xsl:element>
           <span class="mdpNumberLabel">&#xa0;#</span>
-          
+
           <xsl:element name="input">
             <xsl:attribute name="class">mdpPageNumberInputBox</xsl:attribute>
             <xsl:attribute name="id">
@@ -1691,9 +1690,9 @@
         </li>
       </ul>
     </xsl:element>
-    
+
   </xsl:template>
-  
+
   <!-- FORM: Image Resize -->
   <xsl:template name="BuildResizeForm">
     <xsl:param name="pResizeForm"/>

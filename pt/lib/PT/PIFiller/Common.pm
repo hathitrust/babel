@@ -18,12 +18,11 @@ use PIFiller::Common;
 
 =cut
 
-use Date::Manip::Date;
-
 use base qw(PIFiller);
 
 use App;
 use Utils;
+use Utils::Time;
 use DbUtils;
 use Debug::DUtils;
 use Identifier;
@@ -452,13 +451,9 @@ sub handle_VERSION_LABEL_PI
     # massage for final output: we get 2010-09-28T13:43:24 but want
     # 2010-09-28 17:43 UTC
     my $ver = $mdpItem->Version();
+    my $version = iso_UTC_Time(unix_Time($ver));
 
-    my $date = new Date::Manip::Date;
-    $date->parse($ver);
-    $date->convert('UTC');
-    $ver = $date->printf("%Y-%m-%d %H:%M UTC");
-
-    return $ver;
+    return $version;
 }
 
 

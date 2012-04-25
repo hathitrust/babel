@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1333567154'" />
+  <xsl:variable name="timestamp" select="'?_=1335380136'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/pt/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="$gUsingSearch='false'">
@@ -34,6 +34,7 @@
  <script type="text/javascript" src="/pt/yui2-lib/build/connection/connection-min.js{$timestamp}"></script>
  <script type="text/javascript" src="/pt/yui2-lib/build/utilities/utilities.js{$timestamp}"></script>
  <script type="text/javascript" src="/pt/yui2-lib/build/resize/resize-min.js{$timestamp}"></script>
+ <script type="text/javascript" src="/pt/js/versionPopup.js{$timestamp}"></script>
  <script type="text/javascript" src="//common-web/js/feedbackForm.js{$timestamp}"></script>
  <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js{$timestamp}"></script>
  <script type="text/javascript" src="/pt/js/newCollOverlayPT.js{$timestamp}"></script>

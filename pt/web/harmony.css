@@ -594,6 +594,26 @@ div.mdpScrollableContainer {
   background: transparent url(./graphics/harmony/icon_gear.png) no-repeat scroll left center;
 }
 
+.versionContainer {
+  padding-left: 1px;
+  padding-top: 40px;
+  font-size: 85%;
+}
+
+#versionIcon {
+  padding-left: 8px;
+  position: relative;
+  top: 3px;
+  cursor: pointer;
+}
+
+/* version popup */
+.ui-dialog {
+  overflow: hidden;
+  font-size: 85%;
+  text-align: left;
+}
+
 .collectionLinks button {
   font-size: 85%;
 }
