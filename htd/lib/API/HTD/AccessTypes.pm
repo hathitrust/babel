@@ -235,15 +235,13 @@ sub __geo_location_is_US {
 
     if (! grep(/^$country_code$/, @RightsGlobals::g_pdus_country_codes)) {
         $is_us = 0;
-        hLOG('API ERROR: ' . qq{non-US pdus access attempt $IPADDR});
-    }
+        }
     else {
         # veryify this is not a blacklisted US proxy that does not
         # set HTTP_X_FORWARDED_FOR for a non-US request
         require "Access/Proxy.pm";
         if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
             $is_us = 0;
-            hLOG('API ERROR: ' . qq{proxy blocked $IPADDR});
         }
     }
 

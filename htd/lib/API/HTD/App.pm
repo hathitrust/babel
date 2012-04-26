@@ -752,7 +752,8 @@ sub __authNZ_Success {
     # redirect this URL so skip recording nonce, timestamp.
     if (! $hauth->H_authorized_protocol($Q, $dbh, $accessType)) {
         $self->__setErrorResponseCode(303, $hauth->errstr);
-        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr);
+        my $s = $self->__getParamsRefStr($P_Ref);
+        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s});
         return 0;
     }
 
@@ -770,7 +771,11 @@ sub __authNZ_Success {
         $Success = 1;
     }
 
-    hLOG('API ERROR: ' . qq{__authNZ_Success: Success=$Success } . $hauth->errstr) if (! $Success);
+    if (! $Success) {
+        my $s = $self->__getParamsRefStr($P_Ref);
+        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s});
+    }
+    
     return $Success;
 }
 
