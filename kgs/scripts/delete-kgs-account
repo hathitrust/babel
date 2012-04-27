@@ -46,42 +46,53 @@ Description
 
 # ---------------------------------------------------------------------
 sub __get_usage {
-    my $s = qq{Usage: delete-kgs-account [ -e email-address | -a access_key ]\n};
+    my $s = qq{Usage: delete-kgs-account [ -e email | -u userid ]\n};
     return $s;
 }
 
-our ($opt_e, $opt_a);
+our ($opt_e, $opt_u);
 
-my $ops = getopts('e:a:');
+my $ops = getopts('e:u:');
 
-my ($EMAIL_ADDR, $ACCESS_KEY);
+my ($EMAIL, $USERID);
 
 if (defined $opt_e) {
-    $EMAIL_ADDR = $opt_e;
+    $EMAIL = $opt_e;
 }
-elsif (defined $opt_a) {
-    $ACCESS_KEY = $opt_a;
+elsif (defined $opt_u) {
+    $USERID = $opt_u;
 }
 else {
     print __get_usage();
     exit 0;
 }
 
-my $access_key;
+my $access_key = '';
 my ($statement, $sth, $s);
 
-if ($EMAIL_ADDR) {
+if ($EMAIL) {
     $statement = qq{SELECT access_key FROM da_authentication WHERE email=?};
-    $sth = DbUtils::prep_n_execute($dbh, $statement, $EMAIL_ADDR);
-    $access_key = $sth->fetchrow_array() || 'not found';
-    $s = qq{Deleting account by email="$EMAIL_ADDR" to find access_key="$access_key"}
+    $sth = DbUtils::prep_n_execute($dbh, $statement, $EMAIL);
+    $access_key = $sth->fetchrow_array();
+    $s = qq{Deleting account using email="$EMAIL"}
+}
+elsif ($USERID) {
+    $statement = qq{SELECT access_key FROM da_authentication WHERE userid=?};
+    $sth = DbUtils::prep_n_execute($dbh, $statement, $USERID);
+    $access_key = $sth->fetchrow_array();
+    $s = qq{Deleting account using userid="$USERID"}
 }
 else {
-    $access_key = $ACCESS_KEY;
-    $s = qq{Deleting account by access_key="$access_key"};
+    die "Program error\n";
 }
 
-print "$s\n";
+if (! $access_key) {
+    print qq{Could not retrieve access_key.\n};
+    exit 0;
+}
+
+
+print "$s with access_key=$access_key\n";
 LOG($C, $s);
 
 print "Clean da_authentication\n";
@@ -98,6 +109,10 @@ $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
 
 print "Clean da_statistics\n";
 $statement = qq{DELETE FROM da_statistics WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+
+print "Clean da_rates\n";
+$statement = qq{DELETE FROM da_rates WHERE access_key=?};
 $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
 
 exit 0;
