@@ -418,6 +418,13 @@
   <!-- waiting -->
 
   <Inst
+      sdrinst="ttu"
+      template="https://___HOST___/Shibboleth.sso/ttu?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ttu.edu"
+      us="1"
+      enabled="0">Texas Tech University</Inst>
+  <Inst
       sdrinst="uconn"
       template="https://___HOST___/Shibboleth.sso/uconn?target=___TARGET___"
       authtype="shibboleth"
