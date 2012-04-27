@@ -263,10 +263,12 @@ sub preHandler {
     my $ato = new API::HTD::AccessTypes({
                                          _rights => $ro,
                                          _config => $self->__getConfObject,
-                                         _ua_ip  => $self->query->param('ip'),
+                                         _ua_ip  => $self->__originating_IPADDR,
                                         });
     $self->__setMember('access', $ato);
 
+    # single logging point
+    $self->__log_client_trust();
 
     # Authenticate and authorize
     if (! $self->__authNZ_Success($P_Ref)) {
@@ -293,6 +295,72 @@ sub preHandler {
 #  Utilities
 # =====================================================================
 # =====================================================================
+
+# ---------------------------------------------------------------------
+
+=item __originating_IPADDR
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __originating_IPADDR {
+    my $self = shift;
+    
+    my $ip;
+    if ($self->__trusted_client()) {
+        $ip = $self->query->param('ip');
+    }
+    else {
+        $ip = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
+    }
+    
+    return $ip;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __trusted_client
+
+We trust the value of the ip URL parameter as being that of the
+useragent when set by clients whose IP address is in our whitelist.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __trusted_client {
+    my $self = shift;
+    
+    my $clientWhitelistRef  = $self->__getConfigVal('client_whitelist');
+    my $client_REMOTE_ADDR = $ENV{REMOTE_ADDR};
+    
+    my $trusted = (grep(/$client_REMOTE_ADDR/, @$clientWhitelistRef));
+    
+    return $trusted;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __log_client_trust
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __log_client_trust {
+    my $self = shift;
+
+    # single logging point
+    my $trusted = $self->__trusted_client();
+    my $ua_ip = $self->__getAccessObject->__get_UAIP;
+    hLOG('API: ' . sprintf(qq{__log_client_trust: trusted=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s }, 
+                           $trusted, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}));
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -734,9 +802,6 @@ sub __authNZ_Success {
     my $Q = $self->query;
     my $dbh = $self->__get_DBH;
     my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
-
-    # single logging point
-    $self->__getAccessObject->logClientTrust();
 
     # Get an authentication object.
     my $hauth = new API::HTD::HAuth($Q, $dbh);

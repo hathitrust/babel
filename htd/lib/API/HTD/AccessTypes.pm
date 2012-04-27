@@ -151,49 +151,9 @@ sub getAccessTypeByResource {
     return $accessType;
 }
 
-# ---------------------------------------------------------------------
-
-=item logClientTrust
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub logClientTrust {
-    my $self = shift;
-
-    # single logging point
-    my $trusted = $self->__trusted_client();
-    my $ua_ip = $self->__get_UAIP;
-    hLOG('API: ' . sprintf(qq{logClientTrust: trusted=%d UA ip=%s Client ip=%s}, $trusted, $ua_ip, $ENV{REMOTE_ADDR}));
-}
-
 # =====================================================================
 #  Private Methods
 # =====================================================================
-
-# ---------------------------------------------------------------------
-
-=item __trusted_client
-
-We trust the value of the ip URL parameter as being that of the
-useragent when set by clients whose IP address is in our whitelist.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __trusted_client {
-    my $self = shift;
-    
-    my $clientWhitelistRef  = $self->__getConfigVal('client_whitelist');
-    my $client_REMOTE_ADDR = $ENV{REMOTE_ADDR};
-    
-    my $trusted = (grep(/$client_REMOTE_ADDR/, @$clientWhitelistRef));
-    
-    return $trusted;
-}
-
 
 # ---------------------------------------------------------------------
 
@@ -206,27 +166,15 @@ Description
 # ---------------------------------------------------------------------
 sub __geo_location_is_US {
     my $self = shift;
-    
-    # Set trusted-client UA IP address as input to pdus geoip
-    # determination below. Untrusted clients must be treated as
-    # blacklisted -- no way to be sure they are not serving non-US
-    # users
-    if ($self->__trusted_client()) {
-        my $UA_ip = $self->__get_UAIP;
-        if (defined $UA_ip) {
-            $ENV{HTTP_X_FORWARDED_FOR} = $UA_ip;
-        }
-    }
-    else {
-        return 0;
-    }
-    # POSSIBLY NOTREACHED
 
     my $is_us = 1;
     
-    # Limit pdus volumes to un-proxied "U.S." clients. Use forwarded
-    # IP address if proxied, else UA IP addr
-    my $IPADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
+    # This will be the UA IP address seen in HTTP_X_FORWARDED_FOR or
+    # REMOTE_USER by (our) trusted client and passed as a URL
+    # parameter or else simply HTTP_X_FORWARDED_FOR or REMOTE_USER of
+    # a untrusted client itself.  The best we can do to limit pdus to
+    # US users is the geoIP and blacklist tests on these addresses.
+    my $IPADDR = $self->__get_UAIP;
 
     require "Geo/IP.pm";
     my $geoIP = Geo::IP->new();
