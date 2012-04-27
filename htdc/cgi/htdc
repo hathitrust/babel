@@ -260,6 +260,18 @@ sub _print_encoded_output {
     }
 }
 
+# ---------------------------------------------------------------------
+
+=item __originating_IPADDR
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __originating_IPADDR {
+    return $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
+}
 
 # ---------------------------------------------------------------------
 
@@ -276,12 +288,14 @@ sub serve_Data_API_response {
     my $consumer =  _get_consumer($dbh, $access_key);
     my $access_type = _get_access_type($Q, $dbh, $config);
     # POSSIBLY NOTREACHED
-    
+
+    my $originating_IPADDR = __originating_IPADDR();
+
     my $request_url = _make_Data_API_request_url($Q, $access_type);
-    hLOG(qq{htdc: serve API response, request url=$request_url} . "?ip=$ENV{REMOTE_ADDR}");
+    hLOG(qq{htdc: serve API response, request url=$request_url} . "?ip=$originating_IPADDR");
 
     # so API can do geo ip lookup for this user
-    my $extra = { ip => $ENV{REMOTE_ADDR} };
+    my $extra = { ip => $originating_IPADDR };
 
     my $response = $consumer->request
       (
@@ -363,11 +377,14 @@ sub _get_access_type {
                           "rights information not found for $id");
     # POSSIBLY NOTREACHED
 
-    # Get an access type object
+    # Get an access type object. API will trust us to supply a valid
+    # originating IP address on the URL, the same as we use here to
+    # determine the access type and so the constraints (mainly
+    # protocol) for this request.
     my $ato = Call_Handler(API::HTD::AccessTypes->new({
                                                        _rights => $ro,
                                                        _config => $config,
-                                                       _ua_ip  => $ENV{REMOTE_ADDR},
+                                                       _ua_ip  => __originating_IPADDR(),
                                                       }),
                            'cannot determine access type');
     # POSSIBLY NOTREACHED
