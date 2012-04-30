@@ -1005,12 +1005,6 @@ sub handle_FEATURE_LIST_PI
 
 # ---------------------------------------------------------------------
 
-=item handle_FULL_PDF_ACCESS_MESSAGE_PI : PI_handler(FULL_PDF_ACCESS_MESSAGE)
-
-Handler for FULL_PDF_ACCESS_MESSAGE. Returns the reason that full book PDF
-download is not available.
-
-=cut
 =item handle_VIEW_TYPE_FULL_PDF_LINK_PI : PI_handler(VIEW_TYPE_FULL_PDF_LINK)
 
 Handler for VIEW_TYPE_FULL_PDF_LINK.  In the absence of authentication
@@ -1180,17 +1174,6 @@ sub BuildSearchResultsUrl
     }
 
     return $href;
-}
-
-# ---------------------------------------------------------------------
-sub handle_FULL_PDF_ACCESS_MESSAGE_PI
-    : PI_handler(FULL_PDF_ACCESS_MESSAGE)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $id = $C->get_object('CGI')->param('id');
-    my ( $message, $status ) = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
-    return $message;
 }
 
 1;
