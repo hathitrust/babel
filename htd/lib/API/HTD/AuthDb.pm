@@ -215,6 +215,26 @@ sub get_privileges_by_access_key {
 
 # ---------------------------------------------------------------------
 
+=item get_ip_address_by_access_key
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_ip_address_by_access_key {
+    my ($dbh, $access_key) = @_;
+
+    my $statement = qq{SELECT ipregexp FROM da_authorization WHERE  access_key=?};
+    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
+    my $ipregexp = $sth->fetchrow_array() || '^$';
+
+    hLOG_DEBUG('DB:  ' . qq{get_ip_address_by_access_key: $statement: $access_key ::: $ipregexp});
+    return $ipregexp;
+}
+
+# ---------------------------------------------------------------------
+
 =item get_access_key_by_userid
 
 Description

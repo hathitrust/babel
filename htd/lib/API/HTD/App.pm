@@ -246,11 +246,12 @@ sub preHandler {
     }
     # POSSIBLY NOTREACHED
 
+    my $dbh = $self->__get_DBH;
     my $P_Ref = $self->__makeParamsRef(@$argsRef);
 
     # Get a Rights object. We need this either to permit access or to
     # fill in response data for unrestricted resource.
-    my $ro = API::HTD::Rights::createRightsObject($self->__get_DBH(), $P_Ref);
+    my $ro = API::HTD::Rights::createRightsObject($dbh, $P_Ref);
     if (! defined($ro)) {
         my $id = $self->__getIdParamsRef($P_Ref);
         $self->__setErrorResponseCode(404, "rights information not found for $id");
@@ -269,6 +270,14 @@ sub preHandler {
 
     # single logging point
     $self->__log_client_trust();
+
+    # Get an authentication object.
+    my $hauth = new API::HTD::HAuth({
+                                     _query => $self->query,
+                                     _dbh   => $dbh,
+                                     _ua_ip => $self->__originating_IPADDR,
+                                    });
+    $self->__setMember('hauth', $hauth);
 
     # Authenticate and authorize
     if (! $self->__authNZ_Success($P_Ref)) {
@@ -800,27 +809,15 @@ sub __authNZ_Success {
     my $P_Ref = shift;
 
     my $Q = $self->query;
-    my $dbh = $self->__get_DBH;
     my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
 
-    # Get an authentication object.
-    my $hauth = new API::HTD::HAuth($Q, $dbh);
-    $self->__setMember('hauth', $hauth);
+    my $hauth = $self->__getHAuthObject();
 
     # Allow through back door?
-    if ($hauth->H_allow_development_auth()) {
+    if ($hauth->__allow_development_auth()) {
         return 1;
     }
     # POSSIBLY NOTREACHED
-
-    # Check proper protocol for restricted types.  May need to
-    # redirect this URL so skip recording nonce, timestamp.
-    if (! $hauth->H_authorized_protocol($Q, $dbh, $accessType)) {
-        $self->__setErrorResponseCode(303, $hauth->errstr);
-        my $s = $self->__getParamsRefStr($P_Ref);
-        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s});
-        return 0;
-    }
 
     my $Success = 0;
 
@@ -899,21 +896,28 @@ sub __authorized {
     my $error = '';
     my $authorized = 0;
 
-    # Access types: open, limited, open_restricted, restricted, forbidden
+    # Access types: open, limited, open_restricted, restricted, restricted_forbidden
     my $resource = $P_Ref->{'resource'};
     my $accessType = $self->__getAccessTypeByResource($resource);
 
-    my $hauth = $self->__getHAuthObject();
     my $dbh = $self->__get_DBH();
-
+    my $hauth = $self->__getHAuthObject();
+    
     if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {
         $authorized = 1;
     }
     else {
         $error = $hauth->errstr;
-        $self->__setErrorResponseCode(403, $error);
-        hLOG('API ERROR: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=0 error="$error"});
+        if ($error =~ m,redirect,) {
+            $self->__setErrorResponseCode(303, $error);
+        }
+        else {
+            $self->__setErrorResponseCode(403, $error);
+        }
     }
+
+    hLOG('API ERROR: ' . qq{__authorized: access_type=$accessType authorized=0 error=} . $hauth->errstr)
+      if (! $authorized);
 
     hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=$authorized error="$error"});
     return $authorized;
