@@ -320,15 +320,17 @@ sub mis_gather_statistics {
 
     my ($cmd, $sysrc, $s, $rep);
     
-    # Get segment sizes
-    $cmd = $BASE_SCRIPT_DIR . qq{segsizes -r$run};
-    my $sizes = `$cmd 2>&1`;
-    $sysrc = $? >> 8;
+    if (0) {
+        # Get segment sizes
+        $cmd = $BASE_SCRIPT_DIR . qq{segsizes -r$run};
+        my $sizes = `$cmd 2>&1`;
+        $sysrc = $? >> 8;
     
-    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
-    $s .= "\n$sizes";
-    __output("$s");
-    Log_stats($C, $run, $s);
+        $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+        $s .= "\n$sizes";
+        __output("$s");
+        Log_stats($C, $run, $s);
+    }
 
     # Get num docs in index
     my $num = mis_num_docs_in_index($C);
