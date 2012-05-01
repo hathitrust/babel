@@ -31,7 +31,7 @@ else {
     ($logdir, $today_log_file) = API::HTD_Log::hlog_path();
 }
 
-chomp(my @UNIQUE_IP_ADDRESSES = `grep GET_ $today_log_file|cut -f1 -d' '|sort|uniq`);
+chomp(my @UNIQUE_IP_ADDRESSES = `cat $today_log_file|cut -f1 -d' '|sort|uniq`);
 
 #
 # Reports
@@ -126,12 +126,20 @@ sub Total_Auth_ERRORS_By_IP_ByResource {
         foreach my $res (keys %RESOURCES) {
             $RESOURCES{$res} = scalar(grep(/resource="$res"/, @auth_error_lines));
         }
+        my $orig_IPs = '';
+        foreach my $err_line (@auth_error_lines) {
+            my ($ip) = ($err_line =~ m,orig=(\d+\.\d+\.\d+\.\d+),);
+            $orig_IPs .= qq{$ip } if ($ip);
+        }
+        chop($orig_IPs);
+        $orig_IPs = 'from=' . $orig_IPs;
+        
         if (scalar @auth_error_lines) {
             $errors += scalar @auth_error_lines;
             my @domain_name = `nslookup $ip`;
             my $dn = ($domain_name[5] ? $domain_name[5] : '');
             (my $domain_name) = ($dn ? ($domain_name[5] =~ m,name = (.*?)$,) : 'none'); 
-            print "\t$ip ($domain_name)\n";
+            print "\t$ip ($domain_name) ($orig_IPs)\n";
             foreach my $res (keys %RESOURCES) {
                 print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
             }

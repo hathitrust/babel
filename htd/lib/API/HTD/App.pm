@@ -835,7 +835,7 @@ sub __authNZ_Success {
 
     if (! $Success) {
         my $s = $self->__getParamsRefStr($P_Ref);
-        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s});
+        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s orig=} . $self->__originating_IPADDR);
     }
     
     return $Success;
