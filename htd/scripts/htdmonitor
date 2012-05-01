@@ -128,7 +128,10 @@ sub Total_Auth_ERRORS_By_IP_ByResource {
         }
         if (scalar @auth_error_lines) {
             $errors += scalar @auth_error_lines;
-            print "\t$ip\n";
+            my @domain_name = `nslookup $ip`;
+            my $dn = ($domain_name[5] ? $domain_name[5] : '');
+            (my $domain_name) = ($dn ? ($domain_name[5] =~ m,name = (.*?)$,) : 'none'); 
+            print "\t$ip ($domain_name)\n";
             foreach my $res (keys %RESOURCES) {
                 print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
             }
