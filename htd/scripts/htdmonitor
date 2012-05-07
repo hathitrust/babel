@@ -9,6 +9,7 @@ use strict;
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
 
+use Utils;
 use RightsGlobals;
 
 use API::HTD_Log;
@@ -31,7 +32,8 @@ else {
     ($logdir, $today_log_file) = API::HTD_Log::hlog_path();
 }
 
-chomp(my @UNIQUE_IP_ADDRESSES = `cat $today_log_file|cut -f1 -d' '|sort|uniq`);
+chomp(my @UNIQUE_IP_ADDRESSES = `cat $today_log_file|cut -f1 -d' '`);
+sort_uniq_ip_addr_list(\@UNIQUE_IP_ADDRESSES);
 
 #
 # Reports
@@ -55,7 +57,27 @@ CrossCheck_IC_DataRequests();
 
 exit 0;
 
-
+# ---------------------------------------------------------------------
+sub sort_uniq_ip_addr_list {
+    my $list_ref = shift;
+    
+    # filter
+    @$list_ref = grep(/\d+\.\d+\.\d+\.\d+/, @$list_ref);
+    # sort uniq
+    my %h;
+    foreach my $ip (@$list_ref) {
+        $h{$ip}++;
+    }
+    @$list_ref = 
+      sort {
+          my @a = split /\./, $a;
+          my @b = split /\./, $b;
+          $a[0] <=> $b[0] or 
+            $a[1] <=> $b[1] or 
+              $a[2] <=> $b[2] or 
+                $a[3] <=> $b[3];
+      } (keys %h);
+}
 
 # ---------------------------------------------------------------------
 sub Unique_IP_Addresses {
@@ -80,11 +102,13 @@ sub Total_GET_RequestsBy_IP_Addr {
     my %resource_requests_ip;
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         chomp($resource_requests_ip{$ip} = `egrep "$ip.*?GET_" $today_log_file|wc -l`);
-        chomp(my $country = `$GEOIP $ip`);
-        chomp(my @list_resources = `egrep $ip.*?GET_ $today_log_file| cut -f4 -d' '|sort|uniq`);
-        map { s,:|GET_,,g } @list_resources;
-        my $list = join(' ', @list_resources);
-        print "\t$ip ($country) = " . $resource_requests_ip{$ip} . " $list\n";
+        if ($resource_requests_ip{$ip} > 0) {
+            chomp(my $country = `$GEOIP $ip`);
+            chomp(my @list_resources = `egrep $ip.*?GET_ $today_log_file| cut -f4 -d' '|sort|uniq`);
+            map { s,:|GET_,,g } @list_resources;
+            my $list = join(' ', @list_resources);
+            print "\t$ip ($country) = " . $resource_requests_ip{$ip} . " $list\n";
+        }
     }
     print "\n";
 }
@@ -126,20 +150,24 @@ sub Total_Auth_ERRORS_By_IP_ByResource {
         foreach my $res (keys %RESOURCES) {
             $RESOURCES{$res} = scalar(grep(/resource="$res"/, @auth_error_lines));
         }
-        my $orig_IPs = '';
+        my @orig_IPs = ();
         foreach my $err_line (@auth_error_lines) {
             my ($ip) = ($err_line =~ m,orig=(\d+\.\d+\.\d+\.\d+),);
-            $orig_IPs .= qq{$ip } if ($ip);
+            push(@orig_IPs, $ip) if ($ip);
         }
-        chop($orig_IPs);
-        $orig_IPs = 'from=' . $orig_IPs;
+        sort_uniq_ip_addr_list(\@orig_IPs);
+        for (my $i = 0; $i < scalar @orig_IPs; $i++) {
+            my $ip = $orig_IPs[$i];
+            chomp(my $country = `$GEOIP $ip`);
+            $orig_IPs[$i] = qq{$ip:$country};
+        }
+        my $orig_IPs = 'from=' . join(' ', @orig_IPs);
         
         if (scalar @auth_error_lines) {
             $errors += scalar @auth_error_lines;
             my @domain_name = `nslookup $ip`;
-            my $dn = ($domain_name[5] ? $domain_name[5] : '');
-            (my $domain_name) = ($dn ? ($domain_name[5] =~ m,name = (.*?)$,) : 'none'); 
-            print "\t$ip ($domain_name) ($orig_IPs)\n";
+            my $domain_name = grep(/in-addr.arpa\tname=/, @domain_name) || 'none';
+            print "\t$ip domain=$domain_name $orig_IPs\n";
             foreach my $res (keys %RESOURCES) {
                 print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
             }

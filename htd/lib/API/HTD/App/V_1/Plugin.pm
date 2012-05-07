@@ -216,6 +216,8 @@ Order of params is order of regexp captures in config.yaml
 sub __makeParamsRef {
     my $self = shift;
     my ($resource, $id, $namespace, $barcode, $seq) = @_;
+    my $ro = $self->__getRightsObject;
+    
     return
     {
      'resource' => $resource,
@@ -223,6 +225,8 @@ sub __makeParamsRef {
      'ns'       => $namespace,
      'bc'       => $barcode,
      'seq'      => $seq,
+     'attr'     => defined $ro ? $ro->getRightsFieldVal('attr') : 0,
+     'source'   => defined $ro ? $ro->getRightsFieldVal('source') : 0,     
     };
 }
 

@@ -94,8 +94,15 @@ sub __errorExit {
     my $Q = shift;
     my $msg = shift;
 
-    print $Q->header(-Status => $msg);
-    exit 1;
+    if ($ENV{HT_DEV}) {
+        print $Q->header('text/html');
+        print qq{ERROR: $@};
+        exit 0;
+    }
+    else {
+        $Q->header(-Status => $msg);
+        exit 1;
+    }
 }
 
 # ---------------------------------------------------------------------
