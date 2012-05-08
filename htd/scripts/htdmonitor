@@ -32,6 +32,11 @@ else {
     ($logdir, $today_log_file) = API::HTD_Log::hlog_path();
 }
 
+if (! -e $today_log_file) {
+    print STDERR qq{$today_log_file does not exist!\n};
+    exit 1;
+}
+
 chomp(my @UNIQUE_IP_ADDRESSES = `cat $today_log_file|cut -f1 -d' '`);
 sort_uniq_ip_addr_list(\@UNIQUE_IP_ADDRESSES);
 
@@ -50,7 +55,7 @@ Total_GET_RequestsBy_IP_Addr();
 
 Total_IC_RequestsServed();
 
-Total_Auth_ERRORS_By_IP_ByResource();
+Total_Auth_ERRORS_ByIP_ByResource();
 
 CrossCheck_IC_DataRequests();
 
@@ -79,6 +84,30 @@ sub sort_uniq_ip_addr_list {
       } (keys %h);
 }
 
+
+# ---------------------------------------------------------------------
+sub get_domain {
+    my $ip = shift;
+    my $regexp = qr(\cIname\s+=\s+(.*?)\.$);
+
+    chomp(my @nslookup = `nslookup $ip`);
+    foreach my $line (@nslookup) {
+        if (my ($domain) = ($line =~ m,$regexp,)) {
+            return $domain;
+        }
+    }
+    return 'none';
+}
+
+
+# ---------------------------------------------------------------------
+sub get_country {
+    my $ip = shift;
+    chomp(my $country = `$GEOIP $ip`);
+    return $country;
+}
+
+
 # ---------------------------------------------------------------------
 sub Unique_IP_Addresses {
     
@@ -103,11 +132,13 @@ sub Total_GET_RequestsBy_IP_Addr {
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         chomp($resource_requests_ip{$ip} = `egrep "$ip.*?GET_" $today_log_file|wc -l`);
         if ($resource_requests_ip{$ip} > 0) {
-            chomp(my $country = `$GEOIP $ip`);
-            chomp(my @list_resources = `egrep $ip.*?GET_ $today_log_file| cut -f4 -d' '|sort|uniq`);
-            map { s,:|GET_,,g } @list_resources;
+            my $country = get_country($ip);
+            my $domain = get_domain($ip);
+            chomp(my @list_resources = `egrep $ip.*?GET_ $today_log_file`);
+            @list_resources = map { $_ =~ m,GET_(.*?):, } @list_resources;
+            Utils::sort_uniquify_list(\@list_resources);
             my $list = join(' ', @list_resources);
-            print "\t$ip ($country) = " . $resource_requests_ip{$ip} . " $list\n";
+            print "\t$ip ($country):$domain = [" . $resource_requests_ip{$ip} . " $list]\n";
         }
     }
     print "\n";
@@ -138,7 +169,7 @@ sub Total_GET_RequestsByResource {
 
 
 # ---------------------------------------------------------------------
-sub Total_Auth_ERRORS_By_IP_ByResource {
+sub Total_Auth_ERRORS_ByIP_ByResource {
 
     print "* Total authNZ errors by IP by resource\n";
 
@@ -147,9 +178,11 @@ sub Total_Auth_ERRORS_By_IP_ByResource {
     my $errors = 0;
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         chomp(my @auth_error_lines = `egrep "$ip.*?ERROR.*?__authNZ_Success" $today_log_file`);
+        # for this IP, count each type of resource that errored out
         foreach my $res (keys %RESOURCES) {
             $RESOURCES{$res} = scalar(grep(/resource="$res"/, @auth_error_lines));
         }
+        # for this IP, get the /originating/ IP addresses of the errors
         my @orig_IPs = ();
         foreach my $err_line (@auth_error_lines) {
             my ($ip) = ($err_line =~ m,orig=(\d+\.\d+\.\d+\.\d+),);
@@ -158,16 +191,18 @@ sub Total_Auth_ERRORS_By_IP_ByResource {
         sort_uniq_ip_addr_list(\@orig_IPs);
         for (my $i = 0; $i < scalar @orig_IPs; $i++) {
             my $ip = $orig_IPs[$i];
-            chomp(my $country = `$GEOIP $ip`);
-            $orig_IPs[$i] = qq{$ip:$country};
+            my $country = get_country($ip);
+            my $domain = get_domain($ip);
+            $orig_IPs[$i] = qq{$ip ($country):$domain};
         }
         my $orig_IPs = 'from=' . join(' ', @orig_IPs);
         
+        # for this IP, get the country and domain of the errors
         if (scalar @auth_error_lines) {
             $errors += scalar @auth_error_lines;
-            my @domain_name = `nslookup $ip`;
-            my $domain_name = grep(/in-addr.arpa\tname=/, @domain_name) || 'none';
-            print "\t$ip domain=$domain_name $orig_IPs\n";
+            my $country = get_country($ip);
+            my $domain = get_domain($ip);
+            print "\t$ip ($country):$domain $orig_IPs\n";
             foreach my $res (keys %RESOURCES) {
                 print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
             }
@@ -232,23 +267,32 @@ sub _test_resource_by_ip_for_ic {
     my ($statement, $sth);
     my $failures = '';
     
-    chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file|cut -f8 -d' '|cut -f2 -d'"'|sort|uniq`);
-    foreach my $id (@uniq_resource_ids_by_ip) {
-        $statement = qq{SELECT attr FROM j_rights WHERE nid=?};
-        $sth = API::DbIF::prepAndExecute($dbh, $statement, $id);
+    chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file`);
+    @uniq_resource_ids_by_ip = map { $_ =~ m, id="(.*?)" , } @uniq_resource_ids_by_ip;
+    Utils::sort_uniquify_list(\@uniq_resource_ids_by_ip);
+
+    foreach my $rid (@uniq_resource_ids_by_ip) {
+        my ($namespace, $id) = ($rid =~ m,^(.*?)\.(.*?)$,);
+        $statement = qq{SELECT attr FROM rights_current WHERE namespace=? AND id=?};
+        $sth = API::DbIF::prepAndExecute($dbh, $statement, $namespace, $id);
         my $attr = $sth->fetchrow_array();
         if (! grep(/^$attr$/, @FREELY_AVAILABLE)) {
-            # check authorization for access key used to get X-HathiTrust-InCopyright
-            chomp(my $access_line = `egrep "$ip.*?X-HathiTrust-InCopyright.*?$resource" $today_log_file|cut -f6,10 -d' '|sort|uniq`);
-            my ($key) = ($access_line =~ m,key=(.*?) ,); 
-            $statement = qq{SELECT code FROM da_authorization WHERE access_key=?};
-            $sth = API::DbIF::prepAndExecute($dbh, $statement, $key);
-            my $code = $sth->fetchrow_array();
 
-            if ($code <= 1) {
-                # unique lines without 'seq=' 
-                chomp(my $full_line = `egrep "$ip.*?GET_$resource.*?$id" $today_log_file|cut -f1,3,4,5,6,7,8 -d' '|sort|uniq`);
-                $failures .= "\n\t\t--> $full_line ATTR=$attr access_key=$key code=$code ";
+            # check authorization for access key used to get X-HathiTrust-InCopyright
+            chomp(my @access_lines = `egrep "$ip.*?X-HathiTrust-InCopyright.*?$resource.*?$id" $today_log_file`);
+            # unique lines without 'seq='
+            map { $_ =~ s,seq=.*?$,, } @access_lines;
+            Utils::sort_uniquify_list(\@access_lines);
+
+            foreach my $line (@access_lines) {
+                my ($key) = ($line =~ m,key=(.*?) ,); 
+                $statement = qq{SELECT code FROM da_authorization WHERE access_key=?};
+                $sth = API::DbIF::prepAndExecute($dbh, $statement, $key);
+                my $code = $sth->fetchrow_array();
+
+                if ($code <= 1) {
+                    $failures .= "\n\t\t--> $line ATTR=$attr access_key=$key code=$code ";
+                }
             }
         }
     }
