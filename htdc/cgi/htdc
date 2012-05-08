@@ -127,6 +127,8 @@ sub validate_request {
     my $access_key = Call_Handler(API::HTD::AuthDb::get_access_key_by_userid($dbh, $userid), 
                                   qq{Your user ID is not registered. Please visit the <a href="/cgi/kgs/authed">registration page</a> to record your user id});
 
+    Utils::clean_cgi_params($Q);
+
     # all params present?
     Call_Handler($Q->param('id'), 'Please specify an ID');
 
