@@ -107,7 +107,7 @@ The input filename is a fully-qualified filesystem path.
 
 # ---------------------------------------------------------------------
 sub add_to_xsl_lists {
-    my ($filename, $jsfiles_ref, $cssfiles_ref, $section_test) = @_;
+    my ($filename, $jsfiles_ref, $cssfiles_ref, $section_test, $js_order) = @_;
     
     my $web_path = $filename;
     $web_path =~ s,/web/,/,;
@@ -116,7 +116,9 @@ sub add_to_xsl_lists {
         if ( ref($section_test) ) {
             my ( $label, $test ) = @$section_test;
             unless(exists($OPTIONAL_JS{$label})) {
+                # preserve order when pulling keys off %OPTIONAL_JS when loading uncompressed
                 $OPTIONAL_JS{$label} = { test => $test, filenames => [] };
+                $OPTIONAL_JS{$label}{order} = $js_order;
                 $OPTIONAL_JS{$label}{filename} = $WEB_PATH . qq{/js/concatenated_$label-min.js};
                 open($OPTIONAL_JS{$label}{fh}, ">", $OPTIONAL_JS{$label}{filename});
                 push @OPTIONAL_JS_LIST, $label;
@@ -292,14 +294,14 @@ sub write_xsl_file{
     
     foreach my $filename (@{$jsfiles_ref}) {
         my $js_include = make_js_include($filename);
-        print {$XSL_FH} "$js_include\n";
+        print {$XSL_FH} "    $js_include\n";
     }
-    foreach my $key ( keys %OPTIONAL_JS ) {
+    foreach my $key ( sort { $OPTIONAL_JS{$a}{order} <=> $OPTIONAL_JS{$b}{order} } keys %OPTIONAL_JS ) {
         next unless ( $key );
         print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_JS{$key}{'test'}">\n};
         foreach my $filename (@{$OPTIONAL_JS{$key}{filenames}}) {
             my $js_include = make_js_include($filename);
-            print {$XSL_FH} "$js_include\n";
+            print {$XSL_FH} "    $js_include\n";
         }
         print {$XSL_FH} qq{    </xsl:if>\n};
     }
@@ -418,6 +420,7 @@ sub make_concatenated_files {
     my $in_YUI_section = 0;
     my $section_test = undef;
     my $section_label = '';
+    my $js_order = 0;
     
     while (<FILELIST_FH>) {
         next if /^\s*$/;
@@ -426,6 +429,8 @@ sub make_concatenated_files {
         
         my ($section_name) = ($_ =~ /^Section:\s*(.+)\s*$/);
         if ($section_name) {
+            $js_order++;
+            print STDERR "\nprocessing Section: $section_name order=$js_order\n" if ($VERBOSE);
             if ($section_name =~ m,^YUI$,) {
                 $in_YUI_section = 1;
             }
@@ -467,8 +472,8 @@ sub make_concatenated_files {
             $count++;
             print STDERR "$count.";
         }
-        
-        add_to_xsl_lists($xsl_helper_filename, $jsfiles_ref, $cssfiles_ref, $section_test);
+
+        add_to_xsl_lists($xsl_helper_filename, $jsfiles_ref, $cssfiles_ref, $section_test, $js_order);
         
         # Yahoo YUI js files assumed to be minimized so skip compression
         if ($in_YUI_section) {
