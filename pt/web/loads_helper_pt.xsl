@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1335380136'" />
+  <xsl:variable name="timestamp" select="'?_=1336742466'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/pt/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="$gUsingSearch='false'">
@@ -26,46 +26,46 @@
   </xsl:template> 
 
   <xsl:template name="load_uncompressed_js">
- <script type="text/javascript" src="/pt/yui2-lib/build/yahoo/yahoo-min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/yui2-lib/build/event/event-min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/yui2-lib/build/dom/dom-min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/yui2-lib/build/dragdrop/dragdrop-min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/yui2-lib/build/container/container-min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/yui2-lib/build/connection/connection-min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/yui2-lib/build/utilities/utilities.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/yui2-lib/build/resize/resize-min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/js/versionPopup.js{$timestamp}"></script>
- <script type="text/javascript" src="//common-web/js/feedbackForm.js{$timestamp}"></script>
- <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/js/newCollOverlayPT.js{$timestamp}"></script>
- <script type="text/javascript" src="//common-web/js/overlayUtils.js{$timestamp}"></script>
- <script type="text/javascript" src="//common-web/js/listUtils.js{$timestamp}"></script>
- <script type="text/javascript" src="//common-web/js/pageturner.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/js/init.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/js/download_helper.js{$timestamp}"></script>
-    <xsl:if test="$gSkin='mobile' and $gUsingBookReader='true'">
- <script type="text/javascript" src="/pt/mobile/epub_download_helper.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/mobile/jquery.url.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/mobile/jquery-ui-1.8.5.custom.min.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/mobile/HTMobileBookReader.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/mobile/jquery.ui.ipad.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/mobile/jquery.jswipe-0.1.2.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/yahoo/yahoo-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/event/event-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/dom/dom-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/dragdrop/dragdrop-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/container/container-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/connection/connection-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/utilities/utilities.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/yui2-lib/build/resize/resize-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/js/versionPopup.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/js/feedbackForm.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/js/newCollOverlayPT.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/js/overlayUtils.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/js/listUtils.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/js/pageturner.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/jquery/boxy/jquery.boxy.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/js/init.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/js/download_helper.js{$timestamp}"></script>
+    <xsl:if test="$gUsingSearch='false'">
+     <script type="text/javascript" src="/pt/js/section108.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/jquery/jquery.tmpl.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/js/classic.js{$timestamp}"></script>
     </xsl:if>
     <xsl:if test="$gUsingBookReader='true'">
- <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/jquery/jquery.color.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/jquery/jquery.textfill.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/js/HTBookReader.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/js/lscache.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/jquery/jquery.color.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/jquery/jquery.textfill.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/bookreader/BookReader/BookReader.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/js/HTBookReader.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/js/lscache.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gUsingSearch='false'">
- <script type="text/javascript" src="/pt/js/section108.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/jquery/jquery.tmpl.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js{$timestamp}"></script>
- <script type="text/javascript" src="/pt/js/classic.js{$timestamp}"></script>
+    <xsl:if test="$gSkin='mobile' and $gUsingBookReader='true'">
+     <script type="text/javascript" src="/pt/mobile/epub_download_helper.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/mobile/jquery.url.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/mobile/jquery-ui-1.8.5.custom.min.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/mobile/HTMobileBookReader.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/mobile/jquery.ui.ipad.js{$timestamp}"></script>
+     <script type="text/javascript" src="/pt/mobile/jquery.jswipe-0.1.2.js{$timestamp}"></script>
     </xsl:if>
 </xsl:template>
  
