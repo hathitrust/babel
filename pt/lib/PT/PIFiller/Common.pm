@@ -1030,6 +1030,9 @@ sub handle_VIEW_TYPE_FULL_PDF_LINK_PI
         my $return_to_url = $cgi->self_url;
         my $auth = $C->get_object('Auth');
         $href = $auth->get_WAYF_login_href($C, $return_to_url);
+        if ($cgi->param('skin') eq 'mobile') {
+            $href .= ';skin=mobilewayf';
+        }
     }
 
     return $href;

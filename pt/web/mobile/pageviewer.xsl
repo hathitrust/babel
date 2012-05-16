@@ -328,6 +328,7 @@
       	<p id="pagePdfLinkP">
 
         <xsl:element name="a">
+          <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
           <xsl:attribute name="id">pagePdfLink</xsl:attribute>
           <xsl:attribute name="class">tracked</xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
@@ -338,18 +339,16 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
-          <xsl:text>Download PDF - this page</xsl:text>
+          <xsl:text>Download this page (PDF)</xsl:text>
         </xsl:element>
       </p>
       </xsl:if>
 
 
-      <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
-
-
+      <xsl:if test="$gFullPdfAccessMessage='' or $gFullPdfAccessMessage='NOT_AFFILIATED' or $gFullPdfAccessMessage='RESTRICTED_SOURCE'">
         <p id="fullPdfLinkP">
           <xsl:element name="a">
-            <xsl:attribute name="title">Download full PDF</xsl:attribute>
+            <xsl:attribute name="title">Download whole book (PDF)</xsl:attribute>
             <xsl:attribute name="id">fullPdfLink</xsl:attribute>
             <xsl:attribute name="class">tracked</xsl:attribute>
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
@@ -370,10 +369,6 @@
               <p style="text-align: left">
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <!--
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}&amp;skin=mobilewayf;">Login</a></strong>
-                    <xsl:text> to determine whether you can download this book.</xsl:text>
-                    -->
                     <xsl:text>Partner institution members: </xsl:text>
                     <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
                     <xsl:text> to download this book.</xsl:text>
@@ -394,6 +389,9 @@
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
                     <xsl:text>This book cannot be downloaded.</xsl:text>
                   </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
+                    <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
+                  </xsl:when>
                   <xsl:otherwise>
                     <xsl:text>Sorry.</xsl:text>
                   </xsl:otherwise>
@@ -403,8 +401,7 @@
           </xsl:if>
         </p>
 
-		<p id="fullEpubLinkP">
-
+        <p id="fullEpubLinkP">
           <xsl:element name="a">
             <xsl:attribute name="title">Download EPUB</xsl:attribute>
             <xsl:attribute name="id">epubLink</xsl:attribute>
@@ -425,19 +422,13 @@
               <br />
               <span class="pdfPartnerLoginLinkMessage" style="font-size: 80%">Partner login required</span>
             </xsl:if>
-
           </xsl:element>
-
 
           <xsl:if test="$gFullPdfAccess = 'deny'">
             <div id="noEpubAccess">
               <p>
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <!--
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}&amp;skin=mobilewayf;">Login</a></strong>
-                    <xsl:text> to determine whether you can download this book.</xsl:text>
-                    -->
                     <xsl:text>Partner institution members: </xsl:text>
                     <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
                     <xsl:text> to download this book.</xsl:text>
@@ -458,6 +449,9 @@
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
                     <xsl:text>This book cannot be downloaded.</xsl:text>
                   </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
+                    <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
+                  </xsl:when>
                   <xsl:otherwise>
                     <xsl:text>Sorry.</xsl:text>
                   </xsl:otherwise>
@@ -466,8 +460,6 @@
             </div>
           </xsl:if>
         </p>
-
-
       </xsl:if>
 
     </div>

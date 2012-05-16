@@ -113,9 +113,10 @@
         </xsl:element>
       </p>
 
-		  <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
+      <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
       <p>
         <xsl:element name="a">
+          <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
           <xsl:attribute name="id">pagePdfLink</xsl:attribute>
           <xsl:attribute name="class">tracked</xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
@@ -126,15 +127,15 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
-          <xsl:text>Download PDF - this page</xsl:text>
+          <xsl:text>Download this page (PDF)</xsl:text>
         </xsl:element>
       </p>
       </xsl:if>
       
-      <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
+      <xsl:if test="$gFullPdfAccessMessage='' or $gFullPdfAccessMessage='NOT_AFFILIATED' or $gFullPdfAccessMessage='RESTRICTED_SOURCE'">
         <p>
           <xsl:element name="a">
-            <xsl:attribute name="title">Download full PDF</xsl:attribute>
+            <xsl:attribute name="title">Download whole book (PDF)</xsl:attribute>
             <xsl:attribute name="id">fullPdfLink</xsl:attribute>
             <xsl:attribute name="class">tracked</xsl:attribute>
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
@@ -143,26 +144,39 @@
             <xsl:attribute name="href">
               <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
             </xsl:attribute>
-            <xsl:text>Download PDF - whole book</xsl:text>
+            <xsl:text>Download whole book (PDF)</xsl:text>
           </xsl:element>
-        
+          <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+            <p class="pdfPartnerLoginLinkMessage">Partner login required</p>
+          </xsl:if>
+
           <xsl:if test="$gFullPdfAccess = 'deny'">
             <div id="noPdfAccess">
-              <p>
+              <p style="text-align: left">
                 <xsl:choose>
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <xsl:text>Partner institution members: </xsl:text>
                     <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
-                    <xsl:text> to determine whether you can download this book.</xsl:text>
+                    <xsl:text> to download this book.</xsl:text>
+                    <br />
+                    <br />
+                    <em>If you are not a member of a partner institution, 
+                    <br />
+                    whole book download is not available. 
+                    (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                     <xsl:text>Full PDF available only to authenticated users from </xsl:text>
-                    <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions.</a>
+                    <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
                     <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
                     <xsl:text>This book cannot be downloaded.</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
+                    <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:text>Sorry.</xsl:text>
