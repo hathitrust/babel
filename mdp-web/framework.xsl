@@ -1165,6 +1165,7 @@
         <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
         <li>
           <xsl:element name="a">
+            <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
             <xsl:attribute name="id">pagePdfLink</xsl:attribute>
             <xsl:attribute name="class">tracked</xsl:attribute>
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
@@ -1175,15 +1176,15 @@
             <xsl:attribute name="target">
               <xsl:text>pdf</xsl:text>
             </xsl:attribute>
-            <xsl:text>Download PDF - this page</xsl:text>
+            <xsl:text>Download this page (PDF)</xsl:text>
           </xsl:element>
         </li>
         </xsl:if>
         
-        <xsl:if test="$gFullPdfAccessMessage != 'NOT_AVAILABLE'">
+        <xsl:if test="$gFullPdfAccessMessage='' or $gFullPdfAccessMessage='NOT_AFFILIATED' or $gFullPdfAccessMessage='RESTRICTED_SOURCE'">
           <li>
             <xsl:element name="a">
-              <xsl:attribute name="title">Download full PDF</xsl:attribute>
+              <xsl:attribute name="title">Download whole book (PDF)</xsl:attribute>
               <xsl:attribute name="id">fullPdfLink</xsl:attribute>
               <xsl:attribute name="class">tracked</xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
@@ -1192,7 +1193,7 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
               </xsl:attribute>
-              <xsl:text>Download PDF - whole book</xsl:text>
+              <xsl:text>Download whole book (PDF)</xsl:text>
             </xsl:element>
             <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
               <p class="pdfPartnerLoginLinkMessage">Partner login required</p>
@@ -1222,6 +1223,9 @@
                     </xsl:when>
                     <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
                       <xsl:text>This book cannot be downloaded.</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
+                      <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
                     </xsl:when>
                     <xsl:otherwise>
                       <xsl:text>Sorry.</xsl:text>
