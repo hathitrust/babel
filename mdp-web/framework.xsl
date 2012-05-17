@@ -54,6 +54,32 @@
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
   <xsl:variable name="gVersionLabel" select="/MBooksTop/MBooksGlobals/VersionLabel"/>
 
+  <xsl:variable name="gTombstoneMsg">
+    <p class="leftText">This item is no longer available in HathiTrust due to one of the following reasons:</p>
+    <ul class="bullets">
+      <li>It was removed at the request of the rights holder.</li>
+      <li>It was either wholly unusable or there is another, superior copy available.</li>
+    </ul>
+    
+    <p class="leftText">
+      <xsl:text>Try a </xsl:text>
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:choose>
+            <xsl:when test="$gSkin='mobile'">
+              <xsl:value-of select="'http://m.hathitrust.org'"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="'http://www.hathitrust.org'"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:attribute>
+        <xsl:text> new search </xsl:text>
+      </xsl:element>
+      <xsl:text>for your item to see if there are other copies or editions of this work available.</xsl:text>
+    </p>
+  </xsl:variable>
+
   <xsl:variable name="gVolumeTitleFragment">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/VolCurrTitleFrag!=' '">
