@@ -1542,7 +1542,24 @@
           <xsl:choose>
             <!-- TOMBSTONE -->
             <xsl:when test="$gRightsAttribute='8'">
-              <p class="centertext">Full view is not available for this item<br/> due to copyright &#169; restrictions.</p>
+              <div class="Specialtext">
+                <p class="leftText">This item is no longer available in HathiTrust due to one of the following reasons:</p>
+                <ul class="bullets">
+                  <li>It was removed at the request of the rights holder.</li>
+                  <li>It was either wholly unusable or there is another, superior copy available.</li>
+                </ul>
+                
+                <p class="leftText">
+                  <xsl:text>Try a </xsl:text>
+                  <xsl:element name="a">
+                    <xsl:attribute name="href">
+                      <xsl:value-of select="'http://m.hathitrust.org'"/>
+                    </xsl:attribute>
+                    <xsl:text> new search </xsl:text>
+                  </xsl:element>
+                  <xsl:text>for your item to see if there are other copies or editions of this work available.</xsl:text>
+                </p>
+              </div>
             </xsl:when>
             <!-- If opb (attr=3) + affiliated user then tell them when -->
             <!-- current accessor's exclusive access expires -->

@@ -1504,7 +1504,9 @@
           <xsl:choose>
             <!-- TOMBSTONE -->
             <xsl:when test="$gRightsAttribute='8'">
-              <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/> -- TOMBSTONE --</p>
+              <div class="Specialtext">
+                <xsl:copy-of select="$gTombstoneMsg"/>
+              </div>
             </xsl:when>
 
             <!-- If opb (attr=3) + affiliated user then tell them when -->
