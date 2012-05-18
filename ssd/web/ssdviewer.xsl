@@ -148,6 +148,10 @@
           <xsl:element name="a"><xsl:attribute name="name">top</xsl:attribute></xsl:element>
         </xsl:element>
 
+        <xsl:if test="$gSSD_Session='true' or ($gFinalAccessStatus='allow' and $gLoggedIn='YES')">
+          <div>Use of this online version is subject to all U.S. copyright laws. Please do not save or redistribute this file.</div>
+        </xsl:if>
+
         <div id="SSDcontact">
           <xsl:text>For questions or comments, contact HathiTrust.org: </xsl:text>
           <xsl:element name="a">
