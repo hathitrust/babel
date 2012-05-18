@@ -98,6 +98,29 @@ sub __index_item_ok {
     return $ok;
 }
 
+# ---------------------------------------------------------------------
+
+=item __build_item_index_fail_msg
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __build_item_index_fail_msg {
+    my ($C, $id, $index_state, $data_status, $metadata_status) = @_;
+    
+    my $msg = qq{\nITEM-LEVEL INDEXING FAIL: id=$id index=$index_state data=$data_status meta=$metadata_status\n};
+    my $hostname = Utils::get_hostname();
+    ($hostname) = ($hostname =~ m,^(.*?)\..*$,);
+    my $when = Utils::Time::iso_Time();
+    $msg .= qq{ host=$hostname at=$when\n};
+    $msg = Carp::longmess($msg);
+    $msg .= qq{\nCGI: } . CGI::self_url();
+    $msg .= qq{\nEnvironment: } . Debug::DUtils::print_env();
+
+    return $msg;
+}
 
 # ---------------------------------------------------------------------
 
@@ -147,7 +170,10 @@ sub maybe_Solr_index_item {
             SLIP_Utils::Common::merge_stats($C, $g_stats_ref, $commit_stats_ref);
         }
         else {
-            soft_ASSERT(0, qq{Item-level indexing fail: id=$id index=$index_state data=$data_status meta=$metadata_status});
+            Utils::Logger::__Log_string($C, 
+                                        __build_item_index_fail_msg($C, $id, $index_state, $data_status, $metadata_status), 
+                                        'item_indexer_fail_logfile', '___RUN___',
+                                        SLIP_Utils::Common::get_run_number($C->get_object('MdpConfig')));
         }
     }
 
