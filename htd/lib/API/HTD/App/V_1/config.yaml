@@ -432,8 +432,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: restricted
       minn-hist-soc: restricted
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -442,8 +445,11 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
-      utah_state_univ: restricted
+      utah_state_univ_press: restricted
       univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
   pageocr:
     free:
       google: limited
@@ -453,8 +459,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -463,8 +472,11 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
-      utah_state_univ: restricted
+      utah_state_univ_press: restricted
       univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
   pagecoordocr:
     free:
       google: limited
@@ -474,8 +486,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -484,8 +499,11 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
-      utah_state_univ: restricted
+      utah_state_univ_press: restricted
       univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
   aggregate:
     free:
       google: open_restricted
@@ -495,8 +513,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: restricted
       minn-hist-soc: restricted
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -505,8 +526,11 @@ accessibility_matrix:
       yale: restricted
       minn-dig-lib: restricted
       minn-hist-soc: restricted
-      utah_state_univ: restricted
+      utah_state_univ_press: restricted
       univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
   structure:
     free:
       google: open
@@ -516,8 +540,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -526,8 +553,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
   meta:
     free:
       google: open
@@ -537,8 +567,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -547,8 +580,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
   pagemeta:
     free:
       google: open
@@ -558,8 +594,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -568,8 +607,11 @@ accessibility_matrix:
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ: open
+      utah_state_univ_press: open
       univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights_current.attr field values to names
@@ -622,8 +664,11 @@ sources_name_map:
   5: yale
   6: minn-dig-lib
   7: minn-hist-soc
-  8: utah_state_univ
+  8: utah_state_univ_press
   9: univ_madrid
+  10: purdue
+  11: getty
+  12: um-dc-mp
 
 # ---------------------------------------------------------------------
 # MIME type map
