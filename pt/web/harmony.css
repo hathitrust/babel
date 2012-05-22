@@ -809,3 +809,8 @@ div.mdpScrollableContainer {
 .boxy-wrapper {
   text-align: left;
 }
+
+#mdpFeedbackForm {
+  width: auto;
+  max-width: 42em;
+}
