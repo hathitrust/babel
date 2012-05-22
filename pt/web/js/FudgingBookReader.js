@@ -27,7 +27,7 @@ if ( navigator.appVersion.indexOf("MSIE 7.") == -1 && navigator.appVersion.index
 }
 
 // fudgingMonkeyPatch = false;
-if ( fudgingMonkeyPatch ) {
+if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
 
   HTBookReader.prototype.resizePageView1up = function() {
       var i;

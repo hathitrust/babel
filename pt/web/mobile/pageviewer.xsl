@@ -1592,7 +1592,7 @@
                     <xsl:element name="a">
                       <xsl:attribute name="id">mdpLimitedSearchInside</xsl:attribute>
                       <xsl:attribute name="href">
-                        <xsl:value-of select="concat('/cgi/pt?id=', $id)" />
+                        <xsl:value-of select="concat('/cgi/pt?id=', $id, ';skin=default')" />
                       </xsl:attribute>
                       <xsl:text>Search inside on Regular (non-mobile) Website</xsl:text>
                     </xsl:element>
