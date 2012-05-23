@@ -130,7 +130,7 @@ fieldset.request {
   font-weight      : bold;
 }
 
-#sampleid {
+span.sampleid {
   font-family      : courier,monospace;
   font-weight      : bold;
 }
