@@ -6,15 +6,19 @@
 mets_pagemeta_xsl: /htd/lib/API/HTD/App/V_1/mets-pagemeta.xsl
 mets_meta_xsl:     /htd/lib/API/HTD/App/V_1/mets-meta.xsl
 
-# resource ids must coordinate with da_authorization db table.
+# resource ids, e.g. "meta", must coordinate with da_authorization db
+# table.
 patterns:
-  meta:         /(meta)/((.*?)\.([^/]+))$
-  structure:    /(structure)/((.*?)\.([^/]+))$
-  aggregate:    /(aggregate)/((.*?)\.([^/]+))$
-  pageimage:    /(pageimage)/((.*?)\.(.*))/(\d+)$
-  pageocr:      /(pageocr)/((.*?)\.(.*))/(\d+)$
-  pagecoordocr: /(pagecoordocr)/((.*?)\.(.*))/(\d+)$
-  pagemeta:     /(pagemeta)/((.*?)\.(.*))/(\d+)$
+  meta:                 /(meta)/((.*?)\.((___ARK___)|([^/]+)))$
+  structure:       /(structure)/((.*?)\.((___ARK___)|([^/]+)))$
+  aggregate:       /(aggregate)/((.*?)\.((___ARK___)|([^/]+)))$
+  pageimage:       /(pageimage)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
+  pageocr:           /(pageocr)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
+  pagecoordocr: /(pagecoordocr)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
+  pagemeta:         /(pagemeta)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
+
+# separate, for readability
+ark_pattern:    ark:/13960/(t|fk)\d[a-z\d][a-z\d]\d[a-z\d][a-z\d]\d[a-z\d]
 
 valid_query_params:
   - ip
