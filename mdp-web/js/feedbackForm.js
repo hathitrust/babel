@@ -10,9 +10,10 @@ var displayPTFeedback = function() {
         show : false,
         modal: true,
         draggable : false,
-        closeable : false,
+        closeable : true,
         clone : false,
-        unloadOnHide: false
+        unloadOnHide: false,
+        title : "Feedback"
     });
     
     if ( ! $frm.data('initialized') ) {
@@ -105,16 +106,10 @@ var displayPTFeedback = function() {
 
 $(document).ready(function() {
     
-    $("#feedback").click(function(e) {
-        e.preventDefault();
-        displayPTFeedback();
-        return false;
-    })
-
-    $("#feedback_footer").click(function(e) {
-        e.preventDefault();
-        displayPTFeedback();
-        return false;
+    $("#feedback, #feedback_footer, .mobilefeedback").click(function(e) {
+          e.preventDefault();
+          displayPTFeedback();
+          return false;
     })
 
 })
