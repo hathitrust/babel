@@ -207,7 +207,8 @@ sub get_privileges_by_access_key {
 
     my $statement = qq{SELECT code FROM da_authorization WHERE  access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    my $code = $sth->fetchrow_array() || 0;
+    # No row for access key means default lowest privilege
+    my $code = $sth->fetchrow_array() || 1;
 
     hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: $code});
     return $code;
