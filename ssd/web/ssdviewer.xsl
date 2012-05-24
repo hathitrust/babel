@@ -435,7 +435,7 @@
             <p>This item is no longer available in HathiTrust due to one of the following reasons:</p>
             <ul>
               <li>It was removed at the request of the rights holder.</li>
-              <li>It was either wholly unusable or there is another, superior copy available.</li>
+              <li>It was either wholly unusable or a superior copy is available.</li>
 
             </ul>
             <p>Try a <a title="search for item" href="http://www.hathitrust.org">new search</a> for your item to see if there are other copies or editions of this work available </p>
