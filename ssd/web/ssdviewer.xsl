@@ -161,13 +161,15 @@
         </div>
 
         <xsl:call-template name="Access"/>
-        <div id="SSDjumps">
-          <xsl:element name="a">
-            <xsl:attribute name="href">#biblio</xsl:attribute>
-            <xsl:text>Go to full bibliographic information</xsl:text>
-          </xsl:element>
-          <xsl:element name="br"/>
-        </div>
+        <xsl:if test="$gRightsAttribute!='8'">
+          <div id="SSDjumps">
+            <xsl:element name="a">
+              <xsl:attribute name="href">#biblio</xsl:attribute>
+              <xsl:text>Go to full bibliographic information</xsl:text>
+            </xsl:element>
+            <xsl:element name="br"/>
+          </div>
+        </xsl:if>
 
         <xsl:if test="$gFinalAccessStatus='allow'">
           <xsl:choose>
@@ -206,17 +208,18 @@
           </xsl:choose>
         </xsl:if>
 
-        <div id="mdpItemMetadata">
-          <xsl:element name="h2">
-            <xsl:attribute name="class">SkipLink</xsl:attribute>
-            <xsl:element name="a"><xsl:attribute name="name">biblio</xsl:attribute></xsl:element>
-            <xsl:text>Full Bibliographic Information</xsl:text>
-          </xsl:element>
-
-          <xsl:call-template name="FullTitle"/>
-          <xsl:call-template name="BookMetadata"/>
-          
-        </div>
+        <xsl:if test="$gRightsAttribute!='8'">
+          <div id="mdpItemMetadata">
+            <xsl:element name="h2">
+              <xsl:attribute name="class">SkipLink</xsl:attribute>
+              <xsl:element name="a"><xsl:attribute name="name">biblio</xsl:attribute></xsl:element>
+              <xsl:text>Full Bibliographic Information</xsl:text>
+            </xsl:element>
+            
+            <xsl:call-template name="FullTitle"/>
+            <xsl:call-template name="BookMetadata"/>
+          </div>
+        </xsl:if>
       </div>
     </div>
   </xsl:template>
