@@ -111,11 +111,6 @@ sub activate_client_access_key {
     $statement = qq{UPDATE da_authentication SET activated=? WHERE access_key=?};
     DEBUG('db', qq{activate_client_access_key: $statement, 1, $access_key});
     $sth = DbUtils::prep_n_execute($dbh, $statement, 1, $access_key);
-
-    # default authorization
-    $statement = qq{INSERT INTO da_authorization SET access_key=?, code=?};
-    DEBUG('db', qq{activate_client_access_key: $statement, $access_key, 1});
-    $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key, 1);
 }  
 
 # ---------------------------------------------------------------------
