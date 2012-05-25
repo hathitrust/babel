@@ -227,6 +227,32 @@ sub handle_COLLECTION_NAME_PI
     return ($coll_name);
 }
 
+sub handle_COLLECTION_FEATURED_PI
+    : PI_handler(COLLECTION_FEATURED)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    my $coll_featured = $co->get_coll_featured ($coll_id);
+
+    return ($coll_featured);
+}
+
+sub handle_COLLECTION_CONTACT_INFO_PI
+    : PI_handler(COLLECTION_CONTACT_INFO)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    my $coll_featured = $co->get_coll_contact_info ($coll_id);
+
+    return ($coll_featured);
+}
+
 # ---------------------------------------------------------------------
 
 =item handle_EDIT_COLLECTION_WIDGET_PI

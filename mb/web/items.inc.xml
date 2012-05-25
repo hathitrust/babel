@@ -5,6 +5,8 @@
   <EditCollectionWidget><?EDIT_COLLECTION_WIDGET?></EditCollectionWidget>
 
   <CollectionName><?COLLECTION_NAME?></CollectionName>
+  <CollectionFeatured><?COLLECTION_FEATURED?></CollectionFeatured>
+  <CollectionContactInfo><?COLLECTION_CONTACT_INFO?></CollectionContactInfo>
   <OperationResults><?OPERATION_RESULTS?></OperationResults>
   <ItemList><?ITEM_LIST?></ItemList>
 
