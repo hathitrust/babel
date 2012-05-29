@@ -21,6 +21,7 @@ div#mdpContentContainer {
 
 body {
   /*padding: 2px;*/
+  min-width: 0px;
 }
 
 div#mdpContentContainer, #BookReader {

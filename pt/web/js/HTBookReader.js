@@ -962,8 +962,10 @@ HTBookReader.prototype.switchCurrentPageDownloadLinks = function() {
         $link.text(caption.replace("this page", "left page"));
         
         var href = $rightLink.attr('href');
-        href = this._updateUrlFromParams(href, { seq : this.currentIndex() }, { id : '#' + $link.attr('id') });
-        $rightLink.attr('href', href);
+        if ( href ) {
+          href = this._updateUrlFromParams(href, { seq : this.currentIndex() }, { id : '#' + $link.attr('id') });
+          $rightLink.attr('href', href);
+        }
     } else if ( this.mode == this.constMode1up ) {
         $("#pageRightPdfLink").remove();
         $link.text(caption.replace("left page", "this page"));

@@ -60,11 +60,11 @@ HT.resizeBookReader = function(is_fullscreen) {
       var $embedLink = $(".embedLink");
       var $pageOptions = $("#mdpPageOptions");
       var w = $(window).width();
-      var fixed = $branding.width() + $pageOptions.width() + 50;
-      while (  fixed + $embedLink.width()  > w ) {
-          $embedLink.width( $embedLink.width() - 5 );
-          // console.log("MUST NARROW:", $embedLink.width(), w);
-      }
+      // var fixed = $branding.width() + $pageOptions.width() + 50;
+      // while (  fixed + $embedLink.width()  > w ) {
+      //     $embedLink.width( ($embedLink.width() - 5 ));
+      //     // console.log("MUST NARROW:", $embedLink.width(), w);
+      // }
       padding = 0;
   } else if ( $body.hasClass("fullscreen") ) {
     // for the scrollbar
