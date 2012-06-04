@@ -370,7 +370,7 @@ sub _get_access_type {
     
     my ($id, $resource) = ($Q->param('id'), $Q->param('resource'));
 
-    my ($namespace, $barcode) = split(/\./, $id);
+    my ($namespace, $barcode) = ($id =~ m,^(.*?)\.(.*)$,);
     my $P_Ref;
     $P_Ref->{ns} = $namespace;
     $P_Ref->{bc} = $barcode;
