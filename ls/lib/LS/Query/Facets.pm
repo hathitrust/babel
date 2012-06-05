@@ -651,7 +651,7 @@ sub make_query_clause{
           });
     
     #check to see if there is a single Han character surrounded by nonHan characters
-    my  $UNIHAN=$self->isUnihan($QUERY);
+    my  $UNIHAN = $self->isUnihan($QUERY);
     $QUERY = uri_escape_utf8( $QUERY );
     
     DEBUG('query_uri',
@@ -708,16 +708,19 @@ sub make_query_clause{
     # and if there is a single Han character alone or surrounded by non-Hans
     # also search the han unigrams
     # is it ok to hard code the unihan field name here or should we read config file>?
+    # Do we add some boost or leave this with no boost relative to the ocr fields?
     if ($field eq 'ocr' || $field eq 'ocronly')
     {
         
         if ($UNIHAN)
         {
-            $Q.= 'AND unihan:' . $QUERY;
+            
+            
+            $Q.= ' OR hanUnigrams:' . $QUERY;
         }
     }
     
-
+      #  ASSERT(0,qq{han unigram found $Q});
 
     return $Q;
     
