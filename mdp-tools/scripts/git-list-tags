@@ -20,6 +20,10 @@ Print a brief help message and exit.
 
 List this number of tags
 
+=item B<-v>
+
+Verbose listing
+
 =back
 
 =head1 DESCRIPTION
@@ -37,11 +41,12 @@ use Vendors;
 
 use ToolLib;
 
-our ($opt_h, $opt_l);
-my $ops = getopts('hl:');
+our ($opt_h, $opt_l, $opt_v);
+my $ops = getopts('hl:v');
 
 my $help = $opt_h;
 my $list_num_tags = $opt_l;
+my $verbose = $opt_v;
 
 if ($help) {
     print git_list_tags_usage();
@@ -63,11 +68,10 @@ if (! validate_existing_app($repo_root, $app_root, $app)) {
     exit 1;
 }
 
-my $tags = G_list_tags($list_num_tags);
+my $tags = G_list_tags($list_num_tags, $verbose);
 
 if ($tags) {
-    print "Tag list including the commit each tag refers to:\n";
-    print $tags;
+    print "\n$tags";
 }
 else {
     print "No tags here\n";
@@ -84,6 +88,7 @@ sub git_list_tags_usage {
     my $s = qq{Usage: git-list-tags [options] <app>
            where <app> is the application to list tags for 
                  -l <num> sets number to list. default is 3
+                 -v verbose. includes SHA1 of commit that was tagged
                  -h print help\n};
     return $s;
 }

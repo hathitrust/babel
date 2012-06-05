@@ -631,6 +631,58 @@ sub G_push_origin_tags {
     return 1;
 }
 
+# ---------------------------------------------------------------------
+
+=item __list_tags_short
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __list_tags_short {
+    my $num = shift;
+    
+    my $cmd = qq{git for-each-ref --count=$num --sort='-taggerdate' --format='%0a%09Tag: %(refname)%(*body)%0a%09%09Date: %(taggerdate)%0a%09%09Author: %(*authorname)' 'refs/tags'};
+
+    my $list;
+    if (execute_command_w_output($cmd, \$list)) {
+        $list =~ s,refs/tags/,,g;
+        if ($list) {
+            return $list;
+        }
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __list_tags_verbose
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __list_tags_verbose {
+    my $num = shift;
+
+    my $cmd_0 = qq{git for-each-ref --count=$num --sort='-taggerdate' --format='%(refname)%(*body)' 'refs/tags'};
+
+    my $list;
+    if (execute_command_w_output($cmd_0, \$list)) {
+        if ($list) {
+            my @verbose_list = ();
+            my @list = split(/\n/, $list);
+            foreach my $tag (@list) {
+                my $cmd_1 = qq{git show $tag};
+                execute_command_w_output($cmd_1, \$list);
+                push (@verbose_list, $list);
+            }
+            
+            return join("===\n\n", @verbose_list);
+        }
+    }
+}
 
 # ---------------------------------------------------------------------
 
@@ -643,17 +695,15 @@ List tags known to the local repository.
 # ---------------------------------------------------------------------
 sub G_list_tags {
     my $num = shift;
+    my $verbose = shift;
 
     $num = $num ? $num : 3;
 
-    my $cmd = qq{git for-each-ref --count=$num --sort='-taggerdate' --format='%0a%09Tag: %(refname)%(*body)%0a%09%09Date: %(taggerdate)%0a%09Commit: %(*objectname)%0a%09%09Author: %(*authorname)%0a%09%09Date: %(*authordate)' 'refs/tags'};
-
-    my $list;
-    if (execute_command_w_output($cmd, \$list)) {
-        $list =~ s,refs/tags/,,g;
-        if ($list) {
-            return $list;
-        }
+    if ($verbose) {
+        return __list_tags_verbose($num);
+    }
+    else {
+        return __list_tags_short($num);
     }
 }
 
