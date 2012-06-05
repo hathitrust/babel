@@ -137,10 +137,8 @@ sub handle_RIGHTS_ATTRIBUTE_PI
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
 
-    if (defined($id))
-    {
-        my $ar = new Access::Rights($C, $id);
-        $rights_attribute = $ar->get_rights_attribute($C, $id);
+    if (defined($id)) {
+        $rights_attribute = $C->get_object('Access::Rights')->get_rights_attribute($C, $id);
     }
 
     return $rights_attribute;
@@ -166,10 +164,8 @@ sub handle_SOURCE_ATTRIBUTE_PI
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
 
-    if (defined($id))
-    {
-        my $ar = new Access::Rights($C, $id);
-        $source_attribute = $ar->get_source_attribute($C, $id);
+    if (defined($id)) {
+        $source_attribute = $C->get_object('Access::Rights')->get_source_attribute($C, $id);
     }
 
     return $source_attribute;
@@ -189,15 +185,23 @@ sub handle_POD_DATA_PI
     :  PI_handler(POD_DATA)
 {
     my ($C, $act, $piParamHashRef) = @_;
-
-    my $dbh = $C->get_object('Database')->get_DBH($C);
+     
+    # Even HT affiliates can only see the POD link to a PDUS on US
+    # soil.
     my $id = $C->get_object('CGI')->param('id');
+    my $allow_pod = ($C->get_object('Access::Rights')->get_POD_access_status($C, $id) eq 'allow');
 
-    my $statement = qq{SELECT url FROM pod WHERE id=? LIMIT 1};
-    my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
+    my $url = '';
+    
+    if ($allow_pod) {
+        my $dbh = $C->get_object('Database')->get_DBH($C);
 
-    my $url = $sth->fetchrow_array();
-    $url = Utils::escape_url_separators($url);
+        my $statement = qq{SELECT url FROM pod WHERE id=? LIMIT 1};
+        my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
+
+        $url = $sth->fetchrow_array();
+        $url = Utils::escape_url_separators($url);
+    }
 
     return wrap_string_in_tag($url, 'Url');
 }
