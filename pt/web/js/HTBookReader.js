@@ -999,12 +999,12 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
         var pageParam;
         pageParam = "num=" + params.page;
         if ( href.indexOf("num=") > -1 ) {
-            href = href.replace(/num=\w+(;?)/, pageParam + "$1");
+            href = href.replace(/num=[^;]+(;?)/, pageParam + "$1");
         } else {
             href += ";" + pageParam;
         }
     } else {
-        href = href.replace(/num=\w+(;?)/, "");
+        href = href.replace(/num=[^;](;?)/, "");
     }
     
     if ( typeof(params.index) != 'undefined' ) {
