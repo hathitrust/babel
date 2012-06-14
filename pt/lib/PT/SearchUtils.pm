@@ -219,8 +219,11 @@ sub Solr_index_one_item {
 
     my $dbh = $C->get_object('Database')->get_DBH($C);
 
+    # The item-level index consists of only a single shard (for now)
+    my $shard = 1;
+    
     my ($index_state, $data_status, $metadata_status, $stats_ref) =
-      Index_Module::Service_ID($C, $dbh, $run, $$, $HOST, $id, 1);
+      Index_Module::Service_ID($C, $dbh, $run, $shard, $$, $HOST, $id, 1);
 
     return ($index_state, $data_status, $metadata_status, $stats_ref);
 }
@@ -260,10 +263,11 @@ sub Solr_search_item {
         $q_str = join(' ', @$parsed_terms_arr_ref);
     }
     
-    #Convert user query from xml escaped string to regular characters and then url encode it so we can
-    # send it to Solr in an http request
+    # Convert user query from xml escaped string to regular characters
+    # and then url encode it so we can send it to Solr in an http
+    # request
     Utils::remap_cers_to_chars(\$q_str);
-    $q_str= uri_escape_utf8( $q_str );
+    $q_str = uri_escape_utf8( $q_str );
 
     # Solr paging is zero-relative
     my $start = max($cgi->param('start') - 1, 0);

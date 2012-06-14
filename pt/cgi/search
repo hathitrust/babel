@@ -8,7 +8,7 @@ umask 0000;
 # ----------------------------------------------------------------------
 BEGIN {
     ( $main::realSTART ) = time;
-    ## $ENV{DEBUG_LOCAL} = 1;
+    ##$ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -103,12 +103,6 @@ my $is_indexed = PT::SearchUtils::has_Solr_index_item($C, SLIP_Utils::Common::ge
 if ( ! $is_indexed && ! $cgi->param('index') ) {
     _redirect_to_index($cgi);
 }
-
-# if ( $cgi->param('index') ) {
-#     sleep(30) if ( ! $is_indexed );
-#     # we don't need this going forward
-#     $cgi->delete('index');
-# }
 
 PT::SearchUtils::maybe_Solr_index_item($C, SLIP_Utils::Common::get_run_number($run_config), $id, $stats_ref);
 
