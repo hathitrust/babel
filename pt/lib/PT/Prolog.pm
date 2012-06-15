@@ -164,7 +164,10 @@ sub Run {
 
 sub SetBackToResultsReferer {
     my ( $cgi, $ses ) = @_;
+
     my $referer = $cgi->referer();
+    Utils::remove_nonprinting_chars(\$referer);
+
     my $id = $cgi->param('id');
     
     my $script_name = $cgi->script_name;
