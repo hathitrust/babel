@@ -6,7 +6,7 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
-        <title>Hathi Trust Digital Library - Collection: <xsl:value-of select="$coll_name"/></title>
+        <title>Collections: <xsl:value-of select="$coll_name" /> | HathiTrust Digital Library</title>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>

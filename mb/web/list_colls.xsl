@@ -535,7 +535,7 @@
       <xsl:variable name="pubpriv">
         <xsl:call-template name="get_which_list"/>
       </xsl:variable>
-      <xsl:text>HathiTrust Digital Library - Collections</xsl:text>
+      <xsl:text>Collections | HathiTrust Digital Library</xsl:text>
       <!-- <xsl:choose>
         <xsl:when test="$pubpriv='pubcolls'">
           <xsl:text>Public Collections</xsl:text>
