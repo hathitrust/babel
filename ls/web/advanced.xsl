@@ -17,8 +17,8 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
+        <title>Full-text Advanced Search Results | HathiTrust Digital Library</title>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-        <title>Hathi Trust Digital Library - Full-text Search - v3</title>
         <xsl:call-template name="load_js_and_css"/>
         <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
         <xsl:call-template name="IE7hack"/>
