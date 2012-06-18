@@ -1730,7 +1730,8 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	            }
 	    	}catch(err){alert(err.toString())}			    	
 	    	// and log the event
-	    	HT.track_pageview({url:url});
+	    	var title = document.title.replace(" - ", " - PT Search - ");
+	    	HT.track_pageview({url:url, title:title});
     	},
     	error:function(jqXHR, textStatus, errorThrown){
     		var footer=$("#mdpFooter").detach();

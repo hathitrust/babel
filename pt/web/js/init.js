@@ -120,7 +120,13 @@ HT.track_pageview = function(args) {
         } catch(e) { console.log(e); }
     };
     
+    if ( args.title ) {
+      _gaq.push(function() { window.oldtitle = document.title; document.title = args.title; });
+    }
     _gaq.push(fn);
+    if ( args.title ) {
+      _gaq.push(function() { document.title = window.oldtitle; });
+    }
   }
 }
 
