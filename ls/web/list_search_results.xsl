@@ -74,7 +74,17 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
-        <title>Full-text Search Results | HathiTrust Digital Library</title>
+        <title>
+          <xsl:choose>
+            <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
+              <xsl:text>Full-text Advanced Search Results</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>Full-text Search Results</xsl:text>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:text> | HathiTrust Digital Library</xsl:text>
+        </title>
         <!-- jQuery from the Google CDN -->
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
