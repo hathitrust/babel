@@ -78,8 +78,17 @@
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
-          <xsl:text>Hathi Trust Digital Library - </xsl:text>
-          <xsl:value-of select="$gSSDFullTitleString"/>
+          <xsl:variable name="dash">
+            <xsl:choose>
+              <xsl:when test="$gFullOcr//Page"><xsl:text>--</xsl:text></xsl:when>
+              <xsl:otherwise><xsl:text>-</xsl:text></xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:call-template name="PageTitle">
+            <xsl:with-param name="title" select="$gSSDFullTitleString" />
+            <xsl:with-param name="detail" select="'Text-only'" />
+            <xsl:with-param name="dash" select="$dash" />
+          </xsl:call-template>
         </title>
 
         <link rel="stylesheet" href="/ssd/web/ssdstyles.css" type="text/css" />
