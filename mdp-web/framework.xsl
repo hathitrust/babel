@@ -1505,21 +1505,55 @@
   </xsl:template>
   
   <xsl:template name="PageTitle">
-    <xsl:param name="prefix" select="'HathiTrust Digital Library'" />
-    <xsl:value-of select="$prefix" />
+    <xsl:param name="detail" select="''" />
+    <xsl:param name="suffix" select="'HathiTrust Digital Library'" />
+    <xsl:param name="dash" select="'-'" />
+    <xsl:param name="title" />
+    <xsl:param name="tail" />
+
+    <xsl:variable name="displayed-title">
+      <xsl:choose>
+        <xsl:when test="normalize-space($title)">
+          <xsl:value-of select="normalize-space($title)" />
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:variable name="truncated-title">
+            <xsl:call-template name="GetMaybeTruncatedTitle">
+              <xsl:with-param name="titleString" select="$gTitleString"/>
+              <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+              <xsl:with-param name="maxLength" select="$gTitleTruncAmt"/>
+            </xsl:call-template>
+          </xsl:variable>
+          <xsl:value-of select="normalize-space($truncated-title)" />
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:if test="normalize-space($detail)">
+        <xsl:value-of select="concat(' ', $dash, ' ')" />
+        <xsl:value-of select="$detail" />
+      </xsl:if>
+    </xsl:variable>
+  
+    <xsl:value-of select="$displayed-title" />
     <xsl:choose>
+      <xsl:when test="$gRightsAttribute='8'">
+        <xsl:text> - Item Not Available </xsl:text>
+      </xsl:when>
       <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
-        <xsl:text> - </xsl:text>
+        <xsl:text> - Full View </xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text> -- </xsl:text>
+        <xsl:text> - Limited View </xsl:text>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:call-template name="GetMaybeTruncatedTitle">
-      <xsl:with-param name="titleString" select="$gTitleString"/>
-      <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-      <xsl:with-param name="maxLength" select="$gTitleTruncAmt"/>
-    </xsl:call-template>
+
+    <xsl:text> | </xsl:text> 
+    <xsl:value-of select="$suffix" />
+    <xsl:if test="normalize-space($tail)">
+      <xsl:text> (</xsl:text>
+      <xsl:value-of select="$tail" />
+      <xsl:text>)</xsl:text>
+    </xsl:if>
+
   </xsl:template>
   
   <!-- need to move the anchor elsewhere -->
