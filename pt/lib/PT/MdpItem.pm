@@ -257,59 +257,6 @@ sub GetOcrBySequence {
 }
 
 # ----------------------------------------------------------------------
-# NAME         :
-# PURPOSE      :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub GetPageNumBySequence
-{
-    my $self = shift;
-    my $sequence = shift;
-
-    my $pageInfoHashRef = $self->Get( 'pageinfo' );
-
-    my $pageNumber;
-    if ( $self->HasPageNumbers() )
-    {
-        $pageNumber = $$pageInfoHashRef{ 'sequence' }{ $sequence }{ 'pagenumber' };
-    }
-    else
-    {
-        $pageNumber = $sequence;
-    }
-
-    return $pageNumber;
-}
-
-
-# ----------------------------------------------------------------------
-# NAME         :
-# PURPOSE      :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub GetFileNameBySequence
-{
-    my $self = shift;
-    my $sequence = shift;
-    my $which = shift;
-
-    my $pageInfoHashRef = $self->Get( 'pageinfo' );
-    my $fileName = $$pageInfoHashRef{ 'sequence' }{ $sequence }{ $which };
-
-    return $fileName;
-}
-
-# ----------------------------------------------------------------------
 # NAME         : HandleImageContent
 # PURPOSE      : Determine how the requested page image should be converted,
 #                if need be, and put in the web space's cache directory
