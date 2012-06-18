@@ -1286,7 +1286,7 @@
         <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
           <xsl:call-template name="PageTitle">
-            <xsl:with-param name="prefix" select="'HathiTrust Mobile'" />
+            <xsl:with-param name="suffix" select="'HathiTrust Mobile Digital Library'" />
           </xsl:call-template>
         </title>
 

@@ -1,8 +1,8 @@
 // UTILITIES
 
-window.console = {
-    log : function() { }
-}
+//window.console = {
+ //   log : function() { }
+//}
 
 HT.resizeBookReader = function() {
 	//console.log("HT.resizeBookReader()");

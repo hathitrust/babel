@@ -38,7 +38,7 @@
       <head>
         <title>
           <xsl:call-template name="PageTitle">
-            <xsl:with-param name="prefix" select="'HathiTrust Digital Library Search Inside'" />
+            <xsl:with-param name="detail" select="'PT Search'" />
           </xsl:call-template>
         </title>
 
