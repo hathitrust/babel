@@ -650,6 +650,8 @@ sub make_query_clause{
               return qq{Solr query q $i ="$s"}
           });
     
+    #check to see if there is a single Han character surrounded by nonHan characters
+    my  $UNIHAN = $self->isUnihan($QUERY);
     $QUERY = uri_escape_utf8( $QUERY );
     
     DEBUG('query_uri',
@@ -696,17 +698,74 @@ sub make_query_clause{
     my $MM = qq{ mm='} . $mm . qq{' };
     my $TIE = qq{ tie='} . $tie . qq{' };
 
+    
     my $Q;
     
-
+    
     $Q= ' '.  '_query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
+
+    # if query field is ocr or ocronly check for Han characters
+    # and if there is a single Han character alone or surrounded by non-Hans
+    # also search the han unigrams
+    # is it ok to hard code the unihan field name here or should we read config file>?
+    # Do we add some boost or leave this with no boost relative to the ocr fields?
+    if ($field eq 'ocr' || $field eq 'ocronly')
+    {
+        
+        if ($UNIHAN)
+        {
+            
+            
+            $Q.= ' OR hanUnigrams:' . $QUERY;
+        }
+    }
+    
+      #  ASSERT(0,qq{han unigram found $Q});
 
     return $Q;
     
 }
 
-# ---------------------------------------------------------------------
+# --------------------------------------------------------------------
+sub isUnihan
+{
+    my $self = shift;
+    my $q = shift;
+    my $return=undef;
+    my $UNIHAN=undef;
 
+    $q=~s/\s//g;    
+
+    eval
+    {
+        if ($q =~/\p{Han}/)
+        {
+            if ($q =~/^\p{Han}\P{Han}*$/)
+            {
+                $UNIHAN="true";
+            }
+            if ($q =~/^\P{Han}*\p{Han}$/)
+            {
+                $UNIHAN="true";
+            }
+            if  ($q =~/(\P{Han}\p{Han}\P{Han})/)
+            {
+                $UNIHAN="true";
+            }
+         }
+
+        
+    };
+    
+    # change this to an ASSERT
+    if ($@)
+    {
+        print STDERR "bad char $_\n";
+    }
+    return $UNIHAN;
+}
+
+# ---------------------------------------------------------------------
 sub getParenQuery
 {
     my $self = shift;
