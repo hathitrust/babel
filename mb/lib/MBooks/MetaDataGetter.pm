@@ -110,7 +110,7 @@ sub add_rights_data {
         my $id = $meta_hashref->{'extern_item_id'};
 
         my ($rights, $rc) = $self->__get_rights_attribute_for_id($C, $id);
-        ASSERT($rc == RightsGlobals::OK_ID, qq{bad rights data $rc });
+        ASSERT($rc == $RightsGlobals::OK_ID, qq{bad rights data $rc });
         $meta_hashref->{'rights'} = $rights;
     }
 }
@@ -144,10 +144,10 @@ sub __get_rights_attribute_for_id {
     my $attr = $$row_hashref{'attr'};
     my $db_id = $$row_hashref{'id'};
 
-    my $rc = RightsGlobals::OK_ID;
+    my $rc = $RightsGlobals::OK_ID;
 
-    $rc |= RightsGlobals::BAD_ID         if (! $db_id);
-    $rc |= RightsGlobals::NO_ATTRIBUTE   if (! $attr);
+    $rc |= $RightsGlobals::BAD_ID         if (! $db_id);
+    $rc |= $RightsGlobals::NO_ATTRIBUTE   if (! $attr);
 
     return ($attr, $rc);
 }
