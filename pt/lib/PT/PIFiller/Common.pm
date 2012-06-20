@@ -132,7 +132,7 @@ sub handle_RIGHTS_ATTRIBUTE_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $rights_attribute = RightsGlobals::NOOP_ATTRIBUTE;
+    my $rights_attribute = $RightsGlobals::NOOP_ATTRIBUTE;
 
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
@@ -159,7 +159,7 @@ sub handle_SOURCE_ATTRIBUTE_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $source_attribute = RightsGlobals::NOOP_ATTRIBUTE;
+    my $source_attribute = $RightsGlobals::NOOP_ATTRIBUTE;
 
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');

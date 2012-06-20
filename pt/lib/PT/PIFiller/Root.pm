@@ -196,10 +196,10 @@ sub handle_IN_COPYRIGHT_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $id = $C->get_object('CGI')->param('id');
-    if ($C->get_object('Access::Rights')->in_copyright($C, $id)) {
-        return 'true';
+    if ($C->get_object('Access::Rights')->public_domain_world_creative_commons($C, $id)) {
+        return 'false';
     }
-    return 'false';
+    return 'true';
 }
   
       
