@@ -639,9 +639,10 @@ rights_name_map:
   16: orphcand
   17: cc-zero
   18: und-world
+  19: icus
 
 # ---------------------------------------------------------------------
-# List of name that equate to open access
+# List of name that equate to open access modulo geo-location
 # ---------------------------------------------------------------------
 open_access_names: 
   - pd 
@@ -655,6 +656,7 @@ open_access_names:
   - cc-by-sa
   - cc-zero
   - und-world
+  - icus
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights.source field values to names used in

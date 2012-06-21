@@ -56,7 +56,8 @@ sub _initialize {
     
     $self->{_rights} = $args->{_rights};
     $self->{_config} = $args->{_config};
-    $self->{_ua_ip} = $args->{_ua_ip};
+    $self->{_ua_ip}  = $args->{_ua_ip};
+    $self->{_dbh}    = $args->{_dbh};
 }
 
 
@@ -77,6 +78,11 @@ sub __getRightsObject {
 sub __getConfObject {
     my $self = shift;
     return $self->{_config};
+}
+
+sub __get_DBH {
+    my $self = shift;
+    return $self->{_dbh};
 }
 
 sub __getConfigVal {
@@ -108,9 +114,10 @@ sub getInCopyrightStatus {
     my $rights = $self->__getConfigVal('rights_name_map', $attribute);
 
     if ($rights eq 'pdus') {
-        if ($self->__geo_location_is_US()) {
-            $in_copyright = 0;
-        }
+        $in_copyright = 0 if ($self->__geo_location_is('US'))
+    }
+    elsif ($rights eq 'icus') {
+        $in_copyright = 0 if ($self->__geo_location_is('NONUS'))
     }
     else {
         my @freely_available = (
@@ -157,43 +164,59 @@ sub getAccessTypeByResource {
 
 # ---------------------------------------------------------------------
 
-=item __geo_location_is_US
+=item __geo_location_is
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __geo_location_is_US {
+sub __geo_location_is {
     my $self = shift;
+    my $required_location = shift;
 
-    my $is_us = 1;
+    my $is = 1;
     
     # This will be the UA IP address seen in HTTP_X_FORWARDED_FOR or
     # REMOTE_USER by (our) trusted client and passed as a URL
     # parameter or else simply HTTP_X_FORWARDED_FOR or REMOTE_USER of
-    # a untrusted client itself.  The best we can do to limit pdus to
-    # US users is the geoIP and blacklist tests on these addresses.
+    # a untrusted client itself.  The best we can do to limit pdus(icus) to
+    # US(NONUS) users is the geoIP and blacklist tests on these addresses.
     my $IPADDR = $self->__get_UAIP;
 
     require "Geo/IP.pm";
     my $geoIP = Geo::IP->new();
     my $country_code = $geoIP->country_code_by_addr($IPADDR);
-    my $pdusCountryCodesRef = $self->__getConfigVal('pdus_country_codes');
 
-    if (! grep(/^$country_code$/, @RightsGlobals::g_pdus_country_codes)) {
-        $is_us = 0;
-        }
+    my $correct_location = 0;
+    if ($required_location eq 'US') { 
+        $correct_location = (grep(/$country_code/, @RightsGlobals::g_pdus_country_codes));
+    }
+    elsif ($required_location eq 'NONUS') {
+        $correct_location = (! grep(/$country_code/, @RightsGlobals::g_pdus_country_codes));
+    }
     else {
-        # veryify this is not a blacklisted US proxy that does not
-        # set HTTP_X_FORWARDED_FOR for a non-US request
-        require "Access/Proxy.pm";
-        if (Access::Proxy::blacklisted($IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
-            $is_us = 0;
-        }
+        die qq{Invalid required_location value="$required_location"};
     }
 
-    return $is_us;
+    if ($correct_location) {
+        # veryify this is not a blacklisted US(NONUS) proxy that does not set
+        # HTTP_X_FORWARDED_FOR for a non-US(US) request
+        require "Access/Proxy.pm";
+        my $dbh = $self->__get_DBH;
+
+        if (Access::Proxy::blacklisted($dbh, $IPADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
+            $is = 0;
+        }
+        else {
+            $is = 1;
+        }
+    }
+    else {
+        $is = 0;
+    }
+
+    return $is;
 }
 
 
@@ -218,9 +241,12 @@ sub __getFreedomVal {
     if (($freedom eq 'nonfree') && ($rights eq 'nobody')) {
         $freedom = 'restricted_forbidden';
     }
-    elsif (($freedom eq 'free') && ($rights eq 'pdus')) {
-        if (! $self->__geo_location_is_US()) {
-            $freedom = 'nonfree';
+    elsif ($freedom eq 'free') {
+        if ($rights eq 'pdus') {
+            $freedom = 'nonfree' if (! $self->__geo_location_is('US'));
+        }
+        elsif ($rights eq 'icus') {
+            $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS'));
         }
     }
 

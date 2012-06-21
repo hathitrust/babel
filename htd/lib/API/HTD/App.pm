@@ -265,6 +265,7 @@ sub preHandler {
                                          _rights => $ro,
                                          _config => $self->__getConfObject,
                                          _ua_ip  => $self->__originating_IPADDR,
+                                         _dbh    => $dbh,
                                         });
     $self->__setMember('access', $ato);
 
