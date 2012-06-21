@@ -182,12 +182,19 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
         foreach my $res (keys %RESOURCES) {
             $RESOURCES{$res} = scalar(grep(/resource="$res"/, @auth_error_lines));
         }
+        # for this IP get a list of unique IDs that were denied
         # for this IP, get the /originating/ IP addresses of the errors
         my @orig_IPs = ();
+        my @denied_IDs = ();
         foreach my $err_line (@auth_error_lines) {
             my ($ip) = ($err_line =~ m,orig=(\d+\.\d+\.\d+\.\d+),);
             push(@orig_IPs, $ip) if ($ip);
+
+            my ($ns, $bc) = ($err_line =~ m,ns="(.*?)".*?bc="(.*?)",);
+            push(@denied_IDs, "$ns.$bc"); 
         }
+        Utils::sort_uniquify_list(\@denied_IDs);
+
         sort_uniq_ip_addr_list(\@orig_IPs);
         for (my $i = 0; $i < scalar @orig_IPs; $i++) {
             my $ip = $orig_IPs[$i];
@@ -206,6 +213,7 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
             foreach my $res (keys %RESOURCES) {
                 print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
             }
+            print "\t\tIDs = " . join(" ", @denied_IDs) . "\n";
         }
     }
 
