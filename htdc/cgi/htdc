@@ -387,6 +387,7 @@ sub _get_access_type {
                                                        _rights => $ro,
                                                        _config => $config,
                                                        _ua_ip  => __originating_IPADDR(),
+                                                       _dbh    => $dbh,
                                                       }),
                            'cannot determine access type');
     # POSSIBLY NOTREACHED
