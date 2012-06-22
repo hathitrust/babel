@@ -557,6 +557,10 @@ sub handle_dedicated_shard {
     else {
         # I am not assigned to a shard. Find an under-subscribed shard
         my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+        # randomize list so earlier shards are not favored.
+        # sweet. http://www.perlmonks.org/?node_id=31479
+        @num_shards_list = sort { (-1,1)[rand 2] } @num_shards_list;
+
         my $allocated_shard = Db::Select_allocate_unallocated_shard($C, $dbh, $run, [@num_shards_list]);
 
         if (! $allocated_shard) {
