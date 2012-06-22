@@ -100,6 +100,7 @@ CREATE TABLE `j_indexed_temp` (`shard` smallint(2) NOT NULL default '0', `id` va
 ---------------------------------------------------------------------
 CREATE TABLE `j_queue` (
         `run`           smallint(3) NOT NULL default '0',
+        `shard`         smallint(2) NOT NULL default '0',
         `id`            varchar(32) NOT NULL default '',
         `pid`           int         NOT NULL default '0',
         `host`          varchar(32) NOT NULL default '',
@@ -109,11 +110,11 @@ CREATE TABLE `j_queue` (
                 KEY `pid` (`pid`),
                 KEY `host` (`host`),
                 KEY `proc_status` (`proc_status`),
-                KEY `runstatus` (`run`,`proc_status`)
+                KEY `runshardstatus` (`run`,`shard`,`proc_status`)
        );
 
 
-CREATE TABLE `j_queue` (`run` smallint(3) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `pid` int NOT NULL default '0', `host` varchar(32) NOT NULL default '', `proc_status` smallint(1) NOT NULL default '0', KEY `run` (`run`), KEY `id` (`id`), KEY `pid` (`pid`), KEY `host` (`host`), KEY `proc_status` (`proc_status`), KEY `runstatus` (`run`,`proc_status`));
+CREATE TABLE `j_queue` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `pid` int NOT NULL default '0', `host` varchar(32) NOT NULL default '', `proc_status` smallint(1) NOT NULL default '0', KEY `run` (`run`), KEY `id` (`id`), KEY `pid` (`pid`), KEY `host` (`host`), KEY `proc_status` (`proc_status`), KEY `runshardstatus` (`run`,`shard`,`proc_status`)); 
 
 ---------------------------------------------------------------------
 -- IDs to re-index with a coll_id field when added to a "Large"
@@ -227,6 +228,8 @@ CREATE TABLE `j_shard_control` (
         `shard`         smallint(2) NOT NULL default '0',
         `enabled`       tinyint(1)  NOT NULL default '0',
         `suspended`     tinyint(1)  NOT NULL default '0',
+        `num_producers` smallint(2) NOT NULL default '0',
+        `allocated`     smallint(2) NOT NULL default '0',
         `build`         tinyint(1)  NOT NULL default '0',
         `optimiz`       tinyint(1)  NOT NULL default '0',
         `checkd`        tinyint(1)  NOT NULL default '0',
@@ -237,8 +240,7 @@ CREATE TABLE `j_shard_control` (
                 PRIMARY KEY  (`run`, `shard`)
        );
 
-CREATE TABLE `j_shard_control` (`run`  smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', `suspended` tinyint(1) NOT NULL default '0', `build` tinyint(1) NOT NULL default '0', `optimiz` tinyint(1) NOT NULL default '0', `checkd` tinyint(1) NOT NULL default '0', `build_time` timestamp NOT NULL default '0000-00-00 00::00::00', `optimize_time` timestamp NOT NULL default '0000-00-00 00::00::00', `checkd_time` timestamp NOT NULL default '0000-00-00 00::00::00', `release_state` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `shard`));
-
+CREATE TABLE `j_shard_control` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', `suspended` tinyint(1) NOT NULL default '0', `num_producers` smallint(2) NOT NULL default '0', `allocated` smallint(2) NOT NULL default '0', `build` tinyint(1) NOT NULL default '0', `optimiz` tinyint(1) NOT NULL default '0', `checkd` tinyint(1) NOT NULL default '0', `build_time` timestamp NOT NULL default '0000-00-00 00::00::00', `optimize_time` timestamp NOT NULL default '0000-00-00 00::00::00', `checkd_time` timestamp NOT NULL default '0000-00-00 00::00::00', `release_state` tinyint(1) NOT NULL default '0', PRIMARY KEY (`run`, `shard`)); 
 
 ---------------------------------------------------------------------
 --

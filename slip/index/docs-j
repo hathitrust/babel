@@ -28,7 +28,7 @@ see help
 
 use strict;
 BEGIN {
-    #$ENV{DEBUG_LOCAL} = 1;
+    ##$ENV{DEBUG_LOCAL} = 1;
 }
 
 
@@ -68,7 +68,7 @@ if (defined($opt_r)) {
 else {
     my $s = d_get_usage();
     print $s;
-    $SLIP_Utils::States::RC_BAD_ARGS;
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
 }
 # Required: filename
 my $ID_FILENAME;
@@ -88,13 +88,15 @@ else {
 
 
 if (defined($opt_d)) {
-    if (! grep(/1|2|3/, ($opt_d))) {
+    if (! grep(/0|1|2|3/, ($opt_d))) {
         my $s = i_get_usage();
         __output($s);
         exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
 
-    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= ',me';
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc'
+        if ($opt_d == 1);
     $ENV{'DEBUG'} .= ',vufind'
         if ($opt_d == 2);
     $ENV{'DEBUG'} .= ',docfulldebug'
@@ -201,8 +203,9 @@ Description
 
 # ---------------------------------------------------------------------
 sub d_get_usage {
-    my $s = qq{Usage: doc-j -r run(any)-d{1,2,3} -F filename-of-ids | -I<id>\n\t\tWrites results to, e.g., "SDRROOT/logs/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
-                      where 1=default
+    my $s = qq{Usage: doc-j -r run(any)-d{0,1,2,3} -F filename-of-ids | -I<id>\n\t\tWrites results to, e.g., "SDRROOT/logs/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
+                      where 0=default
+                            1=add database,indexing,doc-create
                             2=add vufind response
                             3=add docfulldebug (no delete of zip tmpdir)\n\n};
     return $s;

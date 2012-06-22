@@ -33,7 +33,13 @@ see help
 
 
 use strict;
+use warnings;
 umask 0000;
+
+BEGIN {
+    ##$ENV{DEBUG_LOCAL} = 1;
+}
+
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -120,7 +126,7 @@ if (defined($opt_F)) {
 my $CHECK = defined($opt_n);
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
 }
 
 # Prevent replication errors: enqueue only to one mysqlserv
@@ -224,7 +230,13 @@ sub __handle_queue_insert {
         last
             if (scalar(@queue_array) <= 0);
 
-        my $num_inserted = Db::insert_queue_items($C, $dbh, $run, \@queue_array);
+        my $ref_to_arr_of_hashref = [];
+        foreach my $id (@queue_array) {
+            my $shard = Db::Select_item_id_shard($C, $dbh, $run, $id);
+            push(@$ref_to_arr_of_hashref, {id => $id, shard => $shard});
+        }
+
+        my $num_inserted = Db::insert_queue_items($C, $dbh, $run, $ref_to_arr_of_hashref);
         $total_num_inserted += $num_inserted;
         my $s0 = qq{--> added $num_inserted items to queue, total now $total_num_inserted\n};
         __output($s0);
@@ -256,7 +268,8 @@ sub enqueue_from_FILE {
     if ($num_loaded > 0) {
         my $s0 = qq{loaded $num_loaded items from file=$ID_FILENAME\n};
         __output($s0);
-        __handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids, 'file');
+        __confirm("OK to proceed? [N] ");
+        __handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids);
     }
     else {
         my $s1 = qq{no items to add to queue\n};
@@ -278,6 +291,12 @@ sub enqueue_from_shared_queue {
 
     my $config = $C->get_object('MdpConfig');
     
+    my $production_run = $config->get('run_allowed_to_access_shared_queue');
+    if ($run ne $production_run) {
+        __output(qq{skipping load from shared queue: run=$run is not the production run ($production_run)\n});
+        return;  
+    }
+
     my $daily_max = $config->get('shared_queue_daily_max_items');
     my $slice_size = min($config->get('shared_queue_slice_size'), $daily_max);
     
@@ -305,7 +324,7 @@ sub enqueue_from_shared_queue {
 
         last if (! scalar(@$id_arr_ref));
         
-        my $num_inserted = __handle_queue_insert($C, $dbh, $run, $id_arr_ref, 'shared queue');
+        my $num_inserted = __handle_queue_insert($C, $dbh, $run, $id_arr_ref);
         $num_items += $num_inserted;
         
         last if ($num_items >= $daily_max);
@@ -333,14 +352,19 @@ sub enqueue_from_j_rights {
     my ($C, $dbh, $run) = @_;
 
     my $before_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+    my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
+    my $relation = ($before_timestamp eq $Db::vSOLR_ZERO_TIMESTAMP) ? '>=' : '>';
+    my $out_msg = qq{count=$would_be_queued would be queued with timestamp $relation $before_timestamp\n};
+ 
     if ($CHECK) {
-        my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
-        my $relation = ($before_timestamp eq $Db::vSOLR_ZERO_TIMESTAMP) ? '>=' : '>';
-        __output(qq{count=$would_be_queued would be queued with timestamp $relation $before_timestamp\n});
+        __output($out_msg);
     }
     else {
         # Insert items into the queue and mark their status as "available"
         
+        __output($out_msg);
+        __confirm("OK to proceed? [N] ");
+
         # Get all items from the j_rights table with update_time newer
         # than the timestamp set when enqueuer-j last recorded
         # the MAX(update_time) and insert them into j_queue advancing the
@@ -393,7 +417,7 @@ Description
 sub qu_Log_work {
     my ($C, $run, $num_inserted, $t_before, $t_after) = @_;
 
-    my $f;
+    my $f = '';
     if (defined($ID_FILENAME)) {
         $f = qq{from file=$ID_FILENAME};
     }

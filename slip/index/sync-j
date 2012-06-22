@@ -51,6 +51,12 @@ be inferred to also be missing from the Solr index.
 =cut
 
 use strict;
+use warnings;
+
+BEGIN {
+    ##$ENV{DEBUG_LOCAL} = 1;
+}
+
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -150,7 +156,7 @@ else {
 }
 
 if ($opt_d) {
-    $ENV{'DEBUG'} .= 'lsdb';
+    $ENV{'DEBUG'} .= ',lsdb';
 }
 
 my $TEST_ONLY = defined($opt_T);
@@ -274,7 +280,7 @@ sub Test_rightsNINindexed {
             __output(qq{$s0\n}); 
             Log_sync($C, $run, $s0);
 
-            Db::insert_queue_items($C, $dbh, $run, [$id])
+            Db::insert_queue_items($C, $dbh, $run, [ {id => $id, shard => 0} ])
                 unless($CHECK);
         }
     }

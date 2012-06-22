@@ -107,6 +107,14 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
+my $production_run = $config->get('run_allowed_to_access_shared_queue');
+if ($RUN ne $production_run) {
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    my $s = qq{run=$RUN NOT the production_run ($production_run)};
+    l__output($s);
+    __non_interactive_err_output($rc, $s);    
+}
+
 my $db;
 eval {
     $db = new Database($config);
