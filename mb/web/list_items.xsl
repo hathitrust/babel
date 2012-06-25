@@ -163,7 +163,7 @@
   <xsl:template name="EditCollectionWidgetViewOnly">
     <div class="editViewOnly">
       
-      <xsl:if test="//CollectionFeatured">
+      <xsl:if test="//CollectionFeatured/text()">
         <div class="colFeatured">
           <img src="{//CollectionFeatured}" />
         </div>
