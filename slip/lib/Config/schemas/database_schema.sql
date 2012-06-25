@@ -4,18 +4,19 @@
 -- there may be more than one producer per row/shard
 -----------------------------------------------------------------------
 CREATE TABLE `j_shard_stats` (
-       `run`        smallint(3) NOT NULL DEFAULT '0',
-       `shard`      smallint(2) NOT NULL DEFAULT '0',
-       `s_num_docs` int(11)     NOT NULL DEFAULT '0',
-       `s_doc_size` bigint(20)  NOT NULL DEFAULT '0',
-       `s_doc_time` float       NOT NULL DEFAULT '0',
-       `s_idx_time` float       NOT NULL DEFAULT '0',
-       `s_tot_time` float       NOT NULL DEFAULT '0',
-                    PRIMARY KEY (`run`,`shard`)
-       );
+	 `run`            smallint(3) NOT NULL DEFAULT '0',
+	 `shard`          smallint(2) NOT NULL DEFAULT '0',
+	 `s_reindexed_ct` int(11)     NOT NULL DEFAULT '0',
+	 `s_deleted_ct`   int(11)     NOT NULL DEFAULT '0',
+	 `s_num_docs`     int(11)     NOT NULL DEFAULT '0',
+	 `s_doc_size`     bigint(20)  NOT NULL DEFAULT '0',
+	 `s_doc_time`     float       NOT NULL DEFAULT '0',
+	 `s_idx_time`     float       NOT NULL DEFAULT '0',
+	 `s_tot_time`     float       NOT NULL DEFAULT '0',
+                          PRIMARY KEY (`run`,`shard`)
+          );
 
-CREATE TABLE `j_shard_stats` (`run` smallint(3) NOT NULL DEFAULT '0', `shard` smallint(2) NOT NULL DEFAULT '0', `s_num_docs` int(11) NOT NULL DEFAULT '0', `s_doc_size` bigint(20) NOT NULL DEFAULT '0', `s_doc_time` float NOT NULL DEFAULT '0', `s_idx_time` float NOT NULL DEFAULT '0', `s_tot_time` float NOT NULL DEFAULT '0', PRIMARY KEY (`run`,`shard`));
-
+CREATE TABLE `j_shard_stats` (`run` smallint(3) NOT NULL DEFAULT '0', `shard` smallint(2) NOT NULL DEFAULT '0', `s_reindexed_ct` int(11) NOT NULL DEFAULT '0', `s_deleted_ct` int(11) NOT NULL DEFAULT '0', `s_num_docs` int(11) NOT NULL DEFAULT '0', `s_doc_size` bigint(20) NOT NULL DEFAULT '0', `s_doc_time` float NOT NULL DEFAULT '0', `s_idx_time` float NOT NULL DEFAULT '0', `s_tot_time` float NOT NULL DEFAULT '0', PRIMARY KEY (`run`,`shard`));
 
 -----------------------------------------------------------------------
 -- recorded rates since last checkpoint

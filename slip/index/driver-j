@@ -121,6 +121,8 @@ if ($INTERACTIVE) {
         my $s = qq{You are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
         __confirm($s);
     }
+    my $s = qq{You are about to run the driver at the command line.\n\tContinue? [N] };
+        __confirm($s);
 }
 
 my $C = new Context;
@@ -370,18 +372,19 @@ sub __driver_exit_report {
         $elapsed = sprintf("%.2f", $elapsed/60/60);
         $s .= qq{: elapsed=$elapsed hours};
 
-        # How many were queued and how many got indexed? Some could
-        # have been re-indexed -- they do not increase the total
-        # number of items in the index.
-        my $re_indexed = get_reindexed_ct_this_run($C, $dbh, $run);
+
+        # Sanity: Compare count of ids queued with how many indexed,
+        # deleted, reindexed, or were errors.  Re-indexed ids do not
+        # increase the total number of newly indexed items.
+        my ($reindexed, $deleted) = get_reindexed_deleted_ct_this_run($C, $dbh, $run);
         my $newly_indexed = get_newly_indexed_ct_this_run($C, $dbh, $run);
         my $new_errors = get_new_error_ct_this_run($C, $dbh, $run);
 
-        my $processed = $newly_indexed + $re_indexed + $new_errors;
+        my $processed = $newly_indexed + $reindexed + $deleted + $new_errors;
         my $delta = $INITIAL_QUEUE_SIZE - $processed;
-        my $percent_reindexed = ($INITIAL_QUEUE_SIZE > 0) ? sprintf("%.1f", ($re_indexed/$INITIAL_QUEUE_SIZE) * 100) : 0;
+        my $percent_reindexed = ($INITIAL_QUEUE_SIZE > 0) ? sprintf("%.1f", ($reindexed/$INITIAL_QUEUE_SIZE) * 100) : 0;
 
-        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE, processed=$processed new_errors=$new_errors delta=$delta re-indexed=${percent_reindexed}%};
+        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE processed=$processed delta=$delta new=$newly_indexed $reindexed=$reindexed(${percent_reindexed}%) deleted=$deleted errors=$new_errors};
     }
 
     __output($s);
@@ -823,18 +826,25 @@ sub get_new_error_ct_this_run {
 
 # ---------------------------------------------------------------------
 
-=item get_reindexed_ct_this_run
+=item get_reindexed_deleted_ct_this_run
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_reindexed_ct_this_run {
+sub get_reindexed_deleted_ct_this_run {
     my ($C, $dbh, $run) = @_;
     
-    my $j_reindexed_ct = Db::Select_reindexed_tot_count($C, $dbh, $run);
-    return $j_reindexed_ct;
+    my ($tot_reindexed, $tot_deleted) = (0, 0);
+    
+    foreach my $__shard (@NUM_SHARDS_LIST) {
+        my ($s_reindexed_ct, $s_deleted_ct) = Db::Select_shard_stats($C, $dbh, $run, $__shard);
+        $tot_reindexed += $s_reindexed_ct;
+        $tot_deleted += $s_deleted_ct;
+    }
+
+    return ($tot_reindexed, $tot_deleted);
 }
 
 # ---------------------------------------------------------------------

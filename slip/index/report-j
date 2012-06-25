@@ -270,7 +270,7 @@ sub _load_stats_hash {
             Db::Select_rate_stats($C, $dbh, $run, $__shard);
         my $s_idx_size =
             Db::Select_indexdir_size($C, $dbh, $run, $__shard);
-        my ($s_num_docs, $s_doc_size, $s_doc_time, $s_idx_time, $s_tot_time) =
+        my ($s_reindexed_ct, $s_deleted_ct, $s_num_docs, $s_doc_size, $s_doc_time, $s_idx_time, $s_tot_time) =
             Db::Select_shard_stats($C, $dbh, $run, $__shard);
         my ($s_num_errs) =
             Db::Select_error_data($C, $dbh, $run, $__shard);
@@ -283,6 +283,9 @@ sub _load_stats_hash {
         $stats{$__shard}{'doc_size'} = $s_doc_size;
         $stats{$__shard}{'doc_time'} = $s_doc_time;
         $stats{$__shard}{'idx_time'} = $s_idx_time;
+
+        $stats{$__shard}{'reindexed_ct'} = $s_reindexed_ct;
+        $stats{$__shard}{'deleted_ct'}   = $s_deleted_ct;
 
         $stats{$__shard}{'tot_time'} = $s_tot_time * ADJUST_TOTAL_TIME_FACTOR;
         $stats{$__shard}{'idx_size'} = $s_idx_size;
@@ -312,6 +315,9 @@ sub _report_totals {
 
     my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
 
+    my $reindexed_ct = 0;
+    my $deleted_ct = 0;
+    
     my $num_timeouts = 0;
     my $num_processed = 0;
     my $num_indexed = 0;
@@ -322,6 +328,8 @@ sub _report_totals {
     my $committed_docs = 0;
     my $docs_phour = 0;
     foreach my $__shard (@num_shards_list) {
+        $reindexed_ct   += $srf->{$__shard}{'reindexed_ct'};
+        $deleted_ct     += $srf->{$__shard}{'deleted_ct'};
         $num_errs       += $srf->{$__shard}{'num_errs'};
         $num_timeouts   += $srf->{$__shard}{'num_docs_timedout'};
         $num_indexed    += $srf->{$__shard}{'num_docs_indexed'};
@@ -359,7 +367,7 @@ sub _report_totals {
         $actual = qq{ actual=$committed_docs delta=$delta};
     }
     __Print qq{\tOverall:\n};
-    __Print qq{\t\tDocs:  processed=$num_processed indexed=${num_indexed}$actual timeouts=$num_timeouts errs=$num_errs left=$docs_remaining pcnt=${pcnt}% size=${doc_size_g}g docs/h=$docs_phour\n};
+    __Print qq{\t\tDocs:  processed=$num_processed indexed=${num_indexed}$actual timeouts=$num_timeouts reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs left=$docs_remaining pcnt=${pcnt}% size=${doc_size_g}g docs/h=$docs_phour\n};
     __Print qq{\t\tIndex: size=${idx_size_g}g\n};
     my $e_H = __convert_hours($real_elapsed_h);
     my $r_H = __convert_hours($remains_h);
@@ -419,6 +427,9 @@ sub _report_shard {
 
     __Print qq{\t\t$shard: };
 
+    my $reindexed_ct = $srf->{$shard}{'reindexed_ct'};
+    my $deleted_ct = $srf->{$shard}{'deleted_ct'};
+
     my $num_errs = $srf->{$shard}{'num_errs'};
     my $num_docs_timedout = $srf->{$shard}{'num_docs_timedout'};
     my $num_docs_indexed = $srf->{$shard}{'num_docs_indexed'};
@@ -446,7 +457,7 @@ sub _report_shard {
         $committed = qq{ committed=$on$num_docs_committed$off};
     }
 
-    __Print qq{\tDocs:  processed=$num_docs_processed indexed=${num_docs_indexed}$committed timeouts=$num_docs_timedout errs=$num_errs doc/sec=$doc_psec k/sec=$doc_kpsec doc/h=$doc_ph\n};
+    __Print qq{\tDocs:  processed=$num_docs_processed indexed=${num_docs_indexed}$committed timeouts=$num_docs_timedout reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs doc/sec=$doc_psec k/sec=$doc_kpsec doc/h=$doc_ph\n};
     __Print qq{\t\t\tIndex: size=${idx_size_g}g k/sec=$idx_kpsec\n};
     __Print qq{\t\t\tRatio: i/doc=$ratio\n};
 }
