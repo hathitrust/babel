@@ -384,7 +384,7 @@ sub __driver_exit_report {
         my $delta = $INITIAL_QUEUE_SIZE - $processed;
         my $percent_reindexed = ($INITIAL_QUEUE_SIZE > 0) ? sprintf("%.1f", ($reindexed/$INITIAL_QUEUE_SIZE) * 100) : 0;
 
-        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE processed=$processed delta=$delta new=$newly_indexed $reindexed=$reindexed(${percent_reindexed}%) deleted=$deleted errors=$new_errors};
+        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE processed=$processed delta=$delta new=$newly_indexed reindexed=$reindexed(${percent_reindexed}%) deleted=$deleted errors=$new_errors};
     }
 
     __output($s);
