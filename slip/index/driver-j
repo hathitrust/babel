@@ -372,19 +372,18 @@ sub __driver_exit_report {
         $elapsed = sprintf("%.2f", $elapsed/60/60);
         $s .= qq{: elapsed=$elapsed hours};
 
-
         # Sanity: Compare count of ids queued with how many indexed,
         # deleted, reindexed, or were errors.  Re-indexed ids do not
         # increase the total number of newly indexed items.
-        my ($reindexed, $deleted) = get_reindexed_deleted_ct_this_run($C, $dbh, $run);
-        my $newly_indexed = get_newly_indexed_ct_this_run($C, $dbh, $run);
-        my $new_errors = get_new_error_ct_this_run($C, $dbh, $run);
+        my ($processed_ct, $reindexed_ct, $deleted_ct, $error_ct) = get_process_breakdown_this_run($C, $dbh, $run);
 
-        my $processed = $newly_indexed + $reindexed + $deleted + $new_errors;
-        my $delta = $INITIAL_QUEUE_SIZE - $processed;
-        my $percent_reindexed = ($INITIAL_QUEUE_SIZE > 0) ? sprintf("%.1f", ($reindexed/$INITIAL_QUEUE_SIZE) * 100) : 0;
+        my $indexed_ct = get_num_indexed_this_run($C, $dbh, $run);
+        my $indexed_v_processed_delta = $indexed_ct - $processed_ct;
 
-        $s .= qq{\nqueue size=$INITIAL_QUEUE_SIZE processed=$processed delta=$delta new=$newly_indexed reindexed=$reindexed(${percent_reindexed}%) deleted=$deleted errors=$new_errors};
+        my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
+        my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
+
+        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Indexed=$indexed_ct Processed=$processed_ct IvP_delta=$indexed_v_processed_delta QvP_delta=$queue_v_processed_delta P_new=$newly_processed P_reindexed=$reindexed_ct P_deleted=$deleted_ct P_errors=$error_ct};
     }
 
     __output($s);
@@ -794,57 +793,41 @@ sub __Wait_build_done {
 
 # ---------------------------------------------------------------------
 
-=item get_newly_indexed_ct_this_run
+=item get_num_indexed_this_run
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_newly_indexed_ct_this_run {
+sub get_num_indexed_this_run {
     my ($C, $dbh, $run) = @_;
     
-    my $j_indexed_ct = Db::Select_indexed_tot_count($C, $dbh, $run);
-    return $j_indexed_ct - $INITIAL_TOT_INDEXED_CT;
+    return Db::Select_indexed_tot_count($C, $dbh, $run) - $INITIAL_TOT_INDEXED_CT;
 }
 
 # ---------------------------------------------------------------------
 
-=item get_new_error_ct_this_run
+=item get_process_breakdown_this_run
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_new_error_ct_this_run {
+sub get_process_breakdown_this_run {
     my ($C, $dbh, $run) = @_;
     
-    my $j_error_ct = Db::Select_tot_error_count($C, $dbh, $run);
-    return $j_error_ct - $INITIAL_TOT_ERROR_CT;
-}
-
-# ---------------------------------------------------------------------
-
-=item get_reindexed_deleted_ct_this_run
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub get_reindexed_deleted_ct_this_run {
-    my ($C, $dbh, $run) = @_;
-    
-    my ($tot_reindexed, $tot_deleted) = (0, 0);
-    
+    my ($reindexed, $deleted, $processed) = (0, 0);
     foreach my $__shard (@NUM_SHARDS_LIST) {
-        my ($s_reindexed_ct, $s_deleted_ct) = Db::Select_shard_stats($C, $dbh, $run, $__shard);
-        $tot_reindexed += $s_reindexed_ct;
-        $tot_deleted += $s_deleted_ct;
-    }
+        my ($s_reindexed_ct, $s_deleted_ct, $s_num_docs) = Db::Select_shard_stats($C, $dbh, $run, $__shard);
+        $reindexed += $s_reindexed_ct;
+        $deleted += $s_deleted_ct;
+        $processed += $s_num_docs;
+    }    
+    my $errors = Db::Select_tot_error_count($C, $dbh, $run) - $INITIAL_TOT_ERROR_CT;
 
-    return ($tot_reindexed, $tot_deleted);
+    return ($processed, $reindexed, $deleted, $errors);
 }
 
 # ---------------------------------------------------------------------
