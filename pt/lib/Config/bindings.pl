@@ -19,7 +19,7 @@
      'skin'     => '.*',
      'q1'       => '.*',
      'u'        => '1',
-     'ui'       => 'reader|embed',
+     'ui'       => 'reader|embed|fullscreen',
      'ptsop'    => 'AND|OR|and|or',
      'index'    => '1',
     );

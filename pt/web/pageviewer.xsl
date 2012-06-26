@@ -377,6 +377,10 @@
     <script type="text/javascript">
       HT.params = {};
       HT.params.ui = 'reader';
+      if ( location.hash == '#fullscreen' ) {
+        HT.params.fullscreen = true;
+        location.hash = "";
+      }
       <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
         <xsl:choose>
           <xsl:when test="@name = 'seq'">
@@ -391,6 +395,10 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
+      if ( HT.params.ui == 'fullscreen' ) {
+        HT.params.ui = 'reader';
+        HT.params.fullscreen = true;
+      }
       HT.params.view = "<xsl:value-of select="$gCurrentView" />";
       var fudgingMonkeyPatch = fudgingMonkeyPatch || false;
       HT.params.fudging = fudgingMonkeyPatch;
