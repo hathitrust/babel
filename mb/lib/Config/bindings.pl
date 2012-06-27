@@ -7,7 +7,7 @@
 # listed can be anything and have any value.
 %g_validator_for_param =
     (
-     'a'        => 'addit|additnc|addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|srchm|listrchm',
+     'a'        => 'addit|additnc|addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|srchm|listrchm|random',
 
      'c'        => '\d+',
      'c2'       => '\d+',
@@ -36,6 +36,8 @@
      'undo'     => '.*',  #XXX consider limiting to values of a param
      'skin'     => '.*',
      'testUser' => '.*',
+     'callback' => '.*',
+     '_' => '.*',
     );
 
 %g_url_to_field_name_map =
@@ -559,6 +561,24 @@ $g_late_operations = [
                                        'builders' => [],
                                        'template' => 'search_results_ajax.xml',
                                        'filler'   => 'MBooks::PIFiller::Search',
+                                      },
+                        },
+
+     },
+
+     # ----- database read action -----
+     'ACTION_RANDOM'      =>
+     {'action_param' => 'random',
+      'action_type'  => 'UI',
+      'operations'   => [
+                         'MBooks::Operation::RandomFeatured',
+                        ],
+      'view'         => {'default' => {
+                                       'builders' => [
+                                                      'MBooks::Operation::RandomFeatured',
+                                                     ],
+                                       'template' => 'random_featured.xml',
+                                       'filler'   => 'MBooks::PIFiller::RandomFeatured',
                                       },
                         },
 
