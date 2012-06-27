@@ -383,7 +383,7 @@ sub __driver_exit_report {
         my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
         my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
 
-        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Indexed=$indexed_ct Processed=$processed_ct IvP_delta=$indexed_v_processed_delta QvP_delta=$queue_v_processed_delta P_new=$newly_processed P_reindexed=$reindexed_ct P_deleted=$deleted_ct P_errors=$error_ct};
+        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct QvP_delta=$queue_v_processed_delta Indexed=$indexed_ct IvP_delta=$indexed_v_processed_delta P_new=$newly_processed P_reindexed=$reindexed_ct P_deleted=$deleted_ct P_errors=$error_ct};
     }
 
     __output($s);
