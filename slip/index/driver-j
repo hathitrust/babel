@@ -378,15 +378,14 @@ sub __driver_exit_report {
         my ($processed_ct, $reindexed_ct, $deleted_ct, $error_ct) = get_process_breakdown_this_run($C, $dbh, $run);
 
         my $indexed_ct = get_num_indexed_this_run($C, $dbh, $run);
-        my $indexed_v_processed_delta = $indexed_ct - $processed_ct;
 
         my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
         my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
 
-        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct QvP_delta=$queue_v_processed_delta Indexed=$indexed_ct IvP_delta=$indexed_v_processed_delta P_new=$newly_processed P_reindexed=$reindexed_ct P_deleted=$deleted_ct P_errors=$error_ct};
+        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct QvP_delta=$queue_v_processed_delta I_indexed=$indexed_ct P_new=$newly_processed P_reindexed=$reindexed_ct P_deleted=$deleted_ct P_errors=$error_ct};
     }
 
-    __output($s);
+    __output("$s\n");
     email_driver_msg($C, $s, 0);
 }
 
