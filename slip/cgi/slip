@@ -65,42 +65,21 @@ use SLIP_Utils::Common;
 
 # ============================ Main ===================================
 
-my @RUNS = (1,3,5,6,8,10,51);
-my @RUNS_BETA = (4,7);
-my @RUNS_LS = (10);
-
 my $building = "indexing";
 my $running = "<span class='alert'>serving</span>";
 
-my %run_tasks =
-  (
-   '10' => "production Schema 1",
-   '11' => "re-indexing Schema 4",
-   '60' => "test",
-  );
-
 my $N = "\n";
+my $DEFAULT_RUN = '11';
 
 my $cgi = new CGI;
 Utils::clean_cgi_params($cgi);
 
 my $param = $cgi->param('r');
 if (! defined($param)) {
-    $param = 'all';
+    $param = $DEFAULT_RUN;
 }
 
 my @runs = split(',', $param);
-if (scalar(@runs)) {
-    if (grep(/all/, @runs)) {
-        @runs = @RUNS;
-    }
-    if (grep(/beta/, @runs)) {
-        @runs = @RUNS_BETA;
-    }
-    if (grep(/ls/, @runs)) {
-        @runs = @RUNS_LS;
-    }
-}
 
 my $date = `date`;
 my $runs = join(',', @runs);
@@ -196,10 +175,11 @@ sub report_run {
         $dr_s = qq{ - Driver: $enabled stage=$stage};
     }
     
+    my $def = ($run eq $DEFAULT_RUN) ? '(default)' : '';
     my $content =
       div({-class=>"run-div"},
           $N,
-          h2("Run $run - $run_tasks{$run}$dr_s"),
+          h2("Run $run $def$dr_s"),
           $N,
           report_shards($C, $run, $dbh),
           report_producer_hosts($C, $run, $dbh),

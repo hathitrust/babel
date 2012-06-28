@@ -194,6 +194,26 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
+=item Name 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+use constant INCLUDE_ZERO_SHARD => 1;
+
+sub __get_shard_list {
+    my ($C, $include_zero_shard) = @_; 
+
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    my @list = $include_zero_shard ? (0, @num_shards_list) : @num_shards_list;
+    
+    return @list;
+}
+
+# ---------------------------------------------------------------------
+
 =item __commit
 
 Description
@@ -204,8 +224,9 @@ Description
 sub __commit {
     my ($C, $run, $shard) = @_;
 
-    my $fail = 0;
+    return 0 unless ($shard);
 
+    my $fail = 0;
     use constant COMMIT_TIMEOUT => 10000;
 
     __Print(qq{commit shard=$shard\n});
@@ -233,9 +254,9 @@ Description
 sub _actual_docs_in_shard {
     my ($C, $run, $shard) = @_;
 
-    return 0
-        unless ($COMMITTED);
-
+    return 0 unless ($COMMITTED);
+    return 0 unless ($shard);
+    
     __commit($C, $run, $shard);
 
     my $uri = $C->get_object('MdpConfig')->get('engine_for_shard_' . $shard);
@@ -261,7 +282,7 @@ sub _load_stats_hash {
 
     # Adjustment to account for undercounting elapsed sec.
     use constant ADJUST_TOTAL_TIME_FACTOR => 1.14677;
-    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
 
     my %stats;
     foreach my $__shard (@num_shards_list) {
@@ -313,7 +334,7 @@ Description:
 sub _report_totals {
     my ($C, $dbh, $run, $srf) = @_;
 
-    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
 
     my $reindexed_ct = 0;
     my $deleted_ct = 0;
@@ -484,7 +505,7 @@ sub report_statistics {
     _report_totals($C, $dbh, $run, $stats_ref);
 
     __Print qq{\tshards:\n};
-    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
     foreach my $__shard (@num_shards_list) {
         _report_shard($__shard, $stats_ref);
     }
@@ -572,7 +593,7 @@ sub report_errors {
     my ($C, $dbh, $run) = @_;
 
     my $config = $C->get_object('MdpConfig');
-    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
 
     __Print qq{\n * errors:\n};
 
@@ -626,15 +647,14 @@ Description
 sub report_configuration {
     my ($C, $dbh, $run) = @_;
 
-    my $config = $C->get_object('MdpConfig');
-    my @num_shards_list = $config->get('num_shards_list');
+    my @num_shards_list = __get_shard_list($C);
 
     __Print qq{\n * current config:\n};
 
     __Print qq{\tshards:\n};
 
     foreach my $__shard (@num_shards_list) {
-        my $engine_uri = $config->get('engine_for_shard_' . $__shard);
+        my $engine_uri = $C->get_object('MdpConfig')->get('engine_for_shard_' . $__shard);
         my $s_enabled = Db::Select_shard_enabled($C, $dbh, $run, $__shard);
         my $opt_enabled = Db::Select_optimize_enabled($C, $dbh, $run, $__shard);
         my $ck_enabled = Db::Select_check_enabled($C, $dbh, $run, $__shard);
@@ -791,7 +811,7 @@ sub c_report_errors {
 
         __Print qq{\n  ------- $type  ID  List: run=$run ------\n};
 
-        my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+        my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
         foreach my $__shard (@num_shards_list) {
             $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, $__shard, $reason);
 
@@ -825,7 +845,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008-9 Â©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-12 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
