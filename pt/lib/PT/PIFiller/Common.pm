@@ -200,7 +200,7 @@ sub handle_POD_DATA_PI
         my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
 
         $url = $sth->fetchrow_array();
-        $url = Utils::escape_url_separators($url);
+        $url = Utils::xml_escape_url_separators($url);
     }
 
     return wrap_string_in_tag($url, 'Url');
