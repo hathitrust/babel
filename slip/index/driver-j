@@ -377,14 +377,14 @@ sub __driver_exit_report {
         # increase the total number of newly indexed items.
         my ($processed_ct, $reindexed_ct, $deleted_ct, $error_ct) = get_process_breakdown_this_run($C, $dbh, $run);
 
-        my $indexed_ct = get_num_indexed_this_run($C, $dbh, $run);
+        my ($indexed_this_run, $total_indexed) = get_num_indexed_this_run($C, $dbh, $run);
 
         my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
-        my $indexed_v_new_delta = $indexed_ct - $processed_ct;
         
         my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
+        my $indexed_v_new_delta = $indexed_this_run - $newly_processed;
 
-        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct QvP_delta=$queue_v_processed_delta I_indexed=$indexed_ct P_new=$newly_processed IvP_new_delta=$indexed_v_new_delta P_reindexed=$reindexed_ct P_deleted=$deleted_ct P_errors=$error_ct};
+        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct QvP_delta=$queue_v_processed_delta I_indexed=$indexed_this_run P_new=$newly_processed IvP_new_delta=$indexed_v_new_delta P_reindexed=$reindexed_ct P_deleted=$deleted_ct P_errors=$error_ct\nTotal_indexed=$total_indexed};
     }
 
     __output("$s\n");
@@ -804,7 +804,10 @@ Description
 sub get_num_indexed_this_run {
     my ($C, $dbh, $run) = @_;
     
-    return Db::Select_indexed_tot_count($C, $dbh, $run) - $INITIAL_TOT_INDEXED_CT;
+    my $total_indexed = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $indexed_this_run = $total_indexed - $INITIAL_TOT_INDEXED_CT;
+    
+    return ($indexed_this_run, $total_indexed);
 }
 
 # ---------------------------------------------------------------------
