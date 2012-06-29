@@ -508,7 +508,8 @@
       <div class="CollPage">
         <!-- Collections Table Title -->
         <h2>
-          <xsl:call-template name="get_page_title"/>
+          <xsl:text>Collections</xsl:text>
+          <!-- <xsl:call-template name="get_page_title"/> -->
           <!-- <xsl:if test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO' and /MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='priv'">
             <xsl:text> (login to save them)</xsl:text>
           </xsl:if> -->
