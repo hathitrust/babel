@@ -175,14 +175,16 @@
         <span class="colName"><xsl:value-of select="$spaced_coll_name"/></span>
       </div>
       
-      <div class="colDescLabel">
-        <xsl:text>Collection Description: </xsl:text>
-        <span class="colDesc">
-          <xsl:value-of select="EditCollectionWidget/CollDesc"/>
-        </span>
-      </div>
+      <xsl:if test="normalize-space(EditCollectionWidget/CollDesc)">
+        <div class="colDescLabel">
+          <xsl:text>Collection Description: </xsl:text>
+          <span class="colDesc">
+            <xsl:value-of select="EditCollectionWidget/CollDesc"/>
+          </span>
+        </div>
+      </xsl:if>
       
-      <xsl:if test="//CollectionContactInfo">
+      <xsl:if test="normalize-space(//CollectionContactInfo)">
         <div class="ownerLink">
           <xsl:apply-templates select="//CollectionContactInfo" mode="copy-guts" />
         </div>
