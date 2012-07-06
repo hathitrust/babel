@@ -150,7 +150,7 @@ my $DRIVER = $config->get('driver_driven');
 # -----------------------
 
 # Improve performance
-my ($Q_size, $Q_num_available, $Q_num_in_process, $Q_num_error_Redo) =
+my ($Q_size, $Q_num_available, $Q_num_in_process) =
     Db::Select_queue_data($C, $DBH, $RUN);
 
 if ($ERRORS) {
@@ -739,9 +739,7 @@ sub c_report {
 
     if (! $INTERACTIVE) {
         my $num_shards_enabled = Db::Select_run_num_shards_available($C, $dbh, $run);
-
-        my $non_error_ids_queued_f_indexing =
-            (($Q_size > 0) && ($Q_size > $Q_num_error_Redo));
+        my $non_error_ids_queued_f_indexing = ($Q_size > 0);
 
         return unless (
                        (($num_shards_enabled > 0) && ($non_error_ids_queued_f_indexing))
