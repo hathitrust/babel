@@ -3,7 +3,10 @@ ls.css
   Tom temporary css styles to be put in single css or integrated.  Ask Suz
 ***/
 
-
+span.moreless
+{ 
+  font-style:italic;
+} 
 
 #search_tips{ 
               font-size:100%;
