@@ -369,6 +369,8 @@ sub enqueue_from_j_rights {
         # than the timestamp set when enqueuer-j last recorded
         # the MAX(update_time) and insert them into j_queue advancing the
         # timestamp j_rights_timestamp
+        my $s0 = qq{Beginning insert into Primary queue. Please wait, this will take a while ...\n};
+        __output($s0);
         my $num_inserted = Db::insert_latest_into_queue($C, $dbh, $run);
         my $after_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
         
