@@ -698,7 +698,7 @@
                 </xsl:call-template>
                </xsl:if>
             </xsl:attribute>
-              <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
+              <xsl:attribute name="readonly">readonly</xsl:attribute>
               <xsl:attribute name="value">
                 <xsl:value-of select="$gItemHandle"/>
               </xsl:attribute>
@@ -976,65 +976,72 @@
           <xsl:call-template name="HiddenDebug"/>
         </div>
         
-        <div class="mdpFbSubtitle">
-          <xsl:text>Overall page readability and quality</xsl:text>
-        </div>
-        <div id="mdpFlexible_2_Qual">
-          <div class="mdpFbSubSubtitle">
-            <input name="Quality" type="radio" value="readable" id="readable" alt="Few problems, entire page is readable"/>
-            <label for="readable">Few problems, entire page is readable</label>
+        <fieldset class="mdpFbSubtitle">
+          <legend>
+            <xsl:text>Overall page readability and quality</xsl:text>
+          </legend>
+
+          <div id="mdpFlexible_2_Qual">
+            <div class="mdpFbSubSubtitle">
+              <input name="Quality" type="radio" value="readable" id="readable" />
+              <label for="readable">Few problems, entire page is readable</label>
+            </div>
+            <div class="mdpFbSubSubtitle">
+              <input name="Quality" type="radio" value="someproblems" id="someproblems" />
+              <label for="someproblems">Some problems, but still readable</label>
+            </div>
+            <div class="mdpFbSubSubtitle">
+              <input name="Quality" type="radio" value="difficult" id="difficult" />
+              <label for="difficult">Significant problems, difficult or impossible to read</label>
+            </div>
           </div>
-          <div class="mdpFbSubSubtitle">
-            <input name="Quality" type="radio" value="someproblems" id="someproblems" alt="Some problems, but still readable"/>
-            <label for="someproblems">Some problems, but still readable</label>
-          </div>
-          <div class="mdpFbSubSubtitle">
-            <input name="Quality" type="radio" value="difficult" id="difficult" alt="Significant problems, difficult or impossible to read"/>
-            <label for="difficult">Significant problems, difficult or impossible to read</label>
-          </div>
-        </div>
+        </fieldset>
         
-        <div class="mdpFbSubtitle">
-          <xsl:text>Specific page image problems?</xsl:text>
-        </div>
-        <div id="mdpFlexible_2_Spec">
-          <div class="mdpFbSubSubtitle">
-            <input type="checkbox" name="missing" value="1" id="missing" alt="Missing parts of the page"/>
-            <label for="missing">Missing parts of the page</label>
+        <fieldset class="mdpFbSubtitle">
+          <legend>
+            <xsl:text>Specific page image problems?</xsl:text>
+          </legend>
+          <div id="mdpFlexible_2_Spec">
+            <div class="mdpFbSubSubtitle">
+              <input type="checkbox" name="missing" value="1" id="missing" />
+              <label for="missing">Missing parts of the page</label>
+            </div>
+            <div class="mdpFbSubSubtitle">
+              <input type="checkbox" name="blurry" value="1" id="blurry" />
+              <label for="blurry">Blurry text</label>
+            </div>
+            <div class="mdpFbSubSubtitle">
+              <input type="checkbox" name="curved" value="1" id="curved" />
+              <label for="curved">Curved or distorted text</label>
+            </div>
+            <div class="mdpFbSubSubtitle">
+              <!-- pfarber: lose the checkbox beside the text field -->
+              <!-- input type="checkbox" name="other" value="1" id="other" alt="Other problem"/-->
+              <!-- see: $FBGlobals::gOtherDescLimit -->
+              <label for="other">Other problem</label>
+              <input id="other" name="other" value="" class="overlay" maxlength="50" />
+            </div>
           </div>
-          <div class="mdpFbSubSubtitle">
-            <input type="checkbox" name="blurry" value="1" id="blurry" alt="Blurry text"/>
-            <label for="blurry">Blurry text</label>
-          </div>
-          <div class="mdpFbSubSubtitle">
-            <input type="checkbox" name="curved" value="1" id="curved" alt="Curved or distorted text"/>
-            <label for="curved">Curved or distorted text</label>
-          </div>
-          <div class="mdpFbSubSubtitle">
-            <!-- pfarber: lose the checkbox beside the text field -->
-            <!-- input type="checkbox" name="other" value="1" id="other" alt="Other problem"/-->
-            <label for="other">Other problem<!-- see: $FBGlobals::gOtherDescLimit --></label>
-            <span><input name="other" value="" class="overlay" maxlength="50" alt="Other problem fill in"/></span>
-          </div>
-        </div>
+        </fieldset>
         
-        <div class="mdpFbSubtitle">
-          <xsl:text>Problem with access rights? </xsl:text>
-          <span>(See also: <a href="http://www.hathitrust.org/take_down_policy"
-          target="_blank">take-down policy</a>)</span>
-        </div>
-        <div id="mdpFlexible_2_Rights">
-          <div class="mdpFbSubSubtitle">
-            <input name="Rights" type="radio" value="noaccess" id="noaccess" alt="This item is in the public domain, but I don't have access to it"/>
-            <label for="noaccess">This item is in the public domain, but I don't have access to it.</label>
+        <fieldset class="mdpFbSubtitle">
+          <legend>
+            <xsl:text>Problem with access rights? </xsl:text>
+          </legend>
+          <p>(See also: <a href="http://www.hathitrust.org/take_down_policy"
+          target="_blank">take-down policy</a>)</p>
+          <div id="mdpFlexible_2_Rights">
+            <div class="mdpFbSubSubtitle">
+              <input name="Rights" type="radio" value="noaccess" id="noaccess" />
+              <label for="noaccess">This item is in the public domain, but I don't have access to it.</label>
+            </div>
+            <div class="mdpFbSubSubtitle">
+              <input name="Rights" type="radio" value="access" id="access" />
+              <label for="access">I have access to this item, but should not.</label>
+            </div>
           </div>
-          <div class="mdpFbSubSubtitle">
-            <input name="Rights" type="radio" value="access" id="access" alt="I have access to this item, but should not."/>
-            <label for="access">I have access to this item, but should not.</label>
-          </div>
-        </div>
-        
-        
+        </fieldset>
+
         <div class="mdpFbSubtitle">
           <label for="comments">Other problems or comments?</label>
         </div>
@@ -1049,7 +1056,7 @@
           <div id="mdpEmail">
             <label id="mdpEmailLabel" for="email">To request a reply, enter your email address below. (We will make every effort to address copyright issues by the next business
             day after notification.)</label>
-            <br/><span><input id="email" name="email" class="overlay" alt="Your email address" value="[Your email address]" maxlength="50" size="50" onclick="ClickClear(this, '[Your email address]')" onkeypress="ClickClear(this, '[Your email address]')"/></span>
+            <br/><span><input id="email" name="email" class="overlay" value="[Your email address]" maxlength="50" size="50" onclick="ClickClear(this, '[Your email address]')" onkeypress="ClickClear(this, '[Your email address]')"/></span>
           </div>
         </div>
         
@@ -1058,7 +1065,7 @@
           <tr valign="bottom">
             <td><div id="emptyFBError"><strong>Error: You cannot submit an empty form.</strong></div></td>   
             <td><xsl:text>    </xsl:text></td>
-            <td><input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" alt="submit"/></td>
+            <td><input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" /></td>
             <td width='100px' align='right'><a id='mdpFBcancel' href=''><strong>Cancel</strong></a></td>
           </tr>
         </table>
@@ -1299,7 +1306,7 @@
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Link to this Book</xsl:attribute>
           <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gItemHandle" /></xsl:attribute>
-          <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
+          <xsl:attribute name="readonly">readonly</xsl:attribute>
           <xsl:attribute name="value">
             <xsl:value-of select="$gItemHandle"/>
           </xsl:attribute>
@@ -1324,7 +1331,7 @@
           <xsl:attribute name="class">tracked</xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Link to this Page</xsl:attribute>
-          <xsl:attribute name="readonly">readonly = true;</xsl:attribute>
+          <xsl:attribute name="readonly">readonly</xsl:attribute>
           <xsl:attribute name="data-tracking-label"><xsl:value-of select="$pageLink" /></xsl:attribute>
           <xsl:attribute name="value"><xsl:value-of select="$pageLink" /></xsl:attribute>
         </xsl:element>
@@ -1500,7 +1507,9 @@
   <xsl:template name="heading1">
     <xsl:element name="h1">
       <xsl:attribute name="class">SkipLink</xsl:attribute>
-      <xsl:call-template name="PageTitle" />
+      <xsl:call-template name="PageTitle">
+        <xsl:with-param name="suffix" select="''" />
+      </xsl:call-template>
     </xsl:element>
   </xsl:template>
   
@@ -1546,8 +1555,11 @@
       </xsl:otherwise>
     </xsl:choose>
 
-    <xsl:text> | </xsl:text> 
-    <xsl:value-of select="$suffix" />
+    <xsl:if test="normalize-space($suffix)">
+      <xsl:text> | </xsl:text> 
+      <xsl:value-of select="$suffix" />
+    </xsl:if>
+    
     <xsl:if test="normalize-space($tail)">
       <xsl:text> (</xsl:text>
       <xsl:value-of select="$tail" />
