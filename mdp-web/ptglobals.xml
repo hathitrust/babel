@@ -29,4 +29,5 @@
 <HasOcr><?HAS_OCR?></HasOcr>
 <AccessUse><?ACCESS_USE?></AccessUse>
 <HtId><?HT_ID?></HtId>
+<Holdings><?ACCESS_HOLDINGS?></Holdings>
 <?CHUNK filename="institutions.xml"?>
