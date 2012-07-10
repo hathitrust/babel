@@ -227,7 +227,9 @@
 
       <div id="form_lsCB" name="form_lsCB" >
         <div id="actionsRow2">
-          <div class="selectAll">Select all on page <input type="checkbox" id="checkAll"/></div>
+          <div class="selectAll">
+          <label for="checkAll">Select all on page</label>
+          <input type="checkbox" id="checkAll"/></div>
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
       </div>
@@ -822,15 +824,32 @@
       
       <!--tbw CB test code for now this should only appear if user is logged in-->
       <!--     <xsl:if test= "/MBooksTop/MBooksGlobals/LoggedIn = 'YES'">-->
-        <td class ="ItemSelect">
-          <span class="ItemID Select">
-            <input class="iid" type="checkbox" name="id">
-              <xsl:attribute name="value">
-                <xsl:value-of select="ItemID"/>
-              </xsl:attribute>
-            </input>
-          </span>
-        </td>
+       <!--XXX Access  need label for checkbox -->
+          <xsl:variable name="checkbox_id">
+            <xsl:text>check_</xsl:text>
+            <xsl:value-of select="ItemID"/>
+          </xsl:variable>
+      
+
+          <td class ="ItemSelect">
+            <span class="ItemID Select">
+              <label class="SearchLabel">
+                <xsl:attribute name="for">
+                  <xsl:value-of select="$checkbox_id"/>
+                </xsl:attribute>
+                <xsl:text>Checkbox for </xsl:text>
+                <xsl:value-of select="Title" disable-output-escaping="yes" />
+              </label>
+              <input class="iid" type="checkbox" name="id">
+                <xsl:attribute name="value">
+                  <xsl:value-of select="ItemID"/>
+                </xsl:attribute>
+                <xsl:attribute name="id">
+                  <xsl:value-of select="$checkbox_id"/>
+                </xsl:attribute>
+              </input>
+            </span>
+          </td>
         <!--      </xsl:if>-->
       <!--tbw CB test code-->
 
@@ -973,6 +992,10 @@
 
   <xsl:template name="BuildCollectionSelect">
     <xsl:variable name="select_collection_text">Select Collection</xsl:variable>
+    
+    <label for="LSaddItemSelect" class="SearchLabel">
+      <xsl:value-of select="$select_collection_text"/>
+    </label>
     <select name="c2" id="LSaddItemSelect">
 
       <option value="a" selected="selected">
@@ -1030,17 +1053,21 @@
       
       <!--  unselected facets ##########################################################   -->
       <div class="narrow">
-        <h1 class="narrowsearch">Refine Results</h1>
+        <h2 class="narrowsearch">Refine Results</h2>
         <div id="facetlist">
           <dl>
             <!-- hack to insert pseudo facet availability here based on actual rights queries-->
             <xsl:call-template name="pseudofacet"/>
             
             <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
+              <xsl:variable name="facetName">
+                <xsl:value-of select="@name"/>
+              </xsl:variable>
+              
               
               <xsl:text>    
             </xsl:text>
-            <dt class="facetField"><xsl:value-of select="@name"/></dt>
+            <dt class="facetField"><xsl:value-of select="$facetName"/></dt>
             <xsl:text>                
           </xsl:text>
           <!--   WARNING!  waht we label the field in the html and the field name could be different
@@ -1061,15 +1088,22 @@
                 <xsl:value-of select="@normName"/>
                 <xsl:text> morefacets</xsl:text>
               </xsl:attribute>
-              <i>more...</i></a>
+              
+              <span class="SearchLabel">
+                <xsl:value-of select="$facetName"/><xsl:text>: show </xsl:text>
+              </span>
+              <span class="moreless">more...</span></a>
+              
               
               <a  href="">    
               <xsl:attribute name="class">
                 <xsl:value-of select="@normName"/>
                 <xsl:text> lessfacets</xsl:text>
               </xsl:attribute>
-              
-              <i>less...</i></a>
+              <span class="SearchLabel">
+                <xsl:value-of select="$facetName"/><xsl:text>: show </xsl:text>
+              </span>
+               <span class="moreless">less...</span></a>              
               
             </dd>
           </xsl:if>
