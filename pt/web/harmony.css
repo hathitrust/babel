@@ -859,6 +859,8 @@ div.mdpScrollableContainer {
   padding-bottom: 4px;
   margin-top: 8px;
   background: transparent url(./graphics/fullscreen_24x24.png) no-repeat; /* scroll/fixed top left/top center/top right/center left/center center/center right/bottom left/bottom center/bottom right/x-% y-%/x-pos y-pos;*/
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
 }
 
 #mbToggleHeader.active {

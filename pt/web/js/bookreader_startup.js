@@ -98,7 +98,7 @@ if(newHash.indexOf("slice/") >= 0) {
 
 var toggle_fullscreen = function() {
   var speed = "fast";
-  var $toggleButton = $(this);
+  var $toggleButton = $("#mbToggleHeader");
 
   var fx_in = { opacity: 0.0 };
   var fx_out = { opacity: 1.0 };
@@ -114,11 +114,11 @@ var toggle_fullscreen = function() {
       $("#mbHeader").toggle("blind", function() {
         HT.resizeBookReader(true);
         $toggleButton.toggleClass("active");
+        var title = $toggleButton.text();
         if ( $toggleButton.hasClass("active") ) {
-          $toggleButton.data("original-title", $toggleButton.attr("title"));
-          $toggleButton.attr("title", $toggleButton.attr("title").replace("Enter", "Exit"));
+          $toggleButton.text(title.replace("Enter", "Exit"));
         } else {
-          $toggleButton.attr("title", $toggleButton.data("original-title"));
+          $toggleButton.text(title.replace("Exit", "Enter"));
         }
         $(window).trigger('resize');
         $("#mdpUberContainer").animate(fx_out, speed, function() {
@@ -150,7 +150,7 @@ $(document).ready(function() {
     
     // SETUP FULL SCREEN MODE
     if ( HT.params.ui == "reader" ) {
-      $('<a href="#" id="mbToggleHeader" title="Enter Full Screen"></a>')
+      $('<a href="#" id="mbToggleHeader">Enter full screen</a>')
         .prependTo("#mdpToolbarViews");
 
       $("#mbToggleHeader").click(function() {
