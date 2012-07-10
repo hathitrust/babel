@@ -267,46 +267,50 @@ a.PTbuttonDisabled:hover {
 }
 
 .mdpPreviousPageLink {
-  display: inline-block;
+  display: block;
   height: 25px;
   width: 17px;
   background-image: url(./common-web/graphics/harmony/icon_previous.png);
   background-repeat: no-repeat;
   background-position: 0% 50%;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
 }
 
 .mdpNextPageLink {
-  display: inline-block;
+  display: block;
   height: 25px;
   width: 17px;
   background-image: url(./common-web/graphics/harmony/icon_next.png);
   background-repeat: no-repeat;
   background-position: 0% 50%;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
 }
 
 .mdpFirstPageLink {
-  display: inline-block;
+  display: block;
   height: 25px;
   width: 17px;
   background-image: url(./common-web/graphics/harmony/icon_first.png);
   background-repeat: no-repeat;
   background-position: 0% 50%;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
 }
 
 .mdpLastPageLink {
-  display: inline-block;
+  display: block;
   height: 25px;
   width: 17px;
   background-image: url(./common-web/graphics/harmony/icon_last.png);
   background-repeat: no-repeat;
   background-position: 0% 50%;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
 }
 
@@ -378,7 +382,10 @@ span.prompt {
   height: 25px;
   display: inline-block;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
+  zoom: 1;
+  *display:inline;
 }
 
 .mdpZoomIn {
@@ -387,7 +394,10 @@ span.prompt {
   height: 25px;
   display: inline-block;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
+  zoom: 1;
+  *display:inline;
 }
 
 .rotate-counterclockwise {
@@ -396,7 +406,10 @@ span.prompt {
   height: 25px;
   display: inline-block;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
+  zoom: 1;
+  *display: inline;
 }
 
 .rotate-clockwise {
@@ -405,7 +418,10 @@ span.prompt {
   height: 25px;
   display: inline-block;
   text-indent: -10000px;
+  text-transform: capitalize;
   clip: rect(0, 0, 0, 0);
+  zoom: 1;
+  *display:inline;
 }
 
 .mdpPageWidgets li {
