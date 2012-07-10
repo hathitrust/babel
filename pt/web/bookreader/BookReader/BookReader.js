@@ -858,7 +858,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
                    // width: $(dummyImage).width(),
                    // height: $(dummyImage).height(),
                    src: $(dummyImage).data('srcURL'),
-                   title : $(dummyImage).attr('title'), // UM
+                   //title : $(dummyImage).attr('title'), // UM
                    alt : $(dummyImage).attr('alt')
         });
                  

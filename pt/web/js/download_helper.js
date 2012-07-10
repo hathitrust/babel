@@ -104,7 +104,7 @@ HT.pdf_helpers = {
           behaviours: function(r) {
               $(r).find("a").click(function() {
                   setTimeout(function() {
-                    Boxy.get(r).hide();
+                    Boxy.get(r).hideAndUnload();
                   }, 500);
                   return true;
               })
@@ -135,7 +135,7 @@ HT.pdf_helpers = {
           title: "",
           behaviours: function(r) {
               $(r).find("button").click(function() {
-                  Boxy.get(r).hide();
+                  Boxy.get(r).hideAndUnload();
               })
           }
       });
@@ -308,7 +308,7 @@ HT.pdf_helpers = {
                 $('<p class="align-right"><button>OK</button></p>')
                     .appendTo(r)
                     .find("button").click(function() {
-                        Boxy.get(r).hide();
+                        Boxy.get(r).hideAndUnload();
                     })
             }
         });

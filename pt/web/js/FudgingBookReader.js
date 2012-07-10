@@ -551,7 +551,7 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
                   // $$$ we don't actually go to this URL (click is handled in handler above)
                   var title = "image of page " + this.getPageNum(leaf);
                   link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
-                  $(link).attr({ title : title });
+                  // $(link).attr({ title : title });
                   $pagediv.append(link);
 
                   img = document.createElement("img");
@@ -560,6 +560,7 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
                   var srcURL = this._getPageURI(leaf, thumbReduce);
 
                   $(img).attr('src', this.imagesBaseURL + 'transparent.png')
+                      .attr('alt', title)
                       .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
                       .addClass('BRlazyload')
                       // Store the URL of the image that will replace this one
@@ -687,7 +688,8 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
           $(e).data('index', index);
 
           var title = "image of page " + this.getPageNum(index);
-          $(e).attr({ alt : title, title : title});
+          // $(e).attr({ alt : title, title : title});
+          $(e).attr({ alt : title });
           e.src = this.imagesBaseURL + 'transparent.png';
 
           var viewWidth = self.getViewWidth();
@@ -756,7 +758,7 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
             }
             e.src = this.src;
           })
-          .attr({ src : url });
+          .attr({ src : url, title : title });
 
           lazy = null;
 
@@ -981,7 +983,7 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
           var title = "image of page " + this.getPageNum(index);
           img.uri = pageURI;
           img.src = this.imagesBaseURL + 'transparent.png'; // pageURI; // browser may rewrite src so we stash raw URI here
-          $(img).attr({ title : title, alt : title }).addClass('prefetch2up');
+          $(img).attr({ alt : title }).addClass('prefetch2up');
           this.prefetchedImgs[index] = img;
       } else if ( index > -1 ) {
         var $pagediv = $("#pagediv" + index);

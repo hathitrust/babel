@@ -182,7 +182,6 @@ a.PTbutton {
 
   font-size: 95%;
   margin-top: 4px;
-
 }
 
 a.PTbutton:hover, a.PTbuttonActive {
@@ -194,7 +193,7 @@ a.PTbutton:hover, a.PTbuttonActive {
 a.PTbuttonDisabled {
   color: #ccc;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
-  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40);
+  filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
   opacity: 0.4;
 }
 
@@ -204,18 +203,31 @@ a.PTbuttonDisabled:hover {
   border-bottom: 2px #eaebec !important;
 }
 
+.PTbutton span {
+  float:  left;
+  padding-top: 4px;
+  padding-bottom: 2px;
+  padding-right: 2px;
+}
+
+.PTbutton img {
+  float: left;
+  padding: 0px;
+  padding-left: 0px;
+  padding-right: 2px;
+}
+
 #btnClassicView {
-  width: 5.5em;
+  width: auto; /* 5.5em; */
   height: 2.5em;
   padding: 4px;
   padding-bottom: 8px;
   margin-top: -1px;
-}
-
-#btnClassicView img {
-  float: left;
-  padding: 4px;
-  padding-left: 0px;
+  background-image: url(./common-web/graphics/harmony/icon_classicview.png);
+  background-repeat: no-repeat;
+  background-position: 5% 50%;
+  padding-left: 2em;
+  padding-right: 1em;
 }
 
 #btnClassicView span {
@@ -223,6 +235,79 @@ a.PTbuttonDisabled:hover {
   width: 3em;
   font-size: 95%;
   white-space: normal;
+}
+
+#btnBookReader1up {
+  background-image: url(./common-web/graphics/harmony/icon_scroll.png);
+  background-repeat: no-repeat;
+  background-position: 5% 50%;
+  padding-left: 2.2em;
+  padding-right: 0.5em; 
+}
+
+#btnBookReader2up {
+  background-image: url(./common-web/graphics/harmony/icon_flip.png);
+  background-repeat: no-repeat;
+  background-position: 5% 50%;
+  padding-left: 2.2em;
+  padding-right: 0.5em; 
+}
+
+#btnBookReaderThumbnail {
+  background-image: url(./common-web/graphics/harmony/icon_thumbnails.png);
+  background-repeat: no-repeat;
+  background-position: 5% 50%;
+  padding-left: 2.2em;
+  padding-right: 0.5em; 
+}
+
+#btnClassicText {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.mdpPreviousPageLink {
+  display: inline-block;
+  height: 25px;
+  width: 17px;
+  background-image: url(./common-web/graphics/harmony/icon_previous.png);
+  background-repeat: no-repeat;
+  background-position: 0% 50%;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.mdpNextPageLink {
+  display: inline-block;
+  height: 25px;
+  width: 17px;
+  background-image: url(./common-web/graphics/harmony/icon_next.png);
+  background-repeat: no-repeat;
+  background-position: 0% 50%;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.mdpFirstPageLink {
+  display: inline-block;
+  height: 25px;
+  width: 17px;
+  background-image: url(./common-web/graphics/harmony/icon_first.png);
+  background-repeat: no-repeat;
+  background-position: 0% 50%;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.mdpLastPageLink {
+  display: inline-block;
+  height: 25px;
+  width: 17px;
+  background-image: url(./common-web/graphics/harmony/icon_last.png);
+  background-repeat: no-repeat;
+  background-position: 0% 50%;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
 }
 
 #mdpBookReaderViews {
@@ -250,20 +335,6 @@ a.PTbuttonDisabled:hover {
   background-color: #545454;
 }
 
-.PTbutton span {
-  float:  left;
-  padding-top: 4px;
-  padding-bottom: 2px;
-  padding-right: 2px;
-}
-
-.PTbutton img {
-  float: left;
-  padding: 0px;
-  padding-left: 0px;
-  padding-right: 2px;
-}
-
 span.prompt {
   margin-top: 14px;
   display: block;
@@ -275,8 +346,10 @@ span.prompt {
   margin-left: -50px;
 }
 
-#mdpSectionOptions {
+.mdpSectionOptions {
   float: left;
+  margin-top: 1em;
+  margin-left: 0.5em;
 }
 
 .PTiconButton {
@@ -297,6 +370,42 @@ span.prompt {
   padding-right: 0;
   padding-left: 0;
   white-space: nowrap;
+}
+
+.mdpZoomOut {
+  background: url(./common-web/graphics/harmony/icon_zoomout.png) no-repeat center center;
+  width: 25px;
+  height: 25px;
+  display: inline-block;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.mdpZoomIn {
+  background: url(./common-web/graphics/harmony/icon_zoomin.png) no-repeat center center;
+  width: 25px;
+  height: 25px;
+  display: inline-block;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.rotate-counterclockwise {
+  background: url(./common-web/graphics/harmony/icon_rotate_counterclockwise.png) no-repeat center center;
+  width: 25px;
+  height: 25px;
+  display: inline-block;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.rotate-clockwise {
+  background: url(./common-web/graphics/harmony/icon_rotate_clockwise.png) no-repeat center center;
+  width: 25px;
+  height: 25px;
+  display: inline-block;
+  text-indent: -10000px;
+  clip: rect(0, 0, 0, 0);
 }
 
 .mdpPageWidgets li {
@@ -344,7 +453,7 @@ span.prompt {
        border:solid 1px #929292; border-radius:3px; -moz-border-radius:3px; -webit-border-radius:3px;
        box-shadow: 5px 5px 5px #888; -moz-box-shadow: 1px 1px 3px #555; -webkit-box-shadow: 5px 5px 5px #888; white-space: nowrap;
        left:-1000px;
-       opacity: 0.2; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)"; filter:alpha(opacity=20);
+       opacity: 0.2; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)"; filter:"alpha(opacity=20)";
 }
 
 /*.waiting {
@@ -358,7 +467,7 @@ span.prompt {
 .hovered, .hovered a, .hovered label {
   opacity: 1.0 !important;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)" !important;
-  filter:alpha(opacity=100) !important;
+  filter:"alpha(opacity=100)" !important;
 }
 
 /*#BRpageControls {z-index: 999; padding:5px; background-color:#f5f5f5;background-color:rgba(245, 245, 245, 0.6); display:none;
@@ -370,14 +479,14 @@ span.prompt {
 
 #BRpageControls a { padding:3px 5px; border:solid 1px transparent; color:#000; text-decoration:none; font-size:14px;
     /*float:left;*/ display:block; text-align:center; border-bottom: 2px solid transparent; zoom:1;
-    opacity: 0.6; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)"; filter:alpha(opacity=60);
+    opacity: 0.6; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)"; filter:"alpha(opacity=60)";
 }
 #BRpageControls a img { /*background-color: black;*/ height: 25px; width: 25px; }
 #BRpageControls a:hover { border-bottom: 2px solid #666; }
 #BRpageControls > div { float: left; text-align: center;}
 #BRpageControls label {
   font-size: 80%; display: block; font-weight: bold;
-  opacity: 0.6; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)"; filter:alpha(opacity=60);
+  opacity: 0.6; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)"; filter:"alpha(opacity=60)";
 }
 
 /* @end */
@@ -462,7 +571,7 @@ div#mdpTextFrame p {
     background-color: #FCFCFC;
     position:absolute;
     background-color: #eee;
-    left:-5000;
+    left:-5000px;
 }
 
 #MdpOcrFrame {
@@ -723,7 +832,7 @@ div.mdpScrollableContainer {
 
 .disabled {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
-  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40);
+  filter: "progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
   opacity: 0.4;
 }
 

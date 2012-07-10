@@ -504,7 +504,7 @@ HTBookReader.prototype.init = function(callback) {
     if ( self.notice != null ){
         self.notice.setTitle("&#160;").setContent("<span>All finished</span>");
         setTimeout(function() {
-          self.notice.hide();
+          self.notice.unload();
         }, init_delay + 1000);
     }
     
@@ -762,16 +762,7 @@ HTBookReader.prototype.initToolbar = function(mode, ui) {
 HTBookReader.prototype.switchToolbarMode = function(mode) { 
     
     var $e;
-    // $(".PTbuttonActive").each(function() {
-    //     var title = $(this).attr('title');
-    //     $(this).attr('title', title.replace(" is the current view", ""));
-    // }).removeClass("PTbuttonActive");
-    
-    $e = $(".PTbuttonActive").removeClass("PTbuttonActive");
-    if ( $e.length > 0 ) {
-        var title = $e.attr('title').replace(" is the current view", "");
-        $e.attr('title', title).find("img").attr("title", title);
-    }
+    $e = $(".PTbuttonActive").removeClass("PTbuttonActive").attr('title', '');
     
     if ( 1 == mode ) {
         if ( this.displayMode == 'text' ) {
@@ -793,8 +784,8 @@ HTBookReader.prototype.switchToolbarMode = function(mode) {
         this.toggleZoomHandlers(true);
         this.toggleRotateHandlers(false);
     }
-    var title = $e.attr('title') + " is the current view";
-    $e.attr('title', title).find("img").attr("title", title);
+    var title = "current view";
+    $e.attr('title', title);
 }
 
 // Update titles on the magnifying glasses
@@ -820,8 +811,14 @@ HTBookReader.prototype.updateToolbarZoom = function(reduce) {
             }
             zoom_labels[i] = value;
         }
-        $("#mdpZoomOut, #mdpZoomOut img").attr('title', "Zoom Out: " + zoom_labels[0]);
-        $("#mdpZoomIn, #mdpZoomIn img").attr('title', "Zoom In: " + zoom_labels[1]);
+        // $("#mdpZoomOut, #mdpZoomOut img").attr('title', "Zoom Out: " + zoom_labels[0]);
+        // $("#mdpZoomIn, #mdpZoomIn img").attr('title', "Zoom In: " + zoom_labels[1]);
+        $(".mdpZoomOut").text("Zoom Out: " + zoom_labels[0]);
+        $(".mdpZoomIn").text("Zoom In: " + zoom_labels[1]);
+        console.log("Zoom Out:", $(".mdpZoomOut").text());
+    } else if ( this.mode == this.constModeThumb ) {
+        $(".mdpZoomOut").text("Zoom Out: " + (this.thumbColumns + 1) );
+        $(".mdpZoomIn").text("Zoom In: " + (this.thumbColumns > 1 ? this.thumbColumns - 1 : 1) );
     }
 }
 
