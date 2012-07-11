@@ -545,11 +545,14 @@ sub report_flags_state {
     my $config = $C->get_object('MdpConfig');
     
     my $shared_flags_dir = $config->get('shared_flags_dir');
+    my $busy_file = "$shared_flags_dir/busy";    
+    my $stop_file = "/htapps/babel/slip/etc/STOPSLIP";
     
-    my $busy = (-e "$shared_flags_dir/busy") ? 'YES' : 'no';
-    my $stop = (-e "$ENV{SDRROOT}/slip/etc/STOPSLIP") ? 'YES' : 'no';
+    my $busy = (-e $busy_file) ? 'YES' : 'no';
+    my $stop = (-e $stop_file) ? 'YES' : 'no';
+
     if ($DRIVER) {
-        $busy = ($HOST eq 'earlgrey-1') ? $busy : qq{Undetermined: $HOST is not earlgrey-1};
+        $busy = ($HOST =~ m,earlgrey,) ? $busy : qq{Undetermined: $HOST is not earlgrey-*};
     }
     else {
         $busy = 'Not driver driven';
@@ -557,27 +560,26 @@ sub report_flags_state {
 
     $stop .= " on $HOST";
     
-    my $cksup = $config->get('check_index_supported');
+    my $cksup = $config->get('check_index_supported') ? 'YES' : 'no';
     my $ck = "check index support=$cksup";
-
-    my $fo;
-    if ($HOST eq 'earlgrey-1') {
-        $fo = "full optimize=not configured for run=$run";
+    my $fo = "full optimize=not configured for run=$run";
+    
+    my $schedule_filepath = Scheduler::get_schedule_filepath($C, $run);
+    if ($HOST =~ m,earlgrey,) {
         if (Scheduler::full_optimize_supported($C, $run)) {
-            my $schedule_filepath = Scheduler::get_schedule_filepath($C, $run);
             my $schedule = `cat $schedule_filepath`;
-            chomp($schedule);    
+            chomp($schedule);
             my ($y, $m, $d, $h, $min, $int) = split(/\s+/, $schedule);
-            my $do = Scheduler::driver_do_full_optimize($C, $run) ? "YES" : "no";
+            my $do = Scheduler::driver_do_full_optimize($C, $run) ? 'YES' : 'no';
             
-            $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals\n\t\t" . "? This run=$do";
+            $fo = "full optimize on $y/$m/$d after $h:$min at $int day intervals \n\t\t" . "? This run=$do";
         }
     }
     else {
-        $fo = qq{full optimize=Undetermined: $HOST is not earlgrey-1};
+        $fo = qq{full optimize=Undetermined: $HOST is not earlgrey-*};
     }
           
-    __Print qq{\n * flags state: \n\tbusy=$busy \n\tstopped=$stop\n\t$fo\n\t$ck\n};
+    __Print qq{\n * flags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$fo [file=$schedule_filepath]\n\t$ck\n};
 }
 
 # ---------------------------------------------------------------------
