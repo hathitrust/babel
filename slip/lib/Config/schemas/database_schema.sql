@@ -97,26 +97,27 @@ CREATE TABLE `j_indexed_temp` (`shard` smallint(2) NOT NULL default '0', `id` va
 
  
 ---------------------------------------------------------------------
--- No primary key. Useful to allows duplicates in queue. 
+--  
 ---------------------------------------------------------------------
 CREATE TABLE `j_queue` (
-        `run`           smallint(3) NOT NULL default '0',
-        `shard`         smallint(2) NOT NULL default '0',
-        `id`            varchar(32) NOT NULL default '',
-        `pid`           int         NOT NULL default '0',
-        `host`          varchar(32) NOT NULL default '',
-        `proc_status`   smallint(1) NOT NULL default '0',
-                KEY `run` (`run`),
-                KEY `id` (`id`),
-                KEY `pid` (`pid`),
-                KEY `host` (`host`),
-                KEY `proc_status` (`proc_status`),
-                KEY `runshardstatus` (`run`,`shard`,`proc_status`)
-       );
+        `run`         smallint(3)      NOT NULL DEFAULT '0',
+        `shard`       smallint(2)      NOT NULL DEFAULT '0',
+        `id`          varchar(32)      NOT NULL DEFAULT '',
+        `pid`         int(11)          NOT NULL DEFAULT '0',
+        `host`        varchar(32)      NOT NULL DEFAULT '',
+        `proc_status` smallint(1)      NOT NULL DEFAULT '0',
+                      PRIMARY KEY (`run`,`id`),
+                       KEY `run`            (`run`),
+                       KEY `id`             (`id`),
+                       KEY `pid`            (`pid`),
+                       KEY `host`           (`host`),
+                       KEY `proc_status`    (`proc_status`),
+                       KEY `runstatus`      (`run`,`proc_status`),
+                       KEY `runshardstatus` (`run`,`shard`,`proc_status`)
+        );
 
-
-CREATE TABLE `j_queue` (`run` smallint(3) NOT NULL default '0', `shard` smallint(2) NOT NULL default '0', `id` varchar(32) NOT NULL default '', `pid` int NOT NULL default '0', `host` varchar(32) NOT NULL default '', `proc_status` smallint(1) NOT NULL default '0', KEY `run` (`run`), KEY `id` (`id`), KEY `pid` (`pid`), KEY `host` (`host`), KEY `proc_status` (`proc_status`), KEY `runshardstatus` (`run`,`shard`,`proc_status`)); 
-
+CREATE TABLE `j_queue` (`run` smallint(3) NOT NULL DEFAULT '0', `shard` smallint(2) NOT NULL DEFAULT '0', `id` varchar(32) NOT NULL DEFAULT '', `pid` int(11) NOT NULL DEFAULT '0', `host` varchar(32) NOT NULL DEFAULT '', `proc_status` smallint(1) NOT NULL DEFAULT '0', PRIMARY KEY (`run`,`id`), KEY `run` (`run`), KEY `id` (`id`), KEY `pid` (`pid`), KEY `host` (`host`), KEY `proc_status` (`proc_status`), KEY `runstatus` (`run`,`proc_status`), KEY `runshardstatus` (`run`,`shard`,`proc_status`));
+ 
 ---------------------------------------------------------------------
 -- IDs to re-index with a coll_id field when added to a "Large"
 -- Personal Collection
@@ -161,8 +162,9 @@ CREATE TABLE `j_rights_temp` (
 
 CREATE TABLE `j_rights_temp` (`nid` varchar(32) NOT NULL default '', `attr` tinyint(4) NOT NULL default '0', `reason` tinyint(4) NOT NULL default '0', `source` tinyint(4) NOT NULL default '0', `user` varchar(32) NOT NULL default '', `time` timestamp NOT NULL default CURRENT_TIMESTAMP, `sysid` varchar(32) NOT NULL default '', `update_time` int NOT NULL default '00000000', PRIMARY KEY (`nid`), KEY `update_time` (`update_time`), KEY `attr` (`attr`));
 
+---------------------------------------------------------------------
 --
-
+---------------------------------------------------------------------
 CREATE TABLE `j_rights` (
         `nid`         varchar(32) NOT NULL default '',
         `attr`        tinyint(4)  NOT NULL default '0',
