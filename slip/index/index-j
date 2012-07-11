@@ -272,12 +272,17 @@ sub i_processing_loop {
 
         # Exit if all all shards are carrying a full or over-full
         # allocation of producers. This call is no-op after initial
-        # dedicated shard assignment and also for the SINGLE_ID case:
-        # see SINGLE_ID_handling().
+        # dedicated shard assignment unless the allowed allocation of
+        # producers to this shard decreases.  It is also a no-op for
+        # the SINGLE_ID case: see SINGLE_ID_handling().
         $Dedicated_Shard = handle_dedicated_shard($C, $DBH, $RUN, $PID, $HOST, $Dedicated_Shard, $slices_taken);
         # POSSIBLY NOTREACHED
 
-        # Exit if my shard is not enabled
+        # Exit if my shard is not enabled. Assumes that
+        # handle_dedicated_shard() incremented the count of producers
+        # allocated to this shard and that the END block will
+        # decrement the count if the shard is not enabled and we exit
+        # here.
         handle_shards_enabled($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $slices_taken);
         # POSSIBLY NOTREACHED
 
