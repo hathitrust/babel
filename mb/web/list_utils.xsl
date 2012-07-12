@@ -842,8 +842,22 @@
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
 
+        <div id="itemTable" class="itemTable">
+          <xsl:choose>
+            <xsl:when test="$ItemListType='SearchResults'">
+              <xsl:for-each select="SearchResults/Item">
+                <xsl:call-template name="BuildItemChunk"/>
+              </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:for-each select="ItemList/Item">
+                <xsl:call-template name="BuildItemChunk"/>
+              </xsl:for-each>
+            </xsl:otherwise>
+          </xsl:choose>
+        </div>
 
-        <table id="itemTable" class="itemTable">
+<!--         <table id="itemTable" class="itemTable">
           <xsl:choose>
             <xsl:when test="$ItemListType='SearchResults'">
               <xsl:for-each select="SearchResults/Item">
@@ -857,7 +871,7 @@
             </xsl:otherwise>
           </xsl:choose>
         </table>
-
+ -->
 
         <div id="listisFooter">
           <xsl:call-template name="BuildPagingControls">
@@ -977,34 +991,21 @@
     </xsl:variable>
     <!--################################## end variables-->
 
-    
-    <tr>
-      <xsl:attribute name="class">
-        <xsl:text> Chunk </xsl:text>
-        <xsl:value-of select="$row_class"/>
-      </xsl:attribute>
-      
-      <td class="ItemSelect">
-        <span class="ItemID Select">
-          <input type="checkbox" name="iid" class="iid">
-            <xsl:attribute name="value">
+    <div class="Chunk {$row_class}">
+      <div class="ItemID Select">
+        <input type="checkbox" name="iid" class="iid" id="iid{position()}">
+          <xsl:attribute name="value">
             <xsl:value-of select="ItemID"/>
-            </xsl:attribute>
-          </input>
-          <span class="debug">
-            <xsl:text>item_id: </xsl:text>
-            <xsl:value-of select="ItemID"/></span>
-        </span>
-      </td>
-
-      <td class="ItemData">
-        
+          </xsl:attribute>
+        </input>
+      </div>
+      <div class="ItemData">
         <div class="ItemTitle">
-          <span class="Title">
+          <label for="iid{position()}" class="Title">
             <xsl:value-of select="Title" disable-output-escaping="yes" />
-          </span>
+          </label>
         </div>
-    
+
         <!-- Author -->
         <xsl:if test="Author!=''">
           <div class="ItemAuthor">
@@ -1042,8 +1043,7 @@
             <xsl:value-of select="relevance"/>
           </span>
         </xsl:if>
-      
-      
+
         <ul>
           <li>
             <!--tbw catalog link hard coded text   div needs a class!-->
@@ -1092,14 +1092,14 @@
         </ul>
 
 
-      </td>
+      </div>
 
-      <td class="ItemCollections">
-        <span class="ItemCollectionsLabel">
+      <div class="ItemCollections">
+        <div class="ItemCollectionsLabel">
           <xsl:text>In My Collections: </xsl:text>
-        </span>
+        </div>
 
-        <span class="Collections">
+        <div class="Collections">
           <ul class="inMyColls">
             <xsl:for-each select="Collections/Collection">
               <xsl:call-template name="inMyColls"/>
@@ -1111,9 +1111,9 @@
               </xsl:if>
             </xsl:for-each>
           </ul>
-        </span>
-      </td>
-    </tr> 
+        </div>
+      </div>
+    </div> 
   </xsl:template>
 
 

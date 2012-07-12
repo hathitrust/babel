@@ -1,0 +1,54 @@
+.row {
+	width: 100%;
+	display: table;
+	margin: 0;
+	margin-bottom: 0.25em;
+	border-spacing: 2px;
+	border-collapse: separate;
+	font-size: 1em;
+}
+
+.row:after {
+     visibility: hidden;
+     display: block;
+     font-size: 0;
+     content: " ";
+     clear: both;
+     height: 0;
+}
+
+.row > div {
+	display: table-cell;
+	vertical-align: top;
+	padding: 8px;
+}
+
+.row.rowodd > div {
+	background-color: #FAFAFA;
+}
+
+.row.roweven > div {
+	background-color: #FFF;
+}
+
+.row .ItemSelect {
+	padding-left: 0;
+	width: 1%;
+}
+
+.row .ItemData {
+	/*float: left;*/
+	width: 70%;
+}
+
+.row .ItemCollections {
+	width: 25%;
+	padding-right: 0;
+}
+
+.ItemData ul li {
+display: inline;
+float: left;
+list-style-type: none;
+margin-right: 20px;
+}
