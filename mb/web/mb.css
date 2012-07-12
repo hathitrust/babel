@@ -12,7 +12,19 @@
 
 body {
   min-width: 100px;
+  color: #141414;
 }
+
+/*** WCAG2 AA + ~AAA compliance ***/
+/*
+a:hover, a:focus, a:active {
+  color: #743c00;
+}
+
+a:link, a:visited {
+  color: #743c00;
+}
+*/
 
 #mbMasterContainer {
   min-width: 815px;
@@ -24,6 +36,10 @@ body {
 .ColList {
   /*min-width: 605px;*/
   width: auto;
+  width: 72%;
+  float: left;
+  margin: 0px;
+  margin-right: 1.5em;
 }
 
 .collection p {
@@ -31,18 +47,21 @@ body {
   margin-top: 0.25em;
 }
 
-a.collname {
+.collname a {
   font-size: 110%; /* 125 */
 }
 
-a.collname:link, a.collname:visited {
-  color: #C4630F;
+.collname a:link, .collname a:visited {
   text-decoration: none;
 }
 
-a.collname:hover {
+.collname a:hover {
   text-decoration: underline;
 }
+
+/*a.collname:hover {
+  text-decoration: underline;
+}*/
 
 a.awesome {
   color: white;
@@ -97,11 +116,11 @@ span.owner_name {
 }
 
 span.sharing-status.public {
-  color: green;
+  color: #58ff58;
 }
 
 span.sharing-status.private {
-  color: #666;
+  color: #373737;
 }
 
 span.active_filters {
@@ -223,7 +242,7 @@ span.featured {
 
 p.description {
   font-size: 90%;
-  color: #666;
+  color: #474747;
   padding-bottom: 2px;
 }
 
@@ -271,8 +290,15 @@ p.description {
   margin: 0;
   padding: 0;
   /*margin-right: 0.25em;*/
-  width: 27em;
+  width: 1000px;
   white-space: nowrap;
+  margin-left: 2px;
+}
+
+.controls .filters-wrap {
+  width: 60%;
+  float: left;
+  overflow: hidden;
 }
 
 .controls .filters li {
@@ -355,10 +381,11 @@ input.q {
   background: #FFF;
 }
 
-.Box h4 {
+.Box h3 {
   background: #F1F1F1;
   color: #666;
   font-size: 110%;
+  font-weight: bold;
   padding: 4px;
   margin: 0;
 }
@@ -371,11 +398,12 @@ input.q {
   margin-bottom: 2px;
 }
 
-.Box h5 {
+.Box h4, .Box span.title {
   font-size: 100%;
   font-weight: bold;
   margin: 0;
   margin-bottom: 0.75em;
+  display: block;
 }
 
 .Box p {
@@ -387,6 +415,19 @@ input.q {
   padding: 1em;
 }
 
+.offscreen {
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  height: 1px; width: 1px;
+  margin: -1px; padding: 0; border: 0;
+}
+
+.CollPage {
+  font-size: 1.1em;
+  margin-left: 10px;
+  font-weight: normal;
+}
 
 .placeholder {color: #aaa;}
 

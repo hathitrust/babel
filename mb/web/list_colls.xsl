@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0"
-  extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings" xmlns:exsl="http://exslt.org/common">
+  extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings" xmlns:exsl="http://exslt.org/common"
+  xmlns="http://www.w3.org/1999/xhtml">
 
   <xsl:import href="str.replace.function.xsl" />
 
@@ -22,12 +23,12 @@
 
   <!-- Main template -->
   <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+    <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
       <head>
         <title>
           <xsl:call-template name="get_page_title"/>
         </title>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
@@ -36,52 +37,6 @@
         <xsl:call-template name="debug_CSS"/>
 
         <script id="controls-template" type="text/x-template">
-          <div class="controls clearfix" style="text-align: center">
-            <div class="clearfix">
-              <ul class="filters">
-                <li><button rel="all" class="g-button large active">All</button></li>
-                <li><button rel="updated" class="g-button large">Recently Updated</button></li>
-                <li><button rel="featured" class="g-button large">Featured</button></li>
-                <li><button rel="my-collections" class="g-button large">My Collections</button></li>
-              </ul>
-              <div class="find-collection">
-                <input style="width: 99%" class="q" type="text" placeholder="Find a collection" name="q" id="q" size="15" />
-              </div>
-            </div>
-            <div class="clearfix" style="margin-top: 0.5em">
-              <div class="num_items_control" style="width: 33%; white-space: nowrap">
-                Collections with at least
-                  <select size="1" name="min_items" id="min_items">
-                    <option value="0" selected="selected">(all items)</option>
-                    <option value="1000">1000 items</option>
-                    <option value="500">500 items</option>
-                    <option value="250">250 items</option>
-                    <option value="100">100 items</option>
-                    <option value="50">50 items</option>
-                    <option value="25">25 items</option>
-                  </select>
-              </div>
-              <div style="float:right; width: 33%; text-align: right">
-                  Sort by: <select size="1" name="sort_by" id="sort_by">
-                    <option value="CollName">Collection Title</option>
-                    <option value="OwnerString">Owner</option>
-                    <option value="Updated" rel="desc">Last Updated</option>
-                    <option value="NumItems">Items (low to high)</option>
-                    <option value="NumItems" rel="desc">Items (high to low)</option>
-                  </select>
-              </div>
-              &#160;
-              <!-- <div style="text-align: center">
-                <input type="checkbox" name="toggle_descriptions" checked="checked" /> Show descriptions
-              </div> -->
-            </div>
-            <!-- <div class="clearfix" style="text-align: left">
-            </div> -->
-            <div class="status">
-              <span class="active_filters"></span>
-              <a class="awesome small reset_filters_link" href="#">Reset</a>
-            </div>
-          </div>
         </script>
 
                 <xsl:text>
@@ -162,6 +117,8 @@
           <xsl:call-template name="google_analytics" />
 
         </div>
+        <script type="text/javascript" src="/mb/js/list_colls.js"></script>
+
       </xsl:element> <!-- end body -->
 
     </html>
@@ -255,7 +212,7 @@
     </xsl:variable>
 
     <div id="mbContentContainer" class="mbColListContainer">
-      <h2 class="SkipLink">Main Content</h2>
+      <h2 class="mbContentTitle SkipLink">All Collections</h2>
 
       <xsl:call-template name="LoginMsg"/>
 
@@ -264,18 +221,61 @@
           <xsl:value-of select="$list_class"/>
         </xsl:attribute>
 
-        <style>
-          .ColList {
-            width: 72%;
-            float: left;
-            margin: 0px;
-            margin-right: 1.5em;
-          }
-        </style>
+        <div class="controls clearfix" style="text-align: center">
+          <div class="clearfix">
+            <div class="filters-wrap">
+              <ul class="filters">
+                <li><button rel="all" class="g-button large active">All</button></li>
+                <li><button rel="updated" class="g-button large">Recently Updated</button></li>
+                <li><button rel="featured" class="g-button large">Featured</button></li>
+                <li><button rel="my-collections" class="g-button large">My Collections</button></li>
+              </ul>
+            </div>
+            <div class="find-collection">
+              <label for="q" class="offscreen">Start typing to display only collections containing search terms.</label>
+              <input style="width: 99%" class="q" type="text" placeholder="Find a collection" name="q" id="q" size="15" />
+            </div>
+          </div>
+          <div class="clearfix" style="margin-top: 0.5em">
+            <div class="num_items_control" style="width: 33%; white-space: nowrap">
+              <label>Collections with at least
+                <select size="1" name="min_items" id="min_items">
+                  <option value="0" selected="selected">(all items)</option>
+                  <option value="1000">1000 items</option>
+                  <option value="500">500 items</option>
+                  <option value="250">250 items</option>
+                  <option value="100">100 items</option>
+                  <option value="50">50 items</option>
+                  <option value="25">25 items</option>
+                </select>
+              </label>
+            </div>
+            <div style="float:right; width: 33%; text-align: right">
+                <label>Sort by: <select size="1" name="sort_by" id="sort_by">
+                  <option value="CollName">Collection Title</option>
+                  <option value="OwnerString">Owner</option>
+                  <option value="Updated" rel="desc">Last Updated</option>
+                  <option value="NumItems">Items (low to high)</option>
+                  <option value="NumItems" rel="desc">Items (high to low)</option>
+                </select>
+              </label>
+            </div>
+            &#160;
+            <!-- <div style="text-align: center">
+              <input type="checkbox" name="toggle_descriptions" checked="checked" /> Show descriptions
+            </div> -->
+          </div>
+          <!-- <div class="clearfix" style="text-align: left">
+          </div> -->
+          <div class="status" aria-live="assertive" aria-atomic="true">
+            <span class="active_filters"></span>
+            <a class="awesome small list-reset" href="#">Reset</a>
+          </div>
+        </div>
 
         <xsl:variable name="insts" select="//Inst" />
 
-        <script type="text/javascript" disable-output-escaping="yes">
+        <script type="text/javascript">
           var bucket = { 'html': [], 'featured': [], 'cols':[] };
           var html; var featured;
           bucket.cols = [
@@ -363,7 +363,7 @@
               <xsl:if test="Shared = '0'">private </xsl:if>
             </xsl:variable>
 
-            <div class="{$class}" position="{position() - 1} / {(position() - 1) mod 2}">
+            <div class="{$class}">
               <div class="left">
                 <p class="collname">
                   <a href="?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
@@ -414,7 +414,6 @@
             console.log("SETTING UP BROWSER");
             HT.params = {};
             HT.params.bucket = bucket;
-            HT.cbBrowser.setup();
           })
         </script>
 
@@ -507,17 +506,7 @@
       <!--    <div class="MBooksCol">  XXX temporarily remove this per Suz request-->
       <div class="CollPage">
         <!-- Collections Table Title -->
-        <h2>
-          <xsl:text>Collections</xsl:text>
-          <!-- <xsl:call-template name="get_page_title"/> -->
-          <!-- <xsl:if test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO' and /MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='priv'">
-            <xsl:text> (login to save them)</xsl:text>
-          </xsl:if> -->
-        </h2>
-
-        <xsl:if test="$debug='1'">
-          <span class="debug">DEBUG </span>
-        </xsl:if>
+        <xsl:text>Collections</xsl:text>
       </div>
       <!--  </div>-->
 
@@ -537,39 +526,26 @@
         <xsl:call-template name="get_which_list"/>
       </xsl:variable>
       <xsl:text>Collections | HathiTrust Digital Library</xsl:text>
-      <!-- <xsl:choose>
-        <xsl:when test="$pubpriv='pubcolls'">
-          <xsl:text>Public Collections</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:choose>
-            <xsl:when test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO'">
-              <xsl:text>Temporary Collections</xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:value-of select='concat($g_user_name, "&apos;s Collections")'/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:otherwise>
-      </xsl:choose>     -->
     </xsl:template>
 
     <xsl:template name="FeaturedCollection">
 
       <script id="featured-template" type="text/x-template">
         <div class="Box">
-          <h4>Featured Collection</h4>
+          <h3>Featured Collection</h3>
           <div>
-            <h5>
+            <!-- <h4> -->
+            <span class="title">
               <a href="mb?a=listis;c=${{collid}}">${collname}</a>
-            </h5>
-            <a href="mb?a=listis;c=${{collid}}">
-              <img alt="" class="imgLeft" src="${{featured}}" />
+            </span>
+            <!-- </h4> -->
+            <a href="mb?a=listis;c=${{collid}}" aria-hidden="true">
+              <img alt=" " class="imgLeft" src="${{featured}}" />
             </a>
             <p class="hyphenate">
               ${description}
             </p>
-            <br clear="both" />
+            <br clear="all" />
           </div>
         </div>
       </script>
