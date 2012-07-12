@@ -66,9 +66,9 @@ use SharedQueue;
 use Search::Site;
 
 # Local
+use SLIP_Utils::Common;
 use SLIP_Utils::Log;
 use SLIP_Utils::Load;
-use SLIP_Utils::Common;
 use Db;
 
 my $INTERACTIVE = $ENV{TERM};
@@ -204,52 +204,6 @@ exit 0;
 # --------------------- S u b r o t i n e s   -------------------------
 #
 
-
-
-
-# ---------------------------------------------------------------------
-
-=item __handle_queue_insert
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __handle_queue_insert {
-    my $C = shift;
-    my $dbh = shift;
-    my $run = shift;
-    my $ref_to_arr_of_ids = shift;
-
-    my $total_num_inserted = 0;
-    
-    while (1) {
-        # Insert in blocks of 100
-        my @queue_array = splice(@$ref_to_arr_of_ids, 0, 100);
-        last
-            if (scalar(@queue_array) <= 0);
-
-        my $ref_to_arr_of_hashref = [];
-        foreach my $id (@queue_array) {
-            my $shard = Db::Select_item_id_shard($C, $dbh, $run, $id);
-            push(@$ref_to_arr_of_hashref, {id => $id, shard => $shard});
-        }
-
-        my $num_inserted = Db::insert_queue_items($C, $dbh, $run, $ref_to_arr_of_hashref);
-        $total_num_inserted += $num_inserted;
-        my $s0 = qq{--> added $num_inserted items to queue, total now $total_num_inserted\n};
-        __output($s0);
-    }
-
-    my $s1 = qq{added $total_num_inserted total items to queue\n};
-    __output($s1);
-
-    return $total_num_inserted;
-}
-
-
-
 # ---------------------------------------------------------------------
 
 =item enqueue_from_FILE
@@ -269,7 +223,7 @@ sub enqueue_from_FILE {
         my $s0 = qq{loaded $num_loaded items from file=$ID_FILENAME\n};
         __output($s0);
         __confirm("OK to proceed? [N] ");
-        __handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids);
+        Db::handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids);
     }
     else {
         my $s1 = qq{no items to add to queue\n};
@@ -324,7 +278,7 @@ sub enqueue_from_shared_queue {
 
         last if (! scalar(@$id_arr_ref));
         
-        my $num_inserted = __handle_queue_insert($C, $dbh, $run, $id_arr_ref);
+        my $num_inserted = Db::handle_queue_insert($C, $dbh, $run, $id_arr_ref);
         $num_items += $num_inserted;
         
         last if ($num_items >= $daily_max);
@@ -354,7 +308,7 @@ sub enqueue_from_j_rights {
     my $before_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
     my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
     my $relation = ($before_timestamp eq $Db::vSOLR_ZERO_TIMESTAMP) ? '>=' : '>';
-    my $out_msg = qq{count=$would_be_queued would be queued with timestamp $relation $before_timestamp\n};
+    my $out_msg = qq{count=$would_be_queued would be queued for run=$run with timestamp $relation $before_timestamp\n};
  
     if ($CHECK) {
         __output($out_msg);
@@ -369,7 +323,7 @@ sub enqueue_from_j_rights {
         # than the timestamp set when enqueuer-j last recorded
         # the MAX(update_time) and insert them into j_queue advancing the
         # timestamp j_rights_timestamp
-        my $s0 = qq{Beginning insert into Primary queue. Please wait, this will take a while ...\n};
+        my $s0 = qq{Beginning insert into Primary queue. Please wait, this can take a while ...\n};
         __output($s0);
         my $num_inserted = Db::insert_latest_into_queue($C, $dbh, $run);
         my $after_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
