@@ -41,6 +41,7 @@
     <Ocr><?OCR_DATA?></Ocr>
     <CurrentView><?CURRENT_VIEW?></CurrentView>
     <InCopyright><?IN_COPYRIGHT?></InCopyright>
+    <LoginLink><?LOGIN_LINK?></LoginLink>
   </MBooksGlobals>
 
   <MdpApp>
