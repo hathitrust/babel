@@ -459,10 +459,10 @@ sub handle_max_producers_running_on_host {
 
     my ($max_running, $num_configured, $num_running) =
         SLIP_Utils::Common::max_producers_running($C, $dbh, $run, $host);
-    DEBUG('me', qq{DEBUG: host=$host num_running(includes me)=$num_running configured=$num_configured pid=$pid});
+    DEBUG('me', qq{DEBUG: host=$host num_running(not including me)=$num_running configured=$num_configured pid=$pid});
 
-    if ($max_running && ($num_running-1 > 0)) {
-        Log_max_producers_seen($C, $run, $PID, $host, $num_configured, $num_running-1);
+    if ($max_running) {
+        Log_max_producers_seen($C, $run, $PID, $host, $num_configured, $num_running);
         DEBUG('me', qq{DEBUG: max producers running on host=$host pid=$pid ... exit});
         exit 0;
     }
@@ -570,6 +570,7 @@ sub handle_dedicated_shard {
 
         if (! $allocated_shard) {
             # All shards have a full subscription of producers
+            Log_shards_fully_alloc($C, $run, $pid, $host);
             DEBUG('me', qq{DEBUG: all shards fully subscribed, run=$run host=$host pid=$pid slices taken=$work_done ... exit});
             exit 0;
         }
@@ -743,8 +744,7 @@ sub Log_queue_empty {
     my ($C, $run, $pid, $host) = @_;
 
     my $s = qq{***QUEUE EMPTY (exit): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
-            if ($VERBOSE_LOGGING);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 # ---------------------------------------------------------------------
@@ -812,6 +812,7 @@ sub Log_shard_overalloc {
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
+all shards fully subscribed, run=$run host=$host pid=$pid slices taken=$work_done ... exit
 # ---------------------------------------------------------------------
 
 =item Log_shard_alloc
@@ -825,6 +826,22 @@ sub Log_shard_alloc {
     my ($C, $run, $allocated_shard, $pid, $host) = @_;
 
     my $s = qq{***START (shard allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$allocated_shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_shards_fully_alloc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_shards_fully_alloc {
+    my ($C, $run, $pid, $host) = @_;
+
+    my $s = qq{***MAX (ALL shards allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -861,8 +878,7 @@ sub Log_max_producers_seen {
     my $s = qq{***MAX PRODUCERS (exit): }
       . Utils::Time::iso_Time()
         . qq{ r=$run pid=$pid h=$host num_cfgd=$num_configured num_running=$num_running};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
-            if ($VERBOSE_LOGGING);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 1;
