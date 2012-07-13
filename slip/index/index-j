@@ -571,7 +571,7 @@ sub handle_dedicated_shard {
         if (! $allocated_shard) {
             # All shards have a full subscription of producers
             Log_shards_fully_alloc($C, $run, $pid, $host);
-            DEBUG('me', qq{DEBUG: all shards fully subscribed, run=$run host=$host pid=$pid slices taken=$work_done ... exit});
+            DEBUG('me', qq{DEBUG: all shards fully subscribed, run=$run host=$host pid=$pid ... exit});
             exit 0;
         }
         else {
@@ -812,7 +812,6 @@ sub Log_shard_overalloc {
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
-all shards fully subscribed, run=$run host=$host pid=$pid slices taken=$work_done ... exit
 # ---------------------------------------------------------------------
 
 =item Log_shard_alloc
