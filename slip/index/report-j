@@ -28,7 +28,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -61,7 +61,7 @@ use SLIP_Utils::States;
 use SLIP_Utils::Solr;
 
 my $INTERACTIVE = $ENV{'TERM'};
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP')
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip')
   unless ($INTERACTIVE);
 
 # Flush i/o
@@ -680,19 +680,11 @@ sub report_configuration {
 
     foreach my $hashref (@$ref_to_ary_of_hashref) {
         my $host = $hashref->{'host'};
-        my $num_producers = $hashref->{'num_producers'};
-        my $h_enabled = $hashref->{'enabled'};
+        my $num_producers = $hashref->{'num_producers'} || 0;
+        my $h_enabled = $hashref->{'enabled'} || 0;
+        my $num_running = Db::Select_host_num_running($C, $dbh, $run, $host);
 
-        my ($max_running, $num_configured, $num_running, $num_running_str);
-        if ($host eq $HOST) {
-            ($max_running, $num_configured, $num_running) =
-                SLIP_Utils::Common::max_producers_running($C, $dbh, $run, $HOST);
-            $num_running_str = qq{num_running=$num_running};
-        }
-        else {
-            $num_running_str = qq{num_running=unknown};
-        }
-
+        my $num_running_str = ($host eq $HOST) ? qq{producers_running=$num_running} : qq{producers_running=unknown};
         my $host_line =
             sprintf("\t\t%-11s enabled=%s %-19s num_producers_configured=%s",
                     "$host:", $h_enabled, $num_running_str, $num_producers);

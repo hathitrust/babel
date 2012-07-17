@@ -52,7 +52,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -90,13 +90,13 @@ use Index_Module;
 my $INTERACTIVE = $ENV{TERM};
 
 if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot index. STOPSLIP in place!!\n");
         exit 0;
     }
 }
 else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
 }
 
 
@@ -175,7 +175,7 @@ $C->set_object('MdpConfig', $config);
 # put ns2label map on context object
 
 my $ns_url = $config->get('namespace_mapping_url');
-my $ns_temp_file= $config->get('namespace_mapping_temp_filename');
+my $ns_temp_file = $config->get('namespace_mapping_temp_filename');
 my $yaml_config = new SLIP_Utils::YamlConfig($ns_url, $ns_temp_file);
 $C->set_object('YamlConfig', $yaml_config);
 
@@ -185,7 +185,8 @@ eval {
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'index-j', $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    handle_critical_error($C, undef, $RUN, 0, $PID, $HOST, $@, $SLIP_Utils::States::RC_DATABASE_CONNECT);
+    # NOTREACHED
 }
 
 $C->set_object('Database', $db);
@@ -201,9 +202,7 @@ my $GLOBAL_ref_to_ary_of_id_hashref = [];
 my $GLOBAL_ref_to_ary_of_id_error_recovery_hashref = [];
 
 my $PROCESSING = 1;
-my $Dedicated_Shard = 0;
-
-SINGLE_ID_handling($C, $DBH, $RUN, $SINGLE_ID, \$Dedicated_Shard);
+my $Dedicated_Shard = SINGLE_ID_handling($C, $DBH, $RUN, $SINGLE_ID) || 0;
 
 eval {
     i_processing_loop($C);
@@ -211,7 +210,7 @@ eval {
 if ($@) {
     # Place remaining ids on the error list, disable the shard that had
     # the error and log it.
-    handle_critical_error($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $@);
+    handle_critical_error($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $@, $SLIP_Utils::States::RC_CRITICAL_ERROR);
     # NOTREACHED
 }
 
@@ -221,11 +220,13 @@ exit Index_Module::get_MAX_ERRORS_SEEN();
 END {
     # If I am quitting and was assigned to a shard, decrement the
     # count of producers for that shard.
-    if ($Dedicated_Shard) {
-        my $updated_alloc = Db::update_decrement_shard_allocation($C, $DBH, $RUN, $Dedicated_Shard);
-        Log_shard_dealloc($C, $RUN, $Dedicated_Shard, $PID, $HOST, $updated_alloc);
-        DEBUG('me', qq{DEBUG: end block decrement: alloc now=$updated_alloc run=$RUN shard=$Dedicated_Shard host=$HOST pid=$PID});
+    if (! $SINGLE_ID) {
+        if ($Dedicated_Shard) {
+            my ($allocated, $num_running) = Db::decrement_allocation($C, $DBH, $RUN, $HOST, $Dedicated_Shard);
+            Log_dealloc($C, $RUN, $Dedicated_Shard, $PID, $HOST, $allocated, $num_running);
+        }
     }
+    
     exit $?;
 }
 
@@ -251,12 +252,7 @@ sub i_processing_loop {
 
     while ($PROCESSING) {
         # Exit this producer if the stop file is touched
-        Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
-        # POSSIBLY NOTREACHED
-
-        # Exit before (another) slice is taken if this host is
-        # disabled
-        handle_host_enabled($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $slices_taken);
+        Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
         # POSSIBLY NOTREACHED
 
         # Exit this producer if time of day falls between the downtime
@@ -264,26 +260,14 @@ sub i_processing_loop {
         handle_vSolr_downtime($C);
         # POSSIBLY NOTREACHED
 
-        # Exit this producer before (another) slice is taken and
-        # marked as available for indexing if max configured producers
-        # are running on this host
-        handle_max_producers_running_on_host($C, $DBH, $RUN, $HOST, $PID);
-        # POSSIBLY NOTREACHED
-
-        # Exit if all all shards are carrying a full or over-full
-        # allocation of producers. This call is no-op after initial
-        # dedicated shard assignment unless the allowed allocation of
-        # producers to this shard decreases.  It is also a no-op for
-        # the SINGLE_ID case: see SINGLE_ID_handling().
-        $Dedicated_Shard = handle_dedicated_shard($C, $DBH, $RUN, $PID, $HOST, $Dedicated_Shard, $slices_taken);
-        # POSSIBLY NOTREACHED
-
-        # Exit if my shard is not enabled. Assumes that
-        # handle_dedicated_shard() incremented the count of producers
-        # allocated to this shard and that the END block will
-        # decrement the count if the shard is not enabled and we exit
-        # here.
-        handle_shards_enabled($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $slices_taken);
+        # Exit if all all enabled shards are carrying a full or
+        # over-full allocation of producers or this host is not
+        # enabled or is full or over-full. This call is no-op after
+        # initial dedicated shard assignment unless the allowed number
+        # of producers for this shard or on this host decreases.  It
+        # is also a no-op for the SINGLE_ID case: see
+        # SINGLE_ID_handling().
+        $Dedicated_Shard = handle_allocation($C, $DBH, $RUN, $PID, $HOST, $Dedicated_Shard, $slices_taken);
         # POSSIBLY NOTREACHED
 
         # OK to proceed: get a slice of ids from the queue or just one
@@ -333,19 +317,23 @@ required shard.
 
 # ---------------------------------------------------------------------
 sub SINGLE_ID_handling {
-    my ($C, $dbh, $run, $single_id, $dedicated_shard_ref) = @_;
+    my ($C, $dbh, $run, $single_id) = @_;
+    
+    my $dedicated_shard = 0;
     
     if (defined $single_id) {
         my $shard = Db::Select_item_id_shard($C, $dbh, $run, $single_id);
         if (! $shard) {
             # Grab a random shard and lock to it.
             my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
-            $$dedicated_shard_ref = int(rand(scalar(@num_shards_list)));
+            $dedicated_shard = int(rand(scalar(@num_shards_list)));
         }
         else {
-            $$dedicated_shard_ref = $shard;
+            $dedicated_shard = $shard;
         }
     }
+
+    return $dedicated_shard;
 }
 
 
@@ -413,6 +401,121 @@ sub Read_indexing_queue {
 #
 # --------------- Handling  S u b r o u t i n e s   @@-------------------
 #
+# ---------------------------------------------------------------------
+
+=item __continue_dedicated_shard
+
+See if this dedicated producer may continue to send documents to this
+shard on this host.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __continue_dedicated_shard {
+    my ($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done) = @_;
+
+    my ($shard, $state) = Db::dedicated_producer_monitor($C, $dbh, $run, $host, $dedicated_shard);
+
+    if ($state eq 'Mon_continue') {
+        return $shard;
+    }
+    if ($state eq 'Mon_shard_overallocated') {
+        Log_shard_overalloc($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    if ($state eq 'Mon_host_overallocated') {
+        Log_host_overalloc($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    if ($state eq 'Mon_host_fully_allocated') {
+        return 0;
+    }
+    if ($state eq 'Mon_shard_disabled') {
+        Log_shard_Shutdown($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    if ($state eq 'Mon_host_disabled') {
+        Log_host_Shutdown($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    die qq{Invalid dedicated shard state="$state"};
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __attempt_allocation
+
+See if there are any shards that need producers that can run from this host.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __attempt_allocation {
+    my ($C, $dbh, $run, $pid, $host) = @_;
+
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    # randomize list so earlier shards are not favored.
+    # sweet. http://www.perlmonks.org/?node_id=31479
+    @num_shards_list = sort { (-1,1)[rand 2] } @num_shards_list;
+
+    my ($shard, $state) = Db::undedicated_producer_monitor($C, $dbh, $run, $pid, $host, [@num_shards_list]);
+
+    if ($state eq 'Mon_shard_and_host_allocated') {
+        Log_shard_host_alloc($C, $run, $shard, $pid, $host);
+        return $shard;
+    }
+    if ($state eq 'Mon_host_fully_allocated') {
+        return 0;
+    }
+    if ($state eq 'Mon_host_overallocated') {
+        Log_host_overalloc($C, $run, $shard, $pid, $host);
+        return 0;
+    }
+    if ($state eq 'Mon_host_disabled') {
+        return 0;
+    }
+    if ($state eq 'Mon_shards_fully_allocated') {
+        return 0;
+    }
+    if ($state eq 'Mon_resource_fully_allocated') {
+        return 0;
+    }
+    die qq{Invalid un-dedicated shard state="$state"};
+}    
+
+
+# ---------------------------------------------------------------------
+
+=item handle_allocation
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_allocation {
+    my ($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done) = @_;
+
+    if ($dedicated_shard) {
+        if ($SINGLE_ID) {
+            return $dedicated_shard;
+        }
+        
+        if (__continue_dedicated_shard($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done)) {
+            return $dedicated_shard;
+        }
+    }
+    else {
+        my $allocated_shard = __attempt_allocation($C, $dbh, $run, $pid, $host);
+        if ($allocated_shard) {
+            return $allocated_shard;
+        }
+    }
+    # dang ....
+    exit 0;
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -444,30 +547,6 @@ sub handle_vSolr_downtime {
     }
 }
 
-
-# ---------------------------------------------------------------------
-
-=item handle_max_producers_running_on_host
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_max_producers_running_on_host {
-    my ($C, $dbh, $run, $host, $pid) = @_;
-
-    my ($max_running, $num_configured, $num_running) =
-        SLIP_Utils::Common::max_producers_running($C, $dbh, $run, $host);
-    DEBUG('me', qq{DEBUG: host=$host num_running(not including me)=$num_running configured=$num_configured pid=$pid});
-
-    if ($max_running) {
-        Log_max_producers_seen($C, $run, $PID, $host, $num_configured, $num_running);
-        DEBUG('me', qq{DEBUG: max producers running on host=$host pid=$pid ... exit});
-        exit 0;
-    }
-}
-
 # ---------------------------------------------------------------------
 
 =item handle_startup
@@ -491,99 +570,6 @@ sub handle_startup {
 }
 
 
-# ---------------------------------------------------------------------
-
-=item handle_host_enabled
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_host_enabled {
-    my ($C, $dbh, $run, $shard, $pid, $host, $work_done) = @_;
-
-    my $host_enabled = Db::Select_host_enabled($C, $dbh, $run, $host);
-
-    if (! $host_enabled) {
-        Log_host_Shutdown($C, $run, $shard, $pid, $host)
-            if ($work_done);
-        DEBUG('me', qq{DEBUG: host=$host not enabled (stop requested?) pid=$pid shard=$shard, slices taken=$work_done ... exit});
-        exit 0;
-    }
-}
-
-
-# ---------------------------------------------------------------------
-
-=item handle_shards_enabled
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_shards_enabled {
-    my ($C, $dbh, $run, $shard, $pid, $host, $work_done) = @_;
-
-    # Is my allocated shard enabled?
-    my $enabled = Db::Select_shard_enabled($C, $dbh, $run, $shard);
-    if (! $enabled) {
-        Log_shard_Shutdown($C, $run, $shard, $pid, $host)
-          if ($work_done);
-        DEBUG('me', qq{DEBUG: my shard not enabled host=$host pid=$pid slices taken=$work_done ... exit});
-        exit 0;
-    }
-}
-
-
-# ---------------------------------------------------------------------
-
-=item handle_dedicated_shard
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_dedicated_shard {
-    my ($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done) = @_;
-
-    if ($dedicated_shard) {
-        # The allowed producers_per_shard for my shard may have
-        # decreased dynamically.  Should I quit?
-        if (Db::shard_is_overallocated($C, $dbh, $run, $dedicated_shard)) {
-            Log_shard_overalloc($C, $run, $dedicated_shard, $pid, $host)
-              if ($work_done);
-            DEBUG('me', qq{DEBUG: shard is over-allocated, run=$run shard=$dedicated_shard host=$host pid=$pid});
-            exit 0;
-        }
-    }
-    else {
-        # I am not assigned to a shard. Find an under-subscribed shard
-        my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
-        # randomize list so earlier shards are not favored.
-        # sweet. http://www.perlmonks.org/?node_id=31479
-        @num_shards_list = sort { (-1,1)[rand 2] } @num_shards_list;
-
-        my $allocated_shard = Db::Select_allocate_unallocated_shard($C, $dbh, $run, [@num_shards_list]);
-
-        if (! $allocated_shard) {
-            # All shards have a full subscription of producers
-            Log_shards_fully_alloc($C, $run, $pid, $host);
-            DEBUG('me', qq{DEBUG: all shards fully subscribed, run=$run host=$host pid=$pid ... exit});
-            exit 0;
-        }
-        else {
-            $dedicated_shard = $allocated_shard;
-            Log_shard_alloc($C, $run, $allocated_shard, $pid, $host);
-            DEBUG('me', qq{DEBUG: shard allocated run=$run shard=$allocated_shard host=$host pid=$pid});
-    
-        }
-    }
-
-    return $dedicated_shard;
-}
 
 # ---------------------------------------------------------------------
 
@@ -631,10 +617,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_critical_error {
-    my ($C, $dbh, $run, $shard, $pid, $host, $error) = @_;
+    my ($C, $dbh, $run, $shard, $pid, $host, $error, $rc) = @_;
 
     # Have we lost the database?
-    my $connection_still_alive = $dbh->ping();
+    my $connection_still_alive = defined($dbh) && $dbh->ping();
     if ($connection_still_alive) {
         Db::set_shard_build_error($C, $dbh, $run, $shard)
             if (! $INTERACTIVE);
@@ -650,11 +636,12 @@ sub handle_critical_error {
     }
     else {
         # No database to talk to.  Save the ids in an error log file
-        # and restore them to j_queue, later, by hand.
+        # and restore them to j_queue, later, by hand. Touch the stop file.
         while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
             my $id = $item_hashref->{'id'};
             Log_critical($C, $run, $id);
         }
+        Utils::GlobalSwitch::disable_cron_jobs('slip');
     }
 
     my $subj = qq{[SLIP] CRITICAL ERROR: run=$run shard=$shard};
@@ -666,8 +653,6 @@ sub handle_critical_error {
     SLIP_Utils::Common::Send_email($C, 'report', $subj, $msg);
 
     Index_Module::Log_error_stop($C, $run, $shard, $pid, $host, qq{CRITICAL ERROR: $error});
-
-    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
 
     __output($msg);
     __non_interactive_err_output($rc, $msg);
@@ -814,71 +799,55 @@ sub Log_shard_overalloc {
 
 # ---------------------------------------------------------------------
 
-=item Log_shard_alloc
+=item Log_host_overalloc
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub Log_shard_alloc {
+sub Log_host_overalloc {
+    my ($C, $run, $shard, $pid, $host) = @_;
+
+    my $s = qq{***STOP (host OVER-allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_shard_host_alloc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_shard_host_alloc {
     my ($C, $run, $allocated_shard, $pid, $host) = @_;
 
-    my $s = qq{***START (shard allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$allocated_shard};
+    my $s = qq{***START (shard+host allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$allocated_shard};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
+
 # ---------------------------------------------------------------------
 
-=item Log_shards_fully_alloc
+=item Log_dealloc
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub Log_shards_fully_alloc {
-    my ($C, $run, $pid, $host) = @_;
+sub Log_dealloc {
+    my ($C, $run, $deallocated_shard, $pid, $host, $remaining_alloc, $host_num_running) = @_;
 
-    my $s = qq{***MAX (ALL shards allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
-}
-
-# ---------------------------------------------------------------------
-
-=item Log_shard_dealloc
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub Log_shard_dealloc {
-    my ($C, $run, $deallocated_shard, $pid, $host, $remaining_alloc) = @_;
-
-    my $s = qq{***STOP (shard de-allocated): } 
+    my $s = qq{***STOP (shard+host de-allocated): } 
       . Utils::Time::iso_Time() 
-        . qq{ r=$run pid=$pid h=$host shard=$deallocated_shard remaining_alloc=$remaining_alloc};
+        . qq{ r=$run pid=$pid h=$host shard=$deallocated_shard remaining: shard_alloc=$remaining_alloc host_alloc=$host_num_running };
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
-# ---------------------------------------------------------------------
-
-=item Log_max_producers_seen
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub Log_max_producers_seen {
-    my ($C, $run, $pid, $host, $num_configured, $num_running) = @_;
-
-    my $s = qq{***MAX PRODUCERS (exit): }
-      . Utils::Time::iso_Time()
-        . qq{ r=$run pid=$pid h=$host num_cfgd=$num_configured num_running=$num_running};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
-}
 
 1;
 
