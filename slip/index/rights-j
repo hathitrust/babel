@@ -131,13 +131,13 @@ use SLIP_Utils::Solr;
 my $INTERACTIVE = $ENV{TERM};
 
 if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot get rights. STOPSLIP in place!!\n");
         exit 0;
     }
 }
 else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
 }
 
 
@@ -568,7 +568,7 @@ short of totally rebuilding rights-j table.
 sub process_rights_from_errors {
     my ($C, $dbh, $run, $Check, $totals_hashref) = @_;
 
-    while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+    while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("  wait Rights done: STOPSLIP\n");
         sleep STOPSLIP_SLEEP_WAIT;
     }
@@ -679,7 +679,7 @@ sub process_rights {
     my $offset = 0;
     my $slice = 0;
     while (1) {
-        while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+        while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
             __output("  wait Rights done: STOPSLIP\n");
             sleep STOPSLIP_SLEEP_WAIT;
         }

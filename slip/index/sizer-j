@@ -71,13 +71,13 @@ use SLIP_Utils::Released;
 my $INTERACTIVE = $ENV{TERM};
 
 if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot run sized. STOPSLIP in place!!\n");
         exit 0;
     }
 }
 else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
 }
 
 

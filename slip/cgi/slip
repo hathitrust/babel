@@ -609,7 +609,7 @@ sub report_globals {
     my $caption = "Globals" . $N;
     
     my $r_enabled = Db::Select_rights_enabled(undef, $dbh) ? 'enabled' : 'disabled';
-    my $c_enabled = Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP') ? 'STOP file' : 'no STOP file';
+    my $c_enabled = Utils::GlobalSwitch::cron_jobs_disabled('slip') ? 'STOP file' : 'no STOP file';
     my $r_class = ($r_enabled eq 'enabled') ? 'enabled' : 'alert';
     my $c_class = ($c_enabled eq 'no STOP file') ? 'enabled' : 'alert';
     

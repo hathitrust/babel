@@ -60,7 +60,7 @@ use SLIP_Utils::Processes;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('STOPSLIP');
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
 
 # Flush i/o
 $| = 1;
@@ -222,7 +222,7 @@ Description
 sub handle_check_rc {
     my ($C, $dbh, $run, $shard, $host, $rc) = @_;
 
-    while (Utils::GlobalSwitch::cron_jobs_disabled('slip', 'STOPSLIP')) {
+    while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("  wait Check done: STOPSLIP\n");
         sleep STOPSLIP_CSLEEP_WAIT;
     }
