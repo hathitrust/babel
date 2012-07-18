@@ -108,7 +108,7 @@
             <div class="colNameLabel">
               <xsl:text>Collection Name</xsl:text>
             </div>
-            <input id="CollNameEdit" type="text" size="16" maxlength="32" name="cn">
+            <input id="CollNameEdit" type="text" size="16" maxlength="50" name="cn">
               <xsl:attribute name="value">
                 <xsl:value-of select="$coll_name"/>
               </xsl:attribute>
