@@ -141,7 +141,7 @@
   <xsl:template name="EmptyCollection">
     <div id="ColContainer">
       <xsl:call-template name="EditCollectionWidget"/>
-      <div class="ColContent">
+      <div class="ColContent ">
         <h3 class="SkipLink">List of items and actions</h3>
 
         <xsl:if test="$action='copyit' or $action='movit'or $action='copyitnc' or $action='movitnc' or $action='delit'">

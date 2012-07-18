@@ -32,6 +32,7 @@
 
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>
+        <link rel="stylesheet" href="/mb/list_colls.css" />
 
         <!-- overide debug style if debug flag is on -->
         <xsl:call-template name="debug_CSS"/>

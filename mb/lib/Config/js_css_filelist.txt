@@ -79,8 +79,8 @@ Section:CSS
 /mb/web/yui2-lib/build/fonts/fonts-min.css
 /mb/web/yui2-lib/build/container/assets/skins/sam/container.css
 //common-web/MBooksCol.css
+/mb/web/mb.css
 
 Section:COLLLIST_CSS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'
-/mb/web/mb.css
 /mb/web/awesome.css

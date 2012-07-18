@@ -49,8 +49,8 @@
  <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/fonts/fonts-min.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/container/assets/skins/sam/container.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css{$timestamp}"/>
-    <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
  <link rel="stylesheet" type="text/css" href="/mb/mb.css{$timestamp}"/>
+    <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
  <link rel="stylesheet" type="text/css" href="/mb/awesome.css{$timestamp}"/>
     </xsl:if>
 </xsl:template>

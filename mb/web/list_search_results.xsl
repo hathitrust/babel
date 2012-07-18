@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
   
   <!-- Main template -->
@@ -9,6 +10,12 @@
         <title>Collections: <xsl:value-of select="$coll_name" /> Search Results | HathiTrust Digital Library</title>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>        
+        <xsl:text disable-output-escaping="yes">&#x3C;!--[if lt IE 8]>
+</xsl:text>
+        <link rel="stylesheet" href="/mb/ie7.css" />
+        <xsl:text disable-output-escaping="yes">
+        <![CDATA[<![endif]-->]]>
+        </xsl:text>
         <xsl:call-template name="debug_CSS"/>        
       </head>
       

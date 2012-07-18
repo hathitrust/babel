@@ -11,7 +11,13 @@
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>
-        <link rel="stylesheet" href="/mb/list_items.css" />
+        <xsl:text disable-output-escaping="yes">&#x3C;!--[if lt IE 8]>
+</xsl:text>
+        <link rel="stylesheet" href="/mb/ie7.css" />
+        <xsl:text disable-output-escaping="yes">
+        <![CDATA[<![endif]-->]]>
+        </xsl:text>
+
         <xsl:call-template name="debug_CSS"/>
       </head>
       
@@ -33,7 +39,7 @@
           <xsl:call-template name="header"/>
           <xsl:call-template name="DisplaySearchWidgetLogic"/>
 
-          <div id="mbContentContainer" class="mbListItemsContainer">
+          <div id="mbContentContainer" class="mbListItemsContainer clearfix">
             <h2 class="SkipLink">Main Content</h2>
             <div class="SearchAndRefine">
               <div class="refine">
@@ -105,7 +111,7 @@
         <xsl:call-template name="HiddenDebug"/>  
         
         <div class="formElement">
-          <label for="ColNameEdit">
+          <label for="CollNameEdit">
             <div class="colNameLabel">
               <xsl:text>Collection Name</xsl:text>
             </div>
