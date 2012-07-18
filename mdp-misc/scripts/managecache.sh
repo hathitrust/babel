@@ -24,8 +24,8 @@
 # maximum number of days since last use to keep files
 MAXDAYS=7
 
-# minimum amount of space that must be free (KB)
-#MINFREE=2000000
+# minimum percentage of space and inodes that must be free
+MINFREE=50
 
 renice 19 $$ > /dev/null 2>&1
 
@@ -52,17 +52,19 @@ for CACHEDIR in $CACHEDIRS; do
        \( -atime +$MAXDAYS -o -size 0 \) \
        -exec rm -f {} \;
 
-       DONE=1
-#      FREE=`df -k $CACHEDIR | tail -1 | awk '{print $4}'`
+      SPACEUSE=`df    $CACHEDIR | tail -1 | awk '{print $5}' | cut -d% -f1`
+      INODEUSE=`df -i $CACHEDIR | tail -1 | awk '{print $5}' | cut -d% -f1`
+      if [ \( $SPACEUSE -gt $MINFREE \) -o \( $INODEUSE -gt $MINFREE \) ]; then
+        MAXDAYS=`expr $MAXDAYS - 1`
+echo stepping MAXDAYS back to $MAXDAYS
+        if [ $MAXDAYS -eq 0 ]; then
+          echo "warning: unable to free enough space or inodes on $CACHEDIR"
 
-#      if [ $FREE -lt $MINFREE ]; then
-#        MAXDAYS=`echo $MAXDAYS - 1 | bc`
-#        if [ $MAXDAYS = 0 ]; then
-#	  DONE=1
-#        fi
-#      else
-#        DONE=1
-#      fi
+ 	  DONE=1
+        fi
+      else
+        DONE=1
+      fi
     done
 
     case `/bin/uname` in
