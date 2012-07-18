@@ -4,10 +4,10 @@ var DEFAULT_COLL_NAME = "Collection Name";
 var DEFAULT_DESC = "Description";
 var COLL_NAME = [];
 
-var maxCharsColl = 32;
+var maxCharsColl = 50;
 var charsTypedColl = 0;
 var charsRemainingColl = maxCharsColl - charsTypedColl;
-var maxCharsDesc = 80;
+var maxCharsDesc = 150;
 var charsTypedDesc = 0;
 var charsRemainingDesc = maxCharsDesc - charsTypedDesc;
 
