@@ -504,7 +504,8 @@ sub report_statistics {
 
     _report_totals($C, $dbh, $run, $stats_ref);
 
-    __Print qq{\tshards:\n};
+    __Print qq{\tshards\n};
+
     my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
     foreach my $__shard (@num_shards_list) {
         _report_shard($__shard, $stats_ref);
@@ -651,7 +652,19 @@ sub report_configuration {
 
     my @num_shards_list = __get_shard_list($C);
 
-    __Print qq{\n * current config:\n};
+    my $total_alloc = 0;
+    foreach my $__shard (@num_shards_list) {
+        $total_alloc += Db::Select_shard_num_allocated($C, $dbh, $run, $__shard);
+    }
+
+    my $total_num_running_over_hosts = 0;
+    my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
+    foreach my $hashref (@$ref_to_ary_of_hashref) {
+        my $host = $hashref->{'host'};
+        $total_num_running_over_hosts += Db::Select_host_num_running($C, $dbh, $run, $host);
+    }
+
+    __Print qq{\n * current config: producer counts:[ shards=$total_alloc hosts=$total_num_running_over_hosts ]\n};
 
     __Print qq{\tshards:\n};
 
@@ -676,15 +689,13 @@ sub report_configuration {
 
     __Print qq{\tingest hosts:\n};
 
-    my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
-
     foreach my $hashref (@$ref_to_ary_of_hashref) {
         my $host = $hashref->{'host'};
         my $num_producers = $hashref->{'num_producers'} || 0;
         my $h_enabled = $hashref->{'enabled'} || 0;
         my $num_running = Db::Select_host_num_running($C, $dbh, $run, $host);
 
-        my $num_running_str = ($host eq $HOST) ? qq{producers_running=$num_running} : qq{producers_running=unknown};
+        my $num_running_str = qq{producers_running=$num_running};
         my $host_line =
             sprintf("\t\t%-11s enabled=%s %-19s num_producers_configured=%s",
                     "$host:", $h_enabled, $num_running_str, $num_producers);
@@ -746,7 +757,9 @@ sub c_report {
         report_statistics($C, $dbh, $run);
     }
     else {
-        __Print qq{\n ------- Report ($HOST): run=$run ------\n};
+        my $date = `date`;
+        chomp $date;
+        __Print qq{\n ------- Report ($HOST): run=$run @ $date ------\n};
 
         report_statistics($C, $dbh, $run);
 
