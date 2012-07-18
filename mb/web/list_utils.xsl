@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
   <!-- MBooks global variables -->
@@ -215,7 +216,7 @@
   </xsl:template>
 
   <xsl:template name="Refine">
-    <span>
+    <div>
       <xsl:variable name="Limit">
         <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
       </xsl:variable>
@@ -270,7 +271,7 @@
           
         </xsl:otherwise>
       </xsl:choose>
-    </span>
+    </div>
   </xsl:template>
 
   <xsl:template name="IndexingStatusMsg">
@@ -485,6 +486,7 @@
   <xsl:template name="BuildCollectionSelect">
     <xsl:variable name="select_collection_text">Select Collection</xsl:variable>
 
+    <label class="SkipLink" for="c2">Select Collection</label>
     <select name="c2" id="c2">
 
       <option value="0" selected="selected">
@@ -513,16 +515,17 @@
   <xsl:template name="BuildPagingControls">
     <xsl:param name="which_paging"/>
     <!-- variable top or bottom so we can determine which widget to read from js -->
-    <div id="PageInfo">
+    <div>
       <xsl:attribute name="class">
+        <xsl:text>PageInfo </xsl:text>
         <xsl:value-of select="$which_paging"/>
       </xsl:attribute>
       <!-- rec per page widget-->
       <!-- for-each so we can provide context to template.  Why not have an optional parameter
            so we don't have to do a foreach           -->
-      <div id="resultsPerPage">
+      <div class="resultsPerPage">
         <xsl:for-each select="/MBooksTop/Paging/SliceSizeWidget">
-          <label for="sz" class="SkipLink">Items per page:</label>
+          <label for="{$which_paging}" class="SkipLink">Items per page:</label>
           <xsl:call-template name="BuildHtmlSelect">
             <xsl:with-param name="id">
               <xsl:value-of select="$which_paging"/>
@@ -536,7 +539,7 @@
           </xsl:call-template>
         </xsl:for-each>
       </div>
-      <div id="pagingNav">
+      <div class="pagingNav">
         <xsl:call-template name="Paging"/>
       </div>
     </div>
@@ -565,7 +568,7 @@
   <!--##############################################################  PAGING #########################-->
   <xsl:template name="Paging">
 
-    <ul id="PageWidget">
+    <ul class="PageWidget">
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/PrevPage='None'">
@@ -674,7 +677,7 @@
     <div id="SortWidget">
 
       <xsl:for-each select="/MBooksTop/SortWidget/SortWidgetSort">
-          <label for="sort">Sort by: </label>
+          <label for="SortWidgetSort">Sort by: </label>
           <xsl:call-template name="BuildHtmlSelect">
             <xsl:with-param name="id">SortWidgetSort</xsl:with-param>
             <xsl:with-param name="class" select="'sort'"/>
@@ -838,7 +841,7 @@
           </xsl:call-template>
         </div>
         <div id="actionsRow2">
-          <div class="selectAll">Select all on page <input type="checkbox" id="checkAll"/></div>
+          <div class="selectAll"><label>Select all on page <input type="checkbox" id="checkAll"/></label></div>
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
 
@@ -939,8 +942,9 @@
       <form id="itemlist_searchform" method="get" action="mb" name="searchcoll">
         <xsl:call-template name="HiddenDebug"/>
         <!-- <label for="srch">Search in this collection</label>-->
-        <img class="SearchArrow" alt="" src="//common-web/graphics/SearchArrow_Col.png"/>
-        <input type="text" size="30" maxlength="150" name="q1" > 
+<!--         <img class="SearchArrow" alt="" src="//common-web/graphics/SearchArrow_Col.png"/> -->
+        <h2 class="arrow"><label for="q1">Search in this collection</label></h2>
+        <input type="text" size="30" maxlength="150" name="q1" id="q1"> 
         
         <!-- search widget for list_search results needs query string in param  -->
         
