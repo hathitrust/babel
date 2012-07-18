@@ -25,6 +25,7 @@
   <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
   <xsl:variable name="gUserName" select="/MBooksTop/Header/UserName"/>
   <xsl:variable name="gInCopyright" select="/MBooksTop/MBooksGlobals/InCopyright"/>
+  <xsl:variable name="gHeld" select="/MBooksTop/MBooksGlobals/Holdings/Held"/>
 
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
@@ -1456,7 +1457,7 @@
 
             <!-- If opb (attr=3) + affiliated user then tell them when -->
             <!-- current accessor's exclusive access expires -->
-            <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
+            <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true' and $gHeld='YES'">
               <div class="Specialtext">
                 <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
                 <ul>
