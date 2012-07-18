@@ -258,7 +258,7 @@ eval {
             c_Reset_driver($C, $DBH, $RUN);
         }
         else {
-            my $s = qq{run=$RUN not driver driven};
+            my $s = qq{run=$RUN not configured to be driver driven\n};
             my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
             __output($s);
             __non_interactive_err_output($rc, $s);
