@@ -59,8 +59,6 @@ Section:LOCAL_JS
 Section:COLLLIST_JS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'
 /mb/web/js/jquery.tmpl.js
-/mb/web/js/common.js
-/mb/web/js/css.js
 /mb/web/js/jquery.placeholder.js
 /mb/web/js/date.js
 /mb/web/js/jquery.ba-hashchange.js
