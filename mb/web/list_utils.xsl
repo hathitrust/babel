@@ -142,7 +142,7 @@
     <div id="ColContainer">
       <xsl:call-template name="EditCollectionWidget"/>
       <div class="ColContent ">
-        <h3 class="SkipLink">List of items and actions</h3>
+        <h4 class="SkipLink">List of items and actions</h4>
 
         <xsl:if test="$action='copyit' or $action='movit'or $action='copyitnc' or $action='movitnc' or $action='delit'">
           <div class="alert" id="alert">
@@ -326,7 +326,7 @@
       <xsl:call-template name="EditCollectionWidget"/>
 
       <div class="ColContent">
-        <h3 class="SkipLink">List of items and actions</h3>
+        <h4 class="SkipLink">List of items and actions</h4>
         
         <!-- Special case show index status message only for listsrch page -->
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
@@ -943,7 +943,7 @@
         <xsl:call-template name="HiddenDebug"/>
         <!-- <label for="srch">Search in this collection</label>-->
 <!--         <img class="SearchArrow" alt="" src="//common-web/graphics/SearchArrow_Col.png"/> -->
-        <h2 class="arrow"><label for="q1">Search in this collection</label></h2>
+        <h3 class="arrow"><label for="q1">Search in this collection</label></h3>
         <input type="text" size="30" maxlength="150" name="q1" id="q1"> 
         
         <!-- search widget for list_search results needs query string in param  -->

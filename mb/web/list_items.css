@@ -49,7 +49,7 @@
 }
 
 
-h2.arrow {
+h3.arrow {
 	background: #EF7A06;
 	padding-left: 8px;
 	padding-right: 16px;
@@ -68,14 +68,14 @@ h2.arrow {
 	border-bottom-left-radius: 8px;
 }
 
-h2.arrow label {
+h3.arrow label {
 	background-image: url(./common-web/graphics/harmony/icon_books.png);
 	background-repeat: no-repeat;
 	background-position: 0% 50%;
 	padding-left: 24px;
 }
 
-h2.arrow label:after {
+h3.arrow label:after {
 /*h2.arrow:after {*/
 	content: "";
 	position: absolute;
@@ -86,7 +86,7 @@ h2.arrow label:after {
 	height: 0;
 }
 
-h2.arrow label:after {
+h3.arrow label:after {
 	/* Smaller and different position triangle */
 	/*left: -5px;*/
 	right: -12px;

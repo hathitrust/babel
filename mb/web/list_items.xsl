@@ -40,7 +40,7 @@
           <xsl:call-template name="DisplaySearchWidgetLogic"/>
 
           <div id="mbContentContainer" class="mbListItemsContainer clearfix">
-            <h2 class="SkipLink">Main Content</h2>
+            <h3 class="SkipLink">Main Content</h3>
             <div class="SearchAndRefine">
               <div class="refine">
                 <xsl:call-template name="decideDisplayRefine"/>
@@ -103,7 +103,7 @@
   
   <xsl:template name="EditCollectionWidgetOwned">
     <div class="editOwned">
-      <h3><xsl:text>Edit options</xsl:text></h3>
+      <h4><xsl:text>Edit options</xsl:text></h4>
       
       <form id="editcoll" name="editcoll" method="get" action="mb?">
         <xsl:copy-of select="$hidden_c_param"/>
