@@ -27,3 +27,50 @@
 div.right.featured {
   background: none;
 }
+
+/* for results lists */
+
+/* new clearfix */
+.clearfix:after {
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: " ";
+	clear: both;
+	height: 0;
+	}
+* html .clearfix             { zoom: 1; } /* IE6 */
+*:first-child+html .clearfix { zoom: 1; } /* IE7 */
+
+.mbListItemsContainer {
+	display: block;
+}
+
+#mbFooter {
+	display: none;
+}
+
+.Chunk.row {
+	display: block;
+	zoom: 1;
+}
+
+.Chunk.row > div {
+	float: left;
+}
+
+.Chunk.row .ItemCollections {
+	float: right;
+}
+
+.Chunk.row .ItemData {
+	width: 60%;
+}
+
+.ItemData ul {
+	line-height: 2;
+}
+
+.Chunk.row.roweven {
+	background: #FAFAFA;
+}

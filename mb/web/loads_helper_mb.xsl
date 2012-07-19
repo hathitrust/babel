@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns="http://www.w3.org/1999/xhtml">
       <xsl:output method="html"/>
        
   <xsl:variable name="timestamp" select="'?_=1337974009'" />
@@ -49,8 +49,9 @@
  <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/fonts/fonts-min.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/container/assets/skins/sam/container.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css{$timestamp}"/>
-    <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
  <link rel="stylesheet" type="text/css" href="/mb/mb.css{$timestamp}"/>
+    <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
+ <link rel="stylesheet" type="text/css" href="/mb/list_colls.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/mb/awesome.css{$timestamp}"/>
     </xsl:if>
 </xsl:template>

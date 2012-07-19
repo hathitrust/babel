@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
   
   <!-- Main template -->
@@ -10,7 +11,13 @@
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>
-        
+        <xsl:text disable-output-escaping="yes">&#x3C;!--[if lt IE 8]>
+</xsl:text>
+        <link rel="stylesheet" href="/mb/ie7.css" />
+        <xsl:text disable-output-escaping="yes">
+        <![CDATA[<![endif]-->]]>
+        </xsl:text>
+
         <xsl:call-template name="debug_CSS"/>
       </head>
       
@@ -32,8 +39,8 @@
           <xsl:call-template name="header"/>
           <xsl:call-template name="DisplaySearchWidgetLogic"/>
 
-          <div id="mbContentContainer" class="mbListItemsContainer">
-            <h2 class="SkipLink">Main Content</h2>
+          <div id="mbContentContainer" class="mbListItemsContainer clearfix">
+            <h3 class="SkipLink">Main Content</h3>
             <div class="SearchAndRefine">
               <div class="refine">
                 <xsl:call-template name="decideDisplayRefine"/>
@@ -96,7 +103,7 @@
   
   <xsl:template name="EditCollectionWidgetOwned">
     <div class="editOwned">
-      <h3><xsl:text>Edit options</xsl:text></h3>
+      <h4><xsl:text>Edit options</xsl:text></h4>
       
       <form id="editcoll" name="editcoll" method="get" action="mb?">
         <xsl:copy-of select="$hidden_c_param"/>
@@ -104,7 +111,7 @@
         <xsl:call-template name="HiddenDebug"/>  
         
         <div class="formElement">
-          <label for="ColNameEdit">
+          <label for="CollNameEdit">
             <div class="colNameLabel">
               <xsl:text>Collection Name</xsl:text>
             </div>
@@ -165,7 +172,7 @@
       
       <xsl:if test="//CollectionFeatured/text()">
         <div class="colFeatured">
-          <img src="{//CollectionFeatured}" />
+          <img src="{//CollectionFeatured}" alt=" " />
         </div>
       </xsl:if>
       

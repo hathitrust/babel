@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
   <!-- MBooks global variables -->
@@ -140,8 +141,8 @@
   <xsl:template name="EmptyCollection">
     <div id="ColContainer">
       <xsl:call-template name="EditCollectionWidget"/>
-      <div class="ColContent">
-        <h3 class="SkipLink">List of items and actions</h3>
+      <div class="ColContent ">
+        <h4 class="SkipLink">List of items and actions</h4>
 
         <xsl:if test="$action='copyit' or $action='movit'or $action='copyitnc' or $action='movitnc' or $action='delit'">
           <div class="alert" id="alert">
@@ -215,7 +216,7 @@
   </xsl:template>
 
   <xsl:template name="Refine">
-    <span>
+    <div>
       <xsl:variable name="Limit">
         <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
       </xsl:variable>
@@ -270,7 +271,7 @@
           
         </xsl:otherwise>
       </xsl:choose>
-    </span>
+    </div>
   </xsl:template>
 
   <xsl:template name="IndexingStatusMsg">
@@ -325,7 +326,7 @@
       <xsl:call-template name="EditCollectionWidget"/>
 
       <div class="ColContent">
-        <h3 class="SkipLink">List of items and actions</h3>
+        <h4 class="SkipLink">List of items and actions</h4>
         
         <!-- Special case show index status message only for listsrch page -->
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
@@ -485,6 +486,7 @@
   <xsl:template name="BuildCollectionSelect">
     <xsl:variable name="select_collection_text">Select Collection</xsl:variable>
 
+    <label class="SkipLink" for="c2">Select Collection</label>
     <select name="c2" id="c2">
 
       <option value="0" selected="selected">
@@ -513,16 +515,17 @@
   <xsl:template name="BuildPagingControls">
     <xsl:param name="which_paging"/>
     <!-- variable top or bottom so we can determine which widget to read from js -->
-    <div id="PageInfo">
+    <div>
       <xsl:attribute name="class">
+        <xsl:text>PageInfo </xsl:text>
         <xsl:value-of select="$which_paging"/>
       </xsl:attribute>
       <!-- rec per page widget-->
       <!-- for-each so we can provide context to template.  Why not have an optional parameter
            so we don't have to do a foreach           -->
-      <div id="resultsPerPage">
+      <div class="resultsPerPage">
         <xsl:for-each select="/MBooksTop/Paging/SliceSizeWidget">
-          <label for="sz" class="SkipLink">Items per page:</label>
+          <label for="{$which_paging}" class="SkipLink">Items per page:</label>
           <xsl:call-template name="BuildHtmlSelect">
             <xsl:with-param name="id">
               <xsl:value-of select="$which_paging"/>
@@ -536,7 +539,7 @@
           </xsl:call-template>
         </xsl:for-each>
       </div>
-      <div id="pagingNav">
+      <div class="pagingNav">
         <xsl:call-template name="Paging"/>
       </div>
     </div>
@@ -565,7 +568,7 @@
   <!--##############################################################  PAGING #########################-->
   <xsl:template name="Paging">
 
-    <ul id="PageWidget">
+    <ul class="PageWidget">
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/PrevPage='None'">
@@ -674,7 +677,7 @@
     <div id="SortWidget">
 
       <xsl:for-each select="/MBooksTop/SortWidget/SortWidgetSort">
-          <label for="sort">Sort by: </label>
+          <label for="SortWidgetSort">Sort by: </label>
           <xsl:call-template name="BuildHtmlSelect">
             <xsl:with-param name="id">SortWidgetSort</xsl:with-param>
             <xsl:with-param name="class" select="'sort'"/>
@@ -838,12 +841,26 @@
           </xsl:call-template>
         </div>
         <div id="actionsRow2">
-          <div class="selectAll">Select all on page <input type="checkbox" id="checkAll"/></div>
+          <div class="selectAll"><label>Select all on page <input type="checkbox" id="checkAll"/></label></div>
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
 
+        <div id="itemTable" class="itemTable">
+          <xsl:choose>
+            <xsl:when test="$ItemListType='SearchResults'">
+              <xsl:for-each select="SearchResults/Item">
+                <xsl:call-template name="BuildItemChunk"/>
+              </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:for-each select="ItemList/Item">
+                <xsl:call-template name="BuildItemChunk"/>
+              </xsl:for-each>
+            </xsl:otherwise>
+          </xsl:choose>
+        </div>
 
-        <table id="itemTable" class="itemTable">
+<!--         <table id="itemTable" class="itemTable">
           <xsl:choose>
             <xsl:when test="$ItemListType='SearchResults'">
               <xsl:for-each select="SearchResults/Item">
@@ -857,7 +874,7 @@
             </xsl:otherwise>
           </xsl:choose>
         </table>
-
+ -->
 
         <div id="listisFooter">
           <xsl:call-template name="BuildPagingControls">
@@ -925,8 +942,9 @@
       <form id="itemlist_searchform" method="get" action="mb" name="searchcoll">
         <xsl:call-template name="HiddenDebug"/>
         <!-- <label for="srch">Search in this collection</label>-->
-        <img class="SearchArrow" alt="" src="//common-web/graphics/SearchArrow_Col.png"/>
-        <input type="text" size="30" maxlength="150" name="q1" > 
+<!--         <img class="SearchArrow" alt="" src="//common-web/graphics/SearchArrow_Col.png"/> -->
+        <h3 class="arrow"><label for="q1">Search in this collection</label></h3>
+        <input type="text" size="30" maxlength="150" name="q1" id="q1"> 
         
         <!-- search widget for list_search results needs query string in param  -->
         
@@ -977,34 +995,21 @@
     </xsl:variable>
     <!--################################## end variables-->
 
-    
-    <tr>
-      <xsl:attribute name="class">
-        <xsl:text> Chunk </xsl:text>
-        <xsl:value-of select="$row_class"/>
-      </xsl:attribute>
-      
-      <td class="ItemSelect">
-        <span class="ItemID Select">
-          <input type="checkbox" name="iid" class="iid">
-            <xsl:attribute name="value">
+    <div class="Chunk {$row_class}">
+      <div class="ItemID Select">
+        <input type="checkbox" name="iid" class="iid" id="iid{position()}">
+          <xsl:attribute name="value">
             <xsl:value-of select="ItemID"/>
-            </xsl:attribute>
-          </input>
-          <span class="debug">
-            <xsl:text>item_id: </xsl:text>
-            <xsl:value-of select="ItemID"/></span>
-        </span>
-      </td>
-
-      <td class="ItemData">
-        
+          </xsl:attribute>
+        </input>
+      </div>
+      <div class="ItemData">
         <div class="ItemTitle">
-          <span class="Title">
+          <label for="iid{position()}" class="Title">
             <xsl:value-of select="Title" disable-output-escaping="yes" />
-          </span>
+          </label>
         </div>
-    
+
         <!-- Author -->
         <xsl:if test="Author!=''">
           <div class="ItemAuthor">
@@ -1042,8 +1047,7 @@
             <xsl:value-of select="relevance"/>
           </span>
         </xsl:if>
-      
-      
+
         <ul>
           <li>
             <!--tbw catalog link hard coded text   div needs a class!-->
@@ -1092,14 +1096,14 @@
         </ul>
 
 
-      </td>
+      </div>
 
-      <td class="ItemCollections">
-        <span class="ItemCollectionsLabel">
+      <div class="ItemCollections">
+        <div class="ItemCollectionsLabel">
           <xsl:text>In My Collections: </xsl:text>
-        </span>
+        </div>
 
-        <span class="Collections">
+        <div class="Collections">
           <ul class="inMyColls">
             <xsl:for-each select="Collections/Collection">
               <xsl:call-template name="inMyColls"/>
@@ -1111,9 +1115,9 @@
               </xsl:if>
             </xsl:for-each>
           </ul>
-        </span>
-      </td>
-    </tr> 
+        </div>
+      </div>
+    </div> 
   </xsl:template>
 
 
