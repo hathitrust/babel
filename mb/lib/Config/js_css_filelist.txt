@@ -54,6 +54,7 @@ Section:LOCAL_JS
 //common-web/js/listUtils.js
 //common-web/js/overlayUtils.js
 //common-web/js/search.js
+/mb/web/js/mb.js
 /mb/web/js/tracking.js
 
 Section:COLLLIST_JS
