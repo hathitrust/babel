@@ -52,11 +52,10 @@ for CACHEDIR in $CACHEDIRS; do
        \( -atime +$MAXDAYS -o -size 0 \) \
        -exec rm -f {} \;
 
-      SPACEUSE=`df    $CACHEDIR | tail -1 | awk '{print $5}' | cut -d% -f1`
-      INODEUSE=`df -i $CACHEDIR | tail -1 | awk '{print $5}' | cut -d% -f1`
+      SPACEUSE=`df    --total $CACHEDIR | tail -1 | awk '{print $5}' | cut -d% -f1`
+      INODEUSE=`df -i --total $CACHEDIR | tail -1 | awk '{print $5}' | cut -d% -f1`
       if [ \( $SPACEUSE -gt $MINFREE \) -o \( $INODEUSE -gt $MINFREE \) ]; then
         MAXDAYS=`expr $MAXDAYS - 1`
-echo stepping MAXDAYS back to $MAXDAYS
         if [ $MAXDAYS -eq 0 ]; then
           echo "warning: unable to free enough space or inodes on $CACHEDIR"
 
@@ -67,20 +66,12 @@ echo stepping MAXDAYS back to $MAXDAYS
       fi
     done
 
-    case `/bin/uname` in
-      AIX|SunOS)
-         RMDIR="/bin/rmdir -ps"
-         ;;
-      *)
-         RMDIR="rmdir -p --ignore-fail-on-non-empty"
-         ;;
-    esac
     find $CACHEDIR/* \
      -depth \
      -type d \
      -links 2 2> /dev/null | \
     while read CACHESUBDIR; do
-      $RMDIR "$CACHESUBDIR"
+      rmdir -p --ignore-fail-on-non-empty "$CACHESUBDIR"
     done
   fi
 done
