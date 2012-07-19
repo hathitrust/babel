@@ -409,12 +409,7 @@
         </div>
 
         <script type="text/javascript">
-          <!-- setup cbBrowser app -->
-          $(document).ready(function() {
-            console.log("SETTING UP BROWSER");
-            HT.params = {};
-            HT.params.bucket = bucket;
-          })
+          var HT = HT || {};
         </script>
 
         <br class="clr" />
