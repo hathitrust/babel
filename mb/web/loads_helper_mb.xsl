@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns="http://www.w3.org/1999/xhtml">
+      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1342634139'" />
+  <xsl:variable name="timestamp" select="'?_=1342726526'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/mb/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
@@ -29,17 +29,13 @@
      <script type="text/javascript" src="//common-web/js/listUtils.js{$timestamp}"></script>
      <script type="text/javascript" src="//common-web/js/overlayUtils.js{$timestamp}"></script>
      <script type="text/javascript" src="//common-web/js/search.js{$timestamp}"></script>
+     <script type="text/javascript" src="/mb/js/mb.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/js/tracking.js{$timestamp}"></script>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
      <script type="text/javascript" src="/mb/js/jquery.tmpl.js{$timestamp}"></script>
-     <script type="text/javascript" src="/mb/js/spine.js{$timestamp}"></script>
-     <script type="text/javascript" src="/mb/js/lib/spine.route.js{$timestamp}"></script>
-     <script type="text/javascript" src="/mb/js/common.js{$timestamp}"></script>
-     <script type="text/javascript" src="/mb/js/css.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/js/jquery.placeholder.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/js/date.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/js/jquery.ba-hashchange.js{$timestamp}"></script>
-     <script type="text/javascript" src="/mb/js/mb.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/js/hyphenator.js{$timestamp}"></script>
     </xsl:if>
 </xsl:template>
