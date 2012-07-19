@@ -83,6 +83,8 @@ var ListBrowser = {
       colltype = colltype[1];
       if ( colltype == "priv" ) { colltype = "my-collections"; }
       else if ( colltype == "pub" ) { colltype = "all"; }
+    } else if ( window.location.hash ) {
+      colltype = window.location.hash.substr(1);
     } else {
       colltype = "all";
     }
@@ -179,11 +181,18 @@ var ListBrowser = {
   navigate: function(view, invoke_events) {
     var $buttons = this.$controls.find(".filters button");
     $buttons.removeClass("active");
-    $buttons.filter("[rel=" + view + "]").addClass("active");
+    var $active = $buttons.filter("[rel=" + view + "]");
+    if ( ! $active.length ) {
+      view = 'all';
+      this.navigate('all');
+      return;
+    }
+    $active.addClass("active");
 
     this.filter_list(view);
     this.apply_filters();
     this.update_login_link(view);
+    window.location.replace("#" + view);
   },
   
   _build_cache: function() {

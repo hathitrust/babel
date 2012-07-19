@@ -83,4 +83,5 @@ Section:CSS
 
 Section:COLLLIST_CSS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'
+/mb/web/list_colls.css
 /mb/web/awesome.css

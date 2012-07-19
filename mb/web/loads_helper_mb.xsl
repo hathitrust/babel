@@ -51,6 +51,7 @@
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/mb/mb.css{$timestamp}"/>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
+ <link rel="stylesheet" type="text/css" href="/mb/list_colls.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/mb/awesome.css{$timestamp}"/>
     </xsl:if>
 </xsl:template>
