@@ -146,7 +146,7 @@
           </xsl:when>
           <xsl:otherwise>
             <xsl:if test="$gHasOcr='NO'">
-              <h2 class="SkipLink">Page Text</h2>
+              <h2>Page Text</h2>
               <xsl:text>Sorry, this volume does not contain any readable text.</xsl:text>
             </xsl:if>
           </xsl:otherwise>
@@ -233,7 +233,6 @@
         <xsl:if test="$gRightsAttribute!='8'">
           <div id="mdpItemMetadata">
             <xsl:element name="h2">
-              <xsl:attribute name="class">SkipLink</xsl:attribute>
               <xsl:element name="a"><xsl:attribute name="name">biblio</xsl:attribute></xsl:element>
               <xsl:text>Full Bibliographic Information</xsl:text>
             </xsl:element>
@@ -288,7 +287,6 @@
   <xsl:template name="ContentContainer">
     <div id="mdpContentContainer">
       <xsl:element name="a">
-        <xsl:attribute name="class">SkipLink</xsl:attribute>
         <xsl:attribute name="name">SkipToBookText</xsl:attribute>
       </xsl:element>
       <xsl:call-template name="Viewport"/>
@@ -335,7 +333,6 @@
             <xsl:value-of select="Label"/>
             <xsl:if test="Page!=''">
               <xsl:element name="span">
-                <xsl:attribute name="class">SkipLink</xsl:attribute>
                 <xsl:text> on page number </xsl:text>
                 <xsl:value-of select="Page"/>
               </xsl:element>
@@ -353,17 +350,17 @@
         <xsl:choose>
           <!--If item has page numbers and page is numbered, heading is "Page #" using num. -->
           <xsl:when test="$gCurrentPageNum != ''">
-            <h2 class="SkipLink">Page <xsl:value-of select="$gCurrentPageNum"/></h2>
+            <h2>Page <xsl:value-of select="$gCurrentPageNum"/></h2>
           </xsl:when>
           <!--If item has page numbers and page is not numbered, heading is "Page Text". -->
           <xsl:otherwise>
-            <h2 class="SkipLink">Page Text</h2>
+            <h2>Page Text</h2>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
       <!--If item does has page numbers and page is numbered, heading is "Page #" using seq. -->
       <xsl:otherwise>
-        <h2 class="SkipLink">Page <xsl:value-of select="gCurrentPageSeq"/></h2>
+        <h2>Page <xsl:value-of select="gCurrentPageSeq"/></h2>
       </xsl:otherwise>
     </xsl:choose>
 
@@ -423,7 +420,7 @@
 
   <!-- Full Volume Viewing -->
   <xsl:template name="ViewEntireVolume">
-    <h2 class="SkipLink">Book Text</h2>
+    <h2>Book Text</h2>
     <xsl:element name="div">
       <xsl:attribute name="id">mdpText</xsl:attribute>
       <xsl:apply-templates select="$gFullOcr"/>
