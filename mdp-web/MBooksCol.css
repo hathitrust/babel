@@ -353,12 +353,12 @@ a.inlineLink:hover, a.inlineLink:focus, a.inlineLink:active,
 
 /* use to hide code from display but NOT screenreaders */
 .SkipLink, .SearchLabel {
-  position:absolute;
-  left:0px;
-  top:-1000px;
-  width:1px;
-  height:1px;
-  overflow:hidden;
+  position: absolute;
+  left:     -10000px;
+  top:      auto;
+  width:    1px;
+  height:   1px;
+  overflow: hidden;
 }
 
 /* use to hide code from display AND screenreaders */
