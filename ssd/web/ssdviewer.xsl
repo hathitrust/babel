@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<xsl:stylesheet version="1.0" 
+<xsl:stylesheet version="1.0"
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -73,7 +73,7 @@
   <!-- root template -->
   <xsl:template match="/MBooksTop">
 
-    <html lang="en" xml:lang="en" 
+    <html lang="en" xml:lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
       xmlns:cc="http://creativecommons.org/ns#"
@@ -130,17 +130,17 @@
 
   <!-- Top Level Container DIV -->
   <xsl:template name="UberContainer">
-    
+
     <div id="mdpUberContainer">
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
-      
+
       <div id="ControlContentContainer">
         <xsl:choose>
           <xsl:when test="$gFinalAccessStatus='allow' and $gHasOcr='YES'">
             <!-- Table of Contents -->
             <xsl:call-template name="BuildTOC"/>
-            
+
             <!-- Pages -->
             <xsl:call-template name="ContentContainer"/>
           </xsl:when>
@@ -165,16 +165,15 @@
       </xsl:element>
     </div>
   </xsl:template>
-  
+
   <!-- SSD Page Header -->
   <xsl:template name="SSDPageHeader">
     <div id="mdpHeaderContainer">
       <div id="mdpPageHeader">
+        <xsl:element name="a"><xsl:attribute name="name">top</xsl:attribute></xsl:element>
         <xsl:element name="h1">
           <xsl:value-of select="$gSSDFullTitleString"/>
           <xsl:text> | HathiTrust Digital Library</xsl:text>
-            
-          <xsl:element name="a"><xsl:attribute name="name">top</xsl:attribute></xsl:element>
         </xsl:element>
 
         <xsl:if test="$gFinalAccessStatus='allow'">
@@ -184,52 +183,52 @@
 
         <xsl:call-template name="Access"/>
 
-        <xsl:if test="$gRightsAttribute!='8'">
-          <div id="SSDjumps">
+        <div id="SSDjumps">
+          <xsl:if test="$gRightsAttribute!='8'">
             <xsl:element name="a">
               <xsl:attribute name="href">#biblio</xsl:attribute>
               <xsl:text>Go to full bibliographic information</xsl:text>
             </xsl:element>
             <xsl:element name="br"/>
-          </div>
-        </xsl:if>
+          </xsl:if>
 
-        <xsl:if test="$gFinalAccessStatus='allow'">
-          <xsl:choose>
-            <!--If TOC exists, add link to skip TOC and go to first page. If no TOC, just go to first page-->
-            <xsl:when test="$gFeatureList/Feature">
-              <xsl:element name="a">
-                <xsl:attribute name="href">#toc</xsl:attribute>
-                <xsl:text>Go to table of contents</xsl:text>
-              </xsl:element>
-              <xsl:element name="br"/>
+          <xsl:if test="$gFinalAccessStatus='allow'">
+            <xsl:choose>
+              <!--If TOC exists, add link to skip TOC and go to first page. If no TOC, just go to first page-->
+              <xsl:when test="$gFeatureList/Feature">
+                <xsl:element name="a">
+                  <xsl:attribute name="href">#toc</xsl:attribute>
+                  <xsl:text>Go to table of contents</xsl:text>
+                </xsl:element>
+                <xsl:element name="br"/>
+                
+                <xsl:choose>
+                  <!--If using page by page view, skip to current page instead of first -->
+                  <xsl:when test="$gSSD_Session='false'">
+                    <xsl:element name="a">
+                      <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                      <xsl:text>Skip table of contents and go to current page</xsl:text>
+                    </xsl:element>
+                  </xsl:when>
+                  
+                  <xsl:otherwise>
+                    <xsl:element name="a">
+                      <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                      <xsl:text>Skip table of contents and go to first page</xsl:text>
+                    </xsl:element>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:when>
               
-              <xsl:choose>
-                <!--If using page by page view, skip to current page instead of first -->
-                <xsl:when test="$gSSD_Session='false'">
-                  <xsl:element name="a">
-                    <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
-                    <xsl:text>Skip table of contents and go to current page</xsl:text>
-                  </xsl:element>
-                </xsl:when>
-
-                <xsl:otherwise>
-                  <xsl:element name="a">
-                    <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
-                    <xsl:text>Skip table of contents and go to first page</xsl:text>
-                  </xsl:element>
-                </xsl:otherwise>
-              </xsl:choose>
-            </xsl:when>
-
-            <xsl:otherwise>
-              <xsl:element name="a">
-                <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
-                <xsl:text>Go to First Page</xsl:text>
-              </xsl:element>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:if>
+              <xsl:otherwise>
+                <xsl:element name="a">
+                  <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                  <xsl:text>Go to First Page</xsl:text>
+                </xsl:element>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:if>
+        </div>
 
         <xsl:if test="$gRightsAttribute!='8'">
           <div id="mdpItemMetadata">
@@ -238,7 +237,7 @@
               <xsl:element name="a"><xsl:attribute name="name">biblio</xsl:attribute></xsl:element>
               <xsl:text>Full Bibliographic Information</xsl:text>
             </xsl:element>
-            
+
             <xsl:call-template name="FullTitle"/>
             <xsl:call-template name="BookMetadata"/>
           </div>
@@ -246,7 +245,7 @@
       </div>
     </div>
   </xsl:template>
-  
+
   <!-- -->
   <xsl:template name="BookMetadata">
     <!-- Author, Edition, Published, Description -->
@@ -254,8 +253,8 @@
       <xsl:with-param name="ssd" select="'true'"/>
     </xsl:call-template>
   </xsl:template>
-  
-  
+
+
   <!-- -->
   <xsl:template name="FullTitle">
     <div class="mdpMetaDataRow">
@@ -270,7 +269,7 @@
       </div>
     </div>
   </xsl:template>
-  
+
   <!-- Control Container -->
   <xsl:template name="BuildTOC">
     <div class="mdpControlContainer">
@@ -284,7 +283,7 @@
       </div>
     </div>
   </xsl:template>
-  
+
   <!--Book contents -->
   <xsl:template name="ContentContainer">
     <div id="mdpContentContainer">
@@ -367,7 +366,7 @@
         <h2 class="SkipLink">Page <xsl:value-of select="gCurrentPageSeq"/></h2>
       </xsl:otherwise>
     </xsl:choose>
-    
+
     <xsl:element name="div">
       <xsl:attribute name="id">mdpPage</xsl:attribute>
       <xsl:choose>
@@ -375,7 +374,7 @@
           <div id="mdpTextEmpty">
             <div class="mdpTMPhead">NO TEXT ON PAGE</div>
             <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine</div>
-            
+
             <xsl:if test="contains($gCurrentPageFeatures,'IMAGE_ON_PAGE')">
               <p class="Image">
                 <xsl:text>This page contains an image.</xsl:text>
@@ -419,7 +418,7 @@
         <br/>
         Return to <a href="#top">top</a>.
       </p>
-    </xsl:element>    
+    </xsl:element>
   </xsl:template>
 
   <!-- Full Volume Viewing -->
@@ -440,10 +439,10 @@
          FinalAccessStatus='allow' where access is either full volume or
          page-at-a-time: -->
 
-    <!-- (1) SSD user of anything (authentication assumed): entire volume 
+    <!-- (1) SSD user of anything (authentication assumed): entire volume
          (2) non-SSD user of PD, not authenticated: page-at-a-time
          (3) non-SSD user of PD, authenticated: entire volume
-         (4) non-SSD user of IC (brittle/orphan), authenticated: page-at-a-time --> 
+         (4) non-SSD user of IC (brittle/orphan), authenticated: page-at-a-time -->
 
     <xsl:if test="$gFinalAccessStatus='allow'">
       <xsl:choose>
@@ -452,7 +451,7 @@
         <xsl:when test="$gSSD_Session='true'">
           <xsl:call-template name="ViewEntireVolume"/>
         </xsl:when>
-        
+
         <!-- non-SSD cases -->
         <xsl:when test="$gSSD_Session='false'">
           <xsl:choose>
@@ -460,12 +459,12 @@
             <xsl:when test="$gInCopyright='false' and $gLoggedIn='NO'">
               <xsl:call-template name="ViewOnePage"/>
             </xsl:when>
-            
+
             <!-- Case (3) non-SSD: entire volume-->
             <xsl:when test="$gInCopyright='false' and $gLoggedIn='YES'">
               <xsl:call-template name="ViewEntireVolume"/>
             </xsl:when>
-            
+
             <!-- Case (4) non-SSD: page-at-a-time -->
             <xsl:when test="$gInCopyright='true' and $gLoggedIn='YES'">
               <xsl:call-template name="ViewOnePage"/>
@@ -488,7 +487,7 @@
         </xsl:attribute>
         <xsl:text> Login</xsl:text>
       </xsl:element>
-      <xsl:text> to determine if you have access and see all volumes that are available when searching. </xsl:text>      
+      <xsl:text> to determine if you have access and see all volumes that are available when searching. </xsl:text>
     </xsl:if>
   </xsl:template>
 
@@ -521,7 +520,7 @@
               <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
               <xsl:choose>
                 <xsl:when test="$gHeld='YES'">
-                  <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. 
+                  <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item.
                   <xsl:call-template name="maybe_login"/></p>
                 </xsl:when>
                 <xsl:otherwise>
@@ -565,7 +564,7 @@
           </p>
         </xsl:element>
       </xsl:when>
-      
+
       <xsl:when test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
         <xsl:element name="div">
           <p>You have full view access to this item based on your account privileges. This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#section108">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p>
@@ -585,7 +584,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
   <!-- -->
   <xsl:template match="Section">
 
@@ -602,7 +601,7 @@
         </xsl:with-param>
       </xsl:call-template>
     </xsl:variable>
-  
+
     <xsl:if test="$SectionTitleAttr!=''">
       <xsl:element name="a">
         <xsl:attribute name="name">
@@ -647,7 +646,7 @@
       </xsl:if>
     </div>
   </xsl:template>
-  
+
   <!-- -->
   <xsl:template match="PageNum">
     <div class="PageNum">
