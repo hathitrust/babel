@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <xsl:stylesheet version="1.0"
+  xmlns="http://www.w3.org/1999/xhtml"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   >
@@ -34,7 +35,7 @@
 
   <!-- root template -->
   <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+    <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
       <head>
         <title>
           <xsl:call-template name="PageTitle">
@@ -77,7 +78,9 @@
 
       <body class="yui-skin-sam">
         <div>
-          <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
+          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages!=''">
+            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
+          </xsl:if>
         </div>
 
 
@@ -110,8 +113,6 @@
   <!-- Top Level Container DIV -->
   <xsl:template name="UberContainer">
     <div id="mdpUberContainer">
-      <!-- Header -->
-      <!-- <xsl:call-template name="header"/> -->
 
       <div class="mdpControlContainer">
         <!-- <xsl:call-template name="hathiVuFind"/> -->
@@ -122,10 +123,7 @@
         <xsl:call-template name="versionLabel" />
       </div>
 
-      <xsl:element name="a">
-        <xsl:attribute name="name">skipNav</xsl:attribute>
-        <xsl:attribute name="id">skipNav</xsl:attribute>
-      </xsl:element>
+      <xsl:call-template name="skipNavAnchor"/>
 
       <!-- Results -->
       <xsl:call-template name="ResultsContainer">
@@ -338,7 +336,12 @@
           <xsl:otherwise></xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
-      
+
+      <xsl:element name="a">
+        <xsl:attribute name="name">skipNav</xsl:attribute>
+        <xsl:attribute name="id">skipNav</xsl:attribute>
+      </xsl:element>
+
       <span>
         <xsl:choose>
           <!-- Fatal error! -->
@@ -390,7 +393,7 @@
     
   <!-- -->
   <xsl:template match="Kwic">
-    <xsl:copy-of select="."/>
+    <xsl:copy-of select="./node()"/>
   </xsl:template>
 
   <!-- -->
