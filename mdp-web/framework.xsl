@@ -895,7 +895,12 @@
   
   <!-- Feedback -->
   <xsl:template name="Feedback">
-    
+
+    <xsl:element name="h2">
+      <xsl:attribute name="class">SkipLink</xsl:attribute>
+      <xsl:text>Send feedback about this book</xsl:text>
+    </xsl:element>
+
     <xsl:call-template name="BuildFeedbackForm"/>
     
   </xsl:template>
