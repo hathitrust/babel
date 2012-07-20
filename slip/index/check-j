@@ -121,8 +121,8 @@ if ($INTERACTIVE) {
 }
 
 # Do not try to check this shard while I am running already
-my $lock_shard = $SHARD;
-my $Lock_File = "/tmp/check-$lock_shard-lock.sem";
+my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
+my $Lock_File = "/tmp/check-" . $lock_str . "-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     __output("Could not get semaphore file: $Lock_File\n");
