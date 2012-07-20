@@ -664,7 +664,13 @@
       <!-- rec per page widget-->
       <div id="resultsPerPage">
         <xsl:for-each select="/MBooksTop/Paging/SliceSizeWidget">
-          <label for="sz" class="SkipLink">Items per page:</label>
+          <label  class="SkipLink">
+            <xsl:attribute name="for">
+              <xsl:value-of select="$which_paging"/>
+            </xsl:attribute>
+            Items per page:
+          </label>
+
           <xsl:call-template name="BuildHtmlSelect">
             <xsl:with-param name="id">
               <xsl:value-of select="$which_paging"/>
