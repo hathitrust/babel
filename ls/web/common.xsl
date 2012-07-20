@@ -26,8 +26,11 @@
 
   <xsl:template name="SearchWidget">
     <div class="LSsearchbox">
-      <img class="SearchArrow" src="/ls/common-web/graphics/SearchArrow_FT.png" alt=""/>
-      
+      <h3 class="SearchArrowFT">
+      <label for="itemlist_searchform" >Full-text Search</label>
+      </h3>
+      <!--XXX            <img class="SearchArrow" src="/ls/common-web/graphics/SearchArrow_FT.png" alt=""/>
+      -->
       <div id="LSformCont">
 
 

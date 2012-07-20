@@ -200,7 +200,6 @@
         <div id="errormsg">
           <div class="bd"></div>
         </div>
-
         <xsl:call-template name="SearchResultList"/>
       </div>
     </div>
