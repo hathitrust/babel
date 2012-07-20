@@ -1262,27 +1262,27 @@ li.viewall {
   padding-right: 30px;
 }
 
-#PageInfo { 
+.PageInfo { 
   margin: 0 1em .5em 0em;
   overflow: hidden;
 }
 
-#resultsPerPage {
+.resultsPerPage {
   position: relative;
   float: left;
 }
 
-#pagingNav {
+.pagingNav {
 	margin-left: 10px;
 }
 
-#PageWidget { 
+.PageWidget { 
   list-style-type: none;
   margin: 0 0 0 2em;
   padding: 0;
 } 
 
-#PageWidget li {
+.PageWidget li {
 /** Suz says change this to match ht catalog
   border: 1px solid #CCC;
   float: left;
