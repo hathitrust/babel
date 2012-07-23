@@ -1065,17 +1065,16 @@
             <br/><span><input id="email" name="email" class="overlay" value="[Your email address]" maxlength="50" size="50" onclick="ClickClear(this, '[Your email address]')" onkeypress="ClickClear(this, '[Your email address]')"/></span>
           </div>
         </div>
-        
-        
-        <table>
-          <tr valign="bottom">
-            <td><div id="emptyFBError"><strong>Error: You cannot submit an empty form.</strong></div></td>   
-            <td><xsl:text>    </xsl:text></td>
-            <td><input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" /></td>
-            <td width='100px' align='right'><a id='mdpFBcancel' href=''><strong>Cancel</strong></a></td>
-          </tr>
-        </table>
-        
+
+        <div id="mdpFBtools" class="cf">
+          <div id="emptyFBError" aria-live="assertive" aria-atomic="true">
+          </div>
+          <div class="mdpFBbuttons">
+            <input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" />
+            <a id='mdpFBcancel' href=''><strong>Cancel</strong></a>
+          </div>
+        </div>
+
       </xsl:element>
       
     </div>

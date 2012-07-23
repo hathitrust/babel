@@ -164,6 +164,19 @@ input#email
   margin-top: 1em;
 }
 
+#emptyFBError {
+  float: left;
+  margin-top: 1em;
+}
+
+.mdpFBbuttons {
+  float: right;
+  text-align: right;
+}
+
+.mdpFBbuttons input {
+  margin-right: 2em;
+}
 
 /* Feedback received page */
 
