@@ -1267,16 +1267,34 @@ li.viewall {
   overflow: hidden;
 }
 
+#PageInfo { 
+  margin: 0 1em .5em 0em;
+  overflow: hidden;
+}
+
+
 .resultsPerPage {
   position: relative;
   float: left;
 }
+
+#resultsPerPage {
+  position: relative;
+  float: left;
+}
+
 
 .pagingNav {
 	margin-left: 10px;
 }
 
 .PageWidget { 
+  list-style-type: none;
+  margin: 0 0 0 2em;
+  padding: 0;
+} 
+
+#PageWidget { 
   list-style-type: none;
   margin: 0 0 0 2em;
   padding: 0;
@@ -1296,6 +1314,23 @@ li.viewall {
   padding:0.2em 0.3em;
                  
 }
+
+
+#PageWidget li {
+/** Suz says change this to match ht catalog
+  border: 1px solid #CCC;
+  float: left;
+  line-height: 1.1em;
+  margin: 0 0 0 0.3em;
+  padding: 0 .5em 0 .5em;
+**/
+  float: left;
+  line-height: 1.1em;
+  margin: 0 0 0 0.3em;
+  padding:0.2em 0.3em;
+                 
+}
+
 
 .greyedOut { 
   color: gray;
