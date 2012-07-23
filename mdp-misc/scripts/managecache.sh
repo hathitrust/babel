@@ -24,23 +24,30 @@
 # maximum number of days since last use to keep files
 MAXDAYS=7
 
-# minimum percentage of space and inodes that must be free
-MINFREE=50
-
 renice 19 $$ > /dev/null 2>&1
 
 EXIT=0
 
-CACHEDIRS=$*
-if [ "X$CACHEDIRS" = "X" ]
+CACHEDIRSPECS=$*
+if [ "X$CACHEDIRSPECS" = "X" ]
   then
-  echo "usage: $0 /path/to/cache"
+  echo "usage: $0 /path/to/purge:min%free [...]"
   exit 1
 fi
 
-for CACHEDIR in $CACHEDIRS; do
+for CACHEDIRSPEC in $CACHEDIRSPECS; do
+  CACHEDIR=`echo "$CACHEDIRSPEC" | cut -d: -f1`
+  MINFREE=`echo "$CACHEDIRSPEC" | cut -d: -f2`
   if [ ! -d $CACHEDIR ]; then
-    echo "warning: cache directory $CACHEDIR does not exist"
+    echo "warning: cache directory '$CACHEDIR' does not exist"
+
+    EXIT=1
+  elif [ `echo "$MINFREE" | egrep -c '^[0-9][0-9]*$'` -ne 1 ]; then
+    echo "warning: minimum percent free '$MINFREE' must be an integer"
+
+    EXIT=1
+  elif [ \( "$MINFREE" -lt 1  \) -o \( "$MINFREE" -gt 99 \) ]; then
+    echo "warning: minimum percent free '$MINFREE' must be 0 < n < 100"
 
     EXIT=1
   else
