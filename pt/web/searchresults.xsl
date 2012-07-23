@@ -78,7 +78,7 @@
 
       <body class="yui-skin-sam">
         <div>
-          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages!=''">
+          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/text()">
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
           </xsl:if>
         </div>
@@ -479,6 +479,7 @@
       <span>
        <xsl:element name="img">
          <xsl:attribute name="src">//common-web/graphics/triangle_left.gif</xsl:attribute>
+         <xsl:attribute name="alt"> </xsl:attribute>
        </xsl:element>
       </span>
       <xsl:element name="a">

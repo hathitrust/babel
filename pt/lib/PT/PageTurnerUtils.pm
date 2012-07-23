@@ -41,7 +41,25 @@ use MdpItem;
 
 =item format_OCR_text
 
-Description
+The special formatting syntax e.g. {lt:}, comes from Solr
+configuration specs such as in
+/l/solrs/dev/ptsearch/conf/solrconfig.xml:
+
+    <!-- multi-colored tag FragmentsBuilder for FVH -->
+    <fragmentsBuilder name="colored"
+                      class="org.apache.solr.highlight.ScoreOrderFragmentsBuilder"
+                      default="true">
+      <lst name="defaults">
+        <str name="hl.tag.pre">
+        <![CDATA[{lt:}strong class="solr_highlight_1"{gt:},
+                 {lt:}strong class="solr_highlight_2"{gt:},
+                 {lt:}strong class="solr_highlight_3"{gt:},
+                 {lt:}strong class="solr_highlight_4"{gt:},
+                 {lt:}strong class="solr_highlight_5"{gt:},
+                 {lt:}strong class="solr_highlight_6"{gt:}]]></str>
+        <str name="hl.tag.post"><![CDATA[{lt:}/strong{gt:}]]></str>
+      </lst>
+    </fragmentsBuilder>
 
 =cut
 
@@ -52,8 +70,7 @@ sub format_OCR_text {
 
     Utils::map_chars_to_cers($OCR_text_ref, [q{"}, q{'}], 1);
 
-    $$OCR_text_ref =~ s,{lt:},<,go;
-    $$OCR_text_ref =~ s,{gt:},> ,go;
+    $$OCR_text_ref =~ s,{lt:}(.*?){gt:},<$1>,go;
 
     $$OCR_text_ref =~ s!^([^\n]+)\n!$1<br />\n!gsm
       if ($full_page);
