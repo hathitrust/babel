@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1342726526'" />
+  <xsl:variable name="timestamp" select="'?_=1343151655'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/mb/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
@@ -23,6 +23,8 @@
      <script type="text/javascript" src="/mb/yui2-lib/build/dragdrop/dragdrop-min.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/yui2-lib/build/container/container-min.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/yui2-lib/build/connection/connection-min.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/jquery/jquery.trap.min.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/jquery/boxy/jquery.boxy.js{$timestamp}"></script>
      <script type="text/javascript" src="//common-web/js/feedbackCBForm.js{$timestamp}"></script>
      <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js{$timestamp}"></script>
      <script type="text/javascript" src="/mb/js/newCollOverlayCB.js{$timestamp}"></script>
@@ -44,6 +46,8 @@
  <xsl:template name="load_uncompressed_css">
  <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/fonts/fonts-min.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/mb/yui2-lib/build/container/assets/skins/sam/container.css{$timestamp}"/>
+ <link rel="stylesheet" type="text/css" href="//common-web/jquery/boxy/boxy.css{$timestamp}"/>
+ <link rel="stylesheet" type="text/css" href="//common-web/feedback.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="//common-web/MBooksCol.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/mb/mb.css{$timestamp}"/>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">

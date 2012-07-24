@@ -48,6 +48,8 @@ Section:YUI
 Section:LOCAL_JS 
 # These should be listed with the unminimized name.  The script will
 # run yuicompress on them
+//common-web/jquery/jquery.trap.min.js
+//common-web/jquery/boxy/jquery.boxy.js
 //common-web/js/feedbackCBForm.js
 //common-web/js/newCollOverlayCore.js
 /mb/web/js/newCollOverlayCB.js
@@ -76,6 +78,8 @@ Section:CSS
 # css files, note last one overides earlier
 /mb/web/yui2-lib/build/fonts/fonts-min.css
 /mb/web/yui2-lib/build/container/assets/skins/sam/container.css
+//common-web/jquery/boxy/boxy.css
+//common-web/feedback.css
 //common-web/MBooksCol.css
 /mb/web/mb.css
 
