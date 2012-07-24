@@ -53,6 +53,8 @@ Section:LOCAL_JS
 # The script will run yuicompress on them
 
 # This feedback form script is used for LS.
+//common-web/jquery/jquery.trap.min.js
+//common-web/jquery/boxy/jquery.boxy.js
 //common-web/js/feedbackLSForm.js
 
 # Copied from MBooks, Are these used by ls?
@@ -76,4 +78,6 @@ Section:CSS
 # css files, note last one overides earlier
 /ls/web/yui2-lib/build/fonts/fonts-min.css
 /ls/web/yui2-lib/build/container/assets/skins/sam/container.css
+//common-web/jquery/boxy/boxy.css
+//common-web/feedback.css
 //common-web/MBooksCol.css
