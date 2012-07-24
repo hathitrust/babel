@@ -651,6 +651,7 @@ sub make_query_clause{
           });
     
     #check to see if there is a single Han character surrounded by nonHan characters
+    # have to do this here before we uri escape
     my  $UNIHAN = $self->isUnihan($QUERY);
     $QUERY = uri_escape_utf8( $QUERY );
     
@@ -704,10 +705,9 @@ sub make_query_clause{
     
     $Q= ' '.  '_query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
 
-    # if query field is ocr or ocronly check for Han characters
-    # and if there is a single Han character alone or surrounded by non-Hans
+
+    # Check for han characters. If there is a single Han character alone or surrounded by non-Hans
     # also search the han unigrams
-    # is it ok to hard code the unihan field name here or should we read config file>?
     # Do we add some boost or leave this with no boost relative to the ocr fields?
     my $han_QF;
     my $han_PF;
@@ -716,15 +716,10 @@ sub make_query_clause{
     if ($UNIHAN)
 
     {
-        
-        if ( $field eq 'ocronly')
+
+        if($field ne "isn")
         {
-            $Q.= ' OR hanUnigrams:' . $QUERY;
-        }
-    
-        elsif($field ne "isn")
-        {
-            #need to create an author/title/subject han query and OR it to existing $Q
+            #create a han unigram query and OR it to regular query
             my $map2han = $config->get_map2han();
             
             $han_QF = $self->makeHanQuery('qf',$weights->{'qf'},$map2han);
