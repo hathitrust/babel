@@ -147,7 +147,6 @@
 #mdpFeedbackForm label
 {
   cursor: pointer;
-  display: block;
 }
 
 #mdpEmail
@@ -158,6 +157,10 @@
 label#mdpEmailLabel
 {
   font-style: italic;
+}
+
+#mdpCommentsLabel, #mdpEmailLabel {
+  display: block;
 }
 
 input#email

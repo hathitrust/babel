@@ -18,10 +18,10 @@ var displayCBFeedback = function() {
                     '<input type="hidden" value="Collection Builder" name="id" />' +
                     '<div id="mdpEmail" class="row">' + 
                       '<label id="mdpEmailLabel" for="email">To request a reply, enter your email address below.</label>' + 
-                      '<span><input id="email" name="email" class="overlay" value="{DEFAULT_EMAIL_VALUE}" length="50" maxlength="{emailLen}" /></span>' + 
+                      '<span><input id="email" name="email" class="overlay" value="{DEFAULT_EMAIL_VALUE}" size="50" maxlength="{emailLen}" /></span>' + 
                     '</div>' + 
                     '<div id="mdpFlexible_2_Other" class="row">' + 
-                      '<label for="comments">Problems or comments?</label>' + 
+                      '<label id="mdpCommentsLabel" for="comments">Problems or comments?</label>' + 
                       '<textarea name="comments" id="comments" class="overlay" rows="4" maxlength="{commentsLen}"></textarea>' + 
                     '</div>' +
                     '<div id="emptyFBError" aria-live="assertive" aria-atomic="true"></div>' + 
@@ -61,7 +61,7 @@ var displayCBFeedback = function() {
           clickclear(this, DEFAULT_EMAIL_VALUE);
         })
         .bind('blur', function() {
-          clickclear(this, DEFAULT_EMAIL_VALUE);
+          clickrecall(this, DEFAULT_EMAIL_VALUE);
         })
 
       $("input[type=submit], #mdpFBcancel", $frm).click(function(e) {
