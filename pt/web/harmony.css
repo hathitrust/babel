@@ -726,9 +726,15 @@ div.mdpScrollableContainer {
 }
 
 #versionIcon {
-  padding-left: 8px;
-  position: relative;
-  top: 3px;
+  display: inline-block;
+  height: 18px;
+  width: 18px;
+  margin-left: 5px;
+  background-image: url(./common-web/graphics/harmony/icon_question.png);
+  background-repeat: no-repeat;
+  text-indent: -10000px;
+  text-transform: capitalize;
+  clip: rect(0, 0, 0, 0);
   cursor: pointer;
 }
 
