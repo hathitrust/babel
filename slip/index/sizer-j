@@ -82,19 +82,20 @@ else {
 
 
 sub sz_get_usage {
-    my $s .= qq{Usage: sizer-j -r run [-S][-z][-T]
+    my $s .= qq{Usage: sizer-j -r run [-S][-z][-u][-T]
                   where -S updates the snapshot status
                         -T test compilation
+                        -u performs suspension/unsuspension vs. max shard size in config
                         -z updates the index size\n};
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_S, $opt_z, $opt_T);
+our ($opt_d, $opt_r, $opt_S, $opt_z, $opt_T, $opt_u);
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-my $ops = getopts('dr:STz');
+my $ops = getopts('dr:STzu');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -107,7 +108,8 @@ if (! $RUN) {
 }
 
 my $SNAPSHOT = $opt_S; # Optional
-my $SIZE = $opt_z;
+my $SUSPEND = $opt_u; # Optional
+my $SIZE = $opt_z; # Optional
 
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
@@ -327,11 +329,6 @@ sub sz_update_indexdir_size {
     use constant COMMIT_TIMEOUT => 43200;
 
     foreach my $shard (@shards) {
-        # Goal is to suspend shard if it has grown to the max allowed
-        # but to un-suspend them if they have shrunk due to commits or
-        # an optimize.
-        my $suspended = Db::shard_is_suspended($C, $dbh, $run, $shard);
-
         my $index_dir = $config->get('dir_for_shard_' . $shard);
 
         # Unless storage is shared, the machine running this sizer-j
@@ -357,20 +354,27 @@ sub sz_update_indexdir_size {
 
         __output("shard=$shard size=$size_now ($size_now_GB GB)\n");
 
-        if ($size_now_GB > $max_size_GB) {
-            # If it was not suspended and now should be.
-            if (! $suspended) {
-                Db::suspend_shard($C, $dbh, $run, $shard);
-                __output("shard=$shard suspended\n");
-                Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'SUSPENDED');
+        if ($SUSPEND) {
+            # Goal is to suspend shard if it has grown to the max
+            # allowed but to un-suspend them if they have shrunk due
+            # to commits or an optimize.
+            my $suspended = Db::shard_is_suspended($C, $dbh, $run, $shard);
+
+            if ($size_now_GB > $max_size_GB) {
+                # If it was not suspended and now should be.
+                if (! $suspended) {
+                    Db::suspend_shard($C, $dbh, $run, $shard);
+                    __output("shard=$shard suspended\n");
+                    Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'SUSPENDED');
+                }
             }
-        }
-        elsif  ($size_now_GB < $max_size_GB) {
-            # If it was suspended and now should not be.
-            if ($suspended) {
-                Db::unsuspend_shard($C, $dbh, $run, $shard);
-                __output("shard=$shard un-suspended\n");
-                Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'UNSUSPENDED') ;
+            elsif  ($size_now_GB < $max_size_GB) {
+                # If it was suspended and now should not be.
+                if ($suspended) {
+                    Db::unsuspend_shard($C, $dbh, $run, $shard);
+                    __output("shard=$shard un-suspended\n");
+                    Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'UNSUSPENDED') ;
+                }
             }
         }
     }
