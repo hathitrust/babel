@@ -650,6 +650,9 @@ sub make_query_clause{
               return qq{Solr query q $i ="$s"}
           });
     
+    #check to see if there is a single Han character surrounded by nonHan characters
+    # have to do this here before we uri escape
+    my  $UNIHAN = $self->isUnihan($QUERY);
     $QUERY = uri_escape_utf8( $QUERY );
     
     DEBUG('query_uri',
@@ -696,17 +699,131 @@ sub make_query_clause{
     my $MM = qq{ mm='} . $mm . qq{' };
     my $TIE = qq{ tie='} . $tie . qq{' };
 
+    
     my $Q;
     
-
+    
     $Q= ' '.  '_query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
+
+
+    # Check for han characters. If there is a single Han character alone or surrounded by non-Hans
+    # also search the han unigrams
+    # Do we add some boost or leave this with no boost relative to the ocr fields?
+    my $han_QF;
+    my $han_PF;
+    my $han_Q;
+    
+    if ($UNIHAN)
+
+    {
+
+        if($field ne "isn")
+        {
+            #create a han unigram query and OR it to regular query
+            my $map2han = $config->get_map2han();
+            
+            $han_QF = $self->makeHanQuery('qf',$weights->{'qf'},$map2han);
+            $han_PF = $self->makeHanQuery('pf',$weights->{'pf'},$map2han);
+            
+            $han_Q= ' '.  '_query_:"{!edismax' . $han_QF . $han_PF . $MM .$TIE  . '} ' .  $QUERY .'"';
+            # OR with bigrams in case its a hiragana/han combination
+            $Q.= ' OR ' . $han_Q;
+            # for degugging use just han query no OR
+            #$Q = $han_Q;
+        }
+        
+    }
+    
+      #  ASSERT(0,qq{han unigram found $Q});
 
     return $Q;
     
 }
 
-# ---------------------------------------------------------------------
+# --------------------------------------------------------------------
+sub makeHanQuery
+{
+    my $self = shift;
+    my $type = shift;
+    my $weights = shift;
+    my $map2han = shift;
+    
+    
 
+#            if field is in the map2han hash add han version to string
+#                otherwise skip it
+ 
+    my $string;
+    my $han_field;
+    
+    foreach my $el (@{$weights})
+    {
+        my $field=$el->[0];
+        my $han_field=$map2han->{$field};
+        
+        if (defined ($han_field))
+        {
+            my $weight=$el->[1];
+            $string.=$han_field . '^' . $weight . '+'; 
+        }
+    }
+
+## end code from dismax to sting
+    my $QF = qq{ qf='} . $string . qq{' };
+    my $PF = qq{ pf='} . $string . qq{' };
+    
+    if ($type  eq 'pf')
+    {
+        return $PF;
+    }
+    else
+    {
+        return $QF;
+    }
+    
+}
+
+
+# --------------------------------------------------------------------
+sub isUnihan
+{
+    my $self = shift;
+    my $q = shift;
+    my $return=undef;
+    my $UNIHAN=undef;
+
+    $q=~s/\s//g;    
+
+    eval
+    {
+        if ($q =~/\p{Han}/)
+        {
+            if ($q =~/^\p{Han}\P{Han}*$/)
+            {
+                $UNIHAN="true";
+            }
+            if ($q =~/^\P{Han}*\p{Han}$/)
+            {
+                $UNIHAN="true";
+            }
+            if  ($q =~/(\P{Han}\p{Han}\P{Han})/)
+            {
+                $UNIHAN="true";
+            }
+         }
+
+        
+    };
+    
+    # change this to an ASSERT
+    if ($@)
+    {
+        print STDERR "bad char $_\n";
+    }
+    return $UNIHAN;
+}
+
+# ---------------------------------------------------------------------
 sub getParenQuery
 {
     my $self = shift;
