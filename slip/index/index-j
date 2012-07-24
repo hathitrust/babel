@@ -275,7 +275,7 @@ sub i_processing_loop {
         my $num_ids = Read_indexing_queue($C, $Dedicated_Shard);
 
         # Exit if the queue is empty
-        handle_queue_empty($C, $RUN, $PID, $HOST, $num_ids);
+        handle_queue_empty($C, $RUN, $PID, $HOST, $Dedicated_Shard, $num_ids);
         # POSSIBLY NOTREACHED
 
         $slices_taken++;
@@ -597,11 +597,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_queue_empty {
-    my ($C, $run, $pid, $host, $num_sliced_from_queue) = @_;
+    my ($C, $run, $pid, $host, $dedicated_shard, $num_sliced_from_queue) = @_;
 
     if ($num_sliced_from_queue == 0) {
-        Log_queue_empty($C, $run, $pid, $host);
-        DEBUG('me', qq{DEBUG: queue empty ... exit});
+        Log_queue_empty($C, $run, $pid, $host, $dedicated_shard);
+        DEBUG('me', qq{DEBUG: queue empty shard=$dedicated_shard ... exit});
         exit 0;
     }
 }
@@ -726,9 +726,9 @@ Description
 
 # ---------------------------------------------------------------------
 sub Log_queue_empty {
-    my ($C, $run, $pid, $host) = @_;
+    my ($C, $run, $pid, $host, $dedicated_shard) = @_;
 
-    my $s = qq{***QUEUE EMPTY (exit): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
+    my $s = qq{***QUEUE EMPTY (for shard=$dedicated_shard, exit): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
