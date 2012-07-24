@@ -1066,9 +1066,10 @@
           </div>
         </div>
 
+        <div id="emptyFBError" aria-live="assertive" aria-atomic="true">
+        </div>
+
         <div id="mdpFBtools" class="cf">
-          <div id="emptyFBError" aria-live="assertive" aria-atomic="true">
-          </div>
           <div class="mdpFBbuttons">
             <input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" />
             <a id='mdpFBcancel' href=''><strong>Cancel</strong></a>
