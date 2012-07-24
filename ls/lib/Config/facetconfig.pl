@@ -184,6 +184,45 @@ $yop2name={
             'yop-in'=>"pdate",
 };
 
+#----------------------------------------------------------------------
+# 
+$map2han={
+          'ocr'=>'hanUnigrams',
+          'title'=>'titleHan',
+	'author'=>'authorHan',
+	'author2'=>'author2Han',
+	'allfields'=>'allfieldsHan',
+	'allfieldsProper'=>'allfieldsProperHan',
+	'publisher'=>'publisherHan',
+	'Vauthor'=>'VauthorHan',
+	'author_top'=>'author_topHan',
+	'author_rest'=>'author_restHan',
+	'volume_enumcron'=>'volume_enumcronHan',
+	'Vtitle'=>'VtitleHan',
+	'title_ab'=>'title_abHan',
+	'title_a'=>'title_aHan',
+	'titleProper'=>'titleProperHan',
+	'title_top'=>'title_topHan',
+	'title_topProper'=>'title_topProperHan',
+	'title_restProper'=>'title_restProperHan',
+	'title_rest'=>'title_restHan',
+	'series'=>'seriesHan',
+	'series2'=>'series2Han',
+	'serialTitle_ab'=>'serialTitle_abHan',
+	'serialTitle_a'=>'serialTitle_aHan',
+	'serialTitle'=>'serialTitleHan',
+	'serialTitleProper'=>'serialTitleProperHan',
+	'serialTitle_restProper'=>'serialTitle_restProperHan',
+	'serialTitle_rest'=>'serialTitle_restHan',
+	'topic'=>'topicHan',
+	'topicProper'=>'topicProperHan',
+	'fullgenre'=>'fullgenreHan',
+	'genre'=>'genreHan',
+	'hlb3'=>'hlb3Han',
+	'geographic'=>'geographicHan',
+	'country_of_pub'=>'country_of_pubHan',
+	'fullgeographic'=>'fullgeographicHan',
+         };
 
 #----------------------------------------------------------------------
 # load list of languages and formats for dropdown in advanced search menu

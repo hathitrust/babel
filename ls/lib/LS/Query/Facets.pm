@@ -651,6 +651,7 @@ sub make_query_clause{
           });
     
     #check to see if there is a single Han character surrounded by nonHan characters
+    # have to do this here before we uri escape
     my  $UNIHAN = $self->isUnihan($QUERY);
     $QUERY = uri_escape_utf8( $QUERY );
     
@@ -704,20 +705,33 @@ sub make_query_clause{
     
     $Q= ' '.  '_query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
 
-    # if query field is ocr or ocronly check for Han characters
-    # and if there is a single Han character alone or surrounded by non-Hans
+
+    # Check for han characters. If there is a single Han character alone or surrounded by non-Hans
     # also search the han unigrams
-    # is it ok to hard code the unihan field name here or should we read config file>?
     # Do we add some boost or leave this with no boost relative to the ocr fields?
-    if ($field eq 'ocr' || $field eq 'ocronly')
+    my $han_QF;
+    my $han_PF;
+    my $han_Q;
+    
+    if ($UNIHAN)
+
     {
-        
-        if ($UNIHAN)
+
+        if($field ne "isn")
         {
+            #create a han unigram query and OR it to regular query
+            my $map2han = $config->get_map2han();
             
+            $han_QF = $self->makeHanQuery('qf',$weights->{'qf'},$map2han);
+            $han_PF = $self->makeHanQuery('pf',$weights->{'pf'},$map2han);
             
-            $Q.= ' OR hanUnigrams:' . $QUERY;
+            $han_Q= ' '.  '_query_:"{!edismax' . $han_QF . $han_PF . $MM .$TIE  . '} ' .  $QUERY .'"';
+            # OR with bigrams in case its a hiragana/han combination
+            $Q.= ' OR ' . $han_Q;
+            # for degugging use just han query no OR
+            #$Q = $han_Q;
         }
+        
     }
     
       #  ASSERT(0,qq{han unigram found $Q});
@@ -725,6 +739,50 @@ sub make_query_clause{
     return $Q;
     
 }
+
+# --------------------------------------------------------------------
+sub makeHanQuery
+{
+    my $self = shift;
+    my $type = shift;
+    my $weights = shift;
+    my $map2han = shift;
+    
+    
+
+#            if field is in the map2han hash add han version to string
+#                otherwise skip it
+ 
+    my $string;
+    my $han_field;
+    
+    foreach my $el (@{$weights})
+    {
+        my $field=$el->[0];
+        my $han_field=$map2han->{$field};
+        
+        if (defined ($han_field))
+        {
+            my $weight=$el->[1];
+            $string.=$han_field . '^' . $weight . '+'; 
+        }
+    }
+
+## end code from dismax to sting
+    my $QF = qq{ qf='} . $string . qq{' };
+    my $PF = qq{ pf='} . $string . qq{' };
+    
+    if ($type  eq 'pf')
+    {
+        return $PF;
+    }
+    else
+    {
+        return $QF;
+    }
+    
+}
+
 
 # --------------------------------------------------------------------
 sub isUnihan

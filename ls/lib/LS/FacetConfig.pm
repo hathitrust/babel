@@ -95,12 +95,29 @@ sub _initialize
         $self->__set_yop_input_order($yop_input_order);
         $self->__set_yop2label($yop2label);
         $self->__set_yop2name($yop2name);
-
+        $self->__set_map2han($map2han);
         $self->__set_format_list($formats_list);
         $self->__set_language_list($language_list);
     };
         
 } 
+
+
+# ---------------------------------------------------------------------
+
+sub __set_map2han
+{
+    my $self = shift;
+    my $map2han = shift;
+    $self->{'map2han'} = $map2han;
+}
+
+sub get_map2han
+{
+    my $self = shift;
+    return    $self->{'map2han'};
+}
+
 
 # ---------------------------------------------------------------------
  
