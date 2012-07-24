@@ -136,8 +136,10 @@ sub cont_get_usage {
              and/or 
           number of producers per shard for <shard> or all shards
 
-       control-j -k restore -r run
+       control-j -k restore -r run [-s error_type] 
           move ids from error list back to queue
+            where -s defaults to ALL errors else one of
+              o=ocr i=indexing m=metadata c=critical s=server
 
        control-j -k unstick -r run
           mark queued ids with state "available" again when left behind as "processing"
@@ -150,9 +152,9 @@ sub cont_get_usage {
     return $s;
 }
 
-our ($opt_k, $opt_r, $opt_R, $opt_m, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_L, $opt_C,$opt_T);
+our ($opt_k, $opt_r, $opt_R, $opt_m, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_L, $opt_C, $opt_T, $opt_s);
 
-my $ops = getopts('k:r:R:n:m:h:edDVOt:CT');
+my $ops = getopts('k:r:R:n:m:h:edDVOt:CTs:');
 
 # Required
 my $KOMMAND = $opt_k;
@@ -165,6 +167,7 @@ my $CHECK = $opt_C;
 my $RIGHTS = $opt_V;
 
 my $TIMESTAMP = $opt_t;
+my $ERROR_TYPE = $opt_s || '';
 
 if (! $KOMMAND) {
     my $s = cont_get_usage();
@@ -231,13 +234,30 @@ eval {
             my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
             __output($s);
             __non_interactive_err_output($rc, $s);
-
             exit $rc;
         }
         __validate_host_vs_shard_config($C, $DBH, $RUN);
     }
     elsif ($KOMMAND eq 'restore') {
-        c_restore($C, $DBH, $RUN);
+        my %map = (
+                   'i' => IX_INDEX_FAILURE,
+                   's' => IX_SERVER_GONE,
+                   'o' => IX_DATA_FAILURE,
+                   'm' => IX_METADATA_FAILURE,
+                   'n' => IX_NO_INDEXER_AVAIL,
+                   ''  => undef,
+                  );
+        if ($ERROR_TYPE) {
+            if (! grep(/^$ERROR_TYPE$/, qw(i s o m n))) {
+                my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+                my $s = qq{-s option=$ERROR_TYPE not valid\n} . cont_get_usage();
+                __output($s);
+                __non_interactive_err_output($rc, $s);
+                exit $rc;
+            }
+        }
+
+        c_restore($C, $DBH, $RUN, $map{$ERROR_TYPE});
     }
     elsif ($KOMMAND eq 'unstick') {
         c_unstick($C, $DBH, $RUN);
@@ -768,11 +788,12 @@ Description
 
 # ---------------------------------------------------------------------
 sub c_restore {
-    my ($C, $dbh, $run) = @_;
+    my ($C, $dbh, $run, $type) = @_;
 
-    my $num_restored = Db::insert_restore_errors_to_queue($C, $dbh, $run);
-    Log_restore($C, $run, $num_restored);
-    __output(qq{\tRESTORE run=$run restored=$num_restored\n});
+    my $num_restored = Db::insert_restore_errors_to_queue($C, $dbh, $run, $type);
+    my $error_type = SLIP_Utils::Common::IXconstant2string($type);
+    Log_restore($C, $run, $num_restored, $error_type);
+    __output(qq{\tRESTORE run=$run restored=$num_restored type=$error_type\n});
 }
 
 # ---------------------------------------------------------------------
@@ -1134,9 +1155,9 @@ Description
 
 # ---------------------------------------------------------------------
 sub Log_restore {
-    my ($C, $run, $num_restored) = @_;
+    my ($C, $run, $num_restored, $type) = @_;
 
-    my $s = qq{***RESTORE: } . Utils::Time::iso_Time() . qq{ r=$run restored=$num_restored};
+    my $s = qq{***RESTORE: } . Utils::Time::iso_Time() . qq{ r=$run restored=$num_restored, error_type=$type};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
