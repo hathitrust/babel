@@ -10,8 +10,10 @@ see usage
 
 =head1 DESCRIPTION
 
-Optimize a given shard. With -S1 (default, optional) a multi-stage
-optimize that is a function of the number of segments broken down by powers of 2.
+Optimize a given shard or all shards. With -S1 (default, optional) a
+multi-stage optimize that is a function of the number of segments
+broken down by powers of 2. Staging not supported when optimizing all
+shards.
 
 Timeout is forced to ∞, i.e. -t is ignored. With optional, -O n param
 optimize down to that number of segments either staged or not. If not
@@ -30,6 +32,7 @@ see help
 =cut
 
 use strict;
+use warnings;
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -78,10 +81,10 @@ else {
 $| = 1;
 
 sub opt_get_usage {
-    my $s .= qq{Usage: optimize-j -r run -R shard -On [-S0 | -S1][-t timeout][-d][-n][-T]
+    my $s .= qq{Usage: optimize-j -r run [-R shard [-S0 | -S1]] -On  [-t timeout][-d][-n][-T]
        where -S0 is non-staged (default), -S1 is staged
              -On optimizes to n segments. If -S1, then in powers of 2 down to n={1,2,4,...} segments
-             -T timeout overrides default long timeout (48 hours)
+             -t timeout overrides default long timeout (48 hours). Optimizing all shards forces a 10 sec. timeout.
              -n runs without calling optimize\n};
     return $s;
 }
@@ -91,75 +94,29 @@ our ($opt_r, $opt_R, $opt_t, $opt_S, $opt_d, $opt_O, $opt_n, $opt_T);
 my $ops = getopts('r:R:t:dS:O:nT');
 
 use constant LARGE_TIMEOUT => 172800; # 48 hours
+use constant SMALL_TIMEOUT => 10; # 10 sec when optimizing all shards at once
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
-
-my $NOOP = $opt_n; # optional
-my $RUN = $opt_r; # Required
-my $LIMIT_SEGS = $opt_O; # Required
-if (! defined($LIMIT_SEGS)) {
-    my $s = qq{limit_segs (-O) param missing: } . opt_get_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
-
-my $STAGED = 0; # optional
-if (defined($opt_S)) {
-    $STAGED = $opt_S;
-}
-
-# Force a long timeout unless explicitly over-ridden for some
-# reason. We do no want to timeout before optimize, staged or not,
-# finishes so check-j will see final result. Optimize to 1 or 2
-# segs can take a long time.
-my $TIMEOUT = defined($opt_t) ? $opt_t : LARGE_TIMEOUT; # optional
-
-if (! $RUN) {
-    my $s = qq{run (-r) parameter missing } . opt_get_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
-
-my $SHARD = $opt_R; # Required
-if (! defined($SHARD)) {
-    my $s = qq{shard (-R) parameter missing } . opt_get_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-if ($INTERACTIVE) {
-    my $s;
-    if ($STAGED) {
-        $s = q{Staged optimize. DO NOT KILL script until finished! OK? [N] };
-        __confirm($s);
-    }
-
-    $s = q{Are you running from a shell that can see the Solr index directory for `ls`? [N] };
-    __confirm($s);
+my $NOOP = $opt_n; # optional
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $s = qq{run (-r) parameter missing\n} . opt_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
 }
 
-# Do not try to optimize this shard while I am running already
-my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
-my $Lock_File = "/tmp/optimize-" . $lock_str . "-lock.sem";
-my $Semaphore = new Semaphore($Lock_File);
-if (! $Semaphore) {
-    __output("Could not get semaphore file: $Lock_File\n");
-    exit 0;
-}
-END {
-    $Semaphore->unlock()
-        if ($Semaphore);
+my $LIMIT_SEGS = $opt_O; # Required
+if (! defined($LIMIT_SEGS)) {
+    my $s = qq{limit_segs (-O) param missing\n} . opt_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
 }
 
 if (defined($opt_d)) {
@@ -176,45 +133,112 @@ eval {
     $db = new Database($config);
 };
 if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, qq{optimize-j run=$RUN shard=$SHARD}, $@);
+    SLIP_Utils::Common::Log_database_connection_error($C, qq{optimize-j run=$RUN}, $@);
     exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
 }
 $C->set_object('Database', $db);
 
-my $DBH = $db->get_DBH();
-my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
-
-
-my $optimize_enabled = 
-  (
-   $NOOP
-   ||
-   $INTERACTIVE
-   ||
-   Db::Select_optimize_enabled($C, $DBH, $RUN, $SHARD)
-  );
-
-# Adjust $LIMIT_SEGS for full optimize?
-if ($optimize_enabled) {
-    eval {
-        if (Scheduler::optimize_do_full_optimize($C, $RUN, $SHARD)) {
-            $LIMIT_SEGS = 1;
-        }
-    };
-    if ($@) {
-        Log_optimize_error($C, $RUN, $SHARD, "Problem with schedule file: $@");
-        handle_optimize_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_BAD_SCHED_FILE);
-    }   
-
-    eval {
-        my $s =
-          "optimize-j: OPTIMIZE shard=$SHARD staged=$STAGED timeout=$TIMEOUT"
-            . " limit_to_segments=$LIMIT_SEGS\n";
+my $SHARD = $opt_R; # Optional
+my $STAGED = 0; # Optional
+if (defined($opt_S) && $opt_S) {
+    if (! defined($SHARD)) {
+        my $s = qq{shard (-R) parameter missing: required for staging support\n} . opt_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
         __output($s);
-        
-        handle_optimize_rc($C, $DBH, $RUN, $SHARD, $HOST,
-                           c_optimize($C, $RUN, $DBH, $SHARD, $TIMEOUT, $STAGED, $LIMIT_SEGS));
-    };
+        __non_interactive_err_output($rc, $s);
+        exit $rc;
+    }
+
+    $STAGED = $opt_S;
+}
+
+# Do not try to optimize this shard while I am running already.  Loop
+# if doing all shards.
+my @SHARDS = (defined $SHARD) ? ($SHARD) : $C->get_object('MdpConfig')->get('num_shards_list');
+my $ALL_SHARDS = (scalar(@SHARDS) > 1);
+
+if ($INTERACTIVE) {
+    my $s;
+    if ($STAGED) {
+        $s = q{Staged optimize. DO NOT KILL script until finished! OK? [N] };
+        __confirm($s);
+    }
+
+    $s = q{Are you running from a shell that can see the Solr index directory for `ls`? [N] };
+    __confirm($s);
+
+    if ($ALL_SHARDS) {
+        $s = qq{OK to optimize ALL shards run=$RUN limit segments=$LIMIT_SEGS shards=(} . join(' ', @SHARDS) . q{)? [N] };
+        __confirm($s);
+    }
+}
+
+# Use a long timeout when optimizing one shard unless explicitly
+# over-ridden for some reason. We do no want to timeout before
+# optimize, staged or not, finishes so check-j will see final
+# result. Optimize to 1 or 2 segs can take a long time. Otherwise use
+# a short timeout.
+my $TIMEOUT = LARGE_TIMEOUT; # optional
+if (defined($opt_t)) {
+    $TIMEOUT = $opt_t;
+}
+elsif ($ALL_SHARDS) {
+    $TIMEOUT = SMALL_TIMEOUT;
+}
+
+# Do not try to optimize this shard while I am running already
+my $Semaphore;
+if (! $ALL_SHARDS) {
+    my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
+    my $Lock_File = "/tmp/optimize-" . $lock_str . "-lock.sem";
+    my $Semaphore = new Semaphore($Lock_File);
+    if (! $Semaphore) {
+        __output("Could not get semaphore file: $Lock_File\n");
+        exit 0;
+    }
+}
+
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+foreach my $__shard (@SHARDS) {
+    my $DBH = $db->get_DBH();
+    my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $__shard);
+    my $optimize_enabled =
+      (
+       $NOOP
+       ||
+       $INTERACTIVE
+       ||
+       Db::Select_optimize_enabled($C, $DBH, $RUN, $__shard)
+      );
+
+    # Adjust $LIMIT_SEGS for full optimize?
+    if ($optimize_enabled) {
+        if (! $ALL_SHARDS) {
+            eval {
+                if (Scheduler::optimize_do_full_optimize($C, $RUN, $__shard)) {
+                    $LIMIT_SEGS = 1;
+                }
+            };
+            if ($@) {
+                Log_optimize_error($C, $RUN, $__shard, "Problem with schedule file: $@");
+                handle_optimize_rc($C, $DBH, $RUN, $__shard, $HOST, $SLIP_Utils::States::RC_BAD_SCHED_FILE);
+            }
+        }
+
+        eval {
+            my $s =
+              "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED timeout=$TIMEOUT"
+                . " limit_to_segments=$LIMIT_SEGS\n";
+            __output($s);
+
+            handle_optimize_rc($C, $DBH, $RUN, $__shard, $HOST,
+                               c_optimize($C, $RUN, $DBH, $__shard, $TIMEOUT, $STAGED, $LIMIT_SEGS));
+        };
+    }
 }
 
 exit 0;
@@ -278,7 +302,6 @@ sub handle_optimize_rc {
     else {
         Log_optimize($C, $run, $shard, $s);
     }
-
 
     exit $rc if ($rc > 0);
 }
@@ -375,12 +398,15 @@ sub c_optimize {
             Log_optimize($C, $run, $shard, $s1);
 
             # Optimize
-            my ($index_state, $stats_ref) =
-                $NOOP
-                    ? (IX_INDEXED, {})
-                        : $indexer->optimize($C, $this_stage_segments);
+            my ($index_state, $stats_ref);
+            if ($NOOP) {
+                ($index_state, $stats_ref->{optimize}{elapsed}) = (IX_INDEXED, 0);
+            }
+            else {
+                ($index_state, $stats_ref) = $indexer->optimize($C, $this_stage_segments);
+            }
 
-            my $elapsed = $$stats_ref{'optimize'}{'elapsed'};
+            my $elapsed = $stats_ref->{optimize}{elapsed};
             $total_elapsed += $elapsed;
 
             if (! Search::Constants::indexing_failed($index_state)) {
