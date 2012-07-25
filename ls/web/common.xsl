@@ -26,21 +26,22 @@
 
   <xsl:template name="SearchWidget">
     <div class="LSsearchbox">
-      <h3 class="SearchArrowFT">
-      <label for="itemlist_searchform" >Full-text Search</label>
-      </h3>
-      <!--XXX            <img class="SearchArrow" src="/ls/common-web/graphics/SearchArrow_FT.png" alt=""/>
-      -->
+
       <div id="LSformCont">
 
-
+      <!--XXX                  <img class="SearchArrow" src="/ls/common-web/graphics/SearchArrow_FT.png" alt=""/>
+-->
         <xsl:element name="form" id="itemlist_searchform">
           <xsl:attribute name="action">
             <xsl:value-of select="'ls'"/>
           </xsl:attribute>
           <xsl:attribute name="name">searchcoll</xsl:attribute>
+
+      <h3 class="arrow" id="SearchArrowFT">
+        <label class= "fooSearchLabel" for="q1">Full-text Search</label>
+      </h3>
           
-          <label class= "SearchLabel" for="q1">Content Search</label>
+          
             <input  type="text" size="30" maxlength="150" name="q1" id="q1" >
               
               <!-- if this is not an advanced search populate the query box-->
