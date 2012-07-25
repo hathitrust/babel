@@ -290,12 +290,16 @@ $(document).ready(function() {
         $("#bookreader-toolbar-items").tmpl().appendTo("#mdpToolbarViews > ul").insertBefore($("#mdpPlainTextView"));
     }
     
-    // if the toolbar is disabled, punt
+    // if the toolbar is disabled, punt and prevent navigation into disabled controls
     if ( $("#mdpToolbar").is(".disabled") ) {
         $("#mdpToolbar")
             .click(function() { return false; })
         $("#mdpBottomToolbar")
             .click(function() { return false; })
+        $('#mdpToolbar').find('input, a, select').attr('tabindex', -1);
+        $('#mdpToolbar').find('input, a, select').attr('aria-hidden', 'true');
+        $('#mdpBottomToolbar').find('input, a, select').attr('tabindex', -1);
+        $('#mdpBottomToolbar').find('input, a, select').attr('aria-hidden', 'true');
     }
     
     //// don't need this running for classic yet
