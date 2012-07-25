@@ -727,6 +727,7 @@ div.mdpScrollableContainer {
 
 #versionIcon {
   display: inline-block;
+  position: relative;
   height: 18px;
   width: 18px;
   margin-left: 5px;
