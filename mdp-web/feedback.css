@@ -28,8 +28,8 @@
 { 
   text-align: left;
   background-color: #e6e6e6;
-  margin-left: 80px;
-  width: 42em;
+  /*margin-left: 80px;*/
+  /*width: 42em;*/
   padding-left: 1.5em;
   padding-top: 1.5em;
   padding-bottom: 1.5em;
@@ -40,6 +40,9 @@
   display: none;
 }
 
+#mdpFeedbackForm .row {
+  margin-bottom: 1.5em;
+}
 
 #mdpFbTitle
 { 
@@ -133,14 +136,15 @@
   width: 25em;
 }
 
-textarea
+#mdpFeedbackForm textarea
 {
-  margin-left: 1.3em;
-  width: 30em;
+  /*margin-left: 1.3em;*/
+  /*width: 30em;*/
+  width: 98%;
   height: 3em;
 }
 
-label
+#mdpFeedbackForm label
 {
   cursor: pointer;
 }
@@ -155,6 +159,10 @@ label#mdpEmailLabel
   font-style: italic;
 }
 
+#mdpCommentsLabel, #mdpEmailLabel {
+  display: block;
+}
+
 input#email
 { 
 }
@@ -164,6 +172,19 @@ input#email
   margin-top: 1em;
 }
 
+#emptyFBError {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.mdpFBbuttons {
+  float: right;
+  text-align: right;
+}
+
+.mdpFBbuttons input {
+  margin-right: 2em;
+}
 
 /* Feedback received page */
 
@@ -191,4 +212,19 @@ input#email
 .mdpFBRtext_1_2
 { 
   margin-bottom: 1em;
+}
+
+#mdpFBtools:before,
+#mdpFBtools:after {
+    content:"";
+    display:table;
+}
+
+#mdpFBtools:after {
+    clear:both;
+}
+
+/* For IE 6/7 (trigger hasLayout) */
+.mdpFBtools {
+    zoom:1;
 }

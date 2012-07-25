@@ -27,7 +27,7 @@ var displayPTFeedback = function() {
           var dialog = Boxy.get(this);
 
           if ( $(this).attr('id') == "mdpFBcancel" ) {
-              dialog.hide();
+              dialog.hide().getContent().untrap();
               return false;
           }
 
@@ -54,13 +54,13 @@ var displayPTFeedback = function() {
           }
 
           if (isEmpty == 1) {
-              $(frm).find("#emptyFBError").show();
+              $(frm).find("#emptyFBError").append('<strong>Error: You cannot submit an empty form.</strong>');
           } else {
               // post the form
               var href = $(frm).attr('action');
 
               $.post(href, postData);
-              dialog.hide();
+              dialog.hide().getContent().untrap();
           }
 
           return false;
@@ -69,7 +69,7 @@ var displayPTFeedback = function() {
     }
     
     // empty out the form
-    $("#emptyFBError").hide();
+    $("#emptyFBError").empty();
     
     for (var i=0; i < frm.length; i++)
     {
@@ -87,20 +87,10 @@ var displayPTFeedback = function() {
         }
     }
     
-    dialog.show();
+    dialog.show().getContent().trap();
+    // focus on the title of the dialog; moves focus into the dialog
+    dialog.getInner().find(".title-bar h2").attr('tabindex', '-1').focus();
 
-    // initPTFeedback();
-    // 
-    // // Error message displayed if user tries to submit empty feedback.
-    // YAHOO.mbooks.emptyPTFBError = new YAHOO.widget.Module("emptyFBError", { visible: false });
-    // YAHOO.mbooks.emptyPTFBError.render();
-    // 
-    // // Add listener to form submit and cancel button
-    // YAHOO.util.Event.addListener("mdpFBcancel", "click", interceptPTFBSubmit);
-    // YAHOO.util.Event.addListener("mdpFBform", "submit", interceptPTFBSubmit);
-    // 
-    // YAHOO.mbooks.PTFeedbackForm.show();
-    
     return false;
 };
 

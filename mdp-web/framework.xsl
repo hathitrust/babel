@@ -1062,18 +1062,20 @@
           <div id="mdpEmail">
             <label id="mdpEmailLabel" for="email">To request a reply, enter your email address below. (We will make every effort to address copyright issues by the next business
             day after notification.)</label>
-            <br/><span><input id="email" name="email" class="overlay" value="[Your email address]" maxlength="50" size="50" onclick="ClickClear(this, '[Your email address]')" onkeypress="ClickClear(this, '[Your email address]')"/></span>
+            <span><input id="email" name="email" class="overlay" value="[Your email address]" maxlength="50" size="50" onclick="ClickClear(this, '[Your email address]')" onkeypress="ClickClear(this, '[Your email address]')"/></span>
           </div>
         </div>
 
-        <div>
-          <div id="emptyFBError">
-            <strong>Error: You cannot submit an empty form.</strong>
-          </div>
-          <input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" />
-          <a id='mdpFBcancel' href=''><strong> Cancel</strong></a>
+        <div id="emptyFBError" aria-live="assertive" aria-atomic="true">
         </div>
-        
+
+        <div id="mdpFBtools" class="cf">
+          <div class="mdpFBbuttons">
+            <input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" />
+            <a id='mdpFBcancel' href=''><strong>Cancel</strong></a>
+          </div>
+        </div>
+
       </xsl:element>
       
     </div>
