@@ -7,6 +7,60 @@ images are under web/common-web/graphics/ Use ./graphics/foo.gif so make_concat 
 Tom temporary css styles to be put in single css or integrated.  Ask Suz
 ***/
 
+
+
+/** Copied from mb.css **/
+h3.arrow {
+  display: inline;
+  background: #EF7A06;
+  padding-left: 8px;
+  padding-right: 16px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  position: relative;
+  margin-right: 16px;
+  color: white;
+  font-size: 150%;
+
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-bottom-left-radius: 8px;
+  -moz-border-radius-topleft: 8px;
+  -moz-border-radius-bottomleft: 8px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+h3.arrow label {
+                 background-image:url("./graphics/harmony/icon_books.png");
+                 background-position:0 50%;
+                 background-repeat:no-repeat;
+                 padding-left:24px;
+}
+
+h3.arrow label:after {
+  content: "";
+  position: absolute;
+  /* Pushed down half way, will get pulled back up half height of triangle
+     ensures centering if font-size or line-height changes */
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+h3.arrow label:after {
+  right: -12px;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 12px solid #EF7A06;
+  margin-top: -6px;
+}
+
+/** end Copied from mb.css **/
+
+
+
+
+
 /** copied from HT Catalog **/
 ol, ul {
          list-style:none outside none;
