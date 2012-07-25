@@ -1065,16 +1065,14 @@
             <br/><span><input id="email" name="email" class="overlay" value="[Your email address]" maxlength="50" size="50" onclick="ClickClear(this, '[Your email address]')" onkeypress="ClickClear(this, '[Your email address]')"/></span>
           </div>
         </div>
-        
-        
-        <table>
-          <tr valign="bottom">
-            <td><div id="emptyFBError"><strong>Error: You cannot submit an empty form.</strong></div></td>   
-            <td><xsl:text>    </xsl:text></td>
-            <td><input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" /></td>
-            <td width='100px' align='right'><a id='mdpFBcancel' href=''><strong>Cancel</strong></a></td>
-          </tr>
-        </table>
+
+        <div>
+          <div id="emptyFBError">
+            <strong>Error: You cannot submit an empty form.</strong>
+          </div>
+          <input id="mdpFBinputbutton" type="submit" name="submit" value="Submit" />
+          <a id='mdpFBcancel' href=''><strong> Cancel</strong></a>
+        </div>
         
       </xsl:element>
       
@@ -1348,10 +1346,17 @@
     </div>
   </xsl:template>
 
+  <!-- -->
   <xsl:template name="versionLabel">
     <div class="versionContainer">
       <strong>Version: </strong><xsl:value-of select="$gVersionLabel"/>
-      <span id="versionIcon"><img src="//common-web/graphics/harmony/icon_question.png" alt="version label for this item"/></span>
+      <xsl:element name="a">
+        <xsl:attribute name="id">versionIcon</xsl:attribute>
+        <xsl:attribute name="href">
+          <xsl:value-of select="' '"/>
+        </xsl:attribute>
+        <xsl:text>version label for this item</xsl:text>
+      </xsl:element>
     </div>
   </xsl:template>
 
