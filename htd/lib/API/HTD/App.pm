@@ -10,7 +10,7 @@ This class is a subclass of API::RESTApp.
 
 URI scheme:
 
-http[s]://services.hathitrust.org/api/htd/:RESOURCE/:ID[/:SEQ]
+http[s]://babel.hathitrust.org/cgi/htd/:RESOURCE/:ID[/:SEQ]
 ?
 [v=:N] [&alt=json[&callback=:CALLBACK]]
 

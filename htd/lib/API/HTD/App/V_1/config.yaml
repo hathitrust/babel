@@ -696,13 +696,13 @@ extension_format_map:
 # ---------------------------------------------------------------------
 # Atom elements, contents and attribute values organized by resource
 # ---------------------------------------------------------------------
-_HTD_META_URI_:           http://services.hathitrust.org/htd
-_HTD_PAGEMETA_URI_:       http://services.hathitrust.org/htd
-_HTD_STRUCTURE_URI_:      http://services.hathitrust.org/htd
-_HTD_PAGEIMAGE_URI_:      :::PAGEIMAGEPROTOCOL://services.hathitrust.org/htd
-_HTD_PAGEOCR_URI_:        :::PAGEOCRPROTOCOL://services.hathitrust.org/htd
-_HTD_PAGECOORDOCR_URI_:   :::PAGECOORDOCRPROTOCOL://services.hathitrust.org/htd
-_HTD_AGGREGATE_URI_:      :::AGGREGATEPROTOCOL://services.hathitrust.org/htd
+_HTD_META_URI_:           http://babel.hathitrust.org/cgi/htd
+_HTD_PAGEMETA_URI_:       http://babel.hathitrust.org/cgi/htd
+_HTD_STRUCTURE_URI_:      http://babel.hathitrust.org/cgi/htd
+_HTD_PAGEIMAGE_URI_:      :::PAGEIMAGEPROTOCOL://babel.hathitrust.org/cgi/htd
+_HTD_PAGEOCR_URI_:        :::PAGEOCRPROTOCOL://babel.hathitrust.org/cgi/htd
+_HTD_PAGECOORDOCR_URI_:   :::PAGECOORDOCRPROTOCOL://babel.hathitrust.org/cgi/htd
+_HTD_AGGREGATE_URI_:      :::AGGREGATEPROTOCOL://babel.hathitrust.org/cgi/htd
 _HTD_SCHEMAS_URI_:        http://schemas.hathitrust.org/htd/2009
 _HTD_PT_ALTERNATE_URI_:   http://babel.hathitrust.org/cgi/pt?id=__ID__
 _HTD_HDL_ALTERNATE_URI_:  http://hdl.handle.net/2027/__ID__

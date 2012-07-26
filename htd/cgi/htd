@@ -6,7 +6,7 @@ HathiTrust Repository Data API (htd)
 
 =head1 USAGE
 
-http://services.hathitrust.org/htd/<URI>? ... URL parameters ...
+http://babel.hathitrust.org/cgi/htd/<URI>? ... URL parameters ...
 
 =head1 DESCRIPTION
 
