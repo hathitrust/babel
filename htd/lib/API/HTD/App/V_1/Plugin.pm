@@ -259,7 +259,7 @@ sub __getParamsRefStr {
     my $self = shift;
     my $P_Ref = shift;
 
-    return join(" ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref);
+    return join(" ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref) . ' ';
 }
 
 
@@ -426,7 +426,7 @@ sub GET_structure {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_structure: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_structure: } . $self->__getParamsRefStr($P_Ref) . $self->query->self_url);
 
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('structure', $P_Ref, $parser);
@@ -471,7 +471,7 @@ sub GET_meta {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_meta: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_meta: } . $self->__getParamsRefStr($P_Ref) . $self->query->self_url);
 
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('meta', $P_Ref, $parser);
@@ -520,7 +520,7 @@ sub GET_pagemeta {
     my $self = shift;
     my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_pagemeta: } . $self->__getParamsRefStr($P_Ref));
+    hLOG('API: ' . qq{GET_pagemeta: } . $self->__getParamsRefStr($P_Ref) . $self->query->self_url);
 
     my $parser = XML::LibXML->new();
     my $doc = $self->__getBase_DOMtreeFor('pagemeta', $P_Ref, $parser);
@@ -571,7 +571,7 @@ sub GET_aggregate {
     my $P_Ref = $self->__makeParamsRef(@_);
 
     my $resource_str = $self->__getParamsRefStr($P_Ref);
-    hLOG('API: ' . qq{GET_aggregate: } . $resource_str);
+    hLOG('API: ' . qq{GET_aggregate: } . $resource_str . $self->query->self_url);
 
     my $representation;
 
@@ -614,7 +614,7 @@ sub GET_pageocr {
     my $P_Ref = $self->__makeParamsRef(@_);
 
     my $resource_str = $self->__getParamsRefStr($P_Ref);
-    hLOG('API: ' . qq{GET_pageocr: } . $resource_str);
+    hLOG('API: ' . qq{GET_pageocr: } . $resource_str . $self->query->self_url);
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'ocr');
@@ -652,7 +652,7 @@ sub GET_pagecoordocr {
     my $P_Ref = $self->__makeParamsRef(@_);
 
     my $resource_str = $self->__getParamsRefStr($P_Ref);
-    hLOG('API: ' . qq{GET_pagecoordocr: } . $resource_str);
+    hLOG('API: ' . qq{GET_pagecoordocr: } . $resource_str . $self->query->self_url);
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'coordOCR');
@@ -688,7 +688,7 @@ sub GET_pageimage {
     my $P_Ref = $self->__makeParamsRef(@_);
 
     my $resource_str = $self->__getParamsRefStr($P_Ref);
-    hLOG('API: ' . qq{GET_pageimage: } . $resource_str);
+    hLOG('API: ' . qq{GET_pageimage: } . $resource_str . $self->query->self_url);
 
     my ($representationRef, $filename, $extension) =
         $self->__getFileResourceRepresentation($P_Ref, 'image');

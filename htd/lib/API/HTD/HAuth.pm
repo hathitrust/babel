@@ -296,8 +296,8 @@ sub H_request_is_oauth {
     my $Q = shift;
     
     my @params = map { lc($_) } $Q->param;
-    my $is_oauth = grep(/^oauth/, @params);
-    return $is_oauth;
+    my $oauth_param_ct = grep(/^oauth/, @params);
+    return ($oauth_param_ct == 6);
 }
 
 

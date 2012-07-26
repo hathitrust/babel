@@ -49,6 +49,8 @@ Unique_IP_Addresses();
 
 Total_GET_Requests();
 
+Total_Signed_Requests();
+
 Total_GET_RequestsByResource();
 
 Total_GET_RequestsBy_IP_Addr();
@@ -120,6 +122,13 @@ sub Total_GET_Requests {
 
     chomp(my $total = `grep GET_ $today_log_file|wc -l`);
     print "* Total GET_* requests = $total\n\n";
+}
+
+# ---------------------------------------------------------------------
+sub Total_Signed_Requests {
+
+    chomp(my $total = `egrep "__log_client:.*?signed=1" $today_log_file|wc -l`);
+    print "* Total signed requests = $total\n\n";
 }
 
 

@@ -246,6 +246,7 @@ sub preHandler {
     }
     # POSSIBLY NOTREACHED
 
+    my $Q = $self->query;
     my $dbh = $self->__get_DBH;
     my $P_Ref = $self->__makeParamsRef(@$argsRef);
 
@@ -269,16 +270,16 @@ sub preHandler {
                                         });
     $self->__setMember('access', $ato);
 
-    # single logging point
-    $self->__log_client_trust();
-
     # Get an authentication object.
     my $hauth = new API::HTD::HAuth({
-                                     _query => $self->query,
+                                     _query => $Q,
                                      _dbh   => $dbh,
                                      _ua_ip => $self->__originating_IPADDR,
                                     });
     $self->__setMember('hauth', $hauth);
+
+    # single logging point
+    $self->__log_client($hauth, $Q);
 
     # Authenticate and authorize
     if (! $self->__authNZ_Success($P_Ref)) {
@@ -354,21 +355,23 @@ sub __trusted_client {
 
 # ---------------------------------------------------------------------
 
-=item __log_client_trust
+=item __log_client
 
-Description
+single logging point
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __log_client_trust {
+sub __log_client {
     my $self = shift;
-
-    # single logging point
+    my ($hauth, $Q) = @_;
+    
     my $trusted = $self->__trusted_client();
     my $ua_ip = $self->__getAccessObject->__get_UAIP;
-    hLOG('API: ' . sprintf(qq{__log_client_trust: trusted=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s }, 
-                           $trusted, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}));
+    my $is_oauth = $hauth->H_request_is_oauth($Q);
+
+    hLOG('API: ' . sprintf(qq{__log_client: trusted=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s }, 
+                           $trusted, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}));
 }
 
 
