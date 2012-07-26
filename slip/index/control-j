@@ -791,7 +791,10 @@ sub c_restore {
     my ($C, $dbh, $run, $type) = @_;
 
     my $num_restored = Db::insert_restore_errors_to_queue($C, $dbh, $run, $type);
-    my $error_type = SLIP_Utils::Common::IXconstant2string($type);
+    my $error_type = 
+      (defined $type) 
+        ? SLIP_Utils::Common::IXconstant2string($type)
+          : 'All Error Types';
     Log_restore($C, $run, $num_restored, $error_type);
     __output(qq{\tRESTORE run=$run restored=$num_restored type=$error_type\n});
 }
