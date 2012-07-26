@@ -82,7 +82,7 @@ span.paren{
 
 div.parenLeft{ 
               /*  float: left;*/
-              text-align:right;/
+              text-align:right;
          
  }
 div.parenRight{ 
@@ -363,7 +363,6 @@ ul.row{
 #zeroHits
 { 
   line-height:2;
-  font-style:bold;
   color:red
  }
 #AdvancedLSerrorSearchStuff{ 
