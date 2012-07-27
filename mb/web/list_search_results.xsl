@@ -19,7 +19,7 @@
         <xsl:call-template name="debug_CSS"/>        
       </head>
       
-      <body class="yui-skin-sam" onLoad="initCheckall()">
+      <body class="yui-skin-sam" onload="initCheckall()">
         <div id="mbMasterContainer">
           <div id="DlpsDev">
             <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
