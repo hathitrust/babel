@@ -651,7 +651,7 @@ a .colName {
 
 #CBNavContainer {
   height: 35px;
-  background: url(./graphics/grayGradient.gif) repeat-x SCROLL 0 0 #EEEEEE;
+  background: #666 url(./graphics/grayGradient.gif) repeat-x scroll 0 0;
   border-bottom: 3px solid #E2E2E2;
   border-top: 1px solid #C9C7B8;
   height: 30px;
@@ -1654,7 +1654,7 @@ img.SearchArrow {
     }
     
     #SubNavHeader {
-      z-index: none !important;
+      z-index: auto !important;
     }
 /*end attempted fix*/
 
