@@ -320,6 +320,13 @@
       <xsl:call-template name="buildNatLangQuery"/>
     </xsl:variable>
     
+    <xsl:element name="a">
+      <xsl:attribute name="name">skipNav</xsl:attribute>
+      <xsl:attribute name="id">skipNav</xsl:attribute>
+    </xsl:element>
+    
+    <h2 class="SkipLink">Search Results</h2>
+
     <div class="mdpSearchSummary">
       <xsl:if test="$gFinalAccessStatus!='allow'">
         <xsl:element name="div">
@@ -336,11 +343,6 @@
           <xsl:otherwise></xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
-
-      <xsl:element name="a">
-        <xsl:attribute name="name">skipNav</xsl:attribute>
-        <xsl:attribute name="id">skipNav</xsl:attribute>
-      </xsl:element>
 
       <span>
         <xsl:choose>
