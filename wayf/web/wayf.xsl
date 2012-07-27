@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet 
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
+  >
 
   <xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
 
@@ -49,7 +52,7 @@
                 <div class="loginBox">
                   <h3><span>HathiTrust Partner Institutions</span></h3>
                   <div>
-                    <form class="loginPrompt" onsubmit="return goto_page(this.idp.options[this.idp.selectedIndex].value)">
+                    <form class="loginPrompt" action="" onsubmit="return goto_page(this.idp.options[this.idp.selectedIndex].value)">
                       <label for="idp" id="Selectyourinstitution-ariaLabel" class="SkipLink">Select your institution</label>
                       <select id="idp" name="idp" aria-labelledby="Selectyourinstitution-ariaLabel">
                         <option value="0">Select your institution</option>
