@@ -589,7 +589,7 @@
 
   <!-- TEMPLATE -->
   <xsl:template name="Paging">
-    <ul id="PageWidget">
+    <ul class="PageWidget">
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/PrevPage='None'">
@@ -658,12 +658,14 @@
   <xsl:template name="BuildPagingControls">
     <xsl:param name="which_paging"/>
     <!-- variable top or bottom so we can determine which widget to read from js -->
-    <div id="PageInfo">
+    <!--XXX tbw change id to class after fixing CSS -->
+    <div>
       <xsl:attribute name="class">
         <xsl:value-of select="$which_paging"/>
+        <xsl:text> PageInfo</xsl:text>
       </xsl:attribute>
       <!-- rec per page widget-->
-      <div id="resultsPerPage">
+      <div class="resultsPerPage">
         <xsl:for-each select="/MBooksTop/Paging/SliceSizeWidget">
           <label  class="SkipLink">
             <xsl:attribute name="for">
@@ -685,7 +687,7 @@
           </xsl:call-template>
         </xsl:for-each>
       </div>
-      <div id="pagingNav">
+      <div class="pagingNav">
         <xsl:call-template name="Paging"/>
       </div>
     </div>
