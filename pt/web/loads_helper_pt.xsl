@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1343060996'" />
+  <xsl:variable name="timestamp" select="'?_=1343417103'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/pt/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="$gUsingSearch='false'">
@@ -35,6 +35,7 @@
      <script type="text/javascript" src="/pt/yui2-lib/build/utilities/utilities.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/yui2-lib/build/resize/resize-min.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/js/versionPopup.js{$timestamp}"></script>
+     <script type="text/javascript" src="//common-web/jquery/jquery.trap.min.js{$timestamp}"></script>
      <script type="text/javascript" src="//common-web/js/feedbackForm.js{$timestamp}"></script>
      <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/js/newCollOverlayPT.js{$timestamp}"></script>
