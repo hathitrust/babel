@@ -54,6 +54,7 @@ Section:LOCAL_JS
 # These should be listed with the unminimized name.
 # The script will run yuicompress on them
 /pt/web/js/versionPopup.js
+//common-web/jquery/jquery.trap.min.js
 //common-web/js/feedbackForm.js
 //common-web/js/newCollOverlayCore.js
 /pt/web/js/newCollOverlayPT.js
