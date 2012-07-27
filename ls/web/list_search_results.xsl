@@ -987,9 +987,13 @@
 
  <xsl:template name="BuildItemSelectActions">
     <div class="SelectedItemActions">
+      <!--XXX hide second error message for testing and then remove-->
+      <!--
       <div id="errormsg">
+        <h2>debug errormsg</h2>
         <div class="bd"></div>
       </div>
+      -->
 
       <div class="overlay" id="overlay"></div>
       <span id="addCollectionWidgetLS"></span>
