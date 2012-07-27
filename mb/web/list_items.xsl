@@ -24,7 +24,7 @@
       <!-- <body class="yui-skin-sam" onLoad="testjs()">-->
       <!-- <body class="yui-skin-sam" >-->
       <!-- This adds a listener to the checkAll checkbox in listUtils.js-->
-      <body class="yui-skin-sam" onLoad="initCheckall()">
+      <body class="yui-skin-sam" onload="initCheckall()">
         
         <div id="mbMasterContainer">
 
@@ -111,31 +111,30 @@
         <xsl:call-template name="HiddenDebug"/>  
         
         <div class="formElement">
-          <label for="CollNameEdit">
-            <div class="colNameLabel">
+          <div class="colNameLabel">
+            <label for="CollNameEdit">
               <xsl:text>Collection Name</xsl:text>
-            </div>
+            </label>
+          </div>
+          <div>
             <input id="CollNameEdit" type="text" size="16" maxlength="50" name="cn">
               <xsl:attribute name="value">
                 <xsl:value-of select="$coll_name"/>
               </xsl:attribute>
             </input>
-          </label>
+          </div>
         </div>
         <div class="formElement">
-          <label for="ColDescEdit">
-            <div class="colDescLabel">
+          <div class="colDescLabel">
+            <label for="ColDescEdit">
               <xsl:text>Description </xsl:text>
-            </div>
-            <div class="colDesc">
-              <textarea id="ColDescEdit" cols="17" rows="4" name="desc">
-                <xsl:attribute name="value">
-                  <xsl:value-of select="EditCollectionWidget/CollDesc"/>
-                </xsl:attribute>
-                <xsl:value-of select="EditCollectionWidget/CollDesc"/>
-              </textarea>
-            </div>
-          </label>
+            </label>
+          </div>
+          <div class="colDesc">
+            <textarea id="ColDescEdit" cols="17" rows="4" name="desc">
+              <xsl:value-of select="EditCollectionWidget/CollDesc"/>
+            </textarea>
+          </div>
         </div>
         
         <div class="formElement">
