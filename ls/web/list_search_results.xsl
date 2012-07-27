@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+ xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
   <!--## Global Variables ##-->
@@ -100,7 +101,7 @@
 
       </head>
 
-      <body class="yui-skin-sam" onLoad="initCheckall()">
+      <body class="yui-skin-sam" onload="initCheckall()">
 
         <div id="mbMasterContainer">
           <div id="DlpsDev">
@@ -213,7 +214,7 @@
       <xsl:call-template name="SearchResults_status"/>
 
       <form id="form_ls1" name="form_ls1" method="get" action="ls?">
-        <div name="hiddenParams">
+        <div id="hiddenParams_ls1">
           <xsl:call-template name="GetHiddenParams"/>
         </div>
         <div id="actionsRow1">
@@ -224,7 +225,8 @@
         </div>
       </form>
 
-      <div id="form_lsCB" name="form_lsCB" >
+      <!-- XXX name bad but check Ie<div id="form_lsCB" name="form_lsCB" >-->
+      <div id="form_lsCB"  >
         <div id="actionsRow2">
           <div class="selectAll">
           <label for="checkAll">Select all on page</label>
@@ -241,7 +243,7 @@
           
       <div id="listisFooter">
         <form id="form_ls2" name="form_ls2" method="get" action="ls?">
-          <div name="hiddenParams">
+          <div id="hiddenParams_ls2">
             <xsl:call-template name="GetHiddenParams"/>
           </div>
           <xsl:call-template name="BuildPagingControls">
