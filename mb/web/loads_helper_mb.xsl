@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1343163622'" />
+  <xsl:variable name="timestamp" select="'?_=1343403976'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/mb/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
