@@ -306,34 +306,18 @@ eval {
         }
         elsif ($OPTIMIZE) {
             my $shard = $opt_R;
-            if (! defined($shard)) {
-                my $s = qq{bad shard arg="$shard"} . cont_get_usage();
-                my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-                __output($s);
-                __non_interactive_err_output($rc, $s);
-
-                exit $rc;
-            }
-            else {
-                c_optimize_control($C, $DBH, $RUN, $shard, $enabled);
-            }
+            __validate_shard($C, $RUN, $shard);
+            # POSSIBLY NOTREACHED
+            c_optimize_control($C, $DBH, $RUN, $shard, $enabled);
         }
         elsif ($CHECK) {
             my $shard = $opt_R;
-            if (! defined($shard)) {
-                my $s = qq{bad shard arg="$shard"} . cont_get_usage();
-                my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-                __output($s);
-                __non_interactive_err_output($rc, $s);
-
-                exit $rc;
-            }
-            else {
+            __validate_shard($C, $RUN, $shard);
+            # POSSIBLY NOTREACHED
                 c_check_control($C, $DBH, $RUN, $shard, $enabled);
-            }
         }
         else {
-            my $shard = $opt_R || 0; # optional
+            my $shard = $opt_R; # optional
             my $host = $opt_h; # optional
 
             if (defined($host)) {
@@ -348,6 +332,9 @@ eval {
                 }
             }
             else {
+                if (defined($shard)) {
+                    __validate_shard($C, $RUN, $shard);
+                }
                 c_producer_control($C, $DBH, $RUN, $shard, $host, $enabled);
             }
         }
@@ -425,6 +412,40 @@ sub __validate_host_vs_shard_config {
         __output(qq{\tINFO $allowed = $required\n\t\toptimal shard vs host config\n\n});
     }
 }
+
+# ---------------------------------------------------------------------
+
+=item __validate_shard
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_shard {
+    my $C = shift;
+    my $run = shift;
+    my $shard = shift;
+    
+    if (! defined($shard)) {
+        my $s = qq{bad shard arg="$shard"} . cont_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        
+        exit $rc;
+    }
+    my @num_shards_list = $CONFIG->get('num_shards_list');
+    if (! grep(//, @num_shards_list)) {
+        my $s = qq{bad shard arg="$shard"} . cont_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        
+        exit $rc;
+    }
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -1027,19 +1048,18 @@ Declare which shards can be targets of producers and on which hosts.
 sub c_producer_control {
     my ($C, $dbh, $run, $shard, $host, $enabled) = @_;
 
-    if (! ($host || $shard)) {
+    if (! (defined($host) || (defined($shard))) {
         # Affect all shards and all hosts
         __c_host_control($C, $dbh, $run, undef, $enabled);
         __c_shard_control($C, $dbh, $run, undef, $enabled);
     }
-    else
-    {
-        if ($host) {
+    else {
+        if (defined($host)) {
             # Affect this host
             __c_host_control($C, $dbh, $run, $host, $enabled);
         }
 
-        if ($shard) {
+        if (defined($shard)) {
             # Affect this shard
             __c_shard_control($C, $dbh, $run, $shard, $enabled);
         }

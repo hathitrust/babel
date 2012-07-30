@@ -712,8 +712,7 @@ sub Log_slice {
     my ($C, $run, $shard, $pid, $host, $num_sliced_from_queue) = @_;
 
     my $s = qq{***SLICE: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard pid=$pid h=$host slice_size=$num_sliced_from_queue};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
-            if ($VERBOSE_LOGGING);
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
 # ---------------------------------------------------------------------
