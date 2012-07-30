@@ -28,7 +28,7 @@
 
 
 
-      <body class="yui-skin-sam" onLoad="initCheckall()">
+      <body class="yui-skin-sam" onload="initCheckall()">
 
         <div id="mbMasterContainer">
           <div id="DlpsDev">
@@ -268,6 +268,17 @@
        
        <!-- skip first row -->
        <xsl:if test="$rowNum != 1">
+         <!--XXX accessability following code should be a template call foobar-->
+           <xsl:element name="label" >
+             <xsl:attribute name="class">
+               <xsl:text>SearchLabel</xsl:text>
+             </xsl:attribute>
+             <xsl:attribute name="for">
+               <xsl:value-of select="$opNum"/>
+             </xsl:attribute>
+             <xsl:text>Boolean Operator (AND OR)</xsl:text>
+           </xsl:element>
+
 
          <select class="AndOr">
          <xsl:attribute name="name" >
@@ -342,18 +353,8 @@
 
      <xsl:if test="$rowNum=2 or $rowNum=4 ">
        <li class="col">
-         <!--XXX accessability following code should be a template call-->
-         <div class="andOR">
-           <xsl:element name="label" >
-             <xsl:attribute name="class">
-               <xsl:text>SearchLabel</xsl:text>
-             </xsl:attribute>
-             <xsl:attribute name="for">
-               <xsl:value-of select="$opNum"/>
-             </xsl:attribute>
-             <xsl:text>Operator </xsl:text>
-           </xsl:element>
-           
+
+         <div class="andOR">           
            <xsl:call-template name="andOr">
              <xsl:with-param name="rowNum" select="$rowNum"/>
            </xsl:call-template>
