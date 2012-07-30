@@ -212,7 +212,7 @@ sub getYOP
     }
 
     #my $yop_inputs_xml=wrap_string_in_tag($yop_inputs,'yopInputs') . "\n";         
-    my  $yop_inputs_xml='<span name="yopInputs">' . $yop_inputs . '</span>' . "\n";
+    my  $yop_inputs_xml='<span id="yopInputs">' . $yop_inputs . '</span>' . "\n";
     my $yop_xml2 = "\n" . $yop_options ."\n" .$yop_inputs_xml ;
     
     my $xml  =wrap_string_in_tag($yop_xml2,'yop') . "\n";         

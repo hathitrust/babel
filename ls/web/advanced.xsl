@@ -220,7 +220,7 @@
                 <xsl:copy-of select="AdvancedSearch/yop/yopOptions/*" />
               </select>
               
-              <xsl:copy-of select="AdvancedSearch/yop/span[@name='yopInputs']"/>
+              <xsl:copy-of select="AdvancedSearch/yop/span[@id='yopInputs']"/>
               
             </span>
             <div id="yopErrMsg"></div>
