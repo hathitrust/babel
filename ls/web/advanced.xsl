@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-
+  xmlns= "http://www.w3.org/1999/xhtml"
   version="1.0">
   <xsl:output indent="yes"/>
   <!--## Global Variables ##-->
@@ -15,7 +15,7 @@
 
   <!-- Main template -->
   <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+    <html lang="en" xml:lang="en" >
       <head>
         <title>Full-text Advanced Search Results | HathiTrust Digital Library</title>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
@@ -28,7 +28,7 @@
 
 
 
-      <body class="yui-skin-sam" onLoad="initCheckall()">
+      <body class="yui-skin-sam" onload="initCheckall()">
 
         <div id="mbMasterContainer">
           <div id="DlpsDev">
@@ -36,8 +36,8 @@
           </div>
 
           <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-          </div>
+              <xsl:apply-templates select="/MBooksTop/MBooksGlobals/DebugMessages/*" mode="copy-elements" />
+           </div>
 
           <xsl:call-template name="header"/>
 
@@ -217,11 +217,10 @@
             <span style="margin-left: 4em">
               <label for="yop">Year of publication:  </label>        
               <select id="yop" name="yop" onchange="changeRange('yop')"  >
-                <xsl:copy-of select="AdvancedSearch/yop/yopOptions/*" />
+                <xsl:apply-templates select="AdvancedSearch/yop/yopOptions/*" mode="copy-elements" />
               </select>
               
-              <xsl:copy-of select="AdvancedSearch/yop/span[@name='yopInputs']"/>
-              
+              <xsl:apply-templates select="AdvancedSearch/yop/span[@id='yopInputs']" mode="copy-elements" />
             </span>
             <div id="yopErrMsg"></div>
             
@@ -232,7 +231,7 @@
                 
                 <label for="facet_lang" class="xSearchLabel">Language</label>
                 <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="8">
-                  <xsl:copy-of select="AdvancedSearch/facets/language_list/*"/>
+                  <xsl:apply-templates select="AdvancedSearch/facets/language_list/*" mode="copy-elements" />
                 </select>
               </div>
               
@@ -240,7 +239,7 @@
                 <label for="facet_format" class="xSearchLabel">Limit to Original Format</label>
                 
                 <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="8">
-                  <xsl:copy-of select="AdvancedSearch/facets/formats_list/*"/>
+                  <xsl:apply-templates select="AdvancedSearch/facets/formats_list/*" mode="copy-elements" />
                 </select>
               </div>
             </div>
@@ -268,6 +267,17 @@
        
        <!-- skip first row -->
        <xsl:if test="$rowNum != 1">
+         <!--XXX accessability following code should be a template call foobar-->
+           <xsl:element name="label" >
+             <xsl:attribute name="class">
+               <xsl:text>SearchLabel</xsl:text>
+             </xsl:attribute>
+             <xsl:attribute name="for">
+               <xsl:value-of select="$opNum"/>
+             </xsl:attribute>
+             <xsl:text>Boolean Operator (AND OR)</xsl:text>
+           </xsl:element>
+
 
          <select class="AndOr">
          <xsl:attribute name="name" >
@@ -342,18 +352,8 @@
 
      <xsl:if test="$rowNum=2 or $rowNum=4 ">
        <li class="col">
-         <!--XXX accessability following code should be a template call-->
-         <div class="andOR">
-           <xsl:element name="label" >
-             <xsl:attribute name="class">
-               <xsl:text>SearchLabel</xsl:text>
-             </xsl:attribute>
-             <xsl:attribute name="for">
-               <xsl:value-of select="$opNum"/>
-             </xsl:attribute>
-             <xsl:text>Operator </xsl:text>
-           </xsl:element>
-           
+
+         <div class="andOR">           
            <xsl:call-template name="andOr">
              <xsl:with-param name="rowNum" select="$rowNum"/>
            </xsl:call-template>
@@ -533,5 +533,20 @@
       </xsl:for-each>
     </xsl:element>
   </xsl:template>
+
+  <!--  workaround for empty namespaces in copy-of see:http://dev.ektron.com/kb_article.aspx?id=492#no_namespace -->
+  <xsl:template match="*" mode="copy-elements">
+    <xsl:element name="{name()}">
+      <xsl:apply-templates select="@*|node()" mode="copy-elements"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="@*|text()|comment()|processing-instruction()" mode="copy-elements">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
+
 
 </xsl:stylesheet>

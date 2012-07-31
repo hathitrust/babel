@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+ xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
   <xsl:variable name="debug" >
@@ -26,29 +27,37 @@
 
   <xsl:template name="SearchWidget">
     <div class="LSsearchbox">
-      <img class="SearchArrow" src="/ls/common-web/graphics/SearchArrow_FT.png" alt=""/>
-      <div id="LSformCont">
-        <xsl:element name="form">
-        <xsl:attribute name="id">itemlist_searchform</xsl:attribute>
-        <xsl:attribute name="action">
-          <xsl:value-of select="'ls'"/>
-        </xsl:attribute>
-        <xsl:attribute name="name">searchcoll</xsl:attribute>
-          <label class="SkipLink" for="srch">Full-text Search </label>
-          <input type="text" size="30" maxlength="150" name="q1" >
-          <!-- if this is not an advanced search populate the query box-->
-            <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced = 'false'">
-              <xsl:attribute name="value">
-                <xsl:value-of select="/MBooksTop/QueryString"/>
-              </xsl:attribute>
-            </xsl:if>
-          </input>
 
-          <!-- make checkbox sticky based on lmt=ft -->
-          <input id="fullonly" type="checkbox" name="lmt" value="ft">
-            <xsl:call-template name="getCheckedStatus"/>
-          </input>
-          <label for="fullonly" id="fullOnlyLabel">Full view only</label>
+      <div id="LSformCont">
+
+      <!--XXX                  <img class="SearchArrow" src="/ls/common-web/graphics/SearchArrow_FT.png" alt=""/>
+-->
+        <xsl:element name="form" id="itemlist_searchform">
+          <xsl:attribute name="action">
+            <xsl:value-of select="'ls'"/>
+          </xsl:attribute>
+          <xsl:attribute name="name">searchcoll</xsl:attribute>
+
+      <h3 class="arrow" id="SearchArrowFT">
+        <label class= "fooSearchLabel" for="q1">Full-text Search</label>
+      </h3>
+          
+          
+            <input  type="text" size="30" maxlength="150" name="q1" id="q1" >
+              
+              <!-- if this is not an advanced search populate the query box-->
+              <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced = 'false'">
+                <xsl:attribute name="value">
+                  <xsl:value-of select="/MBooksTop/QueryString"/>
+                </xsl:attribute>
+              </xsl:if>
+            </input>
+            
+            <!-- make checkbox sticky based on lmt=ft -->
+            <input id="fullonly" type="checkbox" name="lmt" value="ft">
+              <xsl:call-template name="getCheckedStatus"/>
+            </input>
+            <label for="fullonly" id="fullOnlyLabel">Full view only</label>
           <input type="hidden" name="a" value="srchls"/>
           <!--XXX temporarily add debug=local switch-->
           <!--<input type="hidden" name="debug" value="local"/>-->
