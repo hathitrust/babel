@@ -822,7 +822,7 @@ Description
 sub get_process_breakdown_this_run {
     my ($C, $dbh, $run) = @_;
     
-    my ($reindexed, $deleted, $processed) = (0, 0);
+    my ($reindexed, $deleted, $processed) = (0, 0, 0);
     foreach my $__shard (@NUM_SHARDS_LIST) {
         my ($s_reindexed_ct, $s_deleted_ct, $s_num_docs) = Db::Select_shard_stats($C, $dbh, $run, $__shard);
         $reindexed += $s_reindexed_ct;
