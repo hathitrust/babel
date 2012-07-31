@@ -36,8 +36,8 @@
           </div>
 
           <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-          </div>
+              <xsl:apply-templates select="/MBooksTop/MBooksGlobals/DebugMessages/*" mode="copy-elements" />
+           </div>
 
           <xsl:call-template name="header"/>
 
@@ -217,11 +217,10 @@
             <span style="margin-left: 4em">
               <label for="yop">Year of publication:  </label>        
               <select id="yop" name="yop" onchange="changeRange('yop')"  >
-                <xsl:copy-of select="AdvancedSearch/yop/yopOptions/*" />
+                <xsl:apply-templates select="AdvancedSearch/yop/yopOptions/*" mode="copy-elements" />
               </select>
               
-              <xsl:copy-of select="AdvancedSearch/yop/span[@id='yopInputs']"/>
-              
+              <xsl:apply-templates select="AdvancedSearch/yop/span[@id='yopInputs']" mode="copy-elements" />
             </span>
             <div id="yopErrMsg"></div>
             
@@ -232,7 +231,7 @@
                 
                 <label for="facet_lang" class="xSearchLabel">Language</label>
                 <select multiple="multiple" class="orFacet"  name="facet_lang" id="facet_lang" size="8">
-                  <xsl:copy-of select="AdvancedSearch/facets/language_list/*"/>
+                  <xsl:apply-templates select="AdvancedSearch/facets/language_list/*" mode="copy-elements" />
                 </select>
               </div>
               
@@ -240,7 +239,7 @@
                 <label for="facet_format" class="xSearchLabel">Limit to Original Format</label>
                 
                 <select multiple="multiple" name="facet_format" class="orFacet"  id="facet_format"  size="8">
-                  <xsl:copy-of select="AdvancedSearch/facets/formats_list/*"/>
+                  <xsl:apply-templates select="AdvancedSearch/facets/formats_list/*" mode="copy-elements" />
                 </select>
               </div>
             </div>
@@ -534,5 +533,20 @@
       </xsl:for-each>
     </xsl:element>
   </xsl:template>
+
+  <!--  workaround for empty namespaces in copy-of see:http://dev.ektron.com/kb_article.aspx?id=492#no_namespace -->
+  <xsl:template match="*" mode="copy-elements">
+    <xsl:element name="{name()}">
+      <xsl:apply-templates select="@*|node()" mode="copy-elements"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="@*|text()|comment()|processing-instruction()" mode="copy-elements">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
+
 
 </xsl:stylesheet>
