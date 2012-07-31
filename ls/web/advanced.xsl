@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-
+  xmlns= "http://www.w3.org/1999/xhtml"
   version="1.0">
   <xsl:output indent="yes"/>
   <!--## Global Variables ##-->
@@ -15,7 +15,7 @@
 
   <!-- Main template -->
   <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+    <html lang="en" xml:lang="en" >
       <head>
         <title>Full-text Advanced Search Results | HathiTrust Digital Library</title>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
