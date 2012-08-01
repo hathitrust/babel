@@ -138,23 +138,20 @@ if ($@) {
 }
 $C->set_object('Database', $db);
 
-my $SHARD = $opt_R; # Optional
-my $STAGED = 0; # Optional
-if (defined($opt_S) && $opt_S) {
-    if (! defined($SHARD)) {
+my $SHARD = $opt_R || 0; # Optional
+my $STAGED = $opt_S || 0; # Optional
+if ($STAGED) {
+    if (! $SHARD) {
         my $s = qq{shard (-R) parameter missing: required for staging support\n} . opt_get_usage();
         my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
         __output($s);
         __non_interactive_err_output($rc, $s);
         exit $rc;
     }
-
-    $STAGED = $opt_S;
 }
 
-# Do not try to optimize this shard while I am running already.  Loop
-# if doing all shards.
-my @SHARDS = (defined $SHARD) ? ($SHARD) : $C->get_object('MdpConfig')->get('num_shards_list');
+# Do not try to optimize this shard while I am running already.
+my @SHARDS = $SHARD ? ($SHARD) : $C->get_object('MdpConfig')->get('num_shards_list');
 my $ALL_SHARDS = (scalar(@SHARDS) > 1);
 
 if ($INTERACTIVE) {
@@ -186,16 +183,14 @@ elsif ($ALL_SHARDS) {
     $TIMEOUT = SMALL_TIMEOUT;
 }
 
-# Do not try to optimize this shard while I am running already
-my $Semaphore;
-if (! $ALL_SHARDS) {
-    my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
-    my $Lock_File = "/tmp/optimize-" . $lock_str . "-lock.sem";
-    my $Semaphore = new Semaphore($Lock_File);
-    if (! $Semaphore) {
-        __output("Could not get semaphore file: $Lock_File\n");
-        exit 0;
-    }
+# Do not try to optimize this shard or repeat all_shards optimization
+# while I am running already
+my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
+my $Lock_File = "/tmp/optimize-" . $lock_str . "-lock.sem";
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    __output("Could not get semaphore file: $Lock_File\n");
+    exit 0;
 }
 
 END {
