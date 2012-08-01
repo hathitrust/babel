@@ -291,10 +291,8 @@ sub _load_stats_hash {
             Db::Select_rate_stats($C, $dbh, $run, $__shard);
         my $s_idx_size =
             Db::Select_indexdir_size($C, $dbh, $run, $__shard);
-        my ($s_reindexed_ct, $s_deleted_ct, $s_num_docs, $s_doc_size, $s_doc_time, $s_idx_time, $s_tot_time) =
+        my ($s_reindexed_ct, $s_deleted_ct, $s_num_errs, $s_num_docs, $s_doc_size, $s_doc_time, $s_idx_time, $s_tot_time) =
             Db::Select_shard_stats($C, $dbh, $run, $__shard);
-        my ($s_num_errs) =
-            Db::Select_error_data($C, $dbh, $run, $__shard);
 
         $stats{$__shard}{'num_docs_processed'} = $s_num_docs;
         $stats{$__shard}{'num_docs_committed'} = _actual_docs_in_shard($C, $run, $__shard);
