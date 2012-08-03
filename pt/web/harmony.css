@@ -85,6 +85,7 @@ body {
 .contentContainerWrap {
   width: 75%;
   float: left;
+  margin-top: 8px;
 }
 
 div#mdpContentContainer {

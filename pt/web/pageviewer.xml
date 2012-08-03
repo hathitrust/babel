@@ -40,6 +40,7 @@
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
     <Filename>pageviewer.xsl</Filename>
+    <Filename><?ITEM_STYLESHEET?></Filename>
   </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->
@@ -56,6 +57,7 @@
     <UrlRoots><?URL_ROOTS?></UrlRoots>
     <PageLink><?PAGE_LINK?></PageLink>
     <InCopyright><?IN_COPYRIGHT?></InCopyright>
+    <ItemType><?ITEM_TYPE?></ItemType>
   </MBooksGlobals>
 
   <?CHUNK filename="header.xml"?>

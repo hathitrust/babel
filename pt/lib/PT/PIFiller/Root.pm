@@ -183,6 +183,69 @@ sub BuildImageServerImageUrl
 #
 # ---------------------------------------------------------------------
 
+=item handle_ITEM_TYPE_PI : PI_handler(ITEM_TYPE)
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_ITEM_TYPE_PI
+  : PI_handler(ITEM_TYPE) 
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $mdpItem = $C->get_object('MdpItem');
+    my $id = $C->get_object('CGI')->param('id');
+
+    my $item_type = qq{book};
+
+    my $finalAccessStatus =
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+        
+    if ( $finalAccessStatus ne 'allow' )
+    {
+        $item_type = qq{restricted};
+    }
+
+    # determine content type somehow
+    
+    return $item_type;
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_ITEM_STYLESHEET_PI : PI_handler(ITEM_STYLESHEET)
+
+Description
+
+=cut
+# ---------------------------------------------------------------------
+sub handle_ITEM_STYLESHEET_PI
+  : PI_handler(ITEM_STYLESHEET) 
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $mdpItem = $C->get_object('MdpItem');
+    my $id = $C->get_object('CGI')->param('id');
+
+    my $stylesheet = qq{pageviewer_book.xsl};
+
+    my $finalAccessStatus =
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+        
+    if ( $finalAccessStatus ne 'allow' )
+    {
+        $stylesheet = qq{pageviewer_restricted.xsl};
+    }
+
+    # determine content type somehow
+    
+    return $stylesheet;
+}
+  
+# ---------------------------------------------------------------------
+
 =item handle_IN_COPYRIGHT_PI : PI_handler(IN_COPYRIGHT)
 
 Description

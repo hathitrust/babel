@@ -73,7 +73,7 @@ Test:$gUsingSearch='false'
 /pt/web/js/classic.js
 
 Section:BOOKREADER_JS
-Test:$gUsingBookReader='true'
+Test:$gItemType = 'book' and $gUsingBookReader='true'
 /pt/web/jquery/jquery.easing.1.3.js
 /pt/web/jquery/jquery.color.js
 /pt/web/jquery/jquery.textfill.js
@@ -91,8 +91,13 @@ Test:$gSkin='mobile' and $gUsingBookReader='true'
 /pt/web/mobile/jquery.ui.ipad.js
 /pt/web/mobile/jquery.jswipe-0.1.2.js
 
+# NOTE: BookReader.css doesn't appear to work when minified.
+# Section:BOOKREADER_CSS
+# Test:$gItemType='book' and $gUsingBookReader='true'
+
 Section:CSS
 # css files, note last one overides earlier
+/pt/web/bookreader/BookReader/BookReader.css
 /pt/web/yui2-lib/build/fonts/fonts-min.css
 /pt/web/yui2-lib/build/container/assets/skins/sam/container.css
 /pt/web/yui2-lib/build/resize/assets/skins/sam/resize.css
@@ -113,7 +118,3 @@ Test:$gSkin='mobile'
 /pt/web/mobile/mobilept.css
 #/pt/web/mobile/epub_download_helper.css
 
-# Section:BOOKREADER_CSS
-# NOTE: BookReader.css doesn't appear to work when minified.
-# Test:$gUsingBookReader='true'
-# /pt/web/bookreader/BookReader/BookReader.css

@@ -2,13 +2,13 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1343420751'" />
+  <xsl:variable name="timestamp" select="'?_=1343938843'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/pt/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="$gUsingSearch='false'">
         <script type="text/javascript" src="/pt/js/concatenated_PAGETURNER_JS-min.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gUsingBookReader='true'">
+    <xsl:if test="$gItemType = 'book' and $gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/js/concatenated_BOOKREADER_JS-min.js{$timestamp}"></script>
     </xsl:if>
     <xsl:if test="$gSkin='mobile' and $gUsingBookReader='true'">
@@ -51,7 +51,7 @@
      <script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/js/classic.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gUsingBookReader='true'">
+    <xsl:if test="$gItemType = 'book' and $gUsingBookReader='true'">
      <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/jquery/jquery.color.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/jquery/jquery.textfill.js{$timestamp}"></script>
@@ -72,6 +72,7 @@
  
 
  <xsl:template name="load_uncompressed_css">
+ <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/pt/yui2-lib/build/fonts/fonts-min.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/pt/yui2-lib/build/container/assets/skins/sam/container.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/pt/yui2-lib/build/resize/assets/skins/sam/resize.css{$timestamp}"/>
