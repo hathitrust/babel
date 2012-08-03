@@ -33,6 +33,35 @@
     </xsl:choose>
   </xsl:variable>
 
+  <xsl:variable name="gFinalView">
+    <xsl:choose>
+      <xsl:when test="contains($gCurrentPageFeatures,'MISSING_PAGE') and $gUsingBookReader = 'false'">
+        <xsl:value-of select="'missing'"/>
+      </xsl:when>
+      <xsl:when test="$gCurrentView = 'text'">
+        <!-- use classic text view -->
+        <xsl:text>plaintext</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:choose>
+          <xsl:when test="$gCurrentView='image' or $gUsingBookReader = 'true'">
+            <xsl:value-of select="$gCurrentView"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:choose>
+              <xsl:when test="$gCurrentPageOcr=''">
+                <xsl:value-of select="'empty'"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$gCurrentView"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:variable name="gUsingBookReader">
     <xsl:choose>
       <xsl:when test="$gFinalAccessStatus!='allow'"><xsl:value-of select="'false'" /></xsl:when>
@@ -281,30 +310,15 @@
 
   </xsl:template>
 
-  <xsl:template name="BookReaderEmbeddedToolbar">
-    <div id="mdpToolbarViews">
-      <div id="mdpToolbarNav">
-        <div class="branding">
-          <div class="brandingLogo">
-            <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/></a>
-          </div>
-        </div>
-        <xsl:call-template name="BuildPageLinks">
-          <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
-        </xsl:call-template>
-        <div class="embedLink">
-          <xsl:element name="a">
-            <xsl:attribute name="href"><xsl:value-of select="//ViewType1UpLink" /></xsl:attribute>
-            <xsl:attribute name="target"><xsl:text>_blank</xsl:text></xsl:attribute>
-            <xsl:call-template name="GetMaybeTruncatedTitle">
-              <xsl:with-param name="titleString" select="$gTitleString"/>
-              <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-              <xsl:with-param name="maxLength" select="'20'"/>
-            </xsl:call-template>
-          </xsl:element>
-        </div>
-      </div>
-    </div>
+  <xsl:template name="item-embedded-viewer">
+    <xsl:call-template name="ContentContainer"/>
+    <xsl:call-template name="bookreader-javascript-init" />
+  </xsl:template>
+
+  <xsl:template name="item-embedded-toolbar">
+    <xsl:call-template name="BuildPageLinks">
+      <xsl:with-param name="pPageLinks" select="//MdpApp/PageLinks"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="BookReaderToolbar">

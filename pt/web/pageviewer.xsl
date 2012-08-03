@@ -38,42 +38,6 @@
     </xsl:choose>
   </xsl:variable>
 
-  <xsl:variable name="gFinalView">
-    <xsl:choose>
-      <xsl:when test="$gFinalAccessStatus!='allow'">
-        <xsl:value-of select="'restricted'"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:choose>
-          <xsl:when test="contains($gCurrentPageFeatures,'MISSING_PAGE') and $gUsingBookReader = 'false'">
-            <xsl:value-of select="'missing'"/>
-          </xsl:when>
-          <xsl:when test="$gCurrentView = 'text'">
-            <!-- use classic text view -->
-            <xsl:text>plaintext</xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:choose>
-              <xsl:when test="$gCurrentView='image' or $gUsingBookReader = 'true'">
-                <xsl:value-of select="$gCurrentView"/>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:choose>
-                  <xsl:when test="$gCurrentPageOcr=''">
-                    <xsl:value-of select="'empty'"/>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:value-of select="$gCurrentView"/>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-
   <!-- root template -->
   <xsl:template match="/MBooksTop">
 
@@ -154,6 +118,7 @@
   <xsl:template match="/MBooksTop" mode="embed">
 
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml" class="htmlNoOverflow">
+      <xsl:call-template name="html-tag-extra-attributes" />
       <head>
         <title>
           <xsl:call-template name="PageTitle" />
@@ -163,35 +128,18 @@
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 
         <xsl:call-template name="include_local_javascript"/>
-        <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
         <xsl:call-template name="load_js_and_css"/>
-        <!-- xsl:call-template name="online_assessment"/-->
-
-        <xsl:if test="$gUsingBookReader='true'">
-        <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script>
-        <!-- <style>
-          .debugIndex {
-            display: block;
-          }
-        </style> -->
-        </xsl:if>
+        <xsl:call-template name="include_extra_js_and_css" />
 
         <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
 
-        <xsl:call-template name="setup-ht-params" />
+        <xsl:call-template name="setup-head" />
 
       </head>
 
       <body class="yui-skin-sam">
-        <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages">
-          <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
-          </div>
-        </xsl:if>
 
-        <xsl:call-template name="BookReaderEmbeddedContainer" />
-
-        <xsl:call-template name="bookreader-javascript-init" />
+        <xsl:call-template name="UberEmbeddedContainer" />
 
         <xsl:if test="$gEnableGoogleAnalytics='true'">
           <xsl:call-template name="google_analytics" />
@@ -222,6 +170,40 @@
     <div id="overlay"></div>
 
   </xsl:template>
+
+  <xsl:template name="UberEmbeddedContainer">
+    
+    <div id="mdpUberContainer">
+
+      <div id="mdpToolbarViews">
+        <div id="mdpToolbarNav">
+          <div class="branding">
+            <div class="brandingLogo">
+              <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/></a>
+            </div>
+          </div>
+          <xsl:call-template name="item-embedded-toolbar" />
+          <div class="embedLink">
+            <xsl:element name="a">
+              <xsl:attribute name="href"><xsl:value-of select="//ViewType1UpLink" /></xsl:attribute>
+              <xsl:attribute name="target"><xsl:text>_blank</xsl:text></xsl:attribute>
+              <xsl:call-template name="GetMaybeTruncatedTitle">
+                <xsl:with-param name="titleString" select="$gTitleString"/>
+                <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+                <xsl:with-param name="maxLength" select="'20'"/>
+              </xsl:call-template>
+            </xsl:element>
+          </div>
+        </div>
+      </div>
+
+      <xsl:call-template name="item-embedded-viewer" />
+
+    </div>
+
+  </xsl:template>
+
+  <xsl:template name="item-embedded-toolbar" />
 
   <xsl:template name="Sidebar">
     <div class="mdpControlContainer">
