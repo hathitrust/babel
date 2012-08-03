@@ -22,6 +22,10 @@
 
   </xsl:template>
 
+  <xsl:template name="item-embedded-viewer">
+    <xsl:call-template name="ContentContainer" />
+  </xsl:template>
+
   <xsl:template name="ContentContainer">
     <div id="mdpContentContainer">
 

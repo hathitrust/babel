@@ -203,6 +203,7 @@
 
   </xsl:template>
 
+  <xsl:template name="item-embedded-viewer" />
   <xsl:template name="item-embedded-toolbar" />
 
   <xsl:template name="Sidebar">
