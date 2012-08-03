@@ -190,10 +190,9 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_ITEM_TYPE_PI
-  : PI_handler(ITEM_TYPE) 
+sub GetItemType 
 {
-    my ($C, $act, $piParamHashRef) = @_;
+    my ( $C ) = @_;
 
     my $mdpItem = $C->get_object('MdpItem');
     my $id = $C->get_object('CGI')->param('id');
@@ -205,12 +204,23 @@ sub handle_ITEM_TYPE_PI
         
     if ( $finalAccessStatus ne 'allow' )
     {
-        $item_type = qq{restricted};
+        return qq{restricted};
     }
 
     # determine content type somehow
-    
+    if ( $C->get_object('CGI')->param('view') eq 'jats' ) {
+        $item_type = 'jats';
+    }
+
     return $item_type;
+}
+
+sub handle_ITEM_TYPE_PI
+  : PI_handler(ITEM_TYPE) 
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    
+    return GetItemType($C);
 }
 
 # ---------------------------------------------------------------------
@@ -226,22 +236,8 @@ sub handle_ITEM_STYLESHEET_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $mdpItem = $C->get_object('MdpItem');
-    my $id = $C->get_object('CGI')->param('id');
-
-    my $stylesheet = qq{pageviewer_book.xsl};
-
-    my $finalAccessStatus =
-        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-        
-    if ( $finalAccessStatus ne 'allow' )
-    {
-        $stylesheet = qq{pageviewer_restricted.xsl};
-    }
-
-    # determine content type somehow
-    
-    return $stylesheet;
+    my $item_type = GetItemType($C);
+    return qq{pageviewer_${item_type}.xsl};
 }
   
 # ---------------------------------------------------------------------
