@@ -7,7 +7,7 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
-        <title>Collections: <xsl:value-of select="$coll_name" /> | HathiTrust Digital Library</title>
+        <title><xsl:call-template name="get_page_title" /></title>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>
@@ -32,15 +32,18 @@
             <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
           </div>
           
-          <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-          </div>
+          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
+            <div>
+              <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
+            </div>
+          </xsl:if>
           
           <xsl:call-template name="header"/>
-          <xsl:call-template name="DisplaySearchWidgetLogic"/>
 
           <div id="mbContentContainer" class="mbListItemsContainer clearfix">
-            <h3 class="SkipLink">Main Content</h3>
+
+            <xsl:call-template name="DisplaySearchWidgetLogic"/>
+
             <div class="SearchAndRefine">
               <div class="refine">
                 <xsl:call-template name="decideDisplayRefine"/>
@@ -50,7 +53,10 @@
             <div id="main">
               <xsl:choose>
                 <xsl:when test="ItemList/Item">
-                  <xsl:call-template name="DisplayContent"/>
+                  <xsl:call-template name="DisplayContent">
+                    <xsl:with-param name="title">Collection</xsl:with-param>
+                    <xsl:with-param name="item-list-contents">items</xsl:with-param>
+                  </xsl:call-template>
                 </xsl:when>
                 <xsl:otherwise>
                   <xsl:call-template name="EmptyCollection"/>
@@ -71,24 +77,25 @@
   
   <xsl:template name="MBooksCol">
     <div class="MBooksCol">
-      <h2>
-        <xsl:value-of select="/MBooksTop/CollectionOwner"/>
-        <xsl:text>'s </xsl:text>
-        <span class="colName"><xsl:value-of select="$coll_name"/></span>
-        <xsl:text> collection</xsl:text>
-        <xsl:if test="$debug='YES'">
-          <span class="debug">DEBUG </span>
-        </xsl:if>
-      </h2>
+      <xsl:value-of select="/MBooksTop/CollectionOwner"/>
+      <xsl:text>'s </xsl:text>
+      <span class="colName"><xsl:value-of select="$coll_name"/></span>
+      <xsl:text> collection</xsl:text>
+      <xsl:if test="$debug='YES'">
+        <span class="debug">DEBUG </span>
+      </xsl:if>
     </div>
   </xsl:template>
   
-  
-  
+  <xsl:template name="get_page_title">
+    <xsl:text>Collections: </xsl:text><xsl:value-of select="$coll_name" /><xsl:text> | HathiTrust Digital Library</xsl:text>
+  </xsl:template>
+    
   <!-- Edit Collection Widget  (refine results needs separate pi/widget) -->
   <xsl:template name="EditCollectionWidget">
-    <div class="ColSidebar">
+    <div class="ColSidebar" role="complementary">
       <div class="ColOptions">
+        <h2 class="offscreen">About this collection</h2>
         <xsl:choose>
           <xsl:when test="EditCollectionWidget/OwnedByUser='yes' ">
             <xsl:call-template name="EditCollectionWidgetOwned"/>
@@ -103,7 +110,8 @@
   
   <xsl:template name="EditCollectionWidgetOwned">
     <div class="editOwned">
-      <h4><xsl:text>Edit options</xsl:text></h4>
+      <!-- <h4><xsl:text>Edit options</xsl:text></h4> -->
+      <h3>Edit options</h3>
       
       <form id="editcoll" name="editcoll" method="get" action="mb?">
         <xsl:copy-of select="$hidden_c_param"/>
@@ -175,23 +183,23 @@
         </div>
       </xsl:if>
       
+      <h3>Collection Name</h3>
       <div class="colNameLabel">
-        <xsl:text>Collection Name: </xsl:text>
-        <!-- <span class="colName"><xsl:value-of select="$coll_name"/></span>-->
         <span class="colName"><xsl:value-of select="$spaced_coll_name"/></span>
       </div>
       
       <xsl:if test="normalize-space(EditCollectionWidget/CollDesc)">
+          <h3>Collection Description</h3>
         <div class="colDescLabel">
-          <xsl:text>Collection Description: </xsl:text>
-          <span class="colDesc">
+          <p class="colDesc">
             <xsl:value-of select="EditCollectionWidget/CollDesc"/>
-          </span>
+          </p>
         </div>
       </xsl:if>
       
       <xsl:if test="normalize-space(//CollectionContactInfo)">
         <div class="ownerLink">
+          <h3 class="offscreen">Contact Information</h3>
           <xsl:apply-templates select="//CollectionContactInfo" mode="copy-guts" />
         </div>
       </xsl:if>
@@ -203,13 +211,13 @@
     
     <xsl:call-template name="MBooksCol"/>
   </xsl:template>
+  
   <xsl:template name ="DisplaySearchWidgetLogic">
- <div class="mainsearch">
+    <div class="mainsearch">
       <xsl:if test="$AllItemsCount>0">
         <xsl:call-template name="SearchWidget"/>
       </xsl:if>
     </div>
-    
   </xsl:template>
 
   <xsl:template match="*" mode="copy-guts">

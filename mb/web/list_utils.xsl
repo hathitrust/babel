@@ -321,12 +321,14 @@
     </xsl:if>  
   </xsl:template>
   
-  <xsl:template name="DisplayContent">    
-    <div id="ColContainer">      
+  <xsl:template name="DisplayContent">
+    <xsl:param name="title" />
+    <xsl:param name="item-list-contents" />
+    <div id="ColContainer" role="main">      
       <xsl:call-template name="EditCollectionWidget"/>
 
       <div class="ColContent">
-        <h4 class="SkipLink">List of items and actions</h4>
+        <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
         
         <!-- Special case show index status message only for listsrch page -->
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
@@ -343,7 +345,9 @@
             <xsl:call-template name="OperationResults" />
           </div>
         </xsl:if>
-        <xsl:call-template name="ItemList"/>
+        <xsl:call-template name="ItemList">
+          <xsl:with-param name="item-list-contents" select="$item-list-contents" />
+        </xsl:call-template>
       </div>  <!-- end div ColContent -->
     </div>  <!-- end div ColContainer -->
   </xsl:template>
@@ -812,6 +816,7 @@
 
 
   <xsl:template name="ItemList">
+    <xsl:param name="item-list-contents" />
     <div class="actions">
       <form id="form1" name="form1" method="get" action="mb?">
         <xsl:copy-of select="$hidden_c_param"/>
@@ -834,18 +839,21 @@
           <input type="hidden" name="page" value="srchresults"/>
         </xsl:if>
 
-        <div id="actionsRow1">
+        <div id="actionsRow1" role="toolbar">
+          <h3 class="offscreen">Tools for sorting and filtering the list</h3>
           <xsl:call-template name="BuildSortWidget"/>
           <xsl:call-template name="BuildPagingControls">
               <xsl:with-param name="which_paging" select="'top_paging'"/>
           </xsl:call-template>
         </div>
-        <div id="actionsRow2">
+        <div id="actionsRow2" role="toolbar">
+          <h3 class="offscreen">Tools for collection management</h3>
           <div class="selectAll"><label>Select all on page <input type="checkbox" id="checkAll"/></label></div>
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
 
         <div id="itemTable" class="itemTable">
+          <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
           <xsl:choose>
             <xsl:when test="$ItemListType='SearchResults'">
               <xsl:for-each select="SearchResults/Item">
@@ -859,22 +867,6 @@
             </xsl:otherwise>
           </xsl:choose>
         </div>
-
-<!--         <table id="itemTable" class="itemTable">
-          <xsl:choose>
-            <xsl:when test="$ItemListType='SearchResults'">
-              <xsl:for-each select="SearchResults/Item">
-                <xsl:call-template name="BuildItemChunk"/>
-              </xsl:for-each>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:for-each select="ItemList/Item">
-                <xsl:call-template name="BuildItemChunk"/>
-              </xsl:for-each>
-            </xsl:otherwise>
-          </xsl:choose>
-        </table>
- -->
 
         <div id="listisFooter">
           <xsl:call-template name="BuildPagingControls">
@@ -938,12 +930,10 @@
 
     
   <xsl:template name="SearchWidget">
-    <div id="LSformCont">
+    <div id="LSformCont" role="search">
       <form id="itemlist_searchform" method="get" action="mb" name="searchcoll">
         <xsl:call-template name="HiddenDebug"/>
-        <!-- <label for="srch">Search in this collection</label>-->
-<!--         <img class="SearchArrow" alt="" src="//common-web/graphics/SearchArrow_Col.png"/> -->
-        <h3 class="arrow"><label for="q1">Search in this collection</label></h3>
+        <h2 class="arrow"><label for="q1">Search in this collection</label></h2>
         <input type="text" size="30" maxlength="150" name="q1" id="q1"> 
         
         <!-- search widget for list_search results needs query string in param  -->

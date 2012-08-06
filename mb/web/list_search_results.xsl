@@ -7,7 +7,7 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
-        <title>Collections: <xsl:value-of select="$coll_name" /> Search Results | HathiTrust Digital Library</title>
+        <title><xsl:call-template name="get_page_title" /></title>
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_local_javascript"/>        
         <xsl:text disable-output-escaping="yes">&#x3C;!--[if lt IE 8]>
@@ -32,7 +32,6 @@
           <xsl:call-template name="DisplaySearchWidgetLogic"/>
           
           <div id="mbContentContainer" class="mbSearchResultsContainer">            
-            <h2 class="SkipLink">Main Content</h2>
             
             <!-- Warning message suppressed for now.  Can't get paging
                  to properly handle 'well_formed' search_result_data.
@@ -50,7 +49,10 @@
             <div id="main">
               <xsl:choose>
                 <xsl:when test="SearchResults/Item">
-                  <xsl:call-template name="DisplayContent"/>
+                  <xsl:call-template name="DisplayContent">
+                    <xsl:with-param name="title" select="'Search Results'" />
+                    <xsl:with-param name="item-list-contents" select="'items'" />
+                  </xsl:call-template>
                 </xsl:when>
                 <xsl:when test="SearchResults/SolrError[normalize-space(.)]">
                   <xsl:call-template name="SolrError"/>
@@ -72,7 +74,11 @@
       </body>
     </html>
   </xsl:template>
-  
+
+  <xsl:template name="get_page_title">
+    <xsl:text>Collections: </xsl:text><xsl:value-of select="$coll_name" /><xsl:text> Search Results | HathiTrust Digital Library</xsl:text>
+  </xsl:template>
+
   <!-- TEMPLATE -->
   <xsl:template name="QueryRewrite">
     <xsl:if test="/MBooksTop/SearchResults/WellFormed!=1">
@@ -90,20 +96,18 @@
   <!-- TEMPLATE -->
   <xsl:template name="MBooksCol">
     <div class="MBooksCol">
-      <h2>
-        <xsl:value-of select="/MBooksTop/CollectionOwner"/>
-        <xsl:text>'s </xsl:text>
-        <a>
-          <xsl:attribute name="href">
-            <xsl:value-of select="/MBooksTop/OperationResults/CollHref"/>
-          </xsl:attribute>
-          <span class="colName"><xsl:value-of select="$coll_name"/></span>
-        </a>
-        <xsl:text> collection</xsl:text>
-        <xsl:if test="$debug='YES'">
-          <span class="debug">DEBUG </span>
-        </xsl:if>
-      </h2>
+      <xsl:value-of select="/MBooksTop/CollectionOwner"/>
+      <xsl:text>'s </xsl:text>
+      <a>
+        <xsl:attribute name="href">
+          <xsl:value-of select="/MBooksTop/OperationResults/CollHref"/>
+        </xsl:attribute>
+        <span class="colName"><xsl:value-of select="$coll_name"/></span>
+      </a>
+      <xsl:text> collection</xsl:text>
+      <xsl:if test="$debug='YES'">
+        <span class="debug">DEBUG </span>
+      </xsl:if>
     </div>
   </xsl:template>
   
@@ -166,7 +170,7 @@
   <!-- TEMPLATE -->
   <xsl:template name="NoResults">    
     <div id="ColContainer">
-      <div class="ColContent">
+      <div class="ColContent" role="main">
         <xsl:call-template name="IndexingStatusMsg"/>
 
         <div class="error">
