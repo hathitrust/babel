@@ -63,15 +63,6 @@
       <xsl:element name="body">
         <xsl:attribute name="class">yui-skin-sam</xsl:attribute>
         <xsl:attribute name="id">PubCollPage</xsl:attribute>
-        <!-- <xsl:choose>
-          <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='pub'">
-            <xsl:attribute name="id">PubCollPage</xsl:attribute>
-          </xsl:when>
-          <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='priv'">
-            <xsl:attribute name="id">PrivCollPage</xsl:attribute>
-          </xsl:when>
-          <xsl:otherwise></xsl:otherwise>
-        </xsl:choose> -->
 
         <div id="mbMasterContainer">
 
@@ -79,11 +70,14 @@
             <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
           </div>
 
-          <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-          </div>
+          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
+            <div>
+              <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
+            </div>
+          </xsl:if>
 
           <xsl:call-template name="header"/>
+
           <xsl:variable name="list_type">
             <xsl:call-template name="get_which_list"/>
           </xsl:variable>
@@ -211,8 +205,8 @@
       </xsl:choose>
     </xsl:variable>
 
-    <div id="mbContentContainer" class="mbColListContainer">
-      <h2 class="mbContentTitle SkipLink">All Collections</h2>
+    <div id="mbContentContainer" class="mbColListContainer" role="main">
+      <h2 class="mbContentTitle offscreen">All Collections</h2>
 
       <xsl:call-template name="LoginMsg"/>
 
@@ -221,7 +215,8 @@
           <xsl:value-of select="$list_class"/>
         </xsl:attribute>
 
-        <div class="controls clearfix" style="text-align: center">
+        <h3 class="offscreen">Sorting/Filtering Tools</h3>
+        <div class="controls clearfix" role="toolbar">
           <div class="clearfix">
             <div class="filters-wrap">
               <ul class="filters">
@@ -272,6 +267,8 @@
             <a class="awesome small list-reset" href="#">Reset</a>
           </div>
         </div>
+
+        <h3 class="offscreen">List of collections</h3>
 
         <xsl:variable name="insts" select="//Inst" />
 
@@ -328,30 +325,7 @@
         </script>
 
         <div class="results">
-          <xsl:for-each select="$list_node/Collection">
-
-            <!-- <script type="text/javascript">
-              html = [];
-              html.push('<xsl:value-of select="CollId" />');
-              html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
-              html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
-              html.push('<xsl:value-of select="NumItems" />');
-              html.push('<xsl:value-of select="OwnerString" />');
-
-              <xsl:variable name="owner_affiliation" select="string($insts[contains(current()/OwnerAffiliation, @domain)])" />
-
-              html.push('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
-              html.push('<xsl:value-of select="Updated" />');
-              html.push('<xsl:value-of select="Updated_Display" />');
-              featured = '<xsl:value-of select="Featured" />';
-              html.push(featured);
-              if ( featured ) {
-                bucket.featured.push(<xsl:value-of select="position() - 1" />);
-              }
-              html.push('<xsl:value-of select="Shared" />');
-              html.push('<xsl:value-of select="DeleteCollHref" />');
-              bucket.html.push(html);
-            </script> -->
+          <xsl:for-each select="$list_node/Collection[position() &lt; 10]">
 
             <xsl:variable name="class">
               <xsl:text>collection </xsl:text>
@@ -526,8 +500,8 @@
     <xsl:template name="FeaturedCollection">
 
       <script id="featured-template" type="text/x-template">
-        <div class="Box">
-          <h3>Featured Collection</h3>
+        <div class="Box" role="complementary">
+          <h2>Featured Collection</h2>
           <div>
             <!-- <h4> -->
             <span class="title">
