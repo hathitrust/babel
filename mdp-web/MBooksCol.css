@@ -10,6 +10,45 @@ Tom temporary css styles to be put in single css or integrated.  Ask Suz
 
 
 /** Copied from mb.css **/
+h2.arrow {
+  display: inline;
+  background: #EF7A06;
+  padding-left: 8px;
+  padding-right: 16px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  position: relative;
+  margin-right: 16px;
+  color: white;
+  font-size: 150%;
+  font-weight: normal;
+
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-bottom-left-radius: 8px;
+  -moz-border-radius-topleft: 8px;
+  -moz-border-radius-bottomleft: 8px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+h2.arrow label:after {
+  content: "";
+  position: absolute;
+  /* Pushed down half way, will get pulled back up half height of triangle
+     ensures centering if font-size or line-height changes */
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+h2.arrow label:after {
+  right: -12px;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 12px solid #EF7A06;
+  margin-top: -6px;
+}
+
 h3.arrow {
   display: inline;
   background: #EF7A06;
@@ -406,7 +445,7 @@ a.inlineLink:hover, a.inlineLink:focus, a.inlineLink:active,
 }
 
 /* use to hide code from display but NOT screenreaders */
-.SkipLink, .SearchLabel {
+.SkipLink, .SearchLabel, .offscreen {
   position: absolute;
   left:     -10000px;
   top:      auto;
@@ -452,6 +491,8 @@ td.ItemData ul li {
 
 /* Used on list_items & search results to show which collection you're currently viewing */
 .MBooksCol {
+  font-size: 1.1em;
+  font-weight: normal;
   position: relative;
   float: left;
 	top: 3px;
@@ -564,24 +605,55 @@ a .colName {
 .branding {
   float: left;
   position: relative;
+  height: 55px;
+  left: 0;
+  /*background: red;*/
+  width: 50%;
 }
 
 .brandingLogo {
   height: 51px;
-  float: left;
   margin-top: 4px;
+}
+
+#brandingLabel {
+  background-image: url(./graphics/HathiTrust.gif);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  display: block;
+  float: left;
+  width: 145px;
+  height: 47px;
+  position: relative;
+  top: 0;
+  left: 0;
+  text-indent: -1000px;
+  clip: rect(0, 0, 0, 0);
+  /* the following for IE */
+  text-transform: capitalize;
+  zoom: 1;
+  *display: inline;
+  _height: 47px;
+  _width: 145px;
 }
 
 .brandingLogo span {
   position: relative;
-  top: -15px;
-  left: 10px;
   color: #6a6b6e;
   font-size: 1.7em;
+  display: block;
+  float: left;
+  height: 47px;
+  line-height: 1.9em;
+  left: 10px;
 }
 
 .brandingLogo a {
   text-decoration: none;
+  position: relative;
+  top: 0;
+  left: 0;
+  display: block;
 }
 
 /* Fixme:suzchap don't need now?
@@ -785,13 +857,13 @@ body#PrivCollPage li#PrivCollLink a {
   margin: 14px 0 30px 20px;
 }
 
-.mainsearch h2 {
+/*.mainsearch h2 {
 	padding: 0;
 	margin: 0;
 	display:inline;
 	font-size: 1em;
 	font-weight: normal;
-}
+}*/
 
 .SearchAndRefine {
   clear: both;
@@ -1252,6 +1324,7 @@ li.viewall {
   font-weight: bold;
 	font-size: 1.1em;
 	background-color: #eeeeee;
+  margin-bottom: 8px;
 }
 
 .editOwned .colNameLabel, .editOwned .colDescLabel{ 

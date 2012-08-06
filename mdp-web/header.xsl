@@ -49,13 +49,13 @@
   
   <xsl:template name="heading1">
     <xsl:element name="h1">
-      <xsl:attribute name="class">SkipLink</xsl:attribute>
-      <xsl:text>HathiTrust Digital Library</xsl:text>
+      <xsl:attribute name="class">offscreen</xsl:attribute>
+      <xsl:call-template name="get_page_title"/>
     </xsl:element>
   </xsl:template>
   
   <xsl:template name="mbooksnav">
-    <div class="MBooksNav">
+    <div class="MBooksNav" role="navigation">
       <h2 class="SkipLink">Navigation links for login, help, feedback, etc.</h2>
       <ul>
         <xsl:call-template name="loginlink"/>
@@ -92,10 +92,12 @@
   </xsl:template>  
   
   <xsl:template name="branding">
-    <div class="branding">
+    <div class="branding" role="branding">
       <div class="brandingLogo">
-        <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/>
-        <span>Digital Library</span></a>
+        <a href="http://catalog.hathitrust.org">
+          <span id="brandingLabel">HathiTrust </span>
+          <span>Digital Library</span>
+        </a>
       </div>
     </div>
   </xsl:template>
@@ -165,7 +167,7 @@
 
    <!--SubNav Header-->
    <!--All pages will have a SubNavHeader, but text/links will be different-->
-   <div id="SubNavHeader">
+   <div id="SubNavHeader" role="navigation">
      <div id="SubNavHeaderCont">
        <xsl:call-template name="subnav_header"/>
      </div>

@@ -11,11 +11,11 @@
 
   <xsl:template name="footer">
     <xsl:param name="gUsingBookReader" select="'false'" />
-    <div id="mbFooter">
+    <div id="mbFooter" role="contentinfo">
       <xsl:if test="$gUsingBookReader = 'true'">
         <xsl:attribute name="class"><xsl:text>footerFixed</xsl:text></xsl:attribute>
       </xsl:if>
-      <h2 class="SkipLink">More Page Information</h2>
+      <h2 class="offscreen">Footer</h2>
         
       <div id="FooterCont">
         <!--All pages use Footer-->
