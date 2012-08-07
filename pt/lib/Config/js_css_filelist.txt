@@ -73,7 +73,7 @@ Test:$gUsingSearch='false'
 /pt/web/js/classic.js
 
 Section:BOOKREADER_JS
-Test:$gItemType = 'book' and $gUsingBookReader='true'
+Test:$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'
 /pt/web/jquery/jquery.easing.1.3.js
 /pt/web/jquery/jquery.color.js
 /pt/web/jquery/jquery.textfill.js
@@ -90,10 +90,6 @@ Test:$gSkin='mobile' and $gUsingBookReader='true'
 /pt/web/mobile/HTMobileBookReader.js
 /pt/web/mobile/jquery.ui.ipad.js
 /pt/web/mobile/jquery.jswipe-0.1.2.js
-
-# NOTE: BookReader.css doesn't appear to work when minified.
-# Section:BOOKREADER_CSS
-# Test:$gItemType='book' and $gUsingBookReader='true'
 
 Section:CSS
 # css files, note last one overides earlier

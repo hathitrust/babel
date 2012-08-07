@@ -2,13 +2,13 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1344353975'" />
+  <xsl:variable name="timestamp" select="'?_=1344354645'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/pt/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="$gUsingSearch='false'">
         <script type="text/javascript" src="/pt/js/concatenated_PAGETURNER_JS-min.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gItemType = 'book' and $gUsingBookReader='true'">
+    <xsl:if test="$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/js/concatenated_BOOKREADER_JS-min.js{$timestamp}"></script>
     </xsl:if>
     <xsl:if test="$gSkin='mobile' and $gUsingBookReader='true'">
@@ -51,7 +51,7 @@
      <script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/js/classic.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gItemType = 'book' and $gUsingBookReader='true'">
+    <xsl:if test="$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'">
      <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/jquery/jquery.color.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/jquery/jquery.textfill.js{$timestamp}"></script>
