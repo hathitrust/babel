@@ -114,7 +114,7 @@
   <xsl:template name="UberContainer">
     <div id="mdpUberContainer">
 
-      <div class="mdpControlContainer">
+      <div class="mdpControlContainer" role="complementary">
         <!-- <xsl:call-template name="hathiVuFind"/> -->
         <xsl:call-template name="aboutThisBook" />
         <xsl:call-template name="getThisBook" />
