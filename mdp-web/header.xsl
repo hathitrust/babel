@@ -196,6 +196,7 @@
        </xsl:when>
        <xsl:otherwise>
          <xsl:value-of select="concat('Hi ', /MBooksTop/Header/UserName, '!')"/>
+         <xsl:text> </xsl:text>
          <xsl:element name="a">
            <xsl:attribute name="href">
              <xsl:if test="/MBooksTop/Header/LoginLink!=''">
