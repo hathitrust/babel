@@ -73,6 +73,8 @@
           <xsl:call-template name="PageTitle" />
         </title>
 
+        <xsl:call-template name="extra-head-setup" />
+
         <!-- jQuery from the Google CDN -->
         <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css"/>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
@@ -149,6 +151,8 @@
       </body>
     </html>
   </xsl:template>
+
+  <xsl:template name="extra-head-setup" />
 
   <xsl:template name="access_banner">
     <div id="accessBanner">Hi <xsl:value-of select="$gUserName"/>! You have full view access to this item based on your account privileges.  A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available.<br />  This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#section108">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></div>
