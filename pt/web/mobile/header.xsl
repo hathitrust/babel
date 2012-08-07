@@ -65,7 +65,7 @@
        </xsl:when>
        <xsl:otherwise>
          <span id="mobilelogin">
-         <xsl:value-of select="concat('Hi ', /MBooksTop/Header/UserName, '!')"/>
+         <xsl:value-of select="concat('Hi ', /MBooksTop/Header/UserName, '! ')"/>
          <xsl:element name="a">
            <xsl:attribute name="href">
              <xsl:if test="/MBooksTop/Header/LoginLink!=''">

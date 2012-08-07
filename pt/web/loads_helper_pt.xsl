@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1344363672'" />
+  <xsl:variable name="timestamp" select="'?_=1344374924'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/pt/js/concatenated_common-min.js{$timestamp}"></script>
     <xsl:if test="$gUsingSearch='false'">
@@ -11,7 +11,7 @@
     <xsl:if test="$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/js/concatenated_BOOKREADER_JS-min.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gSkin='mobile' and $gUsingBookReader='true'">
+    <xsl:if test="$gSkin='mobile' and $gItemType='book' and $gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/js/concatenated_MOBILE_JS-min.js{$timestamp}"></script>
     </xsl:if>
   </xsl:template> 
@@ -60,7 +60,7 @@
      <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/js/lscache.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gSkin='mobile' and $gUsingBookReader='true'">
+    <xsl:if test="$gSkin='mobile' and $gItemType='book' and $gUsingBookReader='true'">
      <script type="text/javascript" src="/pt/mobile/epub_download_helper.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/mobile/jquery.url.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/mobile/jquery-ui-1.8.5.custom.min.js{$timestamp}"></script>

@@ -540,7 +540,7 @@
 <!--
     </div>
 -->
-    <xsl:if test="$gFinalView != 'plaintext'">
+    <!-- <xsl:if test="$gFinalView != 'plaintext'"> -->
 <!--
     <div class="controls">
         <xsl:call-template name="BuildResizeForm">
@@ -557,9 +557,11 @@
       <a href="{$href-clockwise}" id="rotate-clockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
     </div>
 -->
-    </xsl:if>
+    <!-- </xsl:if> -->
 
   </xsl:template>
+
+  <xsl:template name="BuildContentsList" />
 
   <!-- FORM: Image Resize -->
   <xsl:template name="BuildResizeForm">
