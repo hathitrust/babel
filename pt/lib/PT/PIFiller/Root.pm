@@ -208,9 +208,7 @@ sub GetItemType
     }
 
     # determine content type somehow
-    if ( $C->get_object('CGI')->param('view') eq 'jats' ) {
-        $item_type = 'jats';
-    }
+    # TBD
 
     return $item_type;
 }

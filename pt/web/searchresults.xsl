@@ -77,11 +77,11 @@
       </head>
 
       <body class="yui-skin-sam">
-        <div>
-          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/text()">
+        <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/text()">
+          <div>
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
-          </xsl:if>
-        </div>
+          </div>
+        </xsl:if>
 
 
         <xsl:call-template name="header" />
@@ -152,7 +152,7 @@
     <xsl:param name="pSearchHits"/>
     <xsl:param name="pSearchResults"/>
 
-    <div id="mdpResultsContainer">
+    <div id="mdpResultsContainer" role="main">
 
       <xsl:call-template name="backToBeginning" />
 
@@ -325,7 +325,7 @@
       <xsl:attribute name="id">skipNav</xsl:attribute>
     </xsl:element>
     
-    <h2 class="SkipLink">Search Results</h2>
+    <h2 class="offscreen">Search Results</h2>
 
     <div class="mdpSearchSummary">
       <xsl:if test="$gFinalAccessStatus!='allow'">

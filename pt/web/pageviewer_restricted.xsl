@@ -38,7 +38,7 @@
         <xsl:attribute name="class">SkipLink</xsl:attribute>
         <xsl:attribute name="name">SkipToBookText</xsl:attribute>
       </xsl:element>
-      <h2 class="SkipLink">Text or image of individual page (use access key 5 to switch to full text / OCR mode)</h2>
+      <h2 class="offscreen">Individual Page (Not Available)</h2>
       <xsl:call-template name="Viewport">
         <xsl:with-param name="pAccessStatus" select="$gFinalAccessStatus"/>
       </xsl:call-template>

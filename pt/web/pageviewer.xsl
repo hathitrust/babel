@@ -4,6 +4,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
+  xmlns="http://www.w3.org/1999/xhtml"
   extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
 
   <!-- Global Variables -->
@@ -207,7 +208,7 @@
   <xsl:template name="item-embedded-toolbar" />
 
   <xsl:template name="Sidebar">
-    <div class="mdpControlContainer">
+    <div class="mdpControlContainer" role="complementary">
 
       <xsl:call-template name="aboutThisBook" />
 

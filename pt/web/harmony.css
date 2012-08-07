@@ -688,10 +688,14 @@ div.mdpScrollableContainer {
   overflow-y: auto;
 }
 
-.mdpControlContainer h2 {
+.mdpControlContainer h2, .mdpControlContainer h3 {
   padding-left: 20px;
   font-weight:bold;
   border-bottom: 1px solid #ddd;
+}
+
+.mdpControlContainer h3 {
+  font-size: 1.2em;
 }
 
 .mdpControlContainer ul {
@@ -709,15 +713,15 @@ div.mdpScrollableContainer {
   background: transparent url(./graphics/icon_information.png) no-repeat scroll left center;
 }
 
-.getLinks h2 {
+.getLinks h3 {
   background: transparent url(./graphics/harmony/icon_arrow_down.png) no-repeat scroll left center;
 }
 
-.collectionLinks h2 {
+.collectionLinks h3 {
   background: transparent url(./graphics/harmony/icon_books.png) no-repeat scroll left center;
 }
 
-.shareLinks h2 {
+.shareLinks h3 {
   background: transparent url(./graphics/harmony/icon_gear.png) no-repeat scroll left center;
 }
 
@@ -760,6 +764,7 @@ div.mdpScrollableContainer {
 #PTcollection, #PTcollectionUnavail {
   border: none;
   padding: 0;
+  margin-top: 0.5em;
 }
 
 .shareLinks input {

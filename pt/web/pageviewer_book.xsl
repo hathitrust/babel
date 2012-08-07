@@ -4,6 +4,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
+  xmlns="http://www.w3.org/1999/xhtml"
   extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
 
   <xsl:import href="str.replace.function.xsl" />
@@ -272,7 +273,7 @@
   <xsl:template name="item-viewer">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
 
-    <div class="contentContainerWrap">
+    <div class="contentContainerWrap" role="main">
 
       <xsl:call-template name="BookReaderToolbar">
         <xsl:with-param name="pViewTypeList" select="$pViewTypeList"/>
@@ -324,7 +325,7 @@
   <xsl:template name="BookReaderToolbar">
     <xsl:param name="pViewTypeList"/>
 
-    <div id="mdpToolbar">
+    <div id="mdpToolbar" role="toolbar">
       <xsl:if test="$gFinalAccessStatus != 'allow'">
         <xsl:attribute name="class"><xsl:text>disabled</xsl:text></xsl:attribute>
       </xsl:if>
@@ -605,7 +606,34 @@
         <xsl:attribute name="class">SkipLink</xsl:attribute>
         <xsl:attribute name="name">SkipToBookText</xsl:attribute>
       </xsl:element>
-      <h2 class="SkipLink">Text or image of individual page (use access key 5 to switch to full text / OCR mode)</h2>
+      <xsl:variable name="default-tail">(use access key 5 to switch to full text / OCR mode)</xsl:variable>
+      <xsl:variable name="header-1up">Scrolling view of the page images</xsl:variable>
+      <xsl:variable name="header-2up">Flip view of two facing page images</xsl:variable>
+      <xsl:variable name="header-thumb">Gallery of thumbnail images of all pages</xsl:variable>
+      <h2 class="offscreen viewport">
+        <xsl:if test="$gUsingBookReader = 'true'">
+          <xsl:attribute name="data-default-tail"><xsl:value-of select="$default-tail" /></xsl:attribute>
+          <xsl:attribute name="data-header-1up"><xsl:value-of select="$header-1up" /></xsl:attribute>
+          <xsl:attribute name="data-header-2up"><xsl:value-of select="$header-2up" /></xsl:attribute>
+          <xsl:attribute name="data-header-thumb"><xsl:value-of select="$header-thumb" /></xsl:attribute>
+        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="$gCurrentView = '1up'">
+            <xsl:value-of select="$header-1up" />
+          </xsl:when>
+          <xsl:when test="$gCurrentView = '2up'">
+            <xsl:value-of select="$header-2up" />
+          </xsl:when>
+          <xsl:when test="$gCurrentView = 'thumb'">
+            <xsl:value-of select="$header-thumb" />
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>Text or image of individual page</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text> </xsl:text>
+        <xsl:value-of select="$default-tail" />
+      </h2>
       <xsl:call-template name="Viewport">
         <xsl:with-param name="pCurrentPageImageSource" select="$gCurrentPageImageSource"/>
         <xsl:with-param name="pCurrentPageOcr" select="$gCurrentPageOcr"/>

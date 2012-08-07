@@ -786,6 +786,21 @@ HTBookReader.prototype.switchToolbarMode = function(mode) {
     }
     var title = "current view";
     $e.attr('title', title);
+    this.updateViewportHeader(mode);
+}
+
+HTBookReader.prototype.updateViewportHeader = function(mode) {
+    var $h2 = $("h2.viewport")
+    var key;
+    if ( mode == 1 ) {
+        key = 'header-1up';
+    } else if ( mode == 2 ) {
+        key = 'header-2up';
+    } else {
+        key = 'header-thumb';
+    }
+    var text = $h2.data(key) + " " + $h2.data('default-tail');
+    $h2.text(text);
 }
 
 // Update titles on the magnifying glasses
