@@ -625,6 +625,10 @@ div.ocrScrollBar{
 	background-repeat:no-repeat;    
 }
 
+.boxy-content .PTregularLink {
+	margin-left: 0;
+}
+
 .worldcat, #epubLink, #fullPdfLink {
   padding-left: 20px !important;
 	padding-right: 20px !important;

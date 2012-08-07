@@ -6,23 +6,8 @@
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
-  <xsl:import href="../pageviewer.xsl"/>
-  
-  <xsl:template name="Sidebar">
-    <div class="mdpControlContainer">
-
-      <xsl:call-template name="crmsPageControls" />
-      <xsl:call-template name="crmsModeControls" />
-      
-      <div class="mdpScrollableContainer">
-        
-        <xsl:call-template name="BuildContentsList" />
-
-      </div> <!-- scrollable -->
-      
-    </div>
-  </xsl:template>
-  
+  <xsl:import href="../pageviewer_book.xsl"/>
+    
   <xsl:template name="BookReaderToolbar">
   </xsl:template>
   
@@ -310,7 +295,126 @@
     </xsl:element>
   </xsl:template>
   
-  <xsl:template name="crmsModeControls">
+  <xsl:template name="BuildPageLinks">
+    <xsl:param name="pPageLinks"/>
+    
+    <style>
+      .mdpPageLinks ul li a img {
+        background-color: transparent;
+      }
+    </style>
+    
+    <ul>
+      <li>
+        <xsl:if test="$pPageLinks/FirstPageLink">
+          <xsl:element name="a">
+            <xsl:attribute name="id">mdpFirstPageLink</xsl:attribute>
+            <xsl:attribute name="title">First [f]</xsl:attribute>
+            <xsl:attribute name="href">
+              <xsl:value-of select="$pPageLinks/FirstPageLink"/>
+            </xsl:attribute>
+            <xsl:attribute name="accesskey">f</xsl:attribute>
+            <xsl:element name="img">
+              <xsl:attribute name="alt">First [f]</xsl:attribute>
+              <xsl:attribute name="src">
+                <xsl:value-of select="'//common-web/graphics/harmony/icon_first.png'"/>
+              </xsl:attribute>
+            </xsl:element>
+          </xsl:element>
+        </xsl:if>
+      </li>
+
+      <li>
+        <xsl:choose>
+          <xsl:when test="$pPageLinks/PreviousPageLink='XX'">
+
+            <xsl:element name="span">
+              <xsl:element name="img">
+                <xsl:attribute name="alt">Previous</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous_grayed.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:element name="a">
+              <xsl:attribute name="id">mdpPreviousPageLink</xsl:attribute>
+              <xsl:attribute name="title">Previous [p]</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="$pPageLinks/PreviousPageLink"/>
+              </xsl:attribute>
+              <xsl:attribute name="accesskey">p</xsl:attribute>
+              <xsl:element name="img">
+                <xsl:attribute name="alt">Previous [p]</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:otherwise>
+        </xsl:choose>
+      </li>
+
+
+      <li>
+        <xsl:choose>
+          <xsl:when test="$pPageLinks/NextPageLink='XX'">
+
+
+            <xsl:element name="span">
+              <xsl:element name="img">
+                <xsl:attribute name="alt">Next</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next_grayed.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:element name="a">
+              <xsl:attribute name="title">Next [n]</xsl:attribute>
+              <xsl:attribute name="id">mdpNextPageLink</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="$pPageLinks/NextPageLink"/>
+              </xsl:attribute>
+              <xsl:attribute name="accesskey">n</xsl:attribute>
+              <xsl:element name="img">
+                <xsl:attribute name="alt">Next [n]</xsl:attribute>
+                <xsl:attribute name="src">
+                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next.png'"/>
+                </xsl:attribute>
+              </xsl:element>
+            </xsl:element>
+          </xsl:otherwise>
+        </xsl:choose>
+      </li>
+
+      <li>
+        <xsl:if test="$pPageLinks/LastPageLink">
+
+
+          <xsl:element name="a">
+            <xsl:attribute name="id">mdpLastPageLink</xsl:attribute>
+            <xsl:attribute name="title">Last [l]</xsl:attribute>
+            <xsl:attribute name="href">
+              <xsl:value-of select="$pPageLinks/LastPageLink"/>
+            </xsl:attribute>
+            <xsl:attribute name="accesskey">l</xsl:attribute>
+            <xsl:element name="img">
+              <xsl:attribute name="alt">Last [l]</xsl:attribute>
+              <xsl:attribute name="src">
+                <xsl:text>//common-web/graphics/harmony/icon_last.png</xsl:text>
+              </xsl:attribute>
+            </xsl:element>
+          </xsl:element>
+        </xsl:if>
+      </li>
+    </ul>
+
+  </xsl:template>
+  
+   <xsl:template name="crmsModeControls">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     
     <style>
@@ -327,8 +431,12 @@
         padding-right: 4px;
       }
       
-      .PTbutton, #btnClassicView {
+      .PTbutton, #btnClassicView, #btnClassicText {
         width: 8em;
+      }
+
+      #mdpToolbarViews .PTbutton {
+        padding-left: 2.8em !important;
       }
       
     </style>
@@ -494,86 +602,6 @@
     </script>
   </xsl:template>
   
-  
-  <!-- CONTROL: Contents List -->
-  <xsl:template name="BuildContentsList">
-    <xsl:variable name="foldPosition">
-      <xsl:choose>
-        <xsl:when test="/MBooksTop/MBooksGlobals/SSDSession='true'">
-          <!-- Do not fold for ssd; it hides some content -->
-          <xsl:value-of select="9999"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="10"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-
-    <xsl:element name="table">
-      <tbody>
-        <tr id="mdpFeatureListTitle">
-          <th scope="col"><a name="contents"></a>Contents:&#xA0;&#xA0;</th>
-          <th scope="col" class="SkipLink">page number</th>
-        </tr>
-
-        <xsl:for-each select="$gFeatureList/Feature">
-          <xsl:element name="tr">
-            <xsl:choose>
-              <xsl:when test="position() &gt; $foldPosition">
-                <xsl:attribute name="class">mdpFeatureListItem mdpFlexible_3_1</xsl:attribute>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:attribute name="class">mdpFeatureListItem</xsl:attribute>
-              </xsl:otherwise>
-            </xsl:choose>
-            <td>
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="Link"/>
-                </xsl:attribute>
-                <xsl:value-of select="Label"/>
-                <xsl:if test="Page!=''">
-                  <xsl:element name="span">
-                    <xsl:attribute name="class">SkipLink</xsl:attribute>
-                    <xsl:text> on page number </xsl:text>
-                    <xsl:value-of select="Page"/>
-                  </xsl:element>
-                </xsl:if>
-              </xsl:element>
-            </td>
-            <td class="mdpContentsPageNumber">
-              <xsl:if test="/MBooksTop/MBooksGlobals/SSDSession='false'">
-                <!-- Do not repeat the page number already emitted CSS -->
-                <!-- invisibly above for screen readers                -->
-                <xsl:value-of select="Page"/>
-              </xsl:if>
-            </td>
-          </xsl:element>
-        </xsl:for-each>
-
-        <xsl:if test="count($gFeatureList/*) &gt; $foldPosition">
-          <xsl:element name="tr">
-            <xsl:attribute name="class">mdpFeatureListItem</xsl:attribute>
-            <td>&#xA0;</td>
-            <td>
-              <xsl:element name="a">
-                <xsl:attribute name="id">mdpFlexible_3_2</xsl:attribute>
-                <xsl:attribute name="href"><xsl:value-of select="'#contents'"/></xsl:attribute>
-                <xsl:attribute name="onclick">
-                  <xsl:value-of select="'javascript:ToggleContentListSize();'"/>
-                </xsl:attribute>
-                <xsl:attribute name="onkeypress">
-                  <xsl:value-of select="'javascript:ToggleContentListSize();'"/>
-                </xsl:attribute>
-                <xsl:text>&#x00AB; less</xsl:text>
-              </xsl:element>
-            </td>
-          </xsl:element>
-        </xsl:if>
-
-      </tbody>
-    </xsl:element>
-
-  </xsl:template>
-  
+   
+ 
 </xsl:stylesheet>

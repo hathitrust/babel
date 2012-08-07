@@ -3,6 +3,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
+  xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
   <xsl:import href="../pageviewer.xsl"/>
@@ -12,18 +13,15 @@
   	</xsl:value-of>
   </xsl:variable>
 
-  <xsl:template name="BookReaderSidebar">
+  <xsl:template name="Sidebar">
     <div class="mdpControlContainer">
 
       <xsl:call-template name="crmsPageControls" />
-<!--
-      <xsl:call-template name="crmsModeControls" />
--->
 
-	  <div id="mdpMobileTableOfContents">
-      	<xsl:call-template name="BuildContentsList" />
-      </div>
-	  <div id="BRiteminfo" >
+  	  <div id="mdpMobileTableOfContents">
+        	<xsl:call-template name="BuildContentsList" />
+        </div>
+  	  <div id="BRiteminfo" >
 
 	  	<xsl:call-template name="MobileItemMetadata" />
 	  	<xsl:call-template name="BuildCatalogLink" />
@@ -34,27 +32,27 @@
 
 	  </div>
 
-      <div id="BRgetbook">
-     	 <div id="fullEpubDownload"></div>
-      	<xsl:call-template name="MobileGetBook" />
-      </div>
+    <div id="BRgetbook">
+   	  <div id="fullEpubDownload"></div>
+    	<xsl:call-template name="MobileGetBook" />
+    </div>
 
-      <div id="BRocrsettings">
-      	<button id="ocrzoomin" class="bigger">Bigger Text</button><br />
-      	<button id="ocrzoomout" class="smaller">Smaller Text</button><br /><br />
-      	<!--
-      	<button id="wraptext">Wrapped Text</button><br />
-      	<button id="unwraptext" class="selectedwrap">Unwrapped Text</button>
-      	-->
-      	<button id="wraptext" class="selectedwrap">Wrapped Text</button><br />
-      	<button id="unwraptext" >Unwrapped Text</button>
+    <div id="BRocrsettings">
+    	<button id="ocrzoomin" class="bigger">Bigger Text</button><br />
+    	<button id="ocrzoomout" class="smaller">Smaller Text</button><br /><br />
+    	<!--
+    	<button id="wraptext">Wrapped Text</button><br />
+    	<button id="unwraptext" class="selectedwrap">Unwrapped Text</button>
+    	-->
+    	<button id="wraptext" class="selectedwrap">Wrapped Text</button><br />
+    	<button id="unwraptext" >Unwrapped Text</button>
 
-        <br />
-      	<a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
+      <br />
+    	<a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
 
-      </div>
+    </div>
 
-      <div id="BRimagesettings">
+    <div id="BRimagesettings">
       	<button id="imagezoomin" class="bigger">Zoom In</button><br />
       	<button id="imagezoomout" class="smaller">Zoom Out</button><br />
       	<button id="fittopage" >Fit to Page</button>
@@ -1247,442 +1245,73 @@
     -->
   </xsl:template>
 
-
-  <xsl:template match="/MBooksTop" mode="reader">
-    <xsl:variable name="currentSize" select="number(//CurrentCgi/Param[@name='size'])" />
-    <xsl:variable name="currentOrient" select="number(//CurrentCgi/Param[@name='orient'])" />
-    <xsl:variable name="min-width">
-      <xsl:choose>
-        <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
-          <xsl:value-of select="350 + (1100 * ( $currentSize div 100 ))" />
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="270 + (680 * ( $currentSize div 100 ))" />
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-
-    <html lang="en" xml:lang="en"
-      xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:dc="http://purl.org/dc/elements/1.1/"
-      xmlns:cc="http://creativecommons.org/ns#"
-      xmlns:foaf="http://xmlns.com/foaf/0.1/"
-      version="XHTML+RDFa 1.0"
-      >
-      <xsl:if test="$gUsingBookReader = 'true'">
-        <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
-      </xsl:if>
-
-      <head profile="http://www.w3.org/1999/xhtml/vocab">
-
-		<meta name="HandheldFriendly" content="true" />
-		<link rel="alternate" media="handheld" href="" />
-		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
-		<meta name="format-detection" content="telephone=no" />
-		<!-- this causes bookmarked-to-home to open without browser chrome; don't do that -->
-		<!-- <meta name="apple-mobile-web-app-capable" content="yes" />  -->
-
-        <!-- RDFa -->
-        <xsl:call-template name="BuildRDFaLinkElement"/>
-        <title>
-          <xsl:call-template name="PageTitle">
-            <xsl:with-param name="suffix" select="'HathiTrust Mobile Digital Library'" />
-          </xsl:call-template>
-        </title>
-
-        <!-- jQuery from the Google CDN -->
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-
-        <xsl:call-template  name="include_local_javascript"/>
-        <xsl:if test="$gUsingBookReader='true'">
-          <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css"/>
-        </xsl:if>
-        <xsl:call-template name="load_js_and_css"/>
-        <script type="text/javascript" src="/pt/js/FudgingBookReader.js"></script>
-        
-        <!-- <xsl:call-template name="online_assessment"/> -->
-
-        <xsl:if test="$gCurrentView = 'image'">
-          <style>
-            html, body {
-              min-width: <xsl:value-of select="$min-width" />px;
-            }
-          </style>
-        </xsl:if>
-
-        <xsl:comment><![CDATA[[if IE 7]>
-        <style>
-          #mdpNewStarburst {
-            margin-left: -25px;
-          }
-
-          .prompt {
-            margin-left: 0;
-          }
-
-          #mdpBookReaderViews {
-            margin-left: 30px;
-          }
-
-          #mdpToolbarNav > ul {
-            padding-left: 0;
-          }
-
-        </style>
-        <![endif]]]></xsl:comment>
-
-
-        <xsl:call-template name="bookreader-toolbar-items" />
-
-        <xsl:call-template name="setup-ht-params" />
-
-      </head>
-
-	<!-- scrollTo(0,1);ToggleContentListSize(); -->
-      <body class="yui-skin-sam" onload="scrollTo(0,1);">
-        <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages">
-          <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
-          </div>
-        </xsl:if>
-
-        <xsl:call-template name="header"/>
-
-        <xsl:call-template name="BookReaderContainer" />
-
-        <!-- not using these after all; keep reference around until we're sure -->
-        <!-- <xsl:if test="$gUsingBookReader = 'true'">
-          <xsl:call-template name="bookreader-page-items" />
-        </xsl:if> -->
-
-        <!-- Footer -->
-        <xsl:call-template name="footer">
-          <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
-        </xsl:call-template>
-
-        <xsl:if test="$gUsingBookReader = 'true'">
-          <xsl:call-template name="bookreader-javascript-init" />
-        </xsl:if>
-        <xsl:call-template name="GetAddItemRequestUrl"/>
-
-        <xsl:if test="$gEnableGoogleAnalytics='true'">
-          <xsl:call-template name="google_analytics" />
-        </xsl:if>
-
-      </body>
-    </html>
+  <xsl:template name="extra-head-setup">
+    <meta name="HandheldFriendly" content="true" />
+    <link rel="alternate" media="handheld" href="" />
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
+    <meta name="format-detection" content="telephone=no" />
+    <!-- this causes bookmarked-to-home to open without browser chrome; don't do that -->
+    <!-- <meta name="apple-mobile-web-app-capable" content="yes" />  -->
   </xsl:template>
-
 
   <!-- FORM: Search -->
   <xsl:template name="MobileBuildSearchForm">
 
-<!--
-    <xsl:param name="pSearchForm"/>
-    <xsl:element name="form">
-      <xsl:attribute name="onsubmit">
-        <xsl:value-of select="'return FormValidation(this.q1, &quot;Please enter a term in the search box.&quot;)'"/>
-      </xsl:attribute>
-      <xsl:attribute name="method">get</xsl:attribute>
-      <xsl:attribute name="action">
-        <xsl:value-of select="'ptsearch'"/>
-      </xsl:attribute>
+    <div id="mdpSearchFormLabel">
+      <!--<label for="mdpSearchInputBox">Search in this text</label>-->
+      <xsl:element name="a">
+        <xsl:attribute name="class">SkipLink</xsl:attribute>
+        <xsl:attribute name="name">SkipToSearch</xsl:attribute>
+      </xsl:element>
+    </div>
+    <form method="get" onsubmit='return false;' action='pt/search'>
+      <div class="asearchform">
+        <xsl:element name="input">
+          <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
+          <xsl:attribute name="type">text</xsl:attribute>
+          <xsl:attribute name="name">q1</xsl:attribute>
+          <xsl:attribute name="maxlength">150</xsl:attribute>
+          <xsl:attribute name="size">20</xsl:attribute>
+          <xsl:attribute name="onclick"><xsl:text>this.focus();</xsl:text></xsl:attribute>
+          <xsl:attribute name="value">
+            <xsl:value-of select="$gCurrentQ1"/>
+          </xsl:attribute>
+        </xsl:element>
 
-      <h2 class="SkipLink">Search and page navigation options</h2>
--->
-      <!--<ul>
-        <li id="mdpSearchFormLabel"> -->
-        <div id="mdpSearchFormLabel">
-          <!--<label for="mdpSearchInputBox">Search in this text</label>-->
-          <xsl:element name="a">
-            <xsl:attribute name="class">SkipLink</xsl:attribute>
-            <xsl:attribute name="name">SkipToSearch</xsl:attribute>
-          </xsl:element>
-        </div>
-        <!--<li class="asearchform">-->
-        <form method="get" onsubmit='return false;' action='pt/search'>
-        <div class="asearchform">
-          <!--<xsl:apply-templates select="$pSearchForm/HiddenVars"/>-->
+        <xsl:element name="input">
+          <xsl:attribute name="id">mdpSearchButton</xsl:attribute>
+          <xsl:attribute name="type">submit</xsl:attribute>
+          <xsl:attribute name="value">Find</xsl:attribute>
+          <xsl:attribute name="searchurl"><xsl:value-of select="'ptsearch'"/></xsl:attribute>
+        </xsl:element>
 
-          <xsl:element name="input">
-            <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
-            <xsl:attribute name="type">text</xsl:attribute>
-            <xsl:attribute name="name">q1</xsl:attribute>
-            <xsl:attribute name="maxlength">150</xsl:attribute>
-            <xsl:attribute name="size">20</xsl:attribute>
-            <xsl:attribute name="onclick"><xsl:text>this.focus();</xsl:text></xsl:attribute>
-            <xsl:attribute name="value">
-              <xsl:value-of select="$gCurrentQ1"/>
-            </xsl:attribute>
-          </xsl:element>
+      </div>
+    </form>
 
-          <xsl:element name="input">
-            <xsl:attribute name="id">mdpSearchButton</xsl:attribute>
-            <xsl:attribute name="type">submit</xsl:attribute>
-            <xsl:attribute name="value">Find</xsl:attribute>
-            <xsl:attribute name="searchurl"><xsl:value-of select="'ptsearch'"/></xsl:attribute>
-          </xsl:element>
-
-        </div>
-        </form>
-        <!--</li>
-      </ul>-->
-<!--
-      <xsl:call-template name="HiddenDebug"/>
-    </xsl:element>
--->
-<!--
-	<div id="mdpSearchResultsFooter">
-	<div id="footerDiv" class="footer">
-
-		    <div id="footerlogin">
-				<xsl:call-template name="loginlink"/>
-    		</div>
-
-			<span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
-			<br />
-
-			<xsl:call-template name="feedbacklink"/> | <xsl:call-template name="helplink"/> | <xsl:call-template name="footertakedownlink"/>
-			<br />
-
-
-	</div>
-	</div>
--->
-	<xsl:call-template name="BuildMobileFooter"/>
+    <xsl:call-template name="BuildMobileFooter"/>
   </xsl:template>
 
 
   <xsl:template name="BuildMobileFooter">
 	  <div id="mdpFooter">
-		<div id="footerDiv" class="footer">
+		  <div id="footerDiv" class="footer">
 
-			    <div id="footerlogin">
-					<xsl:call-template name="loginlink"/>
-	    		</div>
+        <div id="footerlogin">
+          <xsl:call-template name="loginlink"/>
+        </div>
 
-	    	<!-- 2011-09-29: "regular site" link shouldn't take you to the catalog -->
-        <!-- <span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
-        <br />         -->
+  	    	<!-- 2011-09-29: "regular site" link shouldn't take you to the catalog -->
+          <!-- <span style="color: black;">Mobile</span> | <a href="http://catalog.hathitrust.org?mdetect=no">Regular Site</a>
+          <br />         -->
 
-				<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> | <xsl:call-template name="footertakedownlink"/>
-				<br />
+  			<xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> | <xsl:call-template name="footertakedownlink"/>
+  			<br />
 
-
-		</div>
+		  </div>
 		</div>
   </xsl:template>
 
-  <!-- | <xsl:call-template name="helplink"/> -->
-<!-- VIEWING AREA -->
-  <xsl:template name="Viewport">
-    <xsl:param name="pCurrentPageImageSource"/>
-    <xsl:param name="pCurrentPageOcr"/>
-    <xsl:param name="pAccessStatus"/>
-
-    <!-- now handle the view type -->
-    <xsl:choose>
-      <xsl:when test="$gFinalView='pdf'">
-        <xsl:element name="iframe">
-          <xsl:attribute name="id">mdpPdf</xsl:attribute>
-          <xsl:attribute name="src">
-            <xsl:value-of select="$pCurrentPageImageSource"/>
-          </xsl:attribute>
-        </xsl:element>
-      </xsl:when>
-
-      <xsl:when test="$gFinalView='plaintext'">
-        <xsl:element name="div">
-          <xsl:attribute name="id">mdpText</xsl:attribute>
-          <p>
-            <xsl:apply-templates select="$pCurrentPageOcr"/>
-          </p>
-        </xsl:element>
-      </xsl:when>
-
-      <xsl:when test="$gFinalView='empty'">
-        <div id="mdpTextEmpty">
-          <xsl:choose>
-            <xsl:when test="$gHasOcr='YES'">
-              <div class="mdpTMPhead">NO TEXT ON PAGE</div>
-              <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine</div>
-            </xsl:when>
-            <xsl:otherwise>
-              <div class="mdpTMPhead">NO TEXT IN THIS ITEM</div>
-              <div class="mdpTMPtext">This item consists only of page images without any OCR text</div>
-            </xsl:otherwise>
-          </xsl:choose>
-        </div>
-      </xsl:when>
-
-      <xsl:when test="$gFinalView='restricted'">
-        <xsl:element name="div">
-          <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-
-          <div class="header">
-		      <a class="htlogobutton" href="http://m.hathitrust.org"></a>
-		      <xsl:element name="a">
-		          <xsl:attribute name="id">mdpCatalogLinkLimited</xsl:attribute>
-		          <xsl:variable name="href">
-		            <xsl:text>http://m.hathitrust.org/Record/</xsl:text>
-		            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
-		          </xsl:variable>
-		          <xsl:attribute name="class">tracked</xsl:attribute>
-		          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-		          <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
-		          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
-		          <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-		          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-		          <!--<xsl:text>View full catalog record</xsl:text>-->
-		          <xsl:text disable-output-escaping="yes">&lt;&lt; Record</xsl:text>
-        		</xsl:element>
-          </div>
-          <br />
-
-          <xsl:choose>
-            <!-- TOMBSTONE -->
-            <xsl:when test="$gRightsAttribute='8'">
-              <div class="Specialtext">
-                <p class="leftText">This item is no longer available in HathiTrust due to one of the following reasons:</p>
-                <ul class="bullets">
-                  <li>It was removed at the request of the rights holder.</li>
-                  <li>It was either wholly unusable or a superior copy is available.</li>
-                </ul>
-                
-                <p class="leftText">
-                  <xsl:text>Try a </xsl:text>
-                  <xsl:element name="a">
-                    <xsl:attribute name="href">
-                      <xsl:value-of select="'http://m.hathitrust.org'"/>
-                    </xsl:attribute>
-                    <xsl:text> new search </xsl:text>
-                  </xsl:element>
-                  <xsl:text>for your item to see if there are other copies or editions of this work available.</xsl:text>
-                </p>
-              </div>
-            </xsl:when>
-            <!-- If opb (attr=3) + affiliated user then tell them when -->
-            <!-- current accessor's exclusive access expires -->
-            <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
-              <div class="Specialtext">
-                <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
-                <ul>
-                  <li><strong>Unlimited</strong> use via University of Michigan Library computers</li>
-                  <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
-                </ul>
-                <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
-                <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
-
-              </div>
-            </xsl:when>
-            <xsl:otherwise>
-              <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions.</p>
-            </xsl:otherwise>
-          </xsl:choose>
-         
-          <xsl:if test="$gRightsAttribute!='8'">
-            <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-            <div style="background-color:#f6f6f6;margin:0;padding:10px">
-              <div id="limitedviewoptions">
-                <!--<img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>-->
-                <p>What you <strong>CAN</strong> do:
-                <ul>
-                  <li>
-                    <xsl:variable name="id" select="//CurrentCgi/Param[@name='id']" />
-                    <xsl:element name="a">
-                      <xsl:attribute name="id">mdpLimitedSearchInside</xsl:attribute>
-                      <xsl:attribute name="href">
-                        <xsl:value-of select="concat('/cgi/pt?id=', $id, ';skin=default')" />
-                      </xsl:attribute>
-                      <xsl:text>Search inside on Regular (non-mobile) Website</xsl:text>
-                    </xsl:element>
-                    <!--Find the frequency and page numbers of specific words and phrases -->
-                    <!-- to help you decide if the book would be useful to you.-->
-                  </li>
-                  <li>
-                    <xsl:call-template name="MobileGetBook"/>
-                    <!-- Find this item in a library near you using WorldCat. -->
-                  </li>
-                </ul>
-              </p>
-              <p>Or <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">learn more</a> about HathiTrust copyright regulations</p>
-            </div>
-          </div>
-        </xsl:if>
-      </xsl:element>
-      <xsl:call-template name="BuildMobileFooter"/>
-    </xsl:when>
-
-    <xsl:when test="$gFinalView='restricted-with-thumbnails'">
-        <xsl:element name="div">
-          <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
-          <xsl:choose>
-            <!-- If opb (attr=3) + affiliated user then tell them when -->
-            <!-- current accessor's exclusive access expires -->
-            <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
-              <div class="Specialtext">
-                <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
-                <ul>
-                  <li><strong>Unlimited</strong> use via University of Michigan Library computers</li>
-                  <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
-                </ul>
-                <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
-                <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
-
-              </div>
-            </xsl:when>
-            <xsl:otherwise>
-              <h2>
-                <img src="//common-web/graphics/LimitedLink.png" alt="" class="imgFloat" />
-                Full view is not available for this item <br/>due to copyright &#169; restrictions.
-              </h2>
-            </xsl:otherwise>
-          </xsl:choose>
-          <!-- <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p> -->
-          <div>
-              <img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>
-              <p>What you <strong>CAN</strong> do:
-                <ul>
-                  <li>Use the "Search in this text" search box above to find frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, or when working with a book that does not have an index.</li>
-                  <li>Click the "Find in a library" link to find this item in a library near you.</li>
-                </ul>
-              </p>
-              (<a href="http://www.hathitrust.org/faq#RestrictedAccess">More information</a>)
-            </div>
-        </xsl:element>
-        <div id="BookReader"></div>
-      </xsl:when>
-
-      <xsl:when test="$gFinalView='missing'">
-        <div id="mdpTextMissingPage">
-          <div class="mdpTMPhead">PAGE NOT AVAILABLE</div>
-          <div class="mdpTMPtext"><a target="_blank" href="http://www.hathitrust.org/help_digital_library#PageNotAvailable">Learn more.</a></div>
-        </div>
-      </xsl:when>
-
-      <xsl:when test="$gFinalView = 'image'">
-        <xsl:element name="img">
-          <xsl:attribute name="alt">image of individual page</xsl:attribute>
-          <xsl:attribute name="id">mdpImage</xsl:attribute>
-          <xsl:attribute name="src">
-            <xsl:value-of select="$pCurrentPageImageSource"/>
-          </xsl:attribute>
-          <xsl:attribute name="width">
-            <xsl:value-of select="$gCurrentPageImageWidth"/>
-          </xsl:attribute>
-          <xsl:attribute name="height">
-            <xsl:value-of select="$gCurrentPageImageHeight"/>
-          </xsl:attribute>
-        </xsl:element>
-      </xsl:when>
-
-      <xsl:otherwise>
-        <div id="BookReader"></div>
-      </xsl:otherwise>
-
-    </xsl:choose>
-  </xsl:template>
-
+ 
 </xsl:stylesheet>
 
 
