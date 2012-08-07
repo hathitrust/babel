@@ -70,8 +70,11 @@
       <xsl:call-template name="loginlink" />
     </xsl:variable>
     <xsl:variable name="li" select="exsl:node-set($loginlink)/li" />
-    <div class="SkipLink">
-      <p><xsl:copy-of select="$li/*|$li/text()" /></p>
+    <div class="offscreen" role="note">
+      <h2>Text Only Views</h2>
+      <xsl:if test="normalize-space($li)">
+        <p><xsl:copy-of select="$li/*|$li/text()" /></p>
+      </xsl:if>
       <xsl:if test="$gHtId">
         <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
       </xsl:if>

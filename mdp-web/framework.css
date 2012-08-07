@@ -93,6 +93,11 @@ body
   display: inline;
 }
 
+#mdpItemBar h2 {
+  display: inline;
+  font-size: 1em !important;
+}
+
 
 /* BIBLIO METADATA  */
 
