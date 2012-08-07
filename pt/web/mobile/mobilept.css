@@ -113,6 +113,8 @@ div#BRpager {
     margin-left: 10px;
     margin-right: 10px;
     height: 40px;
+    background: transparent;
+    border: none;
 }
 div#BRslider {
     position: absolute;
