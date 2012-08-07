@@ -1186,6 +1186,7 @@ input#email{
 
 .contentContainerWrap {
   width: 100%;
+  margin-top: 0;
 }
 
 .metaDataRegionHead {
