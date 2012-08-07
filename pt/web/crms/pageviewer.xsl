@@ -7,6 +7,19 @@
   version="1.0">
 
   <xsl:import href="../pageviewer.xsl"/>
+
+  <xsl:template name="extra-head-setup">
+    <style>
+      #mdpUberContainer {
+        margin-top: 0px;
+      }
+      
+      .contentContainerWrap {
+        margin-top: 0px !important;
+      }
+
+    </style>
+  </xsl:template>
   
   <xsl:template name="Sidebar">
     <div class="mdpControlContainer">
@@ -33,10 +46,6 @@
       
       #mdpItemMetadata {
         z-index: 9999;
-      }
-      
-      #mdpUberContainer {
-        margin-top: 0px;
       }
       
       .controls {

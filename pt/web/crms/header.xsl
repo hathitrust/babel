@@ -15,7 +15,7 @@
 
 
     <xsl:template name="header">
-      <div style="background-color:#FFFFFF;border-top:5px solid #494949; height:20px; width:100%; margin-bottom: 25px">
+      <div style="background-color:#FFFFFF;border-top:5px solid #494949; height:20px; width:100%; margin-bottom: 20px">
         <xsl:call-template name="subnavheaderWrapper"/>
       </div>
     </xsl:template>
