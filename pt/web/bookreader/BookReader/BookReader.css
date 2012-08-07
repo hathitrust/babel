@@ -84,7 +84,7 @@
     border-style: solid solid solid none;
     border-color: rgb(51, 51, 34);
     border-width: 1px 1px 1px 0px;
-    background: transparent url(images/right_edges.png) repeat scroll 0% 0%;
+    background: transparent url(/pt/bookreader/BookReader/images/right_edges.png) repeat scroll 0% 0%;
     position: absolute;
 }
 
@@ -92,7 +92,7 @@
     border-style: solid none solid solid;
     border-color: rgb(51, 51, 34);
     border-width: 1px 0px 1px 1px;
-    background: transparent url(images/left_edges.png) repeat scroll 0% 0%;
+    background: transparent url(/pt/bookreader/BookReader/images/left_edges.png) repeat scroll 0% 0%;
     position: absolute;
 }
 
@@ -100,7 +100,7 @@
     border-style: solid none solid solid;
     border-color: rgb(51, 51, 34);
     border-width: 1px 0px 1px 1px;
-    background: transparent url(images/left_edges.png) repeat scroll 0% 0%;
+    background: transparent url(/pt/bookreader/BookReader/images/left_edges.png) repeat scroll 0% 0%;
     position: absolute;
 }
 
@@ -248,7 +248,7 @@ a.BRblack:visited   { color: #000000 }
 }
 
 .BRfliparea {
-    background-image: url(images/transparent.png); /* Required to capture mouse on IE */
+    background-image: url(/pt/bookreader/BookReader/images/transparent.png); /* Required to capture mouse on IE */
 }
 
 .BRtwoPagePopUp {
