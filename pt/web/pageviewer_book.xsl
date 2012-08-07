@@ -34,6 +34,17 @@
     </xsl:choose>
   </xsl:variable>
 
+  <xsl:variable name="gUsingBookReader">
+    <xsl:choose>
+      <xsl:when test="$gFinalAccessStatus!='allow'"><xsl:value-of select="'false'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
+      <!-- <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when> -->
+      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:variable name="gFinalView">
     <xsl:choose>
       <xsl:when test="contains($gCurrentPageFeatures,'MISSING_PAGE') and $gUsingBookReader = 'false'">
@@ -63,17 +74,6 @@
     </xsl:choose>
   </xsl:variable>
 
-  <xsl:variable name="gUsingBookReader">
-    <xsl:choose>
-      <xsl:when test="$gFinalAccessStatus!='allow'"><xsl:value-of select="'false'" /></xsl:when>
-      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
-      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
-      <!-- <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when> -->
-      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-  
   <xsl:variable name="gViewIsResizable">
     <xsl:choose>
       <xsl:when test="$gFinalView='restricted' or $gFinalView='empty' or $gFinalView='missing'">
