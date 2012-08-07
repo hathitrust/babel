@@ -639,6 +639,9 @@
                 <xsl:attribute name="href">
                   <xsl:value-of select="Link"/>
                 </xsl:attribute>
+                <xsl:attribute name="data-seq">
+                  <xsl:value-of select="Seq" />
+                </xsl:attribute>
                 <xsl:value-of select="Label"/>
                 <xsl:if test="Page!=''">
                   <xsl:element name="span">
@@ -680,6 +683,17 @@
         </xsl:if>
 
       </tbody>
+
+      <xsl:if test="$gUsingBookReader = 'true'">
+        <script>
+          $(".mdpFeatureListItem a").click(function() {
+            var seq = $(this).data('seq');
+            HT.reader.jumpToIndex(seq - 1);
+            return false;
+          })
+        </script>
+      </xsl:if>
+
     </xsl:element>
 
   </xsl:template>
