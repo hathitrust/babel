@@ -620,19 +620,28 @@
         <xsl:choose>
           <xsl:when test="$gCurrentView = '1up'">
             <xsl:value-of select="$header-1up" />
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="$default-tail" />
           </xsl:when>
           <xsl:when test="$gCurrentView = '2up'">
             <xsl:value-of select="$header-2up" />
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="$default-tail" />
           </xsl:when>
           <xsl:when test="$gCurrentView = 'thumb'">
             <xsl:value-of select="$header-thumb" />
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="$default-tail" />
+          </xsl:when>
+          <xsl:when test="$gCurrentView = 'image'">
+            <xsl:text>Image of individual page</xsl:text>
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="$default-tail" />
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text>Text or image of individual page</xsl:text>
+            <xsl:text>Text of individual page</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
-        <xsl:text> </xsl:text>
-        <xsl:value-of select="$default-tail" />
       </h2>
       <xsl:call-template name="Viewport">
         <xsl:with-param name="pCurrentPageImageSource" select="$gCurrentPageImageSource"/>
