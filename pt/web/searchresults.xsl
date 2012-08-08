@@ -15,6 +15,7 @@
   <xsl:variable name="gNumTerms" select="count(/MBooksTop/MdpApp/SearchTerms/Term)"/>
   <xsl:variable name="gPagesFound" select="/MBooksTop/MdpApp/SearchSummary/TotalPages"/>
   <xsl:variable name="gValidBoolean" select="/MBooksTop/MdpApp/SearchResults/ValidBooleanExpression"/>
+  <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
   
   <xsl:variable name="gSearchOp">
     <xsl:variable name='ptsop_var' select="//CurrentCgi/Param[@name='ptsop']"/>
