@@ -698,4 +698,85 @@
 
   </xsl:template>
  
+  <xsl:template name="JumpControl">
+        <div class="controls">
+      <!-- <xsl:call-template name="BuildPageXofYForm">
+        <xsl:with-param name="pPageXofYForm" select="MdpApp/PageXOfYForm"/>
+        <xsl:with-param name="pPageXofYFormId" select="'PageNumberJump_1'"/>
+        <xsl:with-param name="pPageXofYId" select="'PageNumberJump_1_Form'"/>
+      </xsl:call-template> -->
+      
+      <xsl:variable name="pageNum">
+        <xsl:choose>
+          <xsl:when test="$gCurrentPageNum">
+            <xsl:value-of select="$gCurrentPageNum" />
+          </xsl:when>
+          <xsl:otherwise>
+            <!-- not making this visible -->
+            <!-- <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" /> -->
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+      
+
+      <form method="GET" action="pt" id="mdpPageForm">
+        <input type="hidden" name="u" id="u" value="1" />
+        
+        <label for="BRpagenum">Jump to </label>
+
+        <xsl:element name="input">
+          <xsl:attribute name="id">BRpagenum</xsl:attribute>
+          <xsl:attribute name="type">text</xsl:attribute>
+          <xsl:attribute name="size">8</xsl:attribute>
+          <xsl:attribute name="name">num</xsl:attribute>
+          <xsl:attribute name="alt">Page Number</xsl:attribute>
+          <xsl:attribute name="value">
+            <xsl:value-of select="$pageNum"/>
+          </xsl:attribute>
+        </xsl:element>
+
+        <xsl:element name="input">
+          <xsl:attribute name="id">mdpGotoButton</xsl:attribute>
+          <xsl:attribute name="type">submit</xsl:attribute>
+          <xsl:attribute name="value">Go</xsl:attribute>
+          <xsl:attribute name="title">Go</xsl:attribute>
+          <xsl:attribute name="alt">Jump</xsl:attribute>
+          <!-- <xsl:attribute name="title">Jump to this sequential page in the text</xsl:attribute>
+          <xsl:attribute name="alt">Jump to this sequential page in the text</xsl:attribute> -->
+          <xsl:attribute name="class">tracked interactive </xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Jump to Page</xsl:attribute>
+        </xsl:element>
+        
+        &#160;
+        
+        <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
+        <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
+          <input type="hidden" name="seq" value="" />
+        </xsl:if>
+        <xsl:call-template name="HiddenDebug" />
+        
+        <br clear="both" />
+      </form>
+
+    </div>
+  </xsl:template>
+
+  <xsl:template name="ResizeControl">
+       <xsl:if test="$gFinalView != 'plaintext'">
+    <div class="controls">
+        <xsl:call-template name="BuildResizeForm">
+          <xsl:with-param name="pResizeForm" select="MdpApp/ResizeForm"/>
+        </xsl:call-template>
+    </div>
+    <div class="controls">
+      <span class="sizeLabel controlLabel" title="Change page rotation">rotate&#xa0;</span>
+      <xsl:variable name="href-counterclockwise" select="/MBooksTop/MdpApp/RotateLinks/CounterClockwiseLink" />
+      <a href="{$href-counterclockwise}" id="rotate-counterclockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Left" data-tracking-category="PT" title="Rotate Left"><img alt="" src="//common-web/graphics/harmony/icon_rotate_counterclockwise.png" height="25" width="25" /></a>
+      <xsl:variable name="href-clockwise" select="/MBooksTop/MdpApp/RotateLinks/ClockwiseLink" />
+      <a href="{$href-clockwise}" id="rotate-clockwise" class="rotateAction tracked interactive" data-tracking-action="PT Rotate Right" data-tracking-category="PT" title="Rotate Right"><img alt="" src="//common-web/graphics/harmony/icon_rotate_clockwise.png" height="25" width="25" /></a>
+    </div>
+    </xsl:if>
+  </xsl:template>
+
 </xsl:stylesheet>
