@@ -197,8 +197,6 @@ sub GetItemType
     my $mdpItem = $C->get_object('MdpItem');
     my $id = $C->get_object('CGI')->param('id');
 
-    my $item_type = qq{book};
-
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
         
@@ -207,8 +205,8 @@ sub GetItemType
         return qq{restricted};
     }
 
-    # determine content type somehow
-    # TBD
+    # pull from mdpItem
+    my $item_type = $mdpItem->GetItemType();
 
     return $item_type;
 }
