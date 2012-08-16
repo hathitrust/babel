@@ -90,12 +90,16 @@ sub sort_uniq_ip_addr_list {
 # ---------------------------------------------------------------------
 sub get_domain {
     my $ip = shift;
-    my $regexp = qr(\cIname\s+=\s+(.*?)\.$);
 
-    chomp(my @nslookup = `nslookup $ip`);
-    foreach my $line (@nslookup) {
-        if (my ($domain) = ($line =~ m,$regexp,)) {
-            return $domain;
+    $ip =~ s,\s,,g;
+    if ($ip) {
+        my $regexp = qr(\cIname\s+=\s+(.*?)\.$);
+
+        chomp(my @nslookup = `nslookup $ip`);
+        foreach my $line (@nslookup) {
+            if (my ($domain) = ($line =~ m,$regexp,)) {
+                return $domain;
+            }
         }
     }
     return 'none';
@@ -105,8 +109,12 @@ sub get_domain {
 # ---------------------------------------------------------------------
 sub get_country {
     my $ip = shift;
-    chomp(my $country = `$GEOIP $ip`);
-    return $country;
+    $ip =~ s,\s,,g;
+    if ($ip) {
+        chomp(my $country = `$GEOIP $ip`);
+        return $country;
+    }
+    return 'none';
 }
 
 
@@ -128,17 +136,24 @@ sub Total_GET_Requests {
 sub Total_Signed_Requests {
 
     chomp(my @signed_requests = `egrep "__log_client:.*?signed=1" $today_log_file`);
-    print "* Total signed requests = " . scalar @signed_requests . "\n\n";
+    # unique combination of user agent and remote address
+    my %uniq_signed_requests;
     foreach my $sr (@signed_requests) {
-        my ($ua, $ra, $ff) = ($sr =~ m,UA_ip=(.*?) REMOTE_ADDR=(.*?) HTTP_X_FORWARDED_FOR=(.*?)$,);
+        my ($ua, $ra, $ff) = ($sr =~ m,UA_ip=(.*?) REMOTE_ADDR=(.*?) HTTP_X_FORWARDED_FOR=(.*?)\s*$,);
+        $uniq_signed_requests{"$ua-$ra-$ff"} = 1;
+    }
+    print "* Total signed requests = " . scalar @signed_requests . "  (unique = " . scalar (keys %uniq_signed_requests) . ")\n";
+    foreach my $key (keys %uniq_signed_requests) {
+        my ($ua, $ra, $ff) = split(/-/, $key);
         my $ucountry = get_country($ua);
         my $udomain = get_domain($ua);
         my $rcountry = get_country($ra);
         my $rdomain = get_domain($ra);
         my $fcountry = get_country($ff);
         my $fdomain = get_domain($ff);
-        print "\tuser_agent=$ua ($ucountry):$udomain\n";
+        print "\tuser_agent=$ua ($ucountry):$udomain\n\t\tremote_addr=$ra ($rcountry):$rdomain\n\t\tforwarded_for=$ff ($fcountry):$fdomain\n";
     }
+    print "\n";    
 }
 
 
