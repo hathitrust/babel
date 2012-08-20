@@ -81,6 +81,7 @@ my @allowed_uniqnames =
    'kshawkin',
    'rwelzenb',
    'sethip',
+   'bkammin',
   );
 
 sub bc_Usage {
