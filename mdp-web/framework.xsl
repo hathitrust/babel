@@ -143,7 +143,7 @@
         </xsl:if>
         
         <!-- Search -->
-        <div id="mdpSearch">
+        <div id="mdpSearch" role="search">
           <xsl:call-template name="BuildSearchForm">
             <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
           </xsl:call-template>
@@ -823,16 +823,18 @@
         </xsl:choose>
       </xsl:attribute>
       
-      <h2 class="SkipLink">Search and page navigation options</h2>
+      <!-- <h2 class="SkipLink">Search and page navigation options</h2> -->
       <ul class="searchForm">
         <li id="mdpSearchFormLabel">
-          <label for="mdpSearchInputBox">
-            <xsl:text>Search in this text</xsl:text>
-          </label>
-          <xsl:element name="a">
+          <h2 id="SkipToSearch" tabindex="0">
+            <label for="mdpSearchInputBox">
+              <xsl:text>Search in this text</xsl:text>
+            </label>
+          </h2>
+<!--           <xsl:element name="a">
             <xsl:attribute name="class">SkipLink</xsl:attribute>
             <xsl:attribute name="name">SkipToSearch</xsl:attribute>
-          </xsl:element>
+          </xsl:element> -->
         </li>
         <li class="asearchform">
           <xsl:apply-templates select="$pSearchForm/HiddenVars"/>
@@ -1085,6 +1087,7 @@
   <xsl:template name="aboutThisBook">
     <div class="bibLinks">
       <h2>About this Book</h2>
+      <h3 class="offscreen">Catalog Record Details</h3>
       <p>
         <xsl:call-template name="BuildRDFaWrappedTitle">
           <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
@@ -1134,7 +1137,7 @@
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     
     <div class="getLinks">
-      <h2>Get this Book</h2>
+      <h3>Get this Book</h3>
       <ul>
         <li>
           <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
@@ -1291,14 +1294,14 @@
   
   <xsl:template name="addToCollection">
     <div class="collectionLinks">
-      <h2>Add to Collection</h2>
+      <h3>Add to Collection</h3>
       <xsl:call-template name="CollectionWidgetContainer" />
     </div>
   </xsl:template>
   
   <xsl:template name="shareThisBook">
     <div class="shareLinks">
-      <h2>Share</h2>
+      <h3>Share</h3>
       <form action="" name="urlForm" id="urlForm">
         <label class="smaller" for="permURL">Permanent link to this book</label>
         <!-- <input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" /> -->
@@ -1416,7 +1419,7 @@
         </xsl:choose>
       </ul>
 
-      <h3 class="SkipLink">Add Item to Collection</h3>
+      <h4 class="offscreen">Add Item to Collection</h4>
 
       <xsl:call-template name="BuildAddToCollectionControl"/>
       <!-- <xsl:call-template name="BackwardNavigation"/> -->
@@ -1519,10 +1522,8 @@
 
   <xsl:template name="heading1">
     <xsl:element name="h1">
-      <xsl:attribute name="class">SkipLink</xsl:attribute>
-      <xsl:call-template name="PageTitle">
-        <xsl:with-param name="suffix" select="''" />
-      </xsl:call-template>
+      <xsl:attribute name="class">offscreen</xsl:attribute>
+      <xsl:call-template name="PageTitle" />
     </xsl:element>
   </xsl:template>
   

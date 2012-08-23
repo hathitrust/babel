@@ -415,6 +415,13 @@
       us="1"
       enabled="1">University of Delaware</Inst>
   <Inst
+      sdrinst="fsu"
+      template="https://___HOST___/Shibboleth.sso/fsu?target=___TARGET___"
+      authtype="shibboleth"
+      domain="fsu.edu"
+      us="1"
+      enabled="1">Florida State University</Inst>
+  <Inst
       sdrinst="vt"
       template="https://___HOST___/Shibboleth.sso/vt?target=___TARGET___"
       authtype="shibboleth"
@@ -438,13 +445,6 @@
       domain="uconn.edu"
       us="1"
       enabled="0">University of Connecticut</Inst>
-  <Inst
-      sdrinst="fsu"
-      template="https://___HOST___/Shibboleth.sso/fsu?target=___TARGET___"
-      authtype="shibboleth"
-      domain="fsu.edu"
-      us="1"
-      enabled="0">Florida State University</Inst>
   <Inst
       sdrinst="harvard"
       template="https://___HOST___/Shibboleth.sso/harvard?target=___TARGET___"
