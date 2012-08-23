@@ -414,16 +414,16 @@
       domain="udel.edu"
       us="1"
       enabled="1">University of Delaware</Inst>
-
-  <!-- waiting -->
-
   <Inst
       sdrinst="vt"
       template="https://___HOST___/Shibboleth.sso/vt?target=___TARGET___"
       authtype="shibboleth"
       domain="vt.edu"
       us="1"
-      enabled="0">Virginia Tech</Inst>
+      enabled="1">Virginia Tech</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="ttu"
       template="https://___HOST___/Shibboleth.sso/ttu?target=___TARGET___"
