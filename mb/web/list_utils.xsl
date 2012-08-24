@@ -1105,19 +1105,6 @@
             <xsl:for-each select="Collections/Collection">
               <xsl:call-template name="inMyColls"/>
             </xsl:for-each>
-            <xsl:if test="ItemID = 'ucm.531685396x'">
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 2</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 3</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 4</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 5</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 6</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 7</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 8</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 9</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 10</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 11</a></li>
-              <li><a href="http://www.umich.edu/">TEST COLLECTION 12</a></li>
-            </xsl:if>
             <!-- add "-" when the item isn't in any collections -->
             <xsl:for-each select="Collections">
               <xsl:if test =" not(Collection)">
