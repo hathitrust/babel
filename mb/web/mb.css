@@ -55,6 +55,10 @@ h2.arrow label {
   padding-left: 24px;
 }
 
+/** RESULTS */
+/* .row divs are have a static h4.Title + div.ItemData, and has position:relative;
+   .ItemID.Select and .ItemCollections are absolutely positioned within the .row to
+   match the earlier table-based look */
 .row {
   width: 100%;
   margin: 0;
@@ -76,7 +80,6 @@ h2.arrow label {
 
 .row h4.Title {
   margin: 0; 
-  display: block; 
   margin-left: 3em; 
   padding-top: 8px; 
   font-weight: normal; 
@@ -130,8 +133,7 @@ h2.arrow label {
   border-left: 2px solid #fff;
   overflow: hidden;
   overflow-y: auto;
-  padding-bottom: 0 !important;
-
+  padding-bottom: 0;
 }
 
 .ItemData ul li {
