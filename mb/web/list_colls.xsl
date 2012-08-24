@@ -339,9 +339,9 @@
 
             <div class="{$class}">
               <div class="left">
-                <p class="collname">
+                <h4 class="collname">
                   <a href="?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
-                </p>
+                </h4>
                 <xsl:if test="normalize-space(Description)">
                   <p class="description"><xsl:value-of select="Description" /></p>
                 </xsl:if>

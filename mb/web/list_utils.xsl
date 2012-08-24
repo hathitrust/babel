@@ -854,6 +854,7 @@
 
         <div id="itemTable" class="itemTable">
           <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
+
           <xsl:choose>
             <xsl:when test="$ItemListType='SearchResults'">
               <xsl:for-each select="SearchResults/Item">
@@ -986,20 +987,20 @@
     <!--################################## end variables-->
 
     <div class="Chunk {$row_class}">
+      <xsl:variable name="item-number" select="position()" />
+      <h4 class="Title">
+        <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
+        <xsl:value-of select="Title" disable-output-escaping="yes" />
+      </h4>
       <div class="ItemID Select">
-        <input type="checkbox" name="iid" class="iid" id="iid{position()}">
+        <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
+        <input type="checkbox" name="iid" class="iid" id="iid{$item-number}">
           <xsl:attribute name="value">
             <xsl:value-of select="ItemID"/>
           </xsl:attribute>
         </input>
       </div>
       <div class="ItemData">
-        <div class="ItemTitle">
-          <label for="iid{position()}" class="Title">
-            <xsl:value-of select="Title" disable-output-escaping="yes" />
-          </label>
-        </div>
-
         <!-- Author -->
         <xsl:if test="Author!=''">
           <div class="ItemAuthor">
@@ -1047,6 +1048,9 @@
                   <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
                   <xsl:value-of select ="record"/>
                 </xsl:attribute>
+                <xsl:attribute name="title">
+                  <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
+                </xsl:attribute>
                 <xsl:attribute name="class">
                   <xsl:text>cataloglinkhref</xsl:text>
                 </xsl:attribute>
@@ -1078,6 +1082,9 @@
                 <xsl:attribute name="class">
                   <xsl:value-of select="$fulltext_class"/>
                 </xsl:attribute>
+                <xsl:attribute name="title">
+                  <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
+                </xsl:attribute>
                 <xsl:value-of select="$fulltext_string"/>
               </xsl:element>
             </div>
@@ -1098,6 +1105,19 @@
             <xsl:for-each select="Collections/Collection">
               <xsl:call-template name="inMyColls"/>
             </xsl:for-each>
+            <xsl:if test="ItemID = 'ucm.531685396x'">
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 2</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 3</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 4</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 5</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 6</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 7</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 8</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 9</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 10</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 11</a></li>
+              <li><a href="http://www.umich.edu/">TEST COLLECTION 12</a></li>
+            </xsl:if>
             <!-- add "-" when the item isn't in any collections -->
             <xsl:for-each select="Collections">
               <xsl:if test =" not(Collection)">

@@ -40,7 +40,12 @@ a:link, a:visited {
   margin-top: 0.25em;
 }
 
-.collname a {
+h4.collname {
+  font-weight: normal;
+  font-size: 110%;
+}
+
+.xxcollname a {
   font-size: 110%; /* 125 */
 }
 
@@ -262,7 +267,7 @@ p.description {
 
 .controls {
   text-align: center;
-  margin-bottom: 2em;
+  margin-bottom: 0.5em;
   /*min-width: 600px;*/
 }
 

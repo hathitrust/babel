@@ -57,12 +57,12 @@ h2.arrow label {
 
 .row {
   width: 100%;
-  display: table;
   margin: 0;
   margin-bottom: 0.25em;
   border-spacing: 2px;
   border-collapse: separate;
   font-size: 1em;
+  position: relative;
 }
 
 .row:after {
@@ -74,33 +74,64 @@ h2.arrow label {
      height: 0;
 }
 
+.row h4.Title {
+  margin: 0; 
+  display: block; 
+  margin-left: 3em; 
+  padding-top: 8px; 
+  font-weight: normal; 
+  font-size: 120%; 
+  margin-right: 20px; 
+  line-height: 1.2; 
+  width: 65%;
+}
+
 .row > div {
-  display: table-cell;
+  float: left;
   vertical-align: top;
   padding: 8px;
 }
 
-.row.rowodd > div {
+.row.rowodd {
   background-color: #FFF;
 }
 
-.row.roweven > div {
+.row.roweven {
   background-color: #F5F6F1;
 }
 
-.row .ItemSelect {
+.row .ItemID.Select {
   padding-left: 0;
-  width: 1%;
+  width: auto;
+  position: absolute; 
+  top: 0; 
+  left: 5px; 
+  bottom: 0; 
+  border-right: 2px solid #fff;
 }
 
 .row .ItemData {
-  /*float: left;*/
+  margin-left: 3em;
   width: 70%;
+}
+
+.ItemData > div { 
+  display: block;
 }
 
 .row .ItemCollections {
   width: 25%;
+  float: right;
   padding-right: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-left: 2px solid #fff;
+  overflow: hidden;
+  overflow-y: auto;
+  padding-bottom: 0 !important;
+
 }
 
 .ItemData ul li {

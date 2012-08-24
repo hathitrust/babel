@@ -625,12 +625,12 @@ var ListBrowser = {
       }
       
       html.push('<div class="left">');
-      html.push('<p class="collname">');
+      html.push('<h4 class="collname">');
       html.push('<a href="mb?a=listis;c=' + data.collid + '">' + data.collname + '</a>');
       if ( data.featured ) {
         html.push('<span class="featured"> (Featured Collection)</span>');
       }
-      html.push('</p>');
+      html.push('</h4>');
       
       if ( $.trim(data.description) && $.trim(data.description) != "&nbsp;" ) {
         html.push('<p class="description">' + data.description + '</p>');
