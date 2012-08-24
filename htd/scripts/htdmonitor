@@ -151,7 +151,7 @@ sub Total_Signed_Requests {
         my $rdomain = get_domain($ra);
         my $fcountry = get_country($ff);
         my $fdomain = get_domain($ff);
-        print "\tuser_agent=$ua ($ucountry):$udomain\n\t\tremote_addr=$ra ($rcountry):$rdomain\n\t\tforwarded_for=$ff ($fcountry):$fdomain\n";
+        print "\tU_A=$ua ($ucountry):$udomain\n\t\tR_A=$ra ($rcountry):$rdomain\n\t\tX_F_F=$ff ($fcountry):$fdomain\n";
     }
     print "\n";    
 }
