@@ -197,7 +197,7 @@
             </xsl:variable>
 
             <li>
-
+              <h3>
               <xsl:choose>
                 <xsl:when test="$gFinalAccessStatus='allow'">
                   <xsl:element name="a">
@@ -226,6 +226,7 @@
                 </xsl:choose>
                 <xsl:text>&#xa0;</xsl:text>
               </xsl:element>
+              </h3>
               <xsl:if test="$gFinalAccessStatus='allow'">
                 <ul class="mdpInnerList">
                   <xsl:for-each select="Kwic">
