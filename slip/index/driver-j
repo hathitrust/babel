@@ -431,6 +431,8 @@ sub handle_Build_Wait {
     my $_Next_Stage = $SLIP_Utils::States::St_Building;
 
     __output("$_Stage\n");
+    my $q = qq{initial queue size=$INITIAL_QUEUE_SIZE};
+    Log_stage($C, $run, $_Stage, $q);
 
     __check_driver_enabled($C, $dbh, $run);
 
@@ -456,9 +458,6 @@ sub handle_Build_Wait {
     
     # POSSIBLY NOTREACHED
     my $rc = 0;
-    my $q = qq{queue size=$INITIAL_QUEUE_SIZE};
-    Log_stage($C, $run, $_Stage, $q);
-
     my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
