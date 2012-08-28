@@ -89,14 +89,15 @@ else {
 
 
 sub sd_get_usage {
-    my $s .= qq{Usage: driver-j -r run [-d][-X][-T]
-                 where -X skips the check index phase\n};
+    my $s .= qq{Usage: driver-j -r run [-d][-X][-T][-K]
+                 where -X skips the check index phase
+                       -K skips timeout requeue and server comm error restore\n};
     return $s;
 }
 
-our ($opt_r, $opt_d, $opt_X, $opt_T);
+our ($opt_r, $opt_d, $opt_X, $opt_T, $opt_K);
 
-my $ops = getopts('r:dXT');
+my $ops = getopts('r:dXTK');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -115,6 +116,7 @@ if (defined($opt_d)) {
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
+my $SKIP_REDO = defined($opt_K);
 my $SKIP_CHECKINDEX = defined($opt_X);
 if ($INTERACTIVE) {
     if (! $SKIP_CHECKINDEX) {
@@ -852,6 +854,8 @@ sub get_Building_queue_size {
 
     my $rc = 0;
     my ($size) = Db::Select_queue_data($C, $dbh, $run);
+
+    return ($size, $rc) if ($SKIP_REDO);
 
     if ($size == 0) {
         # Requeue timeouts, if any
