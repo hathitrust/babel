@@ -75,7 +75,7 @@ my $INTERACTIVE = $ENV{TERM};
 
 if ($INTERACTIVE) {
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("Cannot optimize. STOPSLIP in place!!\n");
+        __output("Cannot enqueue. STOPSLIP in place!!\n");
         exit 0;
     }
 }

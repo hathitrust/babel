@@ -191,6 +191,11 @@ use constant OPTIMIZE_SLEEP_WAIT => 65; # 1 minute
 use constant INDEX_SLEEP_WAIT    => 67;  # 1 minute
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 
+# When the queue empties, $RESTORE_CT increments if there are server
+# comm errors to restore. This process stops after MAX_RESTORES have
+# been attempted.
+use constant MAX_RESTORES => 10;
+
 # Outta here if not enabled
 __check_driver_enabled($C, $DBH, $RUN);
 
@@ -220,25 +225,16 @@ if (-e $BUSY_FILE) {
     exit $rc;
 }
 
-my ($INITIAL_QUEUE_SIZE, $STAGE_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT, $INITIAL_TOT_ERROR_CT) = (0, 0, 0, 0);
+my ($INITIAL_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT, $RESTORE_CT) = (0, 0, 0);
 
 eval {
-    my $rc = 0;
-    ($INITIAL_QUEUE_SIZE, $rc) = get_Building_queue_size($C, $DBH, $RUN, $SLIP_Utils::States::St_Undefined);
-    $STAGE_QUEUE_SIZE = $INITIAL_QUEUE_SIZE;
+    ($INITIAL_QUEUE_SIZE) = Db::Select_queue_data($C, $DBH, $RUN);
     $INITIAL_TOT_INDEXED_CT = Db::Select_indexed_tot_count($C, $DBH, $RUN);
-    $INITIAL_TOT_ERROR_CT = Db::Select_tot_error_count($C, $DBH, $RUN);
 
-    if ($rc == 0) {
-        run_driver($C, $DBH, $RUN);
+    run_driver($C, $DBH, $RUN);
 
-        $Semaphore->unlock()
-            if ($Semaphore);
-    }
-    else {
-        handle_Stage_rc($SLIP_Utils::States::St_Undefined, $rc);
-        # NOTREACHED
-    }
+    $Semaphore->unlock()
+      if ($Semaphore);
 };
 if ($@) {
     my $s = qq{Error running driver-j -r$RUN: $@\n};
@@ -848,26 +844,56 @@ sub get_Building_queue_size {
     my ($C, $dbh, $run, $stage) = @_;
 
     my $rc = 0;
-
-    my ($size) = Db::Select_queue_data($C, $dbh, $run);;
+    my ($size) = Db::Select_queue_data($C, $dbh, $run);
 
     if ($size == 0) {
         # Requeue timeouts, if any
         my $timeouts = Db::Select_timeouts_count($C, $dbh, $run);
         if ($timeouts > 0) {
-            my $percent_timeouts = sprintf("%.1f", ($timeouts/$STAGE_QUEUE_SIZE) * 100);
-            $STAGE_QUEUE_SIZE = $timeouts;
-
             $rc = __requeue_timeouts($C, $dbh, $run, $stage);
             if ($rc == 0) {
                 ($size) = Db::Select_queue_data($C, $dbh, $run);
-                __output("     requeue $size\n");
-                Log_stage($C, $run, $stage, qq{Requeue timeouts num=$size, percent=$percent_timeouts});
+                __output("     timeouts requeued=$timeouts queue=$size\n");
+                Log_stage($C, $run, $stage, qq{Requeue: timeouts=$timeouts queue=$size});
+            }
+        }
+        
+        # Requeue transient server errors no more than MAX_RESTORES
+        if ($RESTORE_CT < MAX_RESTORES) {
+            $rc = __requeue_transient_server_errors($C, $dbh, $run, $stage);
+            if ($rc == 0) {
+                ($size) = Db::Select_queue_data($C, $dbh, $run);
+                my $restored = $size - $timeouts;
+                __output("     requeue restored=$restored queue=$size\n");
+                $RESTORE_CT++ if ($restored);
+                Log_stage($C, $run, $stage, qq{Requeue: restored=$restored queue=$size restore_ct=$RESTORE_CT});
             }
         }
     }
 
     return ($size, $rc);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __requeue_transient_server_errors
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __requeue_transient_server_errors {
+    my ($C, $dbh, $run, $stage) = @_;
+
+    my $cmd = $BASE_DIR . qq{control-j -r$run -krestore -ss 2>$Child_Err_File};
+    my $sysrc = system($cmd);
+
+    my $s = qq{"control-j -r$run -krestore -ss"};
+    my $rc = __check_sysrc($sysrc, $C, $run, $stage, $s);
+
+    return $rc;
 }
 
 
