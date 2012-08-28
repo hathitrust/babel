@@ -433,23 +433,30 @@ sub handle_Build_Wait {
     __check_driver_enabled($C, $dbh, $run);
 
     if ($INITIAL_QUEUE_SIZE == 0) {
-        # Nothing to do.  Clean exit remaining in default Build_Wait
-        my $s = qq{Driver queue empty\n};
+        my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $_Stage);
+        return $rc_1 if ($rc_1 > 0);
 
-        # If this is a full-optimize run, ignore a zero-size queue and
-        # proceed to the next stage to flow through to optimization.
-        if (! $FULL_OPTIMIZE_RUN) {
-            Log_stage($C, $run, $_Stage, $s);
-            __driver_exit_report($C, $dbh, $run, $s);
+        if ($current_queue_size == 0) {
+            # Nothing to do.  Clean exit remaining in default Build_Wait.
+            my $s = qq{Driver queue empty\n};
 
-            exit 0;
+            # If this is a full-optimize run, ignore a zero-size queue
+            # and proceed to the next stage to flow through to
+            # optimization.
+            if (! $FULL_OPTIMIZE_RUN) {
+                Log_stage($C, $run, $_Stage, $s);
+                __driver_exit_report($C, $dbh, $run, $s);
+
+                exit 0;
+            }
         }
     }
+    
     # POSSIBLY NOTREACHED
+    my $rc = 0;
     my $q = qq{queue size=$INITIAL_QUEUE_SIZE};
     Log_stage($C, $run, $_Stage, $q);
 
-    my $rc = 0;
     my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
