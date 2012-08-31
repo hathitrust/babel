@@ -211,11 +211,14 @@ measure of non-synchronization between us and our clients.
 sub __check_timestamp {
     my $self = shift;
     my ($dbh, $access_key, $timestamp) = @_;
+
+    my $window = TIMESTAMP_WINDOW;
+    my $current_time = time();
+    my $delta = $current_time - $timestamp;
     
-    my $delta = time() - $timestamp;
-    if (abs($delta) > TIMESTAMP_WINDOW) {
+    if (abs($delta) > $window) {
         # wayward clock (past or future) or stale timestamp
-        hLOG('API ERROR: ' . qq{__check_timestamp: timestamp refused oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+        hLOG('API ERROR: ' . qq{__check_timestamp: timestamp refused current_time=$current_time oauth_timestamp=$timestamp delta=$delta window=$window oauth_consumer_key=$access_key});
         return $self->error(TIMESTAMP_REFUSED);
     }
     else {
@@ -225,10 +228,9 @@ sub __check_timestamp {
             return $self->error(TIMESTAMP_REFUSED);
         }
     }
-    
+
     return 1;
 }
-
 
 # ---------------------------------------------------------------------
 
