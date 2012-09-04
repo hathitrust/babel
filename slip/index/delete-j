@@ -172,10 +172,15 @@ sub delete_Solr_doc {
         Db::Delete_id_from_j_queue($C, $DBH, $run, $id);
         __output(qq{Deleted nid=$id run=$run from mdp.j_queue\n});
 
-        my $production_run = $C->get_object('MdpConfig')->get('run_allowed_to_access_shared_queue');
-        if ($run eq $production_run) {
-            SharedQueue::Delete_id_from_j_shared_queue($C, $DBH, $id);
-            __output(qq{Deleted nid=$id from mdp.j_shared_queue\n});
+        # If known_shard is set, this is a repair.  Leave the id in
+        # the shared queue so it gets proper large collection
+        # processing
+        if (! $known_shard) {
+            my $production_run = $C->get_object('MdpConfig')->get('run_allowed_to_access_shared_queue');
+            if ($run eq $production_run) {
+                SharedQueue::Delete_id_from_j_shared_queue($C, $DBH, $id);
+                __output(qq{Deleted nid=$id from mdp.j_shared_queue\n});
+            }
         }
     }
 }
