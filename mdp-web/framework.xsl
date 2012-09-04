@@ -58,7 +58,7 @@
   <xsl:variable name="gTombstoneMsg">
     <p class="leftText">This item is no longer available in HathiTrust due to one of the following reasons:</p>
     <ul class="bullets">
-      <li>It was removed at the request of the rights holder.</li>
+      <li>It was deleted at the request of the rights holder or has been marked for deletion.</li>
       <li>It was either wholly unusable or a superior copy is available.</li>
     </ul>
     
