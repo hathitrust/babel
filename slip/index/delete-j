@@ -200,8 +200,10 @@ sub __del_Delete_document {
 
     my ($index_state, $dummy);
 
-    __output(qq{Solr delete id=$id shard=$shard ...});
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+    my $engine =  $indexer->get_solr_engine_uri;
+    
+    __output(qq{Solr delete id=$id shard=$shard engine=$engine ... });
 
     my $delete_field = $C->get_object('MdpConfig')->get('default_Solr_delete_field');
     my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
@@ -230,7 +232,7 @@ sub __del_Delete_document {
 
     __output(qq{Done.\n});
 
-    Log_delete($C, $run, qq{Solr/Mysql deleted id=$id, shard=$shard});
+    Log_delete($C, $run, qq{Solr/Mysql deleted id=$id, shard=$shard engine=$engine});
 
     return 1;
 }
