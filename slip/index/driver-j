@@ -140,7 +140,7 @@ eval {
         $FULL_OPTIMIZE_RUN = 1;
         # Avoid checkIndex on full optimize days -- takes too long
         $SKIP_CHECKINDEX = 1;
-        
+
         __output("$msg\n");
         Log_sched($C, $RUN, $msg);
     }
@@ -374,8 +374,9 @@ sub __duplicates_report {
             push(@report, $ref_1->{id} . ' ' . $ref_1->{shard});
         }
     }
-    
-    return join("\n", @report);
+    my $report = join("\n\t", @report);
+
+    return $report;
 }
 
 
@@ -404,13 +405,19 @@ sub __driver_exit_report {
         my ($indexed_this_run, $total_indexed) = get_num_indexed_this_run($C, $dbh, $run);
 
         my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
-        
+
         my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
         my $indexed_v_new_delta = $indexed_this_run - $newly_processed;
 
         my $duplicates = __duplicates_report($C, $dbh, $run);
 
-        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct\nI_indexed=$indexed_this_run P_new=$newly_processed\nP_deleted=$deleted_ct P_reindexed=$reindexed_ct P_errors=$error_ct\nTotal_indexed=$total_indexed\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta\nRestore_ct=$RESTORE_CT\n$duplicates };
+        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct};
+        $s .= qq{\nI_indexed=$indexed_this_run P_new=$newly_processed};
+        $s .= qq{\nP_deleted=$deleted_ct P_reindexed=$reindexed_ct P_errors=$error_ct};
+        $s .= qq{\nTotal_indexed=$total_indexed};
+        $s .= qq{\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta};
+        $s .= qq{\nRestore_ct=$RESTORE_CT};
+        $s .= qq{\nDuplicates=} . ($duplicates ? qq{\n\t$duplicates} : 'none');
     }
 
     __output("$s\n");
@@ -430,8 +437,8 @@ sub ___rate {
     my $start = shift;
 
     my $elapsed_hours = sprintf("%.2f", (time() - $start)/60/60);
-    my $rate = 
-      ($elapsed_hours > 0) 
+    my $rate =
+      ($elapsed_hours > 0)
         ? sprintf("%.1f", $INITIAL_QUEUE_SIZE/$elapsed_hours)
           : 0.0;
 
@@ -483,7 +490,7 @@ sub handle_Build_Wait {
             }
         }
     }
-    
+
     # POSSIBLY NOTREACHED
     my $rc = 0;
     my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
@@ -835,10 +842,10 @@ Description
 # ---------------------------------------------------------------------
 sub get_num_indexed_this_run {
     my ($C, $dbh, $run) = @_;
-    
+
     my $total_indexed = Db::Select_indexed_tot_count($C, $dbh, $run);
     my $indexed_this_run = $total_indexed - $INITIAL_TOT_INDEXED_CT;
-    
+
     return ($indexed_this_run, $total_indexed);
 }
 
@@ -853,7 +860,7 @@ Description
 # ---------------------------------------------------------------------
 sub get_process_breakdown_this_run {
     my ($C, $dbh, $run) = @_;
-    
+
     my ($reindexed, $deleted, $errors, $processed) = (0, 0, 0, 0);
     foreach my $__shard (@NUM_SHARDS_LIST) {
         my ($s_reindexed_ct, $s_deleted_ct, $s_errored_ct, $s_num_docs) = Db::Select_shard_stats($C, $dbh, $run, $__shard);
@@ -861,7 +868,7 @@ sub get_process_breakdown_this_run {
         $deleted += $s_deleted_ct;
         $errors += $s_errored_ct;
         $processed += $s_num_docs;
-    }    
+    }
 
     return ($processed, $reindexed, $deleted, $errors);
 }
@@ -895,7 +902,7 @@ sub get_Building_queue_size {
                 Log_stage($C, $run, $stage, qq{Requeue: timeouts=$timeouts queue=$size});
             }
         }
-        
+
         # Requeue transient server errors no more than MAX_RESTORES
         if ($RESTORE_CT < MAX_RESTORES) {
             $rc = __requeue_transient_server_errors($C, $dbh, $run, $stage);
