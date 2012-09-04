@@ -201,9 +201,14 @@ sub H_allow_non_oauth_by_grace {
 
 Reject request if:
 
-1) oauth_timestamp is outside a time window either past or
-future. This allows us to expire old timestamps and to support some
-measure of non-synchronization between us and our clients.
+1) oauth_timestamp is outside a time window either past or future.
+This allows us to expire old timestamps and to support some measure of
+non-synchronization between us the Service Provider and our Consumers.
+
+2) oauth_timestamp is not greater than or equal to all other
+timestamps for requests from this Consumer (access_key). A timestamp
+less than all others from this Consumer represents a possible replay
+attack.
 
 =cut
 
@@ -222,9 +227,9 @@ sub __check_timestamp {
         return $self->error(TIMESTAMP_REFUSED);
     }
     else {
-        my $valid = API::HTD::AuthDb::valid_timestamp_for_access_key($dbh, $access_key, $timestamp);
+        my ($valid, $max) = API::HTD::AuthDb::valid_timestamp_for_access_key($dbh, $access_key, $timestamp);
         if (! $valid) {
-            hLOG('API ERROR: ' . qq{__check_timestamp: invalid timestamp oauth_timestamp=$timestamp oauth_consumer_key=$access_key});
+            hLOG('API ERROR: ' . qq{__check_timestamp: invalid timestamp oauth_timestamp=$timestamp max=$max oauth_consumer_key=$access_key});
             return $self->error(TIMESTAMP_REFUSED);
         }
     }

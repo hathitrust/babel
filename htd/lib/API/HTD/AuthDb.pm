@@ -113,7 +113,7 @@ sub valid_timestamp_for_access_key {
     $statement = qq{UNLOCK TABLES};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
-    return ($timestamp > $max);
+    return ($timestamp >= $max, $max);
 }
 
 # ---------------------------------------------------------------------
