@@ -72,6 +72,7 @@ use Semaphore;
 use Db;
 use Scheduler;
 use SLIP_Utils::Db_driver;
+use SLIP_Utils::Db_sync;
 use SLIP_Utils::Common;
 use SLIP_Utils::Log;
 
@@ -351,6 +352,31 @@ sub run_driver {
     __driver_exit_report($C, $dbh, $run, qq{driver completed successfully}, $driver_START);
 }
 
+# ---------------------------------------------------------------------
+
+=item __duplicates_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __duplicates_report {
+    my ($C, $dbh, $run) = @_;
+
+    my $ref_to_arr_of_hashref_0 = SLIP_Utils::Db_sync::Select_duplicate_ids_j_indexed($C, $dbh, $run);
+
+    my @report;
+    foreach my $ref_0 (@$ref_to_arr_of_hashref_0) {
+        my $id = $ref_0->{id};
+        my $ref_to_arr_of_hashref_1 = SLIP_Utils::Db_sync::Select_duplicate_shards_of_id($C, $dbh, $run, $id);
+        foreach my $ref_1 (@$ref_to_arr_of_hashref_1) {
+            push(@report, $ref_1->{id} . ' ' . $ref_1->{shard});
+        }
+    }
+    
+    return join("\n", @report);
+}
 
 
 # ---------------------------------------------------------------------
@@ -382,7 +408,9 @@ sub __driver_exit_report {
         my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
         my $indexed_v_new_delta = $indexed_this_run - $newly_processed;
 
-        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct\nI_indexed=$indexed_this_run P_new=$newly_processed\nP_deleted=$deleted_ct P_reindexed=$reindexed_ct P_errors=$error_ct\nTotal_indexed=$total_indexed\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta\nRestore_ct=$RESTORE_CT };
+        my $duplicates = __duplicates_report($C, $dbh, $run);
+
+        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct\nI_indexed=$indexed_this_run P_new=$newly_processed\nP_deleted=$deleted_ct P_reindexed=$reindexed_ct P_errors=$error_ct\nTotal_indexed=$total_indexed\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta\nRestore_ct=$RESTORE_CT\n$duplicates };
     }
 
     __output("$s\n");
