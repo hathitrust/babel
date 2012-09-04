@@ -55,13 +55,13 @@ Description
 
 # ---------------------------------------------------------------------
 sub delete_get_usage {
-    my $s .= qq{Usage: delete-j -r run -I<docid> | -F <filename> [-d] [-T]\n};
+    my $s .= qq{Usage: delete-j -r run -I<docid> [-S known_shard] | -F <filename> [-d] [-T]\n};
     return $s;
 }
 
-our ($opt_r, $opt_I, $opt_T, $opt_F, $opt_d);
+our ($opt_r, $opt_I, $opt_T, $opt_F, $opt_d, $opt_S);
 
-my $ops = getopts('r:I:TF:d');
+my $ops = getopts('r:I:TF:dS:');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -69,6 +69,8 @@ if (! $RUN) {
     print $s;
     exit $SLIP_Utils::States::RC_BAD_ARGS;
 }
+
+my $KNOWN_SHARD; # Optional
 
 # One is required
 my $FILENAME = $opt_F;
@@ -82,6 +84,9 @@ elsif (! $DOCID && ! $FILENAME) {
     print qq{ERROR: one of -I or -F is required\n};
     print delete_get_usage();
     exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+elsif ($DOCID) {
+    $KNOWN_SHARD = $opt_S;
 }
 
 if (defined($opt_d)) {
@@ -123,7 +128,7 @@ elsif ($FILENAME) {
 }
 
 foreach my $id (@$id_arr_ref) {
-    delete_Solr_doc($C, $RUN, $id);
+    delete_Solr_doc($C, $RUN, $id, $KNOWN_SHARD);
 }
 
 if ($DEFER_COMMIT) {
@@ -140,16 +145,21 @@ exit 0;
 
 =item delete_Solr_doc
 
-Description
+known_shard supports index repair when an ID has been indexed to more
+than one shard and we want to force deletion from a specific shard.
 
 =cut
 
 # ---------------------------------------------------------------------
 sub delete_Solr_doc {
-    my ($C, $run, $id) = @_;
+    my ($C, $run, $id, $known_shard) = @_;
 
     # Find the shard containing the doc and send the delete
-    my $shard = Db::Select_item_id_shard($C, $DBH, $run, $id);
+    my $shard = 
+      $known_shard 
+        ? $known_shard 
+          : Db::Select_item_id_shard($C, $DBH, $run, $id);
+
     if (! $shard) {
         __output(qq{Shard for id=$id not found. Skipping. (Already deleted?)\n});
         return;

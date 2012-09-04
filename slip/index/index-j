@@ -629,7 +629,7 @@ sub handle_critical_error {
         # the error list and disable the shard.
         while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
             my $id = $item_hashref->{'id'};
-            Index_Module::handle_error_insertion($C, $dbh, $run, $shard, $id, $pid, $host, IX_CRITICAL_FAILURE);
+            Db::handle_error_insertion($C, $dbh, $run, $shard, $id, $pid, $host, IX_CRITICAL_FAILURE);
         }
         # Turn off this shard.
         Db::update_shard_enabled($C, $dbh, $run, $shard, 0);
