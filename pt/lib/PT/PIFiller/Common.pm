@@ -454,8 +454,8 @@ sub handle_VERSION_LABEL_PI
     
     # massage for final output: we get 2010-09-28T13:43:24 but want
     # 2010-09-28 17:43 UTC
-    my $ver = $mdpItem->Version();
-    my $version = iso_UTC_Time(unix_Time($ver));
+    my ($ver, $deleted) = $mdpItem->Version();
+    my $version = ($deleted ? 'Deleted ' : '') . iso_UTC_Time(unix_Time($ver));
 
     return $version;
 }
