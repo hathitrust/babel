@@ -53,6 +53,8 @@
       <xsl:call-template name="get_page_title"/>
     </xsl:element>
   </xsl:template>
+
+  <xsl:template name="get_page_title" />
   
   <xsl:template name="mbooksnav">
     <div class="MBooksNav" role="navigation">
