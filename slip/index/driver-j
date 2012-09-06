@@ -269,7 +269,7 @@ sub handle_Stage_rc {
     my ($stage, $rc) = @_;
 
     if ($rc > 0) {
-        my $s = qq{stage=$stage error=} . SLIP_Utils::Common::stage_rc_to_string($rc);
+        my $s = qq{stage=$stage in handle_Stage_rc error=} . SLIP_Utils::Common::stage_rc_to_string($rc);
 
         email_driver_msg($C, $s, 1);
 
@@ -472,7 +472,7 @@ sub handle_Build_Wait {
     my $q = qq{initial queue size=$INITIAL_QUEUE_SIZE};
     Log_stage($C, $run, $_Stage, $q);
 
-    __check_driver_enabled($C, $dbh, $run);
+    __check_driver_enabled($C, $dbh, $run, $_Stage);
 
     if ($INITIAL_QUEUE_SIZE == 0) {
         my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $_Stage);
@@ -539,7 +539,7 @@ sub handle_Building {
 
     __output("$_Stage\n");
 
-    __check_driver_enabled($C, $dbh, $run);
+    __check_driver_enabled($C, $dbh, $run, $_Stage);
     Log_stage($C, $run, $_Stage);
 
     my $build_START = time();
@@ -591,7 +591,7 @@ sub handle_Optimizing {
 
     __output("$_Stage\n");
 
-    __check_driver_enabled($C, $dbh, $run);
+    __check_driver_enabled($C, $dbh, $run, $_Stage);
     Log_stage($C, $run, $_Stage);
 
     my $optimize_START = time();
@@ -652,7 +652,7 @@ sub handle_Checking {
 
     __output("$_Stage\n");
 
-    __check_driver_enabled($C, $dbh, $run);
+    __check_driver_enabled($C, $dbh, $run, $_Stage);
     Log_stage($C, $run, $_Stage);
 
     my $check_START = time();
@@ -720,7 +720,7 @@ sub __Wait_check_done {
     my ($C, $dbh, $run, $stage) = @_;
 
     while (1) {
-        __check_driver_enabled($C, $dbh, $run);
+        __check_driver_enabled($C, $dbh, $run, $stage);
 
         my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
 
@@ -762,7 +762,7 @@ sub __Wait_optimize_done {
     my ($C, $dbh, $run, $stage) = @_;
 
     while (1) {
-        __check_driver_enabled($C, $dbh, $run);
+        __check_driver_enabled($C, $dbh, $run, $stage);
 
         my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
 
@@ -803,7 +803,7 @@ sub __Wait_build_done {
     my ($C, $dbh, $run, $stage) = @_;
 
     while (1) {
-        __check_driver_enabled($C, $dbh, $run);
+        __check_driver_enabled($C, $dbh, $run, $stage);
 
         my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
 
@@ -977,13 +977,15 @@ Description
 
 # ---------------------------------------------------------------------
 sub __check_driver_enabled {
-    my ($C, $dbh, $run) = @_;
+    my ($C, $dbh, $run, $stage) = @_;
 
-    if (! __driver_enabled($C, $DBH, $RUN)) {
+    if (! __driver_enabled($C, $dbh, $run)) {
         my $rc = $SLIP_Utils::States::RC_DRIVER_DISABLED;
-        my $s = qq{driver-j disabled for run=$RUN\n};
+        my $s = qq{driver-j disabled for run=$run at stage=stage in __check_driver_enabled\n};
         __output($s);
         __non_interactive_err_output($rc, $s);
+
+        Log_disabled($C, $run, $stage, $s);
 
         exit $rc;
     }
