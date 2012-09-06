@@ -34,9 +34,11 @@
   <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
   <CollectionSizesJs><?COLLECTION_SIZES_JS?></CollectionSizesJs>  
 
-  <PublicCollList><?PUBLIC_COLL_LIST?></PublicCollList>
-  <MyCollList><?MY_COLL_LIST?></MyCollList>
-  <RecentlyAdded><?RECENTLY_ADDED list_size="3"?></RecentlyAdded>
+  <CollList><?COLL_LIST?></CollList>
+  <!-- DEPRECATED
+  <MyCollList>< ?MY_COLL_LIST? ></MyCollList>
+  <RecentlyAdded>< ?RECENTLY_ADDED list_size="3"? ></RecentlyAdded>
+  -->
 
   <GoogleAnalytics/>
 
