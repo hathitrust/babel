@@ -278,9 +278,12 @@ sub handle_Stage_rc {
 
         __control_producers($C, $DBH, $RUN, $stage, 'stop');
         __control_optimizers($C, $DBH, $RUN, $stage, 'stop');
+        __control_checkers($C, $DBH, $RUN, $stage, 'stop');
 
         SLIP_Utils::Db_driver::set_driver_enabled($C, $DBH, $RUN, 0);
         SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Driver_ERROR);
+
+        Log_disabled($C, $RUN, $stage, $s);
 
         exit $rc;
     }
@@ -1244,9 +1247,9 @@ Description
 
 # ---------------------------------------------------------------------
 sub Log_disabled {
-    my ($C, $run) = @_;
+    my ($C, $run, $stage, $extra) = @_;
 
-    my $s = qq{***DRIVER [DISABLED]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    my $s = qq{***DRIVER [DISABLED]: } . Utils::Time::iso_Time() . qq{ r=$run stage=$stage $extra};
     SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
 }
 
