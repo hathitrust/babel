@@ -65,6 +65,30 @@ sub coll_list_helper
 }
 
 # ---------------------------------------------------------------------
+sub coll_list_helper_json
+{
+    my ($C, $act, $data_key) = @_;
+
+    require JSON::XS;
+
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    $C->set_object('Collection', $co);
+
+    my $data_ref = $act->get_transient_facade_member_data($C, $data_key);
+
+    foreach my $coll_hashref ( @$data_ref ) {
+        $$coll_hashref{collid} = $$coll_hashref{MColl_ID};
+        delete $$coll_hashref{MColl_ID};
+    }
+
+    my $json = JSON::XS->new;
+    $json->utf8(0);
+    my $output = $json->encode($data_ref);
+
+    return $output;
+}
+
+# ---------------------------------------------------------------------
 
 =item handle_PUBLIC_COLL_LIST_PI
 
@@ -73,14 +97,21 @@ PI Handler for the PUBLIC_COLL_LIST processing instruction.
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_PUBLIC_COLL_LIST_PI
-    : PI_handler(PUBLIC_COLL_LIST)
+sub handle_COLL_LIST_PI
+    : PI_handler(COLL_LIST)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    return coll_list_helper($C, $act, 'public_list_colls_data');
+    return coll_list_helper($C, $act, 'list_colls_data');
 }
 
+sub handle_COLL_LIST_JSON_PI
+    : PI_handler(COLL_LIST_JSON)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    return coll_list_helper_json($C, $act, 'list_colls_data');
+}
 
 # ---------------------------------------------------------------------
 

@@ -32,7 +32,7 @@
      'solridx'  => 'text|author|title|subject|isbn',
      'solrfct'  => '.*',
      'start'    => '\d+',
-     'colltype' => 'pub|priv|updated|class|all|my-collections|updated|featured',
+     'colltype' => 'pub|priv|updated|class|all|my-collections|updated|featured|my_colls|all_colls',
      'undo'     => '.*',  #XXX consider limiting to values of a param
      'skin'     => '.*',
      'testUser' => '.*',
@@ -273,7 +273,16 @@ $g_late_operations = [
       'action_type'  => 'UI',
       'operations'   => [
                         ],
-      'view'         => {'default' => {
+      'view'         => {
+                          'ajax' => {
+                                       'builders' => [
+                                                      'MBooks::Operation::ListColls',
+                                                     ],
+                                       'template' => 'list_colls_ajax.xml',
+                                       'filler'   => 'MBooks::PIFiller::ListColls',
+                                       'content_type' => 'application/javascript',
+                                      },
+                          'default' => {
                                        'builders' => [
                                                       'MBooks::Operation::ListColls',
                                                      ],
@@ -289,7 +298,16 @@ $g_late_operations = [
       'action_type'  => 'UI',
       'operations'   => [
                         ],
-      'view'         => {'default' => {
+      'view'         => {
+                          'ajax' => {
+                                       'builders' => [
+                                                      'MBooks::Operation::ListItems',
+                                                     ],
+                                       'template' => 'list_items_ajax.xml',
+                                       'filler'   => 'MBooks::PIFiller::ListItems',
+                                       'content_type' => 'application/javascript',
+                                      },
+                          'default' => {
                                        'builders' => [
                                                       'MBooks::Operation::ListItems',
                                                      ],
