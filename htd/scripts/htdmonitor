@@ -140,10 +140,11 @@ sub Total_Signed_Requests {
     my %uniq_signed_requests;
     foreach my $sr (@signed_requests) {
         my ($ua, $ra, $ff) = ($sr =~ m,UA_ip=(.*?) REMOTE_ADDR=(.*?) HTTP_X_FORWARDED_FOR=(.*?)\s*$,);
-        $uniq_signed_requests{"$ua-$ra-$ff"} = 1;
+        $uniq_signed_requests{"$ua-$ra-$ff"} += 1;
     }
     print "* Total signed requests = " . scalar @signed_requests . "  (unique = " . scalar (keys %uniq_signed_requests) . ")\n";
     foreach my $key (keys %uniq_signed_requests) {
+        my $count = $uniq_signed_requests{$key};
         my ($ua, $ra, $ff) = split(/-/, $key);
         my $ucountry = get_country($ua);
         my $udomain = get_domain($ua);
@@ -151,7 +152,7 @@ sub Total_Signed_Requests {
         my $rdomain = get_domain($ra);
         my $fcountry = get_country($ff);
         my $fdomain = get_domain($ff);
-        print "\tU_A=$ua ($ucountry):$udomain\n\t\tR_A=$ra ($rcountry):$rdomain\n\t\tX_F_F=$ff ($fcountry):$fdomain\n";
+        print "\tU_A=$ua ($ucountry):$udomain\n\t\tR_A=$ra ($rcountry):$rdomain\n\t\tX_F_F=$ff ($fcountry):$fdomain count=$count\n";
     }
     print "\n";    
 }
