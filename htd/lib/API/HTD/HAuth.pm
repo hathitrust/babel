@@ -543,8 +543,6 @@ sub __authorized_at_IP_address {
     my $self = shift;
     my ($ipo, $access_type, $extended_access_type) = @_;
 
-    $extended_access_type = ($extended_access_type ? $extended_access_type : 'none');
-
     my $ip = $ipo->address;
     if ( defined($extended_access_type) || ($access_type =~ m,restricted,) ) {
         my $authorized = $ipo->is_authorized;
@@ -595,7 +593,7 @@ sub H_authorized {
         else {
             API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
             my $ip = $ipo->address;
-            hLOG('API ERROR: ' . qq{H_authorized: ip address fail $access_key=$access_key resource=$resource access_type=$access_type extended_access_type=$extended_access_type ip=$ip});
+            hLOG('API ERROR: ' . qq{H_authorized: ip address fail access_key=$access_key resource=$resource access_type=$access_type extended_access_type=$extended_access_type ip=$ip});
             return $self->error('unauthorized originating ip address');
         }
     }
