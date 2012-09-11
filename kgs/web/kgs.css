@@ -31,6 +31,10 @@ legend {
   text-align       : center;
 }
 
+.smaller {
+  font-size        : 0.8em;
+}
+
 .brandingLogo {
 }
 
