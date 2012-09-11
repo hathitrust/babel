@@ -432,6 +432,20 @@
   <!-- waiting -->
 
   <Inst
+      sdrinst="bc"
+      template="https://___HOST___/Shibboleth.sso/bc?target=___TARGET___"
+      authtype="shibboleth"
+      domain="bc.edu"
+      us="1"
+      enabled="0">Boston College</Inst>
+  <Inst
+      sdrinst="ksu"
+      template="https://___HOST___/Shibboleth.sso/ksu?target=___TARGET___"
+      authtype="shibboleth"
+      domain="k-state.edu"
+      us="1"
+      enabled="0">Kansas State University</Inst>
+  <Inst
       sdrinst="ttu"
       template="https://___HOST___/Shibboleth.sso/ttu?target=___TARGET___"
       authtype="shibboleth"
@@ -473,12 +487,5 @@
       domain="loc.gov"
       us="1"
       enabled="0">Library of Congress</Inst>
-  <Inst
-      sdrinst="ksu"
-      template="https://___HOST___/Shibboleth.sso/ksu?target=___TARGET___"
-      authtype="shibboleth"
-      domain="k-state.edu"
-      us="1"
-      enabled="0">Kansas State University</Inst>
       
 </Institutions>
