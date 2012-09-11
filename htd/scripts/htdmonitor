@@ -17,7 +17,7 @@ use API::DbIF;
 
 
 my $GEOIP            = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
-my %RESOURCES        = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,);
+my %RESOURCES        = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0, pdf => 0);
 my @FREELY_AVAILABLE = (
                         @RightsGlobals::g_creative_commons_attribute_values, 
                         @RightsGlobals::g_public_domain_world_attribute_values,
@@ -279,7 +279,7 @@ sub CrossCheck_IC_DataRequests {
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         my $ip_fail = 0;
         print "\t$ip "; 
-        foreach my $resource (qw( pageimage pageocr pagecoordocr aggregate )) {
+        foreach my $resource (qw( pageimage pageocr pagecoordocr aggregate pdf )) {
             if (my $fail = _test_resource_by_ip_for_ic($dbh, $resource, $ip)) {
                 print "$fail\n";
                 $check_ok = 0;
@@ -309,7 +309,7 @@ sub _test_resource_by_ip_for_ic {
     my ($statement, $sth);
     my $failures = '';
 
-    my @restricted_codes = (7, 15, 23, 31);
+    my @restricted_codes = (7, 15, 23, 31, 39, 47, 71, 79, 135, 143, 199, 207);
     
     chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file`);
     @uniq_resource_ids_by_ip = map { $_ =~ m, id="(.*?)" , } @uniq_resource_ids_by_ip;
