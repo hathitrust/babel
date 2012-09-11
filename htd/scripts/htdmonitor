@@ -309,7 +309,7 @@ sub _test_resource_by_ip_for_ic {
     my ($statement, $sth);
     my $failures = '';
 
-    my @restricted_codes = (7, 15, 23, 31, 39, 47, 71, 79, 135, 143, 199, 207);
+    my @restricted_codes = (7, 15, 23, 31, 39, 47, 71, 79, 135, 143, 199, 207, 231, 239);
     
     chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file`);
     @uniq_resource_ids_by_ip = map { $_ =~ m, id="(.*?)" , } @uniq_resource_ids_by_ip;

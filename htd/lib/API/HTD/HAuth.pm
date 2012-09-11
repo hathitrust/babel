@@ -397,6 +397,13 @@ sub H_authenticate {
  #   195 11000011  --------  (O|OR)     |allow_derivative|allow_unwatermarked
  #   199 11000111  --------  (O|OR|R)   |allow_derivative|allow_unwatermarked
  #   207 11001111  --------  (O|OR|R|RF)|allow_derivative|allow_unwatermarked
+ #
+ #       Basic+allow_pdf+allow_derivative+allow_unwatermarked
+ #       code
+ #   225 11100001  --------  (O)        |allow_pdf|allow_derivative|allow_unwatermarked
+ #   227 11100011  --------  (O|OR)     |allow_pdf|allow_derivative|allow_unwatermarked
+ #   231 11100111  --------  (O|OR|R)   |allow_pdf|allow_derivative|allow_unwatermarked
+ #   239 11101111  --------  (O|OR|R|RF)|allow_pdf|allow_derivative|allow_unwatermarked
 
 =cut
 
