@@ -48,25 +48,27 @@ use API::HTD_Log;
 
 use API::HTD::AuthDb;
 use API::HTD::HConf;
-use API::HTD::Rights;
-use API::HTD::AccessTypes;
-
 
 my $DEBUG = 0;
-$ENV{HTTP_HOST} = 'localhost' if (! defined $ENV{HTTP_HOST});
 
-# non-US testing
-# $ENV{REMOTE_ADDR} = '147.96.1.135';
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+    # non-US testing
+    ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
+}
+
+# forced upstream
+my $USERID = $ENV{REMOTE_USER};
+
+my @superusers = qw(pfarber roger rrotter);
+my $DEVELOPMENT_SUPPORT = $ENV{HT_DEV} || grep(/^$USERID$/, @superusers);
 
 my $Q = new CGI;
-my $userid;
-
-$DEBUG = $Q->param('debug') if (defined $Q->param('debug'));
 
 if (! defined $ENV{REMOTE_USER}) {
     serve_login_page();
 }
-elsif (! $Q->param) {    
+elsif (! $Q->param) {
     serve_request_form_page();
     # NOTREACHED
 }
@@ -75,7 +77,7 @@ else {
     # POSSIBLY NOTREACHED
 
     my $dbh = Call_Handler(_htdc_connect($config), 'Database error');
-    # POSSIBLY NOTREACHED    
+    # POSSIBLY NOTREACHED
 
     my $access_key = validate_request($Q, $dbh, $config);
     # POSSIBLY NOTREACHED
@@ -83,7 +85,6 @@ else {
     serve_Data_API_response($Q, $dbh, $config, $access_key);
     # NOTREACHED
 }
-
 
 exit 0;
 
@@ -100,11 +101,11 @@ Description
 sub Call_Handler {
     my $return_from_call = shift;
     my $in_case_of_error = shift;
-    
+
     if (! $return_from_call) {
         serve_error_page($in_case_of_error);
     }
-    
+
     return $return_from_call;
 }
 
@@ -119,12 +120,9 @@ Description
 # ---------------------------------------------------------------------
 sub validate_request {
     my ($Q, $dbh, $config) = @_;
-    
-    # forced upstream
-    my $userid = $ENV{REMOTE_USER};
-    
+
     # known?
-    my $access_key = Call_Handler(API::HTD::AuthDb::get_access_key_by_userid($dbh, $userid), 
+    my $access_key = Call_Handler(API::HTD::AuthDb::get_access_key_by_userid($dbh, $USERID),
                                   qq{Your user ID is not registered. Please visit the <a href="/cgi/kgs/authed">registration page</a> to record your user id});
 
     Utils::clean_cgi_params($Q);
@@ -148,12 +146,18 @@ sub validate_request {
         $Q->Delete('seq');
     }
 
+    unless ($DEVELOPMENT_SUPPORT) {
+        foreach my $arg ( qw(format size width height res watermark) ) {
+            $Q->Delete($arg);
+        }
+    }
+
     return $access_key;
 }
 
 # ---------------------------------------------------------------------
 
-=item serve_login_page 
+=item serve_login_page
 
 Description
 
@@ -162,10 +166,10 @@ Description
 # ---------------------------------------------------------------------
 sub serve_login_page {
     hLOG(qq{htdc: serve login page});
-    
-    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_login.html');    
 
-    my $wayf_link = _get_htdc_wayf_link();    
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_login.html');
+
+    my $wayf_link = _get_htdc_wayf_link();
     $$page_ref =~ s,___WAYF_LINK___,$wayf_link,;
 
     _standard_replacements($page_ref);
@@ -178,7 +182,7 @@ sub serve_login_page {
 
 # ---------------------------------------------------------------------
 
-=item serve_error_page 
+=item serve_error_page
 
 Description
 
@@ -187,10 +191,10 @@ Description
 # ---------------------------------------------------------------------
 sub serve_error_page {
     my $error_message = shift;
-    
+
     hLOG(qq{htdc ERROR: serve error page: $error_message});
 
-    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_error.html');    
+    my $page_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/htdc_error.html');
     $$page_ref =~ s,___FAIL_REASON___,$error_message,;
 
     _standard_replacements($page_ref);
@@ -202,7 +206,7 @@ sub serve_error_page {
 
 # ---------------------------------------------------------------------
 
-=item serve_request_form_page 
+=item serve_request_form_page
 
 Description
 
@@ -232,7 +236,7 @@ Description
 # ---------------------------------------------------------------------
 sub _get_htdc_wayf_link {
     my $C = shift;
-    
+
     my $target = 'https://' . $ENV{HTTP_HOST} . '/cgi/kgs/authed';
     # wayf will change target /cgi into /shcgi, depending
     my $url = 'http://' . $ENV{HTTP_HOST} . '/cgi/wayf' . '?target=' . CGI::escape($target);
@@ -251,9 +255,9 @@ Description
 # ---------------------------------------------------------------------
 sub _print_encoded_output {
     my ($Q, $response) = @_;
-    
+
     my $resource = $Q->param('resource');
-    if (grep(/^$resource$/, qw(aggregate pageimage))) {
+    if (grep(/^$resource$/, qw(aggregate pageimage pdf))) {
         # Do not encode binary types
         print $response->content;
     }
@@ -264,14 +268,14 @@ sub _print_encoded_output {
 
 # ---------------------------------------------------------------------
 
-=item __originating_IPADDR
+=item IPADDR_of_my_client
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __originating_IPADDR {
+sub IPADDR_of_my_client {
     return $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
 }
 
@@ -287,18 +291,9 @@ Description
 sub serve_Data_API_response {
     my ($Q, $dbh, $config, $access_key) = @_;
 
+    my ($request_url, $extra) = _make_Data_API_request_url($Q);
+
     my $consumer =  _get_consumer($dbh, $access_key);
-    my $access_type = _get_access_type($Q, $dbh, $config);
-    # POSSIBLY NOTREACHED
-
-    my $originating_IPADDR = __originating_IPADDR();
-
-    my $request_url = _make_Data_API_request_url($Q, $access_type);
-    hLOG(qq{htdc: serve API response, request url=$request_url} . "?ip=$originating_IPADDR");
-
-    # so API can do geo ip lookup for this user
-    my $extra = { ip => $originating_IPADDR };
-
     my $response = $consumer->request
       (
        method  => 'GET',
@@ -306,11 +301,14 @@ sub serve_Data_API_response {
        params  => $extra,
       );
 
+    my $full_request_url = $consumer->oauth_request->uri;
+    hLOG(qq{htdc: serve_Data_API_response: full request url=$full_request_url});
+
     # Debug block
     if ($ENV{HT_DEV} && $DEBUG) {
         print CGI::header('text/html');
         print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
-        print $consumer->oauth_request->uri;
+        print $full_request_url;
         
         print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
         print "<b>Status:</b> " . $response->status_line;
@@ -318,8 +316,18 @@ sub serve_Data_API_response {
         print "<b>Header:</b> " . $response->headers->as_string;
         print "<br/>";
         print "<b>Content:</b> " . $response->content;
+        
+        if ($Q->param('resource') eq 'pdf') {
+            my $foo = $response->content;
+            my $filename = '/tmp/test.pdf';
+            open(OUTFILE, ">", $filename) || print STDERR qq{Cannot open $filename for writing\n};
+            print OUTFILE $foo;
+            close( OUTFILE );
+        }
+    
         exit 0;
     }
+    # POSSIBLY NOTREACHED
 
     if ($response->is_success) {
         print CGI::header(join(';', $response->content_type()));
@@ -328,10 +336,10 @@ sub serve_Data_API_response {
     else {
         my $code = $response->code;
         my $status = $response->status_line . " " . (($code !~ m,^5\d\d,) ? $response->content : '');
-        
+
         Call_Handler(0, 'Data API error: ' . $status);
     }
-    
+
     exit 0;
 }
 
@@ -354,47 +362,6 @@ sub _get_config {
                                     );
     return ($config->initSuccess ? $config : 0);
 }
-
-
-# ---------------------------------------------------------------------
-
-=item _get_access_type
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub _get_access_type {
-    my ($Q, $dbh, $config) = @_;
-    
-    my ($id, $resource) = ($Q->param('id'), $Q->param('resource'));
-
-    my ($namespace, $barcode) = ($id =~ m,^(.*?)\.(.*)$,);
-    my $P_Ref;
-    $P_Ref->{ns} = $namespace;
-    $P_Ref->{bc} = $barcode;
-    
-    my $ro = Call_Handler(API::HTD::Rights::createRightsObject($dbh, $P_Ref), 
-                          "rights information not found for $id");
-    # POSSIBLY NOTREACHED
-
-    # Get an access type object. API will trust us to supply a valid
-    # originating IP address on the URL, the same as we use here to
-    # determine the access type and so the constraints (mainly
-    # protocol) for this request.
-    my $ato = Call_Handler(API::HTD::AccessTypes->new({
-                                                       _rights => $ro,
-                                                       _config => $config,
-                                                       _ua_ip  => __originating_IPADDR(),
-                                                       _dbh    => $dbh,
-                                                      }),
-                           'cannot determine access type');
-    # POSSIBLY NOTREACHED
-
-    return $ato->getAccessTypeByResource($resource);
-}
-
 
 # ---------------------------------------------------------------------
 
@@ -448,33 +415,50 @@ sub _get_consumer {
 
 Due to the network architecture that includes the net scaler, to do
 secure transport over SSL we use http:// over port 443, NOT https://
-but only for production.  This also means thaqt test.babel will fail
-SSL negotiation wf SSL is involved.
+but only for production.  This also means that test.babel will fail
+SSL negotiation if SSL is involved.
 
 =cut
 
 # ---------------------------------------------------------------------
 sub _make_Data_API_request_url {
     my $Q = shift;
-    my $access_type = shift;
 
     my $port = '';
     my $protocol = 'http://';
 
-    if (! grep(/^$access_type$/, ('open', 'limited'))) {
-        # use 443 for SSl transport in production
-        if ($ENV{HT_DEV}) {
-            $protocol = 'https://';
-        }
-        else {
-            $port = ':443';
-        }
+    if ($ENV{HT_DEV}) {
+        $protocol = 'https://';
+    }
+    else {
+        $port = ':443';
     }
 
     my ($id, $resource, $seq) = ($Q->param('id'), $Q->param('resource'), $Q->param('seq'));
     my $url = $protocol . $ENV{HTTP_HOST} . $port . '/cgi/htd' . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
-    
-    return $url;
+
+    # so API can do geo ip lookup for this user
+    my $client_IPADDR = IPADDR_of_my_client();
+    my $extra = { ip => $client_IPADDR };
+
+    if ($DEVELOPMENT_SUPPORT) {
+        if ($resource eq 'pdf') {
+            $extra->{format} = 'ebm';
+        }
+        elsif ($resource eq 'pageimage') {
+            my $format = $Q->param('format');
+            if ($format ne 'raw') {
+                $extra->{format} = $Q->param('format');
+                if ($Q->param('unwatermark') eq 'on') {
+                    $extra->{watermark} = 0;
+                }
+
+                $extra->{res} = $Q->param('res') || 0;
+            }
+        }
+    }
+
+    return ($url, $extra);
 }
 
 # ---------------------------------------------------------------------
@@ -494,4 +478,14 @@ sub _standard_replacements {
 
     my $analytics_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/google_analytics.chunk');
     $$page_ref =~ s,___GOOGLE_ANALYTICS___,$$analytics_ref,;
+
+    my $empty = '';
+    my $extended_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . '/htdc/web/extended_types.chunk') : \$empty;
+    $$page_ref =~ s,___EXTENDED_TYPES___,$$extended_types_ref,;
+
+    my $extended_opts_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . '/htdc/web/extended_options.chunk') : \$empty;
+    $$page_ref =~ s,___EXTENDED_OPTIONS___,$$extended_opts_ref,;
+
+    my $extended_opts_js_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . '/htdc/web/extended_options_js.chunk') : \$empty;
+    $$page_ref =~ s,___EXTENDED_OPTIONS_JS___,$$extended_opts_js_ref,;
 }

@@ -57,6 +57,10 @@ legend {
   font-size        : 1em;
 }
 
+.tiny {
+  font-size        : 0.7em;  
+}
+
 #HTDCMasterContainer {
   width            : 680px;
   font-family      : Arial,Verdana,Helvetica,sans-serif;
@@ -105,7 +109,7 @@ input.htsubmit {
   float            : right;
 }
 
-#resource_radio {
+div.resource_radio {
   margin-left      : 10em;
 }
 
@@ -117,7 +121,7 @@ fieldset.request {
   margin-left      : 14em;
 }
 
-#htseq {
+#htseq, #htres {
   width            : 5em;
   font-family      : courier,monospace;
   font-size        : 1.2em;
@@ -142,6 +146,11 @@ span.sampleid {
   vertical-align   : top; 
 }
 
+.unreq { 
+  padding-right    : 1em;
+  color            : #fafafa;
+  vertical-align   : top; 
+}
 
 /* Error page styles */
 

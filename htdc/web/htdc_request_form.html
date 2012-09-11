@@ -34,6 +34,7 @@
         $('input').bind("click", eventHandlerHS);
       });
     </script>
+    ___EXTENDED_OPTIONS_JS___
   </head>
   <body>
     <div id="HTDCMasterContainer">
@@ -63,7 +64,7 @@
             </div>
             <div class="request">
               <label class="request" for="htresource">resource <span class="req">*</span></label>
-              <div id="resource_radio">
+              <div class="resource_radio">
                 <input id="structureid"    type="radio" name="resource" class="htresource request required" value="structure">METS file</input><br/>
                 <input id="aggregateid"    type="radio" name="resource" class="htresource request required" value="aggregate">entire object</input><br/>
                 <input id="metaid"         type="radio" name="resource" class="htresource request required" value="meta">object metadata</input><br/>
@@ -71,12 +72,14 @@
                 <input id="pageimageid"    type="radio" name="resource" class="htresource request required" value="pageimage">page image</input><br/>
                 <input id="pageocrid"      type="radio" name="resource" class="htresource request required" value="pageocr">page OCR</input><br/>
                 <input id="pagecoordocrid" type="radio" name="resource" class="htresource request required" value="pagecoordocr">page coordinate OCR</input><br/>
+                ___EXTENDED_TYPES___
               </div>
             </div>
             <div id="htseqdiv" class="request">
               <label class="request" for="htseq">sequence <span class="req">*</span></label>
               <input id="htseq" name="seq" class="request required digits" />
             </div>
+            ___EXTENDED_OPTIONS___
             <div class="request">
               <input class="htsubmit" type="submit" value="Submit" />
             </div>

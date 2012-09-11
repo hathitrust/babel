@@ -1,0 +1,13 @@
+            <div id="htoptsdiv" class="request">
+              <label class="request" for="htopts">format <span class="req">*</span></label>
+              <div class="resource_radio">
+                <input id="formatid" type="radio" name="format" class="htopts request required" value="raw">raw <span class="tiny">(debug)</span></input><br/>
+                <input id="formatid" type="radio" name="format" class="htopts request required" value="png">png <span class="tiny">(debug)</span></input><br/>
+                <input id="formatid" type="radio" name="format" class="htopts request required" value="jpeg">jpeg <span class="tiny">(debug)</span></input><br/>
+              </div>
+              <label class="request" for="htopts">unwatermark <span class="req">*</span></label>
+              <input id="watermarkid" type="checkbox" name="unwatermark" class="htopts request"> <span class="tiny">(debug)</span></input><br/>
+              <label class="request" for="htopts">res <span class="unreq">&#2063</span></label>
+              <input id="htres" name="res" class="request digits"> <span class="tiny">(debug)</span></input>
+            </div>
+            </div>
