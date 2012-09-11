@@ -104,6 +104,7 @@ use API::HTD::Rights;
 use API::HTD::HAuth;
 use API::HTD::HConf;
 use API::HTD::AccessTypes;
+use API::HTD::IP_Address;
 
 my $DEBUG = ''; # e.g. 'tree'
 
@@ -150,15 +151,6 @@ sub setup {
     if ($self->getRequestMethod() ne 'GET') {
         $self->__setMember('setup_error', 1);
         $self->__setErrorResponseCode(405, $self->getRequestMethod() . ' method not supported');
-        return 0;
-    }
-    # POSSIBLY NOTREACHED
-
-    # Query parameter validation.  Failure is fobbed off to the
-    # defaultResourceHandler to deal with the mess
-    if (! $self->validateQueryParams()) {
-        $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(400, 'query parameter validation fails');
         return 0;
     }
     # POSSIBLY NOTREACHED
@@ -261,11 +253,26 @@ sub preHandler {
     # POSSIBLY NOTREACHED
     $self->__setMember('rights', $ro);
 
+    # Query parameter validation.  Failure is fobbed off to the
+    # defaultResourceHandler to deal with the mess
+    if (! $self->validateQueryParams($P_Ref)) {
+        $self->__setErrorResponseCode(400, $self->__errorDescription);
+        return $defaultHandler;
+    }
+    # POSSIBLY NOTREACHED
+
+    # Establish IP address context singleton
+    API::HTD::IP_Address->new(
+                              $self->__getConfObject, 
+                              $dbh, 
+                              $Q->param('oauth_consumer_key'),
+                              $Q->param('ip'),
+                             );
+
     # Get an access type object
     my $ato = new API::HTD::AccessTypes({
                                          _rights => $ro,
                                          _config => $self->__getConfObject,
-                                         _ua_ip  => $self->__originating_IPADDR,
                                          _dbh    => $dbh,
                                         });
     $self->__setMember('access', $ato);
@@ -274,7 +281,6 @@ sub preHandler {
     my $hauth = new API::HTD::HAuth({
                                      _query => $Q,
                                      _dbh   => $dbh,
-                                     _ua_ip => $self->__originating_IPADDR,
                                     });
     $self->__setMember('hauth', $hauth);
 
@@ -309,52 +315,6 @@ sub preHandler {
 
 # ---------------------------------------------------------------------
 
-=item __originating_IPADDR
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __originating_IPADDR {
-    my $self = shift;
-    
-    my $ip;
-    if ($self->__trusted_client()) {
-        $ip = $self->query->param('ip');
-    }
-    else {
-        $ip = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
-    }
-    
-    return $ip;
-}
-
-
-# ---------------------------------------------------------------------
-
-=item __trusted_client
-
-We trust the value of the ip URL parameter as being that of the
-useragent when set by clients whose IP address is in our whitelist.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __trusted_client {
-    my $self = shift;
-    
-    my $clientWhitelistRef  = $self->__getConfigVal('client_whitelist');
-    my $client_REMOTE_ADDR = $ENV{REMOTE_ADDR};
-    
-    my $trusted = (grep(/$client_REMOTE_ADDR/, @$clientWhitelistRef));
-    
-    return $trusted;
-}
-
-
-# ---------------------------------------------------------------------
-
 =item __log_client
 
 single logging point
@@ -365,12 +325,13 @@ single logging point
 sub __log_client {
     my $self = shift;
     my ($hauth, $Q) = @_;
-    
-    my $trusted = $self->__trusted_client();
-    my $ua_ip = $self->__getAccessObject->__get_UAIP;
+
+    my $ipo = new API::HTD::IP_Address;
+    my $trusted = $ipo->is_authorized;
+    my $ua_ip = $ipo->address;
     my $is_oauth = $hauth->H_request_is_oauth($Q);
 
-    hLOG('API: ' . sprintf(qq{__log_client: trusted=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s }, 
+    hLOG('API: ' . sprintf(qq{__log_client: trusted=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s },
                            $trusted, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}));
 }
 
@@ -402,7 +363,7 @@ Format the %ENV hash
 sub __getEnv {
     my $self = shift;
     my $s;
-    foreach my $key (qw ( REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV SCRIPT_URI  SCRIPT_URL QUERY_STRING PATH_INFO REQUEST_URI)) {
+    foreach my $key (qw (REMOTE_ADDR SERVER_ADDR SERVER_PORT AUTH_TYPE HTTPS HTTP_HOST HT_DEV SCRIPT_URI  SCRIPT_URL QUERY_STRING PATH_INFO REQUEST_URI)) {
         $s .= qq{$key="$ENV{$key}" };
     }
     return $s;
@@ -560,7 +521,7 @@ sub __mapURIsToHandlers {
 
     my $patternsRef = $self->__getConfigVal('patterns');
     my $arkPattern =  $self->__getConfigVal('ark_pattern');;
-    
+
     my %map;
     foreach my $p (keys %$patternsRef) {
         my $fullRE = $patternsRef->{$p};
@@ -659,9 +620,15 @@ sub __getConfigVal {
     return $self->__getConfObject()->getConfigVal(@_);
 }
 
-sub __getAccessTypeByResource {
+sub __getAccessType {
     my $self = shift;
-    return $self->__getAccessObject()->getAccessTypeByResource(@_);
+    return $self->__getAccessObject()->getAccessType(@_);
+
+}
+
+sub __getExtendedAccessType {
+    my $self = shift;
+    return $self->__getAccessObject()->getExtendedAccessType(@_);
 
 }
 
@@ -691,7 +658,7 @@ sub __getClientQueryParams {
     my $Q = $self->query();
     foreach my $p (@$clientParamsRef) {
         my $val = $Q->param($p);
-        $hashRef->{$p} = $val if ($val);
+        $hashRef->{$p} = $val if (defined $val);
     }
 
     return $hashRef;
@@ -712,7 +679,7 @@ sub __getDownloadability {
     my $resource = shift;
 
     # support 'open_restricted', 'restricted_forbidden'
-    my $accessType = $self->__getAccessTypeByResource($resource);
+    my $accessType = $self->__getAccessType($resource);
     my $downloadability = ($accessType =~ m,restricted,) ? 'restricted' : $accessType;
 
     return $downloadability;
@@ -731,7 +698,7 @@ sub __getProtocol {
     my $self = shift;
     my $resource = shift;
 
-    my $accessType = $self->__getAccessTypeByResource($resource);
+    my $accessType = $self->__getAccessType($resource);
     my $protocol = ($accessType =~ m,restricted,) ? 'https' : 'http';
 
     return $protocol;
@@ -815,12 +782,12 @@ sub __authNZ_Success {
     my $P_Ref = shift;
 
     my $Q = $self->query;
-    my $accessType = $self->__getAccessTypeByResource($P_Ref->{resource});
+    my $accessType = $self->__getAccessType($P_Ref->{resource});
 
     my $hauth = $self->__getHAuthObject();
 
     # Allow through back door?
-    if ($hauth->__allow_development_auth()) {
+    if ($hauth->H_allow_development_auth()) {
         return 1;
     }
     # POSSIBLY NOTREACHED
@@ -841,9 +808,10 @@ sub __authNZ_Success {
 
     if (! $Success) {
         my $s = $self->__getParamsRefStr($P_Ref);
-        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s orig=} . $self->__originating_IPADDR);
+        my $ipo = new API::HTD::IP_Address;
+        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s orig=} . $ipo->address);
     }
-    
+
     return $Success;
 }
 
@@ -886,11 +854,11 @@ sub __authenticated {
 
 See if the client is authorized to access the resource being
 requested.  This is a function of access type which is in turn a
-function of rights, source and resource.
+function of rights, source, resource and possibly extension.
 
 i.e.
 
-authorization = f(access_type = g(rights, source, resource))
+authorization = f(access_type = g(rights, source, resource) && h(extension))
 
 =cut
 
@@ -904,12 +872,12 @@ sub __authorized {
 
     # Access types: open, limited, open_restricted, restricted, restricted_forbidden
     my $resource = $P_Ref->{'resource'};
-    my $accessType = $self->__getAccessTypeByResource($resource);
-
+    my $accessType = $self->__getAccessType($resource);
+    my $extended_accessType = $self->__getExtendedAccessType($resource, $Q);
     my $dbh = $self->__get_DBH();
     my $hauth = $self->__getHAuthObject();
-    
-    if ($hauth->H_authorized($Q, $dbh, $resource, $accessType)) {
+
+    if ($hauth->H_authorized($Q, $dbh, $resource, $accessType, $extended_accessType)) {
         $authorized = 1;
     }
     else {
@@ -925,7 +893,7 @@ sub __authorized {
     hLOG('API ERROR: ' . qq{__authorized: access_type=$accessType authorized=0 error=} . $hauth->errstr)
       if (! $authorized);
 
-    hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType authorized=$authorized error="$error"});
+    hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType extended_access_type=$extended_accessType authorized=$authorized error="$error"});
     return $authorized;
 }
 

@@ -34,6 +34,8 @@ Coding example
 
 
 use strict;
+use warnings;
+
 use base qw(API::HTD::App);
 use Access::Statements;
 
@@ -70,10 +72,12 @@ For a given version
 # ---------------------------------------------------------------------
 sub validateQueryParams {
     my $self = shift;
+    my $P_Ref = shift;
 
     my $Q = $self->query();
     my $validParamsRef = $self->__getConfigVal('valid_query_params');
 
+    # Only the query params we recognize ....
     my @params = $Q->param();
     foreach my $p (@params) {
         if (! grep(/^$p$/, @$validParamsRef)) {
@@ -84,10 +88,57 @@ sub validateQueryParams {
     }
     # POSSIBLY NOTREACHED
 
-    if ($Q->param('alt') && ($Q->param('alt') ne 'json')) {
-        # Invalid param: set HTTP status line and bail
-        $self->__errorDescription("alt parameter value not json");
-        return 0;
+    # ... and must be associated with the correct resource
+    my $resource = $P_Ref->{resource};
+
+    # JSON only makes sense for the XML resource types
+    if (grep(/^$resource$/, qw(meta structure pagemeta))) {
+        my $alt = $Q->param('alt');
+        if ($alt && ($alt ne 'json')) {
+            $self->__errorDescription("invalid alt parameter value: $alt");
+            return 0;
+        }
+    }
+    # POSSIBLY NOTREACHED
+
+    # Raw pageimage resource only supports format=raw. Image
+    # derivatives require ip, watermark parameters.
+    elsif ($resource eq 'pageimage') {
+        my $format = $Q->param('format') || 'raw';
+        my ($w, $h, $r, $s, $wa);
+        $w = $Q->param('width'), $h =  $Q->param('height'), $r = $Q->param('res'), $s = $Q->param('size'), $wa = $Q->param('watermark');
+        my $derivative_param_defined = (defined($w) || defined($h) || defined($r) || defined($s) || defined($wa));
+
+        # Valid format?
+        if (! grep(/^$format$/, qw(raw png jpeg))) {
+            $self->__errorDescription("invalid format parameter value: $format");
+            return 0;
+        }
+
+        if ($format eq 'raw') {
+            # Default
+            if ($derivative_param_defined) {
+                $self->__errorDescription("invalid image query parameters present");
+                return 0;
+            }
+        }
+        else {
+            # Derivative requires ip address hashed into signature
+            if (! defined($Q->param('ip'))) {
+                $self->__errorDescription("derivative image ip parameter missing");
+                return 0;
+            }
+        }
+    }
+    # POSSIBLY NOTREACHED
+
+    # PDF resource only allows format=ebm
+    elsif ($resource eq 'pdf') {
+        my $format = $Q->param('format');
+        if (! $format || ($format ne 'ebm')) {
+            $self->__errorDescription("invalid or missing format parameter value format=$format");
+            return 0;
+        }
     }
     # POSSIBLY NOTREACHED
 
@@ -113,9 +164,9 @@ Description
 sub __addHeaderInCopyrightMsg {
     my $self = shift;
     my $resource_str = shift;
-    
+
     my $Header_Key = 'X-HathiTrust-InCopyright';
-    
+
     my ($in_copyright, $attr) = $self->__getAccessObject()->getInCopyrightStatus();
     if ($in_copyright) {
         my $access_key = $self->query->param('oauth_consumer_key') || 0;
@@ -140,9 +191,10 @@ sub __addHeaderAccessUseMsg {
 
     my $url = $self->{stmt_url};
     my $access_use_message = $self->__getConfigVal('access_use_intro') . " " . qq{$url};
+    my $Header_Key = 'X-HathiTrust-Notice';
 
     $self->header(
-                  -X_HathiTrust_Notice => $access_use_message,
+                  $Header_Key => $access_use_message,
                  );
 }
 
@@ -217,7 +269,7 @@ sub __makeParamsRef {
     my $self = shift;
     my ($resource, $id, $namespace, $barcode, $x, $y, $z, $seq) = @_;
     my $ro = $self->__getRightsObject;
-    
+
     return
     {
      'resource' => $resource,
@@ -226,7 +278,7 @@ sub __makeParamsRef {
      'bc'       => $barcode,
      'seq'      => $seq,
      'attr'     => defined $ro ? $ro->getRightsFieldVal('attr') : 0,
-     'source'   => defined $ro ? $ro->getRightsFieldVal('source') : 0,     
+     'source'   => defined $ro ? $ro->getRightsFieldVal('source') : 0,
     };
 }
 
@@ -583,7 +635,7 @@ sub GET_aggregate {
         $filename =~ s/,/\./g;
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('aggregate', 'zip');
-        
+
         $self->header(
                       -Status => $statusLine,
                       -Content_type => $mimetype,
@@ -622,7 +674,7 @@ sub GET_pageocr {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageocr', $extension);
 
-        $self->header(             
+        $self->header(
                       -Status => $statusLine,
                       -Content_type => $mimetype . '; charset=utf8',
                       -Content_Disposition => qq{filename=$filename},
@@ -676,6 +728,49 @@ sub GET_pagecoordocr {
 
 # ---------------------------------------------------------------------
 
+=item __get_pageimage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_pageimage {
+    my $self = shift;
+    my $P_Ref = shift;
+
+    my ($representationRef, $filename, $extension);
+
+    my $Q = $self->query();
+    my $format = $Q->param('format') || 'raw';
+    if ($format eq 'raw') {
+        ($representationRef, $filename, $extension) = $self->__getFileResourceRepresentation($P_Ref, 'image');
+    }
+    else {
+        use constant _OK => 0;
+
+        my %args;
+        foreach my $arg ( qw(format size width height res watermark) ) {
+            my $argval = $Q->param($arg);
+            $args{'--' . $arg} = $argval if (defined $argval);
+        }
+        my $id = $self->__getIdParamsRef($P_Ref);
+
+        my $script = $ENV{SDRROOT} . "/imgsrv/bin/image";
+        my $cmd = "$script " . "--id=$id " . join(" ", map sprintf(q{%s=%s}, $_, $args{$_}), keys %args);
+        print STDERR "cmd=$cmd\n";
+        my $buf = `$cmd`;
+        my $rc = $? >> 8;
+        if ($rc == _OK) {
+            ($representationRef, $filename, $extension) = (\$buf, $id . ".$format", $format);
+        }
+    }
+
+    return ($representationRef, $filename, $extension);
+}
+
+# ---------------------------------------------------------------------
+
 =item GET_pageimage
 
 Description
@@ -690,13 +785,13 @@ sub GET_pageimage {
     my $resource_str = $self->__getParamsRefStr($P_Ref);
     hLOG('API: ' . qq{GET_pageimage: } . $resource_str . $self->query->self_url);
 
-    my ($representationRef, $filename, $extension) =
-        $self->__getFileResourceRepresentation($P_Ref, 'image');
+    my ($representationRef, $filename, $extension) = $self->__get_pageimage($P_Ref);
+
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('pageimage', $extension);
 
-        $self->header( 
+        $self->header(
                       -Status => $statusLine,
                       -Content_type => $mimetype,
                       -Content_Disposition => qq{filename=$filename},
@@ -709,7 +804,75 @@ sub GET_pageimage {
     }
 
     return $representationRef;
+}
 
+# ---------------------------------------------------------------------
+
+=item GET_pdf
+
+Dedicated handler for EBM POD PDF only. PDF creation is time-intensive
+so this method passes a code block up the Plack stack to implement
+streaming by Plack. This sub is Plack/PSGI aware. It does not follow
+CGI::Application conventions.
+
+Always an error if not under Plack.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub GET_pdf {
+    my $self = shift;
+    my $P_Ref = $self->__makeParamsRef(@_);
+
+    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    hLOG('API: ' . qq{GET_pdf: } . $resource_str . $self->query->self_url);
+
+    my $running_under_plack = $ENV{REST_APP_RETURN_ONLY};
+
+    if (! $running_under_plack) {
+        $self->__setErrorResponseCode(404, 'cannot fetch pdf resource');
+        return undef;
+    }
+
+    use IO::File;
+    autoflush STDOUT 1;
+
+    use IPC::Open3;
+    use File::Spec;
+    use Symbol qw(gensym);
+
+    my $mimetype = $self->__getMimetype('pdf');
+    my $id = $self->__getIdParamsRef($P_Ref);
+    my $filename = $id . '.pdf';
+    $self->header(
+                  'Content-type' => $mimetype,
+                  'Content-Disposition' => qq{filename=$filename},
+                 );
+    $self->__addHeaderAccessUseMsg();
+    $self->__addHeaderInCopyrightMsg($resource_str);
+
+    my $script = $ENV{SDRROOT} . "/imgsrv/bin/pdf";
+    hLOG_DEBUG("GET_pdf: invoking $script");
+    my @cmd = ($script, "--format=ebm", "--id=$id");
+
+    open(NULL, ">", File::Spec->devnull);
+    my ($wtr, $rdr, $err) = (gensym, \*DATA, \*NULL);
+
+    my $pid = open3($wtr, $rdr, $err, @cmd);
+    binmode $rdr;
+
+    my $coderef = sub {
+        my $responder = shift;
+        my $writer = $responder->([ 200, [ $self->header ] ]);
+        my $buffer;
+        while (read($rdr, $buffer, 4096)) {
+            print STDERR "GOT: length = " . length($buffer) . "\n";
+            $writer->write($buffer);
+        }
+        waitpid($pid, 0);
+    };
+
+    return $coderef;
 }
 
 

@@ -28,6 +28,7 @@ use RightsGlobals;
 use API::HTD_Log;
 use API::HTD::Rights;
 use API::HTD::HConf;
+use API::HTD::IP_Address;
 
 
 sub new {
@@ -56,7 +57,6 @@ sub _initialize {
     
     $self->{_rights} = $args->{_rights};
     $self->{_config} = $args->{_config};
-    $self->{_ua_ip}  = $args->{_ua_ip};
     $self->{_dbh}    = $args->{_dbh};
 }
 
@@ -64,11 +64,6 @@ sub _initialize {
 # =====================================================================
 #  Accessors
 # =====================================================================
-
-sub __get_UAIP {
-    my $self = shift;
-    return $self->{_ua_ip};
-}
 
 sub __getRightsObject {
     my $self = shift;
@@ -133,14 +128,14 @@ sub getInCopyrightStatus {
 
 # ---------------------------------------------------------------------
 
-=item getAccessTypeByResource
+=item getAccessType
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub getAccessTypeByResource {
+sub getAccessType {
     my $self = shift;
     my $resource = shift;
 
@@ -156,6 +151,41 @@ sub getAccessTypeByResource {
           : $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
 
     return $accessType;
+}
+
+# ---------------------------------------------------------------------
+
+=item getExtendedAccessType
+
+Highly specific for now
+
+=cut
+
+# ---------------------------------------------------------------------
+sub getExtendedAccessType {
+    my $self = shift;
+    my $resource = shift;
+    my $Q = shift;
+
+    # undef except in specific circumstances
+    my $extended_accessType;
+
+    my $format = $Q->param('format');
+
+    if ( ($resource eq 'pageimage') && grep(/^$format$/, qw(png jpeg)) ) {
+        my $watermark = $Q->param('watermark');
+        if (defined $watermark && ($watermark == 0)) {
+            $extended_accessType = 'unwatermarked_derivative';
+        }
+        else {
+            $extended_accessType = 'watermarked_derivative';
+        }
+    }
+    elsif ( ($resource eq 'pdf') && grep(/^$format$/, qw(ebm)) ) {
+        $extended_accessType = 'pdf_ebm';
+    }
+
+    return $extended_accessType;
 }
 
 # =====================================================================
@@ -182,7 +212,7 @@ sub __geo_location_is {
     # parameter or else simply HTTP_X_FORWARDED_FOR or REMOTE_USER of
     # a untrusted client itself.  The best we can do to limit pdus(icus) to
     # US(NONUS) users is the geoIP and blacklist tests on these addresses.
-    my $IPADDR = $self->__get_UAIP;
+    my $IPADDR = API::HTD::IP_Address->new->address;
 
     require "Geo/IP.pm";
     my $geoIP = Geo::IP->new();

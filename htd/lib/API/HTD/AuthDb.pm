@@ -39,7 +39,7 @@ sub get_secret_by_active_access_key {
     my ($dbh, $access_key) = @_;
 
     my $l_access_key = ($access_key ? $access_key : 0);
-    
+
     my $statement = qq{SELECT secret_key FROM da_authentication WHERE access_key=? AND activated=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $l_access_key, 1);
     my $secret_key = $sth->fetchrow_array();
@@ -50,70 +50,96 @@ sub get_secret_by_active_access_key {
 
 # ---------------------------------------------------------------------
 
-=item nonce_used_by_access_key
+=item max_timestamp_check_error
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub nonce_used_by_access_key {
-    my ($dbh, $access_key, $nonce, $timestamp, $window) = @_;
-
-    my ($statement, $sth);
-
-    $statement = qq{LOCK TABLES da_requests WRITE};
-    $sth = API::DbIF::prepAndExecute($dbh, $statement);
-
-    # dispose nonce vaues for this access_key outside our window
-    my $timestamp_CLAUSE = qq{(stamptime > UNIX_TIMESTAMP()+?) OR (stamptime < UNIX_TIMESTAMP()-?)};
-
-    $statement = qq{DELETE FROM da_requests WHERE access_key=? AND ($timestamp_CLAUSE)};
-    hLOG_DEBUG('DB:  ' . qq{nonce_used_by_access_key: $statement: $access_key $window});
-    $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $window, $window);
-
-    # any remaining nonce values must be inside the window and are
-    # replays if they exist
-    $statement = qq{SELECT count(*) FROM da_requests WHERE access_key=? AND nonce=?};
-    $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $nonce);
-
-    my $ct = $sth->fetchrow_array() || 0;
-    hLOG_DEBUG('DB:  ' . qq{nonce_used_by_access_key: $statement: $access_key $nonce ::: $ct});
-
-    $statement = qq{UNLOCK TABLES};
-    $sth = API::DbIF::prepAndExecute($dbh, $statement);
-
-    return $ct;
+sub max_timestamp_check_error {
+    my $rec_ref = shift;
+    return ($rec_ref->{max_timestamp_check}->{error}, $rec_ref->{max});
 }
 
 # ---------------------------------------------------------------------
 
-=item valid_timestamp_for_access_key
+=item uniqueness_check_error
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub valid_timestamp_for_access_key {
-    my ($dbh, $access_key, $timestamp) = @_;
+sub uniqueness_check_error {
+    my $rec_ref = shift;
+    return $rec_ref->{uniqueness_check}->{error};
+}
+
+# ---------------------------------------------------------------------
+
+=item validate_nonce_and_timestamp_for_access_key
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub validate_nonce_and_timestamp_for_access_key {
+    my ($dbh, $access_key, $nonce, $timestamp, $window) = @_;
+
+    my $validation_record = {
+                             'max_timestamp_check' => {'error' => 0, 'max'   => 0},
+                             'uniqueness_check'    => {'error' => 0              }, 
+                            };
 
     my ($statement, $sth);
 
     $statement = qq{LOCK TABLES da_requests WRITE};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
-    # timestamp must be greater than that on all recorded requests for this access key
+    # Dispose nonce values for all access_keys outside window
+    # (otherwise they accumulate for access_keys that are not ever
+    # used again). Any remaining nonces values must be inside the
+    # window and are replays if they exist.
+    my $now = time();
+    my ($window_minus, $window_plus) = ($now - $window, $now + $window);
+    $statement = qq{DELETE FROM da_requests WHERE ((stamptime > ?) OR (stamptime < ?))};
+    hLOG_DEBUG('DB:  ' . qq{validate_nonce_and_timestamp_for_access_key: $statement: $access_key $window_minus $window_plus});
+    $sth = API::DbIF::prepAndExecute($dbh, $statement, $window_minus, $window_plus);
+
+    # timestamp must be greater than or equal to all other recorded
+    # requests for this access key.  (Simultaneous (>=)) requests with
+    # same timestamp with different nonces for this access key are OK
+    # because it is the combination that must be unique (below).
     $statement = qq{SELECT MAX(stamptime) FROM da_requests WHERE access_key=?};
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-
     my $max = $sth->fetchrow_array() || 0;
-    hLOG_DEBUG('DB:  ' . qq{valid_timestamp_for_access_key: $statement: $access_key $timestamp ::: $max});
+    hLOG_DEBUG('DB:  ' . qq{validate_nonce_and_timestamp_for_access_key: $statement: $access_key $timestamp ::: $max});
+
+    $validation_record->{max_timestamp_check}->{error} = ($timestamp < $max);
+    $validation_record->{max_timestamp_check}->{max} = $max;
+
+    if (max_timestamp_check_error($validation_record)) {
+        $statement = qq{UNLOCK TABLES};
+        $sth = API::DbIF::prepAndExecute($dbh, $statement);
+        return $validation_record;
+    }
+    # POSSIBLY NOTREACHED
+
+    # Any remaining nonce values must be inside the window and are
+    # replays if they exist
+    $statement = qq{SELECT count(*) FROM da_requests WHERE access_key=? AND nonce=? AND stamptime=?};
+    $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $nonce, $timestamp);
+    my $ct = $sth->fetchrow_array() || 0;
+    hLOG_DEBUG('DB:  ' . qq{validate_nonce_and_timestamp_for_access_key: $statement: $access_key $nonce $timestamp ::: $ct});
+
+    $validation_record->{uniqueness_check}->{error} = ($ct > 0);
 
     $statement = qq{UNLOCK TABLES};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
-    return ($timestamp >= $max, $max);
+    return $validation_record;
 }
 
 # ---------------------------------------------------------------------
@@ -218,7 +244,11 @@ sub get_privileges_by_access_key {
 
 =item get_ip_address_by_access_key
 
-Description
+No IP address assigned implies no restriction on access by IP
+address. Normally, if a higher access code is assigned to an
+access_key, an IP address would be assigned too.  Otherwise we expect
+a validated IP address to be hashed into the signature as in the Qual
+server case.
 
 =cut
 
@@ -228,7 +258,7 @@ sub get_ip_address_by_access_key {
 
     my $statement = qq{SELECT ipregexp FROM da_authorization WHERE  access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    my $ipregexp = $sth->fetchrow_array() || '^$';
+    my $ipregexp = $sth->fetchrow_array() || '.*';
 
     hLOG_DEBUG('DB:  ' . qq{get_ip_address_by_access_key: $statement: $access_key ::: $ipregexp});
     return $ipregexp;

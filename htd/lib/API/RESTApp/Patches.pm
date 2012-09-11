@@ -6,24 +6,24 @@ use Data::Dumper;
 sub run {
     my $self = shift;
     my $env = $API::HTD::env;
-    
+
     $ENV{REST_APP_RETURN_ONLY} = 1;
-    
+
     $self->{__defaultQuery} = $self->{__query} = CGI::PSGI->new($env);
 
     # Get resource.
     $self->preRun(); # A no-op by default.
     my $repr = $self->loadResource(@_);
     $self->postRun($repr); # A no-op by default.
-    
+
     my @headers;
     my $type = $self->headerType;
     my $q = $self->query;
-    
+
     if ($type eq 'redirect') {
         my %props = $self->header;
         $props{'-location'} ||= delete $props{'-url'} || delete $props{'-uri'};
-        @headers = $q->psgi_header(-Status => 302, %props);
+        @headers = $q->psgi_header(%props);
     } elsif ($type eq 'header') {
         my %props = $self->header;
         @headers = $q->psgi_header(%props);
@@ -32,15 +32,25 @@ sub run {
     } else {
         Carp::croak("Invalid header_type '$type'");
     }
-    
-    if ( ref($repr) eq 'SCALAR' ) {
-        $repr = RefWriter->new($repr);
-    } else {
-        $repr = [ $repr ];
-    }
-    
-    return [ @headers, $repr ];
 
+    # Plack will accept an arrayref, coderef or object (blessed
+    # hashref). coderefs are passed without headers!!!
+    use Scalar::Util;
+    if (ref($repr) eq 'REF' ) {
+        $repr = $$repr;
+    }
+
+    if (ref($repr) eq 'CODE') {
+        return $repr;
+    }
+    elsif (ref($repr) eq 'SCALAR') {
+        $repr = RefWriter->new($repr);
+    }
+    elsif (! Scalar::Util::blessed($repr)) {
+        $repr = [ $repr ]
+    }
+
+    return [ @headers, $repr ];
 }
 
 package RefWriter;
@@ -50,10 +60,10 @@ sub new {
     my $self = bless({ __ref => $ref, __written => 0 }, $class);
     return $self;
 }
-sub getline { my $self = shift; 
+sub getline { my $self = shift;
     return undef if ( $$self{__written} );
     $$self{__written} = 1;
-    return ${$$self{__ref}}; 
+    return ${$$self{__ref}};
 }
 sub close { }
 

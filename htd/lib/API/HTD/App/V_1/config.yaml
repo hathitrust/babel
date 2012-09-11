@@ -16,6 +16,7 @@ patterns:
   pageocr:           /(pageocr)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
   pagecoordocr: /(pagecoordocr)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
   pagemeta:         /(pagemeta)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
+  pdf:              /(pdf)/((.*?)\.((___ARK___)|(.*)))$
 
 # separate, for readability
 ark_pattern:    ark:/13960/(t|fk)\d[a-z\d][a-z\d]\d[a-z\d][a-z\d]\d[a-z\d]
@@ -32,6 +33,12 @@ valid_query_params:
   - oauth_signature_method
   - oauth_timestamp
   - oauth_version
+  - format
+  - width
+  - height
+  - size
+  - res
+  - watermark
 
 client_query_params:
   - ip
@@ -39,11 +46,20 @@ client_query_params:
   - v
   - alt
   - callback
+  - format
+  - width
+  - height
+  - size
+  - res
+  - watermark
 
 # ---------------------------------------------------------------------
-# trusted client servers: lassi, sharbat, moxie-1, moxie-2 + dev
+# TRUSTED CLIENT ADDRESSES. [lassi sharbat moxie-1 moxie-2
+# koolaid-{9-12}] These are addresses where we trust the'ip' query
+# parameter in a request from a client acting as a proxy for SPECIFIC
+# true clients.
 # ---------------------------------------------------------------------
-client_whitelist:
+client_addr_whitelist:
   - 134.68.125.196
   - 134.68.125.197
   - 141.213.128.192
@@ -52,6 +68,14 @@ client_whitelist:
   - 141.213.128.185
   - 141.213.128.186
   - 141.213.128.187
+
+# ---------------------------------------------------------------------
+# TRUSTED ACCESS_KEY VALUES. These are access_keys where we trust the
+# 'ip' query parameter from a client acting as a proxy for
+# NON-SPECIFIC true clients.
+# ---------------------------------------------------------------------
+client_key_whitelist:
+  - 30080887e8
 
 force_array_format:
   - link
@@ -395,8 +419,28 @@ httpstatus:
   500: 500 INTERNAL SERVER ERROR
   503: 503 SERVICE UNAVAILABLE
 
+
 # ---------------------------------------------------------------------
-# MIME type map: f(resource, representation)
+# Variants of extension and format mapped to cannonical_key
+# ---------------------------------------------------------------------
+extension_format_map:
+  default: default
+  jpg:     jpeg
+  jpeg:    jpeg
+  jpe:     jpeg
+  jp2:     jp2
+  txt:     text
+  text:    text
+  json:    json
+  tif:     tiff
+  tiff:    tiff
+  zip:     zip
+  html:    html
+  xml:     xml
+  png:     png
+
+# ---------------------------------------------------------------------
+# MIME type map: f(resource, representation, cannonical_key)
 # ---------------------------------------------------------------------
 mimetype_map:
   meta:
@@ -414,7 +458,8 @@ mimetype_map:
   pageimage:
     tiff: image/tiff
     jp2: image/jp2
-    jpg: image/jpg
+    jpeg: image/jpeg
+    png: image/png
   pageocr:
     default: text/plain
     text: text/plain
@@ -422,11 +467,41 @@ mimetype_map:
     default: text/html
     xml: application/xml
     html: text/html
+  pdf:
+    default: application/pdf
 
 # ---------------------------------------------------------------------
-# Access type map: f(resource, rights attr, source)
+# Access type map: f(resource, rights attr, source). EBM pdf resource
+# is unwatermarked and consequently restricted
 # ---------------------------------------------------------------------
 accessibility_matrix:
+  pdf:
+    free:
+      google: restricted
+      lit-dlps-dc: restricted
+      um-press: restricted
+      internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
+      utah_state_univ_press: restricted
+      univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
+    nonfree:
+      google: restricted
+      lit-dlps-dc: restricted
+      um-press: restricted
+      internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted
+      minn-hist-soc: restricted
+      utah_state_univ_press: restricted
+      univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
   pageimage:
     free:
       google: limited
@@ -644,15 +719,15 @@ rights_name_map:
 # ---------------------------------------------------------------------
 # List of name that equate to open access modulo geo-location
 # ---------------------------------------------------------------------
-open_access_names: 
-  - pd 
-  - pdus 
-  - ic-world 
-  - cc-by 
-  - cc-by-nd 
-  - cc-by-nc-nd 
-  - cc-by-nc 
-  - cc-by-nc-sa 
+open_access_names:
+  - pd
+  - pdus
+  - ic-world
+  - cc-by
+  - cc-by-nd
+  - cc-by-nc-nd
+  - cc-by-nc
+  - cc-by-nc-sa
   - cc-by-sa
   - cc-zero
   - und-world
@@ -675,23 +750,6 @@ sources_name_map:
   10: purdue
   11: getty
   12: um-dc-mp
-
-# ---------------------------------------------------------------------
-# MIME type map
-# ---------------------------------------------------------------------
-extension_format_map:
-  default: default
-  jpg:     jpg
-  jpeg:    jpg
-  jpe:     jpg
-  jp2:     jp2
-  txt:     text
-  json:    json
-  tif:     tiff
-  tiff:    tiff
-  zip:     zip
-  html:    html
-  xml:     xml
 
 # ---------------------------------------------------------------------
 # Atom elements, contents and attribute values organized by resource
