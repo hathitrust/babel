@@ -564,7 +564,7 @@
 
       <xsl:when test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
         <xsl:element name="div">
-          <p>You have full view access to this item based on your account privileges. This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#section108">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p>
+          <p>You have full view access to this item based on your account privileges. This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p>
           <p>
             <a>
               <xsl:attribute name="href">
