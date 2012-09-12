@@ -39,7 +39,7 @@ function displayHelpWidget(e) {
 }
 
 $(document).ready(function() {
-    $("#section108").click(function(e) {
+    $("#ic-access").click(function(e) {
         displayHelpWidget(e);
         return false;
     })

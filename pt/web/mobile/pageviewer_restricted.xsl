@@ -70,7 +70,7 @@
                       <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
                     </ul>
                     <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
-                    <p class="leftText"><a href="#" id="section108">Learn more</a>.</p>
+                    <p class="leftText"><a href="#" id="ic-access">Learn more</a>.</p>
 
                   </div>
                 </xsl:when>
