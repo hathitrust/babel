@@ -875,7 +875,7 @@ sub GET_pdf {
         my $writer = $responder->([ 200, [ $self->header ] ]);
         my $buffer;
         while (read($rdr, $buffer, 4096)) {
-            print STDERR "GOT: length = " . length($buffer) . "\n";
+            #print STDERR "GOT: length = " . length($buffer) . "\n";
             $writer->write($buffer);
         }
         waitpid($pid, 0);
