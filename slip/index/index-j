@@ -326,7 +326,7 @@ sub SINGLE_ID_handling {
         if (! $shard) {
             # Grab a random shard and lock to it.
             my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
-            $dedicated_shard = int(rand(scalar(@num_shards_list)));
+            $dedicated_shard = int(rand(scalar(@num_shards_list))+1);
         }
         else {
             $dedicated_shard = $shard;
