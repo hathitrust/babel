@@ -265,8 +265,8 @@ sub preHandler {
     API::HTD::IP_Address->new(
                               $self->__getConfObject, 
                               $dbh, 
-                              $Q->param('oauth_consumer_key'),
-                              $Q->param('ip'),
+                              $Q->param('oauth_consumer_key') || 0,
+                              $Q->param('ip') || 0,
                              );
 
     # Get an access type object
@@ -798,9 +798,14 @@ sub __authNZ_Success {
     if ($hauth->H_request_is_oauth($Q)) {
         $Success = ($self->__authenticated($Q) && $self->__authorized($Q, $P_Ref));
     }
-    elsif (! $hauth->H_allow_non_oauth_by_grace($accessType)) {
-        $self->__setErrorResponseCode(403, $hauth->errstr);
-        $Success = 0;
+    elsif ($hauth->H_allow_non_oauth_by_grace($accessType)) {
+        if ($self->__authorized($Q, $P_Ref)) {
+            $Success = 1;
+        }
+        else {
+            $self->__setErrorResponseCode(403, $hauth->errstr);
+            $Success = 0;
+        }
     }
     else {
         $Success = 1;

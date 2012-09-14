@@ -157,7 +157,7 @@ sub getAccessType {
 
 =item getExtendedAccessType
 
-Highly specific for now
+Highly specific for EBM PDF and un-watermarked derivatives for now
 
 =cut
 
@@ -177,9 +177,9 @@ sub getExtendedAccessType {
         if (defined $watermark && ($watermark == 0)) {
             $extended_accessType = 'unwatermarked_derivative';
         }
-        else {
-            $extended_accessType = 'watermarked_derivative';
-        }
+    }
+    elsif ( grep(/^$resource$/, qw(pageimage aggregate)) && grep(/^$format$/, qw(raw)) ) {
+        $extended_accessType = 'raw_archival_data';
     }
     elsif ( ($resource eq 'pdf') && grep(/^$format$/, qw(ebm)) ) {
         $extended_accessType = 'pdf_ebm';

@@ -54,28 +54,17 @@ client_query_params:
   - watermark
 
 # ---------------------------------------------------------------------
-# TRUSTED CLIENT ADDRESSES. [lassi sharbat moxie-1 moxie-2
-# koolaid-{9-12}] These are addresses where we trust the'ip' query
-# parameter in a request from a client acting as a proxy for SPECIFIC
-# true clients.
-# ---------------------------------------------------------------------
-client_addr_whitelist:
-  - 134.68.125.196
-  - 134.68.125.197
-  - 141.213.128.192
-  - 141.213.128.193
-  - 141.213.128.184
-  - 141.213.128.185
-  - 141.213.128.186
-  - 141.213.128.187
-
-# ---------------------------------------------------------------------
 # TRUSTED ACCESS_KEY VALUES. These are access_keys where we trust the
-# 'ip' query parameter from a client acting as a proxy for
-# NON-SPECIFIC true clients.
+# 'ip' query parameter from a client acting as a proxy for true
+# clients either directly (Data API web client) or indirectly (Qual)
 # ---------------------------------------------------------------------
 client_key_whitelist:
+  - b2bd9a3cfb
+  - 96da6713b2
   - 30080887e8
+  - 4bf820e6e7
+  - 72e0e7efd3
+  - 5dd746bfd3
 
 force_array_format:
   - link

@@ -101,13 +101,15 @@ sub validateQueryParams {
     }
     # POSSIBLY NOTREACHED
 
-    # Raw pageimage resource only supports format=raw. Image
-    # derivatives require ip, watermark parameters.
+    # Raw pageimage resource only supports format=raw. Unwatermarked image
+    # derivatives require ip, watermark=0 parameters.
     elsif ($resource eq 'pageimage') {
-        my $format = $Q->param('format') || 'raw';
-        my ($w, $h, $r, $s, $wa);
-        $w = $Q->param('width'), $h =  $Q->param('height'), $r = $Q->param('res'), $s = $Q->param('size'), $wa = $Q->param('watermark');
-        my $derivative_param_defined = (defined($w) || defined($h) || defined($r) || defined($s) || defined($wa));
+        # If no format specified: In transition: default is
+        # raw. After: default is optimal derivative TRANSITION@
+        my $format = $Q->param('format') || $Q->param('format', 'raw'); 
+        my ($w, $h, $r, $s, $watermark);
+        $w = $Q->param('width'), $h =  $Q->param('height'), $r = $Q->param('res'), $s = $Q->param('size'), $watermark = $Q->param('watermark');
+        my $derivative_param_defined = (defined($w) || defined($h) || defined($r) || defined($s) || defined($watermark));
 
         # Valid format?
         if (! grep(/^$format$/, qw(raw png jpeg))) {
@@ -123,10 +125,15 @@ sub validateQueryParams {
             }
         }
         else {
-            # Derivative requires ip address hashed into signature
-            if (! defined($Q->param('ip'))) {
-                $self->__errorDescription("derivative image ip parameter missing");
-                return 0;
+            # Unwatermarked derivative requires ip address hashed into
+            # signature. Authorization for ip address is determined
+            # downstream.
+            if (defined($watermark) && ($watermark == 0)) {
+                my $ip = $Q->param('ip');
+                if (! defined($ip) || ($ip !~ m,^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$,)) {
+                    $self->__errorDescription("unwatermarked derivative image ip parameter missing or invalid");
+                    return 0;
+                }
             }
         }
     }
@@ -742,7 +749,7 @@ sub __get_pageimage {
     my ($representationRef, $filename, $extension);
 
     my $Q = $self->query();
-    my $format = $Q->param('format') || 'raw';
+    my $format = $Q->param('format');
     if ($format eq 'raw') {
         ($representationRef, $filename, $extension) = $self->__getFileResourceRepresentation($P_Ref, 'image');
     }
@@ -755,10 +762,12 @@ sub __get_pageimage {
             $args{'--' . $arg} = $argval if (defined $argval);
         }
         my $id = $self->__getIdParamsRef($P_Ref);
+        my $seq = $P_Ref->{'seq'};
 
         my $script = $ENV{SDRROOT} . "/imgsrv/bin/image";
-        my $cmd = "$script " . "--id=$id " . join(" ", map sprintf(q{%s=%s}, $_, $args{$_}), keys %args);
-        print STDERR "cmd=$cmd\n";
+        my $cmd = "$script " . "--id=$id --seq=$seq " . join(" ", map sprintf(q{%s=%s}, $_, $args{$_}), keys %args);
+        hLOG_DEBUG("GET_pageimage: imgsrv command=$cmd");
+        
         my $buf = `$cmd`;
         my $rc = $? >> 8;
         if ($rc == _OK) {
@@ -852,8 +861,8 @@ sub GET_pdf {
     $self->__addHeaderInCopyrightMsg($resource_str);
 
     my $script = $ENV{SDRROOT} . "/imgsrv/bin/pdf";
-    hLOG_DEBUG("GET_pdf: invoking $script");
     my @cmd = ($script, "--format=ebm", "--id=$id");
+    hLOG_DEBUG("GET_pdf: imgsrv command=" . join(' ', @cmd));
 
     open(NULL, ">", File::Spec->devnull);
     my ($wtr, $rdr, $err) = (gensym, \*DATA, \*NULL);

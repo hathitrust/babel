@@ -10,13 +10,10 @@ This singleton class provides the logic of determine the IP address of
 an API request.
 
 An IP address asserted by a client as a URL parameter is authorized if
-one of the following is true:
-
-(1) the client access_key is trusted and the asserted ip address
-matches the origin ip address.
-
-(2) the origin IP address is the address of a trusted client proxy and
-the asserted ip address is configured in our authorization tables.
+the client access_key is trusted (in the whitelist) and the asserted
+ip address matches the origin ip address (Qual case) or, failing that
+matches the IP address configured for that access_key in our
+authorization tables (Data API web client case).
 
 =head1 SYNOPSIS
 
@@ -87,41 +84,38 @@ sub __initialize {
     #
     # Tests for validity of $ip_address_param
     #
-    my $clientAddrWhitelistRef  = $config->getConfigVal('client_addr_whitelist');
-
-    if ( grep(/^$REMOTE_ADDR$/, @$clientAddrWhitelistRef) ) {
-        # A client on a trusted server ...
-        my $ipregexp = API::HTD::AuthDb::get_ip_address_by_access_key($dbh, $access_key);
-        if ($ip_address_param =~ m,$ipregexp,) {
-            # ... proxying a user agent from an authorized ip address
+    my $clientKeyWhitelistRef  = $config->getConfigVal('client_key_whitelist');
+    
+    if ( grep(/^$access_key$/, @$clientKeyWhitelistRef) ) {
+        # We have an access_key from a trusted client ...
+        if ($ip_address_param eq $REMOTE_ADDR) {
+            # ... proxying a client at an endpoint IP matching the IP
+            # address asserted by the trusted client
             $self->__set_authorized(1, $ip_address_param);
-            hLOG_DEBUG(qq{API::HTD::IP_Address: proxied client ip param: authorized=1 ip=$ip_address_param});
+            hLOG_DEBUG(qq{API::HTD::IP_Address: ip param matches REMOTE_ADDR: authorized=1 ip=$ip_address_param});
         }
         else {
-            # ... but ip of proxied user agent not authorized 
-            $self->__set_authorized(0, $ip_address_param);
-            hLOG_DEBUG(qq{API::HTD::IP_Address: proxied client ip param: authorized=0 ip=$ip_address_param});
+            my $ipregexp = API::HTD::AuthDb::get_ip_address_by_access_key($dbh, $access_key);
+            if ($ip_address_param =~ m,$ipregexp,) {
+                # ... proxying a user agent client at an endpoint IP
+                # matching the configured authorized IP address
+                $self->__set_authorized(1, $ip_address_param);
+                hLOG_DEBUG(qq{API::HTD::IP_Address: ip param matches allowed REMOTE_ADDR: authorized=1 ip=$ip_address_param});
+            }
+            else {
+                # ... but IP of proxied user agent client not
+                # configured as authorized
+                $self->__set_authorized(0, $ip_address_param);
+                hLOG_DEBUG(qq{API::HTD::IP_Address: ip param no match allowed REMOTE_ADDR: authorized=0 ip=$ip_address_param});
+            }
         }
     }
     else {
-        my $clientKeyWhitelistRef  = $config->getConfigVal('client_key_whitelist');
-        
-        if ( grep(/^$access_key$/, @$clientKeyWhitelistRef) ) {
-            if ($ip_address_param eq $REMOTE_ADDR) {
-                $self->__set_authorized(1, $ip_address_param);
-                hLOG_DEBUG(qq{API::HTD::IP_Address: strong access key ip param: authorized=1 ip=$ip_address_param});
-            }
-            else {
-                $self->__set_authorized(0, $REMOTE_ADDR);
-                hLOG_DEBUG(qq{API::HTD::IP_Address: strong access key ip param mismatch: authorized=0 ip=$REMOTE_ADDR});
-            }
-        }
-        else {
-            $self->__set_authorized(0, $REMOTE_ADDR);
-            hLOG_DEBUG(qq{API::HTD::IP_Address: weak access key ip param: authorized=0 ip=$REMOTE_ADDR});
-        }
+        $self->__set_authorized(0, $REMOTE_ADDR);
+        hLOG_DEBUG(qq{API::HTD::IP_Address: ip param ignored, untrusted client: authorized=0 ip=$REMOTE_ADDR});
     }
 }
+
 
 # ---------------------------------------------------------------------
 

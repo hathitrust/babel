@@ -168,6 +168,7 @@ sub H_allow_non_oauth_by_grace {
 
     if (time() < OCT_1_2012) {
         if (grep(/^$accessType$/, ('open', 'limited'))) {
+            $self->__auth_valid(1);
             return 1;
         }
     }
@@ -271,7 +272,8 @@ sub __check_signature {
 
 =item H_request_is_oauth
 
-Description
+True if *any* oauth parameters are present. Malformed OAuth requests
+are trapped at signature validation time.
 
 =cut
 
@@ -281,10 +283,14 @@ sub H_request_is_oauth {
     my $Q = shift;
 
     my @params = map { lc($_) } $Q->param;
-    my $oauth_param_ct = grep(/^oauth/, @params);
-    return ($oauth_param_ct == 6);
+    foreach my $oauth (qw(oauth_consumer_key oauth_nonce oauth_timestamp oauth_signature_method oauth_signature oauth_version)) {
+        if (grep(/^$oauth$/, @params)) {
+            return 1;
+        }
+    }
+    
+    return 0;
 }
-
 
 # ---------------------------------------------------------------------
 
@@ -328,82 +334,93 @@ sub H_authenticate {
 
 =item ACCESS AUTHORIZATION MAPPING
 
- #    Bitfield encoding. A set bit indicates authorized access level(s) +
- #      - an enhanced data rate
- #      - PDF access for Expressnet/EBM
- #      - image derivatives
- #      - suppressed watermarking
- #
- #    accesses
- #                                  bit
- #                            7 6 5 4 3 2 1 0
- #                            | | | | | | | |
- #    allow_unwatermarked ----+ | | | | | | |
- #    allow_derivative ---------+ | | | | | |
- #    allow_pdf ------------------+ | | | | |
- #    rate -------------------------+ | | | |
- #    restricted_forbidden -----------+ | | |
- #    restricted -----------------------+ | |
- #    open_restricted --------------------+ |
- #    open ---------------------------------+
- #
- #    Basic codes below assume that authorization to restricted implies
- #    authorization to less restricted.  Some shorthand:
- #
- #    (O)         = open
- #    (O|OR)      = open|open_restricted
- #    (O|OR|R)    = open|open_restricted|restricted
- #    (O|OR|R|RF) = open|open_restricted|restricted|restricted_forbidden
- #
- #       Basic
- #       code      basic_mask
- #    0  00000000            NOT AUTHORIZED
- #    1  00000001  00000001  (O)
- #    3  00000011  00000010  (O|OR)
- #    7  00000111  00000100  (O|OR|R)
- #    15 00001111  00001000  (O|OR|R|RF)
- #
- #       Basic+rate
- #       code      rate_mask
- #    17 00010001  00010000  (O)        |rate
- #    19 00010011  00010000  (O|OR)     |rate
- #    23 00010111  00010000  (O|OR|R)   |rate
- #    31 00011111  00010000  (O|OR|R|RF)|rate
- #
- #       Basic+allow_pdf
- #       code      allow_pdf_ebm_mask
- #    33 00100001  00100000  (O)        |allow_pdf
- #    35 00100011  00100000  (O|OR)     |allow_pdf
- #    39 00100111  00100000  (O|OR|R)   |allow_pdf
- #    47 00101111  00100000  (O|OR|R|RF)|allow_pdf
- #
- #       Basic+allow_derivative
- #       code      allow_derivative_mask
- #    65 01000001  01000000  (O)        |allow_derivative
- #    67 01000011  01000000  (O|OR)     |allow_derivative
- #    71 01000111  01000000  (O|OR|R)   |allow_derivative
- #    79 01001111  01000000  (O|OR|R|RF)|allow_derivative
- #
- #       Basic+allow_unwatermarked
- #       code      allow_unwatermarked_mask
- #   129 10000001  10000000  (O)        |allow_unwatermarked
- #   131 10000011  10000000  (O|OR)     |allow_unwatermarked
- #   135 10000111  10000000  (O|OR|R)   |allow_unwatermarked
- #   143 10001111  10000000  (O|OR|R|RF)|allow_unwatermarked
- #
- #       Basic+allow_derivative+allow_unwatermarked
- #       code
- #   193 11000001  --------  (O)        |allow_derivative|allow_unwatermarked
- #   195 11000011  --------  (O|OR)     |allow_derivative|allow_unwatermarked
- #   199 11000111  --------  (O|OR|R)   |allow_derivative|allow_unwatermarked
- #   207 11001111  --------  (O|OR|R|RF)|allow_derivative|allow_unwatermarked
- #
- #       Basic+allow_pdf+allow_derivative+allow_unwatermarked
- #       code
- #   225 11100001  --------  (O)        |allow_pdf|allow_derivative|allow_unwatermarked
- #   227 11100011  --------  (O|OR)     |allow_pdf|allow_derivative|allow_unwatermarked
- #   231 11100111  --------  (O|OR|R)   |allow_pdf|allow_derivative|allow_unwatermarked
- #   239 11101111  --------  (O|OR|R|RF)|allow_pdf|allow_derivative|allow_unwatermarked
+    Bitfield encoding. A set bit indicates authorized access level(s) +
+      - an enhanced data rate
+      - PDF access for Expressnet/EBM
+      - raw images
+      - suppressed watermarking for derivatives
+ TRANSITION@ 
+    IN the transition period:
+      no format or format=raw -> archival image format
+         raw and watermarked derivatives are unrestricted
+    AFTER the transition period:
+      format=raw -> archival image format
+         raw is restricted
+
+                                      bit
+                                      7 6 5 4 3 2 1 0
+                                      | | | | | | | |
+    allow_unwatermarked_derivatives --+ | | | | | | |
+    allow_raw --------------------------+ | | | | | |
+    allow_pdf ----------------------------+ | | | | |
+    rate -----------------------------------+ | | | |
+    restricted_forbidden ---------------------+ | | |
+    restricted ---------------------------------+ | |
+    open_restricted ------------------------------+ |
+    open -------------------------------------------+
+
+    Basic codes below assume that authorization to restricted implies
+    authorization to less restricted.  Some shorthand:
+
+    (O)         = open
+    (O|OR)      = open|open_restricted
+    (O|OR|R)    = open|open_restricted|restricted
+    (O|OR|R|RF) = open|open_restricted|restricted|restricted_forbidden
+
+    Note that the allow_raw bit is set elsewhere to support access
+    to raw in the transition period. TRANSITION@
+   
+       Basic
+       code      basic_mask
+    0  00000000            NOT AUTHORIZED
+    1  00000001  00000001  (O)
+    3  00000011  00000010  (O|OR)
+    7  00000111  00000100  (O|OR|R)
+    15 00001111  00001000  (O|OR|R|RF)
+
+       Basic+rate
+       code      rate_mask
+    17 00010001  00010000  (O)        |rate
+    19 00010011  00010000  (O|OR)     |rate
+    23 00010111  00010000  (O|OR|R)   |rate
+    31 00011111  00010000  (O|OR|R|RF)|rate
+
+       Basic+allow_pdf
+       code      allow_pdf_mask
+    33 00100001  00100000  (O)        |allow_pdf
+    35 00100011  00100000  (O|OR)     |allow_pdf
+    39 00100111  00100000  (O|OR|R)   |allow_pdf
+    47 00101111  00100000  (O|OR|R|RF)|allow_pdf
+
+       Basic+allow_raw
+       code      allow_raw_mask
+    65 01000001  01000000  (O)        |allow_raw
+    67 01000011  01000000  (O|OR)     |allow_raw
+    71 01000111  01000000  (O|OR|R)   |allow_raw
+    79 01001111  01000000  (O|OR|R|RF)|allow_raw
+
+       Basic+allow_unwatermarked_derivatives
+       code      allow_unwatermarked_derivatives_mask
+   129 10000001  10000000  (O)        |allow_unwatermarked_derivatives
+   131 10000011  10000000  (O|OR)     |allow_unwatermarked_derivatives
+   135 10000111  10000000  (O|OR|R)   |allow_unwatermarked_derivatives
+   143 10001111  10000000  (O|OR|R|RF)|allow_unwatermarked_derivatives
+
+   Combinations:
+
+       Basic+allow_raw+allow_unwatermarked_derivatives
+       code      allow_unwatermarked_derivatives_mask
+   193 11000001  -------  (O)        |allow_raw|allow_unwatermarked_derivatives
+   195 11000011  -------  (O|OR)     |allow_raw|allow_unwatermarked_derivatives
+   199 11000111  -------  (O|OR|R)   |allow_raw|allow_unwatermarked_derivatives
+   207 11001111  -------  (O|OR|R|RF)|allow_raw|allow_unwatermarked_derivatives
+
+       Basic+allow_pdf+allow_raw+allow_unwatermarked_derivatives_mask
+       code
+   225 11100001  --------  (O)        |allow_pdf|allow_raw|allow_unwatermarked_derivatives
+   227 11100011  --------  (O|OR)     |allow_pdf|allow_raw|allow_unwatermarked_derivatives
+   231 11100111  --------  (O|OR|R)   |allow_pdf|allow_raw|allow_unwatermarked_derivatives
+   239 11101111  --------  (O|OR|R|RF)|allow_pdf|allow_raw|allow_unwatermarked_derivatives
 
 =cut
 
@@ -415,7 +432,7 @@ use constant RESTRICTED_MASK           =>   4;
 use constant RESTRICTED_FORBIDDEN_MASK =>   8;
 use constant RATE_MASK                 =>  16;
 use constant ALLOW_PDF_EBM_MASK        =>  32;
-use constant ALLOW_DERIVATIVE_MASK     =>  64;
+use constant ALLOW_RAW_MASK            =>  64;
 use constant ALLOW_UNWATERMARKED_MASK  => 128;
 
 # ---------------------------------------------------------------------
@@ -452,7 +469,7 @@ sub __basic_access_is_authorized {
 
 =item __extended_access_is_authorized
 
-Description
+format=raw are always un-watermarked
 
 =cut
 
@@ -460,13 +477,16 @@ Description
 my %extended_authorization_map =
   (
    'pdf_ebm'                  => ALLOW_PDF_EBM_MASK,
-   'watermarked_derivative'   => ALLOW_DERIVATIVE_MASK,
-   'unwatermarked_derivative' => ALLOW_DERIVATIVE_MASK|ALLOW_UNWATERMARKED_MASK,
+   'raw_archival_data'        => ALLOW_RAW_MASK,
+   'unwatermarked_derivative' => ALLOW_UNWATERMARKED_MASK,
   );
 
 sub __extended_access_is_authorized {
     my $self = shift;
     my ($code, $extended_access_type) = @_;
+
+    # TRANSITION@ set allow_raw bit unconditionally
+    $code |= ALLOW_RAW_MASK;
 
     my $mask = $extended_authorization_map{$extended_access_type};
     my $result = ($code & $mask);
@@ -511,11 +531,14 @@ Description
 sub __authorized_protocol {
     my $self = shift;
     my ($access_type, $extended_access_type) = @_;
-    return 1;
-    # XXX
+
     $ENV{SERVER_PORT} = 80 if (! defined $ENV{SERVER_PORT});
 
-    if ( ($access_type =~ m,restricted,) || (defined $extended_access_type) ) {
+    if ( # TRANSITION@ exclude extended_access_type=raw_archival_data
+        ($access_type =~ m,restricted,) 
+        || 
+        (defined $extended_access_type && ($extended_access_type ne 'raw_archival_data'))
+       ) {
         if ($ENV{SERVER_PORT} ne '443') {
             return 0;
         }
@@ -534,7 +557,7 @@ value. Note that all query parameters are hashed into the signature.
 
 It has already been determined that the access_key allows access based
 on these access_types so here the test is for a valid origin for the
-request with the given access_types.
+request with the extended_access_types.
 
 =cut
 
@@ -543,10 +566,9 @@ sub __authorized_at_IP_address {
     my $self = shift;
     my ($ipo, $access_type, $extended_access_type) = @_;
 
-    my $ip = $ipo->address;
-    if ( defined($extended_access_type) || ($access_type =~ m,restricted,) ) {
+    my $ip = $ipo->address; #TRANSITION@ exclude extended_access_type=raw_archival_data
+    if (defined $extended_access_type && ($extended_access_type ne 'raw_archival_data')) {
         my $authorized = $ipo->is_authorized;
-
         hLOG_DEBUG(qq{__authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=$extended_access_type});
         return $authorized;
     }
@@ -572,10 +594,10 @@ sub H_authorized {
     return 1 if ($FORCE_SUCCESS);
 
     if (! $self->__auth_valid) {
-        return $self->error('cannot authorize. not authenticated');
+        return $self->error('cannot authorize: authentication error');
     }
 
-    my $access_key = $Q->param('oauth_consumer_key');
+    my $access_key = $Q->param('oauth_consumer_key') || 0;
 
     if (! $self->__authorized_protocol($access_type, $extended_access_type)) {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
