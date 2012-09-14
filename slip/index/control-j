@@ -326,7 +326,7 @@ eval {
                 __validate_hostname($C, $RUN, $host);
             }
             
-            if ($shard eq 'A') {
+            if (defined($shard) || ($shard eq 'A')) {
                 foreach my $_shard (@NUM_SHARDS_LIST) {
                     c_producer_control($C, $DBH, $RUN, $_shard, $host, $enabled);
                 }
