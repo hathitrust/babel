@@ -428,6 +428,13 @@
       domain="vt.edu"
       us="1"
       enabled="1">Virginia Tech</Inst>
+  <Inst
+      sdrinst="ksu"
+      template="https://___HOST___/Shibboleth.sso/ksu?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ksu.edu"
+      us="1"
+      enabled="1">Kansas State University</Inst>
 
   <!-- waiting -->
 
@@ -438,13 +445,6 @@
       domain="bc.edu"
       us="1"
       enabled="0">Boston College</Inst>
-  <Inst
-      sdrinst="ksu"
-      template="https://___HOST___/Shibboleth.sso/ksu?target=___TARGET___"
-      authtype="shibboleth"
-      domain="ksu.edu"
-      us="1"
-      enabled="0">Kansas State University</Inst>
   <Inst
       sdrinst="ttu"
       template="https://___HOST___/Shibboleth.sso/ttu?target=___TARGET___"
