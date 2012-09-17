@@ -326,7 +326,7 @@ eval {
                 __validate_hostname($C, $RUN, $host);
             }
             
-            if (defined($shard) || ($shard eq 'A')) {
+            if (defined($shard) && ($shard eq 'A')) {
                 foreach my $_shard (@NUM_SHARDS_LIST) {
                     c_producer_control($C, $DBH, $RUN, $_shard, $host, $enabled);
                 }
@@ -1074,7 +1074,7 @@ sub __c_shard_control {
 
     my $what = $enabled ? 'ENABLE' : 'DISABLE';
 
-    if (! $shard) {
+    if (! defined $shard) {
         # Enable or disable all shards
         foreach my $__shard (@NUM_SHARDS_LIST) {
             Db::update_shard_enabled($C, $dbh, $run, $__shard, $enabled);
@@ -1105,7 +1105,7 @@ sub __c_host_control {
 
     my $what = $enabled ? 'ENABLE' : 'DISABLE';
 
-    if (! $host) {
+    if (! defined $host) {
         # Enable or disable all hosts
         my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
         foreach my $hashref (@$ref_to_ary_of_hashref) {
