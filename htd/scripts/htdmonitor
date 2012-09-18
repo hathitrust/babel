@@ -19,7 +19,7 @@ use API::DbIF;
 my $GEOIP            = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
 my %RESOURCES        = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0, pdf => 0);
 my @FREELY_AVAILABLE = (
-                        @RightsGlobals::g_creative_commons_attribute_values, 
+                        @RightsGlobals::g_creative_commons_attribute_values,
                         @RightsGlobals::g_public_domain_world_attribute_values,
                        );
 
@@ -47,6 +47,8 @@ print "\n --- log file = $today_log_file --- \n\n";
 
 Unique_IP_Addresses();
 
+Total_IC_RequestsServed();
+
 Total_GET_Requests();
 
 Total_Signed_Requests();
@@ -54,8 +56,6 @@ Total_Signed_Requests();
 Total_GET_RequestsByResource();
 
 Total_GET_RequestsBy_IP_Addr();
-
-Total_IC_RequestsServed();
 
 Total_Auth_ERRORS_ByIP_ByResource();
 
@@ -67,7 +67,7 @@ exit 0;
 # ---------------------------------------------------------------------
 sub sort_uniq_ip_addr_list {
     my $list_ref = shift;
-    
+
     # filter
     @$list_ref = grep(/\d+\.\d+\.\d+\.\d+/, @$list_ref);
     # sort uniq
@@ -75,13 +75,13 @@ sub sort_uniq_ip_addr_list {
     foreach my $ip (@$list_ref) {
         $h{$ip}++;
     }
-    @$list_ref = 
+    @$list_ref =
       sort {
           my @a = split /\./, $a;
           my @b = split /\./, $b;
-          $a[0] <=> $b[0] or 
-            $a[1] <=> $b[1] or 
-              $a[2] <=> $b[2] or 
+          $a[0] <=> $b[0] or
+            $a[1] <=> $b[1] or
+              $a[2] <=> $b[2] or
                 $a[3] <=> $b[3];
       } (keys %h);
 }
@@ -120,7 +120,7 @@ sub get_country {
 
 # ---------------------------------------------------------------------
 sub Unique_IP_Addresses {
-    
+
     print "* Total unique ip = " . scalar(@UNIQUE_IP_ADDRESSES) . "\n\n";
 }
 
@@ -154,17 +154,27 @@ sub Total_Signed_Requests {
         my $fdomain = get_domain($ff);
         print "\tU_A=$ua ($ucountry):$udomain\n\t\tR_A=$ra ($rcountry):$rdomain\n\t\tX_F_F=$ff ($fcountry):$fdomain count=$count\n";
     }
-    print "\n";    
+    print "\n";
 }
 
 
 # ---------------------------------------------------------------------
 sub Total_GET_RequestsBy_IP_Addr {
-
-    print "* Total GET_* requests by IP address\n";
-
+    my $ip_hashref = shift;
+    
+    my $unique_ip_addresses_ref;
+    
+    if (! defined($ip_hashref)) {
+        $unique_ip_addresses_ref = \@UNIQUE_IP_ADDRESSES;
+        print "* Total GET_* requests by IP address\n";
+    }
+    else {
+        @$unique_ip_addresses_ref = keys %$ip_hashref;
+    }
+    sort_uniq_ip_addr_list($unique_ip_addresses_ref);
+    
     my %resource_requests_ip;
-    foreach my $ip (@UNIQUE_IP_ADDRESSES) {
+    foreach my $ip (@$unique_ip_addresses_ref) {
         chomp($resource_requests_ip{$ip} = `egrep "$ip.*?GET_" $today_log_file|wc -l`);
         if ($resource_requests_ip{$ip} > 0) {
             my $country = get_country($ip);
@@ -174,6 +184,15 @@ sub Total_GET_RequestsBy_IP_Addr {
             Utils::sort_uniquify_list(\@list_resources);
             my $list = join(' ', @list_resources);
             print "\t$ip ($country):$domain = [" . $resource_requests_ip{$ip} . " $list]\n";
+            if (defined $ip_hashref) {
+                my @id_list;
+                foreach my $id (keys %{$ip_hashref->{$ip}}) {
+                    my $attr = $ip_hashref->{$ip}{$id};
+                    push(@id_list, "$id($attr)");
+                }
+                my $id_list = join(' ', @id_list);
+                print "\t\t$id_list\n";
+            }                
         }
     }
     print "\n";
@@ -184,7 +203,21 @@ sub Total_GET_RequestsBy_IP_Addr {
 sub Total_IC_RequestsServed {
 
     my $ic_requests = `grep 'X-HathiTrust-InCopyright' $today_log_file|wc -l`;
-    print "* Total ic requests served = $ic_requests\n";
+    
+    chomp(my @ic_request_lines = `grep 'X-HathiTrust-InCopyright' $today_log_file`);
+    my %ic_ips;
+    foreach my $line (@ic_request_lines) {
+        my ($ip, $id, $attr) = ($line =~ m,(.*?)[ ].*?id="(.*?)"[ ]attr="(.*?)"[ ],);
+        $ic_ips{$ip}{$id} = $attr;
+    }
+    
+    print "* Total ic requests served = $ic_requests";
+    if (scalar keys %ic_ips) {
+        Total_GET_RequestsBy_IP_Addr(\%ic_ips);
+    }
+    else {
+        print "\n";
+    }
 }
 
 
@@ -194,7 +227,7 @@ sub Total_GET_RequestsByResource {
     print "* Total GET_* requests by resource\n";
 
     map { $RESOURCES{$_} = 0 } keys %RESOURCES;
-      
+
     foreach my $r (keys %RESOURCES) {
         chomp($RESOURCES{$r} = `grep GET_$r $today_log_file|wc -l`);
         print "\t$r = " . $RESOURCES{$r} . "\n";
@@ -209,7 +242,7 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
     print "* Total authNZ errors by IP by resource\n";
 
     map { $RESOURCES{$_} = 0 } keys %RESOURCES;
-    
+
     my $errors = 0;
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         chomp(my @auth_error_lines = `egrep "$ip.*?ERROR.*?__authNZ_Success" $today_log_file`);
@@ -226,7 +259,7 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
             push(@orig_IPs, $ip) if ($ip);
 
             my ($ns, $bc) = ($err_line =~ m,ns="(.*?)".*?bc="(.*?)",);
-            push(@denied_IDs, "$ns.$bc"); 
+            push(@denied_IDs, "$ns.$bc");
         }
         Utils::sort_uniquify_list(\@denied_IDs);
 
@@ -238,7 +271,7 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
             $orig_IPs[$i] = qq{$ip ($country):$domain};
         }
         my $orig_IPs = 'from=' . join(' ', @orig_IPs);
-        
+
         # for this IP, get the country and domain of the errors
         if (scalar @auth_error_lines) {
             $errors += scalar @auth_error_lines;
@@ -265,7 +298,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub CrossCheck_IC_DataRequests {
-    
+
     print "* Cross-check IC data requests\n";
 
     my $dbh = API::DbIF::databaseConnect
@@ -279,7 +312,7 @@ sub CrossCheck_IC_DataRequests {
 
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         my $ip_fail = 0;
-        print "\t$ip "; 
+        print "\t$ip ";
         foreach my $resource (qw( pageimage pageocr pagecoordocr aggregate pdf )) {
             if (my $fail = _test_resource_by_ip_for_ic($dbh, $resource, $ip)) {
                 print "$fail\n";
@@ -310,8 +343,8 @@ sub _test_resource_by_ip_for_ic {
     my ($statement, $sth);
     my $failures = '';
 
-    my @restricted_codes = (7, 15, 23, 31, 39, 47, 71, 79, 135, 143, 199, 207, 231, 239);
-    
+    my @restricted_codes = (3, 5, 7, 15, 23, 31, 39, 47, 71, 79, 135, 143, 199, 207, 231, 239);
+
     chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file`);
     @uniq_resource_ids_by_ip = map { $_ =~ m, id="(.*?)" , } @uniq_resource_ids_by_ip;
     Utils::sort_uniquify_list(\@uniq_resource_ids_by_ip);
@@ -330,7 +363,7 @@ sub _test_resource_by_ip_for_ic {
             Utils::sort_uniquify_list(\@access_lines);
 
             foreach my $line (@access_lines) {
-                my ($key) = ($line =~ m,key=(.*?) ,); 
+                my ($key) = ($line =~ m,key=(.*?) ,);
                 $statement = qq{SELECT code FROM da_authorization WHERE access_key=?};
                 $sth = API::DbIF::prepAndExecute($dbh, $statement, $key);
                 my $code = $sth->fetchrow_array() || 1;
@@ -340,7 +373,7 @@ sub _test_resource_by_ip_for_ic {
             }
         }
     }
-    
+
     return $failures;
 }
-    
+
