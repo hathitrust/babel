@@ -150,6 +150,16 @@ sub getAccessType {
         ? $freedom
           : $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
 
+    # Pending
+    if (0) {
+        if ($accessType eq 'open_restricted') {
+            my $ccNamesRef  = $self->__getConfigVal('creative_commons_names');
+            if (grep(/^$rights$/, @$ccNamesRef)) {
+                $accessType = 'open';
+            }
+        }
+    }
+
     return $accessType;
 }
 
@@ -157,20 +167,20 @@ sub getAccessType {
 
 =item getExtendedAccessType
 
-Highly specific for EBM PDF and un-watermarked derivatives for now
+Highly specific for EBM PDF and un-watermarked derivatives and
+raw_archival_data with CC licenses
 
 =cut
 
 # ---------------------------------------------------------------------
 sub getExtendedAccessType {
     my $self = shift;
-    my $resource = shift;
-    my $Q = shift;
+    my ($resource, $accessType, $Q) = @_;
 
     # undef except in specific circumstances
     my $extended_accessType;
 
-    my $format = $Q->param('format');
+    my $format = $Q->param('format') || 'none';
 
     if ( ($resource eq 'pageimage') && grep(/^$format$/, qw(png jpeg)) ) {
         my $watermark = $Q->param('watermark');
@@ -178,10 +188,18 @@ sub getExtendedAccessType {
             $extended_accessType = 'unwatermarked_derivative';
         }
     }
-    elsif ( grep(/^$resource$/, qw(pageimage aggregate)) && grep(/^$format$/, qw(raw)) ) {
+    elsif ( ($resource eq 'aggregate') && ($accessType =~ m,restricted,) ) {
+        # open aggregate does not require allow_raw bit set
         $extended_accessType = 'raw_archival_data';
     }
-    elsif ( ($resource eq 'pdf') && grep(/^$format$/, qw(ebm)) ) {
+    elsif ( ($resource eq 'pageimage') && ('format' eq 'raw') ) {
+        # default open pageimage is watermarked derivative else
+        # requires allow_raw bit set
+        $extended_accessType = 'raw_archival_data';
+    }
+    elsif ($resource eq 'pdf') {
+        # parameter validation forces pdf to have format=ebm, requires
+        # bit set
         $extended_accessType = 'pdf_ebm';
     }
 

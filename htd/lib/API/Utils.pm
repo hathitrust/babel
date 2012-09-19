@@ -50,21 +50,37 @@ secure transport over SSL we use http:// over port 443, NOT https://
 
 =cut
 
-# ---------------------------------------------------------------------
+# --------------------------------------------------------------------- 
+sub __DEBUG_signature_safe_url {
+    my $Q = shift;
+
+    my ($who) = ($ENV{SDRROOT} =~ m,/htapps/(.*?)\.babel,);
+    $ENV{HTTP_HOST} = $who . '-full.babel.hathitrust.org';
+    $ENV{REQUEST_URI} = '/cgi/htd';
+    $ENV{SERVER_PORT} = '443';
+    my $semi = $CGI::USE_PARAM_SEMICOLONS;
+    $CGI::USE_PARAM_SEMICOLONS = 0;
+    my $dev_url = $Q->self_url;
+    $CGI::USE_PARAM_SEMICOLONS = $semi;
+
+    return $dev_url;
+}
+
 sub signature_safe_url {
     my $Q = shift;
 
-    return $Q->self_url if ($ENV{TERM});
-
-    my $protocol = 'http://';
-    if (defined $ENV{HT_DEV}) {
-        $protocol = 'https://' if ($ENV{SERVER_PORT} eq '443');
+    my $safe_url;
+    if ($ENV{TERM}) {
+        $safe_url = __DEBUG_signature_safe_url($Q);
     }
+    else {
+        my $port = $ENV{SERVER_PORT};
+        my $protocol = (defined $port && ($port eq '443')) ? 'https://' : 'http://';
+        $safe_url = $protocol . $ENV{HTTP_HOST} . $ENV{REQUEST_URI};
+    }   
 
-    my $url = $protocol . $ENV{HTTP_HOST} . $ENV{REQUEST_URI};
-
-    hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$url});
-    return $url;
+    hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$safe_url port=$ENV{SERVER_PORT} terminal=$ENV{TERM}});
+    return $safe_url;
 }
 
 # ---------------------------------------------------------------------

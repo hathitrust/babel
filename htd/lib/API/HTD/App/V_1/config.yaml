@@ -460,46 +460,58 @@ mimetype_map:
     default: application/pdf
 
 # ---------------------------------------------------------------------
-# Access type map: f(resource, rights attr, source). EBM pdf resource
-# is unwatermarked and consequently restricted
+# Access type map: 
+# access_type = g(access_key, f(resource, rights attr, source)).
+#
+# which means that there are further restrictions on 'open' and
+# 'restricted' that are applied downstream: 
+#
+# open pdf is restricted by allow_pdf bit
+#
+# open pageimage when format=raw|watermark=0 is restricted by the
+# allow_raw or allow_unwatermarked_derivatives bit
+#
+# open_restricted aggregate is restricted by allow_raw bit and
+# potentially by CC license rights attribute
+#
 # ---------------------------------------------------------------------
 accessibility_matrix:
   pdf:
     free:
-      google: restricted
-      lit-dlps-dc: restricted
-      um-press: restricted
-      internet-archive: restricted
-      yale: restricted
-      minn-dig-lib: restricted
-      minn-hist-soc: restricted
-      utah_state_univ_press: restricted
-      univ_madrid: restricted
-      purdue: restricted
-      getty: restricted
-      um-dc-mp: restricted
+      google: restricted_forbidden
+      lit-dlps-dc: open
+      um-press: restricted_forbidden
+      internet-archive: restricted_forbidden
+      yale: restricted_forbidden
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: restricted_forbidden
+      univ_madrid: restricted_forbidden
+      purdue: restricted_forbidden
+      getty: restricted_forbidden
+      um-dc-mp: restricted_forbidden
     nonfree:
-      google: restricted
-      lit-dlps-dc: restricted
-      um-press: restricted
+      google: restricted_forbidden
+      lit-dlps-dc: restricted_forbidden
+      um-press: restricted_forbidden
       internet-archive: restricted
-      yale: restricted
-      minn-dig-lib: restricted
-      minn-hist-soc: restricted
+      yale: restricted_forbidden
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
       utah_state_univ_press: restricted
-      univ_madrid: restricted
-      purdue: restricted
-      getty: restricted
-      um-dc-mp: restricted
+      univ_madrid: restricted_forbidden
+      purdue: restricted_forbidden
+      getty: restricted_forbidden
+      um-dc-mp: restricted_forbidden
   pageimage:
     free:
-      google: limited
+      google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
       yale: open
-      minn-dig-lib: restricted
-      minn-hist-soc: restricted
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
       utah_state_univ_press: open
       univ_madrid: open
       purdue: open
@@ -511,8 +523,35 @@ accessibility_matrix:
       um-press: restricted
       internet-archive: restricted
       yale: restricted
-      minn-dig-lib: restricted
-      minn-hist-soc: restricted
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: restricted
+      univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
+  aggregate:
+    free:
+      google: open_restricted
+      lit-dlps-dc: open
+      um-press: restricted_forbidden
+      internet-archive: open
+      yale: open
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: open
+      univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
+    nonfree:
+      google: restricted
+      lit-dlps-dc: restricted
+      um-press: restricted_forbidden
+      internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
       utah_state_univ_press: restricted
       univ_madrid: restricted
       purdue: restricted
@@ -520,7 +559,7 @@ accessibility_matrix:
       um-dc-mp: restricted
   pageocr:
     free:
-      google: limited
+      google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
@@ -547,40 +586,13 @@ accessibility_matrix:
       um-dc-mp: restricted
   pagecoordocr:
     free:
-      google: limited
+      google: open
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
       yale: open
       minn-dig-lib: open
       minn-hist-soc: open
-      utah_state_univ_press: open
-      univ_madrid: open
-      purdue: open
-      getty: open
-      um-dc-mp: open
-    nonfree:
-      google: restricted
-      lit-dlps-dc: restricted
-      um-press: restricted
-      internet-archive: restricted
-      yale: restricted
-      minn-dig-lib: restricted
-      minn-hist-soc: restricted
-      utah_state_univ_press: restricted
-      univ_madrid: restricted
-      purdue: restricted
-      getty: restricted
-      um-dc-mp: restricted
-  aggregate:
-    free:
-      google: open_restricted
-      lit-dlps-dc: open
-      um-press: restricted
-      internet-archive: open
-      yale: open
-      minn-dig-lib: restricted
-      minn-hist-soc: restricted
       utah_state_univ_press: open
       univ_madrid: open
       purdue: open
@@ -721,6 +733,18 @@ open_access_names:
   - cc-zero
   - und-world
   - icus
+
+# ---------------------------------------------------------------------
+# Special treatment for Creative Commons licensed data
+# ---------------------------------------------------------------------
+creative_commons_names:
+  - cc-by
+  - cc-by-nd
+  - cc-by-nc-nd
+  - cc-by-nc
+  - cc-by-nc-sa
+  - cc-by-sa
+  - cc-zero
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights.source field values to names used in

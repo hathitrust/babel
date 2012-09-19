@@ -104,7 +104,7 @@ sub validate_nonce_and_timestamp_for_access_key {
     # window and are replays if they exist.
     my $now = time();
     my ($window_minus, $window_plus) = ($now - $window, $now + $window);
-    $statement = qq{DELETE FROM da_requests WHERE ((stamptime > ?) OR (stamptime < ?))};
+    $statement = qq{DELETE FROM da_requests WHERE ((stamptime < ?) OR (stamptime > ?))};
     hLOG_DEBUG('DB:  ' . qq{validate_nonce_and_timestamp_for_access_key: $statement: $access_key $window_minus $window_plus});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $window_minus, $window_plus);
 
@@ -282,6 +282,27 @@ sub get_access_key_by_userid {
 
     hLOG_DEBUG('DB:  ' . qq{get_access_key_by_userid: $statement: $userid ::: $access_key});
     return $access_key;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item access_key_exists
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub access_key_exists {
+    my ($dbh, $access_key) = @_;
+
+    my $statement = qq{SELECT count(*) FROM da_authentication WHERE access_key=?};
+    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
+    my $ct = $sth->fetchrow_array() || 0;
+
+    hLOG_DEBUG('DB:  ' . qq{access_key_exists: $statement: $access_key ::: $ct});
+    return $ct;
 }
 
 1;

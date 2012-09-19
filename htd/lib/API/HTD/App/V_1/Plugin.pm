@@ -766,7 +766,7 @@ sub __get_pageimage {
 
         my $script = $ENV{SDRROOT} . "/imgsrv/bin/image";
         my $cmd = "$script " . "--id=$id --seq=$seq " . join(" ", map sprintf(q{%s=%s}, $_, $args{$_}), keys %args);
-        hLOG_DEBUG("GET_pageimage: imgsrv command=$cmd");
+        hLOG_DEBUG("API: GET_pageimage: imgsrv command=$cmd");
         
         my $buf = `$cmd`;
         my $rc = $? >> 8;
@@ -862,7 +862,7 @@ sub GET_pdf {
 
     my $script = $ENV{SDRROOT} . "/imgsrv/bin/pdf";
     my @cmd = ($script, "--format=ebm", "--id=$id");
-    hLOG_DEBUG("GET_pdf: imgsrv command=" . join(' ', @cmd));
+    hLOG_DEBUG("API: GET_pdf: imgsrv command=" . join(' ', @cmd));
 
     open(NULL, ">", File::Spec->devnull);
     my ($wtr, $rdr, $err) = (gensym, \*DATA, \*NULL);

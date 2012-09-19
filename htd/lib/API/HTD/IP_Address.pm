@@ -76,7 +76,7 @@ sub __initialize {
 
     if (! defined($ip_address_param) ) {
         $self->__set_authorized(0, $REMOTE_ADDR);
-        hLOG_DEBUG(qq{API::HTD::IP_Address: no ip param: authorized=0 ip=$REMOTE_ADDR});
+        hLOG_DEBUG(qq{API: API::HTD::IP_Address: no ip param: authorized=0 ip=$REMOTE_ADDR});
         return;
     }
     # POSSIBLY NOTREACHED
@@ -92,7 +92,7 @@ sub __initialize {
             # ... proxying a client at an endpoint IP matching the IP
             # address asserted by the trusted client
             $self->__set_authorized(1, $ip_address_param);
-            hLOG_DEBUG(qq{API::HTD::IP_Address: ip param matches REMOTE_ADDR: authorized=1 ip=$ip_address_param});
+            hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param matches REMOTE_ADDR: authorized=1 ip=$ip_address_param});
         }
         else {
             my $ipregexp = API::HTD::AuthDb::get_ip_address_by_access_key($dbh, $access_key);
@@ -100,19 +100,19 @@ sub __initialize {
                 # ... proxying a user agent client at an endpoint IP
                 # matching the configured authorized IP address
                 $self->__set_authorized(1, $ip_address_param);
-                hLOG_DEBUG(qq{API::HTD::IP_Address: ip param matches allowed REMOTE_ADDR: authorized=1 ip=$ip_address_param});
+                hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param matches allowed REMOTE_ADDR: authorized=1 ip=$ip_address_param});
             }
             else {
                 # ... but IP of proxied user agent client not
                 # configured as authorized
                 $self->__set_authorized(0, $ip_address_param);
-                hLOG_DEBUG(qq{API::HTD::IP_Address: ip param no match allowed REMOTE_ADDR: authorized=0 ip=$ip_address_param});
+                hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param no match allowed REMOTE_ADDR: authorized=0 ip=$ip_address_param});
             }
         }
     }
     else {
         $self->__set_authorized(0, $REMOTE_ADDR);
-        hLOG_DEBUG(qq{API::HTD::IP_Address: ip param ignored, untrusted client: authorized=0 ip=$REMOTE_ADDR});
+        hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param ignored, untrusted client: authorized=0 ip=$REMOTE_ADDR});
     }
 }
 

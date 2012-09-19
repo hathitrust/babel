@@ -680,7 +680,7 @@ sub __getDownloadability {
 
     # support 'open_restricted', 'restricted_forbidden'
     my $accessType = $self->__getAccessType($resource);
-    my $downloadability = ($accessType =~ m,restricted,) ? 'restricted' : $accessType;
+    my $downloadability = ($accessType =~ m,restricted,) ? 'restricted' : 'open';
 
     return $downloadability;
 }
@@ -808,7 +808,7 @@ sub __authNZ_Success {
         }
     }
     else {
-        $Success = 1;
+        $Success = $self->__authorized($Q, $P_Ref);
     }
 
     if (! $Success) {
@@ -874,11 +874,11 @@ sub __authorized {
 
     my $error = '';
     my $authorized = 0;
-
-    # Access types: open, limited, open_restricted, restricted, restricted_forbidden
+    
+    # Access types: open, open_restricted, restricted, restricted_forbidden
     my $resource = $P_Ref->{'resource'};
     my $accessType = $self->__getAccessType($resource);
-    my $extended_accessType = $self->__getExtendedAccessType($resource, $Q);
+    my $extended_accessType = $self->__getExtendedAccessType($resource, $accessType, $Q);
     my $dbh = $self->__get_DBH();
     my $hauth = $self->__getHAuthObject();
 
@@ -898,7 +898,7 @@ sub __authorized {
     hLOG('API ERROR: ' . qq{__authorized: access_type=$accessType authorized=0 error=} . $hauth->errstr)
       if (! $authorized);
 
-    hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType extended_access_type=$extended_accessType authorized=$authorized error="$error"});
+    hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType extended_access_type=} . (defined($extended_accessType) ? $extended_accessType : 'none') . qq{ authorized=$authorized error="$error"});
     return $authorized;
 }
 

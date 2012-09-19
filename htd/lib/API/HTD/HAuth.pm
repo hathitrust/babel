@@ -40,7 +40,6 @@ use API::HTD::AuthDb;
 use API::HTD::IP_Address;
 
 my $FORCE_SUCCESS = 0;
-my $DISALLOW_GRACE_PERIOD = 0;
 my $ALLOW_DEVELOPMENT_OVERRIDE = 0;
 
 use constant REQUEST_METHOD => 'GET';
@@ -157,22 +156,24 @@ Special support for grace period if OAuth params absent
 =cut
 
 # ---------------------------------------------------------------------
-use constant OCT_1_2012 => 1349049600;
+use constant OCT_1_2012 => 1349067599;
 
 sub H_allow_non_oauth_by_grace {
     my $self = shift;
     my $accessType = shift;
 
+    $self->__auth_valid(1);
+
     return 1 if ($FORCE_SUCCESS);
-    return 0 if ($DISALLOW_GRACE_PERIOD);
 
     if (time() < OCT_1_2012) {
-        if (grep(/^$accessType$/, ('open', 'limited'))) {
-            $self->__auth_valid(1);
+        if ($accessType eq 'open') {
+            hLOG_DEBUG('API: ' . qq{H_allow_non_oauth_by_grace: access_type=$accessType allowed by grace});
             return 1;
         }
     }
 
+    hLOG_DEBUG('API: ' . qq{H_allow_non_oauth_by_grace: access_type=$accessType dis-allowed by grace});
     return $self->error("access_type=$accessType in non-oauth request not allowed in grace period");
 }
 
@@ -246,6 +247,27 @@ sub __check_nonce_and_timestamp {
 
 # ---------------------------------------------------------------------
 
+=item __check_access_key
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __check_access_key {
+    my $self = shift;
+    my ($dbh, $access_key) = @_;
+
+    if (! API::HTD::AuthDb::access_key_exists($dbh, $access_key)) {
+        return $self->error(CONSUMER_KEY_UNKNOWN);
+    }
+    
+    return 1;
+}
+
+
+# ---------------------------------------------------------------------
+
 =item __check_signature
 
 Description
@@ -313,10 +335,12 @@ sub H_authenticate {
     my $nonce = $Q->param('oauth_nonce') || 0;
     my $timestamp = $Q->param('oauth_timestamp') || 0;
 
-    if ($self->__check_nonce_and_timestamp($dbh, $access_key, $nonce, $timestamp)) {
-        my $signed_url = signature_safe_url($Q);
-        if ($self->__check_signature($signed_url, $dbh, $access_key, $client_data)) {
-            $authenticated = 1;
+    if ($self->__check_access_key($dbh, $access_key)) {
+        if ($self->__check_nonce_and_timestamp($dbh, $access_key, $nonce, $timestamp)) {
+            my $signed_url = signature_safe_url($Q);
+            if ($self->__check_signature($signed_url, $dbh, $access_key, $client_data)) {
+                $authenticated = 1;
+            }
         }
     }
 
@@ -345,7 +369,7 @@ sub H_authenticate {
          raw and watermarked derivatives are unrestricted
     AFTER the transition period:
       format=raw -> archival image format
-         raw is restricted
+         raw is restricted and watermarked derivatives are the default
 
                                       bit
                                       7 6 5 4 3 2 1 0
@@ -360,7 +384,8 @@ sub H_authenticate {
     open -------------------------------------------+
 
     Basic codes below assume that authorization to restricted implies
-    authorization to less restricted.  Some shorthand:
+    authorization to less restricted unless indicated (*).  Some
+    shorthand:
 
     (O)         = open
     (O|OR)      = open|open_restricted
@@ -375,6 +400,7 @@ sub H_authenticate {
     0  00000000            NOT AUTHORIZED
     1  00000001  00000001  (O)
     3  00000011  00000010  (O|OR)
+    5  00000101  00000101  (O|R)(*)
     7  00000111  00000100  (O|OR|R)
     15 00001111  00001000  (O|OR|R|RF)
 
@@ -447,7 +473,6 @@ Description
 my %basic_authorization_map =
   (
    'open'                 => OPEN_MASK,
-   'limited'              => OPEN_MASK,
    'open_restricted'      => OPEN_RESTRICTED_MASK,
    'restricted'           => RESTRICTED_MASK,
    'restricted_forbidden' => RESTRICTED_FORBIDDEN_MASK,
@@ -492,7 +517,7 @@ sub __extended_access_is_authorized {
     my $result = ($code & $mask);
     my $authorized = ($result == $mask);
 
-    hLOG_DEBUG('API: ' . qq{__extended_access_is_authorized: extended_access_type=$extended_access_type code=$code mask=$mask result=$result authorized=$authorized});
+    hLOG_DEBUG('API: ' . qq{__extended_access_is_authorized: extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') .qq{ code=$code mask=$mask result=$result authorized=$authorized});
     return $authorized;
 }
 
@@ -569,11 +594,11 @@ sub __authorized_at_IP_address {
     my $ip = $ipo->address; #TRANSITION@ exclude extended_access_type=raw_archival_data
     if (defined $extended_access_type && ($extended_access_type ne 'raw_archival_data')) {
         my $authorized = $ipo->is_authorized;
-        hLOG_DEBUG(qq{__authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=$extended_access_type});
+        hLOG_DEBUG(qq{API: __authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
         return $authorized;
     }
 
-    hLOG_DEBUG(qq{__authorized_at_IP_address: authorized=1 ip=$ip access_type=$access_type extended_access_type=$extended_access_type});
+    hLOG_DEBUG(qq{API: __authorized_at_IP_address: authorized=1 ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
     return 1;
 }
 
@@ -601,7 +626,7 @@ sub H_authorized {
 
     if (! $self->__authorized_protocol($access_type, $extended_access_type)) {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        hLOG('API ERROR: ' . qq{H_authorized: protocol fail access_key=$access_key  resource=$resource access_type=$access_type extended_access_type=$extended_access_type port=$ENV{SERVER_PORT}});
+        hLOG('API ERROR: ' . qq{H_authorized: protocol fail access_key=$access_key  resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') . qq{ port=$ENV{SERVER_PORT}});
         return $self->error('redirect over SSL required');
     }
 
@@ -615,13 +640,13 @@ sub H_authorized {
         else {
             API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
             my $ip = $ipo->address;
-            hLOG('API ERROR: ' . qq{H_authorized: ip address fail access_key=$access_key resource=$resource access_type=$access_type extended_access_type=$extended_access_type ip=$ip});
+            hLOG('API ERROR: ' . qq{H_authorized: ip address fail access_key=$access_key resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') . qq{ ip=$ip});
             return $self->error('unauthorized originating ip address');
         }
     }
     else {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        hLOG('API ERROR: ' . qq{H_authorized: insufficient privilege access_key=$access_key resource=$resource access_type=$access_type extended_access_type=$extended_access_type});
+        hLOG('API ERROR: ' . qq{H_authorized: insufficient privilege access_key=$access_key resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
         return $self->error('insufficient privilege');
     }
 }
