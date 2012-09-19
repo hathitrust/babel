@@ -36,7 +36,7 @@ Description
 
 # ---------------------------------------------------------------------
 # Support production debugging
-my $debug_logging_enabled = 1;
+my $debug_logging_enabled = 0;
 my $in_development = defined $ENV{HT_DEV};
 
 sub hLOG_DEBUG {
