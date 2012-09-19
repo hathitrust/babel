@@ -25,7 +25,7 @@ use Utils::Time;
 use base qw(Exporter);
 our @EXPORT = qw( hLOG hLOG_DEBUG);
 
-
+ 
 # ---------------------------------------------------------------------
 
 =item hLOG_DEBUG
@@ -35,11 +35,15 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
+# Support production debugging
+my $debug_logging_enabled = 1;
+my $in_development = defined $ENV{HT_DEV};
+
 sub hLOG_DEBUG {
     my $s = shift;
-    
-    return if (! defined $ENV{HT_DEV});
-    hLOG('DEBUG: ' . $s);
+    if ($debug_logging_enabled || $in_development) {
+        hLOG('DEBUG: ' . $s);
+    }
 }
 
 # ---------------------------------------------------------------------

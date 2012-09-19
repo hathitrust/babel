@@ -330,9 +330,10 @@ sub __log_client {
     my $trusted = $ipo->is_authorized;
     my $ua_ip = $ipo->address;
     my $is_oauth = $hauth->H_request_is_oauth($Q);
-
-    hLOG('API: ' . sprintf(qq{__log_client: trusted=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s },
-                           $trusted, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}));
+    my $url = $Q->self_url;
+    
+    hLOG('API: ' . sprintf(qq{__log_client: trusted=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s SERVER_PORT=%s url=%s },
+                           $trusted, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}, $ENV{SERVER_PORT}, $url));
 }
 
 
