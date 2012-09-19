@@ -75,17 +75,12 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
+
         <title>
-          <xsl:choose>
-            <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
-              <xsl:text>Full-text Advanced Search Results</xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>Full-text Search Results</xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:text> | HathiTrust Digital Library</xsl:text>
+          <xsl:call-template name="get_page_title"/>
         </title>
+
+        
         <!-- jQuery from the Google CDN -->
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
 
@@ -190,7 +185,7 @@
   <xsl:template name="DisplayContent">
           <!-- for debugging facets-->
           <div id="lsSidebarContainer" class="ls_box">
-
+            <!--XXX            <h3>Refine Results</h3>-->
           <xsl:call-template name="facets"/>
         </div>
 
@@ -218,6 +213,7 @@
           <xsl:call-template name="GetHiddenParams"/>
         </div>
         <div id="actionsRow1">
+
           <xsl:call-template name="BuildSortWidget"/>
           <xsl:call-template name="BuildPagingControls">
             <xsl:with-param name="which_paging" select="'top_paging'"/>
@@ -228,13 +224,14 @@
       <!-- XXX name bad but check Ie<div id="form_lsCB" name="form_lsCB" >-->
       <div id="form_lsCB"  >
         <div id="actionsRow2">
+          <h3 class="offscreen">Collection Management Tools</h3>
           <div class="selectAll">
           <label for="checkAll">Select all on page</label>
           <input type="checkbox" id="checkAll"/></div>
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
       </div>
-    
+      <h3 class="offscreen">List of Results</h3>
       <table id="itemTable" class="itemTable">
         <xsl:for-each select="SearchResults/Item">
           <xsl:call-template name="BuildItemChunk"/>
@@ -659,11 +656,13 @@
     <xsl:param name="which_paging"/>
     <!-- variable top or bottom so we can determine which widget to read from js -->
     <!--XXX tbw change id to class after fixing CSS -->
+
     <div>
       <xsl:attribute name="class">
         <xsl:value-of select="$which_paging"/>
         <xsl:text> PageInfo</xsl:text>
       </xsl:attribute>
+      <h3 class="offscreen">Sorting/Filtering Tools</h3>
       <!-- rec per page widget-->
       <div class="resultsPerPage">
         <xsl:for-each select="/MBooksTop/Paging/SliceSizeWidget">
@@ -752,6 +751,7 @@
 
   <!-- TEMPLATE -->
   <xsl:template name="BuildSortWidget">
+    <!--XXX This code generates nothing, apparently no longer used-->
     <div id="SortWidget">
       <xsl:for-each select="/MBooksTop/SortWidget/SortWidgetSort">
         <label for="sort">Sort by: </label>
@@ -865,30 +865,32 @@
       <td class="ItemData">
 
         <!-- Title -->
-        <div class="ItemTitle">
-          <span class="Title">
-            <xsl:value-of select="Title" disable-output-escaping="yes" />
-          </span>
-                  
-          <!-- Vernacular Title -->
-          <xsl:choose>
-
-            <xsl:when test="normalize-space(VernacularTitle)">
-              <div class="ItemTitle">
-                <span class="Title">
-                  <xsl:value-of select="VernacularTitle" disable-output-escaping="yes" />
-                </span>
-                <xsl:call-template name="EnumCron"/>
-            </div>
-          </xsl:when>
-
-          <xsl:otherwise>
-                <xsl:call-template name="EnumCron"/>
-          </xsl:otherwise>
-        </xsl:choose>          
         
-        </div>          
-          
+        <div class="ItemTitle">
+          <h4 class="iTitle">
+            <span class="Title">
+              <xsl:value-of select="Title" disable-output-escaping="yes" />
+            </span>
+
+            <!-- Vernacular Title -->
+            <xsl:choose>
+              
+              <xsl:when test="normalize-space(VernacularTitle)">
+                <div class="ItemTitle">
+                  <span class="Title">
+                      <xsl:value-of select="VernacularTitle" disable-output-escaping="yes" />
+                    </span>
+                    <xsl:call-template name="EnumCron"/>
+                  </div>
+                </xsl:when>
+
+                <xsl:otherwise>
+                  <xsl:call-template name="EnumCron"/>
+                </xsl:otherwise>
+              </xsl:choose>          
+            </h4>
+          </div>          
+        
 
 
         <!-- Author -->
@@ -1066,7 +1068,7 @@
       
       <!--  unselected facets ##########################################################   -->
       <div class="narrow">
-        <h2 class="narrowsearch">Refine Results</h2>
+        <h3 class="narrowsearch">Refine Results</h3>
         <div id="facetlist">
           <dl>
             <!-- hack to insert pseudo facet availability here based on actual rights queries-->
@@ -1466,5 +1468,21 @@
       
     </xsl:for-each>
   </xsl:template>
+
+
+ <xsl:template name="get_page_title">
+   <xsl:choose>
+     <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
+       <xsl:text>Full-text Advanced Search Results</xsl:text>
+     </xsl:when>
+     <xsl:otherwise>
+       <xsl:text>Full-text Search Results</xsl:text>
+     </xsl:otherwise>
+   </xsl:choose>
+   <xsl:text> | HathiTrust Digital Library</xsl:text>
+
+  </xsl:template>
+
+
   
 </xsl:stylesheet>

@@ -17,7 +17,9 @@
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" >
       <head>
-        <title>Full-text Advanced Search Results | HathiTrust Digital Library</title>
+        <title>
+          <xsl:call-template name="get_page_title"/>
+        </title>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
         <xsl:call-template name="load_js_and_css"/>
         <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
@@ -545,6 +547,11 @@
     <xsl:copy>
       <xsl:apply-templates select="@*|node()"/>
     </xsl:copy>
+  </xsl:template>
+
+
+ <xsl:template name="get_page_title">
+    <xsl:text>Full-text Advanced Search | HathiTrust Digital Library </xsl:text>
   </xsl:template>
 
 
