@@ -1,3 +1,7 @@
+            <div>
+              <label class="request" for="htopts">debug <span class="unreq">&#2063;</span></label>
+              <input id="htdebug" name="debug" class="request digits"> <span class="tiny">(debug)</span></input>
+            </div>
             <div id="htoptsdiv" class="request">
               <label class="request" for="htopts">format <span class="req">*</span></label>
               <div class="resource_radio">
@@ -10,4 +14,4 @@
               <label class="request" for="htopts">res <span class="unreq">&#2063;</span></label>
               <input id="htres" name="res" class="request digits"> <span class="tiny">(debug)</span></input>
             </div>
-            </div>
+          </div>

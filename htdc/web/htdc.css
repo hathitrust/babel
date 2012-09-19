@@ -121,8 +121,8 @@ fieldset.request {
   margin-left      : 14em;
 }
 
-#htseq, #htres {
-  width            : 5em;
+#htseq, #htres, #htdebug {
+  width            : 3em;
   font-family      : courier,monospace;
   font-size        : 1.2em;
   font-weight      : bold;

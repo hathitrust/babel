@@ -51,22 +51,25 @@ use API::HTD::AuthDb;
 use API::HTD::HConf;
 use HOAuth::Signature;
 
-my $DEBUG = defined($ENV{HT_DEV}) && 0;
-
 BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
     # non-US testing
     ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
 }
 
+my $Q = new CGI;
+
 # forced upstream
 my $USERID = $ENV{REMOTE_USER};
 
 my @superusers = qw(pfarber roger rrotter);
-my $DEVELOPMENT_SUPPORT = $ENV{HT_DEV} || grep(/^$USERID$/, @superusers);
+my $DEVELOPMENT_SUPPORT = defined($ENV{HT_DEV}) || grep(/^$USERID$/, @superusers);
 
-my $Q = new CGI;
-
+my $DEBUG = 0;
+if ($DEVELOPMENT_SUPPORT) {
+    $DEBUG = $Q->param('debug');
+}
+    
 if (! defined $ENV{REMOTE_USER}) {
     serve_login_page();
 }
