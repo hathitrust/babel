@@ -42,14 +42,16 @@ use OAuth::Lite::AuthMethod;
 
 use Context;
 use Utils;
+use Debug::DUtils;
 
 use API::DbIF;
 use API::HTD_Log;
 
 use API::HTD::AuthDb;
 use API::HTD::HConf;
+use HOAuth::Signature;
 
-my $DEBUG = 0;
+my $DEBUG = defined($ENV{HT_DEV}) && 0;
 
 BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
@@ -82,7 +84,15 @@ else {
     my $access_key = validate_request($Q, $dbh, $config);
     # POSSIBLY NOTREACHED
 
-    serve_Data_API_response($Q, $dbh, $config, $access_key);
+    if ($DEBUG == 2) {
+        serve_DEBUG_Data_API_uri($Q, $dbh, $access_key);
+    }
+    elsif ($DEBUG == 1) {
+        serve_DEBUG_Data_API_response($Q, $dbh, $config, $access_key);
+    }
+    else {
+        serve_Data_API_response($Q, $dbh, $config, $access_key);
+    }
     # NOTREACHED
 }
 
@@ -281,6 +291,79 @@ sub IPADDR_of_my_client {
 
 # ---------------------------------------------------------------------
 
+=item serve_DEBUG_Data_API_uri
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub serve_DEBUG_Data_API_uri {
+    my ($Q, $dbh, $access_key) = @_;
+
+    my ($request_url, $extra) = _make_Data_API_request_url($Q);
+    my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
+
+    my $full_request_url = 
+      HOAuth::Signature::S_get_signed_request_URL($request_url, $access_key, $secret_key, 'GET', $extra);
+
+    print CGI::header('text/html');
+    print "<p><b>[CLIENT] URL to paste to server:</b><br/>";
+    print $full_request_url;        
+
+    exit 0;
+}
+
+# ---------------------------------------------------------------------
+
+=item serve_DEBUG_Data_API_response
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub serve_DEBUG_Data_API_response {
+    my ($Q, $dbh, $config, $access_key) = @_;
+
+    my ($request_url, $extra) = _make_Data_API_request_url($Q);
+
+    my $consumer =  _get_consumer($dbh, $access_key);
+    my $response = $consumer->request
+      (
+       method  => 'GET',
+       url     => $request_url,
+       params  => $extra,
+      );
+
+    my $full_request_url = $consumer->oauth_request->uri;
+
+    # Debug block
+    print CGI::header('text/html');
+    print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
+    print $full_request_url;
+    
+    print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
+    print "<b>Status:</b> " . $response->status_line;
+    print "<br/>";
+    print "<b>Header:</b> " . $response->headers->as_string;
+    print "<br/>";
+    print "<b>Content:</b> " . $response->content;
+    
+    if ($Q->param('resource') eq 'pdf') {
+        my $foo = $response->content;
+        my $filename = '/tmp/test.pdf';
+        open(OUTFILE, ">", $filename) || print STDERR qq{Cannot open $filename for writing\n};
+        print OUTFILE $foo;
+        close( OUTFILE );
+    }
+    
+    exit 0;
+}
+
+
+# ---------------------------------------------------------------------
+
 =item serve_Data_API_response
 
 Description
@@ -303,31 +386,6 @@ sub serve_Data_API_response {
 
     my $full_request_url = $consumer->oauth_request->uri;
     hLOG(qq{htdc: serve_Data_API_response: full request url=$full_request_url});
-
-    # Debug block
-    if ($ENV{HT_DEV} && $DEBUG) {
-        print CGI::header('text/html');
-        print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
-        print $full_request_url;
-        
-        print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
-        print "<b>Status:</b> " . $response->status_line;
-        print "<br/>";
-        print "<b>Header:</b> " . $response->headers->as_string;
-        print "<br/>";
-        print "<b>Content:</b> " . $response->content;
-        
-        if ($Q->param('resource') eq 'pdf') {
-            my $foo = $response->content;
-            my $filename = '/tmp/test.pdf';
-            open(OUTFILE, ">", $filename) || print STDERR qq{Cannot open $filename for writing\n};
-            print OUTFILE $foo;
-            close( OUTFILE );
-        }
-    
-        exit 0;
-    }
-    # POSSIBLY NOTREACHED
 
     if ($response->is_success) {
         print CGI::header(join(';', $response->content_type()));
@@ -429,6 +487,9 @@ sub _make_Data_API_request_url {
 
     if ($ENV{HT_DEV}) {
         $protocol = 'https://';
+        if (! Debug::DUtils::under_server) {
+            $ENV{HTTP_HOST} = $ENV{REMOTE_USER} . '-full.babel.hathitrust.org';
+        }
     }
     else {
         $port = ':443';
@@ -447,12 +508,11 @@ sub _make_Data_API_request_url {
         }
         elsif ($resource eq 'pageimage') {
             my $format = $Q->param('format');
+            $extra->{format} = $format;
             if ($format ne 'raw') {
-                $extra->{format} = $Q->param('format');
                 if ($Q->param('unwatermark') eq 'on') {
                     $extra->{watermark} = 0;
                 }
-
                 $extra->{res} = $Q->param('res') || 0;
             }
         }
