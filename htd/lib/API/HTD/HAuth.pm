@@ -363,6 +363,9 @@ sub H_authenticate {
       - PDF access for Expressnet/EBM
       - raw images
       - suppressed watermarking for derivatives
+
+    NOTE: If you add codes here, add them to htdmonitor too.
+
  TRANSITION@ 
     IN the transition period:
       no format or format=raw -> archival image format
