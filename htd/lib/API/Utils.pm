@@ -74,8 +74,10 @@ sub signature_safe_url {
         $safe_url = __DEBUG_signature_safe_url($Q);
     }
     else {
-        my $port = $ENV{SERVER_PORT};
-        my $protocol = (defined $port && ($port eq '443')) ? 'https://' : 'http://';
+        my $protocol = 'http://';
+        if (defined $ENV{HT_DEV}) {
+            $protocol = 'https://' if ($ENV{SERVER_PORT} eq '443');
+        }
         $safe_url = $protocol . $ENV{HTTP_HOST} . $ENV{REQUEST_URI};
     }   
 
