@@ -83,16 +83,6 @@ sub _initialize
 
 }
 
-sub GetItemType
-{
-    my $self = shift;
-    $self->GetItemType(); 
-    if ( DEBUG('jats') ) {
-        return qq{jats};
-    }
-    return qq{book};
-}
-
 sub GetFormatHandler
 {
     my $self = shift;
