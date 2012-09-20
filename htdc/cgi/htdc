@@ -67,7 +67,7 @@ my $DEVELOPMENT_SUPPORT = defined($ENV{HT_DEV}) || grep(/^$USERID$/, @superusers
 
 my $DEBUG = 0;
 if ($DEVELOPMENT_SUPPORT) {
-    $DEBUG = $Q->param('debug');
+    $DEBUG = $Q->param('debug') || $DEBUG;
 }
     
 if (! defined $ENV{REMOTE_USER}) {
