@@ -149,7 +149,7 @@ sub H_make_ssl_redirect_url {
 
 # ---------------------------------------------------------------------
 
-=item H_allow_non_oauth_by_grace
+=item H_authenticated_by_grace
 
 Special support for grace period if OAuth params absent
 
@@ -158,23 +158,22 @@ Special support for grace period if OAuth params absent
 # ---------------------------------------------------------------------
 use constant OCT_1_2012 => 1349067599;
 
-sub H_allow_non_oauth_by_grace {
+sub H_authenticated_by_grace {
     my $self = shift;
-    my $accessType = shift;
-
-    $self->__auth_valid(1);
-
-    return 1 if ($FORCE_SUCCESS);
 
     if (time() < OCT_1_2012) {
-        if ($accessType eq 'open') {
-            hLOG_DEBUG('API: ' . qq{H_allow_non_oauth_by_grace: access_type=$accessType allowed by grace});
-            return 1;
-        }
+        $self->__auth_valid(1);
+        hLOG_DEBUG('API: ' . qq{H_authenticated_by_grace: authenticated=1 inside grace period});
+        return 1;
     }
 
-    hLOG_DEBUG('API: ' . qq{H_allow_non_oauth_by_grace: access_type=$accessType dis-allowed by grace});
-    return $self->error("access_type=$accessType in non-oauth request not allowed in grace period");
+    if ($FORCE_SUCCESS) {
+        $self->__auth_valid(1);
+        return 1;
+    }
+
+    hLOG_DEBUG('API ERROR: ' . qq{H_authenticated_by_grace: authenticated=0 outside grace period});
+    return $self->error("non-oauth request not allowed outside grace period");
 }
 
 # ---------------------------------------------------------------------

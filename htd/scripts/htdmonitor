@@ -53,11 +53,11 @@ Total_GET_Requests();
 
 Total_Signed_Requests();
 
+Total_Auth_ERRORS_ByIP_ByResource();
+
 Total_GET_RequestsByResource();
 
 Total_GET_RequestsBy_IP_Addr();
-
-Total_Auth_ERRORS_ByIP_ByResource();
 
 CrossCheck_IC_DataRequests();
 
@@ -139,7 +139,7 @@ sub Total_Signed_Requests {
     # unique combination of user agent and remote address
     my %uniq_signed_requests;
     foreach my $sr (@signed_requests) {
-        my ($ua, $ra, $ff) = ($sr =~ m,UA_ip=(.*?) REMOTE_ADDR=(.*?) HTTP_X_FORWARDED_FOR=(.*?)\s*$,);
+        my ($ua, $ra, $ff) = ($sr =~ m,UA_ip=(.*?) REMOTE_ADDR=(.*?) HTTP_X_FORWARDED_FOR=(.*?)[ ],);
         $uniq_signed_requests{"$ua-$ra-$ff"} += 1;
     }
     print "* Total signed requests = " . scalar @signed_requests . "  (unique = " . scalar (keys %uniq_signed_requests) . ")\n";
@@ -252,16 +252,22 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
         }
         # for this IP get a list of unique IDs that were denied
         # for this IP, get the /originating/ IP addresses of the errors
+        # for this IP, get the failure type of the error
         my @orig_IPs = ();
         my @denied_IDs = ();
+        my @failpoints = ();
         foreach my $err_line (@auth_error_lines) {
             my ($ip) = ($err_line =~ m,orig=(\d+\.\d+\.\d+\.\d+),);
             push(@orig_IPs, $ip) if ($ip);
 
             my ($ns, $bc) = ($err_line =~ m,ns="(.*?)".*?bc="(.*?)",);
             push(@denied_IDs, "$ns.$bc");
+
+            my ($fail) = ($err_line =~ m,failpoint=(.*?)$,);
+            push(@failpoints, $fail);
         }
         Utils::sort_uniquify_list(\@denied_IDs);
+        Utils::sort_uniquify_list(\@failpoints);
 
         sort_uniq_ip_addr_list(\@orig_IPs);
         for (my $i = 0; $i < scalar @orig_IPs; $i++) {
@@ -282,10 +288,11 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
                 print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
             }
             print "\t\tIDs = " . join(" ", @denied_IDs) . "\n";
+            print "\t\tfailpoints = " . join(" ", @failpoints) . "\n";
         }
     }
 
-    print "total = $errors\n\n";
+    print "\ttotal = $errors\n\n";
 }
 
 # ---------------------------------------------------------------------

@@ -794,28 +794,27 @@ sub __authNZ_Success {
     # POSSIBLY NOTREACHED
 
     my $Success = 0;
+    my $fail_point = '?';
 
     # Authenticate and authorize an OAuth request
     if ($hauth->H_request_is_oauth($Q)) {
-        $Success = ($self->__authenticated($Q) && $self->__authorized($Q, $P_Ref));
+        ($Success = $self->__authenticated($Q)) || ($fail_point = 'oauth_authentication');
+        if ($Success) {
+            ($Success = $self->__authorized($Q, $P_Ref)) || ($fail_point = 'oauth_authorization');
+        }
     }
-    elsif ($hauth->H_allow_non_oauth_by_grace($accessType)) {
-        if ($self->__authorized($Q, $P_Ref)) {
-            $Success = 1;
-        }
-        else {
-            $self->__setErrorResponseCode(403, $hauth->errstr);
-            $Success = 0;
-        }
+    elsif ($hauth->H_authenticated_by_grace) {
+        ($Success = $self->__authorized($Q, $P_Ref)) || ($fail_point = 'grace_authorization');
     }
     else {
-        $Success = $self->__authorized($Q, $P_Ref);
+        $Success = 0;
+        $fail_point = 'non-oauth_outside_grace'; 
     }
 
     if (! $Success) {
         my $s = $self->__getParamsRefStr($P_Ref);
         my $ipo = new API::HTD::IP_Address;
-        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s orig=} . $ipo->address);
+        hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s orig=} . $ipo->address . qq{ failpoint=$fail_point});
     }
 
     return $Success;
