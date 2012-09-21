@@ -84,6 +84,7 @@ sub _initialize
     if (! $redirect)
     {
         $self->SUPER::_initialize($C);
+        $self->{content_type} = $ab->get_view_content_type($C, $page) || 'text/html';
     }
 }
 
@@ -271,6 +272,7 @@ sub output
 {
     my $self = shift;
     my $C = shift;
+    my $content_type = $self->{content_type} || 'text/html';
 
     if ($self->view_is_redirect())
     {
@@ -279,7 +281,7 @@ sub output
     else
     {
         my $transformed_xml_ref = $self->_get_transformed_xml($C);
-        $self->output_HTTP($C, $transformed_xml_ref);
+        $self->output_HTTP($C, $transformed_xml_ref, $content_type);
     }
 }
 

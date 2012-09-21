@@ -40,19 +40,7 @@ sub  handle_RANDOM_FEATURED_COLLECTION_PI
     
     my $coll_arr_ref = $act->get_transient_facade_member_data($C, 'public_list_colls_data');
     my $item = $$coll_arr_ref[0];
-    
-    use Data::Dumper;
-    binmode(STDERR, ":utf8");
-    #print STDERR "OUTPUT: " . Dumper($$coll_arr_ref[0]);
-    #print STDERR "OUTPUT: " . utf8::is_utf8($$item{description});
-    
-    use Encode;
-    #my $success = Encode::decode_utf8($$item{description});
-    #$$item{description} = $success;
-    
-    #print STDERR "OUTPUT: $success / " . utf8::is_utf8($$item{description});
-    # my $json = encode_json($item);
-    # my $json = JSON::XS->new->utf8->encode($item);
+        
     my $json = JSON::XS->new;
     $json->utf8(0);
     my $output = $json->encode($item);
@@ -62,48 +50,6 @@ sub  handle_RANDOM_FEATURED_COLLECTION_PI
     return $output;
 }
 
-
-# ---------------------------------------------------------------------
-# XXX  What should convention for JSON call failure be?
-sub build_json_error
-{
-    my $msg = shift;
-    my   $json_error='{error:"';
-    $json_error .= "$msg";
-    $json_error .= '"}';
-        
-    return "$json_error";
-}
-
-# ---------------------------------------------------------------------
-#
-#    sample json ouput
-#
-
-# {coll_list:[
-#            {coll_id:collname},
-#            {123:"My Collection"},
-#            {453:"Another Collection"},
-#            ]
-# }
-sub build_json
-{
-    my ($name, $list_ref, $label_hashref) = @_;
-    my $json = "\{$name:\[\n\t";
-    foreach my $id (@{$list_ref})
-    {
-        my $coll_name = $label_hashref->{$id};
-        # escape json special characters: ":() { }"
-    
-        $coll_name =~s/([\:\}\{\(\)])/\\$1/g;
-        
-        $json .= "\{ $id\:\"$coll_name\"\}\,\n\t";
-    }
-    $json .= "\]\n\}";
-
-    return $json;
-}
-
 # ---------------------------------------------------------------------
 
 1;
@@ -111,11 +57,11 @@ __END__
 
 =head1 AUTHOR
 
-Tom Burton-West, University of Michigan, tburtonw@umich.edu
+Roger Espinosa, University of Michigan, roger@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2007 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
