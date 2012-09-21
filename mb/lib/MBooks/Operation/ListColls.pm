@@ -106,7 +106,6 @@ sub execute_operation
     } else {
         $colltype = $colltype_map{$colltype} ? $colltype_map{$colltype} : $colltype;
     }
-    print STDERR "OP: $colltype :: " . $ab->get_view_content_type() . "\n";
     
     my $coll_arr_ref;
     eval {
