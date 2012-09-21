@@ -8,10 +8,10 @@
     <xsl:if test="$gUsingSearch='false'">
         <script type="text/javascript" src="/pt/js/concatenated_PAGETURNER_JS-min.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'">
+    <xsl:if test="$gUsingSearch='false' and $gItemType = 'volume' and $gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/js/concatenated_BOOKREADER_JS-min.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gSkin='mobile' and $gItemType='book' and $gUsingBookReader='true'">
+    <xsl:if test="$gSkin='mobile' and $gItemType='volume' and $gUsingBookReader='true'">
         <script type="text/javascript" src="/pt/js/concatenated_MOBILE_JS-min.js{$timestamp}"></script>
     </xsl:if>
   </xsl:template> 
@@ -51,7 +51,7 @@
      <script type="text/javascript" src="/pt/jquery/jquery.tmplPlus.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/js/classic.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'">
+    <xsl:if test="$gUsingSearch='false' and $gItemType = 'volume' and $gUsingBookReader='true'">
      <script type="text/javascript" src="/pt/jquery/jquery.easing.1.3.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/jquery/jquery.color.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/jquery/jquery.textfill.js{$timestamp}"></script>
@@ -60,7 +60,7 @@
      <script type="text/javascript" src="/pt/bookreader/BookReader/dragscrollable.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/js/lscache.js{$timestamp}"></script>
     </xsl:if>
-    <xsl:if test="$gSkin='mobile' and $gItemType='book' and $gUsingBookReader='true'">
+    <xsl:if test="$gSkin='mobile' and $gItemType='volume' and $gUsingBookReader='true'">
      <script type="text/javascript" src="/pt/mobile/epub_download_helper.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/mobile/jquery.url.js{$timestamp}"></script>
      <script type="text/javascript" src="/pt/mobile/jquery-ui-1.8.5.custom.min.js{$timestamp}"></script>

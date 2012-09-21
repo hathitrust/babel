@@ -260,6 +260,10 @@ sub ValidityChecks {
         $cgi->param( 'size', $PTGlobals::gDefaultSize );
     }
 
+    if ( $cgi->param('ui') eq 'embed' && ! $cgi->param('skin') ) {
+        $cgi->param('skin', 'mobile');
+    }
+
     ## assume defaults later down the road
     # if (! defined($orient) ||
     #     ! exists( $PTGlobals::gValidRotationValues{$orient})) {

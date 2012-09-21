@@ -194,7 +194,8 @@ HTMobileBookReader.prototype.initToolbar = function(mode, ui) {
 	// We init the nav bar after the params processing so that the nav slider knows where
     // it should start (doesn't jump after init)
     if (this.ui == "embed") {
-        this.initEmbedNavbar();
+        // this.initEmbedNavbar();
+        this.initNavbar();
     } else {
         this.initNavbar();
     }
@@ -1383,7 +1384,14 @@ HTMobileBookReader.prototype.paramsFromFragment = function(urlFragment){
 				break;
 		}
 	} else if ( navigator.userAgent.indexOf("iPad") < 0 ) {
-	  params.mode = this.constMode1up;
+        console.log("AHOY AHOY:", urlFragment, params.mode);
+        if ( ! params.mode ) {
+            if ( $(window).width() > $(window).height() && ! params.mode ) {
+                params.mode = this.constMode2up;
+            } else {
+              params.mode = this.constMode1up;
+            }            
+        }
 	}
 	return params;
 

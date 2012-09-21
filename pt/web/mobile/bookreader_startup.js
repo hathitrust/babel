@@ -65,17 +65,17 @@ HT.resizeBookReader = function() {
       }
   }
   */
-  if ( HT.reader.ui == 'embed' ) {
-      var $branding = $(".branding");
-      var $embedLink = $(".embedLink");
-      var $pageOptions = $("#mdpPageOptions");
-      var w = $(window).width();
-      var fixed = $branding.width() + $pageOptions.width() + 50;
-      while (  fixed + $embedLink.width()  > w ) {
-          $embedLink.width( $embedLink.width() - 5 );
-          console.log("MUST NARROW:", $embedLink.width(), w);
-      }
-  }
+  // if ( HT.reader.ui == 'embed' ) {
+  //     var $branding = $(".branding");
+  //     var $embedLink = $(".embedLink");
+  //     var $pageOptions = $("#mdpPageOptions");
+  //     var w = $(window).width();
+  //     var fixed = $branding.width() + $pageOptions.width() + 50;
+  //     while (  fixed + $embedLink.width()  > w ) {
+  //         $embedLink.width( $embedLink.width() - 5 );
+  //         console.log("MUST NARROW:", $embedLink.width(), w);
+  //     }
+  // }
   
 }
 

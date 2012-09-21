@@ -221,7 +221,6 @@ sub GetOcrTextRef
     return $self->{'ocrtextref'};
 }
 
-
 # ----------------------------------------------------------------------
 # NAME         : GetOcrBySequence
 # PURPOSE      : Same function as OcrHandler but returns text without <br> and

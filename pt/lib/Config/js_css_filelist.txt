@@ -73,7 +73,7 @@ Test:$gUsingSearch='false'
 /pt/web/js/classic.js
 
 Section:BOOKREADER_JS
-Test:$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'
+Test:$gUsingSearch='false' and $gItemType = 'volume' and $gUsingBookReader='true'
 /pt/web/jquery/jquery.easing.1.3.js
 /pt/web/jquery/jquery.color.js
 /pt/web/jquery/jquery.textfill.js
@@ -83,7 +83,7 @@ Test:$gUsingSearch='false' and $gItemType = 'book' and $gUsingBookReader='true'
 /pt/web/js/lscache.js
 
 Section:MOBILE_JS
-Test:$gSkin='mobile' and $gItemType='book' and $gUsingBookReader='true'
+Test:$gSkin='mobile' and $gItemType='volume' and $gUsingBookReader='true'
 /pt/web/mobile/epub_download_helper.js
 /pt/web/mobile/jquery.url.js
 /pt/web/mobile/jquery-ui-1.8.5.custom.min.js
