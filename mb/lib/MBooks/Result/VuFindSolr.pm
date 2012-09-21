@@ -200,8 +200,8 @@ sub process_metadata
 {       
     my $self = shift;
     my $metadata_hash = shift;
-
-    my $cleaned_hash = $self->__clean_metadata($metadata_hash);
+    my $fix_title_hash = $self->__assemble_title($metadata_hash);
+    my $cleaned_hash = $self->__clean_metadata($fix_title_hash);
     my $converted_hash = $self->__convert_fieldnames($cleaned_hash);
     $converted_hash = $self->__convert_arrays_to_strings($converted_hash);
     return $converted_hash
@@ -243,6 +243,88 @@ sub __Arrayref_toString
     }
     return $couldBeArrayRef;
 }
+# ---------------------------------------------------------------------
+#
+#__assemble title.
+#
+# combine title, 245c vtitle and volume/enum_cron 
+# ---------------------------------------------------------------------
+sub __assemble_title
+{
+      my $self = shift;
+      my $hash = shift;
+      my $vtitle="";
+      
+      my $display_title;
+      
+      if (ref($hash->{'title'}) eq 'ARRAY')
+      {
+          $display_title = $hash->{title}->[0];
+      }
+      else
+      {
+          $display_title = $hash->{title};
+      }
+
+      my $title_c = $hash->{'title_c'};
+      my $vtitle_c;  #if 245c is an array and has more than one element
+                     #the second element is the vernacular title
+      
+      # add first 245c, 
+      if (defined ($title_c) )
+      {
+          if (ref($title_c) eq 'ARRAY')
+          {
+              $display_title.=" ". $title_c->[0];
+              $vtitle_c= $title_c->[1];
+          }
+          else
+          {
+              $display_title.=" ". $title_c;
+          }
+          
+      }    
+      
+      #    display vernacular title?
+      my  $vtitle=  $hash->{'vtitle'};
+      if (defined ($vtitle))
+      {
+          
+          if (ref($vtitle) eq 'ARRAY')
+          {
+              $vtitle = $vtitle->[0];
+          }
+          
+          #            # add the vernacular $245c if present
+          #            #XXX we assume second 245c is a vernacular!
+          if (defined ($vtitle_c ))
+          {
+              $vtitle.= $vtitle_c;
+          }    
+          # add space
+          $vtitle = " " . $vtitle;
+          
+          $display_title.= $vtitle;
+      }
+      
+      
+     my $enum = $hash->{'volume'};
+      
+      if (defined ($enum))
+      {
+          #           ASSERT (ref($enum) ne 'ARRAY',qq{volume/enum should not be an array});
+          $display_title.= " " . $enum;
+      }
+      
+      $hash->{'title'}=$display_title;
+            
+      #remove vtitle and title_c  and  volume
+
+      delete($hash->{'vtitle'});
+      delete($hash->{'title_c'});
+      delete($hash->{'volume'});
+      return $hash;     
+  }
 
 # ---------------------------------------------------------------------
 
@@ -250,6 +332,7 @@ sub __Arrayref_toString
 # This is a holding place for cleaning VuFind related issues.  General data cleanup
 # is in AddMultipleItems::normalize_metadata
 #
+# Removed title munging code because it is now in __assemble_title
 sub __clean_metadata
 {
     my $self = shift;
@@ -259,27 +342,9 @@ sub __clean_metadata
     
     foreach my $key (keys %{$hash})
     {
-        if ($key eq "title")
-        {
-            if (defined ($hash->{'volume'}))
-            {
-                # convert title array to string and add volume             
-                if (ref($hash->{'title'}) eq 'ARRAY')
-        {
-                    $cleanhash->{'title'} = $hash->{'title'}->[0] . " $hash->{'volume'}";
-        }
-        else
-        {
-                    $cleanhash->{'title'} .= " $hash->{'volume'}";
-                }
-            }
-        }
-        #we already processed the title and we don't want the volume in the output cleaned hash
-        if ($key ne "volume" && $key ne "title")
-        {
-            $cleanhash->{$key} = $hash->{$key};
-        }
+        $cleanhash->{$key} = $hash->{$key};
     }
+    
     return $cleanhash;
 }
 

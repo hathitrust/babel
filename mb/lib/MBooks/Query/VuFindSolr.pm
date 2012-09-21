@@ -80,6 +80,8 @@ sub get_Solr_metadata_query_from_ids
     # need sort title and display title
     my $field_list_arr_ref= [ 'author',
                               'title',
+                              'title_c',
+                              'vtitle',
                               'titleSort',
                               #'title_ab',  # Could this be short version for long titles 
                               'publishDate',
