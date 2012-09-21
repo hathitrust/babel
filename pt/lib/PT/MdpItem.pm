@@ -155,11 +155,11 @@ sub DetermineAndSetContentHandler {
     elsif ( $requestedPageView eq 'image' || $requestedPageView eq '1up' || $requestedPageView eq '2up' || $requestedPageView eq 'thumb' || $requestedPageView eq 'text' ) {
         my $requestedPageSequence = $self->GetRequestedPageSequence();
         my $storedFileType = $self->GetStoredFileType( $requestedPageSequence );
-        my $handler = $self->GetFormatHandler( $storedFileType, 'image' ); # all variations on image
-        $self->SetContentHandler( $handler );
+        # my $handler = $self->GetFormatHandler( $storedFileType, 'image' ); # all variations on image
+        # $self->SetContentHandler( $handler );
 
-        DEBUG('image,pt,all', qq{ContentHandler set to: $handler});
-        ASSERT($handler, qq{No handler set in MdpItem::DetermineAndSetContentHandler} );
+        # DEBUG('image,pt,all', qq{ContentHandler set to: $handler});
+        # ASSERT($handler, qq{No handler set in MdpItem::DetermineAndSetContentHandler} );
     }
     else {
         ASSERT(0, qq{Invalid page view type: "$requestedPageView} );
