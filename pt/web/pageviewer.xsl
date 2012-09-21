@@ -34,7 +34,8 @@
 
   <xsl:variable name="gCurrentReaderMode">
     <xsl:choose>
-      <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when>
+<!--       <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when> -->
+      <xsl:when test="$gCurrentUi = 'embed'">full</xsl:when>  
       <xsl:otherwise>full</xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -47,7 +48,8 @@
         <xsl:apply-templates select="." mode="reader" />
       </xsl:when>
       <xsl:when test="$gCurrentUi = 'embed'">
-        <xsl:apply-templates select="." mode="embed" />
+        <!-- <xsl:apply-templates select="." mode="embed" /> -->
+        <xsl:apply-templates select="." mode="reader" />
       </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates select="." mode="reader" />

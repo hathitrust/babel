@@ -30,7 +30,7 @@ umask 0000;
 # ----------------------------------------------------------------------
 BEGIN {
     ( $main::realSTART ) = time;
-    $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
     ## $ENV{TEST_BLACKLIST} = 1;
     ## delete $ENV{SDRLIB};
     ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
@@ -258,6 +258,10 @@ sub ValidityChecks {
     if (! $size ||
         ! exists($PTGlobals::gSizes{$size})) {
         $cgi->param( 'size', $PTGlobals::gDefaultSize );
+    }
+
+    if ( $cgi->param('ui') eq 'embed' && ! $cgi->param('skin') ) {
+        $cgi->param('skin', 'mobile');
     }
 
     ## assume defaults later down the road

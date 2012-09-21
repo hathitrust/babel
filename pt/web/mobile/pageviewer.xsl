@@ -210,19 +210,26 @@
         HT.reader.catalog_method = 'fudged';
         HT.reader.total_slices = 1;
         HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
-        if ( HT.reader.ui == 'embed' ) {
-          HT.reader.mode = 1;
-          HT.reader.reduce = 1;
-        }else{
-        	switch(window.orientation){
-        		case 90, -90:
-        			HT.reader.mode=3;
-        			break;
-        		case 0:
-        			HT.reader.mode=1;
-        			break;
-        	}
+
+        if ( window.orientation != undefined ) {
+          switch(window.orientation){
+            case 90, -90:
+              HT.reader.mode=3;
+              break;
+            case 0:
+              HT.reader.mode=1;
+              break;
+          }
+        } else if ( ! HT.params.mode ) {
+          if ( $(window).length > $(window).height() ) {
+            HT.params.mode = 2;
+          } else {
+            HT.params.mode = 1;
+          }
         }
+
+        console.log("STARTUP", HT.params.mode);
+
         // HT.reader.displayMode = 'image';
         HT.reader.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
         HT.reader.flags.debug = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
