@@ -81,9 +81,16 @@ sub coll_list_helper_json
         delete $$coll_hashref{MColl_ID};
     }
 
+    my $output = {
+        total_items => scalar(@$data_ref),
+        previous_page => undef,
+        next_page => undef,
+        items => $data_ref,
+    };
+
     my $json = JSON::XS->new;
     $json->utf8(0);
-    my $output = $json->encode($data_ref);
+    my $output = $json->encode($output);
 
     return $output;
 }
