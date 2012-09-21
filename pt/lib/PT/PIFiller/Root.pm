@@ -207,7 +207,6 @@ sub GetItemType
 
     # pull from mdpItem
     my $item_type = $mdpItem->GetItemType();
-    print STDERR "HEY: $item_type\n";
 
     return $item_type;
 }
