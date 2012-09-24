@@ -1155,6 +1155,11 @@ HTMobileBookReader.prototype.prepareTwoPageView = function(centerPercentageX, ce
 HTMobileBookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 	// brk - sub-classed to prevent page-turn animation....
 
+    if ( ! window.orientation ) {
+        // use the normal flip right to left
+        return HTBookReader.prototype.flipRightToLeft.call(this, newIndexL, newIndexR);
+    }
+
     var top = this.twoPageTop();
     var scaledW = this.getPageWidth2UP(this.twoPage.currentIndexR);
 
@@ -1203,6 +1208,11 @@ HTMobileBookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 //______________________________________________________________________________
 HTMobileBookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
 	// brk - sub-classed to prevent page-turn animation....
+
+    if ( ! window.orientation ) {
+        // use the normal flip right to left
+        return HTBookReader.prototype.prepareFlipRightToLeft.call(this, nextL, nextR);
+    }
 	
     // Prefetch images
     this.prefetchImg(nextL);
@@ -1259,6 +1269,11 @@ HTMobileBookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
 HTMobileBookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
 	// brk - sub-classed to prevent page-turn animation....
 
+    if ( ! window.orientation ) {
+        // use the normal flip right to left
+        return HTBookReader.prototype.prepareFlipLeftToRight.call(this, prevL, prevR);
+    }
+
     this.prefetchImg(prevL);
     this.prefetchImg(prevR);
     
@@ -1314,6 +1329,11 @@ HTMobileBookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
 // Flips the page on the left towards the page on the right
 HTMobileBookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
 	// brk - sub-classed to prevent page-turn animation....
+
+    if ( ! window.orientation ) {
+        // use the normal flip right to left
+        return HTBookReader.prototype.flipLeftToRight.call(this, newIndexL, newIndexR);
+    }
 	
     var leftLeaf = this.twoPage.currentIndexL;
 
