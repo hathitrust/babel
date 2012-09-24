@@ -267,3 +267,12 @@ window.mockrotate = function(orientation) {
 
 }
 
+$(document).ready(function() {
+  $(".boxy-content a[href*='http://']").live('click', function() {
+    var href = $(this).attr('href');
+    if ( href.indexOf('http://m.') < 0 && window != window.top ) {
+      // break out of the iframe for non-mobile optimized links
+      $(this).attr('target', '_top');
+    }
+  })
+})
