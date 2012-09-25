@@ -578,7 +578,7 @@ a .colName {
 }
 
 /* Style for special access message in pageviewer.xsl */
-#accessBanner {
+.accessBanner {
   background-color: #fce9a8;
   color: #000000;
   text-align: center;
