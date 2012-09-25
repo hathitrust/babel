@@ -1537,6 +1537,16 @@ td.ItemData {
   width:70%;
 } 
 
+/** accessibility to make h4 title normal tbw**/
+h4.iTitle {
+            font-weight:normal;     
+            display:inline;
+            
+
+}
+
+
+
 .ItemTitle {
 /**suz change**/
   line-height:1.3em; 
