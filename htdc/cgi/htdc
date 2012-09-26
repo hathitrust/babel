@@ -486,17 +486,17 @@ sub _make_Data_API_request_url {
     my $Q = shift;
 
     my $port = '';
-    my $protocol = 'http://';
+    my $protocol = 'https://';
 
-    if ($ENV{HT_DEV}) {
-        $protocol = 'https://';
-        if (! Debug::DUtils::under_server) {
-            $ENV{HTTP_HOST} = $ENV{REMOTE_USER} . '-full.babel.hathitrust.org';
-        }
-    }
-    else {
-        $port = ':443';
-    }
+#     if ($ENV{HT_DEV}) {
+#         $protocol = 'https://';
+#         if (! Debug::DUtils::under_server) {
+#             $ENV{HTTP_HOST} = $ENV{REMOTE_USER} . '-full.babel.hathitrust.org';
+#         }
+#     }
+#     else {
+#         $port = ':443';
+#     }
 
     my ($id, $resource, $seq) = ($Q->param('id'), $Q->param('resource'), $Q->param('seq'));
     my $url = $protocol . $ENV{HTTP_HOST} . $port . '/cgi/htd' . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
