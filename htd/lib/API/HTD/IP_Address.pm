@@ -17,20 +17,50 @@ authorization tables (Data API web client case).
 
 =head1 SYNOPSIS
 
-API::HTD::IP_Address->new($config, $dbh, $access_key, $ip_address_param);
-
-later:
-
-my $ipo = new API::HTD::IP_Address();
-
-my $ip_address  = $ipo->address();
-my $authorized = $ipo->is_authorized();
+ API::HTD::IP_Address->new($config, $dbh, $access_key, $ip_address_param);
+ 
+ later:
+ 
+ my $ipo = new API::HTD::IP_Address();
+ 
+ my $ip_address_is_valid  = $ipo->ip_is_valid();
+ my $ip_address_match_result = $ipo->ip_match();
+ 
+ if ($ip_address_is_valid) {
+   if ($data_is_restricted) {
+     if ($ip_address_match_result == IP_MATCH) {
+       $authorized = 1;
+     }
+     else {
+       $authorized = 0;
+     }
+   }
+   else {
+     if ($ip_address_match_result == IP_MATCH || $ip_address_match_result == IP_NOTREQD) {
+       $authorized = 1;
+     }
+     else {
+       $authorized = 0;
+     }
+   }
+ }
+ else {
+     $authorized = 0;
+ }
+ 
 
 =head1 METHODS
 
 =over 8
 
 =cut
+
+use constant IP_NOMATCH => 0;
+use constant IP_MATCH   => 1;
+use constant IP_NOTREQD => 2;
+
+use base qw(Exporter);
+our @EXPORT = qw( IP_NOMATCH IP_MATCH IP_NOTREQD );
 
 use API::HTD::HConf;
 use API::HTD_Log;
@@ -53,7 +83,6 @@ sub new {
     return $singleton;
 }
 
-
 # ---------------------------------------------------------------------
 
 =item __initialize
@@ -63,9 +92,9 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub __set_authorized {
+sub __set_member_data {
     my $self = shift;
-    ($self->{authorized}, $self->{ip}) = @_;
+    ( $self->{ip}, $self->{valid}, $self->{match} ) = @_;
 }
 
 sub __initialize {
@@ -74,45 +103,62 @@ sub __initialize {
 
     my $REMOTE_ADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
 
-    if (! defined($ip_address_param) ) {
-        $self->__set_authorized(0, $REMOTE_ADDR);
-        hLOG_DEBUG(qq{API: API::HTD::IP_Address: no ip param: authorized=0 ip=$REMOTE_ADDR});
-        return;
-    }
-    # POSSIBLY NOTREACHED
+    my $clientKeyRef  = $config->getConfigVal('client_key_authorization_list');
+    my $known_client = grep(/^$access_key$/, @$clientKeyRef);
 
-    #
-    # Tests for validity of $ip_address_param
-    #
-    my $clientKeyWhitelistRef  = $config->getConfigVal('client_key_whitelist');
-    
-    if ( grep(/^$access_key$/, @$clientKeyWhitelistRef) ) {
-        # We have an access_key from a trusted client ...
-        if ($ip_address_param eq $REMOTE_ADDR) {
-            # ... proxying a client at an endpoint IP matching the IP
-            # address asserted by the trusted client
-            $self->__set_authorized(1, $ip_address_param);
-            hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param matches REMOTE_ADDR: authorized=1 ip=$ip_address_param});
-        }
-        else {
-            my $ipregexp = API::HTD::AuthDb::get_ip_address_by_access_key($dbh, $access_key);
-            if ($ip_address_param =~ m,$ipregexp,) {
-                # ... proxying a user agent client at an endpoint IP
-                # matching the configured authorized IP address
-                $self->__set_authorized(1, $ip_address_param);
-                hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param matches allowed REMOTE_ADDR: authorized=1 ip=$ip_address_param});
+    if ($known_client) {
+        my $ipregexp = API::HTD::AuthDb::get_ip_address_by_access_key($dbh, $access_key);
+        if ($ipregexp) {
+            # known client is locked to known IP address
+            if ($ip_address_param) {
+                if ($ip_address_param =~ m,$ipregexp,) {
+                    $self->__set_member_data($ip_address_param, 1, IP_MATCH);
+                    hLOG_DEBUG(qq{API: IP_Address(KL client): ip param matches vs allowed REMOTE_ADDR=$ipregexp: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                }
+                else {
+                    $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
+                    hLOG_DEBUG(qq{API: IP_Address(KL client): ip param no match vs allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                }
             }
             else {
-                # ... but IP of proxied user agent client not
-                # configured as authorized
-                $self->__set_authorized(0, $ip_address_param);
-                hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param no match allowed REMOTE_ADDR: authorized=0 ip=$ip_address_param});
+                $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
+                hLOG_DEBUG(qq{API: IP_Address(KL client): ip param missing for allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=missing REMOTE_ADDR=$REMOTE_ADDR});
+            }
+        }
+        else {
+            # known client is not locked to an IP but may still supply an IP address parameter
+            if ($ip_address_param) {
+                if ($ip_address_param eq $REMOTE_ADDR) {
+                    $self->__set_member_data($ip_address_param, 1, IP_MATCH);
+                    hLOG_DEBUG(qq{API: IP_Address(KuL client): ip param matches vs REMOTE_ADDR: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                }
+                else {
+                    $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
+                    hLOG_DEBUG(qq{API: IP_Address(KuL client): ip param no match vs REMOTE_ADDR: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                }
+            }
+            else {
+                $self->__set_member_data($REMOTE_ADDR, 1, IP_NOTREQD);
+                hLOG_DEBUG(qq{API: IP_Address(KuL client): ip param not required: valid=1 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
             }
         }
     }
     else {
-        $self->__set_authorized(0, $REMOTE_ADDR);
-        hLOG_DEBUG(qq{API: API::HTD::IP_Address: ip param ignored, untrusted client: authorized=0 ip=$REMOTE_ADDR});
+        # unknown unlocked client not in list
+        if ($ip_address_param) {
+            if ($ip_address_param eq $REMOTE_ADDR) {
+                $self->__set_member_data($ip_address_param, 1, IP_MATCH);
+                hLOG_DEBUG(qq{API: IP_Address(uK client): ip param matches vs REMOTE_ADDR: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+            }
+            else {
+                $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
+                hLOG_DEBUG(qq{API: IP_Address(uK client): ip param no match vs REMOTE_ADDR: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+            }
+        }
+        else {
+            $self->__set_member_data($REMOTE_ADDR, 1, IP_NOTREQD);
+            hLOG_DEBUG(qq{API: IP_Address(uK client): ip param not required: valid=1 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
+        }        
     }
 }
 
@@ -133,16 +179,30 @@ sub address {
 
 # ---------------------------------------------------------------------
 
-=item is_authorized
+=item ip_is_valid
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub is_authorized {
+sub ip_is_valid {
     my $self = shift;
-    return $self->{authorized};
+    return $self->{valid};
+}
+
+# ---------------------------------------------------------------------
+
+=item ip_match
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ip_match {
+    my $self = shift;
+    return $self->{match};
 }
 
 

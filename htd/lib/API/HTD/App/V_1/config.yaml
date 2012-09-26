@@ -54,11 +54,11 @@ client_query_params:
   - watermark
 
 # ---------------------------------------------------------------------
-# TRUSTED ACCESS_KEY VALUES. These are access_keys where we trust the
-# 'ip' query parameter from a client acting as a proxy for true
-# clients either directly (Data API web client) or indirectly (Qual)
+# These are access_keys that may have 'ip' query parameter or regexp
+# match constraints from clients acting as a proxies for true clients
+# either directly (Data API web client) or indirectly (Qual)
 # ---------------------------------------------------------------------
-client_key_whitelist:
+client_key_authorization_list:
   - b2bd9a3cfb
   - 96da6713b2
   - 30080887e8

@@ -431,6 +431,7 @@ sub H_authenticate {
        code      allow_unwatermarked_derivatives_mask
    129 10000001  10000000  (O)        |allow_unwatermarked_derivatives
    131 10000011  10000000  (O|OR)     |allow_unwatermarked_derivatives
+   133 10000101  10000000  (O|R)(*)
    135 10000111  10000000  (O|OR|R)   |allow_unwatermarked_derivatives
    143 10001111  10000000  (O|OR|R|RF)|allow_unwatermarked_derivatives
 
@@ -574,17 +575,22 @@ sub __authorized_protocol {
     return 1;
 }
 
+
 # ---------------------------------------------------------------------
 
 =item __authorized_at_IP_address
 
+We impose IP address match requirements vs. an IP address parameter
+(where parameter presence is required) and vs. a known IP address for
+clients we recognize by presence in mdp.da_authorization.
+
 Requests for resources that have a 'basic' access_type of 'restricted'
-or any 'extended' access_type must have an authorized 'ip' query parameter
+or any 'extended' access_type must have an 'ip' query parameter
 value. Note that all query parameters are hashed into the signature.
 
 It has already been determined that the access_key allows access based
-on these access_types so here the test is for a valid origin for the
-request with the extended_access_types.
+on these access_types so here the test is for IP address vs. basic and
+extended access_types.
 
 =cut
 
@@ -594,16 +600,45 @@ sub __authorized_at_IP_address {
     my ($ipo, $access_type, $extended_access_type) = @_;
 
     my $ip = $ipo->address; #TRANSITION@ exclude extended_access_type=raw_archival_data
-    if (defined $extended_access_type && ($extended_access_type ne 'raw_archival_data')) {
-        my $authorized = $ipo->is_authorized;
-        hLOG_DEBUG(qq{API: __authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
-        return $authorized;
+    my $ip_address_is_valid  = $ipo->ip_is_valid();
+    my $ip_address_match_result = $ipo->ip_match();
+    my $data_requires_ip_param = 
+      (
+       (defined $extended_access_type && ($extended_access_type ne 'raw_archival_data'))
+       ||
+       ($access_type =~ m,restricted,)
+      );
+    
+    my $authorized = 0;
+    
+    if ($ip_address_is_valid) {
+        if ($data_requires_ip_param) {
+            if ($ip_address_match_result == IP_MATCH) {
+                $authorized = 1;
+            }
+            else {
+                $authorized = 0;
+            }
+        }
+        else {
+            if ($ip_address_match_result == IP_MATCH || $ip_address_match_result == IP_NOTREQD) {
+                $authorized = 1;
+            }
+            else {
+                $authorized = 0;
+            }
+        }
     }
-
-    hLOG_DEBUG(qq{API: __authorized_at_IP_address: authorized=1 ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
-    return 1;
+    else {
+        $authorized = 0;
+    }
+    
+    my $r = qq{ip_valid=$ip_address_is_valid ip_match=$ip_address_match_result ip_param_reqd=$data_requires_ip_param};
+    my $s = qq{API: __authorized_at_IP_address: $r authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none');
+    
+    hLOG_DEBUG($s);
+    return $authorized;
 }
-
 
 # ---------------------------------------------------------------------
 

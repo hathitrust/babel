@@ -258,7 +258,7 @@ sub get_ip_address_by_access_key {
 
     my $statement = qq{SELECT ipregexp FROM da_authorization WHERE  access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    my $ipregexp = $sth->fetchrow_array() || '.*';
+    my $ipregexp = $sth->fetchrow_array(); # could be empty
 
     hLOG_DEBUG('DB:  ' . qq{get_ip_address_by_access_key: $statement: $access_key ::: $ipregexp});
     return $ipregexp;
