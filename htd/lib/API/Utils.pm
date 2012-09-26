@@ -46,7 +46,8 @@ http://host/cgi/htd/pagemeta/uc1.%24b759628/1/pagemeta/uc1.%24b759628/1
 Signatures fail on this account. Ugh.
 
 Due to the network architecture that includes the net scaler, to do
-secure transport over SSL we use http:// over port 443, NOT https://
+secure transport over SSL Data API sees protocol http:// over port
+443, NOT https://
 
 =cut
 
@@ -74,10 +75,7 @@ sub signature_safe_url {
         $safe_url = __DEBUG_signature_safe_url($Q);
     }
     else {
-        my $protocol = 'http://';
-        if (defined $ENV{HT_DEV}) {
-            $protocol = 'https://' if ($ENV{SERVER_PORT} eq '443');
-        }
+        my $protocol = ( ($ENV{SERVER_PORT} eq '443') ? 'https://' : 'http://' );
         $safe_url = $protocol . $ENV{HTTP_HOST} . $ENV{REQUEST_URI};
     }   
 
