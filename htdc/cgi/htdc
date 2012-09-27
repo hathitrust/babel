@@ -62,8 +62,17 @@ my $Q = new CGI;
 # forced upstream
 my $USERID = $ENV{REMOTE_USER};
 
+my $PRODDUCTION_MODE = 0;
+
 my @superusers = qw(pfarber roger rrotter);
-my $DEVELOPMENT_SUPPORT = defined($ENV{HT_DEV}) || grep(/^$USERID$/, @superusers);
+my $DEVELOPMENT_SUPPORT = 0;
+
+if ($PRODDUCTION_MODE) {      
+    delete $ENV{HT_DEV};
+}
+else {
+    $DEVELOPMENT_SUPPORT = defined($ENV{HT_DEV}) || grep(/^$USERID$/, @superusers);
+}
 
 my $DEBUG = 0;
 if ($DEVELOPMENT_SUPPORT) {
@@ -160,7 +169,9 @@ sub validate_request {
     }
 
     unless ($DEVELOPMENT_SUPPORT) {
-        foreach my $arg ( qw(format size width height res watermark) ) {
+        # No debug support and only resolution for sizing when in
+        # production
+        foreach my $arg ( qw(debug size width height) ) {
             $Q->Delete($arg);
         }
     }

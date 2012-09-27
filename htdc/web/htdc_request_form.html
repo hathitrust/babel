@@ -11,7 +11,12 @@
     <script type="text/javascript">
       $(document).ready(function(){
         $("#htdc_request").validate();
-        function hide_show_seq() {
+        function hide_show_opts() {
+          if ($("#pageimageid").is(":checked")) {
+              $("#htoptsdiv").show();
+            } else {
+              $("#htoptsdiv").hide();
+            }
           if (
             $("#pageimageid").is(":checked")
             ||
@@ -27,10 +32,10 @@
         }
 
         eventHandlerHS = function () {
-          hide_show_seq();
+          hide_show_opts();
         };
 
-        hide_show_seq();
+        hide_show_opts();
         $('input').bind("click", eventHandlerHS);
       });
     </script>
@@ -75,11 +80,27 @@
                 ___EXTENDED_TYPES___
               </div>
             </div>
+
             <div id="htseqdiv" class="request">
               <label class="request" for="htseq">sequence <span class="req">*</span></label>
               <input id="htseq" name="seq" class="request required digits" />
             </div>
+
+            <div id="htoptsdiv" class="request">
+              <label class="request" for="htopts">format <span class="req">*</span></label>
+              <div class="resource_radio">
+                <input id="formatid" type="radio" name="format" class="htopts request required" value="raw">raw</input><br/>
+                <input id="formatid" type="radio" name="format" class="htopts request required" value="png">png</input><br/>
+                <input id="formatid" type="radio" name="format" class="htopts request required" value="jpeg">jpeg</input><br/><br/>
+              </div>
+              <label class="request" for="htopts">unwatermarked <span class="unreq">&#2063;</span></label>
+              <input id="watermarkid" type="checkbox" name="unwatermark" class="htopts request"></input><br/><br/>
+              <label class="request" for="htopts">resolution <span class="unreq">&#2063;</span></label>
+              <input id="htres" name="res" class="request digits"></input> <span class="tiny">(0 = highest)</span>
+            </div>
+
             ___EXTENDED_OPTIONS___
+            
             <div class="request">
               <input class="htsubmit" type="submit" value="Submit" />
             </div>

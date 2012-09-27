@@ -1,18 +1,8 @@
     <script type="text/javascript">
       $(document).ready(function(){
-        function hide_show_opts() {
-          if ($("#pageimageid").is(":checked")) {
-              $("#htoptsdiv").show();
-            } else {
-              $("#htoptsdiv").hide();
-            }
+        function hide_show_ext_opts() {
+          $("#htextopts").show();
         }
-
-        eventHandlerHS = function () {
-          hide_show_opts();
-        };
-
-        hide_show_opts();
-        $('input').bind("click", eventHandlerHS);
+        hide_show_ext_opts();
       });
     </script>
