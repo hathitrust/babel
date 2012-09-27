@@ -37,8 +37,8 @@ use URI;
 use YAML::Any;
 use Encode;
 
-use OAuth::Lite::Consumer;
-use OAuth::Lite::AuthMethod;
+use HTTP::Request;
+use LWP::UserAgent;
 
 use Context;
 use Utils;
@@ -69,7 +69,7 @@ my $DEBUG = 0;
 if ($DEVELOPMENT_SUPPORT) {
     $DEBUG = $Q->param('debug') || $DEBUG;
 }
-    
+
 if (! defined $ENV{REMOTE_USER}) {
     serve_login_page();
 }
@@ -304,15 +304,11 @@ Description
 sub serve_DEBUG_Data_API_uri {
     my ($Q, $dbh, $access_key) = @_;
 
-    my ($request_url, $extra) = _make_Data_API_request_url($Q);
-    my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
-
-    my $full_request_url = 
-      HOAuth::Signature::S_get_signed_request_URL($request_url, $access_key, $secret_key, 'GET', $extra);
+    my $signed_url = _make_Data_API_request_url($Q, $dbh, $access_key);
 
     print CGI::header('text/html');
     print "<p><b>[CLIENT] URL to paste to server:</b><br/>";
-    print $full_request_url;        
+    print $signed_url;
 
     exit 0;
 }
@@ -329,30 +325,21 @@ Description
 sub serve_DEBUG_Data_API_response {
     my ($Q, $dbh, $config, $access_key) = @_;
 
-    my ($request_url, $extra) = _make_Data_API_request_url($Q);
-
-    my $consumer =  _get_consumer($dbh, $access_key);
-    my $response = $consumer->request
-      (
-       method  => 'GET',
-       url     => $request_url,
-       params  => $extra,
-      );
-
-    my $full_request_url = $consumer->oauth_request->uri;
+    my $signed_url = _make_Data_API_request_url($Q, $dbh, $access_key);
+    my $response = _get_response($signed_url);
 
     # Debug block
     print CGI::header('text/html');
     print "<p><b>[CLIENT] sent this URL to server:</b><br/>";
-    print $full_request_url;
-    
+    print $signed_url;
+
     print "<p><b>[CLIENT] received this HTTP response from server:</b><br/>";
     print "<b>Status:</b> " . $response->status_line;
     print "<br/>";
     print "<b>Header:</b> " . $response->headers->as_string;
     print "<br/>";
     print "<b>Content:</b> " . $response->content;
-    
+
     if ($Q->param('resource') eq 'pdf') {
         my $foo = $response->content;
         my $filename = '/tmp/test.pdf';
@@ -360,7 +347,7 @@ sub serve_DEBUG_Data_API_response {
         print OUTFILE $foo;
         close( OUTFILE );
     }
-    
+
     exit 0;
 }
 
@@ -377,18 +364,9 @@ Description
 sub serve_Data_API_response {
     my ($Q, $dbh, $config, $access_key) = @_;
 
-    my ($request_url, $extra) = _make_Data_API_request_url($Q);
-
-    my $consumer =  _get_consumer($dbh, $access_key);
-    my $response = $consumer->request
-      (
-       method  => 'GET',
-       url     => $request_url,
-       params  => $extra,
-      );
-
-    my $full_request_url = $consumer->oauth_request->uri;
-    hLOG(qq{htdc: serve_Data_API_response: full request url=$full_request_url});
+    my $signed_url = _make_Data_API_request_url($Q, $dbh, $access_key);
+    my $response = _get_response($signed_url);
+    hLOG(qq{htdc: serve_Data_API_response: signed request url=$signed_url});
 
     if ($response->is_success) {
         print CGI::header(join(';', $response->content_type()));
@@ -448,61 +426,82 @@ sub _htdc_connect {
 
 # ---------------------------------------------------------------------
 
-=item _get_consumer
+=item _get_user_agent
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub _get_consumer {
-    my $dbh = shift;
-    my $access_key = shift;
+sub _get_user_agent {
 
-    my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
-    my $consumer = OAuth::Lite::Consumer->new
-      (
-       consumer_key    => $access_key,
-       consumer_secret => $secret_key,
-       auth_method     => OAuth::Lite::AuthMethod::URL_QUERY,
-      );
+    my $ua = LWP::UserAgent->new;
+    $ua->agent("HathiTrust Data API Client");
 
-    return $consumer;
+    return $ua;
+}
+
+# ---------------------------------------------------------------------
+
+=item _get_response
+
+Due to the production network architecture that includes the net
+scaler, to do transport over SSL in production use http:// over port
+443, NOT https://.  This also means that test.babel will fail SSL
+negotiation if SSL is involved.
+
+This is only a problem for this client because it is behind the net
+scaler on the same server as the Data API itself.
+
+When Data API sees SERVER_PORT == 443, it assumes a URL string that
+begins with 'https://' in signature_safe_url().
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _get_response {
+    my $url = shift;
+    
+    # Assuming a signed URL string of 'https://host/pathinfo?query'
+    # but sending it as 'http://host:443/pathinfo?query' when in production.
+    #
+    $url =~ s,(^https:)//(.*?)/(.*$),http://$2:443/$3, unless ($ENV{HT_DEV});
+
+    my $req = HTTP::Request->new(     
+                                 GET => "$url"
+                                );
+    my $ua =  _get_user_agent();
+    my $res = $ua->request($req);
+
+    return $res;
 }
 
 # ---------------------------------------------------------------------
 
 =item _make_Data_API_request_url
 
-Due to the network architecture that includes the net scaler, to do
-secure transport over SSL we use http:// over port 443, NOT https://
-but only for production.  This also means that test.babel will fail
-SSL negotiation if SSL is involved.
+For simplicity, htdc always sends its request over SSL even for PD
+data.
 
 =cut
 
 # ---------------------------------------------------------------------
 sub _make_Data_API_request_url {
     my $Q = shift;
+    my $dbh = shift;
+    my $access_key = shift;
 
-    my $port = '';
     my $protocol = 'https://';
 
-#     if ($ENV{HT_DEV}) {
-#         $protocol = 'https://';
-#         if (! Debug::DUtils::under_server) {
-#             $ENV{HTTP_HOST} = $ENV{REMOTE_USER} . '-full.babel.hathitrust.org';
-#         }
-#     }
-#     else {
-#         $port = ':443';
-#     }
+    if ($ENV{HT_DEV}) {
+        if (! Debug::DUtils::under_server) {
+            $ENV{HTTP_HOST} = $ENV{REMOTE_USER} . '-full.babel.hathitrust.org';
+        }
+    }
 
     my ($id, $resource, $seq) = ($Q->param('id'), $Q->param('resource'), $Q->param('seq'));
-    my $url = $protocol . $ENV{HTTP_HOST} . $port . '/cgi/htd' . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
-
-    # so API can do geo ip lookup for this user
-    my $client_IPADDR = IPADDR_of_my_client();
+    # So API can do geo ip lookup for this user
+    my $client_IPADDR = IPADDR_of_my_client(); 
     my $extra = { ip => $client_IPADDR };
 
     if ($DEVELOPMENT_SUPPORT) {
@@ -521,7 +520,13 @@ sub _make_Data_API_request_url {
         }
     }
 
-    return ($url, $extra);
+    my $url = $protocol . $ENV{HTTP_HOST} . '/cgi/htd' . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
+
+
+    my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
+    my $signed_url = HOAuth::Signature::S_get_signed_request_URL($url, $access_key, $secret_key, 'GET', $extra);
+
+    return $signed_url;
 }
 
 # ---------------------------------------------------------------------
