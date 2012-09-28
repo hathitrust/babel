@@ -81,6 +81,17 @@ sub get_view_redirect_action_name
     return $redirect;
 }
 
+sub get_view_content_type
+{
+    my $self = shift;
+    my ($C, $page) = @_;
+
+    my $action_name = $self->get_action_name($C);
+    my $content_type = $Action::Bind::g_action_bindings{$action_name}{'view'}{$page}{'content_type'};
+
+    return $content_type;
+}
+
 
 # ---------------------------------------------------------------------
 

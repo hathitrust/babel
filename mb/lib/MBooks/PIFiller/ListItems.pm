@@ -119,6 +119,57 @@ sub handle_ITEM_LIST_PI
     return $output;
 }
 
+sub handle_ITEM_LIST_JSON_PI
+    : PI_handler(ITEM_LIST_JSON)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    require JSON::XS;
+
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');    
+    $C->set_object('Collection', $co);
+    my $cgi = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+
+    my $output = '';
+    my $data_ref = $act->get_transient_facade_member_data($C, 'list_items_data');
+
+    foreach my $item_hashref ( @$data_ref ) {
+        my $extern_id = $$item_hashref{'extern_item_id'}; 
+        $$item_hashref{href} = MBooks::PIFiller::ListUtils::PT_HREF_helper($C, $extern_id, 'pt');
+    }
+
+    my $pager = $act->get_transient_facade_member_data($C, 'pager');
+    ASSERT(defined($pager),qq{pager not defined });
+
+    my $cgi = $C->get_object('CGI');
+    my $current_page = $cgi->param('pn');
+    my $current_sz = $cgi->param('sz');
+
+    my $output = {
+        total_items => int($pager->total_entries),
+        previous_page => $pager->previous_page,
+        next_page => $pager->next_page,
+        items => $data_ref,
+    };
+
+    my $json = JSON::XS->new;
+    $json->utf8(0);
+    $output = $json->encode($output);
+
+    ## things we're not changing (yet?)
+    # $s .= wrap_string_in_tag($$item_hashref{'extern_item_id'}, 'ItemID');
+    # $s .= wrap_string_in_tag($$item_hashref{'rights'}, 'rights');
+    # $s .= wrap_string_in_tag($$item_hashref{'fulltext'}, 'fulltext');
+    # $s .= wrap_string_in_tag($$item_hashref{'record_no'}, 'record');
+    # $c .= wrap_string_in_tag($hashref->{'collname'}, 'CollectionName');
+    # $c .= wrap_string_in_tag($hashref->{'MColl_ID'}, 'CollID');
+    # $c .= wrap_string_in_tag($hashref->{'href'}, 'CollHref');
+
+    return $output;
+
+}
+
 #XXX this will convert "&" to "&amp;" and > and < to &gt; and &lt;
 # The load programs should never put naked "&" in the data but the marc loader was missing the normalization
 # XXX check to make sure that the additem code (from pageturner) and the marc loader use the same normalization!

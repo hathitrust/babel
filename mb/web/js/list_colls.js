@@ -78,10 +78,10 @@ var ListBrowser = {
     this.recent_timepoint = (1).month().ago().toString("yyyy-MM-dd hh:mm:ss");
     this.default_min_items = 0;
 
-    var colltype = window.location.href.match(/colltype=([a-z-]+)/);
+    var colltype = window.location.href.match(/colltype=([a-z-_]+)/);
     if ( colltype != null && ! window.location.hash ) {
       colltype = colltype[1];
-      if ( colltype == "priv" ) { colltype = "my-collections"; }
+      if ( colltype == "priv" || colltype == "my_colls" ) { colltype = "my-collections"; }
       else if ( colltype == "pub" ) { colltype = "all"; }
     } else if ( window.location.hash ) {
       colltype = window.location.hash.substr(1);

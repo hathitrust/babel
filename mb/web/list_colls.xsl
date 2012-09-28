@@ -78,32 +78,10 @@
 
           <xsl:call-template name="header"/>
 
-          <xsl:variable name="list_type">
-            <xsl:call-template name="get_which_list"/>
-          </xsl:variable>
-
-          <xsl:choose>
-            <xsl:when test="$list_type='mycolls'">
-              <xsl:choose>
-                <xsl:when test="count(/MBooksTop/MyCollList/Collection) &gt; 0">
-                  <xsl:call-template name="coll_list">
-                    <xsl:with-param name="which_list" select="'mycolls'"/>
-                    <xsl:with-param name="list_node" select="/MBooksTop/MyCollList"/>
-                  </xsl:call-template>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:call-template name="NoPrivateColl"/>
-                </xsl:otherwise>
-              </xsl:choose>
-            </xsl:when>
-
-            <xsl:otherwise>
-              <xsl:call-template name="coll_list">
-                <xsl:with-param name="which_list" select="'pubcolls'"/>
-                <xsl:with-param name="list_node" select="/MBooksTop/PublicCollList"/>
-              </xsl:call-template>
-            </xsl:otherwise>
-          </xsl:choose>
+          <xsl:call-template name="coll_list">
+            <xsl:with-param name="which_list" select="'pubcolls'"/>
+            <xsl:with-param name="list_node" select="/MBooksTop/CollList"/>
+          </xsl:call-template>
 
           <div id="overlay"></div>
           <xsl:call-template name="footer"/>
@@ -117,19 +95,6 @@
 
     </html>
   </xsl:template>
-
-
-  <xsl:template name="get_which_list">
-    <xsl:choose>
-      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='pub'">
-        <xsl:text>pubcolls</xsl:text>
-      </xsl:when>
-      <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='colltype']='priv'">
-        <xsl:text>mycolls</xsl:text>
-      </xsl:when>
-    </xsl:choose>
-  </xsl:template>
-
 
   <!--XXX Suz this is where the messages go for when there are no private collections -->
   <xsl:template name="NoPrivateColl">
@@ -491,9 +456,6 @@
     </xsl:template>
 
     <xsl:template name="get_page_title">
-      <xsl:variable name="pubpriv">
-        <xsl:call-template name="get_which_list"/>
-      </xsl:variable>
       <xsl:text>Collections | HathiTrust Digital Library</xsl:text>
     </xsl:template>
 
