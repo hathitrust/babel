@@ -84,6 +84,13 @@ my @allowed_uniqnames =
    'bkammin',
   );
 
+my @allowed_overrides = 
+  (
+   'hathitrust@gmail.com',
+  );
+
+my @allowed_users = (@allowed_uniqnames, @allowed_overrides);
+
 sub bc_Usage {
     print qq{Usage: batch-collection -t 'quoted title' -d 'quoted description text' -o userid -f <filename>\n};
     print qq{         or\n};
@@ -103,9 +110,10 @@ sub bc_Usage {
 
 }
 
-my $WHO_I_AM = `whoami`;
+my $WHO_I_AM = $ENV{BATCH_COLLECTION_USER} || `whoami`;
+
 chomp($WHO_I_AM);
-if (! grep(/^$WHO_I_AM$/, @allowed_uniqnames)) {
+if (! grep(/^$WHO_I_AM$/, @allowed_users)) {
     Log_print( qq{ERROR: $WHO_I_AM is not in the list of permitted users\n} );
     exit 1;
 }
