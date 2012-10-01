@@ -287,7 +287,13 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
             foreach my $res (keys %RESOURCES) {
                 print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
             }
-            print "\t\tIDs = " . join(" ", @denied_IDs) . "\n";
+            my $num_ids = scalar(@denied_IDs );
+            if ($num_ids < 7) {
+                print "\t\tIDs = " . join(" ", @denied_IDs) . "\n";
+            }
+            else {
+                print "\t\tIDs = (LARGE) count=$num_ids\n";
+            }
             print "\t\tfailpoints = " . join(" ", @failpoints) . "\n";
         }
     }
