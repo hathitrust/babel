@@ -93,6 +93,7 @@ use XML::Simple;
 use XML::SAX;
 use JSON::XS;
 use XML::LibXSLT;
+use OAuth::Lite::Problems;
 
 # Local
 use API::Path;
@@ -809,6 +810,7 @@ sub __authNZ_Success {
     }
     else {
         $Success = 0;
+        $self->__setErrorResponseCode(403, $hauth->errstr);
         $fail_point = 'non-oauth_outside_grace'; 
     }
 

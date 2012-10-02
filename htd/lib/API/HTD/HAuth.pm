@@ -173,7 +173,7 @@ sub H_authenticated_by_grace {
     }
 
     hLOG_DEBUG('API ERROR: ' . qq{H_authenticated_by_grace: authenticated=0 outside grace period});
-    return $self->error("non-oauth request not allowed outside grace period");
+    return $self->error('non-oauth request not allowed outside grace period');
 }
 
 # ---------------------------------------------------------------------
@@ -310,7 +310,7 @@ sub H_request_is_oauth {
         }
     }
     
-    return 0;
+    return $self->error('signature missing');
 }
 
 # ---------------------------------------------------------------------
