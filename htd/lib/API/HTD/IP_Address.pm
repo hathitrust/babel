@@ -87,7 +87,14 @@ sub new {
 
 =item __initialize
 
-Description
+      TpFc - (T)rusted (p)roxy for (F)ixed c)lient
+      TFc  - (T)rusted (F)ixed (c)lient
+      TpVc - (T)rusted (p)roxy for (V)ariable c)client
+      uTc  - (u)n(T)rusted (c)lient
+
+ Access keys that have been assigned a higher authorization level are
+ 'trusted' in the senses below. Access keys not in the table default
+ to the lowest authorization (code==1).  
 
 =cut
 
@@ -103,62 +110,59 @@ sub __initialize {
 
     my $REMOTE_ADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
 
-    my $clientKeyRef  = $config->getConfigVal('client_key_authorization_list');
-    my $known_client = grep(/^$access_key$/, @$clientKeyRef);
+    my ($code, $ipregexp) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
+    my $trusted_client = ($code > 1);
 
-    if ($known_client) {
-        my $ipregexp = API::HTD::AuthDb::get_ip_address_by_access_key($dbh, $access_key);
-        if ($ipregexp) {
-            # known client is locked to known IP address
-            if ($ip_address_param) {
-                if ($ip_address_param =~ m,$ipregexp,) {
-                    $self->__set_member_data($ip_address_param, 1, IP_MATCH);
-                    hLOG_DEBUG(qq{API: IP_Address(KL client): ip param matches vs allowed REMOTE_ADDR=$ipregexp: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
-                }
-                else {
-                    $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-                    hLOG_DEBUG(qq{API: IP_Address(KL client): ip param no match vs allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
-                }
+    if (! $trusted_client) {
+        my $s = ($ip_address_param ? 'ignored' : 'notsupplied');
+        $self->__set_member_data($REMOTE_ADDR, 1, IP_NOTREQD);
+        hLOG(qq{API: IP_Address(uTc): ip param not required: valid=1 ipp=$s REMOTE_ADDR=$REMOTE_ADDR});
+        return;
+    }
+
+    # Trusted client tests
+    if ($ipregexp) {
+        if ($ip_address_param) {
+            # trusted PROXY for a client locked to fixed IP address (HT web client)
+            if ($ip_address_param =~ m,$ipregexp,) {
+                $self->__set_member_data($ip_address_param, 1, IP_MATCH);
+                hLOG(qq{API: IP_Address(TpFc): ip param matches vs allowed REMOTE_ADDR=$ipregexp: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
             }
             else {
                 $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-                hLOG_DEBUG(qq{API: IP_Address(KL client): ip param missing for allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=missing REMOTE_ADDR=$REMOTE_ADDR});
+                hLOG(qq{API: IP_Address(TpFc): ip param NO match vs allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
             }
         }
         else {
-            # known client is not locked to an IP but may still supply an IP address parameter
-            if ($ip_address_param) {
-                if ($ip_address_param eq $REMOTE_ADDR) {
-                    $self->__set_member_data($ip_address_param, 1, IP_MATCH);
-                    hLOG_DEBUG(qq{API: IP_Address(KuL client): ip param matches vs REMOTE_ADDR: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
-                }
-                else {
-                    $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-                    hLOG_DEBUG(qq{API: IP_Address(KuL client): ip param no match vs REMOTE_ADDR: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
-                }
+            if ($REMOTE_ADDR =~  m,$ipregexp,) {
+                # trusted CLIENT locked to its REMOTE_ADDR (Expressnet)
+                $self->__set_member_data($REMOTE_ADDR, 1, IP_MATCH);
+                hLOG(qq{API: IP_Address(TFc): REMOTE_ADDR matches vs allowed REMOTE_ADDR=$ipregexp: valid=1 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
+
             }
             else {
-                $self->__set_member_data($REMOTE_ADDR, 1, IP_NOTREQD);
-                hLOG_DEBUG(qq{API: IP_Address(KuL client): ip param not required: valid=1 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
+                $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
+                hLOG(qq{API: IP_Address(TcF):  REMOTE_ADDR NO match vs allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
             }
         }
     }
     else {
-        # unknown unlocked client not in list
+        # trusted PROXY for variable clients who must be locked to an
+        # IP via IP address parameter asserted by proxy . (Qual)
         if ($ip_address_param) {
             if ($ip_address_param eq $REMOTE_ADDR) {
                 $self->__set_member_data($ip_address_param, 1, IP_MATCH);
-                hLOG_DEBUG(qq{API: IP_Address(uK client): ip param matches vs REMOTE_ADDR: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                hLOG(qq{API: IP_Address(TpVc): ip param matches vs asserted REMOTE_ADDR: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
             }
             else {
                 $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-                hLOG_DEBUG(qq{API: IP_Address(uK client): ip param no match vs REMOTE_ADDR: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                hLOG(qq{API: IP_Address(TpVc): ip param NO match vs asserted REMOTE_ADDR: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
             }
         }
         else {
-            $self->__set_member_data($REMOTE_ADDR, 1, IP_NOTREQD);
-            hLOG_DEBUG(qq{API: IP_Address(uK client): ip param not required: valid=1 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
-        }        
+            $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
+            hLOG(qq{API: IP_Address(TpVc): ip param missing: valid=0 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
+        }
     }
 }
 

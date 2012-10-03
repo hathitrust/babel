@@ -223,27 +223,6 @@ sub update_fail_ct {
 
 =item get_privileges_by_access_key
 
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub get_privileges_by_access_key {
-    my ($dbh, $access_key) = @_;
-
-    my $statement = qq{SELECT code FROM da_authorization WHERE  access_key=?};
-    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    # No row for access key means default lowest privilege
-    my $code = $sth->fetchrow_array() || 1;
-
-    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: $code});
-    return $code;
-}
-
-# ---------------------------------------------------------------------
-
-=item get_ip_address_by_access_key
-
 No IP address assigned implies no restriction on access by IP
 address. Normally, if a higher access code is assigned to an
 access_key, an IP address would be assigned too.  Otherwise we expect
@@ -253,16 +232,21 @@ server case.
 =cut
 
 # ---------------------------------------------------------------------
-sub get_ip_address_by_access_key {
+sub get_privileges_by_access_key {
     my ($dbh, $access_key) = @_;
 
-    my $statement = qq{SELECT ipregexp FROM da_authorization WHERE  access_key=?};
+    my $statement = qq{SELECT code, ipregexp FROM da_authorization WHERE access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    my $ipregexp = $sth->fetchrow_array(); # could be empty
+    # No row for access key means default lowest privilege
+    my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
 
-    hLOG_DEBUG('DB:  ' . qq{get_ip_address_by_access_key: $statement: $access_key ::: $ipregexp});
-    return $ipregexp;
+    my $code = $ref_to_arr_of_hashref->[0]->{code} || 1;
+    my $ipregexp = $ref_to_arr_of_hashref->[0]->{ipregexp} || 'notanipaddress';
+
+    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: $code, $ipregexp});
+    return ($code, $ipregexp);
 }
+
 
 # ---------------------------------------------------------------------
 

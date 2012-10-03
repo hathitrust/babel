@@ -86,7 +86,6 @@ sub validateQueryParams {
             return 0;
         }
     }
-    # POSSIBLY NOTREACHED
 
     # ... and must be associated with the correct resource
     my $resource = $P_Ref->{resource};
@@ -99,20 +98,19 @@ sub validateQueryParams {
             return 0;
         }
     }
-    # POSSIBLY NOTREACHED
 
-    # Raw pageimage resource only supports format=raw. Unwatermarked image
-    # derivatives require ip, watermark=0 parameters.
+    # Raw pageimage resource only supports format=raw not
+    # resolutions. Unwatermarked image derivatives require ip,
+    # watermark=0 parameters.
     elsif ($resource eq 'pageimage') {
-        # If no format specified: In transition: default is
-        # raw. After: default is optimal derivative TRANSITION@
-        my $format = $Q->param('format') || $Q->param('format', 'raw'); 
+        # If no format default is optimal derivative
+        my $format = $Q->param('format') || $Q->param('format', 'optimalderivative'); 
         my ($w, $h, $r, $s, $watermark);
         $w = $Q->param('width'), $h =  $Q->param('height'), $r = $Q->param('res'), $s = $Q->param('size'), $watermark = $Q->param('watermark');
         my $derivative_param_defined = (defined($w) || defined($h) || defined($r) || defined($s) || defined($watermark));
 
         # Valid format?
-        if (! grep(/^$format$/, qw(raw png jpeg))) {
+        if (! grep(/^$format$/, qw(raw png jpeg optimalderivative))) {
             $self->__errorDescription("invalid format parameter value: $format");
             return 0;
         }
@@ -137,7 +135,6 @@ sub validateQueryParams {
             }
         }
     }
-    # POSSIBLY NOTREACHED
 
     # PDF resource only allows format=ebm
     elsif ($resource eq 'pdf') {
@@ -756,8 +753,14 @@ sub __get_pageimage {
     else {
         use constant _OK => 0;
 
+        # Remove 'optimalderivative' to let imgsrv decide on format
+        my @arg_arr = qw(format size width height res watermark);
+        if ($format eq 'optimalderivative') {
+            @arg_arr = grep(! /^format$/, @arg_arr)
+        }
+
         my %args;
-        foreach my $arg ( qw(format size width height res watermark) ) {
+        foreach my $arg ( @arg_arr ) {
             my $argval = $Q->param($arg);
             $args{'--' . $arg} = $argval if (defined $argval);
         }

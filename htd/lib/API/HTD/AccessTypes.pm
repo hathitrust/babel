@@ -180,9 +180,9 @@ sub getExtendedAccessType {
     # undef except in specific circumstances
     my $extended_accessType;
 
-    my $format = $Q->param('format') || 'none';
+    my $format = $Q->param('format');
 
-    if ( ($resource eq 'pageimage') && grep(/^$format$/, qw(png jpeg)) ) {
+    if ( ($resource eq 'pageimage') && grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
         my $watermark = $Q->param('watermark');
         if (defined $watermark && ($watermark == 0)) {
             $extended_accessType = 'unwatermarked_derivative';
@@ -192,7 +192,7 @@ sub getExtendedAccessType {
         # open aggregate does not require allow_raw bit set
         $extended_accessType = 'raw_archival_data';
     }
-    elsif ( ($resource eq 'pageimage') && ('format' eq 'raw') ) {
+    elsif ( ($resource eq 'pageimage') && ($format eq 'raw') ) {
         # default open pageimage is watermarked derivative else
         # requires allow_raw bit set
         $extended_accessType = 'raw_archival_data';

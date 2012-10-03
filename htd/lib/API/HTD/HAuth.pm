@@ -40,7 +40,13 @@ use API::HTD::AuthDb;
 use API::HTD::IP_Address;
 
 my $FORCE_SUCCESS = 0;
-my $ALLOW_DEVELOPMENT_OVERRIDE = 0;
+my $ALLOW_AUTHENTICATION_DEVELOPMENT_OVERRIDE = 0;
+my $ALLOW_AUTHORIZATION_DEVELOPMENT_OVERRIDE = 0;
+
+if ($FORCE_SUCCESS) {
+    $ALLOW_AUTHENTICATION_DEVELOPMENT_OVERRIDE = 1;
+    $ALLOW_AUTHORIZATION_DEVELOPMENT_OVERRIDE = 1;
+}
 
 use constant REQUEST_METHOD => 'GET';
 # Number of production seconds in 5 minutes. To force an expired
@@ -71,8 +77,6 @@ Initialize object.
 sub _initialize {
     my $self = shift;
     my $args = shift;
-
-    return if ($FORCE_SUCCESS);
 
     my $Q = $args->{_query};
     my $dbh = $args->{_dbh};
@@ -106,19 +110,33 @@ sub __auth_valid {
 
 # ---------------------------------------------------------------------
 
-=item H_allow_development_auth
+=item __allow_development_authorization_override
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub H_allow_development_auth {
-    my $self = shift;
+sub __allow_development_authorization_override {
 
-    my $dev = ($ALLOW_DEVELOPMENT_OVERRIDE && (defined $ENV{HT_DEV})) ? 1 : 0;
+    my $dev = ($ALLOW_AUTHORIZATION_DEVELOPMENT_OVERRIDE && (defined $ENV{HT_DEV})) ? 1 : 0;
+    hLOG_DEBUG('API: ' . qq{__allow_development_authorization_override: dev authorization overridden=$dev});
+    return $dev;
+}
 
-    hLOG_DEBUG('API: ' . qq{H_allow_development_auth: dev authnz overridden=$dev});
+# ---------------------------------------------------------------------
+
+=item __allow_development_authentication_override
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __allow_development_authentication_override {
+
+    my $dev = ($ALLOW_AUTHENTICATION_DEVELOPMENT_OVERRIDE && (defined $ENV{HT_DEV})) ? 1 : 0;
+    hLOG_DEBUG('API: ' . qq{__allow_development_authentication_override: dev authentication overridden=$dev});
     return $dev;
 }
 
@@ -167,7 +185,7 @@ sub H_authenticated_by_grace {
         return 1;
     }
 
-    if ($FORCE_SUCCESS) {
+    if (__allow_development_authentication_override()) {
         $self->__auth_valid(1);
         return 1;
     }
@@ -326,7 +344,7 @@ sub H_authenticate {
     my $self = shift;
     my ($Q, $dbh, $client_data) = @_;
 
-    return $self->__auth_valid(1) if ($FORCE_SUCCESS);
+    return $self->__auth_valid(1) if (__allow_development_authentication_override());
 
     my $authenticated = 0;
 
@@ -394,9 +412,6 @@ sub H_authenticate {
     (O|OR|R)    = open|open_restricted|restricted
     (O|OR|R|RF) = open|open_restricted|restricted|restricted_forbidden
 
-    Note that the allow_raw bit is set elsewhere to support access
-    to raw in the transition period. TRANSITION@
-   
        Basic
        code      basic_mask
     0  00000000            NOT AUTHORIZED
@@ -513,9 +528,6 @@ sub __extended_access_is_authorized {
     my $self = shift;
     my ($code, $extended_access_type) = @_;
 
-    # TRANSITION@ set allow_raw bit unconditionally
-    $code |= ALLOW_RAW_MASK;
-
     my $mask = $extended_authorization_map{$extended_access_type};
     my $result = ($code & $mask);
     my $authorized = ($result == $mask);
@@ -562,10 +574,10 @@ sub __authorized_protocol {
 
     $ENV{SERVER_PORT} = 80 if (! defined $ENV{SERVER_PORT});
 
-    if ( # TRANSITION@ exclude extended_access_type=raw_archival_data
+    if (
         ($access_type =~ m,restricted,) 
         || 
-        (defined $extended_access_type && ($extended_access_type ne 'raw_archival_data'))
+        (defined $extended_access_type)
        ) {
         if ($ENV{SERVER_PORT} ne '443') {
             return 0;
@@ -599,12 +611,12 @@ sub __authorized_at_IP_address {
     my $self = shift;
     my ($ipo, $access_type, $extended_access_type) = @_;
 
-    my $ip = $ipo->address; #TRANSITION@ exclude extended_access_type=raw_archival_data
+    my $ip = $ipo->address;
     my $ip_address_is_valid  = $ipo->ip_is_valid();
     my $ip_address_match_result = $ipo->ip_match();
     my $data_requires_ip_param = 
       (
-       (defined $extended_access_type && ($extended_access_type ne 'raw_archival_data'))
+       (defined $extended_access_type)
        ||
        ($access_type =~ m,restricted,)
       );
@@ -636,7 +648,7 @@ sub __authorized_at_IP_address {
     my $r = qq{ip_valid=$ip_address_is_valid ip_match=$ip_address_match_result ip_param_reqd=$data_requires_ip_param};
     my $s = qq{API: __authorized_at_IP_address: $r authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none');
     
-    hLOG_DEBUG($s);
+    hLOG($s);
     return $authorized;
 }
 
@@ -653,7 +665,7 @@ sub H_authorized {
     my $self = shift;
     my ($Q, $dbh, $resource, $access_type, $extended_access_type) = @_;
 
-    return 1 if ($FORCE_SUCCESS);
+    return 1 if (__allow_development_authorization_override());
 
     if (! $self->__auth_valid) {
         return $self->error('cannot authorize: authentication error');
@@ -667,7 +679,7 @@ sub H_authorized {
         return $self->error('redirect over SSL required');
     }
 
-    my $code = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
+    my ($code) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
     my $ipo = new API::HTD::IP_Address;
 
     if ($self->__access_is_authorized($code, $access_type, $extended_access_type)) {

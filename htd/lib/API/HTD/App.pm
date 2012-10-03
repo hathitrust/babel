@@ -789,12 +789,6 @@ sub __authNZ_Success {
 
     my $hauth = $self->__getHAuthObject();
 
-    # Allow through back door?
-    if ($hauth->H_allow_development_auth()) {
-        return 1;
-    }
-    # POSSIBLY NOTREACHED
-
     my $Success = 0;
     my $fail_point = '?';
 
