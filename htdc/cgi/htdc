@@ -169,9 +169,9 @@ sub validate_request {
     }
 
     unless ($DEVELOPMENT_SUPPORT) {
-        # No debug support and only resolution for sizing when in
-        # production
-        foreach my $arg ( qw(debug size width height) ) {
+        # No debug support and only resolution and width for sizing
+        # when in production
+        foreach my $arg ( qw(debug size height) ) {
             $Q->Delete($arg);
         }
     }
@@ -519,14 +519,27 @@ sub _make_Data_API_request_url {
         if ($resource eq 'pdf') {
             $extra->{format} = 'ebm';
         }
-        elsif ($resource eq 'pageimage') {
-            my $format = $Q->param('format');
-            $extra->{format} = $format;
-            if ($format ne 'raw') {
-                if ($Q->param('unwatermark') eq 'on') {
-                    $extra->{watermark} = 0;
-                }
-                $extra->{res} = $Q->param('res') || 0;
+    }
+
+    if ($resource eq 'pageimage') {
+        my $format = $Q->param('format');
+        $extra->{format} = $format;
+        if ($format ne 'raw') {
+            if ($Q->param('unwatermark') eq 'on') {
+                $extra->{watermark} = 0;
+            }
+            my $res = $Q->param('res');
+            my $width = $Q->param('width');
+
+            # Prefer resolution
+            if (defined $res) {
+                $extra->{res} = $res || 0;
+            }
+            elsif (defined $width) {
+                $extra->{width} = $width || 680;
+            }
+            else {
+                $extra->{res} = $res || 0;
             }
         }
     }

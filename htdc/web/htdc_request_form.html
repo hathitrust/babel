@@ -13,10 +13,12 @@
         $("#htdc_request").validate();
         function hide_show_opts() {
           if ($("#pageimageid").is(":checked")) {
-              $("#htoptsdiv").show();
-            } else {
-              $("#htoptsdiv").hide();
-            }
+            $("#htoptsdiv").show();
+          }
+          else {
+            $("#htoptsdiv").hide();
+          }
+
           if (
             $("#pageimageid").is(":checked")
             ||
@@ -26,9 +28,17 @@
             ||
             $("#pagecoordocrid").is(":checked")) {
               $("#htseqdiv").show();
-            } else {
-              $("#htseqdiv").hide();
-            }
+          }
+          else {
+            $("#htseqdiv").hide();
+          }
+
+          if ($("#formatrawid").is(":checked")) {
+            $("#htnonrawdiv").hide();
+          }
+          else if ($("#pageimageid").is(":checked")) {
+            $("#htnonrawdiv").show();
+           }
         }
 
         eventHandlerHS = function () {
@@ -89,14 +99,19 @@
             <div id="htoptsdiv" class="request">
               <label class="request" for="htopts">format <span class="req">*</span></label>
               <div class="resource_radio">
-                <input id="formatid" type="radio" name="format" class="htopts request required" value="raw">raw</input><br/>
-                <input id="formatid" type="radio" name="format" class="htopts request required" value="png">png</input><br/>
-                <input id="formatid" type="radio" name="format" class="htopts request required" value="jpeg">jpeg</input><br/><br/>
+                <input id="formatrawid" type="radio" name="format" class="htopts request required" value="raw">raw</input><br/>
+                <input id="formatpngid" type="radio" name="format" class="htopts request required" value="png">png</input><br/>
+                <input id="formatjpgid" type="radio" name="format" class="htopts request required" value="jpeg">jpeg</input><br/>
+                <input id="formatoptid" type="radio" name="format" class="htopts request required" value="optimalderivative">optimal derivative</input><br/><br/>
               </div>
-              <label class="request" for="htopts">unwatermarked <span class="unreq">&#2063;</span></label>
-              <input id="watermarkid" type="checkbox" name="unwatermark" class="htopts request"></input><br/><br/>
-              <label class="request" for="htopts">resolution <span class="unreq">&#2063;</span></label>
-              <input id="htres" name="res" class="request digits"></input> <span class="tiny">(0 = highest)</span>
+              <div id="htnonrawdiv">
+                <label class="request" for="htopts">unwatermarked <span class="unreq">&#2063;</span></label>
+                <input id="watermarkid" type="checkbox" name="unwatermark" class="htopts request"></input><br/><br/>
+                <label class="request" for="htopts">resolution <span class="unreq">&#2063;</span></label>
+                <input id="htres" name="res" class="request digits"></input> <span class="tiny">(0,2,4,8: 0=highest)</span>
+                <b>OR</b>
+                <input id="htres" name="width" class="request digits"></input> <span class="tiny">(in pixels)</span>
+              </div>
             </div>
 
             ___EXTENDED_OPTIONS___
