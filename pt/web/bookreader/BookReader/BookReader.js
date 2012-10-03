@@ -3541,7 +3541,7 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
     }
     
     if (autofit) {
-        value = autofit.slice(0,1).toUpperCase() + autofit.slice(1);
+        value = String(autofit).slice(0,1).toUpperCase() + String(autofit).slice(1);
     } else {
         value = (100 / reduce).toFixed(2);
         // Strip trailing zeroes and decimal if all zeroes

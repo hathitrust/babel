@@ -121,7 +121,7 @@
         <xsl:call-template name="UberContainer" />
 
         <!-- Footer -->
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="pageviewer-footer" />
 
         <xsl:call-template name="GetAddItemRequestUrl"/>
 
@@ -131,6 +131,10 @@
 
       </body>
     </html>
+  </xsl:template>
+
+  <xsl:template name="pageviewer-footer">
+    <xsl:call-template name="footer" />
   </xsl:template>
 
   <xsl:template match="/MBooksTop" mode="embed">

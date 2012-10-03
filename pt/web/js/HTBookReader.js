@@ -10,6 +10,11 @@ function HTBookReader() {
     this.cache_age = -1;
     this.restricted_width = this.restricted_height = 75;
     this.catalog_method = 'unzip';
+    // Object to hold parameters related to 1up mode
+    this.onePage = {
+        autofit: 680                                     // valid values are height, width, none
+    };
+
 }
 
 HTBookReader.prototype.sliceFromIndex = function(index) {
@@ -518,45 +523,9 @@ HTBookReader.prototype.init = function(callback) {
       }
     }, init_delay)
 
-    // BookReader.prototype.init.call(this);
-    // // force thumbnails to load SLOWER if the user 
-    // // is loading bookreader from scratch
-    // if ( this.mode == this.constModeThumb ) {
-    //   this.lazyDelay = 2500;
-    //   setTimeout(function() {
-    //     self.lazyDelay = 1500;
-    //   }, this.lazyDelay * 5);
-    // }
-    // console.log("INITIAL MODE =", this.mode, "/", this.lazyDelay);
-    
-    if ( this.ui == 'full' ) {
-        
-        // var html = 
-        //       '<div id="BRpageControls">'
-        //     +   '<a href="#" id="rotate-left" class="rotateAction"><img alt="Rotate Left" src="/pt/images/icon_rotate_counterclockwise.png" height="25" width="25" /></a>'
-        //     +   '<a href="#" id="rotate-right" class="rotateAction"><img alt="Rotate Right" src="/pt/images/icon_rotate_clockwise.png" height="25" width="25" /></a>'
-        //     +   '<a href="#" id="rotate-right" class="printAction"><img alt="Print Page" src="/pt/images/icon_printer.png" height="25" width="25" /></a>'
-        //     + '</div>';
-        // 
-        // 
-        // var $pageControl = $(html).appendTo("#BookReader");
+    if ( this.ui == 'full' ) {        
         this.bindPageControlHandlers();
     }
-    
-    // $('.BRpagediv1up').unbind('mousedown');
-    // $('.BRpagediv1up').bind('mousedown', this, function(e) {
-    //     // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
-    //     //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-    //     console.log("AM ENABLING MOUSEDOWN");
-    //     // if (e.data.displayMode == 'image') {
-    //     //     return false;
-    //     // }
-    //     return true;
-    // });
-    
-    // if ( ! this.complete ) {
-    //   this.loadBookDataSlice(this.slices.length);
-    // }
     
 }
 
@@ -830,7 +799,6 @@ HTBookReader.prototype.updateToolbarZoom = function(reduce) {
         // $("#mdpZoomIn, #mdpZoomIn img").attr('title', "Zoom In: " + zoom_labels[1]);
         $(".mdpZoomOut").text("Zoom Out: " + zoom_labels[0]);
         $(".mdpZoomIn").text("Zoom In: " + zoom_labels[1]);
-        console.log("Zoom Out:", $(".mdpZoomOut").text());
     } else if ( this.mode == this.constModeThumb ) {
         $(".mdpZoomOut").text("Zoom Out: " + (this.thumbColumns + 1) );
         $(".mdpZoomIn").text("Zoom In: " + (this.thumbColumns > 1 ? this.thumbColumns - 1 : 1) );
@@ -1250,7 +1218,36 @@ HTBookReader.prototype.nextReduce = function( currentReduce, direction, reductio
   // if ( this.mode == this.constMode1up && this.displayMode == "text" && ( direction == "height" || direction == "width" ) ) {
   //   return { reduce : 1.0 };
   // }
-  return BookReader.prototype.nextReduce.call( this, currentReduce, direction, reductionFactors );
+
+    var targetWidth = parseInt(direction);
+    if ( isNaN(targetWidth) ) {
+        return BookReader.prototype.nextReduce.call( this, currentReduce, direction, reductionFactors );
+    }
+
+    if ( targetWidth > $("#BRcontainer").width() ) {
+        targetWidth = $("#BRcontainer").width() - 10;
+    }
+
+    console.log("AHOY:", targetWidth);
+
+    // Asked for specific width
+    var avgW = this.getAvgDimension("width");
+    var dims = {};
+    for (var i = 0; i < reductionFactors.length; i++) {
+        dims[i] = parseInt(avgW / reductionFactors[i].reduce);
+        console.log("AHOY AHOY:", dims[i], targetWidth, $("#BRcontainer").width() );
+        if ( dims[i] < targetWidth ) {
+            if ( dims[i - 1] < $("#BRcontainer").width() ) {
+                console.log("AHOY AHOY AHOY - 1:", dims[i - 1], targetWidth, $("#BRcontainer").width() );
+                return reductionFactors[i - 1];
+            }
+            console.log("AHOY AHOY AHOY:", dims[i], targetWidth, $("#BRcontainer").width() );
+            return reductionFactors[i];
+        }
+    }
+
+    alert('Could not find reduction factor for direction ' + direction);
+    return reductionFactors[0];
 }
 
 // fragmentFromParams(params)
