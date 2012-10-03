@@ -392,17 +392,10 @@
       <li>
         <ul id="mdpBookReaderViews">
           <li>
-            <img alt="NEW!" id="mdpNewStarburst" src="//common-web/graphics/harmony/NewStarburst.png" height="44" width="40" />
-          </li>
-          <li>
-            <span class="prompt">Try our new views!</span>
-          </li>
-          <li>
             <xsl:element name="a">
               <xsl:attribute name="id"><xsl:text>btnBookReader1up</xsl:text></xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Scroll View</xsl:attribute>
-<!--               <xsl:attribute name="title"><xsl:value-of select="$title" /></xsl:attribute> -->        
               <xsl:attribute name="href">
                 <xsl:value-of select="$pViewTypeList/ViewType1UpLink"/>
               </xsl:attribute>
@@ -1180,6 +1173,12 @@
       </ul>
       <xsl:call-template name="HiddenDebug"/>
     </xsl:element>
+  </xsl:template>
+
+  <xsl:template name="pageviewer-footer">
+    <xsl:call-template name="footer">
+      <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
+    </xsl:call-template>
   </xsl:template>
 
 </xsl:stylesheet>
