@@ -3540,8 +3540,9 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
         autofit = this.onePage.autofit;
     }
     
-    if (autofit) {
-        value = String(autofit).slice(0,1).toUpperCase() + String(autofit).slice(1);
+    if (autofit && isNaN(autofit)) {
+        // value = String(autofit).slice(0,1).toUpperCase() + String(autofit).slice(1);
+        value = autofit.slice(0,1).toUpperCase() + autofit.slice(1);
     } else {
         value = (100 / reduce).toFixed(2);
         // Strip trailing zeroes and decimal if all zeroes
