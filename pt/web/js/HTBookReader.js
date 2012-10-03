@@ -1228,20 +1228,15 @@ HTBookReader.prototype.nextReduce = function( currentReduce, direction, reductio
         targetWidth = $("#BRcontainer").width() - 10;
     }
 
-    console.log("AHOY:", targetWidth);
-
     // Asked for specific width
     var avgW = this.getAvgDimension("width");
     var dims = {};
     for (var i = 0; i < reductionFactors.length; i++) {
         dims[i] = parseInt(avgW / reductionFactors[i].reduce);
-        console.log("AHOY AHOY:", dims[i], targetWidth, $("#BRcontainer").width() );
         if ( dims[i] < targetWidth ) {
             if ( dims[i - 1] < $("#BRcontainer").width() ) {
-                console.log("AHOY AHOY AHOY - 1:", dims[i - 1], targetWidth, $("#BRcontainer").width() );
                 return reductionFactors[i - 1];
             }
-            console.log("AHOY AHOY AHOY:", dims[i], targetWidth, $("#BRcontainer").width() );
             return reductionFactors[i];
         }
     }
