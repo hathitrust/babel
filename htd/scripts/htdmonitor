@@ -129,7 +129,7 @@ sub Unique_IP_Addresses {
 sub Total_GET_Requests {
 
     chomp(my $total = `grep GET_ $today_log_file|wc -l`);
-    print "* Total GET_* requests = $total\n\n";
+    print "* Total successful GET_* requests = $total\n\n";
 }
 
 # ---------------------------------------------------------------------
@@ -166,7 +166,7 @@ sub Total_GET_RequestsBy_IP_Addr {
 
     if (! defined($ip_hashref)) {
         $unique_ip_addresses_ref = \@UNIQUE_IP_ADDRESSES;
-        print "* Total GET_* requests by IP address\n";
+        print "* Total successful GET_* requests by IP address\n";
     }
     else {
         @$unique_ip_addresses_ref = keys %$ip_hashref;
