@@ -50,36 +50,11 @@
   <xsl:variable name="gLoggedIn" select="/MBooksTop/MBooksGlobals/LoggedIn"/>
   <xsl:variable name="gHathiTrustAffiliate" select="/MBooksTop/MBooksGlobals/HathiTrustAffiliate"/>
   <xsl:variable name="gMichiganAffiliate" select="/MBooksTop/MBooksGlobals/MichiganAffiliate"/>
+  <xsl:variable name="gIsInLibrary" select="/MBooksTop/MBooksGlobals/InLibrary/Status"/>
   <xsl:variable name="gCurrentQ1" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
   <xsl:variable name="gContactEmail" select="/MBooksTop/MBooksGlobals/ContactEmail"/>
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
   <xsl:variable name="gVersionLabel" select="/MBooksTop/MBooksGlobals/VersionLabel"/>
-
-  <xsl:variable name="gTombstoneMsg">
-    <p class="leftText">This item is no longer available in HathiTrust due to one of the following reasons:</p>
-    <ul class="bullets">
-      <li>It was deleted at the request of the rights holder or has been marked for deletion.</li>
-      <li>It was either wholly unusable or a superior copy is available.</li>
-    </ul>
-    
-    <p class="leftText">
-      <xsl:text>Try a </xsl:text>
-      <xsl:element name="a">
-        <xsl:attribute name="href">
-          <xsl:choose>
-            <xsl:when test="$gSkin='mobile'">
-              <xsl:value-of select="'http://m.hathitrust.org'"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:value-of select="'http://www.hathitrust.org'"/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:attribute>
-        <xsl:text> new search </xsl:text>
-      </xsl:element>
-      <xsl:text>for your item to see if there are other copies or editions of this work available.</xsl:text>
-    </p>
-  </xsl:variable>
 
   <xsl:variable name="gVolumeTitleFragment">
     <xsl:choose>
@@ -595,6 +570,52 @@
     
   </xsl:template>
   
+  <!-- Link to OCLC Get Book -->
+  <xsl:template name="FindInALibraryLink">
+    <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+      <xsl:element name="a">
+        <xsl:attribute name="class">worldcat</xsl:attribute>
+        <xsl:attribute name="href">
+          <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
+          <xsl:choose>
+            <xsl:when test="contains(.,'OCoLC)ocm')">
+              <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
+            </xsl:when>
+            <xsl:when test="contains(.,'OCoLC')">
+              <xsl:value-of select="substring-after(.,'OCoLC)')"/>
+            </xsl:when>
+            <xsl:when test="contains(.,'oclc')">
+              <xsl:value-of select="substring-after(.,'oclc')"/>
+            </xsl:when>
+            <xsl:when test="contains(.,'ocm')">
+              <xsl:value-of select="substring-after(.,'ocm')"/>
+            </xsl:when>
+            <xsl:when test="contains(.,'ocn')">
+              <xsl:value-of select="substring-after(.,'ocn')"/>
+            </xsl:when>
+            <xsl:otherwise/>
+          </xsl:choose>
+        </xsl:attribute>
+        <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
+        
+        <xsl:if test="$gGoogleOnclickTracking = 'true'">
+          <xsl:attribute name="onclick">
+            <xsl:call-template name="PageTracker">
+              <xsl:with-param name="category" select="'outLinks'"/>
+              <xsl:with-param name="action" select="'click'"/>
+              <xsl:with-param name="label" select="'PT Find in a Library'"/>
+            </xsl:call-template>
+          </xsl:attribute>
+        </xsl:if>
+        
+        <xsl:text>Find in a library</xsl:text>
+        
+      </xsl:element>
+    </xsl:for-each>
+    
+  </xsl:template>
+
+
   <!-- Link to HathiTrust VuFind -->
   <xsl:template name="hathiVuFind">
 
@@ -613,46 +634,7 @@
         </xsl:element>  
       </li>      
       <li>
-        <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
-          <xsl:element name="a">
-            <xsl:attribute name="class">worldcat</xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
-                <xsl:choose>
-                  <xsl:when test="contains(.,'OCoLC)ocm')">
-                    <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
-                  </xsl:when>
-                  <xsl:when test="contains(.,'OCoLC')">
-                    <xsl:value-of select="substring-after(.,'OCoLC)')"/>
-                  </xsl:when>
-                  <xsl:when test="contains(.,'oclc')">
-                    <xsl:value-of select="substring-after(.,'oclc')"/>
-                  </xsl:when>
-                  <xsl:when test="contains(.,'ocm')">
-                    <xsl:value-of select="substring-after(.,'ocm')"/>
-                  </xsl:when>
-                  <xsl:when test="contains(.,'ocn')">
-                    <xsl:value-of select="substring-after(.,'ocn')"/>
-                  </xsl:when>
-                  <xsl:otherwise/>
-                </xsl:choose>
-            </xsl:attribute>
-            <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
-
-              <xsl:if test="$gGoogleOnclickTracking = 'true'">
-                <xsl:attribute name="onclick">
-                <xsl:call-template name="PageTracker">
-                  <xsl:with-param name="category" select="'outLinks'"/>
-                  <xsl:with-param name="action" select="'click'"/>
-                  <xsl:with-param name="label" select="'PT Find in a Library'"/>
-                </xsl:call-template>
-                </xsl:attribute>
-              </xsl:if>
-
-               <xsl:text>Find in a library</xsl:text>
-
-          </xsl:element>
-        </xsl:for-each>
+        <xsl:call-template name="FindInALibraryLink"/>
       </li>
 
       <xsl:if test="$gPodUrl != ''">
@@ -805,8 +787,9 @@
   
   <!-- FORM: Search -->
   <xsl:template name="BuildSearchForm">
-    
     <xsl:param name="pSearchForm"/>
+    <xsl:param name="pShowLabel" select="'YES'"/>
+
     <xsl:element name="form">
       <xsl:attribute name="onsubmit">
         <xsl:value-of select="'return FormValidation(this.q1, &quot;Please enter a term in the search box.&quot;)'"/>
@@ -823,19 +806,17 @@
         </xsl:choose>
       </xsl:attribute>
       
-      <!-- <h2 class="SkipLink">Search and page navigation options</h2> -->
       <ul class="searchForm">
-        <li id="mdpSearchFormLabel">
-          <h2 id="SkipToSearch" tabindex="0">
-            <label for="mdpSearchInputBox">
-              <xsl:text>Search in this text</xsl:text>
-            </label>
-          </h2>
-<!--           <xsl:element name="a">
-            <xsl:attribute name="class">SkipLink</xsl:attribute>
-            <xsl:attribute name="name">SkipToSearch</xsl:attribute>
-          </xsl:element> -->
-        </li>
+        <xsl:if test="$pShowLabel='YES'">
+          <li id="mdpSearchFormLabel">
+            <h2 id="SkipToSearch" tabindex="0">
+              <label for="mdpSearchInputBox">
+                <xsl:text>Search in this text</xsl:text>
+              </label>
+            </h2>
+          </li>          
+        </xsl:if>
+
         <li class="asearchform">
           <xsl:apply-templates select="$pSearchForm/HiddenVars"/>
           <xsl:element name="input">
@@ -884,7 +865,7 @@
             <xsl:element name="input">
               <xsl:attribute name="id">mdpSearchButton</xsl:attribute>
               <xsl:attribute name="type">submit</xsl:attribute>
-              <xsl:attribute name="value">Find</xsl:attribute>
+              <xsl:attribute name="value">Search</xsl:attribute>
             </xsl:element>
           </xsl:if>
         </li>
