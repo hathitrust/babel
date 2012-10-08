@@ -984,7 +984,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
             href += ";" + pageParam;
         }
     } else {
-        href = href.replace(/num=[^;](;?)/, "");
+        href = href.replace(/num=[^;]+(;?)/, "");
     }
     
     if ( typeof(params.index) != 'undefined' ) {
@@ -1012,7 +1012,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
             href += ";" + viewParam;
         }
     }
-    
+
     if ( was_escaped != null ) {
         href = was_escaped + "target=" + escape(href);
     } else if ( options.id == "#fullPdfLink" ) {
@@ -1022,7 +1022,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
     }
     
     href = href.replace(/;+$/g, "");
-    
+
     return href;
 }
 
@@ -1053,6 +1053,7 @@ HTBookReader.prototype.updateLocationHash = function() {
     
     if ( window.history && window.history.replaceState != null) {
         var new_href = this._updateUrlFromParams(window.location.search, params, { view : true });
+        console.log("NEW HREF:", new_href);
         window.history.replaceState(null, document.title, new_href);
     } else {
         var newHash = '#' + this.fragmentFromParams(params);
