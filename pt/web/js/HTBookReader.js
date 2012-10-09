@@ -1050,10 +1050,15 @@ HTBookReader.prototype.updateLocationHash = function() {
       var pageurl_text = $pageURL.val();
       $pageURL.val(pageurl_text.replace(/seq=\d+/, "seq=" + (params.index + 1)));
     }
+
+    var $input = $("input[name='return']");
+    $input.val(self._updateUrlFromParams($input.val(), params, { view : true }));
+    $input = $("input[name='SeqNo']");
+    $input.val(params.index);
+
     
     if ( window.history && window.history.replaceState != null) {
         var new_href = this._updateUrlFromParams(window.location.search, params, { view : true });
-        console.log("NEW HREF:", new_href);
         window.history.replaceState(null, document.title, new_href);
     } else {
         var newHash = '#' + this.fragmentFromParams(params);
