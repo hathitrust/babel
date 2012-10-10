@@ -39,6 +39,9 @@ jQuery.notifyBar = function(settings) {
      
     //Set up own class
     notifyBarNS.cls = settings.cls || "";
+
+    //Set up own close class
+    notifyBarNS.closecls = settings.closecls || "";
     
     //close button
     notifyBarNS.close = settings.close || false;
@@ -48,7 +51,7 @@ jQuery.notifyBar = function(settings) {
       notifyBarNS.html = bar.html();
     } else {
       bar = jQuery("<div></div>")
-      .addClass("jquery-notify-bar")
+      //.addClass("jquery-notify-bar")
       .addClass(notifyBarNS.cls)
       .attr("id", "__notifyBar");
     }
@@ -74,7 +77,7 @@ jQuery.notifyBar = function(settings) {
     
     // Style close button in CSS file
     if( notifyBarNS.close) {
-      bar.append(jQuery("<a href='#' class='notify-bar-close'>Close [X]</a>"));
+      bar.append(jQuery("<a href='#' class='" + notifyBarNS.closecls + "'>✕</a>"));
       jQuery(".notify-bar-close").click(function() {
         if( bar.attr("id") == "__notifyBar") {
           jQuery("#" + id).slideUp(asTime, function() { jQuery("#" + id).remove() });
