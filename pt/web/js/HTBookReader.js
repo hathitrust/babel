@@ -984,7 +984,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
             href += ";" + pageParam;
         }
     } else {
-        href = href.replace(/num=[^;](;?)/, "");
+        href = href.replace(/num=[^;]+(;?)/, "");
     }
     
     if ( typeof(params.index) != 'undefined' ) {
@@ -1012,7 +1012,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
             href += ";" + viewParam;
         }
     }
-    
+
     if ( was_escaped != null ) {
         href = was_escaped + "target=" + escape(href);
     } else if ( options.id == "#fullPdfLink" ) {
@@ -1022,7 +1022,7 @@ HTBookReader.prototype._updateUrlFromParams = function(href, params, options) {
     }
     
     href = href.replace(/;+$/g, "");
-    
+
     return href;
 }
 
@@ -1050,6 +1050,12 @@ HTBookReader.prototype.updateLocationHash = function() {
       var pageurl_text = $pageURL.val();
       $pageURL.val(pageurl_text.replace(/seq=\d+/, "seq=" + (params.index + 1)));
     }
+
+    var $input = $("input[name='return']");
+    $input.val(self._updateUrlFromParams($input.val(), params, { view : true }));
+    $input = $("input[name='SeqNo']");
+    $input.val(params.index);
+
     
     if ( window.history && window.history.replaceState != null) {
         var new_href = this._updateUrlFromParams(window.location.search, params, { view : true });

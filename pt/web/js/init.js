@@ -224,3 +224,14 @@ $(document).ready(function() {
         
     })
 })
+
+$(document).ready(function() {
+  $.get("/pt/bookreader/BookReader/images/transparent.png", 
+    { 
+      width : $(window).width(),
+      height : $(window).height(),
+      screen_width : screen.width,
+      screen_height : screen.height
+    }
+  )
+})

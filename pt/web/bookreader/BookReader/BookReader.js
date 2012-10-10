@@ -171,6 +171,7 @@ BookReader.prototype.init = function() {
         //console.log('resize!');
         if (1 == e.data.mode) {
             //console.log('centering 1page view');
+            var currentIndex = e.data.currentIndex();
             if (e.data.autofit) {
                 e.data.resizePageView();
             }
@@ -179,6 +180,9 @@ BookReader.prototype.init = function() {
             e.data.displayedIndices = [];
             e.data.updateSearchHilites(); //deletes hilights but does not call remove()            
             e.data.loadLeafs();
+            setTimeout(function() {
+                e.data.jumpToIndex(currentIndex);                
+            }, 500);
         } else if (3 == e.data.mode){
             e.data.prepareThumbnailView();
         } else {
