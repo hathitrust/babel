@@ -61,7 +61,9 @@ Section:LOCAL_JS
 //common-web/js/overlayUtils.js
 //common-web/js/listUtils.js
 //common-web/js/pageturner.js
+//common-web/jquery/jQuery-URL-Parser/purl.js
 /pt/web/jquery/boxy/jquery.boxy.js
+/pt/web/jquery/jquery.cookie.js
 /pt/web/js/init.js
 /pt/web/js/download_helper.js
 

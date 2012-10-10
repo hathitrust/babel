@@ -62,7 +62,7 @@
                 </xsl:when>
                 <!-- If opb (attr=3) + affiliated user then tell them when -->
                 <!-- current accessor's exclusive access expires -->
-                <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true'">
+                <xsl:when test="$gRightsAttribute='3' and ($gMichiganAffiliate='true' or $gIsInLibrary='YES') and $gHeld='YES'">
                   <div class="Specialtext">
                     <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
                     <ul>

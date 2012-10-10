@@ -86,8 +86,13 @@
         <xsl:call-template name="load_js_and_css"/>
         <xsl:call-template name="include_extra_js_and_css" />
 
+        <!-- dropdown banner -->
+        <script type="text/javascript" src="/pt/web/jquery/jQuery-Notify-bar/jquery.notifyBar.js"></script>
+        <script type="text/javascript" src="/pt/js/access_banner.js"></script>
+
         <!-- <xsl:call-template name="online_assessment"/> -->
 
+        <!-- access banners are hidden and exposed by access_banner.js -->
         <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
           <xsl:choose>
             <xsl:when test="$gLoggedIn='YES'">
@@ -174,15 +179,15 @@
   <xsl:template name="extra-head-setup" />
 
   <xsl:template name="access_banner_ssd">
-    <div id="accessBannerSSD" class="accessBanner">Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your account privileges.<br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></div>
+    <div id="accessBannerID" class="hidden">Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your account privileges.<br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></div>
   </xsl:template>
 
   <xsl:template name="access_banner">
-    <div id="accessBanner" class="accessBanner">Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</div>
+    <div id="accessBannerID" class="hidden">Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</div>
   </xsl:template>
 
   <xsl:template name="access_banner_local">
-    <div id="accessBannerLocal" class="accessBanner">This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</div>
+    <div id="accessBannerID" class="hidden">This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</div>
   </xsl:template>
 
   <!-- Top Level Container DIV -->

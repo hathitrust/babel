@@ -1,4 +1,4 @@
-//Script: section108.js
+//Script: section108.js PROBABLY OBSOLETE
 
 function getHelpContent() {
     var pubCollsLink = location.href.substring(0,location.href.lastIndexOf('/')) + "/mb?a=listcs;colltype=pub";

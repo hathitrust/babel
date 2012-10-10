@@ -46,74 +46,132 @@
 
   </xsl:template>
 
-  <!-- VIEWING AREA -->
-  <xsl:template name="Viewport">
-    <xsl:param name="pCurrentPageImageSource"/>
-    <xsl:param name="pCurrentPageOcr"/>
-    <xsl:param name="pAccessStatus"/>
+  <!-- Orphans -->
+  <xsl:template name="OrphanPage">
+    <xsl:variable name="copyright_restricted_msg">
+      Full view is not available for this item<br/> due to copyright &#169; restrictions.
+    </xsl:variable>
 
     <xsl:variable name="orphan_canditate_msg">
       <strong>This volume is an Orphan Works candidate.</strong> <ul><li>The Orphan Works Project is a framework for libraries to determine whether books in their collections are subject to copyright but whose copyright holders cannot be identified or contacted.</li><li>If you are a bona fide copyright holder of this volume, please contact us at the
       <a title="Orphan Works Project" href="http://www.lib.umich.edu/orphan-works/copyright-holders-we-want-hear-you"> Orphan Works Project.</a></li></ul>
     </xsl:variable>
 
-    <xsl:variable name="copyright_restricted_msg">
-      Full view is not available for this item<br/> due to copyright &#169; restrictions.
-    </xsl:variable>
+    <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/></p>
+    <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
+    <p class="centertext"><xsl:copy-of select="$orphan_canditate_msg"/></p>
+  </xsl:template>
+
+  <!-- Brittle access -->
+  <xsl:template name="BrittleAccessPage">
+    <div class="special_text">
+      <p>Hi <xsl:value-of select="$gUserName"/>!</p>
+      
+      <p>This work is in copyright. Full view access is available for this item based on your affiliation or account privileges. Items made available under these special circumstances can only be accessed by one user at a time, in 24 hour increments.</p>
+      <p>Another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
+      
+      <p>
+        <label id="in_use"><xsl:text>In the meantime, you can search inside the text to see if it contains what you are looking for:</xsl:text></label>
+        <xsl:call-template name="BuildSearchForm">
+          <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
+          <xsl:with-param name="pShowLabel" select="'NO'"/>
+        </xsl:call-template>
+      </p>
+      <p>Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
+    </div>    
+  </xsl:template>
+  
+  <!-- Deleted item -->
+  <xsl:template name="DeletedItemPage">
+    <div class="special_text">
+      <p>This item is <strong>no longer available</strong> in HathiTrust due to one of the following reasons:</p>
+
+      <ul class="bullets">
+        <li>It was deleted at the request of the rights holder or has been marked for deletion.</li>
+        <li>It was either wholly unusable or a superior copy is available.</li>
+      </ul>
+      
+      <p>
+        <xsl:text>Try a </xsl:text>
+        <xsl:element name="a">
+          <xsl:attribute name="href">
+            <xsl:value-of select="'http://www.hathitrust.org'"/>
+          </xsl:attribute>
+          <xsl:text> new search </xsl:text>
+        </xsl:element>
+        <xsl:text>for your item to see if there are other copies or editions of this work available.</xsl:text>
+      </p>
+    </div>
+  </xsl:template>
+
+  <!-- No access due to copyright restrictions -->
+  <xsl:template name="NoAccessPage">
+    <div>
+      <div class="no_access_text special_text">This item is <strong>not available online</strong> (<img src="http://pfarber-full.babel.hathitrust.org/mdp-web/graphics/Icon_SearchOnly.png" alt=" " /> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
+      </div>
+      <div class="no_access_text">
+        <p><em>You can:</em></p>
+      </div>
+      <div class="no_access_search">
+        <label id="in_copyright" for="mdpSearchInputBox">
+          <xsl:text>Search inside the text</xsl:text>
+        </label>
+        <xsl:call-template name="BuildSearchForm">
+          <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
+          <xsl:with-param name="pShowLabel" select="'NO'"/>
+        </xsl:call-template>
+        <div class="no_access_search_help">
+          <div class="no_access_search_help_eg">
+            <em>Example:</em>
+            <br />
+            <img src="http://pfarber-full.babel.hathitrust.org/mdp-web/graphics/LimitedSample.png" />
+          </div>
+          <div class="no_access_search_help_text">
+            to find the frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, etc.
+          </div>
+        </div>
+      </div>
+      <div class="no_access_options">
+        <p>
+          <xsl:text>or </xsl:text>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="http://www.worldcat.org/oclc/68181975" title="Link to OCLC Find in a Library">Find in a library »</a>
+        </p>
+      </div>
+    </div>
+  </xsl:template>
+
+  <!-- VIEWING AREA -->
+
+  <xsl:template name="Viewport">
+    <xsl:param name="pCurrentPageImageSource"/>
+    <xsl:param name="pCurrentPageOcr"/>
+    <xsl:param name="pAccessStatus"/>
 
     <xsl:element name="div">
       <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
       <xsl:choose>
         <!-- TOMBSTONE -->
         <xsl:when test="$gRightsAttribute='8'">
-          <div class="Specialtext">
-            <xsl:copy-of select="$gTombstoneMsg"/>
-          </div>
+          <xsl:call-template name="DeletedItemPage"/>
         </xsl:when>
 
-        <!-- If opb (attr=3) + affiliated user then tell them when -->
-        <!-- current accessor's exclusive access expires -->
-        <xsl:when test="$gRightsAttribute='3' and $gMichiganAffiliate='true' and $gHeld='YES'">
-          <div class="Specialtext">
-            <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
-            <ul>
-              <li><strong>Unlimited</strong> use via University of Michigan Library computers</li>
-              <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
-            </ul>
-            <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
-            <p class="leftText"><a href="#" id="ic-access">Learn more</a>.</p>
-          </div>
+        <!-- Brittle message about when current accessor's exclusive access expires -->
+        <xsl:when test="$gRightsAttribute='3' and ($gMichiganAffiliate='true' or $gIsInLibrary='YES') and $gHeld='YES'">
+          <xsl:call-template name="BrittleAccessPage"/>          
         </xsl:when>
 
+        <!-- orphan message -->
+        <xsl:when test="$gOrphanCandidate='true'">
+          <xsl:call-template name="OrphanPage"/>
+        </xsl:when>
+
+        <!-- In copyright, no access message -->
         <xsl:otherwise>
-          <xsl:choose>
-            <xsl:when test="$gOrphanCandidate='true'">
-              <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/></p>
-              <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-              <p class="centertext"><xsl:copy-of select="$orphan_canditate_msg"/></p>
-            </xsl:when>
-            <xsl:otherwise>
-              <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/></p>
-              <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-            </xsl:otherwise>
-          </xsl:choose>
+          <xsl:call-template name="NoAccessPage"/>
         </xsl:otherwise>
       </xsl:choose>
-
-      <xsl:if test="$gRightsAttribute!='8'">
-        <div>
-          <img src="//common-web/graphics/LimitedSample.png" alt="" class="imgFloat"/>
-          <p>What you <strong>CAN</strong> do:
-            <ul>
-              <li>Use the "Search in this text" search box above to find frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, or when working with a book that does not have an index.</li>
-              <li>Click the "Find in a library" link to find this item in a library near you.</li>
-            </ul>
-          </p>
-          (<a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">More information about restricted items</a>)
-        </div>
-      </xsl:if>
     </xsl:element>
-
+    
   </xsl:template>
 
 </xsl:stylesheet>
