@@ -554,66 +554,11 @@ p.centertext {
   text-align: center;
 }
 
-/*             Restricted access pages           
-
-#mdpTextDeny {
-  font-weight: normal;
-  font-size: 1.1em;
-  margin: 10px 0 4px 0;
-  padding: 0.75em 1em 0.5em 1em;
-  border: 1px solid #999;
-  color: #333;
-  background-color: #FFF;
-  text-align: left;
-  height: 30em;
-  min-width: 55em;
-}
-
-#mdpTextDeny ul li {
-  padding-bottom: 8px;
-}
-
-img.imgFloat {
-  position:relative;
-  float:right;
-}
-
-#no_access_msg {
-  padding: 1em;
-  margin-bottom: 1em;
-  background-color: #e2e2e2;
-}
-
-#sideBysideOptions {
-  min-width: 30em;
-}
-
-#no_access_left {
-  float: left;
-  width: 45%;
-  border-right: 2px solid;
-  margin-right: 2em;
-  min-width: 30em;
-}
-
-#no_access_left_left {
-  float: left;
-  width: 55%;
-  margin-right: 1em;
-}
-
-#no_access_right {
-  padding-left: 3em;
-}
-
-*/
+/*             Restricted access pages           */
 
 
-/* line 12, ../sass/message.css.scss */
 #mdpTextDeny {
   *zoom: 1;
-/*  max-width: 59em; */
-/*  _width: 59em; */
   margin-left: auto;
   margin-right: auto;
   padding: 1em;
@@ -623,43 +568,41 @@ img.imgFloat {
   border: 1px solid #999;
   line-height:normal;
 }
-/* line 38, ../../../../.rvm/gems/ruby-1.9.2-p320/gems/compass-0.12.2/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+
 #mdpTextDeny:after {
   content: "";
   display: table;
   clear: both;
 }
-/* line 14, ../../../../.rvm/gems/ruby-1.9.2-p320/gems/susy-1.0.1/sass/susy/_grid.scss */
+
 #mdpTextDeny * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-/* line 15, ../sass/message.css.scss */
+
 #mdpTextDeny header, #mdpTextDeny footer {
   clear: both;
 }
-/* line 17, ../sass/message.css.scss */
+
 #mdpTextDeny .no_access_text {
   clear: both;
 }
 
-/* line 19, ../sass/message.css.scss */
 #mdpTextDeny .special_text {
   background: #eee;
   padding: 1em;
   margin-bottom: 1em;
 }
 
-/* line 26, ../sass/message.css.scss */
 #mdpTextDeny .no_access_search {
   width: 66.10169%;
   float: left;
   margin-right: 1.69492%;
   display: inline;
-  border-right: 2px solid black;
+  border-right: 2px solid #cccccc;
 }
-/* line 31, ../sass/message.css.scss */
+
 #mdpTextDeny .no_access_options {
   width: 32.20339%;
   float: right;
@@ -667,22 +610,26 @@ img.imgFloat {
   #margin-left: -1em;
   display: inline;
 }
-/* line 35, ../sass/message.css.scss */
+
 #mdpTextDeny form {
   display: block;
   margin-bottom: 1em;
 }
-/* line 40, ../sass/message.css.scss */
-#mdpTextDeny label {
+
+#mdpTextDeny label#in_use {
+  display: block;
+  margin-bottom: -0.6em;
+}
+
+#mdpTextDeny label#in_copyright {
   font-weight: bold;
   display: block;
-  margin-bottom: -0.8em;
 }
-/* line 46, ../sass/message.css.scss */
+
 #mdpTextDeny .no_access_search_help_eg {
   float: right;
   padding: 4px;
-  margin: 4px;
+  margin: 0 8px 0 30px;
 }
 
 #mdpTextDeny .searchForm {
@@ -697,6 +644,10 @@ img.imgFloat {
   font-size: 100%;
   font-style: italic;
   margin: 0;
+}
+
+#mdpTextDeny ul {
+  margin-top: 0!important;
 }
 
 

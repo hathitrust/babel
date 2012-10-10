@@ -591,12 +591,14 @@ a .colName {
 .accessBannerClose {
   background-color: #faeec7;
   font-weight: bold;
+  font-size: 1.2em;
   color: #000000;
   position: fixed;
-  top: 6px;
-  right: 7px;
+  top: 10px;
+  right: 30px;
   border-style: solid;
   border-width: 1px;
+  padding: 2px 4px 2px 4px;
 }
 
 .accessBannerClose:hover {
