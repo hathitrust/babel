@@ -333,9 +333,10 @@ sub __log_client {
     my $ua_ip = $ipo->address;
     my $is_oauth = $hauth->H_request_is_oauth($Q);
     my $url = $Q->self_url;
+    my $access_key = $Q->param('oauth_consumer_key');
     
-    hLOG('API: ' . sprintf(qq{__log_client: ip_valid=%d ip_match=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s SERVER_PORT=%s url=%s },
-                           $ip_valid, $ip_match, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}, $ENV{SERVER_PORT}, $url));
+    hLOG('API: ' . sprintf(qq{__log_client: access_key=%s ip_valid=%d ip_match=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s SERVER_PORT=%s url=%s },
+                           $access_key, $ip_valid, $ip_match, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}, $ENV{SERVER_PORT}, $url));
 }
 
 

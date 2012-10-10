@@ -191,7 +191,7 @@ sub H_authenticated_by_grace {
     }
 
     hLOG_DEBUG('API ERROR: ' . qq{H_authenticated_by_grace: authenticated=0 outside grace period});
-    return $self->error('non-oauth request not allowed outside grace period');
+    return $self->error('non-oauth request not allowed outside grace period. See http://babel.hathitrust.org/cgi/htdc or http://babel.hathitrust.org/cgi/kgs');
 }
 
 # ---------------------------------------------------------------------
