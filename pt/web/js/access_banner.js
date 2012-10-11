@@ -5,7 +5,7 @@
 
 $(document).ready(function() {
     if ($('#accessBannerID').length > 0) {
-        var debug = true;
+        var debug = $('html').hasClass('htdev');
         var idarr = JSON.parse($.cookie('access.hathitrust.org'));
         var url = $.url(); // parse the current page URL
         var id = url.param('id');

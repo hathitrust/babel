@@ -20,6 +20,7 @@
   <xsl:variable name="gHeld" select="/MBooksTop/MBooksGlobals/Holdings/Held"/>
   <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
   <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
+  <xsl:variable name="gHTDEV" select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
 
   <xsl:variable name="gCurrentUi">
     <xsl:choose>

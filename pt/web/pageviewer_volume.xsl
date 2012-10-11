@@ -119,6 +119,10 @@
       </xsl:when>
       <xsl:otherwise/>
     </xsl:choose>
+
+    <xsl:if test="$gHTDEV != ''">
+      <xsl:attribute name="class"><xsl:text>htdev</xsl:text></xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="include_extra_js_and_css">

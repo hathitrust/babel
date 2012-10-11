@@ -34,6 +34,7 @@ BEGIN {
     ## $ENV{TEST_BLACKLIST} = 1;
     ## delete $ENV{SDRLIB};
     ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
+    ## delete $ENV{HT_DEV};
 }
 
 
