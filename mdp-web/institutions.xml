@@ -439,6 +439,23 @@
   <!-- waiting -->
 
   <Inst
+      sdrinst="uvm"
+      template="https://___HOST___/Shibboleth.sso/uvm?target=___TARGET___"
+      authtype="shibboleth"
+      domain="uvm.edu"
+      us="1"
+      enabled="0">University of Vermont</Inst>
+  <Inst
+      sdrinst="ias"
+      template="https://___HOST___/Shibboleth.sso/ias?target=___TARGET___"
+      authtype="shibboleth"
+      domain="ias.edu"
+      us="1"
+      mapto_domain="prnc.edu"
+      mapto_sdrinst="prnc"
+      mapto_name="Princeton University"
+      enabled="0">IAS, via Princeton University</Inst>
+  <Inst
       sdrinst="bc"
       template="https://___HOST___/Shibboleth.sso/bc?target=___TARGET___"
       authtype="shibboleth"
