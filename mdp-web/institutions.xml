@@ -435,16 +435,16 @@
       domain="ksu.edu"
       us="1"
       enabled="1">Kansas State University</Inst>
-
-  <!-- waiting -->
-
   <Inst
       sdrinst="uvm"
       template="https://___HOST___/Shibboleth.sso/uvm?target=___TARGET___"
       authtype="shibboleth"
       domain="uvm.edu"
       us="1"
-      enabled="0">University of Vermont</Inst>
+      enabled="1">University of Vermont</Inst>
+
+  <!-- waiting -->
+
   <Inst
       sdrinst="ias"
       template="https://___HOST___/Shibboleth.sso/ias?target=___TARGET___"
