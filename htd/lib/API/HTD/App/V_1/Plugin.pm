@@ -128,7 +128,7 @@ sub validateQueryParams {
             # downstream.
             if (defined($watermark) && ($watermark == 0)) {
                 my $ip = $Q->param('ip');
-                if (! defined($ip) || ($ip !~ m,^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$,)) {
+                if (! API::Utils::valid_IP_address($ip)) {
                     $self->__errorDescription("unwatermarked derivative image ip parameter missing or invalid");
                     return 0;
                 }

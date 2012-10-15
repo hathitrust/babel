@@ -241,9 +241,9 @@ sub get_privileges_by_access_key {
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
 
     my $code = $ref_to_arr_of_hashref->[0]->{code} || 1;
-    my $ipregexp = $ref_to_arr_of_hashref->[0]->{ipregexp} || 'notanipaddress';
+    my $ipregexp = $ref_to_arr_of_hashref->[0]->{ipregexp};
 
-    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: $code, $ipregexp});
+    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: $code, } . ($ipregexp ? $ipregexp : 'NULL'));
     return ($code, $ipregexp);
 }
 

@@ -29,6 +29,20 @@ use API::HTD_Log;
 
 # ---------------------------------------------------------------------
 
+=item valid_IP_address
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub valid_IP_address {
+    my $ip = shift;
+    return (defined($ip) && ($ip =~ m,^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$,o));
+}
+
+# ---------------------------------------------------------------------
+
 =item signature_safe_url
 
 CGI.pm 3.51 mis-handles pathinfo when it contains a URL escaped character,
