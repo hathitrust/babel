@@ -4,8 +4,6 @@
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
-  <xsl:key name="institution-names" match="/MBooksTop/MBooksGlobals/Institutions/Inst" use="@sdrinst"/> 
-
   <xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
   <xsl:variable name="gGoogleOnclickTracking" select="'true'"/>
 
@@ -43,11 +41,11 @@
  </xsl:template>
 
  <xsl:template name="footerBrandingLinks">
-   <xsl:variable name="sdrinst" select="/MBooksTop/MBooksGlobals/EnvSDRINST"/>
+   <xsl:variable name="inst" select="/MBooksTop/MBooksGlobals/InstitutionName"/>
    <div class="footerBrandingLinks">
      <xsl:choose>
-       <xsl:when test="$sdrinst!=''">
-         <xsl:value-of select="key('institution-names', $sdrinst)"/>
+       <xsl:when test="$inst!=''">
+         <xsl:value-of select="$inst"/>
          <br />
          <em>Member, HathiTrust</em>
        </xsl:when>

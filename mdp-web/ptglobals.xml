@@ -31,4 +31,5 @@
 <HtId><?HT_ID?></HtId>
 <Holdings><?ACCESS_HOLDINGS?></Holdings>
 <InLibrary><?IN_LIBRARY?></InLibrary>
-<?CHUNK filename="institutions.xml"?>
+<InstitutionName><?INSTITUTION_NAME?></InstitutionName>
+
