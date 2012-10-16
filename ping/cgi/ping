@@ -146,10 +146,29 @@ JAVASCRIPT
     
     my $callback = $request->param('callback') || qq{ping_handler};
     
-    # if REMOTE_USER is set, we're done; don't bother with hitting
-    # the database!
+    # configuration; do we need our own config?
+    my $config = new MdpConfig(
+                               Utils::get_uber_config_path('ping'),
+                               $ENV{SDRROOT} . "/ping/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/ping/lib/Config/local.conf"
+                              );
+    $C->set_object('MdpConfig', $config);
+
+    # if REMOTE_USER is set, we're done
     if ( $$env{REMOTE_USER} ) {
-        my $info = Ping::Utils::identify_user($C, $env);
+
+        # Database connection to look up mdp.ht_institutions table
+        my $db = new Database($config);
+        $C->set_object('Database', $db);
+
+        my $cgi = new CGI;
+        $C->set_object('CGI', $cgi);
+
+        # Session
+        my $ses = Session::start_session($C);
+        $C->set_object('Session', $ses);
+
+        my $info = Ping::Utils::identify_user($C, $env, $config);
 
         $response = Plack::Response->new(200);
         $response->content_type('text/javascript');
@@ -165,15 +184,7 @@ JAVASCRIPT
         # $response->body(qq{$callback(true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN");});
         $response->body(_body($callback, 'true', $displayName, $affiliation, $$info{authType}, $$info{u}, "LOGGED IN"));
         return $response->finalize;
-    }
-    
-    # configuration; do we need our own config?
-    my $config = new MdpConfig(
-                               Utils::get_uber_config_path('ping'),
-                               $ENV{SDRROOT} . "/ping/lib/Config/global.conf",
-                               $ENV{SDRROOT} . "/ping/lib/Config/local.conf"
-                              );
-    
+    }    
 
     # do I even have a session cookie??
     my $cookies = $request->cookies;
