@@ -3,75 +3,70 @@ package WAYF::IdpConfig;
 # HathiTrust Shibboleth IdP URLs and link text, icons, etc. Keyed by GRIN code.
 
 use strict;
-use XML::LibXML;
+use warnings;
+
 use Utils;
 use Debug::DUtils;
+use Institutions;
 
-our %HT;
-my $g_wPARSER = XML::LibXML->new();
-
+my $HathiTrust_Institutions;
 
 # ---------------------------------------------------------------------
 
-=item get_config_filename
+=item __populate_HT_hash
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_config_filename {
-    my $filename;
-    if (DEBUG('local')) {
-        $filename = $ENV{SDRROOT} . "/mdp-web/institutions.xml";
-    }
-    else {
-        $filename = $ENV{SDRROOT} . "/wayf/web/common-web/institutions.xml";
-    }
+sub __populate_HT_hash {
+    my $C = shift;
 
-    return $filename;
-}
+    my $list_ref = Institutions::get_institution_list($C);
 
-# ---------------------------------------------------------------------
+    foreach my $hashref (@$list_ref) {
 
-=item populate_HT_hash
+        my $name = $hashref->{name};
+        Utils::map_chars_to_cers(\$name, [q{"}, q{'}], 1);
 
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub populate_HT_hash {
-    # lazy
-    return if (scalar keys %HT);
-    
-    my $xml_config_file = get_config_filename();    
-    my $xmlRef = Utils::read_file( $xml_config_file );
-
-    my $doc = $g_wPARSER->parse_string($$xmlRef);
-
-    my $doc_xpath = q{//Inst};
-    my @doc_nodes = $doc->findnodes($doc_xpath);
-
-    foreach my $node (@doc_nodes) {
-        # NAME ::= Inst
-        my $link_text = $node->textContent();
-        Utils::map_chars_to_cers(\$link_text, [q{"}, q{'}], 1);
-
-        my $enabled = $node->getAttributeNode('enabled')->textContent();
-        my $sdrinst = $node->getAttributeNode('sdrinst')->textContent();
-        my $template = $node->getAttributeNode('template')->textContent();
-        my $authtype = $node->getAttributeNode('authtype')->textContent();
+        my $enabled  = $hashref->{enabled};
+        my $sdrinst  = $hashref->{sdrinst};
+        my $template = $hashref->{template};
+        my $authtype = $hashref->{authtype};
 
         my $h = {
-                 'link_text' => $link_text,
+                 'name' => $name,
                  'authtype' => $authtype,
                  'template' => $template,
                  'enabled' => $enabled,
                 };
-        
-        $HT{$sdrinst} = $h;
+
+        $HathiTrust_Institutions->{$sdrinst} = $h;
     }
 }
+
+
+# ---------------------------------------------------------------------
+
+=item get_HathiTrust_Institutions_List
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_HathiTrust_Institutions_List {
+    my $C = shift;
+
+    if (scalar keys %$HathiTrust_Institutions) {
+        return $HathiTrust_Institutions;
+    }
+    else {
+        __populate_HT_hash($C);
+        return $HathiTrust_Institutions;
+    }
+}
+
 
 1;

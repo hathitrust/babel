@@ -6,11 +6,7 @@ WAYF::PIFiller::WAYF (pif)
 
 =head1 DESCRIPTION
 
-This class Search implementation of the abstract PIFiller class.
-
-=head1 VERSION
-
-$Id: WAYF.pm,v 1.12 2010/06/10 18:55:25 pfarber Exp $
+This class WAYF implementation of the abstract PIFiller class.
 
 =head1 SYNOPSIS
 
@@ -21,12 +17,18 @@ See coding example in base class Operation
 =over 8
 
 =cut
+use strict;
+use warnings;
 
 # MDP Modules
 use base qw(PIFiller);
 
 use Utils;
 use Debug::DUtils;
+use Institutions;
+
+use WAYF::IdpConfig;
+
 
 # ---------------------------------------------------------------------
 
@@ -95,15 +97,17 @@ sub handle_IDP_LIST_PI
         $target = Utils::url_over_SSL_to($target);
     }
     
-    # To preselect user's institution in list. Option 0 is in the xsl
-    my $inst = $C->get_object('Auth')->get_institution_code($C);
+    # To preselect user's UNMAPPED institution in list. Option 0 in
+    # menu is in the xsl
+    my $HT_list = WAYF::IdpConfig::get_HathiTrust_Institutions_List($C); 
+    my $inst = $C->get_object('Auth')->get_institution_code($C) || 'notaninstitution';
     foreach my $idp_key (sort 
                          {
-                             $WAYF::IdpConfig::HT{$a}{'link_text'} cmp $WAYF::IdpConfig::HT{$b}{'link_text'}
-                         } keys %WAYF::IdpConfig::HT) {
+                             $HT_list->{$a}->{name} cmp $HT_list->{$b}->{name}
+                         } keys %$HT_list) {
         
         my $development = 0;
-        if (! $WAYF::IdpConfig::HT{$idp_key}{'enabled'}) {
+        if (! $HT_list->{$idp_key}->{enabled}) {
             $development = 1;
             next unless ($ENV{'HT_DEV'});
         }
@@ -112,18 +116,19 @@ sub handle_IDP_LIST_PI
         my $L_target = $target;
 
         # COSIGN special-case: remove when all HathiTrust auth is Shib
-        if ($WAYF::IdpConfig::HT{$idp_key}{'authtype'} eq 'shibboleth') {
+        if ($HT_list->{$idp_key}->{authtype} eq 'shibboleth') {
             $L_target =~ s,/cgi/,/shcgi/,;
             $L_target = CGI::escape($L_target);
         }
 
-        my $idp_url = $WAYF::IdpConfig::HT{$idp_key}{'template'};
-        $idp_url =~ s,___HOST___,$ENV{'HTTP_HOST'},;
+        my $idp_url = $HT_list->{$idp_key}->{template};
+        my $host = $ENV{'HTTP_HOST'} || 'localhost';
+        $idp_url =~ s,___HOST___,$host,;
         $idp_url =~ s,___TARGET___,$L_target,;
 
 
         $site .= wrap_string_in_tag($idp_url, 'Url');
-        my $link_text = $WAYF::IdpConfig::HT{$idp_key}{'link_text'} . ($development ? ' DEV' : '');
+        my $link_text = $HT_list->{$idp_key}->{name} . ($development ? ' DEV' : '');
         $site .= wrap_string_in_tag($link_text, 'LinkText');
         if ($inst eq $idp_key) {
             $site .= wrap_string_in_tag('1', 'Selected');
@@ -133,7 +138,6 @@ sub handle_IDP_LIST_PI
 
     return $s;
 }
-
 
 
 1;
@@ -147,7 +151,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2010 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2010-12 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

@@ -102,8 +102,6 @@ sub ___core_initialize {
     # View
     my $vw = new View($C);
     $self->set_view($vw);
-
-    WAYF::IdpConfig::populate_HT_hash();
 }
 
 # ---------------------------------------------------------------------

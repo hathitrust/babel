@@ -30,6 +30,10 @@ Debug options
 
 use strict;
 
+#BEGIN {
+#    $ENV{DEBUG_LOCAL} = 1;
+#}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
@@ -57,9 +61,9 @@ use Session;
 use Auth::Auth;
 
 use WAYF::Controller;
-use WAYF::IdpConfig;
 
 $::VERSION = 0.1000;
+
 
 # ============================ Main ===================================
 
