@@ -11,6 +11,7 @@ use MdpConfig;
 use Utils;
 use Utils::Sort;
 use Collection;
+use Institutions;
 
 use MBooks::Utils::Sort;
 use MBooks::Utils::TempColl;
@@ -18,6 +19,21 @@ use MBooks::Index;
 
 BEGIN {
     require "PIFiller/Common/Globals.pm";
+}
+
+# ---------------------------------------------------------------------
+
+=item __owner_is_temp_coll_owner
+
+Persistent owner ID is session ID. The only time owner will be 32
+characters and all hex digits is if its a session_id
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __owner_is_temp_coll_owner {
+    my $owner_string = shift;
+    return ((length($owner_string) == 32) && ($owner_string =~ m,^[0-9a-f]+$,g));
 }
 
 # ---------------------------------------------------------------------
@@ -31,97 +47,88 @@ for the owner name if collection created when user is not logged in
 =cut
 
 # ---------------------------------------------------------------------
-sub get_owner_string
-{
+sub get_owner_string {
     my $C = shift;
     my $owner_string = shift;
 
     my $config = $C->get_object('MdpConfig');
     my $temp_coll_owner_string = $config->get('temp_coll_owner_string');
-    
-    if (
-        (length($owner_string) == 32)
-        &&
-        ($owner_string =~ m,^[0-9a-f]+$,g)
-       )
-    {
-        # The only time owner will be 32 characters and all hex digits
-        # is if its a session_id
-        $owner_string = $temp_coll_owner_string;
-    } 
 
-    # Obfuscate
-    if ($owner_string ne $temp_coll_owner_string)
-    {
-        my @parts = split('@', $owner_string);
-        $owner_string = $parts[0];
-        if (scalar(@parts) > 1)
-        {
-            $owner_string; #  .= " (*)";
-        }
+    if (__owner_is_temp_coll_owner($owner_string)) {
+        $owner_string = $temp_coll_owner_string;
     }
-    
+    else {
+        # Obfuscate
+        my @parts = split(/@/, $owner_string);
+        $owner_string = $parts[0];
+    }
 
     return $owner_string;
 }
 
 # ---------------------------------------------------------------------
-sub get_owner_affiliation
-{
+sub get_owner_affiliation {
     my $C = shift;
     my $owner_string = shift;
     my $owner_name = shift;
-    
+
     my $owner_affiliation = '';
 
     my $config = $C->get_object('MdpConfig');
     my $temp_coll_owner_string = $config->get('temp_coll_owner_string');
-    
+
     ## short cut --- if $owner_name is in the format member@somewhere.edu
     ## use *that* to divine affiliation
     if ( $owner_name =~ m,\@,i ) {
-        $owner_string = $owner_name;
+        $owner_string = $owner_name;xxxx
     }
-    
-    if (
-        (length($owner_string) == 32)
-        &&
-        ($owner_string =~ m,^[0-9a-f]+$,g)
-       )
-    {
-        # The only time owner will be 32 characters and all hex digits
-        # is if its a session_id
-        # noop
-        $owner_string = $temp_coll_owner_string;
-    } 
 
-    # Obfuscate
-    if ($owner_string ne $temp_coll_owner_string)
-    {
-        my @parts;
-        if ( $owner_string =~ m,@, ) {
-           @parts = split('@', $owner_string);
-           $owner_affiliation = $parts[-1];
-        } elsif ( $owner_string =~ m,!, ) {
-            @parts = split('!', $owner_string);
-            $owner_affiliation = $parts[0];
-            if ( $owner_affiliation =~ m,urn:mace:incommin:, ) {
-                $owner_affiliation =~ s,urn:mace:incommon:,,;
-            } elsif ( $owner_affiliation =~ m,https:, ) {
-                # well, this is tedious
-                $owner_affiliation =~ s,^https://,,;
-                @parts = split('/', $owner_affiliation);
-                @parts = split('\.', $parts[0]);
-                if ( scalar @parts ) {
-                    $owner_affiliation = join('.', reverse(pop @parts, pop @parts));
-                }
+    # User categories
+    #   Temporary: owner_string=18a59a1fdd0ba7d2a3a7b9fe15c9520f owner_name=guest
+    # UM uniqname: owner_string=sooty owner_name=sooty
+    #   UM Friend: owner_string=xreliable@gmail.com owner_name=xreliable@gmail.com
+    #   Shib user: owner_string=https://auth.yale.edu/idp/shibboleth!...BLAH...= owner_name=Hess, Adam
+    #          or: owner_string=https://login.wisc.edu/idp/shibboleth!...BLAH...= owner_name=member@wisc.edu
+    #          or: owner_string=urn:mace:incommon:iu.edu!http://www.hathitrust.org/shibboleth-sp!...BLAH...= owner_name=member@iu.edu
+
+    # The only time owner will be 32 characters and all hex digits is
+    # if its a session_id noop
+    my $domain;
+    if (__owner_is_temp_coll_owner($owner_string)) {
+        $owner_string = $temp_coll_owner_string;
+    }
+    else {
+        # Obfuscate. We need a domain to do Institution mapping
+        if ( $owner_string =~ m,[a-z]+, && $owner_string eq $owner_name && ($owner_string !~ m,@,)) {
+            # uniqname
+            $domain = 'umich.edu';
+        }
+        elsif ( $owner_string =~ m,!, ) {
+            # shib
+            if ($owner_string =~ m,^urn:mace:incommon:,) {
+                # urn:mace:incommon:uchicago.edu!http://www.hathitrust.org/shibboleth-sp!...BLAH...=
+                ($domain) = ($owner_string =~ m,^urn:mace:incommon:(.*?)!,);
             }
-        } elsif ( $owner_string =~ m,[a-z]+, && $owner_string eq $owner_name ) {
-            # uniqname, likely
-            $owner_affiliation = 'umich.edu';
+            elsif ($owner_string =~ m,^https://.*?/idp/shibboleth!,) {
+                # https://auth.yale.edu/idp/shibboleth!...BLAH...=
+                my ($sub_domain) = ($owner_string =~ m,^https://(.*?)/idp/shibboleth!,);
+                my @parts = split(/\./, $sub_domain);
+                $domain = $parts[-2] . '.' . $parts[-1];
+            }
+            elsif ($owner_string =~ m,^https://www.rediris.es/sir/ucmidp,) {
+                $domain = 'ucm.edu'; # special case!
+            }
+        }
+        else {
+            # friend. see if domain is in our list
+            my @parts = split(/@/, $owner_string);
+            $domain = $parts[1];
         }
     }
-    
+
+    $owner_affiliation = Institutions::get_institution_domain_field_val($C, $domain, 'name', 'mapped');
+
+    print(STDERR "owner_string=$owner_string owner_name=$owner_name domain=$domain aff=$owner_affiliation");
 
     return $owner_affiliation;
 }

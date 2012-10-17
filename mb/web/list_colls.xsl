@@ -235,8 +235,6 @@
 
         <h3 class="offscreen">List of collections</h3>
 
-        <xsl:variable name="insts" select="//Inst" />
-
         <script type="text/javascript">
           var bucket = { 'html': [], 'featured': [], 'cols':[] };
           var html; var featured;
@@ -263,15 +261,7 @@
               html.push('<xsl:value-of select="OwnerString" />');
 
               <xsl:variable name="owner_affiliation">
-                <xsl:choose>
-                  <xsl:when test="$insts[current()/OwnerAffiliation = @domain]">
-                    <xsl:value-of select="string($insts[current()/OwnerAffiliation = @domain])" />
-                  </xsl:when>
-                  <xsl:when test="$insts[contains(current()/OwnerAffiliation, concat('.', @domain))]">
-                    <xsl:value-of select="string($insts[contains(current()/OwnerAffiliation, concat('.', @domain))])" />
-                  </xsl:when>
-                  <xsl:otherwise><xsl:text></xsl:text></xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="OwnerAffiliation" />
               </xsl:variable>
 
               html.push('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
