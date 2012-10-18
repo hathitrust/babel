@@ -458,9 +458,6 @@ mimetype_map:
 # open pageimage when format=raw|watermark=0 is restricted by the
 # allow_raw or allow_unwatermarked_derivatives bit
 #
-# open_restricted aggregate is restricted by allow_raw bit and
-# potentially by CC license rights attribute
-#
 # ---------------------------------------------------------------------
 accessibility_matrix:
   pdf:
@@ -477,6 +474,7 @@ accessibility_matrix:
       purdue: restricted_forbidden
       getty: restricted_forbidden
       um-dc-mp: restricted_forbidden
+      uiuc: restricted_forbidden
     nonfree:
       google: restricted_forbidden
       lit-dlps-dc: restricted_forbidden
@@ -490,6 +488,7 @@ accessibility_matrix:
       purdue: restricted_forbidden
       getty: restricted_forbidden
       um-dc-mp: restricted_forbidden
+      uiuc: restricted_forbidden
   pageimage:
     free:
       google: open
@@ -504,6 +503,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -517,6 +517,7 @@ accessibility_matrix:
       purdue: restricted
       getty: restricted
       um-dc-mp: restricted
+      uiuc: restricted
   aggregate:
     free:
       google: open_restricted
@@ -531,6 +532,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -544,6 +546,7 @@ accessibility_matrix:
       purdue: restricted
       getty: restricted
       um-dc-mp: restricted
+      uiuc: restricted
   pageocr:
     free:
       google: open
@@ -558,6 +561,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -571,6 +575,7 @@ accessibility_matrix:
       purdue: restricted
       getty: restricted
       um-dc-mp: restricted
+      uiuc: restricted
   pagecoordocr:
     free:
       google: open
@@ -585,6 +590,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -598,6 +604,7 @@ accessibility_matrix:
       purdue: restricted
       getty: restricted
       um-dc-mp: restricted
+      uiuc: restricted
   structure:
     free:
       google: open
@@ -612,6 +619,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -625,6 +633,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
   meta:
     free:
       google: open
@@ -639,6 +648,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -652,6 +662,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
   pagemeta:
     free:
       google: open
@@ -666,6 +677,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
     nonfree:
       google: open
       lit-dlps-dc: open
@@ -679,6 +691,7 @@ accessibility_matrix:
       purdue: open
       getty: open
       um-dc-mp: open
+      uiuc: open
 
 # ---------------------------------------------------------------------
 # Mapping from mdp.rights_current.attr field values to names
@@ -750,6 +763,7 @@ sources_name_map:
   10: purdue
   11: getty
   12: um-dc-mp
+  13: uiuc
 
 # ---------------------------------------------------------------------
 # Atom elements, contents and attribute values organized by resource

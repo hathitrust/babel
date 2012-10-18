@@ -188,10 +188,6 @@ sub getExtendedAccessType {
             $extended_accessType = 'unwatermarked_derivative';
         }
     }
-    elsif ( ($resource eq 'aggregate') && ($accessType =~ m,restricted,) ) {
-        # open aggregate does not require allow_raw bit set
-        $extended_accessType = 'raw_archival_data';
-    }
     elsif ( ($resource eq 'pageimage') && ($format eq 'raw') ) {
         # default open pageimage is watermarked derivative else
         # requires allow_raw bit set
