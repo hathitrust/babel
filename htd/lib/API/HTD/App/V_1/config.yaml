@@ -462,7 +462,7 @@ mimetype_map:
 accessibility_matrix:
   pdf:
     free:
-      google: restricted_forbidden
+      google: open
       lit-dlps-dc: open
       um-press: restricted_forbidden
       internet-archive: restricted_forbidden
