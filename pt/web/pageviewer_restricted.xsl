@@ -107,7 +107,7 @@
   <!-- No access due to copyright restrictions -->
   <xsl:template name="NoAccessPage">
     <div>
-      <div class="no_access_text special_text">This item is <strong>not available online</strong> (<img src="http://pfarber-full.babel.hathitrust.org/mdp-web/graphics/Icon_SearchOnly.png" alt=" " /> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
+      <div class="no_access_text special_text">This item is <strong>not available online</strong> (<img src="//common-web/graphics/Icon_SearchOnly.png" alt=" " /> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
       </div>
       <div class="no_access_text">
         <p><em>You can:</em></p>
@@ -124,7 +124,7 @@
           <div class="no_access_search_help_eg">
             <em>Example:</em>
             <br />
-            <img src="http://pfarber-full.babel.hathitrust.org/mdp-web/graphics/LimitedSample.png" />
+            <img src="//common-web/graphics/LimitedSample.png" />
           </div>
           <div class="no_access_search_help_text">
             to find the frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, etc.
