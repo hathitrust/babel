@@ -321,6 +321,8 @@ sub H_request_is_oauth {
     my $self = shift;
     my $Q = shift;
 
+    return 1 if (__allow_development_authentication_override());
+
     my @params = map { lc($_) } $Q->param;
     foreach my $oauth (qw(oauth_consumer_key oauth_nonce oauth_timestamp oauth_signature_method oauth_signature oauth_version)) {
         if (grep(/^$oauth$/, @params)) {
