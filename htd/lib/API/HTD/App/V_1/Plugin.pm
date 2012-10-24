@@ -321,6 +321,33 @@ sub __getParamsRefStr {
 
 # ---------------------------------------------------------------------
 
+=item __mapURIsToHandlers
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __mapURIsToHandlers {
+    my $self = shift;
+
+    my $patternsRef = $self->__getConfigVal('patterns');
+    my $arkPattern =  $self->__getConfigVal('ark_pattern');;
+
+    my %map;
+    foreach my $p (keys %$patternsRef) {
+        my $fullRE = $patternsRef->{$p};
+        $fullRE =~ s,___ARK___,$arkPattern,;
+        my $handler = qq{GET_$p};
+        $map{qr/$fullRE/} = $handler;
+    }
+
+    $self->resourceHooks(%map);
+}
+
+
+# ---------------------------------------------------------------------
+
 =item __bindYAMLTokens
 
 Tokens must be consistent with the V_1/config.yaml
