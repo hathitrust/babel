@@ -443,8 +443,6 @@ mimetype_map:
     default: text/html
     xml: application/xml
     html: text/html
-  pdf:
-    default: application/pdf
 
 # ---------------------------------------------------------------------
 # Access type map: 
@@ -453,42 +451,11 @@ mimetype_map:
 # which means that there are further restrictions on 'open' and
 # 'restricted' that are applied downstream: 
 #
-# open pdf is restricted by allow_pdf bit
-#
 # open pageimage when format=raw|watermark=0 is restricted by the
 # allow_raw or allow_unwatermarked_derivatives bit
 #
 # ---------------------------------------------------------------------
 accessibility_matrix:
-  pdf:
-    free:
-      google: open
-      lit-dlps-dc: open
-      um-press: restricted_forbidden
-      internet-archive: restricted_forbidden
-      yale: restricted_forbidden
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: restricted_forbidden
-      univ_madrid: restricted_forbidden
-      purdue: restricted_forbidden
-      getty: restricted_forbidden
-      um-dc-mp: restricted_forbidden
-      uiuc: restricted_forbidden
-    nonfree:
-      google: restricted_forbidden
-      lit-dlps-dc: restricted_forbidden
-      um-press: restricted_forbidden
-      internet-archive: restricted
-      yale: restricted_forbidden
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: restricted
-      univ_madrid: restricted_forbidden
-      purdue: restricted_forbidden
-      getty: restricted_forbidden
-      um-dc-mp: restricted_forbidden
-      uiuc: restricted_forbidden
   pageimage:
     free:
       google: open
