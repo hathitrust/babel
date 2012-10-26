@@ -77,12 +77,6 @@ sub get_owner_affiliation {
     my $config = $C->get_object('MdpConfig');
     my $temp_coll_owner_string = $config->get('temp_coll_owner_string');
 
-    ## short cut --- if $owner_name is in the format member@somewhere.edu
-    ## use *that* to divine affiliation
-    if ( $owner_name =~ m,\@,i ) {
-        $owner_string = $owner_name;xxxx
-    }
-
     # User categories
     #   Temporary: owner_string=18a59a1fdd0ba7d2a3a7b9fe15c9520f owner_name=guest
     # UM uniqname: owner_string=sooty owner_name=sooty
@@ -116,7 +110,7 @@ sub get_owner_affiliation {
                 $domain = $parts[-2] . '.' . $parts[-1];
             }
             elsif ($owner_string =~ m,^https://www.rediris.es/sir/ucmidp,) {
-                $domain = 'ucm.edu'; # special case!
+                $domain = 'ucm.es'; # special case!
             }
         }
         else {
@@ -126,7 +120,7 @@ sub get_owner_affiliation {
         }
     }
 
-    $owner_affiliation = Institutions::get_institution_domain_field_val($C, $domain, 'name', 'mapped');
+    $owner_affiliation = Institutions::get_institution_domain_field_val($C, $domain, 'name');
 
     print(STDERR "owner_string=$owner_string owner_name=$owner_name domain=$domain aff=$owner_affiliation");
 
