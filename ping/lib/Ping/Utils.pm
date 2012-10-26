@@ -1,7 +1,6 @@
 package Ping::Utils;
 
-use Auth::Auth;  
-use Institutions;
+use Auth::Auth;
 
 sub identify_user {
 
@@ -10,8 +9,8 @@ sub identify_user {
     my $auth = new Auth::Auth($C);
 
     my $displayName = $auth->get_user_display_name($C, 'unscoped');
-    my $institution_code = $auth->get_institution_code($C);
-    my $institution_name = Institutions::get_institution_sdrinst_field_val($C, $institution_code, 'name', 'mapped');
+    my $institution_code = $auth->get_institution_code($C, 'mapped');
+    my $institution_name = $auth->get_institution_name($C, 'mapped');
     my $print_disabled = $auth->get_eduPersonEntitlement_print_disabled($C);
 
     my $auth_type;
