@@ -386,12 +386,26 @@ sub __convert_fieldnames
     my $hash = shift;
     my $fieldmap = $self->__get_fieldmap();
     my $returnhash;
+    
+    #XXX hardcoded here: if mainauthor is populated, replace author with contents of 
+    # mainauthor.  Mainauthor will be deleted since it isn't in the fieldmap
+    if (defined($hash->{'mainauthor'}) && ($hash->{'mainauthor'} ne '')  )
+    {
+        die "ho ho mainauthor defined";
+        
+        $hash->{'author'} = $hash->{'mainauthor'};
+    }
+    
     foreach my $key (keys %{$hash})
     {
-        my $newkey = $fieldmap->{$key};
-        $returnhash->{$newkey}=$hash->{$key};
+        if (defined($fieldmap->{$key}))
+        {
+            my $newkey = $fieldmap->{$key};
+            $returnhash->{$newkey}=$hash->{$key};
+        }
+        
     }
-    return $returnhash;
+            return $returnhash;
 }
 
 # ---------------------------------------------------------------------

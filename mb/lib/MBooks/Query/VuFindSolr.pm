@@ -79,6 +79,7 @@ sub get_Solr_metadata_query_from_ids
     # pass this in after reading it from config file.  See Phil's bin/l/ls/index code
     # need sort title and display title
     my $field_list_arr_ref= [ 'author',
+                              'mainauthor',
                               'title',
                               'title_c',
                               'vtitle',
