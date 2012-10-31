@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
-    <title>HathiTrust Web Client Request Form</title>
+    <title>HathiTrust Web Client (v.2) Request Form</title>
     <meta http-equiv="Content-Language" content="en-us" />
     <script  type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script  type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
@@ -12,7 +12,7 @@
       $(document).ready(function(){
         $("#htdc_request").validate();
         function hide_show_opts() {
-          if ($("#pageimageid").is(":checked")) {
+          if ($("#volpageimageid").is(":checked")) {
             $("#htoptsdiv").show();
           }
           else {
@@ -20,13 +20,13 @@
           }
 
           if (
-            $("#pageimageid").is(":checked")
+            $("#volpageimageid").is(":checked")
             ||
-            $("#pagemetaid").is(":checked")
+            $("#volpagemetaid").is(":checked")
             ||
-            $("#pageocrid").is(":checked")
+            $("#volpageocrid").is(":checked")
             ||
-            $("#pagecoordocrid").is(":checked")) {
+            $("#volpagecoordocrid").is(":checked")) {
               $("#htseqdiv").show();
           }
           else {
@@ -36,7 +36,7 @@
           if ($("#formatrawid").is(":checked")) {
             $("#htnonrawdiv").hide();
           }
-          else if ($("#pageimageid").is(":checked")) {
+          else if ($("#volpageimageid").is(":checked")) {
             $("#htnonrawdiv").show();
            }
         }
@@ -55,7 +55,7 @@
     <div id="HTDCMasterContainer">
       ___HEADER_CHUNK___
       <div id="HTDCcontainer">
-        <h1 class="heading">HathiTrust Data API request</h1>
+        <h1 class="heading">HathiTrust Data API (v.2) request</h1>
         <ul>
           <li>Some example IDs are:
             <ul>
@@ -66,7 +66,8 @@
           <li>Use the <b><i>back</i></b> button to return to this page after your data arrives.</li>
         </ul>
 
-        <form class="htdc_request_form" id="htdc_request" method="post" action="htdc">
+        <form class="htdc_request_form" id="htdc_request" method="get" action="v2">
+          <input type="hidden" name="v" value="2"/>
           <fieldset class="request">
             <legend>Request parameters</legend>
             <div class="request">
@@ -80,13 +81,22 @@
             <div class="request">
               <label class="request" for="htresource">resource <span class="req">*</span></label>
               <div class="resource_radio">
-                <input id="structureid"    type="radio" name="resource" class="htresource request required" value="structure">METS file</input><br/>
-                <input id="aggregateid"    type="radio" name="resource" class="htresource request required" value="aggregate">entire object</input><br/>
-                <input id="metaid"         type="radio" name="resource" class="htresource request required" value="meta">object metadata</input><br/>
-                <input id="pagemetaid"     type="radio" name="resource" class="htresource request required" value="pagemeta">page metadata</input><br/>
-                <input id="pageimageid"    type="radio" name="resource" class="htresource request required" value="pageimage">page image</input><br/>
-                <input id="pageocrid"      type="radio" name="resource" class="htresource request required" value="pageocr">page OCR</input><br/>
-                <input id="pagecoordocrid" type="radio" name="resource" class="htresource request required" value="pagecoordocr">page coordinate OCR</input><br/>
+                <input id="type"
+                       type="radio" name="resource" class="htresource request required" value="type">object type</input><br/>
+                <input id="volstructureid"
+                       type="radio" name="resource" class="htresource request required" value="volume/structure">METS file</input><br/>
+                <input id="volaggregateid"
+                       type="radio" name="resource" class="htresource request required" value="volume/aggregate">entire object</input><br/>
+                <input id="volmetaid"
+                       type="radio" name="resource" class="htresource request required" value="volume/meta">object metadata</input><br/>
+                <input id="volpagemetaid"
+                       type="radio" name="resource" class="htresource request required" value="volume/pagemeta">page metadata</input><br/>
+                <input id="volpageimageid"
+                       type="radio" name="resource" class="htresource request required" value="volume/pageimage">page image</input><br/>
+                <input id="volpageocrid"
+                       type="radio" name="resource" class="htresource request required" value="volume/pageocr">page OCR</input><br/>
+                <input id="volpagecoordocrid"
+                       type="radio" name="resource" class="htresource request required" value="volume/pagecoordocr">page coordinate OCR</input><br/>
                 ___EXTENDED_TYPES___
               </div>
             </div>
@@ -115,7 +125,7 @@
             </div>
 
             ___EXTENDED_OPTIONS___
-            
+
             <div class="request">
               <input class="htsubmit" type="submit" value="Submit" />
             </div>
