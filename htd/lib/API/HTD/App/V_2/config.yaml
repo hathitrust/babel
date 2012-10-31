@@ -1,1 +1,559 @@
+---
+# =====================================================================
+# V_2-specific plugin config
+# =====================================================================
+
+mets_pagemeta_xsl: /htd/lib/API/HTD/App/V_1/mets-pagemeta.xsl
+mets_meta_xsl:     /htd/lib/API/HTD/App/V_1/mets-meta.xsl
+
+# separate, for readability
+ark_pattern:       ark:/13960/(t|fk)\d[a-z\d][a-z\d]\d[a-z\d][a-z\d]\d[a-z\d]
+id_pattern:        .+
+namespace_pattern: .{2,4}
+
+# resource ids, e.g. "meta", must coordinate with da_authorization db
+# table. And see /htd/scripts/test-pathinfo.pl
+patterns:
+  type:                               ^/(type)/((_NS_)\.((_ARK_)|(_ID_)))$
+
+  volume:                           ^/(volume)/((_NS_)\.((_ARK_)|(_ID_)))$
+  volume/pageimage:       ^/(volume/pageimage)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
+  volume/pageocr:           ^/(volume/pageocr)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
+  volume/pagecoordocr: ^/(volume/pagecoordocr)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
+  volume/pagemeta:         ^/(volume/pagemeta)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
+  volume/meta:                 ^/(volume/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
+  volume/structure:       ^/(volume/structure)/((_NS_)\.((_ARK_)|(_ID_)))$
+  volume/aggregate:       ^/(volume/aggregate)/((_NS_)\.((_ARK_)|(_ID_)))$
+
+  article:                         ^/(article)/((_NS_)\.((_ARK_)|(_ID_)))$
+  article/asset:             ^/(article/asset)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
+  article/supplement:   ^/(article/supplement)/((_NS_)\.((_ARK_)|(_ID_)))$
+  article/meta:               ^/(article/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
+  article/structure:     ^/(article/structure)/((_NS_)\.((_ARK_)|(_ID_)))$
+  article/aggregate:     ^/(article/aggregate)/((_NS_)\.((_ARK_)|(_ID_)))$
+
+valid_query_params:
+  - ip
+  - debug
+  - v
+  - alt
+  - callback
+  - oauth_consumer_key
+  - oauth_nonce
+  - oauth_signature
+  - oauth_signature_method
+  - oauth_timestamp
+  - oauth_version
+  - format
+  - width
+  - height
+  - size
+  - res
+  - watermark
+
+client_query_params:
+  - ip
+  - debug
+  - v
+  - alt
+  - callback
+  - format
+  - width
+  - height
+  - size
+  - res
+  - watermark
+
+# ---------------------------------------------------------------------
+# GLOBAL response block definitions
+# ---------------------------------------------------------------------
+HTD_RIGHTS_BLOCK: &htd-rights-block
+  attrs: null
+  content:
+    htd:source:
+      attrs: null
+      content: :::SOURCE
+    htd:namespace:
+      attrs: null
+      content: :::NAMESPACE
+    htd:time:
+      attrs: null
+      content: :::TIME
+    htd:user:
+      attrs: null
+      content: :::USER
+    htd:reason:
+      attrs: null
+      content: :::REASON
+    htd:id:
+      attrs: null
+      content: :::ID
+    htd:attr:
+      attrs: null
+      content: :::ATTR
+    htd:note:
+      attrs: null
+      content: :::NOTE
+
+HTD_ACCESS_BLOCK: &htd-access-block
+  - attrs:
+      resource: volume/pageocr
+    content: _HTD_SCHEMAS_URI_#:::DOWNLOADVOLUMEPAGEOCR
+  - attrs:
+      resource: volume/pagecoordocr
+    content: _HTD_SCHEMAS_URI_#:::DOWNLOADVOLUMEPAGECOORDOCR
+  - attrs:
+      resource: volume/pageimage
+    content: _HTD_SCHEMAS_URI_#:::DOWNLOADVOLUMEPAGEIMAGE
+  - attrs:
+      resource: volume/aggregate
+    content: _HTD_SCHEMAS_URI_#:::DOWNLOADVOLUMEAGGREGATE
+  - attrs:
+      resource: volume
+    content: _HTD_SCHEMAS_URI_#:::DOWNLOADVOLUME
+
+HTD_VERSION_BLOCK: &htd-version-block
+  attrs: null
+  content: 2
+
+HTD_ACCESS_USE_STATEMENT_BLOCK: &htd-access-use-statement-block
+  attrs: null
+  content: :::ACCESSUSESTATEMENT
+
+HTD_ACCESS_USE_BLOCK: &htd-access-use-block
+  attrs: null
+  content: _HTD_SCHEMAS_URI_#:::ACCESSUSE
+
+UPDATED_BLOCK: &updated-block
+  attrs: null
+  content: :::UPDATED
+
+PAGETURNER_LINK_LINK_BLOCK: &pageturner-link-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#pageturner
+    href: _HTD_PT_ALTERNATE_URI_
+    type: text/html
+  content: null
+
+PAGETURNER_HANDLE_LINK_BLOCK: &pageturner-handle-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#handle
+    href: _HTD_HDL_ALTERNATE_URI_
+    type: text/html
+  content: null
+
+XINCLUDE_BLOCK: &xinclude-block
+  attrs:
+    xmlns:xi: http://www.w3.org/2001/XInclude
+    href: :::XINCLUDEMETS
+  content: null
+
+# ---------------------------------------------------------------------
+# VOLUME response block definitions
+# ---------------------------------------------------------------------
+VOLUME_AGGREGATE_LINK_BLOCK: &volume-aggregate-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#volume_aggregate
+    href: _HTD_VOLUME_AGGREGATE_URI_/volume/aggregate/__ID__
+    type: application/zip
+  content: null
+
+VOLUME_STRUCTURE_LINK_BLOCK: &volume-structure-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#volume_structure
+    type: application/xml
+    href: _HTD_VOLUME_STRUCTURE_URI_/volume/structure/__ID__
+  content: null
+
+VOLUME_META_LINK_BLOCK: &volume-meta-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#volume_meta
+    type: application/xml
+    href: _HTD_VOLUME_META_URI_/volume/meta/__ID__
+  content: null
+
+VOLUME_LINK_BLOCK: &volume-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#volume
+    type: application/pdf
+    href: _HTD_VOLUME_META_URI_/volume/__ID__
+  content: null
+
+VOLUME_PAGEIMAGE_LINK_BLOCK: &volume-pageimage-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#volume_pageimage
+    href: _HTD_VOLUME_PAGEIMAGE_URI_/volume/pageimage/__ID__/__SEQ__
+    type: :::IMAGEMIMETYPE
+  content: null
+
+VOLUME_PAGEOCR_LINK_BLOCK: &volume-pageocr-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#volume_pageocr
+    href: _HTD_VOLUME_PAGEOCR_URI_/volume/pageocr/__ID__/__SEQ__
+    type: :::OCRMIMETYPE
+  content: null
+
+VOLUME_PAGECOORDOCR_LINK_BLOCK: &volume-pagecoordocr-link-block
+  attrs:
+    rel: _HTD_SCHEMAS_URI_#volume_pagecoordocr
+    href: _HTD_VOLUME_PAGECOORDOCR_URI_/volume/pagecoordocr/__ID__/__SEQ__
+    type: :::COORDOCRMIMETYPE
+  content: null
+
+
+responses:
+# ------------------ structure XML response ---------------------------
+  volume/structure:
+    entry:
+      attrs:
+        xmlns: _HTD_ATOM_NAMESPACE_URI_
+        xmlns:htd: _HTD_SCHEMAS_URI_
+      content:
+        htd:rights: *htd-rights-block
+        htd:access: *htd-access-block
+        htd:version: *htd-version-block
+        htd:access_use_statement: *htd-access-use-statement-block
+        htd:access_use: *htd-access-use-block
+        updated: *updated-block
+        id:
+          attrs: null
+          content: _HTD_SCHEMAS_URI_/volume/structure/__ID__
+        title:
+          attrs: null
+          content: HathiTrust Repository Data API - METS
+        link:
+          - attrs:
+              rel: self
+              href: _HTD_VOLUME_STRUCTURE_URI_/volume/structure/__ID__
+              type: application/xml
+            content: null
+          - *pageturner-link-link-block
+          - *pageturner-handle-link-block
+          - *volume-aggregate-link-block
+          - *volume-meta-link-block
+          - *volume-link-block
+        xi:include: *xinclude-block
+
+# ---------------------- meta XML response ----------------------------
+  volume/meta:
+    entry:
+      attrs:
+        xmlns: _HTD_ATOM_NAMESPACE_URI_
+        xmlns:htd: _HTD_SCHEMAS_URI_
+      content:
+        htd:rights: *htd-rights-block
+        htd:version: *htd-version-block
+        htd:access_use_statement: *htd-access-use-statement-block
+        htd:access_use: *htd-access-use-block
+        htd:access: *htd-access-block
+        updated: *updated-block
+        id:
+          attrs:   null
+          content: _HTD_VOLUME_META_URI_/volume/meta/__ID__
+        title:
+          attrs: null
+          content: HathiTrust Repository Data API - metadata
+        link:
+          - attrs:
+              rel:  self
+              href: _HTD_VOLUME_META_URI_/volume/meta/__ID__
+              type: application/atom+xml
+            content: null
+          - *pageturner-link-link-block
+          - *pageturner-handle-link-block
+          - *volume-aggregate-link-block
+          - *volume-structure-link-block
+          - *volume-meta-link-block
+          - *volume-link-block
+        xi:include: *xinclude-block
+
+# ------------------------ pagemeta XML response ----------------------
+  volume/pagemeta:
+    entry:
+      attrs:
+        xmlns: _HTD_ATOM_NAMESPACE_URI_
+        xmlns:htd: _HTD_SCHEMAS_URI_
+      content:
+        htd:rights: *htd-rights-block
+        htd:version: *htd-version-block
+        htd:access_use_statement: *htd-access-use-statement-block
+        htd:access_use: *htd-access-use-block
+        htd:access: *htd-access-block
+        updated: *updated-block
+        htd:selected_seq:
+          attrs: null
+          content: __SEQ__
+        id:
+          attrs: null
+          content: _HTD_VOLUME_PAGEMETA_URI_/volume/pagemeta/__ID__/__SEQ__
+        title:
+          attrs: null
+          content: HathiTrust Repository Data API - single page metadata
+        link:
+          - attrs:
+              rel: self
+              href: _HTD_VOLUME_PAGEMETA_URI_/volume/pagemeta/__ID__/__SEQ__
+              type: application/atom+xml
+            content: null
+          - *pageturner-link-link-block
+          - *pageturner-handle-link-block
+          - *volume-pageimage-link-block
+          - *volume-pageocr-link-block
+          - *volume-pagecoordocr-link-block
+          - *volume-aggregate-link-block
+          - *volume-structure-link-block
+          - *volume-meta-link-block
+          - *volume-link-block
+        xi:include: *xinclude-block
+
+
+# ---------------------------------------------------------------------
+# MIME type map: f(resource, representation, cannonical_key)
+# ---------------------------------------------------------------------
+mimetype_map:
+  type:
+    default: application/xml
+    json: application/json
+
+  volume/pageimage:
+    tiff: image/tiff
+    jp2: image/jp2
+    jpeg: image/jpeg
+    png: image/png
+  volume/pageocr:
+    default: text/plain
+    text: text/plain
+  volume/pagecoordocr:
+    default: text/html
+    xml: application/xml
+    html: text/html
+  volume/pagemeta:
+    default: application/xml
+    json: application/json
+  volume/meta:
+    default: application/xml
+    json: application/json
+  volume/structure:
+    default: application/xml
+    json: application/json
+  volume/aggregate:
+    default: application/zip
+    zip: application/zip
+  volume:
+    default: application/pdf
+
+  article:
+    default: application/xml
+    pdf: application/pdf
+  article/asset:
+    jpeg: image/jpeg
+    png: image/png
+  article/supplement:
+    default: application/zip
+    zip: application/zip
+  article/meta:
+    default: application/xml
+    json: application/json
+  article/structure:
+    default: application/xml
+    json: application/json
+  article/aggregate:
+    default: application/zip
+    zip: application/zip
+
+
+# ---------------------------------------------------------------------
+# Access type map:
+# access_type = g(access_key, f(resource, rights attr, source)).
 #
+# which means that there are further restrictions on 'open' and
+# 'restricted' that are applied downstream:
+#
+# restricted volume (format=ebm) is further restricted
+# by allow_pdf bit:
+#
+#     code=39: 00100111  00100000  (O|OR|R)|allow_pdf
+#
+# open pageimage when format=raw|watermark=0 is restricted by the
+# allow_raw or allow_unwatermarked_derivatives bit
+#
+# ---------------------------------------------------------------------
+OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
+  google: open
+  lit-dlps-dc: open
+  um-press: open
+  internet-archive: open
+  yale: open
+  minn-dig-lib: open
+  minn-hist-soc: open
+  utah_state_univ_press: open
+  univ_madrid: open
+  purdue: open
+  getty: open
+  um-dc-mp: open
+  uiuc: open
+
+RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
+  google: restricted
+  lit-dlps-dc: restricted
+  um-press: restricted
+  internet-archive: restricted
+  yale: restricted
+  minn-dig-lib: restricted
+  minn-hist-soc: restricted
+  utah_state_univ_press: restricted
+  univ_madrid: restricted
+  purdue: restricted
+  getty: restricted
+  um-dc-mp: restricted
+  uiuc: restricted
+
+accessibility_matrix:
+  volume:
+    free:
+      google: restricted
+      lit-dlps-dc: restricted
+      um-press: restricted_forbidden
+      internet-archive: restricted_forbidden
+      yale: restricted_forbidden
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: restricted_forbidden
+      univ_madrid: restricted_forbidden
+      purdue: restricted_forbidden
+      getty: restricted_forbidden
+      um-dc-mp: restricted_forbidden
+      uiuc: restricted_forbidden
+    nonfree:
+      google: restricted_forbidden
+      lit-dlps-dc: restricted_forbidden
+      um-press: restricted_forbidden
+      internet-archive: restricted
+      yale: restricted_forbidden
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: restricted
+      univ_madrid: restricted_forbidden
+      purdue: restricted_forbidden
+      getty: restricted_forbidden
+      um-dc-mp: restricted_forbidden
+      uiuc: restricted_forbidden
+
+  volume/pageimage:
+    free:
+      google: open
+      lit-dlps-dc: open
+      um-press: open
+      internet-archive: open
+      yale: open
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: open
+      univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
+      uiuc: open
+    nonfree:
+      google: restricted
+      lit-dlps-dc: restricted
+      um-press: restricted
+      internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: restricted
+      univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
+      uiuc: restricted
+
+  volume/aggregate:
+    free:
+      google: open_restricted
+      lit-dlps-dc: open
+      um-press: restricted_forbidden
+      internet-archive: open
+      yale: open
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: open
+      univ_madrid: open
+      purdue: open
+      getty: open
+      um-dc-mp: open
+      uiuc: open
+    nonfree:
+      google: restricted
+      lit-dlps-dc: restricted
+      um-press: restricted_forbidden
+      internet-archive: restricted
+      yale: restricted
+      minn-dig-lib: restricted_forbidden
+      minn-hist-soc: restricted_forbidden
+      utah_state_univ_press: restricted
+      univ_madrid: restricted
+      purdue: restricted
+      getty: restricted
+      um-dc-mp: restricted
+      uiuc: restricted
+
+  volume/pageocr:
+    free: *open-accessibility-block
+    nonfree: *restricted-accessibility-block
+
+  volume/pagecoordocr:
+    free: *open-accessibility-block
+    nonfree: *restricted-accessibility-block
+
+  volume/pagemeta:
+    free: *open-accessibility-block
+    nonfree: *open-accessibility-block
+
+  volume/meta:
+    free: *open-accessibility-block
+    nonfree: *open-accessibility-block
+
+  volume/structure:
+    free: *open-accessibility-block
+    nonfree: *open-accessibility-block
+
+  article:
+    free: *open-accessibility-block
+    nonfree: *restricted-accessibility-block
+  article/asset:
+    free: *open-accessibility-block
+    nonfree: *restricted-accessibility-block
+  article/supplement:
+    free: *open-accessibility-block
+    nonfree: *restricted-accessibility-block
+  article/meta:
+    free: *open-accessibility-block
+    nonfree: *open-accessibility-block
+  article/structure:
+    free: *open-accessibility-block
+    nonfree: *open-accessibility-block
+  article/aggregate:
+    free: *open-accessibility-block
+    nonfree: *restricted-accessibility-block
+
+
+# ---------------------------------------------------------------------
+# Atom elements, contents and attribute values organized by resource
+# ---------------------------------------------------------------------
+_HTD_VOLUME_META_URI_:           http://babel.hathitrust.org/cgi/htd
+_HTD_VOLUME_PAGEMETA_URI_:       http://babel.hathitrust.org/cgi/htd
+_HTD_VOLUME_STRUCTURE_URI_:      http://babel.hathitrust.org/cgi/htd
+_HTD_VOLUME_PAGEIMAGE_URI_:      :::VOLUMEPAGEIMAGEPROTOCOL://babel.hathitrust.org/cgi/htd
+_HTD_VOLUME_PAGEOCR_URI_:        :::VOLUMEPAGEOCRPROTOCOL://babel.hathitrust.org/cgi/htd
+_HTD_VOLUME_PAGECOORDOCR_URI_:   :::VOLUMEPAGECOORDOCRPROTOCOL://babel.hathitrust.org/cgi/htd
+_HTD_VOLUME_AGGREGATE_URI_:      :::VOLUMEAGGREGATEPROTOCOL://babel.hathitrust.org/cgi/htd
+_HTD_VOLUME_URI_:                :::VOLUMEPROTOCOL://babel.hathitrust.org/cgi/htd
+
+# ---------------------------------------------------------------------
+# Token patterns to support dynamic replacement
+# ^__XXX__$   replacement by simple substitution
+# ^_HTD_[A-Z_]+_$ replacement by substitution by pointer to static data
+# ^:::XXX$    replacement by a handler binding
+# ---------------------------------------------------------------------

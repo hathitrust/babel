@@ -34,12 +34,10 @@ use Vendors;
 
 use CGI;
 
-# Code version
-$::VERSION = 0.2000;
-
 # Highest API version supported
-use constant HIGHEST_API_VERSION => 1;
-our @SUPPORTED_VERSIONS = (HIGHEST_API_VERSION);
+use constant DEFAULT_API_VERSION => 1;
+use constant HIGHEST_API_VERSION => 2;
+our @SUPPORTED_VERSIONS = (DEFAULT_API_VERSION, HIGHEST_API_VERSION);
 
 # ============================ Main ===================================
 
@@ -118,7 +116,7 @@ sub __determineVersion {
     my $Q = shift;
 
     # Default and validate the version param
-    my $ver = $Q->param('v') ? $Q->param('v') : HIGHEST_API_VERSION;
+    my $ver = $Q->param('v') ? $Q->param('v') : DEFAULT_API_VERSION;
     if (! grep(/^$ver$/, @SUPPORTED_VERSIONS)) {
         return undef;
     }
