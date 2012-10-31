@@ -3,9 +3,6 @@
 # V_2-specific plugin config
 # =====================================================================
 
-mets_pagemeta_xsl: /htd/lib/API/HTD/App/V_1/mets-pagemeta.xsl
-mets_meta_xsl:     /htd/lib/API/HTD/App/V_1/mets-meta.xsl
-
 # separate, for readability
 ark_pattern:       ark:/13960/(t|fk)\d[a-z\d][a-z\d]\d[a-z\d][a-z\d]\d[a-z\d]
 id_pattern:        .+

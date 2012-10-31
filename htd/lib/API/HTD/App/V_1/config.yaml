@@ -3,9 +3,6 @@
 # V_1-specific plugin config
 # =====================================================================
 
-mets_pagemeta_xsl: /htd/lib/API/HTD/App/V_1/mets-pagemeta.xsl
-mets_meta_xsl:     /htd/lib/API/HTD/App/V_1/mets-meta.xsl
-
 # resource ids, e.g. "meta", must coordinate with da_authorization db
 # table.
 patterns:

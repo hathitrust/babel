@@ -9,6 +9,10 @@ unzip_prog: /l/local/bin/unzip
 
 access_use_intro: Please view access and use restrictions at
 
+
+mets_pagemeta_xsl: /htd/lib/API/HTD/App/mets-pagemeta.xsl
+mets_meta_xsl:     /htd/lib/API/HTD/App/mets-meta.xsl
+
 force_array_format:
   - link
   - htd:pgmap
