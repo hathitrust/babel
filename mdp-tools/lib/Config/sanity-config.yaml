@@ -53,8 +53,20 @@ htd:
   - /htapps/__CMD_STAGE__/htd/cgi/htd action=/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22 __LOCAL__
   - /htapps/__CMD_STAGE__/htd/cgi/htd action=/pagemeta/uc1.\$b699489/1 __LOCAL__
 
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/type/mdp.39015004314111 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/pagemeta/mdp.39015004314111/37 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/meta/mdp.39015004314111 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/structure/mdp.39015004314111 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/aggregate/mdp.39015004314111 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/pageimage/inu.30000000123830/19 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/pageocr/mdp.39015004314111/51 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/pagecoordocr/uc2.ark:/13960/t0dv1g69b/22 __LOCAL__
+  - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/pagemeta/uc1.\$b699489/1 __LOCAL__
+
 htdc:
   - http://__URL_STAGE__.hathitrust.org/__CGI__/htdc/dapiclient
+  - http://__URL_STAGE__.hathitrust.org/__CGI__/htdc
+  - http://__URL_STAGE__.hathitrust.org/__CGI__/htdc/v2
 
 logout:
   - /htapps/__CMD_STAGE__/logout/cgi/logout __LOCAL__
