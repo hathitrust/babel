@@ -166,6 +166,11 @@ sub handle_ITEM_LIST_JSON_PI
     # $c .= wrap_string_in_tag($hashref->{'MColl_ID'}, 'CollID');
     # $c .= wrap_string_in_tag($hashref->{'href'}, 'CollHref');
 
+    my $callback = $act->get_transient_facade_member_data($C, 'jsonCallback');
+    if ($callback) {
+        $output = "$callback($output);"
+    }
+
     return $output;
 
 }

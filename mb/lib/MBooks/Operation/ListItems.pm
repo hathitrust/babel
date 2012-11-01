@@ -158,6 +158,14 @@ sub execute_operation
 
     $act->set_transient_facade_member_data($C, 'co', $co);
     
+    my $callback = $cgi->param('callback');
+    if ($callback && $callback =~ /[^A-Za-z0-9_]/) {
+        $callback = 'jsonCallback';
+    }
+    if ($callback) {
+        $act->set_transient_facade_member_data($C, 'jsonCallback', $callback);
+    }
+
     return $ST_OK;
 }
 

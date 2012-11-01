@@ -106,6 +106,14 @@ sub execute_operation
     } else {
         $colltype = $colltype_map{$colltype} ? $colltype_map{$colltype} : $colltype;
     }
+
+    my $callback = $cgi->param('callback');
+    if ($callback && $callback =~ /[^A-Za-z0-9_]/) {
+        $callback = 'jsonCallback';
+    }
+    if ($callback) {
+        $act->set_transient_facade_member_data($C, 'jsonCallback', $callback);
+    }
     
     my $coll_arr_ref;
     eval {

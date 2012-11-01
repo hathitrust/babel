@@ -92,6 +92,11 @@ sub coll_list_helper_json
     $json->utf8(0);
     my $output = $json->encode($output);
 
+    my $callback = $act->get_transient_facade_member_data($C, 'jsonCallback');
+    if ($callback) {
+        $output = "$callback($output);"
+    }
+
     return $output;
 }
 
