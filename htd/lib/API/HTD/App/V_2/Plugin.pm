@@ -90,15 +90,20 @@ sub validateQueryParams {
     # ... and must be associated with the correct resource
     my $resource = $P_Ref->{resource};
 
-    # alt=json only makes sense for the XML resource types
-    my $alt = $Q->param('alt');
-    if ($alt) {
-        if ($alt ne 'json') {
-            $self->__errorDescription("invalid alt parameter value: $alt");
+    # validate format for XML resource types
+    if (grep(/^$resource$/, qw(volume/meta volume/pagemeta volume/structure article article/meta article/structure type))) {
+        my $format = $Q->param('format');
+        if ($format && (! grep(/^$format$/, qw(json xml)))) {
+            $self->__errorDescription("invalid format parameter value: $format");
             return 0;
         }
-        elsif (! grep(/^$resource$/, qw(volume/meta article/meta volume/structure article/structure volume/pagemeta type))) {
-            $self->__errorDescription("alt parameter not valid for resource=$resource");
+    }
+
+    # validate format for non-format supported resources
+    if (grep(/^$resource$/, qw(volume/pageocr volume/pagecoordocr volume/aggregate article/aggregate article/structure article/supplement))) {
+        my $format = $Q->param('format');
+        if ($format) {
+            $self->__errorDescription("format parameter not supported for resource");
             return 0;
         }
     }
@@ -148,7 +153,15 @@ sub validateQueryParams {
             return 0;
         }
     }
-    # POSSIBLY NOTREACHED
+
+    # article/asset is only format=raw
+    elsif ($resource eq 'article/asset') {
+        my $format = $Q->param('format');
+        if ($format && ($format ne 'raw')) {
+            $self->__errorDescription("invalid format parameter value format=$format");
+            return 0;
+        }
+    }
 
     return 1;
 }
@@ -573,7 +586,7 @@ sub GET_type {
         $self->__setErrorResponseCode(404, 'cannot fetch METS');
     }
 
-    my $format = $self->query->param('alt');
+    my $format = $self->query->param('format');
     if ($format eq 'json') {
         $item_type = qq{"$item_type"};
     }
@@ -618,7 +631,7 @@ sub GET_volume_structure {
     }
     # POSSIBLY NOTREACHED
 
-    my $format = $self->query->param('alt');
+    my $format = $self->query->param('format');
     my $representationRef =
         $self->__getMetadataResourceRepresentation($doc, $format);
 
@@ -667,7 +680,7 @@ sub GET_volume_meta {
                               $parser,
                               'mets_meta_xsl');
 
-    my $format = $self->query->param('alt');
+    my $format = $self->query->param('format');
     my $representationRef =
         $self->__getMetadataResourceRepresentation($doc, $format);
 
@@ -717,7 +730,7 @@ sub GET_volume_pagemeta {
                               'mets_pagemeta_xsl',
                               {SelectedSeq => $P_Ref->{'seq'}});
 
-    my $format = $self->query->param('alt');
+    my $format = $self->query->param('format');
     my $representationRef
         = $self->__getMetadataResourceRepresentation($doc, $format);
 

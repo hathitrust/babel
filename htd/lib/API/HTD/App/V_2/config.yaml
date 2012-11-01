@@ -33,7 +33,6 @@ valid_query_params:
   - ip
   - debug
   - v
-  - alt
   - callback
   - oauth_consumer_key
   - oauth_nonce
@@ -52,7 +51,6 @@ client_query_params:
   - ip
   - debug
   - v
-  - alt
   - callback
   - format
   - width

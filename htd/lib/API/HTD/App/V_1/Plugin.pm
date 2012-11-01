@@ -90,11 +90,15 @@ sub validateQueryParams {
     # ... and must be associated with the correct resource
     my $resource = $P_Ref->{resource};
 
-    # JSON only makes sense for the XML resource types
-    if (grep(/^$resource$/, qw(meta structure pagemeta))) {
-        my $alt = $Q->param('alt');
-        if ($alt && ($alt ne 'json')) {
+    # alt=json only makes sense for the XML resource types
+    my $alt = $Q->param('alt');
+    if ($alt) {
+        if ($alt ne 'json') {
             $self->__errorDescription("invalid alt parameter value: $alt");
+            return 0;
+        }
+        elsif (! grep(/^$resource$/, qw(meta structure pagemeta))) {
+            $self->__errorDescription("alt parameter not valid for resource=$resource");
             return 0;
         }
     }
