@@ -391,8 +391,6 @@ sub __convert_fieldnames
     # mainauthor.  Mainauthor will be deleted since it isn't in the fieldmap
     if (defined($hash->{'mainauthor'}) && ($hash->{'mainauthor'} ne '')  )
     {
-        die "ho ho mainauthor defined";
-        
         $hash->{'author'} = $hash->{'mainauthor'};
     }
     
