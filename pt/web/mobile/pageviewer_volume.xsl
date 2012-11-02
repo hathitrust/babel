@@ -132,8 +132,8 @@
 
     //console.log("pageview.xsl - document.addEventListener for loaded method");
 
-        console.log("PARAMS:", HT.params.view);
-        if ( ! HT.params.view ) {
+        console.log("PARAMS:", HT.params.view, window.location.href, window.location.href.indexOf("view=") + -1);
+        if ( window.location.href.indexOf("view=") + 1 == 0 ) {
           if ( $(window).width() - $(window).height() == Math.abs($(window).width() - $(window).height() )) {
             HT.params.view = '2up';
           } else {
@@ -144,6 +144,7 @@
        HT.init_from_params();
 
        HT.reader = new HTMobileBookReader(); // new HTMobileBookReader();
+       HT.reader.onePage.autofit = 'height'; // override 680px default
        HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
        <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
        HT.reader.bookTitle = document.title;

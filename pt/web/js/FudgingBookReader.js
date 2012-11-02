@@ -165,7 +165,7 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
           var width  = dimensions.width;
 
           var $pagediv = $("#pagediv" + i);
-          var leafTop = scrollTop + $pagediv.offset().top - 256;
+          var leafTop = scrollTop + $pagediv.offset().top; // - 256;
           leafBottom = leafTop + height;
 
           // console.log('leafTop = '+leafTop+ ' pageH = ' + this.pageH[i] + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
