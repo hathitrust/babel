@@ -30,9 +30,9 @@ Debug options
 
 use strict;
 
-#BEGIN {
-#    $ENV{DEBUG_LOCAL} = 1;
-#}
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -48,9 +48,6 @@ use Attribute::Handlers;
 
 use Utils;
 use Debug::DUtils;
-BEGIN {
-    Debug::DUtils::setup_DebugScreen();
-}
 
 use App;
 use MdpConfig;
