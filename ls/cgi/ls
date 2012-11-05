@@ -60,9 +60,6 @@ use Attribute::Handlers;
 # MBooks
 use Utils;
 use Debug::DUtils;
-BEGIN {
-    Debug::DUtils::setup_DebugScreen();
-}
 
 use MdpGlobals;
 use App;
