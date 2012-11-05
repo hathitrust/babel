@@ -8,7 +8,7 @@ umask 0000;
 # ----------------------------------------------------------------------
 BEGIN {
     ( $main::realSTART ) = time;
-    ##$ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -47,10 +47,6 @@ use PI;
 use View;
 use Identifier;
 
-BEGIN
-{
-    Debug::DUtils::setup_DebugScreen();
-}
 
 # ----------------------------------------------------------------------
 # define PTGlobals namespace

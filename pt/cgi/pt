@@ -73,10 +73,6 @@ use MdpGlobals;
 use SLIP_Utils::Common;
 use Auth::Logging;
 
-BEGIN {
-    Debug::DUtils::setup_DebugScreen();
-}
-
 # ----------------------------------------------------------------------
 # define global namespaces
 # ----------------------------------------------------------------------
