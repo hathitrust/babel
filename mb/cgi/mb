@@ -28,18 +28,10 @@ Debug options
 use strict;
 umask 0000;
 
-# temporary # XXXX@
-BEGIN{
-    my $restrict_to_dev = 0;
-    if ($restrict_to_dev) {
-        $ENV{'UNAVAILABLE'} = 1
-          unless ($ENV{REMOTE_ADDR} =~ m,^141\.211\.43\.(1(2[8-9]|[3-9][0-9])|2([0-4][0-9]|5[0-5]))$,);
-    }
-}
 
-# BEGIN {
-#     $ENV{DEBUG_LOCAL} = 1;
-# }
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -76,9 +68,6 @@ use MdpGlobals;
 use Utils;
 use Debug::DUtils;
 
-BEGIN {
-    Debug::DUtils::setup_DebugScreen();
-}
 
 use App;
 use Database;

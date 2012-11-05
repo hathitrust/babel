@@ -67,9 +67,6 @@ use Debug::DUtils;
 use SharedQueue;
 use MBooks::MetaDataGetter;
 
-# Support DEBUG calls
-Debug::DUtils::setup_debug_environment();
-
 my @allowed_uniqnames =
   (
    'suzchap',
@@ -222,6 +219,9 @@ $C->set_object('CGI', $cgi);
 my $DB = new Database($config);
 $C->set_object('Database', $DB);
 my $dsn = $DB->get_dsn();
+
+# Support DEBUG calls
+Debug::DUtils::setup_debug_environment();
 
 my $CO = new Collection($DB->get_DBH(), $config, $C_OWNER);
 $C->set_object('Collection', $CO);

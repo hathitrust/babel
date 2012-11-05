@@ -35,10 +35,6 @@ use MdpGlobals;
 use Utils;
 use Debug::DUtils;
 
-BEGIN {
-    Debug::DUtils::setup_DebugScreen();
-}
-
 use App;
 use Database;
 use MdpConfig;
