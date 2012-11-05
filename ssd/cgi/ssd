@@ -44,10 +44,6 @@ use Identifier;
 use MirlynGlobals;
 use Auth::Logging;
 
-BEGIN {
-    Debug::DUtils::setup_DebugScreen();
-}
-
 use PTGlobals;
 
 use PT::MdpItem;
