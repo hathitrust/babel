@@ -165,7 +165,7 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
           var width  = dimensions.width;
 
           var $pagediv = $("#pagediv" + i);
-          var leafTop = scrollTop + $pagediv.offset().top; // - 256;
+          var leafTop = scrollTop + $pagediv.offset().top - $("#mdpToolbar").height() - $("#mdpHeader").height();
           leafBottom = leafTop + height;
 
           // console.log('leafTop = '+leafTop+ ' pageH = ' + this.pageH[i] + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
@@ -751,9 +751,9 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
             if ( fudged ) {
               $(e).parent().andSelf().animate({ height : height + 'px', width : width + 'px'}, "fast", function() {
                 // did this scroll off screen? that's the question
-                // if ( index == self.firstIndex && DEBUG < 10 ) {
-                //   self.jumpToIndex(index);
-                // }
+                if ( index == self.firstIndex && DEBUG < 10 ) {
+                  self.jumpToIndex(index);
+                }
               });
             }
             e.src = this.src;
