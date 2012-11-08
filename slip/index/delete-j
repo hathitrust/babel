@@ -89,6 +89,12 @@ elsif ($DOCID) {
     $KNOWN_SHARD = $opt_S;
 }
 
+# Must be interactive to warn of mismatch between j_rights.attr and
+# rights_current.attr
+if (! $ENV{TERM}) {
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+
 if (defined($opt_d)) {
     $ENV{'DEBUG'} = 'idx,lsdb,me';
 }
@@ -154,10 +160,24 @@ than one shard and we want to force deletion from a specific shard.
 sub delete_Solr_doc {
     my ($C, $run, $id, $known_shard) = @_;
 
+    # Is this is a delete not induced by an automatic update to
+    # metadata and to mdp.rights_current that changed
+    # mdp.rights_current.attr to 8?  WARN if mdp.rights_current.attr
+    # is not 8.
+    my $j_rights_attr = Db::Select_j_rights_id_attr($C, $DBH, $id);
+
+    my ($namespace, $barcode) = split(/\./, $id);
+    my $row_hashref = Db::Select_latest_rights_row($C, $DBH, $namespace, $barcode);
+    my $rights_current_attr = $row_hashref->{attr};
+
+    if ($j_rights_attr ne $rights_current_attr) {
+        __output(qq{WARN: j_rights.attr=$j_rights_attr does not match rights_current.attr=$rights_current_attr. });
+    }
+
     # Find the shard containing the doc and send the delete
-    my $shard = 
-      $known_shard 
-        ? $known_shard 
+    my $shard =
+      $known_shard
+        ? $known_shard
           : Db::Select_item_id_shard($C, $DBH, $run, $id);
 
     if (! $shard) {
@@ -202,13 +222,13 @@ sub __del_Delete_document {
 
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
     my $engine =  $indexer->get_solr_engine_uri;
-    
+
     __output(qq{Solr delete id=$id shard=$shard engine=$engine ... });
 
     my $delete_field = $C->get_object('MdpConfig')->get('default_Solr_delete_field');
     my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
     my $query = qq{$delete_field:$safe_id};
-    
+
     ($index_state, $dummy) = $indexer->delete_by_query($C, $query);
 
     if (Search::Constants::indexing_failed($index_state)) {
