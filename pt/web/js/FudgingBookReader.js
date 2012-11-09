@@ -751,8 +751,10 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
             if ( fudged ) {
               $(e).parent().andSelf().animate({ height : height + 'px', width : width + 'px'}, "fast", function() {
                 // did this scroll off screen? that's the question
-                if ( index == self.firstIndex ) {
-                  self.jumpToIndex(index);
+                if ($("#BRcontainer").height() > 350) {
+                  if ( index == self.firstIndex ) {
+                    self.jumpToIndex(index);
+                  }                  
                 }
               });
             }
