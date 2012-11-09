@@ -62,7 +62,6 @@ use Identifier;
 use MdpConfig;
 use Collection;
 use Access::Rights;
-use MirlynGlobals;
 use Debug::DUtils;
 use SharedQueue;
 use MBooks::MetaDataGetter;
