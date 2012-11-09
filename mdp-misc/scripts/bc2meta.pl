@@ -40,7 +40,57 @@ use Utils;
 use Debug::DUtils;
 use Identifier;
 use MdpGlobals;
-use MirlynGlobals;
+
+# ---------------------------------------------------------------------
+# Mirlyn host configuration dev vs. prod
+#
+my $gUseMirlynDevServer = $ENV{'HT_DEV'} ? 0 : 0;
+
+my $gMirlynDevHost  = q{http://dev.mirlyn.lib.umich.edu:8998};
+my $gMirlynProdHost = q{http://mirlyn-aleph.lib.umich.edu};
+
+my $gMirlynHost = $gUseMirlynDevServer ? $gMirlynDevHost : $gMirlynProdHost;
+                
+
+# ---------------------------------------------------------------------
+# Mirlyn base URLs sys & xserver
+#
+my $gMirlynXservBaseUrl = $gMirlynHost . q{/X};
+my $gMirlynSysBaseUrl   = $gMirlynHost . q{/F};
+
+
+# ----------------------------------------------------------------------
+#  Mirlyn catalog link
+#  --------------------------------------------------------------
+#  NOTE: this needs to have &amp; used since Mirlyn cannot handle
+#  semicolons and, since this string appears in the output XML
+#  file, it can't have plain &s
+#
+my $gMirlynUrlParams = 
+    q{?func=find-b&amp;find_code=MDN&amp;local_base=MIU01_PUB&amp;request=};
+my $gMirlynLinkStem = $gMirlynSysBaseUrl . $gMirlynUrlParams;
+
+
+# ----------------------------------------------------------------------
+#  Mirlyn metadata fetch
+#  --------------------------------------------------------------
+#  NOTE: this script wraps a system script that takes parameters:
+#  schema=oai_marc|marcxml (default is oai_marc) no_meta=1 (will only
+#  return the document number)
+#
+my $gMirlynMetadataScriptQuery = 
+    q{/cgi-bin/bc2meta?id=__METADATA_ID__;schema=oai_marc};
+my $gMirlynMetadataURL = $gMirlynHost . $gMirlynMetadataScriptQuery;
+
+# ----------------------------------------------------------------------
+#  Mirlyn patron record fetch
+#  --------------------------------------------------------------
+#  NOTE: this XServer call returns the patron record
+#
+my $g_ssd_access_query_str = 
+    q{?op=bor-info&bor_id=__UNIQNAME__&verification=__UNIQNAME__&loans=Y&cash=N&hold=N};
+my $g_ssd_access_url = $gMirlynXservBaseUrl . $g_ssd_access_query_str;
+
 
 ## --------------------------------------------------
 ## This CGI takes an mdp id for a digitized item in Mirlyn
@@ -59,11 +109,11 @@ my $gUserAgent = Utils::get_user_agent();
 
 # Do first half of work requesting info from Aleph
 my ( $setNumber, $numberOfEntries ) = 
-    GetSetNumberFromAleph( $MirlynGlobals::gMirlynXservBaseUrl, $gId );
+    GetSetNumberFromAleph( $gMirlynXservBaseUrl, $gId );
 
 # Do second half of work requesting info from Aleph
 $metadata = 
-    GetMetadataForSetNumber( $MirlynGlobals::gMirlynXservBaseUrl, 
+    GetMetadataForSetNumber( $gMirlynXservBaseUrl, 
                              $setNumber, 
                              $numberOfEntries );
 
@@ -286,8 +336,3 @@ sub CheckParameters
     return $cgi->param('id');
 }
 
-    
-    
-
-
-__END__;
