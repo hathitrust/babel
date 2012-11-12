@@ -165,7 +165,7 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
           var width  = dimensions.width;
 
           var $pagediv = $("#pagediv" + i);
-          var leafTop = scrollTop + $pagediv.offset().top; // - 256;
+          var leafTop = scrollTop + $pagediv.offset().top - $("#mdpToolbar").height() - $("#mdpHeader").height();
           leafBottom = leafTop + height;
 
           // console.log('leafTop = '+leafTop+ ' pageH = ' + this.pageH[i] + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
@@ -194,8 +194,8 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
       var firstIndexToDraw  = indicesToDisplay[0];
       this.firstIndex      = firstIndexToDraw;
 
-      // var now = new Date;
-      // console.log(now.getSeconds(), "SET CURRENT INDEX", this.firstIndex, indicesToDisplay.join("/"));
+      var now = new Date;
+      console.log(now.getSeconds(), "SET CURRENT INDEX", this.firstIndex, indicesToDisplay.join("/"));
 
       for(i=0; i < indicesToDisplay.length; i++) {
         var index = indicesToDisplay[i];
@@ -751,8 +751,10 @@ if ( fudgingMonkeyPatch && window.HTBookReader !== undefined ) {
             if ( fudged ) {
               $(e).parent().andSelf().animate({ height : height + 'px', width : width + 'px'}, "fast", function() {
                 // did this scroll off screen? that's the question
-                if ( index == self.firstIndex ) {
-                  self.jumpToIndex(index);
+                if ($("#BRcontainer").height() > 350) {
+                  if ( index == self.firstIndex ) {
+                    self.jumpToIndex(index);
+                  }                  
                 }
               });
             }
