@@ -121,9 +121,9 @@ sub GetMdpItem
     my ($C, $id, $itemFileSystemLocation ) = @_;
 
     ### return MdpItem
-    DEBUG('time', qq{<h3>Start mdp item uncache</h3>} . Utils::display_stats());
+    DEBUG('time', qq{<h3>Start PageTurnerUtils::GetMdpItem</h3>} . Utils::display_stats());
     my $mdpItem = PT::MdpItem->new(MdpItem->GetMdpItem($C, $id));
-    DEBUG('time', qq{<h3>Finish mdp item uncache</h3>} . Utils::display_stats());
+    DEBUG('time', qq{<h3>Finish PageTurnerUtils::GetMdpItem</h3>} . Utils::display_stats());
 
     DEBUG('pt,all',
           sub
