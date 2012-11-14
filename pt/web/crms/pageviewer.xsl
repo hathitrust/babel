@@ -19,6 +19,14 @@
       }
 
     </style>
+    <script>
+      var HT = HT || {};
+      if ( window.location.hash == '#sys=crmsworld' ) {
+        HT.crms_state = 'CRMS-World';
+      } else {
+        HT.crms_state = 'CRMS-US';
+      }
+    </script>
   </xsl:template>
   
   <xsl:template name="Sidebar">
@@ -34,6 +42,18 @@
       </div> <!-- scrollable -->
       
     </div>
+    <script>
+      $(document).ready(function() {
+        $("#feedback, #feedback_footer, .mobilefeedback").unbind('click');
+        $("#feedback, #feedback_footer, .mobilefeedback").click(function(e) {
+              e.preventDefault();
+              displayPTFeedback();
+              $("#email").val(HT.crms_state);
+              return false;
+        })
+      })
+    </script>
+
   </xsl:template>
   
   <xsl:template name="BookReaderToolbar">
