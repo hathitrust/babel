@@ -26,6 +26,7 @@
       } else {
         HT.crms_state = 'CRMS-US';
       }
+      window.location.hash = "#";
     </script>
   </xsl:template>
   
