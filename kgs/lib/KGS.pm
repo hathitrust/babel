@@ -223,10 +223,11 @@ Description
 # ---------------------------------------------------------------------
 sub get_data_api_client_link {
     my $C = shift;
+    my $ver = shift;
     
     my $config = $C->get_object('MdpConfig');
     
-    my $uri = $config->get('data_api_client_uri');
+    my $uri = $config->get('data_api_v' . $ver . '_client_uri');
     my $url = 'http://' . $ENV{HTTP_HOST} . $uri;
     
     return KGS_Utils::adjust_url($url);
