@@ -403,11 +403,23 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   um-dc-mp: restricted
   uiuc: restricted
 
+# Current rules for "volume" resource:
+#
+# o  The only format for volume is ebm which is restricted by policy to
+# source={google, lit-dlps-dc}.
+#
+# o  For those source values, "free" equates to "open" but the ebm
+# format is restricted by the user's authorization code bit=allow_pdf.
+#
+# o For those source values, "nonfree" equates to "restricted" (and
+# further restricted by the allow_pdf bit) to allow access for
+# printing subject to section 108
+#
 accessibility_matrix:
   volume:
     free:
-      google: restricted
-      lit-dlps-dc: restricted
+      google: open
+      lit-dlps-dc: open
       um-press: restricted_forbidden
       internet-archive: restricted_forbidden
       yale: restricted_forbidden
@@ -420,14 +432,14 @@ accessibility_matrix:
       um-dc-mp: restricted_forbidden
       uiuc: restricted_forbidden
     nonfree:
-      google: restricted_forbidden
-      lit-dlps-dc: restricted_forbidden
+      google: restricted
+      lit-dlps-dc: restricted
       um-press: restricted_forbidden
       internet-archive: restricted
       yale: restricted_forbidden
       minn-dig-lib: restricted_forbidden
       minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: restricted
+      utah_state_univ_press: restricted_forbidden
       univ_madrid: restricted_forbidden
       purdue: restricted_forbidden
       getty: restricted_forbidden

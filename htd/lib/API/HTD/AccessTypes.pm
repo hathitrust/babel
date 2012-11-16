@@ -193,7 +193,7 @@ sub getExtendedAccessType {
         # requires allow_raw bit set
         $extended_accessType = 'raw_archival_data';
     }
-    elsif ($resource eq 'pdf') {
+    elsif ($resource eq 'volume') {
         # parameter validation forces pdf to have format=ebm, requires
         # bit set
         $extended_accessType = 'pdf_ebm';

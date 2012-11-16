@@ -139,15 +139,6 @@ sub validateQueryParams {
             }
         }
     }
-
-    # PDF resource only allows format=ebm
-    elsif ($resource eq 'pdf') {
-        my $format = $Q->param('format');
-        if (! $format || ($format ne 'ebm')) {
-            $self->__errorDescription("invalid or missing format parameter value format=$format");
-            return 0;
-        }
-    }
     # POSSIBLY NOTREACHED
 
     return 1;

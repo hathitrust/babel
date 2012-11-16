@@ -13,7 +13,6 @@ patterns:
   pageocr:           /(pageocr)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
   pagecoordocr: /(pagecoordocr)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
   pagemeta:         /(pagemeta)/((.*?)\.((___ARK___)|(.*)))/(\d+)$
-  pdf:              /(pdf)/((.*?)\.((___ARK___)|(.*)))$
 
 # separate, for readability
 ark_pattern:    ark:/13960/(t|fk)\d[a-z\d][a-z\d]\d[a-z\d][a-z\d]\d[a-z\d]
