@@ -41,7 +41,6 @@ use Debug::DUtils;
 use PI;
 use View;
 use Identifier;
-use MirlynGlobals;
 use Auth::Logging;
 
 use PTGlobals;
