@@ -23,35 +23,12 @@ use strict;
 use Utils;
 use Utils::Time;
 use Utils::Date;
-use Utils::Serial;
 use Identifier;
 
 use base qw(PIFiller);
 
 use PT::PIFiller::Common;
-
-
-# ---------------------------  Utilities  -----------------------------
-#
-
-
-# sub BuildSearchResultsUrl
-# {
-#     my ( $cgi, $view ) = @_;
-#     
-#     my $href;
-#     
-#     if ( $cgi->param('q1') ) {
-#         my $tempCgi;
-#         $tempCgi = new CGI( $cgi );
-#         $tempCgi->param('page', 'search');
-#         $tempCgi->delete('view');
-#         $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerSearchCgiRoot);
-#     }
-#     
-#     return $href;
-# }
-# 
+ 
 # ---------------------------------------------------------------------
 
 =item BuildRotateLink

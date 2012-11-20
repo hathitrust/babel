@@ -31,7 +31,6 @@ use Utils::Date;
 use Identifier;
 use Collection;
 use PI;
-use MirlynGlobals;
 
 use PT::MdpItem;
 use MdpItem;
@@ -202,76 +201,6 @@ sub _get_OWNERID {
    DEBUG('ownerid', qq{OWNERID='$OWNERID', SEQ='$seq', id=$id});
 }
 
-# ----------------------------------------------------------------------
-# NAME         :
-# PURPOSE      :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub GetMetadataFromMirlyn
-{
-    my ($C, $id) = @_;
-
-    my $metadata = undef;
-    my $url = $MirlynGlobals::gMirlynMetadataURL;
-    $url =~ s,__METADATA_ID__,$id,;
-
-    DEBUG('pt,mirlyn,all', qq{<h3>Mirlyn metadata URL: $url</h3>});
-    DEBUG('time', qq{<h3>PageTurnerUtils::GetMetadataFromMirlyn(START)</h3>} . Utils::display_stats());
-
-    my $response = Utils::get_user_agent()->get($url);
-    my $responseOk = $response->is_success;
-    my $responseStatus = $response->status_line;
-    my $metadata_failed = 0;
-
-    if ( $responseOk  )
-    {
-        $metadata = $response->content;
-
-        DEBUG('ptdata,mirlyn',
-              sub
-              {
-                  my $data = $metadata; Utils::map_chars_to_cers(\$data, [q{"}, q{'}]);
-                  return qq{<h4>Mirlyn metadata:<br/></h4> $data};
-              });
-
-        # Point to surrogate data if the metadata is empty or there
-        # was an error
-        if ((! $metadata ) || ($metadata =~ m,<error>.*?</error>,))
-        {
-            $metadata_failed = 1;
-            $metadata = <PageTurnerUtils::DATA>
-        }
-    }
-    else
-    {
-        $metadata_failed = 1;
-        $metadata = <PageTurnerUtils::DATA>;
-
-        if (DEBUG('all,pt,mirlyn'))
-        {
-            ASSERT($responseOk,
-                    qq{ERROR in PageTurnerUtils::GetMdpItem: Agent Status: $responseStatus});
-        }
-        else
-        {
-            soft_ASSERT($responseOk,
-                        qq{ERROR in PageTurnerUtils::GetMdpItem: Agent Status: $responseStatus})
-                if ($MdpGlobals::gMirlynErrorReportingEnabled);
-        }
-    }
-    $metadata = Encode::decode_utf8($metadata);
-
-    DEBUG('time', qq{<h3>PageTurnerUtils::GetMetadataFromMirlyn(END)</h3>} . Utils::display_stats());
-
-    return (\$metadata, $metadata_failed);
-}
-
-
 
 # ----------------------------------------------------------------------
 # NAME      : Debug
@@ -312,49 +241,7 @@ sub Debug
               $s .= &CGI::br() . &CGI::hr();
               return $s;
           });
-
-    DEBUG('pt,all',
-          qq{<h5>Using development Mirlyn, XServer: $MirlynGlobals::gUseMirlynDevServer</h5>});
 }
-
-
-# ----------------------------------------------------------------------
-# NAME         :
-# PURPOSE      :
-# CALLS        :
-# INPUT        :
-# RETURNS      :
-# GLOBALS      :
-# SIDE-EFFECTS :
-# NOTES        :
-# ----------------------------------------------------------------------
-sub GetFullVolumeData
-{
-    my ( $cgi, $ses, $mdpItem ) = @_;
-
-    my $dataRef = $mdpItem->GetVolumeData();
-
-    # For now: bc2meta returns only the title associated with this
-    # physical item, whatever volume that may be. Later: we may want
-    # to do additional query to get the other volumes associated with
-    # this one
-
-    my $links;
-    foreach my $bc ( keys %$dataRef )
-    {
-        my $href = BuildItemHandle( $mdpItem, $bc );
-
-        $links .= wrap_string_in_tag
-            ( wrap_string_in_tag( $href, 'Link' ) .
-              wrap_string_in_tag( $$dataRef{$bc}{'vol'}, 'TitleFragment' ),
-              'Data' );
-    }
-
-    return \$links
-}
-
-
-
 
 # ----------------------------------------------------------------------
 # NAME         :
@@ -415,5 +302,3 @@ sub DeleteLastPageTurnerLinkFromSession
 1;
 # ---------------------------------------------------------------------
 
-__DATA__
-<present><record><record_header><set_entry>000000000</set_entry></record_header><doc_number>0</doc_number><metadata><oai_marc><fixfield id="008">^^^^^^^uuuu^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</fixfield><varfield id="100" i1="1" i2=" "><subfield label="a">Metadata not available</subfield></varfield><varfield id="245" i1="0" i2="0"><subfield label="a">Metadata not available</subfield></varfield><varfield id="260" i1=" " i2=" "><subfield label="a">Metadata not available</subfield></varfield><varfield id="300" i1=" " i2=" "><subfield label="a">Metadata not available</subfield></varfield></oai_marc></metadata></record><session-id>0</session-id></present>

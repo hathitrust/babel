@@ -30,7 +30,6 @@ use View::Skin;
 use Collection;
 use CollectionSet;
 use Access::Rights;
-use MirlynGlobals;
 
 
 require "PIFiller/Common/Globals.pm";
@@ -382,28 +381,6 @@ sub handle_ITEM_HANDLE_PI
 
 # ---------------------------------------------------------------------
 
-=item handle_MIRLYN_ITEM_LINK_PI : PI_handler(MIRLYN_ITEM_LINK)
-
-Handler for MIRLYN_ITEM_LINK
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_MIRLYN_ITEM_LINK_PI
-    : PI_handler(MIRLYN_ITEM_LINK)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $mdpItem = $C->get_object('MdpItem');
-    my $id = $mdpItem->GetId();
-
-    return $MirlynGlobals::gMirlynLinkStem . $id;
-}
-
-
-
-# ---------------------------------------------------------------------
-
 =item handle_CONTACT_EMAIL_PI : PI_handler(CONTACT_EMAIL)
 
 Handler for CONTACT_EMAIL
@@ -505,65 +482,38 @@ sub handle_ENV_VAR_PI
 
 # ---------------------------------------------------------------------
 
-=item handle_VOLUME_DATA_PI : PI_handler(VOLUME_DATA)
+=item handle_VOLUME_CURRENT_TITLE_FRAGMENT_PI : PI_handler(VOLUME_CURRENT_TITLE_FRAGMENT)
 
-Handler for VOLUME_DATA
+Handler for VOLUME_CURRENT_TITLE_FRAGMENT
 
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_VOLUME_DATA_PI
-    : PI_handler(VOLUME_DATA)
+sub handle_VOLUME_CURRENT_TITLE_FRAGMENT_PI
+    : PI_handler(VOLUME_CURRENT_TITLE_FRAGMENT)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $cgi = $C->get_object('CGI');
-    my $ses = $C->get_object('Session');
-    my $mdpItem = $C->get_object('MdpItem');
-
-    my $dataRef = $mdpItem->GetVolumeData();
-
-    # For now: Tim's script returns only the title associated with
-    # this physical item, whatever volume that may be. Later: we may
-    # want to do additional query to get the other volumes associated
-    # with this one
-
-    my $links;
-    foreach my $bc ( keys %$dataRef )
-    {
-        my $href = BuildItemHandle( $mdpItem, $bc );
-
-        $links .=
-            wrap_string_in_tag
-                ( wrap_string_in_tag( $href, 'Link' ) .
-                  wrap_string_in_tag( $$dataRef{$bc}{'vol'}, 'TitleFragment' ),
-                  'Data' );
-    }
-
-    return \$links
+    my $frag = $C->get_object('MdpItem')->GetVolumeData();
+    return $frag;
 }
 
 # ---------------------------------------------------------------------
 
-=item handle_VOLUME_CURRENT_TITLE_PI : PI_handler(VOLUME_CURRENT_TITLE)
+=item handle_ITEM_FORMAT_PI : PI_handler(ITEM_FORMAT)
 
-Handler for VOLUME_CURRENT_TITLE
+Handler for ITEM_FORMAT
 
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_VOLUME_CURRENT_TITLE_PI
-    : PI_handler(VOLUME_CURRENT_TITLE)
+sub handle_ITEM_FORMAT_PI
+    : PI_handler(ITEM_FORMAT)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $mdpItem = $C->get_object('MdpItem');
-
-    my $dataRef = $mdpItem->GetVolumeData();
-    my $id = $mdpItem->GetId();
-    my $frag = $$dataRef{$id}{'vol'};
-
-    return $frag
+    my $format = $C->get_object('MdpItem')->GetFormat();
+    return $format;
 }
 
 # ---------------------------------------------------------------------
@@ -581,7 +531,7 @@ sub handle_METADATA_FAILURE_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $mdpItem = $C->get_object('MdpItem');
-    return $mdpItem->GetMetadataFailure() ? 'true' : 'false';
+    return $mdpItem->MetadataFailure() ? 'true' : 'false';
 }
 
 
