@@ -7,7 +7,7 @@
   <xsl:template name="marc2coins">
     <!-- derived from record-html.xsl from vufind source code -->
 
-    <xsl:variable name="format" select="fixfield[@id='FMT']" />
+    <xsl:variable name="format" select="$gItemFormat" />
 
     <xsl:choose>
       <xsl:when test="$format = 'BK'">
@@ -20,37 +20,37 @@
             <xsl:text>rft.genre=book&amp;</xsl:text>
 
             <xsl:text>rft.btitle=</xsl:text>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='a']"/>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='b']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='a']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='b']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.title=</xsl:text>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='a']"/>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='b']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='a']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='b']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.au=</xsl:text>
-            <xsl:value-of select="varfield[@id=100]/subfield[@label='a']"/>
+            <xsl:value-of select="datafield[@tag=100]/subfield[@code='a']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.date=</xsl:text>
-            <xsl:value-of select="varfield[@id=260]/subfield[@label='c']"/>
+            <xsl:value-of select="datafield[@tag=260]/subfield[@code='c']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.pub=</xsl:text>
-            <xsl:value-of select="varfield[@id=260]/subfield[@label='a']"/>
+            <xsl:value-of select="datafield[@tag=260]/subfield[@code='a']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.edition=</xsl:text>
-            <xsl:value-of select="varfield[@id=250]/subfield[@label='a']"/>
+            <xsl:value-of select="datafield[@tag=250]/subfield[@code='a']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft_id=http://hdl.handle.net/2027/</xsl:text>
-            <xsl:value-of select="varfield[@id='MDP']/subfield[@label='u']"/>
+            <xsl:value-of select="$gHtId"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.isbn=</xsl:text>
-            <xsl:value-of select="substring(varfield[@id=020]/subfield[@label='a'], 0, 10)"/>
+            <xsl:value-of select="substring(datafield[@tag=020]/subfield[@code='a'], 0, 10)"/>
           </xsl:attribute>
         </span>
       </xsl:when>
@@ -65,24 +65,24 @@
             <xsl:text>rft.genre=article&amp;</xsl:text>
 
             <xsl:text>rft.title=</xsl:text>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='a']"/>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='b']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='a']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='b']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.au=</xsl:text>
-            <xsl:value-of select="varfield[@id=100]/subfield[@label='a']"/>
+            <xsl:value-of select="datafield[@tag=100]/subfield[@code='a']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.date=</xsl:text>
-            <xsl:value-of select="varfield[@id=260]/subfield[@label='c']"/>
+            <xsl:value-of select="datafield[@tag=260]/subfield[@code='c']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft_id=http://hdl.handle.net/2027/</xsl:text>
-            <xsl:value-of select="varfield[@id='MDP']/subfield[@label='u']"/>
+            <xsl:value-of select="$gHtId"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.issn=</xsl:text>
-            <xsl:value-of select="varfield[@id=022]/subfield[@label='a']"/>
+            <xsl:value-of select="datafield[@tag=022]/subfield[@code='a']"/>
           </xsl:attribute>
         </span>
       </xsl:when>
@@ -96,45 +96,45 @@
             <xsl:text>rfr_id=info:sid/hathitrust.org&amp;</xsl:text>
 
             <xsl:text>rft.title=</xsl:text>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='a']"/>
-            <xsl:value-of select="varfield[@id=245]/subfield[@label='b']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='a']"/>
+            <xsl:value-of select="datafield[@tag=245]/subfield[@code='b']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:choose>
-              <xsl:when test="varfield[@id=100]">
+              <xsl:when test="datafield[@tag=100]">
                 <xsl:text>rft.creator=</xsl:text>
-                <xsl:value-of select="varfield[@id=100]/subfield[@label='a']"/>
+                <xsl:value-of select="datafield[@tag=100]/subfield[@code='a']"/>
                 <xsl:text>&amp;</xsl:text>
               </xsl:when>
-              <xsl:when test="varfield[@id=700]">
-                <xsl:for-each select="varfield[@id=700]">
+              <xsl:when test="datafield[@tag=700]">
+                <xsl:for-each select="datafield[@tag=700]">
                   <xsl:text>rft.creator=</xsl:text>
-                  <xsl:value-of select="./subfield[@label='a']"/>
+                  <xsl:value-of select="./subfield[@code='a']"/>
                   <xsl:text>&amp;</xsl:text>
                 </xsl:for-each>
               </xsl:when>
             </xsl:choose>
 
-            <xsl:for-each select="varfield[@id=650]">
+            <xsl:for-each select="datafield[@tag=650]">
               <xsl:text>rft.subject=</xsl:text>
-              <xsl:value-of select="./subfield[@label='a']"/>
+              <xsl:value-of select="./subfield[@code='a']"/>
               <xsl:text>&amp;</xsl:text>
             </xsl:for-each>
 
             <xsl:text>rft.description=</xsl:text>
-            <xsl:value-of select="varfield[@id=500]/subfield[@label='a']"/>
+            <xsl:value-of select="datafield[@tag=500]/subfield[@code='a']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.publisher=</xsl:text>
-            <xsl:value-of select="varfield[@id=260]/subfield[@label='b']"/>
+            <xsl:value-of select="datafield[@tag=260]/subfield[@code='b']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.date=</xsl:text>
-            <xsl:value-of select="varfield[@id=260]/subfield[@label='c']"/>
+            <xsl:value-of select="datafield[@tag=260]/subfield[@code='c']"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft_id=http://hdl.handle.net/2027/</xsl:text>
-            <xsl:value-of select="varfield[@id='MDP']/subfield[@label='u']"/>
+            <xsl:value-of select="$gHtId"/>
             <xsl:text>&amp;</xsl:text>
 
             <xsl:text>rft.format=</xsl:text>

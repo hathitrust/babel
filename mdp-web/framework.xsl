@@ -43,9 +43,9 @@
   <xsl:variable name="gSdrInst" select="/MBooksTop/MBooksGlobals/EnvSDRINST"/>
   <xsl:variable name="gRightsAttribute" select="/MBooksTop/MBooksGlobals/RightsAttribute"/>
   <xsl:variable name="gSourceAttribute" select="/MBooksTop/MBooksGlobals/SourceAttribute"/>
-  <xsl:variable name="gMdpMetadata" select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc"/>
-  <xsl:variable name="gItemFormat" select="$gMdpMetadata/fixfield[@id='FMT']"/>
-  <xsl:variable name="gHasMARCAuthor" select="$gMdpMetadata/varfield[@id='100']/subfield or $gMdpMetadata/varfield[@id='110']/subfield or $gMdpMetadata/varfield[@id='111']/subfield"/>
+  <xsl:variable name="gMdpMetadata" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record"/>
+  <xsl:variable name="gItemFormat" select="/MBooksTop/MBooksGlobals/ItemFormat"/>
+  <xsl:variable name="gHasMARCAuthor" select="$gMdpMetadata/datafield[@tag='100']/subfield or $gMdpMetadata/datafield[@tag='110']/subfield or $gMdpMetadata/datafield[@tag='111']/subfield"/>
   <xsl:variable name="gItemHandle" select="/MBooksTop/MBooksGlobals/ItemHandle"/>
   <xsl:variable name="gLoggedIn" select="/MBooksTop/MBooksGlobals/LoggedIn"/>
   <xsl:variable name="gHathiTrustAffiliate" select="/MBooksTop/MBooksGlobals/HathiTrustAffiliate"/>
@@ -55,7 +55,7 @@
   <xsl:variable name="gContactEmail" select="/MBooksTop/MBooksGlobals/ContactEmail"/>
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
   <xsl:variable name="gVersionLabel" select="/MBooksTop/MBooksGlobals/VersionLabel"/>
-
+  <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
   <xsl:variable name="gVolumeTitleFragment">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/VolCurrTitleFrag!=' '">
@@ -84,14 +84,14 @@
   </xsl:variable>
 
   <xsl:variable name="gTitleString">
-    <xsl:if test="$gMdpMetadata/varfield[@id='245']/subfield[@label='a']">
-      <xsl:value-of select="$gMdpMetadata/varfield[@id='245']/subfield[@label='a']"/>
+    <xsl:if test="$gMdpMetadata/datafield[@tag='245']/subfield[@code='a']">
+      <xsl:value-of select="$gMdpMetadata/datafield[@tag='245']/subfield[@code='a']"/>
     </xsl:if>
-    <xsl:if test="$gMdpMetadata/varfield[@id='245']/subfield[@label='b']">
-      <xsl:value-of select="concat(' ', $gMdpMetadata/varfield[@id='245']/subfield[@label='b'])"/>
+    <xsl:if test="$gMdpMetadata/datafield[@tag='245']/subfield[@code='b']">
+      <xsl:value-of select="concat(' ', $gMdpMetadata/datafield[@tag='245']/subfield[@code='b'])"/>
     </xsl:if>
-    <xsl:if test="$gMdpMetadata/varfield[@id='245']/subfield[@label='c']">
-      <xsl:value-of select="concat(' ', $gMdpMetadata/varfield[@id='245']/subfield[@label='c'])"/>
+    <xsl:if test="$gMdpMetadata/datafield[@tag='245']/subfield[@code='c']">
+      <xsl:value-of select="concat(' ', $gMdpMetadata/datafield[@tag='245']/subfield[@code='c'])"/>
     </xsl:if>
   </xsl:variable>
   
@@ -323,58 +323,58 @@
   
   <!-- METADATA: author metadata helper -->
   <xsl:template name="MetadataAuthorHelper">
-    <xsl:for-each select="$gMdpMetadata/varfield[@id='100']">
-      <xsl:if test="subfield[@label='a']">
-        <xsl:value-of select="subfield[@label='a']"/>
+    <xsl:for-each select="$gMdpMetadata/datafield[@tag='100']">
+      <xsl:if test="subfield[@code='a']">
+        <xsl:value-of select="subfield[@code='a']"/>
       </xsl:if>
-      <xsl:if test="subfield[@label='b']">
+      <xsl:if test="subfield[@code='b']">
         <xsl:text>&#x20;</xsl:text>
-        <xsl:value-of select="subfield[@label='b']"/>
+        <xsl:value-of select="subfield[@code='b']"/>
       </xsl:if>
-      <xsl:if test="subfield[@label='c']">
+      <xsl:if test="subfield[@code='c']">
         <xsl:text>&#x20;</xsl:text>
-        <xsl:value-of select="subfield[@label='c']"/>
+        <xsl:value-of select="subfield[@code='c']"/>
       </xsl:if>
-      <xsl:if test="subfield[@label='e']">
+      <xsl:if test="subfield[@code='e']">
         <xsl:text>&#x20;</xsl:text>
-        <xsl:value-of select="subfield[@label='e']"/>
+        <xsl:value-of select="subfield[@code='e']"/>
       </xsl:if>
-      <xsl:if test="subfield[@label='q']">
+      <xsl:if test="subfield[@code='q']">
         <xsl:text>&#x20;</xsl:text>
-        <xsl:value-of select="subfield[@label='q']"/>
+        <xsl:value-of select="subfield[@code='q']"/>
       </xsl:if>
-      <xsl:if test="subfield[@label='d']">
+      <xsl:if test="subfield[@code='d']">
         <xsl:text>&#x20;</xsl:text>
-        <xsl:value-of select="subfield[@label='d']"/>
+        <xsl:value-of select="subfield[@code='d']"/>
       </xsl:if>
     </xsl:for-each>
     
-    <xsl:for-each select="$gMdpMetadata/varfield[@id='110']">
-      <xsl:value-of select="subfield[@label='a']"/>
-      <xsl:if test="subfield[@label='b']">
+    <xsl:for-each select="$gMdpMetadata/datafield[@tag='110']">
+      <xsl:value-of select="subfield[@code='a']"/>
+      <xsl:if test="subfield[@code='b']">
         <xsl:text>&#32;</xsl:text>
-        <xsl:value-of select="subfield[@label='c']"/>
+        <xsl:value-of select="subfield[@code='c']"/>
       </xsl:if>
     </xsl:for-each>
     
-    <xsl:for-each select="$gMdpMetadata/varfield[@id='111']">
-      <xsl:value-of select="subfield[@label='a']"/>
+    <xsl:for-each select="$gMdpMetadata/datafield[@tag='111']">
+      <xsl:value-of select="subfield[@code='a']"/>
     </xsl:for-each>
 
   </xsl:template>
 
   <!-- METADATA: published metadata helper -->
   <xsl:template name="MetadataPublishedHelper">
-    <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='a']">
-      <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='a']"/>
+    <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='a']">
+      <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='a']"/>
       &#x20;
     </xsl:if>
-    <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='b']">
-      <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='b']"/>
+    <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='b']">
+      <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='b']"/>
       &#x20;
     </xsl:if>
-    <xsl:if test="$gMdpMetadata/varfield[@id='260']/subfield[@label='c']">
-      <xsl:value-of select="$gMdpMetadata/varfield[@id='260']/subfield[@label='c']"/>
+    <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']">
+      <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']"/>
     </xsl:if>
     
   </xsl:template>
@@ -397,13 +397,13 @@
         </div>
       </xsl:if>
       
-      <xsl:if test="$gMdpMetadata/varfield[@id='250']/subfield">
+      <xsl:if test="$gMdpMetadata/datafield[@tag='250']/subfield">
         <div class="mdpMetaDataRow">
           <div class="mdpMetaDataRegionHead">
             <xsl:text>Edition&#xa0;</xsl:text>
           </div>
           <div class="mdpMetaText">
-            <xsl:value-of select="$gMdpMetadata/varfield[@id='250']/subfield"/>
+            <xsl:value-of select="$gMdpMetadata/datafield[@tag='250']/subfield"/>
           </div>
         </div>
       </xsl:if>
@@ -418,45 +418,18 @@
           </xsl:call-template>
         </div>
       </div>
-      
-      <xsl:choose>
-        <xsl:when test="$gMdpMetadata/varfield[@id='MDP']/subfield[@label='h']">
-          <div class="mdpMetaDataRow">
-            <div class="mdpMetaDataRegionHead">
-              <xsl:text>Orig. Call No.&#xa0;</xsl:text>
-            </div>
-            <div class="mdpMetaText">
-              <xsl:value-of select="$gMdpMetadata/varfield[@id='MDP']/subfield[@label='h']"/>
-            </div>
-          </div>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:if test="$gMdpMetadata/varfield[@id='050']/subfield[@label='a']">
-            <div class="mdpMetaDataRow">
-              <div class="mdpMetaDataRegionHead">
-                <xsl:text>Orig. Call No.&#xa0;</xsl:text>
-              </div>
-              <div class="mdpMetaText">
-                <xsl:value-of select="$gMdpMetadata/varfield[@id='050']/subfield[@label='a']"/>
-                <xsl:text> </xsl:text>
-                <xsl:value-of select="$gMdpMetadata/varfield[@id='050']/subfield[@label='b']"/>
-              </div>
-            </div>
-          </xsl:if>
-        </xsl:otherwise>  
-      </xsl:choose>
-      
-      <xsl:if test="$gMdpMetadata/varfield[@id='300']/subfield">
+
+      <xsl:if test="$gMdpMetadata/datafield[@tag='300']/subfield">
         <div class="mdpMetaDataRow">
           <div class="mdpMetaDataRegionHead">
             <xsl:text>Description&#xa0;</xsl:text>
           </div>
           <div class="mdpMetaText">
-            <xsl:value-of select="$gMdpMetadata/varfield[@id='300']/subfield[@label='a']"/>
+            <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='a']"/>
             &#x20;
-            <xsl:value-of select="$gMdpMetadata/varfield[@id='300']/subfield[@label='b']"/>
+            <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='b']"/>
             &#x20;
-            <xsl:value-of select="$gMdpMetadata/varfield[@id='300']/subfield[@label='c']"/>
+            <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='c']"/>
           </div>
         </div>
       </xsl:if>
@@ -572,7 +545,7 @@
   
   <!-- Link to OCLC Get Book -->
   <xsl:template name="FindInALibraryLink">
-    <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+    <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
       <xsl:element name="a">
         <xsl:attribute name="class">worldcat</xsl:attribute>
         <xsl:attribute name="href">
@@ -615,81 +588,6 @@
     
   </xsl:template>
 
-
-  <!-- Link to HathiTrust VuFind -->
-  <xsl:template name="hathiVuFind">
-
-<div class="bibLinks">
-    
-    <ul>
-      <li>
-        <xsl:element name="a">
-          <xsl:attribute name="class">catalog</xsl:attribute>
-          <xsl:attribute name="href">
-            <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
-            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
-          </xsl:attribute>
-          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-          <xsl:text>Catalog record</xsl:text>
-        </xsl:element>  
-      </li>      
-      <li>
-        <xsl:call-template name="FindInALibraryLink"/>
-      </li>
-
-      <xsl:if test="$gPodUrl != ''">
-        <li>
-          <div id="podURL">
-            <xsl:element name="a">
-              <xsl:attribute name="class">pod</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$gPodUrl"/>
-              </xsl:attribute>
-
-          <xsl:if test="$gGoogleOnclickTracking = 'true'">
-            <xsl:attribute name="onclick">
-              <xsl:call-template name="PageTracker">
-                <xsl:with-param name="category" select="'outLinks'"/>
-                <xsl:with-param name="action" select="'click'"/>
-                <xsl:with-param name="label" select="'PT Buy a reprint'"/>
-              </xsl:call-template>
-            </xsl:attribute>
-          </xsl:if>
-
-              <xsl:text>Buy a copy</xsl:text>
-            </xsl:element>
-          </div>
-        </li>
-      </xsl:if>
-    </ul>
-
-  </div>
-
-        <div id="permURL">
-          <form action="" name="urlForm" id="urlForm">
-            <label for="permURL" class="permalink">Permanent Link</label>
-            <xsl:element name="input">
-              <xsl:attribute name="type">text</xsl:attribute>
-              <xsl:attribute name="name">permURL_link</xsl:attribute>
-              <xsl:attribute name="id">permURL</xsl:attribute>
-              <xsl:attribute name="class">email-permURL</xsl:attribute>
-              <xsl:attribute name="onclick">javascript:document.urlForm.video_link.focus();</xsl:attribute>
-              <xsl:attribute name="onclick">document.urlForm.permURL_link.select();
-               <xsl:if test="$gGoogleOnclickTracking = 'true'">
-                  <xsl:call-template name="PageTracker">
-                  <xsl:with-param name="label" select="'PT Perm Link'"/>
-                </xsl:call-template>
-               </xsl:if>
-            </xsl:attribute>
-              <xsl:attribute name="readonly">readonly</xsl:attribute>
-              <xsl:attribute name="value">
-                <xsl:value-of select="$gItemHandle"/>
-              </xsl:attribute>
-            </xsl:element>
-          </form>
-        </div>
-    
-  </xsl:template>
   
   
   <!-- New Bookmark -->
@@ -1083,19 +981,29 @@
         <xsl:call-template name="BuildRDFaWrappedPublished"/>
       </p>
       <p>
-        <xsl:element name="a">
-          <xsl:variable name="href">
-            <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
-            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
-          </xsl:variable>
-          <xsl:attribute name="class">tracked</xsl:attribute>
-          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-          <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
-          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
-          <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-          <xsl:text>View full catalog record</xsl:text>
-        </xsl:element>
+        <xsl:variable name="record_no">
+          <xsl:value-of select="$gCatalogRecordNo"/>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$record_no!=''">
+            <xsl:element name="a">
+              <xsl:variable name="href">
+                <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+                <xsl:value-of select="$record_no"/>
+              </xsl:variable>
+              <xsl:attribute name="class">tracked</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
+              <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
+              <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
+              <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+              <xsl:text>View full catalog record</xsl:text>
+            </xsl:element>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>Catalog record not available</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
       </p>
       <p class="smaller">
         <!-- Access &amp; Use: 
@@ -1121,7 +1029,7 @@
       <h3>Get this Book</h3>
       <ul>
         <li>
-          <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/present/record/metadata/oai_marc/varfield[@id='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+          <xsl:for-each select="$gMdpMetadata/collection/record/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
             <xsl:element name="a">
               <xsl:attribute name="class">tracked</xsl:attribute>
               <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
@@ -1348,8 +1256,6 @@
 
   <!-- Collection Widget -->
   <xsl:template name="CollectionWidgetContainer">
-
-    <!-- <xsl:call-template name="hathiVuFind"/> -->
 
     <div id="PTcollection">
       <xsl:variable name="collection_list_label">
