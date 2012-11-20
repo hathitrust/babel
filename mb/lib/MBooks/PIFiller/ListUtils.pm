@@ -122,7 +122,7 @@ sub get_owner_affiliation {
 
     $owner_affiliation = Institutions::get_institution_domain_field_val($C, $domain, 'name');
 
-    print(STDERR "owner_string=$owner_string owner_name=$owner_name domain=$domain aff=$owner_affiliation");
+    #print(STDERR "owner_string=$owner_string owner_name=$owner_name domain=$domain aff=$owner_affiliation");
 
     return $owner_affiliation;
 }
