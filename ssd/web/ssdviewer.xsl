@@ -276,7 +276,6 @@
       <div id="mdpContentsList">
         <p/>
         <xsl:if test="$gFeatureList/Feature">
-          <h2><a name="toc">Table of Contents</a></h2>
           <xsl:call-template name="BuildContentsList"/>
         </xsl:if>
       </div>
@@ -295,54 +294,94 @@
 
   <!-- CONTROL: Contents List -->
   <xsl:template name="BuildContentsList">
-    <xsl:element name="ul">
-      <xsl:for-each select="$gFeatureList/Feature">
-        <xsl:element name="li">
-          <xsl:attribute name="class">mdpFeatureListItem</xsl:attribute>
-          <xsl:element name="a">
-            <xsl:attribute name="href">
-              <!--Used page anchors if full text, relative links if page by page -->
+    <!-- Use page anchors if entire-volume, relative links if page-at-a-time -->
+    <xsl:variable name="viewing-mode">
+      <xsl:choose>
+        <xsl:when test="$gFinalAccessStatus='allow'">
+          <xsl:choose>
+            <!-- Case (1) SSD: display entire volume -->
+            <xsl:when test="$gSSD_Session='true'">
+              <xsl:value-of select="'entire-volume'"/>
+            </xsl:when>
+            <!-- non-SSD cases -->
+            <xsl:when test="$gSSD_Session='false'">
               <xsl:choose>
-                <xsl:when test="$gSSD_Session='true'">
-                  <xsl:variable name="SectionTitleAttr">
-                    <xsl:call-template name="ReplaceChar">
-                      <xsl:with-param name="string">
-                        <xsl:value-of select="Label"/>
-                      </xsl:with-param>
-                      <xsl:with-param name="from_char">
-                        <xsl:text> </xsl:text>
-                      </xsl:with-param>
-                      <xsl:with-param name="to_char">
-                        <xsl:text></xsl:text>
-                      </xsl:with-param>
-                    </xsl:call-template>
-                  </xsl:variable>
-                  <xsl:text>#</xsl:text>
-                  <xsl:value-of select="$SectionTitleAttr"/>
+                <!-- Case (2) non-SSD page-at-a-time -->
+                <xsl:when test="$gInCopyright='false' and $gLoggedIn='NO'">
+                  <xsl:value-of select="'page-at-a-time'"/>
                 </xsl:when>
-                <xsl:when test="$gFinalAccessStatus='allow' and $gSSD_Session='false'">ssd?id=<xsl:value-of select="$gItemId"/>;seq=<xsl:value-of select="Seq"/>;num=<xsl:value-of select="Page"/>
-                <xsl:if test="$gCurrentDebug!=''">
-                  <xsl:text>;debug=</xsl:text><xsl:value-of select="$gCurrentDebug"/>
-                </xsl:if>
-                <xsl:if test="$gCurrentAttr!=''">
-                  <xsl:text>;attr=</xsl:text><xsl:value-of select="$gCurrentAttr"/>
-                </xsl:if>
+                <!-- Case (3) non-SSD: entire volume-->
+                <xsl:when test="$gInCopyright='false' and $gLoggedIn='YES'">
+                  <xsl:value-of select="'entire-volume'"/>
+                </xsl:when>
+                <!-- Case (4) non-SSD: page-at-a-time -->
+                <xsl:when test="$gInCopyright='true' and $gLoggedIn='YES'">
+                  <xsl:value-of select="'page-at-a-time'"/>
                 </xsl:when>
               </xsl:choose>
-            </xsl:attribute>
-            <xsl:value-of select="Label"/>
-            <xsl:if test="Page!=''">
-              <xsl:element name="span">
-                <xsl:text> on page number </xsl:text>
-                <xsl:value-of select="Page"/>
-              </xsl:element>
-            </xsl:if>
-          </xsl:element>
-        </xsl:element>
-      </xsl:for-each>
-    </xsl:element>
-  </xsl:template>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="'no-view'"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
 
+    <xsl:if test="$viewing-mode!='no-view'">
+      <h2><a name="toc">Table of Contents</a></h2>
+      <xsl:element name="ul">
+        <xsl:for-each select="$gFeatureList/Feature">
+          <xsl:element name="li">
+            <xsl:attribute name="class">mdpFeatureListItem</xsl:attribute>
+            <xsl:element name="a">
+              <xsl:attribute name="href">
+                <xsl:choose>
+                  <xsl:when test="$viewing-mode='entire-volume'">
+                    <xsl:variable name="SectionTitleAttr">
+                      <xsl:call-template name="ReplaceChar">
+                        <xsl:with-param name="string">
+                          <xsl:value-of select="Label"/>
+                        </xsl:with-param>
+                        <xsl:with-param name="from_char">
+                          <xsl:text> </xsl:text>
+                        </xsl:with-param>
+                        <xsl:with-param name="to_char">
+                          <xsl:text></xsl:text>
+                        </xsl:with-param>
+                      </xsl:call-template>
+                    </xsl:variable>
+                    <xsl:text>#</xsl:text>
+                    <xsl:value-of select="$SectionTitleAttr"/>
+                  </xsl:when>
+                  <xsl:when test="$viewing-mode='page-at-a-time'">
+                    <xsl:text>ssd?id=</xsl:text><xsl:value-of select="$gItemId"/>
+                    <xsl:text>;seq=</xsl:text><xsl:value-of select="Seq"/>
+                    <xsl:text>;num=</xsl:text><xsl:value-of select="Page"/>
+                    <xsl:if test="$gCurrentDebug!=''">
+                      <xsl:text>;debug=</xsl:text><xsl:value-of select="$gCurrentDebug"/>
+                    </xsl:if>
+                    <xsl:if test="$gCurrentAttr!=''">
+                      <xsl:text>;attr=</xsl:text><xsl:value-of select="$gCurrentAttr"/>
+                    </xsl:if>
+                  </xsl:when>
+                  <xsl:otherwise></xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:value-of select="Label"/>
+              <xsl:if test="Page!=''">
+                <xsl:element name="span">
+                  <xsl:text> on page number </xsl:text>
+                  <xsl:value-of select="Page"/>
+                </xsl:element>
+              </xsl:if>
+            </xsl:element>
+          </xsl:element>
+        </xsl:for-each>
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+  
   <!-- Page At A Time Viewing -->
   <xsl:template name="ViewOnePage">
     <xsl:choose>
