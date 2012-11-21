@@ -825,7 +825,7 @@
             <xsl:attribute name="name">RecordURL</xsl:attribute>
             <xsl:attribute name="value">
               <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
-              <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+              <xsl:value-of select="$gCatalogRecordNo"/>
             </xsl:attribute>
           </xsl:element>
           
