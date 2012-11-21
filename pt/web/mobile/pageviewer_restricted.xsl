@@ -7,9 +7,9 @@
 
   <xsl:import href="../pageviewer_restricted.xsl"/>
 
-  
-  <!-- | <xsl:call-template name="helplink"/> -->
-<!-- VIEWING AREA -->
+  <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
+
+  <!-- VIEWING AREA -->
   <xsl:template name="Viewport">
     <xsl:param name="pCurrentPageImageSource"/>
     <xsl:param name="pCurrentPageOcr"/>
@@ -24,7 +24,7 @@
                   <xsl:attribute name="id">mdpCatalogLinkLimited</xsl:attribute>
                   <xsl:variable name="href">
                     <xsl:text>http://m.hathitrust.org/Record/</xsl:text>
-                    <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+                    <xsl:value-of select="$gCatalogRecordNo"/>
                   </xsl:variable>
                   <xsl:attribute name="class">tracked</xsl:attribute>
                   <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>

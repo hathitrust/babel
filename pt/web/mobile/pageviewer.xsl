@@ -295,7 +295,7 @@
           <xsl:attribute name="id">mdpCatalogLink</xsl:attribute>
           <xsl:variable name="href">
             <xsl:text>http://m.hathitrust.org/Record/</xsl:text>
-            <xsl:value-of select="/MBooksTop/METS:mets/METS:dmdSec/present/record/doc_number"/>
+            <xsl:value-of select="$gCatalogRecordNo"/>
           </xsl:variable>
           <xsl:attribute name="class">tracked</xsl:attribute>
           <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
