@@ -51,7 +51,6 @@ use Search::Constants;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Load;
-use SLIP_Utils::YamlConfig;
 
 # Lib
 use Document::Generator;
@@ -108,12 +107,6 @@ my $C = new Context;
 
 my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
-
-my $ns_url = $config->get('namespace_mapping_url');
-my $ns_temp_file= $config->get('namespace_mapping_temp_filename');
-my $yaml_config = new SLIP_Utils::YamlConfig($ns_url, $ns_temp_file);
-$C->set_object('YamlConfig', $yaml_config);
-
 
 my $db = new Database($config);
 $C->set_object('Database', $db);
