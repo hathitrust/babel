@@ -29,6 +29,48 @@
     <xsl:value-of select="$gFullTitleString"/>
   </xsl:variable>
 
+  <!-- Handle the view type. There are four (4) cases when
+       FinalAccessStatus='allow' where access is either full volume or
+       page-at-a-time: -->
+
+  <!-- (1) SSD user of anything (authentication assumed): entire volume
+       (2) non-SSD user of PD, not authenticated: page-at-a-time
+       (3) non-SSD user of PD, authenticated: entire volume
+       (4) non-SSD user of IC (brittle/orphan), authenticated: page-at-a-time -->
+
+  <xsl:variable name="gViewingMode">
+    <xsl:choose>
+      <xsl:when test="$gFinalAccessStatus='allow'">
+        <xsl:choose>
+          <!-- Case (1) SSD: display entire volume -->
+          <xsl:when test="$gSSD_Session='true'">
+            <xsl:value-of select="'entire-volume'"/>
+          </xsl:when>
+          <!-- non-SSD cases -->
+          <xsl:when test="$gSSD_Session='false'">
+            <xsl:choose>
+              <!-- Case (2) non-SSD page-at-a-time -->
+              <xsl:when test="$gInCopyright='false' and $gLoggedIn='NO'">
+                <xsl:value-of select="'page-at-a-time'"/>
+              </xsl:when>
+              <!-- Case (3) non-SSD: entire volume-->
+              <xsl:when test="$gInCopyright='false' and $gLoggedIn='YES'">
+                <xsl:value-of select="'entire-volume'"/>
+              </xsl:when>
+              <!-- Case (4) non-SSD: page-at-a-time -->
+              <xsl:when test="$gInCopyright='true' and $gLoggedIn='YES'">
+                <xsl:value-of select="'page-at-a-time'"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="'no-view'"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:variable name="gFinalView">
     <xsl:choose>
       <xsl:when test="$gFinalAccessStatus!='allow'">
@@ -46,29 +88,6 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-
-  <xsl:variable name="gViewIsResizable">
-    <xsl:choose>
-      <xsl:when test="$gFinalView='restricted' or $gFinalView='empty' or $gFinalView='missing'">
-        <xsl:value-of select="'false'"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="'true'"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-
-  <xsl:variable name="gShowViewTypes">
-    <xsl:choose>
-      <xsl:when test="$gFinalView='restricted'">
-        <xsl:value-of select="'false'"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="'true'"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-
 
   <!-- root template -->
   <xsl:template match="/MBooksTop">
@@ -99,14 +118,6 @@
         </title>
 
         <link rel="stylesheet" href="/ssd/web/ssdstyles.css" type="text/css" />
-
-        <!-- Below is a workaround for javascript script tags so we don't get a cdata output              -->
-        <!--     WARNING  This won't work if the javascript in the XML has a > or < sign in them          -->
-        <!--     XXX TODO:  Figure out how to include javascript that has less than or greater than signs -->
-        <xsl:text disable-output-escaping="yes">&lt;script type="text/javascript"&gt;</xsl:text>
-        <xsl:value-of select="/MBooksTop/MBooksGlobals/LoggedInJs"/>
-        <xsl:text disable-output-escaping="yes"> &lt;/script&gt;</xsl:text>
-
       </head>
 
       <body>
@@ -121,7 +132,6 @@
         <xsl:if test="$gEnableGoogleAnalytics='true'">
           <xsl:call-template name="google_analytics" />
         </xsl:if>
-
 
       </body>
     </html>
@@ -201,7 +211,7 @@
                   <xsl:text>Go to table of contents</xsl:text>
                 </xsl:element>
                 <xsl:element name="br"/>
-                
+
                 <xsl:choose>
                   <!--If using page by page view, skip to current page instead of first -->
                   <xsl:when test="$gSSD_Session='false'">
@@ -210,7 +220,7 @@
                       <xsl:text>Skip table of contents and go to current page</xsl:text>
                     </xsl:element>
                   </xsl:when>
-                  
+
                   <xsl:otherwise>
                     <xsl:element name="a">
                       <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
@@ -219,7 +229,7 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:when>
-              
+
               <xsl:otherwise>
                 <xsl:element name="a">
                   <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
@@ -252,7 +262,6 @@
       <xsl:with-param name="ssd" select="'true'"/>
     </xsl:call-template>
   </xsl:template>
-
 
   <!-- -->
   <xsl:template name="FullTitle">
@@ -295,40 +304,8 @@
   <!-- CONTROL: Contents List -->
   <xsl:template name="BuildContentsList">
     <!-- Use page anchors if entire-volume, relative links if page-at-a-time -->
-    <xsl:variable name="viewing-mode">
-      <xsl:choose>
-        <xsl:when test="$gFinalAccessStatus='allow'">
-          <xsl:choose>
-            <!-- Case (1) SSD: display entire volume -->
-            <xsl:when test="$gSSD_Session='true'">
-              <xsl:value-of select="'entire-volume'"/>
-            </xsl:when>
-            <!-- non-SSD cases -->
-            <xsl:when test="$gSSD_Session='false'">
-              <xsl:choose>
-                <!-- Case (2) non-SSD page-at-a-time -->
-                <xsl:when test="$gInCopyright='false' and $gLoggedIn='NO'">
-                  <xsl:value-of select="'page-at-a-time'"/>
-                </xsl:when>
-                <!-- Case (3) non-SSD: entire volume-->
-                <xsl:when test="$gInCopyright='false' and $gLoggedIn='YES'">
-                  <xsl:value-of select="'entire-volume'"/>
-                </xsl:when>
-                <!-- Case (4) non-SSD: page-at-a-time -->
-                <xsl:when test="$gInCopyright='true' and $gLoggedIn='YES'">
-                  <xsl:value-of select="'page-at-a-time'"/>
-                </xsl:when>
-              </xsl:choose>
-            </xsl:when>
-          </xsl:choose>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="'no-view'"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
 
-    <xsl:if test="$viewing-mode!='no-view'">
+    <xsl:if test="$gViewingMode!='no-view'">
       <h2><a name="toc">Table of Contents</a></h2>
       <xsl:element name="ul">
         <xsl:for-each select="$gFeatureList/Feature">
@@ -337,7 +314,7 @@
             <xsl:element name="a">
               <xsl:attribute name="href">
                 <xsl:choose>
-                  <xsl:when test="$viewing-mode='entire-volume'">
+                  <xsl:when test="$gViewingMode='entire-volume'">
                     <xsl:variable name="SectionTitleAttr">
                       <xsl:call-template name="ReplaceChar">
                         <xsl:with-param name="string">
@@ -354,7 +331,7 @@
                     <xsl:text>#</xsl:text>
                     <xsl:value-of select="$SectionTitleAttr"/>
                   </xsl:when>
-                  <xsl:when test="$viewing-mode='page-at-a-time'">
+                  <xsl:when test="$gViewingMode='page-at-a-time'">
                     <xsl:text>ssd?id=</xsl:text><xsl:value-of select="$gItemId"/>
                     <xsl:text>;seq=</xsl:text><xsl:value-of select="Seq"/>
                     <xsl:text>;num=</xsl:text><xsl:value-of select="Page"/>
@@ -381,23 +358,23 @@
       </xsl:element>
     </xsl:if>
   </xsl:template>
-  
+
   <!-- Page At A Time Viewing -->
   <xsl:template name="ViewOnePage">
     <xsl:choose>
       <xsl:when test="$gFeatureList/Feature">
         <xsl:choose>
-          <!--If item has page numbers and page is numbered, heading is "Page #" using num. -->
+          <!-- If item has page numbers and page is numbered, heading is "Page #" using num. -->
           <xsl:when test="$gCurrentPageNum != ''">
             <h2>Page <xsl:value-of select="$gCurrentPageNum"/></h2>
           </xsl:when>
-          <!--If item has page numbers and page is not numbered, heading is "Page Text". -->
+          <!-- If item has page numbers and page is not numbered, heading is "Page Text". -->
           <xsl:otherwise>
             <h2>Page Text</h2>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
-      <!--If item does has page numbers and page is numbered, heading is "Page #" using seq. -->
+      <!-- If item does has page numbers and page is numbered, heading is "Page #" using seq. -->
       <xsl:otherwise>
         <h2>Page <xsl:value-of select="gCurrentPageSeq"/></h2>
       </xsl:otherwise>
@@ -409,7 +386,7 @@
         <xsl:when test="$gCurrentPageOcr=''">
           <div id="mdpTextEmpty">
             <div class="mdpTMPhead">NO TEXT ON PAGE</div>
-            <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine</div>
+            <div class="mdpTMPtext">This page does not contain any text recoverable by the OCR engine.</div>
 
             <xsl:if test="contains($gCurrentPageFeatures,'IMAGE_ON_PAGE')">
               <p class="Image">
@@ -471,44 +448,15 @@
   <!-- VIEWING AREA -->
   <xsl:template name="Viewport">
 
-    <!-- Handle the view type. NOTE! There are four (4) cases when
-         FinalAccessStatus='allow' where access is either full volume or
-         page-at-a-time: -->
-
-    <!-- (1) SSD user of anything (authentication assumed): entire volume
-         (2) non-SSD user of PD, not authenticated: page-at-a-time
-         (3) non-SSD user of PD, authenticated: entire volume
-         (4) non-SSD user of IC (brittle/orphan), authenticated: page-at-a-time -->
-
-    <xsl:if test="$gFinalAccessStatus='allow'">
-      <xsl:choose>
-
-        <!-- Case (1) SSD: display entire volume -->
-        <xsl:when test="$gSSD_Session='true'">
-          <xsl:call-template name="ViewEntireVolume"/>
-        </xsl:when>
-
-        <!-- non-SSD cases -->
-        <xsl:when test="$gSSD_Session='false'">
-          <xsl:choose>
-            <!-- Case (2) non-SSD page-at-a-time -->
-            <xsl:when test="$gInCopyright='false' and $gLoggedIn='NO'">
-              <xsl:call-template name="ViewOnePage"/>
-            </xsl:when>
-
-            <!-- Case (3) non-SSD: entire volume-->
-            <xsl:when test="$gInCopyright='false' and $gLoggedIn='YES'">
-              <xsl:call-template name="ViewEntireVolume"/>
-            </xsl:when>
-
-            <!-- Case (4) non-SSD: page-at-a-time -->
-            <xsl:when test="$gInCopyright='true' and $gLoggedIn='YES'">
-              <xsl:call-template name="ViewOnePage"/>
-            </xsl:when>
-          </xsl:choose>
-        </xsl:when>
-      </xsl:choose>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="$gViewingMode='entire-volume'">
+        <xsl:call-template name="ViewEntireVolume"/>
+      </xsl:when>
+      <xsl:when test="$gViewingMode='page-at-a-time'">
+        <xsl:call-template name="ViewOnePage"/>
+      </xsl:when>
+      <xsl:otherwise></xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- -->
@@ -530,14 +478,6 @@
   <!-- -->
   <xsl:template name="Access">
 
-    <xsl:variable name="holdings_message">
-      <xsl:choose>
-        <xsl:when test="$gHeld='NO'">
-        </xsl:when>
-        <xsl:otherwise><xsl:text></xsl:text></xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-
     <xsl:choose>
       <xsl:when test="$gFinalView='restricted'">
         <xsl:choose>
@@ -556,8 +496,7 @@
               <xsl:attribute name="id">mdpTextDeny</xsl:attribute>
               <xsl:choose>
                 <xsl:when test="$gHeld='YES'">
-                  <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item.
-                  <xsl:call-template name="maybe_login"/></p>
+                  <p>Authenticated members of HathiTrust institutions who have a print disability may have access to the full-text of this item. <xsl:call-template name="maybe_login"/></p>
                 </xsl:when>
                 <xsl:otherwise>
                   <xsl:choose>
@@ -570,7 +509,7 @@
                   </xsl:choose>
                 </xsl:otherwise>
               </xsl:choose>
-            <p>For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.</p>
+              <p>For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.</p>
               <p>
                 <a>
                   <xsl:attribute name="title">
@@ -587,7 +526,7 @@
         </xsl:choose>
       </xsl:when>
 
-      <xsl:when test="$gSSD_Session='false' and ($gFinalAccessStatus='allow' and $gLoggedIn!='YES')">
+      <xsl:when test="$gViewingMode='page-at-a-time'">
         <xsl:element name="div">
           <p>You have one page at a time access to this item. Authenticated members of HathiTrust institutions who have a print disability may have full-text access to this item. <xsl:call-template name="maybe_login"/>  For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Page at a time access to this item is also available via our fully-styled HathiTrust interface.</p>
           <p>
@@ -601,7 +540,7 @@
         </xsl:element>
       </xsl:when>
 
-      <xsl:when test="$gLoggedIn='YES' and $gFinalAccessStatus='allow' and $gInCopyright='true'">
+      <xsl:when test="$gViewingMode='entire-volume' and $gInCopyright='true'">
         <xsl:element name="div">
           <p>You have full view access to this item based on your account privileges. This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p>
           <p>
