@@ -54,12 +54,12 @@ extension_format_map:
   png:     png
 
 # ---------------------------------------------------------------------
-# Mapping from mdp.rights_current.attr field values to names
+# Mapping from mdp.rights_current.attr field values to names @OPB
 # ---------------------------------------------------------------------
 rights_name_map:
   1: pd
   2: ic
-  3: opb
+  3: op
   4: orph
   5: und
   6: umall
