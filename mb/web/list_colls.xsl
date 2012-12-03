@@ -258,13 +258,13 @@
               html.push(decodeURIComponent('<xsl:value-of select="CollName/@e" />'));
               html.push(decodeURIComponent('<xsl:value-of select="Description/@e" />'));
               html.push('<xsl:value-of select="NumItems" />');
-              html.push('<xsl:value-of select="OwnerString" />');
+              html.push(decodeURIComponent('<xsl:value-of select="OwnerString/@e" />'));
 
               <xsl:variable name="owner_affiliation">
-                <xsl:value-of select="OwnerAffiliation" />
+                <xsl:value-of select="OwnerAffiliation/@e" />
               </xsl:variable>
 
-              html.push('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
+              html.push(decodeURIComponent('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />'));
               html.push('<xsl:value-of select="Updated" />');
               html.push('<xsl:value-of select="Updated_Display" />');
               featured = '<xsl:value-of select="Featured" />';
