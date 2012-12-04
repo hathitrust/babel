@@ -18,6 +18,7 @@
   <xsl:variable name="gUserName" select="/MBooksTop/Header/UserName"/>
   <xsl:variable name="gInCopyright" select="/MBooksTop/MBooksGlobals/InCopyright"/>
   <xsl:variable name="gHeld" select="/MBooksTop/MBooksGlobals/Holdings/Held"/>
+  <xsl:variable name="gBrittleHeld" select="/MBooksTop/MBooksGlobals/Holdings/BrittleHeld"/>
   <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
   <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
   <xsl:variable name="gHTDEV" select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>

@@ -5,12 +5,10 @@
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
-
+  
   <xsl:template name="item-viewer">
 
     <div class="contentContainerWrap">
-
-
       <!-- Image -->
       <xsl:element name="a">
         <xsl:attribute name="name">skipNav</xsl:attribute>
@@ -156,7 +154,7 @@
         </xsl:when>
 
         <!-- Brittle message about when current accessor's exclusive access expires -->
-        <xsl:when test="$gRightsAttribute='3' and ($gMichiganAffiliate='true' or $gIsInLibrary='YES') and $gHeld='YES'">
+        <xsl:when test="$gRightsAttribute='3' and ($gHathiTrustAffiliate='true' or $gIsInLibrary='YES') and $gBrittleHeld='YES'">
           <xsl:call-template name="BrittleAccessPage"/>          
         </xsl:when>
 
