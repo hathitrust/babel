@@ -86,7 +86,7 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'a
     # We reached this point because 
     # (1) authed SSD user of ic on US soil or of pd where pd for non-US affiliates does not include pdus
     # or
-    # (2) authed normal user of OPB ic on US soil
+    # (2) authed normal user of OP ic on US soil @OPB
     # or 
     # (3) authed normal user of pd where pd for non-US affiliates does not include pdus
     # or 
