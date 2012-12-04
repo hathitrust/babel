@@ -19,14 +19,13 @@
       }
 
     </style>
-    <script>
+    <script disable-output-escaping="yes">
       var HT = HT || {};
-      if ( window.location.hash == '#sys=crmsworld' ) {
+      HT.crms_state = 'CRMS-US';
+      var i = window.location.href.indexOf('skin=crmsworld');
+      if ( i + 1 != 0 ) {
         HT.crms_state = 'CRMS-World';
-      } else {
-        HT.crms_state = 'CRMS-US';
       }
-      window.location.hash = "#";
     </script>
   </xsl:template>
   
