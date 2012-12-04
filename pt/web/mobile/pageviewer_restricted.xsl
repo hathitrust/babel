@@ -8,6 +8,7 @@
   <xsl:import href="../pageviewer_restricted.xsl"/>
 
   <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
+  <xsl:variable name="gSection108_Access" select="/MBooksTop/MdpApp/Section108/Granted"/>
 
   <!-- VIEWING AREA -->
   <xsl:template name="Viewport">
@@ -60,16 +61,12 @@
                     </p>
                   </div>
                 </xsl:when>
-                <!-- If opb (attr=3) + affiliated user then tell them when -->
+                <!-- If opb (attr=3) + affiliated user then tell them when @OPB -->
                 <!-- current accessor's exclusive access expires -->
-                <xsl:when test="$gRightsAttribute='3' and ($gMichiganAffiliate='true' or $gIsInLibrary='YES') and $gHeld='YES'">
+                <xsl:when test="$gRightsAttribute='3' and ($gHathiTrustAffiliate='true' or $gIsInLibrary='YES') and $gBrittleHeld='YES'">
                   <div class="Specialtext">
-                    <p class="leftText">Full view access <em>is</em> available for this item under the following circumstances:</p>
-                    <ul>
-                      <li><strong>Unlimited</strong> use via University of Michigan Library computers</li>
-                      <li><strong>One user at a time</strong> for authenticated University of Michigan users in 24 hour increments</li>
-                    </ul>
-                    <p class="leftText">You are seeing this message because another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
+                    <p class="leftText">This work is in copyright. Full view access is available for this item based on your affiliation or account privileges. Items made available under these special circumstances can only be accessed by one user at a time, in 24 hour increments.</p>
+                    <p class="leftText">Another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
                     <p class="leftText"><a href="#" id="ic-access">Learn more</a>.</p>
 
                   </div>
