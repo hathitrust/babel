@@ -1,7 +1,12 @@
 #!/l/local/bin/perl
 
 use strict;
-#use warnings;
+use warnings;
+
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
 
 =head1 NAME
 
@@ -203,21 +208,29 @@ else {
 Utils::map_chars_to_cers(\$C_DESC, [q{"}, q{'}]);
 Utils::map_chars_to_cers(\$C_TITLE, [q{"}, q{'}]);
 
+
+
+
 my $C = new Context;
+
+my $cgi = new CGI;
+$C->set_object('CGI', $cgi);
+
+my $debug = $cgi->param('debug');
+my $debugging = ($ENV{DEBUG_LOCAL} || ($debug =~ m,local,));
+my $uber_conf = ($debugging 
+                 ? $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf"
+                 : $LOCATION . "/../../mb/vendor/common-lib/lib/Config/uber.conf");
+
 my $config = new MdpConfig(
-                           # circumvent debug=local for uber.conf
-                           $LOCATION . "/../../mb/vendor/common-lib/lib/Config/uber.conf",
+                           $uber_conf,
                            $LOCATION . "/../../mb/lib/Config/global.conf",
                            $LOCATION . "/../../mb/lib/Config/local.conf"
                           );
 $C->set_object('MdpConfig', $config);
 
-my $cgi = new CGI;
-$C->set_object('CGI', $cgi);
-
-my $DB = new Database($config);
+my $DB = new Database('ht_maintenance');
 $C->set_object('Database', $DB);
-my $dsn = $DB->get_dsn();
 
 # Support DEBUG calls
 Debug::DUtils::setup_debug_environment();
@@ -258,7 +271,7 @@ if ($APPEND) {
         }
     }
 
-    Log_print( qq{Begin appending IDs to "$coll_name" collection using database: $dsn\n} );
+    Log_print( qq{Begin appending IDs to "$coll_name" collection\n} );
 
     $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($existing_coll_id);
 
@@ -277,7 +290,7 @@ elsif ($COLL_ID) {
     }
 }
 else {
-    Log_print( qq{Begin "$C_TITLE" collection creation using database: $dsn\n} );
+    Log_print( qq{Begin "$C_TITLE" collection creation\n} );
 
     # Create the (empty) collection
     my $new_coll_id = bc_create_collection();
