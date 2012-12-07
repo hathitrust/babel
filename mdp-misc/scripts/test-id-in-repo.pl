@@ -6,13 +6,17 @@
 use Getopt::Std;
 use File::Pairtree;
 
-our ($opt_F);
+our ($opt_F, $opt_I);
 
-my $ops = getopts('F:');
+my $ops = getopts('I:F:');
 
 
+my $ID = $opt_I;
 my $ID_FILENAME = $opt_F;
 
+sub ti_get_usage {
+    return qq{Usage: test-id-in-repo.pl [ -F file | -I id ]\nchecks for id(s) by expanding to pairtree path in repository to check file existence.\n};
+}
 
 sub load_ids_from_file {
     my $filename = shift;
@@ -44,11 +48,20 @@ sub load_ids_from_file {
 
 
 sub test_ids {
-    my $ref_to_arr_of_ids = load_ids_from_file($ID_FILENAME);
+    my $id = shift;
+    
+    my $ref_to_arr_of_ids;
+
+    if (defined $id) {
+        push(@$ref_to_arr_of_ids, $id);
+    }
+    else {
+        $ref_to_arr_of_ids = load_ids_from_file($ID_FILENAME);
+    }
     my $num_loaded = scalar(@$ref_to_arr_of_ids);
 
     if ($num_loaded > 0) {
-        print qq{loaded $num_loaded items from file=$ID_FILENAME\n};
+        print qq{loaded $num_loaded items from file=$ID_FILENAME\n} if ($ID_FILENAME);
         
         foreach my $id (@$ref_to_arr_of_ids) {
             my ($namespace, $barcode) = ($id =~ m,^(.*?)\.(.*?)$,);
@@ -66,7 +79,17 @@ sub test_ids {
         }
     }
 }
-test_ids();
+
+if ($ID) {
+    test_ids($ID);
+}
+elsif ($ID_FILENAME) {
+    test_ids();
+}
+else {
+    print ti_get_usage();
+}
+
 
 exit 0;
 
