@@ -28,6 +28,10 @@ Debug options
 use strict;
 umask 0000;
 
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
 # ----------------------------------------------------------------------
 # Performance check-pointing
 # ----------------------------------------------------------------------
@@ -109,7 +113,7 @@ my $facet_config= new LS::FacetConfig($ENV{SDRROOT} . "/ls/lib/Config/facetconfi
 $C->set_object('FacetConfig', $facet_config);
 
 # Database connection
-my $db = new Database($config);
+my $db = new Database('ht_web');
 $C->set_object('Database', $db);
 
 # Session
