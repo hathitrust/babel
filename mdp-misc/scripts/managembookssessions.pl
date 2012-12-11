@@ -30,19 +30,16 @@ Clean expired MDP sessions and remove temp collections from the database
 
 =cut
 
-use vars qw(
-            $opt_m
-            $opt_a
-            $opt_i
-           );
+use strict;
 
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+our ( $opt_m, $opt_a, $opt_i );
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
-
-# ----------------------------------------------------------------------
-# remove in production
-use strict;
 
 # for getting at session files
 use DBI;
@@ -64,7 +61,7 @@ my $g_config = new MdpConfig(
                           );
 
 # Database connection
-my $db = new Database($g_config);
+my $db = new Database('ht_maintenance');
 my $g_dbh = $db->get_DBH();
 
 my $CS = CollectionSet->new($g_dbh, $g_config, 0);
@@ -79,7 +76,7 @@ my $g_default_age = '120';
 
 check_usage();
 
-print "Operating on: " . $db->get_dsn() . " via user " .  $db->get_db_user() . "\n";
+print "Operating ...\n";
 
 if ($opt_m eq 'list')
 {
@@ -116,7 +113,7 @@ Description
 # ---------------------------------------------------------------------
 sub list_sessions
 {
-    my $sth = $g_dbh->prepare_cached('SELECT id FROM sessions;')
+    my $sth = $g_dbh->prepare_cached('SELECT id FROM ht_sessions;')
         or die "Couldn't prepare statement: " . $g_dbh->errstr;
 
     $sth->execute();
@@ -130,7 +127,7 @@ sub list_sessions
     my ($statement, $ses, $timestamp, $localtime, $checked_count, $a_session);
     foreach my $id (@id_list)
     {
-        $statement = qq{SELECT a_session  FROM sessions where id='$id';};
+        $statement = qq{SELECT a_session  FROM ht_sessions where id='$id';};
         $sth = $g_dbh->prepare_cached($statement)
           or die "Couldn't prepare statement: " . $g_dbh->errstr;
 
@@ -212,11 +209,11 @@ sub examine_sessions
     
     if ($examine_id)
     {
-        $statement = qq{SELECT id, a_session FROM sessions where id = '$examine_id'};
+        $statement = qq{SELECT id, a_session FROM ht_sessions where id = '$examine_id'};
     }
     else
     {  
-        $statement = qq{SELECT id, a_session FROM sessions};
+        $statement = qq{SELECT id, a_session FROM ht_sessions};
         $short = 1;
     }
 
@@ -272,7 +269,7 @@ sub clean_sessions
     print STDOUT qq{Will delete inactive sessions that are older than } .
         $cutoff_age . qq{ minutes from now ($now)\n};
 
-    my $sth = $g_dbh->prepare_cached('SELECT id FROM sessions;')
+    my $sth = $g_dbh->prepare_cached('SELECT id FROM ht_sessions;')
         or die "Couldn't prepare statement: " . $g_dbh->errstr;
 
     $sth->execute();
@@ -288,7 +285,7 @@ sub clean_sessions
     my ($statement, $session_deleted, $temp_colls_deleted, $a_session);
     foreach my $id (@id_list)
     {
-        $statement = qq{SELECT a_session FROM sessions where id='$id';};
+        $statement = qq{SELECT a_session FROM ht_sessions where id='$id';};
         $sth = $g_dbh->prepare_cached($statement)
           or die "Couldn't prepare statement: " . $g_dbh->errstr;
 
@@ -384,7 +381,7 @@ sub delete_session_for_id
 
         #print STDOUT "DELETE Session id=$id timestamp: $localtime, ";
 
-        my $sth = $g_dbh->prepare_cached(qq{DELETE FROM sessions WHERE id=\'} .
+        my $sth = $g_dbh->prepare_cached(qq{DELETE FROM ht_sessions WHERE id=\'} .
                                         $id .
                                         qq{\';})
             or die "Couldn't prepare statement: " . $g_dbh->errstr;
