@@ -40,7 +40,7 @@ my $cookie_name = $config->get('cookie_name');
 my %cookies = fetch CGI::Cookie;
 if (defined($cookies{$cookie_name}))
 {
-    my $db = new Database($config);
+    my $db = new Database('ht_web');
     $C->set_object('Database', $db);
 
     my $sid = $cookies{$cookie_name}->value;
