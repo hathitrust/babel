@@ -17,19 +17,19 @@ INDEXING DATA FLOW
 
 The data flow proceeds from
 
-Vufind_Solr(mdp.j_vufind_timestamp)
-   -> mdp.j_rights(mdp.j_rights_timestamp)
-         -> mdp.j_queue[run]
-               -> mdp.j_indexed[run] or mdp.j_errors[run]
+Vufind_Solr(slip_vufind_timestamp)
+   -> slip_rights(slip_rights_timestamp)
+         -> slip_queue[run]
+               -> slip_indexed[run] or slip_errors[run]
 
-When an id is processed it is removed from j_queue. It can re-enter
-mdp.j_queue if it re-enters Vufind_Solr and is transferred to
-mdp.j_rights and is then queued.
+When an id is processed it is removed from slip_queue. It can re-enter
+slip_queue if it re-enters Vufind_Solr and is transferred to
+slip_rights and is then queued.
 
-If there is an error the id is put into mdp.j_errors not into
-mdp.j_indexed.
+If there is an error the id is put into mdp.slip_errors not into
+slip_indexed.
 
-Re-do indexing moves from ids from mdp.j_errors back into mdp.j_queue
+Re-do indexing moves from ids from slip_errors back into slip_queue
 and reindexing is attempted.  It may or may not succeed.
 
 This script is strictly interactive, to be run from the command line.
@@ -37,8 +37,8 @@ This script is strictly interactive, to be run from the command line.
 
 OTHER MODES OF sync-j
 
--- sync-j -r run -m indexedNINrights: report which ids in j_indexed are
-missing from j_rights. If performed after j_rebuild, reported ids can
+-- sync-j -r run -m indexedNINrights: report which ids in slip_indexed are
+missing from slip_rights. If performed after slip_rebuild, reported ids can
 be inferred to also be missing from the Solr index.
 
 
@@ -115,10 +115,10 @@ Description
 # ---------------------------------------------------------------------
 sub syn_get_usage {
     my $s .= qq{Usage: sync-j -r run -m{rightsNINindexed [-n]|indexedNINrights} [-T][-d]
-            where rightsNINindexed: queue ids in j_rights not in j_indexed
+            where rightsNINindexed: queue ids in slip_rights not in slip_indexed
                                        where -n checks, NO queuing
 
-                  indexedNINrights: report ids in j_indexed not in j_rights
+                  indexedNINrights: report ids in slip_indexed not in slip_rights
                   -T just test compilation and exit\n};
     return $s;
 }
@@ -172,7 +172,7 @@ $C->set_object('MdpConfig', $CONFIG);
 
 my $db;
 eval {
-    $db = new Database($CONFIG);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     my $s = qq{database connect fail};
@@ -195,10 +195,10 @@ foreach my $shard (@num_shards_list) {
 my $msg;
 my $Q_MSG = ($CHECK ? 'DO NOT QUEUE' : 'QUEUE MISSING');
 if ($MODE eq 'rightsNINindexed') {
-    $msg = qq{Check ids from j_rights missing in j_indexed. $Q_MSG.\nj_indexed_temp MUST be fresh via rebuild-j\n\tOK? [N] };
+    $msg = qq{Check ids from slip_rights missing in slip_indexed. $Q_MSG.\nslip_indexed_temp MUST be fresh via rebuild-j\n\tOK? [N] };
 }
 elsif ($MODE eq 'indexedNINrights') {
-    $msg = qq{Report ids from j_indexed missing in j_rights.\nj_indexed_temp MUST be fresh via rebuild-j.\n\tOK? [N] };    
+    $msg = qq{Report ids from slip_indexed missing in slip_rights.\nslip_indexed_temp MUST be fresh via rebuild-j.\n\tOK? [N] };    
 }
 else {
     my $s = syn_get_usage();
@@ -233,8 +233,8 @@ exit 0;
 
 =item Test_rightsNINindexed
 
-Find ids in j_rights that are not in j_indexed (for some shard) or
-j_errors.  If not in j_indexed add to j_queue.
+Find ids in slip_rights that are not in slip_indexed (for some shard) or
+slip_errors.  If not in slip_indexed add to slip_queue.
 
 =cut
 
@@ -242,11 +242,11 @@ j_errors.  If not in j_indexed add to j_queue.
 sub Test_rightsNINindexed {
     my ($C, $dbh, $run) = @_;
 
-    my $j_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
-    my $j_rights_size = Db::Select_count_from_j_rights($C, $dbh);
+    my $slip_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
 
     my $s0;
-    $s0 = qq{Find ids from j_rights (size=$j_rights_size) not in j_indexed (size=$j_indexed_size) run=$run $Q_MSG};
+    $s0 = qq{Find ids from slip_rights (size=$slip_rights_size) not in slip_indexed (size=$slip_indexed_size) run=$run $Q_MSG};
     __output(qq{\n$s0\n}); 
     Log_sync($C, $run, $s0);
 
@@ -256,7 +256,7 @@ sub Test_rightsNINindexed {
         SLIP_Utils::Db_sync::Select_j_rights_NIN_j_indexed($C, $dbh, $run);
     
     my $ct = scalar(@$ref_to_arr_of_hashref);
-    $s0 = qq{Query returned $ct ids from j_rights LEFT JOIN j_indexed_temp};
+    $s0 = qq{Query returned $ct ids from slip_rights LEFT JOIN slip_indexed_temp};
     __output(qq{$s0\n}); 
     Log_sync($C, $run, $s0);
 
@@ -265,18 +265,18 @@ sub Test_rightsNINindexed {
     foreach my $hash_ref (@$ref_to_arr_of_hashref) {
         $item_ct++;
         
-        # If this id is not in j_errors, it's missing
+        # If this id is not in slip_errors, it's missing
         my $id = $hash_ref->{'nid'};
         my $error_id = SLIP_Utils::Db_sync::Select_error_item_id($C, $dbh, $run, $id);
         if ($error_id) {
             $errors_ct++;
-            $s0 = qq{  id=$id in j_rights missing from j_indexed run=$run FOUND in j_errors };
+            $s0 = qq{  id=$id in slip_rights missing from slip_indexed run=$run FOUND in slip_errors };
             __output(qq{$s0\n}); 
             Log_sync($C, $run, $s0);
         }
         else {
             $missing_ct++;
-            $s0 = qq{  id=$id in j_rights missing from j_indexed run=$run};
+            $s0 = qq{  id=$id in slip_rights missing from slip_indexed run=$run};
             __output(qq{$s0\n}); 
             Log_sync($C, $run, $s0);
 
@@ -286,7 +286,7 @@ sub Test_rightsNINindexed {
     }
 
     my $elapsed = sprintf("%.1f minutes", (time() - $start)/60);
-    $s0 = qq{rightsNINindexed: candidates checked=$item_ct j_indexed_missing=$missing_ct j_errors_seen=$errors_ct $Q_MSG elapsed=$elapsed at } . Utils::Time::iso_Time();
+    $s0 = qq{rightsNINindexed: candidates checked=$item_ct slip_indexed_missing=$missing_ct slip_errors_seen=$errors_ct $Q_MSG elapsed=$elapsed at } . Utils::Time::iso_Time();
     __output(qq{$s0\n});
     Log_sync($C, $run, $s0);
 }
@@ -296,7 +296,7 @@ sub Test_rightsNINindexed {
 
 =item Report_indexedNINrights
 
-Report ids in j_indexed missing from j_rights
+Report ids in slip_indexed missing from slip_rights
 
 =cut
 
@@ -304,10 +304,10 @@ Report ids in j_indexed missing from j_rights
 sub Report_indexedNINrights {
     my ($C, $dbh, $run) = @_;
 
-    my $j_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
-    my $j_rights_size = Db::Select_count_from_j_rights($C, $dbh);
+    my $slip_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
 
-    my $s = qq{Report ids from j_indexed (size=$j_indexed_size) missing from j_rights (size=$j_rights_size) run=$run};
+    my $s = qq{Report ids from slip_indexed (size=$slip_indexed_size) missing from slip_rights (size=$slip_rights_size) run=$run};
     __output(qq{\n$s\n}); 
     Log_sync($C, $run, $s);
 
@@ -321,12 +321,12 @@ sub Report_indexedNINrights {
     foreach my $hash_ref (@$ref_to_arr_of_hashref) {
         my $id = $hash_ref->{'id'};
         $missing_ct++;
-        $s = qq{  id=$id in j_indexed missing from j_rights run=$run};
+        $s = qq{  id=$id in slip_indexed missing from slip_rights run=$run};
         __output(qq{$s\n}); 
         Log_sync($C, $run, $s);
     }
 
-    # Check j_errors as missing in j_rights
+    # Check slip_errors as missing in slip_rights
 
     my $elapsed = sprintf("%.1f minutes", (time() - $start)/60);
     $s = qq{indexedNINrights: missing=$missing_ct elapsed=$elapsed at } . Utils::Time::iso_Time();

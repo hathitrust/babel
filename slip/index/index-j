@@ -11,8 +11,8 @@ index-j
 =head1 DESCRIPTION
 
 Take a slice of available items from the indexing queue, build docs for
-the ids and send to Solr for indexing.  Record error ids in j_errors
-table.  Record indexed status in j_indexed table.
+the ids and send to Solr for indexing.  Record error ids in slip_errors
+table.  Record indexed status in slip_indexed table.
 
 Each copy of this script when it runs tries to find a shard that does
 not have producers_per_shard allocated to it and is not on a host
@@ -173,7 +173,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'index-j', $@);
@@ -286,7 +286,7 @@ sub i_processing_loop {
 
             # Remove item from the input queue. Critical errors (9)
             # cause a longjump out of i_processing_loop() and add IDs
-            # to j_errors and deletes them from j_queue atomically
+            # to slip_errors and deletes them from slip_queue atomically
             # without resorting to a call to handle_dequeue().
             handle_dequeue($C, $DBH, $RUN, $id, $PID, $HOST);
         }
@@ -628,7 +628,7 @@ sub handle_critical_error {
     }
     else {
         # No database to talk to.  Save the ids in an error log file
-        # and restore them to j_queue, later, by hand. Touch the stop file.
+        # and restore them to slip_queue, later, by hand. Touch the stop file.
         while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
             my $id = $item_hashref->{'id'};
             Log_critical($C, $run, $id);

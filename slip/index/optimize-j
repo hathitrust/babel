@@ -130,7 +130,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, qq{optimize-j run=$RUN}, $@);

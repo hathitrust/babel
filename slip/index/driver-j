@@ -16,7 +16,7 @@ to any number of segments.
 
 The driver takes care of enabling all configured hosts, enabling shard
 indexers, enabling optimizers monitoring their progress through the
-mdp.j_shard_control table.
+slip_shard_control table.
 
 If the driver has an error it emails and stops the run.
 
@@ -155,7 +155,7 @@ if ($@) {
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, qq{driver-j run=$RUN}, $@);

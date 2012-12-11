@@ -195,7 +195,7 @@ CREATE TABLE `j_vsolr_timestamp` (`time` int NOT NULL default '00000000', PRIMAR
 
 
 ---------------------------------------------------------------------
--- Pointer into mdp.j_rights for the queue of each run
+-- Pointer into rights_current for the queue of each run
 ---------------------------------------------------------------------
 CREATE TABLE `j_rights_timestamp` (
         `run`          smallint(3) NOT NULL default '0',

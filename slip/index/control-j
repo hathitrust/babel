@@ -15,7 +15,7 @@ producers.
 
 Change the number of producers allowed to run on a given host.
 
-Initialize a run by setting the shard stats, offset into j_rights,
+Initialize a run by setting the shard stats, offset into slip_rights,
 index size, error list, indexed list and queue to empty.
 
 etc.
@@ -106,18 +106,18 @@ sub cont_get_usage {
           resets driver shard states and sets driver stage=Build_Wait
 
        control-j -kresetstats -r run
-          zeros j_shard_stats and j_rate_stats for incremental recording
+          zeros slip_shard_stats and slip_rate_stats for incremental recording
 
        control-j -kreseterrors -r run
-          zeros j_errors
+          zeros slip_errors
 
        control-j -kQtimestamp -r run [-tYYYYMMDD]
           set queue timestamp to 00000000 or value of -t
-            re-queue ids in j_rights newer than that timestamp, to be re-indexed
+            re-queue ids in slip_rights newer than that timestamp, to be re-indexed
 
        control-j -kVtimestamp -r run [-tYYYYMMDD]
           set vSolr timestamp to 00000000 or value of -t
-            re-query vSolr for ids newer than that timestamp, to be re-added j_rights 
+            re-query vSolr for ids newer than that timestamp, to be re-added slip_rights 
 
        control-j -k stop|start -V
           -V starts/stops rights-j
@@ -201,7 +201,7 @@ $C->set_object('MdpConfig', $CONFIG);
 
 my $db;
 eval {
-    $db = new Database($CONFIG);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'control-j', $@);
@@ -599,7 +599,7 @@ sub __configure_init_shards {
 
 =item c_init
 
-Initialize a run by setting the shard stats, offset into j_rights,
+Initialize a run by setting the shard stats, offset into slip_rights,
 index size and queue to empty.
 
 =cut

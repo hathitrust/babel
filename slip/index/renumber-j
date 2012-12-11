@@ -123,7 +123,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'renumber-j', $@);
@@ -163,7 +163,7 @@ sub c_renumber {
     
     __confirm("\n\n!!! This will re-number run $from_run to be run $to_run !!!\n\n\t ARE YOU ABSOLUTELY 100% SURE ABOUT THIS!? [N] ");
 
-    __output(qq{\n\tre-number j_rights timestamp } . q{ ... });
+    __output(qq{\n\tre-number slip_rights timestamp } . q{ ... });
     Db::Renumber_j_rights_timestamp($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
 

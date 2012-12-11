@@ -42,7 +42,7 @@ use SLIP_Utils::Solr;
 
 Get a slice of records from VuFind, parse out all the barcodes from
 the ht_id_display field that are newer or equal to the last
-update_time recorded in mdp.j_vsolr_timestamp. It must be >= because
+update_time recorded in slip_vsolr_timestamp. It must be >= because
 on a full rebuild we start at 0000000. Strictly > 00000000 would mean
 we'd skip all of those. During an incremental we query for 2 days
 earlier than the MAX(update_time) of the last run. This overlap allows
@@ -96,7 +96,7 @@ sub get_item_updated_nid_slice_as_of {
     
         if ($want_this_nid) {
             if (! $anomaly) {
-                # Supplement mdp.rights database row hashref with
+                # Supplement rights_current database row hashref with
                 # vSolr query data
                 $rights_hashref->{'sysid'} = $sysid;
                 $rights_hashref->{'timestamp_of_nid'} = $timestamp_of_nid;
@@ -118,9 +118,9 @@ sub get_item_updated_nid_slice_as_of {
 =item process_nid_from_Solr_query_result
 
 The input is an nid from a vSolr bib record that is a candidate for
-insertion into mdp.j_rights.
+insertion into slip_rights.
 
-The return is an nid to insert into msp.j_rights validated vs. mdp.rights
+The return is an nid to insert into slip_rights validated vs. rights_current
 
 =cut
 
@@ -140,7 +140,7 @@ sub process_nid_from_Solr_query_result {
     DEBUG('vsolr', qq{DEBUG: $s1} . Utils::Time::iso_Time());
     
     # ANOMALY is an nid in a bib record with no corresponding row in
-    # mdp.rights.
+    # rights_current.
     my $row_hashref = Db::Select_latest_rights_row($C, $dbh, $namespace, $id);
     if (rights_database_anomaly($C, $dbh, $row_hashref, $hash_ref)) {
         $anomaly = 1;

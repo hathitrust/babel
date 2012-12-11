@@ -89,7 +89,7 @@ elsif ($DOCID) {
     $KNOWN_SHARD = $opt_S;
 }
 
-# Must be interactive to warn of mismatch between j_rights.attr and
+# Must be interactive to warn of mismatch between slip_rights.attr and
 # rights_current.attr
 if (! $ENV{TERM}) {
     exit $SLIP_Utils::States::RC_BAD_ARGS;
@@ -112,7 +112,7 @@ $C->set_object('MdpConfig', $CONFIG);
 
 my $db;
 eval {
-    $db = new Database($CONFIG);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'delete-j', $@);
@@ -161,17 +161,17 @@ sub delete_Solr_doc {
     my ($C, $run, $id, $known_shard) = @_;
 
     # Is this is a delete not induced by an automatic update to
-    # metadata and to mdp.rights_current that changed
-    # mdp.rights_current.attr to 8?  WARN if mdp.rights_current.attr
+    # metadata and to rights_current that changed
+    # rights_current.attr to 8?  WARN if rights_current.attr
     # is not 8.
-    my $j_rights_attr = Db::Select_j_rights_id_attr($C, $DBH, $id);
+    my $slip_rights_attr = Db::Select_j_rights_id_attr($C, $DBH, $id);
 
     my ($namespace, $barcode) = split(/\./, $id);
     my $row_hashref = Db::Select_latest_rights_row($C, $DBH, $namespace, $barcode);
     my $rights_current_attr = $row_hashref->{attr};
 
-    if ($j_rights_attr ne $rights_current_attr) {
-        __output(qq{WARN: j_rights.attr=$j_rights_attr does not match rights_current.attr=$rights_current_attr. });
+    if ($slip_rights_attr ne $rights_current_attr) {
+        __output(qq{WARN: slip_rights.attr=$slip_rights_attr does not match rights_current.attr=$rights_current_attr. });
     }
 
     # Find the shard containing the doc and send the delete
@@ -188,9 +188,9 @@ sub delete_Solr_doc {
     my $ok = __del_Delete_document($C, $run, $id, $shard);
     if ($ok) {
         Db::Delete_item_id_indexed($C, $DBH, $run, $id);
-        __output(qq{Deleted id=$id, shard=$shard run=$run from mdp.j_indexed\n});
+        __output(qq{Deleted id=$id, shard=$shard run=$run from slip_indexed\n});
         Db::Delete_id_from_j_queue($C, $DBH, $run, $id);
-        __output(qq{Deleted nid=$id run=$run from mdp.j_queue\n});
+        __output(qq{Deleted nid=$id run=$run from slip_queue\n});
 
         # If known_shard is set, this is a repair.  Leave the id in
         # the shared queue so it gets proper large collection
@@ -199,7 +199,7 @@ sub delete_Solr_doc {
             my $production_run = $C->get_object('MdpConfig')->get('run_allowed_to_access_shared_queue');
             if ($run eq $production_run) {
                 SharedQueue::Delete_id_from_j_shared_queue($C, $DBH, $id);
-                __output(qq{Deleted nid=$id from mdp.j_shared_queue\n});
+                __output(qq{Deleted nid=$id from slip_shared_queue\n});
             }
         }
     }

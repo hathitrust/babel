@@ -10,8 +10,8 @@ see usage
 
 =head1 DESCRIPTION
 
-Rebuild mdp.j_indexed based on what is actually present in the index
-removing duplicates in j_indexed and Solr. Cannot be run until queue
+Rebuild slip_indexed based on what is actually present in the index
+removing duplicates in slip_indexed and Solr. Cannot be run until queue
 is indexed and index is optimized. Should only take a few minutes.
 
 =head1 OPTIONS
@@ -84,8 +84,8 @@ Description
 # ---------------------------------------------------------------------
 sub rb_get_usage {
     my $s = qq{Usage: rebuild-j -r run [-n][-d]|[-T]
-            build j_indexed_temp and dedup leaving behind j_indexed_temp
-               where -n skips INSERT INTO j_indexed and Solr duplicate doc deletion\n};
+            build slip_indexed_temp and dedup leaving behind slip_indexed_temp
+               where -n skips INSERT INTO slip_indexed and Solr duplicate doc deletion\n};
     return $s;
 }
 
@@ -101,7 +101,7 @@ if (! $opt_r) {
 }
 
 my $CHECK = defined($opt_n);
-my $C_MSG = ($CHECK ? 'CHECK Only: Do NOT delete j_indexed rows' : 'DELETE j_indexed rows');
+my $C_MSG = ($CHECK ? 'CHECK Only: Do NOT delete slip_indexed rows' : 'DELETE slip_indexed rows');
 
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
@@ -120,7 +120,7 @@ $C->set_object('MdpConfig', $CONFIG);
 
 my $db;
 eval {
-    $db = new Database($CONFIG);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     __output(qq{database connect fail\n});
@@ -209,7 +209,7 @@ sub __rb_commit {
 
 =item rebuild_indexed
 
-For each shard, add its ids to j_indexed[shard] for this run
+For each shard, add its ids to slip_indexed[shard] for this run
 
 =cut
 
@@ -219,11 +219,11 @@ sub rebuild_indexed {
 
     my $s;
 
-    $s = qq{Begin j_indexed rebuild run=$run $C_MSG};
+    $s = qq{Begin slip_indexed rebuild run=$run $C_MSG};
     __output(qq{\n\n ***** $s ***** \n\n});
     Log_rebuild($C, $run, $s);
 
-    $s = qq{Initialize j_indexed_temp ...};
+    $s = qq{Initialize slip_indexed_temp ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
     SLIP_Utils::Db_sync::init_j_indexed_temp($C, $dbh);
@@ -246,7 +246,7 @@ sub rebuild_indexed {
         # Commit
         __rb_commit($C, $run, $shard, $indexer);
         
-        # For each id in Solr shard, add it to j_indexed_temp
+        # For each id in Solr shard, add it to slip_indexed_temp
         my $start = 0;
         my ($slice_num, $item_ct) = (0, 0);
         
@@ -275,20 +275,20 @@ sub rebuild_indexed {
         Log_rebuild($C, $run, $s);
     }
     
-    # Delete duplicate rows in j_indexed_temp and corresponding Solr
+    # Delete duplicate rows in slip_indexed_temp and corresponding Solr
     # documents duplicated in the recorded shard.
     if ($CHECK) {
-        $s = qq{Delete Duplicate j_indexed_temp rows, NOT deleting duplicate Solr docs ...};
+        $s = qq{Delete Duplicate slip_indexed_temp rows, NOT deleting duplicate Solr docs ...};
         __output(qq{$s\n});
     }
     else {
-        $s = qq{Delete Duplicate j_indexed_temp rows, duplicate Solr docs ...};
+        $s = qq{Delete Duplicate slip_indexed_temp rows, duplicate Solr docs ...};
         __output(qq{$s\n});
     }
     Log_rebuild($C, $run, $s);
     
     my ($total_dupl_id_item_ct, $total_Delete_ct) = Delete_duplicates($C, $run, $dbh);
-    $s = qq{Done. \n\tduplicated j_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
+    $s = qq{Done. \n\tduplicated slip_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
     __output(qq{$s\n});
     Log_rebuild($C, $run, $s);
     
@@ -299,14 +299,14 @@ sub rebuild_indexed {
             unless(! $CHECK);
     }
     
-    # Clear the rows from j_indexed for this run
+    # Clear the rows from slip_indexed for this run
     if ($CHECK) {        
-        $s = qq{SKIP Delete j_indexed rows};
+        $s = qq{SKIP Delete slip_indexed rows};
         __output(qq{$s\n});
         Log_rebuild($C, $run, $s);
     }
     else {
-        $s = qq{Delete j_indexed rows ...};
+        $s = qq{Delete slip_indexed rows ...};
         __output(qq{$s});
         Log_rebuild($C, $run, $s);
         Db::Delete_indexed($C, $dbh, $run);
@@ -316,14 +316,14 @@ sub rebuild_indexed {
     }
 
     
-    # Insert the rows from j_indexed_temp
+    # Insert the rows from slip_indexed_temp
     if ($CHECK) {
-        $s = qq{SKIP Insert j_indexed_temp rows into j_indexed};
+        $s = qq{SKIP Insert slip_indexed_temp rows into slip_indexed};
         __output(qq{$s\n});
         Log_rebuild($C, $run, $s);
     }
     else {
-        $s = qq{Insert j_indexed_temp rows into j_indexed ...};
+        $s = qq{Insert slip_indexed_temp rows into slip_indexed ...};
         __output(qq{$s});
         Log_rebuild($C, $run, $s);
         SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
@@ -355,7 +355,7 @@ sub Delete_duplicates {
 
     my @dupl_shard_accumulator = ();
 
-    # Find ids that appear in more than one shard according to j_indexed_temp
+    # Find ids that appear in more than one shard according to slip_indexed_temp
     my $ref_to_arr_of_hashref = SLIP_Utils::Db_sync::Select_duplicate_ids_j_indexed_temp($C, $dbh);
     foreach my $hashref (@$ref_to_arr_of_hashref) {
         # For each id, find the extraneous shards.
@@ -387,10 +387,10 @@ sub Delete_duplicates {
         }
 
         foreach my $del_shard (@del_dupl_shards_of_id) {
-            # Delete from j_indexed_temp
+            # Delete from slip_indexed_temp
             SLIP_Utils::Db_sync::Delete_duplicate_id_j_indexed_temp($C, $dbh, $id, $del_shard);
 
-            $s = qq{  deleted id=$id shard=$del_shard from j_indexed_temp};
+            $s = qq{  deleted id=$id shard=$del_shard from slip_indexed_temp};
             __output(qq{$s\n});
             Log_rebuild($C, $run, $s);
 

@@ -117,7 +117,7 @@ if ($RUN ne $production_run) {
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     my $rc = $SLIP_Utils::States::RC_DATABASE_CONNECT;

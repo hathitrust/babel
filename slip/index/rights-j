@@ -12,7 +12,7 @@ rights-j
 
 =head1 DATA SCHEMA
 
-The VuFind Solr index document has two fields to support mdp.j_rights
+The VuFind Solr index document has two fields to support slip_rights
 table updates to HathiTrust IDs (nid's: n]amespace + id).
 
 =over 4
@@ -59,20 +59,20 @@ rights changes or reloaded status.
 
 =head1 PROCESSING
 
-rights-j gets timestamp=D from the j_vsolr_timestamp table which
+rights-j gets timestamp=D from the slip_vsolr_timestamp table which
 records the newest update_time seen when rights-j last ran.
 
 rights-j parses the item ids from the bib records and queries
-mdp.rights table for the complete set of rights data for that id and
-REPLACES INTO the mdp.j-rights with an update_time=vsolr_update_time.
+rights table for the complete set of rights data for that id and
+REPLACES INTO the slip-rights with an update_time=vsolr_update_time.
 
 enqueuer-j script processes records with an update_time newer than the
 newest update_time seen on any record the last time it ran. Processing
-means to copy from mdp.j-rights into mdp.j-queue to be later consumed
+means to copy from slip-rights into slip-queue to be later consumed
 by the index-j script.
 
-The -R option drops the entire j_rights_temp table, rebuilds it and
-renames it to j_rights.
+The -R option drops the entire slip_rights_temp table, rebuilds it and
+renames it to slip_rights.
 
 =head1 OPTIONS
 
@@ -152,12 +152,12 @@ sub r_get_usage {
     $s .= qq{Usage: rights-j [-n][-f][-T][-B -r run | -R | -F<file>] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -f force email\n};
     $s .= qq{     -T test compilation only. No operations\n};
-    $s .= qq{     -F insert IDs from file (missing from j_rights)\n};
-    $s .= qq{           where -n is check_only, no inserts to j_rights\n};
+    $s .= qq{     -F insert IDs from file (missing from slip_rights)\n};
+    $s .= qq{           where -n is check_only, no inserts to slip_rights\n};
     $s .= qq{     -B build from last vSolr timestamp for -r run\n};
-    $s .= qq{           where -n is check_only, no inserts to j_rights\n};
-    $s .= qq{     -R re-build j_rights_temp from 0000000\n};
-    $s .= qq{           where -n is check_only, NO DROP of j_rights\n};
+    $s .= qq{           where -n is check_only, no inserts to slip_rights\n};
+    $s .= qq{     -R re-build slip_rights_temp from 0000000\n};
+    $s .= qq{           where -n is check_only, NO DROP of slip_rights\n};
     $s .= qq{     -d options\n};
     $s .= qq{           1: me\n};
     $s .= qq{           2: me,lsdb\n};
@@ -265,7 +265,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'rights-j', $@);
@@ -284,7 +284,7 @@ eval {
         if ($ID_INSERT_FILE) {
             my $i = $CHECK ? 'CHECK (NO insert)' : 'INSERT';
 
-            __confirm("\nProcess j_rights: $i IDs from $ID_INSERT_FILE? [N] ");
+            __confirm("\nProcess slip_rights: $i IDs from $ID_INSERT_FILE? [N] ");
             repair_insert_id_helper($C, $DBH, $ID_INSERT_FILE, $CHECK);
         }
         elsif ($BUILD) {
@@ -294,13 +294,13 @@ eval {
             my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($last_timestamp, $lag);
 
             $INIT_MSG = qq{Today is $now_timestamp.\n}
-                . qq{Last run set j_rights MAX(update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
+                . qq{Last run set slip_rights MAX(update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
 
             if ($CHECK) {
-                __confirm("\n$INIT_MSG\nCheck j_rights table: NO j_rights INSERT? [N] ");
+                __confirm("\n$INIT_MSG\nCheck slip_rights table: NO slip_rights INSERT? [N] ");
             }
             else {
-                __confirm("\n$INIT_MSG\nExtend j_rights table: INSERT INTO j_rights? [N] ");
+                __confirm("\n$INIT_MSG\nExtend slip_rights table: INSERT INTO slip_rights? [N] ");
             }
 
             # Go
@@ -314,20 +314,20 @@ eval {
                 . qq{Query will be ['00000000' TO *]};
 
             if ($CHECK) {
-                __confirm("\n$INIT_MSG\nCHECK=1 CREATE j_rights_temp\n  => NO RENAME j_rights_temp, NO DROP j_rights? [N] ");
+                __confirm("\n$INIT_MSG\nCHECK=1 CREATE slip_rights_temp\n  => NO RENAME slip_rights_temp, NO DROP slip_rights? [N] ");
             }
             else {
-                __confirm("\n$INIT_MSG\nCHECK=0 RENAME j_rights_temp to j_rights\n  => DROP j_rights? [N] ");
+                __confirm("\n$INIT_MSG\nCHECK=0 RENAME slip_rights_temp to slip_rights\n  => DROP slip_rights? [N] ");
             }
 
-            # DROP/CREATE j_rights_temp
+            # DROP/CREATE slip_rights_temp
             initialize_j_rights_temp($C, $DBH);
-            # Always insert into j_rights_temp by forcing CHECK=0 here
+            # Always insert into slip_rights_temp by forcing CHECK=0 here
 	    my ($process_start, $totals_hashref) = process_rights($C, $DBH, undef, '00000000', 0, 1);
 
 	    r_final_report($C, $DBH, $process_start, $totals_hashref, $CHECK, $REBUILD);
 
-            # DO NOT DROP j_rights if CHECK==1. j_rights_temp is left
+            # DO NOT DROP slip_rights if CHECK==1. slip_rights_temp is left
             # behind until next (-R) run.
             if (! $CHECK) {
                 DROP_j_rights_RENAME_j_rights_temp($C, $DBH);
@@ -338,7 +338,7 @@ eval {
         flush_r_rights_Log($C, $RIGHTS_LOGFILE_KEY);
     }
     else {
-        __output(qq{j_rights not enabled\n})
+        __output(qq{slip_rights not enabled\n})
             unless $INTERACTIVE;
     }
 };
@@ -454,7 +454,7 @@ sub repair_insert_id {
         $s = qq{Repair: Software error: invalid case value=$case } . Utils::Time::iso_Time();
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
-        return 'rights-j_SOFTWARE';
+        return 'Rights_SOFTWARE';
     }
     else {
         $s = "Repair: processed $nid, case=$case";
@@ -545,7 +545,7 @@ sub DROP_j_rights_RENAME_j_rights_temp {
     my ($C, $dbh) = @_;
     Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
 
-    my $s = "Rebuild: drop j_rights, rename j_rights_temp";
+    my $s = "Rebuild: drop slip_rights, rename slip_rights_temp";
     __output("$s\n\n");
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
@@ -586,7 +586,7 @@ sub process_rights_from_errors {
     my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
     my $num_metadata_errors = scalar(@$id_arr_hashref);
     if ($num_metadata_errors) {
-        $s = qq{Repair: Trying to repair $num_metadata_errors ids from j_errors };
+        $s = qq{Repair: Trying to repair $num_metadata_errors ids from slip_errors };
         __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
@@ -600,7 +600,7 @@ sub process_rights_from_errors {
 
             my $case = repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs);
             if ($case eq 'NEW') {
-                # Repair succeeded: ID added to j_rights
+                # Repair succeeded: ID added to slip_rights
                 $totals_hashref->{num_m_errors_repaired}++;
             }
             elsif ($case eq 'NOOP') {
@@ -621,7 +621,7 @@ sub process_rights_from_errors {
         }
     }
     else {
-        $s = qq{Repair: No j_errors ids to repair };
+        $s = qq{Repair: No slip_errors ids to repair };
         __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
     }
@@ -644,7 +644,7 @@ that day.  NOTE: This is not expected to happen. Negative values
 advance the timestamp.
 
 Insert in blocks of SLICE_SIZE. Anomalies count items from bib
-records that are not in mdp.rights.  These are logged and must be
+records that are not in rights_current.  These are logged and must be
 corrected manually.
 
 =cut
@@ -747,7 +747,7 @@ sub process_rights {
     }
 
     # Update the vSolr timestamp to the MAX(update_time) in
-    # j_rights{_temp}. We will backtrack by 2 days from this value
+    # slip_rights{_temp}. We will backtrack by 2 days from this value
     # when next we run.
     Db::update_vSolr_timestamp($C, $dbh, $Rebuild)
         unless $Check;
@@ -817,7 +817,7 @@ sub near_vSolr_downtime {
 
 =item r_rights_enabled
 
-Is j_rights enabled?
+Is slip_rights enabled?
 
 =cut
 
@@ -851,7 +851,7 @@ sub r_slice_report {
     }
 
     my $s =
-        qq{Checkpoint: j_rights size=$size j_rights_temp size=$temp_size off=$offset\n}
+        qq{Checkpoint: slip_rights size=$size slip_rights_temp size=$temp_size off=$offset\n}
             . qq{  slice_ids=$slice_ids anom=$anomalies new=$sref->{'NEW'} noop=$sref->{'NOOP'} upd=$sref->{'UPDATED'} mov=$sref->{'MOVED'}\n}
                 . qq{  total_ids=$tref->{'ids'} total_anom=$anomalies total_new=$tref->{'NEW'} total_noop=$tref->{'NOOP'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'} total_meta_updates=$tref->{'meta_upd'}\n}
                     . qq{  rate=$idsPsec ids/sec };
@@ -897,13 +897,13 @@ sub r_event_report {
     my $time = $hashref->{'time'};
     my $sysid = $hashref->{'sysid'};
 
-    # Get supplements to the mdp.rights data queried from j_rights and nid processing
+    # Get supplements to the rights_current data queried from slip_rights and nid processing
     my $timestamp_of_nid = $hashref->{'timestamp_of_nid'};
-    my $timestamp_in_j_rights = $hashref->{'timestamp_in_j_rights'};
-    my $sysid_in_j_rights = $hashref->{'sysid_in_j_rights'};
+    my $timestamp_in_slip_rights = $hashref->{'timestamp_in_slip_rights'};
+    my $sysid_in_slip_rights = $hashref->{'sysid_in_slip_rights'};
 
     my $s =
-        qq{$event: nid=$nid attr=$attr reason=$reason source=$source user=$user time=$time timestamp_of_nid=$timestamp_of_nid timestamp_in_j_rights=$timestamp_in_j_rights j_rights_sysid=$sysid_in_j_rights vsolr_sysid=$sysid };
+        qq{$event: nid=$nid attr=$attr reason=$reason source=$source user=$user time=$time timestamp_of_nid=$timestamp_of_nid timestamp_in_slip_rights=$timestamp_in_slip_rights slip_rights_sysid=$sysid_in_slip_rights vsolr_sysid=$sysid };
     DEBUG('vsolr', qq{DEBUG: $s} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 }
@@ -920,10 +920,10 @@ Description
 sub __get_repair_report {
     my $tr = shift;
     my $s =
-      qq{Repair metadata errors from j_rights:}
-        . qq{\n\tj_errors_candidates=$tr->{num_m_errors} }
-          . qq{\n\tj_rights_repaired=$tr->{num_m_errors_repaired} }
-            . qq{\n\tj_rights_not_missing=$tr->{num_m_not_missing} }
+      qq{Repair metadata errors from slip_rights:}
+        . qq{\n\tslip_errors_candidates=$tr->{num_m_errors} }
+          . qq{\n\tslip_rights_repaired=$tr->{num_m_errors_repaired} }
+            . qq{\n\tslip_rights_not_missing=$tr->{num_m_not_missing} }
               . qq{\n\tanomalies=$tr->{num_m_anomalies} }
                 . qq{\n\tvufind_http_error=$tr->{num_m_vufind_http} }
                   . qq{\n\tvufind_not_present=$tr->{num_m_missing_vufind} } 
@@ -959,9 +959,9 @@ sub r_final_report {
     my $repair_report = __get_repair_report($tref)
 	unless($Rebuild);
 
-    my $r = $Rebuild ? '(before j_rights_temp rename)' : '';
+    my $r = $Rebuild ? '(before slip_rights_temp rename)' : '';
     my $s =
-        qq{\nUpdate$r: j_rights size=$size j_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
+        qq{\nUpdate$r: slip_rights size=$size slip_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
             . qq{\tthis_run_total=$run_total :: total_new=$tref->{'NEW'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'}\n}
                 . qq{\ttotal_noop=$tref->{'NOOP'} total_anom=$tref->{'anomalies'} total_meta_updates=$tref->{'meta_upd'}\n}
                     . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min\n}
@@ -973,7 +973,7 @@ sub r_final_report {
     if (! $INTERACTIVE || $FORCE_EMAIL) {
         my $HOST = `hostname`;
         $HOST =~ s,\..*$,,s;
-        my $subj = qq{[SLIP] j-rights report ($HOST)};
+        my $subj = qq{[SLIP] rights-j report ($HOST)};
         SLIP_Utils::Common::Send_email($C, 'report', $subj, $s);
     }
 }

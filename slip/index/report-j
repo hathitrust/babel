@@ -129,7 +129,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     my $rc = $SLIP_Utils::States::RC_DATABASE_CONNECT;
@@ -705,15 +705,15 @@ sub report_configuration {
 
     __Print qq{\tqueue:\n\t\tenabled=$enquerer_enabled\n};
 
-    # j_rights config
+    # slip_rights config
     my $rights_enabled = Db::Select_rights_enabled($C, $dbh);
 
     my $v_timestamp = Db::Select_vSolr_timestamp($C, $dbh);
     my $r_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
-    my $j_rights_size = Db::Select_count_from_j_rights($C, $dbh);
+    my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
 
     __Print qq{\trights:\n\t\tenabled=$rights_enabled\n};
-    __Print qq{\t\tj_rights MAX(update_time)=$v_timestamp, enqueuer-j last timestamp=$r_timestamp, j_rights size=$j_rights_size\n};
+    __Print qq{\t\tslip_rights MAX(update_time)=$v_timestamp, enqueuer-j last timestamp=$r_timestamp, slip_rights size=$slip_rights_size\n};
 
     # Driver
     # Enqueuer config

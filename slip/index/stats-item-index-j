@@ -140,7 +140,7 @@ if ($site ne $hosting_site) {
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     my $s = qq{stats-item-index-j run=$RUN} . $@;

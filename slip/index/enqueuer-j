@@ -10,8 +10,8 @@ enqueuer-j
 
 =head1 DESCRIPTION
 
-enqueuer-j reads the timestamp recorded in mdp.j_rights_timestamp when
-it last did work. If there are ids in j_rights newer or _equal_ than
+enqueuer-j reads the timestamp recorded in slip_rights_timestamp when
+it last did work. If there are ids in slip_rights newer or _equal_ than
 that time, it inserts those ids into the queue to be processed for the
 given run.  Producers (index-j) read and dequeue from the queue.
 
@@ -159,7 +159,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'enqueuer-j', $@);
@@ -319,10 +319,10 @@ sub enqueue_from_j_rights {
         __output($out_msg);
         __confirm("OK to proceed? [N] ");
 
-        # Get all items from the j_rights table with update_time newer
+        # Get all items from the slip_rights table with update_time newer
         # than the timestamp set when enqueuer-j last recorded
-        # the MAX(update_time) and insert them into j_queue advancing the
-        # timestamp j_rights_timestamp
+        # the MAX(update_time) and insert them into slip_queue advancing the
+        # timestamp slip_rights_timestamp
         my $s0 = qq{Beginning insert into Primary queue. Please wait, this can take a while ...\n};
         __output($s0);
         my $num_inserted = Db::insert_latest_into_queue($C, $dbh, $run);

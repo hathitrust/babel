@@ -75,7 +75,7 @@ $| = 1;
 sub tim_get_usage {
     my $s = qq{Usage: timeouts-j  -r run -Q|-l{1|2|3} [-d]
                  -l lists timed-out ids by shard, 1,2,3=verbosity
-                 -Q deletes ids from j_timeouts and re-queues them to j_queue\n};
+                 -Q deletes ids from slip_timeouts and re-queues them to slip_queue\n};
     return $s;
 }
 
@@ -122,7 +122,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database($config);
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     my $rc = $SLIP_Utils::States::RC_DATABASE_CONNECT;
