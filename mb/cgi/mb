@@ -110,7 +110,7 @@ my $config = new MdpConfig(
 $C->set_object('MdpConfig', $config);
 
 # Database connection
-my $db = new Database($config);
+my $db = new Database('ht_web');
 $C->set_object('Database', $db);
 
 # Session

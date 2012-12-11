@@ -68,7 +68,7 @@ my $CONFIG = new MdpConfig(
                           );
 $C->set_object('MdpConfig', $CONFIG);
 # Database connection
-my $db = new Database($C->get_object('MdpConfig'));
+my $db = new Database('ht_maintenance');
 my $DBH = $db->get_DBH($C);
 $C->set_object('Database', $db);
 
