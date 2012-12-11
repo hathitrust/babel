@@ -100,7 +100,7 @@ sub Run {
     $C->set_object('MdpConfig', $config);
     
     # Database connection -- order matters
-    my $db = new Database($config);
+    my $db = new Database('ht_web');
     $C->set_object('Database', $db);
 
     # Session -- order matters
