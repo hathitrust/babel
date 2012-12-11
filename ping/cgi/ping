@@ -151,7 +151,7 @@ JAVASCRIPT
     if ( $$env{REMOTE_USER} ) {
 
         # Database connection to look up mdp.ht_institutions table
-        my $db = new Database($config);
+        my $db = new Database('ht_web');
         $C->set_object('Database', $db);
 
         my $cgi = new CGI;
@@ -196,7 +196,7 @@ JAVASCRIPT
     $C->set_object('CGI', $cgi);
 
     # Database connection
-    my $db = new Database($config);
+    my $db = new Database('ht_web');
     $C->set_object('Database', $db);
     
     # Session
