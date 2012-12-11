@@ -3,6 +3,10 @@
 use warnings;
 use strict;
 
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
 use Getopt::Std;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
@@ -30,11 +34,44 @@ my $config = new MdpConfig(
                            $ENV{SDRROOT} . "/kgs/lib/Config/local.conf"
                           );
 $C->set_object('MdpConfig', $config);
+        # For all value of ord($key) see http://www.asciitable.com/
 
-# Database connection
-my $db = new Database($config);
-my $dbh = $db->get_DBH();
+# ---------------------------------------------------------------------
 
+=item get_password
+
+http://stackoverflow.com/questions/701078/how-can-i-enter-a-password-using-perl-and-replace-the-characters-with
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_password() {
+    my $password = "";
+    # Start reading the keys
+    ReadMode(4); # Disable the control keys
+    my $count = 0;
+    while (ord(my $key = ReadKey(0)) != 10) {
+        # This will continue until the Enter key is pressed (decimal value of 10)
+        if(ord($key) == 127 || ord($key) == 8) {
+            # DEL/Backspace was pressed
+            if ($count > 0) {
+                $count--;
+                #1. Remove the last char from the password
+                chop($password);
+                #2 move the cursor back by one, print a blank character, move the cursor back by one
+                print "\b \b";
+            }
+        }
+        elsif(ord($key) >= 32) {
+            $count++;
+            $password = $password.$key;
+            print "*";
+        }
+    }
+    ReadMode(0); #Reset the terminal once we are done
+
+    return $password;
+}
 
 # ---------------------------------------------------------------------
 
@@ -46,74 +83,88 @@ Description
 
 # ---------------------------------------------------------------------
 sub __get_usage {
-    my $s = qq{Usage: delete-kgs-account [ -e email | -u userid ]\n};
+    my $s = qq{Usage: delete-kgs-account -a access_key -u db_user -n db_name -s db_server\n\tprompts for passwd\n};
     return $s;
 }
 
-our ($opt_e, $opt_u);
+our ($opt_a, $opt_u, $opt_n, $opt_s);
+my $ops = getopts('a:u:n:s:');
 
-my $ops = getopts('e:u:');
+my ($access_key, $db_user,  $db_name, $db_server) = ($opt_a, $opt_u, $opt_n, $opt_s);
 
-my ($EMAIL, $USERID);
-
-if (defined $opt_e) {
-    $EMAIL = $opt_e;
-}
-elsif (defined $opt_u) {
-    $USERID = $opt_u;
-}
-else {
-    print __get_usage();
+if (! ($access_key && $db_user && $db_name && $db_server)) {
+    print "ERROR: Missing args.\n" . __get_usage();
     exit 0;
 }
 
-my $access_key = '';
+use Term::ReadKey;
+print "Enter passwd: ";
+
+my $db_passwd = get_password();
+print "\n";
+
+# Database connection
+my $db = new Database($db_user, $db_passwd,  $db_name, $db_server);
+my $dbh = $db->get_DBH();
+
 my ($statement, $sth, $s);
 
-if ($EMAIL) {
-    $statement = qq{SELECT access_key FROM da_authentication WHERE email=?};
-    $sth = DbUtils::prep_n_execute($dbh, $statement, $EMAIL);
-    $access_key = $sth->fetchrow_array();
-    $s = qq{Deleting account using email="$EMAIL"}
-}
-elsif ($USERID) {
-    $statement = qq{SELECT access_key FROM da_authentication WHERE userid=?};
-    $sth = DbUtils::prep_n_execute($dbh, $statement, $USERID);
-    $access_key = $sth->fetchrow_array();
-    $s = qq{Deleting account using userid="$USERID"}
+$statement = qq{SELECT count(*) FROM htd_authentication WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+my $au_ct = $sth->fetchrow_array() || 0;
+
+$statement = qq{SELECT count(*) FROM htd_authentication WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+my $ao_ct = $sth->fetchrow_array() || 0;
+
+$statement = qq{SELECT count(*) FROM htd_rates WHERE access_key=?};
+$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+my $ra_ct = $sth->fetchrow_array() || 0;
+
+if ($au_ct) {
+    $statement = qq{DELETE FROM htd_authentication WHERE access_key=?};
+    $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+    $s = "Clean htd_authentication access_key=$access_key\n";
 }
 else {
-    die "Program error\n";
+    $s = qq{access_key=$access_key not in htd_authentication\n};
 }
-
-if (! $access_key) {
-    print qq{Could not retrieve access_key.\n};
-    exit 0;
-}
-
-
-print "$s with access_key=$access_key\n";
+print "$s";
 LOG($C, $s);
 
-print "Clean da_authentication\n";
-$statement = qq{DELETE FROM da_authentication WHERE access_key=?};
-$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+if ($ao_ct) {
+    $statement = qq{DELETE FROM htd_authorization WHERE access_key=?};
+    $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+    $s = "Clean htd_authorization access_key=$access_key\n";
+}
+else {
+    $s = qq{access_key=$access_key not in htd_authorization\n};
+}
+print "$s";
+LOG($C, $s);
 
-print "Clean da_authorization\n";
-$statement = qq{DELETE FROM da_authorization WHERE access_key=?};
-$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+if ($ra_ct) {
+    $statement = qq{DELETE FROM htd_rates WHERE access_key=?};
+    $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+    $s = "Clean htd_rates access_key=$access_key\n";
+}
+else {
+    $s = qq{access_key=$access_key not in htd_rates\n};
+}
+print "$s";
+LOG($C, $s);
 
-print "Clean da_requests\n";
-$statement = qq{DELETE FROM da_requests WHERE access_key=?};
+$statement = qq{SELECT count(*) FROM htd_statistics WHERE access_key=?};
 $sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
-
-print "Clean da_statistics\n";
-$statement = qq{DELETE FROM da_statistics WHERE access_key=?};
-$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
-
-print "Clean da_rates\n";
-$statement = qq{DELETE FROM da_rates WHERE access_key=?};
-$sth = DbUtils::prep_n_execute($dbh, $statement, $access_key);
+my $st_ct = $sth->fetchrow_array() || 0;
+if ($st_ct) {
+    $s = qq{htd_statistics retained for access_key=$access_key. htd_requests is self-limiting\n};
+}
+else {
+    $s = qq{access_key=$access_key not in htd_statistics. htd_requests is self-limiting\n};
+}
+print "$s";
+LOG($C, $s);
 
 exit 0;
 

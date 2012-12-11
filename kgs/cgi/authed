@@ -21,6 +21,10 @@ From the command line or debugger
 use warnings;
 use strict;
 
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
@@ -53,7 +57,7 @@ my $config = new MdpConfig(
 $C->set_object('MdpConfig', $config);
 
 # Database connection
-my $db = new Database($config);
+my $db = new Database('ht_web');
 $C->set_object('Database', $db);
 my $dbh = $db->get_DBH();
 
