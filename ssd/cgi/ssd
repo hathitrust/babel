@@ -3,6 +3,11 @@
 use strict;
 umask 0000;
 
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+    ## use lib "$ENV{SDRROOT}/pt/lib"; # (to find PTGlobals when using DEBUG_LOCAL)
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
