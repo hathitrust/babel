@@ -6,5 +6,5 @@
 --  meta structure aggregate pageimage pageocr pagecoordocr pagemeta
 -- ---------------------------------------------------------------------
 
-DROP TABLE IF EXISTS da_authorization;
-CREATE TABLE `da_authorization` (`access_key` varchar(64) NOT NULL default '', `code` tinyint NOT NULL DEFAULT 0, PRIMARY KEY (`access_key`));
+DROP TABLE IF EXISTS htd_authorization;
+CREATE TABLE `htd_authorization` (`access_key` varchar(64) NOT NULL default '', `code` tinyint NOT NULL DEFAULT 0, PRIMARY KEY (`access_key`));

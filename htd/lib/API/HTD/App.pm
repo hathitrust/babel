@@ -157,13 +157,7 @@ sub setup {
     # POSSIBLY NOTREACHED
 
     # We need a database connection from this point on.
-    my $DBH = API::DbIF::databaseConnect
-      (
-       $self->__getConfigVal('database', 'name'),
-       $self->__getConfigVal('database', 'user'),
-       $self->__getConfigVal('database', 'passwd'),
-       $self->__getConfigVal('database', 'server'),
-      );
+    my $DBH = API::DbIF::databaseConnect('ht_web');
 
     if (! $DBH) {
         $self->__setMember('setup_error', 1);

@@ -8,7 +8,7 @@ ark_pattern:       ark:/13960/(t|fk)\d[a-z\d][a-z\d]\d[a-z\d][a-z\d]\d[a-z\d]
 id_pattern:        .+
 namespace_pattern: .{2,4}
 
-# resource ids, e.g. "meta", must coordinate with da_authorization db
+# resource ids, e.g. "meta", must coordinate with htd_authorization db
 # table. And see /htd/scripts/test-pathinfo.pl
 patterns:
   type:                               ^/(type)/((_NS_)\.((_ARK_)|(_ID_)))$

@@ -1,9 +1,4 @@
 ---
-database:
-  name:   mdp
-  user:   mdp
-  passwd: II4md-py
-  server: mysql-sdr
 
 unzip_prog: /l/local/bin/unzip
 

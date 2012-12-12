@@ -596,7 +596,7 @@ sub __authorized_protocol {
 
 We impose IP address match requirements vs. an IP address parameter
 (where parameter presence is required) and vs. a known IP address for
-clients we recognize by presence in mdp.da_authorization.
+clients we recognize by presence in ht_maintenance.htd_authorization.
 
 Requests for resources that have a 'basic' access_type of 'restricted'
 or any 'extended' access_type must have an 'ip' query parameter

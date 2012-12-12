@@ -3,7 +3,7 @@
 # V_1-specific plugin config
 # =====================================================================
 
-# resource ids, e.g. "meta", must coordinate with da_authorization db
+# resource ids, e.g. "meta", must coordinate with htd_authorization db
 # table.
 patterns:
   meta:                 /(meta)/((.*?)\.((___ARK___)|([^/]+)))$

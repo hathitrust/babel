@@ -17,5 +17,5 @@
 -- 
 -- ---------------------------------------------------------------------
 
-DROP TABLE IF EXISTS da_authentication;
-CREATE TABLE `da_authentication` (`access_key` varchar(64) NOT NULL default '', `secret_key` varchar(64) NOT NULL default '', `name` varchar(256) NOT NULL default '', `org` varchar(256) NOT NULL default '', `email` varchar(256) NOT NULL default '', `userid` varchar(256) NOT NULL default '', `created` timestamp NOT NULL default NOW(), `activated` tinyint(1) NOT NULL default 0, PRIMARY KEY (`access_key`, `userid`), KEY (`userid`), KEY (`email`));
+DROP TABLE IF EXISTS htd_authentication;
+CREATE TABLE `htd_authentication` (`access_key` varchar(64) NOT NULL default '', `secret_key` varchar(64) NOT NULL default '', `name` varchar(256) NOT NULL default '', `org` varchar(256) NOT NULL default '', `email` varchar(256) NOT NULL default '', `userid` varchar(256) NOT NULL default '', `created` timestamp NOT NULL default NOW(), `activated` tinyint(1) NOT NULL default 0, PRIMARY KEY (`access_key`, `userid`), KEY (`userid`), KEY (`email`));

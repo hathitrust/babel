@@ -40,7 +40,7 @@ sub get_secret_by_active_access_key {
 
     my $l_access_key = ($access_key ? $access_key : 0);
 
-    my $statement = qq{SELECT secret_key FROM da_authentication WHERE access_key=? AND activated=?};
+    my $statement = qq{SELECT secret_key FROM htd_authentication WHERE access_key=? AND activated=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $l_access_key, 1);
     my $secret_key = $sth->fetchrow_array();
     hLOG_DEBUG('DB:  ' . qq{get_secret_by_active_access_key: $statement: $l_access_key 1 ::: SECRET_KEY});
@@ -95,7 +95,7 @@ sub validate_nonce_and_timestamp_for_access_key {
 
     my ($statement, $sth);
 
-    $statement = qq{LOCK TABLES da_requests WRITE};
+    $statement = qq{LOCK TABLES htd_requests WRITE};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
     # Dispose nonce values for all access_keys outside window
@@ -104,7 +104,7 @@ sub validate_nonce_and_timestamp_for_access_key {
     # window and are replays if they exist.
     my $now = time();
     my ($window_minus, $window_plus) = ($now - $window, $now + $window);
-    $statement = qq{DELETE FROM da_requests WHERE ((stamptime < ?) OR (stamptime > ?))};
+    $statement = qq{DELETE FROM htd_requests WHERE ((stamptime < ?) OR (stamptime > ?))};
     hLOG_DEBUG('DB:  ' . qq{validate_nonce_and_timestamp_for_access_key: $statement: $access_key $window_minus $window_plus});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $window_minus, $window_plus);
 
@@ -112,7 +112,7 @@ sub validate_nonce_and_timestamp_for_access_key {
     # requests for this access key.  (Simultaneous (>=)) requests with
     # same timestamp with different nonces for this access key are OK
     # because it is the combination that must be unique (below).
-    $statement = qq{SELECT MAX(stamptime) FROM da_requests WHERE access_key=?};
+    $statement = qq{SELECT MAX(stamptime) FROM htd_requests WHERE access_key=?};
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
     my $max = $sth->fetchrow_array() || 0;
     hLOG_DEBUG('DB:  ' . qq{validate_nonce_and_timestamp_for_access_key: $statement: $access_key $timestamp ::: $max});
@@ -129,7 +129,7 @@ sub validate_nonce_and_timestamp_for_access_key {
 
     # Any remaining nonce values must be inside the window and are
     # replays if they exist
-    $statement = qq{SELECT count(*) FROM da_requests WHERE access_key=? AND nonce=? AND stamptime=?};
+    $statement = qq{SELECT count(*) FROM htd_requests WHERE access_key=? AND nonce=? AND stamptime=?};
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $nonce, $timestamp);
     my $ct = $sth->fetchrow_array() || 0;
     hLOG_DEBUG('DB:  ' . qq{validate_nonce_and_timestamp_for_access_key: $statement: $access_key $nonce $timestamp ::: $ct});
@@ -156,10 +156,10 @@ sub insert_nonce_timestamp {
 
     my ($statement, $sth);
 
-    $statement = qq{LOCK TABLES da_requests WRITE};
+    $statement = qq{LOCK TABLES htd_requests WRITE};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
-    $statement = qq{INSERT INTO da_requests SET access_key=?, nonce=?, stamptime=?};
+    $statement = qq{INSERT INTO htd_requests SET access_key=?, nonce=?, stamptime=?};
     hLOG_DEBUG('DB:  ' . qq{insert_nonce_timestamp: $statement: $access_key $nonce $timestamp});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $nonce, $timestamp);
 
@@ -182,10 +182,10 @@ sub update_access {
     my ($statement, $sth);
     my $last_access = Utils::Time::iso_Time();
 
-    $statement = qq{LOCK TABLES da_statistics WRITE};
+    $statement = qq{LOCK TABLES htd_statistics WRITE};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
-    $statement = qq{INSERT INTO da_statistics SET access_key=? ON DUPLICATE KEY UPDATE accesses=accesses+1, last_access=?};
+    $statement = qq{INSERT INTO htd_statistics SET access_key=? ON DUPLICATE KEY UPDATE accesses=accesses+1, last_access=?};
     hLOG_DEBUG('DB:  ' . qq{update_access: $statement: $access_key $last_access});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key, $last_access);
 
@@ -208,10 +208,10 @@ sub update_fail_ct {
     my ($statement, $sth);
     my $field = $authentication_phase ? 'authentication_failures' : 'authorization_failures';
 
-    $statement = qq{LOCK TABLES da_statistics WRITE};
+    $statement = qq{LOCK TABLES htd_statistics WRITE};
     $sth = API::DbIF::prepAndExecute($dbh, $statement);
 
-    $statement = qq{UPDATE da_statistics SET $field=$field+1 WHERE access_key=?};
+    $statement = qq{UPDATE htd_statistics SET $field=$field+1 WHERE access_key=?};
     hLOG_DEBUG('DB:  ' . qq{update_fail_ct: $statement: $access_key});
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
 
@@ -235,7 +235,7 @@ server case.
 sub get_privileges_by_access_key {
     my ($dbh, $access_key) = @_;
 
-    my $statement = qq{SELECT code, ipregexp FROM da_authorization WHERE access_key=?};
+    my $statement = qq{SELECT code, ipregexp FROM htd_authorization WHERE access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
     # No row for access key means default lowest privilege
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
@@ -260,7 +260,7 @@ Description
 sub get_access_key_by_userid {
     my ($dbh, $userid) = @_;
 
-    my $statement = qq{SELECT access_key FROM da_authentication WHERE userid=?};
+    my $statement = qq{SELECT access_key FROM htd_authentication WHERE userid=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $userid);
     my $access_key = $sth->fetchrow_array() || 0;
 
@@ -281,7 +281,7 @@ Description
 sub access_key_exists {
     my ($dbh, $access_key) = @_;
 
-    my $statement = qq{SELECT count(*) FROM da_authentication WHERE access_key=?};
+    my $statement = qq{SELECT count(*) FROM htd_authentication WHERE access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
     my $ct = $sth->fetchrow_array() || 0;
 
