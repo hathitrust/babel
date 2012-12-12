@@ -92,14 +92,20 @@ if (defined($opt_d)) {
         __output($s);
         exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
-
-    $ENV{'DEBUG'} .= ',me';
-    $ENV{'DEBUG'} .= ',lsdb,idx,doc'
-        if ($opt_d == 1);
-    $ENV{'DEBUG'} .= ',vufind'
-        if ($opt_d == 2);
-    $ENV{'DEBUG'} .= ',docfulldebug'
-        if ($opt_d == 3);
+    my $switches;
+    if ($opt_d == 3) {
+        $switches = 'all,docfulldebug,vufind,lsdb,idx,doc,me';
+    }
+    elsif ($opt_d == 2) {
+        $switches = 'vufind,lsdb,idx,doc,me';
+    }
+    elsif ($opt_d == 1) {
+        $switches = 'lsdb,idx,doc,me';
+    }
+    else {
+        $switches = 'me';
+    }
+    $ENV{'DEBUG'} .= qq{,$switches};
 }
 $ENV{'DEBUG'} .= ',doconly';
 
@@ -138,6 +144,7 @@ foreach my $id (@$id_arr_ref) {
         if ($metadata_status != IX_NO_ERROR) {
             print qq{-----> metadata error: $metadata_status\n};
         }
+        print $doc->D_get_events() if ($doc->D_get_events());
     }
 }
 
