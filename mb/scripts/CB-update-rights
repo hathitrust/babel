@@ -10,7 +10,7 @@ CB-update-rights
 
 =head1 DESCRIPTION
 
-Update mdp.o_item.rights from mdp.rights_current.namespace,id
+Update ht_maintenance.mb_item.rights from ht_maintenance.rights_current.namespace,id
 
 =head1 OPTIONS
 
@@ -171,12 +171,12 @@ sub CB_delete_extras {
     __P(qq{delete extras:\n});
 
     while (1) {
-        $statement = qq{LOCK TABLES o_item WRITE, o_coll_item WRITE};
+        $statement = qq{LOCK TABLES mb_item WRITE, mb_coll_item WRITE};
         $sth = DbUtils::prep_n_execute($DBH, $statement);
 
         # One hundred at a time so we don't race/block with Collection Builder users
         $statement =
-          qq{SELECT extern_item_id FROM o_item WHERE extern_item_id NOT IN (SELECT DISTINCT extern_item_id FROM o_coll_item) LIMIT $size};
+          qq{SELECT extern_item_id FROM mb_item WHERE extern_item_id NOT IN (SELECT DISTINCT extern_item_id FROM mb_coll_item) LIMIT $size};
         $sth = DbUtils::prep_n_execute($DBH, $statement);
         my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
 
@@ -191,8 +191,8 @@ sub CB_delete_extras {
             $num_o_item++;
             my $extern_item_id = $hashref->{extern_item_id};
 
-            __P( qq{A: o_item not in o_coll_item: $extern_item_id\n});
-            $statement = qq{DELETE FROM o_item WHERE extern_item_id=?};
+            __P( qq{A: mb_item not in mb_coll_item: $extern_item_id\n});
+            $statement = qq{DELETE FROM mb_item WHERE extern_item_id=?};
             $sth = DbUtils::prep_n_execute($DBH, $statement, $extern_item_id);
 
             $num_deleted_from_o_item++;
@@ -202,8 +202,8 @@ sub CB_delete_extras {
         $sth = DbUtils::prep_n_execute($DBH, $statement);
     }
 
-    __P(qq{num o_item not in o_coll_item=$num_o_item\n});
-    __P(qq{num deleted in o_item=$num_deleted_from_o_item\n});
+    __P(qq{num mb_item not in mb_coll_item=$num_o_item\n});
+    __P(qq{num deleted in mb_item=$num_deleted_from_o_item\n});
 }
 
 # ---------------------------------------------------------------------
@@ -273,7 +273,7 @@ Description
 sub __get_o_item_metadata {
     my ($C, $id) = @_;
 
-    my $statement = qq{SELECT * FROM mdp.o_item WHERE extern_item_id=?};
+    my $statement = qq{SELECT * FROM mb_item WHERE extern_item_id=?};
     my $sth = DbUtils::prep_n_execute($DBH, $statement, $id);
 
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
