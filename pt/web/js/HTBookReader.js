@@ -647,7 +647,8 @@ HTBookReader.prototype.initToolbar = function(mode, ui) {
         if ( self.mode == 2 ) {
             self.left();
         } else {
-            if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
+            // self.constMode1up, self.constModeThumb
+            if ($.inArray(self.mode, [self.constModeThumb]) >= 0) {
                 self.scrollUp();
             } else {
                 self.prev();
@@ -660,7 +661,8 @@ HTBookReader.prototype.initToolbar = function(mode, ui) {
         if ( self.mode == 2 ) {
             self.right();
         } else {
-            if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
+            // self.constMode1up, self.constModeThumb
+            if ($.inArray(self.mode, [self.constModeThumb]) >= 0) {
                 self.scrollDown();
             } else {
                 self.next();
