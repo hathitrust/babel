@@ -113,7 +113,7 @@ sub run {
     my $config = Call_Handler(get_config(), 'System configuration error');
     # POSSIBLY NOTREACHED
     
-    my $dbh = Call_Handler(_htdc_connect($config), 'Database error');
+    my $dbh = Call_Handler(_htdc_connect(), 'Database error');
     # POSSIBLY NOTREACHED
     
     my $access_key = validate_request($Q, $dbh, $config, $ENV{REMOTE_USER});
@@ -362,16 +362,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub _htdc_connect {
-    my $config = shift;
-
-    return
-      API::DbIF::databaseConnect
-          (
-           $config->getConfigVal('database', 'name'),
-           $config->getConfigVal('database', 'user'),
-           $config->getConfigVal('database', 'passwd'),
-           $config->getConfigVal('database', 'server'),
-          );
+    return API::DbIF::databaseConnect('ht_web');
 }
 
 # ---------------------------------------------------------------------
