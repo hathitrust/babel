@@ -99,7 +99,7 @@ print start_html(-title=>"SLIP status run=$runs",
                         ],
                 );
 print div({-class=>"brandingLogo"},
-          a({-href=>"http://hathitrust.org"},
+          a({-href=>"http://www.hathitrust.org"},
             img({-src=>"/slip/common-web/graphics/HathiTrust.gif", -style=>"border:0"}),
             span("Digital Library - SLIP status - $date")));
 
