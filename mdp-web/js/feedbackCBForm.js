@@ -3,7 +3,7 @@ var displayCBFeedback = function() {
     var DEFAULT_EMAIL_VALUE = "[Your email address]";
     var pathname = window.location.pathname;
     var emailLen = 96;
-    var commentsLen = 256;
+    var commentsLen = 4096;
 
     // Shib
     var cgi_elem = "/cgi";
