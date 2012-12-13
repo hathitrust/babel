@@ -113,10 +113,10 @@
        <h2 class="SkipLink">Navigation links for search and collections</h2>
        <ul>
          <li>
-           <a href="http://hathitrust.org"><span title="Catalog Search">Home</span></a>
+           <a href="http://www.hathitrust.org"><span title="Catalog Search">Home</span></a>
          </li>
          <li>
-           <a href="http://hathitrust.org/about"><span title="About HathiTrust">About</span></a>
+           <a href="http://www.hathitrust.org/about"><span title="About HathiTrust">About</span></a>
          </li>
          <li id="PubCollLink">
            <xsl:element name="a">
