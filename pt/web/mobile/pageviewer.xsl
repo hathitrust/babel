@@ -8,6 +8,16 @@
 
   <xsl:import href="../pageviewer.xsl"/>
 
+  <xsl:template name="get-title-suffix">
+    <xsl:text>HathiTrust Mobile Digital Library</xsl:text>
+  </xsl:template>
+
+  <xsl:template name="GeneratePageTitle">
+    <xsl:call-template name="PageTitle">
+      <xsl:with-param name="suffix">HathiTrust Mobile Digital Library</xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+
   <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
   <xsl:variable name="gCurrentView">
     <xsl:value-of select="'1up'" >

@@ -74,7 +74,11 @@
         <!-- RDFa -->
         <xsl:call-template name="BuildRDFaLinkElement"/>
         <title>
-          <xsl:call-template name="PageTitle" />
+          <xsl:call-template name="PageTitle">
+            <xsl:with-param name="suffix">
+              <xsl:call-template name="get-title-suffix" />
+            </xsl:with-param>
+          </xsl:call-template>
         </title>
 
         <xsl:call-template name="extra-head-setup" />
@@ -266,6 +270,10 @@
   <xsl:template name="include_extra_js_and_css" />
   <xsl:template name="setup-head" />
   <xsl:template name="item-viewer" />
+
+  <xsl:template name="get-title-suffix">
+    <xsl:text>HathiTrust Digital Library</xsl:text>
+  </xsl:template>
 
 </xsl:stylesheet>
 
