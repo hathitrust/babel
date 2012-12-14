@@ -6,48 +6,35 @@ API::HTD::IP_Address
 
 =head1 DESCRIPTION
 
-This singleton class provides the logic of determine the IP address of
+This singleton class provides the logic to determine the IP address of
 an API request.
 
 An IP address asserted by a client as a URL parameter is authorized if
-the client access_key is trusted (in the whitelist) and the asserted
-ip address matches the origin ip address (Qual case) or, failing that
-matches the IP address configured for that access_key in our
-authorization tables (Data API web client case).
+the client access_key is trusted (access_key is in htd_authorization
+and code > 1) and the asserted ip address matches the origin ip
+address (Qual case) or, failing that matches the IP address configured
+for that access_key in our authorization tables (Data API web client
+case).
 
 =head1 SYNOPSIS
 
  API::HTD::IP_Address->new($config, $dbh, $access_key, $ip_address_param);
- 
+
  later:
- 
+
  my $ipo = new API::HTD::IP_Address();
- 
+
  my $ip_address_is_valid  = $ipo->ip_is_valid();
  my $ip_address_match_result = $ipo->ip_match();
- 
+
+ LOG("IP match=$ip_address_match_result");
+
  if ($ip_address_is_valid) {
-   if ($data_is_restricted) {
-     if ($ip_address_match_result == IP_MATCH) {
-       $authorized = 1;
-     }
-     else {
-       $authorized = 0;
-     }
-   }
-   else {
-     if ($ip_address_match_result == IP_MATCH || $ip_address_match_result == IP_NOTREQD) {
-       $authorized = 1;
-     }
-     else {
-       $authorized = 0;
-     }
-   }
- }
+   $authorized = 1;
  else {
-     $authorized = 0;
+   $authorized = 0;
  }
- 
+
 
 =head1 METHODS
 
@@ -87,14 +74,72 @@ sub new {
 
 =item __initialize
 
-      TpFc - (T)rusted (p)roxy for (F)ixed c)lient
-      TFc  - (T)rusted (F)ixed (c)lient
-      TpVc - (T)rusted (p)roxy for (V)ariable c)client
-      uTc  - (u)n(T)rusted (c)lient
+Tests of REMOTE_ADDR and IP address URL parameter vs IP address
+regular expression configured for the given access key.
+
+  [t-lP+lC]   (t)rusted -(l)ocked (P)roxy for +(l)ocked (C)lient
+
+             Security: Known authenticated user at known fixed desktop IP.
+
+             This is the htdc app (the trusted proxy) acting as a
+             proxy for a web browser locked to an IP address (the
+             fixed client).
+
+             The access key is that of an authenticated user of
+             htdc. The IP address is that of the users desktop browser
+             (fixed client) which must match the stored regexp.
+
+  [t+lPuC]   (t)rusted +(l)ocked (P)roxy (u)nknown (C)lient 
+
+             [WEAK, can't test geo location] !! REMOVED !!
+
+             Security: Contractual app from known fixed IP for unknown
+             client IP addresses.
+
+             This is the Expressnet On Demand Book (ODB) app (the
+             trusted fixed client) acting as a proxy for Espresso Book
+             Machine (EBM) clients.
+
+             The access key is that of the ODB app. The IP address is
+             that of the ODB app which must match the stored regexp.
+
+             NOTE: This is a weak form of trust. We do not know the
+             proxied EBM IP addresses to test it for US origin for
+             PDUS materials for authorization code(s) that limit to
+             PD. This gives rise to the next case.
+
+  [t+lPaC]   (t)rusted +(l)ocked (P)roxy (a)sserted (C)lient
+
+             Security: Contractual app from known fixed IP for
+             asserted client IP addresses.
+
+             This is the Expressnet On Demand Book (ODB) app (the
+             trusted fixed client) acting as a proxy for Espresso Book
+             Machine (EBM) clients, supplying EBM IP address in URL.
+
+             The access key is that of the ODB app. The IP address is
+             that of the ODB app which must match the stored
+             regexp. The URL parameter is the IP address of the EBM.
+
+ [v+laCt-lP]  (v)ariable +(l)ocked (C)lient (a)sserted by (t)rusted -(l)ocked(P)roxy
+
+             Security: trusted app transfers signed URL to clients it has IP addresses for.
+
+             This is the qual app which signs a URL containing the IP
+             address of a client /it/ knows and sends it to that
+             client who originates the request. Originating
+             REMOTE_ADDR must match the secure IP address parameter.
+
+             The access key is that of the qual (signing) app. The IP
+             address is that of the variable known (to qual) app
+             supplied in teh URL and which must match the REMOTE_ADDR
+             of the request.
+
+    [-tC]    -(t)rusted (C)lient
 
  Access keys that have been assigned a higher authorization level are
  'trusted' in the senses below. Access keys not in the table default
- to the lowest authorization (code==1).  
+ to the lowest authorization (code==1).
 
 =cut
 
@@ -111,57 +156,54 @@ sub __initialize {
     my $REMOTE_ADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
 
     my ($code, $ipregexp) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
-    my $trusted_client = ($code > 1);
+    my $trusted_client = ($code > 1); # i.e. configured in the htd_authorization table
 
+    # unTrusted client
     if (! $trusted_client) {
         my $s = ($ip_address_param ? 'ignored' : 'notsupplied');
         $self->__set_member_data($REMOTE_ADDR, 1, IP_NOTREQD);
-        hLOG(qq{API: IP_Address(uTc): ip param not required: valid=1 ipp=$s REMOTE_ADDR=$REMOTE_ADDR});
+        hLOG(qq{API: IP_Address[-tC]: ip param not required: valid=1 ip param=$s REMOTE_ADDR=$REMOTE_ADDR});
         return;
     }
 
     # Trusted client tests
     if ($ipregexp) {
         if ($ip_address_param) {
-            # trusted PROXY for a client locked to fixed IP address (HT web client)
+            # trusted unlocked Proxy for a authenticated Client locked to fixed IP address (HT web client)
             if ($ip_address_param =~ m,$ipregexp,) {
                 $self->__set_member_data($ip_address_param, 1, IP_MATCH);
-                hLOG(qq{API: IP_Address(TpFc): ip param matches vs allowed REMOTE_ADDR=$ipregexp: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                hLOG(qq{API: IP_Address[t-lP+lC]: ip param=$ip_address_param matches ipregexp=$ipregexp, REMOTE_ADDR=$REMOTE_ADDR: valid=1});
+            }
+            elsif ($REMOTE_ADDR =~  m,$ipregexp,) {
+                # trusted Proxy locked to its REMOTE_ADDR and asserting Client IP address URL param
+                $self->__set_member_data($ip_address_param, 1, IP_MATCH);
+                hLOG(qq{API: IP_Address[t+lPaC]: REMOTE_ADDR=$REMOTE_ADDR matches ipregexp=$ipregexp, ip param=$ip_address_param: valid=1});
             }
             else {
+                # fail
                 $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-                hLOG(qq{API: IP_Address(TpFc): ip param NO match vs allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
-            }
-        }
-        else {
-            if ($REMOTE_ADDR =~  m,$ipregexp,) {
-                # trusted CLIENT locked to its REMOTE_ADDR (Expressnet)
-                $self->__set_member_data($REMOTE_ADDR, 1, IP_MATCH);
-                hLOG(qq{API: IP_Address(TFc): REMOTE_ADDR matches vs allowed REMOTE_ADDR=$ipregexp: valid=1 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
-
-            }
-            else {
-                $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-                hLOG(qq{API: IP_Address(TcF):  REMOTE_ADDR NO match vs allowed REMOTE_ADDR=$ipregexp: valid=0 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
+                hLOG(qq{API: IP_Address[t-lP+lC]|[t+lPaC]: NO match: ip param=$ip_address_param, REMOTE_ADDR=$REMOTE_ADDR, ipregexp=$ipregexp: valid=0});
             }
         }
     }
     else {
-        # trusted PROXY for variable clients who must be locked to an
-        # IP via IP address parameter asserted by proxy . (Qual)
+        # No ipregexp to test against.
         if ($ip_address_param) {
             if ($ip_address_param eq $REMOTE_ADDR) {
+                # variable locked Client IP address asserted by trusted unlocked Proxy. (Qual)
                 $self->__set_member_data($ip_address_param, 1, IP_MATCH);
-                hLOG(qq{API: IP_Address(TpVc): ip param matches vs asserted REMOTE_ADDR: valid=1 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                hLOG(qq{API: IP_Address[v+laCt-lP]: ip param=$ip_address_param matches REMOTE_ADDR=$REMOTE_ADDR: valid=1});
             }
             else {
+                # fail
                 $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-                hLOG(qq{API: IP_Address(TpVc): ip param NO match vs asserted REMOTE_ADDR: valid=0 ipp=$ip_address_param REMOTE_ADDR=$REMOTE_ADDR});
+                hLOG(qq{API: IP_Address[v+laCt-lP]: ip param=$ip_address_param NO match REMOTE_ADDR=$REMOTE_ADDR: valid=0});
             }
         }
         else {
+            # fail: trusted but missing ip_param to test vs. REMOTE_ADDR
             $self->__set_member_data($REMOTE_ADDR, 0, IP_NOMATCH);
-            hLOG(qq{API: IP_Address(TpVc): ip param missing: valid=0 ipp=notsupplied REMOTE_ADDR=$REMOTE_ADDR});
+            hLOG(qq{API: IP_Address[v+laCt-lP]: ip param missing, ipregexp=NULL, REMOTE_ADDR=$REMOTE_ADDR: valid=0});
         }
     }
 }
