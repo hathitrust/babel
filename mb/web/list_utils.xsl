@@ -969,15 +969,32 @@
 
     <xsl:variable name="fulltext_string">
       <xsl:choose>
+        <xsl:when test="rights=8">This item is no longer available</xsl:when>
+        <xsl:otherwise></xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="fulltext_link_string">
+      <xsl:choose>
         <xsl:when test="fulltext=1">Full view</xsl:when>
-        <xsl:otherwise>Limited (search-only)</xsl:otherwise>
+        <xsl:otherwise>
+          <xsl:choose>
+            <xsl:when test="rights=8"> (Why not?)</xsl:when>
+            <xsl:otherwise>Limited (search-only)</xsl:otherwise>
+          </xsl:choose>
+        </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
 
     <xsl:variable name="fulltext_class">
       <xsl:choose>
         <xsl:when test="fulltext=1">fulltext</xsl:when>
-        <xsl:otherwise>viewonly</xsl:otherwise>
+        <xsl:otherwise>
+          <xsl:choose>
+            <xsl:when test="rights=8"></xsl:when>
+            <xsl:otherwise>viewonly</xsl:otherwise>
+          </xsl:choose>
+        </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
 
@@ -1055,7 +1072,6 @@
                   <xsl:text>cataloglinkhref</xsl:text>
                 </xsl:attribute>
                 <xsl:text>Catalog Record</xsl:text>
-              <!-- <xsl:value-of select="$fulltext_string"/>-->
             </xsl:element>
             </div>
           </li>
@@ -1065,13 +1081,12 @@
                 <xsl:text>rights: </xsl:text>
                 <xsl:value-of select="rights"/>
               </span>
+              <xsl:value-of select="$fulltext_string"/>
               <xsl:element name="a">
                 <xsl:attribute name="href">
                   <xsl:choose>
                     <xsl:when test="$ItemListType='SearchResults'">
-                      <!-- if we want first page instead of passing the
-                           search to xpat use $pt_href instead of
-                           $pt_search_href -->
+                      <!-- if we want first page instead of passing the search to xpat use $pt_href instead of $pt_search_href -->
                       <xsl:value-of select="PtSearchHref"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -1085,14 +1100,11 @@
                 <xsl:attribute name="title">
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
                 </xsl:attribute>
-                <xsl:value-of select="$fulltext_string"/>
+                <xsl:value-of select="$fulltext_link_string"/>
               </xsl:element>
             </div>
-            
           </li>
         </ul>
-
-
       </div>
 
       <div class="ItemCollections">
