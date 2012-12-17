@@ -9,7 +9,14 @@
   <xsl:import href="../pageviewer.xsl"/>
 
   <xsl:template name="get-title-suffix">
-    <xsl:text>HathiTrust Mobile Digital Library</xsl:text>
+    <xsl:choose>
+      <xsl:when test="$gCurrentUi = 'embed'">
+        <xsl:text>HathiTrust Digital Library</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>HathiTrust Mobile Digital Library</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template name="GeneratePageTitle">
