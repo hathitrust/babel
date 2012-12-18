@@ -7,4 +7,4 @@
 -- ---------------------------------------------------------------------
 
 DROP TABLE IF EXISTS htd_authorization;
-CREATE TABLE `htd_authorization` (`access_key` varchar(64) NOT NULL default '', `code` tinyint NOT NULL DEFAULT 0, PRIMARY KEY (`access_key`));
+CREATE TABLE `htd_authorization` (`access_key` varchar(64) NOT NULL default '', `code` tinyint NOT NULL DEFAULT 0, `type` CHAR(1) NOT NULL DEFAULT 'U', PRIMARY KEY (`access_key`));

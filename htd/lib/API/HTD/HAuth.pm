@@ -594,9 +594,8 @@ sub __authorized_protocol {
 
 =item __authorized_at_IP_address
 
-We impose IP address match requirements vs. an IP address parameter
-(where parameter presence is required) and vs. a known IP address for
-clients we recognize by presence in ht_maintenance.htd_authorization.
+We impose IP address match requirements vs. an IP address parameter or
+REMOTE_ADDR (depending on client type).
 
 Requests for resources that have a 'basic' access_type of 'restricted'
 or any 'extended' access_type must have an 'ip' query parameter
@@ -615,42 +614,23 @@ sub __authorized_at_IP_address {
 
     my $ip = $ipo->address;
     my $ip_address_is_valid  = $ipo->ip_is_valid();
-    my $ip_address_match_result = $ipo->ip_match();
-    my $data_requires_ip_param = 
-      (
-       (defined $extended_access_type)
-       ||
-       ($access_type =~ m,restricted,)
-      );
-    
+    my $client_type = $ipo->client_type();
+    my $trusted =  $ipo->trusted();
+
     my $authorized = 0;
     
     if ($ip_address_is_valid) {
-        if ($data_requires_ip_param) {
-            if ($ip_address_match_result == IP_MATCH) {
-                $authorized = 1;
-            }
-            else {
-                $authorized = 0;
-            }
-        }
-        else {
-            if ($ip_address_match_result == IP_MATCH || $ip_address_match_result == IP_NOTREQD) {
-                $authorized = 1;
-            }
-            else {
-                $authorized = 0;
-            }
-        }
+        $authorized = 1;
     }
     else {
         $authorized = 0;
     }
     
-    my $r = qq{ip_valid=$ip_address_is_valid ip_match=$ip_address_match_result ip_param_reqd=$data_requires_ip_param};
-    my $s = qq{API: __authorized_at_IP_address: $r authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none');
-    
+    my $r = qq{ip_valid=$ip_address_is_valid client_type=$client_type trusted=$trusted};
+    hLOG($r);
+    my $s = qq{API: __authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none');
     hLOG($s);
+
     return $authorized;
 }
 

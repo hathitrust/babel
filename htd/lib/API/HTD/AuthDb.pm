@@ -223,11 +223,7 @@ sub update_fail_ct {
 
 =item get_privileges_by_access_key
 
-No IP address assigned implies no restriction on access by IP
-address. Normally, if a higher access code is assigned to an
-access_key, an IP address would be assigned too.  Otherwise we expect
-a validated IP address to be hashed into the signature as in the Qual
-server case.
+Not in table implies not trusted:  PD access only (downstream test for PDUS).
 
 =cut
 
@@ -235,16 +231,18 @@ server case.
 sub get_privileges_by_access_key {
     my ($dbh, $access_key) = @_;
 
-    my $statement = qq{SELECT code, ipregexp FROM htd_authorization WHERE access_key=?};
+    my $statement = qq{SELECT code, ipregexp, type FROM htd_authorization WHERE access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
     # No row for access key means default lowest privilege
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
 
-    my $code = $ref_to_arr_of_hashref->[0]->{code} || 1;
-    my $ipregexp = $ref_to_arr_of_hashref->[0]->{ipregexp};
+    my $trusted = scalar @$ref_to_arr_of_hashref;
+    my $code = $trusted ? $ref_to_arr_of_hashref->[0]->{code} : 1;
+    my $ipregexp = $trusted ? $ref_to_arr_of_hashref->[0]->{ipregexp} : 'notanipregexp';
+    my $type = $trusted ? $ref_to_arr_of_hashref->[0]->{type} : 'U';
 
-    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: $code, } . ($ipregexp ? $ipregexp : 'NULL'));
-    return ($code, $ipregexp);
+    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: code=$code, ipregexp=$ipregexp, trusted=$trusted, type=$type});
+    return ($code, $ipregexp, $trusted, $type);
 }
 
 

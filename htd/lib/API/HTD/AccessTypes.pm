@@ -107,12 +107,13 @@ sub getInCopyrightStatus {
     my $ro = $self->__getRightsObject();
     my $attribute = $ro->getRightsFieldVal('attr');    
     my $rights = $self->__getConfigVal('rights_name_map', $attribute);
-
+    my $trusted = API::HTD::IP_Address->new->trusted;
+    
     if ($rights eq 'pdus') {
-        $in_copyright = 0 if ($self->__geo_location_is('US'))
+        $in_copyright = 1 if (! $self->__geo_location_is('US') ||  ! $trusted);
     }
     elsif ($rights eq 'icus') {
-        $in_copyright = 0 if ($self->__geo_location_is('NONUS'))
+        $in_copyright = 1 if (! $self->__geo_location_is('NONUS') || ! $trusted);
     }
     else {
         my @freely_available = (
@@ -272,6 +273,9 @@ sub __geo_location_is {
 Attempt to determine freedom based on IPADDR.  However, we can't trust
 remote address due to proxying so test mdp.proxies for IPADDR.
 
+Trusted clients supply true IP addresses if they are proxying which we
+can use to test PDUS/ICUS.  An untrusted client only can have PD.
+
 =cut
 
 # ---------------------------------------------------------------------
@@ -286,11 +290,13 @@ sub __getFreedomVal {
         $freedom = 'restricted_forbidden';
     }
     elsif ($freedom eq 'free') {
+        my $trusted = API::HTD::IP_Address->new->trusted;
+
         if ($rights eq 'pdus') {
-            $freedom = 'nonfree' if (! $self->__geo_location_is('US'));
+            $freedom = 'nonfree' if (! $self->__geo_location_is('US') || (! $trusted));
         }
         elsif ($rights eq 'icus') {
-            $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS'));
+            $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS') || (! $trusted));
         }
     }
 
