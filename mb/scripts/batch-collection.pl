@@ -216,8 +216,8 @@ my $C = new Context;
 my $cgi = new CGI;
 $C->set_object('CGI', $cgi);
 
-my $debug = $cgi->param('debug');
-my $debugging = ($ENV{DEBUG_LOCAL} || ($debug =~ m,local,));
+my $debug = $cgi->param('debug') || 0;
+my $debugging = ( ($ENV{DEBUG_LOCAL} ? $ENV{DEBUG_LOCAL} : 0) || ($debug =~ m,local,));
 my $uber_conf = ($debugging 
                  ? $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf"
                  : $LOCATION . "/../../mb/vendor/common-lib/lib/Config/uber.conf");
@@ -351,12 +351,8 @@ sub bc_get_metadata_via_metadata_getter {
             push(@$normed_metadata_aryref, $metadata_ref);
         }
     }
-    else {
-        return undef;
-    }
-    
 
-    return $normed_metadata_aryref;
+    return scalar @$normed_metadata_aryref ? $normed_metadata_aryref : undef;
 }
 
 # ---------------------------------------------------------------------
