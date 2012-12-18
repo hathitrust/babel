@@ -40,7 +40,7 @@ use Utils::Time;
 #
 # Addresses NOTE: Must coordinate with Debug::Email
 #
-my $g_assert_email_to_addr   = q{dlxs-system@umich.edu};
+my $g_assert_email_to_addr   = q{hathitrust-system@umich.edu};
 my $g_assert_email_from_addr = q{"HathiTrust Mailer" <dlps-help@umich.edu>};
 my $g_email_file             = qq{$ENV{SDRROOT}/logs/assert/hathitrust-email-digest-current};
 my $g_email_subject          = qq{[MAFR] HathiTrust assert fail Digest};
