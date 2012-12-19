@@ -95,15 +95,18 @@ Description
 # ---------------------------------------------------------------------
 sub qu_get_usage {
     my $s;
-    $s .= qq{Usage: enqueuer-j -r run [-n] [-d]};
-    $s .= qq{ [-F filename]\n};
+    $s .= qq{Usage: enqueuer-j -r run [-n] [-d] [-s] [-F filename]};
+    $s .= qq{\n\twhere\n\t\t-n No actual queuing, only reports what would be queued};
+    $s .= qq{\n\t\t-n No actual queuing, only reports what would be queued};
+    $s .= qq{\n\t\t-F enqueue from <filename>};
+    $s .= qq{\n\t\t-s Only operate on shared queue};
 
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_F, $opt_n);
+our ($opt_d, $opt_r, $opt_F, $opt_n, $opt_s);
 
-my $ops = getopts('dr:F:n');
+my $ops = getopts('dr:F:ns');
 
 # Required
 my $RUN = $opt_r;
@@ -124,6 +127,7 @@ if (defined($opt_F)) {
 }
 
 my $CHECK = defined($opt_n);
+my $SHARED_ONLY = defined($opt_s);
 
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
@@ -180,7 +184,7 @@ eval {
             ||
             $INTERACTIVE
            ) {
-            enqueue_from_j_rights($C, $DBH, $RUN);
+            enqueue_from_j_rights($C, $DBH, $RUN) unless ($SHARED_ONLY);
             enqueue_from_shared_queue($C, $DBH, $RUN);
         }
         else {
@@ -245,10 +249,11 @@ sub enqueue_from_shared_queue {
 
     my $config = $C->get_object('MdpConfig');
     
+    my $retain = 0;
     my $production_run = $config->get('run_allowed_to_access_shared_queue');
     if ($run ne $production_run) {
-        __output(qq{skipping load from shared queue: run=$run is not the production run ($production_run)\n});
-        return;  
+        __output(qq{load shared queue IDs but retain them in shared queue because run=$run is not the production run ($production_run)\n});
+        $retain = 1;
     }
 
     my $daily_max = $config->get('shared_queue_daily_max_items');
@@ -258,19 +263,26 @@ sub enqueue_from_shared_queue {
 
     if ($CHECK) {
         my $s = ($shared_queue_size > 0)
-          ? qq{would load daily max=$daily_max items from total=$shared_queue_size from shared queue}
+          ? qq{would load total=$shared_queue_size from shared queue where daily max=$daily_max items }
             : qq{no items in shared queue to add to queue};
 
         __output(qq{$s\n});
         return;
     }
     
+    my $offset = 0;
     my $num_items = 0;
     while (1) {
-        my ($ok, $id_arr_ref) = SharedQueue::dequeue_item_ids($C, $dbh, $slice_size);
+        my ($ok, $id_arr_ref);
+        if ($retain) {
+            ($ok, $id_arr_ref) = SharedQueue::read_queued_item_ids($C, $dbh, $slice_size, $offset);
+        }
+        else {
+            ($ok, $id_arr_ref) = SharedQueue::dequeue_item_ids($C, $dbh, $slice_size);
+        }
 
         if (! $ok) {
-            my $s = qq{failed to dequeue items from shared queue after inserting $num_items};
+            my $s = qq{failed to dequeue or read items from shared queue after inserting $num_items};
             __output(qq{$s\n});
             qu_Log_misc($C, $run, $s);
             last;
@@ -280,6 +292,7 @@ sub enqueue_from_shared_queue {
         
         my $num_inserted = Db::handle_queue_insert($C, $dbh, $run, $id_arr_ref);
         $num_items += $num_inserted;
+        $offset += $slice_size;
         
         last if ($num_items >= $daily_max);
     }
