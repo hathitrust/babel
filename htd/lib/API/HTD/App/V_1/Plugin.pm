@@ -145,6 +145,42 @@ sub validateQueryParams {
 }
 
 
+# ---------------------------------------------------------------------
+
+=item __getMetaMimeType
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getMetaMimeType {
+    my $self = shift;
+    my $P_Ref = shift;
+    my $fileType = shift;
+
+    my $mimeType;
+
+    # For now.  Expand when more text types become available
+    if ($fileType eq 'ocr') {
+        $mimeType = $self->__getMimetype('pageocr', 'txt');
+    }
+    elsif ($fileType eq 'coordOCR') {
+        my $filename = $self->__getFilenameFromMETSfor($P_Ref, 'pagecoordocr');
+        my $extension = $self->__getFileExtension($filename);
+
+        $mimeType = $self->__getMimetype('pagecoordocr', 'txt');
+    }
+    elsif ($fileType eq 'image') {
+        my $filename = $self->__getFilenameFromMETSfor($P_Ref, 'image');
+        my $extension = $self->__getFileExtension($filename);
+
+        $mimeType = $self->__getMimetype('pageimage', $extension);
+    }
+
+    return $mimeType;
+}
+
 # =====================================================================
 # =====================================================================
 # Subclass Utilities
