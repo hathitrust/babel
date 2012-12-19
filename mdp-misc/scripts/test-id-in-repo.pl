@@ -71,7 +71,7 @@ sub test_ids {
             $File::Pairtree::root = $root;
             my $path = File::Pairtree::id2ppath($barcode) . File::Pairtree::s2ppchars($barcode);
             if (-e $path) {
-                print qq{$id exists\n};
+                print qq{$id exists at $path\n};
             }
             else {
                 print qq{$id does not exist\n};
