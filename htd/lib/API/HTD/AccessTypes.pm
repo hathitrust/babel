@@ -271,8 +271,11 @@ sub __geo_location_is {
 Attempt to determine freedom based on IPADDR.  However, we can't trust
 some addresses due to proxying so test proxies table for IPADDR.
 
-If the supplied IP address can be geotrusted test it. If the client
-code permits IC we permit PDUS/ICUS.
+If the supplied IP address can be geotrusted test it for PDUS/ICUS.
+If the supplied IP address cannot be geotrusted freedom becomes
+'nonfree' of PDUS/ICUS. 
+
+If the client code permits IC we permit PDUS/ICUS.
 
 =cut
 
@@ -290,15 +293,18 @@ sub __getFreedomVal {
     }
     elsif ($freedom eq 'free') {
         my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;
-        if (! $geo_trusted) {
-            $freedom = 'nonfree';
-        }
-        else {
+        if ($geo_trusted) {
             if ($rights eq 'pdus') {
                 $freedom = 'nonfree' if (! $self->__geo_location_is('US') || (! $ic_allowed));
             }
             elsif ($rights eq 'icus') {
                 $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS') || (! $ic_allowed));
+            }
+        }
+        else {
+            if (grep(/^$rights$/, ('pdus', 'icus'))) {
+                # cannot validate origin IP address so cannot test
+                $freedom = 'nonfree';
             }
         }
     }
