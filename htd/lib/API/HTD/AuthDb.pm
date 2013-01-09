@@ -223,7 +223,8 @@ sub update_fail_ct {
 
 =item get_privileges_by_access_key
 
-Not in table implies not trusted:  PD access only (downstream test for PDUS).
+Not in htd_authorization table implies U or K type: PD access only
+(downstream test for PDUS).
 
 =cut
 
@@ -231,18 +232,39 @@ Not in table implies not trusted:  PD access only (downstream test for PDUS).
 sub get_privileges_by_access_key {
     my ($dbh, $access_key) = @_;
 
-    my $statement = qq{SELECT code, ipregexp, type FROM htd_authorization WHERE access_key=?};
-    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
+    my ($statement, $sth);
+
+    $statement = qq{SELECT code, ipregexp, type FROM htd_authorization WHERE access_key=?};
+    $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
     # No row for access key means default lowest privilege
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+    my $in_htd_authorized = scalar @$ref_to_arr_of_hashref;
 
-    my $trusted = scalar @$ref_to_arr_of_hashref;
-    my $code = $trusted ? $ref_to_arr_of_hashref->[0]->{code} : 1;
-    my $ipregexp = $trusted ? $ref_to_arr_of_hashref->[0]->{ipregexp} : 'notanipregexp';
-    my $type = $trusted ? $ref_to_arr_of_hashref->[0]->{type} : 'U';
+    my ($code, $ipregexp, $type);    
 
-    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: code=$code, ipregexp=$ipregexp, trusted=$trusted, type=$type});
-    return ($code, $ipregexp, $trusted, $type);
+    if ($in_htd_authorized) {
+        $code = $ref_to_arr_of_hashref->[0]->{code} || 1;
+        $ipregexp = $ref_to_arr_of_hashref->[0]->{ipregexp} || 'notanipregexp';
+        $type = $ref_to_arr_of_hashref->[0]->{type};
+    }
+    else {
+        # Determine privileges by htdc user vs key authentication type
+        $statement = qq{SELECT userid FROM htd_authentication WHERE access_key=?};
+        $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
+        my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+        my $userid = $ref_to_arr_of_hashref->[0]->{userid};
+        if ($userid) {
+            $type = 'K';
+        }
+        else  {
+            $type = 'U';
+        }
+        $code = 1;
+        $ipregexp = 'notanipregexp';
+    }
+
+    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: code=$code, ipregexp=$ipregexp, in_authorized=$in_htd_authorized, type=$type});
+    return ($code, $ipregexp, $type);
 }
 
 

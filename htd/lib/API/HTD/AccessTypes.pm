@@ -107,13 +107,12 @@ sub getInCopyrightStatus {
     my $ro = $self->__getRightsObject();
     my $attribute = $ro->getRightsFieldVal('attr');    
     my $rights = $self->__getConfigVal('rights_name_map', $attribute);
-    my $trusted = API::HTD::IP_Address->new->trusted;
-    
+
     if ($rights eq 'pdus') {
-        $in_copyright = 1 if (! $self->__geo_location_is('US') ||  ! $trusted);
+        $in_copyright = 1 if (! $self->__geo_location_is('US'));
     }
     elsif ($rights eq 'icus') {
-        $in_copyright = 1 if (! $self->__geo_location_is('NONUS') || ! $trusted);
+        $in_copyright = 1 if (! $self->__geo_location_is('NONUS'));
     }
     else {
         my @freely_available = (
@@ -139,13 +138,14 @@ Description
 sub getAccessType {
     my $self = shift;
     my $resource = shift;
+    my $ic_allowed = shift;
 
     my $ro = $self->__getRightsObject();
 
     my $source = $self->__getConfigVal('sources_name_map', $ro->getRightsFieldVal('source'));
     my $rights = $self->__getConfigVal('rights_name_map', $ro->getRightsFieldVal('attr'));
 
-    my $freedom = $self->__getFreedomVal($rights);
+    my $freedom = $self->__getFreedomVal($rights, $ic_allowed);
     my $accessType = 
       ($freedom =~ m,forbidden,) 
         ? $freedom
@@ -183,13 +183,13 @@ sub getExtendedAccessType {
 
     my $format = $Q->param('format');
 
-    if ( ($resource eq 'pageimage') && grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
+    if ( ($resource =~ m,pageimage,) && grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
         my $watermark = $Q->param('watermark');
         if (defined $watermark && ($watermark == 0)) {
             $extended_accessType = 'unwatermarked_derivative';
         }
     }
-    elsif ( ($resource eq 'pageimage') && ($format eq 'raw') ) {
+    elsif ( ($resource =~ m,pageimage,) && ($format eq 'raw') ) {
         # default open pageimage is watermarked derivative else
         # requires allow_raw bit set
         $extended_accessType = 'raw_archival_data';
@@ -264,17 +264,15 @@ sub __geo_location_is {
     return $is;
 }
 
-
-
 # ---------------------------------------------------------------------
 
 =item __getFreedomVal
 
 Attempt to determine freedom based on IPADDR.  However, we can't trust
-remote address due to proxying so test mdp.proxies for IPADDR.
+some addresses due to proxying so test proxies table for IPADDR.
 
-Trusted clients supply true IP addresses if they are proxying which we
-can use to test PDUS/ICUS.  An untrusted client only can have PD.
+If the supplied IP address can be geotrusted test it. If the client
+code permits IC we permit PDUS/ICUS.
 
 =cut
 
@@ -282,7 +280,8 @@ can use to test PDUS/ICUS.  An untrusted client only can have PD.
 sub __getFreedomVal {
     my $self = shift;
     my $rights = shift;
-
+    my $ic_allowed = shift;
+    
     my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
     my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
 
@@ -290,13 +289,17 @@ sub __getFreedomVal {
         $freedom = 'restricted_forbidden';
     }
     elsif ($freedom eq 'free') {
-        my $trusted = API::HTD::IP_Address->new->trusted;
-
-        if ($rights eq 'pdus') {
-            $freedom = 'nonfree' if (! $self->__geo_location_is('US') || (! $trusted));
+        my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;
+        if (! $geo_trusted) {
+            $freedom = 'nonfree';
         }
-        elsif ($rights eq 'icus') {
-            $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS') || (! $trusted));
+        else {
+            if ($rights eq 'pdus') {
+                $freedom = 'nonfree' if (! $self->__geo_location_is('US') || (! $ic_allowed));
+            }
+            elsif ($rights eq 'icus') {
+                $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS') || (! $ic_allowed));
+            }
         }
     }
 

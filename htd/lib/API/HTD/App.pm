@@ -280,7 +280,7 @@ sub preHandler {
     $self->__setMember('hauth', $hauth);
 
     # single logging point
-    $self->__log_client($hauth, $Q);
+    $self->__log_client($hauth, $Q, $P_Ref);
 
     # Authenticate and authorize
     if (! $self->__authNZ_Success($P_Ref)) {
@@ -319,7 +319,7 @@ single logging point
 # ---------------------------------------------------------------------
 sub __log_client {
     my $self = shift;
-    my ($hauth, $Q) = @_;
+    my ($hauth, $Q, $P_Ref) = @_;
 
     my $ipo = new API::HTD::IP_Address;
     my $ip_valid = $ipo->ip_is_valid;
@@ -327,9 +327,10 @@ sub __log_client {
     my $is_oauth = $hauth->H_request_is_oauth($Q);
     my $url = $Q->self_url;
     my $access_key = $Q->param('oauth_consumer_key');
+    my $resource = $P_Ref->{resource};
     
-    hLOG('API: ' . sprintf(qq{__log_client: access_key=%s ip_valid=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s SERVER_PORT=%s url=%s },
-                           $access_key, $ip_valid, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}, $ENV{SERVER_PORT}, $url));
+    hLOG('API: ' . sprintf(qq{__log_client: access_key=%s ip_valid=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s SERVER_PORT=%s url=%s resource=%s },
+                           $access_key, $ip_valid, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}, $ENV{SERVER_PORT}, $url, $resource));
 }
 
 
@@ -822,10 +823,16 @@ sub __authorized {
     
     # Access types: open, open_restricted, restricted, restricted_forbidden
     my $resource = $P_Ref->{'resource'};
-    my $accessType = $self->__getAccessType($resource);
+
+    my $hauth = $self->__getHAuthObject();
+
+    my $dbh = $self->__get_DBH;
+    my $access_key = $Q->param('oauth_consumer_key');
+    my $in_copyright_allowed = $hauth->H_IC_authorized($dbh, $access_key);
+
+    my $accessType = $self->__getAccessType($resource, $in_copyright_allowed);
     my $extended_accessType = $self->__getExtendedAccessType($resource, $accessType, $Q);
     my $dbh = $self->__get_DBH();
-    my $hauth = $self->__getHAuthObject();
 
     if ($hauth->H_authorized($Q, $dbh, $resource, $accessType, $extended_accessType)) {
         $authorized = 1;

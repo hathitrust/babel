@@ -79,8 +79,10 @@ sub _initialize {
     my $args = shift;
 
     my $Q = $args->{_query};
-    my $dbh = $args->{_dbh};
 
+    my $dbh = $args->{_dbh};
+    $self->{_dbh} = $dbh;
+    
     my $oauth_consumer_key = $Q->param('oauth_consumer_key');
     API::HTD::AuthDb::update_access($dbh, $oauth_consumer_key)
         if (defined $oauth_consumer_key);
@@ -481,6 +483,9 @@ use constant ALLOW_PDF_EBM_MASK        =>  32;
 use constant ALLOW_RAW_MASK            =>  64;
 use constant ALLOW_UNWATERMARKED_MASK  => 128;
 
+use constant ALLOW_IN_COPYRIGHT_MASK   => RESTRICTED_MASK | RESTRICTED_FORBIDDEN_MASK;
+
+
 # ---------------------------------------------------------------------
 
 =item __basic_access_is_authorized
@@ -598,7 +603,8 @@ We impose IP address match requirements vs. an IP address parameter or
 REMOTE_ADDR (depending on client type).
 
 Requests for resources that have a 'basic' access_type of 'restricted'
-or any 'extended' access_type must have an 'ip' query parameter
+or any 'extended' access_type must be locked to a known IP address
+either through an 'ip' query parameter or through the REMOTE_ADDR
 value. Note that all query parameters are hashed into the signature.
 
 It has already been determined that the access_key allows access based
@@ -615,22 +621,54 @@ sub __authorized_at_IP_address {
     my $ip = $ipo->address;
     my $ip_address_is_valid  = $ipo->ip_is_valid();
     my $client_type = $ipo->client_type();
-    my $trusted =  $ipo->trusted();
-
+    my $locked = $ipo->address_locked();
+    my $lock_required = (
+                         defined($extended_access_type)
+                         ||
+                         ($access_type =~ m,restricted,)
+                        );
+    
     my $authorized = 0;
     
     if ($ip_address_is_valid) {
-        $authorized = 1;
+        if ($lock_required) {
+            $authorized = $locked;
+        }
+        else {
+            $authorized = 1;
+        }
     }
     else {
         $authorized = 0;
     }
     
-    my $r = qq{ip_valid=$ip_address_is_valid client_type=$client_type trusted=$trusted};
-    hLOG($r);
+    my $r = qq{ip_valid=$ip_address_is_valid client_type=$client_type locked=$locked};
     my $s = qq{API: __authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none');
-    hLOG($s);
+    hLOG("$s $r");
 
+    return $authorized;
+}
+
+# ---------------------------------------------------------------------
+
+=item H_IC_authorized
+
+Client's code is authorized for IC access
+
+=cut
+
+# ---------------------------------------------------------------------
+sub H_IC_authorized {
+    my $self = shift;
+    my ($dbh, $access_key) = @_;
+
+    my ($code) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
+
+    my $mask = ALLOW_IN_COPYRIGHT_MASK;
+    my $result = ($code & $mask);
+    my $authorized = ($result == $mask);
+
+    hLOG_DEBUG('API: ' . qq{H_IC_authorized: access_key=$access_key code=$code mask=$mask result=$result authorized=$authorized});
     return $authorized;
 }
 
