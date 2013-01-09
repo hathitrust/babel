@@ -377,6 +377,7 @@ Description
 sub _get_user_agent {
 
     my $ua = LWP::UserAgent->new;
+    $ua->timeout(300); # long to allow for large PDF generation
     $ua->agent("HathiTrust Data API Client");
 
     return $ua;
