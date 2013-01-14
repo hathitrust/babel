@@ -587,22 +587,41 @@ a .colName {
   line-height: 1.2em;
 }
 
+/* Boxy-related */
 /* Style for special access message close button in pageviewer.xsl */
 .accessBannerClose {
   background-color: #faeec7;
   font-weight: bold;
-  font-size: 1.2em;
-  color: #000000;
-  position: fixed;
-  top: 10px;
-  right: 30px;
+  color: #C4630F;
   border-style: solid;
   border-width: 1px;
-  padding: 2px 4px 2px 4px;
+  padding: 0px 3px 0px 3px;
+}
+.accessBannerCloseText {
+  color: #C4630F;
+}
+
+/* over-ridden to 300px in mobilept.css to fit device */
+.accessBannerText {
+  width: 400px;
 }
 
 .accessBannerClose:hover {
   background-color: #f9f5e6;
+  text-decoration: none
+}
+
+/* Boxy pop-up custom CSS */
+.boxy-wrapper .title-bar h2, 
+.boxy-wrapper .title-bar .close {
+  font-size: 1.25em;
+}
+
+.boxy-wrapper .title-bar{
+  text-align: left;
+}
+.boxy-wrapper .title-bar a {
+ text-decoration: none
 }
 
 /*========== Header ==========*/

@@ -46,6 +46,7 @@ var displayCBFeedback = function() {
         modal: true,
         draggable : false,
         closeable : true,
+        closeText : "<span class='accessBannerCloseText'>close</span> <span class='accessBannerClose'>X</span></span>",
         clone : false,
         unloadOnHide: true,
         title : "Feedback"
