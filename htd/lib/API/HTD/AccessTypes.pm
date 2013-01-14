@@ -138,14 +138,15 @@ Description
 sub getAccessType {
     my $self = shift;
     my $resource = shift;
-    my $ic_allowed = shift;
 
     my $ro = $self->__getRightsObject();
 
     my $source = $self->__getConfigVal('sources_name_map', $ro->getRightsFieldVal('source'));
     my $rights = $self->__getConfigVal('rights_name_map', $ro->getRightsFieldVal('attr'));
 
-    my $freedom = $self->__getFreedomVal($rights, $ic_allowed);
+    # freedom = ( free, nonfree, restricted_forbidden )
+    my $freedom = $self->__getFreedomVal($rights);
+    # accessType = ( open, open_restricted, restricted, restricted_forbidden ) 
     my $accessType = 
       ($freedom =~ m,forbidden,) 
         ? $freedom
@@ -283,7 +284,6 @@ If the client code permits IC we permit PDUS/ICUS.
 sub __getFreedomVal {
     my $self = shift;
     my $rights = shift;
-    my $ic_allowed = shift;
     
     my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
     my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';

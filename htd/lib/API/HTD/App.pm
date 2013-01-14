@@ -734,8 +734,6 @@ sub __authNZ_Success {
     my $P_Ref = shift;
 
     my $Q = $self->query;
-    my $accessType = $self->__getAccessType($P_Ref->{resource});
-
     my $hauth = $self->__getHAuthObject();
 
     my $Success = 0;
@@ -828,9 +826,8 @@ sub __authorized {
 
     my $dbh = $self->__get_DBH;
     my $access_key = $Q->param('oauth_consumer_key');
-    my $in_copyright_allowed = $hauth->H_IC_authorized($dbh, $access_key);
 
-    my $accessType = $self->__getAccessType($resource, $in_copyright_allowed);
+    my $accessType = $self->__getAccessType($resource);
     my $extended_accessType = $self->__getExtendedAccessType($resource, $accessType, $Q);
     my $dbh = $self->__get_DBH();
 

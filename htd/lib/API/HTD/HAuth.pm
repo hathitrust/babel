@@ -483,9 +483,6 @@ use constant ALLOW_PDF_EBM_MASK        =>  32;
 use constant ALLOW_RAW_MASK            =>  64;
 use constant ALLOW_UNWATERMARKED_MASK  => 128;
 
-use constant ALLOW_IN_COPYRIGHT_MASK   => RESTRICTED_MASK | RESTRICTED_FORBIDDEN_MASK;
-
-
 # ---------------------------------------------------------------------
 
 =item __basic_access_is_authorized
@@ -649,28 +646,6 @@ sub __authorized_at_IP_address {
     return $authorized;
 }
 
-# ---------------------------------------------------------------------
-
-=item H_IC_authorized
-
-Client's code is authorized for IC access
-
-=cut
-
-# ---------------------------------------------------------------------
-sub H_IC_authorized {
-    my $self = shift;
-    my ($dbh, $access_key) = @_;
-
-    my ($code) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
-
-    my $mask = ALLOW_IN_COPYRIGHT_MASK;
-    my $result = ($code & $mask);
-    my $authorized = ($result == $mask);
-
-    hLOG_DEBUG('API: ' . qq{H_IC_authorized: access_key=$access_key code=$code mask=$mask result=$result authorized=$authorized});
-    return $authorized;
-}
 
 # ---------------------------------------------------------------------
 
