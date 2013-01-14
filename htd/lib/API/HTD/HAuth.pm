@@ -511,7 +511,7 @@ sub __basic_access_is_authorized {
     my $result = ($code & $mask);
     my $authorized = ($result == $mask);
 
-    hLOG_DEBUG('API: ' . qq{__basic_access_is_authorized: access_type=$access_type code=$code mask=$mask result=$result authorized=$authorized});
+    hLOG('API: ' . qq{__basic_access_is_authorized: access_type=$access_type code=$code mask=$mask result=$result authorized=$authorized});
     return $authorized;
 }
 
@@ -539,7 +539,7 @@ sub __extended_access_is_authorized {
     my $result = ($code & $mask);
     my $authorized = ($result == $mask);
 
-    hLOG_DEBUG('API: ' . qq{__extended_access_is_authorized: extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') .qq{ code=$code mask=$mask result=$result authorized=$authorized});
+    hLOG('API: ' . qq{__extended_access_is_authorized: extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') .qq{ code=$code mask=$mask result=$result authorized=$authorized});
     return $authorized;
 }
 

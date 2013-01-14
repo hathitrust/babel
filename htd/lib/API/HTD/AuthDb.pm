@@ -263,7 +263,7 @@ sub get_privileges_by_access_key {
         $ipregexp = 'notanipregexp';
     }
 
-    hLOG_DEBUG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: code=$code, ipregexp=$ipregexp, in_authorized=$in_htd_authorized, type=$type});
+    hLOG('DB:  ' . qq{get_privileges_by_access_key: $statement: $access_key ::: code=$code, ipregexp=$ipregexp, in_authorized=$in_htd_authorized, type=$type});
     return ($code, $ipregexp, $type);
 }
 
