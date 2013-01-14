@@ -295,10 +295,10 @@ sub __getFreedomVal {
         my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;
         if ($geo_trusted) {
             if ($rights eq 'pdus') {
-                $freedom = 'nonfree' if (! $self->__geo_location_is('US') || (! $ic_allowed));
+                $freedom = 'nonfree' if (! $self->__geo_location_is('US'));
             }
             elsif ($rights eq 'icus') {
-                $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS') || (! $ic_allowed));
+                $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS'));
             }
         }
         else {
