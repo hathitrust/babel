@@ -398,6 +398,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
               modal : true,
               draggable : true,
               closeable : true,
+              closeText : "<span class='accessBannerCloseText'>close</span> <span class='accessBannerClose'>X</span></span>",
               title : "Info",
               behaviours: function(r) {
                 $(r).find('#feedback').css('display',''); // still needed???
@@ -421,6 +422,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 	            modal : true,
 	            draggable : true,
 	            closeable : true,
+                    closeText : "<span class='accessBannerCloseText'>close</span> <span class='accessBannerClose'>X</span></span>",
 	            title : "Settings",
 	            behaviours: function(r) {
 	    			if($("#BRocrcontainer").hasClass('hidebr')){
@@ -468,6 +470,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 	            modal : true,
 	            draggable : true,
 	            closeable : true,
+                    closeText : "<span class='accessBannerCloseText'>close</span> <span class='accessBannerClose'>X</span></span>",
 	            title : "Settings",
 	            behaviours: function(r) {
 	    			$(r).find("#imagezoomin").click(function() {	    				
@@ -511,6 +514,7 @@ HTMobileBookReader.prototype.bindNavigationHandlers = function() {
 	            modal : true,
 	            draggable : true,
 	            closeable : true,
+                    closeText : "<span class='accessBannerCloseText'>close</span> <span class='accessBannerClose'>X</span></span>",
 	            title : "Get this book",
 	            behaviours: function(r) {
 	    			$(r).find("#epubLink").click(function() {	    				
@@ -2164,6 +2168,7 @@ HTMobileBookReader.prototype.feedback = function(){
             modal : true,
             draggable : true,
             closeable : true,
+            closeText : "<span class='accessBannerCloseText'>close</span> <span class='accessBannerClose'>X</span></span>",
             title : "Feedback",
             behaviours: function(r) {
 				//console.log("Adding boxytest..." + $(r).parent().attr("class"));

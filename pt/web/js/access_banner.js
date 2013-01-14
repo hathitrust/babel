@@ -17,15 +17,19 @@ $(document).ready(function() {
             // session cookie
             var jsonIdStr = JSON.stringify(idarr);
             $.cookie('access.hathitrust.org', jsonIdStr, { path: '/', domain: '.hathitrust.org' });
-            $.notifyBar(
-                {
-                    cls: "accessBanner",
-                    closecls: "accessBannerClose",
-                    html: $('#accessBannerID').html(),
-                    close: true,
-                    delay: 2000000,
-                    animationSpeed: "normal"
+
+            function showAlert() {
+                var html = $('#accessBannerID').html();
+	    	var alert = new Boxy(html, {
+	            show : true,
+	            modal : true,
+	            draggable : true,
+	            closeable : true,
+	            title : "Special access",
+                    closeText : "<span class='accessBannerCloseText'>close</span> <span class='accessBannerClose'>X</span></span>"
                 });
+            }
+            window.setTimeout(showAlert, 3000, true);
         }
     }
 });

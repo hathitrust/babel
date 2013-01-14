@@ -1166,6 +1166,10 @@ input#email{
 	width:100%;
 }
 
+.accessBannerText {
+  width: 220px;
+}
+
 /* Boxy pop-up custom CSS */
 .boxy-wrapper .title-bar h2, 
 .boxy-wrapper .title-bar .close {

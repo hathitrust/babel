@@ -99,12 +99,12 @@ Section:CSS
 /pt/web/yui2-lib/build/fonts/fonts-min.css
 /pt/web/yui2-lib/build/container/assets/skins/sam/container.css
 /pt/web/yui2-lib/build/resize/assets/skins/sam/resize.css
+/pt/web/jquery/boxy/boxy.css
 //common-web/framework.css
 //common-web/feedback.css
 //common-web/pageviewer.css
 //common-web/MBooksCol.css
 /pt/web/harmony.css
-/pt/web/jquery/boxy/boxy.css
 /pt/web/download_helper.css
 
 Section:SEARCH_CSS
