@@ -1649,7 +1649,7 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	
 	var self=this;
 
-	var url="/cgi/pt/search?skin=mobile;id=" + HT.params['id'] + "&q1=" + self.searchValue + ";";
+	var url="/cgi/pt/search?skin=mobile;id=" + HT.params['id'] + ";q1=" + self.searchValue + ";";
 	if(self.searchStart){
 		url+="start=" + self.searchStart + ";";
 	}
