@@ -9,7 +9,7 @@
 
   <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
   <xsl:template name="ic_access_info">
-    <p class="centertext">Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
+    <p class="centertext" style="background:#fff">Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
   </xsl:template>
 
   <!-- Special mobile header -->
