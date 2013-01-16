@@ -116,9 +116,11 @@
        var pageTracker = _gat._getTracker("</xsl:text>
        <xsl:value-of select="$tracker_id"/>
        <xsl:text disable-output-escaping="yes">");
+       // turn semicolons into ampersands for analytics reporting
        pageTracker._setDomainName(".hathitrust.org");
-       pageTracker._trackPageview();
-       } catch(err) {}&lt;/script&gt;
+       var href = (location.pathname + location.search).replace(/;/g, '&amp;');
+       pageTracker._trackPageview(href);
+       } catch(err) { }&lt;/script&gt;
      </xsl:text>
    </xsl:if>
  </xsl:template>
