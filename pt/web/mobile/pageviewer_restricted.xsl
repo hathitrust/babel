@@ -52,6 +52,7 @@
           <xsl:call-template name="MobileGetBook"/>
         </li>
       </ul>
+      <xsl:call-template name="ic_access_info"/>
     </div>
   </xsl:template>
 
@@ -68,7 +69,6 @@
     </div>
 
     <xsl:call-template name="limited_view_options"/>
-    <xsl:call-template name="ic_access_info"/>
     <xsl:call-template name="BuildMobileFooter"/>
   </xsl:template>
   
@@ -107,7 +107,6 @@
     <p class="centertext special_text">This item is <strong>not available online</strong> (<img src="//common-web/graphics/Icon_SearchOnly.png" alt=" " /> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More&#x00a0;»</a></p>
 
     <xsl:call-template name="limited_view_options"/>
-    <xsl:call-template name="ic_access_info"/>
     <xsl:call-template name="BuildMobileFooter"/>
   </xsl:template>
 
