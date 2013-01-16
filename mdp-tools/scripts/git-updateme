@@ -51,17 +51,10 @@ foreach my $app (@apps) {
 
     print "\n------ Updating $app @ $app_dir ------\n";
     if ($curr_branch !~ m,master,) {
-        PrintN("Waster branch not checked out for $app @ $app_dir. Skipping.\n");
+        PrintN("Master branch not checked out for $app @ $app_dir. Skipping.\n");
         next;
     }
     else {
-        # Update submodules for clean directory check to agree with pre-update status
-
-        if (! G_update_submodules($app_dir)) {
-            PrintN("Could not update submodules for $app. Not updating $app. Skipping.\n");
-            next;
-        }
-
         if (! working_directory_clean()) {
             PrintN("Working directory $app_dir has uncommitted changes. Not updating. Skipping.\n");
             next;
@@ -107,14 +100,18 @@ sub update_app {
     my $app_dir = shift;
 
     my $output;
-    my $cmd = "git pull origin master";
+    my $cmd = "git pull origin master -v";
     return 0
       if (! execute_command_w_output($cmd, \$output));
 
     print "$output\n";
 
-    return 0 
-      if (! G_update_submodules($app_dir));
+    my $cmd_s = "git submodule foreach git pull origin master -v";
+    return 0
+      if (! execute_command_w_output($cmd_s, \$output));
+
+    print "$output\n";
+    execute_command("git submodule status");
 
     return 1;
 }
