@@ -5,7 +5,18 @@
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
-  
+
+  <xsl:variable name="gExclusiveAccessFail">
+    <xsl:choose>
+      <xsl:when test="$gRightsAttribute='3' and ($gHathiTrustAffiliate='true' or $gIsInLibrary='YES') and $gBrittleHeld='YES'">
+        <xsl:value-of select="'YES'"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="'NO'"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:template name="item-viewer">
 
     <div class="contentContainerWrap">
@@ -45,7 +56,7 @@
   </xsl:template>
 
   <!-- Orphans -->
-  <xsl:template name="OrphanPage">
+  <xsl:template name="OrphanCandidatePage">
     <xsl:variable name="copyright_restricted_msg">
       Full view is not available for this item<br/> due to copyright &#169; restrictions.
     </xsl:variable>
@@ -154,13 +165,13 @@
         </xsl:when>
 
         <!-- Brittle message about when current accessor's exclusive access expires -->
-        <xsl:when test="$gRightsAttribute='3' and ($gHathiTrustAffiliate='true' or $gIsInLibrary='YES') and $gBrittleHeld='YES'">
+        <xsl:when test="$gExclusiveAccessFail='YES'">
           <xsl:call-template name="BrittleAccessPage"/>          
         </xsl:when>
 
         <!-- orphan message -->
         <xsl:when test="$gOrphanCandidate='true'">
-          <xsl:call-template name="OrphanPage"/>
+          <xsl:call-template name="OrphanCandidatePage"/>
         </xsl:when>
 
         <!-- In copyright, no access message -->
