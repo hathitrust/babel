@@ -13,8 +13,8 @@ my $ops = getopts('Ah');
 
 sub Usage {
     return "git-updateme [<app> [<app>]+ | -A] ] | -h
-    If <app>'s working directory is clean, executes 'git pull origin master' 
-    and 'git submodule update'
+    If <app>'s working directory is clean (to avoid merging), executes 'git pull origin master' 
+    and 'git submodule foreach git pull origin master'
     OPTIONS
       -A process all apps you have
       -h help \n";
@@ -56,7 +56,7 @@ foreach my $app (@apps) {
     }
     else {
         if (! working_directory_clean()) {
-            PrintN("Working directory $app_dir has uncommitted changes. Not updating. Skipping.\n");
+            PrintN("Working directory $app_dir has uncommitted changes. Not updating to avoid merge. Skipping.\n");
             next;
         }
 
@@ -102,15 +102,12 @@ sub update_app {
     my $output;
     my $cmd = "git pull origin master -v";
     return 0
-      if (! execute_command_w_output($cmd, \$output));
-
-    print "$output\n";
+      if (! execute_command($cmd));
 
     my $cmd_s = "git submodule foreach git pull origin master -v";
     return 0
-      if (! execute_command_w_output($cmd_s, \$output));
+      if (! execute_command($cmd_s));
 
-    print "$output\n";
     execute_command("git submodule status");
 
     return 1;
