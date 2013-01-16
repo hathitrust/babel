@@ -74,7 +74,7 @@ my $gDso = $C->get_object('Session');
 my $gMdpItem = $C->get_object('MdpItem');
 
 my $config = $C->get_object('MdpConfig');
-my $run_config = SLIP_Utils::Common::merge_run_config('slip', $config, 'pt');
+my $run_config = SLIP_Utils::Common::merge_run_config('pt', $config, 'pt');
 # Stomp $config in Context object
 $C->set_object('MdpConfig', $run_config);
 
