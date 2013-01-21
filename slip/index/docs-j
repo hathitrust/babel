@@ -28,7 +28,7 @@ see help
 
 use strict;
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 
@@ -94,7 +94,7 @@ if (defined($opt_d)) {
     }
     my $switches;
     if ($opt_d == 3) {
-        $switches = 'all,docfulldebug,vufind,lsdb,idx,doc,me';
+        $switches = 'all,vufind,lsdb,idx,doc,me';
     }
     elsif ($opt_d == 2) {
         $switches = 'vufind,lsdb,idx,doc,me';
@@ -203,11 +203,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub d_get_usage {
-    my $s = qq{Usage: doc-j -r run(any)-d{0,1,2,3} -F filename-of-ids | -I<id>\n\t\tWrites results to, e.g., "SDRROOT/logs/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
+    my $s = qq{Usage: doc-j -r run(any)-d{0,1,2} -F filename-of-ids | -I<id>\n\t\tWrites results to, e.g., "SDRROOT/logs/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
                       where 0=default
                             1=add database,indexing,doc-create
-                            2=add vufind response
-                            3=add docfulldebug (no delete of zip tmpdir)\n\n};
+                            2=add vufind response\n\n};
     return $s;
 }
 

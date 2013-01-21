@@ -52,7 +52,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -109,7 +109,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub i_get_usage {
-    my $s .= qq{Usage: index-j -r run [-I id][-d 0|1|2|3|4][-v][-T]
+    my $s .= qq{Usage: index-j -r run [-I id][-d 0|1|2|3][-v][-T]
             where -I id indexes one id
                   -v turns on verbose logging
                   -d sets the debug level
@@ -117,8 +117,7 @@ sub i_get_usage {
                             0=default
                             1=add database
                             2=add indexing + doc-create
-                            3=add vufind + HTTP response
-                            4=add docfulldebug (no delete of zip tmpdir)\n};
+                            3=add vufind + HTTP response\n};
     return $s;
 }
 
@@ -141,12 +140,10 @@ if (defined($opt_d)) {
     $ENV{'DEBUG'} .= ',me';
     $ENV{'DEBUG'} .= ',lsdb'
         if ($opt_d == 1);
-    $ENV{'DEBUG'} .= ',idx,doc'
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc'
         if ($opt_d == 2);
-    $ENV{'DEBUG'} .= ',vufind'
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,vufind'
         if ($opt_d == 3);
-    $ENV{'DEBUG'} .= ',docfulldebug'
-        if ($opt_d == 4);
 }
 
 # Required
