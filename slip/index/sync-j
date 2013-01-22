@@ -167,7 +167,7 @@ $| = 1;
 
 my $C = new Context;
 
-my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $CONFIG);
 
 my $db;
