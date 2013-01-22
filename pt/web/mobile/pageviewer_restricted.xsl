@@ -9,7 +9,7 @@
 
   <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
   <xsl:template name="ic_access_info">
-    <p class="centertext" style="background:#fff">Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
+    <p class="centertext" style="padding:0 1.5em 0 1.5em;margin-top:-1em; background:#fff">Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
   </xsl:template>
 
   <!-- Special mobile header -->
@@ -52,7 +52,6 @@
           <xsl:call-template name="MobileGetBook"/>
         </li>
       </ul>
-      <xsl:call-template name="ic_access_info"/>
     </div>
   </xsl:template>
 
@@ -64,11 +63,14 @@
     <xsl:call-template name="mobile_header"/>
 
     <div class="centertext special_text">
+      <p>Hi <xsl:value-of select="$gUserName"/>!</p>
+
       <p>This work is in copyright. Full view access is available for this item based on your affiliation or account privileges. Items made available under these special circumstances can only be accessed by one user at a time, in 24 hour increments.</p>
       <p>Another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p>
     </div>
 
     <xsl:call-template name="limited_view_options"/>
+    <xsl:call-template name="ic_access_info"/>
     <xsl:call-template name="BuildMobileFooter"/>
   </xsl:template>
   
@@ -78,7 +80,7 @@
 
     <div class="centertext special_text">This item is <strong>no longer available</strong> in HathiTrust due to one of the following reasons:
       <ul class="bullets" style="padding-top:1em">
-        <li>It was removed at the request of the rights holder.</li>
+        <li>It was deleted at the request of the rights holder or has been marked for deletion.</li>
         <li>It was either wholly unusable or a superior copy is available.</li>
       </ul>      
     </div>

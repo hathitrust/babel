@@ -52,6 +52,7 @@ div#mdpContentContainer{
 }
 
 p.centertext {
+  text-align:center;
   font-size:1em;
 }
 
