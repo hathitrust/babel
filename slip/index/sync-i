@@ -104,7 +104,7 @@ exit 0 if ($TEST_ONLY);
 $| = 1;
 
 my $C = new Context;
-my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
 my $production_run = $config->get('run_allowed_to_access_shared_queue');
