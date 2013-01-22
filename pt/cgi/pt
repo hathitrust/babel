@@ -127,7 +127,7 @@ my $gMdpItem = $C->get_object('MdpItem');
 $gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues);
 
 my $config = $C->get_object('MdpConfig');
-my $run_config = SLIP_Utils::Common::merge_run_config('pt', $config, 'pt');
+my $run_config = SLIP_Utils::Common::merge_run_config('pt', $config);
 # Stomp $config in Context object
 $C->set_object('MdpConfig', $run_config);
 
