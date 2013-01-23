@@ -180,5 +180,4 @@ slip:
   - /htapps/__CMD_STAGE__/slip/index/timeouts-j -r1 -l1 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/check-j -r11 -R1 -O2 -n -C __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/stats-item-index-j -r1 -T __LOCAL__
-  - /htapps/__CMD_STAGE__/slip/index/manage-item-index-j -r1 -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/renumber-j -r1 -T __LOCAL__
