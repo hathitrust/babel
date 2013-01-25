@@ -10,9 +10,10 @@ index-j
 
 =head1 DESCRIPTION
 
-Take a slice of available items from the indexing queue, build docs for
-the ids and send to Solr for indexing.  Record error ids in slip_errors
-table.  Record indexed status in slip_indexed table.
+Take a slice of available items from the indexing queue, build docs
+for the ids and send to Solr for indexing.  Record error ids in
+ht_maintenance.slip_errors table.  Record indexed status in
+slip_indexed table.
 
 Each copy of this script when it runs tries to find a shard that does
 not have producers_per_shard allocated to it and is not on a host
@@ -20,8 +21,8 @@ running producers_per_host producers.  If both conditions are met it
 locks to the shard, otherwise it quits.
 
 If an item reappears later in the queue for this shard (rights
-changed, etc.), the select on the que will deliver it to this producer
-so the item does not get indexed in more than one shard.
+changed, etc.), the select on the queue will deliver it to this
+producer so the item does not get indexed in more than one shard.
 
 The run number is associated with various experiments related to Solr
 configuration and is used to compose the name of the config file. So
@@ -113,7 +114,7 @@ sub i_get_usage {
             where -I id indexes one id
                   -v turns on verbose logging
                   -d sets the debug level
-                      where 
+                      where
                             0=default
                             1=add database
                             2=add indexing + doc-create
@@ -215,7 +216,7 @@ END {
             Log_dealloc($C, $RUN, $Dedicated_Shard, $PID, $HOST, $allocated, $num_running);
         }
     }
-    
+
     exit $?;
 }
 
@@ -292,7 +293,7 @@ sub i_processing_loop {
 
 #
 # --------------- Helper  S u b r o u t i n e s   @@-------------------
-#    
+#
 
 # ---------------------------------------------------------------------
 
@@ -307,9 +308,9 @@ required shard.
 # ---------------------------------------------------------------------
 sub SINGLE_ID_handling {
     my ($C, $dbh, $run, $single_id) = @_;
-    
+
     my $dedicated_shard = 0;
-    
+
     if (defined $single_id) {
         my $shard = Db::Select_item_id_shard($C, $dbh, $run, $single_id);
         if (! $shard) {
@@ -471,7 +472,7 @@ sub __attempt_allocation {
         return 0;
     }
     die qq{Invalid un-dedicated shard state="$state"};
-}    
+}
 
 
 # ---------------------------------------------------------------------
@@ -490,7 +491,7 @@ sub handle_allocation {
         if ($SINGLE_ID) {
             return $dedicated_shard;
         }
-        
+
         if (__continue_dedicated_shard($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done)) {
             return $dedicated_shard;
         }
@@ -502,6 +503,7 @@ sub handle_allocation {
         }
     }
     # dang ....
+    __output("no work available for shard=$dedicated_shard ... exit\n");
     exit 0;
 }
 
@@ -590,11 +592,10 @@ sub handle_queue_empty {
 
     if ($num_sliced_from_queue == 0) {
         Log_queue_empty($C, $run, $pid, $host, $dedicated_shard);
-        DEBUG('me', qq{DEBUG: queue empty shard=$dedicated_shard ... exit});
+        __output("queue empty shard=$dedicated_shard ... exit\n");
         exit 0;
     }
 }
-
 
 # ---------------------------------------------------------------------
 
@@ -608,40 +609,56 @@ Description
 sub handle_critical_error {
     my ($C, $dbh, $run, $shard, $pid, $host, $error, $rc) = @_;
 
-    # Have we lost the database?
-    my $connection_still_alive = defined($dbh) && $dbh->ping();
-    if ($connection_still_alive) {
-        Db::set_shard_build_error($C, $dbh, $run, $shard)
-            if (! $INTERACTIVE);
+    # Have we completely lost the database?
+    my $database_OK = defined($dbh);
 
-        # Un-handled ids are in the GLOBAL error array. Put them in
-        # the error list and disable the shard.
-        while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
-            my $id = $item_hashref->{'id'};
-            Db::handle_error_insertion($C, $dbh, $run, $shard, $id, $pid, $host, IX_CRITICAL_FAILURE);
+    my $handler_error;
+    my $stored_id_ct = 0;
+
+    eval {
+        if ($database_OK) {
+            Db::set_shard_build_error($C, $dbh, $run, $shard) if (! $INTERACTIVE);
+
+            # Un-handled ids are in the GLOBAL error array. Put them
+            # in the error list and disable the shard.
+            while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
+                my $id = $item_hashref->{'id'};
+                Db::handle_error_insertion($C, $dbh, $run, $shard, $id, $pid, $host, IX_CRITICAL_FAILURE);
+            }
+            # Turn off this shard.
+            Db::update_shard_enabled($C, $dbh, $run, $shard, 0);
         }
-        # Turn off this shard.
-        Db::update_shard_enabled($C, $dbh, $run, $shard, 0);
+    };
+    if ($@) {
+        $database_OK = 0;
+        $handler_error = $@;
     }
-    else {
+
+    if (! $database_OK) {
         # No database to talk to.  Save the ids in an error log file
-        # and restore them to slip_queue, later, by hand. Touch the stop file.
+        # and restore them to ht_maintenance.slip_queue, later, by
+        # hand. Touch the stop file.
         while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
             my $id = $item_hashref->{'id'};
             Log_critical($C, $run, $id);
+            $stored_id_ct++;
         }
         Utils::GlobalSwitch::disable_cron_jobs('slip');
     }
 
     my $subj = qq{[SLIP] CRITICAL ERROR: run=$run shard=$shard};
-    my $msg =
-        qq{CRITICAL ERROR } .
-            qq{run=$run shard=$shard pid=$pid host=$host\nerror=$error\n};
-    $msg .= qq{database connection lost\nunprocessed restorable ids logged in file=logs/___DATE___/run-$run/critical_ids___PID___.log\n}
-        if (! $connection_still_alive);
-    SLIP_Utils::Common::Send_email($C, 'report', $subj, $msg);
+    my $msg = qq{CRITICAL ERROR: run=$run shard=$shard pid=$pid host=$host\nerror="$error"\n};
 
-    Index_Module::Log_error_stop($C, $run, $shard, $pid, $host, qq{CRITICAL ERROR: $error});
+    $msg .= ($handler_error ? qq{exception in critical error handler=$handler_error\n} : q{});
+
+    my $date = Utils::Time::iso_Time('date');
+    $msg .= ($stored_id_ct ? qq{$stored_id_ct unprocessed restorable ids saved to file=logs/slip/run-$run/critical_ids-$date.log\n} : q{});
+
+    my $stop_file = Utils::GlobalSwitch::stop_file_name('slip');
+    $msg .= (Utils::GlobalSwitch::cron_jobs_disabled('slip') ? qq{STOPFILE ($stop_file) is set, SLIP disabled\n} : q{});
+ 
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $msg);
+    Index_Module::Log_error_stop($C, $run, $shard, $pid, $host, qq{$msg});
 
     __output($msg);
     __non_interactive_err_output($rc, $msg);
@@ -768,7 +785,7 @@ sub Log_shard_Shutdown {
     my $s = qq{***STOP (shard disabled): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$shard};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
- 
+
 # ---------------------------------------------------------------------
 
 =item Log_shard_overalloc
@@ -830,8 +847,8 @@ Description
 sub Log_dealloc {
     my ($C, $run, $deallocated_shard, $pid, $host, $remaining_alloc, $host_num_running) = @_;
 
-    my $s = qq{***STOP (shard+host de-allocated): } 
-      . Utils::Time::iso_Time() 
+    my $s = qq{***STOP (shard+host de-allocated): }
+      . Utils::Time::iso_Time()
         . qq{ r=$run pid=$pid h=$host shard=$deallocated_shard remaining: shard_alloc=$remaining_alloc host_alloc=$host_num_running };
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
