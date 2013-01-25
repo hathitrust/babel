@@ -1649,12 +1649,13 @@ HTMobileBookReader.prototype.searchText = function(busyElement ){
 	
 	var self=this;
 
-	var url="/cgi/pt/search?skin=mobile;id=" + HT.params['id'] + ";q1=" + self.searchValue + ";";
+    // use ampersands so analytics is happier
+	var url="/cgi/pt/search?skin=mobile&id=" + HT.params['id'] + "&q1=" + self.searchValue;
 	if(self.searchStart){
-		url+="start=" + self.searchStart + ";";
+		url+="&start=" + self.searchStart;
 	}
 	if(self.searchSize){
-		url+="size=" + self.searchSize + ";";
+		url+="&size=" + self.searchSize;
 	}
 	if(self.searchStart==1){
 		$("#mdpResultsContainer").remove();
