@@ -221,7 +221,7 @@ sub Total_GET_RequestsBy_IP_Addr {
                 my @id_list;
                 foreach my $id (keys %{$ip_hashref->{$ip}}) {
                     my $attr = $ip_hashref->{$ip}{$id};
-                    push(@id_list, "$id($attr)");
+                    push(@id_list, "$id(attr=$attr)");
                 }
                 my $id_list = join(' ', @id_list);
                 print "\t\t$id_list\n";
