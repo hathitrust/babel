@@ -153,7 +153,7 @@ Description
 sub email_something {
     my ($C, $to_addr, $from_addr, $subject, $body_ref) = @_;
 
-    my $mailer = new Mail::Mailer('sendmail');
+    my $mailer = new Mail::Mailer('sendmail', ('-t', '-f hathitrust-system@umich.edu'));
     $mailer->open({
                    'To'       => $to_addr,
                    'From'     => $from_addr,
