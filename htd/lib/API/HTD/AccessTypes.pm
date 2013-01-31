@@ -102,8 +102,9 @@ Description
 sub getInCopyrightStatus {
     my $self = shift;
     
-    # pessimistic
-    my $in_copyright = 1;
+    # optimistic
+    my $in_copyright = 0;
+
     my $ro = $self->__getRightsObject();
     my $attribute = $ro->getRightsFieldVal('attr');    
     my $rights = $self->__getConfigVal('rights_name_map', $attribute);
