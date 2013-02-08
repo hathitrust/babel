@@ -24,3 +24,5 @@ ping
 register
 kgs
 widgets
+register
+useradmin
