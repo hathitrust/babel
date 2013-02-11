@@ -37,7 +37,7 @@ use warnings;
 umask 0000;
 
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 
@@ -186,6 +186,7 @@ eval {
            ) {
             enqueue_from_j_rights($C, $DBH, $RUN) unless ($SHARED_ONLY);
             enqueue_from_shared_queue($C, $DBH, $RUN);
+            enqueue_from_holdings_delta($C, $DBH, $RUN);
         }
         else {
             my $s = qq{enqueuer-j not enabled\n};
@@ -237,6 +238,82 @@ sub enqueue_from_FILE {
 
 # ---------------------------------------------------------------------
 
+=item enqueue_from_holdings_delta
+
+Enqueue holdings between last_loaded_version and the max_version at
+this point in time.  We load only this slice because, while loading,
+holdings_deltas could have a max_version + 1 inserted. We want to read
+only the IDs between last_loaded_version and the max_version we saw at
+a point in time so last_loaded_version agree with the IDs we actually
+read.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_from_holdings_delta {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);    
+    my $max_version = Db::get_holdings_max_version($C, $dbh, $run);
+    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $max_version);
+
+    my $c_0 = ($CHECK ? qq{Will CHECK only:} : qq{Will LOAD:});  
+
+    my $s;
+    if ($holdings_deltas_size > 0) {
+        $s = qq{$c_0 total=$holdings_deltas_size from ht_repository.holdings_deltas};    
+        __confirm("OK to proceed? [N] ");
+    }
+    else {
+        $s = qq{Zero (0) items in ht_repository.holdings_deltas to add to queue (last_loaded_version=$last_loaded_version max_version=$max_version)};
+        __output(qq{$s\n});
+        return;
+    }
+
+    my $start = time;
+    my $slice_size = $config->get('holdings_deltas_slice_size');
+    my $offset = 0;
+    my $num_items = 0;
+    my $remaining = $holdings_deltas_size;
+    while (1) {
+        my $id_arr_ref = Db::read_holdings_deltas_item_ids($C, $dbh, $last_loaded_version, $max_version, $slice_size, $offset);
+        last if (! scalar(@$id_arr_ref));
+        
+        my $num_inserted;
+        if ($CHECK) {
+            $num_inserted = scalar(@$id_arr_ref);
+        }
+        else {
+            $num_inserted = Db::handle_queue_insert($C, $dbh, $run, $id_arr_ref);
+        }
+        $num_items += $num_inserted;
+        $remaining -= $num_inserted;
+        $offset += $slice_size;
+        
+        __output(qq{remaining=$remaining items to load\n});
+    }
+    
+    my $elapsed = (time - $start) || 1;
+    my $ids_per_sec = $num_items / $elapsed;
+
+    my $c_1 = ($CHECK ? qq{CHECKed:} : qq{LOADed:});  
+    if ($num_items > 0) {
+        Db::set_holdings_version($C, $dbh, $run, $max_version) unless ($CHECK);
+        $s = sprintf("$c_1 %d items in %.1f sec at %.1f ids/sec from ht_repository.holdings_deltas (last_loaded_version=%d max_version=%d)",
+                     $num_items, $elapsed, $ids_per_sec, $last_loaded_version, $max_version);
+    }
+    else {
+        $s = qq{Zero (0) items in ht_repository.holdings_deltas to add to queue (last_loaded_version=$last_loaded_version max_version=$max_version)};
+    }
+
+    __output(qq{$s\n});
+    qu_Log_misc($C, $run, $s);
+}
+
+
+# ---------------------------------------------------------------------
+
 =item enqueue_from_shared_queue
 
 Description
@@ -264,7 +341,7 @@ sub enqueue_from_shared_queue {
     if ($CHECK) {
         my $s = ($shared_queue_size > 0)
           ? qq{would load total=$shared_queue_size from shared queue where daily max=$daily_max items }
-            : qq{no items in shared queue to add to queue};
+            : qq{Zero (0) items in shared queue to add to queue};
 
         __output(qq{$s\n});
         return;
@@ -299,7 +376,7 @@ sub enqueue_from_shared_queue {
     
     my $s = ($num_items > 0)
       ? qq{loaded $num_items items from shared queue where daily max=$daily_max}
-        : qq{no items in shared queue to add to queue};
+        : qq{Zero (0) items in shared queue to add to queue};
 
     __output(qq{$s\n});
     qu_Log_misc($C, $run, $s);
@@ -330,7 +407,7 @@ sub enqueue_from_j_rights {
         # Insert items into the queue and mark their status as "available"
         
         __output($out_msg);
-        __confirm("OK to proceed? [N] ");
+        ($would_be_queued > 0) ? __confirm("OK to proceed? [N] ") : return;
 
         # Get all items from the slip_rights table with update_time newer
         # than the timestamp set when enqueuer-j last recorded
@@ -425,7 +502,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008-11 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-2013 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
