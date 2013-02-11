@@ -186,7 +186,7 @@ eval {
            ) {
             enqueue_from_j_rights($C, $DBH, $RUN) unless ($SHARED_ONLY);
             enqueue_from_shared_queue($C, $DBH, $RUN);
-            enqueue_from_holdings_delta($C, $DBH, $RUN);
+            # enqueue_from_holdings_delta($C, $DBH, $RUN);
         }
         else {
             my $s = qq{enqueuer-j not enabled\n};
