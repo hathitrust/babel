@@ -124,7 +124,7 @@ if ($INTERACTIVE) {
         my $s = qq{You are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
         __confirm($s);
     }
-    my $s = qq{You are about to run the driver at the command line.\n\tContinue? [N] };
+    my $s = qq{You are about to run the driver at the command line, indexing and optimization only, no Lucene checkIndex.\n\tContinue? [N] };
         __confirm($s);
 }
 
