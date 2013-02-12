@@ -19,6 +19,7 @@ use Database;
 use Utils;
 use DbUtils;
 use MdpConfig;
+use Password;
 
 use KGS_Log;
 # make sure cache files/dirs are group writable
@@ -35,43 +36,6 @@ my $config = new MdpConfig(
                           );
 $C->set_object('MdpConfig', $config);
         # For all value of ord($key) see http://www.asciitable.com/
-
-# ---------------------------------------------------------------------
-
-=item get_password
-
-http://stackoverflow.com/questions/701078/how-can-i-enter-a-password-using-perl-and-replace-the-characters-with
-
-=cut
-
-# ---------------------------------------------------------------------
-sub get_password() {
-    my $password = "";
-    # Start reading the keys
-    ReadMode(4); # Disable the control keys
-    my $count = 0;
-    while (ord(my $key = ReadKey(0)) != 10) {
-        # This will continue until the Enter key is pressed (decimal value of 10)
-        if(ord($key) == 127 || ord($key) == 8) {
-            # DEL/Backspace was pressed
-            if ($count > 0) {
-                $count--;
-                #1. Remove the last char from the password
-                chop($password);
-                #2 move the cursor back by one, print a blank character, move the cursor back by one
-                print "\b \b";
-            }
-        }
-        elsif(ord($key) >= 32) {
-            $count++;
-            $password = $password.$key;
-            print "*";
-        }
-    }
-    ReadMode(0); #Reset the terminal once we are done
-
-    return $password;
-}
 
 # ---------------------------------------------------------------------
 
@@ -100,7 +64,7 @@ if (! ($access_key && $db_user && $db_name && $db_server)) {
 use Term::ReadKey;
 print "Enter passwd: ";
 
-my $db_passwd = get_password();
+my $db_passwd = Password::get_password();
 print "\n";
 
 # Database connection
