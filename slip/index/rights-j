@@ -88,7 +88,7 @@ see help
 
 use strict;
 BEGIN {
-    #$ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -107,6 +107,7 @@ use Utils;
 use Utils::Time;
 use Utils::GlobalSwitch;
 use Debug::DUtils;
+use Password;
 
 use Context;
 use MdpConfig;
@@ -149,7 +150,7 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j [-n][-f][-T][-B -r run | -R | -F<file>] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j -r run [-B|-R|-F<file>] [-n][-f][-T] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -f force email\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -F insert IDs from file (missing from slip_rights)\n};
@@ -265,7 +266,21 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    $db = new Database('ht_maintenance');
+    if ($REBUILD) {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht_maintenance', 'mysql-sdr');
+    }
+    else {
+        $db = new Database('ht_maintenance');
+    }
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'rights-j', $@);
