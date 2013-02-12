@@ -496,7 +496,9 @@ use constant LOG_BUFFER_MAX => 1000;
 sub r_rights_Log {
     my ($C, $s, $key) = @_;
 
-    return if ($CHECK);
+    unless ($REBUILD) {
+        return if ($CHECK);
+    }
 
     my $ss = qq{$s at: } . Utils::Time::iso_Time() . qq{\n};
     $LOG_BUFFER .= $ss;
@@ -509,7 +511,9 @@ sub r_rights_Log {
 sub flush_r_rights_Log {
     my ($C, $key) = @_;
 
-    return if ($CHECK);
+    unless ($REBUILD) {
+        return if ($CHECK);
+    }
 
     SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $key, '___RUN___', 'rights', 'no_newline');
     $LOG_BUFFER = '';
