@@ -131,6 +131,8 @@ use constant STOPSLIP_SLEEP_WAIT => 60;
 my $RUN = $opt_r;
 my $CHECK = 0;
 my $PHASE = 'Both';
+my $REBUILD = 1;
+
 
 if (! defined($RUN)) {
     my $s = r_r_get_usage();
@@ -150,26 +152,9 @@ if (defined($opt_P)) {
     }
 }
 
-my $REBUILD = 1;
-
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-my $RIGHTS_LOGFILE_KEY = 'rights_rebuild_logfile';
-
-# Do not try to build shadow rights table while I am running already
-my $Lock_File = "/tmp/rights-lock.sem";
-my $Semaphore = new Semaphore($Lock_File);
-if (! $Semaphore) {
-    my $rc = $SLIP_Utils::States::RC_RIGHTS_NO_SEM;
-    my $s = qq{rebuild_rights-j could not get semaphore\n};
-    __output($s);
-    exit $rc;
-}
-END {
-    $Semaphore->unlock()
-        if ($Semaphore);
-}
 
 my $DEBUG_TINY = 0;
 my $TINY_SLICE_NUM = 10;
@@ -328,7 +313,7 @@ sub r_r_rights_Log {
 sub flush_r_r_rights_Log {
     my ($C) = @_;
 
-    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $RIGHTS_LOGFILE_KEY, '___RUN___', 'rights', 'no_newline');
+    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, 'rights_rebuild_logfile', '___RUN___', 'rights', 'no_newline');
     $LOG_BUFFER = '';
     $Log_buffer_size = 0;
 }
