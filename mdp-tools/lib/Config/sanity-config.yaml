@@ -173,6 +173,7 @@ slip:
   - /htapps/__CMD_STAGE__/slip/index/rebuild-j -r1 -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/report-j -r11 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/rights-j -r1 -T -B -n __LOCAL__
+  - /htapps/__CMD_STAGE__/slip/index/rebuild_rights-j -r1 -T -n __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/sizer-j -r1 __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/sync-j -r1 -mrightsNINindexed -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/sync-i -r1 -T __LOCAL__
