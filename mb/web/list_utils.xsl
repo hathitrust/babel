@@ -202,6 +202,7 @@
           <xsl:choose>
             <xsl:when test="$AllItemsCount = $FullTextCount">
               <!-- either they are all full text or all view-only so don't display widget-->
+              <xsl:call-template name="Refine" />
             </xsl:when>
             <xsl:otherwise>
                 <xsl:call-template name="Refine"/>
@@ -209,14 +210,16 @@
           </xsl:choose>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:text>There are no Full View items in this collection</xsl:text>
+          <div class="alert alert-info">
+            <p>There are no Full View items in this collection</p>
+          </div>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:if>
   </xsl:template>
 
   <xsl:template name="Refine">
-    <div>
+    <div class="tabs">
       <xsl:variable name="Limit">
         <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
       </xsl:variable>
@@ -224,8 +227,8 @@
       <xsl:choose>
         <xsl:when test ="$Limit = 'YES'">
           <!-- we are currently showing the result of narrow to full text so we want a URL to all -->
-          <ul class="refineTabs">
-            <li class="viewall inactive">
+          <ul>
+            <li class="viewall">
               <xsl:element name="a">
                 <xsl:attribute name="href">
                   <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
@@ -236,14 +239,13 @@
               </xsl:element>
             </li>
             <li class="fulltext active">
-              <!-- <img alt="full view" title="view full view" src="//common-web/graphics/Icon_FullText.png"/>-->
-              <xsl:text>Only Full view (</xsl:text>
-              <xsl:value-of select="$FullTextCount"/>
-              <xsl:text>)</xsl:text>
+              <span>
+                <xsl:text>Only Full view (</xsl:text>
+                <xsl:value-of select="$FullTextCount"/>
+                <xsl:text>)</xsl:text>
+              </span>
             </li>
           </ul>
-          
-          
         </xsl:when>
 
         <xsl:otherwise>
@@ -251,11 +253,13 @@
           
           <ul class="refineTabs">
             <li class="viewall active">
-              <xsl:text>All Items (</xsl:text>
-              <xsl:value-of select="$AllItemsCount"/>
-              <xsl:text>)</xsl:text>
+              <span>
+                <xsl:text>All Items (</xsl:text>
+                <xsl:value-of select="$AllItemsCount"/>
+                <xsl:text>)</xsl:text>
+              </span>
             </li>
-            <li class="inactive">      
+            <li class="fulltext">      
               <xsl:element name="a">
                 <xsl:attribute name="class">fulltext</xsl:attribute>  
                 <xsl:attribute name="title">full view</xsl:attribute>
@@ -268,7 +272,6 @@
               </xsl:element>
             </li>
           </ul>
-          
         </xsl:otherwise>
       </xsl:choose>
     </div>
@@ -324,31 +327,25 @@
   <xsl:template name="DisplayContent">
     <xsl:param name="title" />
     <xsl:param name="item-list-contents" />
-    <div id="ColContainer" role="main">      
-      <xsl:call-template name="EditCollectionWidget"/>
+    <div id="ColContainer" class="main" role="main">      
 
-      <div class="ColContent">
-        <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
-        
-        <!-- Special case show index status message only for listsrch page -->
-        <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
-          <xsl:call-template name="IndexingStatusMsg"/>
-        </xsl:if>
+      <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
       
-        <!--ADDITION: Added: overlay is displayed here-->
-        <div id="errormsg">
-          <div class="bd"></div>
+      <!-- Special case show index status message only for listsrch page -->
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
+        <xsl:call-template name="IndexingStatusMsg"/>
+      </xsl:if>
+    
+      <!--ADDITION: Added: overlay is displayed here-->
+      <xsl:if test="$action='copyit' or $action='movit'or $action='copyitnc' or $action='movitnc' or $action='delit'">
+        <div class="alert" id="alert">
+          <xsl:call-template name="OperationResults" />
         </div>
-        <div class="overlay" id="overlay"></div>
-        <xsl:if test="$action='copyit' or $action='movit'or $action='copyitnc' or $action='movitnc' or $action='delit'">
-          <div class="alert" id="alert">
-            <xsl:call-template name="OperationResults" />
-          </div>
-        </xsl:if>
-        <xsl:call-template name="ItemList">
-          <xsl:with-param name="item-list-contents" select="$item-list-contents" />
-        </xsl:call-template>
-      </div>  <!-- end div ColContent -->
+      </xsl:if>
+      <xsl:call-template name="ItemList">
+        <xsl:with-param name="item-list-contents" select="$item-list-contents" />
+      </xsl:call-template>
+
     </div>  <!-- end div ColContainer -->
   </xsl:template>
 
@@ -555,7 +552,7 @@
 
       <input type="hidden" name="a" id="a"/>
 
-      <button class="awesome small" id="copyit" value="copyit">Copy Selected</button>
+      <button class="btn" id="copyit" value="copyit">Copy Selected</button>
 
       <!-- if they don't own the collection they shouldn't be able to delete (or move) items -->
       <xsl:choose>
@@ -839,35 +836,32 @@
           <input type="hidden" name="page" value="srchresults"/>
         </xsl:if>
 
-        <div id="actionsRow1" role="toolbar">
+        <div class="toolbar" role="toolbar">
           <h3 class="offscreen">Tools for sorting and filtering the list</h3>
           <xsl:call-template name="BuildSortWidget"/>
           <xsl:call-template name="BuildPagingControls">
               <xsl:with-param name="which_paging" select="'top_paging'"/>
           </xsl:call-template>
         </div>
-        <div id="actionsRow2" role="toolbar">
+        <div class="toolbar alt" role="toolbar">
           <h3 class="offscreen">Tools for collection management</h3>
           <div class="selectAll"><label>Select all on page <input type="checkbox" id="checkAll"/></label></div>
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
 
-        <div id="itemTable" class="itemTable">
-          <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
-
-          <xsl:choose>
-            <xsl:when test="$ItemListType='SearchResults'">
-              <xsl:for-each select="SearchResults/Item">
-                <xsl:call-template name="BuildItemChunk"/>
-              </xsl:for-each>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:for-each select="ItemList/Item">
-                <xsl:call-template name="BuildItemChunk"/>
-              </xsl:for-each>
-            </xsl:otherwise>
-          </xsl:choose>
-        </div>
+        <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
+        <xsl:choose>
+          <xsl:when test="$ItemListType='SearchResults'">
+            <xsl:for-each select="SearchResults/Item">
+              <xsl:call-template name="BuildItemChunk"/>
+            </xsl:for-each>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:for-each select="ItemList/Item">
+              <xsl:call-template name="BuildItemChunk"/>
+            </xsl:for-each>
+          </xsl:otherwise>
+        </xsl:choose>
 
         <div id="listisFooter">
           <xsl:call-template name="BuildPagingControls">
@@ -931,12 +925,11 @@
 
     
   <xsl:template name="SearchWidget">
-    <div id="LSformCont" role="search">
-      <form id="itemlist_searchform" method="get" action="mb" name="searchcoll">
-        <xsl:call-template name="HiddenDebug"/>
-        <h2 class="arrow"><label for="q1">Search in this collection</label></h2>
-        <input type="text" size="30" maxlength="150" name="q1" id="q1"> 
-        
+    <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
+      <xsl:call-template name="HiddenDebug"/>
+      <label for="q1">Search in this collection</label>
+      <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge"> 
+      
         <!-- search widget for list_search results needs query string in param  -->
         
         <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
@@ -946,10 +939,9 @@
         </xsl:if>
       </input>
       <input type="hidden" name="a" value="srch"/>
-      <button type="submit" name="a" id="srch" value="srch">Find</button>
+      <button class="btn" type="submit" name="a" id="srch" value="srch">Find</button>
       <xsl:copy-of select="$hidden_c_param"/>
     </form>
-  </div>
   </xsl:template>
     
 
@@ -959,10 +951,10 @@
     <xsl:variable name="row_class">
       <xsl:choose>
         <xsl:when test="(position() mod 2)=0">
-          <xsl:value-of select="'row roweven'"/>
+          <xsl:value-of select="'row result'"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="'row rowodd'"/>
+          <xsl:value-of select="'row result alt'"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -988,11 +980,11 @@
 
     <xsl:variable name="fulltext_class">
       <xsl:choose>
-        <xsl:when test="fulltext=1">fulltext</xsl:when>
+        <xsl:when test="fulltext=1">fulltext icomoon-document-2</xsl:when>
         <xsl:otherwise>
           <xsl:choose>
             <xsl:when test="rights=8"></xsl:when>
-            <xsl:otherwise>viewonly</xsl:otherwise>
+            <xsl:otherwise>viewonly icomoon-locked</xsl:otherwise>
           </xsl:choose>
         </xsl:otherwise>
       </xsl:choose>
@@ -1003,24 +995,17 @@
     </xsl:variable>
     <!--################################## end variables-->
 
-    <div class="Chunk {$row_class}">
+    <div class="{$row_class}">
       <xsl:variable name="item-number" select="position()" />
-      <h4 class="Title">
-        <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
-        <xsl:value-of select="Title" disable-output-escaping="yes" />
-      </h4>
-      <div class="ItemID Select">
-        <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
-        <input type="checkbox" name="iid" class="iid" id="iid{$item-number}">
-          <xsl:attribute name="value">
-            <xsl:value-of select="ItemID"/>
-          </xsl:attribute>
-        </input>
-      </div>
-      <div class="ItemData">
+      <div class="span7 push2 metadata">
+        <h4 class="Title">
+          <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
+          <xsl:value-of select="Title" disable-output-escaping="yes" />
+        </h4>
+
         <!-- Author -->
         <xsl:if test="Author!=''">
-          <div class="ItemAuthor">
+          <div class="result-metadata-author">
             <span class="ItemAuthorLabel">
               <xsl:text>by </xsl:text>
             </span>
@@ -1031,7 +1016,7 @@
           </div>
         </xsl:if>
 
-        <div class="ItemDate">
+        <div class="result-metadata-published">
           <span class="Date">
             <xsl:choose>
               <xsl:when test="$Date='0000'">
@@ -1056,10 +1041,10 @@
           </span>
         </xsl:if>
 
-        <ul>
-          <li>
-            <!--tbw catalog link hard coded text   div needs a class!-->
-            <div class="cataloglink">
+        <div class="result-access-link">
+          <ul>
+            <li>
+              <!--tbw catalog link hard coded text   div needs a class!-->
               <xsl:element name="a">
                 <xsl:attribute name="href">     
                   <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
@@ -1069,18 +1054,16 @@
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
                 </xsl:attribute>
                 <xsl:attribute name="class">
-                  <xsl:text>cataloglinkhref</xsl:text>
+                  <xsl:text>cataloglinkhref icomoon-info-circle</xsl:text>
                 </xsl:attribute>
                 <xsl:text>Catalog Record</xsl:text>
-            </xsl:element>
-            </div>
-          </li>
-          <li>
-            <div class="Rights">
-              <span class="debug">
-                <xsl:text>rights: </xsl:text>
-                <xsl:value-of select="rights"/>
-              </span>
+              </xsl:element>
+            </li>
+            <li>
+                <!-- <span class="debug">
+                  <xsl:text>rights: </xsl:text>
+                  <xsl:value-of select="rights"/>
+                </span> -->
               <xsl:value-of select="$fulltext_string"/>
               <xsl:element name="a">
                 <xsl:attribute name="href">
@@ -1102,31 +1085,176 @@
                 </xsl:attribute>
                 <xsl:value-of select="$fulltext_link_string"/>
               </xsl:element>
-            </div>
-          </li>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="span2 pull9">
+        <div class="cover">
+          <!-- should be google book cover -->
+          <img src="http://babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ItemID};seq=1;width=60" />
+        </div>
+        <div class="select">
+          <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
+          <input type="checkbox" name="iid" class="iid" id="iid{$item-number}">
+            <xsl:attribute name="value">
+              <xsl:value-of select="ItemID"/>
+            </xsl:attribute>
+          </input>
+        </div>
+      </div>
+
+      <div class="in-collections span3">
+        <h5>
+          <xsl:text>In my collections: </xsl:text>
+        </h5>
+
+        <ul class="inMyColls">
+          <xsl:for-each select="Collections/Collection">
+            <xsl:call-template name="inMyColls"/>
+          </xsl:for-each>
+          <!-- add "-" when the item isn't in any collections -->
+          <xsl:for-each select="Collections">
+            <xsl:if test =" not(Collection)">
+              <li>---</li>
+            </xsl:if>
+          </xsl:for-each>
         </ul>
       </div>
 
-      <div class="ItemCollections">
-        <div class="ItemCollectionsLabel">
-          <xsl:text>In My Collections: </xsl:text>
+
+    </div>
+
+    <xsl:if test="false()">
+    <div class="{$row_class}">
+      <xsl:variable name="item-number" select="position()" />
+      <h4 class="Title">
+        <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
+        <xsl:value-of select="Title" disable-output-escaping="yes" />
+      </h4>
+      <div class="span1 cover">
+        <img src="http://babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ItemID};seq=1;width=60" />
+      </div>
+      <div class="span1 select">
+        <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
+        <input type="checkbox" name="iid" class="iid" id="iid{$item-number}">
+          <xsl:attribute name="value">
+            <xsl:value-of select="ItemID"/>
+          </xsl:attribute>
+        </input>
+      </div>
+      <div class="span7 push2 pull">
+        <!-- Author -->
+        <xsl:if test="Author!=''">
+          <div class="result-metadata-author">
+            <span class="ItemAuthorLabel">
+              <xsl:text>by </xsl:text>
+            </span>
+            
+            <span class="Author">
+              <xsl:value-of select="Author"  disable-output-escaping="yes"/>
+            </span>
+          </div>
+        </xsl:if>
+
+        <div class="result-metadata-published">
+          <span class="Date">
+            <xsl:choose>
+              <xsl:when test="$Date='0000'">
+                <!-- bad date string from pi goes here-->
+                <xsl:text>Published ----</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <span class="ItemDateLabel">
+                  <xsl:text>Published </xsl:text>
+                </span>
+                <xsl:value-of select="$Date"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </span>
         </div>
 
-        <div class="Collections">
-          <ul class="inMyColls">
-            <xsl:for-each select="Collections/Collection">
-              <xsl:call-template name="inMyColls"/>
-            </xsl:for-each>
-            <!-- add "-" when the item isn't in any collections -->
-            <xsl:for-each select="Collections">
-              <xsl:if test =" not(Collection)">
-                <li>---</li>
-              </xsl:if>
-            </xsl:for-each>
+        <!-- SEARCH needs relevance -->
+        <xsl:if test="$ItemListType='SearchResults'">
+          <span class="Relevance debug">
+            <xsl:text>relevance score: </xsl:text>
+            <xsl:value-of select="relevance"/>
+          </span>
+        </xsl:if>
+
+        <div class="result-access-link">
+          <ul>
+            <li>
+              <!--tbw catalog link hard coded text   div needs a class!-->
+              <xsl:element name="a">
+                <xsl:attribute name="href">     
+                  <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+                  <xsl:value-of select ="record"/>
+                </xsl:attribute>
+                <xsl:attribute name="title">
+                  <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
+                </xsl:attribute>
+                <xsl:attribute name="class">
+                  <xsl:text>cataloglinkhref icomoon-info-circle</xsl:text>
+                </xsl:attribute>
+                <xsl:text>Catalog Record</xsl:text>
+              </xsl:element>
+            </li>
+            <li>
+                <!-- <span class="debug">
+                  <xsl:text>rights: </xsl:text>
+                  <xsl:value-of select="rights"/>
+                </span> -->
+              <xsl:value-of select="$fulltext_string"/>
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:choose>
+                    <xsl:when test="$ItemListType='SearchResults'">
+                      <!-- if we want first page instead of passing the search to xpat use $pt_href instead of $pt_search_href -->
+                      <xsl:value-of select="PtSearchHref"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="PtHref"/>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:attribute>
+                <xsl:attribute name="class">
+                  <xsl:value-of select="$fulltext_class"/>
+                </xsl:attribute>
+                <xsl:attribute name="title">
+                  <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
+                </xsl:attribute>
+                <xsl:value-of select="$fulltext_link_string"/>
+              </xsl:element>
+            </li>
           </ul>
         </div>
+
+          <div class="in-collections span3">
+            <h5>
+              <xsl:text>In your Collections: </xsl:text>
+            </h5>
+
+            <ul class="inMyColls">
+              <xsl:for-each select="Collections/Collection">
+                <xsl:call-template name="inMyColls"/>
+              </xsl:for-each>
+              <!-- add "-" when the item isn't in any collections -->
+              <xsl:for-each select="Collections">
+                <xsl:if test =" not(Collection)">
+                  <li>---</li>
+                </xsl:if>
+              </xsl:for-each>
+            </ul>
+          </div>
+        </div> 
+
+
       </div>
-    </div> 
+    </xsl:if>
+
   </xsl:template>
 
 

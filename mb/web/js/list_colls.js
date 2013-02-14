@@ -127,7 +127,7 @@ var ListBrowser = {
       }
     })
     
-    self.$controls.find(".filters button").click(function() {
+    self.$controls.find(".filters a").click(function() {
       var $this = $(this);
       var view = $this.attr('rel');
       self.navigate(view, true);
@@ -179,9 +179,10 @@ var ListBrowser = {
   },
 
   navigate: function(view, invoke_events) {
-    var $buttons = this.$controls.find(".filters button");
+    var $buttons = this.$controls.find(".filters li");
     $buttons.removeClass("active");
-    var $active = $buttons.filter("[rel=" + view + "]");
+    var $active = $buttons.filter(":has(a[rel=" + view + "])");
+    console.log("AHOY", view, $active.length);
     if ( ! $active.length ) {
       view = 'all';
       this.navigate('all');
@@ -574,7 +575,7 @@ var ListBrowser = {
 
       var data = {};
       i += 1;
-      data.stripe = i % 2 == 0 ? "even" : "odd";
+      data.stripe = i % 2 == 0 ? "" : "odd";
       
       data.collid = row[self.idx.CollId];
       data.collname = row[self.idx.CollName];
@@ -603,9 +604,7 @@ var ListBrowser = {
         data.altshared = "Private";
       }
       
-      var cls = "collection";
-      if ( i % 2 == 0 ) { cls += " even"; }
-      else { cls += " odd"; };
+      var cls = "collection "  + data.stripe;
       if ( data.mine != '' ) {
         cls += " mine";
       }
@@ -756,17 +755,22 @@ var ListBrowser = {
 
   _setup_featured: function() {
     // take care of the featured here as well
-    var random_idx = Math.floor(Math.random() * this.cache.featured.length);
-    var featured = this.cache.html[this.cache.featured[random_idx]];
+    var featured_items = _.shuffle(this.cache.featured);
+    // var random_idx = Math.floor(Math.random() * .length);
+    // var featured = this.cache.html[this.cache.featured[random_idx]];
+
+    for(var i = 0; i < 3; i++) {
+      var featured = this.cache.html[featured_items[i]];
+      var tmplData = {
+        collid : featured[this.idx.CollId],
+        collname : featured[this.idx.CollName],
+        description : featured[this.idx.Description],
+        featured : featured[this.idx.Featured]
+      };
+      
+      $("#featured-template").tmpl(tmplData).appendTo(this.$sidebar);
+    }
     
-    var tmplData = {
-      collid : featured[this.idx.CollId],
-      collname : featured[this.idx.CollName],
-      description : featured[this.idx.Description],
-      featured : featured[this.idx.Featured]
-    };
-    
-    $("#featured-template").tmpl(tmplData).appendTo(this.$sidebar);
     Hyphenator.run();
   },
   

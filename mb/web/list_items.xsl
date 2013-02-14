@@ -2,77 +2,97 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
-  
-  <!-- Main template -->
-  <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
-      <head>
-        <title><xsl:call-template name="get_page_title" /></title>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
-        <xsl:call-template name="load_js_and_css"/>
-        <xsl:call-template name="include_local_javascript"/>
-        <xsl:text disable-output-escaping="yes">&#x3C;!--[if lt IE 8]>
-</xsl:text>
-        <link rel="stylesheet" href="/mb/ie7.css" />
-        <xsl:text disable-output-escaping="yes">
-        <![CDATA[<![endif]-->]]>
-        </xsl:text>
 
-        <xsl:call-template name="debug_CSS"/>
-      </head>
-      
-      <!-- <body class="yui-skin-sam" onLoad="testjs()">-->
-      <!-- <body class="yui-skin-sam" >-->
-      <!-- This adds a listener to the checkAll checkbox in listUtils.js-->
-      <body class="yui-skin-sam" onload="initCheckall()">
+  <xsl:template name="setup-extra-header">
+    <!-- <link rel="stylesheet" type="text/css" href="/mb/css/mb.css" /> -->
+    <link rel="stylesheet" type="text/css" href="/mb/css/results.css" />
+
+    <script src="/mb/web/js/mb.js"></script>
+    <script src="/mb/web/js/tracking.js"></script>
+
+  </xsl:template>
+
+  <xsl:template name="contents">
+    <xsl:call-template name="sidebar" />
+    <xsl:call-template name="list-items-results" />
+    <script src="/mb/web/js/google_covers.js"></script>
+  </xsl:template>
+
+  <xsl:template name="sidebar">
+    <div class="sidebar" role="complementary">
         
-        <div id="mbMasterContainer">
+      <xsl:call-template name="display-collection-metadata" />
+      
+    </div>
+  </xsl:template>
 
-          <div id="DlpsDev">
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
-          </div>
-          
-          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
-            <div>
-              <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-            </div>
-          </xsl:if>
-          
-          <xsl:call-template name="header"/>
+  <xsl:template name="display-collection-metadata">
 
-          <div id="mbContentContainer" class="mbListItemsContainer clearfix">
+    <h2 class="offscreen">About this collection</h2>
 
-            <xsl:call-template name="DisplaySearchWidgetLogic"/>
+    <xsl:if test="//CollectionFeatured/text()">
+      <div class="col-featured">
+        <img src="{//CollectionFeatured}" alt=" " aria-hide="true" />
+      </div>
+    </xsl:if>
 
-            <div class="SearchAndRefine">
-              <div class="refine">
-                <xsl:call-template name="decideDisplayRefine"/>
-              </div>
-            </div>
-            
-            <div id="main">
-              <xsl:choose>
-                <xsl:when test="ItemList/Item">
-                  <xsl:call-template name="DisplayContent">
-                    <xsl:with-param name="title">Collection</xsl:with-param>
-                    <xsl:with-param name="item-list-contents">items</xsl:with-param>
-                  </xsl:call-template>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:call-template name="EmptyCollection"/>
-                </xsl:otherwise>
-              </xsl:choose>
-            </div>
-            
-          </div>
-          
-          
-          <xsl:call-template name="footer"/>
-          <xsl:call-template name="google_analytics" />
-                    
-        </div>
-      </body>
-    </html>
+    <h3>
+      <!-- $spaced_coll_name ? -->
+      <xsl:value-of select="$coll_name" />
+    </h3>
+
+    <dl class="collection">
+      <dt>Owner</dt>
+      <dd>
+        <xsl:value-of select="//CollectionOwner" />
+      </dd>
+
+      <xsl:if test="normalize-space(//EditCollectionWidget/CollDesc)">
+        <dt>Description</dt>
+        <dd>
+          <p class="colDesc">
+            <xsl:value-of select="//EditCollectionWidget/CollDesc"/>
+          </p>
+        </dd>
+      </xsl:if>
+
+      <xsl:if test="normalize-space(//CollectionContactInfo)">
+        <dt>More Information</dt>
+        <p><xsl:apply-templates select="//CollectionContactInfo" mode="copy-guts" /></p>
+      </xsl:if>
+
+      <dt>Status</dt>
+      <dd><xsl:value-of select="//EditCollectionWidget/Status" /></dd>
+
+      <xsl:if test="//EditCollectionWidget/OwnedByUser='yes' ">
+        <h3 class="offscreen">Edit collection details</h3>
+        <p>
+          <a href="#" class="btn btn-small">Edit</a>
+        </p>
+      </xsl:if>
+
+    </dl>
+    
+  </xsl:template>
+
+  <xsl:template name="list-items-results">
+    <div id="mbContentContainer" class="main clearfix">
+
+      <xsl:call-template name="DisplaySearchWidgetLogic"/>
+      <xsl:call-template name="decideDisplayRefine"/>
+      <xsl:choose>
+        <xsl:when test="ItemList/Item">
+          <xsl:call-template name="DisplayContent">
+            <xsl:with-param name="title">Collection</xsl:with-param>
+            <xsl:with-param name="item-list-contents">items</xsl:with-param>
+          </xsl:call-template>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="EmptyCollection"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </div>
+
   </xsl:template>
   
   <xsl:template name="MBooksCol">
@@ -87,7 +107,7 @@
     </div>
   </xsl:template>
   
-  <xsl:template name="get_page_title">
+  <xsl:template name="get-page-title">
     <xsl:text>Collections: </xsl:text><xsl:value-of select="$coll_name" /><xsl:text> | HathiTrust Digital Library</xsl:text>
   </xsl:template>
     
@@ -213,11 +233,11 @@
   </xsl:template>
   
   <xsl:template name ="DisplaySearchWidgetLogic">
-    <div class="mainsearch">
-      <xsl:if test="$AllItemsCount>0">
+    <xsl:if test="$AllItemsCount>0">
+      <div class="mainsearch" role="search">
         <xsl:call-template name="SearchWidget"/>
-      </xsl:if>
-    </div>
+      </div>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="*" mode="copy-guts">

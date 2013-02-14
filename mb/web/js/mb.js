@@ -13,7 +13,7 @@ HT.track_pageview = function(args) {
   }
   var params = $.param(args);
   if ( params ) { params = "?" + params; }
-  if ( pageTracker != null ) {
+  if ( window.pageTacker !== undefined && window.pageTracker != null ) {
     var fn = function() {
         try {
             pageTracker._trackPageview(window.location.pathname + params);

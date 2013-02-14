@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE xsl:stylesheet [ 
+<!ENTITY nbsp "&#160;"> 
+<!ENTITY copy "&#169;">
+<!ENTITY raquo "»"> 
+<!ENTITY laquo "«"> 
+]>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0"
   extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings" xmlns:exsl="http://exslt.org/common"
@@ -21,135 +27,46 @@
     <xsl:value-of select="/MBooksTop/Header/UserId"/>
   </xsl:variable>
 
-  <!-- Main template -->
-  <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
-      <head>
-        <title>
-          <xsl:call-template name="get_page_title"/>
-        </title>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+  <xsl:template name="setup-extra-header">
+    <link rel="stylesheet" type="text/css" href="/mb/css/mb.css" />
+    <link rel="stylesheet" type="text/css" href="/mb/list_colls.css" />
 
-        <xsl:call-template  name="include_local_javascript"/>
-        <xsl:call-template name="load_js_and_css"/>
+    <script src="/mb/web/js/jquery.tmpl.js"></script>
+    <script src="/mb/web/js/jquery.placeholder.js"></script>
+    <script src="/mb/web/js/date.js"></script>
+    <script src="/mb/web/js/jquery.ba-hashchange.js"></script>
+    <script src="/mb/web/js/hyphenator.js"></script>
+    <script src="/mb/web/js/mb.js"></script>
+    <script src="/mb/web/js/tracking.js"></script>
 
-        <!-- overide debug style if debug flag is on -->
-        <xsl:call-template name="debug_CSS"/>
-
-        <script id="controls-template" type="text/x-template">
-        </script>
-
-                <xsl:text>
-
-        </xsl:text>
-
-                <xsl:comment><![CDATA[[if lt IE 8]>
-                  <link rel="stylesheet" type="text/css" href="/mb/ie7.css" />
-                <![endif]]]></xsl:comment>
-
-                        <xsl:text>
-
-                </xsl:text>
-
-
-      </head>
-
-      <!-- XXX the onload below only needed to use with
-      searchAjaxColl.js, if we don't search from this page we don't
-      need it-->
-
-      <!-- <body class="yui-skin-sam" onload="setHandlers()"> -->
-
-      <xsl:element name="body">
-        <xsl:attribute name="class">yui-skin-sam</xsl:attribute>
-        <xsl:attribute name="id">PubCollPage</xsl:attribute>
-
-        <div id="mbMasterContainer">
-
-          <div id="DlpsDev">
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
-          </div>
-
-          <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
-            <div>
-              <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-            </div>
-          </xsl:if>
-
-          <xsl:call-template name="header"/>
-
-          <xsl:call-template name="coll_list">
-            <xsl:with-param name="which_list" select="'pubcolls'"/>
-            <xsl:with-param name="list_node" select="/MBooksTop/CollList"/>
-          </xsl:call-template>
-
-          <div id="overlay"></div>
-          <xsl:call-template name="footer"/>
-
-          <xsl:call-template name="google_analytics" />
-
-        </div>
-        <script type="text/javascript" src="/mb/js/list_colls.js"></script>
-
-      </xsl:element> <!-- end body -->
-
-    </html>
   </xsl:template>
 
-  <!--XXX Suz this is where the messages go for when there are no private collections -->
-  <xsl:template name="NoPrivateColl">
-    <xsl:choose>
-      <xsl:when test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO'">
-        <!-- if not logged in user can save temporary collections or log in to see permanent collections-->
-        <div class="loginpromt">
-          <span>You are not logged in.
-          <a class="inlineLink">
-            <xsl:attribute name="href">
-              <xsl:value-of select="/MBooksTop/Header/LoginLink"/>
-            </xsl:attribute>
-            Log in</a> now.
-          </span>
-          <p>Logging in lets you create and save permanent collections.<br/>
-          Or, use the "Create New Collection" link above to create temporary collections. </p>
-        </div>
-      </xsl:when>
-      <xsl:otherwise>
-        <!-- if logged in, user just hasn't added any collections -->
-        <h3>
-          <xsl:text> Currently </xsl:text>
-          <xsl:value-of select="$g_user_name"/>
-          <xsl:text> does not have any collections </xsl:text>
-          <br></br>
-          Use the "Create New Collection" link above to create collections
-        </h3>
-      </xsl:otherwise>
-    </xsl:choose>
+  <xsl:template name="contents">
+    <h2 class="mbContentTitle offscreen">All Collections</h2>
+    <xsl:call-template name="intro" />
+    <xsl:call-template name="coll_list">
+      <xsl:with-param name="which_list" select="'pubcolls'"/>
+      <xsl:with-param name="list_node" select="/MBooksTop/CollList"/>
+    </xsl:call-template>
+    <xsl:call-template name="sidebar" />
+    <script type="text/javascript" src="/mb/js/list_colls.js"></script>
   </xsl:template>
 
-  <!-- Sort direction pointer -->
-  <xsl:template name="get_sort_arrow">
-    <xsl:param name="which_sort"/>
-    <xsl:if test="$which_sort=$g_current_sort">
-      <!-- display arrow -->
-      <xsl:choose>
-        <xsl:when test="$g_current_sort_dir='a'">
-          <img width="12" height="10" src="//common-web/graphics/arrow_up.gif" alt="sort descending"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <img width="12" height="10" src="//common-web/graphics/arrow_down.gif" alt="sort ascending"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:if>
+  <xsl:template name="intro">
+    <div class="listcs-intro">
+      <p>
+        Collections are a way to group items for public or private use. 
+        The full-text of items wihin a collection can be searched 
+        independently of the full library.
+        <a href="#">Learn more about collections &raquo;</a>
+      </p>
+    </div>
   </xsl:template>
 
   <!-- Collection List -->
   <xsl:template name="coll_list">
     <xsl:param name="which_list"/>
     <xsl:param name="list_node"/>
-
-    <xsl:variable name="debug_switch">
-      <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
-    </xsl:variable>
 
     <xsl:variable name="pub_priv">
       <xsl:choose>
@@ -170,10 +87,7 @@
       </xsl:choose>
     </xsl:variable>
 
-    <div id="mbContentContainer" class="mbColListContainer" role="main">
-      <h2 class="mbContentTitle offscreen">All Collections</h2>
-
-      <xsl:call-template name="LoginMsg"/>
+    <div id="mbContentContainer" class="main list_colls" role="main">
 
       <xsl:element name="div">
         <xsl:attribute name="class">
@@ -181,56 +95,64 @@
         </xsl:attribute>
 
         <h3 class="offscreen">Sorting/Filtering Tools</h3>
-        <div class="controls clearfix" role="toolbar">
-          <div class="clearfix">
-            <div class="filters-wrap">
-              <ul class="filters">
-                <li><button rel="all" class="g-button large active">All</button></li>
-                <li><button rel="updated" class="g-button large">Recently Updated</button></li>
-                <li><button rel="featured" class="g-button large">Featured</button></li>
-                <li><button rel="my-collections" class="g-button large">My Collections</button></li>
+
+        <div class="controls" role="toolbar">
+          <div class="row">
+            <div class="span12">
+              <ul class="filters nav nav-tabs">
+                <li class="active"><a href="#" rel="all" class="active">All</a></li>
+                <li><a href="#" rel="updated" class="">Recently Updated</a></li>
+                <li><a href="#" rel="featured" class="">Featured</a></li>
+                <li><a href="#" rel="my-collections" class="">My Collections</a></li>
               </ul>
             </div>
-            <div class="find-collection">
-              <label for="q" class="offscreen">Start typing to display only collections containing search terms.</label>
-              <input style="width: 99%" class="q" type="text" placeholder="Find a collection" name="q" id="q" size="15" />
-            </div>
           </div>
-          <div class="clearfix" style="margin-top: 0.5em">
-            <div class="num_items_control" style="width: 33%; white-space: nowrap">
-              <label>Collections with at least
-                <select size="1" name="min_items" id="min_items">
-                  <option value="0" selected="selected">(all items)</option>
-                  <option value="1000">1000 items</option>
-                  <option value="500">500 items</option>
-                  <option value="250">250 items</option>
-                  <option value="100">100 items</option>
-                  <option value="50">50 items</option>
-                  <option value="25">25 items</option>
-                </select>
-              </label>
-            </div>
-            <div style="float:right; width: 33%; text-align: right">
+          <div class="row">
+            <div class="span6">
+              <div class="num_items_control" style="width: 33%; white-space: nowrap">
+                <label>Collections with at least
+                  <select size="1" name="min_items" id="min_items">
+                    <option value="0" selected="selected">(all items)</option>
+                    <option value="1000">1000 items</option>
+                    <option value="500">500 items</option>
+                    <option value="250">250 items</option>
+                    <option value="100">100 items</option>
+                    <option value="50">50 items</option>
+                    <option value="25">25 items</option>
+                  </select>
+                </label>
+              </div>
+
+              <div>
                 <label>Sort by: <select size="1" name="sort_by" id="sort_by">
-                  <option value="CollName">Collection Title</option>
-                  <option value="OwnerString">Owner</option>
-                  <option value="Updated" rel="desc">Last Updated</option>
-                  <option value="NumItems">Items (low to high)</option>
-                  <option value="NumItems" rel="desc">Items (high to low)</option>
-                </select>
-              </label>
+                    <option value="CollName">Collection Title</option>
+                    <option value="OwnerString">Owner</option>
+                    <option value="Updated" rel="desc">Last Updated</option>
+                    <option value="NumItems">Items (low to high)</option>
+                    <option value="NumItems" rel="desc">Items (high to low)</option>
+                  </select>
+                </label>
+              </div>
             </div>
-            &#160;
-            <!-- <div style="text-align: center">
-              <input type="checkbox" name="toggle_descriptions" checked="checked" /> Show descriptions
-            </div> -->
+            <div class="span6" style="text-align: right">
+
+              <div>
+                <a href="#">Create new collection</a>
+              </div>
+
+              <div class="find-collection">
+                <label for="q" class="offscreen">Start typing to display only collections containing search terms.</label>
+                <input class="q input-large" type="text" placeholder="Find a collection" name="q" id="q" size="15" />
+              </div>
+
+            </div>
+
           </div>
-          <!-- <div class="clearfix" style="text-align: left">
-          </div> -->
-          <div class="status" aria-live="assertive" aria-atomic="true">
-            <span class="active_filters"></span>
-            <a class="awesome small list-reset" href="#">Reset</a>
-          </div>
+        </div>
+
+        <div class="status" aria-live="assertive" aria-atomic="true">
+          <span class="active_filters"></span>
+          <a class="btn btn-mini list-reset" href="#">Reset</a>
         </div>
 
         <h3 class="offscreen">List of collections</h3>
@@ -285,8 +207,8 @@
             <xsl:variable name="class">
               <xsl:text>collection </xsl:text>
               <xsl:choose>
-                <xsl:when test="( position() - 1 ) mod 2 = 0">even </xsl:when>
-                <xsl:otherwise>odd </xsl:otherwise>
+                <xsl:when test="( position() - 1 ) mod 2 = 0"></xsl:when>
+                <xsl:otherwise>alt </xsl:otherwise>
               </xsl:choose>
               <xsl:if test="Owner = $g_user_id">mine </xsl:if>
               <xsl:if test="Shared = '0'">private </xsl:if>
@@ -337,6 +259,8 @@
           </xsl:for-each>
         </div>
 
+        <xsl:call-template name="LoginMsg" />
+
         <script type="text/javascript">
           var HT = HT || {};
         </script>
@@ -344,10 +268,15 @@
         <br class="clr" />
       </xsl:element>
 
-      <xsl:call-template name="FeaturedCollection" />
-
     </div>
 
+  </xsl:template>
+
+  <xsl:template name="sidebar">
+    <div class="sidebar sidebar-right">
+      <h2>Featured Collections</h2>
+      <xsl:call-template name="FeaturedCollection" />
+    </div>
   </xsl:template>
 
   <xsl:template name="LoginMsg">
@@ -445,15 +374,14 @@
       </div>
     </xsl:template>
 
-    <xsl:template name="get_page_title">
-      <xsl:text>Collections | HathiTrust Digital Library</xsl:text>
+    <xsl:template name="get-page-title">
+      <xsl:text>Collections</xsl:text>
     </xsl:template>
 
     <xsl:template name="FeaturedCollection">
 
       <script id="featured-template" type="text/x-template">
         <div class="Box" role="complementary">
-          <h2>Featured Collection</h2>
           <div>
             <!-- <h4> -->
             <span class="title">
