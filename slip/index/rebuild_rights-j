@@ -167,6 +167,8 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
+my $RIGHTS_LOGFILE_KEY = 'rights_rebuild_logfile';
+
 my $DBH = '';
 my $INIT_MSG;
 my $NOW_TIMESTAMP = Utils::Time::iso_Time('date');
@@ -313,7 +315,7 @@ sub r_r_rights_Log {
 sub flush_r_r_rights_Log {
     my ($C) = @_;
 
-    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, 'rights_rebuild_logfile', '___RUN___', 'rights', 'no_newline');
+    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $RIGHTS_LOGFILE_KEY, '___RUN___', 'rights', 'no_newline');
     $LOG_BUFFER = '';
     $Log_buffer_size = 0;
 }
