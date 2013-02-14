@@ -46,7 +46,7 @@ SHADOW RIGHTS TABLE (ht_maintenance.slip_rights) CONSTRUCTION
 Data Schema
 -----------
 
-mysql> describe mdp.j_rights;
+mysql> describe ht_maintenance.slip_rights;
 +-------------+-------------+------+-----+-------------------+-------+
 | Field       | Type        | Null | Key | Default           | Extra |
 +-------------+-------------+------+-----+-------------------+-------+
@@ -103,15 +103,16 @@ rights-j gets timestamp=D from the j_vsolr_timestamp table which
 records the newest update_time seen when rights-j last ran.
 
 rights-j parses the item ids from the bib records that are >= to the
-ht_it_update time and queries mdp.rights table for the complete set of
-rights data for that id and REPLACES INTO ht_maintenance.slip_rights with an
-update_time = the update time of the item from ht_id_diaplay.
+ht_it_update time and queries ht_repository.rights_current table for
+the complete set of rights data for that id and REPLACES INTO
+ht_maintenance.slip_rights with an update_time = the update time of
+the item from ht_id_diaplay.
 
 
-QUEUE (mdp.j_queue) IDS FOR PROCESSING [script: enqueuer-j]
+QUEUE (ht_maintenance.slip_queue) IDS FOR PROCESSING [script: enqueuer-j]
 ===========================================================
 
-mysql> describe mdp.j_queue;
+mysql> describe ht_maintenance.slip_queue;
 +-------------+-------------+------+-----+---------+-------+
 | Field       | Type        | Null | Key | Default | Extra |
 +-------------+-------------+------+-----+---------+-------+
@@ -122,16 +123,19 @@ mysql> describe mdp.j_queue;
 | proc_status | smallint(1) | NO   | MUL | 0       |       |
 +-------------+-------------+------+-----+---------+-------+
 
-enqueuer-j script inserts records from ht_maintenance.slip_rights into mdp.j_queue
-where the update_time is newer than the newest update_time seen on any
-record in ht_maintenance.slip_rights the last time it ran. Processing means to copy
-from ht_maintenance.slip_rights into mdp.j_queue to be later consumed by the index-j
-script.
+enqueuer-j script inserts records from ht_maintenance.slip_rights into
+ht_maintenance.slip_queue where the update_time is newer than the
+newest update_time seen on any record in ht_maintenance.slip_rights
+the last time it ran. Processing means to copy from
+ht_maintenance.slip_rights into ht_maintenance.slip_queue to be later
+consumed by the index-j script.
 
-The -R option builds ht_maintenance.slip_rights_temp, drops mdp.rights-j, renames
-renames ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights.
+The -R option builds ht_maintenance.slip_rights_temp, drops
+ht_maintenance.slip_rights, renames renames
+ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights.
 
-INDEXING (ht_maintenance.slip_indexed, mdp.j_errors, mdp.j_timeouts) [script: index-j]
+INDEXING (ht_maintenance.slip_indexed, ht_maintenance.slip_errors,
+ht_maintenance.slip_timeouts) [script: index-j]
 ========================================================================
 
 mysql> describe ht_maintenance.slip_indexed;
@@ -145,17 +149,18 @@ mysql> describe ht_maintenance.slip_indexed;
 | indexed_ct | smallint(3) | NO   |     | 0                   |       |
 +------------+-------------+------+-----+---------------------+-------+
 
-One or more instances of index-j take id slices from mdp.j_queue,
-build a solr document, send the document to a selected shard and
-record the facts for that id in ht_maintenance.slip_indexed.
+One or more instances of index-j take id slices from
+ht_maintenance.slip_queue, build a solr document, send the document to
+a selected shard and record the facts for that id in
+ht_maintenance.slip_indexed.
 
 Indexing Errors
 ---------------
 If there's an error (server gone, solr parse error, ocr error,
-metadata error) the id is recorded in mdp.j_errors for manual
+metadata error) the id is recorded in ht_maintenance.slip_errors for manual
 resolution and re-queuing.
 
-mysql> describe mdp.j_errors;
+mysql> describe ht_maintenance.slip_errors;
 +------------+-------------+------+-----+---------------------+-------+
 | Field      | Type        | Null | Key | Default             | Extra |
 +------------+-------------+------+-----+---------------------+-------+
@@ -171,7 +176,7 @@ mysql> describe mdp.j_errors;
 Indexing Timeouts
 -----------------
 
-mysql> describe mdp.j_timeouts;
+mysql> describe ht_maintenance.slip_timeouts;
 +--------------+-------------+------+-----+---------------------+-------+
 | Field        | Type        | Null | Key | Default             | Extra |
 +--------------+-------------+------+-----+---------------------+-------+
@@ -185,37 +190,41 @@ mysql> describe mdp.j_timeouts;
 
 
 If there's an HTTP timeout, the document is assumed to be successfully
-processed and is recorded in ht_maintenance.slip_indexed but also in mdp.j_timeouts
-in case it was not successfully processed.  Timeouts are retried at
-the end of the indexing run using the shard number from ht_maintenance.slip_indexed.
+processed and is recorded in ht_maintenance.slip_indexed but also in
+ht_maintenance.slip_timeouts in case it was not successfully
+processed.  Timeouts are retried at the end of the indexing run using
+the shard number from ht_maintenance.slip_indexed.
 
 
 SYNCHRONIZING VuFind Solr vs. ht_maintenance.slip_indexed vs. LSS Solr
-========================================================
+======================================================================
 
 Assertion: If (1) - (3) are run in order everything should be synched.
 
-(1) Make ht_maintenance.slip_rights match VuFind Solr.  Query VuFind for
-ht_id_update:[0000000 TO *], build ht_maintenance.slip_rights_temp, drop
-ht_maintenance.slip_rights, rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
+(1) Make ht_maintenance.slip_rights match VuFind Solr.  Query VuFind
+for ht_id_update:[0000000 TO *], build
+ht_maintenance.slip_rights_temp, drop ht_maintenance.slip_rights,
+rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
     
        % rights-j -R
-       NOTE: 8.1 hours for 5,242,300 docs
+       NOTE: ~1M docs/hour 
 
 
 (2) Make j_indexed match the Solr shards.  Query Solr one shard at a
-time, add ids to ht_maintenance.slip_indexed_temp.  De-dup j_indexed_temp.  If an id
-is duped in ht_maintenance.slip_indexed_temp it must be a duplicate in the Solr
-index because j_indexed_temp was built from the Solr index: delete it
-from the Solr index. Delete from ht_maintenance.slip_indexed for the given
-run. Insert de-duped j_indexed_temp rows into j_indexed.
+time, add ids to ht_maintenance.slip_indexed_temp.  De-dup
+j_indexed_temp.  If an id is duped in ht_maintenance.slip_indexed_temp
+it must be a duplicate in the Solr index because j_indexed_temp was
+built from the Solr index: delete it from the Solr index. Delete from
+ht_maintenance.slip_indexed for the given run. Insert de-duped
+j_indexed_temp rows into j_indexed.
 
        % rebuild-j -r run_number
        NOTE: 5.1 hours for 5M docs
 
-(3) Queue ids in ht_maintenance.slip_rights missing from ht_maintenance.slip_indexed. Ids that get
-queued up in this step must be missing from Solr since ht_maintenance.slip_indexed
-equals the ids in Solr. ***This cannot be done while indexing is in progress.***
+(3) Queue ids in ht_maintenance.slip_rights missing from
+ht_maintenance.slip_indexed. Ids that get queued up in this step must
+be missing from Solr since ht_maintenance.slip_indexed equals the ids
+in Solr. ***This cannot be done while indexing is in progress.***
 
        % sync-j -rN -m rightsNINindexed 
        NOTE: 3.4 hours for 5M docs

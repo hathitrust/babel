@@ -120,7 +120,7 @@ $C->set_object('MdpConfig', $CONFIG);
 
 my $db;
 eval {
-    $db = new Database('ht_maintenance');
+    $db = new Database('ht_web');
 };
 if ($@) {
     __output(qq{database connect fail\n});

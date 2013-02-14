@@ -54,7 +54,7 @@ some barcodes is handled downstream.
 
 # ---------------------------------------------------------------------
 sub get_item_updated_nid_slice_as_of {
-    my ($C, $dbh, $query_timestamp, $offset, $slice_size, $Rebuild) = @_;
+    my ($C, $dbh, $query_timestamp, $offset, $slice_size) = @_;
     
     my $anomalies = 0;
     my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
@@ -79,19 +79,11 @@ sub get_item_updated_nid_slice_as_of {
         my ($rights_hashref, $anomaly) = (undef, 0);
         my $want_this_nid = 0;
         
-        if ($Rebuild) {
-            # Want all nids.
+        # Want only nids that are newer or equal to timestamp.
+        if ($timestamp_of_nid >= $query_timestamp) {
             ($rights_hashref, $anomaly) = 
-                process_nid_from_Solr_query_result($C, $dbh, $hash_ref);
+              process_nid_from_Solr_query_result($C, $dbh, $hash_ref);
             $want_this_nid = 1;
-        }
-        else {
-            # Want only nids that are newer or equal to timestamp.
-            if ($timestamp_of_nid >= $query_timestamp) {
-                ($rights_hashref, $anomaly) = 
-                    process_nid_from_Solr_query_result($C, $dbh, $hash_ref);
-                $want_this_nid = 1;
-            }
         }        
     
         if ($want_this_nid) {

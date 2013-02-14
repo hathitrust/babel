@@ -6,7 +6,7 @@ rights-j
 
 =head USAGE
 
-% rights-j [-T][-B][-I][-d{1|2}]
+% rights-j -r run [-T][-B][-I][-d{1|2}]
 
 =head DESCRIPTION
 
@@ -70,9 +70,6 @@ enqueuer-j script processes records with an update_time newer than the
 newest update_time seen on any record the last time it ran. Processing
 means to copy from slip-rights into slip-queue to be later consumed
 by the index-j script.
-
-The -R option drops the entire slip_rights_temp table, rebuilds it and
-renames it to slip_rights.
 
 =head1 OPTIONS
 
@@ -150,15 +147,13 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j -r run [-B|-R|-F<file>] [-n][-f][-T] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j -r run [-B|-F<file>] [-n][-f][-T] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -f force email\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -F insert IDs from file (missing from slip_rights)\n};
     $s .= qq{           where -n is check_only, no inserts to slip_rights\n};
     $s .= qq{     -B build from last vSolr timestamp for -r run\n};
     $s .= qq{           where -n is check_only, no inserts to slip_rights\n};
-    $s .= qq{     -R re-build slip_rights_temp from 0000000\n};
-    $s .= qq{           where -n is check_only, NO DROP of slip_rights\n};
     $s .= qq{     -d options\n};
     $s .= qq{           1: me\n};
     $s .= qq{           2: me,lsdb\n};
@@ -172,7 +167,7 @@ sub r_get_usage {
 
 our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_F, $opt_r, $opt_f);
 
-my $ops = getopts('BRd:nTI:r:fF:');
+my $ops = getopts('Bd:nTI:r:fF:');
 my $FORCE_EMAIL = defined($opt_f);
 
 if ($opt_d) {
@@ -203,7 +198,6 @@ use constant STOPSLIP_SLEEP_WAIT => 60;
 
 my $BUILD = 0;
 my $RUN = $opt_r;
-my $REBUILD = 0;
 my $CHECK = 0;
 my $ID_INSERT_FILE;
 
@@ -223,9 +217,6 @@ if (defined($opt_F)){
 elsif (defined($opt_B)) {
     $BUILD = 1;
 }
-elsif (defined($opt_R)) {
-    $REBUILD = 1;
-}
 else {
     print r_get_usage();
     exit 0;
@@ -234,8 +225,7 @@ else {
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-# log to different files for incremental build vs. full rebuild
-my $RIGHTS_LOGFILE_KEY = ($REBUILD ? 'rights_rebuild_logfile' : 'rights_logfile');
+my $RIGHTS_LOGFILE_KEY = 'rights_logfile';
 
 # Do not try to build shadow rights table while I am running already
 my $Lock_File = "/tmp/rights-lock.sem";
@@ -256,7 +246,7 @@ END {
 # Flush i/o
 $| = 1;
 
-my $SLICE_SIZE = ($REBUILD ? 100 : 1000);
+my $SLICE_SIZE = 1000;
 
 my $C = new Context;
 
@@ -266,21 +256,7 @@ $C->set_object('MdpConfig', $config);
 
 my $db;
 eval {
-    if ($REBUILD) {
-        my $whoami = `whoami`;
-        chomp($whoami);
-        print "Enter passwd: ";
-        my $pw = Password::get_password();
-        print "\n";
-        unless ($pw) {
-            print "missing passwd\n";
-            exit 0;
-        }
-        $db = new Database($whoami, $pw, 'ht_maintenance', 'mysql-sdr');
-    }
-    else {
-        $db = new Database('ht_maintenance');
-    }
+    $db = new Database('ht_maintenance');
 };
 if ($@) {
     SLIP_Utils::Common::Log_database_connection_error($C, 'rights-j', $@);
@@ -293,7 +269,7 @@ my $DBH = $C->get_object('Database')->get_DBH();
 my $INIT_MSG;
 
 eval {
-    if (r_rights_enabled($C, $DBH) || $INTERACTIVE || $REBUILD) {
+    if (r_rights_enabled($C, $DBH) || $INTERACTIVE) {
         my $now_timestamp = SLIP_Utils::Common::get_now_ISO_timestamp();
 
         if ($ID_INSERT_FILE) {
@@ -321,32 +297,7 @@ eval {
             # Go
             my ($process_start, $totals_hashref) = process_rights($C, $DBH, $RUN, $last_timestamp, $CHECK, 0);
 
-	    r_final_report($C, $DBH, $process_start, $totals_hashref, $CHECK, $REBUILD);
-        }
-        elsif ($REBUILD) {
-            # Build from 00000000
-            $INIT_MSG = qq{Today is $now_timestamp. Rebuild from '00000000'. }
-                . qq{Query will be ['00000000' TO *]};
-
-            if ($CHECK) {
-                __confirm("\n$INIT_MSG\nCHECK=1 CREATE slip_rights_temp\n  => NO RENAME slip_rights_temp, NO DROP slip_rights? [N] ");
-            }
-            else {
-                __confirm("\n$INIT_MSG\nCHECK=0 RENAME slip_rights_temp to slip_rights\n  => DROP slip_rights? [N] ");
-            }
-
-            # DROP/CREATE slip_rights_temp
-            initialize_j_rights_temp($C, $DBH);
-            # Always insert into slip_rights_temp by forcing CHECK=0 here
-	    my ($process_start, $totals_hashref) = process_rights($C, $DBH, undef, '00000000', 0, 1);
-
-	    r_final_report($C, $DBH, $process_start, $totals_hashref, $CHECK, $REBUILD);
-
-            # DO NOT DROP slip_rights if CHECK==1. slip_rights_temp is left
-            # behind until next (-R) run.
-            if (! $CHECK) {
-                DROP_j_rights_RENAME_j_rights_temp($C, $DBH);
-            }
+	    r_final_report($C, $DBH, $process_start, $totals_hashref, $CHECK);
         }
 
         # Flush remaining logs to disk
@@ -464,7 +415,7 @@ sub repair_insert_id {
     $insert_hashref->{'sysid'} = $sysid;
     $insert_hashref->{'timestamp_of_nid'} = $ht_update_time;
 
-    my $case = Db::Replace_j_rights_id($C, $dbh, $insert_hashref, $Check, 0);
+    my $case = Db::Replace_j_rights_id($C, $dbh, $insert_hashref, $Check);
     if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
         $s = qq{Repair: Software error: invalid case value=$case } . Utils::Time::iso_Time();
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
@@ -496,9 +447,7 @@ use constant LOG_BUFFER_MAX => 1000;
 sub r_rights_Log {
     my ($C, $s, $key) = @_;
 
-    unless ($REBUILD) {
-        return if ($CHECK);
-    }
+    return if ($CHECK);
 
     my $ss = qq{$s at: } . Utils::Time::iso_Time() . qq{\n};
     $LOG_BUFFER .= $ss;
@@ -511,9 +460,7 @@ sub r_rights_Log {
 sub flush_r_rights_Log {
     my ($C, $key) = @_;
 
-    unless ($REBUILD) {
-        return if ($CHECK);
-    }
+    return if ($CHECK);
 
     SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $key, '___RUN___', 'rights', 'no_newline');
     $LOG_BUFFER = '';
@@ -537,38 +484,6 @@ sub __hiresTime
     return sprintf("%.8f", $seconds + $fraction);
 }
 
-# ---------------------------------------------------------------------
-
-=item initialize_j_rights_temp
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub initialize_j_rights_temp {
-    my ($C, $dbh) = @_;
-    Db::initialize_j_rights_temp($C, $dbh);
-}
-
-# ---------------------------------------------------------------------
-
-=item DROP_j_rights_RENAME_j_rights_temp
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub DROP_j_rights_RENAME_j_rights_temp {
-    my ($C, $dbh) = @_;
-    Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
-
-    my $s = "Rebuild: drop slip_rights, rename slip_rights_temp";
-    __output("$s\n\n");
-    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-
-}
 
 # ---------------------------------------------------------------------
 
@@ -655,7 +570,7 @@ for IDs.  This timestamp will not be updated until we successfully
 process the entire Solr range query :[$timestamp -2d TO *].  If FAIL,
 we must redo:
 
-% rights-j -B | -R
+% rights-j -B
 
 Query for a day in the past with a +ve $INCREMENT to prevent id loss
 updates to the vSolr index in the *same* day *after* rights-j runs on
@@ -670,7 +585,7 @@ corrected manually.
 
 # ---------------------------------------------------------------------
 sub process_rights {
-    my ($C, $dbh, $run, $timestamp, $Check, $Rebuild) = @_;
+    my ($C, $dbh, $run, $timestamp, $Check) = @_;
 
     my $process_start = __hiresTime();
 
@@ -714,9 +629,9 @@ sub process_rights {
         my $slice_start = __hiresTime();
 
         # Get nids from vSolr bib records that are newer than the last
-        # time we looked (or all of them if REBUILDing).
+        # time we looked.
         my ($ref_to_arr_of_hashref, $bib_record_ct, $anomalies) =
-            vSolr::get_item_updated_nid_slice_as_of($C, $dbh, $query_timestamp, $offset, $SLICE_SIZE, $Rebuild);
+            vSolr::get_item_updated_nid_slice_as_of($C, $dbh, $query_timestamp, $offset, $SLICE_SIZE);
 
         $slice++;
         $totals{'bib_record_ct'} += $bib_record_ct;
@@ -738,7 +653,7 @@ sub process_rights {
         r_rights_Log($C, $s2, $RIGHTS_LOGFILE_KEY);
 
         foreach my $hashref (@$ref_to_arr_of_hashref) {
-            my $case = Db::Replace_j_rights_id($C, $dbh, $hashref, $Check, $Rebuild);
+            my $case = Db::Replace_j_rights_id($C, $dbh, $hashref, $Check);
 
             if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
                 my $s3 = qq{Software error: invalid case value=$case } . Utils::Time::iso_Time();
@@ -751,7 +666,7 @@ sub process_rights {
             r_event_report($C, $dbh, $offset, $hashref, $case);
 
             # Add updated and moved ids to the Collection Builder metadata update queue
-            my $skip_metadata_queue = ($Check || $Rebuild);
+            my $skip_metadata_queue = $Check;
             if (! $skip_metadata_queue) {
                 if ( grep(/^$case$/, ('MOVED', 'UPDATED')) ) {
                     queue_id_for_metadata_update($C, $dbh, $hashref);
@@ -766,14 +681,13 @@ sub process_rights {
     }
 
     # Update the vSolr timestamp to the MAX(update_time) in
-    # slip_rights{_temp}. We will backtrack by 2 days from this value
+    # slip_rights. We will backtrack by 2 days from this value
     # when next we run.
-    Db::update_vSolr_timestamp($C, $dbh, $Rebuild)
+    Db::update_vSolr_timestamp($C, $dbh)
         unless $Check;
 
   REPAIR:
-    process_rights_from_errors($C, $dbh, $run, $Check, \%totals)
-      unless $Rebuild;
+    process_rights_from_errors($C, $dbh, $run, $Check, \%totals);
 
     return ($process_start, \%totals);
 }
@@ -864,13 +778,9 @@ sub r_slice_report {
     my $idsPsec = sprintf("%.2f", ($slice_ids + $anomalies)/$slice_elapsed);
 
     my $size = Db::Select_count_from_j_rights($C, $dbh);
-    my $temp_size = 0;
-    if ($REBUILD) {
-        $temp_size = Db::Select_count_from_j_rights_temp($C, $dbh);
-    }
 
     my $s =
-        qq{Checkpoint: slip_rights size=$size slip_rights_temp size=$temp_size off=$offset\n}
+        qq{Checkpoint: slip_rights size=$size off=$offset\n}
             . qq{  slice_ids=$slice_ids anom=$anomalies new=$sref->{'NEW'} noop=$sref->{'NOOP'} upd=$sref->{'UPDATED'} mov=$sref->{'MOVED'}\n}
                 . qq{  total_ids=$tref->{'ids'} total_anom=$anomalies total_new=$tref->{'NEW'} total_noop=$tref->{'NOOP'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'} total_meta_updates=$tref->{'meta_upd'}\n}
                     . qq{  rate=$idsPsec ids/sec };
@@ -960,27 +870,20 @@ Description
 
 # ---------------------------------------------------------------------
 sub r_final_report {
-    my ($C, $dbh, $process_start, $tref, $Check, $Rebuild) = @_;
+    my ($C, $dbh, $process_start, $tref, $Check) = @_;
 
     my $process_elapsed = __hiresTime() - $process_start;
     my $process_elapsed_min = sprintf("%.2f", $process_elapsed/60);
     my $idsPsec = sprintf("%.2f", ($tref->{'ids'} + $tref->{'anomalies'})/$process_elapsed);
 
     my $size = Db::Select_count_from_j_rights($C, $dbh);
-    my $temp_size = 0;
-    if ($Rebuild) {
-        $temp_size = Db::Select_count_from_j_rights_temp($C, $dbh);
-    }
-
     my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
 
     my $run_total = $tref->{'NEW'} + $tref->{'UPDATED'} + $tref->{'MOVED'};
-    my $repair_report = __get_repair_report($tref)
-	unless($Rebuild);
+    my $repair_report = __get_repair_report($tref);
 
-    my $r = $Rebuild ? '(before slip_rights_temp rename)' : '';
     my $s =
-        qq{\nUpdate$r: slip_rights size=$size slip_rights_temp size=$temp_size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
+        qq{\nUpdate: slip_rights size=$size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
             . qq{\tthis_run_total=$run_total :: total_new=$tref->{'NEW'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'}\n}
                 . qq{\ttotal_noop=$tref->{'NOOP'} total_anom=$tref->{'anomalies'} total_meta_updates=$tref->{'meta_upd'}\n}
                     . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min\n}
@@ -1007,7 +910,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009-2010 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-2010, 2013 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
