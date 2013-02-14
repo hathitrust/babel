@@ -181,10 +181,11 @@ margin-right: 2px;
     a, span {
         font-weight: bold;
         color: #5e5e5e;
+        text-decoration: none;
     }
 
     a:hover {
-        text-decoration: none;
+        text-decoration: underline;
         border-bottom: none;
         color: #b15a0d;        
     }

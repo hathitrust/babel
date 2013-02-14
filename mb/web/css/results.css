@@ -198,14 +198,15 @@ dl.collection dd {
 .tabs a, .tabs span {
   font-weight: bold;
   color: #5e5e5e;
-}
-/* line 186, ../sass/results.scss */
-.tabs a:hover {
   text-decoration: none;
+}
+/* line 187, ../sass/results.scss */
+.tabs a:hover {
+  text-decoration: underline;
   border-bottom: none;
   color: #b15a0d;
 }
-/* line 192, ../sass/results.scss */
+/* line 193, ../sass/results.scss */
 .tabs ul {
   text-align: left;
   list-style: none;
@@ -214,14 +215,14 @@ dl.collection dd {
   line-height: 24px ;
   line-height: 2.4rem ;
 }
-/* line 199, ../sass/results.scss */
+/* line 200, ../sass/results.scss */
 .tabs ul:after, .tabs ul:before {
   display: table;
   line-height: 0;
   content: "";
   clear: both;
 }
-/* line 206, ../sass/results.scss */
+/* line 207, ../sass/results.scss */
 .tabs ul li {
   float: left;
   margin: 0 0px;
@@ -236,49 +237,49 @@ dl.collection dd {
   margin-bottom: -1px;
   font-size: 14px;
 }
-/* line 220, ../sass/results.scss */
+/* line 221, ../sass/results.scss */
 .tabs ul li:first-child {
   margin-left: 0;
 }
-/* line 224, ../sass/results.scss */
+/* line 225, ../sass/results.scss */
 .tabs ul li.active {
   border: 1px solid #aaaaaa;
   border-bottom: 1px solid transparent;
   background: #fff;
 }
-/* line 229, ../sass/results.scss */
+/* line 230, ../sass/results.scss */
 .tabs ul li.active a {
   color: #4f4f4f;
 }
 
-/* line 247, ../sass/results.scss */
+/* line 248, ../sass/results.scss */
 div > h3:first-child {
   margin-top: 0;
 }
 
-/* line 251, ../sass/results.scss */
+/* line 252, ../sass/results.scss */
 .toolbar {
   margin-bottom: 16px ;
   margin-bottom: 1.6rem ;
   padding: 8px ;
   padding: 0.8rem ;
 }
-/* line 252, ../sass/results.scss */
+/* line 253, ../sass/results.scss */
 .toolbar label {
   display: inline-block;
 }
-/* line 259, ../sass/results.scss */
+/* line 260, ../sass/results.scss */
 .toolbar.alt {
   border: 2px solid #d2d2d1;
 }
 
-/* line 265, ../sass/results.scss */
+/* line 266, ../sass/results.scss */
 #SortWidget {
   display: inline-block;
   margin-right: 20px ;
   margin-right: 2rem ;
 }
-/* line 268, ../sass/results.scss */
+/* line 269, ../sass/results.scss */
 #SortWidget select {
   width: auto;
   margin-bottom: 0;
@@ -286,26 +287,26 @@ div > h3:first-child {
   font-size: 1.2rem ;
 }
 
-/* line 277, ../sass/results.scss */
+/* line 278, ../sass/results.scss */
 .PageInfo {
   display: inline-block;
 }
-/* line 280, ../sass/results.scss */
+/* line 281, ../sass/results.scss */
 .PageInfo select {
   width: auto;
   margin-bottom: 0;
   font-size: 12px ;
   font-size: 1.2rem ;
 }
-/* line 286, ../sass/results.scss */
+/* line 287, ../sass/results.scss */
 .PageInfo .resultsPerPage {
   display: inline-block;
 }
-/* line 290, ../sass/results.scss */
+/* line 291, ../sass/results.scss */
 .PageInfo .pagingNav {
   display: inline-block;
 }
-/* line 294, ../sass/results.scss */
+/* line 295, ../sass/results.scss */
 .PageInfo .pagingNav ul {
   list-style: none;
   margin-bottom: 0;
@@ -313,7 +314,7 @@ div > h3:first-child {
   margin-left: 2rem ;
   padding: 0;
 }
-/* line 301, ../sass/results.scss */
+/* line 302, ../sass/results.scss */
 .PageInfo .pagingNav ul li {
   display: inline-block;
   margin: 0;
@@ -329,24 +330,24 @@ div > h3:first-child {
   padding-bottom: 0.2rem ;
 }
 
-/* line 315, ../sass/results.scss */
+/* line 316, ../sass/results.scss */
 .selectAll {
   display: inline-block;
 }
 
-/* line 319, ../sass/results.scss */
+/* line 320, ../sass/results.scss */
 .SelectedItemActions {
   display: inline-block;
   margin-left: 40px ;
   margin-left: 4rem ;
 }
-/* line 323, ../sass/results.scss */
+/* line 324, ../sass/results.scss */
 .SelectedItemActions select {
   width: auto;
   margin-bottom: 0;
 }
 
-/* line 331, ../sass/results.scss */
+/* line 332, ../sass/results.scss */
 #listisFooter {
   display: none;
 }

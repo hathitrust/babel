@@ -219,7 +219,7 @@
   </xsl:template>
 
   <xsl:template name="Refine">
-    <div class="tabs">
+    <div>
       <xsl:variable name="Limit">
         <xsl:value-of select="/MBooksTop/LimitToFullText/Limit"/>
       </xsl:variable>
@@ -227,7 +227,7 @@
       <xsl:choose>
         <xsl:when test ="$Limit = 'YES'">
           <!-- we are currently showing the result of narrow to full text so we want a URL to all -->
-          <ul>
+          <ul class="nav nav-tabs">
             <li class="viewall">
               <xsl:element name="a">
                 <xsl:attribute name="href">
@@ -251,7 +251,7 @@
         <xsl:otherwise>
           <!-- we are currently showing all so we want to show a url for  narrow to full text  -->
           
-          <ul class="refineTabs">
+          <ul class="nav nav-tabs">
             <li class="viewall active">
               <span>
                 <xsl:text>All Items (</xsl:text>
