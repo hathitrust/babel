@@ -1104,7 +1104,7 @@
       <div class="span2 pull9">
         <div class="cover">
           <!-- should be google book cover -->
-          <img src="http://babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ItemID};seq=1;width=60" />
+          <img src="http://babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ItemID};seq=1;width=60" alt="" aria-hidden="true" />
         </div>
         <div class="select">
           <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
