@@ -652,10 +652,10 @@ var ListBrowser = {
         
         var change_sharing = ( data.owner_affiliation 
                                ?  
-                               '<a href="${href}" class="awesome thin small ${bg} toggle-sharing ${status}"><span class="sharing-status ${status}">${shared}</span> : Make ${altshared}</a>' + '&#160;&#160;' 
+                               '<a href="${href}" class="btn btn-mini ${bg} toggle-sharing ${status}"><span class="sharing-status ${status}">${shared}</span> : Make ${altshared}</a>' + '&#160;&#160;' 
                                : "" );
         var options = 
-          '<span class="options">' + change_sharing + '<a href="#" data-delete-href="${mine}" class="awesome thin small grey delete-collection">Delete Collection</a>' +
+          '<span class="options">' + change_sharing + '<a href="#" data-delete-href="${mine}" class="btn btn-mini delete-collection">Delete Collection</a>' +
           '</span>'
         options = options.
                     replace('${collid}',data.collid).
@@ -663,7 +663,7 @@ var ListBrowser = {
                     replace('${shared}', data.shared).
                     replace('${altshared}', data.altshared).
                     replace(/\$\{status\}/g, data.shared.toLowerCase()).
-                    replace('${bg}', data.shared == 'Public' ? 'black' : 'grey').
+                    replace('${bg}', data.shared == 'Public' ? 'btn-inverse' : '').
                     replace('${mine}', data.mine);
         
         html.push(options);

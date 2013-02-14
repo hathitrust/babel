@@ -238,11 +238,11 @@
                       </xsl:choose>
                     </xsl:variable>
                     <span class="options">
-                      <a href="mb?a=editst;shrd={Sharing};c={CollId};colltype=priv;debug={//CurrentCgi/Param[@name='debug']}" class="awesome thin small grey toggle-sharing">
+                      <a href="mb?a=editst;shrd={Sharing};c={CollId};colltype=priv;debug={//CurrentCgi/Param[@name='debug']}" class="btn btn-mini toggle-sharing">
                         <span class="sharing-status {translate($shared, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')}"><xsl:value-of select="$shared" /></span> : Make <xsl:value-of select="$altshared" />
                       </a>
                       <xsl:text>&#160;&#160;</xsl:text>
-                      <a href="#" data-delete-href="{DeleteCollHref}" class="awesome thin small grey delete-collection">Delete Collection</a>
+                      <a href="#" data-delete-href="{DeleteCollHref}" class="btn btn-mini delete-collection">Delete Collection</a>
                     </span>
                   </xsl:if>
                 </p>
