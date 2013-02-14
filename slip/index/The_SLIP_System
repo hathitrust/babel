@@ -196,8 +196,18 @@ processed.  Timeouts are retried at the end of the indexing run using
 the shard number from ht_maintenance.slip_indexed.
 
 
-SYNCHRONIZING VuFind Solr vs. ht_maintenance.slip_indexed vs. LSS Solr
-======================================================================
+SYNCHRONIZING
+=============
+
+The model is
+
+The data flow proceeds from
+
+Vufind_Solr(slip_vufind_timestamp) {rebuild_rights-j}
+   -> slip_rights(slip_rights_timestamp)
+         -> slip_queue[run]
+               -> slip_indexed[run] or slip_errors[run] {rebuild-j}
+                     -> Solr
 
 Assertion: If (1) - (3) are run in order everything should be synched.
 
@@ -206,7 +216,7 @@ for ht_id_update:[0000000 TO *], build
 ht_maintenance.slip_rights_temp, drop ht_maintenance.slip_rights,
 rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
     
-       % rights-j -R
+       % rebuild_rights-j
        NOTE: ~1M docs/hour 
 
 
@@ -214,9 +224,9 @@ rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
 time, add ids to ht_maintenance.slip_indexed_temp.  De-dup
 j_indexed_temp.  If an id is duped in ht_maintenance.slip_indexed_temp
 it must be a duplicate in the Solr index because j_indexed_temp was
-built from the Solr index: delete it from the Solr index. Delete from
-ht_maintenance.slip_indexed for the given run. Insert de-duped
-j_indexed_temp rows into j_indexed.
+built from the Solr index: delete all but one of the duplicates from
+the Solr index. Delete from ht_maintenance.slip_indexed for the given
+run. Insert de-duped j_indexed_temp rows into j_indexed.
 
        % rebuild-j -r run_number
        NOTE: 5.1 hours for 5M docs

@@ -1,14 +1,14 @@
 #!/usr/bin/env perl
 
-=head NAME
+=head1 NAME
 
 rebuild_rights-j
 
-=head USAGE
+=head1 USAGE
 
 % rebuild_rights-j
 
-=head DESCRIPTION
+=head1 DESCRIPTION
 
 See also rights-j
 
@@ -19,6 +19,9 @@ database password.
 Phase 1 = 5.7 hours for 5980242 bib records (Thu Feb 14 10:09:54 2013)
 Phase 2 = 10 hours for 10.5M ids
 
+NOTE: Disable all indexing jobs in crontab.
+
+
 =head1 OPTIONS
 
 =over 8
@@ -28,6 +31,8 @@ Phase 2 = 10 hours for 10.5M ids
 see help
 
 =back
+
+=over
 
 =cut
 
@@ -662,6 +667,7 @@ sub r_r_final_report {
 
 1;
 
+=back
 
 =head1 AUTHOR
 

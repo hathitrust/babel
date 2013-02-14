@@ -34,6 +34,8 @@ and reindexing is attempted.  It may or may not succeed.
 
 This script is strictly interactive, to be run from the command line.
 
+NOTE: Disable all indexing jobs in crontab.
+
 
 OTHER MODES OF sync-j
 
@@ -47,6 +49,8 @@ be inferred to also be missing from the Solr index.
 =over 8
 
 =back
+
+=over
 
 =cut
 
@@ -72,12 +76,12 @@ use Time::HiRes;
 # App
 use Utils;
 use Utils::Time;
-use Utils::GlobalSwitch;
 use Debug::DUtils;
 
 use Context;
 use MdpConfig;
 use Database;
+use Password;
 
 use Search::Site;
 use Search::Constants;
@@ -93,16 +97,9 @@ use SLIP_Utils::Log;
 
 my $INTERACTIVE = $ENV{TERM};
 
-if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("Cannot sync. STOPSLIP in place!!\n");
-        exit 0;
-    }
+if (! $INTERACTIVE) {
+    exit 0;
 }
-else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
-}
-
 
 # ---------------------------------------------------------------------
 
@@ -170,18 +167,7 @@ my $C = new Context;
 my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $CONFIG);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    my $s = qq{database connect fail};
-    __output("$s\n");
-    exit 1;
-}
-
-$C->set_object('Database', $db);
-my $DBH = $db->get_DBH();
+my $DBH = s__connect($C);
 
 # No index-j (producers) enabled
 my @num_shards_list = $CONFIG->get('num_shards_list');
@@ -228,6 +214,32 @@ exit 0;
 #
 # --------------------- S u b r o t i n e s   -------------------------
 #
+
+sub s__connect {
+    my $C = shift;
+    
+    my $db;
+    eval {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht_web', 'mysql-sdr');
+    };
+    if ($@) {
+        SLIP_Utils::Common::Log_database_connection_error($C, 'sync-j', $@);
+        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    }
+    
+    $C->set_object('Database', $db);
+    my $dbh = $C->get_object('Database')->get_DBH();
+    return $dbh;
+}
 
 # ---------------------------------------------------------------------
 
@@ -296,7 +308,8 @@ sub Test_rightsNINindexed {
 
 =item Report_indexedNINrights
 
-Report ids in slip_indexed missing from slip_rights
+Report ids in slip_indexed missing from slip_rights.  These are the
+"vanished" IDs.
 
 =cut
 
@@ -350,36 +363,37 @@ sub Log_sync {
 
 1;
 
-#
-# =head1 AUTHOR
-#
-# Phillip Farber, University of Michigan, pfarber@umich.edu
-#
-# =head1 COPYRIGHT
-#
-# Copyright 2008-10 ©, The Regents of The University of Michigan, All Rights Reserved
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject
-# to the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-# =cut
-#
-#
+=back
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-10, 2013 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
 
 

@@ -12,7 +12,11 @@ see usage
 
 Rebuild slip_indexed based on what is actually present in the index
 removing duplicates in slip_indexed and Solr. Cannot be run until queue
-is indexed and index is optimized. Should only take a few minutes.
+is indexed and index is optimized. 
+
+Elapsed < 1 hour.
+
+NOTE: Disable all indexing jobs in crontab.
 
 =head1 OPTIONS
 
@@ -24,9 +28,16 @@ Debugging
 
 =back
 
+=over
+
 =cut
 
 use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -42,8 +53,8 @@ use Time::HiRes;
 # App
 use Utils;
 use Utils::Time;
-use Utils::GlobalSwitch;
 use Debug::DUtils;
+use Password;
 
 use Context;
 use MdpConfig;
@@ -62,14 +73,8 @@ use SLIP_Utils::Log;
 
 my $INTERACTIVE = $ENV{TERM};
 
-if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("Cannot do rebuild. STOPSLIP in place!!\n");
-        exit 0;
-    }
-}
-else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+if (! $INTERACTIVE) {
+    exit 0;
 }
 
 
@@ -118,29 +123,7 @@ my $C = new Context;
 my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $CONFIG);
 
-my $db;
-eval {
-    $db = new Database('ht_web');
-};
-if ($@) {
-    __output(qq{database connect fail\n});
-    exit 1;
-}
-
-$C->set_object('Database', $db);
-my $DBH = $db->get_DBH();
-
-# No indexing enabled
-my $driver_enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $DBH, $RUN);
-if ($driver_enabled) {
-    my $stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $DBH, $RUN);
-    if ($stage ne 'Build_Wait') {
-        __output(qq{WARNING: run=$RUN driver-j active: stage=$stage. Unsafe to query Solr! ... Exit.\n});
-        exit 0;
-    }
-}
-
-__confirm(qq{$C_MSG OK? [N] });
+my $DBH = r__connect($C);
 
 eval {
     rebuild_indexed($C, $DBH, $RUN);
@@ -156,7 +139,31 @@ exit 0;
 # --------------------- S u b r o t i n e s   -------------------------
 #
 
-
+sub r__connect {
+    my $C = shift;
+    
+    my $db;
+    eval {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht_web', 'mysql-sdr');
+    };
+    if ($@) {
+        SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild-j', $@);
+        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    }
+    
+    $C->set_object('Database', $db);
+    my $dbh = $C->get_object('Database')->get_DBH();
+    return $dbh;
+}
 
 
 # ---------------------------------------------------------------------
@@ -252,7 +259,7 @@ sub rebuild_indexed {
         
         while (1) {
             my $query = qq{q=*:*&fl=id&start=$start&rows=$R_SLICE_SIZE};
-            my $result = `$ENV{SDRROOT}/slip/index/query-j -r$run -D -R$shard -q'$query' -N`;
+            my $result = `$ENV{SDRROOT}/slip/index/query-j -r$run -B -R$shard -q'$query' -N`;
             my @ids = ($result =~ m,<str name="id">(.*?)</str>,g);
             
             my $rows_returned = scalar(@ids);
@@ -332,7 +339,7 @@ sub rebuild_indexed {
         Log_rebuild($C, $run, $s);
     }
     
-    $s = qq{rebuild-j $C_MSG: checked=$total_item_ct deleted=$total_Delete_ct};
+    $s = qq{rebuild-j $C_MSG: checked=$total_item_ct duplicated Solr docs deleted=$total_Delete_ct};
     __output(qq{\n$s\n});
     Log_rebuild($C, $run, $s);
 }
@@ -437,36 +444,37 @@ sub __rb_Delete_document {
 
 1;
 
-#
-# =head1 AUTHOR
-#
-# Phillip Farber, University of Michigan, pfarber@umich.edu
-#
-# =head1 COPYRIGHT
-#
-# Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject
-# to the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-# =cut
-#
-#
+=back
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
 
 

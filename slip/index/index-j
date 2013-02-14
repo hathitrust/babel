@@ -47,6 +47,8 @@ see help
 
 =back
 
+=over
+
 =cut
 
 use strict;
@@ -856,6 +858,7 @@ sub Log_dealloc {
 
 1;
 
+=back
 
 =head1 AUTHOR
 
