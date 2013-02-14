@@ -225,6 +225,16 @@
       </xsl:variable>
 
       <xsl:choose>
+
+        <xsl:when test="$AllItemsCount = $FullTextCount">
+          <!-- only full text -->
+          <ul class="nav nav-tabs">
+            <li class="viewall active">
+              <span>All Items (<xsl:value-of select="$AllItemsCount" />)</span>
+            </li>
+          </ul>
+        </xsl:when>
+
         <xsl:when test ="$Limit = 'YES'">
           <!-- we are currently showing the result of narrow to full text so we want a URL to all -->
           <ul class="nav nav-tabs">
