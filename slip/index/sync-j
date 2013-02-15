@@ -229,7 +229,7 @@ sub s__connect {
             print "missing passwd\n";
             exit 0;
         }
-        $db = new Database($whoami, $pw, 'ht_web', 'mysql-sdr');
+        $db = new Database($whoami, $pw, 'ht', 'mysql-sdr');
     };
     if ($@) {
         SLIP_Utils::Common::Log_database_connection_error($C, 'sync-j', $@);
