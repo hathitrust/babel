@@ -217,7 +217,8 @@ ht_maintenance.slip_rights_temp, drop ht_maintenance.slip_rights,
 rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
     
        % rebuild_rights-j
-       NOTE: Phase one: 6.5 hours 5.9M records
+       NOTE: coordinate Phase one with the VuFInd re-indexing job
+       NOTE: Phase one: 6.5 hours 5.9M records 
              Phase two: 5.5 hours 10.6M IDs
                        ----
                        12.0 hours 
