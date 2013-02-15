@@ -12,9 +12,9 @@ rebuild_rights-j
 
 See also rights-j
 
-Drops the entire slip_rights_temp table, rebuilds it and renames it to
-slip_rights. Only runs from the command line using developer personal
-database password.
+Optionally, drops the entire slip_rights_temp table, rebuilds it and
+optionally renames it to slip_rights. Only runs from the command line
+using developer personal database password.
 
 Phase 1 = 5.7 hours for 5980242 bib records (Thu Feb 14 10:09:54 2013)
 Phase 2 = 10 hours for 10.5M ids
@@ -85,11 +85,11 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_r_get_usage {
     my $s;
-    $s .= qq{Usage: rebuild_rights-j -r <run> [-n][-T][-P <phase> [-f <filename>|'one']] [-d{1|2|3|4|5|6}]\n\nNOTE: verify vSolr re-indexing time\n\n};
+    $s .= qq{Usage: rebuild_rights-j -r <run> [-T][-P one [-f <filename>] | -P two [-n][-f <filename>]] [-d{1|2|3|4|5|6}]\nPhase=one: Read vSolr, write file\nPhase=two: Read file, write slip_rights. \n\nNOTE: Avoid vSolr re-indexing time\n\n};
     $s .= qq{     -T test compilation only. No operations\n};
-    $s .= qq{     -P only perform phase=<phase> ('one' or 'two')\n};
-    $s .= qq{     -f <filename> from which to load records for Phase=two or 'one' for result of -P {one|Both}\n};
-    $s .= qq{     -n CREATE slip_rights_temp, NO RENAME slip_rights_temp, NO DROP slip_rights\n};
+    $s .= qq{     -P perform phase=<phase> ('one' or 'two')\n};
+    $s .= qq{     -n NO RENAME slip_rights_temp, NO DROP slip_rights\n};
+    $s .= qq{     -f <filename> (optional) Phase=one: write, Phase=two: read\n};
     $s .= qq{     -d options\n};
     $s .= qq{           1: me\n};
     $s .= qq{           2: me,lsdb\n};
@@ -129,10 +129,9 @@ if ($opt_d) {
 use constant STOPSLIP_SLEEP_WAIT => 60;
 
 my $RUN = $opt_r;
-my $CHECK = 0;
-my $PHASE = 'Both';
+my $PHASE = '';
 my $REBUILD = 1;
-
+my $CHECK = $opt_n;
 
 if (! defined($RUN)) {
     my $s = r_r_get_usage();
@@ -146,7 +145,7 @@ if (defined($opt_n)) {
 
 if (defined($opt_P)) {
     $PHASE = $opt_P;
-    if ($PHASE !~ m,(Both|one|two),) {
+    if ($PHASE !~ m,(one|two),) {
         __output("Invalid Phase=$PHASE.\n");
         exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
@@ -155,10 +154,9 @@ if (defined($opt_P)) {
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-
 my $DEBUG_TINY = 0;
-my $TINY_SLICE_NUM = 10;
-my $TINY_SLICE_SIZE = 1000;
+my $TINY_SLICE_NUM = 2;
+my $TINY_SLICE_SIZE = 2;
 my $SLICE_SIZE = $DEBUG_TINY ? $TINY_SLICE_SIZE : 1000;
 
 my $C = new Context;
@@ -169,69 +167,39 @@ $C->set_object('MdpConfig', $config);
 
 my $RIGHTS_LOGFILE_KEY = 'rights_rebuild_logfile';
 
-my $DBH = '';
+my $DBH = r_r_connect($C);
+
 my $INIT_MSG;
 my $NOW_TIMESTAMP = Utils::Time::iso_Time('date');
 my $VSOLR_FILENAME = $ENV{SDRROOT} . qq{/logs/slip/run-rights/slip-rebuild-rights-vsolr-ids-$NOW_TIMESTAMP.txt};
 my ($LOG_FILENAME) = SLIP_Utils::Log::full_log_filepath($C, $RIGHTS_LOGFILE_KEY, '___RUN___', 'rights');
 
 eval {
-    # Build from 00000000
-    $INIT_MSG = qq{Today is $NOW_TIMESTAMP. Rebuild. Phases=$PHASE. } . qq{Query will be ['00000000' TO *]};
-    my $confirm_msg;
 
-    if ($CHECK) {
-        $confirm_msg = "\n$INIT_MSG\nCHECK=1 DROP/CREATE slip_rights_temp\n  => NO RENAME slip_rights_temp, NO DROP slip_rights? [N] "
-    }
-    else {
-        $confirm_msg = "\n$INIT_MSG\nCHECK=0 RENAME slip_rights_temp to slip_rights\n  => DROP slip_rights? [N] ";
-    }
-    __confirm($confirm_msg);
-    r_r_rights_Log($C, "$confirm_msg");
-
-    if ($PHASE =~ m,(Both|two),) {
-        my $filename = $opt_f;
-        if (! defined($filename)) {
-            __output("Missing -f <filename> arg.\n");
-            exit $SLIP_Utils::States::RC_BAD_ARGS;
-        }
-        elsif ($filename eq 'one') {
-            __confirm("OK to use $VSOLR_FILENAME for records source? [N] ");
-            if (! -e $VSOLR_FILENAME) {
-                __output("$VSOLR_FILENAME does not exist.\n");
-                exit $SLIP_Utils::States::RC_BAD_ARGS;
-            }
-        }
-        else {
-            if (! -e $filename) {
-                __output("$filename does not exist.\n");
-                exit $SLIP_Utils::States::RC_BAD_ARGS;
-            }
-            else {
-                $VSOLR_FILENAME = $filename;
-            }
-        }
-
-        # DROP/CREATE slip_rights_temp
-        $DBH = r_r_connect($C);
-        if (__confirm_continue("\nDROP/CREATE slip_rights_temp? [N] ")) {
-            initialize_j_rights_temp($C, $DBH);
-            my $m = "DROP/CREATE slip_rights_temp\n";
-            initialize_j_rights_temp($C, $DBH);
-            r_r_rights_Log($C, $m);
-            __output($m);
-        }
-    }
+    #
+    # Check
+    #
+    Phase_one_check() if ($PHASE eq 'one');
+    Phase_two_check() if ($PHASE eq 'two');
 
     #
     # Rebuild
     #
     my ($process_start, $totals_hashref) = rebuild_rights($C, $DBH);
 
-    # DO NOT DROP slip_rights if CHECK==1. slip_rights_temp is left
-    # behind until next (-R) run.
-    DROP_j_rights_RENAME_j_rights_temp($C, $DBH)
-      unless($CHECK);
+    if ($PHASE eq 'two') {
+        # DO NOT DROP slip_rights if CHECK==1. slip_rights_temp is
+        # left untouched.
+        #
+        DROP_j_rights_RENAME_j_rights_temp($C, $DBH)
+          unless($CHECK);
+        
+        # Update the vSolr timestamp to the MAX(update_time) in
+        # slip_rights.
+        #
+        UPDATE_vsolr_timestamp($C, $DBH)
+          unless($CHECK);
+    }
 
     r_r_final_report($C, $DBH, $process_start, $totals_hashref, $CHECK);
     # Flush remaining logs to disk
@@ -253,6 +221,98 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
+=item Phase_one_check
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Phase_one_check {
+
+    my $filename = $opt_f;
+    if (! defined($filename)) {
+        if (-e $VSOLR_FILENAME) {
+            __confirm("Over-write $VSOLR_FILENAME? [N] ");
+        }
+    }
+    else {
+        if (! -e $filename) {
+            __output("$filename does not exist.\n");
+            exit $SLIP_Utils::States::RC_BAD_ARGS;
+        }
+        else {
+            __confirm("Over-write $filename? [N] ");
+            $VSOLR_FILENAME = $filename;
+        }
+    }
+
+    $INIT_MSG =
+      qq{\nToday is $NOW_TIMESTAMP. Phase=$PHASE. vSolr query will be ['00000000' TO *]}
+        . qq{\n => Write $VSOLR_FILENAME. \n\tOK? [N] };
+
+    __confirm($INIT_MSG);
+}
+
+# ---------------------------------------------------------------------
+
+=item Phase_two_check
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Phase_two_check {
+
+    my $filename = $opt_f;
+    if (! defined($filename)) {
+        if (! -e $VSOLR_FILENAME) {
+            __output("Would read from $VSOLR_FILENAME but it does not exist.\n");
+            exit $SLIP_Utils::States::RC_BAD_ARGS;
+        }
+    }
+    else {
+        if (! -e $filename) {
+            __output("$filename does not exist.\n");
+            exit $SLIP_Utils::States::RC_BAD_ARGS;
+        }
+        else {
+            $VSOLR_FILENAME = $filename;
+        }
+    }
+
+    # DROP/CREATE slip_rights_temp?
+    my $drop = "NO DROP/CREATE slip_rights_temp, use existing table";
+    if (__confirm_continue("\nDROP/CREATE slip_rights_temp? [N] ")) {
+        if (__confirm_continue("\nREALLY? [N] ")) {
+            initialize_j_rights_temp($C, $DBH);
+            $drop = "DROP/CREATE slip_rights_temp";
+            initialize_j_rights_temp($C, $DBH);
+        }
+    }
+
+    my $rename;
+    if ($CHECK) {
+        $rename = "NO DROP slip_rights, NO RENAME slip_rights_temp";
+    }
+    else {
+        $rename = "Will DROP slip_rights, will RENAME slip_rights_temp";
+    }
+
+    $INIT_MSG =
+      qq{\nToday is $NOW_TIMESTAMP. Phase=two. Populate slip_rights_temp}
+        . qq{\n\t => Read $VSOLR_FILENAME }
+          . qq{\n\t => $drop }
+            . qq{\n\t => $rename\n\t\t OK? [N]};
+
+    __confirm($INIT_MSG);
+}
+
+
+
+# ---------------------------------------------------------------------
+
 =item r_r_connect
 
 Description
@@ -262,7 +322,7 @@ Description
 # ---------------------------------------------------------------------
 sub r_r_connect {
     my $C = shift;
-    
+
     my $db;
     eval {
         my $whoami = `whoami`;
@@ -280,7 +340,7 @@ sub r_r_connect {
         SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild_rights-j', $@);
         exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
     }
-    
+
     $C->set_object('Database', $db);
     my $dbh = $C->get_object('Database')->get_DBH();
     return $dbh;
@@ -365,9 +425,27 @@ sub DROP_j_rights_RENAME_j_rights_temp {
     Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
 
     my $s = "Rebuild: drop slip_rights, rename slip_rights_temp";
-    __output("$s\n\n");
+    __output("$s\n");
     r_r_rights_Log($C, $s);
+}
 
+# ---------------------------------------------------------------------
+
+=item UPDATE_vsolr_timestamp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub UPDATE_vsolr_timestamp {
+    my ($C, $dbh) = @_;
+
+    Db::update_vSolr_timestamp($C, $dbh);
+
+    my $s = "Update vSolr timestamp from slip_rights MAX()";
+    __output("$s\n");
+    r_r_rights_Log($C, $s);
 }
 
 # ---------------------------------------------------------------------
@@ -425,7 +503,7 @@ sub read_vsolr_ids {
     __output(qq{$s0} . Utils::Time::iso_Time() . qq{\n});
     r_r_rights_Log($C, $s0);
 
-    if (! open(VSOLR, ">>$VSOLR_FILENAME")) {
+    if (! open(VSOLR, ">$VSOLR_FILENAME")) {
         $s0 = qq{Failed to open $VSOLR_FILENAME for append};
         r_r_rights_Log($C, $s0, 1);
         __output("$s0\n");
@@ -573,15 +651,9 @@ sub rebuild_rights {
     my $process_start = __hiresTime();
     my $totals_hash_ref = {'record_ct_1' => 0, 'record_ct_2' => 0, 'ids' => 0, 'anomalies' => 0};
 
-    read_vsolr_ids($C, $totals_hash_ref) if ($PHASE eq 'Both' || $PHASE eq 'one');
+    read_vsolr_ids($C, $totals_hash_ref) if ($PHASE eq 'one');
 
-    write_vsolr_ids($C, $dbh, $totals_hash_ref) if ($PHASE eq 'Both' || $PHASE eq 'two');
-
-    # Update the vSolr timestamp to the MAX(update_time) in
-    # slip_rights{_temp}. We will backtrack by 2 days from this value
-    # when next we run.
-    Db::update_vSolr_timestamp($C, $dbh, $REBUILD)
-        unless $CHECK;
+    write_vsolr_ids($C, $dbh, $totals_hash_ref) if ($PHASE eq 'two');
 
     return ($process_start, $totals_hash_ref);
 }
