@@ -36,8 +36,8 @@ use Getopt::Std;
 # App
 use Utils;
 use Utils::Time;
-use Utils::GlobalSwitch;
 use Debug::DUtils;
+use Password;
 
 use Context;
 use MdpConfig;
@@ -53,16 +53,9 @@ use SLIP_Utils::Log;
 
 my $INTERACTIVE = $ENV{TERM};
 
-if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("Cannot control SLIP. STOPSLIP in place!!\n");
-        exit 0;
-    }
+if (! $INTERACTIVE) {
+    exit 0;
 }
-else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
-}
-
 
 # Flush i/o
 $| = 1;
@@ -121,23 +114,48 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($TO_RUN);
 $C->set_object('MdpConfig', $config);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, 'renumber-j', $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-
-$C->set_object('Database', $db);
-my $DBH = $db->get_DBH();
+my $DBH = r_n_connect($C);
 
 # Go
 c_renumber($C, $DBH, $FROM_RUN, $TO_RUN);
 
 exit 0;
 
+
+# ---------------------------------------------------------------------
+
+=item r_r_connect
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_n_connect {
+    my $C = shift;
+
+    my $db;
+    eval {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht', 'mysql-sdr');
+    };
+    if ($@) {
+        SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild_rights-j', $@);
+        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    }
+
+    $C->set_object('Database', $db);
+    my $dbh = $C->get_object('Database')->get_DBH();
+    return $dbh;
+}
 
 # ---------------------------------------------------------------------
 
