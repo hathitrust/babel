@@ -217,7 +217,10 @@ ht_maintenance.slip_rights_temp, drop ht_maintenance.slip_rights,
 rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
     
        % rebuild_rights-j
-       NOTE: ~1M docs/hour 
+       NOTE: Phase one: 6.5 hours 5.9M records
+             Phase two: 5.5 hours 10.6M IDs
+                       ----
+                       12.0 hours 
 
 
 (2) Make j_indexed match the Solr shards.  Query Solr one shard at a
@@ -230,6 +233,8 @@ run. Insert de-duped j_indexed_temp rows into j_indexed.
 
        % rebuild-j -r run_number
        NOTE: 5.1 hours for 5M docs
+
+       NOTE: Run this in parallel with rebuild_rights-j
 
 (3) Queue ids in ht_maintenance.slip_rights missing from
 ht_maintenance.slip_indexed. Ids that get queued up in this step must
