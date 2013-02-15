@@ -237,7 +237,7 @@ be missing from Solr since ht_maintenance.slip_indexed equals the ids
 in Solr. ***This cannot be done while indexing is in progress.***
 
        % sync-j -rN -m rightsNINindexed 
-       NOTE: 3.4 hours for 5M docs
+       NOTE: minutes for 10M docs
 
 
 Exception
