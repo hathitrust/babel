@@ -518,10 +518,11 @@ sub write_vsolr_ids {
             chomp($line);
             $buf .= qq{$line};
             if ($line_slice == $SLICE_SIZE) {
-                $buf .= q{</foo>};
                 last;
             }
         }
+        $buf .= q{</foo>};
+
         $totals_hash_ref->{record_ct_2} += $line_slice;
         $line_slice = 0;
 
