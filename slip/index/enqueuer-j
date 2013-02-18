@@ -311,8 +311,9 @@ sub enqueue_from_holdings_delta {
 
     if ($num_items > 0) {
         Db::set_holdings_version($C, $dbh, $run, $max_version);
+        my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
         $s = sprintf("inserted %d items in %.1f sec at %.1f ids/sec from ht_repository.holdings_deltas (last_loaded_version=%d max_version=%d)",
-                     $num_items, $elapsed, $ids_per_sec, $last_loaded_version, $max_version);
+                     $num_items, $elapsed, $ids_per_sec, $loaded_version, $max_version);
     }
     else {
         $s = qq{Zero (0) items in ht_repository.holdings_deltas added to queue (last_loaded_version=$last_loaded_version max_version=$max_version)};
