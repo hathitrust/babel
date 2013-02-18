@@ -129,7 +129,7 @@ sub cont_get_usage {
           -C starts/stops check-j
 
        control-j -k conf -r run 
-          -h host -n num_producers 
+          [-h host] -n num_producers 
                     and/or
           -m producers_per_shard [-R <shard>]
           configure host names and number of producers per host
@@ -221,8 +221,8 @@ eval {
         my $host = $opt_h;
         my $producers_per_shard = $opt_m;
         my $shard = $opt_R; # optional
-        if (defined($num_producers) && defined($host)) {
-            __validate_hostname($C, $RUN, $host);
+        if (defined($num_producers)) {
+            __validate_hostname($C, $RUN, $host) if (defined($host));
             c_configure_host($C, $DBH, $RUN, $num_producers, $host);
             $ok = 1;
         }
@@ -231,7 +231,7 @@ eval {
             c_configure_shard($C, $DBH, $RUN, $shard, $producers_per_shard);
         }
         if (! $ok) {
-            my $s = qq{missing one of -m -n -h) options } . cont_get_usage();
+            my $s = qq{missing one of -m -n) options } . cont_get_usage();
             my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
             __output($s);
             __non_interactive_err_output($rc, $s);
@@ -385,29 +385,29 @@ Description
 sub __validate_host_vs_shard_config {
     my ($C, $dbh, $run) = @_;
 
-    my $allowed_producers = 0;
+    my $host_count_producers = 0;
     my @hosts = SLIP_Utils::Common::get_producer_host_list($C);
     foreach my $host (@hosts) {
-        $allowed_producers += Db::Select_num_producers($C, $DBH, $RUN, $host);
+        $host_count_producers += Db::Select_num_producers($C, $DBH, $RUN, $host);
     }
 
-    my $required_producers = 0;
+    my $shard_count_producers = 0;
     my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
     foreach my $shard (@shards) {
-        $required_producers += Db::Select_shard_num_producers($C, $dbh, $run, $shard);
+        $shard_count_producers += Db::Select_shard_num_producers($C, $dbh, $run, $shard);
     }
     
-    my $required = qq{required_producers($required_producers)};
-    my $allowed = qq{allowed_producers($allowed_producers)};
+    my $host_count = qq{producers over hosts($host_count_producers)};
+    my $shard_count = qq{producers over shards($shard_count_producers)};
 
-    if ($allowed_producers < $required_producers) {
-        __output(qq{\tWARN $allowed < $required\n\t\tSome shards may be starved. Increase num_producers per host?\n});
+    if ($host_count_producers < $shard_count_producers) {
+        __output(qq{\tWARN $host_count < $shard_count\n\t\tShards want more producers that hosts allow. Increase num_producers per host?\n});
     }
-    elsif ($allowed_producers > $required_producers) {
-        __output(qq{\tINFO $allowed > $required\n\t\tSome producers are useless. Decrease num_producers per host?\n});
+    elsif ($host_count_producers > $shard_count_producers) {
+        __output(qq{\tINFO $host_count > $shard_count\n\t\tHosts allow more producers than shards need. Decrease num_producers per host?\n});
     }
     else {
-        __output(qq{\tINFO $allowed = $required\n\t\toptimal shard vs host config\n\n});
+        __output(qq{\tINFO $host_count = $shard_count\n\t\toptimal shard vs host config\n\n});
     }
 }
 
@@ -761,11 +761,23 @@ Description
 sub c_configure_host {
     my ($C, $dbh, $run, $num_producers, $host) = @_;
 
-    Db::update_host_num_producers($C, $dbh, $run, $num_producers, $host);
-    my $producers_on_host_enabled = Db::Select_num_producers($C, $dbh, $run, $host);
+    my $producers_per_host = $C->get_object('MdpConfig')->get('producers_per_host');
 
-    Log_configure_host($C, $run, $host, $num_producers);
-    __output(qq{\tCONFIGURE run=$run host_num_producers=$num_producers host=$host enabled=$producers_on_host_enabled\n});
+    my @host_list;
+    if (! defined($host)) {
+        @host_list = SLIP_Utils::Common::get_producer_host_list($C);
+    }
+    else {
+        @host_list = ($host);
+    }
+
+    foreach my $host (@host_list) {
+        Db::update_host_num_producers($C, $dbh, $run, $num_producers, $host);
+        my $producers_on_host_enabled = Db::Select_num_producers($C, $dbh, $run, $host);
+
+        Log_configure_host($C, $run, $host, $num_producers);
+        __output(qq{\tCONFIGURE run=$run host_num_producers=$num_producers host=$host enabled=$producers_on_host_enabled\n});
+    }
 }
 
 
