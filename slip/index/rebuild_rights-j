@@ -103,7 +103,7 @@ sub r_r_get_usage {
 our ($opt_d, $opt_n, $opt_T, $opt_r, $opt_P, $opt_f);
 
 my $ops = getopts('d:nTr:P:f:');
-my $FORCE_EMAIL = 0;
+my $FORCE_EMAIL = (! defined $ENV{DLPS_DEV});
 
 if ($opt_d) {
     if ($opt_d == 1) {
@@ -720,7 +720,7 @@ sub r_r_final_report {
     if ($FORCE_EMAIL) {
         my $HOST = `hostname`;
         $HOST =~ s,\..*$,,s;
-        my $subj = qq{[SLIP] rights-j report ($HOST)};
+        my $subj = qq{[SLIP] rebuild_rights-j report Phase=$PHASE ($HOST)};
         SLIP_Utils::Common::Send_email($C, 'report', $subj, $s);
     }
 }
