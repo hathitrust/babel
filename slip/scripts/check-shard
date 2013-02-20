@@ -115,7 +115,7 @@ foreach my $_shard (@NUM_SHARDS_LIST) {
     chomp($num_segments);
     
     if ($ALL) {
-        __output(qq{shard=$SHARD dir=$index_dir segments=$num_segments (OK)\n});
+        __output(qq{shard=$SHARD dir=$index_dir segments=$num_segments\n});
     }
     else {
         if ($num_segments < 1) {
@@ -129,7 +129,7 @@ foreach my $_shard (@NUM_SHARDS_LIST) {
             $rc++;
         }
         else {
-            __output(qq{shard=$SHARD dir=$index_dir segments=$num_segments\n});
+            __output(qq{shard=$SHARD dir=$index_dir segments=$num_segments (OK)\n});
         }
         
         __non_interactive_err_output($rc, $err);
