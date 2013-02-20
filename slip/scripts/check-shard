@@ -6,7 +6,7 @@ check-shard
 
 =head1 USAGE
 
-% check-shard -r run -R shard -N num_segments
+% check-shard -r run [-R shard -N num_segments]
 
 =head1 DESCRIPTION
 
@@ -50,7 +50,7 @@ use SLIP_Utils::States;
 $| = 1;
 
 sub ck_usage {
-    my $s .= qq{Usage: check-shard -r run -R shard -N num_segments\n};
+    my $s .= qq{Usage: check-shard -r run [-R shard -N num_segments]\n};
     return $s;
 }
 
@@ -70,63 +70,72 @@ if (! $RUN) {
     exit $rc;
 }
 
-my $SHARD = $opt_R; # Required
-if (! $SHARD) {
-    my $s = qq{shard (-R) parameter missing } . ck_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
-
-my $NUMSEGS = $opt_N; # Required
-if (! defined($NUMSEGS)) {
-    my $s = qq{num_segments (-N) parameter missing } . ck_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
-elsif ($NUMSEGS < 1) {
-    my $s = qq{num_segments (-N) parameter must be > 0 } . ck_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}    
-
 my $C = new Context;
-
 my $config = SLIP_Utils::Common::gen_run_config('slip', $RUN);
 $C->set_object('MdpConfig', $config);
 
-my $rc = 0;
-my $err = '';
+my @NUM_SHARDS_LIST;
 
-my $shared_solr_home_dir = $config->get('shared_solr_home_dir');
-my $index_dir = qq{$shared_solr_home_dir/$SHARD/data/index};
-my $num_segments = `ls $index_dir/*.prx  2> /dev/null | wc -l`;
-chomp($num_segments);
-    
-if ($num_segments < 1) {
-    $err = qq{shard=$SHARD dir=$index_dir segments < 1\n};
-    __output($err);
-    $rc++;
-}
-elsif ($num_segments > $NUMSEGS) {
-    $err = qq{shard=$SHARD dir=$index_dir segments=$num_segments (exceeds $NUMSEGS)\n};
-    __output($err);
-    $rc++;
+my $SHARD = $opt_R; # Optional
+if (defined $SHARD) {
+    @NUM_SHARDS_LIST = ($SHARD);
 }
 else {
-    __output(qq{shard=$SHARD dir=$index_dir segments=$num_segments (OK)\n});
+    @NUM_SHARDS_LIST = $C->get_object('MdpConfig')->get('num_shards_list');
 }
 
-__non_interactive_err_output($rc, $err);
+my $NUMSEGS = $opt_N; # Required only if defined $SHARD
+if (defined $SHARD) {
+    if (! defined($NUMSEGS)) {
+        my $s = qq{num_segments (-N) parameter missing } . ck_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        
+        exit $rc;
+    }
+    elsif ($NUMSEGS < 1) {
+        my $s = qq{num_segments (-N) parameter must be > 0 } . ck_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        
+        exit $rc;
+    }
+}
 
+my $rc = 0;
+my $err = '';
+my $ALL = (! defined $SHARD);
+
+my $shared_solr_home_dir = $config->get('shared_solr_home_dir');
+foreach my $_shard (@NUM_SHARDS_LIST) {
+    my $index_dir = qq{$shared_solr_home_dir/$_shard/data/index};
+    my $num_segments = `ls $index_dir/*.prx  2> /dev/null | wc -l`;
+    chomp($num_segments);
+    
+    if ($ALL) {
+        __output(qq{shard=$SHARD dir=$index_dir segments=$num_segments (OK)\n});
+    }
+    else {
+        if ($num_segments < 1) {
+            $err = qq{shard=$SHARD dir=$index_dir segments < 1\n};
+            __output($err);
+            $rc++;
+        }    
+        elsif ($num_segments > $NUMSEGS) {
+            $err = qq{shard=$SHARD dir=$index_dir segments=$num_segments (exceeds $NUMSEGS)\n};
+            __output($err);
+            $rc++;
+        }
+        else {
+            __output(qq{shard=$SHARD dir=$index_dir segments=$num_segments\n});
+        }
+        
+        __non_interactive_err_output($rc, $err);
+    }
+}
+        
 exit $rc;
 
 
