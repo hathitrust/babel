@@ -201,7 +201,7 @@ eval {
           unless($CHECK);
     }
 
-    r_r_final_report($C, $DBH, $process_start, $totals_hashref, $CHECK);
+    r_r_final_report($C, $DBH, $process_start, $totals_hashref);
     # Flush remaining logs to disk
     flush_r_r_rights_Log($C);
 };
@@ -284,11 +284,13 @@ sub Phase_two_check {
 
     # DROP/CREATE slip_rights_temp?
     my $drop = "NO DROP/CREATE slip_rights_temp, use existing table";
-    if (__confirm_continue("\nDROP/CREATE slip_rights_temp? [N] ")) {
-        if (__confirm_continue("\nREALLY? [N] ")) {
-            initialize_j_rights_temp($C, $DBH);
-            $drop = "DROP/CREATE slip_rights_temp";
-            initialize_j_rights_temp($C, $DBH);
+    unless ($CHECK) {
+        if (__confirm_continue("\nDROP/CREATE slip_rights_temp? [N] ")) {
+            if (__confirm_continue("\nREALLY? [N] ")) {
+                initialize_j_rights_temp($C, $DBH);
+                $drop = "DROP/CREATE slip_rights_temp";
+                initialize_j_rights_temp($C, $DBH);
+            }
         }
     }
 
@@ -485,6 +487,7 @@ sub process_parsed_result {
     return ($arr_ref_of_processed_hashref, $anomalies);
 }
 
+
 # ---------------------------------------------------------------------
 
 =item read_vsolr_ids
@@ -498,7 +501,16 @@ sub read_vsolr_ids {
     my ($C, $totals_hash_ref) = @_;
 
     my $phase = 'Read vSolr';
-    my $s0 = qq{\n[BEGIN $phase]: $INIT_MSG };
+
+    # Count total records
+    my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+    my $rs = new Search::Result::SLIP_Raw();
+    
+    my $total_query = qq{q=ht_id_update:[00000000 TO *]&start=0&rows=0};
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $total_query, $rs);
+    my $total_records = $rs->get_num_found();
+
+    my $s0 = qq{\n[BEGIN $phase records=$total_records]: $INIT_MSG };
 
     __output(qq{$s0} . Utils::Time::iso_Time() . qq{\n});
     r_r_rights_Log($C, $s0);
@@ -516,8 +528,8 @@ sub read_vsolr_ids {
     while (1) {
         my $slice_start = __hiresTime();
 
-        my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
-        my $rs = new Search::Result::SLIP_Raw();
+        $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+        $rs = new Search::Result::SLIP_Raw();
 
         my $query = qq{q=ht_id_update:[00000000 TO *]&start=$offset&rows=$SLICE_SIZE&fl=ht_id_display,id };
         $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
@@ -538,7 +550,7 @@ sub read_vsolr_ids {
             foreach my $line (@$result_docs_arr_ref) {
                 print VSOLR qq{$line\n};
             }
-            r_r_slice_report($C, $phase, $slice_start, $records, 0, $totals_hash_ref);
+            r_r_slice_report($C, $phase, $slice_start, $records, 0, $totals_hash_ref, $total_records);
 
             $offset += $SLICE_SIZE;
             $slice++;
@@ -581,6 +593,9 @@ sub write_vsolr_ids {
         exit $SLIP_Utils::States::RC_CRITICAL_ERROR;
     }
 
+    my $total_records = `cat $VSOLR_FILENAME | wc -l`; 
+    chomp($total_records);
+    
     my $parser = XML::LibXML->new();
     my $xpath_doc = q{/foo/doc};
 
@@ -618,7 +633,7 @@ sub write_vsolr_ids {
             $totals_hash_ref->{ids} += $ids;
 
             foreach my $hashref (@$ref_to_arr_of_hashref) {
-                Db::Replace_j_rights_temp_id($C, $dbh, $hashref);
+                Db::Replace_j_rights_temp_id($C, $dbh, $hashref) unless ($CHECK);
             }
             $slice++;
 
@@ -626,7 +641,7 @@ sub write_vsolr_ids {
                 close(VSOLR);
                 last;
             }
-            r_r_slice_report($C, $phase, $slice_start, $ids, $anomalies, $totals_hash_ref);
+            r_r_slice_report($C, $phase, $slice_start, $ids, $anomalies, $totals_hash_ref, $total_records);
         }
         else {
             close(VSOLR);
@@ -669,7 +684,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub r_r_slice_report {
-    my ($C, $phase, $slice_start, $slice_units, $anomalies, $tref) = @_;
+    my ($C, $phase, $slice_start, $slice_units, $anomalies, $tref, $job_size) = @_;
 
     my $slice_elapsed = __hiresTime() - $slice_start;
     my $idsPsec = sprintf("%.2f", ($slice_units + $anomalies)/$slice_elapsed);
@@ -679,7 +694,13 @@ sub r_r_slice_report {
     my $total_records_2 = $tref->{record_ct_2};
     my $total_anomalies = $tref->{anomalies};
 
-    my $s = qq{Checkpoint($phase): rate=$idsPsec units/sec slice_units=$slice_units anom=$anomalies total_ids=$total_ids total_records_1=$total_records_1 total_records_2=$total_records_2 total_anomalies=$total_anomalies } . Utils::Time::iso_Time() . qq{\n};
+    my $remaining = $job_size - int($PHASE eq 'one' ? $total_records_1 : $total_records_2);
+    my @parts = gmtime int(($remaining) * (1 / $idsPsec));
+    my $time_remaining = sprintf("%dh %dm %ds", @parts[2,1,0]);
+
+    my $s0 = sprintf("remains=%s", $time_remaining);
+
+    my $s = qq{Checkpoint($phase): rate=$idsPsec units/sec slice_units=$slice_units anom=$anomalies total_ids=$total_ids total_records_1=$total_records_1 total_records_2=$total_records_2 total_anomalies=$total_anomalies $s0 } . Utils::Time::iso_Time() . qq{\n};
 
     __output(qq{$s});
     r_r_rights_Log($C, $s);
@@ -701,7 +722,12 @@ sub r_r_final_report {
     my $process_elapsed_min = sprintf("%.2f", $process_elapsed/60);
     my $idsPsec = sprintf("%.2f", ($tref->{ids} + $tref->{anomalies})/$process_elapsed);
 
-    my $temp_size = ($PHASE eq 'one') ? Db::Select_count_from_j_rights_temp($C, $dbh) : 0;
+    my $temp_size = 0;
+    if ($PHASE eq 'two') {
+        unless ($CHECK) {
+            $temp_size = Db::Select_count_from_j_rights_temp($C, $dbh);
+        }
+    }
     my $size = Db::Select_count_from_j_rights($C, $dbh);
     my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
 
