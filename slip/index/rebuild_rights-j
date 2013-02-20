@@ -550,7 +550,8 @@ sub read_vsolr_ids {
             foreach my $line (@$result_docs_arr_ref) {
                 print VSOLR qq{$line\n};
             }
-            r_r_slice_report($C, $phase, $slice_start, $records, 0, $totals_hash_ref, $total_records);
+            my $remaining = $total_records - $totals_hash_ref->{record_ct_1};
+            r_r_slice_report($C, $phase, $slice_start, $records, 0, $totals_hash_ref, $remaining);
 
             $offset += $SLICE_SIZE;
             $slice++;
@@ -593,8 +594,8 @@ sub write_vsolr_ids {
         exit $SLIP_Utils::States::RC_CRITICAL_ERROR;
     }
 
-    my $total_records = `cat $VSOLR_FILENAME | wc -l`; 
-    chomp($total_records);
+    # Close proxy for total records
+    my $total_ids = Db::Select_count_from_j_rights($C, $dbh);
     
     my $parser = XML::LibXML->new();
     my $xpath_doc = q{/foo/doc};
@@ -641,7 +642,8 @@ sub write_vsolr_ids {
                 close(VSOLR);
                 last;
             }
-            r_r_slice_report($C, $phase, $slice_start, $ids, $anomalies, $totals_hash_ref, $total_records);
+            my $remaining = $total_ids - $totals_hash_ref->{ids};
+            r_r_slice_report($C, $phase, $slice_start, $ids, $anomalies, $totals_hash_ref, $remaining);
         }
         else {
             close(VSOLR);
@@ -684,7 +686,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub r_r_slice_report {
-    my ($C, $phase, $slice_start, $slice_units, $anomalies, $tref, $job_size) = @_;
+    my ($C, $phase, $slice_start, $slice_units, $anomalies, $tref, $remaining) = @_;
 
     my $slice_elapsed = __hiresTime() - $slice_start;
     my $idsPsec = sprintf("%.2f", ($slice_units + $anomalies)/$slice_elapsed);
@@ -694,7 +696,6 @@ sub r_r_slice_report {
     my $total_records_2 = $tref->{record_ct_2};
     my $total_anomalies = $tref->{anomalies};
 
-    my $remaining = $job_size - int($PHASE eq 'one' ? $total_records_1 : $total_records_2);
     my @parts = gmtime int(($remaining) * (1 / $idsPsec));
     my $time_remaining = sprintf("%dh %dm %ds", @parts[2,1,0]);
 
