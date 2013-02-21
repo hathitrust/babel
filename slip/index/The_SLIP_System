@@ -233,7 +233,7 @@ the Solr index. Delete from ht_maintenance.slip_indexed for the given
 run. Insert de-duped j_indexed_temp rows into j_indexed.
 
        % rebuild-j -r run_number
-       NOTE: 5.1 hours for 5M docs
+       NOTE: < 1 hour for 10.5M docs
 
        NOTE: Run this in parallel with rebuild_rights-j
 

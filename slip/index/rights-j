@@ -6,7 +6,7 @@ rights-j
 
 =head USAGE
 
-% rights-j -r run [-T][-B][-I][-d{1|2}]
+% rights-j -r run [-T][-I][-d{1|2}]
 
 =head DESCRIPTION
 
@@ -147,13 +147,11 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j -r run [-B|-F<file>] [-n][-f][-T] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j -r run [-F<file>] [-n][-f][-T] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -f force email\n};
+    $s .= qq{     -n is check_only, no inserts to slip_rights\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -F insert IDs from file (missing from slip_rights)\n};
-    $s .= qq{           where -n is check_only, no inserts to slip_rights\n};
-    $s .= qq{     -B build from last vSolr timestamp for -r run\n};
-    $s .= qq{           where -n is check_only, no inserts to slip_rights\n};
     $s .= qq{     -d options\n};
     $s .= qq{           1: me\n};
     $s .= qq{           2: me,lsdb\n};
@@ -165,9 +163,9 @@ sub r_get_usage {
     return $s;
 }
 
-our ($opt_B, $opt_R, $opt_d, $opt_n, $opt_T, $opt_F, $opt_r, $opt_f);
+our ($opt_d, $opt_n, $opt_T, $opt_F, $opt_r, $opt_f);
 
-my $ops = getopts('Bd:nTI:r:fF:');
+my $ops = getopts('d:nTI:r:fF:');
 my $FORCE_EMAIL = defined($opt_f);
 
 if ($opt_d) {
@@ -196,7 +194,6 @@ if ($opt_d) {
 
 use constant STOPSLIP_SLEEP_WAIT => 60;
 
-my $BUILD = 0;
 my $RUN = $opt_r;
 my $CHECK = 0;
 my $ID_INSERT_FILE;
@@ -213,13 +210,6 @@ if (defined($opt_n)) {
 
 if (defined($opt_F)){
     $ID_INSERT_FILE = $opt_F;
-}
-elsif (defined($opt_B)) {
-    $BUILD = 1;
-}
-else {
-    print r_get_usage();
-    exit 0;
 }
 
 my $TEST_ONLY = defined($opt_T);
@@ -278,7 +268,7 @@ eval {
             __confirm("\nProcess slip_rights: $i IDs from $ID_INSERT_FILE? [N] ");
             repair_insert_id_helper($C, $DBH, $ID_INSERT_FILE, $CHECK);
         }
-        elsif ($BUILD) {
+        else {
             # Build from last timestamp
             my $last_timestamp = Db::Select_vSolr_timestamp($C, $DBH);
             my $lag = $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
