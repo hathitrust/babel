@@ -723,12 +723,6 @@ sub r_r_final_report {
     my $process_elapsed_min = sprintf("%.2f", $process_elapsed/60);
     my $idsPsec = sprintf("%.2f", ($tref->{ids} + $tref->{anomalies})/$process_elapsed);
 
-    my $temp_size = 0;
-    if ($PHASE eq 'two') {
-        unless ($CHECK) {
-            $temp_size = Db::Select_count_from_j_rights_temp($C, $dbh);
-        }
-    }
     my $size = Db::Select_count_from_j_rights($C, $dbh);
     my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
 
@@ -738,7 +732,7 @@ sub r_r_final_report {
     my $total_anomalies = $tref->{anomalies};
 
     my $s =
-        qq{\nFinal report: slip_rights size=$size slip_rights_temp size=$temp_size total_ids=$total_ids total_records_1=$total_records_1 total_records_2=$total_records_2 total_anomalies=$total_anomalies\n}
+        qq{\nFinal report: slip_rights size=$size total_ids=$total_ids total_records_1=$total_records_1 total_records_2=$total_records_2 total_anomalies=$total_anomalies\n}
           . qq{\trate=$idsPsec id/sec vsolr_timestamp=$timestamp elapsed=$process_elapsed_min min\n};
 
     __output(qq{$s\t at } . Utils::Time::iso_Time() . qq{\n});
