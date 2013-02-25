@@ -125,48 +125,6 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $FULL_OPTIMIZE_RUN = 0;
-__output("Checking schedule for full optimization ... ");
-eval {
-    my $msg = 'Full optimize run; skipping checkIndex';
-    if (Scheduler::driver_do_full_optimize($C, $RUN, \$msg)) {
-        $FULL_OPTIMIZE_RUN = 1;
-        # Avoid checkIndex on full optimize days -- takes too long
-        $SKIP_CHECKINDEX = 1;
-        Log_sched($C, $RUN, $msg);
-    }
-};
-if ($@) {
-    Log_sched_error($C, $RUN, $@);
-    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
-    __non_interactive_err_output($rc, $@);
-
-    exit $rc;
-}
-
-if ($FULL_OPTIMIZE_RUN) {
-    __output("FULL optimize will be scheduled\n");
-}
-else {
-    __output("normal optimize will be scheduled (NOT Full)\n");
-}
-
-
-if ($INTERACTIVE) {
-    if ($FULL_OPTIMIZE_RUN) {
-        my $s = qq{\nA FULL optimization will occur (any checkIndex -X option will be ignored). Not usually what you want interactively.\n\tContinue? [N] };
-        __confirm($s);
-    }
-    if (! $SKIP_CHECKINDEX) {
-        my $s = qq{\nYou are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
-        __confirm($s);
-    }
-    if ($SKIP_CHECKINDEX && (! $FULL_OPTIMIZE_RUN)) {
-        my $s = qq{\nRun driver interactively? [N] };
-        __confirm($s);
-    }    
-}
-
 my $db;
 eval {
     $db = new Database('ht_maintenance');
@@ -182,26 +140,19 @@ if ($@) {
 $C->set_object('Database', $db);
 my $DBH = $db->get_DBH();
 
+# Outta here if not enabled
+__check_driver_enabled($C, $DBH, $RUN);
+
 my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 my @NUM_SHARDS_LIST = $config->get('num_shards_list');
 
 my $logdir = Utils::get_tmp_logdir();
 my $Child_Err_File = qq{$logdir/driver_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
-END{
+END {
     `rm -f $Child_Err_File` if (-z $Child_Err_File);
 }
 
 my $EMAIL_MESSAGE_BUFFER;
-
-my $flags_dir = $config->get('shared_flags_dir');
-if (! -e $flags_dir) {
-    my $rc = $SLIP_Utils::States::RC_DRIVER_FLAGS_DIR;
-    my $s = qq{driver-j: $flags_dir does not exist run=$RUN\n};
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
 
 use constant CHECK_SLEEP_WAIT => 63; # 1 minute
 use constant OPTIMIZE_SLEEP_WAIT => 65; # 1 minute
@@ -212,9 +163,6 @@ use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 # comm errors to restore. This process stops after MAX_RESTORES have
 # been attempted.
 use constant MAX_RESTORES => 10;
-
-# Outta here if not enabled
-__check_driver_enabled($C, $DBH, $RUN);
 
 # Exit driver-j if another has the semaphore to prevent piling up
 my $Lock_File = "/tmp/driver-$RUN-lock.sem";
@@ -229,24 +177,27 @@ if (! $Semaphore) {
     exit $rc;
 }
 
-# Test busy file used to communicate driver in process to Core
-# snapshot release ant Tomcat restart scripts.  Also acts as a valve
-# for Core Services to indicate their scripts are not available.
-my $BUSY_FILE = $flags_dir . '/' . 'busy';
-if (-e $BUSY_FILE) {
-    my $rc =  $SLIP_Utils::States::RC_DRIVER_BUSY_FILE;
-    my $s = qq{driver-j: busy file=$BUSY_FILE detected run=$RUN, exit.\n};
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
-
 my ($INITIAL_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT, $RESTORE_CT) = (0, 0, 0);
 
 eval {
     ($INITIAL_QUEUE_SIZE) = Db::Select_queue_data($C, $DBH, $RUN);
     $INITIAL_TOT_INDEXED_CT = Db::Select_indexed_tot_count($C, $DBH, $RUN);
+
+    if ($INTERACTIVE) {
+        if (__FULL_optimize_run($C, $RUN)) {
+            my $s = qq{\n\tContinue? [N] };
+            __confirm($s);
+        }
+        elsif (! $SKIP_CHECKINDEX) {
+            my $s = qq{\nYou are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
+            __confirm($s);
+        }
+        else {
+            my $s = qq{\nA large queue ($INITIAL_QUEUE_SIZE) may induce a FULL optimize. Run driver interactively? [N] };
+            __confirm($s);
+        }
+    }
+    # POSSIBLY NOTREACHED
 
     run_driver($C, $DBH, $RUN);
 
@@ -348,18 +299,14 @@ sub run_driver {
 
         $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
         if ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
-            # Maybe unconditionally update the full optimize schedule file
-            if ($FULL_OPTIMIZE_RUN) {
-                handle_Stage_rc($_Stage, handle_full_optimize_done($C, $run));
-            }
-
             # Reset the shard states.  This will not happen if there
             # was an error so the states of individual shards will be
             # preserved.
             __Reset_shard_states($C, $dbh, $run);
 
             # Remove busy file
-            unlink($BUSY_FILE);
+            my $busy_file = __get_BUSY_file($C, $run);
+            unlink($busy_file);
             # Jump out of loop
             last;
         }
@@ -367,6 +314,41 @@ sub run_driver {
 
     # Status
     __driver_exit_report($C, $dbh, $run, qq{driver completed successfully}, $driver_START);
+}
+
+# ---------------------------------------------------------------------
+
+=item __get_BUSY_file
+
+Test busy file used to communicate driver in process to Core snapshot
+release ant Tomcat restart scripts.  Also acts as a valve for Core
+Services to indicate their scripts are not available.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_BUSY_file {
+    my ($C, $run) = @_;
+
+    my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
+    if (! -e $flags_dir) {
+        my $rc = $SLIP_Utils::States::RC_DRIVER_FLAGS_DIR;
+        my $s = qq{driver-j: $flags_dir does not exist run=$run. Exit\n};
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        exit $rc;
+    }
+
+    my $busy_file = $flags_dir . '/' . 'busy';
+    if (-e $busy_file) {
+        my $rc =  $SLIP_Utils::States::RC_DRIVER_BUSY_FILE;
+        my $s = qq{driver-j: busy file=$busy_file detected run=$run. Exit.\n};
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        exit $rc;
+    }
+
+    return $busy_file;
 }
 
 # ---------------------------------------------------------------------
@@ -499,10 +481,9 @@ sub handle_Build_Wait {
             # If this is a full-optimize run, ignore a zero-size queue
             # and proceed to the next stage to flow through to
             # optimization.
-            if (! $FULL_OPTIMIZE_RUN) {
+            if (! __FULL_optimize_run($C, $run)) {
                 Log_stage($C, $run, $_Stage, $s);
                 __driver_exit_report($C, $dbh, $run, $s);
-
                 exit 0;
             }
         }
@@ -518,6 +499,11 @@ sub handle_Build_Wait {
         $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage);
 
         if ($rc == 0) {
+            # Set busy file
+            my $busy_file = __get_BUSY_file($C, $run);
+            # POSSIBLY NOTREACHED
+            `touch $busy_file`;
+
             # Enable producers to start running from cron
             $rc = __control_producers($C, $DBH, $RUN, $_Stage, 'start');
 
@@ -525,9 +511,6 @@ sub handle_Build_Wait {
             # bad rc
             if ($rc == 0) {
                 SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
-
-                # Set busy file
-                `touch $BUSY_FILE`;
             }
         }
     }
@@ -577,6 +560,20 @@ sub handle_Building {
             # optimization so sizer-j will not try to enable or commit
             # during optimization.
             SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             # Enable optimizers to start running from cron
             $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
@@ -643,7 +640,7 @@ sub handle_Optimizing {
         }
     }
 
-    Log_stage($C, $run, $_Stage, "FULL=$FULL_OPTIMIZE_RUN " . ___rate($optimize_START));
+    Log_stage($C, $run, $_Stage, ___rate($optimize_START));
 
     return $rc;
 }
@@ -696,22 +693,56 @@ sub handle_Checking {
 #
 # ----------------------- U t i l i t i e s ---------------------------
 #
+
+
 # ---------------------------------------------------------------------
 
-=item handle_full_optimize_done
+=item __FULL_optimize_run
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_full_optimize_done {
-    my $C = shift;
-    my $run = shift;
+sub __FULL_optimize_run {
+    my ($C, $run) = @_;
 
-    my $rc = 0;
+    __output("Checking schedule for full optimization ... ");
 
-    return $rc;
+    my $full = 0;
+    eval {
+        my $msg = '';
+        if (Scheduler::full_optimize_supported($C)) {
+            if (Scheduler::driver_do_full_optimize($C, $run)) {
+                $full = 1;
+                # Avoid checkIndex on full optimize -- takes too long
+                $SKIP_CHECKINDEX = 1;
+                $msg = 'Full optimize run; skipping checkIndex';
+            }
+            else {
+                $msg = 'Normal optimize run';
+            }
+        }
+        else {
+            $msg = 'Normal optimize run; full optimize not supported';
+        }
+        Log_sched($C, $run, $msg);
+    };
+    if ($@) {
+        Log_sched_error($C, $run, $@);
+        my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+        __non_interactive_err_output($rc, $@);
+        exit $rc;
+    }
+
+    if ($full) {
+        __output("FULL optimize will occur\n");
+    }
+    else {
+        __output("normal optimize will occur (NOT Full)\n");
+    }
+
+    return $full;
 }
 
 # ---------------------------------------------------------------------
