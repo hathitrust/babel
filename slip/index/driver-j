@@ -119,14 +119,6 @@ exit 0 if ($TEST_ONLY);
 
 my $SKIP_REDO = defined($opt_K);
 my $SKIP_CHECKINDEX = defined($opt_X);
-if ($INTERACTIVE) {
-    if (! $SKIP_CHECKINDEX) {
-        my $s = qq{You are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
-        __confirm($s);
-    }
-    my $s = qq{You are about to run the driver at the command line, indexing and optimization only, no Lucene checkIndex.\n\tContinue? [N] };
-        __confirm($s);
-}
 
 my $C = new Context;
 
@@ -134,14 +126,13 @@ my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
 my $FULL_OPTIMIZE_RUN = 0;
+__output("Checking schedule for full optimization ... ");
 eval {
-    my $msg;
+    my $msg = 'Full optimize run; skipping checkIndex';
     if (Scheduler::driver_do_full_optimize($C, $RUN, \$msg)) {
         $FULL_OPTIMIZE_RUN = 1;
         # Avoid checkIndex on full optimize days -- takes too long
         $SKIP_CHECKINDEX = 1;
-
-        __output("$msg\n");
         Log_sched($C, $RUN, $msg);
     }
 };
@@ -151,6 +142,29 @@ if ($@) {
     __non_interactive_err_output($rc, $@);
 
     exit $rc;
+}
+
+if ($FULL_OPTIMIZE_RUN) {
+    __output("FULL optimize will be scheduled\n");
+}
+else {
+    __output("normal optimize will be scheduled (NOT Full)\n");
+}
+
+
+if ($INTERACTIVE) {
+    if ($FULL_OPTIMIZE_RUN) {
+        my $s = qq{\nA FULL optimization will occur (any checkIndex -X option will be ignored). Not usually what you want interactively.\n\tContinue? [N] };
+        __confirm($s);
+    }
+    if (! $SKIP_CHECKINDEX) {
+        my $s = qq{\nYou are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
+        __confirm($s);
+    }
+    if ($SKIP_CHECKINDEX && (! $FULL_OPTIMIZE_RUN)) {
+        my $s = qq{\nRun driver interactively? [N] };
+        __confirm($s);
+    }    
 }
 
 my $db;
@@ -629,7 +643,7 @@ sub handle_Optimizing {
         }
     }
 
-    Log_stage($C, $run, $_Stage, "full=$FULL_OPTIMIZE_RUN " . ___rate($optimize_START));
+    Log_stage($C, $run, $_Stage, "FULL=$FULL_OPTIMIZE_RUN " . ___rate($optimize_START));
 
     return $rc;
 }
@@ -696,13 +710,6 @@ sub handle_full_optimize_done {
     my $run = shift;
 
     my $rc = 0;
-
-    eval {
-        Scheduler::advance_full_optimize_date($C, $run);
-    };
-    if ($@) {
-        $rc = $SLIP_Utils::States::RC_BAD_SCHED_FILE;
-    }
 
     return $rc;
 }

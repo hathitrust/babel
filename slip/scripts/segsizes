@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-segsizes-shard
+segsizes
 
 =head1 USAGE
 
@@ -10,8 +10,10 @@ segsizes-shard
 
 =head1 DESCRIPTION
 
-Must be run on a machine where shards in the filesystem are visible.
-Give a picture of the number and size of segments at each mergeFactor.
+Must be run on a machine where shards in the filesystem are
+visible. Used to determine the size of the "baby" shard.  When that
+size exceeds the tuning parameter a full optimize (to one segment) is
+triggered.
 
 =head1 OPTIONS
 
@@ -39,7 +41,7 @@ use Utils;
 use Debug::DUtils;
 use MdpConfig;
 
-# Local 
+# Local
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 
@@ -47,26 +49,24 @@ use SLIP_Utils::States;
 $| = 1;
 
 sub sg_usage {
-    my $s .= qq{Usage: segsizes -r run [-R shard]\n};
+    my $s .= qq{Usage: segsizes -r run [-v][-R shard]\n};
     return $s;
 }
 
-our ($opt_r, $opt_R);
+our ($opt_r, $opt_R, $opt_v);
 
-my $ops = getopts('r:R:');
-
-my $INTERACTIVE = $ENV{'TERM'};
+my $ops = getopts('r:R:v');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
     my $s = qq{run (-r) parameter missing } . sg_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
     __non_interactive_err_output($rc, $s);
 
     exit $rc;
 }
 
+my $VERBOSE = $opt_v; # Optional
 my $SHARD = $opt_R; # Optional
 
 my $C = new Context;
@@ -84,115 +84,83 @@ else {
     @SHARDS = ($SHARD);
 }
 
+my %SEGSIZES;
 my $rc = 0;
-my $err = '';
-
-
 
 foreach my $shard (@SHARDS) {
     my $key = 'dir_for_shard_';
     my $index_dir = $CONFIG->get($key . $shard);
-    show_shards($index_dir);
+    my ($size_main_segment, $size_baby_segment) = size_shards($index_dir);
+
+    # (0,0) is an error condition
+    if (! $size_main_segment || ! $size_baby_segment) {
+        $SEGSIZES{main} = 0;
+        $SEGSIZES{baby} = 0;
+        $rc = $SLIP_Utils::States::RC_CHILD_ERROR;
+        last;
+    }
+    else {
+        $SEGSIZES{main} += $size_main_segment;
+        $SEGSIZES{baby} += $size_baby_segment;
+    }
 }
+
+my $sizes = sprintf("%d %d", $SEGSIZES{main}, $SEGSIZES{baby});
+print STDOUT "$sizes\n";
+
+exit $rc; 
 
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item size_shards
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub show_shards {
-    my ($index_dir) = @_;
+sub size_shards {
+    my ($index_dir) = @_;    
+
+    my @segment_ids = `ls $index_dir/*.prx 2> /dev/null`;
+    my $num_segs = scalar(@segment_ids);
+    unless ($num_segs > 0) {
+        return (0,0);
+    }
     
-    my $merge_factor = `cat $index_dir/../../conf/solrconfig.xml | grep '<mergeFactor>'`;
-    ($merge_factor) = ($merge_factor =~ m,<mergeFactor>(.*?)</mergeFactor>,); 
-
-    my $max_merge = `cat $index_dir/../../conf/solrconfig.xml | grep '<double name="maxMergeMB">'`;
-    ($max_merge) = ($max_merge =~ m,<double[^>]*>(.*?)</double>,); 
-
-    my @segment_ids = `ls $index_dir/*.prx`;
     @segment_ids = map { $_ =~ m,.*/(.*?)\....$, } @segment_ids;
     
-    my $num_segs = scalar @segment_ids;
-    my $s1 = qq{num segments=$num_segs merge_factor=$merge_factor max_merge=${max_merge}M\n\n};
-    __output($s1);
-    __output_non_interactive($s1);
-    
-    my $index_size = 0;
+    my $s = qq{dir=$index_dir   num_segments=$num_segs prefixes=} . join(' ', @segment_ids) . qq{\n\n};
+    __output($s) if ($VERBOSE);
+
     my %segsizes;
+    my $seg = 0;
+    my $largest_seg = 0;
+    my $largest_segsize = 0;
     foreach my $seg_id (@segment_ids) {
-        my $segsize = `du -c --block-size=1 $index_dir/$seg_id*|grep total| cut -f1`;
-        chomp($segsize);
-        
-        my $sz = length($segsize);
-        my $sz_arr_ref = $segsizes{$sz} || [];
-        push(@$sz_arr_ref, {'id' => $seg_id, 'sz' => $segsize});
-        $segsizes{$sz} = $sz_arr_ref;
-        
-        $index_size += $segsize;
+        $seg++;
+        my $segsize = `du -c --block-size=1024M $index_dir/$seg_id*|grep total| cut -f1`;
+        chomp($segsize);        
+        $segsizes{$seg} += $segsize;
+        if ($segsize > $largest_segsize) {
+            $largest_segsize = $segsize;
+            $largest_seg = $seg;
+        }
     }
-    
-    my $levels = keys %segsizes;
-    
-    use constant ONE_GB => 1024*1024*1024;    
-    my ($_m, $_g) = ('M', 'G');
-    
-    foreach my $size (reverse sort { $a <=> $b } keys %segsizes) {
-        my $a_ref = $segsizes{$size};
-        my $seg_ct = scalar @$a_ref;
-        
-        my $s = "Level=$levels segs=$seg_ct\n";
-        __output($s);
-        __output_non_interactive($s);
-        $levels--;
-        
-        foreach my $h_ref (@$a_ref) {            
-            my $size_bytes = $h_ref->{sz};
-            my $size_d;
-            my $base;
-            
-            if ($size_bytes > ONE_GB) {
-                $size_d = sprintf("%.1f", $size_bytes/1024/1024/1024);
-                $base = $_g;
-            }
-            else {
-                $size_d = sprintf("%.1f", $size_bytes/1024/1024);
-                $base = $_m;
-            }
-            
-            my $s0 = $h_ref->{id} . ' ' . $size_d;
-            my $s2 = "\t${s0}$base\n";
-            __output($s2);
-            __output_non_interactive($s2);
-        }
-        
-        my $s3 = "\n";
-        __output($s3);
-        __output_non_interactive($s3);
-        
-        my ($ts, $szz);
-        if ($index_size > ONE_GB) {
-            $szz = sprintf("%.1f", $index_size/1024/1024/1024);
-            $ts = $_g;
-        }
-        else {
-            $szz = sprintf("%.1f", $index_size/1024/1024);
-            $ts = $_m; 
-        }
-        
-        my $s4 = "total size=$szz$ts\n\n";
-        __output($s4);
-        __output_non_interactive($s4);
-        
-        return 1;    
+
+    # Sum all segs smaller than largest to represent baby seg
+    my $baby_segsize = 0;
+    foreach my $segkey (keys %segsizes) {
+        $baby_segsize += $segsizes{$segkey} unless ($segkey == $largest_seg);
     }
+    $segsizes{1} = $largest_segsize;
+    $segsizes{2} = $baby_segsize;
+
+    return ($segsizes{1}, $segsizes{2});
 }    
     
-exit $rc;
+
 
 
 =head1 AUTHOR
@@ -201,7 +169,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2011 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2013 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
