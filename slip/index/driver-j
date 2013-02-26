@@ -411,6 +411,7 @@ sub __driver_exit_report {
         my $indexed_v_new_delta = $indexed_this_run - $newly_processed;
 
         my $duplicates = __duplicates_report($C, $dbh, $run);
+        my $summed_sizes = Scheduler::get_segsizes($C, $run, undef);
 
         $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct};
         $s .= qq{\nI_indexed=$indexed_this_run P_new=$newly_processed};
@@ -419,6 +420,7 @@ sub __driver_exit_report {
         $s .= qq{\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta};
         $s .= qq{\nRestore_ct=$RESTORE_CT};
         $s .= qq{\nDuplicates=} . ($duplicates ? qq{\n\t$duplicates} : 'none');
+        $s .= qq{\nSegment_sizes=$summed_sizes};
     }
 
     __output("$s\n");
