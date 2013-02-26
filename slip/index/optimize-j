@@ -286,9 +286,12 @@ sub handle_optimize_rc {
     Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
 
     # Log
+    my $summed_sizes = Scheduler::get_segsizes($C, $run, undef);
+    my $self_sizes = Scheduler::get_segsizes($C, $run, $shard);
     my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
         . qq{ run=$run shard=$shard host=$host}
-            . qq{ [stop][self] State=$state connect_error=$connect_error};
+            . qq{ [stop][self] State=$state}
+              . qq{ self_sizes='$self_sizes' summed_sizes='$summed_sizes' connect_error=$connect_error};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
     if ($connect_error || ($rc > 0)) {

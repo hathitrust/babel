@@ -328,7 +328,7 @@ Services to indicate their scripts are not available.
 
 # ---------------------------------------------------------------------
 sub __get_BUSY_file {
-    my ($C, $run) = @_;
+    my ($C, $run, $exit_on_exists) = @_;
 
     my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
     if (! -e $flags_dir) {
@@ -341,11 +341,13 @@ sub __get_BUSY_file {
 
     my $busy_file = $flags_dir . '/' . 'busy';
     if (-e $busy_file) {
-        my $rc =  $SLIP_Utils::States::RC_DRIVER_BUSY_FILE;
-        my $s = qq{driver-j: busy file=$busy_file detected run=$run. Exit.\n};
-        __output($s);
-        __non_interactive_err_output($rc, $s);
-        exit $rc;
+        if ($exit_on_exists) {
+            my $rc =  $SLIP_Utils::States::RC_DRIVER_BUSY_FILE;
+            my $s = qq{driver-j: busy file=$busy_file detected run=$run. Exit.\n};
+            __output($s);
+            __non_interactive_err_output($rc, $s);
+            exit $rc;
+        }
     }
 
     return $busy_file;
@@ -500,7 +502,7 @@ sub handle_Build_Wait {
 
         if ($rc == 0) {
             # Set busy file
-            my $busy_file = __get_BUSY_file($C, $run);
+            my $busy_file = __get_BUSY_file($C, $run, 'exit_if_exists');
             # POSSIBLY NOTREACHED
             `touch $busy_file`;
 
@@ -560,20 +562,6 @@ sub handle_Building {
             # optimization so sizer-j will not try to enable or commit
             # during optimization.
             SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             # Enable optimizers to start running from cron
             $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
@@ -944,7 +932,7 @@ sub get_Building_queue_size {
             }
         }
 
-        # Requeue transient server errors no more than MAX_RESTORES
+        # Requeue transient server errors no more than MAX_RESTORES times
         if ($RESTORE_CT < MAX_RESTORES) {
             $rc = __requeue_transient_server_errors($C, $dbh, $run, $stage);
             if ($rc == 0) {
