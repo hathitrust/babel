@@ -861,9 +861,11 @@
           </td>
         <!--      </xsl:if>-->
       <!--tbw CB test code-->
-
+      <!-- unicorn google book stuff-->
       <td class="ItemData">
-
+        <xsl:attribute name="bookIdData">
+          <xsl:value-of select="BookIds"/>
+        </xsl:attribute>
         <!-- Title -->
         
         <div class="ItemTitle">

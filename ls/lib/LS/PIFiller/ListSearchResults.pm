@@ -1398,6 +1398,31 @@ sub _ls_wrap_result_data {
     foreach my $doc_data (@$result_docs_arr_ref) {
         my $s = '';
 
+        # unicorn add oclc, isbn and ? for google book covers
+        my $book_ids_ary_ref=[];
+        my $oclc_ary_ref = $doc_data->{'oclc'};
+        my $isbn_ary_ref = $doc_data->{'isbn'};
+        my $tmp_ary_ref;
+        
+        if (defined($oclc_ary_ref))
+        {
+            $tmp_ary_ref = add_book_id_prefix('OCLC',$oclc_ary_ref);
+            
+            push(@{$book_ids_ary_ref},  @{$tmp_ary_ref});
+        }
+        
+        if (defined($isbn_ary_ref))
+        {
+            $tmp_ary_ref = add_book_id_prefix('ISBN',$isbn_ary_ref);
+            push(@{$book_ids_ary_ref}, @{$tmp_ary_ref} );
+        }
+        # add code for google identifier, see Tim email
+        my $book_ids = join (',',@{$book_ids_ary_ref});
+
+        
+        $s .= wrap_string_in_tag($book_ids,'BookIds');
+        
+        
         my ($display_titles_ary_ref) = $doc_data->{'title'};
         #XXX WARNING  Second title in Solr title field is either 
         #  a) title without the initial article
@@ -1527,6 +1552,20 @@ sub _ls_wrap_result_data {
     }
 
     return \$output;
+}
+#----------------------------------------------------------------------
+#unicorn google book covers
+sub add_book_id_prefix
+{
+    my $prefix = shift;
+    my $ary_ref=shift;
+    my $out=[];
+    
+    foreach my $el (@{$ary_ref})
+    {
+        push (@{$out},$prefix .':'. $el)
+    }
+    return $out;
 }
 
 sub get_advanced_PT_url
