@@ -187,7 +187,7 @@ sub delete_Solr_doc {
 
     my $ok = __del_Delete_document($C, $run, $id, $shard);
     if ($ok) {
-        Db::Delete_item_id_indexed($C, $DBH, $run, $id);
+        Db::Delete_item_id_indexed($C, $DBH, $run, $id, $shard);
         __output(qq{Deleted id=$id, shard=$shard run=$run from slip_indexed\n});
         Db::Delete_id_from_j_queue($C, $DBH, $run, $id);
         __output(qq{Deleted nid=$id run=$run from slip_queue\n});

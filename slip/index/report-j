@@ -567,7 +567,8 @@ sub report_flags_state {
     if (Scheduler::full_optimize_supported($C)) {
         my $do = Scheduler::do_full_optimize($C, $run) ? 'YES' : 'no';
         my $trigger_size = Scheduler::get_full_optimize_trigger_size($C);
-        $fo = "full optimize: trigger size = $trigger_size GB\n\t\t" . "? This run: $do";
+        my $segsizes = Scheduler::get_segsizes($C, $run);
+        $fo = "full optimize: segsizes = $segsizes trigger size = $trigger_size GB\n\t\t" . "? This run: $do";
     }
           
     __Print qq{\n * flags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$fo\n\t$ck\n};
