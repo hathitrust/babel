@@ -111,7 +111,7 @@ sub bc_Usage {
     print qq{       -d '<description>' collection description as a quoted string\n};
     print qq{       -o <userid> (must match your kerberos/Shibboleth/other uniqname)\n};
     print qq{       -a <coll_id> append IDs to coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
-    print qq{       -D <coll_id> [superuser only] delete IDs from coll_id. Obtain <coll_id> using batch_collection.pl -c option\n\tShould be followed by a manual sync-i operation\n};
+    print qq{       -D <coll_id> [superuser only] delete IDs from coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
     print qq{       -c returns the coll_id for collection with -t '<title>' owned by -o <userid>\n};
     print qq{       -C returns the <userid>, display_name, title for collection with -C <coll_id>\n\n};
     print qq{Notes:\n};
