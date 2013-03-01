@@ -12,7 +12,8 @@
   <xsl:variable name="gBeginningLink" select="/MBooksTop/MdpApp/BeginningLink"/>
   <xsl:variable name="gHasPageNumbers" select="/MBooksTop/MdpApp/HasPageNumbers"/>
   <xsl:variable name="gSearchFatalError" select="/MBooksTop/MdpApp/SearchResults/SearchError"/>
-  <xsl:variable name="gNumTerms" select="count(/MBooksTop/MdpApp/SearchTerms/Term)"/>
+  <xsl:variable name="gNumTerms" select="count(/MBooksTop/MdpApp/SearchTerms/Terms/Term)"/>
+  <xsl:variable name="gMultiTerm" select="/MBooksTop/MdpApp/SearchTerms/MultiTerm"/>
   <xsl:variable name="gPagesFound" select="/MBooksTop/MdpApp/SearchSummary/TotalPages"/>
   <xsl:variable name="gValidBoolean" select="/MBooksTop/MdpApp/SearchResults/ValidBooleanExpression"/>
   <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
@@ -127,7 +128,8 @@
 
       <!-- Results -->
       <xsl:call-template name="ResultsContainer">
-        <xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms"/>
+        <xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms/Terms"/>
+        <!--xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms/Terms/"/-->
         <xsl:with-param name="pSearchHits" select="MdpApp/SearchSummary/TotalPages"/>
         <xsl:with-param name="pSearchResults" select="MdpApp/SearchResults"/>
       </xsl:call-template>
@@ -248,13 +250,13 @@
     <xsl:choose>
       <!-- emit entire expression -->
       <xsl:when test="$gValidBoolean=1">
-        <xsl:for-each select="/MBooksTop/MdpApp/SearchTerms/Term">
+        <xsl:for-each select="/MBooksTop/MdpApp/SearchTerms/Terms/Term">
           <xsl:value-of select="."/>
         </xsl:for-each>
       </xsl:when>
       <!-- emit terms joined with OP -->
       <xsl:when test="$gNumTerms >= 1">
-        <xsl:for-each select="/MBooksTop/MdpApp/SearchTerms/Term">
+        <xsl:for-each select="/MBooksTop/MdpApp/SearchTerms/Terms/Term">
           <xsl:value-of select="."/>
           <xsl:if test="position()!=last()">
             <xsl:value-of select="concat(' ', $gSearchOp, ' ')"/>
@@ -297,15 +299,18 @@
       <xsl:value-of select="$gSearchOp"/>
       <xsl:text> numterms=</xsl:text>
       <xsl:value-of select="$gNumTerms"/>
+      <xsl:text> multiterm=</xsl:text>
+      <xsl:value-of select="$gMultiTerm"/>
+      
       <xsl:text> pagesfound=</xsl:text>
       <xsl:value-of select="$gPagesFound"/>
     </xsl:if>
 
     <xsl:choose>
-      <xsl:when test="($gSearchOp='AND' and $gNumTerms > 1)">
+      <xsl:when test="($gSearchOp='AND' and $gMultiTerm = 'true' )">
         <xsl:call-template name="msgRepeatSearchWithOR"/>
       </xsl:when>
-      <xsl:when test="($gSearchOp='OR' and $gNumTerms > 1 and $gPagesFound > 1)">
+      <xsl:when test="($gSearchOp='OR' and $gMultiTerm = 'true' and $gPagesFound > 1)">
         <xsl:call-template name="msgRepeatSearchWithAND"/>
       </xsl:when>
       <xsl:otherwise></xsl:otherwise>
