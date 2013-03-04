@@ -1008,32 +1008,23 @@ sub c_Reset_driver {
     my $driver_Lock_File = "/tmp/driver-$run-lock.sem";
 
     my $s;
-    my $host = `hostname`; $host =~ s,\..*$,,s;
+    my $dev = $ENV{HT_DEV};
 
-    if (-e $busy_file) {
-        $s = `rm $busy_file`;
+    if ($dev) {
+        $s = "\n\tDev: $flags_dir read-only: cannot rm production busy file=$busy_file or $driver_Lock_File: HAND REMOVE\n\n";
     }
     else {
-        if ($host =~ m,earlgrey-1,) {
-            $s = "No busy file\n";
+        if (-e $busy_file) {
+            $s = `rm $busy_file`;
         }
         else {
-            $s = "Host=$host (not earlgrey-1): cannot see busy file=$busy_file: MUST HAND REMOVE!!\n";
+            $s = "No busy file\n";
         }
     }
-    __output($s);
-
     if (-e $driver_Lock_File) {
         $s = `rm $driver_Lock_File`;
     }
-    else {
-        if ($host =~ m,earlgrey-1,) {
-            $s = "No semaphore file\n";
-        }
-        else {
-            $s = "Host=$host (not earlgrey-1): cannot see semaphore file=$driver_Lock_File: MUST HAND REMOVE!!\n";
-        }
-    }
+
     __output($s);
 
     Log_driver_start_stop($C, $run, 'DISABLE');

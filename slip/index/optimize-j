@@ -198,7 +198,7 @@ foreach my $__shard (@SHARDS) {
         if ($SINGLE_SHARD) {
             if ( do_FULL_optimize($C, $DBH, $RUN, $__shard, $HOST, $LIMIT_SEGS) ) {
                 $LIMIT_SEGS = 1;
-                my $s = "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED limit_to_segments=$LIMIT_SEGS\n";
+                my $s = "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED limit_to_segments=$LIMIT_SEGS (FULL)\n";
                 __output($s);
                 error_check_rc($C, $DBH, $RUN, $__shard, $HOST,
                                c_optimize($C, $RUN, $DBH, $__shard, $STAGED, $LIMIT_SEGS));
@@ -243,7 +243,8 @@ Description
 sub do_FULL_optimize {
     my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
 
-    # If limit is already == 1 nothing to do
+    # If limit is already == 1 the first optimization already did the
+    # work.  Nothing to do here.
     my $do = 0;
 
     if ($limit_segs == 1) {
@@ -251,11 +252,26 @@ sub do_FULL_optimize {
     }
     else {
         eval {
-            $do = Scheduler::optimize_do_full_optimize($C, $run, $shard);
+            my $try = Scheduler::optimize_try_full_optimize($C, $run, $shard);
+
+            if ($try) {
+                my $max = $C->get_object('MdpConfig')->get('max_full_optimizing_shards');
+                if (Db::optimize_select_shard($C, $dbh, $run, $shard, $max)) {
+                    $do = 1;
+                    # And leave shard selected to be reset by driver
+                    # when all shards are done so more than max shards
+                    # don't do full optimization.
+                }
+            }
+
+            my $now = Utils::Time::iso_Time();
+            my $sizes = Scheduler::get_segsizes($C, $run, $shard);
+            my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED' : 'NO') . qq{ at $now};
+            Log_optimize($C, $run, $shard, $msg);
         };
         if ($@) {
-            Log_optimize_error($C, $run, $shard, "Problem with schedule file: $@");
-            error_check_rc($C, $dbh, $run, $shard, $host, $SLIP_Utils::States::RC_BAD_SCHED_FILE);
+            Log_optimize_error($C, $run, $shard, "Problem determining full optimize: $@");
+            error_check_rc($C, $dbh, $run, $shard, $host, $SLIP_Utils::States::RC_BAD_SCHED);
         }
     }
 
@@ -341,6 +357,7 @@ sub set_optimize_status {
 
     # Set shard state to 'done'
     my $state = $SLIP_Utils::States::Sht_Optimized;
+
     # Record the time this successful optimize
     Db::set_shard_optimize_done($C, $dbh, $run, $shard);
 
