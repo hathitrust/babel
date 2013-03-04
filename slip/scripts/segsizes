@@ -105,7 +105,7 @@ if ($SIZE) {
         my ($size_main_segment, $size_baby_segment) = size_shards($index_dir);
         
         # (0,0) is an error condition
-        if (! $size_main_segment || ! $size_baby_segment) {
+        if (! $size_main_segment) {
             $SEGSIZES{main} = 0.0;
             $SEGSIZES{baby} = 0.0;
             exit $SLIP_Utils::States::RC_CHILD_ERROR;
@@ -162,7 +162,7 @@ sub size_shards {
 
     @segment_ids = map { $_ =~ m,.*/(.*?)\....$, } @segment_ids;
 
-    my $s = qq{dir=$index_dir   num_segments=$num_segs prefixes=} . join(' ', @segment_ids) . qq{\n\n};
+    my $s = qq{dir=$index_dir   num_segments=$num_segs prefixes=} . join(' ', @segment_ids) . qq{\n};
     __output($s) if ($VERBOSE);
 
     my %segsizes;
