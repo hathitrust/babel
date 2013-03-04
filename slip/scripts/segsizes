@@ -71,8 +71,8 @@ my $SHARD = $opt_R;
 my $COUNT = $opt_C;
 my $SIZE = $opt_S;
 
-if (! $SIZE && ! $COUNT) {
-    my $s = qq{One or both of -S or -C required\n} . sg_usage();
+if (! ($SIZE || $COUNT)) {
+    my $s = qq{One or both of -S or -C is required\n} . sg_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output("$s\n") if ($VERBOSE);
     __non_interactive_err_output($rc, $s);
@@ -128,16 +128,16 @@ if ($COUNT) {
     }
 }
 
-
+my $out;
 if ($SIZE) {
     my $gigabyte_factor = 1024*1024*1024;
     my $sizes = sprintf("%.010f %.010f", $SEGSIZES{main}/$gigabyte_factor, $SEGSIZES{baby}/$gigabyte_factor);
-    print STDOUT "$sizes";
+    $out = "$sizes";
 }
 if ($COUNT) {
-  print STDOUT "$SEGCOUNT";
+  $out = $out ? "$out $SEGCOUNT" : "$SEGCOUNT";
 }
-print "\n";
+print STDOUT "$out\n";
 
 exit 0;
 
