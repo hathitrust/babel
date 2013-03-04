@@ -639,10 +639,6 @@ sub c_init {
     Db::Reset_rate_stats($C, $dbh, $run);
     __output(qq{Done.\n});
 
-    __output(qq{\tzero index size ... });
-    Db::Reset_Index_size($C, $dbh, $run);
-    __output(qq{Done.\n});
-
     __output(qq{\tdelete queue ... });
     Db::Delete_queue($C, $dbh, $run);
     __output(qq{Done.\n});
@@ -710,10 +706,6 @@ sub c_delete {
     
     __output(qq{\tdelete rate stats ... });
     Db::Reset_rate_stats($C, $dbh, $run);
-    __output(qq{Done.\n});
-    
-    __output(qq{\tdelete index size ... });
-    Db::delete_Index_size($C, $dbh, $run);
     __output(qq{Done.\n});
     
     __output(qq{\tdelete queue ... });

@@ -194,7 +194,7 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
-=item Name 
+=item Name
 
 Description
 
@@ -204,11 +204,11 @@ Description
 use constant INCLUDE_ZERO_SHARD => 1;
 
 sub __get_shard_list {
-    my ($C, $include_zero_shard) = @_; 
+    my ($C, $include_zero_shard) = @_;
 
     my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
     my @list = $include_zero_shard ? (0, @num_shards_list) : @num_shards_list;
-    
+
     return @list;
 }
 
@@ -230,12 +230,12 @@ sub __commit {
     use constant COMMIT_TIMEOUT => 10000;
 
     __Print(qq{commit shard=$shard\n});
-    
+
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, COMMIT_TIMEOUT);
     my ($index_state, $stats_ref) = $indexer->commit_updates($C);
 
     if (Search::Constants::indexing_failed($index_state)) {
-        my $s = 
+        my $s =
             qq{commit failed shard=$shard index_state=}
                 . SLIP_Utils::Common::IXconstant2string($index_state);
         die $s;
@@ -256,7 +256,7 @@ sub _actual_docs_in_shard {
 
     return 0 unless ($COMMITTED);
     return 0 unless ($shard);
-    
+
     __commit($C, $run, $shard);
 
     my $uri = $C->get_object('MdpConfig')->get('engine_for_shard_' . $shard);
@@ -287,10 +287,17 @@ sub _load_stats_hash {
     my %stats;
     foreach my $__shard (@num_shards_list) {
         # numbers from producers that have contributed to this shard
-        my $rate =
-            Db::Select_rate_stats($C, $dbh, $run, $__shard);
-        my $s_idx_size =
-            Db::Select_indexdir_size($C, $dbh, $run, $__shard);
+        my $rate = Db::Select_rate_stats($C, $dbh, $run, $__shard);
+        my $s_idx_size;
+        if ($__shard) {
+            my $segsizes = Scheduler::get_segsizes($C, $run, $__shard);
+            my @sizes = split(/[ \n]+/, $segsizes);
+            $s_idx_size = $sizes[0] + $sizes[1];
+        }
+        else {
+            $s_idx_size = 0.0;
+        }
+
         my ($s_reindexed_ct, $s_deleted_ct, $s_num_errs, $s_num_docs, $s_doc_size, $s_doc_time, $s_idx_time, $s_tot_time) =
             Db::Select_shard_stats($C, $dbh, $run, $__shard);
 
@@ -336,7 +343,7 @@ sub _report_totals {
 
     my $reindexed_ct = 0;
     my $deleted_ct = 0;
-    
+
     my $num_timeouts = 0;
     my $num_processed = 0;
     my $num_indexed = 0;
@@ -361,7 +368,7 @@ sub _report_totals {
     }
 
     my $doc_size_g  = sprintf("%.1f", $doc_size/1024/1024/1024);
-    my $idx_size_g  = sprintf("%.1f", $idx_size/1024/1024/1024);
+    my $idx_size_g  = sprintf("%.1f", $idx_size);
 
     my $total_load = $num_processed + $Q_size;
 
@@ -461,7 +468,7 @@ sub _report_shard {
 
     my $doc_psec = ($doc_Time > 0) ? sprintf("%.2f", $num_docs_processed/$doc_Time) : 0;
     my $doc_kpsec = ($doc_Time > 0) ? sprintf("%.1f", $doc_size/1024/$doc_Time) : 0;
-    my $idx_size_g = sprintf("%.1f", $idx_size/1024/1024/1024);
+    my $idx_size_g = sprintf("%.1f", $idx_size);
     my $idx_kpsec = ($idx_Time > 0) ? sprintf("%.1f", $doc_size/1024/$idx_Time) : 0;
     my $ratio =  ($doc_kpsec > 0) ? sprintf("%.2f", $idx_kpsec/$doc_kpsec) : 'undef';
     my $doc_ph = sprintf("%.0f", $srf->{$shard}{'rate'});
@@ -525,7 +532,7 @@ sub report_queue_state {
 
     my $shared_q_size = SharedQueue::count_shared_queue_ids($C, $dbh);
 
-    my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);    
+    my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
     my $max_version = Db::get_holdings_max_version($C, $dbh, $run);
     my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $max_version);
 
@@ -548,18 +555,18 @@ sub report_flags_state {
     my ($C, $run) = @_;
 
     my $config = $C->get_object('MdpConfig');
-    
+
     my $shared_flags_dir = $config->get('shared_flags_dir');
-    my $busy_file = "$shared_flags_dir/busy";    
+    my $busy_file = "$shared_flags_dir/busy";
     my $stop_file = "/htapps/babel/slip/etc/STOPSLIP";
-    
+
     my $busy = (-e $busy_file) ? 'YES' : 'no';
     my $stop = (-e $stop_file) ? 'YES' : 'no';
 
     unless ($DRIVER) {
         $busy = 'Not driver driven'
     }
-    
+
     my $cksup = $config->get('check_index_supported') ? 'YES' : 'no';
     my $ck = "check index support=$cksup";
 
@@ -573,11 +580,11 @@ sub report_flags_state {
 
         my $segsizes;
         foreach my $shard (@num_shards_list) {
-            $segsizes .= Scheduler::get_segsizes($C, $run, $shard) . "\n\t\t";
+            $segsizes .= sprintf("%2s %s\n\t\t", $shard, Scheduler::get_segsizes($C, $run, $shard));
         }
         $fo .= $segsizes;
     }
-          
+
     __Print qq{\n * flags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$fo\n\t$ck\n};
 }
 
@@ -674,13 +681,7 @@ sub report_configuration {
         my $num_s_producers = Db::Select_shard_num_producers($C, $dbh, $run, $__shard);
         my $num_s_allocated = Db::Select_shard_num_allocated($C, $dbh, $run, $__shard);
 
-        my $e;
-        if (! $s_enabled) {
-            $e = 'disabled';
-        }
-        else {
-            $e = Db::shard_is_suspended($C, $dbh, $run, $__shard) ? 'suspended' : 'enabled';
-        }
+        my $e = $s_enabled ? 'enabled' : 'disabled';
 
         __Print qq{\t\t$__shard: producers[conf=$num_s_producers alloc=$num_s_allocated] build=$e optimize=$opt_enabled check=$ck_enabled engine=$engine_uri\n};
     }

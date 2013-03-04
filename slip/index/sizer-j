@@ -10,19 +10,7 @@ sizer-j
 
 =head1 DESCRIPTION
 
-The sizer needs to be on the same machine running Solr so sizer-j can
-do a du on the index subdirectories.
-
-In a multi-machine environment that can see storage over NFS, sizer-j
-only needs to run from cron on one machine.
-
-When scheduled, it saves the du
-stats to a table that can be read by the producers, anywhere, to store
-that stat along with data sizes and indexing and doc creation times.
-It should run frequently enough to capture the solr index flush to
-disk.
-
-
+Now just determines release status.
 
 =head1 OPTIONS
 
@@ -82,15 +70,13 @@ else {
 
 
 sub sz_get_usage {
-    my $s .= qq{Usage: sizer-j -r run [-S][-z][-u][-T]
+    my $s .= qq{Usage: sizer-j -r run -S [-T]
                   where -S updates the snapshot status
-                        -T test compilation
-                        -u performs suspension/unsuspension vs. max shard size in config
-                        -z updates the index size\n};
+                        -T test compilation\n};
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_S, $opt_z, $opt_T, $opt_u);
+our ($opt_d, $opt_r, $opt_S, $opt_T);
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
@@ -107,9 +93,15 @@ if (! $RUN) {
     exit $rc;
 }
 
-my $SNAPSHOT = $opt_S; # Optional
-my $SUSPEND = $opt_u; # Optional
-my $SIZE = $opt_z; # Optional
+my $SNAPSHOT = $opt_S; # Required
+if (! $SNAPSHOT) {
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    my $s = sz_get_usage();
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
 
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
@@ -129,7 +121,6 @@ my $Lock_File = "/tmp/sizer-$RUN-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     __output("could not get semaphore. exit...\n");
-    Log_sem($C, $RUN);
     exit 0;
 }
 END {
@@ -150,32 +141,24 @@ $C->set_object('Database', $db);
 
 my $DBH = $db->get_DBH();
 
-# Only size a run that exists.  When re-numbering from re-indexing run 10 to production run 11, run 11 will first be deleted.  Don't try to zize it.
+# Only determeind release status a run that exists.  When re-numbering
+# from re-indexing run 10 to production run 11, run 11 will first be
+# deleted. 
 
 my $ct = Db::Test_j_rights_timestamp($C, $DBH, $RUN);
 if ($ct == 0) {
-    __output(qq{Nothing to size: run=$RUN not in db tables.  Exit.\n});
+    __output(qq{Nothing to release: run=$RUN not in db tables.  Exit.\n});
     exit 0;
 }
 
 eval {
-    # Only commit to determine index size during the Building and
-    # Build_Wait stages.
-    my $driver_driven = $config->get('driver_driven');
-    if ($driver_driven) {
-        handle_driver_sizing($C, $DBH, $RUN);
-    }
-    else {
-        handle_non_driver_sizing($C, $DBH, $RUN);
-    }
+    sz_update_release_status($C, $DBH, $RUN);
 };
 if ($@) {
     my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
-
     my $s = qq{CRITICAL ERROR: $@\n};
     __output($s);
     __non_interactive_err_output($rc, $s);
-
     exit $rc;
 }
 
@@ -185,60 +168,6 @@ exit 0;
 #
 # --------------------- S u b r o t i n e s   -------------------------
 #
-
-# ---------------------------------------------------------------------
-
-=item handle_driver_sizing
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_driver_sizing {
-    my ($C, $dbh, $run) = @_;
-    
-    if ($SIZE) {
-        my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
-        if (($_Stage eq $SLIP_Utils::States::St_Build_Wait)
-            ||
-            ($_Stage eq $SLIP_Utils::States::St_Building)
-           ) {
-            sz_update_indexdir_size($C, $dbh, $run);
-        }
-        else {
-            if ($INTERACTIVE) {
-                my $s = qq{Wrong driver stage=$_Stage to size index ... skip\n};
-                __output($s);
-            }
-        }
-    }
-    
-    if ($SNAPSHOT) {
-        sz_update_release_status($C, $dbh, $run);
-    }
-}
-
-# ---------------------------------------------------------------------
-
-=item handle_non_driver_sizing
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_non_driver_sizing {
-    my ($C, $dbh, $run) = @_;
-    
-    if ($SIZE) {
-        sz_update_indexdir_size($C, $dbh, $run);
-    }
-    
-    if ($SNAPSHOT) {
-        sz_update_release_status($C, $dbh, $run);
-    }
-}
 
 # ---------------------------------------------------------------------
 
@@ -302,153 +231,6 @@ sub sz_update_release_status {
     }
 }
 
-# ---------------------------------------------------------------------
-
-=item sz_update_indexdir_size
-
-This script is responsible for determining the size of the index on
-disk reliably.
-
-Until a commit removes segment files that have been merged
-into a larger segment, du gives a false number for the shard size.
-So the strategy is to commit then do the du.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub sz_update_indexdir_size {
-    my ($C, $dbh, $run) = @_;
-
-    my $config = $C->get_object('MdpConfig');
-    my @shards = $config->get('num_shards_list');
-
-    # cron runs sizer every 2 minutes.  We do not want to exceed
-    # maxWarmingReaders so use a long timeout to block until the
-    # commit finishes and thereby block later scheduled sizer-j on the
-    # current semaphore.
-    use constant COMMIT_TIMEOUT => 43200;
-
-    foreach my $shard (@shards) {
-        my $index_dir = $config->get('dir_for_shard_' . $shard);
-
-        # Unless storage is shared, the machine running this sizer-j
-        # may not be running the solr instance backing every shard
-        if (! -e $index_dir) {
-            __output(qq{index directory="$index_dir" does not exist. skipping shard=$shard\n});
-            next;
-        }
-
-        # Just hope the commit does not time-out. If it does, we will
-        # probably see a too large du size and hope the next
-        # invocation works and we get the "true" smaller size.
-        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, COMMIT_TIMEOUT);
-        $indexer->commit_updates($C);
-        __output("shard=$shard committed\n");
-
-        my $size_now = ___du($index_dir);
-        Db::update_indexdir_size($C, $dbh, $run, $shard, $size_now);
-        
-        # max_size_GB in .conf leaves some "headroom"
-        my $size_now_GB = get_shard_size_GB($C, $dbh, $run, $shard, $size_now);
-        my $max_size_GB = $C->get_object('MdpConfig')->get('default_max_shard_size_GB');
-
-        __output("shard=$shard size=$size_now ($size_now_GB GB)\n");
-
-        if ($SUSPEND) {
-            # Goal is to suspend shard if it has grown to the max
-            # allowed but to un-suspend them if they have shrunk due
-            # to commits or an optimize.
-            my $suspended = Db::shard_is_suspended($C, $dbh, $run, $shard);
-
-            if ($size_now_GB > $max_size_GB) {
-                # If it was not suspended and now should be.
-                if (! $suspended) {
-                    Db::suspend_shard($C, $dbh, $run, $shard);
-                    __output("shard=$shard suspended\n");
-                    Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'SUSPENDED');
-                }
-            }
-            elsif  ($size_now_GB < $max_size_GB) {
-                # If it was suspended and now should not be.
-                if ($suspended) {
-                    Db::unsuspend_shard($C, $dbh, $run, $shard);
-                    __output("shard=$shard un-suspended\n");
-                    Log_shard_size($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, 'UNSUSPENDED') ;
-                }
-            }
-        }
-    }
-}
-
-
-# ---------------------------------------------------------------------
-
-=item Log_sem
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub Log_sem {
-    my ($C, $run) = @_;
-
-    my $s = qq{***SEMAPHORE EXIT: } . Utils::Time::iso_Time() . qq{ r=$run};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
-}
-
-# ---------------------------------------------------------------------
-
-=item Log_shard_size
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub Log_shard_size {
-    my ($C, $dbh, $run, $shard, $max_size_GB, $size_now_GB, $e) = @_;
-
-    my $s = qq{***SHARD SIZE: [$e] }
-        . Utils::Time::iso_Time()
-            . qq{ r=$run shard=$shard max=$max_size_GB now=$size_now_GB};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
-}
-
-
-# ---------------------------------------------------------------------
-
-=item get_shard_size_GB
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub get_shard_size_GB {
-    my ($C, $dbh, $run, $shard, $size_bytes) = @_;
-    my $idx_size_GB  = sprintf("%.3f", $size_bytes/1024/1024/1024);
-    return $idx_size_GB
-}
-
-
-# ---------------------------------------------------------------------
-
-=item ___du
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub ___du {
-    my $dir = shift;
-
-    my $du_res = `du -B1 $dir`;
-    my ($total) = ($du_res =~ m,^(\d+),);
-
-    return $total;
-}
 
 1;
 
@@ -459,7 +241,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008-9 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-9, 2013 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

@@ -313,18 +313,6 @@ CREATE TABLE `slip_rights_control` (`enabled` tinyint(1) NOT NULL DEFAULT '0');
 
 
 ---------------------------------------------------------------------
--- Do a du in bytes for the run for a given shard
----------------------------------------------------------------------
-CREATE TABLE `slip_index_size` (
-        `run`   smallint(3) NOT NULL DEFAULT '0',
-        `shard` smallint(2) NOT NULL DEFAULT '0',
-        `du`    bigint(20)  NOT NULL DEFAULT '0',
-                PRIMARY KEY  (`run`, `shard`)
-       );
-
-CREATE TABLE `slip_index_size` (`run` smallint(3) NOT NULL DEFAULT '0', `shard` smallint(2) NOT NULL DEFAULT '0', `du` bigint(20) NOT NULL DEFAULT '0', PRIMARY KEY (`run`, `shard`));
-
----------------------------------------------------------------------
 -- Track version loaded from ht_repository.holdings_deltas for a given
 -- run
 ---------------------------------------------------------------------

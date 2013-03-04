@@ -52,6 +52,7 @@ use CGI qw/:standard/;
 use Getopt::Std;
 use Time::Local;
 use Date::Calc;
+use Scheduler;
 
 # App
 use Utils;
@@ -290,13 +291,8 @@ sub report_shards {
         
         my $shard_enabled = Db::Select_shard_enabled($C, $dbh, $run, $shard);
         my $shard_class = $shard_enabled ? 'enabled' : 'not-enabled';
-        my $e;
-        if (! $shard_enabled) {
-            $e = 'dis';
-        }
-        else {
-            $e = Db::shard_is_suspended($C, $dbh, $run, $shard) ? 'sus' : 'enb';
-        }
+
+        my $e = $shard_enabled ? 'enb' : 'dis';
         my $enabled = td({-class=>"$shard_class"}, ["$e"]);
         
         my $opt_enabled = Db::Select_optimize_enabled($C, $dbh, $run, $shard);
@@ -383,16 +379,21 @@ sub report_shards {
         my $crit =  $critical ? td({-class=>'error'}, ["$critical"]) : td(["0"]);
         my $machines = a({-href=>$engine_url}, "$engine");
         
-        my $size = Db::Select_indexdir_size($C, $dbh, $run, $shard);
-        my $size_GB = sprintf("%.3f", $size/1024/1024/1024);
-        
-        my $max = $config->get('default_max_shard_size_GB');
+        my $size_GB;
+        if ($shard) {
+            my $segsizes = Scheduler::get_segsizes($C, $run, $shard);
+            my @sizes = split(/[ \n]+/, $segsizes);
+            $size_GB = $sizes[0] + $sizes[1]; 
+        }
+        else {
+            $size_GB = 0.0;
+        }
         
         push(@rows,
              td(["$shard"])
              . $enabled
              . $states
-             . td([$machines, "$directory", "$num_docs", "$size_GB", "$max"])
+             . td([$machines, "$directory", "$num_docs", "$size_GB"])
              . td(["$total_errs", "$index", "$ocr", "$meta", "$server"])
              . $crit
              . $N);
@@ -405,13 +406,12 @@ sub report_shards {
         $sh_tot{'server'} += $server;
         $sh_tot{'critical'} += $critical;
         $sh_tot{'size'} += $size_GB;
-        $sh_tot{'max'} += $max;
     }
     
     my $totals;
     my $blank_fields = ($driver_driven ? ["","","","","","","","","",""] : ["","","",""]);
     if (scalar(@num_shards_list) > 1) {
-        $totals = td({-class=>"hidden-cell-1"}, $blank_fields) . td([$sh_tot{'num_docs'}, $sh_tot{'size'}, $sh_tot{'max'}, $sh_tot{'total_errs'}, $sh_tot{'index'}, $sh_tot{'ocr'}, $sh_tot{'meta'}, $sh_tot{'server'}, $sh_tot{'critical'}]);
+        $totals = td({-class=>"hidden-cell-1"}, $blank_fields) . td([$sh_tot{'num_docs'}, $sh_tot{'size'}, $sh_tot{'total_errs'}, $sh_tot{'index'}, $sh_tot{'ocr'}, $sh_tot{'meta'}, $sh_tot{'server'}, $sh_tot{'critical'}]);
     }   
     
     my $TR;
@@ -421,9 +421,9 @@ sub report_shards {
                   th({-class=>"hidden-cell-1", -colspan=>1}, "") . 
                   th({-colspan=>3}, "enabled") . 
                   th({-colspan=>4}, "completion times") . 
-                  th({-class=>"hidden-cell-1", -colspan=>5}, "") . 
+                  th({-class=>"hidden-cell-1", -colspan=>4}, "") . 
                   th({-colspan=>6, -width=>"15%"},  "errors") . $N,
-                  th({-width=>"2%"}, ["shard", @enabled_head, @states_head]) . th(["solr instance", "index directory", "num", "size", "max", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
+                  th({-width=>"2%"}, ["shard", @enabled_head, @states_head]) . th(["solr instance", "index directory", "num", "size", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
                   @rows,
                   $totals
                  ])
@@ -431,9 +431,9 @@ sub report_shards {
     else {
         $TR = Tr({-align=>"center"},
                  [
-                  th({-class=>"hidden-cell-1", -colspan=>7}, "") . 
-                  th({-colspan=>9, -width=>"15%"},  "errors") . $N,
-                  th({-width=>"2%"}, ["shard"]) . th("enabled") . th(["solr instance", "index directory", "num", "size", "max", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
+                  th({-class=>"hidden-cell-1", -colspan=>6}, "") . 
+                  th({-colspan=>8, -width=>"15%"},  "errors") . $N,
+                  th({-width=>"2%"}, ["shard"]) . th("enabled") . th(["solr instance", "index directory", "num", "size", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
                   @rows,
                   $totals
                  ])
