@@ -81,10 +81,9 @@ else {
 $| = 1;
 
 sub opt_get_usage {
-    my $s .= qq{Usage: optimize-j -r run [-R shard [-S0 | -S1]] -On  [-t timeout][-d][-n][-T]
+    my $s .= qq{Usage: optimize-j -r run [-R shard [-S0 | -S1]] -On [-d][-n][-T]
        where -S0 is non-staged (default), -S1 is staged
              -On optimizes to n segments. If -S1, then in powers of 2 down to n={1,2,4,...} segments
-             -t timeout overrides default long timeout (48 hours). Optimizing all shards forces a 10 sec. timeout.
              -n runs without calling optimize\n};
     return $s;
 }
@@ -93,8 +92,6 @@ our ($opt_r, $opt_R, $opt_t, $opt_S, $opt_d, $opt_O, $opt_n, $opt_T);
 
 my $ops = getopts('r:R:t:dS:O:nT');
 
-use constant LARGE_TIMEOUT => 172800; # 48 hours
-use constant SMALL_TIMEOUT => 10; # 10 sec when optimizing all shards at once
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 
 my $TEST_ONLY = defined($opt_T);
@@ -137,6 +134,7 @@ if ($@) {
     exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
 }
 $C->set_object('Database', $db);
+my $DBH = $db->get_DBH();
 
 my $SHARD = $opt_R || 0; # Optional
 my $STAGED = $opt_S || 0; # Optional
@@ -150,37 +148,15 @@ if ($STAGED) {
     }
 }
 
-# Do not try to optimize this shard while I am running already.
-my @SHARDS = $SHARD ? ($SHARD) : $C->get_object('MdpConfig')->get('num_shards_list');
-my $ALL_SHARDS = (scalar(@SHARDS) > 1);
+my @SHARDS = (defined($SHARD) && ($SHARD > 0)) ? ($SHARD) : $C->get_object('MdpConfig')->get('num_shards_list');
+my $SINGLE_SHARD = (scalar(@SHARDS) == 1);
 
 if ($INTERACTIVE) {
     my $s;
-    if ($STAGED) {
-        $s = q{Staged optimize. DO NOT KILL script until finished! OK? [N] };
-        __confirm($s);
-    }
-
-    $s = q{Are you running from a shell that can see the Solr index directory for `ls`? [N] };
-    __confirm($s);
-
-    if ($ALL_SHARDS) {
+    unless ($SINGLE_SHARD) {
         $s = qq{OK to optimize ALL shards run=$RUN limit segments=$LIMIT_SEGS shards=(} . join(' ', @SHARDS) . q{)? [N] };
         __confirm($s);
     }
-}
-
-# Use a long timeout when optimizing one shard unless explicitly
-# over-ridden for some reason. We do no want to timeout before
-# optimize, staged or not, finishes so check-j will see final
-# result. Optimize to 1 or 2 segs can take a long time. Otherwise use
-# a short timeout.
-my $TIMEOUT = LARGE_TIMEOUT; # optional
-if (defined($opt_t)) {
-    $TIMEOUT = $opt_t;
-}
-elsif ($ALL_SHARDS) {
-    $TIMEOUT = SMALL_TIMEOUT;
 }
 
 # Do not try to optimize this shard or repeat all_shards optimization
@@ -199,7 +175,6 @@ END {
 }
 
 foreach my $__shard (@SHARDS) {
-    my $DBH = $db->get_DBH();
     my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $__shard);
     my $optimize_enabled =
       (
@@ -212,27 +187,25 @@ foreach my $__shard (@SHARDS) {
 
     # Adjust $LIMIT_SEGS for full optimize?
     if ($optimize_enabled) {
-        if (! $ALL_SHARDS) {
-            eval {
-                if (Scheduler::optimize_do_full_optimize($C, $RUN, $__shard)) {
-                    $LIMIT_SEGS = 1;
-                }
-            };
-            if ($@) {
-                Log_optimize_error($C, $RUN, $__shard, "Problem with schedule file: $@");
-                handle_optimize_rc($C, $DBH, $RUN, $__shard, $HOST, $SLIP_Utils::States::RC_BAD_SCHED_FILE);
+        # Optimize to determine size of second shard to test for
+        # full optimize.
+        my $s = "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED limit_to_segments=$LIMIT_SEGS\n";
+        __output($s);
+        error_check_rc($C, $DBH, $RUN, $__shard, $HOST,
+                       c_optimize($C, $RUN, $DBH, $__shard, $STAGED, $LIMIT_SEGS));
+
+        # Full?
+        if ($SINGLE_SHARD) {
+            if ( do_FULL_optimize($C, $DBH, $RUN, $__shard, $HOST, $LIMIT_SEGS) ) {
+                $LIMIT_SEGS = 1;
+                my $s = "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED limit_to_segments=$LIMIT_SEGS\n";
+                __output($s);
+                error_check_rc($C, $DBH, $RUN, $__shard, $HOST,
+                               c_optimize($C, $RUN, $DBH, $__shard, $STAGED, $LIMIT_SEGS));
             }
         }
-
-        eval {
-            my $s =
-              "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED timeout=$TIMEOUT"
-                . " limit_to_segments=$LIMIT_SEGS\n";
-            __output($s);
-
-            handle_optimize_rc($C, $DBH, $RUN, $__shard, $HOST,
-                               c_optimize($C, $RUN, $DBH, $__shard, $TIMEOUT, $STAGED, $LIMIT_SEGS));
-        };
+        my $state = set_optimize_status($C, $DBH, $RUN, $__shard);
+        optimize_report($C, $RUN, $__shard, $HOST, $state, 0, 0);
     }
 }
 
@@ -244,54 +217,71 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
-=item handle_optimize_rc
+=item __sleep_STOPSLIP
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub handle_optimize_rc {
-    my ($C, $dbh, $run, $shard, $host, $rc) = @_;
-
+sub __sleep_STOPSLIP {
     while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("  wait Optimize done: STOPSLIP\n");
         sleep STOPSLIP_SLEEP_WAIT;
     }
+}
 
-    # Have we lost the database?
-    my $state = 'undef';
-    my $connect_error = 0;
-    my $connection_still_alive = $dbh->ping();
+# ---------------------------------------------------------------------
 
-    if ($connection_still_alive) {
-        if ($rc > 0) {
-            # Set shard state to 'error'
-            $state = $SLIP_Utils::States::Sht_Optimize_Error;
-        }
-        else {
-            # Set shard state to 'done'
-            $state = $SLIP_Utils::States::Sht_Optimized;
-            # Record the time this successful optimize
-            Db::set_shard_optimize_done($C, $dbh, $run, $shard);
-        }
+=item do_FULL_optimize
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub do_FULL_optimize {
+    my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
+
+    # If limit is already == 1 nothing to do
+    my $do = 0;
+
+    if ($limit_segs == 1) {
+        $do = 0;
     }
     else {
-        $connect_error = 1;
+        eval {
+            $do = Scheduler::optimize_do_full_optimize($C, $run, $shard);
+        };
+        if ($@) {
+            Log_optimize_error($C, $run, $shard, "Problem with schedule file: $@");
+            error_check_rc($C, $dbh, $run, $shard, $host, $SLIP_Utils::States::RC_BAD_SCHED_FILE);
+        }
     }
 
-    # Set terminal state
-    Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
-    # Self-stop.  driver-j also disables optimize-j as extra measure.
-    Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
+    return $do;
+}
 
-    # Log
-    my $summed_sizes = Scheduler::get_segsizes($C, $run, undef);
-    my $self_sizes = Scheduler::get_segsizes($C, $run, $shard);
+
+# ---------------------------------------------------------------------
+
+=item optimize_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub optimize_report {
+    my ($C, $run, $shard, $host, $state, $rc, $connect_error) = @_;
+
+    # Report
+    my $segment_sizes = Scheduler::get_segsizes($C, $run);
+    my $self_size = Scheduler::get_segsizes($C, $run, $shard);
     my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
-        . qq{ run=$run shard=$shard host=$host}
+      . qq{ run=$run shard=$shard host=$host}
             . qq{ [stop][self] State=$state}
-              . qq{ self_sizes='$self_sizes' summed_sizes='$summed_sizes' connect_error=$connect_error};
+              . qq{ self_size=$self_size summed_sizes=$segment_sizes connect_error=$connect_error};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
     if ($connect_error || ($rc > 0)) {
@@ -300,8 +290,67 @@ sub handle_optimize_rc {
     else {
         Log_optimize($C, $run, $shard, $s);
     }
+}
 
-    exit $rc if ($rc > 0);
+
+# ---------------------------------------------------------------------
+
+=item error_check_rc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub error_check_rc {
+    my ($C, $dbh, $run, $shard, $host, $rc) = @_;
+
+    if ($rc > 0) {
+        my $connect_error = 0;
+        my $state = $SLIP_Utils::States::Sht_Optimize_Error;
+
+        my $connection_still_alive = $dbh->ping();
+        if ($connection_still_alive) {
+            # Set terminal state
+            Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
+            # Self-stop.
+            Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
+        }
+        else {
+            $connect_error = 1
+        }
+
+        optimize_report($C, $run, $shard, $host, $state, $rc, $connect_error);
+
+        exit $rc;
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item set_optimize_status
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub set_optimize_status {
+    my ($C, $dbh, $run, $shard) = @_;
+
+    # Set shard state to 'done'
+    my $state = $SLIP_Utils::States::Sht_Optimized;
+    # Record the time this successful optimize
+    Db::set_shard_optimize_done($C, $dbh, $run, $shard);
+
+    # Set terminal state
+    Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
+
+    # Self-stop.  driver-j also disables optimize-j as extra measure.
+    Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
+
+    return $state;
 }
 
 
@@ -370,9 +419,11 @@ is a degenerate case that is just a commit.
 
 # ---------------------------------------------------------------------
 sub c_optimize {
-    my ($C, $run, $dbh, $shard, $timeout, $staged, $limit_segs) = @_;
+    my ($C, $run, $dbh, $shard, $staged, $limit_segs) = @_;
 
-    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, $timeout);
+    __sleep_STOPSLIP();
+
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
 
     my ($rc, $num_orig_segments, $segments_ref) =
         get_segment_list($C, $shard, $staged, $limit_segs);

@@ -49,25 +49,35 @@ use SLIP_Utils::States;
 $| = 1;
 
 sub sg_usage {
-    my $s .= qq{Usage: segsizes -r run [-v][-R shard]\n};
+    my $s .= qq{Usage: segsizes -r run [-v] -S [-R shard] | -C shard\n\twhere -S is shard sizes and -C is segment count\n};
     return $s;
 }
 
-our ($opt_r, $opt_R, $opt_v);
+our ($opt_r, $opt_R, $opt_v, $opt_C, $opt_S);
 
-my $ops = getopts('r:R:v');
+my $ops = getopts('r:R:vC:S');
 
+my $VERBOSE = $opt_v; # Optional
 my $RUN = $opt_r; # Required
 if (! $RUN) {
     my $s = qq{run (-r) parameter missing } . sg_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output("$s\n") if ($VERBOSE);
     __non_interactive_err_output($rc, $s);
-
     exit $rc;
 }
 
-my $VERBOSE = $opt_v; # Optional
-my $SHARD = $opt_R; # Optional
+my $SHARD = $opt_R;
+my $COUNT = $opt_C;
+my $SIZE = $opt_S;
+
+if (! $SIZE && ! $COUNT) {
+    my $s = qq{One or both of -S or -C required\n} . sg_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output("$s\n") if ($VERBOSE);
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
+}
 
 my $C = new Context;
 
@@ -85,30 +95,51 @@ else {
 }
 
 my %SEGSIZES;
+my $SEGCOUNT;
 my $rc = 0;
 
-foreach my $shard (@SHARDS) {
-    my $key = 'dir_for_shard_';
-    my $index_dir = $CONFIG->get($key . $shard);
-    my ($size_main_segment, $size_baby_segment) = size_shards($index_dir);
-
-    # (0,0) is an error condition
-    if (! $size_main_segment || ! $size_baby_segment) {
-        $SEGSIZES{main} = 0;
-        $SEGSIZES{baby} = 0;
-        $rc = $SLIP_Utils::States::RC_CHILD_ERROR;
-        last;
-    }
-    else {
-        $SEGSIZES{main} += $size_main_segment;
-        $SEGSIZES{baby} += $size_baby_segment;
+if ($SIZE) {
+    foreach my $shard (@SHARDS) {
+        my $key = 'dir_for_shard_';
+        my $index_dir = $CONFIG->get($key . $shard);
+        my ($size_main_segment, $size_baby_segment) = size_shards($index_dir);
+        
+        # (0,0) is an error condition
+        if (! $size_main_segment || ! $size_baby_segment) {
+            $SEGSIZES{main} = 0.0;
+            $SEGSIZES{baby} = 0.0;
+            exit $SLIP_Utils::States::RC_CHILD_ERROR;
+        }
+        else {
+            $SEGSIZES{main} += $size_main_segment;
+            $SEGSIZES{baby} += $size_baby_segment;
+        }
     }
 }
 
-my $sizes = sprintf("%d %d", $SEGSIZES{main}, $SEGSIZES{baby});
-print STDOUT "$sizes\n";
+if ($COUNT) {
+    my $key = 'dir_for_shard_';
+    my $index_dir = $CONFIG->get($key . $COUNT);
+    $SEGCOUNT = count_segs($index_dir);    
 
-exit $rc; 
+    # 0 is an error condition
+    if (! $SEGCOUNT) {
+        exit $SLIP_Utils::States::RC_CHILD_ERROR;
+    }
+}
+
+
+if ($SIZE) {
+    my $gigabyte_factor = 1024*1024*1024;
+    my $sizes = sprintf("%.010f %.010f", $SEGSIZES{main}/$gigabyte_factor, $SEGSIZES{baby}/$gigabyte_factor);
+    print STDOUT "$sizes";
+}
+if ($COUNT) {
+  print STDOUT "$SEGCOUNT";
+}
+print "\n";
+
+exit 0;
 
 
 # ---------------------------------------------------------------------
@@ -121,27 +152,27 @@ Description
 
 # ---------------------------------------------------------------------
 sub size_shards {
-    my ($index_dir) = @_;    
+    my ($index_dir) = @_;
 
     my @segment_ids = `ls $index_dir/*.prx 2> /dev/null`;
     my $num_segs = scalar(@segment_ids);
     unless ($num_segs > 0) {
         return (0,0);
     }
-    
+
     @segment_ids = map { $_ =~ m,.*/(.*?)\....$, } @segment_ids;
-    
+
     my $s = qq{dir=$index_dir   num_segments=$num_segs prefixes=} . join(' ', @segment_ids) . qq{\n\n};
     __output($s) if ($VERBOSE);
 
     my %segsizes;
     my $seg = 0;
-    my $largest_seg = 0;
-    my $largest_segsize = 0;
+    my $largest_seg = 0.0;
+    my $largest_segsize = 0.0;
     foreach my $seg_id (@segment_ids) {
         $seg++;
-        my $segsize = `du -c --block-size=1024M $index_dir/$seg_id*|grep total| cut -f1`;
-        chomp($segsize);        
+        my $segsize = `du -c --block-size=1 $index_dir/$seg_id*|grep total| cut -f1`;
+        chomp($segsize);
         $segsizes{$seg} += $segsize;
         if ($segsize > $largest_segsize) {
             $largest_segsize = $segsize;
@@ -150,7 +181,7 @@ sub size_shards {
     }
 
     # Sum all segs smaller than largest to represent baby seg
-    my $baby_segsize = 0;
+    my $baby_segsize = 0.0;
     foreach my $segkey (keys %segsizes) {
         $baby_segsize += $segsizes{$segkey} unless ($segkey == $largest_seg);
     }
@@ -158,10 +189,26 @@ sub size_shards {
     $segsizes{2} = $baby_segsize;
 
     return ($segsizes{1}, $segsizes{2});
-}    
-    
+}
 
 
+
+# ---------------------------------------------------------------------
+
+=item count_segs
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub count_segs {
+    my ($index_dir) = @_;
+
+    my @segment_ids = `ls $index_dir/*.prx 2> /dev/null`;
+    my $num_segs = scalar(@segment_ids);
+    return $num_segs;
+}
 
 =head1 AUTHOR
 

@@ -184,16 +184,8 @@ eval {
     $INITIAL_TOT_INDEXED_CT = Db::Select_indexed_tot_count($C, $DBH, $RUN);
 
     if ($INTERACTIVE) {
-        if (__FULL_optimize_run($C, $RUN)) {
-            my $s = qq{\n\tContinue? [N] };
-            __confirm($s);
-        }
-        elsif (! $SKIP_CHECKINDEX) {
+        if (! $SKIP_CHECKINDEX) {
             my $s = qq{\nYou are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
-            __confirm($s);
-        }
-        else {
-            my $s = qq{\nA large queue ($INITIAL_QUEUE_SIZE) may induce a FULL optimize. Run driver interactively? [N] };
             __confirm($s);
         }
     }
@@ -391,38 +383,41 @@ Description
 
 # ---------------------------------------------------------------------
 sub __driver_exit_report {
-    my ($C, $dbh, $run, $s, $start) = @_;
-
-    if ($start) {
-        my $elapsed = time() - $start;
-        $elapsed = sprintf("%.2f", $elapsed/60/60);
-        $s .= qq{: elapsed=$elapsed hours};
-
-        # Sanity: Compare count of ids queued with how many indexed,
-        # deleted, reindexed, or were errors.  Re-indexed ids do not
-        # increase the total number of newly indexed items.
-        my ($processed_ct, $reindexed_ct, $deleted_ct, $error_ct) = get_process_breakdown_this_run($C, $dbh, $run);
-
-        my ($indexed_this_run, $total_indexed) = get_num_indexed_this_run($C, $dbh, $run);
-
-        my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
-
-        my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
-        my $indexed_v_new_delta = $indexed_this_run - $newly_processed;
-
-        my $duplicates = __duplicates_report($C, $dbh, $run);
-        my $summed_sizes = Scheduler::get_segsizes($C, $run, undef);
-
-        $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct};
-        $s .= qq{\nI_indexed=$indexed_this_run P_new=$newly_processed};
-        $s .= qq{\nP_deleted=$deleted_ct P_reindexed=$reindexed_ct P_errors=$error_ct};
-        $s .= qq{\nTotal_indexed=$total_indexed};
-        $s .= qq{\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta};
-        $s .= qq{\nRestore_ct=$RESTORE_CT};
-        $s .= qq{\nDuplicates=} . ($duplicates ? qq{\n\t$duplicates} : 'none');
-        $s .= qq{\nSegment_sizes=$summed_sizes};
+    my ($C, $dbh, $run, $s, $start, $empty_queue) = @_;
+    
+    my $elapsed = time() - $start;
+    $elapsed = sprintf("%.2f", $elapsed/60/60);
+    $s .= qq{: elapsed=$elapsed hours};
+    
+    # Sanity: Compare count of ids queued with how many indexed,
+    # deleted, reindexed, or were errors.  Re-indexed ids do not
+    # increase the total number of newly indexed items.
+    my ($processed_ct, $reindexed_ct, $deleted_ct, $error_ct) = get_process_breakdown_this_run($C, $dbh, $run);
+    
+    my ($indexed_this_run, $total_indexed) = get_num_indexed_this_run($C, $dbh, $run);
+    
+    my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
+    
+    my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
+    my $indexed_v_new_delta = $indexed_this_run - $newly_processed;
+    
+    my $duplicates = __duplicates_report($C, $dbh, $run);
+    my $num_shards = scalar(@NUM_SHARDS_LIST);
+    
+    my $segment_sizes;
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        $segment_sizes .= "\n\tshard=$shard " . Scheduler::get_segsizes($C, $run, $shard);
     }
-
+    
+    $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct} unless ($empty_queue);
+    $s .= qq{\nI_indexed=$indexed_this_run P_new=$newly_processed} unless ($empty_queue);
+    $s .= qq{\nP_deleted=$deleted_ct P_reindexed=$reindexed_ct P_errors=$error_ct} unless ($empty_queue);
+    $s .= qq{\nTotal_indexed=$total_indexed};
+    $s .= qq{\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta} unless ($empty_queue);
+    $s .= qq{\nRestore_ct=$RESTORE_CT} unless ($empty_queue);
+    $s .= qq{\nDuplicates=} . ($duplicates ? qq{\n\t$duplicates} : 'none');
+    $s .= qq{\nSegment_sizes:$segment_sizes};
+    
     __output("$s\n");
     email_driver_msg($C, $s, 0);
 }
@@ -480,16 +475,10 @@ sub handle_Build_Wait {
 
         if ($current_queue_size == 0) {
             # Nothing to do.  Clean exit remaining in default Build_Wait.
-            my $s = qq{Driver queue empty\n};
-
-            # If this is a full-optimize run, ignore a zero-size queue
-            # and proceed to the next stage to flow through to
-            # optimization.
-            if (! __FULL_optimize_run($C, $run)) {
-                Log_stage($C, $run, $_Stage, $s);
-                __driver_exit_report($C, $dbh, $run, $s);
-                exit 0;
-            }
+            my $s = qq{Driver queue empty};
+            Log_stage($C, $run, $_Stage, $s);
+            __driver_exit_report($C, $dbh, $run, $s, time, 1);
+            exit 0;
         }
     }
 
@@ -683,57 +672,6 @@ sub handle_Checking {
 #
 # ----------------------- U t i l i t i e s ---------------------------
 #
-
-
-# ---------------------------------------------------------------------
-
-=item __FULL_optimize_run
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __FULL_optimize_run {
-    my ($C, $run) = @_;
-
-    __output("Checking schedule for full optimization ... ");
-
-    my $full = 0;
-    eval {
-        my $msg = '';
-        if (Scheduler::full_optimize_supported($C)) {
-            if (Scheduler::driver_do_full_optimize($C, $run)) {
-                $full = 1;
-                # Avoid checkIndex on full optimize -- takes too long
-                $SKIP_CHECKINDEX = 1;
-                $msg = 'Full optimize run; skipping checkIndex';
-            }
-            else {
-                $msg = 'Normal optimize run';
-            }
-        }
-        else {
-            $msg = 'Normal optimize run; full optimize not supported';
-        }
-        Log_sched($C, $run, $msg);
-    };
-    if ($@) {
-        Log_sched_error($C, $run, $@);
-        my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
-        __non_interactive_err_output($rc, $@);
-        exit $rc;
-    }
-
-    if ($full) {
-        __output("FULL optimize will occur\n");
-    }
-    else {
-        __output("normal optimize will occur (NOT Full)\n");
-    }
-
-    return $full;
-}
 
 # ---------------------------------------------------------------------
 
