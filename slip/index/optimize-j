@@ -88,10 +88,11 @@ sub opt_get_usage {
     return $s;
 }
 
-our ($opt_r, $opt_R, $opt_t, $opt_S, $opt_d, $opt_O, $opt_n, $opt_T);
+our ($opt_r, $opt_R, $opt_S, $opt_d, $opt_O, $opt_n, $opt_T);
 
-my $ops = getopts('r:R:t:dS:O:nT');
+my $ops = getopts('r:R:dS:O:nT');
 
+use constant LARGE_TIMEOUT => 172800; # 48 hours
 use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 
 my $TEST_ONLY = defined($opt_T);
@@ -440,7 +441,7 @@ sub c_optimize {
 
     __sleep_STOPSLIP();
 
-    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, LARGE_TIMEOUT);
 
     my ($rc, $num_orig_segments, $segments_ref) =
         get_segment_list($C, $shard, $staged, $limit_segs);
