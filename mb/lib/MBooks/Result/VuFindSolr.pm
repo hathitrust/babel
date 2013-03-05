@@ -202,11 +202,11 @@ sub process_metadata
     my $metadata_hash = shift;
     my $fix_title_hash = $self->__assemble_title($metadata_hash);
     my $cleaned_hash = $self->__clean_metadata($fix_title_hash);
-    my $converted_hash = $self->__convert_fieldnames($cleaned_hash);
+    my $converted_hash = $self->__add_book_ids($cleaned_hash);
+    $converted_hash = $self->__convert_fieldnames($converted_hash);
     $converted_hash = $self->__convert_arrays_to_strings($converted_hash);
     return $converted_hash
 }
-
 
 # ---------------------------------------------------------------------
 sub __convert_arrays_to_strings
@@ -347,6 +347,61 @@ sub __clean_metadata
     
     return $cleanhash;
 }
+# ---------------------------------------------------------------------
+#  __add_book_ids
+#
+#  insert "OCLC" or "ISBN" in front of oclc or isbns, 
+#  put in comma separated list
+# XXX  add namespace to google namespace to end of list  (See Tim's algorithm)
+sub __add_book_ids
+{
+      my $self = shift;
+      my $hash = shift;
+      my $ary_ref=[];
+      
+      if (defined ($hash->{'oclc'}))
+      {
+          my @oclc_ary= $hash->{'oclc'};
+          my $o_ref = add_book_id_prefix('OCLC',@oclc_ary);
+          push (@{$ary_ref},@{$o_ref});
+      }
+
+      if (defined ($hash->{'isbn'}))
+      {
+          my @isbn_ary= $hash->{'isbn'};
+          my $i_ref = add_book_id_prefix('ISBN',@isbn_ary);
+          push (@{$ary_ref},@{$i_ref});
+      
+      }
+      #XXX add google book id here
+      # XXXdo we push or shift? we want to put google id last
+      # my $google_id=getGoogleID($hash->{'id'};
+      #   push (@{$ary_ref},$google_id);
+      
+      # do we need to detect empty array?
+      $hash->{'book_ids'}= join (',',@{$ary_ref});
+      
+      # remove oclc and isbn
+      delete($hash->{'oclc'});
+      delete($hash->{'isbn'});
+      return $hash;
+}
+
+#----------------------------------------------------------------------
+#unicorn google book covers
+sub add_book_id_prefix
+{
+    my $prefix = shift;
+    my $ary_ref=shift;
+    my $out=[];
+    
+    foreach my $el (@{$ary_ref})
+    {
+        push (@{$out},$prefix .':'. $el)
+    }
+    return $out;
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -443,6 +498,7 @@ sub __set_fieldmap
                             'publishDate'   => 'date',
                             'ht_id_display' => 'extern_item_id',
                             'id'            => 'bib_id',
+                            'book_ids'      => 'book_id',
                           };
 }
 
