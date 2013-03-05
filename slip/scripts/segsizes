@@ -71,8 +71,8 @@ my $SHARD = $opt_R;
 my $COUNT = $opt_C;
 my $SIZE = $opt_S;
 
-if (! ($SIZE || $COUNT)) {
-    my $s = qq{One or both of -S or -C is required\n} . sg_usage();
+if (! (defined $SIZE || defined $COUNT)) {
+    my $s = qq{One of -S or -C is required\n} . sg_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output("$s\n") if ($VERBOSE);
     __non_interactive_err_output($rc, $s);
@@ -94,50 +94,45 @@ else {
     @SHARDS = ($SHARD);
 }
 
-my %SEGSIZES;
-my $SEGCOUNT;
+
 my $rc = 0;
 
 if ($SIZE) {
+    my %segsizes;
+
     foreach my $shard (@SHARDS) {
         my $key = 'dir_for_shard_';
         my $index_dir = $CONFIG->get($key . $shard);
         my ($size_main_segment, $size_baby_segment) = size_shards($index_dir);
-        
+
         # (0,0) is an error condition
         if (! $size_main_segment) {
-            $SEGSIZES{main} = 0.0;
-            $SEGSIZES{baby} = 0.0;
+            $segsizes{main} = 0.0;
+            $segsizes{baby} = 0.0;
             exit $SLIP_Utils::States::RC_CHILD_ERROR;
         }
         else {
-            $SEGSIZES{main} += $size_main_segment;
-            $SEGSIZES{baby} += $size_baby_segment;
+            $segsizes{main} += $size_main_segment;
+            $segsizes{baby} += $size_baby_segment;
         }
     }
+
+    my $gigabyte_factor = 1024*1024*1024;
+    my $sizes = sprintf("%.010f %.010f", $segsizes{main}/$gigabyte_factor, $segsizes{baby}/$gigabyte_factor);
+    print STDOUT "$sizes\n";
 }
 
-if ($COUNT) {
+elsif ($COUNT) {
     my $key = 'dir_for_shard_';
     my $index_dir = $CONFIG->get($key . $COUNT);
-    $SEGCOUNT = count_segs($index_dir);    
+    my $segcount = count_segs($index_dir);
 
     # 0 is an error condition
-    if (! $SEGCOUNT) {
+    if (! $segcount) {
         exit $SLIP_Utils::States::RC_CHILD_ERROR;
     }
+    print STDOUT "$segcount\n";
 }
-
-my $out;
-if ($SIZE) {
-    my $gigabyte_factor = 1024*1024*1024;
-    my $sizes = sprintf("%.010f %.010f", $SEGSIZES{main}/$gigabyte_factor, $SEGSIZES{baby}/$gigabyte_factor);
-    $out = "$sizes";
-}
-if ($COUNT) {
-  $out = $out ? "$out $SEGCOUNT" : "$SEGCOUNT";
-}
-print STDOUT "$out\n";
 
 exit 0;
 

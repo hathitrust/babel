@@ -384,31 +384,31 @@ Description
 # ---------------------------------------------------------------------
 sub __driver_exit_report {
     my ($C, $dbh, $run, $s, $start, $empty_queue) = @_;
-    
+
     my $elapsed = time() - $start;
     $elapsed = sprintf("%.2f", $elapsed/60/60);
     $s .= qq{: elapsed=$elapsed hours};
-    
+
     # Sanity: Compare count of ids queued with how many indexed,
     # deleted, reindexed, or were errors.  Re-indexed ids do not
     # increase the total number of newly indexed items.
     my ($processed_ct, $reindexed_ct, $deleted_ct, $error_ct) = get_process_breakdown_this_run($C, $dbh, $run);
-    
+
     my ($indexed_this_run, $total_indexed) = get_num_indexed_this_run($C, $dbh, $run);
-    
+
     my $queue_v_processed_delta = $INITIAL_QUEUE_SIZE - $processed_ct;
-    
+
     my $newly_processed = $processed_ct -($reindexed_ct + $deleted_ct + $error_ct);
     my $indexed_v_new_delta = $indexed_this_run - $newly_processed;
-    
+
     my $duplicates = __duplicates_report($C, $dbh, $run);
     my $num_shards = scalar(@NUM_SHARDS_LIST);
-    
+
     my $segment_sizes;
     foreach my $shard (@NUM_SHARDS_LIST) {
         $segment_sizes .= "\n\tshard=$shard " . Scheduler::get_segsizes($C, $run, $shard);
     }
-    
+
     $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct} unless ($empty_queue);
     $s .= qq{\nI_indexed=$indexed_this_run P_new=$newly_processed} unless ($empty_queue);
     $s .= qq{\nP_deleted=$deleted_ct P_reindexed=$reindexed_ct P_errors=$error_ct} unless ($empty_queue);
@@ -417,7 +417,7 @@ sub __driver_exit_report {
     $s .= qq{\nRestore_ct=$RESTORE_CT} unless ($empty_queue);
     $s .= qq{\nDuplicates=} . ($duplicates ? qq{\n\t$duplicates} : 'none');
     $s .= qq{\nSegment_sizes:$segment_sizes};
-    
+
     __output("$s\n");
     email_driver_msg($C, $s, 0);
 }
@@ -947,7 +947,7 @@ sub __check_driver_enabled {
 
     if (! __driver_enabled($C, $dbh, $run)) {
         my $rc = $SLIP_Utils::States::RC_DRIVER_DISABLED;
-        my $s = qq{driver-j disabled for run=$run at stage=stage in __check_driver_enabled\n};
+        my $s = qq{driver-j disabled for run=$run at stage=$stage in __check_driver_enabled\n};
         __output($s);
         __non_interactive_err_output($rc, $s);
 
@@ -1156,8 +1156,6 @@ sub __Reset_stats_recording {
     return $rc;
 }
 
-
-
 # ---------------------------------------------------------------------
 
 =item __control_producers
@@ -1200,7 +1198,6 @@ sub __Reset_shard_states {
     }
 }
 
-
 #
 # ------------------------- L o g g i n g -----------------------------
 #
@@ -1239,38 +1236,6 @@ sub Log_run {
 
 # ---------------------------------------------------------------------
 
-=item Log_sched_error
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub Log_sched_error {
-    my ($C, $run, $error) = @_;
-
-    my $s = qq{***DRIVER [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run $error};
-    SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
-}
-
-# ---------------------------------------------------------------------
-
-=item Log_sched
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub Log_sched {
-    my ($C, $run, $msg) = @_;
-
-    my $s = qq{***DRIVER: } . Utils::Time::iso_Time() . qq{ r=$run $msg};
-    SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
-}
-
-# ---------------------------------------------------------------------
-
 =item Log_stage
 
 Description
@@ -1285,7 +1250,6 @@ sub Log_stage {
     SLIP_Utils::Log::this_string($C, $s, 'driver_logfile', '___RUN___', $run);
     $EMAIL_MESSAGE_BUFFER .= qq{$s\n};
 }
-
 
 # ---------------------------------------------------------------------
 
@@ -1318,7 +1282,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-10, 2013 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
