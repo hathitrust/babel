@@ -1,5 +1,9 @@
 @import "../../../common/web/unicorn/sass/base";
 
+.alert.summary {
+    span { font-weight: bold ; }
+}
+
 #facetlist {
 
     dt, dd {
@@ -258,8 +262,8 @@ div > h3:first-child {
     @include rem(padding, 8);
 
     &.alt {
-        // background-color: #D2D2D1;
-        border: 2px solid #D2D2D1;
+        background-color: #D2D2D1;
+        // border: 2px solid #D2D2D1;
     }
 }
 
@@ -322,11 +326,25 @@ div > h3:first-child {
     @include rem(margin-left, 40);
 
     select {
-        width: auto;
+        // width: auto;
         margin-bottom: 0;
     }
 
 }
 
+.controls .counter {
+    @include rem(margin-left, 5);
+    @include rem(margin-top, 2);
+    vertical-align: top;
+}
+
 // #SortWidget, #actionsRow2, #actionsRow1, .mainsearch { display: none; }
 #listisFooter { display: none; }
+
+.alert-summary {
+    background-color: transparent;
+    border-color: transparent;
+    color: $text-color;
+    padding-left: 0;
+    @include rem(margin-bottom, 10);
+}

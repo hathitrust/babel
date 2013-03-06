@@ -1,4 +1,5 @@
-$(document).ready(function() {
+head.ready(function() {
+
   $(".tracked").click(function() {
     var href = $(this).attr('href');
     pageTracker._trackEvent('cbActions', 'click', "CB - branded " + $(this).text() + " link");

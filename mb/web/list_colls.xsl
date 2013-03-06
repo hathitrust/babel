@@ -31,6 +31,17 @@
     <link rel="stylesheet" type="text/css" href="/mb/css/mb.css" />
     <link rel="stylesheet" type="text/css" href="/mb/list_colls.css" />
 
+    <script>
+      head.js("/mb/web/js/jquery.tmpl.js",
+              "/mb/web/js/jquery.placeholder.js",
+              "/mb/web/js/date.js",
+              "/mb/web/js/jquery.ba-hashchange.js",
+              "/mb/web/js/hyphenator.js",
+              "/mb/web/js/mb.js",
+              "/mb/web/js/tracking.js");
+    </script>
+
+    <!--
     <script src="/mb/web/js/jquery.tmpl.js"></script>
     <script src="/mb/web/js/jquery.placeholder.js"></script>
     <script src="/mb/web/js/date.js"></script>
@@ -38,6 +49,7 @@
     <script src="/mb/web/js/hyphenator.js"></script>
     <script src="/mb/web/js/mb.js"></script>
     <script src="/mb/web/js/tracking.js"></script>
+    -->
 
   </xsl:template>
 
@@ -49,7 +61,9 @@
       <xsl:with-param name="list_node" select="/MBooksTop/CollList"/>
     </xsl:call-template>
     <xsl:call-template name="sidebar" />
-    <script type="text/javascript" src="/mb/js/list_colls.js"></script>
+    <script type="text/javascript" xsrc="/mb/js/list_colls.js">
+      head.js("/mb/js/list_colls.js");
+    </script>
   </xsl:template>
 
   <xsl:template name="intro">

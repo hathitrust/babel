@@ -6,16 +6,13 @@
 
   <!-- XSL fallback files -->
   <XslFileList>
-    <Filename>header.xsl</Filename>
-    <Filename>footer.xsl</Filename>
-    <Filename>js_utils.xsl</Filename>
+    <Filename>skeleton.xsl</Filename>
+    <Filename>js_utils.xsl</Filename> 
+    <Filename>list_utils.xsl</Filename> 
+    <Filename>list_items.xsl</Filename>
+    <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>loads.xsl</Filename>
     <Filename>loads_helper_mb.xsl</Filename>
-    <Filename>coll.xsl</Filename>
-    <Filename>skin.xsl</Filename>
-    <Filename>list_search_results.xsl</Filename>
-    <Filename>list_utils.xsl</Filename>
-    <Filename>xsl2htmlutils.xsl</Filename>
    </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->

@@ -139,6 +139,7 @@
 
 
   <xsl:template name="EmptyCollection">
+
     <div id="ColContainer">
       <xsl:call-template name="EditCollectionWidget"/>
       <div class="ColContent ">
@@ -317,7 +318,7 @@
           <xsl:text>ListSearchInfoAlert</xsl:text>
         </xsl:attribute>
         <xsl:attribute name="class">
-          <xsl:text>infoAlert</xsl:text>
+          <xsl:text>alert</xsl:text>
         </xsl:attribute>
 
         <xsl:element name="span">
@@ -337,21 +338,8 @@
   <xsl:template name="DisplayContent">
     <xsl:param name="title" />
     <xsl:param name="item-list-contents" />
-    <div id="ColContainer" class="main" role="main">      
+    <div role="main">
 
-      <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
-      
-      <!-- Special case show index status message only for listsrch page -->
-      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
-        <xsl:call-template name="IndexingStatusMsg"/>
-      </xsl:if>
-    
-      <!--ADDITION: Added: overlay is displayed here-->
-      <xsl:if test="$action='copyit' or $action='movit'or $action='copyitnc' or $action='movitnc' or $action='delit'">
-        <div class="alert" id="alert">
-          <xsl:call-template name="OperationResults" />
-        </div>
-      </xsl:if>
       <xsl:call-template name="ItemList">
         <xsl:with-param name="item-list-contents" select="$item-list-contents" />
       </xsl:call-template>
@@ -504,7 +492,7 @@
         <xsl:value-of select="$select_collection_text"/>
       </option>
 
-      <option label="New Collection" id="NewC">
+      <option value="__NEW__" id="NewC">
         <xsl:text>[CREATE NEW COLLECTION]</xsl:text>
       </option>
 
@@ -562,13 +550,13 @@
 
       <input type="hidden" name="a" id="a"/>
 
-      <button class="btn" id="copyit" value="copyit">Copy Selected</button>
+      <button class="btn btn-small" id="copyit" value="copyit">Copy Selected</button>
 
       <!-- if they don't own the collection they shouldn't be able to delete (or move) items -->
       <xsl:choose>
         <xsl:when test="/MBooksTop/EditCollectionWidget/OwnedByUser='yes' ">
-          <button class="awesome small" id="movit" value="movit">Move Selected</button>
-          <button class="awesome small" id="delit" value="delit">Remove Selected</button>
+          <button class="btn btn-small" id="movit" value="movit">Move Selected</button>
+          <button class="btn btn-small" id="delit" value="delit">Remove Selected</button>
         </xsl:when>
         <xsl:otherwise></xsl:otherwise>
       </xsl:choose>
@@ -597,14 +585,13 @@
       </li>
 
       <xsl:choose>
-      <xsl:when test="/MBooksTop/Paging/StartPageLinks = 'None'">
-        <xsl:call-template name="allpages"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:call-template name="somepages"/>
-      </xsl:otherwise>
-    </xsl:choose>
-
+        <xsl:when test="/MBooksTop/Paging/StartPageLinks = 'None'">
+          <xsl:call-template name="allpages"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="somepages"/>
+        </xsl:otherwise>
+      </xsl:choose>
 
       <li>
         <xsl:choose>
