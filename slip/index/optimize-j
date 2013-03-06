@@ -441,7 +441,8 @@ sub c_optimize {
 
     __sleep_STOPSLIP();
 
-    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, LARGE_TIMEOUT);
+    my $timeout = LARGE_TIMEOUT;
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, $timeout);
 
     my ($rc, $num_orig_segments, $segments_ref) =
         get_segment_list($C, $shard, $staged, $limit_segs);
