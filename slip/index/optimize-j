@@ -247,7 +247,7 @@ sub do_FULL_optimize {
     my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
 
     if (Sl_Utils::checkIndex_day($C)) {
-        $s = 'Skipped. Today is checkIndex day';
+        my $s = 'Skipped. Today is checkIndex day';
         __output(qq{$s\n});
         Log_optimize($C, $run, $shard, $s);
 
@@ -264,7 +264,6 @@ sub do_FULL_optimize {
     }
     else {
         eval {
-            my $s = '';
             my $try = Scheduler::optimize_try_full_optimize($C, $run, $shard);
             if ($try) {
                 my $max = $C->get_object('MdpConfig')->get('max_full_optimizing_shards');
@@ -277,7 +276,7 @@ sub do_FULL_optimize {
 
             my $now = Utils::Time::iso_Time();
             my $sizes = Scheduler::get_segsizes($C, $run, $shard);
-            my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED' : 'NO') . qq{ $s at $now};
+            my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED' : 'NO') . qq{ at $now};
             Log_optimize($C, $run, $shard, $msg);
         };
         if ($@) {
