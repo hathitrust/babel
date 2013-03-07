@@ -167,13 +167,17 @@ my $check_enabled =
    Db::Select_check_enabled($C, $DBH, $RUN, $SHARD)
   );
 
-# Adjust $LIMIT_SEGS for full optimize case?
+# Adjust $LIMIT_SEGS for full optimize case
+if (Db::optimize_shard_is_selected($C, $DBH, $RUN, $SHARD)) {
+    $LIMIT_SEGS = 1;
+}
+
 if ($check_enabled) {    
     eval {
         my $s =
           "check-j: CHECK shard=$SHARD CheckIndex="
             . ($CHECK_INDEX ? 'yes' : 'no')
-              . " check for segments == $LIMIT_SEGS"
+              . ", check for segments == $LIMIT_SEGS"
                 . ($NOOP ? " ---> NOOP\n" : "\n") ;
         __output($s);
         
@@ -302,14 +306,11 @@ sub __run_check_shard {
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "check num_segs=$num_segs");
 
     if ($rc == 0) {
-        # A seg count of 1 is always accepted
-        if ($seg_ct > 1) {
-            if ($seg_ct != $num_segs) {
-                $rc = $SLIP_Utils::States::RC_WRONG_NUM_SEGS;
-                my $msg = "__run_check_shard num_segs=$num_segs: wrong number seen: $seg_ct";
-                __output("$msg\n");
-                Log_check($C, $run, $shard, $msg);
-            }
+        if ($seg_ct != $num_segs) {
+            $rc = $SLIP_Utils::States::RC_WRONG_NUM_SEGS;
+            my $msg = "__run_check_shard num_segs=$num_segs: wrong number seen: $seg_ct";
+            __output("$msg\n");
+            Log_check($C, $run, $shard, $msg);
         }
         else {
             my $msg = "__run_check_shard num_segs=$num_segs: " . $seg_ct;
@@ -413,8 +414,7 @@ sub __run_CheckIndex {
 
 =item c_check
 
-Check number of segments is correct.  If -C run CheckIndex.  Must be
-run on the SAME machine running tomcat.
+Check number of segments is correct.
 
 =cut
 

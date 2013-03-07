@@ -246,6 +246,15 @@ Description
 sub do_FULL_optimize {
     my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
 
+    if (Sl_Utils::checkIndex_day($C)) {
+        $s = 'Skipped. Today is checkIndex day';
+        __output(qq{$s\n});
+        Log_optimize($C, $run, $shard, $s);
+
+        return 0;
+    }
+    # POSSIBLY NOTREACHED
+
     # If limit is already == 1 the first optimization already did the
     # work.  Nothing to do here.
     my $do = 0;
@@ -262,13 +271,7 @@ sub do_FULL_optimize {
                 if (Db::optimize_select_shard($C, $dbh, $run, $shard, $max)) {
                     # Leave shard selected so only max shards do full
                     # optimization. driver-j will reset.
-                    if (Sl_Utils::checkIndex_day($C)) {
-                        $s = '(Skipped. Today is checkIndex day)';
-                        __output(qq{$s\n});
-                    }
-                    else {
-                        $do = 1;
-                    }
+                    $do = 1;
                 }
             }
 
