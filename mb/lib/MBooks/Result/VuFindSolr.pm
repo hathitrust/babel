@@ -359,27 +359,18 @@ sub __add_book_ids
       my $hash = shift;
       my $ary_ref=[];
       
-      if (defined ($hash->{'oclc'}))
+      my @vuFind_book_id_fields = ("oclc","isbn","lccn");
+      foreach my $field (@vuFind_book_id_fields)
       {
-          my @oclc_ary= $hash->{'oclc'};
-          my $o_ref = add_book_id_prefix('OCLC',@oclc_ary);
-          push (@{$ary_ref},@{$o_ref});
+          if (defined ($hash->{$field}))
+          {
+              my @temp = $hash->{$field};
+              my $temp_ref = add_book_id_prefix(uc($field),@temp);
+              push (@{$ary_ref},@{$temp_ref});
+          }
+          delete($hash->{$field});
       }
-
-      if (defined ($hash->{'isbn'}))
-      {
-          my @isbn_ary= $hash->{'isbn'};
-          my $i_ref = add_book_id_prefix('ISBN',@isbn_ary);
-          push (@{$ary_ref},@{$i_ref});
       
-      }
-
-      if (defined ($hash->{'lccn'}))
-      {
-          my @lccn_ary= $hash->{'lccn'};
-          my $o_ref = add_book_id_prefix('LCCN',@lccn_ary);
-          push (@{$ary_ref},@{$o_ref});
-      }
 
       #XXX add google book id here
       # XXXdo we push or shift? we want to put google id last
@@ -389,9 +380,7 @@ sub __add_book_ids
       # do we need to detect empty array?
       $hash->{'book_ids'}= join (',',@{$ary_ref});
       
-      # remove oclc and isbn
-      delete($hash->{'oclc'});
-      delete($hash->{'isbn'});
+      
       return $hash;
 }
 
