@@ -57,7 +57,6 @@ use Vendors;
 
 # Perl
 use Getopt::Std;
-use Date::Calc qw(:all);
 
 # App
 use Utils;
@@ -75,6 +74,8 @@ use SLIP_Utils::Db_driver;
 use SLIP_Utils::Db_sync;
 use SLIP_Utils::Common;
 use SLIP_Utils::Log;
+
+use Sl_Utils;
 
 my $INTERACTIVE = $ENV{TERM};
 
@@ -604,9 +605,7 @@ sub handle_Optimizing {
             my $check_index_supported = $config->get('check_index_supported');
             if ($check_index_supported) {
                 if (! $SKIP_CHECKINDEX) {
-                    my $day_of_week = Day_of_Week_to_Text(Day_of_Week(Today()));
-                    my $check_index_day = $config->get('check_index_day_of_week');
-                    if ($day_of_week eq $check_index_day) {
+                    if (Sl_Utils::checkIndex_day($C)) {
                         # Enable checkers to start running from cron
                         $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
                         $_Next_Stage = $SLIP_Utils::States::St_Checking;
