@@ -24,6 +24,7 @@ use strict;
 
 use base qw(Search::Result);
 use XML::LibXML;
+use Namespaces;
 
 
 # ---------------------------------------------------------------------
@@ -44,7 +45,7 @@ sub AFTER_Result_initialize {
     $self->{'parser'} = XML::LibXML->new();
     $self->__set_fieldmap();
     $self->__set_ids($id_ary_ref);
-    
+    $self->__set_context($C);
 }
 
 # ---------------------------------------------------------------------
@@ -372,12 +373,18 @@ sub __add_book_ids
       }
       
 
-      #XXX add google book id here
-      # XXXdo we push or shift? we want to put google id last
-      # my $google_id=getGoogleID($hash->{'id'};
-      #   push (@{$ary_ref},$google_id);
+      my $C =$self->__get_context;
+      #XXX we need ht_id
+      my $ht_id=$hash->{'ht_id_display'};
+      my $google_id = Namespaces::get_google_id_by_namespace($C, $ht_id);
+      if (defined($google_id))
+      {
+          push  (@{$ary_ref},$google_id);
+      }
       
-      # do we need to detect empty array?
+      
+
+
       $hash->{'book_ids'}= join (',',@{$ary_ref});
       
       
@@ -456,6 +463,21 @@ sub __convert_fieldnames
         
     }
             return $returnhash;
+}
+
+# ---------------------------------------------------------------------
+sub __set_context
+{
+    my $self = shift;
+    my $context = shift;
+    $self->{'context'}=$context;
+}
+
+# ---------------------------------------------------------------------
+sub __get_context
+{
+    my $self = shift;
+    return   $self->{'context'};
 }
 
 # ---------------------------------------------------------------------
