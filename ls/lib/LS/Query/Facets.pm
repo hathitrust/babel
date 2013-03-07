@@ -252,7 +252,7 @@ sub get_Solr_query_string
     my $Q ='q=';
 #    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,score};
 #unicorn  Add oclc, isbn and ? for google book covers
-    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,oclc,isbn,score};
+    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,oclc,isbn,lccn,score};
 
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INDENT = $ENV{'TERM'} ? qq{&indent=on} : qq{&indent=off};

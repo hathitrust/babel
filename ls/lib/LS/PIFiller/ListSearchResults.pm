@@ -1400,23 +1400,19 @@ sub _ls_wrap_result_data {
 
         # unicorn add oclc, isbn and ? for google book covers
         my $book_ids_ary_ref=[];
-        my $oclc_ary_ref = $doc_data->{'oclc'};
-        my $isbn_ary_ref = $doc_data->{'isbn'};
-        my $tmp_ary_ref;
-        
-        if (defined($oclc_ary_ref))
-        {
-            $tmp_ary_ref = add_book_id_prefix('OCLC',$oclc_ary_ref);
-            
-            push(@{$book_ids_ary_ref},  @{$tmp_ary_ref});
-        }
-        
-        if (defined($isbn_ary_ref))
-        {
-            $tmp_ary_ref = add_book_id_prefix('ISBN',$isbn_ary_ref);
-            push(@{$book_ids_ary_ref}, @{$tmp_ary_ref} );
-        }
-        # add code for google identifier, see Tim email
+      
+      my @vuFind_book_id_fields = ("oclc","isbn","lccn");
+      foreach my $field (@vuFind_book_id_fields)
+      {
+          if (defined ($doc_data->{$field}))
+          {
+              my $temp_ref = $doc_data->{$field};
+              my    $tmp_ary_ref = add_book_id_prefix(uc($field),$temp_ref);
+              push(@{$book_ids_ary_ref},  @{$tmp_ary_ref});
+          }
+      }
+
+        # XXX add code for google identifier, see Tim email
         my $book_ids = join (',',@{$book_ids_ary_ref});
 
         
