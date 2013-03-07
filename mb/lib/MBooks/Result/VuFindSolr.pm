@@ -373,6 +373,14 @@ sub __add_book_ids
           push (@{$ary_ref},@{$i_ref});
       
       }
+
+      if (defined ($hash->{'lccn'}))
+      {
+          my @lccn_ary= $hash->{'lccn'};
+          my $o_ref = add_book_id_prefix('LCCN',@lccn_ary);
+          push (@{$ary_ref},@{$o_ref});
+      }
+
       #XXX add google book id here
       # XXXdo we push or shift? we want to put google id last
       # my $google_id=getGoogleID($hash->{'id'};
