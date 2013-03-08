@@ -94,7 +94,13 @@ sub handle_ITEM_LIST_PI
         $s .= wrap_string_in_tag($$item_hashref{'rights'}, 'rights');
         $s .= wrap_string_in_tag($$item_hashref{'fulltext'}, 'fulltext');
         $s .= wrap_string_in_tag($$item_hashref{'record_no'}, 'record');
-        $s .= wrap_string_in_tag($$item_hashref{'book_id'}, 'bookID');
+        
+        my $book_id = $$item_hashref{'book_id'};
+        unless ( $book_id ) {
+            $book_id = Namespaces::get_google_id_by_namespace($C, $$item_hashref{extern_item_id});
+        }
+        $s .= wrap_string_in_tag($book_id, 'bookID');
+
         my $coll_ary_ref = $item_hashref->{'item_in_collections'};
         my $colls;        
         
