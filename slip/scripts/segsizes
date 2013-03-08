@@ -166,7 +166,7 @@ sub size_shards {
     my $largest_segsize = 0.0;
     foreach my $seg_id (@segment_ids) {
         $seg++;
-        my $segsize = `du -c --block-size=1 $index_dir/$seg_id*|grep total| cut -f1`;
+        my $segsize = `du -c --apparent-size --block-size=1 $index_dir/$seg_id*|grep total| cut -f1`;
         chomp($segsize);
         $segsizes{$seg} += $segsize;
         if ($segsize > $largest_segsize) {
