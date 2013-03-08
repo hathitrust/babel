@@ -6,7 +6,7 @@ CB-update-rights
 
 =head1 USAGE
 
-/htapps/babel/mb/scripts/CB-update-rights
+/htapps/babel/mb/scripts/CB-update-rights [-I<id> | -A] [-e]
 
 =head1 DESCRIPTION
 
@@ -25,17 +25,26 @@ Debug options
 =cut
 
 use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
 use Getopt::Std;
 
 binmode(STDOUT, ":utf8");
 
 my $INTERACTIVE = $ENV{TERM};
 
-our ($opt_e, $opt_I);
+our ($opt_e, $opt_I, $opt_A);
 
-my $ops = getopts('eI:');
-my $EMAIL = $opt_e;
-my $ID = $opt_I;
+my $ops = getopts('eI:A');
+my $EMAIL = defined($opt_e);
+my $ID = defined($opt_I) && $opt_I ;
+my $GLOBAL_UPDATE = defined $opt_A;
+
+use constant GLOBAL_UPDATE_SLICE_SIZE => 10000;
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -54,6 +63,7 @@ use Identifier;
 use Mail::Mailer;
 use MetadataQueue;
 use MBooks::MetaDataGetter;
+use SLIP_Utils::Common;
 
 my $EMAIL_BUFFER = '';
 
@@ -75,6 +85,16 @@ $C->set_object('Database', $db);
 
 my $CO = new Collection($DBH, $CONFIG, 'no_owner');
 $C->set_object('Collection', $CO);
+
+if ($GLOBAL_UPDATE) {
+    __confirm("\n\tUpdate metadata for ALL items? [N] ");
+
+    my $ok = CB_global_update_metadata_queue($C, $DBH);
+    unless($ok) {
+        __P(qq{Global metadata update failed.\n});
+        exit 0;
+    } 
+}
 
 CB_delete_extras($C);
 my (
@@ -146,6 +166,36 @@ sub email_report {
                   });
     print $mailer($EMAIL_BUFFER);
     $mailer->close;
+}
+
+# ---------------------------------------------------------------------
+
+=item CB_global_update_metadata_queue 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CB_global_update_metadata_queue {
+    my ($C, $dbh) = @_;
+    
+    my $CO = $C->get_object('Collection');
+
+    my $ok; 
+    my $offset = 0;
+    while (1) {
+        my $id_arr_ref = $CO->get_item_id_slice($offset, GLOBAL_UPDATE_SLICE_SIZE);
+        last unless (scalar @$id_arr_ref);
+
+        $ok = MetadataQueue::enqueue_metadata_item_id_array($C, $dbh, $id_arr_ref);
+        last unless($ok);
+
+        $offset += GLOBAL_UPDATE_SLICE_SIZE;
+        __P("GLOBAL Update: total enqueued for update\n");
+    }
+
+    return $ok;
 }
 
 
