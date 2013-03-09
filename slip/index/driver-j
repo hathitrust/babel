@@ -300,6 +300,9 @@ sub run_driver {
             # Remove busy file
             my $busy_file = __get_BUSY_file($C, $run);
             unlink($busy_file);
+
+            Log_stage($C, $run, $_Stage, q{normal completion});
+
             # Jump out of loop
             last;
         }

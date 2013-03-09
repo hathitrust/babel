@@ -431,7 +431,9 @@ sub enqueue_from_j_rights {
         # Insert items into the queue and mark their status as "available"
 
         __output($out_msg);
-        ($would_be_queued > 0) ? __confirm("OK to proceed? [N] ") : return;
+        if ($would_be_queued > 0) {
+            __confirm("OK to proceed? [N] ");
+        }
 
         # Get all items from the slip_rights table with update_time newer
         # than the timestamp set when enqueuer-j last recorded
