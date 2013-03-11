@@ -1471,21 +1471,6 @@ sub _ls_wrap_result_data {
             $main_author = join(',', @{$main_author_ary_ref});
             $author =$main_author;
         }
-        else
-        {
-            my ($authors_ary_ref) = $doc_data->{'author'};
-            #XXX  HT catalog does not display non-1xx author fields
-            # Mirlyn displays them as "contributor"
-            #    if (defined ($doc_data->{'author2'}))
-            #    {
-            #        push (@{$authors_ary_ref},@{$doc_data->{'author2'}})
-            #    }
-            
-            if (defined ($authors_ary_ref))
-            {
-                $author = join(',', @{$authors_ary_ref});
-            }
-        }
         if (defined($author))
         {       
             Utils::map_chars_to_cers(\$author);
