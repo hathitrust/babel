@@ -300,6 +300,7 @@ sub __run_check_shard {
 
     my $cmd = qq{$SCRIPTS_DIR/segsizes -r$run -C$shard};
     my $output = `$cmd 2>&1`;
+    chomp($output);
     my $sysrc = $? >> 8;
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "check num_segs=$num_segs", $output);
 
