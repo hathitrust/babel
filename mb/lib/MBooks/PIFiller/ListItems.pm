@@ -38,6 +38,8 @@ use MBooks::Index;
 use MBooks::Utils::Sort;
 use MBooks::PIFiller::ListUtils;
 
+use Namespaces;
+
 BEGIN
 {
     require "PIFiller/Common/Globals.pm";
