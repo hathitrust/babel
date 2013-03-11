@@ -488,7 +488,7 @@ sub handle_Build_Wait {
 
     # POSSIBLY NOTREACHED
     my $rc = 0;
-    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $_Stage);
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
@@ -539,7 +539,7 @@ sub handle_Building {
     my $build_START = time();
 
     my $rc = 0;
-    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $_Stage);
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
@@ -591,7 +591,7 @@ sub handle_Optimizing {
     my $optimize_START = time();
 
     my $rc = 0;
-    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $_Stage);
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
@@ -650,7 +650,7 @@ sub handle_Checking {
     my $check_START = time();
 
     my $rc = 0;
-    my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+    my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $_Stage);
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
@@ -690,7 +690,7 @@ sub __Wait_check_done {
     while (1) {
         __check_driver_enabled($C, $dbh, $run, $stage);
 
-        my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+        my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $stage);
 
         my $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
         return $rc if ($rc > 0);
@@ -732,7 +732,7 @@ sub __Wait_optimize_done {
     while (1) {
         __check_driver_enabled($C, $dbh, $run, $stage);
 
-        my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+        my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $stage);
 
         my $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
         return $rc if ($rc > 0);
@@ -773,7 +773,7 @@ sub __Wait_build_done {
     while (1) {
         __check_driver_enabled($C, $dbh, $run, $stage);
 
-        my $state_record_ref = __get_shard_state_record($C, $dbh, $run);
+        my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $stage);
 
         my $rc_0 = __check_shard_errors($C, $dbh, $run, $state_record_ref);
         return $rc_0 if ($rc_0 > 0);
@@ -990,7 +990,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub __get_shard_state_record {
-    my ($C, $dbh, $run) = @_;
+    my ($C, $dbh, $run, $stage) = @_;
 
     my %h;
 
@@ -1003,9 +1003,18 @@ sub __get_shard_state_record {
         my $optimize_state = Db::Select_shard_optimize_state($C, $dbh, $run, $shard);
         my $check_state    = Db::Select_shard_check_state($C, $dbh, $run, $shard);
 
-        $h{'num_errors'}    += ($build_state    == $SLIP_Utils::States::Sht_Build_Error);
-        $h{'num_errors'}    += ($optimize_state == $SLIP_Utils::States::Sht_Optimize_Error);
-        $h{'num_errors'}    += ($check_state    == $SLIP_Utils::States::Sht_Check_Error);
+        if ($build_state == $SLIP_Utils::States::Sht_Build_Error) {
+            $h{'num_errors'}++;
+            Log_stage($C, $run, $stage, "shard=$shard build error");
+        }
+        if ($optimize_state == $SLIP_Utils::States::Sht_Optimize_Error) {
+            $h{'num_errors'}++;
+            Log_stage($C, $run, $stage, "shard=$shard optimize error");
+        }
+        if ($check_state    == $SLIP_Utils::States::Sht_Check_Error) {
+            $h{'num_errors'}++;
+            Log_stage($C, $run, $stage, "shard=$shard check error");
+        }
 
         $h{'num_optimized'} += ($optimize_state == $SLIP_Utils::States::Sht_Optimized);
         $h{'num_checked'}   += ($check_state    == $SLIP_Utils::States::Sht_Checked);
