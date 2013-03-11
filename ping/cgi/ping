@@ -8,7 +8,7 @@ use IO::File;
 autoflush STDOUT 1;
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
@@ -51,6 +51,7 @@ use Plack::Response;
 use URI::Escape;
 
 use Ping::Utils;
+use JSON::XS;
 
 
 {
@@ -78,8 +79,9 @@ my $app = sub {
     
     sub _body {
         # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
-        my ( $callback, $logged_in, $displayName, $affiliation, $auth_type, $print_disabled, $msg ) = @_;
+        my ( $callback, $logged_in, $displayName, $affiliation, $auth_type, $print_disabled, $msg, $idp_list ) = @_;
         $print_disabled = $print_disabled ? 'true' : 'false';
+        my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
         my $retval = <<JAVASCRIPT;
 var HT = HT || {};
 HT.login_status = {};
@@ -89,6 +91,7 @@ HT.login_status.affiliation = decodeURIComponent('$affiliation');
 HT.login_status.authType = "$auth_type";
 HT.login_status.message = "$msg";
 HT.login_status.u = $print_disabled;
+HT.login_status.idp_list = $idp_list_json;
 JAVASCRIPT
         
         if ( $callback ) {
@@ -99,6 +102,10 @@ JAVASCRIPT
 HT.shibboleth_alert = function() {
     alert("Please quit your browser to log out of Shibboleth.");
     return false;
+}
+
+HT.get_pong_target = function(target) {
+    return "https://$ENV{SERVER_NAME}/cgi/ping/pong?target=" + target;
 }
 
 HT.login_href = function() {
@@ -165,7 +172,7 @@ JAVASCRIPT
 
         $response = Plack::Response->new(200);
         $response->content_type('text/javascript');
-        if ( $$info{auth_type} eq 'shibboleth' && ! $request->cookies->{HT_AUTHTYPE} ) {
+        if ( $$info{auth_type} && $$info{auth_type} eq 'shibboleth' && ! $request->cookies->{HT_AUTHTYPE} ) {
             $response->cookies->{HT_AUTHTYPE} = { 
                 'value' => 'shibboleth', 
                 'path' => '/',
@@ -174,22 +181,20 @@ JAVASCRIPT
         }
         my $displayName = uri_escape($$info{displayName});
         my $affiliation = uri_escape($$info{affiliation});
-        # $response->body(qq{$callback(true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN");});
         $response->body(_body($callback, 'true', $displayName, $affiliation, $$info{authType}, $$info{u}, "LOGGED IN"));
         return $response->finalize;
     }    
 
-    # do I even have a session cookie??
-    my $cookies = $request->cookies;
-    unless ( $$cookies{$config->get('cookie_name')} ) {
-        $response = Plack::Response->new(200);
-        $response->content_type('text/javascript');
-        $response->body(_body($callback, 'false', "", "", 'null', 0, "NOT LOGGED IN: NO SESSION"));
-        return $response->finalize;
-    }
+    # # do I even have a session cookie??
+    # my $cookies = $request->cookies;
+    # unless ( $$cookies{$config->get('cookie_name')} ) {
+    #     $response = Plack::Response->new(200);
+    #     $response->content_type('text/javascript');
+    #     $response->body(_body($callback, 'false', "", "", 'null', 0, "NOT LOGGED IN: NO SESSION"));
+    #     return $response->finalize;
+    # }
     
     # now need to hit the database
-    
     $C->set_object('MdpConfig', $config);
 
     my $cgi = new CGI;
@@ -198,30 +203,40 @@ JAVASCRIPT
     # Database connection
     my $db = new Database('ht_web');
     $C->set_object('Database', $db);
-    
-    # Session
-    my $ses = Session::start_session($C);
-    $C->set_object('Session', $ses);
-    
-    my $auth_type = $ses->get_persistent('authenticated_via');
-
-    # if this is https:// AND there's no AUTH_TYPE/REMOTE_USER then
-    # we're still not logged in
-    if ( $$env{HTTPS} eq 'on' && ! $auth_type ) {
-        $response = Plack::Response->new(200);
-        $response->content_type('text/javascript');
-        $response->body(_body($callback, 'false', "", "", 'null', 0, "NOT LOGGED IN: SESSION BUT NO AUTH"));
-        return $response->finalize;
-    }
 
     # get an Auth object to trigger cgi/shcgi redirection
     my $auth = new Auth::Auth($C);
     $C->set_object('Auth', $auth);
-    
-    # deciededly not authenticated
+
+    # get the institutions
+    my $idp_list = Institutions::get_idp_list($C);
+
+    # don't create a session unless absolutely necessary
+    my $cookies = $request->cookies;
+    if ( $$cookies{$config->get('cookie_name')} ) {
+        # Session
+        my $ses = Session::start_session($C);
+        $C->set_object('Session', $ses);
+
+        # reinitialize Auth to trigger cgi/shcgi redirection
+        $auth->_initialize($C);
+        
+        my $auth_type = $ses->get_persistent('authenticated_via');
+
+        # if this is https:// AND there's no AUTH_TYPE/REMOTE_USER then
+        # we're still not logged in
+        if ( $$env{HTTPS} eq 'on' && ! $auth_type ) {
+            $response = Plack::Response->new(200);
+            $response->content_type('text/javascript');
+            $response->body(_body($callback, 'false', "", "", 'null', 0, "NOT LOGGED IN: SESSION BUT NO AUTH", $idp_list));
+            return $response->finalize;
+        }
+    }
+
+    # decidedly not authenticated
     $response = Plack::Response->new(200);
     $response->content_type('text/javascript');
-    $response->body(_body($callback, 'false', "", "", 'null', 0, "NOT LOGGED IN: NO AUTHENTICATED VIA"));
+    $response->body(_body($callback, 'false', "", "", 'null', 0, "NOT LOGGED IN: NO AUTHENTICATED VIA", $idp_list));
     return $response->finalize;
     
 };
