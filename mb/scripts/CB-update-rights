@@ -468,6 +468,7 @@ sub CB_do_update_metadata {
                 else {
                     push(@failed_metadata_missing_ids, $id);
                     $num_metadata_missing++;
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                 }
             }
             else {
