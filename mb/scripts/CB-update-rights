@@ -31,6 +31,9 @@ BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
 }
 
+# Flush i/o
+$| = 1;
+
 use Getopt::Std;
 
 binmode(STDOUT, ":utf8");
@@ -40,9 +43,9 @@ my $INTERACTIVE = $ENV{TERM};
 our ($opt_e, $opt_I, $opt_A);
 
 my $ops = getopts('eI:A');
-my $EMAIL = defined($opt_e);
-my $ID = defined($opt_I) && $opt_I ;
+my $ID = $opt_I ;
 my $GLOBAL_UPDATE = defined $opt_A;
+my $EMAIL = defined($opt_e) && (! $GLOBAL_UPDATE);
 
 use constant GLOBAL_UPDATE_SLICE_SIZE => 10000;
 
@@ -87,7 +90,7 @@ my $CO = new Collection($DBH, $CONFIG, 'no_owner');
 $C->set_object('Collection', $CO);
 
 if ($GLOBAL_UPDATE) {
-    __confirm("\n\tUpdate metadata for ALL items? [N] ");
+    __confirm("\n\tQueue Ids to update metadata for ALL items? [N] ");
 
     my $ok = CB_global_update_metadata_queue($C, $DBH);
     unless($ok) {
@@ -192,7 +195,7 @@ sub CB_global_update_metadata_queue {
         last unless($ok);
 
         $offset += GLOBAL_UPDATE_SLICE_SIZE;
-        __P("GLOBAL Update: total enqueued for update\n");
+        __P("GLOBAL Update: total enqueued for update: $offset\n");
     }
 
     return $ok;
@@ -348,7 +351,7 @@ sub __format_metadata_diff {
     my @diffs;
     foreach my $md (keys %$updated_metadata_hashref) {
         next if ($md eq 'extern_item_id');
-        my $prior = $prior_metadata_hashref->{$md};
+        my $prior = $prior_metadata_hashref->{$md} || '';
         my $updated = $updated_metadata_hashref->{$md};
         $md =~ s,_title,,;
 
@@ -436,10 +439,13 @@ sub CB_do_update_metadata {
 
                 if ($metadata_ok) {
                     my $o_item_hashref =  __get_o_item_metadata($C, $id);
-                    my $update_ok = __cb_update_metadata($C, $id, $metadata_hashref);
-                    if ($update_ok) {
-                        my $delta = __format_metadata_diff($o_item_hashref, $metadata_hashref);
-                        if ($delta) {
+                    my $delta = __format_metadata_diff($o_item_hashref, $metadata_hashref);
+
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+
+                    if ($delta) {                    
+                        my $update_ok = __cb_update_metadata($C, $id, $metadata_hashref);
+                        if ($update_ok) {
                             # Get affected coll_ids
                             my $coll_ids_ary_ref = $CO->get_coll_ids_for_item($id);
                             my @buf;
@@ -453,18 +459,14 @@ sub CB_do_update_metadata {
                             __P(qq{update [$time]: $id affected=$affected\n\tdelta=\n\t$delta\n});
                             $num_updated++;
                         }
-
-                        MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
-                    }
-                    else {
-                        push(@failed_metadata_update_ids, $id);
-                        MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
-                        $num_update_failed++;
+                        else {
+                            push(@failed_metadata_update_ids, $id);
+                            $num_update_failed++;
+                        }
                     }
                 }
                 else {
                     push(@failed_metadata_missing_ids, $id);
-                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
                     $num_metadata_missing++;
                 }
             }
