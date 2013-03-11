@@ -305,14 +305,14 @@ sub __run_check_shard {
 
     if ($rc == 0) {
         my $seg_ct = $output;
-        if ($seg_ct != $num_segs) {
+        if ($seg_ct > $num_segs) {
             $rc = $SLIP_Utils::States::RC_WRONG_NUM_SEGS;
-            my $msg = "__run_check_shard num_segs=$num_segs: wrong number seen: $seg_ct";
+            my $msg = "__run_check_shard num_segs=$num_segs, wrong number seen: $seg_ct";
             __output("$msg\n");
             Log_check($C, $run, $shard, $msg);
         }
         else {
-            my $msg = "__run_check_shard num_segs=$num_segs: " . $seg_ct;
+            my $msg = "__run_check_shard num_segs=$num_segs, seen: $seg_ct OK";
             __output("$msg\n");
             Log_check($C, $run, $shard, $msg);
         }
