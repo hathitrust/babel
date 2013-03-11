@@ -93,13 +93,12 @@ my $LOGFILE = 'metadata_update_logfile';
 if ($GLOBAL_UPDATE) {
     __confirm("\n\tQueue Ids to update metadata for ALL items? [N] ");
 
+    $LOGFILE = 'metadata_global_update_logfile';
     my $ok = CB_global_update_metadata_queue($C, $DBH);
     unless($ok) {
         __P(qq{Global metadata update failed.\n});
         exit 0;
     }
-
-    $LOGFILE = 'metadata_global_update_logfile';
 }
 
 CB_delete_extras($C);
