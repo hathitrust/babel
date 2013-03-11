@@ -75,10 +75,8 @@ use SLIP_Utils::Db_sync;
 use SLIP_Utils::Common;
 use SLIP_Utils::Log;
 
-use Sl_Utils;
 
 my $INTERACTIVE = $ENV{TERM};
-
 if ($INTERACTIVE) {
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot run driver. STOPSLIP in place!!\n");
@@ -92,7 +90,7 @@ else {
 
 sub sd_get_usage {
     my $s .= qq{Usage: driver-j -r run [-d][-X][-T][-K]
-                 where -X skips the check index phase
+                 where -X skips the entire check index phase
                        -K skips timeout requeue and server comm error restore\n};
     return $s;
 }
@@ -183,14 +181,6 @@ my ($INITIAL_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT, $RESTORE_CT) = (0, 0, 0);
 eval {
     ($INITIAL_QUEUE_SIZE) = Db::Select_queue_data($C, $DBH, $RUN);
     $INITIAL_TOT_INDEXED_CT = Db::Select_indexed_tot_count($C, $DBH, $RUN);
-
-    if ($INTERACTIVE) {
-        if (! $SKIP_CHECKINDEX) {
-            my $s = qq{\nYou are running with Lucene checkIndex enabled (no -X option). Not usually what you want interactively.\n\tContinue? [N] };
-            __confirm($s);
-        }
-    }
-    # POSSIBLY NOTREACHED
 
     run_driver($C, $DBH, $RUN);
 
@@ -608,11 +598,9 @@ sub handle_Optimizing {
             my $check_index_supported = $config->get('check_index_supported');
             if ($check_index_supported) {
                 if (! $SKIP_CHECKINDEX) {
-                    if (Sl_Utils::checkIndex_day($C)) {
-                        # Enable checkers to start running from cron
-                        $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
-                        $_Next_Stage = $SLIP_Utils::States::St_Checking;
-                    }
+                    # Enable checkers to start running from cron
+                    $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
+                    $_Next_Stage = $SLIP_Utils::States::St_Checking;
                 }
             }
 
