@@ -147,6 +147,23 @@ sub __P {
 
 # ---------------------------------------------------------------------
 
+=item __O
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __O {
+    my $msg = shift;
+
+    if ($ENV{'TERM'}) {
+        print STDOUT qq{$msg};
+    }
+}
+
+# ---------------------------------------------------------------------
+
 =item email_report
 
 Description
@@ -463,6 +480,9 @@ sub CB_do_update_metadata {
                             push(@failed_metadata_update_ids, $id);
                             $num_update_failed++;
                         }
+                    }
+                    else {
+                        __O('.');
                     }
                 }
                 else {
