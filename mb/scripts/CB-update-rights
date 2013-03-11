@@ -89,6 +89,7 @@ $C->set_object('Database', $db);
 my $CO = new Collection($DBH, $CONFIG, 'no_owner');
 $C->set_object('Collection', $CO);
 
+my $LOGFILE = 'metadata_update_logfile';
 if ($GLOBAL_UPDATE) {
     __confirm("\n\tQueue Ids to update metadata for ALL items? [N] ");
 
@@ -96,7 +97,9 @@ if ($GLOBAL_UPDATE) {
     unless($ok) {
         __P(qq{Global metadata update failed.\n});
         exit 0;
-    } 
+    }
+
+    $LOGFILE = 'metadata_global_update_logfile';
 }
 
 CB_delete_extras($C);
@@ -142,7 +145,7 @@ sub __P {
     }
 
     chomp($msg);
-    Utils::Logger::__Log_string($C, $msg, 'metadata_update_logfile', '___QUERY___', 'mb');
+    Utils::Logger::__Log_string($C, $msg, $LOGFILE, '___QUERY___', 'mb');
 }
 
 # ---------------------------------------------------------------------
