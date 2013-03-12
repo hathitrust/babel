@@ -247,11 +247,6 @@ sub i_processing_loop {
         Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
         # POSSIBLY NOTREACHED
 
-        # Exit this producer if time of day falls between the downtime
-        # for VuFind Solr. We need VuFind for Solr document metadata.
-        handle_vSolr_downtime($C);
-        # POSSIBLY NOTREACHED
-
         # Exit if all all enabled shards are carrying a full or
         # over-full allocation of producers or this host is not
         # enabled or is full or over-full. This call is no-op after
@@ -507,37 +502,6 @@ sub handle_allocation {
     # dang ....
     __output("no work available for shard=$dedicated_shard ... exit\n");
     exit 0;
-}
-
-
-# ---------------------------------------------------------------------
-
-=item handle_vSolr_downtime
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_vSolr_downtime {
-    my $C = shift;
-    my $config = $C->get_object('MdpConfig');
-
-    return
-        if (! $config->get('vSolr_downtime_checking'));
-
-    my @downtime = $config->get('vSolr_downtime_interval');
-
-    my ($second, $minute, $hour) = localtime();
-    my $decimal_hour = $hour + $minute/60.0;
-
-    if (
-        ($decimal_hour > $downtime[0])
-        &&
-        ($decimal_hour < $downtime[1])
-       ) {
-        exit 0;
-    }
 }
 
 # ---------------------------------------------------------------------

@@ -510,7 +510,7 @@ sub process_rights_from_errors {
     my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
     my $num_metadata_errors = scalar(@$id_arr_hashref);
     if ($num_metadata_errors) {
-        $s = qq{Repair: Trying to repair $num_metadata_errors ids from slip_errors };
+        $s = qq{Repair: UPDATE slip_rights by testing $num_metadata_errors metadata error ids from slip_errors };
         __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
@@ -526,22 +526,37 @@ sub process_rights_from_errors {
             if ($case eq 'NEW') {
                 # Repair succeeded: ID added to slip_rights
                 $totals_hashref->{num_m_errors_repaired}++;
+                $s = qq{Repair[REPAIRED]: NEW $id from slip_errors added to slip_rights };
             }
             elsif ($case eq 'NOOP') {
                 $totals_hashref->{num_m_not_missing}++;
+                $s = qq{Repair[]: NOOP $id already in slip_rights };
             }
-            elsif (grep(/^$case$/, ('MOVED', 'UPDATED'))) {
+            elsif ($case eq 'MOVED') {
                 $totals_hashref->{num_m_anomalies}++;
+                $s = qq{Repair[]: (anomalous) MOVED $id already in slip_rights };
+            }
+            elsif ($case eq 'UPDATED') {
+                $totals_hashref->{num_m_anomalies}++;
+                $s = qq{Repair[]: (anomalous) UPDATED $id already in slip_rights };
             }
             elsif ($case eq 'VuFind_BADHTTP') {
                 $totals_hashref->{num_m_vufind_http}++;
+                $s = qq{Repair[]: BAD HTTP response from VuFind for $id };
             }
             elsif ($case eq 'VuFind_MISSING') {
                 $totals_hashref->{num_m_missing_vufind}++;
+                $s = qq{Repair[]: $id missing from VuFind };
             }
             elsif ($case eq 'Rights_FAIL') {
                 $totals_hashref->{num_m_missing_rights}++;
+                $s = qq{Repair[]: $id missing from rights_current };
             }
+            else {
+                $s = qq{Repair[]: SOFTWARE ERROR for $id };
+            }
+            __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
+            r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
         }
     }
     else {
@@ -703,41 +718,6 @@ sub queue_id_for_metadata_update {
 
 # ---------------------------------------------------------------------
 
-=item near_vSolr_downtime
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub near_vSolr_downtime {
-    my $C = shift;
-    my $config = $C->get_object('MdpConfig');
-
-    my $near = 0;
-
-    return
-        if (! $config->get('vSolr_downtime_checking'));
-
-    my @downtime = $config->get('vSolr_downtime_interval');
-
-    my ($second, $minute, $hour) = localtime();
-    my $decimal_hour = $hour + $minute/60.0;
-
-    if (
-        ($decimal_hour > $downtime[0])
-        &&
-        ($decimal_hour < $downtime[1])
-       ) {
-        $near = 1;
-    }
-
-    return $near;
-}
-
-
-# ---------------------------------------------------------------------
-
 =item r_rights_enabled
 
 Is slip_rights enabled?
@@ -839,14 +819,14 @@ Description
 sub __get_repair_report {
     my $tr = shift;
     my $s =
-      qq{Repair metadata errors from slip_rights:}
-        . qq{\n\tslip_errors_candidates=$tr->{num_m_errors} }
-          . qq{\n\tslip_rights_repaired=$tr->{num_m_errors_repaired} }
-            . qq{\n\tslip_rights_not_missing=$tr->{num_m_not_missing} }
-              . qq{\n\tanomalies=$tr->{num_m_anomalies} }
-                . qq{\n\tvufind_http_error=$tr->{num_m_vufind_http} }
-                  . qq{\n\tvufind_not_present=$tr->{num_m_missing_vufind} } 
-                    . qq{\n\trights_not_present=$tr->{num_m_missing_rights} };
+      qq{Repair slip_rights by re-testing ids in slip_errors :}
+        . qq{\n\tslip_errors candidate ids=$tr->{num_m_errors} }
+          . qq{\n\tslip_errors ids added to slip_rights=$tr->{num_m_errors_repaired} }
+            . qq{\n\tslip_errors ids in catalog and slip_rights=$tr->{num_m_not_missing} }
+              . qq{\n\tslip_errors ids in catalog moved or updated in slip_rights=$tr->{num_m_anomalies} }
+                . qq{\n\tVuFind HTTP errors=$tr->{num_m_vufind_http} }
+                  . qq{\n\tslip_errors ids not in VuFind=$tr->{num_m_missing_vufind} } 
+                    . qq{\n\tslip_errors ids not in rights_current=$tr->{num_m_missing_rights} };
     return $s;
 }
 
