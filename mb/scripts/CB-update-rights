@@ -484,7 +484,7 @@ sub CB_do_update_metadata {
                         }
                     }
                     else {
-                        __O('.');
+                       (($num_processed % 1000) == 0) ? __O($num_processed) : __O('.');
                     }
                 }
                 else {
