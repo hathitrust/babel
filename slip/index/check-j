@@ -193,7 +193,6 @@ if ($check_enabled) {
 else {
     my $s = "check-j not enabled for shard=$SHARD";
     __output(qq{$s\n});
-    Log_check($C, $RUN, $SHARD, $s);
 }
 
 exit 0;
