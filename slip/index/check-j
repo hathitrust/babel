@@ -168,7 +168,7 @@ if (Db::optimize_shard_is_selected($C, $DBH, $RUN, $SHARD)) {
 
 my $CHECK_INDEX = 0;
 if (Sl_Utils::checkIndex_day($C)) {
-    my $CHECK_INDEX = 1;
+    $CHECK_INDEX = 1;
 }
 
 if ($check_enabled) {    
@@ -177,8 +177,9 @@ if ($check_enabled) {
           "check-j: CHECK shard=$SHARD Lucene checkIndex="
             . ($CHECK_INDEX ? 'YES' : 'no')
               . ", check for segments == $LIMIT_SEGS"
-                . ($NOOP ? " ---> NOOP\n" : "\n") ;
-        __output($s);
+                . ($NOOP ? " ---> NOOP" : "") ;
+        __output(qq{$s\n});
+        Log_check($C, $RUN, $SHARD, $s);
         
         handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST,
                         c_check($C, $RUN, $DBH, $SHARD, $LIMIT_SEGS, $CHECK_INDEX));
@@ -190,7 +191,9 @@ if ($check_enabled) {
     }
 }
 else {
-    __output("check-j not enabled for shard=$SHARD\n");
+    my $s = "check-j not enabled for shard=$SHARD";
+    __output(qq{$s\n});
+    Log_check($C, $RUN, $SHARD, $s);
 }
 
 exit 0;
