@@ -923,8 +923,7 @@ sub c_rights_control {
     Db::set_rights_enabled($C, $dbh, $enabled);
 
     my $what = $enabled ? 'ENABLE' : 'DISABLE';
-    my $s = qq{***RIGHTS $what };
-    Log_rights($C, $s);
+    Log_rights($C, $what);
     __output(qq{\t$what rights\n});
 }
 
@@ -1140,7 +1139,7 @@ Description
 sub Log_configure_host {
     my ($C, $run, $host, $num_producers) = @_;
 
-    my $s = qq{***CONFIGURE: } . Utils::Time::iso_Time() . qq{ r=$run h=$host num_producers=$num_producers};
+    my $s = qq{***CONTROL[CONFIGURE]: } . Utils::Time::iso_Time() . qq{ r=$run h=$host num_producers=$num_producers};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1156,7 +1155,7 @@ Description
 sub Log_configure_shard {
     my ($C, $run, $shard, $producers_per_shard) = @_;
 
-    my $s = qq{***CONFIGURE: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard, producers_per_shard=$producers_per_shard};
+    my $s = qq{***CONTROL[CONFIGURE]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard, producers_per_shard=$producers_per_shard};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1172,7 +1171,7 @@ Description
 sub Log_restore {
     my ($C, $run, $num_restored, $type) = @_;
 
-    my $s = qq{***RESTORE: } . Utils::Time::iso_Time() . qq{ r=$run restored=$num_restored, error_type=$type};
+    my $s = qq{***CONTROL[RESTORE]: } . Utils::Time::iso_Time() . qq{ r=$run restored=$num_restored, error_type=$type};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1188,7 +1187,7 @@ Description
 sub Log_stats {
     my ($C, $run) = @_;
 
-    my $s = qq{***STATS RESET: } . Utils::Time::iso_Time() . qq{ r=$run };
+    my $s = qq{***CONTROL[STATS RESET]: } . Utils::Time::iso_Time() . qq{ r=$run };
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1205,7 +1204,7 @@ Description
 sub Log_errors_reset {
     my ($C, $run, $ct) = @_;
 
-    my $s = qq{***ERRORS RESET: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
+    my $s = qq{***CONTROL[ERRORS RESET]: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1221,7 +1220,7 @@ Description
 sub Log_unstuck {
     my ($C, $run, $num_unstuck) = @_;
 
-    my $s = qq{***UNSTICK: } . Utils::Time::iso_Time() . qq{ r=$run unstick=$num_unstuck};
+    my $s = qq{***CONTROL[UNSTICK]: } . Utils::Time::iso_Time() . qq{ r=$run unstick=$num_unstuck};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1238,7 +1237,7 @@ Description
 sub Log_init {
     my ($C, $run, $offset) = @_;
 
-    my $s = qq{***INITIALIZE: } . Utils::Time::iso_Time() . qq{ r=$run};
+    my $s = qq{***CONTROL[INITIALIZE]: } . Utils::Time::iso_Time() . qq{ r=$run};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1254,7 +1253,7 @@ Description
 sub Log_delete {
     my ($C, $run) = @_;
 
-    my $s = qq{***DELETE: } . Utils::Time::iso_Time() . qq{ r=$run};
+    my $s = qq{***CONTROL[DELETE]: } . Utils::Time::iso_Time() . qq{ r=$run};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1271,7 +1270,7 @@ Description
 sub Log_driver_start_stop {
     my ($C, $run, $what) = @_;
 
-    my $s = qq{***DRIVER $what: } . Utils::Time::iso_Time() . qq{ r=$run};
+    my $s = qq{***CONTROL[DRIVER $what]: } . Utils::Time::iso_Time() . qq{ r=$run};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1288,7 +1287,7 @@ Description
 sub Log_optimize_start_stop {
     my ($C, $run, $shard, $what) = @_;
 
-    my $s = qq{***OPTIMIZE $what: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
+    my $s = qq{***CONTROL[OPTIMIZE $what]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1304,7 +1303,7 @@ Description
 sub Log_check_start_stop {
     my ($C, $run, $shard, $what) = @_;
 
-    my $s = qq{***CHECK $what: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
+    my $s = qq{***CONTROL[CHECK $what]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1320,7 +1319,7 @@ Description
 sub Log_enqueuer_start_stop {
     my ($C, $run, $what) = @_;
 
-    my $s = qq{***ENQUEUER $what: } . Utils::Time::iso_Time() . qq{ r=$run};
+    my $s = qq{***CONTROL[ENQUEUER $what]: } . Utils::Time::iso_Time() . qq{ r=$run};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
@@ -1334,10 +1333,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub Log_rights {
-    my ($C, $s) = @_;
+    my ($C, $what) = @_;
+
+    my $s = qq{***CONTROL[RIGHTS $what]: };
     SLIP_Utils::Log::this_string($C, $s, 'rights_logfile', '___RUN___', 'rights');
 }
-
 
 # ---------------------------------------------------------------------
 
