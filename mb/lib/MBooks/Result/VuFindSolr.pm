@@ -159,8 +159,8 @@ sub AFTER_ingest_Solr_search_response
             }
         }
         
-        my $converted_hash;
-        
+        my $converted_hash={};
+                
         my $iteminfo_aryref = $metadata_hash->{'ht_id_display'};
         if (scalar(@$iteminfo_aryref) == 1)
         {
@@ -188,7 +188,8 @@ sub AFTER_ingest_Solr_search_response
                     $ids_seen->{$item_id}++;
                     $metadata_hash->{'volume'} = $volid_hashref->{$item_id};
                     $metadata_hash->{'ht_id_display'} = $item_id;
-                    $converted_hash = $self->process_metadata($metadata_hash);
+                    my $temp_hash={ %{$metadata_hash} };
+                    $converted_hash = $self->process_metadata($temp_hash);
                     push (@{$ary_metadata_hash}, $converted_hash);
                 }
             }
