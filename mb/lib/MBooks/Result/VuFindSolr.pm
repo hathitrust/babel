@@ -367,7 +367,7 @@ sub __add_book_ids
           if (defined ($hash->{$field}))
           {
               my @temp = $hash->{$field};
-              my $temp_ref = add_book_id_prefix(uc($field),@temp);
+              my $temp_ref = add_book_id_prefix_and_filter(uc($field),@temp);
               push (@{$ary_ref},@{$temp_ref});
           }
           delete($hash->{$field});
@@ -394,7 +394,7 @@ sub __add_book_ids
 
 #----------------------------------------------------------------------
 #unicorn google book covers
-sub add_book_id_prefix
+sub add_book_id_prefix_and_filter
 {
     my $prefix = shift;
     my $ary_ref=shift;
@@ -402,6 +402,8 @@ sub add_book_id_prefix
     
     foreach my $el (@{$ary_ref})
     {
+        #skip ids with ampersands (found some in bad lccns)
+        next if $el =~/\&/;
         push (@{$out},$prefix .':'. $el)
     }
     return $out;
