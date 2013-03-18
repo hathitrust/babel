@@ -9,6 +9,7 @@
   <DebugMessages><?DEBUG_MESSAGES?></DebugMessages>
   <LangMap><?CHUNK filename="langmap.xml"?></LangMap>
   <EnvHT_DEV><?ENV_VAR variable="HT_DEV"?></EnvHT_DEV>
+  <SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
   <EnvSDRINST><?ENV_VAR variable="SDRINST"?></EnvSDRINST>
   <DebugUncompressed><?DEBUG_UNCOMPRESSED?></DebugUncompressed>
   <EnvUSER_AGENT><?ENV_VAR variable="HTTP_USER_AGENT"?></EnvUSER_AGENT>
