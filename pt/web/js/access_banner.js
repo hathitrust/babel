@@ -5,6 +5,10 @@
 
 $(document).ready(function() {
     if ($('#accessBannerID').length > 0) {
+        var suppress = $('html').hasClass('supaccban');
+        if (suppress) {
+            return;
+        }
         var debug = $('html').hasClass('htdev');
         var idarr = JSON.parse($.cookie('access.hathitrust.org'));
         var url = $.url(); // parse the current page URL

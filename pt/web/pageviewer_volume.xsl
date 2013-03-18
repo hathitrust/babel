@@ -123,6 +123,9 @@
     <xsl:if test="$gHTDEV != ''">
       <xsl:attribute name="class"><xsl:text>htdev</xsl:text></xsl:attribute>
     </xsl:if>
+    <xsl:if test="$gSuppressAccessBanner = 'true'">
+      <xsl:attribute name="class"><xsl:text>supaccban</xsl:text></xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="include_extra_js_and_css">
