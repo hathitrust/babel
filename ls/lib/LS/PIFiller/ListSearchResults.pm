@@ -1408,7 +1408,7 @@ sub _ls_wrap_result_data {
           if (defined ($doc_data->{$field}))
           {
               my $temp_ref = $doc_data->{$field};
-              my    $tmp_ary_ref = add_book_id_prefix(uc($field),$temp_ref);
+              my    $tmp_ary_ref = add_book_id_prefix_and_filter(uc($field),$temp_ref);
               push(@{$book_ids_ary_ref},  @{$tmp_ary_ref});
           }
       }
@@ -1541,7 +1541,7 @@ sub _ls_wrap_result_data {
 }
 #----------------------------------------------------------------------
 #unicorn google book covers
-sub add_book_id_prefix
+sub add_book_id_prefix_and_filter
 {
     my $prefix = shift;
     my $ary_ref=shift;
@@ -1549,6 +1549,8 @@ sub add_book_id_prefix
     
     foreach my $el (@{$ary_ref})
     {
+    #skip ids with ampersands (found some in bad lccns)
+        next if $el =~/\&/;
         push (@{$out},$prefix .':'. $el)
     }
     return $out;
