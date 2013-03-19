@@ -85,27 +85,31 @@ HT.resizeBookReader = function() {
 //   HT.resizeBookReader();
 // })
 
-// PREPPING AND LOADING SECTION
-// override slice size from params
-var newHash = window.location.hash.substr(1);
-if(newHash.indexOf("slice/") >= 0) {
-    var parts = newHash.split('/');
-    var slice_size;
-    for(var i = 0; i < parts.length; i += 2) {
-        if(parts[i] == 'slice') {
-            slice_size = parts[i+1];
-            break;
-        }
-    }
-    HT.reader.slice_size = parseInt(slice_size);
-}
+head.ready(function() {
+  // PREPPING AND LOADING SECTION
+  // override slice size from params
+  var newHash = window.location.hash.substr(1);
+  if(newHash.indexOf("slice/") >= 0) {
+      var parts = newHash.split('/');
+      var slice_size;
+      for(var i = 0; i < parts.length; i += 2) {
+          if(parts[i] == 'slice') {
+              slice_size = parts[i+1];
+              break;
+          }
+      }
+      HT.reader.slice_size = parseInt(slice_size);
+  }
 
-// update slice_size to match thumbColumns
-while ( HT.reader.slice_size % HT.reader.thumbColumns != 0 ) {
-    HT.reader.slice_size += 1;
-}
+  // update slice_size to match thumbColumns
+  while ( HT.reader.slice_size % HT.reader.thumbColumns != 0 ) {
+      HT.reader.slice_size += 1;
+  }
 
-$(document).ready(function() {
+})
+
+
+head.ready(function() {
   
     $("#mdpImage").hide();
     HT.resizeBookReader();
@@ -267,7 +271,7 @@ window.mockrotate = function(orientation) {
 
 }
 
-$(document).ready(function() {
+head.ready(function() {
   $(".boxy-content a[href*='http://']").live('click', function() {
     var href = $(this).attr('href');
     if ( href.indexOf('http://m.') < 0 && window != window.top ) {

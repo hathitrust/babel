@@ -1,0 +1,16 @@
+@import "toolbar.scss";
+@import "volume/thumb.scss";
+@import "volume/image.scss";
+@import "volume/scroll.scss";
+@import "volume/flip.scss";
+@import "volume/plaintext.scss";
+
+.alert-headline {
+    text-align: center;
+
+    >p {
+        font-size: 200%;
+        font-weight: bold;
+    }
+
+}

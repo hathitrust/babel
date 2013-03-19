@@ -1,0 +1,186 @@
+
+var last_top = $(window).scrollTop();
+var last_left = $(window).scrollLeft();
+
+$(".header").addClass("fixed").addClass("fixed-x").data('extra-height', 40).data('shadow', '#navbar-inner');
+
+var $fixed = $(".fixed");
+var $fixed_x = $(".fixed.fixed-x");
+var $fixed_y = $(".fixed.fixed-y");
+var dummies = {}
+
+var $bottom = $(".main");
+
+HT.x = 1;
+rebuild_sidebar = function() {
+    var h = $(window).height() - $(".header.fixed").height() - $(".navbar-static-top").height();
+    var h2 = h - $(".bibLinks").height() - HT.x;
+    $("#sidebar").height(h).find(".scrollable").height(h2).addClass("nano");
+    $(".scrollable.nano").nanoScroller({ alwaysVisible : true });
+}
+
+head.ready(function() {
+
+
+    rebuild_sidebar();
+
+    var idx = 0;
+    $fixed.each(function() {
+        var $original = $(this);
+
+        var xy = $original.offset();
+        var w = $original.outerWidth();
+
+        // console.log("ORIGINAL", w);
+
+        if ( ! $original.attr("id") ) {
+            idx += 1;
+            $original.attr("id", "id" + idx);
+        }
+
+        $original.css({ position: 'fixed', top : xy.top, left : xy.left, width : w }).addClass("stuck");
+
+        // if ( $original.hasClass("sidebar") ) {
+        //     $original.height($(window).height());
+        // }
+
+        if ( ! $original.is(".no-dummy") ) {
+            var extra_h = $original.data('extra-height') || 0;
+            var $dummy = $("<div><div></div></div>").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.outerHeight() + extra_h, width : w });
+            $original.before($dummy).addClass('fixed-placed');
+            $original.css('top', $dummy.offset().top).width($dummy.outerWidth()).addClass("static");
+            if ( $original.is(".fixed-x") ) {
+                $original.css('left', $dummy.offset().left);
+            }
+            dummies[$original.attr('id')] = $dummy;
+        }
+
+
+    })
+
+
+    $(window).on('scroll', handle_scroll_vertical);
+    $(window).on('scroll', handle_scroll_horizontal);
+    $(window).on('resize', handle_resize);
+
+    $(window).on('reset', function() {
+        setTimeout(function() {
+            $fixed.removeClass("locked");
+            $(window).scroll();
+        }, 100);
+    })
+
+})
+
+
+var handle_scroll_horizontal = function() {
+
+    var current_left = $(window).scrollLeft();
+    $fixed.filter(".fixed-y").each(function() {
+        var $original = $(this);
+        var $dummy = dummies[$original.attr('id')];
+        $original.css({ left : $dummy.offset().left - current_left });
+    })
+}
+
+var handle_scroll_vertical = function() {
+    var current_top = $(window).scrollTop();
+
+    //console.log("-- scrolling", current_top, last_top);
+    // console.log($("#sidebar").fracs().rects.viewport.bottom, " / ", $(".main").fracs().rects.viewport.bottom);
+    if ( current_top == last_top ) {
+        return;
+    }
+
+    $fixed_y.each(function() {
+        var $original = $(this);
+        var margin_top = $original.data('margin-top') || 0;
+        var $dummy = dummies[$original.attr("id")];
+        var top = parseInt($original.css('top'));
+
+        var original_bottom = top + $original.height();
+
+        if ( last_top < current_top ) {
+            // scrolling window content up, toward bottom
+            var check_top, next_top;
+            next_top = check_top = top + ( last_top - current_top );
+            if ( ! $original.is(".unlocked") && next_top <= margin_top ) {
+                next_top = margin_top;
+            }
+            if ( ( next_top >= 0 || $original.is(".unlocked")  ) && next_top < top) {
+                $original.css({ top : next_top });
+            }
+
+            // track the bottom; can't use the dummies, need a container
+            var f1 = $original.fracs(); var f2 = $bottom.fracs();
+            if ( f1.rects.viewport.bottom - f2.rects.viewport.bottom > 0 ) {
+                // console.log("UNLOCKING:", f1.rects.viewport.bottom, f2.rects.viewport.bottom);
+                var delta = f1.rects.viewport.bottom - f2.rects.viewport.bottom;
+                $original.css({ top : check_top });
+                $original.addClass("unlocked");
+            }
+
+        } else {
+
+            var next_top = $dummy.offset().top - current_top;
+            if ( next_top >= margin_top ) {
+                $original.css({ top : next_top });
+                $original.removeClass("unlocked");
+            } else if ( $original.is(".unlocked") ) {
+                next_top = top - ( current_top - last_top );
+                if ( next_top >= margin_top ) {
+                    next_top = margin_top;
+                    $original.removeClass("unlocked");
+                }
+                $original.css({ top : next_top });
+            }
+
+        }
+
+        if ( top <= margin_top  ) {
+            $original.addClass("locked");
+        } else {
+            $original.removeClass("locked");
+        }
+
+    })
+
+    $fixed_x.each(function() {
+        var $original = $(this);
+        var $dummy = dummies[$original.attr("id")];
+        $original.css({ top : $dummy.offset().top - current_top });
+    })
+
+    last_top = current_top;
+}
+
+var handle_resize = function() {
+    var scroll_left = $(window).scrollLeft();
+    $fixed_y.each(function() {
+        var $original = $(this);
+        var $dummy = dummies[$original.attr("id")];
+        var new_left = $dummy.offset().left + scroll_left;
+        $original.css({ left : new_left });
+    })
+
+    $fixed_x.each(function() {
+        var $original = $(this);
+        var $dummy = dummies[$original.attr("id")];
+        var new_left = $dummy.offset().left + parseInt($dummy.css('margin-left'));;
+        // console.log("ER:", $original.offset().left, $dummy.offset().left, scroll_left);
+        // $original.css({ left : new_left, xwidth : $dummy.width() });
+
+        var $shadow = $($original.data('shadow'));
+        //new_left = ( $(window).width() - $shadow.width() ) / 2;
+        $original.css({ width : $shadow.width(), left : new_left });
+
+    })
+
+    var $uber = $(".container.page.centered");
+    $uber.removeClass("page");
+    setTimeout(function() {
+        $uber.addClass("page");
+        rebuild_sidebar();
+    }, 100);
+}
+

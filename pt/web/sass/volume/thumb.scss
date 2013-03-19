@@ -1,0 +1,76 @@
+@import "../../../common/web/unicorn/sass/base";
+
+.view-thumb {
+    .thumbnails {
+        // @include pie-clearfix;
+
+        &.rtl .page-item {
+            float: right;
+        }
+
+    }
+
+    .thumbnails:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .page-item {
+        min-height: 100px;
+        min-width: 100px;
+
+        background: transparent;
+
+        float: left;
+        margin: 4px;
+        display: table-cell;
+        position: relative;
+
+        text-align: center;
+        vertical-align: middle;
+
+        background-image: url(../graphics/thumb-loader.gif);
+        background-repeat: no-repeat;
+        background-position: center;
+
+        &.loaded {
+            background-image: none;
+
+            img {
+                visibility: visible;
+            }
+        }
+
+        .page-link {
+            display: inline-block;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            border: 1px solid #d5d3d3;
+            box-shadow: 0 1px 10px rgba(0,0,0,.1);
+        }
+
+    }
+
+    .page-num {
+        position: absolute;
+        z-index: 50;
+        opacity: 0.4;
+        background: #666;
+        color: #eee;
+        text-align: center;
+        height: 40px;
+        width: 32px;
+        font-size: 14px;
+        font-weight: bold;
+        padding: 8px;
+        top: 10px;
+        right: 10px;
+        display: table-cell;
+        vertical-align: middle;
+    }    
+
+}

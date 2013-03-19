@@ -106,32 +106,7 @@
   <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
 
-
-    //console.log("pageview.xsl - checkpoint init_from_params");
-    /*
-       		var myScroll;
-			function loaded() {
-				console.log("Setting iScroll Timeout");
-				setTimeout(function () {
-					console.log("Initializing TOC iScroll");
-					myScroll = new iScroll('mdpMobileTableOfContents');
-				}, 100);
-			}
-			console.log("Adding load event listener");
-			window.addEventListener('load', loaded, false);
-			*/
-       /*
-    var myScroll;
-	function loaded() {
-		console.log("Creating Scroller");
-		myScroll = new iScroll('mdpMobileTableOfContents');
-	}
-	document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
-	document.addEventListener('DOMContentLoaded', loaded, false);
-       */
-
-    //console.log("pageview.xsl - document.addEventListener for loaded method");
-
+      head.ready(function() {
         console.log("PARAMS:", HT.params.view, window.location.href, window.location.href.indexOf("view=") + -1);
         if ( window.location.href.indexOf("view=") + 1 == 0 ) {
           if ( $(window).width() - $(window).height() == Math.abs($(window).width() - $(window).height() )) {
@@ -146,7 +121,6 @@
        HT.reader = new HTMobileBookReader(); // new HTMobileBookReader();
        HT.reader.onePage.autofit = 'height'; // override 680px default
        HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
-       <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
        HT.reader.bookTitle = document.title;
        HT.reader.reduce = 1;
        HT.reader.pageProgression = 'lr';
@@ -201,9 +175,14 @@
         //HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
         HT.reader.lazyDelay = 500;
         //console.log("pageview.xsl - checkpoint lazyDelay");
+
+      })
+
+
     </script>
-    <script type="text/javascript" src="/pt/mobile/bookreader_startup.js?ts={generate-id(.)}">;</script>
-    <!-- <script src="http://localhost:8080/target/target-script-min.js#anonymous"></script> -->
+    <script type="text/javascript">
+      head.js("/pt/mobile/bookreader_startup.js?ts=<xsl:value-of select="generate-id(.)" />");
+    </script>
     
   </xsl:template>
 

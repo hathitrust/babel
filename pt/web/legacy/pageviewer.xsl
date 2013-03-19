@@ -94,7 +94,7 @@
         <xsl:call-template name="include_extra_js_and_css" />
 
         <!-- dropdown banner -->
-        <script type="text/javascript" src="/pt/web/jquery/jQuery-Notify-bar/jquery.notifyBar.js"></script>
+        <script type="text/javascript" src="/pt/web/vendor/jQuery-Notify-bar/jquery.notifyBar.js"></script>
         <script type="text/javascript" src="/pt/js/access_banner_01.js"></script>
 
         <!-- <xsl:call-template name="online_assessment"/> -->

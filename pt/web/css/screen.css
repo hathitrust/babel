@@ -1,0 +1,144 @@
+@import url(../vendor/nanoscroller/nanoscroller.css);
+/* lets me easily translate font-sizes from mockup */
+/* line 3, ../sass/screen.scss */
+body {
+  min-width: 975px ;
+  min-width: 97.5rem ;
+}
+
+/* line 9, ../sass/screen.scss */
+.main .main-guts {
+  min-height: 400px;
+}
+
+/* line 14, ../sass/screen.scss */
+.dummy {
+  white-space: nowrap;
+}
+
+/* line 21, ../sass/screen.scss */
+.sidebar > div {
+  width: 200px !important;
+  width: 20rem !important;
+}
+/* line 25, ../sass/screen.scss */
+.sidebar a[disabled] {
+  cursor: default;
+  opacity: 0.65;
+  filter: alpha(opacity=65);
+  text-decoration: none;
+}
+/* line 33, ../sass/screen.scss */
+.sidebar h2 {
+  border-bottom: 1px solid #dddddd;
+  font-size: 16px ;
+  font-size: 1.6rem ;
+  padding-bottom: 8px ;
+  padding-bottom: 0.8rem ;
+  font-size: 16px ;
+  font-size: 1.6rem ;
+}
+/* line 40, ../sass/screen.scss */
+.sidebar ul {
+  list-style: none;
+  padding-left: 0;
+}
+/* line 44, ../sass/screen.scss */
+.sidebar ul li {
+  margin-bottom: 4px ;
+  margin-bottom: 0.4rem ;
+}
+/* line 50, ../sass/screen.scss */
+.sidebar .collectionLinks select {
+  font-size: 12px ;
+  font-size: 1.2rem ;
+  height: 24px ;
+  height: 2.4rem ;
+}
+/* line 55, ../sass/screen.scss */
+.sidebar .collectionLinks button {
+  padding-top: 0;
+}
+/* line 59, ../sass/screen.scss */
+.sidebar .collectionLinks .alert {
+  margin-top: 4px ;
+  margin-top: 0.4rem ;
+}
+/* line 66, ../sass/screen.scss */
+.sidebar .shareLinks input[type=text] {
+  font-size: 12px ;
+  font-size: 1.2rem ;
+  height: 18px ;
+  height: 1.8rem ;
+  cursor: default;
+}
+/* line 74, ../sass/screen.scss */
+.sidebar .scrollable {
+  overflow: hidden;
+  overflow-y: auto;
+}
+/* line 79, ../sass/screen.scss */
+.sidebar .versionContainer {
+  padding-top: 40px ;
+  padding-top: 4rem ;
+  padding-left: 1px ;
+  padding-left: 0.1rem ;
+  font-size: 85%;
+}
+/* line 85, ../sass/screen.scss */
+.sidebar input[type=text] {
+  width: 90%;
+}
+/* line 89, ../sass/screen.scss */
+.sidebar select {
+  width: 90%;
+}
+
+/* line 103, ../sass/screen.scss */
+#versionIcon {
+  display: inline-block;
+  position: relative;
+  height: 18px;
+  width: 18px;
+  margin-left: 5px;
+  background-image: url(/pt/common-web/graphics/harmony/icon_question.png);
+  background-repeat: no-repeat;
+  text-indent: -10000px;
+  text-transform: capitalize;
+  clip: rect(0, 0, 0, 0);
+  cursor: pointer;
+}
+
+/* line 117, ../sass/screen.scss */
+.smaller {
+  font-size: 90%;
+}
+
+/* line 121, ../sass/screen.scss */
+#noPdfAccess {
+  display: none;
+}
+
+/* line 125, ../sass/screen.scss */
+.pdfPartnerLoginLinkMessage {
+  margin-top: 4px ;
+  margin-top: 0.4rem ;
+  color: #666;
+  font-style: italic;
+}
+
+/* line 131, ../sass/screen.scss */
+.hide {
+  display: none;
+}
+
+/* line 135, ../sass/screen.scss */
+.bullets {
+  font-style: italic;
+}
+
+/* line 139, ../sass/screen.scss */
+.modal .accessBannerText p {
+  font-size: 14px ;
+  font-size: 1.4rem ;
+}

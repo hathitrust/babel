@@ -35,97 +35,18 @@
 
   <xsl:variable name="gUsingBookReader" select="'false'"/>
 
-  <!-- root template -->
-  <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
-      <head>
-        <title>
-          <xsl:call-template name="PageTitle">
-            <xsl:with-param name="detail" select="'PT Search'" />
-          </xsl:call-template>
-        </title>
-
-        <!-- jQuery from the Google CDN -->
-        <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css"/>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
-
-        <xsl:call-template  name="include_local_javascript"/>
-        <xsl:call-template name="load_js_and_css"/>
-        
-        <script type="text/javascript">
-          HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
-        </script>
-
-        <script type="text/javascript">
-          HT.params = {};
-          <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
-            <xsl:choose>
-              <xsl:when test="@name = 'seq'">
-                HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
-              </xsl:when>
-              <!-- prevent XSS exploit when q1 is displayed in result page -->
-              <xsl:when test="@name = 'q1'">
-                HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="'foo'" />';
-              </xsl:when>
-              <xsl:otherwise>
-                HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:for-each>
-          HT.params.view = "search";
-        </script>
-        
-      </head>
-
-      <body class="yui-skin-sam">
-        <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/text()">
-          <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
-          </div>
-        </xsl:if>
-
-
-        <xsl:call-template name="header" />
-        <xsl:call-template name="UberContainer"/>
-
-        <!-- Feedback form -->
-        <div id="feedbackDiv"></div>
-
-        <!-- New collection overlay -->
-        <div id="overlay"></div>
-
-        <!-- Feedback -->
-        <xsl:call-template name="Feedback"/>
-
-        <!-- Footer -->
-        <xsl:call-template name="footer"/>
-
-        <xsl:call-template name="GetAddItemRequestUrl"/>
-
-        <xsl:if test="$gEnableGoogleAnalytics='true'">
-          <xsl:call-template name="google_analytics" />
-        </xsl:if>
-      </body>
-    </html>
-
+  <xsl:template name="setup-extra-header-extra">
+    <link rel="stylesheet" href="/pt/css/search.css" />
   </xsl:template>
 
+  <xsl:template name="get-page-title">
+    <xsl:call-template name="PageTitle">
+      <xsl:with-param name="detail" select="'PT Search'" />
+    </xsl:call-template>
+  </xsl:template>
 
-  <!-- Top Level Container DIV -->
-  <xsl:template name="UberContainer">
-    <div id="mdpUberContainer">
-
-      <div class="mdpControlContainer" role="complementary">
-        <xsl:call-template name="aboutThisBook" />
-        <xsl:call-template name="getThisBook" />
-        <xsl:call-template name="addToCollection" />
-        <xsl:call-template name="shareThisBook" />
-        <xsl:call-template name="versionLabel" />
-      </div>
-
-      <xsl:call-template name="skipNavAnchor"/>
-
+  <xsl:template name="main">
+    <div class="main" id="viewport">
       <!-- Results -->
       <xsl:call-template name="ResultsContainer">
         <xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms/Terms"/>
@@ -133,19 +54,8 @@
         <xsl:with-param name="pSearchHits" select="MdpApp/SearchSummary/TotalPages"/>
         <xsl:with-param name="pSearchResults" select="MdpApp/SearchResults"/>
       </xsl:call-template>
-
-
-      <!-- Catalog Links -->
-      <!-- <div id="ControlContentContainer">
-        <div id="ControlContent">
-        </div>
-      </div> -->
-
-
     </div>
-
   </xsl:template>
-
 
   <!-- Results -->
   <xsl:template name="ResultsContainer">
@@ -157,6 +67,8 @@
     <div id="mdpResultsContainer" role="main">
 
       <xsl:call-template name="backToBeginning" />
+
+      <xsl:call-template name="embed-search-form" />
 
       <xsl:call-template name="BuildSearchSummary">
         <xsl:with-param name="ppSearchTerms" select="$pSearchTerms"/>
@@ -267,7 +179,14 @@
     </xsl:choose>
   </xsl:template>
   
-  
+  <xsl:template name="embed-search-form">
+    <div class="results-search-form">
+      <xsl:call-template name="action-search-volume">
+        <xsl:with-param name="view" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
+      </xsl:call-template>
+    </div>
+  </xsl:template>
+
   <!-- -->
   <xsl:template name="msgRepeatSearchWithOR">      
     <div class="searchSubMessage">
@@ -335,10 +254,12 @@
 
     <div class="mdpSearchSummary">
       <xsl:if test="$gFinalAccessStatus!='allow'">
-        <xsl:element name="div">
-          <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions. </p>
-          <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-        </xsl:element>
+        <div class="alert alert-error alert-block alert-banner">
+          <p>
+            <!-- <img style="float: left; padding-left: 8px" src="//common-web/graphics/LimitedLink.png" alt="" /> -->
+            Full view is not available for this item due to copyright &#169; restrictions.
+          </p>
+        </div>
       </xsl:if>
       
       <xsl:variable name="page_string">
