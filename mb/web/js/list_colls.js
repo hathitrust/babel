@@ -759,6 +759,10 @@ var ListBrowser = {
     // var random_idx = Math.floor(Math.random() * .length);
     // var featured = this.cache.html[this.cache.featured[random_idx]];
 
+    var tmpl = $("#featured-template").text();
+    _.templateSettings = { interpolate : /\$\{(.+?)\}/g };
+    tmpl = _.template(tmpl);
+
     for(var i = 0; i < 3; i++) {
       var featured = this.cache.html[featured_items[i]];
       var tmplData = {
@@ -768,10 +772,10 @@ var ListBrowser = {
         featured : featured[this.idx.Featured]
       };
       
-      $("#featured-template").tmpl(tmplData).appendTo(this.$sidebar);
+      // $("#featured-template").tmpl(tmplData).appendTo(this.$sidebar);
+      $(tmpl(tmplData)).appendTo(this.$sidebar);
     }
     
-    Hyphenator.run();
   },
   
   update_login_link: function(view) {

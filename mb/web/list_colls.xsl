@@ -32,11 +32,10 @@
     <link rel="stylesheet" type="text/css" href="/mb/list_colls.css" />
 
     <script>
-      head.js("/mb/web/js/jquery.tmpl.js",
+      head.js(
               "/mb/web/js/jquery.placeholder.js",
               "/mb/web/js/date.js",
-              "/mb/web/js/jquery.ba-hashchange.js",
-              "/mb/web/js/hyphenator.js",
+              // "/mb/web/js/jquery.ba-hashchange.js",
               "/mb/web/js/mb.js",
               "/mb/web/js/tracking.js");
     </script>

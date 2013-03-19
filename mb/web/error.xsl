@@ -2,32 +2,22 @@
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
-  
-  <!-- Main template -->
-  <xsl:template match="/MBooksTop">
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
-      <head>
-        <xsl:call-template  name="include_local_javascript"/>
-        <xsl:call-template name="load_js_and_css"/>
-        <!-- overide debug style if debug flag is on -->
-        <xsl:call-template name="debug_CSS"/>
-        <title>My HathiTrust Digital Library Error</title>
-      </head>
 
-      <body>
-        <xsl:call-template name="header"/>
-        <xsl:call-template name="ErrorMessage"/>
-      </body>
-    </html>
+  <xsl:template name="contents">
+    <xsl:call-template name="display-error-message" />
   </xsl:template>
 
-  <xsl:template name="ErrorMessage">
-    <div class="error">
-      <p><xsl:value-of select="/MBooksTop/ErrorMessage"/></p>
+  <xsl:template name="display-error-message">
+    <div id="mbContentContainer" class="main clearfix">
+      <div class="alert alert-block alert-error">
+        <p><xsl:value-of select="/MBooksTop/ErrorMessage" /></p>
+      </div>
     </div>
-    </xsl:template>
+  </xsl:template>
 
-  <xsl:template name="subnav_header">
+  <xsl:template name="get-page-title">
+    <xsl:text>Collections: Error</xsl:text>
+    <xsl:text> | HathiTrust Digital Library</xsl:text>
   </xsl:template>
     
 </xsl:stylesheet>

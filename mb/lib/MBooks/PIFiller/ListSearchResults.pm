@@ -34,6 +34,8 @@ use MBooks::Index;
 use MBooks::Utils::Sort;
 use MBooks::PIFiller::ListUtils;
 
+use Namespaces;
+
 BEGIN {
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
@@ -61,6 +63,7 @@ sub handle_SEARCH_RESULTS_PI
     # array of hashrefs of metadata with same fields as list items but
     # also with relevance score
     my $results_ref = $act->get_transient_facade_member_data($C, 'result_set_final_data');
+
     my $query_time = $act->get_transient_facade_member_data($C, 'query_time');
 
     my $coll_has_items = $act->get_transient_facade_member_data($C, 'coll_has_items');
@@ -97,6 +100,7 @@ sub handle_SEARCH_RESULTS_PI
         $s .= wrap_string_in_tag($$item_hashref{'fulltext'}, 'fulltext');
         $s .= wrap_string_in_tag($$item_hashref{'rel'}, 'relevance');
         $s .= wrap_string_in_tag($$item_hashref{'record_no'}, 'record');
+        $s .= wrap_string_in_tag($$item_hashref{'book_id'}, 'bookID');
 
         my $coll_ary_ref = $item_hashref->{'item_in_collections'};
         my $colls;

@@ -20,73 +20,8 @@ ul.nav {
   padding-left: 0;
 }
 
-.nav-tabs {
-  margin-bottom:1.5em;
-  margin-left: 10px;
-  border-bottom: 1px solid #AAA;
-  width: 96%;
-  color: #333;
-}
-
-.nav-tabs a {
-  font-weight: bold;
-  color: #5e5e5e;
-  text-decoration: none;
-}
-
-.nav-tabs a:hover {
-  text-decoration: none;
-  border-bottom: none;
-  color: #b15a0d;
-}
-
-.nav-tabs {
-  text-align: left;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  line-height: 24px;
-}
-
-.nav-tabs:after, .nav-tabs:before {
-  display: table;
-  line-height: 0;
-  content: "";
-}
-
-.nav-tabs:after {
-  clear: both;
-}
-
-.nav-tabs li {
-  float: left;
-  margin: 0 0px;
-  padding: 0 10px;
-  border: 1px solid #d3d3d3;
-  border-bottom: 1px solid #aaa;
-  background: #e3e3e3;
-  background: -webkit-gradient(linear,0% 0,0% 100%,from(white),to(#e3e3e3));
-  display: inline-block;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-  margin-bottom: -1px;
-  font-size: 14px;
-  /*text-shadow: 0 1px 1px rgba(255, 255, 255, 1);*/
-}
-
-
-.nav-tabs li:first-child {
-  margin-left: 0;
-}
-
-.nav-tabs li.active {
-  border: 1px solid #aaa;
-  border-bottom: 1px solid transparent;
-  background: #fff;
-}
-
-.nav-tabs li.active a {
-  color: #4f4f4f;
+ul.nav-tabs {
+  margin-bottom: 10px;
 }
 
 /*** WCAG2 AA + ~AAA compliance ***/

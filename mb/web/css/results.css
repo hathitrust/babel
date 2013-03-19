@@ -65,22 +65,23 @@
 /* line 57, ../sass/results.scss */
 .row.result .cover {
   width: 60px;
+  min-height: 60px;
   float: right;
 }
-/* line 61, ../sass/results.scss */
+/* line 62, ../sass/results.scss */
 .row.result .cover img {
   min-width: 60px;
 }
-/* line 67, ../sass/results.scss */
+/* line 68, ../sass/results.scss */
 .row.result .select {
   width: 24px;
   float: right;
 }
-/* line 71, ../sass/results.scss */
+/* line 72, ../sass/results.scss */
 .row.result .select label {
   display: inline-block;
 }
-/* line 76, ../sass/results.scss */
+/* line 77, ../sass/results.scss */
 .row.result .in-collections {
   font-size: 90%;
   position: absolute;
@@ -89,80 +90,80 @@
   right: 10px ;
   right: 1rem ;
 }
-/* line 83, ../sass/results.scss */
+/* line 84, ../sass/results.scss */
 .row.result .in-collections ul {
   padding-left: 0;
   margin-left: 0;
   margin-top: 0;
   list-style: none;
 }
-/* line 89, ../sass/results.scss */
+/* line 90, ../sass/results.scss */
 .row.result .in-collections ul li {
   margin-bottom: 4px ;
   margin-bottom: 0.4rem ;
 }
-/* line 96, ../sass/results.scss */
+/* line 97, ../sass/results.scss */
 .row.result [class*="result-metadata-"] {
   display: block;
   font-size: 95%;
   color: #666;
 }
-/* line 102, ../sass/results.scss */
+/* line 103, ../sass/results.scss */
 .row.result .result-access-link {
   margin-top: 10px ;
   margin-top: 1rem ;
 }
-/* line 105, ../sass/results.scss */
+/* line 106, ../sass/results.scss */
 .row.result .result-access-link ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-/* line 110, ../sass/results.scss */
+/* line 111, ../sass/results.scss */
 .row.result .result-access-link ul li {
   display: inline;
   float: left;
   margin-right: 20px ;
   margin-right: 2rem ;
 }
-/* line 118, ../sass/results.scss */
+/* line 119, ../sass/results.scss */
 .row.result.alt {
   background-color: #f6f4f1;
 }
-/* line 122, ../sass/results.scss */
+/* line 123, ../sass/results.scss */
 .row.result [class*="span"] + [class*="pull-"] {
   float: left;
 }
 
-/* line 128, ../sass/results.scss */
+/* line 129, ../sass/results.scss */
 .push-1 {
   margin-left: 8.36653%;
 }
 
-/* line 133, ../sass/results.scss */
+/* line 134, ../sass/results.scss */
 dl.collection dd, dl.collection dt {
   margin-left: 0;
 }
-/* line 137, ../sass/results.scss */
+/* line 138, ../sass/results.scss */
 dl.collection dt {
   font-weight: bold;
   margin-bottom: 4px ;
   margin-bottom: 0.4rem ;
 }
-/* line 142, ../sass/results.scss */
+/* line 143, ../sass/results.scss */
 dl.collection dd {
   margin-bottom: 12px ;
   margin-bottom: 1.2rem ;
 }
 
-/* line 147, ../sass/results.scss */
+/* line 148, ../sass/results.scss */
 .col-featured img {
   border: 2px solid #eeeeee;
   padding: 2px;
   max-width: 100%;
 }
 
-/* line 153, ../sass/results.scss */
+/* line 154, ../sass/results.scss */
 [class^="icomoon-"]:before, [class*=" icomoon-"]:before {
   font-family: 'icomoon';
   font-style: normal;
@@ -176,7 +177,7 @@ dl.collection dd {
   font-size: 110%;
 }
 
-/* line 166, ../sass/results.scss */
+/* line 167, ../sass/results.scss */
 .mainsearch {
   padding-bottom: 16px ;
   padding-bottom: 1.6rem ;
@@ -184,12 +185,12 @@ dl.collection dd {
   margin-bottom: 1.6rem ;
   border-bottom: 1px dotted #a6a5a5;
 }
-/* line 167, ../sass/results.scss */
+/* line 168, ../sass/results.scss */
 .mainsearch label[for=q1] {
   font-size: 110%;
 }
 
-/* line 178, ../sass/results.scss */
+/* line 179, ../sass/results.scss */
 .tabs {
   margin-bottom: 10px ;
   margin-bottom: 1rem ;
@@ -199,19 +200,19 @@ dl.collection dd {
   width: 96%;
   color: #333;
 }
-/* line 185, ../sass/results.scss */
+/* line 186, ../sass/results.scss */
 .tabs a, .tabs span {
   font-weight: bold;
   color: #5e5e5e;
   text-decoration: none;
 }
-/* line 191, ../sass/results.scss */
+/* line 192, ../sass/results.scss */
 .tabs a:hover {
   text-decoration: underline;
   border-bottom: none;
   color: #b15a0d;
 }
-/* line 197, ../sass/results.scss */
+/* line 198, ../sass/results.scss */
 .tabs ul {
   text-align: left;
   list-style: none;
@@ -220,14 +221,14 @@ dl.collection dd {
   line-height: 24px ;
   line-height: 2.4rem ;
 }
-/* line 204, ../sass/results.scss */
+/* line 205, ../sass/results.scss */
 .tabs ul:after, .tabs ul:before {
   display: table;
   line-height: 0;
   content: "";
   clear: both;
 }
-/* line 211, ../sass/results.scss */
+/* line 212, ../sass/results.scss */
 .tabs ul li {
   float: left;
   margin: 0 0px;
@@ -242,49 +243,49 @@ dl.collection dd {
   margin-bottom: -1px;
   font-size: 14px;
 }
-/* line 225, ../sass/results.scss */
+/* line 226, ../sass/results.scss */
 .tabs ul li:first-child {
   margin-left: 0;
 }
-/* line 229, ../sass/results.scss */
+/* line 230, ../sass/results.scss */
 .tabs ul li.active {
   border: 1px solid #aaaaaa;
   border-bottom: 1px solid transparent;
   background: #fff;
 }
-/* line 234, ../sass/results.scss */
+/* line 235, ../sass/results.scss */
 .tabs ul li.active a {
   color: #4f4f4f;
 }
 
-/* line 252, ../sass/results.scss */
+/* line 253, ../sass/results.scss */
 div > h3:first-child {
   margin-top: 0;
 }
 
-/* line 256, ../sass/results.scss */
+/* line 257, ../sass/results.scss */
 .toolbar {
   margin-bottom: 16px ;
   margin-bottom: 1.6rem ;
   padding: 8px ;
   padding: 0.8rem ;
 }
-/* line 257, ../sass/results.scss */
+/* line 258, ../sass/results.scss */
 .toolbar label {
   display: inline-block;
 }
-/* line 264, ../sass/results.scss */
+/* line 265, ../sass/results.scss */
 .toolbar.alt {
   background-color: #D2D2D1;
 }
 
-/* line 270, ../sass/results.scss */
+/* line 271, ../sass/results.scss */
 #SortWidget {
   display: inline-block;
   margin-right: 20px ;
   margin-right: 2rem ;
 }
-/* line 273, ../sass/results.scss */
+/* line 274, ../sass/results.scss */
 #SortWidget select {
   width: auto;
   margin-bottom: 0;
@@ -292,26 +293,26 @@ div > h3:first-child {
   font-size: 1.2rem ;
 }
 
-/* line 282, ../sass/results.scss */
+/* line 283, ../sass/results.scss */
 .PageInfo {
   display: inline-block;
 }
-/* line 285, ../sass/results.scss */
+/* line 286, ../sass/results.scss */
 .PageInfo select {
   width: auto;
   margin-bottom: 0;
   font-size: 12px ;
   font-size: 1.2rem ;
 }
-/* line 291, ../sass/results.scss */
+/* line 292, ../sass/results.scss */
 .PageInfo .resultsPerPage {
   display: inline-block;
 }
-/* line 295, ../sass/results.scss */
+/* line 296, ../sass/results.scss */
 .PageInfo .pagingNav {
   display: inline-block;
 }
-/* line 299, ../sass/results.scss */
+/* line 300, ../sass/results.scss */
 .PageInfo .pagingNav ul {
   list-style: none;
   margin-bottom: 0;
@@ -319,7 +320,7 @@ div > h3:first-child {
   margin-left: 2rem ;
   padding: 0;
 }
-/* line 306, ../sass/results.scss */
+/* line 307, ../sass/results.scss */
 .PageInfo .pagingNav ul li {
   display: inline-block;
   margin: 0;
@@ -335,23 +336,23 @@ div > h3:first-child {
   padding-bottom: 0.2rem ;
 }
 
-/* line 320, ../sass/results.scss */
+/* line 321, ../sass/results.scss */
 .selectAll {
   display: inline-block;
 }
 
-/* line 324, ../sass/results.scss */
+/* line 325, ../sass/results.scss */
 .SelectedItemActions {
   display: inline-block;
   margin-left: 40px ;
   margin-left: 4rem ;
 }
-/* line 328, ../sass/results.scss */
+/* line 329, ../sass/results.scss */
 .SelectedItemActions select {
   margin-bottom: 0;
 }
 
-/* line 335, ../sass/results.scss */
+/* line 336, ../sass/results.scss */
 .controls .counter {
   margin-left: 5px ;
   margin-left: 0.5rem ;
@@ -360,12 +361,12 @@ div > h3:first-child {
   vertical-align: top;
 }
 
-/* line 342, ../sass/results.scss */
+/* line 343, ../sass/results.scss */
 #listisFooter {
   display: none;
 }
 
-/* line 344, ../sass/results.scss */
+/* line 345, ../sass/results.scss */
 .alert-summary {
   background-color: transparent;
   border-color: transparent;

@@ -88,6 +88,10 @@ sub get_Solr_metadata_query_from_ids
                               'publishDate',
                               'ht_id_display',
                               'id',
+                              # oclc, lccn, and isbn for book covers
+                              'oclc',
+                              'isbn',
+                              'lccn',
                             ];
     
     my $field_list = join(',', @$field_list_arr_ref);

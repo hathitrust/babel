@@ -132,6 +132,13 @@ head.ready(function() {
         }
     }
 
+    // bind actions
+    $("#checkAll").click(function(e) {
+        var state = $(this).attr('checked') || null;
+        console.log("STATE", state);
+        $(".select input[type=checkbox]").attr('checked', state);
+    })
+
     $(".SelectedItemActions button").click(function(e) {
         e.preventDefault();
         var action = this.id;

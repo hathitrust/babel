@@ -160,7 +160,7 @@
           <xsl:text> in </xsl:text>
           <xsl:value-of select="/MBooksTop/CollectionOwner"/>
           <xsl:text>'s </xsl:text>
-          <a href="{/MBooksTop/CollHref}">
+          <a href="{/MBooksTop/OperationResults/CollHref}">
             <xsl:value-of select="/MBooksTop/CollectionName"/>    
             <xsl:text> collection</xsl:text>
           </a>

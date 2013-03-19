@@ -1090,8 +1090,9 @@
 
       <div class="span2 pull9">
         <div class="cover">
-          <!-- should be google book cover -->
-          <img src="http://babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ItemID};seq=1;width=60" alt="" aria-hidden="true" />
+          <xsl:if test="normalize-space(bookID)">
+            <xsl:attribute name="data-bookID"><xsl:value-of select="bookID" /></xsl:attribute>
+          </xsl:if>
         </div>
         <div class="select">
           <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>

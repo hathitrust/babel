@@ -1,3 +1,35 @@
+
+head.ready(function() {
+
+  var API_URL = ( window.location.protocol == 'https:' ? "https://encrypted.google.com" : "http://books.google.com" ) + "/books?callback=?";
+  var THUMBNAIL_SIZE = 60;
+
+  $("[data-bookid]").each(function() {
+    var $div = $(this);
+    var book_id = $div.data('bookid');
+    $.getJSON(API_URL, {
+      jscmd : 'viewapi',
+      bibkeys : book_id
+    }, function(gdata) {
+      if ( gdata.length == 0 ) return;
+      var google_link = selectGoogleLink(gdata, 1, 1 );
+      if ( google_link.thumbnail_url ) {
+        var $img = $('<img class="bookCover" aria-hidden="true" alt=""/>')
+        $img.load(function() {
+          $img = jQuery(this);
+          owidth = $img.attr('width');
+          if (owidth > THUMBNAIL_SIZE) {
+            $img.attr('width', THUMBNAIL_SIZE);
+            $img.attr('height', $img.attr('height') * (THUMBNAIL_SIZE/owidth));
+          }
+          $div.append($img);
+        }).attr('src', google_link.thumbnail_url);
+      }
+    })
+  })
+})
+
+
 function getGoogleBookInfo(link_nums, record_num, record_counter)
 {
   var google_id = '';
@@ -7,7 +39,7 @@ function getGoogleBookInfo(link_nums, record_num, record_counter)
   if (link_nums.length > 0 ) {
     // call the google api with the collected link numbers
     //alert(link_nums);
-    var api_url ="http://books.google.com/books?jscmd=viewapi&bibkeys=" + link_nums + "&callback=?";
+    var api_url ="//books.google.com/books?jscmd=viewapi&bibkeys=" + link_nums + "&callback=?";
     //alert("calling script: " + api_url);
     jQuery.getJSON(api_url,
       function(gdata) {
