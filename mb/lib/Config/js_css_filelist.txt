@@ -42,6 +42,9 @@ Section:LOCAL_JS
 //common-web/jquery/jquery.trap.min.js
 /mb/web/js/mb.js
 /mb/web/js/tracking.js
+//common-web/js/google_covers.js
+//common-web/js/collection_tools.js
+
 
 Section:COLLLIST_JS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'

@@ -17,8 +17,6 @@
   <xsl:template name="contents">
     <xsl:call-template name="sidebar" />
     <xsl:call-template name="list-items-results" />
-    <script src="/mb/web/js/google_covers.js"></script>
-    <script src="/mb/web/js/collection_tools.js"></script>
   </xsl:template>
 
   <xsl:template name="sidebar">
