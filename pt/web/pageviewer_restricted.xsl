@@ -143,7 +143,7 @@
       <div class="no_access_options">
         <p>
           <xsl:text>or </xsl:text>
-          <a xmlns="http://www.w3.org/1999/xhtml" href="http://www.worldcat.org/oclc/68181975" title="Link to OCLC Find in a Library">Find in a library »</a>
+          <xsl:call-template name="FindInALibraryLink"/>
         </p>
       </div>
     </div>
