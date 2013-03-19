@@ -31,6 +31,7 @@ use Collection;
 use CollectionSet;
 use Access::Rights;
 
+use URI;
 
 require "PIFiller/Common/Globals.pm";
 require "PIFiller/Common/Group_HEADER.pm";
@@ -1114,6 +1115,55 @@ sub handle_SEARCH_RESULTS_LABEL_PI
     }
 
     return $label;
+}
+
+sub handle_HEADER_SEARCH_FIELDS_PI
+    : PI_handler(HEADER_SEARCH_FIELDS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $ses = $C->get_object('Session');
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+
+    my $script_name = $cgi->script_name;
+
+    my $q1; my $searchtype = 'all'; my $target;
+    if ( my $referer = $ses->get_transient('referer') ) {
+        if ( $referer =~ m,$PTGlobals::gCatalogSearchPattern, ) {
+            ( $q1, $searchtype, $ft ) = ExtractCatalogParams($referer);
+            $target = 'catalog';
+        } elsif ( $referer =~ m,$PTGlobals::gCatalogRecordPattern, ) {
+            ( $q1, $searchtype, $ft ) = ExtractCatalogParams($referer);
+            $target = 'catalog';
+        } elsif ( $referer =~ m,$PTGlobals::gLsSearchCgiRoot, ) {
+            $target = 'ls';
+            ( $q1, $searchtype, $ft ) = ExtractLSParams($referer);
+        }
+    } elsif ( $cgi->param('q1') ) {
+        # $script_name at this point is /pt/cgi/search NOT /cgi/pt/search
+    }
+
+    my $xml;
+
+    if ( $q1 ) {
+        $xml = qq{<HeaderSearchParams>
+                    <Field name="q1">$q1</Field>
+                    <Field name="searchtype">$searchtype</Field>
+                    <Field name="target">$target</Field>
+                    <Field name="ft">$ft</Field>
+                </HeaderSearchParams>};
+    }
+
+    return $xml;
+}
+
+sub ExtractLSParams {
+    my ( $url ) = @_;
+    my ( $q1 ) = ( $url =~ m,.*?q1=([^;&]+).*, );
+    my ( $searchtype ) = ( $url =~ m,.*?.*field1=([^;&]+), ) || 'all';
+    my ( $ft ) = ( $url =~ m,lmt=ft, ) ? 'checked' : '';
+    return ( $q1, $searchtype, $ft );
 }
 
 sub BuildSearchResultsUrl

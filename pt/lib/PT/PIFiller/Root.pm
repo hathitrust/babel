@@ -20,6 +20,8 @@ See coding example in base class PIFiller
 
 use strict;
 
+use List::MoreUtils qw(firstidx);
+
 use Utils;
 use Utils::Time;
 use Utils::Date;
@@ -28,6 +30,7 @@ use Identifier;
 use base qw(PIFiller);
 
 use PT::PIFiller::Common;
+
  
 # ---------------------------------------------------------------------
 
@@ -67,6 +70,46 @@ sub BuildRotateLink
     return Utils::url_to($tempCgi);
 }
 
+sub BuildResizeLink
+{
+    my ( $cgi, $mdpItem, $direction ) = @_;
+
+    my $toReturn = '';
+
+    my $id  = $cgi->param( 'id' );
+    my $seq = $mdpItem->GetRequestedPageSequence( 'seq' );
+
+    my $requestedSize = $mdpItem->GetRequestedSize();
+    my $default = $requestedSize;
+
+    # sort numerically
+    my @valuesList = sort { $a <=> $b } keys( %PTGlobals::gSizes );
+    my $idx = firstidx { $_ eq $requestedSize } @valuesList;
+
+    print STDERR "AHOY: $requestedSize :: $idx :: @valuesList\n";
+
+    my $tempCgi = new CGI( $cgi );
+    my $value;
+    if ( $direction eq 'in' )
+    {
+        $idx += 1;
+    }
+    elsif ( $direction eq 'out' )
+    {
+        $idx -= 1;
+    }
+    else
+    {
+        ASSERT( 0, qq{BuildRotateLink called with invalid parameters});
+    }
+
+    if ( $idx < 0 ) { $idx = 0; }
+    elsif ( $idx == scalar @valuesList ) { $idx -= 1; }
+
+    $tempCgi->param( 'size', $valuesList[$idx] );
+
+    return Utils::url_to($tempCgi);
+}
 
 # ---------------------------------------------------------------------
 
@@ -96,6 +139,9 @@ sub BuildPageNavLink
     if ( $page eq 'first' )
     {
         $pageValue = $mdpItem->GetFirstPageSequence();
+        if ( $currentSeq == $pageValue ) {
+            $returnValueFlag = undef;
+        }
     }
     elsif ( $page eq 'previous' )
     {
@@ -114,6 +160,9 @@ sub BuildPageNavLink
     elsif ( $page eq 'last' )
     {
         $pageValue = $mdpItem->GetLastPageSequence();
+        if ( $currentSeq == $pageValue ) {
+            $returnValueFlag = undef;
+        }
     }
     else
     {
@@ -611,6 +660,30 @@ sub handle_RESIZE_VALUES_PI
                                                      \%PTGlobals::gSizeLabels,,
                                                      $default, undef);
     return $select;
+}
+
+sub handle_RESIZE_IN_LINK_PI
+    : PI_handler(RESIZE_IN_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+    my $requestedSize = $mdpItem->GetRequestedSize();
+
+    return BuildResizeLink($cgi, $mdpItem, 'in');
+}
+
+sub handle_RESIZE_OUT_LINK_PI
+    : PI_handler(RESIZE_OUT_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+    my $requestedSize = $mdpItem->GetRequestedSize();
+
+    return BuildResizeLink($cgi, $mdpItem, 'out');
 }
 
 # ---------------------------------------------------------------------

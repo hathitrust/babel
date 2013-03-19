@@ -2,10 +2,13 @@
 
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:h="http://www.hathitrust.org"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   xmlns="http://www.w3.org/1999/xhtml"
-  extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
+  xmlns:exsl="http://exslt.org/common"
+  exclude-result-prefixes="exsl METS PREMIS h"
+  extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
 
   <xsl:import href="str.replace.function.xsl" />
 
@@ -109,64 +112,191 @@
     </xsl:choose>
   </xsl:variable>
 
-  <xsl:template name="html-tag-extra-attributes">
-    <xsl:choose>
-      <xsl:when test="$gUsingBookReader = 'true'">
-        <xsl:attribute name="class"><xsl:text>htmlNoOverflow</xsl:text></xsl:attribute>
-      </xsl:when>
-      <xsl:when test="$currentOrient = '1' or $currentOrient = '3'">
-        <xsl:attribute name="class"><xsl:text>htmlNoOverflowX</xsl:text></xsl:attribute>
-      </xsl:when>
-      <xsl:otherwise/>
-    </xsl:choose>
-
-    <xsl:if test="$gHTDEV != ''">
-      <xsl:attribute name="class"><xsl:text>htdev</xsl:text></xsl:attribute>
-    </xsl:if>
-    <xsl:if test="$gSuppressAccessBanner = 'true'">
-      <xsl:attribute name="class"><xsl:text>supaccban</xsl:text></xsl:attribute>
-    </xsl:if>
+  <xsl:template name="setup-extra-header-extra">
+    <link rel="stylesheet" href="/pt/css/toolbar.css" />
+    <script>
+      head.js("/pt/vendor/jquery.fracs.js");
+      head.js("/pt/js/reader.js", "/pt/js/manager.js", "/pt/js/views.js");
+    </script>
   </xsl:template>
 
-  <xsl:template name="include_extra_js_and_css">
-    <xsl:if test="$gUsingBookReader='true'">
-    <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script>
-    <!-- <style>
-      .debugIndex {
-        display: block;
-      }
-    </style> -->
-    </xsl:if>
-    <xsl:text disable-output-escaping="yes">
-    <![CDATA[<!--[if IE 7]>]]>
-    </xsl:text>
-    <!-- <script src="//ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script> -->
-    <style>
-      <xsl:text disable-output-escaping="yes">
-      #mdpNewStarburst {
-        margin-left: -25px;
-      }
+  <xsl:template name="setup-body-class">
+    <xsl:text> view-</xsl:text><xsl:value-of select="$gCurrentView" />
+  </xsl:template>
 
-      .prompt {
-        margin-left: 0;
-      }
+  <xsl:template name="pageviewer-contents">
+    <xsl:call-template name="sidebar" />
+    <xsl:call-template name="main" />    
+  </xsl:template>
 
-      #mdpBookReaderViews {
-        margin-left: 30px;
-      }
+  <xsl:template name="main">
+    <div class="main" id="viewport">
+      <xsl:call-template name="toolbar-vertical" />
+      <div id="scrolling">
+        <xsl:call-template name="toolbar-horizontal" />
+        <xsl:call-template name="page-content" />
+      </div>
+    </div>
+    <script>
+      head.js("/pt/web/js/scrolling.js");
+    </script>
+  </xsl:template>
 
-      #mdpToolbarNav > ul {
-        padding-left: 0;
-      }
+  <xsl:template name="toolbar-vertical">
+    <div id="toolbar-vertical" class="fixed fixed-y toolbar-vertical toolbar" data-margin-top="40">
+      <div class="options">
+        <div class="btn-group btn-group-vertical action-views">
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">1up</xsl:with-param>
+          </xsl:call-template>
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">2up</xsl:with-param>
+          </xsl:call-template>
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">thumb</xsl:with-param>
+          </xsl:call-template>
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view" select="'image'">image</xsl:with-param>
+          </xsl:call-template>
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">plaintext</xsl:with-param>
+          </xsl:call-template>
+        </div>
+        <div class="btn-group btn-group-vertical">
+          <button id="action-toggle-fullscreen" type="button" class="btn square alone"><i class="icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
+        </div>
+        <div class="btn-group btn-group-vertical">
+          <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
+          <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
+        </div>
+        <div class="btn-group btn-group-vertical">
+          <a href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square"><i class="icomoon-reload-CCW"></i><span class="label"> Rotate left</span></a>
+          <a href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square"><i class="icomoon-reload-CW"></i><span class="label"> Rotate right</span></a>
+        </div>
+      </div>
+    </div>
+  </xsl:template>
 
-      body {
-        width: auto;
-      }
-      </xsl:text>
-    </style>
-    <xsl:text disable-output-escaping="yes">
-    <![CDATA[<![endif]-->]]>
-    </xsl:text>
+  <xsl:template name="action-view-button">
+    <xsl:param name="view" />
+    <xsl:variable name="options">
+      <h:select>
+        <h:option name="1up" value="icomoon-scroll">Scroll</h:option>
+        <h:option name="2up" value="icomoon-book-alt2">Flip</h:option>
+        <h:option name="thumb" value="icomoon-grid-view">Thumbnail</h:option>
+        <h:option name="image" value="icomoon-documents">Page by Page</h:option>
+        <h:option name="plaintext" value="icomoon-article">Plain Text</h:option>
+      </h:select>
+    </xsl:variable>
+
+    <xsl:variable name="option" select="exsl:node-set($options)//h:option[@name=$view]" />
+    <xsl:variable name="href" select="//ViewTypeLinks/View[@name=$view]" />
+    <xsl:variable name="active">
+      <xsl:choose>
+        <xsl:when test="$view = $gCurrentView"> active</xsl:when>
+        <xsl:otherwise />
+      </xsl:choose>
+    </xsl:variable>
+
+    <a href="{$href}" data-target="{$option}" type="button" class="btn square {$active}"><i class="{$option/@value}"></i><span class="label"> <xsl:value-of select="$option" /></span></a>
+  </xsl:template>
+
+  <xsl:template name="toolbar-horizontal">
+    <div id="toolbar-horizontal" class="toolbar toolbar-horizontal fixed fixed-y" data-margin-top="40">
+        
+      <div class="options btn-toolbar">
+        <div class="btn-group ">
+          <xsl:call-template name="action-page-navigation" />
+        </div>
+
+        <xsl:call-template name="action-go-page" />
+
+        <div class="btn-group table-of-contents">
+          <xsl:call-template name="action-table-of-contents" />
+        </div>
+
+        <xsl:call-template name="action-search-volume" />
+
+      </div>
+
+    </div>
+  </xsl:template>
+
+  <xsl:template name="action-go-page">
+    <xsl:variable name="pageNum">
+      <xsl:choose>
+        <xsl:when test="$gCurrentPageNum">
+          <xsl:value-of select="$gCurrentPageNum" />
+        </xsl:when>
+        <xsl:otherwise>
+          <!-- not making this visible -->
+          <!-- <xsl:text>n</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" /> -->
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <form class="form-inline" method="get" action="pt">
+      <label>Jump to </label>
+      <input id="input-go-page" name="num" type="text" placeholder="" value="{$pageNum}" class="input-mini" />
+      <button id="action-go-page" type="submit" class="btn btn">Go</button>
+      <input type="hidden" name="u" value="1" />
+      <xsl:apply-templates select="//PageXOfYForm/HiddenVars"/>
+      <xsl:if test="not(//PageXOfYForm/HiddenVars/Variable[@name='seq'])">
+        <input type="hidden" name="seq" value="" />
+      </xsl:if>
+      <xsl:call-template name="HiddenDebug"/>
+    </form>
+  </xsl:template>
+
+  <xsl:template name="action-page-navigation">
+    <a id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square"><i class="icomoon-first"></i><span class="label"> First</span></a>
+    <a id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon-go-previous" style=""></i><span class="label"> Previous</span></a>
+    <a id="action-go-next" href="{//NextPageLink}" type="button" class="btn square"><i class="icomoon-go-next"></i><span class="label"> Next</span></a>
+    <a id="action-go-last" href="{//LastPageLink}" type="button" class="btn square"><i class="icomoon-last"></i><span class="label"> Last</span></a>
+  </xsl:template>
+
+  <xsl:template name="action-table-of-contents">
+    <button type="button" class="btn dropdown-toggle square" data-toggle="dropdown">
+      <i class="icomoon-list"></i><span class="label"> Jump to section</span> <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu scrollable-list">
+      <xsl:for-each select="$gFeatureList/Feature">
+        <li>
+          <a href="{Link}">
+            <xsl:value-of select="Label" />
+            <xsl:if test="normalize-space(Page)">
+              <xsl:text> - </xsl:text>
+              <xsl:value-of select="Page" />
+            </xsl:if>
+          </a>
+        </li>
+      </xsl:for-each>
+    </ul>
+  </xsl:template>
+
+  <xsl:template name="page-content">
+    <div id="content">
+      <xsl:choose>
+        <xsl:when test="$gCurrentView = 'image'">
+          <xsl:call-template name="page-content-image" />
+        </xsl:when>
+        <xsl:when test="$gCurrentView = 'plaintext'">
+          <xsl:call-template name="page-content-plaintext" />
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="page-content-reader" />
+        </xsl:otherwise>
+      </xsl:choose>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="page-content-reader">
+    <xsl:call-template name="page-content-image" />
+  </xsl:template>
+
+  <xsl:template name="page-content-image">
+    <div class="page-item">
+      <img src="{//CurrentPageImageSource}" />
+    </div>
   </xsl:template>
 
   <xsl:template name="setup-head">

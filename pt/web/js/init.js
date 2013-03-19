@@ -1,93 +1,8 @@
-if(!Array.indexOf){
-  Array.prototype.indexOf = function(obj){
-   for(var i=0; i<this.length; i++){
-    if(this[i]==obj){
-     return i;
-    }
-   }
-   return -1;
-  }
-}
 
-// add Array.reduce if necessary
-
-if (!Array.prototype.reduce)
-{
-  Array.prototype.reduce = function(fun /*, initial*/)
-  {
-    var len = this.length;
-    if (typeof fun != "function")
-      throw new TypeError();
-
-    // no value to return if no initial value and an empty array
-    if (len == 0 && arguments.length == 1)
-      throw new TypeError();
-
-    var i = 0;
-    if (arguments.length >= 2)
-    {
-      var rv = arguments[1];
-    }
-    else
-    {
-      do
-      {
-        if (i in this)
-        {
-          rv = this[i++];
-          break;
-        }
-
-        // if array contains no values, no initial value to return
-        if (++i >= len)
-          throw new TypeError();
-      }
-      while (true);
-    }
-
-    for (; i < len; i++)
-    {
-      if (i in this)
-        rv = fun.call(null, rv, this[i], i, this);
-    }
-
-    return rv;
-  };
-}
-
-// define a console if not exists
-if ( window.console === undefined ) {
-    window.console = {
-        log : function() { }
-    }
-}
-
-window.unload = function(e) {
-    HT.unloading = true;
-}
-
-// class constructors for bookreader
-function subclass(constructor, superConstructor)
-{
-  function surrogateConstructor()
-  {
-  }
-
-  surrogateConstructor.prototype = superConstructor.prototype;
-
-  var prototypeObject = new surrogateConstructor();
-  prototypeObject.constructor = constructor;
-
-  constructor.prototype = prototypeObject;
-}
 
 // define a namespace
 var HT = HT || {};
 HT.config = HT.config || {};
-
-HT.config.ARBITRARY_PADDING = 65;
-HT.config.ARBITRARY_WINDOW_WIDTH = 915;
-HT.config.CHOKE_DIM = 937;
 
 // bookreader utility
 // seed hash based on URL parameters as needed
@@ -171,7 +86,7 @@ HT.track_event = function(args, async) {
     }
 }
 
-$(document).ready(function() {
+head.ready(function() {
   
     $.ajaxSetup({
       cache: false
@@ -225,13 +140,31 @@ $(document).ready(function() {
     })
 })
 
-$(document).ready(function() {
-  $.get("/pt/bookreader/BookReader/images/transparent.png", 
-    { 
-      width : $(window).width(),
-      height : $(window).height(),
-      screen_width : screen.width,
-      screen_height : screen.height
-    }
-  )
+// $(document).ready(function() {
+//   $.get("/pt/bookreader/BookReader/images/transparent.png", 
+//     { 
+//       width : $(window).width(),
+//       height : $(window).height(),
+//       screen_width : screen.width,
+//       screen_height : screen.height
+//     }
+//   )
+// })
+
+// HEADER FIELD
+head.ready(function() {
+  // update header search field
+  var $html = $("html");
+  var q1 = $html.data('search-q1');
+  var searchtype = $html.data('search-searchtype');
+  var target = $html.data('search-target');
+  var ft = $html.data('search-ft') || null;
+  if ( q1 ) {
+    $(".search-form").find("input[name=q1]").val(q1)
+      .end().find(".search-input-select").val(searchtype)
+      .end().find("input[name=ft]").attr('checked', ft)
+      .end().find("input[name=target][value=" + target + "]").click()
+  }
+
 })
+
