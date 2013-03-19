@@ -7,10 +7,11 @@
     <!-- <link rel="stylesheet" type="text/css" href="/mb/css/mb.css" /> -->
     <link rel="stylesheet" type="text/css" href="/mb/css/results.css" />
 
-    <script src="/mb/web/js/mb.js"></script>
-    <script src="/mb/web/js/tracking.js"></script>
+<!--     <script src="/mb/web/js/mb.js"></script>
+    <script src="/mb/web/js/tracking.js"></script> -->
 
     <xsl:call-template name="include_local_javascript" />
+    <xsl:call-template name="load_js_and_css"/>
   </xsl:template>
 
   <xsl:template name="contents">

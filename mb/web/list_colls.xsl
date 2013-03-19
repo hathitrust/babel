@@ -31,7 +31,10 @@
     <link rel="stylesheet" type="text/css" href="/mb/css/mb.css" />
     <link rel="stylesheet" type="text/css" href="/mb/list_colls.css" />
 
-    <script>
+    <xsl:call-template name="include_local_javascript" />
+    <xsl:call-template name="load_js_and_css"/>
+    
+<!--     <script>
       head.js(
               "/mb/web/js/jquery.placeholder.js",
               "/mb/web/js/date.js",
@@ -39,16 +42,7 @@
               "/mb/web/js/mb.js",
               "/mb/web/js/tracking.js");
     </script>
-
-    <!--
-    <script src="/mb/web/js/jquery.tmpl.js"></script>
-    <script src="/mb/web/js/jquery.placeholder.js"></script>
-    <script src="/mb/web/js/date.js"></script>
-    <script src="/mb/web/js/jquery.ba-hashchange.js"></script>
-    <script src="/mb/web/js/hyphenator.js"></script>
-    <script src="/mb/web/js/mb.js"></script>
-    <script src="/mb/web/js/tracking.js"></script>
-    -->
+ -->
 
   </xsl:template>
 

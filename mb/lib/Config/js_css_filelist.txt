@@ -36,36 +36,17 @@
 # when it is concatenated into concatenated-min under /appname/web it
 # will find its paths in common-web, i.e. relative to its new location
 
-Section:YUI
-# These should always be the out of the box minimized versions
-/mb/web/yui2-lib/build/yahoo/yahoo-min.js
-/mb/web/yui2-lib/build/event/event-min.js
-/mb/web/yui2-lib/build/dom/dom-min.js
-/mb/web/yui2-lib/build/dragdrop/dragdrop-min.js
-/mb/web/yui2-lib/build/container/container-min.js
-/mb/web/yui2-lib/build/connection/connection-min.js
-
 Section:LOCAL_JS 
 # These should be listed with the unminimized name.  The script will
 # run yuicompress on them
 //common-web/jquery/jquery.trap.min.js
-//common-web/jquery/boxy/jquery.boxy.js
-//common-web/js/feedbackCBForm.js
-//common-web/js/newCollOverlayCore.js
-/mb/web/js/newCollOverlayCB.js
-//common-web/js/listUtils.js
-//common-web/js/overlayUtils.js
-//common-web/js/search.js
 /mb/web/js/mb.js
 /mb/web/js/tracking.js
 
 Section:COLLLIST_JS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'
-/mb/web/js/jquery.tmpl.js
 /mb/web/js/jquery.placeholder.js
 /mb/web/js/date.js
-/mb/web/js/jquery.ba-hashchange.js
-/mb/web/js/hyphenator.js
 
 # list_colls.js is loaded at the end of the document
 
@@ -74,16 +55,16 @@ Test://CurrentCgi/Param[@name='a'] = 'listcs'
 #/mb/web/js/searchAjaxCommon.js
 #/mb/web/js/searchAjaxItems.js
 
-Section:CSS
+#Section:CSS
 # css files, note last one overides earlier
-/mb/web/yui2-lib/build/fonts/fonts-min.css
-/mb/web/yui2-lib/build/container/assets/skins/sam/container.css
-//common-web/jquery/boxy/boxy.css
-//common-web/feedback.css
-//common-web/MBooksCol.css
-/mb/web/mb.css
+#/mb/web/yui2-lib/build/fonts/fonts-min.css
+#/mb/web/yui2-lib/build/container/assets/skins/sam/container.css
+#//common-web/jquery/boxy/boxy.css
+#//common-web/feedback.css
+#//common-web/MBooksCol.css
+#/mb/web/mb.css
 
-Section:COLLLIST_CSS
-Test://CurrentCgi/Param[@name='a'] = 'listcs'
-/mb/web/list_colls.css
-/mb/web/awesome.css
+#Section:COLLLIST_CSS
+#Test://CurrentCgi/Param[@name='a'] = 'listcs'
+#/mb/web/list_colls.css
+#/mb/web/awesome.css
