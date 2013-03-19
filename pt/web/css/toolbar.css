@@ -1,0 +1,270 @@
+/* lets me easily translate font-sizes from mockup */
+/* line 3, ../sass/toolbar.scss */
+body {
+  position: relative;
+  margin-top: 40px ;
+  margin-top: 4rem ;
+  padding-bottom: 160px ;
+  padding-bottom: 16rem ;
+}
+
+/* line 9, ../sass/toolbar.scss */
+.stuck {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* line 18, ../sass/toolbar.scss */
+.container.centered {
+  max-width: none;
+}
+
+/* line 28, ../sass/toolbar.scss */
+.dummy {
+  background-color: yellow;
+  opacity: 0.4;
+}
+
+/* line 33, ../sass/toolbar.scss */
+.sidebar.fixed-placed {
+  border-right: 1px solid transparent;
+}
+
+/* line 37, ../sass/toolbar.scss */
+.navbar-static-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* line 45, ../sass/toolbar.scss */
+.navbar-static-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* line 52, ../sass/toolbar.scss */
+.toolbar-vertical {
+  float: left;
+  width: 40px;
+  margin-top: 0;
+  /*10px;*/
+  /*margin-left: -10px;*/
+  z-index: 500;
+}
+/* line 59, ../sass/toolbar.scss */
+.toolbar-vertical .btn-group + .btn-group {
+  margin-left: 0;
+}
+/* line 63, ../sass/toolbar.scss */
+.toolbar-vertical .btn-group-vertical {
+  margin-bottom: 5px;
+}
+/* line 66, ../sass/toolbar.scss */
+.toolbar-vertical .btn-group-vertical .btn.alone {
+  border-radius: 4px 4px 4px 4px;
+}
+
+/* line 73, ../sass/toolbar.scss */
+.toolbar-horizontal {
+  height: 40px;
+  /*margin-left: 5px;*/
+  margin-bottom: -5px;
+  background: #FFFEFB;
+  min-width: 730px ;
+  min-width: 73rem ;
+}
+/* line 81, ../sass/toolbar.scss */
+.toolbar-horizontal.locked {
+  box-shadow: 2px 4px 2px rgba(50, 50, 50, 0.59);
+}
+/* line 87, ../sass/toolbar.scss */
+.toolbar-horizontal .btn-toolbar {
+  margin-bottom: 0;
+}
+/* line 91, ../sass/toolbar.scss */
+.toolbar-horizontal .options.btn-toolbar {
+  margin-top: 0;
+  padding-top: 0;
+}
+/* line 95, ../sass/toolbar.scss */
+.toolbar-horizontal .form-inline {
+  margin: 0;
+  margin-left: 10px;
+  display: inline-block;
+}
+/* line 98, ../sass/toolbar.scss */
+.toolbar-horizontal .form-inline label {
+  padding-top: 0px;
+  margin: 0;
+  margin-right: 5px;
+  font-size: 12px;
+}
+/* line 102, ../sass/toolbar.scss */
+.toolbar-horizontal .form-inline input[type=text] {
+  height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  width: 38px;
+  margin-right: 2px;
+}
+/* line 106, ../sass/toolbar.scss */
+.toolbar-horizontal .form-inline #action-go-page {
+  width: auto;
+  display: inline-block;
+  margin-top: 0px;
+}
+/* line 111, ../sass/toolbar.scss */
+.toolbar-horizontal .table-of-contents {
+  margin-left: 10px;
+}
+/* line 115, ../sass/toolbar.scss */
+.toolbar-horizontal #input-search-text {
+  width: 100px ;
+  width: 10rem ;
+}
+
+/* line 122, ../sass/toolbar.scss */
+.toolbar {
+  z-index: 100;
+}
+/* line 125, ../sass/toolbar.scss */
+.toolbar form {
+  margin: 0;
+  display: inline-block;
+  margin-left: 5px;
+  background: whiteSmoke;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  margin-right: 2px;
+  padding-right: 4px;
+  border-radius: 4px;
+  padding-left: 8px;
+}
+/* line 138, ../sass/toolbar.scss */
+.toolbar .options [class^="icon-"], .toolbar .toolbar [class*=" icon-"] {
+  background: none;
+  color: black;
+}
+/* line 143, ../sass/toolbar.scss */
+.toolbar .btn.square {
+  height: 38px;
+  width: 46px;
+  /*font-size: 18px;*/
+  color: black;
+}
+/* line 150, ../sass/toolbar.scss */
+.toolbar .iconz-doc-2, .toolbar .iconz-doc-text {
+  margin-left: -1px;
+}
+/* line 155, ../sass/toolbar.scss */
+.toolbar [class^="icomoon-"],
+.toolbar [class*=" icomoon-"] {
+  display: inline-block;
+  width: 1em;
+  font-size: 1.3em;
+  /*margin-right: 0.2em;*/
+  text-align: center;
+  opacity: 0.9;
+  line-height: 1em;
+  color: #333;
+  margin-top: 0.25em;
+}
+/* line 167, ../sass/toolbar.scss */
+.toolbar .icomoon-iconmonstr-magnifier-6-icon, .toolbar .icomoon-iconmonstr-magnifier-7-icon {
+  font-size: 1.8em;
+  margin-left: -0.125em;
+  margin-top: 0.1em;
+}
+/* line 173, ../sass/toolbar.scss */
+.toolbar .icomoon-list {
+  font-size: 1.0em;
+}
+/* line 177, ../sass/toolbar.scss */
+.toolbar .icon-white {
+  color: #fff;
+}
+/* line 181, ../sass/toolbar.scss */
+.toolbar .icomoon-scroll, .toolbar .icomoon-documents {
+  font-size: 1.4em;
+}
+
+/* line 187, ../sass/toolbar.scss */
+.sticky #toolbar-vertical {
+  position: fixed;
+  top: 40px;
+}
+
+/* line 192, ../sass/toolbar.scss */
+.sticky #toolbar-horizontal {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  padding-top: 5px;
+  left: 0;
+}
+
+/* line 200, ../sass/toolbar.scss */
+.options a, .inner-search a {
+  text-decoration: none;
+}
+
+/* line 204, ../sass/toolbar.scss */
+.btn.square {
+  width: 40px;
+}
+
+/* line 208, ../sass/toolbar.scss */
+.btn.dropdown-toggle.square {
+  width: 52px;
+}
+
+/* line 212, ../sass/toolbar.scss */
+.label {
+  display: none;
+}
+
+/* line 216, ../sass/toolbar.scss */
+.btn.square:hover .label {
+  display: inline-block;
+}
+
+/* line 220, ../sass/toolbar.scss */
+#scrolling {
+  margin-left: 55px ;
+  margin-left: 5.5rem ;
+}
+
+/* line 224, ../sass/toolbar.scss */
+#content {
+  padding: 24px ;
+  padding: 2.4rem ;
+}
+
+/* line 229, ../sass/toolbar.scss */
+.view-image .page-item {
+  display: block;
+  min-height: 200px;
+  min-width: 510px;
+  background: transparent;
+  border: 4px solid transparent;
+  padding: 3px;
+  margin-left: auto;
+  margin-right: auto;
+  background-image: url(../graphics/thumb-loader.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+/* line 245, ../sass/toolbar.scss */
+.view-image .page-item.loaded {
+  background-image: none;
+}
+/* line 248, ../sass/toolbar.scss */
+.view-image .page-item.loaded img {
+  visibility: visible;
+}

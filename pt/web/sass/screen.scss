@@ -1,0 +1,108 @@
+@import "../../../common/web/unicorn/sass/base";
+
+body {
+    @include rem(min-width, 975);
+}
+
+
+.main {
+    .main-guts {
+        min-height: 400px;
+    }
+}
+
+.dummy {
+    white-space: nowrap;
+}
+
+// should be in commmon?
+.sidebar {
+
+    >div {
+    @include rem(width, 200, !important);        
+    }
+
+
+    h2 {
+        border-bottom: 1px solid #ddd;
+        @include rem(font-size, 16);
+        @include rem(padding-bottom, 8);
+        @include rem(font-size, 16);
+    }
+
+    ul {
+        list-style: none;
+        padding-left: 0;
+
+        li {
+            @include rem(margin-bottom, 4);
+        }
+    }
+
+    .collectionLinks {
+        select {
+            @include rem(font-size, 12);
+            @include rem(height, 24);
+        }
+
+        button {
+            padding-top: 0;
+        }
+
+    }
+
+    .shareLinks {
+        input[type=text] {
+            @include rem(font-size, 12);
+            @include rem(height, 18);
+            cursor: default;
+        }
+    }
+
+
+    .scrollable {
+        overflow: hidden;
+        overflow-y: auto;
+    }
+
+    .versionContainer {
+        @include rem(padding-top, 40);
+        @include rem(padding-left, 1);
+        font-size: 85%;
+    }
+
+    input[type=text] {
+        width: 90%;
+    }
+
+    select {
+        width: 90%;
+    }
+
+}
+
+// .nano.has-scrollbar {
+
+//     .getLinks, .collectionLinks, .shareLinks, .versionContainer {
+//         width: 90%;
+//     }
+
+// }
+
+#versionIcon {
+    display: inline-block;
+    position: relative;
+    height: 18px;
+    width: 18px;
+    margin-left: 5px;
+    background-image: url(/pt/common-web/graphics/harmony/icon_question.png);
+    background-repeat: no-repeat;
+    text-indent: -10000px;
+    text-transform: capitalize;
+    clip: rect(0,0,0,0);
+    cursor: pointer;
+}
+
+.smaller {
+    font-size: 90%;
+}
