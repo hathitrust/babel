@@ -1,4 +1,4 @@
-// Script: access_banner.js 
+// Script: was access_banner.js: renamed to access_banner_01.js
 
 // Only called when an element with id=accessBannerID is present and
 // we need to test for exposure
