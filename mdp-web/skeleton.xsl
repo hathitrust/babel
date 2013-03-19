@@ -19,6 +19,8 @@
   <xsl:variable name="gLoggedIn" select="/MBooksTop/MBooksGlobals/LoggedIn"/>
   <xsl:variable name="gQ1" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']" />
 
+  <xsl:variable name="gEnableGoogleAnalytics" select="'false'"/>
+
   <xsl:variable name="search-options">
       <option value="all">Everything</option>
       <option value="title">Title</option>
@@ -36,6 +38,7 @@
         <xsl:text>no-js </xsl:text>
         <xsl:call-template name="setup-html-class" />
       </xsl:attribute>
+      <xsl:call-template name="setup-html-attributes" />
 
       <head>
 
@@ -45,12 +48,11 @@
 
         <link rel="stylesheet" type="text/css" href="/common/unicorn/vendors/icomoon/style.css" />
 
-        <script type="text/javascript" src="/common/unicorn/vendors/js/modernizr.custom.79639.js"></script> 
 
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
-        <script type="text/javascript" src="/common/unicorn/vendors/js/underscore-min.js"></script>
+        <script type="text/javascript" src="/common/unicorn/vendors/headjs/dist/head.min.js"></script>
+        <script type="text/javascript" src="/common/unicorn/js/common.js"></script>
 
-        <link rel="stylesheet" type="text/css" href="/common/unicorn/vendors/css/bootstrap-forms.css" />
+
         <link rel="stylesheet" type="text/css" href="/common/unicorn/css/common.css" />
 
         <xsl:call-template name="setup-extra-header" />
@@ -83,6 +85,7 @@
   </xsl:template>
 
   <xsl:template name="setup-html-class" />
+  <xsl:template name="setup-html-attributes" />
   <xsl:template name="setup-extra-header" />
   <xsl:template name="setup-body-class" />
 
@@ -98,7 +101,7 @@
 
   <xsl:template name="navbar">
     <div class="navbar navbar-static-top navbar-inverse">
-      <div class="navbar-inner">
+      <div class="navbar-inner" id="navbar-inner">
         <ul id="nav" class="nav">
           <li><a href="http://www.hathitrust.org">Home</a></li>
           <li><a href="http://www.hathitrust.org/about">About</a>
@@ -116,9 +119,9 @@
         </ul>
         <xsl:if test="$gLoggedIn = 'YES'">
           <ul id="person-nav" class="nav pull-right">
-            <li><span>Hi bjensen!</span></li>
-            <li><a href="http://babel.hathitrust.org/cgi/mb?a=listcs;colltype=priv">My Collections</a></li>
-            <li><a href="http://babel.hathitrust.org/cgi/logout">Logout</a></li>
+            <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li>
+            <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
+            <li><a id="logout-link" href="{/Header/LoginLink}">Logout</a></li>
           </ul>
         </xsl:if>
       </div>
@@ -140,7 +143,11 @@
             <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
           </div>
           <fieldset>
-            <input name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" value="{$gQ1}" />
+            <input name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
+              <xsl:attribute name="value">
+                <xsl:call-template name="header-search-q1-value" />
+              </xsl:attribute>
+            </input>
             <div class="search-input-options">
               <select size="1" class="search-input-select" name="searchtype">
                 <xsl:call-template name="search-input-select-options" />
@@ -150,11 +157,11 @@
           </fieldset>
           <div class="search-extra-options">
             <ul class="search-links">
-              <li class="search-advanced-link"><a href="#">Advanced full-text search</a></li>
-              <li class="search-catalog-link"><a href="#">Advanced catalog search</a></li>
-              <li><a href="#">Search tips</a></li>
+              <li class="search-advanced-link"><a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a></li>
+              <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
+              <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
             </ul>
-            <xsl:call-template name="search-ft-checkbox" />
+            <xsl:call-template name="header-search-ft-checkbox" />
           </div>
         </form>
 
@@ -163,13 +170,16 @@
     </div>    
   </xsl:template>
 
+  <xsl:template name="header-search-q1-value" />
+
   <xsl:template name="footer">
+    <xsl:variable name="inst" select="/MBooksTop/MBooksGlobals/InstitutionName"/>
     <div class="navbar navbar-static-bottom navbar-inverse footer">
       <div class="navbar-inner">
-        <xsl:if test="$gLoggedIn = 'YES'">
-          <ul id="nav" class="nav">
+        <xsl:if test="$inst != ''">
+          <ul class="nav">
             <li>
-              <span>University of Michigan<br />Member, HathiTrust
+              <span><xsl:value-of select="$inst" /><br />Member, HathiTrust
               </span>
             </li>
           </ul>
@@ -177,7 +187,7 @@
         <ul class="nav pull-right">
           <li><a href="http://www.hathitrust.org/">Home</a></li>
           <li><a href="http://www.hathitrust.org/about">About</a></li>
-          <li><a href="http://babel.hathitrust.org/cgi/mb">Collections</a></li>
+          <li><a href="/cgi/mb">Collections</a></li>
           <li><a href="http://www.hathitrust.org/help">Help</a></li>
           <li><a href="#">Feedback</a></li>
           <li><a href="http://m.hathitrust.org">Mobile</a></li>
@@ -213,18 +223,20 @@
   <xsl:template name="search-input-select-options">
     <xsl:for-each select="exsl:node-set($search-options)/*">
       <option value="{@value}">
-        <xsl:if test="@value = $gQ1">
-          <xsl:attribute name="selected">selected</xsl:attribute>
-        </xsl:if>
+        <xsl:call-template name="header-search-options-selected">
+          <xsl:with-param name="value" select="@value" />
+        </xsl:call-template>
         <xsl:value-of select="." />
       </option>
     </xsl:for-each>
   </xsl:template>
 
-  <xsl:template name="search-ft-checkbox">
+  <xsl:template name="header-search-options-selected" />
+
+  <xsl:template name="header-search-ft-checkbox">
     <xsl:param name="checked" select="'checked'" />
     <label>
-      <input type="checkbox" value="ft" checked="{$checked}" />
+      <input type="checkbox" name="ft" value="ft" checked="{$checked}" />
       Full view only
     </label>
   </xsl:template>
