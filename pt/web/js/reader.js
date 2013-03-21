@@ -10,6 +10,9 @@ HT.Reader = {
         this.options = $.extend({}, this.options, options);
         this.view = this._getView(); 
         this.id = this.options.params.id;
+        this.imgsrv = Object.create(HT.ImgSrv).init({ 
+            base : window.location.pathname.replace("/pt", "/imgsrv")
+        });
         return this;
     },
 
@@ -28,7 +31,13 @@ HT.Reader = {
         this.manager.start();
     },
 
+    switchView: function(view) {
+        this.manager.switch_view(view);
+    },
+
     bindEvents: function() {
+        var self = this;
+
         // catch disabled items
         $("body").on('click', 'a', function(e) {
             if ( $(this).attr("disabled") ) {
@@ -37,70 +46,108 @@ HT.Reader = {
             }
         });
 
-        $("#action-go-prev").click(function() {
-            $.publish("action.go.prev");
-        })
+        // dyanmic in every view
 
-        $("#action-go-next").click(function() {
-            $.publish("action.go.next");
-        })
-
-        $("#action-go-first").click(function() {
-            $.publish("action.go.start");
-        })
-
-        $("#action-go-last").click(function() {
-            $.publish("action.go.last");
-        })
-
-        $("#action-zoom-in").click(function() {
-            // publish zoom
-        }).subscribe("disable.zoom.in", function() {
-            $(this).attr("disabled", "disabled");
-        }).subscribe("enable.zoom.in", function() {
-            $(this).attr("disabled", null);
-        })
-
-        $("#action-zoom-out").click(function() {
-            // publish zoom
-        }).subscribe("disable.zoom.out", function() {
-            $(this).attr("disabled", "disabled");
-        }).subscribe("enable.zoom.out", function() {
-            $(this).attr("disabled", null);
-        });
-
-        $("#action-rotate-clockwise").click(function() {
-            // publish zoom
-        }).subscribe("disable.rotate.clockwise", function() {
-            $(this).attr("disabled", "disabled");
-        }).subscribe("enable.rotate.clockwise", function() {
-            $(this).attr("disabled", null);
-        });
-
-        $("#action-rotate-counterclockwise").click(function() {
-            // publish zoom
-        }).subscribe("disable.rotate.counterclockwise", function() {
-            $(this).attr("disabled", "disabled");
-        }).subscribe("enable.rotate.counterclockwise", function() {
-            $(this).attr("disabled", null);
-        });
-
-        $("#action-toggle-fullscreen").click(function() {
-            // publish zoom
-        }).subscribe("disable.toggle.fullscreen", function() {
-            $(this).attr("disabled", "disabled");
-        }).subscribe("enable.toggle.fullscreen", function() {
-            $(this).attr("disabled", null);
-        });
+        this._bindAction("toggle.fullscreen");
 
         $("#versionIcon").click(function(e) {
             e.preventDefault();
             bootbox.alert("<p>This is the date when this item was last updated. Version dates are updated when improvements such as higher quality scans or more complete scans have been made. <br /><br /><a href=\"mailto:feedback@issues.hathitrust.org\">Contact us</a> for more information.</p>")
         });
 
-        // and then disable buttons without links
-        $(".btn-toolbar").find("a[href='']").attr("disabled", "disabled");
+        // don't bind dynamic controls for the static views
+        if ( this.view == 'image' || this.view == 'plaintext' ) {
+            // and then disable buttons without links
+            $(".btn-toolbar").find("a[href='']").attr("disabled", "disabled");
+            return;
+        }
 
+        var $views = $(".action-views");
+        $views.on("click", "a", function(e) {
+            e.preventDefault();
+            var $this = $(this);
+            var target = $this.data('target');
+            if ( target != $views.attr('current') ) {
+                $views.find("a.active").removeClass("active");
+                $this.addClass("active");
+                self.switchView($(this).data('target'));
+            }
+        })
+
+        this._bindAction("go.first");
+        this._bindAction("go.prev");
+        this._bindAction("go.next");
+        this._bindAction("go.last");
+
+        this._bindAction("zoom.in");
+        this._bindAction("zoom.out");
+        this._bindAction("rotate.clockwise");
+        this._bindAction("rotate.counterclockwise");
+
+        $(".table-of-contents").on("click", "a", function(e) {
+            e.preventDefault();
+            var seq = $(this).data('seq');
+            $.publish("action.go.page", (seq));
+        })
+
+        $("#action-go-page").click(function(e) {
+            e.preventDefault();
+            var value = $.trim($("#input-go-page").val());
+            var seq;
+            if ( ! value ) { return ; }
+            if ( value.match(/^\d+/) ) {
+                // look up num -> seq in manager
+                seq = self.manager.getSeqForPageNum(value);
+                if ( ! seq ) {
+                    // just punt
+                    seq = value;
+                }
+            } else if ( value.substr(0, 1) == 'n' ) {
+                seq = value.substr(1);
+            }
+            if ( seq ) {
+                $.publish("action.go.page", (seq));
+            }
+        })
+
+        $.subscribe("update.go.page", function(e, seq) {
+            var value = self.manager.getPageNumForSeq(seq);
+            if ( ! value ) {
+                value = "n" + seq;
+            }
+            $("#input-go-page").val(value);
+        })
+
+        $.subscribe("disable.download.page.pdf", function() {
+            $("#pagePdfLink").attr("disabled", "disabled");
+        })
+
+        $.subscribe("enable.download.page.pdf", function() {
+            $("#pagePdfLink").attr("disabled", null);
+        })
+
+        $.subscribe("view.end.reader", function() {
+            // enable everything when we switch views;
+            // the views can update the state when they're initialized
+            $.publish("enable.zoom");
+            $.publish("enaboe.rotate");
+            $.publish("enable.download");
+            $.publish("enable.toggle.fullscreen");
+        })
+
+    },
+
+    _bindAction: function(action) {
+        var id = "#action-" + action.replace(".", "-");
+        var $btn = $(id);
+        $btn.click(function(e) {
+            e.preventDefault();
+            $.publish("action." + action, (this));
+        }).subscribe("disable." + action, function() {
+            $(this).attr("disabled", "disabled");
+        }).subscribe("enable." + action, function() {
+            $(this).attr("disabled", null);
+        })
     },
 
     _getView: function() {

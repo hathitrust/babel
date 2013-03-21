@@ -113,10 +113,15 @@
   </xsl:variable>
 
   <xsl:template name="setup-extra-header-extra">
-    <link rel="stylesheet" href="/pt/css/toolbar.css" />
+    <link rel="stylesheet" href="/pt/css/volume.css" />
     <script>
-      head.js("/pt/vendor/jquery.fracs.js");
-      head.js("/pt/js/reader.js", "/pt/js/manager.js", "/pt/js/views.js");
+      head.js("/pt/vendor/jquery.fracs.js", "/pt/vendor/jquery.viewport.js");
+      head.js("/pt/js/reader.js", 
+              "/pt/js/manager.js", 
+              "/pt/js/imgsrv.js", 
+              "/pt/js/view/image.js", 
+              "/pt/js/view/scroll.js", 
+              "/pt/js/view/thumb.js");
     </script>
   </xsl:template>
 
@@ -261,7 +266,7 @@
     <ul class="dropdown-menu scrollable-list">
       <xsl:for-each select="$gFeatureList/Feature">
         <li>
-          <a href="{Link}">
+          <a href="{Link}" data-seq="{Seq}">
             <xsl:value-of select="Label" />
             <xsl:if test="normalize-space(Page)">
               <xsl:text> - </xsl:text>
@@ -290,7 +295,7 @@
   </xsl:template>
 
   <xsl:template name="page-content-reader">
-    <xsl:call-template name="page-content-image" />
+    
   </xsl:template>
 
   <xsl:template name="page-content-image">

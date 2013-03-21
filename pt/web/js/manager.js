@@ -6,6 +6,7 @@ HT.Manager = {
     init : function(options, callback) {
         this.options = $.extend({}, this.options, options);
         this.data = {};
+        self.page_num_map = {};
 
         return this;
     },
@@ -17,14 +18,17 @@ HT.Manager = {
     start : function() {
         var self = this;
 
-        this.view = Object.create(HT.Viewer[self.options.reader.view]);
+        this.view = Object.create(HT.Viewer[self.options.reader.view]).init({
+            manager : self,
+            reader : self.options.reader
+        });
 
-        if ( ! self.view.is_dynamic ) {
+        if ( ! self.view.options.is_dynamic ) {
             self.view.start();
             return;
         }
 
-        var href = this.options.imgsrv.get_action_url("meta", {});
+        var href = this.options.reader.imgsrv.get_action_url("meta", {});
         $.ajaxSetup({ async : false });
         $.getJSON(href + "callback=?", 
             { id : this.options.id, format : 'items', limit : 1000002, method : 'fudged', start : 0  },
@@ -33,24 +37,54 @@ HT.Manager = {
                 self.data = data;
                 self.num_pages = data.items.length;
                 self.reading_order = data.readingOrder;
+                self.parse_page_numbers();
                 console.log("ready");
                 $.ajaxSetup({ async: true });
                 // callback();
-                self.options.view.start();
+                self.view.start();
             }, 
             'json')
 
     },
 
     switch_view: function(view) {
-        this.options.view.end();
-        delete this.options.view;
-        this.options.view = view;
-        this.options.view.init().start();
+        var self = this;
+
+        self.view.end();
+        delete self.view;
+        // delete this.options.view;
+        self.view = Object.create(HT.Viewer[view]).init({
+            manager : self,
+            reader : self.options.reader
+        });
+        self.view.start();
         $(window).trigger('reset');
     },
 
     /* METHODS */
+
+    parse_page_numbers: function() {
+        var self = this;
+        self.num_seq_map = {};
+        self.seq_num_map = {};
+        for(var i = 0; i < self.data.items.length; i++) {
+            var item = self.data.items[i];
+            if ( item.page_num ) {
+                if ( self.num_seq_map[item.page_num] === undefined ) {
+                    self.num_seq_map[item.page_num] = item.seq;
+                    self.seq_num_map[item.seq] = item.page_num;
+                }
+            }
+        }
+    },
+
+    getSeqForPageNum: function(num) {
+        return this.num_seq_map[num];
+    },
+
+    getPageNumForSeq: function(seq) {
+        return this.seq_num_map[seq];
+    },
 
     rotate_image: function(params) {
         var meta = this.get_page_meta(params);
@@ -98,17 +132,20 @@ HT.Manager = {
         var self = this;
         var meta = this.get_page_meta(params);
 
-        args = { seq : params.seq, id : this.options.id, width : params.width, orient : meta.orient }
+        args = { seq : params.seq, id : this.options.id, width : params.width }
         if ( params.height ) {
             args.height = params.height;
         }
-        var src = this.options.imgsrv.get_action_url(params.action || 'image', args);
-        var is_missing = false;
-        if ( self.has_feature(meta, 'MISSING_PAGE') ) {
-            console.log("MISSING");
-            src = "holder.js/" + meta.width + "x" + meta.height + "/text:MISSING PAGE";
-            is_missing = true;
+        if ( params.orient ) {
+            args.orient = params.orient;
         }
+        var src = this.options.reader.imgsrv.get_action_url(params.action || 'image', args);
+        var is_missing = false;
+        // if ( self.has_feature(meta, 'MISSING_PAGE') ) {
+        //     console.log("MISSING");
+        //     src = "holder.js/" + meta.width + "x" + meta.height + "/text:MISSING PAGE";
+        //     is_missing = true;
+        // }
 
 
         var p = $.Deferred();
@@ -118,18 +155,26 @@ HT.Manager = {
         $img.error(p.resolve);
         $img.get(0).src = src;
         $.when(p.promise()).then(function() {
-            if ( is_missing ) {
-                Holder.run();
-                return;
-            }
+            // if ( is_missing ) {
+            //     Holder.run();
+            //     return;
+            // }
             var check = new Image();
             check.src = $img.get(0).src;
-            console.log("-- image:", params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
+            console.log("-- image:", check.src, params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
 
-            var r = 680 / check.width;
-            var h = check.height * r;
+            var r; var h; var w;
+            if ( params.orient == 1 || params.orient == 3 ) {
+                h = check.width;
+                w = check.height;
+            } else {
+                w = check.width;
+                h = check.height;
+            }
+            r = 680 / w;
+            h = h * r;
 
-            self.data[params.seq] = { width : 680, height : h, orient : meta.orient };
+            self.data[params.seq] = { width : 680, height : h };
             //$img.parent().css({ height: '100%' });
             // $img.parent().animate({ height : '100%' });
 

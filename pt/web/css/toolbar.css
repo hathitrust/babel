@@ -22,12 +22,7 @@ body {
 /* line 28, ../sass/toolbar.scss */
 .dummy {
   background-color: yellow;
-  opacity: 0.4;
-}
-
-/* line 33, ../sass/toolbar.scss */
-.sidebar.fixed-placed {
-  border-right: 1px solid transparent;
+  opacity: 0.1;
 }
 
 /* line 37, ../sass/toolbar.scss */
@@ -244,27 +239,4 @@ body {
 #content {
   padding: 24px ;
   padding: 2.4rem ;
-}
-
-/* line 229, ../sass/toolbar.scss */
-.view-image .page-item {
-  display: block;
-  min-height: 200px;
-  min-width: 510px;
-  background: transparent;
-  border: 4px solid transparent;
-  padding: 3px;
-  margin-left: auto;
-  margin-right: auto;
-  background-image: url(../graphics/thumb-loader.gif);
-  background-repeat: no-repeat;
-  background-position: center;
-}
-/* line 245, ../sass/toolbar.scss */
-.view-image .page-item.loaded {
-  background-image: none;
-}
-/* line 248, ../sass/toolbar.scss */
-.view-image .page-item.loaded img {
-  visibility: visible;
 }

@@ -168,6 +168,8 @@ sub BuildPageNavLink
     {
     }
 
+    $returnValueFlag = 'true' if ( $cgi->param('view') =~ m,1up|2up|thumb, );
+
     if ( $returnValueFlag )
     {
         $tempCgi->param( 'seq', $pageValue );

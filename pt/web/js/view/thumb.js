@@ -1,45 +1,7 @@
-// views.js
-
 var HT = HT || {};
 HT.Viewer = HT.Viewer || {};
 
-HT.Viewer.Image = {
-    init : function(options) {
-        var self = this;
-        return this;
-    },
-
-    options: {},
-
-    start: function() {
-        $body.addClass("view-image");
-        this.bindEvents();
-    },
-
-    bindEvents: function() {
-        var self = this;
-        $.publish("disable.toggle.fullscreen");
-        $.subscribe("action.go.start.image", function(e, link) { self._gotoLink(link); });
-        $.subscribe("action.go.prev.image", function(e, link) { self._gotoLink(link); });
-        $.subscribe("action.go.next.image", function(e, link) { self._gotoLink(link); });
-        $.subscribe("action.go.last.image", function(e, link) { self._gotoLink(link); });
-        $.subscribe("action.zoom.in.image", function(e, link) { self._gotoLink(link); });
-        $.subscribe("action.zoom.out.image", function(e, link) { self._gotoLink(link); });
-
-        $body.find(".page-item img").load(function() {
-            $(window).scroll();
-        })
-    },
-
-    _gotoLink: function(link)  {
-        window.location.href = $(link).attr("href");
-    },
-
-    EOT : true
-
-};
-
-HT.Viewer.Thumb = {
+HT.Viewer.Thumbnail = {
 
     init : function(options) {
         var self = this;
@@ -63,6 +25,8 @@ HT.Viewer.Thumb = {
         this.bindEvents();
         this.bindScroll();
         this.drawPages();
+        $.publish("disable.rotate");
+        $.publish("disable.download.page");
     },
 
     end : function() {
@@ -73,12 +37,13 @@ HT.Viewer.Thumb = {
         $body.removeClass("view-thumb");
         $(window).unbind("scroll.viewer.thumb");
         $(window).unbind("resize.thumb");
+        console.log("UNBOUND THUMBNAIL");
     },
 
     bindEvents: function() {
         var self = this;
 
-        $.subscribe("action.go.start.thumb", function(e) {
+        $.subscribe("action.go.first.thumb", function(e) {
             $("html,body").animate({ scrollTop : 0 });
         })
 
@@ -87,8 +52,6 @@ HT.Viewer.Thumb = {
         })
 
         $.subscribe("action.go.next.thumb", function(e) {
-            console.log("RECEIVED EVENT", e)
-
             var $body = $("body");
             var $window = $(window);
 
@@ -97,7 +60,6 @@ HT.Viewer.Thumb = {
         })
 
         $.subscribe("action.go.prev.thumb", function(e) {
-            console.log("RECEIVED EVENT", e)
 
             var $body = $("body");
             var $window = $(window);
@@ -107,21 +69,16 @@ HT.Viewer.Thumb = {
 
         })
 
-        $.subscribe("action.zoom.thumb", function(e, zoom, next_zoom) {
-            self.w = self.options.default_w * zoom;
-            console.log("ZOOM", e, zoom, next_zoom);
-            if ( next_zoom * self.options.default_w > self.options.max_w ) {
-                $.publish("disable.zoom.in");
-            } else {
-                $.publish("enable.zoom.in");
-            }
+        $.subscribe("action.go.page.thumb", function(e, seq) {
+            self.gotoPage(seq);
+        })
 
-            if ( next_zoom * self.options.default_w < self.options.min_w ) {
-                $.publish("disable.zoom.out");
-            } else {
-                $.publish("enable.zoom.out");
-            }
-            self.drawPages();
+        $.subscribe("action.zoom.in.thumb", function(e) {
+            self.updateZoom(1.25);
+        })
+
+        $.subscribe("action.zoom.out.thumb", function(e) {
+            self.updateZoom(0.8);
         })
 
         $body.on('image:fudge.thumb', "img", function() {
@@ -129,15 +86,6 @@ HT.Viewer.Thumb = {
             var h2 = $(this).parent().height();
 
             $(this).parent().addClass("loaded");
-
-            // var t = parseInt($("#t").val());
-            // // console.log("FUDGE", h1, h2, Math.abs(h1 - h2), ">", t);
-
-            // if ( Math.abs(h1 - h2) > t ) {
-            //  // $(this).parent().animate({ height: h1 }, 100);
-            //  $(this).parent().height(h1);
-            //  $(this).parent().addClass("imaged").addClass("expanded");
-            // }
         });
 
         $(window).on("resize.thumb", function() {
@@ -147,6 +95,24 @@ HT.Viewer.Thumb = {
                 $(window).scroll();
             }, 100);
         })
+    },
+
+    updateZoom: function(factor) {
+        var self = this;
+
+        self.w = self.w * factor;
+        if ( self.w * factor > self.options.max_w ) {
+            $.publish("disable.zoom.in");
+        } else {
+            $.publish("enable.zoom.in");
+        }
+
+        if ( factor * self.w < self.options.min_w ) {
+            $.publish("disable.zoom.out");
+        } else {
+            $.publish("enable.zoom.out");
+        }
+        self.drawPages();
     },
 
     bindScroll: function() {
@@ -173,6 +139,8 @@ HT.Viewer.Thumb = {
 
             $(".page-item.checking").removeClass("imaged").removeClass("checking").removeClass("loaded").find("img").remove();
 
+            self.checkPageStatus();
+
         }, 250);
 
         $(window).on('scroll.viewer.thumb', lazyLayout);
@@ -180,25 +148,12 @@ HT.Viewer.Thumb = {
 
     },
 
-    gotoPage: function(current) {
-        if ( ! current ) { return; }
-        if ( ! $(current).length ) { return ; }
+    gotoPage: function(seq) {
+        var $page = $("#page" + seq);
+        if ( ! $page.length ) { return ; }
         $('html,body').animate({
-            scrollTop : $(current).offset().top
-        }, "fast", function() {
-            // console.log("IN VIEW:", $(".page:in-viewport"));
-
-            $(".page-item:in-viewport").each(function() {
-                var $page = $(this);
-                if ( ! $page.is(".imaged") ) {
-                    $page.addClass("imaged");
-                    var seq = $page.data('seq');
-                    var $img = this.options.manager.get_image({ seq : seq, width : HT.w });
-                    $page.append($img);
-                }
-            })
-
-        });
+            scrollTop: $page.offset().top - 100
+        }, "fast");
     },
 
     loadPage: function($pages) {
@@ -259,6 +214,38 @@ HT.Viewer.Thumb = {
 
         $(window).scroll();
 
+
+    },
+
+    // UTIL
+
+    checkPageStatus: function() {
+        var self = this;
+        var first = $("#page1").fracs();
+        var last = $("#page" + self.options.manager.num_pages).fracs();
+
+        if ( first.visible >= 0.9 ) {
+            $.publish("disable.go.first");
+        } else {
+            $.publish("enable.go.first");
+        }
+
+        if ( last.visible >= 0.9 ) {
+            $.publish("disable.go.last");
+        } else {
+            $.publish("enable.go.last");
+        }
+
+        // identiy the "current" page
+        var $visibles = $(".page-item:in-viewport");
+        for(var i = 0; i < $visibles.length; i++) {
+            var $visible = $visibles.slice(i,i+1);
+            var fracs = $visible.fracs();
+            if ( fracs && fracs.visible >= 0.75 ) {
+                $.publish("update.go.page", ( $visible.data('seq') ));
+                break;
+            }
+        }
 
     },
 
