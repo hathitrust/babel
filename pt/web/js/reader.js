@@ -56,7 +56,7 @@ HT.Reader = {
         });
 
         // don't bind dynamic controls for the static views
-        if ( this.view == 'image' || this.view == 'plaintext' ) {
+        if ( this.view == 'Image' || this.view == 'PlainText' ) {
             // and then disable buttons without links
             $(".btn-toolbar").find("a[href='']").attr("disabled", "disabled");
             return;
@@ -162,7 +162,7 @@ HT.Reader = {
             '2up' : 'Flip',
             'thumb' : 'Thumbnail',
             'image' : 'Image',
-            'plaintext' : 'Plaintext'
+            'plaintext' : 'PlainText'
         }
         return views[this.options.params.view];
     },

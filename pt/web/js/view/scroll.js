@@ -37,7 +37,7 @@ HT.Viewer.Scroll = {
         $.publish("view.end");
         $("#content").empty();
         $(window).unbind("scroll.viewer.scroll");
-        $("body").removeClass("scroll");
+        $("body").removeClass("view-1up");
     },
 
     bindEvents: function() {

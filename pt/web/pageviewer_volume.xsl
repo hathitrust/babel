@@ -115,13 +115,17 @@
   <xsl:template name="setup-extra-header-extra">
     <link rel="stylesheet" href="/pt/css/volume.css" />
     <script>
-      head.js("/pt/vendor/jquery.fracs.js", "/pt/vendor/jquery.viewport.js");
+      head.js("/pt/vendor/jquery.fracs.js", 
+              "/pt/vendor/jquery.viewport.js",
+              "/pt/vendor/BootBlock/jquerypp.custom.js",
+              "/pt/vendor/BootBlock/jquery.bookblock.js");
       head.js("/pt/js/reader.js", 
               "/pt/js/manager.js", 
               "/pt/js/imgsrv.js", 
               "/pt/js/view/image.js", 
               "/pt/js/view/scroll.js", 
-              "/pt/js/view/thumb.js");
+              "/pt/js/view/thumb.js",
+              "/pt/js/view/flip.js");
     </script>
   </xsl:template>
 
@@ -170,6 +174,24 @@
         <div class="btn-group btn-group-vertical">
           <button id="action-toggle-fullscreen" type="button" class="btn square alone"><i class="icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
         </div>
+<!--         <div class="btn-group btn-group-vertical">
+          <button id="xxx" type="button" class="btn square alone dropdown-toggle" data-toggle="dropdown">
+            <i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i>
+            <span class="label"> Zoom</span>
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="#">25%</a></li>
+            <li><a href="#">50%</a></li>
+            <li><a href="#">75%</a></li>
+            <li><a href="#">100%</a></li>
+            <li><a href="#">125%</a></li>
+            <li><a href="#">150%</a></li>
+            <li><a href="#">200%</a></li>
+            <li><a href="#">300%</a></li>
+            <li><a href="#">400%</a></li>
+          </ul>
+        </div> -->
         <div class="btn-group btn-group-vertical">
           <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
           <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
