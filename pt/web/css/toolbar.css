@@ -19,12 +19,6 @@ body {
   max-width: none;
 }
 
-/* line 28, ../sass/toolbar.scss */
-.dummy {
-  background-color: yellow;
-  opacity: 0.1;
-}
-
 /* line 37, ../sass/toolbar.scss */
 .navbar-static-top {
   position: fixed;
