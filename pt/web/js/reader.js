@@ -68,6 +68,12 @@ HT.Reader = {
             var $this = $(this);
             var target = $this.data('target');
             if ( target != $views.attr('current') ) {
+
+                if ( target == 'Page by Page' || target == 'Plain Text' ) {
+                    window.location.href = $this.attr('href');
+                    return;
+                }
+
                 $views.find("a.active").removeClass("active");
                 $this.addClass("active");
                 self.switchView($(this).data('target'));

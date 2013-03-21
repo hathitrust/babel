@@ -83,9 +83,10 @@ HT.Viewer.Thumbnail = {
 
         $body.on('image:fudge.thumb', "img", function() {
             var h1 = $(this).data('natural-height');
-            var h2 = $(this).parent().height();
+            var $parent = $(this).parents(".page-item");
+            var h2 = $parent.height();
 
-            $(this).parent().addClass("loaded");
+            $parent.addClass("loaded");
         });
 
         $(window).on("resize.thumb", function() {
