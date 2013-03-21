@@ -987,6 +987,20 @@
       </xsl:choose>
     </xsl:variable>
 
+    <xsl:variable name="showing-collections">
+      <xsl:choose>
+        <xsl:when test="Collections">true</xsl:when>
+        <xsl:otherwise>false</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="span-n">
+      <xsl:choose>
+        <xsl:when test="$showing-collections = 'true'">7</xsl:when>
+        <xsl:otherwise>10</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
     <xsl:variable name="Date">
       <xsl:value-of select="Date"/>
     </xsl:variable>
@@ -994,7 +1008,7 @@
 
     <div class="{$row_class}">
       <xsl:variable name="item-number" select="position()" />
-      <div class="span7 push2 metadata">
+      <div class="span{$span-n} push2 metadata">
         <h4 class="Title">
           <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
           <xsl:value-of select="Title" disable-output-escaping="yes" />
@@ -1088,7 +1102,7 @@
 
       </div>
 
-      <div class="span2 pull9">
+      <div class="span2 pull{$span-n + 2}">
         <div class="cover">
           <xsl:if test="normalize-space(bookID)">
             <xsl:attribute name="data-bookID"><xsl:value-of select="bookID" /></xsl:attribute>
@@ -1104,23 +1118,25 @@
         </div>
       </div>
 
-      <div class="in-collections span3">
-        <h5>
-          <xsl:text>In my collections: </xsl:text>
-        </h5>
+      <xsl:if test="Collections">
+        <div class="in-collections span3">
+          <h5>
+            <xsl:text>In my collections: </xsl:text>
+          </h5>
 
-        <ul class="inMyColls">
-          <xsl:for-each select="Collections/Collection">
-            <xsl:call-template name="inMyColls"/>
-          </xsl:for-each>
-          <!-- add "-" when the item isn't in any collections -->
-          <xsl:for-each select="Collections">
-            <xsl:if test =" not(Collection)">
-              <li>---</li>
-            </xsl:if>
-          </xsl:for-each>
-        </ul>
-      </div>
+          <ul class="inMyColls">
+            <xsl:for-each select="Collections/Collection">
+              <xsl:call-template name="inMyColls"/>
+            </xsl:for-each>
+            <!-- add "-" when the item isn't in any collections -->
+            <xsl:for-each select="Collections">
+              <xsl:if test =" not(Collection)">
+                <li>---</li>
+              </xsl:if>
+            </xsl:for-each>
+          </ul>
+        </div>
+      </xsl:if>
 
 
     </div>
