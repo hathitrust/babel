@@ -30,9 +30,9 @@ body {
 //     opacity: 0.1;
 // }
 
-// .sidebar.fixed-placed {
-//     border-right: 1px solid transparent;
-// }
+.sidebar.fixed-placed {
+    border-right: none;
+}
 
 .navbar-static-top {
     position: fixed;
@@ -213,12 +213,12 @@ body {
     display: none;
 }
 
-.btn.square:hover {
-    background:green;
-    .label {
-        display: inline-block;
-    }
-}
+// .btn.square:hover {
+//     background:green;
+//     .label {
+//         display: inline-block;
+//     }
+// }
 
 #scrolling {
     @include rem(margin-left, 55);

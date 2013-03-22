@@ -95,6 +95,10 @@
 			this.transEndEventName = transEndEventNames[Modernizr.prefixed('transition')];
 			// support (3dtransforms && transitions).
 			this.support = Modernizr.csstransitions && Modernizr.csstransforms3d;
+			// this seems like a bad hack, but webkit has flaky csstransforms3d detection
+			if ( window.requestAnimationFrame ) {
+				this.support = true;
+			}
 
 			this._initEvents();
 

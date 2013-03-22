@@ -180,6 +180,23 @@ head.ready(function() {
         params : HT.params
     })
 
-    HT.reader.start();    
-})
+    HT.reader.start();
+    // $(".toolbar-vertical").tooltip({ placement : 'right', selector : '.btn' });
+    // $(".toolbar-horizontal").tooltip({ placement : 'top', selector : '.btn' });
 
+    $(".toolbar-vertical .btn").each(function() {
+        var $btn = $(this);
+        var title = $btn.text();
+        $btn.tooltip({ title : title, placement : 'left', container : '.toolbar-vertical' })
+    })
+
+    $(".toolbar-horizontal .btn").each(function() {
+        var $btn = $(this);
+        var title = $btn.find(".label").text();
+        if ( title ) {
+            $btn.tooltip({ title : title, placement : 'top', container : '.toolbar-horizontal' })
+        }
+    })
+
+
+})

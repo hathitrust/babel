@@ -15,7 +15,7 @@ HT.Viewer.Flip = {
 
         this.orient_cache = {};
 
-        this.is_rtl = self.options.manager.reading_order == 'right-to-left';
+        this.rotate = 0;
 
         return this;
     },
@@ -28,6 +28,9 @@ HT.Viewer.Flip = {
 
     start : function() {
         $("body").addClass("view-2up"); // needs to correspond to our parameter. MM.
+
+        this.is_rtl = this.options.manager.reading_order == 'right-to-left';
+
         this.bindEvents();
         this.drawPages();
     },
@@ -74,11 +77,11 @@ HT.Viewer.Flip = {
         })
 
         $.subscribe("action.rotate.clockwise", function(e) {
-            self.rotateCurrentPage(1);
+            self.rotateBook(1);
         })
 
         $.subscribe("action.rotate.counterclockwise", function(e) {
-            self.rotateCurrentPage(-1);
+            self.rotateBook(-1);
         })
 
         $("body").on('image:fudge.flip', "img", function() {
@@ -129,13 +132,19 @@ HT.Viewer.Flip = {
 
     },
 
-    rotateCurrentPage: function(delta) {
+    rotateBook: function(delta) {
         var self = this;
-        var $current = $(".page-item.current");
-        var seq = $current.data('seq');
-        var orient = this.getPageOrient(seq);
-        this.orient_cache[seq] = orient = ( orient + 1 ) % 4;
-        this.drawPages();
+
+        self.$wrapper.addClass("flip-rotating");
+        if ( self.rotate > 0 ) {
+            self.$wrapper.removeClass("flip-rotated-" + self.rotate);
+        }
+        self.rotate += ( 90 * delta );
+        if ( self.rotate == 360 || self.rotate == 0 ) {
+            self.rotate = 0;
+        } else {
+            self.$wrapper.addClass("flip-rotated-" + self.rotate);
+        }
     },
 
     getPageOrient: function(seq) {
@@ -206,6 +215,11 @@ HT.Viewer.Flip = {
 
     drawPages : function() {
         var self = this;
+
+        var current = self.is_rtl ? -1 : 1;
+        if ( self.book ) {
+            current = self.book.current + 1;
+        }
 
         $("#content").empty();
         $("#content").append('<div class="bb-custom-wrapper"><div class="bb-bookblock"></div></div>');
@@ -328,12 +342,11 @@ HT.Viewer.Flip = {
         this.book.n = pages.length;
         HT.bb = this.book;
 
-        self.loadPage(1); self.loadPage(2);
-        if ( self.options.manager.reading_order == 'right-to-left' ) {
-            self.book.jump(self.book.n);
-        } else {
-            self.book.jump(1);
+        if ( current < 1 ) {
+            current = pages.length;
         }
+        self.loadPage(self._page2seq(current)); self.loadPage(self._page2seq(current) + 1);
+        self.book.jump(current);
 
         $(window).scroll();
 

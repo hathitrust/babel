@@ -117,6 +117,7 @@
     <script>
       head.js("/pt/vendor/jquery.fracs.js", 
               "/pt/vendor/jquery.viewport.js",
+              "/common/unicorn/vendors/bootstrap/js/bootstrap-tooltip.js",
               "/pt/vendor/BookBlock/js/jquerypp.custom.js",
               "/pt/vendor/BookBlock/js/jquery.bookblock.js");
       head.js("/pt/js/reader.js", 
@@ -225,7 +226,7 @@
       </xsl:choose>
     </xsl:variable>
 
-    <a href="{$href}" data-target="{$option}" type="button" class="btn square {$active}"><i class="{$option/@value}"></i><span class="label"> <xsl:value-of select="$option" /></span></a>
+    <a href="{$href}" data-target="{$option}" type="button" class="btn square {$active}" data-toggle="tooltip"><i class="{$option/@value}"></i> <span class="label"><xsl:value-of select="$option" /></span></a>
   </xsl:template>
 
   <xsl:template name="toolbar-horizontal">

@@ -19,6 +19,11 @@ body {
   max-width: none;
 }
 
+/* line 33, ../sass/toolbar.scss */
+.sidebar.fixed-placed {
+  border-right: none;
+}
+
 /* line 37, ../sass/toolbar.scss */
 .navbar-static-top {
   position: fixed;
@@ -216,15 +221,6 @@ body {
 /* line 212, ../sass/toolbar.scss */
 .label {
   display: none;
-}
-
-/* line 216, ../sass/toolbar.scss */
-.btn.square:hover {
-  background: green;
-}
-/* line 218, ../sass/toolbar.scss */
-.btn.square:hover .label {
-  display: inline-block;
 }
 
 /* line 223, ../sass/toolbar.scss */
