@@ -69,8 +69,8 @@ body {
   /*margin-left: 5px;*/
   margin-bottom: -5px;
   background: #FFFEFB;
-  min-width: 730px ;
-  min-width: 73rem ;
+  min-width: 700px ;
+  min-width: 70rem ;
 }
 /* line 81, ../sass/toolbar.scss */
 .toolbar-horizontal.locked {
@@ -104,30 +104,36 @@ body {
   padding-top: 0;
   padding-bottom: 0;
   margin-bottom: 0;
-  width: 38px;
+  width: 30px;
   margin-right: 2px;
+  font-size: 12px ;
+  font-size: 1.2rem ;
+  text-align: center;
 }
-/* line 106, ../sass/toolbar.scss */
+/* line 108, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline #action-go-page {
   width: auto;
   display: inline-block;
   margin-top: 0px;
 }
-/* line 111, ../sass/toolbar.scss */
+/* line 113, ../sass/toolbar.scss */
 .toolbar-horizontal .table-of-contents {
   margin-left: 10px;
 }
-/* line 115, ../sass/toolbar.scss */
+/* line 117, ../sass/toolbar.scss */
 .toolbar-horizontal #input-search-text {
   width: 100px ;
   width: 10rem ;
+  font-size: 12px ;
+  font-size: 1.2rem ;
+  text-align: left;
 }
 
-/* line 122, ../sass/toolbar.scss */
+/* line 126, ../sass/toolbar.scss */
 .toolbar {
   z-index: 100;
 }
-/* line 125, ../sass/toolbar.scss */
+/* line 129, ../sass/toolbar.scss */
 .toolbar form {
   margin: 0;
   display: inline-block;
@@ -140,23 +146,23 @@ body {
   border-radius: 4px;
   padding-left: 8px;
 }
-/* line 138, ../sass/toolbar.scss */
+/* line 142, ../sass/toolbar.scss */
 .toolbar .options [class^="icon-"], .toolbar .toolbar [class*=" icon-"] {
   background: none;
   color: black;
 }
-/* line 143, ../sass/toolbar.scss */
+/* line 147, ../sass/toolbar.scss */
 .toolbar .btn.square {
   height: 38px;
   width: 46px;
   /*font-size: 18px;*/
   color: black;
 }
-/* line 150, ../sass/toolbar.scss */
+/* line 154, ../sass/toolbar.scss */
 .toolbar .iconz-doc-2, .toolbar .iconz-doc-text {
   margin-left: -1px;
 }
-/* line 155, ../sass/toolbar.scss */
+/* line 159, ../sass/toolbar.scss */
 .toolbar [class^="icomoon-"],
 .toolbar [class*=" icomoon-"] {
   display: inline-block;
@@ -169,32 +175,32 @@ body {
   color: #333;
   margin-top: 0.25em;
 }
-/* line 167, ../sass/toolbar.scss */
+/* line 171, ../sass/toolbar.scss */
 .toolbar .icomoon-iconmonstr-magnifier-6-icon, .toolbar .icomoon-iconmonstr-magnifier-7-icon {
   font-size: 1.8em;
   margin-left: -0.125em;
   margin-top: 0.1em;
 }
-/* line 173, ../sass/toolbar.scss */
+/* line 177, ../sass/toolbar.scss */
 .toolbar .icomoon-list {
   font-size: 1.0em;
 }
-/* line 177, ../sass/toolbar.scss */
+/* line 181, ../sass/toolbar.scss */
 .toolbar .icon-white {
   color: #fff;
 }
-/* line 181, ../sass/toolbar.scss */
+/* line 185, ../sass/toolbar.scss */
 .toolbar .icomoon-scroll, .toolbar .icomoon-documents {
   font-size: 1.4em;
 }
 
-/* line 187, ../sass/toolbar.scss */
+/* line 191, ../sass/toolbar.scss */
 .sticky #toolbar-vertical {
   position: fixed;
   top: 40px;
 }
 
-/* line 192, ../sass/toolbar.scss */
+/* line 196, ../sass/toolbar.scss */
 .sticky #toolbar-horizontal {
   position: fixed;
   top: 30px;
@@ -203,33 +209,33 @@ body {
   left: 0;
 }
 
-/* line 200, ../sass/toolbar.scss */
+/* line 204, ../sass/toolbar.scss */
 .options a, .inner-search a {
   text-decoration: none;
 }
 
-/* line 204, ../sass/toolbar.scss */
+/* line 208, ../sass/toolbar.scss */
 .btn.square {
   width: 40px;
 }
 
-/* line 208, ../sass/toolbar.scss */
+/* line 212, ../sass/toolbar.scss */
 .btn.dropdown-toggle.square {
   width: 52px;
 }
 
-/* line 212, ../sass/toolbar.scss */
+/* line 216, ../sass/toolbar.scss */
 .label {
   display: none;
 }
 
-/* line 223, ../sass/toolbar.scss */
+/* line 227, ../sass/toolbar.scss */
 #scrolling {
   margin-left: 55px ;
   margin-left: 5.5rem ;
 }
 
-/* line 227, ../sass/toolbar.scss */
+/* line 231, ../sass/toolbar.scss */
 #content {
   padding: 24px ;
   padding: 2.4rem ;
@@ -390,16 +396,15 @@ body {
   vertical-align: middle;
 }
 
-/* line 1, ../sass/volume/flip.scss */
+/* line 6, ../sass/volume/flip.scss */
 .bb-custom-wrapper {
   background: #fff;
   width: 100%;
   height: 550px;
   position: relative;
-  margin: 40px auto;
-  margin-bottom: 80px;
+  margin: 0px auto;
 }
-/* line 10, ../sass/volume/flip.scss */
+/* line 17, ../sass/volume/flip.scss */
 .bb-custom-wrapper h3 {
   color: #aaa;
   font-size: 12px;
@@ -408,7 +413,7 @@ body {
   left: 10px;
   bottom: -3px;
 }
-/* line 19, ../sass/volume/flip.scss */
+/* line 26, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav {
   width: 120px;
   margin: 8px 10px 0 0;
@@ -416,36 +421,40 @@ body {
   position: relative;
   z-index: 0;
 }
-/* line 26, ../sass/volume/flip.scss */
+/* line 33, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a:hover {
   opacity: 1;
 }
-/* line 30, ../sass/volume/flip.scss */
+/* line 37, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a#bb-nav-prev {
   background-position: center left;
   margin-right: 5px;
 }
-/* line 35, ../sass/volume/flip.scss */
+/* line 42, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a#bb-nav-next {
   background-position: -43px 50%;
 }
-/* line 39, ../sass/volume/flip.scss */
+/* line 46, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a#bb-nav-jump {
   background-position: center right;
   float: right;
 }
 
-/* line 47, ../sass/volume/flip.scss */
+/* line 54, ../sass/volume/flip.scss */
 .bb-bookblock {
   box-shadow: 0px 5px 0 rgba(0, 0, 0, 0.1);
   height: 500px;
   width: 100%;
   position: relative;
-  z-index: 50;
+  z-index: 100;
   margin: 0 auto;
 }
+/* line 63, ../sass/volume/flip.scss */
+.bb-bookblock.lowered {
+  z-index: 0;
+}
 
-/* line 57, ../sass/volume/flip.scss */
+/* line 68, ../sass/volume/flip.scss */
 .bb-item {
   width: 100%;
   height: 100%;
@@ -456,7 +465,7 @@ body {
   background: #fff;
 }
 
-/* line 67, ../sass/volume/flip.scss */
+/* line 78, ../sass/volume/flip.scss */
 .bb-page {
   width: 50%;
   height: 100%;
@@ -474,7 +483,7 @@ body {
   transform-origin: left center;
 }
 
-/* line 88, ../sass/volume/flip.scss */
+/* line 100, ../sass/volume/flip.scss */
 .bb-page > div,
 .bb-outer,
 .bb-content {
@@ -484,19 +493,19 @@ body {
   left: 0;
 }
 
-/* line 95, ../sass/volume/flip.scss */
+/* line 107, ../sass/volume/flip.scss */
 .bb-content {
   background: #fff;
 }
 
-/* line 99, ../sass/volume/flip.scss */
+/* line 111, ../sass/volume/flip.scss */
 .bb-inner {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-/* line 105, ../sass/volume/flip.scss */
+/* line 117, ../sass/volume/flip.scss */
 .bb-overlay, .bb-outer {
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
@@ -505,7 +514,7 @@ body {
   backface-visibility: hidden;
 }
 
-/* line 113, ../sass/volume/flip.scss */
+/* line 125, ../sass/volume/flip.scss */
 .bb-page > div {
   width: 100%;
   -webkit-transform-style: preserve-3d;
@@ -520,7 +529,7 @@ body {
   backface-visibility: hidden;
 }
 
-/* line 128, ../sass/volume/flip.scss */
+/* line 140, ../sass/volume/flip.scss */
 .bb-back {
   -webkit-transform: rotateY(-180deg);
   -moz-transform: rotateY(-180deg);
@@ -529,14 +538,14 @@ body {
   transform: rotateY(-180deg);
 }
 
-/* line 136, ../sass/volume/flip.scss */
+/* line 148, ../sass/volume/flip.scss */
 .bb-outer {
   width: 100%;
   overflow: hidden;
   z-index: 999;
 }
 
-/* line 143, ../sass/volume/flip.scss */
+/* line 155, ../sass/volume/flip.scss */
 .bb-overlay,
 .bb-flipoverlay {
   background-color: rgba(0, 0, 0, 0.7);
@@ -548,12 +557,12 @@ body {
   opacity: 0;
 }
 
-/* line 153, ../sass/volume/flip.scss */
+/* line 165, ../sass/volume/flip.scss */
 .bb-flipoverlay {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* line 158, ../sass/volume/flip.scss */
+/* line 170, ../sass/volume/flip.scss */
 .bb-bookblock > div.bb-page:first-child,
 .bb-bookblock > div.bb-page:first-child .bb-back {
   -webkit-transform: rotateY(180deg);
@@ -563,7 +572,7 @@ body {
   transform: rotateY(180deg);
 }
 
-/* line 166, ../sass/volume/flip.scss */
+/* line 178, ../sass/volume/flip.scss */
 .view-2up .page-item {
   height: 1020px;
   min-width: 400px;
@@ -575,7 +584,7 @@ body {
   overflow-x: auto;
 }
 
-/* line 179, ../sass/volume/flip.scss */
+/* line 191, ../sass/volume/flip.scss */
 .view-2up .page-item img {
   /* max-height AND max-width will keep aspect ratio */
   max-height: 100%;
@@ -584,25 +593,25 @@ body {
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* line 189, ../sass/volume/flip.scss */
+/* line 201, ../sass/volume/flip.scss */
 .view-2up .page-item.untypical-page img {
   /*border: 1px solid #686464;*/
   border: 4px double #d5d3d3;
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.8);
 }
 
-/* line 195, ../sass/volume/flip.scss */
+/* line 207, ../sass/volume/flip.scss */
 .view-2up .page-item button {
   margin: 10px;
   float: left;
 }
 
-/* line 200, ../sass/volume/flip.scss */
+/* line 212, ../sass/volume/flip.scss */
 .view-2up .page-item.page-right button {
   float: right;
 }
 
-/* line 204, ../sass/volume/flip.scss */
+/* line 216, ../sass/volume/flip.scss */
 .view-2up .page-num {
   color: #666;
   font-size: 24px;
@@ -612,13 +621,13 @@ body {
   font-weight: bold;
 }
 
-/* line 213, ../sass/volume/flip.scss */
+/* line 225, ../sass/volume/flip.scss */
 .view-2up .page-item {
   min-width: auto;
   height: 98%;
 }
 
-/* line 219, ../sass/volume/flip.scss */
+/* line 231, ../sass/volume/flip.scss */
 .view-2up .page-left {
   width: 50%;
   /*48%;*/
@@ -632,13 +641,13 @@ body {
   text-align: right;
 }
 
-/* line 231, ../sass/volume/flip.scss */
+/* line 243, ../sass/volume/flip.scss */
 .view-2up .page-left .page-num {
   right: auto;
   left: 60px;
 }
 
-/* line 236, ../sass/volume/flip.scss */
+/* line 248, ../sass/volume/flip.scss */
 .view-2up .page-right {
   width: 50%;
   /*48%;*/
@@ -651,32 +660,32 @@ body {
   text-align: left;
 }
 
-/* line 247, ../sass/volume/flip.scss */
+/* line 259, ../sass/volume/flip.scss */
 .view-2up .page-item.empty {
   background: #fff;
   border: none;
   box-shadow: none;
 }
 
-/* line 255, ../sass/volume/flip.scss */
+/* line 267, ../sass/volume/flip.scss */
 .flip-rotating {
   -webkit-transition: all 1s ease;
   transition: rotate 1s ease;
 }
 
-/* line 260, ../sass/volume/flip.scss */
+/* line 272, ../sass/volume/flip.scss */
 .flip-rotated-90 {
   -webkit-transform: rotate(90deg);
   margin-top: 200px;
   margin-bottom: 200px;
 }
 
-/* line 266, ../sass/volume/flip.scss */
+/* line 278, ../sass/volume/flip.scss */
 .flip-rotated-180 {
   -webkit-transform: rotate(180deg);
 }
 
-/* line 270, ../sass/volume/flip.scss */
+/* line 282, ../sass/volume/flip.scss */
 .flip-rotated-270 {
   -webkit-transform: rotate(270deg);
   margin-top: 200px;

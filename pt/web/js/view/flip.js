@@ -9,8 +9,8 @@ HT.Viewer.Flip = {
         var self = this;
         this.options = $.extend({}, this.options, options);
 
-        this.w = this.options.default_w;        
-        this.zoom = this.options.zoom;
+        this.w = -1;
+        this.zoom = -1;
         this.zoom_levels = [ 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 3.00, 4.00 ];
 
         this.orient_cache = {};
@@ -222,10 +222,28 @@ HT.Viewer.Flip = {
         }
 
         $("#content").empty();
+
+        var fit_w = $("#content").width();
+
         $("#content").append('<div class="bb-custom-wrapper"><div class="bb-bookblock"></div></div>');
         var $container = $(".bb-bookblock");
         self.$container = $container;
         self.$wrapper = $("#content").find(".bb-custom-wrapper");
+
+        // which size bets fit the content width?
+        if ( self.w < 0 ) {
+            var best_w = -1; var best_zoom = 0;
+            for(var i = 0; i < self.zoom_levels.length; i++) {
+                var zoom = self.zoom_levels[i];
+                if ( self.options.default_w * zoom * 1.2 > fit_w ) {
+                    break;
+                }
+                self.w = self.options.default_w * zoom;
+                self.zoom = zoom;
+            }
+
+            console.log("STARTUP", self.w, self.zoom);
+        }
 
         var meta = self.options.manager.get_page_meta({ seq : 1 });
         var r = self.w / meta.width;
@@ -236,7 +254,7 @@ HT.Viewer.Flip = {
 
         // var h = ( self.w * 1.3 ) / 2;
 
-        $(".bb-custom-wrapper").height(h); // .width(HT.w);
+        self.$wrapper.height(h); // .width(HT.w);
         $container.height(h);
         console.log("SETTING HEIGHT", h, $container.height(), self.h);
 

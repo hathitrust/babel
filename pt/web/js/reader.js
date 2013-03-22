@@ -94,6 +94,7 @@ HT.Reader = {
             e.preventDefault();
             var seq = $(this).data('seq');
             $.publish("action.go.page", (seq));
+            $(".bb-bookblock").removeClass("lowered");
         })
 
         $("#action-go-page").click(function(e) {
@@ -197,6 +198,17 @@ head.ready(function() {
             $btn.tooltip({ title : title, placement : 'top', container : '.toolbar-horizontal' })
         }
     })
+
+    // $(".table-of-contents .btn").click(function() {
+    //     var z_index = $(this).parent().hasClass("open") ? 100 : 0;
+    //     $(".bb-bookblock").css('z-index', z_index);
+    // })
+
+    $('html').on('click.dropdown.data-api', '.table-of-contents .btn', function(e) {
+        // $(".bb-bookblock").css('z-index', 100);
+        $(".bb-bookblock").toggleClass("lowered");
+        console.log(e, $(".bb-bookblock").hasClass("lowered"));
+    });
 
 
 })
