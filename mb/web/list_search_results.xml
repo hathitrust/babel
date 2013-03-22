@@ -13,6 +13,8 @@
     <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>loads.xsl</Filename>
     <Filename>loads_helper_mb.xsl</Filename>
+    <Filename>coll.xsl</Filename>
+    <Filename>skin.xsl</Filename>
    </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->
