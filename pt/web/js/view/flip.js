@@ -232,7 +232,7 @@ HT.Viewer.Flip = {
         self.h = meta.height * r;
         var h = self.h / 2;
 
-        self.$wrapper.css({ 'min-width' : self.w });
+        self.$wrapper.css({ 'min-width' : ( self.w * 1.2 ) });
 
         // var h = ( self.w * 1.3 ) / 2;
 
