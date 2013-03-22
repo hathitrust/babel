@@ -96,7 +96,7 @@
 			// support (3dtransforms && transitions).
 			this.support = Modernizr.csstransitions && Modernizr.csstransforms3d;
 			// this seems like a bad hack, but webkit has flaky csstransforms3d detection
-			if ( $.browser.webkit && $.browser.version > "543" ) {
+			if ( $.browser.webkit ) {
 				this.support = true;
 			}
 
