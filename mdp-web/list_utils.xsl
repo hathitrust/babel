@@ -1102,7 +1102,7 @@
 
       </div>
 
-      <div class="span2 pull{$span-n + 2}">
+      <div class="options span2 pull{$span-n + 2}">
         <div class="cover">
           <xsl:if test="normalize-space(bookID)">
             <xsl:attribute name="data-bookID"><xsl:value-of select="bookID" /></xsl:attribute>
