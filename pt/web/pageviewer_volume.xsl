@@ -117,8 +117,8 @@
     <script>
       head.js("/pt/vendor/jquery.fracs.js", 
               "/pt/vendor/jquery.viewport.js",
-              "/pt/vendor/BootBlock/jquerypp.custom.js",
-              "/pt/vendor/BootBlock/jquery.bookblock.js");
+              "/pt/vendor/BookBlock/js/jquerypp.custom.js",
+              "/pt/vendor/BookBlock/js/jquery.bookblock.js");
       head.js("/pt/js/reader.js", 
               "/pt/js/manager.js", 
               "/pt/js/imgsrv.js", 

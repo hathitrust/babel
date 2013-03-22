@@ -213,8 +213,11 @@ body {
     display: none;
 }
 
-.btn.square:hover .label {
-    display: inline-block;
+.btn.square:hover {
+    background:green;
+    .label {
+        display: inline-block;
+    }
 }
 
 #scrolling {

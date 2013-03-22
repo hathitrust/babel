@@ -51,7 +51,7 @@ HT.Viewer.Scroll = {
             self.gotoPage(null, -1);
         })
 
-        $.subscribe("action.go.start.scroll", function(e) {
+        $.subscribe("action.go.first.scroll", function(e) {
             self.gotoPage(1);
         })
 

@@ -219,17 +219,21 @@ body {
 }
 
 /* line 216, ../sass/toolbar.scss */
+.btn.square:hover {
+  background: green;
+}
+/* line 218, ../sass/toolbar.scss */
 .btn.square:hover .label {
   display: inline-block;
 }
 
-/* line 220, ../sass/toolbar.scss */
+/* line 223, ../sass/toolbar.scss */
 #scrolling {
   margin-left: 55px ;
   margin-left: 5.5rem ;
 }
 
-/* line 224, ../sass/toolbar.scss */
+/* line 227, ../sass/toolbar.scss */
 #content {
   padding: 24px ;
   padding: 2.4rem ;
