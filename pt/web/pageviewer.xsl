@@ -22,7 +22,8 @@
   <xsl:variable name="gImgsrvUrlRoot" select="/MBooksTop/MBooksGlobals/UrlRoots/Variable[@name='cgi/imgsrv']"/>
   <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
   <xsl:variable name="gHTDEV" select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
-
+  <xsl:variable name="gSuppressAccessBanner" select="/MBooksTop/MBooksGlobals/SuppressAccessBanner"/>
+  
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
@@ -94,7 +95,7 @@
 
         <!-- dropdown banner -->
         <script type="text/javascript" src="/pt/web/jquery/jQuery-Notify-bar/jquery.notifyBar.js"></script>
-        <script type="text/javascript" src="/pt/js/access_banner.js"></script>
+        <script type="text/javascript" src="/pt/js/access_banner_01.js"></script>
 
         <!-- <xsl:call-template name="online_assessment"/> -->
 

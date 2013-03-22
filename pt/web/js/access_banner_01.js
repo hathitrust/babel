@@ -1,10 +1,14 @@
-// Script: access_banner.js 
+// Script: was access_banner.js: renamed to access_banner_01.js
 
 // Only called when an element with id=accessBannerID is present and
 // we need to test for exposure
 
 $(document).ready(function() {
     if ($('#accessBannerID').length > 0) {
+        var suppress = $('html').hasClass('supaccban');
+        if (suppress) {
+            return;
+        }
         var debug = $('html').hasClass('htdev');
         var idarr = JSON.parse($.cookie('access.hathitrust.org'));
         var url = $.url(); // parse the current page URL
