@@ -1,0 +1,798 @@
+/* lets me easily translate font-sizes from mockup */
+/* line 4, ../../../mdp-web/sass/results.scss */
+.alert.summary span {
+  font-weight: bold;
+}
+
+/* line 9, ../../../mdp-web/sass/results.scss */
+#facetlist dt, #facetlist dd {
+  margin-left: 0;
+  margin-bottom: 4px ;
+  margin-bottom: 0.4rem ;
+  line-height: 18px ;
+  line-height: 1.8rem ;
+}
+/* line 15, ../../../mdp-web/sass/results.scss */
+#facetlist dt {
+  font-weight: bold;
+  margin-top: 16px ;
+  margin-top: 1.6rem ;
+}
+/* line 19, ../../../mdp-web/sass/results.scss */
+#facetlist dt:first-child {
+  margin-top: 0;
+}
+/* line 24, ../../../mdp-web/sass/results.scss */
+#facetlist dd {
+  color: #999;
+  margin-left: 16px ;
+  margin-left: 1.6rem ;
+}
+
+/* line 30, ../../../mdp-web/sass/results.scss */
+.row.result {
+  position: relative;
+  margin-bottom: 16px ;
+  margin-bottom: 1.6rem ;
+  padding-bottom: 8px ;
+  padding-bottom: 0.8rem ;
+  padding-top: 8px ;
+  padding-top: 0.8rem ;
+}
+/* line 37, ../../../mdp-web/sass/results.scss */
+.row.result h4 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
+  font-size: 16px;
+  font-weight: normal;
+  width: 99%;
+}
+/* line 47, ../../../mdp-web/sass/results.scss */
+.row.result h5 {
+  margin-top: 4px ;
+  margin-top: 0.4rem ;
+  margin-bottom: 4px ;
+  margin-bottom: 0.4rem ;
+  font-size: 13px ;
+  font-size: 1.3rem ;
+}
+/* line 53, ../../../mdp-web/sass/results.scss */
+.row.result .metadata {
+  padding-left: 16px ;
+  padding-left: 1.6rem ;
+}
+/* line 57, ../../../mdp-web/sass/results.scss */
+.row.result .options {
+  width: 85px;
+}
+/* line 61, ../../../mdp-web/sass/results.scss */
+.row.result .cover {
+  width: 60px;
+  min-height: 60px;
+  float: right;
+}
+/* line 66, ../../../mdp-web/sass/results.scss */
+.row.result .cover img {
+  min-width: 60px;
+}
+/* line 72, ../../../mdp-web/sass/results.scss */
+.row.result .select {
+  width: 24px;
+  float: right;
+}
+/* line 76, ../../../mdp-web/sass/results.scss */
+.row.result .select label {
+  display: inline-block;
+}
+/* line 81, ../../../mdp-web/sass/results.scss */
+.row.result .in-collections {
+  font-size: 90%;
+  position: absolute;
+  top: 8px ;
+  top: 0.8rem ;
+  right: 10px ;
+  right: 1rem ;
+}
+/* line 88, ../../../mdp-web/sass/results.scss */
+.row.result .in-collections ul {
+  padding-left: 0;
+  margin-left: 0;
+  margin-top: 0;
+  list-style: none;
+}
+/* line 94, ../../../mdp-web/sass/results.scss */
+.row.result .in-collections ul li {
+  margin-bottom: 4px ;
+  margin-bottom: 0.4rem ;
+}
+/* line 101, ../../../mdp-web/sass/results.scss */
+.row.result [class*="result-metadata-"] {
+  display: block;
+  font-size: 95%;
+  color: #666;
+}
+/* line 107, ../../../mdp-web/sass/results.scss */
+.row.result .result-access-link {
+  margin-top: 10px ;
+  margin-top: 1rem ;
+}
+/* line 110, ../../../mdp-web/sass/results.scss */
+.row.result .result-access-link ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* line 115, ../../../mdp-web/sass/results.scss */
+.row.result .result-access-link ul li {
+  display: inline;
+  float: left;
+  margin-right: 20px ;
+  margin-right: 2rem ;
+}
+/* line 123, ../../../mdp-web/sass/results.scss */
+.row.result.alt {
+  background-color: #f6f4f1;
+}
+/* line 127, ../../../mdp-web/sass/results.scss */
+.row.result [class*="span"] + [class*="pull-"] {
+  float: left;
+}
+
+/* line 133, ../../../mdp-web/sass/results.scss */
+.push-1 {
+  margin-left: 8.36653%;
+}
+
+/* line 138, ../../../mdp-web/sass/results.scss */
+dl.collection dd, dl.collection dt {
+  margin-left: 0;
+}
+/* line 142, ../../../mdp-web/sass/results.scss */
+dl.collection dt {
+  font-weight: bold;
+  margin-bottom: 4px ;
+  margin-bottom: 0.4rem ;
+}
+/* line 147, ../../../mdp-web/sass/results.scss */
+dl.collection dd {
+  margin-bottom: 12px ;
+  margin-bottom: 1.2rem ;
+}
+
+/* line 152, ../../../mdp-web/sass/results.scss */
+.col-featured img {
+  border: 2px solid #eeeeee;
+  padding: 2px;
+  max-width: 100%;
+}
+
+/* line 158, ../../../mdp-web/sass/results.scss */
+[class^="icomoon-"]:before, [class*=" icomoon-"]:before {
+  font-family: 'icomoon';
+  font-style: normal;
+  speak: none;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  margin-right: 2px;
+  color: #666;
+  display: inline-block;
+  font-size: 110%;
+}
+
+/* line 171, ../../../mdp-web/sass/results.scss */
+.mainsearch {
+  padding-bottom: 16px ;
+  padding-bottom: 1.6rem ;
+  margin-bottom: 16px ;
+  margin-bottom: 1.6rem ;
+  border-bottom: 1px dotted #a6a5a5;
+}
+/* line 172, ../../../mdp-web/sass/results.scss */
+.mainsearch label[for=q1] {
+  font-size: 110%;
+}
+
+/* line 183, ../../../mdp-web/sass/results.scss */
+.tabs {
+  margin-bottom: 10px ;
+  margin-bottom: 1rem ;
+  margin-left: 10px ;
+  margin-left: 1rem ;
+  border-bottom: 1px solid #aaaaaa;
+  width: 96%;
+  color: #333;
+}
+/* line 190, ../../../mdp-web/sass/results.scss */
+.tabs a, .tabs span {
+  font-weight: bold;
+  color: #5e5e5e;
+  text-decoration: none;
+}
+/* line 196, ../../../mdp-web/sass/results.scss */
+.tabs a:hover {
+  text-decoration: underline;
+  border-bottom: none;
+  color: #b15a0d;
+}
+/* line 202, ../../../mdp-web/sass/results.scss */
+.tabs ul {
+  text-align: left;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  line-height: 24px ;
+  line-height: 2.4rem ;
+}
+/* line 209, ../../../mdp-web/sass/results.scss */
+.tabs ul:after, .tabs ul:before {
+  display: table;
+  line-height: 0;
+  content: "";
+  clear: both;
+}
+/* line 216, ../../../mdp-web/sass/results.scss */
+.tabs ul li {
+  float: left;
+  margin: 0 0px;
+  padding: 0 10px;
+  border: 1px solid lightgrey;
+  border-bottom: 1px solid #aaaaaa;
+  background: #e3e3e3;
+  background: -webkit-gradient(linear, 0% 0, 0% 100%, from(white), to(#e3e3e3));
+  display: inline-block;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  margin-bottom: -1px;
+  font-size: 14px;
+}
+/* line 230, ../../../mdp-web/sass/results.scss */
+.tabs ul li:first-child {
+  margin-left: 0;
+}
+/* line 234, ../../../mdp-web/sass/results.scss */
+.tabs ul li.active {
+  border: 1px solid #aaaaaa;
+  border-bottom: 1px solid transparent;
+  background: #fff;
+}
+/* line 239, ../../../mdp-web/sass/results.scss */
+.tabs ul li.active a {
+  color: #4f4f4f;
+}
+
+/* line 257, ../../../mdp-web/sass/results.scss */
+div > h3:first-child {
+  margin-top: 0;
+}
+
+/* line 261, ../../../mdp-web/sass/results.scss */
+.toolbar {
+  margin-bottom: 16px ;
+  margin-bottom: 1.6rem ;
+  padding: 8px ;
+  padding: 0.8rem ;
+}
+/* line 262, ../../../mdp-web/sass/results.scss */
+.toolbar label {
+  display: inline-block;
+}
+/* line 269, ../../../mdp-web/sass/results.scss */
+.toolbar.alt {
+  background-color: #D2D2D1;
+}
+
+/* line 275, ../../../mdp-web/sass/results.scss */
+#SortWidget {
+  display: inline-block;
+  margin-right: 20px ;
+  margin-right: 2rem ;
+}
+/* line 278, ../../../mdp-web/sass/results.scss */
+#SortWidget select {
+  width: auto;
+  margin-bottom: 0;
+  font-size: 12px ;
+  font-size: 1.2rem ;
+}
+
+/* line 287, ../../../mdp-web/sass/results.scss */
+.PageInfo {
+  display: inline-block;
+}
+/* line 290, ../../../mdp-web/sass/results.scss */
+.PageInfo select {
+  width: auto;
+  margin-bottom: 0;
+  font-size: 12px ;
+  font-size: 1.2rem ;
+}
+/* line 296, ../../../mdp-web/sass/results.scss */
+.PageInfo .resultsPerPage {
+  display: inline-block;
+}
+/* line 300, ../../../mdp-web/sass/results.scss */
+.PageInfo .pagingNav {
+  display: inline-block;
+}
+/* line 304, ../../../mdp-web/sass/results.scss */
+.PageInfo .pagingNav ul {
+  list-style: none;
+  margin-bottom: 0;
+  margin-left: 20px ;
+  margin-left: 2rem ;
+  padding: 0;
+}
+/* line 311, ../../../mdp-web/sass/results.scss */
+.PageInfo .pagingNav ul li {
+  display: inline-block;
+  margin: 0;
+  margin-left: 3px ;
+  margin-left: 0.3rem ;
+  padding-left: 3px ;
+  padding-left: 0.3rem ;
+  padding-right: 3px ;
+  padding-right: 0.3rem ;
+  padding-top: 2px ;
+  padding-top: 0.2rem ;
+  padding-bottom: 2px ;
+  padding-bottom: 0.2rem ;
+}
+
+/* line 325, ../../../mdp-web/sass/results.scss */
+.selectAll {
+  display: inline-block;
+}
+
+/* line 329, ../../../mdp-web/sass/results.scss */
+.SelectedItemActions {
+  display: inline-block;
+  margin-left: 40px ;
+  margin-left: 4rem ;
+}
+/* line 333, ../../../mdp-web/sass/results.scss */
+.SelectedItemActions select {
+  margin-bottom: 0;
+}
+
+/* line 340, ../../../mdp-web/sass/results.scss */
+.controls .counter {
+  margin-left: 5px ;
+  margin-left: 0.5rem ;
+  margin-top: 2px ;
+  margin-top: 0.2rem ;
+  vertical-align: top;
+}
+
+/* line 347, ../../../mdp-web/sass/results.scss */
+#listisFooter {
+  display: none;
+}
+
+/* line 349, ../../../mdp-web/sass/results.scss */
+.alert-summary {
+  background-color: transparent;
+  border-color: transparent;
+  color: #4f4f4f;
+  padding-left: 0;
+  margin-bottom: 10px ;
+  margin-bottom: 1rem ;
+}
+
+/* line 2, ../sass/list_colls.scss */
+body.listcs {
+  /*.floater {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    background: #666;
+    color: white;
+    height: 25px;
+    font-size: 11px;
+  }*/
+  /* For modern browsers */
+  /* For IE 6/7 (trigger hasLayout) */
+  /* FEATURED COLLECTION COLUMN */
+}
+/* line 6, ../sass/list_colls.scss */
+body.listcs .container .main {
+  width: auto;
+}
+/* line 11, ../sass/list_colls.scss */
+body.listcs .container .sidebar h2, body.listcs .container .sidebar h3 {
+  border-bottom: 1px solid #dddddd;
+  font-size: 1.17em;
+}
+/* line 19, ../sass/list_colls.scss */
+body.listcs ul.nav {
+  margin-left: 0;
+}
+/* line 23, ../sass/list_colls.scss */
+body.listcs .row {
+  padding-left: 0;
+}
+/* line 27, ../sass/list_colls.scss */
+body.listcs ul.nav-tabs {
+  margin-bottom: 10px;
+}
+/* line 31, ../sass/list_colls.scss */
+body.listcs .listcs-intro {
+  width: 75%;
+  font-size: 13px;
+  display: table-row;
+}
+/* line 37, ../sass/list_colls.scss */
+body.listcs .listcs-intro p {
+  padding-left: 20px;
+  padding-left: 2rem;
+}
+/* line 42, ../sass/list_colls.scss */
+body.listcs .listcs-intro p:last-child {
+  margin-bottom: 2rem;
+  margin-bottom: 20px;
+}
+/* line 48, ../sass/list_colls.scss */
+body.listcs .span6 > div {
+  margin-bottom: .6em;
+}
+/* line 52, ../sass/list_colls.scss */
+body.listcs .collection p {
+  margin-bottom: 0.5em;
+  margin-top: 0.25em;
+}
+/* line 57, ../sass/list_colls.scss */
+body.listcs h4.collname {
+  font-weight: normal;
+  font-size: 110%;
+  margin-top: 1em;
+}
+/* line 63, ../sass/list_colls.scss */
+body.listcs .mine .owner_name {
+  font-weight: bold;
+}
+/* line 67, ../sass/list_colls.scss */
+body.listcs p.collname {
+  padding-top: 4px;
+  /* 8 */
+}
+/* line 71, ../sass/list_colls.scss */
+body.listcs p.meta {
+  margin-top: 4px;
+  margin-bottom: 1em;
+  padding-bottom: 4px;
+}
+/* line 77, ../sass/list_colls.scss */
+body.listcs span.num_items {
+  float: left;
+  width: 150px;
+}
+/* line 82, ../sass/list_colls.scss */
+body.listcs span.owner_name {
+  /*float: left;*/
+  width: auto;
+  /* 250px */
+  overflow: hidden;
+  font-size: 90%;
+}
+/* line 89, ../sass/list_colls.scss */
+body.listcs .options {
+  font-size: 11px;
+  bottom: 2px;
+  position: static;
+  padding-top: 8px;
+  display: block;
+}
+/* line 97, ../sass/list_colls.scss */
+body.listcs .collectionData {
+  display: none;
+}
+/* line 101, ../sass/list_colls.scss */
+body.listcs .find-collection {
+  /*float:right; width: 35%;*/
+  text-align: right;
+}
+/* line 106, ../sass/list_colls.scss */
+body.listcs span.sharing-status.public {
+  color: #58ff58;
+}
+/* line 110, ../sass/list_colls.scss */
+body.listcs span.sharing-status.private {
+  color: #373737;
+}
+/* line 114, ../sass/list_colls.scss */
+body.listcs span.active_filters {
+  padding-right: 8px;
+}
+/* line 118, ../sass/list_colls.scss */
+body.listcs div.ribbon.featured {
+  position: absolute;
+  /*right: -5px;
+    top: -5px;*/
+  height: 68px;
+  width: 68px;
+  right: 0px;
+  top: 0px;
+  background: url(HT_FEATURED_ribbon-corner-flat.png) no-repeat;
+}
+/* line 129, ../sass/list_colls.scss */
+body.listcs div.right.featured {
+  background: url(HT_FEATURED_ribbon-corner-flat.png) no-repeat scroll right top;
+}
+/* line 133, ../sass/list_colls.scss */
+body.listcs span.featured {
+  position: absolute;
+  left: -5000px;
+}
+/* line 139, ../sass/list_colls.scss */
+body.listcs .collection {
+  border-left: 16px solid transparent;
+  display: table-row;
+  padding-bottom: 3px;
+  /* 5px */
+  margin-bottom: 8px;
+  /* from 2px */
+  position: relative;
+}
+/* line 147, ../sass/list_colls.scss */
+body.listcs .results {
+  border-spacing: 0em 0.5em;
+  border-collapse: separate;
+  display: table;
+  width: 100%;
+}
+/* line 154, ../sass/list_colls.scss */
+body.listcs .collection.featured {
+  min-height: 68px;
+}
+/* line 158, ../sass/list_colls.scss */
+body.listcs .left {
+  /*float: left;*/
+  width: 65%;
+  padding-left: 16px;
+  /*border: 1px dashed green;*/
+  position: relative;
+  display: table-cell;
+  vertical-align: middle;
+}
+/* line 168, ../sass/list_colls.scss */
+body.listcs .right p {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+/* line 173, ../sass/list_colls.scss */
+body.listcs .right {
+  /*float: left;*/
+  width: 29%;
+  /* padding-top: 4px; */
+  font-size: 90%;
+  display: table-cell;
+  vertical-align: middle;
+  position: relative;
+  height: auto;
+  /*border: 1px dashed blue;*/
+}
+/* line 185, ../sass/list_colls.scss */
+body.listcs .wrapper {
+  height: auto;
+  position: relative;
+}
+/* line 200, ../sass/list_colls.scss */
+body.listcs .distance {
+  width: 1px;
+  height: 50%;
+  background-color: black;
+  margin-bottom: -1em;
+  float: left;
+}
+/* line 208, ../sass/list_colls.scss */
+body.listcs .collection p {
+  margin-right: 1em;
+}
+/* line 212, ../sass/list_colls.scss */
+body.listcs p.description {
+  font-size: 90%;
+  color: #474747;
+  padding-bottom: 2px;
+}
+/* line 218, ../sass/list_colls.scss */
+body.listcs .odd {
+  background-color: #EBEBEB;
+}
+/* line 222, ../sass/list_colls.scss */
+body.listcs .even {
+  background-color: #F5F6F1;
+}
+/* line 226, ../sass/list_colls.scss */
+body.listcs .private {
+  /*border-left: 16px solid #666;*/
+  /*border-left: 16px solid #DDD;*/
+}
+/* line 231, ../sass/list_colls.scss */
+body.listcs .page_navigation {
+  float: right;
+}
+/* line 235, ../sass/list_colls.scss */
+body.listcs .selected {
+  /* display: block !important; */
+}
+/* line 239, ../sass/list_colls.scss */
+body.listcs .xxcontrols {
+  text-align: center;
+  margin-bottom: 0.5em;
+  /*min-width: 600px;*/
+}
+/* line 246, ../sass/list_colls.scss */
+body.listcs .xxcontrols > div > div {
+  margin-right: 0.25em;
+}
+/* line 250, ../sass/list_colls.scss */
+body.listcs .xxcontrols .num_items_control {
+  /*width: 250px;*/
+  text-align: left;
+  float: left;
+}
+/* line 256, ../sass/list_colls.scss */
+body.listcs .controls select {
+  width: auto;
+  font-size: 90%;
+  margin-bottom: 0;
+}
+/* line 262, ../sass/list_colls.scss */
+body.listcs .xxcontrols .filters {
+  float: left;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+  /*margin-right: 0.25em;*/
+  /* width: 1000px;*/
+  white-space: nowrap;
+  margin-left: 2px;
+}
+/* line 273, ../sass/list_colls.scss */
+body.listcs .xxcontrols .filters-wrap {
+  width: 60%;
+  float: left;
+  overflow: hidden;
+}
+/* line 279, ../sass/list_colls.scss */
+body.listcs .xxcontrols .filters li {
+  display: block;
+  float: left;
+  list-style-type: none;
+}
+/* line 285, ../sass/list_colls.scss */
+body.listcs .xxcontrols ul.filters li {
+  text-indent: 0px;
+}
+/* line 291, ../sass/list_colls.scss */
+body.listcs .cf:before,
+body.listcs .cf:after {
+  content: "";
+  display: table;
+}
+/* line 296, ../sass/list_colls.scss */
+body.listcs .cf:after {
+  clear: both;
+}
+/* line 301, ../sass/list_colls.scss */
+body.listcs .cf {
+  zoom: 1;
+}
+/* line 305, ../sass/list_colls.scss */
+body.listcs .status, body.listcs .login_status {
+  margin-top: 8px;
+  padding: 8px;
+  background: #ddd;
+  text-align: left;
+  font-weight: bold;
+  font-size: 90%;
+}
+/* line 314, ../sass/list_colls.scss */
+body.listcs .status.with-filters {
+  background: #F18F38;
+}
+/* line 318, ../sass/list_colls.scss */
+body.listcs .login_status {
+  background-color: #fcf5d9;
+  padding: 2em;
+  font-weight: normal;
+}
+/* line 324, ../sass/list_colls.scss */
+body.listcs .xxcontrols ul.filters .g-button {
+  margin: 0;
+  margin-left: -1px;
+}
+/* line 329, ../sass/list_colls.scss */
+body.listcs input.q {
+  /*font-size: 110%;*/
+}
+/* line 335, ../sass/list_colls.scss */
+body.listcs .Box img {
+  /*float: left;*/
+  border: 1px solid #cccccc;
+  padding: 2px;
+  margin-right: 10px;
+  margin-bottom: 2px;
+  max-width: 100px;
+}
+/* line 344, ../sass/list_colls.scss */
+body.listcs .Box h4, body.listcs .Box span.title {
+  font-size: 100%;
+  font-weight: bold;
+  margin: 0;
+  margin-bottom: 0.75em;
+  display: block;
+}
+/* line 352, ../sass/list_colls.scss */
+body.listcs .Box p {
+  font-size: 90%;
+  word-break: hyphenate;
+  margin-bottom: 0;
+}
+/* line 358, ../sass/list_colls.scss */
+body.listcs .Box div {
+  /*padding: 1em;*/
+  margin-bottom: 1em;
+}
+/* line 363, ../sass/list_colls.scss */
+body.listcs .CollPage {
+  font-size: 1.1em;
+  margin-left: 10px;
+  font-weight: normal;
+}
+
+/*--- THE MAGIC ---*/
+/*
+This is the best bit!
+*/
+/* line 377, ../sass/list_colls.scss */
+.placeholder {
+  color: #aaa;
+}
+
+/* line 379, ../sass/list_colls.scss */
+[placeholder] {
+  cursor: pointer;
+  /*color:#999;
+   padding:5px;*/
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 2px;
+  border: 1px solid #999999;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+}
+
+/* line 393, ../sass/list_colls.scss */
+[placeholder]:active,
+[placeholder]:focus {
+  cursor: text;
+  color: #333;
+  border: 1px solid #00aa00;
+  -moz-box-shadow: 0 0 5px #00aa00, 0 0 5px rgba(0, 0, 0, 0.25) inset;
+  -webkit-box-shadow: 0 0 5px #00aa00, 0 0 5px rgba(0, 0, 0, 0.25) inset;
+  box-shadow: 0 0 5px #00aa00, 0 0 5px rgba(0, 0, 0, 0.25) inset;
+}
+
+/*
+If the input has placeholder="" AND value="" darken its appearance to show it is pre-populated and not a form hint.
+*/
+/* line 405, ../sass/list_colls.scss */
+[placeholder][value] {
+  color: #333;
+}
+
+/*\*/
+/*/
+* html .results, * html .collection {
+  display: block;
+}
+* html .right, * html .left {
+  display: inline-block;
+}
+*html .right {
+  margin-left: -1px;
+}
+/**/

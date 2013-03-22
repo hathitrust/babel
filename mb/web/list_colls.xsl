@@ -28,22 +28,16 @@
   </xsl:variable>
 
   <xsl:template name="setup-extra-header">
-    <link rel="stylesheet" type="text/css" href="/mb/css/mb.css" />
-    <link rel="stylesheet" type="text/css" href="/mb/list_colls.css" />
+    <link rel="stylesheet" type="text/css" href="/mb/css/screen.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="/mb/list_colls.css" /> -->
 
     <xsl:call-template name="include_local_javascript" />
     <xsl:call-template name="load_js_and_css"/>
     
-<!--     <script>
-      head.js(
-              "/mb/web/js/jquery.placeholder.js",
-              "/mb/web/js/date.js",
-              // "/mb/web/js/jquery.ba-hashchange.js",
-              "/mb/web/js/mb.js",
-              "/mb/web/js/tracking.js");
-    </script>
- -->
+  </xsl:template>
 
+  <xsl:template name="setup-body-class">
+    listcs
   </xsl:template>
 
   <xsl:template name="contents">

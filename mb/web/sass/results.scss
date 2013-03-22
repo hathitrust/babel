@@ -54,6 +54,10 @@
         @include rem(padding-left, 16);
     }
 
+    .options {
+        width: 85px;
+    }
+
     .cover {
         width: 60px; 
         min-height: 60px;
