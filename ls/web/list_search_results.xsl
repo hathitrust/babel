@@ -70,9 +70,11 @@
 
   <!-- ## end Global Variables ##-->
 
+  <!-- XXX temporary dummy template until Roger puts this in the right place -->
+  <xsl:template name="google_analytics"/>
 
   <!-- Main template -->
-  <xsl:template match="/MBooksTop">
+  <xsl:template match="/MBooksTop_DONTMATCHIT">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
       <head>
 
@@ -251,6 +253,35 @@
     </div>
   </xsl:template>
 
+  <!--##############################new templates##################################################-->
+
+  <xsl:template name="contents">
+    <xsl:call-template name="sidebar" />
+    <xsl:call-template name="list-items-results" />
+  </xsl:template>
+
+  <xsl:template name="sidebar">
+    <xsl:call-template name="facets"/>
+  </xsl:template>
+
+  <!-- XXX change name to list-search results once we are clear
+       also remove the extra divs and YUI unless needed -->
+  <xsl:template name="list-items-results">
+      <div class="ColContent">
+
+        <!-- Added: YUI overlay is displayed here -->
+        <div id="errormsg">
+          <div class="bd"></div>
+        </div>
+        <xsl:call-template name="SearchResultList"/>
+      </div>
+    
+  </xsl:template>
+
+
+    
+
+  <!--################################################################################-->
   <!-- TEMPLATE -->
   <xsl:template name="SearchResults_status">
     <div class="SearchResults_status">
@@ -1472,7 +1503,7 @@
   </xsl:template>
 
 
- <xsl:template name="get_page_title">
+ <xsl:template name="get-page-title">
    <xsl:choose>
      <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
        <xsl:text>Full-text Advanced Search Results</xsl:text>
