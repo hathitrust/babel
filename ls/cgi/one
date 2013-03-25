@@ -1,0 +1,50 @@
+#!/usr/bin/env perl
+
+use CGI;
+
+my $LS_MAP = {
+    all => 'ocr',
+    title => 'title',
+    author => 'author',
+    subject => 'subject',
+    isn => 'isn',
+    publisher => 'publisher',
+    series => 'series',
+    year => 'pdate_start'
+};
+
+my $cgi = new CGI;
+my $base = $cgi->url(-full => 1);
+
+my $target = $cgi->param('target');
+my $searchtype = $cgi->param('searchtype');
+my $q1 = $cgi->param('q1');
+my $dest_cgi = new CGI({});
+my $dest_url; my $dest_base;
+
+if ( $target eq 'ls' ) {
+#  XXX hardcode debug env for now  $dest_base = qq{http://babel.hathitrust.org/cgi/ls};
+    $dest_base = qq{http://tburtonw-full.babel.hathitrust.org/cgi/ls};
+    $dest_cgi->param('field1', $$LS_MAP{$searchtype});
+    $dest_cgi->param('q1', $q1);
+    $dest_cgi->param('a', 'srchls');
+} else {
+    $dest_base = qq{http://dueberb.catalog.hathitrust.org/Search/Home};
+    $dest_cgi->param('lookfor', $q1);
+    $dest_cgi->param('searchtype', $searchtype);
+}
+
+my $dest_url = $dest_cgi->url(-full=>1, -query=>1);
+$dest_url =~ s,$base,$dest_base,;
+if ( $target eq 'catalog' ) {
+    $dest_url =~ s,;,&,g;
+}
+
+if ( $cgi->param('debug') ) {
+    print $cgi->header('text/plain');
+    print "TARGET = $target\n";
+    print $dest_url, "\n";
+    print $cgi->url(-full=>1, -query=>1);
+} else {
+    print $cgi->redirect($dest_url);
+}
