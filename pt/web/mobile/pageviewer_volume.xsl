@@ -6,7 +6,7 @@
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
-  <xsl:import href="../pageviewer_volume.xsl"/>
+  <xsl:import href="../legacy/pageviewer_volume.xsl"/>
 
   <xsl:variable name="gCurrentView">
     <xsl:variable name="currentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />

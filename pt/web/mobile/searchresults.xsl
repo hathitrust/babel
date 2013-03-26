@@ -5,7 +5,7 @@
   xmlns:METS="http://www.loc.gov/METS/"
   >
 
-  <xsl:import href="../searchresults.xsl"/>
+  <xsl:import href="../legacy/searchresults.xsl"/>
   
  
  

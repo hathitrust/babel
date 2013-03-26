@@ -6,7 +6,7 @@
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
-  <xsl:import href="../pageviewer.xsl"/>
+  <xsl:import href="../legacy/pageviewer.xsl"/>
 
   <xsl:template name="get-title-suffix">
     <xsl:choose>

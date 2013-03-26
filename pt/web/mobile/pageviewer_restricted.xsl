@@ -5,7 +5,7 @@
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   version="1.0">
 
-  <xsl:import href="../pageviewer_restricted.xsl"/>
+  <xsl:import href="../legacy/pageviewer_restricted.xsl"/>
 
   <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
   <xsl:template name="ic_access_info">
