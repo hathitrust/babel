@@ -47,6 +47,8 @@ sub BuildRotateLink
 
     my $toReturn = '';
 
+    return '' if ( $cgi->param('view') eq 'plaintext' );
+
     my $id  = $cgi->param( 'id' );
     my $seq = $mdpItem->GetRequestedPageSequence( 'seq' );
 
@@ -75,6 +77,7 @@ sub BuildResizeLink
     my ( $cgi, $mdpItem, $direction ) = @_;
 
     my $toReturn = '';
+    return '' if ( $cgi->param('view') eq 'plaintext' );
 
     my $id  = $cgi->param( 'id' );
     my $seq = $mdpItem->GetRequestedPageSequence( 'seq' );

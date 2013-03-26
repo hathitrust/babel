@@ -1,7 +1,5 @@
 // reader.js
 
-window.console||(console={log:function(){}});
-
 var HT = HT || {};
 var $body = $("body");
 
@@ -22,16 +20,22 @@ HT.Reader = {
 
     start : function() {
         var self = this;
+        this._handleView(this._getView(), 'start');
+
         this.bindEvents();
         this.manager = Object.create(HT.Manager).init({
             reader : self,
-            id : self.id
+            id : self.id,
+            seq : self.options.params.seq
         })
 
         this.manager.start();
     },
 
     switchView: function(view) {
+        this._handleView(this.current_view, 'exit');
+        this._handleView(view, 'start');
+        this.current_view = view;
         this.manager.switch_view(view);
     },
 
@@ -48,7 +52,7 @@ HT.Reader = {
 
         // dyanmic in every view
 
-        this._bindAction("toggle.fullscreen");
+        this._bindAction("toggle.fullscreen", this._toggleFullScreen);
 
         $("#versionIcon").click(function(e) {
             e.preventDefault();
@@ -58,7 +62,7 @@ HT.Reader = {
         // don't bind dynamic controls for the static views
         if ( this.view == 'Image' || this.view == 'PlainText' ) {
             // and then disable buttons without links
-            $(".btn-toolbar").find("a[href='']").attr("disabled", "disabled");
+            $(".toolbar").find("a[href='']").attr("disabled", "disabled");
             return;
         }
 
@@ -118,38 +122,77 @@ HT.Reader = {
         })
 
         $.subscribe("update.go.page", function(e, seq) {
+            self._updatePDFLinks(seq);
+            if ( $.isArray(seq) ) {
+                // some views return multiple pages, which we use for
+                // other interface elements
+                seq = seq[0] != null ? seq[0] : seq[1];
+            }
             var value = self.manager.getPageNumForSeq(seq);
             if ( ! value ) {
                 value = "n" + seq;
             }
             $("#input-go-page").val(value);
+            self._current_seq = seq;
         })
 
         $.subscribe("disable.download.page.pdf", function() {
-            $("#pagePdfLink").attr("disabled", "disabled");
+            $(".page-pdf-link").attr("disabled", "disabled").addClass("disabled");
         })
 
         $.subscribe("enable.download.page.pdf", function() {
-            $("#pagePdfLink").attr("disabled", null);
+            $(".page-pdf-link").attr("disabled", null).removeClass("disabled");
         })
 
         $.subscribe("view.end.reader", function() {
             // enable everything when we switch views;
             // the views can update the state when they're initialized
             $.publish("enable.zoom");
-            $.publish("enaboe.rotate");
-            $.publish("enable.download");
+            $.publish("enable.rotate");
+            $.publish("enable.download.page");
             $.publish("enable.toggle.fullscreen");
         })
 
     },
 
-    _bindAction: function(action) {
+    getCurrentSeq: function() {
+        return this._current_seq || this.options.params.seq || 1;
+    },
+
+    _toggleFullScreen: function(btn) {
+        console.log("TOGGLE", this, btn);
+        var $btn = $(btn);
+        var $sidebar = $(".sidebar");
+        if ( $btn.hasClass("active") ) {
+            $(".sidebar.dummy").show("fast", function() {
+                $("#sidebar").css("visibility", "hidden") //.show();
+                $(window).scroll();
+                $("#sidebar").css('visibility', 'visible').show("fast");
+                $btn.removeClass("active");
+                $btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
+                $.publish("action.toggle.fullscreen");
+            })
+        } else {
+            $(".sidebar").hide( "fast", function() {
+                $(window).scroll();
+                $btn.addClass("active");
+                $btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
+                $.publish("action.toggle.fullscreen");
+            })
+        }
+    },
+
+    _bindAction: function(action, fn) {
+        var self = this;
         var id = "#action-" + action.replace(".", "-");
         var $btn = $(id);
         $btn.click(function(e) {
             e.preventDefault();
-            $.publish("action." + action, (this));
+            if ( fn == null ) {
+                $.publish("action." + action, (this));
+            } else {
+                fn.apply(self, $btn);
+            }
         }).subscribe("disable." + action, function() {
             $(this).attr("disabled", "disabled");
         }).subscribe("enable." + action, function() {
@@ -165,7 +208,56 @@ HT.Reader = {
             'image' : 'Image',
             'plaintext' : 'PlainText'
         }
+        this.current_view = views[this.options.params.view];
         return views[this.options.params.view];
+    },
+
+    _updatePDFLinks: function(seq) {
+        var self = this;
+        if ( $.isArray(seq) ) {
+            // we have multiple links, but what do we label them?
+            if ( this.current_view == 'Flip' ) {
+                _.each(seq, function(seq, i) {
+                    var $link = $("#pagePdfLink" + ( i + 1 ));
+                    self._updateLinkSeq($link, seq);
+                })
+            }
+        } else {
+            var $link = $("#pagePdfLink");
+            self._updateLinkSeq($link, seq);
+        }
+    },
+
+    _updateLinkSeq: function($link, seq) {
+        if ( seq == null ) {
+            $link.attr("disabled", "disabled");
+        } else {
+            if ( ! $link.hasClass("disabled") ) {
+                $link.attr("disabled", null);
+            }
+            var href = $link.attr("href");
+            $link.attr("href", href.replace(/seq=\d+/, "seq=" + seq));
+        }
+    },
+
+    _handleView: function(view, stage) {
+        if ( view == 'Flip' ) {
+            this._handleFlip(stage);
+        }
+    },
+
+    _handleFlip: function(stage) {
+        var $link = $("#pagePdfLink").parent();
+        if ( stage == 'start' ) {
+            // recto verso vs. rtl, BLEH!
+            var $link1 = $link.clone(true).find("a").attr("id", "pagePdfLink1").text("Download left page (PDF)").end().insertAfter($link);
+            var $link2 = $link.clone(true).find("a").attr("id", "pagePdfLink2").text("Download right page (PDF)").end().insertAfter($link1);
+            $link.hide();
+        } else {
+            $("#pagePdfLink1").parent().remove();
+            $("#pagePdfLink2").parent().remove();
+            $link.show();
+        }
     },
 
     _parseParams: function() {
@@ -199,15 +291,9 @@ head.ready(function() {
         }
     })
 
-    // $(".table-of-contents .btn").click(function() {
-    //     var z_index = $(this).parent().hasClass("open") ? 100 : 0;
-    //     $(".bb-bookblock").css('z-index', z_index);
-    // })
-
     $('html').on('click.dropdown.data-api', '.table-of-contents .btn', function(e) {
         // $(".bb-bookblock").css('z-index', 100);
         $(".bb-bookblock").toggleClass("lowered");
-        console.log(e, $(".bb-bookblock").hasClass("lowered"));
     });
 
 

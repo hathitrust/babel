@@ -34,9 +34,10 @@ HT.Viewer.Thumbnail = {
         $.unsubscribe(".thumb");
         $.publish("view.end");
         $("#content").empty();
-        $body.removeClass("view-thumb");
         $(window).unbind("scroll.viewer.thumb");
         $(window).unbind("resize.thumb");
+        $(window).scrollTop(0);
+        $body.removeClass("view-thumb");
         console.log("UNBOUND THUMBNAIL");
     },
 

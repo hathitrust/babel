@@ -64,7 +64,6 @@
 
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/pt/css/screen.css" />
-    <link rel="stylesheet" type="text/css" href="/pt/vendor/nanoscroller/nanoscroller.css" />
     <script>
       var HT = HT || {};
       <!-- this should really become a JSON blob -->
@@ -72,7 +71,7 @@
       <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
         <xsl:choose>
           <xsl:when test="@name = 'seq'">
-            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
+            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.)" />;
           </xsl:when>
           <!-- prevent XSS exploit when q1 is displayed in result page -->
           <xsl:when test="@name = 'q1'">
@@ -83,13 +82,10 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
+      HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
     </script>
-    <script>
-      head.js(
-        "/pt/js/base.js",
-        "/pt/vendor/nanoscroller/jquery.nanoscroller.js"
-      );
-    </script>
+    <xsl:call-template name="load_js_and_css"/>
+
     <xsl:call-template name="setup-extra-header-extra" />
   </xsl:template>
 

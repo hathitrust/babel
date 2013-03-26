@@ -28,8 +28,11 @@ HT.Viewer.Flip = {
 
     start : function() {
         $("body").addClass("view-2up"); // needs to correspond to our parameter. MM.
+        $.publish("enable.download.page");
 
         this.is_rtl = this.options.manager.reading_order == 'right-to-left';
+
+        this.options.seq = this.options.reader.getCurrentSeq();
 
         this.bindEvents();
         this.drawPages();
@@ -57,11 +60,11 @@ HT.Viewer.Flip = {
         })
 
         $.subscribe("action.go.first.flip", function(e) {
-            self.gotoPage(self.is_rtl ? 1 : self.options.manager.num_pages);
+            self.gotoPage(self.is_rtl ? self.options.manager.num_pages : 1);
         })
 
         $.subscribe("action.go.last.flip", function(e) {
-            self.gotoPage(self.is_rtl ? self.options.manager.num_pages : 1);
+            self.gotoPage(self.is_rtl ? 1 : self.options.manager.num_pages);
         })
 
         $.subscribe("action.go.page.flip", function(e, seq) {
@@ -82,6 +85,11 @@ HT.Viewer.Flip = {
 
         $.subscribe("action.rotate.counterclockwise", function(e) {
             self.rotateBook(-1);
+        })
+
+        $.subscribe("action.toggle.fullscreen", function(e) {
+            self.w = -1;
+            self.drawPages();
         })
 
         $("body").on('image:fudge.flip', "img", function() {
@@ -156,10 +164,9 @@ HT.Viewer.Flip = {
 
         if ( seq != null ) {
             var page = self._seq2page(seq);
-            self.loadPage(seq);
-            self.book.jump(page);
+            self.loadPage(page);
+            self.book.jump(page + 1);
         } else {
-            seq = self._page2seq(self.book.current);
             if ( delta > 0 ) {
                 // self.do_ltr ? self.book.prev() : self.book.next();
                 self.book.next();
@@ -174,7 +181,40 @@ HT.Viewer.Flip = {
 
     },
 
-    loadPage: function(seq) {
+    loadPage: function(page) {
+        var self = this;
+        console.log("LOADING", page);
+        _.each(self._page2seq(page), function(seq) {
+            if ( seq != null ) {
+                var $page = $("#page" + seq);
+                if ( ! $page.size() ) {
+                    // console.log("NO PAGE", seq);
+                    return;
+                }
+                if ( $page.find('img').size() ) {
+                    return;
+                }
+                // console.log("LOADING", seq, self.w, self.h, $page.width());
+                var $img = self.options.manager.get_image({ seq : seq, height: Math.ceil(self.h / 2) });
+                $img.appendTo($page);
+            }
+        })
+    },
+
+    unloadPage : function(page) {
+        var self = this;
+        _.each(self._page2seq(page), function(seq) {
+            if ( seq == null ) { return; }
+            var $page = $("#page" + seq);
+            if ( ! $page.size() ) {
+                return;
+            }
+            console.log("UNLOADING IMAGE", seq);
+            $page.find("img").remove();
+        })
+    },
+
+    XXloadPage: function(seq) {
         var self = this;
         _.each([ seq, seq + 1], function(seq) {
             var $page = $("#page" + seq);
@@ -206,19 +246,24 @@ HT.Viewer.Flip = {
 
     getCurrentSeq: function() {
 
-        var $current = $(".page-item.current");
-        if ( $current.length ) {
-            return $current.data('seq');
-        }
-        return null;
+        var page = this.book.current;
+        var seq = this._page2seq(page);
+        return seq[0] || seq[1];
+
+        // var $current = $(".page-item.current");
+        // if ( $current.length ) {
+        //     return $current.data('seq');
+        // }
+        // return null;
     },
 
     drawPages : function() {
         var self = this;
 
-        var current = self.is_rtl ? -1 : 1;
+        var current = self.is_rtl ? -1 : 0;
         if ( self.book ) {
-            current = self.book.current + 1;
+            current = self.book.current ;
+            delete self.book;
         }
 
         $("#content").empty();
@@ -242,7 +287,7 @@ HT.Viewer.Flip = {
                 self.zoom = zoom;
             }
 
-            console.log("STARTUP", self.w, self.zoom);
+            // console.log("STARTUP", self.w, self.zoom);
         }
 
         var meta = self.options.manager.get_page_meta({ seq : 1 });
@@ -256,7 +301,7 @@ HT.Viewer.Flip = {
 
         self.$wrapper.height(h); // .width(HT.w);
         $container.height(h);
-        console.log("SETTING HEIGHT", h, $container.height(), self.h);
+        // console.log("SETTING HEIGHT", h, $container.height(), self.h);
 
         // mdpItem will normalize the pages so seq=1 IS THE START OF THE BOOK
         // right-to-left only means we stack the pages in the div differently
@@ -305,19 +350,21 @@ HT.Viewer.Flip = {
             var left_page_seq = page[0];
             var right_page_seq = page[1];
             var html = '<div class="bb-item">';
+            self._page2seq_map[i] = [null, null];
             if ( left_page_seq ) {
                 html += '<div id="page{SEQ}" class="page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
-                self._seq2page_map[left_page_seq] = ( i + 1 );
-                self._page2seq_map[i + 1] = left_page_seq;
+                self._seq2page_map[left_page_seq] = i;
+                self._page2seq_map[i][0] = left_page_seq;
             } else {
                 html += '<div class="page-item page-left empty"></div>';
             }
             if ( right_page_seq ) {
                 html += '<div id="page{SEQ}" class="page-item page-right"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, right_page_seq);
-                self._seq2page_map[right_page_seq] = ( i + 1 );
-                if ( ! left_page_seq || left_page_seq > right_page_seq ) {
-                    self._page2seq_map[i + 1] = right_page_seq;
-                }
+                self._seq2page_map[right_page_seq] = i;
+                self._page2seq_map[i][1] = right_page_seq;
+                // if ( ! left_page_seq || left_page_seq > right_page_seq ) {
+                //     self._page2seq_map[i][1] = right_page_seq;
+                // }
             } else {
                 html += '<div class="page-item page-right empty"></div>';
             }
@@ -347,26 +394,49 @@ HT.Viewer.Flip = {
                     },
                     onEndFlip : function ( page, isLimit ) {
                         console.log("FLIPPED:", page, isLimit);
-                        var seq = self._page2seq(page);
-                        self.loadPage(seq + 2);
-                        self.loadPage(seq + 4);
-                        self.loadPage(seq - 2);
-                        self.loadPage(seq - 4);
-                        self.removeImage(seq - 8);
-                        self.removeImage(seq + 8);
+                        self.loadPage(page - 1);
+                        self.loadPage(page - 2);
+                        self.loadPage(page + 1);
+                        self.loadPage(page + 2);
+
+                        self.unloadPage(page - 8);
+                        self.unloadPage(page + 8);
+
+                        // self.loadPage(seq + 2);
+                        // self.loadPage(seq + 4);
+                        // self.loadPage(seq - 2);
+                        // self.loadPage(seq - 4);
+                        // self.removeImage(seq - 8);
+                        // self.removeImage(seq + 8);
                     }
                 } );
 
         this.book.n = pages.length;
         HT.bb = this.book;
 
-        if ( current < 1 ) {
-            current = pages.length;
+        if ( self.options.seq ) {
+            current = self._seq2page(self.options.seq);
+            delete self.options.seq;
+        } else {
+            if ( current < 0 ) {
+                current = pages.length;
+            }
         }
-        self.loadPage(self._page2seq(current)); self.loadPage(self._page2seq(current) + 1);
-        self.book.jump(current);
+
+        self.loadPage(current);
+        self.loadPage(current + 1);
+        self.loadPage(current - 1);
+        // self.loadPage(self._page2seq(current)); self.loadPage(self._page2seq(current) + 1);
+        self.book.jump(current + 1);
 
         $(window).scroll();
+        self.checkPageStatus();
+
+        $container.on('click', '.page-right', function() {
+            self.book.next();
+        }).on('click', '.page-left', function() {
+            self.book.prev();
+        })
 
     },
 
@@ -389,11 +459,8 @@ HT.Viewer.Flip = {
         }
 
         var seq = self._page2seq(page);
-        if ( seq == undefined ) {
-            seq = self._page2seq(page + 1);
-        }
 
-        $.publish("update.go.page", ( seq ));
+        $.publish("update.go.page", [seq]);
 
     },
 

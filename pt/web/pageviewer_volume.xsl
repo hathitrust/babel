@@ -114,20 +114,6 @@
 
   <xsl:template name="setup-extra-header-extra">
     <link rel="stylesheet" href="/pt/css/volume.css" />
-    <script>
-      head.js("/pt/vendor/jquery.fracs.js", 
-              "/pt/vendor/jquery.viewport.js",
-              "/common/unicorn/vendors/bootstrap/js/bootstrap-tooltip.js",
-              "/pt/vendor/BookBlock/js/jquerypp.custom.js",
-              "/pt/vendor/BookBlock/js/jquery.bookblock.js");
-      head.js("/pt/js/reader.js", 
-              "/pt/js/manager.js", 
-              "/pt/js/imgsrv.js", 
-              "/pt/js/view/image.js", 
-              "/pt/js/view/scroll.js", 
-              "/pt/js/view/thumb.js",
-              "/pt/js/view/flip.js");
-    </script>
   </xsl:template>
 
   <xsl:template name="setup-body-class">
@@ -147,9 +133,6 @@
         <xsl:call-template name="page-content" />
       </div>
     </div>
-    <script>
-      head.js("/pt/web/js/scrolling.js");
-    </script>
   </xsl:template>
 
   <xsl:template name="toolbar-vertical">
@@ -327,6 +310,14 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="page-content-plaintext">
+    <div class="page-item page-text">
+      <p>
+        <xsl:apply-templates select="//CurrentPageOcr" mode="copy-guts" />
+      </p>
+    </div>
+  </xsl:template>
+
   <xsl:template name="setup-head">
     <xsl:call-template name="bookreader-toolbar-items" />
     <xsl:call-template name="setup-ht-params" />
@@ -343,7 +334,7 @@
       <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
         <xsl:choose>
           <xsl:when test="@name = 'seq'">
-            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
+            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.)" />;
           </xsl:when>
           <!-- prevent XSS exploit when q1 is displayed in result page -->
           <xsl:when test="@name = 'q1'">
@@ -1344,6 +1335,22 @@
     <xsl:call-template name="footer">
       <xsl:with-param name="gUsingBookReader" select="$gUsingBookReader" />
     </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template match="node()" mode="copy-guts">
+    <xsl:apply-templates select="@*|*|text()" mode="copy" />
+  </xsl:template>
+
+  <xsl:template match="node()[name()]" mode="copy" priority="10">
+    <xsl:element name="{name()}">
+      <xsl:apply-templates select="@*|*|text()" mode="copy" />
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="@*|*|text()" mode="copy">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|*|text()" mode="copy" />
+    </xsl:copy>
   </xsl:template>
 
 </xsl:stylesheet>

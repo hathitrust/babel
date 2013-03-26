@@ -1,3 +1,4 @@
+@import url(../vendor/nanoscroller/nanoscroller.css);
 /* lets me easily translate font-sizes from mockup */
 /* line 3, ../sass/screen.scss */
 body {
@@ -106,4 +107,14 @@ body {
 /* line 113, ../sass/screen.scss */
 .smaller {
   font-size: 90%;
+}
+
+/* line 117, ../sass/screen.scss */
+#noPdfAccess {
+  display: none;
+}
+
+/* line 121, ../sass/screen.scss */
+.hide {
+  display: none;
 }

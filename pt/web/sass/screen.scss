@@ -113,3 +113,14 @@ body {
 .smaller {
     font-size: 90%;
 }
+
+#noPdfAccess {
+    display: none;
+}
+
+.hide {
+    display: none;
+}
+
+
+@import "../vendor/nanoscroller/nanoscroller.css";

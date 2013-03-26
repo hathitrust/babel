@@ -880,7 +880,7 @@
           <xsl:element name="a">
             <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
             <xsl:attribute name="id">pagePdfLink</xsl:attribute>
-            <xsl:attribute name="class">tracked</xsl:attribute>
+            <xsl:attribute name="class">tracked page-pdf-link</xsl:attribute>
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
             <xsl:attribute name="data-tracking-action">PT Download PDF - this page</xsl:attribute>
             <xsl:attribute name="href">
@@ -923,37 +923,45 @@
             
             <xsl:if test="$gFullPdfAccess = 'deny'">
               <div id="noPdfAccess">
-                <p style="text-align: left">
-                  <xsl:choose>
-                    <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                <xsl:choose>
+                  <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <p class="larger">
                       <xsl:text>Partner institution members: </xsl:text>
                       <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
                       <xsl:text> to download this book.</xsl:text>
+                    </p>
+                    <p>
+                    <em>If you are not a member of a partner institution, 
                       <br />
-                      <br />
-                      <em>If you are not a member of a partner institution, 
-                        <br />
-                        whole book download is not available. 
-                        (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
-                    </xsl:when>
-                    <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                      whole book download is not available. 
+                      (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <p>
                       <xsl:text>Full PDF available only to authenticated users from </xsl:text>
                       <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
-                    </xsl:when>
-                    <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+                    <p>
                       <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
+                    <p>
                       <xsl:text>This book cannot be downloaded.</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
                       <xsl:comment>Handled above</xsl:comment>
-                    </xsl:when>
-                    <xsl:otherwise>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <p>
                       <xsl:text>Sorry.</xsl:text>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                </p>
+                    </p>
+                  </xsl:otherwise>
+                </xsl:choose>
               </div>
             </xsl:if>
           </li>

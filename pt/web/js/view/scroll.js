@@ -26,6 +26,8 @@ HT.Viewer.Scroll = {
 
     start : function() {
         $("body").addClass("view-1up"); // needs to correspond to our parameter. MM.
+        $.publish("enable.download.page");
+        this.options.seq = this.options.reader.getCurrentSeq();
         this.bindEvents();
         this.bindScroll();
         this.drawPages();
@@ -37,6 +39,7 @@ HT.Viewer.Scroll = {
         $.publish("view.end");
         $("#content").empty();
         $(window).unbind("scroll.viewer.scroll");
+        $(window).scrollTop(0);
         $("body").removeClass("view-1up");
     },
 
@@ -281,6 +284,10 @@ HT.Viewer.Scroll = {
     drawPages : function() {
         var self = this;
         var current = self.getCurrentSeq();
+        if ( current == null && self.options.seq ) {
+            current = self.options.seq;
+            delete self.options.seq;
+        }
 
         $("#content").empty();
 
