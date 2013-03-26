@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1348600578'" />
+  <xsl:variable name="timestamp" select="'?_=1364323883'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript" src="/wayf/js/concatenated_common-min.js{$timestamp}"></script>
   </xsl:template> 

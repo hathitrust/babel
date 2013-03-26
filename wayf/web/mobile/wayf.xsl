@@ -5,7 +5,7 @@
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   version="1.0">
 
-  <xsl:import href="../wayf.xsl"/>
+  <xsl:import href="../legacy/wayf.xsl"/>
     
     <!-- Main template -->
   <xsl:template match="/MBooksTop">
