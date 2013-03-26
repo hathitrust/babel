@@ -1120,6 +1120,9 @@ sub __get_facets
     my $FACETS;
     my $facet_config = $self->get_facet_config;
     my $FACET_LIMIT=$facet_config->get_facet_limit;
+    #XXX unicorn debugging set facet limit=5 for now
+    $FACET_LIMIT=5;
+    
     my $facetfields = $facet_config->get_facet_order();    
     my $FACET_FIELDS;
     
