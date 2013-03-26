@@ -212,6 +212,7 @@
         </xsl:when>
         <xsl:otherwise>
           <div class="alert alert-info">
+            <!--XXX tbw different message needed for ls-->
             <p>There are no Full View items in this collection</p>
           </div>
         </xsl:otherwise>
@@ -835,6 +836,7 @@
 
         <div class="toolbar" role="toolbar">
           <h3 class="offscreen">Tools for sorting and filtering the list</h3>
+          <!--XXX tbw BuildSortWidget not applicable for ls-->
           <xsl:call-template name="BuildSortWidget"/>
           <xsl:call-template name="BuildPagingControls">
               <xsl:with-param name="which_paging" select="'top_paging'"/>
@@ -860,12 +862,9 @@
           </xsl:otherwise>
         </xsl:choose>
 
-        <div id="listisFooter">
-          <xsl:call-template name="BuildPagingControls">
-            <xsl:with-param name="which_paging" select="'bottom_paging'"/>
-          </xsl:call-template>
-        </div>
-        
+        <xsl:call-template name="BuildPagingControls">
+          <xsl:with-param name="which_paging" select="'bottom_paging'"/>
+        </xsl:call-template>
       </form>
     </div>
     <!-- end div actions-->
@@ -1013,7 +1012,6 @@
           <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
           <xsl:value-of select="Title" disable-output-escaping="yes" />
         </h4>
-
         <!-- Author -->
         <xsl:if test="Author!=''">
           <div class="result-metadata-author">
@@ -1102,6 +1100,7 @@
 
       </div>
 
+      
       <div class="options span2 pull{$span-n + 2}">
         <div class="cover">
           <xsl:if test="normalize-space(bookID)">
