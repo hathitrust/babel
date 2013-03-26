@@ -1086,8 +1086,27 @@ HTBookReader.prototype.updateLocationHash = function() {
                 
                 args.push("seq=" + ( params_.seq + 1 ));
                 href += args.join(";");
-                _gaq.push(["_trackPageview", href])
+                // _gaq.push(["_trackPageview", href])
+                _gaq.push(
+                    ['_setAccount', pageTracker._getAccount() ],
+                    ['_trackPageview', href]
+                );
             }
+
+            if ( nextTracker != null ) {
+                var params_ = this.paramsForTracking(params);
+                var href = window.location.protocol + "//" + window.location.host + window.location.pathname + "?";
+                var href = [ location.pathname ];
+                href.push("id=" + params_.id);
+                href.push("view=" + params_.view);
+                href.push("seq=" + ( params_.seq + 1 ));
+                href = href.join("/");
+                _gaq.push(
+                    ['_setAccount', nextTracker._getAccount() ],
+                    ['_trackPageview', href]
+                )
+            }
+
         }
         this.last_index = params.index;
     }
