@@ -32,4 +32,5 @@
 <Holdings><?ACCESS_HOLDINGS?></Holdings>
 <InLibrary><?IN_LIBRARY?></InLibrary>
 <InstitutionName><?INSTITUTION_NAME?></InstitutionName>
+<SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
 

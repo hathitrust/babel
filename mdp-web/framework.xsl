@@ -547,7 +547,6 @@
   <xsl:template name="FindInALibraryLink">
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
       <xsl:element name="a">
-        <xsl:attribute name="class">worldcat</xsl:attribute>
         <xsl:attribute name="href">
           <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
           <xsl:choose>
@@ -581,7 +580,7 @@
           </xsl:attribute>
         </xsl:if>
         
-        <xsl:text>Find in a library</xsl:text>
+        <xsl:text>Find in a library »</xsl:text>
         
       </xsl:element>
     </xsl:for-each>
