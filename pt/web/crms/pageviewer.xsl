@@ -9,6 +9,7 @@
   <xsl:import href="../legacy/pageviewer.xsl"/>
 
   <xsl:template name="extra-head-setup">
+    <script src="/common/unicorn/vendors/headjs/dist/head.js"></script>
     <style>
       #mdpUberContainer {
         margin-top: 0px;

@@ -144,105 +144,81 @@
   <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
 
+      head.ready(function() {
 
-    //console.log("pageview.xsl - checkpoint init_from_params");
-    /*
-       		var myScroll;
-			function loaded() {
-				console.log("Setting iScroll Timeout");
-				setTimeout(function () {
-					console.log("Initializing TOC iScroll");
-					myScroll = new iScroll('mdpMobileTableOfContents');
-				}, 100);
-			}
-			console.log("Adding load event listener");
-			window.addEventListener('load', loaded, false);
-			*/
-       /*
-    var myScroll;
-	function loaded() {
-		console.log("Creating Scroller");
-		myScroll = new iScroll('mdpMobileTableOfContents');
-	}
-	document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
-	document.addEventListener('DOMContentLoaded', loaded, false);
-       */
+      HT.init_from_params();
 
-    //console.log("pageview.xsl - document.addEventListener for loaded method");
+      HT.reader = new HTMobileBookReader(); // new HTMobileBookReader();
+      HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
+      <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
+      HT.reader.bookTitle = document.title;
+      HT.reader.reduce = 1;
+      HT.reader.pageProgression = 'lr';
 
-       HT.init_from_params();
+      HT.reader.track_event = HT.track_event;
 
-       HT.reader = new HTMobileBookReader(); // new HTMobileBookReader();
-       HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
-       <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
-       HT.reader.bookTitle = document.title;
-       HT.reader.reduce = 1;
-       HT.reader.pageProgression = 'lr';
-
-       HT.reader.track_event = HT.track_event;
-
-       // reduce: 4 == thumbnails; too small for normal page browsing
-       HT.reader.reductionFactors = [   {reduce: 0.5, autofit: null},
-                                 {reduce: 2/3, autofit: null},
-                                 {reduce: 1, autofit: null},
-                                 {reduce: 4/3, autofit: null}, // 1.5 = 66%, 1.25 == 80%
-                                 {reduce: 2, autofit: null}
-                             ];
+      // reduce: 4 == thumbnails; too small for normal page browsing
+      HT.reader.reductionFactors = [   {reduce: 0.5, autofit: null},
+                                {reduce: 2/3, autofit: null},
+                                {reduce: 1, autofit: null},
+                                {reduce: 4/3, autofit: null}, // 1.5 = 66%, 1.25 == 80%
+                                {reduce: 2, autofit: null}
+                            ];
 
 
-        <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
-          <xsl:if test="position() = 1">
-        // The index of the title page.
-        HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;
-          </xsl:if>
-        </xsl:for-each>
-        HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
-        HT.reader.url_config = {
-          meta  : "<xsl:value-of select="$gImgsrvUrlRoot" />/meta",
-          image : "<xsl:value-of select="$gImgsrvUrlRoot" />/image",
-          text  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ocr",
-          ping  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ping",
-          thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
-        };
-        HT.reader.slice_size = 999999; // 100;
-        HT.reader.catalog_method = 'fudged';
-        HT.reader.total_slices = 1;
-        HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
+       <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
+         <xsl:if test="position() = 1">
+       // The index of the title page.
+       HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;
+         </xsl:if>
+       </xsl:for-each>
+       HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
+       HT.reader.url_config = {
+         meta  : "<xsl:value-of select="$gImgsrvUrlRoot" />/meta",
+         image : "<xsl:value-of select="$gImgsrvUrlRoot" />/image",
+         text  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ocr",
+         ping  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ping",
+         thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
+       };
+       HT.reader.slice_size = 999999; // 100;
+       HT.reader.catalog_method = 'fudged';
+       HT.reader.total_slices = 1;
+       HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
 
-        if ( window.orientation != undefined ) {
-          switch(window.orientation){
-            case 90, -90:
-              HT.reader.mode=3;
-              break;
-            case 0:
-              HT.reader.mode=1;
-              break;
-          }
-        } else if ( ! HT.params.mode ) {
-          if ( $(window).length > $(window).height() ) {
-            HT.params.mode = 2;
-          } else {
-            HT.params.mode = 1;
-          }
-        }
+       if ( window.orientation != undefined ) {
+         switch(window.orientation){
+           case 90, -90:
+             HT.reader.mode=3;
+             break;
+           case 0:
+             HT.reader.mode=1;
+             break;
+         }
+       } else if ( ! HT.params.mode ) {
+         if ( $(window).length > $(window).height() ) {
+           HT.params.mode = 2;
+         } else {
+           HT.params.mode = 1;
+         }
+       }
 
-        console.log("STARTUP", HT.params.mode);
+       console.log("STARTUP", HT.params.mode);
 
-        // HT.reader.displayMode = 'image';
-        HT.reader.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
-        HT.reader.flags.debug = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
-        HT.reader.flags.attr = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='attr']"/>';
-        HT.reader.flags.has_ocr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
-        HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
-        //HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
-        HT.reader.lazyDelay = 500;
-        //console.log("pageview.xsl - checkpoint lazyDelay");
+       // HT.reader.displayMode = 'image';
+       HT.reader.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
+       HT.reader.flags.debug = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
+       HT.reader.flags.attr = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='attr']"/>';
+       HT.reader.flags.has_ocr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
+       HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
+       //HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
+       HT.reader.lazyDelay = 500;
+       //console.log("pageview.xsl - checkpoint lazyDelay");      
+      })
+
+
     </script>
     <script type="text/javascript" src="/pt/mobile/bookreader_startup.js?ts={generate-id(.)}">;</script>
     
-    <script type="text/javascript">
-        // HT.monitor.run();
-    </script>
   </xsl:template>
 
   <xsl:template name="BookReaderToolbar">
@@ -631,6 +607,7 @@
     <link rel="alternate" media="handheld" href="" />
     <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
     <meta name="format-detection" content="telephone=no" />
+    <script src="/common/unicorn/vendors/headjs/dist/head.js"></script>
   </xsl:template>
 
   <!-- FORM: Search -->

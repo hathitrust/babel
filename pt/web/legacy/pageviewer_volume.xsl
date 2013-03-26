@@ -174,40 +174,43 @@
 
   <xsl:template name="setup-ht-params">
     <script type="text/javascript">
-      HT.params = {};
-      HT.params.ui = 'reader';
-      if ( location.hash == '#fullscreen' ) {
-        HT.params.fullscreen = true;
-        location.hash = "";
-      }
-      <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
-        <xsl:choose>
-          <xsl:when test="@name = 'seq'">
-            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
-          </xsl:when>
-          <!-- prevent XSS exploit when q1 is displayed in result page -->
-          <xsl:when test="@name = 'q1'">
-            HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="'foo'" />';
-          </xsl:when>
-          <xsl:otherwise>
-            HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      if ( HT.params.ui == 'fullscreen' ) {
+      head.ready(function() {
+        HT.params = {};
         HT.params.ui = 'reader';
-        HT.params.fullscreen = true;
-      }
-      HT.params.view = "<xsl:value-of select="$gCurrentView" />";
-      var fudgingMonkeyPatch = fudgingMonkeyPatch || false;
-      HT.params.fudging = fudgingMonkeyPatch;
-      HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
+        if ( location.hash == '#fullscreen' ) {
+          HT.params.fullscreen = true;
+          location.hash = "";
+        }
+        <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
+          <xsl:choose>
+            <xsl:when test="@name = 'seq'">
+              HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.) - 1" />;
+            </xsl:when>
+            <!-- prevent XSS exploit when q1 is displayed in result page -->
+            <xsl:when test="@name = 'q1'">
+              HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="'foo'" />';
+            </xsl:when>
+            <xsl:otherwise>
+              HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:for-each>
+        if ( HT.params.ui == 'fullscreen' ) {
+          HT.params.ui = 'reader';
+          HT.params.fullscreen = true;
+        }
+        HT.params.view = "<xsl:value-of select="$gCurrentView" />";
+        var fudgingMonkeyPatch = fudgingMonkeyPatch || false;
+        HT.params.fudging = fudgingMonkeyPatch;
+        HT.config = HT.config || {};
+        HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';      
+      })
     </script>
   </xsl:template>
 
   <xsl:template name="bookreader-javascript-init">
     <script type="text/javascript">
-
+      head.ready(function() {
        HT.init_from_params();
 
        HT.reader = new HTBookReader();
@@ -263,10 +266,10 @@
         </xsl:text>
         HT.reader.lazyDelay = 500;
         // HT.reader.pageProgression = "rl";
+      })
     </script>
-    <script type="text/javascript" src="/pt/js/bookreader_startup.js"/>
     <script type="text/javascript">
-        // HT.monitor.run();
+      head.js("/pt/js/bookreader_startup.js");
     </script>
   </xsl:template>
 
