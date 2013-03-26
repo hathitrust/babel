@@ -73,6 +73,16 @@
   <!-- XXX temporary dummy template until Roger puts this in the right place -->
   <xsl:template name="google_analytics"/>
 
+  <xsl:template name="setup-extra-header">
+    <link rel="stylesheet" type="text/css" href="/mb/css/screen.css" />
+    <xsl:call-template name="include_local_javascript" />
+    <xsl:call-template name="load_js_and_css"/>
+  </xsl:template>
+
+
+
+
+
   <!-- Main template -->
   <xsl:template match="/MBooksTop_DONTMATCHIT">
     <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
@@ -184,7 +194,7 @@
   </xsl:template>
 
   <!-- TEMPLATE -->
-  <xsl:template name="DisplayContent">
+  <xsl:template name="DisplayContentOLD">
           <!-- for debugging facets-->
           <div id="lsSidebarContainer" class="ls_box">
             <!--XXX            <h3>Refine Results</h3>-->
@@ -205,8 +215,8 @@
 
   <!-- TEMPLATE -->
   <xsl:template name="SearchResultList">
-    <div class="actions">
 
+    <div id="mbContentContainer" class="main clearfix actions" >
       <!-- 7/7/11 suz wants message about how many found in search result box-->
       <xsl:call-template name="SearchResults_status"/>
 
@@ -265,8 +275,11 @@
   </xsl:template>
 
   <!-- XXX change name to list-search results once we are clear
-       also remove the extra divs and YUI unless needed -->
-  <xsl:template name="list-items-results">
+       also remove the extra divs and YUI unless needed 
+REMOVE the below and see if it will call list_utils
+
+-->
+    <xsl:template name="list-items-resultsCustom">
       <div class="ColContent">
 
         <!-- Added: YUI overlay is displayed here -->
@@ -277,6 +290,44 @@
       </div>
     
   </xsl:template>
+
+  <!--XXX template copied from mb list_items as basis to modify-->
+  <xsl:template name="list-items-results">
+    <xsl:variable name="title">
+      <xsl:choose>
+        <xsl:when test="SearchResults/Item">
+          <xsl:text>Search Results</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>Fix this in list-items-results</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
+    <div id="mbContentContainer" class="main clearfix">
+
+      <xsl:call-template name="SearchResults_status"/>
+      <!--XXX <xsl:call-template name="DisplaySearchWidgetLogic"/> -->
+
+      <!--XXX      <xsl:call-template name="status-update" /> -->
+
+      <xsl:call-template name="decideDisplayRefine"/>
+      <xsl:choose>
+        <xsl:when test="SearchResults/Item">
+          <xsl:call-template name="DisplayContent">
+            <xsl:with-param name="title" select="'Search Results'" />
+            <xsl:with-param name="item-list-contents" select="'items'" />
+          </xsl:call-template>
+        </xsl:when>
+        <xsl:otherwise>
+          <!-- XXX fix this  -->
+               <h1>FIX THIS decideDisplayRefine</h1>
+        </xsl:otherwise>
+      </xsl:choose>
+    </div>
+
+  </xsl:template>
+
 
 
     
@@ -815,7 +866,7 @@
   </xsl:template>
 
   <!-- TEMPLATE -->  
-  <xsl:template name="BuildItemChunk">
+  <xsl:template name="BuildItemChunkOld">
     <xsl:variable name="IndexStatus">indexed</xsl:variable>
 
     <xsl:variable name="row_class">
