@@ -120,7 +120,28 @@
        pageTracker._setDomainName(".hathitrust.org");
        var href = (location.pathname + location.search).replace(/;/g, '&amp;');
        pageTracker._trackPageview(href);
-       } catch(err) { }&lt;/script&gt;
+
+       } catch(err) { }
+       try {
+       // track hierarchy
+       var nextTracker = _gat._getTracker('UA-39581946-1');
+       nextTracker._setAllowHash(false);
+       nextTracker._setDomainName(".hathitrust.org");
+       href = [location.pathname];
+       var url = $.url();
+       href.push("id=" + url.param('id'));
+       if ( location.pathname == '/cgi/pt' ) {
+         href.push("view=" + url.param('view'));
+         if ( url.param('seq') ) {
+            href.push("seq=" + url.param('seq'));
+         }
+       } else {
+         href.push("start=" + (url.param('start') ? url.param('start') : "1"));
+       }
+       href = href.join("/");
+       nextTracker._trackPageview(href);
+       } catch(err) { console.log(err); }
+       &lt;/script&gt;
      </xsl:text>
    </xsl:if>
  </xsl:template>
