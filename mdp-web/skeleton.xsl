@@ -130,41 +130,47 @@
       <div class="logo">
         <a href="http://www.hathitrust.org"><span class="offscreen">HathiTrust Digital Library</span></a>
       </div>
-      <div class="search-form">
 
-        <form action="/cgi/ls/one" method="GET">
-          <div class="search-tabs">
-            <input name="target" type="radio" id="option-full-text-search" value="ls" checked="checked" />
-            <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
-            <input name="target" type="radio" id="option-catalog-search" value="catalog" />
-            <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
-          </div>
-          <fieldset>
-            <input name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
-              <xsl:attribute name="value">
-                <xsl:call-template name="header-search-q1-value" />
-              </xsl:attribute>
-            </input>
-            <div class="search-input-options">
-              <select size="1" class="search-input-select" name="searchtype">
-                <xsl:call-template name="search-input-select-options" />
-              </select>
-            </div>
-            <button class="button"><span class="offscreen">Search</span></button>
-          </fieldset>
-          <div class="search-extra-options">
-            <ul class="search-links">
-              <li class="search-advanced-link"><a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a></li>
-              <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
-              <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
-            </ul>
-            <xsl:call-template name="header-search-ft-checkbox" />
-          </div>
-        </form>
+      <xsl:call-template name="header-search-form" />
 
-      </div>
       <xsl:call-template name="login-block" />
     </div>    
+  </xsl:template>
+
+  <xsl:template name="header-search-form">
+    <div class="search-form">
+
+      <form action="/cgi/ls/one" method="GET">
+        <div class="search-tabs">
+          <input name="target" type="radio" id="option-full-text-search" value="ls" checked="checked" />
+          <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
+          <input name="target" type="radio" id="option-catalog-search" value="catalog" />
+          <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
+        </div>
+        <fieldset>
+          <input name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
+            <xsl:attribute name="value">
+              <xsl:call-template name="header-search-q1-value" />
+            </xsl:attribute>
+          </input>
+          <div class="search-input-options">
+            <select size="1" class="search-input-select" name="searchtype">
+              <xsl:call-template name="search-input-select-options" />
+            </select>
+          </div>
+          <button class="button"><span class="offscreen">Search</span></button>
+        </fieldset>
+        <div class="search-extra-options">
+          <ul class="search-links">
+            <li class="search-advanced-link"><a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a></li>
+            <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
+            <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
+          </ul>
+          <xsl:call-template name="header-search-ft-checkbox" />
+        </div>
+      </form>
+
+    </div>
   </xsl:template>
 
   <xsl:template name="header-search-q1-value" />
