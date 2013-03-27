@@ -130,7 +130,7 @@
          nextTracker._setDomainName(".hathitrust.org");
          href = [location.pathname];
          var url = $.url();
-         href.push("id=" + url.param('id'));
+         href.push("id=" + encodeURIComponent(url.param('id')));
          if ( location.pathname == '/cgi/pt' ) {
            href.push("view=" + url.param('view'));
            if ( url.param('seq') ) {
