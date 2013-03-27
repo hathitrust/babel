@@ -60,7 +60,6 @@
   </MBooksGlobals>
 
   <?CHUNK filename="header.xml"?>
-  <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
 
   <MdpApp>
     <CurrentPageFeatures><?CURRENT_PAGE_FEATURES?></CurrentPageFeatures>

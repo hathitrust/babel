@@ -41,7 +41,6 @@
   <xsl:template name="load_uncompressed_js">
     <script type="text/javascript">
         var _js = [];
-    _js.push("/mdp-web/js/collection_tools.js<xsl:value-of select="$timestamp" />");
     _js.push("/mdp-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/vendor/jquery.cookie.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/base.js<xsl:value-of select="$timestamp" />");
@@ -51,8 +50,9 @@
     _js.push("/pt/vendor/jquery.viewport.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/vendor/BookBlock/js/jquerypp.custom.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/vendor/BookBlock/js/jquery.bookblock.js<xsl:value-of select="$timestamp" />");
-    _js.push("/pt/js/reader.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/downloader.js<xsl:value-of select="$timestamp" />");
+    _js.push("/pt/js/collection_tools.js<xsl:value-of select="$timestamp" />");
+    _js.push("/pt/js/reader.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/manager.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/imgsrv.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/view/image.js<xsl:value-of select="$timestamp" />");
@@ -64,6 +64,7 @@
     </xsl:if>
     <xsl:if test="$gUsingSearch='true'">
     _js.push("/pt/js/downloader.js<xsl:value-of select="$timestamp" />");
+    _js.push("/pt/js/collection_tools.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     <xsl:if test="$gSkin='mobile' or $gSkin='crms'">
     _js.push("/pt/yui2-lib/build/yahoo/yahoo-min.js<xsl:value-of select="$timestamp" />");

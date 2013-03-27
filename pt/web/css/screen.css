@@ -59,7 +59,12 @@ body {
 .sidebar .collectionLinks button {
   padding-top: 0;
 }
-/* line 62, ../sass/screen.scss */
+/* line 59, ../sass/screen.scss */
+.sidebar .collectionLinks .alert {
+  margin-top: 4px ;
+  margin-top: 0.4rem ;
+}
+/* line 66, ../sass/screen.scss */
 .sidebar .shareLinks input[type=text] {
   font-size: 12px ;
   font-size: 1.2rem ;
@@ -67,12 +72,12 @@ body {
   height: 1.8rem ;
   cursor: default;
 }
-/* line 70, ../sass/screen.scss */
+/* line 74, ../sass/screen.scss */
 .sidebar .scrollable {
   overflow: hidden;
   overflow-y: auto;
 }
-/* line 75, ../sass/screen.scss */
+/* line 79, ../sass/screen.scss */
 .sidebar .versionContainer {
   padding-top: 40px ;
   padding-top: 4rem ;
@@ -80,16 +85,16 @@ body {
   padding-left: 0.1rem ;
   font-size: 85%;
 }
-/* line 81, ../sass/screen.scss */
+/* line 85, ../sass/screen.scss */
 .sidebar input[type=text] {
   width: 90%;
 }
-/* line 85, ../sass/screen.scss */
+/* line 89, ../sass/screen.scss */
 .sidebar select {
   width: 90%;
 }
 
-/* line 99, ../sass/screen.scss */
+/* line 103, ../sass/screen.scss */
 #versionIcon {
   display: inline-block;
   position: relative;
@@ -104,17 +109,17 @@ body {
   cursor: pointer;
 }
 
-/* line 113, ../sass/screen.scss */
+/* line 117, ../sass/screen.scss */
 .smaller {
   font-size: 90%;
 }
 
-/* line 117, ../sass/screen.scss */
+/* line 121, ../sass/screen.scss */
 #noPdfAccess {
   display: none;
 }
 
-/* line 121, ../sass/screen.scss */
+/* line 125, ../sass/screen.scss */
 .hide {
   display: none;
 }
