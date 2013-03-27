@@ -108,6 +108,9 @@
     <xsl:value-of select="concat($gTitleString, ', ', $gVolumeTitleFragment)"/>
   </xsl:variable>
 
+  <xsl:template name="get-feedback-id"></xsl:template>
+  <xsl:template name="get-feedback-m"><xsl:value-of select="pt" /></xsl:template>
+
   <!-- Navigation bar -->
   <xsl:template name="subnav_header">
     
@@ -927,7 +930,7 @@
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                     <p class="larger">
                       <xsl:text>Partner institution members: </xsl:text>
-                      <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                      <strong><a class="trigger-login" data-close-target=".modal.login" href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
                       <xsl:text> to download this book.</xsl:text>
                     </p>
                     <p>
@@ -1061,7 +1064,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:element name="a">
-            <xsl:attribute name="class">PTloginLinkText</xsl:attribute>
+            <xsl:attribute name="class">PTloginLinkText trigger-login</xsl:attribute>
             <xsl:attribute name="href">
               <xsl:value-of select="/MBooksTop/MdpApp/LoginLink"/>
             </xsl:attribute>

@@ -43,6 +43,7 @@ Section:LOCAL_JS
 //common-web/jquery/jQuery-URL-Parser/purl.js
 /pt/web/vendor/jquery.cookie.js
 /pt/web/js/base.js
+/pt/web/js/feedback.js
 
 Section:PAGETURNER_VOLUME_JS
 Test://ItemType='volume' and $gSkin='default'

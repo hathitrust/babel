@@ -83,6 +83,7 @@
         </xsl:choose>
       </xsl:for-each>
       HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
+      HT.params.RecordURL = '<xsl:value-of select="concat('http://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
     </script>
     <xsl:call-template name="load_js_and_css"/>
     <xsl:call-template name="include_local_javascript" />

@@ -34,12 +34,13 @@ HT.Downloader = {
             }
             return false;
         })
+
     },
 
     explainPdfAccess: function(link) {
         var $html = $("#noPdfAccess").html();
-        var $dialog = bootbox.alert($html);
-        $dialog.addClass("login");
+        this.$dialog = bootbox.alert($html);
+        this.$dialog.addClass("login");
     },
 
     downloadPdf: function(link) {

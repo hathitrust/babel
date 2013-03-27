@@ -35,7 +35,7 @@ HT.Reader = {
     switchView: function(view) {
         this._handleView(this.current_view, 'exit');
         this._handleView(view, 'start');
-        this.current_view = view;
+        this.setView(view);
         this.manager.switch_view(view);
     },
 
@@ -210,6 +210,19 @@ HT.Reader = {
         }
         this.current_view = views[this.options.params.view];
         return views[this.options.params.view];
+    },
+
+    setView: function(view) {
+        var views = {
+            'Scroll' : '1up',
+            'Flip' : '2up',
+            'Thumbnail' : 'thumb',
+            'Image' : 'image',
+            'PlainText' : 'plaintext'
+        }
+        this.current_view = view;
+        // and upate the reverse
+        this.options.params.view = views[view];
     },
 
     _updatePDFLinks: function(seq) {

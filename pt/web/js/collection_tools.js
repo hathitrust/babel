@@ -90,8 +90,13 @@ head.ready(function() {
             $block.find("textarea[name=desc]").val(options.desc);
         }
 
-        if ( options.shrd !== null ) {
+        if ( options.shrd != null ) {
             $block.find("input[name=shrd][value=" + options.shrd + ']').attr("checked", "checked");
+        } else if ( ! HT.login_status.logged_in ) {
+            $block.find("input[name=shrd][value=0]").attr("checked", "checked");
+            $('<div class="alert alert-info">Login to create public/permanent collections.</div>').appendTo($block);
+            // remove the <label> that wraps the radio button
+            $block.find("input[name=shrd][value=1]").parent().remove();
         }
 
         if ( options.$hidden ) {
@@ -114,11 +119,20 @@ head.ready(function() {
                 "label" : options.label,
                 "class" : "btn-primary",
                 callback : function() {
+
+                    var cn = $.trim($block.find("input[name=cn]").val());
+                    var desc = $.trim($block.find("textarea[name=desc]").val());
+
+                    if ( ! cn ) {
+                        $('<div class="alert alert-error">You must enter a collection name.</div>').appendTo($block);
+                        return false;
+                    }
+
                     display_info("Submitting; please wait...");
                     submit_post({
                         a : 'additsnc',
-                        cn : $block.find("input[name=cn]").val(),
-                        desc : $block.find("textarea[name=desc]").val(),
+                        cn : cn,
+                        desc : desc,
                         shrd : $block.find("input[name=shrd]:checked").val()
                     })
                 }

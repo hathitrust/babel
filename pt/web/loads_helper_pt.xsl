@@ -44,6 +44,7 @@
     _js.push("/mdp-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/vendor/jquery.cookie.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/base.js<xsl:value-of select="$timestamp" />");
+    _js.push("/pt/js/feedback.js<xsl:value-of select="$timestamp" />");
     <xsl:if test="//ItemType='volume' and $gSkin='default'">
     _js.push("/pt/vendor/nanoscroller/jquery.nanoscroller.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/vendor/jquery.fracs.js<xsl:value-of select="$timestamp" />");

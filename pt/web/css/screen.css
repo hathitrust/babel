@@ -120,6 +120,14 @@ body {
 }
 
 /* line 125, ../sass/screen.scss */
+.pdfPartnerLoginLinkMessage {
+  margin-top: 4px ;
+  margin-top: 0.4rem ;
+  color: #666;
+  font-style: italic;
+}
+
+/* line 131, ../sass/screen.scss */
 .hide {
   display: none;
 }
