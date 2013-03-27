@@ -112,7 +112,7 @@
           <li><a href="http://babel.hathitrust.org/cgi/mb">Collections</a></li>
           <li class="divider-vertical"></li>
           <li class="help"><a href="http://www.hathitrust.org/help">Help</a></li>
-          <li><a href="#">Feedback</a></li>
+          <xsl:call-template name="li-feedback" />
         </ul>
         <xsl:if test="$gLoggedIn = 'YES'">
           <ul id="person-nav" class="nav pull-right">
@@ -192,7 +192,7 @@
           <li><a href="http://www.hathitrust.org/about">About</a></li>
           <li><a href="/cgi/mb">Collections</a></li>
           <li><a href="http://www.hathitrust.org/help">Help</a></li>
-          <li><a href="#">Feedback</a></li>
+          <xsl:call-template name="li-feedback" />
           <li><a href="http://m.hathitrust.org">Mobile</a></li>
           <li><a href="http://www.hathitrust.org/take_down_policy">Take-Down Policy</a></li>
           <li><a href="http://www.hathitrust.org/privacy">Privacy</a></li>
@@ -201,6 +201,19 @@
       </div>
     </div>
   </xsl:template>
+
+  <xsl:template name="li-feedback">
+    <xsl:variable name="feedback-id">
+      <xsl:call-template name="get-feedback-id" />
+    </xsl:variable>
+    <xsl:variable name="feedback-m">
+      <xsl:call-template name="get-feedback-m" />
+    </xsl:variable>
+    <li><a href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback" feedback-id="{$feedback-id}">Feedback</a></li>
+  </xsl:template>
+
+  <xsl:template name="get-feedback-id">HathiTrust (babel)</xsl:template>
+  <xsl:template name="get-feedback-m">ht</xsl:template>
 
   <xsl:template name="page-contents">
     <div class="container page centered">
