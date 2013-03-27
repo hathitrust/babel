@@ -40,7 +40,6 @@
 Section:LOCAL_JS
 # These should be listed with the unminimized name.
 # The script will run yuicompress on them
-//common-web/js/collection_tools.js
 //common-web/jquery/jQuery-URL-Parser/purl.js
 /pt/web/vendor/jquery.cookie.js
 /pt/web/js/base.js
@@ -52,8 +51,9 @@ Test://ItemType='volume' and $gSkin='default'
 /pt/web/vendor/jquery.viewport.js
 /pt/web/vendor/BookBlock/js/jquerypp.custom.js
 /pt/web/vendor/BookBlock/js/jquery.bookblock.js
-/pt/web/js/reader.js
 /pt/web/js/downloader.js
+/pt/web/js/collection_tools.js
+/pt/web/js/reader.js
 /pt/web/js/manager.js
 /pt/web/js/imgsrv.js
 /pt/web/js/view/image.js
@@ -66,6 +66,7 @@ Test://ItemType='volume' and $gSkin='default'
 Section:PAGETURNER_SEARCH_JS
 Test:$gUsingSearch='true'
 /pt/web/js/downloader.js
+/pt/web/js/collection_tools.js
 
 # /pt/web/js/section108.js
 # /pt/web/jquery/jquery.tmpl.js
