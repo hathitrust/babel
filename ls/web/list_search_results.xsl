@@ -249,7 +249,6 @@
           <xsl:call-template name="BuildItemChunk"/>
         </xsl:for-each>
       </table>
-          
       <div id="listisFooter">
         <form id="form_ls2" name="form_ls2" method="get" action="ls?">
           <div id="hiddenParams_ls2">
@@ -1141,7 +1140,7 @@ REMOVE the below and see if it will call list_utils
   <!--############### facet templates ########################################-->
 
   <xsl:template name="facets">
-    <div class="facets">
+    <div class="facets sidebar">
       <xsl:variable name="facetsSelected">
         <xsl:value-of select="/MBooksTop/Facets/facetsSelected"/>
       </xsl:variable>
@@ -1156,7 +1155,7 @@ REMOVE the below and see if it will call list_utils
         <div id="facetlist">
           <dl>
             <!-- hack to insert pseudo facet availability here based on actual rights queries-->
-            <xsl:call-template name="pseudofacet"/>
+            <!--XXX remove viewability fake facets      <xsl:call-template name="pseudofacet"/>-->
             
             <xsl:for-each select="/MBooksTop/Facets/unselectedFacets/facetField">
               <xsl:variable name="facetName">
@@ -1237,7 +1236,7 @@ REMOVE the below and see if it will call list_utils
     <ul class="filters">
       <xsl:call-template name="multiselectFacets"/>
       <xsl:call-template name="daterangeFacets"/>
-      <xsl:call-template name="selectedViewabilityFacet"/>
+      <!--XXX remove fake facet      <xsl:call-template name="selectedViewabilityFacet"/>-->
       <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
         <xsl:text>
         </xsl:text>
