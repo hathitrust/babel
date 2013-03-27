@@ -26,7 +26,7 @@ HT.track_pageview = function(args) {
 
 HT.track_event = function(args) {
     args = $.extend({}, { category : 'MB' }, args)
-    if ( pageTracker != null ) {
+    if ( window.pageTracker !== undefined && window.pageTracker != null ) {
 
         var fn = function() {
             try {
