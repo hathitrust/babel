@@ -127,7 +127,8 @@ var ListBrowser = {
       }
     })
     
-    self.$controls.find(".filters a").click(function() {
+    self.$controls.find(".filters a").click(function(e) {
+      e.preventDefault();
       var $this = $(this);
       var view = $this.attr('rel');
       self.navigate(view, true);
@@ -182,7 +183,6 @@ var ListBrowser = {
     var $buttons = this.$controls.find(".filters li");
     $buttons.removeClass("active");
     var $active = $buttons.filter(":has(a[rel=" + view + "])");
-    console.log("AHOY", view, $active.length);
     if ( ! $active.length ) {
       view = 'all';
       this.navigate('all');
@@ -192,8 +192,7 @@ var ListBrowser = {
 
     this.filter_list(view);
     this.apply_filters();
-    this.update_login_link(view);
-    window.location.replace("#" + view);
+    this.update_state(view);
   },
   
   _build_cache: function() {
@@ -777,26 +776,51 @@ var ListBrowser = {
     }
     
   },
-  
-  update_login_link: function(view) {
+
+  _updateUrlForView: function(view) {
+    var href = window.location.origin + window.location.pathname;
+    var delim;
+    if ( href.indexOf("?") < 0 ) { delim = "?"; }
+    else { delim = href.indexOf(";") < 0 ? '&' : ';'; }
+    if ( href.indexOf("colltype=") < 0 ) {
+      href += delim + "colltype=" + view;
+    } else {
+      href = href.replace(/colltype=([a-z-]+)/, "colltype=" + view);
+    }
+    return href;
+  },
+
+  update_state: function(view) {
+
     if ( view === undefined ) {
       view = this.view;
     }
+
+    var new_href = this._updateUrlForView(view);
+    if ( window.history && window.history.replaceState != null) {
+        window.history.replaceState(null, document.title, new_href);
+    } else {
+        var newHash = '#' + view;
+        window.location.replace(newHash); // replace blocks the back button!
+        // window.location.hash = newHash; // clutters the browser history?
+    }
+
+    this.update_login_link(new_href);
+
+  },
+  
+  update_login_link: function(href) {
     if ( window.location.protocol == "http:" ) {
       // update the Login link; this is escaped as a target to the WAYF URL
       var $loginLink = $(".loginLink");
       var login_href = $loginLink.attr("href").split('target=');
-      var href = unescape(login_href[1]);
-      var delim;
-      if ( href.indexOf("?") < 0 ) { delim = "?"; }
-      else { delim = href.indexOf(";") < 0 ? '&' : ';'; }
-      if ( href.indexOf("colltype=") < 0 ) {
-        href += delim + "colltype=" + view;
-      } else {
-        href = href.replace(/colltype=([a-z-]+)/, "colltype=" + view);
-      }
       login_href[1]= escape(href);
       $loginLink.attr('href', login_href.join('target='));
+      if ( this.view == 'my-collections' ) {
+        $(".login_status").show();
+      } else {
+        $(".login_status").hide();
+      }
     }
   },
 

@@ -14,6 +14,7 @@
     <Filename>list_items.xsl</Filename>
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
+    <Filename>common.xsl</Filename>
     <Filename>xsl2htmlutils.xsl</Filename>
    </XslFileList>
 

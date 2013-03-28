@@ -15,6 +15,7 @@
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
     <Filename>list_colls.xsl</Filename>
+    <Filename>common.xsl</Filename>
 
   </XslFileList>
 

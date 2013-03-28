@@ -283,12 +283,12 @@
   <xsl:template name="LoginMsg">
     <xsl:choose>
       <xsl:when test= "/MBooksTop/MBooksGlobals/LoggedIn = 'NO'">
-        <div class="login_status">
+        <div class="login_status hide">
           <strong>
             <a>
               <xsl:attribute name="href"><xsl:value-of select="/MBooksTop/Header/LoginLink"/></xsl:attribute>
-              <xsl:attribute name="class">loginLink</xsl:attribute>
-              Login
+              <xsl:attribute name="class">loginLink trigger-login</xsl:attribute>
+              <xsl:text>Login</xsl:text>
             </a>
           </strong> to create and save permanent collections or see your private
           collections.
