@@ -81,7 +81,7 @@
     .in-collections {
         font-size: 90%;
         // @include rem(margin-top, -25);
-        position: absolute;
+        // position: absolute;
         @include rem(top, 8);
         @include rem(right, 10);
 
