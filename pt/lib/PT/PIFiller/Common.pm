@@ -1160,9 +1160,17 @@ sub handle_HEADER_SEARCH_FIELDS_PI
 
 sub ExtractLSParams {
     my ( $url ) = @_;
-    my ( $q1 ) = ( $url =~ m,.*?q1=([^;&]+).*, );
+    my ( $q1 ) = ( $url =~ m,.*[?&]q1=([^;&]+).*, );
     my ( $searchtype ) = ( $url =~ m,.*?.*field1=([^;&]+), ) || 'all';
     my ( $ft ) = ( $url =~ m,lmt=ft, ) ? 'checked' : '';
+    return ( $q1, $searchtype, $ft );
+}
+
+sub ExtractCatalogParams {
+    my ( $url ) = @_;
+    my ( $q1 ) = ( $url =~ m,.*lookfor=([^;&]+).*, );
+    my ( $searchtype ) = ( $url =~ m,.*?.*type=([^;&]+), ) || 'all';
+    my ( $ft ) = ( $url =~ m,htftonly=true, ) ? 'checked' : '';
     return ( $q1, $searchtype, $ft );
 }
 

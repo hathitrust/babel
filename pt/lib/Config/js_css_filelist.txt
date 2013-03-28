@@ -63,6 +63,7 @@ Test://ItemType='volume' and $gSkin='default'
 /pt/web/js/view/flip.js
 /pt/web/js/view/plaintext.js
 /pt/web/js/scrolling.js
+/pt/web/js/access_banner_02.js
 
 Section:PAGETURNER_SEARCH_JS
 Test:$gUsingSearch='true'

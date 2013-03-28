@@ -149,7 +149,7 @@
             <xsl:with-param name="view">thumb</xsl:with-param>
           </xsl:call-template>
           <xsl:call-template name="action-view-button">
-            <xsl:with-param name="view" select="'image'">image</xsl:with-param>
+            <xsl:with-param name="view">image</xsl:with-param>
           </xsl:call-template>
           <xsl:call-template name="action-view-button">
             <xsl:with-param name="view">plaintext</xsl:with-param>

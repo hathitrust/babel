@@ -520,9 +520,10 @@
   
   <!-- Link to OCLC Get Book -->
   <xsl:template name="FindInALibraryLink">
+    <xsl:param name="class" />
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
       <xsl:element name="a">
-        <xsl:attribute name="class">worldcat</xsl:attribute>
+        <xsl:attribute name="class">worldcat track <xsl:value-of select="$class" /></xsl:attribute>
         <xsl:attribute name="href">
           <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
           <xsl:choose>
@@ -544,17 +545,9 @@
             <xsl:otherwise/>
           </xsl:choose>
         </xsl:attribute>
+        <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+        <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
         <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
-        
-        <xsl:if test="$gGoogleOnclickTracking = 'true'">
-          <xsl:attribute name="onclick">
-            <xsl:call-template name="PageTracker">
-              <xsl:with-param name="category" select="'outLinks'"/>
-              <xsl:with-param name="action" select="'click'"/>
-              <xsl:with-param name="label" select="'PT Find in a Library'"/>
-            </xsl:call-template>
-          </xsl:attribute>
-        </xsl:if>
         
         <xsl:text>Find in a library</xsl:text>
         
@@ -714,6 +707,7 @@
 
           <xsl:element name="input">
             <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
+            <xsl:attribute name="class">input-text</xsl:attribute>
             <xsl:attribute name="type">text</xsl:attribute>
             <xsl:attribute name="name">q1</xsl:attribute>
             <xsl:attribute name="maxlength">150</xsl:attribute>
@@ -737,6 +731,7 @@
           <xsl:if test="$gHasOcr='YES'">
             <xsl:element name="input">
               <xsl:attribute name="id">mdpSearchButton</xsl:attribute>
+              <xsl:attribute name="class">btn</xsl:attribute>
               <xsl:attribute name="type">submit</xsl:attribute>
               <xsl:attribute name="value">Search</xsl:attribute>
             </xsl:element>
@@ -764,6 +759,9 @@
   <!-- UNICORN: SIDEBAR -->
   <xsl:template name="sidebar">
     <div id="sidebar" class="sidebar sidebarish fixed fixed-y" data-margin-top="40">
+      <xsl:if test="normalize-space(//SearchForm/SearchResultsLink)">
+        <xsl:call-template name="BuildBackToResultsLink" />
+      </xsl:if>
       <xsl:call-template name="sidebar-about-this-book" />
       <div class="scrollable">
         <div class="content">

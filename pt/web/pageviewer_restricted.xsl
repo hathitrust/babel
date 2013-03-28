@@ -17,48 +17,28 @@
     </xsl:choose>
   </xsl:variable>
 
-  <xsl:template name="item-viewer">
-
-    <div class="contentContainerWrap">
-      <!-- Image -->
-      <xsl:element name="a">
-        <xsl:attribute name="name">skipNav</xsl:attribute>
-        <xsl:attribute name="id">skipNav</xsl:attribute>
-      </xsl:element>
-      <xsl:call-template name="ContentContainer"/>
-
-    </div>
-
+  <xsl:template name="setup-extra-header-extra">
+    <link rel="stylesheet" href="/pt/css/restricted.css" />
   </xsl:template>
 
-  <xsl:template name="item-embedded-viewer">
-    <xsl:call-template name="ContentContainer" />
+  <xsl:template name="setup-body-class">
+    <xsl:text> view-restricted</xsl:text>
   </xsl:template>
 
-  <xsl:template name="ContentContainer">
-    <div id="mdpContentContainer">
-
-      <!-- Error message set from addItemToCollection javascript -->
-      <div id="errormsg">
-        <div class="bd"></div>
-      </div>
-
-      <xsl:element name="a">
-        <xsl:attribute name="class">SkipLink</xsl:attribute>
-        <xsl:attribute name="name">SkipToBookText</xsl:attribute>
-      </xsl:element>
+  <xsl:template name="main">
+    <div class="main">
       <h2 class="offscreen">Individual Page (Not Available)</h2>
       <xsl:call-template name="Viewport">
         <xsl:with-param name="pAccessStatus" select="$gFinalAccessStatus"/>
       </xsl:call-template>
     </div>
-
   </xsl:template>
 
   <!-- Orphans -->
   <xsl:template name="OrphanCandidatePage">
     <xsl:variable name="copyright_restricted_msg">
-      Full view is not available for this item<br/> due to copyright &#169; restrictions.
+      <i class="icomoon-locked"></i> 
+      Full view is not available for this item due to copyright &#169; restrictions.
     </xsl:variable>
 
     <xsl:variable name="orphan_canditate_msg">
@@ -66,9 +46,17 @@
       <a title="Orphan Works Project" href="http://www.lib.umich.edu/orphan-works/copyright-holders-we-want-hear-you"> Orphan Works Project.</a></li></ul>
     </xsl:variable>
 
-    <p class="centertext"><xsl:copy-of select="$copyright_restricted_msg"/></p>
-    <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-    <p class="centertext"><xsl:copy-of select="$orphan_canditate_msg"/></p>
+    <div class="alert alert-error alert-block alert-banner">
+      <p>
+        <!-- <img style="float: left; padding-left: 8px" src="//common-web/graphics/LimitedLink.png" alt="" /> -->
+        <xsl:copy-of select="$copyright_restricted_msg" />
+      </p>
+    </div>
+
+    <p>
+      <xsl:copy-of select="$orphan_canditate_msg" />
+    </p>
+
   </xsl:template>
 
   <!-- Brittle access -->
@@ -92,59 +80,69 @@
   
   <!-- Deleted item -->
   <xsl:template name="DeletedItemPage">
-    <div class="special_text">
+    <div class="alert alert-error alert-block alert-banner">
       <p>This item is <strong>no longer available</strong> in HathiTrust due to one of the following reasons:</p>
-
-      <ul class="bullets">
-        <li>It was deleted at the request of the rights holder or has been marked for deletion.</li>
-        <li>It was either wholly unusable or a superior copy is available.</li>
-      </ul>
-      
-      <p>
-        <xsl:text>Try a </xsl:text>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="'http://www.hathitrust.org'"/>
-          </xsl:attribute>
-          <xsl:text> new search </xsl:text>
-        </xsl:element>
-        <xsl:text>for your item to see if there are other copies or editions of this work available.</xsl:text>
-      </p>
     </div>
+
+    <ul class="bullets">
+      <li>It was deleted at the request of the rights holder or has been marked for deletion.</li>
+      <li>It was either wholly unusable or a superior copy is available.</li>
+    </ul>
+      
+    <p>
+      <xsl:text>Try a </xsl:text>
+      <xsl:element name="a">
+        <xsl:attribute name="href">
+          <xsl:value-of select="'http://www.hathitrust.org'"/>
+        </xsl:attribute>
+        <xsl:text> new search </xsl:text>
+      </xsl:element>
+      <xsl:text>for your item to see if there are other copies or editions of this work available.</xsl:text>
+    </p>
   </xsl:template>
 
   <!-- No access due to copyright restrictions -->
   <xsl:template name="NoAccessPage">
-    <div>
-      <div class="no_access_text special_text">This item is <strong>not available online</strong> (<img src="//common-web/graphics/Icon_SearchOnly.png" alt=" " /> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
-      </div>
-      <div class="no_access_text">
-        <p><em>You can:</em></p>
-      </div>
-      <div class="no_access_search">
-        <label id="in_copyright" for="mdpSearchInputBox">
-          <xsl:text>Search inside the text</xsl:text>
-        </label>
-        <xsl:call-template name="BuildSearchForm">
-          <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
-          <xsl:with-param name="pShowLabel" select="'NO'"/>
-        </xsl:call-template>
-        <div class="no_access_search_help">
-          <div class="no_access_search_help_eg">
-            <em>Example:</em>
-            <br />
-            <img src="//common-web/graphics/LimitedSample.png" />
+    <div class="alert alert-error alert-block alert-banner">
+      This item is <strong>not available online</strong> (<i class="icomoon-locked"></i> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
+    </div>
+    <div class="no_access_text">
+      <p>You can:</p>
+    </div>
+    <div class="row">
+      <div class="span8 border-right">
+        <div class="row">
+          <div class="span12">
+            <label id="in_copyright" for="mdpSearchInputBox">
+              <xsl:text>Search inside the text</xsl:text>
+            </label>
+            <xsl:call-template name="BuildSearchForm">
+              <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
+              <xsl:with-param name="pShowLabel" select="'NO'"/>
+            </xsl:call-template>
           </div>
-          <div class="no_access_search_help_text">
-            to find the frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, etc.
+        </div>
+        <div class="row">
+          <div class="span6">
+            <div class="no_access_search_help_text">
+              to find the frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, etc.
+            </div>
+
+          </div>
+          <div class="span6">
+            <div class="no_access_search_help_eg">
+              <em>Example:</em>
+              <br />
+              <img src="//common-web/graphics/LimitedSample.png" />
+            </div>
           </div>
         </div>
       </div>
-      <div class="no_access_options">
-        <p>
-          <xsl:text>or </xsl:text>
-          <xsl:call-template name="FindInALibraryLink"/>
-        </p>
+      <div class="span4 find-in-library">
+        <xsl:text>or </xsl:text>
+        <xsl:call-template name="FindInALibraryLink">
+          <xsl:with-param name="class"> btn btn-info btn-medium</xsl:with-param>
+        </xsl:call-template>
       </div>
     </div>
   </xsl:template>

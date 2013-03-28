@@ -62,6 +62,7 @@
     _js.push("/pt/js/view/flip.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/view/plaintext.js<xsl:value-of select="$timestamp" />");
     _js.push("/pt/js/scrolling.js<xsl:value-of select="$timestamp" />");
+    _js.push("/pt/js/access_banner_02.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     <xsl:if test="$gUsingSearch='true'">
     _js.push("/pt/js/downloader.js<xsl:value-of select="$timestamp" />");

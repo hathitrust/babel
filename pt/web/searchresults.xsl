@@ -254,10 +254,12 @@
 
     <div class="mdpSearchSummary">
       <xsl:if test="$gFinalAccessStatus!='allow'">
-        <xsl:element name="div">
-          <p class="centertext">Full view is not available for this item <br/>due to copyright &#169; restrictions. </p>
-          <p class="centertext"><img src="//common-web/graphics/LimitedLink.png" alt=""/></p>
-        </xsl:element>
+        <div class="alert alert-error alert-block alert-banner">
+          <p>
+            <!-- <img style="float: left; padding-left: 8px" src="//common-web/graphics/LimitedLink.png" alt="" /> -->
+            Full view is not available for this item due to copyright &#169; restrictions.
+          </p>
+        </div>
       </xsl:if>
       
       <xsl:variable name="page_string">
