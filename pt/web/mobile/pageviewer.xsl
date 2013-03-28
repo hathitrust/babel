@@ -607,7 +607,7 @@
     <link rel="alternate" media="handheld" href="" />
     <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
     <meta name="format-detection" content="telephone=no" />
-    <script src="/common/unicorn/vendors/headjs/dist/head.js"></script>
+    <script src="/common/unicorn/js/head.min.js"></script>
   </xsl:template>
 
   <!-- FORM: Search -->
