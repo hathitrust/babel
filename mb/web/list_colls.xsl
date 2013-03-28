@@ -135,10 +135,10 @@
                 </label>
               </div>
             </div>
-            <div class="span6" style="text-align: right">
+            <div class="span6 align-right">
 
               <div>
-                <a href="#">Create new collection</a>
+                <a id="action-add-collection" href="{AddCollHref}">Create new collection</a>
               </div>
 
               <div class="find-collection">
@@ -298,110 +298,33 @@
     </xsl:choose>
   </xsl:template>
 
-  <!-- # search form # -->
-  <xsl:template name="searchform">
-    <xsl:param name="CollId"/>
-    <xsl:param name="pub_priv"/>
+  <xsl:template name="get-page-title">
+    <xsl:text>Collections</xsl:text>
+  </xsl:template>
 
-    <!-- The form label element is for accessibility.  The CSS
-         hides it with display:none. -->
+  <xsl:template name="FeaturedCollection">
 
-    <xsl:variable name = "SearchFormId">
-      <xsl:value-of select="$pub_priv"/>
-      <xsl:text>_srch_</xsl:text>
-      <xsl:value-of select="$CollId"/>   <!-- change to append public/private here -->
-    </xsl:variable>
-
-    <form  method="GET" action="mb" class="searchform">
-      <xsl:attribute name="id">
-        <xsl:value-of select="$SearchFormId"/>
-      </xsl:attribute>
-
-      <xsl:call-template name="HiddenDebug"/>
-      <input type="hidden" name="a" value="srch"/>
-      <input type="hidden" name="c">
-        <xsl:attribute name="value">
-          <xsl:value-of select="$CollId"/>
-        </xsl:attribute>
-      </input>
-      <label>
-        <xsl:attribute name="for">
-          <xsl:value-of select="$SearchFormId"/>
-        </xsl:attribute>
-
-        <span class="SearchLabel">
-          <xsl:value-of select="concat('Search ', CollName)"/>
-        </span>
-        <input type="text" size="15" maxlength="40" name="q1" />
-      </label>
-
-      <button type="submit">
-        <xsl:attribute name="id">
-          <xsl:text>button_</xsl:text>
-          <xsl:value-of select="$CollId"/>
-        </xsl:attribute>
-        Search
-      </button>
-    </form>
-
-    <!-- search error message-->
-    <div>
-      <xsl:attribute name="id">
-        <xsl:text>search_errormsg_</xsl:text>
-        <xsl:value-of select="$SearchFormId"/>
-      </xsl:attribute>
-      <div class="bd"></div>
-    </div>
-    </xsl:template>
-
-
-    <!--# search form #-->
-    <xsl:template name="subnav_header">
-      <!--    <div class="MBooksCol">  XXX temporarily remove this per Suz request-->
-      <div class="CollPage">
-        <!-- Collections Table Title -->
-        <xsl:text>Collections</xsl:text>
-      </div>
-      <!--  </div>-->
-
-      <div class="newCol">
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="AddCollHref"/>
-          </xsl:attribute>
-          <xsl:attribute name="id">createNewColl</xsl:attribute>
-          <xsl:text>Create New Collection</xsl:text>
-        </xsl:element>
-      </div>
-    </xsl:template>
-
-    <xsl:template name="get-page-title">
-      <xsl:text>Collections</xsl:text>
-    </xsl:template>
-
-    <xsl:template name="FeaturedCollection">
-
-      <script id="featured-template" type="text/x-template">
-        <div class="Box" role="complementary">
-          <div>
-            <!-- <h4> -->
-            <span class="title">
-              <a href="mb?a=listis;c=${{collid}}">${collname}</a>
-            </span>
-            <!-- </h4> -->
-            <a href="mb?a=listis;c=${{collid}}" aria-hidden="true">
-              <img alt=" " class="imgLeft" src="${{featured}}" />
-            </a>
-            <p class="hyphenate">
-              ${description}
-            </p>
-            <br clear="all" />
-          </div>
+    <script id="featured-template" type="text/x-template">
+      <div class="Box" role="complementary">
+        <div>
+          <!-- <h4> -->
+          <span class="title">
+            <a href="mb?a=listis;c=${{collid}}">${collname}</a>
+          </span>
+          <!-- </h4> -->
+          <a href="mb?a=listis;c=${{collid}}" aria-hidden="true">
+            <img alt=" " class="imgLeft" src="${{featured}}" />
+          </a>
+          <p class="hyphenate">
+            ${description}
+          </p>
+          <br clear="all" />
         </div>
-      </script>
-
-      <div id="Sidebar">
       </div>
-    </xsl:template>
+    </script>
 
-  </xsl:stylesheet>
+    <div id="Sidebar">
+    </div>
+  </xsl:template>
+
+</xsl:stylesheet>

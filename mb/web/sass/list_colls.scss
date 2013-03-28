@@ -36,8 +36,8 @@ body.listcs {
   }
 
   .listcs-intro p {
-    padding-left: 20px;
-    padding-left: 2rem;
+    @include rem(padding-left, 20);
+    @include rem(padding-right, 20);
   }
 
   .listcs-intro p:last-child {

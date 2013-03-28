@@ -426,8 +426,10 @@ body.listcs .listcs-intro {
 }
 /* line 38, ../sass/list_colls.scss */
 body.listcs .listcs-intro p {
-  padding-left: 20px;
-  padding-left: 2rem;
+  padding-left: 20px ;
+  padding-left: 2rem ;
+  padding-right: 20px ;
+  padding-right: 2rem ;
 }
 /* line 43, ../sass/list_colls.scss */
 body.listcs .listcs-intro p:last-child {
@@ -794,3 +796,7 @@ If the input has placeholder="" AND value="" darken its appearance to show it is
   margin-left: -1px;
 }
 /**/
+/* line 4, ../sass/screen.scss */
+.align-right {
+  text-align: right;
+}

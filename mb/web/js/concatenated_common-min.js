@@ -35,7 +35,7 @@ HT.track_pageview = function(args) {
 
 HT.track_event = function(args) {
     args = $.extend({}, { category : 'MB' }, args)
-    if ( pageTracker != null ) {
+    if ( window.pageTracker !== undefined && window.pageTracker != null ) {
 
         var fn = function() {
             try {
@@ -204,10 +204,6 @@ head.ready(function() {
 
     function hide_error() {
         $errormsg.hide().text();
-    }
-
-    function confirm(msg) {
-        return 
     }
 
     function edit_collection_metadata(args) {

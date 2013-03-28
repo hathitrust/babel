@@ -50,6 +50,7 @@ Section:COLLLIST_JS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'
 /mb/web/js/jquery.placeholder.js
 /mb/web/js/date.js
+/mb/web/js/listcs_collection_tools.js
 
 # list_colls.js is loaded at the end of the document
 

@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1363712974'" />
+  <xsl:variable name="timestamp" select="'?_=1364481007'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var _js = [];
@@ -20,14 +20,15 @@
   <xsl:template name="load_uncompressed_js">
     <script type="text/javascript">
         var _js = [];
-    _js.push("//common-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
     _js.push("/mb/js/mb.js<xsl:value-of select="$timestamp" />");
     _js.push("/mb/js/tracking.js<xsl:value-of select="$timestamp" />");
-    _js.push("//common-web/js/google_covers.js<xsl:value-of select="$timestamp" />");
-    _js.push("//common-web/js/collection_tools.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/google_covers.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/collection_tools.js<xsl:value-of select="$timestamp" />");
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
     _js.push("/mb/js/jquery.placeholder.js<xsl:value-of select="$timestamp" />");
     _js.push("/mb/js/date.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mb/js/listcs_collection_tools.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     head.js.apply(this, _js);
     </script>
