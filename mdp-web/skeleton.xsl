@@ -42,13 +42,10 @@
 
       <head>
 
-        <script type="text/javascript" src="/common/unicorn/vendors/headjs/dist/head.min.js"></script>
+        <script type="text/javascript" src="/common/unicorn/js/head.min.js"></script>
         <script type="text/javascript" src="/common/unicorn/js/common.js"></script>
 
         <xsl:comment>IE PRE-SETUP</xsl:comment>
-
-        <link rel="stylesheet" type="text/css" href="/common/unicorn/vendors/css/normalize.css" />
-        <link rel="stylesheet" type="text/css" href="/common/unicorn/vendors/icomoon/style.css" />
 
         <link rel="stylesheet" type="text/css" href="/common/unicorn/css/common.css" />
 
