@@ -1,3 +1,276 @@
+/*
+ * JQuery URL Parser plugin, v2.2.1
+ * Developed and maintanined by Mark Perkins, mark@allmarkedup.com
+ * Source repository: https://github.com/allmarkedup/jQuery-URL-Parser
+ * Licensed under an MIT-style license. See https://github.com/allmarkedup/jQuery-URL-Parser/blob/master/LICENSE for details.
+ */ 
+
+;(function(factory) {
+	if (typeof define === 'function' && define.amd) {
+		// AMD available; use anonymous module
+		if ( typeof jQuery !== 'undefined' ) {
+			define(['jquery'], factory);	
+		} else {
+			define([], factory);
+		}
+	} else {
+		// No AMD available; mutate global vars
+		if ( typeof jQuery !== 'undefined' ) {
+			factory(jQuery);
+		} else {
+			factory();
+		}
+	}
+})(function($, undefined) {
+	
+	var tag2attr = {
+			a       : 'href',
+			img     : 'src',
+			form    : 'action',
+			base    : 'href',
+			script  : 'src',
+			iframe  : 'src',
+			link    : 'href'
+		},
+		
+		key = ['source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment'], // keys available to query
+		
+		aliases = { 'anchor' : 'fragment' }, // aliases for backwards compatability
+		
+		parser = {
+			strict : /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,  //less intuitive, more accurate to the specs
+			loose :  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/ // more intuitive, fails on relative paths and deviates from specs
+		},
+		
+		toString = Object.prototype.toString,
+		
+		isint = /^[0-9]+$/;
+	
+	function parseUri( url, strictMode ) {
+		var str = decodeURI( url ),
+		res   = parser[ strictMode || false ? 'strict' : 'loose' ].exec( str ),
+		uri = { attr : {}, param : {}, seg : {} },
+		i   = 14;
+		
+		while ( i-- ) {
+			uri.attr[ key[i] ] = res[i] || '';
+		}
+		
+		// build query and fragment parameters		
+		uri.param['query'] = parseString(uri.attr['query']);
+		uri.param['fragment'] = parseString(uri.attr['fragment']);
+		
+		// split path and fragement into segments		
+		uri.seg['path'] = uri.attr.path.replace(/^\/+|\/+$/g,'').split('/');     
+		uri.seg['fragment'] = uri.attr.fragment.replace(/^\/+|\/+$/g,'').split('/');
+		
+		// compile a 'base' domain attribute        
+		uri.attr['base'] = uri.attr.host ? (uri.attr.protocol ?  uri.attr.protocol+'://'+uri.attr.host : uri.attr.host) + (uri.attr.port ? ':'+uri.attr.port : '') : '';      
+		  
+		return uri;
+	};
+	
+	function getAttrName( elm ) {
+		var tn = elm.tagName;
+		if ( typeof tn !== 'undefined' ) return tag2attr[tn.toLowerCase()];
+		return tn;
+	}
+	
+	function promote(parent, key) {
+		if (parent[key].length == 0) return parent[key] = {};
+		var t = {};
+		for (var i in parent[key]) t[i] = parent[key][i];
+		parent[key] = t;
+		return t;
+	}
+
+	function parse(parts, parent, key, val) {
+		var part = parts.shift();
+		if (!part) {
+			if (isArray(parent[key])) {
+				parent[key].push(val);
+			} else if ('object' == typeof parent[key]) {
+				parent[key] = val;
+			} else if ('undefined' == typeof parent[key]) {
+				parent[key] = val;
+			} else {
+				parent[key] = [parent[key], val];
+			}
+		} else {
+			var obj = parent[key] = parent[key] || [];
+			if (']' == part) {
+				if (isArray(obj)) {
+					if ('' != val) obj.push(val);
+				} else if ('object' == typeof obj) {
+					obj[keys(obj).length] = val;
+				} else {
+					obj = parent[key] = [parent[key], val];
+				}
+			} else if (~part.indexOf(']')) {
+				part = part.substr(0, part.length - 1);
+				if (!isint.test(part) && isArray(obj)) obj = promote(parent, key);
+				parse(parts, obj, part, val);
+				// key
+			} else {
+				if (!isint.test(part) && isArray(obj)) obj = promote(parent, key);
+				parse(parts, obj, part, val);
+			}
+		}
+	}
+
+	function merge(parent, key, val) {
+		if (~key.indexOf(']')) {
+			var parts = key.split('['),
+			len = parts.length,
+			last = len - 1;
+			parse(parts, parent, 'base', val);
+		} else {
+			if (!isint.test(key) && isArray(parent.base)) {
+				var t = {};
+				for (var k in parent.base) t[k] = parent.base[k];
+				parent.base = t;
+			}
+			set(parent.base, key, val);
+		}
+		return parent;
+	}
+
+	function parseString(str) {
+		return reduce(String(str).split(/&|;/), function(ret, pair) {
+			try {
+				pair = decodeURIComponent(pair.replace(/\+/g, ' '));
+			} catch(e) {
+				// ignore
+			}
+			var eql = pair.indexOf('='),
+				brace = lastBraceInKey(pair),
+				key = pair.substr(0, brace || eql),
+				val = pair.substr(brace || eql, pair.length),
+				val = val.substr(val.indexOf('=') + 1, val.length);
+
+			if ('' == key) key = pair, val = '';
+
+			return merge(ret, key, val);
+		}, { base: {} }).base;
+	}
+	
+	function set(obj, key, val) {
+		var v = obj[key];
+		if (undefined === v) {
+			obj[key] = val;
+		} else if (isArray(v)) {
+			v.push(val);
+		} else {
+			obj[key] = [v, val];
+		}
+	}
+	
+	function lastBraceInKey(str) {
+		var len = str.length,
+			 brace, c;
+		for (var i = 0; i < len; ++i) {
+			c = str[i];
+			if (']' == c) brace = false;
+			if ('[' == c) brace = true;
+			if ('=' == c && !brace) return i;
+		}
+	}
+	
+	function reduce(obj, accumulator){
+		var i = 0,
+			l = obj.length >> 0,
+			curr = arguments[2];
+		while (i < l) {
+			if (i in obj) curr = accumulator.call(undefined, curr, obj[i], i, obj);
+			++i;
+		}
+		return curr;
+	}
+	
+	function isArray(vArg) {
+		return Object.prototype.toString.call(vArg) === "[object Array]";
+	}
+	
+	function keys(obj) {
+		var keys = [];
+		for ( prop in obj ) {
+			if ( obj.hasOwnProperty(prop) ) keys.push(prop);
+		}
+		return keys;
+	}
+		
+	function purl( url, strictMode ) {
+		if ( arguments.length === 1 && url === true ) {
+			strictMode = true;
+			url = undefined;
+		}
+		strictMode = strictMode || false;
+		url = url || window.location.toString();
+	
+		return {
+			
+			data : parseUri(url, strictMode),
+			
+			// get various attributes from the URI
+			attr : function( attr ) {
+				attr = aliases[attr] || attr;
+				return typeof attr !== 'undefined' ? this.data.attr[attr] : this.data.attr;
+			},
+			
+			// return query string parameters
+			param : function( param ) {
+				return typeof param !== 'undefined' ? this.data.param.query[param] : this.data.param.query;
+			},
+			
+			// return fragment parameters
+			fparam : function( param ) {
+				return typeof param !== 'undefined' ? this.data.param.fragment[param] : this.data.param.fragment;
+			},
+			
+			// return path segments
+			segment : function( seg ) {
+				if ( typeof seg === 'undefined' ) {
+					return this.data.seg.path;
+				} else {
+					seg = seg < 0 ? this.data.seg.path.length + seg : seg - 1; // negative segments count from the end
+					return this.data.seg.path[seg];                    
+				}
+			},
+			
+			// return fragment segments
+			fsegment : function( seg ) {
+				if ( typeof seg === 'undefined' ) {
+					return this.data.seg.fragment;                    
+				} else {
+					seg = seg < 0 ? this.data.seg.fragment.length + seg : seg - 1; // negative segments count from the end
+					return this.data.seg.fragment[seg];                    
+				}
+			}
+	    	
+		};
+	
+	};
+	
+	if ( typeof $ !== 'undefined' ) {
+		
+		$.fn.url = function( strictMode ) {
+			var url = '';
+			if ( this.length ) {
+				url = $(this).attr( getAttrName(this[0]) ) || '';
+			}    
+			return purl( url, strictMode );
+		};
+		
+		$.url = purl;
+		
+	} else {
+		window.purl = purl;
+	}
+
+});
+
+
+/* /htapps/roger.babel/mdp-web/jquery/jQuery-URL-Parser/purl.js */
 /*!
 Copyright (c) 2011, 2012 Julien Wajsberg <felash@gmail.com>
 All rights reserved.
@@ -209,6 +482,8 @@ head.ready(function() {
     function edit_collection_metadata(args) {
 
         var options = $.extend({ creating : false, label : "Save Changes" }, args);
+        var dummy = new Image();
+        dummy.src = "/common/unicorn/img/throbber.gif";
 
         var $block = $(
             '<form class="form-horizontal" action="mb">' + 
@@ -247,8 +522,13 @@ head.ready(function() {
             $block.find("textarea[name=desc]").val(options.desc);
         }
 
-        if ( options.shrd !== null ) {
+        if ( options.shrd != null ) {
             $block.find("input[name=shrd][value=" + options.shrd + ']').attr("checked", "checked");
+        } else if ( ! HT.login_status.logged_in ) {
+            $block.find("input[name=shrd][value=0]").attr("checked", "checked");
+            $('<div class="alert alert-info">Login to create public/permanent collections.</div>').appendTo($block);
+            // remove the <label> that wraps the radio button
+            $block.find("input[name=shrd][value=1]").parent().remove();
         }
 
         if ( options.$hidden ) {
@@ -271,6 +551,16 @@ head.ready(function() {
                 "label" : options.label,
                 "class" : "btn-primary",
                 callback : function() {
+
+                    var cn = $.trim($block.find("input[name=cn]").val());
+                    var desc = $.trim($block.find("textarea[name=desc]").val());
+
+                    if ( ! cn ) {
+                        $('<div class="alert alert-error">You must enter a collection name.</div>').appendTo($block);
+                        return false;
+                    }
+
+                    $dialog.find(".btn-primary").addClass("btn-loading");
                     $block.submit();
                     return false;
                 }
@@ -378,3 +668,91 @@ head.ready(function() {
 
 });
 /* /htapps/roger.babel/mdp-web/js/collection_tools.js */
+head.ready(function() {
+
+    var $selects = $("select[name=sz],select[name=sort]");
+    $selects.each(function() {
+        init_select(this);
+    })
+
+    function init_select(select) {
+        select.changed = false;
+        select.onfocus = select_focused;
+        select.onchange = select_changed;
+        select.onkeydown = select_keyed;
+        select.onclick = select_clicked;
+
+        return true;
+    }
+
+    function select_changed(el) {
+        var select;
+        if ( el && el.value ) {
+            select = el;
+        } else {
+            select = this;
+        }
+        if ( ! select.changed ) {
+            return false;
+        }
+
+        // https://roger-full.babel.hathitrust.org/cgi/mb?c=594541169&pn=1&sort=title_a&sort=date_d&sz=25&c2=0&a=&sz=25&sz=25
+        var $form = $("<form></form>").attr("action", window.location.pathname);
+        var $tmpl = $(select).parents("form");
+        $form.append($tmpl.find("input[type=hidden]"));
+        $form.append('<input type="hidden" name="a" value="{VALUE}" />'.replace('{VALUE}', $.url().param('a')));
+        var name = $(select).attr("name");
+        $form.find("input[name='" + name + "']").val($(select).val());
+        $form.submit();
+
+        return true;
+    }
+
+    function select_clicked() {
+        this.changed = true;
+    }
+
+    function select_focused() {
+        this.initValue = this.value;
+        return true;
+    }
+
+    function select_keyed(e) {
+        var theEvent;
+        var keyCodeTab = "9";
+        var keyCodeEnter = "13";
+        var keyCodeEsc = "27";
+        
+        if (e)
+        {
+            theEvent = e;
+        }
+        else
+        {
+            theEvent = event;
+        }
+
+        if ((theEvent.keyCode == keyCodeEnter || theEvent.keyCode == keyCodeTab) && this.value != this.initValue)
+        {
+            this.changed = true;
+            selectChanged(this);
+        }
+        else if (theEvent.keyCode == keyCodeEsc)
+        {
+            this.value = this.initValue;
+        }
+        else
+        {
+            this.changed = false;
+        }
+        
+        return true;        
+    }
+
+
+    $("#SortWidgetSort").change(function() {
+        $(this).parents("form").submit();
+    })
+
+});
+/* /htapps/roger.babel/mdp-web/js/search_tools.js */

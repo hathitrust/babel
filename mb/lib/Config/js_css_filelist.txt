@@ -39,12 +39,13 @@
 Section:LOCAL_JS 
 # These should be listed with the unminimized name.  The script will
 # run yuicompress on them
+//common-web/jquery/jQuery-URL-Parser/purl.js
 //common-web/jquery/jquery.trap.min.js
 /mb/web/js/mb.js
 /mb/web/js/tracking.js
 //common-web/js/google_covers.js
 //common-web/js/collection_tools.js
-
+//common-web/js/search_tools.js
 
 Section:COLLLIST_JS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'

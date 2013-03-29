@@ -276,6 +276,7 @@ head.ready(function() {
         }
 
         $("<input type='hidden' name='a' />").appendTo($block).val(options.a);            
+        $("<input type='hidden' name='colltype' value='my-collections' />").appendTo($block);
 
         var $dialog = bootbox.dialog($block, [
             {
@@ -295,10 +296,10 @@ head.ready(function() {
                         return false;
                     }
 
-                    $block.find(".btn").attr("disabled", "disabled");
-                    $block.find(".btn-primary").addClass("btn-loading");
+                    $dialog.find(".btn").attr("disabled", "disabled");
+                    $dialog.find(".btn-primary").addClass("btn-loading");
                     $block.submit();
-
+                    return false;
                 }
             }
         ]);
