@@ -18,7 +18,7 @@ HT.Manager = {
     start : function() {
         var self = this;
 
-        this.view = Object.create(HT.Viewer[self.options.reader.view]).init({
+        this.view = Object.create(self.options.reader.getViewModule()).init({
             manager : self,
             reader : self.options.reader
         });
@@ -47,13 +47,13 @@ HT.Manager = {
 
     },
 
-    switch_view: function(view) {
+    restart: function() {
         var self = this;
 
         self.view.end();
         delete self.view;
         // delete this.options.view;
-        self.view = Object.create(HT.Viewer[view]).init({
+        self.view = Object.create(self.options.reader.getViewModule()).init({
             manager : self,
             reader : self.options.reader
         });

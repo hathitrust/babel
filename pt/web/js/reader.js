@@ -6,7 +6,7 @@ var $body = $("body");
 HT.Reader = {
     init: function(options) {
         this.options = $.extend({}, this.options, options);
-        this.view = this._getView(); 
+        // this.view = this._getView(); 
         this.id = this.options.params.id;
         this.imgsrv = Object.create(HT.ImgSrv).init({ 
             base : window.location.pathname.replace("/pt", "/imgsrv")
@@ -20,7 +20,7 @@ HT.Reader = {
 
     start : function() {
         var self = this;
-        this._handleView(this._getView(), 'start');
+        this._handleView(this.getView(), 'start');
 
         this.bindEvents();
         this.manager = Object.create(HT.Manager).init({
@@ -32,11 +32,11 @@ HT.Reader = {
         this.manager.start();
     },
 
-    switchView: function(view) {
-        this._handleView(this.current_view, 'exit');
+    updateView: function(view) {
+        this._handleView(this.getView(), 'exit');
         this._handleView(view, 'start');
         this.setView(view);
-        this.manager.switch_view(view);
+        this.manager.restart();
     },
 
     bindEvents: function() {
@@ -73,16 +73,17 @@ HT.Reader = {
             var target = $this.data('target');
             if ( target != $views.attr('current') ) {
 
-                if ( target == 'Page by Page' || target == 'Plain Text' ) {
+                if ( target == 'image' || target == 'plaintext' ) {
                     window.location.href = $this.attr('href');
                     return;
                 }
 
                 $views.find("a.active").removeClass("active");
                 $this.addClass("active");
-                self.switchView($(this).data('target'));
+                self.updateView($(this).data('target'));
             }
         })
+        $views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
 
         this._bindAction("go.first");
         this._bindAction("go.prev");
@@ -122,7 +123,6 @@ HT.Reader = {
         })
 
         $.subscribe("update.go.page", function(e, seq) {
-            self._updatePDFLinks(seq);
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
                 // other interface elements
@@ -133,7 +133,7 @@ HT.Reader = {
                 value = "n" + seq;
             }
             $("#input-go-page").val(value);
-            self._current_seq = seq;
+            self.setCurrentSeq(seq);
         })
 
         $.subscribe("disable.download.page.pdf", function() {
@@ -157,6 +157,12 @@ HT.Reader = {
 
     getCurrentSeq: function() {
         return this._current_seq || this.options.params.seq || 1;
+    },
+
+    setCurrentSeq: function(seq) {
+        this._current_seq = seq;
+        this._updateState();
+        this._updatePDFLinks();
     },
 
     _toggleFullScreen: function(btn) {
@@ -200,16 +206,8 @@ HT.Reader = {
         })
     },
 
-    _getView: function() {
-        var views = {
-            '1up' : 'Scroll',
-            '2up' : 'Flip',
-            'thumb' : 'Thumbnail',
-            'image' : 'Image',
-            'plaintext' : 'PlainText'
-        }
-        this.current_view = views[this.options.params.view];
-        return views[this.options.params.view];
+    getView: function() {
+        return this._current_view || this.options.params.view;
     },
 
     setView: function(view) {
@@ -220,16 +218,46 @@ HT.Reader = {
             'Image' : 'image',
             'PlainText' : 'plaintext'
         }
-        this.current_view = view;
+        this._current_view = view;
         // and upate the reverse
         this.options.params.view = views[view];
+        this._updateState({ view : view });
+    },
+
+    getViewModule: function() {
+        var views = {
+            '1up' : 'Scroll',
+            '2up' : 'Flip',
+            'thumb' : 'Thumbnail',
+            'image' : 'Image',
+            'plaintext' : 'PlainText'
+        }
+        return HT.Viewer[views[this.getView()]];
+    },
+
+    _updateState: function(params) {
+        if ( window.history && window.history.replaceState != null ) {
+            // create a whole new URL
+            var new_href = window.location.pathname;
+            new_href += "?id=" + HT.params.id;
+            new_href += ";view=" + this.getView();
+            new_href += ";seq=" + this.getCurrentSeq();
+            window.history.replaceState(null, document.title, new_href);
+
+        } else {
+            // update the hash
+            var new_hash = '#view=' + this.getView();
+            new_hash += ';seq=' + this.getCurrentSeq();
+            window.location.replace(new_hash); // replace blocks the back button!
+        }
     },
 
     _updatePDFLinks: function(seq) {
         var self = this;
+        if ( ! seq ) { seq = this.getCurrentSeq(); }
         if ( $.isArray(seq) ) {
             // we have multiple links, but what do we label them?
-            if ( this.current_view == 'Flip' ) {
+            if ( this.getView() == '2up' ) {
                 _.each(seq, function(seq, i) {
                     var $link = $("#pagePdfLink" + ( i + 1 ));
                     self._updateLinkSeq($link, seq);
@@ -254,7 +282,7 @@ HT.Reader = {
     },
 
     _handleView: function(view, stage) {
-        if ( view == 'Flip' ) {
+        if ( view == '2up' ) {
             this._handleFlip(stage);
         }
     },
@@ -282,13 +310,21 @@ HT.Reader = {
 }
 
 head.ready(function() {
+
+    // update HT.params based on the hash
+    if ( window.location.hash ) {
+        var tmp1 = window.location.hash.substr(1).split(";");
+        for(var i = 0; i < tmp1.length; i++) {
+            var tmp2 = tmp1[i].split("=");
+            HT.params[tmp2[0]] = tmp2[1];
+        }
+    }
+
     HT.reader = Object.create(HT.Reader).init({
         params : HT.params
     })
 
     HT.reader.start();
-    // $(".toolbar-vertical").tooltip({ placement : 'right', selector : '.btn' });
-    // $(".toolbar-horizontal").tooltip({ placement : 'top', selector : '.btn' });
 
     $(".toolbar-vertical .btn").each(function() {
         var $btn = $(this);
