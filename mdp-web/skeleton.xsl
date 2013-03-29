@@ -34,6 +34,10 @@
 
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+      <xsl:attribute name="data-analytics-code">
+        <xsl:call-template name="get-analytics-code" />
+      </xsl:attribute>
+      <xsl:attribute name="data-analytics-enabled"><xsl:call-template name="get-analytics-enabled" /></xsl:attribute>
       <xsl:attribute name="class">
         <xsl:text>no-js </xsl:text>
         <xsl:call-template name="setup-html-class" />
@@ -197,6 +201,9 @@
         </ul>
       </div>
     </div>
+    <script>
+      head.js("/common/unicorn/js/google_analytics.js");
+    </script>
   </xsl:template>
 
   <xsl:template name="li-feedback">
@@ -253,5 +260,14 @@
       Full view only
     </label>
   </xsl:template>
+
+        
+
+  <xsl:template name="get-analytics-enabled">true</xsl:template>
+  <xsl:template name="get-analytics-code">
+    <xsl:text>UA-954893-23</xsl:text>
+    <xsl:call-template name="get-extra-analytics-code" />
+  </xsl:template>
+  <xsl:template name="get-extra-analytics-code"></xsl:template>
 
 </xsl:stylesheet>
