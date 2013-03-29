@@ -1,5 +1,7 @@
 head.ready(function() {
 
+    // event handling adapted from http://www.themaninblue.com/writing/perspective/2004/10/19/
+
     var $selects = $("select[name=sz],select[name=sort]");
     $selects.each(function() {
         init_select(this);
