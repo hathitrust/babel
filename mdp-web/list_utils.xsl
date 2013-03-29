@@ -531,11 +531,11 @@
               <xsl:value-of select="$which_paging"/>
             </xsl:with-param>
             <xsl:with-param name="class" select="'sz'"/>
-            <xsl:with-param name="key">
+<!--             <xsl:with-param name="key">
               <xsl:text>redisplay_new_slice_size(&quot;</xsl:text>
               <xsl:value-of select="$which_paging"/>
               <xsl:text>&quot;)</xsl:text>
-            </xsl:with-param>
+            </xsl:with-param> -->
           </xsl:call-template>
         </xsl:for-each>
       </div>
@@ -680,9 +680,9 @@
           <xsl:call-template name="BuildHtmlSelect">
             <xsl:with-param name="id">SortWidgetSort</xsl:with-param>
             <xsl:with-param name="class" select="'sort'"/>
-            <xsl:with-param name="key">
+<!--             <xsl:with-param name="key">
               <xsl:text>doSort()</xsl:text>
-            </xsl:with-param>
+            </xsl:with-param> -->
           </xsl:call-template>
         </xsl:for-each>
 
