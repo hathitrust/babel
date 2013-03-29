@@ -319,7 +319,8 @@ HT.Viewer.Scroll = {
 
         if ( current ) {
             setTimeout(function() {
-                self.gotoPage(current)
+                self.gotoPage(current);
+                $.publish("view.ready");
             }, 500);
         }
 

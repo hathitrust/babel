@@ -11,6 +11,7 @@ HT.Reader = {
         this.imgsrv = Object.create(HT.ImgSrv).init({ 
             base : window.location.pathname.replace("/pt", "/imgsrv")
         });
+        this._tracking = false;
         return this;
     },
 
@@ -33,6 +34,7 @@ HT.Reader = {
     },
 
     updateView: function(view) {
+        this._tracking = false;
         this._handleView(this.getView(), 'exit');
         this._handleView(view, 'start');
         this.setView(view);
@@ -60,7 +62,7 @@ HT.Reader = {
         });
 
         // don't bind dynamic controls for the static views
-        if ( this.view == 'Image' || this.view == 'PlainText' ) {
+        if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
             // and then disable buttons without links
             $(".toolbar").find("a[href='']").attr("disabled", "disabled");
             return;
@@ -136,6 +138,10 @@ HT.Reader = {
             self.setCurrentSeq(seq);
         })
 
+        $.subscribe("view.ready.reader", function() {
+            self._tracking = true;
+        });
+
         $.subscribe("disable.download.page.pdf", function() {
             $(".page-pdf-link").attr("disabled", "disabled").addClass("disabled");
         })
@@ -160,9 +166,15 @@ HT.Reader = {
     },
 
     setCurrentSeq: function(seq) {
+        var self = this;
+
         this._current_seq = seq;
         this._updateState();
         this._updatePDFLinks();
+
+        $(".action-views").find("a").each(function() {
+            self._updateLinkSeq($(this), seq);
+        })
     },
 
     _toggleFullScreen: function(btn) {
@@ -236,12 +248,17 @@ HT.Reader = {
     },
 
     _updateState: function(params) {
+        var new_href = window.location.pathname;
+        new_href += "?id=" + HT.params.id;
+        new_href += ";view=" + this.getView();
+        new_href += ";seq=" + this.getCurrentSeq();
+
+        // if ( HT.params.size ) {
+        //     new_href += ";size=" + HT.params.size;
+        // }
+
         if ( window.history && window.history.replaceState != null ) {
             // create a whole new URL
-            var new_href = window.location.pathname;
-            new_href += "?id=" + HT.params.id;
-            new_href += ";view=" + this.getView();
-            new_href += ";seq=" + this.getCurrentSeq();
             window.history.replaceState(null, document.title, new_href);
 
         } else {
@@ -249,6 +266,15 @@ HT.Reader = {
             var new_hash = '#view=' + this.getView();
             new_hash += ';seq=' + this.getCurrentSeq();
             window.location.replace(new_hash); // replace blocks the back button!
+        }
+        this._trackPageview(new_href);
+    },
+
+    _trackPageview: function(href) {
+        if ( this._tracking && HT.analytics && HT.analytics.enabled ) {
+            HT.analytics.trackPageview(href);
+            // if we were still doing the experiment, we'd do it here
+            // HT.analytics.trackPageview(alternate_href, alternate_profile_id);
         }
     },
 

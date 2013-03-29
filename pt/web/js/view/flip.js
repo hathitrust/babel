@@ -438,6 +438,8 @@ HT.Viewer.Flip = {
             self.book.prev();
         })
 
+        $.publish("view.ready");
+
     },
 
     // UTIL

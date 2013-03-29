@@ -60,7 +60,10 @@
       <xsl:attribute name="data-search-target"><xsl:value-of select="//HeaderSearchParams/Field[@name='target']" /></xsl:attribute>
       <xsl:attribute name="data-search-ft"><xsl:value-of select="//HeaderSearchParams/Field[@name='ft']" /></xsl:attribute>
     </xsl:if>
+    <xsl:call-template name="setup-extra-html-attributes" />
   </xsl:template>
+
+  <xsl:template name="setup-extra-html-attributes" />
 
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/pt/css/screen.css" />

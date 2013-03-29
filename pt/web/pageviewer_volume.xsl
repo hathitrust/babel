@@ -122,6 +122,10 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="setup-extra-html-attributes">
+    <xsl:attribute name="data-analytics-skip">true</xsl:attribute>
+  </xsl:template>
+
   <xsl:template name="pageviewer-contents">
     <xsl:call-template name="sidebar" />
     <xsl:call-template name="main" />    

@@ -179,8 +179,6 @@ HT.Viewer.Thumbnail = {
     drawPages : function() {
         var self = this;
 
-        console.log("DRAWING:", self.w);
-
         $("#content").empty();
         self.$container = $('<div class="thumbnails"></div>').appendTo($("#content"));
 
@@ -216,6 +214,7 @@ HT.Viewer.Thumbnail = {
 
         $(window).scroll();
 
+        $.publish("view.ready");
 
     },
 
