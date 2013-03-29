@@ -1567,5 +1567,175 @@ REMOVE the below and see if it will call list_utils
   </xsl:template>
 
 
+  <!--XXX temporary overide of template in list_utilsxsl-->
+  <!--#################################
+       Logic maybe different from CB?
+       All Items tab only shows up if both so and ft > 0
+       ft and st Tab should only show up if count > 0
+       Active tabs should be the limit type
+       Hyperlined tabs should be everything but the LimitType (all|ft|so)
+   ##################################  -->
+  <xsl:template name="Refine">
+    <div>
+
+      <xsl:variable name="LimitType">
+        <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+      </xsl:variable>
+
+      <xsl:variable name="SearchOnlyCount">
+        <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCount"/>
+      </xsl:variable>
+
+      <xsl:variable name="FullTextCount">
+        <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
+      </xsl:variable>
+
+    <ul class="nav nav-tabs">
+
+      <xsl:if test="($FullTextCount &gt; 0) and ($SearchOnlyCount &gt; 0)">
+        <!-- display all items tab-->
+        <div>
+          <!--          <xsl:call-template name="DisplayAllItemsTab"/>-->
+          <xsl:call-template name="DisplayTab">
+            <xsl:with-param name="active">
+              <xsl:if test="$LimitType ='all'">
+                <xsl:text>true</xsl:text>
+              </xsl:if>
+            </xsl:with-param>
+
+            <xsl:with-param name="text">All Items </xsl:with-param>
+            
+            <xsl:with-param name="count">
+              <xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCountDisplay" />
+            </xsl:with-param>
+            
+            <xsl:with-param name="href">
+              <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
+            </xsl:with-param>
+          </xsl:call-template>
+
+        </div>
+      </xsl:if>
+
+        <!-- display search only tab  commented out for now-->
+        <!--################################################
+
+    <xsl:if test="$SearchOnlyCount &gt; 0">
+
+      <div>
+
+        <xsl:call-template name="DisplayTab">
+          <xsl:with-param name="active">
+            <xsl:if test="$LimitType ='so'">
+              <xsl:text>true</xsl:text>
+            </xsl:if>
+          </xsl:with-param>
+
+          <xsl:with-param name="text">Limited (search only) </xsl:with-param>
+            
+          <xsl:with-param name="count">
+            <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCountDisplay" />
+          </xsl:with-param>
+            
+          <xsl:with-param name="href">
+            <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
+          </xsl:with-param>
+        </xsl:call-template>
+
+      </div>
+    </xsl:if>
+    ################################################ -->
+      
+      <xsl:if test="$FullTextCount &gt; 0">
+        <!-- display full text tab-->
+        <div>
+
+          <xsl:call-template name="DisplayTab">
+            <xsl:with-param name="active">
+              <xsl:if test="$LimitType ='ft'">
+                <xsl:text>true</xsl:text>
+              </xsl:if>
+            </xsl:with-param>
+
+            <xsl:with-param name="text">Full View </xsl:with-param>
+            
+            <xsl:with-param name="count">
+              <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCountDisplay" />
+            </xsl:with-param>
+            
+            <xsl:with-param name="href">
+              <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
+            </xsl:with-param>
+          </xsl:call-template>
+
+        </div>
+      </xsl:if>
+
+
+    </ul>
+    </div>
+  </xsl:template>
+
+
+  <xsl:template name="DisplayAllItemsTab">
+    <xsl:variable name="Limit">
+      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+    </xsl:variable>
+
+
+      <xsl:choose>
+        <xsl:when test="$Limit = 'all'">
+          <li class="viewall active">
+            <span>All Items(<xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCountDisplay" />)</span>
+          </li>
+        </xsl:when>
+        <xsl:otherwise>
+            <li class="viewall">
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
+                </xsl:attribute>
+                <xsl:text>All Items (</xsl:text>
+                <xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCountDisplay"/>
+                <xsl:text>)</xsl:text>
+              </xsl:element>
+            </li>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="DisplayTab">
+        <xsl:param name="active" value="false"/>
+        <xsl:param name="text" value="Bad Text"/>
+        <xsl:param name="count" value="Bad count"/>
+        <xsl:param name="href" value="Bad href"/>
+      <xsl:choose>
+        <xsl:when test="$active = 'true'">
+          <li class="viewall active">
+            <span>
+              <xsl:value-of select="$text"/>
+              <xsl:text> (</xsl:text>
+              <xsl:value-of select="$count" />)
+            </span>
+          </li>
+        </xsl:when>
+        <xsl:otherwise>
+            <li class="viewall">
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="$href"/>
+                </xsl:attribute>
+                <xsl:value-of select="$text"/>
+                <xsl:text> (</xsl:text>
+                <xsl:value-of select="$count" />)
+              </xsl:element>
+            </li>
+        </xsl:otherwise>
+      </xsl:choose>
+
+
+    </xsl:template>
+    
+
   
 </xsl:stylesheet>
