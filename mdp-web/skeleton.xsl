@@ -70,6 +70,8 @@
 
         <h1 class="offscreen"><xsl:call-template name="setup-page-title" /></h1>
 
+        <xsl:call-template name="debug-messages" />
+
         <xsl:call-template name="navbar" />
         <xsl:call-template name="header" />
 
@@ -261,7 +263,13 @@
     </label>
   </xsl:template>
 
-        
+  <xsl:template name="debug-messages">
+    <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
+      <div class="debug-messages">
+        <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*" />
+      </div>
+    </xsl:if>
+  </xsl:template>
 
   <xsl:template name="get-analytics-enabled">true</xsl:template>
   <xsl:template name="get-analytics-code">
