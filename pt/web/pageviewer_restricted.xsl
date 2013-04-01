@@ -46,7 +46,7 @@
       <a title="Orphan Works Project" href="http://www.lib.umich.edu/orphan-works/copyright-holders-we-want-hear-you"> Orphan Works Project.</a></li></ul>
     </xsl:variable>
 
-    <div class="alert alert-error alert-block alert-banner">
+    <div class="alert alert-info alert-block alert-banner">
       <p>
         <!-- <img style="float: left; padding-left: 8px" src="//common-web/graphics/LimitedLink.png" alt="" /> -->
         <xsl:copy-of select="$copyright_restricted_msg" />
@@ -80,7 +80,7 @@
   
   <!-- Deleted item -->
   <xsl:template name="DeletedItemPage">
-    <div class="alert alert-error alert-block alert-banner">
+    <div class="alert alert-info alert-block alert-banner">
       <p>This item is <strong>no longer available</strong> in HathiTrust due to one of the following reasons:</p>
     </div>
 
@@ -103,7 +103,7 @@
 
   <!-- No access due to copyright restrictions -->
   <xsl:template name="NoAccessPage">
-    <div class="alert alert-error alert-block alert-banner">
+    <div class="alert alert-info alert-block alert-banner">
       This item is <strong>not available online</strong> (<i class="icomoon-locked"></i> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
     </div>
     <div class="no_access_text">
