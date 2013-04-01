@@ -63,7 +63,21 @@ HT.Downloader = {
                     label : 'Cancel',
                     'class' : 'btn-dismiss',
                     callback: function() {
-                        console.log("CANCELING THE PDF");
+                        $.ajax({
+                            url: src + ';callback=HT.downloader.cancelDownload;stop=1',
+                            dataType: 'script',
+                            cache: false,
+                            error: function(req, textStatus, errorThrown) {
+                                console.log("DOWNLOAD CANCELLED ERROR");
+                                self.$dialog.modal('hide');
+                                console.log(req, textStatus, errorThrown);
+                                if ( req.status == 503 ) {
+                                    self.displayWarning(req);
+                                } else {
+                                    self.showError();
+                                }
+                            }
+                        })
                     }
                 },
                 {
@@ -89,7 +103,7 @@ HT.Downloader = {
             cache: false,
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
-                self.$dialog.model('hide');
+                self.$dialog.modal('hide');
                 if ( req.status == 503 ) {
                     self.displayWarning(req);
                 } else {
@@ -98,6 +112,12 @@ HT.Downloader = {
             }
         });
 
+    },
+
+    cancelDownload: function(progress_url, download_url, total) {
+        var self = this;
+        self.clearTimer();
+        self.$dialog.modal('hide');
     },
 
     startDownload: function(progress_url, download_url, total) {
