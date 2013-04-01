@@ -49,7 +49,8 @@ HT.Downloader = {
 
         var html = 
             // '<p>Building your PDF...</p>' + 
-            '<div class="progress progress-striped active">' +
+            '<div class="initial"><p>Setting up download...</p></div>' + 
+            '<div class="progress progress-striped active hide">' +
                 '<div class="bar" width="0%"></div>' + 
             '</div>' + 
             '<div class="done hide">' + 
@@ -63,6 +64,10 @@ HT.Downloader = {
                     label : 'Cancel',
                     'class' : 'btn-dismiss',
                     callback: function() {
+                        if ( self.$dialog.data('deactivated') ) {
+                            self.$dialog.modal('hide');
+                            return;
+                        }
                         $.ajax({
                             url: src + ';callback=HT.downloader.cancelDownload;stop=1',
                             dataType: 'script',
@@ -195,12 +200,18 @@ HT.Downloader = {
             status.error = true;
         }
 
+        if ( self.$dialog.find(".initial").is(":visible") ) {
+            self.$dialog.find(".initial").hide();
+            self.$dialog.find(".progress").removeClass("hide");
+        }
+
         self.$dialog.find(".bar").css({ width : percent + '%'});
 
         if ( percent == 100 ) {
             self.$dialog.find(".progress").hide();
             self.$dialog.find(".done").show();
             self.$dialog.find(".download-pdf").show();
+            self.$dialog.data('deactivated', true);
             // still could cancel
         }
 

@@ -49,7 +49,8 @@ HT.Downloader = {
 
         var html = 
             // '<p>Building your PDF...</p>' + 
-            '<div class="progress progress-striped active">' +
+            '<div class="initial"><p>Setting up download...</p></div>' + 
+            '<div class="progress progress-striped active hide">' +
                 '<div class="bar" width="0%"></div>' + 
             '</div>' + 
             '<div class="done hide">' + 
@@ -63,7 +64,25 @@ HT.Downloader = {
                     label : 'Cancel',
                     'class' : 'btn-dismiss',
                     callback: function() {
-                        console.log("CANCELING THE PDF");
+                        if ( self.$dialog.data('deactivated') ) {
+                            self.$dialog.modal('hide');
+                            return;
+                        }
+                        $.ajax({
+                            url: src + ';callback=HT.downloader.cancelDownload;stop=1',
+                            dataType: 'script',
+                            cache: false,
+                            error: function(req, textStatus, errorThrown) {
+                                console.log("DOWNLOAD CANCELLED ERROR");
+                                self.$dialog.modal('hide');
+                                console.log(req, textStatus, errorThrown);
+                                if ( req.status == 503 ) {
+                                    self.displayWarning(req);
+                                } else {
+                                    self.showError();
+                                }
+                            }
+                        })
                     }
                 },
                 {
@@ -89,7 +108,7 @@ HT.Downloader = {
             cache: false,
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
-                self.$dialog.model('hide');
+                self.$dialog.modal('hide');
                 if ( req.status == 503 ) {
                     self.displayWarning(req);
                 } else {
@@ -98,6 +117,12 @@ HT.Downloader = {
             }
         });
 
+    },
+
+    cancelDownload: function(progress_url, download_url, total) {
+        var self = this;
+        self.clearTimer();
+        self.$dialog.modal('hide');
     },
 
     startDownload: function(progress_url, download_url, total) {
@@ -175,12 +200,18 @@ HT.Downloader = {
             status.error = true;
         }
 
+        if ( self.$dialog.find(".initial").is(":visible") ) {
+            self.$dialog.find(".initial").hide();
+            self.$dialog.find(".progress").removeClass("hide");
+        }
+
         self.$dialog.find(".bar").css({ width : percent + '%'});
 
         if ( percent == 100 ) {
             self.$dialog.find(".progress").hide();
             self.$dialog.find(".done").show();
             self.$dialog.find(".download-pdf").show();
+            self.$dialog.data('deactivated', true);
             // still could cancel
         }
 

@@ -2820,7 +2820,8 @@ HT.Downloader = {
 
         var html = 
             // '<p>Building your PDF...</p>' + 
-            '<div class="progress progress-striped active">' +
+            '<div class="initial"><p>Setting up download...</p></div>' + 
+            '<div class="progress progress-striped active hide">' +
                 '<div class="bar" width="0%"></div>' + 
             '</div>' + 
             '<div class="done hide">' + 
@@ -2834,7 +2835,25 @@ HT.Downloader = {
                     label : 'Cancel',
                     'class' : 'btn-dismiss',
                     callback: function() {
-                        console.log("CANCELING THE PDF");
+                        if ( self.$dialog.data('deactivated') ) {
+                            self.$dialog.modal('hide');
+                            return;
+                        }
+                        $.ajax({
+                            url: src + ';callback=HT.downloader.cancelDownload;stop=1',
+                            dataType: 'script',
+                            cache: false,
+                            error: function(req, textStatus, errorThrown) {
+                                console.log("DOWNLOAD CANCELLED ERROR");
+                                self.$dialog.modal('hide');
+                                console.log(req, textStatus, errorThrown);
+                                if ( req.status == 503 ) {
+                                    self.displayWarning(req);
+                                } else {
+                                    self.showError();
+                                }
+                            }
+                        })
                     }
                 },
                 {
@@ -2860,7 +2879,7 @@ HT.Downloader = {
             cache: false,
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
-                self.$dialog.model('hide');
+                self.$dialog.modal('hide');
                 if ( req.status == 503 ) {
                     self.displayWarning(req);
                 } else {
@@ -2869,6 +2888,12 @@ HT.Downloader = {
             }
         });
 
+    },
+
+    cancelDownload: function(progress_url, download_url, total) {
+        var self = this;
+        self.clearTimer();
+        self.$dialog.modal('hide');
     },
 
     startDownload: function(progress_url, download_url, total) {
@@ -2946,12 +2971,18 @@ HT.Downloader = {
             status.error = true;
         }
 
+        if ( self.$dialog.find(".initial").is(":visible") ) {
+            self.$dialog.find(".initial").hide();
+            self.$dialog.find(".progress").removeClass("hide");
+        }
+
         self.$dialog.find(".bar").css({ width : percent + '%'});
 
         if ( percent == 100 ) {
             self.$dialog.find(".progress").hide();
             self.$dialog.find(".done").show();
             self.$dialog.find(".download-pdf").show();
+            self.$dialog.data('deactivated', true);
             // still could cancel
         }
 
@@ -3251,11 +3282,12 @@ var $body = $("body");
 HT.Reader = {
     init: function(options) {
         this.options = $.extend({}, this.options, options);
-        this.view = this._getView(); 
+        // this.view = this._getView(); 
         this.id = this.options.params.id;
         this.imgsrv = Object.create(HT.ImgSrv).init({ 
             base : window.location.pathname.replace("/pt", "/imgsrv")
         });
+        this._tracking = false;
         return this;
     },
 
@@ -3265,7 +3297,7 @@ HT.Reader = {
 
     start : function() {
         var self = this;
-        this._handleView(this._getView(), 'start');
+        this._handleView(this.getView(), 'start');
 
         this.bindEvents();
         this.manager = Object.create(HT.Manager).init({
@@ -3277,11 +3309,12 @@ HT.Reader = {
         this.manager.start();
     },
 
-    switchView: function(view) {
-        this._handleView(this.current_view, 'exit');
+    updateView: function(view) {
+        this._tracking = false;
+        this._handleView(this.getView(), 'exit');
         this._handleView(view, 'start');
         this.setView(view);
-        this.manager.switch_view(view);
+        this.manager.restart();
     },
 
     bindEvents: function() {
@@ -3305,7 +3338,7 @@ HT.Reader = {
         });
 
         // don't bind dynamic controls for the static views
-        if ( this.view == 'Image' || this.view == 'PlainText' ) {
+        if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
             // and then disable buttons without links
             $(".toolbar").find("a[href='']").attr("disabled", "disabled");
             return;
@@ -3318,16 +3351,17 @@ HT.Reader = {
             var target = $this.data('target');
             if ( target != $views.attr('current') ) {
 
-                if ( target == 'Page by Page' || target == 'Plain Text' ) {
+                if ( target == 'image' || target == 'plaintext' ) {
                     window.location.href = $this.attr('href');
                     return;
                 }
 
                 $views.find("a.active").removeClass("active");
                 $this.addClass("active");
-                self.switchView($(this).data('target'));
+                self.updateView($(this).data('target'));
             }
         })
+        $views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
 
         this._bindAction("go.first");
         this._bindAction("go.prev");
@@ -3367,7 +3401,6 @@ HT.Reader = {
         })
 
         $.subscribe("update.go.page", function(e, seq) {
-            self._updatePDFLinks(seq);
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
                 // other interface elements
@@ -3378,8 +3411,12 @@ HT.Reader = {
                 value = "n" + seq;
             }
             $("#input-go-page").val(value);
-            self._current_seq = seq;
+            self.setCurrentSeq(seq);
         })
+
+        $.subscribe("view.ready.reader", function() {
+            self._tracking = true;
+        });
 
         $.subscribe("disable.download.page.pdf", function() {
             $(".page-pdf-link").attr("disabled", "disabled").addClass("disabled");
@@ -3402,6 +3439,18 @@ HT.Reader = {
 
     getCurrentSeq: function() {
         return this._current_seq || this.options.params.seq || 1;
+    },
+
+    setCurrentSeq: function(seq) {
+        var self = this;
+
+        this._current_seq = seq;
+        this._updateState();
+        this._updatePDFLinks();
+
+        $(".action-views").find("a").each(function() {
+            self._updateLinkSeq($(this), seq);
+        })
     },
 
     _toggleFullScreen: function(btn) {
@@ -3445,16 +3494,8 @@ HT.Reader = {
         })
     },
 
-    _getView: function() {
-        var views = {
-            '1up' : 'Scroll',
-            '2up' : 'Flip',
-            'thumb' : 'Thumbnail',
-            'image' : 'Image',
-            'plaintext' : 'PlainText'
-        }
-        this.current_view = views[this.options.params.view];
-        return views[this.options.params.view];
+    getView: function() {
+        return this._current_view || this.options.params.view;
     },
 
     setView: function(view) {
@@ -3465,16 +3506,60 @@ HT.Reader = {
             'Image' : 'image',
             'PlainText' : 'plaintext'
         }
-        this.current_view = view;
+        this._current_view = view;
         // and upate the reverse
         this.options.params.view = views[view];
+        this._updateState({ view : view });
+    },
+
+    getViewModule: function() {
+        var views = {
+            '1up' : 'Scroll',
+            '2up' : 'Flip',
+            'thumb' : 'Thumbnail',
+            'image' : 'Image',
+            'plaintext' : 'PlainText'
+        }
+        return HT.Viewer[views[this.getView()]];
+    },
+
+    _updateState: function(params) {
+        var new_href = window.location.pathname;
+        new_href += "?id=" + HT.params.id;
+        new_href += ";view=" + this.getView();
+        new_href += ";seq=" + this.getCurrentSeq();
+
+        // if ( HT.params.size ) {
+        //     new_href += ";size=" + HT.params.size;
+        // }
+
+        if ( window.history && window.history.replaceState != null ) {
+            // create a whole new URL
+            window.history.replaceState(null, document.title, new_href);
+
+        } else {
+            // update the hash
+            var new_hash = '#view=' + this.getView();
+            new_hash += ';seq=' + this.getCurrentSeq();
+            window.location.replace(new_hash); // replace blocks the back button!
+        }
+        this._trackPageview(new_href);
+    },
+
+    _trackPageview: function(href) {
+        if ( this._tracking && HT.analytics && HT.analytics.enabled ) {
+            HT.analytics.trackPageview(href);
+            // if we were still doing the experiment, we'd do it here
+            // HT.analytics.trackPageview(alternate_href, alternate_profile_id);
+        }
     },
 
     _updatePDFLinks: function(seq) {
         var self = this;
+        if ( ! seq ) { seq = this.getCurrentSeq(); }
         if ( $.isArray(seq) ) {
             // we have multiple links, but what do we label them?
-            if ( this.current_view == 'Flip' ) {
+            if ( this.getView() == '2up' ) {
                 _.each(seq, function(seq, i) {
                     var $link = $("#pagePdfLink" + ( i + 1 ));
                     self._updateLinkSeq($link, seq);
@@ -3499,7 +3584,7 @@ HT.Reader = {
     },
 
     _handleView: function(view, stage) {
-        if ( view == 'Flip' ) {
+        if ( view == '2up' ) {
             this._handleFlip(stage);
         }
     },
@@ -3527,13 +3612,21 @@ HT.Reader = {
 }
 
 head.ready(function() {
+
+    // update HT.params based on the hash
+    if ( window.location.hash ) {
+        var tmp1 = window.location.hash.substr(1).split(";");
+        for(var i = 0; i < tmp1.length; i++) {
+            var tmp2 = tmp1[i].split("=");
+            HT.params[tmp2[0]] = tmp2[1];
+        }
+    }
+
     HT.reader = Object.create(HT.Reader).init({
         params : HT.params
     })
 
     HT.reader.start();
-    // $(".toolbar-vertical").tooltip({ placement : 'right', selector : '.btn' });
-    // $(".toolbar-horizontal").tooltip({ placement : 'top', selector : '.btn' });
 
     $(".toolbar-vertical .btn").each(function() {
         var $btn = $(this);
@@ -3577,7 +3670,7 @@ HT.Manager = {
     start : function() {
         var self = this;
 
-        this.view = Object.create(HT.Viewer[self.options.reader.view]).init({
+        this.view = Object.create(self.options.reader.getViewModule()).init({
             manager : self,
             reader : self.options.reader
         });
@@ -3606,13 +3699,13 @@ HT.Manager = {
 
     },
 
-    switch_view: function(view) {
+    restart: function() {
         var self = this;
 
         self.view.end();
         delete self.view;
         // delete this.options.view;
-        self.view = Object.create(HT.Viewer[view]).init({
+        self.view = Object.create(self.options.reader.getViewModule()).init({
             manager : self,
             reader : self.options.reader
         });
@@ -4169,7 +4262,8 @@ HT.Viewer.Scroll = {
 
         if ( current ) {
             setTimeout(function() {
-                self.gotoPage(current)
+                self.gotoPage(current);
+                $.publish("view.ready");
             }, 500);
         }
 
@@ -4394,8 +4488,6 @@ HT.Viewer.Thumbnail = {
     drawPages : function() {
         var self = this;
 
-        console.log("DRAWING:", self.w);
-
         $("#content").empty();
         self.$container = $('<div class="thumbnails"></div>').appendTo($("#content"));
 
@@ -4431,6 +4523,7 @@ HT.Viewer.Thumbnail = {
 
         $(window).scroll();
 
+        $.publish("view.ready");
 
     },
 
@@ -4910,6 +5003,8 @@ HT.Viewer.Flip = {
             self.book.prev();
         })
 
+        $.publish("view.ready");
+
     },
 
     // UTIL
@@ -5208,7 +5303,7 @@ $(document).ready(function() {
 
             function showAlert() {
                 var html = $('#accessBannerID').html();
-                var $alert = bootbox.alert(html);
+                var $alert = bootbox.dialog(html, [{ label: "OK", "class" : "btn-primary btn-dismiss" }], { header : 'Special access' });
             }
             window.setTimeout(showAlert, 3000, true);
         }
