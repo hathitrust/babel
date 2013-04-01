@@ -141,7 +141,7 @@
       <div class="span4 find-in-library">
         <xsl:text>or </xsl:text>
         <xsl:call-template name="FindInALibraryLink">
-          <xsl:with-param name="class"> btn btn-info btn-medium</xsl:with-param>
+          <xsl:with-param name="class"> btn btn-primary btn-medium</xsl:with-param>
         </xsl:call-template>
       </div>
     </div>
