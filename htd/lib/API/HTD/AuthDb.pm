@@ -309,6 +309,26 @@ sub access_key_exists {
     return $ct;
 }
 
+# ---------------------------------------------------------------------
+
+=item get_expiration_by_access_key
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_expiration_by_access_key {
+    my ($dbh, $access_key) = @_;
+
+    my $statement = qq{SELECT expires FROM htd_authorization WHERE access_key=?};
+    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
+    my $expires = $sth->fetchrow_array();
+
+    hLOG_DEBUG('DB:  ' . qq{expiration: $statement: $access_key ::: $expires});
+    return $expires;
+}
+
 1;
 
 __END__

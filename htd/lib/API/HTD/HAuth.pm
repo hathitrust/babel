@@ -31,6 +31,7 @@ use CGI;
 use OAuth::Lite::Problems qw(:all);
 
 use Context;
+use Utils::Time;
 use HOAuth::Signature;
 
 use API::HTD_Log;
@@ -565,6 +566,29 @@ sub __access_is_authorized {
 
 # ---------------------------------------------------------------------
 
+=item __expired_authorization
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __expired_authorization {
+    my $self = shift;
+    my ($dbh, $access_key) = @_;
+
+    my $expiration_date = API::HTD::AuthDb::get_expiration_by_access_key($dbh, $access_key);
+    if (defined $expiration_date) {
+        if (Utils::Time::expired($expiration_date)) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+# ---------------------------------------------------------------------
+
 =item __authorized_protocol
 
 Description
@@ -667,6 +691,11 @@ sub H_authorized {
     }
 
     my $access_key = $Q->param('oauth_consumer_key') || 0;
+    if ($self->__expired_authorization($dbh, $access_key)) {
+        API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
+        hLOG('API ERROR: ' . qq{H_authorized: authorization expired access_key=$access_key  resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
+        return $self->error('authorization expired');
+    }
 
     if (! $self->__authorized_protocol($access_type, $extended_access_type)) {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
