@@ -1008,12 +1008,11 @@ sub getGroup{
 
 }
 #----------------------------------------------------------------------
-
 sub __isAdvanced{
     my $cgi = shift;
     my $isAdvanced="false";
     my $qcount = 0;
-    my $field1;
+    my $anyall;
     
     for my $i (1..4)
     {
@@ -1023,9 +1022,9 @@ sub __isAdvanced{
             $qcount++;
             if ($i == 1)
             {
-                #if there is a populated q1 and field1 then its advanced since we don't put a field param for basic
-                $field1 =$cgi->param('field1');
-                if (defined($field1) && $field1 ne "")
+                #if there is a populated q1 and there is an anyall field then its advanced since we don't put an anyall field param for basic
+                $anyall =$cgi->param('anyall1');
+                if (defined($anyall) && $anyall ne "")
                 {
                     $isAdvanced="true";
                 }
