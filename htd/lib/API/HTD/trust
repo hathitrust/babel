@@ -12,19 +12,19 @@ KNOWN means the stored IP address matches a regular expression
 therefore the request originated from an address from which we allow
 access to restricted/extended data types.
 
-client   type  IP stored is   IP match vs is       valid                  geotrusted        originates at known addr for restricted/extended?
--------  ----  ------------   -------------------- ---------------------- ----------        ------------------------------------------------- 
-dev      0     REMOTE_ADDR    REMOTE_ADDR          if match               if valid          if valid      IP test if PDUS/ICUS: not required 
+client   type  IP stored is   IP to match vs is    valid                  geotrusted         originates at known addr for restricted/extended?
+-------  ----  ------------   -------------------- ---------------------- ----------         ------------------------------------------------- 
+dev      0     REMOTE_ADDR    REMOTE_ADDR          if match               if valid           if valid (trusted. access determined by code)
        
-htdc     1     IP param       IP param             YES always             YES always        if match      required
+htdc     1     IP param       IP param             YES always             YES always         if match (trusted. access determined by code)
        
-Qual     2     IP param       IP param=REMOTE_ADDR if equal               if valid          if valid     
-               
-ODB      3     IP param       REMOTE_ADDR          if match               if valid          if valid          
+Qual     2     IP param       IP param=REMOTE_ADDR if equal               if valid           if valid (trusted. access determined by code)    
+                
+ODB      3     IP param       REMOTE_ADDR          if match               if valid           if valid (trusted. access determined by code)
        
-htdc     K     IP param       never matches        YES always (by userid) YES               NO (not in htd_authorization, i.e. code=1)
+htdc     K     IP param       never matches        YES always (by userid) YES                NO (not in htd_authorization, i.e. code=1)
 
-prog     U     REMOTE_ADDR    never matches        YES(by access key)     NO(because it could proxy) NO
+prog     U     REMOTE_ADDR    never matches        YES(by access key)     NO(could be proxy) NO (not in htd_authorization, i.e. code=1)
                    
 
 To test for "open" access that allows PDUS/ICUS we test the stored IP
