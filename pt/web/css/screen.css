@@ -142,26 +142,3 @@ body {
   font-size: 14px ;
   font-size: 1.4rem ;
 }
-
-/* line 143, ../sass/screen.scss */
-.debug-messages {
-  z-index: 6000;
-  width: 400px;
-  height: 100px;
-  padding: 8px;
-  opacity: 0.4;
-  background: #666;
-  overflow: auto;
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  font-size: 12px;
-  font-family: monospace;
-  border: 1px solid #666666;
-}
-
-/* line 159, ../sass/screen.scss */
-.debug-messages:hover {
-  opacity: 0.9;
-  background: #eee;
-}

@@ -140,25 +140,25 @@ body {
     @include rem(font-size, 14);
 }
 
-.debug-messages {
-    z-index: 6000;
-    width: 400px;
-    height: 100px;
-    padding: 8px;
-    opacity: 0.4;
-    background: #666;
-    overflow: auto;
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    font-size: 12px;
-    font-family: monospace;
-    border: 1px solid #666;
-}
+// .debug-messages {
+//     z-index: 6000;
+//     width: 400px;
+//     height: 100px;
+//     padding: 8px;
+//     opacity: 0.4;
+//     background: #666;
+//     overflow: auto;
+//     position: fixed;
+//     bottom: 10px;
+//     left: 10px;
+//     font-size: 12px;
+//     font-family: monospace;
+//     border: 1px solid #666;
+// }
 
-.debug-messages:hover {
-    opacity: 0.9;
-    background: #eee;
-}
+// .debug-messages:hover {
+//     opacity: 0.9;
+//     background: #eee;
+// }
 
 @import "../vendor/nanoscroller/nanoscroller.css";

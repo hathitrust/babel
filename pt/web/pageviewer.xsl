@@ -100,7 +100,6 @@
     <!-- h2 ? -->
     <xsl:call-template name="pageviewer-contents" />
     <xsl:call-template name="get-access-statements" />
-    <xsl:call-template name="get-debug-messages" />
   </xsl:template>
 
   <xsl:template name="pageviewer-contents">
@@ -192,14 +191,6 @@
 
   <xsl:template name="access_banner_local">
     <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
-  </xsl:template>
-
-  <xsl:template name="get-debug-messages">
-    <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
-      <div class="debug-messages">
-        <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*" />
-      </div>
-    </xsl:if>
   </xsl:template>
 
   <xsl:template name="html-tag-extra-attributes" />
