@@ -741,48 +741,6 @@ body.listcs .CollPage {
   font-weight: normal;
 }
 
-/*--- THE MAGIC ---*/
-/*
-This is the best bit!
-*/
-/* line 378, ../sass/list_colls.scss */
-.placeholder {
-  color: #aaa;
-}
-
-/* line 380, ../sass/list_colls.scss */
-[placeholder] {
-  cursor: pointer;
-  /*color:#999;
-   padding:5px;*/
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 2px;
-  border: 1px solid #999999;
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-}
-
-/* line 394, ../sass/list_colls.scss */
-[placeholder]:active,
-[placeholder]:focus {
-  cursor: text;
-  color: #333;
-  border: 1px solid #00aa00;
-  -moz-box-shadow: 0 0 5px #00aa00, 0 0 5px rgba(0, 0, 0, 0.25) inset;
-  -webkit-box-shadow: 0 0 5px #00aa00, 0 0 5px rgba(0, 0, 0, 0.25) inset;
-  box-shadow: 0 0 5px #00aa00, 0 0 5px rgba(0, 0, 0, 0.25) inset;
-}
-
-/*
-If the input has placeholder="" AND value="" darken its appearance to show it is pre-populated and not a form hint.
-*/
-/* line 406, ../sass/list_colls.scss */
-[placeholder][value] {
-  color: #333;
-}
-
 /*\*/
 /*/
 * html .results, * html .collection {
