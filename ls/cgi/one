@@ -7,11 +7,15 @@ my $LS_MAP = {
     title => 'title',
     author => 'author',
     subject => 'subject',
-    isn => 'isn',
+    isbn => 'isn',
     publisher => 'publisher',
-    series => 'series',
-    year => 'pdate_start'
+    seriestitle => 'series',
+    pubyear => ''
 };
+
+#XXX currently ls does not allow searching by publication year only limiting by
+# solr query would search for publishDate:query
+#   redo solr? or kludge?
 
 my $cgi = new CGI;
 my $base = $cgi->url(-full => 1);
@@ -19,6 +23,7 @@ my $base = $cgi->url(-full => 1);
 my $target = $cgi->param('target');
 my $searchtype = $cgi->param('searchtype');
 my $q1 = $cgi->param('q1');
+my $ft = $cgi->param('ft');
 my $dest_cgi = new CGI({});
 my $dest_url; my $dest_base;
 
@@ -28,6 +33,11 @@ if ( $target eq 'ls' ) {
     $dest_cgi->param('field1', $$LS_MAP{$searchtype});
     $dest_cgi->param('q1', $q1);
     $dest_cgi->param('a', 'srchls');
+    if ($ft eq "ft")
+    {
+        $dest_cgi->param('lmt', 'ft');
+    }
+    
 } else {
     $dest_base = qq{http://dueberb.catalog.hathitrust.org/Search/Home};
     $dest_cgi->param('lookfor', $q1);
