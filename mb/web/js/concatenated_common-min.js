@@ -670,6 +670,8 @@ head.ready(function() {
 /* /htapps/roger.babel/mdp-web/js/collection_tools.js */
 head.ready(function() {
 
+    // event handling adapted from http://www.themaninblue.com/writing/perspective/2004/10/19/
+
     var $selects = $("select[name=sz],select[name=sort]");
     $selects.each(function() {
         init_select(this);
@@ -692,20 +694,18 @@ head.ready(function() {
         } else {
             select = this;
         }
-        if ( ! select.changed ) {
-            return false;
+
+        if ( select.changed || select.value != select.initValue ) {
+            // https://roger-full.babel.hathitrust.org/cgi/mb?c=594541169&pn=1&sort=title_a&sort=date_d&sz=25&c2=0&a=&sz=25&sz=25
+            var target_url = window.location.href;
+            var name = select.name;
+            var re = new RegExp(';?' + name + '=([^;&]+);?', 'g');
+            target_url = target_url.replace(re, "");
+            target_url += ";" + name + "=" + select.value;
+            window.location.href = target_url;
         }
 
-        // https://roger-full.babel.hathitrust.org/cgi/mb?c=594541169&pn=1&sort=title_a&sort=date_d&sz=25&c2=0&a=&sz=25&sz=25
-        var $form = $("<form></form>").attr("action", window.location.pathname);
-        var $tmpl = $(select).parents("form");
-        $form.append($tmpl.find("input[type=hidden]"));
-        $form.append('<input type="hidden" name="a" value="{VALUE}" />'.replace('{VALUE}', $.url().param('a')));
-        var name = $(select).attr("name");
-        $form.find("input[name='" + name + "']").val($(select).val());
-        $form.submit();
-
-        return true;
+        return false;
     }
 
     function select_clicked() {
@@ -749,10 +749,6 @@ head.ready(function() {
         return true;        
     }
 
-
-    $("#SortWidgetSort").change(function() {
-        $(this).parents("form").submit();
-    })
 
 });
 /* /htapps/roger.babel/mdp-web/js/search_tools.js */

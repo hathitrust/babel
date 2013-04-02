@@ -778,7 +778,7 @@ var ListBrowser = {
   },
 
   _updateUrlForView: function(view) {
-    var href = window.location.origin + window.location.pathname;
+    var href = window.location.pathname;
     var delim;
     if ( href.indexOf("?") < 0 ) { delim = "?"; }
     else { delim = href.indexOf(";") < 0 ? '&' : ';'; }
