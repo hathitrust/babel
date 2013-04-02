@@ -32,6 +32,7 @@
   <CollectionSizesJs><?COLLECTION_SIZES_JS?></CollectionSizesJs>  
 
   <!-- Main -->
+  <HeaderSearchSelect><?HEADER_SEARCH_SELECT?></HeaderSearchSelect>
   <OperationResults><?OPERATION_RESULTS?></OperationResults>
 
   <QueryString><?QUERY_STRING?></QueryString>
