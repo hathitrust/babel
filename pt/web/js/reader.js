@@ -34,6 +34,18 @@ HT.Reader = {
     },
 
     updateView: function(view) {
+        if ( view == this.getView() ) {
+            return;
+        }
+
+        if ( view == 'image' || view == 'plaintext' ) {
+            window.location.href = $this.attr('href');
+            return;
+        }
+
+        this.$views.find("a.active").removeClass("active");
+        this.$views.find("a[data-target=" + view + "]").addClass("active");
+
         this._tracking = false;
         this._handleView(this.getView(), 'exit');
         this._handleView(view, 'start');
@@ -68,24 +80,14 @@ HT.Reader = {
             return;
         }
 
-        var $views = $(".action-views");
-        $views.on("click", "a", function(e) {
+        self.$views = $(".action-views");
+        self.$views.on("click", "a", function(e) {
             e.preventDefault();
             var $this = $(this);
             var target = $this.data('target');
-            if ( target != $views.attr('current') ) {
-
-                if ( target == 'image' || target == 'plaintext' ) {
-                    window.location.href = $this.attr('href');
-                    return;
-                }
-
-                $views.find("a.active").removeClass("active");
-                $this.addClass("active");
-                self.updateView($(this).data('target'));
-            }
+            self.updateView(target);
         })
-        $views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
+        self.$views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
 
         this._bindAction("go.first");
         this._bindAction("go.prev");
@@ -138,6 +140,12 @@ HT.Reader = {
             self.setCurrentSeq(seq);
         })
 
+        $.subscribe("update.focus.page", function(e, seq) {
+            // we define the focus
+            self.setCurrentSeq(seq);
+            self.updateView("1up");
+        });
+
         $.subscribe("view.ready.reader", function() {
             self._tracking = true;
         });
@@ -170,7 +178,7 @@ HT.Reader = {
 
         this._current_seq = seq;
         this._updateState();
-        this._updatePDFLinks();
+        this._updateLinks();
 
         $(".action-views").find("a").each(function() {
             self._updateLinkSeq($(this), seq);
@@ -278,7 +286,7 @@ HT.Reader = {
         }
     },
 
-    _updatePDFLinks: function(seq) {
+    _updateLinks: function(seq) {
         var self = this;
         if ( ! seq ) { seq = this.getCurrentSeq(); }
         if ( $.isArray(seq) ) {
@@ -293,6 +301,7 @@ HT.Reader = {
             var $link = $("#pagePdfLink");
             self._updateLinkSeq($link, seq);
         }
+        self._updateLinkSeq($("#pageURL"), seq);
     },
 
     _updateLinkSeq: function($link, seq) {
@@ -302,8 +311,13 @@ HT.Reader = {
             if ( ! $link.hasClass("disabled") ) {
                 $link.attr("disabled", null);
             }
-            var href = $link.attr("href");
-            $link.attr("href", href.replace(/seq=\d+/, "seq=" + seq));
+            if ( $link.is("input") ) {
+                var href = $link.val();
+                $link.val(href.replace(/seq=\d+/, "seq=" + seq))
+            } else {
+                var href = $link.attr("href");
+                $link.attr("href", href.replace(/seq=\d+/, "seq=" + seq));
+            }
         }
     },
 

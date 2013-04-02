@@ -104,6 +104,8 @@ HT.Viewer.Flip = {
 
             var t = 100;
 
+            $(this).parent().addClass("loaded");
+
             if ( w1 - self.w > t ) {
                 var $parent = $(this).parent();
                 $(this).parent().addClass("untypical-page");

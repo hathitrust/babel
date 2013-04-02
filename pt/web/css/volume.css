@@ -242,21 +242,17 @@ body {
 }
 
 /* lets me easily translate font-sizes from mockup */
-/* line 4, ../sass/volume/thumb.scss */
-.view-thumb .thumbnails {
-  *zoom: 1;
-}
-/* line 38, ../../../sandbox/gems/gems/compass-0.12.2/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
-.view-thumb .thumbnails:after {
-  content: "";
-  display: table;
-  clear: both;
-}
 /* line 7, ../sass/volume/thumb.scss */
 .view-thumb .thumbnails.rtl .page-item {
   float: right;
 }
 /* line 13, ../sass/volume/thumb.scss */
+.view-thumb .thumbnails:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+/* line 19, ../sass/volume/thumb.scss */
 .view-thumb .page-item {
   min-height: 100px;
   min-width: 100px;
@@ -271,26 +267,26 @@ body {
   background-repeat: no-repeat;
   background-position: center;
 }
-/* line 31, ../sass/volume/thumb.scss */
+/* line 37, ../sass/volume/thumb.scss */
 .view-thumb .page-item.loaded {
   background-image: none;
 }
-/* line 34, ../sass/volume/thumb.scss */
+/* line 40, ../sass/volume/thumb.scss */
 .view-thumb .page-item.loaded img {
   visibility: visible;
 }
-/* line 39, ../sass/volume/thumb.scss */
+/* line 45, ../sass/volume/thumb.scss */
 .view-thumb .page-item .page-link {
   display: inline-block;
 }
-/* line 43, ../sass/volume/thumb.scss */
+/* line 49, ../sass/volume/thumb.scss */
 .view-thumb .page-item img {
   max-width: 100%;
   max-height: 100%;
   border: 1px solid #d5d3d3;
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
-/* line 52, ../sass/volume/thumb.scss */
+/* line 58, ../sass/volume/thumb.scss */
 .view-thumb .page-num {
   position: absolute;
   z-index: 50;
@@ -582,36 +578,44 @@ body {
   height: 98%;
   overflow: hidden;
   overflow-x: auto;
+  background-image: url(../graphics/thumb-loader.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+/* line 195, ../sass/volume/flip.scss */
+.view-2up .page-item.loaded img {
+  visibility: visible;
 }
 
-/* line 191, ../sass/volume/flip.scss */
+/* line 200, ../sass/volume/flip.scss */
 .view-2up .page-item img {
   /* max-height AND max-width will keep aspect ratio */
   max-height: 100%;
   max-width: 100%;
+  visibility: hidden;
   border: 1px solid #d5d3d3;
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* line 201, ../sass/volume/flip.scss */
+/* line 212, ../sass/volume/flip.scss */
 .view-2up .page-item.untypical-page img {
   /*border: 1px solid #686464;*/
   border: 4px double #d5d3d3;
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.8);
 }
 
-/* line 207, ../sass/volume/flip.scss */
+/* line 218, ../sass/volume/flip.scss */
 .view-2up .page-item button {
   margin: 10px;
   float: left;
 }
 
-/* line 212, ../sass/volume/flip.scss */
+/* line 223, ../sass/volume/flip.scss */
 .view-2up .page-item.page-right button {
   float: right;
 }
 
-/* line 216, ../sass/volume/flip.scss */
+/* line 227, ../sass/volume/flip.scss */
 .view-2up .page-num {
   color: #666;
   font-size: 24px;
@@ -621,13 +625,13 @@ body {
   font-weight: bold;
 }
 
-/* line 225, ../sass/volume/flip.scss */
+/* line 236, ../sass/volume/flip.scss */
 .view-2up .page-item {
   min-width: auto;
   height: 98%;
 }
 
-/* line 231, ../sass/volume/flip.scss */
+/* line 242, ../sass/volume/flip.scss */
 .view-2up .page-left {
   width: 50%;
   /*48%;*/
@@ -641,13 +645,13 @@ body {
   text-align: right;
 }
 
-/* line 243, ../sass/volume/flip.scss */
+/* line 254, ../sass/volume/flip.scss */
 .view-2up .page-left .page-num {
   right: auto;
   left: 60px;
 }
 
-/* line 248, ../sass/volume/flip.scss */
+/* line 259, ../sass/volume/flip.scss */
 .view-2up .page-right {
   width: 50%;
   /*48%;*/
@@ -660,32 +664,32 @@ body {
   text-align: left;
 }
 
-/* line 259, ../sass/volume/flip.scss */
+/* line 270, ../sass/volume/flip.scss */
 .view-2up .page-item.empty {
   background: #fff;
   border: none;
   box-shadow: none;
 }
 
-/* line 267, ../sass/volume/flip.scss */
+/* line 278, ../sass/volume/flip.scss */
 .flip-rotating {
   -webkit-transition: all 1s ease;
   transition: rotate 1s ease;
 }
 
-/* line 272, ../sass/volume/flip.scss */
+/* line 283, ../sass/volume/flip.scss */
 .flip-rotated-90 {
   -webkit-transform: rotate(90deg);
   margin-top: 200px;
   margin-bottom: 200px;
 }
 
-/* line 278, ../sass/volume/flip.scss */
+/* line 289, ../sass/volume/flip.scss */
 .flip-rotated-180 {
   -webkit-transform: rotate(180deg);
 }
 
-/* line 282, ../sass/volume/flip.scss */
+/* line 293, ../sass/volume/flip.scss */
 .flip-rotated-270 {
   -webkit-transform: rotate(270deg);
   margin-top: 200px;

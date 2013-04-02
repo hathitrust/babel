@@ -186,12 +186,23 @@
     overflow: hidden;
     overflow-x: auto;
 
+    background-image: url(../graphics/thumb-loader.gif);
+    background-repeat: no-repeat;
+    background-position: center;
+
+
+    &.loaded {
+        img { visibility: visible; }
+    }
+
 }
 
 .view-2up .page-item img {
     /* max-height AND max-width will keep aspect ratio */
     max-height: 100%;
     max-width: 100%;
+
+    visibility: hidden;
 
     border: 1px solid #d5d3d3;
     box-shadow: 0 1px 10px rgba(0,0,0,.1);

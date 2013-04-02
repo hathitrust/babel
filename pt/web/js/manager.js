@@ -33,12 +33,12 @@ HT.Manager = {
         $.getJSON(href + "callback=?", 
             { id : this.options.id, format : 'items', limit : 1000002, method : 'fudged', start : 0  },
             function(data) {
-                console.log("processing", data.items.length);
+                // console.log("processing", data.items.length);
                 self.data = data;
                 self.num_pages = data.items.length;
                 self.reading_order = data.readingOrder;
                 self.parse_page_numbers();
-                console.log("ready");
+                // console.log("ready");
                 $.ajaxSetup({ async: true });
                 // callback();
                 self.view.start();

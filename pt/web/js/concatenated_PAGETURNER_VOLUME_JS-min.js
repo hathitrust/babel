@@ -3310,6 +3310,18 @@ HT.Reader = {
     },
 
     updateView: function(view) {
+        if ( view == this.getView() ) {
+            return;
+        }
+
+        if ( view == 'image' || view == 'plaintext' ) {
+            window.location.href = $this.attr('href');
+            return;
+        }
+
+        this.$views.find("a.active").removeClass("active");
+        this.$views.find("a[data-target=" + view + "]").addClass("active");
+
         this._tracking = false;
         this._handleView(this.getView(), 'exit');
         this._handleView(view, 'start');
@@ -3344,24 +3356,14 @@ HT.Reader = {
             return;
         }
 
-        var $views = $(".action-views");
-        $views.on("click", "a", function(e) {
+        self.$views = $(".action-views");
+        self.$views.on("click", "a", function(e) {
             e.preventDefault();
             var $this = $(this);
             var target = $this.data('target');
-            if ( target != $views.attr('current') ) {
-
-                if ( target == 'image' || target == 'plaintext' ) {
-                    window.location.href = $this.attr('href');
-                    return;
-                }
-
-                $views.find("a.active").removeClass("active");
-                $this.addClass("active");
-                self.updateView($(this).data('target'));
-            }
+            self.updateView(target);
         })
-        $views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
+        self.$views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
 
         this._bindAction("go.first");
         this._bindAction("go.prev");
@@ -3414,6 +3416,12 @@ HT.Reader = {
             self.setCurrentSeq(seq);
         })
 
+        $.subscribe("update.focus.page", function(e, seq) {
+            // we define the focus
+            self.setCurrentSeq(seq);
+            self.updateView("1up");
+        });
+
         $.subscribe("view.ready.reader", function() {
             self._tracking = true;
         });
@@ -3446,7 +3454,7 @@ HT.Reader = {
 
         this._current_seq = seq;
         this._updateState();
-        this._updatePDFLinks();
+        this._updateLinks();
 
         $(".action-views").find("a").each(function() {
             self._updateLinkSeq($(this), seq);
@@ -3554,7 +3562,7 @@ HT.Reader = {
         }
     },
 
-    _updatePDFLinks: function(seq) {
+    _updateLinks: function(seq) {
         var self = this;
         if ( ! seq ) { seq = this.getCurrentSeq(); }
         if ( $.isArray(seq) ) {
@@ -3569,6 +3577,7 @@ HT.Reader = {
             var $link = $("#pagePdfLink");
             self._updateLinkSeq($link, seq);
         }
+        self._updateLinkSeq($("#pageURL"), seq);
     },
 
     _updateLinkSeq: function($link, seq) {
@@ -3578,8 +3587,13 @@ HT.Reader = {
             if ( ! $link.hasClass("disabled") ) {
                 $link.attr("disabled", null);
             }
-            var href = $link.attr("href");
-            $link.attr("href", href.replace(/seq=\d+/, "seq=" + seq));
+            if ( $link.is("input") ) {
+                var href = $link.val();
+                $link.val(href.replace(/seq=\d+/, "seq=" + seq))
+            } else {
+                var href = $link.attr("href");
+                $link.attr("href", href.replace(/seq=\d+/, "seq=" + seq));
+            }
         }
     },
 
@@ -3685,12 +3699,12 @@ HT.Manager = {
         $.getJSON(href + "callback=?", 
             { id : this.options.id, format : 'items', limit : 1000002, method : 'fudged', start : 0  },
             function(data) {
-                console.log("processing", data.items.length);
+                // console.log("processing", data.items.length);
                 self.data = data;
                 self.num_pages = data.items.length;
                 self.reading_order = data.readingOrder;
                 self.parse_page_numbers();
-                console.log("ready");
+                // console.log("ready");
                 $.ajaxSetup({ async: true });
                 // callback();
                 self.view.start();
@@ -4391,6 +4405,13 @@ HT.Viewer.Thumbnail = {
             self.updateZoom(0.8);
         })
 
+        $body.on('click.thumb', '.page-link', function(e) {
+            e.preventDefault();
+            // we carry the seq as a hash
+            var seq = $(this).attr('href').substr(1);
+            $.publish("update.focus.page", ( seq ));
+        })
+
         $body.on('image:fudge.thumb', "img", function() {
             var h1 = $(this).data('natural-height');
             var $parent = $(this).parents(".page-item");
@@ -4399,10 +4420,12 @@ HT.Viewer.Thumbnail = {
             $parent.addClass("loaded");
         });
 
+        // does this work in IE8?
         $(window).on("resize.thumb", function() {
             self.$container.css({ width : '' }).hide();
             setTimeout(function() {
                 self.$container.width(self.$container.parent().width()).show();
+                console.log("THUMBNAIL RESIZED");
                 $(window).scroll();
             }, 100);
         })
@@ -4474,8 +4497,9 @@ HT.Viewer.Thumbnail = {
             if ( ! $page.is(".imaged")) {
                 $page.addClass("imaged");
                 var seq = $page.data('seq');
-                var $a = $("<a class='page-link' href='#{SEQ}'></a>".replace('{SEQ}', seq)).appendTo($page);
-                console.log("LOAD PAGE", self.id, self.w);
+                // var $a = $("<a class='page-link' href='#{SEQ}'></a>".replace('{SEQ}', seq)).appendTo($page);
+                // console.log("LOAD PAGE", self.id, self.w);
+                var $a = $page.find("a.page-link");
                 var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: self.w, action : 'thumbnail' });
                 $a.append($img);
             } else {
@@ -4489,18 +4513,17 @@ HT.Viewer.Thumbnail = {
         var self = this;
 
         $("#content").empty();
-        self.$container = $('<div class="thumbnails"></div>').appendTo($("#content"));
+        // self.$container = $("#content");
+        self.$container = $('<div class="thumbnails"></div>');
 
         var total_w = self.$container.width();
         // really, how many thumbnails can we fit at self.w?
-        self.$container.width(self.$container.width());
+        // self.$container.width(self.$container.width());
 
 
         if ( self.options.manager.reading_order == 'right-to-left' ) {
             self.$container.addClass("rtl");
         }
-
-        var current = window.location.hash;
 
         var fragment = document.createDocumentFragment();
 
@@ -4510,7 +4533,7 @@ HT.Viewer.Thumbnail = {
             var r = self.w / meta.width;
             var h = meta.height * r;
 
-            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div></div>'.replace('{SEQ}', seq)).appendTo($(fragment));
+            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><a class="page-link" href="#{SEQ}"></a></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
             $page.css({ height : h, width : self.w });
             $page.data('seq', seq);
@@ -4519,7 +4542,10 @@ HT.Viewer.Thumbnail = {
             // need to bind clicking the thumbnail to open to that page; so wrap in an anchor!!
         }
 
+        $(fragment).append("<br clear='both' />");
         self.$container.append(fragment);
+        $("#content").append(self.$container);
+        self.$container.show();
 
         $(window).scroll();
 
@@ -4531,6 +4557,7 @@ HT.Viewer.Thumbnail = {
 
     checkPageStatus: function() {
         var self = this;
+
         var first = $("#page1").fracs();
         var last = $("#page" + self.options.manager.num_pages).fracs();
 
@@ -4668,6 +4695,8 @@ HT.Viewer.Flip = {
             var w2 = $(this).parent().parent().width() / 2;
 
             var t = 100;
+
+            $(this).parent().addClass("loaded");
 
             if ( w1 - self.w > t ) {
                 var $parent = $(this).parent();

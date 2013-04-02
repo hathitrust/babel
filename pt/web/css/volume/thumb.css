@@ -1,19 +1,15 @@
 /* lets me easily translate font-sizes from mockup */
-/* line 4, ../../sass/volume/thumb.scss */
-.view-thumb .thumbnails {
-  *zoom: 1;
-}
-/* line 38, ../../../../sandbox/gems/gems/compass-0.12.2/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
-.view-thumb .thumbnails:after {
-  content: "";
-  display: table;
-  clear: both;
-}
 /* line 7, ../../sass/volume/thumb.scss */
 .view-thumb .thumbnails.rtl .page-item {
   float: right;
 }
 /* line 13, ../../sass/volume/thumb.scss */
+.view-thumb .thumbnails:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+/* line 19, ../../sass/volume/thumb.scss */
 .view-thumb .page-item {
   min-height: 100px;
   min-width: 100px;
@@ -28,26 +24,26 @@
   background-repeat: no-repeat;
   background-position: center;
 }
-/* line 31, ../../sass/volume/thumb.scss */
+/* line 37, ../../sass/volume/thumb.scss */
 .view-thumb .page-item.loaded {
   background-image: none;
 }
-/* line 34, ../../sass/volume/thumb.scss */
+/* line 40, ../../sass/volume/thumb.scss */
 .view-thumb .page-item.loaded img {
   visibility: visible;
 }
-/* line 39, ../../sass/volume/thumb.scss */
+/* line 45, ../../sass/volume/thumb.scss */
 .view-thumb .page-item .page-link {
   display: inline-block;
 }
-/* line 43, ../../sass/volume/thumb.scss */
+/* line 49, ../../sass/volume/thumb.scss */
 .view-thumb .page-item img {
   max-width: 100%;
   max-height: 100%;
   border: 1px solid #d5d3d3;
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
-/* line 52, ../../sass/volume/thumb.scss */
+/* line 58, ../../sass/volume/thumb.scss */
 .view-thumb .page-num {
   position: absolute;
   z-index: 50;

@@ -2,12 +2,18 @@
 
 .view-thumb {
     .thumbnails {
-        @include pie-clearfix;
+        // @include pie-clearfix;
 
         &.rtl .page-item {
             float: right;
         }
 
+    }
+
+    .thumbnails:after {
+        content: "";
+        display: table;
+        clear: both;
     }
 
     .page-item {

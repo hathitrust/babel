@@ -82,6 +82,13 @@ HT.Viewer.Thumbnail = {
             self.updateZoom(0.8);
         })
 
+        $body.on('click.thumb', '.page-link', function(e) {
+            e.preventDefault();
+            // we carry the seq as a hash
+            var seq = $(this).attr('href').substr(1);
+            $.publish("update.focus.page", ( seq ));
+        })
+
         $body.on('image:fudge.thumb', "img", function() {
             var h1 = $(this).data('natural-height');
             var $parent = $(this).parents(".page-item");
@@ -90,10 +97,12 @@ HT.Viewer.Thumbnail = {
             $parent.addClass("loaded");
         });
 
+        // does this work in IE8?
         $(window).on("resize.thumb", function() {
             self.$container.css({ width : '' }).hide();
             setTimeout(function() {
                 self.$container.width(self.$container.parent().width()).show();
+                console.log("THUMBNAIL RESIZED");
                 $(window).scroll();
             }, 100);
         })
@@ -165,8 +174,9 @@ HT.Viewer.Thumbnail = {
             if ( ! $page.is(".imaged")) {
                 $page.addClass("imaged");
                 var seq = $page.data('seq');
-                var $a = $("<a class='page-link' href='#{SEQ}'></a>".replace('{SEQ}', seq)).appendTo($page);
-                console.log("LOAD PAGE", self.id, self.w);
+                // var $a = $("<a class='page-link' href='#{SEQ}'></a>".replace('{SEQ}', seq)).appendTo($page);
+                // console.log("LOAD PAGE", self.id, self.w);
+                var $a = $page.find("a.page-link");
                 var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: self.w, action : 'thumbnail' });
                 $a.append($img);
             } else {
@@ -180,18 +190,17 @@ HT.Viewer.Thumbnail = {
         var self = this;
 
         $("#content").empty();
-        self.$container = $('<div class="thumbnails"></div>').appendTo($("#content"));
+        // self.$container = $("#content");
+        self.$container = $('<div class="thumbnails"></div>');
 
         var total_w = self.$container.width();
         // really, how many thumbnails can we fit at self.w?
-        self.$container.width(self.$container.width());
+        // self.$container.width(self.$container.width());
 
 
         if ( self.options.manager.reading_order == 'right-to-left' ) {
             self.$container.addClass("rtl");
         }
-
-        var current = window.location.hash;
 
         var fragment = document.createDocumentFragment();
 
@@ -201,7 +210,7 @@ HT.Viewer.Thumbnail = {
             var r = self.w / meta.width;
             var h = meta.height * r;
 
-            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div></div>'.replace('{SEQ}', seq)).appendTo($(fragment));
+            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><a class="page-link" href="#{SEQ}"></a></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
             $page.css({ height : h, width : self.w });
             $page.data('seq', seq);
@@ -210,7 +219,10 @@ HT.Viewer.Thumbnail = {
             // need to bind clicking the thumbnail to open to that page; so wrap in an anchor!!
         }
 
+        $(fragment).append("<br clear='both' />");
         self.$container.append(fragment);
+        $("#content").append(self.$container);
+        self.$container.show();
 
         $(window).scroll();
 
@@ -222,6 +234,7 @@ HT.Viewer.Thumbnail = {
 
     checkPageStatus: function() {
         var self = this;
+
         var first = $("#page1").fracs();
         var last = $("#page" + self.options.manager.num_pages).fracs();
 
