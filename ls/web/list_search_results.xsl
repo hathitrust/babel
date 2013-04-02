@@ -3,6 +3,7 @@
  xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
+  <!-- XXX unicorn version-->
   <!--## Global Variables ##-->
 
   <xsl:variable name="g_current_sort_param" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='sort']"/>
@@ -68,13 +69,26 @@
     <xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCount"/>
   </xsl:variable>
 
-  <!-- ## end Global Variables ##-->
+  <xsl:variable name="Field1">
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='field1']"/>    
+  </xsl:variable>
+  <xsl:variable name="gSelected">
+    <xsl:value-of select="/MBooksTop/HeaderSearchSelect/Selected"/>
+  </xsl:variable>
+
+  <xsl:variable name="gLimit">
+    <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+  </xsl:variable>
+
+  <!-- ######################### end Global Variables ###################################-->
+
+
 
   <!-- XXX temporary dummy template until Roger puts this in the right place -->
   <xsl:template name="google_analytics"/>
 
   <xsl:template name="setup-extra-header">
-    <link rel="stylesheet" type="text/css" href="/mb/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="/ls/css/screen.css" />
     <xsl:call-template name="include_local_javascript" />
     <xsl:call-template name="load_js_and_css"/>
   </xsl:template>
@@ -83,189 +97,23 @@
 
 
 
-  <!-- Main template -->
-  <xsl:template match="/MBooksTop_DONTMATCHIT">
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
-      <head>
-
-        <title>
-          <xsl:call-template name="get_page_title"/>
-        </title>
-
-        
-        <!-- jQuery from the Google CDN -->
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-
-
-        
-        <xsl:call-template name="load_js_and_css"/>
-        <xsl:call-template name="include_local_javascript"/>
-        <xsl:call-template name="debug_CSS"/>
-        <!-- local css to be incorporated in global MBooks css later
-             added here to overide common-web/MBooksCol.css-->
-        <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
-
-
-      </head>
-
-      <body class="yui-skin-sam" onload="initCheckall()">
-
-        <div id="mbMasterContainer">
-          <div id="DlpsDev">
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
-          </div>
-
-          <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-          </div>
-
-          <xsl:call-template name="header"/>
-
-          <div id="mbContentContainer" class="mbSearchResultsContainer">
-          <h2 class="SkipLink">Main Content</h2>
-
-            <div id="main">
-              <!--     XXX          <div class="betasearch">-->
-                <xsl:call-template name="SearchWidget"/>
-                <!--</div>-->
-                <!--XXX              <div class="betasearchinfo">  
-              </div>-->
-              <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='false'">
-                <xsl:choose>
-                  <xsl:when test="SearchResults/WellFormed!=1">
-                    <xsl:call-template name="QueryRewrite">
-                      <xsl:with-param name="ProcessedQueryString">
-                        <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
-                      </xsl:with-param>
-                    </xsl:call-template>
-                  </xsl:when>
-
-                  <xsl:when test="SearchResults/UnBalancedQuotes=1">
-                    <xsl:call-template name="QueryRewriteUnbalanced">
-                        <xsl:with-param name="ProcessedQueryString">
-                          <xsl:value-of select="/MBooksTop/SearchResults/ProcessedQueryString"/>                    
-                        </xsl:with-param>
-                      </xsl:call-template>     
-                    </xsl:when>
-                </xsl:choose>
-                
-            </xsl:if>
-              <div class="SearchAndRefine">
-                <!--XXX this is moved into search results area.  What do we do with these two divs? -->
-                <!--<xsl:call-template name="SearchResults_status"/>-->
-                <div class="refine">
-
-                </div>
-              </div>
-              
-              <xsl:choose>
-                <xsl:when test="SearchResults/Item">
-                  <xsl:call-template name="DisplayContent"/>
-                </xsl:when>
-                <xsl:when test="SearchResults/SolrError[normalize-space(.)]">
-                  <xsl:call-template name="SolrError"/>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:call-template name="NoResults"/>
-                </xsl:otherwise>
-              </xsl:choose>
-            </div>
-          </div>
-          <xsl:call-template name="footer"/>
-          <xsl:call-template name="google_analytics" />
-
-        </div>
-
-        <!-- this is where we are supposed to put jquery javascript, check with roger -->
-        <script type="text/javascript" src="../ls/web/js/ls_misc.js"></script>
-
-        <!--
-    <xsl:text disable-output-escaping="yes">&lt;script type="text/javascript"&gt;</xsl:text>
-    <xsl:value-of select="/MBooksTop/MBooksGlobals/LoggedInJs"/>
-    <xsl:text disable-output-escaping="yes"> &lt;/script&gt;</xsl:text>
--->
-      </body>
-    </html>
-  </xsl:template>
-
-  <!-- TEMPLATE -->
-  <xsl:template name="subnav_header">
-    <xsl:call-template name="HathiCol"/>
-  </xsl:template>
-
-  <!-- TEMPLATE -->
-  <xsl:template name="DisplayContentOLD">
-          <!-- for debugging facets-->
-          <div id="lsSidebarContainer" class="ls_box">
-            <!--XXX            <h3>Refine Results</h3>-->
-          <xsl:call-template name="facets"/>
-        </div>
-
-    <div id="ColContainer" class="ls">
-      <div class="ColContent">
-
-        <!-- Added: YUI overlay is displayed here -->
-        <div id="errormsg">
-          <div class="bd"></div>
-        </div>
-        <xsl:call-template name="SearchResultList"/>
-      </div>
-    </div>
-  </xsl:template>
-
-  <!-- TEMPLATE -->
-  <xsl:template name="SearchResultList">
-
-    <div id="mbContentContainer" class="main clearfix actions" >
-      <!-- 7/7/11 suz wants message about how many found in search result box-->
-      <xsl:call-template name="SearchResults_status"/>
-
-      <form id="form_ls1" name="form_ls1" method="get" action="ls?">
-        <div id="hiddenParams_ls1">
-          <xsl:call-template name="GetHiddenParams"/>
-        </div>
-        <div id="actionsRow1">
-
-          <xsl:call-template name="BuildSortWidget"/>
-          <xsl:call-template name="BuildPagingControls">
-            <xsl:with-param name="which_paging" select="'top_paging'"/>
-          </xsl:call-template>
-        </div>
-      </form>
-
-      <!-- XXX name bad but check Ie<div id="form_lsCB" name="form_lsCB" >-->
-      <div id="form_lsCB"  >
-        <div id="actionsRow2">
-          <h3 class="offscreen">Collection Management Tools</h3>
-          <div class="selectAll">
-          <label for="checkAll">Select all on page</label>
-          <input type="checkbox" id="checkAll"/></div>
-          <xsl:call-template name="BuildItemSelectActions"/>
-        </div>
-      </div>
-      <h3 class="offscreen">List of Results</h3>
-      <table id="itemTable" class="itemTable">
-        <xsl:for-each select="SearchResults/Item">
-          <xsl:call-template name="BuildItemChunk"/>
-        </xsl:for-each>
-      </table>
-      <div id="listisFooter">
-        <form id="form_ls2" name="form_ls2" method="get" action="ls?">
-          <div id="hiddenParams_ls2">
-            <xsl:call-template name="GetHiddenParams"/>
-          </div>
-          <xsl:call-template name="BuildPagingControls">
-            <xsl:with-param name="which_paging" select="'bottom_paging'"/>
-          </xsl:call-template>
-        </form>
-      </div>
-    </div>
-  </xsl:template>
-
   <!--##############################new templates##################################################-->
 
   <xsl:template name="contents">
+    <!-- XXX do proper thing if no results -->
+    <!-- XXX temporarily put these back in until Roger fixes this
+         They actually should go at the very top of the body, but that would require a change to skeleton.xsl
+        Not sure what first one is but the second shows debug messages -->
+
+
+    <div>
+      <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
+    </div>
     <xsl:call-template name="sidebar" />
+<div id="DlpsDev">
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
+          </div>
+
     <xsl:call-template name="list-items-results" />
   </xsl:template>
 
@@ -278,17 +126,6 @@
 REMOVE the below and see if it will call list_utils
 
 -->
-    <xsl:template name="list-items-resultsCustom">
-      <div class="ColContent">
-
-        <!-- Added: YUI overlay is displayed here -->
-        <div id="errormsg">
-          <div class="bd"></div>
-        </div>
-        <xsl:call-template name="SearchResultList"/>
-      </div>
-    
-  </xsl:template>
 
   <!--XXX template copied from mb list_items as basis to modify-->
   <xsl:template name="list-items-results">
@@ -310,7 +147,9 @@ REMOVE the below and see if it will call list_utils
 
       <!--XXX      <xsl:call-template name="status-update" /> -->
 
-      <xsl:call-template name="decideDisplayRefine"/>
+      <!-- XXX       <xsl:call-template name="decideDisplayRefine"/> -->
+       <xsl:call-template name="Refine"/>
+
       <xsl:choose>
         <xsl:when test="SearchResults/Item">
           <xsl:call-template name="DisplayContent">
@@ -318,12 +157,56 @@ REMOVE the below and see if it will call list_utils
             <xsl:with-param name="item-list-contents" select="'items'" />
           </xsl:call-template>
         </xsl:when>
+        <xsl:when test="SearchResults/SolrError[normalize-space(.)]">
+          <xsl:call-template name="SolrError"/>
+        </xsl:when>
         <xsl:otherwise>
-          <!-- XXX fix this  -->
-               <h1>FIX THIS decideDisplayRefine</h1>
+          <xsl:call-template name="NoResults"/>
         </xsl:otherwise>
       </xsl:choose>
+
     </div>
+
+  </xsl:template>
+
+  <!-- templates to make search box in header sticky  make sure not confused by an advanced search-->
+  <xsl:template name="header-search-q1-value" >
+    <!-- from skeleton.xsl global gets current cgi q1 param-->
+    <xsl:value-of select="$gQ1"/>
+  </xsl:template>
+
+
+
+
+  <!-- XXX  template header-search-options-selected
+       Name mapping issue here  hard coded in the PI handler and in cgi/one
+       ls/ cgi/one $LS_MAP maps from what is in the header search form to correct 
+       field1 params.  Reverse mapping from field1 params to header-search form params
+       in PIFILLER/ListSearchResults::handle_HEADER_SEARCH_SELECT 
+   -->
+
+   <xsl:template name="header-search-options-selected">
+     <xsl:param name="value" value="all" />
+     
+     <xsl:if test= "$value = $gSelected">
+         <xsl:attribute name="selected">selected</xsl:attribute>
+     </xsl:if>
+     
+   </xsl:template>
+
+   <!-- XXX ask Roger if we can clean this up. i.e. skeleton calls it without a param-->
+
+<xsl:template name="header-search-ft-checkbox">
+    
+    <label>
+      <input type="checkbox" name="ft" value="ft">
+        <xsl:if test="$gLimit='ft'">
+          <xsl:attribute name="checked" value="checked"/>
+        </xsl:if>
+      </input>
+      Full view only
+    </label>
+      
 
   </xsl:template>
 
@@ -334,6 +217,7 @@ REMOVE the below and see if it will call list_utils
   <!--################################################################################-->
   <!-- TEMPLATE -->
   <xsl:template name="SearchResults_status">
+   
     <div class="SearchResults_status">
       <xsl:if test="$debug='YES'">
         <span id="TempDebug">SEARCH RESULTS</span>
@@ -380,7 +264,7 @@ REMOVE the below and see if it will call list_utils
 </xsl:template>
 
 
-
+<!-- ####################### Advanced search status messages, called by SearchResults_status ############# -->
   <xsl:template name="advanced">
 
       <xsl:variable name="SingleQuery">
@@ -500,18 +384,19 @@ REMOVE the below and see if it will call list_utils
       </xsl:if>
       -->
       
-      <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (WellFormed!=1)">
-        <div class="advancedMsg">
+      <!--xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (WellFormed!=1)"-->
+      <xsl:if test="WellFormed!=1">
+
         <xsl:call-template name="QueryRewrite">
           <xsl:with-param name="ProcessedQueryString">
             <xsl:value-of select="ProcessedQuery"/>                    
           </xsl:with-param>
         </xsl:call-template>     
-      </div>
+
       </xsl:if>
 
-      <xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (UnBalancedQuotes=1)">
-
+      <!--xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (UnBalancedQuotes=1)"-->
+      <xsl:if test="UnBalancedQuotes=1">
         <div class="advancedMsg">
         <xsl:call-template name="QueryRewriteUnbalanced">
           <xsl:with-param name="ProcessedQueryString">
@@ -523,18 +408,15 @@ REMOVE the below and see if it will call list_utils
 
     </xsl:template>
     
-    
 
 
-
-
-
+<!--  Helpers for advanced search status messages called by template advancedContent -->    
 
   <!-- TEMPLATE -->
   <xsl:template name="QueryRewrite">
     <xsl:param name="ProcessedQueryString"/>
     <div class="SearchResults_status">
-      <div class="infoAlert">
+      <div class="alert alert-block">
         One of the operators: <span>AND</span>, <span>OR</span>, <span>)</span>, or <span>(</span> was missing or placed incorrectly in your query. Your query was changed and submitted as: <em>all of these words: </em>
       <span>
           <xsl:value-of select="$ProcessedQueryString"/>
@@ -547,7 +429,8 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="QueryRewriteUnbalanced">
     <xsl:param name="ProcessedQueryString"/>
     <div class="SearchResults_status">
-      <div class="infoAlert">
+
+      <div class="alert alert-block">
         Your query contained ambiguous quotes. Your query was changed and submitted as: 
       <span>
           <xsl:value-of select="$ProcessedQueryString"/>
@@ -556,6 +439,9 @@ REMOVE the below and see if it will call list_utils
       </div>
     </div>
   </xsl:template>
+
+<!-- ####################### End Advanced search status messages, called by SearchResults_status ############# -->    
+
 
   <!-- TEMPLATE -->
 
@@ -572,7 +458,7 @@ REMOVE the below and see if it will call list_utils
             <!-- if the ft checkbox was checked and there are no ft but some so then display stuff below -->
             <xsl:when test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
               <div class="LSerror">
-                <xsl:text>There are no Full View items matching your search</xsl:text>
+                <xsl:text>There are no Full View items matching your search templage NO results</xsl:text>
                 <br></br>
                 <xsl:element name="a">
                   <xsl:attribute name="href">
@@ -589,7 +475,7 @@ REMOVE the below and see if it will call list_utils
             <!-- advanced search with either limits or both boxes
                  Should this logic be in the PI filler instead of the XSL?
                  -->
-            
+            <!-- XXX test this with new isAdvanced criteria -->  
             <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'"> 
             <div class="AdvancedLSerror">
 
@@ -663,10 +549,11 @@ REMOVE the below and see if it will call list_utils
   </xsl:template>
 
 
-  <!--##  PAGING-related ##-->
+  <!--#########################  PAGING-related ###################################-->
 
   <!-- TEMPLATE -->
   <xsl:template name="Paging">
+
     <ul class="PageWidget">
       <li>
         <xsl:choose>
@@ -708,26 +595,7 @@ REMOVE the below and see if it will call list_utils
           </xsl:otherwise>
         </xsl:choose>
       </li>
-      <!-- foobar suz says make it look like catalog XXX this is a Hack!-->
-
-      <!-- This doesnt work right!###############################
-    <xsl:for-each select="/MBooksTop/Paging/EndPageLinks/PageURL">
-
-        <xsl:call-template name="output_page_link_or_current_page"/>
-
-        <li>
-          <xsl:text>[ </xsl:text>
-          <xsl:element name ="a">
-            <xsl:attribute name="href">
-              <xsl:value-of select="Href"/>
-            </xsl:attribute>
-            <xsl:value-of select="Content"/>
-          </xsl:element>
-          <xsl:text> ]</xsl:text>
-        </li>
-    </xsl:for-each>
-##############################################################-->
-
+      <!--  suz says make it look like catalog XXX see hack that doesn't work in clean up!-->
 
     </ul>
   </xsl:template>
@@ -776,6 +644,7 @@ REMOVE the below and see if it will call list_utils
 
   <!-- TEMPLATE -->
   <xsl:template name="allpages">
+
     <xsl:for-each select="/MBooksTop/Paging/PageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
@@ -800,11 +669,10 @@ REMOVE the below and see if it will call list_utils
       </li>
     </xsl:if>
     
-    
     <xsl:for-each select="/MBooksTop/Paging/EndPageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
-    <!--    ##########################################################################-->
+
   </xsl:template>
 
 
@@ -828,53 +696,46 @@ REMOVE the below and see if it will call list_utils
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  <!--##  END PAGING-related ##-->
-
-  <!-- TEMPLATE -->
-  <xsl:template name="BuildSortWidget">
-    <!--XXX This code generates nothing, apparently no longer used-->
-    <div id="SortWidget">
-      <xsl:for-each select="/MBooksTop/SortWidget/SortWidgetSort">
-        <label for="sort">Sort by: </label>
-        <xsl:call-template name="BuildHtmlSelect">
-          <xsl:with-param name="id">SortWidgetSort</xsl:with-param>
-          <xsl:with-param name="class" select="'sort'"/>
-          <xsl:with-param name="key">
-            <xsl:text>doSort()</xsl:text>
-          </xsl:with-param>
-        </xsl:call-template>
-      </xsl:for-each>
-    </div>
-  </xsl:template>
+  <!--#########################  END PAGING-related ###################################-->
 
 
-  <!-- TEMPLATE: Sort sort direction pointer -->
-  <xsl:template name="get_sort_arrow">
-    <xsl:param name="which_sort"/>
-    <xsl:if test="$which_sort=$g_current_sort">
-      <!-- display arrow -->
-      <xsl:choose>
-        <xsl:when test="$g_current_sort_dir='a'">
-          <img width="12" height="10" src="/ls/common-web/graphics/arrow_up.gif" alt="sort descending"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <img width="12" height="10" src="/ls/common-web/graphics/arrow_down.gif" alt="sort ascending"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:if>
-  </xsl:template>
-
+  <!-- ################################# ls BuildItemChunk not used for now but needs looking at ################################# -->
   <!-- TEMPLATE -->  
+  <!--XXX TODO  compare this with list_utils BuildItemChunk.  Probably need stuff here since xml in ls different
+       consider fixing xml in ls to be consistant with what is in title field of CB db table, i.e. 245c/vernacular/enum cron stuff!!
+-->
+
+
+
+  <xsl:template name="GetTitle">
+    <xsl:value-of select="Title" disable-output-escaping="yes" />
+    <!-- Vernacular Title -->
+    <xsl:choose>
+      <xsl:when test="normalize-space(VernacularTitle)">
+        <div class="Itemtitle">
+          <xsl:value-of select="VernacularTitle" disable-output-escaping="yes" />
+          <xsl:call-template name="EnumCron"/>
+        </div>
+      </xsl:when>
+      
+      <xsl:otherwise>
+        <xsl:call-template name="EnumCron"/>
+      </xsl:otherwise>
+    </xsl:choose>          
+  </xsl:template>
+
+
+
   <xsl:template name="BuildItemChunkOld">
     <xsl:variable name="IndexStatus">indexed</xsl:variable>
 
     <xsl:variable name="row_class">
       <xsl:choose>
         <xsl:when test="(position() mod 2)=0">
-          <xsl:value-of select="'row roweven'"/>
+          <xsl:value-of select="'row result'"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="'row rowodd'"/>
+          <xsl:value-of select="'row result alt'"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -892,6 +753,63 @@ REMOVE the below and see if it will call list_utils
         <xsl:otherwise>viewonly</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
+
+
+    <!-- variables from list_utils ############################################
+    <xsl:variable name="fulltext_string">
+      <xsl:choose>
+        <xsl:when test="rights=8">This item is no longer available</xsl:when>
+        <xsl:otherwise></xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="fulltext_link_string">
+      <xsl:choose>
+        <xsl:when test="fulltext=1">Full view</xsl:when>
+        <xsl:otherwise>
+          <xsl:choose>
+            <xsl:when test="rights=8"> (Why not?)</xsl:when>
+            <xsl:otherwise>Limited (search-only)</xsl:otherwise>
+          </xsl:choose>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="fulltext_class">
+      <xsl:choose>
+        <xsl:when test="fulltext=1">fulltext icomoon-document-2</xsl:when>
+        <xsl:otherwise>
+          <xsl:choose>
+            <xsl:when test="rights=8"></xsl:when>
+            <xsl:otherwise>viewonly icomoon-locked</xsl:otherwise>
+          </xsl:choose>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="showing-collections">
+      <xsl:choose>
+        <xsl:when test="Collections">true</xsl:when>
+        <xsl:otherwise>false</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="span-n">
+      <xsl:choose>
+        <xsl:when test="$showing-collections = 'true'">7</xsl:when>
+        <xsl:otherwise>10</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="Date">
+      <xsl:value-of select="Date"/>
+    </xsl:variable>
+    ################################## end variables from list utils-->
+    <!--################################## end variables-->
+
+
+    <!-- XXX what is indexstatus -->
+
 
     <tr>
       <xsl:attribute name="class">
@@ -1069,9 +987,11 @@ REMOVE the below and see if it will call list_utils
     </xsl:if>
   </xsl:template>
 
+  <!-- ################################# ls BuildItemChunk not used for now but needs looking at #################################-->
 
+  <!--  add items widget -->
  <xsl:template name="BuildItemSelectActions">
-    <div class="SelectedItemActions">
+      <div class="SelectedItemActions">
       <!--XXX hide second error message for testing and then remove-->
       <!--
       <div id="errormsg">
@@ -1116,8 +1036,9 @@ REMOVE the below and see if it will call list_utils
     </select>
   </xsl:template>
   
-  
+  <!-- XXX remove?  don't think this is used -->
   <xsl:template name="GetHiddenParams">
+    <h1>Get hidden</h1>
     <xsl:copy-of select="$hidden_pn_param"/>
     <xsl:copy-of select="$hidden_sort_param"/>
     <xsl:copy-of select="$hidden_dir_param"/>
@@ -1212,7 +1133,7 @@ REMOVE the below and see if it will call list_utils
   </div>
 </xsl:template>
 
-
+<!--XXX what does the isAdvanced code below do?  Does it work with changed isAdvanced criteria? -->
 <xsl:template name="showSelected">
   <xsl:param name="isAdvanced" value="false"/>
   <div>
@@ -1332,153 +1253,6 @@ REMOVE the below and see if it will call list_utils
   </xsl:for-each>
 </xsl:template>
 
-
-
-<xsl:template name="selectedViewabilityFacet">
-
-  <!--if LimitType = so or ft show appropriate text with link to remove facet i.e. lmt=all  -->
-  <xsl:variable name="limitType">
-    <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
-  </xsl:variable>
-
-  <xsl:choose>
-    <xsl:when test="$limitType = 'so'">
-      <li>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
-          </xsl:attribute>
-          <xsl:attribute name ="class">
-            unselect
-          </xsl:attribute>
-
-          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
-        </xsl:element>
-        <span class="selectedfieldname">
-          <xsl:text>Viewability</xsl:text>
-      </span>
-        <xsl:text>:  Limited (search only)</xsl:text>
-      </li>
-      
-    </xsl:when>
-    <xsl:when test="$limitType = 'ft'">
-      <li>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
-          </xsl:attribute>
-          <xsl:attribute name ="class">
-            unselect
-          </xsl:attribute>
-          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
-        </xsl:element>
-        <span class="selectedfieldname">
-          <xsl:text>Viewability</xsl:text>
-      </span>
-        <xsl:text>:  Full View</xsl:text>
-      </li>
-    </xsl:when>
-    
-    <xsl:otherwise>
-      
-    </xsl:otherwise>
-  </xsl:choose>
-</xsl:template>
-
-
-
-
-<!--######################################################################-->
-<xsl:template name="pseudofacet">
-  <xsl:text>    
-  </xsl:text>
-  <dt class="facetField">Viewability</dt>
-  <xsl:text>                
-  </xsl:text>
-
-  <xsl:variable name="limitType">
-    <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
-  </xsl:variable>
-  
-
-  <xsl:variable name ="SearchOnlyCount">
-        <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCount"/>
-  </xsl:variable>
-
-  <xsl:variable name ="FullTextCount">
-        <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
-  </xsl:variable>
-
-
-  <xsl:variable name="fakeFullTextFacet">
-    <xsl:text> </xsl:text>
-    <xsl:if test="$FullTextCount > 0">
-      <dd>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
-          </xsl:attribute>
-          <xsl:attribute name ="class">
-            
-          </xsl:attribute>
-          <xsl:text>Full View </xsl:text>
-        </xsl:element>
-        <xsl:text> (</xsl:text>
-        <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCountDisplay"/>
-        <xsl:text>) </xsl:text>
-      </dd>
-    </xsl:if>
-  </xsl:variable>
-  
-  <xsl:variable name="fakeSearchOnlyFacet">
-    <xsl:text> </xsl:text>
-    <xsl:if test="$SearchOnlyCount > 0">
-
-    <dd>
-      <xsl:element name="a">
-        <xsl:attribute name="href">
-          <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
-        </xsl:attribute>
-        <xsl:attribute name ="class">
-          
-        </xsl:attribute>
-        <xsl:text>Limited (search only) </xsl:text>
-      </xsl:element>
-      <xsl:text> (</xsl:text>
-      <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyCountDisplay"/>
-      <xsl:text>) </xsl:text>
-    </dd>
-  </xsl:if>
-  </xsl:variable>
-
-
-  <xsl:choose>    
-   <xsl:when test="$limitType = 'so'">
-     <xsl:copy-of select="$fakeFullTextFacet"/>
-   </xsl:when>
-   <xsl:when test="$limitType = 'ft'">
-     <xsl:copy-of select="$fakeSearchOnlyFacet"/>
-   </xsl:when>
-   <xsl:otherwise>
-     <!-- put facet with highest count first -->
-     <xsl:choose>
-       <xsl:when test="$SearchOnlyCount &gt; $FullTextCount">
-         <xsl:copy-of select="$fakeSearchOnlyFacet"/>
-         <xsl:copy-of select="$fakeFullTextFacet"/>
-       </xsl:when>
-       <xsl:otherwise>
-         <xsl:copy-of select="$fakeFullTextFacet"/>
-         <xsl:copy-of select="$fakeSearchOnlyFacet"/>
-       </xsl:otherwise>
-     </xsl:choose>
-   </xsl:otherwise>
- </xsl:choose>
-</xsl:template>
-
-
-
-
-
   <xsl:template name="facetFields">
     <xsl:param name="fieldName">Unknown facet</xsl:param>
 
@@ -1532,29 +1306,10 @@ REMOVE the below and see if it will call list_utils
 
   </xsl:template>
 
-  <xsl:template name="GetCurrentCGI">
-    <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
-      <xsl:choose>
-        <!-- replace with a test for the first member of the set -->
-        <xsl:when test="position()=1">
-          <xsl:text>?</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>
-          <!-- how do we output a literal ampersand -->
-          <xsl:text>&amp;</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-      
-      <xsl:value-of select="@name"/>
-      <xsl:text>=</xsl:text>
-      <xsl:value-of select="."/>
-      
-    </xsl:for-each>
-  </xsl:template>
 
-
+  <!-- get-page-title called by skeleton.xsl --> 
  <xsl:template name="get-page-title">
-   <xsl:choose>
+     <xsl:choose>
      <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
        <xsl:text>Full-text Advanced Search Results</xsl:text>
      </xsl:when>
@@ -1574,6 +1329,10 @@ REMOVE the below and see if it will call list_utils
        ft and st Tab should only show up if count > 0
        Active tabs should be the limit type
        Hyperlined tabs should be everything but the LimitType (all|ft|so)
+
+       XXX consider changing logic so if limit=ft and there are some results but no ft, then we want to show both tabs but inside the active tab
+       we want to show an appropriate  zero results message
+
    ##################################  -->
   <xsl:template name="Refine">
     <div>
@@ -1592,7 +1351,11 @@ REMOVE the below and see if it will call list_utils
 
     <ul class="nav nav-tabs">
 
-      <xsl:if test="($FullTextCount &gt; 0) and ($SearchOnlyCount &gt; 0)">
+      <!-- This is for 3 tab logic    <xsl:if test="($FullTextCount &gt; 0) and ($SearchOnlyCount &gt; 0)" -->
+      <!--XXX logic below assumes only an all tab and one other -->
+     <xsl:if test="($FullTextCount &gt; 0) or ($SearchOnlyCount &gt; 0)">
+        
+
         <!-- display all items tab-->
         <div>
           <!--          <xsl:call-template name="DisplayAllItemsTab"/>-->
@@ -1646,7 +1409,9 @@ REMOVE the below and see if it will call list_utils
     </xsl:if>
     ################################################ -->
       
-      <xsl:if test="$FullTextCount &gt; 0">
+   
+    <xsl:if test="($FullTextCount &gt; 0) or ($LimitType ='ft')">
+
         <!-- display full text tab-->
         <div>
 
