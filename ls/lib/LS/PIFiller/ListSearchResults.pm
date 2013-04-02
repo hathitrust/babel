@@ -48,6 +48,46 @@ BEGIN
 #
 #======================================================================
 
+
+# ---------------------------------------------------------------------
+
+=item handle_HEADER_SEARCH_SELECT_PI
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_HEADER_SEARCH_SELECT
+    : PI_handler(HEADER_SEARCH_SELECT)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $cgi = $C->get_object('CGI');
+    my $field1 = $cgi->param('field1');
+    my $out="";
+    my $map={
+             ocr => 'all',
+             title => 'title',
+             author => 'author',
+             subject => 'subject',
+             isn => 'isbn',
+             publisher => 'publisher',
+             series => 'seriestitle',
+             pdate_start => 'pubyear'
+            };
+    
+    if (defined($field1) && $field1 ne "")
+    {
+        my $selected=$map->{$field1};
+        $out=wrap_string_in_tag($selected, 'Selected');
+    }
+    
+    
+    return $out;
+    
+}
+
+
 # ---------------------------------------------------------------------
 
 =item handle_PAGING_PI
