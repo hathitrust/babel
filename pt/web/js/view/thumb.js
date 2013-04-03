@@ -98,14 +98,16 @@ HT.Viewer.Thumbnail = {
         });
 
         // does this work in IE8?
-        $(window).on("resize.thumb", function() {
-            self.$container.css({ width : '' }).hide();
-            setTimeout(function() {
-                self.$container.width(self.$container.parent().width()).show();
-                console.log("THUMBNAIL RESIZED");
-                $(window).scroll();
-            }, 100);
-        })
+        if ( ! $("html").is(".lt-ie9") ) {
+            $(window).on("resize.thumb", function() {
+                self.$container.css({ width : '' }).hide();
+                setTimeout(function() {
+                    self.$container.width(self.$container.parent().width()).show();
+                    console.log("THUMBNAIL RESIZED");
+                    $(window).scroll();
+                }, 100);
+            })
+        }
     },
 
     updateZoom: function(factor) {
