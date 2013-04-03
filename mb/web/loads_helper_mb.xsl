@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1364850531'" />
+  <xsl:variable name="timestamp" select="'?_=1365001118'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var _js = [];
@@ -19,20 +19,19 @@
 
   <xsl:template name="load_uncompressed_js">
     <script type="text/javascript">
-        var _js = [];
-    _js.push("/mdp-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mdp-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mb/js/mb.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mb/js/tracking.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mdp-web/js/google_covers.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mdp-web/js/collection_tools.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mdp-web/js/search_tools.js<xsl:value-of select="$timestamp" />");
+        var _js2 = [];
+    _js2.push("/mdp-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mdp-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mb/js/mb.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mb/js/tracking.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mdp-web/js/google_covers.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mdp-web/js/collection_tools.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mdp-web/js/search_tools.js<xsl:value-of select="$timestamp" />");
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
-    _js.push("/mb/js/jquery.placeholder.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mb/js/date.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mb/js/listcs_collection_tools.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mb/js/date.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/mb/js/listcs_collection_tools.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
-    head.js.apply(this, _js);
+    head.js.apply(this, _js2);
     </script>
 </xsl:template>
  

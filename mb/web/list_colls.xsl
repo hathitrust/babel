@@ -276,7 +276,9 @@
   <xsl:template name="sidebar">
     <div class="sidebar sidebar-right">
       <h2>Featured Collections</h2>
-      <xsl:call-template name="FeaturedCollection" />
+      <div id="Sidebar">
+      </div>
+      <!-- <xsl:call-template name="FeaturedCollection" /> -->
     </div>
   </xsl:template>
 
@@ -304,27 +306,25 @@
 
   <xsl:template name="FeaturedCollection">
 
-    <script id="featured-template" type="text/x-template">
+    <!-- <script id="featured-template" type="text/x-template"> -->
       <div class="Box" role="complementary">
         <div>
           <!-- <h4> -->
           <span class="title">
-            <a href="mb?a=listis;c=${{collid}}">${collname}</a>
+            <a href="mb?a=listis;c={{{{collid}}}}">{{collname}}</a>
           </span>
           <!-- </h4> -->
-          <a href="mb?a=listis;c=${{collid}}" aria-hidden="true">
-            <img alt=" " class="imgLeft" src="${{featured}}" />
+          <a href="mb?a=listis;c={{{{collid}}}}" aria-hidden="true">
+            <img alt=" " class="imgLeft" src="{{{{featured}}}}" />
           </a>
           <p class="hyphenate">
-            ${description}
+            {{description}}
           </p>
           <br clear="all" />
         </div>
       </div>
-    </script>
+    <!-- </script> -->
 
-    <div id="Sidebar">
-    </div>
   </xsl:template>
 
 </xsl:stylesheet>

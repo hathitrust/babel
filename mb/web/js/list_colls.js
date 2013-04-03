@@ -1,32 +1,87 @@
-!function( $ ) {
-  
-  if (!Object.create) {
-      Object.create = function (o) {
-          if (arguments.length > 1) {
-              throw new Error('Object.create implementation only accepts the first parameter.');
-          }
-          function F() {}
-          F.prototype = o;
-          return new F();
-      };
-  }
-  
-  // Create a plugin based on a defined object
-  $.plugin = function( name, object ) {
-    $.fn[name] = function( options ) {
-      return this.each(function() {
-        if ( ! $.data( this, name ) ) {
-          $.data( this, name, Object.create(object).init(
-          options, this ) );
-        } else {
-          var ob = $.data(this, name);
-          ob.handle(options);
+if (!Object.create) {
+    Object.create = function (o) {
+        if (arguments.length > 1) {
+            throw new Error('Object.create implementation only accepts the first parameter.');
         }
-      });
+        function F() {}
+        F.prototype = o;
+        return new F();
     };
-  };
+}
+
+// !function( $ ) {
   
-}( window.jQuery );
+  
+  
+// }( window.jQuery );
+
+if(!Array.indexOf){
+  Array.prototype.indexOf = function(obj){
+   for(var i=0; i<this.length; i++){
+    if(this[i]==obj){
+     return i;
+    }
+   }
+   return -1;
+  }
+}
+
+var MAX_ROWS = 50;
+
+var Paginator = {
+  init: function(options) {
+    this.options = $.extend( {}, this.options, options );
+    this._build();
+    return this;
+  },
+
+  options: {
+
+  },
+
+  _build: function() {
+    var slice_start = this.options.start || 0;
+    this.recalculate(slice_start);
+  },
+
+  recalculate: function(slice_start) {
+    var slice_end = slice_start + MAX_ROWS;
+
+    this.page = {};
+    this.page.items = this.options.items.slice(slice_start, slice_end);
+    this.page.n = this.page.items.length;
+    this.page.total = this.options.items.length;
+    this.page.is_active = true;
+    if ( this.page.n == this.page.total ) {
+      this.page.is_active = false;
+    }
+    this.page.start = slice_start + 1;
+    this.page.end = slice_start + MAX_ROWS;
+    if ( this.page.end > this.options.items.length ) {
+      this.page.end = this.options.items.length;
+    }
+
+    this.page.next = this.page.prev = false;
+    if ( slice_start + MAX_ROWS < this.options.items.length ) {
+      this.page.next = slice_start + MAX_ROWS;
+    }
+    if ( slice_start - MAX_ROWS > 0 ) {
+      this.page.prev = slice_start - MAX_ROWS;
+    }
+  },
+
+  describe: function() {
+    var text = "";
+    if ( this.page.is_active ) {
+      text += this.page.start + "-" + ( this.page.end ) + " of ";
+    }
+    text += this.page.total;
+    return text;
+  },
+
+  EOT: true
+
+};
 
 var ListBrowser = {
   init: function(options, elem) {
@@ -134,6 +189,12 @@ var ListBrowser = {
       self.navigate(view, true);
       self.track_pageview();
     })
+
+    self.$elem.on('click.list_colls', '.pages a', function(e) {
+      e.preventDefault();
+      var href = $(this).attr("href");
+      self.goto_page(href.substr(1));
+    }) 
     
     // fix the active button
     if ( window.location.hash && window.location.hash != "#all" ) {
@@ -142,9 +203,21 @@ var ListBrowser = {
     }
     
     self.input_filter = self.$controls.find("input[name=q]");
+    self.input_filter.bind('blur', function(e) {
+      if ( $(this).val().toLowerCase() != self.q ) {
+        self.filter_search($(this).val());
+        self.apply_filters();
+      }
+    })
+    self.input_filter.bind('change', function(e) {
+      if ( $(this).val().toLowerCase() == "" ) {
+        self.filter_search('');
+        self.apply_filters();
+      }
+    })
     self.input_filter.bind('keyup', function(e) {
-      if ( this.value.toLowerCase() != self.q ) {
-        self.filter_search(this.value);
+      if ( $(this).val().toLowerCase() != self.q ) {
+        self.filter_search($(this).val());
         self.apply_filters();
         if ( self.q_timeout == null ) {
           self.q_timeout = setTimeout(function() {
@@ -171,11 +244,11 @@ var ListBrowser = {
       }
     })
     
-    try {
-      $("input[placeholder]", this.$controls).placeholder();
-    } catch(e) {
-      // noop
-    }
+    // try {
+    //   $("input[placeholder]", this.$controls).placeholder();
+    // } catch(e) {
+    //   // noop
+    // }
                     
   },
 
@@ -519,6 +592,10 @@ var ListBrowser = {
     cache.filtered = [];
     var checkIndex = cache.normalized[0].length - 1;
     var n = cache.normalized;
+
+    // and reset the paginator
+    this.paginator = null;
+
     var totalRows = n.length;
     for(var i = 0; i < totalRows; i++) {
       var pos = n[i][checkIndex];
@@ -565,10 +642,19 @@ var ListBrowser = {
     
     // build a single HTML array for the entire listing
     // and slam it onto the resultsDiv
-    var html = [];
-    for(var j = 0; j < totalRows; j++) {
 
-      var pos = f[j];
+    if ( this.paginator == null ) {
+      this.paginator = Object.create(Paginator).init({ items : f })
+    }
+    var page = this.paginator.page;
+    console.log("PAGINATOR", page);
+
+
+    var html = [];
+    for(var j = 0; j < page.n; j++) {
+
+      // var pos = f[j];
+      var pos = page.items[j];
       
       var row = h[pos];
 
@@ -693,7 +779,7 @@ var ListBrowser = {
     resultDiv.innerHTML = html.join("\n");
 
     this.$active_filters.empty();
-    var total = $("div.collection").length;
+    // var total = $("div.collection").length;
     var other_filters_in_use = false;
     var title = "All Collections";
     if ( this.filters.length > 0 ) {
@@ -702,17 +788,18 @@ var ListBrowser = {
       var tab_summary;
       if ( this.has_filter("view") ) {
         if ( this.view == "updated" ) {
-          message += total + " of recently updated"; // " collections";
+          message += this.paginator.describe() + " of recently updated"; // " collections";
           title = "Recently Updated Collections";
         } else if ( this.view == "my-collections" ) {
-          message += total + " of your"; //" collections";
+          message += this.paginator.describe() + " of your"; //" collections";
           title = "My Collections";
         } else if ( this.view == 'featured' ) {
-          message += total + " of featured";
+          message += this.paginator.describe() + " of featured";
           title = "Featured Collections";
         } else {
           //message += " collections";
-          message += "all " + total;
+          // message += "all " + totalRows;
+          message += this.paginator.describe() + " of all collections";
         }
       }
 
@@ -732,7 +819,8 @@ var ListBrowser = {
       //$("#portfolio-title").text(title);
       
     } else {
-      this.$active_filters.text("Showing all " + total + " collections");
+      // this.$active_filters.text("Showing all " + total + " collections");
+      this.$active_filters.text("Showing " + this.paginator.describe() + " of all collections");
     }
     
     if ( ! this.is_default_sort ) {
@@ -749,8 +837,90 @@ var ListBrowser = {
     }
 
     this.$title.text(title);
+    this.show_pages();
+
     
   },
+
+  show_pages: function() {
+
+    function b2p(s) {
+      return Math.floor(s / MAX_ROWS) + 1;
+    }
+
+    if ( ! this.paginator.page.is_active ) {
+      $(".pages").hide();
+      return;
+    }
+    var $div = $(".pages");
+    if ( ! $div.length ) {
+      $div = $("<div class='pages'></div>").insertAfter(this.$status);
+    }
+    $div.empty();
+    var $ul = $("<ul></ul>").appendTo($div);
+    var page = this.paginator.page;
+    var pages = [ page.start - 1 ];
+    // attach 3 previous
+    var prev = page.prev;
+    var i = 0;
+    while ( prev !== false && i < 3 ) {
+      i += 1;
+      pages.unshift(prev);
+      prev = prev - MAX_ROWS;
+      if ( prev < 0 ) {
+        prev = false;
+      }
+    }
+
+    var next = page.next;
+    i = 0;
+    while ( next !== false && i < 3 ) {
+      i += 1;
+      pages.push(next);
+      next = next + MAX_ROWS;
+      if ( next > page.total ) {
+        next = false;
+      }
+    }
+
+    // now the rest of the lame business
+    var num_pages = Math.ceil(page.total / MAX_ROWS);
+    var last_slice = ( num_pages - 1 ) * MAX_ROWS;
+    if ( pages.indexOf(last_slice) < 0 ) {
+      if ( pages[pages.length - 1] + MAX_ROWS < last_slice ) {
+        pages.push("...");
+      }
+      pages.push(last_slice);
+    }
+    if ( pages.indexOf(0) < 0 ) {
+      if ( pages[0] - MAX_ROWS > 0 ) {
+        pages.unshift("...");
+      }
+      pages.unshift(0);
+    }
+
+    console.log("PAGES", pages);
+
+    _.each(pages, function(p) {
+      if ( p == '...' ) {
+        $("<li>...</li>").appendTo($ul);
+      } else {
+        var $li = $("<li><a href='#{SLICE_START}'>{PAGE}</a></li>".replace('{SLICE_START}', p).replace('{PAGE}', b2p(p))).appendTo($ul);
+        if ( p == page.start - 1 ) {
+          $li.addClass("active");
+        }        
+      }
+
+    })
+
+    $div.show();
+
+  },
+
+  goto_page: function(start) {
+    this.paginator.recalculate(parseInt(start));
+    this.render();
+  }, 
 
   _setup_featured: function() {
     // take care of the featured here as well
@@ -758,7 +928,28 @@ var ListBrowser = {
     // var random_idx = Math.floor(Math.random() * .length);
     // var featured = this.cache.html[this.cache.featured[random_idx]];
 
-    var tmpl = $("#featured-template").text();
+    // var tmpl = $("#featured-template").text();
+    // var re = new RegExp("\$\{(.+?)\}", "g");
+    // _.templateSettings = { interpolate : re };
+
+    // var tmpl = $(".sidebar").data('template');
+
+    var tmpl =       
+      '<div class="Box" role="complementary">' + 
+        '<div>' + 
+          '<span class="title">' + 
+            '<a href="mb?a=listis;c=${collid}">${collname}</a>' + 
+          '</span>' + 
+          '<a href="mb?a=listis;c=${collid}" aria-hidden="true">' + 
+            '<img alt=" " class="imgLeft" src="${featured}" />' + 
+          '</a>' + 
+          '<p class="hyphenate">' + 
+            '${description}' +
+          '</p>' +
+          '<br clear="all" />' +
+        '</div>' + 
+      '</div>';
+
     _.templateSettings = { interpolate : /\$\{(.+?)\}/g };
     tmpl = _.template(tmpl);
 
@@ -840,7 +1031,24 @@ var ListBrowser = {
   
 };
 
-(function($) {
+// (function($) {
+head.ready(function() {
+
+  // Create a plugin based on a defined object
+  $.plugin = function( name, object ) {
+    $.fn[name] = function( options ) {
+      return this.each(function() {
+        if ( ! $.data( this, name ) ) {
+          $.data( this, name, Object.create(object).init(
+          options, this ) );
+        } else {
+          var ob = $.data(this, name);
+          ob.handle(options);
+        }
+      });
+    };
+  };
+
 
   $.plugin('listbrowser', ListBrowser);
   $("#mbContentContainer").listbrowser({bucket : bucket});
@@ -866,4 +1074,5 @@ var ListBrowser = {
     return true;
   })
   
-})(jQuery);
+});
+// })(jQuery);

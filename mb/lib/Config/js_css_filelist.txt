@@ -49,7 +49,7 @@ Section:LOCAL_JS
 
 Section:COLLLIST_JS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'
-/mb/web/js/jquery.placeholder.js
+# /mb/web/js/jquery.placeholder.js
 /mb/web/js/date.js
 /mb/web/js/listcs_collection_tools.js
 
