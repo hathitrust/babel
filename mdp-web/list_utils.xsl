@@ -1016,7 +1016,7 @@
       <div class="span{$span-n} push2 metadata">
         <h4 class="Title">
           <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
-          <xsl:value-of select="Title" disable-output-escaping="yes" />
+          <xsl:call-template name="GetTitle"/>
         </h4>
         <!-- Author -->
         <xsl:if test="Author!=''">
@@ -1274,6 +1274,11 @@
     </xsl:if>
 
   </xsl:template>
+
+  <xsl:template name="GetTitle">
+    <xsl:value-of select="Title" disable-output-escaping="yes" />    
+  </xsl:template>
+
 
 
 </xsl:stylesheet>
