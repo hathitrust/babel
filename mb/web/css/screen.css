@@ -4,7 +4,12 @@
   font-weight: bold;
 }
 
-/* line 9, ../../../mdp-web/sass/results.scss */
+/* line 7, ../../../mdp-web/sass/results.scss */
+.collection-summary {
+  display: none;
+}
+
+/* line 13, ../../../mdp-web/sass/results.scss */
 #facetlist dt, #facetlist dd {
   margin-left: 0;
   margin-bottom: 4px ;
@@ -12,24 +17,24 @@
   line-height: 18px ;
   line-height: 1.8rem ;
 }
-/* line 15, ../../../mdp-web/sass/results.scss */
+/* line 19, ../../../mdp-web/sass/results.scss */
 #facetlist dt {
   font-weight: bold;
   margin-top: 16px ;
   margin-top: 1.6rem ;
 }
-/* line 19, ../../../mdp-web/sass/results.scss */
+/* line 23, ../../../mdp-web/sass/results.scss */
 #facetlist dt:first-child {
   margin-top: 0;
 }
-/* line 24, ../../../mdp-web/sass/results.scss */
+/* line 28, ../../../mdp-web/sass/results.scss */
 #facetlist dd {
   color: #999;
   margin-left: 16px ;
   margin-left: 1.6rem ;
 }
 
-/* line 30, ../../../mdp-web/sass/results.scss */
+/* line 34, ../../../mdp-web/sass/results.scss */
 .row.result {
   position: relative;
   margin-bottom: 16px ;
@@ -39,7 +44,7 @@
   padding-top: 8px ;
   padding-top: 0.8rem ;
 }
-/* line 37, ../../../mdp-web/sass/results.scss */
+/* line 41, ../../../mdp-web/sass/results.scss */
 .row.result h4 {
   margin-top: 0;
   margin-bottom: 5px;
@@ -48,7 +53,7 @@
   font-weight: normal;
   width: 99%;
 }
-/* line 47, ../../../mdp-web/sass/results.scss */
+/* line 51, ../../../mdp-web/sass/results.scss */
 .row.result h5 {
   margin-top: 4px ;
   margin-top: 0.4rem ;
@@ -57,35 +62,35 @@
   font-size: 13px ;
   font-size: 1.3rem ;
 }
-/* line 53, ../../../mdp-web/sass/results.scss */
+/* line 57, ../../../mdp-web/sass/results.scss */
 .row.result .metadata {
   padding-left: 16px ;
   padding-left: 1.6rem ;
 }
-/* line 57, ../../../mdp-web/sass/results.scss */
+/* line 61, ../../../mdp-web/sass/results.scss */
 .row.result .options {
   width: 85px;
 }
-/* line 61, ../../../mdp-web/sass/results.scss */
+/* line 65, ../../../mdp-web/sass/results.scss */
 .row.result .cover {
   width: 60px;
   min-height: 60px;
   float: right;
 }
-/* line 66, ../../../mdp-web/sass/results.scss */
+/* line 70, ../../../mdp-web/sass/results.scss */
 .row.result .cover img {
   min-width: 60px;
 }
-/* line 72, ../../../mdp-web/sass/results.scss */
+/* line 76, ../../../mdp-web/sass/results.scss */
 .row.result .select {
   width: 24px;
   float: right;
 }
-/* line 76, ../../../mdp-web/sass/results.scss */
+/* line 80, ../../../mdp-web/sass/results.scss */
 .row.result .select label {
   display: inline-block;
 }
-/* line 81, ../../../mdp-web/sass/results.scss */
+/* line 85, ../../../mdp-web/sass/results.scss */
 .row.result .in-collections {
   font-size: 90%;
   top: 8px ;
@@ -93,80 +98,80 @@
   right: 10px ;
   right: 1rem ;
 }
-/* line 88, ../../../mdp-web/sass/results.scss */
+/* line 92, ../../../mdp-web/sass/results.scss */
 .row.result .in-collections ul {
   padding-left: 0;
   margin-left: 0;
   margin-top: 0;
   list-style: none;
 }
-/* line 94, ../../../mdp-web/sass/results.scss */
+/* line 98, ../../../mdp-web/sass/results.scss */
 .row.result .in-collections ul li {
   margin-bottom: 4px ;
   margin-bottom: 0.4rem ;
 }
-/* line 101, ../../../mdp-web/sass/results.scss */
+/* line 105, ../../../mdp-web/sass/results.scss */
 .row.result [class*="result-metadata-"] {
   display: block;
   font-size: 95%;
   color: #666;
 }
-/* line 107, ../../../mdp-web/sass/results.scss */
+/* line 111, ../../../mdp-web/sass/results.scss */
 .row.result .result-access-link {
   margin-top: 10px ;
   margin-top: 1rem ;
 }
-/* line 110, ../../../mdp-web/sass/results.scss */
+/* line 114, ../../../mdp-web/sass/results.scss */
 .row.result .result-access-link ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-/* line 115, ../../../mdp-web/sass/results.scss */
+/* line 119, ../../../mdp-web/sass/results.scss */
 .row.result .result-access-link ul li {
   display: inline;
   float: left;
   margin-right: 20px ;
   margin-right: 2rem ;
 }
-/* line 123, ../../../mdp-web/sass/results.scss */
+/* line 127, ../../../mdp-web/sass/results.scss */
 .row.result.alt {
   background-color: #f6f4f1;
 }
-/* line 127, ../../../mdp-web/sass/results.scss */
+/* line 131, ../../../mdp-web/sass/results.scss */
 .row.result [class*="span"] + [class*="pull-"] {
   float: left;
 }
 
-/* line 133, ../../../mdp-web/sass/results.scss */
+/* line 137, ../../../mdp-web/sass/results.scss */
 .push-1 {
   margin-left: 8.36653%;
 }
 
-/* line 138, ../../../mdp-web/sass/results.scss */
+/* line 142, ../../../mdp-web/sass/results.scss */
 dl.collection dd, dl.collection dt {
   margin-left: 0;
 }
-/* line 142, ../../../mdp-web/sass/results.scss */
+/* line 146, ../../../mdp-web/sass/results.scss */
 dl.collection dt {
   font-weight: bold;
   margin-bottom: 4px ;
   margin-bottom: 0.4rem ;
 }
-/* line 147, ../../../mdp-web/sass/results.scss */
+/* line 151, ../../../mdp-web/sass/results.scss */
 dl.collection dd {
   margin-bottom: 12px ;
   margin-bottom: 1.2rem ;
 }
 
-/* line 152, ../../../mdp-web/sass/results.scss */
+/* line 156, ../../../mdp-web/sass/results.scss */
 .col-featured img {
   border: 2px solid #eeeeee;
   padding: 2px;
   max-width: 100%;
 }
 
-/* line 158, ../../../mdp-web/sass/results.scss */
+/* line 162, ../../../mdp-web/sass/results.scss */
 [class^="icomoon-"]:before, [class*=" icomoon-"]:before {
   font-family: 'icomoon';
   font-style: normal;
@@ -180,7 +185,7 @@ dl.collection dd {
   font-size: 110%;
 }
 
-/* line 171, ../../../mdp-web/sass/results.scss */
+/* line 175, ../../../mdp-web/sass/results.scss */
 .mainsearch {
   padding-bottom: 16px ;
   padding-bottom: 1.6rem ;
@@ -188,12 +193,12 @@ dl.collection dd {
   margin-bottom: 1.6rem ;
   border-bottom: 1px dotted #a6a5a5;
 }
-/* line 172, ../../../mdp-web/sass/results.scss */
+/* line 176, ../../../mdp-web/sass/results.scss */
 .mainsearch label[for=q1] {
   font-size: 110%;
 }
 
-/* line 183, ../../../mdp-web/sass/results.scss */
+/* line 187, ../../../mdp-web/sass/results.scss */
 .tabs {
   margin-bottom: 10px ;
   margin-bottom: 1rem ;
@@ -203,19 +208,19 @@ dl.collection dd {
   width: 96%;
   color: #333;
 }
-/* line 190, ../../../mdp-web/sass/results.scss */
+/* line 194, ../../../mdp-web/sass/results.scss */
 .tabs a, .tabs span {
   font-weight: bold;
   color: #5e5e5e;
   text-decoration: none;
 }
-/* line 196, ../../../mdp-web/sass/results.scss */
+/* line 200, ../../../mdp-web/sass/results.scss */
 .tabs a:hover {
   text-decoration: underline;
   border-bottom: none;
   color: #b15a0d;
 }
-/* line 202, ../../../mdp-web/sass/results.scss */
+/* line 206, ../../../mdp-web/sass/results.scss */
 .tabs ul {
   text-align: left;
   list-style: none;
@@ -224,14 +229,14 @@ dl.collection dd {
   line-height: 24px ;
   line-height: 2.4rem ;
 }
-/* line 209, ../../../mdp-web/sass/results.scss */
+/* line 213, ../../../mdp-web/sass/results.scss */
 .tabs ul:after, .tabs ul:before {
   display: table;
   line-height: 0;
   content: "";
   clear: both;
 }
-/* line 216, ../../../mdp-web/sass/results.scss */
+/* line 220, ../../../mdp-web/sass/results.scss */
 .tabs ul li {
   float: left;
   margin: 0 0px;
@@ -246,49 +251,49 @@ dl.collection dd {
   margin-bottom: -1px;
   font-size: 14px;
 }
-/* line 230, ../../../mdp-web/sass/results.scss */
+/* line 234, ../../../mdp-web/sass/results.scss */
 .tabs ul li:first-child {
   margin-left: 0;
 }
-/* line 234, ../../../mdp-web/sass/results.scss */
+/* line 238, ../../../mdp-web/sass/results.scss */
 .tabs ul li.active {
   border: 1px solid #aaaaaa;
   border-bottom: 1px solid transparent;
   background: #fff;
 }
-/* line 239, ../../../mdp-web/sass/results.scss */
+/* line 243, ../../../mdp-web/sass/results.scss */
 .tabs ul li.active a {
   color: #4f4f4f;
 }
 
-/* line 257, ../../../mdp-web/sass/results.scss */
+/* line 261, ../../../mdp-web/sass/results.scss */
 div > h3:first-child {
   margin-top: 0;
 }
 
-/* line 261, ../../../mdp-web/sass/results.scss */
+/* line 265, ../../../mdp-web/sass/results.scss */
 .toolbar {
   margin-bottom: 16px ;
   margin-bottom: 1.6rem ;
   padding: 8px ;
   padding: 0.8rem ;
 }
-/* line 262, ../../../mdp-web/sass/results.scss */
+/* line 266, ../../../mdp-web/sass/results.scss */
 .toolbar label {
   display: inline-block;
 }
-/* line 269, ../../../mdp-web/sass/results.scss */
+/* line 273, ../../../mdp-web/sass/results.scss */
 .toolbar.alt {
   background-color: #D2D2D1;
 }
 
-/* line 275, ../../../mdp-web/sass/results.scss */
+/* line 279, ../../../mdp-web/sass/results.scss */
 #SortWidget {
   display: inline-block;
   margin-right: 20px ;
   margin-right: 2rem ;
 }
-/* line 278, ../../../mdp-web/sass/results.scss */
+/* line 282, ../../../mdp-web/sass/results.scss */
 #SortWidget select {
   width: auto;
   margin-bottom: 0;
@@ -296,26 +301,26 @@ div > h3:first-child {
   font-size: 1.2rem ;
 }
 
-/* line 287, ../../../mdp-web/sass/results.scss */
+/* line 291, ../../../mdp-web/sass/results.scss */
 .PageInfo {
   display: inline-block;
 }
-/* line 290, ../../../mdp-web/sass/results.scss */
+/* line 294, ../../../mdp-web/sass/results.scss */
 .PageInfo select {
   width: auto;
   margin-bottom: 0;
   font-size: 12px ;
   font-size: 1.2rem ;
 }
-/* line 296, ../../../mdp-web/sass/results.scss */
+/* line 300, ../../../mdp-web/sass/results.scss */
 .PageInfo .resultsPerPage {
   display: inline-block;
 }
-/* line 300, ../../../mdp-web/sass/results.scss */
+/* line 304, ../../../mdp-web/sass/results.scss */
 .PageInfo .pagingNav {
   display: inline-block;
 }
-/* line 304, ../../../mdp-web/sass/results.scss */
+/* line 308, ../../../mdp-web/sass/results.scss */
 .PageInfo .pagingNav ul {
   list-style: none;
   margin-bottom: 0;
@@ -323,7 +328,7 @@ div > h3:first-child {
   margin-left: 2rem ;
   padding: 0;
 }
-/* line 311, ../../../mdp-web/sass/results.scss */
+/* line 315, ../../../mdp-web/sass/results.scss */
 .PageInfo .pagingNav ul li {
   display: inline-block;
   margin: 0;
@@ -339,23 +344,23 @@ div > h3:first-child {
   padding-bottom: 0.2rem ;
 }
 
-/* line 325, ../../../mdp-web/sass/results.scss */
+/* line 329, ../../../mdp-web/sass/results.scss */
 .selectAll {
   display: inline-block;
 }
 
-/* line 329, ../../../mdp-web/sass/results.scss */
+/* line 333, ../../../mdp-web/sass/results.scss */
 .SelectedItemActions {
   display: inline-block;
   margin-left: 40px ;
   margin-left: 4rem ;
 }
-/* line 333, ../../../mdp-web/sass/results.scss */
+/* line 337, ../../../mdp-web/sass/results.scss */
 .SelectedItemActions select {
   margin-bottom: 0;
 }
 
-/* line 340, ../../../mdp-web/sass/results.scss */
+/* line 344, ../../../mdp-web/sass/results.scss */
 .controls .counter {
   margin-left: 5px ;
   margin-left: 0.5rem ;
@@ -364,12 +369,12 @@ div > h3:first-child {
   vertical-align: top;
 }
 
-/* line 347, ../../../mdp-web/sass/results.scss */
+/* line 351, ../../../mdp-web/sass/results.scss */
 #listisFooter {
   display: none;
 }
 
-/* line 349, ../../../mdp-web/sass/results.scss */
+/* line 353, ../../../mdp-web/sass/results.scss */
 .alert-summary {
   background-color: transparent;
   border-color: transparent;

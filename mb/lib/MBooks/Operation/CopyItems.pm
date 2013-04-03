@@ -107,7 +107,7 @@ sub execute_operation {
 
     # Check that these ids exist.  Either they are new as a result of
     # an AddMultipleItems Operation or exist from another colleciton
-    my @ids = $cgi->param('iid');
+    my @ids = $cgi->param('id');
     ASSERT(scalar(@ids), qq{No ids supplied});
 
     my @valid_ids = ();

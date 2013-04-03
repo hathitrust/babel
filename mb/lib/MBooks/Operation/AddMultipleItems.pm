@@ -143,7 +143,7 @@ sub execute_operation
             }
             # next action, copy items (to collection) assumes that ids
             # are available on the cgi params as ids
-            $cgi->append(-name => 'iid', -values => [$id]);
+            $cgi->append(-name => 'id', -values => [$id]);
         }
     }
 

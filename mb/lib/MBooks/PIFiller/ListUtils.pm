@@ -923,9 +923,9 @@ sub handle_OPERATION_RESULTS_PI
     $undo_cgi->param('a', 'copyit');
     $undo_cgi->param('c2', "$del_from_id");
     # delete any ids in cgi
-    $undo_cgi->delete('iid');
+    $undo_cgi->delete('id');
     # add back ids that were deleted from collection
-    $undo_cgi->param('iid', @$del_valid_ids);
+    $undo_cgi->param('id', @$del_valid_ids);
     # if the items were deleted from a search result set
     # page=srchresult (otherwise copyit will go to list items instead
     # of back to search results)

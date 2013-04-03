@@ -159,7 +159,7 @@ sub add_item_to_database
     }
 
     # Pass added item ids downstream to later Operation like CopyItems
-    $cgi->param('iid', $item_id);
+    $cgi->param('id', $item_id);
 
     return $item_id;
 }

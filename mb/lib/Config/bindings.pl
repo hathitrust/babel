@@ -106,7 +106,7 @@ $g_late_operations = [
                                          },
      'MBooks::Operation::CopyItems'   => {'req_params' => {
                                                            'c2'    => undef,
-                                                           'iid'   => undef,
+                                                           'id'   => undef,
                                                           },
                                           'opt_params' => {
                                                           }
@@ -120,7 +120,7 @@ $g_late_operations = [
                                          },
      'MBooks::Operation::DeleteItems' => {'req_params' => {
                                                            'c'     => undef,
-                                                           'iid'   => undef,
+                                                           'id'   => undef,
                                                           },
                                           'opt_params' => {
                                                           }
