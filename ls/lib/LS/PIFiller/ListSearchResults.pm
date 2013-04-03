@@ -1461,7 +1461,7 @@ sub _ls_wrap_result_data {
 
         my $book_ids = join (',',@{$book_ids_ary_ref});
         
-        $s .= wrap_string_in_tag($book_ids,'BookIds');
+        $s .= wrap_string_in_tag($book_ids,'bookID');
         
         my ($display_titles_ary_ref) = $doc_data->{'title'};
         #XXX WARNING  Second title in Solr title field is either 
