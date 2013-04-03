@@ -9,6 +9,8 @@ head.ready(function() {
     var $available_collections = $("#c2");
     var $errormsg = $(".errormsg");
     var $toolbar = $(".toolbar.alt");
+    var $check_all = $("#checkAll");
+    var $possible_selections = $(".select input[type=checkbox]");
 
     function display_error(msg) {
         if ( ! $errormsg.length ) {
@@ -19,6 +21,117 @@ head.ready(function() {
 
     function hide_error() {
         $errormsg.hide().text();
+    }
+
+    function get_url() {
+        var url = "/cgi/mb";
+        if ( location.pathname.indexOf("/shcgi/") > -1 ) {
+            url = "/shcgi/mb";
+        }
+        return url;
+    }
+
+    function get_ids(items) {
+        var id = [];
+        items.each(function() {
+            id.push($(this).val());
+        })
+        return id;
+    }
+
+    function parse_line(data) {
+        var retval = {};
+        var tmp = data.split("|");
+        for(var i = 0; i < tmp.length; i++) {
+            kv = tmp[i].split("=");
+            retval[kv[0]] = kv[1];
+        }
+        return retval;
+    }
+
+    function uncheck_all() {
+        $possible_selections.attr("checked", null);
+        $check_all.attr("checked", null);
+    }
+
+    function add_item_to_collist(params) {
+        var $select = $("select[name=c2]");
+        var $option = $select.find("option[value='" + params.coll_id + "']");
+        if ( ! $option.length ) {
+            // need to add
+            $option = $('<option></option>').val(params.coll_id).text(params.coll_name).appendTo($select);
+        }
+    }
+
+    function summarize_results(params) {
+        var $div = $(".mb-status");
+        if ( ! $div.length ) {
+            $div = $('<div class="mb-status alert alert-success"></div>').prependTo($(".main")).hide();
+        }
+
+        var collID = params.coll_id;
+        var collName = params.coll_name;
+        var collHref= '<a href="mb?a=listis;c=' + collID + '">' + collName + '</a>';
+        var numAdded=params.NumAdded;
+        var numFailed=params.NumFailed;
+        var alertMsg;
+        var msg;
+        if (numFailed > 0 ){
+          msg = "numFailed items could not be added to your collection,\n " +  numAdded + " items were added to " + collHref;
+        }
+        else {
+          //  var msg =  params.NumAdded + " items of " + params.NumSubmitted + " were added to " + collHref + " collection";
+          if (numAdded >1){
+            msg =  numAdded + " items were added to " + collHref;
+          }
+          else{
+            msg =  numAdded + " item was added to " + collHref;
+          }
+        }
+
+        $div.html(msg).show();
+        add_item_to_collist(params);
+
+        uncheck_all();
+    }
+
+    function submit_post(params, fn) {
+
+        var non_ajax = { movit : true, delit : true, movitnc : true };
+
+        if ( ! non_ajax[params.a] ) {
+            params.page = 'ajax';
+        }
+
+        if ( params.page == 'ajax' ) {
+            $.ajax({
+                url : get_url(),
+                data : $.param(params, true)
+            }).done(function(data) {
+                console.log(data);
+                var params = parse_line(data);
+                $(".btn-loading").removeClass("btn-loading");
+                summarize_results(params);
+                if ( fn ) {
+                    fn();
+                }
+            })
+        } else {
+            // extend with HT.params...
+            var formdata = $.extend({}, $.url().param(), params)    ;
+            var $form = $("<form method='POST'></form>");
+            $form.attr("action", get_url());
+            _.each(_.keys(formdata), function(name) {
+                var values = formdata[name];
+                values = $.isArray(values) ? values : [ values ];
+                _.each(values, function(value) {
+                    $("<input type='hidden' />").attr({ name : name }).val(value).appendTo($form);
+                })
+            })
+            $form.submit();
+        }
+
+
     }
 
     function edit_collection_metadata(args) {
@@ -55,6 +168,8 @@ head.ready(function() {
                 '</div>' + 
             '</form>'
         );
+
+        $block.attr("action", get_url());
 
         if ( options.cn ) {
             $block.find("input[name=cn]").val(options.cn);
@@ -103,7 +218,15 @@ head.ready(function() {
                     }
 
                     $dialog.find(".btn-primary").addClass("btn-loading");
-                    $block.submit();
+                    submit_post({
+                        a : options.a,
+                        id : get_ids(options.$selected),
+                        cn : cn,
+                        desc : desc,
+                        shrd : $block.find("input[name=shrd]").val()
+                    }, function() {
+                        $dialog.modal('hide');
+                    });
                     return false;
                 }
             }
@@ -146,52 +269,58 @@ head.ready(function() {
     }
 
     // bind actions
-    $("#checkAll").click(function(e) {
+    $check_all.click(function(e) {
         var state = $(this).attr('checked') || null;
-        console.log("STATE", state);
-        $(".select input[type=checkbox]").attr('checked', state);
+        $possible_selections.attr("checked", state);
     })
 
     $(".SelectedItemActions button").click(function(e) {
         e.preventDefault();
         var action = this.id;
-        var $form = $("#form1");
-        $form.find("input[name=a]").val(action);
+        var $btn = $(this);
 
         hide_error();
 
         var selected_collection_id = $available_collections.val();
         var selected_collection_name = $available_collections.find("option:selected").text();
 
-        var $selected = $(".iid:checked");
+        var $selected = $(".id:checked");
         if ( $selected.length == 0 ) {
             display_error("You must choose an item");
             return;
         }
 
         if ( ( selected_collection_id == DEFAULT_COLL_MENU_OPTION ) &&
-             ( action == 'copyit' || action == 'movit' || action == 'addI' ) ) {
+             ( action == 'copyit' || action == 'movit' || action == 'addI' || action == 'addits' ) ) {
             display_error("You must select a collection.");
             return;
         }
 
         if ( selected_collection_id == NEW_COLL_MENU_OPTION ) {
             // deal with new collection
-            var $hidden = $form.find("input[type=hidden]").clone();
-            $hidden.filter("input[name=a]").val(action + 'nc');
+            // var $hidden = $form.find("input[type=hidden]").clone();
+            // $hidden.filter("input[name=a]").val(action + 'nc');
             edit_collection_metadata({ 
                 creating : true, 
-                $selected : $selected, 
-                $hidden : $hidden
+                $selected : $selected,
+                a : action + "nc"
             });
             return;
         }
 
+        $btn.addClass("btn-loading");
+
         var add_num_items = $selected.length;
         var COLL_SIZE_ARRAY = getCollSizeArray();
         var coll_size = COLL_SIZE_ARRAY[selected_collection_id];
+
         confirm_large(coll_size, add_num_items, function() {
-            $form.submit();
+            // possible ajax action
+            submit_post({
+                a : action,
+                id : get_ids($selected),
+                c2 : selected_collection_id
+            });
         })
 
     })

@@ -551,7 +551,7 @@
 
       <input type="hidden" name="a" id="a"/>
 
-      <button class="btn btn-small" id="copyit" value="copyit">Copy Selected</button>
+      <button class="btn btn-small" id="addits" value="addits">Add Selected</button>
 
       <!-- if they don't own the collection they shouldn't be able to delete (or move) items -->
       <xsl:choose>
@@ -1113,8 +1113,8 @@
           </xsl:if>
         </div>
         <div class="select">
-          <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
-          <input type="checkbox" name="iid" class="iid" id="iid{$item-number}">
+          <label class="offscreen" for="id{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
+          <input type="checkbox" name="id" class="id" id="id{$item-number}">
             <xsl:attribute name="value">
               <xsl:value-of select="ItemID"/>
             </xsl:attribute>
@@ -1156,8 +1156,8 @@
         <img src="http://babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ItemID};seq=1;width=60" />
       </div>
       <div class="span1 select">
-        <label class="offscreen" for="iid{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
-        <input type="checkbox" name="iid" class="iid" id="iid{$item-number}">
+        <label class="offscreen" for="id{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
+        <input type="checkbox" name="id" class="id" id="id{$item-number}">
           <xsl:attribute name="value">
             <xsl:value-of select="ItemID"/>
           </xsl:attribute>

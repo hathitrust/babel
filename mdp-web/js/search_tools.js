@@ -28,6 +28,7 @@ head.ready(function() {
         if ( select.changed || select.value != select.initValue ) {
             // https://roger-full.babel.hathitrust.org/cgi/mb?c=594541169&pn=1&sort=title_a&sort=date_d&sz=25&c2=0&a=&sz=25&sz=25
             var target_url = window.location.href;
+            var original_url = target_url;
             var name = select.name;
             var re = new RegExp(';?' + name + '=([^;&]+);?', 'g');
             target_url = target_url.replace(re, "");
