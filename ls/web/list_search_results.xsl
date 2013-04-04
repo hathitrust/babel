@@ -90,6 +90,7 @@
 
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/ls/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="/ls/css/ls.css" />
     <xsl:call-template name="include_local_javascript" />
     <xsl:call-template name="load_js_and_css"/>
   </xsl:template>
@@ -847,7 +848,7 @@ REMOVE the below and see if it will call list_utils
 
           <td class ="ItemSelect">
             <span class="ItemID Select">
-              <label class="SearchLabel">
+              <label class="offscreen">
                 <xsl:attribute name="for">
                   <xsl:value-of select="$checkbox_id"/>
                 </xsl:attribute>
@@ -1070,7 +1071,7 @@ REMOVE the below and see if it will call list_utils
                 <xsl:text> morefacets</xsl:text>
               </xsl:attribute>
               
-              <span class="SearchLabel">
+              <span class="offscreen">
                 <xsl:value-of select="$facetName"/><xsl:text>: show </xsl:text>
               </span>
               <span class="moreless">more...</span></a>
@@ -1081,7 +1082,7 @@ REMOVE the below and see if it will call list_utils
                 <xsl:value-of select="@normName"/>
                 <xsl:text> lessfacets</xsl:text>
               </xsl:attribute>
-              <span class="SearchLabel">
+              <span class="offscreen">
                 <xsl:value-of select="$facetName"/><xsl:text>: show </xsl:text>
               </span>
                <span class="moreless">less...</span></a>              
