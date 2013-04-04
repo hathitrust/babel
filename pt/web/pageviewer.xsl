@@ -120,7 +120,7 @@
   </xsl:template> -->
 
   <xsl:template name="action-search-volume">
-    <form class="form-inline" method="get">
+    <form class="form-inline" method="get" id="form-search-volume">
       <xsl:attribute name="action">
         <xsl:choose>
           <xsl:when test="$gUsingSearch = 'true'">search</xsl:when>
@@ -148,7 +148,7 @@
           </xsl:if>
         </xsl:attribute>
       </input>
-      <button type="submit" class="btn btn">Find</button>
+      <button type="submit" class="btn">Find</button>
       <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
       <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">

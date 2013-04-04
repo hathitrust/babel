@@ -627,7 +627,7 @@ body {
 
 /* line 236, ../sass/volume/flip.scss */
 .view-2up .page-item {
-  min-width: auto;
+  min-width: inherit;
   height: 98%;
 }
 
@@ -735,4 +735,14 @@ body {
 /* line 36, ../sass/volume/plaintext.scss */
 .view-plaintext .page-item .solr_highlight_6 {
   background: #0099cc;
+}
+
+/* line 8, ../sass/volume.scss */
+.alert-headline {
+  text-align: center;
+}
+/* line 11, ../sass/volume.scss */
+.alert-headline > p {
+  font-size: 200%;
+  font-weight: bold;
 }
