@@ -202,5 +202,7 @@
     <xsl:text>HathiTrust Digital Library</xsl:text>
   </xsl:template>
 
+  <xsl:template name="get-tracking-category">PT</xsl:template>
+
 </xsl:stylesheet>
 

@@ -522,31 +522,36 @@
   <xsl:template name="FindInALibraryLink">
     <xsl:param name="class" />
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+      <xsl:variable name="oclc-number">
+        <xsl:choose>
+          <xsl:when test="contains(.,'OCoLC)ocm')">
+            <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'OCoLC')">
+            <xsl:value-of select="substring-after(.,'OCoLC)')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'oclc')">
+            <xsl:value-of select="substring-after(.,'oclc')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'ocm')">
+            <xsl:value-of select="substring-after(.,'ocm')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'ocn')">
+            <xsl:value-of select="substring-after(.,'ocn')"/>
+          </xsl:when>
+          <xsl:otherwise/>
+        </xsl:choose>
+      </xsl:variable>
       <xsl:element name="a">
-        <xsl:attribute name="class">worldcat track <xsl:value-of select="$class" /></xsl:attribute>
+        <xsl:attribute name="class">worldcat <xsl:value-of select="$class" /></xsl:attribute>
         <xsl:attribute name="href">
           <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
-          <xsl:choose>
-            <xsl:when test="contains(.,'OCoLC)ocm')">
-              <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'OCoLC')">
-              <xsl:value-of select="substring-after(.,'OCoLC)')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'oclc')">
-              <xsl:value-of select="substring-after(.,'oclc')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'ocm')">
-              <xsl:value-of select="substring-after(.,'ocm')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'ocn')">
-              <xsl:value-of select="substring-after(.,'ocn')"/>
-            </xsl:when>
-            <xsl:otherwise/>
-          </xsl:choose>
+          <xsl:value-of select="$oclc-number" />
         </xsl:attribute>
+        <xsl:attribute name="data-toggle">tracking</xsl:attribute>
         <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
         <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
+        <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
         <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
         
         <xsl:text>Find in a library</xsl:text>
@@ -802,7 +807,7 @@
                   <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
                   <xsl:value-of select="$record_no"/>
                 </xsl:variable>
-                <xsl:attribute name="class">tracked</xsl:attribute>
+                <xsl:attribute name="data-toggle">tracking</xsl:attribute>
                 <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
                 <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
                 <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
@@ -830,31 +835,35 @@
       <xsl:variable name="x" select="$gMdpMetadata/datafield" />
       <ul>
         <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+          <xsl:variable name="oclc-number">
+            <xsl:choose>
+              <xsl:when test="contains(.,'OCoLC)ocm')">
+                <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
+              </xsl:when>
+              <xsl:when test="contains(.,'OCoLC')">
+                <xsl:value-of select="substring-after(.,'OCoLC)')"/>
+              </xsl:when>
+              <xsl:when test="contains(.,'oclc')">
+                <xsl:value-of select="substring-after(.,'oclc')"/>
+              </xsl:when>
+              <xsl:when test="contains(.,'ocm')">
+                <xsl:value-of select="substring-after(.,'ocm')"/>
+              </xsl:when>
+              <xsl:when test="contains(.,'ocn')">
+                <xsl:value-of select="substring-after(.,'ocn')"/>
+              </xsl:when>
+              <xsl:otherwise/>
+            </xsl:choose>
+          </xsl:variable>
           <li>
             <xsl:element name="a">
-              <xsl:attribute name="class">tracked</xsl:attribute>
+              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
               <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
+              <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
-                  <xsl:choose>
-                    <xsl:when test="contains(.,'OCoLC)ocm')">
-                      <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
-                    </xsl:when>
-                    <xsl:when test="contains(.,'OCoLC')">
-                      <xsl:value-of select="substring-after(.,'OCoLC)')"/>
-                    </xsl:when>
-                    <xsl:when test="contains(.,'oclc')">
-                      <xsl:value-of select="substring-after(.,'oclc')"/>
-                    </xsl:when>
-                    <xsl:when test="contains(.,'ocm')">
-                      <xsl:value-of select="substring-after(.,'ocm')"/>
-                    </xsl:when>
-                    <xsl:when test="contains(.,'ocn')">
-                      <xsl:value-of select="substring-after(.,'ocn')"/>
-                    </xsl:when>
-                    <xsl:otherwise/>
-                  </xsl:choose>
+                <xsl:value-of select="$oclc-number" />
               </xsl:attribute>
               <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
               <xsl:text>Find in a library</xsl:text>
@@ -865,9 +874,10 @@
         <xsl:if test="$gPodUrl != ''">
           <li>
             <xsl:element name="a">
-              <xsl:attribute name="class">tracked</xsl:attribute>
+              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
               <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Buy a copy</xsl:attribute>
+              <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gPodUrl" /></xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:value-of select="$gPodUrl"/>
               </xsl:attribute>
@@ -881,7 +891,8 @@
           <xsl:element name="a">
             <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
             <xsl:attribute name="id">pagePdfLink</xsl:attribute>
-            <xsl:attribute name="class">tracked page-pdf-link</xsl:attribute>
+            <xsl:attribute name="class">page-pdf-link</xsl:attribute>
+            <xsl:attribute name="data-toggle">tracking</xsl:attribute>
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
             <xsl:attribute name="data-tracking-action">PT Download PDF - this page</xsl:attribute>
             <xsl:attribute name="href">
@@ -907,7 +918,7 @@
                 <xsl:element name="a">
                   <xsl:attribute name="title">Download whole book (PDF)</xsl:attribute>
                   <xsl:attribute name="id">fullPdfLink</xsl:attribute>
-                  <xsl:attribute name="class">tracked</xsl:attribute>
+                  <xsl:attribute name="data-toggle">tracking-action</xsl:attribute>
                   <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
                   <xsl:attribute name="data-tracking-action">PT Download PDF - whole book</xsl:attribute>
                   <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
@@ -990,7 +1001,7 @@
           <xsl:attribute name="id">permURL</xsl:attribute>
           <xsl:attribute name="class">email-permURL</xsl:attribute>
           <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
-          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Link to this Book</xsl:attribute>
           <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gItemHandle" /></xsl:attribute>
@@ -1016,7 +1027,7 @@
           <xsl:attribute name="id">pageURL</xsl:attribute>
           <xsl:attribute name="class">email-permURL</xsl:attribute>
           <xsl:attribute name="onclick">document.urlForm.pageURL_link.select();</xsl:attribute>
-          <xsl:attribute name="class">tracked</xsl:attribute>
+          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
           <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
           <xsl:attribute name="data-tracking-action">PT Link to this Page</xsl:attribute>
           <xsl:attribute name="readonly">readonly</xsl:attribute>
@@ -1155,7 +1166,7 @@
         <xsl:attribute name="href">
           <xsl:value-of select="//SearchForm/SearchResultsLink" />
         </xsl:attribute>
-        <xsl:attribute name="class">tracked</xsl:attribute>
+        <xsl:attribute name="data-toggle">tracking</xsl:attribute>
         <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
         <xsl:attribute name="data-tracking-action">PT Back to Search Results</xsl:attribute>
         <xsl:text>&#171; Back to </xsl:text>

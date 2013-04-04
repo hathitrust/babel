@@ -39,7 +39,7 @@ HT.Reader = {
         }
 
         if ( view == 'image' || view == 'plaintext' ) {
-            window.location.href = $this.attr('href');
+            window.location.href = this.$views.find("a[data-target=" + view + "]").attr('href');
             return;
         }
 
@@ -88,6 +88,19 @@ HT.Reader = {
             self.updateView(target);
         })
         self.$views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
+
+        // make the toolbar buttons "tracking-actions"
+        // so they don't refresh the page
+        $(".toolbar .btn[data-toggle*=tracking]").each(function() {
+            if ( $(this).data('target') == 'image' || $(this).data('target') == 'plaintext' ) {
+                // don't update these
+                return;
+            }
+            var toggle = $(this).data('toggle');
+            if ( toggle.indexOf("tracking-action") < 0 ) {
+                $(this).data('toggle', toggle.replace('tracking', 'tracking-action'));
+            }
+        })
 
         this._bindAction("go.first");
         this._bindAction("go.prev");
@@ -177,6 +190,8 @@ HT.Reader = {
         var self = this;
 
         this._current_seq = seq;
+        HT.params.seq = seq;
+
         this._updateState();
         this._updateLinks();
 
@@ -240,7 +255,7 @@ HT.Reader = {
         }
         this._current_view = view;
         // and upate the reverse
-        this.options.params.view = views[view];
+        this.options.params.view = view;
         this._updateState({ view : view });
     },
 
@@ -385,5 +400,10 @@ head.ready(function() {
         $(".bb-bookblock").toggleClass("lowered");
     });
 
+    HT.analytics.getTrackingLabel = function($link) {
+        //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+        var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
+        return label;
+    }
 
 })
