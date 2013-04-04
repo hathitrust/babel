@@ -3,6 +3,7 @@
  xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
+
   <!-- XXX unicorn version-->
   <!--## Global Variables ##-->
 
@@ -118,7 +119,10 @@
   </xsl:template>
 
   <xsl:template name="sidebar">
-    <xsl:call-template name="facets"/>
+    <!-- XXX don't display if no results-->
+    <xsl:if test="SearchResults/Item">
+      <xsl:call-template name="facets"/>
+    </xsl:if>
   </xsl:template>
 
   <!-- XXX change name to list-search results once we are clear
@@ -128,6 +132,7 @@ REMOVE the below and see if it will call list_utils
 -->
 
   <!--XXX template copied from mb list_items as basis to modify-->
+
   <xsl:template name="list-items-results">
     <xsl:variable name="title">
       <xsl:choose>
@@ -142,7 +147,7 @@ REMOVE the below and see if it will call list_utils
     <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
     <div id="mbContentContainer" class="main clearfix">
 
-      <xsl:call-template name="SearchResults_status"/>
+
       <!--XXX <xsl:call-template name="DisplaySearchWidgetLogic"/> -->
 
       <!--XXX      <xsl:call-template name="status-update" /> -->
@@ -152,6 +157,7 @@ REMOVE the below and see if it will call list_utils
 
       <xsl:choose>
         <xsl:when test="SearchResults/Item">
+          <xsl:call-template name="SearchResults_status"/>
           <xsl:call-template name="DisplayContent">
             <xsl:with-param name="title" select="'Search Results'" />
             <xsl:with-param name="item-list-contents" select="'items'" />
@@ -222,7 +228,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:if test="$debug='YES'">
         <span id="TempDebug">SEARCH RESULTS</span>
       </xsl:if>
-
+      <!--XXX foobar   this shouldn't display if 0 results-->
       <span>
         <xsl:text>Search Results: </xsl:text>
       </span>
@@ -477,13 +483,13 @@ REMOVE the below and see if it will call list_utils
                  -->
             <!-- XXX test this with new isAdvanced criteria -->  
             <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'"> 
-            <div class="AdvancedLSerror">
+            <div class="AdvancedLSerror alert alert-error alert-block">
 
               <img alt="Error" src="/ls/common-web/graphics/icon_x.gif" id="x_icon"  />
               <span id="zeroHits">
                 <xsl:text>Your search returned 0 results.   </xsl:text>
               </span>
-              <div id="AdvancedLSerrorSearchStuff">
+              <div id="AdvancedLSerrorSearchStuff alert alert-error alert-block">
               <xsl:text>You searched for:</xsl:text>
               <xsl:call-template name="advanced"/>          
               <!-- need styling-->
@@ -989,52 +995,8 @@ REMOVE the below and see if it will call list_utils
 
   <!-- ################################# ls BuildItemChunk not used for now but needs looking at #################################-->
 
-  <!--  add items widget -->
- <xsl:template name="BuildItemSelectActions">
-      <div class="SelectedItemActions">
-      <!--XXX hide second error message for testing and then remove-->
-      <!--
-      <div id="errormsg">
-        <h2>debug errormsg</h2>
-        <div class="bd"></div>
-      </div>
-      -->
-
-      <div class="overlay" id="overlay"></div>
-      <span id="addCollectionWidgetLS"></span>
-      <xsl:call-template name="BuildCollectionSelect"/>
-      <input type="hidden" name="page" value="ajax"/>
-      <button id="LSaddItemsBtn" >Add Selected</button>
-    </div>
-  </xsl:template>
-
-  <xsl:template name="BuildCollectionSelect">
-    <xsl:variable name="select_collection_text">Select Collection</xsl:variable>
-    
-    <label for="LSaddItemSelect" class="SearchLabel">
-      <xsl:value-of select="$select_collection_text"/>
-    </label>
-    <select name="c2" id="LSaddItemSelect">
-
-      <option value="a" selected="selected">
-        <xsl:value-of select="$select_collection_text"/>
-      </option>
-
-      <option label="New Collection" id="NewC" value="b">
-        <xsl:text>[CREATE NEW COLLECTION]</xsl:text>
-      </option>
-
-      <xsl:for-each select="SelectCollectionWidget/Coll">
-        <xsl:element name="option">
-          <xsl:attribute name="value">
-            <xsl:value-of select="collid"/>
-          </xsl:attribute>
-          <xsl:value-of select="CollName"/>
-        </xsl:element>
-      </xsl:for-each>
-      
-    </select>
-  </xsl:template>
+ 
+ 
   
   <!-- XXX remove?  don't think this is used -->
   <xsl:template name="GetHiddenParams">
