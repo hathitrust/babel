@@ -5,7 +5,9 @@
 
 //$(document).ready(function()  below is jquery shortcut for document.ready...
 
-$(function()
+//$(function()  use head ready for unicorn framework instead!
+
+head.ready(function()
   {
     /** we want to only affect the facets in the group so we need to assign a second class and
         feed that to the function 
