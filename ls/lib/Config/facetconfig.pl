@@ -13,8 +13,6 @@ my $lang_format_file = $ENV{SDRROOT} . '/ls/lib/Config/langformat.yaml';
 
 
 $facet_limit=30;
-#XXX temp unicorn debugging
-$facet_limit=7;
 $facet_initial_show=5;
 
 
