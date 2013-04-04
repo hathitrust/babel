@@ -403,6 +403,19 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   um-dc-mp: restricted
   uiuc: restricted
 
+# ---------------------------------------------------------------------
+# Access type map:
+# access_type = g(access_key, f(resource, rights attr, source)).
+#
+# which means that there are further restrictions on 'open' and
+# 'restricted' that are applied downstream:
+#
+# open pageimage when format=raw|watermark=0 is restricted by the
+# allow_raw or allow_unwatermarked_derivatives bit
+#
+# restricted aggregate requires allow_zip bit set
+# 
+# volume requires allow_pdf bit set for ODB-ebm
 # Current rules for "volume" resource:
 #
 # o  The only format for volume is ebm which is restricted by policy to
@@ -414,8 +427,12 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
 # o For those source values, "nonfree" equates to "restricted" (and
 # further restricted by the allow_pdf bit) to allow access for
 # printing subject to section 108
-#
+# ---------------------------------------------------------------------
 accessibility_matrix:
+  type:
+    free: *open-accessibility-block
+    nonfree: *open-accessibility-block
+
   volume:
     free:
       google: open
@@ -453,8 +470,8 @@ accessibility_matrix:
       um-press: open
       internet-archive: open
       yale: open
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
+      minn-dig-lib: open
+      minn-hist-soc: open
       utah_state_univ_press: open
       univ_madrid: open
       purdue: open
@@ -478,7 +495,7 @@ accessibility_matrix:
 
   volume/aggregate:
     free:
-      google: open_restricted
+      google: open
       lit-dlps-dc: open
       um-press: restricted_forbidden
       internet-archive: open

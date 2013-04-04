@@ -81,7 +81,7 @@ Description
 sub hlog_path {
     my $date = Utils::Time::iso_Time('date');
 
-    my $logdir = $ENV{'SDRROOT'} . '/logs/htd';
+    my $logdir = $ENV{SDRROOT} . '/logs/htd';
     my $logfile = "$date.log";
     my $logfile_path = $logdir . '/' . $logfile;
 

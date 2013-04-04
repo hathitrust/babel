@@ -72,13 +72,12 @@ For a given version
 # ---------------------------------------------------------------------
 sub validateQueryParams {
     my $self = shift;
-    my $P_Ref = shift;
 
-    my $Q = $self->query();
+    my $Q = $self->query;
     my $validParamsRef = $self->__getConfigVal('valid_query_params');
 
     # Only the query params we recognize ....
-    my @params = $Q->param();
+    my @params = $Q->param;
     foreach my $p (@params) {
         if (! grep(/^$p$/, @$validParamsRef)) {
             # Invalid param: set HTTP status line and bail
@@ -88,7 +87,7 @@ sub validateQueryParams {
     }
 
     # ... and must be associated with the correct resource
-    my $resource = $P_Ref->{resource};
+    my $resource = $self->__paramsRef->{resource};
 
     # validate format for XML resource types
     if (grep(/^$resource$/, qw(volume/meta volume/pagemeta volume/structure article article/meta article/structure type))) {
@@ -177,7 +176,6 @@ Description
 # ---------------------------------------------------------------------
 sub __getMetaMimeType {
     my $self = shift;
-    my $P_Ref = shift;
     my $fileType = shift;
 
     my $mimeType;
@@ -187,13 +185,13 @@ sub __getMetaMimeType {
         $mimeType = $self->__getMimetype('volume/pageocr', 'txt');
     }
     elsif ($fileType eq 'coordOCR') {
-        my $filename = $self->__getFilenameFromMETSfor($P_Ref, 'pagecoordocr');
+        my $filename = $self->__getFilenameFromMETSfor('pagecoordocr');
         my $extension = $self->__getFileExtension($filename);
 
         $mimeType = $self->__getMimetype('volume/pagecoordocr', 'html');
     }
     elsif ($fileType eq 'image') {
-        my $filename = $self->__getFilenameFromMETSfor($P_Ref, 'image');
+        my $filename = $self->__getFilenameFromMETSfor('image');
         my $extension = $self->__getFileExtension($filename);
 
         $mimeType = $self->__getMimetype('volume/pageimage', $extension);
@@ -224,7 +222,7 @@ sub __addHeaderInCopyrightMsg {
 
     my $Header_Key = 'X-HathiTrust-InCopyright';
 
-    my ($in_copyright, $attr) = $self->__getAccessObject()->getInCopyrightStatus();
+    my ($in_copyright, $attr) = $self->__getAccessObject->getInCopyrightStatus;
     if ($in_copyright) {
         my $access_key = $self->query->param('oauth_consumer_key') || 0;
         $self->header(
@@ -297,13 +295,10 @@ sub __setAccessUseFields {
     my $self = shift;
     my $fieldHashRef = shift;
 
-    my $ro = $self->__getRightsObject();
-    my $dbh = $self->__get_DBH();
-
-    my ($attr, $source) = (
-                           $ro->getRightsFieldVal('attr'),
-                           $ro->getRightsFieldVal('source')
-                          );
+    my $dbh = $self->__get_DBH;
+    my $P_Ref = $self->__paramsRef;
+    
+    my ($attr, $source) = ( $P_Ref->{attr}, $P_Ref->{source} );
     my $ref_to_arr_of_hashref =
       Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $source, $fieldHashRef);
     my $hashref = $ref_to_arr_of_hashref->[0];
@@ -334,8 +329,8 @@ sub __makeParamsRef {
      'ns'       => $namespace,
      'bc'       => $barcode,
      'seq'      => defined $seq ? $seq : '',
-     'attr'     => defined $ro ? $ro->getRightsFieldVal('attr') : 0,
-     'source'   => defined $ro ? $ro->getRightsFieldVal('source') : 0,
+     'attr'     => $ro->getRightsFieldVal('attr'),
+     'source'   => $ro->getRightsFieldVal('source'),
     };
 }
 
@@ -350,8 +345,7 @@ Description
 # ---------------------------------------------------------------------
 sub __getIdParamsRef {
     my $self = shift;
-    my $P_Ref = shift;
-    return $P_Ref->{id};
+    return $self->__paramsRef->{id};
 }
 
 # ---------------------------------------------------------------------
@@ -365,7 +359,7 @@ Description
 # ---------------------------------------------------------------------
 sub __getParamsRefStr {
     my $self = shift;
-    my $P_Ref = shift;
+    my $P_Ref = $self->__paramsRef;
 
     return join(" ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref) . ' ';
 }
@@ -423,7 +417,6 @@ Tokens must be consistent with the V_2/config.yaml. Metadata is always open.
 # ---------------------------------------------------------------------
 sub __bindYAMLTokens {
     my $self = shift;
-    my $P_Ref = shift;
 
     $self->__setMember(':::DOWNLOADVOLUME',
                        sub { $self->__getDownloadability('volume') });
@@ -468,17 +461,17 @@ sub __bindYAMLTokens {
 
 
     $self->__setMember(':::IMAGEMIMETYPE',
-                       sub { $self->__getMetaMimeType($P_Ref, 'image') });
+                       sub { $self->__getMetaMimeType('image') });
     $self->__setMember(':::OCRMIMETYPE',
-                       sub { $self->__getMetaMimeType($P_Ref, 'ocr') });
+                       sub { $self->__getMetaMimeType('ocr') });
     $self->__setMember(':::COORDOCRMIMETYPE',
-                       sub { $self->__getMetaMimeType($P_Ref, 'coordOCR') });
+                       sub { $self->__getMetaMimeType('coordOCR') });
 
     $self->__setAccessUseFields({stmt_url => 1, stmt_text => 1, stmt_key => 1});
     $self->__setMember(':::ACCESSUSE',
-                       sub { $self->__getResourceAccessUseKey() });
+                       sub { $self->__getResourceAccessUseKey });
     $self->__setMember(':::ACCESSUSESTATEMENT',
-                       sub { $self->__getResourceAccessUseStatement() });
+                       sub { $self->__getResourceAccessUseStatement });
 
     $self->__setMember(':::UPDATED',
                        sub { API::Utils::getDateString });
@@ -492,7 +485,7 @@ sub __bindYAMLTokens {
                           :::ATTR
                           :::NOTE/;
 
-    my $ro = $self->__getRightsObject();
+    my $ro = $self->__getRightsObject;
 
     foreach my $tok (@rightsTokens) {
         my ($field) = ($tok =~ m,([A-Z]+),);
@@ -502,7 +495,7 @@ sub __bindYAMLTokens {
     }
 
     $self->__setMember(':::XINCLUDEMETS',
-                       sub { $self->__getPairtreeFilename($P_Ref, 'mets.xml') });
+                       sub { $self->__getPairtreeFilename('mets.xml') });
 
     return 1;
 }
@@ -518,17 +511,17 @@ Description
 # ---------------------------------------------------------------------
 sub __getFilenameFromMETSfor {
    my $self = shift;
-   my ($P_Ref, $fileType) = @_;
+   my $fileType = shift;
 
    my $fn;
-   my $seq = $P_Ref->{'seq'};
+   my $seq = $self->__paramsRef->{seq};
 
-   my $parser = XML::LibXML->new();
-   my $doc = $self->__getBase_DOMtreeFor('volume/structure', $P_Ref, $parser);
+   my $parser = XML::LibXML->new;
+   my $doc = $self->__getBase_DOMtreeFor('volume/structure', $parser);
    my $xpath = q{//METS:fileGrp[@USE='} . $fileType . q{']/METS:file/METS:FLocat};
 
    my $attr = $doc->createAttributeNS('', 'dummy', '');
-   $doc->getDocumentElement()->setAttributeNodeNS($attr);
+   $doc->getDocumentElement->setAttributeNodeNS($attr);
    #'From: http://coding.derkeiler.com/Archive/Perl/comp.lang.perl.modules/2007-07/msg00045.html'
    my @fns;
    foreach my $node ($doc->findnodes($xpath)) {
@@ -553,17 +546,18 @@ Description
 # ---------------------------------------------------------------------
 sub __getFileResourceRepresentation {
     my $self = shift;
-    my ($P_Ref, $fileType) = @_;
+    my $fileType = shift;
 
     my ($representation, $extension);
 
-    my $filename = $self->__getFilenameFromMETSfor($P_Ref, $fileType);
+    my $filename = $self->__getFilenameFromMETSfor($fileType);
     if (defined($filename) && $filename) {
         $extension = $self->__getFileExtension($filename);
-        my $zipFile = $self->__getPairtreeFilename($P_Ref, 'zip');
+        my $zipFile = $self->__getPairtreeFilename('zip');
         if (-e $zipFile) {
-            my $po = $self->__getPathObject();
-            my $toExtract = $po->getPairtreeFilename($P_Ref->{'bc'}) . qq{/$filename};
+            my $barcode = $self->__paramsRef->{bc};
+            my $po = $self->__getPathObject;
+            my $toExtract = $po->getPairtreeFilename($barcode) . qq{/$filename};
             my $unzip_prog = $self->__getConfigVal('unzip_prog');
 
             $representation = `$unzip_prog -p '$zipFile' '$toExtract'`;
@@ -596,16 +590,15 @@ Return a representation of the type of the resource.
 # ---------------------------------------------------------------------
 sub GET_type {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_type: } . $self->__getParamsRefStr($P_Ref) . $self->query->self_url);
+    hLOG('API: ' . qq{GET_type: } . $self->__getParamsRefStr . $self->query->self_url);
 
     my $item_type;
-    my $dataRef = $self->__readPairtreeFile($P_Ref, 'mets.xml');
+    my $dataRef = $self->__readPairtreeFile('mets.xml');
     if (defined($dataRef) && $$dataRef) {
-        my $parser = XML::LibXML->new();
+        my $parser = XML::LibXML->new;
         my $tree = $parser->parse_string($$dataRef);
-        my $root = $tree->getDocumentElement();
+        my $root = $tree->getDocumentElement;
 
         foreach my $path_expr qw( //METS:structMap[@TYPE='physical']/METS:div/@TYPE  //METS:structMap[@TYPE='logical']/METS:div/@TYPE ) {
             $item_type = $root->findvalue($path_expr);
@@ -655,12 +648,11 @@ now.
 # ---------------------------------------------------------------------
 sub GET_volume_structure {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_volume_structure: } . $self->__getParamsRefStr($P_Ref) . $self->query->self_url);
+    hLOG('API: ' . qq{GET_volume_structure: } . $self->__getParamsRefStr . $self->query->self_url);
 
-    my $parser = XML::LibXML->new();
-    my $doc = $self->__getBase_DOMtreeFor('volume/structure', $P_Ref, $parser);
+    my $parser = XML::LibXML->new;
+    my $doc = $self->__getBase_DOMtreeFor('volume/structure', $parser);
     if (! defined($doc)) {
         $self->__setErrorResponseCode(404, 'cannot parse structure DOM tree');
         return undef;
@@ -679,7 +671,7 @@ sub GET_volume_structure {
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
             );
-        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderAccessUseMsg;
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch volume/structure representation');
@@ -700,12 +692,11 @@ Description
 # ---------------------------------------------------------------------
 sub GET_volume_meta {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_volume_meta: } . $self->__getParamsRefStr($P_Ref) . $self->query->self_url);
+    hLOG('API: ' . qq{GET_volume_meta: } . $self->__getParamsRefStr . $self->query->self_url);
 
-    my $parser = XML::LibXML->new();
-    my $doc = $self->__getBase_DOMtreeFor('volume/meta', $P_Ref, $parser);
+    my $parser = XML::LibXML->new;
+    my $doc = $self->__getBase_DOMtreeFor('volume/meta', $parser);
     if (! defined($doc)) {
         $self->__setErrorResponseCode(404, 'cannot parse volume/meta DOM tree');
         return undef;
@@ -728,7 +719,7 @@ sub GET_volume_meta {
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
             );
-        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderAccessUseMsg;
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch volume/meta representation');
@@ -749,12 +740,11 @@ Description
 # ---------------------------------------------------------------------
 sub GET_volume_pagemeta {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    hLOG('API: ' . qq{GET_volume_pagemeta: } . $self->__getParamsRefStr($P_Ref) . $self->query->self_url);
+    hLOG('API: ' . qq{GET_volume_pagemeta: } . $self->__getParamsRefStr . $self->query->self_url);
 
-    my $parser = XML::LibXML->new();
-    my $doc = $self->__getBase_DOMtreeFor('volume/pagemeta', $P_Ref, $parser);
+    my $parser = XML::LibXML->new;
+    my $doc = $self->__getBase_DOMtreeFor('volume/pagemeta', $parser);
     if (! defined($doc)) {
         $self->__setErrorResponseCode(404, 'cannot parse volume/pagemeta DOM tree');
         return undef;
@@ -764,7 +754,7 @@ sub GET_volume_pagemeta {
     $doc = $self->__transform($doc,
                               $parser,
                               'mets_pagemeta_xsl',
-                              {SelectedSeq => $P_Ref->{'seq'}});
+                              { SelectedSeq => $self->__paramsRef->{seq} });
 
     my $format = $self->query->param('format');
     my $representationRef
@@ -778,7 +768,7 @@ sub GET_volume_pagemeta {
              -Status => $statusLine,
              -Content_type => $mimetype . '; charset=utf8',
             );
-        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderAccessUseMsg;
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch volume/pagemeta representation');
@@ -799,17 +789,16 @@ Description
 # ---------------------------------------------------------------------
 sub GET_volume_aggregate {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    my $resource_str = $self->__getParamsRefStr;
     hLOG('API: ' . qq{GET_volume_aggregate: } . $resource_str . $self->query->self_url);
 
     my $representation;
 
-    my $dataRef = $self->__readPairtreeFile($P_Ref, 'zip', 'binary');
+    my $dataRef = $self->__readPairtreeFile('zip', 'binary');
     if (defined($dataRef) && $$dataRef) {
         $representation = $dataRef;
-        my $filename = $self->__getPairtreeFilename($P_Ref, 'zip', 1);
+        my $filename = $self->__getPairtreeFilename('zip', 1);
         # prevent Google Chrome error 346
         $filename =~ s/,/\./g;
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
@@ -820,7 +809,7 @@ sub GET_volume_aggregate {
                       -Content_type => $mimetype,
                       -Content_Disposition => qq{attachment; filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderAccessUseMsg;
         $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
@@ -842,13 +831,12 @@ Description
 # ---------------------------------------------------------------------
 sub GET_volume_pageocr {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    my $resource_str = $self->__getParamsRefStr;
     hLOG('API: ' . qq{GET_volume_pageocr: } . $resource_str . $self->query->self_url);
 
     my ($representationRef, $filename, $extension) =
-        $self->__getFileResourceRepresentation($P_Ref, 'ocr');
+        $self->__getFileResourceRepresentation('ocr');
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('volume/pageocr', $extension);
@@ -858,7 +846,7 @@ sub GET_volume_pageocr {
                       -Content_type => $mimetype . '; charset=utf8',
                       -Content_Disposition => qq{filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderAccessUseMsg;
         $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
@@ -880,13 +868,12 @@ Description
 # ---------------------------------------------------------------------
 sub GET_volume_pagecoordocr {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    my $resource_str = $self->__getParamsRefStr;
     hLOG('API: ' . qq{GET_volume_pagecoordocr: } . $resource_str . $self->query->self_url);
 
     my ($representationRef, $filename, $extension) =
-        $self->__getFileResourceRepresentation($P_Ref, 'coordOCR');
+        $self->__getFileResourceRepresentation('coordOCR');
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype('volume/pagecoordocr', $extension);
@@ -895,7 +882,7 @@ sub GET_volume_pagecoordocr {
                       -Content_type => $mimetype . '; charset=utf8',
                       -Content_Disposition => qq{filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderAccessUseMsg;
         $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
@@ -916,14 +903,13 @@ Description
 # ---------------------------------------------------------------------
 sub __get_pageimage {
     my $self = shift;
-    my $P_Ref = shift;
 
     my ($representationRef, $filename, $extension);
 
-    my $Q = $self->query();
+    my $Q = $self->query;
     my $format = $Q->param('format');
     if ($format eq 'raw') {
-        ($representationRef, $filename, $extension) = $self->__getFileResourceRepresentation($P_Ref, 'image');
+        ($representationRef, $filename, $extension) = $self->__getFileResourceRepresentation('image');
     }
     else {
         use constant _OK => 0;
@@ -939,8 +925,8 @@ sub __get_pageimage {
             my $argval = $Q->param($arg);
             $args{'--' . $arg} = $argval if (defined $argval);
         }
-        my $id = $self->__getIdParamsRef($P_Ref);
-        my $seq = $P_Ref->{'seq'};
+        my $id = $self->__getIdParamsRef;
+        my $seq = $self->__paramsRef->{seq};
 
         my $script = $ENV{SDRROOT} . "/imgsrv/bin/image";
         my $cmd = "$script " . "--id=$id --seq=$seq " . join(" ", map sprintf(q{%s=%s}, $_, $args{$_}), keys %args);
@@ -967,12 +953,11 @@ Description
 # ---------------------------------------------------------------------
 sub GET_volume_pageimage {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    my $resource_str = $self->__getParamsRefStr;
     hLOG('API: ' . qq{GET_volume_pageimage: } . $resource_str . $self->query->self_url);
 
-    my ($representationRef, $filename, $extension) = $self->__get_pageimage($P_Ref);
+    my ($representationRef, $filename, $extension) = $self->__get_pageimage;
 
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
@@ -983,7 +968,7 @@ sub GET_volume_pageimage {
                       -Content_type => $mimetype,
                       -Content_Disposition => qq{filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg();
+        $self->__addHeaderAccessUseMsg;
         $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
@@ -1009,9 +994,8 @@ Always an error if not under Plack.
 # ---------------------------------------------------------------------
 sub GET_volume {
     my $self = shift;
-    my $P_Ref = $self->__makeParamsRef(@_);
 
-    my $resource_str = $self->__getParamsRefStr($P_Ref);
+    my $resource_str = $self->__getParamsRefStr;
     hLOG('API: ' . qq{GET_volume: } . $resource_str . $self->query->self_url);
 
     my $running_under_plack = $ENV{REST_APP_RETURN_ONLY};
@@ -1029,13 +1013,13 @@ sub GET_volume {
     use Symbol qw(gensym);
 
     my $mimetype = $self->__getMimetype('volume');
-    my $id = $self->__getIdParamsRef($P_Ref);
+    my $id = $self->__getIdParamsRef;
     my $filename = $id . '.pdf';
     $self->header(
                   'Content-type' => $mimetype,
                   'Content-Disposition' => qq{filename=$filename},
                  );
-    $self->__addHeaderAccessUseMsg();
+    $self->__addHeaderAccessUseMsg;
     $self->__addHeaderInCopyrightMsg($resource_str);
 
     my $script = $ENV{SDRROOT} . "/imgsrv/bin/pdf";

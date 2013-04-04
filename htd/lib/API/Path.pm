@@ -14,7 +14,7 @@ in the repository.
 
 use API::Path;
 
-my $po = API::Path->new($ENV{'SDRDATAROOT'} . '/obj/mdp/pairtree_root');
+my $po = API::Path->new($ENV{SDRDATAROOT} . '/obj/mdp/pairtree_root');
 
 $po->getItemDir($barcode);
 
@@ -51,7 +51,7 @@ sub _initialize {
     my $self = shift;
     my $myRoot = shift;
 
-    $self->{'my_root'} = $myRoot;
+    $self->{my_root} = $myRoot;
     $File::Pairtree::root = $myRoot;
 }
 
@@ -67,9 +67,9 @@ sub _initialize {
 # ---------------------------------------------------------------------
 sub getItemDir {
     my $self = shift;
-    my $id = shift;
+    my $barcode = shift;
 
-    my $path = File::Pairtree::id2ppath($id) . File::Pairtree::s2ppchars($id);
+    my $path = File::Pairtree::id2ppath($barcode) . File::Pairtree::s2ppchars($barcode);
     return $path;
 }
 
@@ -84,9 +84,9 @@ sub getItemDir {
 # ---------------------------------------------------------------------
 sub getPairtreeFilename {
     my $self = shift;
-    my $id = shift;
+    my $barcode = shift;
 
-    my $filename = File::Pairtree::s2ppchars($id);
+    my $filename = File::Pairtree::s2ppchars($barcode);
     return $filename;
 }
 
@@ -101,7 +101,7 @@ Description
 # ---------------------------------------------------------------------
 sub getRoot {
     my $self = shift;
-    return $self->{'my_root'};
+    return $self->{my_root};
 }
 
 

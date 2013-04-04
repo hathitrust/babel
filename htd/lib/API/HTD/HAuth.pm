@@ -41,7 +41,7 @@ use API::HTD::AuthDb;
 use API::HTD::IP_Address;
 
 my $FORCE_SUCCESS = 0;
-my $ALLOW_AUTHENTICATION_DEVELOPMENT_OVERRIDE = 0;
+my $ALLOW_AUTHENTICATION_DEVELOPMENT_OVERRIDE = 1;
 my $ALLOW_AUTHORIZATION_DEVELOPMENT_OVERRIDE = 0;
 
 if ($FORCE_SUCCESS) {
@@ -83,7 +83,7 @@ sub _initialize {
 
     my $dbh = $args->{_dbh};
     $self->{_dbh} = $dbh;
-    
+
     my $oauth_consumer_key = $Q->param('oauth_consumer_key');
     API::HTD::AuthDb::update_access($dbh, $oauth_consumer_key)
         if (defined $oauth_consumer_key);
@@ -104,7 +104,7 @@ sub __auth_valid {
     my $valid = shift;
 
     if (defined $valid) {
-        die if (defined $self->{_authentication_valid});
+        die "FATAL: hauth initialization invalid" if (defined $self->{_authentication_valid});
         $self->{_authentication_valid} = $valid
     }
     return $self->{_authentication_valid};
@@ -281,7 +281,7 @@ sub __check_access_key {
     if (! API::HTD::AuthDb::access_key_exists($dbh, $access_key)) {
         return $self->error(CONSUMER_KEY_UNKNOWN);
     }
-    
+
     return 1;
 }
 
@@ -332,7 +332,7 @@ sub H_request_is_oauth {
             return 1;
         }
     }
-    
+
     return $self->error('signature missing');
 }
 
@@ -385,13 +385,10 @@ sub H_authenticate {
       - PDF access for Expressnet/EBM
       - raw images
       - suppressed watermarking for derivatives
+      - zip access
 
     NOTE: If you add codes here, add them to htdmonitor too.
 
- TRANSITION@ 
-    IN the transition period:
-      no format or format=raw -> archival image format
-         raw and watermarked derivatives are unrestricted
     AFTER the transition period:
       format=raw -> archival image format
          raw is restricted and watermarked derivatives are the default
@@ -402,84 +399,87 @@ sub H_authenticate {
     allow_unwatermarked_derivatives --+ | | | | | | |
     allow_raw --------------------------+ | | | | | |
     allow_pdf ----------------------------+ | | | | |
-    rate -----------------------------------+ | | | |
-    restricted_forbidden ---------------------+ | | |
-    restricted ---------------------------------+ | |
-    open_restricted ------------------------------+ |
+    allow_zip ------------------------------+ | | | |
+    rate ------------------(not implemented)--+ | | |
+    restricted_forbidden------------------------+ | |
+    restricted -----------------------------------+ |
     open -------------------------------------------+
 
     Basic codes below assume that authorization to restricted implies
     authorization to less restricted unless indicated (*).  Some
     shorthand:
 
-    (O)         = open
-    (O|OR)      = open|open_restricted
-    (O|OR|R)    = open|open_restricted|restricted
-    (O|OR|R|RF) = open|open_restricted|restricted|restricted_forbidden
+    (O)      = open
+    (O|R)    = open|restricted
+    (O|R|RF) = open|restricted|restricted_forbidden
 
        Basic
        code      basic_mask
-    0  00000000            NOT AUTHORIZED
-    1  00000001  00000001  (O)
-    3  00000011  00000010  (O|OR)
-    5  00000101  00000101  (O|R)(*)
-    7  00000111  00000100  (O|OR|R)
-    15 00001111  00001000  (O|OR|R|RF)
+     0 00000000            NOT AUTHORIZED
+     1 00000001  00000001  (O)
+     3 00000011  00000010  (O|R)
+     7 00000111  00000100  (O|R|RF)
 
-       Basic+rate
-       code      rate_mask
-    17 00010001  00010000  (O)        |rate
-    19 00010011  00010000  (O|OR)     |rate
-    23 00010111  00010000  (O|OR|R)   |rate
-    31 00011111  00010000  (O|OR|R|RF)|rate
+       Basic+allow_zip
+       code      allow_zip_mask(16)
+    17 00010001  00010000  (O)     |allow_zip
+    19 00010011  00010000  (O|R)   |allow_zip
+    23 00010111  00010000  (O|R|RF)|allow_zip
 
        Basic+allow_pdf
-       code      allow_pdf_mask
-    33 00100001  00100000  (O)        |allow_pdf
-    35 00100011  00100000  (O|OR)     |allow_pdf
-    39 00100111  00100000  (O|OR|R)   |allow_pdf
-    47 00101111  00100000  (O|OR|R|RF)|allow_pdf
+       code      allow_pdf_mask(32)
+    33 00100001  00100000  (O)     |allow_pdf
+    35 00100011  00100000  (O|R)   |allow_pdf
+    39 00100111  00100000  (O|R|RF)|allow_pdf
 
        Basic+allow_raw
-       code      allow_raw_mask
-    65 01000001  01000000  (O)        |allow_raw
-    67 01000011  01000000  (O|OR)     |allow_raw
-    71 01000111  01000000  (O|OR|R)   |allow_raw
-    79 01001111  01000000  (O|OR|R|RF)|allow_raw
+       code      allow_raw_mask(64)
+    65 01000001  01000000  (O)     |allow_raw
+    67 01000011  01000000  (O|R)   |allow_raw
+    71 01000111  01000000  (O|R|RF)|allow_raw
 
        Basic+allow_unwatermarked_derivatives
-       code      allow_unwatermarked_derivatives_mask
-   129 10000001  10000000  (O)        |allow_unwatermarked_derivatives
-   131 10000011  10000000  (O|OR)     |allow_unwatermarked_derivatives
-   133 10000101  10000000  (O|R)(*)
-   135 10000111  10000000  (O|OR|R)   |allow_unwatermarked_derivatives
-   143 10001111  10000000  (O|OR|R|RF)|allow_unwatermarked_derivatives
+       code      allow_unwatermarked_derivatives_mask(128)
+   129 10000001  10000000  (O)     |allow_unwatermarked_derivatives
+   131 10000011  10000000  (O|R)   |allow_unwatermarked_derivatives
+   135 10000111  10000000  (O|R|RF)|allow_unwatermarked_derivatives
 
-   Combinations:
+   Multiple combinations:
 
-       Basic+allow_raw+allow_unwatermarked_derivatives
-       code      allow_unwatermarked_derivatives_mask
-   193 11000001  -------  (O)        |allow_raw|allow_unwatermarked_derivatives
-   195 11000011  -------  (O|OR)     |allow_raw|allow_unwatermarked_derivatives
-   199 11000111  -------  (O|OR|R)   |allow_raw|allow_unwatermarked_derivatives
-   207 11001111  -------  (O|OR|R|RF)|allow_raw|allow_unwatermarked_derivatives
+       Basic+allow_zip+allow_pdf
+       code      mask(48)
+    49 00110001  00110000 (O)     |allow_zip|allow_pdf
+    51 00110011  00110000 (O|R)   |allow_zip|allow_pdf
+    55 00110111  00110000 (O|R|RF)|allow_zip|allow_pdf
 
-       Basic+allow_pdf+allow_raw+allow_unwatermarked_derivatives_mask
-       code
-   225 11100001  --------  (O)        |allow_pdf|allow_raw|allow_unwatermarked_derivatives
-   227 11100011  --------  (O|OR)     |allow_pdf|allow_raw|allow_unwatermarked_derivatives
-   231 11100111  --------  (O|OR|R)   |allow_pdf|allow_raw|allow_unwatermarked_derivatives
-   239 11101111  --------  (O|OR|R|RF)|allow_pdf|allow_raw|allow_unwatermarked_derivatives
+       Basic+allow_zip+allow_raw
+       code      mask(80)
+    81 01010001  01010000 (O)     |allow_zip|allow_raw
+    83 01010011  01010000 (O|R)   |allow_zip|allow_raw
+    87 01010111  01010000 (O|R|RF)|allow_zip|allow_raw
+
+       Basic+allow_zip+allow_pdf+allow_raw
+       code      mask(112)
+   113 01110001  01110000 (O)     |allow_zip|allow_pdf|allow_raw
+   115 01110011  01110000 (O|R)   |allow_zip|allow_pdf|allow_raw
+   119 01110111  01110000 (O|R|RF)|allow_zip|allow_pdf|allow_raw
+
+       Basic+allow_zip+allow_pdf+allow_raw+allow_unwatermarked_derivatives_mask
+       code      mask(240)
+   241 11110001  11110000  (O)     |allow_zip|allow_pdf|allow_raw|allow_unwatermarked_derivatives
+   243 11110011  11110000  (O|R)   |allow_zip|allow_pdf|allow_raw|allow_unwatermarked_derivatives
+   247 11110111  11110000  (O|R|RF)|allow_zip|allow_pdf|allow_raw|allow_unwatermarked_derivatives
+
 
 =cut
 
 # ---------------------------------------------------------------------
 
 use constant OPEN_MASK                 =>   1;
-use constant OPEN_RESTRICTED_MASK      =>   2;
-use constant RESTRICTED_MASK           =>   4;
-use constant RESTRICTED_FORBIDDEN_MASK =>   8;
-use constant RATE_MASK                 =>  16;
+use constant RESTRICTED_MASK           =>   2;
+use constant RESTRICTED_FORBIDDEN_MASK =>   4;
+use constant RATE_MASK                 =>   8;
+use constant ALLOW_ZIP_MASK            =>  16;
 use constant ALLOW_PDF_EBM_MASK        =>  32;
 use constant ALLOW_RAW_MASK            =>  64;
 use constant ALLOW_UNWATERMARKED_MASK  => 128;
@@ -496,7 +496,6 @@ Description
 my %basic_authorization_map =
   (
    'open'                 => OPEN_MASK,
-   'open_restricted'      => OPEN_RESTRICTED_MASK,
    'restricted'           => RESTRICTED_MASK,
    'restricted_forbidden' => RESTRICTED_FORBIDDEN_MASK,
   );
@@ -505,6 +504,8 @@ sub __basic_access_is_authorized {
     my $self = shift;
     my ($code, $access_type) = @_;
 
+    die "FATAL: access_type=$access_type" unless ($access_type);
+    
     my $mask = $basic_authorization_map{$access_type};
     my $result = ($code & $mask);
     my $authorized = ($result == $mask);
@@ -524,6 +525,7 @@ format=raw are always un-watermarked
 # ---------------------------------------------------------------------
 my %extended_authorization_map =
   (
+   'zip'                      => ALLOW_ZIP_MASK,
    'pdf_ebm'                  => ALLOW_PDF_EBM_MASK,
    'raw_archival_data'        => ALLOW_RAW_MASK,
    'unwatermarked_derivative' => ALLOW_UNWATERMARKED_MASK,
@@ -532,6 +534,8 @@ my %extended_authorization_map =
 sub __extended_access_is_authorized {
     my $self = shift;
     my ($code, $extended_access_type) = @_;
+
+    die "FATAL: extended_access_type=$extended_access_type" unless ($extended_access_type);
 
     my $mask = $extended_authorization_map{$extended_access_type};
     my $result = ($code & $mask);
@@ -603,8 +607,8 @@ sub __authorized_protocol {
     $ENV{SERVER_PORT} = 80 if (! defined $ENV{SERVER_PORT});
 
     if (
-        ($access_type =~ m,restricted,) 
-        || 
+        ($access_type =~ m,restricted,)
+        ||
         (defined $extended_access_type)
        ) {
         if ($ENV{SERVER_PORT} ne '443') {
@@ -648,9 +652,9 @@ sub __authorized_at_IP_address {
                          ||
                          ($access_type =~ m,restricted,)
                         );
-    
+
     my $authorized = 0;
-    
+
     if ($ip_address_is_valid) {
         if ($lock_required) {
             $authorized = $locked;
@@ -662,7 +666,7 @@ sub __authorized_at_IP_address {
     else {
         $authorized = 0;
     }
-    
+
     my $r = qq{ip_valid=$ip_address_is_valid client_type=$client_type locked=$locked};
     my $s = qq{API: __authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none');
     hLOG("$s $r");

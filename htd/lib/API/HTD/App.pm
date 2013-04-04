@@ -129,11 +129,11 @@ sub setup {
     my $self = shift;
 
     # config
-    my $ver = $self->getVersion();
+    my $ver = $self->getVersion;
     my $config_object = new API::HTD::HConf(
                                             [
-                                             $ENV{'SDRROOT'} . '/htd/lib/API/HTD/base-config.yaml',
-                                             $ENV{'SDRROOT'} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml},
+                                             $ENV{SDRROOT} . '/htd/lib/API/HTD/base-config.yaml',
+                                             $ENV{SDRROOT} . qq{/htd/lib/API/HTD/App/V_${ver}/config.yaml},
                                             ]
                                            );
     if ($config_object->initSuccess) {
@@ -145,13 +145,13 @@ sub setup {
         return 0;
     }
 
-    $self->__debugging();
+    $self->__debugging;
     # POSSIBLY NOTREACHED
 
     # We only support HTTP GET
-    if ($self->getRequestMethod() ne 'GET') {
+    if ($self->getRequestMethod ne 'GET') {
         $self->__setMember('setup_error', 1);
-        $self->__setErrorResponseCode(405, $self->getRequestMethod() . ' method not supported');
+        $self->__setErrorResponseCode(405, $self->getRequestMethod . ' method not supported');
         return 0;
     }
     # POSSIBLY NOTREACHED
@@ -169,7 +169,7 @@ sub setup {
     $self->__setMember('dbh', $DBH);
 
     # Map to requested version of resource handlers.
-    $self->__mapURIsToHandlers();
+    $self->__mapURIsToHandlers;
 }
 
 
@@ -188,7 +188,7 @@ sub defaultResourceHandler {
 
     # Some conditions will already have set the header so preserve
     # that otherwise assume a 500
-    if (! $self->header()) {
+    if (! $self->header) {
         $self->__setErrorResponseCode(500, $self->__errorDescription);
     }
 
@@ -219,15 +219,15 @@ sub preHandler {
     my $argsRef = shift;
     my $handler = shift;
 
-    my $defaultHandler = sub { $self->defaultResourceHandler() };
+    my $defaultHandler = sub { $self->defaultResourceHandler };
 
     # Noting to do if setup failed.
     return $defaultHandler
-        if ($self->__setupError());
+        if ($self->__setupError);
     # POSSIBLY NOTREACHED
 
     # Did the handlers bind OK?
-    if (! $self->handlerBindingOk()) {
+    if (! $self->handlerBindingOk) {
         $self->__setErrorResponseCode(400, 'invalid URI');
         return $defaultHandler;
     }
@@ -235,22 +235,25 @@ sub preHandler {
 
     my $Q = $self->query;
     my $dbh = $self->__get_DBH;
-    my $P_Ref = $self->__makeParamsRef(@$argsRef);
 
-    # Get a Rights object. We need this either to permit access or to
-    # fill in response data for unrestricted resource.
-    my $ro = API::HTD::Rights::createRightsObject($dbh, $P_Ref);
-    if (! defined($ro)) {
-        my $id = $self->__getIdParamsRef($P_Ref);
-        $self->__setErrorResponseCode(404, "rights information not found for $id");
+    my $namespace = $argsRef->[2];
+    my $barcode = $argsRef->[3];
+
+    # could fail if invalid HTID is requested
+    my $ro = API::HTD::Rights::createRightsObject($dbh, $namespace, $barcode);
+    unless (defined($ro)) {
+        $self->__setErrorResponseCode(404, "rights information not found for id=" . $self->__getIdParamsRef);
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
     $self->__setMember('rights', $ro);
 
+    # fundamental member data
+    $self->__paramsRef($self->__makeParamsRef(@$argsRef));
+
     # Query parameter validation.  Failure is fobbed off to the
     # defaultResourceHandler to deal with the mess
-    if (! $self->validateQueryParams($P_Ref)) {
+    if (! $self->validateQueryParams) {
         $self->__setErrorResponseCode(400, $self->__errorDescription);
         return $defaultHandler;
     }
@@ -258,15 +261,15 @@ sub preHandler {
 
     # Establish IP address context singleton
     API::HTD::IP_Address->new(
-                              $self->__getConfObject, 
-                              $dbh, 
+                              $self->__getConfObject,
+                              $dbh,
                               $Q->param('oauth_consumer_key') || 0,
                               $Q->param('ip') || 0,
                              );
 
     # Get an access type object
     my $ato = new API::HTD::AccessTypes({
-                                         _rights => $ro,
+                                         _params_ref => $self->__paramsRef,
                                          _config => $self->__getConfObject,
                                          _dbh    => $dbh,
                                         });
@@ -280,22 +283,22 @@ sub preHandler {
     $self->__setMember('hauth', $hauth);
 
     # single logging point
-    $self->__log_client($hauth, $Q, $P_Ref);
+    $self->__log_client($hauth);
 
     # Authenticate and authorize
-    if (! $self->__authNZ_Success($P_Ref)) {
+    if (! $self->__authNZ_Success) {
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
 
     # Create bindings to tokens in the YAML
-    if (! $self->__bindYAMLTokens($P_Ref)) {
+    if (! $self->__bindYAMLTokens) {
         $self->__setErrorResponseCode(500, 'token binding failure');
         return $defaultHandler;
     }
 
     # Create Path object
-    my $po = API::Path->new($ENV{'SDRDATAROOT'} . q{/obj/} . $P_Ref->{'ns'} . q{/pairtree_root});
+    my $po = API::Path->new($ENV{SDRDATAROOT} . q{/obj/} . $namespace . q{/pairtree_root});
     $self->__setMember('path', $po);
 
     return $handler;
@@ -319,7 +322,9 @@ single logging point
 # ---------------------------------------------------------------------
 sub __log_client {
     my $self = shift;
-    my ($hauth, $Q, $P_Ref) = @_;
+    my $hauth = shift;
+
+    my $Q = $self->query;
 
     my $ipo = new API::HTD::IP_Address;
     my $ip_valid = $ipo->ip_is_valid;
@@ -327,8 +332,8 @@ sub __log_client {
     my $is_oauth = $hauth->H_request_is_oauth($Q);
     my $url = $Q->self_url;
     my $access_key = $Q->param('oauth_consumer_key');
-    my $resource = $P_Ref->{resource};
-    
+    my $resource = $self->__paramsRef->{resource};
+
     hLOG('API: ' . sprintf(qq{__log_client: access_key=%s ip_valid=%d signed=%d UA_ip=%s REMOTE_ADDR=%s HTTP_X_FORWARDED_FOR=%s SERVER_PORT=%s url=%s resource=%s },
                            $access_key, $ip_valid, $is_oauth, $ua_ip, $ENV{REMOTE_ADDR}, $ENV{HTTP_X_FORWARDED_FOR}, $ENV{SERVER_PORT}, $url, $resource));
 }
@@ -345,7 +350,7 @@ Description
 # ---------------------------------------------------------------------
 sub __debugging {
     my $self = shift;
-    hLOG_DEBUG('API: ' . $self->__getEnv());
+    hLOG_DEBUG('API: ' . $self->__getEnv);
 }
 
 
@@ -426,12 +431,14 @@ Description
 # ---------------------------------------------------------------------
 sub __getPairtreeFilename {
     my $self = shift;
-    my ($P_Ref, $extension, $bare) = @_;
+    my ($extension, $bare) = @_;
 
-    my $po = $self->__getPathObject();
-    my $filename = $po->getPairtreeFilename($P_Ref->{'bc'}) . qq{.$extension};
+    my $P_Ref = $self->__paramsRef;
+    my $barcode = $self->__paramsRef->{bc};
+    my $po = $self->__getPathObject;
+    my $filename = $po->getPairtreeFilename($barcode) . qq{.$extension};
     if (! $bare) {
-        my $dir = $po->getItemDir($P_Ref->{'bc'});
+        my $dir = $po->getItemDir($barcode);
         $filename = qq{$dir/} . $filename;
     }
 
@@ -450,10 +457,11 @@ Description
 # ---------------------------------------------------------------------
 sub __readPairtreeFile {
     my $self = shift;
-    my ($P_Ref, $extension, $binary) = @_;
+    my ($extension, $binary) = @_;
 
     my $dataRef;
-    my $filename = $self->__getPairtreeFilename($P_Ref, $extension);
+
+    my $filename = $self->__getPairtreeFilename($extension);
     if (-e $filename) {
         $dataRef = API::Utils::readFile($filename, $binary);
     }
@@ -475,7 +483,7 @@ sub __setErrorResponseCode {
     my $self = shift;
     my ($code, $msg) = @_;
 
-    $self->resetHeader();
+    $self->resetHeader;
 
     $self->__errorDescription($msg) if ($msg);
     my $desc = $self->__errorDescription;
@@ -489,7 +497,7 @@ sub __setErrorResponseCode {
 
     if ($code =~ m,^30[1-7],) {
         my $Q = new CGI($self->query);
-        my $url = $self->__getHAuthObject()->H_make_ssl_redirect_url($Q);
+        my $url = $self->__getHAuthObject->H_make_ssl_redirect_url($Q);
         $self->setRedirect($url);
     }
     else {
@@ -538,6 +546,20 @@ sub __bindYAMLTokens {
 # =====================================================================
 # =====================================================================
 
+sub __paramsRef {
+    my $self = shift;
+    my $ref = shift;
+
+    $self->{_params_ref} = $ref if (defined $ref);
+
+    my $val = $self->{_params_ref};
+    unless (defined $val) {
+        die "FATAL: no value for _params_ref in __paramsRef";
+    }
+
+    return $self->{_params_ref};
+}
+
 sub __errorDescription {
     my $self = shift;
     my $desc = shift;
@@ -547,37 +569,37 @@ sub __errorDescription {
 
 sub __getRightsObject {
     my $self = shift;
-    return $self->{'rights'};
+    return $self->{rights};
 }
 
 sub __getConfObject {
     my $self = shift;
-    return $self->{'config'};
+    return $self->{config};
 }
 
 sub __getAccessObject {
     my $self = shift;
-    return $self->{'access'};
+    return $self->{access};
 }
 
 sub __getHAuthObject {
     my $self = shift;
-    return $self->{'hauth'};
+    return $self->{hauth};
 }
 
 sub __get_DBH {
     my $self = shift;
-    return $self->{'dbh'};
+    return $self->{dbh};
 }
 
 sub __getPathObject {
     my $self = shift;
-    return $self->{'path'};
+    return $self->{path};
 }
 
 sub __setupError {
     my $self = shift;
-    return $self->{'setup_error'};
+    return $self->{setup_error};
 }
 
 sub __setMember {
@@ -588,18 +610,18 @@ sub __setMember {
 
 sub __getConfigVal {
     my $self = shift;
-    return $self->__getConfObject()->getConfigVal(@_);
+    return $self->__getConfObject->getConfigVal(@_);
 }
 
 sub __getAccessType {
     my $self = shift;
-    return $self->__getAccessObject()->getAccessType(@_);
+    return $self->__getAccessObject->getAccessType(@_);
 
 }
 
 sub __getExtendedAccessType {
     my $self = shift;
-    return $self->__getAccessObject()->getExtendedAccessType(@_);
+    return $self->__getAccessObject->getExtendedAccessType(@_);
 
 }
 
@@ -626,7 +648,7 @@ sub __getClientQueryParams {
     my $hashRef = {};
 
     my $clientParamsRef  = $self->__getConfigVal('client_query_params');
-    my $Q = $self->query();
+    my $Q = $self->query;
     foreach my $p (@$clientParamsRef) {
         my $val = $Q->param($p);
         $hashRef->{$p} = $val if (defined $val);
@@ -649,9 +671,25 @@ sub __getDownloadability {
     my $self = shift;
     my $resource = shift;
 
-    # support 'open_restricted', 'restricted_forbidden'
+    my $Q = $self->query;
+
+    # support 'restricted', 'restricted_forbidden'. if there is an
+    # extended access type for this object it is restricted
+    my $downloadability;
+
     my $accessType = $self->__getAccessType($resource);
-    my $downloadability = ($accessType =~ m,restricted,) ? 'restricted' : 'open';
+    if ($accessType eq 'open') {
+        my $extended_accessType = $self->__getExtendedAccessType($resource, $accessType, $Q);
+        if (defined $extended_accessType) {
+            $downloadability = 'restricted';
+        }
+        else {
+            $downloadability = 'open';
+        }
+    }
+    else {
+        $downloadability = 'restricted';
+    }
 
     return $downloadability;
 }
@@ -669,8 +707,8 @@ sub __getProtocol {
     my $self = shift;
     my $resource = shift;
 
-    my $accessType = $self->__getAccessType($resource);
-    my $protocol = ($accessType =~ m,restricted,) ? 'https' : 'http';
+    my $downloadability = $self->__getDownloadability($resource);
+    my $protocol = ($downloadability eq 'restricted') ? 'https' : 'http';
 
     return $protocol;
 }
@@ -686,10 +724,9 @@ Description
 # ---------------------------------------------------------------------
 sub __getMetaMimeType {
     my $self = shift;
-    my $P_Ref = shift;
     my $fileType = shift;
 
-    die "ERROR: __getMetaMimeType is pure virtual."
+    die "FATAL: __getMetaMimeType is pure virtual."
 }
 
 # ---------------------------------------------------------------------
@@ -731,32 +768,31 @@ Description
 # ---------------------------------------------------------------------
 sub __authNZ_Success {
     my $self = shift;
-    my $P_Ref = shift;
 
     my $Q = $self->query;
-    my $hauth = $self->__getHAuthObject();
+    my $hauth = $self->__getHAuthObject;
 
     my $Success = 0;
     my $fail_point = '?';
 
     # Authenticate and authorize an OAuth request
     if ($hauth->H_request_is_oauth($Q)) {
-        ($Success = $self->__authenticated($Q)) || ($fail_point = 'oauth_authentication');
+        ($Success = $self->__authenticated) || ($fail_point = 'oauth_authentication');
         if ($Success) {
-            ($Success = $self->__authorized($Q, $P_Ref)) || ($fail_point = 'oauth_authorization');
+            ($Success = $self->__authorized) || ($fail_point = 'oauth_authorization');
         }
     }
     elsif ($hauth->H_authenticated_by_grace) {
-        ($Success = $self->__authorized($Q, $P_Ref)) || ($fail_point = 'grace_authorization');
+        ($Success = $self->__authorized) || ($fail_point = 'grace_authorization');
     }
     else {
         $Success = 0;
         $self->__setErrorResponseCode(403, $hauth->errstr);
-        $fail_point = 'non-oauth_outside_grace'; 
+        $fail_point = 'non-oauth_outside_grace';
     }
 
     if (! $Success) {
-        my $s = $self->__getParamsRefStr($P_Ref);
+        my $s = $self->__getParamsRefStr;
         my $ipo = new API::HTD::IP_Address;
         hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s orig=} . $ipo->address . qq{ failpoint=$fail_point});
     }
@@ -776,13 +812,14 @@ Description
 # ---------------------------------------------------------------------
 sub __authenticated {
     my $self = shift;
-    my $Q = shift;
 
     my $authenticated = 0;
-    my $hauth = $self->__getHAuthObject();
 
-    my $dbh = $self->__get_DBH();
-    my $client_data = $self->__getClientQueryParams();
+    my $Q = $self->query;
+    my $hauth = $self->__getHAuthObject;
+
+    my $dbh = $self->__get_DBH;
+    my $client_data = $self->__getClientQueryParams;
 
     if ($hauth->H_authenticate($Q, $dbh, $client_data)) {
         $authenticated = 1;
@@ -814,23 +851,20 @@ authorization = f(access_type = g(rights, source, resource) && h(extension))
 # ---------------------------------------------------------------------
 sub __authorized {
     my $self = shift;
-    my ($Q, $P_Ref) = @_;
 
     my $error = '';
     my $authorized = 0;
-    
-    # Access types: open, open_restricted, restricted, restricted_forbidden
-    my $resource = $P_Ref->{'resource'};
 
-    my $hauth = $self->__getHAuthObject();
-
-    my $dbh = $self->__get_DBH;
+    # Access types: open, restricted, restricted_forbidden
+    my $Q = $self->query;
+    my $resource = $self->__paramsRef->{resource};
+    my $hauth = $self->__getHAuthObject;
     my $access_key = $Q->param('oauth_consumer_key');
 
     my $accessType = $self->__getAccessType($resource);
     my $extended_accessType = $self->__getExtendedAccessType($resource, $accessType, $Q);
-    my $dbh = $self->__get_DBH();
 
+    my $dbh = $self->__get_DBH;
     if ($hauth->H_authorized($Q, $dbh, $resource, $accessType, $extended_accessType)) {
         $authorized = 1;
     }
@@ -844,10 +878,9 @@ sub __authorized {
         }
     }
 
-    hLOG('API ERROR: ' . qq{__authorized: access_type=$accessType authorized=0 error=} . $hauth->errstr)
-      if (! $authorized);
-
+    hLOG('API ERROR: ' . qq{__authorized: access_type=$accessType authorized=0 error=} . $hauth->errstr) unless($authorized);
     hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType extended_access_type=} . (defined($extended_accessType) ? $extended_accessType : 'none') . qq{ authorized=$authorized error="$error"});
+
     return $authorized;
 }
 
@@ -872,9 +905,9 @@ Description
 sub p__processValue {
     my $self = shift;
     my $val = shift;
-    my $P_Ref = shift;
     my $level = shift;
 
+    my $P_Ref = $self->__paramsRef;
     my $orig_val = $val;
 
     my ($pointer) = ($val =~ m,(_HTD_[A-Z_]+_),);
@@ -882,8 +915,8 @@ sub p__processValue {
         my $pointerVal = $self->__getConfigVal($pointer);
         $val =~ s,$pointer,$pointerVal,;
     }
-    $val =~ s,__ID__,$P_Ref->{'id'},;
-    $val =~ s,__SEQ__,$P_Ref->{'seq'},;
+    $val =~ s,__ID__,$P_Ref->{id},;
+    $val =~ s,__SEQ__,$P_Ref->{seq},;
 
     my @boundTokens = ($val =~ m,:::[A-Z]+,g);
     foreach my $token (@boundTokens) {
@@ -910,7 +943,7 @@ Description
 # ---------------------------------------------------------------------
 sub p__handleAttributes {
     my $self = shift;
-    my ($elem, $attrRef, $P_Ref, $level) = @_;
+    my ($elem, $attrRef, $level) = @_;
 
     if (ref($attrRef) eq 'HASH') {
         foreach my $aName (keys %{ $attrRef }) {
@@ -918,7 +951,7 @@ sub p__handleAttributes {
                 hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleAttributes: elem=" . ($elem ? $elem->nodeName : '') . " attribute=$aName");
             }
             my $attrVal = $attrRef->{$aName};
-            $attrVal = $self->p__processValue($attrVal, $P_Ref, $level+1);
+            $attrVal = $self->p__processValue($attrVal, $level+1);
             $elem->setAttribute($aName, $attrVal);
         }
     }
@@ -935,7 +968,7 @@ Description
 # ---------------------------------------------------------------------
 sub p__handleContent {
     my $self = shift;
-    my ($doc, $parentElem, $elem, $P_Ref, $ref, $level) = @_;
+    my ($doc, $parentElem, $elem, $ref, $level) = @_;
 
     if ($DEBUG eq 'tree') {
         hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__handleContent: elem=" . ($parentElem ? $parentElem->nodeName : ''));
@@ -950,10 +983,10 @@ sub p__handleContent {
 
     if (ref($ref) eq 'HASH') {
         # ! Indirect recursion !
-        $self->p__buildXML($doc, $elem, $P_Ref, $ref, $level+1);
+        $self->p__buildXML($doc, $elem, $ref, $level+1);
     }
     elsif ($ref ne 'null') {
-        $ref = $self->p__processValue($ref, $P_Ref, $level+1);
+        $ref = $self->p__processValue($ref, $level+1);
         $elem->appendText($ref);
     }
 }
@@ -969,7 +1002,7 @@ Description
 # ---------------------------------------------------------------------
 sub p__handleElement {
     my $self = shift;
-    my ($doc, $parentElem, $eName, $P_Ref, $ref, $level) = @_;
+    my ($doc, $parentElem, $eName, $ref, $level) = @_;
 
     if ($DEBUG eq 'tree') {
         hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleElement: parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName");
@@ -977,11 +1010,11 @@ sub p__handleElement {
 
     my $elem = $doc->createElement($eName);
 
-    my $attrRef = $ref->{'attrs'};
-    $self->p__handleAttributes($elem, $attrRef, $P_Ref, $level+1);
+    my $attrRef = $ref->{attrs};
+    $self->p__handleAttributes($elem, $attrRef, $level+1);
 
-    my $contentRef = $ref->{'content'};
-    $self->p__handleContent($doc, $parentElem, $elem, $P_Ref, $contentRef, $level+1);
+    my $contentRef = $ref->{content};
+    $self->p__handleContent($doc, $parentElem, $elem, $contentRef, $level+1);
 }
 
 # ---------------------------------------------------------------------
@@ -995,7 +1028,7 @@ Description
 # ---------------------------------------------------------------------
 sub p__buildXML {
     my $self = shift;
-    my ($doc, $parentElem, $P_Ref, $responsesRef, $level) = @_;
+    my ($doc, $parentElem, $responsesRef, $level) = @_;
 
     if ($DEBUG eq 'tree') {
         hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__buildXML: " . ($parentElem ? $parentElem->nodeName : ''));
@@ -1005,11 +1038,11 @@ sub p__buildXML {
         my $eRef = $responsesRef->{$eName};
         if (ref($eRef) eq 'ARRAY') {
             foreach my $hashRef (@$eRef) {
-                $self->p__handleElement($doc, $parentElem, $eName, $P_Ref, $hashRef, $level+1);
+                $self->p__handleElement($doc, $parentElem, $eName, $hashRef, $level+1);
             }
         }
         else {
-            $self->p__handleElement($doc, $parentElem, $eName, $P_Ref, $eRef, $level+1);
+            $self->p__handleElement($doc, $parentElem, $eName, $eRef, $level+1);
         }
     }
 }
@@ -1026,10 +1059,10 @@ Description
 # ---------------------------------------------------------------------
 sub p__processXIncludes {
     my $self = shift;
-    my ($doc, $parser, $P_Ref) = @_;
+    my ($doc, $parser) = @_;
 
     # See if parser will be able to access the METS file
-    my $filename = $self->__getPairtreeFilename($P_Ref, 'mets.xml');
+    my $filename = $self->__getPairtreeFilename('mets.xml');
     if (-e $filename) {
         $parser->processXIncludes($doc);
         return 1;
@@ -1061,11 +1094,11 @@ sub __transform {
     my $self = shift;
     my ($doc, $parser, $metsFileKey, $XSLvarRef) = @_;
 
-    my $metsXSL = $ENV{'SDRROOT'} . $self->__getConfigVal($metsFileKey);
+    my $metsXSL = $ENV{SDRROOT} . $self->__getConfigVal($metsFileKey);
     my $metsXSL_fh = API::Utils::getBinaryFilehandle($metsXSL);
     my $metsXSL_doc = $parser->parse_fh($metsXSL_fh);
 
-    my $xslParser = XML::LibXSLT->new();
+    my $xslParser = XML::LibXSLT->new;
     my $stylesheet = $xslParser->parse_stylesheet($metsXSL_doc);
     if ($XSLvarRef) {
         $doc = $stylesheet->transform($doc, %$XSLvarRef);
@@ -1106,7 +1139,7 @@ sub __makeJSON {
     my $sax = XML::SAX::ParserFactory->parser(Handler => $simple);
     my $ref = $sax->parse_string($$XMLref);
 
-    my $coder = JSON::XS->new();
+    my $coder = JSON::XS->new;
     my $json = $coder->encode($ref);
     if (defined($json)) {
         $JSONref = \$json;
@@ -1159,14 +1192,14 @@ xi:xinclude element.
 # ---------------------------------------------------------------------
 sub __getBase_DOMtreeFor {
     my $self = shift;
-    my ($resource, $P_Ref, $parser) = @_;
+    my ($resource, $parser) = @_;
 
     my $responsesRef = $self->__getConfigVal('responses', $resource);
 
     my $doc = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
-    $self->p__buildXML($doc, undef, $P_Ref, $responsesRef, 0);
+    $self->p__buildXML($doc, undef, $responsesRef, 0);
 
-    if (! $self->p__processXIncludes($doc, $parser, $P_Ref)) {
+    if (! $self->p__processXIncludes($doc, $parser)) {
         return undef;
     }
 

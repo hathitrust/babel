@@ -409,6 +409,20 @@ mimetype_map:
 # open pageimage when format=raw|watermark=0 is restricted by the
 # allow_raw or allow_unwatermarked_derivatives bit
 #
+# restricted aggregate requires allow_zip bit set
+# 
+# volume requires allow_pdf bit set for ODB-ebm
+# Current rules for "volume" resource:
+#
+# o  The only format for volume is ebm which is restricted by policy to
+# source={google, lit-dlps-dc}.
+#
+# o  For those source values, "free" equates to "open" but the ebm
+# format is restricted by the user's authorization code bit=allow_pdf.
+#
+# o For those source values, "nonfree" equates to "restricted" (and
+# further restricted by the allow_pdf bit) to allow access for
+# printing subject to section 108
 # ---------------------------------------------------------------------
 OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
   google: open
@@ -448,8 +462,8 @@ accessibility_matrix:
       um-press: open
       internet-archive: open
       yale: open
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
+      minn-dig-lib: open
+      minn-hist-soc: open
       utah_state_univ_press: open
       univ_madrid: open
       purdue: open
@@ -473,7 +487,7 @@ accessibility_matrix:
 
   aggregate:
     free:
-      google: open_restricted
+      google: open
       lit-dlps-dc: open
       um-press: restricted_forbidden
       internet-archive: open

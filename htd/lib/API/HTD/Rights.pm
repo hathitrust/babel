@@ -15,7 +15,7 @@ accessibility.
 
 use API::HTD::Rights;
 
-my $ro = API::HTD::Rights::createRightsObject($DBH, $paramRef);
+my $ro = API::HTD::Rights::createRightsObject($DBH, $namespace, $barcode);
 if ($ro)
 {
   ...
@@ -42,20 +42,15 @@ Procedural interface
 =cut
 
 # ---------------------------------------------------------------------
-sub createRightsObject
-{
-    my ($dbh, $paramRef) = @_;
-
-    my $namespace = $paramRef->{'ns'};
-    my $barcode = $paramRef->{'bc'};
+sub createRightsObject {
+    my ($dbh, $namespace, $barcode) = @_;
 
     my $ro = API::HTD::Rights->new($dbh, $namespace, $barcode);
-
-    return $ro->__initialized() ? $ro : undef;
+    return undef unless ($ro->__initialized);
+    return $ro;
 }
 
-sub new
-{
+sub new {
     my $class = shift;
 
     my $self = {};
@@ -75,8 +70,7 @@ Initialize API::HTD::Rights object
 =cut
 
 # ---------------------------------------------------------------------
-sub _initialize
-{
+sub _initialize {
     my $self = shift;
     my ($dbh, $namespace, $barcode) = @_;
 
@@ -87,15 +81,14 @@ sub _initialize
 
     if (defined($row_hashref)) {
         # ISO time format
-        $row_hashref->{'time'} =~ s,[ ],T,;
+        $row_hashref->{time} =~ s,[ ],T,;
 
         # no undef fields
         foreach my $key (keys %$row_hashref) {
             $row_hashref->{$key} = ''
                 if (! defined($row_hashref->{$key}));
         }
-
-        $self->{'rights'} = $row_hashref;
+        $self->{rights} = $row_hashref;
     }
 }
 
@@ -117,7 +110,7 @@ sub getRightsFieldVal {
         return $ENV{TEST_SOURCE} if ($field eq 'source');
     }
 
-    return $self->{'rights'}{$field};
+    return $self->{rights}{$field};
 }
 
 # ---------------------------------------------------------------------
@@ -129,10 +122,9 @@ Private
 =cut
 
 # ---------------------------------------------------------------------
-sub __initialized
-{
+sub __initialized {
     my $self = shift;
-    return exists($self->{'rights'});
+    return exists($self->{rights});
 }
 
 
@@ -146,7 +138,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-13 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

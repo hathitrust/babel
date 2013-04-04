@@ -18,7 +18,11 @@ use API::DbIF;
 my $DBH = API::DbIF::databaseConnect('ht_maintenance');
 
 my $GEOIP            = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
-my %RESOURCES        = (pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0, pdf => 0);
+my %RESOURCES        = (
+                        pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,
+                        volume => 0, type => 0,
+                        volume_pageimage => 0, volume_pagemeta => 0, volume_meta => 0, volume_structure => 0, volume_pageocr => 0, volume_pagecoordocr => 0, volume_aggregate => 0, volume => 0,
+                       );
 my @FREELY_AVAILABLE = (
                         @RightsGlobals::g_creative_commons_attribute_values,
                         @RightsGlobals::g_public_domain_world_attribute_values,
@@ -149,7 +153,7 @@ sub __get_access_info {
     Utils::trim_spaces(\$email);
     my $org  = $ref_to_arr_if_hashref->[0]->{org};
     Utils::trim_spaces(\$org);
-    
+
     my $info;
     if ($name) {
         $info = "$name | $org | $email";
@@ -157,7 +161,7 @@ sub __get_access_info {
     else {
         $info = "$userid";
     }
-    
+
     return $info;
 }
 
@@ -384,7 +388,7 @@ sub _test_resource_by_ip_for_ic {
 
     # MUST coordinate with HAuth.pm that codes permit access to
     # restricted materials.
-    my @restricted_codes = (3, 5, 7, 15, 19, 23, 31, 35, 39, 47, 67, 71, 79, 131, 135, 143, 195, 199, 207, 227, 231, 239);
+    my @restricted_codes = (3, 7, 19, 23, 35, 39, 67, 71, 131, 135, 51, 55, 115, 119, 243, 247);
 
     chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file`);
     @uniq_resource_ids_by_ip = map { $_ =~ m, id="(.*?)" , } @uniq_resource_ids_by_ip;

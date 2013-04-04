@@ -40,7 +40,7 @@ my $singleton;
 sub new {
     if ( defined($singleton) ) {
         shift;
-        die "attempt to redefine API::HTD::IP_Address" if (scalar(@_));
+        die "FATAL: attempt to redefine API::HTD::IP_Address" if (scalar(@_));
     }
     else {
         my $class = shift;
@@ -194,10 +194,10 @@ sub __handle_type_1_client {
 
 =item __handle_type_2_client
 
-This is a Qual-type client where a server has asserted a remote
-javascript client's IP address. If the client's actual REMOTE_ADDR
-equals the asserted IP address in the IP URL param, the request is
-valid.
+This is a Qual-type client where a trusted server has asserted a
+remote javascript client's IP address. If the client's actual
+REMOTE_ADDR equals the asserted IP address in the IP URL param, the
+request is valid.
 
 =cut
 
@@ -300,7 +300,7 @@ sub __initialize {
 
     # system fail
     hLOG(qq{API: IP_Address[type=$type]: $IPf_BAD_TYPE type=$type ip_param=$ip_address_param, REMOTE_ADDR=$REMOTE_ADDR, ipregexp=$IP_regexp: valid=0});
-    die("IP_Address system error: invalid client type=$type");
+    die("FATAL: IP_Address system error: invalid client type=$type");
 }
 
 

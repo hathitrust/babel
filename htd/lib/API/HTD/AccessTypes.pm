@@ -26,7 +26,6 @@ use base qw(Class::ErrorHandler);
 use RightsGlobals;
 
 use API::HTD_Log;
-use API::HTD::Rights;
 use API::HTD::HConf;
 use API::HTD::IP_Address;
 
@@ -54,8 +53,8 @@ Initialize object.
 sub _initialize {
     my $self = shift;
     my $args = shift;
-    
-    $self->{_rights} = $args->{_rights};
+
+    $self->{_params_ref} = $args->{_params_ref};
     $self->{_config} = $args->{_config};
     $self->{_dbh}    = $args->{_dbh};
 }
@@ -65,9 +64,9 @@ sub _initialize {
 #  Accessors
 # =====================================================================
 
-sub __getRightsObject {
+sub __getParamsRef {
     my $self = shift;
-    return $self->{_rights};
+    return $self->{_params_ref};
 }
 
 sub __getConfObject {
@@ -101,12 +100,11 @@ Description
 # ---------------------------------------------------------------------
 sub getInCopyrightStatus {
     my $self = shift;
-    
+
     # optimistic
     my $in_copyright = 0;
 
-    my $ro = $self->__getRightsObject();
-    my $attribute = $ro->getRightsFieldVal('attr');    
+    my $attribute = $self->__getParamsRef->{attr};
     my $rights = $self->__getConfigVal('rights_name_map', $attribute);
 
     if ($rights eq 'pdus') {
@@ -117,10 +115,10 @@ sub getInCopyrightStatus {
     }
     else {
         my @freely_available = (
-                                @RightsGlobals::g_creative_commons_attribute_values, 
+                                @RightsGlobals::g_creative_commons_attribute_values,
                                 @RightsGlobals::g_public_domain_world_attribute_values,
                                );
-        $in_copyright = (! grep(/^$attribute$/, @freely_available));        
+        $in_copyright = (! grep(/^$attribute$/, @freely_available));
     }
 
     return ($in_copyright, $attribute);
@@ -140,28 +138,20 @@ sub getAccessType {
     my $self = shift;
     my $resource = shift;
 
-    my $ro = $self->__getRightsObject();
+    my $P_Ref = $self->__getParamsRef;
 
-    my $source = $self->__getConfigVal('sources_name_map', $ro->getRightsFieldVal('source'));
-    my $rights = $self->__getConfigVal('rights_name_map', $ro->getRightsFieldVal('attr'));
+    my $source = $self->__getConfigVal('sources_name_map', $P_Ref->{source});
+    my $rights = $self->__getConfigVal('rights_name_map', $P_Ref->{attr});
 
     # freedom = ( free, nonfree, restricted_forbidden )
     my $freedom = $self->__getFreedomVal($rights);
-    # accessType = ( open, open_restricted, restricted, restricted_forbidden ) 
-    my $accessType = 
-      ($freedom =~ m,forbidden,) 
+    # accessType = ( open, restricted, restricted_forbidden )
+    my $accessType =
+      ($freedom =~ m,forbidden,)
         ? $freedom
           : $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
 
-    # Pending
-    if (0) {
-        if ($accessType eq 'open_restricted') {
-            my $ccNamesRef  = $self->__getConfigVal('creative_commons_names');
-            if (grep(/^$rights$/, @$ccNamesRef)) {
-                $accessType = 'open';
-            }
-        }
-    }
+    die "FATAL: accessType=$accessType not defined in getAccessType" unless ($accessType);
 
     return $accessType;
 }
@@ -170,8 +160,11 @@ sub getAccessType {
 
 =item getExtendedAccessType
 
-Highly specific for EBM PDF and un-watermarked derivatives and
-raw_archival_data with CC licenses
+Specific for defined extension bits:
+ pdf_ebm
+ unwatermarked_derivative
+ raw_archival_data
+ zip
 
 =cut
 
@@ -184,6 +177,7 @@ sub getExtendedAccessType {
     my $extended_accessType;
 
     my $format = $Q->param('format');
+    my $source_name = $self->__getConfigVal('sources_name_map', $self->__getParamsRef->{source});
 
     if ( ($resource =~ m,pageimage,) && grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
         my $watermark = $Q->param('watermark');
@@ -193,13 +187,23 @@ sub getExtendedAccessType {
     }
     elsif ( ($resource =~ m,pageimage,) && ($format eq 'raw') ) {
         # default open pageimage is watermarked derivative else
-        # requires allow_raw bit set
+        # requires allow_raw bit set (v1=pageimage v2=volume/pageimage)
         $extended_accessType = 'raw_archival_data';
     }
     elsif ($resource eq 'volume') {
         # parameter validation forces pdf to have format=ebm, requires
         # bit set
         $extended_accessType = 'pdf_ebm';
+    }
+    elsif ($resource =~ m,aggregate,) {
+        # google-'open' and 'restricted' basic access require the zip
+        # bit set. (v1=aggregate v2=volume/aggregate)
+        if (($accessType eq 'open') && ($source_name eq 'google')) {
+            $extended_accessType = 'zip';
+        }
+        elsif ($accessType =~ m,restricted,) {
+            $extended_accessType = 'zip';
+        }
     }
 
     return $extended_accessType;
@@ -223,7 +227,7 @@ sub __geo_location_is {
     my $required_location = shift;
 
     my $is = 1;
-    
+
     # This will be the UA IP address seen in HTTP_X_FORWARDED_FOR or
     # REMOTE_USER by (our) trusted client and passed as a URL
     # parameter or else simply HTTP_X_FORWARDED_FOR or REMOTE_USER of
@@ -236,14 +240,14 @@ sub __geo_location_is {
     my $country_code = $geoIP->country_code_by_addr($IPADDR);
 
     my $correct_location = 0;
-    if ($required_location eq 'US') { 
+    if ($required_location eq 'US') {
         $correct_location = (grep(/$country_code/, @RightsGlobals::g_pdus_country_codes));
     }
     elsif ($required_location eq 'NONUS') {
         $correct_location = (! grep(/$country_code/, @RightsGlobals::g_pdus_country_codes));
     }
     else {
-        die qq{Invalid required_location value="$required_location"};
+        die qq{FATAL: Invalid required_location value="$required_location"};
     }
 
     if ($correct_location) {
@@ -275,7 +279,7 @@ some addresses due to proxying so test proxies table for IPADDR.
 
 If the supplied IP address can be geotrusted test it for PDUS/ICUS.
 If the supplied IP address cannot be geotrusted freedom becomes
-'nonfree' of PDUS/ICUS. 
+'nonfree' of PDUS/ICUS.
 
 If the client code permits IC we permit PDUS/ICUS.
 
@@ -285,7 +289,7 @@ If the client code permits IC we permit PDUS/ICUS.
 sub __getFreedomVal {
     my $self = shift;
     my $rights = shift;
-    
+
     my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
     my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
 
