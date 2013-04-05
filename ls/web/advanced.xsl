@@ -20,7 +20,7 @@
     <xsl:call-template name="include_local_javascript" />
     <xsl:call-template name="load_js_and_css"/>
   </xsl:template>
-
+  <xsl:template name="setup-body-class" >no-search</xsl:template>
 
 
   <!-- Main template -->

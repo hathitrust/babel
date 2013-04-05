@@ -136,17 +136,17 @@ head.ready(function()
 function doReset (event)
 { 
   //clear all text boxess
-  var boxes=  $("input:text");
+  var boxes=   $("#advanced_searchform").find("input:text");
   $(boxes).val("");
   
   // set formats to "All"
-  var selectedOpt = $(".orFacet :selected");
+  var selectedOpt = $("#advanced_searchform").find(".orFacet :selected");
   selectedOpt.attr("selected", false);
   $(".orFacet [value='language:All']").attr("selected", true);
   $(".orFacet [value='format:All']").attr("selected", true);
   
   //uncheck any check boxes
-  $("input:checked").attr("checked",false);
+  $("#advanced_searchform").find("input:checked").attr("checked",false);
   
   // set search widgets back to defaults See warning above re hard-coding
   // unselect whatever is selected and then select
@@ -232,7 +232,7 @@ function checkPdate()
 function checkForQuery()
 {
   var queryExists=false;
-  var queries = $(":input.querybox");
+  var queries = $("#advanced_searchform").find(":input.querybox");
   $(queries).each (function (index,element)
                    {
                      var value=$(element).val();
@@ -274,7 +274,7 @@ function getRowNums()
 {
   var rowNums = new Array();
   var count=0;
-  $(':input.querybox').each(function(index)
+  $("#advanced_searchform").find(':input.querybox').each(function(index)
                             {
                               var rownum=index+1;
                               var query=$(this).val();
@@ -312,7 +312,7 @@ function redirect(rowNums)
   document.body.appendChild(newform);
 
   //copy input elements  
-  $(":input").each(function (index,element)
+  $("#advanced_searchform").find(":input").each(function (index,element)
                    {
                      var value= $(element).val();
                      var name = $(element).attr('name');
