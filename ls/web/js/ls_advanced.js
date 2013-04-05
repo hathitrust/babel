@@ -13,7 +13,9 @@ Need to be able to exclude a javascript call? or rename form?
 // process stuff and then submit
 
 
-$(function()
+//$(function() replace with head.ready to use unicorn framework
+
+head.ready(function()
   {
 
   if ($.browser.msie && $.browser.version < 8)
