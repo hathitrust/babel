@@ -40,8 +40,9 @@ use API::Utils;
 use API::HTD::AuthDb;
 use API::HTD::IP_Address;
 
+# These switches never apply when in production
 my $FORCE_SUCCESS = 0;
-my $ALLOW_AUTHENTICATION_DEVELOPMENT_OVERRIDE = 1;
+my $ALLOW_AUTHENTICATION_DEVELOPMENT_OVERRIDE = 0;
 my $ALLOW_AUTHORIZATION_DEVELOPMENT_OVERRIDE = 0;
 
 if ($FORCE_SUCCESS) {
