@@ -1088,11 +1088,17 @@ sub getAdvancedSearchURL
     my $url=$cgi->url(-relative=>1);
     $url.='?a=page&amp;page=advanced';
     # populate query box from previous basic search?
-    #unicorn-- add field1 as well
+    #unicorn-- add field1 and lmt as well
     # but if this is an advanced search just do a blank query box
     if ( __isAdvanced($cgi) ne "true")
     {
         $url.='&amp;q1=' . $cgi->param('q1') . '&amp;field1=' . $cgi->param('field1');
+        my $limit=$cgi->param('lmt');
+        if (defined($limit))
+        {
+            $url.='&amp;lmt='. $limit;
+        }
+        
     }
     return $url;
 }

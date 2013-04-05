@@ -259,10 +259,11 @@
         </fieldset>
         
 <div id="findbuttons">
-               <!-- <button type="reset" name="reset" id="reset">Clear/reset</button>-->
-               <a href="" id="reset">Clear/reset</a>
-               <button type="submit" name="srch" id="srch" >Find</button>
-             </div>
+  <button type="submit" class="button" name="srch" id="advanced_button" >
+    <span >Search</span>
+  </button>
+  <a href="" id="reset">Clear/reset</a>
+</div>
                <div id="submitErrMsg"></div>
              </form>
              </div>

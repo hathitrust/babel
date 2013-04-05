@@ -158,10 +158,11 @@ REMOVE the below and see if it will call list_utils
       <!--XXX      <xsl:call-template name="status-update" /> -->
 
       <!-- XXX       <xsl:call-template name="decideDisplayRefine"/> -->
-       <xsl:call-template name="Refine"/>
 
+          
       <xsl:choose>
         <xsl:when test="SearchResults/Item">
+          <xsl:call-template name="Refine"/>
           <xsl:call-template name="SearchResults_status"/>
           <xsl:call-template name="DisplayContent">
             <xsl:with-param name="title" select="'Search Results'" />
@@ -461,6 +462,12 @@ REMOVE the below and see if it will call list_utils
       <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
     </xsl:variable>
 
+    <!-- if there are some  results, but just no ft results show tabs-->
+
+    <xsl:if test="$all_items_count &gt; 0">
+          <xsl:call-template name="Refine"/>
+    </xsl:if>
+
 
       <div class="ColContent" id="ColContentLSerror">
 
@@ -468,8 +475,10 @@ REMOVE the below and see if it will call list_utils
           <xsl:choose>
             <!-- if the ft checkbox was checked and there are no ft but some so then display stuff below -->
             <xsl:when test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
-              <div class="LSerror">
-                <xsl:text>There are no Full View items matching your search templage NO results</xsl:text>
+              <div class="LSerror alert alert-error">
+                <xsl:text>There are no Full View items matching your search</xsl:text>
+                <!--XXX we don't need this if we show the tabs-->
+                <!--#################################
                 <br></br>
                 <xsl:element name="a">
                   <xsl:attribute name="href">
@@ -480,6 +489,7 @@ REMOVE the below and see if it will call list_utils
                   </xsl:attribute>
                   <xsl:text> See Limited (search only) items matching your search </xsl:text>
                 </xsl:element>
+                #################################-->
               </div>
             </xsl:when>
             
@@ -490,7 +500,7 @@ REMOVE the below and see if it will call list_utils
             <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'"> 
             <div class="AdvancedLSerror alert alert-error alert-block">
 
-              <img alt="Error" src="/ls/common-web/graphics/icon_x.gif" id="x_icon"  />
+             
               <span id="zeroHits">
                 <xsl:text>Your search returned 0 results.   </xsl:text>
               </span>
@@ -524,10 +534,12 @@ REMOVE the below and see if it will call list_utils
         </xsl:when>
         
         <xsl:otherwise>
-          <div class="LSerror">
+          <div class="LSerror alert  alert-error">
             <xsl:text>Your search for "</xsl:text>
             <xsl:value-of select="/MBooksTop/QueryString"/>
-            <xsl:text>" in Everything returned zero hits.</xsl:text>
+            <xsl:text>" in </xsl:text>
+            <xsl:value-of select="/MBooksTop/AdvancedSearch/group/Clause/Field"/>
+            <xsl:text> returned zero hits.</xsl:text>
           </div>
         </xsl:otherwise>      
       </xsl:choose>
@@ -1315,7 +1327,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:variable name="FullTextCount">
         <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
       </xsl:variable>
-
+      <!--XXX if we aren't displaying tabs don't put this here? -->
     <ul class="nav nav-tabs">
 
       <!-- This is for 3 tab logic    <xsl:if test="($FullTextCount &gt; 0) and ($SearchOnlyCount &gt; 0)" -->

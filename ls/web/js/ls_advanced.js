@@ -255,7 +255,7 @@ function checkForQuery()
 function showErrMsg(Msg,id)
 {
   var target= '#' + id;
-  $("<div  class='error' ></div>").html(Msg).appendTo(target);
+  $("<div  class='alert-error alert' ></div>").html(Msg).appendTo(target);
 
 }
 
