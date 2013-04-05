@@ -12,9 +12,19 @@
 
   <!-- ## end Global Variables ##-->
 
+  <xsl:template name="setup-extra-header">
+    <link rel="stylesheet" type="text/css" href="/ls/css/screen.css" />
+ 
+    <!--XXX temporary working kludge, put in SASS after it is working-->
+        <link rel="stylesheet" type="text/css" href="/ls/css/ls_advanced.css" />
+    <xsl:call-template name="include_local_javascript" />
+    <xsl:call-template name="load_js_and_css"/>
+  </xsl:template>
+
+
 
   <!-- Main template -->
-  <xsl:template match="/MBooksTop">
+  <xsl:template match="/MBooksTopDONTUSE">
     <html lang="en" xml:lang="en" >
       <head>
         <title>
@@ -44,7 +54,7 @@
           <xsl:call-template name="header"/>
 
           <div id="mbContentContainer" class="LsHomePageContainer">
-            <h2 class="SkipLink">Main Content</h2>
+            <h2 class="offscreen">Main Content</h2>
             <!-- Added: overlay is displayed here -->
             <div id="errormsg">
               <div class="bd"></div>
@@ -88,7 +98,8 @@
     </xsl:template>
 
   <!-- TEMPLATE -->
-  <xsl:template name="PageContent">
+  <!--  <xsl:template name="PageContent"> -->
+  <xsl:template name="contents">
     <div class="LsAdvancedPageContent">
       <div id="LS_main">
         <div class="betasearch">
@@ -101,7 +112,7 @@
        </div>
           <form id="advanced_searchform" action="ls" name="searchcoll" >
             <fieldset>
-              <legend class="SkipLink">Search for: </legend>
+              <legend class="offscreen">Search for: </legend>
             
           <div id="queryArea">
 
@@ -136,7 +147,7 @@
                       <xsl:value-of select ="position()"/>
                     </xsl:attribute>
 
-                    <legend class="SkipLink">
+                    <legend class="offscreen">
                       <xsl:text>group</xsl:text>
                       <xsl:value-of select ="position()"/>
                         <xsl:text> Group of two rows of entry boxes</xsl:text>
@@ -197,7 +208,6 @@
               </div> 
           </fieldset>
               <!-- Limit area starts here ############################################   -->
-            
             <fieldset class="limits">
               <legend class="limitTo">Limit to: </legend>
 
@@ -272,7 +282,7 @@
          <!--XXX accessability following code should be a template call foobar-->
            <xsl:element name="label" >
              <xsl:attribute name="class">
-               <xsl:text>SearchLabel</xsl:text>
+               <xsl:text>offscreen</xsl:text>
              </xsl:attribute>
              <xsl:attribute name="for">
                <xsl:value-of select="$opNum"/>
@@ -395,7 +405,7 @@
          <!--XXX replace this by a call to a template -->
          <xsl:element name="label" >
           <xsl:attribute name="class">
-            <xsl:text>SearchLabel</xsl:text>
+            <xsl:text>offscreen</xsl:text>
           </xsl:attribute>
           <xsl:attribute name="for">
             <xsl:value-of select="$qNum"/>
@@ -475,7 +485,7 @@
 
         <xsl:element name="label" >
           <xsl:attribute name="class">
-            <xsl:text>SearchLabel</xsl:text>
+            <xsl:text>offscreen</xsl:text>
           </xsl:attribute>
           
           <xsl:attribute name="for">
@@ -550,7 +560,7 @@
   </xsl:template>
 
 
- <xsl:template name="get_page_title">
+ <xsl:template name="get-page-title">
     <xsl:text>Full-text Advanced Search | HathiTrust Digital Library </xsl:text>
   </xsl:template>
 
