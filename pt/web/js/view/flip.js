@@ -160,6 +160,9 @@ HT.Viewer.Flip = {
             self.$wrapper.removeClass("flip-rotated-" + self.rotate);
         }
         self.rotate += ( 90 * delta );
+        if ( self.rotate < 0 ) {
+            self.rotate += 360;
+        }
         if ( self.rotate == 360 || self.rotate == 0 ) {
             self.rotate = 0;
         } else {
