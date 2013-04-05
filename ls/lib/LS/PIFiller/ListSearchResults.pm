@@ -1087,11 +1087,12 @@ sub getAdvancedSearchURL
     #    my $url='http://tburtonw-full.babel.hathitrust.org/cgi/ls?a=page&amp;page=advanced';
     my $url=$cgi->url(-relative=>1);
     $url.='?a=page&amp;page=advanced';
-    # add rogers change i.e. populate query box from previous basic search?
+    # populate query box from previous basic search?
+    #unicorn-- add field1 as well
     # but if this is an advanced search just do a blank query box
     if ( __isAdvanced($cgi) ne "true")
     {
-        $url.='&amp;q1=' . $cgi->param('q1');
+        $url.='&amp;q1=' . $cgi->param('q1') . '&amp;field1=' . $cgi->param('field1');
     }
     return $url;
 }

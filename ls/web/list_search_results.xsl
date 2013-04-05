@@ -95,6 +95,10 @@
     <xsl:call-template name="load_js_and_css"/>
   </xsl:template>
 
+  <!--  pass params from basic search on to advanced search-->
+  <xsl:template name="GetAdvancedFullTextHref">
+    <xsl:value-of select="AdvancedSearch/AdvancedSearchURL"/>
+  </xsl:template>
 
 
 
