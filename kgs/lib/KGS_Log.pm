@@ -39,6 +39,7 @@ sub LOG {
     my $C = shift;
     my $s = shift;
 
+    chomp($s);
     my $config = $C->get_object('MdpConfig');
 
     my $logdir = $ENV{'SDRROOT'} . $config->get('logdir');
