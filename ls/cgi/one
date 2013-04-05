@@ -42,6 +42,17 @@ if ( $target eq 'ls' ) {
     $dest_base = qq{http://dueberb.catalog.hathitrust.org/Search/Home};
     $dest_cgi->param('lookfor', $q1);
     $dest_cgi->param('searchtype', $searchtype);
+    if ($ft eq "ft")
+    {
+        $dest_cgi->param('ft', 'ft');
+        $dest_cgi->param('htftonly', 'true');
+    }
+    else 
+    {
+        $dest_cgi->param('ft', '');
+        $dest_cgi->param('htftonly', 'false');
+    }
+
 }
 
 my $dest_url = $dest_cgi->url(-full=>1, -query=>1);
