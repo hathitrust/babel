@@ -3315,7 +3315,7 @@ HT.Reader = {
         }
 
         if ( view == 'image' || view == 'plaintext' ) {
-            window.location.href = $this.attr('href');
+            window.location.href = this.$views.find("a[data-target=" + view + "]").attr('href');
             return;
         }
 
@@ -3364,6 +3364,19 @@ HT.Reader = {
             self.updateView(target);
         })
         self.$views.find("a.active").removeClass("active").end().find("a[data-target='" + self.getView() + "']").addClass("active");
+
+        // make the toolbar buttons "tracking-actions"
+        // so they don't refresh the page
+        $(".toolbar .btn[data-toggle*=tracking]").each(function() {
+            if ( $(this).data('target') == 'image' || $(this).data('target') == 'plaintext' ) {
+                // don't update these
+                return;
+            }
+            var toggle = $(this).data('toggle');
+            if ( toggle.indexOf("tracking-action") < 0 ) {
+                $(this).data('toggle', toggle.replace('tracking', 'tracking-action'));
+            }
+        })
 
         this._bindAction("go.first");
         this._bindAction("go.prev");
@@ -3443,6 +3456,27 @@ HT.Reader = {
             $.publish("enable.toggle.fullscreen");
         })
 
+        $(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange", function() {
+            console.log("FULLSCREEN?", $(document).fullScreen());
+            // var $main = $(".main");
+            // if ( $(".main").fullScreen() ) {
+            //     $main.data('original-width', $main.css('width'));
+            //     $main.data('original-height', $main.css('height'));
+            //     $main.css({ height: $(window).height() - 50, width : $(window).width() - 50 });
+
+            //     $("#toolbar-horizontal").data('original-top', $("#toolbar-horizontal").css('top'));
+            //     $("#toolbar-horizontal").css("top", 50);
+            // } else {
+            //     $(".main").css({ 
+            //         height : $main.data('original-height'),
+            //         width : $main.data('original-width')
+            //     });
+            //     $("#toolbar-horizontal").css('top', $("#toolbar-horizontal").data('original-top'));
+            // }
+            $.publish("action.toggle.fullscreen");
+            $(window).resize();
+        })
+
     },
 
     getCurrentSeq: function() {
@@ -3453,6 +3487,8 @@ HT.Reader = {
         var self = this;
 
         this._current_seq = seq;
+        HT.params.seq = seq;
+
         this._updateState();
         this._updateLinks();
 
@@ -3462,7 +3498,7 @@ HT.Reader = {
     },
 
     _toggleFullScreen: function(btn) {
-        console.log("TOGGLE", this, btn);
+
         var $btn = $(btn);
         var $sidebar = $(".sidebar");
         if ( $btn.hasClass("active") ) {
@@ -3516,7 +3552,7 @@ HT.Reader = {
         }
         this._current_view = view;
         // and upate the reverse
-        this.options.params.view = views[view];
+        this.options.params.view = view;
         this._updateState({ view : view });
     },
 
@@ -3661,6 +3697,11 @@ head.ready(function() {
         $(".bb-bookblock").toggleClass("lowered");
     });
 
+    HT.analytics.getTrackingLabel = function($link) {
+        //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+        var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
+        return label;
+    }
 
 })
 /* /htapps/roger.babel/pt/web/js/reader.js */
@@ -3827,7 +3868,7 @@ HT.Manager = {
             // }
             var check = new Image();
             check.src = $img.get(0).src;
-            console.log("-- image:", check.src, params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
+            // console.log("-- image:", check.src, params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
 
             var r; var h; var w;
             if ( params.orient == 1 || params.orient == 3 ) {
@@ -4054,6 +4095,29 @@ HT.Viewer.Scroll = {
                 $(this).parent().addClass("imaged").addClass("expanded");
             }
         });
+
+        var _lazyResize = _.debounce(function() {
+            if ( self._resizing ) { return ; }
+            self._resizing = true;
+
+            var $content = $("#content");
+            var fit_w = $content.width();
+            var best_w = -1; var best_zoom = 0;
+            for(var i = 0; i < self.zoom_levels.length; i++) {
+                var zoom = self.zoom_levels[i];
+                if ( self.options.default_w * zoom * 1.2 > fit_w ) {
+                    break;
+                }
+                self.w = self.options.default_w * zoom;
+                self.zoom = zoom;
+            }
+
+            self.drawPages();
+            self._resizing = false;
+        }, 250);
+
+        $(window).on('resize.viewer.scroll', _lazyResize);
+
     },
 
     updateZoom: function(delta) {
@@ -4274,7 +4338,7 @@ HT.Viewer.Scroll = {
 
         $(window).scroll();
 
-        if ( current ) {
+        if ( current && current > 1 ) {
             setTimeout(function() {
                 self.gotoPage(current);
                 $.publish("view.ready");
@@ -4329,7 +4393,7 @@ HT.Viewer.Thumbnail = {
     init : function(options) {
         var self = this;
         this.options = $.extend({}, this.options, options);
-        this.w = this.options.default_w;
+        this.w = -1; // this.options.default_w;
         // this.id = HT.generate_id();
         // console.log("THUMB:", this.id);
 
@@ -4420,15 +4484,28 @@ HT.Viewer.Thumbnail = {
             $parent.addClass("loaded");
         });
 
-        // does this work in IE8?
-        $(window).on("resize.thumb", function() {
-            self.$container.css({ width : '' }).hide();
-            setTimeout(function() {
-                self.$container.width(self.$container.parent().width()).show();
-                console.log("THUMBNAIL RESIZED");
-                $(window).scroll();
-            }, 100);
-        })
+        // // does this work in IE8?
+        // if ( ! $("html").is(".lt-ie9") ) {
+        //     $(window).on("resize.thumb", function() {
+        //         self.$container.css({ width : '' }).hide();
+        //         setTimeout(function() {
+        //             self.$container.width(self.$container.parent().width()).show();
+        //             console.log("THUMBNAIL RESIZED");
+        //             $(window).scroll();
+        //         }, 100);
+        //     })
+        // }
+
+        var _lazyResize = _.debounce(function() {
+            if ( self._resizing ) { return ; }
+            self._resizing = true;
+            self.w = -1;
+            self.drawPages();
+            self._resizing = false;
+        }, 250);
+
+        $(window).on('resize.viewer.thumb', _lazyResize);
+
     },
 
     updateZoom: function(factor) {
@@ -4516,9 +4593,28 @@ HT.Viewer.Thumbnail = {
         // self.$container = $("#content");
         self.$container = $('<div class="thumbnails"></div>');
 
-        var total_w = self.$container.width();
+        var total_w = $("#content").width();
         // really, how many thumbnails can we fit at self.w?
-        // self.$container.width(self.$container.width());
+        
+        if ( self.w < 0 ) {
+            // find a size that fits 4 thumbnails across?
+
+            var w = self.options.min_w;
+            var best_w = w;
+            var factor = 1.25;
+
+            while ( w * 4 < total_w ) {
+                best_w = w;
+                w *= factor;
+            }
+
+            if ( best_w > self.options.max_w ) {
+                best_w = self.options.max_w;
+            }
+
+            self.w = best_w;
+
+        }
 
 
         if ( self.options.manager.reading_order == 'right-to-left' ) {
@@ -4684,6 +4780,16 @@ HT.Viewer.Flip = {
             self.drawPages();
         })
 
+        var _lazyResize = _.debounce(function() {
+            if ( self._resizing ) { return ; }
+            self._resizing = true;
+            self.w = -1;
+            self.drawPages();
+            self._resizing = false;
+        }, 250);
+
+        $(window).on('resize.viewer.flip', _lazyResize);
+
         $("body").on('image:fudge.flip', "img", function() {
             var $img = $(this);
             var seq = $(this).data('seq');
@@ -4805,24 +4911,6 @@ HT.Viewer.Flip = {
             }
             console.log("UNLOADING IMAGE", seq);
             $page.find("img").remove();
-        })
-    },
-
-    XXloadPage: function(seq) {
-        var self = this;
-        _.each([ seq, seq + 1], function(seq) {
-            var $page = $("#page" + seq);
-            if ( ! $page.size() ) {
-                console.log("NO PAGE", seq);
-                return;
-            }
-            if ( $page.find('img').size() ) {
-                console.log("HAS IMAGE", seq);
-                return;
-            }
-            console.log("LOADING", seq, self.w, self.h, $page.width());
-            var $img = self.options.manager.get_image({ seq : seq, height: Math.ceil(self.h / 2) });
-            $img.appendTo($page);
         })
     },
 

@@ -468,7 +468,8 @@ if (!Date.now) {
  
 (function($) {
  
-  var o = $({});
+  // var o = $({});
+  var o = $(document);
  
   $.subscribe = function() {
     o.on.apply(o, arguments);
@@ -507,7 +508,32 @@ $(document).ready(function() {
       .end().find(".search-input-select").val(searchtype)
       .end().find("input[name=ft]").attr('checked', ft)
       .end().find("input[name=target][value=" + target + "]").click()
-  }  
+  }
+
+  //** THESE COULD BE DONE IN reader.js
+
+  // and bind the search form for validation
+  $("#form-search-volume").submit(function() {
+    var $form = $(this);
+    var $input = $form.find("input[type=text]")
+    if ( ! $.trim($input.val()) ) {
+      bootbox.alert("Please enter a term in the search box.");
+      return false;
+    }
+    return true;
+  })
+
+  // same with any existing page number
+  $("#form-go-page").submit(function() {
+    var $form = $(this);
+    var $input = $form.find("input[type=text]")
+    if ( ! $.trim($input.val()) ) {
+      bootbox.alert("Please enter a page number.");
+      return false;
+    }
+    return true;
+  })
+
 })
 
 /* /htapps/roger.babel/pt/web/js/base.js */

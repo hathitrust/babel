@@ -180,6 +180,27 @@ HT.Reader = {
             $.publish("enable.toggle.fullscreen");
         })
 
+        $(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange", function() {
+            console.log("FULLSCREEN?", $(document).fullScreen());
+            // var $main = $(".main");
+            // if ( $(".main").fullScreen() ) {
+            //     $main.data('original-width', $main.css('width'));
+            //     $main.data('original-height', $main.css('height'));
+            //     $main.css({ height: $(window).height() - 50, width : $(window).width() - 50 });
+
+            //     $("#toolbar-horizontal").data('original-top', $("#toolbar-horizontal").css('top'));
+            //     $("#toolbar-horizontal").css("top", 50);
+            // } else {
+            //     $(".main").css({ 
+            //         height : $main.data('original-height'),
+            //         width : $main.data('original-width')
+            //     });
+            //     $("#toolbar-horizontal").css('top', $("#toolbar-horizontal").data('original-top'));
+            // }
+            $.publish("action.toggle.fullscreen");
+            $(window).resize();
+        })
+
     },
 
     getCurrentSeq: function() {
@@ -201,7 +222,7 @@ HT.Reader = {
     },
 
     _toggleFullScreen: function(btn) {
-        console.log("TOGGLE", this, btn);
+
         var $btn = $(btn);
         var $sidebar = $(".sidebar");
         if ( $btn.hasClass("active") ) {

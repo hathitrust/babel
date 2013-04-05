@@ -97,6 +97,29 @@ HT.Viewer.Scroll = {
                 $(this).parent().addClass("imaged").addClass("expanded");
             }
         });
+
+        var _lazyResize = _.debounce(function() {
+            if ( self._resizing ) { return ; }
+            self._resizing = true;
+
+            var $content = $("#content");
+            var fit_w = $content.width();
+            var best_w = -1; var best_zoom = 0;
+            for(var i = 0; i < self.zoom_levels.length; i++) {
+                var zoom = self.zoom_levels[i];
+                if ( self.options.default_w * zoom * 1.2 > fit_w ) {
+                    break;
+                }
+                self.w = self.options.default_w * zoom;
+                self.zoom = zoom;
+            }
+
+            self.drawPages();
+            self._resizing = false;
+        }, 250);
+
+        $(window).on('resize.viewer.scroll', _lazyResize);
+
     },
 
     updateZoom: function(delta) {
@@ -317,7 +340,7 @@ HT.Viewer.Scroll = {
 
         $(window).scroll();
 
-        if ( current ) {
+        if ( current && current > 1 ) {
             setTimeout(function() {
                 self.gotoPage(current);
                 $.publish("view.ready");

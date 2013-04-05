@@ -161,7 +161,7 @@ HT.Manager = {
             // }
             var check = new Image();
             check.src = $img.get(0).src;
-            console.log("-- image:", check.src, params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
+            // console.log("-- image:", check.src, params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
 
             var r; var h; var w;
             if ( params.orient == 1 || params.orient == 3 ) {

@@ -6,7 +6,7 @@ HT.Viewer.Thumbnail = {
     init : function(options) {
         var self = this;
         this.options = $.extend({}, this.options, options);
-        this.w = this.options.default_w;
+        this.w = -1; // this.options.default_w;
         // this.id = HT.generate_id();
         // console.log("THUMB:", this.id);
 
@@ -97,17 +97,28 @@ HT.Viewer.Thumbnail = {
             $parent.addClass("loaded");
         });
 
-        // does this work in IE8?
-        if ( ! $("html").is(".lt-ie9") ) {
-            $(window).on("resize.thumb", function() {
-                self.$container.css({ width : '' }).hide();
-                setTimeout(function() {
-                    self.$container.width(self.$container.parent().width()).show();
-                    console.log("THUMBNAIL RESIZED");
-                    $(window).scroll();
-                }, 100);
-            })
-        }
+        // // does this work in IE8?
+        // if ( ! $("html").is(".lt-ie9") ) {
+        //     $(window).on("resize.thumb", function() {
+        //         self.$container.css({ width : '' }).hide();
+        //         setTimeout(function() {
+        //             self.$container.width(self.$container.parent().width()).show();
+        //             console.log("THUMBNAIL RESIZED");
+        //             $(window).scroll();
+        //         }, 100);
+        //     })
+        // }
+
+        var _lazyResize = _.debounce(function() {
+            if ( self._resizing ) { return ; }
+            self._resizing = true;
+            self.w = -1;
+            self.drawPages();
+            self._resizing = false;
+        }, 250);
+
+        $(window).on('resize.viewer.thumb', _lazyResize);
+
     },
 
     updateZoom: function(factor) {
@@ -195,9 +206,28 @@ HT.Viewer.Thumbnail = {
         // self.$container = $("#content");
         self.$container = $('<div class="thumbnails"></div>');
 
-        var total_w = self.$container.width();
+        var total_w = $("#content").width();
         // really, how many thumbnails can we fit at self.w?
-        // self.$container.width(self.$container.width());
+        
+        if ( self.w < 0 ) {
+            // find a size that fits 4 thumbnails across?
+
+            var w = self.options.min_w;
+            var best_w = w;
+            var factor = 1.25;
+
+            while ( w * 4 < total_w ) {
+                best_w = w;
+                w *= factor;
+            }
+
+            if ( best_w > self.options.max_w ) {
+                best_w = self.options.max_w;
+            }
+
+            self.w = best_w;
+
+        }
 
 
         if ( self.options.manager.reading_order == 'right-to-left' ) {

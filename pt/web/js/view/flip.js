@@ -92,6 +92,16 @@ HT.Viewer.Flip = {
             self.drawPages();
         })
 
+        var _lazyResize = _.debounce(function() {
+            if ( self._resizing ) { return ; }
+            self._resizing = true;
+            self.w = -1;
+            self.drawPages();
+            self._resizing = false;
+        }, 250);
+
+        $(window).on('resize.viewer.flip', _lazyResize);
+
         $("body").on('image:fudge.flip', "img", function() {
             var $img = $(this);
             var seq = $(this).data('seq');
@@ -213,24 +223,6 @@ HT.Viewer.Flip = {
             }
             console.log("UNLOADING IMAGE", seq);
             $page.find("img").remove();
-        })
-    },
-
-    XXloadPage: function(seq) {
-        var self = this;
-        _.each([ seq, seq + 1], function(seq) {
-            var $page = $("#page" + seq);
-            if ( ! $page.size() ) {
-                console.log("NO PAGE", seq);
-                return;
-            }
-            if ( $page.find('img').size() ) {
-                console.log("HAS IMAGE", seq);
-                return;
-            }
-            console.log("LOADING", seq, self.w, self.h, $page.width());
-            var $img = self.options.manager.get_image({ seq : seq, height: Math.ceil(self.h / 2) });
-            $img.appendTo($page);
         })
     },
 

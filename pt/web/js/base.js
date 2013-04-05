@@ -104,7 +104,8 @@ if (!Date.now) {
  
 (function($) {
  
-  var o = $({});
+  // var o = $({});
+  var o = $(document);
  
   $.subscribe = function() {
     o.on.apply(o, arguments);

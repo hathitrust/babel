@@ -69,8 +69,8 @@ body {
   /*margin-left: 5px;*/
   margin-bottom: -5px;
   background: #FFFEFB;
-  min-width: 700px ;
-  min-width: 70rem ;
+  width: 700px ;
+  width: 70rem ;
 }
 /* line 81, ../sass/toolbar.scss */
 .toolbar-horizontal.locked {
