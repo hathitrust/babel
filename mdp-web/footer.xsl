@@ -124,7 +124,7 @@
        } catch(err) { }
        try {
        // track hierarchy
-       if ( location.pathname.indexOf("/cgi/pt") > -1 ) {
+       if ( location.pathname.indexOf("XXX/cgi/pt") > -1 ) {
          var nextTracker = _gat._getTracker('UA-39581946-1');
          nextTracker._setAllowHash(false);
          nextTracker._setDomainName(".hathitrust.org");
