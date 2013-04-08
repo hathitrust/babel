@@ -4808,10 +4808,12 @@ HT.Viewer.Flip = {
                 var $parent = $(this).parent();
                 $(this).parent().addClass("untypical-page");
                 if ( ! $parent.find("button").length ) {
-                    $('<button href="{SRC}" class="btn btn-mini"><i class="icon-eye-open" /></button>'.replace('{SRC}', $img.attr('src')))
+                    $('<button href="{SRC}" class="btn btn-mini">View Larger</button>'.replace('{SRC}', $img.attr('src')))
                         .appendTo($(this).parent())
-                        .click(function() {
+                        .click(function(e) {
+                            e.preventDefault();
                             $.fancybox.open([ { href : $img.attr('src'), type : 'image' }])
+                            return false;
                         })
                 }
             }
@@ -5117,9 +5119,9 @@ HT.Viewer.Flip = {
         $(window).scroll();
         self.checkPageStatus();
 
-        $container.on('click', '.page-right', function() {
+        $container.on('click', '.page-right get_image', function() {
             self.book.next();
-        }).on('click', '.page-left', function() {
+        }).on('click', '.page-left img', function() {
             self.book.prev();
         })
 
