@@ -37,6 +37,7 @@
         <xsl:call-template name="get-analytics-code" />
       </xsl:attribute>
       <xsl:attribute name="data-analytics-enabled"><xsl:call-template name="get-analytics-enabled" /></xsl:attribute>
+      <xsl:attribute name="data-tracking-category"><xsl:call-template name="get-tracking-category" /></xsl:attribute>
       <xsl:attribute name="class">
         <xsl:text>no-js </xsl:text>
         <xsl:call-template name="setup-html-class" />
@@ -72,6 +73,8 @@
 
         <xsl:call-template name="debug-messages" />
 
+        <xsl:call-template name="skip-to-main-link" />
+
         <xsl:call-template name="navbar" />
         <xsl:call-template name="header" />
 
@@ -83,6 +86,8 @@
     </html>
 
   </xsl:template>
+
+  <xsl:template name="skip-to-main-link" />
 
   <xsl:template name="setup-html-class" />
   <xsl:template name="setup-html-attributes" />
@@ -102,6 +107,10 @@
   <xsl:template name="navbar">
     <div class="navbar navbar-static-top navbar-inverse">
       <div class="navbar-inner" id="navbar-inner">
+        <h2 class="offscreen">
+          <xsl:text>Navigation links for help, collections</xsl:text>
+          <xsl:if test="$gLoggedIn = 'YES'">, logout</xsl:if>
+        </h2>
         <ul id="nav" class="nav">
           <li><a href="http://www.hathitrust.org">Home</a></li>
           <li><a href="http://www.hathitrust.org/about">About</a>
@@ -130,6 +139,7 @@
 
   <xsl:template name="header">
     <div class="container centered header clearfix">
+      <h2 class="offscreen">Navigation links for searching HathiTrust, login</h2>
       <div class="logo">
         <a href="http://www.hathitrust.org"><span class="offscreen">HathiTrust Digital Library</span></a>
       </div>
@@ -165,16 +175,7 @@
         </fieldset>
         <div class="search-extra-options">
           <ul class="search-links">
-            <li class="search-advanced-link">
-              <a>
-                <xsl:attribute name="href">
-                  <xsl:call-template name="GetAdvancedFullTextHref"/>
-                </xsl:attribute>
-                <xsl:text>Advanced full-text search</xsl:text>
-              </a>
-            </li>
-
-
+            <li class="search-advanced-link"><a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a></li>
             <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
             <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
           </ul>
@@ -183,10 +184,6 @@
       </form>
 
     </div>
-  </xsl:template>
-
-  <xsl:template name="GetAdvancedFullTextHref">
-    <xsl:text>/cgi/ls?a=page;page=advanced</xsl:text>
   </xsl:template>
 
   <xsl:template name="header-search-q1-value" />
@@ -228,7 +225,7 @@
     <xsl:variable name="feedback-m">
       <xsl:call-template name="get-feedback-m" />
     </xsl:variable>
-    <li><a href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback" feedback-id="{$feedback-id}">Feedback</a></li>
+    <li><a href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a></li>
   </xsl:template>
 
   <xsl:template name="get-feedback-id">HathiTrust (babel)</xsl:template>
@@ -290,5 +287,6 @@
     <xsl:call-template name="get-extra-analytics-code" />
   </xsl:template>
   <xsl:template name="get-extra-analytics-code"></xsl:template>
+  <xsl:template name="get-tracking-category">HT</xsl:template>
 
 </xsl:stylesheet>
