@@ -318,11 +318,8 @@ HT.Viewer.Flip = {
 
         self.$wrapper.css({ 'min-width' : self.w + 25 });
 
-        // var h = ( self.w * 1.3 ) / 2;
-
         self.$wrapper.height(h); // .width(HT.w);
         $container.height(h);
-        // console.log("SETTING HEIGHT", h, $container.height(), self.h);
 
         // mdpItem will normalize the pages so seq=1 IS THE START OF THE BOOK
         // right-to-left only means we stack the pages in the div differently
@@ -448,7 +445,10 @@ HT.Viewer.Flip = {
         self.loadPage(current + 1);
         self.loadPage(current - 1);
         // self.loadPage(self._page2seq(current)); self.loadPage(self._page2seq(current) + 1);
+
+        self.book.toggleLayoutSupport();
         self.book.jump(current + 1);
+        self.book.toggleLayoutSupport();
 
         $(window).scroll();
         self.checkPageStatus();

@@ -264,6 +264,16 @@
 			}
 
 		},
+
+		toggleLayoutSupport: function() {
+			if ( ! this._master_support ) {
+				this._master_support = this.support;
+			}
+			if ( this._master_support ) {
+				this.support = ! this.support;
+			}
+		},
+
 		// with no support we consider no 3d transforms and transitions
 		_layoutNoSupport: function(dir) {
 
