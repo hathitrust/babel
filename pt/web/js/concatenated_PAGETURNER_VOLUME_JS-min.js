@@ -3307,6 +3307,16 @@ HT.Reader = {
         })
 
         this.manager.start();
+
+        if ( this.options.params.ui == 'fullscreen' ) {
+            $.subscribe("")
+            var $btn = $("#action-toggle-fullscreen");
+            if ( ! $btn.is(":disabled") ) {
+                setTimeout(function() {
+                    self._toggleFullScreen($btn);
+                }, 250);
+            }
+        }
     },
 
     updateView: function(view) {
