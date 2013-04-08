@@ -274,27 +274,49 @@ HT.Viewer.Flip = {
         self.$container = $container;
         self.$wrapper = $("#content").find(".bb-custom-wrapper");
 
-        // which size bets fit the content width?
+        // // which size bets fit the content width?
+        // var fit = 1.2;
+        // fit = 1.0;
+        // if ( self.w < 0 ) {
+        //     var best_w = -1; var best_zoom = 0;
+        //     for(var i = 0; i < self.zoom_levels.length; i++) {
+        //         var zoom = self.zoom_levels[i];
+        //         // 1.2
+        //         if ( self.options.default_w * zoom * fit > fit_w ) {
+        //             break;
+        //         }
+        //         self.w = self.options.default_w * zoom;
+        //         self.zoom = zoom;
+        //     }
+
+        //     // console.log("STARTUP", self.w, self.zoom);
+        // }
+
+        // var meta = self.options.manager.get_page_meta({ seq : 1 });
+        // var r = self.w / meta.width;
+        // self.h = meta.height * r;
+        // var h = self.h / 1.5; // 2;
+
+        // which size fits the content width?
         if ( self.w < 0 ) {
             var best_w = -1; var best_zoom = 0;
             for(var i = 0; i < self.zoom_levels.length; i++) {
                 var zoom = self.zoom_levels[i];
-                if ( self.options.default_w * zoom * 1.2 > fit_w ) {
+                if ( ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) ) {
                     break;
                 }
-                self.w = self.options.default_w * zoom;
+                self.w = ( self.options.default_w * zoom ) / 2;
                 self.zoom = zoom;
             }
-
-            // console.log("STARTUP", self.w, self.zoom);
         }
 
-        var meta = self.options.manager.get_page_meta({ seq : 1 });
-        var r = self.w / meta.width;
-        self.h = meta.height * r;
+        var meta = self.options.manager.get_page_meta({seq : 1});
+        self.h = meta.height * self.zoom;
         var h = self.h / 2;
 
-        self.$wrapper.css({ 'min-width' : ( self.w * 1.2 ) });
+        console.log("META: ", meta, self.zoom, self.w, self.h);
+
+        self.$wrapper.css({ 'min-width' : self.w + 25 });
 
         // var h = ( self.w * 1.3 ) / 2;
 

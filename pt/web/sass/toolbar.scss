@@ -232,3 +232,8 @@ body {
     @include rem(padding, 24);
 }
 
+.scrollable-list {
+        @include rem(max-height, 550);
+        overflow: hidden;
+        overflow-y: auto;
+}
