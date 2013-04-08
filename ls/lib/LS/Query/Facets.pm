@@ -243,10 +243,25 @@ sub get_Solr_query_string
         $cgi =__remove_All($cgi);
     }
     
+
     my $ADVANCED= "";
 
-    $ADVANCED = $self->__get_advanced_query($cgi);
-        
+    #  if there is a q1 with a single asterisk bypass all other processing and do an everything search
+    my $q1 =$cgi->param('q1');
+    if ($q1 =~/^\s*\*\s*$/)
+    {
+        $ADVANCED='*:*';
+        # set various stuff to a-OK
+        $self->set_unbalanced_quotes(0,1);
+        $self->set_processed_query_string('* = EVERYTHING',1);
+        $self->set_was_valid_boolean_expression(1);
+        $self->set_well_formed(1,1);   
+    }
+    else
+    {
+        $ADVANCED = $self->__get_advanced_query($cgi);
+    }
+    
   
     # The common Solr query parameters
     my $Q ='q=';
@@ -304,6 +319,8 @@ sub get_Solr_query_string
     if (DEBUG('explain')) {
         $EXPLAIN='&debugQuery=on';
     }
+
+
 
     my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY .$DATE_RANGE .  $EXPLAIN;    
     
