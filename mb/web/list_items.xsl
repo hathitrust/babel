@@ -190,7 +190,6 @@
   <xsl:template name="get-page-title">
     <xsl:text>Collections: </xsl:text><xsl:value-of select="$coll_name" />
     <xsl:if test="//SearchResults"><xsl:text> Search Results</xsl:text></xsl:if>
-    <xsl:text> | HathiTrust Digital Library</xsl:text>
   </xsl:template>
 
   <xsl:template name="status-update">
