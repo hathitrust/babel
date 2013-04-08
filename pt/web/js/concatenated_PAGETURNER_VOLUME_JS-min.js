@@ -3436,6 +3436,7 @@ HT.Reader = {
         })
 
         $.subscribe("update.go.page", function(e, seq) {
+            var orig = seq;
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
                 // other interface elements
@@ -3448,7 +3449,7 @@ HT.Reader = {
                 value = "";
             }
             $("#input-go-page").val(value);
-            self.setCurrentSeq(seq);
+            self.setCurrentSeq(seq, orig);
         })
 
         $.subscribe("update.focus.page", function(e, seq) {
@@ -3516,7 +3517,7 @@ HT.Reader = {
         HT.params.seq = seq;
 
         this._updateState();
-        this._updateLinks();
+        this._updateLinks.apply(this, arguments);
 
         $(".action-views").find("a").each(function() {
             self._updateLinkSeq($(this), seq);
@@ -3624,17 +3625,15 @@ HT.Reader = {
         }
     },
 
-    _updateLinks: function(seq) {
+    _updateLinks: function(seq, seqs) {
+        console.log(seq, seqs);
         var self = this;
         if ( ! seq ) { seq = this.getCurrentSeq(); }
-        if ( $.isArray(seq) ) {
-            // we have multiple links, but what do we label them?
-            if ( this.getView() == '2up' ) {
-                _.each(seq, function(seq, i) {
-                    var $link = $("#pagePdfLink" + ( i + 1 ));
-                    self._updateLinkSeq($link, seq);
-                })
-            }
+        if ( this.getView() == '2up' ) {
+            _.each(seqs, function(seq, i) {
+                var $link = $("#pagePdfLink" + ( i + 1 ));
+                self._updateLinkSeq($link, seq);
+            })
         } else {
             var $link = $("#pagePdfLink");
             self._updateLinkSeq($link, seq);
@@ -3644,10 +3643,10 @@ HT.Reader = {
 
     _updateLinkSeq: function($link, seq) {
         if ( seq == null ) {
-            $link.attr("disabled", "disabled");
+            $link.attr("disabled", "disabled").attr('tabindex', -1);
         } else {
             if ( ! $link.hasClass("disabled") ) {
-                $link.attr("disabled", null);
+                $link.attr("disabled", null).attr("tabindex", null);
             }
             if ( $link.is("input") ) {
                 var href = $link.val();
