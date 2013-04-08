@@ -3469,6 +3469,10 @@ HT.Reader = {
             $(".page-pdf-link").attr("disabled", null).removeClass("disabled").attr('tabindex', null);
         })
 
+        $.subscribe("enable.download.page.pdf", function() {
+            $(".page-pdf-link").attr("disabled", null).removeClass("disabled");
+        })
+
         $.subscribe("view.end.reader", function() {
             // enable everything when we switch views;
             // the views can update the state when they're initialized
@@ -3726,6 +3730,7 @@ head.ready(function() {
     }
 
 })
+
 /* /htapps/roger.babel/pt/web/js/reader.js */
 // manager.js
 
@@ -3931,6 +3936,7 @@ HT.Manager = {
 
     EOT : true
 }
+
 /* /htapps/roger.babel/pt/web/js/manager.js */
 var HT = HT || {};
 HT.ImgSrv = {
@@ -4422,6 +4428,7 @@ HT.Viewer.Scroll = {
     EOT : true
 
 };
+
 /* /htapps/roger.babel/pt/web/js/view/scroll.js */
 var HT = HT || {};
 HT.Viewer = HT.Viewer || {};
@@ -4724,6 +4731,7 @@ HT.Viewer.Thumbnail = {
     EOT : true
 
 };
+
 /* /htapps/roger.babel/pt/web/js/view/thumb.js */
 // flip
 
@@ -5242,6 +5250,7 @@ HT.Viewer.Flip = {
     EOT : true
 
 };
+
 /* /htapps/roger.babel/pt/web/js/view/flip.js */
 var HT = HT || {};
 HT.Viewer = HT.Viewer || {};

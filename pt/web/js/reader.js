@@ -183,6 +183,10 @@ HT.Reader = {
             $(".page-pdf-link").attr("disabled", null).removeClass("disabled").attr('tabindex', null);
         })
 
+        $.subscribe("enable.download.page.pdf", function() {
+            $(".page-pdf-link").attr("disabled", null).removeClass("disabled");
+        })
+
         $.subscribe("view.end.reader", function() {
             // enable everything when we switch views;
             // the views can update the state when they're initialized
