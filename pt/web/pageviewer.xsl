@@ -120,6 +120,7 @@
   </xsl:template> -->
 
   <xsl:template name="action-search-volume">
+    <h3 class="offscreen">Search in this volume</h3>
     <form class="form-inline" method="get" id="form-search-volume">
       <xsl:attribute name="action">
         <xsl:choose>

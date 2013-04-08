@@ -213,6 +213,7 @@ HT.Viewer.Flip = {
                 }
                 // console.log("LOADING", seq, self.w, self.h, $page.width());
                 var $img = self.options.manager.get_image({ seq : seq, height: Math.ceil(self.h / 2) });
+                $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
                 $img.appendTo($page);
             }
         })
@@ -367,7 +368,7 @@ HT.Viewer.Flip = {
             if ( ! page ) { return ; }
             var left_page_seq = page[0];
             var right_page_seq = page[1];
-            var html = '<div class="bb-item">';
+            var html = '<div class="bb-item" aria-hidden="true">';
             self._page2seq_map[i] = [null, null];
             if ( left_page_seq ) {
                 html += '<div id="page{SEQ}" class="page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
@@ -400,6 +401,8 @@ HT.Viewer.Flip = {
 
         })
 
+        this.$leafs = $container.find(".bb-item");
+
         this.book = $container.bookblock( {
                     speed               : 800,
                     shadowSides : 0.8,
@@ -408,10 +411,12 @@ HT.Viewer.Flip = {
                     n : pages.length,
                     onBeforeFlip : function ( page, isLimit ) {
                         console.log("PRE FLIP:", page, isLimit);
+                        self.$leafs.slice(page,page+1).attr('aria-hidden', 'true');
                         // load images a couple of pages in the future
                     },
                     onEndFlip : function ( page, isLimit ) {
                         console.log("FLIPPED:", page, isLimit);
+                        self.$leafs.slice(page,page+1).attr('aria-hidden', 'false');
                         self.loadPage(page - 1);
                         self.loadPage(page - 2);
                         self.loadPage(page + 1);

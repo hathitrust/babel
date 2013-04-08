@@ -191,6 +191,7 @@ HT.Viewer.Thumbnail = {
                 // console.log("LOAD PAGE", self.id, self.w);
                 var $a = $page.find("a.page-link");
                 var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: self.w, action : 'thumbnail' });
+                $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
                 $a.append($img);
             } else {
                 $page.removeClass("checking");

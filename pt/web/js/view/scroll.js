@@ -290,13 +290,7 @@ HT.Viewer.Scroll = {
             }
             var $img = this.options.manager.get_image({ seq : seq, width : this.w, orient : this.getPageOrient(seq) });
 
-            var alt_text = "image of ";
-            var num = this.options.manager.getPageNumForSeq(seq);
-            if ( num ) {
-                alt_text += "page " + num;
-            } else {
-                alt_text += "sequence " + seq;
-            }
+            var alt_text = "image of " + this.options.manager.getAltTextForSeq(seq);
             $img.attr('alt', alt_text);
             $page.append($img);
         } else {

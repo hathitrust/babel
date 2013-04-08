@@ -176,11 +176,11 @@ HT.Reader = {
         });
 
         $.subscribe("disable.download.page.pdf", function() {
-            $(".page-pdf-link").attr("disabled", "disabled").addClass("disabled");
+            $(".page-pdf-link").attr("disabled", "disabled").addClass("disabled").attr('tabindex', -1);
         })
 
         $.subscribe("enable.download.page.pdf", function() {
-            $(".page-pdf-link").attr("disabled", null).removeClass("disabled");
+            $(".page-pdf-link").attr("disabled", null).removeClass("disabled").attr('tabindex', null);
         })
 
         $.subscribe("view.end.reader", function() {
@@ -268,9 +268,9 @@ HT.Reader = {
                 fn.apply(self, $btn);
             }
         }).subscribe("disable." + action, function() {
-            $(this).attr("disabled", "disabled");
+            $(this).attr("disabled", "disabled").attr('tabindex', -1);
         }).subscribe("enable." + action, function() {
-            $(this).attr("disabled", null);
+            $(this).attr("disabled", null).attr("tabindex", null);
         })
     },
 

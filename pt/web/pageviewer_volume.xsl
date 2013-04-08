@@ -114,7 +114,13 @@
   </xsl:template>
 
   <xsl:template name="main">
-    <div class="main" id="viewport">
+    <div class="main" id="main" role="main">
+      <h2 class="offscreen">
+        <xsl:call-template name="get-view-title" />
+        <xsl:if test="$gHasOcr = 'YES'">
+          <xsl:text> (use access key 5 to view full text / OCR mode)</xsl:text>
+        </xsl:if>
+      </h2>
       <xsl:call-template name="toolbar-vertical" />
       <div id="scrolling">
         <xsl:call-template name="toolbar-horizontal" />
@@ -122,6 +128,8 @@
       </div>
     </div>
   </xsl:template>
+
+  <xsl:template name="get-view-title">Main Content</xsl:template>
 
   <xsl:template name="toolbar-vertical">
     <div id="toolbar-vertical" class="fixed fixed-y toolbar-vertical toolbar" data-margin-top="40">
@@ -184,7 +192,7 @@
         <h:option name="2up" value="icomoon-book-alt2">Flip</h:option>
         <h:option name="thumb" value="icomoon-grid-view">Thumbnail</h:option>
         <h:option name="image" value="icomoon-documents">Page by Page</h:option>
-        <h:option name="plaintext" value="icomoon-article">Plain Text</h:option>
+        <h:option name="plaintext" value="icomoon-article" accesskey="5">Plain Text</h:option>
       </h:select>
     </xsl:variable>
 
@@ -197,7 +205,12 @@
       </xsl:choose>
     </xsl:variable>
 
-    <a href="{$href}" data-target="{$option/@name}" type="button" class="btn square {$active}" data-toggle="tooltip tracking" data-tracking-action="PT {$option}"><i class="{$option/@value}"></i> <span class="label"><xsl:value-of select="$option" /></span></a>
+    <a href="{$href}" data-target="{$option/@name}" type="button" class="btn square {$active}" data-toggle="tooltip tracking" data-tracking-action="PT {$option}">
+      <xsl:if test="$option/@accesskey">
+        <xsl:attribute name="accesskey"><xsl:value-of select="$option/@accesskey" /></xsl:attribute>
+      </xsl:if>
+      <i class="{$option/@value}"></i> <span class="label"><xsl:value-of select="$option" /></span>
+    </a>
   </xsl:template>
 
   <xsl:template name="toolbar-horizontal">
@@ -247,10 +260,10 @@
   </xsl:template>
 
   <xsl:template name="action-page-navigation">
-    <a id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page"><i class="icomoon-first"></i><span class="label"> First</span></a>
-    <a id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon-go-previous" data-toggle="tracking" data-tracking-action="PT Previous Page"></i><span class="label"> Previous</span></a>
-    <a id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page"><i class="icomoon-go-next"></i><span class="label"> Next</span></a>
-    <a id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page"><i class="icomoon-last"></i><span class="label"> Last</span></a>
+    <a id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f"><i class="icomoon-first"></i><span class="label"> First [f]</span></a>
+    <a id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon-go-previous" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p"></i><span class="label"> Previous [p</span></a>
+    <a id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n"><i class="icomoon-go-next"></i><span class="label"> Next</span></a>
+    <a id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l"><i class="icomoon-last"></i><span class="label"> Last [l]</span></a>
   </xsl:template>
 
   <xsl:template name="action-table-of-contents">

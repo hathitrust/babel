@@ -1044,6 +1044,7 @@
   <!-- -->
   <xsl:template name="versionLabel">
     <div class="versionContainer">
+      <h3 class="offscreen">About versions</h3>
       <strong>Version: </strong><xsl:value-of select="$gVersionLabel"/>
       <xsl:element name="a">
         <xsl:attribute name="id">versionIcon</xsl:attribute>

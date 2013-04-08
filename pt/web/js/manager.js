@@ -88,6 +88,17 @@ HT.Manager = {
         return this.seq_num_map[seq];
     },
 
+    getAltTextForSeq: function(seq) {
+        var alt_text;
+        var num = this.getPageNumForSeq(seq);
+        if ( num ) {
+            alt_text += "page " + num;
+        } else {
+            alt_text += "sequence " + seq;
+        }
+        return alt_text;
+    },
+
     rotate_image: function(params) {
         var meta = this.get_page_meta(params);
         if ( ! meta.orient ) {

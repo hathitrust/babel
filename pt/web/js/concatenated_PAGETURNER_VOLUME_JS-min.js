@@ -3372,7 +3372,7 @@ HT.Reader = {
         // don't bind dynamic controls for the static views
         if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
             // and then disable buttons without links
-            $(".toolbar").find("a[href='']").attr("disabled", "disabled");
+            $(".toolbar").find("a[href='']").attr("disabled", "disabled").attr('tabindex', '-1');
             return;
         }
 
@@ -3462,11 +3462,11 @@ HT.Reader = {
         });
 
         $.subscribe("disable.download.page.pdf", function() {
-            $(".page-pdf-link").attr("disabled", "disabled").addClass("disabled");
+            $(".page-pdf-link").attr("disabled", "disabled").addClass("disabled").attr('tabindex', -1);
         })
 
         $.subscribe("enable.download.page.pdf", function() {
-            $(".page-pdf-link").attr("disabled", null).removeClass("disabled");
+            $(".page-pdf-link").attr("disabled", null).removeClass("disabled").attr('tabindex', null);
         })
 
         $.subscribe("view.end.reader", function() {
@@ -3554,9 +3554,9 @@ HT.Reader = {
                 fn.apply(self, $btn);
             }
         }).subscribe("disable." + action, function() {
-            $(this).attr("disabled", "disabled");
+            $(this).attr("disabled", "disabled").attr('tabindex', -1);
         }).subscribe("enable." + action, function() {
-            $(this).attr("disabled", null);
+            $(this).attr("disabled", null).attr("tabindex", null);
         })
     },
 
@@ -3815,6 +3815,17 @@ HT.Manager = {
 
     getPageNumForSeq: function(seq) {
         return this.seq_num_map[seq];
+    },
+
+    getAltTextForSeq: function(seq) {
+        var alt_text;
+        var num = this.getPageNumForSeq(seq);
+        if ( num ) {
+            alt_text += "page " + num;
+        } else {
+            alt_text += "sequence " + seq;
+        }
+        return alt_text;
     },
 
     rotate_image: function(params) {
@@ -4215,8 +4226,8 @@ HT.Viewer.Scroll = {
             }
 
             if ( $new.attr('id') != $current.attr('id') ) {
-                $current.removeClass("current");
-                $new.addClass("current");
+                $current.removeClass("current").attr('aria-hidden', 'true');
+                $new.addClass("current").attr("aria-hidden", "false");
                 $.publish("update.go.page", ( $new.data('seq') ));
             }
 
@@ -4311,6 +4322,9 @@ HT.Viewer.Scroll = {
                 return;
             }
             var $img = this.options.manager.get_image({ seq : seq, width : this.w, orient : this.getPageOrient(seq) });
+
+            var alt_text = "image of " + this.options.manager.getAltTextForSeq(seq);
+            $img.attr('alt', alt_text);
             $page.append($img);
         } else {
             $page.removeClass("checking");
@@ -4340,7 +4354,7 @@ HT.Viewer.Scroll = {
 
         for(var seq=1; seq <= this.options.manager.num_pages; seq++) {
             var meta = this.options.manager.get_page_meta({ seq : seq, width : self.w, orient : self.getPageOrient(seq) });
-            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div>'.replace('{SEQ}', seq)).appendTo($(fragment));
+            var $page = $('<div class="page-item" aria-hidden="true"><div class="page-num">{SEQ}</div>'.replace('{SEQ}', seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
 
             var w = meta.width;
@@ -4602,6 +4616,7 @@ HT.Viewer.Thumbnail = {
                 // console.log("LOAD PAGE", self.id, self.w);
                 var $a = $page.find("a.page-link");
                 var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: self.w, action : 'thumbnail' });
+                $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
                 $a.append($img);
             } else {
                 $page.removeClass("checking");
@@ -4925,6 +4940,7 @@ HT.Viewer.Flip = {
                 }
                 // console.log("LOADING", seq, self.w, self.h, $page.width());
                 var $img = self.options.manager.get_image({ seq : seq, height: Math.ceil(self.h / 2) });
+                $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
                 $img.appendTo($page);
             }
         })
@@ -5079,7 +5095,7 @@ HT.Viewer.Flip = {
             if ( ! page ) { return ; }
             var left_page_seq = page[0];
             var right_page_seq = page[1];
-            var html = '<div class="bb-item">';
+            var html = '<div class="bb-item" aria-hidden="true">';
             self._page2seq_map[i] = [null, null];
             if ( left_page_seq ) {
                 html += '<div id="page{SEQ}" class="page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
@@ -5112,6 +5128,8 @@ HT.Viewer.Flip = {
 
         })
 
+        this.$leafs = $container.find(".bb-item");
+
         this.book = $container.bookblock( {
                     speed               : 800,
                     shadowSides : 0.8,
@@ -5120,10 +5138,12 @@ HT.Viewer.Flip = {
                     n : pages.length,
                     onBeforeFlip : function ( page, isLimit ) {
                         console.log("PRE FLIP:", page, isLimit);
+                        self.$leafs.slice(page,page+1).attr('aria-hidden', 'true');
                         // load images a couple of pages in the future
                     },
                     onEndFlip : function ( page, isLimit ) {
                         console.log("FLIPPED:", page, isLimit);
+                        self.$leafs.slice(page,page+1).attr('aria-hidden', 'false');
                         self.loadPage(page - 1);
                         self.loadPage(page - 2);
                         self.loadPage(page + 1);
