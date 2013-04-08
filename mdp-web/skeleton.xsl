@@ -167,7 +167,16 @@
         </fieldset>
         <div class="search-extra-options">
           <ul class="search-links">
-            <li class="search-advanced-link"><a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a></li>
+            <li class="search-advanced-link">
+              <a>
+                <xsl:attribute name="href">
+                  <xsl:call-template name="GetAdvancedFullTextHref"/>
+                </xsl:attribute>
+                <xsl:text>Advanced full-text search</xsl:text>
+              </a>
+            </li>
+
+
             <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
             <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
           </ul>
@@ -176,6 +185,10 @@
       </form>
 
     </div>
+  </xsl:template>
+
+  <xsl:template name="GetAdvancedFullTextHref">
+    <xsl:text>/cgi/ls?a=page;page=advanced</xsl:text>
   </xsl:template>
 
   <xsl:template name="header-search-q1-value" />
