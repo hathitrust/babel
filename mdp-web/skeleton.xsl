@@ -38,6 +38,7 @@
         <xsl:call-template name="get-analytics-code" />
       </xsl:attribute>
       <xsl:attribute name="data-analytics-enabled"><xsl:call-template name="get-analytics-enabled" /></xsl:attribute>
+      <xsl:attribute name="data-tracking-category"><xsl:call-template name="get-tracking-category" /></xsl:attribute>
       <xsl:attribute name="class">
         <xsl:text>no-js </xsl:text>
         <xsl:call-template name="setup-html-class" />
@@ -216,7 +217,7 @@
     <xsl:variable name="feedback-m">
       <xsl:call-template name="get-feedback-m" />
     </xsl:variable>
-    <li><a href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback" feedback-id="{$feedback-id}">Feedback</a></li>
+    <li><a href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a></li>
   </xsl:template>
 
   <xsl:template name="get-feedback-id">HathiTrust (babel)</xsl:template>
@@ -278,5 +279,6 @@
     <xsl:call-template name="get-extra-analytics-code" />
   </xsl:template>
   <xsl:template name="get-extra-analytics-code"></xsl:template>
+  <xsl:template name="get-tracking-category">HT</xsl:template>
 
 </xsl:stylesheet>
