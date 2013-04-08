@@ -3423,7 +3423,9 @@ HT.Reader = {
             }
             var value = self.manager.getPageNumForSeq(seq);
             if ( ! value ) {
-                value = "n" + seq;
+                // value = "n" + seq;
+                // don't display this for the end user
+                value = "";
             }
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq);
@@ -3778,9 +3780,11 @@ HT.Manager = {
             var item = self.data.items[i];
             if ( item.page_num ) {
                 if ( self.num_seq_map[item.page_num] === undefined ) {
+                    // first page number wins this mapping!
                     self.num_seq_map[item.page_num] = item.seq;
-                    self.seq_num_map[item.seq] = item.page_num;
                 }
+                // but we can still keep this
+                self.seq_num_map[item.seq] = item.page_num;
             }
         }
     },
@@ -3881,7 +3885,7 @@ HT.Manager = {
             r = 680 / w;
             h = h * r;
 
-            self.data[params.seq] = { width : 680, height : h };
+            self.data.items[params.seq] = { width : 680, height : h };
             //$img.parent().css({ height: '100%' });
             // $img.parent().animate({ height : '100%' });
 

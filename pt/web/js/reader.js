@@ -147,7 +147,9 @@ HT.Reader = {
             }
             var value = self.manager.getPageNumForSeq(seq);
             if ( ! value ) {
-                value = "n" + seq;
+                // value = "n" + seq;
+                // don't display this for the end user
+                value = "";
             }
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq);
