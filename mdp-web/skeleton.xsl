@@ -29,7 +29,6 @@
       <option value="isbn">ISBN/ISSN</option>
       <option value="publisher">Publisher</option>
       <option value="seriestitle">Series Title</option>
-      <option value="pubyear">Publication Year</option>
   </xsl:variable>
 
   <xsl:template match="/MBooksTop">
@@ -152,7 +151,7 @@
           <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
         </div>
         <fieldset>
-          <input name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
+          <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
             <xsl:attribute name="value">
               <xsl:call-template name="header-search-q1-value" />
             </xsl:attribute>
