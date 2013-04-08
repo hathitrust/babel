@@ -140,4 +140,25 @@ body {
     @include rem(font-size, 14);
 }
 
+/* SOLR HIGHLIGHTING */
+.solr_highlight_1 {
+  background: #ffff00;
+}
+.solr_highlight_2 {
+  background: #00ff00;
+}
+.solr_highlight_3 {
+  background: #ff9900;
+}
+.solr_highlight_4 {
+  background: #00ffcc;
+}
+.solr_highlight_5 {
+  background: #00cccc;
+}
+.solr_highlight_6 {
+  background: #0099cc;
+}
+
+
 @import "../vendor/nanoscroller/nanoscroller.css";
