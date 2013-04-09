@@ -5,142 +5,130 @@ ls_advanced.css
 
 
 ***/
+/* line 9, ../sass/ls_advanced.scss */
+.LsAdvancedPageContent {
+  font-size: 12px;
+  width: 100%;
+  margin: 0 auto;
+  min-width: 1000px;
+}
 
-.LsAdvancedPageContent{ 
-       font-size:12px;
-    // color:red;
-	width: 100%;
-	margin: 0 auto;
-	min-width: 1000px;
+/* line 21, ../sass/ls_advanced.scss */
+#search_tips {
+  font-size: 110%;
+  color: green;
+}
 
-  }
+/* line 26, ../sass/ls_advanced.scss */
+#addGroup {
+  font-size: 110%;
+}
 
+/* line 29, ../sass/ls_advanced.scss */
+#removeGroup {
+  font-size: 110%;
+}
 
+/* line 34, ../sass/ls_advanced.scss */
+#findbuttons {
+  margin-top: 10px;
+  margin-left: 0;
+}
 
-
-#search_tips{ 
-              font-size:110%;
-              color:green;
- }
-
-#addGroup{ 
-           font-size:110%;
- }
-#removeGroup{ 
-                font-size:110%;
-             }
-
-#findbuttons  
-{ 
-  margin-top:10px;
-  margin-left:0;
- }
+/* line 41, ../sass/ls_advanced.scss */
 #advanced
+#reset {
+  margin-left: 5em;
+  font-size: 120%;
+}
 
+/* line 49, ../sass/ls_advanced.scss */
+select, input {
+  margin-left: 100em;
+  margin-right: 1em;
+  width: auto;
+}
 
-#reset{ 
-        margin-left:5em;
-        font-size:120%;
-} 
-
-
-
-
-select, input { 
-                margin-left:100em;
-                margin-right:1em;
-                width:auto;
-
- }
-
-//hide these like offscreen?
-
+/* line 58, ../sass/ls_advanced.scss */
 .SkipLink, .SearchLabel, .offscreen {
-    height: 1px;
-    left: -10000px;
-    overflow: hidden;
-    position: absolute;
-    top: auto;
-    width: 1px;
+  height: 1px;
+  left: -10000px;
+  overflow: hidden;
+  position: absolute;
+  top: auto;
+  width: 1px;
 }
 
+/* line 67, ../sass/ls_advanced.scss */
 label.SearchLabel {
-    height: 1px;
-    left: -10000px;
-    overflow: hidden;
-    position: absolute;
-    top: auto;
-    width: 1px;
+  height: 1px;
+  left: -10000px;
+  overflow: hidden;
+  position: absolute;
+  top: auto;
+  width: 1px;
 }
+
+/* line 75, ../sass/ls_advanced.scss */
 label {
-    display: inline;
-    margin-bottom: 5px;
+  display: inline;
+  margin-bottom: 5px;
 }
 
+/* line 87, ../sass/ls_advanced.scss */
+#fieldsetGroup1 {
+  margin-top: .3em;
+}
 
-
-
-
-
-
-
-#fieldsetGroup1{ 
-                 margin-top:.3em;
- }
 /** for debugging uncomment this**/
 /*div { outline:1px dashed red; } */
-
-
-.querybox{ 
-           /* if we don't set the width, it gets a default width (which I can't find any reference to) but the side effect is that with no width set on any inline element in the <ul> the rowsw won't resize*/
-/* we would like to set the width to 25-35 characters to encourage users to use several query terms (See: Belkin et. al. "Query length in interactive information retrieval"  http://dx.doi.org/10.1145/860435.860474 )
-   If we set width to 20 em it seems allright but over x em it starts to wrap the row
-*/
-           width:20em;
- }
+/* line 94, ../sass/ls_advanced.scss */
+.querybox {
+  /* if we don't set the width, it gets a default width (which I can't find any reference to) but the side effect is that with no width set on any inline element in the <ul> the rowsw won't resize*/
+  /* we would like to set the width to 25-35 characters to encourage users to use several query terms (See: Belkin et. al. "Query length in interactive information retrieval"  http://dx.doi.org/10.1145/860435.860474 )
+     If we set width to 20 em it seems allright but over x em it starts to wrap the row
+  */
+  width: 20em;
+}
 
 /*Parenthesis  */
-
 /* IE7 hacks  see ls.advanced.js where we wrap classes IEcell IErow and parenGroup with html table code with jquery*/
-tr.IEtr{ 
-
-
- }
-td.IEtd.paren{ 
-               font-size:600%;
-               vertical-align:middle;
-               line-height:100%;
-               font-family:monospaced;
-               color:#bfbfbf ;
- }
+/* line 109, ../sass/ls_advanced.scss */
+td.IEtd.paren {
+  font-size: 600%;
+  vertical-align: middle;
+  line-height: 100%;
+  font-family: monospaced;
+  color: #bfbfbf;
+}
 
 /*end IE7 hacks*/
+/* line 119, ../sass/ls_advanced.scss */
+div.parenGroup {
+  display: table-row;
+  text-align: left;
+}
 
-div.parenGroup{  
-             //   outline:1px dashed red;
-                display:table-row;
-                text-align:left;
-                }
+/* line 125, ../sass/ls_advanced.scss */
+div.group {
+  /*     outline:1px dotted blue;*/
+  display: table-cell;
+  vertical-align: middle;
+  /* width:80%;*/
+  /*           margin-left:15%;
+             margin-right:15%;
+  */
+}
 
-div.group{ 
-      /*     outline:1px dotted blue;*/
-           display:table-cell;
-           vertical-align:middle;
-           
-          /* width:80%;*/
-/*           margin-left:15%;
-           margin-right:15%;
-*/
- }
-div.paren{ 
-         /* outline:1px dashed green;*/
-           display:table-cell;
-           font-size:800%;
-           vertical-align:middle;
-           font-family:monospace;
-           color:#bfbfbf ;
-
- }
+/* line 135, ../sass/ls_advanced.scss */
+div.paren {
+  /* outline:1px dashed green;*/
+  display: table-cell;
+  font-size: 800%;
+  vertical-align: middle;
+  font-family: monospace;
+  color: #bfbfbf;
+}
 
 /* XXXtest this after converting the div to a block  (IE7 only supports this on regular inline elements)
 span.paren{ 
@@ -151,310 +139,259 @@ span.paren{
 
 } 
 */
+/* line 155, ../sass/ls_advanced.scss */
+div.parenLeft {
+  /*  float: left;*/
+  text-align: right;
+}
 
-div.parenLeft{ 
-              /*  float: left;*/
-              text-align:right;
-         
- }
-div.parenRight{ 
-              /*  float:right;*/
-               text-align:left;
-         
- }
+/* line 160, ../sass/ls_advanced.scss */
+div.parenRight {
+  /*  float:right;*/
+  text-align: left;
+}
+
 /* fieldset formatting*/
+/* line 167, ../sass/ls_advanced.scss */
+fieldset {
+  border: none;
+}
 
-fieldset { 
-           border:none;
- }
-
-
-legend.limitTo{ 
-               font-size:150%;
-
- }
-
-
-
+/* line 172, ../sass/ls_advanced.scss */
+legend.limitTo {
+  font-size: 150%;
+}
 
 /* facet formatting */
 /* we use xSearchLabel to avoid conflict with MBooksCol.css*/
+/* line 184, ../sass/ls_advanced.scss */
+label.xSearchLabel {
+  /*  margin-left:1em;*/
+  display: block;
+}
 
-label.xSearchLabel
-{ 
-/*  margin-left:1em;*/
-  display:block;
-  }
+/* line 189, ../sass/ls_advanced.scss */
+#format {
+  float: left;
+  margin-left: 5em;
+}
 
-#format{ 
-         float:left;
-         margin-left:5em;
- }
+/* line 194, ../sass/ls_advanced.scss */
+#language {
+  float: left;
+}
 
-#language{ 
-           float:left;
- }
+/* line 198, ../sass/ls_advanced.scss */
+select.orFacet {
+  margin-left: 0;
+}
 
-select.orFacet{ 
-                margin-left:0;
- }
-
-#multiFacets{ 
-              margin-top:20px;
- }
+/* line 202, ../sass/ls_advanced.scss */
+#multiFacets {
+  margin-top: 20px;
+}
 
 /* end facet formatting*/
-
-
-
-fieldset.group{ 
-         
-            /*    background-color:#E9E9E9;*/
-           /*     padding:0;*/
-                margin-bottom:1em;
-                margin-top:1em;
-                border:0;
-/**                width:80%;**/
-
-        
-} 
-
-
-
-
-
-
-
-
-.limits{ 
-        
-} 
-
-
-.removeFacetIcon{ 
-                /*  margin-left:2em;*/
- }
-
-
-.advrow ul{ 
-
-            margin:0 0 5px 0;
-            padding:0;
-        /*    float: left;*/
-            list-style:none;
+/* line 210, ../sass/ls_advanced.scss */
+fieldset.group {
+  /*    background-color:#E9E9E9;*/
+  /*     padding:0;*/
+  margin-bottom: 1em;
+  margin-top: 1em;
+  border: 0;
+  /**                width:80%;**/
 }
-.advrow ul li { 
 
-               
-                display: inline;
-                list-style-type: none;
-                text-decoration:none;
+/* line 234, ../sass/ls_advanced.scss */
+.removeFacetIcon {
+  /*  margin-left:2em;*/
+}
 
-                padding: 1.5px 1px;
-                /**    background-color:grey;**/
- }
+/* line 239, ../sass/ls_advanced.scss */
+.advrow ul {
+  margin: 0 0 5px 0;
+  padding: 0;
+  /*    float: left;*/
+  list-style: none;
+}
 
+/* line 246, ../sass/ls_advanced.scss */
+.advrow ul li {
+  display: inline;
+  list-style-type: none;
+  text-decoration: none;
+  padding: 1.5px 1px;
+  /**    background-color:grey;**/
+}
 
 /**XXX combine this with rule for AndOr **/
-.spacer{ 
-         width:6.3em;
-        /* color:green;
-         backround-color:green;*/
-         display:inline-block;
-         margin-left:1em;
-         margin-right:1em;
-} 
-
-span.AnyAll  {  
-               font-weight:normal;
-               font-style:italic; 
-               }
-
-#anyall1 { 
-/*          margin-left:8em;*/
- }
-
-#anyall3 { 
-
- }
-
-
-.AndOr { 
-  
-         width:5em;
-      /*   margin-left:auto;
-         margin-right: auto;*/
-} 
-.andOR  { 
-          display:inline;
-          width:5em;
-  
- }
-
-#op3{ 
-      width:5em;
-      margin-top:10px;
-      margin-bottom:10px;
-    /*  margin-left:-1em; removed for IE7*/
-      }
-
-
-
-
-ul.row{ 
-
- }
-
-
-
-
-.advancedMsg
-{ 
-  font-size:70%;
-} 
-
-#Op3bool 
-{
-  margin:3px;
-  background-color:#FFFFFF;
-  padding:10px ;
-
-
-} 
-
-
-#modify_link
-{ 
-  font-weight:normal;
-  font-size:90%;
-} 
-
-.AdvancedLSerror #modify_link
-{ 
-  margin-top:1%;
-  }
-
-
-
-#advancedLabel
-{ 
- 
- /** margin:3px;
-  padding:10px;**/
-  font-size: 150%;
-  font-weight:normal;
-} 
-
-#limits{ 
-          margin-bottom:3em;
-        margin-top:1em;
- }
-
-#limits h3
-{ 
-  font-size: 130%;
-  margin-bottom:10px;
-  color:#000000;
+/* line 259, ../sass/ls_advanced.scss */
+.spacer {
+  width: 6.3em;
+  /* color:green;
+   backround-color:green;*/
+  display: inline-block;
+  margin-left: 1em;
+  margin-right: 1em;
 }
 
+/* line 268, ../sass/ls_advanced.scss */
+span.AnyAll {
+  font-weight: normal;
+  font-style: italic;
+}
 
+/* line 273, ../sass/ls_advanced.scss */
+#anyall1 {
+  /*          margin-left:8em;*/
+}
 
-#queryArea
-{ 
-/**  background-color **/
-  margin:3px;
-  padding:3px;
-} 
+/* line 282, ../sass/ls_advanced.scss */
+.AndOr {
+  width: 5em;
+  /*   margin-left:auto;
+     margin-right: auto;*/
+}
 
+/* line 288, ../sass/ls_advanced.scss */
+.andOR {
+  display: inline;
+  width: 5em;
+}
 
+/* line 294, ../sass/ls_advanced.scss */
+#op3 {
+  width: 5em;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  /*  margin-left:-1em; removed for IE7*/
+}
 
-.advancedClause
-{ 
+/* line 312, ../sass/ls_advanced.scss */
+.advancedMsg {
+  font-size: 70%;
+}
 
-  margin:1px 8px;
-  font-size:80%; 
-  line-height:100%;
-} 
+/* line 317, ../sass/ls_advanced.scss */
+#Op3bool {
+  margin: 3px;
+  background-color: #FFFFFF;
+  padding: 10px;
+}
 
-.advancedClause .infoAlert
-{ 
-  margin:15px 15px 0;
-} 
+/* line 327, ../sass/ls_advanced.scss */
+#modify_link {
+  font-weight: normal;
+  font-size: 90%;
+}
 
+/* line 333, ../sass/ls_advanced.scss */
+.AdvancedLSerror #modify_link {
+  margin-top: 1%;
+}
 
-.AdvancedLSerror .advancedClause
-{ 
+/* line 340, ../sass/ls_advanced.scss */
+#advancedLabel {
+  /** margin:3px;
+   padding:10px;**/
+  font-size: 150%;
+  font-weight: normal;
+}
 
-  margin:1px 3%;
-  font-size:100%;
+/* line 348, ../sass/ls_advanced.scss */
+#limits {
+  margin-bottom: 3em;
+  margin-top: 1em;
+}
 
- }
+/* line 354, ../sass/ls_advanced.scss */
+#limits h3 {
+  font-size: 130%;
+  margin-bottom: 10px;
+  color: #000000;
+}
 
-#x_icon
-{ 
-  margin:0px 10px 0px 10px;
-  padding:0px;
+/* line 363, ../sass/ls_advanced.scss */
+#queryArea {
+  /**  background-color **/
+  margin: 3px;
+  padding: 3px;
+}
 
- }
+/* line 372, ../sass/ls_advanced.scss */
+.advancedClause {
+  margin: 1px 8px;
+  font-size: 80%;
+  line-height: 100%;
+}
+
+/* line 380, ../sass/ls_advanced.scss */
+.advancedClause .infoAlert {
+  margin: 15px 15px 0;
+}
+
+/* line 386, ../sass/ls_advanced.scss */
+.AdvancedLSerror .advancedClause {
+  margin: 1px 3%;
+  font-size: 100%;
+}
+
+/* line 394, ../sass/ls_advanced.scss */
+#x_icon {
+  margin: 0px 10px 0px 10px;
+  padding: 0px;
+}
 
 /** this should instead inherit from LSerror with one change of witdth**/
-.AdvancedLSerror
-{
-  background:#FEEEEE  scroll 15px 90%;
-  border:1px solid #FF4040;
-  color:#000000;
-  margin-top:10px;
+/* line 402, ../sass/ls_advanced.scss */
+.AdvancedLSerror {
+  background: #feeeee scroll 15px 90%;
+  border: 1px solid #ff4040;
+  color: #000000;
+  margin-top: 10px;
   margin-bottom: 10px;
-  margin-right:10px;
-  margin-left:10px;
-  padding:10px;
+  margin-right: 10px;
+  margin-left: 10px;
+  padding: 10px;
+}
 
+/* line 417, ../sass/ls_advanced.scss */
+#zeroHits {
+  line-height: 2;
+  color: red;
+}
 
-} 
+/* line 421, ../sass/ls_advanced.scss */
+#AdvancedLSerrorSearchStuff {
+  margin-top: 3px;
+}
 
+/* line 425, ../sass/ls_advanced.scss */
+#in {
+  font-size: 110%;
+}
 
-#zeroHits
-{ 
-  line-height:2;
-  color:red
- }
-#AdvancedLSerrorSearchStuff{ 
-                             margin-top:3px;
- }
+/* line 430, ../sass/ls_advanced.scss */
+#LimitsError {
+  border: 1px solid #ebece4;
+  padding: 5px;
+  background-color: #FAFAFA;
+  margin: 10px 0px;
+}
 
-#in{ 
-     font-size:110%;
-} 
+/* line 442, ../sass/ls_advanced.scss */
+#ColContentLSerror {
+  margin-top: 10px;
+}
 
-#LimitsError
-{ 
-              
-  border:1px solid #EBECE4;
-  padding:5px;
-  background-color:#FAFAFA;
-  margin:10px 0px; 
-
- 
-
- }
-
-#ColContentLSerror
-{ 
-  margin-top:10px;
-  }
-
-select, input { 
-                margin-left:1em;
-                margin-right:1em;
- }
+/* line 446, ../sass/ls_advanced.scss */
+select, input {
+  margin-left: 1em;
+  margin-right: 1em;
+}
 
 /** XXX fix this**/
-#itemlist_searchform
-{
-
- } 
-
-.SearchResults_status
-{ 
-  line-height:120%
- }
+/* line 458, ../sass/ls_advanced.scss */
+.SearchResults_status {
+  line-height: 120%;
+}
