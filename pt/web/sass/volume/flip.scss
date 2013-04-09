@@ -194,6 +194,9 @@
 
 
     &.loaded {
+
+        background-image: none;
+
         img { visibility: visible; }
     }
 

@@ -5192,7 +5192,7 @@ HT.Viewer.Flip = {
         $(window).scroll();
         self.checkPageStatus();
 
-        $container.on('click', '.page-right get_image', function() {
+        $container.on('click', '.page-right img', function() {
             self.book.next();
         }).on('click', '.page-left img', function() {
             self.book.prev();
