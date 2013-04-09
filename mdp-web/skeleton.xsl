@@ -147,7 +147,7 @@
           <ul id="person-nav" class="nav pull-right">
             <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li>
             <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
-            <li><a id="logout-link" href="{/Header/LoginLink}">Logout</a></li>
+            <li><a id="logout-link" href="{//Header/LoginLink}">Logout</a></li>
           </ul>
         </xsl:if>
       </div>
