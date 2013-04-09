@@ -76,6 +76,8 @@
 
         <xsl:call-template name="skip-to-main-link" />
 
+        <xsl:call-template name="access-overview" />
+
         <xsl:call-template name="navbar" />
         <xsl:call-template name="header" />
 
@@ -94,6 +96,20 @@
   <xsl:template name="setup-html-attributes" />
   <xsl:template name="setup-extra-header" />
   <xsl:template name="setup-body-class" />
+
+  <xsl:template name="access-overview">
+    <div class="offscreen" rel="note">
+      <h2>Text Only Views</h2>
+      <xsl:if test="$gHtId">
+        <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
+      </xsl:if>
+      <ul>
+        <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
+        <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
+        <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
+      </ul>      
+    </div>
+  </xsl:template>
 
   <xsl:template name="setup-page-title">
     <xsl:variable name="page-title">
