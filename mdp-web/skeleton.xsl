@@ -161,13 +161,15 @@
           <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
         </div>
         <fieldset>
+          <label for="q1-input" class="offscreen" >Search</label>
           <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
             <xsl:attribute name="value">
               <xsl:call-template name="header-search-q1-value" />
             </xsl:attribute>
           </input>
           <div class="search-input-options">
-            <select size="1" class="search-input-select" name="searchtype">
+            <label for="search-input-select" class="offscreen">Search Field List</label>
+            <select id="search-input-select" size="1" class="search-input-select" name="searchtype">
               <xsl:call-template name="search-input-select-options" />
             </select>
           </div>
