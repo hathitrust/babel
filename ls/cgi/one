@@ -27,9 +27,13 @@ my $ft = $cgi->param('ft');
 my $dest_cgi = new CGI({});
 my $dest_url; my $dest_base;
 
+my $LS_URL = qq{http://beta-3.babel.hathitrust.org/cgi/ls};
+my $CATALOG_URL = qq{http://test.catalog.hathitrust.org/Search/Home};
+
 if ( $target eq 'ls' ) {
 #  XXX hardcode debug env for now  $dest_base = qq{http://babel.hathitrust.org/cgi/ls};
-    $dest_base = qq{http://tburtonw-full.babel.hathitrust.org/cgi/ls};
+    # $dest_base = qq{http://tburtonw-full.babel.hathitrust.org/cgi/ls};
+    $dest_base = $LS_URL;
     $dest_cgi->param('field1', $$LS_MAP{$searchtype});
     $dest_cgi->param('q1', $q1);
     $dest_cgi->param('a', 'srchls');
@@ -39,7 +43,8 @@ if ( $target eq 'ls' ) {
     }
     
 } else {
-    $dest_base = qq{http://dueberb.catalog.hathitrust.org/Search/Home};
+  # $dest_base = qq{http://dueberb.catalog.hathitrust.org/Search/Home};
+    $dest_base = $CATALOG_URL;
     $dest_cgi->param('lookfor', $q1);
     $dest_cgi->param('searchtype', $searchtype);
     if ($ft eq "ft")
