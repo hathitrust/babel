@@ -142,3 +142,34 @@ body {
   font-size: 14px ;
   font-size: 1.4rem ;
 }
+
+/* SOLR HIGHLIGHTING */
+/* line 144, ../sass/screen.scss */
+.solr_highlight_1 {
+  background: #ffff00;
+}
+
+/* line 147, ../sass/screen.scss */
+.solr_highlight_2 {
+  background: #00ff00;
+}
+
+/* line 150, ../sass/screen.scss */
+.solr_highlight_3 {
+  background: #ff9900;
+}
+
+/* line 153, ../sass/screen.scss */
+.solr_highlight_4 {
+  background: #00ffcc;
+}
+
+/* line 156, ../sass/screen.scss */
+.solr_highlight_5 {
+  background: #00cccc;
+}
+
+/* line 159, ../sass/screen.scss */
+.solr_highlight_6 {
+  background: #0099cc;
+}

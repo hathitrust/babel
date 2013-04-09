@@ -14,27 +14,3 @@
   font-size: 1.8rem ;
   line-height: 1.4;
 }
-/* line 21, ../../sass/volume/plaintext.scss */
-.view-plaintext .page-item .solr_highlight_1 {
-  background: #ffff00;
-}
-/* line 24, ../../sass/volume/plaintext.scss */
-.view-plaintext .page-item .solr_highlight_2 {
-  background: #00ff00;
-}
-/* line 27, ../../sass/volume/plaintext.scss */
-.view-plaintext .page-item .solr_highlight_3 {
-  background: #ff9900;
-}
-/* line 30, ../../sass/volume/plaintext.scss */
-.view-plaintext .page-item .solr_highlight_4 {
-  background: #00ffcc;
-}
-/* line 33, ../../sass/volume/plaintext.scss */
-.view-plaintext .page-item .solr_highlight_5 {
-  background: #00cccc;
-}
-/* line 36, ../../sass/volume/plaintext.scss */
-.view-plaintext .page-item .solr_highlight_6 {
-  background: #0099cc;
-}
