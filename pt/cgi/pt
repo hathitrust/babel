@@ -210,8 +210,7 @@ sub ValidityChecks {
     my $id = $cgi->param('id');
 
     # There must be a valid id of an item to view
-    Utils::silent_ASSERT(Identifier::validate_mbooks_id($cgi),
-                         qq{Invalid document id provided.});
+    silent_ASSERT(Identifier::validate_mbooks_id($cgi), qq{Invalid document id provided.});
 
     # lose any image map params
     $cgi->delete( 'x' );

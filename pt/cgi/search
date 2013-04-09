@@ -156,8 +156,7 @@ sub ValidityChecks
     $cgi->delete( 'y' );
 
     # There must be a valid id for an item to search within
-    Utils::silent_ASSERT(Identifier::validate_mbooks_id($cgi),
-                         qq{Invalid document id provided.});
+    silent_ASSERT(Identifier::validate_mbooks_id($cgi), qq{Invalid document id provided.});
 
     # one-relative for fisheye. Solr search query adjusts to be
     # zero-relative.
