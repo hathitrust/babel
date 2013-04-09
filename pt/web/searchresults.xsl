@@ -46,7 +46,7 @@
   </xsl:template>
 
   <xsl:template name="main">
-    <div class="main" id="viewport">
+    <div class="main" id="main">
       <!-- Results -->
       <xsl:call-template name="ResultsContainer">
         <xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms/Terms"/>
