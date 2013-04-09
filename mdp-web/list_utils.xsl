@@ -862,11 +862,12 @@
           </xsl:otherwise>
         </xsl:choose>
 
-        <div id="listisFooter">
+        <!-- XX TODO : should be removable -->
+        <!-- <div id="listisFooter">
           <xsl:call-template name="BuildPagingControls">
             <xsl:with-param name="which_paging" select="'bottom_paging'"/>
           </xsl:call-template>
-        </div>
+        </div> -->
         
         <xsl:call-template name="BuildPagingControls">
           <xsl:with-param name="which_paging" select="'bottom_paging'"/>

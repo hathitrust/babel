@@ -10,6 +10,7 @@
   xmlns:exsl="http://exslt.org/common"
   xmlns:h="http://www.hathitrust.org"
   xmlns="http://www.w3.org/1999/xhtml"
+  exclude-result-prefixes="h exsl"
   extension-element-prefixes="exsl">
   
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
