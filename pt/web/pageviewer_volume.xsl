@@ -247,7 +247,7 @@
       </xsl:choose>
     </xsl:variable>
     <form class="form-inline" method="get" action="pt" id="form-go-page">
-      <label>Jump to </label>
+      <label for="input-go-page">Jump to </label>
       <input id="input-go-page" name="num" type="text" placeholder="" value="{$pageNum}" class="input-mini" />
       <button id="action-go-page" type="submit" class="btn" data-toggle="tracking" data-tracking-action="PT Jump to Section">Go</button>
       <input type="hidden" name="u" value="1" />

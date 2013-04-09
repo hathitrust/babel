@@ -132,7 +132,7 @@
           <xsl:otherwise>pt/search</xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
-      <label>Search in this text </label>
+      <label for="input-search-text">Search in this text </label>
       <input id="input-search-text" name="q1" type="text" class="input-small">
         <xsl:if test="$gHasOcr!='YES'">
           <xsl:attribute name="disabled">disabled</xsl:attribute>
