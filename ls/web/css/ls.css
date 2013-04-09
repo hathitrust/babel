@@ -1,0 +1,65 @@
+/** ls.scss
+*
+*
+**/
+/***
+ls.css
+  Unicorn version.  Stuff only needed by ls. 
+   mostly for facets
+   see oldls.css for old code
+   Probably will need to pull in most of it for advanced search page
+***/
+/**  Facet styling **/
+/* line 16, ../sass/ls.scss */
+ol.filters, ul.filters {
+  list-style: none outside none;
+}
+
+/* line 20, ../sass/ls.scss */
+ul.filters li {
+  text-indent: -20px;
+}
+
+/* line 23, ../sass/ls.scss */
+.removeFacetIcon {
+  padding-right: 3px;
+  position: relative;
+  top: 3px;
+  border: medium none;
+}
+
+/* line 30, ../sass/ls.scss */
+.selectedfieldname {
+  font-weight: bold;
+}
+
+/* line 40, ../sass/ls.scss */
+*.hidefacet {
+  display: none;
+  visibility: hidden;
+}
+
+/* line 46, ../sass/ls.scss */
+span.moreless {
+  font-style: italic;
+}
+
+/* line 53, ../sass/ls.scss */
+.SearchResults_status {
+  color: #333333;
+  font-size: 1.2em;
+  margin: 0;
+  padding: 20px 5px 20px;
+  position: relative;
+}
+
+/* line 60, ../sass/ls.scss */
+.SearchResults_status span {
+  font-weight: bold;
+}
+
+/* line 64, ../sass/ls.scss */
+span.AnyAll {
+  font-weight: normal;
+  font-style: italic;
+}
