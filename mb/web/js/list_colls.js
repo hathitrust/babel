@@ -168,7 +168,7 @@ var ListBrowser = {
 
     self.$controls.find("select[name=sort_by]").bind("change", function() {
       var key = $(this).val();
-      var rel = $(this).find("option:selected").attr("rel");
+      var rel = $(this).find("option:selected").data('sort');
       self.sort_by(key, rel);
       self.apply_filters();
       self.track_pageview();
@@ -185,7 +185,7 @@ var ListBrowser = {
     self.$controls.find(".filters a").click(function(e) {
       e.preventDefault();
       var $this = $(this);
-      var view = $this.attr('rel');
+      var view = $this.data('target');
       self.navigate(view, true);
       self.track_pageview();
     })
@@ -198,8 +198,8 @@ var ListBrowser = {
     
     // fix the active button
     if ( window.location.hash && window.location.hash != "#all" ) {
-      self.$controls.find("button[rel=all]").removeClass("active");
-      self.$controls.find("button[rel=" + window.location.hash.substr(1) + "]").addClass("active");
+      self.$controls.find("button[data-target=all]").removeClass("active");
+      self.$controls.find("button[data-target=" + window.location.hash.substr(1) + "]").addClass("active");
     }
     
     self.input_filter = self.$controls.find("input[name=q]");
@@ -255,7 +255,7 @@ var ListBrowser = {
   navigate: function(view, invoke_events) {
     var $buttons = this.$controls.find(".filters li");
     $buttons.removeClass("active");
-    var $active = $buttons.filter(":has(a[rel=" + view + "])");
+    var $active = $buttons.filter(":has(a[data-target=" + view + "])");
     if ( ! $active.length ) {
       view = 'all';
       this.navigate('all');
@@ -314,13 +314,13 @@ var ListBrowser = {
     })
     
     this.$filters.bind('click', function() {
-      self.filter_list($(this).attr('rel'));
+      self.filter_list($(this).data('target'));
       self.apply_filters();
     })
     
     this.$sort_options.on('click', function(e) {
       e.preventDefault();
-      self.sort_list($(this).attr('href'), $(this).attr('rel'), $(this).text());
+      self.sort_list($(this).attr('href'), $(this).data('sort'), $(this).text());
       self.apply_filters();
     })
     
@@ -364,8 +364,8 @@ var ListBrowser = {
     this.$controls.find("select[name=min_items]").val(this.min_items);
     this.$controls.find("select[name=sort_by]").val("collname");
     this.$controls.find("input[name=q]").val("");
-    var $buttons = this.$controls.find(".filters button");
-    $buttons.removeClass("active").filter("button[rel=all]").addClass("active");
+    // var $buttons = this.$controls.find(".filters button");
+    // $buttons.removeClass("active").filter("button[=all]").addClass("active");
     
     this.navigate("all", true);
     return false;

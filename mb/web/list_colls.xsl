@@ -48,7 +48,7 @@
       <xsl:with-param name="list_node" select="/MBooksTop/CollList"/>
     </xsl:call-template>
     <xsl:call-template name="sidebar" />
-    <script type="text/javascript" xsrc="/mb/js/list_colls.js">
+    <script type="text/javascript">
       head.js("/mb/js/list_colls.js");
     </script>
   </xsl:template>
@@ -101,10 +101,10 @@
           <div class="row">
             <div class="span12">
               <ul class="filters nav nav-tabs">
-                <li class="active"><a href="#" rel="all" class="active">All</a></li>
-                <li><a href="#" rel="updated" class="">Recently Updated</a></li>
-                <li><a href="#" rel="featured" class="">Featured</a></li>
-                <li><a href="#" rel="my-collections" class="">My Collections</a></li>
+                <li class="active"><a href="#" data-target="all" class="active">All</a></li>
+                <li><a href="#" data-target="updated" class="">Recently Updated</a></li>
+                <li><a href="#" data-target="featured" class="">Featured</a></li>
+                <li><a href="#" data-target="my-collections" class="">My Collections</a></li>
               </ul>
             </div>
           </div>
@@ -128,9 +128,9 @@
                 <label>Sort by: <select size="1" name="sort_by" id="sort_by">
                     <option value="CollName">Collection Title</option>
                     <option value="OwnerString">Owner</option>
-                    <option value="Updated" rel="desc">Last Updated</option>
+                    <option value="Updated" data-sort="desc">Last Updated</option>
                     <option value="NumItems">Items (low to high)</option>
-                    <option value="NumItems" rel="desc">Items (high to low)</option>
+                    <option value="NumItems" data-sort="desc">Items (high to low)</option>
                   </select>
                 </label>
               </div>
