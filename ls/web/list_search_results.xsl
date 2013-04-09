@@ -1296,8 +1296,6 @@ REMOVE the below and see if it will call list_utils
        <xsl:text>Full-text Search Results</xsl:text>
      </xsl:otherwise>
    </xsl:choose>
-   <xsl:text> | HathiTrust Digital Library</xsl:text>
-
   </xsl:template>
 
 

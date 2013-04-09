@@ -562,7 +562,7 @@
 
 
  <xsl:template name="get-page-title">
-    <xsl:text>Full-text Advanced Search | HathiTrust Digital Library </xsl:text>
+    <xsl:text>Full-text Advanced Search</xsl:text>
   </xsl:template>
 
 
