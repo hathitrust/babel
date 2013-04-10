@@ -73,20 +73,6 @@ sub Run {
 
     $C = new Context;
 
-    # CGI -- order matters
-    my $cgi = new CGI;    
-
-    # TEMP: don't expose mobile UI in production yet.
-    #if ($cgi->param('skin') eq 'mobile') {
-    #    $cgi->delete('skin')
-    #      unless (defined($ENV{HT_DEV}));
-    #}
-    
-    $C->set_object('CGI', $cgi);
-
-    Utils::clean_cgi_params( $cgi );
-    my $validityCheckStatus = &{$validityCheckRoutine}( $cgi );
-
     # App
     my $app = new App($C, $app_name);
     $C->set_object('App', $app);
@@ -98,10 +84,16 @@ sub Run {
                                $ENV{SDRROOT} . "/$app_name/lib/Config/local.conf"
                               );
     $C->set_object('MdpConfig', $config);
-    
+
     # Database connection -- order matters
     my $db = new Database('ht_web');
     $C->set_object('Database', $db);
+
+    # CGI -- order matters
+    my $cgi = new CGI;
+    $C->set_object('CGI', $cgi);
+    Utils::clean_cgi_params( $cgi );
+    my $validityCheckStatus = &{$validityCheckRoutine}( $cgi );
 
     # Session -- order matters
     my $ses = Session::start_session($C);
@@ -122,8 +114,6 @@ sub Run {
 
     PT::PageTurnerUtils::Debug( $cgi, $ses );
 
-    Identifier::randomize_id($C, $cgi);
-    
     my $id = $cgi->param( 'id' );
     my $dbh = $db->get_DBH();
     my $user_id = $auth->get_user_name($C);
@@ -156,7 +146,7 @@ sub Run {
     # Support for tracking long-lived "Back to results..." links
     # to catalog searches
     SetBackToResultsReferer($cgi, $ses);
-    
+
     # Emit OWNERID if debug=ownerid. No-op otherwise
     PT::PageTurnerUtils::_get_OWNERID($C, $id);
 }
@@ -169,12 +159,12 @@ sub SetBackToResultsReferer {
     Utils::remove_nonprinting_chars(\$referer);
 
     my $id = $cgi->param('id');
-    
+
     my $script_name = $cgi->script_name;
-    
+
     # copy referer stack; keep track of us
     my $stack = $ses->get_persistent('referers') || {};
-        
+
     if ( $referer =~ m,$PTGlobals::gTrackableReferers, ) {
         # we want to track these referers
         $$stack{$script_name,$id} = { referer => $referer, timestamp => time() };
@@ -189,20 +179,20 @@ sub SetBackToResultsReferer {
         # not trackable, not pt, so blank the key
         delete $$stack{$script_name,$id};
     }
-    
+
     # now prune old entries if necessary
     if ( scalar keys %$stack > $PTGlobals::gTrackableLimit ) {
         my @timestamps = ();
         foreach ( sort { $$stack{$a}{timestamp} <=> $$stack{$b}{timestamp} } keys %$stack ) {
             push @timestamps, [$$stack{$_}{timestamp}, $_];
         }
-        
+
         while ( scalar @timestamps > $PTGlobals::gTrackableLimit ) {
             my ($timestamp, $key) = @{ shift @timestamps };
             delete $$stack{$key};
         }
     }
-    
+
     $ses->set_persistent('referers', $stack);
     if ( exists($$stack{$script_name,$id}) ) {
         $ses->set_transient('referer', $$stack{$script_name,$id}{referer});
@@ -217,7 +207,7 @@ sub SetBackToResultsReferer {
 # ----------------------------------------------------------------------
 sub SetDefaultPage {
     my ( $cgi, $mdpItem ) = @_;
-    
+
     my $seq;
     if ( $seq = $mdpItem->HasTitleFeature()) {
         $cgi->param('seq', $seq );
