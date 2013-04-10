@@ -989,6 +989,7 @@ sub getGroup{
         }
         
         my $q     = $cgi->param('q' . $i);
+
         if (defined($q))
         {
             $GROUP_NOT_EMPTY="true";
@@ -1022,7 +1023,12 @@ sub getGroup{
         my $clause;
         if (defined ($q))
         {
-            
+            #XXX handle everything query
+            if ($q=~/^\s*\*\s*$/ && $i == 1)
+            {
+                $clause .=wrap_string_in_tag('true', 'EveryThingQuery');
+            }
+                        
             $clause .=wrap_string_in_tag($i, 'Qnum');
             $clause .=wrap_string_in_tag($q ,'Query');
             $clause .=wrap_string_in_tag($well_formed ,'WellFormed');

@@ -377,24 +377,29 @@ REMOVE the below and see if it will call list_utils
         </span>
         <xsl:text>: </xsl:text>
       </xsl:if>
-
-      <span>
-        <xsl:value-of select="Query"/>
-      </span>
-     
-
-      <xsl:text> in </xsl:text>
-      <!-- replace em with css -->
       
-      <em>
-        <xsl:value-of select="Field"/>
-      </em>
-      <!--XXX Dont put in period at all or  only put period in if search succeeded -->
-      <!--
-      <xsl:if test="/MBooksTop/SearchResults/Item">
-        <xsl:text>.  </xsl:text>
-      </xsl:if>
-      -->
+    <!-- XXX temporary fix for *:* search   this should be done in the perl -->
+      <xsl:variable name="EveryThingQuery">
+        <xsl:value-of select="EveryThingQuery"/> 
+      </xsl:variable>
+      
+      <xsl:choose>
+        <xsl:when test="$EveryThingQuery = 'true'">
+          <xsl:text>* (Everything)</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <span>
+            <xsl:value-of select="Query"/> 
+          </span>
+                
+          <xsl:text> in </xsl:text>
+          <!-- replace em with css -->
+      
+          <em>
+            <xsl:value-of select="Field"/>
+          </em>
+        </xsl:otherwise>
+      </xsl:choose>
       
       <!--xsl:if test="(/MBooksTop/AdvancedSearch/isAdvanced='true') and  (WellFormed!=1)"-->
       <xsl:if test="WellFormed!=1">
