@@ -424,7 +424,7 @@ sub handle_synchronization {
                 if (($id_ct % 100) == 0) {
                     l__output("($id_ct)");
                     # throttle solr requests to prevent 500's
-                    sleep 1;
+                    sleep 2;
                 }
                 l__output('.');
             }
