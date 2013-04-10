@@ -1,5 +1,4 @@
 @import url(../vendor/nanoscroller/nanoscroller.css);
-/* lets me easily translate font-sizes from mockup */
 /* line 3, ../sass/screen.scss */
 body {
   min-width: 975px ;

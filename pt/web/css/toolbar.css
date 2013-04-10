@@ -1,4 +1,3 @@
-/* lets me easily translate font-sizes from mockup */
 /* line 3, ../sass/toolbar.scss */
 body {
   position: relative;
@@ -69,8 +68,8 @@ body {
   /*margin-left: 5px;*/
   margin-bottom: -5px;
   background: #FFFEFB;
-  width: 700px ;
-  width: 70rem ;
+  width: 725px ;
+  width: 72.5rem ;
 }
 /* line 81, ../sass/toolbar.scss */
 .toolbar-horizontal.locked {

@@ -1,5 +1,4 @@
 @import url(../vendor/slider/css/slider.css);
-/* lets me easily translate font-sizes from mockup */
 /* line 3, ../sass/toolbar.scss */
 body {
   position: relative;
@@ -70,8 +69,8 @@ body {
   /*margin-left: 5px;*/
   margin-bottom: -5px;
   background: #FFFEFB;
-  width: 700px ;
-  width: 70rem ;
+  width: 725px ;
+  width: 72.5rem ;
 }
 /* line 81, ../sass/toolbar.scss */
 .toolbar-horizontal.locked {
@@ -250,7 +249,6 @@ body {
   overflow-y: auto;
 }
 
-/* lets me easily translate font-sizes from mockup */
 /* line 7, ../sass/volume/thumb.scss */
 .view-thumb .thumbnails.rtl .page-item {
   float: right;
@@ -337,7 +335,6 @@ body {
   visibility: visible;
 }
 
-/* lets me easily translate font-sizes from mockup */
 /* line 5, ../sass/volume/scroll.scss */
 .view-1up .page-item {
   display: block;
@@ -405,10 +402,12 @@ body {
 #content {
   margin-top: 24px;
   margin-top: 2.4rem;
+  margin-bottom: 30px;
+  margin-bottom: 3rem;
   padding: 0;
 }
 
-/* line 9, ../sass/volume/flip.scss */
+/* line 11, ../sass/volume/flip.scss */
 .bb-custom-wrapper {
   background: #fff;
   width: 100%;
@@ -416,7 +415,7 @@ body {
   position: relative;
   margin: 0px auto;
 }
-/* line 20, ../sass/volume/flip.scss */
+/* line 22, ../sass/volume/flip.scss */
 .bb-custom-wrapper h3 {
   color: #aaa;
   font-size: 12px;
@@ -425,7 +424,7 @@ body {
   left: 10px;
   bottom: -3px;
 }
-/* line 29, ../sass/volume/flip.scss */
+/* line 31, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav {
   width: 120px;
   margin: 8px 10px 0 0;
@@ -433,26 +432,26 @@ body {
   position: relative;
   z-index: 0;
 }
-/* line 36, ../sass/volume/flip.scss */
+/* line 38, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a:hover {
   opacity: 1;
 }
-/* line 40, ../sass/volume/flip.scss */
+/* line 42, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a#bb-nav-prev {
   background-position: center left;
   margin-right: 5px;
 }
-/* line 45, ../sass/volume/flip.scss */
+/* line 47, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a#bb-nav-next {
   background-position: -43px 50%;
 }
-/* line 49, ../sass/volume/flip.scss */
+/* line 51, ../sass/volume/flip.scss */
 .bb-custom-wrapper nav a#bb-nav-jump {
   background-position: center right;
   float: right;
 }
 
-/* line 57, ../sass/volume/flip.scss */
+/* line 59, ../sass/volume/flip.scss */
 .bb-bookblock {
   box-shadow: 0px 5px 0 rgba(0, 0, 0, 0.1);
   height: 500px;
@@ -461,12 +460,12 @@ body {
   z-index: 100;
   margin: 0 auto;
 }
-/* line 66, ../sass/volume/flip.scss */
+/* line 68, ../sass/volume/flip.scss */
 .bb-bookblock.lowered {
   z-index: 0;
 }
 
-/* line 71, ../sass/volume/flip.scss */
+/* line 73, ../sass/volume/flip.scss */
 .bb-item {
   width: 100%;
   height: 100%;
@@ -477,7 +476,7 @@ body {
   background: #fff;
 }
 
-/* line 81, ../sass/volume/flip.scss */
+/* line 83, ../sass/volume/flip.scss */
 .bb-page {
   width: 50%;
   height: 100%;
@@ -495,7 +494,7 @@ body {
   transform-origin: left center;
 }
 
-/* line 103, ../sass/volume/flip.scss */
+/* line 105, ../sass/volume/flip.scss */
 .bb-page > div,
 .bb-outer,
 .bb-content {
@@ -505,19 +504,19 @@ body {
   left: 0;
 }
 
-/* line 110, ../sass/volume/flip.scss */
+/* line 112, ../sass/volume/flip.scss */
 .bb-content {
   background: #fff;
 }
 
-/* line 114, ../sass/volume/flip.scss */
+/* line 116, ../sass/volume/flip.scss */
 .bb-inner {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-/* line 120, ../sass/volume/flip.scss */
+/* line 122, ../sass/volume/flip.scss */
 .bb-overlay, .bb-outer {
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
@@ -526,7 +525,7 @@ body {
   backface-visibility: hidden;
 }
 
-/* line 128, ../sass/volume/flip.scss */
+/* line 130, ../sass/volume/flip.scss */
 .bb-page > div {
   width: 100%;
   -webkit-transform-style: preserve-3d;
@@ -541,7 +540,7 @@ body {
   backface-visibility: hidden;
 }
 
-/* line 143, ../sass/volume/flip.scss */
+/* line 145, ../sass/volume/flip.scss */
 .bb-back {
   -webkit-transform: rotateY(-180deg);
   -moz-transform: rotateY(-180deg);
@@ -550,14 +549,14 @@ body {
   transform: rotateY(-180deg);
 }
 
-/* line 151, ../sass/volume/flip.scss */
+/* line 153, ../sass/volume/flip.scss */
 .bb-outer {
   width: 100%;
   overflow: hidden;
   z-index: 999;
 }
 
-/* line 158, ../sass/volume/flip.scss */
+/* line 160, ../sass/volume/flip.scss */
 .bb-overlay,
 .bb-flipoverlay {
   background-color: rgba(0, 0, 0, 0.7);
@@ -569,12 +568,12 @@ body {
   opacity: 0;
 }
 
-/* line 168, ../sass/volume/flip.scss */
+/* line 170, ../sass/volume/flip.scss */
 .bb-flipoverlay {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* line 173, ../sass/volume/flip.scss */
+/* line 175, ../sass/volume/flip.scss */
 .bb-bookblock > div.bb-page:first-child,
 .bb-bookblock > div.bb-page:first-child .bb-back {
   -webkit-transform: rotateY(180deg);
@@ -584,7 +583,7 @@ body {
   transform: rotateY(180deg);
 }
 
-/* line 181, ../sass/volume/flip.scss */
+/* line 183, ../sass/volume/flip.scss */
 .view-2up .page-item {
   height: 1020px;
   min-width: 400px;
@@ -598,16 +597,16 @@ body {
   background-repeat: no-repeat;
   background-position: center;
 }
-/* line 197, ../sass/volume/flip.scss */
+/* line 199, ../sass/volume/flip.scss */
 .view-2up .page-item.loaded {
   background-image: none;
 }
-/* line 201, ../sass/volume/flip.scss */
+/* line 203, ../sass/volume/flip.scss */
 .view-2up .page-item.loaded img {
   visibility: visible;
 }
 
-/* line 206, ../sass/volume/flip.scss */
+/* line 208, ../sass/volume/flip.scss */
 .view-2up .page-item img {
   /* max-height AND max-width will keep aspect ratio */
   max-height: 100%;
@@ -617,25 +616,25 @@ body {
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* line 218, ../sass/volume/flip.scss */
+/* line 220, ../sass/volume/flip.scss */
 .view-2up .page-item.untypical-page img {
   /*border: 1px solid #686464;*/
   border: 4px double #d5d3d3;
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.8);
 }
 
-/* line 224, ../sass/volume/flip.scss */
+/* line 226, ../sass/volume/flip.scss */
 .view-2up .page-item button {
   margin: 10px;
   float: left;
 }
 
-/* line 229, ../sass/volume/flip.scss */
+/* line 231, ../sass/volume/flip.scss */
 .view-2up .page-item.page-right button {
   float: right;
 }
 
-/* line 233, ../sass/volume/flip.scss */
+/* line 235, ../sass/volume/flip.scss */
 .view-2up .page-num {
   color: #666;
   font-size: 24px;
@@ -645,13 +644,13 @@ body {
   font-weight: bold;
 }
 
-/* line 242, ../sass/volume/flip.scss */
+/* line 244, ../sass/volume/flip.scss */
 .view-2up .page-item {
   min-width: inherit;
   height: 98%;
 }
 
-/* line 248, ../sass/volume/flip.scss */
+/* line 250, ../sass/volume/flip.scss */
 .view-2up .page-left {
   width: 50%;
   /*48%;*/
@@ -665,13 +664,13 @@ body {
   text-align: right;
 }
 
-/* line 260, ../sass/volume/flip.scss */
+/* line 262, ../sass/volume/flip.scss */
 .view-2up .page-left .page-num {
   right: auto;
   left: 60px;
 }
 
-/* line 265, ../sass/volume/flip.scss */
+/* line 267, ../sass/volume/flip.scss */
 .view-2up .page-right {
   width: 50%;
   /*48%;*/
@@ -684,50 +683,49 @@ body {
   text-align: left;
 }
 
-/* line 276, ../sass/volume/flip.scss */
+/* line 278, ../sass/volume/flip.scss */
 .view-2up .page-item.empty {
   background: #fff;
   border: none;
   box-shadow: none;
 }
 
-/* line 284, ../sass/volume/flip.scss */
+/* line 286, ../sass/volume/flip.scss */
 .flip-rotating {
   -webkit-transition: all 1s ease;
   transition: rotate 1s ease;
 }
 
-/* line 289, ../sass/volume/flip.scss */
+/* line 291, ../sass/volume/flip.scss */
 .flip-rotated-90 {
   -webkit-transform: rotate(90deg);
   margin-top: 200px;
   margin-bottom: 200px;
 }
 
-/* line 295, ../sass/volume/flip.scss */
+/* line 297, ../sass/volume/flip.scss */
 .flip-rotated-180 {
   -webkit-transform: rotate(180deg);
 }
 
-/* line 299, ../sass/volume/flip.scss */
+/* line 301, ../sass/volume/flip.scss */
 .flip-rotated-270 {
   -webkit-transform: rotate(270deg);
   margin-top: 200px;
   margin-bottom: 200px;
 }
 
-/* line 305, ../sass/volume/flip.scss */
+/* line 307, ../sass/volume/flip.scss */
 .nob {
   width: 100%;
 }
 
-/* line 309, ../sass/volume/flip.scss */
+/* line 311, ../sass/volume/flip.scss */
 .slider.slider-horizontal {
   margin-top: 8px;
-  z-index: 5000;
+  z-index: 150;
 }
 
-/* lets me easily translate font-sizes from mockup */
 /* line 4, ../sass/volume/plaintext.scss */
 .view-plaintext .page-item {
   display: block;

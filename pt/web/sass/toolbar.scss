@@ -76,7 +76,7 @@ body {
     margin-bottom: -5px;
     background: #FFFEFB;
 
-    @include rem(width, 700);
+    @include rem(width, 725);
 
     &.locked {
         // -webkit-box-shadow: 4px 16px 5px rgba(50, 50, 50, 0.59);
