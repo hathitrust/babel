@@ -340,7 +340,6 @@ HT.Reader = {
     },
 
     _updateLinks: function(seq, seqs) {
-        console.log(seq, seqs);
         var self = this;
         if ( ! seq ) { seq = this.getCurrentSeq(); }
         if ( this.getView() == '2up' ) {
