@@ -1,26 +1,29 @@
 
-var last_top = $(window).scrollTop();
-var last_left = $(window).scrollLeft();
-
-$(".header").addClass("fixed").addClass("fixed-x").data('extra-height', 40).data('shadow', '#navbar-inner');
-
-var $fixed = $(".fixed");
-var $fixed_x = $(".fixed.fixed-x");
-var $fixed_y = $(".fixed.fixed-y");
-var dummies = {}
-
-var $bottom = $(".main");
-
-HT.x = 1;
-rebuild_sidebar = function() {
-    var h = $(window).height() - $(".header.fixed").height() - $(".navbar-static-top").height();
-    var h2 = h - $(".bibLinks").height() - HT.x;
-    $("#sidebar").height(h).find(".scrollable").height(h2).addClass("nano");
-    $(".scrollable.nano").nanoScroller({ alwaysVisible : true });
-}
+var HT = HT || {};
+HT.scrolling = {};
 
 head.ready(function() {
 
+    var last_top = $(window).scrollTop();
+    var last_left = $(window).scrollLeft();
+
+    var rebuild_sidebar = function() {
+        var h = $(window).height() - $(".header.fixed").height() - $(".navbar-static-top").height();
+        var h2 = h - $(".bibLinks").height() - HT.x;
+        $("#sidebar").height(h).find(".scrollable").height(h2).addClass("nano");
+        $(".scrollable.nano").nanoScroller({ alwaysVisible : true });
+    }
+
+    HT.scrolling.rebuild_sidebar = rebuild_sidebar;
+
+    $(".header").addClass("fixed").addClass("fixed-x").data('extra-height', 40).data('shadow', '#navbar-inner');
+
+    var $fixed = $(".fixed");
+    var $fixed_x = $(".fixed.fixed-x");
+    var $fixed_y = $(".fixed.fixed-y");
+    var dummies = {}
+
+    var $bottom = $(".main");
 
     rebuild_sidebar();
 
@@ -58,6 +61,118 @@ head.ready(function() {
 
     })
 
+    var handle_scroll_horizontal = function() {
+
+        var current_left = $(window).scrollLeft();
+        $fixed.filter(".fixed-y").each(function() {
+            var $original = $(this);
+            var $dummy = dummies[$original.attr('id')];
+            $original.css({ left : $dummy.offset().left - current_left });
+        })
+    }
+
+    var handle_scroll_vertical = function() {
+        var current_top = $(window).scrollTop();
+
+        //console.log("-- scrolling", current_top, last_top);
+        // console.log($("#sidebar").fracs().rects.viewport.bottom, " / ", $(".main").fracs().rects.viewport.bottom);
+        if ( current_top == last_top ) {
+            return;
+        }
+
+        $fixed_y.each(function() {
+            var $original = $(this);
+            var margin_top = $original.data('margin-top') || 0;
+            var $dummy = dummies[$original.attr("id")];
+            var top = parseInt($original.css('top'));
+
+            var original_bottom = top + $original.height();
+
+            if ( last_top < current_top ) {
+                // scrolling window content up, toward bottom
+                var check_top, next_top;
+                next_top = check_top = top + ( last_top - current_top );
+                if ( ! $original.is(".unlocked") && next_top <= margin_top ) {
+                    next_top = margin_top;
+                }
+                if ( ( next_top >= 0 || $original.is(".unlocked")  ) && next_top < top) {
+                    $original.css({ top : next_top });
+                }
+
+                // track the bottom; can't use the dummies, need a container
+                var f1 = $original.fracs(); var f2 = $bottom.fracs();
+                if ( f1.rects.viewport.bottom - f2.rects.viewport.bottom > 0 ) {
+                    // console.log("UNLOCKING:", f1.rects.viewport.bottom, f2.rects.viewport.bottom);
+                    var delta = f1.rects.viewport.bottom - f2.rects.viewport.bottom;
+                    $original.css({ top : check_top });
+                    $original.addClass("unlocked");
+                }
+
+            } else {
+
+                var next_top = $dummy.offset().top - current_top;
+                if ( next_top >= margin_top ) {
+                    $original.css({ top : next_top });
+                    $original.removeClass("unlocked");
+                } else if ( $original.is(".unlocked") ) {
+                    next_top = top - ( current_top - last_top );
+                    if ( next_top >= margin_top ) {
+                        next_top = margin_top;
+                        $original.removeClass("unlocked");
+                    }
+                    $original.css({ top : next_top });
+                }
+
+            }
+
+            if ( top <= margin_top  ) {
+                $original.addClass("locked");
+            } else {
+                $original.removeClass("locked");
+            }
+
+        })
+
+        $fixed_x.each(function() {
+            var $original = $(this);
+            var $dummy = dummies[$original.attr("id")];
+            $original.css({ top : $dummy.offset().top - current_top });
+        })
+
+        last_top = current_top;
+    }
+
+    var handle_resize = function() {
+        var scroll_left = $(window).scrollLeft();
+        $fixed_y.each(function() {
+            var $original = $(this);
+            var $dummy = dummies[$original.attr("id")];
+            var new_left = $dummy.offset().left + scroll_left;
+            $original.css({ left : new_left });
+        })
+
+        $fixed_x.each(function() {
+            var $original = $(this);
+            var $dummy = dummies[$original.attr("id")];
+            var new_left = $dummy.offset().left + parseInt($dummy.css('margin-left'));;
+            // console.log("ER:", $original.offset().left, $dummy.offset().left, scroll_left);
+            // $original.css({ left : new_left, xwidth : $dummy.width() });
+
+            var $shadow = $($original.data('shadow'));
+            //new_left = ( $(window).width() - $shadow.width() ) / 2;
+            $original.css({ width : $shadow.width(), left : new_left });
+
+        })
+
+        var $uber = $(".container.page.centered");
+        $uber.removeClass("page");
+        setTimeout(function() {
+            $uber.addClass("page");
+            rebuild_sidebar();
+        }, 100);
+    }
+
+
 
     $(window).on('scroll', handle_scroll_vertical);
     $(window).on('scroll', handle_scroll_horizontal);
@@ -72,115 +187,4 @@ head.ready(function() {
 
 })
 
-
-var handle_scroll_horizontal = function() {
-
-    var current_left = $(window).scrollLeft();
-    $fixed.filter(".fixed-y").each(function() {
-        var $original = $(this);
-        var $dummy = dummies[$original.attr('id')];
-        $original.css({ left : $dummy.offset().left - current_left });
-    })
-}
-
-var handle_scroll_vertical = function() {
-    var current_top = $(window).scrollTop();
-
-    //console.log("-- scrolling", current_top, last_top);
-    // console.log($("#sidebar").fracs().rects.viewport.bottom, " / ", $(".main").fracs().rects.viewport.bottom);
-    if ( current_top == last_top ) {
-        return;
-    }
-
-    $fixed_y.each(function() {
-        var $original = $(this);
-        var margin_top = $original.data('margin-top') || 0;
-        var $dummy = dummies[$original.attr("id")];
-        var top = parseInt($original.css('top'));
-
-        var original_bottom = top + $original.height();
-
-        if ( last_top < current_top ) {
-            // scrolling window content up, toward bottom
-            var check_top, next_top;
-            next_top = check_top = top + ( last_top - current_top );
-            if ( ! $original.is(".unlocked") && next_top <= margin_top ) {
-                next_top = margin_top;
-            }
-            if ( ( next_top >= 0 || $original.is(".unlocked")  ) && next_top < top) {
-                $original.css({ top : next_top });
-            }
-
-            // track the bottom; can't use the dummies, need a container
-            var f1 = $original.fracs(); var f2 = $bottom.fracs();
-            if ( f1.rects.viewport.bottom - f2.rects.viewport.bottom > 0 ) {
-                // console.log("UNLOCKING:", f1.rects.viewport.bottom, f2.rects.viewport.bottom);
-                var delta = f1.rects.viewport.bottom - f2.rects.viewport.bottom;
-                $original.css({ top : check_top });
-                $original.addClass("unlocked");
-            }
-
-        } else {
-
-            var next_top = $dummy.offset().top - current_top;
-            if ( next_top >= margin_top ) {
-                $original.css({ top : next_top });
-                $original.removeClass("unlocked");
-            } else if ( $original.is(".unlocked") ) {
-                next_top = top - ( current_top - last_top );
-                if ( next_top >= margin_top ) {
-                    next_top = margin_top;
-                    $original.removeClass("unlocked");
-                }
-                $original.css({ top : next_top });
-            }
-
-        }
-
-        if ( top <= margin_top  ) {
-            $original.addClass("locked");
-        } else {
-            $original.removeClass("locked");
-        }
-
-    })
-
-    $fixed_x.each(function() {
-        var $original = $(this);
-        var $dummy = dummies[$original.attr("id")];
-        $original.css({ top : $dummy.offset().top - current_top });
-    })
-
-    last_top = current_top;
-}
-
-var handle_resize = function() {
-    var scroll_left = $(window).scrollLeft();
-    $fixed_y.each(function() {
-        var $original = $(this);
-        var $dummy = dummies[$original.attr("id")];
-        var new_left = $dummy.offset().left + scroll_left;
-        $original.css({ left : new_left });
-    })
-
-    $fixed_x.each(function() {
-        var $original = $(this);
-        var $dummy = dummies[$original.attr("id")];
-        var new_left = $dummy.offset().left + parseInt($dummy.css('margin-left'));;
-        // console.log("ER:", $original.offset().left, $dummy.offset().left, scroll_left);
-        // $original.css({ left : new_left, xwidth : $dummy.width() });
-
-        var $shadow = $($original.data('shadow'));
-        //new_left = ( $(window).width() - $shadow.width() ) / 2;
-        $original.css({ width : $shadow.width(), left : new_left });
-
-    })
-
-    var $uber = $(".container.page.centered");
-    $uber.removeClass("page");
-    setTimeout(function() {
-        $uber.addClass("page");
-        rebuild_sidebar();
-    }, 100);
-}
 
