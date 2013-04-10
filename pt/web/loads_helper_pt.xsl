@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1365540292'" />
+  <xsl:variable name="timestamp" select="'?_=1365606624'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var _js = [];
@@ -51,6 +51,7 @@
     _js2.push("/pt/vendor/jquery.viewport.js<xsl:value-of select="$timestamp" />");
     _js2.push("/pt/vendor/BookBlock/js/jquerypp.custom.js<xsl:value-of select="$timestamp" />");
     _js2.push("/pt/vendor/BookBlock/js/jquery.bookblock.js<xsl:value-of select="$timestamp" />");
+    _js2.push("/pt/vendor/slider/js/bootstrap-slider.js<xsl:value-of select="$timestamp" />");
     _js2.push("/pt/js/downloader.js<xsl:value-of select="$timestamp" />");
     _js2.push("/pt/js/collection_tools.js<xsl:value-of select="$timestamp" />");
     _js2.push("/pt/js/reader.js<xsl:value-of select="$timestamp" />");

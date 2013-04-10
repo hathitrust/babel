@@ -52,6 +52,7 @@ Test://ItemType='volume' and $gSkin='default'
 /pt/web/vendor/jquery.viewport.js
 /pt/web/vendor/BookBlock/js/jquerypp.custom.js
 /pt/web/vendor/BookBlock/js/jquery.bookblock.js
+/pt/web/vendor/slider/js/bootstrap-slider.js
 /pt/web/js/downloader.js
 /pt/web/js/collection_tools.js
 /pt/web/js/reader.js

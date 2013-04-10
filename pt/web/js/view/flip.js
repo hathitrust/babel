@@ -200,7 +200,7 @@ HT.Viewer.Flip = {
 
     loadPage: function(page) {
         var self = this;
-        console.log("LOADING", page);
+        // console.log("LOADING", page);
         _.each(self._page2seq(page), function(seq) {
             if ( seq != null ) {
                 var $page = $("#page" + seq);
@@ -227,7 +227,7 @@ HT.Viewer.Flip = {
             if ( ! $page.size() ) {
                 return;
             }
-            console.log("UNLOADING IMAGE", seq);
+            // console.log("UNLOADING IMAGE", seq);
             $page.find("img").remove();
         })
     },
@@ -237,7 +237,7 @@ HT.Viewer.Flip = {
         if ( ! $page.size() ) {
             return;
         }
-        console.log("UNLOADING IMAGE", seq);
+        // console.log("UNLOADING IMAGE", seq);
         $page.find("img").remove();
 
         $page = $("#page" + (seq + 1));
@@ -271,6 +271,7 @@ HT.Viewer.Flip = {
         var fit_w = $("#content").width();
 
         $("#content").append('<div class="bb-custom-wrapper"><div class="bb-bookblock"></div></div>');
+        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
         var $container = $(".bb-bookblock");
         self.$container = $container;
         self.$wrapper = $("#content").find(".bb-custom-wrapper");
@@ -357,7 +358,9 @@ HT.Viewer.Flip = {
             }
         }
 
-        pages.push(last_page);
+        if ( last_page ) {
+            pages.push(last_page);
+        }
 
         if ( self.options.manager.reading_order == 'right-to-left' ) {
             pages.reverse();
@@ -425,16 +428,11 @@ HT.Viewer.Flip = {
                         self.unloadPage(page - 8);
                         self.unloadPage(page + 8);
 
-                        // self.loadPage(seq + 2);
-                        // self.loadPage(seq + 4);
-                        // self.loadPage(seq - 2);
-                        // self.loadPage(seq - 4);
-                        // self.removeImage(seq - 8);
-                        // self.removeImage(seq + 8);
                     }
                 } );
 
         this.book.n = pages.length;
+        self.pages = pages;
         HT.bb = this.book;
 
         if ( self.options.seq ) {
@@ -445,6 +443,37 @@ HT.Viewer.Flip = {
                 current = pages.length;
             }
         }
+
+        var last_num = self.options.manager.getPageNumForSeq(end_seq);
+        if ( ! last_num ) {
+            last_num = "n" + end_seq;
+        }
+        self.$slider = $nob.slider({
+            min : 0,
+            max : pages.length - 1,
+            value : current,
+            selection : 'none',
+            tooltip : 'show',
+            label : function(current, total) {
+                var seq = self._page2seq(current);
+                seq = seq[0];
+                var num = self.options.manager.getPageNumForSeq(seq);
+                var text = " / " + last_num;
+                if ( num ) {
+                    text = num + text;
+                } else {
+                    text = "n" + seq  + text;
+                }
+                // var end = self._page2seq(total);
+                return text;
+            },
+            handle : 'square'
+        }).on('slideStop', function(ev) {
+            var value = ev.value;
+            var seq = self._page2seq(value);
+            console.log("JUMPING TO", value, seq);
+            self.gotoPage(seq[0]);
+        })
 
         self.loadPage(current);
         self.loadPage(current + 1);

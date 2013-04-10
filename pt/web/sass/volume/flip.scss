@@ -1,3 +1,4 @@
+@import "../vendor/slider/css/slider.css";
 
 #content {
     margin-top: 24px;
@@ -300,3 +301,13 @@
     margin-top: 200px;
     margin-bottom: 200px;
 }
+
+.nob {
+    width: 100%;
+}
+
+.slider.slider-horizontal {
+    margin-top: 8px;
+    z-index: 5000;
+}
+
