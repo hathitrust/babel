@@ -515,6 +515,8 @@ HT.Viewer.Flip = {
             $.publish("enable.go.last");
         }
 
+        self.$slider.slider('setValue', page);
+
         var seq = self._page2seq(page);
 
         $.publish("update.go.page", [seq]);
