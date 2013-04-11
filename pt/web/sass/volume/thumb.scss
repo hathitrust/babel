@@ -21,6 +21,7 @@
         min-width: 100px;
 
         background: transparent;
+        border: 1px solid #eee;
 
         float: left;
         margin: 4px;
@@ -36,6 +37,7 @@
 
         &.loaded {
             background-image: none;
+            border-color: transparent;
 
             img {
                 visibility: visible;
@@ -55,22 +57,22 @@
 
     }
 
-    .page-num {
-        position: absolute;
-        z-index: 50;
-        opacity: 0.4;
-        background: #666;
-        color: #eee;
-        text-align: center;
-        height: 40px;
-        width: 32px;
-        font-size: 14px;
-        font-weight: bold;
-        padding: 8px;
-        top: 10px;
-        right: 10px;
-        display: table-cell;
-        vertical-align: middle;
-    }    
+    // .page-num {
+    //     position: absolute;
+    //     z-index: 50;
+    //     opacity: 0.4;
+    //     background: #666;
+    //     color: #eee;
+    //     text-align: center;
+    //     height: 40px;
+    //     width: 32px;
+    //     font-size: 14px;
+    //     font-weight: bold;
+    //     padding: 8px;
+    //     top: 10px;
+    //     right: 10px;
+    //     display: table-cell;
+    //     vertical-align: middle;
+    // }    
 
 }

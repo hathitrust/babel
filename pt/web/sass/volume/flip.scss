@@ -180,106 +180,120 @@
     transform: rotateY(180deg);
 }
 
-.view-2up .page-item {
-    height: 1020px;
-    min-width: 400px;
-    width: 680px;
-    /*max-width: 680px;*/
-    position: relative;
-    height: 98%;
+.view-2up {
 
-    overflow: hidden;
-    overflow-x: auto;
+    .page-item {
+        // height: 1020px;
+        // min-width: 400px;
+        width: 680px;
+        /*max-width: 680px;*/
+        position: relative;
+        height: 98%;
 
-    background-image: url(../graphics/thumb-loader.gif);
-    background-repeat: no-repeat;
-    background-position: center;
+        overflow: hidden;
+        overflow-x: auto;
+
+        background-image: url(../graphics/thumb-loader.gif);
+        background-repeat: no-repeat;
+        background-position: center;
+
+        min-width: inherit;
+        height: 98%;
 
 
-    &.loaded {
+        img {
+            /* max-height AND max-width will keep aspect ratio */
+            max-height: 100%;
+            max-width: 100%;
 
-        background-image: none;
+            visibility: hidden;
 
-        img { visibility: visible; }
+            border: 1px solid #d5d3d3;
+            box-shadow: 0 1px 10px rgba(0,0,0,.1);
+
+        }
+
+        &.loaded {
+
+            background-image: none;
+
+            img { visibility: visible; }
+        }
+
+        &.untypical-page {
+            img {
+                border: 4px double #d5d3d3;
+                box-shadow: 0px 5px 10px rgba(0,0,0,.8);                
+            }
+        }
+
+        button {
+            margin: 10px;
+            float: left;
+        }
+
     }
 
+    .page-left {
+        width: 50%; /*48%;*/
+        float: left;
+        /*margin-right: 2px;*/
+        border-right: 2px solid #ddd;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        text-align: right;
+
+        .page-num {
+            right: auto;
+            // left: 5px;
+            left: 40px;
+        }
+    }
+
+    .page-right {
+        width: 50%; /*48%;*/
+        float: left;
+        /*margin-left: 2px;*/
+        position: absolute;
+        top: 0;
+        left: 50%;
+        bottom: 0;
+        text-align: left;
+
+        .page-num {
+            // right: 8px; // --- for off page
+            right: 40px;
+        }        
+    }
+
+    .empty {
+        background: #fff;
+        border: none;
+        box-shadow: none;        
+    }
+
+
+
+
 }
 
-.view-2up .page-item img {
-    /* max-height AND max-width will keep aspect ratio */
-    max-height: 100%;
-    max-width: 100%;
 
-    visibility: hidden;
-
-    border: 1px solid #d5d3d3;
-    box-shadow: 0 1px 10px rgba(0,0,0,.1);
-
-}
-
-.view-2up .page-item.untypical-page img {
-    /*border: 1px solid #686464;*/
-    border: 4px double #d5d3d3;
-    box-shadow: 0px 5px 10px rgba(0,0,0,.8);
-}
-
-.view-2up .page-item button {
-    margin: 10px;
-    float: left;
-}
 
 .view-2up .page-item.page-right button {
     float: right;
 }
 
-.view-2up .page-num {
-    color: #666;
-    font-size: 24px;
-    top: 50px;
-    right: 60px;
-    position: absolute;
-    font-weight: bold;
-}
+// .view-2up .page-num {
+//     color: #666;
+//     font-size: 24px;
+//     top: 50px;
+//     right: 60px;
+//     position: absolute;
+//     font-weight: bold;
+// }
 
-.view-2up .page-item {
-    min-width: inherit;
-    height: 98%;
-}
-
-
-.view-2up .page-left {
-    width: 50%; /*48%;*/
-    float: left;
-    /*margin-right: 2px;*/
-    border-right: 2px solid #ddd;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    text-align: right;
-}
-
-.view-2up .page-left .page-num {
-    right: auto;
-    left: 60px;
-}
-
-.view-2up .page-right {
-    width: 50%; /*48%;*/
-    float: left;
-    /*margin-left: 2px;*/
-    position: absolute;
-    top: 0;
-    left: 50%;
-    bottom: 0;
-    text-align: left;
-}
-
-.view-2up .page-item.empty {
-    background: #fff;
-    border: none;
-    box-shadow: none;
-}
 
 // ROTATE
 
@@ -303,6 +317,8 @@
     margin-top: 200px;
     margin-bottom: 200px;
 }
+
+// SLIDER
 
 .nob {
     width: 100%;

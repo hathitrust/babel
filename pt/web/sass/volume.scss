@@ -14,3 +14,25 @@
     }
 
 }
+
+// $page-num-color: #b3b3b3;
+$page-num-color: #d2d2d2;
+.page-num {
+    position: absolute;
+    z-index: 15;
+    opacity: 0.4;
+    background: $page-num-color;
+    color: #000;
+    text-align: center;
+    height: 36px;
+    width: 36px;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px;
+    top: 10px;
+    right: 15px;
+    -webkit-border-radius: 999px;
+    -moz-border-radius: 999px;
+    border-radius: 999px;
+    border: 1px solid $page-num-color;
+}
