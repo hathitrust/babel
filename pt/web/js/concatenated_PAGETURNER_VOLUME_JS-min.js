@@ -5817,6 +5817,8 @@ head.ready(function() {
             var $dummy = dummies[$original.attr("id")];
             var top = parseInt($original.css('top'));
 
+            if ( ! $original.is(":visible") ) { return ; }
+
             var original_bottom = top + $original.height();
 
             if ( last_top < current_top ) {
