@@ -34,8 +34,10 @@ HT.Viewer.Thumbnail = {
         $.unsubscribe(".thumb");
         $.publish("view.end");
         $("#content").empty();
-        $(window).unbind("scroll.viewer.thumb");
-        $(window).unbind("resize.thumb");
+        // $(window).unbind("scroll.viewer.thumb");
+        // $(window).unbind("resize.thumb");
+        $(window).unbind(".thumb");
+        $("body").unbind(".thumb");
         $(window).scrollTop(0);
         $body.removeClass("view-thumb");
         console.log("UNBOUND THUMBNAIL");
@@ -89,10 +91,12 @@ HT.Viewer.Thumbnail = {
             $.publish("update.focus.page", ( seq ));
         })
 
-        $body.on('image:fudge.thumb', "img", function() {
+        $body.on('image.fudge.thumb', "img", function() {
             var h1 = $(this).data('natural-height');
             var $parent = $(this).parents(".page-item");
             var h2 = $parent.height();
+
+            // console.log("FUDGE: THUMB");
 
             $parent.addClass("loaded");
         });

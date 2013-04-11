@@ -42,6 +42,8 @@ HT.Viewer.Flip = {
         // unsubscribe all handlers for this view
         $.unsubscribe(".flip");
         $.publish("view.end");
+        $(window).unbind(".flip");
+        $("body").unbind(".flip");
         $("#content").empty();
         $("body").removeClass("view-2up");
     },
@@ -71,23 +73,23 @@ HT.Viewer.Flip = {
             self.gotoPage(seq);
         })
 
-        $.subscribe("action.zoom.in.thumb", function(e) {
+        $.subscribe("action.zoom.in.flip", function(e) {
             self.updateZoom(1);
         })
 
-        $.subscribe("action.zoom.out.thumb", function(e) {
+        $.subscribe("action.zoom.out.flip", function(e) {
             self.updateZoom(-1);
         })
 
-        $.subscribe("action.rotate.clockwise", function(e) {
+        $.subscribe("action.rotate.clockwise.flip", function(e) {
             self.rotateBook(1);
         })
 
-        $.subscribe("action.rotate.counterclockwise", function(e) {
+        $.subscribe("action.rotate.counterclockwise.flip", function(e) {
             self.rotateBook(-1);
         })
 
-        $.subscribe("action.toggle.fullscreen", function(e) {
+        $.subscribe("action.toggle.fullscreen.flip", function(e) {
             self.w = -1;
             self.drawPages();
         })
@@ -102,9 +104,11 @@ HT.Viewer.Flip = {
 
         $(window).on('resize.viewer.flip', _lazyResize);
 
-        $("body").on('image:fudge.flip', "img", function() {
+        $("body").on('image.fudge.flip', "img", function() {
             var $img = $(this);
             var seq = $(this).data('seq');
+
+            // console.log("FUDGE: FLIP");
 
             var h1 = $(this).data('natural-height');
             var h2 = $(this).parent().height();
@@ -433,7 +437,6 @@ HT.Viewer.Flip = {
 
         this.book.n = pages.length;
         self.pages = pages;
-        HT.bb = this.book;
 
         if ( self.options.seq ) {
             current = self._seq2page(self.options.seq);

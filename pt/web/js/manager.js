@@ -194,7 +194,7 @@ HT.Manager = {
             $img.data('seq', params.seq);
             $img.data('natural-height', check.height);
             $img.data('natural-width', check.width);
-            $img.trigger("image:fudge");
+            $img.trigger("image.fudge");
         })
         return $img;
 

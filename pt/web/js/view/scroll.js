@@ -38,7 +38,8 @@ HT.Viewer.Scroll = {
         $.unsubscribe(".scroll");
         $.publish("view.end");
         $("#content").empty();
-        $(window).unbind("scroll.viewer.scroll");
+        $(window).unbind(".scroll");
+        $("body").unbind(".scroll");
         $(window).scrollTop(0);
         $("body").removeClass("view-1up");
     },
@@ -66,25 +67,27 @@ HT.Viewer.Scroll = {
             self.gotoPage(seq);
         })
 
-        $.subscribe("action.zoom.in.thumb", function(e) {
+        $.subscribe("action.zoom.in.scroll", function(e) {
             self.updateZoom(1);
         })
 
-        $.subscribe("action.zoom.out.thumb", function(e) {
+        $.subscribe("action.zoom.out.scroll", function(e) {
             self.updateZoom(-1);
         })
 
-        $.subscribe("action.rotate.clockwise", function(e) {
+        $.subscribe("action.rotate.clockwise.scroll", function(e) {
             self.rotateCurrentPage(1);
         })
 
-        $.subscribe("action.rotate.counterclockwise", function(e) {
+        $.subscribe("action.rotate.counterclockwise.scroll", function(e) {
             self.rotateCurrentPage(-1);
         })
 
-        $("body").on('image:fudge.scroll', "img", function() {
+        $("body").on('image.fudge.scroll', "img", function() {
             var h1 = $(this).data('natural-height');
             var h2 = $(this).parent().height();
+
+            // console.log("FUDGE: SCROLL");
 
             $(this).parent().addClass("loaded");
 
