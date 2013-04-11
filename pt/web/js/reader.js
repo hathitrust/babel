@@ -78,11 +78,6 @@ HT.Reader = {
 
         this._bindAction("toggle.fullscreen", this._toggleFullScreen);
 
-        $("#versionIcon").click(function(e) {
-            e.preventDefault();
-            bootbox.alert("<p>This is the date when this item was last updated. Version dates are updated when improvements such as higher quality scans or more complete scans have been made. <br /><br /><a href=\"mailto:feedback@issues.hathitrust.org\">Contact us</a> for more information.</p>")
-        });
-
         // don't bind dynamic controls for the static views
         if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
             // and then disable buttons without links

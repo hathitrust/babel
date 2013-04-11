@@ -45,7 +45,7 @@ HT.Downloader = {
 
     downloadPdf: function(link) {
         var self = this;
-        var src = $(link).attr('href');
+        self.src = $(link).attr('href');
 
         var html = 
             // '<p>Building your PDF...</p>' + 
@@ -69,7 +69,7 @@ HT.Downloader = {
                             return;
                         }
                         $.ajax({
-                            url: src + ';callback=HT.downloader.cancelDownload;stop=1',
+                            url: self.src + ';callback=HT.downloader.cancelDownload;stop=1',
                             dataType: 'script',
                             cache: false,
                             error: function(req, textStatus, errorThrown) {
@@ -79,7 +79,7 @@ HT.Downloader = {
                                 if ( req.status == 503 ) {
                                     self.displayWarning(req);
                                 } else {
-                                    self.showError();
+                                    self.displayError();
                                 }
                             }
                         })
@@ -102,21 +102,26 @@ HT.Downloader = {
             }
         );
 
+        self.requestDownload();
+
+    },
+
+    requestDownload: function() {
+        var self = this;
         $.ajax({
-            url: src + ';callback=HT.downloader.startDownload',
+            url: self.src + ';callback=HT.downloader.startDownloadMonitor',
             dataType: 'script',
             cache: false,
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
-                self.$dialog.modal('hide');
+                if ( self.$dialog ) { self.$dialog.modal('hide'); }
                 if ( req.status == 503 ) {
                     self.displayWarning(req);
                 } else {
-                    self.showEror();
+                    self.displayError(req);
                 }
             }
         });
-
     },
 
     cancelDownload: function(progress_url, download_url, total) {
@@ -125,7 +130,7 @@ HT.Downloader = {
         self.$dialog.modal('hide');
     },
 
-    startDownload: function(progress_url, download_url, total) {
+    startDownloadMonitor: function(progress_url, download_url, total) {
         var self = this;
 
         if ( self.timer ) {
@@ -163,7 +168,7 @@ HT.Downloader = {
                     self.clearTimer();
                 } else if ( status.error ) {
                     self.$dialog.modal('hide');
-                    self.showError();
+                    self.displayError();
                     self.clearTimer();
                 }
             },
@@ -171,6 +176,9 @@ HT.Downloader = {
                 console.log("FAILED: ", req, "/", textStatus, "/", errorThrown);
                 self.$dialog.modal('hide');
                 self.clearTimer();
+                if ( req.status == 404 && (self.i > 25 || self.num_processed > 0) ) {
+                    self.showEror();
+                }
             }
         })
     },
@@ -227,11 +235,75 @@ HT.Downloader = {
     },
 
     displayWarning: function(req) {
-        console.log("WARN:", req);
+        var self = this;
+        var timeout = parseInt(req.getResponseHeader('X-Choke-UntilEpoch'));
+        var rate = req.getResponseHeader('X-Choke-Rate')
+
+        if ( timeout <= 5 ) {
+            // just punt and wait it out
+            setTimeout(function() {
+              self.requestDownload();
+            }, 5000);
+            return;
+        }
+
+        timeout *= 1000;
+        var now = (new Date).getTime();
+        var countdown = ( Math.ceil((timeout - now) / 1000) )
+
+        var html = 
+          ('<div>' + 
+            '<p>You have exceeded the download rate of {rate}. You may proceed in <span id="throttle-timeout">{countdown}</span> seconds.</p>' + 
+            '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' + 
+          '</div>').replace('{rate}', rate).replace('{countdown}', countdown);
+
+        self.$dialog = bootbox.dialog(
+            html,
+            [
+                {
+                    label : 'OK',
+                    'class' : 'btn-dismiss btn-primary',
+                    callback: function() {
+                        clearInterval(self.countdown_timer);
+                        return true;
+                    }
+                }
+            ]
+        );
+
+        self.countdown_timer = setInterval(function() {
+              countdown -= 1;
+              self.$dialog.find("#throttle-timeout").text(countdown);
+              if ( countdown == 0 ) {
+                clearInterval(self.countdown_timer);
+              }
+              console.log("TIC TOC", countdown);
+        }, 1000);
+
     },
 
-    showError: function() {
-        console.log("ERROR");
+    displayError: function(req) {
+        var html = 
+            '<p>' +
+                'There was a problem building your PDF; staff have been notified.' +
+            '</p>' + 
+            '<p>' + 
+                'Please try again in 24 hours.' +
+            '</p>';
+
+        // bootbox.alert(html);
+        bootbox.dialog(
+            html, 
+            [
+                {
+                    label : 'OK',
+                    'class' : 'btn-dismiss btn-inverse'
+                }
+            ],
+            { classes : 'error' }
+        );
+
+        console.log(req);
     },
 
 
