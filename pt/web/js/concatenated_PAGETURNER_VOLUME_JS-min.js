@@ -4235,7 +4235,7 @@ HT.Manager = {
     },
 
     getAltTextForSeq: function(seq) {
-        var alt_text;
+        var alt_text = "";
         var num = this.getPageNumForSeq(seq);
         if ( num ) {
             alt_text += "page " + num;
