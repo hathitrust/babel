@@ -120,6 +120,10 @@ sub execute_operation
 
     my @get_metadata_ids = (@no_metadata, @update_metadata);
 
+    # clear out the idea; successful ids will be added 
+    # as we get metadata
+    $cgi->delete('id');
+
     my $metadata_aryref = $self->get_metadata_via_metadata_getter($C, \@get_metadata_ids);
     if (! defined($metadata_aryref)) {
         my $msg = qq{Could not get metadata for items. };
