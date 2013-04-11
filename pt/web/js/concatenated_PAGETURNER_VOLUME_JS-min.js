@@ -5554,7 +5554,7 @@ HT.Viewer.Flip = {
         this.$leafs = $container.find(".bb-item");
 
         this.book = $container.bookblock( {
-                    speed               : 800,
+                    speed               : 600,
                     shadowSides : 0.8,
                     shadowFlip  : 0.7,
                     perspective: 1300,
