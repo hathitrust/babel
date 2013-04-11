@@ -1416,12 +1416,12 @@ sub escapeNonBooleanAndOR
         $self->set_processed_query_string($user_query_string,$query_num);    
     }
     
-    #  tbw need to add test for all caps that is multilingual!
     # if all caps then assume not boolean and lower case
     # or we just lower case AND/OR
-    if ($user_query_string =~/AND|OR/)
+
+    if ($user_query_string =~/\s+AND\s+|\s+OR\s+/)
     {
-        
+
         # If there is not  a single lower case character then its  all upper case
         if ($user_query_string =~/\p{Lowercase_Letter}/)
         {
@@ -1429,14 +1429,28 @@ sub escapeNonBooleanAndOR
         }
         else
         {
-            # lower case doesn't work with edismax so we surround op with "=" which then make qparser
-            # think its a word but analyzer strips out the equals
-            #
-            $user_query_string =~s,\s+AND\s+, =and= ,g;
-            $user_query_string =~s,\s+OR\s+, =or= ,g;
+            #bug fix for CJK and other caseless scripts/languages
+            # if after removing AND|OR there is an  upper case letter
+            #then its not a caseless language so it is safe to do the transform
+            # see $SDRROOT/ls/tests/newTest.pl i.e.   perl newTest.pl newdata.txt
+
+            my $temp= $user_query_string;    
+            $temp =~s,AND,,g;
+            $temp =~s,OR,,g;
+            if ($temp=~/(\p{Uppercase_Letter})/)
+            {
+                
+                # lower case doesn't work with edismax so we surround op with "=" which then make qparser
+                # think its a word but analyzer strips out the equals
+                
+                $user_query_string =~s,\s+AND\s+, =and= ,g;
+                $user_query_string =~s,\s+OR\s+, =or= ,g;
+            }
+            
             $self->set_processed_query_string($user_query_string,$query_num);
         }
     }
+    
     return $user_query_string
 }
 
