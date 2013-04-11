@@ -5470,7 +5470,7 @@ HT.Viewer.Flip = {
             }
         }
 
-        var meta = self.options.manager.get_page_meta({seq : 1});
+        var meta = self.options.manager.get_page_meta({seq : 1, width : 680 });
         self.h = meta.height * self.zoom;
         var h = self.h / 2;
 
