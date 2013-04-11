@@ -4,6 +4,7 @@
 @import "volume/scroll.scss";
 @import "volume/flip.scss";
 @import "volume/plaintext.scss";
+@import "compass/css3/opacity";
 
 .alert-headline {
     text-align: center;
@@ -20,7 +21,7 @@ $page-num-color: #d2d2d2;
 .page-num {
     position: absolute;
     z-index: 15;
-    opacity: 0.4;
+    @include opacity(0.4);
     background: $page-num-color;
     color: #000;
     text-align: center;

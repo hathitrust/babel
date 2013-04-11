@@ -689,20 +689,21 @@ body {
   line-height: 1.4;
 }
 
-/* line 8, ../sass/volume.scss */
+/* line 9, ../sass/volume.scss */
 .alert-headline {
   text-align: center;
 }
-/* line 11, ../sass/volume.scss */
+/* line 12, ../sass/volume.scss */
 .alert-headline > p {
   font-size: 200%;
   font-weight: bold;
 }
 
-/* line 20, ../sass/volume.scss */
+/* line 21, ../sass/volume.scss */
 .page-num {
   position: absolute;
   z-index: 15;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
   opacity: 0.4;
   background: #d2d2d2;
   color: #000;
