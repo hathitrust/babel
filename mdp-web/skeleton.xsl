@@ -319,7 +319,11 @@
       <xsl:call-template name="header-search-ft-value" />
     </xsl:variable>
     <label>
-      <input type="checkbox" name="ft" value="ft" checked="{$checked}" />
+      <input type="checkbox" name="ft" value="ft">
+        <xsl:if test="normalize-space($checked)">
+          <xsl:attribute name="checked">checked</xsl:attribute>
+        </xsl:if>
+      </input>
       Full view only
     </label>
   </xsl:template>
