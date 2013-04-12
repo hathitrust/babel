@@ -72,7 +72,14 @@
   </xsl:template>
 
   <xsl:template name="header-search-target">
-    <xsl:value-of select="//HeaderSearchParams/Field[@name='target']" />
+    <xsl:choose>
+      <xsl:when test="//HeaderSearchParams/Field[@name='target']">
+        <xsl:value-of select="//HeaderSearchParams/Field[@name='target']" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>ls</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template name="setup-extra-header">

@@ -1162,14 +1162,21 @@ sub handle_HEADER_SEARCH_FIELDS_PI
 
 sub ExtractLSParams {
     my ( $referer ) = @_;
+    my ( $q1, $searchtype, $ft );
 
     local $URI::DEFAULT_QUERY_FORM_DELIMITER = ';';
 
     my $uri = URI->new($referer);
-    my %params = $uri->query_form();
-    my $q1 = $params{'q1'};
-    my $searchtype = $params{'field1'} || 'all';
-    my $ft = $params{'lmt'} eq 'ft' ? 'checked' : '';
+    %params = $uri->query_form();
+
+    $ft = 'checked';
+
+    # don't bother if we detect q2
+    unless ( $params{'q2'} ) {
+        $q1 = $params{'q1'};
+        $searchtype = $params{'field1'} || 'all';
+        $ft = $params{'lmt'} eq 'ft' ? 'checked' : '';
+    }
 
     return ( $q1, $searchtype, $ft );
 }
@@ -1177,6 +1184,8 @@ sub ExtractLSParams {
 sub ExtractCatalogParams {
     my ( $referer ) = @_;
     my ( $q1, $searchtype, $ft );
+
+    $ft = 'checked';
 
     $referer =~ s,\[\],,gsm;
     $referer =~ s,%5B%5D,,gsm;
