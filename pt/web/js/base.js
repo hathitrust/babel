@@ -133,18 +133,6 @@ if (!Date.now) {
 }(jQuery));
 
 $(document).ready(function() {
-  // update header search field
-  var $html = $("html");
-  var q1 = $html.data('search-q1');
-  var searchtype = $html.data('search-searchtype');
-  var target = $html.data('search-target');
-  var ft = $html.data('search-ft') || null;
-  if ( q1 ) {
-    $(".search-form").find("input[name=q1]").val(q1)
-      .end().find(".search-input-select").val(searchtype)
-      .end().find("input[name=ft]").attr('checked', ft)
-      .end().find("input[name=target][value=" + target + "]").click()
-  }
 
   //** THESE COULD BE DONE IN reader.js
 
