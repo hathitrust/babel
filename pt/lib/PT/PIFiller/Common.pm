@@ -1170,11 +1170,17 @@ sub ExtractCatalogParams {
     my ( $url ) = @_;
     my ( $q1, $searchtype, $ft );
 
+    print STDERR "URL = $url\n";
+
     $url =~ s,\[\],,gsm;
+    $url =~ s,%5B%5D,,gsm;
 
     my ( $q1 ) = ( $url =~ m,.*lookfor=([^;&]+).*, );
     my ( $searchtype ) = ( $url =~ m,.*?.*type=([^;&]+), ) || 'all';
     my ( $ft ) = ( $url =~ m,htftonly=true, ) ? 'checked' : '';
+    unless ( $ft ) {
+      ( $ft ) = ( $url =~ m,ft=ft, ) ? 'checked' : '';
+    }
     return ( $q1, $searchtype, $ft );
 }
 
