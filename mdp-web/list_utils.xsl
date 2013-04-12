@@ -1083,15 +1083,7 @@
               <xsl:value-of select="$fulltext_string"/>
               <xsl:element name="a">
                 <xsl:attribute name="href">
-                  <xsl:choose>
-                    <xsl:when test="$ItemListType='SearchResults'">
-                      <!-- if we want first page instead of passing the search to xpat use $pt_href instead of $pt_search_href -->
-                      <xsl:value-of select="PtSearchHref"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:value-of select="PtHref"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
+                  <xsl:value-of select="PtHref"/>
                 </xsl:attribute>
                 <xsl:attribute name="class">
                   <xsl:value-of select="$fulltext_class"/>
