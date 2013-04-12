@@ -1146,7 +1146,7 @@ sub handle_HEADER_SEARCH_FIELDS_PI
 
     my $xml;
 
-    if ( $q1 ) {
+    if ( $q1 || $target ) {
 
         $xml = qq{<HeaderSearchParams>
                     <Field name="q1">$q1</Field>
