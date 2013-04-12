@@ -59,7 +59,7 @@
         Collections are a way to group items for public or private use. 
         The full-text of items wihin a collection can be searched 
         independently of the full library.
-        <a href="#">Learn more about collections &raquo;</a>
+        <a href="http://www.hathitrust.org/help_digital_library#CBBuild">Learn more about collections &raquo;</a>
       </p>
     </div>
   </xsl:template>
