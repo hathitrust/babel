@@ -28,6 +28,8 @@ my $dest_cgi = new CGI({});
 my $dest_url; my $dest_base;
 
 my $LS_URL = qq{http://beta-3.babel.hathitrust.org/cgi/ls};
+#XXX temp hack 
+$LS_URL = qq{http://tburtonw-full.babel.hathitrust.org/cgi/ls};
 my $CATALOG_URL = qq{http://test.catalog.hathitrust.org/Search/Home};
 
 if ( $target eq 'ls' ) {
@@ -50,12 +52,12 @@ if ( $target eq 'ls' ) {
     if ($ft eq "ft")
     {
         $dest_cgi->param('ft', 'ft');
-        $dest_cgi->param('htftonly', 'true');
+        $dest_cgi->param('setft', 'true');
     }
     else 
     {
         $dest_cgi->param('ft', '');
-        $dest_cgi->param('htftonly', 'false');
+        $dest_cgi->param('setft', 'false');
     }
 
 }
