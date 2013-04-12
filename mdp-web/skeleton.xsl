@@ -172,10 +172,7 @@
 
       <form action="/cgi/ls/one" method="GET">
         <div class="search-tabs">
-          <input name="target" type="radio" id="option-full-text-search" value="ls" checked="checked" />
-          <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
-          <input name="target" type="radio" id="option-catalog-search" value="catalog" />
-          <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
+          <xsl:call-template name="header-search-tabs" />
         </div>
         <fieldset>
           <label for="q1-input" class="offscreen" >Search</label>
@@ -283,6 +280,27 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="header-search-tabs">
+    <xsl:variable name="target">
+      <xsl:call-template name="header-search-target" />
+    </xsl:variable>
+    <input name="target" type="radio" id="option-full-text-search" value="ls">
+      <xsl:if test="$target = 'ls'">
+        <xsl:attribute name="checked">checked</xsl:attribute>
+      </xsl:if>
+    </input>
+    <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
+    <input name="target" type="radio" id="option-catalog-search" value="catalog">
+      <xsl:if test="$target = 'catalog'">
+        <xsl:attribute name="checked">checked</xsl:attribute>
+      </xsl:if>
+    </input>
+    <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
+  </xsl:template>
+
+  <!-- default to ls -->
+  <xsl:template name="header-search-target">ls</xsl:template>
+
   <xsl:template name="search-input-select-options">
     <xsl:for-each select="exsl:node-set($search-options)/*">
       <option value="{@value}">
@@ -297,12 +315,16 @@
   <xsl:template name="header-search-options-selected" />
 
   <xsl:template name="header-search-ft-checkbox">
-    <xsl:param name="checked" select="'checked'" />
+    <xsl:variable name="checked">
+      <xsl:call-template name="header-search-ft-value" />
+    </xsl:variable>
     <label>
       <input type="checkbox" name="ft" value="ft" checked="{$checked}" />
       Full view only
     </label>
   </xsl:template>
+
+  <xsl:template name="header-search-ft-value">checked</xsl:template>
 
   <xsl:template name="debug-messages">
     <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
