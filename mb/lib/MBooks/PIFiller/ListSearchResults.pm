@@ -118,8 +118,12 @@ sub handle_SEARCH_RESULTS_PI
 
         # Link to Pageturner
         my $extern_id = $$item_hashref{'extern_item_id'};
+        # pt searchhref
         $s .= wrap_string_in_tag(MBooks::PIFiller::ListUtils::PT_HREF_helper($C, $extern_id, 'pt_search'), 
                                  'PtSearchHref');
+        # Unicorn pt href with query
+        $s .= wrap_string_in_tag(MBooks::PIFiller::ListUtils::PT_HREF_helper($C, $extern_id, 'pt'), 
+                                 'PtHref');
 
         $output .= wrap_string_in_tag($s, 'Item');
     }
