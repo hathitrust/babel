@@ -1168,6 +1168,10 @@ sub ExtractLSParams {
 
 sub ExtractCatalogParams {
     my ( $url ) = @_;
+    my ( $q1, $searchtype, $ft );
+
+    $url =~ s,\[\],,gsm;
+
     my ( $q1 ) = ( $url =~ m,.*lookfor=([^;&]+).*, );
     my ( $searchtype ) = ( $url =~ m,.*?.*type=([^;&]+), ) || 'all';
     my ( $ft ) = ( $url =~ m,htftonly=true, ) ? 'checked' : '';
