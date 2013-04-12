@@ -277,9 +277,11 @@
 		// with no support we consider no 3d transforms and transitions
 		_layoutNoSupport: function(dir) {
 
-			this.$items.hide();
+			// this.$items.hide();
+			// this.$nextItem.show();
 
-			this.$nextItem.show();
+			this.$items.fadeOut('fast');
+			this.$nextItem.fadeIn('fast');
 
 			this.end = false;
 			this.isAnimating = false;
