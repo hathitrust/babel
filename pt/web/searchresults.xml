@@ -62,6 +62,7 @@
       </HiddenVars>
       <SearchResultsLink><?SEARCH_RESULTS_LINK?></SearchResultsLink>
       <SearchResultsLabel><?SEARCH_RESULTS_LABEL?></SearchResultsLabel>
+      <?HEADER_SEARCH_FIELDS?>
     </SearchForm>
 
     <RepeatSearchLink><?REPEAT_SEARCH_LINK?></RepeatSearchLink>

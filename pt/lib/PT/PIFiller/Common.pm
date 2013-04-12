@@ -1147,40 +1147,52 @@ sub handle_HEADER_SEARCH_FIELDS_PI
     my $xml;
 
     if ( $q1 ) {
+
         $xml = qq{<HeaderSearchParams>
                     <Field name="q1">$q1</Field>
                     <Field name="searchtype">$searchtype</Field>
                     <Field name="target">$target</Field>
                     <Field name="ft">$ft</Field>
                 </HeaderSearchParams>};
+
     }
 
     return $xml;
 }
 
 sub ExtractLSParams {
-    my ( $url ) = @_;
-    my ( $q1 ) = ( $url =~ m,.*[?&]q1=([^;&]+).*, );
-    my ( $searchtype ) = ( $url =~ m,.*?.*field1=([^;&]+), ) || 'all';
-    my ( $ft ) = ( $url =~ m,lmt=ft, ) ? 'checked' : '';
+    my ( $referer ) = @_;
+
+    local $URI::DEFAULT_QUERY_FORM_DELIMITER = ';';
+
+    my $uri = URI->new($referer);
+    my %params = $uri->query_form();
+    my $q1 = $params{'q1'};
+    my $searchtype = $params{'field1'} || 'all';
+    my $ft = $params{'lmt'} eq 'ft' ? 'checked' : '';
+
     return ( $q1, $searchtype, $ft );
 }
 
 sub ExtractCatalogParams {
-    my ( $url ) = @_;
+    my ( $referer ) = @_;
     my ( $q1, $searchtype, $ft );
 
-    print STDERR "URL = $url\n";
+    $referer =~ s,\[\],,gsm;
+    $referer =~ s,%5B%5D,,gsm;
 
-    $url =~ s,\[\],,gsm;
-    $url =~ s,%5B%5D,,gsm;
+    my $uri = URI->new($referer);
+    my %params = $uri->query_form();
+    $q1 = $params{'lookfor'};
+    $searchtype = $params{'type'} || 'all';
+    $ft = $params{'ft'} eq 'ft' ? 'checked' : '';
 
-    my ( $q1 ) = ( $url =~ m,.*lookfor=([^;&]+).*, );
-    my ( $searchtype ) = ( $url =~ m,.*?.*type=([^;&]+), ) || 'all';
-    my ( $ft ) = ( $url =~ m,htftonly=true, ) ? 'checked' : '';
-    unless ( $ft ) {
-      ( $ft ) = ( $url =~ m,ft=ft, ) ? 'checked' : '';
-    }
+    # my ( $q1 ) = ( $url =~ m,.*lookfor=([^;&]+).*, );
+    # my ( $searchtype ) = ( $url =~ m,.*?.*type=([^;&]+), ) || 'all';
+    # my ( $ft ) = ( $url =~ m,htftonly=true, ) ? 'checked' : '';
+    # unless ( $ft ) {
+    #   ( $ft ) = ( $url =~ m,ft=ft, ) ? 'checked' : '';
+    # }
     return ( $q1, $searchtype, $ft );
 }
 
