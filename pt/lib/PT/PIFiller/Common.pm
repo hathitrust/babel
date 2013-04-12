@@ -1175,8 +1175,8 @@ sub ExtractLSParams {
     unless ( $params{'q2'} ) {
         $q1 = $params{'q1'};
         $searchtype = $params{'field1'} || 'all';
-        $ft = $params{'lmt'} eq 'ft' ? 'checked' : '';
     }
+    $ft = $params{'lmt'} eq 'ft' ? 'checked' : '';
 
     return ( $q1, $searchtype, $ft );
 }
@@ -1192,9 +1192,14 @@ sub ExtractCatalogParams {
 
     my $uri = URI->new($referer);
     my %params = $uri->query_form();
-    $q1 = $params{'lookfor'};
-    $searchtype = $params{'type'} || 'all';
+
+    # advanced search, punt
+    unless ( $param{'adv'} ) {
+        $q1 = $params{'lookfor'};
+        $searchtype = $params{'type'} || 'all';
+    }
     $ft = $params{'ft'} eq 'ft' ? 'checked' : '';
+
 
     # my ( $q1 ) = ( $url =~ m,.*lookfor=([^;&]+).*, );
     # my ( $searchtype ) = ( $url =~ m,.*?.*type=([^;&]+), ) || 'all';
