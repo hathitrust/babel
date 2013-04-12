@@ -285,7 +285,6 @@ sub enqueue_from_holdings_delta {
 
         return if $skip;
 
-        __output("$s\n");
         unless ($CHECK) {
             __confirm("OK to proceed? [N] ");
             qu_Log_misc($C, $run, $s);
