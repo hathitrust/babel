@@ -343,7 +343,7 @@
   <xsl:template name ="DisplaySearchWidgetLogic">
     <div class="mainsearch" role="search">
       <xsl:choose>
-        <xsl:when test="//SearchResults and not(//SeachResults/Item)">
+        <xsl:when test="//SearchResults and count(//SearchResults/Item) = 0">
           <xsl:call-template name="search-widget-no-results" />
         </xsl:when>
         <xsl:otherwise>
