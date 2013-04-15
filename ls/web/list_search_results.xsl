@@ -1440,40 +1440,11 @@ REMOVE the below and see if it will call list_utils
 
         </div>
       </xsl:if>
-
-      
-
     </ul>
     </div>
   </xsl:template>
 
-
-  <xsl:template name="DisplayAllItemsTab">
-    <xsl:variable name="Limit">
-      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
-    </xsl:variable>
-
-
-      <xsl:choose>
-        <xsl:when test="$Limit = 'all'">
-          <li class="viewall active">
-            <span>All Items(<xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCountDisplay" />)</span>
-          </li>
-        </xsl:when>
-        <xsl:otherwise>
-            <li class="viewall">
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
-                </xsl:attribute>
-                <xsl:text>All Items (</xsl:text>
-                <xsl:value-of select="/MBooksTop/LimitToFullText/AllItemsCountDisplay"/>
-                <xsl:text>)</xsl:text>
-              </xsl:element>
-            </li>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:template>
+  <!--################################# Template  #################################-->
 
     <xsl:template name="DisplayTab">
         <xsl:param name="active" value="false"/>
@@ -1502,10 +1473,13 @@ REMOVE the below and see if it will call list_utils
         </xsl:when>
 
         <xsl:otherwise>
-            <li class="viewall">
+            <li class="viewall linked">
               <xsl:element name="a">
                 <xsl:attribute name="href">
                   <xsl:value-of select="$href"/>
+                </xsl:attribute>
+                <xsl:attribute name="class">
+                  <xsl:text>tab</xsl:text>
                 </xsl:attribute>
                 <xsl:value-of select="$text"/>
                 <xsl:text> (</xsl:text>
