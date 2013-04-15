@@ -162,8 +162,8 @@ REMOVE the below and see if it will call list_utils
           
       <xsl:choose>
         <xsl:when test="SearchResults/Item">
-          <xsl:call-template name="Refine"/>
           <xsl:call-template name="SearchResults_status"/>
+          <xsl:call-template name="Refine"/>
           <xsl:call-template name="DisplayContent">
             <xsl:with-param name="title" select="'Search Results'" />
             <xsl:with-param name="item-list-contents" select="'items'" />
@@ -1392,8 +1392,7 @@ REMOVE the below and see if it will call list_utils
     ################################################ -->
       
    
-    <xsl:if test="($FullTextCount &gt; 0) or ($LimitType ='ft')">
-
+    <xsl:if test="($FullTextCount &gt; 0)  or ($LimitType ='ft')">
         <!-- display full text tab-->
         <div>
 
@@ -1417,7 +1416,32 @@ REMOVE the below and see if it will call list_utils
 
         </div>
       </xsl:if>
+      <!--XXX test -->
 
+    <xsl:if test="($FullTextCount = 0) and ($SearchOnlyCount &gt; 0) and ($LimitType='all') ">
+        <!-- display full text tab with 0 results and not active-->
+        <div>
+
+          <xsl:call-template name="DisplayTab">
+            <xsl:with-param name="active">
+                <xsl:text>false</xsl:text>
+            </xsl:with-param>
+
+            <xsl:with-param name="text">Full View</xsl:with-param>
+            
+            <xsl:with-param name="count">
+              <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCountDisplay" />
+            </xsl:with-param>
+            
+            <xsl:with-param name="href">
+              <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
+            </xsl:with-param>
+          </xsl:call-template>
+
+        </div>
+      </xsl:if>
+
+      
 
     </ul>
     </div>
@@ -1466,6 +1490,17 @@ REMOVE the below and see if it will call list_utils
             </span>
           </li>
         </xsl:when>
+        <!-- XXX test tab with 0 results-->
+        <xsl:when test="$active = 'zero'">
+          <li class="zero">
+            <span class="disabled">
+              <xsl:value-of select="$text"/>
+              <xsl:text> (</xsl:text>
+              <xsl:value-of select="$count" />)
+            </span>
+          </li>
+        </xsl:when>
+
         <xsl:otherwise>
             <li class="viewall">
               <xsl:element name="a">
