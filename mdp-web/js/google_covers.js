@@ -11,7 +11,11 @@ head.ready(function() {
       jscmd : 'viewapi',
       bibkeys : book_id
     }, function(gdata) {
-      if ( gdata.length == 0 ) return;
+      if ( gdata.length == 0 ) {
+        var $img = $('<img class="bookCover" aria-hidden="true" alt=""/>')
+        $img.attr("src", "/common/unicorn/img/nocover-thumbnail.png");
+        $div.append($img);
+      }
       var google_link = selectGoogleLink(gdata, 1, 1 );
       if ( google_link.thumbnail_url ) {
         var $img = $('<img class="bookCover" aria-hidden="true" alt=""/>')
@@ -24,6 +28,10 @@ head.ready(function() {
           }
           $div.append($img);
         }).attr('src', google_link.thumbnail_url);
+      } else {
+        var $img = $('<img class="bookCover" aria-hidden="true" alt=""/>')
+        $img.attr("src", "/common/unicorn/img/nocover-thumbnail.png");
+        $div.append($img);
       }
     })
   })

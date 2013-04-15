@@ -928,9 +928,10 @@
 
     
   <xsl:template name="SearchWidget">
+    <xsl:param name="label">Search in this collection</xsl:param>
     <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
       <xsl:call-template name="HiddenDebug"/>
-      <label for="q1">Search in this collection</label>
+      <label for="q1"><xsl:value-of select="$label" /></label>
       <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge"> 
       
         <!-- search widget for list_search results needs query string in param  -->
