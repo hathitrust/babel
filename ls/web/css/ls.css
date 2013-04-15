@@ -9,18 +9,23 @@ ls.css
    see oldls.css for old code
    Probably will need to pull in most of it for advanced search page
 ***/
+/* line 15, ../sass/ls.scss */
+.zero {
+  background: #000000;
+}
+
 /**  Facet styling **/
-/* line 16, ../sass/ls.scss */
+/* line 22, ../sass/ls.scss */
 ol.filters, ul.filters {
   list-style: none outside none;
 }
 
-/* line 20, ../sass/ls.scss */
+/* line 26, ../sass/ls.scss */
 ul.filters li {
   text-indent: -20px;
 }
 
-/* line 23, ../sass/ls.scss */
+/* line 29, ../sass/ls.scss */
 .removeFacetIcon {
   padding-right: 3px;
   position: relative;
@@ -28,23 +33,23 @@ ul.filters li {
   border: medium none;
 }
 
-/* line 30, ../sass/ls.scss */
+/* line 36, ../sass/ls.scss */
 .selectedfieldname {
   font-weight: bold;
 }
 
-/* line 40, ../sass/ls.scss */
+/* line 46, ../sass/ls.scss */
 *.hidefacet {
   display: none;
   visibility: hidden;
 }
 
-/* line 46, ../sass/ls.scss */
+/* line 52, ../sass/ls.scss */
 span.moreless {
   font-style: italic;
 }
 
-/* line 53, ../sass/ls.scss */
+/* line 59, ../sass/ls.scss */
 .SearchResults_status {
   color: #333333;
   font-size: 1.2em;
@@ -53,12 +58,12 @@ span.moreless {
   position: relative;
 }
 
-/* line 60, ../sass/ls.scss */
+/* line 66, ../sass/ls.scss */
 .SearchResults_status span {
   font-weight: bold;
 }
 
-/* line 64, ../sass/ls.scss */
+/* line 70, ../sass/ls.scss */
 span.AnyAll {
   font-weight: normal;
   font-style: italic;
