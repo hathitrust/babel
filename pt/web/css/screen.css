@@ -100,7 +100,7 @@ body {
   height: 18px;
   width: 18px;
   margin-left: 5px;
-  background-image: url(/pt/common-web/graphics/harmony/icon_question.png);
+  background-image: url(/common/unicorn/img/icon_question.png);
   background-repeat: no-repeat;
   text-indent: -10000px;
   text-transform: capitalize;
@@ -108,17 +108,17 @@ body {
   cursor: pointer;
 }
 
-/* line 117, ../sass/screen.scss */
+/* line 118, ../sass/screen.scss */
 .smaller {
   font-size: 90%;
 }
 
-/* line 121, ../sass/screen.scss */
+/* line 122, ../sass/screen.scss */
 #noPdfAccess {
   display: none;
 }
 
-/* line 125, ../sass/screen.scss */
+/* line 126, ../sass/screen.scss */
 .pdfPartnerLoginLinkMessage {
   margin-top: 4px ;
   margin-top: 0.4rem ;
@@ -126,49 +126,49 @@ body {
   font-style: italic;
 }
 
-/* line 131, ../sass/screen.scss */
+/* line 132, ../sass/screen.scss */
 .hide {
   display: none;
 }
 
-/* line 135, ../sass/screen.scss */
+/* line 136, ../sass/screen.scss */
 .bullets {
   font-style: italic;
 }
 
-/* line 139, ../sass/screen.scss */
+/* line 140, ../sass/screen.scss */
 .modal .accessBannerText p {
   font-size: 14px ;
   font-size: 1.4rem ;
 }
 
 /* SOLR HIGHLIGHTING */
-/* line 144, ../sass/screen.scss */
+/* line 145, ../sass/screen.scss */
 .solr_highlight_1 {
   background: #ffff00;
 }
 
-/* line 147, ../sass/screen.scss */
+/* line 148, ../sass/screen.scss */
 .solr_highlight_2 {
   background: #00ff00;
 }
 
-/* line 150, ../sass/screen.scss */
+/* line 151, ../sass/screen.scss */
 .solr_highlight_3 {
   background: #ff9900;
 }
 
-/* line 153, ../sass/screen.scss */
+/* line 154, ../sass/screen.scss */
 .solr_highlight_4 {
   background: #00ffcc;
 }
 
-/* line 156, ../sass/screen.scss */
+/* line 157, ../sass/screen.scss */
 .solr_highlight_5 {
   background: #00cccc;
 }
 
-/* line 159, ../sass/screen.scss */
+/* line 160, ../sass/screen.scss */
 .solr_highlight_6 {
   background: #0099cc;
 }

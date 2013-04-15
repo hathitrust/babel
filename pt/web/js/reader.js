@@ -414,14 +414,14 @@ head.ready(function() {
     $(".toolbar-vertical .btn").each(function() {
         var $btn = $(this);
         var title = $btn.text();
-        $btn.tooltip({ title : title, placement : 'left', container : '.toolbar-vertical' })
+        $btn.tooltip({ title : title, placement : 'left', xxcontainer : '.toolbar-vertical', delay : { show : 250, hide: 50 }, xtrigger : 'hover focus', animation: false })
     })
 
     $(".toolbar-horizontal .btn").each(function() {
         var $btn = $(this);
         var title = $btn.find(".label").text();
         if ( title ) {
-            $btn.tooltip({ title : title, placement : 'top', container : '.toolbar-horizontal' })
+            $btn.tooltip({ title : title, placement : 'top', xxcontainer : '.toolbar-horizontal', delay : { show : 250, hide: 50 }, xtrigger: 'hover focus', animation : false })
         }
     })
 

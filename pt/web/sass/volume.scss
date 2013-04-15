@@ -16,6 +16,7 @@
 
 }
 
+
 // $page-num-color: #b3b3b3;
 $page-num-color: #d2d2d2;
 .page-num {
@@ -36,4 +37,10 @@ $page-num-color: #d2d2d2;
     -moz-border-radius: 999px;
     border-radius: 999px;
     border: 1px solid $page-num-color;
+    display: none;
 }
+
+body.htdev .page-num {
+    display: block;
+}
+

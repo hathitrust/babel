@@ -260,10 +260,10 @@
   </xsl:template>
 
   <xsl:template name="action-page-navigation">
-    <a id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f"><i class="icomoon-first"></i><span class="label"> First [f]</span></a>
-    <a id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon-go-previous" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p"></i><span class="label"> Previous [p</span></a>
+    <a id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f"><i class="icomoon-first"></i><span class="label"> First</span></a>
+    <a id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon-go-previous" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p"></i><span class="label"> Previous</span></a>
     <a id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n"><i class="icomoon-go-next"></i><span class="label"> Next</span></a>
-    <a id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l"><i class="icomoon-last"></i><span class="label"> Last [l]</span></a>
+    <a id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l"><i class="icomoon-last"></i><span class="label"> Last</span></a>
   </xsl:template>
 
   <xsl:template name="action-table-of-contents">

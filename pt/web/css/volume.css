@@ -74,7 +74,7 @@ body {
 }
 /* line 81, ../sass/toolbar.scss */
 .toolbar-horizontal.locked {
-  box-shadow: 2px 4px 2px rgba(50, 50, 50, 0.59);
+  box-shadow: 2px 4px 10px 0, 0, 0, 0.2;
 }
 /* line 87, ../sass/toolbar.scss */
 .toolbar-horizontal .btn-toolbar {
@@ -700,7 +700,7 @@ body {
   font-weight: bold;
 }
 
-/* line 21, ../sass/volume.scss */
+/* line 22, ../sass/volume.scss */
 .page-num {
   position: absolute;
   z-index: 15;
@@ -720,4 +720,10 @@ body {
   -moz-border-radius: 999px;
   border-radius: 999px;
   border: 1px solid #d2d2d2;
+  display: none;
+}
+
+/* line 43, ../sass/volume.scss */
+body.htdev .page-num {
+  display: block;
 }
