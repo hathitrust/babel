@@ -68,7 +68,7 @@
 }
 /* line 61, ../../../mdp-web/sass/results.scss */
 .row.result .options {
-  width: 85px;
+  min-width: 85px;
 }
 /* line 65, ../../../mdp-web/sass/results.scss */
 .row.result .cover {
