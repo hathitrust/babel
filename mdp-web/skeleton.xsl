@@ -23,7 +23,9 @@
   <xsl:variable name="gEnableGoogleAnalytics" select="'false'"/>
 
   <xsl:variable name="search-options">
+      <!-- <option value="ocr" data-target="ls">Everything</option> -->
       <option value="all">Everything</option>
+      <option value="ocronly" data-target="ls">Just Full Text</option>
       <option value="title">Title</option>
       <option value="author">Author</option>
       <option value="subject">Subject</option>
@@ -304,6 +306,9 @@
   <xsl:template name="search-input-select-options">
     <xsl:for-each select="exsl:node-set($search-options)/*">
       <option value="{@value}">
+        <xsl:if test="@data-target">
+          <xsl:attribute name="data-target"><xsl:value-of select="@data-target" /></xsl:attribute>
+        </xsl:if>
         <xsl:call-template name="header-search-options-selected">
           <xsl:with-param name="value" select="@value" />
         </xsl:call-template>
