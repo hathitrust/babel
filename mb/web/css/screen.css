@@ -753,8 +753,9 @@ body.listcs .pages {
 /* line 376, ../sass/_list_colls.scss */
 body.listcs .pages ul {
   list-style-type: none;
+  margin-bottom: 0;
 }
-/* line 379, ../sass/_list_colls.scss */
+/* line 380, ../sass/_list_colls.scss */
 body.listcs .pages ul li {
   display: inline-block;
   width: 24px ;
@@ -766,17 +767,17 @@ body.listcs .pages ul li {
   padding-right: 4px ;
   padding-right: 0.4rem ;
 }
-/* line 387, ../sass/_list_colls.scss */
+/* line 388, ../sass/_list_colls.scss */
 body.listcs .pages ul li.active a {
   text-decoration: none;
   font-weight: bold;
   color: #333;
 }
-/* line 394, ../sass/_list_colls.scss */
+/* line 395, ../sass/_list_colls.scss */
 body.listcs .pages ul li a {
   display: inline-block;
 }
-/* line 402, ../sass/_list_colls.scss */
+/* line 403, ../sass/_list_colls.scss */
 body.listcs .pages:after {
   content: "";
   display: table;
