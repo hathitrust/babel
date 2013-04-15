@@ -40,7 +40,7 @@ a:link, a:visited {
 
 .listcs-intro {
   width: 75%; 
-  font-size: 13px; 
+  @include rem(font-size, 15);
   display: table-row;
 }
 

@@ -1,4 +1,3 @@
-/* lets me easily translate font-sizes from mockup */
 /* line 4, ../../../mdp-web/sass/results.scss */
 .alert.summary span {
   font-weight: bold;
@@ -384,7 +383,7 @@ div > h3:first-child {
   margin-bottom: 1rem ;
 }
 
-/* line 2, ../sass/_list_colls.scss */
+/* line 3, ../sass/_list_colls.scss */
 body.listcs {
   /*.floater {
     position: absolute;
@@ -399,83 +398,84 @@ body.listcs {
   /* For IE 6/7 (trigger hasLayout) */
   /* FEATURED COLLECTION COLUMN */
 }
-/* line 6, ../sass/_list_colls.scss */
+/* line 7, ../sass/_list_colls.scss */
 body.listcs .container .main {
   width: auto;
   padding-right: 20px ;
   padding-right: 2rem ;
 }
-/* line 12, ../sass/_list_colls.scss */
+/* line 13, ../sass/_list_colls.scss */
 body.listcs .container .sidebar h2, body.listcs .container .sidebar h3 {
   border-bottom: 1px solid #dddddd;
   font-size: 1.17em;
 }
-/* line 20, ../sass/_list_colls.scss */
+/* line 21, ../sass/_list_colls.scss */
 body.listcs ul.nav {
   margin-left: 0;
 }
-/* line 24, ../sass/_list_colls.scss */
+/* line 25, ../sass/_list_colls.scss */
 body.listcs .row {
   padding-left: 0;
 }
-/* line 28, ../sass/_list_colls.scss */
+/* line 29, ../sass/_list_colls.scss */
 body.listcs ul.nav-tabs {
   margin-bottom: 10px;
 }
-/* line 32, ../sass/_list_colls.scss */
+/* line 33, ../sass/_list_colls.scss */
 body.listcs .listcs-intro {
   width: 75%;
-  font-size: 13px;
+  font-size: 15px ;
+  font-size: 1.5rem ;
   display: table-row;
 }
-/* line 38, ../sass/_list_colls.scss */
+/* line 39, ../sass/_list_colls.scss */
 body.listcs .listcs-intro p {
   padding-left: 20px ;
   padding-left: 2rem ;
   padding-right: 20px ;
   padding-right: 2rem ;
 }
-/* line 43, ../sass/_list_colls.scss */
+/* line 44, ../sass/_list_colls.scss */
 body.listcs .listcs-intro p:last-child {
   margin-bottom: 2rem;
   margin-bottom: 20px;
 }
-/* line 49, ../sass/_list_colls.scss */
+/* line 50, ../sass/_list_colls.scss */
 body.listcs .span6 > div {
   margin-bottom: .6em;
 }
-/* line 53, ../sass/_list_colls.scss */
+/* line 54, ../sass/_list_colls.scss */
 body.listcs .collection p {
   margin-bottom: 0.5em;
   margin-top: 0.25em;
 }
-/* line 58, ../sass/_list_colls.scss */
+/* line 59, ../sass/_list_colls.scss */
 body.listcs h4.collname {
   font-weight: normal;
   font-size: 110%;
   margin-top: 1em;
 }
-/* line 64, ../sass/_list_colls.scss */
+/* line 65, ../sass/_list_colls.scss */
 body.listcs .mine .owner_name {
   font-weight: bold;
 }
-/* line 68, ../sass/_list_colls.scss */
+/* line 69, ../sass/_list_colls.scss */
 body.listcs p.collname {
   padding-top: 4px;
   /* 8 */
 }
-/* line 72, ../sass/_list_colls.scss */
+/* line 73, ../sass/_list_colls.scss */
 body.listcs p.meta {
   margin-top: 4px;
   margin-bottom: 1em;
   padding-bottom: 4px;
 }
-/* line 78, ../sass/_list_colls.scss */
+/* line 79, ../sass/_list_colls.scss */
 body.listcs span.num_items {
   float: left;
   width: 150px;
 }
-/* line 83, ../sass/_list_colls.scss */
+/* line 84, ../sass/_list_colls.scss */
 body.listcs span.owner_name {
   /*float: left;*/
   width: auto;
@@ -483,7 +483,7 @@ body.listcs span.owner_name {
   overflow: hidden;
   font-size: 90%;
 }
-/* line 90, ../sass/_list_colls.scss */
+/* line 91, ../sass/_list_colls.scss */
 body.listcs .options {
   font-size: 11px;
   bottom: 2px;
@@ -491,28 +491,28 @@ body.listcs .options {
   padding-top: 8px;
   display: block;
 }
-/* line 98, ../sass/_list_colls.scss */
+/* line 99, ../sass/_list_colls.scss */
 body.listcs .collectionData {
   display: none;
 }
-/* line 102, ../sass/_list_colls.scss */
+/* line 103, ../sass/_list_colls.scss */
 body.listcs .find-collection {
   /*float:right; width: 35%;*/
   text-align: right;
 }
-/* line 107, ../sass/_list_colls.scss */
+/* line 108, ../sass/_list_colls.scss */
 body.listcs span.sharing-status.public {
   color: #58ff58;
 }
-/* line 111, ../sass/_list_colls.scss */
+/* line 112, ../sass/_list_colls.scss */
 body.listcs span.sharing-status.private {
   color: #373737;
 }
-/* line 115, ../sass/_list_colls.scss */
+/* line 116, ../sass/_list_colls.scss */
 body.listcs span.active_filters {
   padding-right: 8px;
 }
-/* line 119, ../sass/_list_colls.scss */
+/* line 120, ../sass/_list_colls.scss */
 body.listcs div.ribbon.featured {
   position: absolute;
   /*right: -5px;
@@ -523,16 +523,16 @@ body.listcs div.ribbon.featured {
   top: 0px;
   background: url(../HT_FEATURED_ribbon-corner-flat.png) no-repeat;
 }
-/* line 130, ../sass/_list_colls.scss */
+/* line 131, ../sass/_list_colls.scss */
 body.listcs div.right.featured {
   background: url(../HT_FEATURED_ribbon-corner-flat.png) no-repeat scroll right top;
 }
-/* line 134, ../sass/_list_colls.scss */
+/* line 135, ../sass/_list_colls.scss */
 body.listcs span.featured {
   position: absolute;
   left: -5000px;
 }
-/* line 140, ../sass/_list_colls.scss */
+/* line 141, ../sass/_list_colls.scss */
 body.listcs .collection {
   border-left: 16px solid transparent;
   display: table-row;
@@ -542,18 +542,18 @@ body.listcs .collection {
   /* from 2px */
   position: relative;
 }
-/* line 148, ../sass/_list_colls.scss */
+/* line 149, ../sass/_list_colls.scss */
 body.listcs .results {
   border-spacing: 0em 0.5em;
   border-collapse: separate;
   display: table;
   width: 99%;
 }
-/* line 155, ../sass/_list_colls.scss */
+/* line 156, ../sass/_list_colls.scss */
 body.listcs .collection.featured {
   min-height: 68px;
 }
-/* line 159, ../sass/_list_colls.scss */
+/* line 160, ../sass/_list_colls.scss */
 body.listcs .left {
   /*float: left;*/
   width: 65%;
@@ -563,12 +563,12 @@ body.listcs .left {
   display: table-cell;
   vertical-align: middle;
 }
-/* line 169, ../sass/_list_colls.scss */
+/* line 170, ../sass/_list_colls.scss */
 body.listcs .right p {
   margin-bottom: 0;
   padding-bottom: 0;
 }
-/* line 174, ../sass/_list_colls.scss */
+/* line 175, ../sass/_list_colls.scss */
 body.listcs .right {
   /*float: left;*/
   width: 29%;
@@ -580,12 +580,12 @@ body.listcs .right {
   height: auto;
   /*border: 1px dashed blue;*/
 }
-/* line 186, ../sass/_list_colls.scss */
+/* line 187, ../sass/_list_colls.scss */
 body.listcs .wrapper {
   height: auto;
   position: relative;
 }
-/* line 201, ../sass/_list_colls.scss */
+/* line 202, ../sass/_list_colls.scss */
 body.listcs .distance {
   width: 1px;
   height: 50%;
@@ -593,56 +593,56 @@ body.listcs .distance {
   margin-bottom: -1em;
   float: left;
 }
-/* line 209, ../sass/_list_colls.scss */
+/* line 210, ../sass/_list_colls.scss */
 body.listcs .collection p {
   margin-right: 1em;
 }
-/* line 213, ../sass/_list_colls.scss */
+/* line 214, ../sass/_list_colls.scss */
 body.listcs p.description {
   font-size: 90%;
   color: #474747;
   padding-bottom: 2px;
 }
-/* line 219, ../sass/_list_colls.scss */
+/* line 220, ../sass/_list_colls.scss */
 body.listcs .odd {
   background-color: #f6f4f1;
 }
-/* line 227, ../sass/_list_colls.scss */
+/* line 228, ../sass/_list_colls.scss */
 body.listcs .private {
   /*border-left: 16px solid #666;*/
   /*border-left: 16px solid #DDD;*/
 }
-/* line 232, ../sass/_list_colls.scss */
+/* line 233, ../sass/_list_colls.scss */
 body.listcs .page_navigation {
   float: right;
 }
-/* line 236, ../sass/_list_colls.scss */
+/* line 237, ../sass/_list_colls.scss */
 body.listcs .selected {
   /* display: block !important; */
 }
-/* line 240, ../sass/_list_colls.scss */
+/* line 241, ../sass/_list_colls.scss */
 body.listcs .xxcontrols {
   text-align: center;
   margin-bottom: 0.5em;
   /*min-width: 600px;*/
 }
-/* line 247, ../sass/_list_colls.scss */
+/* line 248, ../sass/_list_colls.scss */
 body.listcs .xxcontrols > div > div {
   margin-right: 0.25em;
 }
-/* line 251, ../sass/_list_colls.scss */
+/* line 252, ../sass/_list_colls.scss */
 body.listcs .xxcontrols .num_items_control {
   /*width: 250px;*/
   text-align: left;
   float: left;
 }
-/* line 257, ../sass/_list_colls.scss */
+/* line 258, ../sass/_list_colls.scss */
 body.listcs .controls select {
   width: auto;
   font-size: 90%;
   margin-bottom: 0;
 }
-/* line 263, ../sass/_list_colls.scss */
+/* line 264, ../sass/_list_colls.scss */
 body.listcs .xxcontrols .filters {
   float: left;
   text-align: left;
@@ -653,37 +653,37 @@ body.listcs .xxcontrols .filters {
   white-space: nowrap;
   margin-left: 2px;
 }
-/* line 274, ../sass/_list_colls.scss */
+/* line 275, ../sass/_list_colls.scss */
 body.listcs .xxcontrols .filters-wrap {
   width: 60%;
   float: left;
   overflow: hidden;
 }
-/* line 280, ../sass/_list_colls.scss */
+/* line 281, ../sass/_list_colls.scss */
 body.listcs .xxcontrols .filters li {
   display: block;
   float: left;
   list-style-type: none;
 }
-/* line 286, ../sass/_list_colls.scss */
+/* line 287, ../sass/_list_colls.scss */
 body.listcs .xxcontrols ul.filters li {
   text-indent: 0px;
 }
-/* line 292, ../sass/_list_colls.scss */
+/* line 293, ../sass/_list_colls.scss */
 body.listcs .cf:before,
 body.listcs .cf:after {
   content: "";
   display: table;
 }
-/* line 297, ../sass/_list_colls.scss */
+/* line 298, ../sass/_list_colls.scss */
 body.listcs .cf:after {
   clear: both;
 }
-/* line 302, ../sass/_list_colls.scss */
+/* line 303, ../sass/_list_colls.scss */
 body.listcs .cf {
   zoom: 1;
 }
-/* line 306, ../sass/_list_colls.scss */
+/* line 307, ../sass/_list_colls.scss */
 body.listcs .status, body.listcs .login_status {
   margin-top: 8px;
   padding: 8px;
@@ -692,26 +692,26 @@ body.listcs .status, body.listcs .login_status {
   font-weight: bold;
   font-size: 90%;
 }
-/* line 315, ../sass/_list_colls.scss */
+/* line 316, ../sass/_list_colls.scss */
 body.listcs .status.with-filters {
   background: #F18F38;
 }
-/* line 319, ../sass/_list_colls.scss */
+/* line 320, ../sass/_list_colls.scss */
 body.listcs .login_status {
   background-color: #fcf5d9;
   padding: 2em;
   font-weight: normal;
 }
-/* line 325, ../sass/_list_colls.scss */
+/* line 326, ../sass/_list_colls.scss */
 body.listcs .xxcontrols ul.filters .g-button {
   margin: 0;
   margin-left: -1px;
 }
-/* line 330, ../sass/_list_colls.scss */
+/* line 331, ../sass/_list_colls.scss */
 body.listcs input.q {
   /*font-size: 110%;*/
 }
-/* line 336, ../sass/_list_colls.scss */
+/* line 337, ../sass/_list_colls.scss */
 body.listcs .Box img {
   /*float: left;*/
   border: 1px solid #cccccc;
@@ -720,7 +720,7 @@ body.listcs .Box img {
   margin-bottom: 2px;
   max-width: 100px;
 }
-/* line 345, ../sass/_list_colls.scss */
+/* line 346, ../sass/_list_colls.scss */
 body.listcs .Box h4, body.listcs .Box span.title {
   font-size: 100%;
   font-weight: bold;
@@ -728,33 +728,33 @@ body.listcs .Box h4, body.listcs .Box span.title {
   margin-bottom: 0.75em;
   display: block;
 }
-/* line 353, ../sass/_list_colls.scss */
+/* line 354, ../sass/_list_colls.scss */
 body.listcs .Box p {
   font-size: 90%;
   word-break: hyphenate;
   margin-bottom: 0;
 }
-/* line 359, ../sass/_list_colls.scss */
+/* line 360, ../sass/_list_colls.scss */
 body.listcs .Box div {
   /*padding: 1em;*/
   margin-bottom: 1em;
 }
-/* line 364, ../sass/_list_colls.scss */
+/* line 365, ../sass/_list_colls.scss */
 body.listcs .CollPage {
   font-size: 1.1em;
   margin-left: 10px;
   font-weight: normal;
 }
-/* line 370, ../sass/_list_colls.scss */
+/* line 371, ../sass/_list_colls.scss */
 body.listcs .pages {
   text-align: right;
   width: 100%;
 }
-/* line 375, ../sass/_list_colls.scss */
+/* line 376, ../sass/_list_colls.scss */
 body.listcs .pages ul {
   list-style-type: none;
 }
-/* line 378, ../sass/_list_colls.scss */
+/* line 379, ../sass/_list_colls.scss */
 body.listcs .pages ul li {
   display: inline-block;
   width: 24px ;
@@ -766,17 +766,17 @@ body.listcs .pages ul li {
   padding-right: 4px ;
   padding-right: 0.4rem ;
 }
-/* line 386, ../sass/_list_colls.scss */
+/* line 387, ../sass/_list_colls.scss */
 body.listcs .pages ul li.active a {
   text-decoration: none;
   font-weight: bold;
   color: #333;
 }
-/* line 393, ../sass/_list_colls.scss */
+/* line 394, ../sass/_list_colls.scss */
 body.listcs .pages ul li a {
   display: inline-block;
 }
-/* line 401, ../sass/_list_colls.scss */
+/* line 402, ../sass/_list_colls.scss */
 body.listcs .pages:after {
   content: "";
   display: table;

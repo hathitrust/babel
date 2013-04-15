@@ -55,7 +55,7 @@ head.ready(function() {
             $block.find("input[name=shrd][value=" + options.shrd + ']').attr("checked", "checked");
         } else if ( ! HT.login_status.logged_in ) {
             $block.find("input[name=shrd][value=0]").attr("checked", "checked");
-            $('<div class="alert alert-info">Login to create public/permanent collections.</div>').appendTo($block);
+            $('<div class="alert alert-warning"><p><a href="#" class="trigger-login" data-close-target=".modal">Login</a> to create public and permanent collections.</p></div>').appendTo($block);
             // remove the <label> that wraps the radio button
             $block.find("input[name=shrd][value=1]").parent().remove();
         }

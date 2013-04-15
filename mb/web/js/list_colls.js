@@ -141,7 +141,7 @@ var ListBrowser = {
     } else if ( window.location.hash ) {
       colltype = window.location.hash.substr(1);
     } else {
-      colltype = "all";
+      colltype = "updated";
     }
 
     this.navigate(colltype);

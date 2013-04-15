@@ -1,3 +1,4 @@
+@import "../../../common/web/unicorn/sass/base";
 
 body.listcs {
 
@@ -31,7 +32,7 @@ body.listcs {
 
   .listcs-intro {
     width: 75%; 
-    font-size: 13px; 
+    @include rem(font-size, 15);
     display: table-row;
   }
 

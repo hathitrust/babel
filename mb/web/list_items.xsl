@@ -149,9 +149,9 @@
           <xsl:text> item</xsl:text>
           <xsl:if test="$AllItemsCount > 1">s</xsl:if>
           <xsl:text> found for </xsl:text>
-          <span>
+          <span><strong>
             <xsl:value-of select="/MBooksTop/QueryString"/>
-          </span>
+          </strong></span>
           <xsl:text> in </xsl:text>
           <xsl:value-of select="/MBooksTop/CollectionOwner"/>
           <xsl:text>'s </xsl:text>
@@ -172,6 +172,22 @@
         </div>
       </xsl:when>
       <xsl:when test="SearchResults">
+        <div class="alert alert-summary">
+          <strong>Search Results: </strong>
+          <xsl:text>0 items for for </xsl:text>
+          <span><strong>
+            <xsl:value-of select="/MBooksTop/QueryString"/>
+          </strong></span>
+          <xsl:text> in </xsl:text>
+          <xsl:value-of select="/MBooksTop/CollectionOwner"/>
+          <xsl:text>'s </xsl:text>
+          <a href="{/MBooksTop/OperationResults/CollHref}">
+            <xsl:value-of select="/MBooksTop/CollectionName"/>    
+            <xsl:text> collection</xsl:text>
+          </a>
+        </div>
+      </xsl:when>
+      <xsl:when test="XXSearchResults">
         <div class="alert alert-error">
           <xsl:text>Your search for "</xsl:text>
           <xsl:value-of select="/MBooksTop/QueryString"/>
@@ -183,6 +199,7 @@
           <a href="{//CollHref}">Back to the collection</a>
         </p>
       </xsl:when>
+      <xsl:otherwise />
     </xsl:choose>
 
   </xsl:template>
@@ -325,7 +342,30 @@
     
   <xsl:template name ="DisplaySearchWidgetLogic">
     <div class="mainsearch" role="search">
-      <xsl:call-template name="SearchWidget"/>
+      <xsl:choose>
+        <xsl:when test="//SearchResults/Item">
+          <xsl:call-template name="SearchWidget"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="search-widget-no-results" />
+        </xsl:otherwise>
+      </xsl:choose>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="search-widget-no-results">
+    <div class="alert alert-error alert-block">
+      <p>
+        <xsl:text>Your search for "</xsl:text>
+        <xsl:value-of select="/MBooksTop/QueryString"/>
+        <xsl:text>" in the </xsl:text>
+        <span class="colName"><xsl:value-of select="$coll_name"/></span> 
+        <xsl:text> collection returned zero hits.</xsl:text> 
+      </p>
+      <br />
+      <xsl:call-template name="SearchWidget">
+        <xsl:with-param name="label">Search again?</xsl:with-param>
+      </xsl:call-template>
     </div>
   </xsl:template>
 
