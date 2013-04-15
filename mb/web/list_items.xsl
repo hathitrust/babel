@@ -343,11 +343,11 @@
   <xsl:template name ="DisplaySearchWidgetLogic">
     <div class="mainsearch" role="search">
       <xsl:choose>
-        <xsl:when test="//SearchResults/Item">
-          <xsl:call-template name="SearchWidget"/>
+        <xsl:when test="//SearchResults and not(//SeachResults/Item)">
+          <xsl:call-template name="search-widget-no-results" />
         </xsl:when>
         <xsl:otherwise>
-          <xsl:call-template name="search-widget-no-results" />
+          <xsl:call-template name="SearchWidget"/>
         </xsl:otherwise>
       </xsl:choose>
     </div>
