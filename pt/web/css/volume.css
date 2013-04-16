@@ -8,12 +8,6 @@ body {
   padding-bottom: 16rem ;
 }
 
-/* line 9, ../sass/toolbar.scss */
-.stuck {
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
 /* line 18, ../sass/toolbar.scss */
 .container.centered {
   max-width: none;

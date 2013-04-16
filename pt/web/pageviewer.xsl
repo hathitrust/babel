@@ -44,6 +44,7 @@
     <xsl:if test="$gHTDEV != ''">
       <xsl:text> htdev</xsl:text>
     </xsl:if>
+    <xsl:call-template name="setup-extra-html-class" />
   </xsl:template>
 
   <xsl:template name="setup-html-attributes">
@@ -58,6 +59,7 @@
   </xsl:template>
 
   <xsl:template name="setup-extra-html-attributes" />
+  <xsl:template name="setup-extra-html-class" />
 
   <xsl:template name="header-search-q1-value">
     <xsl:value-of select="//HeaderSearchParams/Field[@name='q1']" />
