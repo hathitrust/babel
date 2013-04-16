@@ -157,7 +157,7 @@
   </xsl:template>
 
   <xsl:template name="header">
-    <div class="container centered header clearfix">
+    <div class="container centered header clearfix" id="header">
       <h2 class="offscreen">Navigation links for searching HathiTrust, login</h2>
       <div class="logo">
         <a href="http://www.hathitrust.org"><span class="offscreen">HathiTrust Digital Library</span></a>
