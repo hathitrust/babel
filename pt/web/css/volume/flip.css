@@ -304,5 +304,5 @@
 /* line 327, ../../sass/volume/flip.scss */
 .slider.slider-horizontal {
   margin-top: 8px;
-  z-index: 150;
+  z-index: 50;
 }
