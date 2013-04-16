@@ -425,7 +425,7 @@ head.ready(function() {
         }
     })
 
-    $('html').on('click.dropdown.data-api', '.table-of-contents .btn', function(e) {
+    $('html').on('click.dropdown.reader', '.table-of-contents .btn', function(e) {
         // $(".bb-bookblock").css('z-index', 100);
         $(".bb-bookblock").toggleClass("lowered");
     });
