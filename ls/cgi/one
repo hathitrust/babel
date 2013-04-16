@@ -11,7 +11,6 @@ my $LS_MAP = {
     publisher => 'publisher',
     seriestitle => 'series',
     ocronly =>'ocronly',
-              
     pubyear => ''
 };
 
@@ -30,8 +29,6 @@ my $dest_cgi = new CGI({});
 my $dest_url; my $dest_base;
 
 my $LS_URL = qq{http://beta-3.babel.hathitrust.org/cgi/ls};
-#XXX temp hack 
-$LS_URL = qq{http://tburtonw-full.babel.hathitrust.org/cgi/ls};
 my $CATALOG_URL = qq{http://test.catalog.hathitrust.org/Search/Home};
 
 if ( $target eq 'ls' ) {
