@@ -758,8 +758,6 @@ body.listcs .pages ul {
 /* line 380, ../sass/_list_colls.scss */
 body.listcs .pages ul li {
   display: inline-block;
-  width: 24px ;
-  width: 2.4rem ;
   height: 16px ;
   height: 1.6rem ;
   padding-left: 4px ;

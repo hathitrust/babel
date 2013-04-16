@@ -379,7 +379,7 @@ body.listcs {
 
       li {
         display: inline-block;
-        @include rem(width, 24);
+        // @include rem(width, 24);
         @include rem(height, 16);
         @include rem(padding-left, 4);
         @include rem(padding-right, 4);

@@ -862,8 +862,12 @@ var ListBrowser = {
     var pages = [ page.start - 1 ];
     // attach 3 previous
     var prev = page.prev;
+    var next_page; var prev_page;
     var i = 0;
     while ( prev !== false && i < 3 ) {
+      if ( prev_page === undefined ) {
+        prev_page = prev;
+      }
       i += 1;
       pages.unshift(prev);
       prev = prev - MAX_ROWS;
@@ -899,7 +903,20 @@ var ListBrowser = {
       pages.unshift(0);
     }
 
-    console.log("PAGES", pages);
+    var p = pages.indexOf(page.start - 1);
+    if ( p > 0 ) {
+      prev_page = pages[p - 1];
+    }
+    if ( p < pages.length - 1 ) {
+      next_page = pages[p + 1]
+    }
+
+    // add the previous link
+    if ( prev_page !== undefined ) {
+      $('<li><a href="#{SLICE_START}">Previous</a></li>'.replace('{SLICE_START}', prev_page)).appendTo($ul);
+    } else {
+      $('<li>Previous</li>').appendTo($ul);
+    }
 
     _.each(pages, function(p) {
       if ( p == '...' ) {
@@ -908,10 +925,16 @@ var ListBrowser = {
         var $li = $("<li><a href='#{SLICE_START}'>{PAGE}</a></li>".replace('{SLICE_START}', p).replace('{PAGE}', b2p(p))).appendTo($ul);
         if ( p == page.start - 1 ) {
           $li.addClass("active");
-        }        
+        }
       }
-
     })
+
+    // add the next link
+    if ( next_page !== undefined ) {
+      $('<li><a href="#{SLICE_START}">Next</a></li>'.replace('{SLICE_START}', next_page)).appendTo($ul);
+    } else {
+      $('<li>Next</li>').appendTo($ul);
+    }
 
     $div.show();
 
