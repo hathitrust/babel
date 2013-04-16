@@ -4155,6 +4155,8 @@ HT.Manager = {
         this.options = $.extend({}, this.options, options);
         this.data = {};
         self.page_num_map = {};
+        self.num_seq_map = {};
+        self.seq_num_map = {};
 
         return this;
     },
@@ -5887,7 +5889,7 @@ head.ready(function() {
         last_top = current_top;
     }
 
-    var handle_resize = function() {
+    var handle_resize_fn = function() {
         var scroll_left = $(window).scrollLeft();
         $fixed_y.each(function() {
             var $original = $(this);
@@ -5899,13 +5901,17 @@ head.ready(function() {
         $fixed_x.each(function() {
             var $original = $(this);
             var $dummy = dummies[$original.attr("id")];
+            //$dummy.css({ width : ''  });
             var new_left = $dummy.offset().left + parseInt($dummy.css('margin-left'));;
+            //console.log("ER:", $dummy.offset().left, $dummy.width(), $dummy.css('margin-left'));
             // console.log("ER:", $original.offset().left, $dummy.offset().left, scroll_left);
             // $original.css({ left : new_left, xwidth : $dummy.width() });
 
             var $shadow = $($original.data('shadow'));
             //new_left = ( $(window).width() - $shadow.width() ) / 2;
+            var new_left = ( $(window).width() - $shadow.width() ) / 2;
             $original.css({ width : $shadow.width(), left : new_left });
+            $dummy.width( $original.outerWidth() );
 
         })
 
@@ -5917,7 +5923,7 @@ head.ready(function() {
         }, 100);
     }
 
-
+    var handle_resize =  _.debounce(handle_resize_fn, 250);
 
     $(window).on('scroll', handle_scroll_vertical);
     $(window).on('scroll', handle_scroll_horizontal);

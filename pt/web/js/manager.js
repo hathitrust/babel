@@ -7,6 +7,8 @@ HT.Manager = {
         this.options = $.extend({}, this.options, options);
         this.data = {};
         self.page_num_map = {};
+        self.num_seq_map = {};
+        self.seq_num_map = {};
 
         return this;
     },

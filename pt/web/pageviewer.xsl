@@ -64,7 +64,14 @@
   </xsl:template>
 
   <xsl:template name="header-search-ft-value">
-    <xsl:value-of select="//HeaderSearchParams/Field[@name='ft']" />
+    <xsl:choose>
+      <xsl:when test="//HeaderSearchParams/Field[@name='ft']">
+        <xsl:value-of select="//HeaderSearchParams/Field[@name='ft']" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>checked</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template name="header-search-options-selected">
