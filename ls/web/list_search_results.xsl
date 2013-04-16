@@ -1473,13 +1473,10 @@ REMOVE the below and see if it will call list_utils
         </xsl:when>
 
         <xsl:otherwise>
-            <li class="viewall linked">
+            <li class="viewall">
               <xsl:element name="a">
                 <xsl:attribute name="href">
                   <xsl:value-of select="$href"/>
-                </xsl:attribute>
-                <xsl:attribute name="class">
-                  <xsl:text>tab</xsl:text>
                 </xsl:attribute>
                 <xsl:value-of select="$text"/>
                 <xsl:text> (</xsl:text>
