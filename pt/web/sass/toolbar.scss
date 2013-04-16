@@ -252,7 +252,7 @@ body {
     @include single-box-shadow(rgba(0, 0, 0, 0.8), 16px, 20px, 35px);
     @include rem(height, 160);
 
-    .logo {
+    .logo a {
         @include rem(margin-left, 10, !important);
     }
 

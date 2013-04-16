@@ -266,7 +266,7 @@ body {
   height: 16rem ;
 }
 /* line 255, ../sass/toolbar.scss */
-.dropped .logo {
+.dropped .logo a {
   margin-left: 10px !important;
   margin-left: 1rem !important;
 }
