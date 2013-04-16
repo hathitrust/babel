@@ -1,4 +1,5 @@
 @import "../../../common/web/unicorn/sass/base";
+@import "compass/css3/box-shadow";
 
 body {
     position: relative;
@@ -79,9 +80,7 @@ body {
     @include rem(width, 725);
 
     &.locked {
-        // -webkit-box-shadow: 4px 16px 5px rgba(50, 50, 50, 0.59);
-        // -moz-box-shadow:    4px 16px 5px rgba(50, 50, 50, 0.59);
-        box-shadow:         2px 4px 10px (0, 0, 0, 0.2);
+        @include single-box-shadow(rgba(0, 0, 0, 0.2), 2px, 4px, 10px);
     }
 
     .btn-toolbar {

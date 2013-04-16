@@ -1,5 +1,5 @@
 @import url(../vendor/slider/css/slider.css);
-/* line 3, ../sass/toolbar.scss */
+/* line 4, ../sass/toolbar.scss */
 body {
   position: relative;
   margin-top: 40px ;
@@ -8,17 +8,17 @@ body {
   padding-bottom: 16rem ;
 }
 
-/* line 18, ../sass/toolbar.scss */
+/* line 19, ../sass/toolbar.scss */
 .container.centered {
   max-width: none;
 }
 
-/* line 33, ../sass/toolbar.scss */
+/* line 34, ../sass/toolbar.scss */
 .sidebar.fixed-placed {
   border-right: none;
 }
 
-/* line 37, ../sass/toolbar.scss */
+/* line 38, ../sass/toolbar.scss */
 .navbar-static-top {
   position: fixed;
   top: 0;
@@ -27,7 +27,7 @@ body {
   z-index: 1000;
 }
 
-/* line 45, ../sass/toolbar.scss */
+/* line 46, ../sass/toolbar.scss */
 .navbar-static-bottom {
   position: absolute;
   bottom: 0;
@@ -35,7 +35,7 @@ body {
   right: 0;
 }
 
-/* line 52, ../sass/toolbar.scss */
+/* line 53, ../sass/toolbar.scss */
 .toolbar-vertical {
   float: left;
   width: 40px;
@@ -44,20 +44,20 @@ body {
   /*margin-left: -10px;*/
   z-index: 500;
 }
-/* line 59, ../sass/toolbar.scss */
+/* line 60, ../sass/toolbar.scss */
 .toolbar-vertical .btn-group + .btn-group {
   margin-left: 0;
 }
-/* line 63, ../sass/toolbar.scss */
+/* line 64, ../sass/toolbar.scss */
 .toolbar-vertical .btn-group-vertical {
   margin-bottom: 5px;
 }
-/* line 66, ../sass/toolbar.scss */
+/* line 67, ../sass/toolbar.scss */
 .toolbar-vertical .btn-group-vertical .btn.alone {
   border-radius: 4px 4px 4px 4px;
 }
 
-/* line 73, ../sass/toolbar.scss */
+/* line 74, ../sass/toolbar.scss */
 .toolbar-horizontal {
   height: 40px;
   /*margin-left: 5px;*/
@@ -66,33 +66,35 @@ body {
   width: 725px ;
   width: 72.5rem ;
 }
-/* line 81, ../sass/toolbar.scss */
+/* line 82, ../sass/toolbar.scss */
 .toolbar-horizontal.locked {
-  box-shadow: 2px 4px 10px 0, 0, 0, 0.2;
+  -webkit-box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
 }
-/* line 87, ../sass/toolbar.scss */
+/* line 89, ../sass/toolbar.scss */
 .toolbar-horizontal .btn-toolbar {
   margin-bottom: 0;
 }
-/* line 91, ../sass/toolbar.scss */
+/* line 93, ../sass/toolbar.scss */
 .toolbar-horizontal .options.btn-toolbar {
   margin-top: 0;
   padding-top: 0;
 }
-/* line 95, ../sass/toolbar.scss */
+/* line 97, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline {
   margin: 0;
   margin-left: 10px;
   display: inline-block;
 }
-/* line 98, ../sass/toolbar.scss */
+/* line 100, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline label {
   padding-top: 0px;
   margin: 0;
   margin-right: 5px;
   font-size: 12px;
 }
-/* line 102, ../sass/toolbar.scss */
+/* line 104, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline input[type=text] {
   height: 30px;
   padding-top: 0;
@@ -104,17 +106,17 @@ body {
   font-size: 1.2rem ;
   text-align: center;
 }
-/* line 108, ../sass/toolbar.scss */
+/* line 110, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline #action-go-page {
   width: auto;
   display: inline-block;
   margin-top: 0px;
 }
-/* line 113, ../sass/toolbar.scss */
+/* line 115, ../sass/toolbar.scss */
 .toolbar-horizontal .table-of-contents {
   margin-left: 10px;
 }
-/* line 117, ../sass/toolbar.scss */
+/* line 119, ../sass/toolbar.scss */
 .toolbar-horizontal #input-search-text {
   width: 100px ;
   width: 10rem ;
@@ -123,11 +125,11 @@ body {
   text-align: left;
 }
 
-/* line 126, ../sass/toolbar.scss */
+/* line 128, ../sass/toolbar.scss */
 .toolbar {
   z-index: 100;
 }
-/* line 129, ../sass/toolbar.scss */
+/* line 131, ../sass/toolbar.scss */
 .toolbar form {
   margin: 0;
   display: inline-block;
@@ -140,23 +142,23 @@ body {
   border-radius: 4px;
   padding-left: 8px;
 }
-/* line 142, ../sass/toolbar.scss */
+/* line 144, ../sass/toolbar.scss */
 .toolbar .options [class^="icon-"], .toolbar .toolbar [class*=" icon-"] {
   background: none;
   color: black;
 }
-/* line 147, ../sass/toolbar.scss */
+/* line 149, ../sass/toolbar.scss */
 .toolbar .btn.square {
   height: 38px;
   width: 46px;
   /*font-size: 18px;*/
   color: black;
 }
-/* line 154, ../sass/toolbar.scss */
+/* line 156, ../sass/toolbar.scss */
 .toolbar .iconz-doc-2, .toolbar .iconz-doc-text {
   margin-left: -1px;
 }
-/* line 159, ../sass/toolbar.scss */
+/* line 161, ../sass/toolbar.scss */
 .toolbar [class^="icomoon-"],
 .toolbar [class*=" icomoon-"] {
   display: inline-block;
@@ -169,32 +171,32 @@ body {
   color: #333;
   margin-top: 0.25em;
 }
-/* line 171, ../sass/toolbar.scss */
+/* line 173, ../sass/toolbar.scss */
 .toolbar .icomoon-iconmonstr-magnifier-6-icon, .toolbar .icomoon-iconmonstr-magnifier-7-icon {
   font-size: 1.8em;
   margin-left: -0.125em;
   margin-top: 0.1em;
 }
-/* line 177, ../sass/toolbar.scss */
+/* line 179, ../sass/toolbar.scss */
 .toolbar .icomoon-list {
   font-size: 1.0em;
 }
-/* line 181, ../sass/toolbar.scss */
+/* line 183, ../sass/toolbar.scss */
 .toolbar .icon-white {
   color: #fff;
 }
-/* line 185, ../sass/toolbar.scss */
+/* line 187, ../sass/toolbar.scss */
 .toolbar .icomoon-scroll, .toolbar .icomoon-documents {
   font-size: 1.4em;
 }
 
-/* line 191, ../sass/toolbar.scss */
+/* line 193, ../sass/toolbar.scss */
 .sticky #toolbar-vertical {
   position: fixed;
   top: 40px;
 }
 
-/* line 196, ../sass/toolbar.scss */
+/* line 198, ../sass/toolbar.scss */
 .sticky #toolbar-horizontal {
   position: fixed;
   top: 30px;
@@ -203,39 +205,39 @@ body {
   left: 0;
 }
 
-/* line 204, ../sass/toolbar.scss */
+/* line 206, ../sass/toolbar.scss */
 .options a, .inner-search a {
   text-decoration: none;
 }
 
-/* line 208, ../sass/toolbar.scss */
+/* line 210, ../sass/toolbar.scss */
 .btn.square {
   width: 40px;
 }
 
-/* line 212, ../sass/toolbar.scss */
+/* line 214, ../sass/toolbar.scss */
 .btn.dropdown-toggle.square {
   width: 52px;
 }
 
-/* line 216, ../sass/toolbar.scss */
+/* line 218, ../sass/toolbar.scss */
 .label {
   display: none;
 }
 
-/* line 227, ../sass/toolbar.scss */
+/* line 229, ../sass/toolbar.scss */
 #scrolling {
   margin-left: 55px ;
   margin-left: 5.5rem ;
 }
 
-/* line 231, ../sass/toolbar.scss */
+/* line 233, ../sass/toolbar.scss */
 #content {
   padding: 24px ;
   padding: 2.4rem ;
 }
 
-/* line 235, ../sass/toolbar.scss */
+/* line 237, ../sass/toolbar.scss */
 .scrollable-list {
   max-height: 550px ;
   max-height: 55rem ;
