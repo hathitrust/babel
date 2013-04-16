@@ -5884,6 +5884,27 @@ head.ready(function() {
             var $original = $(this);
             var $dummy = dummies[$original.attr("id")];
             $original.css({ top : $dummy.offset().top - current_top });
+            if ( $original.attr("id") == 'header' ) {
+                var $menu = $("#menu-toggle");
+                if ( $original.fracs().visible < 0.5 ) {
+                    if ( ! $menu.length ) {
+                        var $ul = $("#person-nav");
+                        if ( ! $ul.length ) {
+                            // we are not logged in; bugger.
+                            $ul = $('<ul id="person-nav" class="nav pull-right"></ul>').appendTo("#navbar-inner");
+                        }
+
+                        $menu = $("<li><a id='menu-toggle' href='#'><span class='offscreen'>Toggle Header</span><i class='icomoon-reorder'></i></a></li>").appendTo($ul);
+                        $menu.click(function(e) {
+                            e.preventDefault();
+                            handle_drop();
+                        })
+                    }
+                    $menu.show();
+                } else {
+                    $menu.hide();
+                }
+            }
         })
 
         last_top = current_top;
@@ -5924,6 +5945,20 @@ head.ready(function() {
     }
 
     var handle_resize =  _.debounce(handle_resize_fn, 250);
+
+    var handle_drop = function() {
+        var $header = $("#header");
+        if ( $header.is(".dropped") ) {
+            var pos = $header.data('pos');
+            $header.animate({ top : pos.top }, function() {
+                $header.removeClass("dropped");
+            });
+        } else {
+            var pos = { top : $header.css('top') };
+            $header.data('pos', pos);
+            $header.addClass("dropped").animate({ top : 40 });
+        }        
+    }
 
     $(window).on('scroll', handle_scroll_vertical);
     $(window).on('scroll', handle_scroll_horizontal);
