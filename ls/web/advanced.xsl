@@ -23,74 +23,6 @@
   <xsl:template name="setup-body-class" >no-search</xsl:template>
 
 
-  <!-- Main template -->
-  <xsl:template match="/MBooksTopDONTUSE">
-    <html lang="en" xml:lang="en" >
-      <head>
-        <title>
-          <xsl:call-template name="get_page_title"/>
-        </title>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-        <xsl:call-template name="load_js_and_css"/>
-        <link rel="stylesheet" type="text/css" href="/ls/web/ls.css" />
-        <xsl:call-template name="IE7hack"/>
-
-      </head>
-
-
-
-
-      <body class="yui-skin-sam" onload="initCheckall()">
-
-        <div id="mbMasterContainer">
-          <div id="DlpsDev">
-            <xsl:value-of select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
-          </div>
-
-          <div>
-              <xsl:apply-templates select="/MBooksTop/MBooksGlobals/DebugMessages/*" mode="copy-elements" />
-           </div>
-
-          <xsl:call-template name="header"/>
-
-          <div id="mbContentContainer" class="LsHomePageContainer">
-            <h2 class="offscreen">Main Content</h2>
-            <!-- Added: overlay is displayed here -->
-            <div id="errormsg">
-              <div class="bd"></div>
-            </div>
-            <xsl:call-template name="PageContent"/>
-          </div>
-          <xsl:call-template name="footer"/>
-          <xsl:call-template name="google_analytics" />
-        </div>
-        <script type="text/javascript" src="/ls/js/ls_advanced.js"></script>  
-      </body>
-    </html>
-  </xsl:template>
-
-  <!-- TEMPLATE -->
-
-  <xsl:template name="IE7hack">
-
-    <xsl:text disable-output-escaping="yes">
-      <![CDATA[<!--[if IE 7]>]]>
-      </xsl:text>
-      
-      <style>
-        <xsl:text disable-output-escaping="yes">
-          /*hide searchform until after we insert table and parens so user doesn't see form elements
-          moving around */
-          #advanced_searchform{
-              
-          visibility:hidden;
-          }
-        </xsl:text>
-      </style>
-      <xsl:text disable-output-escaping="yes">
-        <![CDATA[<![endif]-->]]>
-      </xsl:text>
-    </xsl:template>
     
     <!-- TEMPLATE -->
     <xsl:template name="subnav_header">
@@ -104,11 +36,22 @@
       <div id="LS_main">
         <div class="betasearch">
           <div class="AdvancedLabelRow">
-          <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
-            <!--XXX should probably have a PI instead of being hard-coded-->
-            <span id="search_tips">
-              <a  href="http://www.hathitrust.org/help_digital_library#SearchTips">Search Tips</a>
+
+            <span id="AdvancedCatalogLink">
+              <xsl:text>Prefer to search</xsl:text>
+              <em> within or about</em>
+              <xsl:text> the items in an</xsl:text>
+              <a href="http://test.catalog.hathitrust.org/Search/Advanced"> Advanced Catalog Search?</a>
             </span>
+            <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
+            <!--XXX should be pi but hardcode for now-->
+            <div id="AdvancedExplanation">Search information <em>within or about</em> an item</div>
+            <!--XXX should probably have a PI instead of being hard-coded-->
+            <div id="search_tips">
+              <a  href="http://www.hathitrust.org/help_digital_library#SearchTips">Search Tips</a>
+            </div>
+
+          
        </div>
           <form id="advanced_searchform" action="ls" name="searchcoll" >
             <fieldset>
@@ -213,7 +156,7 @@
 
 
            <div id="limits">
-
+             <br clear="both"></br>
             <!--XXX hardcoded accessability stuff-->
             <label for="fullonly" >Full view only</label>        
             <input type="checkbox"  name="lmt" id="fullonly"  value='ft'>

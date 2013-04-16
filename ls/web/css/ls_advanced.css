@@ -5,7 +5,21 @@ ls_advanced.css
 
 
 ***/
-/* line 9, ../sass/ls_advanced.scss */
+/* line 11, ../sass/ls_advanced.scss */
+#AdvancedExplanation {
+  margin-bottom: 1em;
+  margin-top: 1em;
+  font-size: 110%;
+}
+
+/* line 18, ../sass/ls_advanced.scss */
+#AdvancedCatalogLink {
+  float: right;
+  width: 10em;
+  font-size: 110%;
+}
+
+/* line 25, ../sass/ls_advanced.scss */
 .LsAdvancedPageContent {
   font-size: 12px;
   width: 100%;
@@ -13,43 +27,43 @@ ls_advanced.css
   min-width: 1000px;
 }
 
-/* line 21, ../sass/ls_advanced.scss */
+/* line 37, ../sass/ls_advanced.scss */
 #search_tips {
   font-size: 110%;
   color: green;
 }
 
-/* line 26, ../sass/ls_advanced.scss */
+/* line 42, ../sass/ls_advanced.scss */
 #addGroup {
   font-size: 110%;
 }
 
-/* line 29, ../sass/ls_advanced.scss */
+/* line 45, ../sass/ls_advanced.scss */
 #removeGroup {
   font-size: 110%;
 }
 
-/* line 34, ../sass/ls_advanced.scss */
+/* line 50, ../sass/ls_advanced.scss */
 #findbuttons {
   margin-top: 10px;
   margin-left: 0;
 }
 
-/* line 41, ../sass/ls_advanced.scss */
+/* line 57, ../sass/ls_advanced.scss */
 #advanced
 #reset {
   margin-left: 5em;
   font-size: 120%;
 }
 
-/* line 49, ../sass/ls_advanced.scss */
+/* line 65, ../sass/ls_advanced.scss */
 select, input {
   margin-left: 100em;
   margin-right: 1em;
   width: auto;
 }
 
-/* line 58, ../sass/ls_advanced.scss */
+/* line 74, ../sass/ls_advanced.scss */
 .SkipLink, .SearchLabel, .offscreen {
   height: 1px;
   left: -10000px;
@@ -59,7 +73,7 @@ select, input {
   width: 1px;
 }
 
-/* line 67, ../sass/ls_advanced.scss */
+/* line 83, ../sass/ls_advanced.scss */
 label.SearchLabel {
   height: 1px;
   left: -10000px;
@@ -69,20 +83,20 @@ label.SearchLabel {
   width: 1px;
 }
 
-/* line 75, ../sass/ls_advanced.scss */
+/* line 91, ../sass/ls_advanced.scss */
 label {
   display: inline;
   margin-bottom: 5px;
 }
 
-/* line 87, ../sass/ls_advanced.scss */
+/* line 103, ../sass/ls_advanced.scss */
 #fieldsetGroup1 {
   margin-top: .3em;
 }
 
 /** for debugging uncomment this**/
 /*div { outline:1px dashed red; } */
-/* line 94, ../sass/ls_advanced.scss */
+/* line 110, ../sass/ls_advanced.scss */
 .querybox {
   /* if we don't set the width, it gets a default width (which I can't find any reference to) but the side effect is that with no width set on any inline element in the <ul> the rowsw won't resize*/
   /* we would like to set the width to 25-35 characters to encourage users to use several query terms (See: Belkin et. al. "Query length in interactive information retrieval"  http://dx.doi.org/10.1145/860435.860474 )
@@ -93,7 +107,7 @@ label {
 
 /*Parenthesis  */
 /* IE7 hacks  see ls.advanced.js where we wrap classes IEcell IErow and parenGroup with html table code with jquery*/
-/* line 109, ../sass/ls_advanced.scss */
+/* line 125, ../sass/ls_advanced.scss */
 td.IEtd.paren {
   font-size: 600%;
   vertical-align: middle;
@@ -103,13 +117,13 @@ td.IEtd.paren {
 }
 
 /*end IE7 hacks*/
-/* line 119, ../sass/ls_advanced.scss */
+/* line 135, ../sass/ls_advanced.scss */
 div.parenGroup {
   display: table-row;
   text-align: left;
 }
 
-/* line 125, ../sass/ls_advanced.scss */
+/* line 141, ../sass/ls_advanced.scss */
 div.group {
   /*     outline:1px dotted blue;*/
   display: table-cell;
@@ -120,7 +134,7 @@ div.group {
   */
 }
 
-/* line 135, ../sass/ls_advanced.scss */
+/* line 151, ../sass/ls_advanced.scss */
 div.paren {
   /* outline:1px dashed green;*/
   display: table-cell;
@@ -139,60 +153,60 @@ span.paren{
 
 } 
 */
-/* line 155, ../sass/ls_advanced.scss */
+/* line 171, ../sass/ls_advanced.scss */
 div.parenLeft {
   /*  float: left;*/
   text-align: right;
 }
 
-/* line 160, ../sass/ls_advanced.scss */
+/* line 176, ../sass/ls_advanced.scss */
 div.parenRight {
   /*  float:right;*/
   text-align: left;
 }
 
 /* fieldset formatting*/
-/* line 167, ../sass/ls_advanced.scss */
+/* line 183, ../sass/ls_advanced.scss */
 fieldset {
   border: none;
 }
 
-/* line 172, ../sass/ls_advanced.scss */
+/* line 188, ../sass/ls_advanced.scss */
 legend.limitTo {
   font-size: 150%;
 }
 
 /* facet formatting */
 /* we use xSearchLabel to avoid conflict with MBooksCol.css*/
-/* line 184, ../sass/ls_advanced.scss */
+/* line 200, ../sass/ls_advanced.scss */
 label.xSearchLabel {
   /*  margin-left:1em;*/
   display: block;
 }
 
-/* line 189, ../sass/ls_advanced.scss */
+/* line 205, ../sass/ls_advanced.scss */
 #format {
   float: left;
   margin-left: 5em;
 }
 
-/* line 194, ../sass/ls_advanced.scss */
+/* line 210, ../sass/ls_advanced.scss */
 #language {
   float: left;
 }
 
-/* line 198, ../sass/ls_advanced.scss */
+/* line 214, ../sass/ls_advanced.scss */
 select.orFacet {
   margin-left: 0;
 }
 
-/* line 202, ../sass/ls_advanced.scss */
+/* line 218, ../sass/ls_advanced.scss */
 #multiFacets {
   margin-top: 20px;
 }
 
 /* end facet formatting*/
-/* line 210, ../sass/ls_advanced.scss */
+/* line 226, ../sass/ls_advanced.scss */
 fieldset.group {
   /*    background-color:#E9E9E9;*/
   /*     padding:0;*/
@@ -202,12 +216,12 @@ fieldset.group {
   /**                width:80%;**/
 }
 
-/* line 234, ../sass/ls_advanced.scss */
+/* line 250, ../sass/ls_advanced.scss */
 .removeFacetIcon {
   /*  margin-left:2em;*/
 }
 
-/* line 239, ../sass/ls_advanced.scss */
+/* line 255, ../sass/ls_advanced.scss */
 .advrow ul {
   margin: 0 0 5px 0;
   padding: 0;
@@ -215,7 +229,7 @@ fieldset.group {
   list-style: none;
 }
 
-/* line 246, ../sass/ls_advanced.scss */
+/* line 262, ../sass/ls_advanced.scss */
 .advrow ul li {
   display: inline;
   list-style-type: none;
@@ -225,7 +239,7 @@ fieldset.group {
 }
 
 /**XXX combine this with rule for AndOr **/
-/* line 259, ../sass/ls_advanced.scss */
+/* line 275, ../sass/ls_advanced.scss */
 .spacer {
   width: 6.3em;
   /* color:green;
@@ -235,31 +249,31 @@ fieldset.group {
   margin-right: 1em;
 }
 
-/* line 268, ../sass/ls_advanced.scss */
+/* line 284, ../sass/ls_advanced.scss */
 span.AnyAll {
   font-weight: normal;
   font-style: italic;
 }
 
-/* line 273, ../sass/ls_advanced.scss */
+/* line 289, ../sass/ls_advanced.scss */
 #anyall1 {
   /*          margin-left:8em;*/
 }
 
-/* line 282, ../sass/ls_advanced.scss */
+/* line 298, ../sass/ls_advanced.scss */
 .AndOr {
   width: 5em;
   /*   margin-left:auto;
      margin-right: auto;*/
 }
 
-/* line 288, ../sass/ls_advanced.scss */
+/* line 304, ../sass/ls_advanced.scss */
 .andOR {
   display: inline;
   width: 5em;
 }
 
-/* line 294, ../sass/ls_advanced.scss */
+/* line 310, ../sass/ls_advanced.scss */
 #op3 {
   width: 5em;
   margin-top: 10px;
@@ -267,30 +281,30 @@ span.AnyAll {
   /*  margin-left:-1em; removed for IE7*/
 }
 
-/* line 312, ../sass/ls_advanced.scss */
+/* line 328, ../sass/ls_advanced.scss */
 .advancedMsg {
   font-size: 70%;
 }
 
-/* line 317, ../sass/ls_advanced.scss */
+/* line 333, ../sass/ls_advanced.scss */
 #Op3bool {
   margin: 3px;
   background-color: #FFFFFF;
   padding: 10px;
 }
 
-/* line 327, ../sass/ls_advanced.scss */
+/* line 343, ../sass/ls_advanced.scss */
 #modify_link {
   font-weight: normal;
   font-size: 90%;
 }
 
-/* line 333, ../sass/ls_advanced.scss */
+/* line 349, ../sass/ls_advanced.scss */
 .AdvancedLSerror #modify_link {
   margin-top: 1%;
 }
 
-/* line 340, ../sass/ls_advanced.scss */
+/* line 356, ../sass/ls_advanced.scss */
 #advancedLabel {
   /** margin:3px;
    padding:10px;**/
@@ -298,52 +312,52 @@ span.AnyAll {
   font-weight: normal;
 }
 
-/* line 348, ../sass/ls_advanced.scss */
+/* line 364, ../sass/ls_advanced.scss */
 #limits {
   margin-bottom: 3em;
   margin-top: 1em;
 }
 
-/* line 354, ../sass/ls_advanced.scss */
+/* line 370, ../sass/ls_advanced.scss */
 #limits h3 {
   font-size: 130%;
   margin-bottom: 10px;
   color: #000000;
 }
 
-/* line 363, ../sass/ls_advanced.scss */
+/* line 379, ../sass/ls_advanced.scss */
 #queryArea {
   /**  background-color **/
   margin: 3px;
   padding: 3px;
 }
 
-/* line 372, ../sass/ls_advanced.scss */
+/* line 388, ../sass/ls_advanced.scss */
 .advancedClause {
   margin: 1px 8px;
   font-size: 80%;
   line-height: 100%;
 }
 
-/* line 380, ../sass/ls_advanced.scss */
+/* line 396, ../sass/ls_advanced.scss */
 .advancedClause .infoAlert {
   margin: 15px 15px 0;
 }
 
-/* line 386, ../sass/ls_advanced.scss */
+/* line 402, ../sass/ls_advanced.scss */
 .AdvancedLSerror .advancedClause {
   margin: 1px 3%;
   font-size: 100%;
 }
 
-/* line 394, ../sass/ls_advanced.scss */
+/* line 410, ../sass/ls_advanced.scss */
 #x_icon {
   margin: 0px 10px 0px 10px;
   padding: 0px;
 }
 
 /** this should instead inherit from LSerror with one change of witdth**/
-/* line 402, ../sass/ls_advanced.scss */
+/* line 418, ../sass/ls_advanced.scss */
 .AdvancedLSerror {
   background: #feeeee scroll 15px 90%;
   border: 1px solid #ff4040;
@@ -355,23 +369,23 @@ span.AnyAll {
   padding: 10px;
 }
 
-/* line 417, ../sass/ls_advanced.scss */
+/* line 433, ../sass/ls_advanced.scss */
 #zeroHits {
   line-height: 2;
   color: red;
 }
 
-/* line 421, ../sass/ls_advanced.scss */
+/* line 437, ../sass/ls_advanced.scss */
 #AdvancedLSerrorSearchStuff {
   margin-top: 3px;
 }
 
-/* line 425, ../sass/ls_advanced.scss */
+/* line 441, ../sass/ls_advanced.scss */
 #in {
   font-size: 110%;
 }
 
-/* line 430, ../sass/ls_advanced.scss */
+/* line 446, ../sass/ls_advanced.scss */
 #LimitsError {
   border: 1px solid #ebece4;
   padding: 5px;
@@ -379,19 +393,19 @@ span.AnyAll {
   margin: 10px 0px;
 }
 
-/* line 442, ../sass/ls_advanced.scss */
+/* line 458, ../sass/ls_advanced.scss */
 #ColContentLSerror {
   margin-top: 10px;
 }
 
-/* line 446, ../sass/ls_advanced.scss */
+/* line 462, ../sass/ls_advanced.scss */
 select, input {
   margin-left: 1em;
   margin-right: 1em;
 }
 
 /** XXX fix this**/
-/* line 458, ../sass/ls_advanced.scss */
+/* line 474, ../sass/ls_advanced.scss */
 .SearchResults_status {
   line-height: 120%;
 }
