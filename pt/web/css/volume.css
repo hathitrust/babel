@@ -72,29 +72,29 @@ body {
   -moz-box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
 }
-/* line 89, ../sass/toolbar.scss */
+/* line 86, ../sass/toolbar.scss */
 .toolbar-horizontal .btn-toolbar {
   margin-bottom: 0;
 }
-/* line 93, ../sass/toolbar.scss */
+/* line 90, ../sass/toolbar.scss */
 .toolbar-horizontal .options.btn-toolbar {
   margin-top: 0;
   padding-top: 0;
 }
-/* line 97, ../sass/toolbar.scss */
+/* line 94, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline {
   margin: 0;
   margin-left: 10px;
   display: inline-block;
 }
-/* line 100, ../sass/toolbar.scss */
+/* line 97, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline label {
   padding-top: 0px;
   margin: 0;
   margin-right: 5px;
   font-size: 12px;
 }
-/* line 104, ../sass/toolbar.scss */
+/* line 101, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline input[type=text] {
   height: 30px;
   padding-top: 0;
@@ -106,17 +106,17 @@ body {
   font-size: 1.2rem ;
   text-align: center;
 }
-/* line 110, ../sass/toolbar.scss */
+/* line 107, ../sass/toolbar.scss */
 .toolbar-horizontal .form-inline #action-go-page {
   width: auto;
   display: inline-block;
   margin-top: 0px;
 }
-/* line 115, ../sass/toolbar.scss */
+/* line 112, ../sass/toolbar.scss */
 .toolbar-horizontal .table-of-contents {
   margin-left: 10px;
 }
-/* line 119, ../sass/toolbar.scss */
+/* line 116, ../sass/toolbar.scss */
 .toolbar-horizontal #input-search-text {
   width: 100px ;
   width: 10rem ;
@@ -125,11 +125,11 @@ body {
   text-align: left;
 }
 
-/* line 128, ../sass/toolbar.scss */
+/* line 125, ../sass/toolbar.scss */
 .toolbar {
   z-index: 100;
 }
-/* line 131, ../sass/toolbar.scss */
+/* line 128, ../sass/toolbar.scss */
 .toolbar form {
   margin: 0;
   display: inline-block;
@@ -142,23 +142,23 @@ body {
   border-radius: 4px;
   padding-left: 8px;
 }
-/* line 144, ../sass/toolbar.scss */
+/* line 141, ../sass/toolbar.scss */
 .toolbar .options [class^="icon-"], .toolbar .toolbar [class*=" icon-"] {
   background: none;
   color: black;
 }
-/* line 149, ../sass/toolbar.scss */
+/* line 146, ../sass/toolbar.scss */
 .toolbar .btn.square {
   height: 38px;
   width: 46px;
   /*font-size: 18px;*/
   color: black;
 }
-/* line 156, ../sass/toolbar.scss */
+/* line 153, ../sass/toolbar.scss */
 .toolbar .iconz-doc-2, .toolbar .iconz-doc-text {
   margin-left: -1px;
 }
-/* line 161, ../sass/toolbar.scss */
+/* line 158, ../sass/toolbar.scss */
 .toolbar [class^="icomoon-"],
 .toolbar [class*=" icomoon-"] {
   display: inline-block;
@@ -171,32 +171,32 @@ body {
   color: #333;
   margin-top: 0.25em;
 }
-/* line 173, ../sass/toolbar.scss */
+/* line 170, ../sass/toolbar.scss */
 .toolbar .icomoon-iconmonstr-magnifier-6-icon, .toolbar .icomoon-iconmonstr-magnifier-7-icon {
   font-size: 1.8em;
   margin-left: -0.125em;
   margin-top: 0.1em;
 }
-/* line 179, ../sass/toolbar.scss */
+/* line 176, ../sass/toolbar.scss */
 .toolbar .icomoon-list {
   font-size: 1.0em;
 }
-/* line 183, ../sass/toolbar.scss */
+/* line 180, ../sass/toolbar.scss */
 .toolbar .icon-white {
   color: #fff;
 }
-/* line 187, ../sass/toolbar.scss */
+/* line 184, ../sass/toolbar.scss */
 .toolbar .icomoon-scroll, .toolbar .icomoon-documents {
   font-size: 1.4em;
 }
 
-/* line 193, ../sass/toolbar.scss */
+/* line 190, ../sass/toolbar.scss */
 .sticky #toolbar-vertical {
   position: fixed;
   top: 40px;
 }
 
-/* line 198, ../sass/toolbar.scss */
+/* line 195, ../sass/toolbar.scss */
 .sticky #toolbar-horizontal {
   position: fixed;
   top: 30px;
@@ -205,44 +205,75 @@ body {
   left: 0;
 }
 
-/* line 206, ../sass/toolbar.scss */
+/* line 203, ../sass/toolbar.scss */
 .options a, .inner-search a {
   text-decoration: none;
 }
 
-/* line 210, ../sass/toolbar.scss */
+/* line 207, ../sass/toolbar.scss */
 .btn.square {
   width: 40px;
 }
 
-/* line 214, ../sass/toolbar.scss */
+/* line 211, ../sass/toolbar.scss */
 .btn.dropdown-toggle.square {
   width: 52px;
 }
 
-/* line 218, ../sass/toolbar.scss */
+/* line 215, ../sass/toolbar.scss */
 .label {
   display: none;
 }
 
-/* line 229, ../sass/toolbar.scss */
+/* line 226, ../sass/toolbar.scss */
 #scrolling {
   margin-left: 55px ;
   margin-left: 5.5rem ;
 }
 
-/* line 233, ../sass/toolbar.scss */
+/* line 230, ../sass/toolbar.scss */
 #content {
   padding: 24px ;
   padding: 2.4rem ;
 }
 
-/* line 237, ../sass/toolbar.scss */
+/* line 234, ../sass/toolbar.scss */
 .scrollable-list {
   max-height: 550px ;
   max-height: 55rem ;
   overflow: hidden;
   overflow-y: auto;
+}
+
+/* line 240, ../sass/toolbar.scss */
+#menu-toggle {
+  display: none;
+  color: #ef7c22;
+  font-size: 24px;
+  text-decoration: none;
+  line-height: 34px;
+  margin-right: -48px;
+}
+
+/* line 249, ../sass/toolbar.scss */
+.dropped {
+  z-index: 900;
+  background: #FFFEFB;
+  -webkit-box-shadow: 16px 20px 35px rgba(0, 0, 0, 0.8);
+  -moz-box-shadow: 16px 20px 35px rgba(0, 0, 0, 0.8);
+  box-shadow: 16px 20px 35px rgba(0, 0, 0, 0.8);
+  height: 160px ;
+  height: 16rem ;
+}
+/* line 255, ../sass/toolbar.scss */
+.dropped .logo {
+  margin-left: 10px !important;
+  margin-left: 1rem !important;
+}
+/* line 259, ../sass/toolbar.scss */
+.dropped .log-in {
+  margin-top: -25px !important;
+  margin-top: -2.5rem !important;
 }
 
 /* line 7, ../sass/volume/thumb.scss */

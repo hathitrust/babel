@@ -236,3 +236,27 @@ body {
         overflow: hidden;
         overflow-y: auto;
 }
+
+#menu-toggle {
+    display: none;
+    color: $hathitrust-orange-color;
+    font-size: 24px;
+    text-decoration: none;
+    line-height: 34px;
+    margin-right: -48px;
+}
+
+.dropped {
+    z-index: 900;
+    background: #FFFEFB;
+    @include single-box-shadow(rgba(0, 0, 0, 0.8), 16px, 20px, 35px);
+    @include rem(height, 160);
+
+    .logo {
+        @include rem(margin-left, 10, !important);
+    }
+
+    .log-in {
+        @include rem(margin-top, -25, !important);
+    }
+}
