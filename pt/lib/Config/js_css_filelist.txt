@@ -47,6 +47,7 @@ Section:LOCAL_JS
 
 Section:PAGETURNER_VOLUME_JS
 Test://ItemType='volume' and $gSkin='default'
+/pt/web/js/scrolling.js
 /pt/web/vendor/nanoscroller/jquery.nanoscroller.js
 /pt/web/vendor/jquery.fracs.js
 /pt/web/vendor/jquery.viewport.js
@@ -63,7 +64,6 @@ Test://ItemType='volume' and $gSkin='default'
 /pt/web/js/view/thumb.js
 /pt/web/js/view/flip.js
 /pt/web/js/view/plaintext.js
-/pt/web/js/scrolling.js
 /pt/web/js/access_banner_02.js
 /pt/web/js/version_popup.js
 
