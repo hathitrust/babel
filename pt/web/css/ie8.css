@@ -1,0 +1,11 @@
+.dropped {
+    border-bottom: 4px solid black;
+    border-right: 4px solid black;
+    border-left: 2px solid #ccc;
+}
+
+i.icomoon-reorder:before {
+    content:"=";
+    font-family: monospace;
+    font-weight: bold;
+}
