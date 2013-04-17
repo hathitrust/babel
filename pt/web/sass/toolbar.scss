@@ -237,7 +237,7 @@ body {
         overflow-y: auto;
 }
 
-#menu-toggle {
+#menu-toggleXXX {
     display: none;
     color: $hathitrust-orange-color;
     text-decoration: none;
@@ -256,6 +256,36 @@ body {
         @include rem(font-size, 24);
         @include rem(line-height, 34);
     }
+
+}
+
+#navbar-inner {
+    position: relative;
+}
+
+#menu-toggle {
+
+    position: absolute;
+    @include rem(height, 36);
+    @include rem(width, 36);
+    @include rem(font-size, 24);
+    @include rem(top, 3);
+    @include rem(right, -15);
+
+    a {
+        color: $hathitrust-orange-color;
+        display: block;
+        text-decoration: none;
+        @include rem(height, 32);
+        @include rem(width, 32);
+        // @include rem(padding-right, 0);
+        @include rem(padding-left, 6);
+
+        &.active {
+            background: #000;
+        }
+    }
+    
 
 }
 

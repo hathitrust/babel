@@ -245,7 +245,7 @@ body {
 }
 
 /* line 240, ../sass/toolbar.scss */
-#menu-toggle {
+#menu-toggleXXX {
   display: none;
   color: #ef7c22;
   text-decoration: none;
@@ -257,11 +257,11 @@ body {
   margin-right: -48px;
 }
 /* line 251, ../sass/toolbar.scss */
-#menu-toggle.active {
+#menu-toggleXXX.active {
   background: #000;
 }
 /* line 255, ../sass/toolbar.scss */
-#menu-toggle i:before {
+#menu-toggleXXX i:before {
   font-size: 24px ;
   font-size: 2.4rem ;
   line-height: 34px ;
@@ -269,6 +269,42 @@ body {
 }
 
 /* line 262, ../sass/toolbar.scss */
+#navbar-inner {
+  position: relative;
+}
+
+/* line 266, ../sass/toolbar.scss */
+#menu-toggle {
+  position: absolute;
+  height: 36px ;
+  height: 3.6rem ;
+  width: 36px ;
+  width: 3.6rem ;
+  font-size: 24px ;
+  font-size: 2.4rem ;
+  top: 3px ;
+  top: 0.3rem ;
+  right: -15px ;
+  right: -1.5rem ;
+}
+/* line 275, ../sass/toolbar.scss */
+#menu-toggle a {
+  color: #ef7c22;
+  display: block;
+  text-decoration: none;
+  height: 32px ;
+  height: 3.2rem ;
+  width: 32px ;
+  width: 3.2rem ;
+  padding-left: 6px ;
+  padding-left: 0.6rem ;
+}
+/* line 284, ../sass/toolbar.scss */
+#menu-toggle a.active {
+  background: #000;
+}
+
+/* line 292, ../sass/toolbar.scss */
 .dropped {
   z-index: 900;
   background: #FFFEFB;
@@ -278,12 +314,12 @@ body {
   height: 160px ;
   height: 16rem ;
 }
-/* line 268, ../sass/toolbar.scss */
+/* line 298, ../sass/toolbar.scss */
 .dropped .logo a {
   margin-left: 10px !important;
   margin-left: 1rem !important;
 }
-/* line 272, ../sass/toolbar.scss */
+/* line 302, ../sass/toolbar.scss */
 .dropped .log-in {
   margin-top: -25px !important;
   margin-top: -2.5rem !important;

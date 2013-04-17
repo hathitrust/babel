@@ -143,13 +143,14 @@ head.ready(function() {
                 var $menu = $("#menu-toggle");
                 if ( $original.fracs().visible < 0.5 ) {
                     if ( ! $menu.length ) {
-                        var $ul = $("#person-nav");
-                        if ( ! $ul.length ) {
-                            // we are not logged in; bugger.
-                            $ul = $('<ul id="person-nav" class="nav pull-right"></ul>').appendTo("#navbar-inner");
-                        }
+                        // var $ul = $("#person-nav");
+                        // if ( ! $ul.length ) {
+                        //     // we are not logged in; bugger.
+                        //     $ul = $('<ul id="person-nav" class="nav pull-right"></ul>').appendTo("#navbar-inner");
+                        // }
 
-                        $menu = $("<li><a id='menu-toggle' href='#'><span class='offscreen'>Toggle Header</span><i class='icomoon-reorder'></i></a></li>").appendTo($ul);
+                        // $menu = $("<li><a id='menu-toggle' href='#'><span class='offscreen'>Toggle Header</span><i class='icomoon-reorder'></i></a></li>").appendTo($ul);
+                        $menu = $('<div id="menu-toggle"><a href="#"><span class="offscreen">Toggle Header</span><i class="icomoon-reorder"></i></a></div>').appendTo("#navbar-inner");
                         $menu.find("a").click(function(e) {
                             e.preventDefault();
                             handle_drop($(this));
