@@ -84,9 +84,10 @@ sub __Print {
 }
 
 sub rep_get_usage {
-    my $s = qq{Usage: report-j  -r run [-S][-C][-f][-E o|i|m|c|s|A][-d]
+    my $s = qq{Usage: report-j  -r run [-S scqf][-C][-f][-E oimcsA][-d]
            where -C queries build index for num committed
-                 -S statistics only
+                 -S section
+                      s=statistics c=config q=queues f=flags
                  -f forces an email of the report
                  -E reports error ids
                       o=ocr i=indexing m=metadata c=critical s=server A=all\n};
@@ -95,11 +96,10 @@ sub rep_get_usage {
 
 our ($opt_r, $opt_f, $opt_E, $opt_d, $opt_C, $opt_S);
 
-my $ops = getopts('fr:E:dCS');
+my $ops = getopts('fr:E:dCS:');
 
 # Required
 my $RUN = $opt_r;
-my $STATISTICS_ONLY = defined($opt_S); # optionsl
 my $FORCE_EMAIL = $opt_f; # optionsl
 $INTERACTIVE = 0 if ($FORCE_EMAIL);
 my $COMMITTED = defined($opt_C);
@@ -107,6 +107,7 @@ if ($COMMITTED) {
     __confirm("The -C option queries the index and will leave Readers open.\nThis increases disk size by not allowing segments to be deleted.\nTomcat restart required.\n\tOK? [N] ");
 }
 
+my $SECTION = $opt_S || 'A'; # optional, report all sections by default
 my $ERRORS = $opt_E; # optional
 
 if (! $RUN) {
@@ -179,10 +180,8 @@ else {
 if (! $INTERACTIVE) {
     if ($MESSAGE_BUFFER) {
         print($MESSAGE_BUFFER);
-        if (! $STATISTICS_ONLY) {
-            my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
-            SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
-        }
+        my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
+        SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
     }
 }
 
@@ -750,6 +749,9 @@ sub c_report {
     my $dbh = shift;
     my $run = shift;
 
+    # report all sections by default
+    $SECTION = 'scqf' if ($SECTION eq 'A');
+    
     if (! $INTERACTIVE) {
         my $num_shards_enabled = Db::Select_run_num_shards_available($C, $dbh, $run);
         my $non_error_ids_queued_f_indexing = ($Q_size > 0);
@@ -757,26 +759,20 @@ sub c_report {
         return unless (
                        (($num_shards_enabled > 0) && ($non_error_ids_queued_f_indexing))
                        || $FORCE_EMAIL
-                       || $STATISTICS_ONLY
                       );
     }
 
-    if ($STATISTICS_ONLY) {
-        report_statistics($C, $dbh, $run);
-    }
-    else {
-        my $date = `date`;
-        chomp $date;
-        __Print qq{\n ------- Report ($HOST): run=$run @ $date ------\n};
+    my $date = `date`;
+    chomp $date;
+    __Print qq{\n ------- Report ($HOST): run=$run @ $date ------\n};
 
-        report_statistics($C, $dbh, $run);
-
-        report_configuration($C, $dbh, $run);
-
-        report_queue_state($C, $dbh, $run);
-
-        report_flags_state($C, $dbh, $run);
-    }
+    report_statistics($C, $dbh, $run)    if (index($SECTION, 's') >= 0);
+    
+    report_configuration($C, $dbh, $run) if (index($SECTION, 'c') >= 0);
+    
+    report_queue_state($C, $dbh, $run)   if (index($SECTION, 'q') >= 0);
+    
+    report_flags_state($C, $dbh, $run)   if (index($SECTION, 'f') >= 0);
 
     __Print qq{\n};
 }
