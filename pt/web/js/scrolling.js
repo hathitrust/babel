@@ -150,9 +150,9 @@ head.ready(function() {
                         }
 
                         $menu = $("<li><a id='menu-toggle' href='#'><span class='offscreen'>Toggle Header</span><i class='icomoon-reorder'></i></a></li>").appendTo($ul);
-                        $menu.click(function(e) {
+                        $menu.find("a").click(function(e) {
                             e.preventDefault();
-                            handle_drop();
+                            handle_drop($(this));
                         })
                     }
                     $menu.show();
@@ -201,17 +201,18 @@ head.ready(function() {
 
     var handle_resize =  _.debounce(handle_resize_fn, 250);
 
-    var handle_drop = function() {
+    var handle_drop = function($btn) {
         var $header = $("#header");
         if ( $header.is(".dropped") ) {
             var pos = $header.data('pos');
             $header.animate({ top : pos.top }, function() {
                 $header.removeClass("dropped");
+                $btn.removeClass("active");
             });
         } else {
             var pos = { top : $header.css('top') };
             $header.data('pos', pos);
-            $header.addClass("dropped").animate({ top : 40 });
+            $header.addClass("dropped").animate({ top : 40 }, function() { $btn.addClass("active"); });
         }        
     }
 

@@ -249,13 +249,27 @@ body {
 #menu-toggle {
   display: none;
   color: #ef7c22;
-  font-size: 24px;
   text-decoration: none;
-  line-height: 34px;
+  width: 36px;
+  padding-left: 6px;
+  padding-right: 5px;
+  padding-top: 11px;
+  padding-bottom: 4px;
   margin-right: -48px;
 }
+/* line 251, ../sass/toolbar.scss */
+#menu-toggle.active {
+  background: #000;
+}
+/* line 255, ../sass/toolbar.scss */
+#menu-toggle i:before {
+  font-size: 24px ;
+  font-size: 2.4rem ;
+  line-height: 34px ;
+  line-height: 3.4rem ;
+}
 
-/* line 249, ../sass/toolbar.scss */
+/* line 262, ../sass/toolbar.scss */
 .dropped {
   z-index: 900;
   background: #FFFEFB;
@@ -265,12 +279,12 @@ body {
   height: 160px ;
   height: 16rem ;
 }
-/* line 255, ../sass/toolbar.scss */
+/* line 268, ../sass/toolbar.scss */
 .dropped .logo a {
   margin-left: 10px !important;
   margin-left: 1rem !important;
 }
-/* line 259, ../sass/toolbar.scss */
+/* line 272, ../sass/toolbar.scss */
 .dropped .log-in {
   margin-top: -25px !important;
   margin-top: -2.5rem !important;
