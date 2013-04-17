@@ -1,4 +1,3 @@
-/* lets me easily translate font-sizes from mockup */
 /* line 4, ../../../mdp-web/sass/results.scss */
 .alert.summary span {
   font-weight: bold;
@@ -69,7 +68,7 @@
 }
 /* line 61, ../../../mdp-web/sass/results.scss */
 .row.result .options {
-  width: 85px;
+  min-width: 85px;
 }
 /* line 65, ../../../mdp-web/sass/results.scss */
 .row.result .cover {
