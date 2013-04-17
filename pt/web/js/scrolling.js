@@ -220,17 +220,7 @@ head.ready(function() {
     $(window).on('scroll', handle_scroll_vertical);
     $(window).on('scroll', handle_scroll_horizontal);
 
-    if ( ! window.$window ) {
-        window.$window = $(window);
-        // bind the resize for IE8
-        if ( $.browser.msie ) {
-          if ( parseInt($.browser.version) <= 8 ) {
-            $window = $("body");
-            console.log("REDEFINING $window");
-          }
-        }
-    }
-
+    var $window = get_resize_root();
     $window.on('resize', handle_resize);
 
     $(window).on('reset', function() {
