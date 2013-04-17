@@ -56,6 +56,9 @@
 
     .metadata {
         @include rem(padding-left, 16);
+        a:visited {
+            color: $link-visited-color;
+        }
     }
 
     .options {
