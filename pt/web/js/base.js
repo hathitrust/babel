@@ -134,11 +134,9 @@ head.ready(function() {
    
   }(jQuery));
 
-  var $window;
-
   $(document).ready(function() {
 
-    $window = $(window);
+    window.$window = $(window);
 
     // bind the resize for IE8
     if ( $.browser.msie ) {
