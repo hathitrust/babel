@@ -93,6 +93,11 @@
 
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/pt/css/screen.css" />
+
+    <xsl:text disable-output-escaping="yes">
+    <![CDATA[<!--[if lte IE 8]><link rel="stylesheet" type="text/css" href="/pt/css/ie8.css" /><![endif]-->]]>
+    </xsl:text>
+
     <script>
       var HT = HT || {};
       <!-- this should really become a JSON blob -->

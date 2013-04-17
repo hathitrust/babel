@@ -121,7 +121,7 @@ HT.Viewer.Thumbnail = {
             self._resizing = false;
         }, 250);
 
-        $(window).on('resize.viewer.thumb', _lazyResize);
+        $window.on('resize.viewer.thumb', _lazyResize);
 
     },
 

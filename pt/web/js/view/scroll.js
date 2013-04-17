@@ -121,7 +121,7 @@ HT.Viewer.Scroll = {
             self._resizing = false;
         }, 250);
 
-        $(window).on('resize.viewer.scroll', _lazyResize);
+        $window.on('resize.viewer.scroll', _lazyResize);
 
     },
 

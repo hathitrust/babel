@@ -4576,7 +4576,7 @@ HT.Viewer.Scroll = {
             self._resizing = false;
         }, 250);
 
-        $(window).on('resize.viewer.scroll', _lazyResize);
+        $window.on('resize.viewer.scroll', _lazyResize);
 
     },
 
@@ -4972,7 +4972,7 @@ HT.Viewer.Thumbnail = {
             self._resizing = false;
         }, 250);
 
-        $(window).on('resize.viewer.thumb', _lazyResize);
+        $window.on('resize.viewer.thumb', _lazyResize);
 
     },
 
@@ -5260,7 +5260,7 @@ HT.Viewer.Flip = {
             self._resizing = false;
         }, 250);
 
-        $(window).on('resize.viewer.flip', _lazyResize);
+        $window.on('resize.viewer.flip', _lazyResize);
 
         $("body").on('image.fudge.flip', "img", function() {
             var $img = $(this);
@@ -5964,7 +5964,19 @@ head.ready(function() {
 
     $(window).on('scroll', handle_scroll_vertical);
     $(window).on('scroll', handle_scroll_horizontal);
-    $(window).on('resize', handle_resize);
+
+    if ( ! window.$window ) {
+        window.$window = $(window);
+        // bind the resize for IE8
+        if ( $.browser.msie ) {
+          if ( parseInt($.browser.version) <= 8 ) {
+            $window = $("body");
+            console.log("REDEFINING $window");
+          }
+        }
+    }
+
+    $window.on('resize', handle_resize);
 
     $(window).on('reset', function() {
         setTimeout(function() {

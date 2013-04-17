@@ -102,7 +102,7 @@ HT.Viewer.Flip = {
             self._resizing = false;
         }, 250);
 
-        $(window).on('resize.viewer.flip', _lazyResize);
+        $window.on('resize.viewer.flip', _lazyResize);
 
         $("body").on('image.fudge.flip', "img", function() {
             var $img = $(this);

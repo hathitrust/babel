@@ -496,7 +496,19 @@ if (!Date.now) {
  
 }(jQuery));
 
+var $window;
+
 $(document).ready(function() {
+
+  $window = $(window);
+
+  // bind the resize for IE8
+  if ( $.browser.msie ) {
+    if ( parseInt($.browser.version) <= 8 ) {
+      $window = $("body");
+      console.log("REDEFINING $window");
+    }
+  }
 
   //** THESE COULD BE DONE IN reader.js
 
