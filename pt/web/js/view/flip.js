@@ -102,7 +102,8 @@ HT.Viewer.Flip = {
             self._resizing = false;
         }, 250);
 
-        $window.on('resize.viewer.flip', _lazyResize);
+        var $e = get_resize_root();
+        $e.on('resize.viewer.flip', _lazyResize);
 
         $("body").on('image.fudge.flip', "img", function() {
             var $img = $(this);
@@ -417,12 +418,14 @@ HT.Viewer.Flip = {
                     perspective: 1300,
                     n : pages.length,
                     onBeforeFlip : function ( page, isLimit ) {
+                        $container.addClass("flipping");
                         console.log("PRE FLIP:", page, isLimit);
                         self.$leafs.slice(page,page+1).attr('aria-hidden', 'true');
                         // load images a couple of pages in the future
                     },
                     onEndFlip : function ( page, isLimit ) {
                         console.log("FLIPPED:", page, isLimit);
+                        $container.removeClass("flipping");
                         self.$leafs.slice(page,page+1).attr('aria-hidden', 'false');
                         self.loadPage(page - 1);
                         self.loadPage(page - 2);
@@ -459,7 +462,11 @@ HT.Viewer.Flip = {
             tooltip : 'show',
             label : function(current, total) {
                 var seq = self._page2seq(current);
-                seq = seq[0];
+                if ( seq[0] == null ) {
+                    seq = seq[1];
+                } else {
+                    seq = seq[0];
+                }
                 var num = self.options.manager.getPageNumForSeq(seq);
                 var text = " / " + last_num;
                 if ( num ) {

@@ -62,11 +62,15 @@
   margin: 0 auto;
 }
 /* line 68, ../../sass/volume/flip.scss */
+.bb-bookblock.flipping {
+  z-index: 500;
+}
+/* line 72, ../../sass/volume/flip.scss */
 .bb-bookblock.lowered {
   z-index: 0;
 }
 
-/* line 73, ../../sass/volume/flip.scss */
+/* line 77, ../../sass/volume/flip.scss */
 .bb-item {
   width: 100%;
   height: 100%;
@@ -77,7 +81,7 @@
   background: #fff;
 }
 
-/* line 83, ../../sass/volume/flip.scss */
+/* line 87, ../../sass/volume/flip.scss */
 .bb-page {
   width: 50%;
   height: 100%;
@@ -95,7 +99,7 @@
   transform-origin: left center;
 }
 
-/* line 105, ../../sass/volume/flip.scss */
+/* line 109, ../../sass/volume/flip.scss */
 .bb-page > div,
 .bb-outer,
 .bb-content {
@@ -105,19 +109,19 @@
   left: 0;
 }
 
-/* line 112, ../../sass/volume/flip.scss */
+/* line 116, ../../sass/volume/flip.scss */
 .bb-content {
   background: #fff;
 }
 
-/* line 116, ../../sass/volume/flip.scss */
+/* line 120, ../../sass/volume/flip.scss */
 .bb-inner {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-/* line 122, ../../sass/volume/flip.scss */
+/* line 126, ../../sass/volume/flip.scss */
 .bb-overlay, .bb-outer {
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
@@ -126,7 +130,7 @@
   backface-visibility: hidden;
 }
 
-/* line 130, ../../sass/volume/flip.scss */
+/* line 134, ../../sass/volume/flip.scss */
 .bb-page > div {
   width: 100%;
   -webkit-transform-style: preserve-3d;
@@ -141,7 +145,7 @@
   backface-visibility: hidden;
 }
 
-/* line 145, ../../sass/volume/flip.scss */
+/* line 149, ../../sass/volume/flip.scss */
 .bb-back {
   -webkit-transform: rotateY(-180deg);
   -moz-transform: rotateY(-180deg);
@@ -150,14 +154,14 @@
   transform: rotateY(-180deg);
 }
 
-/* line 153, ../../sass/volume/flip.scss */
+/* line 157, ../../sass/volume/flip.scss */
 .bb-outer {
   width: 100%;
   overflow: hidden;
   z-index: 999;
 }
 
-/* line 160, ../../sass/volume/flip.scss */
+/* line 164, ../../sass/volume/flip.scss */
 .bb-overlay,
 .bb-flipoverlay {
   background-color: rgba(0, 0, 0, 0.7);
@@ -169,12 +173,12 @@
   opacity: 0;
 }
 
-/* line 170, ../../sass/volume/flip.scss */
+/* line 174, ../../sass/volume/flip.scss */
 .bb-flipoverlay {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* line 175, ../../sass/volume/flip.scss */
+/* line 179, ../../sass/volume/flip.scss */
 .bb-bookblock > div.bb-page:first-child,
 .bb-bookblock > div.bb-page:first-child .bb-back {
   -webkit-transform: rotateY(180deg);
@@ -184,7 +188,7 @@
   transform: rotateY(180deg);
 }
 
-/* line 185, ../../sass/volume/flip.scss */
+/* line 189, ../../sass/volume/flip.scss */
 .view-2up .page-item {
   width: 680px;
   /*max-width: 680px;*/
@@ -198,7 +202,7 @@
   min-width: inherit;
   height: 98%;
 }
-/* line 204, ../../sass/volume/flip.scss */
+/* line 208, ../../sass/volume/flip.scss */
 .view-2up .page-item img {
   /* max-height AND max-width will keep aspect ratio */
   max-height: 100%;
@@ -207,25 +211,25 @@
   border: 1px solid #d5d3d3;
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
-/* line 216, ../../sass/volume/flip.scss */
+/* line 220, ../../sass/volume/flip.scss */
 .view-2up .page-item.loaded {
   background-image: none;
 }
-/* line 220, ../../sass/volume/flip.scss */
+/* line 224, ../../sass/volume/flip.scss */
 .view-2up .page-item.loaded img {
   visibility: visible;
 }
-/* line 224, ../../sass/volume/flip.scss */
+/* line 228, ../../sass/volume/flip.scss */
 .view-2up .page-item.untypical-page img {
   border: 4px double #d5d3d3;
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.8);
 }
-/* line 230, ../../sass/volume/flip.scss */
+/* line 234, ../../sass/volume/flip.scss */
 .view-2up .page-item button {
   margin: 10px;
   float: left;
 }
-/* line 237, ../../sass/volume/flip.scss */
+/* line 241, ../../sass/volume/flip.scss */
 .view-2up .page-left {
   width: 50%;
   /*48%;*/
@@ -238,12 +242,12 @@
   bottom: 0;
   text-align: right;
 }
-/* line 248, ../../sass/volume/flip.scss */
+/* line 252, ../../sass/volume/flip.scss */
 .view-2up .page-left .page-num {
   right: auto;
   left: 40px;
 }
-/* line 255, ../../sass/volume/flip.scss */
+/* line 259, ../../sass/volume/flip.scss */
 .view-2up .page-right {
   width: 50%;
   /*48%;*/
@@ -255,54 +259,54 @@
   bottom: 0;
   text-align: left;
 }
-/* line 265, ../../sass/volume/flip.scss */
+/* line 269, ../../sass/volume/flip.scss */
 .view-2up .page-right .page-num {
   right: 40px;
 }
-/* line 271, ../../sass/volume/flip.scss */
+/* line 275, ../../sass/volume/flip.scss */
 .view-2up .empty {
   background: #fff;
   border: none;
   box-shadow: none;
 }
 
-/* line 284, ../../sass/volume/flip.scss */
+/* line 288, ../../sass/volume/flip.scss */
 .view-2up .page-item.page-right button {
   float: right;
 }
 
-/* line 300, ../../sass/volume/flip.scss */
+/* line 304, ../../sass/volume/flip.scss */
 .flip-rotating {
   -webkit-transition: all 1s ease;
   transition: rotate 1s ease;
 }
 
-/* line 305, ../../sass/volume/flip.scss */
+/* line 309, ../../sass/volume/flip.scss */
 .flip-rotated-90 {
   -webkit-transform: rotate(90deg);
   margin-top: 200px;
   margin-bottom: 200px;
 }
 
-/* line 311, ../../sass/volume/flip.scss */
+/* line 315, ../../sass/volume/flip.scss */
 .flip-rotated-180 {
   -webkit-transform: rotate(180deg);
 }
 
-/* line 315, ../../sass/volume/flip.scss */
+/* line 319, ../../sass/volume/flip.scss */
 .flip-rotated-270 {
   -webkit-transform: rotate(270deg);
   margin-top: 200px;
   margin-bottom: 200px;
 }
 
-/* line 323, ../../sass/volume/flip.scss */
+/* line 327, ../../sass/volume/flip.scss */
 .nob {
   width: 100%;
 }
 
-/* line 327, ../../sass/volume/flip.scss */
+/* line 331, ../../sass/volume/flip.scss */
 .slider.slider-horizontal {
   margin-top: 8px;
-  z-index: 50;
+  z-index: 105;
 }

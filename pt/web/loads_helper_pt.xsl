@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1366214058'" />
+  <xsl:variable name="timestamp" select="'?_=1366231212'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         (function() {
@@ -48,6 +48,7 @@
             to_load.push("/pt/js/base.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/feedback.js<xsl:value-of select="$timestamp" />");
     <xsl:if test="//ItemType='volume' and $gSkin='default'">
+            to_load.push("/pt/js/scrolling.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/nanoscroller/jquery.nanoscroller.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/jquery.fracs.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/jquery.viewport.js<xsl:value-of select="$timestamp" />");
@@ -64,7 +65,6 @@
             to_load.push("/pt/js/view/thumb.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/view/flip.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/view/plaintext.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/pt/js/scrolling.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/access_banner_02.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/version_popup.js<xsl:value-of select="$timestamp" />");
     </xsl:if>

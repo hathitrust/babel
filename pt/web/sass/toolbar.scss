@@ -77,6 +77,8 @@ body {
     margin-bottom: -5px;
     background: #FFFEFB;
 
+    z-index: 105;
+
     @include rem(width, 725);
 
     &.locked {
@@ -123,7 +125,7 @@ body {
 
 
 .toolbar {
-    z-index: 100;
+    z-index: 105;
 
     form {
         margin: 0;

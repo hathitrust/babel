@@ -68,6 +68,21 @@ if (!Date.now) {
   }
 }
 
+var get_resize_root = function() {
+  if ( window.$window === undefined ) {
+    window.$window = $(window);
+
+    // bind the resize for IE8
+    if ( $.browser.msie ) {
+      if ( parseInt($.browser.version) <= 8 ) {
+        $window = $("body");
+        console.log("REDEFINING $window");
+      }
+    }
+  }
+  return window.$window;
+}
+
 head.ready(function() {
 
   !function( $ ) {
@@ -135,16 +150,6 @@ head.ready(function() {
   }(jQuery));
 
   $(document).ready(function() {
-
-    window.$window = $(window);
-
-    // bind the resize for IE8
-    if ( $.browser.msie ) {
-      if ( parseInt($.browser.version) <= 8 ) {
-        $window = $("body");
-        console.log("REDEFINING $window");
-      }
-    }
 
     //** THESE COULD BE DONE IN reader.js
 

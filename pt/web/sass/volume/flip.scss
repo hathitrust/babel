@@ -65,6 +65,10 @@
     z-index: 100;
     margin: 0 auto;
 
+    &.flipping {
+        z-index: 500;
+    }
+
     &.lowered {
         z-index: 0;
     }
@@ -326,6 +330,6 @@
 
 .slider.slider-horizontal {
     margin-top: 8px;
-    z-index: 50;
+    z-index: 105;
 }
 
