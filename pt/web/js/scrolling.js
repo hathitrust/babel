@@ -49,7 +49,7 @@ head.ready(function() {
 
         if ( ! $original.is(".no-dummy") ) {
             var extra_h = $original.data('extra-height') || 0;
-            var $dummy = $("<div><div></div></div>").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.outerHeight() + extra_h, width : w });
+            var $dummy = $("<div><div></div></div>").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.height() + extra_h, width : w });
             $original.before($dummy).addClass('fixed-placed');
             $original.css('top', $dummy.offset().top).width($dummy.outerWidth()).addClass("static");
             if ( $original.is(".fixed-x") ) {
