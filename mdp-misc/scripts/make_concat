@@ -273,17 +273,18 @@ sub write_xsl_file{
     print {$XSL_FH} <<XSL;
     <script type="text/javascript">
         (function() {
-            var to_load = [];
-            to_load.push("/$PROGRAM/js/concatenated_common-min.js<xsl:value-of select="\$timestamp" />");
+            window.HT = window.HT || {};
+            HT.scripts = HT.scripts || [];
+            HT.scripts.push("/$PROGRAM/js/concatenated_common-min.js<xsl:value-of select="\$timestamp" />");
 XSL
 
     foreach my $key ( @OPTIONAL_JS_LIST ) {
         print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_JS{$key}{'test'}">\n};
-        print {$XSL_FH} qq{            to_load.push("/$PROGRAM/js/concatenated_${key}-min.js<xsl:value-of select="\$timestamp" />");\n};
+        print {$XSL_FH} qq{            HT.scripts.push("/$PROGRAM/js/concatenated_${key}-min.js<xsl:value-of select="\$timestamp" />");\n};
         print {$XSL_FH} qq{    </xsl:if>\n};
     }
 
-    print {$XSL_FH} qq{            head.js.apply(this, to_load);\n};
+    # print {$XSL_FH} qq{            head.js.apply(this, to_load);\n};
     print {$XSL_FH} qq{        \})()\n};
     print {$XSL_FH} qq{    </script>\n};
     
@@ -306,7 +307,9 @@ XSL
     print {$XSL_FH} <<XSL;
     <script type="text/javascript">
         (function() {
-            var to_load = [];
+            window.HT = window.HT || {};
+            HT.scripts = HT.scripts || [];
+            var to_load = HT.scripts;
 XSL
     
     foreach my $filename (@{$jsfiles_ref}) {
@@ -323,7 +326,7 @@ XSL
         print {$XSL_FH} qq{    </xsl:if>\n};
     }
     
-    print {$XSL_FH} qq{            head.js.apply(this, to_load);\n};
+    # print {$XSL_FH} qq{            head.js.apply(this, to_load);\n};
     print {$XSL_FH} qq{        \})()\n};
     
     print {$XSL_FH} qq{    </script>\n};
