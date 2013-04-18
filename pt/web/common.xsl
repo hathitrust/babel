@@ -1048,6 +1048,7 @@
       <strong>Version: </strong><xsl:value-of select="$gVersionLabel"/>
       <xsl:element name="a">
         <xsl:attribute name="id">versionIcon</xsl:attribute>
+        <xsl:attribute name="default-form">data-default-form</xsl:attribute>
         <xsl:attribute name="href">
           <xsl:value-of select="' '"/>
         </xsl:attribute>
