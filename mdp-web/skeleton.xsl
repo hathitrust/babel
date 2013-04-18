@@ -34,6 +34,8 @@
       <option value="seriestitle">Series Title</option>
   </xsl:variable>
 
+  <xsl:template name="load_base_js" />
+
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
       <xsl:attribute name="data-analytics-code">
