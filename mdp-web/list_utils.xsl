@@ -1015,6 +1015,7 @@
 
     <div class="{$row_class}">
       <xsl:variable name="item-number" select="position()" />
+      <!-- push2 -->
       <div class="span{$span-n} push2 metadata">
         <h4 class="Title">
           <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
@@ -1100,6 +1101,8 @@
 
       </div>
 
+      <!-- options span2 pull{$span-n + 2} -->
+      <!-- options span1 pull{$span-n + 1}_5 -->
       <div class="options span2 pull{$span-n + 2}">
         <div class="cover">
           <xsl:if test="normalize-space(bookID)">
