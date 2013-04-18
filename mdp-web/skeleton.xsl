@@ -24,8 +24,8 @@
 
   <xsl:variable name="search-options">
       <!-- <option value="ocr" data-target="ls">Everything</option> -->
-      <option value="all">Everything</option>
-      <option value="ocronly" data-target="ls">Just Full Text</option>
+      <option value="all">All Fields</option>
+      <!-- <option value="ocronly" data-target="ls">Just Full Text</option> -->
       <option value="title">Title</option>
       <option value="author">Author</option>
       <option value="subject">Subject</option>
