@@ -32,7 +32,7 @@
     <!-- <link rel="stylesheet" type="text/css" href="/mb/list_colls.css" /> -->
 
     <xsl:call-template name="include_local_javascript" />
-    <xsl:call-template name="load_js_and_css"/>
+    <!-- <xsl:call-template name="load_js_and_css"/> -->
     
   </xsl:template>
 

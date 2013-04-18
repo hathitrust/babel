@@ -764,8 +764,8 @@ var ListBrowser = {
         html.push('<div class="right">');
       }
 
-      var innerHTML = data.num_items + " item";
-      if ( data.num_items > 1 ) { innerHTML += "s"; }
+      var innerHTML = ( data.num_items || 0 ) + " item";
+      if ( data.num_items != 1 ) { innerHTML += "s"; }
       
       html.push('<p class="num_items">' + innerHTML + '</p>');
       
