@@ -51,9 +51,10 @@
 
         <xsl:comment>IE PRE-SETUP</xsl:comment>
 
+        <xsl:call-template name="load_js"/>
+
         <script type="text/javascript" src="/common/unicorn/js/head.min.js"></script>
         <script type="text/javascript" src="/common/unicorn/js/common.js"></script>
-
 
         <link rel="stylesheet" type="text/css" href="/common/unicorn/css/common.css" />
 

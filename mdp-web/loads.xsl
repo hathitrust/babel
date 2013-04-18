@@ -5,7 +5,7 @@
   version="1.0">
 
   <xsl:template name="load_js_and_css">
-    <xsl:call-template name="load_js"/>
+    <!-- <xsl:call-template name="load_js"/> -->
     <xsl:call-template name="load_css"/>
   </xsl:template>
 
