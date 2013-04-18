@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1366313011'" />
+  <xsl:variable name="timestamp" select="'?_=1366317681'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var _js = [];
@@ -17,21 +17,17 @@
   <xsl:template name="load_uncompressed_js">
     <script type="text/javascript">
         var _js = [];
-    _js.push("/ls/yui2-lib/build/yahoo/yahoo-min.js<xsl:value-of select="$timestamp" />");
-    _js.push("/ls/yui2-lib/build/event/event-min.js<xsl:value-of select="$timestamp" />");
-    _js.push("/ls/yui2-lib/build/dom/dom-min.js<xsl:value-of select="$timestamp" />");
-    _js.push("/ls/yui2-lib/build/dragdrop/dragdrop-min.js<xsl:value-of select="$timestamp" />");
-    _js.push("/ls/yui2-lib/build/container/container-min.js<xsl:value-of select="$timestamp" />");
-    _js.push("/ls/yui2-lib/build/connection/connection-min.js<xsl:value-of select="$timestamp" />");
     _js.push("/mdp-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
     _js.push("/mdp-web/jquery/boxy/jquery.boxy.js<xsl:value-of select="$timestamp" />");
     _js.push("/mdp-web/js/feedbackLSForm.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mdp-web/js/newCollOverlayCore.js<xsl:value-of select="$timestamp" />");
-    _js.push("/mdp-web/js/overlayUtils.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/google_covers.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/search_tools.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/collection_tools.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
     _js.push("/mdp-web/js/listUtils.js<xsl:value-of select="$timestamp" />");
     _js.push("/mdp-web/js/search.js<xsl:value-of select="$timestamp" />");
-    _js.push("/ls/js/newCollOverlayLS.js<xsl:value-of select="$timestamp" />");
     _js.push("/ls/js/ls_misc.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/js/ls_advanced.js<xsl:value-of select="$timestamp" />");
     head.js.apply(this, _js);
     </script>
 </xsl:template>

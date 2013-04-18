@@ -38,15 +38,6 @@
 # under /appname/web.
 
 
-Section:YUI
-# These should always be the out of the box minimized versions
-# XXX Some YUI files might not be needed for LS and maybe could be removed
-/ls/web/yui2-lib/build/yahoo/yahoo-min.js
-/ls/web/yui2-lib/build/event/event-min.js
-/ls/web/yui2-lib/build/dom/dom-min.js
-/ls/web/yui2-lib/build/dragdrop/dragdrop-min.js
-/ls/web/yui2-lib/build/container/container-min.js
-/ls/web/yui2-lib/build/connection/connection-min.js
 
 Section:LOCAL_JS
 # These should be listed with the unminimized name.  
@@ -56,12 +47,11 @@ Section:LOCAL_JS
 //common-web/jquery/jquery.trap.min.js
 //common-web/jquery/boxy/jquery.boxy.js
 //common-web/js/feedbackLSForm.js
+//common-web/js/google_covers.js
+//common-web/js/search_tools.js
+//common-web/js/collection_tools.js
+//common-web/jquery/jQuery-URL-Parser/purl.js
 
-# Copied from MBooks, Are these used by ls?
-//common-web/js/newCollOverlayCore.js
-//common-web/js/overlayUtils.js
-
-#//common-web/js/newCollOverlayCB.js
 
 # ListUtils used for checkall checkbox
 //common-web/js/listUtils.js
@@ -71,8 +61,8 @@ Section:LOCAL_JS
 //common-web/js/search.js
 
 # ls specific
-/ls/web/js/newCollOverlayLS.js
 /ls/web/js/ls_misc.js
+/ls/web/js/ls_advanced.js
 
 Section:CSS
 # css files, note last one overides earlier
