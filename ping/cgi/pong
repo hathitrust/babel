@@ -102,6 +102,13 @@ my $app = sub {
     
     my $cookie_name = $config->get('cookie_name');
     my $target_url = $request->param('target');
+    if ( $$env{REQUEST_URI} =~ m,&, ) {
+        $target_url = (split(/\?target=/, $$env{REQUEST_URI}))[-1];
+        if ( $target_url =~ m,\%[0-9]{2}, ) {
+            $target_url = CGI::unescape($target_url);
+        }
+    }
+
     $response = Plack::Response->new(302);
     
     # return session cookie
