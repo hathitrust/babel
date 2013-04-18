@@ -2,30 +2,38 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1356123399'" />
+  <xsl:variable name="timestamp" select="'?_=1366313011'" />
   <xsl:template name="load_concat_js_file">
-    <script type="text/javascript" src="/ls/js/concatenated_common-min.js{$timestamp}"></script>
+    <script type="text/javascript">
+        var _js = [];
+        _js.push("/ls/js/concatenated_common-min.js<xsl:value-of select="$timestamp" />");
+        head.js.apply(this, _js);
+    </script>
   </xsl:template> 
   <xsl:template name="load_concat_css_file">
     <link rel="stylesheet" type="text/css" href="/ls/concatenated_common-min.css{$timestamp}"/>
   </xsl:template> 
 
   <xsl:template name="load_uncompressed_js">
-     <script type="text/javascript" src="/ls/yui2-lib/build/yahoo/yahoo-min.js{$timestamp}"></script>
-     <script type="text/javascript" src="/ls/yui2-lib/build/event/event-min.js{$timestamp}"></script>
-     <script type="text/javascript" src="/ls/yui2-lib/build/dom/dom-min.js{$timestamp}"></script>
-     <script type="text/javascript" src="/ls/yui2-lib/build/dragdrop/dragdrop-min.js{$timestamp}"></script>
-     <script type="text/javascript" src="/ls/yui2-lib/build/container/container-min.js{$timestamp}"></script>
-     <script type="text/javascript" src="/ls/yui2-lib/build/connection/connection-min.js{$timestamp}"></script>
-     <script type="text/javascript" src="//common-web/jquery/jquery.trap.min.js{$timestamp}"></script>
-     <script type="text/javascript" src="//common-web/jquery/boxy/jquery.boxy.js{$timestamp}"></script>
-     <script type="text/javascript" src="//common-web/js/feedbackLSForm.js{$timestamp}"></script>
-     <script type="text/javascript" src="//common-web/js/newCollOverlayCore.js{$timestamp}"></script>
-     <script type="text/javascript" src="//common-web/js/overlayUtils.js{$timestamp}"></script>
-     <script type="text/javascript" src="//common-web/js/listUtils.js{$timestamp}"></script>
-     <script type="text/javascript" src="//common-web/js/search.js{$timestamp}"></script>
-     <script type="text/javascript" src="/ls/js/newCollOverlayLS.js{$timestamp}"></script>
-     <script type="text/javascript" src="/ls/js/ls_misc.js{$timestamp}"></script>
+    <script type="text/javascript">
+        var _js = [];
+    _js.push("/ls/yui2-lib/build/yahoo/yahoo-min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/yui2-lib/build/event/event-min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/yui2-lib/build/dom/dom-min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/yui2-lib/build/dragdrop/dragdrop-min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/yui2-lib/build/container/container-min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/yui2-lib/build/connection/connection-min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/jquery/boxy/jquery.boxy.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/feedbackLSForm.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/newCollOverlayCore.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/overlayUtils.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/listUtils.js<xsl:value-of select="$timestamp" />");
+    _js.push("/mdp-web/js/search.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/js/newCollOverlayLS.js<xsl:value-of select="$timestamp" />");
+    _js.push("/ls/js/ls_misc.js<xsl:value-of select="$timestamp" />");
+    head.js.apply(this, _js);
+    </script>
 </xsl:template>
  
 
