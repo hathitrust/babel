@@ -48,9 +48,15 @@ head.ready(function() {
         // }
 
         if ( ! $original.is(".no-dummy") ) {
-            var extra_h = $original.data('extra-height') || 0;
-            var $dummy = $("<div><div></div></div>").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.height() + extra_h, width : w });
+            var extra_h = $.browser.webkit ? ( $original.data('extra-height') || 0 ) || 0;
+            var $dummy = $("<div><div></div></div>").attr('id', $original.attr("id") + "-dummy").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.outerHeight() + extra_h, width : w });
             $original.before($dummy).addClass('fixed-placed');
+            $dummy = $("#" + $original.attr("id") + "-dummy");
+            // $dummy.height($original.outerHeight());
+            if ( $original.is("#header") ) {
+                console.log("ORIGINAL:", $original.css('height'), $original.height(), $original.outerHeight(false), $original.outerHeight(true), $original.innerHeight(), $dummy.height(), $dummy.outerHeight());
+                var x = 2 * 3;
+            }
             $original.css('top', $dummy.offset().top).width($dummy.outerWidth()).addClass("static");
             if ( $original.is(".fixed-x") ) {
                 $original.css('left', $dummy.offset().left);
