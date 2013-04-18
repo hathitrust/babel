@@ -5113,6 +5113,7 @@ HT.Viewer.Thumbnail = {
         $body.addClass("view-thumb");
         this.bindEvents();
         this.bindScroll();
+        this.calculate();
         this.drawPages();
         $.publish("disable.rotate");
         $.publish("disable.download.page");
@@ -5185,7 +5186,19 @@ HT.Viewer.Thumbnail = {
             var $parent = $(this).parents(".page-item");
             var h2 = $parent.height();
 
-            // console.log("FUDGE: THUMB");
+            var t = 50;
+
+            var n = ( h1 > h2 ) ? h2 : h1;
+            var d = ( h1 > h2 ) ? h1 : h2;
+
+            // console.log("THUMB FUDGING", $parent.attr("id"), h1, h2, ( n / d));
+
+            // if ( ( n / d ) < 0.90 ) {
+            //     // $(this).parent().animate({ height: h1 }, 100);
+            //     console.log("--- FUDGING", $parent.attr("id"), h1);
+            //     $parent.height(h1);
+            //     // $(this).parent().addClass("imaged").addClass("expanded");
+            // }
 
             $parent.addClass("loaded");
         });
@@ -5238,7 +5251,6 @@ HT.Viewer.Thumbnail = {
 
         var lazyLayout = _.debounce(function() {
 
-            console.log("UPDATING THUMBNAIL VIEWS");
             var t0 = Date.now();
 
             if ( ! $(".page-item").length ) { return ; }
@@ -5284,7 +5296,8 @@ HT.Viewer.Thumbnail = {
                 // var $a = $("<a class='page-link' href='#{SEQ}'></a>".replace('{SEQ}', seq)).appendTo($page);
                 // console.log("LOAD PAGE", self.id, self.w);
                 var $a = $page.find("a.page-link");
-                var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: self.w, action : 'thumbnail' });
+                var h = $page.data('h');
+                var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
                 $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
                 $a.append($img);
             } else {
@@ -5292,6 +5305,26 @@ HT.Viewer.Thumbnail = {
 
             }
         })
+    },
+
+    calculate: function() {
+        var self = this;
+        // find an average h for scaling
+        var tmp = {};
+        for(var seq=1; seq <= self.options.manager.num_pages; seq++) {
+            var meta = self.options.manager.get_page_meta({ seq : seq, width : 680 });
+            tmp[meta.height] = ( tmp[meta.height] || 0 ) + 1;
+        }
+        var n = -1; var idx;
+        var heights = _.keys(tmp);
+        self.h = heights[0];
+        for(var i=0; i < heights.length; i++) {
+            var h = heights[i];
+            if ( tmp[h] > n ) {
+                n = tmp[h];
+                self.h = h;
+            }
+        }
     },
 
     drawPages : function() {
@@ -5335,12 +5368,14 @@ HT.Viewer.Thumbnail = {
             var meta = self.options.manager.get_page_meta({ seq : seq, width : 680 });
 
             var r = self.w / meta.width;
-            var h = meta.height * r;
+            // var h = meta.height * r;
+            var h = self.h * r;
 
             var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><a class="page-link" href="#{SEQ}"></a></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
             $page.css({ height : h, width : self.w });
             $page.data('seq', seq);
+            $page.data('h', h);
             $page.addClass("loading");
 
             // need to bind clicking the thumbnail to open to that page; so wrap in an anchor!!
