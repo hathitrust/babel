@@ -55,7 +55,7 @@
     }
 
     .metadata {
-        @include rem(padding-left, 16);
+        @include rem(padding-left, 24); // 16
         a:visited {
             color: $link-visited-color;
         }
@@ -72,6 +72,7 @@
 
         img {
             min-width: 60px;
+            max-width: 60px;
         }
 
     }
