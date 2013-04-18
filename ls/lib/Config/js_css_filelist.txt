@@ -44,30 +44,23 @@ Section:LOCAL_JS
 # The script will run yuicompress on them
 
 # This feedback form script is used for LS.
-//common-web/jquery/jquery.trap.min.js
-//common-web/jquery/boxy/jquery.boxy.js
-//common-web/js/feedbackLSForm.js
+#//common-web/jquery/jquery.trap.min.js  Roger says don't load for now
+#April 9th
+
 //common-web/js/google_covers.js
 //common-web/js/search_tools.js
 //common-web/js/collection_tools.js
 //common-web/jquery/jQuery-URL-Parser/purl.js
 
-
-# ListUtils used for checkall checkbox
-//common-web/js/listUtils.js
-
-# search.js used for ajax call to search so zero result hit does not
-# reload page
-//common-web/js/search.js
-
 # ls specific
 /ls/web/js/ls_misc.js
 /ls/web/js/ls_advanced.js
 
+
 Section:CSS
 # css files, note last one overides earlier
-/ls/web/yui2-lib/build/fonts/fonts-min.css
-/ls/web/yui2-lib/build/container/assets/skins/sam/container.css
-//common-web/jquery/boxy/boxy.css
-//common-web/feedback.css
-//common-web/MBooksCol.css
+#/ls/web/yui2-lib/build/fonts/fonts-min.css
+#/ls/web/yui2-lib/build/container/assets/skins/sam/container.css
+#//common-web/jquery/boxy/boxy.css
+#//common-web/feedback.css
+#//common-web/MBooksCol.css
