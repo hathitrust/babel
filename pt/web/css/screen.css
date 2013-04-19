@@ -1,0 +1,174 @@
+@import url(../vendor/nanoscroller/nanoscroller.css);
+/* line 3, ../sass/screen.scss */
+body {
+  min-width: 975px ;
+  min-width: 97.5rem ;
+}
+
+/* line 9, ../sass/screen.scss */
+.main .main-guts {
+  min-height: 400px;
+}
+
+/* line 14, ../sass/screen.scss */
+.dummy {
+  white-space: nowrap;
+}
+
+/* line 22, ../sass/screen.scss */
+.sidebar > div {
+  width: 200px !important;
+  width: 20rem !important;
+}
+/* line 26, ../sass/screen.scss */
+.sidebar a[disabled] {
+  cursor: default;
+  opacity: 0.65;
+  filter: alpha(opacity=65);
+  text-decoration: none;
+}
+/* line 34, ../sass/screen.scss */
+.sidebar h2 {
+  border-bottom: 1px solid #dddddd;
+  font-size: 16px ;
+  font-size: 1.6rem ;
+  padding-bottom: 8px ;
+  padding-bottom: 0.8rem ;
+  font-size: 16px ;
+  font-size: 1.6rem ;
+}
+/* line 41, ../sass/screen.scss */
+.sidebar ul {
+  list-style: none;
+  padding-left: 0;
+}
+/* line 45, ../sass/screen.scss */
+.sidebar ul li {
+  margin-bottom: 4px ;
+  margin-bottom: 0.4rem ;
+}
+/* line 51, ../sass/screen.scss */
+.sidebar .collectionLinks select {
+  font-size: 12px ;
+  font-size: 1.2rem ;
+  height: 24px ;
+  height: 2.4rem ;
+}
+/* line 56, ../sass/screen.scss */
+.sidebar .collectionLinks button {
+  padding-top: 0;
+}
+/* line 60, ../sass/screen.scss */
+.sidebar .collectionLinks .alert {
+  margin-top: 4px ;
+  margin-top: 0.4rem ;
+}
+/* line 67, ../sass/screen.scss */
+.sidebar .shareLinks input[type=text] {
+  font-size: 12px ;
+  font-size: 1.2rem ;
+  height: 18px ;
+  height: 1.8rem ;
+  cursor: default;
+}
+/* line 75, ../sass/screen.scss */
+.sidebar .scrollable {
+  overflow: hidden;
+  overflow-y: auto;
+}
+/* line 80, ../sass/screen.scss */
+.sidebar .versionContainer {
+  padding-top: 40px ;
+  padding-top: 4rem ;
+  padding-left: 1px ;
+  padding-left: 0.1rem ;
+  font-size: 85%;
+}
+/* line 86, ../sass/screen.scss */
+.sidebar input[type=text] {
+  width: 90%;
+}
+/* line 90, ../sass/screen.scss */
+.sidebar select {
+  width: 90%;
+}
+
+/* line 104, ../sass/screen.scss */
+#versionIcon {
+  display: inline-block;
+  position: relative;
+  height: 18px;
+  width: 18px;
+  margin-left: 5px;
+  background-image: url(/common/unicorn/img/icon_question.png);
+  background-repeat: no-repeat;
+  text-indent: -10000px;
+  text-transform: capitalize;
+  clip: rect(0, 0, 0, 0);
+  cursor: pointer;
+}
+
+/* line 119, ../sass/screen.scss */
+.smaller {
+  font-size: 90%;
+}
+
+/* line 123, ../sass/screen.scss */
+#noPdfAccess {
+  display: none;
+}
+
+/* line 127, ../sass/screen.scss */
+.pdfPartnerLoginLinkMessage {
+  margin-top: 4px ;
+  margin-top: 0.4rem ;
+  color: #666;
+  font-style: italic;
+}
+
+/* line 133, ../sass/screen.scss */
+.hide {
+  display: none;
+}
+
+/* line 137, ../sass/screen.scss */
+.bullets {
+  font-style: italic;
+}
+
+/* line 141, ../sass/screen.scss */
+.modal .accessBannerText p {
+  font-size: 14px ;
+  font-size: 1.4rem ;
+}
+
+/* SOLR HIGHLIGHTING */
+/* line 146, ../sass/screen.scss */
+.solr_highlight_1 {
+  background: #ffff00;
+}
+
+/* line 149, ../sass/screen.scss */
+.solr_highlight_2 {
+  background: #00ff00;
+}
+
+/* line 152, ../sass/screen.scss */
+.solr_highlight_3 {
+  background: #ff9900;
+}
+
+/* line 155, ../sass/screen.scss */
+.solr_highlight_4 {
+  background: #00ffcc;
+}
+
+/* line 158, ../sass/screen.scss */
+.solr_highlight_5 {
+  background: #00cccc;
+}
+
+/* line 161, ../sass/screen.scss */
+.solr_highlight_6 {
+  background: #0099cc;
+}

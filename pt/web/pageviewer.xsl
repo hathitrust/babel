@@ -5,7 +5,10 @@
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   xmlns="http://www.w3.org/1999/xhtml"
-  extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:exsl="http://exslt.org/common"
+  exclude-result-prefixes="exsl METS PREMIS"
+  extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
 
   <!-- Global Variables -->
   <xsl:variable name="gOrphanCandidate" select="/MBooksTop/MBooksGlobals/OrphanCandidate"/>
@@ -35,236 +38,195 @@
     </xsl:choose>
   </xsl:variable>
 
-  <xsl:variable name="gCurrentReaderMode">
-    <xsl:choose>
-<!--       <xsl:when test="$gCurrentUi = 'embed'">embed</xsl:when> -->
-      <xsl:when test="$gCurrentUi = 'embed'">full</xsl:when>  
-      <xsl:otherwise>full</xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
+  <xsl:variable name="gCurrentReaderMode">full</xsl:variable>
 
-  <!-- root template -->
-  <xsl:template match="/MBooksTop">
+  <xsl:template name="setup-html-class">
+    <xsl:if test="$gHTDEV != ''">
+      <xsl:text> htdev</xsl:text>
+    </xsl:if>
+    <xsl:call-template name="setup-extra-html-class" />
+  </xsl:template>
 
+  <xsl:template name="setup-html-attributes">
+    <xsl:variable name="ns">
+      <dc:elem xmlns:dc="http://purl.org/dc/elements/1.1/" />
+      <cc:elem xmlns:cc="http://creativecommons.org/ns#" />
+      <foaf:elem xmlns:foaf="http://xmlns.com/foaf/0.1" />
+    </xsl:variable>
+    <xsl:copy-of select="exsl:node-set($ns)/*/namespace::*" />
+    <xsl:attribute name="version">XHTML+RDFa 1.0</xsl:attribute>
+    <xsl:call-template name="setup-extra-html-attributes" />
+  </xsl:template>
+
+  <xsl:template name="setup-extra-html-attributes" />
+  <xsl:template name="setup-extra-html-class" />
+
+  <xsl:template name="header-search-q1-value">
+    <xsl:value-of select="//HeaderSearchParams/Field[@name='q1']" />
+  </xsl:template>
+
+  <xsl:template name="header-search-ft-value">
     <xsl:choose>
-      <xsl:when test="$gCurrentUi = 'reader'">
-        <xsl:apply-templates select="." mode="reader" />
-      </xsl:when>
-      <xsl:when test="$gCurrentUi = 'embed'">
-        <!-- <xsl:apply-templates select="." mode="embed" /> -->
-        <xsl:apply-templates select="." mode="reader" />
+      <xsl:when test="//HeaderSearchParams/Field[@name='ft']">
+        <xsl:value-of select="//HeaderSearchParams/Field[@name='ft']" />
       </xsl:when>
       <xsl:otherwise>
-        <xsl:apply-templates select="." mode="reader" />
+        <xsl:text>checked</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="/MBooksTop" mode="reader">
+  <xsl:template name="header-search-options-selected">
+    <xsl:value-of select="//HeaderSearchParams/Field[@name='target']" />
+  </xsl:template>
 
-    <html lang="en" xml:lang="en"
-      xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:dc="http://purl.org/dc/elements/1.1/"
-      xmlns:cc="http://creativecommons.org/ns#"
-      xmlns:foaf="http://xmlns.com/foaf/0.1/"
-      version="XHTML+RDFa 1.0"
-      >
-      <xsl:call-template name="html-tag-extra-attributes" />
+  <xsl:template name="header-search-target">
+    <xsl:choose>
+      <xsl:when test="//HeaderSearchParams/Field[@name='target']">
+        <xsl:value-of select="//HeaderSearchParams/Field[@name='target']" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>ls</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
-      <head profile="http://www.w3.org/1999/xhtml/vocab">
-        <!-- RDFa -->
-        <xsl:call-template name="BuildRDFaLinkElement"/>
-        <title>
-          <xsl:call-template name="PageTitle">
-            <xsl:with-param name="suffix">
-              <xsl:call-template name="get-title-suffix" />
-            </xsl:with-param>
-          </xsl:call-template>
-        </title>
+  <xsl:template name="setup-extra-header">
+    <link rel="stylesheet" type="text/css" href="/pt/css/screen.css" />
 
-        <xsl:call-template name="extra-head-setup" />
+    <xsl:text disable-output-escaping="yes">
+    <![CDATA[<!--[if lte IE 8]><link rel="stylesheet" type="text/css" href="/pt/css/ie8.css" /><![endif]-->]]>
+    </xsl:text>
 
-        <!-- jQuery from the Google CDN -->
-        <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css"/>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+    <script>
+      var HT = HT || {};
+      <!-- this should really become a JSON blob -->
+      HT.params = {};
+      <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
+        <xsl:choose>
+          <xsl:when test="@name = 'seq'">
+            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.)" />;
+          </xsl:when>
+          <!-- prevent XSS exploit when q1 is displayed in result page -->
+          <xsl:when test="@name = 'q1'">
+            HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="'foo'" />';
+          </xsl:when>
+          <xsl:otherwise>
+            HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+      HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
+      HT.params.RecordURL = '<xsl:value-of select="concat('http://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
+    </script>
+    <xsl:call-template name="load_js_and_css"/>
+    <xsl:call-template name="include_local_javascript" />
 
-        <xsl:call-template  name="include_local_javascript"/>
-        <xsl:call-template name="load_js_and_css"/>
-        <xsl:call-template name="include_extra_js_and_css" />
+    <xsl:call-template name="setup-extra-header-extra" />
+  </xsl:template>
 
-        <!-- dropdown banner -->
-        <script type="text/javascript" src="/pt/web/jquery/jQuery-Notify-bar/jquery.notifyBar.js"></script>
-        <script type="text/javascript" src="/pt/js/access_banner_01.js"></script>
+  <xsl:template name="skip-to-main-link">
+    <a class="offscreen skip-link" href="#main">Skip to main</a>
+  </xsl:template>
 
-        <!-- <xsl:call-template name="online_assessment"/> -->
+  <xsl:template name="setup-extra-header-extra" />
 
-        <!-- access banners are hidden and exposed by access_banner.js -->
-        <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
+  <xsl:template name="contents">
+    <!-- h2 ? -->
+    <xsl:call-template name="pageviewer-contents" />
+    <xsl:call-template name="get-access-statements" />
+  </xsl:template>
+
+  <xsl:template name="pageviewer-contents">
+    <xsl:call-template name="sidebar" />
+    <xsl:call-template name="main" /> 
+  </xsl:template>
+
+  <xsl:template name="get-page-title">
+    <xsl:call-template name="PageTitle">
+      <xsl:with-param name="suffix">
+        <xsl:call-template name="get-title-suffix" />
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+
+  <!-- <xsl:template name="pageviewer-footer">
+    <xsl:call-template name="footer" />
+  </xsl:template> -->
+
+  <xsl:template name="action-search-volume">
+    <h3 class="offscreen">Search in this volume</h3>
+    <form class="form-inline" method="get" id="form-search-volume">
+      <xsl:attribute name="action">
+        <xsl:choose>
+          <xsl:when test="$gUsingSearch = 'true'">search</xsl:when>
+          <xsl:otherwise>pt/search</xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <label for="input-search-text">Search in this text </label>
+      <input id="input-search-text" name="q1" type="text" class="input-small">
+        <xsl:if test="$gHasOcr!='YES'">
+          <xsl:attribute name="disabled">disabled</xsl:attribute>
+        </xsl:if>
+        <xsl:attribute name="placeholder">
           <xsl:choose>
-            <xsl:when test="$gLoggedIn='YES'">
-              <xsl:choose>
-                <xsl:when test="$gSSD_Session='true'">
-                  <xsl:call-template name="access_banner_ssd"/>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:call-template name="access_banner"/>
-                </xsl:otherwise>
-              </xsl:choose>
+            <xsl:when test="$gHasOcr = 'YES'">
+              <!-- <xsl:text>Search in this text</xsl:text> -->
             </xsl:when>
             <xsl:otherwise>
-              <xsl:call-template name="access_banner_local"/>
+              <xsl:text>No text to search in this item</xsl:text>
             </xsl:otherwise>
-          </xsl:choose>      
-        </xsl:if>
-    
-        <xsl:call-template name="setup-head" />
-      </head>
-
-      <body class="yui-skin-sam" onload="javascript:ToggleContentListSize();">
-        <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
-          <div>
-            <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages/*"/>
-          </div>
-        </xsl:if>
-
-        <xsl:call-template name="header"/>
-
-        <xsl:call-template name="UberContainer" />
-
-        <!-- Footer -->
-        <xsl:call-template name="pageviewer-footer" />
-
-        <xsl:call-template name="GetAddItemRequestUrl"/>
-
-        <xsl:if test="$gEnableGoogleAnalytics='true'">
-          <xsl:call-template name="google_analytics" />
-        </xsl:if>
-
-      </body>
-    </html>
+          </xsl:choose>
+        </xsl:attribute>
+        <xsl:attribute name="value">
+          <xsl:if test="$gHasOcr = 'YES'">
+            <xsl:value-of select="$gCurrentQ1" />
+          </xsl:if>
+        </xsl:attribute>
+      </input>
+      <button type="submit" class="btn">Find</button>
+      <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
+      <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+        <input type="hidden" name="seq" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']}" />
+      </xsl:if>
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
+        <input type="hidden" name="num" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']}" />
+      </xsl:if>
+    </form>
   </xsl:template>
 
-  <xsl:template name="pageviewer-footer">
-    <xsl:call-template name="footer" />
+  <xsl:template name="get-access-statements">
+    <!-- access banners are hidden and exposed by access_banner.js -->
+    <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
+      <xsl:choose>
+        <xsl:when test="$gLoggedIn='YES'">
+          <xsl:choose>
+            <xsl:when test="$gSSD_Session='true'">
+              <xsl:call-template name="access_banner_ssd"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:call-template name="access_banner"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="access_banner_local"/>
+        </xsl:otherwise>
+      </xsl:choose>      
+    </xsl:if>    
   </xsl:template>
-
-  <xsl:template match="/MBooksTop" mode="embed">
-
-    <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml" class="htmlNoOverflow">
-      <xsl:call-template name="html-tag-extra-attributes" />
-      <head>
-        <title>
-          <xsl:call-template name="PageTitle" />
-        </title>
-
-        <!-- jQuery from the Google CDN -->
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-
-        <xsl:call-template name="include_local_javascript"/>
-        <xsl:call-template name="load_js_and_css"/>
-        <xsl:call-template name="include_extra_js_and_css" />
-
-        <link rel="stylesheet" type="text/css" href="/pt/embedded.css"/>
-
-        <xsl:call-template name="setup-head" />
-
-      </head>
-
-      <body class="yui-skin-sam">
-
-        <xsl:call-template name="UberEmbeddedContainer" />
-
-        <xsl:if test="$gEnableGoogleAnalytics='true'">
-          <xsl:call-template name="google_analytics" />
-        </xsl:if>
-
-      </body>
-    </html>
-  </xsl:template>
-
-  <xsl:template name="extra-head-setup" />
 
   <xsl:template name="access_banner_ssd">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><span>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br /><br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></span></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br /><br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p></div></div>
   </xsl:template>
 
   <xsl:template name="access_banner">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><span>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</span></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
   </xsl:template>
 
   <xsl:template name="access_banner_local">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><span>This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</span></div></div>
-  </xsl:template>
-
-  <!-- Top Level Container DIV -->
-  <xsl:template name="UberContainer">
-    
-    <div id="mdpUberContainer">
-      <xsl:call-template name="Sidebar" />
-
-      <xsl:call-template name="item-viewer" />
-
-    </div>
-
-    <!-- Feedback -->
-    <xsl:call-template name="Feedback"/>
-
-    <!-- New collection overlay -->
-    <div id="overlay"></div>
-
-  </xsl:template>
-
-  <xsl:template name="UberEmbeddedContainer">
-    
-    <div id="mdpUberContainer">
-
-      <div id="mdpToolbarViews">
-        <div id="mdpToolbarNav">
-          <div class="branding">
-            <div class="brandingLogo">
-              <a href="http://catalog.hathitrust.org"><img src="//common-web/graphics/HathiTrust.gif" alt="Hathi Trust Logo"/></a>
-            </div>
-          </div>
-          <xsl:call-template name="item-embedded-toolbar" />
-          <div class="embedLink">
-            <xsl:element name="a">
-              <xsl:attribute name="href"><xsl:value-of select="//ViewType1UpLink" /></xsl:attribute>
-              <xsl:attribute name="target"><xsl:text>_blank</xsl:text></xsl:attribute>
-              <xsl:call-template name="GetMaybeTruncatedTitle">
-                <xsl:with-param name="titleString" select="$gTitleString"/>
-                <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-                <xsl:with-param name="maxLength" select="'20'"/>
-              </xsl:call-template>
-            </xsl:element>
-          </div>
-        </div>
-      </div>
-
-      <xsl:call-template name="item-embedded-viewer" />
-
-    </div>
-
-  </xsl:template>
-
-  <xsl:template name="item-embedded-viewer" />
-  <xsl:template name="item-embedded-toolbar" />
-
-  <xsl:template name="Sidebar">
-    <div class="mdpControlContainer" role="complementary">
-
-      <xsl:call-template name="aboutThisBook" />
-
-      <div class="mdpScrollableContainer">
-
-        <xsl:call-template name="getThisBook" />
-        <xsl:call-template name="addToCollection" />
-        <xsl:call-template name="shareThisBook" />
-        <xsl:call-template name="versionLabel" />
-
-      </div> <!-- scrollable -->
-
-    </div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
   </xsl:template>
 
   <xsl:template name="html-tag-extra-attributes" />
@@ -275,6 +237,8 @@
   <xsl:template name="get-title-suffix">
     <xsl:text>HathiTrust Digital Library</xsl:text>
   </xsl:template>
+
+  <xsl:template name="get-tracking-category">PT</xsl:template>
 
 </xsl:stylesheet>
 

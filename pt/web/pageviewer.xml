@@ -31,9 +31,8 @@
   <XslFileList>
     <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>coins.xsl</Filename>
-    <Filename>header.xsl</Filename>
-    <Filename>footer.xsl</Filename>
-    <Filename>framework.xsl</Filename>
+    <Filename>skeleton.xsl</Filename>
+    <Filename>common.xsl</Filename>
     <Filename>js_utils.xsl</Filename>
     <Filename>loads.xsl</Filename>
     <Filename>loads_helper_pt.xsl</Filename>
@@ -61,7 +60,6 @@
   </MBooksGlobals>
 
   <?CHUNK filename="header.xml"?>
-  <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
 
   <MdpApp>
     <CurrentPageFeatures><?CURRENT_PAGE_FEATURES?></CurrentPageFeatures>
@@ -104,6 +102,17 @@
       <ViewTypePlainTextLink><?VIEW_TYPE_PLAINTEXT_LINK?></ViewTypePlainTextLink>
     </ViewTypeLinks>
 
+    <ViewTypeLinks>
+      <View name="download-pdf"><?VIEW_TYPE_FULL_PDF_LINK?></View>
+      <View name="pdf"><?VIEW_TYPE_PDF_LINK?></View>
+      <View name="image"><?VIEW_TYPE_IMAGE_LINK?></View>
+      <View name="1up"><?VIEW_TYPE_1UP_LINK?></View>
+      <View name="2up"><?VIEW_TYPE_2UP_LINK?></View>
+      <View name="thumb"><?VIEW_TYPE_THUMBNAIL_LINK?></View>
+      <View name="text"><?VIEW_TYPE_TEXT_LINK?></View>
+      <View name="plaintext"><?VIEW_TYPE_PLAINTEXT_LINK?></View>
+    </ViewTypeLinks>
+
     <ResizeForm>
       <ResizeValuesSelect><?RESIZE_VALUES?></ResizeValuesSelect>
       <HiddenVars>
@@ -116,6 +125,10 @@
         <?HIDDEN_Q1?>
       </HiddenVars>
     </ResizeForm>
+    <ResizeLinks>
+      <ResizeInLink><?RESIZE_IN_LINK?></ResizeInLink>
+      <ResizeOutLink><?RESIZE_OUT_LINK?></ResizeOutLink>
+    </ResizeLinks>
     <RotateLinks>
       <ClockwiseLink><?CLOCKWISE_LINK?></ClockwiseLink>
       <CounterClockwiseLink><?COUNTER_CLOCKWISE_LINK?></CounterClockwiseLink>
@@ -145,6 +158,7 @@
       </HiddenVars>
       <SearchResultsLink><?SEARCH_RESULTS_LINK?></SearchResultsLink>
       <SearchResultsLabel><?SEARCH_RESULTS_LABEL?></SearchResultsLabel>
+      <?HEADER_SEARCH_FIELDS?>
     </SearchForm>
 
     <FeedbackForm>

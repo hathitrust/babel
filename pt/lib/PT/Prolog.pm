@@ -39,6 +39,8 @@ use PT::Action;
 use PT::MdpItem;
 use PT::PageTurnerUtils;
 
+use Debug::DUtils;
+
 # Return codes from ValidityChecks()
 use constant ST_EMPTY            => 0;
 use constant ST_SEQ_NOT_SUPPLIED => 1;
@@ -177,7 +179,7 @@ sub SetBackToResultsReferer {
         }
     } else {
         # not trackable, not pt, so blank the key
-        delete $$stack{$script_name,$id};
+        delete $$stack{$script_name,$id} unless ( DEBUG('xml') );
     }
 
     # now prune old entries if necessary
@@ -197,6 +199,7 @@ sub SetBackToResultsReferer {
     if ( exists($$stack{$script_name,$id}) ) {
         $ses->set_transient('referer', $$stack{$script_name,$id}{referer});
     }
+
 }
 
 # ----------------------------------------------------------------------

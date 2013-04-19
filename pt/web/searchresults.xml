@@ -29,18 +29,17 @@
 
   <!-- XSL fallback files -->
   <XslFileList>
+    <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>coins.xsl</Filename>
-    <Filename>header.xsl</Filename>
-    <Filename>footer.xsl</Filename>
-    <Filename>framework.xsl</Filename>
+    <Filename>skeleton.xsl</Filename>
+    <Filename>common.xsl</Filename>
     <Filename>js_utils.xsl</Filename>
     <Filename>loads.xsl</Filename>
     <Filename>loads_helper_pt.xsl</Filename>
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
+    <Filename>pageviewer.xsl</Filename>
     <Filename>searchresults.xsl</Filename>
-    <Filename>xsl2htmlutils.xsl</Filename>
-
   </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->
@@ -51,7 +50,6 @@
   </MBooksGlobals>
 
   <?CHUNK filename="header.xml"?>
-  <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
 
   <MdpApp>
     <AllowFullPDF><?ALLOW_FULL_PDF?></AllowFullPDF>
@@ -64,6 +62,7 @@
       </HiddenVars>
       <SearchResultsLink><?SEARCH_RESULTS_LINK?></SearchResultsLink>
       <SearchResultsLabel><?SEARCH_RESULTS_LABEL?></SearchResultsLabel>
+      <?HEADER_SEARCH_FIELDS?>
     </SearchForm>
 
     <RepeatSearchLink><?REPEAT_SEARCH_LINK?></RepeatSearchLink>
@@ -90,7 +89,6 @@
       <ViewTypeFullPdfLink><?VIEW_TYPE_FULL_PDF_LINK?></ViewTypeFullPdfLink>
     </ViewTypeLinks>
 
-    <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
     <AddToCollectionForm>
       <CollectionSelect><?COLLECTION_SELECT?></CollectionSelect>
     </AddToCollectionForm>

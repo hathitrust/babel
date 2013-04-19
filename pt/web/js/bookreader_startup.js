@@ -81,21 +81,6 @@ $(window).bind("resize", function() {
   HT.resizeBookReader();
 })
 
-// PREPPING AND LOADING SECTION
-// override slice size from params
-var newHash = window.location.hash.substr(1);
-if(newHash.indexOf("slice/") >= 0) {
-    var parts = newHash.split('/');
-    var slice_size;
-    for(var i = 0; i < parts.length; i += 2) {
-        if(parts[i] == 'slice') {
-            slice_size = parts[i+1];
-            break;
-        }
-    }
-    HT.reader.slice_size = parseInt(slice_size);
-}
-
 var toggle_fullscreen = function() {
   var speed = "fast";
   var $toggleButton = $("#mbToggleHeader");
@@ -132,12 +117,33 @@ var toggle_fullscreen = function() {
 
 }
 
-// update slice_size to match thumbColumns
-while ( HT.reader.slice_size % HT.reader.thumbColumns != 0 ) {
-    HT.reader.slice_size += 1;
-}
+head.ready(function() {
+  // PREPPING AND LOADING SECTION
+  // override slice size from params
+  var newHash = window.location.hash.substr(1);
+  if(newHash.indexOf("slice/") >= 0) {
+      var parts = newHash.split('/');
+      var slice_size;
+      for(var i = 0; i < parts.length; i += 2) {
+          if(parts[i] == 'slice') {
+              slice_size = parts[i+1];
+              break;
+          }
+      }
+      HT.reader.slice_size = parseInt(slice_size);
+  }
 
-$(document).ready(function() {
+  // update slice_size to match thumbColumns
+  while ( HT.reader.slice_size % HT.reader.thumbColumns != 0 ) {
+      HT.reader.slice_size += 1;
+  }
+
+
+})
+
+
+
+head.ready(function() {
     
     $("#mdpImage").hide();
     HT.resizeBookReader();
