@@ -159,8 +159,8 @@ sub AFTER_ingest_Solr_search_response
             }
         }
         
-        my $converted_hash;
-        
+        my $converted_hash={};
+                
         my $iteminfo_aryref = $metadata_hash->{'ht_id_display'};
         if (scalar(@$iteminfo_aryref) == 1)
         {
@@ -188,7 +188,8 @@ sub AFTER_ingest_Solr_search_response
                     $ids_seen->{$item_id}++;
                     $metadata_hash->{'volume'} = $volid_hashref->{$item_id};
                     $metadata_hash->{'ht_id_display'} = $item_id;
-                    $converted_hash = $self->process_metadata($metadata_hash);
+                    my $temp_hash={ %{$metadata_hash} };
+                    $converted_hash = $self->process_metadata($temp_hash);
                     push (@{$ary_metadata_hash}, $converted_hash);
                 }
             }
@@ -366,7 +367,7 @@ sub __add_book_ids
           if (defined ($hash->{$field}))
           {
               my @temp = $hash->{$field};
-              my $temp_ref = add_book_id_prefix(uc($field),@temp);
+              my $temp_ref = add_book_id_prefix_and_filter(uc($field),@temp);
               push (@{$ary_ref},@{$temp_ref});
           }
           delete($hash->{$field});
@@ -393,7 +394,7 @@ sub __add_book_ids
 
 #----------------------------------------------------------------------
 #unicorn google book covers
-sub add_book_id_prefix
+sub add_book_id_prefix_and_filter
 {
     my $prefix = shift;
     my $ary_ref=shift;
@@ -401,6 +402,8 @@ sub add_book_id_prefix
     
     foreach my $el (@{$ary_ref})
     {
+        #skip ids with ampersands (found some in bad lccns)
+        next if $el =~/\&/;
         push (@{$out},$prefix .':'. $el)
     }
     return $out;
@@ -446,12 +449,11 @@ sub __convert_fieldnames
     my $fieldmap = $self->__get_fieldmap();
     my $returnhash;
     
-    #XXX hardcoded here: if mainauthor is populated, replace author with contents of 
-    # mainauthor.  Mainauthor will be deleted since it isn't in the fieldmap
-    if (defined($hash->{'mainauthor'}) && ($hash->{'mainauthor'} ne '')  )
-    {
-        $hash->{'author'} = $hash->{'mainauthor'};
-    }
+    # author now contains 7xx's per Bill's changes
+    #replace author with contents of 
+    # mainauthor.  mainauthor will be deleted since it isn't in the fieldmap
+    $hash->{'author'} = $hash->{'mainauthor'};
+
     
     foreach my $key (keys %{$hash})
     {

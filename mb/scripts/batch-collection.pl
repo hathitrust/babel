@@ -5,7 +5,7 @@ use warnings;
 
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    ##$ENV{DEBUG_LOCAL} = 1;
 }
 
 =head1 NAME
@@ -71,9 +71,13 @@ use Debug::DUtils;
 use SharedQueue;
 use MBooks::MetaDataGetter;
 
+my @superusers =
+  (
+   'pfarber',
+  );
+
 my @allowed_uniqnames =
   (
-   'suzchap',
    'tburtonw',
    'pfarber',
    'jweise',
@@ -82,32 +86,38 @@ my @allowed_uniqnames =
    'kshawkin',
    'rwelzenb',
    'sethip',
-   'bkammin',
   );
 
-my @allowed_overrides = 
+my @allowed_overrides =
   (
    'hathitrust@gmail.com',
   );
 
-my @allowed_users = (@allowed_uniqnames, @allowed_overrides);
+my @allowed_users = (@superusers, @allowed_uniqnames, @allowed_overrides);
 
 sub bc_Usage {
-    print qq{Usage: batch-collection -t 'quoted title' -d 'quoted description text' -o userid -f <filename>\n};
-    print qq{         or\n};
-    print qq{       batch-collection -a coll_id -o userid -f <filename>\n};
-    print qq{         or\n};
-    print qq{       batch-collection -c -t title -o userid\n\n};
+    print qq{Usage: [ADD]    batch-collection.pl -t 'quoted title' -d 'quoted description text' -o userid -f <filename>\n\n};
+
+    print qq{       [APPEND] batch-collection.pl -a coll_id -o userid -f <filename>\n\n};
+
+    print qq{       [DELETE] batch-collection.pl -D coll_id -o superuserid -f <filename>\n\n};
+
+    print qq{       [QUERY]  batch-collection.pl -c -t title -o userid\n\n};
+
+    print qq{       [QUERY]  batch-collection.pl -C <coll_id>\n\n};
     print qq{Options:\n};
-    print qq{  -f <filename> file of HathiTrust IDs, one per line\n};
-    print qq{  -t '<title>' collection title as a quoted string\n};
-    print qq{  -d '<description>' collection description as a quoted string\n};
-    print qq{  -o <userid> (must match your kerberos uniqname)\n};
-    print qq{  -a <coll_id> append IDs to collid. Obtain <coll_id> using batch_collection.pl -c option\n};
-    print qq{  -c returns the coll_id for collection with -t '<title>' owned by -o <userid>\n\n};
+    print qq{       -f <filename> file of HathiTrust IDs, one per line\n};
+    print qq{       -t '<title>' collection title as a quoted string\n};
+    print qq{       -d '<description>' collection description as a quoted string\n};
+    print qq{       -o <userid> (must match your kerberos/Shibboleth/other uniqname)\n};
+    print qq{       -a <coll_id> append IDs to coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
+    print qq{       -D <coll_id> [superuser only] delete IDs from coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
+    print qq{       -c returns the coll_id for collection with -t '<title>' owned by -o <userid>\n};
+    print qq{       -C returns the <userid>, display_name, title for collection with -C <coll_id>\n\n};
     print qq{Notes:\n};
     print qq{       IDs are HathiTrust IDs, e.g. mdp.39015012345\n};
-    print qq{       Blank lines or lines beginning with a '#' are ignored\n\n};
+    print qq{       Blank lines or lines beginning with a '#' are ignored\n};
+    print qq{       Set the BATCH_COLLECTION_USER environment variable to over-ride whoami for group-owned collections\n\n};
 
 }
 
@@ -125,14 +135,39 @@ if (! $allowed) {
     exit 1;
 }
 
-our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c);
-getopts('ct:d:o:f:a:');
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C);
+getopts('ct:d:o:f:a:D:C:');
 
 my $APPEND = $opt_a;
 my $COLL_ID = $opt_c;
+my $DELETE = $opt_D;
+my $USERID = $opt_C;
+
+my $INPUT_FILE = $opt_f || 'general';
+
+my $date = Utils::Time::iso_Time('date');
+my $time = Utils::Time::iso_Time('time');
+my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
+
 my $CREATE = 0;
 
-if ($APPEND) {
+if ($DELETE) {
+    if ($DELETE !~ m,\d+,) {
+        Log_print( qq{ERROR: invalid coll_id arg to delete (-D) option\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+    if (! grep(/^$WHO_I_AM$/, @superusers)) {
+        Log_print( qq{ERROR: $WHO_I_AM is not in the list of superusers\n} );
+        exit 1;
+    }
+    if ((! $opt_o) || (! $opt_f)) {
+        Log_print( qq{missing -o or -f options for collection item deletion operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+}
+elsif ($APPEND) {
     if ($APPEND !~ m,\d+,) {
         Log_print( qq{ERROR: invalid coll_id arg to append (-a) option\n\n} );
         bc_Usage();
@@ -160,6 +195,8 @@ elsif ($COLL_ID) {
         bc_Usage();
         exit 1;
     }
+}
+elsif ($USERID) {
 }
 else {
     if ($opt_t && ((! $opt_d) || (! $opt_o) || (! $opt_f))) {
@@ -189,12 +226,6 @@ else {
     $CREATE = 1;
 }
 
-my $INPUT_FILE = $opt_f;
-
-my $date = Utils::Time::iso_Time('date');
-my $time = Utils::Time::iso_Time('time');
-my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
-
 my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID);
 if ($APPEND) {
     ($C_OWNER, $C_OWNER_NAME, $C_COLL_ID) =
@@ -216,9 +247,9 @@ my $C = new Context;
 my $cgi = new CGI;
 $C->set_object('CGI', $cgi);
 
-my $debug = $cgi->param('debug');
-my $debugging = ($ENV{DEBUG_LOCAL} || ($debug =~ m,local,));
-my $uber_conf = ($debugging 
+my $debug = $cgi->param('debug') || 0;
+my $debugging = ( ($ENV{DEBUG_LOCAL} ? $ENV{DEBUG_LOCAL} : 0) || ($debug =~ m,local,));
+my $uber_conf = ($debugging
                  ? $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf"
                  : $LOCATION . "/../../mb/vendor/common-lib/lib/Config/uber.conf");
 
@@ -229,30 +260,50 @@ my $config = new MdpConfig(
                           );
 $C->set_object('MdpConfig', $config);
 
-my $DB = new Database('ht_maintenance');
-$C->set_object('Database', $DB);
+my $db = new Database('ht_maintenance');
+my $DBH = $db->get_DBH();
+$C->set_object('Database', $db);
 
 # Support DEBUG calls
 Debug::DUtils::setup_debug_environment();
 
-my $CO = new Collection($DB->get_DBH(), $config, $C_OWNER);
+my $CO = new Collection($DBH, $config, $C_OWNER);
 $C->set_object('Collection', $CO);
 
-my $CS = CollectionSet->new($DB->get_DBH(), $config, $C_OWNER) ;
+my $CS = CollectionSet->new($DBH, $config, $C_OWNER) ;
 $C->set_object('CollectionSet', $CS);
 
-if ($APPEND || $CREATE) {
-    open(INPUTFILE, $INPUT_FILE) || die $@;
+if ($APPEND || $CREATE || $DELETE) {
+    open(INPUTFILE, $INPUT_FILE) || die "Could not open $INPUT_FILE: $@\n";
 }
 
 my $INITIAL_COLLECTION_SIZE = 0;
 my $small_collection_max_items = $config->get('filter_query_max_item_ids');
 my $SMALLEST_LARGE_COLLECTION = $small_collection_max_items + 1;
 my $SMALL_TO_LARGE_TRANSITION = 0;
+my $LARGE_TO_SMALL_TRANSITION = 0;
 
-if ($APPEND) {
+if ($DELETE) {
+    my $coll_id = $DELETE;
+    my $coll_name = $CO->get_coll_name($coll_id);
+
+    if (! $CS->exists_coll_id($coll_id)) {
+        Log_print( qq{ERROR: coll_id=$coll_id does not exist. Cannot delete ids from non-existent collection\n} );
+        exit 1;
+    }
+
+    Log_print( qq{Begin deleting IDs from "$coll_name" collection\n} );
+
+    $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($coll_id);
+
+    # Delete items from the collection
+    bc_handle_delete_items_from($C, $coll_id);
+
+    Log_print( qq{Done.\n} );
+}
+elsif ($APPEND) {
     my $existing_coll_id = $APPEND;
-    my $coll_name = 'undefined';
+    my $coll_name = $CO->get_coll_name($existing_coll_id);
 
     if (! $CS->exists_coll_id($existing_coll_id)) {
         Log_print( qq{ERROR: coll_id=$existing_coll_id does not exist. Cannot append ids to non-existent collection\n} );
@@ -276,9 +327,20 @@ if ($APPEND) {
     $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($existing_coll_id);
 
     # Add items to the collection
-    my $added = bc_handle_add_items_to($C, $existing_coll_id);
+    bc_handle_add_items_to($C, $existing_coll_id);
 
     Log_print( qq{Done.\n} );
+}
+elsif ($USERID) {
+    my $userid = $CO->get_coll_owner($USERID);
+    my $name = $CO->get_coll_owner_display_name($USERID);
+    my $coll_name = $CO->get_coll_name($USERID);
+    if ($userid) {
+        Log_print( qq{\nCollection id = $USERID\n\tUser name = $name\n\tUserid = $userid\n\tTitle = $coll_name\n} );
+    }
+    else {
+        Log_print( qq{\nERROR: could not find data for collection id = $USERID\n} );
+    }
 }
 elsif ($COLL_ID) {
     my $coll_id = $CO->get_coll_id_for_collname_and_user($C_TITLE, $C_OWNER_NAME);
@@ -296,7 +358,7 @@ else {
     my $new_coll_id = bc_create_collection();
 
     # Add items to the collection
-    my $added = bc_handle_add_items_to($C, $new_coll_id);
+    bc_handle_add_items_to($C, $new_coll_id);
 
     Log_print( qq{Done. coll_id for "$C_TITLE" collection is: $new_coll_id\n} );
 }
@@ -344,19 +406,72 @@ sub bc_get_metadata_via_metadata_getter {
     my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, $id_aryref);
 
     my $normed_metadata_aryref = [];
-    
+
     if ($metadata_aryref) {
         foreach my $metadata_hashref (@$metadata_aryref) {
             my $metadata_ref = $mdg->normalize_metadata($metadata_hashref);
             push(@$normed_metadata_aryref, $metadata_ref);
         }
     }
-    else {
-        return undef;
-    }
-    
 
-    return $normed_metadata_aryref;
+    return scalar @$normed_metadata_aryref ? $normed_metadata_aryref : undef;
+}
+
+# ---------------------------------------------------------------------
+
+=item bc_handle_delete_items_from
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_handle_delete_items_from {
+    my $C = shift;
+    my $coll_id = shift;
+
+    my $num_ids = 0;
+    my $deleted = 0;
+    my $queued = 0;
+
+    foreach my $id (<INPUTFILE>) {
+        chomp($id);
+        $id =~ s,\s,,g;
+
+        # comment or blank line
+        if ((! $id) || ($id =~ m,^\s*#,)) {
+            next;
+        }
+        $num_ids++;
+
+        Log_print( qq{Deleting item $num_ids "$id"\n} );
+
+        my ($ok, $item_deleted) = bc_delete_item($id, $coll_id);
+        if (! $ok) {
+            Log_print( qq{ERROR: Failed to delete "$id" from collection\n} );
+            exit 1;
+        }
+        else {
+            $deleted += $item_deleted;
+            if ($item_deleted) {
+                my ($ok, $num_enqueued) = bc_do_del_enqueue($C, $coll_id, $id);
+                if (! $ok) {
+                    Log_print( qq{ERROR: Failed to enqueue "$id" for indexing\n} );
+                    exit 1;
+                }
+                else {
+                    $queued += $num_enqueued;
+                }
+            }
+        }
+    }
+
+    Log_print( qq{Processed $num_ids items from $INPUT_FILE, deleted $deleted, enqueued $queued for indexing\n} );
+    if ($deleted) {
+        if ($LARGE_TO_SMALL_TRANSITION) {
+            Log_print( qq{NOTE: Collection became "small"All added\n} )
+        }
+    }
 }
 
 # ---------------------------------------------------------------------
@@ -373,8 +488,6 @@ sub bc_handle_add_items_to {
     my $coll_id = shift;
 
     my $num_ids = 0;
-
-    my $ct = 1;
     my $added = 0;
     my $queued = 0;
 
@@ -397,16 +510,16 @@ sub bc_handle_add_items_to {
 
         my $metadata_ref = bc_get_metadata_via_metadata_getter($C, [$id]);
         my $metadata_failed = $metadata_ref ? 0 : 1;
- 
+
         if ($metadata_failed) {
             Log_print( qq{Could not read metadata for "$id", SKIPPING\n} );
             next;
         }
 
-        Log_print( qq{Adding item $ct "$id"\n} );
+        Log_print( qq{Adding item $num_ids "$id"\n} );
 
         my $metadata_hashref = $metadata_ref->[0];
-        
+
         my ($ok, $item_added) = bc_add_item($id, $coll_id, $metadata_hashref);
         if (! $ok) {
             Log_print( qq{ERROR: Failed to add "$id" to collection\n} );
@@ -428,14 +541,11 @@ sub bc_handle_add_items_to {
                 }
             }
         }
-
-        $ct++;
     }
 
-    $ct--;
-    my $using = 'using vufind';
+    my $using = 'using VuFind for metadata';
 
-    Log_print( qq{Processed $ct of $num_ids items from $INPUT_FILE $using, added $added, enqueued $queued for indexing\n} );
+    Log_print( qq{Processed $num_ids items from $INPUT_FILE $using, added $added, enqueued $queued for indexing\n} );
     if ($added) {
         my $not_queued = max($added - $queued, 0);
         # If collection started out large, $added items should have
@@ -501,6 +611,35 @@ sub bc_create_collection {
 
 # ---------------------------------------------------------------------
 
+=item bc_delete_item
+
+Description ($ok, $deleted) = bc_delete_item()
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_delete_item {
+    my $id = shift;
+    my $coll_id = shift;
+
+    if (! $CO->item_in_collection($id, $coll_id)) {
+        Log_print( qq{Item id="$id" is not in the collection. Skipped.\n} );
+        return (1, 0);
+    }
+
+    eval {
+        $CO->delete_items($coll_id, [$id], 'force_ownership');
+    };
+    if ($@) {
+        Log_print( qq{Could not put item="$id" into collection: $@} );
+        return (0, 0);
+    }
+
+    return (1, 1);
+}
+
+# ---------------------------------------------------------------------
+
 =item bc_add_item
 
 Description ($ok, $added) = bc_add_item()
@@ -537,6 +676,44 @@ sub bc_add_item {
     return (1, 1);
 }
 
+
+# ---------------------------------------------------------------------
+
+=item bc_do_del_enqueue
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_do_del_enqueue {
+    my $C = shift;
+    my $coll_id = shift;
+    my $item_id = shift;
+
+    if ($INITIAL_COLLECTION_SIZE < $SMALLEST_LARGE_COLLECTION) {
+        # Nothing to do. Deletion will only make it smaller and this
+        # coll_id could not be in any Solr doc needing re-indexing.
+        return (1, 0);
+    }
+
+    # We are deleting from a large collection. Always enqueue.
+    my $ok = SharedQueue::enqueue_item_ids($C, $DBH, [$item_id]);
+    my $num_queued = ($ok ? 1 : 0);
+
+    # Did deleting this item made the collection small?
+    if ($ok) {
+        my $curr_coll_size = $CO->count_all_items_for_coll($coll_id);
+        if ($curr_coll_size == $SMALLEST_LARGE_COLLECTION - 1) {
+            $SMALL_TO_LARGE_TRANSITION = $curr_coll_size;
+            Log_print( qq{SMALL COLLECTION TRANSITION POINT ($curr_coll_size) REACHED at "$item_id"\n} );
+        }
+    }
+
+    return ($ok, $num_queued);
+}
+
+
 # ---------------------------------------------------------------------
 
 =item bc_do_enqueue
@@ -553,12 +730,11 @@ sub bc_do_enqueue {
 
     my $ok = 1;
     my $num_queued = 0;
-    my $dbh = $DB->get_DBH();
 
     if ($INITIAL_COLLECTION_SIZE >= $SMALLEST_LARGE_COLLECTION) {
         # All items less than max have been handled in previous runs.
         # Just queue this one item.
-        $ok = SharedQueue::enqueue_item_ids($C, $dbh, [$item_id]);
+        $ok = SharedQueue::enqueue_item_ids($C, $DBH, [$item_id]);
         $num_queued = 1;
     }
     else {
@@ -568,7 +744,7 @@ sub bc_do_enqueue {
             # Adding this item made the collection large.  Queue ALL
             # items already added (but that were not queued because
             # the collection was small when they were added)
-            $ok = SharedQueue::enqueue_all_ids($C, $dbh, $coll_id);
+            $ok = SharedQueue::enqueue_all_ids($C, $DBH, $coll_id);
 
             $num_queued = $curr_coll_size;
             $SMALL_TO_LARGE_TRANSITION = $curr_coll_size;
@@ -584,7 +760,7 @@ sub bc_do_enqueue {
             # somewhere earlier in this run so catch-up enqueuing has
             # already occured.  Just queue this one item.
 
-            $ok = SharedQueue::enqueue_item_ids($C, $dbh, [$item_id]);
+            $ok = SharedQueue::enqueue_item_ids($C, $DBH, [$item_id]);
             $num_queued = 1;
         }
     }
