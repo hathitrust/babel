@@ -16,6 +16,51 @@ head.ready(function() {
 
     HT.scrolling.rebuild_sidebar = rebuild_sidebar;
 
+    var is_fix_active = false;
+    var rebuild_fixed = function() {
+        var idx = 0;
+        $fixed.each(function() {
+            var $original = $(this);
+
+            var xy = $original.offset();
+            var w = $original.outerWidth();
+
+            // console.log("ORIGINAL", w);
+
+            if ( ! $original.attr("id") ) {
+                idx += 1;
+                $original.attr("id", "id" + idx);
+            }
+
+            $original.css({ position: 'fixed', top : xy.top, left : xy.left, width : w }).addClass("stuck");
+
+            // if ( $original.hasClass("sidebar") ) {
+            //     $original.height($(window).height());
+            // }
+
+            if ( ! $original.is(".no-dummy") ) {
+                var extra_h = $.browser.webkit ? ( $original.data('extra-height') || 0 ) : 0;
+                var $dummy = $("<div><div></div></div>").attr('id', $original.attr("id") + "-dummy").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.outerHeight() + extra_h, width : w });
+                $original.before($dummy).addClass('fixed-placed');
+                $dummy = $("#" + $original.attr("id") + "-dummy");
+                // $dummy.height($original.outerHeight());
+                if ( $original.is("#header") ) {
+                    console.log("ORIGINAL:", $original.css('height'), $original.height(), $original.outerHeight(false), $original.outerHeight(true), $original.innerHeight(), $dummy.height(), $dummy.outerHeight());
+                    var x = 2 * 3;
+                }
+                $original.css('top', $dummy.offset().top).width($dummy.outerWidth()).addClass("static");
+                if ( $original.is(".fixed-x") ) {
+                    $original.css('left', $dummy.offset().left);
+                }
+                dummies[$original.attr('id')] = $dummy;
+            }
+
+
+        })
+        is_fix_active = true;
+    };
+
+
     $(".header").addClass("fixed").addClass("fixed-x").data('extra-height', 40).data('shadow', '#navbar-inner');
 
     var $fixed = $(".fixed");
@@ -27,47 +72,12 @@ head.ready(function() {
 
     rebuild_sidebar();
 
-    var idx = 0;
-    $fixed.each(function() {
-        var $original = $(this);
+    setTimeout(rebuild_fixed, 100);
 
-        var xy = $original.offset();
-        var w = $original.outerWidth();
-
-        // console.log("ORIGINAL", w);
-
-        if ( ! $original.attr("id") ) {
-            idx += 1;
-            $original.attr("id", "id" + idx);
-        }
-
-        $original.css({ position: 'fixed', top : xy.top, left : xy.left, width : w }).addClass("stuck");
-
-        // if ( $original.hasClass("sidebar") ) {
-        //     $original.height($(window).height());
-        // }
-
-        if ( ! $original.is(".no-dummy") ) {
-            var extra_h = $.browser.webkit ? ( $original.data('extra-height') || 0 ) : 0;
-            var $dummy = $("<div><div></div></div>").attr('id', $original.attr("id") + "-dummy").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.outerHeight() + extra_h, width : w });
-            $original.before($dummy).addClass('fixed-placed');
-            $dummy = $("#" + $original.attr("id") + "-dummy");
-            // $dummy.height($original.outerHeight());
-            if ( $original.is("#header") ) {
-                console.log("ORIGINAL:", $original.css('height'), $original.height(), $original.outerHeight(false), $original.outerHeight(true), $original.innerHeight(), $dummy.height(), $dummy.outerHeight());
-                var x = 2 * 3;
-            }
-            $original.css('top', $dummy.offset().top).width($dummy.outerWidth()).addClass("static");
-            if ( $original.is(".fixed-x") ) {
-                $original.css('left', $dummy.offset().left);
-            }
-            dummies[$original.attr('id')] = $dummy;
-        }
-
-
-    })
 
     var handle_scroll_horizontal = function() {
+
+        if ( ! is_fix_active ) { return; }
 
         var current_left = $(window).scrollLeft();
         $fixed.filter(".fixed-y").each(function() {
@@ -78,6 +88,8 @@ head.ready(function() {
     }
 
     var handle_scroll_vertical = function() {
+        if ( ! is_fix_active ) { return; }
+
         var current_top = $(window).scrollTop();
 
         //console.log("-- scrolling", current_top, last_top);
@@ -173,6 +185,7 @@ head.ready(function() {
     }
 
     var handle_resize_fn = function() {
+        if ( ! is_fix_active ) { return; }
         var scroll_left = $(window).scrollLeft();
         $fixed_y.each(function() {
             var $original = $(this);
