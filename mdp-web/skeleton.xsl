@@ -45,6 +45,7 @@
       <xsl:attribute name="data-tracking-category"><xsl:call-template name="get-tracking-category" /></xsl:attribute>
       <xsl:attribute name="class">
         <xsl:text>no-js </xsl:text>
+        <xsl:call-template name="search-target-class" />
         <xsl:call-template name="setup-html-class" />
       </xsl:attribute>
       <xsl:call-template name="setup-html-attributes" />
@@ -304,6 +305,12 @@
   </xsl:template>
 
   <!-- default to ls -->
+  <xsl:template name="search-target-class">
+    <xsl:variable name="class">
+      <xsl:text>search-target-</xsl:text><xsl:call-template name="header-search-target" />
+    </xsl:variable>
+    <xsl:value-of select="normalize-space($class)" />
+  </xsl:template>
   <xsl:template name="header-search-target">ls</xsl:template>
 
   <xsl:template name="search-input-select-options">
