@@ -8,7 +8,7 @@ use IO::File;
 autoflush STDOUT 1;
 
 BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
