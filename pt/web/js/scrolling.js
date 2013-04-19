@@ -24,6 +24,9 @@ head.ready(function() {
 
             var xy = $original.offset();
             var w = $original.outerWidth();
+            if ( $original.is("#toolbar-vertical") ) {
+                w = 40;
+            }
 
             // console.log("ORIGINAL", w);
 
@@ -72,7 +75,7 @@ head.ready(function() {
 
     rebuild_sidebar();
 
-    setTimeout(rebuild_fixed, 100);
+    setTimeout(rebuild_fixed, 500);
 
 
     var handle_scroll_horizontal = function() {

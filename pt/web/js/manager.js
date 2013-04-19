@@ -171,28 +171,32 @@ HT.Manager = {
         $img.get(0).src = src;
         $.when(p.promise()).done(function() {
             var check = new Image();
-            check.src = $img.get(0).src;
+            // check.src = $img.get(0).src;
+
             // console.log("-- image:", check.src, params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
 
-            var r; var h; var w;
-            if ( params.orient == 1 || params.orient == 3 ) {
-                h = check.width;
-                w = check.height;
-            } else {
-                w = check.width;
-                h = check.height;
-            }
-            r = 680 / w;
-            h = h * r;
+            $(check).load(function() {
+                var r; var h; var w;
+                if ( params.orient == 1 || params.orient == 3 ) {
+                    h = check.width;
+                    w = check.height;
+                } else {
+                    w = check.width;
+                    h = check.height;
+                }
+                r = 680 / w;
+                h = h * r;
 
-            self.data.items[params.seq] = { width : 680, height : h };
-            //$img.parent().css({ height: '100%' });
-            // $img.parent().animate({ height : '100%' });
+                self.data.items[params.seq] = { width : 680, height : h };
+                //$img.parent().css({ height: '100%' });
+                // $img.parent().animate({ height : '100%' });
 
-            $img.data('seq', params.seq);
-            $img.data('natural-height', check.height);
-            $img.data('natural-width', check.width);
-            $img.trigger("image.fudge");
+                $img.data('seq', params.seq);
+                $img.data('natural-height', check.height);
+                $img.data('natural-width', check.width);
+                $img.trigger("image.fudge");
+            }).attr('src', $img.get(0).src);
+
         }).fail(function(status) {
             $img.get(0).src = '/imgsrv/common-web/graphics/503_image_distorted.jpg';
             $img.data('natural-width', 320);
