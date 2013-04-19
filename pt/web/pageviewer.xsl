@@ -77,7 +77,7 @@
   </xsl:template>
 
   <xsl:template name="header-search-options-selected">
-    <xsl:value-of select="//HeaderSearchParams/Field[@name='target']" />
+    <xsl:value-of select="//HeaderSearchParams/Field[@name='searchtype']" />
   </xsl:template>
 
   <xsl:template name="header-search-target">

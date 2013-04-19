@@ -1194,7 +1194,7 @@ sub ExtractCatalogParams {
     my %params = $uri->query_form();
 
     # advanced search, punt
-    unless ( $param{'adv'} ) {
+    unless ( $params{'adv'} ) {
         $q1 = $params{'lookfor'};
         $searchtype = $params{'type'} || 'all';
     }
