@@ -10,7 +10,7 @@
   </xsl:template>
 
   <xsl:template name="load_js">
-    <xsl:call-template name="load_base_js"/>
+    <!-- <xsl:call-template name="load_base_js"/> -->
     <xsl:call-template name="load_coll_js"/>
     <xsl:call-template name="load_skin_js"/>
   </xsl:template>
