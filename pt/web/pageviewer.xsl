@@ -80,7 +80,9 @@
     <xsl:param name="option" />
     <xsl:variable name="value" select="//HeaderSearchParams/Field[@name='searchtype']" />
     <xsl:choose>
-      <xsl:when test="$value = $option">checked</xsl:when>
+      <xsl:when test="$value = $option">
+        <xsl:attribute name="checked">checked</xsl:attribute>
+      </xsl:when>
       <xsl:otherwise/>
     </xsl:choose>
   </xsl:template>
