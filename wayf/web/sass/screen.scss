@@ -1,0 +1,259 @@
+// ---------------------------------------------------------------------------
+// Imports
+
+@import "../../../common/web/unicorn/sass/base";
+
+/* -------------------------------------------------------------------------*/
+/* Variables */
+$diminished-text-color: #6d6d6d;
+$friend-bgcolor: #f9f8f5;
+$friend-cannot-bgcolor: #e4e4e4;
+$friend-cannot-bgcolor-css3: rgba(105, 105, 105, 0.1);
+$cell-border: 1px solid #e8e4e4;
+
+/* -------------------------------------------------------------------------*/
+/* Utils */
+.row .kill-span-right-margin {
+  margin-right: 0;
+} 
+
+
+/* -------------------------------------------------------------------------*/
+/* Layout */
+.container {
+  @include rem(padding, 20);
+  @include rem(padding-right, 65);
+  @include rem(padding-left, 65);
+  @include rem(padding-bottom, 33);
+}
+
+.container.centered {
+  @include rem(width, 1050);
+  min-width: inherit;
+  max-width: none;
+}
+
+.main-section-title {
+  @include rem(font-size, 24);
+  @include rem(margin-top, 0);
+  text-align: center;
+  @include rem(margin-bottom, 20);
+}
+
+/* Top row */
+#top-row-cells-wrapper {
+  background-color: $login-bgcolor;  
+}
+
+
+/* Top row, left cell */
+#partner-cell-left {
+  background: url("/common/unicorn/img/homepage/stripes.png");
+  background-color: $page-bgcolor;
+  margin-right: 0;
+}
+
+#partner-cell-left > div {
+  @include rem(padding, 20);
+  @include rem(padding-top, 15);
+}
+
+.partner-cell-title {
+  @include rem(font-size, 20);
+  font-weight: bold;
+  @include rem(margin-top, 0);
+  @include rem(margin-bottom, 10);
+}
+
+.partner-cell-text {
+  @include rem(font-size, 16);
+  @include rem(margin-bottom, 30);
+}
+
+.partner-can-do-cells-wrapper {
+  @include rem(width, 440);
+  margin: auto;
+}
+
+.partner-can-do-cell {
+  background-color: $page-bgcolor;
+  border: $cell-border;
+  display: inline;
+  float: left;
+  @include rem(width, 190);
+  @include rem(height, 145);
+  @include rem(margin-right, 30);
+  text-align: center;
+  position: relative;
+}
+
+.partner-can-do-cell > div {
+  @include rem(padding-right, 11);
+  @include rem(padding-left, 11);
+  @include rem(padding-top, 16);
+  @include rem(padding-bottom, 0);
+}
+
+.partner-can-do-cell i {
+  @include rem(font-size, 34);
+  color: $hathitrust-orange-color;
+  position: absolute;
+  @include rem(top, -23);
+  @include rem(left, -8);
+}
+
+.partner-can-do-cell img {
+  @include rem(height, 72);
+}
+
+.partner-can-do-cell p {
+  @include rem(font-size, 12);
+  text-align: left;
+}
+
+/* Top row, right cell */
+#partner-cell-right {
+}
+
+#partner-cell-right > div {
+  @include rem(padding, 25);
+}
+
+#partner-cell-right p {
+  @include rem(font-size, 16);
+}
+
+
+#continue-button {
+  text-align: right;
+}
+
+.button.continue {
+  @include rem(padding-top, 4);
+  @include rem(padding-bottom, 4);
+  @include rem(margin-top, 0);
+  @include rem(margin-right, 0);
+}
+
+#idp {
+  width: 100%;
+  @include rem(font-size, 12);
+}
+
+#no-institution-listed {
+  @include rem(font-size, 12);
+  text-align: right;
+  @include rem(margin-top, 25);
+}
+
+
+/* Middle row */
+#not-provided-msg-text {
+  font-style: italic;
+  @include rem(font-size, 12);
+  color: $diminished-text-color;
+  @include rem(margin-left, 15);
+}
+
+
+/* Bottom row */
+
+#bottom-row-cells-wrapper {
+  background-color: $friend-bgcolor;  
+}
+
+
+/* Bottom row, left cell */
+#friend-cell-left {
+  background: url("/common/unicorn/img/WAYF/stripes-lighter.png");
+  background-color: $page-bgcolor;
+  margin-right: 0;
+}
+
+#friend-cell-left > div {
+  @include rem(padding, 20);
+  @include rem(padding-top, 4);
+}
+
+.friend-cell-title {
+  @include rem(font-size, 16);
+  font-weight: bold;
+  @include rem(margin-bottom, 7);
+}
+
+.friend-cell-text {
+  @include rem(font-size, 14);
+  @include rem(margin-bottom, 20);
+}
+
+.friend-can-do-cells-wrapper {
+  @include rem(width, 440);
+  margin: auto;
+}
+
+.friend-do-cell-common {
+  border: $cell-border;
+  display: inline;
+  float: left;
+  @include rem(width, 170);
+  @include rem(height, 125);
+  text-align: center;
+  position: relative;
+} 
+.friend-can-do-cell {
+  background-color: $page-bgcolor;
+  @include rem(margin-right, 40);
+  @include rem(margin-left, 10);
+}
+
+.friend-cannot-do-cell {
+  background-color: $friend-cannot-bgcolor;
+  background-color: $friend-cannot-bgcolor-css3;
+}
+
+.friend-cannot-do-cell > div, .friend-can-do-cell > div {
+  @include rem(padding-right, 16);
+  @include rem(padding-left, 16);
+  @include rem(padding-top, 16);
+  @include rem(padding-bottom, 8);
+}
+
+.friend-cannot-do-cell i {
+  color: gray;
+  @include rem(font-size, 20);
+}
+
+.friend-can-do-cell i {
+  color: $hathitrust-orange-color;
+  @include rem(font-size, 28);
+}
+
+.friend-cannot-do-cell i, .friend-can-do-cell i {
+  position: absolute;
+  @include rem(top, -15);
+  @include rem(left, -8);
+}
+
+.friend-can-do-cell img {
+  @include rem(height, 54);
+}
+
+.friend-cannot-do-cell p, .friend-can-do-cell p {
+  @include rem(font-size, 11);
+  text-align: left;
+}
+
+/* Bottom row, right cell */
+#friend-cell-right {
+  @include rem(margin-top, 15);
+}
+
+#friend-cell-right > div {
+  @include rem(padding-top, 15);
+  @include rem(padding-left, 25);
+  @include rem(padding-right, 25);
+}
+
+#friend-cell-right p {
+  @include rem(font-size, 14);
+}

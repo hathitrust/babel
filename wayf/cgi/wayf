@@ -31,7 +31,7 @@ Debug options
 use strict;
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1; # Always required if on a branch that needs common/web/unicorn!!
 }
 
 # ----------------------------------------------------------------------

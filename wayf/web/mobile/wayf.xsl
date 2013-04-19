@@ -17,6 +17,7 @@
 		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
 		<meta name="format-detection" content="telephone=no" />
         <title>Login | HathiTrust Mobile Digital Library</title>
+        <xsl:call-template name="load_base_js" /> <!-- Unicorn temporary solution to load loginMobile.js for loginHomeClick() -->
         <xsl:call-template name="load_js_and_css"/>
       </head>
 

@@ -6,19 +6,9 @@
 
   <!-- XSL fallback files -->
   <XslFileList>
-    <Filename>smallheader.xsl</Filename>
+    <Filename>skeleton.xsl</Filename>
     <Filename>wayf.xsl</Filename>
-    <Filename>coll.xsl</Filename>
-    <Filename>skin.xsl</Filename>
-    <Filename>loads.xsl</Filename>
-    <Filename>loads_helper_wayf.xsl</Filename>
    </XslFileList>
-
-  <!-- Custom OPTIONAL XML for top-level file -->
-  <CustomXml><?CHUNK filename="wayf_extra.xml" optional="1"?></CustomXml>
-
-  <!-- Minimal header.xml -->
-  <?CHUNK filename="smallheader.xml"?>
 
   <IdP_List><?IDP_LIST?></IdP_List>
   <FriendLoginLink><?FRIEND_LOGIN_LINK?></FriendLoginLink>
