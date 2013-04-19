@@ -20,7 +20,7 @@
   <xsl:variable name="gLoggedIn" select="/MBooksTop/MBooksGlobals/LoggedIn"/>
   <xsl:variable name="gQ1" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']" />
 
-  <xsl:variable name="gEnableGoogleAnalytics" select="'false'"/>
+  <xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
 
   <xsl:variable name="search-options">
       <!-- <option value="ocr" data-target="ls">Everything</option> -->
@@ -247,9 +247,6 @@
         </ul>
       </div>
     </div>
-    <script>
-      head.js("/common/unicorn/js/google_analytics.js");
-    </script>
   </xsl:template>
 
   <xsl:template name="li-feedback">
