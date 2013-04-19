@@ -97,7 +97,7 @@ head.ready(function() {
 
     function submit_post(params, fn) {
 
-        var non_ajax = { movit : true, delit : true, movitnc : true };
+        var non_ajax = { movit : true, delit : true, movitnc : true, editc : true };
 
         if ( ! non_ajax[params.a] ) {
             params.page = 'ajax';
@@ -209,6 +209,7 @@ head.ready(function() {
                 "class" : "btn-primary",
                 callback : function() {
 
+                    var c = $.trim($block.find("input[name=c]").val());
                     var cn = $.trim($block.find("input[name=cn]").val());
                     var desc = $.trim($block.find("textarea[name=desc]").val());
 
@@ -218,13 +219,23 @@ head.ready(function() {
                     }
 
                     $dialog.find(".btn-primary").addClass("btn-loading");
-                    submit_post({
+
+                    var params = {
                         a : options.a,
-                        id : get_ids(options.$selected),
                         cn : cn,
                         desc : desc,
-                        shrd : $block.find("input[name=shrd]").val()
-                    }, function() {
+                        shrd : $block.find("input[name=shrd]:checked").val()                        
+                    };
+
+                    if ( options.$selected ) {
+                        params.id = get_ids(options.$selected);
+                    }
+
+                    if ( c ) {
+                        params.c = c;
+                    }
+
+                    submit_post(params, function() {
                         $dialog.modal('hide');
                     });
                     return false;
