@@ -76,14 +76,16 @@
     </xsl:choose>
   </xsl:template>
 
+  <xsl:variable name="header-search-params-searchtype" select="//HeaderSearchParams/Field[@name='searchtype']" />
+
   <xsl:template name="header-search-options-selected">
     <xsl:param name="value" />
-    <xsl:variable name="searchtype" select="normalize-space(//HeaderSearchParams/Field[@name='searchtype'])" />
     <xsl:choose>
-      <xsl:when test="$value = $searchtype">
+      <xsl:when test="$value = $header-search-params-searchtype">
         <xsl:attribute name="selected">selected</xsl:attribute>
       </xsl:when>
-      <xsl:otherwise/>
+      <xsl:otherwise>
+      </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
