@@ -757,8 +757,13 @@ body {
   z-index: 105;
 }
 
-/* line 4, ../sass/volume/plaintext.scss */
-.view-plaintext .page-item {
+/* line 5, ../sass/volume/plaintext.scss */
+.view-plaintext #content {
+  padding: 8px ;
+  padding: 0.8rem ;
+}
+/* line 9, ../sass/volume/plaintext.scss */
+.view-plaintext #content .page-item {
   display: block;
   min-height: 350px;
   min-width: 510px;
