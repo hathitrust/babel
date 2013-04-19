@@ -38,7 +38,7 @@ HT.feedback.dialog = function() {
     '    <fieldset>' + 
     '        <legend>Problems with access rights?</legend>' + 
     '        <p style="font-weight: bold; margin-top: 0">' + 
-    '            (See also: <a href="#">take-down policy</a>)' + 
+    '            (See also: <a href="http://www.hathitrust.org/take_down_policy" target="_blank">take-down policy</a>)' + 
     '        </p>' + 
     '        <label class="radio">' + 
     '            <input type="radio" name="Rights" value="noaccess" />' + 

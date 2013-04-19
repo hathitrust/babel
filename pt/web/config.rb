@@ -10,6 +10,9 @@ images_dir = "images"
 javascripts_dir = "js"
 
 output_style = :expanded
+if environment == :production
+    output_style = :compressed
+end
 
 relative_assets = true
 

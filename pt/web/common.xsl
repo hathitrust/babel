@@ -109,7 +109,7 @@
   </xsl:variable>
 
   <xsl:template name="get-feedback-id"></xsl:template>
-  <xsl:template name="get-feedback-m"><xsl:value-of select="pt" /></xsl:template>
+  <xsl:template name="get-feedback-m"><xsl:text>pt</xsl:text></xsl:template>
 
   <!-- Navigation bar -->
   <xsl:template name="subnav_header">

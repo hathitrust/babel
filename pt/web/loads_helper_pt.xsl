@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1366390505'" />
+  <xsl:variable name="timestamp" select="'?_=1366394185'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         (function() {
@@ -45,7 +45,7 @@
             window.HT = window.HT || {};
             HT.scripts = HT.scripts || [];
             var to_load = HT.scripts;
-            to_load.push("/mdp-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/common-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/jquery.cookie.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/base.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/feedback.js<xsl:value-of select="$timestamp" />");
@@ -85,13 +85,13 @@
             to_load.push("/pt/yui2-lib/build/utilities/utilities.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/yui2-lib/build/resize/resize-min.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/versionPopup.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/mdp-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/mdp-web/js/feedbackForm.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/mdp-web/js/newCollOverlayCore.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/common-web/jquery/jquery.trap.min.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/common-web/js/feedbackForm.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/common-web/js/newCollOverlayCore.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/newCollOverlayPT.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/mdp-web/js/overlayUtils.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/mdp-web/js/listUtils.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/mdp-web/js/pageturner.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/common-web/js/overlayUtils.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/common-web/js/listUtils.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/common-web/js/pageturner.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/boxy/jquery.boxy.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/jquery.cookie.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/init.js<xsl:value-of select="$timestamp" />");
