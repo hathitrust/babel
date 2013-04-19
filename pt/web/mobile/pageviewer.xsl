@@ -608,6 +608,9 @@
     <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
     <meta name="format-detection" content="telephone=no" />
     <script src="/common/unicorn/js/head.min.js"></script>
+    <script>
+      head.js.apply(this, HT.scripts);
+    </script>
   </xsl:template>
 
   <!-- FORM: Search -->

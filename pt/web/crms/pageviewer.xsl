@@ -10,6 +10,9 @@
 
   <xsl:template name="extra-head-setup">
     <script src="/common/unicorn/js/head.min.js"></script>
+    <script>
+      head.js.apply(this, HT.scripts);
+    </script>
     <style>
       #mdpUberContainer {
         margin-top: 0px;

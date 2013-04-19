@@ -82,6 +82,8 @@
           </xsl:call-template>
         </title>
 
+        <xsl:call-template name="load_base_js" />
+
         <xsl:call-template name="extra-head-setup" />
 
         <!-- jQuery from the Google CDN -->

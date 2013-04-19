@@ -167,13 +167,9 @@ HT.Manager = {
 
         var $img = $("<img/>");
         $img.load(p.resolve);
-        $img.error(p.resolve);
+        $img.error(p.reject);
         $img.get(0).src = src;
-        $.when(p.promise()).then(function() {
-            // if ( is_missing ) {
-            //     Holder.run();
-            //     return;
-            // }
+        $.when(p.promise()).done(function() {
             var check = new Image();
             check.src = $img.get(0).src;
             // console.log("-- image:", check.src, params.seq, $img.get(0).width, "x", $img.get(0).height, ":", check.width, "x", check.height);
@@ -196,6 +192,11 @@ HT.Manager = {
             $img.data('seq', params.seq);
             $img.data('natural-height', check.height);
             $img.data('natural-width', check.width);
+            $img.trigger("image.fudge");
+        }).fail(function(status) {
+            $img.get(0).src = '/imgsrv/common-web/graphics/503_image_distorted.jpg';
+            $img.data('natural-width', 320);
+            $img.data('natural-height', 480);
             $img.trigger("image.fudge");
         })
         return $img;
