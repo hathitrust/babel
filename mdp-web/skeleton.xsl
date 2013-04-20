@@ -277,7 +277,7 @@
           <!-- we don't do anything normally -->
         </xsl:when>
         <xsl:otherwise>
-          <a href="#" id="login-button" class="button log-in">LOG IN</a>
+          <a href="{/MBooksTop/Header/LoginLink}" id="login-button" class="button log-in">LOG IN</a>
         </xsl:otherwise>
       </xsl:choose>
     </div>
