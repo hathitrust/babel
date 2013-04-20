@@ -272,8 +272,9 @@ sub write_xsl_file{
     print {$XSL_FH} qq{  <xsl:template name="load_concat_js_file">\n};
     print {$XSL_FH} <<XSL;
     <script type="text/javascript">
+        var HT = HT || {};
         (function() {
-            window.HT = window.HT || {};
+            // window.HT = window.HT || {};
             HT.scripts = HT.scripts || [];
             HT.scripts.push("/$PROGRAM/js/concatenated_common-min.js<xsl:value-of select="\$timestamp" />");
 XSL
@@ -306,8 +307,9 @@ XSL
 
     print {$XSL_FH} <<XSL;
     <script type="text/javascript">
+        var HT = HT || {};
         (function() {
-            window.HT = window.HT || {};
+            // window.HT = window.HT || {};
             HT.scripts = HT.scripts || [];
             var to_load = HT.scripts;
 XSL
@@ -433,7 +435,7 @@ Description
 sub clean_up {
     foreach my $filename (@{$TO_REMOVE_REF}) {
         print STDERR "deleting $filename\n" if $VERBOSE;
-        unlink($filename) or die "Couldn't delete $filename: $!\n";
+        unlink($filename) or warn "Couldn't delete $filename: $!\n";
     }
 }
 
