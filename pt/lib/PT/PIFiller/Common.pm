@@ -1196,7 +1196,7 @@ sub ExtractCatalogParams {
     # advanced search, punt
     unless ( $params{'adv'} ) {
         $q1 = $params{'lookfor'};
-        $searchtype = $params{'type'} || $$params{'searchtype'} || 'all';
+        $searchtype = $params{'type'} || $params{'searchtype'} || 'all';
     }
     $ft = $params{'ft'} eq 'ft' ? 'checked' : '';
 
