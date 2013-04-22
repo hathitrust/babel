@@ -4,7 +4,9 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
-  extension-element-prefixes="str" xmlns:str="http://exslt.org/strings">
+  xmlns:exsl="http://exslt.org/common"
+  exclude-result-prefixes="exsl str"
+  extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
 
   <xsl:variable name="gExclusiveAccessFail">
     <xsl:choose>
@@ -103,6 +105,11 @@
 
   <!-- No access due to copyright restrictions -->
   <xsl:template name="NoAccessPage">
+    <xsl:variable name="find-in-library-link">
+      <xsl:call-template name="FindInALibraryLink">
+        <xsl:with-param name="class"> btn btn-primary btn-medium</xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
     <div class="alert alert-info alert-block alert-banner">
       This item is <strong>not available online</strong> (<i class="icomoon-locked"></i> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
     </div>
@@ -138,12 +145,12 @@
           </div>
         </div>
       </div>
-      <div class="span4 find-in-library">
-        <xsl:text>or </xsl:text>
-        <xsl:call-template name="FindInALibraryLink">
-          <xsl:with-param name="class"> btn btn-primary btn-medium</xsl:with-param>
-        </xsl:call-template>
-      </div>
+      <xsl:if test="exsl:node-set($find-in-library-link)//node()">
+        <div class="span4 find-in-library">
+          <xsl:text>or </xsl:text>
+          <xsl:apply-templates select="exsl:node-set($find-in-library-link)" mode="copy" />
+        </div>
+      </xsl:if>
     </div>
   </xsl:template>
 
