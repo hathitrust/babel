@@ -128,7 +128,12 @@
 
   <xsl:template name="include_extra_js_and_css">
     <xsl:if test="$gUsingBookReader='true'">
-    <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script>
+    <!-- <script type="text/javascript" src="/pt/web/js/FudgingBookReader.js?_={generate-id()}"></script> -->
+    <!-- <script type="text/javascript">
+      head.ready(
+        head.js("/pt/web/js/FudgingBookReader.js");
+      );
+    </script> -->
     <!-- <style>
       .debugIndex {
         display: block;
@@ -174,6 +179,7 @@
 
   <xsl:template name="setup-ht-params">
     <script type="text/javascript">
+      var fudgingMonkeyPatch = fudgingMonkeyPatch || false;
       head.ready(function() {
         HT.params = {};
         HT.params.ui = 'reader';
@@ -200,7 +206,6 @@
           HT.params.fullscreen = true;
         }
         HT.params.view = "<xsl:value-of select="$gCurrentView" />";
-        var fudgingMonkeyPatch = fudgingMonkeyPatch || false;
         HT.params.fudging = fudgingMonkeyPatch;
         HT.config = HT.config || {};
         HT.config.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';      

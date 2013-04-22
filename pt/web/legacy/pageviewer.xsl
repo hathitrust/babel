@@ -82,14 +82,15 @@
           </xsl:call-template>
         </title>
 
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+
         <xsl:call-template name="load_base_js" />
 
         <xsl:call-template name="extra-head-setup" />
 
         <!-- jQuery from the Google CDN -->
         <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css"/>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
 
         <xsl:call-template  name="include_local_javascript"/>
         <xsl:call-template name="load_js_and_css"/>

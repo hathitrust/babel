@@ -129,6 +129,7 @@ Test:$gUsingSearch='false' and $gItemType = 'volume' and $gUsingBookReader='true
 /pt/web/vendor/jquery.textfill.js
 /pt/web/bookreader/BookReader/BookReader.js
 /pt/web/js/HTBookReader.js
+/pt/web/js/FudgingBookReader.js
 /pt/web/bookreader/BookReader/dragscrollable.js
 /pt/web/js/lscache.js
 
