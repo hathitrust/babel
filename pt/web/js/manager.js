@@ -33,7 +33,7 @@ HT.Manager = {
         var href = this.options.reader.imgsrv.get_action_url("meta", {});
         $.ajaxSetup({ async : false });
         $.getJSON(href + "callback=?", 
-            { id : this.options.id, format : 'items', limit : 1000002, method : 'fudged', start : 0  },
+            { id : this.options.id, format : 'items', limit : 1000002, method : 'fudged', start : 0, debug : HT.params.debug || ''  },
             function(data) {
                 // console.log("processing", data.items.length);
                 self.data = data;

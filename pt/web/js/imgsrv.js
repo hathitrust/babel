@@ -51,6 +51,13 @@ HT.ImgSrv = {
 		if ( params.start ) {
 			args.push("start=" + params.start);
 		}
+
+		if ( args.length && HT.params.debug ) {
+			args.push("debug=" + HT.params.debug);
+		}
+
+		// https://roger-full.babel.hathitrust.org/cgi/imgsrv/meta?debug=supercallback=jQuery19104218266897369176_1366646687818&id=mdp.39015005503357&format=items&limit=1000002&method=fudged&start=0&_=1366646687819 
+
 		return action_url + args.join(";");
 	},
 
