@@ -89,7 +89,7 @@ Test:$gUsingSearch='true'
 # /pt/web/js/lscache.js
 
 Section:LEGACY_JS
-Test:$gSkin='mobile' or $gSkin='crms'
+Test:$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'
 # NOTE: utilities/README says utilities.js includes all of the below
 # so it should suffice to load just utilities.js instead of all of
 # these except we got a JS error when we tried that.
@@ -145,7 +145,7 @@ Test:$gSkin='mobile' and $gItemType='volume' and $gUsingBookReader='true'
 
 Section:LEGACY_CSS
 # css files, note last one overides earlier
-Test:$gSkin='mobile' or $gSkin='crms'
+Test:$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'
 /pt/web/bookreader/BookReader/BookReader.css
 /pt/web/yui2-lib/build/fonts/fonts-min.css
 /pt/web/yui2-lib/build/container/assets/skins/sam/container.css

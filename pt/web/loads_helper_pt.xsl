@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1366656826'" />
+  <xsl:variable name="timestamp" select="'?_=1366658913'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
@@ -16,7 +16,7 @@
     <xsl:if test="$gUsingSearch='true'">
             HT.scripts.push("/pt/js/concatenated_PAGETURNER_SEARCH_JS-min.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
-    <xsl:if test="$gSkin='mobile' or $gSkin='crms'">
+    <xsl:if test="$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'">
             HT.scripts.push("/pt/js/concatenated_LEGACY_JS-min.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     <xsl:if test="$gUsingSearch='false' and $gSkin!='default'">
@@ -32,7 +32,7 @@
     </script>
   </xsl:template> 
   <xsl:template name="load_concat_css_file">
-    <xsl:if test="$gSkin='mobile' or $gSkin='crms'">
+    <xsl:if test="$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'">
         <link rel="stylesheet" type="text/css" href="/pt/concatenated_LEGACY_CSS-min.css{$timestamp}" />
     </xsl:if>
     <xsl:if test="$gSkin='mobile'">
@@ -77,7 +77,7 @@
             to_load.push("/pt/js/version_popup.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/collection_tools.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
-    <xsl:if test="$gSkin='mobile' or $gSkin='crms'">
+    <xsl:if test="$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'">
             to_load.push("/pt/yui2-lib/build/yahoo/yahoo-min.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/yui2-lib/build/event/event-min.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/yui2-lib/build/dom/dom-min.js<xsl:value-of select="$timestamp" />");
@@ -132,7 +132,7 @@
     <xsl:if test="$gSkin='mobile'">
  <link rel="stylesheet" type="text/css" href="/pt/mobile/mobilept.css{$timestamp}"/>
     </xsl:if>
-    <xsl:if test="$gSkin='mobile' or $gSkin='crms'">
+    <xsl:if test="$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'">
  <link rel="stylesheet" type="text/css" href="/pt/bookreader/BookReader/BookReader.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/pt/yui2-lib/build/fonts/fonts-min.css{$timestamp}"/>
  <link rel="stylesheet" type="text/css" href="/pt/yui2-lib/build/container/assets/skins/sam/container.css{$timestamp}"/>
