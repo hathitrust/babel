@@ -276,7 +276,6 @@ HT.Viewer.Flip = {
         var fit_w = $("#content").width();
 
         $("#content").append('<div class="bb-custom-wrapper"><div class="bb-bookblock"></div></div>');
-        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
         var $container = $(".bb-bookblock");
         self.$container = $container;
         self.$wrapper = $("#content").find(".bb-custom-wrapper");
@@ -454,6 +453,38 @@ HT.Viewer.Flip = {
         if ( ! last_num ) {
             last_num = "n" + end_seq;
         }
+        self.options.last_num = last_num;
+
+        self.loadPage(current);
+        self.loadPage(current + 1);
+        self.loadPage(current - 1);
+        // self.loadPage(self._page2seq(current)); self.loadPage(self._page2seq(current) + 1);
+
+        self.book.toggleLayoutSupport();
+        self.book.jump(current + 1);
+        self.book.toggleLayoutSupport();
+
+        $(window).scroll();
+
+        setTimeout(function() {
+            self.buildSlider(pages, current);
+            self.checkPageStatus();
+        }, 100);
+
+        $container.on('click', '.page-right img', function() {
+            self.book.next();
+        }).on('click', '.page-left img', function() {
+            self.book.prev();
+        })
+
+        $.publish("view.ready");
+
+    },
+
+    buildSlider: function(pages, current) {
+        var self = this;
+        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
+        var last_num = self.options.last_num;
         self.$slider = $nob.slider({
             min : 0,
             max : pages.length - 1,
@@ -484,27 +515,6 @@ HT.Viewer.Flip = {
             console.log("JUMPING TO", value, seq);
             self.gotoPage(seq[0]);
         })
-
-        self.loadPage(current);
-        self.loadPage(current + 1);
-        self.loadPage(current - 1);
-        // self.loadPage(self._page2seq(current)); self.loadPage(self._page2seq(current) + 1);
-
-        self.book.toggleLayoutSupport();
-        self.book.jump(current + 1);
-        self.book.toggleLayoutSupport();
-
-        $(window).scroll();
-        self.checkPageStatus();
-
-        $container.on('click', '.page-right img', function() {
-            self.book.next();
-        }).on('click', '.page-left img', function() {
-            self.book.prev();
-        })
-
-        $.publish("view.ready");
-
     },
 
     // UTIL

@@ -24,8 +24,11 @@ head.ready(function() {
 
             var xy = $original.offset();
             var w = $original.outerWidth();
+            var h = $original.outerHeight();
             if ( $original.is("#toolbar-vertical") ) {
                 w = 40;
+            } else if ( $original.is("#toolbar-horizontal") ) {
+                h = 40;
             }
 
             // console.log("ORIGINAL", w);
@@ -43,7 +46,7 @@ head.ready(function() {
 
             if ( ! $original.is(".no-dummy") ) {
                 var extra_h = $.browser.webkit ? ( $original.data('extra-height') || 0 ) : 0;
-                var $dummy = $("<div><div></div></div>").attr('id', $original.attr("id") + "-dummy").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: $original.outerHeight() + extra_h, width : w });
+                var $dummy = $("<div><div></div></div>").attr('id', $original.attr("id") + "-dummy").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: h + extra_h, width : w });
                 $original.before($dummy).addClass('fixed-placed');
                 $dummy = $("#" + $original.attr("id") + "-dummy");
                 // $dummy.height($original.outerHeight());
@@ -75,7 +78,7 @@ head.ready(function() {
 
     rebuild_sidebar();
 
-    setTimeout(rebuild_fixed, 500);
+    setTimeout(rebuild_fixed, 10);
 
 
     var handle_scroll_horizontal = function() {
