@@ -318,7 +318,11 @@
   </xsl:template>
 
   <xsl:template name="page-content-reader">
-    
+    <div class="page-item">
+      <div class="alert alert-info alert-block startup">
+        <p>Loading <em><xsl:value-of select="$gTitleString" /></em>. <img src="/pt/graphics/thumb-loader.gif" /></p>
+      </div>
+    </div>
   </xsl:template>
 
   <xsl:template name="page-content-image">
