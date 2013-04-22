@@ -45,7 +45,7 @@ head.ready(function() {
             // }
 
             if ( ! $original.is(".no-dummy") ) {
-                var extra_h = $.browser.webkit ? ( $original.data('extra-height') || 0 ) : 0;
+                var extra_h = 0; // $.browser.webkit ? ( $original.data('extra-height') || 0 ) : 0;
                 var $dummy = $("<div><div></div></div>").attr('id', $original.attr("id") + "-dummy").attr('class', $original.attr('class')).addClass("dummy").removeClass("stuck").css({ height: h + extra_h, width : w });
                 $original.before($dummy).addClass('fixed-placed');
                 $dummy = $("#" + $original.attr("id") + "-dummy");
