@@ -1148,12 +1148,13 @@ sub handle_HEADER_SEARCH_FIELDS_PI
 
     if ( $q1 || $target ) {
 
-        $xml = qq{<HeaderSearchParams>
-                    <Field name="q1">$q1</Field>
-                    <Field name="searchtype">$searchtype</Field>
-                    <Field name="target">$target</Field>
-                    <Field name="ft">$ft</Field>
-                </HeaderSearchParams>};
+        $q1 =~ s,&,&amp;,g;
+        $xml = qq{<HeaderSearchParams>};
+        $xml .= wrap_string_in_tag($q1, 'Field', [['name', "q1" ]]);
+        $xml .= wrap_string_in_tag($searchtype, 'Field', [['name', "searchtype" ]]);
+        $xml .= wrap_string_in_tag($target, 'Field', [['name', "target" ]]);
+        $xml .= wrap_string_in_tag($ft, 'Field', [['name', "ft" ]]);
+        $xml .= qq{</HeaderSearchParams>};
 
     }
 
