@@ -1175,6 +1175,8 @@ sub ExtractLSParams {
     # don't bother if we detect q2
     unless ( $params{'q2'} ) {
         $q1 = $params{'q1'};
+
+        utf8::decode($q1);
         $searchtype = $params{'field1'} || 'all';
     }
     $ft = $params{'lmt'} eq 'ft' ? 'checked' : '';
@@ -1197,6 +1199,7 @@ sub ExtractCatalogParams {
     # advanced search, punt
     unless ( $params{'adv'} ) {
         $q1 = $params{'lookfor'};
+        utf8::decode($q1);
         $searchtype = $params{'type'} || $params{'searchtype'} || 'all';
     }
     $ft = $params{'ft'} eq 'ft' ? 'checked' : '';
