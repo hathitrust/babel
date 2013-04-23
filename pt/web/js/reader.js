@@ -308,6 +308,9 @@ HT.Reader = {
         new_href += "?id=" + HT.params.id;
         new_href += ";view=" + this.getView();
         new_href += ";seq=" + this.getCurrentSeq();
+        if ( HT.params.debug ) {
+            new_href += ";debug=" + HT.params.debug;
+        }
 
         // if ( HT.params.size ) {
         //     new_href += ";size=" + HT.params.size;
