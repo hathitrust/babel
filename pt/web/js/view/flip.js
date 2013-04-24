@@ -472,9 +472,11 @@ HT.Viewer.Flip = {
         }, 100);
 
         $container.on('click', '.page-right img', function() {
-            self.book.next();
+            // self.book.next();
+            self.gotoPage(null, 1);
         }).on('click', '.page-left img', function() {
-            self.book.prev();
+            // self.book.prev();
+            self.gotoPage(null, -1);
         })
 
         $.publish("view.ready");
