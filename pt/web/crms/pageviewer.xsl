@@ -47,7 +47,7 @@
       
     </div>
     <script>
-      $(document).ready(function() {
+      head.ready(function() {
         $("#feedback, #feedback_footer, .mobilefeedback").unbind('click');
         $("#feedback, #feedback_footer, .mobilefeedback").click(function(e) {
               e.preventDefault();
