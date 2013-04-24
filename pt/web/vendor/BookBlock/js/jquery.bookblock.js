@@ -156,7 +156,6 @@
 					case arrow.right:
 						self._stopSlideshow();
 						self._navigate('next');
-						B
 						break;
 
 					}

@@ -103,7 +103,7 @@ Test:$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'
 /pt/web/yui2-lib/build/resize/resize-min.js
 
 /pt/web/js/versionPopup.js
-//common-web/jquery/jquery.trap.min.js
+# //common-web/jquery/jquery.trap.min.js
 //common-web/js/feedbackForm.js
 //common-web/js/newCollOverlayCore.js
 /pt/web/js/newCollOverlayPT.js

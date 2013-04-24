@@ -84,6 +84,7 @@
 
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
         <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="/common/unicorn/vendor/js/jquery.trap.js"></script>
 
         <xsl:call-template name="load_base_js" />
 
