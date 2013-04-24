@@ -501,6 +501,24 @@ sub handle_VOLUME_CURRENT_TITLE_FRAGMENT_PI
 
 # ---------------------------------------------------------------------
 
+=item handle_VOLUME_TITLE_PI : PI_handler(VOLUME_TITLE)
+
+Handler for VOLUME_TITLE
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_VOLUME_TITLE_PI
+    : PI_handler(VOLUME_TITLE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $title = $C->get_object('MdpItem')->GetFullTitle();
+    return $title;
+}
+
+# ---------------------------------------------------------------------
+
 =item handle_ITEM_FORMAT_PI : PI_handler(ITEM_FORMAT)
 
 Handler for ITEM_FORMAT
