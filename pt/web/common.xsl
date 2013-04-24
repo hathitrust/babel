@@ -7,30 +7,7 @@
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   exclude-result-prefixes="METS PREMIS"
   >
-  
-  <!--
-       Copyright 2006, The Regents of The University of Michigan, All Rights Reserved
-       
-       Permission is hereby granted, free of charge, to any person obtaining
-       a copy of this software and associated documentation files (the
-       "Software"), to deal in the Software without restriction, including
-       without limitation the rights to use, copy, modify, merge, publish,
-       distribute, sublicense, and/or sell copies of the Software, and to
-       permit persons to whom the Software is furnished to do so, subject
-       to the following conditions:
-       
-       The above copyright notice and this permission notice shall be
-       included in all copies or substantial portions of the Software.
-       
-       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-       EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-       MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-       IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-       CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-       TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-       SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-       -->
-  
+
   <!-- Global Variables -->
   <xsl:variable name="gHtId" select="/MBooksTop/MBooksGlobals/HtId"/>
   <xsl:variable name="gAccessUseHeader" select="/MBooksTop/MBooksGlobals/AccessUse/Header"/>
@@ -57,6 +34,7 @@
   <xsl:variable name="gContactText" select="/MBooksTop/MBooksGlobals/ContactText"/>
   <xsl:variable name="gVersionLabel" select="/MBooksTop/MBooksGlobals/VersionLabel"/>
   <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
+  <xsl:variable name="gTitleString" select="/MBooksTop/MBooksGlobals/VolumeTitle"/>
   <xsl:variable name="gVolumeTitleFragment">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/VolCurrTitleFrag!=' '">
@@ -82,18 +60,6 @@
         <xsl:value-of select="'50'"/>
       </xsl:otherwise>
     </xsl:choose>
-  </xsl:variable>
-
-  <xsl:variable name="gTitleString">
-    <xsl:if test="$gMdpMetadata/datafield[@tag='245']/subfield[@code='a']">
-      <xsl:value-of select="$gMdpMetadata/datafield[@tag='245']/subfield[@code='a']"/>
-    </xsl:if>
-    <xsl:if test="$gMdpMetadata/datafield[@tag='245']/subfield[@code='b']">
-      <xsl:value-of select="concat(' ', $gMdpMetadata/datafield[@tag='245']/subfield[@code='b'])"/>
-    </xsl:if>
-    <xsl:if test="$gMdpMetadata/datafield[@tag='245']/subfield[@code='c']">
-      <xsl:value-of select="concat(' ', $gMdpMetadata/datafield[@tag='245']/subfield[@code='c'])"/>
-    </xsl:if>
   </xsl:variable>
   
   <xsl:variable name="gTruncTitleString">
