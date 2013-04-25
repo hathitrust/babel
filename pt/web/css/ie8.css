@@ -9,3 +9,7 @@ i.icomoon-reorder:before {
     font-family: monospace;
     font-weight: bold;
 }
+
+.page-item, .page-item img, .page-item a {
+    box-sizing: content-box !important;
+}
