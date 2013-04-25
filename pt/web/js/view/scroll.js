@@ -260,16 +260,12 @@ HT.Viewer.Scroll = {
             scrollTop : $current.offset().top - 100
         }, "fast", function() {
 
-            $(".page-item:in-viewport").each(function() {
-                var $page = $(this);
-                self.loadPage($page);
-                // if ( ! $page.is(".imaged") ) {
-                //     $page.addClass("imaged");
-                //     var seq = $page.data('seq');
-                //     var $img = self.options.manager.get_image({ seq : seq, width : self.w });
-                //     $page.append($img);
-                // }
-            })
+            // $(".page-item:in-viewport").each(function() {
+            //     var $page = $(this);
+            //     self.loadPage($page);
+            // })
+
+            $(window).trigger('scroll.viewer.scroll');
 
         });
     },
