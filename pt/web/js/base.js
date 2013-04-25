@@ -121,8 +121,8 @@ head.ready(function() {
    
   (function($) {
    
-    // var o = $({});
-    var o = $(document);
+    var o = $({});
+    // var o = $(document);
    
     $.subscribe = function() {
       o.on.apply(o, arguments);

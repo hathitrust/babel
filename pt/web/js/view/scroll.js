@@ -163,14 +163,15 @@ HT.Viewer.Scroll = {
 
     bindScroll: function() {
         var self = this;
+        var $window = $(window);
         var lazyLayout = _.debounce(function() {
             // figure out the MOST visible page
 
             var t0 = Date.now();
 
             var visibility = [];
-            var scrollTop = $(window).scrollTop();
-            var windowHeight = $(window).height();
+            var scrollTop = $window.scrollTop();
+            var windowHeight = $window.height();
             var $current = $(".page-item.current");
 
             var current_vp = 0;
@@ -183,16 +184,39 @@ HT.Viewer.Scroll = {
             var $imaged = $(".page-item.imaged");
             $imaged.addClass("checking");
 
-            var $visible = $(".page-item:in-viewport");
+            // // ORIGINAL ALGORITHM : viewport selector horribly slow in IE8
+            // var $visible = $(".page-item:in-viewport");
 
-            var max_vp = -1; var $new;
-            for(var i = 0; i < $visible.length; i++) {
-                var $page = $visible.slice(i, i + 1);
-                self.loadPage($page);
+            // var max_vp = -1; var $new;
+            // for(var i = 0; i < $visible.length; i++) {
+            //     var $page = $visible.slice(i, i + 1);
+            //     self.loadPage($page);
+            //     var f = $page.fracs();
+            //     if ( f.visible > max_vp ) {
+            //         max_vp = f.visible;
+            //         $new = $page;
+            //     }
+            // }
+
+            // iterate through all page-items to find the visible items.
+            var $possible = $(".page-item");
+            var $visible = $();
+            var max_vp = 0; var $new;
+            var past_visible = false;
+            for (var i = 0; i < $possible.length; i++) {
+                var $page = $possible.slice(i, i + 1);
                 var f = $page.fracs();
-                if ( f.visible > max_vp ) {
-                    max_vp = f.visible;
-                    $new = $page;
+                if ( f.visible ) {
+                    self.loadPage($page);
+                    $visible.push($page);
+                    if ( f.visible > max_vp ) {
+                        max_vp = f.visible;
+                        $new = $page;
+                    }
+                    past_visible = true;
+                } else if ( past_visible ) {
+                    // don't need to keep looking
+                    break;
                 }
             }
 
@@ -202,44 +226,11 @@ HT.Viewer.Scroll = {
                 $.publish("update.go.page", ( $new.data('seq') ));
             }
 
-            // $visible.each(function() {
-            //     var $page = $(this);
-            //     self.loadPage($page);
-            //     var offset = $page.offset();
-            //     var elementBottom = offset.top + $page.height() - scrollTop;
-            //     var elementTop = offset.top - scrollTop;
-            //     var a = elementTop - (windowHeight - $page.height()) > $page.height() ? $page.height() : elementTop - (windowHeight - $page.height());
-            //     a = a > 0 ? a : 0;
-            //     var b = elementBottom > $page.height() ? $page.height() : elementBottom;
-            //     b = b > 0 ? b : 0;
-            //     var vpVisibility = (b-a) / $page.height();
-            //     visibility.push([vpVisibility, $page.attr('id')]);
-            //     if ( $page.attr('id') == $current.attr('id') ) {
-            //         current_vp = vpVisibility;
-            //     }
-            // });
-
             // load the previous and next for caching
             var $previous = $visible.slice(0,1).prev();
             var $next = $visible.slice(-1).next();
             self.loadPage($previous);
             self.loadPage($next);
-
-
-            // var sorted = _.sortBy(visibility, function(item) { return item[0]; })
-            // // current is the most visible
-            // var new_id = sorted[sorted.length - 1][1];
-            // var new_vp = sorted[sorted.length - 1][0];
-            // var $new = $("#" + new_id);
-            // console.log("--- most visible:", sorted, new_id, new_vp, current_vp, new_vp - current_vp);
-
-            // if ( ( new_vp - current_vp ) >= 0.25 || ! $current.is(".imaged") || ! $current.length ) {
-            //     $current.removeClass("current");
-            //     $new.addClass("current");
-            //     // if ( '#n/' + $new.data('seq') != window.location.hash ) {
-            //     //  window.location.replace('#n/' + $new.data('seq'));
-            //     // }
-            // }
 
             $(".page-item.checking").removeClass("imaged").removeClass("loaded").removeClass("checking").find("img").remove();
 
