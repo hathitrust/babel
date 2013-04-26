@@ -112,7 +112,7 @@ HT.Viewer.Thumbnail = {
             //     // $(this).parent().addClass("imaged").addClass("expanded");
             // }
 
-            $parent.addClass("loaded");
+            $parent.addClass("loaded").removeClass("loading");
         });
 
         // // does this work in IE8?
@@ -170,7 +170,24 @@ HT.Viewer.Thumbnail = {
             var $imaged = $(".page-item.imaged");
             $imaged.addClass("checking");
 
-            var $visible = $(".page-item:in-viewport");
+            // var $visible = $(".page-item:in-viewport");
+            var $visible = $();
+            var $possible = $(".page-item");
+            var past_visible = false;
+            for (var i = 0; i < $possible.length; i++) {
+                var $page = $possible.slice(i, i + 1);
+                var f = $page.fracs();
+                if ( f.visible ) {
+                    // $page.addClass("visible");
+                    $visible = $visible.add($page);
+                    past_visible = true;
+                } else if ( past_visible ) {
+                    // don't need to keep looking
+                    break;
+                }
+            }
+
+            // $visible = $possible.filter(".visible");
             self.loadPage($visible);
 
             // load the previous and next for caching
@@ -179,7 +196,8 @@ HT.Viewer.Thumbnail = {
             self.loadPage($previous);
             self.loadPage($next);
 
-            $(".page-item.checking").removeClass("imaged").removeClass("checking").removeClass("loaded").find("img").remove();
+            // $(".page-item.checking").removeClass("imaged").removeClass("checking").removeClass("loaded").removeClass("loading").find("img").remove();
+            $(".page-item.checking").removeClass("imaged checking loaded loading").find("img").remove();
 
             self.checkPageStatus();
 
@@ -200,23 +218,58 @@ HT.Viewer.Thumbnail = {
 
     loadPage: function($pages) {
         var self = this;
-        _.each($pages, function(page) {
-            var $page = $(page);
-            if ( ! $page.is(".imaged")) {
-                $page.addClass("imaged");
-                var seq = $page.data('seq');
-                // var $a = $("<a class='page-link' href='#{SEQ}'></a>".replace('{SEQ}', seq)).appendTo($page);
-                // console.log("LOAD PAGE", self.id, self.w);
-                var $a = $page.find("a.page-link");
-                var h = $page.data('h');
-                var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
-                $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
-                $a.append($img);
-            } else {
-                $page.removeClass("checking");
+        $pages.removeClass("checking"); // .removeClass("visible");
+        self._processLoadQueue($pages.toArray());
+    },
 
+    _processLoadQueue: function(pages) {
+        var self = this;
+
+        // load 4 thumbnails at a time
+        var queue = [];
+        var i = 0;
+        while ( i < pages.length ) {
+            var tmp = pages.slice(i, i + 4);
+            if ( tmp.length ) {
+                queue.push(tmp);
             }
-        })
+            i += 4;
+        }
+        // console.log("QUEUE", queue);
+        if ( ! queue.length ) {
+            return;
+        }
+
+        var timer;
+        var fn = function() {
+            var $check = $(".loading");
+            if ( $check.length > 2 ) {
+                // console.log("STILL LOADING", $check.length);
+                return;
+            }
+            var pages_ = queue.shift();
+            if ( queue.length == 0 ) {
+                clearInterval(timer);
+            }
+            _.each(pages_, function(page) {
+                var $page = $(page);
+                if ( ! $page.is(".imaged")) {
+                    $page.addClass("imaged").addClass("loading");
+                    var seq = $page.data('seq');
+                    var $a = $page.find("a.page-link");
+                    var h = $page.data('h');
+                    var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
+                    $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
+                    $a.append($img);
+                } else {
+                    $page.removeClass("checking");
+                }
+            })
+
+        };
+
+        timer = setInterval(fn, 500);
+
     },
 
     calculate: function() {
@@ -288,12 +341,12 @@ HT.Viewer.Thumbnail = {
             $page.css({ height : h, width : self.w });
             $page.data('seq', seq);
             $page.data('h', h);
-            $page.addClass("loading");
+            // $page.addClass("loading");
 
             // need to bind clicking the thumbnail to open to that page; so wrap in an anchor!!
         }
 
-        $(fragment).append("<br clear='both' />");
+        // $(fragment).append("<br clear='both' />");
         self.$container.append(fragment);
         $("#content").append(self.$container);
         self.$container.show();
