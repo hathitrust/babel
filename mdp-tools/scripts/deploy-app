@@ -336,8 +336,8 @@ sub __get_auto_increment_version {
     my $increment = shift;
     my $last_tag = G_last_tag();
 
-    if (! $last_tag){
-        return "0 0 1";
+    unless ($last_tag){
+        $last_tag = "0.0.0";
     }
 
     my @version_arr = ($last_tag =~ m,(\d+)\.(\d+)\.(\d+),);
