@@ -165,11 +165,12 @@ HT.Manager = {
 
         var p = $.Deferred();
 
-        var $img = $("<img/>");
+        var $img = $("<img/>"); // .addClass("loading");
         $img.load(p.resolve);
         $img.error(p.reject);
         $img.get(0).src = src;
         $.when(p.promise()).done(function() {
+            // $(this).removeClass("loading");
             var check = new Image();
             // check.src = $img.get(0).src;
 

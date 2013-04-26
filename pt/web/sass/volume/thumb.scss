@@ -1,6 +1,14 @@
 @import "../../../common/web/unicorn/sass/base";
 
 .view-thumb {
+
+    #content:after {
+        content: "";
+        display: table;
+        height: 0;
+        clear: both;
+    }
+
     .thumbnails {
         // @include pie-clearfix;
 
