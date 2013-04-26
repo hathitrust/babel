@@ -169,6 +169,7 @@ HT.Reader = {
 
         $.subscribe("view.ready.reader", function() {
             self._tracking = true;
+            $(window).trigger('reset');
         });
 
         $.subscribe("disable.download.page.pdf", function() {

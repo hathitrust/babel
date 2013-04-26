@@ -7,6 +7,8 @@ head.ready(function() {
     var last_top = $(window).scrollTop();
     var last_left = $(window).scrollLeft();
 
+    HT.x = 10;
+
     var rebuild_sidebar = function() {
         var h = $(window).height() - $(".header.fixed").height() - $(".navbar-static-top").height();
         var h2 = h - $(".bibLinks").height() - HT.x;

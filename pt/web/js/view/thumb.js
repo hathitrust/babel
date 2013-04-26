@@ -22,7 +22,7 @@ HT.Viewer.Thumbnail = {
 
     start : function() {
         $body.addClass("view-thumb");
-        this.options.seq = this.options.reader.getCurrentSeq();
+        // this.options.seq = this.options.reader.getCurrentSeq();
         this.bindEvents();
         this.bindScroll();
         this.calculate();
@@ -299,8 +299,9 @@ HT.Viewer.Thumbnail = {
         self.$container.show();
 
         $(window).scroll();
-        if ( self.options.seq && self.options.seq > 1 ) {
-            self.gotoPage(self.options.seq);
+        var current = self.options.reader.getCurrentSeq();
+        if ( current && current > 1 ) {
+            self.gotoPage(current);
         }
 
         $.publish("view.ready");
