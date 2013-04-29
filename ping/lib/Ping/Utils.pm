@@ -20,6 +20,9 @@ sub identify_user {
     elsif ( $auth->auth_sys_is_COSIGN($C) ) {
         $auth_type = 'cosign';
     } 
+    else {
+        $auth_type = '';
+    } 
 
 
     

@@ -172,7 +172,7 @@ JAVASCRIPT
 
         $response = Plack::Response->new(200);
         $response->content_type('text/javascript');
-        if ( $$info{auth_type} && $$info{auth_type} eq 'shibboleth' && ! $request->cookies->{HT_AUTHTYPE} ) {
+        if ( $$info{auth_type} && $$info{auth_type} eq 'shibboleth' && ! exists($request->cookies->{HT_AUTHTYPE}) ) {
             $response->cookies->{HT_AUTHTYPE} = { 
                 'value' => 'shibboleth', 
                 'path' => '/',
