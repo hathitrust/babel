@@ -2,15 +2,19 @@
 var HT = HT || {};
 HT.scrolling = {};
 
+var $window;
+
 head.ready(function() {
 
-    var last_top = $(window).scrollTop();
-    var last_left = $(window).scrollLeft();
+    $window = $(window);
+
+    var last_top = $window.scrollTop();
+    var last_left = $window.scrollLeft();
 
     HT.x = 10;
 
     var rebuild_sidebar = function() {
-        var h = $(window).height() - $(".header.fixed").height() - $(".navbar-static-top").height();
+        var h = $window.height() - $(".header.fixed").height() - $(".navbar-static-top").height();
         var h2 = h - $(".bibLinks").height() - HT.x;
         $("#sidebar").height(h).find(".scrollable").height(h2).addClass("nano");
         $(".scrollable.nano").nanoScroller({ alwaysVisible : true });
@@ -284,8 +288,10 @@ head.ready(function() {
     $(window).on('scroll', handle_scroll_vertical);
     $(window).on('scroll', handle_scroll_horizontal);
 
-    var $window = get_resize_root();
-    $window.on('resize', handle_resize);
+    if ( ! $("html").is(".mobile") ) {
+        var $window = get_resize_root();
+        $window.on('resize', handle_resize);
+    }
 
     $(window).on('reset', function() {
         setTimeout(function() {
