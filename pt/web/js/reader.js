@@ -311,6 +311,9 @@ HT.Reader = {
         if ( HT.params.debug ) {
             new_href += ";debug=" + HT.params.debug;
         }
+        if ( HT.params.skin ) {
+            new_href += ";skin=" + HT.params.skin;
+        }
 
         // if ( HT.params.size ) {
         //     new_href += ";size=" + HT.params.size;
