@@ -330,6 +330,7 @@ HT.Reader = {
             window.location.replace(new_hash); // replace blocks the back button!
         }
         this._trackPageview(new_href);
+        $.publish("update.reader.state");
     },
 
     _trackPageview: function(href) {

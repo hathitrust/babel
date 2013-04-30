@@ -66,12 +66,14 @@ Test://ItemType='volume' and $gSkin='default'
 /pt/web/js/view/plaintext.js
 /pt/web/js/access_banner_02.js
 /pt/web/js/version_popup.js
+/pt/web/js/google_analytics_experiment.js
 
 Section:PAGETURNER_SEARCH_JS
 Test:$gUsingSearch='true'
 /pt/web/js/downloader.js
 /pt/web/js/version_popup.js
 /pt/web/js/collection_tools.js
+/pt/web/js/google_analytics_experiment.js
 
 # /pt/web/js/section108.js
 # /pt/web/jquery/jquery.tmpl.js

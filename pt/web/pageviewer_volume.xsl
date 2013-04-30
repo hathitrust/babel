@@ -105,7 +105,9 @@
   </xsl:template>
 
   <xsl:template name="setup-extra-html-attributes">
-    <xsl:attribute name="data-analytics-skip">true</xsl:attribute>
+    <xsl:if test="$gUsingBookReader = 'true'">
+      <xsl:attribute name="data-analytics-skip">true</xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="setup-extra-html-class">

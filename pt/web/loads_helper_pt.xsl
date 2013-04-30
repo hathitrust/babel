@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1367010972'" />
+  <xsl:variable name="timestamp" select="'?_=1367355382'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
@@ -71,11 +71,13 @@
             to_load.push("/pt/js/view/plaintext.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/access_banner_02.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/version_popup.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/js/google_analytics_experiment.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     <xsl:if test="$gUsingSearch='true'">
             to_load.push("/pt/js/downloader.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/version_popup.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/collection_tools.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/js/google_analytics_experiment.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     <xsl:if test="$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'">
             to_load.push("/pt/yui2-lib/build/yahoo/yahoo-min.js<xsl:value-of select="$timestamp" />");
