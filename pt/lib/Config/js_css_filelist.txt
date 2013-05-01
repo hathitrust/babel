@@ -41,7 +41,6 @@ Section:LOCAL_JS
 # These should be listed with the unminimized name.
 # The script will run yuicompress on them
 //common-web/jquery/jQuery-URL-Parser/purl.js
-/pt/web/vendor/jquery.cookie.js
 /pt/web/js/base.js
 /pt/web/js/feedback.js
 

@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1367416539'" />
+  <xsl:variable name="timestamp" select="'?_=1367433641'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
@@ -48,7 +48,6 @@
             HT.scripts = HT.scripts || [];
             var to_load = HT.scripts;
             to_load.push("/pt/common-web/jquery/jQuery-URL-Parser/purl.js<xsl:value-of select="$timestamp" />");
-            to_load.push("/pt/vendor/jquery.cookie.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/base.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/feedback.js<xsl:value-of select="$timestamp" />");
     <xsl:if test="//ItemType='volume' and $gSkin='default'">
