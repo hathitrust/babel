@@ -17,6 +17,7 @@ head.ready(function() {
         var h = $window.height() - $(".header.fixed").height() - $(".navbar-static-top").height();
         var h2 = h - $(".bibLinks").height() - HT.x;
         $("#sidebar").height(h).find(".scrollable").height(h2).addClass("nano");
+        $(".sidebar.dummy").height(h);
         $(".scrollable.nano").nanoScroller({ alwaysVisible : true });
     }
 
