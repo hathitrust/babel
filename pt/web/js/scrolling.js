@@ -17,7 +17,7 @@ head.ready(function() {
         var h = $window.height() - $(".header.fixed").height() - $(".navbar-static-top").height();
         var h2 = h - $(".bibLinks").height() - HT.x;
         $("#sidebar").height(h).find(".scrollable").height(h2).addClass("nano");
-        $(".sidebar.dummy").height(h);
+        $(".sidebar.dummy").height($("#sidebar").height());
         $(".scrollable.nano").nanoScroller({ alwaysVisible : true });
     }
 
@@ -72,6 +72,7 @@ head.ready(function() {
         })
         is_fix_active = true;
         handle_margins(true);
+        rebuild_sidebar();
     };
 
 
@@ -84,7 +85,6 @@ head.ready(function() {
 
     var $bottom = $(".main");
 
-    rebuild_sidebar();
 
     setTimeout(rebuild_fixed, 10);
 
