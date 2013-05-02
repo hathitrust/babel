@@ -89,8 +89,6 @@ sub BuildResizeLink
     my @valuesList = sort { $a <=> $b } keys( %PTGlobals::gSizes );
     my $idx = firstidx { $_ eq $requestedSize } @valuesList;
 
-    print STDERR "AHOY: $requestedSize :: $idx :: @valuesList\n";
-
     my $tempCgi = new CGI( $cgi );
     my $value;
     if ( $direction eq 'in' )
