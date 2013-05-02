@@ -47,6 +47,8 @@ HT.Reader = {
             return;
         }
 
+        HT.prefs.set({ pt : { view : view } })
+
         if ( view == 'image' || view == 'plaintext' ) {
             window.location.href = this.$views.find("a[data-target=" + view + "]").attr('href');
             return;
@@ -81,6 +83,11 @@ HT.Reader = {
         if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
             // and then disable buttons without links
             $(".toolbar").find("a[href='']").attr("disabled", "disabled").attr('tabindex', '-1');
+            $(".action-views").on("click", "a", function() {
+                var target = $(this).data('target');
+                console.log("SETTING PREFERENCE", target);
+                HT.prefs.set({ pt : { view : target } });
+            })
             return;
         }
 
@@ -421,7 +428,7 @@ head.ready(function() {
     $(".toolbar-vertical .btn").each(function() {
         var $btn = $(this);
         var title = $btn.text();
-        $btn.tooltip({ title : title, placement : 'left', container : '.toolbar-vertical', delay : { show : 250, hide: 50 }, xtrigger : 'hover focus', animation: false })
+        $btn.tooltip({ title : title, placement : 'left', container : '#main', delay : { show : 250, hide: 50 }, xtrigger : 'hover focus', animation: false })
     })
 
     $(".toolbar-horizontal .btn").each(function() {

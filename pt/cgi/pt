@@ -62,6 +62,7 @@ BEGIN {
 # ----------------------------------------------------------------------
 # Perl standard libs
 use CGI;
+use JSON::XS;
 
 # Magic
 use Attribute::Handlers;
@@ -242,6 +243,22 @@ sub ValidityChecks {
     my $view = $cgi->param( 'view' );
     my $size = $cgi->param( 'size' );
     my $orient = $cgi->param( 'orient' );
+
+    unless ( $view ) {
+        my $prefs = $cgi->cookie('HT.prefs');
+        if ( $prefs ) {
+            eval {
+                $prefs = decode_json($prefs);
+            };
+            if ( $@ ) {
+                # fake it
+                $prefs = { pt => { view => $PTGlobals::gDefaultView } };
+            }
+
+            $view = $$prefs{'pt'}{'view'};
+            $cgi->param('view', $view);
+        }
+    }
 
     if ( ! $view ||
          ! grep(/^$view$/, (@PTGlobals::gViewTypes, @PTGlobals::gAuthdViewTypes))) {
