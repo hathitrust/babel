@@ -190,7 +190,7 @@ sub _redirect_to_index {
     #     $join = '&';
     # }
     # $url .= $join . qq{index=1};
-    print STDERR "REDIRECTING TO INDEX $url\n";
+    ### print STDERR "REDIRECTING TO INDEX $url\n";
     print CGI::redirect($url);
     exit;
 }
@@ -205,7 +205,7 @@ sub _redirect_to_browse {
     #     $join = '&';
     # }
     # $url .= $join . qq{index=1};
-    print STDERR "REDIRECTING TO BROWSE $url\n";
+    ### print STDERR "REDIRECTING TO BROWSE $url\n";
     print CGI::redirect($url);
     exit;
 }
