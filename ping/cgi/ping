@@ -198,7 +198,6 @@ JAVASCRIPT
     # get an Auth object to trigger cgi/shcgi redirection
     my $auth = new Auth::Auth($C);
     $C->set_object('Auth', $auth);
-    print STDERR "...NOPE\n";
 
     # get the institutions
     my $idp_list = Institutions::get_idp_list($C);
@@ -212,14 +211,14 @@ JAVASCRIPT
         $C->set_object('Session', $ses);
 
         my $auth_type = $ses->get_persistent('authenticated_via');
-        if ( $auth_type eq Auth::Auth::SHIBBOLETH ) {
+        if ( $auth_type && $auth_type eq Auth::Auth::SHIBBOLETH ) {
             # reinitialize Auth to trigger cgi/shcgi redirection
             $auth->_initialize($C);            
         }
 
         # if this is https:// AND there's no REMOTE_USER then
         # we're still not logged in
-        if ( $$env{HTTPS} eq 'on' ) {
+        if ( $$env{HTTPS} && $$env{HTTPS} eq 'on' ) {
             $response = Plack::Response->new(200);
             $response->content_type('text/javascript');
             $response->body(_body($callback, 'false', "", "", 'null', 0, "NOT LOGGED IN: SESSION BUT NO AUTH", $idp_list));
