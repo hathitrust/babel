@@ -108,15 +108,6 @@ if (! $RUN) {
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-if (! $RUN) {
-    my $s = qq{run (-r) parameter missing } . mis_get_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
-
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,me';
 }
@@ -339,7 +330,7 @@ sub mis_gather_statistics {
     Log_stats($C, $run, $s);
 
     # Get report-j statistics
-    $cmd = $BASE_DIR . qq{report-j -r$run -S};
+    $cmd = $BASE_DIR . qq{report-j -r$run -Ss};
     $rep = `$cmd 2>&1`;
     $sysrc = $? >> 8;
     
