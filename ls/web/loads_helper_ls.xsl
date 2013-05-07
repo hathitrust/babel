@@ -2,11 +2,12 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1366391370'" />
+  <xsl:variable name="timestamp" select="'?_=1367938966'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
+        var HT = HT || {};
         (function() {
-            window.HT = window.HT || {};
+            // window.HT = window.HT || {};
             HT.scripts = HT.scripts || [];
             HT.scripts.push("/ls/js/concatenated_common-min.js<xsl:value-of select="$timestamp" />");
         })()
@@ -17,8 +18,9 @@
 
   <xsl:template name="load_uncompressed_js">
     <script type="text/javascript">
+        var HT = HT || {};
         (function() {
-            window.HT = window.HT || {};
+            // window.HT = window.HT || {};
             HT.scripts = HT.scripts || [];
             var to_load = HT.scripts;
             to_load.push("/ls/common-web/js/google_covers.js<xsl:value-of select="$timestamp" />");
