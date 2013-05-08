@@ -34,85 +34,6 @@ use URI::Escape;
 # ---------------------------  Utilities  -----------------------------
 #
 
-
-# ---------------------------------------------------------------------
-#
-#   sub isMultiple
-#
-#   return true if string will be split into more than one token
-#    
-#   Current cases below
-#   XXX This may change when if we change settings on CJKFiltering
-#   XXX  Assumes that we have a string with no spaces!
-#    consider using Analysis request handler which would always be correct
-
-#1   3 or more Han or Hiragana characters
-#2   Combination of any two of these: Han, Hiragana, Katakana Latin Number
-#
-#   See testIsMultiple.pl in $SDRROOT (should move to test and rewrite to actually use the 
-#   sub from PT::PIFiller::Search instead of a copy)
-
-sub isMultiple
-{
-    my $q = shift;
-    my $toReturn="false";
-    $q=~s/\s//g;    
-    
-    eval
-    {
-        if ($q =~/\p{Han}|\p{Hiragana}/)
-        {
-            # count Han/Hir
-            my $temp_q = $q;
-            
-            my $Han_count = $temp_q =~ s/\p{Han}//g;
-#            print "q is $q han count is $Han_count\n";
-            
-            $temp_q = $q;
-            my $Hir_count = $temp_q =~ s/\p{Hiragana}//g;
-            if ($Han_count >2 || $Hir_count >2)
-            {
-                $toReturn="true";
-            }
-            else
-            {
-                # test for 2 of any of Han, Hiragana, Katakana, Latin (do we need totest for numbers?)
-                $temp_q = $q;
-                my $Kat_count = $temp_q =~ s/\p{Katakana}//g;
-                $temp_q = $q;
-                my $Lat_count = $temp_q =~ s/\p{Latin}//g;
-                               #XXX  what about numbers and punctuation that is not stripped out
-                # could us \p{common} but that includes punct that is stripped out
-                # for now just include numbers
-                $temp_q = $q;
-                my $Num_count= $temp_q =~ s/\d//g;
-                my $total_scripts =0;
-                
-                foreach my $count ($Han_count, $Hir_count,$Kat_count, $Lat_count, $Num_count)
-                {
-                    if ($count >0) 
-                    {
-                        $total_scripts++;
-                    }
-                }
-                if ($total_scripts >1)
-                {
-                    $toReturn ="true";
-                }
-            }
-        }    
-        
-    };
-    
-    # change this to an ASSERT
-    if ($@)
-    {
-        print STDERR "bad char $@  $_\n";
-    }
-    
-    return($toReturn)
-}
-
 # ---------------------------------------------------------------------
 
 =item BuildPrevNextHitsLink_XML
@@ -381,7 +302,7 @@ sub WrapSearchResultsInXml {
         return $XML_result;
     }
 
-    my $Q = $C->get_object('Query'); 
+    my $Q = $C->get_object('Query');
     my $valid_boolean = $Q->parse_was_valid_boolean_expression();
     $XML_result .= wrap_string_in_tag($valid_boolean, 'ValidBooleanExpression');
 
@@ -440,31 +361,21 @@ sub handle_SEARCH_TERMS_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $parsed_terms_arr_ref =
-      $C->get_object('Search::Result::Page')->get_auxillary_data('parsed_query_terms');
-
     my $toReturn = '';
-    # add structure to deal with CJK
 
-    # need to change xpaths from SearchTerms/Term to SearchTerms/Terms/Term
+    my $rs = $C->get_object('Search::Result::Page');
+    my $parsed_terms_arr_ref = $rs->get_auxillary_data('parsed_query_terms');
+    my $multi_term = $rs->get_auxillary_data('is_multiple');
+
     my $terms_xml;
     foreach my $term (@$parsed_terms_arr_ref) {
         $terms_xml .= wrap_string_in_tag($term, 'Term');
     }
     $toReturn .= wrap_string_in_tag($terms_xml, 'Terms');
 
-    # if this is a cjk query containing Han characters and there is only one string, we need to check to
-    # see if the string would be tokenized into multiple terms
-    my $multi_term ="false";
-    if (scalar(@$parsed_terms_arr_ref) >1)
-    {
-        $multi_term="true"
-    }
-    elsif (scalar(@$parsed_terms_arr_ref) == 1)
-    {
-        $multi_term=isMultiple($parsed_terms_arr_ref->[0])
-    }
-    $toReturn  .= wrap_string_in_tag($multi_term, 'MultiTerm');
+    # If see PT::SearchUtils re: MultiTerm logic.
+    $toReturn .= wrap_string_in_tag($multi_term, 'MultiTerm');
+
     return $toReturn;
 }
 
@@ -578,7 +489,7 @@ sub handle_BEGINNING_LINK_PI
 
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
-    
+
     my $temp_cgi = new CGI('');
     $temp_cgi->param('id', $id);
     $temp_cgi->param('debug', $cgi->param('debug'));
@@ -656,10 +567,10 @@ sub handle_REPEAT_SEARCH_LINK
     my $cgi = $C->get_object('CGI');
     my $tempCgi = new CGI($cgi);
     $tempCgi->delete('op');
-    
+
     # default operator is AND so to broaden a search we use OR
     $tempCgi->param('ptsop','OR');
-    
+
     if ($cgi->param('ptsop') eq "OR")
     {
         $tempCgi->param('ptsop','AND');
@@ -668,11 +579,11 @@ sub handle_REPEAT_SEARCH_LINK
     Utils::remap_cers_to_chars(\$q);
     $tempCgi->delete('q1');
     $tempCgi->param('q1',$q);
-    
-  #  $tempCgi->param('q1',$escaped_q1);    
-    
+
+  #  $tempCgi->param('q1',$escaped_q1);
+
     my    $href = $tempCgi->self_url();
-    
+
     return $href;
 }
 

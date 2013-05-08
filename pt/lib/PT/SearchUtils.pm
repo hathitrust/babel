@@ -109,7 +109,7 @@ Description
 # ---------------------------------------------------------------------
 sub __build_item_index_fail_msg {
     my ($C, $id, $index_state, $data_status, $metadata_status) = @_;
-    
+
     my $msg = qq{\nITEM-LEVEL INDEXING FAIL: id=$id index=$index_state data=$data_status meta=$metadata_status\n};
     my $hostname = Utils::get_hostname();
     ($hostname) = ($hostname =~ m,^(.*?)\..*$,);
@@ -170,8 +170,8 @@ sub maybe_Solr_index_item {
             SLIP_Utils::Common::merge_stats($C, $g_stats_ref, $commit_stats_ref);
         }
         else {
-            Utils::Logger::__Log_string($C, 
-                                        __build_item_index_fail_msg($C, $id, $index_state, $data_status, $metadata_status), 
+            Utils::Logger::__Log_string($C,
+                                        __build_item_index_fail_msg($C, $id, $index_state, $data_status, $metadata_status),
                                         'item_indexer_fail_logfile', '___RUN___',
                                         SLIP_Utils::Common::get_run_number($C->get_object('MdpConfig')));
         }
@@ -201,7 +201,7 @@ sub has_Solr_index_item {
     $g_stats_ref->{update}{check} = __timer($start_0);
 
     my $indexed = $rs->get_num_found();
-    
+
     return $indexed;
 }
 
@@ -221,11 +221,86 @@ sub Solr_index_one_item {
 
     # The item-level index consists of only a single shard (for now)
     my $shard = 1;
-    
+
     my ($index_state, $data_status, $metadata_status, $stats_ref) =
       Index_Module::Service_ID($C, $dbh, $run, $shard, $$, $HOST, $id, 1);
 
     return ($index_state, $data_status, $metadata_status, $stats_ref);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item isMultiple
+
+True if string will be split into more than one token
+
+Current cases below
+
+XXX This may change when if we change settings on CJKFiltering XXX
+Assumes that we have a string with no spaces!  Consider using Analysis
+request handler which would always be correct
+
+1   3 or more Han or Hiragana characters
+2   Combination of any two of these: Han, Hiragana, Katakana Latin Number
+
+See testIsMultiple.pl in $SDRROOT/tburtonw.babel (should move to test and rewrite to
+actually use the sub from PT::PIFiller::Search instead of a copy)
+
+=cut
+
+# ---------------------------------------------------------------------
+sub isMultiple {
+    my $q = shift;
+
+    my $toReturn = 'false';
+    $q =~ s/\s//g;
+
+    eval {
+        if ($q =~ /\p{Han}|\p{Hiragana}/) {
+            # count Han/Hir
+            my $temp_q = $q;
+
+            my $Han_count = $temp_q =~ s/\p{Han}//g;
+            # print "q is $q han count is $Han_count\n";
+
+            $temp_q = $q;
+            my $Hir_count = $temp_q =~ s/\p{Hiragana}//g;
+            if ($Han_count  > 2 || $Hir_count > 2) {
+                $toReturn = 'true';
+            }
+            else {
+                # test for 2 of any of Han, Hiragana, Katakana, Latin
+                # (do we need totest for numbers?)
+                $temp_q = $q;
+                my $Kat_count = $temp_q =~ s/\p{Katakana}//g;
+                $temp_q = $q;
+                my $Lat_count = $temp_q =~ s/\p{Latin}//g;
+                # XXX what about numbers and punctuation that is not
+                # stripped out could us \p{common} but that includes
+                # punct that is stripped out for now just include
+                # numbers
+                $temp_q = $q;
+                my $Num_count = $temp_q =~ s/\d//g;
+                my $total_scripts = 0;
+
+                foreach my $count ($Han_count, $Hir_count, $Kat_count, $Lat_count, $Num_count) {
+                    if ($count > 0) {
+                        $total_scripts++;
+                    }
+                }
+
+                if ($total_scripts > 1) {
+                    $toReturn = 'true';
+                }
+            }
+        }
+    };
+    if ($@) {
+        print STDERR "bad char $@  $_\n";
+    }
+
+    return $toReturn;
 }
 
 # ---------------------------------------------------------------------
@@ -262,7 +337,7 @@ sub Solr_search_item {
         $parsed_terms_arr_ref = __parse_search_terms($C, $processed_q1);
         $q_str = join(' ', @$parsed_terms_arr_ref);
     }
-    
+
     # Convert user query from xml escaped string to regular characters
     # and then url encode it so we can send it to Solr in an http
     # request
@@ -275,6 +350,18 @@ sub Solr_search_item {
 
     my $rs = new Search::Result::Page;
     $rs->set_auxillary_data('parsed_query_terms', $parsed_terms_arr_ref);
+
+    # If this is a CJK query containing Han characters and there is
+    # only one string, we need to check to see if the string would be
+    # tokenized into multiple terms
+    my $multi_term  = 'false';
+    if (scalar(@$parsed_terms_arr_ref) > 1) {
+        $multi_term = 'true';
+    }
+    elsif (scalar(@$parsed_terms_arr_ref) == 1) {
+        $multi_term = isMultiple($parsed_terms_arr_ref->[0]);
+    }
+    $rs->set_auxillary_data('is_multiple', $multi_term);
 
     if (scalar(@$parsed_terms_arr_ref) > 0) {
         my $searcher = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
@@ -430,18 +517,16 @@ sub __parse_search_terms {
     foreach my $qTerm (@quotedTerms) {
         push(@$parsed_terms_arr_ref, qq{"$qTerm"});
     }
-    
-    if (DEBUG('query')||DEBUG('all')) 
-    {
+
+    if (DEBUG('query') || DEBUG('all')) {
         my $s = join(' ', @$parsed_terms_arr_ref);
         Utils::map_chars_to_cers(\$s, [q{"}, q{'}]) if Debug::DUtils::under_server();;
         DEBUG('query,all',
-          sub
-          {
+          sub {
               return qq{<h3>CGI after parsing into separate terms: $s</h3>};
           });
     };
-    
+
     return $parsed_terms_arr_ref;
 }
 

@@ -12,12 +12,15 @@
   <xsl:variable name="gBeginningLink" select="/MBooksTop/MdpApp/BeginningLink"/>
   <xsl:variable name="gHasPageNumbers" select="/MBooksTop/MdpApp/HasPageNumbers"/>
   <xsl:variable name="gSearchFatalError" select="/MBooksTop/MdpApp/SearchResults/SearchError"/>
+  <xsl:variable name="gValidBoolean" select="/MBooksTop/MdpApp/SearchResults/ValidBooleanExpression"/>
+  <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
+
   <xsl:variable name="gNumTerms" select="count(/MBooksTop/MdpApp/SearchTerms/Terms/Term)"/>
   <xsl:variable name="gMultiTerm" select="/MBooksTop/MdpApp/SearchTerms/MultiTerm"/>
   <xsl:variable name="gPagesFound" select="/MBooksTop/MdpApp/SearchSummary/TotalPages"/>
-  <xsl:variable name="gValidBoolean" select="/MBooksTop/MdpApp/SearchResults/ValidBooleanExpression"/>
-  <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
-  
+  <xsl:variable name="gSearchTerms" select="/MBooksTop/MdpApp/SearchTerms/Terms"/>
+  <xsl:variable name="gSearchResults" select="/MBooksTop/MdpApp/SearchResults"/>
+
   <xsl:variable name="gSearchOp">
     <xsl:variable name='ptsop_var' select="//CurrentCgi/Param[@name='ptsop']"/>
     <xsl:choose>
@@ -28,7 +31,7 @@
         <xsl:text>OR</xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>AND</xsl:text>          
+        <xsl:text>AND</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -48,157 +51,55 @@
   <xsl:template name="main">
     <div class="main" id="main">
       <!-- Results -->
-      <xsl:call-template name="ResultsContainer">
-        <xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms/Terms"/>
-        <!--xsl:with-param name="pSearchTerms" select="MdpApp/SearchTerms/Terms/"/-->
-        <xsl:with-param name="pSearchHits" select="MdpApp/SearchSummary/TotalPages"/>
-        <xsl:with-param name="pSearchResults" select="MdpApp/SearchResults"/>
-      </xsl:call-template>
+      <xsl:call-template name="ResultsContainer" />
     </div>
   </xsl:template>
 
   <!-- Results -->
   <xsl:template name="ResultsContainer">
 
-    <xsl:param name="pSearchTerms"/>
-    <xsl:param name="pSearchHits"/>
-    <xsl:param name="pSearchResults"/>
-
     <div id="mdpResultsContainer" role="main">
-
       <xsl:call-template name="backToBeginning" />
-
       <xsl:call-template name="embed-search-form" />
 
-      <xsl:call-template name="BuildSearchSummary">
-        <xsl:with-param name="ppSearchTerms" select="$pSearchTerms"/>
-        <xsl:with-param name="ppSearchHits" select="$pSearchHits"/>
-      </xsl:call-template>
+      <!-- copyright and snippet info -->
+      <xsl:call-template name="msgAccessInfo" />
 
-      <xsl:if test="$pSearchHits > 0">
-        <xsl:choose>
-          <xsl:when test="$gFinalAccessStatus='needlogin'">
-            <div class="mdpSearchSummary">
-              <span>
-                <span class="mdpEmp">Note:</span> detailed search results are not shown for restricted items.  Results may be available if you login.
-              </span>
-            </div>
-          </xsl:when>
-        </xsl:choose>
+      <!-- results of search -->
+      <xsl:call-template name="BuildSearchSummary" />
 
-        <ul id="mdpOuterList">
-          <xsl:for-each select="$pSearchResults/Page">
-
-            <xsl:variable name="pageLabel">
-              <xsl:choose>
-                <xsl:when test="$gHasPageNumbers='true'">
-                  <xsl:choose>
-                    <xsl:when test="PageNumber=''">
-                      <xsl:text>unnumbered page</xsl:text>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:text>p.</xsl:text>
-                      <xsl:value-of select="PageNumber"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:text>sequence No.</xsl:text>
-                  <xsl:value-of select="Sequence"/>
-                </xsl:otherwise>
-              </xsl:choose>
-            </xsl:variable>
-
-            <li>
-              <h3>
-              <xsl:choose>
-                <xsl:when test="$gFinalAccessStatus='allow'">
-                  <xsl:element name="a">
-                    <xsl:attribute name="href">
-                      <xsl:value-of select="Link"/>
-                    </xsl:attribute>
-                    <xsl:value-of select="$pageLabel"/>
-                  </xsl:element>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:value-of select="$pageLabel"/>
-                </xsl:otherwise>
-              </xsl:choose>
-
-              <xsl:element name="span">
-                <xsl:attribute name="class">mdpHitCount</xsl:attribute>
-                <xsl:text>&#xa0;-&#xa0;</xsl:text>
-                <xsl:value-of select="Hits"/>
-                <xsl:choose>
-                  <xsl:when test="Hits > 1">
-                    <xsl:text>&#xa0;matching terms</xsl:text>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:text>&#xa0;matching term</xsl:text>
-                  </xsl:otherwise>
-                </xsl:choose>
-                <xsl:text>&#xa0;</xsl:text>
-              </xsl:element>
-              </h3>
-              <xsl:if test="$gFinalAccessStatus='allow'">
-                <ul class="mdpInnerList">
-                  <xsl:for-each select="Kwic">
-                    <li>&#x2026;<xsl:apply-templates select="."/>&#x2026;</li>
-                  </xsl:for-each>
-                </ul>
-              </xsl:if>
-            </li>
-          </xsl:for-each>
-        </ul>
-      </xsl:if>
-      <xsl:if test="$pSearchHits > 0">
+      <xsl:if test="$gPagesFound > 0">
+        <xsl:call-template name="BuildSearchResultsList" />
         <xsl:call-template name="BuildFisheyeTable"/>
       </xsl:if>
     </div>
   </xsl:template>
 
+  <!-- Messages -->
   <!-- -->
-  <xsl:template name="buildNatLangQuery">
-    <xsl:choose>
-      <!-- emit entire expression -->
-      <xsl:when test="$gValidBoolean=1">
-        <xsl:for-each select="/MBooksTop/MdpApp/SearchTerms/Terms/Term">
-          <xsl:value-of select="."/>
-        </xsl:for-each>
-      </xsl:when>
-      <!-- emit terms joined with OP -->
-      <xsl:when test="$gNumTerms >= 1">
-        <xsl:for-each select="/MBooksTop/MdpApp/SearchTerms/Terms/Term">
-          <xsl:value-of select="."/>
-          <xsl:if test="position()!=last()">
-            <xsl:value-of select="concat(' ', $gSearchOp, ' ')"/>
-          </xsl:if>
-        </xsl:for-each>
-      </xsl:when>
-      <xsl:otherwise>No search terms were entered.</xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template name="embed-search-form">
-    <div class="results-search-form">
-      <xsl:call-template name="action-search-volume">
-        <xsl:with-param name="view" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
-      </xsl:call-template>
-    </div>
+  <xsl:template name="msgAccessInfo">
+    <xsl:if test="$gFinalAccessStatus='deny' and $gPagesFound > 0">
+      <div class="alert alert-warning alert-block alert-banner">
+        <xsl:text>Full view is not available for this item due to copyright &#169; restrictions. Page numbers with matches are displayed without text snippets due to these restrictions.</xsl:text>
+        <xsl:if test="$gLoggedIn='NO'">
+          <xsl:text>  Snippets may be available for some items if you log in.</xsl:text>
+        </xsl:if>
+      </div>
+    </xsl:if>
   </xsl:template>
 
   <!-- -->
-  <xsl:template name="msgRepeatSearchWithOR">      
+  <xsl:template name="msgRepeatSearchWithOR">
     <div class="searchSubMessage">
       <xsl:element name="a">
         <xsl:attribute name="href">
           <xsl:value-of select="/MBooksTop/MdpApp/RepeatSearchLink"/>
         </xsl:attribute>
-        Broaden your search to pages having just <span class="mdpEmp">one or more</span> of your terms.
+        Broaden your search to find pages having just <span class="mdpEmp">one or more</span> of your terms.
       </xsl:element>
     </div>
   </xsl:template>
-  
+
   <!-- -->
   <xsl:template name="msgRepeatSearchWithAND">
     <div class="searchSubMessage">
@@ -206,11 +107,11 @@
         <xsl:attribute name="href">
           <xsl:value-of select="/MBooksTop/MdpApp/RepeatSearchLink"/>
         </xsl:attribute>
-        Narrow your search to just pages having <span class="mdpEmp">all</span> of your terms.
+        Narrow your search to find just pages having <span class="mdpEmp">all</span> of your terms.
       </xsl:element>
     </div>
   </xsl:template>
-  
+
   <!-- -->
   <xsl:template name="msgRepeatSearch">
     <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
@@ -220,7 +121,6 @@
       <xsl:value-of select="$gNumTerms"/>
       <xsl:text> multiterm=</xsl:text>
       <xsl:value-of select="$gMultiTerm"/>
-      
       <xsl:text> pagesfound=</xsl:text>
       <xsl:value-of select="$gPagesFound"/>
     </xsl:if>
@@ -235,91 +135,175 @@
       <xsl:otherwise></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
+  <xsl:template name="BuildSearchResultsList">
+    <ul id="mdpOuterList">
+      <xsl:for-each select="$gSearchResults/Page">
+
+        <xsl:variable name="page_label">
+          <xsl:choose>
+            <xsl:when test="$gHasPageNumbers='true'">
+              <xsl:choose>
+                <xsl:when test="PageNumber=''">
+                  <xsl:text>unnumbered page</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:text>p.</xsl:text>
+                  <xsl:value-of select="PageNumber"/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>sequence No.</xsl:text>
+              <xsl:value-of select="Sequence"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+
+        <li>
+          <h3>
+            <xsl:choose>
+              <xsl:when test="$gFinalAccessStatus='allow'">
+                <xsl:element name="a">
+                  <xsl:attribute name="href">
+                    <xsl:value-of select="Link"/>
+                  </xsl:attribute>
+                  <xsl:value-of select="$page_label"/>
+                </xsl:element>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$page_label"/>
+              </xsl:otherwise>
+            </xsl:choose>
+
+            <xsl:element name="span">
+              <xsl:attribute name="class">mdpHitCount</xsl:attribute>
+              <xsl:text>&#xa0;-&#xa0;</xsl:text>
+              <xsl:value-of select="Hits"/>
+              <xsl:choose>
+                <xsl:when test="Hits > 1">
+                  <xsl:text>&#xa0;matching terms</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:text>&#xa0;matching term</xsl:text>
+                </xsl:otherwise>
+              </xsl:choose>
+              <xsl:text>&#xa0;</xsl:text>
+            </xsl:element>
+          </h3>
+          <xsl:if test="$gFinalAccessStatus='allow'">
+            <ul class="mdpInnerList">
+              <xsl:for-each select="Kwic">
+                <li>&#x2026;<xsl:apply-templates select="."/>&#x2026;</li>
+              </xsl:for-each>
+            </ul>
+          </xsl:if>
+        </li>
+      </xsl:for-each>
+    </ul>
+  </xsl:template>
+
+  <!-- -->
+  <xsl:template name="buildNatLangQuery">
+    <xsl:choose>
+      <!-- emit entire expression -->
+      <xsl:when test="$gValidBoolean=1">
+        <xsl:for-each select="$gSearchTerms/Term">
+          <xsl:value-of select="."/>
+        </xsl:for-each>
+      </xsl:when>
+      <!-- emit terms joined with OP -->
+      <xsl:when test="$gNumTerms >= 1">
+        <xsl:for-each select="$gSearchTerms/Term">
+          <xsl:value-of select="."/>
+          <xsl:if test="position()!=last()">
+            <xsl:value-of select="concat(' ', $gSearchOp, ' ')"/>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:when>
+      <xsl:otherwise></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="embed-search-form">
+    <div class="results-search-form">
+      <xsl:call-template name="action-search-volume">
+        <xsl:with-param name="view" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
+      </xsl:call-template>
+    </div>
+  </xsl:template>
+
+
   <!-- -->
   <xsl:template name="BuildSearchSummary">
-    <xsl:param name="ppSearchTerms"/>
-    <xsl:param name="ppSearchHits"/>
-    
-    <xsl:variable name="vNatLangQuery">
-      <xsl:call-template name="buildNatLangQuery"/>
-    </xsl:variable>
-    
+
     <xsl:element name="a">
       <xsl:attribute name="name">skipNav</xsl:attribute>
       <xsl:attribute name="id">skipNav</xsl:attribute>
     </xsl:element>
-    
+
     <h2 class="offscreen">Search Results</h2>
 
     <div class="mdpSearchSummary">
-      <xsl:if test="$gFinalAccessStatus!='allow'">
-        <div class="alert alert-error alert-block alert-banner">
-          <p>
-            <!-- <img style="float: left; padding-left: 8px" src="//common-web/graphics/LimitedLink.png" alt="" /> -->
-            Full view is not available for this item due to copyright &#169; restrictions.
-          </p>
-        </div>
-      </xsl:if>
-      
+
       <xsl:variable name="page_string">
         <xsl:choose>
-          <xsl:when test="$ppSearchHits > 1"><xsl:text> pages in this item.</xsl:text></xsl:when>
-          <xsl:when test="$ppSearchHits = 1"><xsl:text> page in this item.</xsl:text></xsl:when>
-          <xsl:when test="$ppSearchHits = 0"><xsl:text> pages in this item.</xsl:text></xsl:when>
+          <xsl:when test="$gPagesFound > 1 or $gPagesFound = 0"><xsl:text> pages </xsl:text></xsl:when>
+          <xsl:when test="$gPagesFound = 1"><xsl:text> page</xsl:text></xsl:when>
           <xsl:otherwise></xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
 
-      <span>
-        <xsl:choose>
-          <!-- Fatal error! -->
-          <xsl:when test="$gSearchFatalError='true'">
-            <span class="error">
-              <xsl:text>Sorry! There was an error performing your search.  Please check back later.</xsl:text>
-            </span>
-          </xsl:when>
-          <!-- Hits! -->
-          <xsl:otherwise>
+      <xsl:variable name="vNatLangQuery">
+        <xsl:call-template name="buildNatLangQuery"/>
+      </xsl:variable>
+
+      <xsl:choose>
+        <xsl:when test="$gSearchFatalError='true'">
+          <div class="alert alert-error alert-block alert-banner">
+            <xsl:text>Sorry! There was a system error while conducting your search.  Please check back later.</xsl:text>
+          </div>
+        </xsl:when>
+
+        <xsl:when test="$gPagesFound = 0">
+          <div class="alert alert-error alert-block alert-banner">
+            <xsl:text>Your search for </xsl:text>
             <span class="mdpEmp">
               <xsl:value-of select="$vNatLangQuery"/>
             </span>
-            <xsl:text> matched </xsl:text>
-            <span class="mdpEmp">
-              <xsl:value-of select="$ppSearchHits"/>
-            </span>
-            <xsl:value-of select="$page_string"/>
-            <xsl:call-template name="msgRepeatSearch"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      
-        <!-- if even a broad query returned no pages ... -->
-        <xsl:if test="$gPagesFound=0 and $gSearchOp='OR'">
-          <xsl:call-template name="NoResultsAdditionalMessage"/>
-        </xsl:if>
+            <xsl:text> did not match any pages in this item.</xsl:text>
+          </div>
+          <xsl:if test="$gSearchOp='OR'">
+            <div class="alert alert-warning alert-block alert-banner">
+              "Search in this text" can fail to find matching pages if you arrived at this item from a HathiTrust search that used bibliographic metadata terms <span class="mdpEmp"><em>about</em></span> the item that do not occur <span class="mdpEmp"><em>within</em></span> it. 
+            </div>
+          </xsl:if>
 
-        <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
-          <xsl:text> query time (ms) =</xsl:text>
-          <xsl:value-of select="MdpApp/SearchSummary/QueryTime"/>
-        </xsl:if>
-      </span>
-    </div>
+          <xsl:call-template name="msgRepeatSearch"/>
+        </xsl:when>
 
-    <xsl:if test="$ppSearchHits > 0">
-      <xsl:call-template name="BuildFisheyeTable"/>
-    </xsl:if>
-  </xsl:template>
+        <xsl:otherwise>
+          <span class="mdpEmp">Search Results: </span>
+          <xsl:value-of select="$gPagesFound"/>
+          <xsl:value-of select="$page_string"/>
+          <xsl:text> found for </xsl:text>
+          <span class="mdpEmp">
+            <xsl:value-of select="$vNatLangQuery"/>
+          </span>
 
-  <!-- -->
-  <xsl:template name="NoResultsAdditionalMessage">
-    <!-- If the query came from the ls application and there are no hits show this message-->
-    <div class="searchSubMessage">
-      Sorry, your terms do not appear in the pages of this item.  You may have arrived at this item from a HathiTrust search that included bibliographic metadata <span class="mdpEmp">about</span> the item.
-      <br/>
-      "Search in this text" only searches words that occur <span class="mdpEmp">within</span> the item.
+          <xsl:call-template name="msgRepeatSearch"/>
+        </xsl:otherwise>
+      </xsl:choose>
+
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
+        <xsl:text> query time (ms) = </xsl:text>
+        <xsl:value-of select="MdpApp/SearchSummary/QueryTime"/>
+      </xsl:if>
+
     </div>
   </xsl:template>
-    
+
+
   <!-- -->
   <xsl:template match="Kwic">
     <xsl:copy-of select="./node()"/>
@@ -402,7 +386,7 @@
       </xsl:for-each>
     </span>
   </xsl:template>
-    
+
   <xsl:template name="backToBeginning">
     <div class="mdpGoToBeginning">
       <span>
