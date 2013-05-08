@@ -255,8 +255,9 @@ sub make_concatenated_files {
         } elsif ( $line =~ m,//--END LOCAL--//, ) {
             $in_block = 0;
             my $path = basename($OUT_CONCATENATED_FILE);
+            my $ts = time();
             push @output, qq{    \} else \{};
-            push @output, qq{        HT.scripts.unshift(prefix + 'common/unicorn/js/$path');};
+            push @output, qq{        HT.scripts.unshift(prefix + 'common/unicorn/js/$path?_=$ts');};
             push @output, qq{    \}};
         } elsif ( $in_block ) {
             $line =~ s,^\s*// ,,;
