@@ -1073,7 +1073,8 @@ HTBookReader.prototype.updateLocationHash = function() {
             if ( pageTracker != null ) {
                 // window.location.origin?
                 var params_ = this.paramsForTracking(params);
-                var href = window.location.protocol + "//" + window.location.host + window.location.pathname + "?";
+                // var href = window.location.protocol + "//" + window.location.host + window.location.pathname + "?";
+                var href = window.location.pathname + "?";
                 var args = ["id=" + params_.id];
                 args.push("view=" + params_.view);
                 args.push("orient=" + params_.orient);
