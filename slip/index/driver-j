@@ -400,7 +400,9 @@ sub __driver_exit_report {
 
     my $segment_sizes;
     foreach my $shard (@NUM_SHARDS_LIST) {
-        $segment_sizes .= "\n\tshard=$shard " . Scheduler::get_segsizes($C, $run, $shard);
+        my @sizes = split(/ /, Scheduler::get_segsizes($C, $run, $shard));
+        my $sizes = sprintf("shard = %2d:  %15s  %15s", $shard, $sizes[0], $sizes[1]);
+        $segment_sizes .= "\n\t$sizes";
     }
 
     $s .= qq{\nQueued=$INITIAL_QUEUE_SIZE Processed=$processed_ct} unless ($empty_queue);
