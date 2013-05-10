@@ -51,14 +51,18 @@ append id list to collection=coll_id
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
-use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use File::Basename;
+my $LOCATION;
+BEGIN {
+    $LOCATION = dirname(__FILE__);
+}
+print $LOCATION;
+
+use lib $LOCATION . "/../../mb/vendor/common-lib/lib/Utils";
 use Vendors;
 
 use Getopt::Std;
 use CGI;
-
-use File::Basename;
-my $LOCATION = dirname(__FILE__);
 
 use Utils;
 use Utils::Time;
@@ -123,10 +127,12 @@ sub bc_Usage {
 }
 
 my $NON_SUPERUSER = 1;
-foreach my $superuser (@superusers) {
-    if ( index($ENV{SDRROOT}, $superuser) >= 0 ) {
-        $NON_SUPERUSER = 0;
-        last;
+if ($ENV{SDRROOT}) {
+    foreach my $superuser (@superusers) {
+        if ( index($ENV{SDRROOT}, $superuser) >= 0 ) {
+            $NON_SUPERUSER = 0;
+            last;
+        }
     }
 }
 if ($NON_SUPERUSER) {
