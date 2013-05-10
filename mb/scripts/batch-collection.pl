@@ -56,8 +56,6 @@ my $LOCATION;
 BEGIN {
     $LOCATION = dirname(__FILE__);
 }
-print $LOCATION;
-
 use lib $LOCATION . "/../../mb/vendor/common-lib/lib/Utils";
 use Vendors;
 
