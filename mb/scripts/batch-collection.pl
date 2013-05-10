@@ -124,6 +124,11 @@ sub bc_Usage {
 
 }
 
+unless ($ENV{SDRROOT}) {
+    print( qq{ERROR: Your SDRROOT environment variable is not set\n} );
+    exit 1;
+}
+
 my $NON_SUPERUSER = 1;
 if ($ENV{SDRROOT}) {
     foreach my $superuser (@superusers) {
