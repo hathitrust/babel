@@ -74,6 +74,7 @@ use MBooks::MetaDataGetter;
 my @superusers =
   (
    'pfarber',
+   'roger',
   );
 
 my @allowed_uniqnames =
@@ -121,10 +122,22 @@ sub bc_Usage {
 
 }
 
+my $NON_SUPERUSER = 1;
+foreach my $superuser (@superusers) {
+    if ( index($ENV{SDRROOT}, $superuser) >= 0 ) {
+        $NON_SUPERUSER = 0;
+        last;
+    }
+}
+if ($NON_SUPERUSER) {
+    print( qq{ERROR: Please run batch-collection.pl from /htapps/test.babel\n} );
+    exit 1;
+}
+
 my $WHO_I_AM = $ENV{BATCH_COLLECTION_USER} || `whoami`;
 
 chomp($WHO_I_AM);
-if (! grep(/^$WHO_I_AM$/, @allowed_users)) {
+unless (grep(/^$WHO_I_AM$/, @allowed_users)) {
     Log_print( qq{ERROR: $WHO_I_AM is not in the list of permitted users\n} );
     exit 1;
 }
@@ -138,16 +151,16 @@ if (! $allowed) {
 our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C);
 getopts('ct:d:o:f:a:D:C:');
 
-my $APPEND = $opt_a;
-my $COLL_ID = $opt_c;
-my $DELETE = $opt_D;
-my $USERID = $opt_C;
-
 my $INPUT_FILE = $opt_f || 'general';
 
 my $date = Utils::Time::iso_Time('date');
 my $time = Utils::Time::iso_Time('time');
 my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
+
+my $APPEND = $opt_a;
+my $COLL_ID = $opt_c;
+my $DELETE = $opt_D;
+my $USERID = $opt_C;
 
 my $CREATE = 0;
 
@@ -157,7 +170,7 @@ if ($DELETE) {
         bc_Usage();
         exit 1;
     }
-    if (! grep(/^$WHO_I_AM$/, @superusers)) {
+    if ($NON_SUPERUSER) {
         Log_print( qq{ERROR: $WHO_I_AM is not in the list of superusers\n} );
         exit 1;
     }
