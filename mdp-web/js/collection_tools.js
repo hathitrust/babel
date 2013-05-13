@@ -128,6 +128,7 @@ head.ready(function() {
                     $("<input type='hidden' />").attr({ name : name }).val(value).appendTo($form);
                 })
             })
+            $form.hide().appendTo("body");
             $form.submit();
         }
 
