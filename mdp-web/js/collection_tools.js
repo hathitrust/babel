@@ -119,7 +119,7 @@ head.ready(function() {
         } else {
             // extend with HT.params...
             var formdata = $.extend({}, $.url().param(), params)    ;
-            var $form = $("<form method='POST'></form>");
+            var $form = $("<form method='GET'></form>");
             $form.attr("action", get_url());
             _.each(_.keys(formdata), function(name) {
                 var values = formdata[name];
