@@ -402,6 +402,9 @@ HTBookReader.prototype.installBookDataSlice = function(slice_index, data, do_cac
         this.total_slices = Math.ceil(data['total_items'] / this.slice_size);
         this.total_items = data['total_items'];
         this.flags.download_progress_base = data['download_progress_base'];
+        if ( this.bookData[0]['readingOrder'] == 'right-to-left' ) {
+            this.pageProgression = 'rl';
+        }
     }
     
     // console.log("INSTALLING", this.numLeafs, "/", slice_index, "/", this.bookData[slice_index]['seq'].length);
