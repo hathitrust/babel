@@ -19,6 +19,7 @@
 <ContactEmail><?CONTACT_EMAIL?></ContactEmail>
 <ContactText><?CONTACT_TEXT?></ContactText>
 <VersionLabel><?VERSION_LABEL?></VersionLabel>
+<VolumeTitle><?VOLUME_TITLE?></VolumeTitle>
 <VolCurrTitleFrag><?VOLUME_CURRENT_TITLE_FRAGMENT?></VolCurrTitleFrag>
 <ItemFormat><?ITEM_FORMAT?></ItemFormat>
 <MetadataFailure><?METADATA_FAILURE?></MetadataFailure>
