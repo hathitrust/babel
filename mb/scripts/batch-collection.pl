@@ -132,6 +132,15 @@ sub bc_Usage {
 
 }
 
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C);
+getopts('ct:d:o:f:a:D:C:');
+
+my $INPUT_FILE = $opt_f || 'general';
+
+my $date = Utils::Time::iso_Time('date');
+my $time = Utils::Time::iso_Time('time');
+my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
+
 my $WHO_AM_I_REALLY = `whoami`;
 chomp($WHO_AM_I_REALLY); 
 
@@ -159,15 +168,6 @@ unless (grep(/^$WHO_I_AM$/, @allowed_users)) {
     Log_print( qq{ERROR: $WHO_I_AM is not in the list of permitted users\n} );
     exit 1;
 }
-
-our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C);
-getopts('ct:d:o:f:a:D:C:');
-
-my $INPUT_FILE = $opt_f || 'general';
-
-my $date = Utils::Time::iso_Time('date');
-my $time = Utils::Time::iso_Time('time');
-my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
 
 my $APPEND = $opt_a;
 my $COLL_ID = $opt_c;
