@@ -31,18 +31,17 @@ my $hir="\N{U+306E}"  ;
 my $hir_2= $hir . $hir;
 my $hir_3= $hir_2 . $hir;
 
-# combinations
 my $numbers_han=$han_1 . "123";
+
 my $han_kat=  $han_1 . $kat;
 my $han_hir = $han_1 . $hir;
 my $kat_hir = $kat . $hir;
 my $han_latin = $a . "foo";
 
-
 my $multi =
 {
- "2han"       => "$han_2", 
- "2hir"       => "$hir_2", 
+ "3han"       => "$han_3", 
+ "3hir"       => "$hir_3", 
  "numbers_han" => "$numbers_han", 
  "han latin"  => "$han_latin", 
  "han kat"    => "$han_kat", 
@@ -52,29 +51,30 @@ my $multi =
 
 my $single= 
 {
+ "2han"       => "$han_2",
  "1han"       => "$han_1",
  "2kat"       => "$kat_2",
  "3kat"       => "$kat_3", 
- "1hir"       => "$hir",
+ "2hir"       => "$hir_2",
  "latin"      => "foobar",
 
 };
 
-print "testing multiple (should all be true)\n";
+print "testing multiple for Bigrams\n";
 
 foreach my $testname (keys %{$multi})
 {
         
         my $string=$multi->{$testname};
-        my $return=PT::SearchUtils::isMultiple($string);
+        my $return=PT::SearchUtils::isMultipleBigrams($string);
         print "$testname $string $return\n";
 }
-print "\ntesting single (should all be false)\n";
+print "\ntesting single\n";
 foreach my $testname (keys %{$single})
 {
         
         my $string=$single->{$testname};
-        my $return=PT::SearchUtils::isMultiple($string);
+        my $return=PT::SearchUtils::isMultipleBigrams($string);
         print "$testname $string $return\n";
 }
 
@@ -90,6 +90,8 @@ foreach my $testname (keys %{$single})
 # consider using Analysis request handler which would always be correct
 #
 #    This works assuming Solr configured for bigrams
+#    and that Katakana is not set to be bigrammed
+#
 #    Use PT::SearchUtils::isMultiple
 #1   3 or more Han or Hiragana characters
 #2   Combination of any two of the three: Han, Hiragana, Katakana 

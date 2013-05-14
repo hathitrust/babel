@@ -233,13 +233,93 @@ sub Solr_index_one_item {
 
 =item isMultiple
 
+Assumes Solr using unigrams for CJK
+Use isMultipleBigrams if using bigrams for CJK
+
 True if string will be split into more than one token
 
 Current cases below
 
-XXX This may change when if we change settings on CJKFiltering XXX
-Assumes that we have a string with no spaces!  Consider using Analysis
-request handler which would always be correct
+ This may change when if we change settings on CJKFiltering
+
+Assumes that we have a string with no spaces!  
+###Consider using Analysis request handler which would always be correct
+
+1   2 or more Han or Hiragana characters
+2   Combination of any two of these: Han, Hiragana, Katakana Latin Number
+
+See testIsMultiple.pl in $SDRROOT/pt/scripts
+
+=cut
+
+# ---------------------------------------------------------------------
+sub isMultiple {
+    my $q = shift;
+
+    my $toReturn = 'false';
+    $q =~ s/\s//g;
+
+    eval {
+        if ($q =~ /\p{Han}|\p{Hiragana}/) {
+            # count Han/Hir
+            my $temp_q = $q;
+
+            my $Han_count = $temp_q =~ s/\p{Han}//g;
+            # print "q is $q han count is $Han_count\n";
+
+            $temp_q = $q;
+            my $Hir_count = $temp_q =~ s/\p{Hiragana}//g;
+            if ($Han_count  > 1 || $Hir_count > 1) {
+                $toReturn = 'true';
+            }
+            else {
+                # test for 2 different scripts of any of Han, Hiragana, Katakana, Latin
+                # (do we need totest for numbers?)
+                $temp_q = $q;
+                my $Kat_count = $temp_q =~ s/\p{Katakana}//g;
+                $temp_q = $q;
+                my $Lat_count = $temp_q =~ s/\p{Latin}//g;
+                # XXX what about numbers and punctuation that is not
+                # stripped out could us \p{common} but that includes
+                # punct that is stripped out for now just include
+                # numbers
+                $temp_q = $q;
+                my $Num_count = $temp_q =~ s/\d//g;
+                my $total_scripts = 0;
+
+                foreach my $count ($Han_count, $Hir_count, $Kat_count, $Lat_count, $Num_count) {
+                    if ($count > 0) {
+                        $total_scripts++;
+                    }
+                }
+
+                if ($total_scripts > 1) {
+                    $toReturn = 'true';
+                }
+            }
+        }
+    };
+    if ($@) {
+        print STDERR "bad char $@  $_\n";
+    }
+
+    return $toReturn;
+}
+
+# ---------------------------------------------------------------------
+
+
+=item isMultipleBigrams
+
+True if string will be split into more than one token
+Assumes Solr using bigrams for CJK
+
+Current cases below
+
+ This may change when if we change settings on CJKFiltering
+
+Assumes that we have a string with no spaces!  
+###Consider using Analysis request handler which would always be correct
 
 1   3 or more Han or Hiragana characters
 2   Combination of any two of these: Han, Hiragana, Katakana Latin Number
@@ -250,7 +330,7 @@ actually use the sub from PT::PIFiller::Search instead of a copy)
 =cut
 
 # ---------------------------------------------------------------------
-sub isMultiple {
+sub isMultipleBigrams {
     my $q = shift;
 
     my $toReturn = 'false';
