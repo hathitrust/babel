@@ -5,7 +5,7 @@ use warnings;
 
 
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 =head1 NAME
@@ -51,13 +51,21 @@ append id list to collection=coll_id
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
+use Cwd qw(abs_path);
 use File::Basename;
+
 my $LOCATION;
 BEGIN {
     $LOCATION = dirname(__FILE__);
 }
+
+# Always get libraries from current location instead of $ENV{SDROOT}
+# for normal users who may have libraries in $ENV{SDRROOT} that are
+# not up to date.  Developers can override this via DEBUG_LOCAL
+use lib $LOCATION . "/../../mb/vendor/common-lib/lib";
 use lib $LOCATION . "/../../mb/vendor/common-lib/lib/Utils";
 use Vendors;
+
 
 use Getopt::Std;
 use CGI;
@@ -124,36 +132,31 @@ sub bc_Usage {
 
 }
 
-unless ($ENV{SDRROOT}) {
-    print( qq{ERROR: Your SDRROOT environment variable is not set\n} );
-    exit 1;
-}
+my $WHO_AM_I_REALLY = `whoami`;
+chomp($WHO_AM_I_REALLY); 
 
 my $NON_SUPERUSER = 1;
-if ($ENV{SDRROOT}) {
-    foreach my $superuser (@superusers) {
-        if ( index($ENV{SDRROOT}, $superuser) >= 0 ) {
-            $NON_SUPERUSER = 0;
-            last;
-        }
+foreach my $superuser (@superusers) {
+    if ($WHO_AM_I_REALLY eq $superuser) {
+        $NON_SUPERUSER = 0;
+        last;
     }
 }
+
 if ($NON_SUPERUSER) {
-    print( qq{ERROR: Please run batch-collection.pl from /htapps/test.babel\n} );
-    exit 1;
+    my $path = abs_path($0);
+    #print "ABSPATH: $path\n";
+
+    unless ( index("test.babel", $path) >= 0) {
+        print( qq{ERROR: Please run the copy of batch-collection.pl located in /htapps/test.babel/mb/scripts\n} );
+        exit 1;
+    }
 }
 
-my $WHO_I_AM = $ENV{BATCH_COLLECTION_USER} || `whoami`;
-
+my $WHO_I_AM = $ENV{BATCH_COLLECTION_USER} || $WHO_AM_I_REALLY;
 chomp($WHO_I_AM);
 unless (grep(/^$WHO_I_AM$/, @allowed_users)) {
     Log_print( qq{ERROR: $WHO_I_AM is not in the list of permitted users\n} );
-    exit 1;
-}
-
-my $allowed = ($ENV{SDRVIEW} eq 'full') || (-e '/htapps/babel');
-if (! $allowed) {
-    Log_print( qq{ERROR: batch-collection.pl only functions in the full HTDE environment or production\n} );
     exit 1;
 }
 
