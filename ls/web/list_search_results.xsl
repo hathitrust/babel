@@ -593,7 +593,7 @@ REMOVE the below and see if it will call list_utils
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/PrevPage/Href"/>
               </xsl:attribute>
-             &lt;&lt;  Prev
+              &lt;&lt;   Prev
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
@@ -618,7 +618,7 @@ REMOVE the below and see if it will call list_utils
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/NextPage/Href"/>
               </xsl:attribute>
-              &gt;&gt; Next
+              Next  &gt;&gt;
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
