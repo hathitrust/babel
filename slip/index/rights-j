@@ -147,9 +147,10 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_get_usage {
     my $s;
-    $s .= qq{Usage: rights-j -r run [-F<file>] [-n][-f][-T] [-d{1|2|3|4|5|6}]\n};
+    $s .= qq{Usage: rights-j -r run [-F<file>] [-n][-f][-T][-L] [-d{1|2|3|4|5|6}]\n};
     $s .= qq{     -f force email\n};
     $s .= qq{     -n is check_only, no inserts to slip_rights\n};
+    $s .= qq{     -L lag in days overrides default vSolr_num_lag_days\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -F insert IDs from file (missing from slip_rights)\n};
     $s .= qq{     -d options\n};
@@ -163,9 +164,9 @@ sub r_get_usage {
     return $s;
 }
 
-our ($opt_d, $opt_n, $opt_T, $opt_F, $opt_r, $opt_f);
+our ($opt_d, $opt_n, $opt_T, $opt_F, $opt_r, $opt_f, $opt_L);
 
-my $ops = getopts('d:nTI:r:fF:');
+my $ops = getopts('d:nTI:r:fF:L:');
 my $FORCE_EMAIL = defined($opt_f);
 
 if ($opt_d) {
@@ -214,6 +215,14 @@ if (defined($opt_F)){
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
+
+my $LAG = $opt_L;
+if (defined ($LAG)) {
+    unless (($LAG =~ m,^\d+$,) && ($LAG > 0)) {
+        __output(qq{Bad lag (-L) argument: "$LAG"\n});
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+}
 
 my $RIGHTS_LOGFILE_KEY = 'rights_logfile';
 
@@ -271,7 +280,7 @@ eval {
         else {
             # Build from last timestamp
             my $last_timestamp = Db::Select_vSolr_timestamp($C, $DBH);
-            my $lag = $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
+            my $lag = __get_lag_in_days($C);
             my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($last_timestamp, $lag);
 
             $INIT_MSG = qq{Today is $now_timestamp.\n}
@@ -457,6 +466,29 @@ sub flush_r_rights_Log {
     $Log_buffer_size = 0;
 }
 
+# ---------------------------------------------------------------------
+
+=item __get_lag_in_days
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_lag_in_days {
+    my $C = shift;
+
+    if (defined $LAG) {
+        # test
+        if (($LAG !~ m,^\d+$,) || ($LAG < 0)) {
+            __output(qq{Bad lag (-L) argument\n} . $LAG);
+            exit $SLIP_Utils::States::RC_BAD_ARGS;
+        }
+        return $LAG;
+    }
+    
+    return $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
+}
 
 # ---------------------------------------------------------------------
 
@@ -575,7 +607,7 @@ for IDs.  This timestamp will not be updated until we successfully
 process the entire Solr range query :[$timestamp -2d TO *].  If FAIL,
 we must redo:
 
-% rights-j -B
+% rights-j 
 
 Query for a day in the past with a +ve $INCREMENT to prevent id loss
 updates to the vSolr index in the *same* day *after* rights-j runs on
@@ -594,8 +626,8 @@ sub process_rights {
 
     my $process_start = __hiresTime();
 
-    my $LAG = $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
-    my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($timestamp, $LAG);
+    my $lag = __get_lag_in_days($C);
+    my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($timestamp, $lag);
 
     my $s0 = qq{[BEGIN]: $INIT_MSG CHECK=$CHECK };
     __output(qq{$s0} . Utils::Time::iso_Time() . qq{\n});
