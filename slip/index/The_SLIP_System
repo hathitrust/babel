@@ -216,7 +216,13 @@ for ht_id_update:[0000000 TO *], build
 ht_maintenance.slip_rights_temp, drop ht_maintenance.slip_rights,
 rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
     
-       % rebuild_rights-j
+       % rebuild_rights-j -r run -P one [-f <filename>] 
+then
+       % rebuild_rights-j -r run -P two [-n][-f <filename>] r
+
+       Phase=one: Read vSolr, write file
+       Phase=two: Read file, write slip_rights
+
        NOTE: coordinate Phase one with the VuFInd re-indexing job
        NOTE: Phase one: 6.5 hours 5.9M records 
              Phase two: 5.5 hours 10.6M IDs

@@ -85,7 +85,7 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_r_get_usage {
     my $s;
-    $s .= qq{Usage: rebuild_rights-j -r <run> [-T][-P one [-f <filename>] | -P two [-n][-f <filename>]] [-d{1|2|3|4|5|6}]\nPhase=one: Read vSolr, write file\nPhase=two: Read file, write slip_rights. \n\nNOTE: Avoid vSolr re-indexing time\n\n};
+    $s .= qq{Usage: rebuild_rights-j -r <run> -P one [-f <filename>] | -P two [-n][-f <filename>] [-T][-d{1|2|3|4|5|6}]\nPhase=one: Read vSolr, write file\nPhase=two: Read file, write slip_rights. \n\nNOTE: Avoid vSolr re-indexing time\n\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -P perform phase=<phase> ('one' or 'two')\n};
     $s .= qq{     -n NO RENAME slip_rights_temp, NO DROP slip_rights\n};
@@ -103,7 +103,7 @@ sub r_r_get_usage {
 our ($opt_d, $opt_n, $opt_T, $opt_r, $opt_P, $opt_f);
 
 my $ops = getopts('d:nTr:P:f:');
-my $FORCE_EMAIL = (! defined $ENV{DLPS_DEV});
+my $FORCE_EMAIL = (! defined $ENV{HT_DEV});
 
 if ($opt_d) {
     if ($opt_d == 1) {
@@ -129,7 +129,6 @@ if ($opt_d) {
 use constant STOPSLIP_SLEEP_WAIT => 60;
 
 my $RUN = $opt_r;
-my $PHASE = '';
 my $REBUILD = 1;
 my $CHECK = $opt_n;
 
@@ -143,12 +142,14 @@ if (defined($opt_n)) {
     $CHECK = 1;
 }
 
-if (defined($opt_P)) {
-    $PHASE = $opt_P;
-    if ($PHASE !~ m,(one|two),) {
-        __output("Invalid Phase=$PHASE.\n");
-        exit $SLIP_Utils::States::RC_BAD_ARGS;
-    }
+my $PHASE = $opt_P;
+unless (defined($opt_P)) {
+    __output(qq{Phase (-P) arg missing.\n});
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+if ($PHASE !~ m,(one|two),) {
+    __output(qq{Invalid Phase="$PHASE"\n});
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
 }
 
 my $TEST_ONLY = defined($opt_T);
