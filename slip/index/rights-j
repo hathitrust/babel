@@ -478,15 +478,7 @@ Description
 sub __get_lag_in_days {
     my $C = shift;
 
-    if (defined $LAG) {
-        # test
-        if (($LAG !~ m,^\d+$,) || ($LAG < 0)) {
-            __output(qq{Bad lag (-L) argument\n} . $LAG);
-            exit $SLIP_Utils::States::RC_BAD_ARGS;
-        }
-        return $LAG;
-    }
-    
+    return $LAG if (defined $LAG);
     return $C->get_object('MdpConfig')->get('vSolr_num_lag_days');
 }
 
