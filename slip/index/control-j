@@ -109,7 +109,10 @@ sub cont_get_usage {
           zeros slip_shard_stats and slip_rate_stats for incremental recording
 
        control-j -kreseterrors -r run
-          zeros slip_errors
+          delete all items in slip_errors for a given run
+
+       control-j -kresetqueue -r run
+          delete all items in queue for given run (safely)
 
        control-j -kQtimestamp -r run [-tYYYYMMDD]
           set queue timestamp to 00000000 or value of -t
@@ -291,6 +294,9 @@ eval {
     }
     elsif ($KOMMAND eq 'reseterrors') {
         c_Reset_errors($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'resetqueue') {
+        c_Reset_queue($C, $DBH, $RUN);
     }
     elsif (($KOMMAND eq 'start') || ($KOMMAND eq 'stop')) {
         my $enabled = ($KOMMAND eq 'start') ? 1 : 0;
@@ -858,7 +864,27 @@ sub c_Reset_errors {
     my $ct = Db::Delete_errors($C, $dbh, $run);
 
     Log_errors_reset($C, $run, $ct);
-    __output(qq{\tERRORS RESET run=$run reset=$ct\n});
+    __output(qq{\tERRORS RESET run=$run deleted=$ct\n});
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item c_Reset_queue
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_Reset_queue {
+    my ($C, $dbh, $run) = @_;
+
+    my $ct = Db::Delete_queue($C, $dbh, $run);
+
+    Log_queue_reset($C, $run, $ct);
+    __output(qq{\tQUEUE RESET run=$run deleted=$ct\n});
 }
 
 # ---------------------------------------------------------------------
@@ -1205,6 +1231,24 @@ sub Log_errors_reset {
     my ($C, $run, $ct) = @_;
 
     my $s = qq{***CONTROL[ERRORS RESET]: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item Log_queue_reset
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_queue_reset {
+    my ($C, $run, $ct) = @_;
+
+    my $s = qq{***CONTROL[QUEUE RESET]: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 

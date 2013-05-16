@@ -220,8 +220,8 @@ rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
 then
        % rebuild_rights-j -r run -P two [-n][-f <filename>] r
 
-       Phase=one: Read vSolr, write file
-       Phase=two: Read file, write slip_rights
+       NOTE: Phase=one: Read vSolr, write file
+       NOTE: Phase=two: Read file, write slip_rights
 
        NOTE: coordinate Phase one with the VuFInd re-indexing job
        NOTE: Phase one: 6.5 hours 5.9M records 
@@ -238,9 +238,9 @@ built from the Solr index: delete all but one of the duplicates from
 the Solr index. Delete from ht_maintenance.slip_indexed for the given
 run. Insert de-duped j_indexed_temp rows into j_indexed.
 
-       % rebuild-j -r run_number
-       NOTE: < 1 hour for 10.5M docs
+       % rebuild-j -r run
 
+       NOTE: < 1 hour for 10.5M docs
        NOTE: Run this in parallel with rebuild_rights-j
 
 (3) Queue ids in ht_maintenance.slip_rights missing from
