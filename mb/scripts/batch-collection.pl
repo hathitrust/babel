@@ -98,6 +98,7 @@ my @allowed_uniqnames =
    'kshawkin',
    'rwelzenb',
    'sethip',
+   'jjyork',
   );
 
 my @allowed_overrides =
