@@ -91,6 +91,7 @@ my @allowed_uniqnames =
   (
    'tburtonw',
    'pfarber',
+   'roger',
    'jweise',
    'sooty',
    'khage',
@@ -156,7 +157,7 @@ if ($NON_SUPERUSER) {
     my $path = abs_path($0);
     #print "ABSPATH: $path\n";
 
-    unless ( index("test.babel", $path) >= 0) {
+    unless ( index($path, "test.babel") >= 0) {
         print( qq{ERROR: Please run the copy of batch-collection.pl located in /htapps/test.babel/mb/scripts\n} );
         exit 1;
     }
