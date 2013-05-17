@@ -506,6 +506,9 @@ handle_Build_Resume is just handle_Build_Wait except stats are not reset.
 sub handle_Build_Resume {
     my ($C, $dbh, $run) = @_;
 
+    my $_Stage = $SLIP_Utils::States::St_Build_Resume;
+    __output("$_Stage\n");
+
     return handle_Build_Wait($C, $dbh, $run, 'resuming');
 }
 
