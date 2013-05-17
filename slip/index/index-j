@@ -76,7 +76,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Search::Constants;
 use Utils::GlobalSwitch;
 
@@ -86,6 +85,7 @@ use SLIP_Utils::Db_driver;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
 
 use Index_Module;
 
