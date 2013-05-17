@@ -276,8 +276,11 @@ sub write_xsl_file{
         (function() {
             // window.HT = window.HT || {};
             HT.scripts = HT.scripts || [];
-            HT.scripts.push("/$PROGRAM/js/concatenated_common-min.js<xsl:value-of select="\$timestamp" />");
 XSL
+
+    if ( -s $OUT_JS_FILE ) {
+        print {$XSL_FH} qq{    HT.scripts.push("/$PROGRAM/js/concatenated_common-min.js<xsl:value-of select="\$timestamp" />");\n};
+    }
 
     foreach my $key ( @OPTIONAL_JS_LIST ) {
         print {$XSL_FH} qq{    <xsl:if test="$OPTIONAL_JS{$key}{'test'}">\n};
@@ -527,6 +530,8 @@ sub make_concatenated_files {
     
     print STDERR "\nwrote $OUT_CSS_FILE\n";
     print STDERR "wrote $OUT_JS_FILE\n";
+
+    if ( ! -s $OUT_JS_FILE ) { push @$TO_REMOVE_REF, $OUT_JS_FILE; }
     
     write_xsl_file($jsfiles_ref, $cssfiles_ref);
     
