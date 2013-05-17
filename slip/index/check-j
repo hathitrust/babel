@@ -12,8 +12,15 @@ see usage
 
 Perform health checks on index. Check correct number of segments and
 run Lucene CheckIndex on a given shard. driver-j will only enable
-check-j whe all shards have finished optimizing to ensure enough
+check-j when all shards have finished optimizing to ensure enough
 memory to run checkIndex.
+
+As long as check-j runs from cron on the machine (shotz-)* running
+Lucene checkIndex it does not need to honor STOPSLIP once it is
+executing because the machine would not be taken out of service while
+checkIndex running. It will exit before it sends start teh checkIndex
+program however, if STOPSLIP is set, which is OK because it is
+re-tried from cron every minute and runs if enabled.
 
 =head1 OPTIONS
 
@@ -48,7 +55,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Search::Constants;
 use Semaphore;
 
@@ -60,10 +66,21 @@ use SLIP_Utils::Solr;
 use SLIP_Utils::Processes;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
 
 use Sl_Utils;
 
-Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+my $INTERACTIVE = $ENV{TERM};
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot check. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
 
 # Flush i/o
 $| = 1;
@@ -79,7 +96,6 @@ sub ck_get_usage {
 our ($opt_r, $opt_R, $opt_O, $opt_d, $opt_n);
 
 my $ops = getopts('r:R:dnO:');
-use constant STOPSLIP_CSLEEP_WAIT => 60;  # 1 minute
 use constant TOMCAT_MAX_TRIES => 10;
 use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
 
@@ -139,17 +155,8 @@ my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, qq{check-j run=$RUN shard=$SHARD}, $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-$C->set_object('Database', $db);
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{check-j run=$RUN shard=$SHARD});
 
-my $DBH = $db->get_DBH();
 my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
 
 my $check_enabled = 
@@ -213,45 +220,31 @@ Description
 sub handle_check_rc {
     my ($C, $dbh, $run, $shard, $host, $rc) = @_;
 
-    while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("  wait Check done: STOPSLIP\n");
-        sleep STOPSLIP_CSLEEP_WAIT;
-    }
-
-    # Have we lost the database?
     my $state = 'undef';
-    my $connect_error = 0;
-    my $connection_still_alive = $dbh->ping();
-
-    if ($connection_still_alive) {
-        if ($rc > 0) {
-            # Set shard state to 'error'
-            $state = $SLIP_Utils::States::Sht_Check_Error;
-        }
-        else {
-            # Set shard state to 'done'
-            $state = $SLIP_Utils::States::Sht_Checked;
-            # Record the time this successful optimize
-            Db::set_shard_check_done($C, $dbh, $run, $shard);
-        }
-
-        # Set terminal state
-        Db::set_shard_check_state($C, $dbh, $run, $shard, $state);
-        # Self-stop.  driver-j also disables check-j as extra measure.
-        Db::set_check_enabled($C, $dbh, $run, $shard, 0);
+    if ($rc > 0) {
+        # Set shard state to 'error'
+        $state = $SLIP_Utils::States::Sht_Check_Error;
     }
     else {
-        $connect_error = 1;
+        # Set shard state to 'done'
+        $state = $SLIP_Utils::States::Sht_Checked;
+        # Record the time this successful optimize
+        Db::set_shard_check_done($C, $dbh, $run, $shard);
     }
+
+    # Set terminal state
+    Db::set_shard_check_state($C, $dbh, $run, $shard, $state);
+    # Self-stop.  driver-j also disables check-j as extra measure.
+    Db::set_check_enabled($C, $dbh, $run, $shard, 0);
 
     # Log
     my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
         . qq{ run=$run shard=$shard host=$host}
-          . qq{ [stop][self] State=$state connect_error=$connect_error};
+          . qq{ [stop][self] State=$state};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
 
-    if ($connect_error || ($rc > 0)) {
+    if ($rc > 0) {
         Log_check_error($C, $run, $shard, $s);
     }
     else {

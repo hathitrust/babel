@@ -171,18 +171,7 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, 'enqueuer-j', $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-
-$C->set_object('Database', $db);
-
-my $DBH = $C->get_object('Database')->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'enqueuer-j');
 
 eval {
     if (defined($ID_FILENAME)) {

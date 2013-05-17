@@ -44,7 +44,6 @@ use Getopt::Std;
 # App
 use Context;
 use ObjFactory;
-use Database;
 use Search::Constants;
 
 # Local
@@ -116,7 +115,6 @@ $C->set_object('MdpConfig', $config);
 
 my $db = new Database('ht_maintenance');
 $C->set_object('Database', $db);
-my $dbh = $db->get_DBH();
 
 # Flush i/o
 $| = 1;

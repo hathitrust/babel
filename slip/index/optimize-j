@@ -19,6 +19,13 @@ Timeout is forced to ∞, i.e. -t is ignored. With optional, -O n param
 optimize down to that number of segments either staged or not. If not
 staged, timeout may be specified.
 
+As long as optimize-j runs from cron on the machine (shotz-)* running
+Solr it does not need to honor STOPSLIP once it is executing because
+the machine would not be taken out of service while Solr is
+optimizing. It will exit before it sends an optimize command to Solr
+however, if STOPSLIP is set, which is OK because it is re-tried from
+cron every minute and runs if enabled.
+
 =head1 OPTIONS
 
 =over 8
@@ -52,7 +59,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Search::Constants;
 use Semaphore;
 
@@ -63,11 +69,11 @@ use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
 
 use Sl_Utils;
 
 my $INTERACTIVE = $ENV{TERM};
-
 if ($INTERACTIVE) {
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot optimize. STOPSLIP in place!!\n");
@@ -95,7 +101,6 @@ our ($opt_r, $opt_R, $opt_S, $opt_d, $opt_O, $opt_n, $opt_T);
 my $ops = getopts('r:R:dS:O:nT');
 
 use constant LARGE_TIMEOUT => 172800; # 48 hours
-use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
@@ -128,16 +133,7 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, qq{optimize-j run=$RUN}, $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-$C->set_object('Database', $db);
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{optimize-j run=$RUN});
 
 my $SHARD = $opt_R || 0; # Optional
 my $STAGED = $opt_S || 0; # Optional
@@ -208,7 +204,7 @@ foreach my $__shard (@SHARDS) {
             }
         }
         my $state = set_optimize_status($C, $DBH, $RUN, $__shard);
-        optimize_report($C, $RUN, $__shard, $HOST, $state, 0, 0);
+        optimize_report($C, $RUN, $__shard, $HOST, $state, 0);
     }
 }
 
@@ -218,21 +214,6 @@ exit 0;
 # --------------------- S u b r o t i n e s   -------------------------
 #
 
-# ---------------------------------------------------------------------
-
-=item __sleep_STOPSLIP
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __sleep_STOPSLIP {
-    while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("  wait Optimize done: STOPSLIP\n");
-        sleep STOPSLIP_SLEEP_WAIT;
-    }
-}
 
 # ---------------------------------------------------------------------
 
@@ -299,7 +280,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub optimize_report {
-    my ($C, $run, $shard, $host, $state, $rc, $connect_error) = @_;
+    my ($C, $run, $shard, $host, $state, $rc) = @_;
 
     # Report
     my $segment_sizes = Scheduler::get_segsizes($C, $run);
@@ -307,10 +288,10 @@ sub optimize_report {
     my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
       . qq{ run=$run shard=$shard host=$host}
             . qq{ [stop][self] State=$state}
-              . qq{ self_size=$self_size summed_sizes=$segment_sizes connect_error=$connect_error};
+              . qq{ self_size=$self_size summed_sizes=$segment_sizes};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
-    if ($connect_error || ($rc > 0)) {
+    if $rc > 0) {
         Log_optimize_error($C, $run, $shard, $s);
     }
     else {
@@ -332,21 +313,14 @@ sub error_check_rc {
     my ($C, $dbh, $run, $shard, $host, $rc) = @_;
 
     if ($rc > 0) {
-        my $connect_error = 0;
         my $state = $SLIP_Utils::States::Sht_Optimize_Error;
 
-        my $connection_still_alive = $dbh->ping();
-        if ($connection_still_alive) {
-            # Set terminal state
-            Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
-            # Self-stop.
-            Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
-        }
-        else {
-            $connect_error = 1
-        }
+        # Set terminal state
+        Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
+        # Self-stop.
+        Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
 
-        optimize_report($C, $run, $shard, $host, $state, $rc, $connect_error);
+        optimize_report($C, $run, $shard, $host, $state, $rc);
 
         exit $rc;
     }
@@ -447,8 +421,6 @@ is a degenerate case that is just a commit.
 # ---------------------------------------------------------------------
 sub c_optimize {
     my ($C, $run, $dbh, $shard, $staged, $limit_segs) = @_;
-
-    __sleep_STOPSLIP();
 
     my $timeout = LARGE_TIMEOUT;
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, $timeout);

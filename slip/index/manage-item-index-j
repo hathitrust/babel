@@ -59,7 +59,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Search::Constants;
 use Semaphore;
 
@@ -68,6 +67,7 @@ use Db;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
 use Search::Result::SLIP_Raw;
 use SLIP_Utils::Solr;
 
@@ -142,19 +142,8 @@ if ($site ne $hosting_site) {
     exit $rc;
 }
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    my $s = qq{manage-item-index-j run=$RUN} . $@;
-    Log_manage_error($C, $RUN, $s);
-    SLIP_Utils::Common::Log_database_connection_error($C, qq{manage-item-index-j run=$RUN host=$HOST}, $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-$C->set_object('Database', $db);
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{manage-item-index-j run=$RUN host=$HOST});
 
-my $DBH = $db->get_DBH();
 
 # Do not try to manage while I am running already
 my $Lock_File = "/tmp/manage-item-index-lock.sem";

@@ -58,7 +58,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Search::Constants;
 use Semaphore;
 
@@ -70,6 +69,7 @@ use SLIP_Utils::Log;
 use Search::Result::SLIP_Raw;
 use Search::Site;
 use SLIP_Utils::Solr;
+use SLIP_Utils::DatabaseWrapper;
 
 # Flush i/o
 $| = 1;
@@ -129,19 +129,7 @@ if ($site ne $hosting_site) {
     exit $rc;
 }
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    my $s = qq{stats-item-index-j run=$RUN} . $@;
-    Log_stats_error($C, $RUN, $s);
-    SLIP_Utils::Common::Log_database_connection_error($C, qq{stats-item-index-j run=$RUN host=$HOST}, $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-$C->set_object('Database', $db);
-
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{stats-item-index-j run=$RUN host=$HOST});
 
 # Do not try to manage while I am running already
 my $Lock_File = "/tmp/stats-item-index-lock.sem";
@@ -325,7 +313,7 @@ sub mis_gather_statistics {
 
     # Get num docs in index
     my $num = mis_num_docs_in_index($C);
-    $s = qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/200) . qq{ estimated at 200 pages/vol\n};
+    $s = qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/300) . qq{ estimated at 300 pages/vol\n};
     __output("$s");
     Log_stats($C, $run, $s);
 

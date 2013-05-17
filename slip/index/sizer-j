@@ -42,7 +42,6 @@ use Utils::Time;
 use Utils::GlobalSwitch;
 use Context;
 use MdpConfig;
-use Database;
 use Semaphore;
 
 
@@ -54,10 +53,9 @@ use SLIP_Utils::Solr;
 use SLIP_Utils::Db_driver;
 use SLIP_Utils::Log;
 use SLIP_Utils::Released;
-
+use SLIP_Utils::DatabaseWrapper;
 
 my $INTERACTIVE = $ENV{TERM};
-
 if ($INTERACTIVE) {
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot run sized. STOPSLIP in place!!\n");
@@ -128,18 +126,7 @@ END {
         if ($Semaphore);
 }
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, 'sizer-j', $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-
-$C->set_object('Database', $db);
-
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'sizer-j');
 
 # Only determeind release status a run that exists.  When re-numbering
 # from re-indexing run 10 to production run 11, run 11 will first be

@@ -63,7 +63,6 @@ use Utils;
 use Utils::Time;
 use Context;
 use MdpConfig;
-use Database;
 use Utils::GlobalSwitch;
 use Semaphore;
 
@@ -74,7 +73,7 @@ use SLIP_Utils::Db_driver;
 use SLIP_Utils::Db_sync;
 use SLIP_Utils::Common;
 use SLIP_Utils::Log;
-
+use SLIP_Utils::DatabaseWrapper;
 
 my $INTERACTIVE = $ENV{TERM};
 if ($INTERACTIVE) {
@@ -124,20 +123,8 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, qq{driver-j run=$RUN}, $@);
-    my $rc = $SLIP_Utils::States::RC_DATABASE_CONNECT;
-    __non_interactive_err_output($rc, $@);
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{driver-j run=$RUN});
 
-    exit $rc;
-}
-
-$C->set_object('Database', $db);
-my $DBH = $db->get_DBH();
 
 # Outta here if not enabled
 __check_driver_enabled($C, $DBH, $RUN);
@@ -206,15 +193,21 @@ exit 0;
 
 =item __STOPSLIP_exit_driver
 
-Exit driver leaving it in a state that it can resume from if possible.
-It can only resume from St_Building.
+Exit driver leaving it in a state that it can resume from.
 
-We do not want to start building again in the middle of St_Optimizing
-or St_Checking without knowing whether they have finished.
+The active states are St_Building, St_Optimizing and St_Checking.
 
-We leave driver in those states instead of reseting to St_Build_Resume
-so driver will signal error if it tries to run again and we stopped in
-one of those states.  Requires manual intervention/check.
+If state was St_Building transition to St_Build_Resume to resume build
+without resetting statistics and continue to check for indexers to report
+done.
+
+If state was St_Optimizing reset to St_Building to trigger the
+transition to St_Optimizing resume checking database for optimizers to
+report results.
+
+If state was St_Checking reset to St_Optimizing to trigger the
+transition to St_Checking to resume checking database for checkers to
+report results.
 
 =cut
 
@@ -236,17 +229,28 @@ sub __STOPSLIP_exit_driver {
         __control_optimizers($C, $DBH, $RUN, $stage, 'stop', 'ignore_STOPSLIP');
         __control_checkers($C, $DBH, $RUN, $stage, 'stop', 'ignore_STOPSLIP');
 
+        # The busy flag prevents tomcat restarts and index
+        # release. Remove flag only when optimizers or checkers
+        # (checkIndex) are not running. [*]
+
         if ($stage eq $SLIP_Utils::States::St_Building) {
             SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Build_Resume);
 
-            # The busy flag prevents tomcat restarts and index
-            # release. Remove flag only when optimizers or checkIndex
-            # are not running.
+            # [*]
             my $busy_file = __get_BUSY_file($C, $run);
             unlink($busy_file);
         }
+        elsif ($stage eq $SLIP_Utils::States::St_Optimizing) {
+            SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Building);
+
+            # [*]
+        }
+        elsif ($stage eq $SLIP_Utils::States::St_Checking) {
+            SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Optimizing);
+
+            # [*]
+        }
         else {
-            SLIP_Utils::Db_driver::set_driver_enabled($C, $DBH, $RUN, 0);
         }
 
         exit $rc;
@@ -305,11 +309,6 @@ sub run_driver {
     Log_run($C, $run);
 
     my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
-
-    unless ( grep(/^$_Stage$/, ($SLIP_Utils::States::St_Build_Wait, $SLIP_Utils::States::St_Build_Resume)) ) {
-        handle_Stage_rc($_Stage, $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE);
-    }
-    # POSSIBLY NOTREACHED
 
     while (1) {
 
@@ -546,8 +545,11 @@ sub handle_Build_Wait {
             # Nothing to do.  Clean exit remaining in default Build_Wait.
             my $s = qq{Driver queue empty};
             Log_stage($C, $run, $_Stage, $s);
-            __driver_exit_report($C, $dbh, $run, $s, time, 1);
-            exit 0;
+
+            unless ($resuming) {
+                __driver_exit_report($C, $dbh, $run, $s, time, 1);
+                exit 0;
+            }
         }
     }
 
@@ -558,7 +560,7 @@ sub handle_Build_Wait {
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
         # Zero the rates and counts
-        $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage)
+        $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage, 'ignore_STOPSLIP')
           unless ($resuming);
 
         if ($rc == 0) {
@@ -840,11 +842,12 @@ sub __Wait_build_done {
         # POSSIBLY NOTREACHED
 
         if ($stage eq $SLIP_Utils::States::St_Building) {
-            my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $stage);
-            return $rc_1 if ($rc_1 > 0);
 
             __STOPSLIP_exit_driver($C, $run, $stage);
             # POSSIBLY NOTREACHED
+
+            my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $stage);
+            return $rc_1 if ($rc_1 > 0);
 
             if ($current_queue_size > 0) {
                 __output("  wait Building\n");
@@ -934,7 +937,7 @@ sub get_Building_queue_size {
 
         # Requeue transient server errors no more than MAX_RESTORES times
         if ($RESTORE_CT < MAX_RESTORES) {
-            $rc = __requeue_transient_server_errors($C, $dbh, $run, $stage);
+            $rc = __requeue_transient_server_errors($C, $dbh, $run, $stage, 'ignore_STOPSLIP');
             if ($rc == 0) {
                 ($size) = Db::Select_queue_data($C, $dbh, $run);
                 my $restored = $size - $timeouts;
@@ -959,9 +962,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub __requeue_transient_server_errors {
-    my ($C, $dbh, $run, $stage) = @_;
+    my ($C, $dbh, $run, $stage, $ignore_STOPSLIP) = @_;
 
-    my $cmd = $BASE_DIR . qq{control-j -r$run -krestore -ss 2>$Child_Err_File};
+    my $extra = ($ignore_STOPSLIP ? '-G' : '');
+
+    my $cmd = $BASE_DIR . qq{control-j -r$run -krestore -ss $extra 2>$Child_Err_File};
     my $sysrc = system($cmd);
 
     my $s = qq{"control-j -r$run -krestore -ss"};
@@ -1218,9 +1223,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub __Reset_stats_recording {
-    my ($C, $dbh, $run, $stage) = @_;
+    my ($C, $dbh, $run, $stage, $ignore_STOPSLIP) = @_;
 
-    my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats 2>$Child_Err_File};
+    my $extra = ($ignore_STOPSLIP ? '-G' : '');
+
+    my $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats $extra 2>$Child_Err_File};
     my $sysrc = system($cmd);
     my $rc = __check_sysrc($sysrc, $C, $run, $stage, $cmd);
 

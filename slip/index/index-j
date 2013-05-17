@@ -171,19 +171,7 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, 'index-j', $@);
-    handle_critical_error($C, undef, $RUN, 0, $PID, $HOST, $@, $SLIP_Utils::States::RC_DATABASE_CONNECT);
-    # NOTREACHED
-}
-
-$C->set_object('Database', $db);
-
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'index-j');
 
 my $DEFAULT_SLICE_SIZE = $config->get('queue_slice_size');
 

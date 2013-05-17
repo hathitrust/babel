@@ -47,7 +47,6 @@ use Utils;
 use Debug::DUtils;
 use Context;
 use MdpConfig;
-use Database;
 use Search::Constants;
 use Utils::GlobalSwitch;
 use SharedQueue;
@@ -59,6 +58,7 @@ use SLIP_Utils::Db_driver;
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Solr;
+use SLIP_Utils::DatabaseWrapper;
 
 my $INTERACTIVE = $ENV{'TERM'};
 Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip')
@@ -128,23 +128,7 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    my $rc = $SLIP_Utils::States::RC_DATABASE_CONNECT;
-    SLIP_Utils::Common::Log_database_connection_error($C, 'report-j', $@);
-    my $s = "Database connect error: $@";
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-
-    exit $rc;
-}
-
-$C->set_object('Database', $db);
-
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'report-j');
 
 my $DRIVER = $config->get('driver_driven');
 

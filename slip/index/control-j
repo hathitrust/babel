@@ -57,7 +57,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Search::Constants;
 
 # Local
@@ -67,6 +66,7 @@ use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
 
 # Flush i/o
 $| = 1;
@@ -210,18 +210,8 @@ my $C = new Context;
 my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $CONFIG);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, 'control-j', $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'control-j');
 
-$C->set_object('Database', $db);
-
-my $DBH = $db->get_DBH();
 my @NUM_SHARDS_LIST = $C->get_object('MdpConfig')->get('num_shards_list');
 
 eval {

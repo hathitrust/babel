@@ -35,7 +35,6 @@ use Search::Constants;
 
 use Context;
 use MdpConfig;
-use Database;
 use Identifier;
 use SharedQueue;
 
@@ -44,6 +43,7 @@ use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::Solr;
 use SLIP_Utils::Load;
+use SLIP_Utils::DatabaseWrapper;
 
 # ---------------------------------------------------------------------
 
@@ -110,18 +110,7 @@ my $C = new Context;
 my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $CONFIG);
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    SLIP_Utils::Common::Log_database_connection_error($C, 'delete-j', $@);
-    exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-}
-
-$C->set_object('Database', $db);
-
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'delete-j');
 
 my $DEFER_COMMIT = 0;
 my $id_arr_ref;

@@ -35,7 +35,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Identifier;
 use SharedQueue;
 use RightsGlobals;
@@ -45,6 +44,7 @@ use Search::Result::SLIP;
 use SLIP_Utils::Common;
 use SLIP_Utils::Solr;
 use SLIP_Utils::Released;
+use SLIP_Utils::DatabaseWrapper;
 use Db;
 
 use Collection;
@@ -52,7 +52,6 @@ use CollectionSet;
 
 
 my $INTERACTIVE = $ENV{TERM};
-
 if ($INTERACTIVE) {
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot sync. STOPSLIP in place!!\n");
@@ -127,20 +126,8 @@ if ($RUN ne $production_run) {
     __non_interactive_err_output($rc, $s);
 }
 
-my $db;
-eval {
-    $db = new Database('ht_maintenance');
-};
-if ($@) {
-    my $rc = $SLIP_Utils::States::RC_DATABASE_CONNECT;
-    SLIP_Utils::Common::Log_database_connection_error($C, 'sync-i', $@);
-    __non_interactive_err_output($rc, $@);
-    exit $rc;
-}
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'sync-i');
 
-$C->set_object('Database', $db);
-
-my $DBH = $db->get_DBH();
 my $CO = new Collection($DBH, $config, undef);
 my $CS = new CollectionSet($DBH, $config, undef);
 
@@ -328,6 +315,22 @@ sub __id_exists {
     return ($num_found > 0);
 }
 
+# ---------------------------------------------------------------------
+
+=item __exit_STOPSLIP
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __exit_STOPSLIP {
+
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("exit STOPSLIP in place\n");
+        exit 0;
+    }
+}
 
 # ---------------------------------------------------------------------
 
@@ -399,6 +402,9 @@ sub handle_synchronization {
     my $missing_ids_over_colls = 0;
     
     foreach my $coll_id (@$coll_id_arr_ref) {
+
+        __exit_STOPSLIP();
+        
         $coll_ct++;
         my $num_ignored_as_deleted = 0;
         my $ids_missing_in_Solr = 0;
@@ -413,6 +419,9 @@ sub handle_synchronization {
 
         my $id_ct = 0;
         foreach my $id (@$id_arr_ref) {
+
+            __exit_STOPSLIP();
+
             $id_ct++;
             if (__id_exists($C, $coll_id, $id, $searcher, $rs, \$num_ignored_as_deleted)) {
                 # Does its Solr doc contain this coll_id?
@@ -585,6 +594,9 @@ sub handle_inverse_synchronization {
     my %small_coll_ids = ();
 
     while (1) {
+
+        __exit_STOPSLIP();
+
         # Get a slice of Solr documents with non-empty coll_id field(s)
         my $query = $COLL_ID
           ? qq{q=coll_id:$COLL_ID&start=$start&rows=$SLICE_SIZE&fl=coll_id,id}
