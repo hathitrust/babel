@@ -170,7 +170,7 @@ if (! $Semaphore) {
 
 END {
     $Semaphore->unlock()
-        if ($Semaphore);
+      if ($Semaphore);
 }
 
 foreach my $__shard (@SHARDS) {
@@ -183,7 +183,7 @@ foreach my $__shard (@SHARDS) {
        ||
        Db::Select_optimize_enabled($C, $DBH, $RUN, $__shard)
       );
-
+    
     # Adjust $LIMIT_SEGS for full optimize?
     if ($optimize_enabled) {
         # Optimize to determine size of second shard to test for
@@ -192,7 +192,7 @@ foreach my $__shard (@SHARDS) {
         __output($s);
         error_check_rc($C, $DBH, $RUN, $__shard, $HOST,
                        c_optimize($C, $RUN, $DBH, $__shard, $STAGED, $LIMIT_SEGS));
-
+        
         # Full?
         if ($SINGLE_SHARD) {
             if ( do_FULL_optimize($C, $DBH, $RUN, $__shard, $HOST, $LIMIT_SEGS) ) {
@@ -226,20 +226,20 @@ Description
 # ---------------------------------------------------------------------
 sub do_FULL_optimize {
     my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
-
+    
     if (Sl_Utils::checkIndex_day($C)) {
         my $s = "Skipped test for full optimize shard=$shard. Today is checkIndex day";
         __output(qq{$s\n});
         Log_optimize($C, $run, $shard, $s);
-
+        
         return 0;
     }
     # POSSIBLY NOTREACHED
-
+    
     # If limit is already == 1 the first optimization already did the
     # work.  Nothing to do here.
     my $do = 0;
-
+    
     if ($limit_segs == 1) {
         $do = 0;
     }
@@ -254,7 +254,7 @@ sub do_FULL_optimize {
                     $do = 1;
                 }
             }
-
+            
             my $now = Utils::Time::iso_Time();
             my $sizes = Scheduler::get_segsizes($C, $run, $shard);
             my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED' : 'NO') . qq{ at $now};
@@ -265,7 +265,7 @@ sub do_FULL_optimize {
             error_check_rc($C, $dbh, $run, $shard, $host, $SLIP_Utils::States::RC_BAD_SCHED);
         }
     }
-
+    
     return $do;
 }
 
@@ -281,17 +281,18 @@ Description
 # ---------------------------------------------------------------------
 sub optimize_report {
     my ($C, $run, $shard, $host, $state, $rc) = @_;
-
+    
     # Report
     my $segment_sizes = Scheduler::get_segsizes($C, $run);
     my $self_size = Scheduler::get_segsizes($C, $run, $shard);
     my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
       . qq{ run=$run shard=$shard host=$host}
-            . qq{ [stop][self] State=$state}
-              . qq{ self_size=$self_size summed_sizes=$segment_sizes};
+        . qq{ [stop][self] State=$state}
+          . qq{ self_size=$self_size summed_sizes=$segment_sizes};
     __output(qq{$s\n});
     __non_interactive_err_output($rc, $s);
-    if $rc > 0) {
+
+    if ($rc > 0) {
         Log_optimize_error($C, $run, $shard, $s);
     }
     else {
@@ -299,16 +300,16 @@ sub optimize_report {
     }
 }
 
-
-# ---------------------------------------------------------------------
+  
+  # ---------------------------------------------------------------------
 
 =item error_check_rc
 
 Description
 
 =cut
-
-# ---------------------------------------------------------------------
+  
+  # ---------------------------------------------------------------------
 sub error_check_rc {
     my ($C, $dbh, $run, $shard, $host, $rc) = @_;
 
