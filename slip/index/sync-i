@@ -30,6 +30,7 @@ use Getopt::Std;
 # App
 use Utils;
 use Utils::Time;
+use Utils::GlobalSwitch;
 use Debug::DUtils;
 
 use Context;
@@ -49,6 +50,18 @@ use Db;
 use Collection;
 use CollectionSet;
 
+
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot sync. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
 
 # ---------------------------------------------------------------------
 
@@ -88,7 +101,6 @@ if (defined($opt_d)) {
 }
 
 my $MESSAGE_BUFFER;
-my $INTERACTIVE = $ENV{TERM};
 my $HOST = `hostname`;
 $HOST =~ s,\..*$,,s;
 

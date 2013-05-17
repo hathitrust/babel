@@ -68,19 +68,6 @@ use SLIP_Utils::Solr;
 use SLIP_Utils::States;
 use SLIP_Utils::Log;
 
-my $INTERACTIVE = $ENV{TERM};
-
-if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("Cannot control SLIP. STOPSLIP in place!!\n");
-        exit 0;
-    }
-}
-else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
-}
-
-
 # Flush i/o
 $| = 1;
 
@@ -94,7 +81,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub cont_get_usage {
-    my $s .= qq{Usage: control-j -k stop|start -r run [-R shard|A][-h host][-T]
+    my $s .= qq{Usage: control-j -k<command> [<command_options>][-G] | [-T]
+
+       control-j -k stop|start -r run [-R shard][-h host]
+          starts/stops indexer on one or all shard(s) and/or host(s)
 
        control-j -k stop|start -r run -e
           -e starts/stops enqueuer-j
@@ -151,13 +141,17 @@ sub cont_get_usage {
           initialize a run, zero everything and optionally setting queue time pointer
        
        control-j -k delete -r run
-          delete a run entirely from the database\n};
+          delete a run entirely from the database
+
+       Global switches
+          -G ignore STOPSLIP file
+          -T exit after compilation\n};
     return $s;
 }
 
-our ($opt_k, $opt_r, $opt_R, $opt_m, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_L, $opt_C, $opt_T, $opt_s);
+our ($opt_k, $opt_r, $opt_R, $opt_m, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_C, $opt_T, $opt_s, $opt_G);
 
-my $ops = getopts('k:r:R:n:m:h:edDVOt:CTs:');
+my $ops = getopts('k:r:R:n:m:h:edDVOt:CTs:G');
 
 # Required
 my $KOMMAND = $opt_k;
@@ -171,6 +165,20 @@ my $RIGHTS = $opt_V;
 
 my $TIMESTAMP = $opt_t;
 my $ERROR_TYPE = $opt_s || '';
+my $IGNORE_STOPSLIP = $opt_G;
+    
+my $INTERACTIVE = $ENV{TERM};
+unless ($IGNORE_STOPSLIP) {
+    if ($INTERACTIVE) {
+        if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+            __output("Cannot control SLIP. STOPSLIP in place!!\n");
+            exit 0;
+        }
+    }
+    else {
+        Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+    }
+}
 
 if (! $KOMMAND) {
     my $s = cont_get_usage();
@@ -329,18 +337,10 @@ eval {
             if (defined($host)) {
                 __validate_hostname($C, $RUN, $host);
             }
-            
-            if (defined($shard) && ($shard eq 'A')) {
-                foreach my $_shard (@NUM_SHARDS_LIST) {
-                    c_producer_control($C, $DBH, $RUN, $_shard, $host, $enabled);
-                }
+            if (defined($shard)) {
+                __validate_shard($C, $RUN, $shard);
             }
-            else {
-                if (defined($shard)) {
-                    __validate_shard($C, $RUN, $shard);
-                }
-                c_producer_control($C, $DBH, $RUN, $shard, $host, $enabled);
-            }
+            c_producer_control($C, $DBH, $RUN, $shard, $host, $enabled);
         }
     }
     elsif ($KOMMAND eq 'init') {

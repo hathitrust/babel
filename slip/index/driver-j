@@ -156,7 +156,6 @@ my $EMAIL_MESSAGE_BUFFER;
 use constant CHECK_SLEEP_WAIT => 63; # 1 minute
 use constant OPTIMIZE_SLEEP_WAIT => 65; # 1 minute
 use constant INDEX_SLEEP_WAIT    => 67;  # 1 minute
-use constant STOPSLIP_SLEEP_WAIT => 60;  # 1 minute
 
 # When the queue empties, $RESTORE_CT increments if there are server
 # comm errors to restore. This process stops after MAX_RESTORES have
@@ -172,7 +171,6 @@ if (! $Semaphore) {
     my $s = qq{driver-j could not get semaphore run=$RUN\n};
     __output($s);
     __non_interactive_err_output($rc, $s);
-
     exit $rc;
 }
 
@@ -203,6 +201,58 @@ exit 0;
 #
 # ----------------------- H a n d l e r s -----------------------------
 #
+
+# ---------------------------------------------------------------------
+
+=item __STOPSLIP_exit_driver
+
+Exit driver leaving it in a state that it can resume from if possible.
+It can only resume from St_Building.
+
+We do not want to start building again in the middle of St_Optimizing
+or St_Checking without knowing whether they have finished.
+
+We leave driver in those states instead of reseting to St_Build_Resume
+so driver will signal error if it tries to run again and we stopped in
+one of those states.  Requires manual intervention/check.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __STOPSLIP_exit_driver {
+    my ($C, $run, $stage) = @_;
+    
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        my $rc = $SLIP_Utils::States::RC_STOPSLIP_DRIVER;
+        my $s = qq{stage=$stage condition=} . SLIP_Utils::Common::stage_rc_to_string($rc);
+
+        Log_stage($C, $run, $stage, q{STOPSLIP});
+        email_driver_msg($C, $s);
+
+        __output("$s\n");
+        __non_interactive_err_output($rc, $s);
+
+        __control_producers($C, $DBH, $RUN, $stage, 'stop', 'ignore_STOPSLIP');
+        __control_optimizers($C, $DBH, $RUN, $stage, 'stop', 'ignore_STOPSLIP');
+        __control_checkers($C, $DBH, $RUN, $stage, 'stop', 'ignore_STOPSLIP');
+
+        if ($stage eq $SLIP_Utils::States::St_Building) {
+            SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Build_Resume);
+
+            # The busy flag prevents tomcat restarts and index
+            # release. Remove flag only when optimizers or checkIndex
+            # are not running.
+            my $busy_file = __get_BUSY_file($C, $run);
+            unlink($busy_file);
+        }
+        else {
+            SLIP_Utils::Db_driver::set_driver_enabled($C, $DBH, $RUN, 0);
+        }
+
+        exit $rc;
+    }
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -256,14 +306,18 @@ sub run_driver {
 
     my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
 
-    if ($_Stage ne $SLIP_Utils::States::St_Build_Wait) {
+    unless ( grep(/^$_Stage$/, ($SLIP_Utils::States::St_Build_Wait, $SLIP_Utils::States::St_Build_Resume)) ) {
         handle_Stage_rc($_Stage, $SLIP_Utils::States::RC_DRIVER_WRONG_STAGE);
     }
     # POSSIBLY NOTREACHED
 
     while (1) {
 
-        if ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
+        if ($_Stage eq $SLIP_Utils::States::St_Build_Resume) {
+            # Resume and check for work
+            handle_Stage_rc($_Stage, handle_Build_Resume($C, $dbh, $run));
+        }
+        elsif ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
             # Check for work
             handle_Stage_rc($_Stage, handle_Build_Wait($C, $dbh, $run));
         }
@@ -442,6 +496,22 @@ sub ___rate {
 
 # ---------------------------------------------------------------------
 
+=item handle_Build_Resume
+
+handle_Build_Resume is just handle_Build_Wait except stats are not reset.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Build_Resume {
+    my ($C, $dbh, $run) = @_;
+
+    return handle_Build_Wait($C, $dbh, $run, 'resuming');
+}
+
+
+# ---------------------------------------------------------------------
+
 =item handle_Build_Wait
 
 Build_Wait is the base stage driver-j must be at for a run to
@@ -454,7 +524,7 @@ proceed at different paces.
 
 # ---------------------------------------------------------------------
 sub handle_Build_Wait {
-    my ($C, $dbh, $run) = @_;
+    my ($C, $dbh, $run, $resuming) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Build_Wait;
     my $_Next_Stage = $SLIP_Utils::States::St_Building;
@@ -485,7 +555,8 @@ sub handle_Build_Wait {
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
         # Zero the rates and counts
-        $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage);
+        $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage)
+          unless ($resuming);
 
         if ($rc == 0) {
             # Set busy file
@@ -691,10 +762,8 @@ sub __Wait_check_done {
                 return 0;
             }
             else {
-                while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-                    __output("  wait Checking: STOPSLIP\n");
-                    sleep CHECK_SLEEP_WAIT;
-                }
+                __STOPSLIP_exit_driver($C, $run, $stage);
+                # POSSIBLY NOTREACHED
 
                 __output("  wait Checking\n");
                 sleep CHECK_SLEEP_WAIT;
@@ -733,10 +802,8 @@ sub __Wait_optimize_done {
                 return 0;
             }
             else {
-                while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-                    __output("  wait Optimizing: STOPSLIP\n");
-                    sleep STOPSLIP_SLEEP_WAIT;
-                }
+                __STOPSLIP_exit_driver($C, $run, $stage);
+                # POSSIBLY NOTREACHED
 
                 __output("  wait Optimizing\n");
                 sleep OPTIMIZE_SLEEP_WAIT;
@@ -773,10 +840,8 @@ sub __Wait_build_done {
             my ($current_queue_size, $rc_1) = get_Building_queue_size($C, $dbh, $run, $stage);
             return $rc_1 if ($rc_1 > 0);
 
-            while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-                __output("  wait Building: STOPSLIP\n");
-                sleep STOPSLIP_SLEEP_WAIT;
-            }
+            __STOPSLIP_exit_driver($C, $run, $stage);
+            # POSSIBLY NOTREACHED
 
             if ($current_queue_size > 0) {
                 __output("  wait Building\n");
@@ -1094,13 +1159,14 @@ Description
 
 # ---------------------------------------------------------------------
 sub __control_optimizers {
-    my ($C, $dbh, $run, $stage, $option) = @_;
+    my ($C, $dbh, $run, $stage, $option, $ignore_STOPSLIP) = @_;
 
     my $rc = 0;
+    my $extra = ($ignore_STOPSLIP ? '-G' : '');
 
     # Start or stop the optimize-j script for each shard
     foreach my $shard (@NUM_SHARDS_LIST) {
-        my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -O 2>$Child_Err_File};
+        my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -O $extra 2>$Child_Err_File};
         my $sysrc = system($cmd);
 
         my $s = qq{"control-j -r$run -R$shard -k$option -O"};
@@ -1121,13 +1187,14 @@ Description
 
 # ---------------------------------------------------------------------
 sub __control_checkers {
-    my ($C, $dbh, $run, $stage, $option) = @_;
+    my ($C, $dbh, $run, $stage, $option, $ignore_STOPSLIP) = @_;
 
     my $rc = 0;
+    my $extra = ($ignore_STOPSLIP ? '-G' : '');
 
     # Start or stop the check-j script for each shard
     foreach my $shard (@NUM_SHARDS_LIST) {
-        my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -C 2>$Child_Err_File};
+        my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -C $extra 2>$Child_Err_File};
         my $sysrc = system($cmd);
 
         my $s = qq{"control-j -r$run -R$shard -k$option -C"};
@@ -1167,12 +1234,13 @@ Description
 
 # ---------------------------------------------------------------------
 sub __control_producers {
-    my ($C, $dbh, $run, $stage, $option) = @_;
+    my ($C, $dbh, $run, $stage, $option, $ignore_STOPSLIP) = @_;
 
     my $rc = 0;
+    my $extra = ($ignore_STOPSLIP ? '-G' : '');
 
     # Start or stop the run
-    my $cmd = $BASE_DIR . qq{control-j -r$run -k$option 2>$Child_Err_File};
+    my $cmd = $BASE_DIR . qq{control-j -r$run -k$option $extra 2>$Child_Err_File};
     my $sysrc = system($cmd);
 
     my $s = qq{"control-j -r$run -k$option"};
