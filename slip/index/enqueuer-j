@@ -60,7 +60,6 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use Database;
 use Semaphore;
 use SharedQueue;
 use Search::Site;
@@ -69,12 +68,12 @@ use Search::Site;
 use SLIP_Utils::Common;
 use SLIP_Utils::Log;
 use SLIP_Utils::Load;
+use SLIP_Utils::DatabaseWrapper;
 use Db;
 
 use Sl_Utils;
 
 my $INTERACTIVE = $ENV{TERM};
-
 if ($INTERACTIVE) {
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         __output("Cannot enqueue. STOPSLIP in place!!\n");
