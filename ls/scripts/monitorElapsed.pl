@@ -1,4 +1,4 @@
-#!/l/local/bin/perl -w
+#!/usr/bin/perl -w
 #$Id:  $#
 use strict;
 use Getopt::Long qw(:config auto_version auto_help);
