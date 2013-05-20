@@ -1,0 +1,99 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+BEGIN {
+    $ENV{DEBUG_LOCAL} = 1;
+}
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use CGI;
+
+use Context;
+use Debug::DUtils;
+use Auth::ACL;
+use Database;
+use MdpConfig;
+use Session;
+use Auth::Auth;
+
+
+my $C = new Context;
+
+# CGI
+my $cgi = new CGI;
+Utils::clean_cgi_params($cgi);
+$C->set_object('CGI', $cgi);
+
+my $config = new MdpConfig(Utils::get_uber_config_path('whoami'));
+$C->set_object('MdpConfig', $config);
+
+# Database connection
+my $db = new Database('ht_web');
+$C->set_object('Database', $db);
+
+# Session
+my $ses = Session::start_session($C);
+$C->set_object('Session', $ses);
+
+# Auth
+my $auth = new Auth::Auth($C);
+$C->set_object('Auth', $auth);
+
+my $developement = (Auth::ACL::a_Authorized( {role => 'superuser'} ) && DEBUG('super'));
+
+# --- App ---
+#
+print CGI::header();
+print qq{
+    <div>
+      <!-- header -->
+      <div>
+        <div>
+          <div>
+            <div>
+              <a id="htlogo" href="http://www.hathitrust.org">
+                <img src="/register/graphics/HathiTrustDL_logo.png" alt="Hathi Trust Logo" /></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> };
+
+if (defined $ENV{REMOTE_USER}) {
+    if ($developement) {
+        print Debug::DUtils::print_env($ENV{TERM} ? '' : 'html');
+    }
+    else {
+        print qq{<p>Here are your credentials as we see them from your login.</p>};
+        print qq{<ul>
+                   <li>REMOTE_USER = $ENV{REMOTE_USER}</li>
+                   <li>REMOTE_ADDR = $ENV{REMOTE_ADDR}</li>
+                   <li>AUTH_TYPE = $ENV{AUTH_TYPE}</li>};
+
+        my $auth_type = lc($ENV{AUTH_TYPE});
+        if ($auth_type eq 'shibboleth') {
+            print qq{<li>eduPersonScopedAffiliation = $ENV{affiliation}</li>
+                     <li>eduPersonPrincipalName = $ENV{eppn}</li>
+                     <li>displayName = $ENV{displayName}</li>};
+        }
+        print qq{</ul>};
+    }
+
+    print q{<p>If you were asked to forward this information to HathiTrust, please copy and paste this text into a reply to the support ticket email we sent in response to your request for assistance.</p> };
+
+    print qq{<p>Thank you.</p>};
+}
+else {
+    print q{<p>Greetings,</p><p>You have been directed here to log in. You will be sent to your institutional login page and redirected back to this page where you will be able to view your login credentials.</p>};
+    
+    print q{<p>You then have to option to email those credentials to HathiTrust for purposes such as recovering access to personal collections if you change institutional affiliation.</p>};
+    
+    print qq{<p>Please <a href="http://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami" id="login-button" class="button log-in">LOG IN</a> to view your credentials.</p>};
+
+    print q{<p>Questions?  Contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> };
+}
+
+exit 0;
