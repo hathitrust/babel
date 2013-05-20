@@ -26,3 +26,4 @@ kgs
 widgets
 register
 useradmin
+whoami
