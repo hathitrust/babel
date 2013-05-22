@@ -35,10 +35,21 @@ BEGIN {
 $| = 1;
 
 use Getopt::Std;
+use Utils::GlobalSwitch;
 
 binmode(STDOUT, ":utf8");
 
 my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot do CB update. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
 
 our ($opt_e, $opt_I, $opt_A);
 
