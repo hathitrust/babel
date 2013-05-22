@@ -22,9 +22,9 @@ Coding example
 =cut
 
 use Context;
-use Identifier;
 use Utils;
 use RightsGlobals;
+use Access::Rights;
 
 use MBooks::Searcher::VuFindSolr;
 use MBooks::Query::VuFindSolr;
@@ -109,50 +109,12 @@ sub add_rights_data {
     foreach my $meta_hashref (@$ary_of_hashrefs) {
         my $id = $meta_hashref->{'extern_item_id'};
 
-        my ($rights, $rc) = $self->__get_rights_attribute_for_id($C, $id);
-        ASSERT($rc == $RightsGlobals::OK_ID, qq{bad rights data $rc });
+        my $ar = new Access::Rights($C, $id);
+        my $rights = $ar->get_rights_attribute($C, $id);
+        ASSERT($rights != $RightsGlobals::NOOP_ATTRIBUTE, qq{bad rights data for id="$id"});
         $meta_hashref->{'rights'} = $rights;
     }
 }
-
-# ---------------------------------------------------------------------
-
-=item PRIVATE: __get_rights_attribute_for_id
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __get_rights_attribute_for_id {
-    my $self = shift;
-    my ($C, $id) = @_;
-
-    my $dbh = $C->get_object('Database')->get_DBH($C);
-
-    my $stripped_id = Identifier::get_id_wo_namespace($id);
-    my $namespace = Identifier::the_namespace($id);
-
-    my $row_hashref;
-    my $statement =
-        qq{SELECT id, attr FROM rights_current WHERE id=? AND namespace=?;};
-    my $sth = DbUtils::prep_n_execute($dbh, $statement, $stripped_id, $namespace);
-
-    $row_hashref = $sth->fetchrow_hashref();
-    $sth->finish;
-
-    my $attr = $$row_hashref{'attr'};
-    my $db_id = $$row_hashref{'id'};
-
-    my $rc = $RightsGlobals::OK_ID;
-
-    $rc |= $RightsGlobals::BAD_ID         if (! $db_id);
-    $rc |= $RightsGlobals::NO_ATTRIBUTE   if (! $attr);
-
-    return ($attr, $rc);
-}
-
-
 
 # ---------------------------------------------------------------------
 

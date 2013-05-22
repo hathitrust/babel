@@ -97,6 +97,7 @@ sub get_Solr_metadata_query_from_ids
     my $field_list = join(',', @$field_list_arr_ref);
         
     my $query_string = $self->get_query_string_from_ids($id_arr_ref);
+    
     my $INTERN_Q = qq{q=$query_string};
     my $FL = qq{&fl=$field_list};
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
@@ -105,6 +106,9 @@ sub get_Solr_metadata_query_from_ids
 
     my $solr_query_string =
         $INTERN_Q . $FL . $VERSION . $START_ROWS . $INDENT;
+    require Data::Dumper;
+    my $d = Data::Dumper::Dumper($solr_query_string);
+    print STDERR $d;
 
     return $solr_query_string;
 }
