@@ -227,12 +227,14 @@ Description
 sub do_FULL_optimize {
     my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
     
-    if (Sl_Utils::checkIndex_day($C)) {
-        my $s = "Skipped test for full optimize shard=$shard. Today is checkIndex day";
-        __output(qq{$s\n});
-        Log_optimize($C, $run, $shard, $s);
-        
-        return 0;
+    # Skip checkIndex if full optimize on all shards
+    unless( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
+        if (Sl_Utils::checkIndex_day($C)) {
+            my $s = "Skipped test for full optimize shard=$shard. Today is checkIndex day";
+            __output(qq{$s\n});
+            Log_optimize($C, $run, $shard, $s);
+            return 0;
+        }
     }
     # POSSIBLY NOTREACHED
     
@@ -247,7 +249,9 @@ sub do_FULL_optimize {
         eval {
             my $try = Scheduler::optimize_try_full_optimize($C, $run, $shard);
             if ($try) {
-                my $max = $C->get_object('MdpConfig')->get('max_full_optimizing_shards');
+                # When indexing a large PHDB update all shards will be over
+                # the trigger_size so all must be optimized
+                my $max = Scheduler::get_max_full_optimizing_shards($C, $dbh, $run);
                 if (Db::optimize_select_shard($C, $dbh, $run, $shard, $max)) {
                     # Leave shard selected so only max shards do full
                     # optimization. driver-j will reset.

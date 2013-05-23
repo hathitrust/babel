@@ -672,6 +672,12 @@ sub handle_Optimizing {
         if ($rc == 0) {
             my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
 
+            # Optimizers did full optimize on all shards?
+            if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
+                my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+                Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
+            }
+
             my $config = $C->get_object('MdpConfig');
             my $check_index_supported = $config->get('check_index_supported');
             if ($check_index_supported) {
