@@ -89,7 +89,7 @@ if (defined $ENV{REMOTE_USER}) {
 else {
     print q{<p>Greetings,</p><p>You have been directed here to log in.</p><p> You will be sent to the HathiTrust login page from the login link below where you will proceed to your institutional login page and be redirected back to this page where you will be able to view your login credentials.</p>};
     
-    print q{<p>You then have to option to email those credentials to HathiTrust for purposes such as recovering access to personal collections if you change institutional affiliation.</p>};
+    print q{<p>You then have the option to email those credentials to HathiTrust for purposes such as recovering access to personal collections if you change institutional affiliation.</p>};
     
     print qq{<p>Please <a href="http://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
 
