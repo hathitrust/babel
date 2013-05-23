@@ -516,13 +516,14 @@ sub report_queue_state {
     my $shared_q_size = SharedQueue::count_shared_queue_ids($C, $dbh);
 
     my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+    my $last_processed_version = Db::get_last_processed_holdings_version($C, $dbh, $run);
     my $max_version = Db::get_holdings_max_version($C, $dbh, $run);
     my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $max_version);
 
     __Print qq{\n * queue state:\n};
     __Print qq{\t  Primary: size=$Q_size num_available=$Q_num_available in_process=$Q_num_in_process\n};
     __Print qq{\t   Shared: size=$shared_q_size\n};
-    __Print qq{\t Holdings: size=$holdings_deltas_size last_loaded=$last_loaded_version max_version=$max_version\n};
+    __Print qq{\t Holdings: size=$holdings_deltas_size last_loaded=$last_loaded_version last_processed=$last_processed_version max_version=$max_version\n};
 }
 
 # ---------------------------------------------------------------------
