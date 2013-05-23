@@ -75,17 +75,6 @@ use SLIP_Utils::Common;
 use SLIP_Utils::Log;
 use SLIP_Utils::DatabaseWrapper;
 
-my $INTERACTIVE = $ENV{TERM};
-if ($INTERACTIVE) {
-    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("Cannot run driver. STOPSLIP in place!!\n");
-        exit 0;
-    }
-}
-else {
-    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
-}
-
 
 sub sd_get_usage {
     my $s .= qq{Usage: driver-j -r run [-d][-X][-T][-K]
@@ -122,6 +111,18 @@ my $C = new Context;
 
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
+
+my $INTERACTIVE = $ENV{TERM};
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot run driver. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+    Log_stage($C, $RUN, $SLIP_Utils::States::St_Undefined, q{STOPSLIP prevents run attempt});
+}
 
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{driver-j run=$RUN});
 
@@ -1183,7 +1184,7 @@ sub __control_optimizers {
         my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -O $extra 2>$Child_Err_File};
         my $sysrc = system($cmd);
 
-        my $s = qq{"control-j -r$run -R$shard -k$option -O"};
+        my $s = qq{"control-j -r$run -R$shard -k$option -O $extra"};
         $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
     }
 
@@ -1211,7 +1212,7 @@ sub __control_checkers {
         my $cmd = $BASE_DIR . qq{control-j -r$run -R$shard -k$option -C $extra 2>$Child_Err_File};
         my $sysrc = system($cmd);
 
-        my $s = qq{"control-j -r$run -R$shard -k$option -C"};
+        my $s = qq{"control-j -r$run -R$shard -k$option -C $extra"};
         $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
     }
 
@@ -1259,7 +1260,7 @@ sub __control_producers {
     my $cmd = $BASE_DIR . qq{control-j -r$run -k$option $extra 2>$Child_Err_File};
     my $sysrc = system($cmd);
 
-    my $s = qq{"control-j -r$run -k$option"};
+    my $s = qq{"control-j -r$run -k$option $extra"};
     $rc |= __check_sysrc($sysrc, $C, $run, $stage, $s);
 
     return $rc;
