@@ -343,6 +343,75 @@ sub run_driver {
     __driver_exit_report($C, $dbh, $run, qq{driver completed successfully}, $driver_START);
 }
 
+
+
+# ---------------------------------------------------------------------
+
+=item handle_Build_Resume
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Build_Resume {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Build_Resume;
+    my $_Next_Stage = $SLIP_Utils::States::St_Building;
+
+    __output("$_Stage\n");
+    Log_stage($C, $run, $_Stage);
+
+    SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+    return handle_Building($C, $dbh, $run, 'resume');
+}
+# ---------------------------------------------------------------------
+
+=item handle_Optimize_Resume
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Optimize_Resume {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Optimize_Resume;
+    my $_Next_Stage = $SLIP_Utils::States::St_Optimizing;
+
+    __output("$_Stage\n");
+    Log_stage($C, $run, $_Stage);
+
+    SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+    return handle_Optimizing($C, $dbh, $run, 'resume');
+}
+# ---------------------------------------------------------------------
+
+=item handle_Check_Resume
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Check_Resume {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Check_Resume;
+    my $_Next_Stage = $SLIP_Utils::States::St_Checking;
+
+    __output("$_Stage\n");
+    Log_stage($C, $run, $_Stage);
+
+    SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+    return handle_Checking($C, $dbh, $run, 'resume');
+}
+
 # ---------------------------------------------------------------------
 
 =item __handle_BUSY_file
@@ -489,62 +558,6 @@ sub ___rate {
           : 0.0;
 
     return qq{rate=$rate docs/hour elapsed=$elapsed_hours hours};
-}
-
-
-# ---------------------------------------------------------------------
-
-=item handle_Build_Resume
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_Build_Resume {
-    my ($C, $dbh, $run) = @_;
-
-    my $_Stage = $SLIP_Utils::States::St_Build_Resume;
-    __output("$_Stage\n");
-    Log_stage($C, $run, $_Stage);
-
-    return handle_Building($C, $dbh, $run, 'resume');
-}
-# ---------------------------------------------------------------------
-
-=item handle_Optimize_Resume
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_Optimize_Resume {
-    my ($C, $dbh, $run) = @_;
-
-    my $_Stage = $SLIP_Utils::States::St_Optimize_Resume;
-    __output("$_Stage\n");
-    Log_stage($C, $run, $_Stage);
-
-    return handle_Optimizing($C, $dbh, $run, 'resume');
-}
-# ---------------------------------------------------------------------
-
-=item handle_Check_Resume
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_Check_Resume {
-    my ($C, $dbh, $run) = @_;
-
-    my $_Stage = $SLIP_Utils::States::St_Check_Resume;
-    __output("$_Stage\n");
-    Log_stage($C, $run, $_Stage);
-
-    return handle_Checking($C, $dbh, $run, 'resume');
 }
 
 
