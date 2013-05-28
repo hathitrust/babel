@@ -330,7 +330,7 @@ sub run_driver {
             __Reset_shard_states($C, $dbh, $run);
 
             # Remove busy file
-            __handle_BUSY_file($C, $run, BUSY_Reset);
+            handle_BUSY_file($C, $run, $_Stage, BUSY_Reset);
 
             Log_stage($C, $run, $_Stage, q{normal completion});
 
@@ -414,7 +414,7 @@ sub handle_Check_Resume {
 
 # ---------------------------------------------------------------------
 
-=item __handle_BUSY_file
+=item handle_BUSY_file
 
 Test busy file used to communicate driver in process to Core snapshot
 release ant Tomcat restart scripts.
@@ -431,7 +431,7 @@ sub rm {
     unlink($file);
 }
 
-sub __handle_BUSY_file {
+sub handle_BUSY_file {
     my ($C, $run, $stage, $state) = @_;
 
     my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
@@ -452,7 +452,7 @@ sub __handle_BUSY_file {
         rm($busy_file);
     }
     else {
-        my $s = qq{Error running driver-j -r$RUN: invalid state in __handle_BUSY_file\n};
+        my $s = qq{Error running driver-j -r$RUN: invalid state in handle_BUSY_file\n};
         my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
 
         email_driver_msg($C, $s, 1);
@@ -611,7 +611,7 @@ sub handle_Build_Wait {
 
         if ($rc == 0) {
             # Set busy file
-            __handle_BUSY_file($C, $run, $_Stage, BUSY_Set);
+            handle_BUSY_file($C, $run, $_Stage, BUSY_Set);
 
             # Enable producers to start running from cron
             $rc = __control_producers($C, $DBH, $RUN, $_Stage, 'start');
