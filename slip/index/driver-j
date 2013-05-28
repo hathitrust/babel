@@ -506,8 +506,9 @@ sub handle_Build_Resume {
 
     my $_Stage = $SLIP_Utils::States::St_Build_Resume;
     __output("$_Stage\n");
+    Log_stage($C, $run, $_Stage);
 
-    return handle_Building($C, $dbh, $run);
+    return handle_Building($C, $dbh, $run, 'resume');
 }
 # ---------------------------------------------------------------------
 
@@ -523,8 +524,9 @@ sub handle_Optimize_Resume {
 
     my $_Stage = $SLIP_Utils::States::St_Optimize_Resume;
     __output("$_Stage\n");
+    Log_stage($C, $run, $_Stage);
 
-    return handle_Optimizing($C, $dbh, $run);
+    return handle_Optimizing($C, $dbh, $run, 'resume');
 }
 # ---------------------------------------------------------------------
 
@@ -540,8 +542,9 @@ sub handle_Check_Resume {
 
     my $_Stage = $SLIP_Utils::States::St_Check_Resume;
     __output("$_Stage\n");
+    Log_stage($C, $run, $_Stage);
 
-    return handle_Checking($C, $dbh, $run);
+    return handle_Checking($C, $dbh, $run, 'resume');
 }
 
 
@@ -622,7 +625,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_Building {
-    my ($C, $dbh, $run) = @_;
+    my ($C, $dbh, $run, $resume) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Building;
     my $_Next_Stage = $SLIP_Utils::States::St_Optimizing;
@@ -639,23 +642,29 @@ sub handle_Building {
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
-        # Wait for shards to finish building (queue empty)
-        $rc = __Wait_build_done($C, $dbh, $run, $_Stage, $state_record_ref);
-
-        # Unconditionally, disable producers to stop them from running from cron
-        $rc |= __control_producers($C, $dbh, $run, $_Stage, 'stop');
+        if ($resume) {
+            $rc |= __control_producers($C, $dbh, $run, $_Stage, 'start');
+        }
 
         if ($rc == 0) {
-            # Record this finish time for all shards without errors.
-            __record_shards_build_done($C, $dbh, $run);
+            # Wait for shards to finish building (queue empty)
+            $rc = __Wait_build_done($C, $dbh, $run, $_Stage, $state_record_ref);
 
-            # Enable transition to next stage before allowing
-            # optimization so sizer-j will not try to enable or commit
-            # during optimization.
-            SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+            # Unconditionally, disable producers to stop them from running from cron
+            $rc |= __control_producers($C, $dbh, $run, $_Stage, 'stop');
 
-            # Enable optimizers to start running from cron
-            $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
+            if ($rc == 0) {
+                # Record this finish time for all shards without errors.
+                __record_shards_build_done($C, $dbh, $run);
+
+                # Enable transition to next stage before allowing
+                # optimization so sizer-j will not try to enable or commit
+                # during optimization.
+                SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+
+                # Enable optimizers to start running from cron
+                $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
+            }
         }
     }
 
@@ -675,7 +684,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_Optimizing {
-    my ($C, $dbh, $run) = @_;
+    my ($C, $dbh, $run, $resume) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Optimizing;
 
@@ -691,33 +700,39 @@ sub handle_Optimizing {
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
-        # Wait for all shards to finish optimizing
-        $rc = __Wait_optimize_done($C, $dbh, $run, $_Stage, $state_record_ref);
-
-        # Unconditionally disable optimizers to stop them from running from cron
-        $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
+        if ($resume) {
+            $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'start');
+        }
 
         if ($rc == 0) {
-            my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+            # Wait for all shards to finish optimizing
+            $rc = __Wait_optimize_done($C, $dbh, $run, $_Stage, $state_record_ref);
 
-            # Optimizers did full optimize on all shards?
-            if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
-                my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
-                Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
-            }
+            # Unconditionally disable optimizers to stop them from running from cron
+            $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
 
-            my $config = $C->get_object('MdpConfig');
-            my $check_index_supported = $config->get('check_index_supported');
-            if ($check_index_supported) {
-                if (! $SKIP_CHECKINDEX) {
-                    # Enable checkers to start running from cron
-                    $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
-                    $_Next_Stage = $SLIP_Utils::States::St_Checking;
+            if ($rc == 0) {
+                my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
+
+                # Optimizers did full optimize on all shards?
+                if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
+                    my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+                    Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
                 }
-            }
 
-            # Proceed to next stage.
-            SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+                my $config = $C->get_object('MdpConfig');
+                my $check_index_supported = $config->get('check_index_supported');
+                if ($check_index_supported) {
+                    if (! $SKIP_CHECKINDEX) {
+                        # Enable checkers to start running from cron
+                        $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
+                        $_Next_Stage = $SLIP_Utils::States::St_Checking;
+                    }
+                }
+
+                # Proceed to next stage.
+                SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+            }
         }
     }
 
@@ -737,7 +752,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_Checking {
-    my ($C, $dbh, $run) = @_;
+    my ($C, $dbh, $run, $resume) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Checking;
     my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
@@ -754,15 +769,21 @@ sub handle_Checking {
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
-        # Wait for all shards to finish checking
-        $rc = __Wait_check_done($C, $dbh, $run, $_Stage, $state_record_ref);
-
-        # Unconditionally disable checkers to stop them from running from cron
-        $rc |= __control_checkers($C, $dbh, $run, $_Stage, 'stop');
+        if ($resume) {
+            $rc |= __control_checkers($C, $dbh, $run, $_Stage, 'start');
+        }
 
         if ($rc == 0) {
-            # Proceed to next stage.
-            SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+            # Wait for all shards to finish checking
+            $rc = __Wait_check_done($C, $dbh, $run, $_Stage, $state_record_ref);
+
+            # Unconditionally disable checkers to stop them from running from cron
+            $rc |= __control_checkers($C, $dbh, $run, $_Stage, 'stop');
+
+            if ($rc == 0) {
+                # Proceed to next stage.
+                SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
+            }
         }
     }
 
