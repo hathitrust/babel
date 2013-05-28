@@ -121,7 +121,6 @@ if ($INTERACTIVE) {
 }
 else {
     Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
-    Log_stage($C, $RUN, $SLIP_Utils::States::St_Undefined, q{STOPSLIP prevents run attempt});
 }
 
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{driver-j run=$RUN});
