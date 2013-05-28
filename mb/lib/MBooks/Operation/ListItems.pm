@@ -139,6 +139,8 @@ sub execute_operation
     $act->set_transient_facade_member_data($C, 'pager', $pager);
     
     # get item data for items in this collection
+    #remove bad sort keys such as rel before asking for data
+    $self->replace_bad_sort_keys($C,$co);
     my $item_arr_ref = $self->get_item_data($C, $rights_ref, $pager);
     
     # add full-text field and field for collections that item is in    
@@ -168,7 +170,41 @@ sub execute_operation
 
     return $ST_OK;
 }
+#----------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
+=item replace_bad_sort_keys
+
+Removes bad cgi sort parameter if it is not in the list of sort fields supported by the collection object and replaces it with the default sort key.
+This prevents the collection object from throwing an assertion failure when a sort=rel_d or rel_a.
+We don't know how this happened since it is not in the ui.  However it is valid for listsrch but not for listitems, since items have no relevance ranking
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub replace_bad_sort_keys{
+    my $self = shift;
+    my $C = shift;
+    my $co = shift;
+    
+    my $cgi = $C->get_object('CGI');
+    my $ab = $C->get_object('Bind');
+    my $sort_key = $ab->mapurl_param_to_field($C, $cgi->param('sort'));
+    my $params_hashref = $ab->get_operation_params_hashref($C, ref($self));
+    my $optional_params_hashref = $$params_hashref{'optional'};
+
+    my $item_sort_fields_arr_ref = $co->get_item_sort_fields_arr_ref();
+    my $sort_key_in_sort_fields = grep(/$sort_key/, @$item_sort_fields_arr_ref);
+
+    if ($sort_key_in_sort_fields == 0)
+    {
+        #replace sort param with default
+        $cgi->param('sort', $$optional_params_hashref{'sort'});
+        #set cgi back in $C
+        $C->set_object('CGI', $cgi);
+    }
+}    
 
 
 
