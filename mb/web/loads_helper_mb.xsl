@@ -2,14 +2,14 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1368454380'" />
+  <xsl:variable name="timestamp" select="'?_=1369769867'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
         (function() {
             // window.HT = window.HT || {};
             HT.scripts = HT.scripts || [];
-            HT.scripts.push("/mb/js/concatenated_common-min.js<xsl:value-of select="$timestamp" />");
+    HT.scripts.push("/mb/js/concatenated_common-min.js<xsl:value-of select="$timestamp" />");
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
             HT.scripts.push("/mb/js/concatenated_COLLLIST_JS-min.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
