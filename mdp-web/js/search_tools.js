@@ -30,8 +30,15 @@ head.ready(function() {
             var target_url = window.location.href;
             var original_url = target_url;
             var name = select.name;
-            var re = new RegExp(';?' + name + '=([^;&]+);?', 'g');
-            target_url = target_url.replace(re, "");
+
+            var tmp = original_url.split(/[;&]/);
+            var target_url = [];
+            for(var i = 0; i < tmp.length; i++) {
+                if ( tmp[i].indexOf(name + "=") < 0 ) {
+                    target_url.push(tmp[i]);
+                }
+            }
+            target_url = target_url.join(";");
             target_url += ";" + name + "=" + select.value;
             window.location.href = target_url;
         }
