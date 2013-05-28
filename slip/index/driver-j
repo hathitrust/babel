@@ -150,6 +150,10 @@ use constant INDEX_SLEEP_WAIT    => 67;  # 1 minute
 # been attempted.
 use constant MAX_RESTORES => 10;
 
+# BUSY flag management
+use constant BUSY_Set => -1;
+use constant BUSY_Reset => -2;
+
 # Exit driver-j if another has the semaphore to prevent piling up
 my $Lock_File = "/tmp/driver-$RUN-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
@@ -178,7 +182,6 @@ if ($@) {
     my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
 
     email_driver_msg($C, $s, 1);
-
     handle_Stage_rc($SLIP_Utils::States::St_Undefined, $rc);
     # NOTREACHED
 }
@@ -194,33 +197,20 @@ exit 0;
 
 =item __STOPSLIP_exit_driver
 
-Exit driver leaving it in a state that it can resume from.
-
-The active states are St_Building, St_Optimizing and St_Checking.
-
-If state was St_Building transition to St_Build_Resume to resume build
-without resetting statistics and continue to check for indexers to report
-done.
-
-If state was St_Optimizing reset to St_Building to trigger the
-transition to St_Optimizing resume checking database for optimizers to
-report results.
-
-If state was St_Checking reset to St_Optimizing to trigger the
-transition to St_Checking to resume checking database for checkers to
-report results.
+Exit driver leaving it in a state that it can resume from.  The active
+states are St_Building, St_Optimizing and St_Checking.
 
 =cut
 
 # ---------------------------------------------------------------------
 sub __STOPSLIP_exit_driver {
     my ($C, $run, $stage) = @_;
-    
+
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
         my $rc = $SLIP_Utils::States::RC_STOPSLIP_DRIVER;
         my $s = qq{stage=$stage condition=} . SLIP_Utils::Common::stage_rc_to_string($rc);
 
-        Log_stage($C, $run, $stage, q{STOPSLIP});
+        Log_stage($C, $run, $stage, q{STOPSLIP driver exit});
         email_driver_msg($C, $s);
 
         __output("$s\n");
@@ -230,26 +220,17 @@ sub __STOPSLIP_exit_driver {
         __control_optimizers($C, $DBH, $RUN, $stage, 'stop', 'ignore_STOPSLIP');
         __control_checkers($C, $DBH, $RUN, $stage, 'stop', 'ignore_STOPSLIP');
 
-        # The busy flag prevents tomcat restarts and index
-        # release. Remove flag only when optimizers or checkers
-        # (checkIndex) are not running. [*]
+        # NOTE: Leaving the busy flag set here to prevent tomcat
+        # restarts and index release.
 
         if ($stage eq $SLIP_Utils::States::St_Building) {
             SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Build_Resume);
-
-            # [*]
-            my $busy_file = __get_BUSY_file($C, $run);
-            unlink($busy_file);
         }
         elsif ($stage eq $SLIP_Utils::States::St_Optimizing) {
-            SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Building);
-
-            # [*]
+            SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Optimize_Resume);
         }
         elsif ($stage eq $SLIP_Utils::States::St_Checking) {
-            SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Optimizing);
-
-            # [*]
+            SLIP_Utils::Db_driver::set_driver_stage($C, $DBH, $RUN, $SLIP_Utils::States::St_Check_Resume);
         }
         else {
         }
@@ -314,8 +295,16 @@ sub run_driver {
     while (1) {
 
         if ($_Stage eq $SLIP_Utils::States::St_Build_Resume) {
-            # Resume and check for work
+            # Resume and look for work
             handle_Stage_rc($_Stage, handle_Build_Resume($C, $dbh, $run));
+        }
+        elsif ($_Stage eq $SLIP_Utils::States::St_Optimize_Resume) {
+            # Resume and wait for optimizers to complete
+            handle_Stage_rc($_Stage, handle_Optimize_Resume($C, $dbh, $run));
+        }
+        elsif ($_Stage eq $SLIP_Utils::States::St_Check_Resume) {
+            # Resume and wait for checkers to complete
+            handle_Stage_rc($_Stage, handle_Check_Resume($C, $dbh, $run));
         }
         elsif ($_Stage eq $SLIP_Utils::States::St_Build_Wait) {
             # Check for work
@@ -342,8 +331,7 @@ sub run_driver {
             __Reset_shard_states($C, $dbh, $run);
 
             # Remove busy file
-            my $busy_file = __get_BUSY_file($C, $run);
-            unlink($busy_file);
+            __handle_BUSY_file($C, $run, BUSY_Reset);
 
             Log_stage($C, $run, $_Stage, q{normal completion});
 
@@ -358,17 +346,25 @@ sub run_driver {
 
 # ---------------------------------------------------------------------
 
-=item __get_BUSY_file
+=item __handle_BUSY_file
 
 Test busy file used to communicate driver in process to Core snapshot
-release ant Tomcat restart scripts.  Also acts as a valve for Core
-Services to indicate their scripts are not available.
+release ant Tomcat restart scripts.
 
 =cut
 
 # ---------------------------------------------------------------------
-sub __get_BUSY_file {
-    my ($C, $run, $exit_on_exists) = @_;
+sub touch {
+    my $file = shift;
+    utime(time, time, $file) || ( open(F, ">$file") && close F );
+}
+sub rm {
+    my $file = shift;
+    unlink($file);
+}
+
+sub __handle_BUSY_file {
+    my ($C, $run, $stage, $state) = @_;
 
     my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
     if (! -e $flags_dir) {
@@ -380,17 +376,20 @@ sub __get_BUSY_file {
     }
 
     my $busy_file = $flags_dir . '/' . 'busy';
-    if (-e $busy_file) {
-        if ($exit_on_exists) {
-            my $rc =  $SLIP_Utils::States::RC_DRIVER_BUSY_FILE;
-            my $s = qq{driver-j: busy file=$busy_file detected run=$run. Exit.\n};
-            __output($s);
-            __non_interactive_err_output($rc, $s);
-            exit $rc;
-        }
-    }
 
-    return $busy_file;
+    if ($state == BUSY_Set) {
+        touch($busy_file);
+    }
+    elsif ($state == BUSY_Reset) {
+        rm($busy_file);
+    }
+    else {
+        my $s = qq{Error running driver-j -r$RUN: invalid state in __handle_BUSY_file\n};
+        my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+
+        email_driver_msg($C, $s, 1);
+        handle_Stage_rc($stage, $rc);
+    }
 }
 
 # ---------------------------------------------------------------------
@@ -498,7 +497,7 @@ sub ___rate {
 
 =item handle_Build_Resume
 
-handle_Build_Resume is just handle_Build_Wait except stats are not reset.
+Description
 
 =cut
 
@@ -509,7 +508,41 @@ sub handle_Build_Resume {
     my $_Stage = $SLIP_Utils::States::St_Build_Resume;
     __output("$_Stage\n");
 
-    return handle_Build_Wait($C, $dbh, $run, 'resuming');
+    return handle_Building($C, $dbh, $run);
+}
+# ---------------------------------------------------------------------
+
+=item handle_Optimize_Resume
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Optimize_Resume {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Optimize_Resume;
+    __output("$_Stage\n");
+
+    return handle_Optimizing($C, $dbh, $run);
+}
+# ---------------------------------------------------------------------
+
+=item handle_Check_Resume
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_Check_Resume {
+    my ($C, $dbh, $run) = @_;
+
+    my $_Stage = $SLIP_Utils::States::St_Check_Resume;
+    __output("$_Stage\n");
+
+    return handle_Checking($C, $dbh, $run);
 }
 
 
@@ -527,7 +560,7 @@ proceed at different paces.
 
 # ---------------------------------------------------------------------
 sub handle_Build_Wait {
-    my ($C, $dbh, $run, $resuming) = @_;
+    my ($C, $dbh, $run) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Build_Wait;
     my $_Next_Stage = $SLIP_Utils::States::St_Building;
@@ -547,28 +580,23 @@ sub handle_Build_Wait {
             my $s = qq{Driver queue empty};
             Log_stage($C, $run, $_Stage, $s);
 
-            unless ($resuming) {
-                __driver_exit_report($C, $dbh, $run, $s, time, 1);
-                exit 0;
-            }
+            __driver_exit_report($C, $dbh, $run, $s, time, 1);
+            exit 0;
         }
     }
-
     # POSSIBLY NOTREACHED
+
     my $rc = 0;
     my $state_record_ref = __get_shard_state_record($C, $dbh, $run, $_Stage);
 
     $rc = __check_shard_errors($C, $dbh, $run, $state_record_ref);
     if ($rc == 0) {
         # Zero the rates and counts
-        $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage, 'ignore_STOPSLIP')
-          unless ($resuming);
+        $rc = __Reset_stats_recording($C, $dbh, $run, $_Stage, 'ignore_STOPSLIP');
 
         if ($rc == 0) {
             # Set busy file
-            my $busy_file = __get_BUSY_file($C, $run, 'exit_if_exists');
-            # POSSIBLY NOTREACHED
-            `touch $busy_file`;
+            __handle_BUSY_file($C, $run, $_Stage, BUSY_Set);
 
             # Enable producers to start running from cron
             $rc = __control_producers($C, $DBH, $RUN, $_Stage, 'start');
