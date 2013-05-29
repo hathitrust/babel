@@ -14,6 +14,7 @@
   <EnvUSER_AGENT><?ENV_VAR variable="HTTP_USER_AGENT"?></EnvUSER_AGENT>
   <InLibrary><?IN_LIBRARY?></InLibrary>
   <InstitutionName><?INSTITUTION_NAME?></InstitutionName>
+  <InstitutionCode><?INSTITUTION_CODE?></InstitutionCode>
 </MBooksGlobals>
 
 
