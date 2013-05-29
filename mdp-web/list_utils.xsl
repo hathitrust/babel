@@ -928,24 +928,23 @@
 
     
   <xsl:template name="SearchWidget">
-    <xsl:param name="label">Search in this collection</xsl:param>
-    <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
-      <xsl:call-template name="HiddenDebug"/>
-      <label for="q1"><xsl:value-of select="$label" /></label>
-      <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge"> 
-      
-        <!-- search widget for list_search results needs query string in param  -->
-        
-        <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
-          <xsl:attribute name="value">
-            <xsl:value-of select="/MBooksTop/QueryString"/>
-          </xsl:attribute>
-        </xsl:if>
-      </input>
-      <input type="hidden" name="a" value="srch"/>
-      <button class="btn" type="submit" name="a" id="srch" value="srch">Find</button>
-      <xsl:copy-of select="$hidden_c_param"/>
-    </form>
+    <xsl:if test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
+      <xsl:param name="label">Search in this collection</xsl:param>
+      <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
+        <xsl:call-template name="HiddenDebug"/>
+        <label for="q1"><xsl:value-of select="$label" /></label>
+        <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge">      
+          <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
+            <xsl:attribute name="value">
+              <xsl:value-of select="/MBooksTop/QueryString"/>
+            </xsl:attribute>
+          </xsl:if>
+        </input>
+        <input type="hidden" name="a" value="srch"/>
+        <button class="btn" type="submit" name="a" id="srch" value="srch">Find</button>
+        <xsl:copy-of select="$hidden_c_param"/>
+      </form>
+    </xsl:if>
   </xsl:template>
     
 
