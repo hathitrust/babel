@@ -928,8 +928,8 @@
 
     
   <xsl:template name="SearchWidget">
+    <xsl:param name="label">Search in this collection</xsl:param>
     <xsl:if test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
-      <xsl:param name="label">Search in this collection</xsl:param>
       <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
         <xsl:call-template name="HiddenDebug"/>
         <label for="q1"><xsl:value-of select="$label" /></label>
