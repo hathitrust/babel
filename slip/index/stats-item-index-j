@@ -132,7 +132,7 @@ if ($site ne $hosting_site) {
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{stats-item-index-j run=$RUN host=$HOST});
 
 # Do not try to manage while I am running already
-my $Lock_File = "/tmp/stats-item-index-lock.sem";
+my $Lock_File = "/tmp/stats-item-index-lock-$RUN.sem";
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     my $s = "Could not get semaphore file: $Lock_File at host=$HOST";

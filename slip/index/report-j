@@ -88,7 +88,7 @@ sub rep_get_usage {
            where -C queries build index for num committed
                  -S section
                       s=statistics c=config q=queues f=flags
-                 -f forces an email of the report
+                 -f send an email of the report
                  -E reports error ids
                       o=ocr i=indexing m=metadata c=critical s=server A=all\n};
     return $s;
@@ -100,8 +100,7 @@ my $ops = getopts('fr:E:dCS:');
 
 # Required
 my $RUN = $opt_r;
-my $FORCE_EMAIL = $opt_f; # optionsl
-$INTERACTIVE = 0 if ($FORCE_EMAIL);
+my $SEND_EMAIL = $opt_f; # optionsl
 my $COMMITTED = defined($opt_C);
 if ($COMMITTED) {
     __confirm("The -C option queries the index and will leave Readers open.\nThis increases disk size by not allowing segments to be deleted.\nTomcat restart required.\n\tOK? [N] ");
@@ -164,10 +163,14 @@ else {
 if (! $INTERACTIVE) {
     if ($MESSAGE_BUFFER) {
         print($MESSAGE_BUFFER);
-        my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
-        SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
     }
 }
+
+if ($SEND_EMAIL) {
+    my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
+}
+
 
 exit 0;
 
@@ -460,7 +463,7 @@ sub _report_shard {
     if ($COMMITTED) {
         my ($on, $off) = ('','');
         # Do not email funny highlighting chars
-        if (! $FORCE_EMAIL) {
+        unless ($SEND_EMAIL) {
             ($on, $off) = ($num_docs_indexed == $num_docs_committed) ? ('','') : ($ON, $OFF);
         }
         $committed = qq{ committed=$on$num_docs_committed$off};
@@ -735,17 +738,7 @@ sub c_report {
     my $run = shift;
 
     # report all sections by default
-    $SECTION = 'scqf' if ($SECTION eq 'A');
-    
-    if (! $INTERACTIVE) {
-        my $num_shards_enabled = Db::Select_run_num_shards_available($C, $dbh, $run);
-        my $non_error_ids_queued_f_indexing = ($Q_size > 0);
-
-        return unless (
-                       (($num_shards_enabled > 0) && ($non_error_ids_queued_f_indexing))
-                       || $FORCE_EMAIL
-                      );
-    }
+    $SECTION = 'scqf' if ($SECTION eq 'A');    
 
     my $date = `date`;
     chomp $date;
