@@ -260,3 +260,70 @@ are not in HT Vufind Solr. These might be "vanished" barcodes.
 Those can be checked for by:
 
      % sync-j -rN -m indexedNINrights
+
+
+
+REBUILDING PRODUCTION INDEX
+===========================
+
+I deleted all the /l/solrs/prod-new/*/data/index directories and 
+restarted the "-reindex" tomcats on shotz-1,2.  They all came up.
+
+The run-10.conf (Schema_5 + build-new hosts, prod-new directories) is 
+deployed to production as is the latest SLIP.
+
+Run 11 will continue to run during the run 10 re-indexing.
+
+
+Run 10 has been initialized [ control-j -r10 -k init ].  I believe the 
+crontabs on earlgrey-{1-4} and shotz-{1,2} are correct for run 10.  
+They're documented.  The run 10 cronjobs only index; no optimization or 
+checking.
+
+
+Run 10's queue is loaded with 9585936 items [ enqueuer-j -r10 ]. That 
+took about 6 minutes.  Probably would have been worse on a weekday.
+
+So once the solrconfig.xml and schema.xml changes are in place we should 
+be able to start the run [ control-j -r10 -k start ]. Or stop it [ 
+control-j -r10 -k stop ].
+
+If the run errors-out, the failed IDs will be in the error list.  Just 
+restore them [ control-j -r10 -k restore ] and start the run again.
+
+There's a new script (renumber-j) which we can run to turn the completed 
+run 10 into run 11 so the re-indexed data will be seen in production by 
+SLIP.
+
+It works like this:
+
+Run 10 completes. 
+Do one final load of the queue to do some catch up from today's load point. 
+Re-start run 10. 
+On completion, optimize each shard non-staged (-S0), 1 or 2 segments 
+(-O1 or -O2) [ optimize-j -r10 -R <shard>  -S0 -O 1|2]. Not sure whether 
+we should do 1 or 2 segment optimization. 
+After optimization optionally do check-j, though it might simply be a 
+waste of time.  At least validate that we can query each shard. 
+Stop run 10.
+
+Stop run-11 driver, enqueuer after its daily run has completed. 
+    [ control-j -r11 -k stop ][ control-j -r11 -k stop -D ][ control-j 
+-r11 -k stop -V ]
+
+(Probably be good to comment out all run 11 sections in the earlgrey and 
+shotz crontabs too).
+
+Now renumber: 
+   Remove run 11 rows from the database as they'll be replaced by 10's 
+values. 
+     [ control-j -k delete -r11 ]
+
+   Renumber [ renumber-j -r10 -t11 ].  All database rows in all tables 
+from run 10 will be updated to 11. run 10 essentially disappears from 
+the database; 11 now holds all it's values.  Un-comment crontabs.  Run 
+11 crontabs now are in play and the driver/enqueuer/optimizers for run 
+11 will run. The run 11 crontab runs driver-j -X which skips the check 
+index phase. Al further indexing must now use run 11.
+
+The run 11 deletes and run 10 updates may take a while.
