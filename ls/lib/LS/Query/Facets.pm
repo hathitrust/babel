@@ -294,6 +294,16 @@ sub get_Solr_query_string
 
     #WARNING  this can set an additional facet parameter on the cgi so must come before we figure out the facet query
     my $DATE_RANGE = $self->__get_date_range($C);    
+
+    # 
+    my $HELDBY="";
+    my $holding_inst=$cgi->param('heldby');
+    if (defined($holding_inst))
+    {
+        # do we need to clean this?
+        $HELDBY = '&fq=ht_heldby:' . $holding_inst;
+    }
+    
     # This builds a filter query based on the values of the facet parameter(s) in the cgi
     my $FACETQUERY="";
     my @facetquery = $cgi->param('facet');
@@ -322,7 +332,7 @@ sub get_Solr_query_string
 
 
 
-    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY .$DATE_RANGE .  $EXPLAIN;    
+    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ .$HELDBY . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY .$DATE_RANGE .  $EXPLAIN;    
     
     # for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
     #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;

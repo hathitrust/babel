@@ -80,6 +80,12 @@
   <xsl:variable name="gLimit">
     <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
   </xsl:variable>
+  <xsl:variable name="limitByInst">
+    <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='heldby']">
+      <xsl:text>True</xsl:text>
+    </xsl:if>
+  </xsl:variable>
+    
 
   <!-- ######################### end Global Variables ###################################-->
 
@@ -244,6 +250,13 @@ REMOVE the below and see if it will call list_utils
       
 
       <xsl:call-template name="advanced"/>          
+      <!--XXX consider adding a pi handler instead of looking at cgi params and or put variables global vars-->
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='heldby']">
+        <div class="instLimit">
+          <xsl:call-template name="instLimit"/>
+      </div>
+      </xsl:if>
+
       <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
         <div class="modify_link" id="modify_link">
           <a>
@@ -275,6 +288,11 @@ REMOVE the below and see if it will call list_utils
       <xsl:value-of select="/MBooksTop/LimitToFullText/TotalCount"/>
 </xsl:template>
 
+<!-- ###################################################################### -->
+<xsl:template name="instLimit">
+    <xsl:text> Limited to items held by </xsl:text>
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/InstitutionName"/>
+</xsl:template>
 
 <!-- ####################### Advanced search status messages, called by SearchResults_status ############# -->
   <xsl:template name="advanced">
@@ -514,6 +532,7 @@ REMOVE the below and see if it will call list_utils
               <xsl:call-template name="advanced"/>          
               <!-- need styling-->
               <!--XXX test for limits-->
+              <!--XXX SSD need to add limited to institution maybe foobar-->
               <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
                 <div id="LimitsError">
                 <xsl:text>With these limits </xsl:text>
@@ -524,7 +543,21 @@ REMOVE the below and see if it will call list_utils
                 </xsl:call-template>
                 </div>
               </xsl:if> 
-
+              <xsl:if test="$limitByInst = 'True'">
+                <div id="LimitsError">
+                 <!--XXX SSD need uncheck link-->
+                 <xsl:element name="a">
+                   <xsl:attribute name="href">
+                     <xsl:value-of select="/MBooksTop/Heldby/unselectURL"/>
+                   </xsl:attribute>
+                   <xsl:attribute name ="class">unselect</xsl:attribute>
+                     <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
+                   </xsl:element>
+                   <span class="selectedfieldname">
+                     <xsl:call-template name="instLimit"/>
+                   </span>
+                 </div>
+               </xsl:if>
               
               </div>
               <div class="modify_link" id="modify_link">
@@ -1154,9 +1187,7 @@ REMOVE the below and see if it will call list_utils
             <xsl:attribute name="href">
               <xsl:value-of select="unselectURL"/>
             </xsl:attribute>
-            <xsl:attribute name ="class">
-              unselect
-            </xsl:attribute>
+            <xsl:attribute name ="class">unselect</xsl:attribute>
             
             <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
             <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon" />
