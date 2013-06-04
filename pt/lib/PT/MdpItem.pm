@@ -187,7 +187,7 @@ sub OcrHandler {
             
     if ($q1) {
         my $id = $self->Get('id');
-        $ocrTextRef = PT::SearchUtils::Solr_retrieve_OCR_page($C, $id, $seq);
+        $ocrTextRef = PT::SearchUtils::Solr_retrieve_OCR_page($C, $id, $self->GetPhysicalPageSequence($seq));
         DEBUG('all', qq{Solr retrieve OCR for seq=$seq});
         }
         else {

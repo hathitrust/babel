@@ -284,6 +284,7 @@ sub WrapSearchResultsInXml {
     my ($C, $rs, $finalAccessStatus) = @_;
 
     my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
 
     my $tempCgi = new CGI($cgi);
     my $view = $tempCgi->param('view');
@@ -311,7 +312,7 @@ sub WrapSearchResultsInXml {
 
         my $snip_list = $Page_result->{snip_list};
         my $pgnum = $Page_result->{pgnum};
-        my $seq = $Page_result->{seq};
+        my $seq = $mdpItem->GetVirtualPageSequence($Page_result->{seq});
         my $id = $Page_result->{id};
         my $vol_id = $Page_result->{vol_id};
 
