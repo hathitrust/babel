@@ -33,6 +33,7 @@ use Search::Constants;
 use MBooks::Index;
 use MBooks::Utils::Sort;
 use MBooks::PIFiller::ListUtils;
+use MBooks::PIFiller::Survey;
 
 use Namespaces;
 
