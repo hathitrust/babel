@@ -34,4 +34,5 @@
 <InLibrary><?IN_LIBRARY?></InLibrary>
 <InstitutionName><?INSTITUTION_NAME?></InstitutionName>
 <SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
+<Surveys><?PT_SURVEY?></Surveys>
 

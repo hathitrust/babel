@@ -15,6 +15,7 @@
   <InLibrary><?IN_LIBRARY?></InLibrary>
   <InstitutionName><?INSTITUTION_NAME?></InstitutionName>
   <InstitutionCode><?INSTITUTION_CODE?></InstitutionCode>
+  <Surveys><?MB_SURVEY?></Surveys>
 </MBooksGlobals>
 
 
