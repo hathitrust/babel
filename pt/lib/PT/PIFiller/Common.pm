@@ -30,6 +30,7 @@ use View::Skin;
 use Collection;
 use CollectionSet;
 use Access::Rights;
+use Survey;
 
 use URI;
 
@@ -117,6 +118,53 @@ sub BuildItemHandle
 
 # ---------------------------  Handlers  ------------------------------
 #
+
+# ---------------------------------------------------------------------
+
+=item handle_PT_SURVEY_PI : PI_handler(PT_SURVEY)
+
+ <Surveys><?PT_SURVEY?></Surveys>
+
+  i.e.
+
+ <Surveys>
+   <Survey>
+     <Desc>words</Desc>
+     <Effective>2013-06-06</Expires>
+     <Expires>2013-06-07</Expires>
+   </Survey>
+   <Survey>
+     <Desc>words</Desc>
+     <Effective>2013-06-06</Expires>
+     <Expires>2013-06-07</Expires>
+   </Survey>
+   [...]
+  </Surveys>
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_PT_SURVEY_PI
+    : PI_handler(PT_SURVEY)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $survey_arr_ref = 
+      Survey::get_survey_by_itemid($C, 
+                                   $C->get_object('Database')->get_DBH,
+                                   $C->get_object('CGI')->param('id'));    
+
+    my $surveys = '';
+    foreach my $hashref (@$survey_arr_ref) {
+        my $s = '';
+        $s .= wrap_string_in_tag($hashref->{description}, 'Desc');
+        $s .= wrap_string_in_tag($hashref->{effective_date}, 'Effective');
+        $s .= wrap_string_in_tag($hashref->{expires_date}, 'Expires');
+        $surveys .= wrap_string_in_tag($s, 'Survey');
+    }
+
+    return $surveys;
+}
 
 # ---------------------------------------------------------------------
 
