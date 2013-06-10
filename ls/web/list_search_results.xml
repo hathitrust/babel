@@ -44,6 +44,6 @@
 
   <LimitToFullText><?LIMIT_TO_FULL_TEXT?></LimitToFullText>
   <SearchResultsAjaxUrl><?SEARCH_RESULTS_AJAX_URL?></SearchResultsAjaxUrl>
-
+<Heldby><?HELDBY?></Heldby>
 </MBooksTop>
 

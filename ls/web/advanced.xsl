@@ -10,6 +10,25 @@
     <xsl:text> Full-text Search</xsl:text>
   </xsl:variable>
 
+
+  <xsl:variable name="logged_in">
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/LoggedIn"/>
+  </xsl:variable>
+
+  <xsl:variable name="inst_code">
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/InstitutionCode"/>
+  </xsl:variable>
+
+  <xsl:variable name="inst_name">
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/InstitutionName"/>
+  </xsl:variable>
+  <xsl:variable name="limitByInst">
+    <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='heldby']">
+      <xsl:text>True</xsl:text>
+    </xsl:if>
+  </xsl:variable>
+
+
   <!-- ## end Global Variables ##-->
 
   <xsl:template name="setup-extra-header">
@@ -157,6 +176,18 @@
 
            <div id="limits">
              <br clear="both"></br>
+             <!-- XXX if logged in add a limit to my institution checkbox
+                  TODO: check tab order and other accessibility maybe get ux to help
+                  -->
+
+
+             <xsl:if test="$logged_in = 'YES'">
+               <div class="foo">
+               <xsl:call-template name="LimitToInstitution"/>
+             </div>
+             </xsl:if>
+
+
             <!--XXX hardcoded accessability stuff-->
             <label for="fullonly" >Full view only</label>        
             <input type="checkbox"  name="lmt" id="fullonly"  value='ft'>
@@ -212,6 +243,32 @@
              </div>
            </div>
          </div>
+     </xsl:template>
+
+     <!-- ###################################################################### -->
+     <xsl:template name="LimitToInstitution">
+       
+             <label for="instLimit">
+               <xsl:text>Held by </xsl:text>
+               <xsl:value-of select="$inst_name"/>
+             </label>
+             <input type="checkbox" id="instLimit" name="heldby">
+               <xsl:attribute name="value">
+                 <xsl:value-of select="$inst_code"/>
+               </xsl:attribute>
+
+              <xsl:if test="$limitByInst = 'True'">
+                <xsl:attribute name="checked">
+                  <xsl:text>checked</xsl:text>
+                </xsl:attribute>
+              </xsl:if>
+            
+
+             </input>
+
+       
+
+
      </xsl:template>
 
      <!-- ###################################################################### -->

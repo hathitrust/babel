@@ -438,6 +438,22 @@ sub handle_QUERY_STRING_PI
 
     return $query_string;
 }
+# ---------------------------------------------------------------------
+sub handle_HELDBY_PI
+    : PI_handler(HELDBY) 
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $cgi = $C->get_object('CGI');
+    my $temp_cgi= CGI->new($cgi);
+    $temp_cgi->delete('pn');
+    # change line below to delete either facet_lang or facet_format
+    $temp_cgi->delete('heldby');
+    
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    my $xml = wrap_string_in_tag($url,'unselectURL') . "\n";
+    return $xml;
+}
+
 
 # ---------------------------------------------------------------------
 sub handle_FACETS_PI
@@ -1221,6 +1237,7 @@ sub __get_unselect_url
     my $url = $temp_cgi->url(-relative=>1,-query=>1);  
     return $url;
 }
+
 
 sub __get_select_url
 {
