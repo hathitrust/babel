@@ -249,7 +249,7 @@
      <xsl:template name="LimitToInstitution">
        
              <label for="instLimit">
-               <xsl:text>Limit to items held by </xsl:text>
+               <xsl:text>Held by </xsl:text>
                <xsl:value-of select="$inst_name"/>
              </label>
              <input type="checkbox" id="instLimit" name="heldby">
