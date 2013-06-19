@@ -89,6 +89,7 @@ foreach my $app (@apps) {
         execute_command("git pull origin master -v");
     }
     else {
+        execute_command("git submodule update --init");
         execute_command("git submodule foreach git pull origin master -v");
     }
     
