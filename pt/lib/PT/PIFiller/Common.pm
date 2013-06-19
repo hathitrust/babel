@@ -1214,7 +1214,8 @@ sub handle_HEADER_SEARCH_FIELDS_PI
 
     if ( $q1 || $target ) {
 
-        $q1 =~ s,&,&amp;,g;
+        Utils::map_chars_to_cers(\$q1, [qq{"}, qq{'}]) if ($q1);
+        # $q1 =~ s,&,&amp;,g;
         $xml = qq{<HeaderSearchParams>};
         $xml .= wrap_string_in_tag($q1, 'Field', [['name', "q1" ]]);
         $xml .= wrap_string_in_tag($searchtype, 'Field', [['name', "searchtype" ]]);
