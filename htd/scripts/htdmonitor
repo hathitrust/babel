@@ -388,7 +388,7 @@ sub _test_resource_by_ip_for_ic {
 
     # MUST coordinate with HAuth.pm that codes permit access to
     # restricted materials.
-    my @restricted_codes = (3, 7, 19, 23, 35, 39, 67, 71, 131, 135, 51, 55, 115, 119, 243, 247);
+    my @restricted_codes = (3,7,17,19,23,33,35,39,65,67,71,129,131,135,49,51,55,81,83,87,97,99,103,145,147,151,161,163,167,193,195,199,113,115,119,177,179,183,209,211,215,225,227,231,241,243,247);
 
     chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file`);
     @uniq_resource_ids_by_ip = map { $_ =~ m, id="(.*?)" , } @uniq_resource_ids_by_ip;

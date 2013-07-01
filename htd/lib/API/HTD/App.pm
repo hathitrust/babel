@@ -226,14 +226,16 @@ sub preHandler {
         if ($self->__setupError);
     # POSSIBLY NOTREACHED
 
+    my $Q = $self->query;
+
     # Did the handlers bind OK?
-    if (! $self->handlerBindingOk) {
+    unless ($self->handlerBindingOk) {
+        hLOG('API ERROR: ' . qq{pathinfo match failure, URI=} . $Q->self_url);
         $self->__setErrorResponseCode(400, 'invalid URI');
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
 
-    my $Q = $self->query;
     my $dbh = $self->__get_DBH;
 
     my $namespace = $argsRef->[2];
@@ -662,7 +664,9 @@ sub __getClientQueryParams {
 =item __getDownloadability
 
 This is the downloadability value we put into the Atom response.  It
-is not the resolved value we base the download decision on.
+is not the resolved value that includes the access bits that might be
+set for a given client that we may have authorized to access
+forms of restricted content.
 
 =cut
 
@@ -673,19 +677,12 @@ sub __getDownloadability {
 
     my $Q = $self->query;
 
-    # support 'restricted', 'restricted_forbidden'. if there is an
-    # extended access type for this object it is restricted
+    # support 'open_restricted', 'restricted', 'restricted_forbidden'
     my $downloadability;
 
     my $accessType = $self->__getAccessType($resource);
     if ($accessType eq 'open') {
-        my $extended_accessType = $self->__getExtendedAccessType($resource, $accessType, $Q);
-        if (defined $extended_accessType) {
-            $downloadability = 'restricted';
-        }
-        else {
-            $downloadability = 'open';
-        }
+        $downloadability = 'open';
     }
     else {
         $downloadability = 'restricted';

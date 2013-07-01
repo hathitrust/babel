@@ -401,28 +401,23 @@ mimetype_map:
 
 # ---------------------------------------------------------------------
 # Access type map:
-# access_type = g(access_key, f(resource, rights attr, source)).
+# access_type = g(access_key, f(resource, rights.attr, rights.source)).
 #
-# which means that there are further restrictions on 'open' and
-# 'restricted' that are applied downstream:
+# access_types are:
 #
-# open pageimage when format=raw|watermark=0 is restricted by the
+#   open
+#   open_restricted
+#   restricted
+#   restricted_forbidden
+#
+# Only the access_types that match "restricted" have extended
+# access_types which are defined by the authorization bits in
+# HAuth.pm.
+#
+# restricted pageimage format=raw||watermark=0 is restricted by the
 # allow_raw or allow_unwatermarked_derivatives bit
 #
-# restricted aggregate requires allow_zip bit set
-# 
-# volume requires allow_pdf bit set for ODB-ebm
-# Current rules for "volume" resource:
-#
-# o  The only format for volume is ebm which is restricted by policy to
-# source={google, lit-dlps-dc}.
-#
-# o  For those source values, "free" equates to "open" but the ebm
-# format is restricted by the user's authorization code bit=allow_pdf.
-#
-# o For those source values, "nonfree" equates to "restricted" (and
-# further restricted by the allow_pdf bit) to allow access for
-# printing subject to section 108
+# restricted aggregate is restricted by the allow_zip bit
 # ---------------------------------------------------------------------
 OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
   google: open
@@ -457,7 +452,7 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
 accessibility_matrix:
   pageimage:
     free:
-      google: open
+      google: open_restricted
       lit-dlps-dc: open
       um-press: open
       internet-archive: open
@@ -487,7 +482,7 @@ accessibility_matrix:
 
   aggregate:
     free:
-      google: open
+      google: open_restricted
       lit-dlps-dc: open
       um-press: restricted_forbidden
       internet-archive: open

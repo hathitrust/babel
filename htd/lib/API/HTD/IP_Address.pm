@@ -223,9 +223,10 @@ sub __handle_type_2_client {
 
 =item __handle_type_3_client
 
-This is a ODB-type client where a trusted server has supplied the client's IP
-address. If the server's REMOTE_ADDR matches then the supplied IP address in
-the IP URL param is geotrusted for PDUS/ICUS testing and the request is valid.
+This is a ODB-type client where a trusted server has supplied the
+client's IP address. If the server's REMOTE_ADDR matches our regexp
+then the supplied IP address in the IP URL param is geotrusted for
+PDUS/ICUS testing and the request is valid.
 
 =cut
 

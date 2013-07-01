@@ -145,7 +145,7 @@ sub getAccessType {
 
     # freedom = ( free, nonfree, restricted_forbidden )
     my $freedom = $self->__getFreedomVal($rights);
-    # accessType = ( open, restricted, restricted_forbidden )
+    # accessType = ( open, open_restricted, restricted, restricted_forbidden )
     my $accessType =
       ($freedom =~ m,forbidden,)
         ? $freedom
@@ -158,9 +158,46 @@ sub getAccessType {
 
 # ---------------------------------------------------------------------
 
+=item __get_pageimage_extended_access_type
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_pageimage_extended_access_type {
+    my $Q = shift;
+
+    my $type;
+    my $format = $Q->param('format');
+
+    if ( grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
+        my $watermark = $Q->param('watermark');
+        if (defined $watermark && ($watermark == 0)) {
+            $type = 'unwatermarked_derivative';
+        }
+    }
+    elsif ( ($format eq 'raw') ) {
+        # default open pageimage is watermarked derivative else
+        # requires allow_raw bit set (v1=pageimage v2=volume/pageimage)
+        $type = 'raw_archival_data';
+    }
+
+    return $type;
+}
+
+# ---------------------------------------------------------------------
+
 =item getExtendedAccessType
 
-Specific for defined extension bits:
+Specific for defined extension bits which must be set if the
+access_type is [open_]restricted[_forbidden]:
+
+The restrictions on pageimages include unwatermarked derivatives and
+raw images (which do not carry watermarks). These restrictions can
+apply even to "open_restricted" items, e.g. an unwatermarked google
+pageimages.
+
  pdf_ebm
  unwatermarked_derivative
  raw_archival_data
@@ -173,35 +210,20 @@ sub getExtendedAccessType {
     my $self = shift;
     my ($resource, $accessType, $Q) = @_;
 
-    # undef except in specific circumstances
+    # undef except when restricted in specific circumstances
     my $extended_accessType;
-
-    my $format = $Q->param('format');
-    my $source_name = $self->__getConfigVal('sources_name_map', $self->__getParamsRef->{source});
-
-    if ( ($resource =~ m,pageimage,) && grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
-        my $watermark = $Q->param('watermark');
-        if (defined $watermark && ($watermark == 0)) {
-            $extended_accessType = 'unwatermarked_derivative';
+    
+    # i.e. open_restricted, restricted, restricted_forbidden
+    if ($accessType =~ m,restricted,) {
+        if ( ($resource =~ m,pageimage,) ) {
+            $extended_accessType = __get_pageimage_extended_access_type($Q);
         }
-    }
-    elsif ( ($resource =~ m,pageimage,) && ($format eq 'raw') ) {
-        # default open pageimage is watermarked derivative else
-        # requires allow_raw bit set (v1=pageimage v2=volume/pageimage)
-        $extended_accessType = 'raw_archival_data';
-    }
-    elsif ($resource eq 'volume') {
-        # parameter validation forces pdf to have format=ebm, requires
-        # bit set
-        $extended_accessType = 'pdf_ebm';
-    }
-    elsif ($resource =~ m,aggregate,) {
-        # google-'open' and 'restricted' basic access require the zip
-        # bit set. (v1=aggregate v2=volume/aggregate)
-        if (($accessType eq 'open') && ($source_name eq 'google')) {
-            $extended_accessType = 'zip';
+        elsif ($resource eq 'volume') {
+            # parameter validation forces pdf to have format=ebm, requires
+            # bit set
+            $extended_accessType = 'pdf_ebm';
         }
-        elsif ($accessType =~ m,restricted,) {
+        elsif ($resource =~ m,aggregate,) {
             $extended_accessType = 'zip';
         }
     }
@@ -279,7 +301,7 @@ some addresses due to proxying so test proxies table for IPADDR.
 
 If the supplied IP address can be geotrusted test it for PDUS/ICUS.
 If the supplied IP address cannot be geotrusted freedom becomes
-'nonfree' of PDUS/ICUS.
+'nonfree' if PDUS/ICUS.
 
 If the client code permits IC we permit PDUS/ICUS.
 
@@ -300,10 +322,10 @@ sub __getFreedomVal {
         my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;
         if ($geo_trusted) {
             if ($rights eq 'pdus') {
-                $freedom = 'nonfree' if (! $self->__geo_location_is('US'));
+                $freedom = 'nonfree' unless ($self->__geo_location_is('US'));
             }
             elsif ($rights eq 'icus') {
-                $freedom = 'nonfree' if (! $self->__geo_location_is('NONUS'));
+                $freedom = 'nonfree' unless ($self->__geo_location_is('NONUS'));
             }
         }
         else {

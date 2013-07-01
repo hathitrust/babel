@@ -207,10 +207,10 @@ Request is valid if:
 1) oauth_timestamp is in the closed interval [now - window, now + window].
 
     This allows us to limit storage of nonces to just those seen
-    within this window. We reject the request id timestamp is outside
+    within this window. We reject the request if timestamp is outside
     the window because we (the Service Provider) no longer have nonces
-    from that interval to test against.  The window also supports a
-    measure of non-synchronization between us and our Consumers.
+    from that interval to test against.  The window also allows a
+    measure of non-synchronization between us and our Consumers' clocks.
 
 AND
 
@@ -390,10 +390,6 @@ sub H_authenticate {
 
     NOTE: If you add codes here, add them to htdmonitor too.
 
-    AFTER the transition period:
-      format=raw -> archival image format
-         raw is restricted and watermarked derivatives are the default
-
                                       bit
                                       7 6 5 4 3 2 1 0
                                       | | | | | | | |
@@ -407,12 +403,14 @@ sub H_authenticate {
     open -------------------------------------------+
 
     Basic codes below assume that authorization to restricted implies
-    authorization to less restricted unless indicated (*).  Some
-    shorthand:
+    authorization to less restricted.  Some shorthand:
 
-    (O)      = open
-    (O|R)    = open|restricted
-    (O|R|RF) = open|restricted|restricted_forbidden
+       (O)      = open
+       (O|R)    = open|restricted
+       (O|R|RF) = open|restricted|restricted_forbidden
+
+       combinations: (4)
+                     (1) = 4
 
        Basic
        code      basic_mask
@@ -445,7 +443,8 @@ sub H_authenticate {
    131 10000011  10000000  (O|R)   |allow_unwatermarked_derivatives
    135 10000111  10000000  (O|R|RF)|allow_unwatermarked_derivatives
 
-   Multiple combinations:
+       combinations: (4)
+                     (2) = 6
 
        Basic+allow_zip+allow_pdf
        code      mask(48)
@@ -459,11 +458,60 @@ sub H_authenticate {
     83 01010011  01010000 (O|R)   |allow_zip|allow_raw
     87 01010111  01010000 (O|R|RF)|allow_zip|allow_raw
 
+       Basic+allow_raw+allow_pdf
+       code      mask(80)
+    97 01100001  01100000 (O)     |allow_raw|allow_pdf
+    99 01100011  01100000 (O|R)   |allow_raw|allow_pdf
+   103 01100111  01100000 (O|R|RF)|allow_raw|allow_pdf
+
+       Basic+allow_zip+allow_unwatermarked_derivatives
+       code      mask(80)
+   145 10010001  10010000 (O)     |allow_zip|allow_unwatermarked_derivatives
+   147 10010011  10010000 (O|R)   |allow_zip|allow_unwatermarked_derivatives
+   151 10010111  10010000 (O|R|RF)|allow_zip|allow_unwatermarked_derivatives
+
+       Basic+allow_pdf+allow_unwatermarked_derivatives
+       code      mask(80)
+   161 10100001  10100000 (O)     |allow_pdf|allow_unwatermarked_derivatives
+   163 10100011  10100000 (O|R)   |allow_pdf|allow_unwatermarked_derivatives
+   167 10100111  10100000 (O|R|RF)|allow_pdf|allow_unwatermarked_derivatives
+
+       Basic+allow_raw+allow_unwatermarked_derivatives
+       code      mask(80)
+   193 11000001  11000000 (O)     |allow_raw|allow_unwatermarked_derivatives
+   195 11000011  11000000 (O|R)   |allow_raw|allow_unwatermarked_derivatives
+   199 11000111  11000000 (O|R|RF)|allow_raw|allow_unwatermarked_derivatives
+
+       combinations: (4)
+                     (3) = 4
+
        Basic+allow_zip+allow_pdf+allow_raw
        code      mask(112)
    113 01110001  01110000 (O)     |allow_zip|allow_pdf|allow_raw
    115 01110011  01110000 (O|R)   |allow_zip|allow_pdf|allow_raw
    119 01110111  01110000 (O|R|RF)|allow_zip|allow_pdf|allow_raw
+
+       Basic+allow_zip+allow_pdf+allow_unwatermarked_derivatives
+       code      mask(112)
+   177 10110001  10110000 (O)     |allow_zip|allow_pdf|allow_unwatermarked_derivatives
+   179 10110011  10110000 (O|R)   |allow_zip|allow_pdf|allow_unwatermarked_derivatives
+   183 10110111  10110000 (O|R|RF)|allow_zip|allow_pdf|allow_unwatermarked_derivatives
+
+       Basic+allow_zip+allow_raw+allow_unwatermarked_derivatives
+       code      mask(112)
+   209 11010001  11010000 (O)     |allow_zip|allow_raw|allow_unwatermarked_derivatives
+   211 11010011  11010000 (O|R)   |allow_zip|allow_raw|allow_unwatermarked_derivatives
+   215 11010111  11010000 (O|R|RF)|allow_zip|allow_raw|allow_unwatermarked_derivatives
+
+
+       Basic+allow_pdf+allow_raw+allow_unwatermarked_derivatives
+       code      mask(112)
+   225 11100001  11100000 (O)     |allow_pdf|allow_raw|allow_unwatermarked_derivatives
+   227 11100011  11100000 (O|R)   |allow_pdf|allow_raw|allow_unwatermarked_derivatives
+   231 11100111  11100000 (O|R|RF)|allow_pdf|allow_raw|allow_unwatermarked_derivatives
+
+       combinations: (4)
+                     (4) = 1
 
        Basic+allow_zip+allow_pdf+allow_raw+allow_unwatermarked_derivatives_mask
        code      mask(240)
@@ -477,6 +525,7 @@ sub H_authenticate {
 # ---------------------------------------------------------------------
 
 use constant OPEN_MASK                 =>   1;
+use constant OPEN_RESTRICTED_MASK      =>   1;
 use constant RESTRICTED_MASK           =>   2;
 use constant RESTRICTED_FORBIDDEN_MASK =>   4;
 use constant RATE_MASK                 =>   8;
@@ -497,6 +546,7 @@ Description
 my %basic_authorization_map =
   (
    'open'                 => OPEN_MASK,
+   'open_restricted'      => OPEN_RESTRICTED_MASK,
    'restricted'           => RESTRICTED_MASK,
    'restricted_forbidden' => RESTRICTED_FORBIDDEN_MASK,
   );
@@ -519,7 +569,7 @@ sub __basic_access_is_authorized {
 
 =item __extended_access_is_authorized
 
-format=raw are always un-watermarked
+Materials that are [open_]restricted[_forbidden] require authorization bits
 
 =cut
 
@@ -603,15 +653,11 @@ Description
 # ---------------------------------------------------------------------
 sub __authorized_protocol {
     my $self = shift;
-    my ($access_type, $extended_access_type) = @_;
+    my $access_type = shift;
 
     $ENV{SERVER_PORT} = 80 if (! defined $ENV{SERVER_PORT});
 
-    if (
-        ($access_type =~ m,restricted,)
-        ||
-        (defined $extended_access_type)
-       ) {
+    if ($access_type =~ m,restricted,) {
         if ($ENV{SERVER_PORT} ne '443') {
             return 0;
         }
@@ -628,14 +674,8 @@ sub __authorized_protocol {
 We impose IP address match requirements vs. an IP address parameter or
 REMOTE_ADDR (depending on client type).
 
-Requests for resources that have a 'basic' access_type of 'restricted'
-or any 'extended' access_type must be locked to a known IP address
-either through an 'ip' query parameter or through the REMOTE_ADDR
-value. Note that all query parameters are hashed into the signature.
-
-It has already been determined that the access_key allows access based
-on these access_types so here the test is for IP address vs. basic and
-extended access_types.
+Requests for resources that have a 'basic' access_type matching
+'restricted' must be locked.
 
 =cut
 
@@ -648,12 +688,8 @@ sub __authorized_at_IP_address {
     my $ip_address_is_valid  = $ipo->ip_is_valid();
     my $client_type = $ipo->client_type();
     my $locked = $ipo->address_locked();
-    my $lock_required = (
-                         defined($extended_access_type)
-                         ||
-                         ($access_type =~ m,restricted,)
-                        );
-
+    my $lock_required = ($access_type =~ m,restricted,);
+    
     my $authorized = 0;
 
     if ($ip_address_is_valid) {
@@ -702,7 +738,7 @@ sub H_authorized {
         return $self->error('authorization expired');
     }
 
-    if (! $self->__authorized_protocol($access_type, $extended_access_type)) {
+    if (! $self->__authorized_protocol($access_type)) {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
         hLOG('API ERROR: ' . qq{H_authorized: protocol fail access_key=$access_key  resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') . qq{ port=$ENV{SERVER_PORT}});
         return $self->error('redirect over SSL required');
