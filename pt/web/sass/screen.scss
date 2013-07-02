@@ -162,5 +162,9 @@ body {
   background: #0099cc;
 }
 
+#mdpBackToResults {
+    @include rem(margin-bottom, 10);
+}
+
 
 @import "../vendor/nanoscroller/nanoscroller";

@@ -733,6 +733,7 @@
       <xsl:if test="normalize-space(//SearchForm/SearchResultsLink)">
         <xsl:call-template name="BuildBackToResultsLink" />
       </xsl:if>
+      <xsl:call-template name="list-surveys" />
       <xsl:call-template name="sidebar-about-this-book" />
       <div class="scrollable">
         <div class="content">
