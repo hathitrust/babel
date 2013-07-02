@@ -38,6 +38,8 @@
       <xsl:value-of select="$coll_name" />
     </h3>
 
+    <xsl:call-template name="list-surveys" />
+
     <dl class="collection">
       <dt>Owner</dt>
       <dd>
