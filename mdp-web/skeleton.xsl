@@ -342,6 +342,44 @@
 
   <xsl:template name="header-search-ft-value">checked</xsl:template>
 
+  <xsl:template name="list-surveys">
+    <xsl:call-template name="list-surveys-blocks" />
+<!--     <xsl:choose>
+      <xsl:when test="contains(//Param[@name='debug'], 'blocks')">
+        <xsl:call-template name="list-surveys-blocks" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="list-surveys-combined" />
+      </xsl:otherwise>
+    </xsl:choose> -->
+  </xsl:template>
+
+  <xsl:template name="list-surveys-blocks">
+    <xsl:for-each select="//Surveys/Survey">
+      <div class="alert alert-notice alert-block">
+        <xsl:if test=".//a[@class='ltr']">
+          <xsl:attribute name="dir">ltr</xsl:attribute>
+        </xsl:if>
+        <p>
+          <xsl:apply-templates select="Desc" mode="copy-guts" />
+        </p>
+      </div>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="list-surveys-combined">
+    <div class="alert alert-notice alert-block">
+      <xsl:for-each select="//Surveys/Survey">
+        <p>
+          <xsl:if test="position() &gt; 1">
+            <xsl:attribute name="style">margin-top: 20px</xsl:attribute>
+          </xsl:if>
+          <xsl:apply-templates select="Desc" mode="copy-guts" />
+        </p>
+      </xsl:for-each>
+    </div>  
+  </xsl:template>
+
   <xsl:template name="debug-messages">
     <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
       <div class="debug-messages">
