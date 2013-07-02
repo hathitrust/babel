@@ -357,8 +357,8 @@
   <xsl:template name="list-surveys-blocks">
     <xsl:for-each select="//Surveys/Survey">
       <div class="alert alert-notice alert-block">
-        <xsl:if test=".//a[@class='ltr']">
-          <xsl:attribute name="dir">ltr</xsl:attribute>
+        <xsl:if test=".//a[@dir]">
+          <xsl:attribute name="dir"><xsl:value-of select=".//a/@dir" /></xsl:attribute>
         </xsl:if>
         <p>
           <xsl:apply-templates select="Desc" mode="copy-guts" />
