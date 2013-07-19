@@ -350,44 +350,14 @@ sub __getMETS_root {
 
 =item __set_PluginType
 
-Description
+Pure virtual
 
 =cut
 
 # ---------------------------------------------------------------------
 sub __set_PluginType {
     my $self = shift;
-
-    my $_type;
-    my $root = $self->__getMETS_root;    
-    if (defined $root) {
-        $_type = DataTypes::getDataType($root);
-        unless (defined $_type) {
-            $self->__setErrorResponseCode(404, 'cannot parse type for Plugin from METS');
-            return 0;
-        }
-    }
-    else {
-        $self->__setErrorResponseCode(404, 'cannot fetch METS for Plugin');
-        return 0;
-    }
-    # POSSIBLY NOTREACHED
-
-    # Go ...
-    my $subclass = ucfirst($_type);
-    my $ver = $self->getVersion;
-    my $classPackage = qq{API::HTD::App::V_${ver}::Plugin::$subclass};
-
-    eval qq{require $classPackage};
-    if ($@) {
-        $self->__setErrorResponseCode(404, 'cannot compile subclass=$classPackage for Plugin');
-        return 0;
-    }
-    else {
-        bless $self, $classPackage;
-    }
-
-    return 1;
+    return 0;
 }
 
 # ---------------------------------------------------------------------

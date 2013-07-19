@@ -187,6 +187,49 @@ sub validateQueryParams {
 
 # ---------------------------------------------------------------------
 
+=item __set_PluginType
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __set_PluginType {
+    my $self = shift;
+
+    my $_type;
+    my $root = $self->__getMETS_root;
+    if (defined $root) {
+        $_type = DataTypes::getDataType($root);
+        unless (defined $_type) {
+            $self->__setErrorResponseCode(404, 'cannot parse type for Plugin from METS');
+            return 0;
+        }
+    }
+    else {
+        $self->__setErrorResponseCode(404, 'cannot fetch METS for Plugin');
+        return 0;
+    }
+    # POSSIBLY NOTREACHED
+
+    # Go ...
+    my $subclass = ucfirst($_type);
+    my $classPackage = qq{API::HTD::App::V_2::Plugin::$subclass};
+
+    eval qq{require $classPackage};
+    if ($@) {
+        $self->__setErrorResponseCode(404, 'cannot compile subclass=$classPackage for Plugin');
+        return 0;
+    }
+    else {
+        bless $self, $classPackage;
+    }
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
 =item __mapURIsToHandlers
 
 Support mapping to handlers and backward compatibility between
