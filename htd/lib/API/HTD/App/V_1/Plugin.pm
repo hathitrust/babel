@@ -36,6 +36,8 @@ Coding example
 use strict;
 use warnings;
 
+use XML::LibXML;
+
 use base qw(API::HTD::App);
 use Access::Statements;
 
@@ -125,18 +127,6 @@ sub validateQueryParams {
                 return 0;
             }
         }
-        else {
-            # Unwatermarked derivative requires ip address hashed into
-            # signature. Authorization for ip address is determined
-            # downstream.
-            if (defined($watermark) && ($watermark == 0)) {
-                my $ip = $Q->param('ip');
-                if (! API::Utils::valid_IP_address($ip)) {
-                    $self->__errorDescription("unwatermarked derivative image ip parameter missing or invalid");
-                    return 0;
-                }
-            }
-        }
     }
     # POSSIBLY NOTREACHED
 
@@ -144,203 +134,12 @@ sub validateQueryParams {
 }
 
 
-# ---------------------------------------------------------------------
-
-=item __getMetaMimeType
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getMetaMimeType {
-    my $self = shift;
-    my $fileType = shift;
-
-    my $mimeType;
-
-    # For now.  Expand when more text types become available
-    if ($fileType eq 'ocr') {
-        $mimeType = $self->__getMimetype('pageocr', 'txt');
-    }
-    elsif ($fileType eq 'coordOCR') {
-        my $filename = $self->__getFilenameFromMETSfor('pagecoordocr');
-        my $extension = $self->__getFileExtension($filename);
-
-        $mimeType = $self->__getMimetype('pagecoordocr', 'txt');
-    }
-    elsif ($fileType eq 'image') {
-        my $filename = $self->__getFilenameFromMETSfor('image');
-        my $extension = $self->__getFileExtension($filename);
-
-        $mimeType = $self->__getMimetype('pageimage', $extension);
-    }
-
-    return $mimeType;
-}
-
 # =====================================================================
 # =====================================================================
 # Subclass Utilities
 # =====================================================================
 # =====================================================================
 
-# ---------------------------------------------------------------------
-
-=item __addHeaderInCopyrightMsg
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __addHeaderInCopyrightMsg {
-    my $self = shift;
-    my $resource_str = shift;
-
-    my $Header_Key = 'X-HathiTrust-InCopyright';
-
-    my ($in_copyright, $attr) = $self->__getAccessObject->getInCopyrightStatus;
-    if ($in_copyright) {
-        my $access_key = $self->query->param('oauth_consumer_key') || 0;
-        $self->header(
-                      $Header_Key => "user=$access_key;attr=$attr;access=data_api_user");
-        hLOG('API: ' . qq{X-HathiTrust-InCopyright: access key=$access_key } . $resource_str);
-    }
-}
-
-
-# ---------------------------------------------------------------------
-
-=item __addHeaderAccessUseMsg
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __addHeaderAccessUseMsg {
-    my $self = shift;
-
-    my $url = $self->{stmt_url};
-    my $access_use_message = $self->__getConfigVal('access_use_intro') . " " . qq{$url};
-    my $Header_Key = 'X-HathiTrust-Notice';
-
-    $self->header(
-                  $Header_Key => $access_use_message,
-                 );
-}
-
-# ---------------------------------------------------------------------
-
-=item __getResourceAccessUseStatement
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getResourceAccessUseStatement {
-    my $self = shift;
-    return $self->{stmt_text};
-}
-
-# ---------------------------------------------------------------------
-
-=item __getResourceAccessUseKey
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getResourceAccessUseKey {
-    my $self = shift;
-    return $self->{stmt_key};
-}
-
-
-# ---------------------------------------------------------------------
-
-=item __setAccessUseFields
-
-Expects a hashref. Stores requested fields.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __setAccessUseFields {
-    my $self = shift;
-    my $fieldHashRef = shift;
-
-    my $dbh = $self->__get_DBH;
-    my $P_Ref = $self->__paramsRef;
-    
-    my ($attr, $source) = ( $P_Ref->{attr}, $P_Ref->{source} );
-    my $ref_to_arr_of_hashref =
-      Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $source, $fieldHashRef);
-    my $hashref = $ref_to_arr_of_hashref->[0];
-
-    foreach my $field_val (keys %$hashref) {
-        $self->__setMember($field_val, $hashref->{$field_val});
-    }
-}
-
-# ---------------------------------------------------------------------
-
-=item __makeParamsRef
-
-Order of params is order of regexp captures in config.yaml
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __makeParamsRef {
-    my $self = shift;
-    my ($resource, $id, $namespace, $barcode, $x, $y, $z, $seq) = @_;
-    my $ro = $self->__getRightsObject;
-
-    return
-    {
-     'resource' => $resource,
-     'id'       => $id,
-     'ns'       => $namespace,
-     'bc'       => $barcode,
-     'seq'      => defined $seq ? $seq : '',
-     'attr'     => $ro->getRightsFieldVal('attr'),
-     'source'   => $ro->getRightsFieldVal('source'),
-    };
-}
-
-# ---------------------------------------------------------------------
-
-=item __getIdParamsRef
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getIdParamsRef {
-    my $self = shift;
-    return $self->__paramsRef->{id};
-}
-
-# ---------------------------------------------------------------------
-
-=item __getParamsRefStr
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getParamsRefStr {
-    my $self = shift;
-    my $P_Ref = $self->__paramsRef;
-
-    return join(" ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref) . ' ';
-}
 
 
 # ---------------------------------------------------------------------
@@ -401,11 +200,11 @@ sub __bindYAMLTokens {
                        sub { $self->__getProtocol('aggregate') });
 
     $self->__setMember(':::IMAGEMIMETYPE',
-                       sub { $self->__getMetaMimeType('image') });
+                       sub { $self->__getMimeType('pageimage') });
     $self->__setMember(':::OCRMIMETYPE',
-                       sub { $self->__getMetaMimeType('ocr') });
+                       sub { $self->__getMimeType('pageocr') });
     $self->__setMember(':::COORDOCRMIMETYPE',
-                       sub { $self->__getMetaMimeType('coordOCR') });
+                       sub { $self->__getMimeType('pagecoordocr') });
 
     $self->__setAccessUseFields({stmt_url => 1, stmt_text => 1, stmt_key => 1});
     $self->__setMember(':::ACCESSUSE',
@@ -543,8 +342,7 @@ sub GET_structure {
     # POSSIBLY NOTREACHED
 
     my $format = $self->query->param('alt');
-    my $representationRef =
-        $self->__getMetadataResourceRepresentation($doc, $format);
+    my $representationRef = $self->__getMetadataResourceRepresentation($doc, $format);
 
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);

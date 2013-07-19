@@ -32,6 +32,7 @@ use strict;
 use warnings;
 
 use API::DbIF;
+use API::HTD::HConf;
 
 # ---------------------------------------------------------------------
 
@@ -60,6 +61,38 @@ sub new {
     return $self;
 }
 
+# ---------------------------------------------------------------------
+
+=item __development_rights_object
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __development_rights {
+    my $self = shift;
+    my ($namespace, $barcode) = @_;
+
+    my $row_hashref;
+
+    my $dataRef = API::HTD::HConf->new->getConfigVal('development_data');
+    my $id = qq{$namespace.$barcode};
+    if (grep(/^$id$/, keys %$dataRef)) {
+        $row_hashref =
+          {
+           namespace => $namespace,
+           id => $barcode,
+           attr => 1,
+           reason => 1,
+           source => 2,
+           user => 'me',
+           time => '2012-09-14 13:30:02'
+          };
+    }
+
+    return $row_hashref;
+}
 
 # ---------------------------------------------------------------------
 
@@ -74,12 +107,19 @@ sub _initialize {
     my $self = shift;
     my ($dbh, $namespace, $barcode) = @_;
 
-    my $statement =
-        qq{SELECT namespace, id, attr, reason, source, user, time, note FROM rights_current WHERE id=? AND namespace=?};
-    my $sth = API::DbIF::prepAndExecute($dbh, $statement, $barcode, $namespace);
-    my $row_hashref = $sth->fetchrow_hashref();
+    my $row_hashref;
 
-    if (defined($row_hashref)) {
+    if ($ENV{HT_DEV}) {
+        $row_hashref = $self->__development_rights($namespace, $barcode);
+    }
+
+    unless (defined $row_hashref) {
+        my $statement = qq{SELECT namespace, id, attr, reason, source, user, time, note FROM rights_current WHERE id=? AND namespace=?};
+        my $sth = API::DbIF::prepAndExecute($dbh, $statement, $barcode, $namespace);
+        $row_hashref = $sth->fetchrow_hashref();
+    }
+
+    if (defined $row_hashref) {
         # ISO time format
         $row_hashref->{time} =~ s,[ ],T,;
 
@@ -104,11 +144,6 @@ Public method on rights object
 sub getRightsFieldVal {
     my $self = shift;
     my $field = shift;
-
-    if ($ENV{UNDER_TEST}) {
-        return $ENV{TEST_ATTR} if ($field eq 'attr');
-        return $ENV{TEST_SOURCE} if ($field eq 'source');
-    }
 
     return $self->{rights}{$field};
 }

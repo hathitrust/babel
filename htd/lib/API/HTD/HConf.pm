@@ -25,16 +25,23 @@ use warnings;
 use base qw(Class::ErrorHandler);
 use YAML::Any;
 
+
+my $singleton;
+
 sub new {
-    my $class = shift;
+    if ( defined($singleton) ) {
+        shift;
+        die "FATAL: attempt to redefine API::HTD::HConf" if (scalar(@_));
+    }
+    else {
+        my $class = shift;
+        my $self = {};
+        $singleton = bless $self, $class;
 
-    my $self = {};
-    bless $self, $class;
-    $self->{_init_success} = $self->_initialize(@_);
-
-    return $self;
+        $self->{_init_success} = $self->_initialize(@_);
+    }
+    return $singleton;
 }
-
 
 # ---------------------------------------------------------------------
 

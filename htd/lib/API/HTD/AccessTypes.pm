@@ -55,8 +55,9 @@ sub _initialize {
     my $args = shift;
 
     $self->{_params_ref} = $args->{_params_ref};
-    $self->{_config} = $args->{_config};
     $self->{_dbh}    = $args->{_dbh};
+
+    $self->{_config} = new API::HTD::HConf;
 }
 
 

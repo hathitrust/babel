@@ -96,6 +96,9 @@ use XML::LibXSLT;
 use OAuth::Lite::Problems;
 
 # Local
+use DataTypes;
+
+# Us
 use API::Path;
 use API::Utils;
 use API::DbIF;
@@ -236,22 +239,27 @@ sub preHandler {
     }
     # POSSIBLY NOTREACHED
 
+    # fundamental member data
+    $self->__paramsRef($self->__makeParamsRef(@$argsRef));
+
     my $dbh = $self->__get_DBH;
 
-    my $namespace = $argsRef->[2];
-    my $barcode = $argsRef->[3];
+    my $namespace = $self->__paramsRef->{ns};
+    my $barcode = $self->__paramsRef->{bc};
+
+    # Create Path object
+    my $po = API::Path->new($self->__get_SDRDATAROOT($namespace, $barcode) . q{/obj/} . $namespace . q{/pairtree_root});
+    $self->__setMember('path', $po);
 
     # could fail if invalid HTID is requested
     my $ro = API::HTD::Rights::createRightsObject($dbh, $namespace, $barcode);
     unless (defined($ro)) {
-        $self->__setErrorResponseCode(404, "rights information not found for id=" . $self->__getIdParamsRef);
+        $self->__setErrorResponseCode(404, "rights information not found for id=" . $self->__paramsRef->{id});
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
     $self->__setMember('rights', $ro);
-
-    # fundamental member data
-    $self->__paramsRef($self->__makeParamsRef(@$argsRef));
+    $self->__paramsRefAddRights($ro);
 
     # Query parameter validation.  Failure is fobbed off to the
     # defaultResourceHandler to deal with the mess
@@ -262,18 +270,15 @@ sub preHandler {
     # POSSIBLY NOTREACHED
 
     # Establish IP address context singleton
-    API::HTD::IP_Address->new(
-                              $self->__getConfObject,
-                              $dbh,
-                              $Q->param('oauth_consumer_key') || 0,
-                              $Q->param('ip') || 0,
-                             );
+    API::HTD::IP_Address->new({ 
+                               _query => $Q,
+                               _dbh   => $dbh,
+                              });
 
     # Get an access type object
     my $ato = new API::HTD::AccessTypes({
                                          _params_ref => $self->__paramsRef,
-                                         _config => $self->__getConfObject,
-                                         _dbh    => $dbh,
+                                         _dbh        => $dbh,
                                         });
     $self->__setMember('access', $ato);
 
@@ -291,7 +296,6 @@ sub preHandler {
     if (! $self->__authNZ_Success) {
         return $defaultHandler;
     }
-    # POSSIBLY NOTREACHED
 
     # Create bindings to tokens in the YAML
     if (! $self->__bindYAMLTokens) {
@@ -299,9 +303,11 @@ sub preHandler {
         return $defaultHandler;
     }
 
-    # Create Path object
-    my $po = API::Path->new($ENV{SDRDATAROOT} . q{/obj/} . $namespace . q{/pairtree_root});
-    $self->__setMember('path', $po);
+    # Instantiate Plugin type
+    unless ($self->__set_PluginType) {
+        # __set_PluginType sets response code
+        return $defaultHandler;
+    }
 
     return $handler;
 }
@@ -312,6 +318,101 @@ sub preHandler {
 #  Utilities
 # =====================================================================
 # =====================================================================
+
+
+# ---------------------------------------------------------------------
+
+=item __getMETS_root
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getMETS_root {
+    my $self = shift;
+    
+    my $root = $self->{_metsroot};
+    
+    unless(defined $root) {
+        my $dataRef = $self->__readPairtreeFile('mets.xml');
+        if (defined($dataRef) && $$dataRef) {
+            my $parser = XML::LibXML->new;
+            my $tree = $parser->parse_string($$dataRef);
+            $self->{_metsroot} = $root = $tree->getDocumentElement;
+        }
+    }
+    
+    return $root; 
+}
+
+# ---------------------------------------------------------------------
+
+=item __set_PluginType
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __set_PluginType {
+    my $self = shift;
+
+    my $_type;
+    my $root = $self->__getMETS_root;    
+    if (defined $root) {
+        $_type = DataTypes::getDataType($root);
+        unless (defined $_type) {
+            $self->__setErrorResponseCode(404, 'cannot parse type for Plugin from METS');
+            return 0;
+        }
+    }
+    else {
+        $self->__setErrorResponseCode(404, 'cannot fetch METS for Plugin');
+        return 0;
+    }
+    # POSSIBLY NOTREACHED
+
+    # Go ...
+    my $subclass = ucfirst($_type);
+    my $ver = $self->getVersion;
+    my $classPackage = qq{API::HTD::App::V_${ver}::Plugin::$subclass};
+
+    eval qq{require $classPackage};
+    if ($@) {
+        $self->__setErrorResponseCode(404, 'cannot compile subclass=$classPackage for Plugin');
+        return 0;
+    }
+    else {
+        bless $self, $classPackage;
+    }
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item __get_SDRDATAROOT
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_SDRDATAROOT {
+    my $self = shift;
+    my ($namespace, $barcode) = @_;
+
+    if ($ENV{HT_DEV}) {
+        my $dataRef = $self->__getConfigVal('development_data');
+        my $id = qq{$namespace.$barcode};
+        if (grep(/^$id$/, keys %$dataRef)) {
+            $ENV{SDRDATAROOT} = $ENV{SDRROOT} . $dataRef->{$id}{sdrdataroot};
+        }
+    }
+
+    return $ENV{SDRDATAROOT};
+}
 
 # ---------------------------------------------------------------------
 
@@ -435,7 +536,6 @@ sub __getPairtreeFilename {
     my $self = shift;
     my ($extension, $bare) = @_;
 
-    my $P_Ref = $self->__paramsRef;
     my $barcode = $self->__paramsRef->{bc};
     my $po = $self->__getPathObject;
     my $filename = $po->getPairtreeFilename($barcode) . qq{.$extension};
@@ -488,7 +588,7 @@ sub __setErrorResponseCode {
     $self->resetHeader;
 
     $self->__errorDescription($msg) if ($msg);
-    my $desc = $self->__errorDescription;
+    my $desc = $self->__errorDescription || '';
 
     my $statusLine = $self->__getConfigVal('httpstatus', $code) || $code;
     $self->header(
@@ -541,6 +641,11 @@ sub __bindYAMLTokens {
     return 0;
 }
 
+# sub __getFilenameFromMETSfor {
+#    my $self = shift;
+#    return 0;
+# }
+
 
 # =====================================================================
 # =====================================================================
@@ -556,10 +661,20 @@ sub __paramsRef {
 
     my $val = $self->{_params_ref};
     unless (defined $val) {
-        die "FATAL: no value for _params_ref in __paramsRef";
+        die "FATAL: no value for _params_ref member data in __paramsRef() method call";
     }
 
     return $self->{_params_ref};
+}
+
+sub __paramsRefAddRights {
+    my $self = shift;
+    my $ro = shift;
+
+    my $ref = $self->__paramsRef;
+
+    $ref->{attr} = $ro->getRightsFieldVal('attr');
+    $ref->{source} = $ro->getRightsFieldVal('source');
 }
 
 sub __errorDescription {
@@ -633,6 +748,161 @@ sub __getExtendedAccessType {
 # =====================================================================
 # =====================================================================
 
+
+# ---------------------------------------------------------------------
+
+=item __addHeaderInCopyrightMsg
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __addHeaderInCopyrightMsg {
+    my $self = shift;
+    my $resource_str = shift;
+
+    my $Header_Key = 'X-HathiTrust-InCopyright';
+
+    my ($in_copyright, $attr) = $self->__getAccessObject->getInCopyrightStatus;
+    if ($in_copyright) {
+        my $access_key = $self->query->param('oauth_consumer_key') || 0;
+        $self->header(
+                      $Header_Key => "user=$access_key;attr=$attr;access=data_api_user");
+        hLOG('API: ' . qq{X-HathiTrust-InCopyright: access key=$access_key } . $resource_str);
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __addHeaderAccessUseMsg
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __addHeaderAccessUseMsg {
+    my $self = shift;
+
+    my $url = $self->{stmt_url};
+    my $access_use_message = $self->__getConfigVal('access_use_intro') . " " . qq{$url};
+    my $Header_Key = 'X-HathiTrust-Notice';
+
+    $self->header(
+                  $Header_Key => $access_use_message,
+                 );
+}
+
+# ---------------------------------------------------------------------
+
+=item __getResourceAccessUseStatement
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getResourceAccessUseStatement {
+    my $self = shift;
+    return $self->{stmt_text};
+}
+
+# ---------------------------------------------------------------------
+
+=item __getResourceAccessUseKey
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getResourceAccessUseKey {
+    my $self = shift;
+    return $self->{stmt_key};
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __setAccessUseFields
+
+Expects a hashref. Stores requested fields.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __setAccessUseFields {
+    my $self = shift;
+    my $fieldHashRef = shift;
+
+    my $dbh = $self->__get_DBH;
+    my $P_Ref = $self->__paramsRef;
+
+    my ($attr, $source) = ( $P_Ref->{attr}, $P_Ref->{source} );
+    my $ref_to_arr_of_hashref =
+      Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $source, $fieldHashRef);
+    my $hashref = $ref_to_arr_of_hashref->[0];
+
+    foreach my $field_val (keys %$hashref) {
+        $self->__setMember($field_val, $hashref->{$field_val});
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __makeParamsRef
+
+Order of params is order of regexp captures in config.yaml
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __makeParamsRef {
+    my $self = shift;
+    my ($resource, $id, $namespace, $barcode, $x, $y, $z, $seq) = @_;
+    my $ro = $self->__getRightsObject;
+
+    return
+    {
+     'resource' => $resource,
+     'id'       => $id,
+     'ns'       => $namespace,
+     'bc'       => $barcode,
+     'seq'      => defined $seq ? $seq : '',
+    };
+}
+
+# ---------------------------------------------------------------------
+
+=item __getIdParamsRef
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getIdParamsRef {
+    my $self = shift;
+    return $self->__paramsRef->{id};
+}
+
+# ---------------------------------------------------------------------
+
+=item __getParamsRefStr
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getParamsRefStr {
+    my $self = shift;
+    my $P_Ref = $self->__paramsRef;
+
+    return join(" ", map sprintf(q{%s="%s"}, $_, $$P_Ref{$_}), keys %$P_Ref) . ' ';
+}
 
 # ---------------------------------------------------------------------
 
@@ -710,39 +980,31 @@ sub __getProtocol {
     return $protocol;
 }
 
-# ---------------------------------------------------------------------
-
-=item __getMetaMimeType
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getMetaMimeType {
-    my $self = shift;
-    my $fileType = shift;
-
-    die "FATAL: __getMetaMimeType is pure virtual."
-}
 
 # ---------------------------------------------------------------------
 
 =item __getMimetype
 
-Description
+Used to determine mimetype emitted in header.
 
 =cut
 
 # ---------------------------------------------------------------------
 sub __getMimetype {
     my $self = shift;
-    my ($resource, $format_OR_extension) = @_;
+    my ($resource, $format) = @_;
 
-    $format_OR_extension ||= 'default';
-
-    my $key = $self->__getConfigVal('extension_format_map', $format_OR_extension);
+    unless (defined $format) {
+        $format = 'default';
+    }
+    
+    my $key = $self->__getConfigVal('extension_format_map', $format);
     my $mimetype = $self->__getConfigVal('mimetype_map', $resource, $key);
+
+    # fallback in case extension is not in config.yaml
+    unless (defined $mimetype) {
+        $mimetype = $self->__getConfigVal('mimetype_map', $resource, 'default');
+    }
 
     return $mimetype;
 }
@@ -1164,12 +1426,10 @@ sub __getMetadataResourceRepresentation {
 
     # Format (1) the stream for readability.
     my $representation = $doc->toString($DEBUG eq 'xml' ? 1 : 0);
-    if (defined($representation) && $representation)
-    {
+    if (defined($representation) && $representation) {
         $representationRef = \$representation;
 
-        if ($format eq 'json')
-        {
+        if ($format eq 'json') {
             $representationRef = $self->__makeJSON($representationRef);
         }
     }

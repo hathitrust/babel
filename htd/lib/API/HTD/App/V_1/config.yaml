@@ -131,7 +131,7 @@ responses:
           - attrs:
               rel: self
               href: _HTD_STRUCTURE_URI_/structure/__ID__
-              type: application/xml
+              type: text/xml
             content: null
           - attrs:
               rel: _HTD_SCHEMAS_URI_#aggregate
@@ -140,7 +140,7 @@ responses:
             content: null
           - attrs:
               rel: _HTD_SCHEMAS_URI_#meta
-              type: application/xml
+              type: text/xml
               href: _HTD_META_URI_/meta/__ID__
             content: null
         xi:include:
@@ -239,7 +239,7 @@ responses:
             content: null
           - attrs:
               rel:  _HTD_SCHEMAS_URI_#structure
-              type: application/xml
+              type: text/xml
               href: _HTD_STRUCTURE_URI_/structure/__ID__
             content: null
         xi:include:
@@ -356,7 +356,7 @@ responses:
             content: null
           - attrs:
               rel: _HTD_SCHEMAS_URI_#structure
-              type: application/xml
+              type: text/xml
               href: _HTD_STRUCTURE_URI_/structure/__ID__
             content: null
           - attrs:
@@ -375,18 +375,19 @@ responses:
 # ---------------------------------------------------------------------
 mimetype_map:
   meta:
-    default: application/xml
+    default: text/xml
     json: application/json
   structure:
-    default: application/xml
+    default: text/xml
     json: application/json
   pagemeta:
-    default: application/xml
+    default: text/xml
     json: application/json
   aggregate:
     default: application/zip
     zip: application/zip
   pageimage:
+    default: binary/octet-stream
     tiff: image/tiff
     jp2: image/jp2
     jpeg: image/jpeg
@@ -396,7 +397,7 @@ mimetype_map:
     text: text/plain
   pagecoordocr:
     default: text/html
-    xml: application/xml
+    xml: text/xml
     html: text/html
 
 # ---------------------------------------------------------------------

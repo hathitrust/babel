@@ -13,7 +13,7 @@ Refer to SDRROOT/htd/lib/API/HTD/trust
 
 =head1 SYNOPSIS
 
- API::HTD::IP_Address->new($config, $dbh, $access_key, $ip_address_param);
+ API::HTD::IP_Address->new($dbh, $access_key, $ip_address_param);
 
  later:
 
@@ -31,7 +31,6 @@ Refer to SDRROOT/htd/lib/API/HTD/trust
 use strict;
 use warnings;
 
-use API::HTD::HConf;
 use API::HTD_Log;
 use API::HTD::AuthDb;
 
@@ -96,13 +95,13 @@ have no way of knowing.
 sub __handle_type_U_client {
     my $self = shift;
     my $stored_IP_address = shift;
-    
+
     my $type = 'U';
 
     my $valid = 1;
     my $geo_trusted = 0;
     my $locked_to_authorized_ip_address = 0;
-    
+
     $self->__set_member_data($stored_IP_address, $valid, $geo_trusted, $type, $locked_to_authorized_ip_address);
     hLOG(qq{API: IP_Address[type=$type]: $IP_REMOTE_ADDR_NO_TRUST: valid=$valid ip_param=NONE IP_stored=$stored_IP_address lock=$locked_to_authorized_ip_address});
 }
@@ -125,11 +124,11 @@ sub __handle_type_K_client {
     my $stored_IP_address  = shift;
 
     my $type = 'K';
-    
+
     my $valid = 1;
     my $geo_trusted = 1;
     my $locked_to_authorized_ip_address = 0;
-    
+
     $self->__set_member_data($stored_IP_address, $valid, $geo_trusted, $type, $locked_to_authorized_ip_address);
     hLOG(qq{API: IP_Address[type=$type]: $IP_IP_PARAM_NO_LOCK: valid=$valid ip_param=$stored_IP_address IP_stored=$stored_IP_address lock=$locked_to_authorized_ip_address});
 }
@@ -139,7 +138,7 @@ sub __handle_type_K_client {
 =item __handle_type_0_client
 
 This is in internal development client such as from ptg locked to its
-REMOTE_ADDR. 
+REMOTE_ADDR.
 
 =cut
 
@@ -153,7 +152,7 @@ sub __handle_type_0_client {
     my $valid = ($match_IP_address =~ m,$IP_regexp,);
     my $geo_trusted = $valid;
     my $locked_to_authorized_ip_address = $valid;
-    
+
     $self->__set_member_data($stored_IP_address, $valid, $geo_trusted, $type, $locked_to_authorized_ip_address);
     my $event = $valid ? $IP_REMOTE_ADDR_MATCH_REGEXP : $IPf_REMOTE_ADDR_MATCH_REGEXP;
 
@@ -183,13 +182,13 @@ sub __handle_type_1_client {
     my $match = ($match_IP_address =~ m,$IP_regexp,);
     my $geo_trusted = 1;
     my $locked_to_authorized_ip_address = $match;
-    
+
     $self->__set_member_data($stored_IP_address, $valid, $geo_trusted, $type, $locked_to_authorized_ip_address);
     my $event = $match ? $IP_IP_PARAM_MATCH_REGEXP : $IPf_IP_PARAM_MATCH_REGEXP;
 
     hLOG(qq{API: IP_Address[type=$type]: $event: valid=$valid ip_param=$stored_IP_address IP_stored=$stored_IP_address IP_match=$match_IP_address regexp=$IP_regexp lock=$locked_to_authorized_ip_address});
 }
-    
+
 # ---------------------------------------------------------------------
 
 =item __handle_type_2_client
@@ -212,7 +211,7 @@ sub __handle_type_2_client {
     my $valid = $match;
     my $geo_trusted = $valid;
     my $locked_to_authorized_ip_address = $valid;
-    
+
     $self->__set_member_data($stored_IP_address, $valid, $geo_trusted, $type, $locked_to_authorized_ip_address);
     my $event = $valid ? $IP_IP_PARAM_EQ_REMOTE_ADDR : $IPf_IP_PARAM_EQ_REMOTE_ADDR;
 
@@ -241,7 +240,7 @@ sub __handle_type_3_client {
     my $valid = $match;
     my $geo_trusted = $valid;
     my $locked_to_authorized_ip_address = $valid;
-    
+
     $self->__set_member_data($stored_IP_address, $valid, $geo_trusted, $type, $locked_to_authorized_ip_address);
     my $event = $valid ? $IP_REMOTE_ADDR_MATCH_REGEXP_W_IP_PARAM : $IPf_REMOTE_ADDR_MATCH_REGEXP_W_IP_PARAM;
 
@@ -268,7 +267,11 @@ locked to authorized IP address(es).
 # ---------------------------------------------------------------------
 sub __initialize {
     my $self = shift;
-    my ($config, $dbh, $access_key, $ip_address_param) = @_;
+    my $args = shift;
+
+    my $dbh = $args->{_dbh};
+    my $access_key = $args->{_query}->param('oauth_consumer_key') || 0;
+    my $ip_address_param = $args->{_query}->param('ip') || 0;
 
     my $REMOTE_ADDR = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR};
 
@@ -336,7 +339,7 @@ sub ip_is_valid {
 
 # ---------------------------------------------------------------------
 
-=item geotrusted 
+=item geotrusted
 
 Description
 
@@ -388,7 +391,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2012-13 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
