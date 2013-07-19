@@ -450,20 +450,28 @@ sub _standard_replacements {
     $$page_ref =~ s,___GOOGLE_ANALYTICS___,$$analytics_ref,;
 
     my $empty = '';
-    my $extended_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/extended_types.chunk") : \$empty;
+    my $base = $ENV{SDRROOT} . "/htdc/web/V_$VERSION";
+    
+    my $extended_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/extended_types.chunk") : \$empty;
     $$page_ref =~ s,___EXTENDED_TYPES___,$$extended_types_ref,;
 
-    my $extended_opts_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/extended_options.chunk") : \$empty;
+    my $extended_opts_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/extended_options.chunk") : \$empty;
     $$page_ref =~ s,___EXTENDED_OPTIONS___,$$extended_opts_ref,;
 
-    my $extended_opts_js_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/extended_options_js.chunk") : \$empty;
+    my $extended_opts_js_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/extended_options_js.chunk") : \$empty;
     $$page_ref =~ s,___EXTENDED_OPTIONS_JS___,$$extended_opts_js_ref,;
 
-    my $article_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/article_types.chunk") : \$empty;
+    my $article_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/article_types.chunk") : \$empty;
     $$page_ref =~ s,___ARTICLE_TYPES___,$$article_types_ref,;
 
-    my $object_type_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/object_type.chunk") : \$empty;
+    my $object_type_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/object_type.chunk") : \$empty;
     $$page_ref =~ s,___OBJECT_TYPE___,$$object_type_ref,;
+
+    my $example_ids_ref = 
+      $DEVELOPMENT_SUPPORT 
+        ? Utils::read_file("$base/example_ids_dev.chunk") 
+          : Utils::read_file("$base/example_ids.chunk");
+    $$page_ref =~ s,___EXAMPLE_IDS___,$$example_ids_ref,;
 }
 
 
