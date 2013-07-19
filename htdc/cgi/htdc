@@ -7,8 +7,8 @@ htdc
 =head1 DESCRIPTION
 
 This is a perl 2-legged oauth client that uses their auth credentials
-as a proxy for the oauth keys and constructs a signed Data API
-request.
+as a proxy for the oauth keys and constructs a signed VERSION 2 Data
+API request.
 
 =head1 SYNOPSIS
 
@@ -16,7 +16,7 @@ For example:
 
 http://babel.hathitrust.org/cgi/htdc (present the data entry form)
 
-http://babel.hathitrust.org/cgi/htdc?resource=pagemeta&id=mdp.39015063764644&seq=5 (send a request to Data API)
+http://babel.hathitrust.org/cgi/htdc?resource=volume/pagemeta&id=mdp.39015063764644&seq=5 (send a request to Data API)
 
 =head1 OUTPUT
 
@@ -41,10 +41,10 @@ BEGIN {
     ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
 }
 
-my $version = 1;
+my $version = 2;
 my $production_mode = 0;
 
-my @superusers = qw(pfarber roger);
+my @superusers = qw(pfarber roger tgeitgey);
 my $development_support = 0;
 
 if ($production_mode) {

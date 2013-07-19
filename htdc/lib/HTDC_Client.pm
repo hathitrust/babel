@@ -64,10 +64,10 @@ Initialize object.
 sub _initialize {
     my $self = shift;
     my $args = shift;
-    
-    $VERSION = $args->{version}; 
-    $DEVELOPMENT_SUPPORT = $args->{development_support}; 
-    $DEBUG = $args->{debug}; 
+
+    $VERSION = $args->{version};
+    $DEVELOPMENT_SUPPORT = $args->{development_support};
+    $DEBUG = $args->{debug} || '0';
 }
 
 # ---------------------------------------------------------------------
@@ -87,15 +87,15 @@ sub run {
     if ($DEVELOPMENT_SUPPORT) {
         $DEBUG = $Q->param('debug') || $DEBUG;
     }
-    
+
     if (! defined $ENV{REMOTE_USER}) {
         _serve_login_page();
         # NOTREACHED
     }
-    
+
     my $clientVersion = "V_${VERSION}::HTDC";
     my $packagePath = $ENV{SDRROOT} . "/htdc/lib/V_${VERSION}/HTDC.pm";;
-    
+
     eval {
         require $packagePath;
     };
@@ -103,22 +103,22 @@ sub run {
         Call_Handler(0, "Internal error: $@");
         # NOTREACHED
     }
-    $clientVersion->import();    
-    
+    $clientVersion->import();
+
     if (! $Q->param()) {
         _serve_request_form_page();
         # NOTREACHED
     }
-    
+
     my $config = Call_Handler(get_config(), 'System configuration error');
     # POSSIBLY NOTREACHED
-    
+
     my $dbh = Call_Handler(_htdc_connect(), 'Database error');
     # POSSIBLY NOTREACHED
-    
+
     my $access_key = validate_request($Q, $dbh, $config, $ENV{REMOTE_USER});
     # POSSIBLY NOTREACHED
-    
+
     if ($DEBUG == 2) {
         _serve_DEBUG_Data_API_uri($Q, $dbh, $access_key);
     }
@@ -316,7 +316,7 @@ sub _serve_DEBUG_Data_API_response {
     print "<br/>";
     print "<b>Header:</b> " . $response->headers->as_string;
     print "<br/>";
-    print "<b>Content:</b> " . $response->content;
+    print "<b>Content byte count:</b> " . length($response->content);
 
     exit 0;
 }
@@ -336,10 +336,21 @@ sub _serve_Data_API_response {
 
     my $signed_url = make_Data_API_request_url($Q, $dbh, $access_key);
     my $response = _get_response($signed_url);
-    hLOG(qq{htdc: _serve_Data_API_response version=$VERSION: signed request url=$signed_url});
+    my $client_url = $Q->self_url;
+    hLOG(qq{htdc: _serve_Data_API_response version=$VERSION: client_url=$client_url signed_request_url=$signed_url});
 
     if ($response->is_success) {
-        print CGI::header(join(';', $response->content_type()));
+        my $h = $response->headers;
+        my $content_type = $h->header('Content-Type');
+        my $content_disposition = $h->header('Content-Disposition');
+        if ($Q->param('disposition') eq 'download') {
+            $content_disposition = 'attachment; ' . $content_disposition;
+        }
+
+        print CGI::header(
+                          -Content_Type => $content_type,
+                          -Content_Disposition => $content_disposition,
+                         );
         print_encoded_output($Q, $response);
     }
     else {
@@ -403,13 +414,13 @@ begins with 'https://' in signature_safe_url().
 # ---------------------------------------------------------------------
 sub _get_response {
     my $url = shift;
-    
+
     # Assuming a signed URL string of 'https://host/pathinfo?query'
     # but sending it as 'http://host:443/pathinfo?query' when in production.
     #
     $url =~ s,(^https:)//(.*?)/(.*$),http://$2:443/$3, unless ($ENV{HT_DEV});
 
-    my $req = HTTP::Request->new(     
+    my $req = HTTP::Request->new(
                                  GET => "$url"
                                 );
     my $ua =  _get_user_agent();
@@ -447,6 +458,12 @@ sub _standard_replacements {
 
     my $extended_opts_js_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/extended_options_js.chunk") : \$empty;
     $$page_ref =~ s,___EXTENDED_OPTIONS_JS___,$$extended_opts_js_ref,;
+
+    my $article_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/article_types.chunk") : \$empty;
+    $$page_ref =~ s,___ARTICLE_TYPES___,$$article_types_ref,;
+
+    my $object_type_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/object_type.chunk") : \$empty;
+    $$page_ref =~ s,___OBJECT_TYPE___,$$object_type_ref,;
 }
 
 

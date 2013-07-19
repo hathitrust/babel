@@ -3,13 +3,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
-    <title>HathiTrust Web Client (v.2) Request Form</title>
+    <title>HathiTrust Web Client Request Form</title>
     <meta http-equiv="Content-Language" content="en-us" />
     <script  type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script  type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
     <link rel="stylesheet" type="text/css" href="/htdc/htdc.css"/>
     <script type="text/javascript">
       $(document).ready(function(){
+
+      var $radio = $('input:radio[name="resource"]');
+      $radio.addClass("validate[required]");
+
         $("#htdc_request").validate();
         function hide_show_opts() {
           if ($("#volpageimageid").is(":checked")) {
@@ -26,7 +30,14 @@
             ||
             $("#volpageocrid").is(":checked")
             ||
-            $("#volpagecoordocrid").is(":checked")) {
+            $("#volpagecoordocrid").is(":checked")
+            ||
+            $("#articleasset").is(":checked")
+            ||
+            $("#articlealternate").is(":checked")
+            ||
+            $("#articlesupplement").is(":checked")
+             ) {
               $("#htseqdiv").show();
           }
           else {
@@ -55,57 +66,66 @@
     <div id="HTDCMasterContainer">
       ___HEADER_CHUNK___
       <div id="HTDCcontainer">
-        <h1 class="heading">HathiTrust Data API (v.2) request</h1>
+        <div class="subheading">Example IDs</div>
         <ul>
-          <li>Some example IDs are:
-            <ul>
-              <li><span class="sampleid">mdp.39015011716761</span></li>
-              <li><span class="sampleid">uc2.ark:/13960/t74t6w95q</span></li>
-            </ul>
-          </li>
-          <li>Use the <b><i>back</i></b> button to return to this page after your data arrives.</li>
+          <li><span class="sampleid">pur1.32754063106516</span><span class="tiny"> (volume)</span></li>
+          <li><span class="sampleid">mdp.99999999999999</span><span class="tiny"> (article)</span></li>
         </ul>
 
-        <form class="htdc_request_form" id="htdc_request" method="post" action="v2">
+        <form class="htdc_request_form" id="htdc_request" method="post" action="htdc" target="_blank">
           <input type="hidden" name="v" value="2"/>
           <fieldset class="request">
-            <legend>Request parameters</legend>
-            <div class="request">
-              <label class="request">required field <span class="req">*</span></label>
-            </div>
-            <br/><br/>
+            <br/>
             <div class="request">
               <label class="request" for="htid">ID <span class="req">*</span></label>
-              <input id="htid" name="id" class="request required"/>
+              <input id="htid" name="id" class="request required"/>              <span class="resource_radio">
+                <input id="downloadid" type="radio" name="disposition" class="htresource request" value="download"><b class="tiny">download</b></input>
+                <input id="viewitemdid" checked="checked" type="radio" name="disposition" class="htresource request" value="view"><b class="tiny">view</b></input>
+              </span>
+
+            </div>
+            <div class="request">
+            </div>
+            <div class="request">
+              <div class="resource_radio">
+                ___OBJECT_TYPE___
+              </div>
             </div>
             <div class="request">
               <label class="request" for="htresource">resource <span class="req">*</span></label>
               <div class="resource_radio">
-                <input id="type"
-                       type="radio" name="resource" class="htresource request required" value="type">object type</input><br/>
-                <input id="volstructureid"
-                       type="radio" name="resource" class="htresource request required" value="volume/structure">METS file</input><br/>
-                <input id="volaggregateid"
-                       type="radio" name="resource" class="htresource request required" value="volume/aggregate">entire object</input><br/>
-                <input id="volmetaid"
-                       type="radio" name="resource" class="htresource request required" value="volume/meta">object metadata</input><br/>
-                <input id="volpagemetaid"
-                       type="radio" name="resource" class="htresource request required" value="volume/pagemeta">page metadata</input><br/>
-                <input id="volpageimageid"
-                       type="radio" name="resource" class="htresource request required" value="volume/pageimage">page image</input><br/>
-                <input id="volpageocrid"
-                       type="radio" name="resource" class="htresource request required" value="volume/pageocr">page OCR</input><br/>
-                <input id="volpagecoordocrid"
-                       type="radio" name="resource" class="htresource request required" value="volume/pagecoordocr">page coordinate OCR</input><br/>
-                ___EXTENDED_TYPES___
+                <fieldset>
+                  <legend> volume items </legend>
+                  ___EXTENDED_TYPES___
+                  <input id="volpageimageid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pageimage">volume page image</input><br/>
+                  <input id="volpageocrid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pageocr">volume page OCR</input><br/>
+                  <input id="volpagecoordocrid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pagecoordocr">volume page coordinate OCR</input><br/>
+                  <input id="volmetaid"
+                         type="radio" name="resource" class="htresource request required" value="volume/meta">volume metadata</input><br/>
+                  <input id="volpagemetaid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pagemeta">volume page metadata</input><br/>
+                  <br/>
+                </fieldset>
+                <br/>
+                ___ARTICLE_TYPES___
+                <fieldset>
+                  <legend> all items </legend>
+                  <input id="structureid"
+                         type="radio" name="resource" class="htresource request required" value="structure">item METS file</input><br/>
+                  <input id="aggregateid"
+                         type="radio" name="resource" class="htresource request required" value="aggregate">entire item</input><br/><br/>
+                </fieldset>
               </div>
             </div>
-
+            
             <div id="htseqdiv" class="request">
               <label class="request" for="htseq">sequence <span class="req">*</span></label>
               <input id="htseq" name="seq" class="request required digits" />
             </div>
-
+            
             <div id="htoptsdiv" class="request">
               <label class="request" for="htopts">format <span class="req">*</span></label>
               <div class="resource_radio">
@@ -123,15 +143,16 @@
                 <input id="htres" name="width" class="request digits"></input> <span class="tiny">(in pixels)</span>
               </div>
             </div>
-
+            
             ___EXTENDED_OPTIONS___
-
+            
             <div class="request">
               <input class="htsubmit" type="submit" value="Submit" />
+              <p>Questions? Please email <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a></p>
             </div>
           </fieldset>
         </form>
-
+        
       </div>
     </div>
     ___GOOGLE_ANALYTICS___

@@ -93,6 +93,15 @@ sub validate_request {
             HTDC_Client::Call_Handler(0, 'Please specify a sequence number that consists of only digits');
         }
     }
+    elsif (grep(/^$resource$/, qw( article/alternate article/assets/embedded article/assets/supplementary ))) {
+        my $seq = $Q->param('seq');
+        if (! $seq) {
+            HTDC_Client::Call_Handler(0, 'Please specify a sequence number');
+        }
+        elsif ($seq !~ m,^\d+$,) {
+            HTDC_Client::Call_Handler(0, 'Please specify a sequence number that consists of only digits');
+        }
+    }
     else {
         $Q->Delete('seq');
     }
@@ -122,7 +131,7 @@ sub print_encoded_output {
     my ($Q, $response) = @_;
 
     my $resource = $Q->param('resource');
-    if (grep(/^$resource$/, qw(volume/aggregate volume/pageimage volume))) {
+    if (grep(/^$resource$/, qw( aggregate volume volume/pageimage article/alternate article/assets/embedded article/assets/supplementary ))) {
         # Do not encode binary types
         print $response->content;
     }

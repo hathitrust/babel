@@ -1,0 +1,15 @@
+                <fieldset>
+                  <legend> article items </legend>
+                  <input id="articlexml"
+                         type="radio" name="resource" class="htresource request required" value="article">article</input><br/>
+                  <input id="articlealternate"
+                         type="radio" name="resource" class="htresource request required" value="article/alternate">article alternative</input><br/>
+                  <input id="articleasset"
+                         type="radio" name="resource" class="htresource request required" value="article/assets/embedded">article embedded asset</input><br/>
+                  <input id="articlesupplement"
+                         type="radio" name="resource" class="htresource request required" value="article/assets/supplementary">article supplementary asset</input><br/>
+                  <input id="articlemetaid"
+                         type="radio" name="resource" class="htresource request required" value="article/meta">article object metadata</input><br/>
+                  <br/>
+                </fieldset>
+                <br/>

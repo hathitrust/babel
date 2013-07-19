@@ -4,7 +4,8 @@
       <div class="brandingLogo">
         <a id="htlogo" href="http://www.hathitrust.org">
           <img src="/kgs/common-web/graphics/HathiTrustDL_logo.png" alt="Hathi Trust Logo" />
-          <span></span></a>
+        </a>
+        <span class="heading">HathiTrust Data API Client</span>
       </div>
     </div>
   </div>
