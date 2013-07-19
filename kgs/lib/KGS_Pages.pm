@@ -174,9 +174,6 @@ sub get_auth_reply_page {
 
     ___insert_hathitrust_email($C, $page_ref);
 
-    my $htdc_v1_link = KGS::get_data_api_client_link($C, 1);
-    $$page_ref =~ s,___DATA_API_V1_CLIENT___,$htdc_v1_link,g;
-
     my $htdc_v2_link = KGS::get_data_api_client_link($C, 2);
     $$page_ref =~ s,___DATA_API_V2_CLIENT___,$htdc_v2_link,g;
 
