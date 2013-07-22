@@ -68,6 +68,7 @@ sub _initialize {
     $VERSION = $args->{version};
     $DEVELOPMENT_SUPPORT = $args->{development_support};
     $DEBUG = $args->{debug} || '0';
+    $self->{_Q} = $args->{_Q};
 }
 
 # ---------------------------------------------------------------------
@@ -82,7 +83,7 @@ Description
 sub run {
     my $self = shift;
 
-    my $Q = new CGI;
+    my $Q = $self->{_Q};
 
     if ($DEVELOPMENT_SUPPORT) {
         $DEBUG = $Q->param('debug') || $DEBUG;

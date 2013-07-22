@@ -27,6 +27,8 @@ The form or the resource
 use strict;
 use warnings;
 
+use CGI;
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
@@ -41,6 +43,8 @@ BEGIN {
     ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
 }
 
+my $Q = new CGI;
+
 my $version = 2;
 my $production_mode = 0;
 
@@ -53,7 +57,12 @@ if ($production_mode) {
 else {
     my $userid = $ENV{REMOTE_USER};
     $development_support = defined($ENV{HT_DEV}) || grep(/^$userid$/, @superusers);
+    if ($Q->param('over')) {
+        $development_support = 0;
+        $Q->Delete('over');
+    }
 }
+
 
 my $debug = 0;
 
@@ -61,6 +70,7 @@ my $client = new HTDC_Client({
                               version => $version,
                               development_support => $development_support,
                               debug => $debug,
+                              _Q => $Q,
                              });
 
 $client->run();
