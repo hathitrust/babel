@@ -28,6 +28,7 @@ umask 0000;
 
 use strict;
 
+use Encode;
 use Mail::Mailer;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
@@ -46,6 +47,11 @@ my $g_email_file             = qq{$ENV{SDRROOT}/logs/assert/hathitrust-email-dig
 my $g_email_subject          = qq{[MAFR] HathiTrust assert fail Digest};
 
 my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
+my $test_file = $ARGV[0];
+
+if ($test_file) {
+    $g_email_file = $test_file;
+}
 
 if (-e $g_email_file) {
     my $text_ref = Utils::read_file($g_email_file, 1, 0);
@@ -60,7 +66,8 @@ if (-e $g_email_file) {
                        'From'    => $g_assert_email_from_addr,
                        'Subject' => $email_subject,
                       });
-        print $mailer($$text_ref);
+        my $text = Encode::encode_utf8($$text_ref);
+        print $mailer($text);
         $mailer->close;
 
         my $archive_file = $g_email_file;
