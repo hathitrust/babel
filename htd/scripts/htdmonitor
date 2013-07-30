@@ -19,9 +19,31 @@ my $DBH = API::DbIF::databaseConnect('ht_maintenance');
 
 my $GEOIP            = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
 my %RESOURCES        = (
-                        pageimage => 0, pagemeta => 0, meta => 0, structure => 0, pageocr => 0, pagecoordocr => 0, aggregate => 0,
-                        volume => 0, type => 0,
-                        volume_pageimage => 0, volume_pagemeta => 0, volume_meta => 0, volume_structure => 0, volume_pageocr => 0, volume_pagecoordocr => 0, volume_aggregate => 0, volume => 0,
+                        # common
+                        'COMMON'                     => {ord => 0, ct => 0},
+                        type                         => {ord => 1, ct => 0},
+                        aggregate                    => {ord => 2, ct => 0},
+                        structure                    => {ord => 3, ct => 0},
+                        # v.1 resources
+                        'V.1'                        => {ord => 5, ct => 0},
+                        pageimage                    => {ord => 6, ct => 0},
+                        pageocr                      => {ord => 7, ct => 0},
+                        pagecoordocr                 => {ord => 8, ct => 0},
+                        meta                         => {ord => 9, ct => 0},
+                        pagemeta                     => {ord => 10, ct => 0},
+                        # v.2 resources
+                        'V.2'                        => {ord => 11, ct => 0},
+                        volume                       => {ord => 12, ct => 0},
+                        volume_pageimage             => {ord => 13, ct => 0},
+                        volume_pageocr               => {ord => 14, ct => 0},
+                        volume_pagecoordocr          => {ord => 15, ct => 0},
+                        volume_meta                  => {ord => 16, ct => 0},
+                        volume_pagemeta              => {ord => 17, ct => 0},
+                        article                      => {ord => 18, ct => 0},
+                        article_alternate            => {ord => 19, ct => 0},
+                        article_assets_embedded      => {ord => 20, ct => 0},
+                        article_assets_supplementary => {ord => 21, ct => 0},
+                        article_meta                 => {ord => 22, ct => 0},
                        );
 my @FREELY_AVAILABLE = (
                         @RightsGlobals::g_creative_commons_attribute_values,
@@ -68,6 +90,16 @@ CrossCheck_IC_DataRequests();
 
 
 exit 0;
+
+# ---------------------------------------------------------------------
+sub order_resource_array {
+    map { $RESOURCES{$_}->{ct} = 0 } keys %RESOURCES;
+
+    my @resource_arr = sort { $RESOURCES{$a}->{ord} <=> $RESOURCES{$b}->{ord} } keys %RESOURCES;
+    
+    return @resource_arr;
+}
+
 
 # ---------------------------------------------------------------------
 sub sort_uniq_ip_addr_list {
@@ -263,11 +295,16 @@ sub Total_GET_RequestsByResource {
 
     print "* Total GET_* requests by resource\n";
 
-    map { $RESOURCES{$_} = 0 } keys %RESOURCES;
+    my @resource_arr = order_resource_array();
 
-    foreach my $r (keys %RESOURCES) {
-        chomp($RESOURCES{$r} = `grep GET_$r $today_log_file|wc -l`);
-        print "\t$r = " . $RESOURCES{$r} . "\n";
+    foreach my $r (@resource_arr) {
+        chomp($RESOURCES{$r}->{ct} = `grep -E "GET_$r:" $today_log_file|wc -l`);
+        if ($r =~ m,[CV],) {
+            print "\t--- " . lc($r) .  " ---\n";
+        }
+        else {
+            print "\t$r = " . $RESOURCES{$r}->{ct} . "\n";
+        }
     }
     print "\n";
 }
@@ -278,14 +315,14 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
 
     print "* Total authNZ errors by IP by resource\n";
 
-    map { $RESOURCES{$_} = 0 } keys %RESOURCES;
+    my @resource_arr = order_resource_array();
 
     my $errors = 0;
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         chomp(my @auth_error_lines = `egrep "$ip.*?ERROR.*?__authNZ_Success" $today_log_file`);
         # for this IP, count each type of resource that errored out
-        foreach my $res (keys %RESOURCES) {
-            $RESOURCES{$res} = scalar(grep(/resource="$res"/, @auth_error_lines));
+        foreach my $res (@resource_arr) {
+            $RESOURCES{$res}->{ct} = scalar(grep(/resource="$res"/, @auth_error_lines)) unless ($res =~ m,^[CV],);
         }
         # for this IP get a list of unique IDs that were denied
         # for this IP, get the /originating/ IP addresses of the errors
@@ -321,8 +358,8 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
             my $country = get_country($ip);
             my $domain = get_domain($ip);
             print "\t$ip ($country):$domain $orig_IPs\n";
-            foreach my $res (keys %RESOURCES) {
-                print "\t\t$res = $RESOURCES{$res}\n" if ($RESOURCES{$res} > 0);
+            foreach my $res (@resource_arr) {
+                print "\t\t$res = $RESOURCES{$res}->{ct}\n" if ($RESOURCES{$res}->{ct} > 0);
             }
             my $num_ids = scalar(@denied_IDs );
             if ($num_ids < 7) {
