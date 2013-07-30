@@ -18,7 +18,7 @@ The ptsearch solr/tomcat instance runs on slurm-1 at the MACC and duff-1 at ICTC
 
 Solr connection information for apps running on the web servers is: http://solr-sdr-ptsearch:8080/ptsearch
 
-Solr home at each site is /l/solrs/prod/ptsearch.
+Solr home at each site is /htsolr/ptsearch.
 
 User must have sudo rights to start/stop the tomcat instance on slurm-1/duff-1 (/etc/init.d/tomcat-ptsearch).
 

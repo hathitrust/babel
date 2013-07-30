@@ -60,7 +60,7 @@ sub query_get_usage {
                         -N is silent mode (no status printed)
                         -V query serving index
                         -B query build index (default) (may be sthe same as serving index)
-                  Warning: In -B mode: Possibly run /l/local/bin/tomcat-build-restart on all
+                  Warning: In -B mode: Possibly run /l/local/bin/tomcat-lss-restart on all
                            Solr build hosts before and after querying to restore java heap\n};
     return $s;
 }

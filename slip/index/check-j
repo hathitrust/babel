@@ -339,10 +339,10 @@ sub __run_s_tomcat {
     my $test = ($action eq 'stop') ? 0 : 1;
     
     # Try to act on a tomcat
-    my $cmd = qq{sudo /etc/init.d/tomcat-build $action $shard};
+    my $cmd = qq{sudo /etc/init.d/tomcat-lss $action $shard};
     my $output = `$cmd 2>&1`;
 
-    # The rc from tomcat-build is unreliable. Test result by looking at
+    # The rc from tomcat-lss is unreliable. Test result by looking at
     # process table to make sure sure it stopped or started
     my $tomcat_pattern = $C->get_object('MdpConfig')->get('tomcat_pattern');
     $tomcat_pattern =~ s,__SHARD__,$shard,;
