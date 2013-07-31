@@ -181,7 +181,7 @@ if ($@) {
     my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
 
     email_driver_msg($C, $s, 1);
-    handle_Stage_rc($SLIP_Utils::States::St_Undefined, $rc);
+    handle_Stage_rc($SLIP_Utils::States::St_Undefined, $rc, $s);
     # NOTREACHED
 }
 
@@ -249,10 +249,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_Stage_rc {
-    my ($stage, $rc) = @_;
+    my ($stage, $rc, $extra) = @_;
 
     if ($rc > 0) {
-        my $s = qq{stage=$stage in handle_Stage_rc error=} . SLIP_Utils::Common::stage_rc_to_string($rc);
+        my $s = qq{stage=$stage in handle_Stage_rc error=} . SLIP_Utils::Common::stage_rc_to_string($rc) . qq{ $extra};
 
         email_driver_msg($C, $s, 1);
 
@@ -424,39 +424,51 @@ release ant Tomcat restart scripts.
 # ---------------------------------------------------------------------
 sub touch {
     my $file = shift;
-    utime(time, time, $file) || ( open(F, ">$file") && close F );
+    return (utime(time, time, $file) || ( open(F, ">$file") && close F ));
 }
 sub rm {
     my $file = shift;
-    unlink($file);
+    return unlink($file);
 }
 
 sub handle_BUSY_file {
     my ($C, $run, $stage, $state) = @_;
 
+    my $rc = $SLIP_Utils::States::RC_OK;
+
     my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
-    if (! -e $flags_dir) {
-        my $rc = $SLIP_Utils::States::RC_DRIVER_FLAGS_DIR;
-        my $s = qq{driver-j: $flags_dir does not exist run=$run. Exit\n};
+    unless (-e $flags_dir) {
+        $rc = $SLIP_Utils::States::RC_DRIVER_FLAGS_DIR;
+        my $s = qq{driver-j: $flags_dir does not exist run=$run.\n};
         __output($s);
         __non_interactive_err_output($rc, $s);
-        exit $rc;
+        handle_Stage_rc($stage, $rc, $s);
     }
 
     my $busy_file = $flags_dir . '/' . 'busy';
 
     if ($state == BUSY_Set) {
-        touch($busy_file);
+        unless ( touch($busy_file) ) {
+            my $s = qq{driver-j: could not touch $busy_file run=$run.\n};
+            $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+            __output($s);
+            __non_interactive_err_output($rc, $s);
+            handle_Stage_rc($stage, $rc, $s);
+        }
     }
     elsif ($state == BUSY_Reset) {
-        rm($busy_file);
+        unless ( rm($busy_file) ) {
+            my $s = qq{driver-j: could not rm $busy_file run=$run.\n};
+            $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+            __output($s);
+            __non_interactive_err_output($rc, $s);
+            handle_Stage_rc($stage, $rc, $s);
+        }
     }
     else {
-        my $s = qq{Error running driver-j -r$RUN: invalid state in handle_BUSY_file\n};
-        my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
-
-        email_driver_msg($C, $s, 1);
-        handle_Stage_rc($stage, $rc);
+        my $s = qq{Error running driver-j -r$RUN: invalid state="$state" in handle_BUSY_file\n};
+        $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+        handle_Stage_rc($stage, $rc, $s);
     }
 }
 
