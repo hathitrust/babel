@@ -15,10 +15,10 @@ run Lucene CheckIndex on a given shard. driver-j will only enable
 check-j when all shards have finished optimizing to ensure enough
 memory to run checkIndex.
 
-As long as check-j runs from cron on the machine (shotz-)* running
+As long as check-j runs from cron on the machine (shotz-*) running
 Lucene checkIndex it does not need to honor STOPSLIP once it is
 executing because the machine would not be taken out of service while
-checkIndex running. It will exit before it sends start teh checkIndex
+checkIndex running. It will exit before it starts the checkIndex
 program however, if STOPSLIP is set, which is OK because it is
 re-tried from cron every minute and runs if enabled.
 
@@ -98,8 +98,6 @@ our ($opt_r, $opt_R, $opt_O, $opt_d, $opt_n);
 my $ops = getopts('r:R:dnO:');
 use constant TOMCAT_MAX_TRIES => 10;
 use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
-
-my $INTERACTIVE = $ENV{'TERM'};
 
 my $NOOP = $opt_n; # optional
 my $RUN = $opt_r; # Required
@@ -269,9 +267,9 @@ sub __check_c_sysrc {
     my $rc = 0;
     
     if ($sysrc > 0) {
-        my $ss = qq{check-j system_rc=$sysrc attempting $s run=$run shard=$shard error: $error\n};
+        my $ss = qq{check-j system_rc=$sysrc attempting $s run=$run shard=$shard error: $error};
         $rc = $SLIP_Utils::States::RC_CHILD_ERROR;
-        __output($ss);
+        __output("$ss\n");
         __non_interactive_err_output($rc, $ss);
         Log_check_error($C, $run, $shard, $ss);
     }
@@ -358,14 +356,14 @@ sub __run_s_tomcat {
 
     if ($tries > TOMCAT_MAX_TRIES) {
         $rc = $fail_rc;
-        my $s = qq{check-j tomcat failed to $action run=$run shard=$shard\n};
-        __output($s);
+        my $s = qq{check-j tomcat failed to $action run=$run shard=$shard};
+        __output("$s\n");
         __non_interactive_err_output($rc, $s);
         Log_check_error($C, $run, $shard, $s);
     }
     else {
-        my $s = qq{check-j success: tomcat action=$action run=$run shard=$shard\n};
-        __output($s);
+        my $s = qq{check-j success: tomcat action=$action run=$run shard=$shard};
+        __output("$s\n");
         Log_check($C, $run, $shard, "__run_s_tomcat (action=$action): " . $output);
     }
 
@@ -482,7 +480,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-13 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
