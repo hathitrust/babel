@@ -6,8 +6,27 @@ kgs
 
 =head1 DESCRIPTION
 
-This program is the application to provide Data API users with an
-oauth_consumer_key and oauth_consumer_secret
+This program is the application to: 
+
+(1) Provide Data API (htd) users with an oauth_consumer_key and
+oauth_consumer_secret.  Data API users supply a name, organization and
+valid email address to which we mail a confirmation link the
+registrant can follow to receive and activate their
+keys. [/kgs/request /kgs/register /kgs/confirm]
+
+(2) Record the userid (REMOTE_USER) of Data API Client (htdc) users
+auto-register them so that the Data API client has an access_key for
+them based on their authentication credential.  The user is redirected
+to the wayf if xes is not authenticated. [/kgs/authed]
+
+So in the ht.htd_authentication table there are two colums:
+
+email: the email addresses to which we mailed confirmation links for
+key provision to developers.  These email addresses can be used to
+update developers on changes to Data API versions.
+
+userid: authentication credentials for Data API Client users.  Data
+API changes are opaquee to client users.
 
 =head1 SYNOPSIS
 
