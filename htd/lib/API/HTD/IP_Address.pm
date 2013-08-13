@@ -137,8 +137,9 @@ sub __handle_type_K_client {
 
 =item __handle_type_0_client
 
-This is in internal development client such as from ptg locked to its
-REMOTE_ADDR.
+This is an internal development programmatic client such as from ptg
+or an external programmatic client.  The client may have higher
+authorization. The client must be locked to its REMOTE_ADDR.
 
 =cut
 
@@ -285,7 +286,7 @@ sub __initialize {
         $self->__handle_type_K_client($ip_address_param);
         return;
     }
-    if ($type eq '0') { # internal/development
+    if ($type eq '0') { # program internal/external w/higher authorization
         $self->__handle_type_0_client($REMOTE_ADDR, $REMOTE_ADDR, $IP_regexp);
         return;
     }
