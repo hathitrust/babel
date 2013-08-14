@@ -5,7 +5,7 @@ use warnings;
 
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 =head1 NAME
@@ -109,15 +109,17 @@ my @allowed_overrides =
 my @allowed_users = (@superusers, @allowed_uniqnames, @allowed_overrides);
 
 sub bc_Usage {
-    print qq{Usage: [ADD]    batch-collection.pl -t 'quoted title' -d 'quoted description text' -o userid -f <filename>\n\n};
+    print qq{Usage: [ADD]     batch-collection.pl -t 'quoted title' -d 'quoted description text' -o userid -f <filename>\n\n};
 
-    print qq{       [APPEND] batch-collection.pl -a coll_id -o userid -f <filename>\n\n};
+    print qq{       [APPEND]  batch-collection.pl -a coll_id -o userid -f <filename>\n\n};
 
-    print qq{       [DELETE] batch-collection.pl -D coll_id -o superuserid -f <filename>\n\n};
+    print qq{       [DELETE]  batch-collection.pl -D coll_id -o superuserid -f <filename>\n\n};
 
-    print qq{       [QUERY]  batch-collection.pl -c -t title -o userid\n\n};
+    print qq{       [EXPUNGE] batch-collection.pl -X coll_id -o superuserid\n\n};
 
-    print qq{       [QUERY]  batch-collection.pl -C <coll_id>\n\n};
+    print qq{       [QUERY]   batch-collection.pl -c -t title -o userid\n\n};
+
+    print qq{       [QUERY]   batch-collection.pl -C <coll_id>\n\n};
     print qq{Options:\n};
     print qq{       -f <filename> file of HathiTrust IDs, one per line\n};
     print qq{       -t '<title>' collection title as a quoted string\n};
@@ -125,6 +127,7 @@ sub bc_Usage {
     print qq{       -o <userid> (must match your kerberos/Shibboleth/other uniqname)\n};
     print qq{       -a <coll_id> append IDs to coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
     print qq{       -D <coll_id> [superuser only] delete IDs from coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
+    print qq{       -X <coll_id> [superuser only] delete entire collection. Obtain <coll_id> using batch_collection.pl -c option\n};
     print qq{       -c returns the coll_id for collection with -t '<title>' owned by -o <userid>\n};
     print qq{       -C returns the <userid>, display_name, title for collection with -C <coll_id>\n\n};
     print qq{Notes:\n};
@@ -134,8 +137,8 @@ sub bc_Usage {
 
 }
 
-our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C);
-getopts('ct:d:o:f:a:D:C:');
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X);
+getopts('ct:d:o:f:a:D:C:X:');
 
 my $INPUT_FILE = $opt_f || 'general';
 
@@ -144,12 +147,15 @@ my $time = Utils::Time::iso_Time('time');
 my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
 
 my $WHO_AM_I_REALLY = `whoami`;
-chomp($WHO_AM_I_REALLY); 
+chomp($WHO_AM_I_REALLY);
 
 my $NON_SUPERUSER = 1;
+my $SUPERUSER = 0;
+
 foreach my $superuser (@superusers) {
     if ($WHO_AM_I_REALLY eq $superuser) {
         $NON_SUPERUSER = 0;
+        $SUPERUSER = 1;
         last;
     }
 }
@@ -174,11 +180,28 @@ unless (grep(/^$WHO_I_AM$/, @allowed_users)) {
 my $APPEND = $opt_a;
 my $COLL_ID = $opt_c;
 my $DELETE = $opt_D;
+my $EXPUNGE = $opt_X;
 my $USERID = $opt_C;
 
 my $CREATE = 0;
 
-if ($DELETE) {
+if ($EXPUNGE) {
+    if ($EXPUNGE !~ m,\d+,) {
+        Log_print( qq{ERROR: invalid coll_id arg to expunge (-X) option\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+    if ($NON_SUPERUSER) {
+        Log_print( qq{ERROR: $WHO_I_AM is not in the list of superusers\n} );
+        exit 1;
+    }
+    unless ($opt_o) {
+        Log_print( qq{missing -o option for collection expunge operation\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+}
+elsif ($DELETE) {
     if ($DELETE !~ m,\d+,) {
         Log_print( qq{ERROR: invalid coll_id arg to delete (-D) option\n\n} );
         bc_Usage();
@@ -308,9 +331,27 @@ my $INITIAL_COLLECTION_SIZE = 0;
 my $small_collection_max_items = $config->get('filter_query_max_item_ids');
 my $SMALLEST_LARGE_COLLECTION = $small_collection_max_items + 1;
 my $SMALL_TO_LARGE_TRANSITION = 0;
-my $LARGE_TO_SMALL_TRANSITION = 0;
 
-if ($DELETE) {
+
+if ($EXPUNGE) {
+    my $coll_id = $EXPUNGE;
+    my $coll_name = $CO->get_coll_name($coll_id);
+
+    if (! $CS->exists_coll_id($coll_id)) {
+        Log_print( qq{ERROR: coll_id=$coll_id does not exist. Cannot expunge a non-existent collection\n} );
+        exit 1;
+    }
+
+    Log_print( qq{Beginning to expunge "$coll_name" collection\n} );
+
+    $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($coll_id);
+
+    # Delete items from the collection
+    bc_handle_expunge($C, $coll_id);
+
+    Log_print( qq{Done.\n} );
+}
+elsif ($DELETE) {
     my $coll_id = $DELETE;
     my $coll_name = $CO->get_coll_name($coll_id);
 
@@ -338,25 +379,27 @@ elsif ($APPEND) {
     }
     else {
         $coll_name = $CO->get_coll_name($existing_coll_id);
-        if ($WHO_I_AM ne $C_OWNER) {
-            Log_print( qq{ERROR: $WHO_I_AM is not the owner of $coll_name. You can append only to collections you own\n} );
-            exit 1;
+        if ($NON_SUPERUSER) {
+            if ($WHO_I_AM ne $C_OWNER) {
+                Log_print( qq{ERROR: $WHO_I_AM is not the owner of $coll_name. You can append only to collections you own\n} );
+                exit 1;
+            }
+
+            if (! $CS->exists_coll_name_for_owner($coll_name, $C_OWNER)) {
+                Log_print( qq{ERROR: $C_OWNER is apparently not the owner of the collection named "$coll_name"\n} );
+                exit 1;
+            }
         }
 
-        if (! $CS->exists_coll_name_for_owner($coll_name, $C_OWNER)) {
-            Log_print( qq{ERROR: $C_OWNER is apparently not the owner of the collection named "$coll_name"\n} );
-            exit 1;
-        }
+        Log_print( qq{Begin appending IDs to "$coll_name" collection\n} );
+
+        $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($existing_coll_id);
+
+        # Add items to the collection
+        bc_handle_add_items_to($C, $existing_coll_id);
+
+        Log_print( qq{Done.\n} );
     }
-
-    Log_print( qq{Begin appending IDs to "$coll_name" collection\n} );
-
-    $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($existing_coll_id);
-
-    # Add items to the collection
-    bc_handle_add_items_to($C, $existing_coll_id);
-
-    Log_print( qq{Done.\n} );
 }
 elsif ($USERID) {
     my $userid = $CO->get_coll_owner($USERID);
@@ -494,11 +537,52 @@ sub bc_handle_delete_items_from {
     }
 
     Log_print( qq{Processed $num_ids items from $INPUT_FILE, deleted $deleted, enqueued $queued for indexing\n} );
-    if ($deleted) {
-        if ($LARGE_TO_SMALL_TRANSITION) {
-            Log_print( qq{NOTE: Collection became "small"All added\n} )
+}
+
+
+# ---------------------------------------------------------------------
+
+=item bc_handle_expunge
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_handle_expunge {
+    my $C = shift;
+    my $coll_id = shift;
+
+    my $coll_num_items = $INITIAL_COLLECTION_SIZE;
+    my $coll_name = $CO->get_coll_name($coll_id);
+
+    Log_print( qq{Expunging $coll_name ($coll_id) containing $coll_num_items items\n} );
+
+    my $ok = 1;
+    my $small_collection_max_items = $CO->get_config()->get('filter_query_max_item_ids');
+
+    if ($coll_num_items > $small_collection_max_items) {
+        # coll is "large"
+        my $dbh = $CO->get_dbh();
+        $ok = SharedQueue::enqueue_all_ids($C, $dbh, $coll_id);
+        if ($ok) {
+            Log_print( qq{Enqueued $coll_num_items from $coll_name for re-indexing\n} );
+        }
+        else {
+            Log_print( qq{ERROR: Failed to enqueue all ids from collection for re-indexing\n} );
+            exit 1;
         }
     }
+
+    eval {
+        $CO->delete_coll($coll_id, $SUPERUSER);
+    };
+    if ($@) {
+        Log_print( qq{ERROR: Delete collection database operation failed\n} );
+        exit 1;
+    }
+
+    Log_print( qq{Deleted $coll_num_items items from $coll_name and deleted collection record\n} );
 }
 
 # ---------------------------------------------------------------------
@@ -655,7 +739,7 @@ sub bc_delete_item {
     }
 
     eval {
-        $CO->delete_items($coll_id, [$id], 'force_ownership');
+        $CO->delete_items($coll_id, [$id], $SUPERUSER);
     };
     if ($@) {
         Log_print( qq{Could not put item="$id" into collection: $@} );
@@ -693,7 +777,7 @@ sub bc_add_item {
     }
 
     eval {
-        $CO->copy_items($coll_id, [$id]);
+        $CO->copy_items($coll_id, [$id], $SUPERUSER);
     };
     if ($@) {
         Log_print( qq{Could not put item="$id" into collection: $@} );
