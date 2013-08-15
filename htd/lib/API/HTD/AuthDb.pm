@@ -329,6 +329,28 @@ sub get_expiration_by_access_key {
     return $expires;
 }
 
+# ---------------------------------------------------------------------
+
+=item get_all_authentication_data
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_all_authentication_data {
+    my ($dbh) = @_;
+
+    my $statement = qq{SELECT access_key, name, org, email FROM htd_authentication WHERE activated=?};
+    my $sth = API::DbIF::prepAndExecute($dbh, $statement, 1);
+    my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+
+    hLOG_DEBUG('DB:  ' . qq{get_all_authentication_data: $statement});
+    return $ref_to_arr_of_hashref;
+}
+
+
+
 1;
 
 __END__
@@ -339,7 +361,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2012-13 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
