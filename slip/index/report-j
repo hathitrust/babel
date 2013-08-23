@@ -561,7 +561,7 @@ sub report_flags_state {
     my $trigger_size = Scheduler::get_full_optimize_trigger_size($C) if ($supported);
     my $all_trigger_size = Scheduler::get_all_full_optimize_trigger_size($C) if ($supported);
 
-    my $opo = "full_optimize supported=$supported" . ($supported ? " trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB\n\t\t" : "");
+    my $opo = "full_optimize supported=$supported " . ($supported ? "trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB\n\t\t" : "");
 
     my @num_shards_list = __get_shard_list($C);
     my $total_segsizes = Scheduler::get_segsizes($C, $run);
