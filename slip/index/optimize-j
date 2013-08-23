@@ -231,36 +231,41 @@ probably meet the test.
 sub do_FULL_optimize {
     my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
 
+    unless(Scheduler::full_optimize_supported($C)) {
+        return 0;
+    }
+    # POSSIBLY NOTREACHED
+
     # If limit is already == 1 the first optimization already did the
     # work.  Nothing to do here.
-    my $do = 0;
-
     if ($limit_segs == 1) {
-        $do = 0;
+        return 0;
     }
-    else {
-        eval {
-            # Is the second segment large enough for this shard to be
-            # selected for optimization to one segment?
-            my ($try, $snd_segment_size) = Scheduler::optimize_try_full_optimize($C, $run, $shard);
-            if ($try) {
-                my $max = Scheduler::get_max_full_optimizing_shards($C, $dbh, $run, $snd_segment_size);
-                if (Db::optimize_select_shard($C, $dbh, $run, $shard, $max)) {
-                    # Leave shard selected so only max shards do full
-                    # optimization. driver-j will reset.
-                    $do = 1;
-                }
-            }
+    # POSSIBLY NOTREACHED
 
-            my $now = Utils::Time::iso_Time();
-            my $sizes = Scheduler::get_segsizes($C, $run, $shard);
-            my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED' : 'NO') . qq{ at $now};
-            Log_optimize($C, $run, $shard, $msg);
-        };
-        if ($@) {
-            Log_optimize_error($C, $run, $shard, "Problem determining full optimize: $@");
-            error_check_rc($C, $dbh, $run, $shard, $host, $SLIP_Utils::States::RC_BAD_SCHED);
+    my $do = 0;
+    
+    eval {
+        # Is the second segment large enough for this shard to be
+        # selected for optimization to one segment?
+        my ($try, $snd_segment_size) = Scheduler::optimize_try_full_optimize($C, $run, $shard);
+        if ($try) {
+            my $max = Scheduler::get_max_full_optimizing_shards($C, $dbh, $run, $snd_segment_size);
+            if (Db::optimize_select_shard($C, $dbh, $run, $shard, $max)) {
+                # Leave shard selected so only max shards do full
+                # optimization. driver-j will reset.
+                $do = 1;
+            }
         }
+        
+        my $now = Utils::Time::iso_Time();
+        my $sizes = Scheduler::get_segsizes($C, $run, $shard);
+        my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED' : 'NO') . qq{ at $now};
+        Log_optimize($C, $run, $shard, $msg);
+    };
+    if ($@) {
+        Log_optimize_error($C, $run, $shard, "Problem determining full optimize: $@");
+        error_check_rc($C, $dbh, $run, $shard, $host, $SLIP_Utils::States::RC_BAD_SCHED);
     }
 
     return $do;

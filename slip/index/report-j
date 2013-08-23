@@ -558,8 +558,8 @@ sub report_flags_state {
     my $ck = "check index support=$cksup";
 
     my $supported = Scheduler::full_optimize_supported($C);
-    my $trigger_size = Scheduler::get_full_optimize_trigger_size($C);
-    my $all_trigger_size = Scheduler::get_all_full_optimize_trigger_size($C);
+    my $trigger_size = Scheduler::get_full_optimize_trigger_size($C) if (supported);
+    my $all_trigger_size = Scheduler::get_all_full_optimize_trigger_size($C) if (supported);
 
     my $opo = "full_optimize supported=$supported" . ($supported ? " trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB\n\t\t" : "");
 
