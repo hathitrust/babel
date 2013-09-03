@@ -606,7 +606,7 @@
     <meta name="HandheldFriendly" content="true" />
     <meta name="robots" content="noarchive" /> 
     <xsl:element name="link">
-      <xsl:attribute name="rel">cannonical</xsl:attribute>
+      <xsl:attribute name="rel">canonical</xsl:attribute>
       <xsl:attribute name="href">
         <xsl:text>http://babel.hathitrust.org/cgi/pt?id=</xsl:text>
         <xsl:value-of select="$gHtId" />
