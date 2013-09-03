@@ -9,6 +9,14 @@
   <xsl:import href="../legacy/pageviewer.xsl"/>
 
   <xsl:template name="extra-head-setup">
+    <meta name="robots" content="noarchive" /> 
+    <xsl:element name="link">
+      <xsl:attribute name="rel">cannonical</xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:text>http://babel.hathitrust.org/cgi/pt?id=</xsl:text>
+        <xsl:value-of select="$gHtId" />
+      </xsl:attribute>
+    </xsl:element>
     <script src="/common/unicorn/js/head.min.js"></script>
     <script>
       head.js.apply(this, HT.scripts);

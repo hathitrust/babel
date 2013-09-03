@@ -604,6 +604,14 @@
 
   <xsl:template name="extra-head-setup">
     <meta name="HandheldFriendly" content="true" />
+    <meta name="robots" content="noarchive" /> 
+    <xsl:element name="link">
+      <xsl:attribute name="rel">cannonical</xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:text>http://babel.hathitrust.org/cgi/pt?id=</xsl:text>
+        <xsl:value-of select="$gHtId" />
+      </xsl:attribute>
+    </xsl:element>
     <link rel="alternate" media="handheld" href="" />
     <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
     <meta name="format-detection" content="telephone=no" />
