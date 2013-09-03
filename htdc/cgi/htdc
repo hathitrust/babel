@@ -48,7 +48,7 @@ my $Q = new CGI;
 my $version = 2;
 my $production_mode = 0;
 
-my @superusers = qw(pfarber roger tgeitgey);
+my @superusers = qw(pfarber roger);
 my $development_support = 0;
 
 if ($production_mode) {

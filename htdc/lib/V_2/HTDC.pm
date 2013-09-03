@@ -87,20 +87,20 @@ sub validate_request {
     if (grep(/^$resource$/, qw( volume/pagemeta volume/pageimage volume/pageocr volume/pagecoordocr ))) {
         my $seq = $Q->param('seq');
         if (! $seq) {
-            HTDC_Client::Call_Handler(0, 'Please specify a sequence number');
+            HTDC_Client::Call_Handler(0, 'Please specify a sequence number or FILEID');
         }
-        elsif ($seq !~ m,^\d+$,) {
-            HTDC_Client::Call_Handler(0, 'Please specify a sequence number that consists of only digits');
-        }
+#         elsif ($seq !~ m,^\d+$,) {
+#             HTDC_Client::Call_Handler(0, 'Please specify a sequence number that consists of only digits');
+#         }
     }
     elsif (grep(/^$resource$/, qw( article/alternate article/assets/embedded article/assets/supplementary ))) {
         my $seq = $Q->param('seq');
         if (! $seq) {
-            HTDC_Client::Call_Handler(0, 'Please specify a sequence number');
+            HTDC_Client::Call_Handler(0, 'Please specify a sequence number or FILEID');
         }
-        elsif ($seq !~ m,^\d+$,) {
-            HTDC_Client::Call_Handler(0, 'Please specify a sequence number that consists of only digits');
-        }
+#         elsif ($seq !~ m,^\d+$,) {
+#             HTDC_Client::Call_Handler(0, 'Please specify a sequence number that consists of only digits');
+#         }
     }
     else {
         $Q->Delete('seq');
