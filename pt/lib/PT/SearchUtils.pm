@@ -201,8 +201,9 @@ sub has_Solr_index_item {
     $g_stats_ref->{update}{check} = __timer($start_0);
 
     my $indexed = $rs->get_num_found();
+    my $Solr_error = ($rs->get_response_code() ne '200');
 
-    return $indexed;
+    return ($indexed, $Solr_error);
 }
 
 # ---------------------------------------------------------------------

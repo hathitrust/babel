@@ -94,17 +94,28 @@ my $id = $cgi->param('id');
 # indexing of the same id will be serialized at the Tomcat
 # instance. This may become a service.
 my $stats_ref = {};
-    
-my $is_indexed = PT::SearchUtils::has_Solr_index_item($C, SLIP_Utils::Common::get_run_number($run_config), $id, $stats_ref);
-if ( ! $is_indexed && ! $cgi->param('index') ) {
-    _redirect_to_index($cgi);
-}
 
-PT::SearchUtils::maybe_Solr_index_item($C, SLIP_Utils::Common::get_run_number($run_config), $id, $stats_ref);
-
-if ( $cgi->param('index') ) {
-    # we've indexed, so bounce to get rid of the index parameter
-    _redirect_to_browse($cgi);
+my ($is_indexed, $Solr_error) =
+  PT::SearchUtils::has_Solr_index_item($C,
+                                       SLIP_Utils::Common::get_run_number($run_config),
+                                       $id,
+                                       $stats_ref);
+# Can't talk to Solr. Don't try to index.  Fall through to
+# Solr_search_item() which will fail and present the usual UI that
+# indicates a system error. Better than showing the "Busy Indexing,
+# Try Again" page.
+unless ($Solr_error) {
+    if ( ! $is_indexed && ! $cgi->param('index') ) {
+        _redirect_to_index($cgi);
+    }
+    PT::SearchUtils::maybe_Solr_index_item($C,
+                                           SLIP_Utils::Common::get_run_number($run_config),
+                                           $id,
+                                           $stats_ref);
+    if ( $cgi->param('index') ) {
+        # we've indexed, so bounce to get rid of the index parameter
+        _redirect_to_browse($cgi);
+    }
 }
 
 # Search
@@ -181,7 +192,7 @@ sub ValidityChecks
 sub _redirect_to_index {
     my ( $cgi ) = @_;
     my $idx = $cgi->param('index') || 1;
-    
+
     $cgi->param('index', $idx);
     my $url = $cgi->self_url();
     # my $url = $ENV{REQUEST_URI};
