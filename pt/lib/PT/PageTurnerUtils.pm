@@ -42,7 +42,7 @@ use MdpItem;
 
 The special formatting syntax e.g. {lt:}, comes from Solr
 configuration specs such as in
-/l/solrs/dev/ptsearch/conf/solrconfig.xml:
+/htsolr/ptsearch/shards/1/conf/solrconfig.xml:
 
     <!-- multi-colored tag FragmentsBuilder for FVH -->
     <fragmentsBuilder name="colored"
