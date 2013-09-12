@@ -20,7 +20,7 @@ my @messages =
   (
    {
     subject => 'HathiTrust Data API Update',
-    body => "Greetings___USER___,\n\nYou are receiving this message as a registered user of the HathiTrust Data API.\n\nWe're writing to let you know that version 2 of the API is now available.  Access to version 1 will be discontinued on November 1, 2013.\n\nYou may want to refer to the version 2 documentation at http://www.hathitrust.org/data_api for details on changes to the URL syntax and new resources available from the API.\n\nPlease reply to this email or send email to feedback\@issues.hathitrust.org with with your questions or comments\n\n\nRegards,\n\tHathiTrust.org",
+    body => "Greetings___USER___,\n\nYou are receiving this message as a registered user of the HathiTrust Data API.\n\nWe're writing to let you know that version 2 of the API is now available.  Access to version 1 will be discontinued on November 1, 2013.\n\nYou may want to refer to the version 2 documentation at http://www.hathitrust.org/data_api for details on changes to the URL syntax and new resources available from the API.\n\nPlease reply to this email or send email to feedback\@issues.hathitrust.org with with your questions or comments.\n\n\nRegards,\n\tHathiTrust.org",
    },
   );
 
