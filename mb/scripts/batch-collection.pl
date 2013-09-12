@@ -5,7 +5,7 @@ use warnings;
 
 
 BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 =head1 NAME
