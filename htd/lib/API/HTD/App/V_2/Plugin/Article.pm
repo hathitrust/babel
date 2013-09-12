@@ -27,6 +27,10 @@ use base qw(API::HTD::App::V_2::Plugin);
 
 use XML::LibXML;
 
+my $STRUCTMAP_XPATH = q{//METS:structMap[@TYPE="physical"]/METS:div[@TYPE="contents"]};
+
+my $ARTICLE_XPATH = $STRUCTMAP_XPATH . qq{/METS:div[\@TYPE="article"]};
+my $ASSET_XPATH   = $STRUCTMAP_XPATH . qq{/METS:div[\@TYPE="assets"]};
 
 # ---------------------------------------------------------------------
 
@@ -38,43 +42,93 @@ Description
 
 # ---------------------------------------------------------------------
 sub __getFilenameFromMETSfor {
-   my $self = shift;
-   my $resource = shift;
+    my $self = shift;
+    my $resource = shift;
 
-   my $seq = $self->__paramsRef->{seq};
-   my $structMap_xpath = q{//METS:structMap[@TYPE="physical"]/METS:div[@TYPE="contents"]};
+    my ($filename, $mimetype, $seq);
 
-   my $article_xpath = $structMap_xpath . qq{/METS:div[\@TYPE="article"]};
-   my $asset_xpath   = $structMap_xpath . qq{/METS:div[\@TYPE="assets"]};
+    if ($self->__paramsRefHasFileid) {
+        ($filename, $mimetype, $seq) = $self->__getByFileid($resource);
+    }
+    else {
+        ($filename, $mimetype, $seq) = $self->__getBySeq($resource);
+    }
 
-   my %resource_FILEIDmap =
-     (
-      'article'                      => $article_xpath . qq{/METS:div[\@TYPE="primary"]/METS:fptr},
-      'article/alternate'            => $article_xpath . qq{/METS:div[\@TYPE="alternate"]/*[$seq]},
-      'article/assets/embedded'      => $asset_xpath   . qq{/METS:div[\@TYPE="embedded"]/*[$seq]},
-      'article/assets/supplementary' => $asset_xpath   . qq{/METS:div[\@TYPE="supplementary"]/*[$seq]},
-     );
+    return ($filename, $mimetype, $seq);
+}
 
-   my $root = $self->__getMETS_root;
-   my $node;
-   my ($filename, $mimetype);
+# ---------------------------------------------------------------------
 
-   my $FILEID_xpath = $resource_FILEIDmap{$resource};
-   ($node) = $root->findnodes($FILEID_xpath);
+=item __getBySeq
 
-   if ($node) {
-       my $fid = $node->getAttribute('FILEID');
-       my $fn_xpath = qq{//METS:file[\@ID="$fid"]};
+Description
 
-       my ($fn_node) = $root->findnodes($fn_xpath);
-       if ($fn_node) {
-           $mimetype = $fn_node->getAttribute('MIMETYPE');
-           ($node)= $fn_node->findnodes($fn_xpath . q{/METS:FLocat});
-           $filename = $node->getAttribute('xlink:href');
-       }
-   }
+=cut
 
-   return ($filename, $mimetype);
+# ---------------------------------------------------------------------
+sub __getBySeq {
+    my $self = shift;
+    my $resource = shift;
+
+    my ($filename, $mimetype, $seq) = ('', '', $self->__paramsRef->{seq} || 0);
+    my %resource_FILEIDmap =
+      (
+       'article'                      => $ARTICLE_XPATH . qq{/METS:div[\@TYPE="primary"]/METS:fptr},
+       'article/alternate'            => $ARTICLE_XPATH . qq{/METS:div[\@TYPE="alternate"]/*[$seq]},
+       'article/assets/embedded'      => $ASSET_XPATH   . qq{/METS:div[\@TYPE="embedded"]/*[$seq]},
+       'article/assets/supplementary' => $ASSET_XPATH   . qq{/METS:div[\@TYPE="supplementary"]/*[$seq]},
+      );
+
+    my $root = $self->__getMETS_root;
+    my $node;
+
+    my $FILEID_xpath = $resource_FILEIDmap{$resource};
+    ($node) = $root->findnodes($FILEID_xpath);
+
+    if ($node) {
+        my $fid = $node->getAttribute('FILEID');
+        my $fn_xpath = qq{//METS:file[\@ID="$fid"]};
+
+        my ($fn_node) = $root->findnodes($fn_xpath);
+        if ($fn_node) {
+            $mimetype = $fn_node->getAttribute('MIMETYPE');
+            ($node)= $fn_node->findnodes($fn_xpath . q{/METS:FLocat});
+            $filename = $node->getAttribute('xlink:href');
+        }
+    }
+
+    return ($filename, $mimetype, $seq);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __getByFileid
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getByFileid {
+    my $self = shift;
+    my $resource = shift;
+
+    my ($filename, $mimetype, $seq) = ('', '', '');
+    my $fileid = $self->__paramsRef->{fileid};
+
+    my $root = $self->__getMETS_root;
+    my $fn_xpath = qq{//METS:file[\@ID="$fileid"]};
+
+    my $node;
+    my ($fn_node) = $root->findnodes($fn_xpath);
+    if ($fn_node) {
+        $mimetype = $fn_node->getAttribute('MIMETYPE');
+        ($node)= $fn_node->findnodes($fn_xpath . q{/METS:FLocat});
+        $filename = $node->getAttribute('xlink:href') if ($node);
+    }
+
+    return ($filename, $mimetype, $seq);
 }
 
 1;

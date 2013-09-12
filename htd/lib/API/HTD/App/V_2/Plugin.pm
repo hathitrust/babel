@@ -9,7 +9,7 @@ API::HTD::App::V_2::Plugin;
 
 This is a subclass of API::HTD::App which contains resource handlers
 and associated support code to handle the Version 2 schemas for the
-HathiTruse Data API.
+HathiTrust Data API.
 
 As such, it contains methods that assume data values or structural
 relationships that might differ from one version to another.
@@ -218,7 +218,7 @@ sub __set_PluginType {
 
     eval qq{require $classPackage};
     if ($@) {
-        $self->__setErrorResponseCode(404, 'cannot compile subclass=$classPackage for Plugin');
+        $self->__setErrorResponseCode(404, "cannot compile subclass=$classPackage for Plugin");
         return 0;
     }
     else {
@@ -249,6 +249,7 @@ sub __mapURIsToHandlers {
     my $arkPattern =  $self->__getConfigVal('ark_pattern');;
     my $idPattern =  $self->__getConfigVal('id_pattern');;
     my $nsPattern =  $self->__getConfigVal('namespace_pattern');;
+    my $fileidPattern =  $self->__getConfigVal('fileid_pattern');;
 
     my %map;
     foreach my $resource (keys %$patternsRef) {
@@ -257,6 +258,7 @@ sub __mapURIsToHandlers {
         $fullRE =~ s,_ARK_,$arkPattern,;
         $fullRE =~ s,_ID_,$idPattern,;
         $fullRE =~ s,_NS_,$nsPattern,;
+        $fullRE =~ s,_FILEID_,$fileidPattern,;
 
         my $cannonicalResource = $resource;
         $cannonicalResource =~ s,/,_,g;
@@ -368,7 +370,7 @@ sub __getFileResourceRepresentation {
 
     my $representation;
 
-    my ($filename, $mimetype) = $self->__getFilenameFromMETSfor($resource);
+    my ($filename, $mimetype, $seq) = $self->__getFilenameFromMETSfor($resource);
     if (defined($filename) && $filename) {
         my $zipFile = $self->__getPairtreeFilename('zip');
         if (-e $zipFile) {
@@ -384,8 +386,8 @@ sub __getFileResourceRepresentation {
     # Allow the return of 0-length files (mainly OCR)
     return
         defined($representation)
-            ? (\$representation, $filename, $mimetype)
-                : (undef, undef, undef);
+            ? (\$representation, $filename, $mimetype, $seq)
+                : (undef, undef, undef, undef);
 }
 
 # ---------------------------------------------------------------------
@@ -417,7 +419,7 @@ sub __getFileFor {
         $self->__addHeaderInCopyrightMsg($resource_str);
     }
     else {
-        $self->__setErrorResponseCode(404, 'cannot fetch $resource resource');
+        $self->__setErrorResponseCode(404, "cannot fetch $resource resource");
     }
 
     return $representationRef;
@@ -443,7 +445,7 @@ sub __getResourceMetaRepresentationFor {
     my $parser = XML::LibXML->new;
     my $doc = $self->__getBase_DOMtreeFor($resource, $parser);
     if (! defined($doc)) {
-        $self->__setErrorResponseCode(404, 'cannot parse $resource DOM tree');
+        $self->__setErrorResponseCode(404, "cannot parse $resource DOM tree");
         return undef;
     }
     # POSSIBLY NOTREACHED
@@ -473,7 +475,7 @@ sub __getResourceMetaRepresentationFor {
         $self->__addHeaderAccessUseMsg;
     }
     else {
-        $self->__setErrorResponseCode(404, 'cannot fetch $resource representation');
+        $self->__setErrorResponseCode(404, "cannot fetch $resource representation");
     }
 
     return $representationRef;
@@ -705,16 +707,19 @@ Description
 # ---------------------------------------------------------------------
 sub __get_pageimage {
     my $self = shift;
-
-    my ($representationRef, $filename, $mimetype);
+    my $resource = shift;
+    
+    my ($representationRef, $filename, $mimetype, $seq);
 
     my $Q = $self->query;
     my $format = $Q->param('format');
     if ($format eq 'raw') {
-        ($representationRef, $filename, $mimetype) = $self->__getFileResourceRepresentation('volume/pageimage');
+        ($representationRef, $filename, $mimetype) = $self->__getFileResourceRepresentation($resource);
     }
     else {
         use constant _OK => 0;
+
+        ($filename, $mimetype, $seq) = $self->__getFilenameFromMETSfor($resource);
 
         # Remove 'optimalderivative' from args to let imgsrv decide on format
         my @arg_arr = qw(format size width height res watermark);
@@ -730,8 +735,6 @@ sub __get_pageimage {
             $args{'--' . $arg} = $argval if (defined $argval);
         }
         my $id = $self->__getIdParamsRef;
-        my $seq = $self->__paramsRef->{seq};
-
         my $script = $ENV{SDRROOT} . "/imgsrv/bin/image";
         my $cmd = "$script " . "--id=$id --seq=$seq " . join(" ", map sprintf(q{%s=%s}, $_, $args{$_}), keys %args);
         hLOG_DEBUG("API: GET_pageimage: imgsrv command=$cmd");
@@ -762,7 +765,7 @@ sub GET_volume_pageimage {
     my $resource_str = $self->__getParamsRefStr;
     hLOG('API: ' . qq{GET_volume_pageimage: } . $resource_str . $self->query->self_url);
 
-    my ($representationRef, $filename, $mimetype) = $self->__get_pageimage;
+    my ($representationRef, $filename, $mimetype) = $self->__get_pageimage('volume/pageimage');
 
     if (defined($representationRef)) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);

@@ -28,6 +28,74 @@ use XML::LibXML;
 
 # ---------------------------------------------------------------------
 
+=item __getBySeq
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getBySeq {
+    my $self = shift;
+    my $USE = shift;
+
+    my $seq = $self->__paramsRef->{seq};
+
+    my $root = $self->__getMETS_root;
+    my $xpath = qq{//METS:fileSec/METS:fileGrp[\@USE="$USE"]/METS:file[position()=$seq]};
+    my $fns_arr_ref;
+    foreach my $node ($root->findnodes($xpath)) {
+        my $fn = ($node->findnodes('METS:FLocat'))[0]->findvalue('@xlink:href');
+        my $mimetype = $node->findvalue('@MIMETYPE');
+        push(@$fns_arr_ref, {
+                             filename => $fn,
+                             mimetype => $mimetype,
+                             seq => $seq,
+                            }
+            );
+    }
+
+    return $fns_arr_ref;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __getByFileid
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getByFileid {
+    my $self = shift;
+    my $USE = shift;
+
+    my $fileid = $self->__paramsRef->{fileid};
+
+    my $root = $self->__getMETS_root;
+    my $xpath = qq{//METS:fileSec/METS:fileGrp[\@USE="$USE"]/METS:file[\@ID="$fileid"]};
+    my $fns_arr_ref;
+    foreach my $node ($root->findnodes($xpath)) {
+        my $fn = ($node->findnodes('METS:FLocat'))[0]->findvalue('@xlink:href');
+        my $mimetype = $node->findvalue('@MIMETYPE');
+        my $seq = $node->findvalue('@SEQ');
+        $seq += 0; # remove leading zeros
+        push(@$fns_arr_ref, {
+                             filename => $fn,
+                             mimetype => $mimetype,
+                             seq => $seq,
+                            }
+            );
+    }
+
+    return $fns_arr_ref;
+}
+
+
+# ---------------------------------------------------------------------
+
 =item __getFilenameFromMETSfor
 
 Description
@@ -36,44 +104,43 @@ Description
 
 # ---------------------------------------------------------------------
 sub __getFilenameFromMETSfor {
-   my $self = shift;
-   my $resource = shift;
+    my $self = shift;
+    my $resource = shift;
 
-   my %resource_map =
-     (
-      'volume/pageocr'      => 'ocr',
-      'volume/pagecoordocr' => 'coordOCR',
-      'volume/pageimage'    => 'image',
-     );
+    my %resource_map =
+      (
+       'volume/pageocr'      => 'ocr',
+       'volume/pagecoordocr' => 'coordOCR',
+       'volume/pageimage'    => 'image',
+      );
 
-   my $USE = $resource_map{$resource};
-   my $seq = $self->__paramsRef->{seq};
+    my $fns_arr_ref = [];
+    my $USE = $resource_map{$resource};
 
-   my $root = $self->__getMETS_root;
-   my $xpath = qq{//METS:fileSec/METS:fileGrp[\@USE="$USE"]/METS:file[position()=$seq]};
-   my %fns;
-   foreach my $node ($root->findnodes($xpath)) {
-       my $fn = ($node->findnodes('METS:FLocat'))[0]->findvalue('@xlink:href');
-       $fns{$fn} = $node->findvalue('@MIMETYPE');
-   }
+    if ($self->__paramsRefHasFileid) {
+        $fns_arr_ref = $self->__getByFileid($USE);
+    }
+    else {
+        $fns_arr_ref = $self->__getBySeq($USE);
+    }
 
-   my ($filename, $mimetype);
+    my ($filename, $mimetype, $seq) =
+      ($fns_arr_ref->[0]->{filename}, $fns_arr_ref->[0]->{mimetype}, $fns_arr_ref->[0]->{seq});
 
-   if ($USE eq 'image') {
-       if (scalar(keys %fns) > 1) {
-           $filename = grep(/\.jp2$/, keys %fns);
-           $filename = (keys %fns)[0] unless($filename);
-       }
-       else {
-           $filename = (keys %fns)[0];
-       }
-   }
-   else {
-       $filename = (keys %fns)[0];
-   }
-   $mimetype = $fns{$filename};
+    if ($USE eq 'image') {
+        if (scalar @$fns_arr_ref > 1) {
+            foreach my $ref (@$fns_arr_ref) {
+                if ($ref->{filename} =~ m,\.jp2$,) {
+                    $filename = $ref->{filename};
+                    $mimetype = $ref->{mimetype};
+                    $seq = $ref->{seq};
+                    last;
+                }
+            }
+        }
+    }
 
-   return ($filename, $mimetype);
+    return ($filename, $mimetype, $seq);
 }
 
 1;

@@ -34,10 +34,10 @@ use Vendors;
 
 use CGI;
 
-# Highest API version supported
-use constant DEFAULT_API_VERSION => 1;
-use constant HIGHEST_API_VERSION => 2;
-our @SUPPORTED_VERSIONS = (DEFAULT_API_VERSION, HIGHEST_API_VERSION);
+# API versions
+use constant API_VERSION_1 => 1;
+use constant API_VERSION_2 => 2;
+our @VERSIONS = (API_VERSION_2, API_VERSION_1);
 
 # ============================ Main ===================================
 
@@ -53,28 +53,27 @@ if ($action) {
 
 my $API_version = __determineVersion($Q);
 
-if (! $API_version) {
+unless (defined $API_version) {
     __errorExit($Q, '400 BAD REQUEST Invalid version');
     # NOTREACHED
 }
-else {
-    my $classPackage = qq{API::HTD::App::V_${API_version}::Plugin};
-    my $classPath = __packageToPath($classPackage);
 
-    eval {
-        require $classPath;
-    };
-    if ($@) {
-        __errorExit($Q, '500 INTERNAL SERVER ERROR');
-        # NOTREACHED
-    }
+my $classPackage = qq{API::HTD::App::V_${API_version}::Plugin};
+my $classPath = __packageToPath($classPackage);
 
-    my $API_version_instance = $classPackage->new(('CGI' => $Q));
-
-    # for Plack/PSGI, return the run instance
-    my $retval = $API_version_instance->run();
-    return $retval if ( defined($ENV{'psgi.version'}) );
+eval {
+    require $classPath;
+};
+if ($@) {
+    __errorExit($Q, '500 INTERNAL SERVER ERROR');
+    # NOTREACHED
 }
+
+my $API_version_instance = $classPackage->new(('CGI' => $Q));
+
+# for Plack/PSGI, return the run instance
+my $retval = $API_version_instance->run();
+return $retval if ( defined($ENV{'psgi.version'}) );
 
 exit 0;
 
@@ -94,7 +93,7 @@ sub __errorExit {
 
     if ($ENV{HT_DEV}) {
         print $Q->header('text/html');
-        print qq{ERROR: $@};
+        print qq{ERROR: $msg $@};
         exit 0;
     }
     else {
@@ -107,20 +106,34 @@ sub __errorExit {
 
 =item __determineVersion
 
-Description
+After Nov. 1, 2013 version parameter (v) must be present and must be
+2, currently.
 
 =cut
 
 # ---------------------------------------------------------------------
+use constant NOV_1_2013 => 1383264000;
 sub __determineVersion {
     my $Q = shift;
 
-    # Default and validate the version param
-    my $ver = $Q->param('v') ? $Q->param('v') : DEFAULT_API_VERSION;
-    if (! grep(/^$ver$/, @SUPPORTED_VERSIONS)) {
-        return undef;
+    my $version;
+
+    if (time() < NOV_1_2013) {
+        $version = $Q->param('v') ? $Q->param('v') : API_VERSION_1;
+        unless (grep(/^$version$/, @VERSIONS)) {
+            return undef;
+        }
+        # POSSIBLY NOTREACHED
     }
-    return $ver;
+    else {
+        $version = $Q->param('v');
+        unless ($version == API_VERSION_2) {
+            return undef;
+        }
+        # POSSIBLY NOTREACHED
+    }
+
+    return $version;
 }
 
 sub __packageToPath {

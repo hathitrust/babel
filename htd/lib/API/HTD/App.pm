@@ -601,20 +601,10 @@ sub validateQueryParams {
     return 0;
 }
 
-sub __makeParamsRef {
-    my $self = shift;
-    return undef;
-}
-
 sub __bindYAMLTokens {
     my $self = shift;
     return 0;
 }
-
-# sub __getFilenameFromMETSfor {
-#    my $self = shift;
-#    return 0;
-# }
 
 
 # =====================================================================
@@ -645,6 +635,11 @@ sub __paramsRefAddRights {
 
     $ref->{attr} = $ro->getRightsFieldVal('attr');
     $ref->{source} = $ro->getRightsFieldVal('source');
+}
+
+sub __paramsRefHasFileid {
+    my $self = shift;
+    return $self->__paramsRef->{fileid};
 }
 
 sub __errorDescription {
@@ -831,17 +826,27 @@ Order of params is order of regexp captures in config.yaml
 # ---------------------------------------------------------------------
 sub __makeParamsRef {
     my $self = shift;
-    my ($resource, $id, $namespace, $barcode, $x, $y, $z, $seq) = @_;
+    my ($resource, $id, $namespace, $barcode, $x, $y, $z, $seqORfileid) = @_;
     my $ro = $self->__getRightsObject;
 
-    return
-    {
-     'resource' => $resource,
-     'id'       => $id,
-     'ns'       => $namespace,
-     'bc'       => $barcode,
-     'seq'      => defined $seq ? $seq : '',
-    };
+    my $params_ref = 
+      {
+       'resource' => $resource,
+       'id'       => $id,
+       'ns'       => $namespace,
+       'bc'       => $barcode,
+      };
+
+    if (defined $seqORfileid) {
+        if ($seqORfileid =~ m,^\d+$,) {
+            $params_ref->{seq} = $seqORfileid;
+        }
+        else {
+            $params_ref->{fileid} = $seqORfileid;
+        }
+    }
+
+    return $params_ref;
 }
 
 # ---------------------------------------------------------------------

@@ -224,7 +224,7 @@ sub getExtendedAccessType {
             # bit set
             $extended_accessType = 'pdf_ebm';
         }
-        elsif ($resource =~ m,aggregate,) {
+        elsif ($resource eq 'aggregate') {
             $extended_accessType = 'zip';
         }
     }

@@ -7,6 +7,7 @@
 ark_pattern:       ark:/13960/(t|fk)\d[a-z\d][a-z\d]\d[a-z\d][a-z\d]\d[a-z\d]
 id_pattern:        .+
 namespace_pattern: .{2,4}
+fileid_pattern:    '[a-zA-Z_:].*'
 
 # URI regexps
 patterns:
@@ -15,16 +16,16 @@ patterns:
   structure:                                       ^/(structure)/((_NS_)\.((_ARK_)|(_ID_)))$
                                      
   volume:                                             ^/(volume)/((_NS_)\.((_ARK_)|(_ID_)))$
-  volume/pageimage:                         ^/(volume/pageimage)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
-  volume/pageocr:                             ^/(volume/pageocr)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
-  volume/pagecoordocr:                   ^/(volume/pagecoordocr)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
-  volume/pagemeta:                           ^/(volume/pagemeta)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
+  volume/pageimage:                         ^/(volume/pageimage)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+  volume/pageocr:                             ^/(volume/pageocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+  volume/pagecoordocr:                   ^/(volume/pagecoordocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+  volume/pagemeta:                           ^/(volume/pagemeta)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
   volume/meta:                                   ^/(volume/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
                                 
   article:                                           ^/(article)/((_NS_)\.((_ARK_)|(_ID_)))$
-  article/alternate:                       ^/(article/alternate)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
-  article/assets/embedded:           ^/(article/assets/embedded)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
-  article/assets/supplementary: ^/(article/assets/supplementary)/((_NS_)\.((_ARK_)|(_ID_)))/(\d+)$
+  article/alternate:                       ^/(article/alternate)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+  article/assets/embedded:           ^/(article/assets/embedded)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+  article/assets/supplementary: ^/(article/assets/supplementary)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
   article/meta:                                 ^/(article/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
 
 valid_query_params:
@@ -447,6 +448,7 @@ OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
   getty: open
   um-dc-mp: open
   uiuc: open
+  brooklynmuseum: open
 
 RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   google: restricted
@@ -462,6 +464,7 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   getty: restricted
   um-dc-mp: restricted
   uiuc: restricted
+  brooklynmuseum: open
 
 # ---------------------------------------------------------------------
 # Access type map:
@@ -513,6 +516,7 @@ accessibility_matrix:
       getty: open
       um-dc-mp: open
       uiuc: open
+      brooklynmuseum: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -527,6 +531,7 @@ accessibility_matrix:
       getty: restricted
       um-dc-mp: restricted
       uiuc: restricted
+      brooklynmuseum: open
 
   volume:
     free:
@@ -543,6 +548,7 @@ accessibility_matrix:
       getty: restricted_forbidden
       um-dc-mp: restricted_forbidden
       uiuc: restricted_forbidden
+      brooklynmuseum: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -557,6 +563,7 @@ accessibility_matrix:
       getty: restricted_forbidden
       um-dc-mp: restricted_forbidden
       uiuc: restricted_forbidden
+      brooklynmuseum: open
 
   volume/pageimage:
     free:
@@ -573,6 +580,7 @@ accessibility_matrix:
       getty: open
       um-dc-mp: open
       uiuc: open
+      brooklynmuseum: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -587,6 +595,7 @@ accessibility_matrix:
       getty: restricted
       um-dc-mp: restricted
       uiuc: restricted
+      brooklynmuseum: open
 
   volume/pageocr:
     free: *open-accessibility-block
