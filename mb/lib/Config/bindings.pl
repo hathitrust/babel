@@ -28,7 +28,7 @@
      'da'       => '.*',
      'id'       => '.*',
      'rattr'    => '\d+',
-     'sz'       => '\d+',
+     'sz'       => '^([1-9]|[1-9][0-9]|100)$', # 1 <= sz <= 100
      'solridx'  => 'text|author|title|subject|isbn',
      'solrfct'  => '.*',
      'start'    => '\d+',
