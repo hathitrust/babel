@@ -284,16 +284,16 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
     }
     my $status =  $co->get_shared_status($coll_id);
     my $coll_name = $co->get_coll_name($coll_id);
-    if (length($coll_name) > 50) {
-        $coll_name = substr($coll_name, 0, 50);
+    if (length($coll_name) > 100) {
+        $coll_name = substr($coll_name, 0, 100);
     }
     my $spaced_coll_name = getSpacedCollName($coll_name, 16);
-    if (length($spaced_coll_name) > 50) {
-        $spaced_coll_name = substr($spaced_coll_name, 0, 150);
+    if (length($spaced_coll_name) > 100) {
+        $spaced_coll_name = substr($spaced_coll_name, 0, 100);
     }
     my $coll_desc = $co->get_description($coll_id);
-    if (length($coll_desc) > 150) {
-        $coll_desc = substr($coll_desc, 0, 150);
+    if (length($coll_desc) > 255) {
+        $coll_desc = substr($coll_desc, 0, 255);
     }
 
     my $is_temporary = MBooks::Utils::TempColl::coll_is_temporary($C, $co, $coll_id);
