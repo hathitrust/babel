@@ -97,11 +97,12 @@ Description
 sub qu_get_usage {
     my $s;
     $s .= qq{Usage: enqueuer-j -r run [-n][-d][-S][-H][-F filename]};
-    $s .= qq{\n\twhere\n\t\t-n No actual queuing, only reports what would be queued};
+    $s .= qq{\n\twhere};
     $s .= qq{\n\t\t-n Do not queue. Only report what would be queued};
     $s .= qq{\n\t\t-F enqueue from <filename>};
     $s .= qq{\n\t\t-s Only operate on shared queue};
     $s .= qq{\n\t\t-s Only operate on holdings queue};
+    $s .= qq{\n};
 
     return $s;
 }

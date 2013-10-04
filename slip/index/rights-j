@@ -264,7 +264,7 @@ eval {
             my $i = $CHECK ? 'CHECK (NO insert)' : 'INSERT';
 
             __confirm("\nProcess slip_rights: $i IDs from $ID_INSERT_FILE? [N] ");
-            repair_insert_id_helper($C, $DBH, $ID_INSERT_FILE, $CHECK);
+            __repair_insert_id_helper($C, $DBH, $ID_INSERT_FILE, $CHECK);
         }
         else {
             # Build from last timestamp
@@ -314,14 +314,14 @@ exit 0;
 
 # ---------------------------------------------------------------------
 
-=item repair_insert_id_helper
+=item __repair_insert_id_helper
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub repair_insert_id_helper {
+sub __repair_insert_id_helper {
     my ($C, $dbh, $filename, $Check) = @_;
 
     my $id_arr_ref = SLIP_Utils::Load::load_ids_from_file($C, $filename);
@@ -397,8 +397,9 @@ sub repair_insert_id {
 
     my $insert_hashref = $rights_hashref;
 
-    my ($ht_update_time) = ($$ref_to_vSolr_response =~ m,<arr name="ht_id_display">.*?<str>\Q$nid\E\|(.*?)\|.*?</str>,s);
-    my ($sysid) = ($$ref_to_vSolr_response =~ m,<str name="id">(.*?)</str>,s);
+    my ($ht_id_display_field) = ($$ref_to_vSolr_response =~ m,<arr name="ht_id_display">(.*?)</arr>,os);
+    my ($ht_update_time) = ($ht_id_display_field =~ m,<str>\Q$nid\E\|(.*?)\|.*?</str>,s);
+    my ($sysid) = ($$ref_to_vSolr_response =~ m,<str name="id">(.*?)</str>,os);
 
     $insert_hashref->{'sysid'} = $sysid;
     $insert_hashref->{'timestamp_of_nid'} = $ht_update_time;
@@ -490,7 +491,7 @@ sub __hiresTime
 
 # ---------------------------------------------------------------------
 
-=item process_rights_from_errors
+=item __process_rights_from_errors
 
 Check errors-j for metadata errors that may have been due to the id
 MISSING FROM rights-j [because of various types of errors] and, if we
@@ -502,7 +503,7 @@ short of totally rebuilding rights-j table.
 =cut
 
 # ---------------------------------------------------------------------
-sub process_rights_from_errors {
+sub __process_rights_from_errors {
     my ($C, $dbh, $run, $Check, $totals_hashref) = @_;
 
     while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
@@ -705,7 +706,7 @@ sub process_rights {
         unless $Check;
 
   REPAIR:
-    process_rights_from_errors($C, $dbh, $run, $Check, \%totals);
+    __process_rights_from_errors($C, $dbh, $run, $Check, \%totals);
 
     return ($process_start, \%totals);
 }
