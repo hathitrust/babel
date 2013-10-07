@@ -85,7 +85,7 @@ see help
 
 use strict;
 BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
