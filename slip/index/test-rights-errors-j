@@ -28,9 +28,12 @@ use Search::Query;
 use Search::Result::SLIP;
 
 
-our ($opt_r, $opt_F, $opt_I);
+our ($opt_r, $opt_f, $opt_Q, $opt_T, $opt_I);
 
-my $ops = getopts('r:I:F:');
+my $ops = getopts('r:Qf:TI:');
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
 
 my $RUN = $opt_r;
 if (! defined $RUN) {
@@ -38,13 +41,29 @@ if (! defined $RUN) {
     exit 1;
 }
 
+my $ID = $opt_I;
+my $ID_FILENAME;
+my $DO_QUEUE = $opt_Q;
+my $DO_QUERY;
+
+if (defined($opt_I)) {
+    $ID = $opt_I;
+}
+elsif (defined($opt_Q)){
+    $ID_FILENAME = $opt_f;
+    unless ($ID_FILENAME) {
+        print trv_get_usage();
+        exit 1;
+    }
+}
+else {
+    $DO_QUERY = 1;
+}
+
 my $C = new Context;
 
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
-
-my $ID = $opt_I;
-my $ID_FILENAME = $opt_F;
 
 my $whoami = `whoami`;
 chomp($whoami);
@@ -57,7 +76,7 @@ my $db = new Database($whoami, $passwd, 'ht', 'mysql-sdr');
 my $DBH = $db->get_DBH();
 
 sub trv_get_usage {
-    return qq{Usage: test-rights-v/db.pl -r run -F outfile  [-I id] \nchecks for id(s) consistency in Solr vs. ht.rights_current.\n};
+    return qq{Usage: test-rights-errors -r run -f outfile | -Q -f infile | -I id\n\tchecks for id(s) consistency in Solr vs. ht.rights_current and writes list to stdout or reads file list and queues (-Q) to ht.slip_errors.\n};
 }
 
 my $ROWS = 100;
@@ -67,12 +86,12 @@ sub test_ids_from_Solr {
     
     my $query = 
       $ID 
-        ? qq{q=id:$ID\&rows=$ROWS\&fl=id,rights} 
+        ? qq{q=id:$ID\&fl=id,rights} 
           : qq{q=*:*\&start=$start\&rows=$ROWS\&fl=id,rights};
 
     my $result = `$ENV{SDRROOT}/slip/index/query-j -r$RUN -N -V -q'$query'`;
     my @result_arr = split("\n", $result);    
-
+    
     foreach my $res (@result_arr) {
         my ($id, $rights) = ($res =~ m,<doc><str name="id">(.*?)</str><int name="rights">(.*?)</int></doc>,);
          
@@ -88,19 +107,28 @@ sub test_ids_from_Solr {
         #print '.';
         #print "\n" if ($start % 500 == 0);
         
-        print "$id $@\n" if ($@);
+        print "\n$id $@\n" if ($@);
         if ($attr ne $rights) {
             print "\n$id solr=$rights db=$attr"
         }
+        elsif ($ID) {
+            print "\n$id OK: solr=$rights db=$attr\n";
+            
+        }
      }
  
-     return scalar @result_arr;
+     return $ID ? 0 : scalar @result_arr;
 }
 
 my $start_offset = 0;
 
-while ( test_ids_from_Solr($start_offset) ) {
-    $start_offset += $ROWS;
+if ($DO_QUEUE) {
+
+}
+else {
+    while ( test_ids_from_Solr($start_offset) ) {
+        $start_offset += $ROWS;
+    }
 }
 
 exit 0;

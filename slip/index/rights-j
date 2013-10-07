@@ -85,7 +85,7 @@ see help
 
 use strict;
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -151,7 +151,7 @@ sub r_get_usage {
     $s .= qq{     -n is check_only, no inserts to slip_rights\n};
     $s .= qq{     -L lag in days overrides default vSolr_num_lag_days\n};
     $s .= qq{     -T test compilation only. No operations\n};
-    $s .= qq{     -F insert IDs from file (missing from slip_rights)\n};
+    $s .= qq{     -F insert IDs from file (missing from or invalid in slip_rights)\n};
     $s .= qq{     -d options\n};
     $s .= qq{           1: me\n};
     $s .= qq{           2: me,lsdb\n};
@@ -349,7 +349,7 @@ sub repair_insert_id {
 
     my $s;
 
-    $s = "Repair: start process $nid";
+    $s = "\nRepair: start process $nid";
     __output("$s\n");
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
@@ -397,6 +397,8 @@ sub repair_insert_id {
 
     my $insert_hashref = $rights_hashref;
 
+    # Found in Solr and Catalog and rights_current so there's some
+    # field for this ID that's wrong in Solr.
     my ($ht_id_display_field) = ($$ref_to_vSolr_response =~ m,<arr name="ht_id_display">(.*?)</arr>,os);
     my ($ht_update_time) = ($ht_id_display_field =~ m,<str>\Q$nid\E\|(.*?)\|.*?</str>,s);
     my ($sysid) = ($$ref_to_vSolr_response =~ m,<str name="id">(.*?)</str>,os);
@@ -404,8 +406,8 @@ sub repair_insert_id {
     $insert_hashref->{'sysid'} = $sysid;
     $insert_hashref->{'timestamp_of_nid'} = $ht_update_time;
 
-    my $case = Db::Replace_j_rights_id($C, $dbh, $insert_hashref, $Check);
-    if (! grep(/^$case$/, ('NEW', 'NOOP', 'MOVED', 'UPDATED'))) {
+    my $case = Db::Replace_j_rights_id($C, $dbh, $insert_hashref, $Check, 'force');
+    if (! grep(/^$case$/, ('FORCED'))) {
         $s = qq{Repair: Software error: invalid case value=$case } . Utils::Time::iso_Time();
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
@@ -413,7 +415,7 @@ sub repair_insert_id {
     }
     else {
         $s = "Repair: processed $nid, case=$case";
-        __output("$s\n\n");
+        __output("$s\n");
         r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 
         return $case;
@@ -520,6 +522,7 @@ sub __process_rights_from_errors {
     $totals_hashref->{num_m_vufind_http} = 0;
     $totals_hashref->{num_m_missing_vufind} = 0;
     $totals_hashref->{num_m_missing_rights} = 0;
+    $totals_hashref->{num_forced} = 0;
 
     my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
     my $num_metadata_errors = scalar(@$id_arr_hashref);
@@ -537,22 +540,9 @@ sub __process_rights_from_errors {
             my $id = $hashref->{'id'};
 
             my $case = repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs);
-            if ($case eq 'NEW') {
-                # Repair succeeded: ID added to slip_rights
-                $totals_hashref->{num_m_errors_repaired}++;
-                $s = qq{Repair[REPAIRED]: NEW $id from slip_errors added to slip_rights };
-            }
-            elsif ($case eq 'NOOP') {
-                $totals_hashref->{num_m_not_missing}++;
-                $s = qq{Repair[]: NOOP $id already in slip_rights };
-            }
-            elsif ($case eq 'MOVED') {
-                $totals_hashref->{num_m_anomalies}++;
-                $s = qq{Repair[]: (anomalous) MOVED $id already in slip_rights };
-            }
-            elsif ($case eq 'UPDATED') {
-                $totals_hashref->{num_m_anomalies}++;
-                $s = qq{Repair[]: (anomalous) UPDATED $id already in slip_rights };
+            if ($case eq 'FORCED') {
+                $totals_hashref->{num_forced}++;
+                $s = qq{Repair[]: $id update forced };
             }
             elsif ($case eq 'VuFind_BADHTTP') {
                 $totals_hashref->{num_m_vufind_http}++;
@@ -599,6 +589,15 @@ advance the timestamp.
 Insert in blocks of SLICE_SIZE. Anomalies count items from bib
 records that are not in rights_current.  These are logged and must be
 corrected manually.
+
+NOTE: this will only handle ids with a vSolr update time newer than
+the last time we queried vSolr.  If the update time is corrected in
+vSlolr retrospectively and is set to a time older than the last time
+we queried the update will be missed.
+
+We will need to identify these sorts of ids (using
+e.g. test-rights-v-db.pl) and queue them to ht.slip_errors and set the
+FORCE parameter to make them update.
 
 =cut
 
@@ -757,18 +756,18 @@ Description
 # ---------------------------------------------------------------------
 sub r_slice_report {
     my ($C, $dbh, $slice_start, $offset, $slice_ids, $anomalies, $sref, $tref) = @_;
-
+    
     my $slice_elapsed = __hiresTime() - $slice_start;
     my $idsPsec = sprintf("%.2f", ($slice_ids + $anomalies)/$slice_elapsed);
-
+    
     my $size = Db::Select_count_from_j_rights($C, $dbh);
-
+    
     my $s =
-        qq{Checkpoint: slip_rights size=$size off=$offset\n}
-            . qq{  slice_ids=$slice_ids anom=$anomalies new=$sref->{'NEW'} noop=$sref->{'NOOP'} upd=$sref->{'UPDATED'} mov=$sref->{'MOVED'}\n}
-                . qq{  total_ids=$tref->{'ids'} total_anom=$anomalies total_new=$tref->{'NEW'} total_noop=$tref->{'NOOP'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'} total_meta_updates=$tref->{'meta_upd'}\n}
-                    . qq{  rate=$idsPsec ids/sec };
-
+      qq{Checkpoint: slip_rights size=$size off=$offset\n}
+        . qq{  slice_ids=$slice_ids anom=$anomalies new=$sref->{'NEW'} noop=$sref->{'NOOP'} upd=$sref->{'UPDATED'} mov=$sref->{'MOVED'}\n}
+          . qq{  total_ids=$tref->{'ids'} total_anom=$anomalies total_new=$tref->{'NEW'} total_noop=$tref->{'NOOP'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'} total_meta_updates=$tref->{'meta_upd'}\n}
+            . qq{  rate=$idsPsec ids/sec };
+    
     __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 }
@@ -784,7 +783,7 @@ Description
 # ---------------------------------------------------------------------
 sub r_downtime_report {
     my ($C, $timestamp) = @_;
-
+    
     my $s = qq{DOWNTIME: timestamp=$timestamp };
     __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
@@ -801,7 +800,7 @@ Description
 # ---------------------------------------------------------------------
 sub r_event_report {
     my ($C, $dbh, $offset, $hashref, $event) = @_;
-
+    
     my $nid = $hashref->{'nid'};
     my $attr = $hashref->{'attr'};
     my $reason = $hashref->{'reason'};
@@ -809,14 +808,14 @@ sub r_event_report {
     my $user = $hashref->{'user'};
     my $time = $hashref->{'time'};
     my $sysid = $hashref->{'sysid'};
-
+    
     # Get supplements to the rights_current data queried from slip_rights and nid processing
     my $timestamp_of_nid = $hashref->{'timestamp_of_nid'};
     my $timestamp_in_slip_rights = $hashref->{'timestamp_in_slip_rights'};
     my $sysid_in_slip_rights = $hashref->{'sysid_in_slip_rights'};
-
+    
     my $s =
-        qq{$event: nid=$nid attr=$attr reason=$reason source=$source user=$user time=$time timestamp_of_nid=$timestamp_of_nid timestamp_in_slip_rights=$timestamp_in_slip_rights slip_rights_sysid=$sysid_in_slip_rights vsolr_sysid=$sysid };
+      qq{$event: nid=$nid attr=$attr reason=$reason source=$source user=$user time=$time timestamp_of_nid=$timestamp_of_nid timestamp_in_slip_rights=$timestamp_in_slip_rights slip_rights_sysid=$sysid_in_slip_rights vsolr_sysid=$sysid };
     DEBUG('vsolr', qq{DEBUG: $s} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
 }
@@ -832,15 +831,12 @@ Description
 # ---------------------------------------------------------------------
 sub __get_repair_report {
     my $tr = shift;
-    my $s =
-      qq{Repair slip_rights by re-testing ids in slip_errors :}
-        . qq{\n\tslip_errors candidate ids=$tr->{num_m_errors} }
-          . qq{\n\tslip_errors ids added to slip_rights=$tr->{num_m_errors_repaired} }
-            . qq{\n\tslip_errors ids in catalog and slip_rights=$tr->{num_m_not_missing} }
-              . qq{\n\tslip_errors ids in catalog moved or updated in slip_rights=$tr->{num_m_anomalies} }
-                . qq{\n\tVuFind HTTP errors=$tr->{num_m_vufind_http} }
-                  . qq{\n\tslip_errors ids not in VuFind=$tr->{num_m_missing_vufind} } 
-                    . qq{\n\tslip_errors ids not in rights_current=$tr->{num_m_missing_rights} };
+    my $s = qq{Repair slip_rights by re-testing ids in slip_errors (or in -F file of ids):}
+      . qq{\n\tslip_errors candidate ids=$tr->{num_m_errors} }
+        . qq{\n\tVuFind HTTP errors=$tr->{num_m_vufind_http} }
+          . qq{\n\tslip_errors ids not in VuFind=$tr->{num_m_missing_vufind} } 
+            . qq{\n\tslip_errors ids not in rights_current=$tr->{num_m_missing_rights} }
+              . qq{\n\tslip_errors ids forced to update in slip_rights=$tr->{num_forced} };
     return $s;
 }
 
@@ -855,27 +851,27 @@ Description
 # ---------------------------------------------------------------------
 sub r_final_report {
     my ($C, $dbh, $process_start, $tref, $Check) = @_;
-
+    
     my $process_elapsed = __hiresTime() - $process_start;
     my $process_elapsed_min = sprintf("%.2f", $process_elapsed/60);
     my $idsPsec = sprintf("%.2f", ($tref->{'ids'} + $tref->{'anomalies'})/$process_elapsed);
-
+    
     my $size = Db::Select_count_from_j_rights($C, $dbh);
     my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
-
+    
     my $run_total = $tref->{'NEW'} + $tref->{'UPDATED'} + $tref->{'MOVED'};
     my $repair_report = __get_repair_report($tref);
-
+    
     my $s =
-        qq{\nUpdate: slip_rights size=$size total_ids_seen=$tref->{'ids'} total_bib_seen=$tref->{'bib_record_ct'}\n}
-            . qq{\tthis_run_total=$run_total :: total_new=$tref->{'NEW'} total_upd=$tref->{'UPDATED'} total_mov=$tref->{'MOVED'}\n}
-                . qq{\ttotal_noop=$tref->{'NOOP'} total_anom=$tref->{'anomalies'} total_meta_updates=$tref->{'meta_upd'}\n}
-                    . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min\n}
-                      . qq{$repair_report};
-
-    __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
+      qq{\nUpdate slip_rights size=$size total_ids_seen=$tref->{ids} total_bib_seen=$tref->{bib_record_ct}\n}
+        . qq{\tthis_run_total=$run_total :: total_new=$tref->{NEW} total_upd=$tref->{UPDATED} total_mov=$tref->{MOVED} }
+          . qq{total_noop=$tref->{NOOP} total_anom=$tref->{anomalies} total_meta_updates=$tref->{meta_upd}\n}
+            . qq{\trate=$idsPsec id/sec t=$timestamp elapsed=$process_elapsed_min min\n}
+              . qq{$repair_report};
+    
+    __output(qq{$s\n\t} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-
+    
     if (! $INTERACTIVE || $FORCE_EMAIL) {
         my $HOST = `hostname`;
         $HOST =~ s,\..*$,,s;
