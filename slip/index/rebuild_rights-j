@@ -702,7 +702,7 @@ sub r_r_slice_report {
 
     my $s0 = sprintf("remains=%s", $time_remaining);
 
-    my $s = qq{Checkpoint($phase): rate=$idsPsec units/sec slice_units=$slice_units anom=$anomalies total_ids=$total_ids total_records_1=$total_records_1 total_records_2=$total_records_2 total_anomalies=$total_anomalies $s0 } . Utils::Time::iso_Time() . qq{\n};
+    my $s = qq{Checkpoint($phase): rate=$idsPsec units/sec slice_units=$slice_units anom=$anomalies total_item_ids=$total_ids total_bib_records_phase_one=$total_records_1 total_bib_records_phase_two=$total_records_2 total_anomalies=$total_anomalies $s0 } . Utils::Time::iso_Time() . qq{\n};
 
     __output(qq{$s});
     r_r_rights_Log($C, $s);
@@ -733,7 +733,7 @@ sub r_r_final_report {
     my $total_anomalies = $tref->{anomalies};
 
     my $s =
-        qq{\nFinal report: slip_rights size=$size total_ids=$total_ids total_records_1=$total_records_1 total_records_2=$total_records_2 total_anomalies=$total_anomalies\n}
+        qq{\nFinal report: slip_rights size=$size total_item_ids=$total_ids total_bib_records_pahse_one=$total_records_1 total_bib_records_pahse_two=$total_records_2 total_anomalies=$total_anomalies\n}
           . qq{\trate=$idsPsec id/sec vsolr_timestamp=$timestamp elapsed=$process_elapsed_min min\n};
 
     __output(qq{$s\t at } . Utils::Time::iso_Time() . qq{\n});
