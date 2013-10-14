@@ -70,7 +70,7 @@ else {
     my $start_offset = 0;
     while ( test_ids_in_Solr($start_offset) ) {
         $start_offset += $ROWS;
-        print STDERR "$start_offset.";
+        print "$start_offset.";
     }
 }
 
