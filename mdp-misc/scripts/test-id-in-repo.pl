@@ -6,9 +6,35 @@
 use Getopt::Std;
 use File::Pairtree;
 
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+use Context;
+use Database;
+use DbUtils;
+use SLIP_Utils::Common;
+use Password;
+
 our ($opt_F, $opt_I);
 
 my $ops = getopts('I:F:');
+
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config(11);
+$C->set_object('MdpConfig', $config);
+
+my $whoami = `whoami`;
+chomp($whoami);
+print STDERR "Enter passwd: ";
+my $passwd = Password::get_password();
+print STDERR "\n";
+
+
+my $db = new Database($whoami, $passwd, 'ht', 'mysql-sdr');
+my $DBH = $db->get_DBH();
 
 
 my $ID = $opt_I;
@@ -45,6 +71,15 @@ sub load_ids_from_file {
     return $arr;
 }
 
+sub get_rights_row {
+    my ($namespace, $barcode) = @_;
+
+    my $statement = qq{SELECT count(*) FROM rights_current WHERE namespace=? AND id=?};
+    my $sth = DbUtils::prep_n_execute($DBH, $statement, $namespace, $barcode);
+    my $count = $sth->fetchrow_array();
+
+    return $count;
+}
 
 
 sub test_ids {
@@ -70,11 +105,14 @@ sub test_ids {
             # Initial pairtree module
             $File::Pairtree::root = $root;
             my $path = File::Pairtree::id2ppath($barcode) . File::Pairtree::s2ppchars($barcode);
+            my $exists = get_rights_row($namespace, $barcode);
+            my $s = $exists ? 'exists in rights_current' : 'NOT exists in rights_current';
+            
             if (-e $path) {
-                print qq{$id exists at $path\n};
+                print qq{$id in repo at $path, $s\n};
             }
             else {
-                print qq{$id does not exist\n};
+                print qq{$id does not exist, $s\n};
             }
         }
     }
