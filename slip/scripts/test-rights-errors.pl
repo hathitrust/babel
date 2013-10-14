@@ -90,7 +90,7 @@ sub call_solr {
     unless ($rs->http_status_ok()) {
         my $status = $rs->get_status_line;
         print "Solr HTTP error: $status\n";
-        return;
+        return [];
     }
      
     my $result_docs_arr_ref = $rs->get_result_docs();
