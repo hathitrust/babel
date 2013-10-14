@@ -99,6 +99,8 @@ if (! $QUERY) {
     exit 1;
 }
 
+$QUERY = Identifier::get_safe_Solr_id($QUERY);
+
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }

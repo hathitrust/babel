@@ -10,10 +10,11 @@ enqueuer-j
 
 =head1 DESCRIPTION
 
-enqueuer-j reads the timestamp recorded in slip_rights_timestamp when
-it last did work. If there are ids in slip_rights newer or _equal_ than
-that time, it inserts those ids into the queue to be processed for the
-given run.  Producers (index-j) read and dequeue from the queue.
+enqueuer-j reads the timestamp [MAX(update_time)] recorded in
+slip_rights_timestamp when it last did work. If there are ids in
+slip_rights newer or _equal_ than that time, it inserts those ids into
+the queue to be processed for the given run.  Producers (index-j) read
+and dequeue from the queue.
 
 The enqueuer-j runs independently of the other scripts, i.e if index-j
 is disabled, enqueuer-j still runs.
@@ -225,8 +226,13 @@ sub enqueue_from_FILE {
         qu_Log_misc($C, $run, $s);
         __output("$s\n");
 
-        unless ($CHECK) {
-            __confirm("OK to proceed? [N] ");
+        if ($CHECK) {
+            $s = qq{Check mode: zero (0) items inserted into main queue};
+            qu_Log_misc($C, $run, $s);
+            __output("$s\n");
+        }
+        else {
+            __confirm("OK to insert these into main queue? [N] ");
             Db::handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids);
             $s = qq{inserted $num_loaded items from file=$ID_FILENAME into main queue};
             qu_Log_misc($C, $run, $s);

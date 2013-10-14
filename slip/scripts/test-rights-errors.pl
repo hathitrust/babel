@@ -24,14 +24,12 @@ use SLIP_Utils::States;
 
 use Search::Searcher;
 use Search::Query;
-use Search::Result::SLIP;
+use Search::Result::SLIP_Raw;
+;
 
-our ($opt_r, $opt_f, $opt_T, $opt_I);
+our ($opt_r, $opt_I);
 
-my $ops = getopts('r:f:TI:');
-
-my $TEST_ONLY = defined($opt_T);
-exit 0 if ($TEST_ONLY);
+my $ops = getopts('r:I:');
 
 my $RUN = $opt_r;
 if (! defined $RUN) {
@@ -40,8 +38,6 @@ if (! defined $RUN) {
 }
 
 my $ID = $opt_I;
-my $ID_FILENAME;
-
 if (defined($opt_I)) {
     $ID = $opt_I;
 }
@@ -60,10 +56,10 @@ print STDERR "\n";
 # Database connection
 my $db = new Database($whoami, $passwd, 'ht', 'mysql-sdr');
 my $DBH = $db->get_DBH();
-my $ROWS = 100;
+my $ROWS = 1000;
 
 sub trv_get_usage {
-    return qq{Usage: test-rights-errors -r run [-I id]\n\tchecks for id(s) consistency in Solr vs. ht.rights_current and writes list to stdout.\n};
+    return qq{Usage: test-rights-errors.pl -r run [-I id]\n\tchecks for id(s) consistency in Solr vs. ht.rights_current and writes list to stdout.\n};
 }
 
 
@@ -74,11 +70,32 @@ else {
     my $start_offset = 0;
     while ( test_ids_in_Solr($start_offset) ) {
         $start_offset += $ROWS;
+        print STDERR "$start_offset.";
     }
 }
 
 
 exit 0;
+
+
+# ---------------------------------------------------------------------
+sub call_solr {
+    my $query = shift;
+    
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
+    my $searcher = new Search::Searcher($engine_uri, undef, 1);
+    my $rs = new Search::Result::SLIP_Raw;
+
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+    unless ($rs->http_status_ok()) {
+        print "Solr HTTP error\n";
+        exit 1;
+    }
+     
+    my $result_docs_arr_ref = $rs->get_result_docs();
+
+    return $result_docs_arr_ref;
+}
 
 # ---------------------------------------------------------------------
 
@@ -93,15 +110,15 @@ sub test_ids_in_Solr {
     my $start = shift;
 
     my $query = qq{q=*:*&start=$start&rows=$ROWS&fl=id,rights};
-    my $result = `$ENV{SDRROOT}/slip/index/query-j -r$RUN -N -V -q'$query'`;
+    my $result_docs_arr_ref = call_solr($query);
 
-    my @result_arr = split("\n", $result);
-
-    foreach my $res (@result_arr) {
-        my ($id, $rights) = ($res =~ m,<doc><str name="id">(.*?)</str><int name="rights">(.*?)</int></doc>,);
-
+    foreach my $res (@$result_docs_arr_ref) {
+        my ($rights) = ($res =~ m,<int name="rights">(.*?)</int>,);
+        my ($id) = ($res =~ m,<str name="id">(.*?)</str>,);
+        print STDERR "$id\n";
+        
         my $attr;
-        my ($namespace, $barcode) = Identifier::__split_id($id);
+        my ($namespace, $barcode) = Identifier::split_id($id);
          eval {
              my $statement = qq{SELECT attr FROM ht.rights_current WHERE namespace='$namespace' AND id='$barcode'};
              my $sth = DbUtils::prep_n_execute($DBH, $statement);
@@ -113,9 +130,8 @@ sub test_ids_in_Solr {
             print qq{\n$id FAIL [ LSS solr rights ]="$rights" [ ht.rights_current.attr ]="$attr"};
         }
     }
-    print STDERR ' .';
     
-    return scalar @result_arr;
+    return scalar @$result_docs_arr_ref 
 }
 
 # ---------------------------------------------------------------------
@@ -129,17 +145,20 @@ Description
 # ---------------------------------------------------------------------
 sub test_one_id_in_Solr {
 
-    my $query = qq{q=id:$ID\&fl=id,rights};
-    my $result = `$ENV{SDRROOT}/slip/index/query-j -r$RUN -N -V -q'$query'`;
+    my $safe_id = Identifier::get_safe_Solr_id($ID);
 
+    my $query = qq{q=id:$safe_id&fl=id,rights};
+    my $result_docs_arr_ref = call_solr($query);
+    my $result = $result_docs_arr_ref->[0];
+    
     unless ($result) {
         print "\n$ID not in LSS Solr";
     }
-
-    my ($id, $rights) = ($result =~ m,<doc><str name="id">(.*?)</str><int name="rights">(.*?)</int></doc>,);
-
+    my ($rights) = ($result =~ m,<int name="rights">(.*?)</int>,);
+    my ($id) = ($result =~ m,<str name="id">(.*?)</str>,);
+        
     my $attr;
-    my ($namespace, $barcode) = Identifier::__split_id($ID);
+    my ($namespace, $barcode) = Identifier::split_id($ID);
     eval {
         my $statement = qq{SELECT attr FROM ht.rights_current WHERE namespace='$namespace' AND id='$barcode'};
         my $sth = DbUtils::prep_n_execute($DBH, $statement);

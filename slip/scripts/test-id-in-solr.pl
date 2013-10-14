@@ -9,6 +9,8 @@ use Vendors;
 
 # Perl
 use Getopt::Std;
+use File::Pairtree;
+
 # App
 use Context;
 use Utils;
@@ -69,12 +71,12 @@ sub load_ids_from_file {
         $ok = open(IDS, "<$filename");
     };
     if ($@) {
-        my $s0 = qq{i/o ERROR:($@) opening file="$filename"\n};
+        print STDERR qq{i/o ERROR:($@) opening file="$filename"\n};
         exit 1;
     }
 
     if (! $ok) {
-        my $s1 = qq{could not open file="$filename"\n};
+        print STDERR qq{could not open file="$filename"\n};
         exit 1;
     }
 
@@ -105,6 +107,21 @@ sub test_ids {
         print qq{loaded $num_loaded items from file=$ID_FILENAME\n} if ($ID_FILENAME);
         
         foreach my $id (@$ref_to_arr_of_ids) {
+
+            my $path_result;
+            
+            my ($namespace, $barcode) = ($id =~ m,^(.*?)\.(.*?)$,);
+            my $root = q{/sdr1/obj/} . $namespace . q{/pairtree_root};
+
+            $File::Pairtree::root = $root;
+            my $path = File::Pairtree::id2ppath($barcode) . File::Pairtree::s2ppchars($barcode);
+            if (-e $path) {
+                $path_result = 'REPO_ONE';
+            }
+            else {
+                $path_result = 'REPO_ZERO';
+            }
+
             my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
             my $searcher = new Search::Searcher($engine_uri, undef, 1);
             my $rs = new Result::SLIP();
@@ -125,7 +142,7 @@ sub test_ids {
                     $solr_result = 'SOLR_MULTIPLE';
                 }
                 elsif ($num_found == 1) {
-                    $solr_result = 'SOLR_ONE';
+                    $solr_result = 'SOLR_ONE ';
                 }
                 else {
                     $solr_result = 'SOLR_ZERO';
@@ -143,18 +160,24 @@ sub test_ids {
                 $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
             };
             if ($@) {
-                $rights_result = 'RIGHTS_DB';
+                $rights_result = 'RIGHTS_DB ';
             }
             else {
                 if ($ref_to_arr_of_hashref->[0]->{nid}) {
-                    $rights_result = 'RIGHTS_ONE';
+                    $rights_result = 'RIGHTS_ONE ';
                 }
                 else {
                     $rights_result = 'RIGHTS_ZERO';
                 }
             }
 
-            print "$id solr=$solr_result rights=$rights_result\n";
+            my $url = "http://solr-sdr-catalog:9033/catalog/select/?q=ht_id:$safe_id&start=0&rows=0";
+            my $result = `curl --silent '$url'`;
+            my ($catalog_result) = ($result =~ m,numFound="(.*?)",);
+            $catalog_result = $catalog_result ? 'CATALOG_ONE' : 'CATALOG_ZERO';
+            
+            printf("%-20s solr=%s rights=%s repo=%s catalog=%s\n", 
+                   $id, $solr_result, $rights_result, $path_result, $catalog_result);
         }
     }
 }

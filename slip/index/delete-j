@@ -155,7 +155,7 @@ sub delete_Solr_doc {
     # is not 8.
     my $slip_rights_attr = Db::Select_j_rights_id_attr($C, $DBH, $id);
 
-    my ($namespace, $barcode) = split(/\./, $id);
+    my ($namespace, $barcode) = Identifier::split_id($id);
     my $row_hashref = Db::Select_latest_rights_row($C, $DBH, $namespace, $barcode);
     my $rights_current_attr = $row_hashref->{attr};
 
@@ -169,8 +169,27 @@ sub delete_Solr_doc {
         ? $known_shard
           : Db::Select_item_id_shard($C, $DBH, $run, $id);
 
-    if (! $shard) {
-        __output(qq{Shard for id=$id not found. Skipping. (Already deleted?)\n});
+    unless ($shard) {
+        __output(qq{Shard for id=$id not found in slip_indexed. Checking Solr too.\n});
+        my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+
+        foreach my $_shard (@shards) {
+            my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
+            my $query = qq{q=id:$safe_id&fl=id};
+            my $result = `$ENV{SDRROOT}/slip/index/query-j -r$run -B -R$_shard -q'$query' -N`;
+            my @ids = ($result =~ m,<str name="id">(.*?)</str>,g);
+            my $rows_returned = scalar(@ids);
+
+            if ($rows_returned > 0) {
+                $shard = $_shard;
+                __output(qq{Shard=$shard for id=$id found in Solr.\n});
+                last;
+            }
+        }
+    }
+
+    unless ($shard) {
+        __output(qq{Shard for id=$id not found in Solr either.\n});
         return;
     }
 

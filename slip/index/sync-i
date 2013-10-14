@@ -302,7 +302,7 @@ sub __id_exists {
 
     if ($num_found == 0) {
         # Was it "nobody"?
-        my ($namespace, $barcode) = split(/\./, $id);
+        my ($namespace, $barcode) = Identifier::split_id($id);
         my $rights_hashref = Db::Select_latest_rights_row($C, $DBH, $namespace, $barcode);
         my $attr = $rights_hashref->{attr};
         if ($attr == $RightsGlobals::g_available_to_no_one_attribute_value) {

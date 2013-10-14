@@ -98,14 +98,10 @@ our ($opt_r, $opt_f, $opt_E, $opt_d, $opt_C, $opt_S);
 
 my $ops = getopts('fr:E:dCS:');
 
-# Required
-my $RUN = $opt_r;
+my $RUN = $opt_r; # Required
+
 my $SEND_EMAIL = $opt_f; # optionsl
 my $COMMITTED = defined($opt_C);
-if ($COMMITTED) {
-    __confirm("The -C option queries the index and will leave Readers open.\nThis increases disk size by not allowing segments to be deleted.\nTomcat restart required.\n\tOK? [N] ");
-}
-
 my $SECTION = $opt_S || 'A'; # optional, report all sections by default
 my $ERRORS = $opt_E; # optional
 
@@ -712,7 +708,7 @@ sub report_configuration {
     my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
 
     __Print qq{\trights:\n\t\tenabled=$rights_enabled\n};
-    __Print qq{\t\tslip_rights MAX(update_time)=$v_timestamp, enqueuer-j last timestamp=$r_timestamp, slip_rights size=$slip_rights_size\n};
+    __Print qq{\t\tslip_rights MAX(update_time)=$v_timestamp, enqueuer-j last update_time for run $run=$r_timestamp, slip_rights size=$slip_rights_size\n};
 
     # Driver
     # Enqueuer config

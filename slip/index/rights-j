@@ -6,13 +6,13 @@ rights-j
 
 =head USAGE
 
-% rights-j -r run [-T][-I][-d{1|2}]
+% rights-j -r run ... see usage below
 
 =head DESCRIPTION
 
 =head1 DATA SCHEMA
 
-The VuFind Solr index document has two fields to support slip_rights
+The VuFind Solr document has two fields to support slip_rights
 table updates to HathiTrust IDs (nid's: n]amespace + id).
 
 =over 4
@@ -20,13 +20,21 @@ table updates to HathiTrust IDs (nid's: n]amespace + id).
 =item ht_id_display [stored]:
 
 a repeating field that contains the nid(s) of volumes associated with
-the bib record together with the date each item was last updated and
-an optional enumcron if the work is multi-volume. For example:
+the bib record together with the date each item was last updated
+(update_time) and an optional enumcron if the work is
+multi-volume. For example:
 
 <arr name="ht_id_display">
-  <str>mdp.39015066198014|20090701|v.1</str>
-  <str>mdp.39015025339659|00000000|v.10</str>
-  <str>mdp.39015066198311|00000000|v.2</str>
+   <str>mdp.39015066198014|20090701|v.1</str>
+   <str>mdp.39015025339659|20120801|v.10</str>
+   <str>mdp.39015066198311|20120802|v.2</str>
+   <str>mdp.39015066198170|20120801|v.3</str>
+   <str>mdp.39015066198022|20120802|v.4</str>
+   <str>mdp.39015066198329|20120801|v.5</str>
+   <str>mdp.39015066198030|00000000|v.6</str>
+   <str>mdp.39015066198188|20120801|v.7</str>
+   <str>mdp.39015066198337|20120801|v.8</str>
+   <str>mdp.39015066198196|20120714|v.9</str>
 </arr>
 
 =item ht_id_update [not stored]:
@@ -34,26 +42,38 @@ an optional enumcron if the work is multi-volume. For example:
 the date when the bib record was last updated due to a change/addition
 to the list in the ht_id_display field. One or more dates on the items
 in the ht_id_didplay field will be the same as this field's value. In
-the above example, ht_id_update would be 20090701.
+the above example, ht_id_update would be:
 
+<arr name="ht_id_update">
+   <int>20090701</int>
+   <int>20120801</int>
+   <int>20120802</int>
+   <int>20120801</int>
+   <int>20120802</int>
+   <int>20120801</int>
+   <int>0</int>
+   <int>20120801</int>
+   <int>20120801</int>
+   <int>20120714</int>
+</arr>
+   
 =back
 
 =head1 QUERYING
 
-rights-j does a query based on timestamp=D, where D is 2 days earlier
-than the last run of rights-j.  The lag is to avoid overlooking
-records than could have been added to the VuFind Solr index after
-j-rights ran that day
-
-=over 4
+rights-j does a VuFind query based on timestamp=D which is the
+MAX(update_time) seen following its latest query. The default for D is
+2 days earlier than the last run of rights-j.  The lag is to avoid
+overlooking records than could have been added to the VuFind Solr
+index after j-rights ran that day:
 
 =item q=ht_id_update:[D TO *],fl=ht_id_display
 
-These are bib records for added or updated (rights changed) volumes
-but not for volumes where just the record-level metadata has changed.
-These volumes correspond to ht_id_display items with dates equal or
-newer that D. Just these volumes re-indexed to reflect their addition,
-rights changes or reloaded status.
+These are bib records for added or updated volumes where rights
+changed or where the record-level metadata has changed.  These volumes
+correspond to ht_id_display items with dates equal or newer that
+D. Just these volumes are re-indexed to reflect their addition, rights
+changes or reloaded status.
 
 =back
 
@@ -62,14 +82,17 @@ rights changes or reloaded status.
 rights-j gets timestamp=D from the slip_vsolr_timestamp table which
 records the newest update_time seen when rights-j last ran.
 
-rights-j parses the item ids from the bib records and queries
-rights table for the complete set of rights data for that id and
-REPLACES INTO the slip-rights with an update_time=vsolr_update_time.
+rights-j parses the item ids from the bib records and queries rights
+table for the complete set of rights data for that id and REPLACES
+INTO the slip_rights table with an update_time=vsolr_update_time.
 
 enqueuer-j script processes records with an update_time newer than the
-newest update_time seen on any record the last time it ran. Processing
-means to copy from slip-rights into slip-queue to be later consumed
-by the index-j script.
+newest update_time seen on any record the last time it ran. It
+records, for the run it is queuing items for, the update_time is used
+to determine which items to queue up.  Different runs may have
+different pointers (update_times) into slip_rights.  Processing means
+copying from slip_rights into slip_queue to be later consumed by the
+index-j script.
 
 =head1 OPTIONS
 
@@ -384,7 +407,7 @@ sub repair_insert_id {
         return 'VuFind_BADHTTP';
     }
 
-    my ($namespace, $barcode) = split(/\./, $nid);
+    my ($namespace, $barcode) = Identifier::split_id($nid);
     my $rights_hashref = Db::Select_latest_rights_row($C, $dbh, $namespace, $barcode);
     if (! $rights_hashref) {
         $s = "Repair: Rights lookup $nid fail";
