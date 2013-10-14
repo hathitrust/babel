@@ -115,7 +115,7 @@ sub test_ids_in_Solr {
     foreach my $res (@$result_docs_arr_ref) {
         my ($rights) = ($res =~ m,<int name="rights">(.*?)</int>,);
         my ($id) = ($res =~ m,<str name="id">(.*?)</str>,);
-        print STDERR "$id\n";
+        #print STDERR "$id\n";
         
         my $attr;
         my ($namespace, $barcode) = Identifier::split_id($id);
