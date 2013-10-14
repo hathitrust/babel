@@ -88,8 +88,9 @@ sub call_solr {
 
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
     unless ($rs->http_status_ok()) {
-        print "Solr HTTP error\n";
-        exit 1;
+        my $status = $rs->get_status_line;
+        print "Solr HTTP error: $status\n";
+        return;
     }
      
     my $result_docs_arr_ref = $rs->get_result_docs();
