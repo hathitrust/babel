@@ -25,7 +25,8 @@ use SLIP_Utils::States;
 use Search::Searcher;
 use Search::Query;
 use Search::Result::SLIP_Raw;
-;
+use IO::Handle;
+autoflush STDOUT 1;
 
 our ($opt_r, $opt_I);
 
