@@ -129,7 +129,7 @@ sub test_ids_in_Solr {
         print "\n$id FAIL $@" if ($@);
 
         if ($attr ne $rights) {
-            print qq{\n$id FAIL [ LSS solr rights ]="$rights" [ ht.rights_current.attr ]="$attr"};
+            print qq{\n$id FAIL [ LSS solr rights ]="$rights" [ ht.rights_current.attr ]="$attr"\n};
         }
     }
     
