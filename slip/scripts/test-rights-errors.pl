@@ -198,6 +198,7 @@ sub test_ids {
         # SLIP
         my $slip_attr    = $hashref->{attr};
         my $slip_profile = $hashref->{access_profile};
+        my $slip_time    =  $hashref->{update_time};
 
         # rights_current
         my $rights_hashref = get_rights_current($nid);
@@ -223,6 +224,7 @@ sub test_ids {
         }
 
         if ($error) {
+            $error .= qq{ update $slip_time};
             if ($ENQUEUE) {
                 `echo 'y' | $ENV{SDRROOT}/slip/index/enqueuer-j -r11 -I $nid`;
             }
