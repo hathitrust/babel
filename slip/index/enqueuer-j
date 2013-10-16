@@ -97,7 +97,7 @@ Description
 # ---------------------------------------------------------------------
 sub qu_get_usage {
     my $s;
-    $s .= qq{Usage: enqueuer-j -r run [-n][-d][-S][-H][-F filename]};
+    $s .= qq{Usage: enqueuer-j -r run [-S][-H] | [-F filename] | [-I itemid], common: [-n][-d] };
     $s .= qq{\n\twhere};
     $s .= qq{\n\t\t-n Do not queue. Only report what would be queued};
     $s .= qq{\n\t\t-F enqueue from <filename>};
@@ -108,9 +108,9 @@ sub qu_get_usage {
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_F, $opt_n, $opt_S, $opt_H);
+our ($opt_d, $opt_r, $opt_F, $opt_n, $opt_S, $opt_H, $opt_I);
 
-my $ops = getopts('dr:F:nSH');
+my $ops = getopts('dr:F:nSHI:');
 
 # Required
 my $RUN = $opt_r;
@@ -126,11 +126,15 @@ if (! $opt_r) {
 
 my $CHECK = defined($opt_n);
 
-# Enqueue ids from a file
+# Enqueue ids from a file or individual id
+my $ID;
 my $ID_FILENAME;
 my $SHARED_ONLY;
 my $HOLDINGS_ONLY;
-if (defined($opt_F)) {
+if (defined($opt_I)) {
+    $ID = $opt_I;
+}
+elsif (defined($opt_F)) {
     $ID_FILENAME = $opt_F;
 }
 elsif (defined($opt_S)) {
@@ -175,19 +179,22 @@ $C->set_object('MdpConfig', $config);
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'enqueuer-j');
 
 eval {
-    if (defined($ID_FILENAME)) {
-        enqueue_from_FILE($C, $DBH, $RUN);
-    }
-    else {
-        if (qu_enqueuer_enabled($C, $DBH, $RUN) || $INTERACTIVE) {
+    if (qu_enqueuer_enabled($C, $DBH, $RUN) || $INTERACTIVE) {
+        if (defined($ID)) {
+            enqueue_ID($C, $DBH, $RUN);
+        }
+        elsif (defined($ID_FILENAME)) {
+            enqueue_from_FILE($C, $DBH, $RUN);
+        }
+        else {
             enqueue_from_j_rights($C, $DBH, $RUN) unless ($SHARED_ONLY || $HOLDINGS_ONLY);
             enqueue_from_shared_queue($C, $DBH, $RUN) unless ($HOLDINGS_ONLY);
             enqueue_from_holdings_delta($C, $DBH, $RUN) unless ($SHARED_ONLY);
         }
-        else {
-            my $s = qq{enqueuer-j not enabled\n};
-            __output($s);
-        }
+    }
+    else {
+        my $s = qq{enqueuer-j not enabled\n};
+        __output($s);
     }
 };
 if ($@) {
@@ -204,6 +211,35 @@ exit 0;
 #
 # --------------------- S u b r o t i n e s   -------------------------
 #
+
+# ---------------------------------------------------------------------
+
+=item enqueue_ID
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_ID {
+    my ($C, $dbh, $run) = @_;
+
+    my $ref_to_arr_of_ids = [ $ID ];
+
+    my $s;
+    if ($CHECK) {
+        $s = qq{Check mode: zero (0) items inserted into main queue};
+        qu_Log_misc($C, $run, $s);
+        __output("$s\n");
+    }
+    else {
+        __confirm("OK to insert $ID into main queue? [N] ");
+        Db::handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids);
+        $s = qq{$ID inserted into main queue};
+        qu_Log_misc($C, $run, $s);
+        __output("$s\n");
+    }
+}
 
 # ---------------------------------------------------------------------
 

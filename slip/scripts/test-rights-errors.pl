@@ -31,9 +31,9 @@ use Search::Result::SLIP_Raw;
 use IO::Handle;
 autoflush STDOUT 1;
 
-our ($opt_r, $opt_R, $opt_I);
+our ($opt_r, $opt_R, $opt_I, $opt_E);
 
-my $ops = getopts('r:I:R:');
+my $ops = getopts('r:I:R:E');
 
 my $RUN = $opt_r;
 if (! defined $RUN) {
@@ -41,6 +41,8 @@ if (! defined $RUN) {
     exit 1;
 }
 
+my $ENQUEUE = defined($opt_E);
+                      
 my $ID = $opt_I;
 if (defined($opt_I)) {
     $ID = $opt_I;
@@ -189,7 +191,7 @@ sub test_ids {
     my $ref_to_arr_of_hash_ref = shift;
 
     foreach my $hashref (@$ref_to_arr_of_hash_ref) {
-        my $s = '';
+        my $error = '';
 
         my $nid = $hashref->{nid};
 
@@ -213,16 +215,21 @@ sub test_ids {
             ||
             ($solr_attr ne $rights_attr)
            ) {
-            $s = qq{ solr_attr=$solr_attr slip_attr=$slip_attr rights_attr=$rights_attr};
-            print qq{\n$nid FAIL $s\n};
+            $error = qq{ solr_attr=$solr_attr slip_attr=$slip_attr rights_attr=$rights_attr};
         }
 
         if ($slip_profile ne $rights_profile) {
-            $s .= qq{ slip_profile=$slip_profile rights_profile=$rights_profile};
-            print qq{\n$nid FAIL $s\n};
+            $error .= qq{ slip_profile=$slip_profile rights_profile=$rights_profile};
         }
 
-        Log_consistency_error($C, "$nid $s") if $s;
+        if ($error) {
+            if ($ENQUEUE) {
+                `echo 'y' | $ENV{SDRROOT}/slip/index/enqueuer-j -r11 -I $nid`;
+            }
+            $error .= ($ENQUEUE ? " enqueued" : "");       
+            Log_consistency_error($C, "$nid $error");
+            print qq{\n$nid FAIL $error\n};
+        }
     }
 
     return scalar @$ref_to_arr_of_hash_ref;
