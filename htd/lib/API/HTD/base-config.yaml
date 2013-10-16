@@ -127,6 +127,7 @@ sources_name_map:
   12: um-dc-mp
   13: uiuc
   14: brooklynmuseum
+  15: uf
 
 _HTD_SCHEMAS_URI_:               http://schemas.hathitrust.org/htd/2009
 _HTD_PT_ALTERNATE_URI_:          http://babel.hathitrust.org/cgi/pt?id=__ID__

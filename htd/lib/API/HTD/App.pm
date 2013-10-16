@@ -733,7 +733,7 @@ sub __addHeaderInCopyrightMsg {
     if ($in_copyright) {
         my $access_key = $self->query->param('oauth_consumer_key') || 0;
         $self->header(
-                      $Header_Key => "user=$access_key;attr=$attr;access=data_api_user");
+                      $Header_Key => "user=$access_key,none;attr=$attr;access=data_api_user");
         hLOG('API: ' . qq{X-HathiTrust-InCopyright: access key=$access_key } . $resource_str);
     }
 }

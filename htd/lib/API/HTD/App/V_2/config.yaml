@@ -517,6 +517,7 @@ accessibility_matrix:
       um-dc-mp: open
       uiuc: open
       brooklynmuseum: open
+      uf: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -531,7 +532,8 @@ accessibility_matrix:
       getty: restricted
       um-dc-mp: restricted
       uiuc: restricted
-      brooklynmuseum: open
+      brooklynmuseum: restricted
+      uf: restricted
 
   volume:
     free:
@@ -549,6 +551,7 @@ accessibility_matrix:
       um-dc-mp: restricted_forbidden
       uiuc: restricted_forbidden
       brooklynmuseum: open
+      uf: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -563,7 +566,8 @@ accessibility_matrix:
       getty: restricted_forbidden
       um-dc-mp: restricted_forbidden
       uiuc: restricted_forbidden
-      brooklynmuseum: open
+      brooklynmuseum: restricted
+      uf: restricted
 
   volume/pageimage:
     free:
@@ -581,6 +585,7 @@ accessibility_matrix:
       um-dc-mp: open
       uiuc: open
       brooklynmuseum: open
+      uf: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -595,7 +600,8 @@ accessibility_matrix:
       getty: restricted
       um-dc-mp: restricted
       uiuc: restricted
-      brooklynmuseum: open
+      brooklynmuseum: restricted
+      uf: restricted
 
   volume/pageocr:
     free: *open-accessibility-block

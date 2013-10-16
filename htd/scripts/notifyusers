@@ -20,11 +20,11 @@ my @messages =
   (
    {
     subject => 'HathiTrust Data API Update',
-    body => "Greetings___USER___,\n\nYou are receiving this message as a registered user of the HathiTrust Data API.\n\nWe're writing to let you know that version 2 of the API is now available.  Access to version 1 will be discontinued on November 1, 2013.\n\nYou may want to refer to the version 2 documentation at http://www.hathitrust.org/data_api for details on changes to the URL syntax and new resources available from the API.\n\nPlease reply to this email or send email to feedback\@issues.hathitrust.org with with your questions or comments.\n\n\nRegards,\n\tHathiTrust.org",
+    body => "Greetings___USER___,\n\nYou are receiving this message as a registered user of the HathiTrust Data API.\n\nWe're writing to let you know that version 2 of the API is now available.  Access to version 1 will be discontinued on November 1, 2013.\n\nYou may want to refer to the version 2 documentation at http://www.hathitrust.org/data_api for details about changes to the URL syntax and new resources available from the API.\n\nPlease reply to this email or send email to feedback\@issues.hathitrust.org with with your questions or comments.\n\n\nRegards,\n\tHathiTrust.org",
    },
   );
 
-my $DEBUG = 1;
+my $DEBUG = 0;
 
 my $DBH = API::DbIF::databaseConnect('ht_web');
 my $ref_to_arr_of_hashref = API::HTD::AuthDb::get_all_authentication_data($DBH);
@@ -55,20 +55,34 @@ foreach my $email (keys %users) {
     printf("%-25s %s\n", $users{$email}, $email);
 }
 
-if ($DEBUG) {
-    email_notification('pfarber@umich.edu', 'feedback@issues.hathitrust.org', $messages[0]);
-}
-else {
-    foreach my $email (keys %users) {
-#        email_notification($email, 'feedback@issues.hathitrust.org', 'Notification', $messages[0]);
+if (__confirm_email('List', 'looks')) {
+    if ($DEBUG) {
+        if (__confirm_email('Phillip Farber', 'pfarber@umich.edu')) { 
+            email_notification('pfarber@umich.edu', 'feedback@issues.hathitrust.org', $messages[0]);
+        }
+    }
+    else {
+        foreach my $email (keys %users) {
+            if (__confirm_email($users{$email}, $email)) { 
+                email_notification($email, 'feedback@issues.hathitrust.org', $messages[0]);
+            }
+        }
     }
 }
 
 
-
-
 exit 0;
 
+
+# ---------------------------------------------------------------------
+sub __confirm_email {
+    my ($user, $addr) = @_;    
+    
+    print "$user $addr OK? [n]";
+    my $pass_1 = <STDIN>;
+    return 0 if ($pass_1 !~ m,y,i);
+    return 1;
+}
 
 # ---------------------------------------------------------------------
 sub email_notification {
@@ -89,4 +103,5 @@ sub email_notification {
                   });
     print $mailer($body);
     $mailer->close;
+    print "Sent\n";    
 }
