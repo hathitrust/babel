@@ -61,7 +61,7 @@ my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-rights-er
 my $SLIP_RIGHTS_SLICE = 1000;
 
 sub trv_get_usage {
-    return qq{Usage: test-rights-errors.pl -r run [-I id] [-R <resume_offset>]\n\tchecks for id(s) consistency in Solr vs. ht.rights_current vs. ht.slip_rights and writes list to stdout.\n};
+    return qq{Usage: test-rights-errors.pl -r run [-I id] [-E ] [-R <resume_offset>]\n\t checks one id (-I) or all for consistency in Solr vs. ht.rights_current vs. ht.slip_rights. \n\t\tWrites list to stdout, logs and enqueues (-E).\n};
 }
 
 
