@@ -101,7 +101,7 @@ sub Log_consistency_error {
 sub get_solr_attr {
     my $nid = shift;
 
-    use constant MYTIMEOUT => 600; # 10 minutes 
+    use constant MYTIMEOUT => 1200; # 20 minutes 
 
     my $safe_id = Identifier::get_safe_Solr_id($nid);
     my $query = qq{q=id:$safe_id&fl=rights};
