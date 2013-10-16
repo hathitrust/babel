@@ -82,7 +82,7 @@ else {
         test_ids($ref_to_arr_of_hash_ref);
         
         $start_offset += $SLIP_RIGHTS_SLICE;
-        print "$start_offset.";
+        __output("$start_offset.");
     }
 }
 
@@ -113,7 +113,7 @@ sub get_solr_attr {
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
     unless ($rs->http_status_ok()) {
         my $status = $rs->get_status_line;
-        print "Solr HTTP error: $status\n";
+        __output("Solr HTTP error: $status\n");
         return 0;
     }
 
@@ -141,7 +141,7 @@ sub get_rights_current {
         my $sth = DbUtils::prep_n_execute($DBH, $statement);
         $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
     };
-    print "\nget_rights_current FAIL for $nid: $@" if ($@);
+    __output("\nget_rights_current FAIL for $nid: $@") if ($@);
 
     return $ref_to_arr_of_hash_ref->[0];
 }
@@ -157,7 +157,7 @@ sub get_slip_rights {
         my $sth = DbUtils::prep_n_execute($DBH, $statement);
         $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
     };
-    print "\nget_slip_rights FAIL at $offset: $@" if ($@);
+    __output("\nget_slip_rights FAIL at $offset: $@") if ($@);
 
     return $ref_to_arr_of_hash_ref;
 }
@@ -173,7 +173,7 @@ sub get_one_slip_rights {
         my $sth = DbUtils::prep_n_execute($DBH, $statement);
         $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
     };
-    print "\nget_one_slip_rights FAIL for $nid: $@" if ($@);
+    __output("\nget_one_slip_rights FAIL for $nid: $@") if ($@);
 
     return $ref_to_arr_of_hash_ref;
 }
@@ -228,7 +228,7 @@ sub test_ids {
             }
             $error .= ($ENQUEUE ? " enqueued" : "");       
             Log_consistency_error($C, "$nid $error");
-            print qq{\n$nid FAIL $error\n};
+            __output(qq{\n$nid FAIL $error\n});
         }
     }
 
