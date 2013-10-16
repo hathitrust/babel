@@ -99,11 +99,13 @@ sub Log_consistency_error {
 sub get_solr_attr {
     my $nid = shift;
 
+    use constant MYTIMEOUT => 600; # 10 minutes 
+
     my $safe_id = Identifier::get_safe_Solr_id($nid);
     my $query = qq{q=id:$safe_id&fl=rights};
 
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
-    my $searcher = new Search::Searcher($engine_uri, undef, 1);
+    my $searcher = new Search::Searcher($engine_uri, MYTIMEOUT, 1);
     my $rs = new Search::Result::SLIP_Raw;
 
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
