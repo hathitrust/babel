@@ -85,7 +85,7 @@ sub metadata_getter_get_metadata {
     my $C = shift;
 
     my $metadata_aryref = $self->get_vufind_metadata($C);
-    if ($metadata_aryref) {
+    if (scalar @$metadata_aryref) {
         $self->add_rights_data($C, $metadata_aryref);
     }
 
