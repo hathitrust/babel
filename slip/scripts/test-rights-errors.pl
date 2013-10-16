@@ -21,10 +21,13 @@ use Database;
 
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
+use SLIP_Utils::DatabaseWrapper;
+use SLIP_Utils::Log;
 
 use Search::Searcher;
 use Search::Query;
 use Search::Result::SLIP_Raw;
+
 use IO::Handle;
 autoflush STDOUT 1;
 
@@ -50,15 +53,9 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
-my $whoami = `whoami`;
-chomp($whoami);
-print STDERR "Enter passwd: ";
-my $passwd = Password::get_password();
-print STDERR "\n";
-
 # Database connection
-my $db = new Database($whoami, $passwd, 'ht', 'mysql-sdr');
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-rights-errors.pl');
+
 my $SLIP_RIGHTS_SLICE = 1000;
 
 sub trv_get_usage {
@@ -66,12 +63,22 @@ sub trv_get_usage {
 }
 
 
+my $ref_to_arr_of_hash_ref;
+
 if ($ID) {
-    test_one_id();
+    $ref_to_arr_of_hash_ref = get_one_slip_rights($ID); 
+
+    test_ids($ref_to_arr_of_hash_ref);
 }
 else {
     my $start_offset = $RESUME_AT;
-    while ( test_all_ids($start_offset) ) {
+
+    while (1) {
+        $ref_to_arr_of_hash_ref = get_slip_rights($start_offset); 
+        last unless (scalar @$ref_to_arr_of_hash_ref);
+        
+        test_ids($ref_to_arr_of_hash_ref);
+        
         $start_offset += $SLIP_RIGHTS_SLICE;
         print "$start_offset.";
     }
@@ -80,88 +87,123 @@ else {
 
 exit 0;
 
+# ---------------------------------------------------------------------
+sub Log_consistency_error {
+    my ($C, $s) = @_;
+
+    my $when = Utils::Time::iso_Time();
+    SLIP_Utils::Log::this_string($C, $s . " $when", 'consistency_logfile', '___RUN___', $RUN);
+}
 
 # ---------------------------------------------------------------------
-sub call_solr {
-    my $query = shift;
-    
+sub get_solr_attr {
+    my $nid = shift;
+
+    my $safe_id = Identifier::get_safe_Solr_id($nid);
+    my $query = qq{q=id:$safe_id&fl=rights};
+
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $searcher = new Search::Searcher($engine_uri, undef, 1);
     my $rs = new Search::Result::SLIP_Raw;
-    
+
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
     unless ($rs->http_status_ok()) {
         my $status = $rs->get_status_line;
         print "Solr HTTP error: $status\n";
-        return [];
+        return 0;
     }
-    
+
     my $result_docs_arr_ref = $rs->get_result_docs();
-    
-    return $result_docs_arr_ref->[0];
+
+    my $result_doc = $result_docs_arr_ref->[0];
+    $result_doc = '' unless ($result_doc);
+
+    my ($solr_attr) = ($result_doc =~ m,<int name="rights">(.*?)</int>,);
+    $solr_attr = '' unless ($solr_attr);
+
+    return $solr_attr;
 }
 
+
 # ---------------------------------------------------------------------
-sub get_rights_current_attr {
+sub get_rights_current {
     my $nid = shift;
-    
-    my $attr = 0;
-    my ($namespace, $barcode) = Identifier::split_id($nid);
-    
-    eval {
-        my $statement = qq{SELECT attr FROM ht.rights_current WHERE namespace='$namespace' AND id='$barcode'};
-        my $sth = DbUtils::prep_n_execute($DBH, $statement);
-        $attr = $sth->fetchrow_array;
-    };
-    print "\n get_rights_current_attr FAIL for $nid: $@" if ($@);
-    
-    return $attr;
-}
 
-# ---------------------------------------------------------------------
-sub get_slip_rights_attrs {
-    my $offset = shift;
-    
     my $ref_to_arr_of_hash_ref = [];
-    
+    my ($namespace, $barcode) = Identifier::split_id($nid);
+
     eval {
-        my $statement = qq{SELECT nid, attr FROM ht.slip_rights LIMIT $offset, $SLIP_RIGHTS_SLICE};
+        my $statement = qq{SELECT * FROM ht.rights_current WHERE namespace='$namespace' AND id='$barcode'};
         my $sth = DbUtils::prep_n_execute($DBH, $statement);
         $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
     };
-    print "\nget_slip_rights_attr FAIL at $offset: $@" if ($@);
-    
+    print "\nget_rights_current FAIL for $nid: $@" if ($@);
+
+    return $ref_to_arr_of_hash_ref->[0];
+}
+
+# ---------------------------------------------------------------------
+sub get_slip_rights {
+    my $offset = shift;
+
+    my $ref_to_arr_of_hash_ref = [];
+
+    eval {
+        my $statement = qq{SELECT * FROM ht.slip_rights LIMIT $offset, $SLIP_RIGHTS_SLICE};
+        my $sth = DbUtils::prep_n_execute($DBH, $statement);
+        $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
+    };
+    print "\nget_slip_rights FAIL at $offset: $@" if ($@);
+
+    return $ref_to_arr_of_hash_ref;
+}
+
+# ---------------------------------------------------------------------
+sub get_one_slip_rights {
+    my $nid = shift;
+
+    my $ref_to_arr_of_hash_ref = [];
+
+    eval {
+        my $statement = qq{SELECT * FROM ht.slip_rights WHERE nid='$nid'};
+        my $sth = DbUtils::prep_n_execute($DBH, $statement);
+        $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
+    };
+    print "\nget_one_slip_rights FAIL for $nid: $@" if ($@);
+
     return $ref_to_arr_of_hash_ref;
 }
 
 # ---------------------------------------------------------------------
 
-=item test_all_ids
+=item test_ids
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub test_all_ids {
-    my $offset = shift;
-    
-    # slip_rights slice
-    my $ref_to_arr_of_hash_ref = get_slip_rights_attrs($offset);
-    
+sub test_ids {
+    my $ref_to_arr_of_hash_ref = shift;
+
     foreach my $hashref (@$ref_to_arr_of_hash_ref) {
+        my $s = '';
+
         my $nid = $hashref->{nid};
-        my $slip_attr = $hashref->{attr};
-        
+
+        # SLIP
+        my $slip_attr    = $hashref->{attr};
+        my $slip_profile = $hashref->{access_profile};
+
         # rights_current
-        my $rights_attr = get_rights_current_attr($nid);
-        
+        my $rights_hashref = get_rights_current($nid);
+
+        my $rights_attr    = $rights_hashref->{attr};
+        my $rights_profile = $rights_hashref->{access_profile};
+
         # solr
-        my $safe_id = Identifier::get_safe_Solr_id($nid);
-        my $query = qq{q=id:$safe_id&fl=rights};
-        my $result_doc = call_solr($query);
-        my ($solr_attr) = ($result_doc =~ m,<int name="rights">(.*?)</int>,);
-        
+        my $solr_attr = get_solr_attr($nid);
+
         if (
             ($slip_attr ne $rights_attr)
             ||
@@ -169,57 +211,18 @@ sub test_all_ids {
             ||
             ($solr_attr ne $rights_attr)
            ) {
-            print qq{\n$nid FAIL solr_attr=$solr_attr slip_attr=$slip_attr rights_attr=$rights_attr\n};
-        }        
+            $s = qq{ solr_attr=$solr_attr slip_attr=$slip_attr rights_attr=$rights_attr};
+            print qq{\n$nid FAIL $s\n};
+        }
+
+        if ($slip_profile ne $rights_profile) {
+            $s .= qq{ slip_profile=$slip_profile rights_profile=$rights_profile};
+            print qq{\n$nid FAIL $s\n};
+        }
+
+        Log_consistency_error($C, "$nid $s") if $s;
     }
-    
-    return scalar @$ref_to_arr_of_hash_ref; 
+
+    return scalar @$ref_to_arr_of_hash_ref;
 }
 
-# ---------------------------------------------------------------------
-
-=item test_one_id
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub test_one_id {
-    
-    my $safe_id = Identifier::get_safe_Solr_id($ID);
-    
-    my $query = qq{q=id:$safe_id&fl=rights};
-    my $result_doc = call_solr($query) || '';
-    my ($solr_attr) = ($result_doc =~ m,<int name="rights">(.*?)</int>,);    
-    $solr_attr = 0 unless ($solr_attr);
-
-    my $rights_attr;
-    my ($namespace, $barcode) = Identifier::split_id($ID);
-    eval {
-        my $statement = qq{SELECT attr FROM ht.rights_current WHERE namespace='$namespace' AND id='$barcode'};
-        my $sth = DbUtils::prep_n_execute($DBH, $statement);
-        $rights_attr = $sth->fetchrow_array;
-    };
-    print "\nrights_current FAIL for $ID: $@\n" if ($@);
-    $rights_attr = 0 unless($rights_attr);
-    
-    my $slip_attr;
-    eval {
-        my $statement = qq{SELECT attr FROM ht.slip_rights WHERE nid='$ID'};
-        my $sth = DbUtils::prep_n_execute($DBH, $statement);
-        $slip_attr = $sth->fetchrow_array
-    };
-    print "\nslip_rights FAIL for $ID: $@" if ($@);
-    $slip_attr = 0 unless($slip_attr);
-    
-    if (
-        ($slip_attr ne $rights_attr)
-        ||
-        ($slip_attr ne $solr_attr)
-        ||
-        ($solr_attr ne $rights_attr)
-       ) {
-        print qq{\n$ID FAIL solr_attr=$solr_attr slip_attr=$slip_attr rights_attr=$rights_attr\n}; 
-    }
-}

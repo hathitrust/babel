@@ -20,14 +20,14 @@ use Context;
 use MdpConfig;
 use Identifier;
 use Password;
-use Database;
 
 use SLIP_Utils::Common;
 use SLIP_Utils::States;
+use SLIP_Utils::DatabaseWrapper;
 
 use Search::Searcher;
 use Search::Query;
-use Search::Result::SLIP;
+use Search::Result::SLIP_Raw;
 
 
 our ($opt_r, $opt_F, $opt_I);
@@ -48,15 +48,8 @@ $C->set_object('MdpConfig', $config);
 my $ID = $opt_I;
 my $ID_FILENAME = $opt_F;
 
-my $whoami = `whoami`;
-chomp($whoami);
-print "Enter passwd: ";
-my $passwd = Password::get_password();
-print "\n";
-
 # Database connection
-my $db = new Database($whoami, $passwd, 'ht', 'mysql-sdr');
-my $DBH = $db->get_DBH();
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-id-in-5-places.pl');
 
 sub tis_get_usage {
     return qq{Usage: test-id-in-5-places.pl -r run {-F file | -I id} \nchecks for id(s) existence by querying -r run solr, repository, catalog, slip_rights and rights_current.\n};
@@ -124,19 +117,25 @@ sub test_ids {
 
             my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
             my $searcher = new Search::Searcher($engine_uri, undef, 1);
-            my $rs = new Result::SLIP();
+            my $rs = new Search::Result::SLIP_Raw;
 
             my $solr_result;
-
+            my $solr_attr = -3;
+            
             # Solr
             my $safe_id = Identifier::get_safe_Solr_id($id);
-            my $query = qq{q=id:$safe_id&start=0&rows=0&fl=id};
+            my $query = qq{q=id:$safe_id&fl=rights};
             $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
             if (! $rs->http_status_ok()) {
                 $solr_result = 'ERRO';
             }
             else {
                 my $num_found = $rs->get_num_found();
+                my $result_docs_arr_ref = $rs->get_result_docs();
+                my $result_doc = $result_docs_arr_ref->[0];
+                $result_doc = '' unless ($result_doc);
+                ($solr_attr) = ($result_doc =~ m,<int name="rights">(.*?)</int>,);
+                $solr_attr = '-3' unless ($solr_attr);
 
                 if ($num_found > 1) {
                     $solr_result = 'MULT';
@@ -200,10 +199,10 @@ sub test_ids {
             my $url = "http://solr-sdr-catalog:9033/catalog/select/?q=ht_id:$safe_id&start=0&rows=0";
             my $result = `curl --silent '$url'`;
             my ($catalog_result) = ($result =~ m,numFound="(.*?)",);
-            $catalog_result = $catalog_result ? 'CATALOG_ONE' : 'CATALOG_ZERO';
+            $catalog_result = $catalog_result ? 'ONE' : 'ZERO';
             
-            printf("%-20s solr=%s (s)lip_rights=%s (r)ights=%s (s=%2d r=%2d) repo=%s catalog=%s\n", 
-                   $id, $solr_result, $slip_rights_result, $rights_result, $slip_attr, $rights_attr, $path_result, $catalog_result);
+            printf("%-20s solr=%s slip=%s rights=%s (solr=%2d slip=%2d rights=%2d) repo=%s catalog=%s\n", 
+                   $id, $solr_result, $slip_rights_result, $rights_result, $solr_attr, $slip_attr, $rights_attr, $path_result, $catalog_result);
         }
     }
 }

@@ -262,6 +262,30 @@ Those can be checked for by:
      % sync-j -rN -m indexedNINrights
 
 
+CRMS RIGHTS UPDATE PROCESS
+==========================
+
+1. CRMS sends list of IDs with changed rights to Aaron
+
+2. Aaron applies rights change to rights_current.attr,
+timestamp=CURRENT_TIMESTAMP (T)
+
+3. Tim queries for changes to rights_current newer than last time he
+queried.
+
+4. Tim inserts change into Mirlyn record using either T or current time. 
+    - In either case the update_time (U) >= (T)
+    - some days later U appears in vufind solr
+
+5. daily rights-j script queries vufind for update_times newer than
+last rights-j query time minus LAG (3 months)
+
+6. if vufind update_time of ID > update_time of ID in slip_rights
+table, the new update_time is recorded in slip_rights.
+
+7. daily enqueuer-j script queries slip_rights for IDs with
+update_times > MAX(update_time) seen in slip_rights when enqueuer-j
+ran last.
 
 REBUILDING PRODUCTION INDEX
 ===========================

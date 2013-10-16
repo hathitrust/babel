@@ -372,10 +372,6 @@ sub repair_insert_id {
 
     my $s;
 
-    $s = "\nRepair: start process $nid";
-    __output("$s\n");
-    r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-
     my $safe_nid = Identifier::get_safe_Solr_id($nid);
     my $query = qq{q=ht_id:$safe_nid&start=0&rows=1&fl=id,ht_id_display};
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
@@ -513,86 +509,6 @@ sub __hiresTime
     return sprintf("%.8f", $seconds + $fraction);
 }
 
-
-# ---------------------------------------------------------------------
-
-=item __process_rights_from_errors
-
-Check errors-j for metadata errors that may have been due to the id
-MISSING FROM rights-j [because of various types of errors] and, if we
-can get the metadata, add that id to rights-j.
-
-This at least allows Collection Builder indexing for these missing ids
-short of totally rebuilding rights-j table.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __process_rights_from_errors {
-    my ($C, $dbh, $run, $Check, $totals_hashref) = @_;
-
-    while (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
-        __output("  wait Rights done: STOPSLIP\n");
-        sleep STOPSLIP_SLEEP_WAIT;
-    }
-
-    my $s;
-
-    $totals_hashref->{num_m_errors} = 0;
-    $totals_hashref->{num_m_errors_repaired} = 0;
-    $totals_hashref->{num_m_not_missing} = 0;
-    $totals_hashref->{num_m_anomalies} = 0;
-    $totals_hashref->{num_m_vufind_http} = 0;
-    $totals_hashref->{num_m_missing_vufind} = 0;
-    $totals_hashref->{num_m_missing_rights} = 0;
-    $totals_hashref->{num_forced} = 0;
-
-    my $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, undef, IX_METADATA_FAILURE);
-    my $num_metadata_errors = scalar(@$id_arr_hashref);
-    if ($num_metadata_errors) {
-        $s = qq{Repair: UPDATE slip_rights by testing $num_metadata_errors metadata error ids from slip_errors };
-        __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
-        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-
-        $totals_hashref->{num_m_errors} = $num_metadata_errors;
-
-        my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
-        my $rs = new Search::Result::vSolrRaw();
-
-        foreach my $hashref (@$id_arr_hashref) {
-            my $id = $hashref->{'id'};
-
-            my $case = repair_insert_id($C, $dbh, $id, $Check, $searcher, $rs);
-            if ($case eq 'FORCED') {
-                $totals_hashref->{num_forced}++;
-                $s = qq{Repair[]: $id update forced };
-            }
-            elsif ($case eq 'VuFind_BADHTTP') {
-                $totals_hashref->{num_m_vufind_http}++;
-                $s = qq{Repair[]: BAD HTTP response from VuFind for $id };
-            }
-            elsif ($case eq 'VuFind_MISSING') {
-                $totals_hashref->{num_m_missing_vufind}++;
-                $s = qq{Repair[]: $id missing from VuFind };
-            }
-            elsif ($case eq 'Rights_FAIL') {
-                $totals_hashref->{num_m_missing_rights}++;
-                $s = qq{Repair[]: $id missing from rights_current };
-            }
-            else {
-                $s = qq{Repair[]: SOFTWARE ERROR for $id };
-            }
-            __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
-            r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-        }
-    }
-    else {
-        $s = qq{Repair: No slip_errors ids to repair };
-        __output(qq{$s} . Utils::Time::iso_Time() . qq{\n});
-        r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
-    }
-}
-
 # ---------------------------------------------------------------------
 
 =item process_rights
@@ -615,12 +531,12 @@ corrected manually.
 
 NOTE: this will only handle ids with a vSolr update time newer than
 the last time we queried vSolr.  If the update time is corrected in
-vSlolr retrospectively and is set to a time older than the last time
+vSolr retrospectively and is set to a time older than the last time
 we queried the update will be missed.
 
 We will need to identify these sorts of ids (using
-e.g. test-rights-v-db.pl) and queue them to ht.slip_errors and set the
-FORCE parameter to make them update.
+e.g. scripts/test-rights-errors.pl) and queue them to ht.slip_queue
+directly via enqueuer-j.
 
 =cut
 
@@ -722,13 +638,10 @@ sub process_rights {
     }
 
     # Update the vSolr timestamp to the MAX(update_time) in
-    # slip_rights. We will backtrack by 2 days from this value
+    # slip_rights. We will backtrack by LAG days from this value
     # when next we run.
     Db::update_vSolr_timestamp($C, $dbh)
         unless $Check;
-
-  REPAIR:
-    __process_rights_from_errors($C, $dbh, $run, $Check, \%totals);
 
     return ($process_start, \%totals);
 }
@@ -858,8 +771,7 @@ sub __get_repair_report {
       . qq{\n\tslip_errors candidate ids=$tr->{num_m_errors} }
         . qq{\n\tVuFind HTTP errors=$tr->{num_m_vufind_http} }
           . qq{\n\tslip_errors ids not in VuFind=$tr->{num_m_missing_vufind} } 
-            . qq{\n\tslip_errors ids not in rights_current=$tr->{num_m_missing_rights} }
-              . qq{\n\tslip_errors ids forced to update in slip_rights=$tr->{num_forced} };
+            . qq{\n\tslip_errors ids not in rights_current=$tr->{num_m_missing_rights} };
     return $s;
 }
 
