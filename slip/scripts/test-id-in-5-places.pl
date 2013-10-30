@@ -52,7 +52,7 @@ my $ID_FILENAME = $opt_F;
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-id-in-5-places.pl');
 
 sub tis_get_usage {
-    return qq{Usage: test-id-in-5-places.pl -r run {-F file | -I id} \nchecks for id(s) existence by querying -r run solr, repository, catalog, slip_rights and rights_current.\n};
+    return qq{Usage: test-id-in-5-places.pl -r run {-F file | -I id} \nchecks for id(s) existence by querying\n\t -r run solr, repository, catalog, slip_rights, rights_current, mb_coll_item.\n};
 }
 
 sub load_ids_from_file {
@@ -201,8 +201,29 @@ sub test_ids {
             my ($catalog_result) = ($result =~ m,numFound="(.*?)",);
             $catalog_result = $catalog_result ? 'ONE' : 'ZERO';
             
-            printf("%-20s solr=%s slip=%s rights=%s (solr=%2d slip=%2d rights=%2d) repo=%s catalog=%s\n", 
-                   $id, $solr_result, $slip_rights_result, $rights_result, $solr_attr, $slip_attr, $rights_attr, $path_result, $catalog_result);
+            # mb_coll_item
+            my $coll_item_result;
+            my $ct = 0;
+            eval {
+                $statement = "SELECT count(*) FROM ht.mb_coll_item WHERE extern_item_id='$id'";
+                $sth = DbUtils::prep_n_execute($DBH, $statement);
+                $ct = $sth->fetchrow_array();
+            };
+            if ($@) {
+                $coll_item_result = 'ERRO';
+            }
+            else {
+                if ($ct) {
+                    $coll_item_result = "$ct";
+                }
+                else {
+                    $coll_item_result = 'ZERO';
+                }
+            }
+
+
+            printf("%-20s solr=%s slip=%s rights=%s (solr=%2d slip=%2d rights=%2d) repo=%s catalog=%s coll_item=$coll_item_result\n", 
+                   $id, $solr_result, $slip_rights_result, $rights_result, $solr_attr, $slip_attr, $rights_attr, $path_result, $catalog_result, $coll_item_result);
         }
     }
 }
