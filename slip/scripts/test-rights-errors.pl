@@ -31,9 +31,9 @@ use Search::Result::SLIP_Raw;
 use IO::Handle;
 autoflush STDOUT 1;
 
-our ($opt_r, $opt_R, $opt_I, $opt_E);
+our ($opt_r, $opt_R, $opt_I, $opt_E, $opt_t);
 
-my $ops = getopts('r:I:R:E');
+my $ops = getopts('r:I:R:Et');
 
 my $RUN = $opt_r;
 if (! defined $RUN) {
@@ -42,6 +42,7 @@ if (! defined $RUN) {
 }
 
 my $ENQUEUE = defined($opt_E);
+my $TEST_PROFILE = defined($opt_t);
                       
 my $ID = $opt_I;
 if (defined($opt_I)) {
@@ -61,7 +62,7 @@ my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-rights-er
 my $SLIP_RIGHTS_SLICE = 1000;
 
 sub trv_get_usage {
-    return qq{Usage: test-rights-errors.pl -r run [-I id] [-E ] [-R <resume_offset>]\n\t checks one id (-I) or all for consistency in Solr vs. ht.rights_current vs. ht.slip_rights. \n\t\tWrites list to stdout, logs and enqueues (-E).\n};
+    return qq{Usage: test-rights-errors.pl -r run [-I id] [-E] [-t] [-R <resume_offset>]\n\t checks one id (-I) or all for consistency in Solr vs. ht.rights_current vs. ht.slip_rights (including access_profile with -t). \n\t\tWrites list to stdout, logs and enqueues (-E).\n};
 }
 
 
@@ -196,35 +197,43 @@ sub test_ids {
         my $nid = $hashref->{nid};
 
         # SLIP
-        my $slip_attr    = $hashref->{attr};
-        my $slip_profile = $hashref->{access_profile};
-        my $slip_time    =  $hashref->{update_time};
+        my $slip_rights_attr    = $hashref->{attr};
+        my $slip_rights_profile = $hashref->{access_profile};
+        my $slip_rights_time    =  $hashref->{update_time};
 
         # rights_current
         my $rights_hashref = get_rights_current($nid);
 
-        my $rights_attr    = $rights_hashref->{attr};
-        my $rights_profile = $rights_hashref->{access_profile};
+        my $rights_current_attr    = $rights_hashref->{attr};
+        my $rights_current_profile = $rights_hashref->{access_profile};
 
         # solr
-        my $solr_attr = get_solr_attr($nid);
+        my $slip_solr_attr = get_solr_attr($nid);
 
         if (
-            ($slip_attr ne $rights_attr)
+            ($slip_rights_attr ne $rights_current_attr)
             ||
-            ($slip_attr ne $solr_attr)
+            ($slip_rights_attr ne $slip_solr_attr)
             ||
-            ($solr_attr ne $rights_attr)
+            ($slip_solr_attr ne $rights_current_attr)
            ) {
-            $error = qq{ solr_attr=$solr_attr slip_attr=$slip_attr rights_attr=$rights_attr};
+            $error = qq{ slip_solr_attr=$slip_solr_attr slip_rights_attr=$slip_rights_attr rights_current_attr=$rights_current_attr};
         }
 
-        if ($slip_profile ne $rights_profile) {
-            $error .= qq{ slip_profile=$slip_profile rights_profile=$rights_profile};
+        # catalog
+        my $safe_id = Identifier::get_safe_Solr_id($nid);
+        my $url = "http://solr-sdr-catalog:9033/catalog/select/?q=ht_id:$safe_id&fl=ht_id_display";
+        my $result = `curl --silent '$url'`;
+        my ($catalog_time) = ($result =~ m,<str>$safe_id\|(.+?)\|.*?</str>,);
+
+        if ($TEST_PROFILE) {
+            if ($slip_rights_profile ne $rights_current_profile) {
+                $error .= qq{ slip_rights_profile=$slip_rights_profile rights_current_profile=$rights_current_profile};
+            }
         }
 
         if ($error) {
-            $error .= qq{ update $slip_time};
+            $error .= qq{ slip_solr_update $slip_rights_time catalog_time=$catalog_time};
             if ($ENQUEUE) {
                 `echo 'y' | $ENV{SDRROOT}/slip/index/enqueuer-j -r11 -I $nid`;
             }
