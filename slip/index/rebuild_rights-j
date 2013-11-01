@@ -85,11 +85,11 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 
 sub r_r_get_usage {
     my $s;
-    $s .= qq{Usage: rebuild_rights-j -r <run> -P one [-f <filename>] | -P two [-n][-f <filename>] [-T][-d{1|2|3|4|5|6}]\nPhase=one: Read vSolr, write file\nPhase=two: Read file, write slip_rights. \n\nNOTE: Avoid vSolr re-indexing time\n\n};
+    $s .= qq{Usage: rebuild_rights-j -r <run> -P one -f <filename_key> | -P two [-n] -f <filename_key> [-T][-d{1|2|3|4|5|6}]\nPhase=one: Read vSolr, write file\nPhase=two: Read file, write slip_rights. \n\nNOTE: Avoid vSolr re-indexing time\n\n};
     $s .= qq{     -T test compilation only. No operations\n};
     $s .= qq{     -P perform phase=<phase> ('one' or 'two')\n};
     $s .= qq{     -n NO RENAME slip_rights_temp, NO DROP slip_rights\n};
-    $s .= qq{     -f <filename> (optional) Phase=one: write, Phase=two: read\n};
+    $s .= qq{     -f <filename_key> uniqifiy filename Phase=one: write filename, Phase=two: read filename\n};
     $s .= qq{     -d options\n};
     $s .= qq{           1: me\n};
     $s .= qq{           2: me,lsdb\n};
@@ -172,7 +172,13 @@ my $DBH = r_r_connect($C);
 
 my $INIT_MSG;
 my $NOW_TIMESTAMP = Utils::Time::iso_Time('date');
-my $VSOLR_FILENAME = $ENV{SDRROOT} . qq{/logs/slip/run-rights/slip-rebuild-rights-vsolr-ids-$NOW_TIMESTAMP.txt};
+unless (defined($opt_f)) {
+    __output(qq{Missing filename key.\n});
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+my $filename_key = $opt_f;
+
+my $VSOLR_FILENAME = $ENV{SDRROOT} . qq{/logs/slip/run-rights/slip-rebuild-rights-vsolr-ids-$filename_key.txt};
 my ($LOG_FILENAME) = SLIP_Utils::Log::full_log_filepath($C, $RIGHTS_LOGFILE_KEY, '___RUN___', 'rights');
 
 eval {
@@ -231,21 +237,8 @@ Description
 # ---------------------------------------------------------------------
 sub Phase_one_check {
 
-    my $filename = $opt_f;
-    if (! defined($filename)) {
-        if (-e $VSOLR_FILENAME) {
-            __confirm("Over-write $VSOLR_FILENAME? [N] ");
-        }
-    }
-    else {
-        if (! -e $filename) {
-            __output("$filename does not exist.\n");
-            exit $SLIP_Utils::States::RC_BAD_ARGS;
-        }
-        else {
-            __confirm("Over-write $filename? [N] ");
-            $VSOLR_FILENAME = $filename;
-        }
+    if (-e $VSOLR_FILENAME) {
+        __confirm("Over-write $VSOLR_FILENAME? [N] ");
     }
 
     $INIT_MSG =
@@ -266,21 +259,9 @@ Description
 # ---------------------------------------------------------------------
 sub Phase_two_check {
 
-    my $filename = $opt_f;
-    if (! defined($filename)) {
-        if (! -e $VSOLR_FILENAME) {
-            __output("Would read from $VSOLR_FILENAME but it does not exist.\n");
-            exit $SLIP_Utils::States::RC_BAD_ARGS;
-        }
-    }
-    else {
-        if (! -e $filename) {
-            __output("$filename does not exist.\n");
-            exit $SLIP_Utils::States::RC_BAD_ARGS;
-        }
-        else {
-            $VSOLR_FILENAME = $filename;
-        }
+    if (! -e $VSOLR_FILENAME) {
+        __output("Would read from $VSOLR_FILENAME but it does not exist.\n");
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
 
     # DROP/CREATE slip_rights_temp?
