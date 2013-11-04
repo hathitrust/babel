@@ -25,12 +25,13 @@ my %RESOURCES        = (
                         aggregate                    => {ord => 2, ct => 0},
                         structure                    => {ord => 3, ct => 0},
                         # v.1 resources
-                        'V.1'                        => {ord => 5, ct => 0},
-                        pageimage                    => {ord => 6, ct => 0},
-                        pageocr                      => {ord => 7, ct => 0},
-                        pagecoordocr                 => {ord => 8, ct => 0},
-                        meta                         => {ord => 9, ct => 0},
-                        pagemeta                     => {ord => 10, ct => 0},
+                        'V.1 - dreprecated'                        => {ord => 5, ct => 0},
+                        # ---> 'V.1'                        => {ord => 5, ct => 0},
+                        # ---> pageimage                    => {ord => 6, ct => 0},
+                        # ---> pageocr                      => {ord => 7, ct => 0},
+                        # ---> pagecoordocr                 => {ord => 8, ct => 0},
+                        # ---> meta                         => {ord => 9, ct => 0},
+                        # ---> pagemeta                     => {ord => 10, ct => 0},
                         # v.2 resources
                         'V.2'                        => {ord => 11, ct => 0},
                         volume                       => {ord => 12, ct => 0},
@@ -207,7 +208,7 @@ sub Total_Signed_Requests {
     my %uniq_signed_requests;
     foreach my $sr (@signed_requests) {
         my ($ua, $ra, $ff) = ($sr =~ m,UA_ip=(.*?) REMOTE_ADDR=(.*?) HTTP_X_FORWARDED_FOR=(.*?)[ ],);
-        my ($ak) = ($sr =~ m,access_key=(.*?)[ ],);
+        my ($ak) = ($sr =~ m,access_key=(.*?)[ ],) || 0;
         $uniq_signed_requests{"$ak-$ua-$ra-$ff"} += 1;
     }
     print "* Total signed requests = " . scalar @signed_requests . "  (unique = " . scalar (keys %uniq_signed_requests) . ")\n";
