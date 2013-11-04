@@ -23,17 +23,16 @@ use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::DatabaseWrapper;
 use SLIP_Utils::Log;
-
-use Search::Searcher;
-use Search::Query;
 use Search::Result::SLIP_Raw;
+use SLIP_Utils::Solr;
+
 
 use IO::Handle;
 autoflush STDOUT 1;
 
-our ($opt_r, $opt_R, $opt_I, $opt_E, $opt_t);
+our ($opt_r, $opt_R, $opt_I, $opt_E, $opt_t, $opt_B, $opt_V);
 
-my $ops = getopts('r:I:R:Et');
+my $ops = getopts('r:I:R:EtBV');
 
 my $RUN = $opt_r;
 if (! defined $RUN) {
@@ -43,6 +42,18 @@ if (! defined $RUN) {
 
 my $ENQUEUE = defined($opt_E);
 my $TEST_PROFILE = defined($opt_t);
+
+my $MODE; # Optional
+if (defined($opt_V)) {
+    $MODE = 'serving';
+}
+elsif (defined($opt_B)) {
+    $MODE = 'build';
+}
+else {
+    print trv_get_usage();
+    exit 1;
+}
                       
 my $ID = $opt_I;
 if (defined($opt_I)) {
@@ -62,7 +73,7 @@ my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-rights-er
 my $SLIP_RIGHTS_SLICE = 1000;
 
 sub trv_get_usage {
-    return qq{Usage: test-rights-errors.pl -r run [-I id] [-E] [-t] [-R <resume_offset>]\n\t checks one id (-I) or all for consistency in Solr vs. ht.rights_current vs. ht.slip_rights (including access_profile with -t). \n\t\tWrites list to stdout, logs and enqueues (-E).\n};
+    return qq{Usage: test-rights-errors.pl -r run -B|-V [-I id] [-E] [-t] [-R <resume_offset>]\n\t checks one id (-I) or all for consistency in (B)uild or ser(V)e Solr vs. ht.rights_current vs. ht.slip_rights (including access_profile with -t). \n\t\tWrites list to stdout, logs and enqueues (-E).\n};
 }
 
 
@@ -104,12 +115,17 @@ sub get_solr_attr {
 
     use constant MYTIMEOUT => 1200; # 20 minutes 
 
-    my $safe_id = Identifier::get_safe_Solr_id($nid);
-    my $query = qq{q=id:$safe_id&fl=rights};
+    my $shard = Db::Select_item_id_shard($C, $DBH, $RUN, $nid);
 
-    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
-    my $searcher = new Search::Searcher($engine_uri, MYTIMEOUT, 1);
-    my $rs = new Search::Result::SLIP_Raw;
+    return 0 unless($shard);
+
+    my $searcher = ($MODE eq 'build') 
+      ? SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, $shard, MYTIMEOUT)
+        : SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard, MYTIMEOUT);
+
+    my $rs = new Search::Result::SLIP_Raw();
+    my $safe_id = Identifier::get_safe_Solr_id($nid);
+    my $query = qq{q=id:$safe_id&fl=rights&indent=on};
 
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
     unless ($rs->http_status_ok()) {

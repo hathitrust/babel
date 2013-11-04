@@ -25,14 +25,13 @@ use SLIP_Utils::Common;
 use SLIP_Utils::States;
 use SLIP_Utils::DatabaseWrapper;
 
-use Search::Searcher;
-use Search::Query;
+use SLIP_Utils::Solr;
 use Search::Result::SLIP_Raw;
 
 
-our ($opt_r, $opt_F, $opt_I);
+our ($opt_r, $opt_F, $opt_I, $opt_B, $opt_V);
 
-my $ops = getopts('r:I:F:');
+my $ops = getopts('r:I:F:BV');
 
 my $RUN = $opt_r;
 if (! defined $RUN) {
@@ -48,11 +47,25 @@ $C->set_object('MdpConfig', $config);
 my $ID = $opt_I;
 my $ID_FILENAME = $opt_F;
 
+my $MODE;
+if (defined($opt_V)) {
+    $MODE = 'serving';
+}
+elsif (defined($opt_B)) {
+    $MODE = 'build';
+}
+else {
+    print tis_get_usage();
+    exit 1;
+}
+
+use constant MYTIMEOUT => 1200; # 20 minutes 
+
 # Database connection
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-id-in-5-places.pl');
 
 sub tis_get_usage {
-    return qq{Usage: test-id-in-5-places.pl -r run {-F file | -I id} \nchecks for id(s) existence by querying\n\t -r run solr, repository, catalog, slip_rights, rights_current, mb_coll_item.\n};
+    return qq{Usage: test-id-in-5-places.pl -r run -B|-V {-F file | -I id} \nchecks for id(s) existence by querying\n\t -r run (B)uild or ser(V)e solr, repository, catalog, slip_rights, rights_current, mb_coll_item.\n};
 }
 
 sub load_ids_from_file {
@@ -95,17 +108,17 @@ sub test_ids {
         $ref_to_arr_of_ids = load_ids_from_file($ID_FILENAME);
     }
     my $num_loaded = scalar(@$ref_to_arr_of_ids);
-
+    
     if ($num_loaded > 0) {
         print qq{loaded $num_loaded items from file=$ID_FILENAME\n} if ($ID_FILENAME);
         
         foreach my $id (@$ref_to_arr_of_ids) {
-
+            
             my $path_result;
             
             my ($namespace, $barcode) = Identifier::split_id($id);
             my $root = q{/sdr1/obj/} . $namespace . q{/pairtree_root};
-
+            
             $File::Pairtree::root = $root;
             my $path = File::Pairtree::id2ppath($barcode) . File::Pairtree::s2ppchars($barcode);
             if (-e $path) {
@@ -113,41 +126,48 @@ sub test_ids {
             }
             else {
                 $path_result = 'ZERO';
-            }
-
-            my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
-            my $searcher = new Search::Searcher($engine_uri, undef, 1);
-            my $rs = new Search::Result::SLIP_Raw;
-
+            }            
+            
             my $solr_result;
             my $solr_attr = -3;
             
             # Solr
-            my $safe_id = Identifier::get_safe_Solr_id($id);
-            my $query = qq{q=id:$safe_id&fl=rights};
-            $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
-            if (! $rs->http_status_ok()) {
+            my $shard = Db::Select_item_id_shard($C, $DBH, $RUN, $id);
+            if (! $shard) {
                 $solr_result = 'ERRO';
             }
             else {
-                my $num_found = $rs->get_num_found();
-                my $result_docs_arr_ref = $rs->get_result_docs();
-                my $result_doc = $result_docs_arr_ref->[0];
-                $result_doc = '' unless ($result_doc);
-                ($solr_attr) = ($result_doc =~ m,<int name="rights">(.*?)</int>,);
-                $solr_attr = '-3' unless ($solr_attr);
-
-                if ($num_found > 1) {
-                    $solr_result = 'MULT';
-                }
-                elsif ($num_found == 1) {
-                    $solr_result = 'ONE ';
+                my $searcher = ($MODE eq 'build') 
+                  ? SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, $shard, MYTIMEOUT)
+                    : SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard, MYTIMEOUT);
+                my $rs = new Search::Result::SLIP_Raw;
+                
+                my $safe_id = Identifier::get_safe_Solr_id($id);
+                my $query = qq{q=id:$safe_id&fl=rights};
+                $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+                if (! $rs->http_status_ok()) {
+                    $solr_result = 'ERRO';
                 }
                 else {
-                    $solr_result = 'ZERO';
+                    my $num_found = $rs->get_num_found();
+                    my $result_docs_arr_ref = $rs->get_result_docs();
+                    my $result_doc = $result_docs_arr_ref->[0];
+                    $result_doc = '' unless ($result_doc);
+                    ($solr_attr) = ($result_doc =~ m,<int name="rights">(.*?)</int>,);
+                    $solr_attr = '-3' unless ($solr_attr);
+                    
+                    if ($num_found > 1) {
+                        $solr_result = 'MULT';
+                    }
+                    elsif ($num_found == 1) {
+                        $solr_result = 'ONE ';
+                    }
+                    else {
+                        $solr_result = 'ZERO';
+                    }
                 }
             }
-
+            
             my ($statement, $sth);
             my $ref_to_arr_of_hashref;
             
@@ -196,6 +216,7 @@ sub test_ids {
                 }
             }
 
+            my $safe_id = Identifier::get_safe_Solr_id($id);
             my $url = "http://solr-sdr-catalog:9033/catalog/select/?q=ht_id:$safe_id&start=0&rows=0";
             my $result = `curl --silent '$url'`;
             my ($catalog_result) = ($result =~ m,numFound="(.*?)",);

@@ -168,6 +168,14 @@ sub delete_Solr_doc {
       $known_shard
         ? $known_shard
           : Db::Select_item_id_shard($C, $DBH, $run, $id);
+    
+    my $no_solr_check = 0;
+    if ($no_solr_check) {
+        unless ($shard) {
+            __output(qq{SKIP.\n});
+            return;
+        }
+    }
 
     unless ($shard) {
         __output(qq{Shard for id=$id not found in slip_indexed. Checking Solr too.\n});
