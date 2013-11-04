@@ -408,7 +408,7 @@ sub DROP_j_rights_RENAME_j_rights_temp {
     my ($C, $dbh) = @_;
     Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
 
-    my $s = "Rebuild: drop slip_rights, rename slip_rights_temp";
+    my $s = "Rebuild: DROP slip_rights, ALTER slip_rights_temp RENAME TO slip_rights";
     __output("$s\n");
     r_r_rights_Log($C, $s);
 }
