@@ -249,13 +249,17 @@ sub test_ids {
         }
 
         if ($error) {
-            $error .= qq{ slip_solr_update $slip_rights_time catalog_time=$catalog_time};
-            if ($ENQUEUE) {
-                `echo 'y' | $ENV{SDRROOT}/slip/index/enqueuer-j -r11 -I $nid`;
+            # Only enqueue if missing from build index not the
+            # production index which is 1+ day(s) behind
+            my $enqueue = $ENQUEUE && ($MODE eq 'build');
+            if ($enqueue) {
+                my $ref_to_arr_of_ids = [ $nid ];
+                $error .= qq{ slip_solr_update $slip_rights_time catalog_time=$catalog_time};
+                Db::handle_queue_insert($C, $DBH, $RUN, $ref_to_arr_of_ids);
+                $error .= ($enqueue ? " enqueued" : "");       
+                Log_consistency_error($C, "$nid $error");
+                __output(qq{\n$nid FAIL $error\n});
             }
-            $error .= ($ENQUEUE ? " enqueued" : "");       
-            Log_consistency_error($C, "$nid $error");
-            __output(qq{\n$nid FAIL $error\n});
         }
     }
 
