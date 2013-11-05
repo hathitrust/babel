@@ -101,8 +101,8 @@ sub qu_get_usage {
     $s .= qq{\n\twhere};
     $s .= qq{\n\t\t-n Do not queue. Only report what would be queued};
     $s .= qq{\n\t\t-F enqueue from <filename>};
-    $s .= qq{\n\t\t-s Only operate on shared queue};
-    $s .= qq{\n\t\t-s Only operate on holdings queue};
+    $s .= qq{\n\t\t-S Only operate on shared queue};
+    $s .= qq{\n\t\t-H Only operate on holdings queue};
     $s .= qq{\n};
 
     return $s;
