@@ -24,6 +24,7 @@ use SLIP_Utils::States;
 use SLIP_Utils::DatabaseWrapper;
 use SLIP_Utils::Log;
 use Search::Result::SLIP_Raw;
+use Search::Searcher;
 use SLIP_Utils::Solr;
 
 
@@ -72,6 +73,10 @@ my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'test-rights-er
 
 my $SLIP_RIGHTS_SLICE = 1000;
 
+use constant MYTIMEOUT => 1200; # 20 minutes 
+use constant MAX_HTTP_TRIES => 5;
+use constant HTTP_SLEEP => 60;
+
 sub trv_get_usage {
     return qq{Usage: test-rights-errors.pl -r run -B|-V [-I id] [-E] [-t] [-R <resume_offset>]\n\t checks one id (-I) or all for consistency in (B)uild or ser(V)e Solr vs. ht.rights_current vs. ht.slip_rights (including access_profile with -t). \n\t\tWrites list to stdout, logs and enqueues (-E).\n};
 }
@@ -110,13 +115,33 @@ sub Log_consistency_error {
 }
 
 # ---------------------------------------------------------------------
+sub handle_HTTP_result {
+    my $rs = shift;
+    
+    my $tries = 0;
+    while (1) {
+        if ($rs->http_status_ok) {
+            return 1;
+        }
+        else {
+            $tries++;
+            if ($tries > MAX_HTTP_TRIES) {
+                my $status = $rs->get_status_line;
+                __output("Solr HTTP error: $status\n");
+                return 0;
+            }
+            else {
+                sleep HTTP_SLEEP;
+            }
+        }
+    }
+}
+
+# ---------------------------------------------------------------------
 sub get_solr_attr {
     my $nid = shift;
-
-    use constant MYTIMEOUT => 1200; # 20 minutes 
-
+    
     my $shard = Db::Select_item_id_shard($C, $DBH, $RUN, $nid);
-
     return 0 unless($shard);
 
     my $searcher = ($MODE eq 'build') 
@@ -128,9 +153,8 @@ sub get_solr_attr {
     my $query = qq{q=id:$safe_id&fl=rights&indent=on};
 
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
-    unless ($rs->http_status_ok()) {
-        my $status = $rs->get_status_line;
-        __output("Solr HTTP error: $status\n");
+
+    unless ( handle_HTTP_result($rs) ) {
         return 0;
     }
 
@@ -140,7 +164,7 @@ sub get_solr_attr {
     $result_doc = '' unless ($result_doc);
 
     my ($solr_attr) = ($result_doc =~ m,<int name="rights">(.*?)</int>,);
-    $solr_attr = '' unless ($solr_attr);
+    $solr_attr = '0' unless ($solr_attr);
 
     return $solr_attr;
 }
@@ -196,6 +220,30 @@ sub get_one_slip_rights {
 }
 
 # ---------------------------------------------------------------------
+sub get_catalog_time {
+    my $nid = shift;
+
+    my $engine_uri = $C->get_object('MdpConfig')->get('engine_for_vSolr');
+    my $searcher = new Search::Searcher($engine_uri);
+    my $rs = new Search::Result::SLIP_Raw;
+
+    my $safe_id = Identifier::get_safe_Solr_id($nid);
+    my $query_string = qq{q=ht_id:$safe_id&&fl=ht_id_display};
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
+
+    unless ( handle_HTTP_result($rs) ) {
+        return 0;
+    }
+
+    my $ref = $rs->get_result_docs;
+    my $result = $ref->[0];
+    
+    my ($catalog_time) = ($result =~ m,<str>$safe_id\|(.+?)\|.*?</str>,);
+
+    return $catalog_time
+}
+
+# ---------------------------------------------------------------------
 
 =item test_ids
 
@@ -237,10 +285,7 @@ sub test_ids {
         }
 
         # catalog
-        my $safe_id = Identifier::get_safe_Solr_id($nid);
-        my $url = "http://solr-sdr-catalog:9033/catalog/select/?q=ht_id:$safe_id&fl=ht_id_display";
-        my $result = `curl --silent '$url'`;
-        my ($catalog_time) = ($result =~ m,<str>$safe_id\|(.+?)\|.*?</str>,);
+        my ($catalog_time) = get_catalog_time($nid);
 
         if ($TEST_PROFILE) {
             if ($slip_rights_profile ne $rights_current_profile) {
@@ -249,17 +294,18 @@ sub test_ids {
         }
 
         if ($error) {
+            $error .= qq{ slip_solr_update $slip_rights_time catalog_time=$catalog_time};
+
             # Only enqueue if missing from build index not the
             # production index which is 1+ day(s) behind
             my $enqueue = $ENQUEUE && ($MODE eq 'build');
             if ($enqueue) {
                 my $ref_to_arr_of_ids = [ $nid ];
-                $error .= qq{ slip_solr_update $slip_rights_time catalog_time=$catalog_time};
                 Db::handle_queue_insert($C, $DBH, $RUN, $ref_to_arr_of_ids);
                 $error .= ($enqueue ? " enqueued" : "");       
-                Log_consistency_error($C, "$nid $error");
-                __output(qq{\n$nid FAIL $error\n});
             }
+            Log_consistency_error($C, "$nid $error");
+            __output(qq{\n$nid FAIL $error\n});
         }
     }
 
