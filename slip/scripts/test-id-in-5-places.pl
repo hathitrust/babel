@@ -124,7 +124,7 @@ sub get_slip_solr_result {
     # Solr
     my $shard = Db::Select_item_id_shard($C, $DBH, $RUN, $id);
     if (! $shard) {
-        $solr_result = 'ERRO';
+        $solr_result = 'ZERO';
     }
     else {
         my $searcher = ($MODE eq 'build') 

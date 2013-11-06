@@ -315,8 +315,19 @@ sub test_ids {
             ||
             ($slip_solr_attr ne $rights_current_attr)
            ) {
-            $error = qq{ slip_solr_attr=$slip_solr_attr slip_rights_attr=$slip_rights_attr rights_current_attr=$rights_current_attr};
-            $ERRORS++;
+            unless (
+                    ($rights_current_attr eq $slip_rights_attr)
+                    &&
+                    ($rights_current_attr eq '8')
+                    &&
+                    ($slip_solr_attr eq '0')
+                   ) {
+                # It is not an error if rights_current.attr=nobody and
+                # slip_rights.attr=nobody and slip_solr_attr==0 (not
+                # in index)
+                $error = qq{ slip_solr_attr=$slip_solr_attr slip_rights_attr=$slip_rights_attr rights_current_attr=$rights_current_attr};
+                $ERRORS++;
+            }
         }
 
         # catalog
