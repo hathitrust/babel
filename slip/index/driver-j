@@ -77,15 +77,16 @@ use SLIP_Utils::DatabaseWrapper;
 
 
 sub sd_get_usage {
-    my $s .= qq{Usage: driver-j -r run [-d][-X][-T][-K]
-                 where -X skips the entire check index phase
+    my $s .= qq{Usage: driver-j -r run [-d][-X c|o][-T][-K]
+                 where -Xc skips the entire check index phase
+                       -Xo skips the entire optimization phase (implies -Xc too)
                        -K skips timeout requeue and server comm error restore\n};
     return $s;
 }
 
 our ($opt_r, $opt_d, $opt_X, $opt_T, $opt_K);
 
-my $ops = getopts('r:dXTK');
+my $ops = getopts('r:dX:TK');
 
 my $RUN = $opt_r; # Required
 if (! $RUN) {
@@ -105,7 +106,14 @@ my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
 my $SKIP_REDO = defined($opt_K);
-my $SKIP_CHECKINDEX = defined($opt_X);
+
+my $SKIP_CHECKINDEX = 0;
+my $SKIP_OPTIMIZE = 0;
+if (defined($opt_X)) {
+    $SKIP_CHECKINDEX = grep(/c/, $opt_X);
+    $SKIP_OPTIMIZE = grep(/o/, $opt_X);
+    $SKIP_CHECKINDEX = 1 if ($SKIP_OPTIMIZE);
+}
 
 my $C = new Context;
 
@@ -653,7 +661,7 @@ sub handle_Building {
     my ($C, $dbh, $run, $resume) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Building;
-    my $_Next_Stage = $SLIP_Utils::States::St_Optimizing;
+    my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
 
     __output("$_Stage\n");
 
@@ -681,10 +689,14 @@ sub handle_Building {
             if ($rc == 0) {
                 # Record this finish time for all shards without errors.
                 __record_shards_build_done($C, $dbh, $run);
+                
+                unless ($SKIP_OPTIMIZE) {
+                    # Enable optimizers to start running from cron
+                    $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
+                    $_Next_Stage = $SLIP_Utils::States::St_Optimizing;
+                }
 
-                # Enable transition to next stage before allowing
-                # optimization so sizer-j will not try to enable or commit
-                # during optimization.
+                # Proceed to next stage 
                 SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
 
                 # Enable optimizers to start running from cron
@@ -712,6 +724,7 @@ sub handle_Optimizing {
     my ($C, $dbh, $run, $resume) = @_;
 
     my $_Stage = $SLIP_Utils::States::St_Optimizing;
+    my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
 
     __output("$_Stage\n");
 
@@ -750,7 +763,7 @@ sub handle_Optimizing {
                 my $config = $C->get_object('MdpConfig');
                 my $check_index_supported = $config->get('check_index_supported');
                 if ($check_index_supported) {
-                    if (! $SKIP_CHECKINDEX) {
+                    unless ($SKIP_CHECKINDEX) {
                         # Enable checkers to start running from cron
                         $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
                         $_Next_Stage = $SLIP_Utils::States::St_Checking;

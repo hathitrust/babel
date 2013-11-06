@@ -799,7 +799,8 @@ sub r_final_report {
     __output(qq{$s\n\t} . Utils::Time::iso_Time() . qq{\n});
     r_rights_Log($C, $s, $RIGHTS_LOGFILE_KEY);
     
-    maybe_email_report($s, '[SLIP] rights-j report');
+    my $lag = __get_lag_in_days($C);
+    maybe_email_report($s, "[SLIP] rights-j report -L$lag");
 }
 
 
