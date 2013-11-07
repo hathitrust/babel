@@ -58,11 +58,10 @@ use XML::LibXML;
 use Utils;
 use Utils::Time;
 use Debug::DUtils;
-use Password;
 
 use Context;
 use MdpConfig;
-use Database;
+use SLIP_Utils::DatabaseWrapper;
 
 use Search::Site;
 use Search::Constants;
@@ -182,7 +181,7 @@ $C->set_object('MdpConfig', $config);
 
 my $RIGHTS_LOGFILE_KEY = 'rights_rebuild_logfile';
 
-my $DBH = r_r_connect($C);
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'rebuild_rights-j');
 
 my $INIT_MSG;
 my $NOW_TIMESTAMP = Utils::Time::iso_Time('date');
@@ -306,44 +305,6 @@ sub Phase_two_check {
 
     __confirm_l($INIT_MSG);
 }
-
-
-
-# ---------------------------------------------------------------------
-
-=item r_r_connect
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub r_r_connect {
-    my $C = shift;
-
-    my $db;
-    eval {
-        my $whoami = `whoami`;
-        chomp($whoami);
-        print "Enter passwd: ";
-        my $pw = Password::get_password();
-        print "\n";
-        unless ($pw) {
-            print "missing passwd\n";
-            exit 0;
-        }
-        $db = new Database($whoami, $pw, 'ht', 'mysql-sdr');
-    };
-    if ($@) {
-        SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild_rights-j', $@);
-        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
-    }
-
-    $C->set_object('Database', $db);
-    my $dbh = $C->get_object('Database')->get_DBH();
-    return $dbh;
-}
-
 
 # ---------------------------------------------------------------------
 
