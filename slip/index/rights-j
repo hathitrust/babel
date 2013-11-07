@@ -41,7 +41,7 @@ multi-volume. For example:
 
 the date when the bib record was last updated due to a change/addition
 to the list in the ht_id_display field. One or more dates on the items
-in the ht_id_didplay field will be the same as this field's value. In
+in the ht_id_display field will be the same as this field's value. In
 the above example, ht_id_update would be:
 
 <arr name="ht_id_update">
@@ -82,9 +82,28 @@ changes or reloaded status.
 rights-j gets timestamp=D from the slip_vsolr_timestamp table which
 records the newest update_time seen when rights-j last ran.
 
-rights-j parses the item ids from the bib records and queries rights
-table for the complete set of rights data for that id and REPLACES
-INTO the slip_rights table with an update_time=vsolr_update_time.
+rights-j parses the item ids from the bib records and queries
+rights_current table for the complete set of rights data for that id
+and REPLACES INTO the slip_rights table with update_time set to the
+update time in ht_id_display, e.g.
+<str>mdp.39015066198014|***20090701***|v.1</str>
+
+But suppose today is 20131108 and slip_vsolr_timestamp=20131107 and
+the lag is 2 days.  The query for records with new or updated items
+will be q=ht_id_update:[20131106 TO *],fl=ht_id_display. Suppose also
+that, for some reason, two records change, one appears for an new item:
+
+<arr name="ht_id_display"><str>mdp.39015012333333|20131107|</str> 
+
+and one changes for an updated item, but the update time on the item
+is 20131102:
+
+<arr name="ht_id_display"><str>mdp.39015012424242|20131102|</str> 
+
+The ht_id_update query for records in the range 20131106 TO * will
+miss this item. We hope this never happens.
+
+=head1 QUEUING
 
 enqueuer-j script processes records with an update_time newer than the
 newest update_time seen on any record the last time it ran. It

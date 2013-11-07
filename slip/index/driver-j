@@ -698,9 +698,6 @@ sub handle_Building {
 
                 # Proceed to next stage 
                 SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
-
-                # Enable optimizers to start running from cron
-                $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
             }
         }
     }
