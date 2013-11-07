@@ -83,6 +83,20 @@ if (Search::Site::get_server_site_name() ne 'macc') {
     exit 0;
 }
 
+my $FORCE_NON_INTERACTIVE = 1;
+
+sub __confirm_l {
+    my $msg = shift;
+    return 1 if ($FORCE_NON_INTERACTIVE);
+    __confirm($msg);
+}
+
+sub __confirm_continue_l {
+    my $msg = shift;
+    return 1 if ($FORCE_NON_INTERACTIVE);
+    return __confirm_continue($msg);
+}
+
 sub r_r_get_usage {
     my $s;
     $s .= qq{Usage: rebuild_rights-j -r <run> -P one -f <filename_key> | -P two [-n] -f <filename_key> [-T][-d{1|2|3|4|5|6}]\nPhase=one: Read vSolr, write file\nPhase=two: Read file, write slip_rights. \n\nNOTE: Avoid vSolr re-indexing time\n\n};
@@ -238,14 +252,14 @@ Description
 sub Phase_one_check {
 
     if (-e $VSOLR_FILENAME) {
-        __confirm("Over-write $VSOLR_FILENAME? [N] ");
+        __confirm_l("Over-write $VSOLR_FILENAME? [N] ");
     }
 
     $INIT_MSG =
       qq{\nToday is $NOW_TIMESTAMP. Phase=$PHASE. vSolr query will be ['00000000' TO *]}
         . qq{\n => Write $VSOLR_FILENAME. \n\tOK? [N] };
 
-    __confirm($INIT_MSG);
+    __confirm_l($INIT_MSG);
 }
 
 # ---------------------------------------------------------------------
@@ -267,8 +281,8 @@ sub Phase_two_check {
     # DROP/CREATE slip_rights_temp?
     my $drop = "NO DROP/CREATE slip_rights_temp, use existing table";
     unless ($CHECK) {
-        if (__confirm_continue("\nDROP/CREATE slip_rights_temp? [N] ")) {
-            if (__confirm_continue("\nREALLY? [N] ")) {
+        if (__confirm_continue_l("\nDROP/CREATE slip_rights_temp? [N] ")) {
+            if (__confirm_continue_l("\nREALLY? [N] ")) {
                 initialize_j_rights_temp($C, $DBH);
                 $drop = "DROP/CREATE slip_rights_temp";
                 initialize_j_rights_temp($C, $DBH);
@@ -290,7 +304,7 @@ sub Phase_two_check {
           . qq{\n\t => $drop }
             . qq{\n\t => $rename\n\t\t OK? [N]};
 
-    __confirm($INIT_MSG);
+    __confirm_l($INIT_MSG);
 }
 
 
