@@ -341,7 +341,7 @@ sub test_ids {
         }
 
         if ($error) {
-            $error .= qq{ slip_solr_update $slip_rights_time catalog_time=$catalog_time rights_current_time=$rights_current_time slip_solr_timestamp=$slip_solr_timestamp};
+            $error .= qq{ slip_rights_time=update $slip_rights_time catalog_time=$catalog_time rights_current_time=$rights_current_time slip_solr_timestamp=$slip_solr_timestamp};
 
             # Only enqueue if missing from build index not the
             # production index which is 1+ day(s) behind
