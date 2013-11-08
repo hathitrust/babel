@@ -62,6 +62,7 @@ use Debug::DUtils;
 use Context;
 use MdpConfig;
 use Database;
+use Password;
 
 use Search::Site;
 use Search::Constants;
@@ -82,19 +83,6 @@ if (Search::Site::get_server_site_name() ne 'macc') {
     exit 0;
 }
 
-my $FORCE_NON_INTERACTIVE = 1;
-
-sub __confirm_l {
-    my $msg = shift;
-    return 1 if ($FORCE_NON_INTERACTIVE);
-    __confirm($msg);
-}
-
-sub __confirm_continue_l {
-    my $msg = shift;
-    return 1 if ($FORCE_NON_INTERACTIVE);
-    return __confirm_continue($msg);
-}
 
 sub r_r_get_usage {
     my $s;
