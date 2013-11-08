@@ -61,7 +61,7 @@ use Debug::DUtils;
 
 use Context;
 use MdpConfig;
-use SLIP_Utils::DatabaseWrapper;
+use Database;
 
 use Search::Site;
 use Search::Constants;
@@ -181,7 +181,7 @@ $C->set_object('MdpConfig', $config);
 
 my $RIGHTS_LOGFILE_KEY = 'rights_rebuild_logfile';
 
-my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'rebuild_rights-j');
+my $DBH = r_r_connect($C);
 
 my $INIT_MSG;
 my $NOW_TIMESTAMP = Utils::Time::iso_Time('date');
@@ -239,6 +239,42 @@ exit 0;
 # --------------------- S u b r o t i n e s   -------------------------
 #
 
+
+# ---------------------------------------------------------------------
+
+=item r_r_connect
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_r_connect {
+    my $C = shift;
+
+    my $db;
+    eval {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht', 'mysql-sdr');
+    };
+    if ($@) {
+        SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild_rights-j', $@);
+        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    }
+
+    $C->set_object('Database', $db);
+    my $dbh = $C->get_object('Database')->get_DBH();
+    return $dbh;
+}
+
 # ---------------------------------------------------------------------
 
 =item Phase_one_check
@@ -251,14 +287,14 @@ Description
 sub Phase_one_check {
 
     if (-e $VSOLR_FILENAME) {
-        __confirm_l("Over-write $VSOLR_FILENAME? [N] ");
+        __confirm("Over-write $VSOLR_FILENAME? [N] ");
     }
 
     $INIT_MSG =
       qq{\nToday is $NOW_TIMESTAMP. Phase=$PHASE. vSolr query will be ['00000000' TO *]}
         . qq{\n => Write $VSOLR_FILENAME. \n\tOK? [N] };
 
-    __confirm_l($INIT_MSG);
+    __confirm($INIT_MSG);
 }
 
 # ---------------------------------------------------------------------
@@ -280,8 +316,8 @@ sub Phase_two_check {
     # DROP/CREATE slip_rights_temp?
     my $drop = "NO DROP/CREATE slip_rights_temp, use existing table";
     unless ($CHECK) {
-        if (__confirm_continue_l("\nDROP/CREATE slip_rights_temp? [N] ")) {
-            if (__confirm_continue_l("\nREALLY? [N] ")) {
+        if (__confirm_continue("\nDROP/CREATE slip_rights_temp? [N] ")) {
+            if (__confirm_continue("\nREALLY? [N] ")) {
                 initialize_j_rights_temp($C, $DBH);
                 $drop = "DROP/CREATE slip_rights_temp";
                 initialize_j_rights_temp($C, $DBH);
@@ -303,7 +339,7 @@ sub Phase_two_check {
           . qq{\n\t => $drop }
             . qq{\n\t => $rename\n\t\t OK? [N]};
 
-    __confirm_l($INIT_MSG);
+    __confirm($INIT_MSG);
 }
 
 # ---------------------------------------------------------------------
