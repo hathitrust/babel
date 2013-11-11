@@ -271,7 +271,7 @@ sub get_catalog_time {
     my $ref = $rs->get_result_docs;
     my $result = $ref->[0];
     
-    my ($catalog_time) = ($result =~ m,<str>$safe_id\|(.+?)\|.*?</str>,);
+    my ($catalog_time) = ($result =~ m,<str>\Q$safe_id\E\|(.+?)\|.*?</str>,);
 
     return $catalog_time
 }
