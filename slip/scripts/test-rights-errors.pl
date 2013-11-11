@@ -41,7 +41,6 @@ if (! defined $RUN) {
     exit 1;
 }
 
-my $ENQUEUE = defined($opt_E);
 my $TEST_PROFILE = defined($opt_t);
 my $ERRORS = 0;
 
@@ -85,14 +84,13 @@ use constant HTTP_SLEEP => 60;
 
 sub trv_get_usage {
     return 
-      qq{Usage: test-rights-errors.pl -r <run> -B|-V [-I <id>] [-E] [-t] [-R <offset> | -a <after> ]
+      qq{Usage: test-rights-errors.pl -r <run> -B|-V [-I <id>] [-t] [-R <offset> | -a <after> ]
            Check rights attribute in LSS Solr vs. ht.rights_current vs. ht.slip_rights
               where -t add a access_profile checking
                     -I checks only <id>. Otherwise all are checked.
                     -B|-V checks build|serve LSS Solr
                     -R resumes at <offset>
                     -a begins check after <after>, e.g. update_time > 20131104, <offset>=0
-                    -E enqueues  
               Writes list to stdout, logs/slip/run-<run>.consistency-yyyy-mm-dd.log\n};
 }
 
@@ -342,15 +340,6 @@ sub test_ids {
 
         if ($error) {
             $error .= qq{ slip_rights_time=$slip_rights_time catalog_time=$catalog_time rights_current_time=$rights_current_time slip_solr_timestamp=$slip_solr_timestamp};
-
-            # Only enqueue if missing from build index not the
-            # production index which is 1+ day(s) behind
-            my $enqueue = $ENQUEUE && ($MODE eq 'build');
-            if ($enqueue) {
-                my $ref_to_arr_of_ids = [ $nid ];
-                Db::handle_queue_insert($C, $DBH, $RUN, $ref_to_arr_of_ids);
-                $error .= ($enqueue ? " enqueued" : "");       
-            }
             Log_consistency_error($C, "$nid $error");
             __output(qq{\n$nid FAIL $error\n});
         }
