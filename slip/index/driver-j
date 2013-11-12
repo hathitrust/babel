@@ -112,7 +112,7 @@ my $SKIP_BUILD = 0;
 my $SKIP_OPTIMIZE = 0;
 my $SKIP_CHECKINDEX = 0;
 if (defined($opt_X)) {
-    $SKIP_BUILD =  = grep(/b/, $opt_X);
+    $SKIP_BUILD = grep(/b/, $opt_X);
     $SKIP_OPTIMIZE = grep(/o/, $opt_X);
     $SKIP_CHECKINDEX = grep(/c/, $opt_X);
 }
