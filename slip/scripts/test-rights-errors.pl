@@ -31,9 +31,9 @@ use SLIP_Utils::Solr;
 use IO::Handle;
 autoflush STDOUT 1;
 
-our ($opt_r, $opt_R, $opt_I, $opt_E, $opt_t, $opt_B, $opt_V, $opt_a);
+our ($opt_r, $opt_R, $opt_I, $opt_E, $opt_t, $opt_B, $opt_V, $opt_a, $opt_F);
 
-my $ops = getopts('r:I:R:EtBVa:');
+my $ops = getopts('r:I:R:EtBVa:F:');
 
 my $RUN = $opt_r;
 if (! defined $RUN) {
@@ -56,6 +56,8 @@ else {
     exit 1;
 }
                       
+my $ID_FILENAME = $opt_F;
+
 my $ID = $opt_I;
 if (defined($opt_I)) {
     $ID = $opt_I;
@@ -84,9 +86,10 @@ use constant HTTP_SLEEP => 60;
 
 sub trv_get_usage {
     return 
-      qq{Usage: test-rights-errors.pl -r <run> -B|-V [-I <id>] [-t] [-R <offset> | -a <after> ]
+      qq{Usage: test-rights-errors.pl -r <run> -B|-V [-I <id> | -F <filename>] [-t] [-R <offset> | -a <after> ]
            Check rights attribute in LSS Solr vs. ht.rights_current vs. ht.slip_rights
               where -t add a access_profile checking
+                    -F checks IDs in <filename>
                     -I checks only <id>. Otherwise all are checked.
                     -B|-V checks build|serve LSS Solr
                     -R resumes at <offset>
@@ -100,7 +103,17 @@ my $num_tested = 0;
 if ($ID) {
     $ref_to_arr_of_hash_ref = get_one_slip_rights($ID); 
 
-    $num_tested = test_ids($ref_to_arr_of_hash_ref);
+    $num_tested = test_rights_ids($ref_to_arr_of_hash_ref);
+}
+elsif ($ID_FILENAME) {
+    my $ref_to_arr_of_ids = load_from_file($ID_FILENAME);
+    my $num_loaded = scalar(@$ref_to_arr_of_ids);
+
+    foreach my $id (@$ref_to_arr_of_ids) {
+        $ref_to_arr_of_hash_ref = get_one_slip_rights($id);
+        $num_tested += test_rights_ids($ref_to_arr_of_hash_ref);
+    }
+    __output(qq{\nnum tested=$num_tested\n})
 }
 else {
     my $start_offset = $RESUME_AT;
@@ -109,7 +122,7 @@ else {
         $ref_to_arr_of_hash_ref = get_slip_rights($start_offset); 
         last unless (scalar @$ref_to_arr_of_hash_ref);
         
-        $num_tested += test_ids($ref_to_arr_of_hash_ref);
+        $num_tested += test_rights_ids($ref_to_arr_of_hash_ref);
         
         $start_offset += $SLIP_RIGHTS_SLICE;
         __output("$start_offset.");
@@ -119,6 +132,34 @@ __output("IDs tested: $num_tested, errors: $ERRORS\n");
 
 
 exit 0;
+
+# ---------------------------------------------------------------------
+sub load_from_file {
+    my $filename = shift;
+
+    my $arr;
+    my $ok;
+    eval {
+        $ok = open(IDS, "<$filename");
+    };
+    if ($@) {
+        print STDERR qq{i/o ERROR:($@) opening file="$filename"\n};
+        exit 1;
+    }
+
+    if (! $ok) {
+        print STDERR qq{could not open file="$filename"\n};
+        exit 1;
+    }
+
+    while (my $id = <IDS>) {
+        chomp($id);
+        push(@$arr, $id) if($id);
+    }
+    close (IDS);
+
+    return $arr;
+}
 
 # ---------------------------------------------------------------------
 sub Log_consistency_error {
@@ -276,14 +317,14 @@ sub get_catalog_time {
 
 # ---------------------------------------------------------------------
 
-=item test_ids
+=item test_rights_ids
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub test_ids {
+sub test_rights_ids {
     my $ref_to_arr_of_hash_ref = shift;
 
     foreach my $hashref (@$ref_to_arr_of_hash_ref) {
