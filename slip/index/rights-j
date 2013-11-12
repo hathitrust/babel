@@ -316,11 +316,7 @@ eval {
             my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($last_timestamp, $lag);
 
             $INIT_MSG = qq{Today is $now_timestamp.\n}
-<<<<<<< HEAD
-                . qq{Last run set vSolr timestamp from slip_rights MAX(update_time) to $last_timestamp. vSolr query will be [$query_timestamp TO *]};
-=======
-                . qq{Last run set MAX(slip_rights.update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
->>>>>>> insert-timestamp
+              . qq{Last run set MAX(slip_rights.update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
 
             if ($CHECK) {
                 __confirm("\n$INIT_MSG\nCheck slip_rights table: NO slip_rights INSERT? [N] ");
