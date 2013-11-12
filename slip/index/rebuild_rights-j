@@ -12,15 +12,14 @@ rebuild_rights-j
 
 See also rights-j
 
-Optionally, drops the entire slip_rights_temp table, rebuilds it and
+Optionally, drops the slip_rights_temp table, rebuilds it and
 optionally renames it to slip_rights. Only runs from the command line
-using developer personal database password.
+using developer personal database password to allow DROP/RENAME TABLE.
 
 Phase 1 = 5.7 hours for 5980242 bib records (Thu Feb 14 10:09:54 2013)
 Phase 2 = 10 hours for 10.5M ids
 
 NOTE: Disable all indexing jobs in crontab.
-
 
 =head1 OPTIONS
 
@@ -201,11 +200,14 @@ eval {
         #
         DROP_j_rights_RENAME_j_rights_temp($C, $DBH)
           unless($CHECK);
-        
+
         # Update the vSolr timestamp to the MAX(update_time) in
         # slip_rights.
         #
-        UPDATE_vsolr_timestamp($C, $DBH)
+        UPDATE_slip_vsolr_timestamp($C, $DBH)
+          unless($CHECK);
+
+        UPDATE_slip_rights_timestamp($C, $DBH)
           unless($CHECK);
     }
 
@@ -421,12 +423,46 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub UPDATE_vsolr_timestamp {
+sub UPDATE_slip_vsolr_timestamp {
     my ($C, $dbh) = @_;
 
     Db::update_vSolr_timestamp($C, $dbh);
 
-    my $s = "Update vSolr timestamp from slip_rights MAX()";
+    my $s = "Update slip_vsolr_timestamp from MAX(slip_rights.update_time)";
+    __output("$s\n");
+    r_r_rights_Log($C, $s);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item UPDATE_slip_rights_timestamp
+
+Inserts to slip_rights[_temp] all automatically set
+slip_rights[_temp].insert_time to CURRENT_TIMESTAMP.
+
+Set the pointer for the production run to
+MAX(slip_rights[_temp].insert_time ) to pretend all these IDs have
+already gone through queuing and indexing.
+
+If some in slip_rights are missing from the index, running sync-j -m
+rightsNINindexed will reveal them for manual re-indexing.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub UPDATE_slip_rights_timestamp {
+    my ($C, $dbh) = @_;
+
+    my $production_run_number =
+      $C->get_object('MdpConfig')->get('distinguished_production_run_number');
+
+    Db::update_j_rights_timestamp($C, $dbh, $production_run_number);
+
+    my $s;
+    $s .= "Updated slip_rights_timestamp.time[production_run_number] from MAX(slip_rights.insert_time)";
+    $s .= "\nMust now check for items in rights not in index: run sync-j -m rightsNINindexed";
+
     __output("$s\n");
     r_r_rights_Log($C, $s);
 }
@@ -486,7 +522,7 @@ sub read_vsolr_ids {
     # Count total records
     my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
     my $rs = new Search::Result::SLIP_Raw();
-    
+
     my $total_query = qq{q=ht_id_update:[00000000 TO *]&start=0&rows=0};
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $total_query, $rs);
     my $total_records = $rs->get_num_found();
@@ -577,7 +613,7 @@ sub write_vsolr_ids {
 
     # Close proxy for total records
     my $total_ids = Db::Select_count_from_j_rights($C, $dbh);
-    
+
     my $parser = XML::LibXML->new();
     my $xpath_doc = q{/foo/doc};
 
@@ -713,7 +749,7 @@ sub r_r_final_report {
     my $total_anomalies = $tref->{anomalies};
 
     my $s =
-        qq{\nFinal report: slip_rights size=$size total_item_ids=$total_ids total_bib_records_pahse_one=$total_records_1 total_bib_records_pahse_two=$total_records_2 total_anomalies=$total_anomalies\n}
+        qq{\nFinal report: slip_rights size=$size total_item_ids=$total_ids total_bib_records_phase_one=$total_records_1 total_bib_records_phase_two=$total_records_2 total_anomalies=$total_anomalies\n}
           . qq{\trate=$idsPsec id/sec vsolr_timestamp=$timestamp elapsed=$process_elapsed_min min\n};
 
     __output(qq{$s\t at } . Utils::Time::iso_Time() . qq{\n});
@@ -738,7 +774,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009-2010 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-2013 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

@@ -77,9 +77,10 @@ use SLIP_Utils::DatabaseWrapper;
 
 
 sub sd_get_usage {
-    my $s .= qq{Usage: driver-j -r run [-d][-X c|o][-T][-K]
-                 where -Xc skips the entire check index phase
-                       -Xo skips the entire optimization phase (implies -Xc too)
+    my $s .= qq{Usage: driver-j -r run [-d][-X bco][-T][-K]
+                 where -Xc skips the check index phase
+                       -Xo skips the optimization phase
+                       -Xb skips build phase
                        -K skips timeout requeue and server comm error restore\n};
     return $s;
 }
@@ -107,12 +108,13 @@ exit 0 if ($TEST_ONLY);
 
 my $SKIP_REDO = defined($opt_K);
 
-my $SKIP_CHECKINDEX = 0;
+my $SKIP_BUILD = 0;
 my $SKIP_OPTIMIZE = 0;
+my $SKIP_CHECKINDEX = 0;
 if (defined($opt_X)) {
-    $SKIP_CHECKINDEX = grep(/c/, $opt_X);
+    $SKIP_BUILD =  = grep(/b/, $opt_X);
     $SKIP_OPTIMIZE = grep(/o/, $opt_X);
-    $SKIP_CHECKINDEX = 1 if ($SKIP_OPTIMIZE);
+    $SKIP_CHECKINDEX = grep(/c/, $opt_X);
 }
 
 my $C = new Context;
@@ -585,8 +587,7 @@ sub ___rate {
 
 =item handle_Build_Wait
 
-Build_Wait is the base stage driver-j must be at for a run to
-be processed when triggered from cron.
+Build_Wait is the base stage driver-j.
 
 driver-j enables several other scripts to run from cron.  They can
 proceed at different paces.

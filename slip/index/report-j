@@ -708,7 +708,13 @@ sub report_configuration {
     my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
 
     __Print qq{\trights:\n\t\tenabled=$rights_enabled\n};
+<<<<<<< HEAD
     __Print qq{\t\tvSolr timestamp set from slip_rights MAX(update_time)=$v_timestamp, enqueuer-j last update_time for run $run=$r_timestamp, slip_rights size=$slip_rights_size\n};
+=======
+    __Print qq{\t\t\trights-j:   slip_vsolr_timestamp from MAX(slip_rights.update_time)=$v_timestamp\n};
+    __Print qq{\t\t\tenqueuer-j: slip_rights_timestamp[$run] from MAX(slip_rights.insert_time)=$r_timestamp\n};
+    __Print qq{\t\t\tslip_rights size=$slip_rights_size\n};
+>>>>>>> insert-timestamp
 
     # Driver
     # Enqueuer config

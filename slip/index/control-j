@@ -104,12 +104,12 @@ sub cont_get_usage {
        control-j -kresetqueue -r run
           delete all items in queue for given run (safely)
 
-       control-j -kQtimestamp -r run [-tYYYYMMDD]
-          set queue timestamp to 00000000 or value of -t
+       control-j -kQtimestamp -r run [-tYYYY-MM-DD hh:mm:ss]
+          set queue timestamp to $Db::MYSQL_ZERO_TIMESTAMP or value of -t
             re-queue ids in slip_rights newer than that timestamp, to be re-indexed
 
        control-j -kVtimestamp -r run [-tYYYYMMDD]
-          set vSolr timestamp to 00000000 or value of -t
+          set vSolr timestamp to $Db::VSOLR_ZERO_TIMESTAMP or value of -t
             re-query vSolr for ids newer than that timestamp, to be re-added slip_rights 
 
        control-j -k stop|start -V
@@ -268,12 +268,12 @@ eval {
     elsif ($KOMMAND eq 'Qtimestamp') {
         my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
         Db::init_j_rights_timestamp($C, $DBH, $RUN, $time);
-        __output(qq{\tset queue timestamp to } . ($time ? $time : '00000000') . qq{\n});
+        __output(qq{\tset queue timestamp to } . ($time ? $time : $Db::MYSQL_ZERO_TIMESTAMP) . qq{\n});
     }
     elsif ($KOMMAND eq 'Vtimestamp') {
         my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
         Db::init_vSolr_timestamp($C, $DBH, $time);
-        __output(qq{\tset vSolr timestamp to } . ($time ? $time : '00000000') . qq{\n});
+        __output(qq{\tset vSolr timestamp to } . ($time ? $time : $Db::VSOLR_ZERO_TIMESTAMP) . qq{\n});
     }
     elsif ($KOMMAND eq 'resetdriver') {
         my $driver_driven = $CONFIG->get('driver_driven');
@@ -611,7 +611,7 @@ sub c_init {
     __output(qq{Done.\n});
 
     my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
-    __output(qq{\n\tset queue timestamp to } . ($time ? $time : '00000000') . q{ ... });
+    __output(qq{\n\tset queue timestamp to } . ($time ? $time : $Db::MYSQL_ZERO_TIMESTAMP) . q{ ... });
     Db::init_j_rights_timestamp($C, $dbh, $run, $time);
     __output(qq{Done.\n});
 
@@ -1423,7 +1423,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008-9 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-13 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

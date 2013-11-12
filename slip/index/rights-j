@@ -63,9 +63,9 @@ the above example, ht_id_update would be:
 
 rights-j does a VuFind query based on timestamp=D which is the
 MAX(update_time) seen following its latest query. The default for D is
-2 days earlier than the last run of rights-j.  The lag is to avoid
-overlooking records than could have been added to the VuFind Solr
-index after j-rights ran that day:
+2 days earlier than the last run of rights-j.  The LAG (configurable
+with -L) is to avoid overlooking records than could have been added to
+the VuFind Solr index after rights-j ran that day:
 
 =item q=ht_id_update:[D TO *],fl=ht_id_display
 
@@ -73,7 +73,9 @@ These are bib records for added or updated volumes where rights
 changed or where the record-level metadata has changed.  These volumes
 correspond to ht_id_display items with dates equal or newer that
 D. Just these volumes are re-indexed to reflect their addition, rights
-changes or reloaded status.
+changes or reloaded status. These volume's IDs are added to
+slip_rights and their slip_rights.insert times are recorded for
+queuing processing by enqueuer-j (see QUEUING below).
 
 =back
 
@@ -101,17 +103,18 @@ is 20131102:
 <arr name="ht_id_display"><str>mdp.39015012424242|20131102|</str> 
 
 The ht_id_update query for records in the range 20131106 TO * will
-miss this item. We hope this never happens.
+miss this item. We hope this never happens and if it does, the LAG is
+sufficient to include such update times.
 
 =head1 QUEUING
 
-enqueuer-j script processes records with an update_time newer than the
-newest update_time seen on any record the last time it ran. It
-records, for the run it is queuing items for, the update_time is used
-to determine which items to queue up.  Different runs may have
-different pointers (update_times) into slip_rights.  Processing means
-copying from slip_rights into slip_queue to be later consumed by the
-index-j script.
+enqueuer-j script processes records with an slip_rights.insert_time
+newer than the MAX(insert_time) which was recorded the last time
+enqueuer-j ran. It records, for the run it is queuing items for, the
+current MAX(insert_time) to prepare for the next queuing event.
+Different runs may have stored different pointers (insert_times) into
+slip_rights.  Processing means copying from slip_rights into
+slip_queue to be later consumed by the index-j script.
 
 =head1 OPTIONS
 
@@ -313,7 +316,11 @@ eval {
             my $query_timestamp = SLIP_Utils::Common::get_offset_ISO_timestamp($last_timestamp, $lag);
 
             $INIT_MSG = qq{Today is $now_timestamp.\n}
+<<<<<<< HEAD
                 . qq{Last run set vSolr timestamp from slip_rights MAX(update_time) to $last_timestamp. vSolr query will be [$query_timestamp TO *]};
+=======
+                . qq{Last run set MAX(slip_rights.update_time) to $last_timestamp. Query will be [$query_timestamp TO *]};
+>>>>>>> insert-timestamp
 
             if ($CHECK) {
                 __confirm("\n$INIT_MSG\nCheck slip_rights table: NO slip_rights INSERT? [N] ");

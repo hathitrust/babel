@@ -10,15 +10,16 @@ enqueuer-j
 
 =head1 DESCRIPTION
 
-enqueuer-j reads the timestamp [MAX(update_time)] recorded in
-slip_rights_timestamp when it last did work. If there are ids in
-slip_rights newer or _equal_ than that time, it inserts those ids into
-the queue to be processed for the given run.  Producers (index-j) read
-and dequeue from the queue.
+enqueuer-j reads the timestamp [set from MAX(slip_rights.insert_time)]
+recorded in slip_rights_timestamp when it last did work. If there are
+ids in slip_rights newer than that time, it inserts those ids into the
+queue to be processed for the given run.  Producers (index-j) read and
+dequeue from the queue.
 
 The enqueuer-j runs independently of the other scripts, i.e if index-j
 is disabled, enqueuer-j still runs.
 
+See also the POD in the rights-j script.
 
 =head1 OPTIONS
 
@@ -329,7 +330,7 @@ sub enqueue_from_holdings_delta {
     }
 
     return if ($CHECK);
-    
+
     my $start = time;
     my $slice_size = $config->get('holdings_deltas_slice_size');
     my $offset = 0;
@@ -451,8 +452,8 @@ sub enqueue_from_j_rights {
 
     my $before_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
     my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
-    my $relation = ($before_timestamp eq $Db::vSOLR_ZERO_TIMESTAMP) ? '>=' : '>';
-    my $out_msg = qq{count=$would_be_queued would be queued for run=$run with timestamp $relation $before_timestamp\n};
+    my $relation = ($before_timestamp eq $Db::MYSQL_ZERO_TIMESTAMP) ? '>=' : '>';
+    my $out_msg = qq{count=$would_be_queued would be queued for run=$run with slip_rights_timestamp.time $relation $before_timestamp\n};
 
     if ($CHECK) {
         __output($out_msg);
@@ -465,17 +466,17 @@ sub enqueue_from_j_rights {
             __confirm("OK to proceed? [N] ");
         }
 
-        # Get all items from the slip_rights table with update_time newer
+        # Get all items from the slip_rights table with insert_time newer
         # than the timestamp set when enqueuer-j last recorded
-        # the MAX(update_time) and insert them into slip_queue advancing the
-        # timestamp slip_rights_timestamp
+        # MAX(slip_rights.insert_time) and insert them into slip_queue advancing the
+        # timestamp slip_rights_timestamp to MAX(slip_rights.insert_time)
         my $s0 = qq{Beginning insert into Primary queue. Please wait, this can take a while ...\n};
         __output($s0);
         my $num_inserted = Db::insert_latest_into_queue($C, $dbh, $run);
         my $after_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
 
         if ($num_inserted > 0) {
-            my $s = qq{Primary add $num_inserted items to queue};
+            my $s = qq{Primary add $num_inserted items to queue and advanced slip_rights_timestamp.time to $after_timestamp};
             __output(qq{$s\n});
             DEBUG('me', qq{DEBUG: $s});
             qu_Log_work($C, $run, $num_inserted, $before_timestamp, $after_timestamp);
