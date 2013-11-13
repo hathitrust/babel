@@ -310,7 +310,7 @@ sub get_catalog_time {
     my $ref = $rs->get_result_docs;
     my $result = $ref->[0];
     
-    my ($catalog_time) = ($result =~ m,<str>\Q$safe_id\E\|(.+?)\|.*?</str>,);
+    my ($catalog_time) = ($result =~ m,<str>$nid\|(.+?)\|.*?</str>,);
 
     return $catalog_time || '!catalog'
 }
