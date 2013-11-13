@@ -77,10 +77,9 @@ use SLIP_Utils::DatabaseWrapper;
 
 
 sub sd_get_usage {
-    my $s .= qq{Usage: driver-j -r run [-d][-X bco][-T][-K]
-                 where -Xc skips the check index phase
-                       -Xo skips the optimization phase
-                       -Xb skips build phase
+    my $s .= qq{Usage: driver-j -r run [-d][-X co][-T][-K]
+                 where -Xc skips the ONLY check index phase
+                       -Xo skips the optimization AND check phase
                        -K skips timeout requeue and server comm error restore\n};
     return $s;
 }
@@ -108,13 +107,11 @@ exit 0 if ($TEST_ONLY);
 
 my $SKIP_REDO = defined($opt_K);
 
-my $SKIP_BUILD = 0;
 my $SKIP_OPTIMIZE = 0;
 my $SKIP_CHECKINDEX = 0;
 if (defined($opt_X)) {
-    $SKIP_BUILD = grep(/b/, $opt_X);
     $SKIP_OPTIMIZE = grep(/o/, $opt_X);
-    $SKIP_CHECKINDEX = grep(/c/, $opt_X);
+    $SKIP_CHECKINDEX = grep(/c/, $opt_X) || $SKIP_OPTIMIZE;
 }
 
 my $C = new Context;
@@ -426,8 +423,8 @@ sub handle_Check_Resume {
 
 =item handle_BUSY_file
 
-Test busy file used to communicate driver in process to Core snapshot
-release ant Tomcat restart scripts.
+Test busy file used to communicate driver in process to Core Services
+snapshot release and Tomcat restart scripts.
 
 =cut
 
@@ -634,7 +631,13 @@ sub handle_Build_Wait {
             # Set busy file
             handle_BUSY_file($C, $run, $_Stage, BUSY_Set);
 
-            # Enable producers to start running from cron
+            # Update processed version of PHDB update.
+            if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
+                my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+                Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
+            }
+
+            # Enable producers to start running from cron, go to next stage
             $rc = __control_producers($C, $DBH, $RUN, $_Stage, 'start');
 
             # Proceed to next stage or let handle_Stage_rc deal with the
@@ -647,7 +650,6 @@ sub handle_Build_Wait {
 
     return $rc;
 }
-
 
 # ---------------------------------------------------------------------
 
@@ -690,14 +692,14 @@ sub handle_Building {
             if ($rc == 0) {
                 # Record this finish time for all shards without errors.
                 __record_shards_build_done($C, $dbh, $run);
-                
+
                 unless ($SKIP_OPTIMIZE) {
                     # Enable optimizers to start running from cron
                     $rc = __control_optimizers($C, $dbh, $run, $_Stage, 'start');
                     $_Next_Stage = $SLIP_Utils::States::St_Optimizing;
                 }
 
-                # Proceed to next stage 
+                # Proceed to next stage
                 SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
             }
         }
@@ -748,16 +750,6 @@ sub handle_Optimizing {
             $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
 
             if ($rc == 0) {
-                my $_Next_Stage = $SLIP_Utils::States::St_Build_Wait;
-
-                # Update processed version of PHDB update. Optimizers
-                # probably did full optimize on all shards unless
-                # update was quite small.
-                if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
-                    my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
-                    Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
-                }
-
                 my $config = $C->get_object('MdpConfig');
                 my $check_index_supported = $config->get('check_index_supported');
                 if ($check_index_supported) {
