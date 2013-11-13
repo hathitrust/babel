@@ -249,7 +249,7 @@ sub get_rights_current {
     };
     __output("\nget_rights_current FAIL for $nid: $@") if ($@);
 
-    return $ref_to_arr_of_hash_ref->[0];
+    return $ref_to_arr_of_hash_ref->[0] || 0;
 }
 
 # ---------------------------------------------------------------------
@@ -312,7 +312,7 @@ sub get_catalog_time {
     
     my ($catalog_time) = ($result =~ m,<str>\Q$safe_id\E\|(.+?)\|.*?</str>,);
 
-    return $catalog_time
+    return $catalog_time || '!catalog'
 }
 
 # ---------------------------------------------------------------------
