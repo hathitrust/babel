@@ -9,24 +9,52 @@ id_pattern:        .+
 namespace_pattern: .{2,4}
 fileid_pattern:    '[a-zA-Z_:].*'
 
-# URI regexps
-patterns:
-  type:                                                 ^/(type)/((_NS_)\.((_ARK_)|(_ID_)))$
-  aggregate:                                       ^/(aggregate)/((_NS_)\.((_ARK_)|(_ID_)))$
-  structure:                                       ^/(structure)/((_NS_)\.((_ARK_)|(_ID_)))$
-                                     
-  volume:                                             ^/(volume)/((_NS_)\.((_ARK_)|(_ID_)))$
-  volume/pageimage:                         ^/(volume/pageimage)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-  volume/pageocr:                             ^/(volume/pageocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-  volume/pagecoordocr:                   ^/(volume/pagecoordocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-  volume/pagemeta:                           ^/(volume/pagemeta)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-  volume/meta:                                   ^/(volume/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
-                                
-  article:                                           ^/(article)/((_NS_)\.((_ARK_)|(_ID_)))$
-  article/alternate:                       ^/(article/alternate)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-  article/assets/embedded:           ^/(article/assets/embedded)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-  article/assets/supplementary: ^/(article/assets/supplementary)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-  article/meta:                                 ^/(article/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
+# Resources, URI regexps and data/metadata typing
+resources:
+  type:
+    pattern:                                            ^/(type)/((_NS_)\.((_ARK_)|(_ID_)))$
+    dtype:                                                       metadata
+  aggregate:
+    pattern:                                       ^/(aggregate)/((_NS_)\.((_ARK_)|(_ID_)))$
+    dtype:                                                       data
+  structure:
+    pattern:                                       ^/(structure)/((_NS_)\.((_ARK_)|(_ID_)))$
+    dtype:                                                       metadata
+
+  volume:
+    pattern:                                          ^/(volume)/((_NS_)\.((_ARK_)|(_ID_)))$
+    dtype:                                                       data
+  volume/pageimage:
+    pattern:                                ^/(volume/pageimage)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+    dtype:                                                       data
+  volume/pageocr:
+    pattern:                                  ^/(volume/pageocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+    dtype:                                                       data
+  volume/pagecoordocr:
+    pattern:                             ^/(volume/pagecoordocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+    dtype:                                                       data
+  volume/pagemeta:
+    pattern:                                 ^/(volume/pagemeta)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+    dtype:                                                       metadata
+  volume/meta:
+    pattern:                                     ^/(volume/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
+    dtype:                                                       metadata
+
+  article:
+    pattern:                                         ^/(article)/((_NS_)\.((_ARK_)|(_ID_)))$
+    dtype:                                                       data
+  article/alternate:
+    pattern:                               ^/(article/alternate)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+    dtype:                                                       data
+  article/assets/embedded:
+    pattern:                         ^/(article/assets/embedded)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+    dtype:                                                       data
+  article/assets/supplementary:
+    pattern:                    ^/(article/assets/supplementary)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
+    dtype:                                                       data
+  article/meta:
+    pattern:                                    ^/(article/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
+    dtype:                                                       metadata
 
 valid_query_params:
   - ip
@@ -485,7 +513,7 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
 # allow_raw or allow_unwatermarked_derivatives bit
 #
 # restricted aggregate is restricted by the allow_zip bit
-# 
+#
 # volume is restricted by the allow_pdf bit for ODB-ebm
 # Current rules for "volume" resource:
 #

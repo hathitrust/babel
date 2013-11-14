@@ -244,27 +244,27 @@ pageimage -> volume_pageimage
 sub __mapURIsToHandlers {
     my $self = shift;
 
-    my $patternsRef = $self->__getConfigVal('patterns');
-
     my $arkPattern =  $self->__getConfigVal('ark_pattern');;
     my $idPattern =  $self->__getConfigVal('id_pattern');;
     my $nsPattern =  $self->__getConfigVal('namespace_pattern');;
     my $fileidPattern =  $self->__getConfigVal('fileid_pattern');;
 
     my %map;
-    foreach my $resource (keys %$patternsRef) {
+    my $resourcesRef = $self->__getConfigVal('resources');
 
-        my $fullRE = $patternsRef->{$resource};
-        $fullRE =~ s,_ARK_,$arkPattern,;
-        $fullRE =~ s,_ID_,$idPattern,;
-        $fullRE =~ s,_NS_,$nsPattern,;
-        $fullRE =~ s,_FILEID_,$fileidPattern,;
+    foreach my $resource (keys %$resourcesRef) {
+        my $resourceURIregexp = $resourcesRef->{$resource}{pattern};
+
+        $resourceURIregexp =~ s,_ARK_,$arkPattern,;
+        $resourceURIregexp =~ s,_ID_,$idPattern,;
+        $resourceURIregexp =~ s,_NS_,$nsPattern,;
+        $resourceURIregexp =~ s,_FILEID_,$fileidPattern,;
 
         my $cannonicalResource = $resource;
         $cannonicalResource =~ s,/,_,g;
 
         my $handler = qq{GET_$cannonicalResource};
-        $map{qr/$fullRE/} = $handler;
+        $map{qr/$resourceURIregexp/} = $handler;
     }
 
     $self->resourceHooks(%map);
@@ -415,8 +415,7 @@ sub __getFileFor {
                       -Content_type => $mimetype . '; charset=utf8',
                       -Content_Disposition => qq{filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg;
-        $self->__addHeaderInCopyrightMsg($resource_str);
+        $self->__addExtraHeaders($resource, $resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, "cannot fetch $resource resource");
@@ -439,7 +438,8 @@ sub __getResourceMetaRepresentationFor {
     my $self = shift;
     my ($caller_name, $xsl_key, $args_hashref) = @_;
 
-    hLOG('API: ' . $caller_name . q{: } . $self->__getParamsRefStr . $self->query->self_url);
+    my $resource_str = $self->__getParamsRefStr;
+    hLOG('API: ' . $caller_name . q{: } . $resource_str . $self->query->self_url);
 
     my $resource = $self->__paramsRef->{resource};
     my $parser = XML::LibXML->new;
@@ -462,9 +462,9 @@ sub __getResourceMetaRepresentationFor {
     if (defined($representationRef) && $$representationRef) {
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
         my $mimetype = $self->__getMimetype($resource, $format);
-        my $resource = $self->__paramsRef->{resource};
-        $resource =~ s,/,-,g;
-        my $filename = $resource . '-' . $self->__getIdParamsRef . ".$format";
+        my $l_resource = $resource;
+        $l_resource =~ s,/,-,g;
+        my $filename = $l_resource . '-' . $self->__getIdParamsRef . ".$format";
 
         $self->header
             (
@@ -472,7 +472,7 @@ sub __getResourceMetaRepresentationFor {
              -Content_type => $mimetype . '; charset=utf8',
              -Content_Disposition => qq{filename=$filename},
             );
-        $self->__addHeaderAccessUseMsg;
+        $self->__addExtraHeaders($resource, $resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, "cannot fetch $resource representation");
@@ -583,8 +583,7 @@ sub GET_structure {
                       -Content_type => $mimetype,
                       -Content_Disposition => qq{filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg;
-        $self->__addHeaderInCopyrightMsg($resource_str);
+        $self->__addExtraHeaders('structure', $resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch structure resource');
@@ -624,8 +623,7 @@ sub GET_aggregate {
                       -Content_type => $mimetype,
                       -Content_Disposition => qq{filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg;
-        $self->__addHeaderInCopyrightMsg($resource_str);
+        $self->__addExtraHeaders('aggregate', $resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch aggregate resource');
@@ -774,8 +772,7 @@ sub GET_volume_pageimage {
                       -Content_type => $mimetype,
                       -Content_Disposition => qq{filename=$filename},
                      );
-        $self->__addHeaderAccessUseMsg;
-        $self->__addHeaderInCopyrightMsg($resource_str);
+        $self->__addExtraHeaders('volume/pageimage', $resource_str);
     }
     else {
         $self->__setErrorResponseCode(404, 'cannot fetch volume/pageimage resource');
@@ -869,8 +866,7 @@ sub GET_volume {
                   'Content-type' => $mimetype,
                   'Content-Disposition' => qq{filename=$filename},
                  );
-    $self->__addHeaderAccessUseMsg;
-    $self->__addHeaderInCopyrightMsg($resource_str);
+    $self->__addExtraHeaders('volume', $resource_str);
 
     my $script = $ENV{SDRROOT} . "/imgsrv/bin/pdf";
     my $cmd_ref = [ $script, "--format=ebm", "--id=$id" ];

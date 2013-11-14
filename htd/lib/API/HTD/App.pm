@@ -713,6 +713,26 @@ sub __getExtendedAccessType {
 # =====================================================================
 # =====================================================================
 
+# ---------------------------------------------------------------------
+
+=item __addExtraHeaders
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __addExtraHeaders {
+    my $self = shift;
+    my ($resource, $resource_str) = @_;
+
+    $self->___addHeaderAccessUseMsg;
+
+    my $data_type = $self->__getConfigVal('resources', $resource, 'dtype');
+    if ($data_type eq 'data') {
+        $self->___addHeaderInCopyrightMsg($resource_str);
+    }
+}
 
 # ---------------------------------------------------------------------
 
@@ -723,7 +743,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub __addHeaderInCopyrightMsg {
+sub ___addHeaderInCopyrightMsg {
     my $self = shift;
     my $resource_str = shift;
 
@@ -748,7 +768,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub __addHeaderAccessUseMsg {
+sub ___addHeaderAccessUseMsg {
     my $self = shift;
 
     my $url = $self->{stmt_url};
