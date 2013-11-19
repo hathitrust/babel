@@ -556,7 +556,7 @@ sub __basic_access_is_authorized {
     my ($code, $access_type) = @_;
 
     die "FATAL: access_type=$access_type" unless ($access_type);
-    
+
     my $mask = $basic_authorization_map{$access_type};
     my $result = ($code & $mask);
     my $authorized = ($result == $mask);
@@ -674,8 +674,13 @@ sub __authorized_protocol {
 We impose IP address match requirements vs. an IP address parameter or
 REMOTE_ADDR (depending on client type).
 
-Requests for resources that have a 'basic' access_type matching
-'restricted' must be locked.
+Requests for resources that have a 'basic' access_type equal to
+'open_restricted' must be locked when an extended_access_type is
+defined (making them 'restricted') otherwise the resource is 'open'
+and does not have to be locked to an IP address.
+
+Requests for resources that have a 'basic' access_type equal to
+'restricted[_forbidden]' must be locked to an IP address always.
 
 =cut
 
@@ -687,9 +692,21 @@ sub __authorized_at_IP_address {
     my $ip = $ipo->address;
     my $ip_address_is_valid  = $ipo->ip_is_valid();
     my $client_type = $ipo->client_type();
+
     my $locked = $ipo->address_locked();
-    my $lock_required = ($access_type =~ m,restricted,);
-    
+    my $lock_required = 0;
+
+    if ($access_type =~ m,restricted,) {
+        if ($access_type =~ m,open,) {
+            if (defined $extended_access_type) {
+                $lock_required = 1;
+            }
+        }
+        else {
+            $lock_required = 1;
+        }
+    }
+
     my $authorized = 0;
 
     if ($ip_address_is_valid) {

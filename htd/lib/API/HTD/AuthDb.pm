@@ -90,7 +90,7 @@ sub validate_nonce_and_timestamp_for_access_key {
 
     my $validation_record = {
                              'max_timestamp_check' => {'error' => 0, 'max'   => 0},
-                             'uniqueness_check'    => {'error' => 0              }, 
+                             'uniqueness_check'    => {'error' => 0              },
                             };
 
     my ($statement, $sth);
@@ -226,6 +226,10 @@ sub update_fail_ct {
 Not in htd_authorization table implies U or K type: PD access only
 (downstream test for PDUS).
 
+NOTE: We may temporarily set code=1 for access_keys in
+htd_authorization to restrict access to the same level as an
+unauthorized htdc user or an unauthorized programatic user.
+
 =cut
 
 # ---------------------------------------------------------------------
@@ -236,19 +240,25 @@ sub get_privileges_by_access_key {
 
     $statement = qq{SELECT code, ipregexp, type FROM htd_authorization WHERE access_key=?};
     $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    # No row for access key means default lowest privilege
+    # No row for access key or code == 1 means default lowest privilege
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
     my $in_htd_authorized = scalar @$ref_to_arr_of_hashref;
 
-    my ($code, $ipregexp, $type);    
+    my ($code, $ipregexp, $type);
 
     if ($in_htd_authorized) {
         $code = $ref_to_arr_of_hashref->[0]->{code} || 1;
         $ipregexp = $ref_to_arr_of_hashref->[0]->{ipregexp} || 'notanipregexp';
         $type = $ref_to_arr_of_hashref->[0]->{type};
     }
-    else {
-        # Determine privileges by htdc user vs key authentication type
+
+    unless ($code > 1) {
+        # Determine authorization for htdc users by the authentication
+        # credential stored as userid when they log in to
+        # htdc. Programatic users will not have the userid field
+        # populated.
+        $in_htd_authorized = 0;
+
         $statement = qq{SELECT userid FROM htd_authentication WHERE access_key=?};
         $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
         my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
