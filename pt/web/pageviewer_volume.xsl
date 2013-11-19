@@ -112,7 +112,7 @@
 
   <xsl:template name="setup-extra-html-class">
     <xsl:if test="$gSuppressAccessBanner = 'true'">
-      <xsl:text>supaccban</xsl:text>
+      <xsl:text> supaccban </xsl:text>
     </xsl:if>    
   </xsl:template>
 

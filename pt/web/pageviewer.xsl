@@ -42,7 +42,7 @@
 
   <xsl:template name="setup-html-class">
     <xsl:if test="$gHTDEV != ''">
-      <xsl:text> htdev</xsl:text>
+      <xsl:text> htdev </xsl:text>
     </xsl:if>
     <xsl:call-template name="setup-extra-html-class" />
   </xsl:template>
