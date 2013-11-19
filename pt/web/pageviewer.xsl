@@ -26,7 +26,7 @@
   <xsl:variable name="gItemType" select="/MBooksTop/MBooksGlobals/ItemType" />
   <xsl:variable name="gHTDEV" select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
   <xsl:variable name="gSuppressAccessBanner" select="/MBooksTop/MBooksGlobals/SuppressAccessBanner"/>
-  
+
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
@@ -103,6 +103,16 @@
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/pt/css/screen.css" />
 
+    <meta name="robots" content="noarchive" />
+
+    <xsl:element name="link">
+      <xsl:attribute name="rel">canonical</xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:text>http://babel.hathitrust.org/cgi/pt?id=</xsl:text>
+        <xsl:value-of select="$gHtId" />
+      </xsl:attribute>
+    </xsl:element>
+
     <xsl:text disable-output-escaping="yes">
     <![CDATA[<!--[if lte IE 8]><link rel="stylesheet" type="text/css" href="/pt/css/ie8.css" /><![endif]-->]]>
     </xsl:text>
@@ -148,7 +158,7 @@
 
   <xsl:template name="pageviewer-contents">
     <xsl:call-template name="sidebar" />
-    <xsl:call-template name="main" /> 
+    <xsl:call-template name="main" />
   </xsl:template>
 
   <xsl:template name="get-page-title">
@@ -222,8 +232,8 @@
         <xsl:otherwise>
           <xsl:call-template name="access_banner_local"/>
         </xsl:otherwise>
-      </xsl:choose>      
-    </xsl:if>    
+      </xsl:choose>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="access_banner_ssd">

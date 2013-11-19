@@ -1,4 +1,4 @@
-// Script: was access_banner.js: renamed to access_banner_01.js
+// Script: was access_banner.js: renamed to access_banner_02.js
 
 // Only called when an element with id=accessBannerID is present and
 // we need to test for exposure
@@ -10,17 +10,24 @@ $(document).ready(function() {
             return;
         }
         var debug = $('html').hasClass('htdev');
-        var idarr = JSON.parse($.cookie('access.hathitrust.org'));
+        var idhash = $.cookie('access.hathitrust.org', undefined, {json : true});
         var url = $.url(); // parse the current page URL
-        var id = url.param('id');
-        if (idarr == null) {
-            idarr = new Array;
+        var currid = url.param('id');
+        if (idhash == null) {
+            idhash = {};
         }
-        if ((idarr.indexOf(id) < 0) || debug) {
-            idarr.push(id);
+
+        var ids = [];
+        for (var id in idhash) {
+            if (idhash.hasOwnProperty(id)) {
+                ids.push(id);
+            }
+        }
+
+        if ((ids.indexOf(currid) < 0) || debug) {
+            idhash[currid] = 1;
             // session cookie
-            var jsonIdStr = JSON.stringify(idarr);
-            $.cookie('access.hathitrust.org', jsonIdStr, { path: '/', domain: '.hathitrust.org' });
+            $.cookie('access.hathitrust.org', idhash, { json : true, path: '/', domain: '.hathitrust.org' });
 
             function showAlert() {
                 var html = $('#accessBannerID').html();
