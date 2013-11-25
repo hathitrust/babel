@@ -306,16 +306,9 @@ sub enqueue_from_holdings_delta {
 
     my $s;
     if ($holdings_deltas_size > 0) {
-        my $skip = 0;
         $s = qq{total=$holdings_deltas_size from ht_repository.holdings_deltas to add to queue};
-        if (Sl_Utils::checkIndex_day($C)) {
-            $s .= ' SKIPPED. Today is checkIndex day';
-            $skip = 1;
-        }
         __output(qq{$s\n});
         qu_Log_misc($C, $run, $s);
-
-        return if $skip;
 
         unless ($CHECK) {
             __confirm("OK to proceed? [N] ");
