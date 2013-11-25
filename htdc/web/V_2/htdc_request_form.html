@@ -93,11 +93,11 @@
                   <legend> volume items </legend>
                   ___EXTENDED_TYPES___
                   <input id="volpageimageid"
-                         type="radio" name="resource" class="htresource request required" value="volume/pageimage">volume page image</input><br/>
+                         type="radio" name="resource" class="htresource request required" value="volume/pageimage">volume page image</input><span class="tiny"><sup> [1]</sup></span><br/>
                   <input id="volpageocrid"
-                         type="radio" name="resource" class="htresource request required" value="volume/pageocr">volume page OCR</input><br/>
+                         type="radio" name="resource" class="htresource request required" value="volume/pageocr">volume page OCR</input><span class="tiny"><sup> [1]</sup></span><br/>
                   <input id="volpagecoordocrid"
-                         type="radio" name="resource" class="htresource request required" value="volume/pagecoordocr">volume page coordinate OCR</input><br/>
+                         type="radio" name="resource" class="htresource request required" value="volume/pagecoordocr">volume page coordinate OCR</input><span class="tiny"><sup> [1]</sup></span><br/>
                   <input id="volmetaid"
                          type="radio" name="resource" class="htresource request required" value="volume/meta">volume metadata</input><br/>
                   <input id="volpagemetaid"
@@ -111,7 +111,7 @@
                   <input id="structureid"
                          type="radio" name="resource" class="htresource request required" value="structure">item METS file</input><br/>
                   <input id="aggregateid"
-                         type="radio" name="resource" class="htresource request required" value="aggregate">entire item</input><br/><br/>
+                         type="radio" name="resource" class="htresource request required" value="aggregate">entire item</input><span class="tiny"><sup> [2]</sup></span><br/><br/>
                 </fieldset>
               </div>
             </div>
@@ -124,14 +124,14 @@
             <div id="htoptsdiv" class="request">
               <label class="request" for="htopts">format <span class="req">*</span></label>
               <div class="resource_radio">
-                <input id="formatrawid" type="radio" name="format" class="htopts request required" value="raw">raw</input><br/>
+                <input id="formatrawid" type="radio" name="format" class="htopts request required" value="raw">raw</input><span class="tiny"><sup> [2]</sup></span><br/>
                 <input id="formatpngid" type="radio" name="format" class="htopts request required" value="png">png</input><br/>
                 <input id="formatjpgid" type="radio" name="format" class="htopts request required" value="jpeg">jpeg</input><br/>
                 <input id="formatoptid" type="radio" name="format" class="htopts request required" value="optimalderivative">optimal derivative</input><br/><br/>
               </div>
               <div id="htnonrawdiv">
                 <label class="request" for="htopts">unwatermarked <span class="unreq">&#2063;</span></label>
-                <input id="watermarkid" type="checkbox" name="unwatermark" class="htopts request"></input><br/><br/>
+                <input id="watermarkid" type="checkbox" name="unwatermark" class="htopts request"></input><span class="tiny"><sup> [2]</sup></span><br/><br/>
                 <label class="request" for="htopts">resolution <span class="unreq">&#2063;</span></label>
                 <input id="htres" name="res" class="request digits"></input> <span class="tiny">(0,2,4,8: 0=highest)</span>
                 <b>OR</b>
@@ -143,6 +143,16 @@
             
             <div class="request">
               <input class="htsubmit" type="submit" value="Submit" />
+            </div>
+            <br/>
+            <br/>
+            <hr width="60%"/>
+            <div class="request tiny">
+              <p>Notes</p>
+              <ol>
+                <li>Permission is required when this item is subject to copyright.</li>
+                <li>Permission is required when the source of this item is Google. </li>
+              </ol>
               <p>Questions? Please email <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a></p>
             </div>
           </fieldset>
