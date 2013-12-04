@@ -34,6 +34,7 @@ use CGI;
 # ----------------------------------------------------------------------
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
+use Utils;
 
 use HTDC_Client;
 
@@ -44,6 +45,7 @@ BEGIN {
 }
 
 my $Q = new CGI;
+Utils::clean_cgi_params($Q);
 
 my $version = 2;
 my $production_mode = 0;
