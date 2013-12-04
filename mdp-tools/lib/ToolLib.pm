@@ -508,13 +508,13 @@ sub G_update_submodules {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd_1 = "git submodule update --init";
-    return 0
-      if (! execute_command($cmd_1));
-
     my $cmd_2 = "git submodule foreach 'git init --shared=group'";
     return 0
       if (! execute_command($cmd_2));
+
+    my $cmd_1 = "git submodule update";
+    return 0
+      if (! execute_command($cmd_1));
 
     my $cmd_3 = "git submodule foreach 'chmod g+w .'";
 #    return 0
