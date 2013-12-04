@@ -45,13 +45,10 @@ $ToolLib::VERBOSE = 0;
 @ToolLib::valid_developers =
   qw (
          aelkiss 
-         besmit 
-         ezbrooks 
          jgmorse 
          jjyork 
          moseshll 
          pfarber 
-         pulintz 
          roger 
          rrotter 
          scollett 
@@ -60,8 +57,8 @@ $ToolLib::VERBOSE = 0;
          sooty 
          stampy 
          tburtonw 
-         nasirg
          sethip
+         amardesi
     );
  
 @ToolLib::valid_dev_repos = map { "/htapps/$_.babel" } @ToolLib::valid_developers;
@@ -172,9 +169,9 @@ sub G_clone {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd_2 = "git init --shared=group";
-    return 0
-      if (! execute_command($cmd_2));
+#     my $cmd_2 = "git init --shared=group";
+#     return 0
+#       if (! execute_command($cmd_2));
 
     my $cmd_3 = "git remote show origin";
     return 0
@@ -508,18 +505,14 @@ sub G_update_submodules {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd_2 = "git submodule foreach 'git init --shared=group'";
-    return 0
-      if (! execute_command($cmd_2));
-
     my $cmd_1 = "git submodule update";
     return 0
       if (! execute_command($cmd_1));
 
-    my $cmd_3 = "git submodule foreach 'chmod g+w .'";
+#    my $cmd_3 = "git submodule foreach 'chmod g+w .'";
 #    return 0
 #      if (! execute_command($cmd_3));
-    execute_command($cmd_3);
+#    execute_command($cmd_3);
     
     PrintY("OK\n");
     return 1;
