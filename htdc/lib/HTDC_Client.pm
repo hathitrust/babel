@@ -67,7 +67,7 @@ sub _initialize {
 
     $VERSION = $args->{version};
     $DEVELOPMENT_SUPPORT = $args->{development_support};
-    $DEBUG = $args->{debug} || '0';
+    $DEBUG = $args->{debug} || 0;
     $self->{_Q} = $args->{_Q};
 }
 
