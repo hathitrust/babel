@@ -343,7 +343,7 @@ sub _serve_Data_API_response {
     if ($response->is_success) {
         my $h = $response->headers;
         my $content_type = $h->header('Content-Type');
-        my $content_disposition = $h->header('Content-Disposition');
+        my $content_disposition = $h->header('Content-Disposition') || '';
         if ($Q->param('disposition') eq 'download') {
             $content_disposition = 'attachment; ' . $content_disposition;
         }

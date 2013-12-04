@@ -173,7 +173,8 @@ sub make_Data_API_request_url {
         my $format = $Q->param('format');
         $extra->{format} = $format;
         if ($format ne 'raw') {
-            if ($Q->param('unwatermark') eq 'on') {
+            my $unwatermarked = $Q->param('unwatermark') || '';
+            if ($unwatermarked eq 'on') {
                 $extra->{watermark} = 0;
             }
             my $res = $Q->param('res');
