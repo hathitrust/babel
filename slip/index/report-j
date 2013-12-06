@@ -551,35 +551,39 @@ sub report_flags_state {
     }
 
     my $cksup = $config->get('check_index_supported') ? 'YES' : 'no';
-    my $ck = "check index support=$cksup";
+    my $ck = "\n\tcheck index support=$cksup\n\t\t";
 
     my $supported = Scheduler::full_optimize_supported($C);
     my $trigger_size = Scheduler::get_full_optimize_trigger_size($C) if ($supported);
     my $all_trigger_size = Scheduler::get_all_full_optimize_trigger_size($C) if ($supported);
 
-    my $opo = "full_optimize supported=$supported " . ($supported ? "trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB\n\t\t" : "");
-
+    my $opo = "full_optimize supported=$supported " . ($supported ? "trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB" : "");
+    $opo .= $ck;
+    
     my @num_shards_list = __get_shard_list($C);
-    my $total_segsizes = Scheduler::get_segsizes($C, $run);
-    $opo .= "total_segsizes = $total_segsizes\n\t\t";
+    my @sizes = split(/ /, Scheduler::get_segsizes($C, $run));
+    my $segsizes = sprintf("tot% 16s % 16s\n\t\t", $sizes[0], $sizes[1]);
 
-    my $extra;
+    my $extra = sprintf("%2s % 16s % 16s  %-20s %-20s%s  %-20s\n\t\t", '', 'seg_1', 'seg_2', 'built', 'optimized', '[s]', 'checked');
     foreach my $shard (@num_shards_list) {
         my $buildDoneTime = Db::Select_shard_build_done($C, $dbh, $run, $shard);
         my $optimizeDoneTime = Db::Select_shard_optimize_done($C, $dbh, $run, $shard);
         my $checkDoneTime = Db::Select_shard_check_done($C, $dbh, $run, $shard);
+        my $selected = Db::optimize_shard_is_selected($C, $dbh, $run, $shard);
+
         $extra .= sprintf(
-                          "%2s %14s %14s  build=%s  optimiz=%s  check=%s\n\t\t",
+                          "%2s % 16s % 16s  %-20s %-20s[%s]  %-20s\n\t\t",
                           $shard,
                           split(/ /, Scheduler::get_segsizes($C, $run, $shard)),
                           $buildDoneTime,
                           $optimizeDoneTime,
+                          $selected,
                           $checkDoneTime
                          );
     }
-    $opo .= $extra;
+    $opo .= $extra . $segsizes;
 
-    __Print qq{\n * flags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$opo\n\t$ck\n};
+    __Print qq{\n * flags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$opo\n};
 }
 
   # ---------------------------------------------------------------------
@@ -675,9 +679,7 @@ sub report_configuration {
         my $num_s_producers = Db::Select_shard_num_producers($C, $dbh, $run, $__shard);
         my $num_s_allocated = Db::Select_shard_num_allocated($C, $dbh, $run, $__shard);
 
-        my $e = $s_enabled ? 'enabled' : 'disabled';
-
-        __Print qq{\t\t$__shard: producers[conf=$num_s_producers alloc=$num_s_allocated] build=$e optimize=$opt_enabled check=$ck_enabled engine=$engine_uri\n};
+        __Print qq{\t\t$__shard: producers[conf=$num_s_producers alloc=$num_s_allocated] building=$s_enabled optimizing=$opt_enabled checking=$ck_enabled engine=$engine_uri\n};
     }
 
     __Print qq{\tingest hosts:\n};
