@@ -40,7 +40,7 @@
    'pdate'    => '\d+',
    'pdate_start'    => '\d+',
    'pdate_end'    => '\d+',
-   'srch'   =>'*',
+   'srch'   =>'.*',
    'heldby' =>'.*',
   );
 
