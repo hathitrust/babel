@@ -26,14 +26,7 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config(11);
 $C->set_object('MdpConfig', $config);
 
-my $whoami = `whoami`;
-chomp($whoami);
-print STDERR "Enter passwd: ";
-my $passwd = Password::get_password();
-print STDERR "\n";
-
-
-my $db = new Database($whoami, $passwd, 'ht', 'mysql-sdr');
+my $db = new Database('ht_maintenance');
 my $DBH = $db->get_DBH();
 
 
