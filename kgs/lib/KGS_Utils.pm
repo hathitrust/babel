@@ -48,11 +48,11 @@ sub get_client_req_param_tests {
     return {
             name  => {
                       regexp => qr/^[a-zA-Z0-9- ]+$/,
-                      msg    => 'Name may contain only spaces, letters: a-z, A-Z, digits: 0-9 and "-".',
+                      msg    => 'Name may contain only spaces, letters: a-z, A-Z, digits: 0-9 and "-"',
                      },
             org   => {
                       regexp => qr/^[a-zA-Z0-9- ]+$/,
-                      msg    => 'Organization name may contain only spaces, letters: a-z, A-Z, digits: 0-9 and "-".',
+                      msg    => 'Organization name may contain only spaces, letters: a-z, A-Z, digits: 0-9 and "-"',
                      },
             email => {
                       # from http://www.regular-expressions.info/email.html

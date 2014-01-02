@@ -1,5 +1,5 @@
 <p>There were errors in the data submitted for key generation.</p>
-<p>Empty fields: <b>___MISSING_PARAMS___</b></p>.
-<p>Invalid data in fields: <b>___INVALID_PARAMS___</b></p>.
+<p>Empty fields:<br/><b>___MISSING_PARAMS___</b></p>
+<p>Invalid data in fields:<br/><b>___INVALID_PARAMS___</b></p>
 Try your request again at <a href="___REQUEST_URL___">___REQUEST_URL___</a></p> 
 <p>Contact us at <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> if you need assistance.</p>
