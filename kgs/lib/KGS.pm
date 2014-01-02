@@ -112,13 +112,14 @@ sub RegisterHandler {
     # filter
     my $client_data = KGS_Utils::make_client_data($Q, KGS_Utils::get_client_supported_params);
     
-    my ($valid, $errors);
+    my ($valid, $missing, $invalid);
     $self->header_type('header');
     
     # do server-side backup of javascript form validation
-    ($valid, $errors) = KGS_Validate::validate_form_params($C, $client_data, KGS_Utils::get_client_req_params);
-    if (! $valid) {
-        return KGS_Pages::get_missing_params_page($C, $errors);
+    ($valid, $missing, $invalid) = 
+      KGS_Validate::validate_form_params($C, $client_data, KGS_Utils::get_client_req_params);
+    unless ($valid) {
+        return KGS_Pages::get_missing_params_page($C, $missing, $invalid);
     }
     
     # do not allow another registration if MAX_ATTEMPTED_REGISTRATIONS have been made

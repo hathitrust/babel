@@ -33,7 +33,7 @@ use KGS_Log;
 
 use constant MAX_ATTEMPTED_REGISTRATIONS => 10;
 use constant MAX_ACTIVE_REGISTRATIONS => 5;
-use constant LINK_LIFETIME => 86400; # seconds in 24 hours 
+use constant LINK_LIFETIME => 86400; # seconds in 24 hours
 
 # ---------------------------------------------------------------------
 
@@ -48,18 +48,29 @@ sub validate_form_params {
     my ($C, $client_data, $required) = @_;
 
     my $valid = 1;
-    my $errors;
+    my $missing = {};
     foreach my $p (@$required) {
-        $errors->{$p} = 1 if (! $client_data->{$p});
+        $missing->{$p} = 1 unless ($client_data->{$p});
     }
+    $valid = 0 if (scalar keys %$missing);
 
-    if (scalar keys %$errors) {
-        $valid = 0;
+    my $invalid = {};
+    my $tests = KGS_Utils::get_client_req_param_tests();
+    foreach my $q (@$required) {
+        my $data = $client_data->{$q};
+        if ($data) {
+            my $RE = $tests->{$q}{regexp};
+            if ($data !~ $RE) {
+                $invalid->{$q} = $tests->{$q}{msg};
+            }
+        }
     }
+    $valid = 0 if (scalar keys %$invalid);
 
-    my $missing = join(',', keys %$errors);
-    LOG($C, qq{validate_form_params [valid=$valid]: missing=$missing});
-    return ($valid, $errors);
+    my $missing_msg = join(',', keys %$missing);
+    my $invalid_msg = join(',', keys %$invalid);
+    LOG($C, qq{validate_form_params [valid=$valid]: missing=$missing_msg invalid=$invalid_msg});
+    return ($valid, $missing, $invalid);
 }
 
 # ---------------------------------------------------------------------
@@ -124,7 +135,7 @@ sub validate_max_active_registrations {
     if ($reg_ct < MAX_ACTIVE_REGISTRATIONS) {
         $valid = 1;
     }
-    
+
     LOG($C, qq{validate_max_active_registrations [valid=$valid]: num=$reg_ct email=$email});
     return $valid;
 }
@@ -142,7 +153,7 @@ sub validate_confirmation_link_timestamp {
   my ($C, $cgi, $client_data) = @_;
 
   my $valid = 0;
-  
+
   my $now = time;
   my $elapsed = -1;
   my $link_timestamp = $cgi->param('oauth_timestamp');
@@ -168,7 +179,7 @@ Description
 # ---------------------------------------------------------------------
 sub validate_confirmation_replay {
     my ($C, $dbh, $key_pair) = @_;
-    
+
     my $access_key = $key_pair->token;
     my $valid = (! KGS_Db::access_key_is_active($dbh, $access_key));
 

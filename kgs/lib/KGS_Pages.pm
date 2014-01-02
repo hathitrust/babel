@@ -243,20 +243,37 @@ Description
 
 # ---------------------------------------------------------------------
 sub get_missing_params_page {
-    my ($C, $errors) = @_;
+    my ($C, $missing_params, $invalid_params) = @_;
 
     my $config = $C->get_object('MdpConfig');
 
     my $page_ref = __get_request_fail_page($C);
     __insert_chunk($C, $page_ref, 'missing_params_msg');
 
-    my @msg_elems;
-    foreach my $e (keys %$errors) {
-        push(@msg_elems, $e) if ($errors->{$e});
+    my $msg;
+    my @missing_elems;
+    foreach my $e (keys %$missing_params) {
+        push(@missing_elems, $e) if ($missing_params->{$e});
     }
-
-    my $msg = join(', ', @msg_elems);
+    if (scalar @missing_elems) {
+        $msg = join(', ', @missing_elems);
+    }
+    else {
+        $msg = 'No empty fields';
+    }
     $$page_ref =~ s,___MISSING_PARAMS___,$msg,g;
+
+    my @invalid_elems;
+    foreach my $i (keys %$invalid_params) {
+        push(@invalid_elems, $invalid_params->{$i}) if ($invalid_params->{$i});
+    }
+    if (scalar @invalid_elems) {
+        $msg = join("<br/>", @invalid_elems);
+    }
+    else {
+        $msg = 'No invalid fields';
+    }
+    $$page_ref =~ s,___INVALID_PARAMS___,$msg,g;
 
     my $url = get_request_link($C);
     $$page_ref =~ s,___REQUEST_URL___,$url,g;

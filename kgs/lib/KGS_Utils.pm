@@ -44,6 +44,24 @@ sub get_client_req_params {
     return [ qw(name org email) ];
 }
 
+sub get_client_req_param_tests {
+    return {
+            name  => {
+                      regexp => qr/^[a-zA-Z0-9- ]+$/,
+                      msg    => 'Name may contain only spaces, letters: a-z, A-Z, digits: 0-9 and "-".',
+                     },
+            org   => {
+                      regexp => qr/^[a-zA-Z0-9- ]+$/,
+                      msg    => 'Organization name may contain only spaces, letters: a-z, A-Z, digits: 0-9 and "-".',
+                     },
+            email => {
+                      # from http://www.regular-expressions.info/email.html
+                      regexp => qr/^[A-Za-z0-9._%+-]+\@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/,
+                      msg    => 'Email address is not well-formed.',
+                     },
+           };
+}
+
 sub get_client_opt_params {
     return [ qw(debug) ];
 }
@@ -135,7 +153,8 @@ sub kgs_clean_cgi {
         my @newvals = ();
         foreach my $v (@vals) {
             $v = Encode::decode_utf8($v);
-            push(@newvals, $v);
+            Utils::trim_spaces(\$v);
+            push(@newvals, $v) if ($v);
         }
         $cgi->param($p, @newvals);
     }
