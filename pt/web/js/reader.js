@@ -361,21 +361,26 @@ HT.Reader = {
             self._updateLinkSeq($link, seq);
         }
         self._updateLinkSeq($("#pageURL"), seq);
+        self._updateLinkSeq($("input[name=seq]"), seq);
+        self._updateLinkSeq($("#login-button"), seq);
     },
 
     _updateLinkSeq: function($link, seq) {
+        if ( ! $link.length ) { return ; }
         if ( seq == null ) {
             $link.attr("disabled", "disabled").attr('tabindex', -1);
         } else {
             if ( ! $link.hasClass("disabled") ) {
                 $link.attr("disabled", null).attr("tabindex", null);
             }
-            if ( $link.is("input") ) {
+            if ( $link.is("input") && $link.attr("name") == "seq" ) {
+                $link.val(seq);
+            } else if ( $link.is("input") ) {
                 var href = $link.val();
                 $link.val(href.replace(/seq=\d+/, "seq=" + seq))
             } else {
                 var href = $link.attr("href");
-                $link.attr("href", href.replace(/seq=\d+/, "seq=" + seq));
+                $link.attr("href", href.replace(/seq(=|%3D)\d+/, "seq" + "$1" + seq));
             }
         }
     },
