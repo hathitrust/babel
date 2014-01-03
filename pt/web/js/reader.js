@@ -60,6 +60,7 @@ HT.Reader = {
         this._tracking = false;
         this._handleView(this.getView(), 'exit');
         this._handleView(view, 'start');
+        this._updateViews(view);
         this.setView(view);
         this.manager.restart();
     },
@@ -379,9 +380,47 @@ HT.Reader = {
                 var href = $link.val();
                 $link.val(href.replace(/seq=\d+/, "seq=" + seq))
             } else {
-                var href = $link.attr("href");
-                $link.attr("href", href.replace(/seq(=|%3D)\d+/, "seq" + "$1" + seq));
+                this._updateLinkAttribute($link, "seq", seq);
             }
+        }
+    },
+
+    _updateViews: function(view) {
+        var self = this;
+        if ( ! view ) { view = this.getView(); }
+        self._updateLinkAttribute($("#login-button"), "view", view);
+        $("input[name=view]").val(view);
+    },
+
+    _updateLinkAttribute: function($link, key, value) {
+        if ( ! $link.length ) { return ; }
+        var href = $link.attr("href");
+        var regex = new RegExp(key + "(=|%3D)");
+        if ( ! regex.test(href) ) {
+            // key not in href
+            var text = key + "=" + value;
+            var target_href = href;
+            var idx;
+            if ( ( idx = target_href.indexOf('target=') ) > -1 ) {
+                // extract the target url
+                idx += "target=".length;
+                target_href = decodeURIComponent(href.substr(idx));
+            }
+            var sep = ';';
+            if ( target_href.indexOf("&") > -1 ) {
+                // add to parameters - semicolon
+                sep = '&';
+            }
+            target_href += sep + text;
+            if ( idx > -1 ) {
+                // re-encode
+                target_href = href.substr(0, idx) + encodeURIComponent(target_href);
+            }
+            $link.attr("href", target_href);
+        } else {
+            // replace existing key
+            regex = new RegExp(key + "(=|%3D)" + "\\w+(;|&|%3B|%26)?");
+            $link.attr("href", href.replace(regex, key + "$1" + value + "$2"));
         }
     },
 
