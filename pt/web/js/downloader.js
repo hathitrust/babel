@@ -84,17 +84,6 @@ HT.Downloader = {
                             }
                         })
                     }
-                },
-                {
-                    label : 'Download PDF',
-                    'class' : 'download-pdf btn-dismiss btn-primary hide',
-                    callback: function() {
-                        window.location.href = self.pdf.download_url;
-                        setTimeout(function() {
-                            self.$dialog.modal('hide');
-                        }, 500);
-                        return false;
-                    }
                 }
             ],
             {
@@ -218,7 +207,18 @@ HT.Downloader = {
         if ( percent == 100 ) {
             self.$dialog.find(".progress").hide();
             self.$dialog.find(".done").show();
-            self.$dialog.find(".download-pdf").show();
+            var $download_btn = self.$dialog.find('.download-pdf');
+            if ( ! $download_btn.length ) {
+                $download_btn = $('<a class="download-pdf btn btn-primary">Download PDF</a>').attr('href', self.pdf.download_url);
+                $download_btn.appendTo(self.$dialog.find(".modal-footer")).on('click', function(e) {
+                    console.log("SHOULD BE THE FIRST TO FIRE");
+                    setTimeout(function() {
+                        self.$dialog.modal('hide');
+                        $download_btn.remove();
+                    }, 1000);
+                    e.stopPropagation();
+                })
+            }
             self.$dialog.data('deactivated', true);
             // still could cancel
         }
