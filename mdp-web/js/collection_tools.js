@@ -12,6 +12,8 @@ head.ready(function() {
     var $check_all = $("#checkAll");
     var $possible_selections = $(".select input[type=checkbox]");
 
+    var NEW_COLL_NUM_ITEMS = {};
+
     function display_error(msg) {
         if ( ! $errormsg.length ) {
             $errormsg = $('<div class="alert alert-error"></div>').insertAfter($toolbar);
@@ -60,6 +62,7 @@ head.ready(function() {
         if ( ! $option.length ) {
             // need to add
             $option = $('<option></option>').val(params.coll_id).text(params.coll_name).appendTo($select);
+            NEW_COLL_NUM_ITEMS[params.coll_id] = params.NumAdded;
         }
     }
 
@@ -108,7 +111,7 @@ head.ready(function() {
                 url : get_url(),
                 data : $.param(params, true)
             }).done(function(data) {
-                console.log(data);
+                // console.log(data);
                 var params = parse_line(data);
                 $(".btn-loading").removeClass("btn-loading");
                 summarize_results(params);
@@ -259,7 +262,8 @@ head.ready(function() {
 
     function confirm_large(collSize, addNumItems, callback) {
 
-        if ( collSize <= 1000 && collSize + addNumItems > 1000 ) {
+        var LARGE_SIZE = 1000;
+        if ( collSize <= LARGE_SIZE && collSize + addNumItems > LARGE_SIZE ) {
             var numStr;
             if (addNumItems > 1) {
                 numStr = "these " + addNumItems + " items";
@@ -269,9 +273,11 @@ head.ready(function() {
             }
             var msg = "Note: Your collection contains " + collSize + " items.  Adding " + numStr + " to your collection will increase its size to more than 1000 items.  This means your collection will not be searchable until it is indexed, usually within 48 hours.  After that, just newly added items will see this delay before they can be searched. \n\nDo you want to proceed?"
 
-            confirm(msg, function(answer) {
+            bootbox.confirm(msg, function(answer) {
                 if ( answer ) {
                     callback();
+                } else {
+                    $(".btn-loading").removeClass("btn-loading");                
                 }
             })
         } else {
@@ -324,7 +330,7 @@ head.ready(function() {
 
         var add_num_items = $selected.length;
         var COLL_SIZE_ARRAY = getCollSizeArray();
-        var coll_size = COLL_SIZE_ARRAY[selected_collection_id];
+        var coll_size = COLL_SIZE_ARRAY[selected_collection_id] || NEW_COLL_NUM_ITEMS[selected_collection_id];
 
         confirm_large(coll_size, add_num_items, function() {
             // possible ajax action
