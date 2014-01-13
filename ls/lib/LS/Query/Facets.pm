@@ -308,7 +308,7 @@ sub get_Solr_query_string
     my $FACETQUERY="";
     my @facetquery = $cgi->param('facet');
     
-    if (@facetquery))
+    if (@facetquery)
     {
         foreach my $fquery (@facetquery)
         {
