@@ -573,7 +573,7 @@ sub get_selected_unselected
 
 
             my @cgi_facets = $cgi->param('facet');
-            if (defined (@cgi_facets)){    
+            if (@cgi_facets){    
                 # XXX move this loop into isFacetSelected
                 # test the facet names for a match first before comparing the values and
                 # then just compare values!
