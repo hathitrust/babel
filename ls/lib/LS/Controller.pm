@@ -96,12 +96,12 @@ sub ___core_initialize {
         $temp_cgi->param('debug', $cgi->param('debug'));
         $C->set_object('CGI', $temp_cgi);
     }
-
+#XXX
     # Default to displaying "Limited view" in search results
-    my $lmt = $cgi->param('lmt');
-    if (! defined($lmt)) {
-        $cgi->param('lmt', 'all');
-    }
+#    my $lmt = $cgi->param('lmt');
+ #   if (! defined($lmt)) {
+  #      $cgi->param('lmt', 'all');
+   # }
 
     # Bind)ings
     my $ab = new LS::Bind($C, $g_bindings);

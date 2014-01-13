@@ -18,7 +18,7 @@
    'da'     => '.*',
    'sz'     => '\d+',
    'start'  => '\d+',
-   'lmt'    => 'ft|all|so',
+   'lmt'    => '.*',
    'facet'  => '.*',
    'facet_format'  => '.*',
    'facet_lang'  => '.*',

@@ -107,17 +107,28 @@ sub execute_operation
                              'ft'=>'full_text',
                              'so'=>'search_only',
                              'all'=>'all',
-                             'default'=>'all',
                             };
     
     my $primary_type; # primary type to get actual search results
-    if (defined ($cgi->param('lmt') ) )
+    my $lmt = $cgi->param('lmt');
+    #  XXX This is needed per current UI which sends no lmt param when full veiw box is unchecked
+    # TODO: rewrite UI logic so lmt=all is sent if full view box is unchecked and then change
+    # line below to $lmt='ft'
+
+    if (!defined($lmt))
     {
-        $primary_type = $lmt_2_query_type->{$cgi->param('lmt')}
+        $lmt='all';
+    }
+    
+    if ($lmt=~/^(ft|so|all)$/) 
+    {
+        $primary_type = $lmt_2_query_type->{$lmt}
     }
     else
     {
-        $primary_type= $lmt_2_query_type->{'default'}
+        #This sets the default to be full-text and sets the cgi lmt to ft for UI purposes
+        $cgi->param('lmt','ft');
+        $primary_type= $lmt_2_query_type->{'ft'}
     }
     # secondary type to just get counts, default=full_text and can use math to get search only:
     #  all - full_text = search_only.   We just need to make sure we have an "all" count and one or the other of so|ft
