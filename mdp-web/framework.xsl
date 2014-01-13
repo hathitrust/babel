@@ -123,6 +123,34 @@
 
   </xsl:template>
 
+  <!-- schema org: start -->
+  <xsl:template name="BuildSchemaOrgTitle">
+    <xsl:param name="title"/>
+
+    <xsl:element name="span">  
+    <xsl:attribute name="itemprop">name</xsl:attribute><xsl:value-of select="$title"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template name="BuildSchemaOrgAuthor">
+
+    <xsl:variable name="author">
+      <xsl:call-template name="MetadataAuthorHelper"/>        
+    </xsl:variable>
+
+    <xsl:element name="span">  
+    <xsl:attribute name="itemprop">author</xsl:attribute><xsl:value-of select="$author"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template name="BuildSchemaOrgUrl">
+    <xsl:element name="span">  
+    <xsl:attribute name="itemprop">url</xsl:attribute><xsl:value-of select="$gItemHandle"/>
+    </xsl:element>
+  </xsl:template>
+  <!-- schema org: end -->
+
+
   <!-- FOAF: primary topic -->
   <xsl:variable name="gFOAFPrimaryTopicId">
     <xsl:value-of select="concat('[_:', $gHtId, ']')"/>
@@ -501,6 +529,15 @@
             <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
           </xsl:call-template>
         </div>
+
+       <div itemscope="" itemtype="http://schema.org/Book" style="display:none">
+          <xsl:call-template name="BuildSchemaOrgTitle">
+            <xsl:with-param name="title" select="$gFullTitleString"/>
+          </xsl:call-template>
+          <xsl:call-template name="BuildSchemaOrgAuthor"/>
+          <xsl:call-template name="BuildSchemaOrgUrl"/>
+        </div>
+
       </div>
 
       <!-- Author, Edition, Published, Description -->
@@ -921,7 +958,7 @@
             <a id='mdpFBcancel' href=''><strong>Cancel</strong></a>
           </div>
         </div>
-
+ 
       </xsl:element>
 
     </div>
@@ -929,6 +966,15 @@
 
   <!-- HARMONY: SIDEBAR -->
   <xsl:template name="aboutThisBook">
+
+        <div itemscope="" itemtype="http://schema.org/Book" style="display:none">
+          <xsl:call-template name="BuildSchemaOrgTitle">
+            <xsl:with-param name="title" select="$gFullTitleString"/>
+          </xsl:call-template>
+          <xsl:call-template name="BuildSchemaOrgAuthor"/>
+          <xsl:call-template name="BuildSchemaOrgUrl"/>
+        </div>
+
     <div class="bibLinks">
       <h2>About this Book</h2>
       <h3 class="offscreen">Catalog Record Details</h3>
