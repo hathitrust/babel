@@ -112,6 +112,34 @@
     </xsl:element>
   </xsl:template>
 
+
+  <!-- schema org: start -->
+  <xsl:template name="BuildSchemaOrgTitle">
+    <xsl:param name="title"/>
+
+    <xsl:element name="span">  
+    <xsl:attribute name="itemprop">name</xsl:attribute><xsl:value-of select="$title"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template name="BuildSchemaOrgAuthor">
+
+    <xsl:variable name="author">
+      <xsl:call-template name="MetadataAuthorHelper"/>        
+    </xsl:variable>
+
+    <xsl:element name="span">  
+    <xsl:attribute name="itemprop">author</xsl:attribute><xsl:value-of select="$author"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template name="BuildSchemaOrgUrl">
+    <xsl:element name="span">  
+    <xsl:attribute name="itemprop">url</xsl:attribute><xsl:value-of select="$gItemHandle"/>
+    </xsl:element>
+  </xsl:template>
+  <!-- schema org: end -->
+
   <!-- RDFa: hidden_title_string wrapped in content-less span -->
   <xsl:template name="BuildRDFaWrappedTitle">
     <xsl:param name="visible_title_string"/>
@@ -475,7 +503,17 @@
             <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
             <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
           </xsl:call-template>
+        </div> 
+
+        <div itemscope="" itemtype="http://schema.org/Book" style="display:none">
+          <xsl:call-template name="BuildSchemaOrgTitle">
+            <xsl:with-param name="title" select="$gFullTitleString"/>
+          </xsl:call-template>
+          <xsl:call-template name="BuildSchemaOrgAuthor"/>
+          <xsl:call-template name="BuildSchemaOrgUrl"/>
         </div>
+
+
       </div>
       
       <!-- Author, Edition, Published, Description -->
@@ -747,7 +785,17 @@
   </xsl:template>
 
   <xsl:template name="sidebar-about-this-book">
+
+        <div itemscope="" itemtype="http://schema.org/Book" style="display:none">
+          <xsl:call-template name="BuildSchemaOrgTitle">
+            <xsl:with-param name="title" select="$gFullTitleString"/>
+          </xsl:call-template>
+          <xsl:call-template name="BuildSchemaOrgAuthor"/>
+          <xsl:call-template name="BuildSchemaOrgUrl"/>
+        </div>
+
     <div class="bibLinks">
+
       <h2>About this Book</h2>
       <h3 class="offscreen">Catalog Record Details</h3>
         <p>
