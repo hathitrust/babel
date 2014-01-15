@@ -69,15 +69,20 @@ if (defined $ENV{REMOTE_USER}) {
     else {
         print qq{<p>Here are your credentials as we see them from your login.</p>};
         print qq{<ul>
-                   <li>REMOTE_USER = $ENV{REMOTE_USER}</li>
-                   <li>REMOTE_ADDR = $ENV{REMOTE_ADDR}</li>
-                   <li>AUTH_TYPE = $ENV{AUTH_TYPE}</li>};
+                   <li>REMOTE_USER = "$ENV{REMOTE_USER}" or possibly forwarded for: "$ENV{HTTP_X_FORWARDED_FOR}"</li>
+                   <li>REMOTE_ADDR = "$ENV{REMOTE_ADDR}"</li>
+                   <li>AUTH_TYPE = "$ENV{AUTH_TYPE}"</li>
+                   <li>BROWSER = "$ENV{HTTP_USER_AGENT}"</li>
+                   <li>HOST = "$ENV{HTTP_HOST}"</li>
+}
+
+;
 
         my $auth_type = lc($ENV{AUTH_TYPE});
         if ($auth_type eq 'shibboleth') {
-            print qq{<li>eduPersonScopedAffiliation = $ENV{affiliation}</li>
-                     <li>eduPersonPrincipalName = $ENV{eppn}</li>
-                     <li>displayName = $ENV{displayName}</li>};
+            print qq{<li>eduPersonScopedAffiliation = "$ENV{affiliation}"</li>
+                     <li>eduPersonPrincipalName = "$ENV{eppn}"</li>
+                     <li>displayName = "$ENV{displayName}"</li>};
         }
         print qq{</ul>};
     }
