@@ -82,6 +82,9 @@ my $app = sub {
         my ( $callback, $logged_in, $displayName, $affiliation, $auth_type, $print_disabled, $msg, $idp_list ) = @_;
         $print_disabled = $print_disabled ? 'true' : 'false';
         my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
+        $displayName = $displayName || '';
+        $affiliation = $affiliation || '';
+        
         my $retval = <<JAVASCRIPT;
 var HT = HT || {};
 HT.login_status = {};
