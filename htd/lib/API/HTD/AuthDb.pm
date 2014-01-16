@@ -244,7 +244,7 @@ sub get_privileges_by_access_key {
     my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
     my $in_htd_authorized = scalar @$ref_to_arr_of_hashref;
 
-    my ($code, $ipregexp, $type);
+    my ($code, $ipregexp, $type) = (1, 'notanipregexp', 'U');
 
     if ($in_htd_authorized) {
         $code = $ref_to_arr_of_hashref->[0]->{code} || 1;
@@ -333,7 +333,7 @@ sub get_expiration_by_access_key {
 
     my $statement = qq{SELECT expires FROM htd_authorization WHERE access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    my $expires = $sth->fetchrow_array();
+    my $expires = $sth->fetchrow_array() || '0000-00-00 00:00:00';
 
     hLOG_DEBUG('DB:  ' . qq{expiration: $statement: $access_key ::: $expires});
     return $expires;
