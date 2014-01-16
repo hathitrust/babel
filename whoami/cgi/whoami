@@ -70,11 +70,13 @@ if (defined $ENV{REMOTE_USER}) {
     else {
         my $remote_addr = $ENV{REMOTE_ADDR};
         my $country = get_geoip($remote_addr);
+        my $client_host = `host $remote_addr`;
+        chomp($client_host);
         
         print qq{<p>Here are your credentials as we see them from your login.</p>};
         print qq{<ul>
                    <li>REMOTE_USER = "$ENV{REMOTE_USER}" or possibly forwarded for: "$ENV{HTTP_X_FORWARDED_FOR}"</li>
-                   <li>REMOTE_ADDR = "$remote_addr" (country = "$country")</li>
+                   <li>REMOTE_ADDR = "$remote_addr" <br/>&nbsp;&nbsp;country = "$country" <br/>&nbsp;&nbsp;UA host="$client_host"</li>
                    <li>AUTH_TYPE = "$ENV{AUTH_TYPE}"</li>
                    <li>BROWSER = "$ENV{HTTP_USER_AGENT}"</li>
                    <li>HOST = "$ENV{HTTP_HOST}"</li>};
