@@ -20,6 +20,7 @@ use Session;
 use Auth::Auth;
 
 
+
 my $C = new Context;
 
 # CGI
@@ -67,16 +68,16 @@ if (defined $ENV{REMOTE_USER}) {
         print Debug::DUtils::print_env($ENV{TERM} ? '' : 'html');
     }
     else {
+        my $remote_addr = $ENV{REMOTE_ADDR};
+        my $country = get_geoip($remote_addr);
+        
         print qq{<p>Here are your credentials as we see them from your login.</p>};
         print qq{<ul>
                    <li>REMOTE_USER = "$ENV{REMOTE_USER}" or possibly forwarded for: "$ENV{HTTP_X_FORWARDED_FOR}"</li>
-                   <li>REMOTE_ADDR = "$ENV{REMOTE_ADDR}"</li>
+                   <li>REMOTE_ADDR = "$remote_addr" (country = "$country")</li>
                    <li>AUTH_TYPE = "$ENV{AUTH_TYPE}"</li>
                    <li>BROWSER = "$ENV{HTTP_USER_AGENT}"</li>
-                   <li>HOST = "$ENV{HTTP_HOST}"</li>
-}
-
-;
+                   <li>HOST = "$ENV{HTTP_HOST}"</li>};
 
         my $auth_type = lc($ENV{AUTH_TYPE});
         if ($auth_type eq 'shibboleth') {
@@ -103,3 +104,14 @@ else {
 print qq{</body>};
 
 exit 0;
+
+sub get_geoip {
+    use Geo::IP;
+
+    my $IP = shift;
+    
+    my $geoIp = Geo::IP->new();
+    my $countryCode = $geoIp->country_code_by_addr($IP);
+    my $countryName = $geoIp->country_name_by_addr($IP);
+    return "$countryCode / $countryName";
+}
