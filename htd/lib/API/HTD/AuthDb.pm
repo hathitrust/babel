@@ -323,7 +323,9 @@ sub access_key_exists {
 
 =item get_expiration_by_access_key
 
-Description
+If the access_key is not present in htd_authorization, it has default
+authorization which never expires therefore the expiration date is not
+defined.
 
 =cut
 
@@ -333,7 +335,7 @@ sub get_expiration_by_access_key {
 
     my $statement = qq{SELECT expires FROM htd_authorization WHERE access_key=?};
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
-    my $expires = $sth->fetchrow_array() || '0000-00-00 00:00:00';
+    my $expires = $sth->fetchrow_array(); # undef if not present in htd_authorization
 
     hLOG_DEBUG('DB:  ' . qq{expiration: $statement: $access_key ::: $expires});
     return $expires;
