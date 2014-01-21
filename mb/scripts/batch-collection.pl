@@ -99,6 +99,7 @@ my @allowed_uniqnames =
    'rwelzenb',
    'sethip',
    'jjyork',
+   'blancoj',
   );
 
 my @allowed_overrides =
