@@ -1065,10 +1065,18 @@
           <xsl:attribute name="data-tracking-label"><xsl:value-of select="$pageLink" /></xsl:attribute>
           <xsl:attribute name="value"><xsl:value-of select="$pageLink" /></xsl:attribute>
         </xsl:element>
-        
         </xsl:if>
-
       </form>
+
+      <xsl:element name="a">
+        <xsl:attribute name="id">embedHtml</xsl:attribute>
+        <xsl:attribute name="default-form">data-default-form</xsl:attribute>
+        <xsl:attribute name="href">
+          <xsl:value-of select="' '"/>
+        </xsl:attribute>
+        <xsl:text>Embed this book</xsl:text>
+      </xsl:element>
+
     </div>
   </xsl:template>
 

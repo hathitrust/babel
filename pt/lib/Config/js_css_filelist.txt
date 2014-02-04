@@ -46,6 +46,7 @@ Test:$gSkin='default'
 /pt/web/js/feedback.js
 /pt/web/js/downloader.js
 /pt/web/js/version_popup.js
+/pt/web/js/embedHtml_popup.js
 /pt/web/js/collection_tools.js
 /pt/web/js/access_banner_02.js
 /pt/web/js/google_analytics_experiment.js
