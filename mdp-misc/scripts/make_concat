@@ -170,7 +170,7 @@ sub compress_file {
     my $min_filename = "$ENV{SDRROOT}/$PROGRAM/web" . "$js_dir/" .  basename($fq_filename);
     $min_filename =~ s,\.(js|css)$,-min.$1,;
     
-    my $yuicompressor = qq{yuicompressor};
+    my $yuicompressor = qq{yui-compressor};
     
     my $cmd = "$yuicompressor --charset utf8 -o $min_filename $fq_filename";
     if ($VERBOSE) {
