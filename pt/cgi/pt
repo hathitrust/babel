@@ -32,12 +32,6 @@ BEGIN {
     ( $main::realSTART ) = time;
     ## $ENV{DEBUG_LOCAL} = 1;
     ## $ENV{TEST_BLACKLIST} = 1;
-    ## delete $ENV{SDRLIB};
-    ## $ENV{SDRLIB} = 1;
-    ## $ENV{SDRINST} = 'uom';
-    ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
-    ## $ENV{REMOTE_USER} = 'pfarber';
-    ## delete $ENV{HT_DEV};
 }
 
 
