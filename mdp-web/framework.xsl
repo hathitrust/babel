@@ -531,6 +531,14 @@
         </div>
 
        <div itemscope="" itemtype="http://schema.org/Book" style="display:none">
+          <meta itemprop="accessibilityFeature" content="alternativeText"/>
+          <meta itemprop="accessibilityFeature" content="bookmarks"/>
+          <meta itemprop="accessibilityFeature" content="index"/>
+          <meta itemprop="accessibilityFeature" content="longDescription"/>
+          <meta itemprop="accessibilityFeature" content="readingOrder"/>
+          <meta itemprop="accessibilityAPI"     content="ARIA"/>
+          <meta itemprop="accessibilityControl" content="fullKeyboardControl"/>
+          <meta itemprop="accessibilityControl" content="fullMouseControl"/>
           <xsl:call-template name="BuildSchemaOrgTitle">
             <xsl:with-param name="title" select="$gFullTitleString"/>
           </xsl:call-template>
@@ -968,6 +976,14 @@
   <xsl:template name="aboutThisBook">
 
         <div itemscope="" itemtype="http://schema.org/Book" style="display:none">
+          <meta itemprop="accessibilityFeature" content="alternativeText"/>
+          <meta itemprop="accessibilityFeature" content="bookmarks"/>
+          <meta itemprop="accessibilityFeature" content="index"/>
+          <meta itemprop="accessibilityFeature" content="longDescription"/>
+          <meta itemprop="accessibilityFeature" content="readingOrder"/>
+          <meta itemprop="accessibilityAPI"     content="ARIA"/>
+          <meta itemprop="accessibilityControl" content="fullKeyboardControl"/>
+          <meta itemprop="accessibilityControl" content="fullMouseControl"/>
           <xsl:call-template name="BuildSchemaOrgTitle">
             <xsl:with-param name="title" select="$gFullTitleString"/>
           </xsl:call-template>
