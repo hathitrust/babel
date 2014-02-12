@@ -54,6 +54,9 @@ body {
     height: 1.8rem ;
     cursor: default;
 }
+.bootboxMediumWidth {
+    width: 500px;
+}
 .embedUrlContainer h3 {
     display: inline-block; 
 }
@@ -68,12 +71,18 @@ body {
 .embedUrlContainer textarea {
     width: 95%;
 }
-.embedUrlContainer #embedIcon {
+.embedUrlContainer label.radio .icomoon-scroll {
+    font-size: 1.6rem;
+}
+.embedUrlContainer label.radio .icomoon-book-alt2 {
+    font-size: 1.6rem;
+}
+.embedUrlContainer #embedHelpIcon {
     display: inline-block;
     position: relative; 
     height: 18px;
     width: 18px;
-    margin-left: 380px;
+    margin-left: 315px;
     margin-bottom: 1.4rem;
     background-image: url(/common/unicorn/img/icon_question.png);
     background-repeat: no-repeat;
