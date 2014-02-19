@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1389022794'" />
+  <xsl:variable name="timestamp" select="'?_=1392329563'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
@@ -52,6 +52,7 @@
             to_load.push("/pt/js/feedback.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/downloader.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/version_popup.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/js/embedHtml_popup.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/collection_tools.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/access_banner_02.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/google_analytics_experiment.js<xsl:value-of select="$timestamp" />");
