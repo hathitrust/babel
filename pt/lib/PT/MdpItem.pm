@@ -184,13 +184,17 @@ sub OcrHandler {
 
     my $q1 = $C->get_object('CGI')->param('q1');
     my $seq = $self->GetRequestedPageSequence();
-            
-    if ($q1) {
+
+    if ( grep(/CHECKOUT_PAGE/, $self->GetPageFeatures($seq)) ) {
+        # do nothing
+        DEBUG('all', qq{Checkout Page; supressed for seq=$seq});
+    } 
+    elsif ($q1) {
         my $id = $self->Get('id');
         $ocrTextRef = PT::SearchUtils::Solr_retrieve_OCR_page($C, $id, $self->GetPhysicalPageSequence($seq));
         DEBUG('all', qq{Solr retrieve OCR for seq=$seq});
-        }
-        else {
+    }
+    else {
         my $ocrFile = $self->GetFilePathMaybeExtract($seq, 'ocrfile') ;
             
         if ($ocrFile) {
