@@ -93,9 +93,12 @@ $C->set_object('MdpConfig', $config);
 my $db = new Database('ht_web');
 $C->set_object('Database', $db);
 
-# Session
-my $ses = Session::start_session($C);
-$C->set_object('Session', $ses);
+# No Session for WAYF.  Redirects from Auth::Auth when session
+# indicates user was logged in sometime during the session but is not
+# now logged in cause Cosign URL errors.
+# ---------------------------------------------------------------------
+# my $ses = Session::start_session($C);
+# $C->set_object('Session', $ses);
 
 # Auth
 my $auth = new Auth::Auth($C);
