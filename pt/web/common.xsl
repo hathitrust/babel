@@ -1068,14 +1068,18 @@
         </xsl:if>
       </form>
 
-      <xsl:element name="a">
-        <xsl:attribute name="id">embedHtml</xsl:attribute>
-        <xsl:attribute name="default-form">data-default-form</xsl:attribute>
-        <xsl:attribute name="href">
-          <xsl:value-of select="' '"/>
-        </xsl:attribute>
-        <xsl:text>Embed this book</xsl:text>
-      </xsl:element>
+      <xsl:if test="$gFinalAccessStatus = 'allow'">
+        <p>
+          <xsl:element name="a">
+            <xsl:attribute name="id">embedHtml</xsl:attribute>
+            <xsl:attribute name="default-form">data-default-form</xsl:attribute>
+            <xsl:attribute name="href">
+              <xsl:value-of select="' '"/>
+            </xsl:attribute>
+            <xsl:text>Embed this book</xsl:text>
+          </xsl:element>
+        </p>
+      </xsl:if>
 
     </div>
   </xsl:template>
