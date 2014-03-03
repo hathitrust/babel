@@ -477,6 +477,9 @@ OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
   um-dc-mp: open
   uiuc: open
   brooklynmuseum: open
+  uf: open
+  tamu: open
+  udel: open
 
 RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   google: restricted
@@ -492,7 +495,10 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   getty: restricted
   um-dc-mp: restricted
   uiuc: restricted
-  brooklynmuseum: open
+  brooklynmuseum: restricted
+  uf: restricted
+  tamu: restricted
+  udel: restricted
 
 # ---------------------------------------------------------------------
 # Access type map:
@@ -546,6 +552,8 @@ accessibility_matrix:
       uiuc: open
       brooklynmuseum: open
       uf: open
+      tamu: open
+      udel: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -562,6 +570,8 @@ accessibility_matrix:
       uiuc: restricted
       brooklynmuseum: restricted
       uf: restricted
+      tamu: restrcted
+      udel: restricted
 
   volume:
     free:
@@ -580,6 +590,8 @@ accessibility_matrix:
       uiuc: restricted_forbidden
       brooklynmuseum: open
       uf: open
+      tamu: open
+      udel: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -596,6 +608,8 @@ accessibility_matrix:
       uiuc: restricted_forbidden
       brooklynmuseum: restricted
       uf: restricted
+      tamu: restrcted
+      udel: restricted
 
   volume/pageimage:
     free:
@@ -614,6 +628,8 @@ accessibility_matrix:
       uiuc: open
       brooklynmuseum: open
       uf: open
+      tamu: open
+      udel: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -630,6 +646,8 @@ accessibility_matrix:
       uiuc: restricted
       brooklynmuseum: restricted
       uf: restricted
+      tamu: restrcted
+      udel: restricted
 
   volume/pageocr:
     free: *open-accessibility-block
