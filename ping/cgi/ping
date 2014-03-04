@@ -45,6 +45,8 @@ use Utils;
 use Database;
 use Session;
 
+use Institutions;
+
 use Plack::Request;
 use Plack::Response;
 
