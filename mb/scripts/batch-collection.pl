@@ -165,8 +165,17 @@ if ($NON_SUPERUSER) {
     my $path = abs_path($0);
     #print "ABSPATH: $path\n";
 
-    unless ( index($path, "test.babel") >= 0) {
+    unless ( index($path, "test.babel") >= 0 ) {
         print( qq{ERROR: Please run the copy of batch-collection.pl located in /htapps/test.babel/mb/scripts\n} );
+        exit 1;
+    }
+
+    my $ip_address = `hostname -i`;
+    chomp($ip_address);
+    my $host_info = `host -i test.babel.hathitrust.org`;
+    my ($test_dot_babel_ip_address) = ($host_info =~ /(\d+\.\d+\.\d+\.\d+)/s);
+    unless ($ip_address eq $test_dot_babel_ip_address) {
+        print( qq{ERROR: Please run batch-collection.pl when logged into host test.babel.hathitrust.org\n} );
         exit 1;
     }
 }
@@ -889,7 +898,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2007-11 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2007-14 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
