@@ -249,7 +249,7 @@ sub get_rights_current {
     };
     __output("\nget_rights_current FAIL for $nid: $@") if ($@);
 
-    return $ref_to_arr_of_hash_ref->[0] || 0;
+    return $ref_to_arr_of_hash_ref->[0] || {};
 }
 
 # ---------------------------------------------------------------------
@@ -308,7 +308,7 @@ sub get_catalog_time {
     }
 
     my $ref = $rs->get_result_docs;
-    my $result = $ref->[0];
+    my $result = $ref->[0] || '';
     
     my ($catalog_time) = ($result =~ m,<str>$nid\|(.+?)\|.*?</str>,);
 
@@ -340,9 +340,9 @@ sub test_rights_ids {
         # rights_current
         my $rights_hashref = get_rights_current($nid);
 
-        my $rights_current_attr    = $rights_hashref->{attr};
-        my $rights_current_time = $rights_hashref->{time};
-        my $rights_current_profile = $rights_hashref->{access_profile};
+        my $rights_current_attr = $rights_hashref->{attr} || 0;
+        my $rights_current_time = $rights_hashref->{time} || 0;
+        my $rights_current_profile = $rights_hashref->{access_profile} || 0;
 
         # solr
         my ($slip_solr_attr, $slip_solr_timestamp) = get_solr_attr($nid);
@@ -382,7 +382,7 @@ sub test_rights_ids {
         if ($error) {
             $error .= qq{ slip_rights_time=$slip_rights_time catalog_time=$catalog_time rights_current_time=$rights_current_time slip_solr_timestamp=$slip_solr_timestamp};
             Log_consistency_error($C, "$nid $error");
-            __output(qq{\n$nid FAIL $error\n});
+            __output(qq{$nid FAIL $error\n});
         }
     }
 
