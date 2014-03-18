@@ -513,16 +513,15 @@ sub Solr_retrieve_OCR_page {
 
     my $rs = new Search::Result::Page;
     my $searcher = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
-    my $safe_id = Identifier::get_safe_Solr_id($id);
+    my $safe_id = Identifier::get_safe_Solr_id($id) . "_$seq";
 
     # get ocr field as we will get an empty snippet list if the q_str does not match
-    my $fls = 'vol_id,hid,ocr';
-    my $hid = $safe_id . "_$seq";
+    my $fls = 'vol_id,id,ocr';
     my $start = 0;
     my $rows = 1;
     # The page to retrieve may not have the q1 match on it so OR it
     # with the id of the page we want.
-    my $query = qq{q=ocr:$q_str+OR+hid:$hid&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=single&hl.fragsize=10000&fq=hid:$hid};
+    my $query = qq{q=ocr:$q_str+OR+id:$safe_id&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=single&hl.fragsize=10000&fq=id:$safe_id};
 
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 
