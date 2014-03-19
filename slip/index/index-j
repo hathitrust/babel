@@ -31,11 +31,7 @@ $SDRROOT/path-to-config-files/run-1.conf The config file points a solr
 instance for each available shard.
 
 Commit and optimize are manual processes or handled as part of the
-driver_j process flow.
-
-Protect shard from exceeding max shard size.  Co-operates with
-sizer-j.  sizer-j will disable shard and re-enable shard to control
-the flow of documents into a given shard.
+driver-j process flow.
 
 =head1 OPTIONS
 
@@ -299,9 +295,9 @@ sub SINGLE_ID_handling {
     if (defined $single_id) {
         my $shard = Db::Select_item_id_shard($C, $dbh, $run, $single_id);
         if (! $shard) {
-            # Grab a random shard and lock to it.
+            # Grab a random shard from the configured shards in the list and lock to it.
             my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
-            $dedicated_shard = int(rand(scalar(@num_shards_list))+1);
+            $dedicated_shard = $num_shards_list[ rand @num_shards_list ];
         }
         else {
             $dedicated_shard = $shard;

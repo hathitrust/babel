@@ -31,7 +31,7 @@ see help
 
 use strict;
 BEGIN {
-    #$ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -127,7 +127,7 @@ END {
 }
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
 }
 
 my $C = new Context;
