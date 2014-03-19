@@ -17,6 +17,11 @@ Query a shard or all shards in a run
 =cut
 
 use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
