@@ -480,8 +480,8 @@ OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
   uf: open
   tamu: open
   udel: open
-  aeu: open
-  ucw: open
+  private: open
+  umich: open
 
 RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   google: restricted
@@ -501,8 +501,8 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   uf: restricted
   tamu: restricted
   udel: restricted
-  aeu: restricted
-  ucw: restricted
+  private: restricted
+  umich: restricted
 
 # ---------------------------------------------------------------------
 # Access type map:
@@ -558,8 +558,8 @@ accessibility_matrix:
       uf: open
       tamu: open
       udel: open
-      aeu: open
-      ucw: open
+      private: open
+      umich: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -578,8 +578,8 @@ accessibility_matrix:
       uf: restricted
       tamu: restrcted
       udel: restricted
-      aeu: restricted
-      ucw: restricted
+      private: restricted
+      umich: restricted
 
   volume:
     free:
@@ -600,8 +600,8 @@ accessibility_matrix:
       uf: open
       tamu: open
       udel: open
-      aeu: open
-      ucw: open
+      private: open
+      umich: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -620,8 +620,8 @@ accessibility_matrix:
       uf: restricted
       tamu: restrcted
       udel: restricted
-      aeu: restricted
-      ucw: restricted
+      private: restricted
+      umich: restricted
 
   volume/pageimage:
     free:
@@ -642,8 +642,8 @@ accessibility_matrix:
       uf: open
       tamu: open
       udel: open
-      aeu: open
-      ucw: open
+      private: open
+      umich: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -662,8 +662,8 @@ accessibility_matrix:
       uf: restricted
       tamu: restrcted
       udel: restricted
-      aeu: restricted
-      ucw: restricted
+      private: restricted
+      umich: restricted
 
   volume/pageocr:
     free: *open-accessibility-block
