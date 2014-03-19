@@ -454,7 +454,7 @@ sub handle_synchronization {
         $s = $ids_missing_in_Solr
           ? qq{\n\tcollid=$coll_id ($coll_name) [num in coll=$num_ids_in_coll] has $ids_missing_in_Solr IDs missing in Solr and  \n}
             : qq{\n\tAll Solr ids present for coll_id=$coll_id ($coll_name) [num in coll=$num_ids_in_coll]\n};
-        my $ig = qq{\tnum idnored due to Deletes=$num_ignored_as_deleted\n};
+        my $ig = qq{\tnum ignored due to Deletes=$num_ignored_as_deleted\n};
 
         l__output(qq{$s$ig\n});
     }
