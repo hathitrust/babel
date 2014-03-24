@@ -248,10 +248,11 @@ eval {
                    'm' => IX_METADATA_FAILURE,
                    'n' => IX_NO_INDEXER_AVAIL,
                    'c' => IX_CRITICAL_FAILURE,
+                   'g' => IX_GENERATOR_ERROR,
                    ''  => undef,
                   );
         if ($ERROR_TYPE) {
-            if (! grep(/^$ERROR_TYPE$/, qw(i s o m n c))) {
+            unless ( grep(/^$ERROR_TYPE$/, ( qw/i s o m n c g/ )) ) {
                 my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
                 my $s = qq{-s option=$ERROR_TYPE not valid\n} . cont_get_usage();
                 __output($s);
