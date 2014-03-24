@@ -84,13 +84,13 @@ sub __Print {
 }
 
 sub rep_get_usage {
-    my $s = qq{Usage: report-j  -r run [-S scqf][-C][-f][-E oimcsA][-d]
+    my $s = qq{Usage: report-j  -r run [-S scqf][-C][-f][-E oimcsgA][-d]
            where -C queries build index for num committed
                  -S section
                       s=statistics c=config q=queues f=flags
                  -f send an email of the report
                  -E reports error ids
-                      o=ocr i=indexing m=metadata c=critical s=server A=all\n};
+                      o=ocr i=indexing m=metadata c=critical s=server g=generator A=all\n};
     return $s;
 }
 
@@ -134,7 +134,7 @@ my ($Q_size, $Q_num_available, $Q_num_in_process) =
     Db::Select_queue_data($C, $DBH, $RUN);
 
 if ($ERRORS) {
-    if (! grep(/$ERRORS/, ('o', 'i', 'm', 'c', 's', 'n', 'A'))) {
+    unless (grep(/$ERRORS/, ( qw/o i m c s n g A/ ))) {
         my $s = rep_get_usage();
         my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
 
@@ -605,10 +605,10 @@ sub report_errors {
 
     my $error_ct = 0;
     foreach my $__shard (@num_shards_list) {
-        my ($num_errors, $num_I, $num_O, $num_M, $num_C, $num_S, $num_N) =
+        my ($num_errors, $num_I, $num_O, $num_M, $num_C, $num_S, $num_N, $num_G) =
             Db::Select_error_data($C, $dbh, $run, $__shard);
         if ($num_errors) {
-            __Print qq{\tshard=$__shard: num_errors=$num_errors index=$num_I ocr=$num_O metadata=$num_M critical=$num_C server=$num_S indexer_avail=$num_N\n};
+            __Print qq{\tshard=$__shard: num_errors=$num_errors index=$num_I ocr=$num_O metadata=$num_M critical=$num_C server=$num_S indexer_avail=$num_N generator=$num_G\n};
             $error_ct += $num_errors;
         }
         else {
@@ -787,6 +787,9 @@ sub c_report_errors {
     }
     elsif ($errors eq 'n') {
         $reason = IX_NO_INDEXER_AVAIL;
+    }
+    elsif ($errors eq 'g') {
+        $reason = IX_GENERATOR_ERROR;
     }
     else {
         __Print rep_get_usage();
