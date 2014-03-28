@@ -137,6 +137,7 @@ foreach my $id (@$id_arr_ref) {
     eval {
         $generator = new Document::Generator($C, $id);
         $generator->G_generate($C);
+        $generator->G_release;
     };
     if ($@) {
         if (ref $generator eq 'Document::Generator') {
