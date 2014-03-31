@@ -149,10 +149,10 @@ sub handle_PT_SURVEY_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $survey_arr_ref = 
-      Survey::get_survey_by_itemid($C, 
+    my $survey_arr_ref =
+      Survey::get_survey_by_itemid($C,
                                    $C->get_object('Database')->get_DBH,
-                                   $C->get_object('CGI')->param('id'));    
+                                   $C->get_object('CGI')->param('id'));
 
     my $surveys = '';
     foreach my $hashref (@$survey_arr_ref) {
@@ -233,14 +233,14 @@ sub handle_POD_DATA_PI
     :  PI_handler(POD_DATA)
 {
     my ($C, $act, $piParamHashRef) = @_;
-     
+
     # Even HT affiliates can only see the POD link to a PDUS on US
     # soil.
     my $id = $C->get_object('CGI')->param('id');
     my $allow_pod = ($C->get_object('Access::Rights')->get_POD_access_status($C, $id) eq 'allow');
 
     my $url = '';
-    
+
     if ($allow_pod) {
         my $dbh = $C->get_object('Database')->get_DBH($C);
 
@@ -475,9 +475,9 @@ sub handle_VERSION_LABEL_PI
     : PI_handler(VERSION_LABEL)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     my $mdpItem = $C->get_object('MdpItem');
-    
+
     # massage for final output: we get 2010-09-28T13:43:24 but want
     # 2010-09-28 17:43 UTC
     my ($ver, $deleted) = $mdpItem->Version();
@@ -504,29 +504,6 @@ sub handle_CURRENT_URL_PI
     my $cgi = $C->get_object('CGI');
 
     return Utils::url_to($cgi);
-}
-
-
-# ---------------------------------------------------------------------
-
-=item handle_ENV_VAR_PI : PI_handler(ENV_VAR)
-
-Handler for ENV_VAR
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_ENV_VAR_PI
-    : PI_handler(ENV_VAR)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $environmentVariable = $$piParamHashRef{'variable'};
-    my $v = $ENV{$environmentVariable};
-    # occassionally useragent has chars
-    # in need of mapping. e.g., AT&T
-    Utils::map_chars_to_cers(\$v);
-    return $v;
 }
 
 # ---------------------------------------------------------------------

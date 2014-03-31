@@ -158,7 +158,8 @@ sub SetBackToResultsReferer {
     my ( $cgi, $ses ) = @_;
 
     my $referer = $cgi->referer();
-    Utils::remove_nonprinting_chars(\$referer);
+    $referer = Encode::decode_utf8($referer);
+    Utils::remove_invalid_xml_chars(\$referer);
 
     my $id = $cgi->param('id');
 
