@@ -80,14 +80,14 @@ sub BuildImageServerPDFUrl
     }
     if ( $view eq 'fpdf' ) {
         # pass
-        $action = "download";
+        $action = "download/pdf";
     } elsif ( $view eq 'pdf' ) {
         # don't force download;
         # let the PDF open in the browser if possible
         $tempCgi->param('seq', $cgi->param('seq'));
         $tempCgi->param('num', $cgi->param('num'));
         $tempCgi->param('attachment', 0);
-        $action = "pdf";
+        $action = "download/pdf";
     }
 
     if ( $cgi->param('debug') ) {
