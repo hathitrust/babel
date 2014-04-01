@@ -253,7 +253,7 @@ sub r_r_connect {
             print "missing passwd\n";
             exit 0;
         }
-        $db = new Database($whoami, $pw, 'ht', 'mysql-sdr');
+        $db = new Database($whoami, $pw, 'ht_maintenance', 'mysql-sdr');
     };
     if ($@) {
         SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild_rights-j', $@);
@@ -306,11 +306,10 @@ sub Phase_two_check {
     # DROP/CREATE slip_rights_temp?
     my $drop = "NO DROP/CREATE slip_rights_temp, use existing table";
     unless ($CHECK) {
-        if (__confirm_continue("\nDROP/CREATE slip_rights_temp? [N] ")) {
+        if (__confirm_continue("\nDROP IF EXISTS slip_rights_temp, CREATE slip_rights_temp LIKE slip_rights? [N] ")) {
             if (__confirm_continue("\nREALLY? [N] ")) {
                 initialize_j_rights_temp($C, $DBH);
                 $drop = "DROP/CREATE slip_rights_temp";
-                initialize_j_rights_temp($C, $DBH);
             }
         }
     }
@@ -320,11 +319,11 @@ sub Phase_two_check {
         $rename = "NO DROP slip_rights, NO RENAME slip_rights_temp";
     }
     else {
-        $rename = "Will DROP slip_rights, will RENAME slip_rights_temp";
+        $rename = "Will DROP slip_rights, will RENAME slip_rights_temp to slip_rights";
     }
 
     $INIT_MSG =
-      qq{\nToday is $NOW_TIMESTAMP. Phase=two. Populate slip_rights_temp}
+      qq{\nToday is $NOW_TIMESTAMP. Phase=two. Populating slip_rights_temp}
         . qq{\n\t => Read $VSOLR_FILENAME }
           . qq{\n\t => $drop }
             . qq{\n\t => $rename\n\t\t OK? [N]};
@@ -428,7 +427,7 @@ sub UPDATE_slip_vsolr_timestamp {
 
     Db::update_vSolr_timestamp($C, $dbh);
 
-    my $s = "Update slip_vsolr_timestamp from MAX(slip_rights.update_time)";
+    my $s = "Updated slip_vsolr_timestamp from MAX(slip_rights.update_time)";
     __output("$s\n");
     r_r_rights_Log($C, $s);
 }
@@ -461,7 +460,7 @@ sub UPDATE_slip_rights_timestamp {
 
     my $s;
     $s .= "Updated slip_rights_timestamp.time[production_run_number] from MAX(slip_rights.insert_time)";
-    $s .= "\nMust now check for items in rights not in index: run sync-j -m rightsNINindexed";
+    $s .= "\nYou must now check for items in rights not in index: run sync-j -m rightsNINindexed";
 
     __output("$s\n");
     r_r_rights_Log($C, $s);
