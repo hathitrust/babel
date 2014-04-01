@@ -11,6 +11,7 @@ use MdpConfig;
 use Utils;
 use Utils::Sort;
 use Collection;
+use Auth::Auth;
 use Institutions;
 
 use MBooks::Utils::Sort;
@@ -67,62 +68,58 @@ sub get_owner_string {
 }
 
 # ---------------------------------------------------------------------
+
+=item get_owner_affiliation
+
+Get the name of the institution with which the collection owner
+(targetedID or ePPN) is affiliated by lookup based on the shibboleth
+entityID derived from the "owner" ID stored in the database for this
+collection.
+
+ User categories
+   Temporary: owner=18a59a1fdd0ba7d2a3a7b9fe15c9520f owner_name=guest
+ UM uniqname: owner=sooty owner_name=sooty
+   UM Friend: owner=xreliable@gmail.com owner_name=xreliable@gmail.com
+   Shib user: owner=https://auth.yale.edu/idp/shibboleth!...BLAH...= owner_name=Hess, Adam
+          or: owner=https://login.wisc.edu/idp/shibboleth!...BLAH...= owner_name=member@wisc.edu
+          or: owner=urn:mace:incommon:iu.edu!http://www.hathitrust.org/shibboleth-sp!...BLAH...= owner_name=member@iu.edu
+
+
+=cut
+
+# ---------------------------------------------------------------------
 sub get_owner_affiliation {
     my $C = shift;
-    my $owner_string = shift;
+    my $owner = shift;
     my $owner_name = shift;
 
-    my $owner_affiliation = '';
+    my $entityID = '';
+    my $domain = '';
+    
+    # Temporary owners do not have affiliations.
+    unless (__owner_is_temp_coll_owner($owner)) {
 
-    my $config = $C->get_object('MdpConfig');
-    my $temp_coll_owner_string = $config->get('temp_coll_owner_string');
-
-    # User categories
-    #   Temporary: owner_string=18a59a1fdd0ba7d2a3a7b9fe15c9520f owner_name=guest
-    # UM uniqname: owner_string=sooty owner_name=sooty
-    #   UM Friend: owner_string=xreliable@gmail.com owner_name=xreliable@gmail.com
-    #   Shib user: owner_string=https://auth.yale.edu/idp/shibboleth!...BLAH...= owner_name=Hess, Adam
-    #          or: owner_string=https://login.wisc.edu/idp/shibboleth!...BLAH...= owner_name=member@wisc.edu
-    #          or: owner_string=urn:mace:incommon:iu.edu!http://www.hathitrust.org/shibboleth-sp!...BLAH...= owner_name=member@iu.edu
-
-    # The only time owner will be 32 characters and all hex digits is
-    # if its a session_id noop
-    my $domain;
-    if (__owner_is_temp_coll_owner($owner_string)) {
-        $owner_string = $temp_coll_owner_string;
-    }
-    else {
-        # Obfuscate. We need a domain to do Institution mapping
-        if ( $owner_string =~ m,[a-z]+, && $owner_string eq $owner_name && ($owner_string !~ m,@,)) {
-            # uniqname
+        if ( $owner =~ m/^[a-z]{3,8}$/ ) {
+            # COSIGN uniqname
+            $entityID = Auth::Auth::get_umich_IdP_entity_id;
             $domain = 'umich.edu';
         }
-        elsif ( $owner_string =~ m,!, ) {
-            # shib
-            if ($owner_string =~ m,^urn:mace:incommon:,) {
-                # urn:mace:incommon:uchicago.edu!http://www.hathitrust.org/shibboleth-sp!...BLAH...=
-                ($domain) = ($owner_string =~ m,^urn:mace:incommon:(.*?)!,);
-            }
-            elsif ($owner_string =~ m,^https://.*?/idp/shibboleth!,) {
-                # https://auth.yale.edu/idp/shibboleth!...BLAH...=
-                my ($sub_domain) = ($owner_string =~ m,^https://(.*?)/idp/shibboleth!,);
-                my @parts = split(/\./, $sub_domain);
-                $domain = $parts[-2] . '.' . $parts[-1];
-            }
-            elsif ($owner_string =~ m,^https://www.rediris.es/sir/ucmidp,) {
-                $domain = 'ucm.es'; # special case!
-            }
+        elsif ( $owner =~ m/!/ ) {
+            # Shibboleth targetedID. entityID is part before the '!'
+            ($entityID) = ( $owner =~ m/^(.*?)!/);
+            $domain = Institutions::get_institution_entityID_field_val($C, $entityID, 'domain');
         }
         else {
-            # friend. see if domain is in our list
-            my @parts = split(/@/, $owner_string);
+            # COSIGN friend or Shibboleth eduPersonPrincipalName (ePPN)
+            my @parts = split(/@/, $owner);
             $domain = $parts[1];
+            $entityID = Institutions::get_institution_domain_field_val($C, $domain, 'entityID');
         }
     }
 
-    $owner_affiliation = Institutions::get_institution_domain_field_val($C, $domain, 'name');
+    my $owner_affiliation = Institutions::get_institution_entityID_field_val($C, $entityID, 'name') || '';
 
-    #print(STDERR "owner_string=$owner_string owner_name=$owner_name domain=$domain aff=$owner_affiliation");
+    # print(STDERR "owner=$owner owner_name=$owner_name domain=$domain aff=$owner_affiliation");
 
     return $owner_affiliation;
 }
