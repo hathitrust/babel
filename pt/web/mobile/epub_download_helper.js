@@ -181,7 +181,7 @@ HT.epub_helpers = {
     download_epub : function(self) {
       
       var src = $(self).attr('href');
-      src=src.replace('download','download/epub');
+      src=src.replace('download/pdf','download/epub');
       
       var html = 
       '<div class="meter-wrap">' +
