@@ -243,9 +243,9 @@
         </xsl:for-each>
         HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
         HT.reader.url_config = {
-          meta  : "<xsl:value-of select="$gImgsrvUrlRoot" />/meta",
+          meta  : "<xsl:value-of select="$gImgsrvUrlRoot" />/metadata",
           image : "<xsl:value-of select="$gImgsrvUrlRoot" />/image",
-          text  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ocr",
+          text  : "<xsl:value-of select="$gImgsrvUrlRoot" />/html",
           ping  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ping",
           thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
         };
