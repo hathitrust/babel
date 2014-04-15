@@ -57,8 +57,8 @@
           <div class="AdvancedLabelRow">
 
             <span id="AdvancedCatalogLink">
-              <xsl:text>Prefer to search</xsl:text>
-              <em> within or about</em>
+              <xsl:text>Prefer to search words</xsl:text>
+              <em> about</em>
               <xsl:text> the items in an</xsl:text>
               <a href="http://catalog.hathitrust.org/Search/Advanced"> Advanced Catalog Search?</a>
             </span>
