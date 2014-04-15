@@ -47,6 +47,9 @@ if ( $referer =~ m,/test\., || $referer =~ m,/beta-3, ) {
     # referer is a babel dev instance
     $LS_DOMAIN = $ENV{SERVER_NAME};
     $CATALOG_DOMAIN = qq{test.$CATALOG_DOMAIN};
+} elsif ( my ( $prefix ) = $referer =~ m,https?://(.*)\.catalog., ) {
+    # referer is a catalog dev instance
+    $CATALOG_DOMAIN = qq{$prefix.$CATALOG_DOMAIN};
 }
 # still needs to handle case of a catalog dev server
 
