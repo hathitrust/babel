@@ -550,8 +550,11 @@ sub report_flags_state {
         $busy = 'Not driver driven'
     }
 
-    my $cksup = $config->get('check_index_supported') ? 'YES' : 'no';
+    my $check_index_day = $config->get('check_index_day_of_week');
+    my $cksup = $config->get('check_index_supported') ? "YES on $check_index_day" : 'no';
+
     my $ck = "\n\tcheck index support=$cksup\n\t\t";
+
 
     my $supported = Scheduler::full_optimize_supported($C);
     my $trigger_size = Scheduler::get_full_optimize_trigger_size($C) if ($supported);
