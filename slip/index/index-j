@@ -479,14 +479,17 @@ sub handle_busy_flag_exit {
     my $distinguished_run = $config->get('distinguished_production_run_number');
 
     unless ( $run eq  $distinguished_run) {
-        my $shared_flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
-        my $busy_file = "$shared_flags_dir/busy";
-        if ( -e $busy_file ) {
-            __output("run=$run is not permitted to run while busy flag ($busy_file) is set. \n\t run $run is not the distinguished production run number ($distinguished_run) ... exit\n");
-            exit 0;
+        if ( $config->get('disabled_if_busy_flag_set') ) {
+            my $shared_flags_dir = $config->get('shared_flags_dir');
+            my $busy_file = "$shared_flags_dir/busy";
+            if ( -e $busy_file ) {
+                __output("busy flag ($busy_file) is set. Only run=$distinguished_run is permitted to run.\n\tSee config parameter 'disabled_if_busy_flag_set' ... exit\n");
+                exit 0;
+            }
         }
     }
 }
+
 
 # ---------------------------------------------------------------------
 
