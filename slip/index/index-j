@@ -231,6 +231,12 @@ sub i_processing_loop {
         Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
         # POSSIBLY NOTREACHED
 
+        # Exit this producer if busy flag is set unless
+        # $RUN=distinguished_production_run_number (11) to help
+        # prevent CPU overload on machines running Solr.
+        handle_busy_flag_exit($C, $RUN);
+        # POSSIBLY NOTREACHED
+
         # Exit if all all enabled shards are carrying a full or
         # over-full allocation of producers or this host is not
         # enabled or is full or over-full. This call is no-op after
@@ -455,6 +461,32 @@ sub __attempt_allocation {
     die qq{Invalid un-dedicated shard state="$state"};
 }
 
+# ---------------------------------------------------------------------
+
+=item handle_busy_flag_exit
+
+Exit this producer if busy flag is set unless
+$RUN=distinguished_production_run_number (11) to help prevent CPU
+overload on machines running Solr.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_busy_flag_exit {
+    my ($C, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my $distinguished_run = $config->get('distinguished_production_run_number');
+
+    unless ( $run eq  $distinguished_run) {
+        my $shared_flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
+        my $busy_file = "$shared_flags_dir/busy";
+        if ( -e $busy_file ) {
+            __output("run=$run is not permitted to run while busy flag ($busy_file) is set. \n\t run $run is not the distinguished production run number ($distinguished_run) ... exit\n");
+            exit 0;
+        }
+    }
+}
 
 # ---------------------------------------------------------------------
 
@@ -606,7 +638,7 @@ sub handle_critical_error {
 
     my $stop_file = Utils::GlobalSwitch::stop_file_name('slip');
     $msg .= (Utils::GlobalSwitch::cron_jobs_disabled('slip') ? qq{STOPFILE ($stop_file) is set, SLIP disabled\n} : q{});
- 
+
     SLIP_Utils::Common::Send_email($C, 'report', $subj, $msg);
     Index_Module::Log_error_stop($C, $run, $shard, $pid, $host, qq{$msg});
 
