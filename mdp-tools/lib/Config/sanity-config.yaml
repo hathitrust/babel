@@ -4,20 +4,19 @@
 # =====================================================================
 imgsrv:
   - EMPTY_CACHE
-  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=pdf id=1 __LOCAL__
-  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=1 __LOCAL__
-  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=uc1.\$b699489 __LOCAL__
-  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=1 seq=8 seq=9 seq=10 __LOCAL__
-  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=image id=1 seq=7 __LOCAL__
-  - /htapps/__CMD_STAGE__/imgsrv/cgi/imgsrv action=meta id=2 start=0 limit=10 __LOCAL__
+  - /htapps/__CMD_STAGE__/imgsrv/bin/pdf --id=1 __LOCAL__
+  - /htapps/__CMD_STAGE__/imgsrv/bin/image --id=1 __LOCAL__
+  - /htapps/__CMD_STAGE__/imgsrv/bin/image --id=uc1.\$b699489 __LOCAL__
+  - /htapps/__CMD_STAGE__/imgsrv/bin/image --id=1 --seq=8 --seq=9 --seq=10 __LOCAL__
+  - /htapps/__CMD_STAGE__/imgsrv/bin/image --id=1 --seq=7 __LOCAL__
 
   - EMPTY_CACHE
-  - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/pdf?id=1;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/download/pdf?id=1;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/image?id=1;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/image?id=uc1.$b699489;__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/pdf?id=1;seq=8;seq=9;seq=10;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/download/pdf?id=1;seq=8;seq=9;seq=10;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/image?id=1;seq=7;__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/meta?id=2;start=0;limit=10;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/imgsrv/metadata?id=2;start=0;limit=10;__LOCAL__
 
 feedback:
   - /htapps/__CMD_STAGE__/feedback/cgi/feedback m=pt ui=embed RecordURL=http%3A%2F%2Fcatalog.hathitrust.org%2FRecord%2F1234567890 SysID=mdp.39015015394847 return=%2Fcgi%2Fpt%3Fid%3Dmdp.39015015394847%3Bpage%3Droot%3Bseq%3D7%3Bview%3Dimage%3Bsize%3D100%3Borient%3D0 SeqNo=7 view=image Quality=someproblems blurry=1 other= Rights=access comments=pfarber+test+command+line email=pfarber%40umich.edu submit=Submit __LOCAL__
