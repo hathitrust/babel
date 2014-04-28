@@ -354,11 +354,15 @@ HT.Viewer.Flip = {
         }
 
         for(var seq = start_seq; seq <= end_seq; seq += 2) {
+            var next_seq = seq + 1;
+            if ( next_seq > self.options.manager.num_pages ) {
+                next_seq = null;
+            }
             if ( self.options.manager.reading_order == 'right-to-left' ) {
                 // seq + 1 may not exist?
-                pages.push([ seq + 1, seq ]);
+                pages.push([ next_seq, seq ]);
             } else {
-                pages.push([ seq, seq + 1 ]);
+                pages.push([ seq, next_seq ]);
             }
         }
 
