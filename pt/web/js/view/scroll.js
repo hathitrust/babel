@@ -153,7 +153,7 @@ HT.Viewer.Scroll = {
         var $current = $(".page-item.current");
         var seq = $current.data('seq');
         var orient = this.getPageOrient(seq);
-        this.orient_cache[seq] = orient = ( orient + 1 ) % 4;
+        this.orient_cache[seq] = orient = ( ( orient + delta ) + 4 ) % 4;
         this.drawPages();
     },
 
