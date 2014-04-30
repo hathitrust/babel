@@ -114,7 +114,7 @@ sub bc_Usage {
 
     print qq{       [APPEND]  batch-collection.pl -a coll_id -o userid -f <filename>\n\n};
 
-    print qq{       [DELETE]  batch-collection.pl -D coll_id -o superuserid -f <filename>\n\n};
+    print qq{       [DELETE]  batch-collection.pl -D coll_id -o userid -f <filename>\n\n};
 
     print qq{       [EXPUNGE] batch-collection.pl -X coll_id -o superuserid\n\n};
 
@@ -127,7 +127,7 @@ sub bc_Usage {
     print qq{       -d '<description>' collection description as a quoted string\n};
     print qq{       -o <userid> (must match your kerberos/Shibboleth/other uniqname)\n};
     print qq{       -a <coll_id> append IDs to coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
-    print qq{       -D <coll_id> [superuser only] delete IDs from coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
+    print qq{       -D <coll_id> delete IDs from coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
     print qq{       -X <coll_id> [superuser only] delete entire collection. Obtain <coll_id> using batch_collection.pl -c option\n};
     print qq{       -c returns the coll_id for collection with -t '<title>' owned by -o <userid>\n};
     print qq{       -C returns the <userid>, display_name, title for collection with -C <coll_id>\n\n};
@@ -215,10 +215,6 @@ elsif ($DELETE) {
     if ($DELETE !~ m,\d+,) {
         Log_print( qq{ERROR: invalid coll_id arg to delete (-D) option\n\n} );
         bc_Usage();
-        exit 1;
-    }
-    if ($NON_SUPERUSER) {
-        Log_print( qq{ERROR: $WHO_I_AM is not in the list of superusers\n} );
         exit 1;
     }
     if ((! $opt_o) || (! $opt_f)) {
