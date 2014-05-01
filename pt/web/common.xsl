@@ -77,6 +77,20 @@
   <xsl:template name="get-feedback-id"></xsl:template>
   <xsl:template name="get-feedback-m"><xsl:text>pt</xsl:text></xsl:template>
 
+  <xsl:template name="setup-html-data-attributes">
+    <xsl:variable name="items" select="//MBooksGlobals/Collections/Item" />
+    <xsl:if test="$items">
+      <xsl:attribute name="data-anlaytics-dimension">
+        <xsl:text>dimension2=</xsl:text>
+        <xsl:text>:</xsl:text>
+        <xsl:for-each select="$items">
+          <xsl:value-of select="." />
+          <xsl:text>:</xsl:text>
+        </xsl:for-each>
+      </xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
   <!-- Navigation bar -->
   <xsl:template name="subnav_header">
     

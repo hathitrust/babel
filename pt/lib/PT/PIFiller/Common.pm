@@ -167,6 +167,27 @@ sub handle_PT_SURVEY_PI
 }
 
 # ---------------------------------------------------------------------
+sub handle_ITEM_IN_COLLECTIONS
+    : PI_handler(ITEM_IN_COLLECTIONS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $collections_list = '';
+
+    my $id = $C->get_object('CGI')->param('id');
+    my $dbh = $C->get_object('Database')->get_DBH($C);
+
+    my $statement = qq{SELECT MColl_ID FROM mb_coll_item WHERE extern_item_id=?};
+    my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
+
+    foreach my $row ( @{ $sth->fetchall_arrayref() } ) {
+        $collections_list .= wrap_string_in_tag($$row[0], 'Item');
+    }
+
+    return $collections_list;
+}
+
+# ---------------------------------------------------------------------
 
 =item handle_RIGHTS_ATTRIBUTE_PI : PI_handler(RIGHTS_ATTRIBUTE)
 
