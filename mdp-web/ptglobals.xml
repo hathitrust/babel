@@ -35,4 +35,5 @@
 <InstitutionName><?INSTITUTION_NAME?></InstitutionName>
 <SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
 <Surveys><?PT_SURVEY?></Surveys>
+<Collections><?ITEM_IN_COLLECTIONS?></Collections>
 

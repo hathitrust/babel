@@ -43,6 +43,7 @@
       </xsl:attribute>
       <xsl:attribute name="data-analytics-enabled"><xsl:call-template name="get-analytics-enabled" /></xsl:attribute>
       <xsl:attribute name="data-tracking-category"><xsl:call-template name="get-tracking-category" /></xsl:attribute>
+      <xsl:call-template name="setup-html-data-attributes" />
       <xsl:attribute name="class">
         <xsl:text>no-js </xsl:text>
         <xsl:call-template name="search-target-class" />
@@ -102,6 +103,7 @@
   <xsl:template name="setup-html-attributes" />
   <xsl:template name="setup-extra-header" />
   <xsl:template name="setup-body-class" />
+  <xsl:template name="setup-html-data-attributes" />
 
   <xsl:template name="access-overview">
     <div class="offscreen" rel="note">
