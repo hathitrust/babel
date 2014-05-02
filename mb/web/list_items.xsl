@@ -3,6 +3,15 @@
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
+  <xsl:template name="setup-html-data-attributes">
+    <xsl:attribute name="data-anlaytics-dimension">
+      <xsl:text>dimension2=</xsl:text>
+      <xsl:text>:</xsl:text>
+      <xsl:value-of select="//MBooksGlobals/CurrentCgi/Param[@name='c']" />
+      <xsl:text>:</xsl:text>
+    </xsl:attribute>
+  </xsl:template>
+
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/mb/css/screen.css" />
 
