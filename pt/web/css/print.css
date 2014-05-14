@@ -1,0 +1,36 @@
+@media print {
+
+  #toolbar-vertical, #toolbar-vertical-dummy {
+    display: none;
+  }
+
+  #toolbar-horizontal, #toolbar-horizontal-dummy {
+    display: none;
+  }
+
+  #sidebar-dummy {
+    display: none;
+  }
+
+  #content {
+    margin-left: 100px;
+  }
+
+  .view-1up .page-item {
+    display: none;
+  }
+
+  .view-1up .page-item.loaded {
+    display: block !important;
+  }
+
+  .view-thumb .page-item {
+    display: none;
+  }
+
+  .view-thumb .page-item.loaded {
+    display: table-cell !important;
+  }
+
+
+}

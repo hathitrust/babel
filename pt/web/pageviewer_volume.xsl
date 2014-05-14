@@ -96,6 +96,7 @@
 
   <xsl:template name="setup-extra-header-extra">
     <link rel="stylesheet" href="/pt/css/volume.css" />
+    <link rel="stylesheet" href="/pt/css/print.css" media="print" />
   </xsl:template>
 
   <xsl:template name="setup-body-class">
@@ -113,12 +114,12 @@
   <xsl:template name="setup-extra-html-class">
     <xsl:if test="$gSuppressAccessBanner = 'true'">
       <xsl:text> supaccban </xsl:text>
-    </xsl:if>    
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="pageviewer-contents">
     <xsl:call-template name="sidebar" />
-    <xsl:call-template name="main" />    
+    <xsl:call-template name="main" />
   </xsl:template>
 
   <xsl:template name="main">
@@ -223,7 +224,7 @@
 
   <xsl:template name="toolbar-horizontal">
     <div id="toolbar-horizontal" class="toolbar toolbar-horizontal fixed fixed-y" data-margin-top="40">
-        
+
       <div class="options btn-toolbar">
         <div class="btn-group ">
           <xsl:call-template name="action-page-navigation" />
