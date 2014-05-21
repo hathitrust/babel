@@ -30,7 +30,7 @@ umask 0000;
 # ----------------------------------------------------------------------
 BEGIN {
     ( $main::realSTART ) = time;
-    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
     ## $ENV{TEST_BLACKLIST} = 1;
 }
 
@@ -135,8 +135,10 @@ PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
 my $gId = $gCgi->param('id');
 if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
     # Security logging
-    Auth::Logging::log_incopyright_access($C, $gId);
-    
+    if ( Auth::Logging::log_incopyright_access($C, $gId) ) {
+        Auth::ACL::a_Increment_accesscount();
+    }
+
     # set up text, image or pdf handlers for this request
     $gMdpItem->DetermineAndSetContentHandler();
 
