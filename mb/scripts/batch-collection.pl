@@ -172,10 +172,10 @@ if ($NON_SUPERUSER) {
 
     my $ip_address = `hostname -i`;
     chomp($ip_address);
-    my $host_info = `host -i test.babel.hathitrust.org`;
+    my $host_info = `host -i hic.umdl.umich.edu`;
     my ($test_dot_babel_ip_address) = ($host_info =~ /(\d+\.\d+\.\d+\.\d+)/s);
     unless ($ip_address eq $test_dot_babel_ip_address) {
-        print( qq{ERROR: Please run batch-collection.pl when logged into host test.babel.hathitrust.org\n} );
+        print( qq{ERROR: Please run batch-collection.pl when logged into host hic.umdl.umich.edu\n} );
         exit 1;
     }
 }
