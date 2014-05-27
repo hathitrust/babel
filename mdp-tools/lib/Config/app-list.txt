@@ -26,4 +26,6 @@ kgs
 widgets
 register
 useradmin
+usercertify
+userupdate
 whoami
