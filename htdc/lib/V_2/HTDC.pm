@@ -79,7 +79,7 @@ sub validate_request {
     Utils::clean_cgi_params($Q);
 
     # all params present?
-    HTDC_Client::Call_Handler($Q->param('id'), 'Please specify an ID');
+    HTDC_Client::Call_Handler(scalar $Q->param('id'), 'Please specify an ID');
 
     my $resource = $Q->param('resource');
     HTDC_Client::Call_Handler($resource, 'Please specify a resource');
@@ -164,7 +164,7 @@ sub make_Data_API_request_url {
         }
     }
 
-    my ($id, $resource, $seq) = ($Q->param('id'), $Q->param('resource'), $Q->param('seq'));
+    my ($id, $resource, $seq) = (scalar $Q->param('id'), scalar $Q->param('resource'), scalar $Q->param('seq'));
     # So API can do geo ip lookup for this user
     my $client_IPADDR = HTDC_Client::IPADDR_of_my_client(); 
     my $extra = { ip => $client_IPADDR };

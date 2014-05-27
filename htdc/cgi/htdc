@@ -29,6 +29,12 @@ use warnings;
 
 use CGI;
 
+BEGIN {
+    # $ENV{DEBUG_LOCAL} = 1;
+    # non-US testing
+    ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
+}
+
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
@@ -37,12 +43,6 @@ use Vendors;
 use Utils;
 
 use HTDC_Client;
-
-BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
-    # non-US testing
-    ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
-}
 
 my $Q = new CGI;
 Utils::clean_cgi_params($Q);
