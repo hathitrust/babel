@@ -482,6 +482,10 @@ OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
   udel: open
   private: open
   umich: open
+  clark: open
+  ku: open
+  mcgill: open
+  bc: open
 
 RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   google: restricted
@@ -503,6 +507,10 @@ RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
   udel: restricted
   private: restricted
   umich: restricted
+  clark: restricted
+  ku: restricted
+  mcgill: restricted
+  bc: restricted
 
 # ---------------------------------------------------------------------
 # Access type map:
@@ -560,6 +568,10 @@ accessibility_matrix:
       udel: open
       private: open
       umich: open
+      clark: open
+      ku: open
+      mcgill: open
+      bc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -580,6 +592,10 @@ accessibility_matrix:
       udel: restricted
       private: restricted
       umich: restricted
+      clark: restricted
+      ku: restricted
+      mcgill: restricted
+      bc: restricted
 
   volume:
     free:
@@ -602,6 +618,10 @@ accessibility_matrix:
       udel: open
       private: open
       umich: open
+      clark: open
+      ku: open
+      mcgill: open
+      bc: open
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -622,6 +642,10 @@ accessibility_matrix:
       udel: restricted
       private: restricted
       umich: restricted
+      clark: restricted
+      ku: restricted
+      mcgill: restricted
+      bc: restricted
 
   volume/pageimage:
     free:
@@ -644,6 +668,11 @@ accessibility_matrix:
       udel: open
       private: open
       umich: open
+      clark: open
+      ku: open
+      mcgill: open
+      bc: open
+
     nonfree:
       google: restricted
       lit-dlps-dc: restricted
@@ -664,6 +693,10 @@ accessibility_matrix:
       udel: restricted
       private: restricted
       umich: restricted
+      clark: restricted
+      ku: restricted
+      mcgill: restricted
+      bc: restricted
 
   volume/pageocr:
     free: *open-accessibility-block

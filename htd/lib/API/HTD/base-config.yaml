@@ -68,16 +68,22 @@ rights_name_map:
   7: ic-world
   8: nobody
   9: pdus
-  10: cc-by
-  11: cc-by-nd
-  12: cc-by-nc-nd
-  13: cc-by-nc
-  14: cc-by-nc-sa
-  15: cc-by-sa
+  10: cc-by-3.0
+  11: cc-by-nd-3.0
+  12: cc-by-nc-nd-3.0
+  13: cc-by-nc-3.0
+  14: cc-by-nc-sa-3.0
+  15: cc-by-sa-3.0
   16: orphcand
   17: cc-zero
   18: und-world
   19: icus
+  20: cc-by-4.0
+  21: cc-by-nd-4.0
+  22: cc-by-nc-nd-4.0
+  23: cc-by-nc-4.0
+  24: cc-by-nc-sa-4.0
+  25: cc-by-sa-4.0
 
 # ---------------------------------------------------------------------
 # List of name that equate to open access modulo geo-location
@@ -86,12 +92,23 @@ open_access_names:
   - pd
   - pdus
   - ic-world
-  - cc-by
-  - cc-by-nd
-  - cc-by-nc-nd
-  - cc-by-nc
-  - cc-by-nc-sa
-  - cc-by-sa
+  - cc-by-3.0
+  - cc-by-nd-3.0
+  - cc-by-nc-nd-3.0
+  - cc-by-nc-3.0
+  - cc-by-nc-sa-3.0
+  - cc-by-sa-3.0
+
+
+  - cc-by-4.0
+  - cc-by-nd-4.0
+  - cc-by-nc-nd-4.0
+  - cc-by-nc-4.0
+  - cc-by-nc-sa-4.0
+  - cc-by-sa-4.0
+
+
+
   - cc-zero
   - und-world
   - ic-us
@@ -133,6 +150,9 @@ sources_name_map:
   18: private
   19: umich
   20: clark
+  21: ku
+  22: mcgill
+  23: bc
 
 _HTD_SCHEMAS_URI_:               http://schemas.hathitrust.org/htd/2009
 _HTD_PT_ALTERNATE_URI_:          http://babel.hathitrust.org/cgi/pt?id=__ID__
