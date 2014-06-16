@@ -29,45 +29,94 @@ use PT::PageTurnerUtils;
 
 use SLIP_Utils::Common;
 use URI::Escape;
+use POSIX qw(floor ceil);
 
+# Number of allowed links for pagination. Set this so page links fit on one line.
+use constant MAX_PAGELABELS=>11;
 
 # ---------------------------  Utilities  -----------------------------
 #
 
 # ---------------------------------------------------------------------
-
-=item BuildPrevNextHitsLink_XML
+=item BuildFirstLastPagesLink_XML
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub BuildPrevNextHitsLink_XML {
-    my ($cgi, $totalMatches, $direction, $cgiRoot) = @_;
+sub BuildFirstLastPagesLink_XML {
+    my ($cgi, $totalMatches, $direction) = @_; 
 
-    my $interval  = $cgi->param('size');
-    my $start = $cgi->param('start');
+    my $sliceSize  =  $cgi->param('sz'); 
+    my $focus =   $cgi->param('start'); 
+
+    my $href = '';
+    my $pageLabel = '';
+    my $pageLink = '';
+    my $tempCgi = new CGI($cgi);
+
+    if ($direction eq 'first') 
+    {
+        my $firstPageLabel = 1;
+        $tempCgi->param('start', $firstPageLabel);
+        $href = $tempCgi->self_url();
+	$pageLabel = '[' . $firstPageLabel . ']';
+    }
+    elsif ($direction eq 'last') 
+    { 
+	my $lastPageLabel = ceil($totalMatches/$sliceSize);
+        $tempCgi->param('start', (floor($totalMatches/$sliceSize) * $sliceSize) + 1);
+        $href = $tempCgi->self_url();
+        $pageLabel = '[' . $lastPageLabel . ']';
+    }
+
+    $pageLink .= wrap_string_in_tag($href, 'Href');
+    $pageLink .= wrap_string_in_tag($pageLabel, 'LinkNumber');
+
+    return $pageLink;
+}
+
+# ---------------------------------------------------------------------
+
+=item BuildPrevNextHitsLink_XML
+
+Page 1 contains result pages 1-10, 2 contains 11-20, etc.
+No matter what cgi->start is set to, set Prev and Next buttons 
+to point to very first result set of each page. Otherwise,
+simply adding/subtracting sliceSize makes things wonky near first
+and last pages. 
+So if start is set to 33:
+Prev -->  31
+Next -->  41
+
+=cut
+
+# ---------------------------------------------------------------------
+sub BuildPrevNextHitsLink_XML {
+    my ($cgi, $totalMatches, $direction) = @_;
+
+    my $sliceSize  = $cgi->param('sz');
+    my $focus = $cgi->param('start');
 
     my $href = '';
     my $tempCgi = new CGI($cgi);
 
     if ($direction eq 'prev')
     {
-        my $prevStart = $start - $interval;
-
-        if (($prevStart) >= 1)
+        my $prevFocus = (floor($focus/$sliceSize) * $sliceSize) - ($sliceSize - 1);
+        if (($prevFocus) >= 1)
         {
-            $tempCgi->param('start', $prevStart);
+            $tempCgi->param('start', $prevFocus);
             $href = $tempCgi->self_url();
         }
     }
     elsif ($direction eq 'next')
     {
-        my $nextStart =  $start + $interval;
-        if ($totalMatches >= $nextStart )
-        {
-            $tempCgi->param('start', $nextStart);
+        my $nextFocus = (ceil($focus/$sliceSize) * $sliceSize) + 1;
+        if ($totalMatches >= $nextFocus )
+	{
+            $tempCgi->param('start', $nextFocus);
             $href = $tempCgi->self_url();
         }
     }
@@ -79,109 +128,72 @@ sub BuildPrevNextHitsLink_XML {
 
 =item _BuildFisheyeLinks_XML
 
-Description
+Page 1 contains result pages 1-10, 2 contains 11-20, etc.
+Not using a pager facade. 
+Still implementing start=<page> in CGI as main linking mechanism.
+Just calculating the pagination using POSIX ceil function.
 
 =cut
 
 # ---------------------------------------------------------------------
 sub _BuildFisheyeLinks_XML {
-    my ($focus, $hits, $interval, $cgi) = @_;
+    my ($focus, $numOccurrences, $sliceSize, $cgi) = @_;
 
-    if ($hits == 0) { return ''; }
+    my $current_pageLabel = ceil($focus/$sliceSize);
+    my $last_pageLabel = ceil($numOccurrences/$sliceSize);
 
-    my $factor = 2;
-    my $firstStartPoint = 1;
+    # spit out links for each page with the page range i.e href to
+    # page2 label 11-20
+    my $start = '';
+    my $end = '';
+    my $pageLinks = '';
+    my $firstPageLink = '';
+    my $lastPageLink = '';
+    my $lastPageFactor = 0;
+    my $toReturn;
 
-    my ($x, $y) = ($focus, 0);
-    my @a;
-
-    my $rightDistance = $hits - $focus;
-    my $leftDistance = $focus - $firstStartPoint;
-
-    if ($rightDistance == 0) { $rightDistance = 1; }
-    if ($leftDistance == 0) { $leftDistance = 1; }
-
-    # definitely include next "slice"
-    push (@a, $interval);
-
-    my $basePercent = $interval / $rightDistance;
-    for ($x = $basePercent; $y < $hits; $x = $x * $factor) {
-        $y = $y + ($x * $rightDistance);
-        $y = int ($y);
-        push (@a, $y);
+    if ($last_pageLabel <= MAX_PAGELABELS)
+    {
+        # if there aren't too many just spit out all the page links
+        $start = 1;
+        $end = $last_pageLabel;
     }
-
-    # now do left side
-    $x = $focus;
-    $y = 0;
-    $basePercent = $interval / $leftDistance;
-    for ($x = $basePercent; $y > $firstStartPoint; $x = $x * $factor) {
-        $y += $y - ($x * $leftDistance);
-        $y = int ($y);
-        push (@a, $y);
-    }
-
-    # duplicate the numbers but negative to get a mirror image of the
-    # parabolic curve away from the starting number
-    my @b = map { 0 - $_ } @a ;
-    push (@a , @b);
-
-    # add 0, so that when $focus is added to all, there exists in the
-    # list a number for the current slice
-    push (@a, 0);
-
-    # get actual numbers by adding focus to all numbers
-    @a = map { $_ + $focus  }  @a;
-
-    my (@linkNumbersArray, $linkNumber);
-
-    foreach $linkNumber (@a) {
-        if ($linkNumber >= $firstStartPoint && $linkNumber <= $hits) {
-            push (@linkNumbersArray, $linkNumber);
+    else
+    {
+        if ($focus > $sliceSize)
+	{
+            $firstPageLink
+	      = BuildFirstLastPagesLink_XML($cgi, $numOccurrences, 'first');
         }
-    }
-
-    # build up ends of slices always include the focus
-    push (@linkNumbersArray, $focus);
-
-    # always include the first "slice"
-    push (@linkNumbersArray, $firstStartPoint);
-
-    # sort
-    Utils::sort_uniquify_list(\@linkNumbersArray, 'numeric');
-
-    # check to see if last currently included slice would include the
-    # last item.  if so, we are done. Otherwise, we need to add a
-    # slice that includes the last $interval items, so that the last
-    # slice shown does in fact get the user to the last item
-    my $possibleLastSliceNumber = $hits - $interval + 1 ;
-    if ($possibleLastSliceNumber > $linkNumbersArray[ scalar(@linkNumbersArray)-1 ]) {
-        push (@linkNumbersArray, $possibleLastSliceNumber);
-    }
-
-    my $toReturn = '';
-    my (@linksArray, $link);
-
-    # make links for each number in the array, only if there is more than one slice
-    if (scalar(@linkNumbersArray > 1)) {
-        foreach $linkNumber (@linkNumbersArray) {
-            my $href = undef;
-
-            my $linkNumberElement = wrap_string_in_tag($linkNumber, 'LinkNumber');
-            if ($linkNumber == $focus) {
-                add_attribute(\$linkNumberElement, 'focus', 'true');
-            }
-            else {
-                my $tempCgi = new CGI($cgi);
-                $tempCgi->param('start', $linkNumber);
-                $href = $tempCgi->self_url();
-            }
-
-            my $hrefElement = wrap_string_in_tag($href, 'Href');
-            $toReturn .= wrap_string_in_tag($linkNumberElement . qq{\n} . $hrefElement, 'FisheyeLink');
+        unless (noLastLinkNecessary($focus, $numOccurrences, $sliceSize))
+        {
+            $lastPageFactor = -1;
+            $lastPageLink
+              = BuildFirstLastPagesLink_XML($cgi, $numOccurrences, 'last');
         }
+        my $smallestEndPageLabel = $last_pageLabel - (MAX_PAGELABELS - 1);
+        if ($current_pageLabel < $smallestEndPageLabel)
+        {
+            $start = $current_pageLabel;
+            $end = $current_pageLabel + (MAX_PAGELABELS - 1);
+        }
+        else
+        {
+            # just output tail end of PAGELABELS 
+	    $start = $smallestEndPageLabel + $lastPageFactor;
+	    $end = $last_pageLabel + $lastPageFactor;
+	}
     }
-    wrap_string_in_tag_by_ref(\$toReturn, 'FisheyeLinks');
+    $pageLinks =
+        _ls_get_pagelinks($start, $end, $numOccurrences, $cgi, $current_pageLabel);
+    
+    wrap_string_in_tag_by_ref(\$firstPageLink, 'EndPageLink');
+    add_attribute(\$firstPageLink, 'page', 'first');
+    wrap_string_in_tag_by_ref(\$lastPageLink, 'EndPageLink');
+    add_attribute(\$lastPageLink, 'page', 'last');
+    wrap_string_in_tag_by_ref(\$pageLinks, 'FisheyeLinks');
+
+    $toReturn = join(qq{\n}, $firstPageLink, $lastPageLink, $pageLinks);
 
     return $toReturn;
 }
@@ -226,19 +238,27 @@ Description
 sub BuildFisheyeString_XML {
     my ($cgi, $numOccurrences) = @_;
 
-    my $sliceSize = $cgi->param('size');
-    my $start     = $cgi->param('start');
+    my $sliceSize = $cgi->param('sz');
+    my $focus     = $cgi->param('start');
 
+    my $prevHitsLink = '';
+    my $nextHitsLink = '';
+    my $fisheyeLinks = '';
     my $toReturn;
 
     my $matchesString =
-      _BuildMatchesString_XML($start, $sliceSize, $numOccurrences);
-    my $fisheyeLinks =
-      _BuildFisheyeLinks_XML($start, $numOccurrences, $sliceSize, $cgi);
-    my $nextHitsLink
-      = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'next');
-    my $prevHitsLink
-      = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'prev');
+      _BuildMatchesString_XML($focus, $sliceSize, $numOccurrences);
+
+    if ($numOccurrences > $sliceSize) {
+      $fisheyeLinks =
+        _BuildFisheyeLinks_XML($focus, $numOccurrences, $sliceSize, $cgi);
+      $prevHitsLink
+        = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'prev');
+    }
+    unless (noLastLinkNecessary($focus, $numOccurrences, $sliceSize)) {
+      $nextHitsLink
+        = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'next');
+    }
 
     wrap_string_in_tag_by_ref(\$nextHitsLink, 'NextHitsLink');
     wrap_string_in_tag_by_ref(\$prevHitsLink, 'PrevHitsLink');
@@ -262,7 +282,7 @@ sub BuildSliceNavigationLinks {
 
     my $toReturn = '';
 
-    if($total_pages >= 0) {
+    if($total_pages > 0) {
         my $fe_str = BuildFisheyeString_XML ($cgi, $total_pages);
         $toReturn = wrap_string_in_tag($total_pages, 'TotalPages') . $fe_str;
     }
@@ -588,8 +608,117 @@ sub handle_REPEAT_SEARCH_LINK
     return $href;
 }
 
+# ---------------------------------------------------------------------
+#======================================================================
+#
+#              P I    H a n d l e r   H e l p e r s
+#
+#======================================================================
+#----------------------------------------------------------------------
+
+=item noLastLinkNecessary 
+
+Don't need to navigate to next page if we're on last slice of page results 
+
+=cut
+
+# --------------------------------------------------------------------
+sub noLastLinkNecessary
+{
+    my $focus = shift;
+    my $totalMatches = shift;
+    my $sliceSize = shift;
+
+    return (ceil($totalMatches/$sliceSize) == ceil($focus/$sliceSize)) ? 1 : 0;
+}
+
+#----------------------------------------------------------------------
+
+=item _ls_get_pagelinks
+
+Generate a set of pagination links [start ... end]
+
+=cut
+
+# --------------------------------------------------------------------
+sub _ls_get_pagelinks
+{
+    my $start = shift;
+    my $end = shift;
+    my $numOccurrences = shift;
+    my ($cgi, $current_pageLabel) = @_;
+    my $temp_cgi = new CGI($cgi);
+
+    my $pagelinks;
+
+    for my $pageLabel ($start..$end)
+    {
+        $pagelinks .= _ls_make_pagelink($pageLabel, $numOccurrences, $temp_cgi, $current_pageLabel);
+    }
+
+    return $pagelinks;
+}
 
 # ---------------------------------------------------------------------
+
+=item _ls_make_pagelink
+
+Create a pagination link: <Href> and <LinkNumber>.
+No HREF necessary for focus page.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _ls_make_pagelink
+{
+    my $pageLabel = shift;
+    my $numOccurrences = shift;
+    my $temp_cgi = shift;
+    my $current_pageLabel = shift;
+    my $href;
+
+    my $linkNumberElement = '<LinkNumber>'. $pageLabel .  '</LinkNumber>';
+    if ($pageLabel eq $current_pageLabel)
+    {
+	add_attribute(\$linkNumberElement, 'focus', 'true');
+    	$href = '';
+    }
+    else
+    {
+        $href = _ls_make_item_page_href($pageLabel, $numOccurrences, $temp_cgi);
+    }
+    my $url .= wrap_string_in_tag($href, 'Href');
+    $url .= $linkNumberElement;
+    my $pagelink = wrap_string_in_tag($url, 'FisheyeLink');
+
+    return $pagelink;
+}
+
+# ---------------------------------------------------------------------
+
+=item _ls_make_item_page_href
+
+Create an HREF. Page being linked to should not be bigger than last page.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _ls_make_item_page_href
+{
+    my $pageLabel = shift;
+    my $numOccurrences = shift;
+    my $cgi = shift;
+
+    my $temp_cgi = new CGI($cgi);
+    my $sliceSize = $cgi->param('sz');
+    # PageLabel 4 points to pageresults 31-40. Thus point this to result page 31.
+    my $focusPage = ($pageLabel * $sliceSize) - ($sliceSize - 1);
+    $focusPage = ($focusPage > $numOccurrences) ? $numOccurrences : $focusPage;
+    $temp_cgi->param('start', $focusPage);
+    my $href = CGI::self_url($temp_cgi);
+
+    return $href;
+}
 
 1;
 
@@ -601,7 +730,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008-11 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-14 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

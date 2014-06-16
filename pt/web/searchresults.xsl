@@ -36,6 +36,10 @@
     </xsl:choose>
   </xsl:variable>
 
+  <xsl:variable name="vNatLangQuery">
+    <xsl:call-template name="buildNatLangQuery"/>
+  </xsl:variable>
+
   <xsl:variable name="gUsingBookReader" select="'false'"/>
 
   <xsl:template name="setup-extra-header-extra">
@@ -69,8 +73,9 @@
       <xsl:call-template name="BuildSearchSummary" />
 
       <xsl:if test="$gPagesFound > 0">
+	<xsl:call-template name="BuildFisheyeTable" />
         <xsl:call-template name="BuildSearchResultsList" />
-        <xsl:call-template name="BuildFisheyeTable"/>
+	<xsl:call-template name="BuildFisheyeTable" />
       </xsl:if>
     </div>
   </xsl:template>
@@ -90,26 +95,22 @@
 
   <!-- -->
   <xsl:template name="msgRepeatSearchWithOR">
-    <div class="searchSubMessage">
       <xsl:element name="a">
         <xsl:attribute name="href">
           <xsl:value-of select="/MBooksTop/MdpApp/RepeatSearchLink"/>
         </xsl:attribute>
         Broaden your search to find pages having just <span class="mdpEmp">one or more</span> of your terms.
       </xsl:element>
-    </div>
   </xsl:template>
 
   <!-- -->
   <xsl:template name="msgRepeatSearchWithAND">
-    <div class="searchSubMessage">
       <xsl:element name="a">
         <xsl:attribute name="href">
           <xsl:value-of select="/MBooksTop/MdpApp/RepeatSearchLink"/>
         </xsl:attribute>
         Narrow your search to find just pages having <span class="mdpEmp">all</span> of your terms.
       </xsl:element>
-    </div>
   </xsl:template>
 
   <!-- -->
@@ -244,7 +245,6 @@
 
     <h2 class="offscreen">Search Results</h2>
 
-    <div class="mdpSearchSummary">
 
       <xsl:variable name="page_string">
         <xsl:choose>
@@ -254,53 +254,39 @@
         </xsl:choose>
       </xsl:variable>
 
-      <xsl:variable name="vNatLangQuery">
-        <xsl:call-template name="buildNatLangQuery"/>
-      </xsl:variable>
-
       <xsl:choose>
         <xsl:when test="$gSearchFatalError='true'">
-          <div class="alert alert-error alert-block alert-banner">
-            <xsl:text>Sorry! There was a system error while conducting your search.  Please check back later.</xsl:text>
+          <div class="mdpSearchSummary">
+            <div class="alert alert-error alert-block alert-banner">
+              <xsl:text>Sorry! There was a system error while conducting your search.  Please check back later.</xsl:text>
+            </div>
           </div>
         </xsl:when>
 
         <xsl:when test="$gPagesFound = 0">
-          <div class="alert alert-error alert-block alert-banner">
-            <xsl:text>Your search for </xsl:text>
-            <span class="mdpEmp">
-              <xsl:value-of select="$vNatLangQuery"/>
-            </span>
-            <xsl:text> did not match any pages in this item.</xsl:text>
-          </div>
+          <div class="mdpSearchSummary">
+            <div class="alert alert-error alert-block alert-banner">
+              <xsl:text>Your search for </xsl:text>
+              <span class="mdpEmp">
+                <xsl:value-of select="$vNatLangQuery"/>
+              </span>
+              <xsl:text> did not match any pages in this item.</xsl:text>
+            </div>
           <xsl:if test="$gSearchOp='OR'">
             <div class="alert alert-warning alert-block alert-banner">
               "Search in this text" can fail to find matching pages if you arrived at this item from a HathiTrust search that used bibliographic metadata terms <span class="mdpEmp"><em>about</em></span> the item that do not occur <span class="mdpEmp"><em>within</em></span> it. 
             </div>
           </xsl:if>
-
-          <xsl:call-template name="msgRepeatSearch"/>
+          </div>
         </xsl:when>
-
-        <xsl:otherwise>
-          <span class="mdpEmp">Search Results: </span>
-          <xsl:value-of select="$gPagesFound"/>
-          <xsl:value-of select="$page_string"/>
-          <xsl:text> found for </xsl:text>
-          <span class="mdpEmp">
-            <xsl:value-of select="$vNatLangQuery"/>
-          </span>
-
-          <xsl:call-template name="msgRepeatSearch"/>
-        </xsl:otherwise>
       </xsl:choose>
+      <xsl:call-template name="msgRepeatSearch"/>
 
       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
         <xsl:text> query time (ms) = </xsl:text>
         <xsl:value-of select="MdpApp/SearchSummary/QueryTime"/>
       </xsl:if>
 
-    </div>
   </xsl:template>
 
 
@@ -320,10 +306,23 @@
 
   <!-- -->
   <xsl:template match="SliceNavigationLinks">
-    <xsl:if test="End > Start">
-      <div>
-        <xsl:value-of select="concat('Viewing results for: ',Start,' to ',End,' of ',TotalPages,' pages')"/>
+
+	  <xsl:if test="End >= Start">
+      <div class="mdpSearchSummary">
+        <xsl:value-of select="concat('Showing ',Start,' - ',End,' of ',TotalPages,' Results for ')"/>
+	<span class="mdpEmp"><xsl:value-of select="$vNatLangQuery"/></span>
       </div>
+
+      <xsl:if test="EndPageLink[@page='first']">
+        <span class="mdpFisheyeLink">
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="EndPageLink[@page='first']/Href"/>
+            </xsl:attribute>
+	    <xsl:value-of select="EndPageLink[@page='first']/LinkNumber"/>
+          </xsl:element>
+        </span>
+      </xsl:if>
 
       <xsl:if test="PrevHitsLink!=''">
         <span class="mdpFisheyeLink">
@@ -331,9 +330,8 @@
             <xsl:attribute name="href">
               <xsl:value-of select="PrevHitsLink"/>
             </xsl:attribute>
-            <xsl:text>&#x25C4;previous</xsl:text>
+            <xsl:text>&#171; Prev</xsl:text>
           </xsl:element>
-          <xsl:text> | </xsl:text>
         </span>
       </xsl:if>
 
@@ -341,12 +339,23 @@
 
       <xsl:if test="NextHitsLink!=''">
         <span class="mdpFisheyeLink">
-          <xsl:text> | </xsl:text>
+          <xsl:text>  </xsl:text>
           <xsl:element name="a">
             <xsl:attribute name="href">
               <xsl:value-of select="NextHitsLink"/>
             </xsl:attribute>
-            <xsl:text>next&#x25BA;</xsl:text>
+	    <xsl:text>Next &#187;</xsl:text>
+          </xsl:element>
+        </span>
+      </xsl:if>
+
+      <xsl:if test="EndPageLink[@page='last']">
+        <span class="mdpFisheyeLink">
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="EndPageLink[@page='last']/Href"/>
+            </xsl:attribute>
+	    <xsl:value-of select="EndPageLink[@page='last']/LinkNumber"/>
           </xsl:element>
         </span>
       </xsl:if>
@@ -360,27 +369,21 @@
       <xsl:for-each select="FisheyeLink">
         <xsl:choose>
           <!-- if there is an Href then build a link, otherwise, this is the slice in focus -->
-          <xsl:when test="Href!=''">
+	  <xsl:when test="Href!=''">
+	    <span class="mdpFisheyeLink">
             <xsl:element name="a">
               <xsl:attribute name="href">
                 <xsl:value-of select="Href"/>
               </xsl:attribute>
               <xsl:value-of select="LinkNumber"/>
             </xsl:element>
+            </span>
           </xsl:when>
           <!-- slice in focus, just output the link number -->
           <xsl:otherwise>
             <span class="mdpEmp">
               <xsl:value-of select="LinkNumber"/>
             </span>
-          </xsl:otherwise>
-        </xsl:choose>
-        <!-- output separator after all links, but the last one -->
-        <xsl:choose>
-          <xsl:when test="position() = last()"/>
-          <!-- do nothing -->
-          <xsl:otherwise>
-            <xsl:text disable-output-escaping="yes"> | </xsl:text>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
