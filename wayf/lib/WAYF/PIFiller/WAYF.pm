@@ -99,7 +99,19 @@ sub handle_IDP_LIST_PI
     
     # To preselect user's UNMAPPED institution in list. Option 0 in
     # menu is in the xsl
-    my $HT_list = WAYF::IdpConfig::get_HathiTrust_Institutions_List($C); 
+    my $HT_list = WAYF::IdpConfig::get_HathiTrust_Institutions_List($C);
+
+    # Add UM shibboleth SSO in dev
+    if ($ENV{HT_DEV}) {
+        $HT_list->{uoms}->{authtype} = 'shibboleth';
+        $HT_list->{uoms}->{enabled}  = 0;
+        $HT_list->{uoms}->{name} = 'University of Michigan (Shibboleth)';
+        $HT_list->{uoms}->{template} = 'https://___HOST___/Shibboleth.sso/uom?target=___TARGET___';
+        $HT_list->{uoms}->{domain} = 'umich.edu';
+        $HT_list->{uoms}->{us} = 1;
+        $HT_list->{uoms}->{entityID} = 'https://shibboleth.umich.edu/idp/shibboleth';
+    }    
+
     my $inst = $C->get_object('Auth')->get_institution_code($C) || 'notaninstitution';
     foreach my $idp_key (sort 
                          {
