@@ -175,11 +175,11 @@ sub ValidityChecks
         $cgi->param ('start', '1');
     }
 
-    if (! $cgi->param('size')) {
-        $cgi->param ( 'size', $PTGlobals::gDefaultSliceSize );
+    if (! $cgi->param('sz')) {
+        $cgi->param ( 'sz', $PTGlobals::gDefaultSliceSize );
     }
-    elsif ($cgi->param('size') > $PTGlobals::gDefaultMaxSliceSize) {
-        $cgi->param ( 'size', $PTGlobals::gDefaultMaxSliceSize );
+    elsif ($cgi->param('sz') > $PTGlobals::gDefaultMaxSliceSize) {
+        $cgi->param ( 'sz', $PTGlobals::gDefaultMaxSliceSize );
     }
 
     unless ( $cgi->param('page') ) {

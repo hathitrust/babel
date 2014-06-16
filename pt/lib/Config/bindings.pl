@@ -8,6 +8,7 @@
      'page'     => 'root|search',
      'seq'      => '\d+',
      'size'     => '\d+',
+     'sz'     => '\d+',
      'view'     => 'image|text|1up|2up|thumb|plaintext|search',
      'debug'    => '.*',
      'newsid'   => '1|[a-z0-9]{32}',
