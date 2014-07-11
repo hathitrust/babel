@@ -118,6 +118,8 @@ if ($GLOBAL_UPDATE) {
     }
 }
 
+my $update_START = time();
+
 CB_delete_extras($C);
 my (
     $num_processed,
@@ -135,7 +137,7 @@ my $mu = join("\n", @$failed_metadata_update_ids_ref) || 'none';
 
 __P(qq{Report: num_processed=$num_processed num_updated=$num_updated queue_error=$queue_error\n\tnum_metadata_missing=$num_metadata_missing missing_metadata_ids=$mm\n\tnum_update_failed=$num_update_failed failed_update_ids=$mu\n});
 
-email_report()
+email_report($update_START)
   if ($EMAIL);
 
 exit 0;
@@ -191,11 +193,15 @@ Description
 
 # ---------------------------------------------------------------------
 sub email_report {
+    my $start = shift;
+
+    my $elapsed = sprintf("elapsed=%.2f hours", (time() - $start)/60/60);
+
     my $email_to_addr_ref = [ q{pfarber@umich.edu}, q{tburtonw@umich.edu} ];
     my $g_assert_email_from_addr = q{"Collection Builder Mailer" <dlps-help@umich.edu>};
 
     my $when = Utils::Time::iso_Time();
-    my $email_subject = qq{[CB] Metadata update ($when)};
+    my $email_subject = qq{[CB] Metadata update ($when)($elapsed)};
 
     my $mailer = new Mail::Mailer('sendmail');
     $mailer->open({
@@ -203,6 +209,8 @@ sub email_report {
                    'From'    => $g_assert_email_from_addr,
                    'Subject' => $email_subject,
                   });
+
+    __P(qq{$elapsed\n});
     print $mailer($EMAIL_BUFFER);
     $mailer->close;
 }
