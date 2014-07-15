@@ -130,6 +130,8 @@ my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'sync-i');
 
 my $CO = new Collection($DBH, $config, undef);
 my $CS = new CollectionSet($DBH, $config, undef);
+my @num_shards_list = $config->get('num_shards_list');
+my @SHARDS = (@num_shards_list);
 
 my $process_start = time();
 
@@ -564,127 +566,136 @@ sub handle_inverse_synchronization {
     my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
     l__output(qq{Initial shared queue count=$initial_shared_queue_ct\n});
 
-    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
-    my $searcher = new Search::Searcher($engine_uri, undef, 1);
-    my $rs = new Result::SLIP();
-
-    my $s;
-    my $ok;
-    my $id_ct = 0;
-    my $start = 0;
-
     my $num_ids_from_missing_coll_ids = 0;
     my $num_ids_from_small_coll_ids = 0;
 
-    # zero is reserved for the coll_id field for items that are not in
-    # any collection. Limit to one coll_id for -C option
-    my $item_query = $COLL_ID
-      ? qq{q=coll_id:$COLL_ID&start=0&rows=0&fl=coll_id,id}
-        : qq{q=coll_id:[1 TO *]&start=0&rows=0&fl=coll_id,id};
+    my $total_ids_queued_over_shards = 0;
+    my $total_ids_processed_over_shards = 0;
 
-    $rs = __handle_query($C, $item_query, $searcher, $rs);
-    my $num_found = $rs->get_num_found();
-    l__output(qq{Solr has $num_found items in collections (or in -C COLL_ID)\n});
+    foreach my $shard (@SHARDS) {
 
-    my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
-    __handle_rc($_ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-                qq{Failed to get large coll_ids\n});
+        l__output(qq{\n*** Processing shard=$shard ***\n\n});
 
-    my %missing_coll_ids = ();
-    my %small_coll_ids = ();
+        my $searcher = SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
+        my $rs = new Result::SLIP();
 
-    while (1) {
+        my $s;
+        my $ok;
+        my $id_ct = 0;
+        my $start = 0;
 
-        __exit_STOPSLIP();
+        # zero is reserved for the coll_id field for items that are not in
+        # any collection. Limit to one coll_id for -C option
+        my $item_query = $COLL_ID
+          ? qq{q=coll_id:$COLL_ID&start=0&rows=0&fl=coll_id,id}
+            : qq{q=coll_id:[1 TO *]&start=0&rows=0&fl=coll_id,id};
 
-        # Get a slice of Solr documents with non-empty coll_id field(s)
-        my $query = $COLL_ID
-          ? qq{q=coll_id:$COLL_ID&start=$start&rows=$SLICE_SIZE&fl=coll_id,id}
-            : qq{q=coll_id:[1 TO *]&start=$start&rows=$SLICE_SIZE&fl=coll_id,id};
-        $rs = __handle_query($C, $query, $searcher, $rs);
+        $rs = __handle_query($C, $item_query, $searcher, $rs);
+        my $num_found = $rs->get_num_found();
+        l__output(qq{Solr has $num_found items in collections (or in -C COLL_ID)\n});
+
+        my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
+        __handle_rc($_ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
+                    qq{Failed to get large coll_ids\n});
+
+        my %missing_coll_ids = ();
+        my %small_coll_ids = ();
+
+        while (1) {
+
+            __exit_STOPSLIP();
+
+            # Get a slice of Solr documents with non-empty coll_id field(s)
+            my $query = $COLL_ID
+              ? qq{q=coll_id:$COLL_ID&start=$start&rows=$SLICE_SIZE&fl=coll_id,id}
+                : qq{q=coll_id:[1 TO *]&start=$start&rows=$SLICE_SIZE&fl=coll_id,id};
+            $rs = __handle_query($C, $query, $searcher, $rs);
         
-        my $rows_returned = $rs->get_rows_returned();
-        last if ($rows_returned == 0);
-        $start += $SLICE_SIZE;
-        l__output(qq{$rows_returned ids.}) if ($VERBOSE);
-        sleep 1;
+            my $rows_returned = $rs->get_rows_returned();
+            last if ($rows_returned == 0);
+            $start += $SLICE_SIZE;
+            l__output(qq{$rows_returned ids.}) if ($VERBOSE);
+            sleep 1;
 
-        # Parse and return optimized list of ids to test
-        my ($id_hashref_of_coll_id_arr_ref, $small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref)
-          = __parse_result_docs(
-                                $C, $rs, $large_coll_id_arr_ref,
-                                \%missing_coll_ids,
-                                \%small_coll_ids
-                               );
+            # Parse and return optimized list of ids to test
+            my ($id_hashref_of_coll_id_arr_ref, $small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref)
+              = __parse_result_docs(
+                                    $C, $rs, $large_coll_id_arr_ref,
+                                    \%missing_coll_ids,
+                                    \%small_coll_ids
+                                   );
 
-        my $num_ids_missing = scalar(@$missing_ids_to_enqueue_arr_ref);
-        $num_ids_from_missing_coll_ids += $num_ids_missing;
-        l__output(qq{\nSolr now has $num_ids_from_missing_coll_ids ids in MISSING MySQL coll_ids\n})
-          if ($num_ids_from_missing_coll_ids);
+            my $num_ids_missing = scalar(@$missing_ids_to_enqueue_arr_ref);
+            $num_ids_from_missing_coll_ids += $num_ids_missing;
+            l__output(qq{\nSolr now has $num_ids_from_missing_coll_ids ids in MISSING MySQL coll_ids\n})
+              if ($num_ids_from_missing_coll_ids);
 
-        if ($num_ids_missing) {
-            if (! $NOOP) {
-                l__output("\n\t--> queue $num_ids_missing ids\n");
-                $ok = SharedQueue::enqueue_item_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref);
-                __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-                            qq{Failed to enqueue ids from missing optimize step\n});
-            }
-        }
-
-        my $num_ids_small = scalar(@$small_ids_to_enqueue_arr_ref);
-        $num_ids_from_small_coll_ids += $num_ids_small;
-        l__output(qq{\nSolr now has $num_ids_from_small_coll_ids ids in SMALL MySQL coll_ids\n})
-          if ($num_ids_from_small_coll_ids);
-
-        if ($num_ids_small) {
-            if (! $NOOP) {
-                l__output("\n\t--> queue $num_ids_small ids\n");
-                $ok = SharedQueue::enqueue_item_ids($C, $DBH, $small_ids_to_enqueue_arr_ref);
-                __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-                            qq{Failed to enqueue ids from small optimize step\n});
-            }
-        }
-
-        $small_ids_to_enqueue_arr_ref = [];
-        $missing_ids_to_enqueue_arr_ref = [];
-
-        foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
-            my $ids_to_enqueue_arr_ref = [];
-
-            my $coll_id_arr_ref = $id_hashref_of_coll_id_arr_ref->{$id};
-
-            $id_ct++;
-
-            if ($VERBOSE) {
-                (($id_ct % 100) == 0) ? l__output($id_ct) : '';
-                (($id_ct % 10) == 0) ? l__output('.') : '';
-            }
-
-            # Check that this id is in each of these coll_ids
-            foreach my $coll_id (@$coll_id_arr_ref) {
-                if (! $CO->one_or_more_items_in_coll($coll_id, [$id])) {
-                    $s = $NOOP ? '' : "\n\t--> queue id (unless already in queue)";
-                    l__output(qq{\n\tid NOT IN MySQL COLLECTION: id=$id, coll_id=$coll_id $s\n});
-
-                    push(@$ids_to_enqueue_arr_ref, $id);
-                }
-            }
-            if (! $NOOP) {
-                if (scalar(@$ids_to_enqueue_arr_ref)) {
-                    $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
+            if ($num_ids_missing) {
+                if (! $NOOP) {
+                    l__output("\n\t--> queue $num_ids_missing ids\n");
+                    $ok = SharedQueue::enqueue_item_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref);
                     __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-                                qq{Failed to enqueue ids not in collection\n});
+                                qq{Failed to enqueue ids from missing optimize step\n});
+                }
+            }
+
+            my $num_ids_small = scalar(@$small_ids_to_enqueue_arr_ref);
+            $num_ids_from_small_coll_ids += $num_ids_small;
+            l__output(qq{\nSolr now has $num_ids_from_small_coll_ids ids in SMALL MySQL coll_ids\n})
+              if ($num_ids_from_small_coll_ids);
+
+            if ($num_ids_small) {
+                if (! $NOOP) {
+                    l__output("\n\t--> queue $num_ids_small ids\n");
+                    $ok = SharedQueue::enqueue_item_ids($C, $DBH, $small_ids_to_enqueue_arr_ref);
+                    __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
+                                qq{Failed to enqueue ids from small optimize step\n});
+                }
+            }
+            
+            $small_ids_to_enqueue_arr_ref = [];
+            $missing_ids_to_enqueue_arr_ref = [];
+
+            foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
+                my $ids_to_enqueue_arr_ref = [];
+                
+                my $coll_id_arr_ref = $id_hashref_of_coll_id_arr_ref->{$id};
+                
+                $id_ct++;
+                
+                if ($VERBOSE) {
+                    (($id_ct % 100) == 0) ? l__output($id_ct) : '';
+                    (($id_ct % 10) == 0) ? l__output('.') : '';
+                }
+                
+                # Check that this id is in each of these coll_ids
+                foreach my $coll_id (@$coll_id_arr_ref) {
+                    if (! $CO->one_or_more_items_in_coll($coll_id, [$id])) {
+                        $s = $NOOP ? '' : "\n\t--> queue id (unless already in queue)";
+                        l__output(qq{\n\tid NOT IN MySQL COLLECTION: id=$id, coll_id=$coll_id $s\n});
+                        
+                        push(@$ids_to_enqueue_arr_ref, $id);
+                    }
+                }
+                if (! $NOOP) {
+                    if (scalar(@$ids_to_enqueue_arr_ref)) {
+                        $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
+                        __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
+                                    qq{Failed to enqueue ids not in collection\n});
+                    }
                 }
             }
         }
+        
+        my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
+        my $total_ids_processed = $id_ct + $num_ids_from_missing_coll_ids + $num_ids_from_small_coll_ids;
+        
+        $total_ids_queued_over_shards += $total_ids_queued;
+        $total_ids_processed_over_shards += $total_ids_processed;        
     }
 
-    my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
-    my $total_ids_processed = $id_ct + $num_ids_from_missing_coll_ids + $num_ids_from_small_coll_ids;
-
-    $s = $NOOP ? '' : "$total_ids_queued added to shared queue";
-    l__output(qq{\n\nPhase II processed $total_ids_processed id occurrences in colls (or in -C COLL_ID)\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll (or not in -C COLL_ID) in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n});
-
+    my $s = $NOOP ? '' : "$total_ids_queued_over_shards added to shared queue";
+    l__output(qq{\n\nPhase II processed $total_ids_processed_over_shards id occurrences in colls (or in -C COLL_ID)\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll (or not in -C COLL_ID) in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n});
 }
 
 # ---------------------------------------------------------------------
