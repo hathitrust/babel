@@ -261,6 +261,8 @@ sub __handle_query {
         # NOTREACHED
     }
 
+    l__output(qq{\nSolr query=$query\n});
+
     return $rs;
 }
 
@@ -378,6 +380,8 @@ otherwise enqueue ID for Solr doc that lacks coll_id.
 sub handle_synchronization {
     my $C = shift;
 
+    my $phase_1_start = time();
+
     l__output(qq{\n***\n*** Begin Phase I synchronization [coll_id(s) present if ID in Solr] ...\n***\n\n});
 
     my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
@@ -464,6 +468,11 @@ sub handle_synchronization {
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
     $s = $NOOP ? '' : ", $total_ids_queued added to shared queue";
     l__output(qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls\n\t missing in Solr over all colls=$missing_ids_over_colls$s\n});
+
+    my $phase_1_elapsed = time() - $phase_1_start;
+    my $elapsed_min = sprintf("%.2f", $phase_1_elapsed/60);
+    my $ss = qq{\nelapsed minutes=$elapsed_min\n};
+    l__output($ss);
 }
 
 # ---------------------------------------------------------------------
@@ -561,6 +570,8 @@ coll_ids, sans the coll_id it was deleted from.
 sub handle_inverse_synchronization {
     my $C = shift;
 
+    my $phase_2_start = time();
+
     l__output(qq{\n***\n*** Begin Phase II synchronization ...\n***\n\n});
 
     my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
@@ -592,7 +603,7 @@ sub handle_inverse_synchronization {
 
         $rs = __handle_query($C, $item_query, $searcher, $rs);
         my $num_found = $rs->get_num_found();
-        l__output(qq{Solr has $num_found items in collections (or in -C COLL_ID)\n});
+        l__output(qq{Solr (shard=$shard) has $num_found items in collections (or in -C COLL_ID)\n});
 
         my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
         __handle_rc($_ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
@@ -696,6 +707,11 @@ sub handle_inverse_synchronization {
 
     my $s = $NOOP ? '' : "$total_ids_queued_over_shards added to shared queue";
     l__output(qq{\n\nPhase II processed $total_ids_processed_over_shards id occurrences in colls (or in -C COLL_ID)\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll (or not in -C COLL_ID) in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n});
+
+    my $phase_2_elapsed = time() - $phase_2_start;
+    my $elapsed_min = sprintf("%.2f", $phase_2_elapsed/60);
+    my $ss = qq{\nelapsed minutes=$elapsed_min\n};
+    l__output($ss);
 }
 
 # ---------------------------------------------------------------------
