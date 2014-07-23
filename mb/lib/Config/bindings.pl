@@ -7,7 +7,7 @@
 # listed can be anything and have any value.
 %g_validator_for_param =
     (
-     'a'        => 'addit|additnc|addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|srchm|listrchm|random',
+     'a'        => 'addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|srchm|listrchm|random',
 
      'c'        => '\d+',
      'c2'       => '\d+',
@@ -92,18 +92,6 @@ $g_late_operations = [
                                                            'colltype' =>undef,
                                                           },
                                          },
-     'MBooks::Operation::AddItems'    => {'req_params' => {
-                                                           'i2'    => undef,
-                                                           'ti'    => undef,
-
-                                                           'id'    => undef,
-                                                           'rattr' => undef,
-                                                          },
-                                          'opt_params' => {
-                                                           'au'    => undef,
-                                                           'da'    => undef,
-                                                          }
-                                         },
      'MBooks::Operation::CopyItems'   => {'req_params' => {
                                                            'c2'    => undef,
                                                            'id'   => undef,
@@ -161,7 +149,7 @@ $g_late_operations = [
                                                            'sort'  => 'rel_d',
                                                            'pn'    => '1',
                                                            'sz'    =>  undef,
-                                                           'skin'  => undef,   
+                                                           'skin'  => undef,
                                                           }
                                          },
 
@@ -389,47 +377,6 @@ $g_late_operations = [
 
 
      # ----- database read/update action -----
-     'ACTION_ADD_ITEM'   =>
-     {'action_param' => 'addit',
-      'action_type'  => 'database',
-      'operations'   => [
-                         'MBooks::Operation::AddItems',
-                         'MBooks::Operation::CopyItems',
-                        ],
-      'view'         => {'default' => {
-                                       'redirect' => 'ACTION_LIST_COLLS',
-                                      },
-                         'ajax'    => {
-                                       'builders' => [],
-                                       'template' => 'add_items_ajax.xml',
-                                       'filler'   => 'MBooks::PIFiller::AddItems',
-                                      },
-                        },
-     },
-
-
-     # ----- database read/update action -----
-     'ACTION_ADD_ITEM_NC' =>
-     {'action_param' => 'additnc',
-      'action_type'  => 'database',
-      'operations'   => [
-                         'MBooks::Operation::AddColl',
-                         'MBooks::Operation::AddItems',
-                         'MBooks::Operation::CopyItems',
-                        ],
-      'view'         => {'default' => {
-                                       'redirect' => 'ACTION_LIST_COLLS',
-                                      },
-                         'ajax'    => {
-                                       'builders' => [],
-                                       'template' => 'add_items_ajax.xml',
-                                       'filler'   => 'MBooks::PIFiller::AddItems',
-                                      },
-                        },
-     },
-
-
- # ----- database read/update action -----
      'ACTION_ADD_MULTIPLE_ITEMS'   =>
      {'action_param' => 'addits',
       'action_type'  => 'database',
@@ -449,7 +396,7 @@ $g_late_operations = [
      },
 
 
- # ----- database read/update action -----
+     # ----- database read/update action -----
      'ACTION_ADD_MULTIPLE_ITEMS_NC'   =>
      {'action_param' => 'additsnc',
       'action_type'  => 'database',
@@ -487,7 +434,7 @@ $g_late_operations = [
                                           },
                          'srch'        => {
                                            'redirect' => 'ACTION_SEARCH',
-                                          },                         
+                                          },
                         },
      },
 
@@ -509,7 +456,7 @@ $g_late_operations = [
                                           },
                         },
      },
-     
+
 
      # ----- database read/update action -----
      'ACTION_MOVE_ITEM'    =>
@@ -527,7 +474,7 @@ $g_late_operations = [
                                           },
                         },
      },
-     
+
 
      # ----- database read/update action -----
      'ACTION_MOVE_ITEM_NC'    =>

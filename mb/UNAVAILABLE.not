@@ -1,0 +1,3 @@
+This file, when copied to "UNAVAILABLE" in the same directory, will
+cause mb to display /mb/web/collection_builder_unavailable.html which
+can be edited to contain a specific message about time frame, etc.

@@ -64,11 +64,10 @@ sub ___core_initialize
     my $self = shift;
     my $C = shift;
 
-    my $config = $C->get_object('MdpConfig');
-    my $filename = $config->get('solr_index_maint_lock_file');
-    if (-e $filename) {
-        $ENV{'UNAVAILABLE'} = 1;
+    my $config = $C->get_object('MdpConfig'); 
+    if ( defined $ENV{UNAVAILABLE} ) {
         my $msg = $config->get('solr_mb_maint_msg');
+        print STDERR '___core_initialize';
         
         ASSERT(0, $msg);
     }
