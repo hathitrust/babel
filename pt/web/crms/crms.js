@@ -1,4 +1,13 @@
 head.ready(function() {
+
+    // define CRMS state
+    HT.crms_state = 'CRMS-US';
+    var i = window.location.href.indexOf('skin=crmsworld');
+    if ( i + 1 != 0 ) {
+        HT.crms_state = 'CRMS-World';
+    }
+
+    // display bib information
     var $div = $(".bibLinks");
     var $p = $div.find("p:first");
     $p.find("span:empty").each(function() {

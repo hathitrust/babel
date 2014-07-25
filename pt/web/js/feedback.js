@@ -74,6 +74,10 @@ HT.feedback.dialog = function() {
     }
     $("<input type='hidden' name='view' />").val(HT.params.view).appendTo($form);
 
+    if ( HT.crms_state ) {
+        $form.find("#email").val(HT.crms_state);
+    }
+
 
     return $form;
 };
