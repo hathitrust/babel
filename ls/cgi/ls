@@ -94,6 +94,9 @@ my $cgi = new CGI;
 Utils::clean_cgi_params($cgi);
 $C->set_object('CGI', $cgi);
 
+my $q = $cgi->param('q1');
+
+die if ($q =~ m/^.$/); 
 #
 # Create the application
 #
