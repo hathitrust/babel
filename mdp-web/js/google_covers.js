@@ -30,7 +30,9 @@ head.ready(function() {
         }).attr('src', google_link.thumbnail_url);
       } else {
         var $img = $('<img class="bookCover" aria-hidden="true" alt=""/>')
-        $img.attr("src", "/common/unicorn/img/nocover-thumbnail.png");
+        $img.attr("src", "/cgi/imgsrv/cover?id=" + $div.data('barcode'));
+        $div.addClass("localCover");
+        // $img.attr("src", "/common/unicorn/img/nocover-thumbnail.png");
         $div.append($img);
       }
     })

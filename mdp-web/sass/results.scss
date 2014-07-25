@@ -71,10 +71,15 @@
         float: right;
 
         img {
-            min-width: 60px;
+            // min-width: 60px;
             max-width: 60px;
+            border: 2px solid #eee;
         }
 
+    }
+
+    .localCover {
+      border-bottom: 4px solid black;
     }
 
     .select {
