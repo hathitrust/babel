@@ -235,6 +235,33 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- RDFa: description -->
+  <xsl:template name="BuildRDFaWrappedDescription">
+    <xsl:param name="visible"/>
+
+    <xsl:if test="$gMdpMetadata/datafield[@tag='300']/subfield">
+
+      <xsl:variable name="description">
+        <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='a']"/>
+        &#x20;
+        <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='b']"/>
+        &#x20;
+        <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='c']"/>
+      </xsl:variable>
+
+      <xsl:element name="span">
+        <xsl:attribute name="property">dc:description</xsl:attribute>
+        <xsl:attribute name="content">
+          <xsl:value-of select="$description" />
+        </xsl:attribute>
+        <xsl:if test="$visible = 'visible'">
+          <xsl:value-of select="$description" />
+        </xsl:if>
+      </xsl:element>
+    </xsl:if>
+
+  </xsl:template>
+
   <!-- RDFa: license -->
   <xsl:template name="BuildRDFaCCLicenseMarkup">
     <xsl:variable name="access_use_header">
@@ -828,48 +855,49 @@
 
       <h2>About this Book</h2>
       <h3 class="offscreen">Catalog Record Details</h3>
-        <p>
-          <xsl:call-template name="BuildRDFaWrappedTitle">
-            <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
-            <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
-          </xsl:call-template>
-          <!-- set author off from title with a space -->
-          <xsl:value-of select="' '"/>
+      <p>
+        <xsl:call-template name="BuildRDFaWrappedTitle">
+          <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
+          <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
+        </xsl:call-template>
+        <xsl:text> </xsl:text>
 
-          <!-- not visible -->
-          <xsl:call-template name="BuildRDFaWrappedAuthor"/>
-          <!-- not visible -->
-          <xsl:call-template name="BuildRDFaWrappedPublished"/>
-        </p>
-        <p>
-          <xsl:variable name="record_no">
-            <xsl:value-of select="$gCatalogRecordNo"/>
-          </xsl:variable>
-          <xsl:choose>
-            <xsl:when test="$record_no!=''">
-              <xsl:element name="a">
-                <xsl:variable name="href">
-                  <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
-                  <xsl:value-of select="$record_no"/>
-                </xsl:variable>
-                <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-                <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-                <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
-                <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
-                <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-                <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-                <xsl:text>View full catalog record</xsl:text>
-              </xsl:element>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>Catalog record not available</xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-        </p>
-        <p class="smaller">
-          <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
-        </p>
-      </div>
+        <!-- not visible -->
+        <xsl:call-template name="BuildRDFaWrappedAuthor"/>
+        <!-- not visible -->
+        <xsl:call-template name="BuildRDFaWrappedPublished"/>
+        <!-- not visible -->
+        <xsl:call-template name="BuildRDFaWrappedDescription" />
+      </p>
+      <p>
+        <xsl:variable name="record_no">
+          <xsl:value-of select="$gCatalogRecordNo"/>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$record_no!=''">
+            <xsl:element name="a">
+              <xsl:variable name="href">
+                <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+                <xsl:value-of select="$record_no"/>
+              </xsl:variable>
+              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
+              <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
+              <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
+              <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+              <xsl:text>View full catalog record</xsl:text>
+            </xsl:element>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>Catalog record not available</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+      </p>
+      <p class="smaller">
+        <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+      </p>
+    </div>
   </xsl:template>
 
   <xsl:template name="get-this-book">
@@ -877,59 +905,10 @@
     
     <div class="getLinks">
       <h3>Get this Book</h3>
-      <xsl:variable name="x" select="$gMdpMetadata/datafield" />
+
       <ul>
-        <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
-          <xsl:variable name="oclc-number">
-            <xsl:choose>
-              <xsl:when test="contains(.,'OCoLC)ocm')">
-                <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
-              </xsl:when>
-              <xsl:when test="contains(.,'OCoLC')">
-                <xsl:value-of select="substring-after(.,'OCoLC)')"/>
-              </xsl:when>
-              <xsl:when test="contains(.,'oclc')">
-                <xsl:value-of select="substring-after(.,'oclc')"/>
-              </xsl:when>
-              <xsl:when test="contains(.,'ocm')">
-                <xsl:value-of select="substring-after(.,'ocm')"/>
-              </xsl:when>
-              <xsl:when test="contains(.,'ocn')">
-                <xsl:value-of select="substring-after(.,'ocn')"/>
-              </xsl:when>
-              <xsl:otherwise/>
-            </xsl:choose>
-          </xsl:variable>
-          <li>
-            <xsl:element name="a">
-              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-              <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-              <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
-              <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
-                <xsl:value-of select="$oclc-number" />
-              </xsl:attribute>
-              <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
-              <xsl:text>Find in a library</xsl:text>
-            </xsl:element>
-          </li>
-        </xsl:for-each>
-        
-        <xsl:if test="$gPodUrl != ''">
-          <li>
-            <xsl:element name="a">
-              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-              <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-              <xsl:attribute name="data-tracking-action">PT Buy a copy</xsl:attribute>
-              <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gPodUrl" /></xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$gPodUrl"/>
-              </xsl:attribute>
-              <xsl:text>Buy a copy</xsl:text>
-            </xsl:element>
-          </li>
-        </xsl:if>
+        <xsl:call-template name="find-in-library" />
+        <xsl:call-template name="buy-this-item" />
 
         <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
         <li>
@@ -1027,6 +1006,64 @@
     </div>
   </xsl:template>
   
+  <xsl:template name="find-in-library">
+    <xsl:variable name="x" select="$gMdpMetadata/datafield" />
+    <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+      <xsl:variable name="oclc-number">
+        <xsl:choose>
+          <xsl:when test="contains(.,'OCoLC)ocm')">
+            <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'OCoLC')">
+            <xsl:value-of select="substring-after(.,'OCoLC)')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'oclc')">
+            <xsl:value-of select="substring-after(.,'oclc')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'ocm')">
+            <xsl:value-of select="substring-after(.,'ocm')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'ocn')">
+            <xsl:value-of select="substring-after(.,'ocn')"/>
+          </xsl:when>
+          <xsl:otherwise/>
+        </xsl:choose>
+      </xsl:variable>
+      <li>
+        <xsl:element name="a">
+          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
+          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
+          <xsl:attribute name="href">
+            <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
+            <xsl:value-of select="$oclc-number" />
+          </xsl:attribute>
+          <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
+          <xsl:text>Find in a library</xsl:text>
+        </xsl:element>
+      </li>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="buy-this-item">
+    <xsl:if test="$gPodUrl != ''">
+      <li>
+        <xsl:element name="a">
+          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Buy a copy</xsl:attribute>
+          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gPodUrl" /></xsl:attribute>
+          <xsl:attribute name="href">
+            <xsl:value-of select="$gPodUrl"/>
+          </xsl:attribute>
+          <xsl:text>Buy a copy</xsl:text>
+        </xsl:element>
+      </li>
+    </xsl:if>
+  </xsl:template>
+
+
   <xsl:template name="collect-this-book">
     <div class="collectionLinks">
       <h3>Add to Collection</h3>

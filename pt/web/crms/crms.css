@@ -1,0 +1,26 @@
+body {
+    background: blue;
+}
+
+.container.centered {
+    width: 100%;
+}
+
+#toggle-bib-metadata {
+    margin-top: 4px;
+    display: inline-block;
+}
+
+span.blocked {
+    display: block;
+    margin-top: 4px;
+    /*margin-bottom: 2px;*/
+}
+
+span.blocked strong {
+    display: block;
+}
+
+span.blocked strong::first-letter {
+    text-transform: capitalize;
+}

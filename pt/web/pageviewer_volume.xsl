@@ -160,36 +160,27 @@
             <xsl:with-param name="view">plaintext</xsl:with-param>
           </xsl:call-template>
         </div>
-        <div class="btn-group btn-group-vertical">
-          <button id="action-toggle-fullscreen" type="button" class="btn square alone"><i class="icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
-        </div>
-<!--         <div class="btn-group btn-group-vertical">
-          <button id="xxx" type="button" class="btn square alone dropdown-toggle" data-toggle="dropdown">
-            <i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i>
-            <span class="label"> Zoom</span>
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu">
-            <li><a href="#">25%</a></li>
-            <li><a href="#">50%</a></li>
-            <li><a href="#">75%</a></li>
-            <li><a href="#">100%</a></li>
-            <li><a href="#">125%</a></li>
-            <li><a href="#">150%</a></li>
-            <li><a href="#">200%</a></li>
-            <li><a href="#">300%</a></li>
-            <li><a href="#">400%</a></li>
-          </ul>
-        </div> -->
-        <div class="btn-group btn-group-vertical">
-          <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
-          <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
-        </div>
+        <xsl:call-template name="action-fullscreen" />
+        <xsl:call-template name="action-resize" />
+
         <div class="btn-group btn-group-vertical">
           <a href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square"><i class="icomoon-reload-CCW"></i><span class="label"> Rotate left</span></a>
           <a href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square"><i class="icomoon-reload-CW"></i><span class="label"> Rotate right</span></a>
         </div>
       </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="action-fullscreen">
+    <div class="btn-group btn-group-vertical">
+      <button id="action-toggle-fullscreen" type="button" class="btn square alone"><i class="icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="action-resize">
+    <div class="btn-group btn-group-vertical">
+      <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
+      <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
     </div>
   </xsl:template>
 
