@@ -4,7 +4,9 @@ use strict;
 use warnings;
 
 BEGIN {
-#     $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
+
+    ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/ls/UNAVAILABLE");
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
@@ -35,7 +37,7 @@ $app = builder {
     enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
-        "HTErrorDocument", 500 => "/mdp-web/production_error.html";
+      "HTErrorDocument", 500 => (defined $ENV{UNAVAILABLE} ? "/ls/web/fulltext_search_unavailable.html" : "/mdp-web/production_error.html");
 
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
 

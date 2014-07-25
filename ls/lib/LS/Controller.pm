@@ -67,10 +67,9 @@ sub ___core_initialize {
 
     my $config = $C->get_object('MdpConfig');
 
-    my $filename = $config->get('solr_index_maint_lock_file');
-    if (-e $filename) {
-        $ENV{'UNAVAILABLE'} = 1;
+    if ( defined $ENV{UNAVAILABLE} ) {
         my $msg = $config->get('solr_ls_maint_msg');
+        print STDERR '___ls_core_initialize';
 
         ASSERT(0, $msg);
     }
@@ -80,15 +79,15 @@ sub ___core_initialize {
 
     my $action = $cgi->param('a');
     my $query = $self->__get_user_query_string($cgi);
-    
+
     my $page = $cgi->param('page');
-    
+
     #XXX  redo this with cleaner logic
     if ($action eq "page")
     {
         # we need this to display a page even when there is no query
     }
-    elsif (! $action || ! $query) 
+    elsif (! $action || ! $query)
     {
         my $params = $config->get('ls_default_params');
         my $temp_cgi = new CGI($params);
@@ -96,12 +95,6 @@ sub ___core_initialize {
         $temp_cgi->param('debug', $cgi->param('debug'));
         $C->set_object('CGI', $temp_cgi);
     }
-#XXX
-    # Default to displaying "Limited view" in search results
-#    my $lmt = $cgi->param('lmt');
- #   if (! defined($lmt)) {
-  #      $cgi->param('lmt', 'all');
-   # }
 
     # Bind)ings
     my $ab = new LS::Bind($C, $g_bindings);
@@ -133,13 +126,13 @@ sub Log_elapsed {
     my $self = shift;
     my $C = shift;
     my $act = shift;
-    
+
     # Log
     my $ipaddr = $ENV{'REMOTE_ADDR'};
     my $session_id = $C->get_object('Session')->get_session_id();
     my $elapsed = sprintf("%.2f", Time::HiRes::time() - $main::realSTART);
     my $timeout = '';
-    
+
     my $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
     if ($solr_error_msg) {
         my $http_status_line;
@@ -290,7 +283,7 @@ sub __get_user_query_string
 {
     my $self = shift;
     my $cgi  = shift;
-    
+
     my $user_query_string = $cgi->param('q1')||$cgi->param('q2')||$cgi->param('q3')||$cgi->param('q4');
 
     return $user_query_string;
