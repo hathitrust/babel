@@ -235,7 +235,8 @@ sub __add_rights_data {
 
     # Some items in sample personal collections are not in the sample
     # repository. We can still get metadata for them from vufind.
-    if ($ENV{SDRVIEW} eq 'sample') {
+    my $view = $ENV{SDRVIEW} || '';
+    if ($view eq 'sample') {
         if ($attribute == $RightsGlobals::NOOP_ATTRIBUTE) {
             $attribute = 1;
         }
