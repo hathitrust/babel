@@ -104,9 +104,10 @@ my $elapsed = sprintf("elapsed=%.2f hours", (time - $START)/60/60);
 
 my $report = 
   qq{Report: $elapsed num_seen=$num_seen num_updated=$num_updated\n}
-  . qq{num_metadata_missing=$num_metadata_missing $num_update_failed=$num_update_failed}
-  . qq{missing_metadata=$mm\n}
-  . qq{failed_queries=$mq\n};
+  . qq{num_metadata_missing=$num_metadata_missing num_update_failed=$num_update_failed\n}
+  . qq{failed_queries=$mq\n}
+  . qq{missing_metadata=$mm\n};
+
 
 __P(  $report );
 
