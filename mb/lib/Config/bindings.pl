@@ -42,14 +42,14 @@
 
 %g_url_to_field_name_map =
     (
-     'auth_a'   => 'author',
-     'auth_d'   => 'author',
+     'auth_a'   => 'sort_author',
+     'auth_d'   => 'sort_author',
      'title_d'  => 'sort_title',
      'title_a'  => 'sort_title',
      'cn_a'     => 'collname',
      'cn_d'     => 'collname',
-     'date_a'   => 'date',
-     'date_d'   => 'date',
+     'date_a'   => 'sort_date',
+     'date_d'   => 'sort_date',
      'num_a'    => 'num_items',
      'num_d'    => 'num_items',
      'own_a'    => 'owner_name',

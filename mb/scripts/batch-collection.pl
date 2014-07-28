@@ -1,13 +1,5 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings;
-
-
-BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
-}
-
 =head1 NAME
 
 batch-collection
@@ -47,6 +39,14 @@ append id list to collection=coll_id
 =back
 
 =cut
+
+use strict;
+use warnings;
+
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -95,7 +95,6 @@ my @allowed_uniqnames =
    'jweise',
    'sooty',
    'khage',
-   'kshawkin',
    'rwelzenb',
    'sethip',
    'jjyork',
@@ -478,19 +477,10 @@ sub bc_get_metadata_via_metadata_getter {
     my $C = shift;
     my $id_aryref = shift;
 
-    my $mdg = new MBooks::MetaDataGetter($C,$id_aryref);
-    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, $id_aryref);
+    my $mdg = new MBooks::MetaDataGetter($C, $id_aryref);
+    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C);
 
-    my $normed_metadata_aryref = [];
-
-    if ($metadata_aryref) {
-        foreach my $metadata_hashref (@$metadata_aryref) {
-            my $metadata_ref = $mdg->normalize_metadata($metadata_hashref);
-            push(@$normed_metadata_aryref, $metadata_ref);
-        }
-    }
-
-    return scalar @$normed_metadata_aryref ? $normed_metadata_aryref : undef;
+    return ($metadata_aryref && scalar @$metadata_aryref) ? $metadata_aryref : undef;
 }
 
 # ---------------------------------------------------------------------

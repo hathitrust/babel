@@ -1,15 +1,31 @@
 package MBooks::Query::VuFindSolr;
 
-#
-#XXX WARNING!! this is really specialized to get metadata for a list of mdp/hathi ids
-# Its not a general class for searching the VuFindSolr instance
-# Perhaps it needs a new name 
-#
-#
 
+=head1 NAME
+
+MBooks::Query::VuFindSolr
+
+=head1 DESCRIPTION
+
+
+This class is specialized to get metadata for a list of mdp/hathi ids
+used by Collection Builder, CB-update_rights an batch_collection.pl.
+
+It is not a general class for searching the VuFindSolr instance.
+
+=head1 SYNOPSIS
+
+Coding example
+
+=head1 METHODS
+
+=over 8
+
+=cut
 
 
 use strict;
+use warnings;
 
 use Utils;
 use Debug::DUtils;
@@ -27,12 +43,10 @@ Design Pattern.
 =cut
 
 # ---------------------------------------------------------------------
-sub AFTER_Query_initialize
-{
+sub AFTER_Query_initialize {
     my $self = shift;
     my $C = shift;
 }
-
 
 # ---------------------------------------------------------------------
 
@@ -48,71 +62,95 @@ sub get_id_arr_ref {
     return $self->{'id_arr_ref'};
 }
 
-
 # ---------------------------------------------------------------------
 sub get_query_string_from_ids {
     my $self = shift;
     my $id_arr_ref = shift;
 
     ASSERT(scalar(@$id_arr_ref) <= 1024, qq{more than 1024 ids });
-
     my $query = join(' OR ', map {qq{ht_id:"$_"}} @$id_arr_ref);
 
-    return $query;   
+    return $query;
 }
 
 # ---------------------------------------------------------------------
 
 =item get_Solr_metadata_query_from_ids
 
-Creates a solr query based on a list of HathiTrust ids and  the 
-XXX TODO: implment conf file step: fields in the global.conf file
+Creates a solr query based on a list of HathiTrust ids and  the
+TODO: implment conf file step: fields in the global.conf file
 
 =cut
 
 # ---------------------------------------------------------------------
-sub get_Solr_metadata_query_from_ids
-{
+sub get_Solr_metadata_query_from_ids {
     my $self = shift;
     my $id_arr_ref = shift;
-    
-    # pass this in after reading it from config file.  See Phil's bin/l/ls/index code
-    # need sort title and display title
+
     my $field_list_arr_ref= [ 'author',
                               'mainauthor',
                               'title',
                               'title_c',
                               'vtitle',
                               'titleSort',
-                              #'title_ab',  # Could this be short version for long titles 
-                              'publishDate',
-                              'ht_id_display',
-                              'id',
-                              # oclc, lccn, and isbn for book covers
-                              'oclc',
-                              'isbn',
-                              'lccn',
+                              'ht_id_display', # contains item_id, update_time, enumchron, enhanced publishDate
+                              'id',            # bib record id
+                              'oclc',          # book cover support
+                              'isbn',          # book cover support
+                              'lccn',          # book cover support
                             ];
-    
-    my $field_list = join(',', @$field_list_arr_ref);
-        
-    my $query_string = $self->get_query_string_from_ids($id_arr_ref);
-    
-    my $INTERN_Q = qq{q=$query_string};
-    my $FL = qq{&fl=$field_list};
-    my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
-    my $START_ROWS = qq{&start=0&rows=1000000};
-    my $INDENT = qq{&indent=off};
 
-    my $solr_query_string =
-        $INTERN_Q . $FL . $VERSION . $START_ROWS . $INDENT;
-    require Data::Dumper;
-    my $d = Data::Dumper::Dumper($solr_query_string);
-    print STDERR $d;
+    my $field_list = join(',', @$field_list_arr_ref);
+
+    my $query_string = $self->get_query_string_from_ids($id_arr_ref);
+
+    my $FL         = qq{&fl=$field_list};
+    my $INDENT     = qq{&indent=off};
+    my $VERSION    = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
+    my $INTERN_Q   = qq{q=$query_string};
+    my $START_ROWS = qq{&start=0&rows=1000000};
+
+    my $solr_query_string = $INTERN_Q . $FL . $VERSION . $START_ROWS . $INDENT;
+
+    if (0) {
+        require Data::Dumper;
+        my $d = Data::Dumper::Dumper($solr_query_string);
+        print STDERR $d;
+    }
 
     return $solr_query_string;
 }
 
-#----------------
-
 1;
+
+__END__
+
+=head1 AUTHOR
+
+Tom Burton-West, University of Michigan, tburtonw@umich.edu
+Phillip Frber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-14 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

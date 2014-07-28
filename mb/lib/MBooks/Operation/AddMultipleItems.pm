@@ -43,7 +43,7 @@ sub new
 
 =item _initialize
 
-Initialize MBooks::Operation::AddItems.  Must call parent initialize.
+Initialize MBooks::Operation::AddMultipleItems.  Must call parent initialize.
 
 =cut
 
@@ -58,6 +58,7 @@ sub _initialize
 
     $self->SUPER::_initialize($C, $act);
 }
+
 # ---------------------------------------------------------------------
 
 =item execute_operation
@@ -98,7 +99,7 @@ sub execute_operation
     my @failed_ids;
     my $failed_to_add_count  = 0;
     my $added_count = 0;
-    
+
     # Pessimistic
     my $ALL_METADATA_RETURNED = 0;
 
@@ -120,7 +121,7 @@ sub execute_operation
 
     my @get_metadata_ids = (@no_metadata, @update_metadata);
 
-    # clear out the idea; successful ids will be added 
+    # clear out the idea; successful ids will be added
     # as we get metadata
     $cgi->delete('id');
 
@@ -190,23 +191,11 @@ sub get_metadata_via_metadata_getter {
     my $C = shift;
     my $id_aryref = shift;
 
-    my $mdg = new MBooks::MetaDataGetter($C,$id_aryref);
-    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, $id_aryref);
+    my $mdg = new MBooks::MetaDataGetter($C, $id_aryref);
+    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C);
 
-    my $normed_metadata_aryref = [];
-    
-    if ($metadata_aryref) {
-        foreach my $metadata_hashref (@$metadata_aryref) {
-            my $metadata_ref = $mdg->normalize_metadata($metadata_hashref);
-            push(@$normed_metadata_aryref, $metadata_ref);
-        }
-    }
-    else {
-        return undef;
-    }
-    
-
-    return $normed_metadata_aryref;
+    return undef unless ($metadata_aryref && scalar @$metadata_aryref);
+    return $metadata_aryref;
 }
 
 # ---------------------------------------------------------------------
@@ -214,7 +203,7 @@ sub get_metadata_via_metadata_getter {
 #
 #   calls $co->create_or_update_item_metadata($metadata_ref);
 #   which will create new item if extern_id not in db or update data otherwise
-#   
+#
 # ---------------------------------------------------------------------
 sub add_item_metadata_to_database {
     my $self = shift;

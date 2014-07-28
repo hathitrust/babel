@@ -317,18 +317,14 @@ sub __cb_get_vufind_metadata_hashref {
     my $id = shift;
 
     my $mdg = new MBooks::MetaDataGetter($C, [$id]);
-    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C, [$id]);
+    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C);
 
-    if (scalar @$metadata_aryref) {
-        my $metadata_hashref = $metadata_aryref->[0];
-        $metadata_hashref = $mdg->normalize_metadata($metadata_hashref);
-
-        return $metadata_hashref;
-    }
-    else {
+    unless ($metadata_aryref && scalar @$metadata_aryref) {
         __P( qq{\tCould not get metadata for id="$id"\n} );
         return undef;
     }
+
+    return $metadata_aryref->[0];
 }
 
 
