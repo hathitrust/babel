@@ -94,15 +94,6 @@ my $C = new Context;
 # CGI
 my $cgi = new CGI;
 
-# XXX DDOS
-my $q1 = $cgi->param('q1');
-die if ($q1 =~ m/^.$/); 
-
-my $pn = $cgi->param('pn');
-unless ($pn < 10) {
-    $cgi->param('pn', 10);
-}
-
 Utils::clean_cgi_params($cgi);
 $C->set_object('CGI', $cgi);
 

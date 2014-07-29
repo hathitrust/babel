@@ -203,7 +203,22 @@ sub get_solr_page_values
     my $cgi = $C->get_object('CGI');
 
     my $current_page = $cgi->param('pn') || 1;
+    #my $requested_pn = $current_page;
+    
     my $current_sz = $cgi->param('sz') || $config->get('default_records_per_page');
+
+    # set deep paging limits
+    ($current_page,$current_sz)=__limit_paging($config,$current_page,$current_sz);
+
+    #XXX consider setting flag with pn requested
+    # if ($requested_pn != $current_page)
+    # {
+    # 	$cgi->param('requested_pn', $requested_pn);
+    # }
+
+    # reset CGI object
+    $cgi->param('pn', $current_page);
+    $C->set_object('CGI', $cgi);
 
     my $solr_start = ($current_page - 1) * $current_sz;
     my $solr_rows = $current_sz;
@@ -213,7 +228,32 @@ sub get_solr_page_values
 
 
 # ---------------------------------------------------------------------
+sub __limit_paging
+{
+    # reset pn param to limit according to max_rows set in config file
+    #XXX do we want to log pn attempts over the limit?
+    my $config = shift;
+    my $pn = shift;
+    my $sz = shift;
+    my $max_rows = $config->get('max_rows');
+    my $default_sz =$config->get('default_records_per_page');
+    my $rows = $pn * $sz;
+    my $max_pn = $max_rows/$default_sz;
 
+    if (defined $sz && $sz != 0)
+    {
+	$max_pn = $max_rows/$sz;
+    }
+
+    unless ($pn < $max_pn) {
+	$pn = $max_pn
+    }
+    return ($pn,$sz);
+}
+
+
+
+# ---------------------------------------------------------------------
 sub __get_user_query_string
 {
     my $self = shift;

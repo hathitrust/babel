@@ -101,14 +101,24 @@ sub handle_PAGING_PI
     : PI_handler(PAGING)
 {
     my ($C, $act, $piParamHashRef) = @_;
+    my $config = $C->get_object('MdpConfig');
 
     my $pager = $act->get_transient_facade_member_data($C, 'pager');
     ASSERT(defined($pager), qq{pager not defined});
 
     my $cgi = $C->get_object('CGI');
     my $current_page = $cgi->param('pn');
+    #my $requested_pn = $cgi->param('requested_pn');
     my $current_sz = $cgi->param('sz');
+    # set total entries to max_rows if number results greater than max_rows
+    my $max_rows = $config->get('max_rows');
+    my $total_rows = $pager->total_entries;
 
+    if ($total_rows > $max_rows)
+    {
+	$pager->total_entries($max_rows);
+    }
+    
     my $temp_cgi = new CGI($cgi);
     $temp_cgi->param('a', 'srchls');
 
