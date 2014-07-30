@@ -238,11 +238,11 @@ sub __limit_paging
     my $max_rows = $config->get('max_rows');
     my $default_sz =$config->get('default_records_per_page');
     my $rows = $pn * $sz;
-    my $max_pn = $max_rows/$default_sz;
+    my $max_pn = int($max_rows/$default_sz);
 
     if (defined $sz && $sz != 0)
     {
-	$max_pn = $max_rows/$sz;
+	$max_pn = int($max_rows/$sz);
     }
 
     unless ($pn < $max_pn) {
