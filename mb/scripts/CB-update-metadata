@@ -44,10 +44,11 @@ use Getopt::Std;
 
 binmode(STDOUT, ":utf8");
 
-our ($opt_L);
+our ($opt_L, $opt_I);
 
-my $ops = getopts('L');
+my $ops = getopts('LI:');
 my $LIVE = $opt_L;
+my $ID = $opt_I;
 
 use constant GLOBAL_UPDATE_SLICE_SIZE => 1000;
 
@@ -92,7 +93,7 @@ if ($use_test_tables) {
 }
 
 my $START = time;
-my ($num_seen, $num_updated, $failed_metadata_missing_ids_ref, $failed_query_operation_ids_ref) = UPM_do_update_metadata($C);
+my ($num_seen, $num_updated, $failed_metadata_missing_ids_ref, $failed_query_operation_ids_ref) = UPM_do_update_metadata($C, $ID);
  
 my $num_metadata_missing = scalar @$failed_metadata_missing_ids_ref;
 my $num_update_failed = scalar @$failed_query_operation_ids_ref;
@@ -126,10 +127,15 @@ Description
 
 # ---------------------------------------------------------------------
 sub __upm_get_id_slice {
-    my ($C, $offset) = @_;
+    my ($C, $offset, $id) = @_;
     
     my $ref_to_arr_of_arr_ref = [];
     
+    if (defined $id) {
+        return [$id];
+    }
+    # POSSIBLY NOTREACHED
+
     eval {
         my $statement = qq{SELECT extern_item_id FROM $Item_Table_Name LIMIT ?, ?};
         my $sth = DbUtils::prep_n_execute($DBH, $statement, $offset, GLOBAL_UPDATE_SLICE_SIZE);
@@ -217,8 +223,8 @@ Description
 
 # ---------------------------------------------------------------------
 sub UPM_do_update_metadata {
-    my $C = shift;
-
+    my ($C, $id) = @_;
+    
     __P(qq{Update all metadata in $Item_Table_Name ...\n});
 
     my $offset = 0;
@@ -231,7 +237,7 @@ sub UPM_do_update_metadata {
 
     while (1) {
         # Big mysql query
-        my $ids_arr_ref =  __upm_get_id_slice($C, $offset);
+        my $ids_arr_ref =  __upm_get_id_slice($C, $offset, $id);
 
         last unless (defined $ids_arr_ref);
 
@@ -269,6 +275,8 @@ sub UPM_do_update_metadata {
         my $elapsed = (time - $START);
         my $checkpoint = sprintf("%.2f ids/sec elapsed=%.2f minutes\n", $num_updated/$elapsed, $elapsed/60);
         __P( $checkpoint );
+
+        last if (defined $id);
     }
     
     return ($num_seen, $num_updated, $failed_metadata_missing_ids_ref, $failed_query_operation_ids_ref);
