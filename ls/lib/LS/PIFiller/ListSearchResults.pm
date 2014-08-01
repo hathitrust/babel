@@ -126,15 +126,18 @@ sub handle_PAGING_PI
 
     # spit out links for each page with the page range i.e href to
     # page2 label 11-20
-    my $pagelinks = '';
+    my $pagelinks = "None";           # A small enough number of pages 
+                                      # that they are all viewable in the pager
+    # Else, they are broken down into three subsets:
     my $start_pagelinks = "None";
     my $middle_pagelinks = "None";
     my $end_pagelinks = "None";
+
     my $start;
     my $end;
 
     # Set this so page links fit on one line
-    my $MAX_PAGE_LINKS = 11;
+    my $MAX_PAGE_LINKS = 9;
     my $NUM_END_LINKS = 1 ;
 
     if ($pager->last_page <= $MAX_PAGE_LINKS)
@@ -150,20 +153,27 @@ sub handle_PAGING_PI
     {
         my ($end_links_start, $end_links_end);
 
+        # Always be able to get back to the first page; Display "1 ... " at head.
+        if ($current_page > 2)
+        {
+            $start_pagelinks =
+                _ls_get_pagelinks(1, 1,
+                                  $pager, $temp_cgi, $current_page);
+        }
+
         if ($current_page < $pager->last_page - ($MAX_PAGE_LINKS - 1))
         {
             $start = $current_page;
             $end = $current_page + (($MAX_PAGE_LINKS - $NUM_END_LINKS) - 1);
             $end_links_start = $pager->last_page - ($NUM_END_LINKS - 1);
             $end_links_end = $pager->last_page;
-            $start_pagelinks =
+            $middle_pagelinks =
                 _ls_get_pagelinks($start, $end,
                                   $pager, $temp_cgi, $current_page);
         }
         else
         {
             # just output last $MAX_PAGE_LINKS links
-            $start_pagelinks = "Some";
             $end_links_start = $pager->last_page - (($MAX_PAGE_LINKS) - 1);
             $end_links_end = $pager->last_page;
             # reset pager

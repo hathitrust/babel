@@ -633,11 +633,11 @@ REMOVE the below and see if it will call list_utils
       </li>
 
       <xsl:choose>
-        <xsl:when test="/MBooksTop/Paging/StartPageLinks = 'None'">
-          <xsl:call-template name="allpages"/>
+        <xsl:when test="/MBooksTop/Paging/PageLinks = 'None'">
+          <xsl:call-template name="somepages"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:call-template name="somepages"/>
+          <xsl:call-template name="allpages"/>
         </xsl:otherwise>
       </xsl:choose>
 
@@ -705,7 +705,6 @@ REMOVE the below and see if it will call list_utils
 
   <!-- TEMPLATE -->
   <xsl:template name="allpages">
-
     <xsl:for-each select="/MBooksTop/Paging/PageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
@@ -713,21 +712,29 @@ REMOVE the below and see if it will call list_utils
 
   <!-- TEMPLATE -->
   <xsl:template name="somepages">
+
     <xsl:for-each select="/MBooksTop/Paging/StartPageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
+
+    <xsl:if test="/MBooksTop/Paging/StartPageLinks/PageURL">
+      <li class="elipsis">
+        <xsl:text>...</xsl:text>
+      </li>
+    </xsl:if>
 
     <xsl:for-each select="/MBooksTop/Paging/MiddlePageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
 
 
-    <!--
-         suz says make it look like catalog-->
+    <!-- suz says make it look like catalog-->
     <xsl:if test="/MBooksTop/Paging/EndPageLinks/PageURL">
-      <li class="elipsis">
-        <xsl:text>...</xsl:text>
-      </li>
+      <xsl:if test="/MBooksTop/Paging/MiddlePageLinks/PageURL">
+        <li class="elipsis">
+          <xsl:text>...</xsl:text>
+        </li>
+      </xsl:if>
     </xsl:if>
     
     <xsl:for-each select="/MBooksTop/Paging/EndPageLinks/PageURL">
