@@ -302,13 +302,43 @@
       <xsl:value-of select="/MBooksTop/SearchWidget/NumNotIndexed"/>
     </xsl:variable>
 
+    <xsl:variable name="num_deleted">
+      <xsl:value-of select="/MBooksTop/SearchWidget/NumDeleted"/>
+    </xsl:variable>
+
+    <xsl:variable name="num_queued">
+      <xsl:value-of select="$num_not_indexed - $num_deleted"/>
+    </xsl:variable>
+
     <xsl:variable name="num_not_indexed_verb">
       <xsl:choose>
         <xsl:when test="$num_not_indexed > 1">
-          <xsl:text> are</xsl:text>
+          <xsl:text> items are </xsl:text>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:text> is</xsl:text>
+          <xsl:text> item is </xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="num_queued_verb">
+      <xsl:choose>
+        <xsl:when test="$num_queued > 1">
+          <xsl:text> items are </xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text> item is </xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="num_deleted_verb">
+      <xsl:choose>
+        <xsl:when test="$num_deleted > 1">
+          <xsl:text> items have been</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text> item has been</xsl:text>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -326,11 +356,17 @@
           <xsl:attribute name="class">
             <xsl:text>IndexMsgSearchResults</xsl:text>
           </xsl:attribute>
-          <xsl:text>Not all items in this collection are currently available for searching. Of </xsl:text>
-          <xsl:value-of select="$num_in_collection"/>
-          <xsl:text> items, </xsl:text>
-          <xsl:value-of select="$num_not_indexed"/><xsl:value-of select="$num_not_indexed_verb"/>
-          <xsl:text> queued to be indexed, usually within 48 hours.</xsl:text>
+          <xsl:text>Of </xsl:text><xsl:value-of select="$num_in_collection"/><xsl:text> items in this collection, </xsl:text>
+          <xsl:value-of select="$num_not_indexed"/><xsl:value-of select="$num_not_indexed_verb"/><xsl:text>not available for searching. </xsl:text>
+          
+          <xsl:if test="$num_deleted > 0">
+            <xsl:value-of select="$num_deleted"/><xsl:value-of select="$num_deleted_verb"/><xsl:text> deleted from the repository. </xsl:text>
+          </xsl:if>
+          
+          <xsl:if test="$num_queued > 0">
+            <xsl:value-of select="$num_queued"/><xsl:value-of select="$num_queued_verb"/>
+            <xsl:text> queued to be indexed, usually within 48 hours.</xsl:text>
+          </xsl:if>
         </xsl:element>      
       </xsl:element>
     </xsl:if>  
