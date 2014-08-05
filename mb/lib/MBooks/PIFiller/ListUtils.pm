@@ -814,12 +814,14 @@ sub handle_SEARCH_WIDGET_PI
 
     my $ix = new MBooks::Index;
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
-    my ($solr_all_indexed, $num_in_collection, $num_not_indexed) = $ix->get_coll_id_all_indexed_status($C, $co, $coll_id);
+    my ($solr_all_indexed, $num_in_collection, $num_not_indexed, $deleted) 
+      = $ix->get_coll_id_all_indexed_status($C, $co, $coll_id);
 
     my $all_indexed = $solr_all_indexed ? 'TRUE' : 'FALSE';
     $s .= wrap_string_in_tag($all_indexed, 'AllItemsIndexed');
     $s .= wrap_string_in_tag($num_in_collection, 'NumItemsInCollection');
     $s .= wrap_string_in_tag($num_not_indexed, 'NumNotIndexed');
+    $s .= wrap_string_in_tag($deleted, 'NumDeleted');
 
     return $s;
 }

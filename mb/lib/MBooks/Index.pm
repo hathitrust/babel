@@ -80,7 +80,7 @@ sub __get_counts_for_coll_id {
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
 
     my $count = $rs->get_num_found();
-    
+
     return $count
 }
 
@@ -106,15 +106,21 @@ sub get_coll_id_all_indexed_status {
     my $num_not_indexed = 0;
     my $num_in_collection = $co->count_all_items_for_coll($coll_id);
 
-    if ($co->collection_is_large($coll_id)) {
+    if ($co->collection_is_large($coll_id, $num_in_collection)) {
         # count number of items in this collection in the Solr index
         my $solr_count = $self->__get_counts_for_coll_id($C, $coll_id);
         $num_not_indexed = $num_in_collection - $solr_count;
- 
+
         $all_indexed = ($num_not_indexed == 0);
     }
 
-    return ($all_indexed, $num_in_collection, $num_not_indexed);
+    # determine if some are not indexed because they are attr=8
+    my $deleted = 0;
+    unless ($all_indexed) {
+        $deleted = $co->count_rights_for_coll($coll_id, 8);
+    }
+
+    return ($all_indexed, $num_in_collection, $num_not_indexed, $deleted);
 }
 
 1;
