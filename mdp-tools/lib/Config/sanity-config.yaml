@@ -193,6 +193,11 @@ userupdate:
 
   - http://__URL_STAGE__.hathitrust.org/userupdate?__LOCAL__
 
+userupdate:
+  - /htapps/__CMD_STAGE__/userlist/cgi/userlist __LOCAL__
+
+  - http://__URL_STAGE__.hathitrust.org/userlist?__LOCAL__
+
 userwarn:
   - /htapps/__CMD_STAGE__/userwarn/scripts/warn_contact.pl __LOCAL__
 

@@ -44,23 +44,23 @@ $ToolLib::VERBOSE = 0;
 
 @ToolLib::valid_developers =
   qw (
-         aelkiss 
-         jgmorse 
-         jjyork 
-         moseshll 
-         pfarber 
-         roger 
-         rrotter 
-         scollett 
-         sethajoh 
-         skorner 
-         sooty 
-         stampy 
-         tburtonw 
-         sethip
-         amardesi
-    );
- 
+          aelkiss 
+          jgmorse 
+          jjyork 
+          moseshll 
+          pfarber 
+          roger 
+          rrotter 
+          scollett 
+          sethajoh 
+          skorner 
+          sooty 
+          stampy 
+          tburtonw 
+          sethip
+          amardesi
+     );
+
 @ToolLib::valid_dev_repos = map { "/htapps/$_.babel" } @ToolLib::valid_developers;
 
 
