@@ -1091,12 +1091,12 @@ sub query_option {
 
 # gray=30, red=31, green=32
 sub on {
-    return unless ($ENV{TERM} eq 'xterm');
+    return unless ($ENV{TERM} =~ m/color/);
     my $color = shift;
     $ok ? print "\033[1;${color}m" : print "\033[1;${color}m";
 }
 sub off {
-    return unless ($ENV{TERM} eq 'xterm');
+    return unless ($ENV{TERM} =~ m/color/);
     print "\033[0m";
 }
 
