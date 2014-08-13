@@ -12,6 +12,29 @@ HT.Reader = {
             base : window.location.pathname.replace("/pt", "/imgsrv")
         });
         this._tracking = false;
+
+        var view = this.options.params.view;
+        if ( window.location.search.indexOf("view=" + view) < 0 ) {
+            // view was inferred by cgi/pt; ignore
+            view = null;
+        }
+
+        if ( this.options.params.ui == 'embed' ) {
+            if ( view == 'plaintext' ) {
+                // don't allow plaintext to be a default view in embedding
+                view = null;
+            }
+        } else {
+            // normal; null if not plaintext
+            // if ( view != 'plaintext' ) { view = null; }
+        }
+
+        if ( view == null ) {
+            view = this._calculateOptimalView();
+        }
+        
+        this.options.params.view = view;
+
         return this;
     },
 
@@ -19,8 +42,14 @@ HT.Reader = {
 
     },
 
+    _calculateOptimalView: function() {
+        var $window = $(window);
+        return $window.height() < $window.width() ? '2up' : '1up';
+    },
+
     start : function() {
         var self = this;
+
         this._handleView(this.getView(), 'start');
 
         this.bindEvents();
@@ -31,15 +60,6 @@ HT.Reader = {
         })
 
         this.manager.start();
-
-        if ( this.options.params.ui == 'fullscreen' ) {
-            var $btn = $("#action-toggle-fullscreen");
-            if ( ! $btn.is(":disabled") ) {
-                setTimeout(function() {
-                    self._toggleFullScreen($btn);
-                }, 250);
-            }
-        }
     },
 
     updateView: function(view) {
@@ -47,21 +67,19 @@ HT.Reader = {
             return;
         }
 
-        HT.prefs.set({ pt : { view : view } })
+        // HT.prefs.set({ pt : { view : view } })
 
-        if ( view == 'image' || view == 'plaintext' ) {
-            window.location.href = this.$views.find("a[data-target=" + view + "]").attr('href');
-            return;
-        }
-
-        this.$views.find("a.active").removeClass("active");
-        this.$views.find("a[data-target=" + view + "]").addClass("active");
+        // this.$views.find("a.active").removeClass("active");
+        // this.$views.find("a[data-target=" + view + "]").addClass("active");
 
         this._tracking = false;
         this._handleView(this.getView(), 'exit');
         this._handleView(view, 'start');
         this._updateViews(view);
         this.setView(view);
+        if ( this.$slider && this.$slider.length ) {
+            this.$slider.parents('.slider').remove();
+        }
         this.manager.restart();
     },
 
@@ -76,21 +94,40 @@ HT.Reader = {
             }
         });
 
-        // dyanmic in every view
+        // // don't bind dynamic controls for the static views
+        // if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
+        //     // and then disable buttons without links
+        //     $(".toolbar").find("a[href='']").attr("disabled", "disabled").attr('tabindex', '-1');
+        //     $(".action-views").on("click", "a", function() {
+        //         var target = $(this).data('target');
+        //         console.log("SETTING PREFERENCE", target);
+        //         HT.prefs.set({ pt : { view : target } });
+        //     })
+        //     return;
+        // }
 
-        this._bindAction("toggle.fullscreen", this._toggleFullScreen);
-
-        // don't bind dynamic controls for the static views
-        if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
-            // and then disable buttons without links
-            $(".toolbar").find("a[href='']").attr("disabled", "disabled").attr('tabindex', '-1');
-            $(".action-views").on("click", "a", function() {
-                var target = $(this).data('target');
-                console.log("SETTING PREFERENCE", target);
-                HT.prefs.set({ pt : { view : target } });
-            })
-            return;
+        
+        $("#action-view-toggle").click(function(e) {
+            e.preventDefault();
+            var $button = $(this);            
+            if ( self.getView() == 'plaintext' ) {
+                // plaintext -> image
+                $button.removeClass("action-view-image").find(".label").text("Plain Text");
+                self.updateView(self._last_image_view || ( $(window).height() > $(window).width() ? '1up' : '2up') );
+            } else {
+                // image -> plaintext
+                $button.addClass("action-view-image").find(".label").text("Image");
+                self._last_image_view = self.getView();
+                self.updateView('plaintext');
+            }
+        });
+        // and then set the initial view
+        if ( self.getView() == 'plaintext' ) {
+            // default is image -> plaintext, so only need to change this
+            // if we're starting in plaintext
+            $("#action-view-toggle").addClass("action-view-image").find(".label").text("Image");
         }
+
 
         self.$views = $(".action-views");
         self.$views.on("click", "a", function(e) {
@@ -121,6 +158,7 @@ HT.Reader = {
 
         this._bindAction("zoom.in");
         this._bindAction("zoom.out");
+        this._bindAction("zoom.reset");
         this._bindAction("rotate.clockwise");
         this._bindAction("rotate.counterclockwise");
 
@@ -179,11 +217,8 @@ HT.Reader = {
 
         $.subscribe("view.ready.reader", function() {
             self._tracking = true;
-            if ( self.getView() == '2up' ) {
-                setTimeout(function() {
-                    self.buildSlider();
-                }, 250);
-            }
+            // set up the slider as needed
+            self.buildSlider();
             $(window).trigger('reset');
         });
 
@@ -208,30 +243,32 @@ HT.Reader = {
             $.publish("enable.toggle.fullscreen");
         })
 
-        $(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange", function() {
-            console.log("FULLSCREEN?", $(document).fullScreen());
-            // var $main = $(".main");
-            // if ( $(".main").fullScreen() ) {
-            //     $main.data('original-width', $main.css('width'));
-            //     $main.data('original-height', $main.css('height'));
-            //     $main.css({ height: $(window).height() - 50, width : $(window).width() - 50 });
-
-            //     $("#toolbar-horizontal").data('original-top', $("#toolbar-horizontal").css('top'));
-            //     $("#toolbar-horizontal").css("top", 50);
-            // } else {
-            //     $(".main").css({ 
-            //         height : $main.data('original-height'),
-            //         width : $main.data('original-width')
-            //     });
-            //     $("#toolbar-horizontal").css('top', $("#toolbar-horizontal").data('original-top'));
-            // }
-            $.publish("action.toggle.fullscreen");
-            $(window).resize();
+        $(window).on('orientationchange', function() {
+            if ( self.getView() == '1up' || self.getView() == '2up' ) {
+                console.log("ORIENTATION CHANGE", window.orientation);
+                switch(window.orientation) {
+                    case 90:
+                    case -90:
+                        self.updateView('2up');
+                        break;
+                    case 0:
+                    case 180:
+                        self.updateView('1up');
+                        break;
+                    default:
+                        break;
+                }
+            }
         })
 
-        var $e = get_resize_root();
-        $e.on('resize.reader', function(e) {
-            $.publish("action.resize");
+        $(window).on('resize', function() {
+            if ( self.getView() == '1up' || self.getView() == '2up' ) {
+                if ( $(window).height() > $(window).width() ) {
+                    self.updateView('1up');
+                } else {
+                    self.updateView('2up');
+                }
+            }
         })
 
     },
@@ -296,15 +333,18 @@ HT.Reader = {
     },
 
     getView: function() {
-        return this._current_view || this.options.params.view;
+        var view = this._current_view || this.options.params.view;
+        // if ( $(window).height() > $(window).width() && view == '2up' ) { return '1up'; }
+        // else if ( $(window).width() > $(window).height() && view == '1up' ) { return '2up'; }
+        return view;
     },
 
     setView: function(view) {
         var views = {
             'Scroll' : '1up',
             'Flip' : '2up',
-            'Thumbnail' : 'thumb',
-            'Image' : 'image',
+            // 'Thumbnail' : 'thumb',
+            // 'Image' : 'image',
             'PlainText' : 'plaintext'
         }
         this._current_view = view;
@@ -323,6 +363,57 @@ HT.Reader = {
         }
         return HT.Viewer[views[this.getView()]];
     },
+
+    buildSlider: function() {
+        var self = this;
+        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($(".slider-park"));
+        var manager = self.manager;
+        var last_seq = manager.getLastSeq();
+        var last_num = manager.getPageNumForSeq(last_seq);
+        var current = self.getCurrentSeq();
+        var this_view = self.getView();
+        if ( this_view == '2up ') { current = manager.view._seq2page(current); }
+        self.$slider = $nob.slider({
+            min : 0,
+            max : this_view == '2up' ? manager.view.pages.length - 1 : last_seq - 1,
+            value : current,
+            selection : 'none',
+            tooltip : 'show',
+            orientation: 'right',
+            formater : function(seq) {
+                if ( this_view == '2up' ) {
+                    seq = manager.view._page2seq(seq);
+                    if ( seq[0] == null ) {
+                        seq = seq[1];
+                    } else {
+                        seq = seq[0];
+                    }
+                }
+                var num = manager.getPageNumForSeq(seq);
+                var text = " / " + last_num;
+                if ( num ) {
+                    text = num + text;
+                } else {
+                    text = "n" + seq  + text;
+                }
+                // var end = self._page2seq(total);
+                return text;
+            },
+            handle : 'square'
+        }).on('slideStop', function(ev) {
+            var seq = ev.value;
+            if ( this_view == '2up' ) {
+                seq = manager.view._page2seq(seq);
+                if ( seq[0] !== null ) {
+                    seq = seq[0];
+                } else {
+                    seq = seq[1];
+                }
+            }
+            console.log("JUMPING TO", seq);
+            $.publish("action.go.page", (seq));
+        })
+    },    
 
     _updateState: function(params) {
         var new_href = window.location.pathname;
@@ -444,15 +535,12 @@ HT.Reader = {
     },
 
     _handleFlip: function(stage) {
-        var self = this;
-
         var $link = $("#pagePdfLink").parent();
         if ( stage == 'start' ) {
             // recto verso vs. rtl, BLEH!
             var $link1 = $link.clone(true).find("a").attr("id", "pagePdfLink1").text("Download left page (PDF)").end().insertAfter($link);
             var $link2 = $link.clone(true).find("a").attr("id", "pagePdfLink2").text("Download right page (PDF)").end().insertAfter($link1);
             $link.hide();
-
         } else {
             $("#pagePdfLink1").parent().remove();
             $("#pagePdfLink2").parent().remove();
@@ -464,107 +552,244 @@ HT.Reader = {
 
     },
 
-    buildSlider: function() {
-        var self = this;
-        if ( ! self.manager ) {
-            return;
-        }
-        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
-        var manager = self.manager;
-        var last_seq = manager.getLastSeq();
-        var last_num = manager.getPageNumForSeq(last_seq);
-        var current = self.getCurrentSeq();
-        var this_view = self.getView();
-        if ( this_view == '2up ') { current = manager.view._seq2page(current); }
-        console.log("INIT SLIDER", this_view, current, manager.view.pages.length - 1);
-        self.$slider = $nob.slider({
-            min : 0,
-            max : this_view == '2up' ? manager.view.pages.length - 1 : last_seq - 1,
-            value : current,
-            selection : 'none',
-            tooltip : 'show',
-            formater : function(seq) {
-                if ( this_view == '2up' ) {
-                    var old_seq = seq;
-                    seq = manager.view._page2seq(seq);
-                    console.log("FORMAT SLIDE", old_seq, seq);
-                    if ( seq[0] == null ) {
-                        seq = seq[1];
-                    } else {
-                        seq = seq[0];
-                    }
-                }
-                var num = manager.getPageNumForSeq(seq);
-                var text = " / " + last_num;
-                if ( num ) {
-                    text = num + text;
-                } else {
-                    text = "n" + seq  + text;
-                }
-                // var end = self._page2seq(total);
-                return text;
-            },
-            handle : 'square'
-        }).on('slideStop', function(ev) {
-            var seq = ev.value;
-            if ( this_view == '2up' ) {
-                seq = manager.view._page2seq(seq);
-                console.log("SLIDE STOP", seq);
-                if ( seq[0] !== null ) {
-                    seq = seq[0]
-                } else {
-                    seq = seq[1];
-                }
-            }
-            console.log("JUMPING TO", seq);
-            $.publish("action.go.page", (seq));
-        })
-    }, 
-
     EOT: true
 
 }
 
-head.ready(function() {
-
-    // update HT.params based on the hash
-    if ( window.location.hash ) {
-        var tmp1 = window.location.hash.substr(1).split(";");
-        for(var i = 0; i < tmp1.length; i++) {
-            var tmp2 = tmp1[i].split("=");
-            HT.params[tmp2[0]] = tmp2[1];
-        }
+if ( HT.Viewer && HT.Viewer.Scroll ) {
+    HT.Viewer.Scroll._getPageMargin = function() {
+        return 1;
     }
+}
 
-    HT.reader = Object.create(HT.Reader).init({
-        params : HT.params
+head.ready(function() {
+    var $toggle = $("#action-toggle-toolbars");
+
+    var _hide_toolbars = function() {
+        setTimeout(function() {
+            $(".cbp-spmenu").removeClass("cbp-spmenu-open");
+        }, 250);
+    };
+
+    $toggle.click(function(e) {
+        e.preventDefault();
+        $(".cbp-spmenu").toggleClass("cbp-spmenu-open");
     })
 
-    HT.reader.start();
-
-    $(".toolbar-vertical .btn").each(function() {
-        var $btn = $(this);
-        var title = $btn.text();
-        $btn.tooltip({ title : title, placement : 'left', container : '#main', delay : { show : 250, hide: 50 }, xtrigger : 'hover focus', animation: false })
+    $("#action-info").click(function(e) {
+        e.preventDefault();
+        $("#info-panel").modal();
+        _hide_toolbars();
     })
 
-    $(".toolbar-horizontal .btn").each(function() {
-        var $btn = $(this);
-        var title = $btn.find(".label").text();
-        if ( title ) {
-            $btn.tooltip({ title : title, placement : 'top', container : '.toolbar-horizontal', delay : { show : 250, hide: 50 }, xtrigger: 'hover focus', animation : false })
+    $("#action-settings").click(function(e) {
+        e.preventDefault();
+        var $panel = $("#settings-panel");
+        $panel.modal();
+        _hide_toolbars();
+    })
+
+    $("#action-get-item").click(function(e) {
+        e.preventDefault();
+        $("#get-book-panel").modal();
+        _hide_toolbars();
+    })
+
+    $("#toolbar-back-to-item").click(function(e) {
+        e.preventDefault();
+        if ( $("#search-page").is(":visible") ) {
+            $("#action-search-inside").click();
+        } else {
+            $("#action-table-of-contents").click();
         }
     })
 
-    $('html').on('click.dropdown.reader', '.table-of-contents .btn', function(e) {
-        // $(".bb-bookblock").css('z-index', 100);
-        $(".bb-bookblock").toggleClass("lowered");
+    $("#action-table-of-contents").click(function(e) {
+        e.preventDefault();
+        var $toc = $("#contents-page");
+        var $page = $("#main");
+        if ( $page.is(":visible") ) {
+            // activate search form
+            $page.hide();
+            $toc.show();
+            $("#toolbar-footer").removeClass("cbp-spmenu-open").hide();
+            $("#toolbar-header").addClass("cbp-spmenu-open do-search-inside");
+        } else {
+            // active page
+            $toc.hide();
+            $page.show();
+            $("#toolbar-header").removeClass("cbp-spmenu-open do-search-inside");
+            $("#toolbar-footer").show();
+        }
+    })
+
+    $("#action-search-inside").click(function(e) {
+        e.preventDefault();
+        var $form = $("#search-page");
+        var $page = $("#main");
+        if ( $page.is(":visible") ) {
+            // activate search form
+            $page.hide();
+            $form.show();
+            $("#toolbar-footer").removeClass("cbp-spmenu-open").hide();
+            $("#toolbar-header").addClass("cbp-spmenu-open do-search-inside");
+        } else {
+            // active page
+            $form.hide();
+            $page.show();
+            $("#toolbar-header").removeClass("cbp-spmenu-open do-search-inside");
+            $("#toolbar-footer").show();
+        }
+    })
+
+    $("body").on('click', '.search-results > li', function(e) {
+        e.preventDefault();
+        var seq = $(this).data('seq');
+        if ( $("#contents-page").is(":visible") ) {
+            $("#action-table-of-contents").click();
+        } else {
+            $("#action-search-inside").click();
+        }
+        $.publish("action.go.page", (seq));
     });
 
-    HT.analytics.getTrackingLabel = function($link) {
-        //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
-        var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
-        return label;
+    $("#mdpTextDeny form").on('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        var value = $.trim($form.find("input[name=q1]").val());
+        if ( ! value ) { return ; }
+        $("#search-page input[name=q1]").val(value);
+        $("#action-search-inside").click();
+        $("#form-search-volume").submit();
+    });
+
+    $(".form-search-inside").on('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $status = $("#search-page .message");
+        var $results = $("#search-page .search-results");
+
+        $form.find("button").addClass("btn-loading");
+
+        var start = 1;
+
+        // construct search URL
+        HT.reader.base_search_url = window.location.pathname + "/search?id=" + HT.params.id + ";q1=" + $form.find("input[type=text]").val();
+        HT.reader.base_search_url += ";sz=25;skin=mobile;start=";
+        HT.reader.search_start = 1;
+
+        $results.empty();
+
+        $.ajax({
+            url : HT.reader.base_search_url + HT.reader.search_start,
+            cache : true,
+            success : function(data) {
+                if ( ! data ) {
+                    // no results
+                } else {
+                    var $data = $(data);
+                    var total = $data.find("#mdpResultsContainer").data("total");
+                    HT.reader.search_total = total;
+                    $status.empty();
+                    $data.find(".mdpSearchSummary").appendTo($status);
+                    $data.find("#mdpOuterList > li").each(function() {
+                        $results.append(this);
+                    })
+                    if ( total > 25 ) {
+                        $("#action-more-results").show();
+                    }
+                    $form.find("button").removeClass("btn-loading");
+                    $form.find("input[name=q1]").blur();
+                }
+            }
+        })
+
+    })
+
+    $("#action-more-results").click(function(e) {
+        e.preventDefault();
+        var $button = $(this).addClass("btn-loading");
+        var $results = $("#search-page .search-results");
+        HT.reader.search_start += 25;
+        $.ajax({
+            url : HT.reader.base_search_url + HT.reader.search_start,
+            cache : true,
+            success : function(data) {
+                if ( ! data ) {
+                    // no results
+                } else {
+                    $button.removeClass("btn-loading");
+                    var $data = $(data);
+                    var N = 0;
+                    $data.find("#mdpOuterList > li").each(function() {
+                        $results.append(this);
+                        N += 1;
+                    })
+                    if ( N < 25 ) {
+                        $button.hide();
+                    }
+                }
+            }
+        })        
+    })
+
+    if ( ! $("body").is(".view-restricted") ) {
+        setTimeout(function() {
+            $("#action-toggle-toolbars").click();
+        }, 500);
+    } else {
+        HT = HT || {};
+        HT.reader = {};
+        HT.reader.params = HT.params;
     }
 
+    setTimeout(function() {
+        window.scrollTo(0,1);
+    }, 1);
+
+    // var $e = get_resize_root();
+    // $e.on('resize.reader', function(e) {
+    //     $.publish("action.resize");
+    // })
+
 })
+
+var _dump_list = function($list) {
+    var tmp = [];
+    if ( $list.length == 0 ) {
+        return "-";
+    }
+    $list.each(function() {
+        tmp.push($(this).attr("id") || '?');
+    })
+    return tmp.join(" : ");
+}
+
+var FormValidation = function() {
+    return true;
+}
+
+// head.ready(function() {
+
+//     // update HT.params based on the hash
+//     if ( window.location.hash ) {
+//         var tmp1 = window.location.hash.substr(1).split(";");
+//         for(var i = 0; i < tmp1.length; i++) {
+//             var tmp2 = tmp1[i].split("=");
+//             HT.params[tmp2[0]] = tmp2[1];
+//         }
+//     }
+
+//     HT.reader = Object.create(HT.Reader).init({
+//         params : HT.params
+//     })
+
+//     HT.reader.start();
+
+//     HT.analytics.getTrackingLabel = function($link) {
+//         //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+//         var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
+//         return label;
+//     }
+
+// })

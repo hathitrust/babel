@@ -9,7 +9,7 @@ HT.Viewer.Scroll = {
         var self = this;
         this.options = $.extend({}, this.options, options);
 
-        this.w = this.options.default_w;        
+        this.w = this.options.default_w;
         this.zoom = this.options.zoom;
         this.zoom_levels = [ 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 3.00, 4.00 ];
 
@@ -20,7 +20,7 @@ HT.Viewer.Scroll = {
 
     options: {
         default_w : 680,
-        zoom : 1,
+        zoom : -1,
         is_dynamic: true
     },
 
@@ -30,6 +30,13 @@ HT.Viewer.Scroll = {
         this.options.seq = this.options.reader.getCurrentSeq();
         this.bindEvents();
         this.bindScroll();
+
+        if ( this.zoom < 0 ) {
+            // calculate a default zoom
+            this._calculateBestFitZoom();
+            this.reset_zoom = this.zoom;
+        }
+
         this.drawPages();
     },
 
@@ -37,9 +44,9 @@ HT.Viewer.Scroll = {
         // unsubscribe all handlers for this view
         $.unsubscribe(".scroll");
         $.publish("view.end");
-        $("#content").empty();
         $(window).unbind(".scroll");
         $("body").unbind(".scroll");
+        $("#content").empty();
         $(window).scrollTop(0);
         $("body").removeClass("view-1up");
     },
@@ -68,11 +75,15 @@ HT.Viewer.Scroll = {
         })
 
         $.subscribe("action.zoom.in.scroll", function(e) {
-            self.updateZoom(1);
+            self.incrementZoom(1);
         })
 
         $.subscribe("action.zoom.out.scroll", function(e) {
-            self.updateZoom(-1);
+            self.incrementZoom(-1);
+        })
+
+        $.subscribe("action.zoom.reset.scroll", function(e) {
+            self.updateZoom(self.reset_zoom);
         })
 
         $.subscribe("action.rotate.clockwise.scroll", function(e) {
@@ -105,28 +116,23 @@ HT.Viewer.Scroll = {
             if ( self._resizing ) { return ; }
             self._resizing = true;
 
-            var $content = $("#content");
-            var fit_w = $content.width();
-            var best_w = -1; var best_zoom = 0;
-            for(var i = 0; i < self.zoom_levels.length; i++) {
-                var zoom = self.zoom_levels[i];
-                if ( self.options.default_w * zoom * 1.2 > fit_w ) {
-                    break;
-                }
-                self.w = self.options.default_w * zoom;
-                self.zoom = zoom;
-            }
+            self._calculateBestFitZoom();
 
             self.drawPages();
             self._resizing = false;
+            console.log("RESIZE SCROLL");
         }, 250);
 
-        var $e = get_resize_root();
-        $e.on('resize.viewer.scroll', _lazyResize);
+        $.subscribe("action.resize.scroll", function(e) {
+            _lazyResize();
+        })
+
+        // var $e = get_resize_root();
+        // $e.on('resize.viewer.scroll', _lazyResize);
 
     },
 
-    updateZoom: function(delta) {
+    incrementZoom: function(delta) {
         var self = this;
         var current_index = self.zoom_levels.indexOf(self.zoom);
         var new_index = current_index + delta;
@@ -141,7 +147,15 @@ HT.Viewer.Scroll = {
             $.publish("enable.zoom.in");
         }
 
-        self.zoom = self.zoom_levels[new_index];
+        self.updateZoom(self.zoom_levels[new_index]);
+
+    },
+
+    updateZoom: function(zoom) {
+
+        var self = this;
+
+        self.zoom = zoom;
         self.w = self.options.default_w * self.zoom;
 
         self.drawPages();
@@ -176,7 +190,10 @@ HT.Viewer.Scroll = {
 
             var current_vp = 0;
             if ( $current.length ) {
-                current_vp = $current.fracs().visible;
+                try {
+                  current_vp = $current.fracs().visible;
+                } catch (e) {
+                }
             }
 
             if ( ! $(".page-item").length ) { return ; }
@@ -208,7 +225,7 @@ HT.Viewer.Scroll = {
                 var f = $page.fracs();
                 if ( f.visible ) {
                     self.loadPage($page);
-                    $visible.push($page);
+                    $visible.push($page.get(0));
                     if ( f.visible > max_vp ) {
                         max_vp = f.visible;
                         $new = $page;
@@ -375,6 +392,31 @@ HT.Viewer.Scroll = {
         //     }
         // }
 
+    },
+
+    _getPageMargin: function() {
+        return 1.2;
+    },
+
+    _calculateBestFitZoom: function() {
+        var self = this;
+        var $content = $("#content");
+        var fit_w = $content.width();
+        var best_w = -1; var best_zoom = 0;
+        for(var i = 0; i < self.zoom_levels.length; i++) {
+            var zoom = self.zoom_levels[i];
+            console.log("CALCULATE BEST FIT", self.options.default_w * zoom * self._getPageMargin(), fit_w);
+            var check_w = self.options.default_w * zoom * self._getPageMargin();
+            if (  check_w > fit_w ) {
+                if ( check_w / fit_w < 1.25 ) {
+                    self.w = Math.ceil(fit_w * 0.98);
+                    self.zoom = zoom;
+                }
+                break;
+            }
+            self.w = self.options.default_w * zoom;
+            self.zoom = zoom;
+        }
     },
 
     EOT : true

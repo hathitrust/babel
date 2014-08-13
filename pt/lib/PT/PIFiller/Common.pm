@@ -58,6 +58,8 @@ sub BuildViewTypeUrl
 
     if ( $view eq 'fpdf' || $view eq 'pdf' ) {
         return BuildImageServerPDFUrl($cgi, $view);
+    } elsif ( $view eq 'epub' ) {
+        return BuildImageServerPDFUrl($cgi, $view);
     }
 
     $tempCgi->delete('ui'); # clear ui=embed
@@ -88,6 +90,8 @@ sub BuildImageServerPDFUrl
         $tempCgi->param('num', $cgi->param('num'));
         $tempCgi->param('attachment', 0);
         $action = "download/pdf";
+    } elsif ( $view eq 'epub' ) {
+        $action = 'download/epub';
     }
 
     if ( $cgi->param('debug') ) {
@@ -1057,6 +1061,32 @@ sub handle_VIEW_TYPE_FULL_PDF_LINK_PI
     return $href;
 }
 
+sub handle_VIEW_TYPE_FULL_EPUB_LINK_PI
+    : PI_handler(VIEW_TYPE_FULL_EPUB_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $href;
+
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+    my $status = $C->get_object('Access::Rights')->get_full_PDF_access_status($C, $id);
+    if ($status eq 'allow') {
+        $href = BuildViewTypeUrl($cgi, 'epub');
+    }
+    else {
+        my $return_to_url = $cgi->self_url;
+        my $auth = $C->get_object('Auth');
+        $href = $auth->get_WAYF_login_href($C, $return_to_url);
+        if ($cgi->param('skin') eq 'mobile') {
+            $href .= ';skin=mobilewayf';
+        }
+    }
+
+    return $href;
+}
+
+#
 # ---------------------------------------------------------------------
 
 =item handle_ALLOW_FULL_PDF_PI : PI_handler(ALLOW_FULL_PDF)

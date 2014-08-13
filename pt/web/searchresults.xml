@@ -84,15 +84,16 @@
     <FeedbackForm>
      <?FEEDBACK_CGI_URL?>
     </FeedbackForm>
-    
+
     <ViewTypeLinks>
       <ViewTypeFullPdfLink><?VIEW_TYPE_FULL_PDF_LINK?></ViewTypeFullPdfLink>
+      <ViewTypeFullEpubLink><?VIEW_TYPE_FULL_EPUB_LINK?></ViewTypeFullEpubLink>
     </ViewTypeLinks>
 
     <AddToCollectionForm>
       <CollectionSelect><?COLLECTION_SELECT?></CollectionSelect>
     </AddToCollectionForm>
-    
+
     <DownloadProgressBase><?DOWNLOAD_PROGRESS_BASE?></DownloadProgressBase>
 
   </MdpApp>

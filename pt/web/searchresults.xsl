@@ -62,7 +62,7 @@
   <!-- Results -->
   <xsl:template name="ResultsContainer">
 
-    <div id="mdpResultsContainer" role="main">
+    <div id="mdpResultsContainer" role="main" data-total="{$gPagesFound}">
       <xsl:call-template name="backToBeginning" />
       <xsl:call-template name="embed-search-form" />
 
@@ -73,9 +73,9 @@
       <xsl:call-template name="BuildSearchSummary" />
 
       <xsl:if test="$gPagesFound > 0">
-	<xsl:call-template name="BuildFisheyeTable" />
+        <xsl:call-template name="BuildFisheyeTable" />
         <xsl:call-template name="BuildSearchResultsList" />
-	<xsl:call-template name="BuildFisheyeTable" />
+        <xsl:call-template name="BuildFisheyeTable" />
       </xsl:if>
     </div>
   </xsl:template>

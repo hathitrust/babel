@@ -22,8 +22,9 @@ HT.Downloader = {
 
     bindEvents: function() {
         var self = this;
-        $("#fullPdfLink").addClass("interactive").click(function(e) {
+        $("a[data-toggle=download]").addClass("interactive").click(function(e) {
             e.preventDefault();
+            bootbox.hideAll();
             if ( $(this).attr("rel") == 'allow' ) {
                 if ( self.options.params.download_progress_base == null ) {
                     return true;
@@ -46,15 +47,16 @@ HT.Downloader = {
     downloadPdf: function(link) {
         var self = this;
         self.src = $(link).attr('href');
+        self.item_title = $(link).data('title');
 
-        var html = 
-            // '<p>Building your PDF...</p>' + 
-            '<div class="initial"><p>Setting up download...</p></div>' + 
+        var html =
+            // '<p>Building your PDF...</p>' +
+            '<div class="initial"><p>Setting up download...</p></div>' +
             '<div class="progress progress-striped active hide">' +
-                '<div class="bar" width="0%"></div>' + 
-            '</div>' + 
-            '<div class="done hide">' + 
-                '<p>All done!</p>' + 
+                '<div class="bar" width="0%"></div>' +
+            '</div>' +
+            '<div class="done hide">' +
+                '<p>All done!</p>' +
             '</div>';
 
         self.$dialog = bootbox.dialog(
@@ -87,7 +89,7 @@ HT.Downloader = {
                 }
             ],
             {
-                header: 'Building your PDF'
+                header: 'Building your ' + self.item_title
             }
         );
 
@@ -176,7 +178,7 @@ HT.Downloader = {
         var self = this;
         var status = { done : false, error : false };
         var percent;
-        
+
         var current = $(data).find("#current").data('value');
         if ( current == 'EOT' ) {
             status.done = true;
@@ -209,7 +211,7 @@ HT.Downloader = {
             self.$dialog.find(".done").show();
             var $download_btn = self.$dialog.find('.download-pdf');
             if ( ! $download_btn.length ) {
-                $download_btn = $('<a class="download-pdf btn btn-primary">Download PDF</a>').attr('href', self.pdf.download_url);
+                $download_btn = $('<a class="download-pdf btn btn-primary">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
                 $download_btn.appendTo(self.$dialog.find(".modal-footer")).on('click', function(e) {
                     console.log("SHOULD BE THE FIRST TO FIRE");
                     setTimeout(function() {
@@ -251,10 +253,10 @@ HT.Downloader = {
         var now = (new Date).getTime();
         var countdown = ( Math.ceil((timeout - now) / 1000) )
 
-        var html = 
-          ('<div>' + 
-            '<p>You have exceeded the download rate of {rate}. You may proceed in <span id="throttle-timeout">{countdown}</span> seconds.</p>' + 
-            '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' + 
+        var html =
+          ('<div>' +
+            '<p>You have exceeded the download rate of {rate}. You may proceed in <span id="throttle-timeout">{countdown}</span> seconds.</p>' +
+            '<p>Download limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>' +
           '</div>').replace('{rate}', rate).replace('{countdown}', countdown);
 
         self.$dialog = bootbox.dialog(
@@ -283,17 +285,17 @@ HT.Downloader = {
     },
 
     displayError: function(req) {
-        var html = 
+        var html =
             '<p>' +
-                'There was a problem building your PDF; staff have been notified.' +
-            '</p>' + 
-            '<p>' + 
+                'There was a problem building your ' + this.item_title + '; staff have been notified.' +
+            '</p>' +
+            '<p>' +
                 'Please try again in 24 hours.' +
             '</p>';
 
         // bootbox.alert(html);
         bootbox.dialog(
-            html, 
+            html,
             [
                 {
                     label : 'OK',

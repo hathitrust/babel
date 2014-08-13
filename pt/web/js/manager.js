@@ -59,8 +59,10 @@ HT.Manager = {
             manager : self,
             reader : self.options.reader
         });
-        self.view.start();
-        $(window).trigger('reset');
+        setTimeout(function() {
+            self.view.start();
+            $(window).trigger('reset');
+        }, 100);
     },
 
     /* METHODS */
@@ -87,7 +89,15 @@ HT.Manager = {
     },
 
     getPageNumForSeq: function(seq) {
-        return this.seq_num_map[seq];
+        return this.seq_num_map ? this.seq_num_map[seq] : null;
+    },
+
+    getLastSeq: function() {
+        var end_seq = this.num_pages;
+        if ( this.has_feature(end_seq, "BACK_COVER") || ( this.has_feature(1, "COVER") && this.has_feature(1, "LEFT") ) ) {
+            end_seq -= 1;           
+        }
+        return end_seq; 
     },
 
     getAltTextForSeq: function(seq) {
@@ -121,7 +131,7 @@ HT.Manager = {
             meta = this.data.items[params.seq - 1];
         } else {
             var w = 680; // default w
-            var h = w * 1.3;
+            var h = w * 1.294;
             meta = { width : w, height : h, orient : 0 };
         }
         if ( params.width ) {
@@ -140,6 +150,33 @@ HT.Manager = {
             return true;
         }
         return false;
+    },
+
+    get_text : function(params) {
+        // params : seq, orient, size
+        var self = this;
+        var meta = this.get_page_meta(params);
+
+        args = { seq : params.seq, id : this.options.id }
+        var src = this.options.reader.imgsrv.get_action_url(params.action || 'ocr', args);
+        var is_missing = false;
+
+        var p = $.ajax({
+            url : src,
+            dataType: 'html'
+        })
+
+        var $div = $("<div class='ocr_page'></div>");
+
+        $.when(p.promise()).done(function(data) {
+            $div.append($(data).children());
+            if ( ! $.trim($div.text()) ) {
+                $div.addClass("empty").empty().append('<div class="ocr_page"><div class="ocrx_block"><div class="ocr_par"><div class="alert alert-block alert-info alert-headline"><p>NO TEXT ON PAGE</p></div><p>This page does not contain any text recoverable by the OCR engine.</p></div></div>');
+            }
+            $div.trigger("text.loaded");
+        })
+
+        return $div;
     },
 
     get_image : function(params) {

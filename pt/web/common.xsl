@@ -61,7 +61,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  
+
   <xsl:variable name="gTruncTitleString">
     <xsl:call-template name="GetMaybeTruncatedTitle">
       <xsl:with-param name="titleString" select="$gTitleString"/>
@@ -93,14 +93,14 @@
 
   <!-- Navigation bar -->
   <xsl:template name="subnav_header">
-    
+
     <div id="mdpItemBar">
       <div id="ItemBarContainer">
         <!-- Back to Search Results -->
         <xsl:if test="normalize-space(//SearchForm/SearchResultsLink)">
           <xsl:call-template name="BuildBackToResultsLink" />
         </xsl:if>
-        
+
         <!-- Search -->
         <div id="mdpSearch" role="search">
           <xsl:call-template name="BuildSearchForm">
@@ -109,7 +109,7 @@
         </div>
       </div>
     </div>
-    
+
   </xsl:template>
 
   <!-- FOAF: primary topic -->
@@ -131,7 +131,7 @@
   <xsl:template name="BuildSchemaOrgTitle">
     <xsl:param name="title"/>
 
-    <xsl:element name="span">  
+    <xsl:element name="span">
     <xsl:attribute name="itemprop">name</xsl:attribute><xsl:value-of select="$title"/>
     </xsl:element>
   </xsl:template>
@@ -139,16 +139,16 @@
   <xsl:template name="BuildSchemaOrgAuthor">
 
     <xsl:variable name="author">
-      <xsl:call-template name="MetadataAuthorHelper"/>        
+      <xsl:call-template name="MetadataAuthorHelper"/>
     </xsl:variable>
 
-    <xsl:element name="span">  
+    <xsl:element name="span">
     <xsl:attribute name="itemprop">author</xsl:attribute><xsl:value-of select="$author"/>
     </xsl:element>
   </xsl:template>
 
   <xsl:template name="BuildSchemaOrgUrl">
-    <xsl:element name="span">  
+    <xsl:element name="span">
     <xsl:attribute name="itemprop">url</xsl:attribute><xsl:value-of select="$gItemHandle"/>
     </xsl:element>
   </xsl:template>
@@ -166,7 +166,7 @@
       <xsl:attribute name="rel">dc:type</xsl:attribute>
       <xsl:attribute name="href">http://purl.org/dc/dcmitype/Text</xsl:attribute>
       <xsl:attribute name="content"><xsl:value-of select="$hidden_title_string"/></xsl:attribute>
-      <xsl:value-of select="$visible_title_string"/>        
+      <xsl:value-of select="$visible_title_string"/>
     </xsl:element>
   </xsl:template>
 
@@ -175,9 +175,9 @@
     <xsl:param name="visible"/>
 
     <xsl:variable name="author">
-      <xsl:call-template name="MetadataAuthorHelper"/>        
+      <xsl:call-template name="MetadataAuthorHelper"/>
     </xsl:variable>
-    
+
     <!-- not ever visible -->
     <xsl:if test="$gItemFormat='BK'">
       <xsl:element name="span">
@@ -200,7 +200,7 @@
         <xsl:value-of select="$author"/>
       </xsl:if>
     </xsl:element>
-    
+
   </xsl:template>
 
   <!-- RDFa: published -->
@@ -208,7 +208,7 @@
     <xsl:param name="visible"/>
 
     <xsl:variable name="published">
-      <xsl:call-template name="MetadataPublishedHelper"/>        
+      <xsl:call-template name="MetadataPublishedHelper"/>
     </xsl:variable>
 
     <!-- not ever visible -->
@@ -267,7 +267,7 @@
     <xsl:variable name="access_use_header">
       <xsl:value-of select="$gAccessUseHeader"/><xsl:text>. </xsl:text>
     </xsl:variable>
-    
+
     <!-- Link text to the default HT.org page -->
     <xsl:element name="a">
       <xsl:attribute name="target">
@@ -289,7 +289,7 @@
     <xsl:if test="$gAccessUseIcon != '' or ( $gAccessUseAuxLink != '' and $gAccessUseAuxIcon != '' )">
       <br /><br />
     </xsl:if>
-    
+
     <!-- If there's a default icon, link it default HT.org page -->
     <xsl:if test="$gAccessUseIcon!=''">
       <xsl:element name="a">
@@ -320,17 +320,17 @@
           <xsl:attribute name="src">
             <xsl:value-of select="$gAccessUseAuxIcon"/>
           </xsl:attribute>
-        </xsl:element>        
+        </xsl:element>
       </xsl:element>
     </xsl:if>
 
   </xsl:template>
-  
+
   <!-- METADATA: All journal links -->
   <xsl:template name="BuildAllJournalLinksPopup">
-    
+
   </xsl:template>
-  
+
   <!-- METADATA: author metadata helper -->
   <xsl:template name="MetadataAuthorHelper">
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='100']">
@@ -358,7 +358,7 @@
         <xsl:value-of select="subfield[@code='d']"/>
       </xsl:if>
     </xsl:for-each>
-    
+
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='110']">
       <xsl:value-of select="subfield[@code='a']"/>
       <xsl:if test="subfield[@code='b']">
@@ -366,7 +366,7 @@
         <xsl:value-of select="subfield[@code='c']"/>
       </xsl:if>
     </xsl:for-each>
-    
+
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='111']">
       <xsl:value-of select="subfield[@code='a']"/>
     </xsl:for-each>
@@ -386,14 +386,14 @@
     <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']">
       <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']"/>
     </xsl:if>
-    
+
   </xsl:template>
 
   <!-- METADATA: MDP-style metadata helper -->
   <xsl:template name="MdpMetadataHelper">
     <xsl:param name="ssd"/>
     <div id="mdpFlexible_1">
-      
+
       <xsl:if test="$gHasMARCAuthor">
         <div class="mdpMetaDataRow">
           <div class="mdpMetaDataRegionHead">
@@ -406,7 +406,7 @@
           </div>
         </div>
       </xsl:if>
-      
+
       <xsl:if test="$gMdpMetadata/datafield[@tag='250']/subfield">
         <div class="mdpMetaDataRow">
           <div class="mdpMetaDataRegionHead">
@@ -417,7 +417,7 @@
           </div>
         </div>
       </xsl:if>
-      
+
       <div class="mdpMetaDataRow">
         <div class="mdpMetaDataRegionHead">
           <xsl:text>Published&#xa0;</xsl:text>
@@ -443,7 +443,7 @@
           </div>
         </div>
       </xsl:if>
-      
+
       <div class="mdpMetaDataRow">
         <div class="mdpMetaDataRegionHead">
           <xsl:text>Copyright&#xa0;</xsl:text>
@@ -452,7 +452,7 @@
           <xsl:call-template name="BuildRDFaCCLicenseMarkup"/>
         </div>
       </div>
-      
+
       <!-- allow SSD user to link from SSDviewer to pageturner if desired -->
       <xsl:choose>
         <xsl:when test="$ssd">
@@ -466,8 +466,8 @@
       </xsl:choose>
     </div>
   </xsl:template>
-  
-  
+
+
   <xsl:template name="PermanentURL">
     <xsl:param name="ssd"/>
     <div class="mdpMetaDataRow">
@@ -484,11 +484,11 @@
               <xsl:when test="$ssd = 'true'">
                 <a>
                   <xsl:attribute name="href"><xsl:value-of select="$gItemHandle"/></xsl:attribute>
-                  <xsl:value-of select="$gItemHandle"/>   
+                  <xsl:value-of select="$gItemHandle"/>
                 </a>
               </xsl:when>
               <xsl:otherwise>
-                <xsl:value-of select="$gItemHandle"/>   
+                <xsl:value-of select="$gItemHandle"/>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:otherwise>
@@ -496,22 +496,22 @@
       </div>
     </div>
   </xsl:template>
-  
-  
+
+
   <!-- METADATA: Short -->
   <xsl:template name="ItemMetadata">
     <div id="mdpItemMetadata">
-      
+
       <xsl:element name="a">
         <xsl:attribute name="class">SkipLink</xsl:attribute>
         <xsl:attribute name="name">SkipToBookInfo</xsl:attribute>
       </xsl:element>
-      
+
       <xsl:element name="h2">
         <xsl:attribute name="class">SkipLink</xsl:attribute>
         <xsl:text>Bibliographic Information about this book</xsl:text>
       </xsl:element>
-            
+
       <div class="mdpMetaDataRow">
         <div class="mdpMetaDataRegionHead">
           <xsl:text>Title&#xa0;</xsl:text>
@@ -537,14 +537,14 @@
             </xsl:element>
           </xsl:if>
         </div>
-        
+
       <!-- Title -->
         <div class="mdpMetaText">
           <xsl:call-template name="BuildRDFaWrappedTitle">
             <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
             <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
           </xsl:call-template>
-        </div> 
+        </div>
 
         <div itemscope="" itemtype="http://schema.org/Book" style="display:none">
           <meta itemprop="accessibilityFeature" content="alternativeText"/>
@@ -564,13 +564,13 @@
 
 
       </div>
-      
+
       <!-- Author, Edition, Published, Description -->
       <xsl:call-template name="MdpMetadataHelper"/>
     </div>
-    
+
   </xsl:template>
-  
+
   <!-- Link to OCLC Get Book -->
   <xsl:template name="FindInALibraryLink">
     <xsl:param name="class" />
@@ -606,16 +606,16 @@
         <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
         <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
         <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
-        
+
         <xsl:text>Find in a library</xsl:text>
-        
+
       </xsl:element>
     </xsl:for-each>
-    
+
   </xsl:template>
 
-  
-  
+
+
   <!-- New Bookmark -->
   <xsl:template name="ItemBookmark">
     <div class="mdpBookmark">
@@ -640,12 +640,12 @@
               </xsl:with-param>
             </xsl:call-template>
           </xsl:variable>
-          
+
           <!-- -->
           <xsl:variable name="parameters">
             <xsl:value-of select="concat('&quot;', $safeBookmarkTitle, '&quot;', ',', '&quot;', $gItemHandle, '&quot;')"/>
           </xsl:variable>
-          
+
           <!-- -->
           <xsl:variable name="theJS" select="concat('javascript:Bookmark(', $parameters, ');'  )"/>
           <xsl:element name="a">
@@ -660,7 +660,7 @@
                   <xsl:with-param name="label" select="'PT bookmark'"/>
                 </xsl:call-template>
             </xsl:if>
-            
+
             </xsl:attribute>
             <xsl:attribute name="onkeypress">
               <xsl:value-of select="$theJS"/>
@@ -705,16 +705,19 @@
         </xsl:otherwise>
       </xsl:choose>
     </div>
-    
+
   </xsl:template>
-  
-  
+
+
   <!-- FORM: Search -->
   <xsl:template name="BuildSearchForm">
     <xsl:param name="pSearchForm"/>
     <xsl:param name="pShowLabel" select="'YES'"/>
 
     <xsl:element name="form">
+      <xsl:attribute name="class">
+        <xsl:text>form-search-inside</xsl:text>
+      </xsl:attribute>
       <xsl:attribute name="onsubmit">
         <xsl:value-of select="'return FormValidation(this.q1, &quot;Please enter a term in the search box.&quot;)'"/>
       </xsl:attribute>
@@ -729,7 +732,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
-      
+
       <ul class="searchForm">
         <xsl:if test="$pShowLabel='YES'">
           <li id="mdpSearchFormLabel">
@@ -738,7 +741,7 @@
                 <xsl:text>Search in this text</xsl:text>
               </label>
             </h2>
-          </li>          
+          </li>
         </xsl:if>
 
         <li class="asearchform">
@@ -782,7 +785,7 @@
               <xsl:otherwise>
                 <xsl:attribute name="value">
                   <xsl:value-of select="'No text to search in this item'"/>
-                </xsl:attribute>                
+                </xsl:attribute>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:element>
@@ -798,10 +801,10 @@
       </ul>
       <xsl:call-template name="HiddenDebug"/>
     </xsl:element>
-    
+
   </xsl:template>
-  
-  
+
+
   <!-- Feedback -->
   <xsl:template name="Feedback">
 
@@ -811,7 +814,7 @@
     </xsl:element>
 
     <xsl:call-template name="BuildFeedbackForm"/>
-    
+
   </xsl:template>
 
   <!-- UNICORN: SIDEBAR -->
@@ -902,7 +905,7 @@
 
   <xsl:template name="get-this-book">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
-    
+
     <div class="getLinks">
       <h3>Get this Book</h3>
 
@@ -929,7 +932,7 @@
           </xsl:element>
         </li>
         </xsl:if>
-        
+
         <xsl:if test="$gFullPdfAccessMessage='' or $gFullPdfAccessMessage='NOT_AFFILIATED' or $gFullPdfAccessMessage='RESTRICTED_SOURCE'">
           <li>
             <xsl:choose>
@@ -956,7 +959,7 @@
                 </xsl:if>
               </xsl:otherwise>
             </xsl:choose>
-            
+
             <xsl:if test="$gFullPdfAccess = 'deny'">
               <div id="noPdfAccess">
                 <xsl:choose>
@@ -967,9 +970,9 @@
                       <xsl:text> to download this book.</xsl:text>
                     </p>
                     <p>
-                    <em>If you are not a member of a partner institution, 
+                    <em>If you are not a member of a partner institution,
                       <br />
-                      whole book download is not available. 
+                      whole book download is not available.
                       (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
                     </p>
                   </xsl:when>
@@ -1005,7 +1008,7 @@
      </ul>
     </div>
   </xsl:template>
-  
+
   <xsl:template name="find-in-library">
     <xsl:variable name="x" select="$gMdpMetadata/datafield" />
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
@@ -1070,7 +1073,7 @@
       <xsl:call-template name="CollectionWidgetContainer" />
     </div>
   </xsl:template>
-  
+
   <xsl:template name="share-this-book">
     <div class="shareLinks">
       <h3>Share</h3>
@@ -1270,11 +1273,11 @@
       </xsl:element>
     </div>
   </xsl:template>
-  
+
   <xsl:template match="SearchResultsLabel" mode="copy">
     <xsl:apply-templates select="@*|*|text()" mode="copy" />
   </xsl:template>
-  
+
   <xsl:template match="@*|*|text()" mode="copy">
     <xsl:copy>
       <xsl:apply-templates select="@*|*|text()" mode="copy" />
@@ -1288,12 +1291,12 @@
       <xsl:apply-templates select="." mode="copy" />
     </xsl:element>
   </xsl:template>
-  
+
   <!-- Preserve line breaks in OCR -->
   <xsl:template match="br">
     <xsl:copy-of select="."/>
   </xsl:template>
-  
+
   <xsl:template match="@*|*|text()" mode="copy">
     <xsl:copy>
       <xsl:apply-templates select="@*|*|text()" mode="copy" />
@@ -1306,7 +1309,7 @@
       <xsl:call-template name="PageTitle" />
     </xsl:element>
   </xsl:template>
-  
+
   <xsl:template name="PageTitle">
     <xsl:param name="detail" select="''" />
     <xsl:param name="suffix" select="'HathiTrust Digital Library'" />
@@ -1335,7 +1338,7 @@
         <xsl:value-of select="$detail" />
       </xsl:if>
     </xsl:variable>
-  
+
     <xsl:value-of select="$displayed-title" />
     <xsl:choose>
       <xsl:when test="$gRightsAttribute='8'">
@@ -1350,10 +1353,10 @@
     </xsl:choose>
 
     <xsl:if test="normalize-space($suffix)">
-      <xsl:text> | </xsl:text> 
+      <xsl:text> | </xsl:text>
       <xsl:value-of select="$suffix" />
     </xsl:if>
-    
+
     <xsl:if test="normalize-space($tail)">
       <xsl:text> (</xsl:text>
       <xsl:value-of select="$tail" />
@@ -1361,11 +1364,11 @@
     </xsl:if>
 
   </xsl:template>
-  
+
   <!-- need to move the anchor elsewhere -->
   <xsl:template name="skipNavAnchor">
   </xsl:template>
-  
+
 
 </xsl:stylesheet>
 

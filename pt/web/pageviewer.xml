@@ -90,9 +90,10 @@
     </ViewTypeForm>
 
     <QValsHash><?QVAL_ENCODED?></QValsHash>
-    
+
     <ViewTypeLinks>
       <ViewTypeFullPdfLink><?VIEW_TYPE_FULL_PDF_LINK?></ViewTypeFullPdfLink>
+      <ViewTypeFullEpubLink><?VIEW_TYPE_FULL_EPUB_LINK?></ViewTypeFullEpubLink>
       <ViewTypePdfLink><?VIEW_TYPE_PDF_LINK?></ViewTypePdfLink>
       <ViewTypeImageLink><?VIEW_TYPE_IMAGE_LINK?></ViewTypeImageLink>
       <ViewType1UpLink><?VIEW_TYPE_1UP_LINK?></ViewType1UpLink>
