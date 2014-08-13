@@ -26,7 +26,7 @@ HT.Reader = {
             }
         } else {
             // normal; null if not plaintext
-            // if ( view != 'plaintext' ) { view = null; }
+            if ( view != 'plaintext' ) { view = null; }
         }
 
         if ( view == null ) {
