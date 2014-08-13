@@ -99,9 +99,24 @@ body {
             }
 
             &.fuzzy {
-                background: yellow;
+                position: relative;
             }
 
+            &.fuzzy:after {
+                position: absolute;
+                content: "";
+                display: block;
+                height: 25%;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                /* "transparent" only works here because == rgba(0,0,0,0) */ 
+                background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, transparent),color-stop(1, #eee));
+                background-image: -webkit-linear-gradient(top, transparent, #eee);
+                background-image: -moz-linear-gradient(top, transparent, #eee);
+                background-image: -ms-linear-gradient(top, transparent, #eee);
+                background-image: -o-linear-gradient(top, transparent, #eee);
+            }
         }
     }
 
