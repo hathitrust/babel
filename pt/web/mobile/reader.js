@@ -610,14 +610,17 @@ head.ready(function() {
         var $page = $("#main");
         if ( $page.is(":visible") ) {
             // activate search form
+            HT.reader._last_seq = HT.reader.getCurrentSeq();
             $page.hide();
             $toc.show();
+            window.scrollTo(0,0);
             $("#toolbar-footer").removeClass("cbp-spmenu-open").hide();
             $("#toolbar-header").addClass("cbp-spmenu-open do-search-inside");
         } else {
             // active page
             $toc.hide();
             $page.show();
+            $.publish("action.go.page", (HT.reader._last_seq));
             $("#toolbar-header").removeClass("cbp-spmenu-open do-search-inside");
             $("#toolbar-footer").show();
         }
@@ -629,14 +632,17 @@ head.ready(function() {
         var $page = $("#main");
         if ( $page.is(":visible") ) {
             // activate search form
+            HT.reader._last_seq = HT.reader.getCurrentSeq();
             $page.hide();
             $form.show();
+            window.scrollTo(0,0);
             $("#toolbar-footer").removeClass("cbp-spmenu-open").hide();
             $("#toolbar-header").addClass("cbp-spmenu-open do-search-inside");
         } else {
             // active page
             $form.hide();
             $page.show();
+            $.publish("action.go.page", (HT.reader._last_seq));
             $("#toolbar-header").removeClass("cbp-spmenu-open do-search-inside");
             $("#toolbar-footer").show();
         }

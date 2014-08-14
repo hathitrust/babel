@@ -261,7 +261,7 @@
         </div>
         <div class="panel-group">
           <p>
-            <a href="#" class="btn btn-full btn-inverse btn-large">Back to Record</a>
+            <a href="http://m.hathitrust.org/Record/{$gCatalogRecordNo}" class="btn btn-full btn-inverse btn-large">Back to Record</a>
           </p>
         </div>
         <div class="panel-group">
