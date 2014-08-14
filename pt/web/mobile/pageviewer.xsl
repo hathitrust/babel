@@ -84,6 +84,37 @@
   </xsl:template>
 
   <xsl:template name="footer">
+
+    <div id="mobile-footer" class="container centered">
+      <xsl:variable name="feedback-id">
+        <xsl:call-template name="get-feedback-id" />
+      </xsl:variable>
+      <xsl:variable name="feedback-m">
+        <xsl:call-template name="get-feedback-m" />
+      </xsl:variable>
+      <div class="row">
+        <div class="span12">
+          <p>
+            <xsl:choose>
+              <xsl:when test="$gLoggedIn = 'YES'">
+                <a id="logout-link" class="btn btn-large btn-inverse" href="{//Header/LoginLink}">Logout</a>
+              </xsl:when>
+              <xsl:otherwise>
+                <a class="btn btn-large btn-inverse" href="{//Header/LoginLink};skin=mobilewayf">Login</a>
+              </xsl:otherwise>
+            </xsl:choose>
+          </p>
+          <p class="links">
+            <a href="/cgi/feedback" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a>
+            <xsl:text> | </xsl:text>
+            <a href="http://www.hathitrust.org/help_digital_library#Mobile" title="Help, Documentation, and FAQ">Help</a>
+            <xsl:text> | </xsl:text>
+            <a href="http://www.hathitrust.org/take_down_policy" title="item removal policy">Take-Down Policy</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
     <div id="toolbar-footer" class="cbp-spmenu-bottom cbp-spmenu cbp-spmenu-open">
       <a href="#" id="action-toggle-toolbars"></a>
       <nav class="cbp-spmenu-horizontal">

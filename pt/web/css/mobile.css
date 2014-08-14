@@ -381,42 +381,41 @@ body {
 
 /* line 375, ../sass/mobile.scss */
 .modal {
-  left: 50%;
-  top: 50%;
-  margin-top: -20%;
+  z-index: 9000;
+  position: fixed;
+  top: 3%;
+  right: 3%;
+  left: 3%;
+  width: auto;
+  margin: 0;
 }
-/* line 381, ../sass/mobile.scss */
+/* line 389, ../sass/mobile.scss */
 .modal .modal-body {
   font-size: 18px ;
   font-size: 1.8rem ;
 }
-/* line 385, ../sass/mobile.scss */
+/* line 393, ../sass/mobile.scss */
 .modal .modal-header h3 {
   font-size: 21px ;
   font-size: 2.1rem ;
 }
 
+/* line 405, ../sass/mobile.scss */
+#mobile-footer {
+  text-align: center;
+  position: relative;
+  z-index: 2500;
+  margin-bottom: 24px ;
+  margin-bottom: 2.4rem ;
+}
+/* line 411, ../sass/mobile.scss */
+#mobile-footer .links {
+  font-size: 14px ;
+  font-size: 1.4rem ;
+}
+/* line 415, ../sass/mobile.scss */
+#mobile-footer .links a {
+  color: #fff;
+}
+
 /* MEDIA QUERIES */
-@media only screen and (orientation: portrait) and (max-width: 767px) {
-  /* line 392, ../sass/mobile.scss */
-  .modal {
-    margin-left: -50%;
-    margin-top: 0;
-    top: 60px;
-    width: 98%;
-  }
-}
-@media only screen and (orientation: landscape) and (max-height: 700px) {
-  /* line 401, ../sass/mobile.scss */
-  .modal {
-    margin-left: -50%;
-    margin-top: 0;
-    top: 25px;
-    width: 98%;
-  }
-  /* line 407, ../sass/mobile.scss */
-  .modal .modal-body {
-    max-height: 200px;
-    overflow-y: auto;
-  }
-}
