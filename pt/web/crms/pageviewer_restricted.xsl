@@ -6,7 +6,7 @@
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
 
-  <xsl:import href="../legacy/pageviewer_restricted.xsl"/>
-    
+  <xsl:import href="../pageviewer_restricted.xsl"/>
+
 
 </xsl:stylesheet>
