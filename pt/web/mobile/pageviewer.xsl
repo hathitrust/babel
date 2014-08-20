@@ -191,7 +191,7 @@
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                     <p class="larger">
                       <xsl:text>Partner institution members: </xsl:text>
-                      <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                      <strong><a  href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
                       <xsl:text> to download this book.</xsl:text>
                     </p>
                     <p>
