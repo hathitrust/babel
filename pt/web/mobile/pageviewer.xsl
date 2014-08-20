@@ -156,6 +156,7 @@
   </xsl:template>
 
   <xsl:template name="build-get-book-panel">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     <div id="get-book-panel" class="modal hide bootbox" tabindex="-1" role="dialog" aria-labelledby="Get this Book" aria-hidden="true">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -190,7 +191,7 @@
                   <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                     <p class="larger">
                       <xsl:text>Partner institution members: </xsl:text>
-                      <strong><a class="trigger-login" data-close-target=".modal.login" href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                      <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
                       <xsl:text> to download this book.</xsl:text>
                     </p>
                     <p>
