@@ -38,7 +38,7 @@
 # under /appname/web.
 
 Section:LOCAL_JS
-Test:$gSkin='default'
+#Test:$gSkin='default'
 # These should be listed with the unminimized name.
 # The script will run yuicompress on them
 //common-web/jquery/jQuery-URL-Parser/purl.js
@@ -52,7 +52,8 @@ Test:$gSkin='default'
 /pt/web/js/google_analytics_experiment.js
 
 Section:PAGETURNER_VOLUME_JS
-Test://ItemType='volume' and $gSkin='default'
+#Test://ItemType='volume' and $gSkin='default'
+Test://ItemType='volume'
 /pt/web/vendor/nanoscroller/jquery.nanoscroller.js
 /pt/web/vendor/jquery.fracs.js
 /pt/web/vendor/jquery.viewport.js
@@ -72,82 +73,82 @@ Test://ItemType='volume' and $gSkin='default'
 # Section:PAGETURNER_SEARCH_JS
 # Test:$gUsingSearch='true'
 
-Section:LEGACY_JS
-Test:$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'
-# NOTE: utilities/README says utilities.js includes all of the below
-# so it should suffice to load just utilities.js instead of all of
-# these except we got a JS error when we tried that.
-//common-web/jquery/jQuery-URL-Parser/purl.js
-/pt/web/yui2-lib/build/yahoo/yahoo-min.js
-/pt/web/yui2-lib/build/event/event-min.js
-/pt/web/yui2-lib/build/dom/dom-min.js
-/pt/web/yui2-lib/build/dragdrop/dragdrop-min.js
-/pt/web/yui2-lib/build/container/container-min.js
-/pt/web/yui2-lib/build/connection/connection-min.js
-/pt/web/yui2-lib/build/utilities/utilities.js
-/pt/web/yui2-lib/build/resize/resize-min.js
+#Section:LEGACY_JS
+#Test:$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'
+## NOTE: utilities/README says utilities.js includes all of the below
+## so it should suffice to load just utilities.js instead of all of
+## these except we got a JS error when we tried that.
+#//common-web/jquery/jQuery-URL-Parser/purl.js
+#/pt/web/yui2-lib/build/yahoo/yahoo-min.js
+#/pt/web/yui2-lib/build/event/event-min.js
+#/pt/web/yui2-lib/build/dom/dom-min.js
+#/pt/web/yui2-lib/build/dragdrop/dragdrop-min.js
+#/pt/web/yui2-lib/build/container/container-min.js
+#/pt/web/yui2-lib/build/connection/connection-min.js
+#/pt/web/yui2-lib/build/utilities/utilities.js
+#/pt/web/yui2-lib/build/resize/resize-min.js
 
-/pt/web/js/versionPopup.js
-//common-web/js/feedbackForm.js
-//common-web/js/newCollOverlayCore.js
-/pt/web/js/newCollOverlayPT.js
-//common-web/js/overlayUtils.js
-//common-web/js/listUtils.js
-//common-web/js/pageturner.js
-/pt/web/vendor/boxy/jquery.boxy.js
-/pt/web/vendor/jquery.cookie.js
-/pt/web/js/init.js
-/pt/web/js/download_helper.js
+#/pt/web/js/versionPopup.js
+#//common-web/js/feedbackForm.js
+#//common-web/js/newCollOverlayCore.js
+#/pt/web/js/newCollOverlayPT.js
+#//common-web/js/overlayUtils.js
+#//common-web/js/listUtils.js
+#//common-web/js/pageturner.js
+#/pt/web/vendor/boxy/jquery.boxy.js
+#/pt/web/vendor/jquery.cookie.js
+#/pt/web/js/init.js
+#/pt/web/js/download_helper.js
 
-Section:LEGACY_PAGETURNER_JS
-Test:$gUsingSearch='false' and $gSkin!='default'
-/pt/web/js/section108.js
-/pt/web/vendor/jquery.tmpl.js
-/pt/web/vendor/jquery.tmplPlus.js
-/pt/web/js/classic.js
+#Section:LEGACY_PAGETURNER_JS
+#Test:$gUsingSearch='false' and $gSkin!='default'
+#/pt/web/js/section108.js
+#/pt/web/vendor/jquery.tmpl.js
+#/pt/web/vendor/jquery.tmplPlus.js
+#/pt/web/js/classic.js
 
-Section:LEGACY_BOOKREADER_JS
-Test:$gUsingSearch='false' and $gItemType = 'volume' and $gUsingBookReader='true' and $gSkin != 'default'
-/pt/web/vendor/jquery.easing.1.3.js
-/pt/web/vendor/jquery.color.js
-/pt/web/vendor/jquery.textfill.js
-/pt/web/bookreader/BookReader/BookReader.js
-/pt/web/js/HTBookReader.js
-/pt/web/js/FudgingBookReader.js
-/pt/web/bookreader/BookReader/dragscrollable.js
-/pt/web/js/lscache.js
+#Section:LEGACY_BOOKREADER_JS
+#Test:$gUsingSearch='false' and $gItemType = 'volume' and $gUsingBookReader='true' and $gSkin != 'default'
+#/pt/web/vendor/jquery.easing.1.3.js
+#/pt/web/vendor/jquery.color.js
+#/pt/web/vendor/jquery.textfill.js
+#/pt/web/bookreader/BookReader/BookReader.js
+#/pt/web/js/HTBookReader.js
+#/pt/web/js/FudgingBookReader.js
+#/pt/web/bookreader/BookReader/dragscrollable.js
+#/pt/web/js/lscache.js
 
 
-Section:MOBILE_JS
-Test:$gSkin='mobile' and $gItemType='volume' and $gUsingBookReader='true'
-/pt/web/mobile/epub_download_helper.js
-/pt/web/mobile/jquery.url.js
-/pt/web/mobile/jquery-ui-1.8.5.custom.min.js
-/pt/web/mobile/HTMobileBookReader.js
-/pt/web/mobile/jquery.ui.ipad.js
-/pt/web/mobile/jquery.jswipe-0.1.2.js
+#Section:MOBILE_JS
+#Test:$gSkin='mobile' and $gItemType='volume' and $gUsingBookReader='true'
+#/pt/web/mobile/epub_download_helper.js
+#/pt/web/mobile/jquery.url.js
+#/pt/web/mobile/jquery-ui-1.8.5.custom.min.js
+#/pt/web/mobile/HTMobileBookReader.js
+#/pt/web/mobile/jquery.ui.ipad.js
+#/pt/web/mobile/jquery.jswipe-0.1.2.js
 
-Section:LEGACY_CSS
-# css files, note last one overides earlier
-Test:$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'
-/pt/web/bookreader/BookReader/BookReader.css
-/pt/web/yui2-lib/build/fonts/fonts-min.css
-/pt/web/yui2-lib/build/container/assets/skins/sam/container.css
-/pt/web/yui2-lib/build/resize/assets/skins/sam/resize.css
-/pt/web/vendor/boxy/boxy.css
-//common-web/framework.css
-//common-web/feedback.css
-//common-web/pageviewer.css
-//common-web/MBooksCol.css
-/pt/web/harmony.css
-/pt/web/download_helper.css
+#Section:LEGACY_CSS
+## css files, note last one overides earlier
+#Test:$gSkin='mobile' or $gSkin='crms' or $gSkin='crmsworld'
+#/pt/web/bookreader/BookReader/BookReader.css
+#/pt/web/yui2-lib/build/fonts/fonts-min.css
+#/pt/web/yui2-lib/build/container/assets/skins/sam/container.css
+#/pt/web/yui2-lib/build/resize/assets/skins/sam/resize.css
+#/pt/web/vendor/boxy/boxy.css
+#//common-web/framework.css
+#//common-web/feedback.css
+#//common-web/pageviewer.css
+#//common-web/MBooksCol.css
+#/pt/web/harmony.css
+#/pt/web/download_helper.css
 
 # Section:SEARCH_CSS
 # Test:$gUsingSearch='true'
 # /pt/web/searchresults.css
 
-Section:MOBILE_CSS
-Test:$gSkin='mobile'
-/pt/web/mobile/mobilept.css
-#/pt/web/mobile/epub_download_helper.css
+#Section:MOBILE_CSS
+#Test:$gSkin='mobile'
+#/pt/web/mobile/mobilept.css
+##/pt/web/mobile/epub_download_helper.css
 

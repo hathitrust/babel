@@ -44,7 +44,7 @@ HT.Viewer.Flip = {
         $.publish("view.end");
         $(window).unbind(".flip");
         $("body").unbind(".flip");
-        $("#content").empty();
+        $("#content").empty().css('margin-top', '');
         $("body").removeClass("view-2up");
     },
 
@@ -81,6 +81,10 @@ HT.Viewer.Flip = {
             self.updateZoom(-1);
         })
 
+        $.subscribe("action.zoom.reset.flip", function(e) {
+            self.updateZoom(0, self.reset_zoom);
+        })
+
         $.subscribe("action.rotate.clockwise.flip", function(e) {
             self.rotateBook(1);
         })
@@ -102,8 +106,12 @@ HT.Viewer.Flip = {
             self._resizing = false;
         }, 250);
 
-        var $e = get_resize_root();
-        $e.on('resize.viewer.flip', _lazyResize);
+        $.subscribe("action.resize.flip", function(e) {
+            _lazyResize();
+        })
+
+        // var $e = get_resize_root();
+        // $e.on('resize.viewer.flip', _lazyResize);
 
         $("body").on('image.fudge.flip', "img", function() {
             var $img = $(this);
@@ -137,9 +145,13 @@ HT.Viewer.Flip = {
         });
     },
 
-    updateZoom: function(delta) {
+    updateZoom: function(delta, zoom) {
         var self = this;
+        
         var current_index = self.zoom_levels.indexOf(self.zoom);
+        if ( delta == 0 ) {
+            delta = self.zoom_levels.indexOf(zoom) - current_index;
+        }
         var new_index = current_index + delta;
         if ( new_index + delta < 0 ) {
             $.publish("disable.zoom.out");
@@ -280,52 +292,55 @@ HT.Viewer.Flip = {
         self.$container = $container;
         self.$wrapper = $("#content").find(".bb-custom-wrapper");
 
-        // // which size bets fit the content width?
-        // var fit = 1.2;
-        // fit = 1.0;
-        // if ( self.w < 0 ) {
-        //     var best_w = -1; var best_zoom = 0;
-        //     for(var i = 0; i < self.zoom_levels.length; i++) {
-        //         var zoom = self.zoom_levels[i];
-        //         // 1.2
-        //         if ( self.options.default_w * zoom * fit > fit_w ) {
-        //             break;
-        //         }
-        //         self.w = self.options.default_w * zoom;
-        //         self.zoom = zoom;
-        //     }
+        var $target; var target_h = -1;
+        var height_target = $("#content").data('height-target');
+        if ( height_target ) {
+            $target = ( height_target == 'window' ) ? $(window) : $("#" + height_target);
+            target_h = $target.height();
+        } else {
+            target_h = $(window).height() - $(".navbar").height() - $(".toolbar-horizontal").height() - 25;
+        }
 
-        //     // console.log("STARTUP", self.w, self.zoom);
-        // }
-
-        // var meta = self.options.manager.get_page_meta({ seq : 1 });
-        // var r = self.w / meta.width;
-        // self.h = meta.height * r;
-        // var h = self.h / 1.5; // 2;
-
-        // which size fits the content width?
         if ( self.w < 0 ) {
-            var best_w = -1; var best_zoom = 0;
+            // cleanup later --- we want a slightly larger initial page if 
+            // we have the whole window available to us
             for(var i = 0; i < self.zoom_levels.length; i++) {
                 var zoom = self.zoom_levels[i];
-                if ( ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) ) {
+                if ( ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) && ( height_target != 'window' ) ) {
                     break;
                 }
                 self.w = ( self.options.default_w * zoom ) / 2;
                 self.zoom = zoom;
+                self.reset_zoom = zoom;
+                if ( ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) && ( height_target == 'window' ) ) {
+                    break;
+                }
             }
         }
 
+        // now figure out the best height?
         var meta = self.options.manager.get_page_meta({seq : 1, width : 680 });
         self.h = meta.height * self.zoom;
         var h = self.h / 2;
 
-        console.log("META: ", meta, self.zoom, self.w, self.h);
+        if ( self.zoom == self.reset_zoom && target_h > 0 ) {
+            if ( h > target_h ) {
+                h = target_h;
+            }
+        }
+        console.log("META: ", meta, self.zoom, h, self.w, self.h);
 
         self.$wrapper.css({ 'min-width' : self.w + 25 });
 
         self.$wrapper.height(h); // .width(HT.w);
         $container.height(h);
+
+        if ( $target != null && h < $target.height() ) {
+            // what's the vertical center of this container?
+            var y = $target.height() / 2;
+            y -= ( h / 2 );
+            self.$wrapper.css('margin-top', y + "px");
+        }
 
         // mdpItem will normalize the pages so seq=1 IS THE START OF THE BOOK
         // right-to-left only means we stack the pages in the div differently
@@ -471,7 +486,7 @@ HT.Viewer.Flip = {
         $(window).scroll();
 
         setTimeout(function() {
-            self.buildSlider(pages, current);
+            // self.buildSlider(pages, current);
             self.checkPageStatus();
         }, 100);
 
@@ -541,7 +556,7 @@ HT.Viewer.Flip = {
             $.publish("enable.go.last");
         }
 
-        self.$slider.slider('setValue', page);
+        // self.$slider.slider('setValue', page);
 
         var seq = self._page2seq(page);
 

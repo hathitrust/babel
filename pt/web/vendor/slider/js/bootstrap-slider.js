@@ -21,9 +21,6 @@
 
 	var Slider = function(element, options) {
 		this.element = $(element);
-
-		var width = this.element.outerWidth();
-
 		this.picker = $('<div class="slider">'+
 							'<div class="slider-track">'+
 								'<div class="slider-selection"></div>'+
@@ -39,8 +36,11 @@
 			this.picker[0].id = this.id;
 		}
 
+		if (typeof Modernizr !== 'undefined' && Modernizr.touch) {
+			this.touchCapable = true;
+		}
+
 		var tooltip = this.element.data('slider-tooltip')||options.tooltip;
-		this.label = options.label;
 
 		this.tooltip = this.picker.find('.tooltip');
 		this.tooltipInner = this.tooltip.find('div.tooltip-inner');
@@ -55,15 +55,18 @@
 				this.tooltip.addClass('right')[0].style.left = '100%';
 				break;
 			default:
-				// console.log("SETTING THE WIDTH:", this.element.outerWidth(), this.element, tmp1, tmp2);
 				this.picker
 					.addClass('slider-horizontal')
-					.css('width', width);
+					.css('width', this.element.outerWidth());
 				this.orientation = 'horizontal';
 				this.stylePos = 'left';
 				this.mousePos = 'pageX';
 				this.sizePos = 'offsetWidth';
-				this.tooltip.addClass('top')[0].style.top = -this.tooltip.outerHeight() - 14 + 'px';
+				if ( this.touchCapable ) {
+					this.tooltip.addClass('right')[0].style.left = '100%';
+				} else {
+					this.tooltip.addClass('top')[0].style.top = -this.tooltip.outerHeight() - 14 + 'px';					
+				}
 				break;
 		}
 
@@ -122,13 +125,25 @@
 		this.offset = this.picker.offset();
 		this.size = this.picker[0][this.sizePos];
 
+		this.formater = options.formater;
+
 		this.layout();
-		this.picker.on({
-			mousedown: $.proxy(this.mousedown, this)});
+
+		if (this.touchCapable) {
+			// Touch: Bind touch events:
+			this.picker.on({
+				touchstart: $.proxy(this.mousedown, this)
+			});
+		} else {
+			this.picker.on({
+				mousedown: $.proxy(this.mousedown, this)
+			});
+		}
+
 		if (tooltip === 'show') {
 			this.picker.on({
 				mouseenter: $.proxy(this.showTooltip, this),
-				mouseleave: $.proxy(this.hideTooltip, this)
+				mouseleave: $.proxy(this.hideTooltip, this),
 			});
 		} else {
 			this.tooltip.addClass('hide');
@@ -145,10 +160,12 @@
 			this.tooltip.addClass('in');
 			//var left = Math.round(this.percent*this.width);
 			//this.tooltip.css('left', left - this.tooltip.outerWidth()/2);
+			console.log(this.tooltip);
 			this.over = true;
 		},
 		
 		hideTooltip: function(){
+			console.log("HIDE TOOLTIP", this.inDrag, this.over);
 			if (this.inDrag === false) {
 				this.tooltip.removeClass('in');
 			}
@@ -167,24 +184,33 @@
 			}
 			if (this.range) {
 				this.tooltipInner.text(
-					(this.min + Math.round((this.diff * this.percentage[0]/100)/this.step)*this.step) + 
+					this.formater(this.value[0]) + 
 					' : ' + 
-					(this.min + Math.round((this.diff * this.percentage[1]/100)/this.step)*this.step)
+					this.formater(this.value[1])
 				);
 				this.tooltip[0].style[this.stylePos] = this.size * (this.percentage[0] + (this.percentage[1] - this.percentage[0])/2)/100 - (this.orientation === 'vertical' ? this.tooltip.outerHeight()/2 : this.tooltip.outerWidth()/2) +'px';
 			} else {
-				var text = (this.min + Math.round((this.diff * this.percentage[0]/100)/this.step)*this.step);
-				if ( this.label ) {
-					text = this.label(text, this.max);
-				}
 				this.tooltipInner.text(
-					text
+					this.formater(this.value[0])
 				);
-				this.tooltip[0].style[this.stylePos] = this.size * this.percentage[0]/100 - (this.orientation === 'vertical' ? this.tooltip.outerHeight()/2 : this.tooltip.outerWidth()/2) +'px';
+				if ( this.touchCapable && this.orientation === 'horizontal' )  {
+					this.tooltip[0].style[this.stylePos] = ( this.size * this.percentage[0]/100 + this.tooltip.outerWidth()/4 ) + 'px';
+				} else {
+					this.tooltip[0].style[this.stylePos] = this.size * this.percentage[0]/100 - (this.orientation === 'vertical' ? this.tooltip.outerHeight()/2 : this.tooltip.outerWidth()/2) +'px';
+				}
 			}
 		},
 
 		mousedown: function(ev) {
+
+			// Touch: Get the original event:
+			if (this.touchCapable && ev.type === 'touchstart') {
+				ev = ev.originalEvent;
+				if ( ! this.tooltip.hasClass("hide") ) {
+					this.showTooltip();
+				}
+			}
+
 			this.offset = this.picker.offset();
 			this.size = this.picker[0][this.sizePos];
 
@@ -201,10 +227,19 @@
 			this.percentage[this.dragged] = percentage;
 			this.layout();
 
-			$(document).on({
-				mousemove: $.proxy(this.mousemove, this),
-				mouseup: $.proxy(this.mouseup, this)
-			});
+			if (this.touchCapable) {
+				// Touch: Bind touch events:
+				$(document).on({
+					touchmove: $.proxy(this.mousemove, this),
+					touchend: $.proxy(this.mouseup, this)
+				});
+			} else {
+				$(document).on({
+					mousemove: $.proxy(this.mousemove, this),
+					mouseup: $.proxy(this.mouseup, this)
+				});
+			}
+
 			this.inDrag = true;
 			var val = this.calculateValue();
 			this.element.trigger({
@@ -218,6 +253,12 @@
 		},
 
 		mousemove: function(ev) {
+			
+			// Touch: Get the original event:
+			if (this.touchCapable && ev.type === 'touchmove') {
+				ev = ev.originalEvent;
+			}
+
 			var percentage = this.getPercentage(ev);
 			if (this.range) {
 				if (this.dragged === 0 && this.percentage[1] < percentage) {
@@ -242,17 +283,27 @@
 		},
 
 		mouseup: function(ev) {
-			$(document).off({
-				mousemove: this.mousemove,
-				mouseup: this.mouseup
-			});
+			if (this.touchCapable) {
+				// Touch: Bind touch events:
+				$(document).off({
+					touchmove: this.mousemove,
+					touchend: this.mouseup
+				});
+				this.hideTooltip();
+			} else {
+				$(document).off({
+					mousemove: this.mousemove,
+					mouseup: this.mouseup
+				});
+			}
+
+			console.log("MOUSEUP", this.over);
 			this.inDrag = false;
 			if (this.over == false) {
 				this.hideTooltip();
 			}
 			this.element;
 			var val = this.calculateValue();
-			console.log("MOUSEUP", val);
 			this.element
 				.trigger({
 					type: 'slideStop',
@@ -279,6 +330,9 @@
 		},
 
 		getPercentage: function(ev) {
+			if (this.touchCapable) {
+				ev = ev.touches[0];
+			}
 			var percentage = (ev[this.mousePos] - this.offset[this.stylePos])*100/this.size;
 			percentage = Math.round(percentage/this.percentage[2])*this.percentage[2];
 			return Math.max(0, Math.min(100, percentage));
@@ -338,7 +392,10 @@
 		value: 5,
 		selection: 'before',
 		tooltip: 'show',
-		handle: 'round'
+		handle: 'round',
+		formater: function(value) {
+			return value;
+		}
 	};
 
 	$.fn.slider.Constructor = Slider;

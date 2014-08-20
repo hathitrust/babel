@@ -1,0 +1,71 @@
+@import "../../../../common/web/unicorn/sass/base";
+
+
+body {
+    margin-top: 0;
+    min-width: inherit;
+    width: 100%;
+}
+
+.view-restricted {
+
+        margin: 0;
+
+        .container {
+
+            .main {
+                @include rem(padding-top, 48);
+
+                >div {
+                    @include rem(padding, 24);
+                    background-color: #eee;
+                    width: 95%;
+                    margin: 8px auto;
+
+                    @include rem(font-size, 14);
+
+                    .span8.border-right, .span6 {
+                        border-right: 1px transparent solid;
+                        display: block;
+                        width: 99%;
+                        @include rem(margin-bottom, 8);
+                    }
+
+                    .no_access_search_help_eg {
+                        display: none;
+                    }
+
+                }
+
+                .alert {
+                    @include rem(font-size, 18);
+                }
+
+            }
+
+        }
+
+
+
+}
+
+.cbp-spmenu-top {
+    top: 0px;
+}
+
+.cbp-spmenu-bottom {
+    bottom: 0px;
+}
+
+#action-toggle-toolbars {
+    display: none;
+}
+
+
+#action-settings, #action-search-inside {
+    display: none;
+}
+
+#action-table-of-contents {
+    display: none;
+}

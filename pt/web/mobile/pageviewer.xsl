@@ -1,610 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+<xsl:stylesheet version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   xmlns="http://www.w3.org/1999/xhtml"
-  version="1.0">
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:exsl="http://exslt.org/common"
+  exclude-result-prefixes="exsl METS PREMIS"
+  extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
 
-  <xsl:import href="../legacy/pageviewer.xsl"/>
+  <xsl:import href="../pageviewer.xsl" />
 
-  <xsl:template name="get-title-suffix">
-    <xsl:choose>
-      <xsl:when test="$gCurrentUi = 'embed'">
-        <xsl:text>HathiTrust Digital Library</xsl:text>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:text>HathiTrust Mobile Digital Library</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+  <xsl:template name="setup-extra-header">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1,user-scalable=0" />
+    <link rel="stylesheet" type="text/css" href="/pt/css/screen.css" />
 
-  <xsl:template name="GeneratePageTitle">
-    <xsl:call-template name="PageTitle">
-      <xsl:with-param name="suffix">HathiTrust Mobile Digital Library</xsl:with-param>
-    </xsl:call-template>
-  </xsl:template>
+    <meta name="robots" content="noarchive" />
 
-  <xsl:variable name="gCatalogRecordNo" select="/MBooksTop/METS:mets/METS:dmdSec[@ID='DMD1']/collection/record/controlfield[@tag='001']"/>
-  <xsl:variable name="gCurrentView">
-    <xsl:value-of select="'1up'" >
-    </xsl:value-of>
-  </xsl:variable>
-
-  <xsl:template name="Sidebar">
-    <div class="mdpControlContainer">
-
-      <xsl:call-template name="crmsPageControls" />
-
-      <div id="mdpMobileTableOfContents">
-        <xsl:call-template name="BuildContentsList" />
-      </div>
-      <div id="BRiteminfo" >
-        
-        <xsl:call-template name="MobileItemMetadata" />
-        <xsl:call-template name="BuildCatalogLink" />
-        <div id="mobilefeedbackdiv"><xsl:call-template name="feedbacklink"/></div>
-      </div>
-      <div id="BRsearch" data-scroll="true" >
-        <xsl:call-template name="MobileBuildSearchForm" />
-        
-      </div>
-      
-      <div id="BRgetbook">
-        <div id="fullEpubDownload"></div>
-        <xsl:call-template name="MobileGetBook" />
-      </div>
-      
-      <div id="BRocrsettings">
-        <button id="ocrzoomin" class="bigger">Bigger Text</button><br />
-        <button id="ocrzoomout" class="smaller">Smaller Text</button><br /><br />
-        <button id="wraptext" class="selectedwrap">Wrapped Text</button><br />
-        <button id="unwraptext" >Unwrapped Text</button>
-        
-        <br />
-        <a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
-        
-      </div>
-      
-      <div id="BRimagesettings">
-        <button id="imagezoomin" class="bigger">Zoom In</button><br />
-        <button id="imagezoomout" class="smaller">Zoom Out</button><br />
-        <button id="fittopage" >Fit to Page</button>
-        <br />
-        <a class="PTregularLink" href="/cgi/pt?id={$gHtId};seq={/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']};skin=default">Regular Site</a>
-      </div>
-      
-      <div id="BRabout">About</div>
-      
-    </div>
-  </xsl:template>
-  
-  
-  <xsl:template name="BuildCatalogLink">
-    <xsl:element name="a">
-      <xsl:attribute name="id">mdpCatalogLinkInfoForm</xsl:attribute>
-      <xsl:variable name="href">
-        <xsl:text>http://m.hathitrust.org/Record/</xsl:text>
-        <xsl:value-of select="$gCatalogRecordNo"/>
-      </xsl:variable>
-      <xsl:attribute name="class">tracked</xsl:attribute>
-      <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-      <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
-      <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
-      <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-      <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-      <xsl:text>Back to Record</xsl:text>
-    </xsl:element>
-  </xsl:template>
-  
-  <xsl:template name="MobileGetBook">
-    <xsl:for-each select="/MBooksTop/METS:mets/METS:dmdSec/collection/record/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
-      <xsl:element name="a">
-        <xsl:attribute name="class">worldcat</xsl:attribute>
-        <xsl:attribute name="href">
-          <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
-          <xsl:choose>
-            <xsl:when test="contains(.,'OCoLC)ocm')">
-              <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'OCoLC')">
-              <xsl:value-of select="substring-after(.,'OCoLC)')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'oclc')">
-              <xsl:value-of select="substring-after(.,'oclc')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'ocm')">
-              <xsl:value-of select="substring-after(.,'ocm')"/>
-            </xsl:when>
-            <xsl:when test="contains(.,'ocn')">
-              <xsl:value-of select="substring-after(.,'ocn')"/>
-            </xsl:when>
-            <xsl:otherwise/>
-          </xsl:choose>
-        </xsl:attribute>
-        <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
-        
-        <xsl:if test="$gGoogleOnclickTracking = 'true'">
-          <xsl:attribute name="onclick">
-            <xsl:call-template name="PageTracker">
-              <xsl:with-param name="category" select="'outLinks'"/>
-              <xsl:with-param name="action" select="'click'"/>
-              <xsl:with-param name="label" select="'PT Find in a Library'"/>
-            </xsl:call-template>
-          </xsl:attribute>
-        </xsl:if>
-        
-        <xsl:text>Find in a library</xsl:text>
-        
-      </xsl:element>
-    </xsl:for-each>
-
-  </xsl:template>
-
-  <xsl:template name="bookreader-javascript-init">
-    <script type="text/javascript">
-
-      head.ready(function() {
-
-      HT.init_from_params();
-
-      HT.reader = new HTMobileBookReader(); // new HTMobileBookReader();
-      HT.reader.bookId   = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='id']"/>';
-      <!-- HT.reader.bookTitle = "<xsl:value-of select="str:replace(str:replace(string($gFullTitleString), '&quot;', '\&quot;'), '&amp;', '\&amp;amp;')"/>"; -->
-      HT.reader.bookTitle = document.title;
-      HT.reader.reduce = 1;
-      HT.reader.pageProgression = 'lr';
-
-      HT.reader.track_event = HT.track_event;
-
-      // reduce: 4 == thumbnails; too small for normal page browsing
-      HT.reader.reductionFactors = [   {reduce: 0.5, autofit: null},
-                                {reduce: 2/3, autofit: null},
-                                {reduce: 1, autofit: null},
-                                {reduce: 4/3, autofit: null}, // 1.5 = 66%, 1.25 == 80%
-                                {reduce: 2, autofit: null}
-                            ];
-
-
-       <xsl:for-each select="$gFeatureList/Feature[Tag='TITLE'][last()]">
-         <xsl:if test="position() = 1">
-       // The index of the title page.
-       HT.reader.titleLeaf = <xsl:value-of select="number(./Seq)-1"/>;
-         </xsl:if>
-       </xsl:for-each>
-       HT.reader.imagesBaseURL = "/pt/bookreader/BookReader/images/";
-       HT.reader.url_config = {
-         meta  : "<xsl:value-of select="$gImgsrvUrlRoot" />/metadata",
-         image : "<xsl:value-of select="$gImgsrvUrlRoot" />/image",
-         text  : "<xsl:value-of select="$gImgsrvUrlRoot" />/html",
-         ping  : "<xsl:value-of select="$gImgsrvUrlRoot" />/ping",
-         thumb : "<xsl:value-of select="$gImgsrvUrlRoot" />/thumbnail"
-       };
-       HT.reader.slice_size = 999999; // 100;
-       HT.reader.catalog_method = 'fudged';
-       HT.reader.total_slices = 1;
-       HT.reader.ui = '<xsl:value-of select="$gCurrentReaderMode" />';
-
-       if ( window.orientation != undefined ) {
-         switch(window.orientation){
-           case 90, -90:
-             HT.reader.mode=3;
-             break;
-           case 0:
-             HT.reader.mode=1;
-             break;
-         }
-       } else if ( ! HT.params.mode ) {
-         if ( $(window).length > $(window).height() ) {
-           HT.params.mode = 2;
-         } else {
-           HT.params.mode = 1;
-         }
-       }
-
-       console.log("STARTUP", HT.params.mode);
-
-       // HT.reader.displayMode = 'image';
-       HT.reader.q1 = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>';
-       HT.reader.flags.debug = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>';
-       HT.reader.flags.attr = '<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='attr']"/>';
-       HT.reader.flags.has_ocr = '<xsl:value-of select="string(/MBooksTop/MBooksGlobals/HasOcr)" />' == 'YES';
-       HT.reader.flags.final_access_status = '<xsl:value-of select="$gFinalAccessStatus" />';
-       //HT.reader.flags.force = (HT.reader.flags.debug.indexOf('force') >= 0);
-       HT.reader.lazyDelay = 500;
-       //console.log("pageview.xsl - checkpoint lazyDelay");      
-      })
-
-
-    </script>
-    <script type="text/javascript" src="/pt/mobile/bookreader_startup.js?ts={generate-id(.)}">;</script>
-    
-  </xsl:template>
-
-  <xsl:template name="BookReaderToolbar">
-  </xsl:template>
-
-  <xsl:template name="crmsPageControls">
-    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
-
-    <style>
-
-      #mdpItemMetadata {
-        z-index: 9999;
-      }
-
-      #mdpUberContainer {
-        margin-top: 0px;
-      }
-
-      .controls {
-        margin-top, margin-bottom: 0.5em;
-        border-bottom: 1px dashed #666;
-        clear: both;
-      }
-
-      .sizeLabel {
-        font-weight: bold;
-      }
-
-      .mdpPageNumberInputBox {
-        width: 5em;
-      }
-
-      .mdpPageLinks, .mdpPageLinks > ul {
-        float: none;
-      }
-
-      .mdpControlContainer div {
-        padding-top: 8px;
-      }
-
-      #mdpSectionForm, #mdpPageForm {
-        float: none;
-      }
-
-      #BottomNav {
-        left: 14px;
-      }
-
-      .mdpPageLinksBottom ul li {
-        padding-right: 4px !important;
-      }
-
-      .mdpPageLinksBottom ul li a img {
-        background: none;
-      }
-
-      .mdpPageXofYBottom {
-        margin-left: 80px;
-      }
-
-    </style>
-
-    <div class="controls" style="display:none">
-
-       <p>
-        <xsl:element name="a">
-          <xsl:attribute name="id">mdpCatalogLink</xsl:attribute>
-          <xsl:variable name="href">
-            <xsl:text>http://m.hathitrust.org/Record/</xsl:text>
-            <xsl:value-of select="$gCatalogRecordNo"/>
-          </xsl:variable>
-          <xsl:attribute name="class">tracked</xsl:attribute>
-          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-          <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
-          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
-          <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-          <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
-          <!--<xsl:text>View full catalog record</xsl:text>-->
-          <xsl:text disable-output-escaping="yes">&lt;&lt; Record</xsl:text>
-        </xsl:element>
-      </p>
-
-     <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
-      	<p id="pagePdfLinkP">
-
-        <xsl:element name="a">
-          <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
-          <xsl:attribute name="id">pagePdfLink</xsl:attribute>
-          <xsl:attribute name="class">tracked</xsl:attribute>
-          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-          <xsl:attribute name="data-tracking-action">PT Download PDF - this page</xsl:attribute>
-          <xsl:attribute name="href">
-            <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
-          </xsl:attribute>
-          <xsl:attribute name="target">
-            <xsl:text>pdf</xsl:text>
-          </xsl:attribute>
-          <xsl:text>Download this page (PDF)</xsl:text>
-        </xsl:element>
-      </p>
-      </xsl:if>
-
-      <xsl:if test="$gFullPdfAccessMessage='' or $gFullPdfAccessMessage='NOT_AFFILIATED' or $gFullPdfAccessMessage='RESTRICTED_SOURCE'">
-        <p id="fullPdfLinkP">
-          <xsl:element name="a">
-            <xsl:attribute name="title">Download whole book (PDF)</xsl:attribute>
-            <xsl:attribute name="id">fullPdfLink</xsl:attribute>
-            <xsl:attribute name="class">tracked</xsl:attribute>
-            <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-            <xsl:attribute name="data-tracking-action">PT Download PDF - whole book</xsl:attribute>
-            <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
-            </xsl:attribute>
-            <xsl:text>Download PDF</xsl:text>
-            <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-              <br />
-              <span class="pdfPartnerLoginLinkMessage" style="font-size: 80%">Partner login required</span>
-            </xsl:if>
-          </xsl:element>
-
-          <xsl:if test="$gFullPdfAccess = 'deny'">
-            <div id="noPdfAccess">
-              <p style="text-align: left">
-                <xsl:choose>
-                  <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <xsl:text>Partner institution members: </xsl:text>
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
-                    <xsl:text> to download this book.</xsl:text>
-                    <br />
-                    <br />
-                    <em>If you are not a member of a partner institution,
-                    <br />
-                    whole book download is not available.
-                    (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <xsl:text>Full PDF available only to authenticated users from </xsl:text>
-                    <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
-                    <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
-                    <xsl:text>This book cannot be downloaded.</xsl:text>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
-                    <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:text>Sorry.</xsl:text>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </p>
-            </div>
-          </xsl:if>
-        </p>
-
-        <p id="fullEpubLinkP">
-          <xsl:element name="a">
-            <xsl:attribute name="title">Download EPUB</xsl:attribute>
-            <xsl:attribute name="id">epubLink</xsl:attribute>
-            <xsl:attribute name="class">tracked</xsl:attribute>
-            <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-            <xsl:attribute name="data-tracking-action">PT Download EPUB</xsl:attribute>
-            <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
-            </xsl:attribute>
-            <xsl:text>Download EPUB</xsl:text>
-            <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-              <br />
-              <span class="pdfPartnerLoginLinkMessage" style="font-size: 80%">Partner login required</span>
-            </xsl:if>
-          </xsl:element>
-
-          <xsl:if test="$gFullPdfAccess = 'deny'">
-            <div id="noEpubAccess">
-              <p>
-                <xsl:choose>
-                  <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <xsl:text>Partner institution members: </xsl:text>
-                    <strong><a href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
-                    <xsl:text> to download this book.</xsl:text>
-                    <br />
-                    <br />
-                    <em>If you are not a member of a partner institution,
-                    <br />
-                    whole book download is not available.
-                    (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
-                    <xsl:text>Full EPUB available only to authenticated users from </xsl:text>
-                    <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">HathiTrust partner institutions.</a>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
-                    <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
-                    <xsl:text>This book cannot be downloaded.</xsl:text>
-                  </xsl:when>
-                  <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
-                    <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:text>Sorry.</xsl:text>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </p>
-            </div>
-          </xsl:if>
-        </p>
-      </xsl:if>
-
-    </div>
-  </xsl:template>
-
-  <xsl:template name="BuildContentsList" />
-
-  <!-- FORM: Image Resize -->
-  <xsl:template name="BuildResizeForm">
-    <xsl:param name="pResizeForm"/>
-  </xsl:template>
-
-  <xsl:template name="BuildPageLinks">
-    <xsl:param name="pPageLinks"/>
-
-    <style>
-      .mdpPageLinks ul li a img {
-        background-color: transparent;
-      }
-    </style>
-
-    <ul>
-      <li>
-        <xsl:if test="$pPageLinks/FirstPageLink">
-          <xsl:element name="a">
-            <xsl:attribute name="id">mdpFirstPageLink</xsl:attribute>
-            <xsl:attribute name="title">First [f]</xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pPageLinks/FirstPageLink"/>
-            </xsl:attribute>
-            <xsl:attribute name="accesskey">f</xsl:attribute>
-            <xsl:element name="img">
-              <xsl:attribute name="alt">First [f]</xsl:attribute>
-              <xsl:attribute name="src">
-                <xsl:value-of select="'//common-web/graphics/harmony/icon_first.png'"/>
-              </xsl:attribute>
-            </xsl:element>
-          </xsl:element>
-        </xsl:if>
-      </li>
-
-      <li>
-        <xsl:choose>
-          <xsl:when test="$pPageLinks/PreviousPageLink='XX'">
-
-            <xsl:element name="span">
-              <xsl:element name="img">
-                <xsl:attribute name="alt">Previous</xsl:attribute>
-                <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous_grayed.png'"/>
-                </xsl:attribute>
-              </xsl:element>
-            </xsl:element>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:element name="a">
-              <xsl:attribute name="id">mdpPreviousPageLink</xsl:attribute>
-              <xsl:attribute name="title">Previous [p]</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$pPageLinks/PreviousPageLink"/>
-              </xsl:attribute>
-              <xsl:attribute name="accesskey">p</xsl:attribute>
-              <xsl:element name="img">
-                <xsl:attribute name="alt">Previous [p]</xsl:attribute>
-                <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/harmony/icon_previous.png'"/>
-                </xsl:attribute>
-              </xsl:element>
-            </xsl:element>
-          </xsl:otherwise>
-        </xsl:choose>
-      </li>
-
-
-      <li>
-        <xsl:choose>
-          <xsl:when test="$pPageLinks/NextPageLink='XX'">
-            <xsl:element name="span">
-              <xsl:element name="img">
-                <xsl:attribute name="alt">Next</xsl:attribute>
-                <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next_grayed.png'"/>
-                </xsl:attribute>
-              </xsl:element>
-            </xsl:element>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:element name="a">
-              <xsl:attribute name="title">Next [n]</xsl:attribute>
-              <xsl:attribute name="id">mdpNextPageLink</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$pPageLinks/NextPageLink"/>
-              </xsl:attribute>
-              <xsl:attribute name="accesskey">n</xsl:attribute>
-              <xsl:element name="img">
-                <xsl:attribute name="alt">Next [n]</xsl:attribute>
-                <xsl:attribute name="src">
-                  <xsl:value-of select="'//common-web/graphics/harmony/icon_next.png'"/>
-                </xsl:attribute>
-              </xsl:element>
-            </xsl:element>
-          </xsl:otherwise>
-        </xsl:choose>
-      </li>
-
-      <li>
-        <xsl:if test="$pPageLinks/LastPageLink">
-          <xsl:element name="a">
-            <xsl:attribute name="id">mdpLastPageLink</xsl:attribute>
-            <xsl:attribute name="title">Last [l]</xsl:attribute>
-            <xsl:attribute name="href">
-              <xsl:value-of select="$pPageLinks/LastPageLink"/>
-            </xsl:attribute>
-            <xsl:attribute name="accesskey">l</xsl:attribute>
-            <xsl:element name="img">
-              <xsl:attribute name="alt">Last [l]</xsl:attribute>
-              <xsl:attribute name="src">
-                <xsl:text>//common-web/graphics/harmony/icon_last.png</xsl:text>
-              </xsl:attribute>
-            </xsl:element>
-          </xsl:element>
-        </xsl:if>
-      </li>
-    </ul>
-
-  </xsl:template>
-
-  <xsl:template name="crmsModeControls">
-  </xsl:template>
-
-  <xsl:template name="bookreader-toolbar-items">
-  </xsl:template>
-
- 
-  <xsl:template name="MobileItemMetadata">
-    <div id="mdpMobileItemMetadata">
-        <div id="mdpTitle" class="mdpMobileMetaText">
-          <xsl:call-template name="GetMaybeTruncatedTitle">
-            <xsl:with-param name="titleString" select="$gFullTitleString"/>
-            <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-            <xsl:with-param name="maxLength" select="30"/>
-          </xsl:call-template>
-        </div>
-
-      <!-- Author, Edition, Published, Description -->
-      <xsl:call-template name="MdpMetadataHelper"/>
-    </div>
-
-  </xsl:template>
-
-
-  <!-- METADATA: MDP-style metadata helper -->
-  <xsl:template name="MdpMetadataHelper">
-    <xsl:param name="ssd"/>
-
-      <xsl:if test="$gRightsAttribute">
-        <div class="mdpMetaDataRow">
-          <span class="mdpMetaDataRegionHead">
-            <xsl:text>Copyright:</xsl:text>
-          </span>
-          <span class="mdpMetaText">
-            <xsl:call-template name="BuildRDFaCCLicenseMarkup" />
-          </span>
-        </div>
-      </xsl:if>
-
-  </xsl:template>
-
-  <xsl:template name="PermanentURL">
-  </xsl:template>
-
-  <xsl:template name="extra-head-setup">
-    <meta name="HandheldFriendly" content="true" />
-    <meta name="robots" content="noarchive" /> 
     <xsl:element name="link">
       <xsl:attribute name="rel">canonical</xsl:attribute>
       <xsl:attribute name="href">
@@ -612,66 +25,424 @@
         <xsl:value-of select="$gHtId" />
       </xsl:attribute>
     </xsl:element>
-    <link rel="alternate" media="handheld" href="" />
-    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; minimum-scale=1; user-scalable=0;" />
-    <meta name="format-detection" content="telephone=no" />
-    <script src="/common/unicorn/js/head.min.js"></script>
+
+    <xsl:text disable-output-escaping="yes">
+    <![CDATA[<!--[if lte IE 8]><link rel="stylesheet" type="text/css" href="/pt/css/ie8.css" /><![endif]-->]]>
+    </xsl:text>
+
     <script>
-      head.js.apply(this, HT.scripts);
+      var HT = HT || {};
+      <!-- this should really become a JSON blob -->
+      HT.params = {};
+      <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
+        <xsl:choose>
+          <xsl:when test="@name = 'seq'">
+            HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.)" />;
+          </xsl:when>
+          <!-- prevent XSS exploit when q1 is displayed in result page -->
+          <xsl:when test="@name = 'q1'">
+            HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="'foo'" />';
+          </xsl:when>
+          <xsl:otherwise>
+            HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+      HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
+      HT.params.RecordURL = '<xsl:value-of select="concat('http://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
     </script>
+    <xsl:call-template name="load_js_and_css"/>
+    <xsl:call-template name="include_local_javascript" />
+
+    <xsl:call-template name="setup-extra-header-extra" />
   </xsl:template>
 
-  <!-- FORM: Search -->
-  <xsl:template name="MobileBuildSearchForm">
+  <xsl:template name="skip-to-main-link">
+    <a class="offscreen skip-link" href="#main">Skip to main</a>
+  </xsl:template>
 
-    <div id="mdpSearchFormLabel">
-      <xsl:element name="a">
-        <xsl:attribute name="class">SkipLink</xsl:attribute>
-        <xsl:attribute name="name">SkipToSearch</xsl:attribute>
-      </xsl:element>
+  <xsl:template name="setup-extra-header-extra" />
+
+  <xsl:template name="navbar" />
+  <xsl:template name="sidebar" />
+
+  <xsl:template name="contents">
+    <!-- h2 ? -->
+    <xsl:call-template name="pageviewer-contents" />
+    <xsl:call-template name="get-access-statements" />
+  </xsl:template>
+
+  <xsl:template name="header">
+    <div id="toolbar-header" class="cbp-spmenu-top cbp-spmenu cbp-spmenu-open">
+      <nav class="cbp-spmenu-horizontal2">
+        <a href="http://m.hathitrust.org/" class="ht-logo-link float-left"><span class="label">HathiTrust</span></a>
+        <button id="action-table-of-contents" class="float-right">Contents</button>
+        <a id="toolbar-back-to-record" href="http://catalog.hathitrust.org/Record/{$gCatalogRecordNo}">&lt;&lt; Record</a>
+        <a id="toolbar-back-to-item" href="#">&lt;&lt; Back</a>
+      </nav>
     </div>
-    <form method="get" onsubmit='return false;' action='pt/search'>
-      <div class="asearchform">
-        <xsl:element name="input">
-          <xsl:attribute name="id">mdpSearchInputBox</xsl:attribute>
-          <xsl:attribute name="type">text</xsl:attribute>
-          <xsl:attribute name="name">q1</xsl:attribute>
-          <xsl:attribute name="maxlength">150</xsl:attribute>
-          <xsl:attribute name="size">20</xsl:attribute>
-          <xsl:attribute name="onclick"><xsl:text>this.focus();</xsl:text></xsl:attribute>
-          <xsl:attribute name="value">
-            <xsl:value-of select="$gCurrentQ1"/>
-          </xsl:attribute>
-        </xsl:element>
-
-        <xsl:element name="input">
-          <xsl:attribute name="id">mdpSearchButton</xsl:attribute>
-          <xsl:attribute name="type">submit</xsl:attribute>
-          <xsl:attribute name="value">Find</xsl:attribute>
-          <xsl:attribute name="searchurl"><xsl:value-of select="'ptsearch'"/></xsl:attribute>
-        </xsl:element>
-
-      </div>
-    </form>
-
-    <xsl:call-template name="BuildMobileFooter"/>
   </xsl:template>
 
+  <xsl:template name="footer">
 
-  <xsl:template name="BuildMobileFooter">
-    <div id="mdpFooter">
-      <div id="footerDiv" class="footer">
-        <div id="footerlogin">
-          <xsl:call-template name="loginlink"/>
+    <div id="mobile-footer" class="container centered">
+      <xsl:variable name="feedback-id">
+        <xsl:call-template name="get-feedback-id" />
+      </xsl:variable>
+      <xsl:variable name="feedback-m">
+        <xsl:call-template name="get-feedback-m" />
+      </xsl:variable>
+      <div class="row">
+        <div class="span12">
+          <p>
+            <xsl:choose>
+              <xsl:when test="$gLoggedIn = 'YES'">
+                <a id="logout-link" class="btn btn-large btn-inverse" href="{//Header/LoginLink}">Logout</a>
+              </xsl:when>
+              <xsl:otherwise>
+                <a class="btn btn-large btn-inverse" href="{//Header/LoginLink};skin=mobilewayf">Login</a>
+              </xsl:otherwise>
+            </xsl:choose>
+          </p>
+          <p class="links">
+            <a href="/cgi/feedback" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a>
+            <xsl:text> | </xsl:text>
+            <a href="http://www.hathitrust.org/help_digital_library#Mobile" title="Help, Documentation, and FAQ">Help</a>
+            <xsl:text> | </xsl:text>
+            <a href="http://www.hathitrust.org/take_down_policy" title="item removal policy">Take-Down Policy</a>
+          </p>
         </div>
-        
-        <xsl:call-template name="feedbacklink"/>  | <a href="http://www.hathitrust.org/help_mobile">Help</a> | <xsl:call-template name="footertakedownlink"/>
-        <br />
+      </div>
+    </div>
+
+    <div id="toolbar-footer" class="cbp-spmenu-bottom cbp-spmenu cbp-spmenu-open">
+      <a href="#" id="action-toggle-toolbars"></a>
+      <nav class="cbp-spmenu-horizontal">
+          <button id="action-view-toggle"><span class="label">Plain Text</span></button>
+          <button id="action-info"><span class="label">Info</span></button>
+          <button id="action-settings"><span class="label">Settings</span></button>
+          <button id="action-get-item"><span class="label">Get Item</span></button>
+          <button id="action-search-inside"><span class="label">Search Inside</span></button>
+      </nav>
+      <div class="slider-park"></div>
+    </div>
+
+
+    <xsl:call-template name="build-settings-panel" />
+    <xsl:call-template name="build-info-panel" />
+    <xsl:call-template name="build-get-book-panel" />
+
+  </xsl:template>
+
+<!--   <div class="slider-horizontal">
+    <div class="slider-track"></div>
+  </div> -->
+
+  <xsl:template name="build-search-inside">
+    <div id="search-page" class="hide">
+      <form class="form-inline centered form-search-inside" id="form-search-volume">
+        <input type="text" id="mdpSearchInputBox" name="q1" maxlength="150" size="20" value="" class="input-medium" />
+        <button class="btn">Find</button>
+      </form>
+      <div class="message"></div>
+      <ul class="search-results">
+      </ul>
+      <div class="centered">
+        <p>
+          <button id="action-more-results" class="btn btn-large btn-inverse hide">More Results</button>
+        </p>
       </div>
     </div>
   </xsl:template>
+
+  <xsl:template name="build-get-book-panel">
+    <div id="get-book-panel" class="modal hide bootbox" tabindex="-1" role="dialog" aria-labelledby="Get this Book" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Get this Book</h3>
+      </div>
+      <div class="modal-body">
+        <div class="panel-group">
+          <xsl:call-template name="find-in-library" />
+        </div>
+        <div class="panel-group">
+          <xsl:if test="$gFullPdfAccessMessage='' or $gFullPdfAccessMessage='NOT_AFFILIATED' or $gFullPdfAccessMessage='RESTRICTED_SOURCE'">
+            <xsl:choose>
+              <xsl:when test="$gFullPdfAccessMessage='RESTRICTED_SOURCE'">
+                <p>
+                  <xsl:text>Download whole book (PDF)</xsl:text>
+                  <br />
+                  <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
+                </p>
+              </xsl:when>
+              <xsl:otherwise>
+                <a href="{//ViewTypeFullPdfLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="PDF" rel="{$gFullPdfAccess}" id="fullPdfLink">Download PDF</a>
+                <a href="{//ViewTypeFullEpubLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="EPUB" rel="{$gFullPdfAccess}" id="epubLink">Download EPUB</a>
+                <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                  <p class="pdfPartnerLoginLinkMessage">Partner login required</p>
+                </xsl:if>
+              </xsl:otherwise>
+            </xsl:choose>
+            
+            <xsl:if test="$gFullPdfAccess = 'deny'">
+              <div id="noPdfAccess">
+                <xsl:choose>
+                  <xsl:when test="$gLoggedIn = 'NO' and $gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <p class="larger">
+                      <xsl:text>Partner institution members: </xsl:text>
+                      <strong><a class="trigger-login" data-close-target=".modal.login" href="{$pViewTypeList/ViewTypeFullPdfLink}">Login</a></strong>
+                      <xsl:text> to download this book.</xsl:text>
+                    </p>
+                    <p>
+                    <em>If you are not a member of a partner institution, 
+                      <br />
+                      whole book download is not available. 
+                      (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+                    <p>
+                      <xsl:text>Full PDF available only to authenticated users from </xsl:text>
+                      <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
+                    <p>
+                      <xsl:text>In-copyright books cannot be downloaded.</xsl:text>
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'NOT_AVAILABLE'">
+                    <p>
+                      <xsl:text>This book cannot be downloaded.</xsl:text>
+                    </p>
+                  </xsl:when>
+                  <xsl:when test="$gFullPdfAccessMessage = 'RESTRICTED_SOURCE'">
+                      <xsl:comment>Handled above</xsl:comment>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <p>
+                      <xsl:text>Sorry.</xsl:text>
+                    </p>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </div>
+            </xsl:if>
+          </xsl:if>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-large" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="build-info-panel">
+
+    <div id="info-panel" class="modal hide bootbox" tabindex="-1" role="dialog" aria-labelledby="Info" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Info</h3>
+      </div>
+      <div class="modal-body">
+        <div class="panel-group">
+          <p>
+            <xsl:call-template name="BuildRDFaWrappedTitle">
+              <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
+              <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
+            </xsl:call-template>
+            <xsl:text> </xsl:text>
+
+            <!-- not visible -->
+            <xsl:call-template name="BuildRDFaWrappedAuthor"/>
+          </p>
+          <p class="smaller">
+            <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+          </p>            
+        </div>
+        <div class="panel-group">
+          <p>
+            <a href="http://m.hathitrust.org/Record/{$gCatalogRecordNo}" class="btn btn-full btn-inverse btn-large">Back to Record</a>
+          </p>
+        </div>
+        <div class="panel-group">
+          <p>
+            <xsl:call-template name="action-feedback-link" />
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-large" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="build-settings-panel">
+    <div id="settings-panel" class="modal hide bootbox" tabindex="-1" role="dialog" aria-labelledby="Settings" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Settings</h3>
+      </div>
+      <div class="modal-body">
+        <div class="panel-group">
+          <button class="btn btn-full btn-inverse btn-large" id="action-zoom-in">Zoom In</button>
+          <button class="btn btn-full btn-inverse btn-large" id="action-zoom-out">Zoom Out</button>
+        </div>
+        <div class="panel-group">
+          <button class="btn btn-full btn-inverse btn-large" id="action-zoom-reset">Fit to Page</button>
+        </div>
+        <div class="panel-group">
+          <a href="{$gItemHandle}?urlappend=%3Bskin=default" class="btn btn-full btn-inverse btn-large">Regular Site</a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-large" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="find-in-library">
+    <xsl:variable name="x" select="$gMdpMetadata/datafield" />
+    <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
+      <xsl:variable name="oclc-number">
+        <xsl:choose>
+          <xsl:when test="contains(.,'OCoLC)ocm')">
+            <xsl:value-of select="substring-after(.,'OCoLC)ocm')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'OCoLC')">
+            <xsl:value-of select="substring-after(.,'OCoLC)')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'oclc')">
+            <xsl:value-of select="substring-after(.,'oclc')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'ocm')">
+            <xsl:value-of select="substring-after(.,'ocm')"/>
+          </xsl:when>
+          <xsl:when test="contains(.,'ocn')">
+            <xsl:value-of select="substring-after(.,'ocn')"/>
+          </xsl:when>
+          <xsl:otherwise/>
+        </xsl:choose>
+      </xsl:variable>
+      <xsl:element name="a">
+        <xsl:attribute name="class">btn btn-full btn-inverse btn-large</xsl:attribute>
+        <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+        <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
+        <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
+        <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
+        <xsl:attribute name="href">
+          <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
+          <xsl:value-of select="$oclc-number" />
+        </xsl:attribute>
+        <xsl:text>Find in a library</xsl:text>
+      </xsl:element>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="action-feedback-link">
+    <xsl:variable name="feedback-id">
+      <xsl:call-template name="get-feedback-id" />
+    </xsl:variable>
+    <xsl:variable name="feedback-m">
+      <xsl:call-template name="get-feedback-m" />
+    </xsl:variable>
+    <a class="btn btn-full btn-inverse btn-large" href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a>
+  </xsl:template>
+
+  <xsl:template name="get-page-title">
+    <xsl:call-template name="PageTitle">
+      <xsl:with-param name="suffix">
+        <xsl:call-template name="get-title-suffix" />
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template name="action-search-volume">
+    <h3 class="offscreen">Search in this volume</h3>
+    <form class="form-inline" method="get" id="form-search-volume">
+      <xsl:attribute name="action">
+        <xsl:choose>
+          <xsl:when test="$gUsingSearch = 'true'">search</xsl:when>
+          <xsl:otherwise>pt/search</xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <label for="input-search-text">Search in this text </label>
+      <input id="input-search-text" name="q1" type="text" class="input-small">
+        <xsl:if test="$gHasOcr!='YES'">
+          <xsl:attribute name="disabled">disabled</xsl:attribute>
+        </xsl:if>
+        <xsl:attribute name="placeholder">
+          <xsl:choose>
+            <xsl:when test="$gHasOcr = 'YES'">
+              <!-- <xsl:text>Search in this text</xsl:text> -->
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>No text to search in this item</xsl:text>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:attribute>
+        <xsl:attribute name="value">
+          <xsl:if test="$gHasOcr = 'YES'">
+            <xsl:value-of select="$gCurrentQ1" />
+          </xsl:if>
+        </xsl:attribute>
+      </input>
+      <button type="submit" class="btn">Find</button>
+      <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
+      <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+        <input type="hidden" name="seq" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']}" />
+      </xsl:if>
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
+        <input type="hidden" name="num" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']}" />
+      </xsl:if>
+    </form>
+  </xsl:template>
+
+  <xsl:template name="get-access-statements">
+    <!-- access banners are hidden and exposed by access_banner.js -->
+    <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
+      <xsl:choose>
+        <xsl:when test="$gLoggedIn='YES'">
+          <xsl:choose>
+            <xsl:when test="$gSSD_Session='true'">
+              <xsl:call-template name="access_banner_ssd"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:call-template name="access_banner"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="access_banner_local"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="access_banner_ssd">
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br /><br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p></div></div>
+  </xsl:template>
+
+  <xsl:template name="access_banner">
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
+  </xsl:template>
+
+  <xsl:template name="access_banner_local">
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
+  </xsl:template>
+
+  <xsl:template name="html-tag-extra-attributes" />
+  <xsl:template name="include_extra_js_and_css" />
+  <xsl:template name="setup-head" />
+  <xsl:template name="item-viewer" />
+
+  <xsl:template name="get-title-suffix">
+    <xsl:text>HathiTrust Digital Library</xsl:text>
+  </xsl:template>
+
+  <xsl:template name="get-tracking-category">PT</xsl:template>
+
+  <xsl:template name="access-overview" />
 
 </xsl:stylesheet>
-
-
 

@@ -166,6 +166,9 @@ HT.Reader = {
             }
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq, orig);
+            if ( self.$slider ) {
+                self.$slider.slider('setValue', self.getView() == '2up' ? self.manager.view._seq2page(seq) : seq);
+            }
         })
 
         $.subscribe("update.focus.page", function(e, seq) {
@@ -176,6 +179,11 @@ HT.Reader = {
 
         $.subscribe("view.ready.reader", function() {
             self._tracking = true;
+            if ( self.getView() == '2up' ) {
+                setTimeout(function() {
+                    self.buildSlider();
+                }, 250);
+            }
             $(window).trigger('reset');
         });
 
@@ -219,6 +227,11 @@ HT.Reader = {
             // }
             $.publish("action.toggle.fullscreen");
             $(window).resize();
+        })
+
+        var $e = get_resize_root();
+        $e.on('resize.reader', function(e) {
+            $.publish("action.resize");
         })
 
     },
@@ -431,12 +444,15 @@ HT.Reader = {
     },
 
     _handleFlip: function(stage) {
+        var self = this;
+
         var $link = $("#pagePdfLink").parent();
         if ( stage == 'start' ) {
             // recto verso vs. rtl, BLEH!
             var $link1 = $link.clone(true).find("a").attr("id", "pagePdfLink1").text("Download left page (PDF)").end().insertAfter($link);
             var $link2 = $link.clone(true).find("a").attr("id", "pagePdfLink2").text("Download right page (PDF)").end().insertAfter($link1);
             $link.hide();
+
         } else {
             $("#pagePdfLink1").parent().remove();
             $("#pagePdfLink2").parent().remove();
@@ -447,6 +463,63 @@ HT.Reader = {
     _parseParams: function() {
 
     },
+
+    buildSlider: function() {
+        var self = this;
+        if ( ! self.manager ) {
+            return;
+        }
+        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
+        var manager = self.manager;
+        var last_seq = manager.getLastSeq();
+        var last_num = manager.getPageNumForSeq(last_seq);
+        var current = self.getCurrentSeq();
+        var this_view = self.getView();
+        if ( this_view == '2up ') { current = manager.view._seq2page(current); }
+        console.log("INIT SLIDER", this_view, current, manager.view.pages.length - 1);
+        self.$slider = $nob.slider({
+            min : 0,
+            max : this_view == '2up' ? manager.view.pages.length - 1 : last_seq - 1,
+            value : current,
+            selection : 'none',
+            tooltip : 'show',
+            formater : function(seq) {
+                if ( this_view == '2up' ) {
+                    var old_seq = seq;
+                    seq = manager.view._page2seq(seq);
+                    console.log("FORMAT SLIDE", old_seq, seq);
+                    if ( seq[0] == null ) {
+                        seq = seq[1];
+                    } else {
+                        seq = seq[0];
+                    }
+                }
+                var num = manager.getPageNumForSeq(seq);
+                var text = " / " + last_num;
+                if ( num ) {
+                    text = num + text;
+                } else {
+                    text = "n" + seq  + text;
+                }
+                // var end = self._page2seq(total);
+                return text;
+            },
+            handle : 'square'
+        }).on('slideStop', function(ev) {
+            var seq = ev.value;
+            if ( this_view == '2up' ) {
+                seq = manager.view._page2seq(seq);
+                console.log("SLIDE STOP", seq);
+                if ( seq[0] !== null ) {
+                    seq = seq[0]
+                } else {
+                    seq = seq[1];
+                }
+            }
+            console.log("JUMPING TO", seq);
+            $.publish("action.go.page", (seq));
+        })
+    }, 
 
     EOT: true
 
