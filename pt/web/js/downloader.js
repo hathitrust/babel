@@ -22,7 +22,7 @@ HT.Downloader = {
 
     bindEvents: function() {
         var self = this;
-        $("a[data-toggle=download]").addClass("interactive").click(function(e) {
+        $("a[data-toggle*=download]").addClass("interactive").click(function(e) {
             e.preventDefault();
             bootbox.hideAll();
             if ( $(this).attr("rel") == 'allow' ) {
@@ -47,7 +47,7 @@ HT.Downloader = {
     downloadPdf: function(link) {
         var self = this;
         self.src = $(link).attr('href');
-        self.item_title = $(link).data('title');
+        self.item_title = $(link).data('title') || 'PDF';
 
         var html =
             // '<p>Building your PDF...</p>' +
