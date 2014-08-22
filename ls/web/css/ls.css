@@ -1,1 +1,70 @@
-.zero{background:#000000}ol.filters,ul.filters{list-style:none outside none}ul.filters li{text-indent:-20px}.removeFacetIcon{padding-right:3px;position:relative;top:3px;border:medium none}.selectedfieldname{font-weight:bold}*.hidefacet{display:none;visibility:hidden}span.moreless{font-style:italic}.SearchResults_status{color:#333333;font-size:1.2em;margin:0;padding:20px 5px 20px;position:relative}.SearchResults_status span{font-weight:bold}span.AnyAll{font-weight:normal;font-style:italic}
+/** ls.scss
+*
+*
+**/
+/***
+ls.css
+  Unicorn version.  Stuff only needed by ls. 
+   mostly for facets
+   see oldls.css for old code
+   Probably will need to pull in most of it for advanced search page
+***/
+/* line 16, ../sass/ls.scss */
+.zero {
+  background: #000000;
+}
+
+/**  Facet styling **/
+/* line 23, ../sass/ls.scss */
+ol.filters, ul.filters {
+  list-style: none outside none;
+}
+
+/* line 27, ../sass/ls.scss */
+ul.filters li {
+  text-indent: -20px;
+}
+
+/* line 30, ../sass/ls.scss */
+.removeFacetIcon {
+  padding-right: 3px;
+  position: relative;
+  top: 3px;
+  border: medium none;
+}
+
+/* line 37, ../sass/ls.scss */
+.selectedfieldname {
+  font-weight: bold;
+}
+
+/* line 47, ../sass/ls.scss */
+*.hidefacet {
+  display: none;
+  visibility: hidden;
+}
+
+/* line 53, ../sass/ls.scss */
+span.moreless {
+  font-style: italic;
+}
+
+/* line 60, ../sass/ls.scss */
+.SearchResults_status {
+  color: #333333;
+  font-size: 1.2em;
+  margin: 0;
+  padding: 20px 5px 20px;
+  position: relative;
+}
+
+/* line 67, ../sass/ls.scss */
+.SearchResults_status span {
+  font-weight: bold;
+}
+
+/* line 71, ../sass/ls.scss */
+span.AnyAll {
+  font-weight: normal;
+  font-style: italic;
+}
