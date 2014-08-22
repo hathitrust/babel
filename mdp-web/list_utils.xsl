@@ -150,7 +150,7 @@
             <xsl:call-template name="OperationResults" />
           </div>
         </xsl:if>
-        
+
             <div class="infoAlert">
           <xsl:text>There are 0 items in </xsl:text>
           <span class="colName"><xsl:value-of select="$coll_name"/></span>
@@ -262,7 +262,7 @@
 
         <xsl:otherwise>
           <!-- we are currently showing all so we want to show a url for  narrow to full text  -->
-          
+
           <ul class="nav nav-tabs">
             <li class="viewall active">
               <span>
@@ -271,9 +271,9 @@
                 <xsl:text>)</xsl:text>
               </span>
             </li>
-            <li class="fulltext">      
+            <li class="fulltext">
               <xsl:element name="a">
-                <xsl:attribute name="class">fulltext</xsl:attribute>  
+                <xsl:attribute name="class">fulltext</xsl:attribute>
                 <xsl:attribute name="title">full view</xsl:attribute>
                 <xsl:attribute name="href">
                   <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextHref"/>
@@ -358,20 +358,20 @@
           </xsl:attribute>
           <xsl:text>Of </xsl:text><xsl:value-of select="$num_in_collection"/><xsl:text> items in this collection, </xsl:text>
           <xsl:value-of select="$num_not_indexed"/><xsl:value-of select="$num_not_indexed_verb"/><xsl:text>not available for searching. </xsl:text>
-          
+
           <xsl:if test="$num_deleted > 0">
             <xsl:value-of select="$num_deleted"/><xsl:value-of select="$num_deleted_verb"/><xsl:text> deleted from the repository. </xsl:text>
           </xsl:if>
-          
+
           <xsl:if test="$num_queued > 0">
             <xsl:value-of select="$num_queued"/><xsl:value-of select="$num_queued_verb"/>
             <xsl:text> queued to be indexed, usually within 48 hours.</xsl:text>
           </xsl:if>
-        </xsl:element>      
+        </xsl:element>
       </xsl:element>
-    </xsl:if>  
+    </xsl:if>
   </xsl:template>
-  
+
   <xsl:template name="DisplayContent">
     <xsl:param name="title" />
     <xsl:param name="item-list-contents" />
@@ -407,7 +407,7 @@
         </xsl:with-param>
       </xsl:call-template>
     </xsl:if>
-    
+
     <xsl:if test="$already_count &gt; 0">
       <xsl:value-of select="$already_count"/>
       <xsl:choose>
@@ -450,7 +450,7 @@
       <xsl:choose>
         <xsl:when test="$action = 'movit'">moved</xsl:when>
         <xsl:when test="$action = 'delit'">deleted</xsl:when>
-        <xsl:when test="$ToCollName = $CollName">restored</xsl:when> 
+        <xsl:when test="$ToCollName = $CollName">restored</xsl:when>
         <xsl:otherwise>copied</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -467,7 +467,7 @@
         <xsl:text> item was </xsl:text>
       </xsl:otherwise>
     </xsl:choose>
-    
+
     <xsl:value-of select="$ActionName"/>
     <xsl:choose>
       <xsl:when test="$ActionName = 'restored'">
@@ -487,7 +487,7 @@
       </xsl:choose>
 
     </xsl:template>
-    
+
 
     <xsl:template name="Deleted">
       <xsl:param name="DelValidCount"/>
@@ -505,13 +505,13 @@
       <span class="colName">
         <xsl:value-of select="OperationResults/DeleteItemsInfo/DeleteFromCollName"/>
       </span>
-      
+
       <span class="undo">
 		    <xsl:text>(</xsl:text>
         <a>
           <xsl:attribute name="href">
           <xsl:attribute name ="class">inlineLink</xsl:attribute>
-            <xsl:value-of select="OperationResults/DeleteItemsInfo/UndoDelHref"/>            
+            <xsl:value-of select="OperationResults/DeleteItemsInfo/UndoDelHref"/>
           </xsl:attribute>undo
 		    </a>
 		    <xsl:text>)</xsl:text>
@@ -660,12 +660,12 @@
     <xsl:for-each select="/MBooksTop/Paging/StartPageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
-        
+
     <!--##################### only if we want two elipsis
     <xsl:if test="/MBooksTop/Paging/StartPageLinks/PageURL">
       <li class="elipsis">
         <xsl:text>...start</xsl:text>
-      </li>        
+      </li>
     </xsl:if>
     ######################################-->
     <xsl:for-each select="/MBooksTop/Paging/MiddlePageLinks/PageURL">
@@ -675,15 +675,15 @@
     <xsl:if test="/MBooksTop/Paging/EndPageLinks/PageURL">
       <li class="elipsis">
         <xsl:text>...</xsl:text>
-      </li>        
+      </li>
     </xsl:if>
-    
+
     <xsl:for-each select="/MBooksTop/Paging/EndPageLinks/PageURL">
       <xsl:call-template name="output_page_link_or_current_page"/>
     </xsl:for-each>
-    
+
   </xsl:template>
-  
+
   <xsl:template name="output_page_link_or_current_page">
     <xsl:choose>
       <xsl:when test="Content/CurrentPage">
@@ -703,10 +703,10 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-    
+
   <!--##############################################################  END PAGING #########################-->
-    
-    
+
+
   <xsl:template name="BuildSortWidget">
 
     <div id="SortWidget">
@@ -904,7 +904,7 @@
             <xsl:with-param name="which_paging" select="'bottom_paging'"/>
           </xsl:call-template>
         </div> -->
-        
+
         <xsl:call-template name="BuildPagingControls">
           <xsl:with-param name="which_paging" select="'bottom_paging'"/>
         </xsl:call-template>
@@ -962,14 +962,14 @@
     </xsl:element>
   </xsl:template>
 
-    
+
   <xsl:template name="SearchWidget">
     <xsl:param name="label">Search in this collection</xsl:param>
     <xsl:if test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
       <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
         <xsl:call-template name="HiddenDebug"/>
         <label for="q1"><xsl:value-of select="$label" /></label>
-        <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge">      
+        <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge">
           <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
             <xsl:attribute name="value">
               <xsl:value-of select="/MBooksTop/QueryString"/>
@@ -982,7 +982,7 @@
       </form>
     </xsl:if>
   </xsl:template>
-    
+
 
   <xsl:template name="BuildItemChunk">
     <!--#######################  variables used for each chunk-->
@@ -1062,7 +1062,7 @@
             <span class="ItemAuthorLabel">
               <xsl:text>by </xsl:text>
             </span>
-            
+
             <span class="Author">
               <xsl:value-of select="Author"  disable-output-escaping="yes"/>
             </span>
@@ -1099,7 +1099,7 @@
             <li>
               <!--tbw catalog link hard coded text   div needs a class!-->
               <xsl:element name="a">
-                <xsl:attribute name="href">     
+                <xsl:attribute name="href">
                   <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
                   <xsl:value-of select ="record"/>
                 </xsl:attribute>
@@ -1142,7 +1142,7 @@
         <div class="cover">
           <xsl:if test="normalize-space(bookID)">
             <xsl:attribute name="data-bookID"><xsl:value-of select="bookID" /></xsl:attribute>
-            <xsl:attribute name="data-barcode"><xsl:value-of select="ItemID" /></xsl:attribute>
+            <xsl:attribute name="data-hdl"><xsl:value-of select="ItemID" /></xsl:attribute>
           </xsl:if>
         </div>
         <div class="select">
@@ -1203,7 +1203,7 @@
             <span class="ItemAuthorLabel">
               <xsl:text>by </xsl:text>
             </span>
-            
+
             <span class="Author">
               <xsl:value-of select="Author"  disable-output-escaping="yes"/>
             </span>
@@ -1240,7 +1240,7 @@
             <li>
               <!--tbw catalog link hard coded text   div needs a class!-->
               <xsl:element name="a">
-                <xsl:attribute name="href">     
+                <xsl:attribute name="href">
                   <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
                   <xsl:value-of select ="record"/>
                 </xsl:attribute>
@@ -1300,7 +1300,7 @@
               </xsl:for-each>
             </ul>
           </div>
-        </div> 
+        </div>
 
 
       </div>
@@ -1309,7 +1309,7 @@
   </xsl:template>
 
   <xsl:template name="GetTitle">
-    <xsl:value-of select="Title" disable-output-escaping="yes" />    
+    <xsl:value-of select="Title" disable-output-escaping="yes" />
   </xsl:template>
 
 

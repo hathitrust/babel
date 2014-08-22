@@ -30,7 +30,7 @@ head.ready(function() {
         }).attr('src', google_link.thumbnail_url);
       } else {
         var $img = $('<img class="bookCover" aria-hidden="true" alt=""/>')
-        $img.attr("src", "/cgi/imgsrv/cover?id=" + $div.data('barcode'));
+        $img.attr("src", "/cgi/imgsrv/cover?id=" + $div.data('hdl'));
         if ( window.location.hash.indexOf("debug=covers") > -1 ) {
           $div.addClass("localCover");
         }
