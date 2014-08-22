@@ -1,0 +1,499 @@
+/***
+
+ls_advanced.css
+  Tom temporary css styles to be put in single css or integrated using SASS
+
+
+***/
+
+/**  On initial load hide lots of stuff without javascript to avoid
+flashing in IE **/
+
+#removeGroup{
+        visibility:hidden;
+}
+
+//pdates
+#yop-between{
+       display:none;
+}
+#yop-in{
+        display:none;
+}
+#yop-end{
+        display:none;
+}
+
+#fieldsetGroup2{
+        display:none;
+}
+
+#AdvancedExplanation{
+                      margin-bottom: 1em;
+                      margin-top: 1em;
+                      font-size:110%;
+
+ }
+
+#AdvancedCatalogLink {
+  float: right;
+  width: 20%;
+  font-size:110%;
+}
+
+
+.LsAdvancedPageContent{
+       font-size:12px;
+    // color:red;
+	width: 100%;
+	margin: 0 auto;
+	min-width: 1000px;
+
+  }
+
+
+
+
+#search_tips{
+              font-size:110%;
+              color:green;
+ }
+
+#addGroup{
+           font-size:110%;
+ }
+#removeGroup{
+                font-size:110%;
+             }
+
+#findbuttons
+{
+  margin-top:10px;
+  margin-left:0;
+ }
+#advanced
+
+
+#reset{
+        margin-left:5em;
+        font-size:120%;
+}
+
+
+
+
+select, input {
+                margin-left:100em;
+                margin-right:1em;
+                width:auto;
+
+ }
+
+//hide these like offscreen?
+
+.SkipLink, .SearchLabel, .offscreen {
+    height: 1px;
+    left: -10000px;
+    overflow: hidden;
+    position: absolute;
+    top: auto;
+    width: 1px;
+}
+
+label.SearchLabel {
+    height: 1px;
+    left: -10000px;
+    overflow: hidden;
+    position: absolute;
+    top: auto;
+    width: 1px;
+}
+label {
+    display: inline;
+    margin-bottom: 5px;
+}
+
+
+
+
+
+
+
+
+#fieldsetGroup1{
+                 margin-top:.3em;
+ }
+/** for debugging uncomment this**/
+/*div { outline:1px dashed red; } */
+
+
+.querybox{
+           /* if we don't set the width, it gets a default width (which I can't find any reference to) but the side effect is that with no width set on any inline element in the <ul> the rowsw won't resize*/
+/* we would like to set the width to 25-35 characters to encourage users to use several query terms (See: Belkin et. al. "Query length in interactive information retrieval"  http://dx.doi.org/10.1145/860435.860474 )
+   If we set width to 20 em it seems allright but over x em it starts to wrap the row
+*/
+           width:20em;
+ }
+
+/*Parenthesis  */
+
+/* IE7 hacks  see ls.advanced.js where we wrap classes IEcell IErow and parenGroup with html table code with jquery*/
+tr.IEtr{
+
+
+ }
+td.IEtd.paren{
+               font-size:600%;
+               vertical-align:middle;
+               line-height:100%;
+               font-family:monospaced;
+               color:#bfbfbf ;
+ }
+
+/*end IE7 hacks*/
+
+div.parenGroup{
+             //   outline:1px dashed red;
+                display:table-row;
+                text-align:left;
+                }
+
+div.group{
+      /*     outline:1px dotted blue;*/
+           display:table-cell;
+           vertical-align:middle;
+
+          /* width:80%;*/
+/*           margin-left:15%;
+           margin-right:15%;
+*/
+ }
+div.paren{
+//          outline:1px dashed green;
+            visibility:hidden;
+           display:table-cell;
+           font-size:800%;
+           vertical-align:middle;
+           font-family:monospace;
+           color:#bfbfbf ;
+
+ }
+
+/* XXXtest this after converting the div to a block  (IE7 only supports this on regular inline elements)
+span.paren{
+           display:inline-block;
+           font-size:700%;
+           vertical-align:middle;
+           font-family:monospace;
+
+}
+*/
+
+div.parenLeft{
+              /*  float: left;*/
+              text-align:right;
+
+ }
+div.parenRight{
+              /*  float:right;*/
+               text-align:left;
+
+ }
+/* fieldset formatting*/
+
+fieldset {
+           border:none;
+ }
+
+
+legend.limitTo{
+               font-size:150%;
+
+ }
+
+
+
+
+/* facet formatting */
+/* we use xSearchLabel to avoid conflict with MBooksCol.css*/
+
+label.xSearchLabel
+{
+/*  margin-left:1em;*/
+  display:block;
+  }
+
+#format{
+         float:left;
+         margin-left:5em;
+ }
+
+#language{
+           float:left;
+ }
+
+select.orFacet{
+                margin-left:0;
+ }
+
+#multiFacets{
+              margin-top:20px;
+ }
+
+/* end facet formatting*/
+
+
+
+fieldset.group{
+
+            /*    background-color:#E9E9E9;*/
+           /*     padding:0;*/
+                margin-bottom:1em;
+                margin-top:1em;
+                border:0;
+/**                width:80%;**/
+
+
+}
+
+
+
+
+
+
+
+
+.limits{
+
+}
+
+
+.removeFacetIcon{
+                /*  margin-left:2em;*/
+ }
+
+
+.advrow ul{
+
+            margin:0 0 5px 0;
+            padding:0;
+        /*    float: left;*/
+            list-style:none;
+}
+.advrow ul li {
+
+
+                display: inline;
+                list-style-type: none;
+                text-decoration:none;
+
+                padding: 1.5px 1px;
+                /**    background-color:grey;**/
+ }
+
+
+/**XXX combine this with rule for AndOr **/
+.spacer{
+         width:6.3em;
+        /* color:green;
+         backround-color:green;*/
+         display:inline-block;
+         margin-left:1em;
+         margin-right:1em;
+}
+
+span.AnyAll  {
+               font-weight:normal;
+               font-style:italic;
+               }
+
+#anyall1 {
+/*          margin-left:8em;*/
+ }
+
+#anyall3 {
+
+ }
+
+
+.AndOr {
+
+         width:5em;
+      /*   margin-left:auto;
+         margin-right: auto;*/
+}
+.andOR  {
+          display:inline;
+          width:5em;
+
+ }
+
+#op3{
+     // visibility:hidden;
+     display:none;
+      width:5em;
+      margin-top:10px;
+      margin-bottom:10px;
+    /*  margin-left:-1em; removed for IE7*/
+      }
+
+
+
+
+ul.row{
+
+ }
+
+
+
+
+.advancedMsg
+{
+  font-size:70%;
+}
+
+#Op3bool
+{
+  margin:3px;
+  background-color:#FFFFFF;
+  padding:10px ;
+
+
+}
+
+
+#modify_link
+{
+  font-weight:normal;
+  font-size:90%;
+}
+
+.AdvancedLSerror #modify_link
+{
+  margin-top:1%;
+  }
+
+
+
+#advancedLabel
+{
+
+ /** margin:3px;
+  padding:10px;**/
+  font-size: 150%;
+  font-weight:normal;
+}
+
+#limits{
+          margin-bottom:3em;
+        margin-top:1em;
+ }
+
+#limits h3
+{
+  font-size: 130%;
+  margin-bottom:10px;
+  color:#000000;
+}
+
+
+
+#queryArea
+{
+/**  background-color **/
+  margin:3px;
+  padding:3px;
+}
+
+
+
+.advancedClause
+{
+
+  margin:1px 8px;
+  font-size:80%;
+  line-height:100%;
+}
+
+.advancedClause .infoAlert
+{
+  margin:15px 15px 0;
+}
+
+
+.AdvancedLSerror .advancedClause
+{
+
+  margin:1px 3%;
+  font-size:100%;
+
+ }
+
+#x_icon
+{
+  margin:0px 10px 0px 10px;
+  padding:0px;
+
+ }
+
+/** this should instead inherit from LSerror with one change of witdth**/
+.AdvancedLSerror
+{
+  background:#FEEEEE  scroll 15px 90%;
+  border:1px solid #FF4040;
+  color:#000000;
+  margin-top:10px;
+  margin-bottom: 10px;
+  margin-right:10px;
+  margin-left:10px;
+  padding:10px;
+
+
+}
+
+
+#zeroHits
+{
+  line-height:2;
+  color:red
+ }
+#AdvancedLSerrorSearchStuff{
+                             margin-top:3px;
+ }
+
+#in{
+     font-size:110%;
+}
+
+#LimitsError
+{
+
+  border:1px solid #EBECE4;
+  padding:5px;
+  background-color:#FAFAFA;
+  margin:10px 0px;
+
+
+
+ }
+
+#ColContentLSerror
+{
+  margin-top:10px;
+  }
+
+select, input {
+                margin-left:1em;
+                margin-right:1em;
+ }
+
+/** XXX fix this**/
+#itemlist_searchform
+{
+
+ }
+
+.SearchResults_status
+{
+  line-height:120%
+ }
