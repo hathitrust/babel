@@ -1142,6 +1142,7 @@
         <div class="cover">
           <xsl:if test="normalize-space(bookID)">
             <xsl:attribute name="data-bookID"><xsl:value-of select="bookID" /></xsl:attribute>
+            <xsl:attribute name="data-barcode"><xsl:value-of select="ItemID" /></xsl:attribute>
           </xsl:if>
         </div>
         <div class="select">

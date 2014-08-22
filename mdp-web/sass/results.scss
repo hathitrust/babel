@@ -42,7 +42,7 @@
         // @include push(2);
         margin-top: 0;
         margin-bottom: 5px;
-        margin-bottom: 0.5rem;  
+        margin-bottom: 0.5rem;
         font-size: 16px;
         font-weight: normal;
         width: 99%;
@@ -66,15 +66,20 @@
     }
 
     .cover {
-        width: 60px; 
+        width: 60px;
         min-height: 60px;
         float: right;
 
         img {
-            min-width: 60px;
+            // min-width: 60px;
             max-width: 60px;
+            border: 2px solid #eee;
         }
 
+    }
+
+    .localCover {
+      border-bottom: 8px solid red !important;
     }
 
     .select {
@@ -181,7 +186,7 @@ margin-right: 2px;
         font-size: 110%;
         // font-weight: bold;
     }
-    
+
     @include rem(padding-bottom, 16);
     @include rem(margin-bottom, 16) ;
     border-bottom: 1px dotted #a6a5a5;
@@ -204,7 +209,7 @@ margin-right: 2px;
     a:hover {
         text-decoration: underline;
         border-bottom: none;
-        color: #b15a0d;        
+        color: #b15a0d;
     }
 
     ul {
@@ -246,7 +251,7 @@ margin-right: 2px;
 
             a {
                 color: #4f4f4f;
-            }            
+            }
         }
 
       }
