@@ -40,12 +40,13 @@ $app = builder {
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
 
     enable 'Choke::Cache::Filesystem';
+    enable 'Choke::Cache::Filesystem', config_key => 'choke_shared_cache_dir', name => 'psgix.cache.shared';
 
     enable
         match_if param('index'),
             'Choke::Requests::Indexer',
                     key            => 'search-index',
-                    cache_dir_key  => 'choke_shared_cache_dir',
+                    use_cache      => 'psgix.cache.shared',
                     client_identifier_sub => sub {
                         my ( $request ) = @_;
                         if ( $request->param('id') ) {
