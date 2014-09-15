@@ -147,7 +147,7 @@ HT.Viewer.Flip = {
 
     updateZoom: function(delta, zoom) {
         var self = this;
-        
+
         var current_index = self.zoom_levels.indexOf(self.zoom);
         if ( delta == 0 ) {
             delta = self.zoom_levels.indexOf(zoom) - current_index;
@@ -302,7 +302,7 @@ HT.Viewer.Flip = {
         }
 
         if ( self.w < 0 ) {
-            // cleanup later --- we want a slightly larger initial page if 
+            // cleanup later --- we want a slightly larger initial page if
             // we have the whole window available to us
             for(var i = 0; i < self.zoom_levels.length; i++) {
                 var zoom = self.zoom_levels[i];
@@ -349,7 +349,8 @@ HT.Viewer.Flip = {
 
         var start_seq = 1;
         var end_seq = self.options.manager.num_pages;
-        if ( self.options.manager.has_feature(1, "FRONT_COVER") || ( self.options.manager.has_feature(1, "COVER") && self.options.manager.has_feature(1, "RIGHT") ) ) {
+
+        if ( self.options.manager.has_feature(1, "FRONT_COVER") || ( self.options.manager.has_feature(1, "COVER") && self.options.manager.has_feature(1, "RIGHT") ) || ! self.options.manager.has_features(1) ) {
             // first page is a cover
             if ( self.options.manager.reading_order == 'right-to-left' ) {
                 pages.push([ 1, null ]);
@@ -365,7 +366,7 @@ HT.Viewer.Flip = {
             } else {
                 last_page = [ end_seq, null ];
             }
-            end_seq -= 1;           
+            end_seq -= 1;
         }
 
         for(var seq = start_seq; seq <= end_seq; seq += 2) {

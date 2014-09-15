@@ -32,7 +32,7 @@ HT.Manager = {
 
         var href = this.options.reader.imgsrv.get_action_url("meta", {});
         $.ajaxSetup({ async : false });
-        $.getJSON(href + "callback=?", 
+        $.getJSON(href + "callback=?",
             { id : this.options.id, format : 'items', limit : 1000002, method : 'fudged', start : 0, debug : HT.params.debug || ''  },
             function(data) {
                 // console.log("processing", data.items.length);
@@ -44,7 +44,7 @@ HT.Manager = {
                 $.ajaxSetup({ async: true });
                 // callback();
                 self.view.start();
-            }, 
+            },
             'json')
 
     },
@@ -95,9 +95,9 @@ HT.Manager = {
     getLastSeq: function() {
         var end_seq = this.num_pages;
         if ( this.has_feature(end_seq, "BACK_COVER") || ( this.has_feature(1, "COVER") && this.has_feature(1, "LEFT") ) ) {
-            end_seq -= 1;           
+            end_seq -= 1;
         }
-        return end_seq; 
+        return end_seq;
     },
 
     getAltTextForSeq: function(seq) {
@@ -147,6 +147,17 @@ HT.Manager = {
             meta = this.get_page_meta({ seq : meta });
         }
         if ( meta.features && _.indexOf(meta.features, feature) > -1 ) {
+            return true;
+        }
+        return false;
+    },
+
+    has_features : function(meta) {
+        if ( typeof(meta) == "number" ) {
+            meta = this.get_page_meta({ seq : meta });
+        }
+        if ( meta.features && meta.features.length > 0 ) {
+            if ( meta.features.length == 1 && meta.features[0] == 'FUDGED' ) { return false; }
             return true;
         }
         return false;
