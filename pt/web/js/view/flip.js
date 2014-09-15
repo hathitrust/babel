@@ -350,7 +350,7 @@ HT.Viewer.Flip = {
         var start_seq = 1;
         var end_seq = self.options.manager.num_pages;
 
-        if ( self.options.manager.has_feature(1, "FRONT_COVER") || ( self.options.manager.has_feature(1, "COVER") && self.options.manager.has_feature(1, "RIGHT") ) || ! self.options.manager.has_features(1) ) {
+        if ( self.options.manager.has_feature(1, "FRONT_COVER") || ( self.options.manager.has_feature(1, "COVER") && self.options.manager.has_feature(1, "RIGHT") ) || self.options.manager.has_feature(1, "COVER") || ! self.options.manager.has_features(1) ) {
             // first page is a cover
             if ( self.options.manager.reading_order == 'right-to-left' ) {
                 pages.push([ 1, null ]);
