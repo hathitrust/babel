@@ -1,0 +1,31 @@
+
+
+#advanced_button {
+                 
+  border: none;
+  display: inline-block;
+//  margin: 20px 30px; /* just to move away from each other in demo */
+  font-weight: bold;
+  text-decoration: none;
+  letter-spacing: .1em;
+  border-radius: 8px;
+  display: inline-block;
+  color: #F5F4F4;
+  font-size: 18px;
+  height: 40px;
+  width:125px;
+  margin-left: 0;
+  padding: 0;
+
+  text-align: left;
+
+  padding-left: 16px;
+
+  background: #696969 url('/common/unicorn/img/search.png') no-repeat 95% center; /*png24*/
+  z-index: 0;
+
+  &:hover {
+    background-color: #848383;
+  }
+
+}
