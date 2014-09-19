@@ -203,7 +203,7 @@
           </xsl:if>
         </xsl:attribute>
       </input>
-      <button type="submit" class="btn">Find</button>
+      <button type="submit" class="btn dark">Find</button>
       <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
       <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
