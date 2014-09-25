@@ -84,18 +84,16 @@ Description
 # ---------------------------------------------------------------------
 sub __process_tables {
     my $access_key = shift;
-    
+
     my $authentication_ct = __authentication_count_by_access_key($access_key);
     my $authorization_ct = __authorization_count_by_access_key($access_key);
-    my $rates_ct = __rates_count_by_access_key($access_key);
     my $statistics_accesses_ct = __statistics_accesses_by_access_key($access_key);
 
     my $s;
     $s .= __delete_authentication_by_access_key($access_key) if ($authentication_ct);
     $s .= __delete_authorization_by_access_key($access_key) if ($authorization_ct);
-    $s .= __delete_rates_by_access_key($access_key) if ($rates_ct);
     $s .= __delete_statistics_by_access_key($access_key) if ($statistics_accesses_ct);
-    
+
     if ($s) {
         LOG($C, $s);
         print($s) if ($INTERACTIVE);
@@ -124,7 +122,7 @@ sub handle_interactive_delete {
     }
 
     __confirmation("OK to process $access_key? [N] ");
-    
+
     use Term::ReadKey;
     print "Enter passwd: ";
 
@@ -137,7 +135,7 @@ sub handle_interactive_delete {
     unless (__process_tables($access_key)) {
         print qq{access_key=$access_key not found\n};
     }
-    
+
     return 0;
 }
 
@@ -160,15 +158,15 @@ sub handle_cron_delete {
     foreach my $access_key (@$access_key_arr_ref) {
         __process_tables($access_key);
     }
-    
+
     return 0;
 }
 
 
 sub __confirmation {
-    my $s = shift;    
+    my $s = shift;
     return 0 unless($INTERACTIVE);
-    
+
     print "$s";
     my $pass_1 = <STDIN>;
     exit 0 if ($pass_1 !~ m,y,i);
@@ -222,17 +220,6 @@ sub __delete_authorization_by_access_key {
 }
 
 # ---------------------------------------------------------------------
-sub __delete_rates_by_access_key {
-    my $access_key = shift;
-
-    my $statement = qq{DELETE FROM htd_rates WHERE access_key=?};
-    my $sth = DbUtils::prep_n_execute($DBH, $statement, $access_key);
-
-    my $s = "Clean htd_rates access_key=$access_key\n";
-    return $s;
-}
-
-# ---------------------------------------------------------------------
 sub __delete_statistics_by_access_key {
     my $access_key = shift;
 
@@ -266,17 +253,6 @@ sub __authorization_count_by_access_key {
 }
 
 # ---------------------------------------------------------------------
-sub __rates_count_by_access_key {
-    my $access_key = shift;
-
-    my $statement = qq{SELECT count(*) FROM htd_rates WHERE access_key=?};
-    my $sth = DbUtils::prep_n_execute($DBH, $statement, $access_key);
-    my $ct = $sth->fetchrow_array() || 0;
-
-    return $ct;
-}
-
-# ---------------------------------------------------------------------
 sub __statistics_accesses_by_access_key {
     my $access_key = shift;
 
@@ -295,7 +271,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2013 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2013-14 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -322,8 +298,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-    
-    
+
+
 
 
 
