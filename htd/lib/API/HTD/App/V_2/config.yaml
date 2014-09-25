@@ -13,48 +13,48 @@ fileid_pattern:    '[a-zA-Z_:].*'
 resources:
   type:
     pattern:                                            ^/(type)/((_NS_)\.((_ARK_)|(_ID_)))$
-    dtype:                                                       metadata
+    resource_type:                                                       metadata
   aggregate:
     pattern:                                       ^/(aggregate)/((_NS_)\.((_ARK_)|(_ID_)))$
-    dtype:                                                       data
+    resource_type:                                                       data
   structure:
     pattern:                                       ^/(structure)/((_NS_)\.((_ARK_)|(_ID_)))$
-    dtype:                                                       metadata
+    resource_type:                                                       metadata
 
   volume:
     pattern:                                          ^/(volume)/((_NS_)\.((_ARK_)|(_ID_)))$
-    dtype:                                                       data
+    resource_type:                                                       data
   volume/pageimage:
     pattern:                                ^/(volume/pageimage)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-    dtype:                                                       data
+    resource_type:                                                       data
   volume/pageocr:
     pattern:                                  ^/(volume/pageocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-    dtype:                                                       data
+    resource_type:                                                       data
   volume/pagecoordocr:
     pattern:                             ^/(volume/pagecoordocr)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-    dtype:                                                       data
+    resource_type:                                                       data
   volume/pagemeta:
     pattern:                                 ^/(volume/pagemeta)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-    dtype:                                                       metadata
+    resource_type:                                                       metadata
   volume/meta:
     pattern:                                     ^/(volume/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
-    dtype:                                                       metadata
+    resource_type:                                                       metadata
 
   article:
     pattern:                                         ^/(article)/((_NS_)\.((_ARK_)|(_ID_)))$
-    dtype:                                                       data
+    resource_type:                                                       data
   article/alternate:
     pattern:                               ^/(article/alternate)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-    dtype:                                                       data
+    resource_type:                                                       data
   article/assets/embedded:
     pattern:                         ^/(article/assets/embedded)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-    dtype:                                                       data
+    resource_type:                                                       data
   article/assets/supplementary:
     pattern:                    ^/(article/assets/supplementary)/((_NS_)\.((_ARK_)|(_ID_)))/((\d+)|(_FILEID_))$
-    dtype:                                                       data
+    resource_type:                                                       data
   article/meta:
     pattern:                                    ^/(article/meta)/((_NS_)\.((_ARK_)|(_ID_)))$
-    dtype:                                                       metadata
+    resource_type:                                                       metadata
 
 valid_query_params:
   - ip
@@ -85,6 +85,16 @@ client_query_params:
   - size
   - res
   - watermark
+
+# ---------------------------------------------------------------------
+# Mapping from ht.rights_current.access_profile field values to names
+# used in access determination code.
+# ---------------------------------------------------------------------
+access_profile_name_map:
+  1: open
+  2: google
+  3: page
+  4: pagelowres
 
 # ---------------------------------------------------------------------
 # GLOBAL response block definitions
@@ -444,288 +454,6 @@ mimetype_map:
   article/meta:
     default: text/xml
     json: application/json
-
-
-# ---------------------------------------------------------------------
-# Access type map:
-# access_type = g(access_key, f(resource, rights attr, source)).
-#
-# which means that there are further restrictions on 'open' and
-# 'restricted' that are applied downstream:
-#
-# restricted volume (format=ebm) is further restricted
-# by allow_pdf bit:
-#
-#     code=39: 00100111  00100000  (O|OR|R)|allow_pdf
-#
-# open pageimage when format=raw|watermark=0 is restricted by the
-# allow_raw or allow_unwatermarked_derivatives bit
-#
-# ---------------------------------------------------------------------
-OPEN_ACCESSIBILITY_BLOCK: &open-accessibility-block
-  google: open
-  lit-dlps-dc: open
-  um-press: open
-  internet-archive: open
-  yale: open
-  minn-dig-lib: open
-  minn-hist-soc: open
-  utah_state_univ_press: open
-  univ_madrid: open
-  purdue: open
-  getty: open
-  um-dc-mp: open
-  uiuc: open
-  brooklynmuseum: open
-  uf: open
-  tamu: open
-  udel: open
-  private: open
-  umich: open
-  clark: open
-  ku: open
-  mcgill: open
-  bc: open
-
-RESTRICTED_ACCESSIBILITY_BLOCK: &restricted-accessibility-block
-  google: restricted
-  lit-dlps-dc: restricted
-  um-press: restricted
-  internet-archive: restricted
-  yale: restricted
-  minn-dig-lib: restricted
-  minn-hist-soc: restricted
-  utah_state_univ_press: restricted
-  univ_madrid: restricted
-  purdue: restricted
-  getty: restricted
-  um-dc-mp: restricted
-  uiuc: restricted
-  brooklynmuseum: restricted
-  uf: restricted
-  tamu: restricted
-  udel: restricted
-  private: restricted
-  umich: restricted
-  clark: restricted
-  ku: restricted
-  mcgill: restricted
-  bc: restricted
-
-# ---------------------------------------------------------------------
-# Access type map:
-# access_type = g(access_key, f(resource, rights.attr, rights.source)).
-#
-# access_types are:
-#
-#   open
-#   open_restricted
-#   restricted
-#   restricted_forbidden
-#
-# Only the access_types that match "restricted" have extended
-# access_types which are defined by the authorization bits in
-# HAuth.pm.
-#
-# restricted pageimage format=raw||watermark=0 is restricted by the
-# allow_raw or allow_unwatermarked_derivatives bit
-#
-# restricted aggregate is restricted by the allow_zip bit
-#
-# volume is restricted by the allow_pdf bit for ODB-ebm
-# Current rules for "volume" resource:
-#
-# o  The only format for volume is ebm which is limited by policy to
-# source={google, lit-dlps-dc}.
-# ---------------------------------------------------------------------
-accessibility_matrix:
-  type:
-    free: *open-accessibility-block
-    nonfree: *open-accessibility-block
-
-  structure:
-    free: *open-accessibility-block
-    nonfree: *open-accessibility-block
-
-  aggregate:
-    free:
-      google: open_restricted
-      lit-dlps-dc: open
-      um-press: restricted_forbidden
-      internet-archive: open
-      yale: open
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: open
-      univ_madrid: open
-      purdue: open
-      getty: open
-      um-dc-mp: open
-      uiuc: open
-      brooklynmuseum: open
-      uf: open
-      tamu: open
-      udel: open
-      private: open
-      umich: open
-      clark: open
-      ku: open
-      mcgill: open
-      bc: open
-    nonfree:
-      google: restricted
-      lit-dlps-dc: restricted
-      um-press: restricted_forbidden
-      internet-archive: restricted
-      yale: restricted
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: restricted
-      univ_madrid: restricted
-      purdue: restricted
-      getty: restricted
-      um-dc-mp: restricted
-      uiuc: restricted
-      brooklynmuseum: restricted
-      uf: restricted
-      tamu: restrcted
-      udel: restricted
-      private: restricted
-      umich: restricted
-      clark: restricted
-      ku: restricted
-      mcgill: restricted
-      bc: restricted
-
-  volume:
-    free:
-      google: open_restricted
-      lit-dlps-dc: open
-      um-press: restricted_forbidden
-      internet-archive: restricted_forbidden
-      yale: restricted_forbidden
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: restricted_forbidden
-      univ_madrid: restricted_forbidden
-      purdue: restricted_forbidden
-      getty: restricted_forbidden
-      um-dc-mp: restricted_forbidden
-      uiuc: restricted_forbidden
-      brooklynmuseum: open
-      uf: open
-      tamu: open
-      udel: open
-      private: open
-      umich: open
-      clark: open
-      ku: open
-      mcgill: open
-      bc: open
-    nonfree:
-      google: restricted
-      lit-dlps-dc: restricted
-      um-press: restricted_forbidden
-      internet-archive: restricted
-      yale: restricted_forbidden
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: restricted_forbidden
-      univ_madrid: restricted_forbidden
-      purdue: restricted_forbidden
-      getty: restricted_forbidden
-      um-dc-mp: restricted_forbidden
-      uiuc: restricted_forbidden
-      brooklynmuseum: restricted
-      uf: restricted
-      tamu: restrcted
-      udel: restricted
-      private: restricted
-      umich: restricted
-      clark: restricted
-      ku: restricted
-      mcgill: restricted
-      bc: restricted
-
-  volume/pageimage:
-    free:
-      google: open_restricted
-      lit-dlps-dc: open
-      um-press: open
-      internet-archive: open
-      yale: open
-      minn-dig-lib: open
-      minn-hist-soc: open
-      utah_state_univ_press: open
-      univ_madrid: open
-      purdue: open
-      getty: open
-      um-dc-mp: open
-      uiuc: open
-      brooklynmuseum: open
-      uf: open
-      tamu: open
-      udel: open
-      private: open
-      umich: open
-      clark: open
-      ku: open
-      mcgill: open
-      bc: open
-
-    nonfree:
-      google: restricted
-      lit-dlps-dc: restricted
-      um-press: restricted
-      internet-archive: restricted
-      yale: restricted
-      minn-dig-lib: restricted_forbidden
-      minn-hist-soc: restricted_forbidden
-      utah_state_univ_press: restricted
-      univ_madrid: restricted
-      purdue: restricted
-      getty: restricted
-      um-dc-mp: restricted
-      uiuc: restricted
-      brooklynmuseum: restricted
-      uf: restricted
-      tamu: restrcted
-      udel: restricted
-      private: restricted
-      umich: restricted
-      clark: restricted
-      ku: restricted
-      mcgill: restricted
-      bc: restricted
-
-  volume/pageocr:
-    free: *open-accessibility-block
-    nonfree: *restricted-accessibility-block
-  volume/pagecoordocr:
-    free: *open-accessibility-block
-    nonfree: *restricted-accessibility-block
-  volume/pagemeta:
-    free: *open-accessibility-block
-    nonfree: *open-accessibility-block
-  volume/meta:
-    free: *open-accessibility-block
-    nonfree: *open-accessibility-block
-
-  article:
-    free: *open-accessibility-block
-    nonfree: *restricted-accessibility-block
-  article/alternate:
-    free: *open-accessibility-block
-    nonfree: *restricted-accessibility-block
-  article/assets/embedded:
-    free: *open-accessibility-block
-    nonfree: *restricted-accessibility-block
-  article/assets/supplementary:
-    free: *open-accessibility-block
-    nonfree: *restricted-accessibility-block
-  article/meta:
-    free: *open-accessibility-block
-    nonfree: *open-accessibility-block
 
 
 # ---------------------------------------------------------------------

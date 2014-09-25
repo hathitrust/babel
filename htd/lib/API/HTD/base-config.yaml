@@ -86,9 +86,10 @@ rights_name_map:
   25: cc-by-sa-4.0
 
 # ---------------------------------------------------------------------
-# List of name that equate to open access modulo geo-location
+# List of rights_current.attr names that equate to open access modulo
+# geo-location
 # ---------------------------------------------------------------------
-open_access_names:
+open_access_rights_names:
   - pd
   - pdus
   - ic-world
@@ -98,61 +99,16 @@ open_access_names:
   - cc-by-nc-3.0
   - cc-by-nc-sa-3.0
   - cc-by-sa-3.0
-
-
   - cc-by-4.0
   - cc-by-nd-4.0
   - cc-by-nc-nd-4.0
   - cc-by-nc-4.0
   - cc-by-nc-sa-4.0
   - cc-by-sa-4.0
-
-
-
   - cc-zero
   - und-world
   - ic-us
 
-# ---------------------------------------------------------------------
-# Special treatment for Creative Commons licensed data
-# ---------------------------------------------------------------------
-creative_commons_names:
-  - cc-by
-  - cc-by-nd
-  - cc-by-nc-nd
-  - cc-by-nc
-  - cc-by-nc-sa
-  - cc-by-sa
-  - cc-zero
-
-# ---------------------------------------------------------------------
-# Mapping from mdp.rights.source field values to names used in
-# accessibility_matrix
-# ---------------------------------------------------------------------
-sources_name_map:
-  1: google
-  2: lit-dlps-dc
-  3: um-press
-  4: internet-archive
-  5: yale
-  6: minn-dig-lib
-  7: minn-hist-soc
-  8: utah_state_univ_press
-  9: univ_madrid
-  10: purdue
-  11: getty
-  12: um-dc-mp
-  13: uiuc
-  14: brooklynmuseum
-  15: uf
-  16: tamu
-  17: udel
-  18: private
-  19: umich
-  20: clark
-  21: ku
-  22: mcgill
-  23: bc
 
 _HTD_SCHEMAS_URI_:               http://schemas.hathitrust.org/htd/2009
 _HTD_PT_ALTERNATE_URI_:          http://babel.hathitrust.org/cgi/pt?id=__ID__

@@ -39,6 +39,7 @@ use API::Utils;
 
 use API::HTD::AuthDb;
 use API::HTD::IP_Address;
+use API::HTD::HCodes;
 
 # These switches never apply when in production
 my $FORCE_SUCCESS = 0;
@@ -279,7 +280,7 @@ sub __check_access_key {
     my $self = shift;
     my ($dbh, $access_key) = @_;
 
-    if (! API::HTD::AuthDb::access_key_exists($dbh, $access_key)) {
+    unless ( API::HTD::AuthDb::access_key_exists($dbh, $access_key) ) {
         return $self->error(CONSUMER_KEY_UNKNOWN);
     }
 
@@ -302,7 +303,7 @@ sub __check_signature {
 
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
     my ($valid, $errors) = HOAuth::Signature::S_validate($signed_url, $access_key, $secret_key, REQUEST_METHOD, $client_data);
-    if (! $valid) {
+    unless ($valid) {
         hLOG('API ERROR: ' . qq{__check_signature: $errors oauth_consumer_key=$access_key url=$signed_url});
         return $self->error($errors);
     }
@@ -372,7 +373,7 @@ sub H_authenticate {
     # record (even failures)
     API::HTD::AuthDb::insert_nonce_timestamp($dbh, $access_key, $nonce, $timestamp);
     # track errors
-    API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 1) if (! $authenticated);
+    API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 1) unless ($authenticated);
 
     return $authenticated;
 }
@@ -381,220 +382,13 @@ sub H_authenticate {
 
 =item ACCESS AUTHORIZATION MAPPING
 
-    Bitfield encoding. A set bit indicates authorized access level(s) +
-      - an enhanced data rate
-      - PDF access for Expressnet/EBM
-      - raw images
-      - suppressed watermarking for derivatives
-      - zip access
-
-    NOTE: If you add codes here, add them to htdmonitor too.
-
-                                      bit
-                                      7 6 5 4 3 2 1 0
-                                      | | | | | | | |
-    allow_unwatermarked_derivatives --+ | | | | | | |
-    allow_raw --------------------------+ | | | | | |
-    allow_pdf ----------------------------+ | | | | |
-    allow_zip ------------------------------+ | | | |
-    rate ------------------(not implemented)--+ | | |
-    restricted_forbidden------------------------+ | |
-    restricted -----------------------------------+ |
-    open -------------------------------------------+
-
-    Basic codes below assume that authorization to restricted implies
-    authorization to less restricted.  Some shorthand:
-
-       (O)      = open
-       (O|R)    = open|restricted
-       (O|R|RF) = open|restricted|restricted_forbidden
-
-       combinations: (4)
-                     (1) = 4
-
-       Basic
-       code      basic_mask
-     0 00000000            NOT AUTHORIZED
-     1 00000001  00000001  (O)
-     3 00000011  00000010  (O|R)
-     7 00000111  00000100  (O|R|RF)
-
-       Basic+allow_zip
-       code      allow_zip_mask(16)
-    17 00010001  00010000  (O)     |allow_zip
-    19 00010011  00010000  (O|R)   |allow_zip
-    23 00010111  00010000  (O|R|RF)|allow_zip
-
-       Basic+allow_pdf
-       code      allow_pdf_mask(32)
-    33 00100001  00100000  (O)     |allow_pdf
-    35 00100011  00100000  (O|R)   |allow_pdf
-    39 00100111  00100000  (O|R|RF)|allow_pdf
-
-       Basic+allow_raw
-       code      allow_raw_mask(64)
-    65 01000001  01000000  (O)     |allow_raw
-    67 01000011  01000000  (O|R)   |allow_raw
-    71 01000111  01000000  (O|R|RF)|allow_raw
-
-       Basic+allow_unwatermarked_derivatives
-       code      allow_unwatermarked_derivatives_mask(128)
-   129 10000001  10000000  (O)     |allow_unwatermarked_derivatives
-   131 10000011  10000000  (O|R)   |allow_unwatermarked_derivatives
-   135 10000111  10000000  (O|R|RF)|allow_unwatermarked_derivatives
-
-       combinations: (4)
-                     (2) = 6
-
-       Basic+allow_zip+allow_pdf
-       code      mask(48)
-    49 00110001  00110000 (O)     |allow_zip|allow_pdf
-    51 00110011  00110000 (O|R)   |allow_zip|allow_pdf
-    55 00110111  00110000 (O|R|RF)|allow_zip|allow_pdf
-
-       Basic+allow_zip+allow_raw
-       code      mask(80)
-    81 01010001  01010000 (O)     |allow_zip|allow_raw
-    83 01010011  01010000 (O|R)   |allow_zip|allow_raw
-    87 01010111  01010000 (O|R|RF)|allow_zip|allow_raw
-
-       Basic+allow_raw+allow_pdf
-       code      mask(80)
-    97 01100001  01100000 (O)     |allow_raw|allow_pdf
-    99 01100011  01100000 (O|R)   |allow_raw|allow_pdf
-   103 01100111  01100000 (O|R|RF)|allow_raw|allow_pdf
-
-       Basic+allow_zip+allow_unwatermarked_derivatives
-       code      mask(80)
-   145 10010001  10010000 (O)     |allow_zip|allow_unwatermarked_derivatives
-   147 10010011  10010000 (O|R)   |allow_zip|allow_unwatermarked_derivatives
-   151 10010111  10010000 (O|R|RF)|allow_zip|allow_unwatermarked_derivatives
-
-       Basic+allow_pdf+allow_unwatermarked_derivatives
-       code      mask(80)
-   161 10100001  10100000 (O)     |allow_pdf|allow_unwatermarked_derivatives
-   163 10100011  10100000 (O|R)   |allow_pdf|allow_unwatermarked_derivatives
-   167 10100111  10100000 (O|R|RF)|allow_pdf|allow_unwatermarked_derivatives
-
-       Basic+allow_raw+allow_unwatermarked_derivatives
-       code      mask(80)
-   193 11000001  11000000 (O)     |allow_raw|allow_unwatermarked_derivatives
-   195 11000011  11000000 (O|R)   |allow_raw|allow_unwatermarked_derivatives
-   199 11000111  11000000 (O|R|RF)|allow_raw|allow_unwatermarked_derivatives
-
-       combinations: (4)
-                     (3) = 4
-
-       Basic+allow_zip+allow_pdf+allow_raw
-       code      mask(112)
-   113 01110001  01110000 (O)     |allow_zip|allow_pdf|allow_raw
-   115 01110011  01110000 (O|R)   |allow_zip|allow_pdf|allow_raw
-   119 01110111  01110000 (O|R|RF)|allow_zip|allow_pdf|allow_raw
-
-       Basic+allow_zip+allow_pdf+allow_unwatermarked_derivatives
-       code      mask(112)
-   177 10110001  10110000 (O)     |allow_zip|allow_pdf|allow_unwatermarked_derivatives
-   179 10110011  10110000 (O|R)   |allow_zip|allow_pdf|allow_unwatermarked_derivatives
-   183 10110111  10110000 (O|R|RF)|allow_zip|allow_pdf|allow_unwatermarked_derivatives
-
-       Basic+allow_zip+allow_raw+allow_unwatermarked_derivatives
-       code      mask(112)
-   209 11010001  11010000 (O)     |allow_zip|allow_raw|allow_unwatermarked_derivatives
-   211 11010011  11010000 (O|R)   |allow_zip|allow_raw|allow_unwatermarked_derivatives
-   215 11010111  11010000 (O|R|RF)|allow_zip|allow_raw|allow_unwatermarked_derivatives
-
-
-       Basic+allow_pdf+allow_raw+allow_unwatermarked_derivatives
-       code      mask(112)
-   225 11100001  11100000 (O)     |allow_pdf|allow_raw|allow_unwatermarked_derivatives
-   227 11100011  11100000 (O|R)   |allow_pdf|allow_raw|allow_unwatermarked_derivatives
-   231 11100111  11100000 (O|R|RF)|allow_pdf|allow_raw|allow_unwatermarked_derivatives
-
-       combinations: (4)
-                     (4) = 1
-
-       Basic+allow_zip+allow_pdf+allow_raw+allow_unwatermarked_derivatives_mask
-       code      mask(240)
-   241 11110001  11110000  (O)     |allow_zip|allow_pdf|allow_raw|allow_unwatermarked_derivatives
-   243 11110011  11110000  (O|R)   |allow_zip|allow_pdf|allow_raw|allow_unwatermarked_derivatives
-   247 11110111  11110000  (O|R|RF)|allow_zip|allow_pdf|allow_raw|allow_unwatermarked_derivatives
-
+Please refer to comments in API::HTD::HCodes for code computation and
+to /htd/scripts/[htdmonitor,authorization_code_generator] for tools to
+compose and decompose authorization codes and their uses.
 
 =cut
 
 # ---------------------------------------------------------------------
-
-use constant OPEN_MASK                 =>   1;
-use constant OPEN_RESTRICTED_MASK      =>   1;
-use constant RESTRICTED_MASK           =>   2;
-use constant RESTRICTED_FORBIDDEN_MASK =>   4;
-use constant RATE_MASK                 =>   8;
-use constant ALLOW_ZIP_MASK            =>  16;
-use constant ALLOW_PDF_EBM_MASK        =>  32;
-use constant ALLOW_RAW_MASK            =>  64;
-use constant ALLOW_UNWATERMARKED_MASK  => 128;
-
-# ---------------------------------------------------------------------
-
-=item __basic_access_is_authorized
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-my %basic_authorization_map =
-  (
-   'open'                 => OPEN_MASK,
-   'open_restricted'      => OPEN_RESTRICTED_MASK,
-   'restricted'           => RESTRICTED_MASK,
-   'restricted_forbidden' => RESTRICTED_FORBIDDEN_MASK,
-  );
-
-sub __basic_access_is_authorized {
-    my $self = shift;
-    my ($code, $access_type) = @_;
-
-    die "FATAL: access_type=$access_type" unless ($access_type);
-
-    my $mask = $basic_authorization_map{$access_type};
-    my $result = ($code & $mask);
-    my $authorized = ($result == $mask);
-
-    hLOG('API: ' . qq{__basic_access_is_authorized: access_type=$access_type code=$code mask=$mask result=$result authorized=$authorized});
-    return $authorized;
-}
-
-# ---------------------------------------------------------------------
-
-=item __extended_access_is_authorized
-
-Materials that are [open_]restricted[_forbidden] require authorization bits
-
-=cut
-
-# ---------------------------------------------------------------------
-my %extended_authorization_map =
-  (
-   'zip'                      => ALLOW_ZIP_MASK,
-   'pdf_ebm'                  => ALLOW_PDF_EBM_MASK,
-   'raw_archival_data'        => ALLOW_RAW_MASK,
-   'unwatermarked_derivative' => ALLOW_UNWATERMARKED_MASK,
-  );
-
-sub __extended_access_is_authorized {
-    my $self = shift;
-    my ($code, $extended_access_type) = @_;
-
-    die "FATAL: extended_access_type=$extended_access_type" unless ($extended_access_type);
-
-    my $mask = $extended_authorization_map{$extended_access_type};
-    my $result = ($code & $mask);
-    my $authorized = ($result == $mask);
-
-    hLOG('API: ' . qq{__extended_access_is_authorized: extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') .qq{ code=$code mask=$mask result=$result authorized=$authorized});
-    return $authorized;
-}
 
 # ---------------------------------------------------------------------
 
@@ -607,15 +401,17 @@ Wrapper method
 # ---------------------------------------------------------------------
 sub __access_is_authorized {
     my $self = shift;
-    my ($code, $access_type, $extended_access_type) = @_;
+    my ($client_code, $access_type) = @_;
 
-    my $authorized = $self->__basic_access_is_authorized($code, $access_type);
-    if ($authorized) {
-        if (defined $extended_access_type) {
-            $authorized = $self->__extended_access_is_authorized($code, $extended_access_type);
-        }
-    }
+    my ($basic_access, @extended_access) = API::HTD::HCodes::parse_access_type($access_type);
+    my $extended_access = join('-', @extended_access);
 
+    my ($required_code, $bitstring) = API::HTD::HCodes::get_authorization_code($basic_access, @extended_access);
+    # test whether client_code has all bits set that required_code
+    # says are needed for authorization
+    my $authorized = (($client_code & $required_code) == $required_code);
+
+    hLOG('API: ' . qq{__access_is_authorized: authorized=$authorized required=$required_code client=$client_code bitstring=$bitstring basic=$basic_access extended=$extended_access});
     return $authorized;
 }
 
@@ -653,11 +449,11 @@ Description
 # ---------------------------------------------------------------------
 sub __authorized_protocol {
     my $self = shift;
-    my $access_type = shift;
+    my $access_type_restriction = shift;
 
-    $ENV{SERVER_PORT} = 80 if (! defined $ENV{SERVER_PORT});
+    $ENV{SERVER_PORT} = 80 unless (defined $ENV{SERVER_PORT});
 
-    if ($access_type =~ m,restricted,) {
+    if ($access_type_restriction eq 'restricted') {
         if ($ENV{SERVER_PORT} ne '443') {
             return 0;
         }
@@ -687,7 +483,7 @@ Requests for resources that have a 'basic' access_type equal to
 # ---------------------------------------------------------------------
 sub __authorized_at_IP_address {
     my $self = shift;
-    my ($ipo, $access_type, $extended_access_type) = @_;
+    my ($ipo, $access_type_restriction) = @_;
 
     my $ip = $ipo->address;
     my $ip_address_is_valid  = $ipo->ip_is_valid();
@@ -696,15 +492,8 @@ sub __authorized_at_IP_address {
     my $locked = $ipo->address_locked();
     my $lock_required = 0;
 
-    if ($access_type =~ m,restricted,) {
-        if ($access_type =~ m,open,) {
-            if (defined $extended_access_type) {
-                $lock_required = 1;
-            }
-        }
-        else {
-            $lock_required = 1;
-        }
+    if ($access_type_restriction eq 'restricted') {
+        $lock_required = 1;
     }
 
     my $authorized = 0;
@@ -722,7 +511,7 @@ sub __authorized_at_IP_address {
     }
 
     my $r = qq{ip_valid=$ip_address_is_valid client_type=$client_type locked=$locked};
-    my $s = qq{API: __authorized_at_IP_address: authorized=$authorized ip=$ip access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none');
+    my $s = qq{API: __authorized_at_IP_address: authorized=$authorized ip=$ip access_type_restriction=$access_type_restriction};
     hLOG("$s $r");
 
     return $authorized;
@@ -740,44 +529,44 @@ Description
 # ---------------------------------------------------------------------
 sub H_authorized {
     my $self = shift;
-    my ($Q, $dbh, $resource, $access_type, $extended_access_type) = @_;
+    my ($Q, $dbh, $resource, $access_type, $access_type_restriction) = @_;
 
     return 1 if (__allow_development_authorization_override());
 
-    if (! $self->__auth_valid) {
+    unless ($self->__auth_valid) {
         return $self->error('cannot authorize: authentication error');
     }
 
     my $access_key = $Q->param('oauth_consumer_key') || 0;
     if ($self->__expired_authorization($dbh, $access_key)) {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        hLOG('API ERROR: ' . qq{H_authorized: authorization expired access_key=$access_key  resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
+        hLOG('API ERROR: ' . qq{H_authorized: authorization expired access_key=$access_key resource=$resource access_type=$access_type});
         return $self->error('authorization expired');
     }
 
-    if (! $self->__authorized_protocol($access_type)) {
+    unless ($self->__authorized_protocol($access_type_restriction)) {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        hLOG('API ERROR: ' . qq{H_authorized: protocol fail access_key=$access_key  resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') . qq{ port=$ENV{SERVER_PORT}});
+        hLOG('API ERROR: ' . qq{H_authorized: protocol fail access_key=$access_key  resource=$resource access_type=$access_type port=$ENV{SERVER_PORT}});
         return $self->error('redirect over SSL required');
     }
 
     my ($code) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
     my $ipo = new API::HTD::IP_Address;
 
-    if ($self->__access_is_authorized($code, $access_type, $extended_access_type)) {
-        if ($self->__authorized_at_IP_address($ipo, $access_type, $extended_access_type)) {
+    if ($self->__access_is_authorized($code, $access_type)) {
+        if ($self->__authorized_at_IP_address($ipo, $access_type_restriction)) {
             return 1;
         }
         else {
             API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
             my $ip = $ipo->address;
-            hLOG('API ERROR: ' . qq{H_authorized: ip address fail access_key=$access_key resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none') . qq{ ip=$ip});
+            hLOG('API ERROR: ' . qq{H_authorized: ip address fail access_key=$access_key resource=$resource access_type=$access_type ip=$ip});
             return $self->error('unauthorized originating ip address');
         }
     }
     else {
         API::HTD::AuthDb::update_fail_ct($dbh, $access_key, 0);
-        hLOG('API ERROR: ' . qq{H_authorized: insufficient privilege access_key=$access_key resource=$resource access_type=$access_type extended_access_type=} . (defined($extended_access_type) ? $extended_access_type : 'none'));
+        hLOG('API ERROR: ' . qq{H_authorized: insufficient privilege access_key=$access_key resource=$resource access_type=$access_type});
         return $self->error('insufficient privilege');
     }
 }
@@ -795,7 +584,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2012-14 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
