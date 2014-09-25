@@ -102,7 +102,7 @@ sub handle_IDP_LIST_PI
     my $HT_list = WAYF::IdpConfig::get_HathiTrust_Institutions_List($C);
 
     # Add UM shibboleth SSO in dev
-    if ($ENV{HT_DEV}) {
+    if ( defined $ENV{HT_DEV} ) {
         $HT_list->{uoms}->{authtype} = 'shibboleth';
         $HT_list->{uoms}->{enabled}  = 0;
         $HT_list->{uoms}->{name} = 'University of Michigan (Shibboleth)';
@@ -118,11 +118,21 @@ sub handle_IDP_LIST_PI
                              $HT_list->{$a}->{name} cmp $HT_list->{$b}->{name}
                          } keys %$HT_list) {
         
+        my $add_to_list = 0;
         my $development = 0;
-        if (! $HT_list->{$idp_key}->{enabled}) {
-            $development = 1;
-            next unless ($ENV{'HT_DEV'});
+        if ( $HT_list->{$idp_key}->{enabled} == 0 ) {
+            if ( defined $ENV{HT_DEV} ) {
+                $add_to_list = 1;
+                $development = 1;
+            }
         }
+        elsif ( $HT_list->{$idp_key}->{enabled} == 1 ) {
+            $add_to_list = 1;
+        }
+        elsif ( $HT_list->{$idp_key}->{enabled} == 2 ) {
+            $add_to_list = 0;
+        }
+        next unless ($add_to_list);
 
         my $site;
         my $L_target = $target;
