@@ -30,4 +30,5 @@ usercertify
 userupdate
 userlist
 userwarn
+watermarks
 whoami
