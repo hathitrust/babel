@@ -15,7 +15,7 @@ sub clone_app_usage {
            where <app> is the application of which to clone its central repo, init and update its submodules.
                  -s clone under staging area: test, beta-{1,2,...} (e.g. /htapps/test.babel or /htapps/beta-3.babel )
                     instead of /htapps/user.babel
-                 -f force remove existing clone, then clone
+                 -f force rename (mv) existing clone, then clone
                  -A all apps
                  -h print help\n};
     return $s;
@@ -70,8 +70,9 @@ my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
 foreach my $app (@apps) {
     my $app_dir = "$app_root/$app";    
     my $app_repo = $app . '.git';
+    my $time = time;
     
-    my $cmsg = qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE removal" : "") . qq{\n};
+    my $cmsg = qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE rename to $app.$time" : "") . qq{\n};
     
     PrintY($cmsg);
 
@@ -116,12 +117,14 @@ sub __validate_clone_app {
     }
     if (-e "$app_dir") {
         if ($FORCE) {
-            if (! query_yn("\nWARN: This will force removal of existing clone. \n\tContinue?", 'y')) {
+            my $time = time;
+            
+            if (! query_yn("\nWARN: This will force rename of existing clone to $app.$time. \n\tContinue?", 'y')) {
                 return 0;
             }
             else {
-                print "Removing $app_dir ... ";
-                `rm -rf $app_dir`;
+                print "Renaming $app_dir ... ";
+                `mv -f $app_dir $app_dir.$time`;
                 PrintY(qq{OK\n});
             }
         }
