@@ -94,7 +94,7 @@ access_profile_name_map:
   1: open
   2: google
   3: page
-  4: pagelowres
+  4: page+lowres
 
 # ---------------------------------------------------------------------
 # GLOBAL response block definitions

@@ -260,7 +260,7 @@ raw images (which do not carry watermarks).
 These bits allow a resource to restricted in a finer-grained manner
 for special cases regardless of basic_access.
 
-imgsrv handles 'pagelowres' access
+imgsrv handles 'page+lowres' access
 
 =cut
 
@@ -323,7 +323,7 @@ sub __get_pageimage_extended_access {
     elsif ( ($format eq 'raw') ) {
         # default open pageimage is a watermarked derivative else
         # requires raw_archival_data bit set. This doubles for
-        # handling access to highres for access_profile=pagelowres
+        # handling access to highres for access_profile=page+lowres
         $pageimage_extended_access = 'raw_archival_data';
     }
 

@@ -52,7 +52,7 @@ my %test_profiles = (
                     1 => 'open', 
                     2 => 'google', 
                     3 => 'page', 
-                    4 => 'pagelowres',
+                    4 => 'page+lowres',
                    );
 
 # Here and there
