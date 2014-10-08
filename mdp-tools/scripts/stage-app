@@ -290,6 +290,7 @@ sub stage_topic_branch {
     my $branch = shift;
 
     my ($src_repo_root, $src_app_root) = get_HTDE_roots();
+    my $time = time;
 
     my $src_app_dir = "$src_app_root/$app";
     my $fail_msg = qq{Failed to stage app=$app from repo=$src_app_dir branch=$branch at $STAGE\n};
@@ -304,11 +305,10 @@ sub stage_topic_branch {
 
     PrintY(qq{\nStaging via clone app=$app branch=$branch from $src_app_dir at $dest_app_root\n});
 
-    if (! query_yn("\nWARN: This will force removal of existing repo for app=$app under $dest_app_root. \n\tContinue?", 'y')) {
+    if (! query_yn("\nWARN: This will force rename of existing repo for app=$app to $app.$time under $dest_app_root. \n\tContinue?", 'y')) {
         return 0;
     }
     else {
-        my $time = time();
         my $backup = "${dest_app_dir}.$time";
         print "Moving $dest_app_dir to $backup ... ";
         `mv $dest_app_dir $backup`;
