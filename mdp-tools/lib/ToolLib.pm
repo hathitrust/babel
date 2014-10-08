@@ -119,7 +119,7 @@ sub G_handle_diff {
     
     write_data(\$diff, $diff_file);
     
-    my $sysrc = system( "$ENV{EDITOR}", $diff_file );
+    my $sysrc = system( "$ENV{EDITOR} $diff_file" );
     # system( "more", $diff_file );
 
     ($sysrc == 0) ? PrintY("OK\n") : PrintN("ERROR: could not invoke $ENV{EDITOR}\n");
