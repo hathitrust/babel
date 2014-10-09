@@ -46,6 +46,7 @@ HT.Downloader = {
 
     downloadPdf: function(link) {
         var self = this;
+        self.link = $(link);
         self.src = $(link).attr('href');
         self.item_title = $(link).data('title') || 'PDF';
 
@@ -214,6 +215,7 @@ HT.Downloader = {
                 $download_btn = $('<a class="download-pdf btn btn-primary">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
                 $download_btn.appendTo(self.$dialog.find(".modal-footer")).on('click', function(e) {
                     console.log("SHOULD BE THE FIRST TO FIRE");
+                    self.link.trigger("click.google");
                     setTimeout(function() {
                         self.$dialog.modal('hide');
                         $download_btn.remove();
