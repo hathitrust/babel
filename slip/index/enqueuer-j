@@ -98,12 +98,12 @@ Description
 # ---------------------------------------------------------------------
 sub qu_get_usage {
     my $s;
-    $s .= qq{Usage: enqueuer-j -r run [-S][-H] | [-F filename] | [-I itemid], common: [-n][-d] };
+    $s .= qq{Usage: enqueuer-j -r run [-S][-H offset] | [-F filename] | [-I itemid], common: [-n][-d] };
     $s .= qq{\n\twhere};
     $s .= qq{\n\t\t-n Do not queue. Only report what would be queued};
     $s .= qq{\n\t\t-F enqueue from <filename>};
     $s .= qq{\n\t\t-S Only operate on shared queue};
-    $s .= qq{\n\t\t-H Only operate on holdings queue};
+    $s .= qq{\n\t\t-H Only operate on holdings queue beginning at offset};
     $s .= qq{\n};
 
     return $s;
@@ -111,7 +111,7 @@ sub qu_get_usage {
 
 our ($opt_d, $opt_r, $opt_F, $opt_n, $opt_S, $opt_H, $opt_I);
 
-my $ops = getopts('dr:F:nSHI:');
+my $ops = getopts('dr:F:nSH:I:');
 
 # Required
 my $RUN = $opt_r;
@@ -132,6 +132,7 @@ my $ID;
 my $ID_FILENAME;
 my $SHARED_ONLY;
 my $HOLDINGS_ONLY;
+my $HOLDINGS_OFFSET = 0;
 if (defined($opt_I)) {
     $ID = $opt_I;
 }
@@ -143,6 +144,7 @@ elsif (defined($opt_S)) {
 }
 elsif (defined($opt_H)) {
     $HOLDINGS_ONLY = 1;
+    $HOLDINGS_OFFSET = $opt_H;
 }
 
 if (defined($opt_d)) {
@@ -303,10 +305,12 @@ sub enqueue_from_holdings_delta {
     my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
     my $max_version = Db::get_holdings_max_version($C, $dbh, $run);
     my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $max_version);
+    my $slice_size = $config->get('holdings_deltas_slice_size');
 
+    my $num_to_queue = $holdings_deltas_size - $HOLDINGS_OFFSET;
     my $s;
     if ($holdings_deltas_size > 0) {
-        $s = qq{total=$holdings_deltas_size from ht_repository.holdings_deltas to add to queue};
+        $s = qq{total size=$holdings_deltas_size, remaining=$num_to_queue from ht_repository.holdings_deltas to add to queue};
         __output(qq{$s\n});
         qu_Log_misc($C, $run, $s);
 
@@ -325,8 +329,7 @@ sub enqueue_from_holdings_delta {
     return if ($CHECK);
 
     my $start = time;
-    my $slice_size = $config->get('holdings_deltas_slice_size');
-    my $offset = 0;
+    my $offset = $HOLDINGS_OFFSET;
     my $num_items = 0;
     my $remaining = $holdings_deltas_size;
     while (1) {
@@ -339,7 +342,13 @@ sub enqueue_from_holdings_delta {
         $remaining -= $num_inserted;
         $offset += $slice_size;
 
-        __output(qq{remaining=$remaining items to load\n});
+        my $total_elapsed = (time - $start);
+        my $total_ids_per_sec = $num_items / $total_elapsed;
+        my @parts = gmtime int(($holdings_deltas_size - $num_items) * (1 / $total_ids_per_sec));
+        my $time_remaining = sprintf("%dh %dm %ds", @parts[2,1,0]);
+
+        my $s0 = sprintf("Queue totals: added=%d elapsed=%.2f rate=%.2f ids/sec remain=%s offset=%d\n", $num_items, $total_elapsed, $total_ids_per_sec, $time_remaining, $offset);
+        __output($s0);
     }
 
     my $elapsed = (time - $start) || 1;
