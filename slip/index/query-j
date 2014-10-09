@@ -107,7 +107,7 @@ if (! $QUERY) {
 $QUERY = Identifier::get_safe_Solr_id($QUERY);
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me,query';
 }
 
 my $INTERACTIVE = (! defined($opt_N)); # optional
