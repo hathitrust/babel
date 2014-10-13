@@ -1130,7 +1130,11 @@ sub __c_host_control {
             Db::update_host_enabled($C, $dbh, $run, $__host, $enabled);
             Log_control($C, $run, 'host', $__host, $enabled);
             __output(qq{\t$what run=$run host=$__host\n});
-        }
+
+            # clear count when stale
+            Db::update_host_num_running($C, $dbh, $run, $__host, 0);
+            __output(qq{\tset producers_running=0 on $__host\n});
+    }
     }
     else {
         Db::update_host_enabled($C, $dbh, $run, $host, $enabled);
