@@ -347,7 +347,7 @@ sub enqueue_from_holdings_delta {
         my @parts = gmtime int(($holdings_deltas_size - $num_items) * (1 / $total_ids_per_sec));
         my $time_remaining = sprintf("%dh %dm %ds", @parts[2,1,0]);
 
-        my $s0 = sprintf("Queue totals: added=%d elapsed=%.2f rate=%.2f ids/sec remain=%s offset=%d\n", $num_items, $total_elapsed, $total_ids_per_sec, $time_remaining, $offset);
+        my $s0 = sprintf("enqueuer holdings operation totals: added=%d elapsed=%.2f rate=%.2f ids/sec remain=%s offset=%d\n", $num_items, $total_elapsed, $total_ids_per_sec, $time_remaining, $offset);
         __output($s0);
     }
 
