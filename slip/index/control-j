@@ -92,25 +92,28 @@ sub cont_get_usage {
        control-j -k stop|start -r run -D
           -D starts/stops driver-j
 
-       control-j -kresetdriver -r run
+       control-j -k resetdriver -r run
           resets driver shard states and sets driver stage=Build_Wait
 
-       control-j -kresetstats -r run
+       control-j -k resetstats -r run
           zeros slip_shard_stats and slip_rate_stats for incremental recording
 
-       control-j -kreseterrors -r run
+       control-j -k reseterrors -r run
           delete all items in slip_errors for a given run
 
-       control-j -kresetqueue -r run
+       control-j -k resetqueue -r run
           delete all items in queue for given run (safely)
 
-       control-j -kQtimestamp -r run [-tYYYY-MM-DD hh:mm:ss]
+       control-j -k setholdingsversion -r run -v version
+          set last version loaded to earlier version to reprocess print holdings update
+
+       control-j -k Qtimestamp -r run [-tYYYY-MM-DD hh:mm:ss]
           set queue timestamp to $Db::MYSQL_ZERO_TIMESTAMP or value of -t
             re-queue ids in slip_rights newer than that timestamp, to be re-indexed
 
-       control-j -kVtimestamp -r run [-tYYYYMMDD]
+       control-j -k Vtimestamp -r run [-tYYYYMMDD]
           set vSolr timestamp to $Db::VSOLR_ZERO_TIMESTAMP or value of -t
-            re-query vSolr for ids newer than that timestamp, to be re-added slip_rights 
+            re-query vSolr for ids newer than that timestamp, to be re-added slip_rights
 
        control-j -k stop|start -V
           -V starts/stops rights-j
@@ -121,15 +124,15 @@ sub cont_get_usage {
        control-j -k stop|start -r run -R shard -C
           -C starts/stops check-j
 
-       control-j -k conf -r run 
-          [-h host] -n num_producers 
+       control-j -k conf -r run
+          [-h host] -n num_producers
                     and/or
           -m producers_per_shard [-R <shard>]
           configure host names and number of producers per host
-             and/or 
+             and/or
           number of producers per shard for <shard> or all shards
 
-       control-j -k restore -r run [-s error_type] 
+       control-j -k restore -r run [-s error_type]
           move ids from error list back to queue
             where -s defaults to ALL errors else one of
               o=ocr i=indexing m=metadata c=critical s=server
@@ -139,7 +142,7 @@ sub cont_get_usage {
 
        control-j -k init -r run [-t 'yyyy-mm-dd hh:mm:ss']
           initialize a run, zero everything and optionally setting queue time pointer
-       
+
        control-j -k delete -r run
           delete a run entirely from the database
 
@@ -149,9 +152,9 @@ sub cont_get_usage {
     return $s;
 }
 
-our ($opt_k, $opt_r, $opt_R, $opt_m, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_C, $opt_T, $opt_s, $opt_G);
+our ($opt_k, $opt_r, $opt_R, $opt_m, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_C, $opt_T, $opt_s, $opt_G, $opt_v);
 
-my $ops = getopts('k:r:R:n:m:h:edDVOt:CTs:G');
+my $ops = getopts('k:r:R:n:m:h:edDVOt:CTs:Gv:');
 
 # Required
 my $KOMMAND = $opt_k;
@@ -162,11 +165,11 @@ my $DRIVER = $opt_D;
 my $OPTIMIZE = $opt_O;
 my $CHECK = $opt_C;
 my $RIGHTS = $opt_V;
-
+my $HOLDINGS_VERSION = $opt_v;
 my $TIMESTAMP = $opt_t;
 my $ERROR_TYPE = $opt_s || '';
 my $IGNORE_STOPSLIP = $opt_G;
-    
+
 my $INTERACTIVE = $ENV{TERM};
 unless ($IGNORE_STOPSLIP) {
     if ($INTERACTIVE) {
@@ -180,7 +183,7 @@ unless ($IGNORE_STOPSLIP) {
     }
 }
 
-if (! $KOMMAND) {
+unless ($KOMMAND) {
     my $s = cont_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
@@ -189,12 +192,12 @@ if (! $KOMMAND) {
     exit $rc;
 }
 
-if (! $RUN) {
+unless ($RUN) {
     my $s = cont_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
     __non_interactive_err_output($rc, $s);
-    
+
     exit $rc;
 }
 
@@ -297,6 +300,16 @@ eval {
     elsif ($KOMMAND eq 'resetqueue') {
         c_Reset_queue($C, $DBH, $RUN);
     }
+    elsif ($KOMMAND eq 'setholdingsversion') {
+        unless ( defined($HOLDINGS_VERSION) && $HOLDINGS_VERSION > 0 ) {
+            my $s = qq{holdings version not supplied\n} . cont_get_usage();
+            my $rc = 0;
+            __output($s);
+            exit $rc;
+        }
+
+        c_set_holdings_version($C, $DBH, $RUN, $HOLDINGS_VERSION);
+    }
     elsif (($KOMMAND eq 'start') || ($KOMMAND eq 'stop')) {
         my $enabled = ($KOMMAND eq 'start') ? 1 : 0;
 
@@ -393,7 +406,7 @@ sub __validate_host_vs_shard_config {
     foreach my $shard (@shards) {
         $shard_count_producers += Db::Select_shard_num_producers($C, $dbh, $run, $shard);
     }
-    
+
     my $host_count = qq{producers over hosts($host_count_producers)};
     my $shard_count = qq{producers over shards($shard_count_producers)};
 
@@ -421,13 +434,13 @@ sub __validate_shard {
     my $C = shift;
     my $run = shift;
     my $shard = shift;
-    
+
     if (! defined($shard)) {
         my $s = qq{bad shard arg="$shard"} . cont_get_usage();
         my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
         __output($s);
         __non_interactive_err_output($rc, $s);
-        
+
         exit $rc;
     }
 
@@ -436,7 +449,7 @@ sub __validate_shard {
         my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
         __output($s);
         __non_interactive_err_output($rc, $s);
-        
+
         exit $rc;
     }
 }
@@ -559,7 +572,7 @@ Description
 # ---------------------------------------------------------------------
 sub __configure_init_hosts {
     my ($C, $dbh, $run) = @_;
-    
+
     my $config = $C->get_object('MdpConfig');
 
     my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
@@ -580,7 +593,7 @@ Description
 # ---------------------------------------------------------------------
 sub __configure_init_shards {
     my ($C, $dbh, $run) = @_;
-    
+
     my $config = $C->get_object('MdpConfig');
     my $producers_per_shard = $config->get('producers_per_shard');
 
@@ -674,9 +687,9 @@ sub c_delete {
     my ($C, $dbh, $run) = @_;
 
     __confirm("\n\n!!!(This will delete ALL RECORD of the run from the database for Run=$run !!!\n\n\t ARE YOU ABSOLUTELY 100% SURE ABOUT THIS!? [N] ");
-    
+
     __confirm("\n\t\t\tREALLY? [N] ");
-    
+
     __output(qq{\n\tdelete holdings version ... });
     Db::delete_holdings_record($C, $dbh, $run);
     __output(qq{Done.\n});
@@ -684,35 +697,35 @@ sub c_delete {
     __output(qq{\n\tdelete queue timestamp ... });
     Db::delete_j_rights_timestamp($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete errors ... });
     Db::Delete_errors($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete indexed ... });
     Db::Delete_indexed($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete enqueuer record ... });
     Db::delete_enqueuer($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete shard stats ... });
     Db::Reset_shard_stats($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete rate stats ... });
     Db::Reset_rate_stats($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete queue ... });
     Db::Delete_queue($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete hosts ... });
     Db::Delete_host_control($C, $dbh, $run);
     __output(qq{Done.\n});
-    
+
     __output(qq{\tdelete driver ... });
     SLIP_Utils::Db_driver::delete_driver($C, $dbh, $run);
     __output(qq{Done.\n\n});
@@ -789,7 +802,7 @@ sub c_configure_shard {
     else {
         @num_shards_list = @NUM_SHARDS_LIST;
     }
-    
+
     foreach my $__shard (@num_shards_list) {
         Db::update_shard_num_producers($C, $dbh, $run, $__shard, $producers_per_shard);
 
@@ -812,8 +825,8 @@ sub c_restore {
     my ($C, $dbh, $run, $type) = @_;
 
     my $num_restored = Db::insert_restore_errors_to_queue($C, $dbh, $run, $type);
-    my $error_type = 
-      (defined $type) 
+    my $error_type =
+      (defined $type)
         ? SLIP_Utils::Common::IXconstant2string($type)
           : 'All Error Types';
     Log_restore($C, $run, $num_restored, $error_type);
@@ -839,7 +852,6 @@ sub c_Reset_stats {
     __output(qq{\tSTATS RESET run=$run\n});
 }
 
-
 # ---------------------------------------------------------------------
 
 =item c_Reset_errors
@@ -858,8 +870,6 @@ sub c_Reset_errors {
     __output(qq{\tERRORS RESET run=$run deleted=$ct\n});
 }
 
-
-
 # ---------------------------------------------------------------------
 
 =item c_Reset_queue
@@ -876,6 +886,25 @@ sub c_Reset_queue {
 
     Log_queue_reset($C, $run, $ct);
     __output(qq{\tQUEUE RESET run=$run deleted=$ct\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_set_holdings_version
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_set_holdings_version {
+    my ($C, $dbh, $run, $version) = @_;
+
+    Db::set_holdings_version($C, $dbh, $run, $version);
+    Db::update_last_processed_holdings_version($C, $dbh, $run, $version);
+
+    Log_holdings_set($C, $run, $version);
+    __output(qq{\tHOLDINGS VERSION SET run=$run version=$version\n});
 }
 
 # ---------------------------------------------------------------------
@@ -1229,8 +1258,6 @@ sub Log_errors_reset {
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
-
-
 # ---------------------------------------------------------------------
 
 =item Log_queue_reset
@@ -1244,6 +1271,22 @@ sub Log_queue_reset {
     my ($C, $run, $ct) = @_;
 
     my $s = qq{***CONTROL[QUEUE RESET]: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_holdings_set
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_holdings_set {
+    my ($C, $run, $version) = @_;
+
+    my $s = qq{***CONTROL[HOLDINGS VERSION SET]: } . Utils::Time::iso_Time() . qq{ r=$run version=$version };
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 

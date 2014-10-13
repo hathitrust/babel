@@ -631,12 +631,6 @@ sub handle_Build_Wait {
             # Set busy file
             handle_BUSY_file($C, $run, $_Stage, BUSY_Set);
 
-            # Update processed version of PHDB update.
-            if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
-                my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
-                Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
-            }
-
             # Enable producers to start running from cron, go to next stage
             $rc = __control_producers($C, $DBH, $RUN, $_Stage, 'start');
 
@@ -692,6 +686,12 @@ sub handle_Building {
             if ($rc == 0) {
                 # Record this finish time for all shards without errors.
                 __record_shards_build_done($C, $dbh, $run);
+
+                # Update processed version of PHDB update.
+                if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
+                    my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+                    Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
+                }
 
                 unless ($SKIP_OPTIMIZE) {
                     # Enable optimizers to start running from cron
