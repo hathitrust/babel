@@ -170,6 +170,7 @@ $C->set_object('MdpConfig', $config);
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'index-j');
 
 my $DEFAULT_SLICE_SIZE = $config->get('queue_slice_size');
+my $LIFETIME_SLICE_LIMIT = $config->get('lifetime_slice_limit');
 
 # Index just one id
 my $SINGLE_ID = $opt_I;
@@ -227,6 +228,12 @@ sub i_processing_loop {
     my $slices_taken = 0;
 
     while ($PROCESSING) {
+        # Exit this producer if it reaches its lifetime slice
+        # limit. This is mainly to protect against memory leaks during
+        # very long indexing runs.
+        handle_lifetime_slice_limit($C, $slices_taken, $LIFETIME_SLICE_LIMIT, $RUN, $PID, $HOST, $Dedicated_Shard);
+        # POSSIBLY NOTREACHED
+
         # Exit this producer if the stop file is touched
         Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
         # POSSIBLY NOTREACHED
@@ -311,6 +318,25 @@ sub SINGLE_ID_handling {
     }
 
     return $dedicated_shard;
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_lifetime_slice_limit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_lifetime_slice_limit {
+    my ($C, $slice_num, $limit, $run, $pid, $host, $shard) = @_;
+
+    if ($slice_num > $limit) {
+        Log_lifetime_limit($C, $limit, $run, $pid, $host, $shard);
+        __output("lifetime limit=$limit reached for shard=$shard ... exit\n");
+        exit 0;
+    }
 }
 
 
@@ -719,6 +745,24 @@ sub Log_queue_empty {
     my ($C, $run, $pid, $host, $dedicated_shard) = @_;
 
     my $s = qq{***QUEUE EMPTY (for shard=$dedicated_shard, exit): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item Log_lifetime_limit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_lifetime_limit {
+    my ($C, $limit, $run, $pid, $host, $shard) = @_;
+
+    my $s = qq{***LIFETIME LIMIT: } . Utils::Time::iso_Time() . qq{ r=$run limit=$limit pid=$pid h=$host shard=$shard};
     SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
 }
 
