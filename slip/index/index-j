@@ -108,9 +108,10 @@ Description
 
 # ---------------------------------------------------------------------
 sub i_get_usage {
-    my $s .= qq{Usage: index-j -r run [-I id][-d 0|1|2|3][-v][-T]
+    my $s .= qq{Usage: index-j -r run [-I id][-d 0|1|2|3][-v][-T][-L limit]
             where -I id indexes one id
                   -v turns on verbose logging
+                  -L set lifetime number of slices, overrides config.lifetime_slice_limit
                   -d sets the debug level
                       where
                             0=default
@@ -123,9 +124,9 @@ sub i_get_usage {
 # When total docs reaches an even multiple of the stop point the
 # indexer stops.
 
-our ($opt_d, $opt_r, $opt_I, $opt_v, $opt_T);
+our ($opt_d, $opt_r, $opt_I, $opt_v, $opt_T, $opt_L);
 
-my $ops = getopts('d:r:I:vT');
+my $ops = getopts('d:r:I:vTL:');
 
 my $VERBOSE_LOGGING = defined($opt_v);
 
@@ -170,7 +171,7 @@ $C->set_object('MdpConfig', $config);
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'index-j');
 
 my $DEFAULT_SLICE_SIZE = $config->get('queue_slice_size');
-my $LIFETIME_SLICE_LIMIT = $config->get('lifetime_slice_limit');
+my $LIFETIME_SLICE_LIMIT = $opt_L || $config->get('lifetime_slice_limit');
 
 # Index just one id
 my $SINGLE_ID = $opt_I;
