@@ -35,6 +35,7 @@ njp|1|ca-mvgoo|njp
 njp|4|casfia|njp
 nnc1|1|ca-mvgoo|nnc
 nnc2|4|casfia|nnc
+nnc2|24|nnc|nnc
 nyp|1|ca-mvgoo|nn
 nyp|4|casfia|nn
 osu|1|ca-mvgoo|ou
