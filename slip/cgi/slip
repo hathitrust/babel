@@ -274,7 +274,6 @@ sub report_shards {
     
     my @enabled_head = ();
     my @states_head = ();
-    my @states_head = ();
     if ($driver_driven) {
         @enabled_head = ("ind", "opt", "ckd");
         @states_head = ("indexed", "optimized", "checked", "released");
