@@ -28,7 +28,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -567,7 +567,7 @@ sub report_flags_state {
     my @sizes = split(/ /, Scheduler::get_segsizes($C, $run));
     my $segsizes = sprintf("tot% 16s % 16s\n\t\t", $sizes[0], $sizes[1]);
 
-    my $extra = sprintf("%2s % 16s % 16s  %-20s %-20s%s  %-20s\n\t\t", '', 'seg_1', 'seg_2', 'built', 'optimized', '[s]', 'checked');
+    my $extra = sprintf("%2s % 16s % 16s  %-20s %-20s%s  %-20s %s\n\t\t", '', 'seg_1', 'seg_2', 'built', 'optimized', '[s]', 'checked', 'segments');
     foreach my $shard (@num_shards_list) {
         my $buildDoneTime = Db::Select_shard_build_done($C, $dbh, $run, $shard);
         my $optimizeDoneTime = Db::Select_shard_optimize_done($C, $dbh, $run, $shard);
@@ -575,13 +575,14 @@ sub report_flags_state {
         my $selected = Db::optimize_shard_is_selected($C, $dbh, $run, $shard);
 
         $extra .= sprintf(
-                          "%2s % 16s % 16s  %-20s %-20s[%s]  %-20s\n\t\t",
+                          "%2s % 16s % 16s  %-20s %-20s[%s]  %-20s %s\n\t\t",
                           $shard,
                           split(/ /, Scheduler::get_segsizes($C, $run, $shard)),
                           $buildDoneTime,
                           $optimizeDoneTime,
                           $selected,
-                          $checkDoneTime
+                          $checkDoneTime,
+                          Scheduler::get_segsizes_count($C, $run, $shard),
                          );
     }
     $opo .= $extra . $segsizes;
