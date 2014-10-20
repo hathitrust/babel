@@ -67,3 +67,4 @@ aeu|4|casfia|aeu
 ucw|4|casfia|ctu
 udel|17|deu|deu
 msu|1|ca-mvgoo|miem
+emu|25|geu|geu
