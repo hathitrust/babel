@@ -137,13 +137,13 @@ ssd:
 
 access:
   - /htapps/__CMD_STAGE__/access/cgi/stmts __LOCAL__
-  - /htapps/__CMD_STAGE__/access/cgi/stmts attr=1 src=3 __LOCAL__
-  - /htapps/__CMD_STAGE__/access/cgi/stmts_api attr=1 src=3 fields=stmt_url,stmt_key __LOCAL__
+  - /htapps/__CMD_STAGE__/access/cgi/stmts attr=1 access=3 __LOCAL__
+  - /htapps/__CMD_STAGE__/access/cgi/stmts_api attr=1 access=3 fields=stmt_url,stmt_key __LOCAL__
   - /htapps/__CMD_STAGE__/access/cgi/status_api id=mdp.39015015394847 __LOCAL__
 
   - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts?__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts?attr=1;src=3;__LOCAL__
-  - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts_api?attr=1;src=3;fields=stmt_url,stmt_key;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts?attr=1;access=3;__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/access/cgi/stmts_api?attr=1;access=3;fields=stmt_url,stmt_key;__LOCAL__
   - http://__URL_STAGE__.hathitrust.org/access/cgi/status_api?id=mdp.39015015394847;__LOCAL__
 
 wayf:
