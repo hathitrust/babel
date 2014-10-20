@@ -334,6 +334,7 @@ sub __bindYAMLTokens {
 
     # Rights tokens
     my @rightsTokens = qw/:::SOURCE
+                          :::ACCESS_PROFILE
                           :::NAMESPACE
                           :::TIME
                           :::USER
@@ -345,7 +346,7 @@ sub __bindYAMLTokens {
     my $ro = $self->__getRightsObject;
 
     foreach my $tok (@rightsTokens) {
-        my ($field) = ($tok =~ m,([A-Z]+),);
+        my ($field) = ($tok =~ m,([A-Z_]+),);
         $field = lc($field);
         $self->__setMember($tok,
                            sub { $ro->getRightsFieldVal($field) || '' });

@@ -634,6 +634,7 @@ sub __paramsRefAddRights {
     my $ref = $self->__paramsRef;
 
     $ref->{attr} = $ro->getRightsFieldVal('attr');
+    $ref->{source} = $ro->getRightsFieldVal('source');
     $ref->{access_profile} = $ro->getRightsFieldVal('access_profile');
 }
 
@@ -825,9 +826,9 @@ sub __setAccessUseFields {
     my $dbh = $self->__get_DBH;
     my $P_Ref = $self->__paramsRef;
 
-    my ($attr, $source) = ( $P_Ref->{attr}, $P_Ref->{source} );
+    my ($attr, $access_profile) = ( $P_Ref->{attr}, $P_Ref->{access_profile} );
     my $ref_to_arr_of_hashref =
-      Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $source, $fieldHashRef);
+      Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $access_profile, $fieldHashRef);
     my $hashref = $ref_to_arr_of_hashref->[0];
 
     foreach my $field_val (keys %$hashref) {
@@ -1169,7 +1170,7 @@ sub p__processValue {
     $val =~ s,__ID__,$P_Ref->{id},;
     $val =~ s,__SEQ__,$P_Ref->{seq},;
 
-    my @boundTokens = ($val =~ m,:::[A-Z]+,g);
+    my @boundTokens = ($val =~ m,:::[A-Z_]+,g);
     foreach my $token (@boundTokens) {
         my $handler = $self->__getYAMLTokenBinding($token);
         my $replacement = &$handler;
@@ -1177,7 +1178,7 @@ sub p__processValue {
     }
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__processValue: $orig_val => $val");
+        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__processValue[$level]: $orig_val => $val");
     }
 
     return $val;
@@ -1199,7 +1200,7 @@ sub p__handleAttributes {
     if (ref($attrRef) eq 'HASH') {
         foreach my $aName (keys %{ $attrRef }) {
             if ($DEBUG eq 'tree') {
-                hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleAttributes: elem=" . ($elem ? $elem->nodeName : '') . " attribute=$aName");
+                hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleAttributes[$level]: elem=" . ($elem ? $elem->nodeName : '') . " attribute=$aName");
             }
             my $attrVal = $attrRef->{$aName};
             $attrVal = $self->p__processValue($attrVal, $level+1);
@@ -1222,7 +1223,7 @@ sub p__handleContent {
     my ($doc, $parentElem, $elem, $ref, $level) = @_;
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__handleContent: elem=" . ($parentElem ? $parentElem->nodeName : ''));
+        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__handleContent[$level]: elem=" . ($parentElem ? $parentElem->nodeName : ''));
     }
 
     if ($parentElem) {
@@ -1256,7 +1257,7 @@ sub p__handleElement {
     my ($doc, $parentElem, $eName, $ref, $level) = @_;
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleElement: parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName");
+        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleElement[$level]: parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName");
     }
 
     my $elem = $doc->createElement($eName);
@@ -1282,7 +1283,7 @@ sub p__buildXML {
     my ($doc, $parentElem, $responsesRef, $level) = @_;
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__buildXML: " . ($parentElem ? $parentElem->nodeName : ''));
+        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__buildXML[$level]: " . ($parentElem ? $parentElem->nodeName : ''));
     }
 
     foreach my $eName (keys %$responsesRef) {

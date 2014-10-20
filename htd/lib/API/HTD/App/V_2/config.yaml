@@ -105,6 +105,9 @@ HTD_RIGHTS_BLOCK: &htd-rights-block
     htd:source:
       attrs: null
       content: :::SOURCE
+    htd:access_profile:
+      attrs: null
+      content: :::ACCESS_PROFILE
     htd:namespace:
       attrs: null
       content: :::NAMESPACE
