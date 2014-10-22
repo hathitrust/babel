@@ -634,7 +634,6 @@ sub __paramsRefAddRights {
     my $ref = $self->__paramsRef;
 
     $ref->{attr} = $ro->getRightsFieldVal('attr');
-    $ref->{source} = $ro->getRightsFieldVal('source');
     $ref->{access_profile} = $ro->getRightsFieldVal('access_profile');
 }
 

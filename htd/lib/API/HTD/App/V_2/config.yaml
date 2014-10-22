@@ -102,9 +102,6 @@ access_profile_name_map:
 HTD_RIGHTS_BLOCK: &htd-rights-block
   attrs: null
   content:
-    htd:source:
-      attrs: null
-      content: :::SOURCE
     htd:access_profile:
       attrs: null
       content: :::ACCESS_PROFILE

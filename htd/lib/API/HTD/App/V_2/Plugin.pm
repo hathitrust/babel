@@ -333,15 +333,16 @@ sub __bindYAMLTokens {
                        sub { $self->__getPairtreeFilename('mets.xml') });
 
     # Rights tokens
-    my @rightsTokens = qw/:::SOURCE
-                          :::ACCESS_PROFILE
-                          :::NAMESPACE
-                          :::TIME
-                          :::USER
-                          :::REASON
-                          :::ID
-                          :::ATTR
-                          :::NOTE/;
+    my @rightsTokens = qw/
+                             :::ACCESS_PROFILE
+                             :::NAMESPACE
+                             :::TIME
+                             :::USER
+                             :::REASON
+                             :::ID
+                             :::ATTR
+                             :::NOTE
+                         /;
 
     my $ro = $self->__getRightsObject;
 
@@ -707,7 +708,7 @@ Description
 sub __get_pageimage {
     my $self = shift;
     my $resource = shift;
-    
+
     my ($representationRef, $filename, $mimetype, $seq);
 
     my $Q = $self->query;
