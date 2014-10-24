@@ -168,6 +168,7 @@ HT.Viewer.Flip = {
         self.w = self.options.default_w * self.zoom;
 
         self.drawPages();
+        $.publish("update.zoom.size", ( self.zoom ));
 
     },
 
@@ -187,6 +188,7 @@ HT.Viewer.Flip = {
         } else {
             self.$wrapper.addClass("flip-rotated-" + self.rotate);
         }
+        $.publish("update.rotate.orient", ( self.rotate ));
     },
 
     getPageOrient: function(seq) {

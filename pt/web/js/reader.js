@@ -171,6 +171,14 @@ HT.Reader = {
             }
         })
 
+        $.subscribe("update.zoom.size", function(e, size) {
+            HT.params.size = size;
+        })
+
+        $.subscribe("update.rotate.orient", function(e, orient) {
+            HT.params.orient = orient;
+        })
+
         $.subscribe("update.focus.page", function(e, seq) {
             // we define the focus
             self.setCurrentSeq(seq);
@@ -283,6 +291,7 @@ HT.Reader = {
         var $btn = $(id);
         $btn.click(function(e) {
             e.preventDefault();
+            // HT.analytics.trackEvent({ category : "PT", action : "PT "+ action});
             if ( fn == null ) {
                 $.publish("action." + action, (this));
             } else {

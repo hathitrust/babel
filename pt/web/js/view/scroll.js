@@ -148,7 +148,6 @@ HT.Viewer.Scroll = {
         }
 
         self.updateZoom(self.zoom_levels[new_index]);
-
     },
 
     updateZoom: function(zoom) {
@@ -159,7 +158,7 @@ HT.Viewer.Scroll = {
         self.w = self.options.default_w * self.zoom;
 
         self.drawPages();
-
+        $.publish("update.zoom.size", ( self.zoom ));
     },
 
     rotateCurrentPage: function(delta) {
@@ -169,6 +168,7 @@ HT.Viewer.Scroll = {
         var orient = this.getPageOrient(seq);
         this.orient_cache[seq] = orient = ( ( orient + delta ) + 4 ) % 4;
         this.drawPages();
+        $.publish("update.rotate.orient", ( orient ));
     },
 
     getPageOrient: function(seq) {
@@ -405,7 +405,7 @@ HT.Viewer.Scroll = {
         var best_w = -1; var best_zoom = 0;
         for(var i = 0; i < self.zoom_levels.length; i++) {
             var zoom = self.zoom_levels[i];
-            console.log("CALCULATE BEST FIT", self.options.default_w * zoom * self._getPageMargin(), fit_w);
+            // console.log("CALCULATE BEST FIT", self.options.default_w * zoom * self._getPageMargin(), fit_w);
             var check_w = self.options.default_w * zoom * self._getPageMargin();
             if (  check_w > fit_w ) {
                 if ( check_w / fit_w < 1.25 ) {

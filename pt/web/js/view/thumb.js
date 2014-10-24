@@ -156,6 +156,7 @@ HT.Viewer.Thumbnail = {
             $.publish("enable.zoom.out");
         }
         self.drawPages();
+        $.publish("update.zoom.size", ( "~" + HT.params.size ));
     },
 
     bindScroll: function() {

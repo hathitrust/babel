@@ -164,8 +164,8 @@
         <xsl:call-template name="action-resize" />
 
         <div class="btn-group btn-group-vertical">
-          <a href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square"><i class="icomoon-reload-CCW"></i><span class="label"> Rotate left</span></a>
-          <a href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square"><i class="icomoon-reload-CW"></i><span class="label"> Rotate right</span></a>
+          <a href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Counterclockwise"><i class="icomoon-reload-CCW"></i><span class="label"> Rotate left</span></a>
+          <a href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Clockwise"><i class="icomoon-reload-CW"></i><span class="label"> Rotate right</span></a>
         </div>
       </div>
     </div>
@@ -173,14 +173,14 @@
 
   <xsl:template name="action-fullscreen">
     <div class="btn-group btn-group-vertical">
-      <button id="action-toggle-fullscreen" type="button" class="btn square alone"><i class="icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
+      <button id="action-toggle-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen"><i class="icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
     </div>
   </xsl:template>
 
   <xsl:template name="action-resize">
     <div class="btn-group btn-group-vertical">
-      <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
-      <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square"><i class="icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
+      <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In"><i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
+      <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out"><i class="icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
     </div>
   </xsl:template>
 
