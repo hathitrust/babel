@@ -14,6 +14,7 @@ use RightsGlobals;
 
 use API::HTD_Log;
 use API::DbIF;
+use API::HTD::HCodes;
 
 my $DBH = API::DbIF::databaseConnect('ht_maintenance');
 
@@ -24,15 +25,6 @@ my %RESOURCES        = (
                         type                         => {ord => 1, ct => 0},
                         aggregate                    => {ord => 2, ct => 0},
                         structure                    => {ord => 3, ct => 0},
-                        # v.1 resources
-                        'V.1 - dreprecated'                        => {ord => 5, ct => 0},
-                        # ---> 'V.1'                        => {ord => 5, ct => 0},
-                        # ---> pageimage                    => {ord => 6, ct => 0},
-                        # ---> pageocr                      => {ord => 7, ct => 0},
-                        # ---> pagecoordocr                 => {ord => 8, ct => 0},
-                        # ---> meta                         => {ord => 9, ct => 0},
-                        # ---> pagemeta                     => {ord => 10, ct => 0},
-                        # v.2 resources
                         'V.2'                        => {ord => 11, ct => 0},
                         volume                       => {ord => 12, ct => 0},
                         volume_pageimage             => {ord => 13, ct => 0},
@@ -46,6 +38,14 @@ my %RESOURCES        = (
                         article_assets_supplementary => {ord => 21, ct => 0},
                         article_meta                 => {ord => 22, ct => 0},
                        );
+
+my @RESOURCES_RESTRICTED = (
+                            volume                       => {ord => 12, ct => 0},
+                            volume_pageimage             => {ord => 13, ct => 0},
+                            volume_pageocr               => {ord => 14, ct => 0},
+                            volume_pagecoordocr          => {ord => 15, ct => 0},
+                           );
+
 my @FREELY_AVAILABLE = (
                         @RightsGlobals::g_creative_commons_attribute_values,
                         @RightsGlobals::g_public_domain_world_attribute_values,
@@ -394,7 +394,7 @@ sub CrossCheck_IC_DataRequests {
     foreach my $ip (@UNIQUE_IP_ADDRESSES) {
         my $ip_fail = 0;
         print "\t$ip ";
-        foreach my $resource (qw( pageimage pageocr pagecoordocr aggregate pdf )) {
+        foreach my $resource (@RESOURCES_RESTRICTED) {
             if (my $fail = _test_resource_by_ip_for_ic($DBH, $resource, $ip)) {
                 print "$fail\n";
                 $check_ok = 0;
@@ -424,9 +424,7 @@ sub _test_resource_by_ip_for_ic {
     my ($statement, $sth);
     my $failures = '';
 
-    # MUST coordinate with HAuth.pm that codes permit access to
-    # restricted materials.
-    my @restricted_codes = (3,7,17,19,23,33,35,39,65,67,71,129,131,135,49,51,55,81,83,87,97,99,103,145,147,151,161,163,167,193,195,199,113,115,119,177,179,183,209,211,215,225,227,231,241,243,247);
+    my @restricted_codes = API::HTD::HCodes::get_all_authorization_codes('restricted_only', undef);
 
     chomp(my @uniq_resource_ids_by_ip = `egrep "$ip.*?GET_$resource" $today_log_file`);
     @uniq_resource_ids_by_ip = map { $_ =~ m, id="(.*?)" , } @uniq_resource_ids_by_ip;
@@ -437,7 +435,7 @@ sub _test_resource_by_ip_for_ic {
         $statement = qq{SELECT attr FROM rights_current WHERE namespace=? AND id=?};
         $sth = API::DbIF::prepAndExecute($DBH, $statement, $namespace, $id);
         my $attr = $sth->fetchrow_array();
-        if (! grep(/^$attr$/, @FREELY_AVAILABLE)) {
+        unless ( grep(/^$attr$/, @FREELY_AVAILABLE) ) {
 
             # check authorization for access key used to get X-HathiTrust-InCopyright
             chomp(my @access_lines = `egrep "$ip.*?X-HathiTrust-InCopyright.*?$resource.*?$id" $today_log_file`);
@@ -452,7 +450,7 @@ sub _test_resource_by_ip_for_ic {
                 $sth = API::DbIF::prepAndExecute($DBH, $statement, $key);
                 my $code = $sth->fetchrow_array() || 1;
 
-                if (! grep(/^$code$/, @restricted_codes)) {
+                unless ( grep(/^$code$/, @restricted_codes) ) {
                     my $codekey = "code=$code key=$key";
                     $id_hash{$rid}{$codekey} += 1;
                 }

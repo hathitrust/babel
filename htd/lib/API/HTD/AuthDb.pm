@@ -337,7 +337,7 @@ sub get_expiration_by_access_key {
     my $sth = API::DbIF::prepAndExecute($dbh, $statement, $access_key);
     my $expires = $sth->fetchrow_array(); # undef if not present in htd_authorization
 
-    hLOG_DEBUG('DB:  ' . qq{expiration: $statement: $access_key ::: $expires});
+    hLOG_DEBUG('DB:  ' . qq{expiration: $statement: $access_key ::: } . (defined $expires ? $expires : 'never'));
     return $expires;
 }
 

@@ -48,11 +48,11 @@ my %test_attrs = (
 # 2 represents 2,4,5,8,9
 # 3 represents 3
 # 6 represents 6,7
-my %test_sources = (
-                    1 => 'google', 
-                    2 => 'open', 
-                    3 => 'umpress', 
-                    6 => 'minn',
+my %test_profiles = (
+                    1 => 'open', 
+                    2 => 'google', 
+                    3 => 'page', 
+                    4 => 'page+lowres',
                    );
 
 # Here and there
@@ -68,13 +68,13 @@ my %test_ports = (
                  );
 
 my %resources = (
-#                  structure    => 0,
-#                  aggregate    => 0,
-#                  meta         => 0,
-#                  pagemeta     => 1,
-#                  pageimage    => 1,
-#                  pageocr      => 1,
-                  pagecoordocr => 1,
+                 'structure'    => 0,
+                  aggregate    => 0,
+                  volume/meta         => 0,
+                  volume/pagemeta     => 1,
+                  volume/pageimage    => 1,
+                  volume/pageocr      => 1,
+                  volume/pagecoordocr => 1,
                 );
 
 my $COMMAND;
@@ -84,8 +84,8 @@ $ENV{UNDER_TEST} = 1;
 foreach my $attr (keys %test_attrs) {
     $ENV{TEST_ATTR} = $attr;
 
-    foreach my $source (keys %test_sources) {
-        $ENV{TEST_SOURCE} = $source;        
+    foreach my $profile (keys %test_profiles) {
+        $ENV{TEST_PROFILE} = $profile;        
 
         foreach my $addr (keys %test_addrs) {
             $ENV{REMOTE_ADDR} = $addr;
@@ -96,7 +96,7 @@ foreach my $attr (keys %test_attrs) {
                 foreach my $resource (keys %resources) {
                     printf("%-15s %-18s %-25s %-10s %-21s", 
                            qq{attr=$attr ($test_attrs{$attr})},
-                           qq{source=$source ($test_sources{$source})},
+                           qq{profile=$profile ($test_profiles{$profile})},
                            qq{addr=$addr ($test_addrs{$addr})},
                            qq{port=$test_ports{$port}},
                            qq{resource=$resource},

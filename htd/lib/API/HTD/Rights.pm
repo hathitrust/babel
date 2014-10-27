@@ -85,7 +85,7 @@ sub __development_rights {
            id => $barcode,
            attr => 1,
            reason => 1,
-           source => 2,
+           access_profile => 1,
            user => 'me',
            time => '2012-09-14 13:30:02'
           };
@@ -114,7 +114,7 @@ sub _initialize {
     }
 
     unless (defined $row_hashref) {
-        my $statement = qq{SELECT namespace, id, attr, reason, source, user, time, note FROM rights_current WHERE id=? AND namespace=?};
+        my $statement = qq{SELECT namespace, id, attr, reason, access_profile, user, time, note FROM rights_current WHERE id=? AND namespace=?};
         my $sth = API::DbIF::prepAndExecute($dbh, $statement, $barcode, $namespace);
         $row_hashref = $sth->fetchrow_hashref();
     }
@@ -125,8 +125,7 @@ sub _initialize {
 
         # no undef fields
         foreach my $key (keys %$row_hashref) {
-            $row_hashref->{$key} = ''
-                if (! defined($row_hashref->{$key}));
+            $row_hashref->{$key} = '' unless (defined $row_hashref->{$key});
         }
         $self->{rights} = $row_hashref;
     }

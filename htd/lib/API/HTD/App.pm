@@ -162,7 +162,7 @@ sub setup {
     # We need a database connection from this point on.
     my $DBH = API::DbIF::databaseConnect('ht_web');
 
-    if (! $DBH) {
+    unless ($DBH) {
         $self->__setMember('setup_error', 1);
         $self->__setErrorResponseCode(500, 'database connect error');
         return 0;
@@ -191,7 +191,7 @@ sub defaultResourceHandler {
 
     # Some conditions will already have set the header so preserve
     # that otherwise assume a 500
-    if (! $self->header) {
+    unless ($self->header) {
         $self->__setErrorResponseCode(500, $self->__errorDescription);
     }
 
@@ -263,14 +263,14 @@ sub preHandler {
 
     # Query parameter validation.  Failure is fobbed off to the
     # defaultResourceHandler to deal with the mess
-    if (! $self->validateQueryParams) {
+    unless ($self->validateQueryParams) {
         $self->__setErrorResponseCode(400, $self->__errorDescription);
         return $defaultHandler;
     }
     # POSSIBLY NOTREACHED
 
     # Establish IP address context singleton
-    API::HTD::IP_Address->new({ 
+    API::HTD::IP_Address->new({
                                _query => $Q,
                                _dbh   => $dbh,
                               });
@@ -293,7 +293,7 @@ sub preHandler {
     $self->__log_client($hauth);
 
     # Authenticate and authorize
-    if (! $self->__authNZ_Success) {
+    unless ($self->__authNZ_Success) {
         return $defaultHandler;
     }
 
@@ -331,9 +331,9 @@ Description
 # ---------------------------------------------------------------------
 sub __getMETS_root {
     my $self = shift;
-    
+
     my $root = $self->{_metsroot};
-    
+
     unless(defined $root) {
         my $dataRef = $self->__readPairtreeFile('mets.xml');
         if (defined($dataRef) && $$dataRef) {
@@ -342,8 +342,8 @@ sub __getMETS_root {
             $self->{_metsroot} = $root = $tree->getDocumentElement;
         }
     }
-    
-    return $root; 
+
+    return $root;
 }
 
 # ---------------------------------------------------------------------
@@ -634,7 +634,7 @@ sub __paramsRefAddRights {
     my $ref = $self->__paramsRef;
 
     $ref->{attr} = $ro->getRightsFieldVal('attr');
-    $ref->{source} = $ro->getRightsFieldVal('source');
+    $ref->{access_profile} = $ro->getRightsFieldVal('access_profile');
 }
 
 sub __paramsRefHasFileid {
@@ -701,9 +701,9 @@ sub __getAccessType {
 
 }
 
-sub __getExtendedAccessType {
+sub __getAccessTypeRestriction {
     my $self = shift;
-    return $self->__getAccessObject->getExtendedAccessType(@_);
+    return $self->__getAccessObject->getAccessTypeRestriction(@_);
 
 }
 
@@ -728,8 +728,8 @@ sub __addExtraHeaders {
 
     $self->___addHeaderAccessUseMsg;
 
-    my $data_type = $self->__getConfigVal('resources', $resource, 'dtype');
-    if ($data_type eq 'data') {
+    my $resource_type = $self->__getConfigVal('resources', $resource, 'resource_type');
+    if ($resource_type eq 'data') {
         $self->___addHeaderInCopyrightMsg($resource_str);
     }
 }
@@ -825,9 +825,9 @@ sub __setAccessUseFields {
     my $dbh = $self->__get_DBH;
     my $P_Ref = $self->__paramsRef;
 
-    my ($attr, $source) = ( $P_Ref->{attr}, $P_Ref->{source} );
+    my ($attr, $access_profile) = ( $P_Ref->{attr}, $P_Ref->{access_profile} );
     my $ref_to_arr_of_hashref =
-      Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $source, $fieldHashRef);
+      Access::Statements::get_stmt_by_rights_values(undef, $dbh, $attr, $access_profile, $fieldHashRef);
     my $hashref = $ref_to_arr_of_hashref->[0];
 
     foreach my $field_val (keys %$hashref) {
@@ -849,7 +849,7 @@ sub __makeParamsRef {
     my ($resource, $id, $namespace, $barcode, $x, $y, $z, $seqORfileid) = @_;
     my $ro = $self->__getRightsObject;
 
-    my $params_ref = 
+    my $params_ref =
       {
        'resource' => $resource,
        'id'       => $id,
@@ -929,9 +929,9 @@ sub __getClientQueryParams {
 =item __getDownloadability
 
 This is the downloadability value we put into the Atom response.  It
-is not the resolved value that includes the access bits that might be
-set for a given client that we may have authorized to access
-forms of restricted content.
+is a summary includes the access bits that might be set for a given
+client that we may have authorized to access forms of restricted
+content.
 
 =cut
 
@@ -941,17 +941,7 @@ sub __getDownloadability {
     my $resource = shift;
 
     my $Q = $self->query;
-
-    # support 'open_restricted', 'restricted', 'restricted_forbidden'
-    my $downloadability;
-
-    my $accessType = $self->__getAccessType($resource);
-    if ($accessType eq 'open') {
-        $downloadability = 'open';
-    }
-    else {
-        $downloadability = 'restricted';
-    }
+    my $downloadability = $self->__getAccessTypeRestriction( $self->__getAccessType($resource, $Q) );
 
     return $downloadability;
 }
@@ -975,7 +965,6 @@ sub __getProtocol {
     return $protocol;
 }
 
-
 # ---------------------------------------------------------------------
 
 =item __getMimetype
@@ -992,7 +981,7 @@ sub __getMimetype {
     unless (defined $format) {
         $format = 'default';
     }
-    
+
     my $key = $self->__getConfigVal('extension_format_map', $format);
     my $mimetype = $self->__getConfigVal('mimetype_map', $resource, $key);
 
@@ -1045,7 +1034,7 @@ sub __authNZ_Success {
         $fail_point = 'non-oauth_outside_grace';
     }
 
-    if (! $Success) {
+    unless ($Success) {
         my $s = $self->__getParamsRefStr;
         my $ipo = new API::HTD::IP_Address;
         hLOG('API ERROR: ' . qq{__authNZ_Success: Success=0 } . $hauth->errstr . qq{ $s orig=} . $ipo->address . qq{ failpoint=$fail_point});
@@ -1094,11 +1083,11 @@ sub __authenticated {
 
 See if the client is authorized to access the resource being
 requested.  This is a function of access type which is in turn a
-function of rights, source, resource and possibly extension.
+function of rights, access_profile, resource.
 
 i.e.
 
-authorization = f(access_type = g(rights, source, resource) && h(extension))
+authorization = f(rights, access_profile, resource))
 
 =cut
 
@@ -1109,31 +1098,39 @@ sub __authorized {
     my $error = '';
     my $authorized = 0;
 
-    # Access types: open, restricted, restricted_forbidden
+    # Access types: (free|nonfree|noaccess)[-extended_access]
     my $Q = $self->query;
-    my $resource = $self->__paramsRef->{resource};
+    my $dbh = $self->__get_DBH;
     my $hauth = $self->__getHAuthObject;
+    my $resource = $self->__paramsRef->{resource};
     my $access_key = $Q->param('oauth_consumer_key');
 
-    my $accessType = $self->__getAccessType($resource);
-    my $extended_accessType = $self->__getExtendedAccessType($resource, $accessType, $Q);
+    my $access_type = 'access_type_notdefined';
+    eval {
+        $access_type = $self->__getAccessType($resource, $Q);
+        my $access_type_restriction = $self->__getAccessTypeRestriction($access_type);
 
-    my $dbh = $self->__get_DBH;
-    if ($hauth->H_authorized($Q, $dbh, $resource, $accessType, $extended_accessType)) {
-        $authorized = 1;
-    }
-    else {
-        $error = $hauth->errstr;
-        if ($error =~ m,redirect,) {
-            $self->__setErrorResponseCode(303, $error);
+        if ($hauth->H_authorized($Q, $dbh, $resource, $access_type, $access_type_restriction)) {
+            $authorized = 1;
         }
         else {
-            $self->__setErrorResponseCode(403, $error);
+            $error = $hauth->errstr;
+            if ($error =~ m,redirect,) {
+                $self->__setErrorResponseCode(303, $error);
+            }
+            else {
+                $self->__setErrorResponseCode(403, $error);
+            }
         }
-    }
 
-    hLOG('API ERROR: ' . qq{__authorized: access_type=$accessType authorized=0 error=} . $hauth->errstr) unless($authorized);
-    hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$accessType extended_access_type=} . (defined($extended_accessType) ? $extended_accessType : 'none') . qq{ authorized=$authorized error="$error"});
+        hLOG('API ERROR: ' . qq{__authorized: access_type=$access_type authorized=0 error="$error"}) unless($authorized);
+        hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$access_type authorized=$authorized error="$error"});
+    };
+    if ($@) {
+        hLOG('API ERROR: ' . qq{__authorized: access_type=$access_type authorized=0 error="$@"});
+        hLOG_DEBUG('API: ' . qq{__authorized: resource=$resource access_type=$access_type authorized=$authorized error="$@"});
+        $self->__setErrorResponseCode(500, $@);
+    }
 
     return $authorized;
 }
@@ -1172,7 +1169,7 @@ sub p__processValue {
     $val =~ s,__ID__,$P_Ref->{id},;
     $val =~ s,__SEQ__,$P_Ref->{seq},;
 
-    my @boundTokens = ($val =~ m,:::[A-Z]+,g);
+    my @boundTokens = ($val =~ m,:::[A-Z_]+,g);
     foreach my $token (@boundTokens) {
         my $handler = $self->__getYAMLTokenBinding($token);
         my $replacement = &$handler;
@@ -1180,7 +1177,7 @@ sub p__processValue {
     }
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__processValue: $orig_val => $val");
+        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__processValue[$level]: $orig_val => $val");
     }
 
     return $val;
@@ -1202,7 +1199,7 @@ sub p__handleAttributes {
     if (ref($attrRef) eq 'HASH') {
         foreach my $aName (keys %{ $attrRef }) {
             if ($DEBUG eq 'tree') {
-                hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleAttributes: elem=" . ($elem ? $elem->nodeName : '') . " attribute=$aName");
+                hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleAttributes[$level]: elem=" . ($elem ? $elem->nodeName : '') . " attribute=$aName");
             }
             my $attrVal = $attrRef->{$aName};
             $attrVal = $self->p__processValue($attrVal, $level+1);
@@ -1225,7 +1222,7 @@ sub p__handleContent {
     my ($doc, $parentElem, $elem, $ref, $level) = @_;
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__handleContent: elem=" . ($parentElem ? $parentElem->nodeName : ''));
+        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__handleContent[$level]: elem=" . ($parentElem ? $parentElem->nodeName : ''));
     }
 
     if ($parentElem) {
@@ -1259,7 +1256,7 @@ sub p__handleElement {
     my ($doc, $parentElem, $eName, $ref, $level) = @_;
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleElement: parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName");
+        hLOG_DEBUG('API: ' . (" " x (5*$level)) . "p__handleElement[$level]: parent elem=" . ($parentElem ? $parentElem->nodeName : '') . " elem=$eName");
     }
 
     my $elem = $doc->createElement($eName);
@@ -1285,7 +1282,7 @@ sub p__buildXML {
     my ($doc, $parentElem, $responsesRef, $level) = @_;
 
     if ($DEBUG eq 'tree') {
-        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__buildXML: " . ($parentElem ? $parentElem->nodeName : ''));
+        hLOG_DEBUG('API: ' .  (" " x (5*$level)) .  "p__buildXML[$level]: " . ($parentElem ? $parentElem->nodeName : ''));
     }
 
     foreach my $eName (keys %$responsesRef) {

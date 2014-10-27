@@ -6,7 +6,14 @@ API::HTD::AccessTypes
 
 =head1 DESCRIPTION
 
-This class encapsulates Data API access type determination.
+This class encapsulates Data API access type determination. An access
+type is a combination of
+
+ basic_access [free|nonfree|noaccess]
+
+  and
+
+ extended_access [zip, unwatermarked_derivatives, pdf_ebm, raw_archival_data, non_free, noaccess]
 
 =head1 SYNOPSIS
 
@@ -92,6 +99,31 @@ sub __getConfigVal {
 
 # ---------------------------------------------------------------------
 
+=item getAccessType
+
+access_type is a combination of basic_access and extended_access
+
+=cut
+
+# ---------------------------------------------------------------------
+sub getAccessType {
+    my $self = shift;
+    my ($resource, $Q) = @_;
+
+    my $basic_access = $self->__getBasicAccess($resource);
+    my $extended_access = $self->__getExtendedAccess($resource, $Q);
+
+    my $access_type = $basic_access;
+
+    if (defined $extended_access) {
+        $access_type .= "-$extended_access";
+    }
+
+    return $access_type;
+}
+
+# ---------------------------------------------------------------------
+
 =item getInCopyrightStatus
 
 Description
@@ -102,7 +134,6 @@ Description
 sub getInCopyrightStatus {
     my $self = shift;
 
-    # optimistic
     my $in_copyright = 0;
 
     my $attribute = $self->__getParamsRef->{attr};
@@ -125,116 +156,180 @@ sub getInCopyrightStatus {
     return ($in_copyright, $attribute);
 }
 
-
 # ---------------------------------------------------------------------
 
-=item getAccessType
+=item getAccessTypeRestriction
 
-Description
+Boil basic_access+extended_access down to open|restricted
 
 =cut
 
 # ---------------------------------------------------------------------
-sub getAccessType {
+sub getAccessTypeRestriction {
     my $self = shift;
-    my $resource = shift;
+    my $access_type = shift;
 
-    my $P_Ref = $self->__getParamsRef;
-
-    my $source = $self->__getConfigVal('sources_name_map', $P_Ref->{source});
-    my $rights = $self->__getConfigVal('rights_name_map', $P_Ref->{attr});
-
-    # freedom = ( free, nonfree, restricted_forbidden )
-    my $freedom = $self->__getFreedomVal($rights);
-    # accessType = ( open, open_restricted, restricted, restricted_forbidden )
-    my $accessType =
-      ($freedom =~ m,forbidden,)
-        ? $freedom
-          : $self->__getConfigVal('accessibility_matrix', $resource, $freedom, $source);
-
-    die "FATAL: accessType=$accessType not defined in getAccessType" unless ($accessType);
-
-    return $accessType;
-}
-
-# ---------------------------------------------------------------------
-
-=item __get_pageimage_extended_access_type
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __get_pageimage_extended_access_type {
-    my $Q = shift;
-
-    my $type;
-    my $format = $Q->param('format');
-
-    if ( grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
-        my $watermark = $Q->param('watermark');
-        if (defined $watermark && ($watermark == 0)) {
-            $type = 'unwatermarked_derivative';
-        }
-    }
-    elsif ( ($format eq 'raw') ) {
-        # default open pageimage is watermarked derivative else
-        # requires allow_raw bit set (v1=pageimage v2=volume/pageimage)
-        $type = 'raw_archival_data';
+    # Is access_type unencumbered by any extended_access bits?
+    if ( $access_type eq 'free') {
+        return 'open';
     }
 
-    return $type;
+    return 'restricted'
 }
 
-# ---------------------------------------------------------------------
-
-=item getExtendedAccessType
-
-Specific for defined extension bits which must be set if the
-access_type is [open_]restricted[_forbidden]:
-
-The restrictions on pageimages include unwatermarked derivatives and
-raw images (which do not carry watermarks). These restrictions can
-apply even to "open_restricted" items, e.g. an unwatermarked google
-pageimages.
-
- pdf_ebm
- unwatermarked_derivative
- raw_archival_data
- zip
-
-=cut
-
-# ---------------------------------------------------------------------
-sub getExtendedAccessType {
-    my $self = shift;
-    my ($resource, $accessType, $Q) = @_;
-
-    # undef except when restricted in specific circumstances
-    my $extended_accessType;
-    
-    # i.e. open_restricted, restricted, restricted_forbidden
-    if ($accessType =~ m,restricted,) {
-        if ( ($resource =~ m,pageimage,) ) {
-            $extended_accessType = __get_pageimage_extended_access_type($Q);
-        }
-        elsif ($resource eq 'volume') {
-            # parameter validation forces pdf to have format=ebm, requires
-            # bit set
-            $extended_accessType = 'pdf_ebm';
-        }
-        elsif ($resource eq 'aggregate') {
-            $extended_accessType = 'zip';
-        }
-    }
-
-    return $extended_accessType;
-}
 
 # =====================================================================
 #  Private Methods
 # =====================================================================
+
+
+# ---------------------------------------------------------------------
+
+=item __getBasicAccess
+
+basic_access = ( free, nonfree, noaccess )
+
+Attempt to determine basic_access based on IPADDR.  However, we can't trust
+some addresses due to proxying so test proxies table for IPADDR.
+
+If the supplied IP address can be geotrusted test it for PDUS/ICUS.
+If the supplied IP address cannot be geotrusted freedom becomes
+'nonfree' if PDUS/ICUS.
+
+If the client code permits IC we permit PDUS/ICUS.
+
+For a resource with resource_type=metadata there are no restrictions.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getBasicAccess {
+    my $self = shift;
+    my $resource = shift;
+
+    my $basic_access = 'basic_access_notdefined';
+
+    my $resource_type = $self->__getConfigVal('resources', $resource, 'resource_type');
+    if ($resource_type eq 'metadata') {
+        # metadata resources are not restricted
+        $basic_access = 'free';
+    }
+    else {
+        # data resources are subject to restrictions
+        my $rights_name = $self->__getConfigVal('rights_name_map', $self->__getParamsRef->{attr});
+        my $openAccessNamesRef  = $self->__getConfigVal('open_access_rights_names');
+
+        $basic_access = grep(/^$rights_name$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
+
+        if (($basic_access eq 'nonfree') && ($rights_name eq 'nobody')) {
+            $basic_access = 'noaccess';
+        }
+        elsif ($basic_access eq 'free') {
+            my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;
+            if ($geo_trusted) {
+                if ($rights_name eq 'pdus') {
+                    $basic_access = 'nonfree' unless ($self->__geo_location_is('US'));
+                }
+                elsif ($rights_name eq 'icus') {
+                    $basic_access = 'nonfree' unless ($self->__geo_location_is('NONUS'));
+                }
+            }
+            else {
+                if (grep(/^$rights_name$/, ('pdus', 'icus'))) {
+                    # cannot validate origin IP address so cannot test
+                    $basic_access = 'nonfree';
+                }
+            }
+        }
+    }
+
+    return $basic_access;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __getExtendedAccess
+
+Specific for defined extension bits which must be set for access to
+certain resources.
+
+The restrictions on pageimages include unwatermarked derivatives and
+raw images (which do not carry watermarks).
+
+These bits allow a resource to restricted in a finer-grained manner
+for special cases regardless of basic_access.
+
+imgsrv handles 'page+lowres' access
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __getExtendedAccess {
+    my $self = shift;
+    my ($resource, $Q) = @_;
+
+    my $access_profile = $self->__getConfigVal('access_profile_name_map', $self->__getParamsRef->{access_profile});
+
+    # undef except when restricted in specific circumstances
+    my $extended_access;
+
+    if ( ($resource eq 'volume/pageimage') ) {
+        # may require unwatermarked_derivatives or raw_archival_data bit
+        $extended_access = __get_pageimage_extended_access($Q);
+    }
+    elsif ($resource eq 'volume') {
+        # parameter validation forces pdf to have format=ebm, requires
+        # pdf_ebm bit set under all conditions
+        $extended_access = 'pdf_ebm';
+    }
+    elsif ($resource eq 'aggregate') {
+        # zip bit required for some access_profiles
+        unless ($access_profile eq 'open') {
+            $extended_access = 'zip';
+        }
+    }
+
+    return $extended_access;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __get_pageimage_extended_access
+
+Certain query conditions on page images require extended_access.
+
+This means that the downloadability in the metadata resources (whose
+request URI do not have query strings) could have the value 'open' but
+end up being 'restricted' when these conditions apply.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_pageimage_extended_access {
+    my $Q = shift;
+
+    my $pageimage_extended_access;
+
+    my $format = (defined $Q) ? $Q->param('format') : '';
+
+    if ( grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
+        my $watermark = $Q->param('watermark');
+        if (defined $watermark && ($watermark == 0)) {
+            $pageimage_extended_access = 'unwatermarked_derivatives';
+        }
+    }
+    elsif ( ($format eq 'raw') ) {
+        # default open pageimage is a watermarked derivative else
+        # requires raw_archival_data bit set. This doubles for
+        # handling access to highres for access_profile=page+lowres
+        $pageimage_extended_access = 'raw_archival_data';
+    }
+
+    return $pageimage_extended_access;
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -293,52 +388,6 @@ sub __geo_location_is {
     return $is;
 }
 
-# ---------------------------------------------------------------------
-
-=item __getFreedomVal
-
-Attempt to determine freedom based on IPADDR.  However, we can't trust
-some addresses due to proxying so test proxies table for IPADDR.
-
-If the supplied IP address can be geotrusted test it for PDUS/ICUS.
-If the supplied IP address cannot be geotrusted freedom becomes
-'nonfree' if PDUS/ICUS.
-
-If the client code permits IC we permit PDUS/ICUS.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __getFreedomVal {
-    my $self = shift;
-    my $rights = shift;
-
-    my $openAccessNamesRef  = $self->__getConfigVal('open_access_names');
-    my $freedom = grep(/^$rights$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
-
-    if (($freedom eq 'nonfree') && ($rights eq 'nobody')) {
-        $freedom = 'restricted_forbidden';
-    }
-    elsif ($freedom eq 'free') {
-        my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;
-        if ($geo_trusted) {
-            if ($rights eq 'pdus') {
-                $freedom = 'nonfree' unless ($self->__geo_location_is('US'));
-            }
-            elsif ($rights eq 'icus') {
-                $freedom = 'nonfree' unless ($self->__geo_location_is('NONUS'));
-            }
-        }
-        else {
-            if (grep(/^$rights$/, ('pdus', 'icus'))) {
-                # cannot validate origin IP address so cannot test
-                $freedom = 'nonfree';
-            }
-        }
-    }
-
-    return $freedom;
-}
 
 1;
 
@@ -350,7 +399,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2012-14 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
