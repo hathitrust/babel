@@ -201,5 +201,13 @@ userupdate:
 userwarn:
   - /htapps/__CMD_STAGE__/userwarn/scripts/warn_contact.pl __LOCAL__
 
+userlist:
+  - http://__URL_STAGE__.hathitrust.org/userlist?__LOCAL__
+
+register:
+  - /htapps/__CMD_STAGE__/register/cgi/register __LOCAL__
+
+  - http://__URL_STAGE__.hathitrust.org/cgi/register?__LOCAL__
+
 
 
