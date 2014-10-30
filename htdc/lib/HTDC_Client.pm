@@ -399,16 +399,7 @@ sub _get_user_agent {
 
 =item _get_response
 
-Due to the production network architecture that includes the net
-scaler, to do transport over SSL in production use http:// over port
-443, NOT https://.  This also means that test.babel will fail SSL
-negotiation if SSL is involved.
-
-This is only a problem for this client because it is behind the net
-scaler on the same server as the Data API itself.
-
-When Data API sees SERVER_PORT == 443, it assumes a URL string that
-begins with 'https://' in signature_safe_url().
+Description
 
 =cut
 
@@ -416,14 +407,7 @@ begins with 'https://' in signature_safe_url().
 sub _get_response {
     my $url = shift;
 
-    # Assuming a signed URL string of 'https://host/pathinfo?query'
-    # but sending it as 'http://host:443/pathinfo?query' when in production.
-    #
-    $url =~ s,(^https:)//(.*?)/(.*$),http://$2:443/$3, unless ($ENV{HT_DEV});
-
-    my $req = HTTP::Request->new(
-                                 GET => "$url"
-                                );
+    my $req = HTTP::Request->new( GET => "$url" );
     my $ua =  _get_user_agent();
     my $res = $ua->request($req);
 
