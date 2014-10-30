@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet 
+<xsl:stylesheet
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
@@ -14,7 +14,7 @@
   <xsl:template name="buy-this-item" />
 
   <xsl:template name="navbar">
-    <div class="navbar navbar-static-top navbar-inverse">
+    <div class="navbar navbar-static-top navbar-inverse" data-loggedin="{$gLoggedIn}">
       <div class="navbar-inner" id="navbar-inner">
         <h2 class="offscreen">
           <xsl:text>Navigation links for help, collections</xsl:text>
@@ -52,7 +52,7 @@
             <xsl:value-of select="$gItemHandle"/>
           </xsl:attribute>
         </xsl:element>
-      </form>    
+      </form>
     </div>
   </xsl:template>
 
