@@ -572,8 +572,24 @@ head.ready(function() {
 
     HT.analytics.getTrackingLabel = function($link) {
         //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+
         var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
         return label;
+    }
+
+    HT.analytics.getContentGroupData = function() {
+        // cheat
+        var suffix = '';
+        var content_group = 1;
+        if ( $("body").hasClass("view-restricted") ) {
+            content_group = 2;
+            suffix = '#restricted';
+        } else if ( window.location.href.indexOf("debug=super") > -1 ) {
+            content_group = 3;
+            suffix = '#super';
+        }
+        return { index : content_group, value : HT.params.id + suffix };
+
     }
 
 })
