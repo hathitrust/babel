@@ -519,9 +519,8 @@ Description
 sub __driver_exit_report {
     my ($C, $dbh, $run, $s, $start, $empty_queue) = @_;
 
-    my $elapsed = time() - $start;
-    $elapsed = sprintf("%.2f", $elapsed/60/60);
-    $s .= qq{: elapsed=$elapsed hours};
+    my $performance = ___rate($start);
+    $s .= qq{: overall performance: $performance};
 
     # Sanity: Compare count of ids queued with how many indexed,
     # deleted, reindexed, or were errors.  Re-indexed ids do not
