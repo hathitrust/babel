@@ -187,7 +187,7 @@ head.ready(function() {
   HT.analytics.getContentGroupData = function() {
       // cheat
       var suffix = '';
-      var content_group = 1;
+      var content_group = 4;
       if ( $("body").hasClass("view-restricted") ) {
           content_group = 2;
           suffix = '#restricted';
