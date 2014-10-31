@@ -312,7 +312,7 @@ sub __get_pageimage_extended_access {
 
     my $pageimage_extended_access;
 
-    my $format = (defined $Q) ? $Q->param('format') : '';
+    my $format = ((defined $Q) ? $Q->param('format') : '') || '';
 
     if ( grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
         my $watermark = $Q->param('watermark');
