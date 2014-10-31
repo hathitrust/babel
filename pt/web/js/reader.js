@@ -572,6 +572,7 @@ head.ready(function() {
 
     HT.analytics.getTrackingLabel = function($link) {
         //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+
         var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
         return label;
     }
