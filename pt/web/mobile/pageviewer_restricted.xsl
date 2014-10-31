@@ -7,7 +7,7 @@
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:exsl="http://exslt.org/common"
-  exclude-result-prefixes="exsl METS PREMIS h mets premis"
+  exclude-result-prefixes="exsl METS PREMIS h"
   extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
 
   <xsl:import href="../pageviewer_restricted.xsl" />
