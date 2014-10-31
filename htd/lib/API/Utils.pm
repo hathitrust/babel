@@ -84,8 +84,10 @@ sub __DEBUG_signature_safe_url {
 sub signature_safe_url {
     my $Q = shift;
 
+    my $terminal = $ENV{TERM} || 0;
+    
     my $safe_url;
-    if ($ENV{TERM}) {
+    if ($terminal) {
         $safe_url = __DEBUG_signature_safe_url($Q);
     }
     else {
@@ -93,7 +95,7 @@ sub signature_safe_url {
         $safe_url = $protocol . $ENV{HTTP_HOST} . $ENV{REQUEST_URI};
     }   
 
-    hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$safe_url port=$ENV{SERVER_PORT} terminal=$ENV{TERM}});
+    hLOG_DEBUG('API: ' . qq{signature_safe_url: safe url=$safe_url port=$ENV{SERVER_PORT} terminal=$terminal});
     return $safe_url;
 }
 
