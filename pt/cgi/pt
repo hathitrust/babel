@@ -136,7 +136,7 @@ my $gId = $gCgi->param('id');
 if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
     # Security logging
     if ( Auth::Logging::log_incopyright_access($C, $gId) ) {
-        Auth::ACL::a_Increment_accesscount();
+        Auth::ACL::a_Increment_accesscount($gId);
     }
 
     # set up text, image or pdf handlers for this request
