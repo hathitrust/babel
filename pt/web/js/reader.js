@@ -478,7 +478,10 @@ HT.Reader = {
         if ( ! self.manager ) {
             return;
         }
-        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
+        var $nob = $(".nob");
+        if ( ! $nob.length ) {
+            $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
+        }
         var manager = self.manager;
         var last_seq = manager.getLastSeq();
         var last_num = manager.getPageNumForSeq(last_seq);
