@@ -45,6 +45,9 @@ my $g_assert_email_to_addr   = q{hathitrust-system@umich.edu};
 my $g_assert_email_from_addr = q{"HathiTrust Mailer" <dlps-help@umich.edu>};
 my $g_email_file             = qq{$ENV{SDRROOT}/logs/assert/hathitrust-email-digest-current};
 my $g_email_subject          = qq{[MAFR] HathiTrust assert fail Digest};
+my $g_email_fail_subject     = qq{[MAFR] HathiTrust email_monitor cronjob FAILED};
+
+my $MAX_EMAIL_SIZE           = 99 * 1024; # less than 100K
 
 my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
 my $test_file = $ARGV[0];
@@ -57,24 +60,42 @@ if (-e $g_email_file) {
     my $text_ref = Utils::read_file($g_email_file, 1, 0);
 
     if ($text_ref && $$text_ref) {
+        my $buf = substr $$text_ref, 0, $MAX_EMAIL_SIZE;
+        if ( length($buf) < length($$text_ref) ) {
+            $buf .= qq{\n[TRUNCATED at $MAX_EMAIL_SIZE characters]};
+        }
+
         my $when = Utils::Time::iso_Time();
         my $email_subject = $g_email_subject . qq{ ($when)($HOST)};
-
         my $mailer = new Mail::Mailer('sendmail');
-        $mailer->open({
-                       'To'      => $g_assert_email_to_addr,
-                       'From'    => $g_assert_email_from_addr,
-                       'Subject' => $email_subject,
-                      });
-        my $text = Encode::encode_utf8($$text_ref);
-        print $mailer($text);
-        $mailer->close;
 
-        my $archive_file = $g_email_file;
-        $archive_file =~ s,current,$when,;
-        $archive_file =~ s, ,_,;
-        
-        system("mv", "-f", "$g_email_file", "$archive_file");
+        eval {
+            $mailer->open({
+                           'To'      => $g_assert_email_to_addr,
+                           'From'    => $g_assert_email_from_addr,
+                           'Subject' => $email_subject,
+                          });
+            my $text = Encode::encode_utf8($buf);
+            print $mailer($text);
+            $mailer->close;
+
+            my $archive_file = $g_email_file;
+            $archive_file =~ s,current,$when,;
+            $archive_file =~ s, ,_,;
+
+            system("mv", "-f", "$g_email_file", "$archive_file");
+        };
+        if ($@) {
+            my $email_subject = $g_email_fail_subject . qq{ ($when)($HOST)};
+            $mailer->open({
+                           'To'      => $g_assert_email_to_addr,
+                           'From'    => $g_assert_email_from_addr,
+                           'Subject' => $email_subject,
+                          });
+            my $text = qq{/htapps/babel/mdp-misc/scripts/email_monitor.pl failed with exception: $@};
+            print $mailer($text);
+            $mailer->close;
+        }
     }
 }
 
