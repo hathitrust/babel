@@ -2,6 +2,9 @@ var HT = HT || {};
 HT.Viewer = HT.Viewer || {};
 
 HT.Viewer.Image = {
+
+    name : 'image',
+
     init : function(options) {
         var self = this;
         return this;

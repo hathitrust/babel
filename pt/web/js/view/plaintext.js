@@ -2,6 +2,8 @@ var HT = HT || {};
 HT.Viewer = HT.Viewer || {};
 
 HT.Viewer.PlainText = {
+    name : 'plaintext',
+
     init : function(options) {
         var self = this;
         return this;
