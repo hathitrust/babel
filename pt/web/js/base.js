@@ -199,7 +199,7 @@ head.ready(function() {
 
   }
 
-  HT.analytics.getPageHref = function(href) {
+  HT.analytics._simplifyPageHref = function(href) {$
     var url = $.url(href);
     var new_href = url.segment();
     new_href.push(url.param("id"));
@@ -209,6 +209,10 @@ head.ready(function() {
     }
     new_href = "/" + new_href.join("/") + qs;
     return new_href;
+  }
+
+  HT.analytics.getPageHref = function() {
+    return HT.analytics._simplifyPageHref();
   }
 
 })
