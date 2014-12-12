@@ -41,7 +41,7 @@ Debug::DUtils::setup_debug_environment();
 my $auth = new Auth::Auth($C);
 $C->set_object('Auth', $auth);
 
-my $developement = (Auth::ACL::a_Authorized( {role => 'superuser'} ) && DEBUG('super'));
+my $developement = 1 if ($ENV{HT_DEV} || (Auth::ACL::a_Authorized( {role => 'superuser'} ) && DEBUG('super')));
 
 # --- App ---
 #
@@ -72,7 +72,7 @@ if (defined $ENV{REMOTE_USER}) {
         my $country = get_geoip($remote_addr);
         my $client_host = `host $remote_addr`;
         chomp($client_host);
-        
+
         print qq{<p>Here are your credentials as we see them from your login.</p>};
         print qq{<ul>
                    <li>REMOTE_USER = "$ENV{REMOTE_USER}" or possibly forwarded for: "$ENV{HTTP_X_FORWARDED_FOR}"</li>
@@ -96,9 +96,9 @@ if (defined $ENV{REMOTE_USER}) {
 }
 else {
     print q{<p>Greetings,</p><p>You have been directed here to log in.</p><p> You will be sent to the HathiTrust login page from the login link below where you will proceed to your institutional login page and be redirected back to this page where you will be able to view your login credentials.</p>};
-    
+
     print q{<p>You then have the option to email those credentials to HathiTrust for purposes such as recovering access to personal collections if you change institutional affiliation.</p>};
-    
+
     print qq{<p>Please <a href="http://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
 
     print q{<p>Questions?  Contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> };
@@ -111,7 +111,7 @@ sub get_geoip {
     use Geo::IP;
 
     my $IP = shift;
-    
+
     my $geoIp = Geo::IP->new();
     my $countryCode = $geoIp->country_code_by_addr($IP);
     my $countryName = $geoIp->country_name_by_addr($IP);
