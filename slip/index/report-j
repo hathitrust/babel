@@ -550,10 +550,13 @@ sub report_flags_state {
         $busy = 'Not driver driven'
     }
 
-    my $check_index_day = $config->get('check_index_day_of_week');
-    my $cksup = $config->get('check_index_supported') ? "YES on $check_index_day" : 'no';
-
-    my $ck = "\n\tcheck index support=$cksup\n\t\t";
+    my $ck = 'no';
+    my $check_index_supported = $config->get('check_index_supported');
+    if ($check_index_supported) {
+        my $check_index_day = $config->get('check_index_day_of_week');
+        $ck = "YES on $check_index_day";
+    }
+    my $ck_str = "\n\tcheck index support=$ck\n\t\t";
 
 
     my $supported = Scheduler::full_optimize_supported($C);
@@ -561,7 +564,7 @@ sub report_flags_state {
     my $all_trigger_size = Scheduler::get_all_full_optimize_trigger_size($C) if ($supported);
 
     my $opo = "full_optimize supported=$supported " . ($supported ? "trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB" : "");
-    $opo .= $ck;
+    $opo .= $ck_str;
     
     my @num_shards_list = __get_shard_list($C);
     my @sizes = split(/ /, Scheduler::get_segsizes($C, $run));
