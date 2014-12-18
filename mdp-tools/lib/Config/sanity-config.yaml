@@ -208,6 +208,7 @@ register:
   - /htapps/__CMD_STAGE__/register/cgi/register __LOCAL__
 
   - http://__URL_STAGE__.hathitrust.org/cgi/register?__LOCAL__
+  - http://__URL_STAGE__.hathitrust.org/cgi/register/crms?__LOCAL__
 
 
 
