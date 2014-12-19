@@ -62,7 +62,7 @@ uva|4|casfia|viu
 wu|1|ca-mvgoo|wu
 yale|1|ca-mvgoo|cty
 yale|4|casfia|cty
-yale|5|zz-ht-yale.edu-ms|cty
+yale|5|zz-ht-microsoft.com-support|cty
 aeu|4|casfia|aeu
 ucw|4|casfia|ctu
 udel|17|deu|deu
