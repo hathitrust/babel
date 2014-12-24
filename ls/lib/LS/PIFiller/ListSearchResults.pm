@@ -1569,6 +1569,11 @@ sub _ls_wrap_result_data {
         
         my ($date) = ($doc_data->{'date'});
         $s .= wrap_string_in_tag($date, 'Date');
+	# XXX both date enum date here
+	my ($edate) = ($doc_data->{'enumPublishDate'}->[0]);
+	$s .= wrap_string_in_tag($edate, 'EnumDate');
+	my ($bdate) = ($doc_data->{'bothPublishDate'}->[0]);
+	$s .= wrap_string_in_tag($bdate, 'BothDate');
 
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');

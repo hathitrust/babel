@@ -11,9 +11,11 @@ my $lang_format_file = $ENV{SDRROOT} . '/ls/lib/Config/langformat.yaml';
 
 # date type (date|both)
 # date= regular bib date, both=date from parsed enumcron if exists otherwise bib
-$date_type = date;
+
+$date_type="both";
 
 $facet_limit=30;
+
 $facet_initial_show=5;
 
 
@@ -25,6 +27,7 @@ $facet_to_label_map =
 'language' =>'Language',
 'countryOfPubStr' =>'Place of Publication',
 'publishDateRange' =>'Date of Publication',
+'bothPublishDateRange' =>'Date of Publication',
 'format' =>'Original Format',
 'htsource' =>'Original Location',
 'hlb3Str' =>'Academic Discipline',
