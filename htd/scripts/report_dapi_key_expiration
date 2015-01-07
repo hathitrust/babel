@@ -37,7 +37,7 @@ use API::HTD_Log;
 use API::HTD::HCodes;
 
 
-my $DEBUG = 1;
+my $DEBUG = 0;
 
 my $PREFIX = ($ENV{HT_DEV} || $DEBUG) ? 'test_' : '';
 my $CONFIG = new MdpConfig($ENV{SDRROOT} . '/htd/lib/Config/global.conf');
