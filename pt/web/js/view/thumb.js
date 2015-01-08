@@ -3,6 +3,8 @@ HT.Viewer = HT.Viewer || {};
 
 HT.Viewer.Thumbnail = {
 
+    name : 'thumbnail',
+
     init : function(options) {
         var self = this;
         this.options = $.extend({}, this.options, options);
@@ -302,7 +304,7 @@ HT.Viewer.Thumbnail = {
 
         var total_w = $("#content").width();
         // really, how many thumbnails can we fit at self.w?
-        
+
         if ( self.w < 0 ) {
             // find a size that fits 4 thumbnails across?
 

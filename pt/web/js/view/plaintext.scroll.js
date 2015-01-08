@@ -5,6 +5,8 @@ HT.Viewer = HT.Viewer || {};
 
 HT.Viewer.PlainText = {
 
+    name : 'plaintext',
+
     init : function(options) {
         var self = this;
         this.options = $.extend({}, this.options, options);

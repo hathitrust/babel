@@ -25,10 +25,12 @@ HT.Reader = {
 
         this.bindEvents();
         this.manager = Object.create(HT.Manager).init({
-            reader : self,
             id : self.id,
             seq : self.options.params.seq
         })
+
+        // passing reader in the init seemed to clone reader
+        this.manager.options.reader = this;
 
         this.manager.start();
 
@@ -86,7 +88,6 @@ HT.Reader = {
             $(".toolbar").find("a[href='']").attr("disabled", "disabled").attr('tabindex', '-1');
             $(".action-views").on("click", "a", function() {
                 var target = $(this).data('target');
-                console.log("SETTING PREFERENCE", target);
                 HT.prefs.set({ pt : { view : target } });
             })
             return;
@@ -365,7 +366,7 @@ HT.Reader = {
 
     _trackPageview: function(href) {
         if ( this._tracking && HT.analytics && HT.analytics.enabled ) {
-            HT.analytics.trackPageview(href);
+            HT.analytics.trackPageview(HT.analytics._simplifyPageHref(href));
             // if we were still doing the experiment, we'd do it here
             // HT.analytics.trackPageview(alternate_href, alternate_profile_id);
         }
@@ -478,14 +479,17 @@ HT.Reader = {
         if ( ! self.manager ) {
             return;
         }
-        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
+        var $nob = $(".nob");
+        if ( ! $nob.length ) {
+            $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
+        }
         var manager = self.manager;
         var last_seq = manager.getLastSeq();
         var last_num = manager.getPageNumForSeq(last_seq);
         var current = self.getCurrentSeq();
         var this_view = self.getView();
-        if ( this_view == '2up ') { current = manager.view._seq2page(current); }
-        console.log("INIT SLIDER", this_view, current, manager.view.pages.length - 1);
+        if ( this_view == '2up' ) { current = manager.view._seq2page(current); }
+        // console.log("INIT SLIDER", this_view, current, manager.view.pages.length - 1);
         self.$slider = $nob.slider({
             min : 0,
             max : this_view == '2up' ? manager.view.pages.length - 1 : last_seq - 1,
@@ -496,7 +500,6 @@ HT.Reader = {
                 if ( this_view == '2up' ) {
                     var old_seq = seq;
                     seq = manager.view._page2seq(seq);
-                    console.log("FORMAT SLIDE", old_seq, seq);
                     if ( seq[0] == null ) {
                         seq = seq[1];
                     } else {
@@ -518,14 +521,12 @@ HT.Reader = {
             var seq = ev.value;
             if ( this_view == '2up' ) {
                 seq = manager.view._page2seq(seq);
-                console.log("SLIDE STOP", seq);
                 if ( seq[0] !== null ) {
                     seq = seq[0]
                 } else {
                     seq = seq[1];
                 }
             }
-            console.log("JUMPING TO", seq);
             $.publish("action.go.page", (seq));
         })
     }, 
