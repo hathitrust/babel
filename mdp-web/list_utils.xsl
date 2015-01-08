@@ -1046,6 +1046,17 @@
     <xsl:variable name="Date">
       <xsl:value-of select="Date"/>
     </xsl:variable>
+<!-- enum date stuff XXX -->
+    <xsl:variable name="EnumDate">
+      <xsl:value-of select="EnumDate"/>
+    </xsl:variable>
+    <xsl:variable name="BothDate">
+      <xsl:value-of select="BothDate"/>
+    </xsl:variable>
+<!-- enum date stuff XXX -->
+
+
+
     <!--################################## end variables-->
 
     <div class="{$row_class}">
@@ -1084,7 +1095,47 @@
               </xsl:otherwise>
             </xsl:choose>
           </span>
+	</div>
+	<!--XXX test date stuff-->
+	<div>
+          <span class="Date">
+            <xsl:choose>
+              <xsl:when test="$BothDate='0000'">
+                <!-- bad date string from pi goes here-->
+                <xsl:text>Published ----</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <span class="ItemDateLabel">
+                  <xsl:text>This volume published </xsl:text>
+                </span>
+		<strong>
+                <xsl:value-of select="$BothDate"/>
+		</strong>
+              </xsl:otherwise>
+            </xsl:choose>
+          </span>
+	</div>
+<div>
+          <span class="Date">
+            <xsl:choose>
+              <xsl:when test="$EnumDate='0000'">
+                <!-- bad date string from pi goes here-->
+                <xsl:text>enumdate ----</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <span class="ItemDateLabel">
+                  <xsl:text>enumdate </xsl:text>
+                </span>
+                <xsl:value-of select="$EnumDate"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </span>
         </div>
+
+<!--XXX test date stuff-->
+
+
+
 
         <!-- SEARCH needs relevance -->
         <xsl:if test="$ItemListType='SearchResults'">
