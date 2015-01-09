@@ -56,6 +56,18 @@ sub get_facet_config
     my $self = shift;
     return $self->{'facet_config'}
 }
+# ---------------------------------------------------------------------
+sub get_date_type
+{
+    my $self =shift;
+    my $config=$self->get_facet_config;
+    my $date_type=$config->{date_type};
+    if (DEBUG('edate'))
+    {
+	$date_type='both';
+    }
+    return $date_type;
+}
 
 # ---------------------------------------------------------------------
 
@@ -236,8 +248,8 @@ sub get_Solr_query_string
     my $config = $self->get_facet_config;  
     
     # get date type (date|both) both = enum cron date if exists otherwise bib date
-    my $date_type=$config->{'date_type'};
-    
+    my $date_type= $self->get_date_type;
+
     #advanced search foobar
     #XXX consider refactoring and putting in subroutine
     # remove facet_lang or facet_format = "All" in case javascript did not work
@@ -268,16 +280,16 @@ sub get_Solr_query_string
   
     # The common Solr query parameters
     my $Q ='q=';
-#    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,score};
+    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,score};
     #unicorn  Add oclc, isbn and ? for google book covers
-    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date, rights,id,record_no,oclc,isbn,lccn,score};
+#XXX    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date, rights,id,record_no,oclc,isbn,lccn,score};
     # add bothPublishDate and enumPublishDate to field list for display/debugging
     # normally the enum date should show up in the enumcron part of the title display, but this shows what the parser found as a date
 #XXX temporary until Phil fixes ability to login and set debug flag
 
-#    if (DEBUG('date')) {
+    if (DEBUG('date,edate')) {
         $FL .= qq{,bothPublishDate,enumPublishDate};
- #   }
+    }
 
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INDENT = $ENV{'TERM'} ? qq{&indent=on} : qq{&indent=off};
@@ -1104,7 +1116,7 @@ sub __get_date_range
 
     my $config = $self->get_facet_config;  
     # get date type (date|both) both = enum cron date if exists otherwise bib date
-    my $date_type=$config->{'date_type'};
+    my $date_type=$self->get_date_type;
     
 
     my $date_range_facet='publishDateRange';
@@ -1183,9 +1195,16 @@ sub __get_facets
     
     my $facetfields = $facet_config->get_facet_order();    
     my $FACET_FIELDS;
+    my $date_type = $self->get_date_type;
     
     foreach my $field (@{$facetfields})
     {
+	#date fix
+	if ($field eq "publishDateRange" && $date_type eq 'both')
+	{
+	    $field = 'bothPublishDateRange';
+	}
+		
         $FACET_FIELDS .='&facet.field=' . $field;
     }
     
