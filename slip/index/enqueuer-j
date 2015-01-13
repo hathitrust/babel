@@ -192,7 +192,7 @@ eval {
         else {
             enqueue_from_j_rights($C, $DBH, $RUN) unless ($SHARED_ONLY || $HOLDINGS_ONLY);
             enqueue_from_shared_queue($C, $DBH, $RUN) unless ($HOLDINGS_ONLY);
-            enqueue_from_holdings_delta($C, $DBH, $RUN) unless ($SHARED_ONLY);
+            # TEMPORARY until new flag is implemented enqueue_from_holdings_delta($C, $DBH, $RUN) unless ($SHARED_ONLY);
         }
     }
     else {
