@@ -70,3 +70,4 @@ msu|1|ca-mvgoo|miem
 emu|25|geu|geu
 mou|28|mou|mou
 wau|29|chtanc|wau
+iau|1|ca-mvgoo|iau
