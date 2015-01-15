@@ -1,0 +1,185 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+manage-holdings-deltas
+
+=head1 DESCRIPTION
+
+Manage holdings-deltas table size.
+
+=head1 SYNOPSIS
+
+Coding example
+
+=head1 METHODS
+
+=over 8
+
+=cut
+
+use warnings;
+use strict;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+use Getopt::Std;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use CGI;
+
+use Context;
+use Database;
+use Utils;
+use DbUtils;
+use MdpConfig;
+use Password;
+
+# make sure cache files/dirs are group writable
+umask 0002;
+
+my $INTERACTIVE = $ENV{TERM};
+
+# MDP stuff
+my $C = new Context;
+
+# configuration
+my $config = new MdpConfig(
+                           Utils::get_uber_config_path('kgs'),
+                           $ENV{SDRROOT} . "/kgs/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/kgs/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $config);
+
+our ($opt_v, $opt_u, $opt_n, $opt_s);
+my $ops = getopts('v:u:n:s:');
+
+my ($db_user, $db_name, $db_server, $holdings_version) = ($opt_u, $opt_n, $opt_s, $opt_v);
+
+unless ($holdings_version && $db_user && $db_name && $db_server) {
+    print "ERROR: Missing args.\n" . __get_mhdd_usage();
+    exit 1;
+}
+
+use Term::ReadKey;
+print "Enter passwd: ";
+
+my $db_passwd = Password::get_password();
+print "\n";
+
+# Database connection
+my $DBH = new Database($db_user, $db_passwd,  $db_name, $db_server)->get_DBH;
+
+__confirmation("OK to process holdings_deltas.version $holdings_version? [N] ");
+
+handle_holdings_deltas_delete($holdings_version);
+
+exit 0;
+
+
+
+# ---------------------------------------------------------------------
+
+=item handle_holdings_deltas_delete
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_holdings_deltas_delete {
+    my $holdings_version = shift;
+
+    my $total = 0;
+    my $count = 0;
+    
+    my $size = 100000;
+    my $start = time;
+    
+    while ( ($count = __delete_holdings_deltas_version($holdings_version, $size)) > 0 ) {
+        $total += $count;
+        my $elapsed = time - $start;
+        sleep int( $elapsed + $elapsed*1.5);
+        $start = time;
+    }
+    print "\tdeleted total=$total rows\n";
+}
+
+
+sub __confirmation {
+    my $s = shift;
+    return 0 unless($INTERACTIVE);
+
+    print "$s";
+    my $pass_1 = <STDIN>;
+    exit 0 if ($pass_1 !~ m,y,i);
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+sub __get_mhdd_usage {
+    my $s = qq{Usage: handle_holdings_deltas_delete -v <holdings_version> -u <database_user> -n ht -s mysql-sdr\n\tprompts for passwd\n};
+    return $s;
+}
+
+# ---------------------------------------------------------------------
+sub __delete_holdings_deltas_version {
+    my ($holdings_version, $size) = @_;
+
+    my $count = 0;
+
+    my $statement = qq{DELETE FROM holdings_deltas WHERE version=? LIMIT ?};
+    my $sth = DbUtils::prep_n_execute($DBH, $statement, $holdings_version, $size, \$count);
+    $count = 0 if ($count == "0E0");
+    
+    print "\tdeleted $count rows\n";
+
+    return $count;
+}
+
+
+=back
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2015 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
+
+
+
+
+
+
+
+

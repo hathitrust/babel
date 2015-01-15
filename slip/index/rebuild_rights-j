@@ -309,7 +309,7 @@ sub Phase_two_check {
     }
 
     # DROP/CREATE slip_rights_temp?
-    my $drop = "NO DROP/CREATE slip_rights_temp, use existing table";
+    my $drop = "NO DROP/CREATE slip_rights_temp, use existing slip_rights_temp table";
     unless ($CHECK) {
         if (__confirm_continue("\nDROP IF EXISTS slip_rights_temp, CREATE slip_rights_temp LIKE slip_rights? [N] ")) {
             if (__confirm_continue("\nREALLY? [N] ")) {
