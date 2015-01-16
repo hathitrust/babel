@@ -96,8 +96,11 @@ sub ck_get_usage {
 our ($opt_r, $opt_R, $opt_O, $opt_d, $opt_n);
 
 my $ops = getopts('r:R:dnO:');
-use constant TOMCAT_MAX_TRIES => 10;
-use constant TOMCAT_TRIES_WAIT => 30; # 0.5 minute
+
+# Ensure we do not try to checkIndex while tomcat is shutting down and
+# taking a long time because of large merges. 120*60 = 2 hours.
+use constant TOMCAT_MAX_TRIES => 120;
+use constant TOMCAT_TRIES_WAIT => 60; # 1.0 minute
 
 my $NOOP = $opt_n; # optional
 my $RUN = $opt_r; # Required
