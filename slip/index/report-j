@@ -41,6 +41,7 @@ use Vendors;
 # Perl
 use Getopt::Std;
 use Time::Local;
+use Scalar::Util qw(looks_like_number);
 
 # App
 use Utils;
@@ -274,6 +275,8 @@ sub _load_stats_hash {
         if ($__shard) {
             my $segsizes = Scheduler::get_segsizes($C, $run, $__shard);
             my @sizes = split(/[ \n]+/, $segsizes);
+            $sizes[0] = 0.0 unless (looks_like_number($sizes[0]));
+            $sizes[1] = 0.0 unless (looks_like_number($sizes[1]));
             $s_idx_size = $sizes[0] + $sizes[1];
         }
         else {
@@ -565,7 +568,7 @@ sub report_flags_state {
 
     my $opo = "full_optimize supported=$supported " . ($supported ? "trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB" : "");
     $opo .= $ck_str;
-    
+
     my @num_shards_list = __get_shard_list($C);
     my @sizes = split(/ /, Scheduler::get_segsizes($C, $run));
     my $segsizes = sprintf("tot% 16s % 16s\n\t\t", $sizes[0], $sizes[1]);
