@@ -149,13 +149,13 @@ Description
 sub size_shards {
     my ($index_dir) = @_;
 
-    my @segment_ids = `ls $index_dir/*.prx 2> /dev/null`;
+    my @segment_ids = `ls $index_dir/*.fdt 2> /dev/null`;
     my $num_segs = scalar(@segment_ids);
     unless ($num_segs > 0) {
         return (0,0);
     }
 
-    @segment_ids = map { $_ =~ m,.*/(.*?)\....$, } @segment_ids;
+    @segment_ids = map{ $_ =~ m,.*/(.*?)\..*$,} @segment_ids;
 
     my $s = qq{dir=$index_dir   num_segments=$num_segs prefixes=} . join(' ', @segment_ids) . qq{\n};
     __output($s) if ($VERBOSE);
@@ -200,7 +200,7 @@ Description
 sub count_segs {
     my ($index_dir) = @_;
 
-    my @segment_ids = `ls $index_dir/*.prx 2> /dev/null`;
+    my @segment_ids = `ls $index_dir/*.fdt 2> /dev/null`;
     my $num_segs = scalar(@segment_ids);
     return $num_segs;
 }
