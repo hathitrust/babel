@@ -550,7 +550,7 @@ sub report_flags_state {
     my $stop = (-e $stop_file) ? 'YES' : 'no';
 
     unless ($DRIVER) {
-        $busy = 'Not driver driven'
+        $busy = "Not driver driven, driver busy=$busy";
     }
 
     my $ck = 'no';
