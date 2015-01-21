@@ -37,7 +37,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    ##$ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 # ----------------------------------------------------------------------
@@ -307,7 +307,6 @@ eval {
             __output($s);
             exit $rc;
         }
-
         c_set_holdings_version($C, $DBH, $RUN, $HOLDINGS_VERSION);
     }
     elsif (($KOMMAND eq 'start') || ($KOMMAND eq 'stop')) {
@@ -332,7 +331,7 @@ eval {
             my $shard = $opt_R;
             __validate_shard($C, $RUN, $shard);
             # POSSIBLY NOTREACHED
-                c_check_control($C, $DBH, $RUN, $shard, $enabled);
+            c_check_control($C, $DBH, $RUN, $shard, $enabled);
         }
         else {
             my $shard = $opt_R; # optional
@@ -620,7 +619,7 @@ sub c_init {
 
     __confirm("\n\t\t\tREALLY? [N] ");
 
-    __output(qq{\n\tset holdings version to holdings_deltas.MAX(version) ... });
+    __output(qq{\n\tset slip_holdings.{last_loaded_version,last_processed_version} to holdings_deltas.MAX(version) ... });
     Db::init_holdings_version($C, $dbh, $run);
     __output(qq{Done.\n});
 

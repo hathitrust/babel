@@ -13,10 +13,10 @@ enqueuer-j
 enqueuer-j reads the timestamp [set from MAX(slip_rights.insert_time)]
 recorded in slip_rights_timestamp when it last did work. If there are
 ids in slip_rights newer than that time, it inserts those ids into the
-queue to be processed for the given run.  Producers (index-j) read and
+queue to be processed by the given run.  Producers (index-j) read and
 dequeue from the queue.
 
-The enqueuer-j runs independently of the other scripts, i.e if index-j
+The enqueuer-j runs independently of the other scripts, i.e. if index-j
 is disabled, enqueuer-j still runs.
 
 See also the POD in the rights-j script.
@@ -98,12 +98,12 @@ Description
 # ---------------------------------------------------------------------
 sub qu_get_usage {
     my $s;
-    $s .= qq{Usage: enqueuer-j -r run [-S][-H offset] | [-F filename] | [-I itemid], common: [-n][-d] };
+    $s .= qq{Usage: enqueuer-j -r run [-I itemid | -S | -H | -F <filename>], common: [-n][-d] };
     $s .= qq{\n\twhere};
     $s .= qq{\n\t\t-n Do not queue. Only report what would be queued};
     $s .= qq{\n\t\t-F enqueue from <filename>};
     $s .= qq{\n\t\t-S Only operate on shared queue};
-    $s .= qq{\n\t\t-H Only operate on holdings queue beginning at offset};
+    $s .= qq{\n\t\t-H Only operate on holdings queue};
     $s .= qq{\n};
 
     return $s;
@@ -111,11 +111,11 @@ sub qu_get_usage {
 
 our ($opt_d, $opt_r, $opt_F, $opt_n, $opt_S, $opt_H, $opt_I);
 
-my $ops = getopts('dr:F:nSH:I:');
+my $ops = getopts('dr:F:nSHI:');
 
 # Required
 my $RUN = $opt_r;
-if (! $opt_r) {
+unless ($opt_r) {
     my $s = qu_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
 
@@ -132,7 +132,7 @@ my $ID;
 my $ID_FILENAME;
 my $SHARED_ONLY;
 my $HOLDINGS_ONLY;
-my $HOLDINGS_OFFSET = 0;
+
 if (defined($opt_I)) {
     $ID = $opt_I;
 }
@@ -144,7 +144,6 @@ elsif (defined($opt_S)) {
 }
 elsif (defined($opt_H)) {
     $HOLDINGS_ONLY = 1;
-    $HOLDINGS_OFFSET = $opt_H;
 }
 
 if (defined($opt_d)) {
@@ -153,7 +152,7 @@ if (defined($opt_d)) {
 
 # Prevent replication errors: enqueue only to one mysqlserv
 if (Search::Site::get_server_site_name() ne 'macc') {
-    if (! $CHECK) {
+    unless ($CHECK) {
         __output("Only runs from MACC unless check mode (-n)\n");
         exit 0;
     }
@@ -162,7 +161,7 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 # Do not try to enqueue ids while I am running already
 my $Lock_File = "/tmp/enqueuer-$RUN-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
-if (! $Semaphore) {
+unless ($Semaphore) {
     __output("Could not get semaphore file: $Lock_File\n");
     exit 0;
 }
@@ -295,22 +294,41 @@ only the IDs between last_loaded_version and the max_version we saw at
 a point in time so last_loaded_version agree with the IDs we actually
 read.
 
+Further, we want to load only items with versions whose date is older
+that holdings_dates.last_catalog_index_date so that when we query the
+catalog (VuFind Solr) we get the correct holdings for those items.
+
 =cut
 
 # ---------------------------------------------------------------------
 sub enqueue_from_holdings_delta {
     my ($C, $dbh, $run) = @_;
 
+    my $s;
     my $config = $C->get_object('MdpConfig');
+    
+    # The policy is to use run-11 to catch up on holdings updates
+    # rather than trying to do it within the re-indexing run-10.
+    my $production_run = $config->get('distinguished_production_run_number');
+    if ($run ne $production_run) {
+        $s = qq{Skip possible load of PHDB updated IDs because run=$run is not the production run ($production_run)\n};
+        __output($s);
+        qu_Log_misc($C, $run, $s);
+        return;
+    }
+    # POSSIBLY NOTREACHED
+
+    # Any holdings_deltas.version to load older then (<)
+    # holdings_dates.last_catalog_index_date that is newer than (>)
+    # slip_holdings_version.last_loaded_version?
+
     my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
-    my $max_version = Db::get_holdings_max_version($C, $dbh, $run);
-    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $max_version);
+    my $latest_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
+    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $latest_ready_version);
     my $slice_size = $config->get('holdings_deltas_slice_size');
 
-    my $num_to_queue = $holdings_deltas_size - $HOLDINGS_OFFSET;
-    my $s;
     if ($holdings_deltas_size > 0) {
-        $s = qq{total size=$holdings_deltas_size, remaining=$num_to_queue from ht_repository.holdings_deltas to add to queue};
+        $s = qq{total size=$holdings_deltas_size in ht_repository.holdings_deltas to add to queue between versions $last_loaded_version and $latest_ready_version};
         __output(qq{$s\n});
         qu_Log_misc($C, $run, $s);
 
@@ -320,7 +338,7 @@ sub enqueue_from_holdings_delta {
         }
     }
     else {
-        $s = qq{Zero (0) items in ht_repository.holdings_deltas to add to queue (last_loaded_version=$last_loaded_version max_version=$max_version)};
+        $s = qq{Zero (0) items in ht_repository.holdings_deltas to add to queue (last_loaded_version=$last_loaded_version max_version=$latest_ready_version)};
         __output(qq{$s\n});
         qu_Log_misc($C, $run, $s) unless ($CHECK);
         return;
@@ -329,12 +347,12 @@ sub enqueue_from_holdings_delta {
     return if ($CHECK);
 
     my $start = time;
-    my $offset = $HOLDINGS_OFFSET;
+    my $offset = 0;
     my $num_items = 0;
     my $remaining = $holdings_deltas_size;
     while (1) {
-        my $id_arr_ref = Db::read_holdings_deltas_item_ids($C, $dbh, $last_loaded_version, $max_version, $slice_size, $offset);
-        last if (! scalar(@$id_arr_ref));
+        my $id_arr_ref = Db::read_holdings_deltas_item_ids($C, $dbh, $last_loaded_version, $latest_ready_version, $slice_size, $offset);
+        last unless (scalar(@$id_arr_ref));
 
         my $num_inserted = Db::handle_queue_insert($C, $dbh, $run, $id_arr_ref);
 
@@ -347,7 +365,8 @@ sub enqueue_from_holdings_delta {
         my @parts = gmtime int(($holdings_deltas_size - $num_items) * (1 / $total_ids_per_sec));
         my $time_remaining = sprintf("%dh %dm %ds", @parts[2,1,0]);
 
-        my $s0 = sprintf("enqueuer holdings operation totals: added=%d elapsed=%.2f rate=%.2f ids/sec remain=%s offset=%d\n", $num_items, $total_elapsed, $total_ids_per_sec, $time_remaining, $offset);
+        my $s0 = sprintf("enqueuer holdings operation totals: added=%d elapsed=%.2f rate=%.2f ids/sec remain=%s offset=%d\n",
+                         $num_items, $total_elapsed, $total_ids_per_sec, $time_remaining, $offset);
         __output($s0);
     }
 
@@ -357,11 +376,11 @@ sub enqueue_from_holdings_delta {
     if ($num_items > 0) {
         Db::set_holdings_version($C, $dbh, $run, $max_version);
         my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
-        $s = sprintf("inserted %d items in %.1f sec at %.1f ids/sec from ht_repository.holdings_deltas (last_loaded_version=%d max_version=%d)",
-                     $num_items, $elapsed, $ids_per_sec, $loaded_version, $max_version);
+        $s = sprintf("inserted %d items in %.1f sec at %.1f ids/sec from ht_repository.holdings_deltas (last_loaded_version=%d latest_ready_version=%d)",
+                     $num_items, $elapsed, $ids_per_sec, $loaded_version, $latest_ready_version);
     }
     else {
-        $s = qq{Zero (0) items in ht_repository.holdings_deltas added to queue (last_loaded_version=$last_loaded_version max_version=$max_version)};
+        $s = qq{Zero (0) items in ht_repository.holdings_deltas added to queue (last_loaded_version=$last_loaded_version latest_ready_version=$latest_ready_version)};
     }
 
     __output(qq{$s\n});
@@ -415,14 +434,14 @@ sub enqueue_from_shared_queue {
             ($ok, $id_arr_ref) = SharedQueue::dequeue_item_ids($C, $dbh, $slice_size);
         }
 
-        if (! $ok) {
+        unless ($ok) {
             my $s = qq{failed to dequeue or read items from shared queue after inserting $num_items};
             __output(qq{$s\n});
             qu_Log_misc($C, $run, $s);
             last;
         }
 
-        last if (! scalar(@$id_arr_ref));
+        last unless (scalar(@$id_arr_ref));
 
         my $num_inserted = Db::handle_queue_insert($C, $dbh, $run, $id_arr_ref);
         $num_items += $num_inserted;
