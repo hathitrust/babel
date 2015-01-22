@@ -382,7 +382,7 @@ sub get_segment_list {
     my $rc = 0;
 
     my $index_dir = $C->get_object('MdpConfig')->get('dir_for_shard_' . $shard);
-    my $num_segments = `ls $index_dir/*.prx 2> /dev/null | wc -l 2> /dev/null`;
+    my $num_segments = `ls $index_dir/*.fdt 2> /dev/null | wc -l 2> /dev/null`;
     chomp($num_segments);
     my $orig_num_segments = $num_segments;
 
