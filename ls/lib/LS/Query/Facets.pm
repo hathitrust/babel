@@ -62,7 +62,7 @@ sub get_date_type
     my $self =shift;
     my $config=$self->get_facet_config;
     my $date_type=$config->{date_type};
-    if (DEBUG('edate'))
+    if (DEBUG('enum'))
     {
 	$date_type='both';
     }
@@ -287,7 +287,7 @@ sub get_Solr_query_string
     # normally the enum date should show up in the enumcron part of the title display, but this shows what the parser found as a date
 #XXX temporary until Phil fixes ability to login and set debug flag
 
-    if (DEBUG('date,edate')) {
+    if (DEBUG('date,enum')) {
         $FL .= qq{,bothPublishDate,enumPublishDate};
     }
 
