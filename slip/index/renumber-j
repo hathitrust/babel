@@ -91,8 +91,7 @@ $C->set_object('MdpConfig', $config);
 
 # Go
 if ($LIVE) {
-    my $dbh = r_n_connect($C);
-    c_renumber($C, $dbh, $FROM_RUN, $TO_RUN);
+    c_renumber($C, $FROM_RUN, $TO_RUN);
 }
 else {
     print ren_get_usage();
@@ -139,7 +138,7 @@ sub r_n_connect {
     eval {
         my $whoami = `whoami`;
         chomp($whoami);
-        print "Enter passwd: ";
+        print "Enter database password: ";
         my $pw = Password::get_password();
         print "\n";
         unless ($pw) {
@@ -185,10 +184,12 @@ run-10, when run-11 runs next it will catch up.
 
 # ---------------------------------------------------------------------
 sub c_renumber {
-    my ($C, $dbh, $from_run, $to_run) = @_;
+    my ($C, $from_run, $to_run) = @_;
 
     __confirm("\nThis will re-number run $from_run to be run $to_run after you first manually delete run $to_run.\n\n\t ARE YOU READY TO PROCEED? [N] ");
     __confirm("\n\nHave you deleted run=$to_run (control-j -r$to_run -kdelete)? [N] ");
+
+    my $dbh = r_n_connect($C);
 
     # Make sure.
     my $ct = Db::Test_j_rights_timestamp($C, $dbh, $to_run);
