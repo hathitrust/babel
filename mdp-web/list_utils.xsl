@@ -17,6 +17,13 @@
   <!-- end global variables -->
 
   <!-- list_items/search_results global variables  -->
+
+  <!--XXX foobar date test stuff -->
+  <xsl:variable name="dateDebug">
+          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
+  </xsl:variable>
+
+
   <xsl:variable name="ItemListType">
     <xsl:choose>
       <xsl:when test="/MBooksTop/SearchResults">SearchResults</xsl:when>
@@ -1047,6 +1054,10 @@
       <xsl:value-of select="Date"/>
     </xsl:variable>
 <!-- enum date stuff XXX -->
+    <xsl:variable name="UseDate">
+      <xsl:value-of select="UseDate"/>
+    </xsl:variable>
+
     <xsl:variable name="EnumDate">
       <xsl:value-of select="EnumDate"/>
     </xsl:variable>
@@ -1080,10 +1091,13 @@
           </div>
         </xsl:if>
 
+	<!-- date in $UseDate depends on date_type set in config or debug
+	debug=enum sets date_type to "both" -->
+
         <div class="result-metadata-published">
           <span class="Date">
             <xsl:choose>
-              <xsl:when test="$Date='0000'">
+              <xsl:when test="$UseDate='0000'">
                 <!-- bad date string from pi goes here-->
                 <xsl:text>Published ----</xsl:text>
               </xsl:when>
@@ -1091,47 +1105,70 @@
                 <span class="ItemDateLabel">
                   <xsl:text>Published </xsl:text>
                 </span>
+                <xsl:value-of select="$UseDate"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </span>
+	</div>
+	<xsl:if test="contains($dateDebug,'date')">
+	<div>
+          <span class="Date">
+            <xsl:choose>
+              <xsl:when test="$Date='0000'">
+                <!-- bad date string from pi goes here-->
+                <xsl:text>bibdate ----</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <span class="ItemDateLabel">
+                  <xsl:text>bibdate: </xsl:text>
+                </span>
                 <xsl:value-of select="$Date"/>
               </xsl:otherwise>
             </xsl:choose>
           </span>
 	</div>
-	<!--XXX test date stuff-->
-	<div>
-          <span class="Date">
-            <xsl:choose>
-              <xsl:when test="$BothDate='0000'">
-                <!-- bad date string from pi goes here-->
-                <xsl:text>Published ----</xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
-                <span class="ItemDateLabel">
-                  <xsl:text>This volume published </xsl:text>
-                </span>
-		<strong>
-                <xsl:value-of select="$BothDate"/>
-		</strong>
-              </xsl:otherwise>
-            </xsl:choose>
-          </span>
-	</div>
-<div>
-          <span class="Date">
-            <xsl:choose>
-              <xsl:when test="$EnumDate='0000'">
-                <!-- bad date string from pi goes here-->
-                <xsl:text>enumdate ----</xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
-                <span class="ItemDateLabel">
-                  <xsl:text>enumdate </xsl:text>
-                </span>
-                <xsl:value-of select="$EnumDate"/>
-              </xsl:otherwise>
-            </xsl:choose>
-          </span>
-        </div>
 
+
+	<xsl:if test="normalize-space($BothDate)">
+	  <div>
+	    <span class="Date">
+	      <xsl:choose>
+		<xsl:when test="$BothDate='0000'">
+		  <!-- bad date string from pi goes here-->
+		  <xsl:text>bothdate ----</xsl:text>
+		</xsl:when>
+		<xsl:otherwise>
+		  <span class="ItemDateLabel">
+		    <xsl:text>bothdate: </xsl:text>
+		  </span>
+		  <strong>
+		    <xsl:value-of select="$BothDate"/>
+		  </strong>
+		</xsl:otherwise>
+	      </xsl:choose>
+	    </span>
+	  </div>
+	</xsl:if>
+	
+	<xsl:if test="normalize-space($EnumDate)">
+	  <div>
+	    <span class="Date">
+	      <xsl:choose>
+		<xsl:when test="$EnumDate='0000'">
+		  <!-- bad date string from pi goes here-->
+		  <xsl:text>enumdate ----</xsl:text>
+		</xsl:when>
+		<xsl:otherwise>
+		  <span class="ItemDateLabel">
+		    <xsl:text>enumdate: </xsl:text>
+		  </span>
+		  <xsl:value-of select="$EnumDate"/>
+		</xsl:otherwise>
+	      </xsl:choose>
+	    </span>
+	  </div>
+	</xsl:if>
+	</xsl:if>
 <!--XXX test date stuff-->
 
 
