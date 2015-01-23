@@ -52,14 +52,15 @@ use SLIP_Utils::Log;
 my $INTERACTIVE = $ENV{TERM};
 
 unless ($INTERACTIVE) {
+    print ren_get_usage();
     exit 0;
 }
 
 # Flush i/o
 $| = 1;
 
-our ($opt_d, $opt_T);
-my $ops = getopts('Td');
+our ($opt_d, $opt_T, $opt_L);
+my $ops = getopts('LTd');
 
 my $INDEX_SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 
@@ -74,6 +75,8 @@ if (defined($opt_d)) {
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
+my $LIVE = defined($opt_L);
+
 my $logdir = Utils::get_tmp_logdir();
 my $Child_Err_File = qq{$logdir/renumber_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
 END{
@@ -85,13 +88,40 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config($TO_RUN);
 $C->set_object('MdpConfig', $config);
 
-my $DBH = r_n_connect($C);
 
 # Go
-c_renumber($C, $DBH, $FROM_RUN, $TO_RUN);
+if ($LIVE) {
+    my $dbh = r_n_connect($C);
+    c_renumber($C, $dbh, $FROM_RUN, $TO_RUN);
+}
+else {
+    print ren_get_usage();
+}
+
 
 exit 0;
 
+
+# ---------------------------------------------------------------------
+
+=item ren_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ren_get_usage {
+    my $s;
+    $s .= qq{Usage: renumber-j [-L][-T][-d] };
+    $s .= qq{\n\twhere run-10 tables will be renumbered to run-11 (hardcoded). Runs only at command line.};
+    $s .= qq{\n\t\t-L L)ive: actually do the renumbering, otherwise print this usage message};
+    $s .= qq{\n\t\t-d produce debug output};
+    $s .= qq{\n\t\t-T test compilation and exit};
+    $s .= qq{\n};
+
+    return $s;
+}
 
 # ---------------------------------------------------------------------
 
@@ -158,7 +188,6 @@ sub c_renumber {
     my ($C, $dbh, $from_run, $to_run) = @_;
 
     __confirm("\nThis will re-number run $from_run to be run $to_run after you first manually delete run $to_run.\n\n\t ARE YOU READY TO PROCEED? [N] ");
-
     __confirm("\n\nHave you deleted run=$to_run (control-j -r$to_run -kdelete)? [N] ");
 
     # Make sure.
@@ -167,7 +196,7 @@ sub c_renumber {
         __output(qq{Looks like run=$to_run has not been deleted.  Exit.\n});
         exit 0;
     }
-    
+
     __output(qq{\n\tre-number slip_rights timestamp } . q{ ... });
     Db::Renumber_j_rights_timestamp($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
@@ -210,6 +239,10 @@ sub c_renumber {
 
     __output(qq{\tre-number shard control ... });
     Db::Renumber_shard_control($C, $dbh, $from_run, $to_run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tre-number holdings version ... });
+    Db::Renumber_holdings_version($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
 
     __output(qq{\tre-number driver ... });
