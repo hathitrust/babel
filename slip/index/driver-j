@@ -686,11 +686,10 @@ sub handle_Building {
                 # Record this finish time for all shards without errors.
                 __record_shards_build_done($C, $dbh, $run);
 
-                # Update processed version of PHDB update.
-                if ( Scheduler::am_processing_PHDB_update($C, $dbh, $run) ) {
-                    my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
-                    Db::update_last_processed_holdings_version($C, $dbh, $run, $loaded_version);
-                }
+                # Set PHDB last_processed version = last_loaded
+                # version now that indexing has consumed the queue
+                # which contained the last_loaded version.
+                Db::update_processed_holdings_version($C, $dbh, $run);
 
                 unless ($SKIP_OPTIMIZE) {
                     # Enable optimizers to start running from cron

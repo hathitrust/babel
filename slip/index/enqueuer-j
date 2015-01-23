@@ -17,7 +17,7 @@ queue to be processed by the given run.  Producers (index-j) read and
 dequeue from the queue.
 
 The enqueuer-j runs independently of the other scripts, i.e. if index-j
-is disabled, enqueuer-j still runs.
+is disabled, enqueuer-j still runs, unless it itself is disabled.
 
 See also the POD in the rights-j script.
 
@@ -39,7 +39,7 @@ use warnings;
 umask 0000;
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 
 
@@ -191,7 +191,7 @@ eval {
         else {
             enqueue_from_j_rights($C, $DBH, $RUN) unless ($SHARED_ONLY || $HOLDINGS_ONLY);
             enqueue_from_shared_queue($C, $DBH, $RUN) unless ($HOLDINGS_ONLY);
-            # TEMPORARY until new flag is implemented enqueue_from_holdings_delta($C, $DBH, $RUN) unless ($SHARED_ONLY);
+            enqueue_from_holdings_delta($C, $DBH, $RUN) unless ($SHARED_ONLY);
         }
     }
     else {
@@ -291,10 +291,10 @@ Enqueue holdings between last_loaded_version and the max_version at
 this point in time.  We load only this slice because, while loading,
 holdings_deltas could have a max_version + 1 inserted. We want to read
 only the IDs between last_loaded_version and the max_version we saw at
-a point in time so last_loaded_version agree with the IDs we actually
+a point in time so last_loaded_version agrees with the IDs we actually
 read.
 
-Further, we want to load only items with versions whose date is older
+Further, we want to load only items where max_version's date is older
 that holdings_dates.last_catalog_index_date so that when we query the
 catalog (VuFind Solr) we get the correct holdings for those items.
 
@@ -311,16 +311,17 @@ sub enqueue_from_holdings_delta {
     # rather than trying to do it within the re-indexing run-10.
     my $production_run = $config->get('distinguished_production_run_number');
     if ($run ne $production_run) {
-        $s = qq{Skip possible load of PHDB updated IDs because run=$run is not the production run ($production_run)\n};
+        $s = qq{Skipping possible load of PHDB updated IDs because run=$run is not the production run (run=$production_run)\n};
         __output($s);
         qu_Log_misc($C, $run, $s);
         return;
     }
     # POSSIBLY NOTREACHED
 
-    # Any holdings_deltas.version to load older then (<)
-    # holdings_dates.last_catalog_index_date that is newer than (>)
-    # slip_holdings_version.last_loaded_version?
+    # Get the MAX version (V) from holdings_deltas.version with an
+    # update_date < latest holdings_dates.last_catalog_index_date that has
+    # not already been loaded into the indexing queue, i.e. where V is
+    # < slip_holdings_version.last_loaded_version.
 
     my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
     my $latest_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
@@ -338,7 +339,7 @@ sub enqueue_from_holdings_delta {
         }
     }
     else {
-        $s = qq{Zero (0) items in ht_repository.holdings_deltas to add to queue (last_loaded_version=$last_loaded_version max_version=$latest_ready_version)};
+        $s = qq{Zero (0) items in ht_repository.holdings_deltas to add to queue for run=$run. (last_version_enqueued=$last_loaded_version next_catalog_ready_version=none) };
         __output(qq{$s\n});
         qu_Log_misc($C, $run, $s) unless ($CHECK);
         return;
@@ -374,7 +375,7 @@ sub enqueue_from_holdings_delta {
     my $ids_per_sec = $num_items / $elapsed;
 
     if ($num_items > 0) {
-        Db::set_holdings_version($C, $dbh, $run, $max_version);
+        Db::set_holdings_version($C, $dbh, $run, $latest_ready_version);
         my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
         $s = sprintf("inserted %d items in %.1f sec at %.1f ids/sec from ht_repository.holdings_deltas (last_loaded_version=%d latest_ready_version=%d)",
                      $num_items, $elapsed, $ids_per_sec, $loaded_version, $latest_ready_version);

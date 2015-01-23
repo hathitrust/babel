@@ -891,13 +891,25 @@ sub c_Reset_queue {
 
 =item c_set_holdings_version
 
-Description
+Set to earlier loaded version that is earlier than the last version
+that is catalog ready. Setting version to one that is equal or newer
+that the last version that is catalog ready means that that version
+would not be loaded into teh indexing queue and therefore not
+processed.
 
 =cut
 
 # ---------------------------------------------------------------------
 sub c_set_holdings_version {
     my ($C, $dbh, $run, $version) = @_;
+
+    my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+    my $last_catalog_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
+
+    if ($version > $last_catalog_ready_version) {
+        __output(qq{\tERROR: setting slip_holdings_version.last_loaded_version to $version would lose holdings metadata. $version would be more recent than the last version indexed by VuFind Solr.\n});
+        return;
+    }
 
     Db::set_holdings_version($C, $dbh, $run, $version);
     Db::update_last_processed_holdings_version($C, $dbh, $run, $version);
