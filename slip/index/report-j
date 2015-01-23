@@ -519,13 +519,16 @@ sub report_queue_state {
 
     my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
     my $last_processed_version = Db::get_last_processed_holdings_version($C, $dbh, $run);
-    my $max_version = Db::get_holdings_max_version($C, $dbh, $run);
-    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $max_version);
+    my $last_catalog_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
+    my $newest_version = Db::get_holdings_max_version($C, $dbh);
+    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $last_catalog_ready_version);
 
+    my $ready = ($last_catalog_ready_version > 0 ? $last_catalog_ready_version : 'none');
+                 
     __Print qq{\n * queue state:\n};
     __Print qq{\t  Primary: size=$Q_size num_available=$Q_num_available in_process=$Q_num_in_process\n};
     __Print qq{\t   Shared: size=$shared_q_size\n};
-    __Print qq{\t Holdings: size=$holdings_deltas_size last_version_enqueued=$last_loaded_version last_version_indexed=$last_processed_version newest_version=$max_version\n};
+    __Print qq{\t Holdings: size=$holdings_deltas_size last_version_enqueued=$last_loaded_version last_version_indexed=$last_processed_version newest_version=$newest_version next_catalog_ready_version=$ready\n};
 }
 
 # ---------------------------------------------------------------------

@@ -10,11 +10,9 @@ see usage
 
 =head1 DESCRIPTION
 
-Renumber the re-indexing run so it becomes the procution/daily run; in
-effect, changing the config file to point to a different Solr
-configuration than was used to do the re-index.
-
-Runs must be similar in their host config and shard counts.
+Renumber the re-indexing run-10 so it becomes the prodution/daily
+run-11; in effect, changing the config file to point to a different
+Solr configuration than was used to do the re-index.
 
 =cut
 
@@ -53,48 +51,21 @@ use SLIP_Utils::Log;
 
 my $INTERACTIVE = $ENV{TERM};
 
-if (! $INTERACTIVE) {
+unless ($INTERACTIVE) {
     exit 0;
 }
 
 # Flush i/o
 $| = 1;
 
-# ---------------------------------------------------------------------
-
-=item renum_get_usage
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub renum_get_usage {
-    my $s = qq{Usage: renumber-j -r run -t run [-d][-T]
-             where:
-                -r = run number to be renumbered (probably a re-indexing run)
-                -t = number to renumber to (probably a production run)\n};
-    return $s;
-}
-
-our ($opt_r, $opt_t, $opt_d, $opt_T);
-
-my $ops = getopts('r:t:Td');
+our ($opt_d, $opt_T);
+my $ops = getopts('Td');
 
 my $INDEX_SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 
 # Required
-my $FROM_RUN = $opt_r;
-my $TO_RUN = $opt_t;
-
-if (! ($FROM_RUN && $TO_RUN)) {
-    my $s = renum_get_usage();
-    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
-    __output($s);
-    __non_interactive_err_output($rc, $s);
-    
-    exit $rc;
-}
+my $FROM_RUN = 10;
+my $TO_RUN = 11;
 
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,me';
@@ -161,8 +132,24 @@ sub r_n_connect {
 
 =item c_renumber
 
-Change the run number of a (probably) re-indexing run to make it the
-production/daily run.
+Change the run number of the re-indexing run-10 to make it the
+production/daily run-11.
+
+First delete run-11.
+
+HOLDINGS: Note the following:
+
+slip_holdings[10].{last_loaded_version,last_processed_version} are set
+to MAX(holdings_deltas.version) and load_time
+MAX(holdings_deltas.update_date) to when run-10 is initialized because
+*all* IDs are queued *and* re-indexed so run-10 necessarily
+incorporates the latest holdings data run-11 posseses which was
+correct with respect to PHDB and and VuFind.
+
+Hence, when slip_holdings[10] is renumbered to be slip_holdings[11]
+the state of run-11 will be correct as of the PHDB update version that
+was in effect when run-10 began. If a PHDB update occurs during
+run-10, when run-11 runs next it will catch up.
 
 =cut
 
@@ -170,17 +157,17 @@ production/daily run.
 sub c_renumber {
     my ($C, $dbh, $from_run, $to_run) = @_;
 
+    __confirm("\nThis will re-number run $from_run to be run $to_run after you first manually delete run $to_run.\n\n\t ARE YOU READY TO PROCEED? [N] ");
+
     __confirm("\n\nHave you deleted run=$to_run (control-j -r$to_run -kdelete)? [N] ");
 
     # Make sure.
     my $ct = Db::Test_j_rights_timestamp($C, $dbh, $to_run);
     if ($ct > 0) {
-        __output(qq{Looks like run=$to_run still exists.  Exit.\n});
+        __output(qq{Looks like run=$to_run has not been deleted.  Exit.\n});
         exit 0;
     }
     
-    __confirm("\n\n!!! This will re-number run $from_run to be run $to_run !!!\n\n\t ARE YOU ABSOLUTELY 100% SURE ABOUT THIS!? [N] ");
-
     __output(qq{\n\tre-number slip_rights timestamp } . q{ ... });
     Db::Renumber_j_rights_timestamp($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
@@ -193,7 +180,7 @@ sub c_renumber {
     Db::Renumber_indexed($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number enqueuer control ... });
+    __output(qq{\tSkip re-number enqueuer control ... });
     Db::Renumber_enqueuer_control($C, $dbh, $from_run, $to_run);
     __output(qq{Done.\n});
 
@@ -257,7 +244,8 @@ sub c_renumber {
 
     Log_renumber($C, $from_run, $to_run);
     __output(qq{\n\tRe-numbered from run $from_run to run $to_run\n\n});
-    __output(qq{\nWARN: update production configuration (run-${to_run}.conf) to match re-indexing configuration (run-${from_run}.conf)\n\n});
+    __output(qq{\nWARN: update production configuration (run-${to_run}.conf) to match re-indexing configuration (run-${from_run}.conf)\n});
+    __output(qq{\nWARN: re-enable driver-j and enqueuer-j for run-${to_run} when ready.\n\n});
 }
 
 
