@@ -39,7 +39,7 @@ use warnings;
 umask 0000;
 
 BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{DEBUG_LOCAL} = 1;
 }
 
 
