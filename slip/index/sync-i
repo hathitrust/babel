@@ -91,6 +91,8 @@ my $RUN = 11;
 use constant DEFAULT_SLICE_SIZE => 10000;
 my $SLICE_SIZE = defined($opt_s) ? $opt_s : DEFAULT_SLICE_SIZE; # optional
 
+my $MAX_EMAIL_BUF_SIZE = 99 * 1024; # less than 100K
+
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
 }
@@ -235,7 +237,13 @@ sub sy_final_report {
     $s =~ s,\n\n,\n,gs;
 
     my $subj = qq{[SLIP] sync-i report ($HOST)};
-    SLIP_Utils::Common::Send_email($C, 'report', $subj, $s);
+
+    my $buf = substr $s, 0, $MAX_EMAIL_BUF_SIZE;
+    if ( length($buf) < length($s) ) {
+        $buf .= qq{\n[TRUNCATED at $MAX_EMAIL_BUF_SIZE characters -- see logs in logs/slip/run-11/sync-i-*]};
+    }
+    
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $buf);
 }
 
 # ---------------------------------------------------------------------
