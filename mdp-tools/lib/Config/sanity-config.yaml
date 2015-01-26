@@ -59,7 +59,6 @@ htd:
   - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/pagemeta/uc1.\$b699489/1 __LOCAL__
 
 htdc:
-  - http://__URL_STAGE__.hathitrust.org/__CGI__/htdc/dapiclient
   - http://__URL_STAGE__.hathitrust.org/__CGI__/htdc
   - http://__URL_STAGE__.hathitrust.org/__CGI__/htdc/v2
 
