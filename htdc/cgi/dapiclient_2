@@ -1,0 +1,96 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+dapiclient_2
+
+=head1 DESCRIPTION
+
+This is an example perl 2-legged oauth client that makes a request to
+the full Data API. Replace OAUTH_CONSUMER_SECRET and
+OAUTH_CONSUMER_KEY (below) with the keys you received from
+http://babel.hathitrust.org/cgi/kgs and MY_IP_ADDRESS by the IP
+address of workstation or server running this script.
+
+It uses a hardcoded URL to request a single page image for a public domain item.
+
+It is intended to aid development of a fully function Data API client
+in Perl or other languages that implement HMAC_SHA1 OAuth libraries.
+
+=head1 SYNOPSIS
+
+At the Unix command line:
+
+  % cd /path/to/dapiclient_2/directory
+  % chmod u+x dapiclient_2
+
+then:
+
+  % curl 'http://yourhost/path_to_client/dapiclient_2' > mdp.39015000000128.png
+
+If your png is corrupt, run without i/o redirection to see the error code:
+
+  % curl 'http://yourhost/path_to_client/dapiclient_2'
+
+or paste the URL to your browser.
+
+=head1 OUTPUT
+
+Stream of data for the above mentioned page image file or error code.
+
+=cut
+
+use strict;
+use warnings;
+
+use CGI;
+use OAuth::Lite::Consumer;
+use OAuth::Lite::AuthMethod;
+
+
+my $access_key = 'OAUTH_CONSUMER_KEY';    # replace with your access_key
+my $secret_key = 'OAUTH_CONSUMER_SECRET'; # replace with your secret_key
+my $ip_address = 'MY_IP_ADDRESS';         # replace with the IP address of your workstation or server
+
+my $request_url = 'https://babel.hathitrust.org/cgi/htd/volume/pageimage/mdp.39015000000128/1';
+
+my $consumer = OAuth::Lite::Consumer->new
+  (
+   consumer_key    => $access_key,
+   consumer_secret => $secret_key,
+   auth_method     => OAuth::Lite::AuthMethod::URL_QUERY,
+  );
+
+my $response = $consumer->request
+  (
+   method  => 'GET',
+   url     => $request_url,
+   params  => {
+               v => '2',
+               format => 'png',
+               ip => $ip_address,
+              },
+  );
+
+my $success = $response->is_success;
+my $content_type = 'image/png';
+
+unless ($success) {
+    $content_type = 'text/html';
+}
+
+print CGI::header(
+                  Content_type => $content_type,
+                  Status => $response->status_line,
+                 );
+
+unless ($success) {
+    print "<p><b>Error: " . $response->content . "</b><br/>";
+}
+else {
+    print $response->content;
+}
+
+exit $success;
+
+
