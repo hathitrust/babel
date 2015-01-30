@@ -221,8 +221,9 @@ sub __getBasicAccess {
 
         $basic_access = grep(/^$rights_name$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
 
-        if (($basic_access eq 'nonfree') && ($rights_name eq 'nobody')) {
-            $basic_access = 'noaccess';
+        if ($basic_access eq 'nonfree') {
+            my $noAccessNamesRef  = $self->__getConfigVal('no_access_rights_names');
+            $basic_access = 'noaccess' if ( grep(/^$rights_name$/, @$noAccessNamesRef) );
         }
         elsif ($basic_access eq 'free') {
             my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;

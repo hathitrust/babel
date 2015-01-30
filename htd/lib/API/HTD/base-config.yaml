@@ -84,6 +84,14 @@ rights_name_map:
   23: cc-by-nc-4.0
   24: cc-by-nc-sa-4.0
   25: cc-by-sa-4.0
+  26: pd-private
+
+# ---------------------------------------------------------------------
+# List of rights_current.attr names that equate to no access
+# ---------------------------------------------------------------------
+no_access_rights_names:
+  - nobody
+  - pd-private
 
 # ---------------------------------------------------------------------
 # List of rights_current.attr names that equate to open access modulo
