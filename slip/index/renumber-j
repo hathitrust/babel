@@ -14,6 +14,10 @@ Renumber the re-indexing run-10 so it becomes the prodution/daily
 run-11; in effect, changing the config file to point to a different
 Solr configuration than was used to do the re-index.
 
+Optionally get mysqldump command to dump relevant mysql tables. You
+should delete all other runs no in use to minimize the size of the
+dump files.
+
 =cut
 
 
@@ -59,8 +63,8 @@ unless ($INTERACTIVE) {
 # Flush i/o
 $| = 1;
 
-our ($opt_d, $opt_T, $opt_L);
-my $ops = getopts('LTd');
+our ($opt_d, $opt_T, $opt_L, $opt_D);
+my $ops = getopts('LTdD');
 
 my $INDEX_SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/index/';
 
@@ -75,7 +79,10 @@ if (defined($opt_d)) {
 my $TEST_ONLY = defined($opt_T);
 exit 0 if ($TEST_ONLY);
 
-my $LIVE = defined($opt_L);
+my $DUMP = $opt_D;
+my $LIVE = $opt_L;
+
+$LIVE = 0 if ($DUMP);
 
 my $logdir = Utils::get_tmp_logdir();
 my $Child_Err_File = qq{$logdir/renumber_child_error-$$-} . Utils::Time::iso_Time('sdt') . q{.log};
@@ -90,8 +97,8 @@ $C->set_object('MdpConfig', $config);
 
 
 # Go
-if ($LIVE) {
-    c_renumber($C, $FROM_RUN, $TO_RUN);
+if ($DUMP || $LIVE) {
+    c_handle_tables($C, $FROM_RUN, $TO_RUN);
 }
 else {
     print ren_get_usage();
@@ -112,9 +119,10 @@ Description
 # ---------------------------------------------------------------------
 sub ren_get_usage {
     my $s;
-    $s .= qq{Usage: renumber-j [-L][-T][-d] };
+    $s .= qq{Usage: renumber-j [-L|-D][-T][-d] };
     $s .= qq{\n\twhere run-10 tables will be renumbered to run-11 (hardcoded). Runs only at command line.};
     $s .= qq{\n\t\t-L L)ive: actually do the renumbering, otherwise print this usage message};
+    $s .= qq{\n\t\t-D D)ump: print a mysqldump statement to run at the command line to backup the database.};
     $s .= qq{\n\t\t-d produce debug output};
     $s .= qq{\n\t\t-T test compilation and exit};
     $s .= qq{\n};
@@ -159,7 +167,7 @@ sub r_n_connect {
 
 # ---------------------------------------------------------------------
 
-=item c_renumber
+=item c_handle_tables
 
 Change the run number of the re-indexing run-10 to make it the
 production/daily run-11.
@@ -183,103 +191,138 @@ run-10, when run-11 runs next it will catch up.
 =cut
 
 # ---------------------------------------------------------------------
-sub c_renumber {
+sub c_handle_tables {
     my ($C, $from_run, $to_run) = @_;
 
-    __confirm("\nThis will re-number run $from_run to be run $to_run after you first manually delete run $to_run.\n\n\t ARE YOU READY TO PROCEED? [N] ");
-    __confirm("\n\nHave you deleted run=$to_run (control-j -r$to_run -kdelete)? [N] ");
+    my $dbh;
+    my $msg = 're-number';
+    
+    if ($DUMP) {
+        $msg = 'dump';
+        __confirm("\n\nThis will only print out a mysqldump statement you can run at the command line. It will not affect database tables. OK? [N] ");
+    }
+    else {
+        __confirm("\nThis will re-number run $from_run to be run $to_run after you first manually delete run $to_run.\n\n\t ARE YOU READY TO PROCEED? [N] ");
+        __confirm("\n\nHave you deleted run=$to_run (control-j -r$to_run -kdelete)? [N] ");
 
-    my $dbh = r_n_connect($C);
+        $dbh = r_n_connect($C);
 
-    # Make sure.
+        # Make sure.
     my $ct = Db::Test_j_rights_timestamp($C, $dbh, $to_run);
-    if ($ct > 0) {
-        __output(qq{Looks like run=$to_run has not been deleted.  Exit.\n});
-        exit 0;
+        if ($ct > 0) {
+            __output(qq{Looks like run=$to_run has not been deleted.  Exit.\n});
+            exit 0;
+        }
     }
+    # POSSIBLY NOTREACHED
 
-    __output(qq{\n\tre-number slip_rights timestamp } . q{ ... });
-    Db::Renumber_j_rights_timestamp($C, $dbh, $from_run, $to_run);
+    my @ht_web_table_list = ();
+    my @ht_maintenance_table_list = ();
+     
+    #
+    # Tables in the ht_maintenance database
+    #
+   __output(qq{\n\t$msg slip_rights_timestamp ... });
+    $LIVE ? Db::Renumber_j_rights_timestamp($C, $dbh, $from_run, $to_run) : push @ht_maintenance_table_list, 'slip_rights_timestamp';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number errors ... });
-    Db::Renumber_errors($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_enqueuer_control ... });
+    $LIVE ? Db::Renumber_enqueuer_control($C, $dbh, $from_run, $to_run) : push @ht_maintenance_table_list, 'slip_enqueuer_control';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number indexed ... });
-    Db::Renumber_indexed($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_commit_control ... });
+    $LIVE ? Db::Renumber_optimize_control($C, $dbh, $from_run, $to_run) : push @ht_maintenance_table_list, 'slip_commit_control';
     __output(qq{Done.\n});
 
-    __output(qq{\tSkip re-number enqueuer control ... });
-    Db::Renumber_enqueuer_control($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_check_control ... });
+    $LIVE ? Db::Renumber_check_control($C, $dbh, $from_run, $to_run) : push @ht_maintenance_table_list, 'slip_check_control';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number shard stats ... });
-    Db::Renumber_shard_stats($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_holdings_version ... });
+    $LIVE ? Db::Renumber_holdings_version($C, $dbh, $from_run, $to_run) : push @ht_maintenance_table_list, 'slip_holdings_version';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number rate stats ... });
-    Db::Renumber_rate_stats($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_driver ... });
+    $LIVE ? SLIP_Utils::Db_driver::Renumber_driver($C, $dbh, $from_run, $to_run) : push @ht_maintenance_table_list, 'slip_driver_control';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number queue ... });
-    Db::Renumber_queue($C, $dbh, $from_run, $to_run);
+    #
+    # Tables in the ht_web
+    #
+    __output(qq{\t$msg slip_errors ... });
+    $LIVE ? Db::Renumber_errors($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_errors';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number hosts config ... });
-    Db::Renumber_host_control($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_timeouts ... });
+    $LIVE ? Db::Renumber_timeouts($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_timeouts';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number optimize config ... });
-    Db::Renumber_optimize_control($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_shard_stats ... });
+    $LIVE ? Db::Renumber_shard_stats($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_shard_stats';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number Lucene checkIndex control ... });
-    Db::Renumber_check_control($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_rate_stats ... });
+    $LIVE ? Db::Renumber_rate_stats($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_rate_stats';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number shard control ... });
-    Db::Renumber_shard_control($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_host_control ... });
+    $LIVE ? Db::Renumber_host_control($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_host_control';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number holdings version ... });
-    Db::Renumber_holdings_version($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_shard_control ... });
+    $LIVE ? Db::Renumber_shard_control($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_shard_control';
     __output(qq{Done.\n});
 
-    __output(qq{\tre-number driver ... });
-    SLIP_Utils::Db_driver::Renumber_driver($C, $dbh, $from_run, $to_run);
+    __output(qq{\t$msg slip_queue ... });
+    $LIVE ? Db::Renumber_queue($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_queue';
     __output(qq{Done.\n});
 
-    __output(qq{\tDRIVER RESET for run=$to_run ... });
-    my $cmd_1 = qq{$INDEX_SCRIPTS_DIR/control-j -r$to_run -kresetdriver};
-    my $output_1 = `$cmd_1 2> $Child_Err_File`;
-    my $sysrc_1 = $? >> 8;
-    if ($sysrc_1 > 0) {
-        my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
-        my $s = qq{-----> renumber-j error system_rc=$sysrc_1 attempting $cmd_1 error:$$s_ref\n};
-        __output($s);
+    __output(qq{\t$msg slip_indexed ... });
+    $LIVE ? Db::Renumber_indexed($C, $dbh, $from_run, $to_run) : push @ht_web_table_list, 'slip_indexed';
+    __output(qq{Done.\n});
+
+
+    if ($LIVE) {
+        __output(qq{\tDRIVER RESET for run=$to_run ... });
+        my $cmd_1 = qq{$INDEX_SCRIPTS_DIR/control-j -r$to_run -kresetdriver};
+        my $output_1 = `$cmd_1 2> $Child_Err_File`;
+        my $sysrc_1 = $? >> 8;
+        if ($sysrc_1 > 0) {
+            my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
+            my $s = qq{-----> renumber-j error system_rc=$sysrc_1 attempting $cmd_1 error:$$s_ref\n};
+            __output($s);
+        }
+        else {
+            __output(qq{Done.\n\n});
+        }
+        
+        __output(qq{\tre-INITIALIZE run=$from_run ... });
+        my $cmd_2 = qq{echo "y\ny\n" | $INDEX_SCRIPTS_DIR/control-j -r$from_run -kinit};
+        my $output_2 = `$cmd_2 2> $Child_Err_File`;
+        my $sysrc_2 = $? >> 8;
+        if ($sysrc_2 > 0) {
+            my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
+            my $s = qq{-----> renumber-j error system_rc=$sysrc_2 attempting $cmd_2 error:$$s_ref\n};
+            __output($s);
+        }
+        else {
+            __output(qq{Done.\n\n});
+        }
+        
+        Log_renumber($C, $from_run, $to_run);
+        __output(qq{\n\tRe-numbered from run $from_run to run $to_run\n\n});
+        __output(qq{\nWARN: update production configuration (run-${to_run}.conf) to match re-indexing configuration (run-${from_run}.conf)\n});
+        __output(qq{\nWARN: re-enable driver-j and enqueuer-j for run-${to_run} when ready.\n\n});
     }
     else {
-        __output(qq{Done.\n\n});
+        my $ht_web_tables = join ' ', @ht_web_table_list;
+        my $ht_maintenance_tables = join ' ', @ht_maintenance_table_list;
+        my $date = `date +%F`;
+        chomp $date;
+        __output(qq{\nHere are your mysqldump statements.  The views in the ht database into the dumped tables in ht_web, ht_maintenance databases need not change.\n\n});
+        __output(qq{mysqldump -u DB_USERID -h mysql-sdr -p ht_web $ht_web_tables > /tmp/renumber-ht_web-$date.sql\n\n});
+        __output(qq{mysqldump -u DB_USERID -h mysql-sdr -p ht_maintenance $ht_maintenance_tables > /tmp/renumber-ht_maintenance-$date.sql\n\n});
     }
-
-    __output(qq{\tre-INITIALIZE run=$from_run ... });
-    my $cmd_2 = qq{echo "y\ny\n" | $INDEX_SCRIPTS_DIR/control-j -r$from_run -kinit};
-    my $output_2 = `$cmd_2 2> $Child_Err_File`;
-    my $sysrc_2 = $? >> 8;
-    if ($sysrc_2 > 0) {
-        my $s_ref = Utils::read_file($Child_Err_File, 1, 0);
-        my $s = qq{-----> renumber-j error system_rc=$sysrc_2 attempting $cmd_2 error:$$s_ref\n};
-        __output($s);
-    }
-    else {
-        __output(qq{Done.\n\n});
-    }
-
-    Log_renumber($C, $from_run, $to_run);
-    __output(qq{\n\tRe-numbered from run $from_run to run $to_run\n\n});
-    __output(qq{\nWARN: update production configuration (run-${to_run}.conf) to match re-indexing configuration (run-${from_run}.conf)\n});
-    __output(qq{\nWARN: re-enable driver-j and enqueuer-j for run-${to_run} when ready.\n\n});
 }
 
 
