@@ -701,8 +701,8 @@ sub c_delete {
     Db::Delete_errors($C, $dbh, $run);
     __output(qq{Done.\n});
 
-    __output(qq{\tdelete indexed ... });
-    Db::Delete_indexed($C, $dbh, $run);
+    __output(qq{\tdelete indexed ... \n});
+    Db::Delete_indexed($C, $dbh, $run, 'verbose');
     __output(qq{Done.\n});
 
     __output(qq{\tdelete enqueuer record ... });
