@@ -91,6 +91,6 @@ else {
     print $response->content;
 }
 
-exit $success;
+exit ($success ? 0 : 1);
 
 
