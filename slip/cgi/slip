@@ -281,9 +281,11 @@ sub report_shards {
     my %sh_tot;
     
     foreach my $shard (@num_shards_list) {
-        my $engine_url = $config->get('engine_for_shard_' . $shard) . '/admin';
-        my ($engine) = ($engine_url =~ m,^http://(.*?/.*?)/,);
-        $engine =~ s,\.umdl\.umich\.edu,,;
+        my $engine_url = $config->get('engine_for_shard_' . $shard);
+        # Solr 4 specific
+        $engine_url =~ s,/core-1,/#/~cores/core-1,;
+        my $engine = $engine_url;
+        
         my ($host) = ($engine =~ m,^(.*?):.*,); 
         my $directory = $config->get('dir_for_shard_' . $shard);
         my ($num_docs) = Db::Select_indexed_count($C, $dbh, $run, $shard);        
@@ -422,7 +424,7 @@ sub report_shards {
                   th({-colspan=>4}, "completion times") . 
                   th({-class=>"hidden-cell-1", -colspan=>4}, "") . 
                   th({-colspan=>6, -width=>"15%"},  "errors") . $N,
-                  th({-width=>"2%"}, ["shard", @enabled_head, @states_head]) . th(["solr instance", "index directory", "num", "size", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
+                  th({-width=>"2%"}, ["shard", @enabled_head, @states_head]) . th(["solr dashboard", "index directory", "num", "size", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
                   @rows,
                   $totals
                  ])
