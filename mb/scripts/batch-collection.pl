@@ -123,8 +123,8 @@ sub bc_Usage {
     print qq{       [QUERY]   batch-collection.pl -C <coll_id>\n\n};
 
     print qq{       [DUMP]    batch-collection.pl -M <coll_id>\n};
-    print qq{         NOTE: Redirect output to STDERR to separate status from list of IDs, e.g.:\n};
-    print qq{                \$ batch_collection.pl -M 1234567 2> my_ids.txt\n};
+    print qq{                   NOTE: Redirect output to STDERR to separate status from list of IDs, e.g.:\n};
+    print qq{                     \$ batch_collection.pl -M 1234567 2> my_ids.txt\n};
 
     print qq{Options:\n};
     print qq{       -f <filename> file of HathiTrust IDs, one per line\n};
@@ -139,7 +139,7 @@ sub bc_Usage {
     print qq{       -C returns the <userid>, display_name, title for collection with -C <coll_id>\n\n};
     print qq{Notes:\n};
     print qq{       IDs are HathiTrust IDs, e.g. mdp.39015012345\n};
-    print qq{       Blank lines or lines beginning with a '#' are ignored\n};
+    print qq{       Blank lines or lines beginning with a '#' are ignored in input files\n};
     print qq{       Set the BATCH_COLLECTION_USER environment variable to over-ride whoami for group-owned collections\n\n};
 
 }
