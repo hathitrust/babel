@@ -574,6 +574,10 @@ sub __configure_init_hosts {
 
     my $config = $C->get_object('MdpConfig');
 
+    # delete hosts not from this config left over from previous
+    # configurations for this run
+    Db::Delete_host_control($C, $dbh, $run);
+
     my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
     my $producers_per_host = $config->get('producers_per_host');
     foreach my $host (@host_list) {

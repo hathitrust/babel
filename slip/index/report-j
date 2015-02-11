@@ -378,7 +378,7 @@ sub _report_totals {
         $actual = qq{ actual=$committed_docs delta=$delta};
     }
     __Print qq{\tOverall:\n};
-    __Print qq{\t\tDocs:  processed=$num_processed indexed=${num_indexed}$actual timeouts=$num_timeouts reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs left=$docs_remaining pcnt=${pcnt}% size=${doc_size_g}g docs/h=$docs_phour\n};
+    __Print qq{\t\tDocs: processed=$num_processed indexed=${num_indexed}$actual timeouts=$num_timeouts reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs left=$docs_remaining pcnt=${pcnt}% size=${doc_size_g}g docs/h=$docs_phour\n};
     __Print qq{\t\tIndex: size=${idx_size_g}g\n};
     my $e_H = __convert_hours($real_elapsed_h);
     my $r_H = __convert_hours($remains_h);
@@ -436,7 +436,7 @@ Description:
 sub _report_shard {
     my ($shard, $srf) = @_;
 
-    __Print qq{\t\t$shard: };
+    __Print( sprintf("\t%3d: ", $shard) );
 
     my $reindexed_ct = $srf->{$shard}{'reindexed_ct'};
     my $deleted_ct = $srf->{$shard}{'deleted_ct'};
@@ -468,9 +468,9 @@ sub _report_shard {
         $committed = qq{ committed=$on$num_docs_committed$off};
     }
 
-    __Print qq{\tDocs:  processed=$num_docs_processed indexed=${num_docs_indexed}$committed timeouts=$num_docs_timedout reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs doc/sec=$doc_psec k/sec=$doc_kpsec doc/h=$doc_ph\n};
-    __Print qq{\t\t\tIndex: size=${idx_size_g}g k/sec=$idx_kpsec\n};
-    __Print qq{\t\t\tRatio: i/doc=$ratio\n};
+    __Print qq{  Docs: processed=$num_docs_processed indexed=${num_docs_indexed}$committed timeouts=$num_docs_timedout reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs doc/sec=$doc_psec k/sec=$doc_kpsec doc/h=$doc_ph\n};
+    __Print qq{\t\tIndex: size=${idx_size_g}g k/sec=$idx_kpsec\n};
+    __Print qq{\t\tRatio: i/doc=$ratio\n};
 }
 
 
