@@ -480,7 +480,7 @@ sub enqueue_from_j_rights {
     my $before_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
     my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
     my $relation = ($before_timestamp eq $Db::MYSQL_ZERO_TIMESTAMP) ? '>=' : '>';
-    my $out_msg = qq{count=$would_be_queued would be queued for run=$run with slip_rights_timestamp.insert_time $relation $before_timestamp\n};
+    my $out_msg = qq{count=$would_be_queued would be queued for run=$run with slip_rights_timestamp.time $relation $before_timestamp\n};
 
     if ($CHECK) {
         __output($out_msg);
@@ -503,7 +503,7 @@ sub enqueue_from_j_rights {
         my $after_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
 
         if ($num_inserted > 0) {
-            my $s = qq{Primary add $num_inserted items to queue and advanced slip_rights_timestamp.insert_time to $after_timestamp};
+            my $s = qq{Primary add $num_inserted items to queue and advanced slip_rights_timestamp.time to $after_timestamp};
             __output(qq{$s\n});
             DEBUG('me', qq{DEBUG: $s});
             qu_Log_work($C, $run, $num_inserted, $before_timestamp, $after_timestamp);
