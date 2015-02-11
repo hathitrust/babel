@@ -47,6 +47,7 @@ use warnings;
 BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
 }
+$| = 1;		## flush stdio
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -120,6 +121,11 @@ sub bc_Usage {
     print qq{       [QUERY]   batch-collection.pl -c -t title -o userid\n\n};
 
     print qq{       [QUERY]   batch-collection.pl -C <coll_id>\n\n};
+
+    print qq{       [DUMP]    batch-collection.pl -M <coll_id>\n};
+    print qq{         NOTE: Redirect output to STDERR to separate status from list of IDs, e.g.:\n};
+    print qq{                \$ batch_collection.pl -M 1234567 2> my_ids.txt\n};
+
     print qq{Options:\n};
     print qq{       -f <filename> file of HathiTrust IDs, one per line\n};
     print qq{       -t '<title>' collection title as a quoted string\n};
@@ -129,6 +135,7 @@ sub bc_Usage {
     print qq{       -D <coll_id> delete IDs from coll_id. Obtain <coll_id> using batch_collection.pl -c option\n};
     print qq{       -X <coll_id> [superuser only] delete entire collection. Obtain <coll_id> using batch_collection.pl -c option\n};
     print qq{       -c returns the coll_id for collection with -t '<title>' owned by -o <userid>\n};
+    print qq{       -M <coll_id> dumps a list of item IDs in collection with coll_id = <coll_id>\n};
     print qq{       -C returns the <userid>, display_name, title for collection with -C <coll_id>\n\n};
     print qq{Notes:\n};
     print qq{       IDs are HathiTrust IDs, e.g. mdp.39015012345\n};
@@ -137,8 +144,8 @@ sub bc_Usage {
 
 }
 
-our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X);
-getopts('ct:d:o:f:a:D:C:X:');
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X, $opt_M);
+getopts('ct:d:o:f:a:D:C:X:M:');
 
 my $INPUT_FILE = $opt_f || 'general';
 
@@ -191,10 +198,18 @@ my $COLL_ID = $opt_c;
 my $DELETE = $opt_D;
 my $EXPUNGE = $opt_X;
 my $USERID = $opt_C;
+my $DUMP = $opt_M;
 
 my $CREATE = 0;
 
-if ($EXPUNGE) {
+if ($DUMP) {
+    if ($DUMP !~ m,\d+,) {
+        Log_print( qq{ERROR: invalid coll_id arg to dump (-M) option\n\n} );
+        bc_Usage();
+        exit 1;
+    }
+}
+elsif ($EXPUNGE) {
     if ($EXPUNGE !~ m,\d+,) {
         Log_print( qq{ERROR: invalid coll_id arg to expunge (-X) option\n\n} );
         bc_Usage();
@@ -338,7 +353,25 @@ my $SMALLEST_LARGE_COLLECTION = $small_collection_max_items + 1;
 my $SMALL_TO_LARGE_TRANSITION = 0;
 
 
-if ($EXPUNGE) {
+if ($DUMP) {
+    my $coll_id = $DUMP;
+    my $coll_name = $CO->get_coll_name($coll_id);
+
+    if (! $CS->exists_coll_id($coll_id)) {
+        Log_print( qq{ERROR: coll_id=$coll_id does not exist. Cannot dump IDs from a non-existent collection.\n} );
+        exit 1;
+    }
+
+    Log_print( qq{Beginning to dump "$coll_name" collection ...\n} );
+
+    $INITIAL_COLLECTION_SIZE = $CO->count_all_items_for_coll($coll_id);
+
+    # Dump items from the collection
+    bc_handle_dump($C, $coll_id);
+
+    Log_print( qq{Done.\n} );
+}
+elsif ($EXPUNGE) {
     my $coll_id = $EXPUNGE;
     my $coll_name = $CO->get_coll_name($coll_id);
 
@@ -533,6 +566,42 @@ sub bc_handle_delete_items_from {
     }
 
     Log_print( qq{Processed $num_ids items from $INPUT_FILE, deleted $deleted, enqueued $queued for indexing\n} );
+}
+
+
+# ---------------------------------------------------------------------
+
+=item bc_handle_dump
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub bc_handle_dump {
+    my $C = shift;
+    my $coll_id = shift;
+
+    my $coll_num_items = $INITIAL_COLLECTION_SIZE;
+    my $coll_name = $CO->get_coll_name($coll_id);
+
+    Log_print( qq{Dumping $coll_name ($coll_id) containing $coll_num_items items\n} );
+
+    my $ok = 1;
+    my $id_arr_ref = [];
+    eval {
+        $id_arr_ref = $CO->get_ids_for_coll($coll_id);
+    };
+    if ($@) {
+        Log_print( qq{ERROR: Dump item IDs for coll_id=$coll_id operation failed: $@\n} );
+        exit 1;
+    }
+
+    foreach my $id (@$id_arr_ref) {
+        print STDERR "$id\n";
+    }
+
+    Log_print( qq{Dumped $coll_num_items items from $coll_name with coll_id=$coll_id\n} );
 }
 
 
