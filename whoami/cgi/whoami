@@ -77,20 +77,24 @@ if (defined $ENV{REMOTE_USER}) {
         print qq{<ul>
                    <li>REMOTE_USER = "$ENV{REMOTE_USER}" or possibly forwarded for: "$ENV{HTTP_X_FORWARDED_FOR}"</li>
                    <li>REMOTE_ADDR = "$remote_addr" <br/>&nbsp;&nbsp;country = "$country" <br/>&nbsp;&nbsp;USER AGENT host="$client_host"</li>
+                   <li>REMOTE_REALM = "$ENV{REMOTE_REALM}"</li>
                    <li>AUTH_TYPE = "$ENV{AUTH_TYPE}"</li>
                    <li>HTTP_USER_AGENT = "$ENV{HTTP_USER_AGENT}"</li>
-                   <li>HTTP_HOST = "$ENV{HTTP_HOST}"</li>};
-
+                   <li>HTTP_HOST = "$ENV{HTTP_HOST}"</li>
+                   <li>SDRINST = "$ENV{SDRINST}"</li>
+                   <li>SDRLIB = "$ENV{SDRLIB}"</li>};
+        
         my $auth_type = lc $ENV{AUTH_TYPE};
         if ($auth_type eq 'shibboleth') {
             print qq{<li>eduPersonScopedAffiliation = "$ENV{affiliation}"</li>
                      <li>eduPersonPrincipalName = "$ENV{eppn}"</li>
-                     <li>displayName = "$ENV{displayName}"</li>};
+                     <li>displayName = "$ENV{displayName}"</li>
+                     <li>entityID = "$ENV{Shib_Identity_Provider}"</li>};
         }
         print qq{</ul>};
     }
 
-    print q{<p>If you were asked to forward this information to HathiTrust, please copy and paste this text into a reply to the support ticket email we sent in response to your request for assistance.</p> };
+    print q{<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p> };
 
     print qq{<p>Thank you.</p>};
 }
