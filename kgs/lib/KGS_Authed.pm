@@ -90,8 +90,8 @@ sub AuthHandler {
     # We have to know who the user is so we can look up the
     # access_key. If REMOTE_USER is not set, send them to the
     # wayf. They must have invoked the link to here directly.
-    my $userid = $ENV{REMOTE_USER};
-    if (! defined($userid)) {
+    my $userid = Utils::Get_Remote_User();
+    unless ($userid) {
         print STDERR "KGS_Authed REMOTE_USER not set\n";
         my $wayf_link = KGS_Portal::get_portal_wayf_link($C);
         print $Q->redirect($wayf_link);
