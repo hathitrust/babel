@@ -159,8 +159,8 @@ sub make_Data_API_request_url {
     my $protocol = 'https://';
 
     if ($ENV{HT_DEV}) {
-        if (! Debug::DUtils::under_server) {
-            $ENV{HTTP_HOST} = $ENV{REMOTE_USER} . '-full.babel.hathitrust.org';
+        unless (Debug::DUtils::under_server) {
+            $ENV{HTTP_HOST} = $ENV{HT_DEV} . '-full.babel.hathitrust.org';
         }
     }
 

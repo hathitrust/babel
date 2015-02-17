@@ -89,7 +89,7 @@ sub run {
         $DEBUG = $Q->param('debug') || $DEBUG;
     }
 
-    if (! defined $ENV{REMOTE_USER}) {
+    unless (Utils::Get_Remote_User()) {
         _serve_login_page();
         # NOTREACHED
     }
@@ -117,7 +117,7 @@ sub run {
     my $dbh = Call_Handler(_htdc_connect(), 'Database error');
     # POSSIBLY NOTREACHED
 
-    my $access_key = validate_request($Q, $dbh, $config, $ENV{REMOTE_USER});
+    my $access_key = validate_request($Q, $dbh, $config, Utils::Get_Remote_User());
     # POSSIBLY NOTREACHED
 
     if ($DEBUG == 2) {
