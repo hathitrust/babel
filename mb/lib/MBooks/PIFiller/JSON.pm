@@ -40,7 +40,7 @@ sub  handle_COLLS_OWNED_JSON_PI
     my $owner = $C->get_object('Auth')->get_user_name($C);
     # Auth->get_user_name($C) returns 0 if there is neither a session
     # nor unique name.
-    if (! defined($owner) || $owner eq '0')
+    unless ($owner)
     {
         my $error_message = "There was a problem with authentication for the owner";
         return build_json_error($error_message);
