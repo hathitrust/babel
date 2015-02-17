@@ -232,7 +232,7 @@
 
               <xsl:otherwise>
                 <xsl:element name="a">
-                  <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                  <xsl:attribute name="href"><xsl:value-of select="MdpApp/PageLinks/FirstPageLink"/></xsl:attribute>
                   <xsl:text>Go to First Page</xsl:text>
                 </xsl:element>
               </xsl:otherwise>
