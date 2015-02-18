@@ -239,7 +239,7 @@ sub rebuild_indexed {
     Log_rebuild($C, $run, $s);
 
     my $total_item_ct = 0;
-    my $R_SLICE_SIZE = 100000;
+    my $R_SLICE_SIZE = 1000;
 
     my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
 

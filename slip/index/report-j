@@ -375,7 +375,9 @@ sub _report_totals {
     my $actual = '';
     if ($COMMITTED) {
         my $delta = $num_indexed - $committed_docs;
-        $actual = qq{ actual=$committed_docs delta=$delta};
+        my ($on, $off) = ($delta == 0) ? ('','') : ($ON, $OFF);
+
+        $actual = qq{ ${on}comitted=$committed_docs delta=$delta$off};
     }
     __Print qq{\tOverall:\n};
     __Print qq{\t\tDocs: processed=$num_processed indexed=${num_indexed}$actual timeouts=$num_timeouts reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs left=$docs_remaining pcnt=${pcnt}% size=${doc_size_g}g docs/h=$docs_phour\n};
@@ -465,7 +467,8 @@ sub _report_shard {
         unless ($SEND_EMAIL) {
             ($on, $off) = ($num_docs_indexed == $num_docs_committed) ? ('','') : ($ON, $OFF);
         }
-        $committed = qq{ committed=$on$num_docs_committed$off};
+        my $delta = $num_docs_indexed - $num_docs_committed; 
+        $committed = qq{ committed=$on$num_docs_committed delta=$delta$off};
     }
 
     __Print qq{  Docs: processed=$num_docs_processed indexed=${num_docs_indexed}$committed timeouts=$num_docs_timedout reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs doc/sec=$doc_psec k/sec=$doc_kpsec doc/h=$doc_ph\n};
@@ -721,11 +724,13 @@ sub report_configuration {
     my $v_timestamp = Db::Select_vSolr_timestamp($C, $dbh);
     my $r_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
     my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
-
+    my $slip_rights_size_minus_deletes = Db::Select_count_from_j_rights($C, $dbh, 'WHERE attr != 8');
+    my $delete_delta = $slip_rights_size - $slip_rights_size_minus_deletes;
+    
     __Print qq{\trights:\n\t\tenabled=$rights_enabled\n};
     __Print qq{\t\t\trights-j:   slip_vsolr_timestamp from MAX(slip_rights.update_time)=$v_timestamp\n};
     __Print qq{\t\t\tenqueuer-j: slip_rights_timestamp[$run] from MAX(slip_rights.insert_time)=$r_timestamp\n};
-    __Print qq{\t\t\tslip_rights size=$slip_rights_size\n};
+    __Print qq{\t\t\tslip_rights size=$slip_rights_size deleted_size=$slip_rights_size_minus_deletes delta=$delete_delta\n};
 
     # Driver
     # Enqueuer config
