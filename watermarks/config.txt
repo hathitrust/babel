@@ -9,8 +9,8 @@ coo|4|archive|cornell
 dul1|4|archive|duke
 gri|4|archive|getty
 gri|11|getty|getty
-hvd|1|google|hardvard
-hvd|4|archive|hardvard
+hvd|1|google|harvard
+hvd|4|archive|harvard
 ien|1|google|northwestern
 ien|4|archive|northwestern
 inu|1|google|iu
@@ -33,9 +33,9 @@ nc01|4|archive|unc
 ncs1|4|archive|ncsu
 njp|1|google|princeton
 njp|4|archive|princeton
-nnc1|1|google|cornell
-nnc2|4|archive|cornell
-nnc2|24|cornell|cornell
+nnc1|1|google|columbia
+nnc2|4|archive|columbia
+nnc2|24|columbia|columbia
 nyp|1|google|nypl
 nyp|4|archive|nypl
 osu|1|google|osu
@@ -56,7 +56,7 @@ uiug|1|google|illinois
 uiuo|4|archive|illinois
 uma|4|archive|umass
 umn|1|google|umn
-usu|8|usu|usu
+usu|8|usupress|usupress
 uva|1|google|virginia
 uva|4|archive|virginia
 wu|1|google|wisc
