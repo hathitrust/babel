@@ -89,10 +89,11 @@ Description
 
 # ---------------------------------------------------------------------
 sub rb_get_usage {
-    my $s = qq{Usage: rebuild-j -r run [-P solr|dedup][-d]|[-T]
+    my $s = qq{Usage: rebuild-j -r run [-P solr|dedup|both][-d]|[-T]
             build slip_indexed_temp and dedup leaving behind slip_indexed_temp
                where -P solr: queries Solr, initializes slip_indexed_temp, INSERTs slip_indexed_temp rows
-                     -P dedup: (requires a prior -P solr) DEDUPEs slip_indexed_temp, DELETEs dup Solr docs, DELETEs slip_indexed rows, INSERTs slip_indexed_temp rows\n};
+                     -P dedup: (requires a prior -P solr) DEDUPEs slip_indexed_temp, DELETEs dup Solr docs, DELETEs slip_indexed rows, INSERTs slip_indexed_temp rows
+                     -P both: does both phases\n};
     return $s;
 }
 
@@ -108,7 +109,7 @@ unless ($opt_r) {
 }
 
 my $PHASE = $opt_P || '';
-unless ($opt_P eq 'solr' || $opt_P eq 'dedup') {
+unless ($PHASE eq 'solr' || $PHASE eq 'dedup' || $PHASE eq 'both') {
     print rb_get_usage();
     exit 1;
 }
@@ -231,7 +232,7 @@ sub __rebuild_Solr_query_phase {
 
     my $s;
     
-    $s = qq{Solr query phase: Initialize slip_indexed_temp ...};
+    $s = qq{Solr query phase (PHASE=$PHASE): Initialize slip_indexed_temp ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
     SLIP_Utils::Db_sync::init_j_indexed_temp($C, $dbh);
@@ -303,7 +304,7 @@ sub __rebuild_dedup_delete_phase {
     
     # Delete duplicate rows in slip_indexed_temp and corresponding Solr
     # documents duplicated in the recorded shard.
-    $s = qq{Delete Duplicates Phase: slip_indexed_temp rows, duplicate Solr docs ...};
+    $s = qq{Delete Duplicates Phase (PHASE=$PHASE): slip_indexed_temp rows, duplicate Solr docs ...};
     __output(qq{$s\n});
     Log_rebuild($C, $run, $s);
 
@@ -336,7 +337,7 @@ sub __rebuild_insert_phase {
     my $s;
     
     # Clear the rows from slip_indexed for this run
-    $s = qq{Insert Phase: Delete slip_indexed rows ...};
+    $s = qq{Insert Phase (PHASE=$PHASE): Delete slip_indexed rows ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
     Db::Delete_indexed($C, $dbh, $run);
@@ -345,7 +346,7 @@ sub __rebuild_insert_phase {
     Log_rebuild($C, $run, $s);
 
     # Insert the rows from slip_indexed_temp
-    $s = qq{Insert Phase: Insert slip_indexed_temp rows into slip_indexed ...};
+    $s = qq{Insert Phase (PHASE=$PHASE): Insert slip_indexed_temp rows into slip_indexed ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
     SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
@@ -368,16 +369,17 @@ sub rebuild_indexed {
 
     my $s;
 
-    $s = qq{rebuild-j: begin Phase $PHASE slip_indexed rebuild process run=$run};
+    $s = qq{rebuild-j: begin (PHASE=$PHASE) slip_indexed rebuild process run=$run};
     __output(qq{\n\n ***** $s ***** \n\n});
     Log_rebuild($C, $run, $s);
 
     my ($total_item_ct, $total_Delete_ct) = (0, 0);
 
-    if ($PHASE eq 'solr') {
+    if ($PHASE eq 'solr' || $PHASE eq 'both') {
         $total_item_ct = __rebuild_Solr_query_phase($C, $dbh, $run);
     }
-    elsif ($PHASE eq 'dedup') {
+    
+    if ($PHASE eq 'dedup' || $PHASE eq 'both') {
         $total_Delete_ct = __rebuild_dedup_delete_phase($C, $dbh, $run);
         __rebuild_insert_phase($C, $dbh, $run);
     }
