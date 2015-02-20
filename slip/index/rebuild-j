@@ -107,7 +107,7 @@ unless ($opt_r) {
     exit 1;
 }
 
-my $PHASE = $opt_P;
+my $PHASE = $opt_P || '';
 unless ($opt_P eq 'solr' || $opt_P eq 'dedup') {
     print rb_get_usage();
     exit 1;
