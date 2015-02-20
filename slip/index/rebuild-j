@@ -59,6 +59,7 @@ use Password;
 use Context;
 use MdpConfig;
 use Database;
+use Identifier;
 use Search::Site;
 use Search::Searcher;
 use Search::Result::SLIP;
@@ -431,7 +432,10 @@ sub __rb_Delete_document {
     my ($C, $run, $id, $shard) = @_;
 
     my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
-    my ($index_state, $dummy) = $indexer->delete_document($C, $id);
+
+    my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
+    my $query = qq{id:$safe_id};
+    my ($index_state, $dummy) = $indexer->delete_by_query($C, $query);
 
     if (Search::Constants::indexing_failed($index_state)) {
         my $s =
@@ -452,7 +456,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2009-15 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
