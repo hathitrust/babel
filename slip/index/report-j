@@ -524,7 +524,7 @@ sub report_queue_state {
     my $last_processed_version = Db::get_last_processed_holdings_version($C, $dbh, $run);
     my $last_catalog_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
     my $newest_version = Db::get_holdings_max_version($C, $dbh);
-    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $last_catalog_ready_version);
+    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $newest_version);
 
     my $ready = ($last_catalog_ready_version > 0 ? $last_catalog_ready_version : 'none');
                  

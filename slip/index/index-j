@@ -270,11 +270,8 @@ sub i_processing_loop {
 
             remove_id_from_backup_list();
 
-            # Remove item from the input queue. Critical errors (9)
-            # cause a longjump out of i_processing_loop() and add IDs
-            # to slip_errors and deletes them from slip_queue atomically
-            # without resorting to a call to handle_dequeue().
-            handle_dequeue($C, $DBH, $RUN, $id, $PID, $HOST);
+            # Critical errors (9) cause a longjump out of
+            # i_processing_loop() and add IDs to slip_errors
         }
     }
 }
@@ -545,24 +542,6 @@ sub handle_startup {
     DEBUG('me', qq{DEBUG: process slice shard=$shard host=$host pid=$pid num=$num_ids});
 }
 
-
-
-# ---------------------------------------------------------------------
-
-=item handle_dequeue
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_dequeue {
-    my ($C, $dbh, $run, $id, $pid, $host) = @_;
-
-    Db::dequeue($C, $dbh, $run, $id, $pid, $host);
-    Log_dequeue($C, $run, $id, $pid, $host);
-}
-
 # ---------------------------------------------------------------------
 
 =item handle_queue_empty
@@ -671,23 +650,6 @@ sub Log_critical {
 
     my $s = Utils::Time::iso_Time() . qq{ id=$id};
     SLIP_Utils::Log::this_string($C, $s, 'critical_ids_logfile', '___RUN___', $run);
-}
-
-# ---------------------------------------------------------------------
-
-=item Log_dequeue
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub Log_dequeue {
-    my ($C, $run, $id, $pid, $host) = @_;
-
-    my $s = qq{***DEQUEUE: } . Utils::Time::iso_Time() . qq{ id=$id r=$run pid=$pid h=$host};
-    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run)
-            if ($VERBOSE_LOGGING);
 }
 
 # ---------------------------------------------------------------------

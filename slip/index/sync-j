@@ -97,7 +97,7 @@ use SLIP_Utils::Log;
 
 my $INTERACTIVE = $ENV{TERM};
 
-if (! $INTERACTIVE) {
+unless ($INTERACTIVE) {
     exit 0;
 }
 
@@ -127,7 +127,7 @@ my $g_S;
 
 # Required
 my $RUN = $opt_r;
-if (! $opt_r) {
+unless ($opt_r) {
     my $s = syn_get_usage();
     print $s;
     exit 1;
@@ -136,7 +136,7 @@ if (! $opt_r) {
 my $CHECK = 1;
 
 my $MODE = $opt_m;
-if (! $opt_m) {
+unless ($opt_m) {
     my $s = syn_get_usage();
     print $s;
     exit 1;
@@ -292,7 +292,7 @@ sub Test_rightsNINindexed {
             __output(qq{$s0\n}); 
             Log_sync($C, $run, $s0);
 
-            Db::insert_queue_items($C, $dbh, $run, [ {id => $id, shard => 0} ])
+            Db::handle_queue_insert($C, $dbh, $run, [ {id => $id, shard => 0} ])
                 unless($CHECK);
         }
     }
