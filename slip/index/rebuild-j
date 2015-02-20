@@ -12,7 +12,7 @@ see usage
 
 Rebuild slip_indexed based on what is actually present in the index
 removing duplicates in slip_indexed and Solr. Cannot be run until queue
-is indexed and index is optimized. 
+is indexed and index is optimized.
 
 Elapsed < 1 hour.
 
@@ -89,25 +89,29 @@ Description
 
 # ---------------------------------------------------------------------
 sub rb_get_usage {
-    my $s = qq{Usage: rebuild-j -r run [-n][-d]|[-T]
+    my $s = qq{Usage: rebuild-j -r run [-P solr|dedup][-d]|[-T]
             build slip_indexed_temp and dedup leaving behind slip_indexed_temp
-               where -n skips INSERT INTO slip_indexed and Solr duplicate doc deletion\n};
+               where -P solr: queries Solr, initializes slip_indexed_temp, INSERTs slip_indexed_temp rows
+                     -P dedup: (requires a prior -P solr) DEDUPEs slip_indexed_temp, DELETEs dup Solr docs, DELETEs slip_indexed rows, INSERTs slip_indexed_temp rows\n};
     return $s;
 }
 
-our ($opt_d, $opt_r, $opt_n, $opt_T);
+our ($opt_d, $opt_r, $opt_P, $opt_T);
 
-my $ops = getopts('dr:nT');
+my $ops = getopts('dr:P:T');
 
 # Required
 my $RUN = $opt_r;
-if (! $opt_r) {
+unless ($opt_r) {
     print rb_get_usage();
     exit 1;
 }
 
-my $CHECK = defined($opt_n);
-my $C_MSG = ($CHECK ? 'CHECK Only: Do NOT delete slip_indexed rows' : 'DELETE slip_indexed rows');
+my $PHASE = $opt_P;
+unless ($opt_P eq 'solr' || $opt_P eq 'dedup') {
+    print rb_get_usage();
+    exit 1;
+}
 
 if (defined($opt_d)) {
     $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
@@ -142,7 +146,7 @@ exit 0;
 
 sub r__connect {
     my $C = shift;
-    
+
     my $db;
     eval {
         my $whoami = `whoami`;
@@ -160,7 +164,7 @@ sub r__connect {
         SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild-j', $@);
         exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
     }
-    
+
     $C->set_object('Database', $db);
     my $dbh = $C->get_object('Database')->get_DBH();
     return $dbh;
@@ -194,7 +198,7 @@ sub __rb_commit {
     my ($C, $run, $shard, $indexer) = @_;
 
     my $s;
-    
+
     $s = qq{commit shard=$shard ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
@@ -215,23 +219,19 @@ sub __rb_commit {
 
 # ---------------------------------------------------------------------
 
-=item rebuild_indexed
+=item __rebuild_Solr_query_phase
 
-For each shard, add its ids to slip_indexed[shard] for this run
+Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub rebuild_indexed {
+sub __rebuild_Solr_query_phase {
     my ($C, $dbh, $run) = @_;
 
     my $s;
-
-    $s = qq{Begin slip_indexed rebuild run=$run $C_MSG};
-    __output(qq{\n\n ***** $s ***** \n\n});
-    Log_rebuild($C, $run, $s);
-
-    $s = qq{Initialize slip_indexed_temp ...};
+    
+    $s = qq{Solr query phase: Initialize slip_indexed_temp ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
     SLIP_Utils::Db_sync::init_j_indexed_temp($C, $dbh);
@@ -246,35 +246,35 @@ sub rebuild_indexed {
 
     foreach my $shard (@shards) {
         my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
-        
+
         $s = qq{processing shard=$shard ...};
         __output(qq{\n$s\n});
         Log_rebuild($C, $run, $s);
-        
+
         # Commit
         __rb_commit($C, $run, $shard, $indexer);
-        
+
         # For each id in Solr shard, add it to slip_indexed_temp
         my $start = 0;
         my ($slice_num, $item_ct) = (0, 0);
-        
+
         while (1) {
             my $query = qq{q=*:*&fl=id&start=$start&rows=$R_SLICE_SIZE};
             my $result = `$ENV{SDRROOT}/slip/index/query-j -r$run -B -R$shard -q'$query' -N`;
             my @ids = ($result =~ m,<str name="id">(.*?)</str>,g);
-            
+
             my $rows_returned = scalar(@ids);
             last if ($rows_returned == 0);
-            
+
             $start += $R_SLICE_SIZE;
             $slice_num++;
-            
+
             $s = qq{[SLICE=$slice_num] (Solr returned=$rows_returned at: } . localtime(time);
             __output(qq{$s\n});
             Log_rebuild($C, $run, $s);
-            
+
             SLIP_Utils::Db_sync::insert_item_id_j_indexed_temp($C, $dbh, $shard, \@ids);
-            
+
             $item_ct += $rows_returned;
             $total_item_ct += $rows_returned;
         }
@@ -282,80 +282,127 @@ sub rebuild_indexed {
         __output(qq{\n$s\n});
         Log_rebuild($C, $run, $s);
     }
-    
-    # Delete duplicate rows in slip_indexed_temp and corresponding Solr
-    # documents duplicated in the recorded shard.
-    if ($CHECK) {
-        $s = qq{Delete Duplicate slip_indexed_temp rows, NOT deleting duplicate Solr docs ...};
-        __output(qq{$s\n});
-    }
-    else {
-        $s = qq{Delete Duplicate slip_indexed_temp rows, duplicate Solr docs ...};
-        __output(qq{$s\n});
-    }
-    Log_rebuild($C, $run, $s);
-    
-    my ($total_dupl_id_item_ct, $total_Delete_ct) = Delete_duplicates($C, $run, $dbh);
-    $s = qq{Done. \n\tduplicated slip_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
-    __output(qq{$s\n});
-    Log_rebuild($C, $run, $s);
-    
-    # Commit again after duplicate docs have been deleted
-    foreach my $sh (@shards) {
-        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $sh);
-        __rb_commit($C, $run, $sh, $indexer)
-            unless(! $CHECK);
-    }
-    
-    # Clear the rows from slip_indexed for this run
-    if ($CHECK) {        
-        $s = qq{SKIP Delete slip_indexed rows};
-        __output(qq{$s\n});
-        Log_rebuild($C, $run, $s);
-    }
-    else {
-        $s = qq{Delete slip_indexed rows ...};
-        __output(qq{$s});
-        Log_rebuild($C, $run, $s);
-        Db::Delete_indexed($C, $dbh, $run);
-        $s = qq{Done.};
-        __output(qq{$s\n});
-        Log_rebuild($C, $run, $s);
-    }
 
-    
-    # Insert the rows from slip_indexed_temp
-    if ($CHECK) {
-        $s = qq{SKIP Insert slip_indexed_temp rows into slip_indexed};
-        __output(qq{$s\n});
-        Log_rebuild($C, $run, $s);
-    }
-    else {
-        $s = qq{Insert slip_indexed_temp rows into slip_indexed ...};
-        __output(qq{$s});
-        Log_rebuild($C, $run, $s);
-        SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
-        $s = qq{Done.};
-        __output(qq{$s\n});
-        Log_rebuild($C, $run, $s);
-    }
-    
-    $s = qq{rebuild-j $C_MSG: checked=$total_item_ct duplicated Solr docs deleted=$total_Delete_ct};
-    __output(qq{\n$s\n});
-    Log_rebuild($C, $run, $s);
+    return $total_item_ct;
 }
-
 
 # ---------------------------------------------------------------------
 
-=item Delete_duplicates
+=item __rebuild_dedup_delete_phase
 
 Description
 
 =cut
 
 # ---------------------------------------------------------------------
-sub Delete_duplicates {
+sub __rebuild_dedup_delete_phase {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+    my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+    
+    # Delete duplicate rows in slip_indexed_temp and corresponding Solr
+    # documents duplicated in the recorded shard.
+    $s = qq{Delete Duplicates Phase: slip_indexed_temp rows, duplicate Solr docs ...};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    my ($total_dupl_id_item_ct, $total_Delete_ct) = __Delete_duplicates($C, $run, $dbh);
+    $s = qq{Done. \n\tduplicated slip_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    # Commit again after duplicate docs have been deleted
+    foreach my $sh (@shards) {
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $sh);
+        __rb_commit($C, $run, $sh, $indexer);
+    }
+
+    return $total_Delete_ct;
+}
+
+# ---------------------------------------------------------------------
+
+=item __rebuild_insert_phase
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rebuild_insert_phase {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+    
+    # Clear the rows from slip_indexed for this run
+    $s = qq{Insert Phase: Delete slip_indexed rows ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
+    Db::Delete_indexed($C, $dbh, $run);
+    $s = qq{Done.};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    # Insert the rows from slip_indexed_temp
+    $s = qq{Insert Phase: Insert slip_indexed_temp rows into slip_indexed ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
+    SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
+    $s = qq{Done.};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+}
+
+# ---------------------------------------------------------------------
+
+=item rebuild_indexed
+
+For each shard, add its ids to slip_indexed[shard] for this run
+
+=cut
+
+# ---------------------------------------------------------------------
+sub rebuild_indexed {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+
+    $s = qq{rebuild-j: begin Phase $PHASE slip_indexed rebuild process run=$run};
+    __output(qq{\n\n ***** $s ***** \n\n});
+    Log_rebuild($C, $run, $s);
+
+    my ($total_item_ct, $total_Delete_ct) = (0, 0);
+
+    if ($PHASE eq 'solr') {
+        $total_item_ct = __rebuild_Solr_query_phase($C, $dbh, $run);
+    }
+    elsif ($PHASE eq 'dedup') {
+        $total_Delete_ct = __rebuild_dedup_delete_phase($C, $dbh, $run);
+        __rebuild_insert_phase($C, $dbh, $run);
+    }
+    else {
+        print rb_get_usage();
+        exit 1;
+    }
+
+    $s = qq{rebuild-j: checked=$total_item_ct duplicated Solr docs deleted=$total_Delete_ct};
+    __output(qq{\n$s\n});
+    Log_rebuild($C, $run, $s);
+
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __Delete_duplicates
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Delete_duplicates {
     my ($C, $run, $dbh) = @_;
 
     my $s;
@@ -388,11 +435,9 @@ sub Delete_duplicates {
             Log_rebuild($C, $run, $s);
         }
         my $preserved_shard = shift(@del_dupl_shards_of_id);
-        if (! $CHECK) {
-            $s = qq{  -----> id=$id preserved in shard=$preserved_shard};
-            __output(qq{$s\n});
-            Log_rebuild($C, $run, $s);
-        }
+        $s = qq{  -----> id=$id preserved in shard=$preserved_shard};
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
 
         foreach my $del_shard (@del_dupl_shards_of_id) {
             # Delete from slip_indexed_temp
@@ -403,14 +448,12 @@ sub Delete_duplicates {
             Log_rebuild($C, $run, $s);
 
             # Delete from Solr
-            if (! $CHECK) {
-                __rb_Delete_document($C, $run, $id, $del_shard);
-                $total_Delete_ct++;
-
-                $s = qq{  deleted id=$id shard=$del_shard Solr document};
-                __output(qq{$s\n});
-                Log_rebuild($C, $run, $s);
-            }
+            __rb_Delete_document($C, $run, $id, $del_shard);
+            $total_Delete_ct++;
+            
+            $s = qq{  deleted id=$id shard=$del_shard Solr document};
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
         }
     }
 
