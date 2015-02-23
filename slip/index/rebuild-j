@@ -48,7 +48,6 @@ use Vendors;
 
 # Perl
 use Getopt::Std;
-use Time::HiRes;
 
 # App
 use Utils;
@@ -231,7 +230,8 @@ sub __rebuild_Solr_query_phase {
     my ($C, $dbh, $run) = @_;
 
     my $s;
-    
+    my $start = time;
+
     $s = qq{Solr query phase (PHASE=$PHASE): Initialize slip_indexed_temp ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
@@ -283,6 +283,9 @@ sub __rebuild_Solr_query_phase {
         __output(qq{\n$s\n});
         Log_rebuild($C, $run, $s);
     }
+    my $elapsed = sprintf("elapsed=%.0f sec.", time - $start);
+    __output(qq{$elapsed\n});
+    Log_rebuild($C, $run, $s);
 
     return $total_item_ct;
 }
@@ -302,6 +305,7 @@ sub __rebuild_dedup_delete_phase {
     my $s;
     my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
     
+    my $start = time;
     # Delete duplicate rows in slip_indexed_temp and corresponding Solr
     # documents duplicated in the recorded shard.
     $s = qq{Delete Duplicates Phase (PHASE=$PHASE): slip_indexed_temp rows, duplicate Solr docs ...};
@@ -309,7 +313,9 @@ sub __rebuild_dedup_delete_phase {
     Log_rebuild($C, $run, $s);
 
     my ($total_dupl_id_item_ct, $total_Delete_ct) = __Delete_duplicates($C, $run, $dbh);
-    $s = qq{Done. \n\tduplicated slip_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct};
+    my $elapsed = sprintf("elapsed=%.0f sec.", time - $start);
+
+    $s = qq{Done. \n\tduplicated slip_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct $elapsed};
     __output(qq{$s\n});
     Log_rebuild($C, $run, $s);
 
@@ -335,22 +341,30 @@ sub __rebuild_insert_phase {
     my ($C, $dbh, $run) = @_;
 
     my $s;
+    my $elapsed = 0;
+    my $total_elapsed = 0;
     
+    my $start = time;
     # Clear the rows from slip_indexed for this run
     $s = qq{Insert Phase (PHASE=$PHASE): Delete slip_indexed rows ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
     Db::Delete_indexed($C, $dbh, $run);
-    $s = qq{Done.};
+    $elapsed = sprintf("step elapsed=%.0f sec.", time - $start);
+    $total_elapsed += (time - $start);    
+    $s = qq{Done.\n$elapsed};
     __output(qq{$s\n});
     Log_rebuild($C, $run, $s);
 
+    $start = time;
     # Insert the rows from slip_indexed_temp
     $s = qq{Insert Phase (PHASE=$PHASE): Insert slip_indexed_temp rows into slip_indexed ...};
     __output(qq{$s});
     Log_rebuild($C, $run, $s);
     SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
-    $s = qq{Done.};
+    $elapsed = sprintf("step elapsed=%.0f sec.", time - $start);
+    $total_elapsed += (time - $start);
+    $s = qq{Done.\n$elapsed Insert Phase elapsed=$total_elapsed};
     __output(qq{$s\n});
     Log_rebuild($C, $run, $s);
 }
@@ -368,7 +382,8 @@ sub rebuild_indexed {
     my ($C, $dbh, $run) = @_;
 
     my $s;
-
+    my $start = time;
+    
     $s = qq{rebuild-j: begin (PHASE=$PHASE) slip_indexed rebuild process run=$run};
     __output(qq{\n\n ***** $s ***** \n\n});
     Log_rebuild($C, $run, $s);
@@ -387,8 +402,9 @@ sub rebuild_indexed {
         print rb_get_usage();
         exit 1;
     }
+    my $total_elapsed = sprintf("total elapsed=%.0f sec.", time - $start);
 
-    $s = qq{rebuild-j: checked=$total_item_ct duplicated Solr docs deleted=$total_Delete_ct};
+    $s = qq{rebuild-j: checked=$total_item_ct duplicated Solr docs deleted=$total_Delete_ct $total_elapsed};
     __output(qq{\n$s\n});
     Log_rebuild($C, $run, $s);
 

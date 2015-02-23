@@ -506,6 +506,26 @@ sub __duplicates_report {
     return $report;
 }
 
+# ---------------------------------------------------------------------
+
+=item ___driver_run_report_script
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ___driver_run_report_script {
+    my $run = shift;
+    
+    my $cmd = $ENV{SDRROOT} . qq{/slip/index/report-j -r$run -C};
+    my $output = `$cmd 2> $Child_Err_File`;
+    if ($?) {
+        $output = qq{rc=$? } . `cat $Child_Err_File` . qq{\n};
+    }
+
+    return $output;
+}
 
 # ---------------------------------------------------------------------
 
@@ -551,9 +571,10 @@ sub __driver_exit_report {
     $s .= qq{\nDeltas: QvP=$queue_v_processed_delta IvP_new=$indexed_v_new_delta} unless ($empty_queue);
     $s .= qq{\nRestore_ct=$RESTORE_CT} unless ($empty_queue);
     $s .= qq{\nDuplicates=} . ($duplicates ? qq{\n\t$duplicates} : 'none');
-    $s .= qq{\nSegment_sizes:$segment_sizes};
-
+    $s .= qq{\nSegment_sizes:$segment_sizes\n\n};
+    $s .= ___driver_run_report_script($run);
     __output("$s\n");
+
     email_driver_msg($C, $s, 0);
 }
 
