@@ -137,12 +137,12 @@ if (defined($opt_d)) {
         exit $SLIP_Utils::States::RC_BAD_ARGS;
     }
 
-    $ENV{'DEBUG'} .= ',me';
-    $ENV{'DEBUG'} .= ',lsdb'
+    $ENV{DEBUG} .= ',me';
+    $ENV{DEBUG} .= ',lsdb'
         if ($opt_d == 1);
-    $ENV{'DEBUG'} .= ',lsdb,idx,doc'
+    $ENV{DEBUG} .= ',lsdb,idx,doc'
         if ($opt_d == 2);
-    $ENV{'DEBUG'} .= ',lsdb,idx,doc,vufind'
+    $ENV{DEBUG} .= ',lsdb,idx,doc,vufind'
         if ($opt_d == 3);
 }
 
@@ -263,7 +263,7 @@ sub i_processing_loop {
 
         # Go to work
         while (my $hashref = get_id_from_slice()) {
-            my $id = $hashref->{'id'};
+            my $id = $hashref->{id};
             $item_ct++;
 
             Index_Module::Service_ID($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $id, $item_ct);
@@ -388,10 +388,10 @@ shard on this host.
 sub __continue_dedicated_shard {
     my ($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done) = @_;
 
-    my ($shard, $state) = Db::dedicated_producer_monitor($C, $dbh, $run, $host, $dedicated_shard);
+    my $state = Db::dedicated_producer_monitor($C, $dbh, $run, $host, $dedicated_shard);
 
     if ($state eq 'Mon_continue') {
-        return $shard;
+        return 1;
     }
     if ($state eq 'Mon_shard_overallocated') {
         Log_shard_overalloc($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
@@ -586,7 +586,7 @@ sub handle_critical_error {
             # Un-handled ids are in the GLOBAL error array. Put them
             # in the error list and disable the shard.
             while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
-                my $id = $item_hashref->{'id'};
+                my $id = $item_hashref->{id};
                 Db::handle_error_insertion($C, $dbh, $run, $shard, $id, $pid, $host, IX_CRITICAL_FAILURE);
             }
             # Turn off this shard.
@@ -603,7 +603,7 @@ sub handle_critical_error {
         # and restore them to ht_maintenance.slip_queue, later, by
         # hand. Touch the stop file.
         while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
-            my $id = $item_hashref->{'id'};
+            my $id = $item_hashref->{id};
             Log_critical($C, $run, $id);
             $stored_id_ct++;
         }
