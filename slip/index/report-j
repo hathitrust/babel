@@ -61,7 +61,7 @@ use SLIP_Utils::States;
 use SLIP_Utils::Solr;
 use SLIP_Utils::DatabaseWrapper;
 
-my $INTERACTIVE = $ENV{'TERM'};
+my $INTERACTIVE = $ENV{TERM};
 Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip')
   unless ($INTERACTIVE);
 
@@ -116,7 +116,7 @@ if (! $RUN) {
 }
 
 if (defined($opt_d)) {
-    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
+    $ENV{DEBUG} .= ',lsdb,idx,doc,me';
 }
 
 my $C = new Context;
@@ -286,21 +286,21 @@ sub _load_stats_hash {
         my ($s_reindexed_ct, $s_deleted_ct, $s_num_errs, $s_num_docs, $s_doc_size, $s_doc_time, $s_idx_time, $s_tot_time) =
             Db::Select_shard_stats($C, $dbh, $run, $__shard);
 
-        $stats{$__shard}{'num_docs_processed'} = $s_num_docs;
-        $stats{$__shard}{'num_docs_committed'} = _actual_docs_in_shard($C, $run, $__shard);
-        $stats{$__shard}{'num_docs_indexed'} = Db::Select_indexed_count($C, $dbh, $run, $__shard);
-        $stats{$__shard}{'num_docs_timedout'} = Db::Select_timeouts_count($C, $dbh, $run, $__shard);
-        $stats{$__shard}{'num_errs'} = $s_num_errs;
-        $stats{$__shard}{'doc_size'} = $s_doc_size;
-        $stats{$__shard}{'doc_time'} = $s_doc_time;
-        $stats{$__shard}{'idx_time'} = $s_idx_time;
+        $stats{$__shard}{num_docs_processed} = $s_num_docs;
+        $stats{$__shard}{num_docs_committed} = _actual_docs_in_shard($C, $run, $__shard);
+        $stats{$__shard}{num_docs_indexed} = Db::Select_indexed_count($C, $dbh, $run, $__shard);
+        $stats{$__shard}{num_docs_timedout} = Db::Select_timeouts_count($C, $dbh, $run, $__shard);
+        $stats{$__shard}{num_errs} = $s_num_errs;
+        $stats{$__shard}{doc_size} = $s_doc_size;
+        $stats{$__shard}{doc_time} = $s_doc_time;
+        $stats{$__shard}{idx_time} = $s_idx_time;
 
-        $stats{$__shard}{'reindexed_ct'} = $s_reindexed_ct;
-        $stats{$__shard}{'deleted_ct'}   = $s_deleted_ct;
+        $stats{$__shard}{reindexed_ct} = $s_reindexed_ct;
+        $stats{$__shard}{deleted_ct}   = $s_deleted_ct;
 
-        $stats{$__shard}{'tot_time'} = $s_tot_time * ADJUST_TOTAL_TIME_FACTOR;
-        $stats{$__shard}{'idx_size'} = $s_idx_size;
-        $stats{$__shard}{'rate'} = $rate;
+        $stats{$__shard}{tot_time} = $s_tot_time * ADJUST_TOTAL_TIME_FACTOR;
+        $stats{$__shard}{idx_size} = $s_idx_size;
+        $stats{$__shard}{rate} = $rate;
     }
 
     return \%stats;
@@ -339,17 +339,17 @@ sub _report_totals {
     my $committed_docs = 0;
     my $docs_phour = 0;
     foreach my $__shard (@num_shards_list) {
-        $reindexed_ct   += $srf->{$__shard}{'reindexed_ct'};
-        $deleted_ct     += $srf->{$__shard}{'deleted_ct'};
-        $num_errs       += $srf->{$__shard}{'num_errs'};
-        $num_timeouts   += $srf->{$__shard}{'num_docs_timedout'};
-        $num_indexed    += $srf->{$__shard}{'num_docs_indexed'};
-        $num_processed  += $srf->{$__shard}{'num_docs_processed'};
-        $doc_size       += $srf->{$__shard}{'doc_size'};
-        $idx_size       += $srf->{$__shard}{'idx_size'};
-        $elapsed_sec    += $srf->{$__shard}{'tot_time'};
-        $committed_docs += $srf->{$__shard}{'num_docs_committed'};
-        $docs_phour     += sprintf("%.0f", $srf->{$__shard}{'rate'});
+        $reindexed_ct   += $srf->{$__shard}{reindexed_ct};
+        $deleted_ct     += $srf->{$__shard}{deleted_ct};
+        $num_errs       += $srf->{$__shard}{num_errs};
+        $num_timeouts   += $srf->{$__shard}{num_docs_timedout};
+        $num_indexed    += $srf->{$__shard}{num_docs_indexed};
+        $num_processed  += $srf->{$__shard}{num_docs_processed};
+        $doc_size       += $srf->{$__shard}{doc_size};
+        $idx_size       += $srf->{$__shard}{idx_size};
+        $elapsed_sec    += $srf->{$__shard}{tot_time};
+        $committed_docs += $srf->{$__shard}{num_docs_committed};
+        $docs_phour     += sprintf("%.0f", $srf->{$__shard}{rate});
     }
 
     my $doc_size_g  = sprintf("%.1f", $doc_size/1024/1024/1024);
@@ -440,25 +440,25 @@ sub _report_shard {
 
     __Print( sprintf("\t%3d: ", $shard) );
 
-    my $reindexed_ct = $srf->{$shard}{'reindexed_ct'};
-    my $deleted_ct = $srf->{$shard}{'deleted_ct'};
+    my $reindexed_ct = $srf->{$shard}{reindexed_ct};
+    my $deleted_ct = $srf->{$shard}{deleted_ct};
 
-    my $num_errs = $srf->{$shard}{'num_errs'};
-    my $num_docs_timedout = $srf->{$shard}{'num_docs_timedout'};
-    my $num_docs_indexed = $srf->{$shard}{'num_docs_indexed'};
-    my $num_docs_committed = $srf->{$shard}{'num_docs_committed'};
-    my $num_docs_processed = $srf->{$shard}{'num_docs_processed'};
-    my $doc_Time = $srf->{$shard}{'doc_time'};
-    my $idx_Time = $srf->{$shard}{'idx_time'};
-    my $doc_size = $srf->{$shard}{'doc_size'};
-    my $idx_size = $srf->{$shard}{'idx_size'};
+    my $num_errs = $srf->{$shard}{num_errs};
+    my $num_docs_timedout = $srf->{$shard}{num_docs_timedout};
+    my $num_docs_indexed = $srf->{$shard}{num_docs_indexed};
+    my $num_docs_committed = $srf->{$shard}{num_docs_committed};
+    my $num_docs_processed = $srf->{$shard}{num_docs_processed};
+    my $doc_Time = $srf->{$shard}{doc_time};
+    my $idx_Time = $srf->{$shard}{idx_time};
+    my $doc_size = $srf->{$shard}{doc_size};
+    my $idx_size = $srf->{$shard}{idx_size};
 
     my $doc_psec = ($doc_Time > 0) ? sprintf("%.2f", $num_docs_processed/$doc_Time) : 0;
     my $doc_kpsec = ($doc_Time > 0) ? sprintf("%.1f", $doc_size/1024/$doc_Time) : 0;
     my $idx_size_g = sprintf("%.1f", $idx_size);
     my $idx_kpsec = ($idx_Time > 0) ? sprintf("%.1f", $doc_size/1024/$idx_Time) : 0;
     my $ratio =  ($doc_kpsec > 0) ? sprintf("%.2f", $idx_kpsec/$doc_kpsec) : 'undef';
-    my $doc_ph = sprintf("%.0f", $srf->{$shard}{'rate'});
+    my $doc_ph = sprintf("%.0f", $srf->{$shard}{rate});
 
     my $committed = '';
     if ($COMMITTED) {
@@ -649,9 +649,9 @@ sub __num_enabled_producers {
     my $num_producers = 0;
     my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
     foreach my $hashref (@$ref_to_ary_of_hashref) {
-        my $host = $hashref->{'host'};
+        my $host = $hashref->{host};
         if (Db::Select_host_enabled($C, $dbh, $run, $host)) {
-            $num_producers += $$hashref{'num_producers'};
+            $num_producers += $$hashref{num_producers};
         }
     }
     return $num_producers;
@@ -679,7 +679,7 @@ sub report_configuration {
     my $total_num_running_over_hosts = 0;
     my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
     foreach my $hashref (@$ref_to_ary_of_hashref) {
-        my $host = $hashref->{'host'};
+        my $host = $hashref->{host};
         $total_num_running_over_hosts += Db::Select_host_num_running($C, $dbh, $run, $host);
     }
 
@@ -701,9 +701,9 @@ sub report_configuration {
     __Print qq{\tingest hosts:\n};
 
     foreach my $hashref (@$ref_to_ary_of_hashref) {
-        my $host = $hashref->{'host'};
-        my $num_producers = $hashref->{'num_producers'} || 0;
-        my $h_enabled = $hashref->{'enabled'} || 0;
+        my $host = $hashref->{host};
+        my $num_producers = $hashref->{num_producers} || 0;
+        my $h_enabled = $hashref->{enabled} || 0;
         my $num_running = Db::Select_host_num_running($C, $dbh, $run, $host);
 
         my $num_running_str = qq{producers_running=$num_running};
@@ -725,12 +725,14 @@ sub report_configuration {
     my $r_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
     my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
     my $slip_rights_size_minus_deletes = Db::Select_count_from_j_rights($C, $dbh, 'WHERE attr != 8');
+    my $total_docs_indexed = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $slip_rights_size_delta_indexed = $slip_rights_size_minus_deletes - $total_docs_indexed; 
     my $delete_delta = $slip_rights_size - $slip_rights_size_minus_deletes;
     
     __Print qq{\trights:\n\t\tenabled=$rights_enabled\n};
     __Print qq{\t\t\trights-j:   slip_vsolr_timestamp from MAX(slip_rights.update_time)=$v_timestamp\n};
     __Print qq{\t\t\tenqueuer-j: slip_rights_timestamp[$run] from MAX(slip_rights.insert_time)=$r_timestamp\n};
-    __Print qq{\t\t\tslip_rights size=$slip_rights_size deleted_size=$slip_rights_size_minus_deletes delta=$delete_delta\n};
+    __Print qq{\t\t\tslip_rights size=$slip_rights_size deleted_size=$slip_rights_size_minus_deletes deleted_delta=$delete_delta slip_rights_delta_slip_indexed=$slip_rights_size_delta_indexed\n};
 
     # Driver
     # Enqueuer config
@@ -830,9 +832,9 @@ sub c_report_errors {
             __Print qq{\t\t$s0\n};
             if (defined($id_arr_hashref) && scalar(@$id_arr_hashref > 0)) {
                 foreach my $hashref (@$id_arr_hashref) {
-                    my $id = $hashref->{'id'};
+                    my $id = $hashref->{id};
                     my $sysid = Db::Select_j_rights_id_sysid($C, $dbh, $id);
-                    my $s1 = sprintf("%18s %10s %6s %10s %s", $hashref->{'id'}, $sysid, $hashref->{'pid'}, $hashref->{'host'}, $hashref->{'error_time'});
+                    my $s1 = sprintf("%18s %10s %6s %10s %s", $hashref->{id}, $sysid, $hashref->{pid}, $hashref->{host}, $hashref->{error_time} );
                     __Print qq{\t\t$s1\n};
                     $error_ct++;
                 }
@@ -855,7 +857,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008-12 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-15 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
