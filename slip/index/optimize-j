@@ -442,7 +442,7 @@ sub __commit_pre_optimize {
     }
 
     my $s = qq{OPTIMIZE[COMMIT]: run=$RUN shard=$shard index_state=$success_str elapsed=$e\n};
-    Log_optimize($C, $RUN, $shard, $index_state, $e);
+    Log_optimize($C, $RUN, $shard, $index_state, $s);
     __output($s);
     __non_interactive_err_output($rc, $s);
 
@@ -516,10 +516,10 @@ sub c_optimize {
                 }
                 
                 my $e = sprintf(qq{elapsed=%.3f total=%.3f}, $elapsed, $total_elapsed);
-                my $s2 = qq{OPTIMIZE: [done] run=$RUN shard=$shard index_state=$success_str $e staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
-                Log_optimize($C, $run, $shard, $s2);
-                __output("$s2\n");
-                __non_interactive_err_output($rc, $s2);
+                $s = qq{OPTIMIZE: [done] run=$RUN shard=$shard index_state=$success_str $e staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
+                Log_optimize($C, $run, $shard, $s);
+                __output("$s\n");
+                __non_interactive_err_output($rc, $s);
                 
                 last if ($rc > 0);
             }
