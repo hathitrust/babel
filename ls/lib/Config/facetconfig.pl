@@ -12,7 +12,7 @@ my $lang_format_file = $ENV{SDRROOT} . '/ls/lib/Config/langformat.yaml';
 # date type (date|both)
 # date= regular bib date, both=date from parsed enumcron if exists otherwise bib
 
-$date_type="date";
+$date_type="both";
 
 $facet_limit=30;
 

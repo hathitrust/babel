@@ -285,11 +285,12 @@ sub get_Solr_query_string
 #XXX    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date, rights,id,record_no,oclc,isbn,lccn,score};
     # add bothPublishDate and enumPublishDate to field list for display/debugging
     # normally the enum date should show up in the enumcron part of the title display, but this shows what the parser found as a date
+
 #XXX temporary until Phil fixes ability to login and set debug flag
 
-    if (DEBUG('date,enum')) {
+#    if (DEBUG('date,enum')) {
         $FL .= qq{,bothPublishDate,enumPublishDate};
-    }
+ #   }
 
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INDENT = $ENV{'TERM'} ? qq{&indent=on} : qq{&indent=off};
