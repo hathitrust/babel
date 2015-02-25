@@ -29,7 +29,7 @@ use strict;
 umask 0000;
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+     $ENV{DEBUG_LOCAL} = 1;
 
     ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/ls/UNAVAILABLE");
 }

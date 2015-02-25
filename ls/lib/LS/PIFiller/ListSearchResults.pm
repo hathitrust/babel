@@ -1566,9 +1566,32 @@ sub _ls_wrap_result_data {
             $s .= wrap_string_in_tag($author, 'Author');
         }
         
-        
+        #DATES
+	# XXX usedate = (both|date) check config/debug?
+	
+	# XXX get date_type (should this be a subroutine?
+	my $facet_config=$C->get_object('FacetConfig');
+	my $date_type = $facet_config->{date_type};
+	if (DEBUG('enum'))
+	{
+	    $date_type='both';
+	}
+
+	my ($use_date) = ($doc_data->{'date'});
+	if ($date_type eq "both")
+	{
+	    ($use_date) = ($doc_data->{'bothPublishDate'}->[0]);
+	}
+	$s .= wrap_string_in_tag($use_date, 'UseDate');
+
+
         my ($date) = ($doc_data->{'date'});
         $s .= wrap_string_in_tag($date, 'Date');
+	# XXX both date enum date here
+	my ($edate) = ($doc_data->{'enumPublishDate'}->[0]);
+	$s .= wrap_string_in_tag($edate, 'EnumDate');
+	my ($bdate) = ($doc_data->{'bothPublishDate'}->[0]);
+	$s .= wrap_string_in_tag($bdate, 'BothDate');
 
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');

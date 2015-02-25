@@ -56,6 +56,18 @@ sub get_facet_config
     my $self = shift;
     return $self->{'facet_config'}
 }
+# ---------------------------------------------------------------------
+sub get_date_type
+{
+    my $self =shift;
+    my $config=$self->get_facet_config;
+    my $date_type=$config->{date_type};
+    if (DEBUG('enum'))
+    {
+	$date_type='both';
+    }
+    return $date_type;
+}
 
 # ---------------------------------------------------------------------
 
@@ -235,6 +247,9 @@ sub get_Solr_query_string
     # do we need to rename facet_config since it contains more than just facet config info?
     my $config = $self->get_facet_config;  
     
+    # get date type (date|both) both = enum cron date if exists otherwise bib date
+    my $date_type= $self->get_date_type;
+
     #advanced search foobar
     #XXX consider refactoring and putting in subroutine
     # remove facet_lang or facet_format = "All" in case javascript did not work
@@ -265,9 +280,17 @@ sub get_Solr_query_string
   
     # The common Solr query parameters
     my $Q ='q=';
-#    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,score};
-#unicorn  Add oclc, isbn and ? for google book covers
-    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,oclc,isbn,lccn,score};
+    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,score};
+    #unicorn  Add oclc, isbn and ? for google book covers
+#XXX    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date, rights,id,record_no,oclc,isbn,lccn,score};
+    # add bothPublishDate and enumPublishDate to field list for display/debugging
+    # normally the enum date should show up in the enumcron part of the title display, but this shows what the parser found as a date
+
+#XXX temporary until Phil fixes ability to login and set debug flag
+
+#    if (DEBUG('date,enum')) {
+        $FL .= qq{,bothPublishDate,enumPublishDate};
+ #   }
 
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INDENT = $ENV{'TERM'} ? qq{&indent=on} : qq{&indent=off};
@@ -312,6 +335,12 @@ sub get_Solr_query_string
     {
         foreach my $fquery (@facetquery)
         {
+	    #change datequery to proper type if using date=both
+	    if ($date_type eq "both" && $fquery=~/publishDateRange/ )
+	    {
+		$fquery=~s/publishDateRange/bothPublishDateRange/g;
+	    }
+
             my $cleaned_fquery = $self->__clean_facet_query($fquery);
             $FACETQUERY.='&fq=' . $cleaned_fquery;
         }
@@ -1076,12 +1105,29 @@ sub __hide_dismax
 #  __get_date_range($cgi);
 #
 #      filter query (fq) for date ranges 
+
+# XXX Dec 2104 tbw need to parameterize name of facet
+# i.e. publishDateRange and publishDateTrie could be enumPub... or bothPub...
 # ---------------------------------------------------------------------
 sub __get_date_range
 {
     my $self = shift;
     my $C = shift;
     my $cgi = $C->get_object('CGI');
+
+    my $config = $self->get_facet_config;  
+    # get date type (date|both) both = enum cron date if exists otherwise bib date
+    my $date_type=$self->get_date_type;
+    
+
+    my $date_range_facet='publishDateRange';
+    my $date_trie_facet ='publishDateTrie';
+    if ($date_type eq "both")
+    {
+	$date_range_facet='bothPublishDateRange';
+	$date_trie_facet ='bothPublishDateTrie';
+    }
+    
     
     my $q="";
     my $fq="";
@@ -1096,7 +1142,7 @@ sub __get_date_range
     
     if (defined($pdate) && $pdate ne "")
     {
-        $facet='publishDateRange:"' . $pdate . '"';
+        $facet="$date_range_facet" . ':"' . $pdate . '"';
         #remove pdate param
         $cgi->delete('pdate');
         # remove the other pdate params since we can only either have a pdate or a date range from the advanced search form
@@ -1119,7 +1165,7 @@ sub __get_date_range
             $end = '*';
         }
         
-        $fq='publishDateTrie:[ ' . $start . ' TO ' . $end . ' ]'; 
+        $fq="$date_trie_facet" . ':[ ' . $start . ' TO ' . $end . ' ]'; 
     }
     
     $q='&fq=' . $fq;
@@ -1150,9 +1196,16 @@ sub __get_facets
     
     my $facetfields = $facet_config->get_facet_order();    
     my $FACET_FIELDS;
+    my $date_type = $self->get_date_type;
     
     foreach my $field (@{$facetfields})
     {
+	#date fix
+	if ($field eq "publishDateRange" && $date_type eq 'both')
+	{
+	    $field = 'bothPublishDateRange';
+	}
+		
         $FACET_FIELDS .='&facet.field=' . $field;
     }
     

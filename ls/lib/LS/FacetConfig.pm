@@ -76,7 +76,8 @@ sub _initialize
     do 
     {
         no strict;
-        $self->__set_facet_order(\@facet_order);
+	$self->__set_date_type($date_type);
+	$self->__set_facet_order(\@facet_order);
         $self->__set_facet_mapping($facet_to_label_map);
         $self->__set_facet_limit($facet_limit);
         $self->__set_facet_initial_show($facet_initial_show);
@@ -289,6 +290,14 @@ sub get_facet_limit
 {
     my $self=shift;
     return $self->{'facet_limit'};
+}
+# ---------------------------------------------------------------------
+sub __set_date_type
+{
+    my $self = shift;
+    my $date_type = shift;
+    
+    $self->{'date_type'} = $date_type;
 }
 
 # ---------------------------------------------------------------------
