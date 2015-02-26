@@ -1089,41 +1089,30 @@
           </div>
         </xsl:if>
 
-	<!-- date in $UseDate depends on date_type set in config  -->
+	<!-- $UseDate populated in ls not in mb so test this to decide what to use for 
+	published date in display  date in $UseDate depends on date_type set in config  -->
 
-        <div class="result-metadata-published">
-          <span class="Date">
-            <xsl:choose>
-              <xsl:when test="$UseDate='0000'">
-                <!-- bad date string from pi goes here-->
-                <xsl:text>Published ----</xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
-                <span class="ItemDateLabel">
-                  <xsl:text>Published </xsl:text>
-                </span>
-                <xsl:value-of select="$UseDate"/>
-              </xsl:otherwise>
-            </xsl:choose>
-          </span>
-	</div>
+	<xsl:choose>
+	  <xsl:when test="normalize-space($UseDate)">
+	            <xsl:call-template name="DisplayPublishDate">
+		      <xsl:with-param name="DisplayDate" select="$UseDate"/>
+		    </xsl:call-template>
+	  </xsl:when>
+	  <xsl:otherwise>
+	    <xsl:call-template name="DisplayPublishDate">
+	      <xsl:with-param name="DisplayDate" select="$Date"/>
+	    </xsl:call-template>
+	  </xsl:otherwise>
+	</xsl:choose>
 
 	<!-- additional information for debug=date -->
 	<xsl:if test="contains($dateDebug,'date')">
 	<div>
           <span class="Date">
-            <xsl:choose>
-              <xsl:when test="$Date='0000'">
-                <!-- bad date string from pi goes here-->
-                <xsl:text>bibdate ----</xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
                 <span class="ItemDateLabel">
                   <xsl:text>bibdate: </xsl:text>
                 </span>
                 <xsl:value-of select="$Date"/>
-              </xsl:otherwise>
-            </xsl:choose>
           </span>
 	</div>
 
@@ -1131,20 +1120,12 @@
 	<xsl:if test="normalize-space($BothDate)">
 	  <div>
 	    <span class="Date">
-	      <xsl:choose>
-		<xsl:when test="$BothDate='0000'">
-		  <!-- bad date string from pi goes here-->
-		  <xsl:text>bothdate ----</xsl:text>
-		</xsl:when>
-		<xsl:otherwise>
 		  <span class="ItemDateLabel">
 		    <xsl:text>bothdate: </xsl:text>
 		  </span>
 		  <strong>
 		    <xsl:value-of select="$BothDate"/>
 		  </strong>
-		</xsl:otherwise>
-	      </xsl:choose>
 	    </span>
 	  </div>
 	</xsl:if>
@@ -1152,18 +1133,10 @@
 	<xsl:if test="normalize-space($EnumDate)">
 	  <div>
 	    <span class="Date">
-	      <xsl:choose>
-		<xsl:when test="$EnumDate='0000'">
-		  <!-- bad date string from pi goes here-->
-		  <xsl:text>enumdate ----</xsl:text>
-		</xsl:when>
-		<xsl:otherwise>
 		  <span class="ItemDateLabel">
 		    <xsl:text>enumdate: </xsl:text>
 		  </span>
 		  <xsl:value-of select="$EnumDate"/>
-		</xsl:otherwise>
-	      </xsl:choose>
 	    </span>
 	  </div>
 	</xsl:if>
@@ -1399,6 +1372,28 @@
     <xsl:value-of select="Title" disable-output-escaping="yes" />
   </xsl:template>
 
+
+
+<xsl:template name="DisplayPublishDate">
+	<xsl:param name="DisplayDate"/>
+	
+        <div class="result-metadata-published">
+          <span class="Date">
+            <xsl:choose>
+              <xsl:when test="$DisplayDate='0000'">
+                <!-- bad date string from pi goes here-->
+                <xsl:text>Published ----</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <span class="ItemDateLabel">
+                  <xsl:text>Published </xsl:text>
+                </span>
+                <xsl:value-of select="$DisplayDate"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </span>
+	</div>
+</xsl:template>
 
 
 </xsl:stylesheet>
