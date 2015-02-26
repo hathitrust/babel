@@ -18,7 +18,7 @@
 
   <!-- list_items/search_results global variables  -->
 
-  <!--XXX foobar date test stuff -->
+  <!-- date debugging info tbw -->
   <xsl:variable name="dateDebug">
           <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
   </xsl:variable>
@@ -1053,7 +1053,7 @@
     <xsl:variable name="Date">
       <xsl:value-of select="Date"/>
     </xsl:variable>
-<!-- enum date stuff XXX -->
+    <!-- enum date stuff for debugging -->
     <xsl:variable name="UseDate">
       <xsl:value-of select="UseDate"/>
     </xsl:variable>
@@ -1064,8 +1064,6 @@
     <xsl:variable name="BothDate">
       <xsl:value-of select="BothDate"/>
     </xsl:variable>
-<!-- enum date stuff XXX -->
-
 
 
     <!--################################## end variables-->
@@ -1091,8 +1089,7 @@
           </div>
         </xsl:if>
 
-	<!-- date in $UseDate depends on date_type set in config or debug
-	debug=enum sets date_type to "both" -->
+	<!-- date in $UseDate depends on date_type set in config  -->
 
         <div class="result-metadata-published">
           <span class="Date">
@@ -1110,6 +1107,8 @@
             </xsl:choose>
           </span>
 	</div>
+
+	<!-- additional information for debug=date -->
 	<xsl:if test="contains($dateDebug,'date')">
 	<div>
           <span class="Date">
@@ -1169,7 +1168,7 @@
 	  </div>
 	</xsl:if>
 	</xsl:if>
-<!--XXX test date stuff-->
+<!--end date debugging stuff-->
 
 
 
