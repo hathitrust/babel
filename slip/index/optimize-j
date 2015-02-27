@@ -260,7 +260,7 @@ sub do_FULL_optimize {
         
         my $now = Utils::Time::iso_Time();
         my $sizes = Scheduler::get_segsizes($C, $run, $shard);
-        my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED' : 'NO') . qq{ at $now};
+        my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED[shard=$shard]' : 'NO') . qq{ at $now};
         Log_optimize($C, $run, $shard, $msg);
     };
     if ($@) {
