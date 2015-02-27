@@ -328,10 +328,11 @@ sub enqueue_from_holdings_delta {
     my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $latest_ready_version);
     my $slice_size = $config->get('holdings_deltas_slice_size');
 
-    my $loading_disabled = (Db::holdings_loading_disabled($C, $dbh) ? 'YES' : 'no');
+    my $loading_disabled = Db::holdings_loading_disabled($C, $dbh);
+    my $disabled = $loading_disabled ? 'YES' : 'no';
     
     if ($holdings_deltas_size > 0) {
-        $s = qq{total size=$holdings_deltas_size in ht_repository.holdings_deltas to add to queue between versions $last_loaded_version and $latest_ready_version loading_disabled=$loading_disabled};
+        $s = qq{total size=$holdings_deltas_size in ht_repository.holdings_deltas to add to queue between versions $last_loaded_version and $latest_ready_version loading_disabled=$disabled};
         __output(qq{$s\n});
         qu_Log_misc($C, $run, $s);
         if ($loading_disabled) {
