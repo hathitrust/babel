@@ -517,7 +517,7 @@ Description
 # ---------------------------------------------------------------------
 sub ___driver_run_report_script {
     my $run = shift;
-    
+
     my $cmd = $ENV{SDRROOT} . qq{/slip/index/report-j -r$run -C};
     my $output = `$cmd 2> $Child_Err_File`;
     if ($?) {
@@ -769,19 +769,15 @@ sub handle_Optimizing {
             $rc |= __control_optimizers($C, $dbh, $run, $_Stage, 'stop');
 
             if ($rc == 0) {
-                my $config = $C->get_object('MdpConfig');
-                my $check_index_supported = $config->get('check_index_supported');
-                if ($check_index_supported) {
-                    unless ($SKIP_CHECKINDEX) {
-                        # Enable checkers to start running from cron
-                        $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
-                        $_Next_Stage = $SLIP_Utils::States::St_Checking;
-                    }
+                unless ($SKIP_CHECKINDEX) {
+                    # Enable checkers to start running from cron
+                    $rc = __control_checkers($C, $dbh, $run, $_Stage, 'start');
+                    $_Next_Stage = $SLIP_Utils::States::St_Checking;
                 }
-
-                # Proceed to next stage.
-                SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
             }
+
+            # Proceed to next stage.
+            SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
         }
     }
 

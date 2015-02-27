@@ -106,7 +106,7 @@ my $COMMITTED = defined($opt_C);
 my $SECTION = $opt_S || 'A'; # optional, report all sections by default
 my $ERRORS = $opt_E; # optional
 
-if (! $RUN) {
+unless ($RUN) {
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     my $s = rep_get_usage();
     __output($s);
@@ -157,7 +157,7 @@ else {
 }
 
 
-if (! $INTERACTIVE) {
+unless ($INTERACTIVE) {
     if ($MESSAGE_BUFFER) {
         print($MESSAGE_BUFFER);
     }

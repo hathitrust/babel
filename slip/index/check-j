@@ -104,7 +104,7 @@ use constant TOMCAT_TRIES_WAIT => 60; # 1.0 minute
 
 my $NOOP = $opt_n; # optional
 my $RUN = $opt_r; # Required
-if (! $RUN) {
+unless ($RUN) {
     my $s = qq{run (-r) parameter missing } . ck_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
@@ -114,7 +114,7 @@ if (! $RUN) {
 }
 
 my $SHARD = $opt_R; # Required
-if (! defined($SHARD)) {
+unless (defined $SHARD) {
     my $s = qq{shard (-R) parameter missing } . ck_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
@@ -124,7 +124,7 @@ if (! defined($SHARD)) {
 }
 
 my $LIMIT_SEGS = $opt_O; # Required
-if (! defined($LIMIT_SEGS)) {
+unless (defined $LIMIT_SEGS) {
     my $s = qq{limit_segs (-O) param missing: } . ck_get_usage();
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
@@ -137,7 +137,7 @@ if (! defined($LIMIT_SEGS)) {
 my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
 my $Lock_File = "/tmp/check-" . $lock_str . "-lock.sem";
 my $Semaphore = new Semaphore($Lock_File);
-if (! $Semaphore) {
+unless ($Semaphore) {
     __output("Could not get semaphore file: $Lock_File\n");
     exit 0;
 }
@@ -175,7 +175,9 @@ if (Db::optimize_shard_is_selected($C, $DBH, $RUN, $SHARD)) {
 }
 
 my $CHECK_INDEX = 0;
-if (Sl_Utils::checkIndex_day($C)) {
+my $check_index_supported = $config->get('check_index_supported');
+
+if ( $check_index_supported && Sl_Utils::checkIndex_day($C) ) {
     $CHECK_INDEX = 1;
 }
 
