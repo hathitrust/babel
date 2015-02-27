@@ -441,9 +441,9 @@ sub __commit_pre_optimize {
         $rc = $SLIP_Utils::States::RC_SOLR_ERROR;
     }
 
-    my $s = qq{[pre-COMMIT]: run=$RUN index_state=$success_str elapsed=$e\n};
+    my $s = qq{[pre-COMMIT]: run=$RUN index_state=$success_str elapsed=$e};
     Log_optimize($C, $RUN, $shard, $s);
-    __output($s);
+    __output("$s\n");
     __non_interactive_err_output($rc, $s);
 
     return $rc;
