@@ -97,7 +97,6 @@ my @allowed_uniqnames =
    'sooty',
    'khage',
    'rwelzenb',
-   'sethip',
    'jjyork',
    'blancoj',
   );
