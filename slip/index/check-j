@@ -186,7 +186,7 @@ if ($check_enabled) {
         my $s =
           "check-j: CHECK shard=$SHARD Lucene checkIndex="
             . ($CHECK_INDEX ? 'YES' : 'no')
-              . ", check for segments == $LIMIT_SEGS"
+              . ", check for segments <= $LIMIT_SEGS"
                 . ($NOOP ? " ---> NOOP" : "") ;
         __output(qq{$s\n});
         Log_check($C, $RUN, $SHARD, $s);
