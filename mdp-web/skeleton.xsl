@@ -177,43 +177,53 @@
 
   <xsl:template name="header-search-form">
     <div class="search-form">
+      <xsl:call-template name="global-search-form" />
+    </div>
+  </xsl:template>
 
-      <form action="/cgi/ls/one" method="GET">
-        <div class="search-tabs">
-          <xsl:call-template name="header-search-tabs" />
-        </div>
-        <fieldset>
-          <label for="q1-input" class="offscreen" >Search</label>
-          <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
-            <xsl:attribute name="value">
-              <xsl:call-template name="header-search-q1-value" />
+  <xsl:template name="global-search-form">
+    <form action="/cgi/ls/one" method="GET">
+      <div class="search-tabs">
+        <xsl:call-template name="header-search-tabs" />
+      </div>
+      <xsl:call-template name="global-search-form-fieldset" />
+      <xsl:call-template name="global-search-form-options" />
+    </form>
+  </xsl:template>
+
+  <xsl:template name="global-search-form-fieldset">
+    <fieldset>
+      <label for="q1-input" class="offscreen" >Search</label>
+      <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
+        <xsl:attribute name="value">
+          <xsl:call-template name="header-search-q1-value" />
+        </xsl:attribute>
+      </input>
+      <div class="search-input-options">
+        <label for="search-input-select" class="offscreen">Search Field List</label>
+        <select id="search-input-select" size="1" class="search-input-select" name="searchtype">
+          <xsl:call-template name="search-input-select-options" />
+        </select>
+      </div>
+      <button class="button"><span class="offscreen">Search</span></button>
+    </fieldset>
+  </xsl:template>
+
+  <xsl:template name="global-search-form-options">
+    <div class="search-extra-options">
+      <ul class="search-links">
+        <li class="search-advanced-link">
+          <a>
+            <xsl:attribute name="href">
+              <xsl:call-template name="GetAdvancedFullTextHref"/>
             </xsl:attribute>
-          </input>
-          <div class="search-input-options">
-            <label for="search-input-select" class="offscreen">Search Field List</label>
-            <select id="search-input-select" size="1" class="search-input-select" name="searchtype">
-              <xsl:call-template name="search-input-select-options" />
-            </select>
-          </div>
-          <button class="button"><span class="offscreen">Search</span></button>
-        </fieldset>
-        <div class="search-extra-options">
-          <ul class="search-links">
-            <li class="search-advanced-link">
-              <a>
-                <xsl:attribute name="href">
-                  <xsl:call-template name="GetAdvancedFullTextHref"/>
-                </xsl:attribute>
-                <xsl:text>Advanced full-text search</xsl:text>
-              </a>
-            </li>
-            <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
-            <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
-          </ul>
-          <xsl:call-template name="header-search-ft-checkbox" />
-        </div>
-      </form>
-
+            <xsl:text>Advanced full-text search</xsl:text>
+          </a>
+        </li>
+        <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
+        <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
+      </ul>
+      <xsl:call-template name="header-search-ft-checkbox" />
     </div>
   </xsl:template>
 
