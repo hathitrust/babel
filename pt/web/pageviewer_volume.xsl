@@ -130,9 +130,9 @@
           <xsl:text> (use access key 5 to view full text / OCR mode)</xsl:text>
         </xsl:if>
       </h2>
+      <xsl:call-template name="toolbar-horizontal" />
       <xsl:call-template name="toolbar-vertical" />
       <div id="scrolling">
-        <xsl:call-template name="toolbar-horizontal" />
         <xsl:call-template name="page-content" />
       </div>
     </div>
@@ -217,10 +217,6 @@
     <div id="toolbar-horizontal" class="toolbar toolbar-horizontal fixed fixed-y" data-margin-top="40">
 
       <div class="options btn-toolbar">
-        <div class="btn-group ">
-          <xsl:call-template name="action-page-navigation" />
-        </div>
-
         <xsl:call-template name="action-go-page" />
 
         <div class="btn-group table-of-contents">
@@ -229,6 +225,9 @@
 
         <xsl:call-template name="action-search-volume" />
 
+        <div class="btn-group ">
+          <xsl:call-template name="action-page-navigation" />
+        </div>
       </div>
 
     </div>

@@ -25,7 +25,7 @@ HT.Viewer.PlainText = {
     start : function() {
         $("body").addClass("view-plaintext"); // needs to correspond to our parameter. MM.
         $.publish("enable.download.page");
-        this.options.seq = this.options.reader.getCurrentSeq();
+        this.options.seq = HT.engines.reader.getCurrentSeq();
         this.bindEvents();
         this.bindScroll();
 
@@ -59,7 +59,7 @@ HT.Viewer.PlainText = {
         })
 
         $.subscribe("action.go.last.plaintext", function(e) {
-            self.gotoPage(self.options.manager.num_pages);
+            self.gotoPage(HT.engines.manager.num_pages);
         })
 
         $.subscribe("action.go.page.plaintext", function(e, seq) {
@@ -286,7 +286,7 @@ HT.Viewer.PlainText = {
                 console.log("NO SEQUENCE?", $page);
                 return;
             }
-            var $div = this.options.manager.get_text({ seq : seq });
+            var $div = HT.engines.manager.get_text({ seq : seq });
 
             $page.append($div);
         } else {
@@ -315,8 +315,8 @@ HT.Viewer.PlainText = {
 
         var fragment = document.createDocumentFragment();
 
-        for(var seq=1; seq <= this.options.manager.num_pages; seq++) {
-            // var meta = this.options.manager.get_page_meta({ seq : seq, width : self.w, orient : self.getPageOrient(seq) });
+        for(var seq=1; seq <= HT.engines.manager.num_pages; seq++) {
+            // var meta = HT.engines.manager.get_page_meta({ seq : seq, width : self.w, orient : self.getPageOrient(seq) });
             var $page = $('<div class="page-item" aria-hidden="true"><div class="page-num">{SEQ}</div>'.replace('{SEQ}', seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
 
@@ -347,7 +347,7 @@ HT.Viewer.PlainText = {
     checkPageStatus: function() {
         var self = this;
         var first = $("#page1").fracs();
-        var last = $("#page" + self.options.manager.num_pages).fracs();
+        var last = $("#page" + HT.engines.manager.num_pages).fracs();
 
         if ( first.visible >= 0.9 ) {
             $.publish("disable.go.first");

@@ -29,15 +29,21 @@ HT.Viewer.Scroll = {
     start : function() {
         $("body").addClass("view-1up"); // needs to correspond to our parameter. MM.
         $.publish("enable.download.page");
-        this.options.seq = this.options.reader.getCurrentSeq();
+        this.options.seq = HT.engines.reader.getCurrentSeq();
         this.bindEvents();
         this.bindScroll();
 
+        this._calculateBestFitZoom();
         if ( this.zoom < 0 ) {
-            // calculate a default zoom
-            this._calculateBestFitZoom();
-            this.reset_zoom = this.zoom;
+            this.zoom = this.reset_zoom;
+        } else {
+            var zoom_idx = this.zoom_levels.indexOf(this.zoom);
+            if ( zoom_idx < 0 ) {
+                // use this zoom
+                this.zoom = this.reset_zoom;
+            }
         }
+        this.w = this.options.default_w * this.zoom;
 
         this.drawPages();
     },
@@ -69,7 +75,7 @@ HT.Viewer.Scroll = {
         })
 
         $.subscribe("action.go.last.scroll", function(e) {
-            self.gotoPage(self.options.manager.num_pages);
+            self.gotoPage(HT.engines.manager.num_pages);
         })
 
         $.subscribe("action.go.page.scroll", function(e, seq) {
@@ -161,6 +167,7 @@ HT.Viewer.Scroll = {
 
         self.drawPages();
         $.publish("update.zoom.size", ( self.zoom ));
+        // $.publish("update.zoom.size", ( Math.ceil(self.zoom * 100) ));
     },
 
     rotateCurrentPage: function(delta) {
@@ -298,9 +305,9 @@ HT.Viewer.Scroll = {
                 console.log("NO SEQUENCE?", $page);
                 return;
             }
-            var $img = this.options.manager.get_image({ seq : seq, width : this.w, orient : this.getPageOrient(seq) });
+            var $img = HT.engines.manager.get_image({ seq : seq, width : this.w, orient : this.getPageOrient(seq) });
 
-            var alt_text = "image of " + this.options.manager.getAltTextForSeq(seq);
+            var alt_text = "image of " + HT.engines.manager.getAltTextForSeq(seq);
             $img.attr('alt', alt_text);
             $page.append($img);
         } else {
@@ -329,8 +336,8 @@ HT.Viewer.Scroll = {
 
         var fragment = document.createDocumentFragment();
 
-        for(var seq=1; seq <= this.options.manager.num_pages; seq++) {
-            var meta = this.options.manager.get_page_meta({ seq : seq, width : self.w, orient : self.getPageOrient(seq) });
+        for(var seq=1; seq <= HT.engines.manager.num_pages; seq++) {
+            var meta = HT.engines.manager.get_page_meta({ seq : seq, width : self.w, orient : self.getPageOrient(seq) });
             var $page = $('<div class="page-item" aria-hidden="true"><div class="page-num">{SEQ}</div>'.replace('{SEQ}', seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
 
@@ -358,6 +365,10 @@ HT.Viewer.Scroll = {
                 self.gotoPage(current);
                 $.publish("view.ready");
             }, 500);
+        } else {
+            setTimeout(function() {
+                $.publish("view.ready");
+            }, 500)
         }
 
         // this.gotoPage(1);
@@ -369,7 +380,7 @@ HT.Viewer.Scroll = {
     checkPageStatus: function() {
         var self = this;
         var first = $("#page1").fracs();
-        var last = $("#page" + self.options.manager.num_pages).fracs();
+        var last = $("#page" + HT.engines.manager.num_pages).fracs();
 
         if ( first.visible >= 0.9 ) {
             $.publish("disable.go.first");
@@ -404,6 +415,7 @@ HT.Viewer.Scroll = {
         var self = this;
         var $content = $("#content");
         var fit_w = $content.width();
+        if ( $("html").is(".mobile") ) { fit_w *= 0.90; console.log("WIDTH =", fit_w);  }
         var best_w = -1; var best_zoom = 0;
         for(var i = 0; i < self.zoom_levels.length; i++) {
             var zoom = self.zoom_levels[i];
@@ -411,14 +423,15 @@ HT.Viewer.Scroll = {
             var check_w = self.options.default_w * zoom * self._getPageMargin();
             if (  check_w > fit_w ) {
                 if ( check_w / fit_w < 1.25 ) {
-                    self.w = Math.ceil(fit_w * 0.98);
-                    self.zoom = zoom;
+                    // self.w = Math.ceil(fit_w * 0.98);
+                    self.reset_zoom = zoom;
                 }
                 break;
             }
-            self.w = self.options.default_w * zoom;
-            self.zoom = zoom;
+            // self.w = self.options.default_w * zoom;
+            self.reset_zoom = zoom;
         }
+
     },
 
     EOT : true

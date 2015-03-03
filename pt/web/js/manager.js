@@ -6,32 +6,39 @@ HT.Manager = {
     init : function(options, callback) {
         this.options = $.extend({}, this.options, options);
         this.data = {};
-        self.page_num_map = {};
-        self.num_seq_map = {};
-        self.seq_num_map = {};
+        this.page_num_map = {};
+        this.num_seq_map = {};
+        this.seq_num_map = {};
 
         return this;
     },
 
     options: {
-
+        zooms: {}
     },
 
     start : function() {
         var self = this;
 
-        this.view = Object.create(self.options.reader.getViewModule()).init({
+        var view = HT.engines.reader.getView();
+        var zoom = -1;
+        if ( this.options.zooms[view] && this.options.zooms[view] != 100 ) {
+            zoom = this.options.zooms[view] / 100;
+        }
+
+        HT.engines.view = Object.create(HT.engines.reader.getViewModule()).init({
             manager : self,
-            reader : self.options.reader
+            reader : HT.engines.reader,
+            zoom : zoom
         });
 
-        if ( ! self.view.options.is_dynamic ) {
-            self.view.start();
+        if ( ! HT.engines.view.options.is_dynamic ) {
+            HT.engines.view.start();
             return;
         }
 
-        var href = this.options.reader.imgsrv.get_action_url("meta", {});
-        $.ajaxSetup({ async : false });
+        var href = HT.engines.imgsrv.get_action_url("meta", {});
+        // $.ajaxSetup({ async : false });
         $.getJSON(href + "callback=?",
             { id : this.options.id, format : 'items', limit : 1000002, method : 'fudged', start : 0, debug : HT.params.debug || ''  },
             function(data) {
@@ -43,7 +50,7 @@ HT.Manager = {
                 // console.log("ready");
                 $.ajaxSetup({ async: true });
                 // callback();
-                self.view.start();
+                HT.engines.view.start();
             },
             'json')
 
@@ -52,17 +59,30 @@ HT.Manager = {
     restart: function() {
         var self = this;
 
-        self.view.end();
-        delete self.view;
+        HT.engines.view.end();
+        delete HT.engines.view;
         // delete this.options.view;
-        self.view = Object.create(self.options.reader.getViewModule()).init({
+        var view = HT.engines.reader.getView();
+        var zoom = self.get_zoom(view);
+        zoom = zoom == 100 ? -1 : zoom / 100; 
+        console.log("RESTARTING", view, zoom);
+        HT.engines.view = Object.create(HT.engines.reader.getViewModule()).init({
             manager : self,
-            reader : self.options.reader
+            reader : HT.engines.reader,
+            zoom : zoom
         });
         setTimeout(function() {
-            self.view.start();
+            HT.engines.view.start();
             $(window).trigger('reset');
         }, 100);
+    },
+
+    update_zoom: function(view, size) {
+        this.options.zooms[view] = size;
+    },
+
+    get_zoom: function(view) {
+        return this.options.zooms[view] || 100;
     },
 
     /* METHODS */
@@ -169,7 +189,7 @@ HT.Manager = {
         var meta = this.get_page_meta(params);
 
         args = { seq : params.seq, id : this.options.id }
-        var src = this.options.reader.imgsrv.get_action_url(params.action || 'ocr', args);
+        var src = HT.engines.imgsrv.get_action_url(params.action || 'ocr', args);
         var is_missing = false;
 
         var p = $.ajax({
@@ -190,9 +210,7 @@ HT.Manager = {
         return $div;
     },
 
-    get_image : function(params) {
-        // params : seq, orient, size
-        var self = this;
+    get_image_src: function(params) {
         var meta = this.get_page_meta(params);
 
         args = { seq : params.seq, id : this.options.id, width : params.width }
@@ -202,7 +220,15 @@ HT.Manager = {
         if ( params.orient ) {
             args.orient = params.orient;
         }
-        var src = this.options.reader.imgsrv.get_action_url(params.action || 'image', args);
+        params.seq = 10;
+        var src = HT.engines.imgsrv.get_action_url(params.action || 'image', args);
+        return src;
+    },
+
+    get_image : function(params) {
+        // params : seq, orient, size
+        var self = this;
+        var src = self.get_image_src(params);
         var is_missing = false;
         // if ( self.has_feature(meta, 'MISSING_PAGE') ) {
         //     console.log("MISSING");

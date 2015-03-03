@@ -1,8 +1,9 @@
+@import "../../../common/web/unicorn/sass/base";
 @import "../vendor/slider/css/slider";
+@import "../vendor/BookBlock/css/bookblock";
 
 #content {
-    margin-top: 24px;
-    margin-top: 2.4rem;
+    @include rem(margin-top, 24);
     margin-bottom: 30px;
     margin-bottom: 3rem;
     padding: 0;
@@ -11,62 +12,79 @@
 .bb-custom-wrapper {
     background: #fff;
 
-    width: 100%;
+    width: 90%;
     height: 550px;
     position: relative;
-    // margin: 40px auto;
-    // margin-bottom: 80px;
 
     margin: 0px auto;
+    @include rem(margin-bottom, 20);
 
-    h3 {
-        color: #aaa;
-        font-size: 12px;
-        line-height: 16px;
-        position: absolute;
-        left: 10px;
-        bottom: -3px;
+    .bb-bookblock {
+        width: 100%;
+        height: 100%;
+        // -webkit-perspective: 2000px;
+        // -moz-perspective: 2000px;
+        // perspective: 2000px;
     }
 
-    nav {
-        width: 120px;
-        margin: 8px 10px 0 0;
-        float: right;
+    .bb-custom-side {
+        width: 50%;
+        float: left;
+        height: 100%;
+        overflow: hidden;
+        /* Centering with flexbox */
+        display: -webkit-box;
+        display: -moz-box;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-direction: row;
+        flex-direction: row;
+        -webkit-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -webkit-box-pack: center;
+        -moz-box-pack: center;
+        -webkit-justify-content: center;
+        justify-content: center;
+        -webkit-box-align: center;
+        -moz-box-align: center;
+        -webkit-align-items: center;
+        align-items: center;
         position: relative;
-        z-index: 0;
-
-        a:hover {
-            opacity: 1;
-        }
-
-        a#bb-nav-prev {
-            background-position: center left;
-            margin-right: 5px;
-        }
-
-        a#bb-nav-next {
-            background-position: -43px 50%;
-        }
-
-        a#bb-nav-jump {
-            background-position: center right;
-            float: right;
-        }
     }
 
 }
 
-.bb-bookblock {
-    box-shadow: 0px 5px 0 rgba(0, 0, 0, 0.1);
+/* No JS */
+.no-js .bb-custom-wrapper {
+    height: auto;
+}
 
-    height: 500px;
-    width: 100%;
-    position: relative;
-    z-index: 100;
-    margin: 0 auto;
+.no-js .bb-custom-content {
+    height: 470px;
+}
+
+.bb-edge { 
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    cursor: default;
+    background: #ddd;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAFCAYAAABirU3bAAAAG0lEQVQIW2O8c+fOTCEhIYZ3794xgGhGKggAAJf0H/UWcK5GAAAAAElFTkSuQmCC); 
+    border-left: 2px solid #666;
+    border-right: 2px solid #666;
+
+    transition-property: left, right;
+    transition-duration: 0.1s;
+}
+
+.bb-bookblock {
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 
     &.flipping {
-        z-index: 500;
+        // z-index: 500;
     }
 
     &.lowered {
@@ -74,125 +92,27 @@
     }
 }
 
-.bb-item {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: none;
-    background: #fff;
-}
-
-.bb-page {
-    width: 50%;
-    height: 100%;
-    left: 50%;
-    position: absolute;
-
-    -webkit-transform-style: preserve-3d;
-    -moz-transform-style: preserve-3d;
-    -o-transform-style: preserve-3d;
-    -ms-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-
-    -webkit-transform-origin: left center;
-    -moz-transform-origin: left center;
-    -o-transform-origin: left center;
-    -ms-transform-origin: left center;
-    transform-origin: left center;
-
-}
-
-.bb-page > div,
-.bb-outer,
-.bb-content {
-    position: absolute;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
-
-.bb-content {
-    background: #fff;
-}
-
-.bb-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-
-.bb-overlay, .bb-outer {
-    -webkit-backface-visibility: hidden;
-    -moz-backface-visibility: hidden;
-    -o-backface-visibility: hidden;
-    -ms-backface-visibility: hidden;
-    backface-visibility: hidden;
-}
-
-.bb-page > div {
-    width: 100%;
-    -webkit-transform-style: preserve-3d;
-    -moz-transform-style: preserve-3d;
-    -o-transform-style: preserve-3d;
-    -ms-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-
-    -webkit-backface-visibility: hidden;
-    -moz-backface-visibility: hidden;
-    -o-backface-visibility: hidden;
-    -ms-backface-visibility: hidden;
-    backface-visibility: hidden;
-}
-
-.bb-back {
-    -webkit-transform: rotateY(-180deg);
-    -moz-transform: rotateY(-180deg);
-    -o-transform: rotateY(-180deg);
-    -ms-transform: rotateY(-180deg);
-    transform: rotateY(-180deg);
-}
-
-.bb-outer {
-    width: 100%;
-    overflow: hidden;
-    z-index: 999;
-}
-
-.bb-overlay,
-.bb-flipoverlay {
-    background-color: rgba(0, 0, 0, 0.7);
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-}
-
-.bb-flipoverlay {
-    background-color: rgba(0, 0, 0, 0.2);
-}
-
-.bb-bookblock > div.bb-page:first-child,
-.bb-bookblock > div.bb-page:first-child .bb-back {
-    -webkit-transform: rotateY(180deg);
-    -moz-transform: rotateY(180deg);
-    -o-transform: rotateY(180deg);
-    -ms-transform: rotateY(180deg);
-    transform: rotateY(180deg);
-}
-
 .view-2up {
 
+    // #scrolling {
+    //     @include rem(margin-top, -35);
+    // }
+
+    .slider {
+        &.slider-horizontal {
+            @include rem(margin-top, -12);
+            z-index: 105;
+            width: 100%;
+        }
+    }
+
     .page-item {
-        // height: 1020px;
-        // min-width: 400px;
-        width: 680px;
-        /*max-width: 680px;*/
-        position: relative;
-        height: 98%;
+        // // height: 1020px;
+        // // min-width: 400px;
+        // width: 680px;
+        // /*max-width: 680px;*/
+        // position: relative;
+        // height: 98%;
 
         overflow: hidden;
         overflow-x: auto;
@@ -202,7 +122,7 @@
         background-position: center;
 
         min-width: inherit;
-        height: 98%;
+        // height: 98%;
 
 
         img {
@@ -212,8 +132,8 @@
 
             visibility: hidden;
 
-            border: 1px solid #d5d3d3;
-            box-shadow: 0 1px 10px rgba(0,0,0,.1);
+            // border: 1px solid #d5d3d3;
+            // box-shadow: 0 1px 10px rgba(0,0,0,.1);
 
         }
 
@@ -226,27 +146,31 @@
 
         &.untypical-page {
             img {
-                border: 4px double #d5d3d3;
-                box-shadow: 0px 5px 10px rgba(0,0,0,.8);
+                border-bottom: 4px double #d5d3d3;
+                // box-shadow: 0px 5px 10px rgba(0,0,0,.8);
             }
         }
 
         button {
             margin: 10px;
-            float: left;
+            position: absolute;
+            @include rem(width, 70);
+            @include rem(margin-left, -35);
+            left: 50%;
+            bottom: 0;
         }
 
     }
 
     .page-left {
-        width: 50%; /*48%;*/
-        float: left;
-        /*margin-right: 2px;*/
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        text-align: right;
+        // width: 50%; /*48%;*/
+        // float: left;
+        // /*margin-right: 2px;*/
+        // position: absolute;
+        // top: 0;
+        // left: 0;
+        // bottom: 0;
+        // text-align: right;
 
         .page-num {
             right: auto;
@@ -255,23 +179,34 @@
         }
 
         img {
-            border-right: 2px solid #ddd;
+            // border-right: 2px solid #ddd;
+            position: absolute;
+            right: 0;
+            top: 0;
         }
+
+        border-right: 2px solid #ddd;
     }
 
     .page-right {
-        width: 50%; /*48%;*/
-        float: left;
-        /*margin-left: 2px;*/
-        position: absolute;
-        top: 0;
-        left: 50%;
-        bottom: 0;
-        text-align: left;
+        // width: 50%; /*48%;*/
+        // float: left;
+        // /*margin-left: 2px;*/
+        // position: absolute;
+        // top: 0;
+        // left: 50%;
+        // bottom: 0;
+        // text-align: left;
 
         .page-num {
             // right: 8px; // --- for off page
             right: 40px;
+        }
+
+        img {
+            position: absolute;
+            left: 0;
+            top: 0;
         }
     }
 
@@ -331,9 +266,4 @@
     width: 100%;
 }
 
-.slider.slider-horizontal {
-    margin-top: 8px;
-    z-index: 105;
-    width: 100%;
-}
 

@@ -44,7 +44,14 @@
     <xsl:if test="$gHTDEV != ''">
       <xsl:text> htdev </xsl:text>
     </xsl:if>
+    <xsl:call-template name="setup-login-status-class" />
     <xsl:call-template name="setup-extra-html-class" />
+  </xsl:template>
+
+  <xsl:template name="setup-login-status-class">
+    <xsl:if test="$gLoggedIn = 'YES'">
+      <xsl:text> logged-in </xsl:text>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="setup-html-attributes">
@@ -150,6 +157,68 @@
 
   <xsl:template name="setup-extra-header-extra" />
 
+  <xsl:template name="header" />
+
+  <xsl:template name="navbar">
+    <div class="navbar navbar-static-top navbar-inverse">
+      <div class="navbar-inner" id="navbar-inner">
+        <h2 class="offscreen">
+          <xsl:text>Navigation links for help, collections</xsl:text>
+          <xsl:if test="$gLoggedIn = 'YES'">, logout</xsl:if>
+        </h2>
+        <ul id="nav" class="nav">
+          <li><a class="home-link" href="http://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
+          <li><a href="http://www.hathitrust.org/about">About</a>
+            <ul>
+              <li><a href="http://www.hathitrust.org/partnership">Our Partnership</a></li>
+              <li><a href="http://www.hathitrust.org/digital_library">Our Digital Library</a></li>
+              <li><a href="http://www.hathitrust.org/htrc">Our Research Center</a></li>
+              <li><a href="http://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+            </ul>
+          </li>
+          <li><a href="/cgi/mb">Collections</a></li>
+          <li class="divider-vertical"></li>
+          <li class="help"><a href="http://www.hathitrust.org/help">Help</a></li>
+          <xsl:call-template name="li-feedback" />
+        </ul>
+        <ul id="person-nav" class="nav pull-right">
+          <xsl:call-template name="nav-search-form" />
+          <xsl:call-template name="navbar-user-links" />
+        </ul>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="navbar-user-links">
+    <xsl:choose>
+      <xsl:when test="$gLoggedIn = 'YES'">
+        <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li>
+        <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
+        <li><a id="logout-link" href="{//Header/LoginLink}">Logout</a></li>
+      </xsl:when>
+      <xsl:otherwise>
+        <li><a id="login-link" class="trigger-login" data-close-target=".modal.login" href="{//Header/LoginLink}">Login</a></li>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="nav-search-form">
+    <li class="search-form">
+      <form class="form-inline relative" action="/cgi/ls/one" method="GET">
+        <xsl:call-template name="global-search-form-fieldset" />
+        <div class="bg">
+            <div class="bg-inner">
+            </div>
+            <div class="search-tabs">
+              <xsl:call-template name="header-search-tabs" />
+            </div>
+            <xsl:call-template name="global-search-form-options" />
+        </div>
+      </form>
+    </li>
+    <li class="divider-vertical"></li>
+  </xsl:template>
+
   <xsl:template name="contents">
     <!-- h2 ? -->
     <xsl:call-template name="pageviewer-contents" />
@@ -168,10 +237,6 @@
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
-
-  <!-- <xsl:template name="pageviewer-footer">
-    <xsl:call-template name="footer" />
-  </xsl:template> -->
 
   <xsl:template name="action-search-volume">
     <h3 class="offscreen">Search in this volume</h3>

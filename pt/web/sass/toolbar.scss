@@ -1,61 +1,29 @@
 @import "../../../common/web/unicorn/sass/base";
 @import "compass/css3/box-shadow";
-
-body {
-    position: relative;
-    @include rem(margin-top, 40);
-    @include rem(padding-bottom, 160);
-}
-
-// .stuck {
-//     margin-left: auto !important;
-//     margin-right: auto !important;
-// }
+@import "compass/css3/opacity";
 
 .container {
-    // margin-left: auto;
-    // margin-right: auto;
 
     &.centered {
         max-width: none;
+        width: 96%;
     }
-
-    // &.page.centered {
-    //     min-width: 1100px;
-    // }
 }
-
-
-// .dummy {
-//     background-color: yellow;
-//     opacity: 0.1;
-// }
 
 .sidebar.fixed-placed {
     border-right: none;
 }
 
-.navbar-static-top {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-}
-
-.navbar-static-bottom {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
 .toolbar-vertical {
-    float: left;
-    width: 40px;
-    margin-top: 0; /*10px;*/
-    /*margin-left: -10px;*/
+    position: fixed;
+    right: 0;
+    top: 46px;
+    width: 48px;
+    // padding: 6px 10px;
+    padding: 0;
     z-index: 500;
+    // margin-right: 18px;
+    background: #F5F5F5; // #FFFEFB;
 
     .btn-group + .btn-group {
         margin-left: 0;
@@ -67,19 +35,28 @@ body {
         .btn.alone {
             border-radius: 4px 4px 4px 4px;
         }
-    }
 
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
 }
 
 .toolbar-horizontal {
-    height: 40px;
-    /*margin-left: 5px;*/
+    position: fixed;
+    top: 40px;
+    right: 50px;
+    padding: 5px 0px;
+    padding-right: 2px;
+
+    height: 48px;
     margin-bottom: -5px;
-    background: #FFFEFB;
+    background: #F5F5F5; // #FFFEFB;
+    // border-bottom: 1px dotted #ddd;
 
-    z-index: 105;
+    z-index: 125;
 
-    @include rem(width, 725);
+    // @include rem(width, 725);
 
     &.locked {
         @include single-box-shadow(rgba(0, 0, 0, 0.2), 2px, 4px, 10px);
@@ -101,11 +78,8 @@ body {
         }
 
         input[type=text] {
-            @include rem(height, 30);
-            @include rem(width, 30);
-            @include rem(margin-right, 2);
+            height: 30px; padding-top: 0; padding-bottom: 0; margin-bottom: 0; width: 30px; margin-right: 2px;
             @include rem(font-size, 12);
-            padding-top: 0; padding-bottom: 0; margin-bottom: 0;
             text-align: center;
         }
 
@@ -119,16 +93,17 @@ body {
     }
 
     #input-search-text {
-        @include rem(width, 100);
+        @include rem(width, 90);
         @include rem(font-size, 12);
         text-align: left;
     }
-
 }
 
 
 .toolbar {
-    z-index: 105;
+    z-index: 200;
+
+    // @include opacity(0.4);
 
     form {
         margin: 0;
@@ -148,12 +123,35 @@ body {
         color: black;
     }
 
-    .btn.square {
-        height: 38px;
-        width: 46px;
-        /*font-size: 18px;*/
-        color: black;
-    }
+    .btn {
+        // background: rgba(232, 232, 232, 0.2);
+        background: #666;
+        color: #eee;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
+        // border-color: #222222 #222222 black;
+        // border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+        border-color: #333;
+
+        [class^="icomoon-"] {
+            color: #eee;
+        }
+
+        &:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        &.active {
+            // background: rgba(232, 232, 232, 1.0); 
+            background: rgba(0,0,0,1.0);
+        }
+
+        &.square {
+            height: 38px;
+            width: 46px;
+            /*font-size: 18px;*/
+            color: black;
+        }
+    }    
 
     .iconz-doc-2, .iconz-doc-text {
         margin-left: -1px;
@@ -164,12 +162,12 @@ body {
         display: inline-block;
         width: 1em;
         font-size: 1.3em;
-    /*margin-right: 0.2em;*/
-    text-align: center;
-    opacity: 0.9;
-    line-height: 1em;
-    color: #333;
-    margin-top: 0.25em;
+        /*margin-right: 0.2em;*/
+        text-align: center;
+        opacity: 0.9;
+        line-height: 1em;
+        color: #333;
+        margin-top: 0.25em;
     }
 
     .icomoon-iconmonstr-magnifier-6-icon, .icomoon-iconmonstr-magnifier-7-icon {
@@ -190,20 +188,24 @@ body {
         font-size: 1.4em;
     }
 
+    // &:hover {
+    //     @include opacity(1.0);
+    // }
+
 }
 
-.sticky #toolbar-vertical {
-    position: fixed;
-    top: 40px;
-}
+// .sticky #toolbar-vertical {
+//     position: fixed;
+//     top: 40px;
+// }
 
-.sticky #toolbar-horizontal {
-    position: fixed;
-    top: 30px;
-    right: 30px;
-    padding-top: 5px;
-    left: 0;
-}
+// .sticky #toolbar-horizontal {
+//     position: fixed;
+//     top: 30px;
+//     right: 30px;
+//     padding-top: 5px;
+//     left: 0;
+// }
 
 .options a, .inner-search a {
     text-decoration: none;
@@ -221,17 +223,6 @@ body {
     display: none;
 }
 
-// .btn.square:hover {
-//     background:green;
-//     .label {
-//         display: inline-block;
-//     }
-// }
-
-#scrolling {
-    @include rem(margin-left, 55);
-}
-
 #content {
     @include rem(padding, 24);
 }
@@ -242,27 +233,6 @@ body {
         overflow-y: auto;
 }
 
-#menu-toggleXXX {
-    display: none;
-    color: $hathitrust-orange-color;
-    text-decoration: none;
-    width: 36px;
-    padding-left: 6px;
-    padding-right: 5px;
-    padding-top: 11px;
-    padding-bottom: 4px;
-    margin-right: -48px;
-
-    &.active {
-        background: #000;
-    }
-
-    i:before {
-        @include rem(font-size, 24);
-        @include rem(line-height, 34);
-    }
-
-}
 
 #navbar-inner {
     position: relative;

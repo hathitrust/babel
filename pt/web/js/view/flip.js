@@ -12,7 +12,7 @@ HT.Viewer.Flip = {
         this.options = $.extend({}, this.options, options);
 
         this.w = -1;
-        this.zoom = -1;
+        this.zoom = this.options.zoom;
         this.zoom_levels = [ 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 3.00, 4.00 ];
 
         this.orient_cache = {};
@@ -24,20 +24,35 @@ HT.Viewer.Flip = {
 
     options: {
         default_w : 680,
-        zoom : 1,
+        zoom : -1,
         is_dynamic: true
     },
 
     start : function() {
         $("body").addClass("view-2up"); // needs to correspond to our parameter. MM.
         $.publish("enable.download.page");
+        $.publish("disable.rotate");
 
-        this.is_rtl = this.options.manager.reading_order == 'right-to-left';
+        this.is_rtl = HT.engines.manager.reading_order == 'right-to-left';
 
-        this.options.seq = this.options.reader.getCurrentSeq();
+        this.options.seq = HT.engines.reader.getCurrentSeq();
+        this._calculateBestFitZoom();
+
+        if ( this.zoom < 0 ) {
+            this.zoom = this.reset_zoom;
+        } else {
+            var zoom_idx = this.zoom_levels.indexOf(this.zoom);
+            if ( zoom_idx < 0 ) {
+                // use this zoom
+                this.zoom = this.reset_zoom;
+            }
+        }
 
         this.bindEvents();
-        this.drawPages();
+
+        // this.w = ( this.options.default_w * this.zoom ) / 2;
+        // this.drawPages();
+        this.updateZoom(0, this.zoom);
     },
 
     end : function() {
@@ -64,11 +79,11 @@ HT.Viewer.Flip = {
         })
 
         $.subscribe("action.go.first.flip", function(e) {
-            self.gotoPage(self.is_rtl ? self.options.manager.num_pages : 1);
+            self.gotoPage(self.is_rtl ? HT.engines.manager.num_pages : 1);
         })
 
         $.subscribe("action.go.last.flip", function(e) {
-            self.gotoPage(self.is_rtl ? 1 : self.options.manager.num_pages);
+            self.gotoPage(self.is_rtl ? 1 : HT.engines.manager.num_pages);
         })
 
         $.subscribe("action.go.page.flip", function(e, seq) {
@@ -96,20 +111,36 @@ HT.Viewer.Flip = {
         })
 
         $.subscribe("action.toggle.fullscreen.flip", function(e) {
-            self.w = -1;
-            self.drawPages();
+            self._calculateBestFitZoom();
+            self.updateZoom(0, self.reset_zoom);
         })
+
+        self.resize_timer = null;
+        var do_rezoom = false;
 
         var _lazyResize = _.debounce(function() {
             if ( self._resizing ) { return ; }
             self._resizing = true;
-            self.w = -1;
-            self.drawPages();
+            // self.updateZoom(0, self.zoom);
+            if ( self.resize_timer === null ) {
+                self.resize_timer = setTimeout(function() {
+                    if ( self.zoom == self.reset_zoom ) {
+                        do_rezoom = true;
+                    }
+                    self._calculateBestFitZoom();
+                    if ( do_rezoom ) {
+                        self.zoom = self.reset_zoom;
+                    }
+                    self.updateZoom(0, self.zoom);
+                    self.reset_timer = null;
+                }, 500);
+            }
             self._resizing = false;
         }, 250);
 
         $.subscribe("action.resize.flip", function(e) {
-            _lazyResize();
+            setTimeout(function() { self.handleResize(); }, 100);
+            // self.handleResize();
         })
 
         // var $e = get_resize_root();
@@ -147,6 +178,24 @@ HT.Viewer.Flip = {
         });
     },
 
+    handleResize: function() {
+        var self = this;
+
+        self._resizing = true;
+        var do_rezoom = false;
+        var last_reset_zoom = self.reset_zoom;
+        if ( self.zoom == self.reset_zoom ) {
+            do_rezoom = true;
+        }
+        self._calculateBestFitZoom();
+        if ( do_rezoom ) {
+            self.zoom = self.reset_zoom;
+        }
+        console.log("FLIP RESIZE", do_rezoom, self.zoom, last_reset_zoom, self.reset_zoom);
+        self.updateZoom(0, self.zoom);
+        self._resizing = false;
+    },
+
     updateZoom: function(delta, zoom) {
         var self = this;
 
@@ -167,7 +216,11 @@ HT.Viewer.Flip = {
         }
 
         self.zoom = self.zoom_levels[new_index];
-        self.w = self.options.default_w * self.zoom;
+        self.target_h = self.reset_target_h * self.zoom;
+
+        console.log("UPDATE ZOOM", self.target_h, self.zoom);
+
+        // self.w = ( self.options.default_w * self.zoom ) / 2;
 
         self.drawPages();
         $.publish("update.zoom.size", ( self.zoom ));
@@ -203,14 +256,14 @@ HT.Viewer.Flip = {
         if ( seq != null ) {
             var page = self._seq2page(seq);
             self.loadPage(page);
-            self.book.jump(page + 1);
+            self.book.bookblock('jump', page + 1);
         } else {
             if ( delta > 0 ) {
-                // self.do_ltr ? self.book.prev() : self.book.next();
-                self.book.next();
+                // self.do_ltr ? self.book.bookblock('prev') : self.book.bookblock('next');
+                self.book.bookblock('next');
             } else {
-                // self.do_ltr ? self.book.next() : self.book.prev();
-                self.book.prev();
+                // self.do_ltr ? self.book.bookblock('next') : self.book.bookblock('prev');
+                self.book.bookblock('prev');
             }
         }
 
@@ -232,9 +285,8 @@ HT.Viewer.Flip = {
                 if ( $page.find('img').size() ) {
                     return;
                 }
-                // console.log("LOADING", seq, self.w, self.h, $page.width());
-                var $img = self.options.manager.get_image({ seq : seq, height: Math.ceil(self.h / 2) });
-                $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
+                var $img = HT.engines.manager.get_image({ seq : seq, height: Math.ceil(self.h) }); // why divide h by 2?
+                $img.attr("alt", "image of " + HT.engines.manager.getAltTextForSeq(seq));
                 $img.appendTo($page);
             }
         })
@@ -267,8 +319,8 @@ HT.Viewer.Flip = {
 
     getCurrentSeq: function() {
 
-        var page = this.book.current;
-        var seq = this._page2seq(page);
+        var status = this.book.data('bookblock').status();
+        var seq = this._page2seq(status.current);
         return seq[0] || seq[1];
 
         // var $current = $(".page-item.current");
@@ -282,59 +334,70 @@ HT.Viewer.Flip = {
         var self = this;
 
         var current = self.is_rtl ? -1 : 0;
-        if ( self.book ) {
-            current = self.book.current ;
+        var status;
+
+        if ( self.book != null ) {
+            status = self.book.data('bookblock').status();
+            current = status.current;
+            self.book.bookblock('destroy');
             delete self.book;
         }
 
         $("#content").empty();
 
-        var fit_w = $("#content").width();
-
-        $("#content").append('<div class="bb-custom-wrapper"><div class="bb-bookblock"></div></div>');
+        var wrapper_html;
+        if ( Modernizr.canvas ) {
+            wrapper_html = '<div class="bb-custom-wrapper"><div class="bb-bookblock"></div><div class="bb-edge"></div></div>';
+        } else {
+            wrapper_html = '<div class="bb-custom-wrapper"><div class="bb-bookblock"></div></div>';
+        }
+        $("#content").append(wrapper_html);
         var $container = $(".bb-bookblock");
         self.$container = $container;
         self.$wrapper = $("#content").find(".bb-custom-wrapper");
 
-        var $target; var target_h = -1;
-        var height_target = $("#content").data('height-target');
-        if ( height_target ) {
-            $target = ( height_target == 'window' ) ? $(window) : $("#" + height_target);
-            target_h = $target.height();
-        } else {
-            target_h = $(window).height() - $(".navbar").height() - $(".toolbar-horizontal").height() - 25;
-        }
-
-        if ( self.w < 0 ) {
-            // cleanup later --- we want a slightly larger initial page if
-            // we have the whole window available to us
-            for(var i = 0; i < self.zoom_levels.length; i++) {
-                var zoom = self.zoom_levels[i];
-                if ( ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) && ( height_target != 'window' ) ) {
-                    break;
-                }
-                self.w = ( self.options.default_w * zoom ) / 2;
-                self.zoom = zoom;
-                self.reset_zoom = zoom;
-                if ( ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) && ( height_target == 'window' ) ) {
-                    break;
-                }
-            }
-        }
-
         // now figure out the best height?
-        var meta = self.options.manager.get_page_meta({seq : 1, width : 680 });
-        self.h = meta.height * self.zoom;
-        var h = self.h / 2;
+        var h;
+        var meta = HT.engines.manager.get_page_meta({seq : 1, width : 680 });
+        self.r = meta.width / meta.height;
+        // self.h = self.w / self.r;
+        // h = self.h; //  / 2;
+
+        var $target = self.$target;
+        var target_h = self.target_h;
+        var margin_w = self.margin_w;
+        var height_target = self.height_target;
+        var r = meta.height / target_h;
+        self.w = ( meta.width / r ) * 1;
+        h = target_h;
+        self.h = h;
+        // self.w = meta.width / r;
+
+        var max_width = (self.w * 2) + self.margin_w;
+        if ( self.height_target == 'window' && max_width > $(window).width() && self.zoom == self.reset_zoom ) {
+            // too big an initial zoom!
+            max_width = $(window).width() - 25;
+        }
 
         if ( self.zoom == self.reset_zoom && target_h > 0 ) {
             if ( h > target_h ) {
+                var msg = [ "REDEFINING", target_h, ":", self.w, "x", self.h ];
+                r = target_h / h;
                 h = target_h;
+                self.h = h;
+                self.w = self.w * r;
+                msg.push("/", self.w, "x", self.h);
+                max_width = (self.w * 2) + margin_w;
+                if ( height_target == 'window' && max_width > $(window).width() && self.zoom == self.reset_zoom ) {
+                   // too big an initial zoom!
+                   max_width = $(window).width() - 25;
+                }
+                // console.log.apply(console, msg);
             }
         }
-        console.log("META: ", meta, self.zoom, h, self.w, self.h);
+        console.log("META: ", meta, self.zoom, self.reset_zoom, r, "/", self.w, self.h, "/", h, target_h);
 
-        self.$wrapper.css({ 'min-width' : self.w + 25 });
+        self.$wrapper.css({ 'width' : max_width  });
 
         self.$wrapper.height(h); // .width(HT.w);
         $container.height(h);
@@ -352,11 +415,11 @@ HT.Viewer.Flip = {
         var page = [];
 
         var start_seq = 1;
-        var end_seq = self.options.manager.num_pages;
+        var end_seq = HT.engines.manager.num_pages;
 
-        if ( self.options.manager.has_feature(1, "FRONT_COVER") || ( self.options.manager.has_feature(1, "COVER") && self.options.manager.has_feature(1, "RIGHT") ) || self.options.manager.has_feature(1, "COVER") || ! self.options.manager.has_features(1) ) {
+        if ( HT.engines.manager.has_feature(1, "FRONT_COVER") || ( HT.engines.manager.has_feature(1, "COVER") && HT.engines.manager.has_feature(1, "RIGHT") ) || HT.engines.manager.has_feature(1, "COVER") || ! HT.engines.manager.has_features(1) ) {
             // first page is a cover
-            if ( self.options.manager.reading_order == 'right-to-left' ) {
+            if ( HT.engines.manager.reading_order == 'right-to-left' ) {
                 pages.push([ 1, null ]);
             } else {
                 pages.push([ null, 1 ]);
@@ -364,8 +427,8 @@ HT.Viewer.Flip = {
             start_seq = 2;
         }
         var last_page;
-        if ( self.options.manager.has_feature(end_seq, "BACK_COVER") || ( self.options.manager.has_feature(1, "COVER") && self.options.manager.has_feature(1, "LEFT") ) ) {
-            if ( self.options.manager.reading_order == 'right-to-left' ) {
+        if ( HT.engines.manager.has_feature(end_seq, "BACK_COVER") || ( HT.engines.manager.has_feature(1, "COVER") && HT.engines.manager.has_feature(1, "LEFT") ) ) {
+            if ( HT.engines.manager.reading_order == 'right-to-left' ) {
                 last_page = [ null, end_seq ];
             } else {
                 last_page = [ end_seq, null ];
@@ -375,10 +438,10 @@ HT.Viewer.Flip = {
 
         for(var seq = start_seq; seq <= end_seq; seq += 2) {
             var next_seq = seq + 1;
-            if ( next_seq > self.options.manager.num_pages ) {
+            if ( next_seq > HT.engines.manager.num_pages ) {
                 next_seq = null;
             }
-            if ( self.options.manager.reading_order == 'right-to-left' ) {
+            if ( HT.engines.manager.reading_order == 'right-to-left' ) {
                 // seq + 1 may not exist?
                 pages.push([ next_seq, seq ]);
             } else {
@@ -390,7 +453,7 @@ HT.Viewer.Flip = {
             pages.push(last_page);
         }
 
-        if ( self.options.manager.reading_order == 'right-to-left' ) {
+        if ( HT.engines.manager.reading_order == 'right-to-left' ) {
             pages.reverse();
         }
 
@@ -402,29 +465,31 @@ HT.Viewer.Flip = {
             var html = '<div class="bb-item" aria-hidden="true">';
             self._page2seq_map[i] = [null, null];
             if ( left_page_seq ) {
-                html += '<div id="page{SEQ}" class="page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
+                // html += '<div id="page{SEQ}" class="page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
+                html += '<div id="page{SEQ}" class="bb-custom-side page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
                 self._seq2page_map[left_page_seq] = i;
                 self._page2seq_map[i][0] = left_page_seq;
             } else {
-                html += '<div class="page-item page-left empty"></div>';
+                html += '<div class="bb-custom-side page-item page-left empty"></div>';
             }
             if ( right_page_seq ) {
-                html += '<div id="page{SEQ}" class="page-item page-right"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, right_page_seq);
+                // html += '<div id="page{SEQ}" class="page-item page-right"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, right_page_seq);
+                html += '<div id="page{SEQ}" class="bb-custom-side page-item page-right"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, right_page_seq);
                 self._seq2page_map[right_page_seq] = i;
                 self._page2seq_map[i][1] = right_page_seq;
                 // if ( ! left_page_seq || left_page_seq > right_page_seq ) {
                 //     self._page2seq_map[i][1] = right_page_seq;
                 // }
             } else {
-                html += '<div class="page-item page-right empty"></div>';
+                html += '<div class="bb-custom-side page-item page-right empty"></div>';
             }
             html += '</div>';
             self._attachPageHTML(html);
 
             $.each([ left_page_seq, right_page_seq ], function() {
                 if ( this ) {
-                    var meta = self.options.manager.get_page_meta({ seq : this });
-                    if ( self.options.manager.has_feature(meta, "UNTYPICAL_PAGE") ) {
+                    var meta = HT.engines.manager.get_page_meta({ seq : this });
+                    if ( HT.engines.manager.has_feature(meta, "UNTYPICAL_PAGE") ) {
                         $("#page" + this).addClass("untypical-page");
                     }
                 }
@@ -433,21 +498,24 @@ HT.Viewer.Flip = {
         })
 
         this.$leafs = $container.find(".bb-item");
+        var max_edge_width = ( ( $("#content").width() - $container.width() ) * 0.85 ) / 2;
 
         this.book = $container.bookblock( {
                     speed               : 600,
                     shadowSides : 0.8,
-                    shadowFlip  : 0.7,
-                    perspective: 1300,
+                    shadowFlip  : 0.4,
+                    // perspective: 1300,
+                    edges: { $edge: $(".bb-edge"), max_edge_width: max_edge_width  },
                     n : pages.length,
+
                     onBeforeFlip : function ( page, isLimit ) {
                         $container.addClass("flipping");
-                        console.log("PRE FLIP:", page, isLimit);
+                        // console.log("PRE FLIP:", page, isLimit);
                         self.$leafs.slice(page,page+1).attr('aria-hidden', 'true');
                         // load images a couple of pages in the future
                     },
-                    onEndFlip : function ( page, isLimit ) {
-                        console.log("FLIPPED:", page, isLimit);
+                    onEndFlip : function ( previous, page, isLimit ) {
+                        // console.log("FLIPPED:", current, previous, page, isLimit, arguments );
                         $container.removeClass("flipping");
                         self.$leafs.slice(page,page+1).attr('aria-hidden', 'false');
                         self.loadPage(page - 1);
@@ -458,6 +526,11 @@ HT.Viewer.Flip = {
                         self.unloadPage(page - 8);
                         self.unloadPage(page + 8);
 
+                    },
+                    onEdgeClick: function( previous, page, isLimit ) {
+                        var seqs = self._page2seq(page);
+                        // console.log("JUMP THROUGH EDGE STATUS: ", previous, page, seqs);
+                        self.gotoPage(seqs[0]);
                     }
                 } );
 
@@ -473,7 +546,7 @@ HT.Viewer.Flip = {
             }
         }
 
-        var last_num = self.options.manager.getPageNumForSeq(end_seq);
+        var last_num = HT.engines.manager.getPageNumForSeq(end_seq);
         if ( ! last_num ) {
             last_num = "n" + end_seq;
         }
@@ -484,9 +557,9 @@ HT.Viewer.Flip = {
         self.loadPage(current - 1);
         // self.loadPage(self._page2seq(current)); self.loadPage(self._page2seq(current) + 1);
 
-        self.book.toggleLayoutSupport();
-        self.book.jump(current + 1);
-        self.book.toggleLayoutSupport();
+        self.book.bookblock('toggleLayoutSupport');
+        self.book.bookblock('jump', current + 1);
+        self.book.bookblock('toggleLayoutSupport');
 
         $(window).scroll();
 
@@ -495,13 +568,14 @@ HT.Viewer.Flip = {
             self.checkPageStatus();
         }, 100);
 
-        $container.on('click', '.page-right img', function() {
-            // self.book.next();
+        $container.on('click', '.page-right', function() { // .page-right img?
+            // self.book.bookblock('next');
             self.gotoPage(null, 1);
-        }).on('click', '.page-left img', function() {
-            // self.book.prev();
+        }).on('click', '.page-left', function() { // .page-left img?
+            // self.book.bookblock('prev');
             self.gotoPage(null, -1);
-        })
+        }).on('swipeleft', function(e) { self.gotoPage(null, 1); })
+          .on('swiperight', function(e) { self.gotoPage(null, -1); })
 
         $.publish("view.ready");
 
@@ -524,7 +598,7 @@ HT.Viewer.Flip = {
                 } else {
                     seq = seq[0];
                 }
-                var num = self.options.manager.getPageNumForSeq(seq);
+                var num = HT.engines.manager.getPageNumForSeq(seq);
                 var text = " / " + last_num;
                 if ( num ) {
                     text = num + text;
@@ -538,7 +612,7 @@ HT.Viewer.Flip = {
         }).on('slideStop', function(ev) {
             var value = ev.value;
             var seq = self._page2seq(value);
-            console.log("JUMPING TO", value, seq);
+            // console.log("JUMPING TO", value, seq);
             self.gotoPage(seq[0]);
         })
     },
@@ -548,14 +622,14 @@ HT.Viewer.Flip = {
     checkPageStatus: function() {
         var self = this;
 
-        var page = self.book.current;
-        if ( page == 0 ) {
+        var status = self.book.data('bookblock').status();
+        if ( status.current == 0 ) {
             $.publish("disable.go.first");
         } else {
             $.publish("enable.go.first");
         }
 
-        if ( self.book.end ) {
+        if ( status.end ) {
             $.publish("disable.go.last");
         } else {
             $.publish("enable.go.last");
@@ -563,10 +637,62 @@ HT.Viewer.Flip = {
 
         // self.$slider.slider('setValue', page);
 
-        var seq = self._page2seq(page);
+        var seq = self._page2seq(status.current);
 
         $.publish("update.go.page", [seq]);
 
+    },
+
+    _calculateBestFitZoom: function() {
+        var self = this;
+
+        var fit_w = $("#content").width();
+        var $window = $(window);
+
+        var $target; var target_h = -1;
+        var height_target = $("#content").data('height-target');
+        var margin_w = 0;
+        if ( height_target ) {
+            $target = ( height_target == 'window' ) ? $(window) : $("#" + height_target);
+            target_h = $target.height() * 0.98;
+        } else {
+
+            // var w = window,
+            //     d = document,
+            //     e = d.documentElement,
+            //     g = d.getElementsByTagName('body')[0],
+            //     x = w.innerWidth || e.clientWidth || g.clientWidth,
+            //     y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+            // y = e.clientHeight || g.clientHeight || w.innerHeight;
+            var y = $(window).height();
+
+            console.log("BEST FIT target_h", y, $(window).height(), $(".navbar").height(), $(".toolbar-horizontal").height());
+            target_h = y - $(".navbar").height() - $(".toolbar-horizontal").height() - 25 - 75;
+            margin_w = 75;
+        }
+       
+        // for(var i = 0; i < self.zoom_levels.length; i++) {
+        //     var zoom = self.zoom_levels[i];
+        //     // if ( 0 && ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) && ( height_target != 'window' ) ) {
+        //     //     break;
+        //     // }
+        //     // self.w = ( self.options.default_w * zoom ) / 2;
+        //     self.reset_zoom = zoom;
+        //     if ( ( self.options.default_w * zoom ) * 2  > ( fit_w * 2 ) && ( 1 || height_target == 'window' ) ) {
+        //         break;
+        //     }
+        // }
+
+        // THIS IS THE BEST FIT ZOOM; THIS BECOMES SIZE=100
+        self.reset_zoom = 1;
+
+        self.$target = $target;
+        self.height_target = height_target;
+        self.target_h = target_h;
+        self.reset_target_h = target_h;
+        self.margin_w = margin_w;
+        console.log("BEST FIT", target_h, margin_w);
     },
 
     _page2seq: function(page) {
@@ -578,7 +704,7 @@ HT.Viewer.Flip = {
     },
 
     _attachPageHTML: function(html) {
-        if ( false && self.options.manager.do_ltr ) {
+        if ( false && HT.engines.manager.do_ltr ) {
             $(html).prependTo(this.$container);
         } else {
             $(html).appendTo(this.$container);
@@ -586,7 +712,7 @@ HT.Viewer.Flip = {
     },
 
     isRTL: function() {
-        return self.options.manager.reading_order == 'right-to-left';
+        return HT.engines.manager.reading_order == 'right-to-left';
     },
 
     EOT : true

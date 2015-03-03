@@ -97,7 +97,7 @@
     <div id="mdpItemBar">
       <div id="ItemBarContainer">
         <!-- Back to Search Results -->
-        <xsl:if test="normalize-space(//SearchForm/SearchResultsLink)">
+        <xsl:if test="normalize-space(//SearchForm/SearchResultsLink) or normalize-space(//InItemResultsLink)">
           <xsl:call-template name="BuildBackToResultsLink" />
         </xsl:if>
 
@@ -819,18 +819,18 @@
 
   <!-- UNICORN: SIDEBAR -->
   <xsl:template name="sidebar">
-    <div id="sidebar" class="sidebar sidebarish fixed fixed-y" data-margin-top="40">
-      <xsl:if test="normalize-space(//SearchForm/SearchResultsLink)">
+    <div id="sidebar" class="sidebar" data-margin-top="40">
+      <div class="sidebar-wrap">
         <xsl:call-template name="BuildBackToResultsLink" />
-      </xsl:if>
-      <xsl:call-template name="list-surveys" />
-      <xsl:call-template name="sidebar-about-this-book" />
-      <div class="scrollable">
-        <div class="content">
-          <xsl:call-template name="get-this-book" />
-          <xsl:call-template name="collect-this-book" />
-          <xsl:call-template name="share-this-book" />
-          <xsl:call-template name="versionLabel" />
+        <xsl:call-template name="list-surveys" />
+        <xsl:call-template name="sidebar-about-this-book" />
+        <div class="scrollable">
+          <div class="content">
+            <xsl:call-template name="get-this-book" />
+            <xsl:call-template name="collect-this-book" />
+            <xsl:call-template name="share-this-book" />
+            <xsl:call-template name="versionLabel" />
+          </div>
         </div>
       </div>
     </div>
@@ -1260,18 +1260,37 @@
   </xsl:template>
 
   <xsl:template name="BuildBackToResultsLink">
-    <div id="mdpBackToResults">
-      <xsl:element name="a">
-        <xsl:attribute name="href">
-          <xsl:value-of select="//SearchForm/SearchResultsLink" />
-        </xsl:attribute>
-        <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-        <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-        <xsl:attribute name="data-tracking-action">PT Back to Search Results</xsl:attribute>
-        <xsl:text>&#171; Back to </xsl:text>
-        <xsl:apply-templates select="//SearchForm/SearchResultsLabel" mode="copy" />
-      </xsl:element>
-    </div>
+    <xsl:variable name="search-results-link" select="normalize-space(//SearchForm/SearchResultsLink)" />
+    <xsl:variable name="in-item-results-link" select="normalize-space(//InItemResultsLink)" />
+    <xsl:if test="$search-results-link or $in-item-results-link">
+      <div id="mdpBackToResults">
+        <xsl:if test="normalize-space($in-item-results-link)">
+          <p>
+            <a href="{$in-item-results-link}">
+              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Back to In Item Results</xsl:attribute>
+              <xsl:text>&#171; Back to "In this Item" results</xsl:text>
+            </a>
+          </p>
+        </xsl:if>
+
+        <xsl:if test="$search-results-link">
+          <p>
+            <xsl:element name="a">
+              <xsl:attribute name="href">
+                <xsl:value-of select="$search-results-link" />
+              </xsl:attribute>
+              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Back to Search Results</xsl:attribute>
+              <xsl:text>&#171; Back to </xsl:text>
+              <xsl:apply-templates select="//SearchForm/SearchResultsLabel" mode="copy" />
+            </xsl:element>
+          </p>
+        </xsl:if>
+      </div>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="SearchResultsLabel" mode="copy">

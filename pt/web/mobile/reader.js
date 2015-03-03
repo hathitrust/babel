@@ -6,9 +6,9 @@ var $body = $("body");
 HT.Reader = {
     init: function(options) {
         this.options = $.extend({}, this.options, options);
-        // this.view = this._getView(); 
+        // this.view = this._getView();
         this.id = this.options.params.id;
-        this.imgsrv = Object.create(HT.ImgSrv).init({ 
+        HT.engines.imgsrv = Object.create(HT.ImgSrv).init({
             base : window.location.pathname.replace("/pt", "/imgsrv")
         });
         this._tracking = false;
@@ -32,7 +32,7 @@ HT.Reader = {
         if ( view == null ) {
             view = this._calculateOptimalView();
         }
-        
+
         this.options.params.view = view;
 
         return this;
@@ -53,13 +53,13 @@ HT.Reader = {
         this._handleView(this.getView(), 'start');
 
         this.bindEvents();
-        this.manager = Object.create(HT.Manager).init({
+        HT.engines.manager = Object.create(HT.Manager).init({
             reader : self,
             id : self.id,
             seq : self.options.params.seq
         })
 
-        this.manager.start();
+        HT.engines.manager.start();
     },
 
     updateView: function(view) {
@@ -80,7 +80,7 @@ HT.Reader = {
         if ( this.$slider && this.$slider.length ) {
             this.$slider.parents('.slider').remove();
         }
-        this.manager.restart();
+        HT.engines.manager.restart();
     },
 
     bindEvents: function() {
@@ -106,10 +106,10 @@ HT.Reader = {
         //     return;
         // }
 
-        
+
         $("#action-view-toggle").click(function(e) {
             e.preventDefault();
-            var $button = $(this);            
+            var $button = $(this);
             if ( self.getView() == 'plaintext' ) {
                 // plaintext -> image
                 $button.removeClass("action-view-image").find(".label").text("Plain Text");
@@ -176,7 +176,7 @@ HT.Reader = {
             if ( ! value ) { return ; }
             if ( value.match(/^\d+/) ) {
                 // look up num -> seq in manager
-                seq = self.manager.getSeqForPageNum(value);
+                seq = HT.engines.manager.getSeqForPageNum(value);
                 if ( ! seq ) {
                     // just punt
                     seq = value;
@@ -196,7 +196,7 @@ HT.Reader = {
                 // other interface elements
                 seq = seq[0] != null ? seq[0] : seq[1];
             }
-            var value = self.manager.getPageNumForSeq(seq);
+            var value = HT.engines.manager.getPageNumForSeq(seq);
             if ( ! value ) {
                 // value = "n" + seq;
                 // don't display this for the end user
@@ -205,7 +205,7 @@ HT.Reader = {
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq, orig);
             if ( self.$slider ) {
-                self.$slider.slider('setValue', self.getView() == '2up' ? self.manager.view._seq2page(seq) : seq);
+                self.$slider.slider('setValue', self.getView() == '2up' ? HT.engines.view._seq2page(seq) : seq);
             }
         })
 
@@ -367,22 +367,23 @@ HT.Reader = {
     buildSlider: function() {
         var self = this;
         var $nob = $('<input type="text" class="nob" value="1" />').appendTo($(".slider-park"));
-        var manager = self.manager;
+        var manager = HT.engines.manager;
+        var view = HT.engines.view;
         var last_seq = manager.getLastSeq();
         var last_num = manager.getPageNumForSeq(last_seq);
         var current = self.getCurrentSeq();
         var this_view = self.getView();
-        if ( this_view == '2up ') { current = manager.view._seq2page(current); }
+        if ( this_view == '2up ') { current = view._seq2page(current); }
         self.$slider = $nob.slider({
             min : 0,
-            max : this_view == '2up' ? manager.view.pages.length - 1 : last_seq - 1,
+            max : this_view == '2up' ? view.pages.length - 1 : last_seq - 1,
             value : current,
             selection : 'none',
             tooltip : 'show',
             orientation: 'right',
             formater : function(seq) {
                 if ( this_view == '2up' ) {
-                    seq = manager.view._page2seq(seq);
+                    seq = view._page2seq(seq);
                     if ( seq[0] == null ) {
                         seq = seq[1];
                     } else {
@@ -403,7 +404,7 @@ HT.Reader = {
         }).on('slideStop', function(ev) {
             var seq = ev.value;
             if ( this_view == '2up' ) {
-                seq = manager.view._page2seq(seq);
+                seq = view._page2seq(seq);
                 if ( seq[0] !== null ) {
                     seq = seq[0];
                 } else {
@@ -413,7 +414,7 @@ HT.Reader = {
             console.log("JUMPING TO", seq);
             $.publish("action.go.page", (seq));
         })
-    },    
+    },
 
     _updateState: function(params) {
         var new_href = window.location.pathname;
@@ -610,7 +611,7 @@ head.ready(function() {
         var $page = $("#main");
         if ( $page.is(":visible") ) {
             // activate search form
-            HT.reader._last_seq = HT.reader.getCurrentSeq();
+            HT.engines.reader._last_seq = HT.engines.reader.getCurrentSeq();
             $page.hide();
             $toc.show();
             window.scrollTo(0,0);
@@ -620,7 +621,7 @@ head.ready(function() {
             // active page
             $toc.hide();
             $page.show();
-            $.publish("action.go.page", (HT.reader._last_seq));
+            $.publish("action.go.page", (HT.engines.reader._last_seq));
             $("#toolbar-header").removeClass("cbp-spmenu-open do-search-inside");
             $("#toolbar-footer").show();
         }
@@ -632,7 +633,7 @@ head.ready(function() {
         var $page = $("#main");
         if ( $page.is(":visible") ) {
             // activate search form
-            HT.reader._last_seq = HT.reader.getCurrentSeq();
+            HT.engines.reader._last_seq = HT.engines.reader.getCurrentSeq();
             $page.hide();
             $form.show();
             window.scrollTo(0,0);
@@ -642,7 +643,7 @@ head.ready(function() {
             // active page
             $form.hide();
             $page.show();
-            $.publish("action.go.page", (HT.reader._last_seq));
+            $.publish("action.go.page", (HT.engines.reader._last_seq));
             $("#toolbar-header").removeClass("cbp-spmenu-open do-search-inside");
             $("#toolbar-footer").show();
         }
@@ -680,14 +681,14 @@ head.ready(function() {
         var start = 1;
 
         // construct search URL
-        HT.reader.base_search_url = window.location.pathname + "/search?id=" + HT.params.id + ";q1=" + $form.find("input[type=text]").val();
-        HT.reader.base_search_url += ";sz=25;skin=mobile;start=";
-        HT.reader.search_start = 1;
+        HT.engines.reader.base_search_url = window.location.pathname + "/search?id=" + HT.params.id + ";q1=" + $form.find("input[type=text]").val();
+        HT.engines.reader.base_search_url += ";sz=25;skin=mobile;start=";
+        HT.engines.reader.search_start = 1;
 
         $results.empty();
 
         $.ajax({
-            url : HT.reader.base_search_url + HT.reader.search_start,
+            url : HT.engines.reader.base_search_url + HT.engines.reader.search_start,
             cache : true,
             success : function(data) {
                 if ( ! data ) {
@@ -695,7 +696,7 @@ head.ready(function() {
                 } else {
                     var $data = $(data);
                     var total = $data.find("#mdpResultsContainer").data("total");
-                    HT.reader.search_total = total;
+                    HT.engines.reader.search_total = total;
                     $status.empty();
                     $data.find(".mdpSearchSummary").appendTo($status);
                     $data.find("#mdpOuterList > li").each(function() {
@@ -716,9 +717,9 @@ head.ready(function() {
         e.preventDefault();
         var $button = $(this).addClass("btn-loading");
         var $results = $("#search-page .search-results");
-        HT.reader.search_start += 25;
+        HT.engines.reader.search_start += 25;
         $.ajax({
-            url : HT.reader.base_search_url + HT.reader.search_start,
+            url : HT.engines.reader.base_search_url + HT.engines.reader.search_start,
             cache : true,
             success : function(data) {
                 if ( ! data ) {
@@ -736,7 +737,7 @@ head.ready(function() {
                     }
                 }
             }
-        })        
+        })
     })
 
     if ( ! $("body").is(".view-restricted") ) {
@@ -745,8 +746,9 @@ head.ready(function() {
         }, 500);
     } else {
         HT = HT || {};
-        HT.reader = {};
-        HT.reader.params = HT.params;
+        HT.engines = {};
+        HT.engines.reader = {};
+        HT.engines.reader.params = HT.params;
     }
 
     setTimeout(function() {

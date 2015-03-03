@@ -8,9 +8,11 @@ HT.Viewer.Thumbnail = {
     init : function(options) {
         var self = this;
         this.options = $.extend({}, this.options, options);
-        this.w = -1; // this.options.default_w;
-        // this.id = HT.generate_id();
-        // console.log("THUMB:", this.id);
+        this.inited = false;
+        this.zoom = this.options.zoom;
+        this.zoom_levels = [ 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 3.00, 4.00 ];
+
+        this.w = -1;
 
         return this;
     },
@@ -19,18 +21,38 @@ HT.Viewer.Thumbnail = {
         default_w : 150,
         min_w : 75,
         max_w : 250,
+        zoom: -1,
         is_dynamic: true
     },
 
     start : function() {
-        $body.addClass("view-thumb");
-        // this.options.seq = this.options.reader.getCurrentSeq();
+        this.inited = false;
+        $("body").addClass("view-thumb");
         this.bindEvents();
         this.bindScroll();
-        this.calculate();
-        this.drawPages();
+        this._calculateAverages();
+        this._calculateBestFitZoom();
+
+        var factor = 1;
+
+        if ( this.zoom > 0 ) {
+            console.log("INIT THUMBNAIL WITH ZOOM", this.zoom, this.options.default_w * this.zoom, this.options.min_w, this.options.max_w);
+            var zoom_idx = this.zoom_levels.indexOf(this.zoom);
+            if ( zoom_idx < 0 || 
+                 this.options.default_w * this.zoom > this.options.max_w || 
+                 this.options.default_w * this.zoom < this.options.min_w ) {
+                // not a valid zoom
+                this.zoom = this.reset_zoom;
+            }
+        } else {
+            this.zoom = this.reset_zoom;
+        }
+
+        this.updateZoom(0, this.zoom);
+        // this.drawPages();
         $.publish("disable.rotate");
         $.publish("disable.download.page");
+        this.inited = true;
     },
 
     end : function() {
@@ -38,42 +60,32 @@ HT.Viewer.Thumbnail = {
         $.unsubscribe(".thumb");
         $.publish("view.end");
         $("#content").empty();
-        // $(window).unbind("scroll.viewer.thumb");
-        // $(window).unbind("resize.thumb");
         $(window).unbind(".thumb");
         $("body").unbind(".thumb");
         $(window).scrollTop(0);
-        $body.removeClass("view-thumb");
+        $("body").removeClass("view-thumb");
         console.log("UNBOUND THUMBNAIL");
     },
 
     bindEvents: function() {
         var self = this;
 
+        var $body = $("body");
+
         $.subscribe("action.go.first.thumb", function(e) {
-            $("html,body").animate({ scrollTop : 0 });
+            self.gotoPage(1);
         })
 
         $.subscribe("action.go.last.thumb", function(e) {
-            $("html,body").animate({ scrollTop : $("body").height() - $(window).height() });
+            self.gotoPage(HT.engines.manager.getLastSeq());
         })
 
         $.subscribe("action.go.next.thumb", function(e) {
-            var $body = $("body");
-            var $window = $(window);
-
-            var step = $window.height() / 3;
-            $("html,body").animate({ scrollTop : $body.scrollTop() + step });
+            self.gotoPage(null, -1);
         })
 
         $.subscribe("action.go.prev.thumb", function(e) {
-
-            var $body = $("body");
-            var $window = $(window);
-
-            var step = $window.height() / 3;
-            $("html,body").animate({ scrollTop : $body.scrollTop() - step });
-
+            self.gotoPage(null, 1);
         })
 
         $.subscribe("action.go.page.thumb", function(e, seq) {
@@ -81,11 +93,13 @@ HT.Viewer.Thumbnail = {
         })
 
         $.subscribe("action.zoom.in.thumb", function(e) {
-            self.updateZoom(1.25);
+            // self.updateZoom(1.25);
+            self.updateZoom(1);
         })
 
         $.subscribe("action.zoom.out.thumb", function(e) {
-            self.updateZoom(0.8);
+            // self.updateZoom(0.8);
+            self.updateZoom(-1);
         })
 
         $body.on('click.thumb', '.page-link', function(e) {
@@ -130,7 +144,9 @@ HT.Viewer.Thumbnail = {
         // }
 
         var _lazyResize = _.debounce(function() {
+            if ( ! self.inited ) { return ; }
             if ( self._resizing ) { return ; }
+            console.log("THUMBNAIL RESIZE EVENT", self.inited);
             self._resizing = true;
             self.w = -1;
             self.drawPages();
@@ -142,10 +158,38 @@ HT.Viewer.Thumbnail = {
 
     },
 
-    updateZoom: function(factor) {
+    updateZoom: function(delta, zoom) {
+        var self = this;
+        var current_index = self.zoom_levels.indexOf(self.zoom);
+        if ( delta == 0 ) {
+            delta = self.zoom_levels.indexOf(zoom) - current_index;
+        }
+        var new_index = current_index + delta;
+        if ( new_index + delta < 0 || self.default_w * self.zoom_levels[new_index + delta] < self.options.min_w ) {
+            $.publish("disable.zoom.out");
+        } else {
+            $.publish("enable.zoom.out");
+        }
+        if ( new_index + delta >= self.zoom_levels.length || self.default_w * self.zoom_levels[new_index + delta] > self.options.max_w ) {
+            $.publish("disable.zoom.in");
+        } else {
+            $.publish("enable.zoom.in");
+        }
+
+        self.zoom = self.zoom_levels[new_index];
+        self.w = ( self.default_w * self.zoom );
+
+        self.drawPages();
+        $.publish("update.zoom.size", ( self.zoom ));
+
+    },
+
+    updateZoom_XX: function(factor) {
         var self = this;
 
         self.w = self.w * factor;
+        self.zoom = self.zoom * factor;
+
         if ( self.w * factor > self.options.max_w ) {
             $.publish("disable.zoom.in");
         } else {
@@ -158,13 +202,15 @@ HT.Viewer.Thumbnail = {
             $.publish("enable.zoom.out");
         }
         self.drawPages();
-        $.publish("update.zoom.size", ( "~" + HT.params.size ));
+        $.publish("update.zoom.size", ( self.zoom ));
     },
 
     bindScroll: function() {
         var self = this;
 
         var lazyLayout = _.debounce(function() {
+
+            console.log("REPAINTING THUMBNIAL");
 
             var t0 = Date.now();
 
@@ -211,7 +257,19 @@ HT.Viewer.Thumbnail = {
 
     },
 
-    gotoPage: function(seq) {
+    gotoPage: function(seq, delta) {
+        var $page;
+        if ( seq == null ) {
+            var $visibles = $(".page-item:in-viewport");
+            $page = $visibles.slice(delta);
+            seq = $page.data('seq');
+            if ( delta < 0 ) { seq -= 1 ; }
+            else { seq += 1 ; }
+        }
+
+        if ( seq < 1 ) { seq = 1 ; }
+        else if ( seq > HT.engines.manager.getLastSeq() ) { seq = HT.engines.manager.getLastSeq(); }
+
         var $page = $("#page" + seq);
         if ( ! $page.length ) { return ; }
         $('html,body').animate({
@@ -261,8 +319,8 @@ HT.Viewer.Thumbnail = {
                     var seq = $page.data('seq');
                     var $a = $page.find("a.page-link");
                     var h = $page.data('h');
-                    var $img = self.options.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
-                    $img.attr("alt", "image of " + self.options.manager.getAltTextForSeq(seq));
+                    var $img = HT.engines.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
+                    $img.attr("alt", "image of " + HT.engines.manager.getAltTextForSeq(seq));
                     $a.append($img);
                 } else {
                     $page.removeClass("checking");
@@ -275,12 +333,12 @@ HT.Viewer.Thumbnail = {
 
     },
 
-    calculate: function() {
+    _calculateAverages: function() {
         var self = this;
         // find an average h for scaling
         var tmp = {};
-        for(var seq=1; seq <= self.options.manager.num_pages; seq++) {
-            var meta = self.options.manager.get_page_meta({ seq : seq, width : 680 });
+        for(var seq=1; seq <= HT.engines.manager.num_pages; seq++) {
+            var meta = HT.engines.manager.get_page_meta({ seq : seq, width : 680 });
             tmp[meta.height] = ( tmp[meta.height] || 0 ) + 1;
         }
         var n = -1; var idx;
@@ -302,38 +360,14 @@ HT.Viewer.Thumbnail = {
         // self.$container = $("#content");
         self.$container = $('<div class="thumbnails"></div>');
 
-        var total_w = $("#content").width();
-        // really, how many thumbnails can we fit at self.w?
-
-        if ( self.w < 0 ) {
-            // find a size that fits 4 thumbnails across?
-
-            var w = self.options.min_w;
-            var best_w = w;
-            var factor = 1.25;
-
-            while ( w * 4 < total_w ) {
-                best_w = w;
-                w *= factor;
-            }
-
-            if ( best_w > self.options.max_w ) {
-                best_w = self.options.max_w;
-            }
-
-            self.w = best_w;
-
-        }
-
-
-        if ( self.options.manager.reading_order == 'right-to-left' ) {
+        if ( HT.engines.manager.reading_order == 'right-to-left' ) {
             self.$container.addClass("rtl");
         }
 
         var fragment = document.createDocumentFragment();
 
-        for(var seq=1; seq <= self.options.manager.num_pages; seq++) {
-            var meta = self.options.manager.get_page_meta({ seq : seq, width : 680 });
+        for(var seq=1; seq <= HT.engines.manager.num_pages; seq++) {
+            var meta = HT.engines.manager.get_page_meta({ seq : seq, width : 680 });
 
             var r = self.w / meta.width;
             // var h = meta.height * r;
@@ -355,7 +389,7 @@ HT.Viewer.Thumbnail = {
         self.$container.show();
 
         $(window).scroll();
-        var current = self.options.reader.getCurrentSeq();
+        var current = HT.engines.reader.getCurrentSeq();
         if ( current && current > 1 ) {
             self.gotoPage(current);
         }
@@ -370,7 +404,7 @@ HT.Viewer.Thumbnail = {
         var self = this;
 
         var first = $("#page1").fracs();
-        var last = $("#page" + self.options.manager.num_pages).fracs();
+        var last = $("#page" + HT.engines.manager.num_pages).fracs();
 
         if ( first.visible >= 0.9 ) {
             $.publish("disable.go.first");
@@ -395,6 +429,29 @@ HT.Viewer.Thumbnail = {
             }
         }
 
+    },
+
+    _calculateBestFitZoom: function() {
+        var self = this;
+
+        var total_w = $("#content").width();
+        var w = self.options.min_w;
+        var best_w = w;
+        var zoom = 1;
+        var factor = 1.25;
+
+        while ( w * 4 < total_w ) {
+            best_w = w;
+            w *= factor;
+            zoom *= factor;
+        }
+
+        if ( best_w > self.options.max_w ) {
+            best_w = self.options.max_w;
+        }
+
+        self.default_w = best_w;
+        self.reset_zoom = 1;
     },
 
     EOT : true

@@ -69,18 +69,18 @@ if (!Date.now) {
 }
 
 var get_resize_root = function() {
-  if ( window.$window === undefined ) {
-    window.$window = $(window);
+  if ( window.$resize_root === undefined ) {
+    window.$resize_root = $(window);
 
     // bind the resize for IE8
     if ( $.browser.msie ) {
       if ( parseInt($.browser.version) <= 8 ) {
-        $window = $("body");
+        window.$resize_root = $("body");
         console.log("REDEFINING $window");
       }
     }
   }
-  return window.$window;
+  return window.$resize_root;
 }
 
 head.ready(function() {

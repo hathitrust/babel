@@ -4,12 +4,28 @@
     border-left: 2px solid #ccc;
 }
 
+.container {
+    width: 100% !important;
+}
+
 i.icomoon-reorder:before {
     content:"=";
     font-family: monospace;
     font-weight: bold;
 }
 
+.bb-custom-wrapper .bb-custom-side {
+    width: 48% !important;
+}
+
 .page-item, .page-item img, .page-item a {
     box-sizing: content-box !important;
+}
+
+#sidebar {
+    margin-top: 0;
+}
+
+.sidebar-wrap {
+    margin-top: 0;
 }

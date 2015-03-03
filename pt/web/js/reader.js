@@ -8,7 +8,7 @@ HT.Reader = {
         this.options = $.extend({}, this.options, options);
         // this.view = this._getView(); 
         this.id = this.options.params.id;
-        this.imgsrv = Object.create(HT.ImgSrv).init({ 
+        HT.engines.imgsrv = Object.create(HT.ImgSrv).init({ 
             base : window.location.pathname.replace("/pt", "/imgsrv")
         });
         this._tracking = false;
@@ -22,23 +22,28 @@ HT.Reader = {
     start : function() {
         var self = this;
         this._handleView(this.getView(), 'start');
-
         this.bindEvents();
-        this.manager = Object.create(HT.Manager).init({
+
+        var zooms = {};
+        if ( HT.params.size && HT.params.size != "100" ) {
+            var size = parseInt(HT.params.size);
+            zooms[this.getView()] = size;
+        }
+
+        HT.engines.manager = Object.create(HT.Manager).init({
             id : self.id,
-            seq : self.options.params.seq
+            seq : self.options.params.seq,
+            zooms : zooms
         })
 
-        // passing reader in the init seemed to clone reader
-        this.manager.options.reader = this;
-
-        this.manager.start();
+        HT.engines.manager.start();
 
         if ( this.options.params.ui == 'fullscreen' ) {
             var $btn = $("#action-toggle-fullscreen");
             if ( ! $btn.is(":disabled") ) {
                 setTimeout(function() {
-                    self._toggleFullScreen($btn);
+                    // self._toggleFullScreen($btn);
+                    self._manageFullScreen(true);
                 }, 250);
             }
         }
@@ -64,7 +69,7 @@ HT.Reader = {
         this._handleView(view, 'start');
         this._updateViews(view);
         this.setView(view);
-        this.manager.restart();
+        HT.engines.manager.restart();
     },
 
     bindEvents: function() {
@@ -80,7 +85,12 @@ HT.Reader = {
 
         // dyanmic in every view
 
+        var $btn_fullScreen = $("#action-toggle-fullscreen");
         this._bindAction("toggle.fullscreen", this._toggleFullScreen);
+        $(window).bind('fullscreen-toggle', function(e, state) { self._manageFullScreen(state); })
+                 .bind('fullscreen-on',     function(e)        { self._manageFullScreen(true)  })
+                 .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
+                 .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
 
         // don't bind dynamic controls for the static views
         if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
@@ -139,7 +149,7 @@ HT.Reader = {
             if ( ! value ) { return ; }
             if ( value.match(/^\d+/) ) {
                 // look up num -> seq in manager
-                seq = self.manager.getSeqForPageNum(value);
+                seq = HT.engines.manager.getSeqForPageNum(value);
                 if ( ! seq ) {
                     // just punt
                     seq = value;
@@ -159,7 +169,7 @@ HT.Reader = {
                 // other interface elements
                 seq = seq[0] != null ? seq[0] : seq[1];
             }
-            var value = self.manager.getPageNumForSeq(seq);
+            var value = HT.engines.manager.getPageNumForSeq(seq);
             if ( ! value ) {
                 // value = "n" + seq;
                 // don't display this for the end user
@@ -167,13 +177,16 @@ HT.Reader = {
             }
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq, orig);
-            if ( self.$slider ) {
-                self.$slider.slider('setValue', self.getView() == '2up' ? self.manager.view._seq2page(seq) : seq);
+            if ( self.$slider && HT.engines.view ) {
+                self.$slider.slider('setValue', self.getView() == '2up' ? HT.engines.view._seq2page(seq) : seq);
             }
         })
 
-        $.subscribe("update.zoom.size", function(e, size) {
+        $.subscribe("update.zoom.size", function(e, zoom) {
+            if ( self._animating ) { return ; }
+            var size = Math.ceil(zoom * 100);
             HT.params.size = size;
+            HT.engines.manager.update_zoom(self.getView(), size);
         })
 
         $.subscribe("update.rotate.orient", function(e, orient) {
@@ -193,6 +206,8 @@ HT.Reader = {
                     self.buildSlider();
                 }, 250);
             }
+            // and center the display
+            self._centerContentDisplay();
             $(window).trigger('reset');
         });
 
@@ -217,32 +232,14 @@ HT.Reader = {
             $.publish("enable.toggle.fullscreen");
         })
 
-        $(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange", function() {
-            console.log("FULLSCREEN?", $(document).fullScreen());
-            // var $main = $(".main");
-            // if ( $(".main").fullScreen() ) {
-            //     $main.data('original-width', $main.css('width'));
-            //     $main.data('original-height', $main.css('height'));
-            //     $main.css({ height: $(window).height() - 50, width : $(window).width() - 50 });
-
-            //     $("#toolbar-horizontal").data('original-top', $("#toolbar-horizontal").css('top'));
-            //     $("#toolbar-horizontal").css("top", 50);
-            // } else {
-            //     $(".main").css({ 
-            //         height : $main.data('original-height'),
-            //         width : $main.data('original-width')
-            //     });
-            //     $("#toolbar-horizontal").css('top', $("#toolbar-horizontal").data('original-top'));
-            // }
-            $.publish("action.toggle.fullscreen");
-            $(window).resize();
-        })
-
         var $e = get_resize_root();
-        $e.on('resize.reader', function(e) {
+        var last_size = { width : $e.width(), height: $e.height() };
+        var lazyResize = _.debounce(function(e) {
+            console.log("POSTING RESIZE EVENT", $e.width(), "x", $e.height());
             $.publish("action.resize");
-        })
-
+        }, 500);
+        $e.on('resize.reader', lazyResize);
+        // $e.on('debouncedresize.reader', function() { console.log("POSTING RESIZE EVENT"); $.publish("action.resize"); });
     },
 
     getCurrentSeq: function() {
@@ -263,25 +260,59 @@ HT.Reader = {
         })
     },
 
-    _toggleFullScreen: function(btn) {
+    _centerContentDisplay: function() {
+        // try to horizontally center content
+        var $content = $("#content");
+        var $window = $(window);
+        var right_edge = $content.position().left + $content.width();
+        // console.log("CENTERING", $window.scrollLeft(), $window.width(), right_edge);
+        if ( right_edge > $window.width() && $window.scrollLeft() == 0 ) {
+            $window.scrollLeft(right_edge - $window.width() - ( $("#sidebar").width() * 0.4 ) );
+        }
+    },
 
+    _toggleFullScreen: function(btn) {
+        var self = this;
         var $btn = $(btn);
-        var $sidebar = $(".sidebar");
         if ( $btn.hasClass("active") ) {
-            $(".sidebar.dummy").show("fast", function() {
-                $("#sidebar").css("visibility", "hidden") //.show();
+            // exitFullscreen();
+            self._manageFullScreen(false);
+        } else {
+            console.log("LAUNCHING FULL SCREEN");
+            // launchFullscreen(document.documentElement);
+            self._manageFullScreen(true);
+        }
+    },
+
+    _manageFullScreen: function(state) {
+        var self = this;
+        
+        var $btn = $("#action-toggle-fullscreen");
+        var $sidebar = $(".sidebar");
+        if ( state == null ) { state = ! $btn.hasClass("active"); }
+        // set this EARLY
+        self._full_screen_state = state;
+        self._animating = true;
+        if ( ! state ) {
+            $sidebar.show("fast", function() {
+                //$("#sidebar").css("visibility", "hidden") //.show();
                 $(window).scroll();
-                $("#sidebar").css('visibility', 'visible').show("fast");
+                //$("#sidebar").css('visibility', 'visible').show("fast");
                 $btn.removeClass("active");
                 $btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
                 $.publish("action.toggle.fullscreen");
+                // $(window).trigger("resize");
+                setTimeout(function() {
+                    self._animating = false;
+                }, 500);
             })
         } else {
-            $(".sidebar").hide( "fast", function() {
+            $sidebar.hide( "fast", function() {
                 $(window).scroll();
                 $btn.addClass("active");
                 $btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
                 $.publish("action.toggle.fullscreen");
+                self._animating = false;
             })
         }
     },
@@ -296,7 +327,7 @@ HT.Reader = {
             if ( fn == null ) {
                 $.publish("action." + action, (this));
             } else {
-                fn.apply(self, $btn);
+                fn.apply(self, [$btn]);
             }
         }).subscribe("disable." + action, function() {
             $(this).attr("disabled", "disabled").attr('tabindex', -1);
@@ -320,7 +351,7 @@ HT.Reader = {
         this._current_view = view;
         // and upate the reverse
         this.options.params.view = view;
-        this._updateState({ view : view });
+        this._updateState({ view : view, size : HT.engines.manager.get_zoom(view) });
     },
 
     getViewModule: function() {
@@ -339,6 +370,10 @@ HT.Reader = {
         new_href += "?id=" + HT.params.id;
         new_href += ";view=" + this.getView();
         new_href += ";seq=" + this.getCurrentSeq();
+        var size = HT.engines.manager.get_zoom(this.getView());
+        if ( size && size != 100 ) {
+            new_href += ";size=" + size;
+        }
         if ( HT.params.debug ) {
             new_href += ";debug=" + HT.params.debug;
         }
@@ -358,6 +393,9 @@ HT.Reader = {
             // update the hash
             var new_hash = '#view=' + this.getView();
             new_hash += ';seq=' + this.getCurrentSeq();
+            if ( size && size != 100 ) {
+                new_hash += ";size=" + size;
+            }
             window.location.replace(new_hash); // replace blocks the back button!
         }
         this._trackPageview(new_href);
@@ -476,30 +514,31 @@ HT.Reader = {
 
     buildSlider: function() {
         var self = this;
-        if ( ! self.manager ) {
+        if ( ! HT.engines.manager ) {
             return;
         }
         var $nob = $(".nob");
         if ( ! $nob.length ) {
             $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
         }
-        var manager = self.manager;
+        var manager = HT.engines.manager;
         var last_seq = manager.getLastSeq();
         var last_num = manager.getPageNumForSeq(last_seq);
+        if ( last_num === undefined ) { last_num = "n" + last_seq ; }
         var current = self.getCurrentSeq();
         var this_view = self.getView();
-        if ( this_view == '2up' ) { current = manager.view._seq2page(current); }
-        // console.log("INIT SLIDER", this_view, current, manager.view.pages.length - 1);
+        if ( this_view == '2up' ) { current = HT.engines.view._seq2page(current); }
+        // console.log("INIT SLIDER", this_view, current, HT.engines.view.pages.length - 1);
         self.$slider = $nob.slider({
             min : 0,
-            max : this_view == '2up' ? manager.view.pages.length - 1 : last_seq - 1,
+            max : this_view == '2up' ? HT.engines.view.pages.length - 1 : last_seq - 1,
             value : current,
             selection : 'none',
             tooltip : 'show',
             formater : function(seq) {
                 if ( this_view == '2up' ) {
                     var old_seq = seq;
-                    seq = manager.view._page2seq(seq);
+                    seq = HT.engines.view._page2seq(seq);
                     if ( seq[0] == null ) {
                         seq = seq[1];
                     } else {
@@ -520,7 +559,7 @@ HT.Reader = {
         }).on('slideStop', function(ev) {
             var seq = ev.value;
             if ( this_view == '2up' ) {
-                seq = manager.view._page2seq(seq);
+                seq = HT.engines.view._page2seq(seq);
                 if ( seq[0] !== null ) {
                     seq = seq[0]
                 } else {
@@ -546,11 +585,13 @@ head.ready(function() {
         }
     }
 
-    HT.reader = Object.create(HT.Reader).init({
+    HT.engines = {};
+
+    HT.engines.reader = Object.create(HT.Reader).init({
         params : HT.params
     })
 
-    HT.reader.start();
+    HT.engines.reader.start();
 
     $(".toolbar-vertical .btn").each(function() {
         var $btn = $(this);
@@ -562,7 +603,7 @@ head.ready(function() {
         var $btn = $(this);
         var title = $btn.find(".label").text();
         if ( title ) {
-            $btn.tooltip({ title : title, placement : 'top', container : '.toolbar-horizontal', delay : { show : 250, hide: 50 }, xtrigger: 'hover focus', animation : false })
+            $btn.tooltip({ title : title, placement : 'bottom', container : '.toolbar-horizontal', delay : { show : 250, hide: 50 }, xtrigger: 'hover focus', animation : false })
         }
     })
 
@@ -579,3 +620,26 @@ head.ready(function() {
     }
 
 })
+
+// Find the right method, call on correct element
+function launchFullscreen(element) {
+  if(element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if(element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if(element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if(element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  }
+}
+
+function exitFullscreen() {
+  if(document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if(document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if(document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  }
+}

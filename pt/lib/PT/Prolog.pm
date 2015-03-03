@@ -171,6 +171,10 @@ sub SetBackToResultsReferer {
     if ( $referer =~ m,$PTGlobals::gTrackableReferers, ) {
         # we want to track these referers
         $$stack{$script_name,$id} = { referer => $referer, timestamp => time() };
+    } elsif ( $referer =~ m,/search, ) {
+        $$stack{$script_name,$id} = { referer => undef, timestamp => time() } unless ( exists($$stack{$script_name,$id}) );
+        $$stack{$script_name,$id}{timestamp} = time();
+        $$stack{$script_name,$id}{ptsearch} = $referer;
     } elsif ( $referer =~ m,$PTGlobals::gPageturnerCgiRoot, ) {
         # referer is us (e.g. changing views, paging)
         # update current timestamp if we're already tracking
@@ -199,6 +203,7 @@ sub SetBackToResultsReferer {
     $ses->set_persistent('referers', $stack);
     if ( exists($$stack{$script_name,$id}) ) {
         $ses->set_transient('referer', $$stack{$script_name,$id}{referer});
+        $ses->set_transient('ptsearch_referer', $$stack{$script_name,$id}{ptsearch});
     }
 
 }

@@ -154,6 +154,57 @@
     </div>
   </xsl:template>
 
+  <!-- No access due to pd-pvt (private) -->
+  <xsl:template name="PrivateItemPage">
+    <xsl:variable name="find-in-library-link">
+      <xsl:call-template name="FindInALibraryLink">
+        <xsl:with-param name="class"> btn btn-primary btn-medium</xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
+    <div class="alert alert-info alert-block alert-banner">
+      We have determined this work to be in the public domain, but access is limited due to privacy concerns. See HathiTrust's <a href="http://www.hathitrust.org/privacy#pd-pvt">Privacy Policy</a> for more information.
+    </div>
+    <div class="no_access_text">
+      <p>You can:</p>
+    </div>
+    <div class="row">
+      <div class="span8 border-right">
+        <div class="row">
+          <div class="span12">
+            <label id="in_copyright" for="mdpSearchInputBox">
+              <xsl:text>Search inside the text</xsl:text>
+            </label>
+            <xsl:call-template name="BuildSearchForm">
+              <xsl:with-param name="pSearchForm" select="MdpApp/SearchForm"/>
+              <xsl:with-param name="pShowLabel" select="'NO'"/>
+            </xsl:call-template>
+          </div>
+        </div>
+        <div class="row">
+          <div class="span6">
+            <div class="no_access_search_help_text">
+              to find the frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, etc.
+            </div>
+
+          </div>
+          <div class="span6">
+            <div class="no_access_search_help_eg">
+              <em>Example:</em>
+              <br />
+              <img src="//common-web/graphics/LimitedSample.png" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <xsl:if test="exsl:node-set($find-in-library-link)//node()">
+        <div class="span4 find-in-library">
+          <xsl:text>or </xsl:text>
+          <xsl:apply-templates select="exsl:node-set($find-in-library-link)" mode="copy" />
+        </div>
+      </xsl:if>
+    </div>
+  </xsl:template>
+
   <!-- VIEWING AREA -->
 
   <xsl:template name="Viewport">
@@ -167,6 +218,11 @@
         <!-- TOMBSTONE -->
         <xsl:when test="$gRightsAttribute='8'">
           <xsl:call-template name="DeletedItemPage"/>
+        </xsl:when>
+
+        <!-- PD-PVT (PRIVATE) -->
+        <xsl:when test="$gRightsAttribute='26'">
+          <xsl:call-template name="PrivateItemPage" />
         </xsl:when>
 
         <!-- Brittle message about when current accessor's exclusive access expires -->
