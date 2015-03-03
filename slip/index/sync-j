@@ -153,7 +153,7 @@ else {
 }
 
 if ($opt_d) {
-    $ENV{'DEBUG'} .= ',lsdb';
+    $ENV{DEBUG} .= ',lsdb';
 }
 
 my $TEST_ONLY = defined($opt_T);
@@ -274,11 +274,13 @@ sub Test_rightsNINindexed {
 
     my ($missing_ct, $item_ct, $errors_ct) = (0, 0, 0);
 
+    my $ref_to_arr_if_ids = [];
+    
     foreach my $hash_ref (@$ref_to_arr_of_hashref) {
         $item_ct++;
         
         # If this id is not in slip_errors, it's missing
-        my $id = $hash_ref->{'nid'};
+        my $id = $hash_ref->{nid};
         my $error_id = SLIP_Utils::Db_sync::Select_error_item_id($C, $dbh, $run, $id);
         if ($error_id) {
             $errors_ct++;
@@ -291,11 +293,10 @@ sub Test_rightsNINindexed {
             $s0 = qq{  id=$id in slip_rights missing from slip_indexed run=$run};
             __output(qq{$s0\n}); 
             Log_sync($C, $run, $s0);
-
-            Db::handle_queue_insert($C, $dbh, $run, [ {id => $id, shard => 0} ])
-                unless($CHECK);
+            push(@$ref_to_arr_if_ids , $id) unless ($CHECK);
         }
     }
+    Db::handle_queue_insert($C, $dbh, $run, $ref_to_arr_if_ids) unless($CHECK);
 
     my $elapsed = sprintf("%.1f minutes", (time() - $start)/60);
     $s0 = qq{rightsNINindexed: candidates checked=$item_ct slip_indexed_missing=$missing_ct slip_errors_seen=$errors_ct $Q_MSG elapsed=$elapsed at } . Utils::Time::iso_Time();
@@ -332,7 +333,7 @@ sub Report_indexedNINrights {
     my $missing_ct = 0;
 
     foreach my $hash_ref (@$ref_to_arr_of_hashref) {
-        my $id = $hash_ref->{'id'};
+        my $id = $hash_ref->{id};
         $missing_ct++;
         $s = qq{  id=$id in slip_indexed missing from slip_rights run=$run};
         __output(qq{$s\n}); 
@@ -371,7 +372,7 @@ Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2008-10, 2013 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2008-10, 2013, 2015 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
