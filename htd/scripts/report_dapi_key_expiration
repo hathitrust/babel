@@ -71,7 +71,7 @@ Description
 sub __report_expiring_user_keys {
 
     my $ref_to_arr_of_hashref;
-    my $statement = qq{SELECT htd_authorization.access_key, name, userid, code, htd_authorization.expires FROM htd_authentication INNER JOIN htd_authorization ON htd_authentication.access_key = htd_authorization.access_key WHERE expires < (NOW() + INTERVAL $LEAD_TIME DAY)};
+    my $statement = qq{SELECT htd_authorization.access_key, NAME, userid, CODE, htd_authorization.expires FROM htd_authentication INNER JOIN htd_authorization ON htd_authentication.access_key = htd_authorization.access_key WHERE expires > NOW() AND expires < (NOW() + INTERVAL 30 DAY)};
 
     eval {
         my $sth = DbUtils::prep_n_execute($DBH, $statement);
@@ -136,7 +136,7 @@ sub send_expiration_email {
                    'Subject'  => "Data API user keys nearing expiration",
                   });
 
-    my $body = qq{These users listed below have Data API keys authorizing special access.  Their keys will expire in $LEAD_TIME days.  The keys are stored in the htd_authorization table. Please review and update their expiration dates or remove them from the table.\n\nThere is a stored procedure you can call from mysql as "CALL htdauth()" that joins htd_authorization to htd_authentication for ease of listing more complete data.\n\n$data\n\n  -- report_dapi_key_expiration cron job};
+    my $body = qq{These users listed below have Data API keys authorizing special access.  Their keys will expire within $LEAD_TIME days or less from today.  The users' access_keys are stored in the htd_authorization table. Please review and update their expiration dates or remove them from the table.\n\nThere is a stored procedure you can call from mysql as "CALL htdauth()" that joins htd_authorization to htd_authentication for ease of listing more complete data.\n\n$data\n\n  -- report_dapi_key_expiration cron job};
 
     print $mailer($body);
     $mailer->close;
