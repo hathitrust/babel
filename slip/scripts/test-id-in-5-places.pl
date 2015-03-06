@@ -294,7 +294,7 @@ sub test_ids {
             
             my $coll_item_result = get_collection_result($id);
 
-            printf("%-20s solr=%s slip=%s rights=%s (solr=%2d slip=%2d rights=%2d) repo=%s catalog=%s coll_item=$coll_item_result\n", 
+            printf("%-20s solr=%s slip=%s rights=%s (solr_attr=%2d slip_attr=%2d rights_attr=%2d) repo=%s catalog=%s coll_item=$coll_item_result\n", 
                    $id, $solr_result, $slip_rights_result, $rights_result, $solr_attr, $slip_attr, $rights_attr, $path_result, $catalog_result, $coll_item_result);
         }
     }
