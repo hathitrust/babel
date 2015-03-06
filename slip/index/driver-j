@@ -953,6 +953,10 @@ sub __Wait_build_done {
                 __output("  wait Building\n");
                 sleep INDEX_SLEEP_WAIT;
             }
+            elsif (Building_not_finalized($C, $dbh, $run)) {
+                __output("  wait Building, queue empty, final slice handling\n");
+                sleep INDEX_SLEEP_WAIT;
+            }
             else {
                 return 0;
             }
@@ -1003,6 +1007,29 @@ sub get_process_breakdown_this_run {
     }
 
     return ($processed, $reindexed, $deleted, $errors);
+}
+
+# ---------------------------------------------------------------------
+
+=item Building_not_finalized
+
+On an empty queue, make sure the index-j scripts that are finishing
+their final slice have terminated.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Building_not_finalized {
+    my ($C, $dbh, $run) = @_;
+
+    my $num_still_running = 0;
+    
+    foreach my $__shard (@NUM_SHARDS_LIST) {
+        my $allocated = Db::Select_shard_num_allocated($C, $dbh, $run, $__shard);
+        $num_still_running += $allocated;
+    }
+    
+    return $num_still_running; 
 }
 
 # ---------------------------------------------------------------------
