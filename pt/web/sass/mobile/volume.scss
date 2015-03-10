@@ -41,6 +41,16 @@ body {
             background-color: #999;
         }
 
+        .page-left img {
+            position: absolute;
+            right: 0;
+        }
+
+        .page-right img {
+            position: absolute;
+            left: 0;
+        }
+
     }
 }
 
@@ -176,7 +186,7 @@ body {
     &.slider-horizontal {
         height: 30px;
         width: 100%;
-        z-index: 1000;
+        z-index: 115;
         overflow: hidden;
         opacity: 0.95;
         background: #555;

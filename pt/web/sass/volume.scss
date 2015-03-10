@@ -16,6 +16,16 @@
 
 }
 
+.alert-block.startup {
+    width: 80%;
+    margin: 20px auto;
+    margin-top: 60px;
+}
+
+
+#scrolling {
+    @include rem(margin-top, -20);
+}
 
 // $page-num-color: #b3b3b3;
 $page-num-color: #d2d2d2;

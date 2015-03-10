@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+#    $ENV{DEBUG_LOCAL} = 1;
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
@@ -40,7 +40,7 @@ $app = builder {
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
 
     enable 'Choke::Cache::Filesystem';
-    
+
     enable
         match_if any( param('view', 'plaintext'), param('view', 'text') ),
             'Choke::Requests',
@@ -48,7 +48,7 @@ $app = builder {
                     credit_rate    => [ 0.5, 'sec' ],
                     max_debt       => [ 50, '+30 sec' ],
             ;
-    
+
     # probably do some generous throttling
     enable
         match_if unchoked(),

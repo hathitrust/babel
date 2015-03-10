@@ -1138,6 +1138,18 @@ sub handle_DOWNLOAD_PROGRESS_BASE
     return $cache_dir;
 }
 
+sub handle_IN_ITEM_SEARCH_RESULTS_LINK
+    : PI_handler(IN_ITEM_SEARCH_RESULTS_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $ses = $C->get_object('Session');
+    if ( my $referer = $ses->get_transient('ptsearch_referer') ) {
+        $referer =~ s,&,&amp;,g;
+        return $referer;
+    }
+}
+
 sub handle_SEARCH_RESULTS_LINK_PI
     : PI_handler(SEARCH_RESULTS_LINK)
 {

@@ -159,6 +159,7 @@
       </HiddenVars>
       <SearchResultsLink><?SEARCH_RESULTS_LINK?></SearchResultsLink>
       <SearchResultsLabel><?SEARCH_RESULTS_LABEL?></SearchResultsLabel>
+      <InItemResultsLink><?IN_ITEM_SEARCH_RESULTS_LINK?></InItemResultsLink>
       <?HEADER_SEARCH_FIELDS?>
     </SearchForm>
 

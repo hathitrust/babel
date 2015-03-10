@@ -50,6 +50,7 @@ Section:LOCAL_JS
 /pt/web/js/collection_tools.js
 /pt/web/js/access_banner_02.js
 /pt/web/js/google_analytics_experiment.js
+/pt/web/js/header_search.js
 
 Section:PAGETURNER_VOLUME_JS
 #Test://ItemType='volume' and $gSkin='default'
@@ -57,10 +58,15 @@ Test://ItemType='volume'
 /pt/web/vendor/nanoscroller/jquery.nanoscroller.js
 /pt/web/vendor/jquery.fracs.js
 /pt/web/vendor/jquery.viewport.js
-/pt/web/vendor/BookBlock/js/jquerypp.custom.js
+/pt/web/vendor/jquery.sticky-kit.js
+/pt/web/vendor/jquery.fullscreen.js
+/pt/web/vendor/jquery.animate.clip.js
+# /pt/web/vendor/BookBlock/js/jquerypp.custom.js
+/pt/web/vendor/jquery.event.move.js
+/pt/web/vendor/jquery.event.swipe.js
 /pt/web/vendor/BookBlock/js/jquery.bookblock.js
 /pt/web/vendor/slider/js/bootstrap-slider.js
-/pt/web/js/scrolling.js
+/pt/web/js/sidebar.js
 /pt/web/js/reader.js
 /pt/web/js/manager.js
 /pt/web/js/imgsrv.js
