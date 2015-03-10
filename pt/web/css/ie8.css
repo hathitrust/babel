@@ -29,3 +29,7 @@ i.icomoon-reorder:before {
 .sidebar-wrap {
     margin-top: 0;
 }
+
+.navbar-inner .search-form .form-inline.focused .bg {
+    border-bottom: 2px solid #000000;
+}
