@@ -85,10 +85,17 @@
   <xsl:template name="msgAccessInfo">
     <xsl:if test="$gFinalAccessStatus='deny' and $gPagesFound > 0">
       <div class="alert alert-warning alert-block alert-banner">
-        <xsl:text>Full view is not available for this item due to copyright &#169; restrictions. Page numbers with matches are displayed without text snippets due to these restrictions.</xsl:text>
-        <xsl:if test="$gLoggedIn='NO'">
-          <xsl:text>  Snippets may be available for some items if you log in.</xsl:text>
-        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="$gRightsAttribute='26'">
+            <xsl:text>Full view is not available for this item due privacy concerns. Page numbers with matches are displayed but text snippets cannot be shown.</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>Full view is not available for this item due to copyright &#169; restrictions.</xsl:text>
+            <xsl:if test="$gLoggedIn='NO'">
+              <xsl:text>  Snippets may be available for some items if you log in.</xsl:text>
+            </xsl:if>
+          </xsl:otherwise>
+        </xsl:choose>
       </div>
     </xsl:if>
   </xsl:template>
