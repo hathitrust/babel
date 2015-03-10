@@ -271,6 +271,10 @@ body {
     .logged-in .search-form input.search-input-text {
         width: 40%; /* !important;*/
     }
+
+    .logged-in .search-form .focused input.search-input-text {
+        width: 85%;
+    }
 }
 
 #option-catalog-search, #option-full-text-search {
