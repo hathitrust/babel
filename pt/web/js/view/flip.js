@@ -60,6 +60,7 @@ HT.Viewer.Flip = {
         $.unsubscribe(".flip");
         $.publish("view.end");
         $(window).unbind(".flip");
+        $(document).unbind(".flip");
         $("body").unbind(".flip");
         $("#content").empty().css('margin-top', '');
         $("body").removeClass("view-2up");
@@ -176,6 +177,30 @@ HT.Viewer.Flip = {
                 }
             }
         });
+
+        $(document).on('keydown.flip', function(e) {
+            var keyCode = e.keyCode || e.which;
+            var arrow = {
+                left: 37,
+                up: 38,
+                right: 39,
+                down: 40
+            };
+
+            switch (keyCode) {
+            case arrow.left:
+                self.gotoPage(null, -1);
+                // self._stopSlideshow();
+                // self._navigate('prev');
+                break;
+            case arrow.right:
+                self.gotoPage(null, 1);
+                // self._stopSlideshow();
+                // self._navigate('next');
+                break;
+
+            }
+        })
     },
 
     handleResize: function() {
