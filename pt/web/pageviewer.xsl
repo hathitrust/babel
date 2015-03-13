@@ -108,7 +108,7 @@
   </xsl:template>
 
   <xsl:template name="setup-extra-header">
-    <link rel="stylesheet" type="text/css" href="/pt/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="/pt/css/screen.css{$timestamp}" />
 
     <meta name="robots" content="noarchive" />
 

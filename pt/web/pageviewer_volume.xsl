@@ -95,8 +95,8 @@
   </xsl:variable>
 
   <xsl:template name="setup-extra-header-extra">
-    <link rel="stylesheet" href="/pt/css/volume.css" />
-    <link rel="stylesheet" href="/pt/css/print.css" media="print" />
+    <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
+    <link rel="stylesheet" href="/pt/css/print.css{$timestamp}" media="print" />
   </xsl:template>
 
   <xsl:template name="setup-body-class">
