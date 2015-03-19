@@ -48,6 +48,11 @@ perl foo.pl --help
 
 
 use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -175,7 +180,7 @@ if (! $Semaphore) {
 my ($INITIAL_QUEUE_SIZE, $INITIAL_TOT_INDEXED_CT, $RESTORE_CT) = (0, 0, 0);
 
 eval {
-    ($INITIAL_QUEUE_SIZE) = Db::Select_queue_data($C, $DBH, $RUN);
+    $INITIAL_QUEUE_SIZE = Db::Select_queue_size($C, $DBH, $RUN);
     $INITIAL_TOT_INDEXED_CT = Db::Select_indexed_tot_count($C, $DBH, $RUN);
 
     run_driver($C, $DBH, $RUN);
@@ -1046,7 +1051,7 @@ sub get_Building_queue_size {
     my ($C, $dbh, $run, $stage) = @_;
 
     my $rc = 0;
-    my ($size) = Db::Select_queue_data($C, $dbh, $run);
+    my $size = Db::Select_queue_size($C, $dbh, $run);
 
     return ($size, $rc) if ($SKIP_REDO);
 
@@ -1056,7 +1061,7 @@ sub get_Building_queue_size {
         if ($timeouts > 0) {
             $rc = __requeue_timeouts($C, $dbh, $run, $stage);
             if ($rc == 0) {
-                ($size) = Db::Select_queue_data($C, $dbh, $run);
+                $size = Db::Select_queue_size($C, $dbh, $run);
                 __output("     timeouts requeued=$timeouts queue=$size\n");
                 Log_stage($C, $run, $stage, qq{Requeue: timeouts=$timeouts queue=$size});
             }
@@ -1066,7 +1071,7 @@ sub get_Building_queue_size {
         if ($RESTORE_CT < MAX_RESTORES) {
             $rc = __requeue_transient_server_errors($C, $dbh, $run, $stage, 'ignore_STOPSLIP');
             if ($rc == 0) {
-                ($size) = Db::Select_queue_data($C, $dbh, $run);
+                $size = Db::Select_queue_size($C, $dbh, $run);
                 my $restored = $size - $timeouts;
                 __output("     requeue restored=$restored queue=$size\n");
                 $RESTORE_CT++ if ($restored);

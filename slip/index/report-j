@@ -131,8 +131,7 @@ my $DRIVER = $config->get('driver_driven');
 # -----------------------
 
 # Improve performance
-my ($Q_size, $Q_num_available, $Q_num_in_process) =
-    Db::Select_queue_data($C, $DBH, $RUN);
+my $Q_size = Db::Select_queue_size($C, $DBH, $RUN);
 
 if ($ERRORS) {
     unless (grep(/$ERRORS/, ( qw/o i m c s n g A/ ))) {
@@ -467,7 +466,7 @@ sub _report_shard {
         unless ($SEND_EMAIL) {
             ($on, $off) = ($num_docs_indexed == $num_docs_committed) ? ('','') : ($ON, $OFF);
         }
-        my $delta = $num_docs_indexed - $num_docs_committed; 
+        my $delta = $num_docs_indexed - $num_docs_committed;
         $committed = qq{ committed=$on$num_docs_committed delta=$delta$off};
     }
 
@@ -491,7 +490,7 @@ sub report_statistics {
     my $dbh = shift;
     my $run = shift;
 
-    __Print qq{\n * statistics: \n};
+    __Print qq{\n * (s)tatistics: \n};
 
     my $stats_ref = _load_stats_hash($C, $dbh, $run);
 
@@ -527,9 +526,9 @@ sub report_queue_state {
     my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $newest_version);
 
     my $ready = ($last_catalog_ready_version > 0 ? $last_catalog_ready_version : 'none');
-                 
-    __Print qq{\n * queue state:\n};
-    __Print qq{\t  Primary: size=$Q_size num_available=$Q_num_available in_process=$Q_num_in_process\n};
+
+    __Print qq{\n * (q)ueue state:\n};
+    __Print qq{\t  Primary: size=$Q_size\n};
     __Print qq{\t   Shared: size=$shared_q_size\n};
     __Print qq{\t Holdings: size=$holdings_deltas_size last_version_enqueued=$last_loaded_version last_version_indexed=$last_processed_version newest_version=$newest_version next_catalog_ready_version=$ready\n};
 }
@@ -599,7 +598,7 @@ sub report_flags_state {
     }
     $opo .= $extra . $segsizes;
 
-    __Print qq{\n * flags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$opo\n};
+    __Print qq{\n * (f)lags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$opo\n};
 }
 
   # ---------------------------------------------------------------------
@@ -683,7 +682,7 @@ sub report_configuration {
         $total_num_running_over_hosts += Db::Select_host_num_running($C, $dbh, $run, $host);
     }
 
-    __Print qq{\n * current config: producer counts:[ shards=$total_alloc hosts=$total_num_running_over_hosts ]\n};
+    __Print qq{\n * (c)urrent config: producer counts:[ shards=$total_alloc hosts=$total_num_running_over_hosts ]\n};
 
     __Print qq{\tshards:\n};
 
@@ -726,9 +725,9 @@ sub report_configuration {
     my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
     my $slip_rights_size_minus_deletes = Db::Select_count_from_j_rights($C, $dbh, 'WHERE attr != 8');
     my $total_docs_indexed = Db::Select_indexed_tot_count($C, $dbh, $run);
-    my $slip_rights_size_delta_indexed = $slip_rights_size_minus_deletes - $total_docs_indexed; 
+    my $slip_rights_size_delta_indexed = $slip_rights_size_minus_deletes - $total_docs_indexed;
     my $delete_delta = $slip_rights_size - $slip_rights_size_minus_deletes;
-    
+
     __Print qq{\trights:\n\t\tenabled=$rights_enabled\n};
     __Print qq{\t\t\trights-j:   slip_vsolr_timestamp from MAX(slip_rights.update_time)=$v_timestamp\n};
     __Print qq{\t\t\tenqueuer-j: slip_rights_timestamp[$run] from MAX(slip_rights.insert_time)=$r_timestamp\n};

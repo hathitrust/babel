@@ -467,7 +467,7 @@ sub report_queue
     
     my $config = $C->get_object('MdpConfig');
     
-    my ($size, $avail, $process) = Db::Select_queue_data($C, $dbh, $run);
+    my $size = Db::Select_queue_size($C, $dbh, $run);
     my $enabled = Db::Select_enqueuer_enabled($C, $dbh, $run);
     my $class = $enabled ? 'enabled' : 'not-enabled';
     my $v_timestamp = Db::Select_vSolr_timestamp($C, $dbh);
@@ -475,7 +475,7 @@ sub report_queue
     
     my $row =
       td({-class=>$class}, ["$enabled"])
-        . td(["$size", "$avail", "$process", "$v_timestamp", "$r_timestamp"])
+        . td(["$size", "$v_timestamp", "$r_timestamp"])
           . $N;
     
     $content .=
@@ -483,7 +483,7 @@ sub report_queue
             caption($caption),
             Tr({-align=>"center"},
                [
-                th({-width=>"2%"}, ["enabled", "size", "avail", "process"])
+                th({-width=>"2%"}, ["enabled", "size"])
                 . th({-width=>"10%"}, ["vSolr timestamp", "slip_rights timestamp"]) . $N,
                 $row
                ]
