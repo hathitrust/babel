@@ -32,7 +32,9 @@
         border: 1px solid #eee;
 
         float: left;
-        margin: 4px;
+        @include rem(margin, 4);
+        @include rem(margin-top, 16);
+        @include rem(margin-bottom, 16);
         display: table-cell;
         position: relative;
 

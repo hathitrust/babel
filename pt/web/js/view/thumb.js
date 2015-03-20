@@ -165,12 +165,12 @@ HT.Viewer.Thumbnail = {
             delta = self.zoom_levels.indexOf(zoom) - current_index;
         }
         var new_index = current_index + delta;
-        if ( new_index + delta < 0 || self.default_w * self.zoom_levels[new_index + delta] < self.options.min_w ) {
+        if ( new_index + delta < 0 || self.default_w * self.zoom_levels[new_index - delta] < self.options.min_w ) {
             $.publish("disable.zoom.out");
         } else {
             $.publish("enable.zoom.out");
         }
-        if ( new_index + delta >= self.zoom_levels.length || self.default_w * self.zoom_levels[new_index + delta] > self.options.max_w ) {
+        if ( new_index + delta >= self.zoom_levels.length || self.default_w * self.zoom_levels[new_index + 1] > self.options.max_w ) {
             $.publish("disable.zoom.in");
         } else {
             $.publish("enable.zoom.in");
@@ -333,26 +333,6 @@ HT.Viewer.Thumbnail = {
 
     },
 
-    _calculateAverages: function() {
-        var self = this;
-        // find an average h for scaling
-        var tmp = {};
-        for(var seq=1; seq <= HT.engines.manager.num_pages; seq++) {
-            var meta = HT.engines.manager.get_page_meta({ seq : seq, width : 680 });
-            tmp[meta.height] = ( tmp[meta.height] || 0 ) + 1;
-        }
-        var n = -1; var idx;
-        var heights = _.keys(tmp);
-        self.h = heights[0];
-        for(var i=0; i < heights.length; i++) {
-            var h = heights[i];
-            if ( tmp[h] > n ) {
-                n = tmp[h];
-                self.h = h;
-            }
-        }
-    },
-
     drawPages : function() {
         var self = this;
 
@@ -375,9 +355,9 @@ HT.Viewer.Thumbnail = {
 
             var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><a class="page-link" href="#{SEQ}"></a></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
-            $page.css({ height : h, width : self.w });
+            $page.css({ height : self.w, width : self.w });
             $page.data('seq', seq);
-            $page.data('h', h);
+            $page.data('h', self.w);
             // $page.addClass("loading");
 
             // need to bind clicking the thumbnail to open to that page; so wrap in an anchor!!
@@ -429,6 +409,28 @@ HT.Viewer.Thumbnail = {
             }
         }
 
+    },
+
+    _calculateAverages: function() {
+        var self = this;
+        // find an average h for scaling
+        var tmp = {};
+        for(var seq=1; seq <= HT.engines.manager.num_pages; seq++) {
+            var meta = HT.engines.manager.get_page_meta({ seq : seq, width : 680 });
+            tmp[meta.height] = ( tmp[meta.height] || 0 ) + 1;
+        }
+        var n = -1; var idx;
+        var heights = _.keys(tmp);
+        self.h = heights[0];
+        console.log(tmp);
+        console.log(heights);
+        for(var i=0; i < heights.length; i++) {
+            var h = heights[i];
+            if ( tmp[h] > n ) {
+                n = tmp[h];
+                self.h = h;
+            }
+        }
     },
 
     _calculateBestFitZoom: function() {
