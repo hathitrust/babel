@@ -148,7 +148,7 @@ HT.Manager = {
     get_page_meta: function(params) {
         var meta;
         if ( this.data.items[params.seq - 1] ) {
-            meta = this.data.items[params.seq - 1];
+            meta = _.clone(this.data.items[params.seq - 1]);
         } else {
             var w = 680; // default w
             var h = w * 1.294;
