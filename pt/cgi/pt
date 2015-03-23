@@ -133,7 +133,10 @@ my $gDso = $C->get_object('Session');
 PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
 
 my $gId = $gCgi->param('id');
-if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
+unless ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
+    Auth::Logging::log_failed_access($C, $gId);
+}
+else {
     # Security logging
     if ( Auth::Logging::log_incopyright_access($C, $gId) ) {
         Auth::ACL::a_Increment_accesscount($gId);
