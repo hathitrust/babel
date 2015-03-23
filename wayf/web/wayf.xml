@@ -6,6 +6,7 @@
 
   <!-- XSL fallback files -->
   <XslFileList>
+    <Filename>loads_helper_wayf.xsl</Filename>
     <Filename>skeleton.xsl</Filename>
     <Filename>wayf.xsl</Filename>
    </XslFileList>
