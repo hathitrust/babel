@@ -31,7 +31,7 @@ sub __populate_HT_hash {
         Utils::map_chars_to_cers(\$name, [q{"}, q{'}], 1);
 
         my $enabled  = $hashref->{enabled};
-        my $sdrinst  = $hashref->{sdrinst};
+        my $inst_id  = $hashref->{inst_id};
         my $template = $hashref->{template};
         my $authtype = $hashref->{authtype};
 
@@ -42,7 +42,7 @@ sub __populate_HT_hash {
                  'enabled' => $enabled,
                 };
 
-        $HathiTrust_Institutions->{$sdrinst} = $h;
+        $HathiTrust_Institutions->{$inst_id} = $h;
     }
 }
 
