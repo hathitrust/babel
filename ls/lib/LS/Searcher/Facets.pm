@@ -38,9 +38,10 @@ Description
 # ---------------------------------------------------------------------
 sub get_populated_Solr_query_result {
     my $self = shift;
-    my ($C, $Q, $rs) = @_;
+    my ($C, $Q, $rs,$AB) = @_;
 
-    my $query_string = $Q->get_Solr_query_string($C);
+    
+    my $query_string = $Q->get_Solr_query_string($C,$AB);
 
     return $self->__Solr_result($C, $query_string, $rs);
 }

@@ -235,6 +235,7 @@ sub get_Solr_query_string
 {
     my $self = shift;
     my $C = shift;
+    my $AB = shift;
     
     # Cache to avoid repeated MySQL calls in Access::Rights
 
@@ -276,7 +277,17 @@ sub get_Solr_query_string
     {
         $ADVANCED = $self->__get_advanced_query($cgi);
     }
+   # XXX   hack here for A/B just replacing ocr field with proper scoring field
+    #
+    my $B_rank_type= $cgi->param('b');
+    $B_rank_type='bm25'; #XXX hardcoded for debugging
     
+    if ($AB eq "B" && defined ($B_rank_type))
+    {
+        $ADVANCED =~s/ocronly/$B_rank_type/g;
+        $ADVANCED =~s/ocr/$B_rank_type/g;
+    }
+
   
     # The common Solr query parameters
     my $Q ='q=';

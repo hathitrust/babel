@@ -396,27 +396,41 @@ sub handle_SEARCH_RESULTS_PI
 
     my $output;
     my ($query_time, $solr_error_msg);
+    my ($A_query_time, $B_query_time);
     my $cgi = $C->get_object('CGI');
     my $limit = $cgi->param('lmt');
     my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');
     my $primary_rs = $$search_result_data_hashref{'primary_result_object'};
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
+    my $B_rs =$$search_result_data_hashref{'B_result_object'};
 
     # Was there a search?
-    if ($search_result_data_hashref->{'undefined_query_string'}) {
+    if ($search_result_data_hashref->{'undefined_query_string'}) { 
         $query_time = 0;
         $solr_error_msg = '';
     }
     else {
         # we can just add up all 3 query times. Forget primary secondary
-        $query_time = $primary_rs->get_query_time() + $secondary_rs->get_query_time();
+       	#   $query_time = $primary_rs->get_query_time() + $secondary_rs->get_query_time();
+	#XXX do we need total query time see above?
+        $A_query_time = $primary_rs->get_query_time();
+        $B_query_time = $B_rs->get_query_time();
 
         $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
-        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
-        $output .= $$result_ref;
+	#XXX  don't we want to do the interleaving here instead of having the xsl do it?
+        #        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
+	#        $output .= $$result_ref;
+	my $A_result_ref = _ls_wrap_result_data($C, $primary_rs);
+        my $B_result_ref = _ls_wrap_result_data($C, $B_rs);
+        my $A_out = wrap_string_in_tag($$A_result_ref, 'A_RESULTS');
+        my $B_out = wrap_string_in_tag($$B_result_ref, 'B_RESULTS');
+        $output .= $A_out . $B_out;
     }
 
-    $output .= wrap_string_in_tag($query_time, 'QueryTime');
+    #$output .= wrap_string_in_tag($query_time, 'QueryTime');
+    $output .= wrap_string_in_tag($A_query_time, 'A_QueryTime');
+    $output .= wrap_string_in_tag($B_query_time, 'B_QueryTime');
+
     $output .= wrap_string_in_tag($solr_error_msg, 'SolrError');
 
     #XXX  get first element of array for basic search See xxx for advanced search

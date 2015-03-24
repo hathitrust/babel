@@ -139,13 +139,16 @@ sub execute_operation
     }
 
 
-    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows);
-    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0);
+    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+    my ($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+
 
     my %search_result_data =
         (
          'primary_result_object'   => $primary_rs,
          'secondary_result_object' =>$secondary_rs,
+	 'B_result_object'         =>$B_rs,
          'well_formed' => {
                            'primary'                => $primary_Q->well_formed() ,
                            'processed_query_string' => $primary_Q->get_processed_query_string() ,
@@ -168,6 +171,8 @@ sub do_query{
     my $query_type = shift;
     my $start_rows =shift;
     my $num_rows = shift;
+    my $AB = shift;
+    
     
     my $Q = new LS::Query::Facets($C, $user_query_string, undef, 
                                        {
@@ -177,10 +182,10 @@ sub do_query{
                                        });
 
     my $rs = new LS::Result::JSON::Facets($query_type);
-    $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs);
+    $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs,$AB);
     
     #    Log
-    $Q->log_query($C, $searcher, $rs, 'ls');
+    $Q->log_query($C, $searcher, $rs, 'ls',$AB);
     return ($rs,$Q);
 }
 
