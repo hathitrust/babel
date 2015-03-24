@@ -140,10 +140,10 @@ sub getInCopyrightStatus {
     my $rights = $self->__getConfigVal('rights_name_map', $attribute);
 
     if ($rights eq 'pdus') {
-        $in_copyright = 1 if (! $self->__geo_location_is('US'));
+        $in_copyright = 1 unless ($self->__geo_location_is('US'));
     }
     elsif ($rights eq 'icus') {
-        $in_copyright = 1 if (! $self->__geo_location_is('NONUS'));
+        $in_copyright = 1 unless ($self->__geo_location_is('NONUS'));
     }
     else {
         my @freely_available = (
@@ -221,8 +221,9 @@ sub __getBasicAccess {
 
         $basic_access = grep(/^$rights_name$/, @$openAccessNamesRef) ? 'free' : 'nonfree';
 
-        if (($basic_access eq 'nonfree') && ($rights_name eq 'nobody')) {
-            $basic_access = 'noaccess';
+        if ($basic_access eq 'nonfree') {
+            my $noAccessNamesRef  = $self->__getConfigVal('no_access_rights_names');
+            $basic_access = 'noaccess' if ( grep(/^$rights_name$/, @$noAccessNamesRef) );
         }
         elsif ($basic_access eq 'free') {
             my $geo_trusted = API::HTD::IP_Address->new->geo_trusted;
@@ -312,7 +313,7 @@ sub __get_pageimage_extended_access {
 
     my $pageimage_extended_access;
 
-    my $format = (defined $Q) ? $Q->param('format') : '';
+    my $format = ((defined $Q) ? $Q->param('format') : '') || '';
 
     if ( grep(/^$format$/, qw(png jpeg optimalderivative)) ) {
         my $watermark = $Q->param('watermark');
@@ -349,24 +350,12 @@ sub __geo_location_is {
     # This will be the UA IP address seen in HTTP_X_FORWARDED_FOR or
     # REMOTE_USER by (our) trusted client and passed as a URL
     # parameter or else simply HTTP_X_FORWARDED_FOR or REMOTE_USER of
-    # a untrusted client itself.  The best we can do to limit pdus(icus) to
-    # US(NONUS) users is the geoIP and blacklist tests on these addresses.
-    my $IPADDR = API::HTD::IP_Address->new->address;
+    # a client itself.
+    my $ipo = new API::HTD::IP_Address;
+    my $IPADDR = $ipo->address;
 
-    require "Geo/IP.pm";
-    my $geoIP = Geo::IP->new();
-    my $country_code = $geoIP->country_code_by_addr($IPADDR);
-
-    my $correct_location = 0;
-    if ($required_location eq 'US') {
-        $correct_location = (grep(/$country_code/, @RightsGlobals::g_pdus_country_codes));
-    }
-    elsif ($required_location eq 'NONUS') {
-        $correct_location = (! grep(/$country_code/, @RightsGlobals::g_pdus_country_codes));
-    }
-    else {
-        die qq{FATAL: Invalid required_location value="$required_location"};
-    }
+    die qq{FATAL: required_location should be US|NONUS, value="$required_location"} unless (grep(/^$required_location$/, qw(US NONUS)) );
+    my $correct_location = ($ipo->address_location eq $required_location);
 
     if ($correct_location) {
         # veryify this is not a blacklisted US(NONUS) proxy that does not set

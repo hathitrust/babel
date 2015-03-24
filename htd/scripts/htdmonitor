@@ -208,7 +208,8 @@ sub Total_Signed_Requests {
     my %uniq_signed_requests;
     foreach my $sr (@signed_requests) {
         my ($ua, $ra, $ff) = ($sr =~ m,UA_ip=(.*?) REMOTE_ADDR=(.*?) HTTP_X_FORWARDED_FOR=(.*?)[ ],);
-        my ($ak) = ($sr =~ m,access_key=(.*?)[ ],) || 0;
+        my ($ak) = ($sr =~ m,access_key=(.*?)[ ],);
+        $ak = $ak ? $ak : 0;
         $uniq_signed_requests{"$ak-$ua-$ra-$ff"} += 1;
     }
     print "* Total signed requests = " . scalar @signed_requests . "  (unique = " . scalar (keys %uniq_signed_requests) . ")\n";
