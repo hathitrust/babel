@@ -347,6 +347,12 @@ sub _serve_Data_API_response {
         if ($Q->param('disposition') eq 'download') {
             $content_disposition = 'attachment; ' . $content_disposition;
         }
+        elsif ($Q->param('disposition') eq 'view') {
+            $content_disposition = 'inline; ' . $content_disposition;
+        }
+        else {
+            $content_disposition = 'inline; ' . $content_disposition;
+        }
 
         print CGI::header(
                           -Content_Type => $content_type,
