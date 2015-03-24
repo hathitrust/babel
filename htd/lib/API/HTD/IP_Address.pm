@@ -266,7 +266,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub ___proxied_address {
-    return $ENV{HTTP_X_FORWARDED_FOR} || $ENV{HTTP_X_FORWARDED} || $ENV{HTTP_FORWARDED_FOR} || $ENV{HTTP_CLIENT_IP} || $ENV{HTTP_VIA};
+    return $ENV{HTTP_X_FORWARDED_FOR} || $ENV{HTTP_X_FORWARDED} || $ENV{HTTP_FORWARDED_FOR};
 }
 
 # ---------------------------------------------------------------------
