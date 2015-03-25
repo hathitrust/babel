@@ -132,6 +132,10 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'a
         $mdpItem->OcrHandler($C);
     }
 }
+else {
+    Auth::Logging::log_failed_access($C, $id, 'ssd');
+}
+
 
 # ----------------------------------------------------------------------
 # get XML template and process its PIs
