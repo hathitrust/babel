@@ -114,7 +114,7 @@ sub __handle_type_U_client {
 
 This is an authenticated (logged in) user of htdc who does not have
 authorization above default code=1 i.e. IP address is not in
-htd_authorization table. 
+htd_authorization table.
 
 The stored IP address may be trusted for geoip testing if coterminous.
 
@@ -124,7 +124,7 @@ The stored IP address may be trusted for geoip testing if coterminous.
 sub __handle_type_K_client {
     my $self = shift;
     my ($stored_IP_address) = @_;
-    
+
     my $type = 'K';
 
     my $valid = 1;
@@ -266,7 +266,12 @@ Description
 
 # ---------------------------------------------------------------------
 sub ___proxied_address {
-    return $ENV{HTTP_X_FORWARDED_FOR} || $ENV{HTTP_X_FORWARDED} || $ENV{HTTP_FORWARDED_FOR};
+    my $proxied_addr = $ENV{HTTP_X_FORWARDED_FOR} || $ENV{HTTP_X_FORWARDED} || $ENV{HTTP_FORWARDED_FOR};
+    if ($proxied_addr) {
+        return $proxied_addr if ($proxied_addr !~ m/$RightsGlobals::private_network_ranges_regexp/);
+    }
+
+    return undef;
 }
 
 # ---------------------------------------------------------------------
@@ -303,13 +308,13 @@ sub __initialize {
     # these addresses can be spoofed.
     my $PROXIED_ADDR = ___proxied_address();
     my $proxy_detected = $self->proxy_detected($PROXIED_ADDR);
-    
+
     my $REMOTE_ADDR = $ENV{REMOTE_ADDR};
 
     my $remote_addr_country_code = $geoIP->country_code_by_addr( $REMOTE_ADDR );
     my $remote_addr_is_US = ( grep(/^$remote_addr_country_code$/, @RightsGlobals::g_pdus_country_codes) );
     my $remote_addr_is_nonUS = (! $remote_addr_is_US);
-    
+
     my $proxied_addr_country_code = $geoIP->country_code_by_addr( $PROXIED_ADDR );
     my $proxied_addr_is_US = ( grep(/^$proxied_addr_country_code$/, @RightsGlobals::g_pdus_country_codes) );
     my $proxied_addr_is_nonUS = (! $proxied_addr_is_US);
@@ -322,10 +327,10 @@ sub __initialize {
             $STORED_ADDR = $PROXIED_ADDR;
             $self->geo_trusted(1);
             if ($proxied_addr_is_US && $remote_addr_is_US) {
-                $address_location = 'US'; 
+                $address_location = 'US';
             }
             else {
-                $address_location = 'NONUS'; 
+                $address_location = 'NONUS';
             }
         }
     }
@@ -333,12 +338,12 @@ sub __initialize {
         $STORED_ADDR = $REMOTE_ADDR;
         $self->geo_trusted(1);
         if ($remote_addr_is_US) {
-            $address_location = 'US'; 
+            $address_location = 'US';
         }
         else {
-            $address_location = 'NONUS'; 
+            $address_location = 'NONUS';
         }
-    }    
+    }
     $self->address_location($address_location);
 
     my ($code, $IP_regexp, $type) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
@@ -415,7 +420,7 @@ Description
 sub geo_trusted {
     my $self = shift;
     my $trusted = shift;
-   
+
     $self->{_geotrusted} = $trusted if (defined $trusted);
     return $self->{_geotrusted};
 }
@@ -461,7 +466,7 @@ Description
 sub proxy_detected {
     my $self = shift;
     my $detected = shift;
-    
+
     $self->{_proxydetected} = $detected if (defined $detected);
     return $self->{_proxydetected};
 }
@@ -478,7 +483,7 @@ Description
 sub address_location {
     my $self = shift;
     my $location = shift;
-    
+
     $self->{_addresslocation} = $location if (defined $location);
     return $self->{_addresslocation};
 }

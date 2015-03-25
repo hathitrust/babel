@@ -24,6 +24,14 @@ Debug options
 =back
 
 =cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
 umask 0000;
 
 # ----------------------------------------------------------------------
