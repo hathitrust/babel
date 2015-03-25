@@ -799,28 +799,26 @@ sub __get_volume {
     use IO::File;
     autoflush STDOUT 1;
 
-    use IPC::Open3;
-    use File::Spec;
-    use Symbol qw(gensym);
-
-    open(NULL, ">", File::Spec->devnull);
-    my ($wtr, $rdr, $err) = (gensym, \*DATA, \*NULL);
-
-    my $pid = open3($wtr, $rdr, $err, @$cmd_ref);
-    binmode $rdr;
+    use IPC::Run;
 
     my $coderef = sub {
         my $responder = shift;
         my $writer = $responder->([ 200, [ $self->header ] ]);
-        my $buffer;
-        while (read($rdr, $buffer, 4096)) {
-            print STDERR "GOT: length = " . length($buffer) . "\n";
-            $writer->write($buffer);
-        }
-        waitpid($pid, 0);
+        
+        my $catch_some_out = sub {
+            print STDERR "GOT: length = " . length($_[0]) . "\n";
+            $writer->write(@_);
+        };
+
+        my $err;
+
+        IPC::Run::run $cmd_ref, \undef, $catch_some_out, \$err, IPC::Run::timeout( 100 ) or die "cat: $?";
+        # print STDERR $err . "\n";
     };
 
     return $coderef;
+
+
 }
 
 # ---------------------------------------------------------------------
