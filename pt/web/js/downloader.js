@@ -169,7 +169,7 @@ HT.Downloader = {
                 self.$dialog.modal('hide');
                 self.clearTimer();
                 if ( req.status == 404 && (self.i > 25 || self.num_processed > 0) ) {
-                    self.showEror();
+                    self.displayError();
                 }
             }
         })
@@ -196,7 +196,8 @@ HT.Downloader = {
             self.num_attempts += 1;
         }
 
-        if ( self.num_attempts > 5 ) {
+        // try 100 times, which amounts to ~100 seconds
+        if ( self.num_attempts > 100 ) {
             status.error = true;
         }
 
