@@ -131,7 +131,7 @@
 
   <xsl:template name="sidebar">
     <!-- XXX don't display if no results-->
-    <xsl:if test="SearchResults/Item">
+    <xsl:if test="SearchResults/A_RESULTS/Item">
       <xsl:call-template name="facets"/>
     </xsl:if>
   </xsl:template>
@@ -147,7 +147,7 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="list-items-results">
     <xsl:variable name="title">
       <xsl:choose>
-        <xsl:when test="SearchResults/Item">
+        <xsl:when test="SearchResults/A_RESULTS/Item">
           <xsl:text>Search Results</xsl:text>
         </xsl:when>
         <xsl:otherwise>
@@ -167,7 +167,7 @@ REMOVE the below and see if it will call list_utils
 
           
       <xsl:choose>
-        <xsl:when test="SearchResults/Item">
+        <xsl:when test="SearchResults/A_RESULTS/Item">
           <xsl:call-template name="SearchResults_status"/>
           <xsl:call-template name="Refine"/>
           <xsl:call-template name="DisplayContent">
