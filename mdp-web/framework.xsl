@@ -430,7 +430,7 @@
 
       <div class="mdpMetaDataRow">
         <div class="mdpMetaDataRegionHead">
-          <xsl:text>Copyright&#xa0;</xsl:text>
+          <xsl:text>Rights&#xa0;</xsl:text>
         </div>
         <div class="mdpMetaText">
           <xsl:call-template name="BuildRDFaCCLicenseMarkup"/>
@@ -1044,7 +1044,7 @@
           </xsl:attribute>
           <xsl:value-of select="$gAccessUseHeader" />
         </xsl:element> -->
-        <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+        <strong>Rights: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
       </p>
     </div>
   </xsl:template>
