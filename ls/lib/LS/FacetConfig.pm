@@ -81,7 +81,9 @@ sub _initialize
         $self->__set_facet_mapping($facet_to_label_map);
         $self->__set_facet_limit($facet_limit);
         $self->__set_facet_initial_show($facet_initial_show);
-        $self->__set_rel_weights($rel_weights);
+        $self->__set_rel_weights($rel_weights_A,'A');
+	$self->__set_rel_weights($rel_weights_B,'B');
+
         $self->__set_param_2_solr_map($param_2_solr_map);
         #advanced search additions
         $self->__set_field_2_display($field_2_display);
@@ -266,14 +268,15 @@ sub __set_rel_weights
 {
     my $self = shift;
     my $rel_weights = shift;
-    
-    $self->{'rel_weights'} = $rel_weights;
+    my $AB = shift;
+    $self->{'rel_weights'}->{$AB} = $rel_weights;
 }
 # ---------------------------------------------------------------------
 sub get_rel_weights
 {
     my $self = shift;
-    return  $self->{'rel_weights'};
+    my $AB = shift;
+    return  $self->{'rel_weights'}->{$AB};
 }
 
 
@@ -349,7 +352,9 @@ sub get_weights_for_field
 {
     my $self = shift;
     my $field = shift;
-    my $weights = $self->get_rel_weights;
+    my $AB = shift;
+    
+    my $weights = $self->get_rel_weights($AB);
     ASSERT (defined($weights->{$field}),qq{no weights for $field field});
     return $weights->{$field};
 }
@@ -361,7 +366,9 @@ sub get_weights_for_field
 sub get_all_weights
 {
    my $self = shift;
-   return $self->{'rel_weights'}->{'all'};
+   my $AB = shift;
+   #XXX
+   return $self->{'rel_weights'}->{$AB}->{'all'};
    
 }
 
