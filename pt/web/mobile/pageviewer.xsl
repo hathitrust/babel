@@ -257,7 +257,7 @@
             <xsl:call-template name="BuildRDFaWrappedAuthor"/>
           </p>
           <p class="smaller">
-            <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+            <strong>Rights: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
           </p>            
         </div>
         <div class="panel-group">

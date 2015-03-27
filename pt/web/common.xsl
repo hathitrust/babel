@@ -898,7 +898,7 @@
         </xsl:choose>
       </p>
       <p class="smaller">
-        <strong>Copyright: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+        <strong>Rights: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
       </p>
     </div>
   </xsl:template>
