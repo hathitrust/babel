@@ -373,7 +373,7 @@ sub handle_Build_Resume {
     my $_Next_Stage = $SLIP_Utils::States::St_Building;
 
     __output("$_Stage\n");
-    Log_stage($C, $run, $_Stage);
+    Log_stage($C, $run, $_Stage, 'begin handler');
 
     SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
 
@@ -395,7 +395,7 @@ sub handle_Optimize_Resume {
     my $_Next_Stage = $SLIP_Utils::States::St_Optimizing;
 
     __output("$_Stage\n");
-    Log_stage($C, $run, $_Stage);
+    Log_stage($C, $run, $_Stage, 'begin handler');
 
     SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
 
@@ -417,7 +417,7 @@ sub handle_Check_Resume {
     my $_Next_Stage = $SLIP_Utils::States::St_Checking;
 
     __output("$_Stage\n");
-    Log_stage($C, $run, $_Stage);
+    Log_stage($C, $run, $_Stage, 'begin handler');
 
     SLIP_Utils::Db_driver::set_driver_stage($C, $dbh, $run, $_Next_Stage);
 
@@ -688,7 +688,7 @@ sub handle_Building {
     __output("$_Stage\n");
 
     __check_driver_enabled($C, $dbh, $run, $_Stage);
-    Log_stage($C, $run, $_Stage);
+    Log_stage($C, $run, $_Stage, 'active');
 
     my $build_START = time();
 
@@ -753,7 +753,7 @@ sub handle_Optimizing {
     __output("$_Stage\n");
 
     __check_driver_enabled($C, $dbh, $run, $_Stage);
-    Log_stage($C, $run, $_Stage);
+    Log_stage($C, $run, $_Stage, 'active');
 
     my $optimize_START = time();
 
@@ -810,7 +810,7 @@ sub handle_Checking {
     __output("$_Stage\n");
 
     __check_driver_enabled($C, $dbh, $run, $_Stage);
-    Log_stage($C, $run, $_Stage);
+    Log_stage($C, $run, $_Stage, 'active');
 
     my $check_START = time();
 
