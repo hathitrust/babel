@@ -50,7 +50,7 @@ Utils::clean_cgi_params($Q);
 my $version = 2;
 my $production_mode = 0;
 
-my @superusers = qw(pfarber roger aelkiss skorner);
+my @superusers = qw(pfarber roger aelkiss skorner tburtonw);
 my $development_support = 0;
 
 if ($production_mode) {
