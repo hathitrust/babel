@@ -160,7 +160,7 @@ my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{check-j run=
 
 my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
 
-my $check_enabled = 
+my $check_enabled =
   (
    $NOOP
    ||
@@ -181,7 +181,7 @@ if ( $check_index_supported && Sl_Utils::checkIndex_day($C) ) {
     $CHECK_INDEX = 1;
 }
 
-if ($check_enabled) {    
+if ($check_enabled) {
     eval {
         my $s =
           "check-j: CHECK shard=$SHARD Lucene checkIndex="
@@ -190,7 +190,7 @@ if ($check_enabled) {
                 . ($NOOP ? " ---> NOOP" : "") ;
         __output(qq{$s\n});
         Log_check($C, $RUN, $SHARD, $s);
-        
+
         handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST,
                         c_check($C, $RUN, $DBH, $SHARD, $LIMIT_SEGS, $CHECK_INDEX));
     };
@@ -270,7 +270,7 @@ sub __check_c_sysrc {
     my ($sysrc, $C, $run, $shard, $s, $error) = @_;
 
     my $rc = 0;
-    
+
     if ($sysrc > 0) {
         my $ss = qq{check-j system_rc=$sysrc attempting $s run=$run shard=$shard error: $error};
         $rc = $SLIP_Utils::States::RC_CHILD_ERROR;
@@ -335,12 +335,12 @@ sub __run_s_tomcat {
     return 0 if $NOOP;
 
     my $rc = 0;
-    my $fail_rc = ($action eq 'stop') 
-      ? $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL 
+    my $fail_rc = ($action eq 'stop')
+      ? $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL
         : $SLIP_Utils::States::RC_TOMCAT_START_FAIL;
 
     my $test = ($action eq 'stop') ? 0 : 1;
-    
+
     # Try to act on a tomcat
     my $cmd = qq{sudo /etc/init.d/tomcat-lss $action $shard};
     my $output = `$cmd 2>&1`;
@@ -354,7 +354,7 @@ sub __run_s_tomcat {
     while (1) {
         last if (SLIP_Utils::Processes::is_tomcat_running($C, $tomcat_pattern) == $test);
         sleep TOMCAT_TRIES_WAIT;
-        
+
         $tries++;
         last if ($tries > TOMCAT_MAX_TRIES);
     }
@@ -390,13 +390,24 @@ sub __run_CheckIndex {
 
     return 0 if $NOOP;
 
+    my $start = time;
+
     # Try to act on a tomcat
     my $cmd = $C->get_object('MdpConfig')->get('check_index_java_cmd');
     $cmd =~ s,__SHARD__,$shard,g;
-    
+
     my $output = `$cmd 2>&1`;
     my $sysrc = $?;
+
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "Lucene checkIndex", $output);
+
+    # Another test
+    if ($rc == 0) {
+        my $s = 'No problems were detected with this index.';
+        unless ( grep($s, $output) ) {
+            $rc = __check_c_sysrc(256, $C, $run, $shard, "Lucene checkIndex", $output);
+        }
+    }
 
     if ($rc == 0) {
         my $msg = qq{Lucene checkIndex sysrc="$sysrc" } . $output;
