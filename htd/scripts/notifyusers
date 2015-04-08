@@ -57,7 +57,7 @@ foreach my $email (keys %users) {
 
 if (__confirm_email('List', 'looks')) {
     if ($DEBUG) {
-        if (__confirm_email('Phillip Farber', 'pfarber@umich.edu')) { 
+        if (__confirm_email('Test', 'tburtonw@umich.edu,roger@umich.edu')) { 
             email_notification('pfarber@umich.edu', 'feedback@issues.hathitrust.org', $messages[0]);
         }
     }
