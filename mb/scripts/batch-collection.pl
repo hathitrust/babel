@@ -84,14 +84,13 @@ use MBooks::MetaDataGetter;
 
 my @superusers =
   (
-   'pfarber',
    'roger',
+   'tburtonw',
   );
 
 my @allowed_uniqnames =
   (
    'tburtonw',
-   'pfarber',
    'roger',
    'jweise',
    'sooty',
