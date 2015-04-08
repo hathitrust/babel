@@ -48,17 +48,13 @@ $ToolLib::VERBOSE = 0;
           jgmorse 
           jjyork 
           moseshll 
-          pfarber 
           roger 
           rrotter 
-          scollett 
-          sethajoh 
           skorner 
           sooty 
           stampy 
           tburtonw 
           sethip
-          amardesi
      );
 
 @ToolLib::valid_dev_repos = map { "/htapps/$_.babel" } @ToolLib::valid_developers;
