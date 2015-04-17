@@ -1,6 +1,7 @@
 <DebugMessages><?DEBUG_MESSAGES?></DebugMessages>
 <RightsAttribute><?RIGHTS_ATTRIBUTE?></RightsAttribute>
 <SourceAttribute><?SOURCE_ATTRIBUTE?></SourceAttribute>
+<ContentProvider><?CONTENT_PROVIDER?></ContentProvider>
 <FinalAccessStatus><?FINAL_ACCESS_STATUS?></FinalAccessStatus>
 <LoggedIn><?LOGGED_IN?></LoggedIn>
 <HathiTrustAffiliate><?HATHITRUST_AFFILIATE?></HathiTrustAffiliate>
