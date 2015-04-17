@@ -247,6 +247,47 @@ sub handle_SOURCE_ATTRIBUTE_PI
 
 # ---------------------------------------------------------------------
 
+=item handle_CONTENT_PROVIDER_PI : PI_handler(CONTENT_PROVIDER)
+
+Handler for CONTENT_PROVIDER
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_CONTENT_PROVIDER_PI
+    : PI_handler(CONTENT_PROVIDER)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $mdpItem = $C->get_object('MdpItem');
+    my $content_provider = lc $mdpItem->Get('collection_source');
+
+    # no collection source in METS, punt to using namespace + source attribute lookup
+    # NOTE: REMOVE AFTER METS UPLIFT - ROGER
+    unless ( $content_provider ) {
+        my $id = $mdpItem->GetId();
+        my $rights = $C->get_object('Access::Rights',1);
+        my $source_attribute;
+        if (ref $rights){
+            $source_attribute = $rights->get_source_attribute($C, $id);
+        }
+        my $namespace = Identifier::the_namespace( $id );
+        $content_provider = $namespace; # default
+        if ( -f qq{$ENV{SDRROOT}/watermarks/config.txt} ) {
+            @watermark_config = File::Slurp::read_file(qq{$ENV{SDRROOT}/watermarks/config.txt});
+            my ( $line ) = grep(/^$namespace\|$source_attribute\|/, @watermark_config); chomp $line;
+            if ( $line ) {
+                my @config = split(/\|/, $line);
+                $content_provider = $config[3];
+            }
+        }
+    }
+
+    return $content_provider;
+}
+
+# ---------------------------------------------------------------------
+
 =item handle_POD_DATA_PI :  PI_handler(POD_DATA)
 
 Description
