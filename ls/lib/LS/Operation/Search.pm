@@ -35,6 +35,8 @@ use Search::Searcher;
 use LS::Query::Facets;
 use LS::Result::JSON::Facets;
 use LS::Searcher::Facets;
+use LS::Interleaver::Balanced;
+
 
 sub new
 {
@@ -142,13 +144,21 @@ sub execute_operation
     my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
     my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
     my ($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
-
+    
+    my $IL = new LS::Interleaver::Balanced;
+    # We need a result set object, but won't populate it by searching
+    # populate by interleaving results and copying stuff from real result sets
+    
+    my  $i_rs = new LS::Result::JSON::Facets('all'); 
+    $i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
+    
 
     my %search_result_data =
         (
          'primary_result_object'   => $primary_rs,
          'secondary_result_object' =>$secondary_rs,
 	 'B_result_object'         =>$B_rs,
+	 'interleaved_result_object'=>$i_rs,
          'well_formed' => {
                            'primary'                => $primary_Q->well_formed() ,
                            'processed_query_string' => $primary_Q->get_processed_query_string() ,

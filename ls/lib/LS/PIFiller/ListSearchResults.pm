@@ -403,7 +403,8 @@ sub handle_SEARCH_RESULTS_PI
     my $primary_rs = $$search_result_data_hashref{'primary_result_object'};
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
     my $B_rs =$$search_result_data_hashref{'B_result_object'};
-
+    my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
+    
     # Was there a search?
     if ($search_result_data_hashref->{'undefined_query_string'}) { 
         $query_time = 0;
@@ -421,7 +422,9 @@ sub handle_SEARCH_RESULTS_PI
         #        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
 	#        $output .= $$result_ref;
 	my $A_result_ref = _ls_wrap_result_data($C, $primary_rs);
-        my $B_result_ref = _ls_wrap_result_data($C, $B_rs);
+	#hack.  Need switch
+	#my $B_result_ref = _ls_wrap_result_data($C, $B_rs);
+	my $B_result_ref = _ls_wrap_result_data($C, $i_rs);
         my $A_out = wrap_string_in_tag($$A_result_ref, 'A_RESULTS');
         my $B_out = wrap_string_in_tag($$B_result_ref, 'B_RESULTS');
         $output .= $A_out . $B_out;
@@ -1609,7 +1612,14 @@ sub _ls_wrap_result_data {
 
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');
-
+	#XXX hack for AB and interleaving label
+	my $AB=$doc_data->{'AB'};
+	if ($AB=~/A|B/)
+	{
+	    $s.= wrap_string_in_tag($AB, 'ABLabel');
+	}
+	
+	
         # use id to look up explain data
         if (DEBUG('explain'))
         {

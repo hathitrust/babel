@@ -68,40 +68,48 @@ sub get_interleaved
     #WARNING $rs is not a result set object its the 
     my $rs_a = shift;
     my $rs_b = shift;
-    
-    
+    my $rs_out = shift;
     
     # extract $rs->{result_response_docs_arr_ref} from input result sets and get interleaved result_response_docs_arr_ref
     my $a_docs_ary   =  $rs_a->{result_response_docs_arr_ref};
     my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
     my $out_docs_ary = $self->__get_interleaved($start,$a_docs_ary,$b_docs_ary);
         
+    # insert the docs_array into the interleaved result set object
+    # XXX we are bypassing internal methods
+    # We probably need a new result set object subclass maybe a mock result set object
+    $rs_out->{'result_response_docs_arr_ref'}=($out_docs_ary);
+    # for now lets just copy the docs
+
+    # copy various values from result set a to interleaved result set object
+    # See setter methods in /htapps/tburtonw.babel/ls/lib/LS/Result/JSON/Facets.pm
     #  XXX Is there any other part of the result set for a and b that we need to keep?
     # replace result_response_docs_arr_ref and replace with inteleaved $out_docs_ary
     # copy fields except  result_response_docs_arr_ref to $rs_out
     # use $out_docs_array for $rs_out->result_response_docs_arr_ref
     # add b_key for various keys to $rs_out
-    my $rs_out = {};
-    foreach my $key (keys %{$rs_a})
-    {
-	if ($key eq "result_response_docs_arr_ref")
-	{
-	    $rs_out->{result_response_docs_arr_ref} = $out_docs_ary;
-	}
-	else
-	{
-	    $rs_out->{$key} = $rs_a->{$key};
-	}
-    }
+    # my $rs_out = {};
+    # # OK here is the problme $rs_a is actually a result set object
+    # foreach my $key (keys %{$rs_a})
+    # {
+    # 	if ($key eq "result_response_docs_arr_ref")
+    # 	{
+    # 	    $rs_out->{result_response_docs_arr_ref} = $out_docs_ary;
+    # 	}
+    # 	else
+    # 	{
+    # 	    $rs_out->{$key} = $rs_a->{$key};
+    # 	}
+    # }
         
-    # add various b keys
-    my $bkey;
-    my @keys= qw(result_ids result_scores num_found max_score query_time response_code);
-    foreach my $key  (@keys)
-    {
-	$bkey= 'b_' . $key;
-	$rs_out->{$bkey}=$rs_b->{$key};
-    }
+    # # add various b keys
+    # my $bkey;
+    # my @keys= qw(result_ids result_scores num_found max_score query_time response_code);
+    # foreach my $key  (@keys)
+    # {
+    # 	$bkey= 'b_' . $key;
+    # 	$rs_out->{$bkey}=$rs_b->{$key};
+    # }
     return $rs_out;
 }
 
