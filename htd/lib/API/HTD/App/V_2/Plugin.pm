@@ -801,6 +801,7 @@ sub __get_volume {
 
     use IPC::Run;
 
+    my $timeout = IPC::Run::timeout(100);
     my $coderef = sub {
         my $responder = shift;
         my $writer = $responder->([ 200, [ $self->header ] ]);
@@ -808,11 +809,12 @@ sub __get_volume {
         my $catch_some_out = sub {
             print STDERR "GOT: length = " . length($_[0]) . "\n";
             $writer->write(@_);
+            $timeout->start(100);
         };
 
         my $err;
 
-        IPC::Run::run $cmd_ref, \undef, $catch_some_out, \$err, IPC::Run::timeout( 100 ) or die "cat: $?";
+        IPC::Run::run $cmd_ref, \undef, $catch_some_out, \$err, $timeout or die "cat: $?";
         # print STDERR $err . "\n";
     };
 
