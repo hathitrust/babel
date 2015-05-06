@@ -32,6 +32,8 @@ use CollectionSet;
 use Access::Rights;
 use Survey;
 
+use File::Slurp ();
+
 use URI;
 
 require "PIFiller/Common/Globals.pm";
