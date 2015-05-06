@@ -399,7 +399,6 @@
                 process = options.click.call(this, e);
             }
             if (process) {
-                console.log(options);
                 var context = {
                     url: options.url,
                     title: options.title
@@ -432,9 +431,6 @@
             if (screen.height > params.height) {
                 top = Math.round(screen.height/3 - params.height/2);
             }
-
-            console.log(url);
-            //return;
 
             var win = window.open(url, 'sl_' + this.service, 'left=' + left + ',top=' + top + ',' +
                'width=' + params.width + ',height=' + params.height + ',personalbar=0,toolbar=0,scrollbars=1,resizable=1');
