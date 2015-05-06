@@ -1099,14 +1099,14 @@
       <h3>Share</h3>
 
       <div class="btn-group share-toolbar share-toolbar-seven social-links">
-        <button data-service="facebook" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-facebook2"></i></button>
-        <button data-service="twitter" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-twitter2"></i></button>
-        <button data-service="plusone" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-google-plus"></i></button>
-        <button data-service="reddit" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-reddit"></i></button>
-        <button data-service="tumblr" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i></button>
-        <button data-service="vkontakte" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-vk"></i></button>
+        <button data-service="facebook" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-facebook2"></i><span class="offscreen"> Share via Facebook</span></button>
+        <button data-service="twitter" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-twitter2"></i><span class="offscreen"> Share via Twitter</span></button>
+        <button data-service="plusone" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button>
+        <button data-service="reddit" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-reddit"></i><span class="offscreen"> Share via reddit</span></button>
+        <button data-service="tumblr" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i><span class="offscreen"> Share via Tumblr</span></button>
+        <button data-service="vkontakte" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-vk"></i><span class="offscreen"> Share via VK</span></button>
         <xsl:if test="$gUsingSearch = 'false'">
-          <button data-service="pinterest" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-pinterest-p"></i></button>
+          <button data-service="pinterest" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-pinterest-p"></i><span class="offscreen"> Share via Pinterest</span></button>
         </xsl:if>
       </div>
 

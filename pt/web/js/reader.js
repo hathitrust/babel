@@ -648,10 +648,6 @@ head.ready(function() {
         return label;
     };
 
-    // // initialize
-    // $(".social-links button[data-media]").data('media', HT.engines.reader.getCurrentImage());
-    // $("meta[property='og:image']").attr('content', HT.engines.reader.getCurrentImage());
-
 })
 
 // Find the right method, call on correct element
