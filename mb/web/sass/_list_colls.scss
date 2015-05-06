@@ -410,6 +410,29 @@ body.listcs {
 
 }
 
+body.listis {
+
+  .share-toolbar {
+      @include rem(margin-bottom, 12);
+      .btn {
+          @include rem(font-size, 12);
+          @include rem(padding, 4);
+          @include rem(padding-left, 8);
+          @include rem(padding-right, 8);
+      }
+  }
+
+
+  .shareLinks {
+      input[type=text] {
+          @include rem(font-size, 12);
+          @include rem(height, 18);
+          cursor: default;
+      }
+  }
+
+}
+
 
 // /*--- THE MAGIC ---*/
 // /*

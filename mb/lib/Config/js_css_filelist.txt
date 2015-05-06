@@ -46,6 +46,7 @@ Section:LOCAL_JS
 //common-web/js/google_covers.js
 //common-web/js/collection_tools.js
 //common-web/js/search_tools.js
+//common-web/js/social_links.js
 
 Section:COLLLIST_JS
 Test://CurrentCgi/Param[@name='a'] = 'listcs'

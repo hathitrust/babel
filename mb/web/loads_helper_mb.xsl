@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1411068772'" />
+  <xsl:variable name="timestamp" select="'?_=1430924400'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
@@ -32,6 +32,7 @@
             to_load.push("/mb/common-web/js/google_covers.js<xsl:value-of select="$timestamp" />");
             to_load.push("/mb/common-web/js/collection_tools.js<xsl:value-of select="$timestamp" />");
             to_load.push("/mb/common-web/js/search_tools.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/mb/common-web/js/social_links.js<xsl:value-of select="$timestamp" />");
     <xsl:if test="//CurrentCgi/Param[@name='a'] = 'listcs'">
             to_load.push("/mb/js/date.js<xsl:value-of select="$timestamp" />");
             to_load.push("/mb/js/listcs_collection_tools.js<xsl:value-of select="$timestamp" />");

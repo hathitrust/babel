@@ -19,6 +19,10 @@
     <xsl:call-template name="load_js_and_css"/>
   </xsl:template>
 
+  <xsl:template name="setup-body-class">
+    listis
+  </xsl:template>
+
   <xsl:template name="contents">
     <xsl:call-template name="sidebar" />
     <xsl:call-template name="list-items-results" />
@@ -77,7 +81,40 @@
       </xsl:if>
 
     </dl>
-    
+
+    <div class="shareLinks">
+
+    <h3>Share</h3>
+
+    <div class="btn-group share-toolbar social-links">
+      <button data-service="facebook" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-facebook2"></i></button>
+      <button data-service="twitter" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-twitter2"></i></button>
+      <button data-service="plusone" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-google-plus"></i></button>
+      <button data-service="reddit" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-reddit"></i></button>
+      <button data-service="tumblr" data-title="{$coll_name}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i></button>
+      <button data-service="vkontakte" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-vk"></i></button>
+    </div>
+
+    <br />
+
+    <form action="" name="urlForm" id="urlForm">
+      <label class="smaller" for="permURL">Link to this collection</label>
+      <xsl:element name="input">
+        <xsl:attribute name="type">text</xsl:attribute>
+        <xsl:attribute name="name">permURL_link</xsl:attribute>
+        <xsl:attribute name="id">permURL</xsl:attribute>
+        <xsl:attribute name="class">email-permURL</xsl:attribute>
+        <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
+        <xsl:attribute name="readonly">readonly</xsl:attribute>
+        <xsl:attribute name="value">
+          <xsl:text>http://babel.hathitrust.org/cgi/mb?a=listis&amp;c=</xsl:text>
+          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']" />
+        </xsl:attribute>
+      </xsl:element>
+    </form>
+
+    </div>
+
   </xsl:template>
 
   <xsl:template name="collection-edit-metadata">
