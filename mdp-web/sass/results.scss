@@ -168,18 +168,18 @@ dl.collection {
     max-width: 100%;
 }
 
-[class^="icomoon-"]:before, [class*=" icomoon-"]:before {
-font-family: 'icomoon';
-font-style: normal;
-speak: none;
-font-weight: normal;
-line-height: 1;
--webkit-font-smoothing: antialiased;
-margin-right: 2px;
-    color: #666;
-    display: inline-block;
-    font-size: 110%;
-}
+// [class^="icomoon-"]:before, [class*=" icomoon-"]:before {
+// font-family: 'icomoon';
+// font-style: normal;
+// speak: none;
+// font-weight: normal;
+// line-height: 1;
+// -webkit-font-smoothing: antialiased;
+// margin-right: 2px;
+//     color: #666;
+//     display: inline-block;
+//     font-size: 110%;
+// }
 
 .mainsearch {
     label[for=q1] {
