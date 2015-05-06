@@ -1074,9 +1074,42 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="share-with-services-link">
+    <a class="share" href="#"><span class="icomoon-share"></span></a>
+  </xsl:template>
+
+  <xsl:template name="share-with-services-button">
+    <button class="share btn btn-default"><span class="icomoon-share"></span></button>
+  </xsl:template>
+
+  <xsl:template name="get-sharable-handle-link">
+    <xsl:value-of select="$gItemHandle" />
+    <xsl:if test="$gUsingSearch = 'false'">
+      <xsl:text>?urlappend=%3Bseq=</xsl:text>
+      <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
+    </xsl:if>
+  </xsl:template>    
+
   <xsl:template name="share-this-book">
+    <xsl:variable name="pageLink">
+      <xsl:call-template name="get-sharable-handle-link" />
+    </xsl:variable>
+
     <div class="shareLinks">
       <h3>Share</h3>
+
+      <div class="btn-group share-toolbar share-toolbar-seven social-links">
+        <button data-service="facebook" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-facebook2"></i></button>
+        <button data-service="twitter" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-twitter2"></i></button>
+        <button data-service="plusone" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-google-plus"></i></button>
+        <button data-service="reddit" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-reddit"></i></button>
+        <button data-service="tumblr" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i></button>
+        <button data-service="vkontakte" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-vk"></i></button>
+        <xsl:if test="$gUsingSearch = 'false'">
+          <button data-service="pinterest" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-pinterest-p"></i></button>
+        </xsl:if>
+      </div>
+
       <form action="" name="urlForm" id="urlForm">
         <label class="smaller" for="permURL">Permanent link to this book</label>
         <!-- <input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" /> -->
@@ -1100,11 +1133,6 @@
         <br />
 
         <label class="smaller" for="pageURL">Link to this page</label>
-        <xsl:variable name="pageLink">
-          <xsl:value-of select="$gItemHandle" />
-          <xsl:text>?urlappend=%3Bseq=</xsl:text>
-          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
-        </xsl:variable>
 
         <xsl:element name="input">
           <xsl:attribute name="type">text</xsl:attribute>
@@ -1134,7 +1162,6 @@
           </xsl:element>
         </p>
       </xsl:if>
-
     </div>
   </xsl:template>
 

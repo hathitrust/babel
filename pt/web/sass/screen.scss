@@ -474,3 +474,20 @@ body {
 
 
 @import "../vendor/nanoscroller/nanoscroller";
+@import "../vendor/social-likes/social-likes_birman";
+
+.shareLinks {
+
+    position: relative;
+
+    .share-toolbar {
+        @include rem(margin-bottom, 12);
+        .btn {
+            @include rem(font-size, 11);
+            @include rem(padding, 4);
+            @include rem(padding-left, 8);
+            @include rem(padding-right, 8);
+        }
+    }
+
+}

@@ -94,9 +94,26 @@
     </xsl:choose>
   </xsl:variable>
 
+  <xsl:variable name="gUsingPageImages">
+    <xsl:choose>
+      <xsl:when test="$gFinalAccessStatus!='allow'"><xsl:value-of select="'false'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '1up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
+      <xsl:when test="$gCurrentView = 'image'"><xsl:value-of select="'true'" /></xsl:when>
+      <!-- <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when> -->
+      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:template name="setup-extra-header-extra">
     <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
     <link rel="stylesheet" href="/pt/css/print.css{$timestamp}" media="print" />
+
+    <xsl:if test="$gUsingPageImages = 'true'">
+      <meta property="og:image" content="{//CurrentPageImageSource}" />
+    </xsl:if>
+
   </xsl:template>
 
   <xsl:template name="setup-body-class">
@@ -164,8 +181,8 @@
         <xsl:call-template name="action-resize" />
 
         <div class="btn-group btn-group-vertical">
-          <a href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Counterclockwise"><i class="icomoon-reload-CCW"></i><span class="label"> Rotate left</span></a>
-          <a href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Clockwise"><i class="icomoon-reload-CW"></i><span class="label"> Rotate right</span></a>
+          <a href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Counterclockwise"><i class="icomoon icomoon-reload-CCW"></i><span class="label"> Rotate left</span></a>
+          <a href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Clockwise"><i class="icomoon icomoon-reload-CW"></i><span class="label"> Rotate right</span></a>
         </div>
       </div>
     </div>
@@ -173,14 +190,14 @@
 
   <xsl:template name="action-fullscreen">
     <div class="btn-group btn-group-vertical">
-      <button id="action-toggle-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen"><i class="icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
+      <button id="action-toggle-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen"><i class="icomoon icomoon-fullscreen"></i><span class="label"> Full Screen</span></button>
     </div>
   </xsl:template>
 
   <xsl:template name="action-resize">
     <div class="btn-group btn-group-vertical">
-      <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In"><i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
-      <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out"><i class="icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
+      <a href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In"><i class="icomoon icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="label"> Zoom In</span></a>
+      <a href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out"><i class="icomoon icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="label"> Zoom Out</span></a>
     </div>
   </xsl:template>
 
@@ -188,11 +205,11 @@
     <xsl:param name="view" />
     <xsl:variable name="options">
       <h:select>
-        <h:option name="1up" value="icomoon-scroll">Scroll</h:option>
-        <h:option name="2up" value="icomoon-book-alt2">Flip</h:option>
-        <h:option name="thumb" value="icomoon-grid-view">Thumbnail</h:option>
-        <h:option name="image" value="icomoon-documents">Page by Page</h:option>
-        <h:option name="plaintext" value="icomoon-article" accesskey="5">Plain Text</h:option>
+        <h:option name="1up" value="icomoon icomoon-scroll">Scroll</h:option>
+        <h:option name="2up" value="icomoon icomoon-book-alt2">Flip</h:option>
+        <h:option name="thumb" value="icomoon icomoon-gridview">Thumbnail</h:option>
+        <h:option name="image" value="icomoon icomoon-documents">Page by Page</h:option>
+        <h:option name="plaintext" value="icomoon icomoon-article" accesskey="5">Plain Text</h:option>
       </h:select>
     </xsl:variable>
 
@@ -259,15 +276,15 @@
   </xsl:template>
 
   <xsl:template name="action-page-navigation">
-    <a id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f"><i class="icomoon-first"></i><span class="label"> First</span></a>
-    <a id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon-go-previous" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p"></i><span class="label"> Previous</span></a>
-    <a id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n"><i class="icomoon-go-next"></i><span class="label"> Next</span></a>
-    <a id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l"><i class="icomoon-last"></i><span class="label"> Last</span></a>
+    <a id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f"><i class="icomoon icomoon-first"></i><span class="label"> First</span></a>
+    <a id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon icomoon-go-previous" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p"></i><span class="label"> Previous</span></a>
+    <a id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n"><i class="icomoon icomoon-go-next"></i><span class="label"> Next</span></a>
+    <a id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l"><i class="icomoon icomoon-last"></i><span class="label"> Last</span></a>
   </xsl:template>
 
   <xsl:template name="action-table-of-contents">
     <button type="button" class="btn dropdown-toggle square" data-toggle="dropdown">
-      <i class="icomoon-list"></i><span class="label"> Jump to section</span> <span class="caret"></span>
+      <i class="icomoon icomoon-list"></i><span class="label"> Jump to section</span> <span class="caret"></span>
     </button>
     <ul class="dropdown-menu scrollable-list">
       <xsl:for-each select="$gFeatureList/Feature">

@@ -14,11 +14,23 @@ head.ready(function() {
         return;
     }
 
+    if ( $("body").is(".view-image") || $("body").is(".view-plaintext") ) {
+        return; // don't bother
+    }
+
     HT.x = 10;
 
-    $navbar  = $(".navbar-static-top");
-    var h = $window.height() - $navbar.height();
-    var h2 = h - $(".bibLinks").height() - HT.x;
+    var calculate_height = function() {
+        $navbar  = $(".navbar-static-top");
+        var window_h = $(window).height();
+        var h = $(window).height() - $navbar.height() - $(".toolbar-horizontal").outerHeight() - 20;
+        var main_h = $("#scrolling").height();
+        if ( h > main_h ) { h = main_h ; }
+        var h2 = h - $(".bibLinks").height() - HT.x;
+        console.log("CALCULATING SCROLLABLE HEIGHT", h, main_h, h2);
+        return h2;
+    }
+
 
     // if ( $.browser.msie && parseInt($.browser.version) < 9 ) {
     //     return;
@@ -66,7 +78,7 @@ head.ready(function() {
     $.subscribe("view.ready.sidebar", function() {
 
         $sidebar.trigger("sticky_kit:detach");
-        $sidebar_scrollable.height(h2);
+        $sidebar_scrollable.height(calculate_height());
         $sidebar.stick_in_parent({ inner_scrolling : false, offset_top : $navbar.height() + 10, recalc_every: 500 });
 
         // console.log("STICKING SIDEBAR");

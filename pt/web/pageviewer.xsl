@@ -110,8 +110,10 @@
 
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/pt/css/screen.css{$timestamp}" />
-
     <meta name="robots" content="noarchive" />
+
+    <xsl:call-template name="setup-social-twitter" />
+    <xsl:call-template name="setup-social-facebook" />
 
     <xsl:element name="link">
       <xsl:attribute name="rel">canonical</xsl:attribute>
@@ -150,6 +152,63 @@
     <xsl:call-template name="include_local_javascript" />
 
     <xsl:call-template name="setup-extra-header-extra" />
+  </xsl:template>
+
+  <xsl:template name="setup-social-twitter">
+    <meta name="twitter:card">
+      <xsl:attribute name="content">
+        <xsl:choose>
+          <xsl:when test="//CurrentPageImageSource">
+            <xsl:text>summary_large_image</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>summary</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+    </meta>
+    <meta name="twitter:site" content="@HathiTrust" />
+    <meta name="twitter:url">
+      <xsl:attribute name="content">
+        <xsl:call-template name="get-sharable-handle-link" />
+      </xsl:attribute>
+    </meta>
+    <meta name="twitter:description">
+      <xsl:attribute name="content">
+        <xsl:call-template name="GetMaybeTruncatedTitle">
+          <xsl:with-param name="titleString" select="$gTitleString"/>
+          <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+          <xsl:with-param name="maxLength" select="1024"/>
+        </xsl:call-template>
+      </xsl:attribute>
+    </meta>
+
+    <xsl:if test="//CurrentPageImageSource">
+      <meta name="twitter:image:src" content="{//CurrentPageImageSource}" />
+    </xsl:if>    
+  </xsl:template>
+
+  <xsl:template name="setup-social-facebook">
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HathiTrust" />
+    <meta property="og:url">
+      <xsl:attribute name="content">
+        <xsl:call-template name="get-sharable-handle-link" />
+      </xsl:attribute>
+    </meta>
+    <meta property="og:title">
+      <xsl:attribute name="content">
+        <xsl:call-template name="GetMaybeTruncatedTitle">
+          <xsl:with-param name="titleString" select="$gTitleString"/>
+          <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
+          <xsl:with-param name="maxLength" select="1024"/>
+        </xsl:call-template>
+      </xsl:attribute>
+    </meta>
+
+    <xsl:if test="//CurrentPageImageSource">
+      <meta property="og:image" content="{//CurrentPageImageSource}" />
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="skip-to-main-link">

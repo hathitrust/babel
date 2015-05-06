@@ -51,6 +51,7 @@ Section:LOCAL_JS
 /pt/web/js/access_banner_02.js
 /pt/web/js/google_analytics_experiment.js
 /pt/web/js/header_search.js
+//common-web/js/social_links.js
 
 Section:PAGETURNER_VOLUME_JS
 #Test://ItemType='volume' and $gSkin='default'

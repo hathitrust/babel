@@ -100,6 +100,7 @@ HT.Reader = {
                 var target = $(this).data('target');
                 HT.prefs.set({ pt : { view : target } });
             })
+            self._updateSocialLinks();
             return;
         }
 
@@ -209,6 +210,9 @@ HT.Reader = {
             // and center the display
             self._centerContentDisplay();
             $(window).trigger('reset');
+
+            console.log("AHOY: VIEW READY");
+            self._updateSocialLinks();
         });
 
         $.subscribe("disable.download.page.pdf", function() {
@@ -258,6 +262,8 @@ HT.Reader = {
         $(".action-views").find("a").each(function() {
             self._updateLinkSeq($(this), seq);
         })
+
+        this._updateSocialLinks();
     },
 
     _centerContentDisplay: function() {
@@ -399,7 +405,7 @@ HT.Reader = {
             window.location.replace(new_hash); // replace blocks the back button!
         }
         this._trackPageview(new_href);
-        $.publish("update.reader.state");
+
     },
 
     _trackPageview: function(href) {
@@ -444,6 +450,23 @@ HT.Reader = {
                 this._updateLinkAttribute($link, "seq", seq);
             }
         }
+    },
+
+    _updateSocialLinks: function() {
+
+        var canonical_url = $("#pageURL").val();
+        var image_url = this.getCurrentImageURL();
+
+        // twitter
+        $("meta[name='twitter:image:src']").attr('content', image_url);
+        $("meta[name='twitter:url']").attr('content', canonical_url);
+
+        // facebook
+        $("meta[property='og:image']").attr('content', image_url);
+        $("meta[property='og:url']").attr('content', canonical_url);
+
+        $(".social-links button[data-media]").data('media', image_url);
+        $(".social-links button").data('url', canonical_url);
     },
 
     _updateViews: function(view) {
@@ -570,6 +593,12 @@ HT.Reader = {
         })
     }, 
 
+    getCurrentImageURL: function() {
+        var image_url = window.location.origin + HT.engines.imgsrv.get_action_url('image', { id : HT.params.id, idth: 400, seq: this.getCurrentSeq() });
+        image_url = image_url.replace('roger-full.', '');
+        return image_url;
+    },
+
     EOT: true
 
 }
@@ -617,7 +646,11 @@ head.ready(function() {
 
         var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
         return label;
-    }
+    };
+
+    // // initialize
+    // $(".social-links button[data-media]").data('media', HT.engines.reader.getCurrentImage());
+    // $("meta[property='og:image']").attr('content', HT.engines.reader.getCurrentImage());
 
 })
 
