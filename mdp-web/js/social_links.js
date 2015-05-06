@@ -211,9 +211,15 @@
         });
     };
 
+    var default_title = document.title.split(' | ')[0].split(' - ');
+    if ( $.inArray(default_title[default_title.length - 1], [ 'Full View', 'Limited View', 'Item Not Available' ]) !== -1 ) {
+        default_title.pop();
+    }
+    default_title.pop();
+    default_title += " | HathiTrust";
     $.fn.socialLinks.defaults = {
         url: window.location.href.replace(window.location.hash, ''),
-        title: document.title.split(/\s*- Full View|\s*- Limited View|\s*- Item Not Available/)[0],
+        title: default_title,
         counters: true,
         zeroes: false,
         wait: 500,  // Show buttons only after counters are ready or after this amount of time
