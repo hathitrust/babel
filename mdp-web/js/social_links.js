@@ -51,7 +51,7 @@
             convertNumber: function(data) {
                 return data.count;
             },
-            popupUrl: 'https://twitter.com/intent/tweet?url={url}&text={title}',
+            popupUrl: 'https://twitter.com/intent/tweet?url={url}&text={post_title}',
             popupWidth: 600,
             popupHeight: 450,
             click: function() {
@@ -69,7 +69,7 @@
                     }
                 }
             },
-            popupUrl: protocol + '//connect.mail.ru/share?share_url={url}&title={title}',
+            popupUrl: protocol + '//connect.mail.ru/share?share_url={url}&title={post_title}',
             popupWidth: 550,
             popupHeight: 360
         },
@@ -93,7 +93,7 @@
                 $.getScript(makeUrl(jsonUrl, {index: index}))
                     .fail(deferred.reject);
             },
-            popupUrl: protocol + '//vk.com/share.php?url={url}&title={title}',
+            popupUrl: protocol + '//vk.com/share.php?url={url}&title={post_title}',
             popupWidth: 550,
             popupHeight: 330
         },
@@ -155,7 +155,7 @@
             convertNumber: function(data) {
                 return data.count;
             },
-            popupUrl: protocol + '//pinterest.com/pin/create/button/?url={url}&description={title}',
+            popupUrl: protocol + '//pinterest.com/pin/create/button/?url={url}&description={post_title}',
             popupWidth: 630,
             popupHeight: 360
         },
@@ -165,8 +165,8 @@
             convertNumber: function(data) {
                 return data.count;
             },
-            popupUrl1: protocol + '//www.tumblr.com/share/link?url={url}&description={title}',
-            popupUrl2: protocol + '//www.tumblr.com/share/photo?source={media}&click_thru={url}&description={title}',
+            popupUrl1: protocol + '//www.tumblr.com/share/link?url={url}&description={post_title}',
+            popupUrl2: protocol + '//www.tumblr.com/share/photo?source={media}&click_thru={url}&description={post_title}',
             click: function() {
                 if ( this.widget.data('media') ) {
                     this.options.popupUrl = this.options.popupUrl2;
@@ -185,7 +185,7 @@
             convertNumber: function(data) {
                 return data.count;
             },
-            popupUrl: protocol + '//reddit.com/submit?url={url}&description={title}',
+            popupUrl: protocol + '//reddit.com/submit?url={url}&description={post_title}',
             popupWidth: 630,
             popupHeight: 360
         },
@@ -211,15 +211,15 @@
         });
     };
 
-    var default_title = document.title.split(' | ')[0].split(' - ');
-    if ( $.inArray(default_title[default_title.length - 1], [ 'Full View', 'Limited View', 'Item Not Available' ]) !== -1 ) {
-        default_title.pop();
+    var post_title = document.title.split(' | ')[0].split(' - ');
+    if ( $.inArray(post_title[post_title.length - 1], [ 'Full View', 'Limited View', 'Item Not Available' ]) !== -1 ) {
+        post_title.pop();
     }
-    default_title.pop();
-    default_title += " | HathiTrust";
+    post_title = post_title.join(" - ") + " | HathiTrust";
+    console.log("TITLE", post_title);
     $.fn.socialLinks.defaults = {
         url: window.location.href.replace(window.location.hash, ''),
-        title: default_title,
+        post_title: post_title,
         counters: true,
         zeroes: false,
         wait: 500,  // Show buttons only after counters are ready or after this amount of time
@@ -347,7 +347,7 @@
             if (options.clickUrl) {
                 var url = makeUrl(options.clickUrl, {
                     url: options.url,
-                    title: options.title
+                    post_title: options.post_title
                 });
                 var link = $('<a>', {
                     href: url
@@ -360,7 +360,7 @@
                 widget.on('click', $.proxy(this.click, this));
             }
 
-            widget.tooltip({ title : options.label, animation: false });
+            widget.tooltip({ title : widget.text(), animation: false });
 
             this.button = button;
         },
@@ -407,7 +407,7 @@
             if (process) {
                 var context = {
                     url: options.url,
-                    title: options.title
+                    post_title: options.post_title
                 };
                 if ( this.widget.data('media') ) {
                     context.media = this.widget.data('media');
@@ -423,8 +423,7 @@
         },
 
         addAdditionalParamsToUrl: function(url) {
-            var data = this.widget.data();
-            delete data.tooltip;
+            var data =  dataToOptions(this.widget);
             var params = $.param($.extend(data, this.options.data));
             if ($.isEmptyObject(params)) return url;
             var glue = url.indexOf('?') === -1 ? '?' : '&';
@@ -468,6 +467,7 @@
         var options = {};
         var data = elem.data();
         for (var key in data) {
+            if ( key == 'tooltip' ) { continue ; }
             var value = data[key];
             if (value === 'yes') value = true;
             else if (value === 'no') value = false;
