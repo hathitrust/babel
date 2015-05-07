@@ -184,7 +184,7 @@
     </meta>
 
     <xsl:if test="//CurrentPageImageSource">
-      <meta name="twitter:image:src" content="{//CurrentPageImageSource}" />
+      <meta name="twitter:image" content="{//CurrentPageImageSource}" />
     </xsl:if>    
   </xsl:template>
 
