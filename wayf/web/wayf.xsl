@@ -47,14 +47,14 @@
               <div class="partner-can-do-cells-wrapper">
                 <div class="partner-can-do-cell">
                   <div>
-                    <div><i class="icomoon-checkmark"/></div>
+                    <div><i class="icomoon icomoon-checkmark"/></div>
                     <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-partner.png" /></div>
                     <p>Members can create &amp; share permanent collections</p>
                   </div>
                 </div>
                 <div class="partner-can-do-cell">
                   <div>
-                    <div><i class="icomoon-checkmark"/></div>
+                    <div><i class="icomoon icomoon-checkmark"/></div>
                     <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-partner.png" /></div>
                     <p>Members can download PDFs of available items*</p>
                   </div>
@@ -108,14 +108,14 @@
               <div class="friend-can-do-cells-wrapper">
                 <div class="friend-do-cell-common friend-can-do-cell">
                   <div>
-                    <div><i class="icomoon-checkmark"/></div>
+                    <div><i class="icomoon icomoon-checkmark"/></div>
                     <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-friend.png" /></div>
                     <p>Friends can create &amp; share permanent collections</p>
                   </div>
                 </div>
                 <div class="friend-do-cell-common friend-cannot-do-cell">
                   <div>
-                    <div><i class="icomoon-cancel"/></div>
+                    <div><i class="icomoon icomoon-cancel"/></div>
                     <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-friend.png" /></div>
                     <p>Friends cannot download PDFs of available items</p>
                   </div>
