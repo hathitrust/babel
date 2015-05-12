@@ -93,6 +93,8 @@ sub get_owner_affiliation {
     my $owner = shift;
     my $owner_name = shift;
 
+    my $inst_hashref = get_inst_data($C);
+
     my $entityID = '';
     my $domain = '';
     
@@ -107,23 +109,38 @@ sub get_owner_affiliation {
         elsif ( $owner =~ m/!/ ) {
             # Shibboleth targetedID. entityID is part before the '!'
             ($entityID) = ( $owner =~ m/^(.*?)!/);
-            $domain = Institutions::get_institution_entityID_field_val($C, $entityID, 'domain');
+            # $domain = Institutions::get_institution_entityID_field_val($C, $entityID, 'domain'); # NEVER NEEDED
         }
         else {
             # COSIGN friend or Shibboleth eduPersonPrincipalName (ePPN)
             my @parts = split(/@/, $owner);
             $domain = $parts[1];
-            $entityID = Institutions::get_institution_domain_field_val($C, $domain, 'entityID');
+            ### $entityID = Institutions::get_institution_domain_field_val($C, $domain, 'entityID');
+
+            $entityID = $$inst_hashref{domains}{$domain};
         }
     }
 
-    my $owner_affiliation = Institutions::get_institution_entityID_field_val($C, $entityID, 'name') || '';
+    ### my $owner_affiliation = Institutions::get_institution_entityID_field_val($C, $entityID, 'name') || '';
+    my $owner_affiliation = $$inst_hashref{entityIDs}{$entityID}{name} || ''; ### NOT MAPPED
 
     # print(STDERR "owner=$owner owner_name=$owner_name domain=$domain aff=$owner_affiliation");
-
+    
     return $owner_affiliation;
 }
 
+sub get_inst_data {
+    my ( $C ) = @_;
+    unless ( $C->has_object('InstData') ) {
+        my $inst_hashref = { entityIDs => {}, domains => {} };
+        my $list = Institutions::get_institution_list($C);
+        # now build the mappings
+        $$inst_hashref{entityIDs} = { map { $$_{entityID} => $_ } grep({ $$_{entityID} ne '' } @$list) };
+        $$inst_hashref{domains} = { map { $$_{domain} => $$_{entityID} } grep({ $$_{domain} ne '' } @$list) };
+        $C->set_object('InstData', $inst_hashref, 1);
+    }
+    return $C->get_object('InstData');
+}
 
 # ---------------------------------------------------------------------
 

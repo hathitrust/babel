@@ -28,6 +28,9 @@ use MBooks::Index;
 use MBooks::Utils::Sort;
 use MBooks::PIFiller::ListUtils;
 
+use URI::Escape;
+use Time::HiRes qw(time);
+
 BEGIN
 {
     require "PIFiller/Common/Globals.pm";
@@ -46,6 +49,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
+use Data::Dumper;
 sub coll_list_helper
 {
     my ($C, $act, $data_key) = @_;
@@ -54,12 +58,16 @@ sub coll_list_helper
     $C->set_object('Collection', $co);
     my $output = '';
 
+    my $start = time();
+
     my $data_ref = $act->get_transient_facade_member_data($C, $data_key);
     foreach my $coll_hashref (@$data_ref)
     {
         my $s = get_coll_xml($C, $coll_hashref);
         $output .= wrap_string_in_tag($s, 'Collection');
     }
+
+    ## print STDERR "COLL_LIST_HELPER : " . ( time() - $start ) . "\n";
 
     return $output;
 }
@@ -152,9 +160,7 @@ sub get_coll_xml
     my $C = shift;
     my $coll_hashref = shift;
     my $s = '';
-    
-    use URI::Escape;
-    
+
     $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName', [['e', uri_escape_utf8($$coll_hashref{'collname'})]]);
     my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'});
     my $owner_affiliation = MBooks::PIFiller::ListUtils::get_owner_affiliation($C, $$coll_hashref{'owner'}, $$coll_hashref{'owner_name'});
