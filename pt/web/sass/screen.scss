@@ -149,7 +149,7 @@ body {
                     right: 0; // -5px;
                     background-color: #fff;
                     z-index: 400;
-                    box-shadow: 16px 20px 35px rgba(0, 0, 0, 0.8);      
+                    box-shadow: 16px 20px 35px rgba(0, 0, 0, 0.8);
 
                     .bg-inner {
                         position: absolute;
@@ -159,8 +159,8 @@ body {
                         height: 50px;
                         right: 0px;
                         background-color: #D2D2D1;
-                        z-index: 500;                    
-                    }          
+                        z-index: 500;
+                    }
                 }
 
                 .search-form {
@@ -204,7 +204,7 @@ body {
                 z-index: 499;
 
                 text-align: left;
-                padding-right: 1rem;            
+                padding-right: 1rem;
 
 
                 input[type="radio"] {
@@ -229,7 +229,7 @@ body {
                         background-color: #D2D2D1;
                         color: #4F4F4F;
                     }
-                }            
+                }
             }
 
             .search-input-options {
@@ -263,7 +263,7 @@ body {
   // background: #eee;
   // opacity: 0.04;
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=1)";
-    background-color: rgba(255, 255, 255, 0.1); 
+    background-color: rgba(255, 255, 255, 0.1);
     //color: rgba(255, 255, 255, 0.1);
 }
 
@@ -289,7 +289,7 @@ body {
 .sidebar {
 
     >div {
-        @include rem(width, 200, !important);        
+        @include rem(width, 200, !important);
     }
 
     a[disabled] {
@@ -485,8 +485,8 @@ body {
         .btn {
             @include rem(font-size, 11);
             @include rem(padding, 4);
-            @include rem(padding-left, 8);
-            @include rem(padding-right, 8);
+            @include rem(padding-left, 7.75);
+            @include rem(padding-right, 7.75);
         }
     }
 
