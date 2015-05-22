@@ -102,6 +102,8 @@ my $app = sub {
     # get an Auth object to trigger cgi/shcgi redirection
     my $auth = new Auth::Auth($C);
     $C->set_object('Auth', $auth);
+
+    $ses->set_persistent('_isa_new_login_via_pong', 1);
     
     my $cookie_name = $config->get('cookie_name');
     my $target_url = $request->param('target');
