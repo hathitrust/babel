@@ -67,9 +67,15 @@ head.ready(function() {
     }
 
     function summarize_results(params) {
+        console.log("PARAMS", params);
         var $div = $(".mb-status");
-        if ( ! $div.length ) {
-            $div = $('<div class="mb-status alert alert-success"></div>').prependTo($(".main")).hide();
+        if ( $div.length ) { $div.remove(); }
+        var status = 'alert-success';
+        if ( params.result == 'ADD_ITEM_FAILURE' ) {
+            status = 'alert-error';
+        }
+        if ( 1 || ! $div.length ) {
+            $div = $('<div class="mb-status alert {STATUS}"></div>'.replace('{STATUS}', status)).prependTo($(".main")).hide();
         }
 
         var collID = params.coll_id;
@@ -79,7 +85,9 @@ head.ready(function() {
         var numFailed=params.NumFailed;
         var alertMsg;
         var msg;
-        if (numFailed > 0 ){
+        if ( params.result == 'ADD_ITEM_FAILURE' ) {
+            msg = "Sorry; there was a problem adding these items to your collection.";
+        } else if (numFailed > 0 ){
           msg = "numFailed items could not be added to your collection,\n " +  numAdded + " items were added to " + collHref;
         }
         else {
