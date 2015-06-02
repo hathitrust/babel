@@ -178,7 +178,7 @@
         <xsl:call-template name="GetMaybeTruncatedTitle">
           <xsl:with-param name="titleString" select="$gTitleString"/>
           <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-          <xsl:with-param name="maxLength" select="1024"/>
+          <xsl:with-param name="maxLength" select="256"/>
         </xsl:call-template>
       </xsl:attribute>
     </meta>
@@ -201,7 +201,7 @@
         <xsl:call-template name="GetMaybeTruncatedTitle">
           <xsl:with-param name="titleString" select="$gTitleString"/>
           <xsl:with-param name="titleFragment" select="$gVolumeTitleFragment"/>
-          <xsl:with-param name="maxLength" select="1024"/>
+          <xsl:with-param name="maxLength" select="256"/>
         </xsl:call-template>
       </xsl:attribute>
     </meta>

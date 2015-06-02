@@ -37,7 +37,7 @@
   <xsl:variable name="gTitleString" select="/MBooksTop/MBooksGlobals/VolumeTitle"/>
   <xsl:variable name="gVolumeTitleFragment">
     <xsl:choose>
-      <xsl:when test="/MBooksTop/MBooksGlobals/VolCurrTitleFrag!=' '">
+      <xsl:when test="normalize-space(/MBooksTop/MBooksGlobals/VolCurrTitleFrag)">
         <xsl:value-of select="concat(' ', /MBooksTop/MBooksGlobals/VolCurrTitleFrag, '.')"/>
       </xsl:when>
       <xsl:otherwise><xsl:value-of select="' '"/></xsl:otherwise>
