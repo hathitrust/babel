@@ -45,7 +45,21 @@ body {
 
         }
 
+        #search-page {
+            .search-results {
 
+                & > li {
+                    cursor: default;
+                }
+
+                li {
+                    cursor: default;
+                    span {
+                        cursor: default;
+                    }
+                }
+            }
+        }
 
 }
 

@@ -633,7 +633,11 @@ head.ready(function() {
         var $page = $("#main");
         if ( $page.is(":visible") ) {
             // activate search form
-            HT.engines.reader._last_seq = HT.engines.reader.getCurrentSeq();
+            if ( $("body").is(".view-restricted") ) {
+                // do something else
+            } else {
+                HT.engines.reader._last_seq = HT.engines.reader.getCurrentSeq();
+            }
             $page.hide();
             $form.show();
             window.scrollTo(0,0);
@@ -651,6 +655,10 @@ head.ready(function() {
 
     $("body").on('click', '.search-results > li', function(e) {
         e.preventDefault();
+        if ( $("body").is(".view-restricted") ) {
+            return;
+        }
+
         var seq = $(this).data('seq');
         if ( $("#contents-page").is(":visible") ) {
             $("#action-table-of-contents").click();
