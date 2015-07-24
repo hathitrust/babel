@@ -51,7 +51,7 @@ HT.Viewer.Thumbnail = {
         this.updateZoom(0, this.zoom);
         // this.drawPages();
         $.publish("disable.rotate");
-        $.publish("disable.download.page");
+        // $.publish("disable.download.page");
         this.inited = true;
     },
 
@@ -129,6 +129,7 @@ HT.Viewer.Thumbnail = {
             // }
 
             $parent.addClass("loaded").removeClass("loading");
+            $parent.css('height', Math.ceil(h1) + 8);
         });
 
         // // does this work in IE8?
@@ -319,7 +320,8 @@ HT.Viewer.Thumbnail = {
                     var seq = $page.data('seq');
                     var $a = $page.find("a.page-link");
                     var h = $page.data('h');
-                    var $img = HT.engines.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
+                    // var $img = HT.engines.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
+                    var $img = HT.engines.manager.get_image({ seq : seq, height: h, action : 'thumbnail' });
                     $img.attr("alt", "image of " + HT.engines.manager.getAltTextForSeq(seq));
                     $a.append($img);
                 } else {
@@ -355,9 +357,11 @@ HT.Viewer.Thumbnail = {
 
             var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><a class="page-link" href="#{SEQ}"></a></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
-            $page.css({ height : self.w, width : self.w });
+            $page.css({ 'height' : Math.ceil(self.w) + 8, width : self.w });
             $page.data('seq', seq);
             $page.data('h', self.w);
+            var num = HT.engines.manager.getAltTextForSeq(seq);
+            $page.append('<label data-toggle="tooltip" data-placement="bottom"><span class="offscreen">Print page {NUM}</span><input type="checkbox" name="selected" class="printable" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
             // $page.addClass("loading");
 
             // need to bind clicking the thumbnail to open to that page; so wrap in an anchor!!
@@ -367,6 +371,12 @@ HT.Viewer.Thumbnail = {
         self.$container.append(fragment);
         $("#content").append(self.$container);
         self.$container.show();
+
+        self.$container.find(".page-item label").tooltip({
+            title: function() {
+                return $(this).find("span").text()
+            }
+        })
 
         $(window).scroll();
         var current = HT.engines.reader.getCurrentSeq();

@@ -83,6 +83,42 @@ HT.Reader = {
             }
         });
 
+        $("#content").on('mousedown', function(e) {
+            if ( e.ctrlKey || e.shiftKey ) {
+                e.preventDefault();
+            }
+        })
+
+        $("body").on('click', "input.printable", function(e) {
+            var $page = $(this).parents(".page-item");
+            $page.toggleClass("selected", $(this).prop('checked') );
+            if ( e.shiftKey && $(this).prop('checked') ) {
+                var $prev = $page.prevAll(".page-item").filter(function(idx) {
+                    return $("input.printable:checked", this).length === 1;
+                })
+                if ( $prev.size() > 0 ) {
+                    console.log("PREV", $prev, $prev.slice(0));
+                    $page.prevUntil($prev.slice(0)).each(function() {
+                        var $this = $(this);
+                        $this.toggleClass('selected', true);
+                        $this.find("input.printable").prop('checked', true);
+                        console.log("UPDATING", $this.attr("id"));
+                    })
+                }
+            }
+            var $link = $("#pagePdfLink");
+            var msg = $("input.printable:checked").size();
+            if ( msg == 0 ) {
+                msg = 'pages';
+            } else if ( msg == 1 ) {
+                msg = "1 page";
+            } else {
+                msg = msg + " pages";
+            }
+
+            $link.text($link.data('template').replace('{PAGES}', msg));
+        })
+
         // dyanmic in every view
 
         var $btn_fullScreen = $("#action-toggle-fullscreen");
@@ -511,6 +547,8 @@ HT.Reader = {
     _handleView: function(view, stage) {
         if ( view == '2up' ) {
             this._handleFlip(stage);
+        } else if ( view == 'thumb' ) {
+            this._handleThumb(stage);
         }
     },
 
@@ -529,6 +567,86 @@ HT.Reader = {
             $("#pagePdfLink2").parent().remove();
             $link.show();
         }
+    },
+
+    _handleThumb: function(stage) {
+        var self = this;
+
+        var $link = $("#pagePdfLink");
+        if ( stage == 'start' ) {
+            // recto verso vs. rtl, BLEH!
+            $link.data('original-label', $link.text());
+            $link.data('original-href', $link.attr('href'));
+            $link.data('template', 'Download {PAGES}... (PDF)').data('selectable', true);
+            $link.text($link.data('template').replace('{PAGES}', 'pages'));
+            var $btn = $('<button class="btn btn-mini action-clear-selection">Clear Selection</button>').insertAfter($link);
+            $btn.on('click', function(e) {
+                e.preventDefault();
+                $("input.printable:checked").prop('checked', false);
+                $(".page-item.selected").toggleClass('selected', false);
+            })
+            $link.on('click.reader.range', function(e) {
+                // e.preventDefault();
+                self._downloadPageRange(e);
+            })
+        } else {
+            $link.text($link.data('original-label')).data('selectable', false);
+            $link.attr('href', $link.data('original-href'));
+            $link.off('click.reader.range');
+            $("#fullPdfLink").removeData('seq');
+            $(".action-clear-selection").remove();
+        }
+    },
+
+    _downloadPageRange: function(e) {
+        var self = this;
+        var $link = $("#pagePdfLink");
+        var $action = $("#fullPdfLink");
+        var $selected = $("input.printable:checked");
+        e.preventDefault();
+        if ( $selected.size() == 0 ) {
+            alert("You need to select some pages to download.");
+            return;
+        }
+        // var href = $link.data('original-href');
+        var seq = [];
+        $selected.each(function() {
+            // seq.push("seq=" + $(this).val());
+            var val = $(this).val();
+            if ( seq.length == 0 ) {
+                seq.push([val, -1]);
+            } else {
+                var last = seq[seq.length - 1];
+                if ( last[1] < 0 && val - last[0] == 1 ) {
+                    last[1] = val;
+                } else if ( val - last[1] == 1 ) {
+                    last[1] = val;
+                } else {
+                    seq.push([val, -1]);
+                }
+            }
+            // seq.push($(this).val());
+        })
+
+        for(var i = 0; i < seq.length; i++) {
+            var tmp = seq[i];
+            if ( tmp[1] < 0 ) {
+                seq[i] = tmp[0];
+            } else {
+                seq[i] = tmp[0] + "-" + tmp[1];
+            }
+        }
+
+        // seq = seq.join(';');
+        // href = href.replace(/;seq=\d+/, ';' + seq);
+        // $link.attr("href", href);
+        // this should follow the link, right?
+        $action.data('seq', seq);
+        $action.data('selected', $selected.size());
+        console.log($action.data('seq'));
+        $action.trigger('click');
+        $selected.prop('checked', false);
+        $(".page-item.selected").toggleClass('selected', false);
     },
 
     _parseParams: function() {

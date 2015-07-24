@@ -490,6 +490,14 @@ body {
         }
     }
 
+}
 
+.page-item.selected {
+    background: #eee !important;
+}
 
+.action-clear-selection {
+    display: block;
+    margin-top: 4px;
+    margin-left: 8px;
 }

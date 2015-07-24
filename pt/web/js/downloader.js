@@ -60,6 +60,12 @@ HT.Downloader = {
                 '<p>All done!</p>' +
             '</div>';
 
+        var header = 'Building your ' + self.item_title;
+        if ( self.link.data('selected') != null ) {
+            var suffix = self.link.data('selected') == 1 ? 'page' : 'pages';
+            header += ' (' + self.link.data('selected') + ' ' + suffix + ')';
+        }
+
         self.$dialog = bootbox.dialog(
             html,
             [
@@ -90,7 +96,7 @@ HT.Downloader = {
                 }
             ],
             {
-                header: 'Building your ' + self.item_title
+                header: header 
             }
         );
 
@@ -100,10 +106,16 @@ HT.Downloader = {
 
     requestDownload: function() {
         var self = this;
+        var data = {};
+        if ( self.link.data('seq') ) {
+            data['seq'] = self.link.data('seq');
+            // self.link.removeData('seq');
+        }
         $.ajax({
-            url: self.src + ';callback=HT.downloader.startDownloadMonitor',
+            url: self.src.replace(/;/g, '&') + '&callback=HT.downloader.startDownloadMonitor',
             dataType: 'script',
             cache: false,
+            data: data,
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
                 if ( self.$dialog ) { self.$dialog.modal('hide'); }

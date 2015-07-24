@@ -27,6 +27,7 @@
     .page-item {
         min-height: 100px;
         min-width: 100px;
+        height: 100%;
 
         background: transparent;
         border: 1px solid #eee;
@@ -34,8 +35,9 @@
         float: left;
         @include rem(margin, 4);
         @include rem(margin-top, 16);
-        @include rem(margin-bottom, 16);
-        display: table-cell;
+        @include rem(margin-bottom, 32); // 16
+        display: block;
+        // display: table-cell;
         position: relative;
 
         text-align: center;
@@ -56,6 +58,15 @@
 
         .page-link {
             display: inline-block;
+        }
+
+        label {
+            position: absolute;
+            right: 0;
+            left: 0;
+            height: 32px;
+            bottom: -40px;
+            // z-index: 5000;
         }
 
         img {
