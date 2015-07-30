@@ -168,7 +168,12 @@ sub execute_operation
 
         return;
     }
-
+    
+    ######################################################################
+    #
+    #XXX Scripps hack skip this step for more than 40,000 results?  or 10,000?
+    # do we know collid
+    ######################################################################
 
     # Here we delete any items from the result set that are no longer
     # in the collection according to mysql Later calls to the result
@@ -177,13 +182,27 @@ sub execute_operation
     my $temp_result_id_arrayref = $rs->get_result_ids();
     my @deleted_ids;
 
-    foreach my $id (@{$temp_result_id_arrayref}) {
-        if (! $co->item_in_collection($id, $coll_id)) {
-            push (@deleted_ids, $id);
-        }
+    #foobar
+    if ($coll_id eq 622177961)
+    {
+	#skip this for Scripps
+	# consider using number of items instead and something like 10,000
+	#ASSERT(0,"yep this is scripps");
+	
     }
-    $rs->remove_result_ids_for($coll_id, \@deleted_ids) 
-      if (scalar(@deleted_ids > 0));
+    else
+    {
+	foreach my $id (@{$temp_result_id_arrayref}) {
+	    if (! $co->item_in_collection($id, $coll_id)) {
+		push (@deleted_ids, $id);
+	    }
+	}
+	$rs->remove_result_ids_for($coll_id, \@deleted_ids) 
+	if (scalar(@deleted_ids > 0));
+    }
+
+    ######################################################################
+
 
     # get total number of records
     my $all_count = $rs ? $rs->get_total_hits() : 0;
