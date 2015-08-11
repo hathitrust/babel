@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>SolrDebug</title>
+  </head>
+
+  <body>
+    <h1>SolrDebug</h1>
+
+
+<form name="queryForm" method="GET" action="http://solr-sdr-search-7.umdl.umich.edu:8081/serve-7/select" accept-charset="UTF-8">
+<!-- these are good defaults to have if people bookmark the resulting
+     URLs, but they should not show up in the form since they are very
+     output type specific.
+  -->
+<input name="indent" type="hidden" value="on">
+<input name="version" type="hidden" value="2.2">
+<input name="shards" type="hidden" value="solr-sdr-search-1:8081/serve-1,solr-sdr-search-2:8081/serve-2,solr-sdr-search-3:8081/serve-3,solr-sdr-search-4:8081/serve-4,solr-sdr-search-5:8081/serve-5,solr-sdr-search-6:8081/serve-6,solr-sdr-search-7:8081/serve-7,solr-sdr-search-8:8081/serve-8,solr-sdr-search-9:8081/serve-9,solr-sdr-search-10:8081/serve-10,solr-sdr-search-11:8081/serve-11,solr-sdr-search-12:8081/serve-12"
+>
+<table>
+
+<tr>
+  <td>
+	<strong>Solr/Lucene Statement</strong>
+  </td>
+  <td>
+	<textarea rows="5" cols="60" name="q">solr</textarea>
+  </td>
+</tr>
+<tr>
+
+  <td>
+	<strong>Filter Query</strong>
+  </td>
+  <td>
+	<textarea rows="2" cols="60" name="fq"></textarea>
+  </td>
+</tr>
+<tr>
+  <td>
+
+	<strong>Start Row</strong>
+  </td>
+  <td>
+	<input name="start" type="text" value="0">
+  </td>
+</tr>
+<tr>
+  <td>
+	<strong>Maximum Rows Returned</strong>
+
+  </td>
+  <td>
+	<input name="rows" type="text" value="10">
+  </td>
+</tr>
+<tr>
+  <td>
+	<strong>Fields to Return</strong>
+  </td>
+
+  <td>
+	<input name="fl" type="text" value="*,score">
+  </td>
+</tr>
+<tr>
+  <td>
+	<strong>Query Type</strong>
+  </td>
+  <td>
+
+	<input name="qt" type="text">
+  </td>
+</tr>
+<tr>
+  <td>
+	<strong>Output Type</strong>
+  </td>
+  <td>
+	<input name="wt" type="text" value="">
+
+  </td>
+</tr>
+<tr>
+  <td>
+	<strong>Debug: enable</strong>
+  </td>
+  <td>
+	<input name="debugQuery" type="checkbox" >
+  <em><font size="-1">  Note: you may need to "view source" in your browser to see explain() correctly indented.</font></em>
+
+  </td>
+</tr>
+<tr>
+  <td>
+	<strong>Debug: explain others</strong>
+  </td>
+  <td>
+	<input name="explainOther" type="text" >
+  <em><font size="-1">  Apply original query scoring to matches of this query to see how they compare.</font></em>
+
+  </td>
+</tr>
+<tr>
+  <td>
+	<strong>Enable Highlighting</strong>
+  </td>
+  <td>
+	<input name="hl" type="checkbox" >
+  </td>
+
+</tr>
+<tr>
+  <td>
+	<strong>Fields to Highlight</strong>
+  </td>
+  <td>
+	<input name="hl.fl" type="text" >
+  </td>
+</tr>
+<tr>
+
+  <td>
+  </td>
+  <td>
+    <input class="stdbutton" type="submit" value="search" onclick="if (queryForm.q.value.length==0) { alert('no empty queries, please'); return false; } else { queryForm.submit(); return false;} ">
+  </td>
+</tr>
+</table>
+</form>
+
+    <hr>
+    <address><a href="mailto:tburtonw@umich.edu">Tom  Burton-West</a></address>
+<!-- Created: Tue Nov  8 16:15:53 EST 2011 -->
+<!-- hhmts start -->
+Last modified: Tue Nov  8 16:21:23 EST 2011
+<!-- hhmts end -->
+  </body>
+</html>
