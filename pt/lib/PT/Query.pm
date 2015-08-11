@@ -86,6 +86,13 @@ sub log_query {
     my ($C, $stats_ref, $Solr_url) = @_;
 
     # Log
+    my $tempcgi = $C->get_object('CGI');
+    my $referer=$ENV{REFERER} ||$tempcgi->referer();
+    #add logged_in
+    my $auth = $C->get_object('Auth');
+    my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
+
+
     my $ipaddr = $ENV{'REMOTE_ADDR'};
     my $session_id = $C->get_object('Session')->get_session_id();
     
@@ -107,7 +114,9 @@ sub log_query {
           . qq{$cgi_elapsed }
             . qq{$create_doc_size $create_elapsed }
               . qq{$update_check $update_qtime $update_elapsed $commit_elapsed ($update_total) }
-                . qq{ $query_qtime $query_elapsed $query_num_found};
+	      . qq{ $query_qtime $query_elapsed $query_num_found}
+	      . qq{ referer=$referer logged_in=$is_logged_in};
+
     
     Utils::Logger::__Log_string($C, $log_string, 'query_logfile', '___RUN___',
                                 SLIP_Utils::Common::get_run_number($C->get_object('MdpConfig')));
