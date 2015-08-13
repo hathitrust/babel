@@ -183,7 +183,7 @@ sub execute_operation
     my @deleted_ids;
 
     #foobar
-    if ($coll_id eq 622177961)
+    if (0 && $coll_id eq 622177961)
     {
 	#skip this for Scripps
 	# consider using number of items instead and something like 10,000
