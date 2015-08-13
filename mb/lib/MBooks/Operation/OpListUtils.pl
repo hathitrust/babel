@@ -200,6 +200,8 @@ sub get_final_item_arr_ref {
     my $owner = $co->get_user_id;
     my $final_item_arr_ref = [];
 
+    my $coll_items_hashref = $co->get_coll_data_for_items_and_user($item_arr_ref, $owner);
+
     foreach my $item_hashref (@$item_arr_ref) {
         my $item_rights_attr = $item_hashref->{'rights'};
 
@@ -215,10 +217,12 @@ sub get_final_item_arr_ref {
         my $coll_ary_hashref;
         my $id = $item_hashref->{'extern_item_id'};
 
-        eval {
-            $coll_ary_hashref = $co->get_coll_data_for_item_and_user($id, $owner);
-        };
-        ASSERT(!$@, qq{Error: $@});
+        # eval {
+        #     $coll_ary_hashref = $co->get_coll_data_for_item_and_user($id, $owner);
+        # };
+        # ASSERT(!$@, qq{Error: $@});
+
+        my $coll_ary_hashref = $$coll_items_hashref{$id} || [];
 
         # add hrefs
         my $coll_ary_hashref_final = $self->add_hrefs($C, $coll_ary_hashref);
