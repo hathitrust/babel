@@ -1,12 +1,24 @@
 #!/usr/bin/env perl
 
+# http://roger-full.babel.hathitrust.org/cgi/mb?c=378;a=listis;sort=title_d
+# http://roger-full.babel.hathitrust.org/cgi/mb?c=1693617892;a=listis
+
 use strict;
 use warnings;
+use Time::HiRes;
 
 BEGIN {
     $ENV{DEBUG_LOCAL} = 1;
+    $ENV{REMOTE_USER} = 'sooty';
 
     ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/mb/UNAVAILABLE");
+
+    $debug::log = sub {
+        my ( $msg, $time_ref, @extra ) = @_;
+        my $extra = ( scalar @extra > 0 ) ? ' : ' . join(' : ', @extra) : '';
+        print STDERR "$msg : " . ( Time::HiRes::time() - $$time_ref ) . $extra . "\n";
+        $$time_ref = Time::HiRes::time();
+    };
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
