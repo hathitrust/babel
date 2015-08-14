@@ -33,6 +33,8 @@ use Session;
 use Auth::Auth;
 use MdpConfig;
 
+use Utils::Logger;
+
 # Pageturner specific
 use PT::Bind;
 use PT::Action;
@@ -144,7 +146,11 @@ sub Run {
     if ( $validityCheckStatus & PT::Prolog::ST_SEQ_NOT_SUPPLIED ) {
         SetDefaultPage( $cgi, $mdpItem );
     }
-
+    # Call this before SetBackToResultsReferer because it looks like that sub
+    # might mess with the cgi and referer 
+    #XXX confirm the above
+    __log_request($C,$cgi);
+    
     # Support for tracking long-lived "Back to results..." links
     # to catalog searches
     SetBackToResultsReferer($cgi, $ses);
@@ -226,5 +232,33 @@ sub SetDefaultPage {
     }
 }
 
+# ----------------------------------------------------------------------
+#
+#  __log_request
+#
+#  Queries are currently logged but not regular pt requests
+#  add logging to track referers without having to mess with apache logs
+#  also log whether user is logged in to help determine robots
+# ----------------------------------------------------------------------
+sub __log_request{
+    my $C = shift;
+    my $cgi = shift;
+    my $referer = $cgi->referer();
+    my $ipaddr = ($ENV{REMOTE_ADDR} ? $ENV{REMOTE_ADDR} : '0.0.0.0');
+    my $session_id = $C->get_object('Session')->get_session_id();
+    my $auth = $C->get_object('Auth');
+    my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
+    my $appURL=$cgi->self_url;
+
+     
+    my $log_string = qq{$ipaddr $session_id $$ }
+      . Utils::Time::iso_Time('time')
+        . qq{ $appURL referer=$referer logged_in=$is_logged_in};
+
+    Utils::Logger::__Log_string($C, $log_string,
+                                     'pt_logfile', '___QUERY___', 'pt');
+
+}
+# ----------------------------------------------------------------------
 
 1;
