@@ -9,7 +9,10 @@ use Time::HiRes;
 
 BEGIN {
     $ENV{DEBUG_LOCAL} = 1;
-    $ENV{REMOTE_USER} = 'sooty';
+
+    # if ( $ENV{QUERY_STRING} =~ m,debug=sooty, && $ENV{QUERY_STRING} =~ m,c=1693617892, ) {
+    #     $ENV{REMOTE_USER} = 'sooty';
+    # }
 
     ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/mb/UNAVAILABLE");
 

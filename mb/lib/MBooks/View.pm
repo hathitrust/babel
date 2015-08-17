@@ -281,6 +281,9 @@ sub output
     else
     {
         my $transformed_xml_ref = $self->_get_transformed_xml($C);
+        my $t1 = Time::HiRes::time() - $debug::t0;
+        $t1 = sprintf("%0.4f", $t1);
+        $$transformed_xml_ref =~ s,\{RUN\},$t1 sec,;
         $self->output_HTTP($C, $transformed_xml_ref, $content_type);
     }
 }

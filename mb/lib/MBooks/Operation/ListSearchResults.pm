@@ -183,7 +183,10 @@ sub execute_operation
     my @deleted_ids;
 
     #foobar
-    if (0 && $coll_id eq 622177961)
+    my %SKIP_COLLECTIONS = ();
+    $SKIP_COLLECTIONS{622177961} = 1;
+    $SKIP_COLLECTIONS{1693617892} = 1;
+    if (0 && $SKIP_COLLECTIONS{$coll_id})
     {
 	#skip this for Scripps
 	# consider using number of items instead and something like 10,000
@@ -354,13 +357,19 @@ sub get_final_rs_data
         my $norm_rel_hashref
             = MBooks::Relevance::get_normalized_relevance($rs, \@ids_on_page, 'absolute');
 
-        foreach my $id (@ids_on_page)
-        {
-            ASSERT (defined ($id),qq{id not defined from ids on page});
-            my $metadata_hashref = $co->get_metadata_for_item($id);
-            $metadata_hashref->{'rel'} = $norm_rel_hashref->{$id};
+        my $metadata_arr_ref = $co->get_metadata_for_item_ids(\@ids_on_page);
+        foreach my $metadata_hashref ( @$metadata_arr_ref ) {
+            $metadata_hashref->{'rel'} = $norm_rel_hashref->{'extern_item_id'};
             push(@$temp_rs_data, $metadata_hashref);
         }
+
+        # foreach my $id (@ids_on_page)
+        # {
+        #     ASSERT (defined ($id),qq{id not defined from ids on page});
+        #     my $metadata_hashref = $co->get_metadata_for_item($id);
+        #     $metadata_hashref->{'rel'} = $norm_rel_hashref->{$id};
+        #     push(@$temp_rs_data, $metadata_hashref);
+        # }
     }
     else
     {
