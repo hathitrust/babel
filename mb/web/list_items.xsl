@@ -45,6 +45,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </pre>
+      <br />
         
       <xsl:call-template name="display-collection-metadata" />
       
