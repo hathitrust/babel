@@ -115,7 +115,7 @@ sub get_Solr_query_string
     
     # The common Solr query parameters
     my $USER_Q = qq{q=$user_query_string};
-    my $FL = qq{&fl=id,score};
+    my $FL = qq{&fl=id,score,rights};
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $START_ROWS = qq{&start=0&rows=1000000};
     my $INDENT = qq{&indent=off};

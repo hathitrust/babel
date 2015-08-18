@@ -131,7 +131,8 @@ sub execute_operation
     # We need to know if this is an empty collection to determine
     # whether to display search widget Also if there are 0 results, we
     # need this to display correct message
-    my $coll_has_items = ($co->count_all_items_for_coll($coll_id) > 0);
+    my $count_all_items = $co->count_all_items_for_coll($coll_id);
+    my $coll_has_items = ($count_all_items > 0);
     $act->set_transient_facade_member_data($C, 'coll_has_items', $coll_has_items);
 
     my $solr_error_msg;
@@ -179,29 +180,21 @@ sub execute_operation
     # in the collection according to mysql Later calls to the result
     # set object will reflect this This solves the problem where an
     # item is deleted in mysql but not yet in the solar index
+
+    # do not check for deleted ids if $count_all_items >= delete_check_max_item_ids
+
     my $temp_result_id_arrayref = $rs->get_result_ids();
     my @deleted_ids;
 
-    #foobar
-    my %SKIP_COLLECTIONS = ();
-    $SKIP_COLLECTIONS{622177961} = 1;
-    $SKIP_COLLECTIONS{1693617892} = 1;
-    if (0 && $SKIP_COLLECTIONS{$coll_id})
+    unless ( $co->collection_is_very_large($coll_id, $count_all_items) )
     {
-	#skip this for Scripps
-	# consider using number of items instead and something like 10,000
-	#ASSERT(0,"yep this is scripps");
-	
-    }
-    else
-    {
-	foreach my $id (@{$temp_result_id_arrayref}) {
-	    if (! $co->item_in_collection($id, $coll_id)) {
-		push (@deleted_ids, $id);
-	    }
-	}
-	$rs->remove_result_ids_for($coll_id, \@deleted_ids) 
-	if (scalar(@deleted_ids > 0));
+    	foreach my $id (@{$temp_result_id_arrayref}) {
+    	    if (! $co->item_in_collection($id, $coll_id)) {
+    		  push (@deleted_ids, $id);
+    	    }
+    	}
+    	$rs->remove_result_ids_for($coll_id, \@deleted_ids) 
+        	if (scalar(@deleted_ids > 0));
     }
 
     ######################################################################
@@ -228,7 +221,9 @@ sub execute_operation
     my $result_id_arrayref = $rs->get_result_ids();
     my $full_text_count = 0;
     if (scalar(@$result_id_arrayref) > 0) {
-        $full_text_count = $co->count_full_text($coll_id, $rights_ref, $result_id_arrayref);
+        ## REPLACE WITH MORE ACCURATE / FASTER QUERY
+        # $full_text_count = $co->count_full_text($coll_id, $rights_ref, $result_id_arrayref);
+        $full_text_count = $self->count_full_text($rs, $rights_ref);
     }
     $act->set_transient_facade_member_data($C, 'full_text_count', $full_text_count);
 
@@ -395,6 +390,17 @@ sub get_final_rs_data
     # return some array of hashes with item metadata as well as id and
     # rel rank containing id elements
     return $final_rs_data;
+}
+
+sub count_full_text {
+    my ( $self, $rs, $rights_ref ) = @_;
+    my $full_text_count = 0;
+    my $rights_hash = $rs->get_result_rights;
+    my $rights_map = { map { $_ => 1 } @$rights_ref };
+    foreach my $id ( keys %$rights_hash ) {
+        $full_text_count += 1 if ( $$rights_map{$$rights_hash{$id}} );
+    }
+    return $full_text_count;
 }
 
 

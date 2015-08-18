@@ -81,7 +81,7 @@ sub AFTER_ingest_Solr_search_response {
     my $Solr_response_ref = shift;
 
     my @coll_ids = ();
-    my (@result_ids, %result_score_hash);
+    my (@result_ids, %result_score_hash, %result_rights_hash);
 
     # Coll_ids
     my ($coll_id_fields) = ($$Solr_response_ref =~ m,<arr name="coll_id">(.*?)</arr>,s);
@@ -98,6 +98,13 @@ sub AFTER_ingest_Solr_search_response {
         $result_score_hash{$result_ids[$i]} = $result_scores[$i];
     }
     $self->{'result_scores'} = \%result_score_hash;
+
+    my @result_rights = ($$Solr_response_ref =~ m,<int name="rights">(.*?)</int>,g);
+    for (my $i=0; $i < scalar(@result_ids); $i++) {
+        $result_rights_hash{$result_ids[$i]} = $result_rights[$i];
+    }
+    $self->{'result_rights'} = \%result_rights_hash;
+
 }
 
 
@@ -196,6 +203,21 @@ sub get_result_scores
 {
     my $self = shift;
     return $self->{'result_scores'};
+}
+
+# ---------------------------------------------------------------------
+
+=item get_result_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_result_rights
+{
+    my $self = shift;
+    return $self->{'result_rights'};
 }
 
 # ---------------------------------------------------------------------
