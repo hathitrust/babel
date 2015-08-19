@@ -357,14 +357,6 @@ sub get_final_rs_data
             $metadata_hashref->{'rel'} = $norm_rel_hashref->{'extern_item_id'};
             push(@$temp_rs_data, $metadata_hashref);
         }
-
-        # foreach my $id (@ids_on_page)
-        # {
-        #     ASSERT (defined ($id),qq{id not defined from ids on page});
-        #     my $metadata_hashref = $co->get_metadata_for_item($id);
-        #     $metadata_hashref->{'rel'} = $norm_rel_hashref->{$id};
-        #     push(@$temp_rs_data, $metadata_hashref);
-        # }
     }
     else
     {

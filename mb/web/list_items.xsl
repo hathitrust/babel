@@ -30,22 +30,6 @@
 
   <xsl:template name="sidebar">
     <div class="sidebar" role="complementary">
-
-      <pre style="font-size: 24px; text-align: left; margin: 0">
-        <xsl:choose>
-          <xsl:when test="contains(//CurrentCgi/Param[@name='debug'], 'fast')">
-            <xsl:text>FAST</xsl:text><xsl:text>
-</xsl:text>
-            <xsl:text>{RUN}</xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>SLOW</xsl:text><xsl:text>
-</xsl:text>
-            <xsl:text>{RUN}</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-      </pre>
-      <br />
         
       <xsl:call-template name="display-collection-metadata" />
       

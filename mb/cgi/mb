@@ -113,20 +113,6 @@ my $config = new MdpConfig(
                           );
 $C->set_object('MdpConfig', $config);
 
-## TESTING
-if ( $cgi->param('debug') =~ m,fast, ) {
-  $$config{primary_config}{_}{coll_table_name} = 'ht_web.mb_collection_barracuda';
-  $$config{primary_config}{_}{item_table_name} = 'ht_web.mb_item_barracuda';
-  $$config{primary_config}{_}{coll_item_table_name} = 'ht_web.mb_coll_item_barracuda';
-  use File::Slurp qw(write_file);
-  write_file("/tmp/config.txt", Data::Dumper::Dumper($config));
-  chmod(0666, "/tmp/config.txt");
-  # coll_table_name                = ht_web.mb_collection_barracuda
-  # item_table_name                = ht_web.mb_item_barracuda
-  # coll_item_table_name           = ht_web.mb_coll_item_barracuda
-
-}
-
 # Database connection
 my $db = new Database('ht_web');
 $C->set_object('Database', $db);
