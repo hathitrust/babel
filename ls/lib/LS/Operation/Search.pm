@@ -143,14 +143,37 @@ sub execute_operation
 
     my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
     my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
-    my ($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+
+    my $use_interleave=$config->get('use_interleave');
+    my $use_B_query = $config->get('use_B_query');
     
-    my $IL = new LS::Interleaver::Balanced;
-    # We need a result set object, but won't populate it by searching
-    # populate by interleaving results and copying stuff from real result sets
+    # should read config file to determine whether or not to do a B query
+    my $B_rs;
+    my $B_Q;  # do we need to save B query if we are doing query expansion?
+    my $i_rs;
+
+    if ($use_interleave || $use_B_query)
+    {
+	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+    }
     
-    my  $i_rs = new LS::Result::JSON::Facets('all'); 
-    $i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
+# Read config file to decide whether to interleave at all
+# Will need to read again at display time? or not?
+
+
+    if ($use_interleave)
+    {
+	#XXX fix this.  Can we get a class
+	my $interleaver_class = $config->get('interleaver_class');
+	#my $IL = new LS::Interleaver::Balanced;
+	my $IL = new $interleaver_class;
+	
+	# We need a result set object, but won't populate it by searching
+	# populate by interleaving results and copying stuff from real result sets
+	
+	$i_rs = new LS::Result::JSON::Facets('all'); 
+	$i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
+    }
     
 
     my %search_result_data =

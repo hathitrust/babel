@@ -415,21 +415,37 @@ sub handle_SEARCH_RESULTS_PI
        	#   $query_time = $primary_rs->get_query_time() + $secondary_rs->get_query_time();
 	#XXX do we need total query time see above?
         $A_query_time = $primary_rs->get_query_time();
-        $B_query_time = $B_rs->get_query_time();
-
+	if (defined($B_rs))
+	{
+	    $B_query_time = $B_rs->get_query_time();
+	}
+	
         $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
 	#XXX  don't we want to do the interleaving here instead of having the xsl do it?
         #        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
 	#        $output .= $$result_ref;
 	my $A_result_ref = _ls_wrap_result_data($C, $primary_rs);
-	#hack.  Need switch
-	#my $B_result_ref = _ls_wrap_result_data($C, $B_rs);
-	my $B_result_ref = _ls_wrap_result_data($C, $i_rs);
+	my $B_result_ref;
+	
+	if ($C->get_object('MdpConfig')->get('use_interleave'))
+	{
+	    $B_result_ref = _ls_wrap_result_data($C, $i_rs);
+	}
+	elsif ($C->get_object('MdpConfig')->get('use_B_query'))
+	{
+	    $B_result_ref = _ls_wrap_result_data($C, $B_rs);
+	}
+	
         my $A_out = wrap_string_in_tag($$A_result_ref, 'A_RESULTS');
-        my $B_out = wrap_string_in_tag($$B_result_ref, 'B_RESULTS');
-        $output .= $A_out . $B_out;
+	$output .= $A_out;
+	
+	if (defined($B_result_ref))
+	{
+	    my $B_out = wrap_string_in_tag($$B_result_ref, 'B_RESULTS');
+	    $output .=  $B_out;
+	}
     }
-
+    
     #$output .= wrap_string_in_tag($query_time, 'QueryTime');
     $output .= wrap_string_in_tag($A_query_time, 'A_QueryTime');
     $output .= wrap_string_in_tag($B_query_time, 'B_QueryTime');

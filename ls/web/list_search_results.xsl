@@ -157,6 +157,17 @@ REMOVE the below and see if it will call list_utils
     </xsl:variable>
     <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
     <div id="mbContentContainer" class="main clearfix">
+<!--AB addition-->
+      <xsl:variable name="hasB">
+        <xsl:if test="SearchResults/B_RESULTS/Item">
+          <xsl:text>B</xsl:text>
+        </xsl:if>
+      </xsl:variable>
+        
+          <h1><xsl:text>DEBUG hasB</xsl:text>
+          <xsl:value-of select="$hasB"/>
+  </h1>
+<!--AB addition-->
 
 
       <!--XXX <xsl:call-template name="DisplaySearchWidgetLogic"/> -->
@@ -173,9 +184,12 @@ REMOVE the below and see if it will call list_utils
           <xsl:call-template name="DisplayContent">
             <xsl:with-param name="title" select="'Search Results'" />
             <xsl:with-param name="item-list-contents" select="'items'" />
+	    <!--AB-->
+	    <xsl:with-param name="AB" select="$hasB" /> 
           </xsl:call-template>
         </xsl:when>
-        <xsl:when test="SearchResults/SolrError[normalize-space(.)]">
+     <!--   <xsl:when test="SearchResults/SolrError[normalize-space(.)]">-->
+ <xsl:when test="SearchResults/A_RESULTS/SolrError[normalize-space(.)]">
           <xsl:call-template name="SolrError"/>
         </xsl:when>
         <xsl:otherwise>
@@ -272,7 +286,8 @@ REMOVE the below and see if it will call list_utils
       <span class="debug">
       <xsl:text>
         (in </xsl:text>
-      <xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>
+      <!--<xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>-->
+      <xsl:value-of select="/MBooksTop/SearchResults/A_QueryTime"/>
       <xsl:text> sec.)</xsl:text>
     </span>
 
