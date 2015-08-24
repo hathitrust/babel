@@ -210,7 +210,7 @@ sub __get_id_hashref
 # this will change when we pass real rs around instead of test?
 sub __get_id_from_rs_el
 {
-    my $el;
+    my $el = shift;
     my $id=$el->{'id'};
     return $id;
     
