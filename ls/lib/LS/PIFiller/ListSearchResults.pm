@@ -393,7 +393,6 @@ PI Handler for the Solr response. Typically:
 sub handle_SEARCH_RESULTS_PI
     : PI_handler(SEARCH_RESULTS) {
     my ($C, $act, $piParamHashRef) = @_;
-
     my $output;
     my ($query_time, $solr_error_msg);
     my ($A_query_time, $B_query_time);
@@ -404,7 +403,9 @@ sub handle_SEARCH_RESULTS_PI
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
     my $B_rs =$$search_result_data_hashref{'B_result_object'};
     my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
-    
+    my $config = $C->get_object('MdpConfig');
+    my $side_by_side = $config->get('side_by_side');
+
     # Was there a search?
     if ($search_result_data_hashref->{'undefined_query_string'}) { 
         $query_time = 0;
@@ -424,17 +425,41 @@ sub handle_SEARCH_RESULTS_PI
 	#XXX  don't we want to do the interleaving here instead of having the xsl do it?
         #        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
 	#        $output .= $$result_ref;
-	my $A_result_ref = _ls_wrap_result_data($C, $primary_rs);
-	my $B_result_ref;
 	
-	if ($C->get_object('MdpConfig')->get('use_interleave'))
+	
+
+	my $A_result_ref;
+	my $B_result_ref;
+	my $A_label;
+	my $B_label;
+	
+	my $use_interleave = $config->get('use_interleave');
+	my $side_by_side   = $config->get('side_by_side');	
+	#  side-by-side or single display
+	if ($side_by_side)
 	{
-	    $B_result_ref = _ls_wrap_result_data($C, $i_rs);
+	    $A_result_ref  = _ls_wrap_result_data($C, $primary_rs);
+	    $A_label = "Default";
+	    $output.=wrap_string_in_tag('TRUE','SideBySideDisplay');
+		
+	    if ($use_interleave) 
+	    {
+		$B_result_ref = _ls_wrap_result_data($C, $i_rs);
+	    }
+	    elsif ($config->get('use_B_query'))
+	    {
+		$B_result_ref = _ls_wrap_result_data($C, $B_rs);
+	    }
 	}
-	elsif ($C->get_object('MdpConfig')->get('use_B_query'))
+	elsif($use_interleave)
 	{
-	    $B_result_ref = _ls_wrap_result_data($C, $B_rs);
+	    # if we are using interleave but not side by side just put interleave 	    
+	    #result in A and don't define B result ref
+	    $A_result_ref  = _ls_wrap_result_data($C, $i_rs);
+    	    $A_label= $config->get('interleaver_class')
 	}
+	$output.=wrap_string_in_tag($A_label,'A_LABEL');
+	
 	
         my $A_out = wrap_string_in_tag($$A_result_ref, 'A_RESULTS');
 	$output .= $A_out;
@@ -443,6 +468,20 @@ sub handle_SEARCH_RESULTS_PI
 	{
 	    my $B_out = wrap_string_in_tag($$B_result_ref, 'B_RESULTS');
 	    $output .=  $B_out;
+	    # change label to interleaved if we are displaying interleave
+	    # in B column
+	    my $B_label;
+	    
+	    if ($use_interleave)
+	    {
+		$B_label= $config->get('interleaver_class')
+	    }
+	    else{
+		$B_label = $config->get('B_description');
+	    }
+	    my $B_label_out = wrap_string_in_tag($B_label, 'B_LABEL');
+	    $output .= $B_label_out;
+	    
 	}
     }
     

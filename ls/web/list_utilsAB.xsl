@@ -14,6 +14,10 @@
     <xsl:value-of select="/MBooksTop/MBooksGlobals/Debug"/>
   </xsl:variable>
 
+  <xsl:variable name="debugContents" >
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
+  </xsl:variable>
+
   <!-- end global variables -->
 
   <!-- list_items/search_results global variables  -->
@@ -838,6 +842,8 @@
 
           <xsl:copy-of select="$hidden_q1_param"/>
           <input type="hidden" name="page" value="srchresults"/>
+
+
         </xsl:if>
 
         <div class="toolbar" role="toolbar">
@@ -857,23 +863,51 @@
         <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
         <xsl:choose>
           <xsl:when test="$ItemListType='SearchResults'">
-            <!--XXX AB fixe here -->
-            <div id="results_A">
-              <h1>A list</h1>
-              <xsl:for-each select="SearchResults/A_RESULTS/Item">
-                <xsl:call-template name="BuildItemChunk"/>
-              </xsl:for-each>
-            </div>
+            <!--XXX AB fix here 
+		Working on grid stuff for side by side
+		After it works need ability to switch to one column
+		i.e. need to somehow determine if we are in AB mode and if not
+		set class on results_A to span 12 (i.e. whole column)
+		Also need to fix bookcover spacing if possible
+	    -->
+	    <!--XXX AB testing variable -->
+	    <xsl:variable name="resultsClass">
+	      <xsl:choose>
+		<xsl:when test="SearchResults/SideBySideDisplay='TRUE'">
+		  span6
+		</xsl:when>
+		<xsl:otherwise>
+		  span12
+		</xsl:otherwise>
+	      </xsl:choose>
+	    </xsl:variable>
+	    <!--XXX AB testing variable -->
+
+	    <div class="row">
+	      <div id="results_A">
+		<xsl:attribute name="class">
+		  <xsl:value-of select="$resultsClass"/>
+		</xsl:attribute>
+		
+		<h1><xsl:text>A: </xsl:text>   
+		<xsl:value-of select="SearchResults/A_LABEL"/>
+		</h1>
+		<xsl:for-each select="SearchResults/A_RESULTS/Item">
+		  <xsl:call-template name="BuildItemChunk"/>
+		</xsl:for-each>
+	      </div>
                 
-            <xsl:if test="$AB = 'B'">
-              <div id="results_B">
-                <h1>B list</h1>
-                <xsl:for-each select="SearchResults/B_RESULTS/Item">
-                  <xsl:call-template name="BuildItemChunk"/>
-                </xsl:for-each>
-              </div>
-            </xsl:if>
-            
+	      <xsl:if test="$AB = 'B'">
+		<div id="results_B" class="span6">
+		  <h1><xsl:text>B: </xsl:text> 
+		  <xsl:value-of select="SearchResults/B_LABEL"/>
+		  </h1>
+		  <xsl:for-each select="SearchResults/B_RESULTS/Item">
+		    <xsl:call-template name="BuildItemChunk"/>
+		  </xsl:for-each>
+		</div>
+	      </xsl:if>
+            </div>
           </xsl:when>
           <xsl:otherwise>
             <xsl:for-each select="ItemList/Item">
@@ -1031,12 +1065,24 @@
     <xsl:variable name="Date">
       <xsl:value-of select="Date"/>
     </xsl:variable>
+    
     <!--################################## end variables-->
 
     <div class="{$row_class}">
       <xsl:variable name="item-number" select="position()" />
       <!-- push2 -->
       <div class="span{$span-n} push2 metadata">
+	<!-- if debug = ab then display AB label and also display id-->
+	<xsl:if test="contains($debugContents,'AB')">
+	  <h4>
+	    <strong>
+	      <xsl:value-of select="ABLabel"/>
+	         <xsl:text> : </xsl:text>
+	      <xsl:value-of select="ItemID"/>
+	  </strong>
+	  </h4>
+	</xsl:if>
+
         <h4 class="Title">
           <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
           <xsl:call-template name="GetTitle"/>
