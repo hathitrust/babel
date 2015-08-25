@@ -14,6 +14,7 @@ HT.Viewer.PlainText = {
     start: function() {
         $body.addClass("view-plaintext");
         this.bindEvents();
+        $.publish("view.ready");
     },
 
     bindEvents: function() {

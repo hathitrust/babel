@@ -50,6 +50,8 @@ HT.Manager = {
                 // console.log("ready");
                 $.ajaxSetup({ async: true });
                 // callback();
+
+                console.log("STARTING VIEW");
                 HT.engines.view.start();
             },
             'json')

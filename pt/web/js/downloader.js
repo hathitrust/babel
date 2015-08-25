@@ -46,9 +46,15 @@ HT.Downloader = {
 
     downloadPdf: function(link) {
         var self = this;
-        self.link = $(link);
+        self.$link = $(link);
         self.src = $(link).attr('href');
         self.item_title = $(link).data('title') || 'PDF';
+
+        if ( self.$link.data('range') == 'yes' ) {
+            if ( ! self.$link.data('seq') ) {
+                return;
+            }
+        }
 
         var html =
             // '<p>Building your PDF...</p>' +
@@ -61,9 +67,10 @@ HT.Downloader = {
             '</div>';
 
         var header = 'Building your ' + self.item_title;
-        if ( self.link.data('selected') != null ) {
-            var suffix = self.link.data('selected') == 1 ? 'page' : 'pages';
-            header += ' (' + self.link.data('selected') + ' ' + suffix + ')';
+        var total = self.$link.data('total') || 0;
+        if ( total > 0 ) {
+            var suffix = total == 1 ? 'page' : 'pages';
+            header += ' (' + total + ' ' + suffix + ')';
         }
 
         self.$dialog = bootbox.dialog(
@@ -107,9 +114,9 @@ HT.Downloader = {
     requestDownload: function() {
         var self = this;
         var data = {};
-        if ( self.link.data('seq') ) {
-            data['seq'] = self.link.data('seq');
-            // self.link.removeData('seq');
+        if ( self.$link.data('seq') ) {
+            data['seq'] = self.$link.data('seq');
+            // self.$link.removeData('seq');
         }
         $.ajax({
             url: self.src.replace(/;/g, '&') + '&callback=HT.downloader.startDownloadMonitor',
@@ -228,10 +235,11 @@ HT.Downloader = {
                 $download_btn = $('<a class="download-pdf btn btn-primary">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
                 $download_btn.appendTo(self.$dialog.find(".modal-footer")).on('click', function(e) {
                     console.log("SHOULD BE THE FIRST TO FIRE");
-                    self.link.trigger("click.google");
+                    self.$link.trigger("click.google");
                     setTimeout(function() {
                         self.$dialog.modal('hide');
                         $download_btn.remove();
+                        HT.engines.reader._clearRangeSelection();
                     }, 1000);
                     e.stopPropagation();
                 })

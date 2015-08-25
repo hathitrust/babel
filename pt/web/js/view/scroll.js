@@ -27,6 +27,9 @@ HT.Viewer.Scroll = {
     },
 
     start : function() {
+
+        this._startup = true;
+
         $("body").addClass("view-1up"); // needs to correspond to our parameter. MM.
         $.publish("enable.download.page");
         this.options.seq = HT.engines.reader.getCurrentSeq();
@@ -46,6 +49,7 @@ HT.Viewer.Scroll = {
         this.w = this.options.default_w * this.zoom;
 
         this.drawPages();
+
     },
 
     end : function() {
@@ -108,7 +112,7 @@ HT.Viewer.Scroll = {
 
             // console.log("FUDGE: SCROLL");
 
-            $(this).parent().addClass("loaded");
+            $(this).parents(".page-item").addClass("loaded");
 
             var t = 50;
             // console.log("FUDGE", h1, h2, Math.abs(h1 - h2), ">", t);
@@ -132,6 +136,7 @@ HT.Viewer.Scroll = {
         }, 250);
 
         $.subscribe("action.resize.scroll", function(e) {
+            console.log("ACTION RESIZE");
             _lazyResize();
         })
 
@@ -246,11 +251,28 @@ HT.Viewer.Scroll = {
                 }
             }
 
-            if ( $new.attr('id') != $current.attr('id') ) {
-                $current.removeClass("current").attr('aria-hidden', 'true');
-                $new.addClass("current").attr("aria-hidden", "false");
-                $.publish("update.go.page", ( $new.data('seq') ));
+            var is_update = false;
+            if ( $current.length ) {
+                if ( $new.attr('id') != $current.attr('id') ) {
+                    $current.removeClass("current").attr('aria-hidden', 'true');
+                    is_update = true;
+                    console.log("LAZY RELOAD", self._startup);
+                    $.publish("update.go.page", ( [ $new.data('seq'), true ] ));
+                }
+            } else {
+                is_update = true;
             }
+
+            if ( is_update ) {
+                $new.addClass("current").attr("aria-hidden", "false");
+            }
+
+            // if ( ( $new.attr('id') != $current.attr('id') ) ) {
+            //     $current.removeClass("current").attr('aria-hidden', 'true');
+            //     $new.addClass("current").attr("aria-hidden", "false");
+            //     console.log("LAZY RELOAD", self._startup);
+            //     $.publish("update.go.page", ( $new.data('seq') ));
+            // }
 
             // load the previous and next for caching
             var $previous = $visible.slice(0,1).prev();
@@ -258,7 +280,7 @@ HT.Viewer.Scroll = {
             self.loadPage($previous);
             self.loadPage($next);
 
-            $(".page-item.checking").removeClass("imaged").removeClass("loaded").removeClass("checking").find("img").remove();
+            $(".page-item.checking").removeClass("imaged").removeClass("loaded").removeClass("checking").find(".page-wrap").remove();
 
             self.checkPageStatus();
 
@@ -276,6 +298,13 @@ HT.Viewer.Scroll = {
             var seq = $current.data('seq');
         }
 
+        var callback;
+
+        if ( delta != null && typeof(delta) == 'function' ) {
+            callback = delta;
+            delta = null;
+        }
+
         if ( delta != null ) {
             seq += delta;
         }
@@ -291,7 +320,11 @@ HT.Viewer.Scroll = {
             //     self.loadPage($page);
             // })
 
-            $(window).trigger('scroll.viewer.scroll');
+            // $(window).trigger('scroll.viewer.scroll');
+
+            if ( callback != null ) {
+                callback();
+            }
 
         });
     },
@@ -309,7 +342,9 @@ HT.Viewer.Scroll = {
 
             var alt_text = "image of " + HT.engines.manager.getAltTextForSeq(seq);
             $img.attr('alt', alt_text);
-            $page.append($img);
+            var $wrap = $('<div class="page-wrap"></div>').appendTo($page);
+            $img.appendTo($wrap);
+            // $page.append($img);
         } else {
             $page.removeClass("checking");
         }
@@ -326,6 +361,9 @@ HT.Viewer.Scroll = {
 
     drawPages : function() {
         var self = this;
+
+        console.log("DRAWING PAGES");
+
         var current = self.getCurrentSeq();
         if ( current == null && self.options.seq ) {
             current = self.options.seq;
@@ -362,11 +400,14 @@ HT.Viewer.Scroll = {
 
         if ( current && current > 1 ) {
             setTimeout(function() {
-                self.gotoPage(current);
-                $.publish("view.ready");
+                self.gotoPage(current, function() {
+                    self._startup = false;
+                    $.publish("view.ready");
+                });
             }, 500);
         } else {
             setTimeout(function() {
+                self._startup = false;
                 $.publish("view.ready");
             }, 500)
         }

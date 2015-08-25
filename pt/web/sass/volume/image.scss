@@ -18,16 +18,49 @@
 
         text-align: center;
 
+        $size: 50;
+        @while $size < 500 {
+            &.size-#{$size} {
+                max-width: #{(680 * ( $size / 100 )) + 14}px;
+                min-height: #{(900 * ( $size / 100)) + 14}px;
+            }
+            $size: $size + 25;
+        }
+
+        // &.size-75 {
+        //     max-width: 510;
+        // }
+
+        // &.size-100 {
+        //     max-width: 680px;
+        //     min-height: 1000px;
+        // }
+
+        // &.size-125 {
+        //     max-width: 1025px;
+        // }
+
+        // &.size-150 {
+        //     max-width: 1020px;
+        // }
+
+        // &.size-175 {
+        //     max-width: 
+        // }
+
         &.loaded {
             background-image: none;
+            border-color: transparent;
 
             img {
                 visibility: visible;
+                border: 1px solid #eee;
             }
         }
 
         img {
-            // visibility: hidden;
+            visibility: hidden;
+            max-width: 100%;
         }
 
     }

@@ -13,8 +13,9 @@ HT.Viewer.Image = {
     options: {},
 
     start: function() {
-        $body.addClass("view-image");
+        $("body").addClass("view-image");
         this.bindEvents();
+        $.publish("view.ready");
     },
 
     bindEvents: function() {
@@ -27,9 +28,24 @@ HT.Viewer.Image = {
         // $.subscribe("action.zoom.in.image", function(e, link) { self._gotoLink(link); });
         // $.subscribe("action.zoom.out.image", function(e, link) { self._gotoLink(link); });
 
-        $body.find(".page-item img").load(function() {
+
+
+        var $img = $("body").find(".page-item img").load(function() {
+            alert("LOADED");
+            self._imageLoaded($(this));
+        });
+
+        setTimeout(function() {
+            self._imageLoaded($img)
+        }, 500);
+    
+    },
+
+    _imageLoaded: function($img) {
+        if ( $img.get(0).complete ) {
+            $img.parents(".page-item").addClass("loaded");
             $(window).scroll();
-        })
+        }
     },
 
     _gotoLink: function(link)  {

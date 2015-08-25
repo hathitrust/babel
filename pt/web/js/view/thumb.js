@@ -247,7 +247,7 @@ HT.Viewer.Thumbnail = {
             self.loadPage($next);
 
             // $(".page-item.checking").removeClass("imaged").removeClass("checking").removeClass("loaded").removeClass("loading").find("img").remove();
-            $(".page-item.checking").removeClass("imaged checking loaded loading").find("img").remove();
+            $(".page-item.checking").removeClass("imaged checking loaded loading").find(".page-wrap").remove();
 
             self.checkPageStatus();
 
@@ -323,7 +323,8 @@ HT.Viewer.Thumbnail = {
                     // var $img = HT.engines.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
                     var $img = HT.engines.manager.get_image({ seq : seq, height: h, action : 'thumbnail' });
                     $img.attr("alt", "image of " + HT.engines.manager.getAltTextForSeq(seq));
-                    $a.append($img);
+                    var $wrap = $('<div class="page-wrap"></div>').appendTo($page);
+                    $wrap.append($img);
                 } else {
                     $page.removeClass("checking");
                 }
@@ -360,8 +361,6 @@ HT.Viewer.Thumbnail = {
             $page.css({ 'height' : Math.ceil(self.w) + 8, width : self.w });
             $page.data('seq', seq);
             $page.data('h', self.w);
-            var num = HT.engines.manager.getAltTextForSeq(seq);
-            $page.append('<label data-toggle="tooltip" data-placement="bottom"><span class="offscreen">Print page {NUM}</span><input type="checkbox" name="selected" class="printable" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
             // $page.addClass("loading");
 
             // need to bind clicking the thumbnail to open to that page; so wrap in an anchor!!
@@ -371,12 +370,6 @@ HT.Viewer.Thumbnail = {
         self.$container.append(fragment);
         $("#content").append(self.$container);
         self.$container.show();
-
-        self.$container.find(".page-item label").tooltip({
-            title: function() {
-                return $(this).find("span").text()
-            }
-        })
 
         $(window).scroll();
         var current = HT.engines.reader.getCurrentSeq();

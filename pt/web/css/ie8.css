@@ -22,6 +22,17 @@ i.icomoon-reorder:before {
     box-sizing: content-box !important;
 }
 
+.page-wrap {
+    position: static !important;
+}
+
+.page-item.loaded.selected .page-wrap:before {
+    width: 10%;
+    height: 2%;
+    right: 0;
+    border: none;
+}
+
 #sidebar {
     margin-top: 0;
 }

@@ -152,6 +152,7 @@
     <xsl:call-template name="include_local_javascript" />
 
     <xsl:call-template name="setup-extra-header-extra" />
+    <script src="/pt/vendor/vein.js"></script>
   </xsl:template>
 
   <xsl:template name="setup-social-twitter">
