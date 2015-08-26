@@ -492,51 +492,29 @@ body {
 
 }
 
-// .view-2up .page-item label, .view-1up .page-item label {
-//     display: none;
-// }
-
-// label.printable {
-//     display: none;
-// }
-
-// .view-thumb label.printable {
-//     display: block;
-// }
-
 .page-item {
     position: relative;
 }
 
-// .view-2up label.printable, .view-1up label.printable {
-//     position: absolute;
-//     top: 0;
-//     left: 0;
-//     right: 0;
-
-//     text-align: right;
-//     padding: 8px;
-//     z-index: 400;
-// }
-
-// .view-2up .page-item:hover label.printable, .view-1up .page-item:hover label.printable {
-//     display: block;
-
-//     &:hover {
-//         background: #eee;
-//     }
-// }
-
 #selection-contents {
 
+    &.open {
+        span {
+            text-shadow: none;
+            color: #999;
+        }
+    }
+
     button {
-        // background-color: rgba(146, 74, 11, 1.0);
         width: auto;
-        color: #eee;
+
+        span {
+            color: #eee;
+        }
 
         i {
-            color: #eee;
-            font-size: 18px;
+            // color: #eee;
+            font-size: 1em;
         }
 
         .msg {
@@ -590,9 +568,6 @@ body {
         background: rgba(239, 124, 34, 0.5) !important;
     }
 
-    // .page-wrap {
-    //     border: 4px solid rgba(239, 124, 34, 0.5) !important;
-    // }
 }
 
 .page-item.loaded.selected .page-wrap:before {
@@ -654,11 +629,11 @@ body {
 label.printable {
   position: absolute;
   top: 0;
-  /*left: 0;*/
   right: 0;
   height: 10%;
   min-height: 64px;
-  // background: #ddd; // transparent;
+  // background: transparent;
+  // need the transparent gif for the region to be clickable in IE8
   background: transparent 0 0 repeat scroll url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"); 
   width: 25%;
   border: none;
@@ -701,36 +676,6 @@ label.printable:hover {
 p.centered {
     text-align: center;
 }
-
-
-// .view-1up .page-item.selected,
-// .view-thumb .page-item.selected,
-// .view-image .page-item.selected,
-// .view-2up-XXX .page-item.selected {
-
-//     img {
-//         padding: 2% !important;
-//         background: rgba(239, 124, 34, 0.5) !important;
-//     }
-
-//     // img {
-//     //     border: 2px dotted rgba(146, 74, 11, 0.7) !important;
-//     //     padding: 1px !important;
-//     // }
-// }
-
-// .view-plaintext .page-item.selected {
-//     border: 2px solid rgba(239, 124, 34, 0.5) !important;
-//     padding: 20px !important;
-// }
-
-// .view-2up .page-item.selected {
-//     img {
-//         padding: 2% !important;
-//     }
-
-//     border: 8px solid rgba(239, 124, 34, 0.5) !important;
-// }
 
 .action-clear-selection {
     display: block;

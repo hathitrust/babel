@@ -143,28 +143,12 @@ HT.Reader = {
                     }
                 }
                 msg.push("<p><tt>shift + click</tt> to de/select the pages between this page and a previously selected page.");
-                msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"fa fa-paperclip\" style=\"color: white; font-size: 18px;\" /></button>");
+                msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"icomoon icomoon-attachment\" style=\"color: white; font-size: 14px;\" /></button>");
 
                 msg = msg.join("\n");
 
-                // if ( self.getView() == 'thumb' ) {
-                //     msg += "<p>Check to select pages.</p>";
-                // } else {
-                //     msg += "<p>To select pages, open the thumbnail view and check the pages you're interested in printing.</p>";
-                //     buttons.push({
-                //         label: "Open Thumbnail View",
-                //         "class": "inverse",
-                //         callback: function() {
-                //             self.updateView('thumb');
-                //         }
-                //     });
-                // }
                 buttons.push({
                     label: "OK"
-                    // ,
-                    // callback: function() {
-                    //     self.updateView('thumb');
-                    // }
                 });
                 bootbox.dialog(msg, buttons);
                 return false;
@@ -186,23 +170,6 @@ HT.Reader = {
                  .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
                  .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
 
-
-
-
-        $("#action-toggle-printable").on('click', function(e) {
-            e.preventDefault();
-            var $this = $(this);
-            var $i = $this.find("i.fa");
-            var is_selected = ! ( $i.is(".fa-check-square-o") );
-            $i.toggleClass('fa-square-o fa-check-square-o');
-            // $i.toggleClass(function() {
-            //     if ( is_selected ) {
-            //         return 'fa fa-check-square-o';
-            //     } else {
-            //         return 'fa fa-square-o';
-            //     }
-            // })
-        })
 
 
         $("#action-clear-printable").on('click', function(e) {
@@ -336,7 +303,7 @@ HT.Reader = {
             }
         })
 
-        $.subscribe("update.go.page", function(e, seq) {
+        $.subscribe("update.go.page", function(e, seq, is_logging) {
             var orig = seq;
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
@@ -351,9 +318,14 @@ HT.Reader = {
             }
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq, orig);
+
             if ( self.$slider && HT.engines.view ) {
                 self.$slider.slider('setValue', self.getView() == '2up' ? HT.engines.view._seq2page(seq) : seq);
             }
+
+            // if ( is_logging ) {
+            //     self._logPageview(orig);
+            // }
         })
 
         $.subscribe("update.zoom.size", function(e, zoom) {
@@ -529,6 +501,24 @@ HT.Reader = {
         return HT.Viewer[views[this.getView()]];
     },
 
+     _getCurrentURL: function(seq) {
+        var new_href = window.location.pathname;
+        new_href += "?id=" + HT.params.id;
+        new_href += ";view=" + this.getView();
+        new_href += ";seq=" + ( seq || this.getCurrentSeq() );
+        var size = HT.engines.manager.get_zoom(this.getView());
+        if ( size && size != 100 ) {
+            new_href += ";size=" + size;
+        }
+        if ( HT.params.debug ) {
+            new_href += ";debug=" + HT.params.debug;
+        }
+        if ( HT.params.skin ) {
+            new_href += ";skin=" + HT.params.skin;
+        }
+        return new_href;
+    },
+
     _updateState: function(params) {
         var new_href = this._getCurrentURL();
         // if ( HT.params.size ) {
@@ -679,48 +669,6 @@ HT.Reader = {
 
     _handleThumb: function(stage) {
         var self = this;
-
-        if ( stage == 'XXselect' ) {
-            $(".page-item").each(function() {
-                var $page = $(this);
-                var seq = $page.data('seq');
-                var num = HT.engines.manager.getAltTextForSeq(seq);
-                $page.append('<label data-toggle="tooltip" data-placement="bottom"><span class="offscreen">Select page {NUM} to print</span><input type="checkbox" name="selected" class="printable" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
-                $page.find("label").tooltip({
-                    title: function() {
-                        return $(this).find("span").text()
-                    }
-                })
-                if ( self._range.indexOf(seq) > -1 ) {
-                    $page.find("input.printable").prop('checked', true);
-                }
-            })
-        }
-
-        // var $link = $("#pagePdfLink");
-        // if ( stage == 'start' ) {
-        //     // recto verso vs. rtl, BLEH!
-        //     $link.data('original-label', $link.text());
-        //     $link.data('original-href', $link.attr('href'));
-        //     $link.data('template', 'Download {PAGES}... (PDF)').data('selectable', true);
-        //     $link.text($link.data('template').replace('{PAGES}', 'pages'));
-        //     var $btn = $('<button class="btn btn-mini action-clear-selection">Clear Selection</button>').insertAfter($link);
-        //     $btn.on('click', function(e) {
-        //         e.preventDefault();
-        //         $("input.printable:checked").prop('checked', false);
-        //         $(".page-item.selected").toggleClass('selected', false);
-        //     })
-        //     $link.on('click.reader.range', function(e) {
-        //         // e.preventDefault();
-        //         self._downloadPageRange(e);
-        //     })
-        // } else {
-        //     $link.text($link.data('original-label')).data('selectable', false);
-        //     $link.attr('href', $link.data('original-href'));
-        //     $link.off('click.reader.range');
-        //     $("#fullPdfLink").removeData('seq');
-        //     $(".action-clear-selection").remove();
-        // }
     },
 
     _downloadPageRange: function(e) {
@@ -903,19 +851,6 @@ HT.Reader = {
             return;
         }
 
-        // if ( ! $menu.length ) {
-        //     var $contents = $(".btn-group.table-of-contents");
-        //     var $menu = $contents.clone().insertAfter($contents);
-        //     var $i = $menu.find("i");
-        //     $i.removeClass("icomoon icomoon-list").addClass("fa fa-paperclip");
-        //     console.log("WHAT", $menu.html());
-        //     $menu.find(".label").text("Jump to selected page");
-        //     $menu.find("button .label").after('<span class="msg"></span>');
-        //     $menu.attr("id", "range-contents");
-        // } else {
-        //     // do nothing
-        // }
-
         $menu.find("button").removeClass('disabled');
         $menu.find(".msg").text(printable.length + " pages");
         var $ul = $menu.find("ul.dropdown-menu");
@@ -927,9 +862,8 @@ HT.Reader = {
             if ( typeof(args) == "string" ) {
                 var tmp = args.split("-");
                 seq = tmp[0];
-                postscript = "<br /><span>+ " + ( parseInt(tmp[1], 10) - parseInt(tmp[0], 10) ) + " pages</span>";
+                postscript = "<br /><span>(" + ( parseInt(tmp[1], 10) - parseInt(tmp[0], 10) + 1 ) + " pages)</span>";
             }
-            // $ul.append('<li><a href="{URL}" data-seq="{SEQ}">{ARGS}</a></li>'.replace('{URL}', window.location.href.replace(/seq=\d+/, "seq=" + seq)).replace(/{SEQ}/g, seq).replace(/{ARGS}/g, args).replace(/num=\d+/, ''));
             $ul.append('<li><a href="{URL}" data-seq="{SEQ}"><img src="//babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ID};seq={SEQ};width=75" />{POSTSCRIPT}</a></li>'
                 .replace('{URL}', window.location.href.replace(/seq=\d+/, "seq=" + seq))
                 .replace(/{SEQ}/g, seq)

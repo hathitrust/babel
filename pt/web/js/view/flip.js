@@ -220,7 +220,7 @@ HT.Viewer.Flip = {
         if ( do_rezoom ) {
             self.zoom = self.reset_zoom;
         }
-        console.log("FLIP RESIZE", do_rezoom, self.zoom, last_reset_zoom, self.reset_zoom);
+        // console.log("FLIP RESIZE", do_rezoom, self.zoom, last_reset_zoom, self.reset_zoom);
         self.updateZoom(0, self.zoom);
         self._resizing = false;
     },
@@ -247,7 +247,7 @@ HT.Viewer.Flip = {
         self.zoom = self.zoom_levels[new_index];
         self.target_h = self.reset_target_h * self.zoom;
 
-        console.log("UPDATE ZOOM", self.target_h, self.zoom);
+        // console.log("UPDATE ZOOM", self.target_h, self.zoom);
 
         // self.w = ( self.options.default_w * self.zoom ) / 2;
 
@@ -712,7 +712,7 @@ HT.Viewer.Flip = {
             // y = e.clientHeight || g.clientHeight || w.innerHeight;
             var y = $(window).height();
 
-            console.log("BEST FIT target_h", y, $(window).height(), $(".navbar").height(), $(".toolbar-horizontal").height());
+            // console.log("BEST FIT target_h", y, $(window).height(), $(".navbar").height(), $(".toolbar-horizontal").height());
             target_h = y - $(".navbar").height() - $(".toolbar-horizontal").height() - 25 - 75;
             margin_w = 75;
         }
@@ -737,7 +737,7 @@ HT.Viewer.Flip = {
         self.target_h = target_h;
         self.reset_target_h = target_h;
         self.margin_w = margin_w;
-        console.log("BEST FIT", target_h, margin_w);
+        // console.log("BEST FIT", target_h, margin_w);
     },
 
     _page2seq: function(page) {

@@ -132,11 +132,10 @@ HT.Viewer.Scroll = {
 
             self.drawPages();
             self._resizing = false;
-            console.log("RESIZE SCROLL");
+            // console.log("RESIZE SCROLL");
         }, 250);
 
         $.subscribe("action.resize.scroll", function(e) {
-            console.log("ACTION RESIZE");
             _lazyResize();
         })
 
@@ -251,16 +250,14 @@ HT.Viewer.Scroll = {
                 }
             }
 
-            var is_update = false;
+            var is_update = true;
             if ( $current.length ) {
                 if ( $new.attr('id') != $current.attr('id') ) {
                     $current.removeClass("current").attr('aria-hidden', 'true');
-                    is_update = true;
-                    console.log("LAZY RELOAD", self._startup);
                     $.publish("update.go.page", ( [ $new.data('seq'), true ] ));
+                } else {
+                    is_update = false;
                 }
-            } else {
-                is_update = true;
             }
 
             if ( is_update ) {
@@ -361,8 +358,6 @@ HT.Viewer.Scroll = {
 
     drawPages : function() {
         var self = this;
-
-        console.log("DRAWING PAGES");
 
         var current = self.getCurrentSeq();
         if ( current == null && self.options.seq ) {
