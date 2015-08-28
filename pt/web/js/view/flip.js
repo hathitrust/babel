@@ -64,6 +64,7 @@ HT.Viewer.Flip = {
         $(window).unbind(".flip");
         $(document).unbind(".flip");
         $("body").unbind(".flip");
+        $("body").unbind("movestart"); // why?
         $("#content").empty().css('margin-top', '');
         $("body").removeClass("view-2up");
     },
@@ -611,7 +612,7 @@ HT.Viewer.Flip = {
             // self.book.bookblock('prev');
             if ( e.metaKey || e.ctrlKey ) { return ; }
             self.gotoPage(null, -1);
-        }).on('swipeleft.flip', function(e) { self.gotoPage(null, 1); })
+        }).on('swipeleft.flip', function(e) { console.log("SWIPING"); self.gotoPage(null, 1); })
           .on('swiperight.flip', function(e) { self.gotoPage(null, -1); })
 
         $.publish("view.ready");
@@ -659,7 +660,10 @@ HT.Viewer.Flip = {
     checkPageStatus: function() {
         var self = this;
 
-        var status = self.book.data('bookblock').status();
+        var status = self.book.data('bookblock');
+        if ( status === undefined ) { return ; }
+
+        status = status.status();
         if ( status.current == 0 ) {
             $.publish("disable.go.first");
         } else {

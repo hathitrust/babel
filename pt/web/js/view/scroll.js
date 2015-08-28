@@ -135,9 +135,11 @@ HT.Viewer.Scroll = {
             // console.log("RESIZE SCROLL");
         }, 250);
 
-        $.subscribe("action.resize.scroll", function(e) {
-            _lazyResize();
-        })
+        if ( $("html").is(".desktop") ) {
+            $.subscribe("action.resize.scroll", function(e) {
+                _lazyResize();
+            })
+        }
 
         // var $e = get_resize_root();
         // $e.on('resize.viewer.scroll', _lazyResize);
@@ -194,6 +196,8 @@ HT.Viewer.Scroll = {
         var lazyLayout = _.debounce(function() {
             // figure out the MOST visible page
 
+            if ( $(".page-item").length == 0 ) { return ; }
+
             var t0 = Date.now();
 
             var visibility = [];
@@ -235,8 +239,13 @@ HT.Viewer.Scroll = {
             var past_visible = false;
             for (var i = 0; i < $possible.length; i++) {
                 var $page = $possible.slice(i, i + 1);
-                var f = $page.fracs();
-                if ( f.visible ) {
+                var f = null;
+                try {
+                    f = $page.fracs();
+                } catch(e) {
+                    console.log("SCROLL RESIZE", e, $page);
+                }
+                if ( f && f.visible ) {
                     self.loadPage($page);
                     $visible.push($page.get(0));
                     if ( f.visible > max_vp ) {

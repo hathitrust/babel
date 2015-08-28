@@ -101,7 +101,7 @@ HT.Reader = {
         $("body").on('click', '.page-item', function(e) {
             if ( e.metaKey || e.ctrlKey ) {
                 console.log("AHOY : PAGE ITEM CLICK");
-                self._addPageToRange($(this), e.shiftKey, true);
+                self._addPageToRange($(this), e, true);
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
@@ -116,10 +116,22 @@ HT.Reader = {
 
         $("body").on('click', "input.printable,label.printable", function(e) {
             var $page = $(this).parents(".page-item");
-            console.log("WTF", e.shiftKey, e);
-            self._addPageToRange($page, e.shiftKey, ! $page.is(".selected"));
+            // self._addPageToRange($page, e.shiftKey, ! $page.is(".selected"));
+            self._addPageToRange($page, e, ! $page.is(".selected"));
             e.preventDefault();
             e.stopPropagation();
+        })
+
+        $("body").on('focusin', "input.printable", function(e) {
+            $(this).parents("label.printable").addClass("focused").tooltip('show');
+        }).on('focusout', 'input.printable', function(e) {
+            $(this).parents("label.printable").removeClass("focused").tooltip('hide');
+        })
+
+        $("body").on('mouseenter', 'label.printable', function(e) {
+            $(this).tooltip('show');
+        }).on('mouseleave', 'label.printable', function(e) {
+            $(this).tooltip('hide');
         })
 
         $("#rangePdfLink").on('click', function(e) {
@@ -200,15 +212,19 @@ HT.Reader = {
                 var $page = $(this);
                 var seq = $page.data('seq');
                 var num = HT.engines.manager.getPageNumForSeq(seq) || "n" + seq;
-                $page.append('<label class="printable" data-toggle="tooltip" data-placement="bottom"><span class="offscreen">Select page {NUM} to download</span><input type="checkbox" name="selected" class="printable" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
+                $page.data('num', num);
+                $page.append('<label class="printable" data-toggle="tooltip" data-placement="bottom"><span class="offscreen directions" data-num="{NUM}">Select page {NUM} to download</span><input type="checkbox" name="selected" class="printable offscreen" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
                 $page.find("label").tooltip({
+                    trigger: 'manual',
                     title: function() {
                         return $(this).find("span").text()
                     }
                 })
                 if ( _.indexOf(printable, seq) > -1 ) {
                     $page.find("input.printable").prop('checked', true);
+                    var $span = $page.find("label.printable span.directions");
                     $page.addClass('selected');
+                    $page.attr('aria-label', "Page " + num + " is selcted for download");
                 }
             });
 
@@ -533,6 +549,7 @@ HT.Reader = {
             // update the hash
             var new_hash = '#view=' + this.getView();
             new_hash += ';seq=' + this.getCurrentSeq();
+            var size = HT.engines.manager.get_zoom(this.getView());
             if ( size && size != 100 ) {
                 new_hash += ";size=" + size;
             }
@@ -726,7 +743,8 @@ HT.Reader = {
 
     },
 
-    _addPageToRange: function($page, extend_selection, toggle) {
+    // _addPageToRange: function($page, extend_selection, toggle) {
+    _addPageToRange: function($page, evt, toggle) {
         var self = this;
         var $input = $page.find("input.printable");
         var checked = ! $page.is(".selected");
@@ -743,24 +761,56 @@ HT.Reader = {
         var to_process = [ seq ];
 
         $page.toggleClass("selected", checked );
-        if ( extend_selection ) {
-            // var checked = $input.prop('checked');
-
+        $page.attr('aria-label', checked ? ( "Page " + $page.data('num') + " is selcted for download" ) : null);
+        if ( evt && evt.shiftKey && self._last_selected_seq ) {
+            // there should be an earlier selection
             var prev_until;
             var fn = checked ? function(seq) { return _.indexOf(printable, seq) > -1 } : function(seq) { return _.indexOf(printable, seq) < 0 };
-            for(var prev_until_ = seq - 1; prev_until_ > 0; prev_until_--) {
-                console.log("CHECKING:", checked, prev_until_, fn(prev_until_));
+
+            var start_seq; var end_seq; var delta;
+            if ( seq > self._last_selected_seq ) {
+                start_seq = seq;
+                end_seq = self._last_selected_seq;
+            } else {
+                start_seq = self._last_selected_seq;
+                end_seq = seq;
+            }
+
+            for(var prev_until_ = start_seq - 1; prev_until_ > end_seq; prev_until_--) {
+                // console.log("CHECKING:", checked, prev_until_, fn(prev_until_));
                 prev_until = prev_until_;
                 if ( fn(prev_until_) ) {
                     break;
                 }
             }
 
-            for(var prev=seq - 1; prev > prev_until; prev--) {
-                $("#page" + prev).toggleClass('selected', checked).find("input.printable").prop('checked', checked);
-                to_process.push(prev);
+            if ( prev_until == 1 && _.indexOf(printable, 1) < 0 ) {
+                bootbox.alert("<p>Sorry.</p><p>Shift-click selects the pages between this page and an earlier selection, and we didn't find an earlier selected page.</p>");
+            } else {
+                for(var prev=start_seq; prev >= prev_until; prev--) {
+                    var $page_prev = $("#page" + prev);
+                    if ( $page_prev.length ) {
+                        $page_prev.toggleClass('selected', checked).find("input.printable").prop('checked', checked);
+                        $page_prev.attr('aria-label', checked ? ( "Page " + $page_prev.data('num') + " is selcted for download" ) : null);
+                    }
+                    to_process.push(prev);
+                }
             }
         }
+
+        // if ( evt && evt.metaKey ) {
+        //     // select the chapter
+        //     var next_seq = seq + 1;
+        //     while ( next_seq <= HT.engines.manager.getLastSeq() ) {
+        //         var meta = HT.engines.manager.get_page_meta({ seq : next_seq });
+        //         if ( _.indexOf(meta.features, 'FIRST_CONTENT_CHAPTER_START') > -1 || _.indexOf(meta.features, 'CHAPTER_START') > -1 ) {
+        //             break;
+        //         }
+        //         to_process.push(next_seq);
+        //         $("#page" + next_seq).toggleClass('selected', checked).find("input.printable").prop('checked', checked);
+        //         next_seq += 1;
+        //     }
+        // }
 
         if ( is_adding ) {
             printable = _.union(printable, to_process);
@@ -774,6 +824,8 @@ HT.Reader = {
         var num_printable = printable.length;
         self._updateRangeLabel(num_printable);
         self._updateRangeContents(printable);
+
+        self._last_selected_seq = seq;
 
         // sessionStorage.setItem('printable', JSON.stringify(printable));
     },
@@ -956,6 +1008,10 @@ HT.Reader = {
 }
 
 head.ready(function() {
+
+    if ( window.location.href.indexOf("skin=mobile") > -1 ) {
+        return;
+    }
 
     // update HT.params based on the hash
     if ( window.location.hash ) {
