@@ -626,7 +626,7 @@ html.no-mobile .page-item.page-left:not(.selected):hover .page-wrap:before {
     left: 0;
 }
 
-label.printable {
+label.selectable {
   position: absolute;
   top: 0;
   right: 0;
@@ -650,7 +650,7 @@ label.printable {
 }
 
 .view-thumb {
-    .printable {
+    .selectable {
         right: 0;
         left: 0;
         width: 100%;
@@ -658,27 +658,27 @@ label.printable {
 }
 
 .view-2up {
-    .printable {
+    .selectable {
         width: 50%;
     }
 }
 
-// .printable input[type=checkbox] {
+// .selectable input[type=checkbox] {
 //   visibility: hidden;
 // }
 
-// .printable input[type=checkbox]:focus {
+// .selectable input[type=checkbox]:focus {
 //     position: static !important;
 //     height: auto !important;
 //     clip: auto !important;
 // }
 
-.page-left .printable {
+.page-left .selectable {
   right: auto;
   left: 0;
 }
 
-// label.printable:hover {
+// label.selectable:hover {
 //   // background: rgba(238, 238, 238, 0.5)
 //   border: 2px dotted #ddd;
 // }

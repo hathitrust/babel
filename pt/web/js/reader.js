@@ -12,7 +12,6 @@ HT.Reader = {
             base : window.location.pathname.replace("/pt", "/imgsrv")
         });
         this._tracking = false;
-        this._range = [];
         this._startup = true;
         return this;
     },
@@ -91,7 +90,7 @@ HT.Reader = {
             console.log("PAGE LINK CLICK", e.ctrlKey);
             if ( e.ctrlKey ) {
                 // select this item
-                self._addPageToRange($(this).parents(".page-item"), false, true);
+                self._addPageToSelection($(this).parents(".page-item"), false, true);
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
@@ -101,7 +100,7 @@ HT.Reader = {
         $("body").on('click', '.page-item', function(e) {
             if ( e.metaKey || e.ctrlKey ) {
                 console.log("AHOY : PAGE ITEM CLICK");
-                self._addPageToRange($(this), e, true);
+                self._addPageToSelection($(this), e, true);
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
@@ -114,30 +113,30 @@ HT.Reader = {
             }
         })
 
-        $("body").on('click', "input.printable,label.printable", function(e) {
+        $("body").on('click', "input.selectable,label.selectable", function(e) {
             var $page = $(this).parents(".page-item");
-            // self._addPageToRange($page, e.shiftKey, ! $page.is(".selected"));
-            self._addPageToRange($page, e, ! $page.is(".selected"));
+            // self._addPageToSelection($page, e.shiftKey, ! $page.is(".selected"));
+            self._addPageToSelection($page, e, ! $page.is(".selected"));
             e.preventDefault();
             e.stopPropagation();
         })
 
-        $("body").on('focusin', "input.printable", function(e) {
-            $(this).parents("label.printable").addClass("focused").tooltip('show');
-        }).on('focusout', 'input.printable', function(e) {
-            $(this).parents("label.printable").removeClass("focused").tooltip('hide');
+        $("body").on('focusin', "input.selectable", function(e) {
+            $(this).parents("label.selectable").addClass("focused").tooltip('show');
+        }).on('focusout', 'input.selectable', function(e) {
+            $(this).parents("label.selectable").removeClass("focused").tooltip('hide');
         })
 
-        $("body").on('mouseenter', 'label.printable', function(e) {
+        $("body").on('mouseenter', 'label.selectable', function(e) {
             $(this).tooltip('show');
-        }).on('mouseleave', 'label.printable', function(e) {
+        }).on('mouseleave', 'label.selectable', function(e) {
             $(this).tooltip('hide');
         })
 
-        $("#rangePdfLink").on('click', function(e) {
+        $("#selectedPagesPdfLink").on('click', function(e) {
             e.preventDefault();
 
-            var printable = self._getRange();
+            var printable = self._getPageSelection();
 
             if ( printable.length == 0 ) {
                 var buttons = [];
@@ -167,7 +166,7 @@ HT.Reader = {
             }
 
 
-            var seq = self._getFlattenedRange(printable);
+            var seq = self._getFlattenedSelection(printable);
 
             $(this).data('seq', seq);
             HT.downloader.downloadPdf(this);
@@ -184,9 +183,9 @@ HT.Reader = {
 
 
 
-        $("#action-clear-printable").on('click', function(e) {
+        $("#action-clear-selection").on('click', function(e) {
             e.preventDefault();
-            self._clearRangeSelection();
+            self._clearSelectionSelection();
             $(this).css('visibility', 'hidden');
         })
 
@@ -198,41 +197,7 @@ HT.Reader = {
                 }, 250);
             }
 
-            var printable = self._getRange();
-            var w = $(".page-item:visible").width(); w = parseInt(w * 0.08);
-            if ( ! $("html").is('.eq-ie8') ) {
-                vein.inject('.page-item.selected .page-wrap:before', { 'border-width' : '0 ' + w + 'px ' + w + 'px 0 !important' });
-                vein.inject('.page-item:not(.selected):hover .page-wrap:before', { 'border-width' : w + 'px ' + ' 0 0 ' + w + 'px !important' });
-
-                vein.inject('.page-item.page-left.selected .page-wrap:before', { 'border-width' : '0 0 ' + w + 'px ' + w + 'px !important' });
-                vein.inject('.page-item.page-left:not(.selected):hover .page-wrap:before', { 'border-width' : w + 'px ' + w + 'px 0 0 !important' });
-            }
-
-            $(".page-item").each(function() {
-                var $page = $(this);
-                var seq = $page.data('seq');
-                var num = HT.engines.manager.getPageNumForSeq(seq) || "n" + seq;
-                $page.data('num', num);
-                $page.append('<label class="printable" data-toggle="tooltip" data-placement="bottom"><span class="offscreen directions" data-num="{NUM}">Select page {NUM} to download</span><input type="checkbox" name="selected" class="printable offscreen" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
-                $page.find("label").tooltip({
-                    trigger: 'manual',
-                    title: function() {
-                        return $(this).find("span").text()
-                    }
-                })
-                if ( _.indexOf(printable, seq) > -1 ) {
-                    $page.find("input.printable").prop('checked', true);
-                    var $span = $page.find("label.printable span.directions");
-                    $page.addClass('selected');
-                    $page.attr('aria-label', "Page " + num + " is selcted for download");
-                }
-            });
-
-            if ( printable.length ) {
-                self._updateRangeLabel(_.keys(printable).length);
-                self._updateRangeContents(printable);
-            }
-
+            self.setupPageSelection();
 
             // and center the display
             self._centerContentDisplay();
@@ -688,65 +653,51 @@ HT.Reader = {
         var self = this;
     },
 
-    _downloadPageRange: function(e) {
-        var self = this;
-        var $link = $("#pagePdfLink");
-        var $action = $("#fullPdfLink");
-        var $selected = $("input.printable:checked");
-        e.preventDefault();
-        if ( $selected.size() == 0 ) {
-            alert("You need to select some pages to download.");
-            return;
-        }
-        // var href = $link.data('original-href');
-        var seq = [];
-        $selected.each(function() {
-            // seq.push("seq=" + $(this).val());
-            var val = $(this).val();
-            if ( seq.length == 0 ) {
-                seq.push([val, -1]);
-            } else {
-                var last = seq[seq.length - 1];
-                if ( last[1] < 0 && val - last[0] == 1 ) {
-                    last[1] = val;
-                } else if ( val - last[1] == 1 ) {
-                    last[1] = val;
-                } else {
-                    seq.push([val, -1]);
-                }
-            }
-            // seq.push($(this).val());
-        })
-
-        for(var i = 0; i < seq.length; i++) {
-            var tmp = seq[i];
-            if ( tmp[1] < 0 ) {
-                seq[i] = tmp[0];
-            } else {
-                seq[i] = tmp[0] + "-" + tmp[1];
-            }
-        }
-
-        // seq = seq.join(';');
-        // href = href.replace(/;seq=\d+/, ';' + seq);
-        // $link.attr("href", href);
-        // this should follow the link, right?
-        $action.data('seq', seq);
-        $action.data('selected', $selected.size());
-        console.log($action.data('seq'));
-        $action.trigger('click');
-        $selected.prop('checked', false);
-        $(".page-item.selected").toggleClass('selected', false);
-    },
-
     _parseParams: function() {
 
     },
 
-    // _addPageToRange: function($page, extend_selection, toggle) {
-    _addPageToRange: function($page, evt, toggle) {
+    setupPageSelection: function() {
         var self = this;
-        var $input = $page.find("input.printable");
+        var printable = self._getPageSelection();
+        var w = $(".page-item:visible").width(); w = parseInt(w * 0.08);
+        if ( ! $("html").is('.eq-ie8') ) {
+            vein.inject('.page-item.selected .page-wrap:before', { 'border-width' : '0 ' + w + 'px ' + w + 'px 0 !important' });
+            vein.inject('.page-item:not(.selected):hover .page-wrap:before', { 'border-width' : w + 'px ' + ' 0 0 ' + w + 'px !important' });
+
+            vein.inject('.page-item.page-left.selected .page-wrap:before', { 'border-width' : '0 0 ' + w + 'px ' + w + 'px !important' });
+            vein.inject('.page-item.page-left:not(.selected):hover .page-wrap:before', { 'border-width' : w + 'px ' + w + 'px 0 0 !important' });
+        }
+
+        $(".page-item").each(function() {
+            var $page = $(this);
+            var seq = $page.data('seq');
+            var num = HT.engines.manager.getPageNumForSeq(seq) || "n" + seq;
+            $page.data('num', num);
+            $page.append('<label class="selectable" data-toggle="tooltip" data-placement="bottom"><span class="offscreen directions" data-num="{NUM}">Select page {NUM} to download</span><input type="checkbox" name="selected" class="selectable offscreen" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
+            $page.find("label").tooltip({
+                trigger: 'manual',
+                title: function() {
+                    return $(this).find("span").text()
+                }
+            })
+            if ( _.indexOf(printable, seq) > -1 ) {
+                $page.find("input.selectable").prop('checked', true);
+                var $span = $page.find("label.selectable span.directions");
+                $page.addClass('selected');
+                $page.attr('aria-label', "Page " + num + " is selcted for download");
+            }
+        });
+
+        if ( printable.length ) {
+            self._updateSelectionLabel(_.keys(printable).length);
+            self._updateSelectionContents(printable);
+        }
+    },
+
+    _addPageToSelection: function($page, evt, toggle) {
+        var self = this;
+        var $input = $page.find("input.selectable");
         var checked = ! $page.is(".selected");
 
         if ( toggle ) {
@@ -755,7 +706,7 @@ HT.Reader = {
 
         var seq = parseInt($input.val(), 10);
         // now deal with processing 
-        var printable = self._getRange();
+        var printable = self._getPageSelection();
 
         var is_adding = checked; // $input.prop('checked');
         var to_process = [ seq ];
@@ -790,7 +741,7 @@ HT.Reader = {
                 for(var prev=start_seq; prev >= prev_until; prev--) {
                     var $page_prev = $("#page" + prev);
                     if ( $page_prev.length ) {
-                        $page_prev.toggleClass('selected', checked).find("input.printable").prop('checked', checked);
+                        $page_prev.toggleClass('selected', checked).find("input.selectable").prop('checked', checked);
                         $page_prev.attr('aria-label', checked ? ( "Page " + $page_prev.data('num') + " is selcted for download" ) : null);
                     }
                     to_process.push(prev);
@@ -807,7 +758,7 @@ HT.Reader = {
         //             break;
         //         }
         //         to_process.push(next_seq);
-        //         $("#page" + next_seq).toggleClass('selected', checked).find("input.printable").prop('checked', checked);
+        //         $("#page" + next_seq).toggleClass('selected', checked).find("input.selectable").prop('checked', checked);
         //         next_seq += 1;
         //     }
         // }
@@ -818,20 +769,18 @@ HT.Reader = {
             printable = _.difference(printable, to_process)
         }
 
-        self._setRange(printable);
+        self._setSelection(printable);
         console.log(printable, to_process);
 
         var num_printable = printable.length;
-        self._updateRangeLabel(num_printable);
-        self._updateRangeContents(printable);
+        self._updateSelectionLabel(num_printable);
+        self._updateSelectionContents(printable);
 
         self._last_selected_seq = seq;
-
-        // sessionStorage.setItem('printable', JSON.stringify(printable));
     },
 
-    _updateRangeLabel: function(num_printable) {
-        var $link = $("#rangePdfLink");
+    _updateSelectionLabel: function(num_printable) {
+        var $link = $("#selectedPagesPdfLink");
         var msg = num_printable;
         if ( msg == 0 ) {
             msg = 'pages';
@@ -848,14 +797,14 @@ HT.Reader = {
         return msg;
     },
 
-    _getRange: function() {
-        var key = "range-" + HT.params.id;
+    _getPageSelection: function() {
+        var key = "selection-" + HT.params.id;
         var printable = JSON.parse(sessionStorage.getItem(key) || "[]");
         return printable;
     },
 
-    _setRange: function(printable) {
-        var key = "range-" + HT.params.id;
+    _setSelection: function(printable) {
+        var key = "selection-" + HT.params.id;
         if ( printable === null ) {
             sessionStorage.removeItem(key);
             return;
@@ -863,7 +812,7 @@ HT.Reader = {
         sessionStorage.setItem(key, JSON.stringify(printable.sort(function(a, b) { return a - b; })));
     },
 
-    _getFlattenedRange: function(printable) {
+    _getFlattenedSelection: function(printable) {
         var seq = [];
         _.each(printable.sort(function(a, b) { return a - b; }), function(val) {
             if ( seq.length == 0 ) {
@@ -891,7 +840,7 @@ HT.Reader = {
         return seq;
     },
 
-    _updateRangeContents: function(printable) {
+    _updateSelectionContents: function(printable) {
         var self = this;
 
         var $menu = $("#selection-contents");
@@ -907,7 +856,7 @@ HT.Reader = {
         $menu.find(".msg").text(printable.length + " pages");
         var $ul = $menu.find("ul.dropdown-menu");
         $ul.find("li").remove();
-        var list = self._getFlattenedRange(printable);
+        var list = self._getFlattenedSelection(printable);
         _.each(list, function(args) {
             var seq = args;
             var postscript = "";
@@ -927,16 +876,16 @@ HT.Reader = {
         })
     },
 
-    _clearRangeSelection: function() {
+    _clearSelectionSelection: function() {
         var self = this;
 
-        $("input.printable:checked").prop('checked', false);
+        $("input.selectable:checked").prop('checked', false);
         $(".page-item.selected").toggleClass('selected', false);
-        var $link = $("#rangePdfLink");
+        var $link = $("#selectedPagesPdfLink");
         $link.text($link.data('template').replace('{PAGES}', 'pages'));
 
-        self._setRange(null);
-        self._updateRangeContents([]);
+        self._setSelection(null);
+        self._updateSelectionContents([]);
     },
 
     buildSlider: function() {

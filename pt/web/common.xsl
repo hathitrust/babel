@@ -933,16 +933,16 @@
           </li>
         </xsl:if>
 
-        <xsl:if test="$gFullPdfAccessMessage=''">
+        <xsl:if test="$gFullPdfAccessMessage='' and $gUsingSearch = 'false'">
           <!-- only show this link if we have access -->
           <li>
             <xsl:element name="a">
-              <xsl:attribute name="id">rangePdfLink</xsl:attribute>
+              <xsl:attribute name="id">selectedPagesPdfLink</xsl:attribute>
               <xsl:attribute name="title">Download pages (PDF)</xsl:attribute>
               <xsl:attribute name="data-template">Download {PAGES} (PDF)</xsl:attribute>
               <xsl:attribute name="data-toggle">tracking-action</xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-              <xsl:attribute name="data-tracking-action">PT Download PDF - range</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Download PDF - selection</xsl:attribute>
               <xsl:attribute name="range">yes</xsl:attribute>
               <xsl:attribute name="data-seq"></xsl:attribute>
               <xsl:attribute name="data-total">0</xsl:attribute>
@@ -952,7 +952,7 @@
               </xsl:attribute>
               <xsl:text>Download pages (PDF)</xsl:text>
             </xsl:element>
-            <button data-toggle="tooltip" class="btn btn-mini" id="action-clear-printable"><i class="icomoon icomoon-cancel"></i><span class="label"> Clear Selection</span></button>
+            <button data-toggle="tooltip" class="btn btn-mini" id="action-clear-selection"><i class="icomoon icomoon-cancel"></i><span class="label"> Clear Selection</span></button>
           </li>
         </xsl:if>
 

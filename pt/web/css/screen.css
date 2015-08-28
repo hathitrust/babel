@@ -729,7 +729,7 @@ html.no-mobile .page-item.page-left:not(.selected):hover .page-wrap:before {
 }
 
 /* line 629, ../sass/screen.scss */
-label.printable {
+label.selectable {
   position: absolute;
   top: 0;
   right: 0;
@@ -742,7 +742,7 @@ label.printable {
   z-index: 150;
 }
 /* line 643, ../sass/screen.scss */
-label.printable:focus, label.printable:hover, label.printable.focused {
+label.selectable:focus, label.selectable:hover, label.selectable.focused {
   border: 2px dotted #dddddd;
 }
 
@@ -752,19 +752,19 @@ label.printable:focus, label.printable:hover, label.printable.focused {
 }
 
 /* line 653, ../sass/screen.scss */
-.view-thumb .printable {
+.view-thumb .selectable {
   right: 0;
   left: 0;
   width: 100%;
 }
 
 /* line 661, ../sass/screen.scss */
-.view-2up .printable {
+.view-2up .selectable {
   width: 50%;
 }
 
 /* line 676, ../sass/screen.scss */
-.page-left .printable {
+.page-left .selectable {
   right: auto;
   left: 0;
 }
