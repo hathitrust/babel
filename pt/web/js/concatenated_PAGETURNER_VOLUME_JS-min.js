@@ -4164,6 +4164,178 @@
 
 }( window.jQuery );
 /* /htapps/roger.babel/pt/web/vendor/slider/js/bootstrap-slider.js */
+/**
+ *  vein.js - version 0.3
+ *
+ *  by Danny Povolotski (dannypovolotski@gmail.com)
+ **/
+
+!function (name, definition) {
+    if (typeof module != 'undefined') module.exports = definition()
+    else if (typeof define == 'function' && define.amd) define(name, definition)
+    else this[name] = definition()
+}('vein', function () {
+    var vein = function(){};
+
+    // Kudos to: http://youmightnotneedjquery.com/
+    var extend = function(out) {
+      out = out || {};
+
+      for (var i = 1; i < arguments.length; i++) {
+        if (!arguments[i])
+          continue;
+
+        for (var key in arguments[i]) {
+          if (arguments[i].hasOwnProperty(key))
+            out[key] = arguments[i][key];
+        }
+      }
+
+      return out;
+    };
+
+    var findOrDeleteBySelector = function(selector, stylesheet, css){
+        var matches = [],
+            rules = stylesheet[ document.all ? 'rules' : 'cssRules' ],
+            selectorCompare = selector.replace(/\s/g,''),
+            ri, rl;
+
+        // Since there could theoretically be multiple versions of the same rule,
+        // we will first iterate
+        for(ri = 0, rl = rules.length; ri < rl; ri++) {
+            if(
+                // regular style selector
+                (rules[ri].selectorText === selector)   ||
+                // for media queries, remove spaces and see if the query matches
+                (rules[ri].type === 4 && rules[ri].cssText.replace(/\s/g,'').substring(0, selectorCompare.length) == selectorCompare)
+            ) {
+                if(css === null) {
+                    // If we set css to null, let's delete that ruleset altogether
+                    stylesheet.deleteRule(ri);
+                }
+                else {
+                    // Otherwise - we push it into the matches array
+                    matches.push(rules[ri]);
+                }
+            }
+        }
+
+        return matches;
+    };
+
+    var cssToString = function(css){
+        cssArray = [];
+
+        for(property in css) {
+            if (css.hasOwnProperty(property)) {
+                cssArray.push(property + ': ' + css[property] + ';');
+            }
+        }
+        cssText = cssArray.join('');
+        return cssText;
+    };
+
+    // Get the stylesheet we use to inject stuff or create it if it doesn't exist yet
+    vein.getStylesheet = function() {
+        var self = this,
+            si, sl;
+
+        if(!self.element || !document.getElementById('vein')) {
+            self.element = document.createElement("style");
+            self.element.setAttribute('type', 'text/css');
+            self.element.setAttribute('id', 'vein');
+            document.getElementsByTagName("head")[0].appendChild(self.element);
+
+            self.stylesheet = self.element.sheet;
+        }
+
+        return self.stylesheet;
+    };
+
+    var getRulesFromStylesheet = function(stylesheet){
+        return stylesheet[ document.all ? 'rules' : 'cssRules' ];
+    }
+
+    var insertRule = function(selector, cssText, stylesheet){
+        var rules = getRulesFromStylesheet(stylesheet);
+
+        if(stylesheet.insertRule) {
+            // Supported by all modern browsers
+            stylesheet.insertRule(selector + '{' + cssText + '}', rules.length);
+        } else {
+            // Old IE compatability
+            stylesheet.addRule(selector, cssText, rules.length);
+        }
+    };
+
+    // Let's inject some CSS. We can supply an array (or string) of selectors, and an object
+    // with CSS value and property pairs.
+    vein.inject = function(selectors, css, options) {
+        options = extend({}, options);
+
+        var self        =   this,
+            stylesheet  =   options.stylesheet || self.getStylesheet(),
+            rules       =   getRulesFromStylesheet(stylesheet),
+            si, sl, query, matches, cssText, property, mi, ml, qi, ql;
+
+        if(typeof selectors === 'string') {
+            selectors = [selectors];
+        }
+
+        for(si = 0, sl = selectors.length; si < sl; si++) {
+            if(typeof selectors[si] === 'object' && stylesheet.insertRule){
+                for(query in selectors[si]) {
+                    matches = findOrDeleteBySelector(query, stylesheet, css);
+
+                    if(matches.length === 0){
+                        cssText = cssToString(css);
+                        for(qi = 0, ql = selectors[si][query].length; qi < ql; qi++) {
+                            insertRule(query, selectors[si][query][qi] + '{' + cssText + '}', stylesheet);
+                        }
+                    } else {
+                        for(mi = 0, ml = matches.length; mi < ml; mi++) {
+                            self.inject(selectors[si][query], css, {stylesheet: matches[mi]});
+                        }
+                    }
+                }
+            } else {
+                matches = findOrDeleteBySelector(selectors[si], stylesheet, css);
+
+                // If all we wanted is to delete that ruleset, we're done here
+                if(css === null) return;
+
+                // If no rulesets have been found for the selector, we will create it below
+                if(matches.length === 0) {
+                    cssText = cssToString(css);
+                    insertRule(selectors[si], cssText, stylesheet);
+                }
+
+                // Otherwise, we're just going to modify the property
+                else {
+                    for(mi = 0, ml = matches.length; mi < ml; mi++) {
+                        for(property in css) {
+                            if (css.hasOwnProperty(property)) {
+                                // TODO: Implement priority
+                                if(matches[mi].style.setProperty) {
+                                    matches[mi].style.setProperty(property, css[property], '');
+                                } else {
+                                    //IE8
+                                    matches[mi].style.setAttribute(property, css[property], '');
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return self;
+    };
+
+    return vein;
+});
+
+/* /htapps/roger.babel/pt/web/vendor/vein.js */
 head.ready(function() {
 
     var $window;
@@ -4268,6 +4440,7 @@ HT.Reader = {
         });
         this._tracking = false;
         this._range = [];
+        this._startup = true;
         return this;
     },
 
@@ -4303,6 +4476,7 @@ HT.Reader = {
                 }, 250);
             }
         }
+
     },
 
     updateView: function(view) {
@@ -4396,28 +4570,12 @@ HT.Reader = {
                     }
                 }
                 msg.push("<p><tt>shift + click</tt> to de/select the pages between this page and a previously selected page.");
-                msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"fa fa-paperclip\" style=\"color: white; font-size: 18px;\" /></button>");
+                msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"icomoon icomoon-attachment\" style=\"color: white; font-size: 14px;\" /></button>");
 
                 msg = msg.join("\n");
 
-                // if ( self.getView() == 'thumb' ) {
-                //     msg += "<p>Check to select pages.</p>";
-                // } else {
-                //     msg += "<p>To select pages, open the thumbnail view and check the pages you're interested in printing.</p>";
-                //     buttons.push({
-                //         label: "Open Thumbnail View",
-                //         "class": "inverse",
-                //         callback: function() {
-                //             self.updateView('thumb');
-                //         }
-                //     });
-                // }
                 buttons.push({
                     label: "OK"
-                    // ,
-                    // callback: function() {
-                    //     self.updateView('thumb');
-                    // }
                 });
                 bootbox.dialog(msg, buttons);
                 return false;
@@ -4439,23 +4597,6 @@ HT.Reader = {
                  .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
                  .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
 
-
-
-
-        $("#action-toggle-printable").on('click', function(e) {
-            e.preventDefault();
-            var $this = $(this);
-            var $i = $this.find("i.fa");
-            var is_selected = ! ( $i.is(".fa-check-square-o") );
-            $i.toggleClass('fa-square-o fa-check-square-o');
-            // $i.toggleClass(function() {
-            //     if ( is_selected ) {
-            //         return 'fa fa-check-square-o';
-            //     } else {
-            //         return 'fa fa-square-o';
-            //     }
-            // })
-        })
 
 
         $("#action-clear-printable").on('click', function(e) {
@@ -4506,10 +4647,10 @@ HT.Reader = {
 
             // and center the display
             self._centerContentDisplay();
-            $(window).trigger('reset');
 
             console.log("AHOY: VIEW READY");
             self._updateSocialLinks();
+            self._startup = false;
         });
 
         // don't bind dynamic controls for the static views
@@ -4589,7 +4730,7 @@ HT.Reader = {
             }
         })
 
-        $.subscribe("update.go.page", function(e, seq) {
+        $.subscribe("update.go.page", function(e, seq, is_logging) {
             var orig = seq;
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
@@ -4604,9 +4745,14 @@ HT.Reader = {
             }
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq, orig);
+
             if ( self.$slider && HT.engines.view ) {
                 self.$slider.slider('setValue', self.getView() == '2up' ? HT.engines.view._seq2page(seq) : seq);
             }
+
+            // if ( is_logging ) {
+            //     self._logPageview(orig);
+            // }
         })
 
         $.subscribe("update.zoom.size", function(e, zoom) {
@@ -4782,11 +4928,11 @@ HT.Reader = {
         return HT.Viewer[views[this.getView()]];
     },
 
-    _updateState: function(params) {
+     _getCurrentURL: function(seq) {
         var new_href = window.location.pathname;
         new_href += "?id=" + HT.params.id;
         new_href += ";view=" + this.getView();
-        new_href += ";seq=" + this.getCurrentSeq();
+        new_href += ";seq=" + ( seq || this.getCurrentSeq() );
         var size = HT.engines.manager.get_zoom(this.getView());
         if ( size && size != 100 ) {
             new_href += ";size=" + size;
@@ -4797,7 +4943,11 @@ HT.Reader = {
         if ( HT.params.skin ) {
             new_href += ";skin=" + HT.params.skin;
         }
+        return new_href;
+    },
 
+    _updateState: function(params) {
+        var new_href = this._getCurrentURL();
         // if ( HT.params.size ) {
         //     new_href += ";size=" + HT.params.size;
         // }
@@ -4946,48 +5096,6 @@ HT.Reader = {
 
     _handleThumb: function(stage) {
         var self = this;
-
-        if ( stage == 'XXselect' ) {
-            $(".page-item").each(function() {
-                var $page = $(this);
-                var seq = $page.data('seq');
-                var num = HT.engines.manager.getAltTextForSeq(seq);
-                $page.append('<label data-toggle="tooltip" data-placement="bottom"><span class="offscreen">Select page {NUM} to print</span><input type="checkbox" name="selected" class="printable" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
-                $page.find("label").tooltip({
-                    title: function() {
-                        return $(this).find("span").text()
-                    }
-                })
-                if ( self._range.indexOf(seq) > -1 ) {
-                    $page.find("input.printable").prop('checked', true);
-                }
-            })
-        }
-
-        // var $link = $("#pagePdfLink");
-        // if ( stage == 'start' ) {
-        //     // recto verso vs. rtl, BLEH!
-        //     $link.data('original-label', $link.text());
-        //     $link.data('original-href', $link.attr('href'));
-        //     $link.data('template', 'Download {PAGES}... (PDF)').data('selectable', true);
-        //     $link.text($link.data('template').replace('{PAGES}', 'pages'));
-        //     var $btn = $('<button class="btn btn-mini action-clear-selection">Clear Selection</button>').insertAfter($link);
-        //     $btn.on('click', function(e) {
-        //         e.preventDefault();
-        //         $("input.printable:checked").prop('checked', false);
-        //         $(".page-item.selected").toggleClass('selected', false);
-        //     })
-        //     $link.on('click.reader.range', function(e) {
-        //         // e.preventDefault();
-        //         self._downloadPageRange(e);
-        //     })
-        // } else {
-        //     $link.text($link.data('original-label')).data('selectable', false);
-        //     $link.attr('href', $link.data('original-href'));
-        //     $link.off('click.reader.range');
-        //     $("#fullPdfLink").removeData('seq');
-        //     $(".action-clear-selection").remove();
-        // }
     },
 
     _downloadPageRange: function(e) {
@@ -5170,19 +5278,6 @@ HT.Reader = {
             return;
         }
 
-        // if ( ! $menu.length ) {
-        //     var $contents = $(".btn-group.table-of-contents");
-        //     var $menu = $contents.clone().insertAfter($contents);
-        //     var $i = $menu.find("i");
-        //     $i.removeClass("icomoon icomoon-list").addClass("fa fa-paperclip");
-        //     console.log("WHAT", $menu.html());
-        //     $menu.find(".label").text("Jump to selected page");
-        //     $menu.find("button .label").after('<span class="msg"></span>');
-        //     $menu.attr("id", "range-contents");
-        // } else {
-        //     // do nothing
-        // }
-
         $menu.find("button").removeClass('disabled');
         $menu.find(".msg").text(printable.length + " pages");
         var $ul = $menu.find("ul.dropdown-menu");
@@ -5194,9 +5289,8 @@ HT.Reader = {
             if ( typeof(args) == "string" ) {
                 var tmp = args.split("-");
                 seq = tmp[0];
-                postscript = "<br /><span>+ " + ( parseInt(tmp[1], 10) - parseInt(tmp[0], 10) ) + " pages</span>";
+                postscript = "<br /><span>(" + ( parseInt(tmp[1], 10) - parseInt(tmp[0], 10) + 1 ) + " pages)</span>";
             }
-            // $ul.append('<li><a href="{URL}" data-seq="{SEQ}">{ARGS}</a></li>'.replace('{URL}', window.location.href.replace(/seq=\d+/, "seq=" + seq)).replace(/{SEQ}/g, seq).replace(/{ARGS}/g, args).replace(/num=\d+/, ''));
             $ul.append('<li><a href="{URL}" data-seq="{SEQ}"><img src="//babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ID};seq={SEQ};width=75" />{POSTSCRIPT}</a></li>'
                 .replace('{URL}', window.location.href.replace(/seq=\d+/, "seq=" + seq))
                 .replace(/{SEQ}/g, seq)
@@ -5415,6 +5509,8 @@ HT.Manager = {
                 // console.log("ready");
                 $.ajaxSetup({ async: true });
                 // callback();
+
+                // console.log("STARTING VIEW");
                 HT.engines.view.start();
             },
             'json')
@@ -5430,7 +5526,7 @@ HT.Manager = {
         var view = HT.engines.reader.getView();
         var zoom = self.get_zoom(view);
         zoom = zoom == 100 ? -1 : zoom / 100; 
-        console.log("RESTARTING", view, zoom);
+        // console.log("RESTARTING", view, zoom);
         HT.engines.view = Object.create(HT.engines.reader.getViewModule()).init({
             manager : self,
             reader : HT.engines.reader,
@@ -5732,7 +5828,7 @@ HT.Viewer.Image = {
     options: {},
 
     start: function() {
-        $body.addClass("view-image");
+        $("body").addClass("view-image");
         this.bindEvents();
         $.publish("view.ready");
     },
@@ -5747,11 +5843,24 @@ HT.Viewer.Image = {
         // $.subscribe("action.zoom.in.image", function(e, link) { self._gotoLink(link); });
         // $.subscribe("action.zoom.out.image", function(e, link) { self._gotoLink(link); });
 
-        $body.find(".page-item img").load(function() {
-            $(this).parents(".page-item").addClass("loaded");
-            $(window).scroll();
-        })
+
+
+        var $img = $("body").find(".page-item img").load(function() {
+            alert("LOADED");
+            self._imageLoaded($(this));
+        });
+
+        setTimeout(function() {
+            self._imageLoaded($img)
+        }, 500);
     
+    },
+
+    _imageLoaded: function($img) {
+        if ( $img.get(0).complete ) {
+            $img.parents(".page-item").addClass("loaded");
+            $(window).scroll();
+        }
     },
 
     _gotoLink: function(link)  {
@@ -5792,6 +5901,9 @@ HT.Viewer.Scroll = {
     },
 
     start : function() {
+
+        this._startup = true;
+
         $("body").addClass("view-1up"); // needs to correspond to our parameter. MM.
         $.publish("enable.download.page");
         this.options.seq = HT.engines.reader.getCurrentSeq();
@@ -5811,6 +5923,7 @@ HT.Viewer.Scroll = {
         this.w = this.options.default_w * this.zoom;
 
         this.drawPages();
+
     },
 
     end : function() {
@@ -5893,7 +6006,7 @@ HT.Viewer.Scroll = {
 
             self.drawPages();
             self._resizing = false;
-            console.log("RESIZE SCROLL");
+            // console.log("RESIZE SCROLL");
         }, 250);
 
         $.subscribe("action.resize.scroll", function(e) {
@@ -6011,11 +6124,26 @@ HT.Viewer.Scroll = {
                 }
             }
 
-            if ( $new.attr('id') != $current.attr('id') ) {
-                $current.removeClass("current").attr('aria-hidden', 'true');
-                $new.addClass("current").attr("aria-hidden", "false");
-                $.publish("update.go.page", ( $new.data('seq') ));
+            var is_update = true;
+            if ( $current.length ) {
+                if ( $new.attr('id') != $current.attr('id') ) {
+                    $current.removeClass("current").attr('aria-hidden', 'true');
+                    $.publish("update.go.page", ( [ $new.data('seq'), true ] ));
+                } else {
+                    is_update = false;
+                }
             }
+
+            if ( is_update ) {
+                $new.addClass("current").attr("aria-hidden", "false");
+            }
+
+            // if ( ( $new.attr('id') != $current.attr('id') ) ) {
+            //     $current.removeClass("current").attr('aria-hidden', 'true');
+            //     $new.addClass("current").attr("aria-hidden", "false");
+            //     console.log("LAZY RELOAD", self._startup);
+            //     $.publish("update.go.page", ( $new.data('seq') ));
+            // }
 
             // load the previous and next for caching
             var $previous = $visible.slice(0,1).prev();
@@ -6041,6 +6169,13 @@ HT.Viewer.Scroll = {
             var seq = $current.data('seq');
         }
 
+        var callback;
+
+        if ( delta != null && typeof(delta) == 'function' ) {
+            callback = delta;
+            delta = null;
+        }
+
         if ( delta != null ) {
             seq += delta;
         }
@@ -6056,7 +6191,11 @@ HT.Viewer.Scroll = {
             //     self.loadPage($page);
             // })
 
-            $(window).trigger('scroll.viewer.scroll');
+            // $(window).trigger('scroll.viewer.scroll');
+
+            if ( callback != null ) {
+                callback();
+            }
 
         });
     },
@@ -6093,6 +6232,7 @@ HT.Viewer.Scroll = {
 
     drawPages : function() {
         var self = this;
+
         var current = self.getCurrentSeq();
         if ( current == null && self.options.seq ) {
             current = self.options.seq;
@@ -6129,11 +6269,14 @@ HT.Viewer.Scroll = {
 
         if ( current && current > 1 ) {
             setTimeout(function() {
-                self.gotoPage(current);
-                $.publish("view.ready");
+                self.gotoPage(current, function() {
+                    self._startup = false;
+                    $.publish("view.ready");
+                });
             }, 500);
         } else {
             setTimeout(function() {
+                self._startup = false;
                 $.publish("view.ready");
             }, 500)
         }
@@ -6707,6 +6850,8 @@ HT.Viewer.Flip = {
         $.publish("enable.download.page");
         $.publish("disable.rotate");
 
+        this._startup = true;
+
         this.is_rtl = HT.engines.manager.reading_order == 'right-to-left';
 
         this.options.seq = HT.engines.reader.getCurrentSeq();
@@ -6828,21 +6973,23 @@ HT.Viewer.Flip = {
             // console.log("FUDGE: FLIP");
 
             var h1 = $(this).data('natural-height');
-            var h2 = $(this).parent().height();
+            var h2 = $(this).parents('.bb-item').height();
+            // var h2 = $(this).parent().height();
 
             var w1 = $(this).data('natural-width');
-            var w2 = $(this).parent().parent().width() / 2;
+            // var w2 = $(this).parent().parent().width() / 2;
+            var w2 = $(this).parents('.bb-item').width() / 2;
 
             var t = 100;
 
             $(this).parents(".page-item").addClass("loaded");
 
             if ( w1 - self.w > t ) {
-                var $parent = $(this).parent();
-                $(this).parent().addClass("untypical-page");
+                var $parent = $(this).parents('.page-item');
+                $(this).parents('.page-item').addClass("untypical-page");
                 if ( ! $parent.find("button").length ) {
                     $('<button href="{SRC}" class="btn btn-mini">View Larger</button>'.replace('{SRC}', $img.attr('src')))
-                        .appendTo($(this).parent())
+                        .appendTo($parent)
                         .click(function(e) {
                             e.preventDefault();
                             $.fancybox.open([ { href : $img.attr('src'), type : 'image' }])
@@ -6890,7 +7037,7 @@ HT.Viewer.Flip = {
         if ( do_rezoom ) {
             self.zoom = self.reset_zoom;
         }
-        console.log("FLIP RESIZE", do_rezoom, self.zoom, last_reset_zoom, self.reset_zoom);
+        // console.log("FLIP RESIZE", do_rezoom, self.zoom, last_reset_zoom, self.reset_zoom);
         self.updateZoom(0, self.zoom);
         self._resizing = false;
     },
@@ -6917,7 +7064,7 @@ HT.Viewer.Flip = {
         self.zoom = self.zoom_levels[new_index];
         self.target_h = self.reset_target_h * self.zoom;
 
-        console.log("UPDATE ZOOM", self.target_h, self.zoom);
+        // console.log("UPDATE ZOOM", self.target_h, self.zoom);
 
         // self.w = ( self.options.default_w * self.zoom ) / 2;
 
@@ -7002,7 +7149,8 @@ HT.Viewer.Flip = {
                 return;
             }
             // console.log("UNLOADING IMAGE", seq);
-            $page.find("img").remove();
+            // $page.find("img").remove();
+            $page.find(".page-wrap").remove();
         })
     },
 
@@ -7012,10 +7160,12 @@ HT.Viewer.Flip = {
             return;
         }
         // console.log("UNLOADING IMAGE", seq);
-        $page.find("img").remove();
+        // $page.find("img").remove();
+        $page.find(".page-wrap").remove();
 
         $page = $("#page" + (seq + 1));
-        $page.find("img").remove();
+        $page.find(".page-wrap").remove();
+        // $page.find("img").remove();
     },
 
     getCurrentSeq: function() {
@@ -7267,6 +7417,7 @@ HT.Viewer.Flip = {
         setTimeout(function() {
             // self.buildSlider(pages, current);
             self.checkPageStatus();
+            self._startup = false;
         }, 100);
 
         $("body").on('click.flip', '.page-right', function(e) { // .page-right img?
@@ -7342,7 +7493,15 @@ HT.Viewer.Flip = {
 
         var seq = self._page2seq(status.current);
 
-        $.publish("update.go.page", [seq]);
+        $(".page-item:visible").each(function() {
+            var $page = $(this);
+            var $img = $page.find("img");
+            // console.log("#1 ", $page.width(), "x", $page.height(), " : ", $img.width(), "x", $img.height());
+            // $img.height($page.height()).width($page.width());
+            // console.log("#2 ", $page.width(), "x", $page.height(), " : ", $img.width(), "x", $img.height());
+        })
+
+        $.publish("update.go.page", [ seq, ! this._startup ]);
 
     },
 
@@ -7370,7 +7529,7 @@ HT.Viewer.Flip = {
             // y = e.clientHeight || g.clientHeight || w.innerHeight;
             var y = $(window).height();
 
-            console.log("BEST FIT target_h", y, $(window).height(), $(".navbar").height(), $(".toolbar-horizontal").height());
+            // console.log("BEST FIT target_h", y, $(window).height(), $(".navbar").height(), $(".toolbar-horizontal").height());
             target_h = y - $(".navbar").height() - $(".toolbar-horizontal").height() - 25 - 75;
             margin_w = 75;
         }
@@ -7395,7 +7554,7 @@ HT.Viewer.Flip = {
         self.target_h = target_h;
         self.reset_target_h = target_h;
         self.margin_w = margin_w;
-        console.log("BEST FIT", target_h, margin_w);
+        // console.log("BEST FIT", target_h, margin_w);
     },
 
     _page2seq: function(page) {

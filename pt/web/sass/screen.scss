@@ -603,7 +603,7 @@ body {
     border-radius: 0 0 5px 0px;
 }
 
-.page-item:not(.selected):hover .page-wrap:before {
+html.no-mobile .page-item:not(.selected):hover .page-wrap:before {
     content: "";
     position: absolute;
     top: 0;
@@ -620,7 +620,7 @@ body {
     display: block;
 }
 
-.page-item.page-left:not(.selected):hover .page-wrap:before {
+html.no-mobile .page-item.page-left:not(.selected):hover .page-wrap:before {
     border-width: 0 32px 32px 0;
     right: auto;
     left: 0;
@@ -639,6 +639,10 @@ label.printable {
   border: none;
   cursor: pointer;
   z-index: 150;
+
+  &:focus, &:hover, &.focused {
+    border: 2px dotted #ddd;
+  }
 }
 
 .page-wrap {
@@ -659,19 +663,25 @@ label.printable {
     }
 }
 
-.printable input[type=checkbox] {
-  visibility: hidden;
-}
+// .printable input[type=checkbox] {
+//   visibility: hidden;
+// }
+
+// .printable input[type=checkbox]:focus {
+//     position: static !important;
+//     height: auto !important;
+//     clip: auto !important;
+// }
 
 .page-left .printable {
   right: auto;
   left: 0;
 }
 
-label.printable:hover {
-  /*background: rgba(238, 238, 238, 0.5)*/
-  border: 2px dotted #ddd;
-}
+// label.printable:hover {
+//   // background: rgba(238, 238, 238, 0.5)
+//   border: 2px dotted #ddd;
+// }
 
 p.centered {
     text-align: center;

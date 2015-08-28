@@ -604,56 +604,63 @@ body {
   padding-right: 0.775rem ;
 }
 
-/* line 507, ../sass/screen.scss */
+/* line 495, ../sass/screen.scss */
 .page-item {
   position: relative;
 }
 
-/* line 532, ../sass/screen.scss */
+/* line 502, ../sass/screen.scss */
+#selection-contents.open span {
+  text-shadow: none;
+  color: #999;
+}
+/* line 508, ../sass/screen.scss */
 #selection-contents button {
   width: auto;
+}
+/* line 511, ../sass/screen.scss */
+#selection-contents button span {
   color: #eee;
 }
-/* line 537, ../sass/screen.scss */
+/* line 515, ../sass/screen.scss */
 #selection-contents button i {
-  color: #eee;
-  font-size: 18px;
+  font-size: 1em;
 }
-/* line 542, ../sass/screen.scss */
+/* line 520, ../sass/screen.scss */
 #selection-contents button .msg {
   font-weight: normal;
   padding-right: 2px;
   font-size: 13px;
 }
-/* line 551, ../sass/screen.scss */
+/* line 529, ../sass/screen.scss */
 #selection-contents .dropdown-menu li a {
   border-bottom: 2px solid #dddddd;
   padding-bottom: 4px;
   padding-top: 4px;
   text-align: center;
 }
-/* line 557, ../sass/screen.scss */
+/* line 535, ../sass/screen.scss */
 #selection-contents .dropdown-menu li a img {
   border: 1px solid #eeeeee;
 }
-/* line 562, ../sass/screen.scss */
+/* line 540, ../sass/screen.scss */
 #selection-contents .dropdown-menu li:last-child a {
   border-bottom-color: transparent;
 }
 
-/* line 569, ../sass/screen.scss */
+/* line 547, ../sass/screen.scss */
 .page-wrap {
   position: relative;
   height: 100%;
 }
 
-/* line 576, ../sass/screen.scss */
+/* line 554, ../sass/screen.scss */
 .page-item.selected img {
   padding: 2% !important;
   background: rgba(239, 124, 34, 0.5) !important;
 }
 
-/* line 586, ../sass/screen.scss */
+/* line 564, ../sass/screen.scss */
 .view-plaintext .page-item.selected .page-wrap {
   background: #fff;
   padding: 2% !important;
@@ -661,7 +668,7 @@ body {
   background: rgba(239, 124, 34, 0.5) !important;
 }
 
-/* line 598, ../sass/screen.scss */
+/* line 573, ../sass/screen.scss */
 .page-item.loaded.selected .page-wrap:before {
   content: "";
   position: absolute;
@@ -681,12 +688,12 @@ body {
   width: 0;
 }
 
-/* line 618, ../sass/screen.scss */
+/* line 593, ../sass/screen.scss */
 .view-2up .page-item.selected .page-wrap:before {
   box-shadow: none !important;
 }
 
-/* line 622, ../sass/screen.scss */
+/* line 597, ../sass/screen.scss */
 .page-item.page-left.selected .page-wrap:before {
   right: auto;
   left: 0;
@@ -696,8 +703,8 @@ body {
   border-radius: 0 0 5px 0px;
 }
 
-/* line 631, ../sass/screen.scss */
-.page-item:not(.selected):hover .page-wrap:before {
+/* line 606, ../sass/screen.scss */
+html.no-mobile .page-item:not(.selected):hover .page-wrap:before {
   content: "";
   position: absolute;
   top: 0;
@@ -714,18 +721,17 @@ body {
   display: block;
 }
 
-/* line 648, ../sass/screen.scss */
-.page-item.page-left:not(.selected):hover .page-wrap:before {
+/* line 623, ../sass/screen.scss */
+html.no-mobile .page-item.page-left:not(.selected):hover .page-wrap:before {
   border-width: 0 32px 32px 0;
   right: auto;
   left: 0;
 }
 
-/* line 654, ../sass/screen.scss */
+/* line 629, ../sass/screen.scss */
 label.printable {
   position: absolute;
   top: 0;
-  /*left: 0;*/
   right: 0;
   height: 10%;
   min-height: 64px;
@@ -735,59 +741,52 @@ label.printable {
   cursor: pointer;
   z-index: 150;
 }
+/* line 643, ../sass/screen.scss */
+label.printable:focus, label.printable:hover, label.printable.focused {
+  border: 2px dotted #dddddd;
+}
 
-/* line 669, ../sass/screen.scss */
+/* line 648, ../sass/screen.scss */
 .page-wrap {
   z-index: 102;
 }
 
-/* line 674, ../sass/screen.scss */
+/* line 653, ../sass/screen.scss */
 .view-thumb .printable {
   right: 0;
   left: 0;
   width: 100%;
 }
 
-/* line 682, ../sass/screen.scss */
+/* line 661, ../sass/screen.scss */
 .view-2up .printable {
   width: 50%;
 }
 
-/* line 687, ../sass/screen.scss */
-.printable input[type=checkbox] {
-  visibility: hidden;
-}
-
-/* line 691, ../sass/screen.scss */
+/* line 676, ../sass/screen.scss */
 .page-left .printable {
   right: auto;
   left: 0;
 }
 
-/* line 696, ../sass/screen.scss */
-label.printable:hover {
-  /*background: rgba(238, 238, 238, 0.5)*/
-  border: 2px dotted #dddddd;
-}
-
-/* line 701, ../sass/screen.scss */
+/* line 686, ../sass/screen.scss */
 p.centered {
   text-align: center;
 }
 
-/* line 735, ../sass/screen.scss */
+/* line 690, ../sass/screen.scss */
 .action-clear-selection {
   display: block;
   margin-top: 4px;
   margin-left: 8px;
 }
 
-/* line 741, ../sass/screen.scss */
+/* line 696, ../sass/screen.scss */
 .getLinks li {
   position: relative;
 }
 
-/* line 745, ../sass/screen.scss */
+/* line 700, ../sass/screen.scss */
 #action-clear-printable {
   margin-left: 8px;
   visibility: hidden;

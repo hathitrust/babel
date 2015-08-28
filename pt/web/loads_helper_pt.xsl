@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1440014498'" />
+  <xsl:variable name="timestamp" select="'?_=1440602233'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
@@ -48,6 +48,7 @@
             to_load.push("/pt/vendor/jquery.event.swipe.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/BookBlock/js/jquery.bookblock.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/slider/js/bootstrap-slider.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/vendor/vein.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/sidebar.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/reader.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/manager.js<xsl:value-of select="$timestamp" />");

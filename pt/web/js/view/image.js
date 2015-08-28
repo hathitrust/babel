@@ -31,7 +31,6 @@ HT.Viewer.Image = {
 
 
         var $img = $("body").find(".page-item img").load(function() {
-            alert("LOADED");
             self._imageLoaded($(this));
         });
 
