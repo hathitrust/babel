@@ -490,6 +490,217 @@ body {
         }
     }
 
+}
+
+.page-item {
+    position: relative;
+}
+
+#selection-contents {
+
+    &.open {
+        span {
+            text-shadow: none;
+            color: #999;
+        }
+    }
+
+    button {
+        width: auto;
+
+        span {
+            color: #eee;
+        }
+
+        i {
+            // color: #eee;
+            font-size: 1em;
+        }
+
+        .msg {
+            font-weight: normal;
+            padding-right: 2px;
+            font-size: 13px;
+        }
+
+    }
+
+    .dropdown-menu li {
+        a {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 4px;
+            padding-top: 4px;
+            text-align: center;
+
+            img {
+                border: 1px solid #eee;
+            }
+        }
+
+        &:last-child a {
+            border-bottom-color: transparent;
+        }
+    }
+
+}
+
+.page-wrap {
+    position: relative;
+    height: 100%;
+}
+
+.page-item.selected {
+
+    img {
+        padding: 2% !important;
+        background: rgba(239, 124, 34, 0.5) !important;
+    }
+
+}
+
+.view-plaintext .page-item.selected {
 
 
+    .page-wrap {
+        background: #fff;
+        padding: 2% !important;
+        background: rgb(239, 124, 34) !important;
+        background: rgba(239, 124, 34, 0.5) !important;
+    }
+
+}
+
+.page-item.loaded.selected .page-wrap:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-width: 0 32px 32px 0;
+    border-style: solid;
+    /*border-color: #658E15 #fff;*/
+    border-color:#fff #fff rgb(239,124,34) rgb(239,124,34); /* A bit more verbose to work with .rounded too */
+    background:rgb(239,124,34); /* For when also applying a border-radius */
+
+    border-color:#fff #fff rgba(239, 124, 34, 0.75) rgba(239, 124, 34, 0.75);
+    background:rgba(239, 124, 34, 0.75);
+    // box-shadow: 0 1px 1px rgba(0,0,0,0.3), -1px 1px 1px rgba(0,0,0,0.2);
+    // -webkit-box-shadow:0 1px 1px rgba(0,0,0,0.3), -1px 1px 1px rgba(0,0,0,0.2);
+    border-radius: 0 0 0 5px;
+    display: block;
+    width: 0;
+}
+
+.view-2up .page-item.selected .page-wrap:before {
+    box-shadow: none !important;
+}
+
+.page-item.page-left.selected .page-wrap:before {
+    right: auto;
+    left: 0;
+    border-width: 0 0 32px 32px;
+    border-color: rgb(239, 124, 34) #fff rgb(239,124,34) #fff;
+    border-color: rgba(239, 124, 34, 0.75) #fff rgba(239, 124, 34, 0.75) #fff;
+    border-radius: 0 0 5px 0px;
+}
+
+html.no-mobile .page-item:not(.selected):hover .page-wrap:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    border-width: 32px 0 0 32px;
+    border-style: solid;
+    /*border-color: #658E15 #fff;*/
+    border-color: rgb(239, 124, 34) transparent;
+    border-color: rgba(101, 142, 21, 0.2) transparent;
+    border-color:rgba(239, 124, 34, 0.2) transparent;
+    /*border-color: red blue green black;*/
+    background:transparent;
+    display: block;
+}
+
+html.no-mobile .page-item.page-left:not(.selected):hover .page-wrap:before {
+    border-width: 0 32px 32px 0;
+    right: auto;
+    left: 0;
+}
+
+label.selectable {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 10%;
+  min-height: 64px;
+  // background: transparent;
+  // need the transparent gif for the region to be clickable in IE8
+  background: transparent 0 0 repeat scroll url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"); 
+  width: 25%;
+  border: none;
+  cursor: pointer;
+  z-index: 150;
+
+  &:focus, &:hover, &.focused {
+    border: 2px dotted #ddd;
+  }
+}
+
+.page-wrap {
+    z-index: 102;
+}
+
+.view-thumb {
+    .selectable {
+        right: 0;
+        left: 0;
+        width: 100%;
+    }
+}
+
+.view-2up {
+    .selectable {
+        width: 50%;
+    }
+}
+
+// .selectable input[type=checkbox] {
+//   visibility: hidden;
+// }
+
+// .selectable input[type=checkbox]:focus {
+//     position: static !important;
+//     height: auto !important;
+//     clip: auto !important;
+// }
+
+.page-left .selectable {
+  right: auto;
+  left: 0;
+}
+
+// label.selectable:hover {
+//   // background: rgba(238, 238, 238, 0.5)
+//   border: 2px dotted #ddd;
+// }
+
+p.centered {
+    text-align: center;
+}
+
+.action-clear-selection {
+    display: block;
+    margin-top: 4px;
+    margin-left: 8px;
+}
+
+.getLinks li {
+    position: relative;
+}
+
+#action-clear-printable {
+    margin-left: 8px;
+    visibility: hidden;
+    position: absolute;
+    right: 0;
+    top: -5px;
 }

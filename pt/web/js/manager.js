@@ -50,6 +50,8 @@ HT.Manager = {
                 // console.log("ready");
                 $.ajaxSetup({ async: true });
                 // callback();
+
+                // console.log("STARTING VIEW");
                 HT.engines.view.start();
             },
             'json')
@@ -65,7 +67,7 @@ HT.Manager = {
         var view = HT.engines.reader.getView();
         var zoom = self.get_zoom(view);
         zoom = zoom == 100 ? -1 : zoom / 100; 
-        console.log("RESTARTING", view, zoom);
+        // console.log("RESTARTING", view, zoom);
         HT.engines.view = Object.create(HT.engines.reader.getViewModule()).init({
             manager : self,
             reader : HT.engines.reader,

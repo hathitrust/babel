@@ -27,6 +27,7 @@
     .page-item {
         min-height: 100px;
         min-width: 100px;
+        height: 100%;
 
         background: transparent;
         border: 1px solid #eee;
@@ -35,7 +36,8 @@
         @include rem(margin, 4);
         @include rem(margin-top, 16);
         @include rem(margin-bottom, 16);
-        display: table-cell;
+        display: block;
+        // display: table-cell;
         position: relative;
 
         text-align: center;
@@ -58,12 +60,33 @@
             display: inline-block;
         }
 
+        // label {
+        //     position: absolute;
+        //     right: 0;
+        //     left: 0;
+        //     height: 32px;
+        //     bottom: -40px;
+        //     // z-index: 5000;
+        // }
+
         img {
             max-width: 100%;
             max-height: 100%;
+            width: 100%;
             border: 1px solid #d5d3d3;
-            box-shadow: 0 1px 10px rgba(0,0,0,.1);
+            // box-shadow: 0 1px 10px rgba(0,0,0,.1);
             visibility: hidden;
+        }
+
+        .page-wrap {
+            // position: absolute;
+            // top: 0;
+            // left: 0;
+            // top: 50%;
+            // margin-top: -25%;
+            // left: 50%;
+            // margin-left: -25%;
+            display: inline-block;
         }
 
     }

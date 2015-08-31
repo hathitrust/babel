@@ -63,7 +63,7 @@ HT.Reader = {
     },
 
     updateView: function(view) {
-        if ( view == this.getView() ) {
+        if ( 0 && view == this.getView() ) {
             return;
         }
 
@@ -245,7 +245,6 @@ HT.Reader = {
 
         $(window).on('orientationchange', function() {
             if ( self.getView() == '1up' || self.getView() == '2up' ) {
-                console.log("ORIENTATION CHANGE", window.orientation);
                 switch(window.orientation) {
                     case 90:
                     case -90:
@@ -262,6 +261,7 @@ HT.Reader = {
         })
 
         $(window).on('resize', function() {
+            console.log("RESIZE CHANGE");
             if ( self.getView() == '1up' || self.getView() == '2up' ) {
                 if ( $(window).height() > $(window).width() ) {
                     self.updateView('1up');
@@ -365,6 +365,70 @@ HT.Reader = {
     },
 
     buildSlider: function() {
+        var self = this;
+        if ( ! HT.engines.manager ) {
+            return;
+        }
+
+        if ( self.$slider != null && self.$slider.length ) {
+            $(".slider-park").empty();
+            self.$slider = null;
+        }
+
+        var $nob = $('<input type="text" class="nob" value="1" />').appendTo($(".slider-park"));
+        if ( ! $nob.length ) {
+            $nob = $('<input type="text" class="nob" value="1" />').appendTo($("#content"));
+        }
+        var manager = HT.engines.manager;
+        var last_seq = manager.getLastSeq();
+        var last_num = manager.getPageNumForSeq(last_seq);
+        if ( last_num === undefined ) { last_num = "n" + last_seq ; }
+        var current = self.getCurrentSeq();
+        var this_view = self.getView();
+        if ( this_view == '2up' ) { current = HT.engines.view._seq2page(current); }
+        // console.log("INIT SLIDER", this_view, current, HT.engines.view.pages.length - 1);
+        self.$slider = $nob.slider({
+            min : 0,
+            max : this_view == '2up' ? HT.engines.view.pages.length - 1 : last_seq - 1,
+            value : current,
+            selection : 'none',
+            tooltip : 'show',
+            formater : function(seq) {
+                if ( this_view == '2up' ) {
+                    var old_seq = seq;
+                    seq = HT.engines.view._page2seq(seq);
+                    if ( seq[0] == null ) {
+                        seq = seq[1];
+                    } else {
+                        seq = seq[0];
+                    }
+                }
+                var num = manager.getPageNumForSeq(seq);
+                var text = " / " + last_num;
+                if ( num ) {
+                    text = num + text;
+                } else {
+                    text = "n" + seq  + text;
+                }
+                // var end = self._page2seq(total);
+                return text;
+            },
+            handle : 'square'
+        }).on('slideStop', function(ev) {
+            var seq = ev.value;
+            if ( this_view == '2up' ) {
+                seq = HT.engines.view._page2seq(seq);
+                if ( seq[0] !== null ) {
+                    seq = seq[0]
+                } else {
+                    seq = seq[1];
+                }
+            }
+            $.publish("action.go.page", (seq));
+        })
+    }, 
+
+    buildSliderXX: function() {
         var self = this;
         var $nob = $('<input type="text" class="nob" value="1" />').appendTo($(".slider-park"));
         var manager = HT.engines.manager;
@@ -532,6 +596,9 @@ HT.Reader = {
     _handleView: function(view, stage) {
         if ( view == '2up' ) {
             this._handleFlip(stage);
+        }
+        if ( stage == 'exit' ) {
+            $(".slider-park").empty();
         }
     },
 
@@ -749,9 +816,19 @@ head.ready(function() {
     })
 
     if ( ! $("body").is(".view-restricted") ) {
+
         setTimeout(function() {
             $("#action-toggle-toolbars").click();
         }, 500);
+
+        HT.engines = {};
+
+        HT.engines.reader = Object.create(HT.Reader).init({
+            params : HT.params
+        })
+
+        HT.engines.reader.start();
+
     } else {
         HT = HT || {};
         HT.engines = {};
@@ -767,6 +844,14 @@ head.ready(function() {
     // $e.on('resize.reader', function(e) {
     //     $.publish("action.resize");
     // })
+
+    HT.analytics.getTrackingLabel = function($link) {
+        //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
+
+        var label = HT.params.id + " " + HT.params.seq + " " + HT.params.size + " " + HT.params.orient + " " + HT.params.view;
+        return label;
+    };
+
 
 })
 

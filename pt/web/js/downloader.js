@@ -46,9 +46,15 @@ HT.Downloader = {
 
     downloadPdf: function(link) {
         var self = this;
-        self.link = $(link);
+        self.$link = $(link);
         self.src = $(link).attr('href');
         self.item_title = $(link).data('title') || 'PDF';
+
+        if ( self.$link.data('range') == 'yes' ) {
+            if ( ! self.$link.data('seq') ) {
+                return;
+            }
+        }
 
         var html =
             // '<p>Building your PDF...</p>' +
@@ -59,6 +65,13 @@ HT.Downloader = {
             '<div class="done hide">' +
                 '<p>All done!</p>' +
             '</div>';
+
+        var header = 'Building your ' + self.item_title;
+        var total = self.$link.data('total') || 0;
+        if ( total > 0 ) {
+            var suffix = total == 1 ? 'page' : 'pages';
+            header += ' (' + total + ' ' + suffix + ')';
+        }
 
         self.$dialog = bootbox.dialog(
             html,
@@ -90,7 +103,7 @@ HT.Downloader = {
                 }
             ],
             {
-                header: 'Building your ' + self.item_title
+                header: header 
             }
         );
 
@@ -100,10 +113,16 @@ HT.Downloader = {
 
     requestDownload: function() {
         var self = this;
+        var data = {};
+        if ( self.$link.data('seq') ) {
+            data['seq'] = self.$link.data('seq');
+            // self.$link.removeData('seq');
+        }
         $.ajax({
-            url: self.src + ';callback=HT.downloader.startDownloadMonitor',
+            url: self.src.replace(/;/g, '&') + '&callback=HT.downloader.startDownloadMonitor',
             dataType: 'script',
             cache: false,
+            data: data,
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
                 if ( self.$dialog ) { self.$dialog.modal('hide'); }
@@ -216,10 +235,11 @@ HT.Downloader = {
                 $download_btn = $('<a class="download-pdf btn btn-primary">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
                 $download_btn.appendTo(self.$dialog.find(".modal-footer")).on('click', function(e) {
                     console.log("SHOULD BE THE FIRST TO FIRE");
-                    self.link.trigger("click.google");
+                    self.$link.trigger("click.google");
                     setTimeout(function() {
                         self.$dialog.modal('hide');
                         $download_btn.remove();
+                        HT.engines.reader._clearRangeSelection();
                     }, 1000);
                     e.stopPropagation();
                 })

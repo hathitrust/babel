@@ -67,6 +67,7 @@ Test://ItemType='volume'
 /pt/web/vendor/jquery.event.swipe.js
 /pt/web/vendor/BookBlock/js/jquery.bookblock.js
 /pt/web/vendor/slider/js/bootstrap-slider.js
+/pt/web/vendor/vein.js
 /pt/web/js/sidebar.js
 /pt/web/js/reader.js
 /pt/web/js/manager.js

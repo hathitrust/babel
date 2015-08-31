@@ -51,7 +51,7 @@ HT.Viewer.Thumbnail = {
         this.updateZoom(0, this.zoom);
         // this.drawPages();
         $.publish("disable.rotate");
-        $.publish("disable.download.page");
+        // $.publish("disable.download.page");
         this.inited = true;
     },
 
@@ -129,6 +129,7 @@ HT.Viewer.Thumbnail = {
             // }
 
             $parent.addClass("loaded").removeClass("loading");
+            $parent.css('height', Math.ceil(h1) + 8);
         });
 
         // // does this work in IE8?
@@ -246,7 +247,7 @@ HT.Viewer.Thumbnail = {
             self.loadPage($next);
 
             // $(".page-item.checking").removeClass("imaged").removeClass("checking").removeClass("loaded").removeClass("loading").find("img").remove();
-            $(".page-item.checking").removeClass("imaged checking loaded loading").find("img").remove();
+            $(".page-item.checking").removeClass("imaged checking loaded loading").find(".page-wrap").remove();
 
             self.checkPageStatus();
 
@@ -319,9 +320,11 @@ HT.Viewer.Thumbnail = {
                     var seq = $page.data('seq');
                     var $a = $page.find("a.page-link");
                     var h = $page.data('h');
-                    var $img = HT.engines.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
+                    // var $img = HT.engines.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
+                    var $img = HT.engines.manager.get_image({ seq : seq, height: h, action : 'thumbnail' });
                     $img.attr("alt", "image of " + HT.engines.manager.getAltTextForSeq(seq));
-                    $a.append($img);
+                    var $wrap = $('<div class="page-wrap"></div>').appendTo($page);
+                    $wrap.append($img);
                 } else {
                     $page.removeClass("checking");
                 }
@@ -355,7 +358,7 @@ HT.Viewer.Thumbnail = {
 
             var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><a class="page-link" href="#{SEQ}"></a></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
-            $page.css({ height : self.w, width : self.w });
+            $page.css({ 'height' : Math.ceil(self.w) + 8, width : self.w });
             $page.data('seq', seq);
             $page.data('h', self.w);
             // $page.addClass("loading");

@@ -33,6 +33,8 @@ HT.Viewer.Flip = {
         $.publish("enable.download.page");
         $.publish("disable.rotate");
 
+        this._startup = true;
+
         this.is_rtl = HT.engines.manager.reading_order == 'right-to-left';
 
         this.options.seq = HT.engines.reader.getCurrentSeq();
@@ -62,6 +64,7 @@ HT.Viewer.Flip = {
         $(window).unbind(".flip");
         $(document).unbind(".flip");
         $("body").unbind(".flip");
+        $("body").unbind("movestart"); // why?
         $("#content").empty().css('margin-top', '');
         $("body").removeClass("view-2up");
     },
@@ -154,21 +157,23 @@ HT.Viewer.Flip = {
             // console.log("FUDGE: FLIP");
 
             var h1 = $(this).data('natural-height');
-            var h2 = $(this).parent().height();
+            var h2 = $(this).parents('.bb-item').height();
+            // var h2 = $(this).parent().height();
 
             var w1 = $(this).data('natural-width');
-            var w2 = $(this).parent().parent().width() / 2;
+            // var w2 = $(this).parent().parent().width() / 2;
+            var w2 = $(this).parents('.bb-item').width() / 2;
 
             var t = 100;
 
-            $(this).parent().addClass("loaded");
+            $(this).parents(".page-item").addClass("loaded");
 
             if ( w1 - self.w > t ) {
-                var $parent = $(this).parent();
-                $(this).parent().addClass("untypical-page");
+                var $parent = $(this).parents('.page-item');
+                $(this).parents('.page-item').addClass("untypical-page");
                 if ( ! $parent.find("button").length ) {
                     $('<button href="{SRC}" class="btn btn-mini">View Larger</button>'.replace('{SRC}', $img.attr('src')))
-                        .appendTo($(this).parent())
+                        .appendTo($parent)
                         .click(function(e) {
                             e.preventDefault();
                             $.fancybox.open([ { href : $img.attr('src'), type : 'image' }])
@@ -216,7 +221,7 @@ HT.Viewer.Flip = {
         if ( do_rezoom ) {
             self.zoom = self.reset_zoom;
         }
-        console.log("FLIP RESIZE", do_rezoom, self.zoom, last_reset_zoom, self.reset_zoom);
+        // console.log("FLIP RESIZE", do_rezoom, self.zoom, last_reset_zoom, self.reset_zoom);
         self.updateZoom(0, self.zoom);
         self._resizing = false;
     },
@@ -243,7 +248,7 @@ HT.Viewer.Flip = {
         self.zoom = self.zoom_levels[new_index];
         self.target_h = self.reset_target_h * self.zoom;
 
-        console.log("UPDATE ZOOM", self.target_h, self.zoom);
+        // console.log("UPDATE ZOOM", self.target_h, self.zoom);
 
         // self.w = ( self.options.default_w * self.zoom ) / 2;
 
@@ -312,7 +317,9 @@ HT.Viewer.Flip = {
                 }
                 var $img = HT.engines.manager.get_image({ seq : seq, height: Math.ceil(self.h) }); // why divide h by 2?
                 $img.attr("alt", "image of " + HT.engines.manager.getAltTextForSeq(seq));
-                $img.appendTo($page);
+                var $wrap = $('<div class="page-wrap"></div>').appendTo($page);
+                $img.appendTo($wrap);
+                // $img.appendTo($page);
             }
         })
     },
@@ -326,7 +333,8 @@ HT.Viewer.Flip = {
                 return;
             }
             // console.log("UNLOADING IMAGE", seq);
-            $page.find("img").remove();
+            // $page.find("img").remove();
+            $page.find(".page-wrap").remove();
         })
     },
 
@@ -336,10 +344,12 @@ HT.Viewer.Flip = {
             return;
         }
         // console.log("UNLOADING IMAGE", seq);
-        $page.find("img").remove();
+        // $page.find("img").remove();
+        $page.find(".page-wrap").remove();
 
         $page = $("#page" + (seq + 1));
-        $page.find("img").remove();
+        $page.find(".page-wrap").remove();
+        // $page.find("img").remove();
     },
 
     getCurrentSeq: function() {
@@ -491,7 +501,7 @@ HT.Viewer.Flip = {
             self._page2seq_map[i] = [null, null];
             if ( left_page_seq ) {
                 // html += '<div id="page{SEQ}" class="page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
-                html += '<div id="page{SEQ}" class="bb-custom-side page-item page-left"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
+                html += '<div id="page{SEQ}" class="bb-custom-side page-item page-left" data-seq="{SEQ}"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, left_page_seq);
                 self._seq2page_map[left_page_seq] = i;
                 self._page2seq_map[i][0] = left_page_seq;
             } else {
@@ -499,7 +509,7 @@ HT.Viewer.Flip = {
             }
             if ( right_page_seq ) {
                 // html += '<div id="page{SEQ}" class="page-item page-right"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, right_page_seq);
-                html += '<div id="page{SEQ}" class="bb-custom-side page-item page-right"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, right_page_seq);
+                html += '<div id="page{SEQ}" class="bb-custom-side page-item page-right" data-seq="{SEQ}"><div class="page-num">{SEQ}</div></div>'.replace(/{SEQ}/g, right_page_seq);
                 self._seq2page_map[right_page_seq] = i;
                 self._page2seq_map[i][1] = right_page_seq;
                 // if ( ! left_page_seq || left_page_seq > right_page_seq ) {
@@ -591,16 +601,19 @@ HT.Viewer.Flip = {
         setTimeout(function() {
             // self.buildSlider(pages, current);
             self.checkPageStatus();
+            self._startup = false;
         }, 100);
 
-        $container.on('click', '.page-right', function() { // .page-right img?
+        $("body").on('click.flip', '.page-right', function(e) { // .page-right img?
             // self.book.bookblock('next');
+            if ( e.metaKey || e.ctrlKey ) { return true; }
             self.gotoPage(null, 1);
-        }).on('click', '.page-left', function() { // .page-left img?
+        }).on('click.flip', '.page-left', function(e) { // .page-left img?
             // self.book.bookblock('prev');
+            if ( e.metaKey || e.ctrlKey ) { return ; }
             self.gotoPage(null, -1);
-        }).on('swipeleft', function(e) { self.gotoPage(null, 1); })
-          .on('swiperight', function(e) { self.gotoPage(null, -1); })
+        }).on('swipeleft.flip', function(e) { console.log("SWIPING"); self.gotoPage(null, 1); })
+          .on('swiperight.flip', function(e) { self.gotoPage(null, -1); })
 
         $.publish("view.ready");
 
@@ -647,7 +660,10 @@ HT.Viewer.Flip = {
     checkPageStatus: function() {
         var self = this;
 
-        var status = self.book.data('bookblock').status();
+        var status = self.book.data('bookblock');
+        if ( status === undefined ) { return ; }
+
+        status = status.status();
         if ( status.current == 0 ) {
             $.publish("disable.go.first");
         } else {
@@ -664,7 +680,15 @@ HT.Viewer.Flip = {
 
         var seq = self._page2seq(status.current);
 
-        $.publish("update.go.page", [seq]);
+        $(".page-item:visible").each(function() {
+            var $page = $(this);
+            var $img = $page.find("img");
+            // console.log("#1 ", $page.width(), "x", $page.height(), " : ", $img.width(), "x", $img.height());
+            // $img.height($page.height()).width($page.width());
+            // console.log("#2 ", $page.width(), "x", $page.height(), " : ", $img.width(), "x", $img.height());
+        })
+
+        $.publish("update.go.page", [ seq, ! this._startup ]);
 
     },
 
@@ -692,7 +716,7 @@ HT.Viewer.Flip = {
             // y = e.clientHeight || g.clientHeight || w.innerHeight;
             var y = $(window).height();
 
-            console.log("BEST FIT target_h", y, $(window).height(), $(".navbar").height(), $(".toolbar-horizontal").height());
+            // console.log("BEST FIT target_h", y, $(window).height(), $(".navbar").height(), $(".toolbar-horizontal").height());
             target_h = y - $(".navbar").height() - $(".toolbar-horizontal").height() - 25 - 75;
             margin_w = 75;
         }
@@ -717,7 +741,7 @@ HT.Viewer.Flip = {
         self.target_h = target_h;
         self.reset_target_h = target_h;
         self.margin_w = margin_w;
-        console.log("BEST FIT", target_h, margin_w);
+        // console.log("BEST FIT", target_h, margin_w);
     },
 
     _page2seq: function(page) {

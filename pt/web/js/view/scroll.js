@@ -27,6 +27,9 @@ HT.Viewer.Scroll = {
     },
 
     start : function() {
+
+        this._startup = true;
+
         $("body").addClass("view-1up"); // needs to correspond to our parameter. MM.
         $.publish("enable.download.page");
         this.options.seq = HT.engines.reader.getCurrentSeq();
@@ -46,6 +49,7 @@ HT.Viewer.Scroll = {
         this.w = this.options.default_w * this.zoom;
 
         this.drawPages();
+
     },
 
     end : function() {
@@ -108,7 +112,7 @@ HT.Viewer.Scroll = {
 
             // console.log("FUDGE: SCROLL");
 
-            $(this).parent().addClass("loaded");
+            $(this).parents(".page-item").addClass("loaded");
 
             var t = 50;
             // console.log("FUDGE", h1, h2, Math.abs(h1 - h2), ">", t);
@@ -128,12 +132,14 @@ HT.Viewer.Scroll = {
 
             self.drawPages();
             self._resizing = false;
-            console.log("RESIZE SCROLL");
+            // console.log("RESIZE SCROLL");
         }, 250);
 
-        $.subscribe("action.resize.scroll", function(e) {
-            _lazyResize();
-        })
+        if ( $("html").is(".desktop") ) {
+            $.subscribe("action.resize.scroll", function(e) {
+                _lazyResize();
+            })
+        }
 
         // var $e = get_resize_root();
         // $e.on('resize.viewer.scroll', _lazyResize);
@@ -190,6 +196,8 @@ HT.Viewer.Scroll = {
         var lazyLayout = _.debounce(function() {
             // figure out the MOST visible page
 
+            if ( $(".page-item").length == 0 ) { return ; }
+
             var t0 = Date.now();
 
             var visibility = [];
@@ -231,8 +239,13 @@ HT.Viewer.Scroll = {
             var past_visible = false;
             for (var i = 0; i < $possible.length; i++) {
                 var $page = $possible.slice(i, i + 1);
-                var f = $page.fracs();
-                if ( f.visible ) {
+                var f = null;
+                try {
+                    f = $page.fracs();
+                } catch(e) {
+                    console.log("SCROLL RESIZE", e, $page);
+                }
+                if ( f && f.visible ) {
                     self.loadPage($page);
                     $visible.push($page.get(0));
                     if ( f.visible > max_vp ) {
@@ -246,11 +259,26 @@ HT.Viewer.Scroll = {
                 }
             }
 
-            if ( $new.attr('id') != $current.attr('id') ) {
-                $current.removeClass("current").attr('aria-hidden', 'true');
-                $new.addClass("current").attr("aria-hidden", "false");
-                $.publish("update.go.page", ( $new.data('seq') ));
+            var is_update = true;
+            if ( $current.length ) {
+                if ( $new.attr('id') != $current.attr('id') ) {
+                    $current.removeClass("current").attr('aria-hidden', 'true');
+                    $.publish("update.go.page", ( [ $new.data('seq'), true ] ));
+                } else {
+                    is_update = false;
+                }
             }
+
+            if ( is_update ) {
+                $new.addClass("current").attr("aria-hidden", "false");
+            }
+
+            // if ( ( $new.attr('id') != $current.attr('id') ) ) {
+            //     $current.removeClass("current").attr('aria-hidden', 'true');
+            //     $new.addClass("current").attr("aria-hidden", "false");
+            //     console.log("LAZY RELOAD", self._startup);
+            //     $.publish("update.go.page", ( $new.data('seq') ));
+            // }
 
             // load the previous and next for caching
             var $previous = $visible.slice(0,1).prev();
@@ -258,7 +286,7 @@ HT.Viewer.Scroll = {
             self.loadPage($previous);
             self.loadPage($next);
 
-            $(".page-item.checking").removeClass("imaged").removeClass("loaded").removeClass("checking").find("img").remove();
+            $(".page-item.checking").removeClass("imaged").removeClass("loaded").removeClass("checking").find(".page-wrap").remove();
 
             self.checkPageStatus();
 
@@ -276,6 +304,13 @@ HT.Viewer.Scroll = {
             var seq = $current.data('seq');
         }
 
+        var callback;
+
+        if ( delta != null && typeof(delta) == 'function' ) {
+            callback = delta;
+            delta = null;
+        }
+
         if ( delta != null ) {
             seq += delta;
         }
@@ -291,7 +326,11 @@ HT.Viewer.Scroll = {
             //     self.loadPage($page);
             // })
 
-            $(window).trigger('scroll.viewer.scroll');
+            // $(window).trigger('scroll.viewer.scroll');
+
+            if ( callback != null ) {
+                callback();
+            }
 
         });
     },
@@ -309,7 +348,9 @@ HT.Viewer.Scroll = {
 
             var alt_text = "image of " + HT.engines.manager.getAltTextForSeq(seq);
             $img.attr('alt', alt_text);
-            $page.append($img);
+            var $wrap = $('<div class="page-wrap"></div>').appendTo($page);
+            $img.appendTo($wrap);
+            // $page.append($img);
         } else {
             $page.removeClass("checking");
         }
@@ -326,6 +367,7 @@ HT.Viewer.Scroll = {
 
     drawPages : function() {
         var self = this;
+
         var current = self.getCurrentSeq();
         if ( current == null && self.options.seq ) {
             current = self.options.seq;
@@ -362,11 +404,14 @@ HT.Viewer.Scroll = {
 
         if ( current && current > 1 ) {
             setTimeout(function() {
-                self.gotoPage(current);
-                $.publish("view.ready");
+                self.gotoPage(current, function() {
+                    self._startup = false;
+                    $.publish("view.ready");
+                });
             }, 500);
         } else {
             setTimeout(function() {
+                self._startup = false;
                 $.publish("view.ready");
             }, 500)
         }

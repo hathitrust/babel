@@ -110,6 +110,8 @@
     <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
     <link rel="stylesheet" href="/pt/css/print.css{$timestamp}" media="print" />
 
+    <!-- <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" /> -->
+
     <xsl:if test="$gUsingPageImages = 'true'">
       <meta property="og:image" content="{//CurrentPageImageSource}" />
     </xsl:if>
@@ -184,6 +186,7 @@
           <a href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Counterclockwise"><i class="icomoon icomoon-reload-CCW"></i><span class="label"> Rotate left</span></a>
           <a href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Clockwise"><i class="icomoon icomoon-reload-CW"></i><span class="label"> Rotate right</span></a>
         </div>
+
       </div>
     </div>
   </xsl:template>
@@ -238,6 +241,10 @@
 
         <div class="btn-group table-of-contents">
           <xsl:call-template name="action-table-of-contents" />
+        </div>
+
+        <div class="btn-group table-of-contents" id="selection-contents">
+          <xsl:call-template name="action-selection-contents" />
         </div>
 
         <xsl:call-template name="action-search-volume" />
@@ -301,6 +308,13 @@
     </ul>
   </xsl:template>
 
+  <xsl:template name="action-selection-contents">
+    <button type="button" class="btn dropdown-toggle square disabled" data-toggle="dropdown">
+      <i class="icomoon icomoon-attachment"></i><span class="label"> Jump to selected page</span> <span class="msg"></span> <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu scrollable-list"></ul>
+  </xsl:template>
+
   <xsl:template name="page-content">
     <div id="content">
       <xsl:choose>
@@ -336,16 +350,24 @@
   </xsl:template>
 
   <xsl:template name="page-content-image">
-    <div class="page-item">
-      <img alt="image of individual page" src="{//CurrentPageImageSource}" />
+    <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
+    <div class="page-item size-{//CurrentCgi/Param[@name='size']}" data-seq="{$seq}" id="page{$seq}">
+      <div class="page-wrap">
+        <img alt="image of individual page" src="{//CurrentPageImageSource}" />
+      </div>
     </div>
   </xsl:template>
 
   <xsl:template name="page-content-plaintext">
-    <div class="page-item page-text">
-      <p>
-        <xsl:apply-templates select="//CurrentPageOcr" mode="copy-guts" />
-      </p>
+    <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
+    <div class="page-item page-text" data-seq="{$seq}" id="page{$seq}">
+      <div class="page-wrap">
+        <div class="page-inner">
+          <p>
+            <xsl:apply-templates select="//CurrentPageOcr" mode="copy-guts" />
+          </p>
+        </div>
+      </div>
     </div>
   </xsl:template>
 

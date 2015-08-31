@@ -12,6 +12,7 @@ HT.Reader = {
             base : window.location.pathname.replace("/pt", "/imgsrv")
         });
         this._tracking = false;
+        this._startup = true;
         return this;
     },
 
@@ -47,6 +48,7 @@ HT.Reader = {
                 }, 250);
             }
         }
+
     },
 
     updateView: function(view) {
@@ -81,6 +83,93 @@ HT.Reader = {
                 e.preventDefault();
                 return false;
             }
+
+        });
+
+        $("body").on('click', '.page-link', function(e) {
+            console.log("PAGE LINK CLICK", e.ctrlKey);
+            if ( e.ctrlKey ) {
+                // select this item
+                self._addPageToSelection($(this).parents(".page-item"), false, true);
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        })
+
+        $("body").on('click', '.page-item', function(e) {
+            if ( e.metaKey || e.ctrlKey ) {
+                console.log("AHOY : PAGE ITEM CLICK");
+                self._addPageToSelection($(this), e, true);
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        })
+
+        $("#content").on('mousedown', function(e) {
+            if ( e.ctrlKey || e.shiftKey ) {
+                e.preventDefault();
+            }
+        })
+
+        $("body").on('click', "input.selectable,label.selectable", function(e) {
+            var $page = $(this).parents(".page-item");
+            // self._addPageToSelection($page, e.shiftKey, ! $page.is(".selected"));
+            self._addPageToSelection($page, e, ! $page.is(".selected"));
+            e.preventDefault();
+            e.stopPropagation();
+        })
+
+        $("body").on('focusin', "input.selectable", function(e) {
+            $(this).parents("label.selectable").addClass("focused").tooltip('show');
+        }).on('focusout', 'input.selectable', function(e) {
+            $(this).parents("label.selectable").removeClass("focused").tooltip('hide');
+        })
+
+        $("body").on('mouseenter', 'label.selectable', function(e) {
+            $(this).tooltip('show');
+        }).on('mouseleave', 'label.selectable', function(e) {
+            $(this).tooltip('hide');
+        })
+
+        $("#selectedPagesPdfLink").on('click', function(e) {
+            e.preventDefault();
+
+            var printable = self._getPageSelection();
+
+            if ( printable.length == 0 ) {
+                var buttons = [];
+
+                var msg = [ "<p>You haven't selected any pages to print.</p>" ];
+                if ( self.getView() == '2up' ) {
+                    msg.push("<p>To select pages, click in the upper left or right corner of the page.");
+                    msg.push("<p class=\"centered\"><img src=\"/pt/web/graphics/view-flip.gif\" /></p>");
+                } else {
+                    msg.push("<p>To select pages, click in the upper right corner of the page.");
+                    if ( self.getView() == 'thumb' ) {
+                        msg.push("<p class=\"centered\"><img src=\"/pt/web/graphics/view-thumb.gif\" /></p>");
+                    } else {
+                        msg.push("<p class=\"centered\"><img src=\"/pt/web/graphics/view-scroll.gif\" /></p>");
+                    }
+                }
+                msg.push("<p><tt>shift + click</tt> to de/select the pages between this page and a previously selected page.");
+                msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"icomoon icomoon-attachment\" style=\"color: white; font-size: 14px;\" /></button>");
+
+                msg = msg.join("\n");
+
+                buttons.push({
+                    label: "OK"
+                });
+                bootbox.dialog(msg, buttons);
+                return false;
+            }
+
+
+            var seq = self._getFlattenedSelection(printable);
+
+            $(this).data('seq', seq);
+            HT.downloader.downloadPdf(this);
         });
 
         // dyanmic in every view
@@ -92,6 +181,32 @@ HT.Reader = {
                  .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
                  .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
 
+
+
+        $("#action-clear-selection").on('click', function(e) {
+            e.preventDefault();
+            self._clearSelectionSelection();
+            $(this).css('visibility', 'hidden');
+        })
+
+        $.subscribe("view.ready.reader", function() {
+            self._tracking = true;
+            if ( self.getView() == '2up' ) {
+                setTimeout(function() {
+                    self.buildSlider();
+                }, 250);
+            }
+
+            self.setupPageSelection();
+
+            // and center the display
+            self._centerContentDisplay();
+
+            console.log("AHOY: VIEW READY");
+            self._updateSocialLinks();
+            self._startup = false;
+        });
+
         // don't bind dynamic controls for the static views
         if ( this.getView() == 'image' || this.getView() == 'plaintext' ) {
             // and then disable buttons without links
@@ -100,7 +215,7 @@ HT.Reader = {
                 var target = $(this).data('target');
                 HT.prefs.set({ pt : { view : target } });
             })
-            self._updateSocialLinks();
+            // self._updateSocialLinks();
             return;
         }
 
@@ -136,12 +251,18 @@ HT.Reader = {
         this._bindAction("rotate.clockwise");
         this._bindAction("rotate.counterclockwise");
 
-        $(".table-of-contents").on("click", "a", function(e) {
+        // $(".table-of-contents").on("click", "a", function(e) {
+        $("body").on("click", ".table-of-contents a", function(e) {            
             e.preventDefault();
             var seq = $(this).data('seq');
             $.publish("action.go.page", (seq));
             $(".bb-bookblock").removeClass("lowered");
         })
+
+        // $("html").on("click.dropdown.reader", function() {
+        //     console.log("REMOVING LOWERED");
+        //     $(".bb-bookblock").toggleClass("lowered", $(".btn-group").is(".open"));
+        // })
 
         $("#action-go-page").click(function(e) {
             e.preventDefault();
@@ -163,7 +284,7 @@ HT.Reader = {
             }
         })
 
-        $.subscribe("update.go.page", function(e, seq) {
+        $.subscribe("update.go.page", function(e, seq, is_logging) {
             var orig = seq;
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
@@ -178,9 +299,14 @@ HT.Reader = {
             }
             $("#input-go-page").val(value);
             self.setCurrentSeq(seq, orig);
+
             if ( self.$slider && HT.engines.view ) {
                 self.$slider.slider('setValue', self.getView() == '2up' ? HT.engines.view._seq2page(seq) : seq);
             }
+
+            // if ( is_logging ) {
+            //     self._logPageview(orig);
+            // }
         })
 
         $.subscribe("update.zoom.size", function(e, zoom) {
@@ -198,21 +324,6 @@ HT.Reader = {
             // we define the focus
             self.setCurrentSeq(seq);
             self.updateView("1up");
-        });
-
-        $.subscribe("view.ready.reader", function() {
-            self._tracking = true;
-            if ( self.getView() == '2up' ) {
-                setTimeout(function() {
-                    self.buildSlider();
-                }, 250);
-            }
-            // and center the display
-            self._centerContentDisplay();
-            $(window).trigger('reset');
-
-            console.log("AHOY: VIEW READY");
-            self._updateSocialLinks();
         });
 
         $.subscribe("disable.download.page.pdf", function() {
@@ -371,11 +482,11 @@ HT.Reader = {
         return HT.Viewer[views[this.getView()]];
     },
 
-    _updateState: function(params) {
+     _getCurrentURL: function(seq) {
         var new_href = window.location.pathname;
         new_href += "?id=" + HT.params.id;
         new_href += ";view=" + this.getView();
-        new_href += ";seq=" + this.getCurrentSeq();
+        new_href += ";seq=" + ( seq || this.getCurrentSeq() );
         var size = HT.engines.manager.get_zoom(this.getView());
         if ( size && size != 100 ) {
             new_href += ";size=" + size;
@@ -386,7 +497,11 @@ HT.Reader = {
         if ( HT.params.skin ) {
             new_href += ";skin=" + HT.params.skin;
         }
+        return new_href;
+    },
 
+    _updateState: function(params) {
+        var new_href = this._getCurrentURL();
         // if ( HT.params.size ) {
         //     new_href += ";size=" + HT.params.size;
         // }
@@ -399,6 +514,7 @@ HT.Reader = {
             // update the hash
             var new_hash = '#view=' + this.getView();
             new_hash += ';seq=' + this.getCurrentSeq();
+            var size = HT.engines.manager.get_zoom(this.getView());
             if ( size && size != 100 ) {
                 new_hash += ";size=" + size;
             }
@@ -511,6 +627,8 @@ HT.Reader = {
     _handleView: function(view, stage) {
         if ( view == '2up' ) {
             this._handleFlip(stage);
+        } else if ( view == 'thumb' ) {
+            this._handleThumb(stage);
         }
     },
 
@@ -531,8 +649,243 @@ HT.Reader = {
         }
     },
 
+    _handleThumb: function(stage) {
+        var self = this;
+    },
+
     _parseParams: function() {
 
+    },
+
+    setupPageSelection: function() {
+        var self = this;
+        var printable = self._getPageSelection();
+        var w = $(".page-item:visible").width(); w = parseInt(w * 0.08);
+        if ( ! $("html").is('.eq-ie8') ) {
+            vein.inject('.page-item.selected .page-wrap:before', { 'border-width' : '0 ' + w + 'px ' + w + 'px 0 !important' });
+            vein.inject('.page-item:not(.selected):hover .page-wrap:before', { 'border-width' : w + 'px ' + ' 0 0 ' + w + 'px !important' });
+
+            vein.inject('.page-item.page-left.selected .page-wrap:before', { 'border-width' : '0 0 ' + w + 'px ' + w + 'px !important' });
+            vein.inject('.page-item.page-left:not(.selected):hover .page-wrap:before', { 'border-width' : w + 'px ' + w + 'px 0 0 !important' });
+        }
+
+        $(".page-item").each(function() {
+            var $page = $(this);
+            var seq = $page.data('seq');
+            var num = HT.engines.manager.getPageNumForSeq(seq) || "n" + seq;
+            $page.data('num', num);
+            $page.append('<label class="selectable" data-toggle="tooltip" data-placement="bottom"><span class="offscreen directions" data-num="{NUM}">Select page {NUM} to download</span><input type="checkbox" name="selected" class="selectable offscreen" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
+            $page.find("label").tooltip({
+                trigger: 'manual',
+                title: function() {
+                    return $(this).find("span").text()
+                }
+            })
+            if ( _.indexOf(printable, seq) > -1 ) {
+                $page.find("input.selectable").prop('checked', true);
+                var $span = $page.find("label.selectable span.directions");
+                $page.addClass('selected');
+                $page.attr('aria-label', "Page " + num + " is selcted for download");
+            }
+        });
+
+        if ( printable.length ) {
+            self._updateSelectionLabel(_.keys(printable).length);
+            self._updateSelectionContents(printable);
+        }
+    },
+
+    _addPageToSelection: function($page, evt, toggle) {
+        var self = this;
+        var $input = $page.find("input.selectable");
+        var checked = ! $page.is(".selected");
+
+        if ( toggle ) {
+            $input.prop('checked', checked); // ! $input.prop('checked'));
+        }
+
+        var seq = parseInt($input.val(), 10);
+        // now deal with processing 
+        var printable = self._getPageSelection();
+
+        var is_adding = checked; // $input.prop('checked');
+        var to_process = [ seq ];
+
+        $page.toggleClass("selected", checked );
+        $page.attr('aria-label', checked ? ( "Page " + $page.data('num') + " is selcted for download" ) : null);
+        if ( evt && evt.shiftKey && self._last_selected_seq ) {
+            // there should be an earlier selection
+            var prev_until;
+            var fn = checked ? function(seq) { return _.indexOf(printable, seq) > -1 } : function(seq) { return _.indexOf(printable, seq) < 0 };
+
+            var start_seq; var end_seq; var delta;
+            if ( seq > self._last_selected_seq ) {
+                start_seq = seq;
+                end_seq = self._last_selected_seq;
+            } else {
+                start_seq = self._last_selected_seq;
+                end_seq = seq;
+            }
+
+            for(var prev_until_ = start_seq - 1; prev_until_ > end_seq; prev_until_--) {
+                // console.log("CHECKING:", checked, prev_until_, fn(prev_until_));
+                prev_until = prev_until_;
+                if ( fn(prev_until_) ) {
+                    break;
+                }
+            }
+
+            if ( prev_until == 1 && _.indexOf(printable, 1) < 0 ) {
+                bootbox.alert("<p>Sorry.</p><p>Shift-click selects the pages between this page and an earlier selection, and we didn't find an earlier selected page.</p>");
+            } else {
+                for(var prev=start_seq; prev >= prev_until; prev--) {
+                    var $page_prev = $("#page" + prev);
+                    if ( $page_prev.length ) {
+                        $page_prev.toggleClass('selected', checked).find("input.selectable").prop('checked', checked);
+                        $page_prev.attr('aria-label', checked ? ( "Page " + $page_prev.data('num') + " is selcted for download" ) : null);
+                    }
+                    to_process.push(prev);
+                }
+            }
+        }
+
+        // if ( evt && evt.metaKey ) {
+        //     // select the chapter
+        //     var next_seq = seq + 1;
+        //     while ( next_seq <= HT.engines.manager.getLastSeq() ) {
+        //         var meta = HT.engines.manager.get_page_meta({ seq : next_seq });
+        //         if ( _.indexOf(meta.features, 'FIRST_CONTENT_CHAPTER_START') > -1 || _.indexOf(meta.features, 'CHAPTER_START') > -1 ) {
+        //             break;
+        //         }
+        //         to_process.push(next_seq);
+        //         $("#page" + next_seq).toggleClass('selected', checked).find("input.selectable").prop('checked', checked);
+        //         next_seq += 1;
+        //     }
+        // }
+
+        if ( is_adding ) {
+            printable = _.union(printable, to_process);
+        } else {
+            printable = _.difference(printable, to_process)
+        }
+
+        self._setSelection(printable);
+        console.log(printable, to_process);
+
+        var num_printable = printable.length;
+        self._updateSelectionLabel(num_printable);
+        self._updateSelectionContents(printable);
+
+        self._last_selected_seq = seq;
+    },
+
+    _updateSelectionLabel: function(num_printable) {
+        var $link = $("#selectedPagesPdfLink");
+        var msg = num_printable;
+        if ( msg == 0 ) {
+            msg = 'pages';
+        } else if ( msg == 1 ) {
+            msg = "1 page";
+        } else {
+            msg = msg + " pages";
+        }
+
+        $link.text($link.data('template').replace('{PAGES}', msg));
+        $link.data('total', num_printable);
+
+        $("#action-clear-printable").css('visibility', num_printable == 0 ? 'hidden' : 'visible');
+        return msg;
+    },
+
+    _getPageSelection: function() {
+        var key = "selection-" + HT.params.id;
+        var printable = JSON.parse(sessionStorage.getItem(key) || "[]");
+        return printable;
+    },
+
+    _setSelection: function(printable) {
+        var key = "selection-" + HT.params.id;
+        if ( printable === null ) {
+            sessionStorage.removeItem(key);
+            return;
+        }
+        sessionStorage.setItem(key, JSON.stringify(printable.sort(function(a, b) { return a - b; })));
+    },
+
+    _getFlattenedSelection: function(printable) {
+        var seq = [];
+        _.each(printable.sort(function(a, b) { return a - b; }), function(val) {
+            if ( seq.length == 0 ) {
+                seq.push([val, -1]);
+            } else {
+                var last = seq[seq.length - 1];
+                if ( last[1] < 0 && val - last[0] == 1 ) {
+                    last[1] = val;
+                } else if ( val - last[1] == 1 ) {
+                    last[1] = val;
+                } else {
+                    seq.push([val, -1]);
+                }
+            }
+        })
+
+        for(var i = 0; i < seq.length; i++) {
+            var tmp = seq[i];
+            if ( tmp[1] < 0 ) {
+                seq[i] = tmp[0];
+            } else {
+                seq[i] = tmp[0] + "-" + tmp[1];
+            }
+        }
+        return seq;
+    },
+
+    _updateSelectionContents: function(printable) {
+        var self = this;
+
+        var $menu = $("#selection-contents");
+
+        if ( printable.length == 0 ) {
+            $menu.find("li").remove();
+            $menu.find(".msg").text('');
+            $menu.find("button").addClass('disabled');
+            return;
+        }
+
+        $menu.find("button").removeClass('disabled');
+        $menu.find(".msg").text(printable.length + " pages");
+        var $ul = $menu.find("ul.dropdown-menu");
+        $ul.find("li").remove();
+        var list = self._getFlattenedSelection(printable);
+        _.each(list, function(args) {
+            var seq = args;
+            var postscript = "";
+            if ( typeof(args) == "string" ) {
+                var tmp = args.split("-");
+                seq = tmp[0];
+                postscript = "<br /><span>(" + ( parseInt(tmp[1], 10) - parseInt(tmp[0], 10) + 1 ) + " pages)</span>";
+            }
+            $ul.append('<li><a href="{URL}" data-seq="{SEQ}"><img src="//babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ID};seq={SEQ};width=75" />{POSTSCRIPT}</a></li>'
+                .replace('{URL}', window.location.href.replace(/seq=\d+/, "seq=" + seq))
+                .replace(/{SEQ}/g, seq)
+                .replace(/{ARGS}/g, args)
+                .replace(/num=\d+/, '')
+                .replace('{ID}', HT.params.id)
+                .replace('{POSTSCRIPT}', postscript)
+            );
+        })
+    },
+
+    _clearSelectionSelection: function() {
+        var self = this;
+
+        $("input.selectable:checked").prop('checked', false);
+        $(".page-item.selected").toggleClass('selected', false);
+        var $link = $("#selectedPagesPdfLink");
+        $link.text($link.data('template').replace('{PAGES}', 'pages'));
+
+        self._setSelection(null);
+        self._updateSelectionContents([]);
     },
 
     buildSlider: function() {
@@ -605,6 +958,10 @@ HT.Reader = {
 
 head.ready(function() {
 
+    if ( window.location.href.indexOf("skin=mobile") > -1 ) {
+        return;
+    }
+
     // update HT.params based on the hash
     if ( window.location.hash ) {
         var tmp1 = window.location.hash.substr(1).split(";");
@@ -636,10 +993,14 @@ head.ready(function() {
         }
     })
 
-    $('html').on('click.dropdown.reader', '.table-of-contents .btn', function(e) {
-        // $(".bb-bookblock").css('z-index', 100);
-        $(".bb-bookblock").toggleClass("lowered");
-    });
+    $("#action-clear-printable").tooltip({ title: "Clear Selection", placement : 'left', container: 'body', delay : { show : 250, hide: 50 } });
+
+    // $('html').on('click.dropdown.reader', '.table-of-contents .btn', function(e) {
+    //     // $(".bb-bookblock").css('z-index', 100);
+    //     var toggle = ! $(this).parent().is(".open");
+    //     console.log("HEY", $(this).parent(), toggle);
+    //     $(".bb-bookblock").toggleClass("lowered", toggle);
+    // });
 
     HT.analytics.getTrackingLabel = function($link) {
         //var params = ( HT.reader != null ) ? HT.reader.paramsForTracking() : HT.params;
