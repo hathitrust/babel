@@ -139,7 +139,6 @@ unless ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) 
 else {
     # Security logging
     if ( Auth::Logging::log_incopyright_access($C, $gId) ) {
-        print STDERR "IN COPYRIGHT IN COPYRIGHT\n";
         Auth::ACL::a_Increment_accesscount($gId);
     }
 
