@@ -185,7 +185,7 @@ HT.Reader = {
 
         $("#action-clear-selection").on('click', function(e) {
             e.preventDefault();
-            self._clearSelectionSelection();
+            self._clearSelection();
             $(this).css('visibility', 'hidden');
         })
 
@@ -887,7 +887,7 @@ HT.Reader = {
         })
     },
 
-    _clearSelectionSelection: function() {
+    _clearSelection: function() {
         var self = this;
 
         $("input.selectable:checked").prop('checked', false);
