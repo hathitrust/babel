@@ -804,7 +804,7 @@ HT.Reader = {
         $link.text($link.data('template').replace('{PAGES}', msg));
         $link.data('total', num_printable);
 
-        $("#action-clear-printable").css('visibility', num_printable == 0 ? 'hidden' : 'visible');
+        $("#action-clear-selection").css('visibility', num_printable == 0 ? 'hidden' : 'visible');
         return msg;
     },
 
@@ -892,11 +892,12 @@ HT.Reader = {
 
         $("input.selectable:checked").prop('checked', false);
         $(".page-item.selected").toggleClass('selected', false);
-        var $link = $("#selectedPagesPdfLink");
-        $link.text($link.data('template').replace('{PAGES}', 'pages'));
+        // var $link = $("#selectedPagesPdfLink");
+        // $link.text($link.data('template').replace('{PAGES}', 'pages'));
 
         self._setSelection(null);
         self._updateSelectionContents([]);
+        self._updateSelectionLabel(0);
     },
 
     buildSlider: function() {
@@ -1004,7 +1005,7 @@ head.ready(function() {
         }
     })
 
-    $("#action-clear-printable").tooltip({ title: "Clear Selection", placement : 'left', container: 'body', delay : { show : 250, hide: 50 } });
+    $("#action-clear-selection").tooltip({ title: "Clear Selection", placement : 'left', container: 'body', delay : { show : 250, hide: 50 } });
 
     // $('html').on('click.dropdown.reader', '.table-of-contents .btn', function(e) {
     //     // $(".bb-bookblock").css('z-index', 100);
