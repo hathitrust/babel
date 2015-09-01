@@ -23,7 +23,7 @@
      'ui'       => 'reader|embed|fullscreen',
      'ptsop'    => 'AND|OR|and|or',
      'index'    => '1',
-     'log'      => '1',
+     'a'        => '\w+',
     );
 
 # Specification of global *database* operations to be executed before

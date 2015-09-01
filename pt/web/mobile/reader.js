@@ -189,7 +189,7 @@ HT.Reader = {
             }
         })
 
-        $.subscribe("update.go.page", function(e, seq) {
+        $.subscribe("update.go.page", function(e, seq, action ) {
             var orig = seq;
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
@@ -207,7 +207,8 @@ HT.Reader = {
             if ( self.$slider ) {
                 self.$slider.slider('setValue', self.getView() == '2up' ? HT.engines.view._seq2page(seq) : seq);
             }
-        })
+            if ( action ) { self._logPageview(orig); }
+        });
 
         $.subscribe("update.focus.page", function(e, seq) {
             // we define the focus
@@ -510,6 +511,35 @@ HT.Reader = {
         $.publish("update.reader.state");
     },
 
+     _getCurrentURL: function(seq) {
+        var new_href = window.location.pathname;
+        new_href += "?id=" + HT.params.id;
+        new_href += ";view=" + this.getView();
+        new_href += ";seq=" + ( seq || this.getCurrentSeq() );
+        var size = HT.engines.manager.get_zoom(this.getView());
+        if ( size && size != 100 ) {
+            new_href += ";size=" + size;
+        }
+        if ( HT.params.debug ) {
+            new_href += ";debug=" + HT.params.debug;
+        }
+        if ( HT.params.skin ) {
+            new_href += ";skin=" + HT.params.skin;
+        }
+        return new_href;
+    },
+
+    _logPageview: function(seq, action) {
+        // log to babel
+        var self = this;
+        if ( this._startup ) { return ; }
+        if ( $.isArray(seq) ) { seq = seq.join(','); }
+        if ( ! action ) { action = 'read'; }
+        var new_href = self._getCurrentURL(seq);
+        new_href += ";a=" + action;
+        $.get(new_href);
+    },
+    
     _trackPageview: function(href) {
         if ( this._tracking && HT.analytics && HT.analytics.enabled ) {
             HT.analytics.trackPageview(href);

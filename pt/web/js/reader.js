@@ -284,8 +284,11 @@ HT.Reader = {
             }
         })
 
-        $.subscribe("update.go.page", function(e, seq, is_logging) {
+        $.subscribe("update.go.page", function(e, seq, action) {
             var orig = seq;
+
+            if ( action ) { self._logPageview(orig); }
+
             if ( $.isArray(seq) ) {
                 // some views return multiple pages, which we use for
                 // other interface elements
@@ -304,9 +307,6 @@ HT.Reader = {
                 self.$slider.slider('setValue', self.getView() == '2up' ? HT.engines.view._seq2page(seq) : seq);
             }
 
-            // if ( is_logging ) {
-            //     self._logPageview(orig);
-            // }
         })
 
         $.subscribe("update.zoom.size", function(e, zoom) {
@@ -522,6 +522,17 @@ HT.Reader = {
         }
         this._trackPageview(new_href);
 
+    },
+
+    _logPageview: function(seq, action) {
+        // log to babel
+        var self = this;
+        if ( this._startup ) { return ; }
+        if ( ! action ) { action = '-'; }
+        if ( $.isArray(seq) ) { seq = seq.join(','); }
+        var new_href = self._getCurrentURL(seq);
+        new_href += ";a=" + action;
+        $.get(new_href);
     },
 
     _trackPageview: function(href) {

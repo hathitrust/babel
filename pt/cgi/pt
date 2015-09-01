@@ -140,6 +140,13 @@ else {
     # Security logging
     if ( Auth::Logging::log_incopyright_access($C, $gId) ) {
         Auth::ACL::a_Increment_accesscount($gId);
+        Auth::Logging::log_successful_access($C, $gId, 'pt');
+    }
+
+    if ( $gCgi->param('a') ) {
+        View::P_output_none_HTTP($C);
+        # print $gCgi->header(-status=>204);
+        exit;
     }
 
     # set up text, image or pdf handlers for this request
