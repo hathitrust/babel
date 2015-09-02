@@ -247,7 +247,7 @@ HT.Viewer.Thumbnail = {
             self.loadPage($next);
 
             // $(".page-item.checking").removeClass("imaged").removeClass("checking").removeClass("loaded").removeClass("loading").find("img").remove();
-            $(".page-item.checking").removeClass("imaged checking loaded loading").find(".page-wrap").remove();
+            $(".page-item.checking").removeClass("imaged checking loaded loading").find(".page-wrap img").remove();
 
             self.checkPageStatus();
 
@@ -323,8 +323,9 @@ HT.Viewer.Thumbnail = {
                     // var $img = HT.engines.manager.get_image({ seq : seq, width : self.w, height: h, action : 'thumbnail' });
                     var $img = HT.engines.manager.get_image({ seq : seq, height: h, action : 'thumbnail' });
                     $img.attr("alt", "image of " + HT.engines.manager.getAltTextForSeq(seq));
-                    var $wrap = $('<div class="page-wrap"></div>').appendTo($page);
-                    $wrap.append($img);
+                    // var $wrap = $('<div class="page-wrap"></div>').appendTo($page);
+                    // $wrap.append($img);
+                    $a.append($img);
                 } else {
                     $page.removeClass("checking");
                 }
@@ -356,7 +357,7 @@ HT.Viewer.Thumbnail = {
             // var h = meta.height * r;
             var h = self.h * r;
 
-            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><a class="page-link" href="#{SEQ}"></a></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
+            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><div class="page-wrap"><a class="page-link" href="#{SEQ}"></a></div></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
             $page.css({ 'height' : Math.ceil(self.w) + 8, width : self.w });
             $page.data('seq', seq);

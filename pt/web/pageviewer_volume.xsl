@@ -360,7 +360,7 @@
 
   <xsl:template name="page-content-plaintext">
     <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
-    <div class="page-item page-text" data-seq="{$seq}" id="page{$seq}">
+    <div class="page-item page-text loaded" data-seq="{$seq}" id="page{$seq}">
       <div class="page-wrap">
         <div class="page-inner">
           <p>

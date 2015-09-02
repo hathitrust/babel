@@ -603,7 +603,7 @@ body {
     border-radius: 0 0 5px 0px;
 }
 
-html.no-mobile .page-item:not(.selected):hover .page-wrap:before {
+html.no-mobile .page-item.loaded:not(.selected):hover .page-wrap:before {
     content: "";
     position: absolute;
     top: 0;
@@ -620,7 +620,7 @@ html.no-mobile .page-item:not(.selected):hover .page-wrap:before {
     display: block;
 }
 
-html.no-mobile .page-item.page-left:not(.selected):hover .page-wrap:before {
+html.no-mobile .page-item.loaded.page-left:not(.selected):hover .page-wrap:before {
     border-width: 0 32px 32px 0;
     right: auto;
     left: 0;
