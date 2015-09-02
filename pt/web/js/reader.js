@@ -810,7 +810,11 @@ HT.Reader = {
 
     _getPageSelection: function() {
         var key = "selection-" + HT.params.id;
-        var printable = JSON.parse(sessionStorage.getItem(key) || "[]");
+        var printable = [];
+        try {
+            printable = JSON.parse(sessionStorage.getItem(key) || "[]");
+        } catch (e) {
+        }
         return printable;
     },
 
