@@ -670,6 +670,14 @@ HT.Reader = {
 
     setupPageSelection: function() {
         var self = this;
+
+        // do nothing if we can't download the full PDF!
+        if ( $("#fullPdfLink").attr('rel') != 'allow' ) {
+            return;
+        }
+
+        $("html").addClass("selectable");
+
         var printable = self._getPageSelection();
         var w = $(".page-item:visible").width(); w = parseInt(w * 0.08);
         if ( ! $("html").is('.eq-ie8') ) {

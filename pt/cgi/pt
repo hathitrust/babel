@@ -32,6 +32,8 @@ BEGIN {
     ( $main::realSTART ) = time;
     ## $ENV{DEBUG_LOCAL} = 1;
     ## $ENV{TEST_BLACKLIST} = 1;
+    # $ENV{REMOTE_ADDR} = '8.8.8.8';
+    # $ENV{SDRINST} = '';
 }
 
 
