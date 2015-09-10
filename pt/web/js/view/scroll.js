@@ -119,8 +119,8 @@ HT.Viewer.Scroll = {
 
             if ( Math.abs(h1 - h2) > t ) {
                 // $(this).parent().animate({ height: h1 }, 100);
-                $(this).parent().height(h1);
-                $(this).parent().addClass("imaged").addClass("expanded");
+                $(this).parents(".page-item").height(h1);
+                $(this).parents(".page-item").addClass("imaged").addClass("expanded");
             }
         });
 
