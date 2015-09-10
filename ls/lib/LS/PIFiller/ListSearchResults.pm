@@ -405,6 +405,9 @@ sub handle_SEARCH_RESULTS_PI
     my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
     my $config = $C->get_object('MdpConfig');
     my $side_by_side = $config->get('side_by_side');
+    my $display_AB = $config->get('display_AB');
+    
+    
 
     # Was there a search?
     if ($search_result_data_hashref->{'undefined_query_string'}) { 
@@ -435,6 +438,15 @@ sub handle_SEARCH_RESULTS_PI
 	
 	my $use_interleave = $config->get('use_interleave');
 	my $side_by_side   = $config->get('side_by_side');	
+
+	# XXX check if debug flag set and do logic here
+	if ($display_AB)
+	{
+	    $output .= wrap_string_in_tag('TRUE', 'DISPLAY_AB');   
+	}
+	
+   
+   
 	#  side-by-side or single display
 	if ($side_by_side)
 	{
@@ -456,7 +468,7 @@ sub handle_SEARCH_RESULTS_PI
 	    # if we are using interleave but not side by side just put interleave 	    
 	    #result in A and don't define B result ref
 	    $A_result_ref  = _ls_wrap_result_data($C, $i_rs);
-    	    $A_label= $config->get('interleaver_class')
+    	    $A_label= $config->get('interleaver_class') . ':' . $config->get('B_description');
 	}
 	$output.=wrap_string_in_tag($A_label,'A_LABEL');
 	

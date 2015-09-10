@@ -139,6 +139,15 @@
     </xsl:choose>
   </xsl:template>
 
+<xsl:variable name="displayAB">
+  <xsl:choose>
+    <xsl:when test=" (/MBooksTop/SearchResults/DISPLAY_AB = 'TRUE') or (contains($debugContents,'AB')) ">TRUE</xsl:when>
+    <xsl:otherwise>
+      FALSE
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
+
   <!-- ############################################# end global list_items/search_results variables -->
 
 
@@ -819,9 +828,6 @@
     <xsl:param name="item-list-contents" />
     <xsl:param name="AB"/>
 
-    <h1><xsl:text>DEBUG </xsl:text>
-    <xsl:value-of select="$AB"/>
-  </h1>
     <div class="actions">
       <form id="form1" name="form1" method="get" action="mb?">
         <xsl:copy-of select="$hidden_c_param"/>
@@ -863,6 +869,7 @@
         <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
         <xsl:choose>
           <xsl:when test="$ItemListType='SearchResults'">
+	    
             <!--XXX AB fix here 
 		Working on grid stuff for side by side
 		After it works need ability to switch to one column
@@ -1073,7 +1080,8 @@
       <!-- push2 -->
       <div class="span{$span-n} push2 metadata">
 	<!-- if debug = ab then display AB label and also display id-->
-	<xsl:if test="contains($debugContents,'AB')">
+
+	<xsl:if test="$displayAB = 'TRUE'">
 	  <h4>
 	    <strong>
 	      <xsl:value-of select="ABLabel"/>

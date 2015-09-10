@@ -122,13 +122,14 @@ sub __get_interleaved
 {
     my $self = shift;
     my $start = shift;  # (random|fixed); #fixed = always start with first list
-    
+
     #WARNING $rs is not a result set object its the $rs->{result_response_docs_arr_ref}
     #WARNING #2   These end up being pointers to the result set objects not deep copies
     # So if we mess with them, and later on want to use set a or b they are messed up
 
     my $rs_a = shift;
     my $rs_b = shift;
+
     my $rs_out=[];
     
     #hashrefs for testing if an id is in the result set
@@ -136,6 +137,8 @@ sub __get_interleaved
     my $ids_b = __get_id_hashref($rs_b);
     my $ids_out ={};
     
+    
+
     # check that inputs are refs to arrays!
     #    ASSERT(0, qq{get_interleaved() in __PACKAGE__ is pure virtual});
     
@@ -151,7 +154,7 @@ sub __get_interleaved
     {
 	 # check this against algorithm in TOIS
 	# I don't like this condtion.  
-	# Check translation and then rewrite for clarith
+	# Check translation and then rewrite for clarity
 	# if first = 0 then use list a
 	# 
 	my $id;
@@ -169,12 +172,20 @@ sub __get_interleaved
 	    if ( __not_in($ids_out,$id))
 	    {
 		#add field
-		$rs_a->[$counter_a]->{AB}="A";
+		#check for dupe.  If this is also in rs_b then label as dupe
+		if (__in($ids_b,$id))
+		{
+		    $rs_a->[$counter_a]->{AB}="A_dupe"
+		}
+		else
+		{
+		    $rs_a->[$counter_a]->{AB}="A";
+		}
+		
 		push(@{$rs_out},$rs_a->[$counter_a]);
 		$ids_out->{$id}++;
 	    }
 	    $counter_a++;
-	    
 	}
 	else
 	{
@@ -182,7 +193,16 @@ sub __get_interleaved
 	    if ( __not_in($ids_out,$id))
 	    {
 		#add field
-		$rs_b->[$counter_b]->{AB}="B";
+		#check for dupe
+		if (__in($ids_a,$id))
+		{
+		    $rs_b->[$counter_b]->{AB}="B_dupe"
+		}
+		else
+		{
+		    $rs_b->[$counter_b]->{AB}="B";
+		}
+		
 		push(@{$rs_out},$rs_b->[$counter_b]);
 		$ids_out->{$id}++;
 	    }
@@ -216,6 +236,23 @@ sub __get_id_from_rs_el
     
 }
 
+sub __in
+{
+    my $hashref = shift;
+    my $el = shift;
+    my $to_return;
+    
+    if (exists($hashref->{$el}) || ($hashref->{$el} >= 1)) 
+    {
+	#it is in the hash 
+	$to_return="true";	
+    }
+    else
+    {
+	#its not in the hash so return undef
+    }
+    return $to_return;
+}
 
 sub __not_in
 {
