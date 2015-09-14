@@ -470,6 +470,12 @@ sub handle_SEARCH_RESULTS_PI
 	    $A_result_ref  = _ls_wrap_result_data($C, $i_rs);
     	    $A_label= $config->get('interleaver_class') . ':' . $config->get('B_description');
 	}
+	else
+	{
+	    #normal results
+	    $A_result_ref  = _ls_wrap_result_data($C, $primary_rs);
+	}
+	
 	$output.=wrap_string_in_tag($A_label,'A_LABEL');
 	
 	

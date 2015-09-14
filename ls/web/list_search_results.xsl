@@ -164,9 +164,6 @@ REMOVE the below and see if it will call list_utils
         </xsl:if>
       </xsl:variable>
         
-          <h1><xsl:text>DEBUG hasB</xsl:text>
-          <xsl:value-of select="$hasB"/>
-  </h1>
 <!--AB addition-->
 
 

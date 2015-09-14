@@ -895,10 +895,12 @@
 		<xsl:attribute name="class">
 		  <xsl:value-of select="$resultsClass"/>
 		</xsl:attribute>
-		
+		<!--#test if there is some kind of AB test-->
+		<xsl:if test="normalize-space(SearchResults/A_LABEL)" > 
 		<h1><xsl:text>A: </xsl:text>   
 		<xsl:value-of select="SearchResults/A_LABEL"/>
 		</h1>
+	      </xsl:if>
 		<xsl:for-each select="SearchResults/A_RESULTS/Item">
 		  <xsl:call-template name="BuildItemChunk"/>
 		</xsl:for-each>
