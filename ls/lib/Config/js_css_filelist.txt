@@ -55,7 +55,7 @@ Section:LOCAL_JS
 # ls specific
 /ls/web/js/ls_misc.js
 /ls/web/js/ls_advanced.js
-
+/ls/web/js/ls_clicklog.js
 
 Section:CSS
 # css files, note last one overides earlier
