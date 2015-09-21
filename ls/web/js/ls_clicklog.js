@@ -6,24 +6,40 @@
 //ls_clicklog.js
 head.ready(function()  
 {
-//alert("head is ready to be served");
+    var debug="true";
+    //alert("head is ready to be served");
 
-//global data
-//var global = 
 
-/**
-links to pt are:
-<a class = viewonly or fulltext
-**/
-    //.click( [eventData ], handler http://api.jquery.com/click/
-    // global data could be put into js on load and then passed in with this method signature
-    //      .click(data,handler)
-    $("a.viewonly, a.fulltext").click(handle_click);
+    /**
+       links to pt are:
+       <a class = viewonly or fulltext
+       .click( [eventData ], handler http://api.jquery.com/click/
+       
+    **/
 
+    //global data
+    var gd =  $("#globalclick");
+
+    //      .click(data,eventData,handler)
+    $("a.viewonly, a.fulltext").click(gd,handle_click);
+
+
+    function test_handle_click(e)
+    {
+
+	var gd = e.data.text();
+	var d = $(e.target).attr('data_clicklog');
+	alert("clicked: "+d+"|globbal:"+gd);
+    }
+
+    //---------------------------------------------------------------------//
     function handle_click(e)
     {
+	var gd = e.data.text();
 	var d = $(e.target).attr('data_clicklog');
-	alert("clicked: "+d);
+	var msg= "clicked="+d+"|globbal:"+gd;
+	alert(msg);
+	$.post( "http://tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
     }
 }
   );

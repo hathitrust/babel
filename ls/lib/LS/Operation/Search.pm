@@ -187,6 +187,7 @@ sub execute_operation
                            'processed_query_string' => $primary_Q->get_processed_query_string() ,
                            'unbalanced_quotes' =>$primary_Q->get_unbalanced_quotes() ,
                           },
+	 'user_query_string' =>$user_query_string,
         );
 
     $act->set_transient_facade_member_data($C, 'search_result_data', \%search_result_data);
