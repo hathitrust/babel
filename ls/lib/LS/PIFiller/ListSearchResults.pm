@@ -32,6 +32,8 @@ use LS::FacetConfig;
 use URI::Escape;
 use Utils;
 use Namespaces;
+# for logging in json
+use JSON::XS;
 
 
 BEGIN
@@ -399,6 +401,8 @@ sub handle_SEARCH_RESULTS_PI
     my $cgi = $C->get_object('CGI');
     my $limit = $cgi->param('lmt');
     my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');
+    my $user_query_string = $$search_result_data_hashref{'user_query_string'};
+    
     my $primary_rs = $$search_result_data_hashref{'primary_result_object'};
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
     my $B_rs =$$search_result_data_hashref{'B_result_object'};
@@ -438,7 +442,9 @@ sub handle_SEARCH_RESULTS_PI
 	
 	my $use_interleave = $config->get('use_interleave');
 	my $side_by_side   = $config->get('side_by_side');	
-
+	my $global_click_data;
+	
+	
 	# XXX check if debug flag set and do logic here
 	if ($display_AB)
 	{
@@ -446,37 +452,50 @@ sub handle_SEARCH_RESULTS_PI
 	}
 	
    
-   
-	#  side-by-side or single display
+	#XXXfoobar    if we are doing A/B or interleave we need global clicklog data for both a and b result refs as well as interleave result ref
+	# if we want to put global data in with item data in the PI handlere instead of using javascript
+	# we need to pass the global_click_data into _ls_wrap_result_data as a parameter!
+	#  side-by-side 
 	if ($side_by_side)
 	{
-	    $A_result_ref  = _ls_wrap_result_data($C, $primary_rs);
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $primary_rs);
 	    $A_label = "Default";
 	    $output.=wrap_string_in_tag('TRUE','SideBySideDisplay');
-		
 	    if ($use_interleave) 
 	    {
-		$B_result_ref = _ls_wrap_result_data($C, $i_rs);
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
+		$global_click_data=get_global_click_data($C, 'side_intl',  $primary_rs, $B_rs,$i_rs);
 	    }
 	    elsif ($config->get('use_B_query'))
 	    {
-		$B_result_ref = _ls_wrap_result_data($C, $B_rs);
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $B_rs);
+		$global_click_data=get_global_click_data($C, 'side_AB',  $primary_rs, $B_rs);
 	    }
 	}
 	elsif($use_interleave)
 	{
+	    #interleave single column
 	    # if we are using interleave but not side by side just put interleave 	    
 	    #result in A and don't define B result ref
-	    $A_result_ref  = _ls_wrap_result_data($C, $i_rs);
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
     	    $A_label= $config->get('interleaver_class') . ':' . $config->get('B_description');
+	    $global_click_data=get_global_click_data($C, 'intl',  $primary_rs, $B_rs,$i_rs);
 	}
 	else
 	{
-	    #normal results
-	    $A_result_ref  = _ls_wrap_result_data($C, $primary_rs);
+	    #normal results single column
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $primary_rs);
+	    $global_click_data=get_global_click_data($C, 'normal',  $primary_rs);
+	    #Single column, normal results followed by B results
+	    if ($config->get('use_B_query'))
+	    {
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $B_rs);
+	    }
+	    
 	}
-	
-	$output.=wrap_string_in_tag($A_label,'A_LABEL');
+	#XXXfoobar put global in xsl here or repeat for each item ?
+	$output .= wrap_string_in_tag($global_click_data,'G_CLICK_DATA');
+	$output .= wrap_string_in_tag($A_label,'A_LABEL');
 	
 	
         my $A_out = wrap_string_in_tag($$A_result_ref, 'A_RESULTS');
@@ -1559,6 +1578,9 @@ Description
 # ---------------------------------------------------------------------
 sub _ls_wrap_result_data {
     my $C = shift;
+    #XXXfoobar  this is wrong  we don't need query here we only need it in global data
+    # need to redo this and fix all method calls
+    my $query=shift;
     my $rs = shift;
 
     my $cgi = $C->get_object('CGI');
@@ -1575,10 +1597,13 @@ sub _ls_wrap_result_data {
     # any strings.  Is there a better place to do this?
 
     my $result_docs_arr_ref = $rs->get_result_docs();
+#XXXfoobar    my $global_click_log_data = get_global_click_log_data($C,$result_docs_arr_ref,$query_string);
+    my $doc_count=0;
+    
     foreach my $doc_data (@$result_docs_arr_ref) {
         my $s = '';
-
-        # unicorn add oclc, isbn and ? for google book covers
+	$doc_count++;
+	# unicorn add oclc, isbn and ? for google book covers
         my $book_ids_ary_ref=[];
       
       my @vuFind_book_id_fields = ("oclc","isbn","lccn");
@@ -1685,6 +1710,18 @@ sub _ls_wrap_result_data {
 
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');
+
+	#XXXfoobar	# click log data adds the following
+	# Decide if we want to concatenate global and item data here, in xsl or in javascript!
+	# Do we put query or url here?
+	# if we want to concatenate as below, we need to pass $global_click_data from 
+	# handle_SEARCH_RESULTS_PI when we call _ls_wrap_string_in_tag
+	#my $item_click_log_data = qq{$id|$doc_count|$global_click_data};
+	my $item_click_log_data = qq{$id|$doc_count|$query};
+	$s .= wrap_string_in_tag($item_click_log_data, 'clickLogData');
+
+
+
 	#XXX hack for AB and interleaving label
 	my $AB=$doc_data->{'AB'};
 	if ($AB=~/A|B/)
@@ -1780,6 +1817,77 @@ sub get_advanced_PT_url
     return $pt_search_URL;
     
 }
+#XXXfoobar
+#----------------------------------------------------------------------
+#
+#    output     session_id|pid|query|ids in order for click logging
+#          XXX do we want referer here or just in reg query log to be joined
+#           what about timestamp for joining click logs?
+#
+#
+#    XXXfoobar consider json so we can identify the ding_dang result arrays
+
+# Do we want numbered arrays? 
+sub get_global_click_data
+{
+    my $C = shift;
+#    my $query_string=shift;  #foobar fix this
+    my $type=shift;
+    my $A_rs= shift;
+    my $B_rs = shift;
+    my $I_rs = shift;
+    my $hashref={ 'A'=>$A_rs,
+		  'B'=>$B_rs,
+		  'I'=>$I_rs,
+		};
+    
+    #XXX temp fix
+    my $query_string="query string fixme";
+    
+    #replace bar with a space since we use them as delimiter
+    $query_string=~s/\|/ /;
+    # do we want ip address and if so where can we get it
+    #    session_id, pid, query, ids in order
+    my $session_id = $C->get_object('Session')->get_session_id();
+    my $pid = $$;
+    
+    my $to_return=qq{$session_id|$pid|$query_string|$type|};
+    foreach my $key qw(A B I)
+    {
+	if (exists($hashref->{$key}) && defined($hashref->{$key}))
+	{
+	    my $rs =$hashref->{$key};
+	    # replace by asking for result_ids instead of result_response_docs_arr_ref and fix serialize
+	    my $ary_ref= $rs->get_result_docs();
+	    my $s=_serialize_result_ary($ary_ref);
+	    
+	    $to_return .= $key . '\:' . $s . '|';
+	}
+		   
+    }
+    
+    
+    return($to_return);
+}
+#----------------------------------------------------------------------
+
+sub _serialize_result_ary
+{
+    my $ary_ref = shift;
+    my @out;
+    my $to_return;
+    foreach my $doc_data (@$ary_ref)
+    {
+	my $id=$doc_data->{'id'};
+	push(@out,$id);
+    }
+    $to_return.= join(':',@out);
+    return($to_return);
+    
+}
+
+#----------------------------------------------------------------------
+
 
 1;
 

@@ -1,0 +1,145 @@
+#!/usr/bin/env perl
+
+use strict;
+#umask 0000;
+
+BEGIN {
+     $ENV{DEBUG_LOCAL} = 1;
+
+    ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/ls/UNAVAILABLE");
+}
+
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+BEGIN {
+    if ( $ENV{'HT_DEV'} ) {
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ls/cgi');
+    }
+}
+
+
+
+
+
+
+use CGI;
+use Semaphore;
+use Utils;
+use Utils::Time;
+
+
+
+
+my $cgi = new CGI;
+
+
+
+# log stuff
+my $log_string=$cgi->param('clicked');
+
+#$log_string="test_log_string";
+__Log_string($log_string);
+
+print $cgi->header();
+print $cgi->start_html();
+print $cgi->Dump;
+print $cgi->end_html();
+
+
+
+# ---------------------------------------------------------------------
+
+=item __get_logdir_root
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_logdir_root
+{
+    return $ENV{'SDRROOT'}; 
+}
+
+
+# ---------------------------------------------------------------------
+
+
+use constant MAX_TRIES => 10;
+
+sub __Log_string {
+
+    my $s = shift;
+
+    my $logdir = __get_logdir_root() . '/logs/clicklogs';
+
+    my $logfile = 'ls_clicks___DATE___';
+    my $date = Utils::Time::iso_Time('date');
+    $logfile =~ s,___DATE___,-$date,;
+    
+    Utils::mkdir_path($logdir);
+
+    my $logfile_path = $logdir . '/' . $logfile;
+
+    # Obtain an exclusive lock to protect access to the logfile when
+    # multiple producers are writing to the logfile for the same shard
+    my $lock_file = $logfile_path . '.sem';
+
+    # --- BEGIN CRITICAL SECTION ---
+    my $sem;
+    my $tries = 0;
+    while (! ($sem = new Semaphore($lock_file))) {
+        $tries++;
+        return if ($tries > MAX_TRIES);
+        sleep 1;
+    }
+
+    if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
+        LOG->autoflush(1);
+        print LOG qq{$s\n};
+        close(LOG);
+        chmod(0666, $logfile_path) if (-o $logfile_path);
+    }
+
+    $sem->unlock();
+    # --- END CRITICAL SECTION ---
+}
+
+# ---------------------------------------------------------------------
+
+=item __Log_simple
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Log_simple {
+    my $s = shift;
+#    exit 0 if (! $logging_enabled);
+
+    my $date = Utils::Time::iso_Time('date');
+    my $time = Utils::Time::iso_Time('time');
+    my $logfile = qq{MDP-generic-$date.log};
+
+    my $logfile_path = Utils::get_tmp_logdir() . "/$logfile";
+    if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
+        LOG->autoflush(1);
+        print LOG qq{$time: $s\n};
+        close(LOG);
+        chmod(0666, $logfile_path) if (-o $logfile_path);
+    }
+    
+    return $logfile_path;
+}
+
+
+

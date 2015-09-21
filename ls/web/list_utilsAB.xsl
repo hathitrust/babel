@@ -352,11 +352,16 @@
   <xsl:template name="DisplayContent">
     <xsl:param name="title" />
     <xsl:param name="item-list-contents" />
-    <xsl:param name="AB" />
+    <xsl:param name="hasB" />
     <div role="main">
+<!--DEBUG_AB
+      <h1><xsl:text>DEBUG DisplayContent hasB=</xsl:text>
+      <xsl:value-of select ="$hasB"/>
+    </h1>
+-->
       <xsl:call-template name="ItemList">
         <xsl:with-param name="item-list-contents" select="$item-list-contents" />
-        <xsl:with-param name="AB" select="$AB" />
+        <xsl:with-param name="hasB" select="$hasB" />
       </xsl:call-template>
 
     </div>  <!-- end div ColContainer -->
@@ -826,7 +831,7 @@
 
   <xsl:template name="ItemList">
     <xsl:param name="item-list-contents" />
-    <xsl:param name="AB"/>
+    <xsl:param name="hasB"/>
 
     <div class="actions">
       <form id="form1" name="form1" method="get" action="mb?">
@@ -870,6 +875,11 @@
         <xsl:choose>
           <xsl:when test="$ItemListType='SearchResults'">
 	    
+	    <!--XXX insert global click log stuff here need to hide from humans-->
+	    <span id="globalclick" class = "debug">
+	      <xsl:value-of select ="/MBooksTop/SearchResults/G_CLICK_DATA"/>
+	    </span>
+
             <!--XXX AB fix here 
 		Working on grid stuff for side by side
 		After it works need ability to switch to one column
@@ -895,22 +905,34 @@
 		<xsl:attribute name="class">
 		  <xsl:value-of select="$resultsClass"/>
 		</xsl:attribute>
-		<!--#test if there is some kind of AB test-->
-		<xsl:if test="normalize-space(SearchResults/A_LABEL)" > 
-		<h1><xsl:text>A: </xsl:text>   
-		<xsl:value-of select="SearchResults/A_LABEL"/>
-		</h1>
-	      </xsl:if>
+		<!--#test if there is some kind of AB test only show if debug=AB or display_AB=1 -->
+		<xsl:if test="$displayAB = 'TRUE'">
+		  <xsl:if test="normalize-space(SearchResults/A_LABEL)" > 
+		    <h1><xsl:text>A: </xsl:text>   
+		    <xsl:value-of select="SearchResults/A_LABEL"/>
+		    </h1>
+		  </xsl:if>
+		</xsl:if>
 		<xsl:for-each select="SearchResults/A_RESULTS/Item">
 		  <xsl:call-template name="BuildItemChunk"/>
 		</xsl:for-each>
 	      </div>
-                
-	      <xsl:if test="$AB = 'B'">
-		<div id="results_B" class="span6">
+
+	      <xsl:if test="$hasB = 'B'">
+		<!--DEBUG_AB
+		<h1>DEBUG has B </h1>
+		-->
+		<div id="results_B">
+		  <xsl:attribute name="class">
+		    <xsl:value-of select="$resultsClass"/>
+		  </xsl:attribute>
+
+		<xsl:if test="$displayAB = 'TRUE'">
 		  <h1><xsl:text>B: </xsl:text> 
 		  <xsl:value-of select="SearchResults/B_LABEL"/>
 		  </h1>
+		</xsl:if>
+
 		  <xsl:for-each select="SearchResults/B_RESULTS/Item">
 		    <xsl:call-template name="BuildItemChunk"/>
 		  </xsl:for-each>

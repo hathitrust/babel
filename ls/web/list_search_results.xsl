@@ -172,8 +172,13 @@ REMOVE the below and see if it will call list_utils
       <!--XXX      <xsl:call-template name="status-update" /> -->
 
       <!-- XXX       <xsl:call-template name="decideDisplayRefine"/> -->
+  <!--DEBUG_AB
+    <h1>
+	<xsl:text>debug list-items-results AB has B </xsl:text>          
+	<xsl:value-of select="$hasB"/>
+      </h1>
+      -->
 
-          
       <xsl:choose>
         <xsl:when test="SearchResults/A_RESULTS/Item">
           <xsl:call-template name="SearchResults_status"/>
@@ -182,7 +187,7 @@ REMOVE the below and see if it will call list_utils
             <xsl:with-param name="title" select="'Search Results'" />
             <xsl:with-param name="item-list-contents" select="'items'" />
 	    <!--AB-->
-	    <xsl:with-param name="AB" select="$hasB" /> 
+	    <xsl:with-param name="hasB" select="$hasB" /> 
           </xsl:call-template>
         </xsl:when>
      <!--   <xsl:when test="SearchResults/SolrError[normalize-space(.)]">-->
@@ -248,9 +253,13 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="SearchResults_status">
    
     <div class="SearchResults_status">
-      <xsl:if test="$debug='YES'">
+<!--XXX
+    Why is this here and why is debug=yes?
+    <xsl:if test="$debug='YES'">
         <span id="TempDebug">SEARCH RESULTS</span>
       </xsl:if>
+-->
+
       <!--XXX foobar   this shouldn't display if 0 results-->
       <span>
         <xsl:text>Search Results: </xsl:text>
