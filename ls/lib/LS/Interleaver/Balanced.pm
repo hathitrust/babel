@@ -78,9 +78,22 @@ sub get_interleaved
     # insert the docs_array into the interleaved result set object
     # XXX we are bypassing internal methods
     # We probably need a new result set object subclass maybe a mock result set object
-    $rs_out->{'result_response_docs_arr_ref'}=($out_docs_ary);
-    # for now lets just copy the docs
+    # for now lets just copy the docs and create an array of ids in rank order
+#    $rs_out->{'result_response_docs_arr_ref'}=($out_docs_ary);
+    $rs_out->__set_result_docs($out_docs_ary); 
+    my $id_ary_ref=[];
+    foreach my $doc (@{$out_docs_ary})
+    {
+     	my $id = $doc->{'id'};
+     	push (@{$id_ary_ref},$id);
+    }
+    $rs_out->__set_result_ids($id_ary_ref);
+    
+    
 
+    # Commented code below is attempt to copy other data from rs_a to interleaved object
+    # I think we only need rs_B query time to get the cost of doing the additional query
+    # What about scores for A and B? do we care
     # copy various values from result set a to interleaved result set object
     # See setter methods in /htapps/tburtonw.babel/ls/lib/LS/Result/JSON/Facets.pm
     #  XXX Is there any other part of the result set for a and b that we need to keep?
