@@ -21,7 +21,8 @@ head.ready(function()
     var gd =  $("#globalclick");
 
     //      .click(data,eventData,handler)
-    $("a.viewonly, a.fulltext").click(gd,handle_click);
+    //TODO: add event for clicking on catalog link
+    $("a.viewonly, a.fulltext, a.cataloglinkhref").click(gd,handle_click);
 
 
     function test_handle_click(e)
