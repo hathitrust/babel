@@ -1828,15 +1828,12 @@ sub get_advanced_PT_url
     return $pt_search_URL;
     
 }
-#XXXfoobar
+
 #----------------------------------------------------------------------
 #
-#    output     session_id|pid|query|ids in order for click logging
-#          XXX do we want referer here or just in reg query log to be joined
-#           what about timestamp for joining click logs?
+#  get_global_click)data
 #
-#
-#    XXXfoobar consider json so we can identify the ding_dang result arrays
+#   XXX how much do we want to repeat stuff already in regular ls logs? 
 
 # Do we want numbered arrays? 
 sub get_global_click_data
@@ -1846,9 +1843,11 @@ sub get_global_click_data
     my $A_rs= shift;
     my $B_rs = shift;
     my $I_rs = shift;
+    my $config = $C->get_object('MdpConfig');
+
     my $g_hashref={};
     
-    my $hashref={ 'A'=>$A_rs,
+    my $rs_hashref={ 'A'=>$A_rs,
 		  'B'=>$B_rs,
 		  'I'=>$I_rs,
 		};
@@ -1865,127 +1864,96 @@ sub get_global_click_data
     my $cgi = $C->get_object('CGI');
     # is this the best way to serialize the cgi params?
     my $appURL=$cgi->url(-query=>1);
-    #XXX  semicolon's in $appURL mess things up
-    $appURL=~s/\;/\--/g;
-    #XXX instead why not just dump out the key value pairs in a hash?
-
-    # we should get the query from the $appURL or from user_query_string?
-    # do we need to indicate whether this is an advanced search
-    # get starting result id
-    my $entries_per_page = $cgi->param('sz');
-    my $page_number = $cgi->param('pn');
+    my $entries_per_page;
+    if (defined ($cgi->param('sz')))
+    {
+	$entries_per_page = $cgi->param('sz');
+    }
+    else
+    {
+	$entries_per_page=$config->get('default_records_per_page');
+    }
+    my $page_number;
+    if (defined ($cgi->param('pn')))
+    {
+	$page_number = $cgi->param('pn');
+    }
+    else
+    {
+	$page_number = $config->get('pn');
+    }
     my $starting_result_number = ($entries_per_page * $page_number )+1; 
+    # XXXdo we need to indicate whether this is an advanced search
+    # get starting result id
     my $query_string = $cgi->param('q1') .
     ' ' . $cgi->param('q2') .
     ' ' . $cgi->param('q3') . 
     ' '. $cgi->param('q4');
     #remove trailing spaces
- #   $query_string=~s/(\s+)$//g;
+    $query_string=~s/(\s+)$//g;
     #NOTE: we should probably detect advanced search by seeing if more than one qN param is used.
-
-    #replace bar with a space since we use them as delimiter
-    $query_string=~s/\|/ /;
-    # do we want ip address and if so where can we get it
-    #    session_id, pid, query, ids in order
     my $session_id = $C->get_object('Session')->get_session_id();
     my $pid = $$;
-    
-    #XXX need to test  referer 
-
     my $referer=$ENV{REFERER} ||$cgi->referer();
-    #add logged_in
     my $auth = $C->get_object('Auth');
     my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
-
-
-
-
-#XXX foobar $appURL causes second part to be missing!
-    my $to_return=qq{$ipaddr|$session_id|$pid|$timestamp|qtime=$A_Qtime|num_found=$A_num_found|$query_string|$type|};
 
     $g_hashref->{'ip'}        = $ipaddr ;
     $g_hashref->{'session'}   = $session_id;
     $g_hashref->{'pid'}       = $pid;
     $g_hashref->{'timestamp'} = $timestamp;
-    $g_hashref->{'A_qtime'}     = $A_Qtime;
+    $g_hashref->{'A_qtime'}   = $A_Qtime;
 
-    $g_hashref->{'num_found'} = $A_num_found ;
-    $g_hashref->{'query_string'} = $query_string ;
-    $g_hashref->{'type'}         = $type ;
+    $g_hashref->{'num_found'}     = $A_num_found ;
+    $g_hashref->{'query_string'}  = $query_string ;
+    $g_hashref->{'type'}          = $type ;
     $g_hashref->{'starting_result_no'}  = $starting_result_number;
-    #XXX semicolons or ampersands in referer mess things up
-    # need to figure out the right kind of escaping
-    # this is going into XML->XML->HTML->Javascript  Where is the problem and what kind of escaping do we need
-    #XXX hack
-    $referer=~s/;/--/g;
-    
-    $g_hashref->{'referer'}       = $referer;    
+    $g_hashref->{'referer'} = URI::Escape::uri_escape_utf8($referer);
     $g_hashref->{'logged_in'}     = $is_logged_in;   
-    #XXX do we need to escape this somehow?
-    $g_hashref->{'cgi'}          = $appURL;
-#    $g_hashref->{'cgi'}          = "http://cgi/ls?foobar=baz";
- #   $g_hashref->{''}          = ;
+    $g_hashref->{'cgi'}          = URI::Escape::uri_escape_utf8($appURL);
+    #   $g_hashref->{''}          = ;
 
-# B info, check for $B_rs exists
-# B will exist if doing side-by-side or interleaving
+    # B info, check for $B_rs exists
+    # B will exist if doing side-by-side or interleaving
     if (defined($B_rs))
     {
-	
 	my $B_Qtime = $B_rs->get_query_time();
 	my $B_num_found=$B_rs->get_num_found();
 	$g_hashref->{'B_qtime'}     = $B_Qtime;
 	$g_hashref->{'B_num_found'}  = $B_num_found;
     }
     
-
- #   $g_hashref->{''}          = ;
-#    $g_hashref->{''}          = ;
-  
+    #   $g_hashref->{''}          = ;
+    #   $g_hashref->{''}          = ;
     
-    # replace above with key value pairs
-
-    foreach my $key qw(A B I)
-    {
-	if (exists($hashref->{$key}) && defined($hashref->{$key}))
-	{
-	    my $rs =$hashref->{$key};
-	    # replace by asking for result_ids instead of result_response_docs_arr_ref and fix serialize
-	    my $rs_ref= $rs->get_result_docs();
-	    
-	    my $ary_ref=$rs->get_result_ids();
-	    
-	    my $hash_key=$key . '_rs';
-	    
-	    $g_hashref->{$hash_key} = $ary_ref;
-	  #  my $s=_serialize_result_ary($rs_ref);
-	   # $to_return .= $key . '\:' . $s . '|';
-	}
-		   
-    }
+    # arrays of result ids in relevance order for each applicable A, B, I(interleaved)
+    $g_hashref = add_result_arrays($rs_hashref,$g_hashref);
     
     my    $utf8_encoded_json_text = encode_json $g_hashref;
     return($utf8_encoded_json_text);    
-    #return($to_return);
+
 }    
 #----------------------------------------------------------------------
 
-sub _serialize_result_ary
+sub add_result_arrays
 {
-    my $ary_ref = shift;
-    my @out;
-    my $to_return;
-    foreach my $doc_data (@$ary_ref)
-    {
-	my $id=$doc_data->{'id'};
-	push(@out,$id);
-    }
-    $to_return.= join(':',@out);
-    return($to_return);
+    my $rs_hashref = shift;
+    my $g_hashref = shift;
     
+    foreach my $key qw(A B I)
+    {
+	if (exists($rs_hashref->{$key}) && defined($rs_hashref->{$key}))
+	{
+	    my $rs =$rs_hashref->{$key};
+	    my $ary_ref=$rs->get_result_ids();
+	    my $hash_key=$key . '_rs';
+	    $g_hashref->{$hash_key} = $ary_ref;
+	}
+	
+    }
+    return $g_hashref
 }
-
 #----------------------------------------------------------------------
-
 
 1;
 
