@@ -1170,7 +1170,7 @@
                   <xsl:value-of select ="record"/>
                 </xsl:attribute>
 		  <xsl:attribute name="data_clicklog">
-		   <xsl:text>{catalog:</xsl:text> <xsl:value-of select="$ItemClickData"/><xsl:text>}</xsl:text>
+		   <xsl:text>{"catalog":</xsl:text> <xsl:value-of select="$ItemClickData"/><xsl:text>}</xsl:text>
 		  </xsl:attribute>
                 <xsl:attribute name="title">
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
@@ -1192,7 +1192,7 @@
                   <xsl:value-of select="PtHref"/>
                 </xsl:attribute>
 		<xsl:attribute name="data_clicklog">
-		   <xsl:text>{pt:</xsl:text>
+		   <xsl:text>{"pt":</xsl:text>
 		    <xsl:value-of select="$ItemClickData"/>
 		    <xsl:text>}</xsl:text>
 		</xsl:attribute>
@@ -1318,7 +1318,7 @@
                   <xsl:value-of select ="record"/>
                 </xsl:attribute>
 		  <xsl:attribute name="data_clicklog">
-		    <xsl:text>{catalog:</xsl:text> <xsl:value-of select="$ItemClickData"/><xsl:text>}</xsl:text>
+		    <xsl:text>{"catalog":</xsl:text> <xsl:value-of select="$ItemClickData"/><xsl:text>}</xsl:text>
 		  </xsl:attribute>
 
 
@@ -1349,7 +1349,7 @@
                     </xsl:otherwise>
                   </xsl:choose>
 		  <xsl:attribute name="data_clicklog">
-		    <xsl:text>{pt:</xsl:text>
+		    <xsl:text>{"pt":</xsl:text>
 		    <xsl:value-of select="$ItemClickData"/>
 		    <xsl:text>}</xsl:text>
 		  </xsl:attribute>

@@ -38,7 +38,7 @@ head.ready(function()
     {
 	var gd = e.data.text();
 	var d = $(e.target).attr('data_clicklog');
-	var msg= "clicked={item:"+d+",global:"+gd+"}}";
+	var msg= "clicked={\"item\":"+d+",\"global\":"+gd+"}";
 //	alert(msg);
 	$.post( "//tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
     }
