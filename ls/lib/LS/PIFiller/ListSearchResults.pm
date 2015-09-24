@@ -1712,16 +1712,6 @@ sub _ls_wrap_result_data {
         $s .= wrap_string_in_tag($id, 'ItemID');
 
 	#XXXfoobar	# click log data adds the following
-	# Decide if we want to concatenate global and item data here, in xsl or in javascript!
-	# Do we put query or url here?
-	# if we want to concatenate as below, we need to pass $global_click_data from 
-	# handle_SEARCH_RESULTS_PI when we call _ls_wrap_string_in_tag
-	#my $item_click_log_data = qq{$id|$doc_count|$global_click_data};
-	my $item_click_log_data = qq{$id|$doc_count|$query};
-	$s .= wrap_string_in_tag($item_click_log_data, 'clickLogData');
-
-
-
 	#XXX hack for AB and interleaving label
 	my $AB=$doc_data->{'AB'};
 	if ($AB=~/A|B/)
@@ -1731,6 +1721,7 @@ sub _ls_wrap_result_data {
 	
 	# Local Click Data
 	# id, AB label, count
+	#XXX foobar need to add whether it is pt or catalog search here not in XSL later
 
 	my $item_click_data= {
 			      'id'=>$id,
@@ -1859,7 +1850,8 @@ sub get_global_click_data
     my $ipaddr = ($ENV{REMOTE_ADDR} ? $ENV{REMOTE_ADDR} : '0.0.0.0');
     my $A_Qtime = $A_rs->get_query_time();
     my $A_num_found = $A_rs->get_num_found();
-    my $timestamp =Utils::Time::iso_Time('time');
+#    my $timestamp =Utils::Time::iso_Time('time');
+    my $timestamp =Utils::Time::iso_Time('datetime');
     # add cgi params for better tracking
     my $cgi = $C->get_object('CGI');
     # is this the best way to serialize the cgi params?
@@ -1882,7 +1874,7 @@ sub get_global_click_data
     {
 	$page_number = $config->get('pn');
     }
-    my $starting_result_number = ($entries_per_page * $page_number )+1; 
+    my $starting_result_number = (($entries_per_page * ($page_number-1) ))+1; 
     # XXXdo we need to indicate whether this is an advanced search
     # get starting result id
     my $query_string = $cgi->param('q1') .
