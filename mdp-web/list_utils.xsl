@@ -14,23 +14,35 @@
     <xsl:value-of select="/MBooksTop/MBooksGlobals/Debug"/>
   </xsl:variable>
 
+  <xsl:variable name="debugContents" >
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
+  </xsl:variable>
+
   <!-- end global variables -->
 
   <!-- list_items/search_results global variables  -->
 
-  <!-- date debugging info tbw -->
   <xsl:variable name="dateDebug">
           <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']"/>
   </xsl:variable>
 
-
   <xsl:variable name="ItemListType">
     <xsl:choose>
       <xsl:when test="/MBooksTop/SearchResults">SearchResults</xsl:when>
+      <!-- order matters, mb always has ItemList, but if it also has a SearchResults its a search result listing-->
       <xsl:when test="/MBooksTop/ItemList">ItemList</xsl:when>
       <xsl:otherwise></xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
+
+  <xsl:variable name="AB_mode" >
+    <xsl:choose>
+      <xsl:when test="/MBooksTop/SearchResults/A_RESULTS">TRUE</xsl:when>
+      <xsl:otherwise>FALSE</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  
 
   <xsl:variable name="spaced_coll_name">
     <xsl:value-of select="/MBooksTop/EditCollectionWidget/SpacedCollName"/>
@@ -141,6 +153,15 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+
+<xsl:variable name="displayAB">
+  <xsl:choose>
+    <xsl:when test=" (/MBooksTop/SearchResults/DISPLAY_AB = 'TRUE') or (contains($debugContents,'AB')) ">TRUE</xsl:when>
+    <xsl:otherwise>
+      FALSE
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
 
   <!-- ############################################# end global list_items/search_results variables -->
 
@@ -382,10 +403,12 @@
   <xsl:template name="DisplayContent">
     <xsl:param name="title" />
     <xsl:param name="item-list-contents" />
+    <xsl:param name="hasB" />
     <div role="main">
 
       <xsl:call-template name="ItemList">
         <xsl:with-param name="item-list-contents" select="$item-list-contents" />
+        <xsl:with-param name="hasB" select="$hasB" />
       </xsl:call-template>
 
     </div>  <!-- end div ColContainer -->
@@ -855,6 +878,8 @@
 
   <xsl:template name="ItemList">
     <xsl:param name="item-list-contents" />
+    <xsl:param name="hasB"/>
+
     <div class="actions">
       <form id="form1" name="form1" method="get" action="mb?">
         <xsl:copy-of select="$hidden_c_param"/>
@@ -892,12 +917,34 @@
         </div>
 
         <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
+	<!--XXX insert global click log stuff here need to hide from humans-->
+	
+	<span id="globalclick" class = "debug">
+	  <xsl:value-of select ="/MBooksTop/SearchResults/G_CLICK_DATA"/>
+	</span>
+
         <xsl:choose>
           <xsl:when test="$ItemListType='SearchResults'">
-            <xsl:for-each select="SearchResults/Item">
-              <xsl:call-template name="BuildItemChunk"/>
-            </xsl:for-each>
+	    <!--XXX to do
+	    either call template BuildItemChunk for mb or call a template to do AB stuff
+	    so move almost everything here to a template
+	    -->
+	    <xsl:choose>
+	      <xsl:when test="$AB_mode='TRUE'">
+
+		<xsl:call-template name="BuildAB_Items">
+		  <xsl:with-param name="hasB"/>
+		</xsl:call-template>
+	      </xsl:when>
+	      
+	      <xsl:otherwise>
+		<xsl:for-each select="SearchResults/Item">
+		  <xsl:call-template name="BuildItemChunk"/>
+		</xsl:for-each>
+	      </xsl:otherwise>
+	    </xsl:choose>
           </xsl:when>
+
           <xsl:otherwise>
             <xsl:for-each select="ItemList/Item">
               <xsl:call-template name="BuildItemChunk"/>
@@ -919,6 +966,63 @@
     </div>
     <!-- end div actions-->
   </xsl:template>
+
+<!-- AB stuff-->
+
+<xsl:template name="BuildAB_Items">
+  <xsl:param name="hasB"/>
+  <xsl:variable name="resultsClass">
+    <xsl:choose>
+      <xsl:when test="SearchResults/SideBySideDisplay='TRUE'">
+	span6
+      </xsl:when>
+      <xsl:otherwise>
+	span12
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <div class="row">
+    <div id="results_A">
+      <xsl:attribute name="class">
+	<xsl:value-of select="$resultsClass"/>
+      </xsl:attribute>
+      <!--#test if there is some kind of AB test only show if debug=AB or display_AB=1 -->
+      <xsl:if test="$displayAB = 'TRUE'">
+	<xsl:if test="normalize-space(SearchResults/A_LABEL)" > 
+	  <h1><xsl:text>A: </xsl:text>   
+	  <xsl:value-of select="SearchResults/A_LABEL"/>
+	  </h1>
+	</xsl:if>
+      </xsl:if>
+      <xsl:for-each select="SearchResults/A_RESULTS/Item">
+	<xsl:call-template name="BuildItemChunk"/>
+      </xsl:for-each>
+    </div>
+    
+    <xsl:if test="$hasB = 'B'">
+      <!--DEBUG_AB
+	  <h1>DEBUG has B </h1>
+      -->
+      <div id="results_B">
+	<xsl:attribute name="class">
+	  <xsl:value-of select="$resultsClass"/>
+	</xsl:attribute>
+	
+	<xsl:if test="$displayAB = 'TRUE'">
+	  <h1><xsl:text>B: </xsl:text> 
+	  <xsl:value-of select="SearchResults/B_LABEL"/>
+	  </h1>
+	</xsl:if>
+	
+	<xsl:for-each select="SearchResults/B_RESULTS/Item">
+	  <xsl:call-template name="BuildItemChunk"/>
+	</xsl:for-each>
+      </div>
+    </xsl:if>
+  </div>
+</xsl:template>
+<!--end AB stuff-->
 
   <xsl:template name="inMyColls">
     <li>
@@ -1053,7 +1157,8 @@
     <xsl:variable name="Date">
       <xsl:value-of select="Date"/>
     </xsl:variable>
-    <!-- enum date stuff for debugging -->
+    
+  <!-- enum date stuff for debugging -->
     <xsl:variable name="UseDate">
       <xsl:value-of select="UseDate"/>
     </xsl:variable>
@@ -1065,6 +1170,10 @@
       <xsl:value-of select="BothDate"/>
     </xsl:variable>
 
+    <xsl:variable name="ItemClickData">
+      <xsl:value-of select="ItemClickData"/>
+    </xsl:variable>
+
 
     <!--################################## end variables-->
 
@@ -1072,6 +1181,18 @@
       <xsl:variable name="item-number" select="position()" />
       <!-- push2 -->
       <div class="span{$span-n} push2 metadata">
+	<!-- if debug = ab then display AB label and also display id-->
+
+	<xsl:if test="$displayAB = 'TRUE'">
+	  <h4>
+	    <strong>
+	      <xsl:value-of select="ABLabel"/>
+	         <xsl:text> : </xsl:text>
+	      <xsl:value-of select="ItemID"/>
+	  </strong>
+	  </h4>
+	</xsl:if>
+
         <h4 class="Title">
           <span class="offscreen">Item <xsl:value-of select="$item-number" />: </span>
           <xsl:call-template name="GetTitle"/>
@@ -1163,6 +1284,9 @@
                   <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
                   <xsl:value-of select ="record"/>
                 </xsl:attribute>
+		  <xsl:attribute name="data_clicklog">
+		   <xsl:text>catalog|</xsl:text> <xsl:value-of select="$ItemClickData"/>
+		  </xsl:attribute>
                 <xsl:attribute name="title">
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
                 </xsl:attribute>
@@ -1182,6 +1306,9 @@
                 <xsl:attribute name="href">
                   <xsl:value-of select="PtHref"/>
                 </xsl:attribute>
+		<xsl:attribute name="data_clicklog">
+		   <xsl:text>pt|</xsl:text> <xsl:value-of select="$ItemClickData"/>
+		</xsl:attribute>
                 <xsl:attribute name="class">
                   <xsl:value-of select="$fulltext_class"/>
                 </xsl:attribute>
@@ -1304,6 +1431,11 @@
                   <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
                   <xsl:value-of select ="record"/>
                 </xsl:attribute>
+		  <xsl:attribute name="data_clicklog">
+		   <xsl:text>catalog|</xsl:text> <xsl:value-of select="$ItemClickData"/>
+		  </xsl:attribute>
+
+
                 <xsl:attribute name="title">
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
                 </xsl:attribute>
@@ -1330,6 +1462,10 @@
                       <xsl:value-of select="PtHref"/>
                     </xsl:otherwise>
                   </xsl:choose>
+		  <xsl:attribute name="data_clicklog">
+		   <xsl:text>pt|</xsl:text> <xsl:value-of select="$ItemClickData"/>
+		  </xsl:attribute>
+
                 </xsl:attribute>
                 <xsl:attribute name="class">
                   <xsl:value-of select="$fulltext_class"/>
