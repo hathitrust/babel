@@ -172,12 +172,12 @@ REMOVE the below and see if it will call list_utils
       <!--XXX      <xsl:call-template name="status-update" /> -->
 
       <!-- XXX       <xsl:call-template name="decideDisplayRefine"/> -->
-  <!--DEBUG_AB
+  <!--
     <h1>
 	<xsl:text>debug list-items-results AB has B </xsl:text>          
 	<xsl:value-of select="$hasB"/>
       </h1>
-      -->
+       -->
 
       <xsl:choose>
         <xsl:when test="SearchResults/A_RESULTS/Item">
