@@ -923,6 +923,8 @@
 	  <xsl:value-of select ="/MBooksTop/SearchResults/G_CLICK_DATA"/>
 	</span>
 
+
+
         <xsl:choose>
           <xsl:when test="$ItemListType='SearchResults'">
 	    <!--XXX to do
@@ -931,9 +933,14 @@
 	    -->
 	    <xsl:choose>
 	      <xsl:when test="$AB_mode='TRUE'">
+		<!--Debugging hasB
+		<h1>
+		  <xsl:text>In test ItemListType=SearchResults and AB_Mode true  list-utils hasB=  </xsl:text>          	  <xsl:value-of select="$hasB"/>
+		</h1>
+		-->
 
 		<xsl:call-template name="BuildAB_Items">
-		  <xsl:with-param name="hasB"/>
+		  <xsl:with-param name="hasB" select="$hasB" />
 		</xsl:call-template>
 	      </xsl:when>
 	      
@@ -971,6 +978,13 @@
 
 <xsl:template name="BuildAB_Items">
   <xsl:param name="hasB"/>
+<!--debug hasB
+    <h1>
+	<xsl:text>In BuildAB_Items  list-utils hasB=  </xsl:text>          
+	<xsl:value-of select="$hasB"/>
+      </h1>
+-->
+
   <xsl:variable name="resultsClass">
     <xsl:choose>
       <xsl:when test="SearchResults/SideBySideDisplay='TRUE'">
