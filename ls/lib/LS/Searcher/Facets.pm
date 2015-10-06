@@ -86,16 +86,14 @@ sub __get_Solr_select_url {
     #XXX Hack  should at least read config file to get core name of B
     if ($AB eq 'B')
     {
-	my $B_core_name = $C->get_object('MdpConfig')->get('B_core_name');
-	
+	my $AB_config=$C->get_object('AB_test_config');
+	my $B_core_name = $AB_config->{'_'}->{'B_core_name'};
+	my $A_core_name = $AB_config->{'_'}->{'A_core_name'};
 	
 	#get B core name
 	# replace it
-	$shards_param =~s/core-1/$B_core_name/g;
-	$primary_engine_uri =~s/core-1/$B_core_name/g;
-	#XXX alamo hack. TODO: fix alamo nameing!
-	$shards_param =~s/core1/$B_core_name/g;
-	$primary_engine_uri =~s/core1/$B_core_name/g;
+	$shards_param =~s/$A_core_name/$B_core_name/g;
+	$primary_engine_uri =~s/$A_core_name/$B_core_name/g;
 
     }
     

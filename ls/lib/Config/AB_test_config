@@ -1,0 +1,27 @@
+# AB testing
+
+#B_description =  BM25 Alg K1=10
+B_description = dismax MARC boost x 100
+
+side_by_side = 0
+use_B_query= 0
+use_interleave= 1
+display_AB = 1
+interleaver_class = LS::Interleaver::Balanced
+
+# Note that code does not read A_core_name to get default core name.  The default core name and paths to solr are configured in mdp-lib/Config/uber.conf.
+# This code just specifies the default (i.e. A name) so we can
+# get the name so we can substitute all instances of A with B
+
+# need to fix naming on alamo so we can use these instead of ones below
+#A_core_name = core-1
+#B_core_name = core-2
+
+A_core_name = core1
+B_core_name = core1
+
+A_yaml_file_name = dismax_A.yaml
+B_yaml_file_name = dismax_B.yaml
+
+# set both the same so we just use different cores not weights
+#B_yaml_file_name = dismax_A.yaml

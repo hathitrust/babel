@@ -144,8 +144,9 @@ sub execute_operation
     my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
     my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
 
-    my $use_interleave=$config->get('use_interleave');
-    my $use_B_query = $config->get('use_B_query');
+    my $AB_config=$C->get_object('AB_test_config');
+    my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
+    my $use_B_query = $AB_config->{'_'}->{'use_B_query'};
     
     # should read config file to determine whether or not to do a B query
     my $B_rs;
@@ -163,9 +164,9 @@ sub execute_operation
 
     if ($use_interleave)
     {
-	#XXX fix this.  Can we get a class
-	my $interleaver_class = $config->get('interleaver_class');
-	#my $IL = new LS::Interleaver::Balanced;
+
+	my $AB_config=$C->get_object('AB_test_config');
+	my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
 	my $IL = new $interleaver_class;
 	
 	# We need a result set object, but won't populate it by searching

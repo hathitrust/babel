@@ -407,10 +407,9 @@ sub handle_SEARCH_RESULTS_PI
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
     my $B_rs =$$search_result_data_hashref{'B_result_object'};
     my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
-    my $config = $C->get_object('MdpConfig');
-    my $side_by_side = $config->get('side_by_side');
-    my $display_AB = $config->get('display_AB');
-    
+
+
+
     
 
     # Was there a search?
@@ -434,14 +433,26 @@ sub handle_SEARCH_RESULTS_PI
 	#        $output .= $$result_ref;
 	
 	
+	my $AB_config=$C->get_object('AB_test_config');
 
 	my $A_result_ref;
 	my $B_result_ref;
 	my $A_label;
 	my $B_label;
+	my $side_by_side = $AB_config->{'_'}->{'side_by_side'};
+	my $display_AB = $AB_config->{'_'}->{'display_AB'};
+	my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
+	#test for existence
+	my $use_B_query;
 	
-	my $use_interleave = $config->get('use_interleave');
-	my $side_by_side   = $config->get('side_by_side');	
+	if (exists($AB_config->{'_'}->{'use_B_query'}) && 
+	    defined($AB_config->{'_'}->{'use_B_query'}))
+	{
+	    $use_B_query=$AB_config->{'_'}->{'use_B_query'};
+	}
+	my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
+	my $B_description = $AB_config->{'_'}->{'B_description'};
+
 	my $global_click_data;
 	
 	
@@ -466,7 +477,7 @@ sub handle_SEARCH_RESULTS_PI
 		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
 		$global_click_data=get_global_click_data($C, 'side_intl',  $primary_rs, $B_rs,$i_rs);
 	    }
-	    elsif ($config->get('use_B_query'))
+	    elsif ($use_B_query)
 	    {
 		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $B_rs);
 		$global_click_data=get_global_click_data($C, 'side_AB',  $primary_rs, $B_rs);
@@ -478,7 +489,7 @@ sub handle_SEARCH_RESULTS_PI
 	    # if we are using interleave but not side by side just put interleave 	    
 	    #result in A and don't define B result ref
 	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
-    	    $A_label= $config->get('interleaver_class') . ':' . $config->get('B_description');
+    	    $A_label= $interleaver_class . ':' . $B_description;
 	    $global_click_data=get_global_click_data($C, 'intl',  $primary_rs, $B_rs,$i_rs);
 	}
 	else
@@ -487,7 +498,7 @@ sub handle_SEARCH_RESULTS_PI
 	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $primary_rs);
 	    $global_click_data=get_global_click_data($C, 'normal',  $primary_rs);
 	    #Single column, normal results followed by B results
-	    if ($config->get('use_B_query'))
+	    if ($use_B_query)
 	    {
 		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $B_rs);
 	    }
@@ -511,10 +522,10 @@ sub handle_SEARCH_RESULTS_PI
 	    
 	    if ($use_interleave)
 	    {
-		$B_label= $config->get('interleaver_class')
+		$B_label= $interleaver_class;
 	    }
 	    else{
-		$B_label = $config->get('B_description');
+		$B_label = $B_description;
 	    }
 	    my $B_label_out = wrap_string_in_tag($B_label, 'B_LABEL');
 	    $output .= $B_label_out;

@@ -6,9 +6,9 @@
 # perl data structures needed for faceting and advanced search
 use YAML::Any;
 
-
-my $rel_weights_file_A = $ENV{SDRROOT} . '/ls/lib/Config/dismax_A.yaml';
-my $rel_weights_file_B = $ENV{SDRROOT} . '/ls/lib/Config/dismax_B.yaml';
+#foobar XXX remove after testing
+#my $rel_weights_file_A = $ENV{SDRROOT} . '/ls/lib/Config/dismax_A.yaml';
+#my $rel_weights_file_B = $ENV{SDRROOT} . '/ls/lib/Config/dismax_B.yaml';
 
 my $lang_format_file = $ENV{SDRROOT} . '/ls/lib/Config/langformat.yaml';
 
@@ -72,9 +72,9 @@ $facet_to_label_map =
 #                htsource 
 #            };
 
-# rel ranking
-$rel_weights_A= getRelWeights("$rel_weights_file_A");
-$rel_weights_B= getRelWeights("$rel_weights_file_B");
+# rel ranking  foobar XXX remove after testing
+#$rel_weights_A= getRelWeights("$rel_weights_file_A");
+#$rel_weights_B= getRelWeights("$rel_weights_file_B");
 
 # HT/mirlyn out of the box yaml file contains these keys
 #      'subject2'
