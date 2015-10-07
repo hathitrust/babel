@@ -36,6 +36,7 @@ use LS::Query::Facets;
 use LS::Result::JSON::Facets;
 use LS::Searcher::Facets;
 use LS::Interleaver::Balanced;
+use LS::Interleaver::AA;
 
 
 sub new
