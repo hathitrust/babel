@@ -428,11 +428,7 @@ sub handle_SEARCH_RESULTS_PI
 	}
 	
         $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
-	#XXX  don't we want to do the interleaving here instead of having the xsl do it?
-        #        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
-	#        $output .= $$result_ref;
-	
-	
+		
 	my $AB_config=$C->get_object('AB_test_config');
 
 	my $A_result_ref;
@@ -456,17 +452,13 @@ sub handle_SEARCH_RESULTS_PI
 	my $global_click_data;
 	
 	
-	# XXX check if debug flag set and do logic here
+	# XXX should we check if debug flag set and do logic here
 	if ($display_AB)
 	{
 	    $output .= wrap_string_in_tag('TRUE', 'DISPLAY_AB');   
 	}
 	
-   
-	#XXXfoobar    if we are doing A/B or interleave we need global clicklog data for both a and b result refs as well as interleave result ref
-	# if we want to put global data in with item data in the PI handlere instead of using javascript
-	# we need to pass the global_click_data into _ls_wrap_result_data as a parameter!
-	#  side-by-side 
+   	#  side-by-side 
 	if ($side_by_side)
 	{
 	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $primary_rs);
@@ -504,7 +496,6 @@ sub handle_SEARCH_RESULTS_PI
 	    }
 	    
 	}
-	#XXXfoobar put global in xsl here or repeat for each item ?
 	$output .= wrap_string_in_tag($global_click_data,'G_CLICK_DATA');
 	$output .= wrap_string_in_tag($A_label,'A_LABEL');
 	
@@ -1608,7 +1599,6 @@ sub _ls_wrap_result_data {
     # any strings.  Is there a better place to do this?
 
     my $result_docs_arr_ref = $rs->get_result_docs();
-#XXXfoobar    my $global_click_log_data = get_global_click_log_data($C,$result_docs_arr_ref,$query_string);
     my $doc_count=0;
     
     foreach my $doc_data (@$result_docs_arr_ref) {
@@ -1722,8 +1712,7 @@ sub _ls_wrap_result_data {
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');
 
-	#XXXfoobar	# click log data adds the following
-	#XXX hack for AB and interleaving label
+	# AB and interleaving label
 	my $AB=$doc_data->{'AB'};
 	if ($AB=~/A|B/)
 	{
@@ -1732,8 +1721,6 @@ sub _ls_wrap_result_data {
 	
 	# Local Click Data
 	# id, AB label, count
-	#XXX foobar need to add whether it is pt or catalog search here not in XSL later
-
 	my $item_click_data= {
 			      'id'=>$id,
 			      'rank_on_page'=>$doc_count,
