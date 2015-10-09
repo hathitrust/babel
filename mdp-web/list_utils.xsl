@@ -981,7 +981,7 @@
 <!-- AB stuff-->
 
 <xsl:template name="LoggerURL">
-  <span id="logger_url">
+  <span id="logger_url" class="debug">
     <xsl:value-of select="/MBooksTop/SearchResults/LoggerURL"/>
   </span>
 </xsl:template>
