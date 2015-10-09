@@ -167,11 +167,7 @@ REMOVE the below and see if it will call list_utils
 <!--AB addition-->
 
 
-      <!--XXX <xsl:call-template name="DisplaySearchWidgetLogic"/> -->
-
-      <!--XXX      <xsl:call-template name="status-update" /> -->
-
-      <!-- XXX       <xsl:call-template name="decideDisplayRefine"/> -->
+      
   <!--
     <h1>
 	<xsl:text>debug list-items-results AB has B </xsl:text>          
