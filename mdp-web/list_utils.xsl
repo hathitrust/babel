@@ -919,6 +919,7 @@
         <h3 class="offscreen">List of <xsl:value-of select="$item-list-contents" /></h3>
 	<!--XXX insert global click log stuff here need to hide from humans-->
 	
+
 	<span id="globalclick" class = "debug">
 	  <xsl:value-of select ="/MBooksTop/SearchResults/G_CLICK_DATA"/>
 	</span>
@@ -931,6 +932,9 @@
 	    either call template BuildItemChunk for mb or call a template to do AB stuff
 	    so move almost everything here to a template
 	    -->
+
+	    <!-- click logging for search results will eventually make it into CB so put it here-->
+	    <xsl:call-template name="LoggerURL"/>
 	    <xsl:choose>
 	      <xsl:when test="$AB_mode='TRUE'">
 		<!--Debugging hasB
@@ -975,6 +979,12 @@
   </xsl:template>
 
 <!-- AB stuff-->
+
+<xsl:template name="LoggerURL">
+  <span id="logger_url">
+    <xsl:value-of select="/MBooksTop/SearchResults/LoggerURL"/>
+  </span>
+</xsl:template>
 
 <xsl:template name="BuildAB_Items">
   <xsl:param name="hasB"/>
