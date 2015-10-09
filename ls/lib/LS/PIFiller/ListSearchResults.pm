@@ -407,10 +407,11 @@ sub handle_SEARCH_RESULTS_PI
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
     my $B_rs =$$search_result_data_hashref{'B_result_object'};
     my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
-
-
-
     
+    # get cgi url from cgi object and add logger to ls i.e SDRROOT/cgi/ls/logger
+    my $base_url = $cgi->url();
+    my $logger= $base_url . '/logger';
+    $output .= wrap_string_in_tag($logger, 'LoggerURL');   
 
     # Was there a search?
     if ($search_result_data_hashref->{'undefined_query_string'}) { 

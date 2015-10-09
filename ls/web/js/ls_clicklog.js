@@ -1,5 +1,4 @@
 
-//alert("this is ls_clicklog.js");
 /**
 
 **/
@@ -8,7 +7,9 @@ head.ready(function()
 {
     //global data
     var gd =  $("#globalclick");
-
+    // logger url
+    var logger_url = $("#logger_url").text();
+    
     $("a.viewonly, a.fulltext, a.cataloglinkhref").click(gd,handle_click);
     //logs right click context menu, might not open in new window/tab but best we can do
     $("a.viewonly, a.fulltext, a.cataloglinkhref").on("contextmenu",gd,handle_context_menu);
@@ -21,16 +22,19 @@ head.ready(function()
 	var fixed = fix_json(item_data);
 	var d = add_cm_event_to_log(fixed);
 	var msg= "clicked={\"item\":"+d+",\"global\":"+gd+"}";
-	$.post( "//tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
+	//$.post( "//tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
+	$.post(logger_url,msg );
     }
 
     function handle_click(e)
     {
+
 	var gd = e.data.text();
 	var item_data = $(e.target).attr('data_clicklog');
 	var d = fix_json(item_data);
 	var msg= "clicked={\"item\":"+d+",\"global\":"+gd+"}";
-	$.post( "//tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
+	//$.post( "//tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
+	$.post(logger_url,msg );
     }
 
 
