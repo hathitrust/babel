@@ -37,6 +37,8 @@ use MBooks::PIFiller::Survey;
 
 use Namespaces;
 
+use utf8;
+
 BEGIN {
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
@@ -181,10 +183,8 @@ sub normalize_string
     # $string =~s/\>/\&gt\; /g;
     # $string =~s/\</\&lt\; /g;
 
-    # require HTML::Entities;
     $string =~ s/&([^;]+);/ENTITY:$1:ENTITY/gis;
-    $string =~ s,&,&amp;g;
-    # $string = HTML::Entities::encode_entities($string);
+    $string =~ s,&,&amp;,g;
     $string =~ s/ENTITY:([a-z0-9]+):ENTITY/&$1;/gis;
 
     return $string;
