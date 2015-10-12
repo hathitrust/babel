@@ -181,9 +181,10 @@ sub normalize_string
     # $string =~s/\>/\&gt\; /g;
     # $string =~s/\</\&lt\; /g;
 
-    require HTML::Entities;
+    # require HTML::Entities;
     $string =~ s/&([^;]+);/ENTITY:$1:ENTITY/gis;
-    $string = HTML::Entities::encode_entities($string);
+    $string =~ s,&,&amp;g;
+    # $string = HTML::Entities::encode_entities($string);
     $string =~ s/ENTITY:([a-z0-9]+):ENTITY/&$1;/gis;
 
     return $string;
