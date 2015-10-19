@@ -35,6 +35,9 @@ use Search::Searcher;
 use LS::Query::Facets;
 use LS::Result::JSON::Facets;
 use LS::Searcher::Facets;
+use LS::Interleaver::Balanced;
+use LS::Interleaver::AA;
+
 
 sub new
 {
@@ -139,18 +142,54 @@ sub execute_operation
     }
 
 
-    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows);
-    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0);
+    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+
+    my $AB_config=$C->get_object('AB_test_config');
+    my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
+    my $use_B_query = $AB_config->{'_'}->{'use_B_query'};
+    
+    # should read config file to determine whether or not to do a B query
+    my $B_rs;
+    my $B_Q;  # do we need to save B query if we are doing query expansion?
+    my $i_rs;
+
+    if ($use_interleave || $use_B_query)
+    {
+	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+    }
+    
+# Read config file to decide whether to interleave at all
+# Will need to read again at display time? or not?
+
+
+    if ($use_interleave)
+    {
+
+	my $AB_config=$C->get_object('AB_test_config');
+	my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
+	my $IL = new $interleaver_class;
+	
+	# We need a result set object, but won't populate it by searching
+	# populate by interleaving results and copying stuff from real result sets
+	
+	$i_rs = new LS::Result::JSON::Facets('all'); 
+	$i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
+    }
+    
 
     my %search_result_data =
         (
          'primary_result_object'   => $primary_rs,
          'secondary_result_object' =>$secondary_rs,
+	 'B_result_object'         =>$B_rs,
+	 'interleaved_result_object'=>$i_rs,
          'well_formed' => {
                            'primary'                => $primary_Q->well_formed() ,
                            'processed_query_string' => $primary_Q->get_processed_query_string() ,
                            'unbalanced_quotes' =>$primary_Q->get_unbalanced_quotes() ,
                           },
+	 'user_query_string' =>$user_query_string,
         );
 
     $act->set_transient_facade_member_data($C, 'search_result_data', \%search_result_data);
@@ -168,6 +207,8 @@ sub do_query{
     my $query_type = shift;
     my $start_rows =shift;
     my $num_rows = shift;
+    my $AB = shift;
+    
     
     my $Q = new LS::Query::Facets($C, $user_query_string, undef, 
                                        {
@@ -177,10 +218,10 @@ sub do_query{
                                        });
 
     my $rs = new LS::Result::JSON::Facets($query_type);
-    $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs);
+    $rs = $searcher->get_populated_Solr_query_result($C, $Q, $rs,$AB);
     
     #    Log
-    $Q->log_query($C, $searcher, $rs, 'ls');
+    $Q->log_query($C, $searcher, $rs, 'ls',$AB);
     return ($rs,$Q);
 }
 

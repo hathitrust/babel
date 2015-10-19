@@ -8,7 +8,9 @@
   <XslFileList>
   <Filename>skeleton.xsl</Filename>
     <Filename>js_utils.xsl</Filename>
-    <Filename>list_utils.xsl</Filename> 
+<!--XXX try list_utilsAB.xsl from AB branch-->
+    <Filename>list_utils.xsl</Filename>
+<!--    <Filename>list_utilsAB.xsl</Filename> -->
     <Filename>loads.xsl</Filename>
     <Filename>loads_helper_ls.xsl</Filename>
     <Filename>coll.xsl</Filename>

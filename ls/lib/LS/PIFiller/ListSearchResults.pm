@@ -32,6 +32,8 @@ use LS::FacetConfig;
 use URI::Escape;
 use Utils;
 use Namespaces;
+# for logging in json
+use JSON::XS;
 
 
 BEGIN
@@ -393,30 +395,140 @@ PI Handler for the Solr response. Typically:
 sub handle_SEARCH_RESULTS_PI
     : PI_handler(SEARCH_RESULTS) {
     my ($C, $act, $piParamHashRef) = @_;
-
     my $output;
     my ($query_time, $solr_error_msg);
+    my ($A_query_time, $B_query_time);
     my $cgi = $C->get_object('CGI');
     my $limit = $cgi->param('lmt');
     my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');
+    my $user_query_string = $$search_result_data_hashref{'user_query_string'};
+    
     my $primary_rs = $$search_result_data_hashref{'primary_result_object'};
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
+    my $B_rs =$$search_result_data_hashref{'B_result_object'};
+    my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
+    
+    # get cgi url from cgi object and add logger to ls i.e SDRROOT/cgi/ls/logger
+    my $base_url = $cgi->url();
+    my $logger= $base_url . '/logger';
+    $output .= wrap_string_in_tag($logger, 'LoggerURL');   
 
     # Was there a search?
-    if ($search_result_data_hashref->{'undefined_query_string'}) {
+    if ($search_result_data_hashref->{'undefined_query_string'}) { 
         $query_time = 0;
         $solr_error_msg = '';
     }
     else {
         # we can just add up all 3 query times. Forget primary secondary
-        $query_time = $primary_rs->get_query_time() + $secondary_rs->get_query_time();
-
+       	#   $query_time = $primary_rs->get_query_time() + $secondary_rs->get_query_time();
+	#XXX do we need total query time see above?
+        $A_query_time = $primary_rs->get_query_time();
+	if (defined($B_rs))
+	{
+	    $B_query_time = $B_rs->get_query_time();
+	}
+	
         $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
-        my $result_ref = _ls_wrap_result_data($C, $primary_rs);
-        $output .= $$result_ref;
-    }
+		
+	my $AB_config=$C->get_object('AB_test_config');
 
-    $output .= wrap_string_in_tag($query_time, 'QueryTime');
+	my $A_result_ref;
+	my $B_result_ref;
+	my $A_label;
+	my $B_label;
+	my $side_by_side = $AB_config->{'_'}->{'side_by_side'};
+	my $display_AB = $AB_config->{'_'}->{'display_AB'};
+	my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
+	#test for existence
+	my $use_B_query;
+	
+	if (exists($AB_config->{'_'}->{'use_B_query'}) && 
+	    defined($AB_config->{'_'}->{'use_B_query'}))
+	{
+	    $use_B_query=$AB_config->{'_'}->{'use_B_query'};
+	}
+	my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
+	my $B_description = $AB_config->{'_'}->{'B_description'};
+
+	my $global_click_data;
+	
+	
+	# XXX should we check if debug flag set and do logic here
+	if ($display_AB)
+	{
+	    $output .= wrap_string_in_tag('TRUE', 'DISPLAY_AB');   
+	}
+	
+   	#  side-by-side 
+	if ($side_by_side)
+	{
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $primary_rs);
+	    $A_label = "Default";
+	    $output.=wrap_string_in_tag('TRUE','SideBySideDisplay');
+	    if ($use_interleave) 
+	    {
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
+		$global_click_data=get_global_click_data($C, 'side_intl',  $primary_rs, $B_rs,$i_rs);
+	    }
+	    elsif ($use_B_query)
+	    {
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $B_rs);
+		$global_click_data=get_global_click_data($C, 'side_AB',  $primary_rs, $B_rs);
+	    }
+	}
+	elsif($use_interleave)
+	{
+	    #interleave single column
+	    # if we are using interleave but not side by side just put interleave 	    
+	    #result in A and don't define B result ref
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
+    	    $A_label= $interleaver_class . ':' . $B_description;
+	    $global_click_data=get_global_click_data($C, 'intl',  $primary_rs, $B_rs,$i_rs);
+	}
+	else
+	{
+	    #normal results single column
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $primary_rs);
+	    $global_click_data=get_global_click_data($C, 'normal',  $primary_rs);
+	    #Single column, normal results followed by B results
+	    if ($use_B_query)
+	    {
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $B_rs);
+	    }
+	    
+	}
+	$output .= wrap_string_in_tag($global_click_data,'G_CLICK_DATA');
+	$output .= wrap_string_in_tag($A_label,'A_LABEL');
+	
+	
+        my $A_out = wrap_string_in_tag($$A_result_ref, 'A_RESULTS');
+	$output .= $A_out;
+	
+	if (defined($B_result_ref))
+	{
+	    my $B_out = wrap_string_in_tag($$B_result_ref, 'B_RESULTS');
+	    $output .=  $B_out;
+	    # change label to interleaved if we are displaying interleave
+	    # in B column
+	    my $B_label;
+	    
+	    if ($use_interleave)
+	    {
+		$B_label= $interleaver_class;
+	    }
+	    else{
+		$B_label = $B_description;
+	    }
+	    my $B_label_out = wrap_string_in_tag($B_label, 'B_LABEL');
+	    $output .= $B_label_out;
+	    
+	}
+    }
+    
+    #$output .= wrap_string_in_tag($query_time, 'QueryTime');
+    $output .= wrap_string_in_tag($A_query_time, 'A_QueryTime');
+    $output .= wrap_string_in_tag($B_query_time, 'B_QueryTime');
+
     $output .= wrap_string_in_tag($solr_error_msg, 'SolrError');
 
     #XXX  get first element of array for basic search See xxx for advanced search
@@ -1469,6 +1581,9 @@ Description
 # ---------------------------------------------------------------------
 sub _ls_wrap_result_data {
     my $C = shift;
+    #XXXfoobar  this is wrong  we don't need query here we only need it in global data
+    # need to redo this and fix all method calls
+    my $query=shift;
     my $rs = shift;
 
     my $cgi = $C->get_object('CGI');
@@ -1485,10 +1600,12 @@ sub _ls_wrap_result_data {
     # any strings.  Is there a better place to do this?
 
     my $result_docs_arr_ref = $rs->get_result_docs();
+    my $doc_count=0;
+    
     foreach my $doc_data (@$result_docs_arr_ref) {
         my $s = '';
-
-        # unicorn add oclc, isbn and ? for google book covers
+	$doc_count++;
+	# unicorn add oclc, isbn and ? for google book covers
         my $book_ids_ary_ref=[];
       
       my @vuFind_book_id_fields = ("oclc","isbn","lccn");
@@ -1596,6 +1713,24 @@ sub _ls_wrap_result_data {
         my $id = $doc_data->{'id'};
         $s .= wrap_string_in_tag($id, 'ItemID');
 
+	# AB and interleaving label
+	my $AB=$doc_data->{'AB'};
+	if ($AB=~/A|B/)
+	{
+	    $s.= wrap_string_in_tag($AB, 'ABLabel');
+	}
+	
+	# Local Click Data
+	# id, AB label, count
+	my $item_click_data= {
+			      'id'=>$id,
+			      'rank_on_page'=>$doc_count,
+			      'AB_label'=>$AB,
+			     };
+	
+	my $item_click_data_json  = encode_json $item_click_data;
+	$s.= wrap_string_in_tag($item_click_data_json, 'ItemClickData');
+
         # use id to look up explain data
         if (DEBUG('explain'))
         {
@@ -1683,6 +1818,133 @@ sub get_advanced_PT_url
     return $pt_search_URL;
     
 }
+
+#----------------------------------------------------------------------
+#
+#  get_global_click)data
+#
+#   XXX how much do we want to repeat stuff already in regular ls logs? 
+
+# Do we want numbered arrays? 
+sub get_global_click_data
+{
+    my $C = shift;
+    my $type=shift;
+    my $A_rs= shift;
+    my $B_rs = shift;
+    my $I_rs = shift;
+    my $config = $C->get_object('MdpConfig');
+
+    my $g_hashref={};
+    
+    my $rs_hashref={ 'A'=>$A_rs,
+		  'B'=>$B_rs,
+		  'I'=>$I_rs,
+		};
+    
+    
+    # Repeat stuff that is in normal logs here.  Consider later whether to 
+    # remove it as it duplicates regular query logs
+
+    my $ipaddr = ($ENV{REMOTE_ADDR} ? $ENV{REMOTE_ADDR} : '0.0.0.0');
+    my $A_Qtime = $A_rs->get_query_time();
+    my $A_num_found = $A_rs->get_num_found();
+#    my $timestamp =Utils::Time::iso_Time('time');
+    my $timestamp =Utils::Time::iso_Time('datetime');
+    # add cgi params for better tracking
+    my $cgi = $C->get_object('CGI');
+    # is this the best way to serialize the cgi params?
+    my $appURL=$cgi->url(-query=>1);
+    my $entries_per_page;
+    if (defined ($cgi->param('sz')))
+    {
+	$entries_per_page = $cgi->param('sz');
+    }
+    else
+    {
+	$entries_per_page=$config->get('default_records_per_page');
+    }
+    my $page_number;
+    if (defined ($cgi->param('pn')))
+    {
+	$page_number = $cgi->param('pn');
+    }
+    else
+    {
+	$page_number = $config->get('pn');
+    }
+    my $starting_result_number = (($entries_per_page * ($page_number-1) ))+1; 
+    # XXXdo we need to indicate whether this is an advanced search
+    # get starting result id
+    my $query_string = $cgi->param('q1') .
+    ' ' . $cgi->param('q2') .
+    ' ' . $cgi->param('q3') . 
+    ' '. $cgi->param('q4');
+    #remove trailing spaces
+    $query_string=~s/(\s+)$//g;
+    #NOTE: we should probably detect advanced search by seeing if more than one qN param is used.
+    my $session_id = $C->get_object('Session')->get_session_id();
+    my $pid = $$;
+    my $referer=$ENV{REFERER} ||$cgi->referer();
+    my $auth = $C->get_object('Auth');
+    my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
+
+    $g_hashref->{'ip'}        = $ipaddr ;
+    $g_hashref->{'session'}   = $session_id;
+    $g_hashref->{'pid'}       = $pid;
+    $g_hashref->{'timestamp'} = $timestamp;
+    $g_hashref->{'A_qtime'}   = $A_Qtime;
+
+    $g_hashref->{'num_found'}     = $A_num_found ;
+    $g_hashref->{'query_string'}  = $query_string ;
+    $g_hashref->{'type'}          = $type ;
+    $g_hashref->{'starting_result_no'}  = $starting_result_number;
+    $g_hashref->{'referer'} = URI::Escape::uri_escape_utf8($referer);
+    $g_hashref->{'logged_in'}     = $is_logged_in;   
+    $g_hashref->{'cgi'}          = URI::Escape::uri_escape_utf8($appURL);
+    #   $g_hashref->{''}          = ;
+
+    # B info, check for $B_rs exists
+    # B will exist if doing side-by-side or interleaving
+    if (defined($B_rs))
+    {
+	my $B_Qtime = $B_rs->get_query_time();
+	my $B_num_found=$B_rs->get_num_found();
+	$g_hashref->{'B_qtime'}     = $B_Qtime;
+	$g_hashref->{'B_num_found'}  = $B_num_found;
+    }
+    
+    #   $g_hashref->{''}          = ;
+    #   $g_hashref->{''}          = ;
+    
+    # arrays of result ids in relevance order for each applicable A, B, I(interleaved)
+    $g_hashref = add_result_arrays($rs_hashref,$g_hashref);
+    
+    my    $utf8_encoded_json_text = encode_json $g_hashref;
+    return($utf8_encoded_json_text);    
+
+}    
+#----------------------------------------------------------------------
+
+sub add_result_arrays
+{
+    my $rs_hashref = shift;
+    my $g_hashref = shift;
+    
+    foreach my $key qw(A B I)
+    {
+	if (exists($rs_hashref->{$key}) && defined($rs_hashref->{$key}))
+	{
+	    my $rs =$rs_hashref->{$key};
+	    my $ary_ref=$rs->get_result_ids();
+	    my $hash_key=$key . '_rs';
+	    $g_hashref->{$hash_key} = $ary_ref;
+	}
+	
+    }
+    return $g_hashref
+}
+#----------------------------------------------------------------------
 
 1;
 

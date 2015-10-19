@@ -29,7 +29,7 @@ use strict;
 umask 0000;
 
 BEGIN {
-     ##$ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 
     ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/ls/UNAVAILABLE");
 }
@@ -63,6 +63,7 @@ use CGI;
 # Magic
 use Attribute::Handlers;
 
+use Config::Tiny;
 # MBooks
 use Utils;
 use Debug::DUtils;
@@ -112,9 +113,20 @@ my $config = new MdpConfig(
                           );
 $C->set_object('MdpConfig', $config);
 
+# additional configuration for click_logging and A/B testing
+my $AB_test_config_filename = $ENV{SDRROOT} . '/ls/lib/Config/AB_test_config';
+my $AB_test_config = $config = Config::Tiny->read($AB_test_config_filename);
+ASSERT($AB_test_config, qq{Error in testing config file $AB_test_config_filename: } . Config::Tiny::errstr);
+# 1 disables checking object name
+$C->set_object('AB_test_config', $AB_test_config,1);
+
 # additional configuration for facets and relevance weighting
-my $facet_config= new LS::FacetConfig($ENV{SDRROOT} . "/ls/lib/Config/facetconfig.pl");
+my $facet_config= new LS::FacetConfig($C, $ENV{SDRROOT} . "/ls/lib/Config/facetconfig.pl");
 $C->set_object('FacetConfig', $facet_config);
+
+
+
+
 
 # Database connection
 my $db = new Database('ht_web');

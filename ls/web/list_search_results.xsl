@@ -131,7 +131,7 @@
 
   <xsl:template name="sidebar">
     <!-- XXX don't display if no results-->
-    <xsl:if test="SearchResults/Item">
+    <xsl:if test="SearchResults/A_RESULTS/Item">
       <xsl:call-template name="facets"/>
     </xsl:if>
   </xsl:template>
@@ -147,7 +147,7 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="list-items-results">
     <xsl:variable name="title">
       <xsl:choose>
-        <xsl:when test="SearchResults/Item">
+        <xsl:when test="SearchResults/A_RESULTS/Item">
           <xsl:text>Search Results</xsl:text>
         </xsl:when>
         <xsl:otherwise>
@@ -157,25 +157,37 @@ REMOVE the below and see if it will call list_utils
     </xsl:variable>
     <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
     <div id="mbContentContainer" class="main clearfix">
+<!--AB addition-->
+      <xsl:variable name="hasB">
+        <xsl:if test="SearchResults/B_RESULTS/Item">
+          <xsl:text>B</xsl:text>
+        </xsl:if>
+      </xsl:variable>
+        
+<!--AB addition-->
 
 
-      <!--XXX <xsl:call-template name="DisplaySearchWidgetLogic"/> -->
+      
+  <!--
+    <h1>
+	<xsl:text>debug list-items-results AB has B </xsl:text>          
+	<xsl:value-of select="$hasB"/>
+      </h1>
+       -->
 
-      <!--XXX      <xsl:call-template name="status-update" /> -->
-
-      <!-- XXX       <xsl:call-template name="decideDisplayRefine"/> -->
-
-          
       <xsl:choose>
-        <xsl:when test="SearchResults/Item">
+        <xsl:when test="SearchResults/A_RESULTS/Item">
           <xsl:call-template name="SearchResults_status"/>
           <xsl:call-template name="Refine"/>
           <xsl:call-template name="DisplayContent">
             <xsl:with-param name="title" select="'Search Results'" />
             <xsl:with-param name="item-list-contents" select="'items'" />
+	    <!--AB-->
+	    <xsl:with-param name="hasB" select="$hasB" /> 
           </xsl:call-template>
         </xsl:when>
-        <xsl:when test="SearchResults/SolrError[normalize-space(.)]">
+     <!--   <xsl:when test="SearchResults/SolrError[normalize-space(.)]">-->
+ <xsl:when test="SearchResults/A_RESULTS/SolrError[normalize-space(.)]">
           <xsl:call-template name="SolrError"/>
         </xsl:when>
         <xsl:otherwise>
@@ -237,9 +249,13 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="SearchResults_status">
    
     <div class="SearchResults_status">
-      <xsl:if test="$debug='YES'">
+<!--XXX
+    Why is this here and why is debug=yes?
+    <xsl:if test="$debug='YES'">
         <span id="TempDebug">SEARCH RESULTS</span>
       </xsl:if>
+-->
+
       <!--XXX foobar   this shouldn't display if 0 results-->
       <span>
         <xsl:text>Search Results: </xsl:text>
@@ -272,7 +288,8 @@ REMOVE the below and see if it will call list_utils
       <span class="debug">
       <xsl:text>
         (in </xsl:text>
-      <xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>
+      <!--<xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>-->
+      <xsl:value-of select="/MBooksTop/SearchResults/A_QueryTime"/>
       <xsl:text> sec.)</xsl:text>
     </span>
 

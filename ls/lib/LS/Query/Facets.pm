@@ -235,6 +235,7 @@ sub get_Solr_query_string
 {
     my $self = shift;
     my $C = shift;
+    my $AB = shift;
     
     # Cache to avoid repeated MySQL calls in Access::Rights
 
@@ -274,9 +275,19 @@ sub get_Solr_query_string
     }
     else
     {
-        $ADVANCED = $self->__get_advanced_query($cgi);
+        $ADVANCED = $self->__get_advanced_query($cgi,$AB);
     }
+   # XXX   hack here for A/B just replacing ocr field with proper scoring field
+    #
+    # my $B_rank_type= $cgi->param('b');
+    # $B_rank_type='bm25'; #XXX hardcoded for debugging
     
+    # if ($AB eq "B" && defined ($B_rank_type))
+    # {
+    #     $ADVANCED =~s/ocronly/$B_rank_type/g;
+    #     $ADVANCED =~s/ocr/$B_rank_type/g;
+    # }
+
   
     # The common Solr query parameters
     my $Q ='q=';
@@ -620,7 +631,7 @@ sub __get_advanced_query
 {
     my $self = shift;
     my $cgi = shift;
-    
+    my $AB  = shift;
     my $ADVANCED="";
     
     #There is no longer any op1  the number of the op goes with the number of the query
@@ -644,7 +655,7 @@ sub __get_advanced_query
             # do we also want to check for a defined but blank query?
             if (defined $cgi->param($q))
             {
-                $clause_ary[$i] = $self-> make_query_clause($i,$cgi);
+                $clause_ary[$i] = $self-> make_query_clause($i,$cgi,$AB);
             }
             $op = 'op' . $i;
             $op_ary[$i] =$cgi->param($op); 
@@ -682,6 +693,7 @@ sub make_query_clause{
     my $self = shift;
     my $i    = shift;
     my $cgi  = shift;
+    my $AB   = shift;
     
     my $q     = $cgi->param('q' . $i);
     my $field = $cgi->param('field' . $i);
@@ -699,25 +711,26 @@ sub make_query_clause{
         return "";
     }
     #XXX this is in middle of a for i loop!!!
-    my $QUERY = $self->process_query($q,$i,$anyall);
-    Utils::remap_cers_to_chars(\$QUERY);
+    my $processed_user_query_string = $self->process_query($q,$i,$anyall);
+    Utils::remap_cers_to_chars(\$processed_user_query_string);
     
     DEBUG('query_q',
           sub
-          {   my $s = $QUERY;
+          {   my $s = $processed_user_query_string;
               Utils::map_chars_to_cers(\$s, [q{"}, q{'}], 1) if Debug::DUtils::under_server();
               return qq{Solr query q $i ="$s"}
           });
     
-    $QUERY = uri_escape_utf8( $QUERY );
+    $processed_user_query_string = uri_escape_utf8( $processed_user_query_string );
     
     DEBUG('query_uri',
           sub
-          {   my $s = $QUERY;
+          {   my $s = $processed_user_query_string;
               return qq{Solr query q $i ="$s"}
           });
     
 
+    
 
     my $config = $self->get_facet_config;    
     
@@ -726,8 +739,9 @@ sub make_query_clause{
     ASSERT (defined ($field_hash->{$field} ),qq{LS::Query::Facets: $field is not a legal type of field});
     my $solr_field = $field_hash->{$field};
 
-    my $weights = $config->get_weights_for_field($solr_field);
-    
+#    my $weights = $config->get_weights_for_field($solr_field);
+    my $weights = $config->get_weights_for_field($solr_field,$AB);    
+
     my $qf = $self->dismax_2_string($weights->{'qf'});
     my $pf = $self->dismax_2_string($weights->{'pf'});
     my $pf3;
@@ -742,11 +756,13 @@ sub make_query_clause{
     my $mm=$weights->{'mm'};
     my $tie=$weights->{'tie'};
     $mm =~s,\%,\%25,g; #url encode any percent sign should this be a named sub? 
-    
+
+  
     my $QF = qq{ qf='} . $qf . qq{' };
 
     my $PF = qq{ pf='} . $pf . qq{' };
-    #XXX with pf 2 and 3.  XXX need to write this so we only put these in if they are in the config
+    #XXX with pf 2 and 3.  XXX need to write this so we only put these in if they are in the config  Should test individually for definded $pf2 and $pf3 Current code assumes both defined if
+#pf2 exists
     if (defined ($pf2))
     {
         $PF = qq{ pf='} . $pf . qq{' } . qq{ pf3='} . $pf3 . qq{' } .qq{ pf2='} . $pf2 . qq{' };
@@ -755,11 +771,11 @@ sub make_query_clause{
     my $MM = qq{ mm='} . $mm . qq{' };
     my $TIE = qq{ tie='} . $tie . qq{' };
 
-    
+    my $QUERY_STRING = $processed_user_query_string;    
     my $Q;
     
     
-    $Q= ' '.  '_query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY .'"';
+    $Q= ' '.  '_query_:"{!edismax' . $QF . $PF . $MM .$TIE  . '} ' .  $QUERY_STRING .'"';
 
     return $Q;
     
