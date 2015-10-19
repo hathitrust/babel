@@ -19,19 +19,34 @@ my $il = new LS::Interleaver::Balanced();
 
 my $a = build_rs_array('a');
 my $b = build_rs_array('b');
+#make fake result set.  For test purposses we only need one hash
 
+my $a_rs={'result_response_docs_arr_ref'=>$a};
+my $b_rs={'result_response_docs_arr_ref'=>$b};
 
+print "A =";
+output($a_rs);
+print "\n---\nB=\n";
+output($b_rs);
+print "\n---\nOutput=\n";
 
-my $results=$il->get_interleaved('random',$a,$b);
+my $results=$il->get_interleaved('random',$a_rs,$b_rs);
 output($results);
 
 
 sub output
 {
-    my $ary=shift;
+    my $rs=shift;
+    my $ary=$rs->{'result_response_docs_arr_ref'};
+    
     foreach my $el (@{$ary})
     {
-	print "$el->{'id'}\t $el->{'title'}\n";
+	print "$el->{'id'}\t $el->{'title'}";
+	if (exists($el->{'AB'}))
+	{
+	    print "\t$el->{'AB'}";
+	}
+	print "\n";    
 	
     }
 }
@@ -111,3 +126,22 @@ sub get_hash
     
 }
 
+__DATA__
+A_first:
+a-0      my_title_a-0
+b-0      my_title_b-0
+
+a-1      my_title_a-1
+b-1      my_title_b-1
+
+b-2      my_title_a-2 dupe
+b-3      my_title_b-3
+
+a-3      my_title_a-3
+b-4      my_title_b-4 dupe
+
+a-5      my_title_a-5
+b-5      my_title_b-5
+
+
+B_first:
