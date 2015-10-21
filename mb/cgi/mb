@@ -28,6 +28,13 @@ Debug options
 use strict;
 umask 0000;
 
+#BEGIN {
+#    if ( $ENV{HTTP_USER_AGENT} =~ m,^MB/0.1/, ) {
+#        my @tmp = split(/\//, $ENV{HTTP_USER_AGENT});
+#        $ENV{REMOTE_USER} = $tmp[-1];
+#    }
+#}
+
 
 BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
