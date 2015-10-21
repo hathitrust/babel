@@ -41,7 +41,7 @@ if ( $cgi->https() ) {
 my $referer = $cgi->referer();
 if ( ( $referer =~ m,/test\., && $referer !~ m,\.babel, ) || $referer =~ m,/beta-3, ) {
     # referer is a dev instance; update links
-    $LS_DOMAIN = qq{beta-3.$LS_DOMAIN};
+    $LS_DOMAIN = qq{test.$LS_DOMAIN};
     $CATALOG_DOMAIN = qq{test.$CATALOG_DOMAIN};
 } elsif ( $referer =~ m,/(.*)\.babel, ) {
     # referer is a babel dev instance
