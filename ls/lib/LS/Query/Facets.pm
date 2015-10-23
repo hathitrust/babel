@@ -1577,7 +1577,17 @@ sub filter_lucene_chars{
     $user_query_string =~ s,\*, ,g;
     
     # Preserve only word-leading plus and minus (+) (-)
+    # exception to punctuation rule for -"words in quotes"
+
+    #protect quote
+    $user_query_string=~s/\"/QUOTE_/g;
+    #remove  "-+"
     while ($user_query_string =~ s,(^|\W)[-+]+(\W|$),$1 $2,){}
+    #insert quote
+    $user_query_string=~s/QUOTE_/\"/g;
+
+
+
     
     # Note: Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
 
