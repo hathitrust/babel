@@ -20,7 +20,7 @@ head.ready(function()
 	var gd = e.data.text();
 	var item_data = $(e.target).attr('data_clicklog');
 	var fixed = fix_json(item_data);
-	var d = add_cm_event_to_log(fixed);
+	var d = add_click_event_to_log(fixed,'context_menu');
 	var msg= "clicked={\"item\":"+d+",\"global\":"+gd+"}";
 	//$.post( "//tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
 	$.post(logger_url,msg );
@@ -31,7 +31,8 @@ head.ready(function()
 
 	var gd = e.data.text();
 	var item_data = $(e.target).attr('data_clicklog');
-	var d = fix_json(item_data);
+	var fixed = fix_json(item_data);
+	var d = add_click_event_to_log(fixed,'click');
 	var msg= "clicked={\"item\":"+d+",\"global\":"+gd+"}";
 	//$.post( "//tburtonw-full.babel.hathitrust.org/cgi/ls/logger",msg );
 	$.post(logger_url,msg );
@@ -57,6 +58,13 @@ head.ready(function()
     function add_cm_event_to_log(fixed)
     {
 	var cm = '"click_type":"context_menu",'
+	var out = '{' + cm + fixed.replace(/^\{/,'');
+	return out;
+    }
+
+    function add_click_event_to_log(fixed,event_type)
+    {
+	var cm = '"click_type":"'+event_type+'",';
 	var out = '{' + cm + fixed.replace(/^\{/,'');
 	return out;
     }
