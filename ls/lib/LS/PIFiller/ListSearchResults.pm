@@ -1829,7 +1829,8 @@ sub get_advanced_PT_url
 sub get_global_click_data
 {
     my $C = shift;
-    my $type=shift;
+    my $test_type=shift;  # this is type of test  (normal|intl|side_intl'|side_AB) intl=interleaved
+    
     my $A_rs= shift;
     my $B_rs = shift;
     my $I_rs = shift;
@@ -1885,9 +1886,27 @@ sub get_global_click_data
     #NOTE: we should probably detect advanced search by seeing if more than one qN param is used.
     my $session_id = $C->get_object('Session')->get_session_id();
     my $pid = $$;
-    my $referer=$ENV{REFERER} ||$cgi->referer();
+    my $referer = $ENV{REFERER} ||$cgi->referer();
+    
     my $auth = $C->get_object('Auth');
     my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
+    
+    #fingerprinting stuff
+    my $user_agent=$cgi->user_agent();
+    $user_agent = URI::Escape::uri_escape_utf8($user_agent);
+    
+    # accept headers for fingerprinting
+    # could do md5sum or murmurhash of all 3 to save log space but keep for now
+    my $http_accept= $cgi->http('HTTP_ACCEPT')||$cgi->https('HTTP_ACCEPT');
+    my $http_accept_language = $cgi->http('HTTP_ACCEPT_LANGUAGE')||$cgi->https('HTTP_ACCEPT_LANGUAGE');
+    my $http_accept_encoding = $cgi->http('HTTP_ACCEPT_ENCODING')||$cgi->https('HTTP_ACCEPT_ENCODING');
+    
+    $g_hashref->{'user_agent'}        = $user_agent;
+    $g_hashref->{'accept'}    = clean_string($http_accept);
+    $g_hashref->{'accept_language'}    = clean_string($http_accept_language);
+    $g_hashref->{'accept_encoding'}    = clean_string($http_accept_encoding);
+
+    # end fingerprinting
 
     $g_hashref->{'ip'}        = $ipaddr ;
     $g_hashref->{'session'}   = $session_id;
@@ -1896,8 +1915,8 @@ sub get_global_click_data
     $g_hashref->{'A_qtime'}   = $A_Qtime;
 
     $g_hashref->{'num_found'}     = $A_num_found ;
-    $g_hashref->{'query_string'}  = $query_string ;
-    $g_hashref->{'type'}          = $type ;
+    $g_hashref->{'query_string'}  = URI::Escape::uri_escape_utf8($query_string) ;
+    $g_hashref->{'test_type'}          = $test_type ;
     $g_hashref->{'starting_result_no'}  = $starting_result_number;
     $g_hashref->{'referer'} = URI::Escape::uri_escape_utf8($referer);
     $g_hashref->{'logged_in'}     = $is_logged_in;   
@@ -1924,6 +1943,15 @@ sub get_global_click_data
     return($utf8_encoded_json_text);    
 
 }    
+#----------------------------------------------------------------------
+sub clean_string
+{
+    my $s = shift;
+    $s =~s/\;/%3B/g;
+    $s =~s/\&/%26/g;
+    $s =~s/\"/%22/g;
+    return $s;
+}
 #----------------------------------------------------------------------
 
 sub add_result_arrays
