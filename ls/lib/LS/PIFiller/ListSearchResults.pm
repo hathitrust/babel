@@ -1883,6 +1883,9 @@ sub get_global_click_data
     ' '. $cgi->param('q4');
     #remove trailing spaces
     $query_string=~s/(\s+)$//g;
+    #escape quotes before we urlencode them for json
+    $query_string=~s/\"/\\"/g;
+    
     #NOTE: we should probably detect advanced search by seeing if more than one qN param is used.
     my $session_id = $C->get_object('Session')->get_session_id();
     my $pid = $$;
