@@ -172,7 +172,7 @@ HT.Viewer.Flip = {
                 var $parent = $(this).parents('.page-item');
                 $(this).parents('.page-item').addClass("untypical-page");
                 if ( ! $parent.find("button").length ) {
-                    $('<button href="{SRC}" class="btn btn-mini">View Larger</button>'.replace('{SRC}', $img.attr('src')))
+                    $('<button href="{SRC}" class="btn btn-mini action-view-larger">View Larger</button>'.replace('{SRC}', $img.attr('src')))
                         .appendTo($parent)
                         .click(function(e) {
                             e.preventDefault();

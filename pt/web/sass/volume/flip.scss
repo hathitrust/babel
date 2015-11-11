@@ -158,6 +158,7 @@
             @include rem(margin-left, -35);
             left: 50%;
             bottom: 0;
+            z-index: 1000;
         }
 
     }
