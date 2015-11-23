@@ -1918,12 +1918,12 @@ sub get_global_click_data
     $g_hashref->{'A_qtime'}   = $A_Qtime;
 
     $g_hashref->{'num_found'}     = $A_num_found ;
-    $g_hashref->{'query_string'}  = URI::Escape::uri_escape_utf8($query_string) ;
+    $g_hashref->{'query_string'}  = escape_for_json($query_string) ;
     $g_hashref->{'test_type'}          = $test_type ;
     $g_hashref->{'starting_result_no'}  = $starting_result_number;
-    $g_hashref->{'referer'} = URI::Escape::uri_escape_utf8($referer);
+    $g_hashref->{'referer'} = escape_for_json($referer);
     $g_hashref->{'logged_in'}     = $is_logged_in;   
-    $g_hashref->{'cgi'}          = URI::Escape::uri_escape_utf8($appURL);
+    $g_hashref->{'cgi'}          =  escape_for_json($appURL);
     #   $g_hashref->{''}          = ;
 
     # B info, check for $B_rs exists
@@ -1946,6 +1946,17 @@ sub get_global_click_data
     return($utf8_encoded_json_text);    
 
 }    
+#----------------------------------------------------------------------
+sub escape_for_json
+{
+    my $s  = shift;
+    #escape quotes before we urlencode them for json
+   $s=~s/\%22/\"/g;
+    $s=~s/\"/\\"/g;
+ 
+    my $out = URI::Escape::uri_escape_utf8($s);
+    
+}
 #----------------------------------------------------------------------
 sub clean_string
 {
