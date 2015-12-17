@@ -1957,7 +1957,7 @@ sub escape_for_json
     $s=~s/\%09/\t/g;
     $s=~s/\t/ /g;
     # remove escapes if the next character is a space
-    $s=~s/\\s*/ /g;
+    $s=~s/\\\s+/ /g;
     
     my $out = URI::Escape::uri_escape_utf8($s);
     
