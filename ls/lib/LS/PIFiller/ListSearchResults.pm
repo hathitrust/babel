@@ -1951,9 +1951,14 @@ sub escape_for_json
 {
     my $s  = shift;
     #escape quotes before we urlencode them for json
-   $s=~s/\%22/\"/g;
+    $s=~s/\%22/\"/g;
     $s=~s/\"/\\"/g;
- 
+    #replace any tabs with spaces
+    $s=~s/\%09/\t/g;
+    $s=~s/\t/ /g;
+    # remove escapes if the next character is a space
+    $s=~s/\\s*/ /g;
+    
     my $out = URI::Escape::uri_escape_utf8($s);
     
 }
