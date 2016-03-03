@@ -89,6 +89,20 @@ sub _initialize
 }
 
 
+sub read_template {
+    my $self = shift;
+    my ($C, $ab) = @_;
+
+    my $template_name = $ab->get_action_template_name($C);
+    unless ( $template_name ) {
+        $$self{template_name} = undef;
+        $$self{PIs} = {};
+        my $s = "";
+        $$self{template_data_ref} = \$s;
+    } else {
+        $self->SUPER::read_template($C, $ab);
+    }
+}
 
 
 # ---------------------------------------------------------------------
@@ -113,9 +127,13 @@ sub execute_view
     # run the Operations that constitute the Builders for this VIew
     my $status = $self->_execute_builders($C, $act);
 
-    if ($status == $Operation::Status::ST_OK)
+    if ($status == $Operation::Status::ST_OK && ! ref($$self{template_action}))
     {
-        $self->SUPER::execute_view(@_);
+        if ( $$self{template_name} ) {
+            $self->SUPER::execute_view(@_);
+        } else {
+            $$self{output} = $act->get_transient_facade_member_data($C, 'output');
+        }
     }
 
     return $status;
@@ -277,6 +295,10 @@ sub output
     if ($self->view_is_redirect())
     {
         $self->redirect_HTTP($C);
+    }
+    elsif ( exists($$self{output}) ) {
+        my $output = $$self{output};
+        $self->output_HTTP($C, \$output, $content_type);
     }
     else
     {

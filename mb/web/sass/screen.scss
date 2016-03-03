@@ -5,3 +5,21 @@
     text-align: right;
 }
 
+.form-download-metadata {
+    margin-top: 8rem;
+
+    a {
+        display: inline-block;
+        position: relative;
+        @include rem(height, 18);
+        @include rem(width, 18);
+        @include rem(margin-left, 5);
+        background-image: url(/common/unicorn/img/icon_question.png);
+        background-repeat: no-repeat;
+        text-indent: -10000px;
+        text-transform: capitalize;
+        clip: rect(0,0,0,0);
+        cursor: pointer;
+    }
+
+}

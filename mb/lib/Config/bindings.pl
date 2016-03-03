@@ -7,7 +7,7 @@
 # listed can be anything and have any value.
 %g_validator_for_param =
     (
-     'a'        => 'addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|srchm|listrchm|random',
+     'a'        => 'addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|srchm|listrchm|random|download',
 
      'c'        => '\d+',
      'c2'       => '\d+',
@@ -37,6 +37,7 @@
      'skin'     => '.*',
      'testUser' => '.*',
      'callback' => '.*',
+     'format'   => 'text|json',
      '_' => '.*',
     );
 
@@ -138,6 +139,18 @@ $g_late_operations = [
                                                            'pn'    => '1',
                                                            'sz'    => undef,
                                                            'skin'  => undef,
+                                                          }
+                                         },
+     'MBooks::Operation::DownloadItemsMetadata'   => {'req_params' => {
+                                                           'a'     => 'download',
+                                                           'c'     => undef,
+                                                          },
+                                          'opt_params' => {
+                                                           'sort'  => undef,
+                                                           'pn'    => undef,
+                                                           'sz'    => undef,
+                                                           'skin'  => undef,
+                                                           'format' => undef,
                                                           }
                                          },
      'MBooks::Operation::ListSearchResults'   => {'req_params' => {
@@ -301,6 +314,24 @@ $g_late_operations = [
                                                      ],
                                        'template' => 'list_items.xml',
                                        'filler'   => 'MBooks::PIFiller::ListItems',
+                                      },
+                        },
+     },
+     # ----- UI (view) production action -----
+     'ACTION_DOWNLOAD_ITEMS_METADATA'  =>
+     {'action_param' => 'download',
+      'action_type'  => 'database',
+      'operations'   => [
+                        ],
+      'view'         => {
+                          'ajax' => {
+                                    },
+                          'default' => {
+                                          'builders' => [
+                                            'MBooks::Operation::DownloadItemsMetadata',
+                                          ],
+                                          'content_type' => 'text/plain',
+                                          'template' => undef,
                                       },
                         },
      },

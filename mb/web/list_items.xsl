@@ -84,34 +84,36 @@
 
     <div class="shareLinks">
 
-    <h3>Share</h3>
+      <h3>Share</h3>
 
-    <div class="btn-group share-toolbar social-links">
-      <button data-service="facebook" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-facebook2"></i><span class="offscreen"> Share via Facebook</span></button>
-      <button data-service="twitter" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-twitter2"></i><span class="offscreen"> Share via Twitter</span></button>
-      <button data-service="plusone" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button>
-      <button data-service="reddit" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-reddit"></i><span class="offscreen"> Share via reddit</span></button>
-      <button data-service="tumblr" data-title="{$coll_name}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i><span class="offscreen"> Share via Tumblr</span></button>
-      <button data-service="vkontakte" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-vk"></i><span class="offscreen"> Share via VK</span></button>
-    </div>
+      <div class="btn-group share-toolbar social-links">
+        <button data-service="facebook" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-facebook2"></i><span class="offscreen"> Share via Facebook</span></button>
+        <button data-service="twitter" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-twitter2"></i><span class="offscreen"> Share via Twitter</span></button>
+        <button data-service="plusone" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button>
+        <button data-service="reddit" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-reddit"></i><span class="offscreen"> Share via reddit</span></button>
+        <button data-service="tumblr" data-title="{$coll_name}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i><span class="offscreen"> Share via Tumblr</span></button>
+        <button data-service="vkontakte" data-title="{$coll_name}" class="btn"><i class="icomoon icomoon-vk"></i><span class="offscreen"> Share via VK</span></button>
+      </div>
 
-    <br />
+      <br />
 
-    <form action="" name="urlForm" id="urlForm">
-      <label class="smaller" for="permURL">Link to this collection</label>
-      <xsl:element name="input">
-        <xsl:attribute name="type">text</xsl:attribute>
-        <xsl:attribute name="name">permURL_link</xsl:attribute>
-        <xsl:attribute name="id">permURL</xsl:attribute>
-        <xsl:attribute name="class">email-permURL</xsl:attribute>
-        <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
-        <xsl:attribute name="readonly">readonly</xsl:attribute>
-        <xsl:attribute name="value">
-          <xsl:text>http://babel.hathitrust.org/cgi/mb?a=listis&amp;c=</xsl:text>
-          <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']" />
-        </xsl:attribute>
-      </xsl:element>
-    </form>
+      <form action="" name="urlForm" id="urlForm">
+        <label class="smaller" for="permURL">Link to this collection</label>
+        <xsl:element name="input">
+          <xsl:attribute name="type">text</xsl:attribute>
+          <xsl:attribute name="name">permURL_link</xsl:attribute>
+          <xsl:attribute name="id">permURL</xsl:attribute>
+          <xsl:attribute name="class">email-permURL</xsl:attribute>
+          <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
+          <xsl:attribute name="readonly">readonly</xsl:attribute>
+          <xsl:attribute name="value">
+            <xsl:text>http://babel.hathitrust.org/cgi/mb?a=listis&amp;c=</xsl:text>
+            <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']" />
+          </xsl:attribute>
+        </xsl:element>
+      </form>
+
+      <xsl:call-template name="DownloadMetadataForm" />
 
     </div>
 
@@ -449,6 +451,44 @@
         <xsl:text> for new items.</xsl:text>
       </p>
     </div>
+  </xsl:template>
+
+  <xsl:template name="DownloadMetadataForm">
+    <xsl:choose>
+      <xsl:when test="//TotalRecords = 0">
+        <p style="margin-top: 4rem">
+          <em>No records to download</em>
+        </p>
+      </xsl:when>
+      <xsl:otherwise>
+
+        <form class="form-download-metadata" method="POST" action="/cgi/mb">
+          <input type="hidden" name="c" value="{//Param[@name='c']}" />
+          <input type="hidden" name="a" value="download" />
+          <xsl:choose>
+            <xsl:when test="//Param[@name='q1']">
+              <input type="hidden" name="q1" value="{//Param[@name='q1']}" />
+            </xsl:when>
+            <xsl:otherwise>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:if test="//Param[@name='lmt']">
+            <input type="hidden" name="lmt" value="{//Param[@name='lmt']}" />
+          </xsl:if>
+          <!-- <input type="hidden" name="debug" value="attachment" />
+          <input type="hidden" name="format" value="json" /> -->
+          <input type="hidden" name="format" value="text" /> 
+          <button class="btn btn-mini">
+            <i class="icomoon icomoon-download"></i>
+            <xsl:text> Download Metadata</xsl:text>
+          </button>
+          <xsl:text> </xsl:text>
+          <a href="#">Help about Downloading Metadata</a>
+        </form>
+
+      </xsl:otherwise>
+    </xsl:choose>
+
   </xsl:template>
 
   <xsl:template match="*" mode="copy-guts">
