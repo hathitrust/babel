@@ -86,6 +86,7 @@ my @superusers =
   (
    'roger',
    'tburtonw',
+   'sooty',
   );
 
 my @allowed_uniqnames =
