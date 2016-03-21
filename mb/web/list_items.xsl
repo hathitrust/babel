@@ -478,7 +478,7 @@
           <!-- <input type="hidden" name="debug" value="attachment" />
           <input type="hidden" name="format" value="json" /> -->
           <input type="hidden" name="format" value="text" /> 
-          <button class="btn btn-mini">
+          <button class="btn btn-mini" data-toggle="tracking" data-tracking-action="MB Download Metadata">
             <i class="icomoon icomoon-download"></i>
             <xsl:text> Download Metadata</xsl:text>
           </button>
