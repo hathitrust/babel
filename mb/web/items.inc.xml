@@ -21,3 +21,4 @@
   <SearchWidget><?SEARCH_WIDGET?></SearchWidget>
 
   <LimitToFullText><?LIMIT_TO_FULL_TEXT?></LimitToFullText>
+  <DownloadMetadataAction><?DOWNLOAD_METADATA_BASE?></DownloadMetadataAction>

@@ -1042,5 +1042,16 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     return $s;
 }
 
+sub handle_DOWNLOAD_METADATA_BASE_PI 
+    : PI_handler(DOWNLOAD_METADATA_BASE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $temp_cgi = new CGI("");
+    return CGI::self_url($temp_cgi);
+
+}
+
 #----------------------------------------------------------------------
 1;

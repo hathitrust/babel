@@ -462,7 +462,7 @@
       </xsl:when>
       <xsl:otherwise>
 
-        <form class="form-download-metadata" method="POST" action="/cgi/mb">
+        <form class="form-download-metadata" method="POST" action="{//DownloadMetadataAction}">
           <input type="hidden" name="c" value="{//Param[@name='c']}" />
           <input type="hidden" name="a" value="download" />
           <xsl:choose>
