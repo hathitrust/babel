@@ -478,7 +478,14 @@
           <!-- <input type="hidden" name="debug" value="attachment" />
           <input type="hidden" name="format" value="json" /> -->
           <input type="hidden" name="format" value="text" /> 
-          <button class="btn btn-mini" data-toggle="tracking" data-tracking-action="MB Download Metadata">
+          <button class="btn btn-mini">
+            <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+            <xsl:attribute name="data-tracking-action">MB Download Metadata</xsl:attribute>
+            <xsl:attribute name="data-tracking-label">
+              <xsl:value-of select="//EditCollectionWidget/CollName" />
+              <xsl:text>: </xsl:text>
+              <xsl:value-of select="//EditCollectionWidget/CollId" />
+            </xsl:attribute>
             <i class="icomoon icomoon-download"></i>
             <xsl:text> Download Metadata</xsl:text>
           </button>
