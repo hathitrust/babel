@@ -157,7 +157,7 @@ HT.Downloader = {
         self.num_processed = 0;
         self.i = 0;
 
-        self.timer = setInterval(function() { self.checkStatus(); }, 1000);
+        self.timer = setInterval(function() { self.checkStatus(); }, 2500);
         // do it once the first time
         self.checkStatus();
 
@@ -177,6 +177,11 @@ HT.Downloader = {
                 self.num_processed += 1;
                 if ( status.done ) {
                     self.clearTimer();
+                } else if ( status.error && status.num_attempts > 100 ) {
+                    self.$dialog.modal('hide');
+                    self.displayError();
+                    self.clearTimer();
+                    self.logError();
                 } else if ( status.error ) {
                     self.$dialog.modal('hide');
                     self.displayError();
@@ -239,7 +244,7 @@ HT.Downloader = {
                         self.$dialog.modal('hide');
                         $download_btn.remove();
                         HT.engines.reader._clearSelection();
-                    }, 1000);
+                    }, 1500);
                     e.stopPropagation();
                 })
             }
@@ -328,6 +333,11 @@ HT.Downloader = {
         );
 
         console.log(req);
+    },
+
+    logError: function() {
+        var self = this;
+        $.get(self.src + ';num_attempts=' + self.num_attempts);
     },
 
 
