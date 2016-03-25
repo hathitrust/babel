@@ -179,7 +179,7 @@ HT.Downloader = {
                     self.clearTimer();
                 } else if ( status.error && status.num_attempts > 100 ) {
                     self.$dialog.modal('hide');
-                    self.displayError();
+                    self.displayProcessError();
                     self.clearTimer();
                     self.logError();
                 } else if ( status.error ) {
@@ -309,6 +309,33 @@ HT.Downloader = {
               console.log("TIC TOC", countdown);
         }, 1000);
 
+    },
+
+    displayProcessError: function(req) {
+        var html =
+            '<p>' + 
+                'Unfortunately, the process for creating your PDF has been interrupted. ' + 
+                'Please click "OK" and try again.' + 
+            '</p>' +
+            '<p>' +
+                'If this problem persists and you are unable to download this PDF after repeated attempts, ' + 
+                'please notify us at <a href="/cgi/feedback/?page=form" data=m="pt" data-toggle="feedback tracking-action" data-tracking-action="Show Feedback">feedback@issues.hathitrust.org</a> ' +
+                'and include the URL of the book you were trying to access when the problem occurred.' +
+            '</p>';
+
+        // bootbox.alert(html);
+        bootbox.dialog(
+            html,
+            [
+                {
+                    label : 'OK',
+                    'class' : 'btn-dismiss btn-inverse'
+                }
+            ],
+            { classes : 'error' }
+        );
+
+        console.log(req);
     },
 
     displayError: function(req) {
