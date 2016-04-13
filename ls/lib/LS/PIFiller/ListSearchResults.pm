@@ -1978,7 +1978,7 @@ sub add_result_arrays
     my $rs_hashref = shift;
     my $g_hashref = shift;
     
-    foreach my $key qw(A B I)
+    foreach my $key (qw(A B I))
     {
 	if (exists($rs_hashref->{$key}) && defined($rs_hashref->{$key}))
 	{
