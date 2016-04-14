@@ -116,7 +116,6 @@ HT.Downloader = {
         var data = {};
         if ( self.$link.data('seq') ) {
             data['seq'] = self.$link.data('seq');
-            // self.$link.removeData('seq');
         }
         $.ajax({
             url: self.src.replace(/;/g, '&') + '&callback=HT.downloader.startDownloadMonitor',
@@ -170,10 +169,9 @@ HT.Downloader = {
             url : self.pdf.progress_url,
             data : { ts : (new Date).getTime() },
             cache : false,
-            dataType : 'html',
+            dataType: 'json',
             success : function(data) {
                 var status = self.updateProgress(data);
-                var log = $.trim(data).split("\n").reverse();
                 self.num_processed += 1;
                 if ( status.done ) {
                     self.clearTimer();
@@ -204,12 +202,12 @@ HT.Downloader = {
         var status = { done : false, error : false };
         var percent;
 
-        var current = $(data).find("#current").data('value');
-        if ( current == 'EOT' ) {
+        var current = data.status;
+        if ( current == 'EOT' || current == 'DONE' ) {
             status.done = true;
             percent = 100;
         } else {
-            current = parseInt(current);
+            current = data.current_page;
             percent = 100 * ( current / self.pdf.total );
         }
 
