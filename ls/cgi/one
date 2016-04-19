@@ -33,9 +33,9 @@ my $dest_url; my $dest_base;
 my $LS_DOMAIN = qq{babel.hathitrust.org};
 my $CATALOG_DOMAIN = qq{catalog.hathitrust.org};
 
-my $LS_SCHEME = qq{http};
+my $SCHEME = qq{http};
 if ( $cgi->https() ) {
-    $LS_SCHEME = qq{https};
+    $SCHEME = qq{https};
 }
 
 my $referer = $cgi->referer();
@@ -53,8 +53,8 @@ if ( ( $referer =~ m,/test\., && $referer !~ m,\.babel, ) || $referer =~ m,/beta
 }
 # still needs to handle case of a catalog dev server
 
-my $LS_URL = qq{$LS_SCHEME://$LS_DOMAIN/cgi/ls};
-my $CATALOG_URL = qq{http://$CATALOG_DOMAIN/Search/Home};
+my $LS_URL = qq{$SCHEME://$LS_DOMAIN/cgi/ls};
+my $CATALOG_URL = qq{$SCHEME://$CATALOG_DOMAIN/Search/Home};
 
 if ( $target eq 'ls' ) {
 #  XXX hardcode debug env for now  $dest_base = qq{http://babel.hathitrust.org/cgi/ls};
