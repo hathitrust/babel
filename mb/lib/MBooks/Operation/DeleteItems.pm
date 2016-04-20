@@ -95,7 +95,7 @@ sub execute_operation
            qq{Operation::DeleteItems coll $coll_id not owned by user $owner});
 
     # check that these ids exist
-    my @ids = $cgi->param('id');
+    my @ids = $cgi->multi_param('id');
     my @valid_ids = ();
     foreach my $id (@ids) {
         ASSERT($co->item_exists($id), qq{Invalid id="$id"});

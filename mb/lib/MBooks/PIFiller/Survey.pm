@@ -61,7 +61,7 @@ sub handle_MB_SURVEY_PI
     my $survey_arr_ref = 
       Survey::get_survey_by_collid($C, 
                                    $C->get_object('Database')->get_DBH,
-                                   $C->get_object('CGI')->param('c'));    
+                                   scalar $C->get_object('CGI')->param('c'));    
 
     my $surveys = '';
     foreach my $hashref (@$survey_arr_ref) {

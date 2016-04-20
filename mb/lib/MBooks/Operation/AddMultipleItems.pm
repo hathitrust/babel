@@ -85,7 +85,7 @@ sub execute_operation
     my $cgi = $C->get_object('CGI');
 
     # if in production limit ids to max_ids
-    my @ids = $cgi->param('id');
+    my @ids = $cgi->multi_param('id');
     my $num_ids = scalar(@ids);
     my $max_ids = $config->get('max_add_ids');
     if (! defined ($ENV{'HT_DEV'})) {
@@ -178,7 +178,7 @@ sub execute_operation
     my $act = $self->get_action();
     $act->set_persistent_facade_member_data($C, 'add_multiple_items_data', \%add_multiple_items_data);
 
-    $cgi->param('c', $cgi->param('c2'));
+    $cgi->param('c', scalar $cgi->param('c2'));
     $C->set_object('CGI', $cgi);
 
     return $db_success ? $ST_OK : $ST_NOT_OK;

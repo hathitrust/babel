@@ -170,8 +170,8 @@ sub get_sorting_href
     $temp_cgi->param('pn', '1');
 
 
-    my $current_sortkey = Utils::Sort::get_sort_from_sort_param( $cgi->param('sort'));
-    my $current_direction = Utils::Sort::get_dir_from_sort_param( $cgi->param('sort'));
+    my $current_sortkey = Utils::Sort::get_sort_from_sort_param( scalar $cgi->param('sort'));
+    my $current_direction = Utils::Sort::get_dir_from_sort_param( scalar $cgi->param('sort'));
     my $next_direction;
 #XXX  we probably don't need this!  Check and then resolve code here with PIFiller/ListColls!!
     if ($sortkey eq 'rel')
@@ -986,11 +986,11 @@ sub make_coll_href
 
     $temp_cgi->param('c', $coll_id);
     $temp_cgi->param('a', 'listis');
-    $temp_cgi->param('sz',$cgi->param('sz'));
-    $temp_cgi->param('debug', $cgi->param('debug'));
+    $temp_cgi->param('sz', scalar $cgi->param('sz'));
+    $temp_cgi->param('debug', scalar $cgi->param('debug'));
     if (! $cgi->param('sort') =~m,rel,)
     {
-        $temp_cgi->param('sort',$cgi->param('sort'));
+        $temp_cgi->param('sort', scalar $cgi->param('sort'));
     }
     my $coll_href = CGI::self_url($temp_cgi);
 

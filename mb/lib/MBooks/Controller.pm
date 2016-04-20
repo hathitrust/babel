@@ -81,7 +81,7 @@ sub ___core_initialize
         my $config = $C->get_object('MdpConfig');
         my $params = $config->get('mbooks_default_params');
         my $temp_cgi = new CGI($params);
-        $temp_cgi->param('debug', $cgi->param('debug'));
+        $temp_cgi->param('debug', scalar $cgi->param('debug'));
         $cgi = $temp_cgi;
         $C->set_object('CGI',$cgi);
     }
