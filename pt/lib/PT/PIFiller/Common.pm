@@ -80,7 +80,7 @@ sub BuildImageServerPDFUrl
     my $path;
     # copy params
     foreach my $p (qw(id orient size attr src u)) {
-        $tempCgi->param($p, $cgi->param($p));
+        $tempCgi->param($p, scalar $cgi->param($p));
     }
     if ( $view eq 'fpdf' ) {
         # pass
@@ -88,8 +88,8 @@ sub BuildImageServerPDFUrl
     } elsif ( $view eq 'pdf' ) {
         # don't force download;
         # let the PDF open in the browser if possible
-        $tempCgi->param('seq', $cgi->param('seq'));
-        $tempCgi->param('num', $cgi->param('num'));
+        $tempCgi->param('seq', scalar $cgi->param('seq'));
+        $tempCgi->param('num', scalar $cgi->param('num'));
         $tempCgi->param('attachment', 0);
         $action = "download/pdf";
     } elsif ( $view eq 'epub' ) {
@@ -97,7 +97,7 @@ sub BuildImageServerPDFUrl
     }
 
     if ( $cgi->param('debug') ) {
-        $tempCgi->param('debug', $cgi->param('debug'));
+        $tempCgi->param('debug', scalar $cgi->param('debug'));
     }
 
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
@@ -158,7 +158,7 @@ sub handle_PT_SURVEY_PI
     my $survey_arr_ref =
       Survey::get_survey_by_itemid($C,
                                    $C->get_object('Database')->get_DBH,
-                                   $C->get_object('CGI')->param('id'));
+                                   scalar $C->get_object('CGI')->param('id'));
 
     my $surveys = '';
     foreach my $hashref (@$survey_arr_ref) {

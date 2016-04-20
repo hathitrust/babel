@@ -99,6 +99,8 @@ sub Run {
     Utils::clean_cgi_params( $cgi );
     my $validityCheckStatus = &{$validityCheckRoutine}( $cgi );
 
+    $cgi->param('view', 'plaintext') if ( $cgi->param('view') eq 'text' );
+
     # Session -- order matters
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);

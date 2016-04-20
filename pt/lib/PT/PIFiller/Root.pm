@@ -196,11 +196,11 @@ sub BuildImageServerImageUrl
     my $action = 'image';
     # copy params
     foreach my $p (qw(id orient size attr src u seq num)) {
-        $tempCgi->param($p, $cgi->param($p));
+        $tempCgi->param($p, scalar $cgi->param($p));
     }
     
     if ( $cgi->param('debug') ) {
-        $tempCgi->param('debug', $cgi->param('debug'));
+        $tempCgi->param('debug', scalar $cgi->param('debug'));
     }
     
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
