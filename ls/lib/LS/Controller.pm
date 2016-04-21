@@ -92,7 +92,7 @@ sub ___core_initialize {
         my $params = $config->get('ls_default_params');
         my $temp_cgi = new CGI($params);
         # Preserve debug params
-        $temp_cgi->param('debug', $cgi->param('debug'));
+        $temp_cgi->param('debug', scalar $cgi->param('debug'));
         $C->set_object('CGI', $temp_cgi);
     }
 

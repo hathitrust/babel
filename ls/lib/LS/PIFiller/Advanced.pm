@@ -227,7 +227,7 @@ sub getYOP
 sub getDateFromDateFacet
 {
     my $cgi = shift;
-    my @facets=$cgi->param('facet');
+    my @facets=$cgi->multi_param('facet');
     foreach my $facet (@facets)
     {
         if ($facet =~ /publishDateRange(.+)/)
@@ -267,7 +267,7 @@ sub getDropdown
         $param_name='facet_lang';
     }
     my $param_hash = {};
-    my @params=$cgi->param($param_name);
+    my @params=$cgi->multi_param($param_name);
     foreach my $param (@params)
     {
         $param_hash->{$param}++;

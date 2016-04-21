@@ -340,7 +340,7 @@ sub get_Solr_query_string
     
     # This builds a filter query based on the values of the facet parameter(s) in the cgi
     my $FACETQUERY="";
-    my @facetquery = $cgi->param('facet');
+    my @facetquery = $cgi->multi_param('facet');
     
     if (@facetquery)
     {
@@ -406,8 +406,8 @@ sub __remove_All
 {
     my $cgi = shift;
             
-    my @lang = $cgi->param('facet_lang');        
-    my @format = $cgi->param('facet_format');        
+    my @lang = $cgi->multi_param('facet_lang');        
+    my @format = $cgi->multi_param('facet_format');        
     my ($wasAll,$lang_cleaned) = __clean_all(\@lang);
     if ($wasAll)
     {
@@ -507,8 +507,8 @@ sub __get_facet_OR_query
     
     my $query ="";
     
-    my @lang= $cgi->param('facet_lang');
-    my @format = $cgi->param('facet_format');
+    my @lang= $cgi->multi_param('facet_lang');
+    my @format = $cgi->multi_param('facet_format');
     my $clause1;
     my $clause2;
 

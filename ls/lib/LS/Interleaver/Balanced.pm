@@ -331,7 +331,7 @@ sub __get_min_length
 sub __is_same
 {
     my $a = shift;
-    my $b = shift
+    my $b = shift;
     my $to_return;
     
     if ($a->{id} eq $b->{id})

@@ -352,7 +352,7 @@ sub get_redirect_url
     my $optional_params_hashref = $$params_hashref{'optional'};
     foreach my $param (keys %$optional_params_hashref)
     {
-        my @param_val = $cgi->param($param);
+        my @param_val = $cgi->multi_param($param);
         # CGI params override the optional defaults
         if (scalar(@param_val))
         {
@@ -370,7 +370,7 @@ sub get_redirect_url
     }
 
     # Preserve debug param
-    $redirect_cgi->param('debug', $cgi->param('debug'));
+    $redirect_cgi->param('debug', scalar $cgi->param('debug'));
 
     return($redirect_cgi->self_url());
 }

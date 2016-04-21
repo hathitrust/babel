@@ -641,9 +641,9 @@ sub pdate_selected
     
     # if either pdate_start or pdate_end is defined and non-blank return ture
     return ( 
-            (! __IsUndefOrBlank($cgi->param('pdate_start')))
+            (! __IsUndefOrBlank(scalar $cgi->param('pdate_start')))
             ||
-            (! __IsUndefOrBlank($cgi->param('pdate_end')))
+            (! __IsUndefOrBlank(scalar $cgi->param('pdate_end')))
               );
 }
 
@@ -704,7 +704,7 @@ sub get_selected_unselected
 
 
 
-            my @cgi_facets = $cgi->param('facet');
+            my @cgi_facets = $cgi->multi_param('facet');
             if (@cgi_facets){    
                 # XXX move this loop into isFacetSelected
                 # test the facet names for a match first before comparing the values and
@@ -763,7 +763,7 @@ sub make_selected_facets_xml
     $xml .= $multiselect_xml;
     
     my $daterange_xml;
-    if ( __IsUndefOrBlank($cgi->param('pdate_start')) && __IsUndefOrBlank( $cgi->param('pdate_end')) )
+    if ( __IsUndefOrBlank( scalar $cgi->param('pdate_start')) && __IsUndefOrBlank( scalar $cgi->param('pdate_end')) )
     {
         # if they are both blank/undef don't bother getting the xml
     }
@@ -859,8 +859,8 @@ sub __get_multiselect_xml
     my $xml;
     my $multiselect;
     # XXX should read names of multiselect facets from config file for now hard code
-    my @lang= $cgi->param('facet_lang');
-    my @format = $cgi->param('facet_format');
+    my @lang= $cgi->multi_param('facet_lang');
+    my @format = $cgi->multi_param('facet_format');
     my $lang=get_multifacet_xml(\@lang,$cgi,$fconfig);
     my $format=get_multifacet_xml(\@format,$cgi,$fconfig);
     $multiselect= $lang . $format;
@@ -1269,8 +1269,8 @@ sub getModifyAdvancedSearchURL
     #XXX for now see if url is too long for a safe GET and delete long facets if it is
     # alternative is javascript to grab the url and do a POST instead of a get.
     my $tempurl=$temp_cgi->self_url();
-    my $facet_lang_string = join(' ',$temp_cgi->param('facet_lang'));
-    my $facet_format_string = join(' ',$temp_cgi->param('facet_format'));
+    my $facet_lang_string = join(' ',$temp_cgi->multi_param('facet_lang'));
+    my $facet_format_string = join(' ',$temp_cgi->multi_param('facet_format'));
     
 
     if (length($tempurl ) > $LIMIT)
@@ -1335,7 +1335,7 @@ sub __get_unselect_url
 #        my $escaped_value= uri_escape_utf8($url_value);
 
     my $cgi= shift;
-    my @facets= $cgi->param('facet');
+    my @facets= $cgi->multi_param('facet');
 
     my $temp_cgi= CGI->new($cgi);
     # remove paging since selecting/unselecting facets causes result set changes and reordering
@@ -1376,7 +1376,7 @@ sub __get_select_url
     my $hashref = shift;
     my $cgi = shift;
     my $facet_name=$hashref->{'facet_name'};
-    my $value=$hashref->{'value'};
+    my $value=$hashref->{'value'} || '';
     
     # remove page number since changing facets changes facet count
     my $current_url = $cgi->url(-relative=>1,-query=>1);    
@@ -1895,7 +1895,7 @@ sub get_global_click_data
     my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
     
     #fingerprinting stuff
-    my $user_agent=$cgi->user_agent();
+    my $user_agent=$cgi->user_agent() || '';
     $user_agent = URI::Escape::uri_escape_utf8($user_agent);
     
     # accept headers for fingerprinting
@@ -1949,7 +1949,7 @@ sub get_global_click_data
 #----------------------------------------------------------------------
 sub escape_for_json
 {
-    my $s  = shift;
+    my $s  = shift || '';
     #escape quotes before we urlencode them for json
     $s=~s/\%22/\"/g;
     $s=~s/\"/\\"/g;

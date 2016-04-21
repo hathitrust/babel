@@ -222,7 +222,7 @@ sub __clean_facets
             #XXX test for now by encoding only stuf with an ampersand           
             if ($value=~/\&/)
             {
-                 $cleaned = URI::Escape::uri_escape_utf8($cleaned);
+                 $cleaned = URI::Escape::uri_escape_utf8($value);
             }
             else
             {
