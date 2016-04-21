@@ -2,6 +2,7 @@ gr
 htd
 htdc
 imgsrv
+imgsrv-tools
 logout
 ls
 mb
