@@ -90,15 +90,17 @@ sub rep_get_usage {
            where -C queries build index for num committed
                  -S section
                       s=statistics c=config q=queues f=flags
+                 -X skip
+                      G = segment file sizes in Gbytes in the flags section
                  -f send an email of the report
                  -E reports error ids
                       o=ocr i=indexing m=metadata c=critical s=server g=generator A=all\n};
     return $s;
 }
 
-our ($opt_r, $opt_f, $opt_E, $opt_d, $opt_C, $opt_S);
+our ($opt_r, $opt_f, $opt_E, $opt_d, $opt_C, $opt_S, $opt_X);
 
-my $ops = getopts('fr:E:dCS:');
+my $ops = getopts('fr:E:dX:CS:');
 
 my $RUN = $opt_r; # Required
 
@@ -106,6 +108,7 @@ my $SEND_EMAIL = $opt_f; # optionsl
 my $COMMITTED = defined($opt_C);
 my $SECTION = $opt_S || 'A'; # optional, report all sections by default
 my $ERRORS = $opt_E; # optional
+my $EXCLUDE_FILESIZES = (defined $opt_X) && ($opt_X =~ /G/);
 
 unless ($RUN) {
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
@@ -576,8 +579,12 @@ sub report_flags_state {
     $opo .= $ck_str;
 
     my @num_shards_list = __get_shard_list($C);
-    my @sizes = split(/ /, Scheduler::get_segsizes($C, $run));
-    my $segsizes = sprintf("tot% 16s % 16s\n\t\t", $sizes[0], $sizes[1]);
+    my @sizes = ('-', '-'); # presume we don't want them
+
+    unless ($EXCLUDE_FILESIZES) {
+        my @sizes = split( / /, Scheduler::get_segsizes( $C, $run ) );
+    }
+    my $segsizes = sprintf( "tot% 16s % 16s\n\t\t", $sizes[0], $sizes[1] );
 
     my $extra = sprintf("%2s % 16s % 16s  %-20s %-20s%s  %-20s %s\n\t\t", '', 'seg_1', 'seg_2', 'built', 'optimized', '[s]', 'checked', 'segments');
     foreach my $shard (@num_shards_list) {
@@ -586,10 +593,20 @@ sub report_flags_state {
         my $checkDoneTime = Db::Select_shard_check_done($C, $dbh, $run, $shard);
         my $selected = Db::optimize_shard_is_selected($C, $dbh, $run, $shard);
 
+        my @this_shards_seg_sizes = ('-', '-');
+
+        unless ($EXCLUDE_FILESIZES) {
+            @this_shards_seg_sizes = split(/ /, Scheduler::get_segsizes($C, $run, $shard)),
+
+        }
+
         $extra .= sprintf(
                           "%2s % 16s % 16s  %-20s %-20s[%s]  %-20s %s\n\t\t",
                           $shard,
-                          split(/ /, Scheduler::get_segsizes($C, $run, $shard)),
+            $this_shards_seg_sizes[0],
+            $this_shards_seg_sizes[1],
+
+#                          split(/ /, Scheduler::get_segsizes($C, $run, $shard)),
                           $buildDoneTime,
                           $optimizeDoneTime,
                           $selected,
