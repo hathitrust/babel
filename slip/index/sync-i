@@ -17,6 +17,7 @@ Synchronize the LS index with the CB database tables.
 =cut
 
 use strict;
+use open qw/:std :utf8/;
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -242,7 +243,7 @@ sub sy_final_report {
     if ( length($buf) < length($s) ) {
         $buf .= qq{\n[TRUNCATED at $MAX_EMAIL_BUF_SIZE characters -- see logs in logs/slip/run-11/sync-i-*]};
     }
-    
+
     SLIP_Utils::Common::Send_email($C, 'report', $subj, $buf);
 }
 

@@ -27,6 +27,7 @@ see help
 
 
 use strict;
+use open qw/:std :utf8/;
 BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
 }
@@ -135,7 +136,7 @@ foreach my $id (@$id_arr_ref) {
     my $start = time;
     my $generator;
     eval {
-        $generator = new Document::Generator($C, $id);
+        $generator = Document::Generator->new($C, $id);
         $generator->G_generate($C);
         $generator->G_release;
     };
