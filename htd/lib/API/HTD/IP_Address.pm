@@ -315,14 +315,13 @@ sub __initialize {
     my $remote_addr_is_US = ( grep(/^$remote_addr_country_code$/, @RightsGlobals::g_pdus_country_codes) );
     my $remote_addr_is_nonUS = (! $remote_addr_is_US);
 
-    my $proxied_addr_country_code = $geoIP->country_code_by_addr( $PROXIED_ADDR );
-    my $proxied_addr_is_US = ( grep(/^$proxied_addr_country_code$/, @RightsGlobals::g_pdus_country_codes) );
-    my $proxied_addr_is_nonUS = (! $proxied_addr_is_US);
-
     my $STORED_ADDR = 0;
     my $address_location = 'notalocation';
 
     if ($PROXIED_ADDR) {
+        my $proxied_addr_country_code = $geoIP->country_code_by_addr( $PROXIED_ADDR );
+        my $proxied_addr_is_US = ( grep(/^$proxied_addr_country_code$/, @RightsGlobals::g_pdus_country_codes) ) if ( $proxied_addr_country_code );
+        my $proxied_addr_is_nonUS = (! $proxied_addr_is_US);
         if ( ($proxied_addr_is_US && $remote_addr_is_US) || ($proxied_addr_is_nonUS && $remote_addr_is_nonUS) ) {
             $STORED_ADDR = $PROXIED_ADDR;
             $self->geo_trusted(1);
@@ -467,7 +466,7 @@ sub proxy_detected {
     my $self = shift;
     my $detected = shift;
 
-    $self->{_proxydetected} = $detected if (defined $detected);
+    $self->{_proxydetected} = (defined $detected) ? $detected : 0;
     return $self->{_proxydetected};
 }
 

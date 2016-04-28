@@ -26,7 +26,16 @@ sub run {
         @headers = $q->psgi_header(%props);
     } elsif ($type eq 'header') {
         my %props = $self->header;
+        my @other_props = ();
+        # psgi_header chokes if the X- headers are in 
+        # the start of the hash->array
+        foreach my $key ( keys %props ) {
+            next unless ( $key =~ m,^X-, );
+            push @other_props, $key, $props{$key};
+            delete $props{$key};
+        }
         @headers = $q->psgi_header(%props);
+        push @{ $headers[1] }, @other_props;
     } elsif ($type eq 'none') {
         Carp::croak("header_type of 'none' is not support by CGI::Application::PSGI");
     } else {
@@ -40,15 +49,21 @@ sub run {
         $repr = $$repr;
     }
 
+    # put the return value in $API::HTD::RETVAL because
+    # we can't get the return value from the CGI::Compile closure
     if (ref($repr) eq 'CODE') {
-        return $repr;
+        # return $repr;
+        $API::HTD::RETVAL = $repr;
     }
     elsif (ref($repr) eq 'SCALAR') {
         $repr = RefWriter->new($repr);
+        $API::HTD::RETVAL = [ @headers, $repr ];
     }
     elsif (! Scalar::Util::blessed($repr)) {
-        $repr = [ $repr ]
+        $repr = [ $repr ];
+        $API::HTD::RETVAL = [ @headers, $repr ];
     }
+
 
     return [ @headers, $repr ];
 }

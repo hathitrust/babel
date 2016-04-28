@@ -34,7 +34,7 @@ my $app = sub {
     my ( $env ) = shift;
     $API::HTD::env = $env;
     my $resp = $sub->();
-    return $resp;
+    return $API::HTD::RETVAL;
 };
 
 $app = builder {
