@@ -156,9 +156,13 @@ my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
 my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
+
+
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{check-j run=$RUN shard=$SHARD});
 
 my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
+
+
 
 my $check_enabled =
   (
@@ -181,6 +185,10 @@ if ( $check_index_supported && Sl_Utils::checkIndex_day($C) ) {
     $CHECK_INDEX = 1;
 }
 
+######
+$CHECK_INDEX = 1 if $ENV{"FORCE_CHECK_INDEX"};
+######
+
 if ($check_enabled) {
     eval {
         my $s =
@@ -190,11 +198,11 @@ if ($check_enabled) {
                 . ($NOOP ? " ---> NOOP" : "") ;
         __output(qq{$s\n});
         Log_check($C, $RUN, $SHARD, $s);
-
         handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST,
                         c_check($C, $RUN, $DBH, $SHARD, $LIMIT_SEGS, $CHECK_INDEX));
     };
     if ($@) {
+        print $@, "\n";
         Log_check_error($C, $RUN, $SHARD, "Critical error: $@");
         handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
         # NOTREACHED
@@ -375,6 +383,99 @@ sub __run_s_tomcat {
     return $rc;
 }
 
+# ---------------------------------------------------------------------
+
+=item _get_shard_index_directory($C, $shard)
+
+ Get a string holding the root directory of a shard
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub _get_shard_index_directory {
+    my ($C, $shard) = @_;
+    return $C->get_object('MdpConfig')->get('dir_for_shard_' . $shard);
+}
+
+# ---------------------------------------------------------------------
+
+
+
+# ---------------------------------------------------------------------
+
+=item last_run_unixtime($run, $shard)
+
+Get the last run time (as unix timestamp) for this shard. Wouldn't it be nice if this
+were all in a Check object of some sort?
+
+Should probably live in slip_lib/lib/Db.pm
+
+=cut
+
+# ---------------------------------------------------------------------
+
+use constant START_OF_EPOCH => 0;
+sub last_run_unixtime {
+    my ($run, $shard) = @_;
+
+    my $statement = qq{SELECT UNIX_TIMESTAMP(checkd_time) FROM slip_shard_control WHERE run=? AND shard=?};
+    my $sth = DbUtils::prep_n_execute($DBH, $statement, $run, $shard);
+    DEBUG('lsdb', qq{DEBUG: $statement : $run, $shard});
+
+    my $dt =  $sth->fetchrow_array;
+    return ($dt || START_OF_EPOCH);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item segments_that_need_updating($C, $shard)
+
+Return a list of segent basenames that need their index checked
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub segments_that_need_updating {
+    my ($C, $run, $shard) = @_;
+
+    # It would probably make sense to cache this, but eh. It's not
+    # the slowest part by a long shot.
+
+    my $last_run_time = last_run_unixtime($run, $shard);
+    my $shard_dir = _get_shard_index_directory($C, $shard);
+
+    unless (-e $shard_dir and -d $shard_dir) {
+        #error out; dir doesn't exist
+    }
+    $shard_dir .= '/' unless ($shard_dir =~ m,/$,);
+
+    my @posfiles = glob( $shard_dir."*pos" );
+
+    my @segments_that_need_updating;
+    foreach my $posfile (@posfiles) {
+        my $segment = segment_basename($posfile);
+        my $mod_time = (stat($posfile))[9]; # Modification time
+        push @segments_that_need_updating, $segment if ($mod_time > $last_run_time);
+    }
+
+    return @segments_that_need_updating;
+
+}
+
+
+sub segment_basename {
+    my $full_shard_file_path = shift;
+
+    my $filename =( split('/', $full_shard_file_path))[-1];
+
+    $filename =~ m/^(_.+?)_/;
+    return $1;
+}
+
+
 
 # ---------------------------------------------------------------------
 
@@ -385,7 +486,9 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
+
 sub __run_CheckIndex {
+
     my ($C, $run, $shard) = @_;
 
     return 0 if $NOOP;
@@ -393,11 +496,27 @@ sub __run_CheckIndex {
     my $start = time;
 
     # Try to act on a tomcat
+
+
     my $cmd = $C->get_object('MdpConfig')->get('check_index_java_cmd');
     $cmd =~ s,__SHARD__,$shard,g;
+    $cmd =~ s,\s*;\s*$,,;
 
-    my $output = `$cmd 2>&1`;
-    my $sysrc = $?;
+    my @segs_to_update = segments_that_need_updating($C, $run, $shard);
+
+    my $sysrc;
+    my $output;
+    if (scalar(@segs_to_update) > 0) {
+        foreach my $segment (@segs_to_update) {
+            $cmd .= " -segment $segment";
+        }
+        $output = `$cmd 2>&1`;
+        $sysrc = $?;
+    } else {
+        SLIP_Utils::Log::this_string($C, "No segments in $run/$shard need updating", 'indexer_logfile', '__RUN__', $run);
+        $output =  "No segments in $run/$shard need updating";
+        $sysrc = 0;
+    }
 
     my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "Lucene checkIndex", $output);
 
@@ -414,6 +533,10 @@ sub __run_CheckIndex {
         __output("$msg\n");
         Log_check($C, $run, $shard, $msg);
     }
+
+
+
+
 
     return $rc;
 }
@@ -439,16 +562,21 @@ sub c_check {
     if ($check_index) {
 
         # Try to stop a tomcat to free up memory
-        $rc = __run_s_tomcat($C, $run, $shard, 'stop');
-        return $rc if ($rc > 0);
-
+        unless ($ENV{"LEAVE_TOMCAT_ALONE"}) {
+            $rc = __run_s_tomcat( $C, $run, $shard, 'stop' );
+            return $rc if ($rc > 0);
+        }
         # CheckIndex
         $rc = __run_CheckIndex($C, $run, $shard);
         return $rc if ($rc > 0);
 
+
         # Try to re-start a tomcat
-        $rc = __run_s_tomcat($C, $run, $shard, 'start');
-        return $rc if ($rc > 0);
+        unless ($ENV{"LEAVE_TOMCAT_ALONE"}) {
+            $rc = __run_s_tomcat( $C, $run, $shard, 'start' );
+            return $rc if ($rc > 0);
+        }
+
     }
 
     return $rc;
