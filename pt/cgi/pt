@@ -137,6 +137,10 @@ PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
 my $gId = $gCgi->param('id');
 unless ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
     Auth::Logging::log_failed_access($C, $gId, 'pt');
+    if ( $C->get_object('Access::Rights')->suppressed($C, $gId ) ) {
+        View::P_output_data_HTTP($C, undef, undef, 404);
+        exit;
+    }
 }
 else {
     # Security logging
@@ -146,8 +150,7 @@ else {
     }
 
     if ( $gCgi->param('a') ) {
-        View::P_output_none_HTTP($C);
-        # print $gCgi->header(-status=>204);
+        View::P_output_data_HTTP($C, undef, undef, 204);
         exit;
     }
 

@@ -35,9 +35,12 @@ $app = builder {
     enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
-        "HTErrorDocument", 500 => "/mdp-web/production_error.html";
+        "HTErrorDocument", 500 => "/mdp-web/production_500.html";
 
-    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
+    enable_if { (Debug::DUtils::under_server()) }
+        "HTErrorDocument", 404 => "/mdp-web/production_404.html";
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", rethrow => 0;
 
     enable 'Choke::Cache::Filesystem';
 
