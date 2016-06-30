@@ -407,6 +407,7 @@ sub handle_SEARCH_RESULTS_PI
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
     my $B_rs =$$search_result_data_hashref{'B_result_object'};
     my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
+    my $i_debug_data= $$search_result_data_hashref{'il_debug_data'};
     
     # get cgi url from cgi object and add logger to ls i.e SDRROOT/cgi/ls/logger
     my $base_url = $cgi->url();
@@ -498,6 +499,17 @@ sub handle_SEARCH_RESULTS_PI
 	    
 	}
 	$output .= wrap_string_in_tag($global_click_data,'G_CLICK_DATA');
+	#XXX foobar  temp hack
+	if(defined($i_debug_data))
+	{
+	    my $debug_out;
+	    foreach my $key (sort keys %{$i_debug_data})
+	    {
+		$debug_out .= "$key = $i_debug_data->{$key}, ";
+	    }
+	    $A_label .= " DEBUG:  $debug_out";
+	}
+	   
 	$output .= wrap_string_in_tag($A_label,'A_LABEL');
 	
 	

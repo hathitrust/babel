@@ -162,21 +162,30 @@ sub execute_operation
 # Read config file to decide whether to interleave at all
 # Will need to read again at display time? or not?
 
-
+    my $il_debug_data;
+    
     if ($use_interleave)
     {
 
 	my $AB_config=$C->get_object('AB_test_config');
 	my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
 	my $IL = new $interleaver_class;
+	my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);
 	
+	$IL->set_random_seed($C,$B_Q,$num_found);
+ 
+
 	# We need a result set object, but won't populate it by searching
 	# populate by interleaving results and copying stuff from real result sets
 	
 	$i_rs = new LS::Result::JSON::Facets('all'); 
 	$i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
+
+	if (DEBUG('AB'))
+	{
+	    $il_debug_data = $IL->get_debug_data();
+	}
     }
-    
 
     my %search_result_data =
         (
@@ -184,6 +193,7 @@ sub execute_operation
          'secondary_result_object' =>$secondary_rs,
 	 'B_result_object'         =>$B_rs,
 	 'interleaved_result_object'=>$i_rs,
+	 'il_debug_data'           =>$il_debug_data,
          'well_formed' => {
                            'primary'                => $primary_Q->well_formed() ,
                            'processed_query_string' => $primary_Q->get_processed_query_string() ,
@@ -305,8 +315,28 @@ sub __get_user_query_string
     return $user_query_string;
 }
 #----------------------------------------------------------------------
+# sub get_all_num_found
+# return number of hits for all query
+#----------------------------------------------------------------------
+sub get_all_num_found
+{
+    my $self         = shift;
+    my $primary_rs   = shift;
+    my $secondary_rs = shift;
+    my $num_found;
+    
+    if ($primary_rs->{'result_type'} eq 'all')
+    {
+	$num_found = $primary_rs->{'num_found'}
+    }
+    else
+    {
+	$num_found = $secondary_rs->{'num_found'}
+    }
+    return $num_found;
+}
 
-
+#----------------------------------------------------------------------
 1;
 
 __END__

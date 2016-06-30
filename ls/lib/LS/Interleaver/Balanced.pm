@@ -155,7 +155,7 @@ sub __get_interleaved
     # check that inputs are refs to arrays!
     #    ASSERT(0, qq{get_interleaved() in __PACKAGE__ is pure virtual});
     
-    my $first =__get_first($start);
+    my $first =$self->__get_first($start);
     my $min_length=__get_min_length($rs_a,$rs_b);
     
     my $counter_a = 0;
@@ -292,21 +292,34 @@ sub __not_in
 
 sub __get_first
 {
+    my $self = shift;
+    
     my $start=shift;
 #    ASSERT($start=/random|fixed/, qq{start must be one of "random"|"fixed"});
     
     my $first = 'a';
     my $num;
     
-   if($start ne "fixed")
-   {
-       $num =int(rand(2));#XXX check this produces a 1 or 0 at random
-       if ($num == 1)
-       {
-	   $first='b';
-       }
-       
-   }
+    if ($start ne "fixed")
+    {
+	#XXX
+	# seed random number generator based on
+	# query, session, and/or page size/number?
+	#XXX
+	my $seed = $self->get_random_seed();
+	srand($seed);
+	$num =int(rand(2));#XXX check this produces a 1 or 0 at random
+
+	if ($num == 1)
+	{
+	    $first='b';
+	}
+	$self->set_debug_data($first,$seed,$num);
+    }
+    else
+    {
+	$self->set_debug_data($first);
+    }
     return $first;
 }
     
@@ -353,5 +366,21 @@ sub __deep_copy
     }
     
 }
+
+#Class specific override
+sub set_debug_data
+{
+    my $self = shift;
+    my $first = shift;
+    my $seed = shift;
+    my $num  = shift;
+    my $data= {
+	       'first' => $first,
+	       'seed' => $seed,
+	       'bool' => $num,
+	      };
+    $self->SUPER::set_debug_data($data);
+}
+
 
 return 1;
