@@ -20,7 +20,7 @@ Coding example
 =cut
 
 use strict;
-#use Utils;
+use Utils;
 use base qw(LS::Interleaver);
 
 
@@ -53,78 +53,6 @@ sub _initialize
 #    $self->AFTER_Result_initialize(@_);
 }
 
-# XXXTODO:
-# consider moving this to base class!
-# i.e. base class should handle creating rs with values from a and b and then subclass should provide interleaved set
-
-# wrapper for __get_interleaved that takes 2 result sets and returns interleaved result set
-# change signature so we get self, a, b and then any interleave specific params in @
-
-sub get_interleaved
-{
-    my $self = shift;
-    my $start = shift;  # (random|fixed); #fixed = always start with first list
-    
-    #WARNING $rs is not a result set object its the 
-    my $rs_a = shift;
-    my $rs_b = shift;
-    my $rs_out = shift;
-    
-    # extract $rs->{result_response_docs_arr_ref} from input result sets and get interleaved result_response_docs_arr_ref
-    my $a_docs_ary   =  $rs_a->{result_response_docs_arr_ref};
-    my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
-    my $out_docs_ary = $self->__get_interleaved($start,$a_docs_ary,$b_docs_ary);
-        
-    # insert the docs_array into the interleaved result set object
-    # XXX we are bypassing internal methods
-    # We probably need a new result set object subclass maybe a mock result set object
-    # for now lets just copy the docs and create an array of ids in rank order
-#    $rs_out->{'result_response_docs_arr_ref'}=($out_docs_ary);
-    $rs_out->__set_result_docs($out_docs_ary); 
-    my $id_ary_ref=[];
-    foreach my $doc (@{$out_docs_ary})
-    {
-     	my $id = $doc->{'id'};
-     	push (@{$id_ary_ref},$id);
-    }
-    $rs_out->__set_result_ids($id_ary_ref);
-    
-    
-
-    # Commented code below is attempt to copy other data from rs_a to interleaved object
-    # I think we only need rs_B query time to get the cost of doing the additional query
-    # What about scores for A and B? do we care
-    # copy various values from result set a to interleaved result set object
-    # See setter methods in /htapps/tburtonw.babel/ls/lib/LS/Result/JSON/Facets.pm
-    #  XXX Is there any other part of the result set for a and b that we need to keep?
-    # replace result_response_docs_arr_ref and replace with inteleaved $out_docs_ary
-    # copy fields except  result_response_docs_arr_ref to $rs_out
-    # use $out_docs_array for $rs_out->result_response_docs_arr_ref
-    # add b_key for various keys to $rs_out
-    # my $rs_out = {};
-    # # OK here is the problme $rs_a is actually a result set object
-    # foreach my $key (keys %{$rs_a})
-    # {
-    # 	if ($key eq "result_response_docs_arr_ref")
-    # 	{
-    # 	    $rs_out->{result_response_docs_arr_ref} = $out_docs_ary;
-    # 	}
-    # 	else
-    # 	{
-    # 	    $rs_out->{$key} = $rs_a->{$key};
-    # 	}
-    # }
-        
-    # # add various b keys
-    # my $bkey;
-    # my @keys= qw(result_ids result_scores num_found max_score query_time response_code);
-    # foreach my $key  (@keys)
-    # {
-    # 	$bkey= 'b_' . $key;
-    # 	$rs_out->{$bkey}=$rs_b->{$key};
-    # }
-    return $rs_out;
-}
 
 # ---------------------------------------------------------------------
 #
@@ -134,7 +62,6 @@ sub get_interleaved
 sub __get_interleaved
 {
     my $self = shift;
-    my $start = shift;  # (random|fixed); #fixed = always start with first list
 
     #WARNING $rs is not a result set object its the $rs->{result_response_docs_arr_ref}
     #WARNING #2   These end up being pointers to the result set objects not deep copies
@@ -142,6 +69,9 @@ sub __get_interleaved
 
     my $rs_a = shift;
     my $rs_b = shift;
+    my @params = @_;
+    my $start = $params[0];  # (random|fixed); #fixed = always start with first list
+      ASSERT(($start eq "random"||$start eq "first" ), qq{start=$start  start  must be one of "random"|"fixed" for Balanced Interleave params});    
 
     my $rs_out=[];
     
@@ -295,7 +225,7 @@ sub __get_first
     my $self = shift;
     
     my $start=shift;
-#    ASSERT($start=/random|fixed/, qq{start must be one of "random"|"fixed"});
+   # ASSERT(($start  "random"), qq{start must be one of "random"|"fixed"});
     
     my $first = 'a';
     my $num;
@@ -340,32 +270,7 @@ sub __get_min_length
     return $min_length;
 }
 
-# compare id number of two array elements    
-sub __is_same
-{
-    my $a = shift;
-    my $b = shift;
-    my $to_return;
-    
-    if ($a->{id} eq $b->{id})
-    {
-	$to_return ="true"
-    }
-    return ($to_return);
-}
 
-# Not really a deep copy, just copying hash values to new hash
-sub __deep_copy
-{
-    my $in=shift;
-    my $out={};
-    
-    foreach my $key (keys %{$in})
-    {
-	$out->{$key}=$in->{$key};
-    }
-    
-}
 
 #Class specific override
 sub set_debug_data

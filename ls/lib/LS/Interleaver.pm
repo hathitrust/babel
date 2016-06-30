@@ -52,18 +52,47 @@ sub _initialize
 }
 
 # ---------------------------------------------------------------------
+#
+# sub get_interleaved
+
+# Wrapper for __get_interleaved that takes 2 result sets and returns interleaved result doc array.
+# Extracts result_docs_aray_ref from result objects from result sets a and b.
+# calls __get_interleaved and return interleaved docs_array_ref
+#
+# ---------------------------------------------------------------------
 sub get_interleaved
 {
     my $self = shift;
-    my $start = shift ;   # for balanced interleave choice is (random|fixed)
-    my $rs_A = shift;
-    my $rs_B = shift;
     
+    my $rs_a = shift;
+    my $rs_b = shift;
+    my $rs_out = shift;
+    my @params=@_;
+    
+    my $a_docs_ary   =  $rs_a->{result_response_docs_arr_ref};
+    my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
+    my $out_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
+        
+    # insert the docs_array into the interleaved result set object
+    # XXX we are bypassing internal methods
+    # We probably need a new result set object subclass maybe a mock result set object
+    # for now lets just copy the docs and create an array of ids in rank order
+    #    $rs_out->{'result_response_docs_arr_ref'}=($out_docs_ary);
+    $rs_out->__set_result_docs($out_docs_ary); 
+    my $id_ary_ref=[];
+    foreach my $doc (@{$out_docs_ary})
+    {
+     	my $id = $doc->{'id'};
+     	push (@{$id_ary_ref},$id);
+    }
+    $rs_out->__set_result_ids($id_ary_ref);
+    
+    return $rs_out;
+}
+
+sub __get_interleaved
+{
     ASSERT(0, qq{get_interleaved() in __PACKAGE__ is pure virtual});
-#    my $rs_interleaved;
- #   return $rs_interleaved;
-    
-    
 }
 
 sub get_debug_data

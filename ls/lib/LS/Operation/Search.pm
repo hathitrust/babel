@@ -179,7 +179,9 @@ sub execute_operation
 	# populate by interleaving results and copying stuff from real result sets
 	
 	$i_rs = new LS::Result::JSON::Facets('all'); 
-	$i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
+	#	$i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
+	#change order of params
+	$i_rs = $IL->get_interleaved($primary_rs,$B_rs,$i_rs, 'random' );
 
 	if (DEBUG('AB'))
 	{
