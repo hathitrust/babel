@@ -1727,7 +1727,7 @@ sub _ls_wrap_result_data {
 
 	# AB and interleaving label
 	my $AB=$doc_data->{'AB'};
-	if ($AB=~/A|B/)
+	if ($AB=~/A|B|Rank/)
 	{
 	    $s.= wrap_string_in_tag($AB, 'ABLabel');
 	}

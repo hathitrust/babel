@@ -119,7 +119,15 @@ sub __get_interleaved
 		#check for dupe.  If this is also in rs_b then label as dupe
 		if (__in($ids_b,$id))
 		{
-		    $rs_a->[$counter_a]->{AB}="A_dupe"
+		    # check if A and B rank it the same
+		    if( $id eq $rs_b->[$counter_a]->{'id'})
+		    {
+			$rs_a->[$counter_a]->{AB}="Same_Rank";
+		    }
+		    else
+		    {
+			$rs_a->[$counter_a]->{AB}="A_dupe";
+		    }
 		}
 		else
 		{
@@ -140,7 +148,16 @@ sub __get_interleaved
 		#check for dupe
 		if (__in($ids_a,$id))
 		{
-		    $rs_b->[$counter_b]->{AB}="B_dupe"
+		    #check if same rank
+		    if ( $id eq $rs_a->[$counter_b]->{'id'})
+		    {
+			$rs_b->[$counter_b]->{AB}="Same_Rank";
+		    }
+		    else
+		    {
+			$rs_b->[$counter_b]->{AB}="B_dupe";
+		    }
+		    
 		}
 		else
 		{
