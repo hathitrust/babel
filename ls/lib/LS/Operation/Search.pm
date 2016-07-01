@@ -140,14 +140,32 @@ sub execute_operation
     {
         $secondary_type = 'all';
     }
-
-
-    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
-    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
-
+    #XXX
+    
     my $AB_config=$C->get_object('AB_test_config');
     my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
     my $use_B_query = $AB_config->{'_'}->{'use_B_query'};
+    my $B_solr_start_row =$solr_start_row;
+    
+    #get ab counters hash from session
+    #my $ab_counters=XXX::get_ab_counters();
+    
+    #what if person starts this session on not first page
+    # then we need some way to get counter data before first search
+    # if ($use_interleave)
+    # {
+    # 	# if not page 1 then
+    # 	# modify start rows according to interleave counters
+    # 	# say for a we showed 13 results (page size 25)
+    # 	# next page should start at 14 which is 25 -12
+    # 	#XXX fix this for off by one errors and work out logic!
+    # 	$solr_start_row = $solr_start_row - ($solr_num_rows - $a_counter);
+    # 	$B_solr_start_row = $solr_num_rows - $b_counter;
+    # }
+        
+    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+
     
     # should read config file to determine whether or not to do a B query
     my $B_rs;
@@ -156,7 +174,7 @@ sub execute_operation
 
     if ($use_interleave || $use_B_query)
     {
-	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$B_solr_start_row, $solr_num_rows,'B');
     }
     
 # Read config file to decide whether to interleave at all

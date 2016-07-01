@@ -63,6 +63,7 @@ sub __get_interleaved
 {
     my $self = shift;
 
+    #XXX TODO: replace name rs_  with r_doc_ary or something better.
     #WARNING $rs is not a result set object its the $rs->{result_response_docs_arr_ref}
     #WARNING #2   These end up being pointers to the result set objects not deep copies
     # So if we mess with them, and later on want to use set a or b they are messed up
@@ -152,6 +153,19 @@ sub __get_interleaved
 	    $counter_b++;
 	}
     }
+    #XXX if debug then
+    my $d = $self->get_debug_data;
+    $d->{'counter_a'} = $counter_a;
+    $d->{'counter_b'} = $counter_b;
+    # use super because that just takes the hash
+    #XXX consider renaming this classes set_debug_data method
+    # maybe prepare debug data?
+    $self->SUPER::set_debug_data($d);    
+    
+    my $counters={'a'=>$counter_a,
+		  'b'=>$counter_b,
+		 };
+    #XXX save counters on session object somewhere
     return $rs_out;
     
 }
