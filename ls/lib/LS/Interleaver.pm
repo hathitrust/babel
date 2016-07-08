@@ -121,8 +121,15 @@ sub get_random_seed
 # i.e. same person does same query next day
 # vs  same person does same query on another computer
 #  Just query and num found or query + facets + any other limits etc?
-
 sub set_random_seed
+{
+    my $self = shift;
+    my $seed = shift;
+    $self->{'seed'} = $seed;
+}
+
+
+sub get_random_seed_from_data
 {
     my $self=shift;
     my $C = shift;
@@ -142,7 +149,7 @@ sub set_random_seed
     my $query=$query_string;
     my $session_id = $C->get_object('Session')->get_session_id();
     my $seed =get_seed($query, $session_id, $num_found);
-    $self->{'seed'} = $seed;
+    return $seed;
 }
 
 

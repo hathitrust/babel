@@ -1,3 +1,6 @@
+#$Id$
+#TestDupes
+
 use strict;
 umask 0000;
 
@@ -24,6 +27,11 @@ my $seed = 1234;
 $seed = int(rand(500));
 
 $il->set_random_seed($seed);
+
+#XXX rewrite whole logic so we can specify a number of dupes
+#  B should have random permutation of ids in A except
+#  for n_d dupes which are same id as in B but possibly at any particular postion.
+
 
 #my $num_dupes;
 #my $b_order =get_b_order();

@@ -61,7 +61,7 @@ sub _initialize
 # ---------------------------------------------------------------------
 sub __get_interleaved
 {
-    my $self = shift;
+   my $self = shift;
 
     #XXX TODO: replace name rs_  with r_doc_ary or something better.
     #WARNING $rs is not a result set object its the $rs->{result_response_docs_arr_ref}
@@ -72,7 +72,7 @@ sub __get_interleaved
     my $rs_b = shift;
     my @params = @_;
     my $start = $params[0];  # (random|fixed); #fixed = always start with first list
-      ASSERT(($start eq "random"||$start eq "first" ), qq{start=$start  start  must be one of "random"|"fixed" for Balanced Interleave params});    
+      ASSERT(($start eq "random"||$start eq "a"||$start eq "b" ), qq{start=$start  start  must be one of "random"|"a"|"b" for Balanced Interleave params});    
 
     my $rs_out=[];
     
@@ -248,8 +248,9 @@ sub __not_in
 #
 # sub __get_first
 #
-# if start = fixed return "a"
+# if start = 'a' or 'b' just return them
 # else return a or b with equal probability
+# This is made repeatable by using a seed
 
 sub __get_first
 {
@@ -260,8 +261,10 @@ sub __get_first
     
     my $first = 'a';
     my $num;
-    
-    if ($start ne "fixed")
+    if ($start eq "b"){
+	$first='b';
+    }
+    elsif ($start eq "random")
     {
 	#XXX
 	# seed random number generator based on

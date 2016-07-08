@@ -152,7 +152,7 @@ sub execute_operation
     
     #what if person starts this session on not first page
     # then we need some way to get counter data before first search
-    # if ($use_interleave)
+    # if ($use_interleave && $solr_start_row ne 0)
     # {
     # 	# if not page 1 then
     # 	# modify start rows according to interleave counters
@@ -190,8 +190,9 @@ sub execute_operation
 	my $IL = new $interleaver_class;
 	my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);
 	
-	$IL->set_random_seed($C,$B_Q,$num_found);
- 
+	my $seed = $IL->get_random_seed_from_data($C,$B_Q,$num_found);
+	$IL->set_random_seed($seed);
+	
 
 	# We need a result set object, but won't populate it by searching
 	# populate by interleaving results and copying stuff from real result sets
