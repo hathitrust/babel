@@ -171,9 +171,11 @@ sub __get_interleaved
 	}
     }
     #XXX if debug then
-    my $d = $self->get_debug_data;
-    $d->{'counter_a'} = $counter_a;
-    $d->{'counter_b'} = $counter_b;
+   my $d = $self->get_debug_data;
+   $d->{'counter_a'} = $counter_a;
+   $d->{'counter_b'} = $counter_b;
+   $d->{'diff_counters'} = abs($counter_a - $counter_b);
+   
     # use super because that just takes the hash
     #XXX consider renaming this classes set_debug_data method
     # maybe prepare debug data?
