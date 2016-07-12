@@ -6,8 +6,9 @@ LS::Interleaver::Balanced
 
 =head1 DESCRIPTION
 
-Implementation of the Balanced Interleaving algorithm
-based on what? lerot or yue sample code or what paper?
+Perl implementation of the Balanced Interleaving algorithm
+based on Chapelle et.al http://dx.doi.org/10.1145/2094072.2094078 and python 
+implementation in LEROT: https://bitbucket.org/ilps/lerot
 
 =head1 SYNOPSIS
 
@@ -49,8 +50,8 @@ sub _initialize
 {
     my $self = shift;
 
-    # Subclass:
-#    $self->AFTER_Result_initialize(@_);
+    #    Subclass:
+    #    $self->AFTER_Result_initialize(@_);
 }
 
 
@@ -65,14 +66,12 @@ sub __get_interleaved
 
     #XXX TODO: replace name rs_  with r_doc_ary or something better.
     #WARNING $rs is not a result set object its the $rs->{result_response_docs_arr_ref}
-    #WARNING #2   These end up being pointers to the result set objects not deep copies
-    # So if we mess with them, and later on want to use set a or b they are messed up
-
+   
     my $rs_a = shift;
     my $rs_b = shift;
     my @params = @_;
     my $start = $params[0];  # (random|fixed); #fixed = always start with first list
-      ASSERT(($start eq "random"||$start eq "a"||$start eq "b" ), qq{start=$start  start  must be one of "random"|"a"|"b" for Balanced Interleave params});    
+   ASSERT(($start eq "random"||$start eq "a"||$start eq "b" ), qq{start=$start  start  must be one of "random"|"a"|"b" for Balanced Interleave params});    
 
     my $rs_out=[];
     
@@ -81,10 +80,8 @@ sub __get_interleaved
     my $ids_b = __get_id_hashref($rs_b);
     my $ids_out ={};
     
-    
-
-    # check that inputs are refs to arrays!
-    #    ASSERT(0, qq{get_interleaved() in __PACKAGE__ is pure virtual});
+   # check that inputs are refs to arrays!
+   #    ASSERT(0, qq{get_interleaved() in __PACKAGE__ is pure virtual});
     
     my $first =$self->__get_first($start);
     my $min_length=__get_min_length($rs_a,$rs_b);
@@ -188,7 +185,7 @@ sub __get_interleaved
     return $rs_out;
     
 }
-
+#----------------------------------------------------------------------
 sub __get_id_hashref
 {
     my $rs = shift;
@@ -202,8 +199,7 @@ sub __get_id_hashref
     return $hashref;
     
 }
-
-# this will change when we pass real rs around instead of test?
+#----------------------------------------------------------------------
 sub __get_id_from_rs_el
 {
     my $el = shift;
@@ -211,7 +207,7 @@ sub __get_id_from_rs_el
     return $id;
     
 }
-
+#----------------------------------------------------------------------
 sub __in
 {
     my $hashref = shift;
@@ -229,7 +225,7 @@ sub __in
     }
     return $to_return;
 }
-
+#----------------------------------------------------------------------
 sub __not_in
 {
     my $hashref = shift;
@@ -246,7 +242,7 @@ sub __not_in
     }
     return $to_return;
 }
-
+#----------------------------------------------------------------------
 #
 # sub __get_first
 #
@@ -291,7 +287,7 @@ sub __get_first
     
 #XXX consider which of these could be moved to base class
 # do we assume what is in array
-
+#----------------------------------------------------------------------
 sub __get_min_length
 {
     my $rs_A = shift;
@@ -306,8 +302,7 @@ sub __get_min_length
     return $min_length;
 }
 
-
-
+#----------------------------------------------------------------------
 #Class specific override
 sub set_debug_data
 {
