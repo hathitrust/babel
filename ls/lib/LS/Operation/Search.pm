@@ -21,6 +21,9 @@ See coding example in base class Operation
 
 use strict;
 
+use Digest::MD5 qw(md5 md5_hex);
+
+
 # MDP Modules
 use Operation;
 use base qw(Operation);
@@ -93,6 +96,8 @@ sub execute_operation
     my $cgi = $C->get_object('CGI');
     my $act = $self->get_action();
 
+    
+
     # Execute the Action's Operations if there is a query to
     # perform. At this point there will be due to COntroller.
     my $user_query_string = $self->__get_user_query_string($cgi);
@@ -103,111 +108,97 @@ sub execute_operation
     my $timeout = $config->get('ls_searcher_timeout');
     my $searcher = new LS::Searcher::Facets($engine_uri, $timeout, 1);
     
-    # Paging: Solr doc number is 0-relative
-    my ($solr_start_row, $solr_num_rows) = $self->get_solr_page_values($C);
+    my ($cgi, $primary_type,$secondary_type)= get_types($cgi);
 
-    my  $lmt_2_query_type = {
-                             'ft'=>'full_text',
-                             'so'=>'search_only',
-                             'all'=>'all',
-                            };
-    
-    my $primary_type; # primary type to get actual search results
-    my $lmt = $cgi->param('lmt');
-    #  XXX This is needed per current UI which sends no lmt param when full veiw box is unchecked
-    # TODO: rewrite UI logic so lmt=all is sent if full view box is unchecked and then change
-    # line below to $lmt='ft'
-
-    if (!defined($lmt))
-    {
-        $lmt='all';
-    }
-    
-    if ($lmt=~/^(ft|so|all)$/) 
-    {
-        $primary_type = $lmt_2_query_type->{$lmt}
-    }
-    else
-    {
-        #This sets the default to be full-text and sets the cgi lmt to ft for UI purposes
-        $cgi->param('lmt','ft');
-        $primary_type= $lmt_2_query_type->{'ft'}
-    }
-    # secondary type to just get counts, default=full_text and can use math to get search only:
-    #  all - full_text = search_only.   We just need to make sure we have an "all" count and one or the other of so|ft
-    my $secondary_type ='full_text';  
-    if ($primary_type ne 'all')
-    {
-        $secondary_type = 'all';
-    }
-    #XXX
-    
     my $AB_config=$C->get_object('AB_test_config');
     my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
     my $use_B_query = $AB_config->{'_'}->{'use_B_query'};
-    my $B_solr_start_row =$solr_start_row;
-    
-    #get ab counters hash from session
-    #my $ab_counters=XXX::get_ab_counters();
-    
-    #what if person starts this session on not first page
-    # then we need some way to get counter data before first search
-    # if ($use_interleave && $solr_start_row ne 0)
-    # {
-    # 	# if not page 1 then
-    # 	# modify start rows according to interleave counters
-    # 	# say for a we showed 13 results (page size 25)
-    # 	# next page should start at 14 which is 25 -12
-    # 	#XXX fix this for off by one errors and work out logic!
-    # 	$solr_start_row = $solr_start_row - ($solr_num_rows - $a_counter);
-    # 	$B_solr_start_row = $solr_num_rows - $b_counter;
-    # }
-        
-    my ($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
-    my ($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+    my $N_Cached = $AB_config->{'_'}->{'Num_Cached_Results'};
+    # Paging: Solr doc number is 0-relative
+    my ($user_solr_start_row, $user_solr_num_rows,$current_sz) = $self->get_solr_page_values($C);
+    #default no interleave so regular paging
+    my  $solr_start_row = $user_solr_start_row;
+    my  $solr_num_rows  = $user_solr_num_rows;
 
-    
-    # should read config file to determine whether or not to do a B query
+    my ($primary_rs, $primary_Q);
+    my ($secondary_rs, $secondary_Q);
     my $B_rs;
     my $B_Q;  # do we need to save B query if we are doing query expansion?
-    my $i_rs;
-
-    if ($use_interleave || $use_B_query)
-    {
-	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$B_solr_start_row, $solr_num_rows,'B');
-    }
-    
-# Read config file to decide whether to interleave at all
-# Will need to read again at display time? or not?
-
+    my $i_rs;  # we will put truncated result set here
     my $il_debug_data;
+
+    if ( $use_B_query)
+    {
+	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+    }
     
     if ($use_interleave)
     {
-
-	my $AB_config=$C->get_object('AB_test_config');
-	my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
-	my $IL = new $interleaver_class;
-	my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);
-	
-	my $seed = $IL->get_random_seed_from_data($C,$B_Q,$num_found);
-	$IL->set_random_seed($seed);
-	
-
-	# We need a result set object, but won't populate it by searching
-	# populate by interleaving results and copying stuff from real result sets
-	
-	$i_rs = new LS::Result::JSON::Facets('all'); 
-	#	$i_rs = $IL->get_interleaved('random',$primary_rs,$B_rs,$i_rs );
-	#change order of params
-	$i_rs = $IL->get_interleaved($primary_rs,$B_rs,$i_rs, 'random' );
-
-	if (DEBUG('AB'))
+	if ($user_solr_start_row eq 0 || $user_solr_start_row + $current_sz < $N_Cached)
 	{
-	    $il_debug_data = $IL->get_debug_data();
+	    # check for off by 1 error < N_Cached
+	    # get interleaved results for first N records and cache them
+	    # check for cached results
+	    my $query_md5 = get_query_md5($C,$cgi);
+	    my $cached_rs = get_cached_rs($C,$query_md5);
+	    
+	    if (!defined($cached_rs))
+	    {
+	     	$solr_num_rows = $N_Cached;
+	     	($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+	     	($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+		($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+		
+		($i_rs,$il_debug_data)= $self->do_interleaved_query($C,$primary_rs,$secondary_rs,$B_rs,$B_Q);
+		#cache whole rs
+		set_cached_rs($C, $query_md5,$i_rs);
+		# set start and sz for this query on rs
+		$i_rs->set_start($user_solr_start_row);
+		$i_rs->set_num_rows($user_solr_num_rows);
+	    }
+	    else
+	    {
+		$i_rs = $cached_rs;
+		$i_rs->set_start($user_solr_start_row);
+		$i_rs->set_num_rows($user_solr_num_rows);
+	    }
+	    #XXX moved to list search results
+	    # for now grab only a page worth of results from $full_i_rs
+	    #$i_rs=get_page_of_results($full_i_rs,$user_solr_start_row, $current_sz);
 	}
+	
+	elsif ($user_solr_start_row + $current_sz >$N_Cached)
+	{
+	    if($user_solr_start_row < $N_Cached)
+	    {
+		# get rows from start row to N_Cached from cache then get rest from a query
+	    }
+	    else
+	    {
+		# just do A query but calculate from the A pointer as a start?
+		#i.e. if N =1000 and A pointer=505, then start A query at 506 i.e. subtract 500 and then add offset?
+	    }
+	    
+	  #  does this include already subtracting 1
+	   # i.e. if N = 100 and we ask for rows 50-150?
+	   # calculate start row based on cached counters
+	   # i.e. whatever it would be normally - (100-counter)
+	}
+#    my ($solr_start_row, $solr_num_rows) = $self->get_solr_page_values($C);	
+	# my $solr_start_row = ($current_page - 1) * $current_sz;
+#	    my $solr_num_rows = $current_sz;
+	# Check if we already have cashed info
     }
+    else
+    {
+	($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+	($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+    }
+    #XXX do we truncate result set here leaving ListSearchResults and the PI filler ignorent or put the paging stuff there
+    # for now list search results should take responsibility!
 
+    
+    
     my %search_result_data =
         (
          'primary_result_object'   => $primary_rs,
@@ -257,8 +248,87 @@ sub do_query{
 }
 
 # ---------------------------------------------------------------------
+sub do_interleaved_query
+{
+    my $self         = shift;
+    my $C            = shift;
+    my $primary_rs   = shift;
+    my $secondary_rs = shift;
+    my $B_rs         = shift;
+    my $B_Q          = shift;
+        
+    my $AB_config=$C->get_object('AB_test_config');
+    my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
+    my $IL = new $interleaver_class;
+    my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);    
+
+    my $seed = $IL->get_random_seed_from_data($C,$B_Q,$num_found);
+    $IL->set_random_seed($seed);
+    
+    
+    # We need a result set object, but won't populate it by searching
+    # populate by interleaving results and copying stuff from real result sets
+    
+    my  $i_rs = new LS::Result::JSON::Facets('all'); 
+    $i_rs = $IL->get_interleaved($primary_rs,$B_rs,$i_rs, 'random' );
+    my $il_debug_data ;
+    
+    if (DEBUG('AB'))
+    {
+	$il_debug_data = $IL->get_debug_data();
+    }
+    return($i_rs,$il_debug_data);
+    
+}
+
+# ---------------------------------------------------------------------
 
 
+
+
+
+sub get_types
+{
+    my $cgi = shift;
+    
+    my  $lmt_2_query_type = {
+			     'ft'=>'full_text',
+			     'so'=>'search_only',
+			     'all'=>'all',
+			    };
+    
+    my $primary_type; # primary type to get actual search results
+    my $lmt = $cgi->param('lmt');
+    #  XXX This is needed per current UI which sends no lmt param when full veiw box is unchecked
+    # TODO: rewrite UI logic so lmt=all is sent if full view box is unchecked and then change
+    # line below to $lmt='ft'
+    
+    if (!defined($lmt))
+    {
+        $lmt='all';
+    }
+    
+    if ($lmt=~/^(ft|so|all)$/) 
+    {
+        $primary_type = $lmt_2_query_type->{$lmt}
+    }
+    else
+    {
+        #This sets the default to be full-text and sets the cgi lmt to ft for UI purposes
+        $cgi->param('lmt','ft');
+        $primary_type= $lmt_2_query_type->{'ft'}
+    }
+    # secondary type to just get counts, default=full_text and can use math to get search only:
+    #  all - full_text = search_only.   We just need to make sure we have an "all" count and one or the other of so|ft
+    my $secondary_type ='full_text';  
+    if ($primary_type ne 'all')
+    {
+        $secondary_type = 'all';
+    }
+    return ($cgi, $primary_type,$secondary_type);
+}
+
+# ---------------------------------------------------------------------
 =item get_solr_page_values
 
 Description
@@ -295,7 +365,7 @@ sub get_solr_page_values
     my $solr_start = ($current_page - 1) * $current_sz;
     my $solr_rows = $current_sz;
 
-    return ($solr_start, $solr_rows);
+    return ($solr_start, $solr_rows, $current_sz);
 }
 
 
@@ -356,6 +426,49 @@ sub get_all_num_found
     }
     return $num_found;
 }
+
+#----------------------------------------------------------------------
+sub get_query_md5
+{
+    my $C = shift;
+    my $cgi = shift;
+    my $ses = $C->get_object('Session');
+    # get only cgi params we want like sz pn what else?
+    my $temp_cgi = new CGI($cgi);
+    # remove params we don't want
+    # insert code here XXX
+    my $md5=md5_hex($temp_cgi);
+    return $md5;
+}
+#----------------------------------------------------------------------
+sub set_cached_rs
+{
+    my $C     = shift;
+    my $q_md5 = shift;
+    my $rs    = shift;
+    my $ses   = $C->get_object('Session');
+    $ses->set_persistent($q_md5, $rs) ;
+}
+
+#----------------------------------------------------------------------
+sub get_cached_rs
+{
+    my $C     = shift;
+    my $q_md5 = shift;
+    my $ses = $C->get_object('Session');
+    my $rs = $ses->get_persistent($q_md5) ;
+}
+
+#----------------------------------------------------------------------
+sub get_page_of_results
+{
+    my $full_i_rs = shift;
+    my $user_solr_start_row = shift;
+    my $current_sz = shift;
+    my $page_rs =[];
+    
+}
+
 
 #----------------------------------------------------------------------
 1;

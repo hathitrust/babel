@@ -404,6 +404,43 @@ sub get_result_docs
     my $self = shift;
     return $self->{'result_response_docs_arr_ref'};
 }
+# ---------------------------------------------------------------------
+
+#  these set per query start number and number of rows for taking a slice
+# of the $i_rs doc array ref
+#		$i_rs->set_start($user_solr_start_row);
+#		$i_rs->set_num_rows($user_solr_num_rows);
+# ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+sub set_start
+{
+    my $self = shift;
+    my $start = shift;
+    $self->{'start'} = $start;
+}
+# ---------------------------------------------------------------------
+sub set_num_rows
+{
+    my $self = shift;
+    my $num_rows = shift;
+    $self->{'num_rows'} = $num_rows;
+}
+
+# ---------------------------------------------------------------------
+sub get_slice_result_docs
+{
+    my $self = shift;
+    #XXX do we need to replace by getter functions?
+    my $start = $self->{'start'};
+    my $num = $self->{'num_rows'};
+    my $ary_ref =[];
+    #XXX figure out 0 based array off by 1 stuff
+    for (my $i = $start; $i < $num; $i++)
+    {
+	push(@{$ary_ref}, $self->{'result_response_docs_arr_ref'}->[$i]);
+    }
+    return ($ary_ref);
+}
 
 
 # ---------------------------------------------------------------------

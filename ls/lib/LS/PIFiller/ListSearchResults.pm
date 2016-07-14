@@ -1597,7 +1597,9 @@ sub _ls_wrap_result_data {
     # need to redo this and fix all method calls
     my $query=shift;
     my $rs = shift;
-
+    my $start = shift;
+    my $num = shift;
+    
     my $cgi = $C->get_object('CGI');
 
     my $output;
@@ -1611,7 +1613,13 @@ sub _ls_wrap_result_data {
     # since json might contain unescaped xml entities i.e. "&" we need to filter
     # any strings.  Is there a better place to do this?
 
-    my $result_docs_arr_ref = $rs->get_result_docs();
+    #XXX do we call this conditionally or instead have non-interleaved scenarios
+    # set correct limits in result object?
+    #if use interleave
+    my $result_docs_arr_ref = $rs->get_slice_result_docs();
+    #else
+    #    my $result_docs_arr_ref = $rs->get_result_docs();
+    
     my $doc_count=0;
     
     foreach my $doc_data (@$result_docs_arr_ref) {
