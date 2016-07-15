@@ -96,17 +96,10 @@ sub execute_operation
     my $cgi = $C->get_object('CGI');
     my $act = $self->get_action();
 
-    
-
-    # Execute the Action's Operations if there is a query to
-    # perform. At this point there will be due to COntroller.
-    
-
-
     my $AB_config=$C->get_object('AB_test_config');
     my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
     my $use_B_query = $AB_config->{'_'}->{'use_B_query'};
-    my $N_Cached = $AB_config->{'_'}->{'Num_Cached_Results'};
+    my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
     # Paging: Solr doc number is 0-relative
     my ($user_solr_start_row, $user_solr_num_rows,$current_sz) = $self->get_solr_page_values($C);
     #default no interleave so regular paging
@@ -136,59 +129,41 @@ sub execute_operation
     my $result_data ={};    
     if ($use_interleave)
     {
-	my $query_md5 = get_query_md5($C,$cgi);
-	my $cached_rs = get_cached_rs($C,$query_md5);
-	
-	if ($user_solr_start_row eq 0 || $user_solr_start_row + $current_sz < $N_Cached)
+	if ($user_solr_start_row eq 0 || $user_solr_start_row < $N_Interleaved)
 	{
-	    # check for off by 1 error < N_Cached
-	    # get interleaved results for first N records and cache them
-	    # check for cached results
+	    # check for off by 1 error < N_Interleave
+	    # get interleaved results for first N records 
+	    $solr_start_row=0;	    
+	    $solr_num_rows = $N_Interleaved;
 	    
-	    if (!defined($cached_rs))
+	    if ($user_solr_start_row + $current_sz > $N_Interleaved)
 	    {
-		$solr_num_rows = $N_Cached;
-		$solr_start_row=0;
-		$result_data=$self->do_queries($C,$primary_type,$solr_start_row, $solr_num_rows);
+		#get at max $current_sz more interleaved results
+		$solr_num_rows = $N_Interleaved+ $current_sz;
+	    }
+	    $result_data=$self->do_queries($C,$primary_type,$solr_start_row, $solr_num_rows);
 						
-		#cache whole rs
-		my $i_rs = $result_data->{'i_rs'};
-		set_cached_rs($C, $query_md5, $i_rs);
-		# set start and sz for this query on rs
-		$i_rs->set_start($user_solr_start_row);
-		$i_rs->set_num_rows($user_solr_num_rows);
-	    }
-	    else
-	    {
-		$i_rs = $cached_rs;
-		$i_rs->set_start($user_solr_start_row);
-		$i_rs->set_num_rows($user_solr_num_rows);
-	    }
+	    # set start and num rows to what user requested for use by
+	    # PIFiller/ListSearchResults::get_slice_result_docs
+	    my $i_rs = $result_data->{'i_rs'};
+	    $i_rs->set_start($user_solr_start_row);
+	    $i_rs->set_num_rows($user_solr_num_rows);
 	}
-	
-	elsif ($user_solr_start_row + $current_sz >$N_Cached)
+	else
 	{
-	    if($user_solr_start_row < $N_Cached)
-	    {
-		# get rows from start row to N_Cached from cache then get rest from a query
-	    }
-	    else
-	    {
-		# Still have to do a query to get A counter if not cached
-		
-		# just do A query but calculate from the A pointer as a start?
-		#i.e. if N =1000 and A pointer=505, then start A query at 506 i.e. subtract 500 and then add offset?
-	    }
-	    
-	  #  does this include already subtracting 1
+	    # Need to get A counter to figure out where to start to see any A results not already seen
+	    # Still have to do a query to get A counter if not cached
+	    # just do A query but calculate from the A pointer as a start?
+	    #i.e. if N =1000 and A pointer=505, then start A query at 506 i.e. subtract 500 and then add offset?
+	    # for now we need to do two queries
+	    # 1 interleaved query for $N_Interleaved + $current_sz to get A pointer
+	    # 2  A query starting where?
+
+	    	#  does this include already subtracting 1
 	   # i.e. if N = 100 and we ask for rows 50-150?
 	   # calculate start row based on cached counters
 	   # i.e. whatever it would be normally - (100-counter)
 	}
-#    my ($solr_start_row, $solr_num_rows) = $self->get_solr_page_values($C);	
-	# my $solr_start_row = ($current_page - 1) * $current_sz;
-#	    my $solr_num_rows = $current_sz;
-	# Check if we already have cashed info
     }
     else
     {
@@ -471,8 +446,8 @@ sub get_query_md5
     # remove params we don't want
     $temp_cgi->delete('sz','pn','debug');
 
-    my $md5=md5_hex($temp_cgi);
-
+    my $md5 = md5_hex($temp_cgi->query_string);
+    
     return $md5;
 }
 #----------------------------------------------------------------------
