@@ -322,6 +322,7 @@ sub __set_result_docs
 {
     my $self = shift;
     my $arr_ref = shift;
+
     $self->{'result_response_docs_arr_ref'} = $arr_ref;
 }
 
@@ -433,9 +434,27 @@ sub get_slice_result_docs
     #XXX do we need to replace by getter functions?
     my $start = $self->{'start'};
     my $num = $self->{'num_rows'};
+    my $end = $start + $num;
     my $ary_ref =[];
     #XXX figure out 0 based array off by 1 stuff
-    for (my $i = $start; $i < $num; $i++)
+
+
+    # FOR debugging
+    # number il ref
+    
+    if (DEBUG('AB'))
+    {
+	my $i =1;
+	my $arr_ref = $self->{'result_response_docs_arr_ref'};
+	foreach my $hash (@{$arr_ref})
+	{
+	    $hash->{'il_num'} = $i;
+	    $i++;
+	}
+    }
+        
+    my $i = $start;
+    for ( $i = $start; $i < $end; $i++)
     {
 	push(@{$ary_ref}, $self->{'result_response_docs_arr_ref'}->[$i]);
     }

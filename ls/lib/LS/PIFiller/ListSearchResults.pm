@@ -1734,7 +1734,17 @@ sub _ls_wrap_result_data {
         $s .= wrap_string_in_tag($id, 'ItemID');
 
 	# AB and interleaving label
-	my $AB=$doc_data->{'AB'};
+	my $AB;
+	if (exists($doc_data->{'il_num'}))
+	{
+	    $AB = $doc_data->{'AB'} . " $doc_count i: " . $doc_data->{'il_num'};
+	}
+	else
+	{
+	   $AB = $doc_data->{'AB'};
+	}
+	
+	
 	if ($AB=~/A|B|Rank/)
 	{
 	    $s.= wrap_string_in_tag($AB, 'ABLabel');

@@ -100,15 +100,8 @@ sub execute_operation
 
     # Execute the Action's Operations if there is a query to
     # perform. At this point there will be due to COntroller.
-    my $user_query_string = $self->__get_user_query_string($cgi);
-
-    my $config = $C->get_object('MdpConfig');
-    # Randomize primary shard
-    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
-    my $timeout = $config->get('ls_searcher_timeout');
-    my $searcher = new LS::Searcher::Facets($engine_uri, $timeout, 1);
     
-    my ($cgi, $primary_type,$secondary_type)= get_types($cgi);
+
 
     my $AB_config=$C->get_object('AB_test_config');
     my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
@@ -126,32 +119,41 @@ sub execute_operation
     my $B_Q;  # do we need to save B query if we are doing query expansion?
     my $i_rs;  # we will put truncated result set here
     my $il_debug_data;
+    my ($cgi, $primary_type,$secondary_type)= get_types($cgi);
+    my $result_data={};
 
-    if ( $use_B_query)
-    {
-	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
-    }
+    # For now just assume we will allways do B query
+    #XXX later consider not doing it
+    # Seriously consider having a dedicated Search subclass just for interleaving so
+    # we don't have to handle the options for A/B queries or just A queries here with tons of
+    # if statements
     
+    # if ( $use_B_query)
+    # {
+    # 	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+    # }
+
+    my $result_data ={};    
     if ($use_interleave)
     {
+	my $query_md5 = get_query_md5($C,$cgi);
+	my $cached_rs = get_cached_rs($C,$query_md5);
+	
 	if ($user_solr_start_row eq 0 || $user_solr_start_row + $current_sz < $N_Cached)
 	{
 	    # check for off by 1 error < N_Cached
 	    # get interleaved results for first N records and cache them
 	    # check for cached results
-	    my $query_md5 = get_query_md5($C,$cgi);
-	    my $cached_rs = get_cached_rs($C,$query_md5);
 	    
 	    if (!defined($cached_rs))
 	    {
-	     	$solr_num_rows = $N_Cached;
-	     	($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
-	     	($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
-		($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
-		
-		($i_rs,$il_debug_data)= $self->do_interleaved_query($C,$primary_rs,$secondary_rs,$B_rs,$B_Q);
+		$solr_num_rows = $N_Cached;
+		$solr_start_row=0;
+		$result_data=$self->do_queries($C,$primary_type,$solr_start_row, $solr_num_rows);
+						
 		#cache whole rs
-		set_cached_rs($C, $query_md5,$i_rs);
+		my $i_rs = $result_data->{'i_rs'};
+		set_cached_rs($C, $query_md5, $i_rs);
 		# set start and sz for this query on rs
 		$i_rs->set_start($user_solr_start_row);
 		$i_rs->set_num_rows($user_solr_num_rows);
@@ -162,9 +164,6 @@ sub execute_operation
 		$i_rs->set_start($user_solr_start_row);
 		$i_rs->set_num_rows($user_solr_num_rows);
 	    }
-	    #XXX moved to list search results
-	    # for now grab only a page worth of results from $full_i_rs
-	    #$i_rs=get_page_of_results($full_i_rs,$user_solr_start_row, $current_sz);
 	}
 	
 	elsif ($user_solr_start_row + $current_sz >$N_Cached)
@@ -175,6 +174,8 @@ sub execute_operation
 	    }
 	    else
 	    {
+		# Still have to do a query to get A counter if not cached
+		
 		# just do A query but calculate from the A pointer as a start?
 		#i.e. if N =1000 and A pointer=505, then start A query at 506 i.e. subtract 500 and then add offset?
 	    }
@@ -191,32 +192,64 @@ sub execute_operation
     }
     else
     {
-	($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
-	($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+	# Regular A search no interleave
+	# comment out for now!
+#	($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+#	($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
     }
     #XXX do we truncate result set here leaving ListSearchResults and the PI filler ignorent or put the paging stuff there
     # for now list search results should take responsibility!
 
-    
+
+    my $primary_Q= $result_data->{'primary_Q'};
     
     my %search_result_data =
         (
-         'primary_result_object'   => $primary_rs,
-         'secondary_result_object' =>$secondary_rs,
-	 'B_result_object'         =>$B_rs,
-	 'interleaved_result_object'=>$i_rs,
-	 'il_debug_data'           =>$il_debug_data,
-         'well_formed' => {
-                           'primary'                => $primary_Q->well_formed() ,
-                           'processed_query_string' => $primary_Q->get_processed_query_string() ,
-                           'unbalanced_quotes' =>$primary_Q->get_unbalanced_quotes() ,
-                          },
-	 'user_query_string' =>$user_query_string,
+         'primary_result_object'   =>   $result_data->{'primary_rs'},
+         'secondary_result_object' =>   $result_data->{'secondary_rs'},
+	 'B_result_object'         =>   $result_data->{'B_rs'},
+	 'interleaved_result_object'=>  $result_data->{'i_rs'},
+	 'il_debug_data'           =>   $result_data->{'il_debug_data'},
+
+	 'well_formed'             =>   {
+					 'primary'                => $primary_Q->well_formed() ,
+					 'processed_query_string' => $primary_Q->get_processed_query_string() ,
+					 'unbalanced_quotes' =>$primary_Q->get_unbalanced_quotes() ,
+					},
+    
+	 'user_query_string'       =>   $result_data->{'user_query_string'},
         );
 
     $act->set_transient_facade_member_data($C, 'search_result_data', \%search_result_data);
 
     return $ST_OK;
+}
+
+# ---------------------------------------------------------------------
+sub do_queries
+{
+    my $self              = shift;
+    my $C                 = shift;
+    my $primary_type      = shift;
+    my $solr_start_row    = shift;
+    my $solr_num_rows     = shift;
+    my $r={}; #result_data
+    
+    my $cgi = $C->get_object('CGI');    
+    my ($cgi, $primary_type,$secondary_type)= get_types($cgi);
+    my $user_query_string = $self->__get_user_query_string($cgi);
+    my $config = $C->get_object('MdpConfig');
+    # Randomize primary shard
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
+    my $timeout = $config->get('ls_searcher_timeout');
+    my $searcher = new LS::Searcher::Facets($engine_uri, $timeout, 1);
+   
+    ($r->{'primary_rs'}, $r->{'primary_Q'} )     = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+    ($r->{'secondary_rs'}, $r->{'secondary_Q'} ) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+    ($r->{'B_rs'}, $r->{'B_Q'} )                 = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+    ($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'});
+    $r->{'user_query_string'} = $user_query_string;
+    return($r);
 }
 
 
@@ -436,8 +469,10 @@ sub get_query_md5
     # get only cgi params we want like sz pn what else?
     my $temp_cgi = new CGI($cgi);
     # remove params we don't want
-    # insert code here XXX
+    $temp_cgi->delete('sz','pn','debug');
+
     my $md5=md5_hex($temp_cgi);
+
     return $md5;
 }
 #----------------------------------------------------------------------
