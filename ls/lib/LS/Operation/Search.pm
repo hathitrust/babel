@@ -139,38 +139,65 @@ sub execute_operation
 	    if ($user_solr_start_row + $current_sz > $N_Interleaved)
 	    {
 		#get at max $current_sz more interleaved results
+		# Reconsider this as it makes determining what number to use for counter
+		# more complicated
 		$solr_num_rows = $N_Interleaved+ $current_sz;
 	    }
-	    $result_data=$self->do_queries($C,$primary_type,$solr_start_row, $solr_num_rows);
+	    my $to_search =  {
+			      'a'=>1,
+			      'b'=>1,
+			      'i'=>1,
+			     };
+	    
+	    $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
 						
 	    # set start and num rows to what user requested for use by
 	    # PIFiller/ListSearchResults::get_slice_result_docs
 	    my $i_rs = $result_data->{'i_rs'};
 	    $i_rs->set_start($user_solr_start_row);
 	    $i_rs->set_num_rows($user_solr_num_rows);
+	    # cache counter_a on session
+	    my $counter_a = $result_data->{'il_debug_data'}->{'counter_a'};
+	    my $query_md5 = get_query_md5($C);
+	    set_cached_object($C, $query_md5, 'counter_a', $counter_a);
 	}
 	else
 	{
-	    # Need to get A counter to figure out where to start to see any A results not already seen
-	    # Still have to do a query to get A counter if not cached
-	    # just do A query but calculate from the A pointer as a start?
-	    #i.e. if N =1000 and A pointer=505, then start A query at 506 i.e. subtract 500 and then add offset?
-	    # for now we need to do two queries
-	    # 1 interleaved query for $N_Interleaved + $current_sz to get A pointer
-	    # 2  A query starting where?
-
-	    	#  does this include already subtracting 1
-	   # i.e. if N = 100 and we ask for rows 50-150?
-	   # calculate start row based on cached counters
-	   # i.e. whatever it would be normally - (100-counter)
-	}
-    }
+	    #$user_solr_start_row >=  $N_Interleaved)
+	    my $query_md5 = get_query_md5($C);
+	    my $counter_a = get_cached_object($C, $query_md5,'counter_a');
+	    # XXX for debugging
+	    $counter_a =201;
+	    
+	    if (defined($counter_a))
+	    {
+		# get start row based on counter and N_Interleaved and just do an A query
+		my $offset= $user_solr_start_row - $N_Interleaved;
+		ASSERT($offset >=  0,qq{offset = $offset user start row $user_solr_start_row less then N $N_Interleaved });
+		$solr_start_row= $offset + $counter_a;
+		#ASSERT(0,qq{calculated start row is $solr_start_row});
+		my $to_search =  {
+			      'a'=>1,
+				 };
+		$result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
+	    }
+	    else
+	    {
+		#Bug where caching failed or edge case where there hasn't
+		#been an initial page1 query or session timed out
+		ASSERT(0,qq{no cached counter a });
+	    }
+	}	    
+	
+    } # end if use interleave
     else
     {
 	# Regular A search no interleave
-	# comment out for now!
-#	($primary_rs, $primary_Q)   = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
-#	($secondary_rs, $secondary_Q) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+	#XXX do we need to mess with rows?
+	my $to_search =  {
+			  'a'=>1,
+			 };
+	$result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
     }
     #XXX do we truncate result set here leaving ListSearchResults and the PI filler ignorent or put the paging stuff there
     # for now list search results should take responsibility!
@@ -200,11 +227,13 @@ sub execute_operation
     return $ST_OK;
 }
 
+
 # ---------------------------------------------------------------------
 sub do_queries
 {
     my $self              = shift;
     my $C                 = shift;
+    my $to_search         = shift;
     my $primary_type      = shift;
     my $solr_start_row    = shift;
     my $solr_num_rows     = shift;
@@ -213,18 +242,33 @@ sub do_queries
     my $cgi = $C->get_object('CGI');    
     my ($cgi, $primary_type,$secondary_type)= get_types($cgi);
     my $user_query_string = $self->__get_user_query_string($cgi);
+    my $searcher= get_searcher($C);
+    if($to_search->{'a'} eq 1)
+    {
+	($r->{'primary_rs'}, $r->{'primary_Q'} )     = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
+	($r->{'secondary_rs'}, $r->{'secondary_Q'} ) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
+    }
+    if($to_search->{'b'} eq 1){
+	
+	($r->{'B_rs'}, $r->{'B_Q'} )                 = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
+    }
+    if($to_search->{'i'} eq 1){
+	($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'});
+    }
+    
+    $r->{'user_query_string'} = $user_query_string;
+    return($r);
+}
+# ---------------------------------------------------------------------
+sub get_searcher
+{
+    my $C = shift;
     my $config = $C->get_object('MdpConfig');
     # Randomize primary shard
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $timeout = $config->get('ls_searcher_timeout');
     my $searcher = new LS::Searcher::Facets($engine_uri, $timeout, 1);
-   
-    ($r->{'primary_rs'}, $r->{'primary_Q'} )     = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'A');
-    ($r->{'secondary_rs'}, $r->{'secondary_Q'} ) = $self->do_query($C,$searcher,$user_query_string,$secondary_type,0,0,'A');
-    ($r->{'B_rs'}, $r->{'B_Q'} )                 = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
-    ($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'});
-    $r->{'user_query_string'} = $user_query_string;
-    return($r);
+    return $searcher;
 }
 
 
@@ -280,11 +324,11 @@ sub do_interleaved_query
     my  $i_rs = new LS::Result::JSON::Facets('all'); 
     $i_rs = $IL->get_interleaved($primary_rs,$B_rs,$i_rs, 'random' );
     my $il_debug_data ;
-    
-    if (DEBUG('AB'))
-    {
+# XXX we need to get counter data even if we are not debugging    
+#    if (DEBUG('AB'))
+ #   {
 	$il_debug_data = $IL->get_debug_data();
-    }
+  #  }
     return($i_rs,$il_debug_data);
     
 }
@@ -449,6 +493,31 @@ sub get_query_md5
     my $md5 = md5_hex($temp_cgi->query_string);
     
     return $md5;
+}
+#----------------------------------------------------------------------
+#XXX foobar
+#   consider whether to consolidate these two caching functions
+sub set_cached_object
+{
+    my $C     = shift;
+    my $q_md5 = shift;
+    my $object_name    = shift;
+    my $object = shift;
+    my $key = $q_md5 . $object_name;
+    
+    my $ses   = $C->get_object('Session');
+    $ses->set_persistent($key, $object) ;
+}
+
+#----------------------------------------------------------------------
+sub get_cached_object
+{
+    my $C     = shift;
+    my $q_md5 = shift;
+    my $object_name    = shift;
+    my $key = $q_md5 . $object_name;
+    my $ses = $C->get_object('Session');
+    my $rs = $ses->get_persistent($key) ;
 }
 #----------------------------------------------------------------------
 sub set_cached_rs

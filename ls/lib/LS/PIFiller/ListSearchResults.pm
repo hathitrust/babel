@@ -393,7 +393,7 @@ PI Handler for the Solr response. Typically:
 
 # ---------------------------------------------------------------------
 sub handle_SEARCH_RESULTS_PI
-    : PI_handler(SEARCH_RESULTS) {
+: PI_handler(SEARCH_RESULTS) {
     my ($C, $act, $piParamHashRef) = @_;
     my $output;
     my ($query_time, $solr_error_msg);
@@ -468,7 +468,8 @@ sub handle_SEARCH_RESULTS_PI
 	    $output.=wrap_string_in_tag('TRUE','SideBySideDisplay');
 	    if ($use_interleave) 
 	    {
-		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
+		my $get_slice='true';
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs, $get_slice);
 		$global_click_data=get_global_click_data($C, 'side_intl',  $primary_rs, $B_rs,$i_rs);
 	    }
 	    elsif ($use_B_query)
@@ -477,12 +478,13 @@ sub handle_SEARCH_RESULTS_PI
 		$global_click_data=get_global_click_data($C, 'side_AB',  $primary_rs, $B_rs);
 	    }
 	}
-	elsif($use_interleave)
+	elsif($use_interleave && defined($i_rs))
 	{
 	    #interleave single column
 	    # if we are using interleave but not side by side just put interleave 	    
 	    #result in A and don't define B result ref
-	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
+	     my $get_slice = 'true';   
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs,$get_slice );
     	    $A_label= $interleaver_class . ':' . $B_description;
 	    $global_click_data=get_global_click_data($C, 'intl',  $primary_rs, $B_rs,$i_rs);
 	}
@@ -499,8 +501,8 @@ sub handle_SEARCH_RESULTS_PI
 	    
 	}
 	$output .= wrap_string_in_tag($global_click_data,'G_CLICK_DATA');
-	#XXX foobar  temp hack
-	if(defined($i_debug_data))
+	
+	if (DEBUG('AB')&& defined($i_debug_data))
 	{
 	    my $debug_out;
 	    foreach my $key (sort keys %{$i_debug_data})
@@ -1597,8 +1599,7 @@ sub _ls_wrap_result_data {
     # need to redo this and fix all method calls
     my $query=shift;
     my $rs = shift;
-    my $start = shift;
-    my $num = shift;
+    my $get_slice = shift;
     
     my $cgi = $C->get_object('CGI');
 
@@ -1615,11 +1616,17 @@ sub _ls_wrap_result_data {
 
     #XXX do we call this conditionally or instead have non-interleaved scenarios
     # set correct limits in result object?
-    #if use interleave
-    my $result_docs_arr_ref = $rs->get_slice_result_docs();
-    #else
-    #    my $result_docs_arr_ref = $rs->get_result_docs();
+    my $result_docs_arr_ref;
     
+    if (defined($get_slice))
+    { 
+	$result_docs_arr_ref = $rs->get_slice_result_docs();
+    }
+    else
+    {
+	$result_docs_arr_ref = $rs->get_result_docs();
+    }
+
     my $doc_count=0;
     
     foreach my $doc_data (@$result_docs_arr_ref) {
