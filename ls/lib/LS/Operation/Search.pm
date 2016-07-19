@@ -192,13 +192,21 @@ sub execute_operation
     } # end if use interleave
     else
     {
-	# Regular A search no interleave
-	#XXX do we need to mess with rows?
 	my $to_search =  {
 			  'a'=>1,
 			 };
-	$result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
+	if($use_B_query)
+	{
+	    $to_search->{'b'} = 1;
+	}
+
+	# Regular A search (or AB search) no interleave
+	#XXX do we need to mess with rows?
+	
+	    $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
     }
+    
+    
     #XXX do we truncate result set here leaving ListSearchResults and the PI filler ignorent or put the paging stuff there
     # for now list search results should take responsibility!
 
