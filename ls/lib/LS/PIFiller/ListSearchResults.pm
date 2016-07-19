@@ -1817,7 +1817,11 @@ sub _ls_wrap_result_data {
         my $record_no = $doc_data->{'record_no'};
         
         $s .= wrap_string_in_tag($record_no, 'record');
-
+	# add for debugging original number in result list
+	my $result_number = $doc_data->{'result_number'};
+	$s .=wrap_string_in_tag($result_number, 'result_number');
+	
+	
         $output .= wrap_string_in_tag($s, 'Item');
     }
 

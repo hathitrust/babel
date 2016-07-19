@@ -139,9 +139,16 @@ sub execute_operation
 	    if ($user_solr_start_row + $current_sz > $N_Interleaved)
 	    {
 		#get at max $current_sz more interleaved results
-		# Reconsider this as it makes determining what number to use for counter
-		# more complicated
+		# XXX redo this as follows:
+		#  Get $N_interleaved results
+		#  Get rest of results from A query starting with offset
+		#
+		#The interleaver should do this as otherwise we would have to
+		# do two different A queries
+		# Can we safely put this in interleaver?
 		$solr_num_rows = $N_Interleaved+ $current_sz;
+
+		
 	    }
 	    my $to_search =  {
 			      'a'=>1,
@@ -167,7 +174,7 @@ sub execute_operation
 	    my $query_md5 = get_query_md5($C);
 	    my $counter_a = get_cached_object($C, $query_md5,'counter_a');
 	    # XXX for debugging
-	    $counter_a =201;
+	  #  $counter_a =201;
 	    
 	    if (defined($counter_a))
 	    {
@@ -180,12 +187,14 @@ sub execute_operation
 			      'a'=>1,
 				 };
 		$result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
+		$result_data->{'il_debug_data'}->{'a_solr_start_row'} = $solr_start_row;
 	    }
 	    else
 	    {
 		#Bug where caching failed or edge case where there hasn't
 		#been an initial page1 query or session timed out
 		ASSERT(0,qq{no cached counter a });
+		#XXX TODO: add code to do il query just to get offset
 	    }
 	}	    
 	
