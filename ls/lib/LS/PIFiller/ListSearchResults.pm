@@ -468,8 +468,7 @@ sub handle_SEARCH_RESULTS_PI
 	    $output.=wrap_string_in_tag('TRUE','SideBySideDisplay');
 	    if ($use_interleave) 
 	    {
-		my $get_slice='true';
-		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs, $get_slice);
+		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
 		$global_click_data=get_global_click_data($C, 'side_intl',  $primary_rs, $B_rs,$i_rs);
 	    }
 	    elsif ($use_B_query)
@@ -483,8 +482,7 @@ sub handle_SEARCH_RESULTS_PI
 	    #interleave single column
 	    # if we are using interleave but not side by side just put interleave 	    
 	    #result in A and don't define B result ref
-	     my $get_slice = 'true';   
-	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs,$get_slice );
+	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs );
     	    $A_label= $interleaver_class . ':' . $B_description;
 	    $global_click_data=get_global_click_data($C, 'intl',  $primary_rs, $B_rs,$i_rs);
 	}
@@ -1614,18 +1612,9 @@ sub _ls_wrap_result_data {
     # since json might contain unescaped xml entities i.e. "&" we need to filter
     # any strings.  Is there a better place to do this?
 
-    #XXX do we call this conditionally or instead have non-interleaved scenarios
-    # set correct limits in result object?
     my $result_docs_arr_ref;
-    
-    if (defined($get_slice))
-    { 
-	$result_docs_arr_ref = $rs->get_slice_result_docs();
-    }
-    else
-    {
-	$result_docs_arr_ref = $rs->get_result_docs();
-    }
+
+    $result_docs_arr_ref = $rs->get_result_docs();
 
     my $doc_count=0;
     
