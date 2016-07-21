@@ -129,27 +129,12 @@ sub execute_operation
     my $result_data ={};    
     if ($use_interleave)
     {
-	if ($user_solr_start_row eq 0 || $user_solr_start_row < $N_Interleaved)
+	if ($user_solr_start_row eq 0 || $user_solr_start_row + $current_sz < $N_Interleaved)
 	{
-	    # check for off by 1 error < N_Interleave
 	    # get interleaved results for first N records 
 	    $solr_start_row=0;	    
 	    $solr_num_rows = $N_Interleaved;
 	    
-	    if ($user_solr_start_row + $current_sz > $N_Interleaved)
-	    {
-		#get at max $current_sz more interleaved results
-		# XXX redo this as follows:
-		#  Get $N_interleaved results
-		#  Get rest of results from A query starting with offset
-		#
-		#The interleaver should do this as otherwise we would have to
-		# do two different A queries
-		# Can we safely put this in interleaver?
-		$solr_num_rows = $N_Interleaved+ $current_sz;
-
-		
-	    }
 	    my $to_search =  {
 			      'a'=>1,
 			      'b'=>1,
@@ -161,12 +146,29 @@ sub execute_operation
 	    # set start and num rows to what user requested for use by
 	    # PIFiller/ListSearchResults::get_slice_result_docs
 	    my $i_rs = $result_data->{'i_rs'};
-	    $i_rs->set_start($user_solr_start_row);
-	    $i_rs->set_num_rows($user_solr_num_rows);
+	  #  $i_rs->set_start($user_solr_start_row);
+	   # $i_rs->set_num_rows($user_solr_num_rows);
 	    # cache counter_a on session
 	    my $counter_a = $result_data->{'il_debug_data'}->{'counter_a'};
 	    my $query_md5 = get_query_md5($C);
 	    set_cached_object($C, $query_md5, 'counter_a', $counter_a);
+	}
+	elsif($user_solr_start_row < $N_Interleaved && $user_solr_start_row + $current_sz > $N_Interleaved)
+	{
+	    #  Get $N_interleaved results
+	    #  list search results then needs to get
+	    # slice from start to N from i_rs and
+	    # from counter -N +1 to sz? from A
+	    
+	    ASSERT(0,qq{start < N start + sz > N});
+	    	# XXX redo this as follows:
+	
+		#  Get rest of results from A query starting with offset
+		#
+		#The interleaver should do this as otherwise we would have to
+		# do two different A queries
+		# Can we safely put this in interleaver?
+		
 	}
 	else
 	{
@@ -269,8 +271,19 @@ sub do_queries
 	
 	($r->{'B_rs'}, $r->{'B_Q'} )                 = $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
     }
-    if($to_search->{'i'} eq 1){
-	($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'});
+    if($to_search->{'i'} eq 1)
+    {
+	#get originally requested rows to pull from $N_Interleaved results
+	my ($user_solr_start_row, $user_solr_num_rows,$current_sz) = $self->get_solr_page_values($C);
+	#not doing Solr query, grabbing from perl array index starts at 0
+	my $start_row = 0;
+	if ($user_solr_start_row >0)
+	{
+	    $start_row=$user_solr_start_row-1;
+	}
+	
+	($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'},$start_row,$user_solr_num_rows);
+
     }
     
     $r->{'user_query_string'} = $user_query_string;
@@ -296,14 +309,14 @@ sub do_query{
     my $searcher = shift;
     my $user_query_string = shift;
     my $query_type = shift;
-    my $start_rows =shift;
+    my $start_row =shift;
     my $num_rows = shift;
     my $AB = shift;
     
     
     my $Q = new LS::Query::Facets($C, $user_query_string, undef, 
                                        {
-                                        'solr_start_row' => $start_rows,
+                                        'solr_start_row' => $start_row,
                                         'solr_num_rows' => $num_rows,
                                         'query_type' => $query_type ,
                                        });
@@ -317,6 +330,36 @@ sub do_query{
 }
 
 # ---------------------------------------------------------------------
+#
+#   XXX TODO:  fix this documentation!
+#  Notes on do_interleaved_query
+    # We need a result set object, but won't populate it by searching
+# populate by interleaving results and copying stuff from real result sets
+# 1 get N_Interleaved results for A and B queries
+#   We need more than N_Interleaved results from each of A and B due to dupes so
+#    we ask A and B to each get N_Interleaved
+# 2) interleave them to produce set of N_Interleaved results
+# 3) currently we don't cache this
+# 4) calculate sub-set of interleaved results needed and provide interleaver with start and end rows based on paging info
+# 5) Interleaver gets subset of interleaved results and returns it
+# 6) XXX need to verify that if asked for start < N and end > N that interleaver will grab 
+# appropriate results from A.  Also need to make sure that N results from the A query will satisfy any possible start < N and end > N within allowed page size limits
+# 7XXX need to figure out how to populate click logs with
+# a) A and B id lists?
+# b) interleaved id list
+# Do we return A and B from 0 to end row?
+
+# we tell the interleaver object the start and end 
+
+    # get subset of $all_docs_ary based on $start_row,$num_rows# array_index - numrows-1
+    #XXX WARNING  if we decide to cache whole result set we need to do something
+    # different
+    # current code below interleaves N results and then grabs appropriate sub-set
+    # Consider having two object on the rs object
+    #  1  sub set stored in result_response_docs_arr_ref so it looks like any other rs
+    #  2 full result set stored in "full_result_response_docs_arr_ref"
+
+# ---------------------------------------------------------------------
 sub do_interleaved_query
 {
     my $self         = shift;
@@ -325,29 +368,37 @@ sub do_interleaved_query
     my $secondary_rs = shift;
     my $B_rs         = shift;
     my $B_Q          = shift;
-        
+    my $start_row =shift;
+    my $num_rows = shift;
+
     my $AB_config=$C->get_object('AB_test_config');
+    my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
     my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
     my $IL = new $interleaver_class;
-    my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);    
 
+    my $num_rows_primary_rs=scalar(@{$primary_rs->{'result_ids'}});
+   # ASSERT($num_rows_primary_rs == $N_Interleaved,qq{A and B must have N=$N_interleaved rows not $num_rows_primary_rs rows});
+    
+    my $end_row = $start_row+$num_rows;
+    my $needed_A_rows;
+    
+    if ($end_row > $N_Interleaved)
+    {
+	$needed_A_rows=$end_row - $N_Interleaved;
+	$end_row = $N_Interleaved;
+    }
+
+    my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);#XXX consider using md5 cgi    
     my $seed = $IL->get_random_seed_from_data($C,$B_Q,$num_found);
     $IL->set_random_seed($seed);
-    
-    
-    # We need a result set object, but won't populate it by searching
-    # populate by interleaving results and copying stuff from real result sets
+      
     
     my  $i_rs = new LS::Result::JSON::Facets('all'); 
-    $i_rs = $IL->get_interleaved($primary_rs,$B_rs,$i_rs, 'random' );
+    $i_rs = $IL->get_interleaved($C,$primary_rs,$B_rs,$i_rs, $start_row,$end_row,'random' );
     my $il_debug_data ;
-# XXX we need to get counter data even if we are not debugging    
-#    if (DEBUG('AB'))
- #   {
-	$il_debug_data = $IL->get_debug_data();
-  #  }
+    $il_debug_data = $IL->get_debug_data();
+      
     return($i_rs,$il_debug_data);
-    
 }
 
 # ---------------------------------------------------------------------

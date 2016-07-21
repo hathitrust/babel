@@ -63,15 +63,21 @@ sub _initialize
 sub get_interleaved
 {
     my $self = shift;
-    
+    my $C    = shift;
     my $rs_a = shift;
     my $rs_b = shift;
     my $rs_out = shift;
+    my $start_row = shift;
+    my $num_rows = shift;
     my @params=@_;
     
     my $a_docs_ary   =  $rs_a->{result_response_docs_arr_ref};
     my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
-    my $out_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
+    my $all_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
+ 
+    # get subset of $all_docs_ary based on $start_row,$num_rows# array_index - numrows-1
+    my @temp=@{$all_docs_ary}[$start_row..($num_rows-1)];
+    my $out_docs_ary=\@temp;
         
     # insert the docs_array into the interleaved result set object
     # XXX we are bypassing internal methods
