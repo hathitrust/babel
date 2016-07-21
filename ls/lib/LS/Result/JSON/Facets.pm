@@ -83,6 +83,8 @@ sub AFTER_ingest_Solr_search_response
     my $docs = $Parsed_Solr_response_ref->{'response'}->{'docs'};
     
     # check to see if there is at least one doc
+    my $count=0;
+    
     if (defined($docs->[0]))
     {
         
@@ -91,7 +93,9 @@ sub AFTER_ingest_Solr_search_response
     
         foreach my $doc (@{$docs})
         {
-            my $result_id = $doc->{'id'};
+	    $count++;
+	    $doc->{'result_number'} = $count;
+	    my $result_id = $doc->{'id'};
             
             push (@result_ids,$result_id);
             # Relevance scores
