@@ -75,8 +75,9 @@ sub get_interleaved
     my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
     my $all_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
  
-    # get subset of $all_docs_ary based on $start_row,$num_rows# array_index - numrows-1
-    my @temp=@{$all_docs_ary}[$start_row..($num_rows-1)];
+    # get subset of $all_docs_ary based on $start_row,$num_rows
+    my $end_row_array_index = $num_rows -1; 
+    my @temp=@{$all_docs_ary}[$start_row..$end_row_array_index];
     my $out_docs_ary=\@temp;
         
     # insert the docs_array into the interleaved result set object
