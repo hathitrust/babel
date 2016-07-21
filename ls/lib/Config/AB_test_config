@@ -1,5 +1,8 @@
 # AB testing
 
+#
+Num_Interleaved_Results=400
+
 #B_description =  BM25 Alg K1=10
 B_description = dismax MARC boost x 100
 #B_description = same as A for A/A testing
@@ -7,7 +10,7 @@ B_description = dismax MARC boost x 100
 side_by_side = 0
 use_B_query= 0
 use_interleave= 1
-display_AB = 0
+display_AB = 1
 interleaver_class = LS::Interleaver::Balanced
 #interleaver_class = LS::Interleaver::AA
 
