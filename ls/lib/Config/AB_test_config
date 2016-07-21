@@ -11,6 +11,7 @@ side_by_side = 0
 use_B_query= 0
 use_interleave= 1
 display_AB = 1
+debug_AB = 0
 interleaver_class = LS::Interleaver::Balanced
 #interleaver_class = LS::Interleaver::AA
 
