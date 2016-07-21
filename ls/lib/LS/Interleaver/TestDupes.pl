@@ -22,14 +22,14 @@ my $il = new LS::Interleaver::Balanced();
 my $num_runs =1000;
 
 my $num_dupes;
-my $num_records=100;
+my $num_records=10;
 my $positions;#=[3, 5, 6, 9,10];
 my $OUTPUT_AB;
-my $OUTPUT_INT;
-#my $OUTPUT_AB = "true";
+my $OUTPUT_INT = "true";
+ $OUTPUT_AB = "true";
 
 for (my $i = 1; $i <= $num_runs; $i++) {
-    $num_dupes=int(rand(100) +1);
+    $num_dupes=int(rand($num_records) +1);
     print "$i\n";
     run_sim($num_dupes);
 }
