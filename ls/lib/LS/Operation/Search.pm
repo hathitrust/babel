@@ -160,7 +160,22 @@ sub execute_operation
 	    # slice from start to N from i_rs and
 	    # from counter -N +1 to sz? from A
 	    
-	    ASSERT(0,qq{start < N start + sz > N});
+	#    ASSERT(0,qq{start < N start + sz > N this is line 163});
+	    #XXX copy code from above to see if it works
+	    # if it does remove this elsif
+ # get interleaved results for first N records 
+	    $solr_start_row=0;	    
+	    $solr_num_rows = $N_Interleaved;
+	    
+	    my $to_search =  {
+			      'a'=>1,
+			      'b'=>1,
+			      'i'=>1,
+			     };
+	    
+	    $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
+	
+	    
 	    	# XXX redo this as follows:
 	
 		#  Get rest of results from A query starting with offset
@@ -378,15 +393,7 @@ sub do_interleaved_query
 
     my $num_rows_primary_rs=scalar(@{$primary_rs->{'result_ids'}});
    # ASSERT($num_rows_primary_rs == $N_Interleaved,qq{A and B must have N=$N_interleaved rows not $num_rows_primary_rs rows});
-    
-    my $end_row = $start_row+$num_rows;
-    my $needed_A_rows;
-    
-    if ($end_row > $N_Interleaved)
-    {
-	$needed_A_rows=$end_row - $N_Interleaved;
-	$end_row = $N_Interleaved;
-    }
+
 
     my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);#XXX consider using md5 cgi    
     my $seed = $IL->get_random_seed_from_data($C,$B_Q,$num_found);
@@ -394,7 +401,7 @@ sub do_interleaved_query
       
     
     my  $i_rs = new LS::Result::JSON::Facets('all'); 
-    $i_rs = $IL->get_interleaved($C,$primary_rs,$B_rs,$i_rs, $start_row,$end_row,'random' );
+    $i_rs = $IL->get_interleaved($C,$primary_rs,$B_rs,$i_rs, $start_row,$num_rows,'random' );
     my $il_debug_data ;
     $il_debug_data = $IL->get_debug_data();
       
