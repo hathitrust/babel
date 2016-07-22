@@ -160,7 +160,7 @@ sub execute_operation
 	    my $query_md5 = get_query_md5($C);
 	    my $counter_a = get_cached_object($C, $query_md5,'counter_a');
 	    # XXX debug_counter for debugging
-	  #  $counter_a =5;
+	    #$counter_a =100;
 	    
 	    if (defined($counter_a))
 	    {

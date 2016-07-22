@@ -124,7 +124,7 @@ sub get_slice
     }
     else
     {
-	 $i_end_row_array_index = $num_rows -1;
+	 $i_end_row_array_index = ($start_row + $num_rows) -1;
     }    
     # get subset of $all_docs_ary based on $start_row,$end_row
     my @all_temp = @{$all_docs_ary}[$start_row..$i_end_row_array_index];
