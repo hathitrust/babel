@@ -114,21 +114,22 @@ sub execute_operation
     my $il_debug_data;
     my ($cgi, $primary_type,$secondary_type)= get_types($cgi);
     my $result_data={};
-
-    # For now just assume we will allways do B query
-    #XXX later consider not doing it
-    # Seriously consider having a dedicated Search subclass just for interleaving so
-    # we don't have to handle the options for A/B queries or just A queries here with tons of
-    # if statements
     
-    # if ( $use_B_query)
-    # {
-    # 	($B_rs,$B_Q)= $self->do_query($C,$searcher,$user_query_string,$primary_type,$solr_start_row, $solr_num_rows,'B');
-    # }
-
-    my $result_data ={};    
-    if ($use_interleave)
+    if (!$use_interleave)
     {
+	# Regular A search (or AB search) no interleave
+	my $to_search =  {
+			  'a'=>1,
+			 };
+	if($use_B_query)
+	{
+	    $to_search->{'b'} = 1;
+	}
+	$result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
+    }
+    else
+    {
+	# use_interleave
 	if ($user_solr_start_row eq 0 || $user_solr_start_row + $current_sz < $N_Interleaved)
 	{
 	    # get interleaved results for first N records 
@@ -143,11 +144,7 @@ sub execute_operation
 	    
 	    $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
 						
-	    # set start and num rows to what user requested for use by
-	    # PIFiller/ListSearchResults::get_slice_result_docs
 	    my $i_rs = $result_data->{'i_rs'};
-	  #  $i_rs->set_start($user_solr_start_row);
-	   # $i_rs->set_num_rows($user_solr_num_rows);
 	    # cache counter_a on session
 	    my $counter_a = $result_data->{'il_debug_data'}->{'counter_a'};
 	    my $query_md5 = get_query_md5($C);
@@ -216,27 +213,8 @@ sub execute_operation
 	}	    
 	
     } # end if use interleave
-    else
-    {
-	my $to_search =  {
-			  'a'=>1,
-			 };
-	if($use_B_query)
-	{
-	    $to_search->{'b'} = 1;
-	}
 
-	# Regular A search (or AB search) no interleave
-	#XXX do we need to mess with rows?
-	
-	    $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
-    }
     
-    
-    #XXX do we truncate result set here leaving ListSearchResults and the PI filler ignorent or put the paging stuff there
-    # for now list search results should take responsibility!
-
-
     my $primary_Q= $result_data->{'primary_Q'};
     
     my %search_result_data =
