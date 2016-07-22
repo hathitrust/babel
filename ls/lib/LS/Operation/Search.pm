@@ -130,7 +130,9 @@ sub execute_operation
     else
     {
 	# use_interleave
-	if ($user_solr_start_row eq 0 || $user_solr_start_row + $current_sz < $N_Interleaved)
+	#Interleaver handles case where $user_solr_start_row < $N_Interleaved && $user_solr_start_row + $current_sz > $N_Interleaved)
+	#It will fill in >N results needed from A starting with counter_a
+	if ($user_solr_start_row eq 0 || $user_solr_start_row < $N_Interleaved)
 	{
 	    # get interleaved results for first N records 
 	    $solr_start_row=0;	    
@@ -150,45 +152,15 @@ sub execute_operation
 	    my $query_md5 = get_query_md5($C);
 	    set_cached_object($C, $query_md5, 'counter_a', $counter_a);
 	}
-	elsif($user_solr_start_row < $N_Interleaved && $user_solr_start_row + $current_sz > $N_Interleaved)
-	{
-	    #  Get $N_interleaved results
-	    #  list search results then needs to get
-	    # slice from start to N from i_rs and
-	    # from counter -N +1 to sz? from A
-	    
-	#    ASSERT(0,qq{start < N start + sz > N this is line 163});
-	    #XXX copy code from above to see if it works
-	    # if it does remove this elsif
- # get interleaved results for first N records 
-	    $solr_start_row=0;	    
-	    $solr_num_rows = $N_Interleaved;
-	    
-	    my $to_search =  {
-			      'a'=>1,
-			      'b'=>1,
-			      'i'=>1,
-			     };
-	    
-	    $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
-	
-	    
-	    	# XXX redo this as follows:
-	
-		#  Get rest of results from A query starting with offset
-		#
-		#The interleaver should do this as otherwise we would have to
-		# do two different A queries
-		# Can we safely put this in interleaver?
-		
-	}
 	else
 	{
 	    #$user_solr_start_row >=  $N_Interleaved)
+	    # get results from A results starting after the last result
+	    #from A in the interleaved results (counter_a)
 	    my $query_md5 = get_query_md5($C);
 	    my $counter_a = get_cached_object($C, $query_md5,'counter_a');
-	    # XXX for debugging
-	  #  $counter_a =201;
+	    # XXX debug_counter for debugging
+	  #  $counter_a =5;
 	    
 	    if (defined($counter_a))
 	    {
@@ -211,10 +183,8 @@ sub execute_operation
 		#XXX TODO: add code to do il query just to get offset
 	    }
 	}	    
-	
-    } # end if use interleave
+    } # end if use_interleave (actually if(!use_interleave) else
 
-    
     my $primary_Q= $result_data->{'primary_Q'};
     
     my %search_result_data =

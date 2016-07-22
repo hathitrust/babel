@@ -93,7 +93,7 @@ sub get_slice
     my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
 
     
-    #XXX ccheck for off by one errors below
+    #XXX ccheck for off by one errors below 
     ASSERT($start_row < $N_Interleaved,qq{start row $start_row must be less than N $N_Interleaved});
     #hard coded should be from config file
     my $MAX_SZ = 100;
@@ -118,7 +118,7 @@ sub get_slice
 	my $debug_data = $self->get_debug_data();
 	my $counter_a=$debug_data->{'counter_a'};
 	my $a_start = $counter_a;
-	my $a_end_row_array_index=$A_rows_needed -1;
+	my $a_end_row_array_index=($a_start + $A_rows_needed) -1;
 	my @A_temp=@{$a_docs_ary};
 	@A_out = @A_temp[$a_start..$a_end_row_array_index];
     }
@@ -127,9 +127,9 @@ sub get_slice
 	 $i_end_row_array_index = $num_rows -1;
     }    
     # get subset of $all_docs_ary based on $start_row,$end_row
-    my @temp=@{$all_docs_ary}[$start_row..$i_end_row_array_index];
+    my @all_temp = @{$all_docs_ary}[$start_row..$i_end_row_array_index];
 
-    my @out_array=(@temp,@A_out);
+    my @out_array=(@all_temp,@A_out);
     my $out_docs_ary=\@out_array;
         
     # insert the docs_array into the interleaved result set object
