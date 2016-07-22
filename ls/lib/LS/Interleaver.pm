@@ -148,6 +148,13 @@ sub get_slice
     
     return $rs_out;
 }
+#----------------------------------------------------------------------
+#
+#  sub __get_interleaved
+#
+#  Takes two arrays and returns an interleaved array
+#  Size of returned array is size of smaller of two input arrays
+#----------------------------------------------------------------------
 
 sub __get_interleaved
 {

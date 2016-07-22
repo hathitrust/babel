@@ -54,17 +54,19 @@ sub _initialize
     #    $self->AFTER_Result_initialize(@_);
 }
 
-
-# ---------------------------------------------------------------------
+#----------------------------------------------------------------------
 #
-#   Does method have to know what's inside arraref?
+#  sub __get_interleaved
 #
+#  Takes two arrays and returns an interleaved array
+#  Size of returned array is size of smaller of two input arrays
 # ---------------------------------------------------------------------
 sub __get_interleaved
 {
    my $self = shift;
 
-    #XXX TODO: replace name rs_  with r_doc_ary or something better.
+   
+   #XXX TODO: replace name rs_  with r_doc_ary or something better.
     #WARNING $rs is not a result set object its the $rs->{result_response_docs_arr_ref}
    
     my $rs_a = shift;
