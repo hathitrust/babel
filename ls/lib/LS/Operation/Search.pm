@@ -134,23 +134,7 @@ sub execute_operation
 	#It will fill in >N results needed from A starting with counter_a
 	if ($user_solr_start_row eq 0 || $user_solr_start_row < $N_Interleaved)
 	{
-	    # get interleaved results for first N records 
-	    $solr_start_row=0;	    
-	    $solr_num_rows = $N_Interleaved;
-	    
-	    my $to_search =  {
-			      'a'=>1,
-			      'b'=>1,
-			      'i'=>1,
-			     };
-	    
-	    $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
-						
-	    my $i_rs = $result_data->{'i_rs'};
-	    # cache counter_a on session
-	    my $counter_a = $result_data->{'il_debug_data'}->{'counter_a'};
-	    my $query_md5 = get_query_md5($C);
-	    set_cached_object($C, $query_md5, 'counter_a', $counter_a);
+	    $result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
 	}
 	else
 	{
@@ -164,23 +148,24 @@ sub execute_operation
 	    
 	    if (defined($counter_a))
 	    {
-		# get start row based on counter and N_Interleaved and just do an A query
-		my $offset= $user_solr_start_row - $N_Interleaved;
-		ASSERT($offset >=  0,qq{offset = $offset user start row $user_solr_start_row less then N $N_Interleaved });
-		$solr_start_row= $offset + $counter_a;
-		#ASSERT(0,qq{calculated start row is $solr_start_row});
-		my $to_search =  {
-			      'a'=>1,
-				 };
-		$result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
-		$result_data->{'il_debug_data'}->{'a_solr_start_row'} = $solr_start_row;
+		
+		$result_data=$self->__do_A_search_from_counter($C,$N_Interleaved,$primary_type,$user_solr_start_row,$solr_num_rows,$counter_a);
+		
 	    }
 	    else
 	    {
-		#Bug where caching failed or edge case where there hasn't
+		#Handle bug where caching failed or edge case where there hasn't
 		#been an initial page1 query or session timed out
-		ASSERT(0,qq{no cached counter a });
-		#XXX TODO: add code to do il query just to get offset
+		# Do regular query for 0 -N interleaved results in order to get
+		# the last A result i.e. counter_a
+		my $throwaway_result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
+		# now get counter_a and do correct interleave
+		# and reset result data
+		my $query_md5 = get_query_md5($C);
+		my $counter_a = get_cached_object($C, $query_md5,'counter_a');
+		ASSERT(defined($counter_a),qq {no cached counter a found} );
+		$result_data=$self->__do_A_search_from_counter($C,$N_Interleaved,$primary_type,$user_solr_start_row,$solr_num_rows,$counter_a);
+
 	    }
 	}	    
     } # end if use_interleave (actually if(!use_interleave) else
@@ -208,8 +193,59 @@ sub execute_operation
 
     return $ST_OK;
 }
+# ---------------------------------------------------------------------
+sub __do_A_search_from_counter
+{
+    my $self                = shift;
+    my $C                   = shift;
+    my $N_Interleaved       = shift;
+    my $primary_type        = shift;
+    my $user_solr_start_row = shift;
+    my $solr_num_rows       = shift;
+    my $counter_a           = shift;
+    
+    # get start row based on counter and N_Interleaved and just do an A query
+    my $offset= $user_solr_start_row - $N_Interleaved;
+    ASSERT($offset >=  0,qq{offset = $offset user start row $user_solr_start_row less then N $N_Interleaved });
+    my $solr_start_row= $offset + $counter_a;
+    #ASSERT(0,qq{calculated start row is $solr_start_row});
+    my $to_search =  {
+		      'a'=>1,
+		     };
+    my $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
+    $result_data->{'il_debug_data'}->{'a_solr_start_row'} = $solr_start_row;
+    return $result_data;
+}
 
 
+# ---------------------------------------------------------------------
+#XXX need better name
+
+sub __do_interleave_N
+{
+    my $self          = shift;
+    my $C             = shift;
+    my $N_Interleaved = shift;
+    my $primary_type  = shift;
+    
+    # get interleaved results for first N records 
+    my $solr_start_row=0;	    
+    my $solr_num_rows = $N_Interleaved;
+    
+    my $to_search =  {
+		      'a'=>1,
+		      'b'=>1,
+		      'i'=>1,
+		     };
+    
+    my $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows);
+    
+    # cache counter_a on session
+    my $counter_a = $result_data->{'il_debug_data'}->{'counter_a'};
+    my $query_md5 = get_query_md5($C);
+    set_cached_object($C, $query_md5, 'counter_a', $counter_a);
+    return $result_data;
+}
 # ---------------------------------------------------------------------
 sub do_queries
 {
