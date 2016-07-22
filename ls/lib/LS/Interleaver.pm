@@ -71,23 +71,35 @@ sub get_interleaved
     my $num_rows = shift;
     my @params=@_;
 
-    my $AB_config=$C->get_object('AB_test_config');
-    my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
     
     my $a_docs_ary   =  $rs_a->{result_response_docs_arr_ref};
     my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
     my $all_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
+    my $rs_out = $self->get_slice($C,$start_row,$num_rows,$a_docs_ary,$all_docs_ary,$rs_out);
+    return $rs_out;
+}
+#----------------------------------------------------------------------
+sub get_slice
+{
+    my $self = shift;
+    my $C    = shift;
+    my $start_row = shift;
+    my $num_rows = shift;
+    my $a_docs_ary = shift;
+    my $all_docs_ary = shift;
+    my $rs_out = shift;
+    
+    my $AB_config=$C->get_object('AB_test_config');
+    my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
 
+    
     #XXX ccheck for off by one errors below
     ASSERT($start_row < $N_Interleaved,qq{start row $start_row must be less than N $N_Interleaved});
     #hard coded should be from config file
     my $MAX_SZ = 100;
     ASSERT($start_row +$num_rows < $N_Interleaved+ $MAX_SZ ,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved plus max sz $MAX_SZ});
 
-
     my @A_out=();# empty array
-    
-   
     my $A_rows_needed;
     my $I_rows_needed;
     my $end_row = $start_row + $num_rows;
