@@ -120,17 +120,16 @@ sub execute_operation
     else
     {
 	# use_interleave
-	# Interleaver handles case where $user_solr_start_row < $N_Interleaved && $user_solr_start_row + $current_sz > $N_Interleaved)
-	# It will fill in >N results needed from A starting with counter_a
 	if ($user_solr_start_row eq 0 || $user_solr_start_row < $N_Interleaved)
 	{
 	    $result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
 	}
 	else
 	{
-	    # $user_solr_start_row >=  $N_Interleaved)
-	    # get results from A results starting after the last result
-	    # from A in the interleaved results (counter_a)
+	    # $user_solr_start_row >=  $N_Interleaved
+	    # Interleaver handles case where $user_solr_start_row < $N_Interleaved && $user_solr_start_row + $current_sz > $N_Interleaved)
+	    # It will fill in > N results needed from A starting with counter_a
+    
 	    my $query_md5 = get_query_md5($C);
 	    my $counter_a = get_cached_object($C, $query_md5,'counter_a');
 	    
@@ -138,15 +137,15 @@ sub execute_operation
 	    {
 		# Handle bug where caching failed or edge case where there hasn't
 		# been an initial page1 query or session timed out
-		# Do regular query for 0 -N interleaved results in order to get
-		# the last A result i.e. counter_a
+		# Do regular query for 0.. $N_interleaved results in order to get
+		# the last A result i.e. $counter_a
 		my $throwaway_result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
-		# now get counter_a and do correct interleave
-		# and reset result data
-		my $query_md5 = get_query_md5($C);
-		my $counter_a = get_cached_object($C, $query_md5,'counter_a');
+
+		$query_md5 = get_query_md5($C);
+		$counter_a = get_cached_object($C, $query_md5,'counter_a');
 		ASSERT(defined($counter_a),qq {no cached counter a found} );
 	    }
+	    
 	    $result_data=$self->__do_A_search_from_counter($C,$N_Interleaved,$primary_type,$user_solr_start_row,$user_solr_num_rows,$counter_a);
 	}	    
     } # end if use_interleave (actually if(!use_interleave) else

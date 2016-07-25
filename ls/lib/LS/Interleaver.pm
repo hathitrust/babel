@@ -79,8 +79,13 @@ sub get_interleaved
     return $rs_out;
 }
 #----------------------------------------------------------------------
-
-
+#
+#     sub get_slice
+#
+#      Return subset of interleaved result set
+#      if the end of the requested rows is past the number of interleaved results ($N_interleaved)
+#      add rows from the a result set starting from one past the last A result in the interleaved result set 
+#
 #----------------------------------------------------------------------
 sub get_slice
 {
@@ -107,7 +112,7 @@ sub get_slice
     
     if( $end_row > $N_Interleaved)
     {
-	@A_out=self->get_rows_from_A($num_rows,$end_row,$N_Interleaved,$a_docs_ary);
+	@A_out=$self->get_rows_from_A($num_rows,$end_row,$N_Interleaved,$a_docs_ary);
 	#end row for extracting from interleaved
 	$i_end_row_array_index = $N_Interleaved -1;
     }
@@ -118,15 +123,11 @@ sub get_slice
     # get subset of $i_docs_ary based on $start_row,$end_row
     my @i_temp = @{$i_docs_ary}[$start_row..$i_end_row_array_index];
 
+    #combine interleaved results with possibly empty results from A results
     my @out_array=(@i_temp,@A_out);
     my $out_docs_ary=\@out_array;
         
-    # insert the docs_array into the interleaved result set object
-    # XXX we are bypassing internal methods
-    # We probably need a new result set object subclass maybe a mock result set object
-    # for now lets just copy the docs and create an array of ids in rank order
-    #    $rs_out->{'result_response_docs_arr_ref'}=($out_docs_ary);
-    $rs_out->__set_result_docs($out_docs_ary); 
+    $rs_out->__set_result_docs($out_docs_ary);
     my $id_ary_ref=[];
     foreach my $doc (@{$out_docs_ary})
     {
