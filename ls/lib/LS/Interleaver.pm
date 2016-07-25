@@ -74,10 +74,13 @@ sub get_interleaved
     
     my $a_docs_ary   =  $rs_a->{result_response_docs_arr_ref};
     my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
-    my $all_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
-    my $rs_out = $self->get_slice($C,$start_row,$num_rows,$a_docs_ary,$all_docs_ary,$rs_out);
+    my $i_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
+    my $rs_out = $self->get_slice($C,$start_row,$num_rows,$a_docs_ary,$i_docs_ary,$rs_out);
     return $rs_out;
 }
+#----------------------------------------------------------------------
+
+
 #----------------------------------------------------------------------
 sub get_slice
 {
@@ -86,13 +89,12 @@ sub get_slice
     my $start_row = shift;
     my $num_rows = shift;
     my $a_docs_ary = shift;
-    my $all_docs_ary = shift;
+    my $i_docs_ary = shift;
     my $rs_out = shift;
     
     my $AB_config=$C->get_object('AB_test_config');
     my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
 
-    
     #XXX ccheck for off by one errors below 
     ASSERT($start_row < $N_Interleaved,qq{start row $start_row must be less than N $N_Interleaved});
     #hard coded should be from config file
@@ -100,36 +102,23 @@ sub get_slice
     ASSERT($start_row +$num_rows < $N_Interleaved+ $MAX_SZ ,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved plus max sz $MAX_SZ});
 
     my @A_out=();# empty array
-    my $A_rows_needed;
-    my $I_rows_needed;
     my $end_row = $start_row + $num_rows;
     my $i_end_row_array_index;
     
     if( $end_row > $N_Interleaved)
     {
-	$A_rows_needed = $end_row - $N_Interleaved;
-	$I_rows_needed =  $num_rows - $A_rows_needed;
-	ASSERT($A_rows_needed + $I_rows_needed == $num_rows,qq{A: $A_rows_needed + I: $I_rows_needed should equal number of rows requested: $num_rows} );
+	@A_out=self->get_rows_from_A($num_rows,$end_row,$N_Interleaved,$a_docs_ary);
 	#end row for extracting from interleaved
 	$i_end_row_array_index = $N_Interleaved -1;
-	# get start and end for extracting from A results
-	# counter_a = start
-	#XXX move counters out of debug data into something better named
-	my $debug_data = $self->get_debug_data();
-	my $counter_a=$debug_data->{'counter_a'};
-	my $a_start = $counter_a;
-	my $a_end_row_array_index=($a_start + $A_rows_needed) -1;
-	my @A_temp=@{$a_docs_ary};
-	@A_out = @A_temp[$a_start..$a_end_row_array_index];
     }
     else
     {
 	 $i_end_row_array_index = ($start_row + $num_rows) -1;
     }    
-    # get subset of $all_docs_ary based on $start_row,$end_row
-    my @all_temp = @{$all_docs_ary}[$start_row..$i_end_row_array_index];
+    # get subset of $i_docs_ary based on $start_row,$end_row
+    my @i_temp = @{$i_docs_ary}[$start_row..$i_end_row_array_index];
 
-    my @out_array=(@all_temp,@A_out);
+    my @out_array=(@i_temp,@A_out);
     my $out_docs_ary=\@out_array;
         
     # insert the docs_array into the interleaved result set object
@@ -148,6 +137,34 @@ sub get_slice
     
     return $rs_out;
 }
+#----------------------------------------------------------------------
+sub get_rows_from_A
+{
+    my $self = shift;
+    my $num_rows=shift;
+    my $end_row = shift;
+    my $N_Interleaved = shift;
+    my $a_docs_ary = shift;
+    
+    my $A_rows_needed;
+    my $I_rows_needed;
+	
+    $A_rows_needed = $end_row - $N_Interleaved;
+    $I_rows_needed =  $num_rows - $A_rows_needed;
+    ASSERT($A_rows_needed + $I_rows_needed == $num_rows,qq{A: $A_rows_needed + I: $I_rows_needed should equal number of rows requested: $num_rows} );
+    # get start and end for extracting from A results
+    # counter_a = start
+    #XXX move counters out of debug data into something better named
+    my $debug_data = $self->get_debug_data();
+    my $counter_a=$debug_data->{'counter_a'};
+    my $a_start = $counter_a;
+    my $a_end_row_array_index=($a_start + $A_rows_needed) -1;
+    my @A_temp=@{$a_docs_ary};
+    my @A_out = @A_temp[$a_start..$a_end_row_array_index];
+    return (@A_out);
+}
+
+    
 #----------------------------------------------------------------------
 #
 #  sub __get_interleaved
