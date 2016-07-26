@@ -103,7 +103,9 @@ sub get_slice
     #XXX ccheck for off by one errors below 
     ASSERT($start_row < $N_Interleaved,qq{start row $start_row must be less than N $N_Interleaved});
     #hard coded should be from config file
-    my $MAX_SZ = 100;
+    my $global_config = $C->get_object('MdpConfig');
+    my $MAX_SZ = $global_config->get('max_records_per_page');
+    #ASSERT(0,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved plus max sz $MAX_SZ});   
     ASSERT($start_row +$num_rows < $N_Interleaved+ $MAX_SZ ,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved plus max sz $MAX_SZ});
 
     my @A_out=();# empty array
@@ -159,8 +161,12 @@ sub get_rows_from_A
     my $debug_data = $self->get_debug_data();
     my $counter_a=$debug_data->{'counter_a'};
     my $a_start = $counter_a;
-    my $a_end_row_array_index=($a_start + $A_rows_needed) -1;
+    my $a_end_row=($a_start + $A_rows_needed);
+    my $a_end_row_array_index = $a_end_row -1;
+            
     my @A_temp=@{$a_docs_ary};
+    my $A_total_rows = scalar(@A_temp);
+    ASSERT($a_end_row < $A_total_rows ,qq{rows requested $a_end_row must be less than the total number of rows < $A_total_rows});
     my @A_out = @A_temp[$a_start..$a_end_row_array_index];
     return (@A_out);
 }
