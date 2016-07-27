@@ -167,6 +167,11 @@ head.ready(function() {
         return false;
       }
       $submit.addClass("btn-loading").attr("disabled", "disabled");
+
+      $(window).on('unload', function() {
+        $submit.removeAttr('disabled');
+      })
+
       return true;
     })
 
@@ -182,7 +187,6 @@ head.ready(function() {
     })
 
   })
-
 
   HT.analytics.getContentGroupData = function() {
     // cheat
