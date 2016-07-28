@@ -122,30 +122,105 @@ sub execute_operation
 	# use_interleave
 	if ($user_solr_start_row eq 0 || $user_solr_start_row < $N_Interleaved)
 	{
-	    $result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
+	    if ($user_solr_start_row +$user_solr_num_rows > $N_Interleaved)
+	    {
+		#get results from interleaver for $start_row up to N
+		# get results from N to $user_solr_num_rows (end) from A results
+		# Calculate
+		my $end_row = $user_solr_start_row + $user_solr_num_rows;
+		# double check off by 1
+		my $A_rows_needed = $end_row - $N_Interleaved;
+		my $I_rows_needed =  $user_solr_num_rows - $A_rows_needed;
+		ASSERT($A_rows_needed + $I_rows_needed == $user_solr_num_rows,qq{A: $A_rows_needed + I: $I_rows_needed should equal number of rows requested: $user_solr_num_rows} );
+		#do regular interleaved query (this will also set counter_A which we need)
+		# XXX check for off by 1 XXX consider fancier stuff to avoid doing A query twice
+		my $i_start= $N_Interleaved - $I_rows_needed;
+		
+		my $to_search =  {
+				  'a'=>1,
+				  'b'=>1,
+				  'i'=>1,
+				  'i_start_end'=>[$i_start,$I_rows_needed],
+				 };
+		my $solr_start_row = 0;
+		my $solr_num_rows = $N_Interleaved;
+		my $i_result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows,$N_Interleaved);
+
+		my $debug_output = scalar(@{$i_result_data->{'i_rs'}->{'result_response_docs_arr_ref'}});
+	#	ASSERT(0,qq{ $debug_output result docs from interleaver start, rows neede = $i_start $I_rows_needed });
+
+		# 		    #hard coded should be from config file
+		# my $global_config = $C->get_object('MdpConfig');
+		# my $MAX_SZ = $global_config->get('max_records_per_page');
+		# #ASSERT(0,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved plus max sz $MAX_SZ});   
+
+		#retrieve results from N_Iterleaved to end i.e. A rows needed
+		#
+
+		my $counter_a=$self->get_counter_a($C,$N_Interleaved,$primary_type );
+
+		$solr_start_row =$N_Interleaved;
+		$solr_num_rows=$A_rows_needed;
+		
+		my $a_result_data=$self->__do_A_search_from_counter($C,$N_Interleaved,$primary_type,$solr_start_row,$solr_num_rows,$counter_a);
+
+		
+		# get doc arrays from both I and A and concatenate
+		#  create id arry
+		#  shove both into i_rs 
+		my @i_array=@{$i_result_data->{'i_rs'}->{'result_response_docs_arr_ref'}};
+		my @a_array=@{$a_result_data->{'primary_rs'}->{'result_response_docs_arr_ref'}};
+		my @new_i = (@i_array , @a_array);
+
+		# create new_i_rs with the combined i + a results and then
+		# replace the old $i_result_data->{i_rs }
+	    
+		my $new_i_rs =new LS::Result::JSON::Facets('all');
+		my $new_i_docs_ary=\@new_i;
+		$new_i_rs ->__set_result_docs($new_i_docs_ary);
+
+		my $id_ary_ref=[];
+		foreach my $doc (@{$new_i_docs_ary})
+		{
+		    my $id = $doc->{'id'};
+		    push (@{$id_ary_ref},$id);
+		}
+		$new_i_rs->__set_result_ids($id_ary_ref);
+		$i_result_data->{'i_rs'} = $new_i_rs;
+		$result_data=$i_result_data;
+				
+	    }
+	    else
+	    {
+		#get all results from interleaver
+		# get slice of interleaved results specifed by user start and num roww
+		my $to_search =  {
+		      'a'=>1,
+		      'b'=>1,
+		      'i'=>1,
+		      'i_start_end'=>[$user_solr_start_row,$user_solr_num_rows],
+		     };
+		# set start and num rows for A and B queries to the number we want interleaved
+		my $solr_start_row=0;	    
+		my $solr_num_rows = $N_Interleaved;
+		
+	        $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows,$N_Interleaved);
+    
+		# cache counter_a on session
+		my $counter_a = $result_data->{'il_debug_data'}->{'counter_a'};
+		my $query_md5 = get_query_md5($C);
+		set_cached_object($C, $query_md5, 'counter_a', $counter_a);
+
+		#$result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
+	    }
 	}
 	else
 	{
 	    # $user_solr_start_row >=  $N_Interleaved
-	    # Interleaver handles case where $user_solr_start_row < $N_Interleaved && $user_solr_start_row + $current_sz > $N_Interleaved)
-	    # It will fill in > N results needed from A starting with counter_a
-    
-	    my $query_md5 = get_query_md5($C);
-	    my $counter_a = get_cached_object($C, $query_md5,'counter_a');
-	    
-	    if(!defined($counter_a))
-	    {
-		# Handle bug where caching failed or edge case where there hasn't
-		# been an initial page1 query or session timed out
-		# Do regular query for 0.. $N_interleaved results in order to get
-		# the last A result i.e. $counter_a
-		my $throwaway_result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
-
-		$query_md5 = get_query_md5($C);
-		$counter_a = get_cached_object($C, $query_md5,'counter_a');
-		ASSERT(defined($counter_a),qq {no cached counter a found} );
-	    }
-	    
+	    # Return results needed from A results using offset from counter_a
+	    # 
+	    my $counter_a=$self->get_counter_a($C,$N_Interleaved,$primary_type );
+	    	    
 	    $result_data=$self->__do_A_search_from_counter($C,$N_Interleaved,$primary_type,$user_solr_start_row,$user_solr_num_rows,$counter_a);
 	}	    
     } # end if use_interleave (actually if(!use_interleave) else
@@ -174,6 +249,65 @@ sub execute_operation
     return $ST_OK;
 }
 # ---------------------------------------------------------------------
+sub get_counter_a
+{
+    my $self = shift;
+    my $C = shift;
+    my $N_Interleaved = shift;
+    my $primary_type = shift;
+    
+    my $query_md5 = get_query_md5($C);
+    my $counter_a = get_cached_object($C, $query_md5,'counter_a');
+    
+    if(!defined($counter_a))
+    {
+	# Handle bug where caching failed or edge case where there hasn't
+	# been an initial page1 query or session timed out
+	# Do regular query for 0.. $N_interleaved results in order to get
+	# the last A result i.e. $counter_a
+	my $throwaway_result_data=$self->__do_interleave_N($C,$N_Interleaved,$primary_type);
+	
+	$query_md5 = get_query_md5($C);
+	$counter_a = get_cached_object($C, $query_md5,'counter_a');
+	ASSERT(defined($counter_a),qq {no cached counter a found} );
+    }
+    return $counter_a;
+}
+
+#----------------------------------------------------------------------
+sub get_rows_from_A
+{
+    #XXX moveed from Interleaver may not be needed
+    my $self = shift;
+    my $num_rows=shift;
+    my $end_row = shift;
+    my $N_Interleaved = shift;
+    my $a_docs_ary = shift;
+    
+    my $A_rows_needed;
+    my $I_rows_needed;
+	
+    $A_rows_needed = $end_row - $N_Interleaved;
+    $I_rows_needed =  $num_rows - $A_rows_needed;
+    ASSERT($A_rows_needed + $I_rows_needed == $num_rows,qq{A: $A_rows_needed + I: $I_rows_needed should equal number of rows requested: $num_rows} );
+    # get start and end for extracting from A results
+    # counter_a = start
+    #XXX move counters out of debug data into something better named
+    my $debug_data = $self->get_debug_data();
+    my $counter_a=$debug_data->{'counter_a'};
+    my $a_start = $counter_a;
+    my $a_end_row=($a_start + $A_rows_needed);
+    my $a_end_row_array_index = $a_end_row -1;
+            
+    my @A_temp=@{$a_docs_ary};
+    my $A_total_rows = scalar(@A_temp);
+    ASSERT($a_end_row < $A_total_rows ,qq{rows requested $a_end_row must be less than the total number of rows < $A_total_rows});
+    my @A_out = @A_temp[$a_start..$a_end_row_array_index];
+    return (@A_out);
+}
+
+#----------------------------------------------------------------------
+
 sub __do_A_search_from_counter
 {
     my $self                = shift;
@@ -216,6 +350,9 @@ sub __do_interleave_N
 		      'a'=>1,
 		      'b'=>1,
 		      'i'=>1,
+		      'i_start_end'=>[$solr_start_row,$solr_num_rows],
+		     # my ($user_solr_start_row, $user_solr_num_rows) = $to_search->{'i_start_end'};
+		      
 		     };
     
     my $result_data=$self->do_queries($C,$to_search,$primary_type,$solr_start_row, $solr_num_rows,$N_Interleaved);
@@ -254,17 +391,12 @@ sub do_queries
     if($to_search->{'i'} eq 1)
     {
 	#get originally requested rows to pull from $N_Interleaved results
-	my ($user_solr_start_row, $user_solr_num_rows,$current_sz) = $self->get_solr_page_values($C);
-	#not doing Solr query, grabbing from perl array index starts at 0
-	my $start_row = 0;
-	#below for no_cached counter_a but seems to have side effects
-	#if ($user_solr_start_row >0 && $user_solr_start_row < $N_Interleaved)
-	if ($user_solr_start_row >0)
-	{
-	    $start_row=$user_solr_start_row-1;
-	}
+	#	my ($user_solr_start_row, $user_solr_num_rows,$current_sz) = $self->get_solr_page_values($C);
+	my $user_solr_start_row = $to_search->{'i_start_end'}->[0];
+	my $user_solr_num_rows  = $to_search->{'i_start_end'}->[1];
 	
-	($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'},$start_row,$user_solr_num_rows);
+	
+	($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'},$user_solr_start_row,$user_solr_num_rows);
 
     }
     
@@ -353,13 +485,13 @@ sub do_interleaved_query
     my $start_row =shift;
     my $num_rows = shift;
 
+    
+    #    my $num_rows_primary_rs=scalar(@{$primary_rs->{'result_ids'}});
+   # ASSERT($num_rows_primary_rs == $N_Interleaved,qq{A and B must have N=$N_interleaved rows not $num_rows_primary_rs rows});
+
     my $AB_config=$C->get_object('AB_test_config');
-    my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
     my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
     my $IL = new $interleaver_class;
-
-    my $num_rows_primary_rs=scalar(@{$primary_rs->{'result_ids'}});
-   # ASSERT($num_rows_primary_rs == $N_Interleaved,qq{A and B must have N=$N_interleaved rows not $num_rows_primary_rs rows});
 
 
     my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);#XXX consider using md5 cgi    

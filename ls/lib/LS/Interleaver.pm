@@ -55,9 +55,12 @@ sub _initialize
 #
 # sub get_interleaved
 
-# Wrapper for __get_interleaved that takes 2 result sets and returns interleaved result doc array.
+# Wrapper for __get_interleaved that takes 2 result sets and returns interleaved result set object
 # Extracts result_docs_aray_ref from result objects from result sets a and b.
-# calls __get_interleaved and return interleaved docs_array_ref
+# calls __get_interleaved (which will return min(a b) doc_array_ref)
+# grabs slice of doc_array_ref according to start_row and num_rows and 
+# return interleaved result_set
+#  
 #
 # ---------------------------------------------------------------------
 sub get_interleaved
@@ -75,7 +78,7 @@ sub get_interleaved
     my $a_docs_ary   =  $rs_a->{result_response_docs_arr_ref};
     my $b_docs_ary   =  $rs_b->{result_response_docs_arr_ref};
     my $i_docs_ary = $self->__get_interleaved($a_docs_ary,$b_docs_ary,@params);
-    my $rs_out = $self->get_slice($C,$start_row,$num_rows,$a_docs_ary,$i_docs_ary,$rs_out);
+    my $rs_out = $self->get_slice($C,$start_row,$num_rows,$i_docs_ary,$rs_out);
     return $rs_out;
 }
 #----------------------------------------------------------------------
@@ -83,8 +86,6 @@ sub get_interleaved
 #     sub get_slice
 #
 #      Return subset of interleaved result set
-#      if the end of the requested rows is past the number of interleaved results ($N_interleaved)
-#      add rows from the a result set starting from one past the last A result in the interleaved result set 
 #
 #----------------------------------------------------------------------
 sub get_slice
@@ -93,43 +94,31 @@ sub get_slice
     my $C    = shift;
     my $start_row = shift;
     my $num_rows = shift;
-    my $a_docs_ary = shift;
     my $i_docs_ary = shift;
     my $rs_out = shift;
-    
+
+    #This section and variables just used for assertion testing
     my $AB_config=$C->get_object('AB_test_config');
     my $N_Interleaved = $AB_config->{'_'}->{'Num_Interleaved_Results'};
-
-    #XXX ccheck for off by one errors below 
+    #not doing Solr query, grabbing from perl array index starts at 0
+        #XXX ccheck for off by one errors below 
     ASSERT($start_row < $N_Interleaved,qq{start row $start_row must be less than N $N_Interleaved});
-    #hard coded should be from config file
-    my $global_config = $C->get_object('MdpConfig');
-    my $MAX_SZ = $global_config->get('max_records_per_page');
-    #ASSERT(0,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved plus max sz $MAX_SZ});   
-    ASSERT($start_row +$num_rows < $N_Interleaved+ $MAX_SZ ,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved plus max sz $MAX_SZ});
+    ASSERT($start_row +$num_rows <= $N_Interleaved ,qq{start row $start_row plus num_rows $num_rows must be less than N $N_Interleaved });
 
-    my @A_out=();# empty array
-    my $end_row = $start_row + $num_rows;
-    my $i_end_row_array_index;
-    
-    if( $end_row > $N_Interleaved)
+    my $start_row_array_index = 0;
+    if ($start_row >0)
     {
-	@A_out=$self->get_rows_from_A($num_rows,$end_row,$N_Interleaved,$a_docs_ary);
-	#end row for extracting from interleaved
-	$i_end_row_array_index = $N_Interleaved -1;
+	$start_row_array_index=$start_row;
     }
-    else
-    {
-	 $i_end_row_array_index = ($start_row + $num_rows) -1;
-    }    
-    # get subset of $i_docs_ary based on $start_row,$end_row
-    my @i_temp = @{$i_docs_ary}[$start_row..$i_end_row_array_index];
-
-    #combine interleaved results with possibly empty results from A results
-    my @out_array=(@i_temp,@A_out);
-    my $out_docs_ary=\@out_array;
+    
+    my $i_end_row_array_index;
+    $i_end_row_array_index = ($start_row + $num_rows) -1;
         
+    # get subset of $i_docs_ary based on $start_row,$end_row
+    my @i_temp = @{$i_docs_ary}[$start_row_array_index..$i_end_row_array_index];
+    my $out_docs_ary=\@i_temp;
     $rs_out->__set_result_docs($out_docs_ary);
+
     my $id_ary_ref=[];
     foreach my $doc (@{$out_docs_ary})
     {
@@ -139,36 +128,6 @@ sub get_slice
     $rs_out->__set_result_ids($id_ary_ref);
     
     return $rs_out;
-}
-#----------------------------------------------------------------------
-sub get_rows_from_A
-{
-    my $self = shift;
-    my $num_rows=shift;
-    my $end_row = shift;
-    my $N_Interleaved = shift;
-    my $a_docs_ary = shift;
-    
-    my $A_rows_needed;
-    my $I_rows_needed;
-	
-    $A_rows_needed = $end_row - $N_Interleaved;
-    $I_rows_needed =  $num_rows - $A_rows_needed;
-    ASSERT($A_rows_needed + $I_rows_needed == $num_rows,qq{A: $A_rows_needed + I: $I_rows_needed should equal number of rows requested: $num_rows} );
-    # get start and end for extracting from A results
-    # counter_a = start
-    #XXX move counters out of debug data into something better named
-    my $debug_data = $self->get_debug_data();
-    my $counter_a=$debug_data->{'counter_a'};
-    my $a_start = $counter_a;
-    my $a_end_row=($a_start + $A_rows_needed);
-    my $a_end_row_array_index = $a_end_row -1;
-            
-    my @A_temp=@{$a_docs_ary};
-    my $A_total_rows = scalar(@A_temp);
-    ASSERT($a_end_row < $A_total_rows ,qq{rows requested $a_end_row must be less than the total number of rows < $A_total_rows});
-    my @A_out = @A_temp[$a_start..$a_end_row_array_index];
-    return (@A_out);
 }
 
     
