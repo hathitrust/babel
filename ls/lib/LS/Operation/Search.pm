@@ -72,14 +72,14 @@ sub _initialize
 
     $self->SUPER::_initialize($C, $act);
 }
-
-
-
 # ---------------------------------------------------------------------
 
 =item execute_operation
 
 Perform the database operations necessary for Search action
+Main part of this is deciding what searches to do according 
+to config file:  A = default search, B = default + B algorithm
+Interleaved means Default + B algorithm with results interleaved up to N_Interleaved
 
 =cut
 
@@ -172,6 +172,13 @@ sub execute_operation
 
     return $ST_OK;
 }
+# ---------------------------------------------------------------------
+#
+#     sub get_mixed_results
+#
+#     Get first part of results from end of interleaved results and merge with second part of results
+#     from an A query starting immediately after last A query in interleaved result
+
 # ---------------------------------------------------------------------
 sub get_mixed_results
 {
@@ -378,7 +385,6 @@ sub do_query{
     my $num_rows = shift;
     my $AB = shift;
     
-    
     my $Q = new LS::Query::Facets($C, $user_query_string, undef, 
                                        {
                                         'solr_start_row' => $start_row,
@@ -395,34 +401,12 @@ sub do_query{
 }
 
 # ---------------------------------------------------------------------
-#
-#   XXX TODO:  fix this documentation!
-#  Notes on do_interleaved_query
-    # We need a result set object, but won't populate it by searching
-# populate by interleaving results and copying stuff from real result sets
-# 1 get N_Interleaved results for A and B queries
-#   We need more than N_Interleaved results from each of A and B due to dupes so
-#    we ask A and B to each get N_Interleaved
-# 2) interleave them to produce set of N_Interleaved results
-# 3) currently we don't cache this
-# 4) calculate sub-set of interleaved results needed and provide interleaver with start and end rows based on paging info
-# 5) Interleaver gets subset of interleaved results and returns it
-# 6) XXX need to verify that if asked for start < N and end > N that interleaver will grab 
-# appropriate results from A.  Also need to make sure that N results from the A query will satisfy any possible start < N and end > N within allowed page size limits
-# 7XXX need to figure out how to populate click logs with
+
+#  Get $N_Interleaved results for A and B queries
+#  and return slice of results specified by $start_row and $num_rows 
+# XXX need to figure out how to populate click logs with
 # a) A and B id lists?
 # b) interleaved id list
-# Do we return A and B from 0 to end row?
-
-# we tell the interleaver object the start and end 
-
-    # get subset of $all_docs_ary based on $start_row,$num_rows# array_index - numrows-1
-    #XXX WARNING  if we decide to cache whole result set we need to do something
-    # different
-    # current code below interleaves N results and then grabs appropriate sub-set
-    # Consider having two object on the rs object
-    #  1  sub set stored in result_response_docs_arr_ref so it looks like any other rs
-    #  2 full result set stored in "full_result_response_docs_arr_ref"
 
 # ---------------------------------------------------------------------
 sub do_interleaved_query
@@ -454,11 +438,6 @@ sub do_interleaved_query
 }
 
 # ---------------------------------------------------------------------
-
-
-
-
-
 sub get_types
 {
     my $cgi = shift;
