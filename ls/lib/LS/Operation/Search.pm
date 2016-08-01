@@ -146,7 +146,11 @@ sub execute_operation
 	    my $counter_a=$self->get_counter_a($C,$N_Interleaved,$primary_type );
 	    	    
 	    $result_data=$self->__do_A_search_from_counter($C,$N_Interleaved,$primary_type,$user_solr_start_row,$user_solr_num_rows,$counter_a);
-	}	    
+	}
+	# line below somehow triggers $B_rs to be defined but not blessed!
+	my $il_debug=get_il_debug_data($result_data);
+	$result_data->{'il_debug_data'}->{'counts'} = qq{a= $il_debug->{'a'}, b= $il_debug->{'b'}, i= $il_debug->{'i'} };
+	
     } # end if use_interleave (actually if(!use_interleave) else
 
     my $primary_Q= $result_data->{'primary_Q'};
@@ -172,6 +176,34 @@ sub execute_operation
 
     return $ST_OK;
 }
+# ---------------------------------------------------------------------
+sub get_il_debug_data
+{
+    my $rd=shift;
+    my $debug_count={};
+        
+    my $A_id_ref = $rd->{'primary_rs'}->{'result_ids'};
+    my $B_id_ref = $rd->{'B_rs'}->{'result_ids'};
+    my $I_id_ref =$rd->{'i_rs'}->{'result_ids'};
+
+    if (defined($A_id_ref))
+    {
+	$debug_count->{'a'} = scalar(@{$A_id_ref});		       
+    }
+    if (defined($B_id_ref))
+    {
+	$debug_count->{'b'} = scalar(@{$B_id_ref});
+    }
+    if (defined($I_id_ref))
+    {
+	$debug_count->{'i'} = scalar(@{$I_id_ref});
+    }
+    
+    return $debug_count;
+    
+}
+
+
 # ---------------------------------------------------------------------
 #
 #     sub get_mixed_results
