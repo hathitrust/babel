@@ -484,6 +484,7 @@ sub handle_SEARCH_RESULTS_PI
 	    #result in A and don't define B result ref
 	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs );
     	    $A_label= $interleaver_class . ':' . $B_description;
+	    # XXX need to handle different cases of interleaving
 	    $global_click_data=get_global_click_data($C, 'intl',  $primary_rs, $B_rs,$i_rs);
 	}
 	else
@@ -1951,6 +1952,7 @@ sub get_global_click_data
     $g_hashref->{'query_string'}  = escape_for_json($query_string) ;
     $g_hashref->{'test_type'}          = $test_type ;
     $g_hashref->{'starting_result_no'}  = $starting_result_number;
+    $g_hashref->{'entries_per_page'}  = $entries_per_page ;
     $g_hashref->{'referer'} = escape_for_json($referer);
     $g_hashref->{'logged_in'}     = $is_logged_in;   
     $g_hashref->{'cgi'}          =  escape_for_json($appURL);
@@ -1970,7 +1972,9 @@ sub get_global_click_data
     #   $g_hashref->{''}          = ;
     
     # arrays of result ids in relevance order for each applicable A, B, I(interleaved)
-    $g_hashref = add_result_arrays($rs_hashref,$g_hashref);
+    my $AB_config=$C->get_object('AB_test_config');
+    
+    $g_hashref = add_result_arrays($rs_hashref,$g_hashref,$AB_config);
     
     my    $utf8_encoded_json_text = encode_json $g_hashref;
     return($utf8_encoded_json_text);    
@@ -2007,13 +2011,25 @@ sub add_result_arrays
 {
     my $rs_hashref = shift;
     my $g_hashref = shift;
+    my $AB_config = shift;
+    my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
+    my $num_AB_results=$AB_config->{'_'}->{'num_AB_results'};   
     
     foreach my $key (qw(A B I))
     {
 	if (exists($rs_hashref->{$key}) && defined($rs_hashref->{$key}))
 	{
 	    my $rs =$rs_hashref->{$key};
-	    my $ary_ref=$rs->get_result_ids();
+	    my $ary_ref=[];
+	    my $temp_ary_ref=$rs->get_result_ids();
+	    if ($key ne 'I' && $use_interleave )
+	    {
+		$ary_ref= __truncate_ary_ref($temp_ary_ref,$num_AB_results);
+	    }
+	    else
+	    {
+		$ary_ref=$temp_ary_ref;
+	    }
 	    my $hash_key=$key . '_rs';
 	    $g_hashref->{$hash_key} = $ary_ref;
 	}
@@ -2021,6 +2037,19 @@ sub add_result_arrays
     }
     return $g_hashref
 }
+#----------------------------------------------------------------------
+sub __truncate_ary_ref
+{
+    my $ary_ref=shift;
+    my $length_limit = shift;
+    my $new_length=$length_limit -1;
+    my @temp=@{$ary_ref};
+    if ($#temp > $new_length){
+	$#temp=$new_length;
+    }
+    return (\@temp);
+}
+
 #----------------------------------------------------------------------
 
 1;
