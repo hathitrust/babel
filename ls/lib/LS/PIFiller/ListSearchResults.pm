@@ -1973,8 +1973,17 @@ sub get_global_click_data
     
     # arrays of result ids in relevance order for each applicable A, B, I(interleaved)
     my $AB_config=$C->get_object('AB_test_config');
+    my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
+    my $AB_result_log_limit=$AB_config->{'_'}->{'num_AB_results'};
+    my $end_row = $starting_result_number +$entries_per_page-1;
+    if ($end_row < $AB_result_log_limit)
+    {
+	$AB_result_log_limit= $end_row;
+    }
     
-    $g_hashref = add_result_arrays($rs_hashref,$g_hashref,$AB_config);
+    # limit the number of A and B results depending on last row seen or
+    # config limit
+    $g_hashref = add_result_arrays($rs_hashref,$g_hashref,$use_interleave,$AB_result_log_limit);
     
     my    $utf8_encoded_json_text = encode_json $g_hashref;
     return($utf8_encoded_json_text);    
@@ -2009,11 +2018,10 @@ sub clean_string
 
 sub add_result_arrays
 {
-    my $rs_hashref = shift;
-    my $g_hashref = shift;
-    my $AB_config = shift;
-    my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
-    my $num_AB_results=$AB_config->{'_'}->{'num_AB_results'};   
+    my $rs_hashref     = shift;
+    my $g_hashref      = shift;
+    my $use_interleave = shift;
+    my $num_AB_results = shift;
     
     foreach my $key (qw(A B I))
     {
