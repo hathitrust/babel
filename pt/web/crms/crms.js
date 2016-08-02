@@ -1,14 +1,14 @@
 head.ready(function() {
 
-    // if ( $(".navbar-static-top").data('loggedin') != 'YES' && window.location.protocol == 'https:' ) {
-    //     // horrible hack
-    //     var target = window.location.href.replace(/\$/g, '%24');
-    //     var href = 'https://weblogin.umich.edu/?cosign-___HOST___&___TARGET___'
-    //     href = href.replace('___TARGET___', target);
-    //     href = href.replace('___HOST___', window.location.hostname);
-    //     window.location.href = href;
-    //     return;
-    // }
+    if ( $(".navbar-static-top").data('loggedin') != 'YES' && window.location.protocol == 'https:' ) {
+        // horrible hack
+        var target = window.location.href.replace(/\$/g, '%24');
+        var href = 'https://weblogin.umich.edu/?cosign-___HOST___&___TARGET___'
+        href = href.replace('___TARGET___', target);
+        href = href.replace('___HOST___', window.location.hostname);
+        window.location.href = href;
+        return;
+    }
 
     // define CRMS state
     HT.crms_state = 'CRMS-US';
