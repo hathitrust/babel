@@ -386,7 +386,7 @@ sub do_queries
     {
 	my $user_solr_start_row = $to_search->{'i_start_end'}->[0];
 	my $user_solr_num_rows  = $to_search->{'i_start_end'}->[1];
-	
+
 	($r->{'i_rs'}, $r->{'il_debug_data'} )       = $self->do_interleaved_query($C,$r->{'primary_rs'}, $r->{'secondary_rs'},$r->{'B_rs'},$r->{'B_Q'},$user_solr_start_row,$user_solr_num_rows);
     }
     
@@ -455,13 +455,22 @@ sub do_interleaved_query
     my $AB_config=$C->get_object('AB_test_config');
     my $interleaver_class = $AB_config->{'_'}->{'interleaver_class'};
     my $IL = new $interleaver_class;
-
+    my $il_debug_data ;
+    my $i_rs = new LS::Result::JSON::Facets('all'); 
+    
     my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);#XXX consider using md5 cgi    
+    # zero results nothing to interleave. Return a result set with an empty id array ref
+    if ($num_found == 0)
+    {
+	$i_rs->__set_result_ids([]);
+	return ($i_rs,$il_debug_data);
+    }
+    
     my $seed = $IL->get_random_seed_from_data($C,$B_Q,$num_found);
     $IL->set_random_seed($seed);
       
     
-    my  $i_rs = new LS::Result::JSON::Facets('all'); 
+
     $i_rs = $IL->get_interleaved($C,$primary_rs,$B_rs,$i_rs, $start_row,$num_rows,'random' );
     my $il_debug_data ;
     $il_debug_data = $IL->get_debug_data();

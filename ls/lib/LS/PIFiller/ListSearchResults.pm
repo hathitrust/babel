@@ -1980,10 +1980,14 @@ sub get_global_click_data
     {
 	$AB_result_log_limit= $end_row;
     }
-    
+    #XXXWARNING assumes that A and B find same number of results!
+    # Check that we found some results and then
     # limit the number of A and B results depending on last row seen or
     # config limit
-    $g_hashref = add_result_arrays($rs_hashref,$g_hashref,$use_interleave,$AB_result_log_limit);
+    # 
+    if ($g_hashref->{'num_found'} >0){
+	$g_hashref = add_result_arrays($rs_hashref,$g_hashref,$use_interleave,$AB_result_log_limit);
+    }
     
     my    $utf8_encoded_json_text = encode_json $g_hashref;
     return($utf8_encoded_json_text);    
