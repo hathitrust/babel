@@ -111,9 +111,15 @@ sub get_slice
 	$start_row_array_index=$start_row;
     }
     
-    my $i_end_row_array_index;
-    $i_end_row_array_index = ($start_row + $num_rows) -1;
-        
+    my $i_end_row_array_size  = ($start_row + $num_rows);
+    my $i_size = scalar(@{$i_docs_ary});
+    if ($i_size < $i_end_row_array_size)
+    {
+	#out of records so set end size to size of array
+	$i_end_row_array_size = $i_size
+    }
+    my $i_end_row_array_index = $i_end_row_array_size -1;
+    
     # get subset of $i_docs_ary based on $start_row,$end_row
     my @i_temp = @{$i_docs_ary}[$start_row_array_index..$i_end_row_array_index];
     my $out_docs_ary=\@i_temp;
