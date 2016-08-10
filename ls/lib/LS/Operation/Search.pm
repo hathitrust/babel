@@ -292,7 +292,7 @@ sub get_counter_a
 	my $i_start = 0;
 	my $i_rows  = $N_Interleaved;
 
-	my $throwaway_result_data=$self->__do_interleave_N($C,,$primary_type,$i_start,$i_rows);
+	my $throwaway_result_data=$self->__do_interleave($C,$primary_type,$i_start,$i_rows);
 	
 	$counter_a = get_cached_object($C, $query_md5,'counter_a');
 	ASSERT(defined($counter_a),qq {no cached counter a found} );
