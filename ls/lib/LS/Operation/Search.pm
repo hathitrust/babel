@@ -181,10 +181,23 @@ sub get_il_debug_data
 {
     my $rd=shift;
     my $debug_count={};
-        
-    my $A_id_ref = $rd->{'primary_rs'}->{'result_ids'};
-    my $B_id_ref = $rd->{'B_rs'}->{'result_ids'};
-    my $I_id_ref =$rd->{'i_rs'}->{'result_ids'};
+    my $A_id_ref;
+    my $B_id_ref;
+    my $I_id_ref;
+
+    if (exists($rd->{'primary_rs'}))
+    {
+	$A_id_ref = $rd->{'primary_rs'}->{'result_ids'};
+    }
+    if (exists($rd->{'B_rs'}))
+    {
+	$B_id_ref = $rd->{'B_rs'}->{'result_ids'};
+    }
+    if (exists($rd->{'B_rs'}))
+    {
+	$I_id_ref =$rd->{'i_rs'}->{'result_ids'};
+    }
+    
 
     if (defined($A_id_ref))
     {
