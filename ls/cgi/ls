@@ -120,13 +120,17 @@ ASSERT($AB_test_config, qq{Error in testing config file $AB_test_config_filename
 # 1 disables checking object name
 $C->set_object('AB_test_config', $AB_test_config,1);
 if ($AB_test_config->{'_'}->{'debug_AB'} == 1)
- {
-      $cgi->append(
-      		 -name  => 'debug',
-      		 -value => 'AB'
-      		 );
-      $C->set_object('CGI', $cgi);
- }
+{
+    if (!defined($cgi->param('debug')))
+    {
+	$cgi->append(
+		     -name  => 'debug',
+		     -value => 'AB'
+		    );
+	$C->set_object('CGI', $cgi);
+    }
+}
+
 
 
 # additional configuration for facets and relevance weighting
