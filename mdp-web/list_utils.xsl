@@ -1212,7 +1212,9 @@
 	    <strong>
 	      <xsl:value-of select="ABLabel"/>
 	         <xsl:text> : </xsl:text>
-	      <xsl:value-of select="ItemID"/>
+		 <xsl:value-of select="ItemID"/>
+	         <xsl:text> : </xsl:text>
+		 <xsl:value-of select="result_number"/>
 	  </strong>
 	  </h4>
 	</xsl:if>
