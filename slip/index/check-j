@@ -135,7 +135,7 @@ unless (defined $LIMIT_SEGS) {
 
 # Do not try to check this shard while I am running already
 my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
-my $Lock_File = "/tmp/check-" . $lock_str . "-lock.sem";
+my $Lock_File = Sl_Utils::slip_semaphore_file("check-" . $lock_str);
 my $Semaphore = new Semaphore($Lock_File);
 unless ($Semaphore) {
     __output("Could not get semaphore file: $Lock_File\n");

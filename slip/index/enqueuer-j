@@ -159,7 +159,7 @@ if (Search::Site::get_server_site_name() ne 'macc') {
 }
 
 # Do not try to enqueue ids while I am running already
-my $Lock_File = "/tmp/enqueuer-$RUN-lock.sem";
+my $Lock_File = Sl_Utils::slip_semaphore_file("enqueuer-$RUN");
 my $Semaphore = new Semaphore($Lock_File);
 unless ($Semaphore) {
     __output("Could not get semaphore file: $Lock_File\n");
@@ -306,7 +306,7 @@ sub enqueue_from_holdings_delta {
 
     my $s;
     my $config = $C->get_object('MdpConfig');
-    
+
     # The policy is to use run-11 to catch up on holdings updates
     # rather than trying to do it within the re-indexing run-10.
     my $production_run = $config->get('distinguished_production_run_number');
@@ -330,7 +330,7 @@ sub enqueue_from_holdings_delta {
 
     my $loading_disabled = Db::holdings_loading_disabled($C, $dbh);
     my $disabled = $loading_disabled ? 'YES' : 'no';
-    
+
     if ($holdings_deltas_size > 0) {
         $s = qq{total size=$holdings_deltas_size in ht_repository.holdings_deltas to add to queue between versions $last_loaded_version and $latest_ready_version loading_disabled=$disabled};
         __output(qq{$s\n});
@@ -572,7 +572,7 @@ sub qu_Log_misc {
     my ($C, $run, $s) = @_;
 
     return if ($CHECK);
-    
+
     my $s0 = qq{enqueuer-j: $s at: } . Utils::Time::iso_Time();
     SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run);
     SLIP_Utils::Log::this_string($C, $s0, 'enqueuer_logfile', '___RUN___', $run);

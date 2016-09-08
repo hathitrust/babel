@@ -80,6 +80,8 @@ use SLIP_Utils::Common;
 use SLIP_Utils::Log;
 use SLIP_Utils::DatabaseWrapper;
 
+use Sl_Utils;
+
 
 sub sd_get_usage {
     my $s .= qq{Usage: driver-j -r run [-d][-X co][-T][-K]
@@ -166,7 +168,7 @@ use constant BUSY_Set => -1;
 use constant BUSY_Reset => -2;
 
 # Exit driver-j if another has the semaphore to prevent piling up
-my $Lock_File = "/tmp/driver-$RUN-lock.sem";
+my $Lock_File = Sl_Utils::slip_semaphore_file("driver-$RUN");
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     my $rc = $SLIP_Utils::States::RC_DRIVER_NO_SEM;
@@ -1028,13 +1030,13 @@ sub Building_not_finalized {
     my ($C, $dbh, $run) = @_;
 
     my $num_still_running = 0;
-    
+
     foreach my $__shard (@NUM_SHARDS_LIST) {
         my $allocated = Db::Select_shard_num_allocated($C, $dbh, $run, $__shard);
         $num_still_running += $allocated;
     }
-    
-    return $num_still_running; 
+
+    return $num_still_running;
 }
 
 # ---------------------------------------------------------------------

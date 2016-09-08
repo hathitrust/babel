@@ -109,13 +109,13 @@ if (! $INTERACTIVE) {
     my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
     __output($s);
     __non_interactive_err_output($rc, $s);
-    
+
     exit $rc;
 }
 
 # Do not try to commit this shard while I am running already
 my $lock_shard = $opt_R;
-my $Lock_File = "/tmp/commit-$lock_shard-lock.sem";
+my $Lock_File = Sl_Utils::slip_semaphore_file("commit-$lock_shard");
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     __output("Could not get semaphore file: $Lock_File\n");
@@ -151,7 +151,7 @@ eval {
         my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
         __output($s);
         __non_interactive_err_output($rc, $s);
-        
+
         exit $rc;
     }
 

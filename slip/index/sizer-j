@@ -55,6 +55,9 @@ use SLIP_Utils::Log;
 use SLIP_Utils::Released;
 use SLIP_Utils::DatabaseWrapper;
 
+use Sl_Utils;
+
+
 my $INTERACTIVE = $ENV{TERM};
 if ($INTERACTIVE) {
     if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
@@ -115,7 +118,7 @@ $C->set_object('MdpConfig', $config);
 
 # Doing a lot of commits in the shard loop below may take more time
 # that allowed for in cron
-my $Lock_File = "/tmp/sizer-$RUN-lock.sem";
+my $Lock_File = Sl_Utils::slip_semaphore_file("sizer-$RUN");
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     __output("could not get semaphore. exit...\n");
@@ -130,7 +133,7 @@ my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'sizer-j');
 
 # Only determeind release status a run that exists.  When re-numbering
 # from re-indexing run 10 to production run 11, run 11 will first be
-# deleted. 
+# deleted.
 
 my $ct = Db::Test_j_rights_timestamp($C, $DBH, $RUN);
 if ($ct == 0) {
@@ -160,7 +163,7 @@ exit 0;
 
 =item __get_release_status
 
-Description: If it is after 6 a.m. today and there is not a snapshot with 
+Description: If it is after 6 a.m. today and there is not a snapshot with
              today's date: error
 
 =cut
@@ -173,9 +176,9 @@ sub __get_release_status {
 
     my $todays_iso_date = `date '+%F'`;
     chomp($todays_iso_date);
-    my $unix_today_at_6am = Utils::Time::unix_Time($todays_iso_date . 'T06:00:00'); 
+    my $unix_today_at_6am = Utils::Time::unix_Time($todays_iso_date . 'T06:00:00');
     my $unix_now = time();
-    
+
     if ($unix_now > $unix_today_at_6am) {
         my ($index_released, $m) = SLIP_Utils::Released::released();
         if ($index_released) {
@@ -188,7 +191,7 @@ sub __get_release_status {
     else {
         $status = $SLIP_Utils::States::Srl_Rel_Pending;
     }
-    
+
     __output(qq{Release status=$status\n});
 
     return $status;
@@ -213,7 +216,7 @@ sub sz_update_release_status {
 
     # update the release status
     foreach my $shard (@shards) {
-        Db::set_shard_release_state($C, $dbh, $run, $shard, $status) 
+        Db::set_shard_release_state($C, $dbh, $run, $shard, $status)
             unless ($status == $SLIP_Utils::States::Srl_Rel_Wrong_Host);
     }
 }

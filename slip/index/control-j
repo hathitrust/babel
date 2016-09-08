@@ -68,6 +68,8 @@ use SLIP_Utils::States;
 use SLIP_Utils::Log;
 use SLIP_Utils::DatabaseWrapper;
 
+use Sl_Utils;
+
 # Flush i/o
 $| = 1;
 
@@ -1065,7 +1067,8 @@ sub c_Reset_driver {
 
     my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
     my $busy_file = $flags_dir . '/' . 'busy';
-    my $driver_Lock_File = "/tmp/driver-$run-lock.sem";
+
+    my $driver_Lock_File = Sl_Utils::slip_semaphore_file("driver-$run-lock");
 
     my $s;
     my $dev = $ENV{HT_DEV};

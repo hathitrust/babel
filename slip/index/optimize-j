@@ -161,7 +161,7 @@ if ($INTERACTIVE) {
 # Do not try to optimize this shard or repeat all_shards optimization
 # while I am running already
 my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
-my $Lock_File = "/tmp/optimize-" . $lock_str . "-lock.sem";
+my $Lock_File = Sl_Utils::slip_semaphore_file("optimize-" . $lock_str);
 my $Semaphore = new Semaphore($Lock_File);
 unless ($Semaphore) {
     __output("Could not get semaphore file: $Lock_File\n");
@@ -244,7 +244,7 @@ sub do_FULL_optimize {
     # POSSIBLY NOTREACHED
 
     my $do = 0;
-    
+
     eval {
         # Is the second segment large enough for this shard to be
         # selected for optimization to one segment?
@@ -257,7 +257,7 @@ sub do_FULL_optimize {
                 $do = 1;
             }
         }
-        
+
         my $now = Utils::Time::iso_Time();
         my $sizes = Scheduler::get_segsizes($C, $run, $shard);
         my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED[shard=$shard]' : 'NO') . qq{ at $now};
@@ -409,7 +409,7 @@ sub get_segment_list {
 
 # ---------------------------------------------------------------------
 
-=item __commit_pre_optimize 
+=item __commit_pre_optimize
 
 Flush in-memory segments.  Trying to make sure Solr 4.x optimizes all
 segments.
@@ -419,7 +419,7 @@ segments.
 # ---------------------------------------------------------------------
 sub __commit_pre_optimize {
     my ($C, $shard, $indexer, $stats_ref) = @_;
-    
+
     my $rc = 0;
 
     my $success_str = '';
@@ -491,7 +491,7 @@ sub c_optimize {
                     last
                       unless ($num_orig_segments == 1);
                 }
-                
+
                 # Optimize
                 if ($NOOP) {
                     ($index_state, $stats_ref->{optimize}{elapsed}) = (IX_INDEXED, 0);
@@ -503,10 +503,10 @@ sub c_optimize {
                 $s = qq{OPTIMIZE: [start] run=$RUN shard=$shard staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
                 __output("$s\n");
                 Log_optimize($C, $run, $shard, $s);
-                
+
                 my $elapsed = $stats_ref->{optimize}{elapsed};
                 $total_elapsed += $elapsed;
-                
+
                 unless (Search::Constants::indexing_failed($index_state)) {
                     $success_str = SLIP_Utils::Common::IXconstant2string(IX_INDEXED);
                 }
@@ -514,13 +514,13 @@ sub c_optimize {
                     $success_str = SLIP_Utils::Common::IXconstant2string($index_state);
                     $rc = $SLIP_Utils::States::RC_SOLR_ERROR;
                 }
-                
+
                 my $e = sprintf(qq{elapsed=%.3f total=%.3f}, $elapsed, $total_elapsed);
                 $s = qq{OPTIMIZE: [done] run=$RUN shard=$shard index_state=$success_str $e staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
                 Log_optimize($C, $run, $shard, $s);
                 __output("$s\n");
                 __non_interactive_err_output($rc, $s);
-                
+
                 last if ($rc > 0);
             }
         }

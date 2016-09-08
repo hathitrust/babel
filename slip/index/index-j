@@ -85,6 +85,8 @@ use SLIP_Utils::DatabaseWrapper;
 
 use Index_Module;
 
+use Sl_Utils;
+
 my $INTERACTIVE = $ENV{TERM};
 
 if ($INTERACTIVE) {

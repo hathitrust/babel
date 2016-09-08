@@ -118,7 +118,7 @@ my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
 $C->set_object('MdpConfig', $config);
 
 # constrain to proper site
-my $hosting_site = $config->get('hosting_site');        
+my $hosting_site = $config->get('hosting_site');
 my $site = Search::Site::get_server_site_name();
 if ($site ne $hosting_site) {
     my $s = qq{stats-item-index-j run=$RUN wrong site: $site is not $hosting_site};
@@ -132,7 +132,7 @@ if ($site ne $hosting_site) {
 my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{stats-item-index-j run=$RUN host=$HOST});
 
 # Do not try to manage while I am running already
-my $Lock_File = "/tmp/stats-item-index-lock-$RUN.sem";
+my $Lock_File = Sl_Utils::slip_semaphore_file("stats-item-index-$RUN");
 my $Semaphore = new Semaphore($Lock_File);
 if (! $Semaphore) {
     my $s = "Could not get semaphore file: $Lock_File at host=$HOST";
@@ -149,7 +149,7 @@ my $SEARCHER = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
 my $engine_uri = $SEARCHER->get_engine_uri();
 
 if ($INTERACTIVE) {
-    my $index_dir = $C->get_object('MdpConfig')->get('dir_for_shard_1');        
+    my $index_dir = $C->get_object('MdpConfig')->get('dir_for_shard_1');
     if (! -e $index_dir) {
         if (! $NOOP) {
             my $s = qq{$HOST cannot see $index_dir.\nExit.\n};
@@ -251,7 +251,7 @@ sub mis_num_docs_in_index {
 
 # ---------------------------------------------------------------------
 
-=item mis_report_errors 
+=item mis_report_errors
 
 Description
 
@@ -264,7 +264,7 @@ sub mis_report_errors {
     my $buf = " *errors\n";
     my $shard = 1;
     my $error_ct = 0;
-    
+
     my ($num_errors, $num_I, $num_O, $num_M, $num_C, $num_S, $num_N) =
       Db::Select_error_data($C, $dbh, $run, 1);
     if ($num_errors) {
@@ -274,7 +274,7 @@ sub mis_report_errors {
     else {
         $buf .= qq{\tshard=$shard: no errors\n};
     }
-    
+
     $buf .= qq{\tTotal errors=$error_ct\n};
 
     return $buf;
@@ -293,18 +293,18 @@ sub mis_gather_statistics {
     my ($C, $dbh, $run) = @_;
 
     # Get error report
-    my $errors = mis_report_errors($C, $dbh, $run); 
+    my $errors = mis_report_errors($C, $dbh, $run);
     __output("$errors");
     Log_stats($C, $run, $errors);
 
     my ($cmd, $sysrc, $s, $rep);
-    
+
     if (0) {
         # Get segment sizes
         $cmd = $BASE_SCRIPT_DIR . qq{segsizes -r$run};
         my $sizes = `$cmd 2>&1`;
         $sysrc = $? >> 8;
-    
+
         $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
         $s .= "\n$sizes";
         __output("$s");
@@ -321,7 +321,7 @@ sub mis_gather_statistics {
     $cmd = $BASE_DIR . qq{report-j -r$run -Ss};
     $rep = `$cmd 2>&1`;
     $sysrc = $? >> 8;
-    
+
     $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
     $s .= "$rep";
     __output("$s");
