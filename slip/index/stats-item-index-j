@@ -71,6 +71,7 @@ use Search::Site;
 use SLIP_Utils::Solr;
 use SLIP_Utils::DatabaseWrapper;
 
+use Sl_Utils;
 # Flush i/o
 $| = 1;
 

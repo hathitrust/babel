@@ -170,6 +170,7 @@ use SLIP_Utils::Log;
 use SLIP_Utils::Load;
 use SLIP_Utils::Solr;
 use SLIP_Utils::DatabaseWrapper;
+use Sl_Utils;
 
 my $INTERACTIVE = $ENV{TERM};
 if ($INTERACTIVE) {
