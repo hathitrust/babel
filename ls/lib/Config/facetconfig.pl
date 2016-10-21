@@ -27,7 +27,7 @@ $facet_to_label_map =
  'ht_availability' => 'Viewability',
  'topicStr' =>'Subject',
 'authorStr' =>'Author',
-'language' =>'Language',
+'language008_full' =>'Language',
 'countryOfPubStr' =>'Place of Publication',
 'publishDateRange' =>'Date of Publication',
 'bothPublishDateRange' =>'Date of Publication',
@@ -52,7 +52,7 @@ $facet_to_label_map =
 @facet_order=qw{
                 topicStr
                 authorStr 
-                language 
+                language008_full 
                 countryOfPubStr 
                 publishDateRange 
                 format 

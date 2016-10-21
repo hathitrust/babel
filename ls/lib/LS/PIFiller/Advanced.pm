@@ -130,7 +130,8 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     my $list;
     $list = getDropdown($cgi,'format',$formats_list);
     $facets .=  wrap_string_in_tag($list,'formats_list') . "\n";         
-    $list = getDropdown($cgi,'language',$language_list);
+#    $list = getDropdown($cgi,'language',$language_list);
+    $list = getDropdown($cgi,'language008_full',$language_list);
     $facets .=  wrap_string_in_tag($list,'language_list') . "\n";         
 
     $xml.=wrap_string_in_tag($facets,'facets') . "\n";         
