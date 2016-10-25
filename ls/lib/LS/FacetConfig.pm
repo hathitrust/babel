@@ -99,6 +99,7 @@ sub _initialize
         $self->__set_default_fields($default_fields);
         $self->__set_default_anyall($default_anyall);
         $self->__set_anyall_2_display($anyall_2_display);
+	$self->__set_anyall_order($anyall_order);
         $self->__set_yop_default($yop_default);
         $self->__set_yop_order($yop_order);
         $self->__set_yop_map($yop_map);
@@ -216,6 +217,14 @@ sub __set_anyall_2_display
     my $a2d = shift;
     
     $self->{'anyall_2_display'} = $a2d;
+}
+# ---------------------------------------------------------------------
+sub __set_anyall_order
+{
+    my $self = shift;
+    my $anyall_order = shift;
+    
+    $self->{'anyall_order'} = $anyall_order;
 }
 
 # ---------------------------------------------------------------------

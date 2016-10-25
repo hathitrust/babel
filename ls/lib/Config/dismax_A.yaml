@@ -1,6 +1,8 @@
 # dismax stuff; for now, just all
 
 ab: "A"
+
+
 #
 
 year:
@@ -13,6 +15,7 @@ publisher:
   qf:
     - [publisher, 25000]
   mm: "100%"
+  most_mm: "2<-1 5<67%"  
   tie: 0.9
 
 
@@ -27,7 +30,8 @@ serialtitle:
     - [serialTitle_restProper, 40]
     - [serialTitle, 30]
     - [serialTitle_rest, 10]
-  mm: "2<-1 5<67%"
+  mm: "100%"
+  most_mm: "2<-1 5<67%"	
   tie: 0.1
 
 
@@ -49,7 +53,8 @@ title:
     - [title, 30]
     - [title_top, 20]
     - [title_rest, 10]
-  mm: "2<-1 5<67%"
+  mm: "100%"
+  most_mm: "2<-1 5<67%"  
   tie: 0.1
 
 debugtitle:
@@ -57,7 +62,7 @@ debugtitle:
   qf:
     - [title, 300]
     - [Vtitle,300] 
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.1
 
 
@@ -79,7 +84,7 @@ journaltitle:
     - [title, 30]
     - [title_top, 20]
     - [title_rest, 10]
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.1
 
 
@@ -90,7 +95,7 @@ subject2:
   qf:
     - [topicProper, 5]
     - [topic, 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.1    
 
 subject:
@@ -106,7 +111,8 @@ subject:
     - [fullgeographic, 1]
     - [fullgenre, 1]
     - [era , 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
+  most_mm: "2<-1 5<67%"      
   tie: 0.1    
 
 
@@ -115,7 +121,7 @@ hlb3:
     - [hlb3, 10]
   qf:
     - [hlb3, 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.1    
   
 realauth:
@@ -123,7 +129,7 @@ realauth:
     [authorStr, 10]
   qf:
     [authorStr, 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.1
 
 author:
@@ -137,7 +143,8 @@ author:
     - [author2, 5]
     - [author_top, 2]
     - [author_rest, 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
+  most_mm: "2<-1 5<67%"  
   tie: 0.1  
 
   
@@ -189,7 +196,7 @@ all:
     - [fullgeographic, 1]
     - [fullgenre, 1]
     - [era, 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.5
 # may want to rename this to allocr to imply its OCR plus all MARC
 #fields   
@@ -207,6 +214,7 @@ ocronly:
   qf:
     - [ocr, 500000]
   mm: "100%"
+  most_mm: "2<-1 5<67%"  #XXXXXXXXXXXXXXXXXXXXfoobar
   tie: 0.9
 
 #ocr only
@@ -252,6 +260,7 @@ ocr:
     - [fullgenre, 1]
     - [era, 1]
   mm: "100%"
+  most_mm: "2<-1 5<67%"  #XXXXXXXXXXXXXXXXXXXXfoobar	
   tie: 0.9
 
 # ocr with pf2 and pf3
@@ -444,7 +453,7 @@ ocr2:
     - [fullgeographic, 1]
     - [fullgenre, 1]
     - [era, 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.9
 
 
@@ -499,7 +508,7 @@ debugocr:
     - [fullgeographic, 1]
     - [fullgenre, 1]
     - [era, 1]
-  mm: "2<-1 5<67%"
+  mm: "100%"
   tie: 0.9
 
 
@@ -529,6 +538,7 @@ isn:
     - [sdrnum, 100]
     - [isn_related, 100]
     - [ht_id, 100]
-  mm: "2<-1 5<67%"
+  mm: "100%"
+  most_mm: "2<-1 5<67%"  
   tie: 0.1
   

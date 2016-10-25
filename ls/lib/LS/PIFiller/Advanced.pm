@@ -78,8 +78,7 @@ sub handle_ADVANCED_SEARCH_FORM_PI
 
     #  list for any all widget
     my $bool2display = $fconfig->{'anyall_2_display'};
-    my @booleans = keys (%{$bool2display});
-
+    my @booleans = @{$fconfig->{'anyall_order'}};
     my $anyall;
     
     foreach my $bool (@booleans)

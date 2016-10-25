@@ -436,7 +436,7 @@ sub __clean_all
     
     foreach my $value (@{$aryref})
     {
-        if ($value eq "All")
+	if ($value=~/All$/)
         {
             $wasAll="true";
         }
@@ -753,7 +753,16 @@ sub make_query_clause{
         $pf2= $self->dismax_2_string($weights->{'pf2'});
     }
     
-    my $mm=$weights->{'mm'};
+    my $mm = $weights->{'mm'};
+    # if "most of these" then use $weights->{'most_mm}
+    if ($anyall =~/most/)
+    {
+	$mm=$weights->{'most_mm'};
+    }
+    
+    
+    
+    
     my $tie=$weights->{'tie'};
     $mm =~s,\%,\%25,g; #url encode any percent sign should this be a named sub? 
 

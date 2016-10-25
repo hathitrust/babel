@@ -142,7 +142,7 @@ function doReset (event)
   // set formats to "All"
   var selectedOpt = $("#advanced_searchform").find(".orFacet :selected");
   selectedOpt.attr("selected", false);
-  $(".orFacet [value='language:All']").attr("selected", true);
+  $(".orFacet [value='language008_full:All']").attr("selected", true);
   $(".orFacet [value='format:All']").attr("selected", true);
   
   //uncheck any check boxes
@@ -398,7 +398,7 @@ function processMultiSelectFacet(name,value)
   // test for value[0]= All
   // and scalar(value)> 1foobar
   
-  if( (value[0] === "language:All"|| value[0] === "format:All") && typeof value !== "string")
+  if( (value[0] === "language008_full:All"|| value[0] === "format:All") && typeof value !== "string")
   {
     var newValues = new Array();
     var i=1;
@@ -408,7 +408,7 @@ function processMultiSelectFacet(name,value)
     }
     addInput(name,newValues);
   }
-  else if( value[0] === "language:All"|| value[0] === "format:All") 
+  else if( value[0] === "language008_full:All"|| value[0] === "format:All") 
   {
          // don't add if only the All is selected
   }
