@@ -15,7 +15,7 @@ run Lucene CheckIndex on a given shard. driver-j will only enable
 check-j when all shards have finished optimizing to ensure enough
 memory to run checkIndex.
 
-As long as check-j runs from cron on the machine (shotz-*) running
+As long as check-j runs from cron on the machine (beeftea-*) running
 Lucene checkIndex it does not need to honor STOPSLIP once it is
 executing because the machine would not be taken out of service while
 checkIndex running. It will exit before it starts the checkIndex
