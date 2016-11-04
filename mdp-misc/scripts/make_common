@@ -21,7 +21,7 @@ my $NO_COMPRESS = $opts{z} || '';
 
 my $TO_REMOVE_REF = [];
 
-if ($ENV{'SDRROOT'} !~ /[a-z]+\.(babel|catalog|www)/) {
+if ($ENV{'SDRROOT'} !~ /[a-z0-9\-]+\.(babel|catalog|www)/) {
     die "This program should only be run in a development environment";
 }
 
