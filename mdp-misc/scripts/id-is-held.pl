@@ -1,10 +1,8 @@
 #!/usr/bin/env perl
 
 
-
 # Perl
 use Getopt::Std;
-use File::Pairtree;
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
@@ -14,7 +12,6 @@ use Context;
 use Database;
 use DbUtils;
 use SLIP_Utils::Common;
-use Password;
 
 our ($opt_F, $opt_I);
 
@@ -26,15 +23,15 @@ my $C = new Context;
 my $config = SLIP_Utils::Common::gen_SLIP_config(11);
 $C->set_object('MdpConfig', $config);
 
-my $db = new Database('ht_maintenance');
+my $db = new Database('ht_web');
 my $DBH = $db->get_DBH();
 
 
 my $ID = $opt_I;
 my $ID_FILENAME = $opt_F;
 
-sub ti_get_usage {
-    return qq{Usage: test-id-in-repo.pl [ -F file | -I id ]\nchecks for id(s) by expanding to pairtree path in repository to check file existence.\n};
+sub ho_get_usage {
+    return qq{Usage: id-is-help.pl [ -F file | -I id ]\nchecks for id(s) in holdings_htitem_htmember.\n};
 }
 
 sub load_ids_from_file {
@@ -64,20 +61,20 @@ sub load_ids_from_file {
     return $arr;
 }
 
-sub get_rights_row {
-    my ($namespace, $barcode) = @_;
+sub get_holdings_rows {
+    my ($id) = @_;
 
-    my $statement = qq{SELECT count(*) FROM rights_current WHERE namespace=? AND id=?};
-    my $sth = DbUtils::prep_n_execute($DBH, $statement, $namespace, $barcode);
-    my $count = $sth->fetchrow_array();
+    my $statement = qq{SELECT member_id, copy_count, access_count FROM holdings_htitem_htmember WHERE volume_id=?};
+    my $sth = DbUtils::prep_n_execute($DBH, $statement, $id);
+    my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
 
-    return $count;
+    return $ref_to_arr_of_hashref;
 }
 
 
 sub test_ids {
     my $id = shift;
-
+    
     my $ref_to_arr_of_ids;
 
     if (defined $id) {
@@ -90,27 +87,17 @@ sub test_ids {
 
     if ($num_loaded > 0) {
         print qq{loaded $num_loaded items from file=$ID_FILENAME\n} if ($ID_FILENAME);
-
+        
         foreach my $id (@$ref_to_arr_of_ids) {
-            my ($namespace, $barcode) = ($id =~ m,^(.*?)\.(.*?)$,);
-            my $root = q{/sdr1/obj/} . $namespace . q{/pairtree_root};
-
-            unless ($namespace) {
-                print qq{Could not determine namespace for $barcode\n};
+            my $ref_to_arr_of_hashref = get_holdings_rows($id);
+            unless (scalar @$ref_to_arr_of_hashref) {
+                print qq{$id not in PHDB\n};
                 next;
             }
 
-            # Initial pairtree module
-            $File::Pairtree::root = $root;
-            my $path = File::Pairtree::id2ppath($barcode) . File::Pairtree::s2ppchars($barcode);
-            my $exists = get_rights_row($namespace, $barcode);
-            my $s = $exists ? 'exists in rights_current' : 'NOT exists in rights_current';
 
-            if (-e $path) {
-                print qq{$id in repo at $path, $s\n};
-            }
-            else {
-                print qq{$id does not exist in repository, $s\n};
+            foreach my $hashref (@$ref_to_arr_of_hashref) {
+                printf("\tmember = %-10s copies = %-3s access = %-3s\n", $hashref->{member_id}, $hashref->{copy_count}, $hashref->{access_count});
             }
         }
     }
@@ -129,4 +116,4 @@ else {
 
 exit 0;
 
-
+            
