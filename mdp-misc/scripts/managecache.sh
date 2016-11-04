@@ -22,7 +22,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # maximum number of days since last use to keep files
-MAXDAYS=7
+DEFAULT_MAXDAYS=7
 
 renice 19 $$ > /dev/null 2>&1
 
@@ -31,13 +31,17 @@ EXIT=0
 CACHEDIRSPECS=$*
 if [ "X$CACHEDIRSPECS" = "X" ]
   then
-  echo "usage: $0 /path/to/purge:min%free [...]"
+  echo "usage: $0 /path/to/purge:min%free[:maxdays] [...]"
   exit 1
 fi
 
 for CACHEDIRSPEC in $CACHEDIRSPECS; do
   CACHEDIR=`echo "$CACHEDIRSPEC" | cut -d: -f1`
   MINFREE=`echo "$CACHEDIRSPEC" | cut -d: -f2`
+  MAXDAYS=`echo "$CACHEDIRSPEC" | cut -d: -f3`
+  if [ "X$MAXDAYS" = "X" ]; then
+    MAXDAYS=$DEFAULT_MAXDAYS
+  fi
   if [ ! -d $CACHEDIR ]; then
     echo "warning: cache directory '$CACHEDIR' does not exist"
 
@@ -48,6 +52,10 @@ for CACHEDIRSPEC in $CACHEDIRSPECS; do
     EXIT=1
   elif [ \( "$MINFREE" -lt 1  \) -o \( "$MINFREE" -gt 99 \) ]; then
     echo "warning: minimum percent free '$MINFREE' must be 0 < n < 100"
+
+    EXIT=1
+  elif [ `echo "$MAXDAYS" | egrep -c '^[0-9][0-9]*$'` -ne 1 ]; then
+    echo "warning: max acess time days '$MAXDAYS' must be an integer"
 
     EXIT=1
   else
