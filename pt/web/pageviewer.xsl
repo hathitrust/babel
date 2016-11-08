@@ -212,7 +212,6 @@
   </xsl:template>
 
   <xsl:template name="skip-to-main-link">
-    <a class="offscreen skip-link" href="#main">Skip to main</a>
   </xsl:template>
 
   <xsl:template name="setup-extra-header-extra" />

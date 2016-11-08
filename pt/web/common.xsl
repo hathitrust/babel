@@ -819,13 +819,16 @@
 
   <!-- UNICORN: SIDEBAR -->
   <xsl:template name="sidebar">
-    <div id="sidebar" class="sidebar" data-margin-top="40">
+    <div id="sidebar" class="sidebar" data-margin-top="40" tabindex="-1">
       <div class="sidebar-wrap">
         <xsl:call-template name="BuildBackToResultsLink" />
         <xsl:call-template name="list-surveys" />
+
         <xsl:call-template name="sidebar-about-this-book" />
         <div class="scrollable">
           <div class="content">
+            <xsl:call-template name="access-overview-block" />
+
             <xsl:call-template name="get-this-book" />
             <xsl:call-template name="collect-this-book" />
             <xsl:call-template name="share-this-book" />
@@ -833,6 +836,24 @@
           </div>
         </div>
       </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="access-overview-block">
+    <div class="accessOverview" rel="note">
+      <h3>Text Only Views</h3>
+      <xsl:if test="$gHtId">
+        <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
+      </xsl:if>
+      <ul>
+        <xsl:if test="$gInCopyright = 'false'">
+          <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
+        </xsl:if>
+        <xsl:if test="$gInCopyright = 'true'">
+          <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
+        </xsl:if>
+        <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
+      </ul>      
     </div>
   </xsl:template>
 

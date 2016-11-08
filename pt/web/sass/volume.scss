@@ -6,6 +6,10 @@
 @import "volume/plaintext.scss";
 @import "compass/css3/opacity";
 
+body {
+    max-width: none;
+}
+
 .alert-headline {
     text-align: center;
 

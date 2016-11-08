@@ -2,6 +2,10 @@
 
 .view-1up {
 
+    body {
+        max-width: none;
+    }
+
     .page-item {
 
         display: block;

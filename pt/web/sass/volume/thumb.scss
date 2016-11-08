@@ -2,6 +2,8 @@
 
 .view-thumb {
 
+    max-width: none;
+
     #content:after {
         content: "";
         display: table;

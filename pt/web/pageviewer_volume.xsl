@@ -136,13 +136,22 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="skip-to-main-link">
+    <ul id="skiplinks">
+      <li><a href="#main">Skip to page content</a></li>
+      <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
+      <li><a href="#input-search-text">Skip to search in this text</a></li>
+      <li><a href="#sidebar">Skip to book options</a></li>
+    </ul>
+  </xsl:template>
+
   <xsl:template name="pageviewer-contents">
     <xsl:call-template name="sidebar" />
     <xsl:call-template name="main" />
   </xsl:template>
 
   <xsl:template name="main">
-    <div class="main" id="main" role="main">
+    <div class="main" id="main" role="main" tabindex="-1">
       <h2 class="offscreen">
         <xsl:call-template name="get-view-title" />
         <xsl:if test="$gHasOcr = 'YES'">

@@ -52,8 +52,17 @@
     </xsl:call-template>
   </xsl:template>
 
+  <xsl:template name="skip-to-main-link">
+    <ul id="skiplinks">
+      <li><a href="#mdpResultsContainer">Skip to resultst</a></li>
+      <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
+      <li><a href="#input-search-text">Skip to search in this text</a></li>
+      <li><a href="#sidebar">Skip to book options</a></li>
+    </ul>
+  </xsl:template>
+
   <xsl:template name="main">
-    <div class="main" id="main">
+    <div class="main" id="main" tabindex="0">
       <!-- Results -->
       <xsl:call-template name="ResultsContainer" />
     </div>
@@ -62,7 +71,7 @@
   <!-- Results -->
   <xsl:template name="ResultsContainer">
 
-    <div id="mdpResultsContainer" role="main" data-total="{$gPagesFound}">
+    <div id="mdpResultsContainer" role="main" data-total="{$gPagesFound}" tabindex="-1">
       <xsl:call-template name="backToBeginning" />
       <xsl:call-template name="embed-search-form" />
 
@@ -156,7 +165,7 @@
                   <xsl:text>unnumbered page</xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
-                  <xsl:text>p.</xsl:text>
+                  <xsl:text>Page </xsl:text>
                   <xsl:value-of select="PageNumber"/>
                 </xsl:otherwise>
               </xsl:choose>
@@ -337,7 +346,7 @@
             <xsl:attribute name="href">
               <xsl:value-of select="PrevHitsLink"/>
             </xsl:attribute>
-            <xsl:text>&#171; Prev</xsl:text>
+            <xsl:text>Previous</xsl:text>
           </xsl:element>
         </span>
       </xsl:if>
@@ -351,7 +360,7 @@
             <xsl:attribute name="href">
               <xsl:value-of select="NextHitsLink"/>
             </xsl:attribute>
-	    <xsl:text>Next &#187;</xsl:text>
+	    <xsl:text>Next</xsl:text>
           </xsl:element>
         </span>
       </xsl:if>

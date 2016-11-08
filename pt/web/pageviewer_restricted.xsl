@@ -28,7 +28,7 @@
   </xsl:template>
 
   <xsl:template name="main">
-    <div class="main" id="main">
+    <div class="main" id="main" tabindex="0">
       <h2 class="offscreen">Individual Page (Not Available)</h2>
       <xsl:call-template name="Viewport">
         <xsl:with-param name="pAccessStatus" select="$gFinalAccessStatus"/>

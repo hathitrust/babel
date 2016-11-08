@@ -348,6 +348,7 @@ body {
     .scrollable {
         overflow: hidden;
         overflow-y: auto;
+        @include rem(padding-left, 4);
     }
 
     .versionContainer {

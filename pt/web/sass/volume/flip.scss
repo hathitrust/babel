@@ -98,6 +98,8 @@
     //     @include rem(margin-top, -35);
     // }
 
+    max-width: none;
+
     .slider {
         &.slider-horizontal {
             @include rem(margin-top, -12);
