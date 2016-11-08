@@ -107,6 +107,11 @@
   </xsl:template>
 
 
+  <xsl:template name="skip-to-main-link">
+    <ul id="skiplinks">
+      <li><a href="#mbContentContainer">Skip to search results</a></li>
+    </ul>
+  </xsl:template>
 
 
   <!--##############################new templates##################################################-->
@@ -156,7 +161,7 @@ REMOVE the below and see if it will call list_utils
       </xsl:choose>
     </xsl:variable>
     <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
-    <div id="mbContentContainer" class="main clearfix">
+    <div id="mbContentContainer" class="main clearfix" tabindex="-1">
 <!--AB addition-->
       <xsl:variable name="hasB">
         <xsl:if test="SearchResults/B_RESULTS/Item">
@@ -636,14 +641,14 @@ REMOVE the below and see if it will call list_utils
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/PrevPage='None'">
-            <span class="greyedOut">Prev</span>
+            <span class="greyedOut">Previous</span>
           </xsl:when>
           <xsl:otherwise>
             <xsl:element name ="a">
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/PrevPage/Href"/>
               </xsl:attribute>
-              &lt;&lt;   Prev
+              Previous
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
@@ -668,7 +673,7 @@ REMOVE the below and see if it will call list_utils
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/NextPage/Href"/>
               </xsl:attribute>
-              Next  &gt;&gt;
+              Next
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
@@ -1152,7 +1157,9 @@ REMOVE the below and see if it will call list_utils
               <span class="offscreen">
                 <xsl:value-of select="$facetName"/><xsl:text>: show </xsl:text>
               </span>
-              <span class="moreless">more...</span></a>
+              <!-- <span class="moreless">more...</span> -->
+              <span class="moreless">more...</span>
+            </a>
               
               
               <a  href="">    
@@ -1386,7 +1393,7 @@ REMOVE the below and see if it will call list_utils
         <xsl:value-of select="/MBooksTop/LimitToFullText/FullTextCount"/>
       </xsl:variable>
       <!--XXX if we aren't displaying tabs don't put this here? -->
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs" role="tablist">
 
       <!-- This is for 3 tab logic    <xsl:if test="($FullTextCount &gt; 0) and ($SearchOnlyCount &gt; 0)" -->
       <!--XXX logic below assumes only an all tab and one other -->
@@ -1394,7 +1401,7 @@ REMOVE the below and see if it will call list_utils
         
 
         <!-- display all items tab-->
-        <div>
+        <!-- <div> -->
           <!--          <xsl:call-template name="DisplayAllItemsTab"/>-->
           <xsl:call-template name="DisplayTab">
             <xsl:with-param name="active">
@@ -1414,7 +1421,7 @@ REMOVE the below and see if it will call list_utils
             </xsl:with-param>
           </xsl:call-template>
 
-        </div>
+        <!-- </div> -->
       </xsl:if>
 
         <!-- display search only tab  commented out for now-->
@@ -1449,7 +1456,7 @@ REMOVE the below and see if it will call list_utils
    
     <xsl:if test="($FullTextCount &gt; 0)  or ($LimitType ='ft')">
         <!-- display full text tab-->
-        <div>
+        <!-- <div> -->
 
           <xsl:call-template name="DisplayTab">
             <xsl:with-param name="active">
@@ -1469,13 +1476,13 @@ REMOVE the below and see if it will call list_utils
             </xsl:with-param>
           </xsl:call-template>
 
-        </div>
+        <!-- </div> -->
       </xsl:if>
       <!--XXX test -->
 
     <xsl:if test="($FullTextCount = 0) and ($SearchOnlyCount &gt; 0) and ($LimitType='all') ">
         <!-- display full text tab with 0 results and not active-->
-        <div>
+        <!-- <div> -->
 
           <xsl:call-template name="DisplayTab">
             <xsl:with-param name="active">
@@ -1493,7 +1500,7 @@ REMOVE the below and see if it will call list_utils
             </xsl:with-param>
           </xsl:call-template>
 
-        </div>
+        <!-- </div> -->
       </xsl:if>
     </ul>
     </div>
@@ -1508,7 +1515,7 @@ REMOVE the below and see if it will call list_utils
         <xsl:param name="href" value="Bad href"/>
       <xsl:choose>
         <xsl:when test="$active = 'true'">
-          <li class="viewall active">
+          <li class="viewall active" role="tab">
             <span>
               <xsl:value-of select="$text"/>
               <xsl:text> (</xsl:text>
@@ -1518,7 +1525,7 @@ REMOVE the below and see if it will call list_utils
         </xsl:when>
         <!-- XXX test tab with 0 results-->
         <xsl:when test="$active = 'zero'">
-          <li class="zero">
+          <li class="zero" role="tab">
             <span class="disabled">
               <xsl:value-of select="$text"/>
               <xsl:text> (</xsl:text>
@@ -1528,7 +1535,7 @@ REMOVE the below and see if it will call list_utils
         </xsl:when>
 
         <xsl:otherwise>
-            <li class="viewall">
+            <li class="viewall" role="tab">
               <xsl:element name="a">
                 <xsl:attribute name="href">
                   <xsl:value-of select="$href"/>
