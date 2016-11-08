@@ -2,6 +2,12 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns="http://www.w3.org/1999/xhtml"
   version="1.0">
+
+  <xsl:template name="skip-to-main-link">
+    <ul id="skiplinks">
+      <li><a href="#results">Skip to collections list</a></li>
+    </ul>
+  </xsl:template>
   
   <!-- Main template -->
   <xsl:template match="/MBooksTop">

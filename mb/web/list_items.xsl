@@ -23,6 +23,12 @@
     listis
   </xsl:template>
 
+  <xsl:template name="skip-to-main-link">
+    <ul id="skiplinks">
+      <li><a href="#mbContentContainer">Skip to items</a></li>
+    </ul>
+  </xsl:template>
+
   <xsl:template name="contents">
     <xsl:call-template name="sidebar" />
     <xsl:call-template name="list-items-results" />
@@ -157,7 +163,7 @@
       </xsl:choose>
     </xsl:variable>
     <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
-    <div id="mbContentContainer" class="main clearfix">
+    <div id="mbContentContainer" class="main clearfix" tabindex="-1">
 
       <xsl:call-template name="SearchResults_status"/>
       <xsl:call-template name="DisplaySearchWidgetLogic"/>

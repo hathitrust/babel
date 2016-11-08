@@ -40,6 +40,12 @@
     listcs
   </xsl:template>
 
+  <xsl:template name="skip-to-main-link">
+    <ul id="skiplinks">
+      <li><a href="#results">Skip to collections list</a></li>
+    </ul>
+  </xsl:template>
+
   <xsl:template name="contents">
     <h2 class="mbContentTitle offscreen">All Collections</h2>
     <xsl:call-template name="intro" />
@@ -202,7 +208,7 @@
 
         </script>
 
-        <div class="results">
+        <div class="results" id="results" tabindex="-1">
           <xsl:for-each select="$list_node/Collection[position() &lt; 10]">
 
             <xsl:variable name="class">
