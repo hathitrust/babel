@@ -83,7 +83,7 @@
 
         <xsl:call-template name="skip-to-main-link" />
 
-        <xsl:call-template name="access-overview" />
+        <!-- <xsl:call-template name="access-overview" /> -->
 
         <xsl:call-template name="navbar" />
         <xsl:call-template name="header" />
@@ -119,6 +119,20 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="access-overview-block">
+    <div class="accessOverview" rel="note">
+      <h3>Text Only Views</h3>
+      <xsl:if test="$gHtId">
+        <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
+      </xsl:if>
+      <ul>
+        <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
+        <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
+        <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
+      </ul>      
+    </div>
+  </xsl:template>
+
   <xsl:template name="setup-page-title">
     <xsl:variable name="page-title">
       <xsl:call-template name="get-page-title" />
@@ -140,10 +154,11 @@
           <li><a href="http://www.hathitrust.org">Home</a></li>
           <li><a href="http://www.hathitrust.org/about">About</a>
             <ul>
-              <li><a href="http://www.hathitrust.org/partnership">Our Partnership</a></li>
-              <li><a href="http://www.hathitrust.org/digital_library">Our Digital Library</a></li>
-              <li><a href="http://www.hathitrust.org/htrc">Our Research Center</a></li>
-              <li><a href="http://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+              <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
+              <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
+              <li><a href="https://www.hathitrust.org/collaborative-programs">Our Collaborative Programs</a></li>
+              <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
+              <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
             </ul>
           </li>
           <li><a href="http://babel.hathitrust.org/cgi/mb">Collections</a></li>

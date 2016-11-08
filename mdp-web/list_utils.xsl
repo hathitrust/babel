@@ -258,8 +258,8 @@
 
         <xsl:when test="$AllItemsCount = $FullTextCount">
           <!-- only full text -->
-          <ul class="nav nav-tabs">
-            <li class="viewall active">
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="viewall active" role="tab">
               <span>All Items (<xsl:value-of select="$AllItemsCount" />)</span>
             </li>
           </ul>
@@ -267,8 +267,8 @@
 
         <xsl:when test ="$Limit = 'YES'">
           <!-- we are currently showing the result of narrow to full text so we want a URL to all -->
-          <ul class="nav nav-tabs">
-            <li class="viewall">
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="viewall" role="tab">
               <xsl:element name="a">
                 <xsl:attribute name="href">
                   <xsl:value-of select="/MBooksTop/LimitToFullText/AllHref"/>
@@ -278,7 +278,7 @@
                 <xsl:text>)</xsl:text>
               </xsl:element>
             </li>
-            <li class="fulltext active">
+            <li class="fulltext active" role="tab">
               <span>
                 <xsl:text>Only Full view (</xsl:text>
                 <xsl:value-of select="$FullTextCount"/>
@@ -291,15 +291,15 @@
         <xsl:otherwise>
           <!-- we are currently showing all so we want to show a url for  narrow to full text  -->
 
-          <ul class="nav nav-tabs">
-            <li class="viewall active">
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="viewall active" role="tab">
               <span>
                 <xsl:text>All Items (</xsl:text>
                 <xsl:value-of select="$AllItemsCount"/>
                 <xsl:text>)</xsl:text>
               </span>
             </li>
-            <li class="fulltext">
+            <li class="fulltext" role="tab">
               <xsl:element name="a">
                 <xsl:attribute name="class">fulltext</xsl:attribute>
                 <xsl:attribute name="title">full view</xsl:attribute>
@@ -645,7 +645,7 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/PrevPage/Href"/>
               </xsl:attribute>
-              Previous Page
+              Previous
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
