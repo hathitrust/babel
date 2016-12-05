@@ -641,14 +641,15 @@ REMOVE the below and see if it will call list_utils
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/PrevPage='None'">
-            <span class="greyedOut">Previous</span>
+            <!-- <span class="greyedOut">Previous</span> -->
           </xsl:when>
           <xsl:otherwise>
             <xsl:element name ="a">
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/PrevPage/Href"/>
               </xsl:attribute>
-              Previous
+              <i class="icomoon icomoon-arrow-left" aria-hidden="true"></i>
+              <xsl:text> Previous</xsl:text>
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
@@ -666,14 +667,15 @@ REMOVE the below and see if it will call list_utils
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/NextPage='None'">
-            <span class="greyedOut">Next</span>
+            <!-- <span class="greyedOut">Next</span> -->
           </xsl:when>
           <xsl:otherwise>
             <xsl:element name ="a">
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/NextPage/Href"/>
               </xsl:attribute>
-              Next
+              <xsl:text>Next </xsl:text>
+              <i class="icomoon icomoon-arrow-right" aria-hidden="true"></i>
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
