@@ -245,7 +245,7 @@ $gKduExtractCommand =
 # ----------------------------------------------------------------------
 # Handle link stem
 # ----------------------------------------------------------------------
-$gHandleLinkStem = q{http://hdl.handle.net/2027/};
+$gHandleLinkStem = q{https://hdl.handle.net/2027/};
 
 # ---------------------------------------------------------------------
 # CGI locations (actual server cgi root and URL for it)
