@@ -198,7 +198,8 @@
 
   <xsl:template name="global-search-form">
     <form action="/cgi/ls/one" method="GET">
-      <div class="search-tabs">
+      <div class="search-tabs" role="radiogroup" aria-labelledby="search-tabs-label">
+        <span id="search-tabs-label" class="offscreen">Search this index</span>
         <xsl:call-template name="header-search-tabs" />
       </div>
       <xsl:call-template name="global-search-form-fieldset" />

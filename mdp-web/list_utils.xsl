@@ -638,14 +638,15 @@
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/PrevPage='None'">
-            <span class="greyedOut">Previous</span>
+            <!-- <span class="greyedOut">Previous</span> -->
           </xsl:when>
           <xsl:otherwise>
             <xsl:element name ="a">
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/PrevPage/Href"/>
               </xsl:attribute>
-              Previous
+              <i class="icomoon icomoon-arrow-left" aria-hidden="true"></i>
+              <xsl:text> Previous</xsl:text>
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
@@ -663,14 +664,15 @@
       <li>
         <xsl:choose>
           <xsl:when test="/MBooksTop/Paging/NextPage='None'">
-            <span class="greyedOut">Next</span>
+            <!-- <span class="greyedOut">Next</span> -->
           </xsl:when>
           <xsl:otherwise>
             <xsl:element name ="a">
               <xsl:attribute name="href">
                 <xsl:value-of select="/MBooksTop/Paging/NextPage/Href"/>
               </xsl:attribute>
-              Next
+              <xsl:text>Next </xsl:text>
+              <i class="icomoon icomoon-arrow-right" aria-hidden="true"></i>
             </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
@@ -912,6 +914,7 @@
         </div>
         <div class="toolbar alt" role="toolbar">
           <h3 class="offscreen">Tools for collection management</h3>
+          <span class="offscreen" id="selected-items-label">Selected items</span>
           <div class="selectAll"><label>Select all on page <input type="checkbox" id="checkAll"/></label></div>
           <xsl:call-template name="BuildItemSelectActions"/>
         </div>
@@ -1358,7 +1361,7 @@
         </div>
         <div class="select">
           <label class="offscreen" for="id{$item-number}">Select item <xsl:value-of select="$item-number" /></label>
-          <input type="checkbox" name="id" class="id" id="id{$item-number}">
+          <input type="checkbox" name="id" class="id" id="id{$item-number}" aria-labelledby="selected-items-label">
             <xsl:attribute name="value">
               <xsl:value-of select="ItemID"/>
             </xsl:attribute>
