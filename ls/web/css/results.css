@@ -161,7 +161,7 @@ dl.collection dd {
 
 /* line 152, ../sass/results.scss */
 .col-featured img {
-  border: 2px solid #eee;
+  border: 2px solid #eeeeee;
   padding: 2px;
   max-width: 100%;
 }
@@ -199,7 +199,7 @@ dl.collection dd {
   margin-bottom: 1rem ;
   margin-left: 10px ;
   margin-left: 1rem ;
-  border-bottom: 1px solid #AAA;
+  border-bottom: 1px solid #aaaaaa;
   width: 96%;
   color: #333;
 }
@@ -236,10 +236,10 @@ dl.collection dd {
   float: left;
   margin: 0 0px;
   padding: 0 10px;
-  border: 1px solid #d3d3d3;
-  border-bottom: 1px solid #aaa;
+  border: 1px solid lightgrey;
+  border-bottom: 1px solid #aaaaaa;
   background: #e3e3e3;
-  background: -webkit-gradient(linear, 0% 0, 0% 100%, left, right);
+  background: -webkit-gradient(linear, 0% 0, 0% 100%, from(white), to(#e3e3e3));
   display: inline-block;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
@@ -252,7 +252,7 @@ dl.collection dd {
 }
 /* line 234, ../sass/results.scss */
 .tabs ul li.active {
-  border: 1px solid #aaa;
+  border: 1px solid #aaaaaa;
   border-bottom: 1px solid transparent;
   background: #fff;
 }
