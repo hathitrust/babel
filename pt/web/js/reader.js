@@ -1011,7 +1011,7 @@ head.ready(function() {
 
     $(".toolbar-horizontal .btn").each(function() {
         var $btn = $(this);
-        var title = $btn.find(".label").text();
+        var title = $btn.find(".toolbar-label").text();
         if ( title ) {
             $btn.tooltip({ title : title, placement : 'bottom', container : '.toolbar-horizontal', delay : { show : 250, hide: 50 }, xtrigger: 'hover focus', animation : false })
         }

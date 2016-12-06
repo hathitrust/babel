@@ -357,7 +357,7 @@ HT.Viewer.Thumbnail = {
             // var h = meta.height * r;
             var h = self.h * r;
 
-            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><div class="page-wrap"><a class="page-link" href="#{SEQ}"></a></div></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
+            var $page = $('<div class="page-item"><div class="page-num">{SEQ}</div><div class="page-wrap"><a class="page-link" href="#{SEQ}" aria-label="Link to sequence {SEQ}"></a></div></div>'.replace(/\{SEQ\}/g, seq)).appendTo($(fragment));
             $page.attr('id', 'page' + seq);
             $page.css({ 'height' : Math.ceil(self.w) + 8, width : self.w });
             $page.data('seq', seq);

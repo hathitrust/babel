@@ -329,7 +329,7 @@
 	<span class="mdpEmp"><xsl:value-of select="$vNatLangQuery"/></span>
       </div>
 
-      <xsl:if test="EndPageLink[@page='first']">
+      <xsl:if test="EndPageLink[@page='first']/Href">
         <span class="mdpFisheyeLink">
           <xsl:element name="a">
             <xsl:attribute name="href">
@@ -346,6 +346,8 @@
             <xsl:attribute name="href">
               <xsl:value-of select="PrevHitsLink"/>
             </xsl:attribute>
+            <i class="icomoon icomoon-arrow-left" aria-hidden="true"></i>
+            <xsl:text> </xsl:text>
             <xsl:text>Previous</xsl:text>
           </xsl:element>
         </span>
@@ -360,12 +362,14 @@
             <xsl:attribute name="href">
               <xsl:value-of select="NextHitsLink"/>
             </xsl:attribute>
-	    <xsl:text>Next</xsl:text>
+            <xsl:text>Next</xsl:text>
+            <xsl:text> </xsl:text>
+            <i class="icomoon icomoon-arrow-right" aria-hidden="true"></i>
           </xsl:element>
         </span>
       </xsl:if>
 
-      <xsl:if test="EndPageLink[@page='last']">
+      <xsl:if test="EndPageLink[@page='last']/Href">
         <span class="mdpFisheyeLink">
           <xsl:element name="a">
             <xsl:attribute name="href">

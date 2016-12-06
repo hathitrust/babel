@@ -286,10 +286,14 @@ body {
 }
 
 // should be in commmon?
-.sidebar {
+.container .sidebar {
 
     >div {
         @include rem(width, 200, !important);
+    }
+
+    div > p:last-child {
+        margin-bottom: 0;
     }
 
     a[disabled] {
@@ -309,7 +313,12 @@ body {
         border-bottom: 1px solid #ddd;
         @include rem(font-size, 16);
         @include rem(padding-bottom, 8);
-        @include rem(font-size, 16);
+    }
+
+    h3 {
+        @include rem(margin-top, 16);
+        @include rem(margin-bottom, 12)
+        // @include rem(margin-bottom, 12);
     }
 
     ul {
