@@ -26,7 +26,7 @@ Description
 sub adjust_url {
     my $url = shift;
 
-    if ($ENV{AUTH_TYPE} eq 'shibboleth') {
+    if ($ENV{AUTH_TYPE} eq 'shibboleth' && Utils::is_cosign_active()) {
         $url =~ s,/cgi,/shcgi,g;
     }
     if (defined $ENV{AUTH_TYPE}) {
