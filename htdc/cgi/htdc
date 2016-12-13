@@ -57,7 +57,8 @@ if ($production_mode) {
     delete $ENV{HT_DEV};
 }
 else {
-    my $userid = $ENV{REMOTE_USER};
+    # my $userid = $ENV{REMOTE_USER};
+    my $userid = Utils::Get_Remote_User();
     $development_support = defined($ENV{HT_DEV}) || grep(/^$userid$/, @superusers);
     if ($Q->param('over')) {
         $development_support = 0;

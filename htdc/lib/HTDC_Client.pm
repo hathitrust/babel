@@ -117,7 +117,7 @@ sub run {
     my $dbh = Call_Handler(_htdc_connect(), 'Database error');
     # POSSIBLY NOTREACHED
 
-    my $access_key = validate_request($Q, $dbh, $config, $ENV{REMOTE_USER});
+    my $access_key = validate_request($Q, $dbh, $config, Utils::Get_Remote_User());
     # POSSIBLY NOTREACHED
 
     if ($DEBUG == 2) {
@@ -266,7 +266,7 @@ sub _get_htdc_wayf_link {
 
     my $target = 'https://' . $ENV{HTTP_HOST} . '/cgi/kgs/authed';
     # wayf will change target /cgi into /shcgi, depending
-    my $url = 'http://' . $ENV{HTTP_HOST} . '/cgi/wayf' . '?target=' . CGI::escape($target);
+    my $url = 'https://' . $ENV{HTTP_HOST} . '/cgi/wayf' . '?target=' . CGI::escape($target);
 
     return $url;
 }

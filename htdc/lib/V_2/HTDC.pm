@@ -160,7 +160,7 @@ sub make_Data_API_request_url {
 
     if ($ENV{HT_DEV}) {
         if (! Debug::DUtils::under_server) {
-            $ENV{HTTP_HOST} = $ENV{REMOTE_USER} . '-full.babel.hathitrust.org';
+            $ENV{HTTP_HOST} = Utils::Get_Remote_User() . '-full.babel.hathitrust.org';
         }
     }
 
