@@ -89,7 +89,7 @@ sub run {
         $DEBUG = $Q->param('debug') || $DEBUG;
     }
 
-    if (! defined $ENV{REMOTE_USER}) {
+    if (! ( defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER} )) {
         _serve_login_page();
         # NOTREACHED
     }
