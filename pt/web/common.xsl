@@ -970,7 +970,7 @@
               </xsl:attribute>
               <xsl:text>Download pages (PDF)</xsl:text>
             </xsl:element>
-            <button data-toggle="tooltip" class="btn btn-mini" id="action-clear-selection"><i class="icomoon icomoon-cancel"></i><span class="label"> Clear Selection</span></button>
+            <button data-toggle="tooltip" class="btn btn-mini" id="action-clear-selection"><i class="icomoon icomoon-cancel"></i><span class="offscreen"> Clear Selection</span></button>
           </li>
         </xsl:if>
 
