@@ -114,7 +114,7 @@
       <ul>
         <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
         <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
-        <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
+        <li>See the <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
       </ul>      
     </div>
   </xsl:template>
@@ -128,7 +128,7 @@
       <ul>
         <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
         <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
-        <li>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
+        <li>See the <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
       </ul>      
     </div>
   </xsl:template>
@@ -151,8 +151,8 @@
           <xsl:if test="$gLoggedIn = 'YES'">, logout</xsl:if>
         </h2>
         <ul id="nav" class="nav">
-          <li><a href="http://www.hathitrust.org">Home</a></li>
-          <li><a href="http://www.hathitrust.org/about">About</a>
+          <li><a href="https://www.hathitrust.org">Home</a></li>
+          <li><a href="https://www.hathitrust.org/about">About</a>
             <ul>
               <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
               <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
@@ -161,9 +161,9 @@
               <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
             </ul>
           </li>
-          <li><a href="http://babel.hathitrust.org/cgi/mb">Collections</a></li>
+          <li><a href="//babel.hathitrust.org/cgi/mb">Collections</a></li>
           <li class="divider-vertical"></li>
-          <li class="help"><a href="http://www.hathitrust.org/help">Help</a></li>
+          <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
           <xsl:call-template name="li-feedback" />
         </ul>
         <xsl:if test="$gLoggedIn = 'YES'">
@@ -181,7 +181,7 @@
     <div class="container centered header clearfix" id="header">
       <h2 class="offscreen">Navigation links for searching HathiTrust, login</h2>
       <div class="logo">
-        <a href="http://www.hathitrust.org"><span class="offscreen">HathiTrust Digital Library</span></a>
+        <a href="https://www.hathitrust.org"><span class="offscreen">HathiTrust Digital Library</span></a>
       </div>
 
       <xsl:call-template name="header-search-form" />
@@ -236,8 +236,8 @@
             <xsl:text>Advanced full-text search</xsl:text>
           </a>
         </li>
-        <li class="search-catalog-link"><a href="http://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
-        <li><a href="http://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
+        <li class="search-catalog-link"><a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
+        <li><a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
       </ul>
       <xsl:call-template name="header-search-ft-checkbox" />
     </div>
@@ -263,15 +263,15 @@
           </ul>
         </xsl:if>
         <ul class="nav pull-right">
-          <li><a href="http://www.hathitrust.org/">Home</a></li>
-          <li><a href="http://www.hathitrust.org/about">About</a></li>
+          <li><a href="https://www.hathitrust.org/">Home</a></li>
+          <li><a href="https://www.hathitrust.org/about">About</a></li>
           <li><a href="/cgi/mb">Collections</a></li>
-          <li><a href="http://www.hathitrust.org/help">Help</a></li>
+          <li><a href="https://www.hathitrust.org/help">Help</a></li>
           <xsl:call-template name="li-feedback" />
-          <li><a href="http://m.hathitrust.org">Mobile</a></li>
-          <li><a href="http://www.hathitrust.org/take_down_policy">Take-Down Policy</a></li>
-          <li><a href="http://www.hathitrust.org/privacy">Privacy</a></li>
-          <li><a href="http://www.hathitrust.org/contact">Contact</a></li>
+          <li><a href="https://m.hathitrust.org">Mobile</a></li>
+          <li><a href="https://www.hathitrust.org/take_down_policy">Take-Down Policy</a></li>
+          <li><a href="https://www.hathitrust.org/privacy">Privacy</a></li>
+          <li><a href="https://www.hathitrust.org/contact">Contact</a></li>
         </ul>
       </div>
     </div>
