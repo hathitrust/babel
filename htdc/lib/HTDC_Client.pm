@@ -89,7 +89,7 @@ sub run {
         $DEBUG = $Q->param('debug') || $DEBUG;
     }
 
-    if (! ( defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER} )) {
+    unless (Utils::Get_Remote_User()) {
         _serve_login_page();
         # NOTREACHED
     }
@@ -347,6 +347,12 @@ sub _serve_Data_API_response {
         if ($Q->param('disposition') eq 'download') {
             $content_disposition = 'attachment; ' . $content_disposition;
         }
+        elsif ($Q->param('disposition') eq 'view') {
+            $content_disposition = 'inline; ' . $content_disposition;
+        }
+        else {
+            $content_disposition = 'inline; ' . $content_disposition;
+        }
 
         print CGI::header(
                           -Content_Type => $content_type,
@@ -399,16 +405,7 @@ sub _get_user_agent {
 
 =item _get_response
 
-Due to the production network architecture that includes the net
-scaler, to do transport over SSL in production use http:// over port
-443, NOT https://.  This also means that test.babel will fail SSL
-negotiation if SSL is involved.
-
-This is only a problem for this client because it is behind the net
-scaler on the same server as the Data API itself.
-
-When Data API sees SERVER_PORT == 443, it assumes a URL string that
-begins with 'https://' in signature_safe_url().
+Description
 
 =cut
 
@@ -416,14 +413,7 @@ begins with 'https://' in signature_safe_url().
 sub _get_response {
     my $url = shift;
 
-    # Assuming a signed URL string of 'https://host/pathinfo?query'
-    # but sending it as 'http://host:443/pathinfo?query' when in production.
-    #
-    $url =~ s,(^https:)//(.*?)/(.*$),http://$2:443/$3, unless ($ENV{HT_DEV});
-
-    my $req = HTTP::Request->new(
-                                 GET => "$url"
-                                );
+    my $req = HTTP::Request->new( GET => "$url" );
     my $ua =  _get_user_agent();
     my $res = $ua->request($req);
 
@@ -452,7 +442,7 @@ sub _standard_replacements {
 
     my $empty = '';
     my $base = $ENV{SDRROOT} . "/htdc/web/V_$VERSION";
-    
+
     my $extended_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/extended_types.chunk") : \$empty;
     $$page_ref =~ s,___EXTENDED_TYPES___,$$extended_types_ref,;
 
@@ -468,9 +458,9 @@ sub _standard_replacements {
     my $object_type_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/object_type.chunk") : \$empty;
     $$page_ref =~ s,___OBJECT_TYPE___,$$object_type_ref,;
 
-    my $example_ids_ref = 
-      $DEVELOPMENT_SUPPORT 
-        ? Utils::read_file("$base/example_ids_dev.chunk") 
+    my $example_ids_ref =
+      $DEVELOPMENT_SUPPORT
+        ? Utils::read_file("$base/example_ids_dev.chunk")
           : Utils::read_file("$base/example_ids.chunk");
     $$page_ref =~ s,___EXAMPLE_IDS___,$$example_ids_ref,;
 }

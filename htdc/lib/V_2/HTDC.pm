@@ -30,7 +30,7 @@ use API::HTD::HConf;
 use HOAuth::Signature;
 
 use base qw(Exporter);
-our @EXPORT = qw ( 
+our @EXPORT = qw (
                      get_config
                      validate_request
                      print_encoded_output
@@ -72,7 +72,7 @@ sub validate_request {
     my ($Q, $dbh, $config, $userid) = @_;
 
     # known?
-    my $access_key = 
+    my $access_key =
       HTDC_Client::Call_Handler(API::HTD::AuthDb::get_access_key_by_userid($dbh, $userid),
                                 qq{Your user ID is not registered. Please visit the <a href="/cgi/kgs/authed">registration page</a> to record your user id});
 
@@ -166,7 +166,7 @@ sub make_Data_API_request_url {
 
     my ($id, $resource, $seq) = (scalar $Q->param('id'), scalar $Q->param('resource'), scalar $Q->param('seq'));
     # So API can do geo ip lookup for this user
-    my $client_IPADDR = HTDC_Client::IPADDR_of_my_client(); 
+    my $client_IPADDR = HTDC_Client::IPADDR_of_my_client();
     my $extra = { ip => $client_IPADDR };
 
     if ($resource eq 'volume/pageimage') {
@@ -199,7 +199,7 @@ sub make_Data_API_request_url {
         }
     }
     $extra->{v} = $Q->param('v') || $HTDC_Client::VERSION;
-    
+
     my $url = $protocol . $ENV{HTTP_HOST} . '/cgi/htd' . qq{/$resource} . qq{/$id} . ($seq ? qq{/$seq} : '');
 
     my $secret_key = API::HTD::AuthDb::get_secret_by_active_access_key($dbh, $access_key);
