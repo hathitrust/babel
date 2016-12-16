@@ -4,10 +4,10 @@ head.ready(function() {
     var side_short = "450";
     var side_long  = "700";
     var htId = HT.params.id;
-    var embedHelpLink = "http://www.hathitrust.org/embed";
+    var embedHelpLink = "https://www.hathitrust.org/embed";
 
     var codeblock_txt_a = function(w,h) {return '<iframe width="' + w + '" height="' + h + '" ';}
-    var codeblock_txt_b = 'src="http://hdl.handle.net/2027/' + htId + '?urlappend=%3Bui=embed"></iframe>';
+    var codeblock_txt_b = 'src="https://hdl.handle.net/2027/' + htId + '?urlappend=%3Bui=embed"></iframe>';
 
     var $block = $(
 	'<div class="embedUrlContainer">' +
@@ -22,11 +22,11 @@ head.ready(function() {
         '<div class="controls">' + 
             '<label class="radio inline">' +
                 '<input type="radio" name="view" id="view-scroll" value="0" checked="checked" >' +
-		'<span class="icomoon-scroll"/> Scroll View ' +
+		'<span class="icomoon icomoon-scroll"/> Scroll View ' +
             '</label>' + 
             '<label class="radio inline">' +
                 '<input type="radio" name="view" id="view-flip" value="1" >' +
-		'<span class="icomoon-book-alt2"/> Flip View ' +
+		'<span class="icomoon icomoon-book-alt2"/> Flip View ' +
             '</label>' +
         '</div>' +
         '</form>' +
