@@ -267,9 +267,9 @@ body {
     //color: rgba(255, 255, 255, 0.1);
 }
 
-@media (max-width: 1200px) {
+@media (min-width: 900px) {
     .logged-in .search-form input.search-input-text {
-        width: 40%; /* !important;*/
+        width: 50%; /* !important;*/
     }
 
     .logged-in .search-form .focused input.search-input-text {
