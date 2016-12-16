@@ -113,7 +113,7 @@
           <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
           <xsl:attribute name="readonly">readonly</xsl:attribute>
           <xsl:attribute name="value">
-            <xsl:text>http://babel.hathitrust.org/cgi/mb?a=listis&amp;c=</xsl:text>
+            <xsl:text>https://babel.hathitrust.org/cgi/mb?a=listis&amp;c=</xsl:text>
             <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']" />
           </xsl:attribute>
         </xsl:element>
