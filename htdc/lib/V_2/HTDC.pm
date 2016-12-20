@@ -193,7 +193,7 @@ sub make_Data_API_request_url {
         }
     }
 
-    if ($HTDC_Client::DEVELOPMENT_SUPPORT) {
+    if ($HTDC_Client::use_extended_types) {
         if ($resource eq 'volume') {
             $extra->{format} = 'ebm';
         }

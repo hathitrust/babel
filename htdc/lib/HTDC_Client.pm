@@ -460,9 +460,9 @@ sub _standard_replacements {
     my $empty = '';
     my $base = $ENV{SDRROOT} . "/htdc/web/V_$VERSION";
 
-    my $use_extended_types = $DEVELOPMENT_SUPPORT || ( $access_type =~ m,pdf_ebm, );
+    $HTDC_Client::use_extended_types = $DEVELOPMENT_SUPPORT || ( $access_type && $access_type =~ m,pdf_ebm, );
 
-    my $extended_types_ref = $use_extended_types ? Utils::read_file("$base/extended_types.chunk") : \$empty;
+    my $extended_types_ref = $HTDC_Client::use_extended_types ? Utils::read_file("$base/extended_types.chunk") : \$empty;
     $$page_ref =~ s,___EXTENDED_TYPES___,$$extended_types_ref,;
 
     my $extended_opts_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/extended_options.chunk") : \$empty;
