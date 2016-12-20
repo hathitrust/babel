@@ -106,16 +106,16 @@ sub run {
     }
     $clientVersion->import();
 
-    if (! $Q->param()) {
-        _serve_request_form_page();
-        # NOTREACHED
-    }
-
     my $config = Call_Handler(get_config(), 'System configuration error');
     # POSSIBLY NOTREACHED
 
     my $dbh = Call_Handler(_htdc_connect(), 'Database error');
     # POSSIBLY NOTREACHED
+
+    if (! $Q->param()) {
+        _serve_request_form_page($dbh);
+        # NOTREACHED
+    }
 
     my $access_key = validate_request($Q, $dbh, $config, Utils::Get_Remote_User());
     # POSSIBLY NOTREACHED
@@ -241,10 +241,26 @@ Description
 
 # ---------------------------------------------------------------------
 sub _serve_request_form_page {
+    my ( $dbh ) = @_;
     hLOG(qq{htdc: serve request form version=$VERSION});
 
+    my $access_key =
+      Call_Handler(API::HTD::AuthDb::get_access_key_by_userid($dbh, Utils::Get_Remote_User()),
+                                qq{Your user ID is not registered. Please visit the <a href="/cgi/kgs/authed">registration page</a> to record your user id});
+
+    
+    my ( $code, $ipregexp, $type ) = API::HTD::AuthDb::get_privileges_by_access_key($dbh, $access_key);
+    $code = undef unless ( $type == 1 );
+    $code = undef unless ( IPADDR_of_my_client() =~ m,$ipregexp, );
+
+    my ( $access_type, $bitstring );
+    if ( $code ) { 
+        require API::HTD::HCodes;
+        ( $access_type, $bitstring ) = API::HTD::HCodes::get_access_type_from_code($code);
+    }
+
     my $page_ref = Utils::read_file($ENV{SDRROOT} . "/htdc/web/V_$VERSION/htdc_request_form.html");
-    _standard_replacements($page_ref);
+    _standard_replacements($page_ref, $access_type);
 
     print CGI::header('text/html');
     print $$page_ref;
@@ -433,6 +449,7 @@ Description
 # ---------------------------------------------------------------------
 sub _standard_replacements {
     my $page_ref = shift;
+    my $access_type = shift;
 
     my $header_ref = Utils::read_file($ENV{SDRROOT} . '/htdc/web/header.chunk');
     $$page_ref =~ s,___HEADER_CHUNK___,$$header_ref,;
@@ -443,7 +460,9 @@ sub _standard_replacements {
     my $empty = '';
     my $base = $ENV{SDRROOT} . "/htdc/web/V_$VERSION";
 
-    my $extended_types_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/extended_types.chunk") : \$empty;
+    my $use_extended_types = $DEVELOPMENT_SUPPORT || ( $access_type =~ m,pdf_ebm, );
+
+    my $extended_types_ref = $use_extended_types ? Utils::read_file("$base/extended_types.chunk") : \$empty;
     $$page_ref =~ s,___EXTENDED_TYPES___,$$extended_types_ref,;
 
     my $extended_opts_ref = $DEVELOPMENT_SUPPORT ? Utils::read_file("$base/extended_options.chunk") : \$empty;
