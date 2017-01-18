@@ -180,7 +180,25 @@ sub execute_operation
 
     if ( $format eq 'json' ) {
         # unshift @$content, { total_results => scalar @$result_id_arrayref };
-        $content = JSON::XS::encode_json($content);
+        my $result = { items => $content };
+        # and add metadata about this collection
+        my $coll_record = $co->get_coll_record($coll_id);
+        $$result{collection} = {};
+        $$result{collection}{MColl_ID} = $coll_id;
+        $$result{collection}{title} = $$coll_record{collname};
+        $$result{collection}{description} = $$coll_record{description};
+        $$result{collection}{modified} = $$coll_record{modified};
+        $$result{collection}{num_items} = $$coll_record{num_items};
+        $$result{collection}{shared} = $$coll_record{shared};
+        $$result{collection}{owner_name} = $$coll_record{owner_name};
+        unless ( $co->coll_owned_by_user($coll_id, $owner) ) {
+            if ( $$result{collection}{owner_name} =~ m,\@, ) {
+                $$result{collection}{owner_name} =~ s,\@.*,,;
+            }
+        } else {
+            $$result{collection}{owner} = $$coll_record{owner};
+        }
+        $content = JSON::XS::encode_json($result);
     } else {
         $content = join("\n", @$content);
     }

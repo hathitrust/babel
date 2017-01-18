@@ -483,25 +483,66 @@
           </xsl:if>
           <!-- <input type="hidden" name="debug" value="attachment" />
           <input type="hidden" name="format" value="json" /> -->
-          <input type="hidden" name="format" value="text" /> 
-          <button class="btn btn-mini">
-            <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-            <xsl:attribute name="data-tracking-action">MB Download Metadata</xsl:attribute>
-            <xsl:attribute name="data-tracking-label">
-              <xsl:value-of select="//EditCollectionWidget/CollName" />
-              <xsl:text>: </xsl:text>
-              <xsl:value-of select="//EditCollectionWidget/CollId" />
-            </xsl:attribute>
-            <i class="icomoon icomoon-download"></i>
-            <xsl:text> Download Metadata</xsl:text>
-          </button>
-          <xsl:text> </xsl:text>
-          <a href="#">Help about Downloading Metadata</a>
+
+          <xsl:choose>
+            <xsl:when test="//Param[@name='debug'] = 'dropdown'">
+              <xsl:call-template name="action-metadata-download-dropdown" />
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:call-template name="action-metadata-download-select" />
+            </xsl:otherwise>
+          </xsl:choose>
         </form>
 
       </xsl:otherwise>
     </xsl:choose>
 
+  </xsl:template>
+
+  <xsl:template name="action-metadata-download-select">
+    <xsl:call-template name="btn-metadata-download" />
+    <xsl:text> </xsl:text>
+    <a href="#" class="download-help-link">Help about Downloading Metadata</a>
+    <br />
+    <div style="font-size: 11px; margin-top: 8px">
+      <span>Format: </span>
+      <select size="1" name="format" style="width: auto; font-size: 11px; vertical-align: baseline">
+        <option value="text">Text (CSV)</option>
+        <option value="json">JSON</option>
+      </select>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="action-metadata-download-dropdown">
+    <input type="hidden" name="format" value="text" /> 
+    <div class="btn-group">
+      <xsl:call-template name="btn-metadata-download" />
+      <button type="button" class="btn btn-mini dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="offscreen">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a href="#" style="width: auto; background-image: none; text-indent: 0; text-transform: none; clip: auto; text-decoration: none; line-height: 12px" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download JSON</a>
+        </li>
+      </ul>
+    </div>
+    <xsl:text> </xsl:text>
+    <a href="#" class="download-help-link">Help about Downloading Metadata</a>
+  </xsl:template>
+
+  <xsl:template name="btn-metadata-download">
+    <button class="btn btn-mini">
+      <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+      <xsl:attribute name="data-tracking-action">MB Download Metadata</xsl:attribute>
+      <xsl:attribute name="data-tracking-label">
+        <xsl:value-of select="//EditCollectionWidget/CollName" />
+        <xsl:text>: </xsl:text>
+        <xsl:value-of select="//EditCollectionWidget/CollId" />
+      </xsl:attribute>
+      <i class="icomoon icomoon-download"></i>
+      <xsl:text> Download Metadata</xsl:text>
+    </button>
   </xsl:template>
 
   <xsl:template match="*" mode="copy-guts">

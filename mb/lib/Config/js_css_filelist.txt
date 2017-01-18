@@ -43,7 +43,7 @@ Section:LOCAL_JS
 # //common-web/jquery/jquery.trap.min.js
 /mb/web/js/mb.js
 /mb/web/js/tracking.js
-/mb/web/js/version_popup.js
+/mb/web/js/help_modals.js
 //common-web/js/google_covers.js
 //common-web/js/collection_tools.js
 //common-web/js/search_tools.js
