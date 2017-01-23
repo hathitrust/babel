@@ -291,11 +291,7 @@ sub get_Solr_query_string
   
     # The common Solr query parameters
     my $Q ='q=';
-    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,score};
-    #unicorn  Add oclc, isbn and ? for google book covers
-#XXX    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date, rights,id,record_no,oclc,isbn,lccn,score};
-    # add bothPublishDate and enumPublishDate to field list for display/debugging
-    # normally the enum date should show up in the enumcron part of the title display, but this shows what the parser found as a date
+    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,oclc,isbn,lccn,score};
 
 #XXX temporary until Phil fixes ability to login and set debug flag
 
