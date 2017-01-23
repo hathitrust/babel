@@ -750,15 +750,7 @@ sub make_query_clause{
     }
     
     my $mm = $weights->{'mm'};
-    # if "most of these" then use $weights->{'most_mm}
-    if ($anyall =~/most/)
-    {
-	$mm=$weights->{'most_mm'};
-    }
-    
-    
-    
-    
+       
     my $tie=$weights->{'tie'};
     $mm =~s,\%,\%25,g; #url encode any percent sign should this be a named sub? 
 

@@ -15,7 +15,6 @@ publisher:
   qf:
     - [publisher, 25000]
   mm: "100%"
-  most_mm: "2<-1 5<67%"  
   tie: 0.9
 
 
@@ -31,7 +30,6 @@ serialtitle:
     - [serialTitle, 30]
     - [serialTitle_rest, 10]
   mm: "100%"
-  most_mm: "2<-1 5<67%"	
   tie: 0.1
 
 
@@ -54,7 +52,6 @@ title:
     - [title_top, 20]
     - [title_rest, 10]
   mm: "100%"
-  most_mm: "2<-1 5<67%"  
   tie: 0.1
 
 debugtitle:
@@ -112,7 +109,6 @@ subject:
     - [fullgenre, 1]
     - [era , 1]
   mm: "100%"
-  most_mm: "2<-1 5<67%"      
   tie: 0.1    
 
 
@@ -144,7 +140,6 @@ author:
     - [author_top, 2]
     - [author_rest, 1]
   mm: "100%"
-  most_mm: "2<-1 5<67%"  
   tie: 0.1  
 
   
@@ -214,7 +209,6 @@ ocronly:
   qf:
     - [ocr, 500000]
   mm: "100%"
-  most_mm: "2<-1 5<67%"  #XXXXXXXXXXXXXXXXXXXXfoobar
   tie: 0.9
 
 #ocr only
@@ -260,7 +254,6 @@ ocr:
     - [fullgenre, 1]
     - [era, 1]
   mm: "100%"
-  most_mm: "2<-1 5<67%"  #XXXXXXXXXXXXXXXXXXXXfoobar	
   tie: 0.9
 
 # ocr with pf2 and pf3
@@ -539,6 +532,5 @@ isn:
     - [isn_related, 100]
     - [ht_id, 100]
   mm: "100%"
-  most_mm: "2<-1 5<67%"  
   tie: 0.1
   
