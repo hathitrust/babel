@@ -162,7 +162,7 @@ sub get_coll_xml
     my $s = '';
 
     $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName', [['e', uri_escape_utf8($$coll_hashref{'collname'})]]);
-    my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'});
+    my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'}, 1);
     my $owner_affiliation = MBooks::PIFiller::ListUtils::get_owner_affiliation($C, $$coll_hashref{'owner'}, $$coll_hashref{'owner_name'});
     $s .= wrap_string_in_tag($owner_string, 'OwnerString', [['e', uri_escape_utf8($owner_string)]]);
     $s .= wrap_string_in_tag($owner_affiliation, 'OwnerAffiliation', [['e', uri_escape_utf8($owner_affiliation)]]);

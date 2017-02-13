@@ -51,6 +51,7 @@ for the owner name if collection created when user is not logged in
 sub get_owner_string {
     my $C = shift;
     my $owner_string = shift;
+    my $escaped = shift;
 
     my $config = $C->get_object('MdpConfig');
     my $temp_coll_owner_string = $config->get('temp_coll_owner_string');
@@ -62,6 +63,10 @@ sub get_owner_string {
         # Obfuscate
         my @parts = split(/@/, $owner_string);
         $owner_string = $parts[0];
+    }
+
+    if ( $escaped ) {
+        Utils::map_chars_to_cers(\$owner_string, [q{"}, q{'}], 1);
     }
 
     return $owner_string;
@@ -215,7 +220,7 @@ sub handle_COLLECTION_OWNER_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $coll_owner = $act->get_transient_facade_member_data($C, 'coll_owner_display');
-    $coll_owner = get_owner_string($C, $coll_owner);
+    $coll_owner = get_owner_string($C, $coll_owner, 1);
 
     return $coll_owner;
 }
