@@ -162,20 +162,19 @@ $default_fields = ['ocr',
 $default_anyall = ['all',
                    'phrase',
 		   'any',
-		   'most'
+		   'all',
                   ];
 #order of anyall for each option group
 $anyall_order = ['all',
 		   'any',
                    'phrase',
-		   'most'
-                  ];
+		];
 
 # mappings of anyall to user strings
 $anyall_2_display = {"any"=>"any of these words",
                      "all"=>"all of these words", 
                      "phrase"=>"this exact phrase",
-		     "most" =>"most of these words"
+
                     };
 #----------------------------------------------------------------------
 # yop defaults and mappings
