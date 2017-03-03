@@ -471,9 +471,9 @@ sub do_interleaved_query
     my $il_debug_data ;
     my $i_rs = new LS::Result::JSON::Facets('all'); 
     
-    my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);#XXX consider using md5 cgi    
-    # zero results nothing to interleave. Return a result set with an empty id array ref
-    if ($num_found == 0)
+    my $num_found = $self->get_all_num_found($primary_rs, $secondary_rs);#XXX consider using md5 cgi
+    my $primary_num_found = $primary_rs->{'num_found'}; #if primary_rs is zero (i.e. A query) we have nothing to interleave.   Return a result set with an empty id array ref
+    if ($num_found == 0 || $primary_num_found == 0)
     {
 	$i_rs->__set_result_ids([]);
 	return ($i_rs,$il_debug_data);
