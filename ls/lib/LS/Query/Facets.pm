@@ -874,8 +874,9 @@ sub process_query
     # This may change if UX changes mind
     # this should be subroutine if (isBoolean) or something
     my $isBoolean;
-    
-    if ($processed_q=~/AND|OR/)
+
+    # "AND" or "OR" must be surrounded by spaces otherwise we match "FOR" or "WAND"
+    if ($processed_q=~/\s+(AND|OR)\s+/)
     {
         $isBoolean="true";
     }

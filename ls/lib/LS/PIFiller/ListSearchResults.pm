@@ -413,7 +413,17 @@ sub handle_SEARCH_RESULTS_PI
     my $base_url = $cgi->url();
     my $logger= $base_url . '/logger';
     $output .= wrap_string_in_tag($logger, 'LoggerURL');   
-
+    #
+    #XXX Right now we only output primary rs explain.  Not B results
+    my $explain_data;
+    if (DEBUG('explain'))
+    {
+        $explain_data=$primary_rs->get_result_solr_debug();
+	my $p_explain_data =__process_explain_data($explain_data);
+	$output.= wrap_string_in_tag($p_explain_data, 'global_explain');   
+    }
+   
+    
     # Was there a search?
     if ($search_result_data_hashref->{'undefined_query_string'}) { 
         $query_time = 0;
@@ -855,7 +865,41 @@ sub get_daterange_unselectURL
     my $url = $temp_cgi->url(-relative=>1,-query=>1);  
     return $url;
 }
+# ---------------------------------------------------------------------
+#     sub __process_explain_data
+#
+#     keys to explain data structure
+# 0  'timing'
+# 1  'QParser'
+# 2  'explain'
+# 3  'track'
+# 4  'parsedquery'
+# 5  'parsedquery_toString'
+# 6  'rawquerystring'
+# 7  'querystring'
+#
+#   This deals with the global explain data
+#   the explain data for each id is processed in _ls_wrap_result_data 
 
+sub __process_explain_data
+{
+    my $explain_data = shift;
+    my $p_explain_data;
+
+    my $parsedquery = $explain_data->{'parsedquery'};
+    $p_explain_data .= wrap_string_in_tag($parsedquery,'parsedquery');
+    my $parsedquery_toString  = $explain_data->{'parsedquery_toString'};
+    $p_explain_data .= wrap_string_in_tag($parsedquery_toString,'parsedquery_toString');
+    my $rawquerystring = $explain_data->{'rawquerystring'};
+    $p_explain_data .= wrap_string_in_tag($rawquerystring,'rawquerystring');
+    my $querystring = $explain_data->{'querystring'};
+    $p_explain_data .= wrap_string_in_tag($querystring,'querystring');
+
+    return ($p_explain_data);
+}
+
+
+# ---------------------------------------------------------------------
 #----------------------------------------------------------------------
 sub __IsUndefOrBlank
 {
