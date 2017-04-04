@@ -542,7 +542,9 @@ HT.Reader = {
     
     _trackPageview: function(href) {
         if ( this._tracking && HT.analytics && HT.analytics.enabled ) {
-            HT.analytics.trackPageview(href);
+            // HT.analytics.trackPageview(href);
+            HT.analytics.trackPageview(HT.analytics._simplifyPageHref(href));
+
             // if we were still doing the experiment, we'd do it here
             // HT.analytics.trackPageview(alternate_href, alternate_profile_id);
         }
