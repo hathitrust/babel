@@ -260,6 +260,18 @@ REMOVE the below and see if it will call list_utils
         <span id="TempDebug">SEARCH RESULTS</span>
       </xsl:if>
 -->
+<!-- check for coll_id param and if its here call a template to put up the search in this collections box-->
+<xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
+<xsl:if test="normalize-space($coll_id) != ''">
+  <xsl:call-template name="collSearchWidget">
+    <xsl:with-param name="coll_id">
+      <xsl:value-of select="$coll_id"/>                    
+    </xsl:with-param>
+  </xsl:call-template>     
+</xsl:if>
+    
+<!-- how do we deal with redo this advanced search? -->
+
 
       <!--XXX foobar   this shouldn't display if 0 results-->
       <span>
@@ -309,6 +321,56 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="getTotalCount">
       <xsl:value-of select="/MBooksTop/LimitToFullText/TotalCount"/>
 </xsl:template>
+
+<!-- ###################################################################### -->
+
+<xsl:template name="collSearchWidget">
+    <xsl:param name="coll_id"/>
+    <h4>Eureka! a coll id  <xsl:value-of select="$coll_id"/>
+    <xsl:text>
+    </xsl:text>
+    	  <xsl:value-of select="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
+    </h4>
+
+
+    <div class="search-form">
+      <div role="search" class="mainsearch">
+          <form class="form-inline" name="searchcoll" action="ls" method="get" id="coll_searchform">
+            <label for="q1">Search in this collection</label>
+            <input type="text" class="input-xlarge" id="q1" name="q1" maxlength="150" size="30"/>
+            <input type="hidden" value="srchls" name="a" />
+            <button value="srch" id="srch" name="a" type="submit" class="btn">Find</button>
+            <input type="hidden" >
+	      <xsl:attribute name="name">
+		<xsl:text>coll_id</xsl:text>
+	      </xsl:attribute>
+	      <xsl:attribute name="value">
+		<xsl:value-of select="$coll_id"/>
+	      </xsl:attribute>
+	    </input>
+
+	    <xsl:element name="a">
+	       <xsl:attribute name ="href">
+		 <xsl:text>/cgi/ls?a=page;page=advanced;coll_id=</xsl:text>
+		 <xsl:value-of select="$coll_id"/>
+	       </xsl:attribute>
+	      Advanced full-text search in this collection ac
+	    </xsl:element>
+	    <label>
+	      <input type="checkbox" value="ft" name="ft"/>
+	      Full view only
+	    </label>
+	    
+          </form>
+        </div>
+    </div>
+   
+    
+    
+  </xsl:template>     
+
+
+
 
 <!-- ###################################################################### -->
 <xsl:template name="instLimit">
@@ -460,9 +522,16 @@ REMOVE the below and see if it will call list_utils
             <xsl:value-of select="ProcessedQuery"/>                    
           </xsl:with-param>
         </xsl:call-template>     
-      </div>
+	</div>
       </xsl:if>
-
+      <!--XXX this should be a test for COLL_INFO and then stick it in-->
+      <xsl:if test="/MBooksTop/SearchResults/COLL_INFO">
+	<xsl:text> in Collection: </xsl:text>
+	<em>
+	  <xsl:value-of select="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
+	</em>
+      </xsl:if>
+	  
     </xsl:template>
     
 

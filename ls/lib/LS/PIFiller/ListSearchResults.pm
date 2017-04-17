@@ -569,11 +569,48 @@ sub handle_SEARCH_RESULTS_PI
     #need to fix any xml chars before output
     
   #  $processed =clean_for_xml($processed);
+    # add collection info
+    my $coll_info = __get_coll_info($C,$act);
+    if(defined($coll_info))
+    {
+	    $output.= wrap_string_in_tag($coll_info, 'COLL_INFO');
+    }
     
     return $output;
 }
+# ---------------------------------------------------------------------
 
-
+sub __get_coll_info
+{
+    my $C     = shift;
+    my $act   = shift;
+    my $cgi = $C->get_object('CGI');
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    
+    my $coll_info;
+    my $coll_desc;
+    my $coll_name;
+    my $coll_status;
+    
+    if(defined ($cgi->param('coll_id')))  {
+	my $coll_id = $cgi->param('coll_id');
+	#check for empty or space only param
+	$coll_id=~s/s+//g;
+	if ($coll_id ne ''){
+	    if($co->get_shared_status($coll_id) ne "public")
+	    {
+		return($coll_info);
+	    }
+	    $coll_desc   = $co->get_description($coll_id);
+	    $coll_name   = $co->get_coll_name($coll_id);
+	    $coll_info ='<COLL_DESC>'. $coll_desc . '</COLL_DESC>';
+	    $coll_info .='<COLL_NAME>'. $coll_name . '</COLL_NAME>';
+	}
+    }
+    
+    return($coll_info);
+	
+}	
 # ---------------------------------------------------------------------
 
 =item handle_QUERY_STRING_PI
