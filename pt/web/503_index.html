@@ -1,60 +1,154 @@
 <html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
   <head> 
     <meta http-equiv="Pragma" content="no-cache">
-    <title>Hathi Trust Digital Library - Indexing in Progress</title>
-    <link rel="stylesheet" href="./faq.css" type="text/css" />
-    <link rel="stylesheet" href="./MBooksCol.css" type="text/css" /> 
-    <style type="text/css" media="screen">
-      .message {
-        position: absolute;
-        bottom: 0;
-        left: 10;
-        color: #ddd;
-      }
-    </style>
+    <title>Indexing in Progress | Hathi Trust Digital Library</title>
+
+    <script type="text/javascript" src="/common/unicorn/vendor/headjs/dist/head.min.js"></script>
+    <script type="text/javascript" src="/common/unicorn/js/common.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="//ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js"></script>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <script src="../common/unicorn/vendor/js/selectivizr.js" type="text/javascript"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/common/unicorn/css/common.css" />
+
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" type="text/css" href="/common/unicorn/css/ie7.css" />
+    <![endif]-->
+
   </head>
   
   <body class="staticPage"> 
-    
-    <div id="masthead">
-      <div class="branding">
-        <div class="brandingLogo">
-          <a href="http://www.hathitrust.org">
-            <img src="./graphics/HathiTrust.gif" alt="Hathi Trust Logo"/>
-            <span>Digital Library</span>
-          </a>
+
+    <!-- NAVBAR -->
+    <h2 class="offscreen">Navigation</h2>
+    <div class="navbar navbar-static-top navbar-inverse" role="navigation">
+      <div class="navbar-inner">
+        <ul id="nav" class="nav">
+          <li><a href="http://www.hathitrust.org">Home</a></li>
+          <li><a href="http://www.hathitrust.org/about">About</a>
+            <ul>
+            <li><a href="http://www.hathitrust.org/partnership">Our Partnership</a></li>
+            <li><a href="http://www.hathitrust.org/digital_library">Our Digital Library</a></li>
+            <li><a href="http://www.hathitrust.org/htrc">Our Research Center</a></li>
+            <li><a href="http://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+            </ul></li>
+          <li><a href="http://babel.hathitrust.org/cgi/mb">Collections</a></li>
+          <li class="divider-vertical"></li>
+          <li class="help"><a href="http://www.hathitrust.org/help">Help</a></li>
+          <li><a href="http://babel.hathitrust.org/cgi/feedback?page=form" data-m="ht" data-id="404" data-toggle="feedback">Feedback</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="container centered header clearfix">
+      <div class="logo">
+        <a href="http://www.hathitrust.org"><span class="offscreen">HathiTrust Digital Library</span></a>
+      </div>
+      <div class="search-form" role="search">
+
+        <form action="/cgi/ls/one" method="GET">
+          <div class="search-tabs">
+            <input name="target" type="radio" id="option-full-text-search" value="ls" checked="checked" />
+            <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
+            <input name="target" type="radio" id="option-catalog-search" value="catalog" />
+            <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
+          </div>
+          <fieldset>
+            <input name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" value="" />
+            <div class="search-input-options">
+              <select size="1" class="search-input-select" name="searchtype">
+                <option value="all">Everything</option>
+                <option value="title">Title</option>
+                <option value="author">Author</option>
+                <option value="subject">Subject</option>
+                <option value="isbn">ISBN/ISSN</option>
+                <option value="publisher">Publisher</option>
+                <option value="seriestitle">Series Title</option>
+                <option value="pubyear">Publication Year</option>
+              </select>
+            </div>
+            <button class="button"><span class="offscreen">Search</span></button>
+          </fieldset>
+          <div class="search-extra-options">
+            <ul class="search-links">
+              <li class="search-advanced-link"><a href="//babel.hathitrust.org/cgi/ls?a=page;page=advanced">Advanced full-text search</a></li>
+              <li class="search-catalog-link"><a href="//catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
+              <li><a href="//www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
+            </ul>
+            <label>
+              <input type="checkbox" value="ft" />
+              Full view only
+            </label>
+          </div>
+        </form>
+
+      </div>
+      <div class="login">
+        <a href="//babel.hathitrust.org/cgi/wayf" id="login-button" class="button log-in">LOG IN</a>
+      </div>
+
+    </div>
+
+    <div class="container page centered">
+      <div class="main" role="main">
+        <div class="row">
+          <div class="span12">
+            <h1>Your book is currently being indexed for searching.</h1>
+            
+            <p><strong><em>Why am I seeing this message?</em></strong> There are several possibilities: you may 
+              have attempted to begin the search again while the book is being indexed. Or someone else started the
+              indexing moments before you made your request.</p>
+              
+            <!-- <p>Indexing should be complete soon.</p> -->
+            
+            <p><strong><a id="request_url" href="__REQUEST_URL__">Try your query again</a></strong>
+              
+            <pre class="message">___MESSAGE___</pre>
+
+            <div class="img">
+              <p>
+                <img src="graphics/503/5858521608_c7639801a5_z.jpg" alt="Pages" style="width: 100%; box-shadow: 10px 10px 33px 16px rgba(102,102,102,0.62); border: 8px solid white;" />
+              </p>
+              <p class="pull-right">
+                <small>
+                  <a href="https://www.flickr.com/photos/kimberlykoppen/5858521608/">"Pages"</a> by <a href="https://www.flickr.com/photos/kimberlykoppen/">Kimberly Koppen</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/2.0/">CC BY NC 2.0</a>
+                </small>
+              </p>
+            </div>
+            <script>
+              // rewrite the request_url and remove the index parameter
+              var a = document.getElementById("request_url");
+              var href = a.getAttribute('href');
+              href = href.replace(/index=\d+[;&]?/, '');
+              a.setAttribute('href', href);
+            </script>
+
+
+          </div>
         </div>
       </div>
     </div>
 
+    <div class="navbar navbar-static-bottom navbar-inverse footer" role="contentinfo">
+      <div class="navbar-inner">
+        <ul class="nav pull-right">
+          <li><a href="http://www.hathitrust.org/">Home</a></li>
+          <li><a href="http://www.hathitrust.org/about">About</a></li>
+          <li><a href="http://babel.hathitrust.org/cgi/mb">Collections</a></li>
+          <li><a href="http://www.hathitrust.org/help">Help</a></li>
+          <li><a href="#" data-m="ht" data-id="404" data-toggle="feedback">Feedback</a></li>
+          <li><a href="http://m.hathitrust.org">Mobile</a></li>
+          <li><a href="http://www.hathitrust.org/take_down_policy">Take-Down Policy</a></li>
+          <li><a href="http://www.hathitrust.org/privacy">Privacy</a></li>
+          <li><a href="http://www.hathitrust.org/contact">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+
     
-    <div class="outmessage">
-      <h1>Indexing in progress</h1>
-    </div>
-    <div class="message_error">
-      
-      <img src="./graphics/MLibrary_bookplate.gif" alt="image of Library book plate"/>
-      
-        <p>Your book is currently being indexed for searching.</p>
-        
-        <p><strong><em>Why am I seeing this message?</em></strong> There are several possibilities: you may 
-          have attempted to begin the search again while the book is being indexed. Or someone else started the
-          indexing moments before you made your request.</p>
-          
-        <p>Indexing should be complete soon.</p>
-        
-        <p><strong><a id="request_url" href="__REQUEST_URL__">Try your query again</a></strong>
-          
-        <pre class="message">___MESSAGE___</pre>
-      
-    </div>
-    <script>
-      // rewrite the request_url and remove the index parameter
-      var a = document.getElementById("request_url");
-      var href = a.getAttribute('href');
-      href = href.replace(/index=\d+[;&]?/, '');
-      a.setAttribute('href', href);
-    </script>
   </body>
 </html>
-
