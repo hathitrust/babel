@@ -28,6 +28,16 @@
     </xsl:if>
   </xsl:variable>
 
+  
+  <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
+  <xsl:variable name="isCollSearch">
+
+    <!--    <xsl:if test="(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']) and (normalize-space($coll_id) != '') ">-->
+    
+    <xsl:if test="normalize-space($coll_id) != ''">
+      <xsl:text>True</xsl:text>
+    </xsl:if>
+  </xsl:variable>
 
   <!-- ## end Global Variables ##-->
 
@@ -62,7 +72,23 @@
               <xsl:text> the items in an</xsl:text>
               <a href="http://catalog.hathitrust.org/Search/Advanced"> Advanced Catalog Search?</a>
             </span>
-            <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
+            <h2 id="advancedLabel">Advanced  Full-text Search
+	    <xsl:choose>
+	      <xsl:when test="$isCollSearch = 'True'">
+		
+		<span class="big_coll_name">
+		  <xsl:text>within Collection:  </xsl:text>
+		  <em>
+		    <xsl:value-of select="/MBooksTop/AdvancedSearch/COLL_INFO/COLL_NAME"/>
+		  </em>
+		</span>
+		
+	      </xsl:when>
+	      <xsl:otherwise>
+		<xsl:text>:</xsl:text>
+	      </xsl:otherwise>
+	    </xsl:choose>
+	    </h2>
             <!--XXX should be pi but hardcode for now-->
             <div id="AdvancedExplanation">Search information <em>within or about</em> an item</div>
             <!--XXX should probably have a PI instead of being hard-coded-->
@@ -84,8 +110,14 @@
               <!--
               Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
               -->
-                  <input type="hidden" name="a" value="srchls" />
-
+              <input type="hidden" name="a" value="srchls" />
+	      <xsl:if test="$isCollSearch = 'True' ">
+		<input type="hidden" name="coll_id">
+		  <xsl:attribute name="value">
+		    <xsl:value-of select="$coll_id"/>
+		  </xsl:attribute>
+		</input>
+	      </xsl:if>
               <!--XXX lets start by converting the query rows from a table to css and then do the rest-->
 
                 <xsl:for-each select="AdvancedSearch/groups/group">

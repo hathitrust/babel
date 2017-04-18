@@ -326,17 +326,19 @@ REMOVE the below and see if it will call list_utils
 
 <xsl:template name="collSearchWidget">
     <xsl:param name="coll_id"/>
-    <h4>Eureka! a coll id  <xsl:value-of select="$coll_id"/>
-    <xsl:text>
-    </xsl:text>
-    	  <xsl:value-of select="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
-    </h4>
+    <!-- debug
+	 <h4>Eureka! a coll id  <xsl:value-of select="$coll_id"/></h4>
+    -->
+    <div class="big_coll_name">
+    <xsl:text>Collection:  </xsl:text>
+    <xsl:value-of select="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
+    </div>
 
 
     <div class="search-form">
       <div role="search" class="mainsearch">
           <form class="form-inline" name="searchcoll" action="ls" method="get" id="coll_searchform">
-            <label for="q1">Search in this collection</label>
+            <label for="q1">Search in this collection  </label>
             <input type="text" class="input-xlarge" id="q1" name="q1" maxlength="150" size="30"/>
             <input type="hidden" value="srchls" name="a" />
             <button value="srch" id="srch" name="a" type="submit" class="btn">Find</button>
@@ -348,19 +350,23 @@ REMOVE the below and see if it will call list_utils
 		<xsl:value-of select="$coll_id"/>
 	      </xsl:attribute>
 	    </input>
-
-	    <xsl:element name="a">
-	       <xsl:attribute name ="href">
-		 <xsl:text>/cgi/ls?a=page;page=advanced;coll_id=</xsl:text>
-		 <xsl:value-of select="$coll_id"/>
-	       </xsl:attribute>
-	      Advanced full-text search in this collection ac
-	    </xsl:element>
-	    <label>
-	      <input type="checkbox" value="ft" name="ft"/>
-	      Full view only
-	    </label>
-	    
+	    <div class="search-extra-options">
+	      <ul class="search-links">
+		<li class="search-advanced-link">
+	      <xsl:element name="a">
+		<xsl:attribute name ="href">
+		  <xsl:text>/cgi/ls?a=page;page=advanced;coll_id=</xsl:text>
+		  <xsl:value-of select="$coll_id"/>
+		</xsl:attribute>
+		Advanced full-text search in this collection ac
+	      </xsl:element>
+		</li>
+	      </ul>
+	      <label>
+		<input type="checkbox" value="ft" name="ft"/>
+		Full view only
+	      </label>
+	    </div>
           </form>
         </div>
     </div>
