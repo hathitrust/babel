@@ -6,6 +6,7 @@
 
   <!-- XXX unicorn version-->
   <!--## Global Variables ##-->
+<xsl:variable name="gCollSearch" select = "/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']" />
 
   <xsl:variable name="g_current_sort_param" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='sort']"/>
   <!-- need to separate sort and dir from sort param i.e. title_d = sort=title dir=d -->
@@ -85,10 +86,27 @@
       <xsl:text>True</xsl:text>
     </xsl:if>
   </xsl:variable>
-    
 
+  <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
+  
+  <xsl:variable name="gIsCollSearch">  
+    <xsl:choose>
+      <xsl:when test="normalize-space($coll_id) != ''">
+	<xsl:text>TRUE</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:text>FALSE</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  
+  <xsl:variable name="gCollName">
+    <xsl:if test="$gIsCollSearch = 'TRUE'">
+      <xsl:value-of select ="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
+    </xsl:if>    
+  </xsl:variable>
+  
   <!-- ######################### end Global Variables ###################################-->
-
 
 
   <!-- XXX temporary dummy template until Roger puts this in the right place -->
@@ -137,6 +155,7 @@
   <xsl:template name="sidebar">
     <!-- XXX don't display if no results-->
     <xsl:if test="SearchResults/A_RESULTS/Item">
+      
       <xsl:call-template name="facets"/>
     </xsl:if>
   </xsl:template>
@@ -207,7 +226,14 @@ REMOVE the below and see if it will call list_utils
   <!-- templates to make search box in header sticky  make sure not confused by an advanced search-->
   <xsl:template name="header-search-q1-value" >
     <!-- from skeleton.xsl global gets current cgi q1 param-->
-    <xsl:value-of select="$gQ1"/>
+    <xsl:choose>
+      <xsl:when test ="$gCollSearch">
+	    <!-- Don't show query in global search box if its a search within collection tbw-->
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:value-of select="$gQ1"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
 
@@ -261,13 +287,9 @@ REMOVE the below and see if it will call list_utils
       </xsl:if>
 -->
 <!-- check for coll_id param and if its here call a template to put up the search in this collections box-->
-<xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
-<xsl:if test="normalize-space($coll_id) != ''">
-  <xsl:call-template name="collSearchWidget">
-    <xsl:with-param name="coll_id">
-      <xsl:value-of select="$coll_id"/>                    
-    </xsl:with-param>
-  </xsl:call-template>     
+
+<xsl:if test="$gIsCollSearch = 'TRUE'">
+  <xsl:call-template name="collSearchWidget"/>
 </xsl:if>
     
 <!-- how do we deal with redo this advanced search? -->
@@ -325,21 +347,23 @@ REMOVE the below and see if it will call list_utils
 <!-- ###################################################################### -->
 
 <xsl:template name="collSearchWidget">
-    <xsl:param name="coll_id"/>
-    <!-- debug
-	 <h4>Eureka! a coll id  <xsl:value-of select="$coll_id"/></h4>
-    -->
     <div class="big_coll_name">
     <xsl:text>Collection:  </xsl:text>
-    <xsl:value-of select="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
+    <xsl:value-of select="$gCollName"/>
     </div>
 
 
     <div class="search-form">
       <div role="search" class="mainsearch">
+	<!--tbw XXX TODO  copy css for class mainsearch but modify styling on bottom border-->
+	
           <form class="form-inline" name="searchcoll" action="ls" method="get" id="coll_searchform">
             <label for="q1">Search in this collection  </label>
-            <input type="text" class="input-xlarge" id="q1" name="q1" maxlength="150" size="30"/>
+            <input type="text" class="input-xlarge" id="q1" name="q1" maxlength="150" size="30">
+	      <xsl:attribute name ="value">
+		<xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
+	      </xsl:attribute>
+		  </input>
             <input type="hidden" value="srchls" name="a" />
             <button value="srch" id="srch" name="a" type="submit" class="btn">Find</button>
             <input type="hidden" >
@@ -353,17 +377,26 @@ REMOVE the below and see if it will call list_utils
 	    <div class="search-extra-options">
 	      <ul class="search-links">
 		<li class="search-advanced-link">
+
 	      <xsl:element name="a">
 		<xsl:attribute name ="href">
 		  <xsl:text>/cgi/ls?a=page;page=advanced;coll_id=</xsl:text>
 		  <xsl:value-of select="$coll_id"/>
+		  <xsl:text>;q1=</xsl:text>
+		  <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
 		</xsl:attribute>
-		Advanced full-text search in this collection ac
+		
+	
+		Advanced full-text search in this collection 
 	      </xsl:element>
 		</li>
 	      </ul>
 	      <label>
-		<input type="checkbox" value="ft" name="ft"/>
+		<!--XXX tbw add code to keep checkbox checked if in url param-->
+		<input type="checkbox" value="ft" name="lmt">
+		 <!-- <xsl:attribute name="lmt">
+		  </xsl:attribute> -->
+		</input>
 		Full view only
 	      </label>
 	    </div>
@@ -530,11 +563,11 @@ REMOVE the below and see if it will call list_utils
         </xsl:call-template>     
 	</div>
       </xsl:if>
-      <!--XXX this should be a test for COLL_INFO and then stick it in-->
+
       <xsl:if test="/MBooksTop/SearchResults/COLL_INFO">
 	<xsl:text> in Collection: </xsl:text>
 	<em>
-	  <xsl:value-of select="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
+	  <xsl:value-of select="$gCollName"/>
 	</em>
       </xsl:if>
 	  
@@ -622,12 +655,22 @@ REMOVE the below and see if it will call list_utils
 
              
               <span id="zeroHits">
-                <xsl:text>Your search returned 0 results.   </xsl:text>
+		<xsl:choose>
+		  <xsl:when test ="$gIsCollSearch = 'TRUE'">
+		    <xsl:text>Your search in Collecion: </xsl:text>
+		    <xsl:value-of select="$gCollName"/>
+		    <xsl:text> returned 0 results  </xsl:text>
+		  </xsl:when>
+		  <xsl:otherwise>
+		    <xsl:text>Your search returned 0 results.   </xsl:text>
+		  </xsl:otherwise>
+		</xsl:choose>  
               </span>
               <div id="AdvancedLSerrorSearchStuff alert alert-error alert-block">
-              <xsl:text>You searched for:</xsl:text>
-              <xsl:call-template name="advanced"/>          
-              <!-- need styling-->
+		<xsl:text>You searched for:</xsl:text>
+		  
+		<xsl:call-template name="advanced"/>          
+		<!-- need styling-->
               <!--XXX test for limits-->
               <!--XXX SSD need to add limited to institution maybe foobar-->
               <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
@@ -669,12 +712,26 @@ REMOVE the below and see if it will call list_utils
         </xsl:when>
         
         <xsl:otherwise>
+	  <!-- tbw need to fix this for big coll search-->
+	  <!-- need to still display search collection box and to mention collection in error-->
+	  <xsl:if test="$gIsCollSearch = 'TRUE'">
+	    <xsl:call-template name="collSearchWidget"/>
+	  </xsl:if>
+
           <div class="LSerror alert  alert-error">
             <xsl:text>Your search for "</xsl:text>
             <xsl:value-of select="/MBooksTop/QueryString"/>
             <xsl:text>" in </xsl:text>
             <xsl:value-of select="/MBooksTop/AdvancedSearch/group/Clause/Field"/>
-            <xsl:text> returned zero hits.</xsl:text>
+	    
+	    <xsl:if test="$gIsCollSearch = 'TRUE'">
+	      <br/>
+	      <xsl:text>  in Collection: </xsl:text>
+	      <xsl:value-of select="$gCollName"/>
+	      <br/>
+	    </xsl:if>
+
+	    <xsl:text> returned zero hits.</xsl:text>
           </div>
         </xsl:otherwise>      
       </xsl:choose>
@@ -1185,6 +1242,10 @@ REMOVE the below and see if it will call list_utils
 
   <xsl:template name="facets">
     <div class="facets sidebar">
+      <xsl:if test="$gIsCollSearch = 'TRUE'">
+	<xsl:call-template name="coll_name_sidebar"/>
+      </xsl:if>
+      
       <xsl:variable name="facetsSelected">
         <xsl:value-of select="/MBooksTop/Facets/facetsSelected"/>
       </xsl:variable>
@@ -1628,6 +1689,14 @@ REMOVE the below and see if it will call list_utils
 
     </xsl:template>
     
-
+    <xsl:template name="coll_name_sidebar">
+      <div> <!-- class="sidebar" role="complementary"-->
+	<h3 class="cn" >
+	  <xsl:value-of select = "$gCollName"/>
+	</h3>
+      </div>
+	
+    </xsl:template>
+    
   
 </xsl:stylesheet>
