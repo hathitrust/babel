@@ -217,7 +217,7 @@
     }
     post_title = post_title.join(" - ") + " | HathiTrust";
     $.fn.socialLinks.defaults = {
-        url: window.location.href.replace(window.location.hash, '').replace(/;/g, '&'),
+        url: window.location.href.replace(window.location.hash, '').replace(/;/g, '&').replace('/shcgi/', '/cgi/'),
         post_title: post_title,
         counters: true,
         zeroes: false,
