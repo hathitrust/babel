@@ -898,7 +898,7 @@
           <xsl:when test="$record_no!=''">
             <xsl:element name="a">
               <xsl:variable name="href">
-                <xsl:text>http://catalog.hathitrust.org/Record/</xsl:text>
+                <xsl:text>https://catalog.hathitrust.org/Record/</xsl:text>
                 <xsl:value-of select="$record_no"/>
               </xsl:variable>
               <xsl:attribute name="data-toggle">tracking</xsl:attribute>
@@ -980,7 +980,7 @@
               <xsl:when test="$gFullPdfAccessMessage='RESTRICTED_SOURCE'">
                 <xsl:text>Download whole book (PDF)</xsl:text>
                 <br />
-                <i>Not available</i> (<a href="http://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
+                <i>Not available</i> (<a href="https://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
               </xsl:when>
               <xsl:otherwise>
                 <xsl:element name="a">
@@ -1014,13 +1014,13 @@
                     <em>If you are not a member of a partner institution,
                       <br />
                       whole book download is not available.
-                      (<a href="http://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
+                      (<a href="https://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
                     </p>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                     <p>
                       <xsl:text>Full PDF available only to authenticated users from </xsl:text>
-                      <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
+                      <a href="https://www.hathitrust.org/help_digital_library#LoginNotListed" target="_blank">HathiTrust partner institutions.</a>
                     </p>
                   </xsl:when>
                   <xsl:when test="$gFullPdfAccessMessage = 'NOT_PD'">
@@ -1080,7 +1080,7 @@
           <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
           <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
           <xsl:attribute name="href">
-            <xsl:text>http://www.worldcat.org/oclc/</xsl:text>
+            <xsl:text>https://www.worldcat.org/oclc/</xsl:text>
             <xsl:value-of select="$oclc-number" />
           </xsl:attribute>
           <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>

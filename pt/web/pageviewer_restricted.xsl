@@ -45,7 +45,7 @@
 
     <xsl:variable name="orphan_canditate_msg">
       <strong>This volume is an Orphan Works candidate.</strong> <ul><li>The Orphan Works Project is a framework for libraries to determine whether books in their collections are subject to copyright but whose copyright holders cannot be identified or contacted.</li><li>If you are a bona fide copyright holder of this volume, please contact us at the
-      <a title="Orphan Works Project" href="http://www.lib.umich.edu/orphan-works/copyright-holders-we-want-hear-you"> Orphan Works Project.</a></li></ul>
+      <a title="Orphan Works Project" href="https://www.lib.umich.edu/orphan-works/copyright-holders-we-want-hear-you"> Orphan Works Project.</a></li></ul>
     </xsl:variable>
 
     <div class="alert alert-info alert-block alert-banner">
@@ -76,7 +76,7 @@
           <xsl:with-param name="pShowLabel" select="'NO'"/>
         </xsl:call-template>
       </p>
-      <p>Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
+      <p>Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
     </div>    
   </xsl:template>
   
@@ -95,7 +95,7 @@
       <xsl:text>Try a </xsl:text>
       <xsl:element name="a">
         <xsl:attribute name="href">
-          <xsl:value-of select="'http://www.hathitrust.org'"/>
+          <xsl:value-of select="'https://www.hathitrust.org'"/>
         </xsl:attribute>
         <xsl:text> new search </xsl:text>
       </xsl:element>
@@ -111,7 +111,7 @@
       </xsl:call-template>
     </xsl:variable>
     <div class="alert alert-info alert-block alert-banner">
-      This item is <strong>not available online</strong> (<i class="icomoon-locked"></i> Limited - search only) due to copyright restrictions. <a href="http://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
+      This item is <strong>not available online</strong> (<i class="icomoon-locked"></i> Limited - search only) due to copyright restrictions. <a href="https://www.hathitrust.org/help_copyright#RestrictedAccess">Learn More »</a>
     </div>
     <div class="no_access_text">
       <p>You can:</p>
@@ -162,7 +162,7 @@
       </xsl:call-template>
     </xsl:variable>
     <div class="alert alert-info alert-block alert-banner">
-      We have determined this work to be in the public domain, but access is limited due to privacy concerns. See HathiTrust's <a href="http://www.hathitrust.org/privacy#pd-pvt">Privacy Policy</a> for more information.
+      We have determined this work to be in the public domain, but access is limited due to privacy concerns. See HathiTrust's <a href="https://www.hathitrust.org/privacy#pd-pvt">Privacy Policy</a> for more information.
     </div>
     <div class="no_access_text">
       <p>You can:</p>

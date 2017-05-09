@@ -118,7 +118,7 @@
     <xsl:element name="link">
       <xsl:attribute name="rel">canonical</xsl:attribute>
       <xsl:attribute name="href">
-        <xsl:text>http://babel.hathitrust.org/cgi/pt?id=</xsl:text>
+        <xsl:text>https://babel.hathitrust.org/cgi/pt?id=</xsl:text>
         <xsl:value-of select="$gHtId" />
       </xsl:attribute>
     </xsl:element>
@@ -146,7 +146,7 @@
         </xsl:choose>
       </xsl:for-each>
       HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
-      HT.params.RecordURL = '<xsl:value-of select="concat('http://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
+      HT.params.RecordURL = '<xsl:value-of select="concat('https://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
     </script>
     <xsl:call-template name="load_js_and_css"/>
     <xsl:call-template name="include_local_javascript" />
@@ -226,18 +226,18 @@
           <xsl:if test="$gLoggedIn = 'YES'">, logout</xsl:if>
         </h2>
         <ul id="nav" class="nav">
-          <li><a class="home-link" href="http://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
-          <li><a href="http://www.hathitrust.org/about">About</a>
+          <li><a class="home-link" href="https://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
+          <li><a href="https://www.hathitrust.org/about">About</a>
             <ul>
-              <li><a href="http://www.hathitrust.org/partnership">Our Partnership</a></li>
-              <li><a href="http://www.hathitrust.org/digital_library">Our Digital Library</a></li>
-              <li><a href="http://www.hathitrust.org/htrc">Our Research Center</a></li>
-              <li><a href="http://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+              <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
+              <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
+              <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
+              <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
             </ul>
           </li>
           <li><a href="/cgi/mb">Collections</a></li>
           <li class="divider-vertical"></li>
-          <li class="help"><a href="http://www.hathitrust.org/help">Help</a></li>
+          <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
           <xsl:call-template name="li-feedback" />
         </ul>
         <ul id="person-nav" class="nav pull-right">
@@ -361,15 +361,15 @@
   </xsl:template>
 
   <xsl:template name="access_banner_ssd">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br /><br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br /><br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p></div></div>
   </xsl:template>
 
   <xsl:template name="access_banner">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
   </xsl:template>
 
   <xsl:template name="access_banner_local">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>This work is in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
   </xsl:template>
 
   <xsl:template name="html-tag-extra-attributes" />
