@@ -651,6 +651,11 @@ REMOVE the below and see if it will call list_utils
         <xsl:otherwise>
           <!-- tbw need to fix this for big coll search-->
           <!-- need to still display search collection box and to mention collection in error-->
+<!-- tbw put search box back -->
+	  <xsl:if test="$gIsCollSearch = 'TRUE'">
+            <xsl:call-template name="collSearchWidget"/>
+          </xsl:if>
+	  
           <div class="LSerror alert  alert-error">
             <xsl:text>Your search </xsl:text>
             <xsl:if test="$gIsCollSearch = 'TRUE'">
@@ -669,11 +674,11 @@ REMOVE the below and see if it will call list_utils
           <p>
             <xsl:call-template name="action_start_over" />
           </p>
-
+<!--tbw XXX
           <xsl:if test="false() and $gIsCollSearch = 'TRUE'">
             <xsl:call-template name="collSearchWidget"/>
           </xsl:if>
-
+-->
         </xsl:otherwise>
       </xsl:choose>
       <!-- </div>-->
