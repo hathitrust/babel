@@ -1,3 +1,5 @@
+@import "../../../common/web/unicorn/sass/base";
+
 /** ls.scss
 *
 *
@@ -54,19 +56,56 @@ span.moreless
   font-style:italic;
 } 
 
+#DlpsDev {
+  position: absolute;
+  right: 10px;
+  background: #666;
+  color: yellow;
+  padding: 8px;
+}
 
+.mainsearch {
+    .search-extra-options {
+        margin-top: 0;
+        font-size: 90%;
+        @include rem(padding-bottom, 16);
+        // @include rem(margin-bottom, 16);
+    }
 
+    @include rem(margin-bottom, 16);
+}
 
 .SearchResults_status {
-    color: #333333;
-    font-size: 1.2em;
-    margin: 0;
-    padding: 20px 5px 20px;
-    position: relative;
+  @include rem(padding-top, 20);
+  @include rem(padding-bottom, 20);
+  @include rem(font-size, 16);
+
+
+  span {
+    font-weight: bold;
+  }
 }
-.SearchResults_status span{
-               font-weight:bold;
+
+.main.mb {
+  .SearchResults_status {
+    @include rem(font-size, 13);
+  }
 }
+
+.modify_link {
+  @include rem(margin-top, 16);
+}
+
+// .SearchResults_status {
+//     color: #4f4f4f;
+//     font-size: 1.2em;
+//     margin: 0;
+//     padding: 20px 5px 20px;
+//     position: relative;
+// }
+// .SearchResults_status span{
+//                font-weight:bold;
+// }
 
 span.AnyAll  {  
                font-weight:normal;

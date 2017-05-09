@@ -591,6 +591,8 @@ sub __get_coll_info
     my $coll_desc;
     my $coll_name;
     my $coll_status;
+    my $coll_featured;
+    my $coll_contact_info;
     
     if(defined ($cgi->param('coll_id')))  {
 	my $coll_id = $cgi->param('coll_id');
@@ -603,8 +605,12 @@ sub __get_coll_info
 	    }
 	    $coll_desc   = $co->get_description($coll_id);
 	    $coll_name   = $co->get_coll_name($coll_id);
+        $coll_featured = $co->get_coll_featured($coll_id);
+        $coll_contact_info = $co->get_coll_contact_info($coll_id);
 	    $coll_info ='<COLL_DESC>'. $coll_desc . '</COLL_DESC>';
 	    $coll_info .='<COLL_NAME>'. $coll_name . '</COLL_NAME>';
+        $coll_info .= '<COLL_FEATURED>' . $coll_featured . '</COLL_FEATURED>' if ( $coll_featured );
+        $coll_info .= '<COLL_CONTACT_INFO>' . $coll_contact_info . '</COLL_CONTACT_INFO>' if ( $coll_contact_info );
 	}
     }
     

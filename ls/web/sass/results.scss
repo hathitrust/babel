@@ -173,6 +173,10 @@ margin-right: 2px;
         font-size: 110%;
         // font-weight: bold;
     }
+
+    .search-extra-options {
+        margin-top: 0;
+    }
     
     @include rem(padding-bottom, 16);
     @include rem(margin-bottom, 16) ;

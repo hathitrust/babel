@@ -77,10 +77,10 @@
 	      <xsl:when test="$isCollSearch = 'True'">
 		
 		<span class="big_coll_name">
-		  <xsl:text>within Collection:  </xsl:text>
-		  <em>
+		  <xsl:text>in the collection </xsl:text>
+      <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}">
 		    <xsl:value-of select="/MBooksTop/AdvancedSearch/COLL_INFO/COLL_NAME"/>
-		  </em>
+		  </a>
 		</span>
 		
 	      </xsl:when>
