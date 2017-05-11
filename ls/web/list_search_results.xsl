@@ -612,7 +612,8 @@ REMOVE the below and see if it will call list_utils
               <!-- need styling-->
               <!--XXX test for limits-->
               <!--XXX SSD need to add limited to institution maybe foobar-->
-              <xsl:if test="/MBooksTop/Facets/facetsSelected='true' and count(/MBooksTop/Facets/SelectedFacets/facetValue) &gt; 0">
+	      <!--tbw MAY10 debugging missing error facets              <xsl:if test="/MBooksTop/Facets/facetsSelected='true' and count(/MBooksTop/Facets/SelectedFacets/facetValue) &gt; 0">-->
+	      <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
                 <div id="LimitsError">
                   <xsl:text>With these limits </xsl:text>
                   <xsl:call-template name="showSelected">
