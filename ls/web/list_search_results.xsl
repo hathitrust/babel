@@ -573,82 +573,14 @@ REMOVE the below and see if it will call list_utils
         <xsl:when test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
           <div class="LSerror alert alert-error">
             <xsl:text>There are no Full View items matching your search</xsl:text>
-            <!--XXX we don't need this if we show the tabs-->
-            <!--#################################
-                <br></br>
-                <xsl:element name="a">
-                  <xsl:attribute name="href">
-                    <xsl:value-of select="/MBooksTop/LimitToFullText/SearchOnlyHref"/>
-                  </xsl:attribute>
-                  <xsl:attribute name ="class">
-                  
-                  </xsl:attribute>
-                  <xsl:text> See Limited (search only) items matching your search </xsl:text>
-                </xsl:element>
-                #################################-->
           </div>
         </xsl:when>
         <!-- advanced search with either limits or both boxes
                  Should this logic be in the PI filler instead of the XSL?
                  -->
-        <!-- XXX test this with new isAdvanced criteria -->
         <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'">
-          <div class="AdvancedLSerror alert alert-error alert-block">
-            <span id="zeroHits">
-              <xsl:choose>
-                <xsl:when test="$gIsCollSearch = 'TRUE'">
-                  <xsl:text>Your search in the collection </xsl:text>
-                  <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}"><xsl:value-of select="$gCollName"/></a>
-                  <xsl:text> returned zero results  </xsl:text>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:text>Your search returned zero results.   </xsl:text>
-                </xsl:otherwise>
-              </xsl:choose>
-            </span>
-            <div id="AdvancedLSerrorSearchStuff alert alert-error alert-block">
-              <xsl:text>You searched for:</xsl:text>
-              <xsl:call-template name="advanced"/>
-              <!-- need styling-->
-              <!--XXX test for limits-->
-              <!--XXX SSD need to add limited to institution maybe foobar-->
-	      <!--tbw MAY10 debugging missing error facets              <xsl:if test="/MBooksTop/Facets/facetsSelected='true' and count(/MBooksTop/Facets/SelectedFacets/facetValue) &gt; 0">-->
-	      <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
-                <div id="LimitsError">
-                  <xsl:text>With these limits </xsl:text>
-                  <xsl:call-template name="showSelected">
-                    <xsl:with-param name="noResults">
-                      <xsl:value-of select="true"/>
-                    </xsl:with-param>
-                  </xsl:call-template>
-                </div>
-              </xsl:if>
-              <xsl:if test="$limitByInst = 'True'">
-                <div id="LimitsError">
-                  <!--XXX SSD need uncheck link-->
-                  <xsl:element name="a">
-                    <xsl:attribute name="href">
-                      <xsl:value-of select="/MBooksTop/Heldby/unselectURL"/>
-                    </xsl:attribute>
-                    <xsl:attribute name="class">unselect</xsl:attribute>
-                    <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
-                  </xsl:element>
-                  <span class="selectedfieldname">
-                    <xsl:call-template name="instLimit"/>
-                  </span>
-                </div>
-              </xsl:if>
-            </div>
-            <div class="modify_link" id="modify_link">
-              <a class="btn btn-inverse">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
-                </xsl:attribute>
-                <xsl:text>Revise this advanced search</xsl:text>
-              </a>
-            </div>
-          </div>
-        </xsl:when>
+	  <xsl:call-template name="AdvancedNoResults"/>
+	</xsl:when>
         <xsl:otherwise>
           <!-- tbw need to fix this for big coll search-->
           <!-- need to still display search collection box and to mention collection in error-->
@@ -706,6 +638,68 @@ REMOVE the below and see if it will call list_utils
       </xsl:choose>
     </div>
   </xsl:template>
+
+ <!--#########################  No Results from Advanced Search ###################################-->
+<xsl:template name="AdvancedNoResults">
+  <div class="AdvancedLSerror alert alert-error alert-block">
+    <span id="zeroHits">
+      <xsl:choose>
+        <xsl:when test="$gIsCollSearch = 'TRUE'">
+          <xsl:text>Your search in the collection </xsl:text>
+          <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}"><xsl:value-of select="$gCollName"/></a>
+          <xsl:text> returned zero results  </xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>Your search returned zero results.   </xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </span>
+    <div id="AdvancedLSerrorSearchStuff alert alert-error alert-block">
+      <xsl:text>You searched for:</xsl:text>
+      <xsl:call-template name="advanced"/>
+      <!-- need styling-->
+      <!--XXX test for limits-->
+      <!--XXX SSD need to add limited to institution maybe foobar-->
+      <!--tbw MAY10 debugging missing error facets              <xsl:if test="/MBooksTop/Facets/facetsSelected='true' and count(/MBooksTop/Facets/SelectedFacets/facetValue) &gt; 0">-->
+      <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
+        <div id="LimitsError">
+          <xsl:text>With these limits </xsl:text>
+          <xsl:call-template name="showSelected">
+            <xsl:with-param name="noResults">
+              <xsl:value-of select="true"/>
+            </xsl:with-param>
+          </xsl:call-template>
+        </div>
+      </xsl:if>
+      <xsl:if test="$limitByInst = 'True'">
+        <div id="LimitsError">
+          <!--XXX SSD need uncheck link-->
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="/MBooksTop/Heldby/unselectURL"/>
+            </xsl:attribute>
+            <xsl:attribute name="class">unselect</xsl:attribute>
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
+          </xsl:element>
+          <span class="selectedfieldname">
+            <xsl:call-template name="instLimit"/>
+          </span>
+        </div>
+      </xsl:if>
+    </div>
+    <div class="modify_link" id="modify_link">
+      <a class="btn btn-inverse">
+        <xsl:attribute name="href">
+          <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
+        </xsl:attribute>
+        <xsl:text>Revise this advanced search</xsl:text>
+      </a>
+    </div>
+  </div>
+</xsl:template>
+
+
+  
   <!--#########################  PAGING-related ###################################-->
   <!-- TEMPLATE -->
 
