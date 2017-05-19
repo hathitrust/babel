@@ -729,33 +729,7 @@ sub get_selected_unselected
     
     foreach my $facet_name (keys %{$facet_hash})
     {
-        #--------------------------------------------------
-        #XXX hack for pdate and no results
-        # how do we know no results?
-        # 
-        
-#        if ($facet_name eq 'publishDateRange')
-#          {
-#            # pdate param removed by now and put back in Facet:publishDateRange
-#            my @facets = $cgi->param('facet');
-#            my $pdate= $facets[0];
-#            if (defined($pdate) && $pdate ne "")
-#            {
-                
-#                # need test for zero results and pdate param
-#                my $hash={};
-#                $hash->{'selected'}   = "true";
-#                $hash->{'count'}      = 0;
-#                $hash->{'facet_name'} = $facet_name;
-                
-#                my ($junk, $facet_value) = split(/\:/,$pdate); #fix this
-#                $hash->{'value'}      = clean_for_xml($facet_value);
-#                $hash->{'unselect_url'}=__get_unselect_url($hash,$cgi);
-#                push (@selected,$hash);
-#            }
-#        }
-        
-        my $ary_for_this_facet_name=[];
+	my $ary_for_this_facet_name=[];
         my $facet_list_ref=$facet_hash->{$facet_name};
         foreach my $facet_ary (@{$facet_list_ref})
         {
