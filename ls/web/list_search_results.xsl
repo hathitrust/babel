@@ -602,6 +602,7 @@ REMOVE the below and see if it will call list_utils
             <xsl:text> in </xsl:text>
             <xsl:value-of select="/MBooksTop/AdvancedSearch/group/Clause/Field"/>
             <xsl:text> returned zero hits.</xsl:text>
+	    <xsl:call-template name="showSelected"/>
           </div>
 
           <p>
@@ -664,11 +665,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
         <div id="LimitsError">
           <xsl:text>With these limits </xsl:text>
-          <xsl:call-template name="showSelected">
-            <xsl:with-param name="noResults">
-              <xsl:value-of select="true"/>
-            </xsl:with-param>
-          </xsl:call-template>
+          <xsl:call-template name="showSelected"/>
         </div>
       </xsl:if>
       <xsl:if test="$limitByInst = 'True'">
