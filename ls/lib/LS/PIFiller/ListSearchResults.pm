@@ -652,6 +652,8 @@ sub handle_HELDBY_PI
     return $xml;
 }
 
+# ---------------------------------------------------------------------
+
 
 # ---------------------------------------------------------------------
 sub handle_FACETS_PI
@@ -713,8 +715,30 @@ sub pdate_selected
               );
 }
 
-#----------------------------------------------------------------------    
+# ---------------------------------------------------------------------
+sub isFacetSelected
+{
+    my $cgi_facets  = shift;
+    my $facet_name  = shift;
+    my $facet_value = shift;
+    #if there is a cgi facet with matching name, verify that they have same value
+    foreach my $facet (@{$cgi_facets})
+    {
+	my ($cgi_facet_name,@rest)=split(/\:/,$facet);
+	my $cgi_facet_value = join (':', @rest);
+	if ($facet_name eq $cgi_facet_name)
+	{
+	    if (doFacetValuesMatch($facet_value,$cgi_facet_value) eq "true")
+	    {
+		return ("true");
+	    }                    
+	}
+    }
+}
 
+
+
+# ---------------------------------------------------------------------
 sub get_selected_unselected 
 
 {
@@ -723,9 +747,9 @@ sub get_selected_unselected
 
     my @selected;
     my $unselected={};
-
-    #XXX hack to cause pdate facet to show up as selected if pdate was used in advanced search
-    #XXX if facet_hash is empty because we got zero results
+    my $EMPTY_FACETS="true";
+    my @cgi_facets = $cgi->multi_param('facet');
+  
     
     foreach my $facet_name (keys %{$facet_hash})
     {
@@ -742,27 +766,14 @@ sub get_selected_unselected
             # clean facet data from json Solr response so we can output it in XML
             $hash->{'value'}      = clean_for_xml($facet_value);
 
-
-
-            my @cgi_facets = $cgi->multi_param('facet');
-            if (@cgi_facets){    
-                # XXX move this loop into isFacetSelected
-                # test the facet names for a match first before comparing the values and
-                # then just compare values!
-                foreach my $facet (@cgi_facets)
-                {
-                    my ($cgi_facet_name,@rest)=split(/\:/,$facet);
-                    my $cgi_facet_value = join (':', @rest);
-                    if ($facet_name eq $cgi_facet_name)
-                    {
-                        if (isFacetSelected($facet_value,$cgi_facet_value)eq "true")
-                        {
-                            $hash->{'selected'} = "true";
-                        }                    
-                    }
-                }
-            }
-            
+	    if (@cgi_facets)
+	    {
+	     	if (isFacetSelected(\@cgi_facets,$facet_name,$facet_value) eq "true")
+	     	{
+		    $hash->{'selected'} = "true";
+	     	}
+	    }
+	    
             if ($hash->{'selected'} eq "true")
             {
                 # add the unselect url to the hash
@@ -778,15 +789,46 @@ sub get_selected_unselected
             # unselected needs array of array of hashes
             # facet1->hashes for facet 1
             # facet2->hashes for facet 2
-
             push (@{$ary_for_this_facet_name},$hash); 
         }
-        $unselected->{$facet_name}=$ary_for_this_facet_name;
+	if (scalar(@{$facet_list_ref}) >0)
+	{
+	    $EMPTY_FACETS="false";
+	}
+	$unselected->{$facet_name}=$ary_for_this_facet_name;
+    }
+    # Handle search with no results for sticky facets
+    if ($EMPTY_FACETS eq "true")
+    {
+	@selected = get_selected_from_cgi($cgi,\@cgi_facets)
     }
     return (\@selected,$unselected);
 }
+#----------------------------------------------------------------------
+sub get_selected_from_cgi
+{
+    my $cgi = shift;
+    my $cgi_facets  = shift;
+    my @selected;
 
-
+          
+    foreach my $facet (@{$cgi_facets})
+    {
+	my $hash={};
+	my ($cgi_facet_name,@rest)=split(/\:/,$facet);
+	my $facet_value = join (':', @rest);
+	# remove leading/trailing quotes XXX is this right place?
+	$facet_value=~s/^\"//g;
+	$facet_value=~s/\"$//g;
+	# clean facet data from json Solr response so we can output it in XML
+	$hash->{'value'}      = clean_for_xml($facet_value);
+	$hash->{'facet_name'} = $cgi_facet_name;
+	$hash->{'unselect_url'}=__get_unselect_url($hash,$cgi);
+	push (@selected,$hash);
+    }
+    return (@selected);
+}	
+#----------------------------------------------------------------------    
 sub make_selected_facets_xml
 {
     my $selected = shift;
@@ -1477,7 +1519,8 @@ sub clean_for_xml
 }
 
 
-sub isFacetSelected
+
+sub doFacetValuesMatch
 {
 
     my $facet_value = shift;
