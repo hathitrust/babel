@@ -86,18 +86,38 @@ ul.filters li {
   clear: both;
 }
 
-/* line 99, ../sass/ls.scss */
+/* line 94, ../sass/ls.scss */
+.shareLinks .btn-group .btn {
+  font-size: 11px;
+  font-size: 1.1rem;
+  padding: 4px;
+  padding: 0.4rem;
+  padding-left: 8px;
+  padding-left: 0.8rem;
+  padding-right: 8px;
+  padding-right: 0.8rem;
+}
+/* line 105, ../sass/ls.scss */
+.shareLinks input[type=text] {
+  font-size: 12px;
+  font-size: 1.2rem;
+  height: 18px;
+  height: 1.8rem;
+  cursor: default;
+}
+
+/* line 119, ../sass/ls.scss */
 *.hidefacet {
   display: none;
   visibility: hidden;
 }
 
-/* line 105, ../sass/ls.scss */
+/* line 125, ../sass/ls.scss */
 span.moreless {
   font-style: italic;
 }
 
-/* line 109, ../sass/ls.scss */
+/* line 129, ../sass/ls.scss */
 #DlpsDev {
   position: absolute;
   right: 10px;
@@ -106,12 +126,12 @@ span.moreless {
   padding: 8px;
 }
 
-/* line 117, ../sass/ls.scss */
+/* line 137, ../sass/ls.scss */
 .mainsearch {
   margin-bottom: 16px ;
   margin-bottom: 1.6rem ;
 }
-/* line 118, ../sass/ls.scss */
+/* line 138, ../sass/ls.scss */
 .mainsearch .search-extra-options {
   margin-top: 0;
   font-size: 90%;
@@ -119,7 +139,7 @@ span.moreless {
   padding-bottom: 1.6rem ;
 }
 
-/* line 128, ../sass/ls.scss */
+/* line 148, ../sass/ls.scss */
 .SearchResults_status {
   padding-top: 20px ;
   padding-top: 2rem ;
@@ -128,24 +148,24 @@ span.moreless {
   font-size: 16px ;
   font-size: 1.6rem ;
 }
-/* line 134, ../sass/ls.scss */
+/* line 154, ../sass/ls.scss */
 .SearchResults_status span {
   font-weight: bold;
 }
 
-/* line 140, ../sass/ls.scss */
+/* line 160, ../sass/ls.scss */
 .main.mb .SearchResults_status {
   font-size: 13px ;
   font-size: 1.3rem ;
 }
 
-/* line 145, ../sass/ls.scss */
+/* line 165, ../sass/ls.scss */
 .modify_link {
   margin-top: 16px ;
   margin-top: 1.6rem ;
 }
 
-/* line 160, ../sass/ls.scss */
+/* line 180, ../sass/ls.scss */
 span.AnyAll {
   font-weight: normal;
   font-style: italic;

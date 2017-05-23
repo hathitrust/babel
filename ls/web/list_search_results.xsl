@@ -1232,6 +1232,9 @@ REMOVE the below and see if it will call list_utils
       <!-- <xsl:if test="$gIsCollSearch = 'TRUE'">
         <xsl:call-template name="coll_name_sidebar"/>
       </xsl:if> -->
+
+      <xsl:call-template name="share-links" />
+
       <xsl:variable name="facetsSelected">
         <xsl:value-of select="/MBooksTop/Facets/facetsSelected"/>
       </xsl:variable>
@@ -1629,7 +1632,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:when test="$gIsCollSearch = 'TRUE'">
         <a class="btn" xhref="/cgi/ls?coll_id={$coll_id};a=srchls;q1=*">
           <xsl:attribute name="href">
-            <xsl:text>/cgi/ls?</xsl:text>
+            <xsl:text>/cgi/ls</xsl:text>
             <xsl:text>?a=srchls;q1=*</xsl:text>
   <!--           <xsl:for-each select="//CurrentCgi/Param[@name='facet']">
               <xsl:text>;facet=</xsl:text>
@@ -1648,6 +1651,42 @@ REMOVE the below and see if it will call list_utils
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text> </xsl:text>
+  </xsl:template>
+
+  <xsl:template name="share-links">
+    <xsl:if test="$gIsCollSearch = 'TRUE'">
+      <xsl:variable name="title">Collections: <xsl:value-of select="$gCollName" /> | HathiTrust</xsl:variable>
+      <xsl:variable name="url">https://babel.hathitrust.org/cgi/mb?a=listis&amp;c=<xsl:value-of select="$coll_id" /></xsl:variable>
+      <div class="shareLinks">
+        <h3>Share</h3>
+        <div class="btn-group share-toolbar social-links" style="margin-bottom: 1.2rem">
+          <button data-service="facebook" data-title="{$title}" data-url="{$url}" class="btn"><i class="icomoon icomoon-facebook2"></i><span class="offscreen"> Share via Facebook</span></button>
+          <button data-service="twitter" data-title="{$title}" data-url="{$url}" class="btn"><i class="icomoon icomoon-twitter2"></i><span class="offscreen"> Share via Twitter</span></button>
+          <button data-service="plusone" data-title="{$title}" data-url="{$url}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button>
+          <button data-service="reddit" data-title="{$title}" data-url="{$url}" class="btn"><i class="icomoon icomoon-reddit"></i><span class="offscreen"> Share via reddit</span></button>
+          <button data-service="tumblr" data-title="{$title}" data-url="{$url}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i><span class="offscreen"> Share via Tumblr</span></button>
+          <button data-service="vkontakte" data-title="{$title}" data-url="{$url}" class="btn"><i class="icomoon icomoon-vk"></i><span class="offscreen"> Share via VK</span></button>
+        </div>
+
+        <br />
+
+        <form action="" name="urlForm" id="urlForm">
+          <label class="smaller" for="permURL">Link to this collection</label>
+          <xsl:element name="input">
+            <xsl:attribute name="type">text</xsl:attribute>
+            <xsl:attribute name="name">permURL_link</xsl:attribute>
+            <xsl:attribute name="id">permURL</xsl:attribute>
+            <xsl:attribute name="class">email-permURL</xsl:attribute>
+            <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
+            <xsl:attribute name="readonly">readonly</xsl:attribute>
+            <xsl:attribute name="value">
+              <xsl:text>https://babel.hathitrust.org/cgi/mb?a=listis&amp;c=</xsl:text>
+              <xsl:value-of select="$coll_id" />
+            </xsl:attribute>
+          </xsl:element>
+        </form>
+      </div>
+    </xsl:if>
   </xsl:template>
 
 </xsl:stylesheet>

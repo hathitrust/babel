@@ -90,6 +90,26 @@ ul.filters li{
   }
 }
 
+.shareLinks {
+  .btn-group .btn {
+    font-size: 11px;
+    font-size: 1.1rem;
+    padding: 4px;
+    padding: 0.4rem;
+    padding-left: 8px;
+    padding-left: 0.8rem;
+    padding-right: 8px;
+    padding-right: 0.8rem;  
+  }
+
+  input[type=text] {
+    font-size: 12px;
+    font-size: 1.2rem;
+    height: 18px;
+    height: 1.8rem;
+    cursor: default;
+  }
+}
 
 *.showfacet
 { 

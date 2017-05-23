@@ -51,6 +51,7 @@ Section:LOCAL_JS
 //common-web/js/search_tools.js
 //common-web/js/collection_tools.js
 //common-web/jquery/jQuery-URL-Parser/purl.js
+//common-web/js/social_links.js
 
 # ls specific
 /ls/web/js/ls_misc.js
