@@ -507,6 +507,7 @@ function showHidePdates(){
   if ($("#yop").val() == 'between')
   {
     $("#yop-between").show();
+    $("#yop-end").show();
   }
   else
   {
