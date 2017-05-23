@@ -42,7 +42,7 @@ my $auth = new Auth::Auth($C);
 $C->set_object('Auth', $auth);
 
 my $developement = 1 if ($ENV{HT_DEV} || (Auth::ACL::a_Authorized( {role => 'superuser'} ) && DEBUG('super')));
-$developement = 0 if ( DEBUG('ord') );
+$developement = 0; # if ( DEBUG('ord') );
 
 # --- App ---
 #
@@ -79,7 +79,7 @@ if (defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER}) {
         my $remote_user = $ENV{REMOTE_USER};
         my $li;
 
-        if ( $auth_type eq 'shibboleth' && ! Utils::is_cosign_active() ) {
+        if ( $auth_type eq 'shibboleth' && ! Utils::is_cosign_active() && $ENV{Shib_Identity_Provider} eq $Utils::UMICH_ENTITY_ID ) {
           my $shibboleth_remote_user = $remote_user;
           $remote_user = Utils::Get_Legacy_Remote_User();
           $li = qq{<li>SHIBBOLETH IDENTITY = "$shibboleth_remote_user" (for University of Michigan)</li>};
