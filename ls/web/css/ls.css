@@ -38,18 +38,66 @@ ul.filters li {
   font-weight: bold;
 }
 
+/* line 44, ../sass/ls.scss */
+#selectedFacets p {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
 /* line 49, ../sass/ls.scss */
+.query-summary {
+  display: block;
+  margin: 8px 0;
+}
+/* line 55, ../sass/ls.scss */
+.query-summary ul {
+  padding: 0;
+}
+/* line 57, ../sass/ls.scss */
+.query-summary ul li {
+  float: left;
+  display: block;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 4px;
+  height: 40px;
+  border: 1px solid #dddddd;
+}
+/* line 67, ../sass/ls.scss */
+.query-summary ul li:first-child {
+  border: 1px solid transparent;
+}
+/* line 70, ../sass/ls.scss */
+.query-summary ul li:first-child .btn {
+  padding: 4px 12px;
+}
+/* line 75, ../sass/ls.scss */
+.query-summary ul li > * {
+  display: inline-block;
+  padding: 4px 0;
+  margin-bottom: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* line 86, ../sass/ls.scss */
+.query-summary:after {
+  display: table;
+  content: '';
+  clear: both;
+}
+
+/* line 99, ../sass/ls.scss */
 *.hidefacet {
   display: none;
   visibility: hidden;
 }
 
-/* line 55, ../sass/ls.scss */
+/* line 105, ../sass/ls.scss */
 span.moreless {
   font-style: italic;
 }
 
-/* line 59, ../sass/ls.scss */
+/* line 109, ../sass/ls.scss */
 #DlpsDev {
   position: absolute;
   right: 10px;
@@ -58,12 +106,12 @@ span.moreless {
   padding: 8px;
 }
 
-/* line 67, ../sass/ls.scss */
+/* line 117, ../sass/ls.scss */
 .mainsearch {
   margin-bottom: 16px ;
   margin-bottom: 1.6rem ;
 }
-/* line 68, ../sass/ls.scss */
+/* line 118, ../sass/ls.scss */
 .mainsearch .search-extra-options {
   margin-top: 0;
   font-size: 90%;
@@ -71,7 +119,7 @@ span.moreless {
   padding-bottom: 1.6rem ;
 }
 
-/* line 78, ../sass/ls.scss */
+/* line 128, ../sass/ls.scss */
 .SearchResults_status {
   padding-top: 20px ;
   padding-top: 2rem ;
@@ -80,24 +128,24 @@ span.moreless {
   font-size: 16px ;
   font-size: 1.6rem ;
 }
-/* line 84, ../sass/ls.scss */
+/* line 134, ../sass/ls.scss */
 .SearchResults_status span {
   font-weight: bold;
 }
 
-/* line 90, ../sass/ls.scss */
+/* line 140, ../sass/ls.scss */
 .main.mb .SearchResults_status {
   font-size: 13px ;
   font-size: 1.3rem ;
 }
 
-/* line 95, ../sass/ls.scss */
+/* line 145, ../sass/ls.scss */
 .modify_link {
   margin-top: 16px ;
   margin-top: 1.6rem ;
 }
 
-/* line 110, ../sass/ls.scss */
+/* line 160, ../sass/ls.scss */
 span.AnyAll {
   font-weight: normal;
   font-style: italic;

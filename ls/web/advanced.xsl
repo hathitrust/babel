@@ -66,12 +66,14 @@
         <div class="betasearch">
           <div class="AdvancedLabelRow">
 
-            <span id="AdvancedCatalogLink">
-              <xsl:text>Prefer to search words</xsl:text>
-              <em> about</em>
-              <xsl:text> the items in an</xsl:text>
-              <a href="http://catalog.hathitrust.org/Search/Advanced"> Advanced Catalog Search?</a>
-            </span>
+            <xsl:if test="$isCollSearch != 'True'">
+              <span id="AdvancedCatalogLink">
+                <xsl:text>Prefer to search words</xsl:text>
+                <em> about</em>
+                <xsl:text> the items in an</xsl:text>
+                <a href="http://catalog.hathitrust.org/Search/Advanced"> Advanced Catalog Search?</a>
+              </span>
+            </xsl:if>
             <h2 id="advancedLabel">Advanced  Full-text Search
 	    <xsl:choose>
 	      <xsl:when test="$isCollSearch = 'True'">
@@ -206,8 +208,8 @@
               <legend class="limitTo">Limit to: </legend>
 
 
-           <div id="limits">
-             <br clear="both"></br>
+           <div id="limits" style="margin-top: 0">
+             <!-- <br clear="both"></br> -->
              <!-- XXX if logged in add a limit to my institution checkbox
                   TODO: check tab order and other accessibility maybe get ux to help
                   -->
@@ -242,6 +244,22 @@
             </span>
             <div id="yopErrMsg"></div>
             
+            <xsl:if test="false and //AdvancedSearch/facets/checkable/facet">
+              <div id="checkableFacets" style="margin-top: 1em; font-size: 14px">
+                <p>Selected facets:</p>
+                <ul>
+                  <xsl:for-each select="//AdvancedSearch/facets/checkable/facet">
+                    <li>
+                      <label>
+                        <input type="checkbox" name="facet" value="{@term}:{.}" checked="checked" />
+                        <xsl:text> </xsl:text>
+                        <xsl:value-of select="@label" />: <xsl:value-of select="." />
+                      </label>
+                    </li>
+                  </xsl:for-each>
+                </ul>
+              </div>
+            </xsl:if>
             
             
             <div id="multiFacets">
@@ -260,6 +278,24 @@
                   <xsl:apply-templates select="AdvancedSearch/facets/formats_list/*" mode="copy-elements" />
                 </select>
               </div>
+
+              <xsl:if test="//AdvancedSearch/facets/checkable/facet">
+                <div class="multiFacets" id="checkableFacets">
+                  <p>Additional facets:</p>
+                  <ul>
+                    <xsl:for-each select="//AdvancedSearch/facets/checkable/facet">
+                      <li>
+                        <label>
+                          <input type="checkbox" name="facet" value="{@term}:{.}" checked="checked" />
+                          <xsl:text> </xsl:text>
+                          <strong><xsl:value-of select="@label" /></strong>: <xsl:value-of select="." />
+                        </label>
+                      </li>
+                    </xsl:for-each>
+                  </ul>
+                </div>
+              </xsl:if>
+
             </div>
           </div><!-- end multiFacets -->
         </fieldset>

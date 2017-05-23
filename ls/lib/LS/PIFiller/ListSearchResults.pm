@@ -1424,6 +1424,10 @@ sub getUnselectAdvancedClauseURL
     $temp_cgi->delete("$field");
 
     my $url=$temp_cgi->self_url();
+    if ( $url !~ m,q\d+=,) {
+        # no query parameters
+        $url .= ";q1=*";
+    }
     return $url;
 }
 

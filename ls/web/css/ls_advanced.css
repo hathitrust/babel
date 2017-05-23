@@ -1,1 +1,459 @@
-#removeGroup{visibility:hidden}#yop-between{display:none}#yop-in{display:none}#yop-end{display:none}#fieldsetGroup2{display:none}#AdvancedExplanation{margin-bottom:1em;margin-top:1em;font-size:110%}#AdvancedCatalogLink{float:right;width:20%;font-size:110%}.LsAdvancedPageContent{font-size:12px;width:100%;margin:0 auto;min-width:1000px}#search_tips{font-size:110%;color:green}#addGroup{font-size:110%}#removeGroup{font-size:110%}#findbuttons{margin-top:10px;margin-left:0}#advanced #reset{margin-left:5em;font-size:120%}select,input{margin-left:100em;margin-right:1em;width:auto}.SkipLink,.SearchLabel,.offscreen{height:1px;left:-10000px;overflow:hidden;position:absolute;top:auto;width:1px}label.SearchLabel{height:1px;left:-10000px;overflow:hidden;position:absolute;top:auto;width:1px}label{display:inline;margin-bottom:5px}#fieldsetGroup1{margin-top:.3em}.querybox{width:20em}td.IEtd.paren{font-size:600%;vertical-align:middle;line-height:100%;font-family:monospaced;color:#bfbfbf}div.parenGroup{display:table-row;text-align:left}div.group{display:table-cell;vertical-align:middle}div.paren{visibility:hidden;display:table-cell;font-size:800%;vertical-align:middle;font-family:monospace;color:#bfbfbf}div.parenLeft{text-align:right}div.parenRight{text-align:left}fieldset{border:none}legend.limitTo{font-size:150%}label.xSearchLabel{display:block}#format{float:left;margin-left:5em}#language{float:left}select.orFacet{margin-left:0}#multiFacets{margin-top:20px}fieldset.group{margin-bottom:1em;margin-top:1em;border:0}.advrow ul{margin:0 0 5px 0;padding:0;list-style:none}.advrow ul li{display:inline;list-style-type:none;text-decoration:none;padding:1.5px 1px}.spacer{width:6.3em;display:inline-block;margin-left:1em;margin-right:1em}span.AnyAll{font-weight:normal;font-style:italic}.AndOr{width:5em}.andOR{display:inline;width:5em}#op3{display:none;width:5em;margin-top:10px;margin-bottom:10px}.advancedMsg{font-size:70%}#Op3bool{margin:3px;background-color:#FFFFFF;padding:10px}#modify_link{font-weight:normal;font-size:90%}.AdvancedLSerror #modify_link{margin-top:1%}#advancedLabel{font-size:150%;font-weight:normal}#limits{margin-bottom:3em;margin-top:1em}#limits h3{font-size:130%;margin-bottom:10px;color:#000000}#queryArea{margin:3px;padding:3px}.advancedClause{margin:1px 8px;font-size:80%;line-height:100%}.advancedClause .infoAlert{margin:15px 15px 0}.AdvancedLSerror .advancedClause{margin:1px 3%;font-size:100%}#x_icon{margin:0px 10px 0px 10px;padding:0px}.AdvancedLSerror{background:#feeeee scroll 15px 90%;border:1px solid #ff4040;color:#000000;margin-top:10px;margin-bottom:10px;margin-right:10px;margin-left:10px;padding:10px}#zeroHits{line-height:2;color:red}#AdvancedLSerrorSearchStuff{margin-top:3px}#in{font-size:110%}#LimitsError{border:1px solid #ebece4;padding:5px;background-color:#FAFAFA;margin:10px 0px}#ColContentLSerror{margin-top:10px}select,input{margin-left:1em;margin-right:1em}.SearchResults_status{line-height:120%}
+/***
+
+ls_advanced.css
+  Tom temporary css styles to be put in single css or integrated using SASS
+
+
+***/
+/**  On initial load hide lots of stuff without javascript to avoid
+flashing in IE **/
+/* line 12, ../sass/ls_advanced.scss */
+#removeGroup {
+  visibility: hidden;
+}
+
+/* line 17, ../sass/ls_advanced.scss */
+#yop-between {
+  display: none;
+}
+
+/* line 20, ../sass/ls_advanced.scss */
+#yop-in {
+  display: none;
+}
+
+/* line 23, ../sass/ls_advanced.scss */
+#yop-end {
+  display: none;
+}
+
+/* line 27, ../sass/ls_advanced.scss */
+#fieldsetGroup2 {
+  display: none;
+}
+
+/* line 31, ../sass/ls_advanced.scss */
+#AdvancedExplanation {
+  margin-bottom: 1em;
+  margin-top: 1em;
+  font-size: 110%;
+}
+
+/* line 38, ../sass/ls_advanced.scss */
+#AdvancedCatalogLink {
+  float: right;
+  width: 20%;
+  font-size: 110%;
+}
+
+/* line 45, ../sass/ls_advanced.scss */
+.LsAdvancedPageContent {
+  font-size: 12px;
+  width: 100%;
+  margin: 0 auto;
+  min-width: 1000px;
+}
+
+/* line 57, ../sass/ls_advanced.scss */
+#search_tips {
+  font-size: 110%;
+  color: green;
+}
+
+/* line 62, ../sass/ls_advanced.scss */
+#addGroup {
+  font-size: 110%;
+}
+
+/* line 65, ../sass/ls_advanced.scss */
+#removeGroup {
+  font-size: 110%;
+}
+
+/* line 70, ../sass/ls_advanced.scss */
+#findbuttons {
+  margin-top: 10px;
+  margin-left: 0;
+}
+
+/* line 77, ../sass/ls_advanced.scss */
+#advanced
+#reset {
+  margin-left: 5em;
+  font-size: 120%;
+}
+
+/* line 85, ../sass/ls_advanced.scss */
+select, input {
+  margin-left: 100em;
+  margin-right: 1em;
+  width: auto;
+}
+
+/* line 94, ../sass/ls_advanced.scss */
+.SkipLink, .SearchLabel, .offscreen {
+  height: 1px;
+  left: -10000px;
+  overflow: hidden;
+  position: absolute;
+  top: auto;
+  width: 1px;
+}
+
+/* line 103, ../sass/ls_advanced.scss */
+label.SearchLabel {
+  height: 1px;
+  left: -10000px;
+  overflow: hidden;
+  position: absolute;
+  top: auto;
+  width: 1px;
+}
+
+/* line 111, ../sass/ls_advanced.scss */
+label {
+  display: inline;
+  margin-bottom: 5px;
+}
+
+/* line 123, ../sass/ls_advanced.scss */
+#fieldsetGroup1 {
+  margin-top: .3em;
+}
+
+/** for debugging uncomment this**/
+/*div { outline:1px dashed red; } */
+/* line 130, ../sass/ls_advanced.scss */
+.querybox {
+  /* if we don't set the width, it gets a default width (which I can't find any reference to) but the side effect is that with no width set on any inline element in the <ul> the rowsw won't resize*/
+  /* we would like to set the width to 25-35 characters to encourage users to use several query terms (See: Belkin et. al. "Query length in interactive information retrieval"  http://dx.doi.org/10.1145/860435.860474 )
+     If we set width to 20 em it seems allright but over x em it starts to wrap the row
+  */
+  width: 20em;
+}
+
+/*Parenthesis  */
+/* IE7 hacks  see ls.advanced.js where we wrap classes IEcell IErow and parenGroup with html table code with jquery*/
+/* line 145, ../sass/ls_advanced.scss */
+td.IEtd.paren {
+  font-size: 600%;
+  vertical-align: middle;
+  line-height: 100%;
+  font-family: monospaced;
+  color: #bfbfbf;
+}
+
+/*end IE7 hacks*/
+/* line 155, ../sass/ls_advanced.scss */
+div.parenGroup {
+  display: table-row;
+  text-align: left;
+}
+
+/* line 161, ../sass/ls_advanced.scss */
+div.group {
+  /*     outline:1px dotted blue;*/
+  display: table-cell;
+  vertical-align: middle;
+  /* width:80%;*/
+  /*           margin-left:15%;
+             margin-right:15%;
+  */
+}
+
+/* line 171, ../sass/ls_advanced.scss */
+div.paren {
+  visibility: hidden;
+  display: table-cell;
+  font-size: 800%;
+  vertical-align: middle;
+  font-family: monospace;
+  color: #bfbfbf;
+}
+
+/* XXXtest this after converting the div to a block  (IE7 only supports this on regular inline elements)
+span.paren{
+           display:inline-block;
+           font-size:700%;
+           vertical-align:middle;
+           font-family:monospace;
+
+}
+*/
+/* line 192, ../sass/ls_advanced.scss */
+div.parenLeft {
+  /*  float: left;*/
+  text-align: right;
+}
+
+/* line 197, ../sass/ls_advanced.scss */
+div.parenRight {
+  /*  float:right;*/
+  text-align: left;
+}
+
+/* fieldset formatting*/
+/* line 204, ../sass/ls_advanced.scss */
+fieldset {
+  border: none;
+}
+
+/* line 209, ../sass/ls_advanced.scss */
+legend.limitTo {
+  font-size: 150%;
+}
+
+/* facet formatting */
+/* we use xSearchLabel to avoid conflict with MBooksCol.css*/
+/* line 221, ../sass/ls_advanced.scss */
+label.xSearchLabel {
+  /*  margin-left:1em;*/
+  display: block;
+}
+
+/* line 226, ../sass/ls_advanced.scss */
+#format {
+  float: left;
+  margin-left: 5em;
+}
+
+/* line 231, ../sass/ls_advanced.scss */
+#language {
+  float: left;
+}
+
+/* line 235, ../sass/ls_advanced.scss */
+#checkableFacets {
+  float: left;
+  margin-left: 5em;
+}
+/* line 238, ../sass/ls_advanced.scss */
+#checkableFacets p {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+/* line 243, ../sass/ls_advanced.scss */
+#checkableFacets ul {
+  padding-left: 0;
+  margin-top: 0;
+}
+/* line 248, ../sass/ls_advanced.scss */
+#checkableFacets li {
+  list-style-type: none;
+}
+
+/* line 253, ../sass/ls_advanced.scss */
+select.orFacet {
+  margin-left: 0;
+}
+
+/* line 257, ../sass/ls_advanced.scss */
+#multiFacets {
+  margin-top: 20px;
+}
+
+/* end facet formatting*/
+/* line 265, ../sass/ls_advanced.scss */
+fieldset.group {
+  /*    background-color:#E9E9E9;*/
+  /*     padding:0;*/
+  margin-bottom: 1em;
+  margin-top: 1em;
+  border: 0;
+  /**                width:80%;**/
+}
+
+/* line 289, ../sass/ls_advanced.scss */
+.removeFacetIcon {
+  /*  margin-left:2em;*/
+}
+
+/* line 294, ../sass/ls_advanced.scss */
+.advrow ul {
+  margin: 0 0 5px 0;
+  padding: 0;
+  /*    float: left;*/
+  list-style: none;
+}
+
+/* line 301, ../sass/ls_advanced.scss */
+.advrow ul li {
+  display: inline;
+  list-style-type: none;
+  text-decoration: none;
+  padding: 1.5px 1px;
+  /**    background-color:grey;**/
+}
+
+/**XXX combine this with rule for AndOr **/
+/* line 314, ../sass/ls_advanced.scss */
+.spacer {
+  width: 6.3em;
+  /* color:green;
+   backround-color:green;*/
+  display: inline-block;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+/* line 323, ../sass/ls_advanced.scss */
+span.AnyAll {
+  font-weight: normal;
+  font-style: italic;
+}
+
+/* line 328, ../sass/ls_advanced.scss */
+#anyall1 {
+  /*          margin-left:8em;*/
+}
+
+/* line 337, ../sass/ls_advanced.scss */
+.AndOr {
+  width: 5em;
+  /*   margin-left:auto;
+     margin-right: auto;*/
+}
+
+/* line 343, ../sass/ls_advanced.scss */
+.andOR {
+  display: inline;
+  width: 5em;
+}
+
+/* line 349, ../sass/ls_advanced.scss */
+#op3 {
+  display: none;
+  width: 5em;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  /*  margin-left:-1em; removed for IE7*/
+}
+
+/* line 369, ../sass/ls_advanced.scss */
+.advancedMsg {
+  font-size: 70%;
+}
+
+/* line 374, ../sass/ls_advanced.scss */
+#Op3bool {
+  margin: 3px;
+  background-color: #FFFFFF;
+  padding: 10px;
+}
+
+/* line 384, ../sass/ls_advanced.scss */
+#modify_link {
+  font-weight: normal;
+  font-size: 90%;
+}
+
+/* line 390, ../sass/ls_advanced.scss */
+.AdvancedLSerror #modify_link {
+  margin-top: 1%;
+}
+
+/* line 397, ../sass/ls_advanced.scss */
+#advancedLabel {
+  /** margin:3px;
+   padding:10px;**/
+  font-size: 150%;
+  font-weight: normal;
+}
+
+/* line 405, ../sass/ls_advanced.scss */
+#limits {
+  margin-bottom: 3em;
+  margin-top: 1em;
+}
+
+/* line 411, ../sass/ls_advanced.scss */
+#limits h3 {
+  font-size: 130%;
+  margin-bottom: 10px;
+  color: #000000;
+}
+
+/* line 420, ../sass/ls_advanced.scss */
+#queryArea {
+  /**  background-color **/
+  margin: 3px;
+  padding: 3px;
+}
+
+/* line 429, ../sass/ls_advanced.scss */
+.advancedClause {
+  margin: 1px 8px;
+  font-size: 80%;
+  line-height: 100%;
+}
+
+/* line 437, ../sass/ls_advanced.scss */
+.advancedClause .infoAlert {
+  margin: 15px 15px 0;
+}
+
+/* line 443, ../sass/ls_advanced.scss */
+.AdvancedLSerror .advancedClause {
+  margin: 1px 3%;
+  font-size: 100%;
+}
+
+/* line 451, ../sass/ls_advanced.scss */
+#x_icon {
+  margin: 0px 10px 0px 10px;
+  padding: 0px;
+}
+
+/** this should instead inherit from LSerror with one change of witdth**/
+/* line 459, ../sass/ls_advanced.scss */
+.AdvancedLSerror {
+  background: #feeeee scroll 15px 90%;
+  border: 1px solid #ff4040;
+  color: #000000;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
+  padding: 10px;
+}
+
+/* line 474, ../sass/ls_advanced.scss */
+#zeroHits {
+  line-height: 2;
+  color: red;
+}
+
+/* line 478, ../sass/ls_advanced.scss */
+#AdvancedLSerrorSearchStuff {
+  margin-top: 3px;
+}
+
+/* line 482, ../sass/ls_advanced.scss */
+#in {
+  font-size: 110%;
+}
+
+/* line 487, ../sass/ls_advanced.scss */
+#LimitsError {
+  border: 1px solid #ebece4;
+  padding: 5px;
+  background-color: #FAFAFA;
+  margin: 10px 0px;
+}
+
+/* line 499, ../sass/ls_advanced.scss */
+#ColContentLSerror {
+  margin-top: 10px;
+}
+
+/* line 503, ../sass/ls_advanced.scss */
+select, input {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+/** XXX fix this**/
+/* line 515, ../sass/ls_advanced.scss */
+.SearchResults_status {
+  line-height: 120%;
+}

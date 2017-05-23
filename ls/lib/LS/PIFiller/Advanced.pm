@@ -138,7 +138,17 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     $facets .=  wrap_string_in_tag($list,'formats_list') . "\n";         
 #    $list = getDropdown($cgi,'language',$language_list);
     $list = getDropdown($cgi,'language008_full',$language_list);
-    $facets .=  wrap_string_in_tag($list,'language_list') . "\n";         
+    $facets .=  wrap_string_in_tag($list,'language_list') . "\n";
+
+    my $checkable_facets;
+    foreach my $facet ( $cgi->multi_param('facet') ) {
+        next if ( $facet =~ m,format:, || $facet =~ m,language008_full:, );
+        my ( $term, $value ) = split(/:/, $facet);
+        my $label = $fconfig->{facet_mapping}{$term};
+        $value =~ s,\042,,g;
+        $checkable_facets .= qq{<facet term="$term" label="$label">$value</facet>};
+    }
+    $facets .= "<checkable>$checkable_facets</checkable>" if ( $checkable_facets );
 
     $xml.=wrap_string_in_tag($facets,'facets') . "\n";         
     return $xml;
@@ -278,6 +288,13 @@ sub getDropdown
     foreach my $param (@params)
     {
         $param_hash->{$param}++;
+    }
+    # pick up any facets declared via the "facet" parameter
+    foreach my $value ( $cgi->multi_param('facet') ) {
+        if ( $value =~ m,$list_type:, ) {
+            $value =~ s,\042,,g;
+            $param_hash->{$value}++;
+        }
     }
     my $FACET_SELECTED;
 

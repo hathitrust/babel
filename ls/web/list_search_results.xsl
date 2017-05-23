@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
   <!-- XXX unicorn version-->
   <!--## Global Variables ##-->
+  <xsl:variable name="gIsAdvanced" select="/MBooksTop/AdvancedSearch/isAdvanced"/>
   <xsl:variable name="gCollSearch" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
   <xsl:variable name="g_current_sort_param" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='sort']"/>
   <!-- need to separate sort and dir from sort param i.e. title_d = sort=title dir=d -->
@@ -305,8 +306,16 @@ REMOVE the below and see if it will call list_utils
         <a href="/cgi/ls?coll_id={$coll_id};a=srchls;q1=*"><xsl:value-of select="$gCollName" /></a>
         <xsl:text> </xsl:text>
       </xsl:if>
-      <xsl:text> for</xsl:text>
-      <xsl:call-template name="advanced"/>
+      <!-- <xsl:text> for</xsl:text> -->
+
+      <xsl:call-template name="summarize-like-blacklight" />
+
+<!--       <xsl:call-template name="advanced"/>
+      <xsl:if test="$gIsCollSearch = 'TRUE'">
+        <xsl:call-template name="showSelected">
+          <xsl:with-param name="prompt">With limit(s)</xsl:with-param>
+        </xsl:call-template>
+      </xsl:if> -->
       <!--XXX consider adding a pi handler instead of looking at cgi params and or put variables global vars-->
       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='heldby']">
         <div class="instLimit">
@@ -315,7 +324,7 @@ REMOVE the below and see if it will call list_utils
       </xsl:if>
       <xsl:if test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
         <div class="modify_link" id="modify_link">
-          <xsl:call-template name="action_start_over" />
+          <!-- <xsl:call-template name="action_start_over" /> -->
           <a class="btn btn-inverse">
             <xsl:attribute name="href">
               <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
@@ -379,7 +388,17 @@ REMOVE the below and see if it will call list_utils
         <div class="search-extra-options">
           <ul class="search-links">
             <li class="search-advanced-link-collection">
-              <xsl:element name="a"><xsl:attribute name="href"><xsl:text>/cgi/ls?a=page;page=advanced;coll_id=</xsl:text><xsl:value-of select="$coll_id"/><xsl:text>;q1=</xsl:text><xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/></xsl:attribute>
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:text>/cgi/ls?a=page;page=advanced;coll_id=</xsl:text>
+                  <xsl:value-of select="$coll_id"/>
+                  <xsl:text>;q1=</xsl:text>
+                  <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
+                  <xsl:for-each select="//CurrentCgi/Param[@name='facet']">
+                    <xsl:text>;facet=</xsl:text>
+                    <xsl:value-of select="." />
+                  </xsl:for-each>
+                </xsl:attribute>
                 Advanced full-text search in this collection 
                </xsl:element>
             </li>
@@ -403,6 +422,68 @@ REMOVE the below and see if it will call list_utils
     <xsl:text> Limited to items held by </xsl:text>
     <xsl:value-of select="/MBooksTop/MBooksGlobals/InstitutionName"/>
   </xsl:template>
+
+  <xsl:template name="summarize-like-blacklight">
+    <xsl:choose>
+      <xsl:when test="(count(/MBooksTop/AdvancedSearch/group) = 1) and (count(/MBooksTop/AdvancedSearch/group/Clause) = 1) and (/MBooksTop/AdvancedSearch/group/Clause/EveryThingQuery = 'true') and count(//Facets/SelectedFacets//unselectURL) = 0" />
+      <xsl:otherwise>
+        <div class="query-summary">
+          <ul>
+            <li><xsl:call-template name="action_start_over" /></li>
+            <xsl:choose>
+              <xsl:when test="(count(/MBooksTop/AdvancedSearch/group) = 1) and (count(/MBooksTop/AdvancedSearch/group/Clause) = 1) and (/MBooksTop/AdvancedSearch/group/Clause/Query = '*')" />
+              <xsl:otherwise>
+                <xsl:for-each select="/MBooksTop/AdvancedSearch/group">
+                  <xsl:call-template name="summarize-search-group">
+                    <xsl:with-param name="position" select="position()" />
+                  </xsl:call-template>
+                </xsl:for-each>
+              </xsl:otherwise>
+            </xsl:choose>
+            <xsl:call-template name="multiselectFacets"/>
+            <xsl:call-template name="daterangeFacets"/>
+            <xsl:call-template name="otherFacets" />
+          </ul>
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="otherFacets">
+    <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
+      <li>
+        <xsl:variable name="value">
+          <xsl:value-of select="@name"/>
+        </xsl:variable>
+        <xsl:element name="a">
+          <xsl:attribute name="href">
+            <xsl:value-of select="unselectURL"/>
+          </xsl:attribute>
+          <xsl:attribute name="class">unselect</xsl:attribute>
+          <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
+          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
+        </xsl:element>
+        <span class="selectedfieldname">
+          <xsl:value-of select="fieldName"/>
+        </span>
+        <xsl:text>:  </xsl:text>
+        <xsl:value-of select="@name"/>
+      </li>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="summarize-search-group">
+    <xsl:param name="position" />
+    <li>
+      <xsl:if test="$position &gt; 1">
+        <span><xsl:value-of select="/MBooksTop/AdvancedSearch/OP3" /></span>
+      </xsl:if>
+      <xsl:for-each select="Clause">
+        <xsl:call-template name="advancedContent" />
+      </xsl:for-each>
+    </li>
+  </xsl:template>
+
   <!-- ####################### Advanced search status messages, called by SearchResults_status ############# -->
 
   <xsl:template name="advanced">
@@ -438,6 +519,12 @@ REMOVE the below and see if it will call list_utils
         </xsl:for-each>
       </xsl:otherwise>
     </xsl:choose>
+    <!--tbw may22-->
+    <xsl:if test="false and $gIsCollSearch = 'TRUE'">
+      <xsl:call-template name="showSelected">
+        <xsl:with-param name="prompt">With limit(s)</xsl:with-param>
+      </xsl:call-template>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="advancedGroup">
@@ -446,7 +533,7 @@ REMOVE the below and see if it will call list_utils
            else add parens and the op properly formatted
            -->
     <xsl:choose>
-      <xsl:when test="count(Clause)= 1">
+      <xsl:when test="count(Clause)= 0">
         <xsl:for-each select="Clause">
           <xsl:call-template name="advancedContent"/>
         </xsl:for-each>
@@ -464,7 +551,7 @@ REMOVE the below and see if it will call list_utils
   </xsl:template>
 
   <xsl:template name="advancedContent">
-    <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) &gt; 1">
+    <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) &gt; 0">
       <a>
         <xsl:attribute name="href">
           <xsl:value-of select="unselectURL"/>
@@ -585,11 +672,11 @@ REMOVE the below and see if it will call list_utils
           <!-- tbw need to fix this for big coll search-->
           <!-- need to still display search collection box and to mention collection in error-->
 <!-- tbw put search box back -->
-	  <xsl:if test="$gIsCollSearch = 'TRUE'">
+	        <xsl:if test="false and $gIsCollSearch = 'TRUE'">
             <xsl:call-template name="collSearchWidget"/>
           </xsl:if>
 	  
-          <div class="LSerror alert  alert-error">
+    <!--       <div class="LSerror alert  alert-error">
             <xsl:text>Your search </xsl:text>
             <xsl:if test="$gIsCollSearch = 'TRUE'">
               <xsl:text>  in the collection </xsl:text>
@@ -602,12 +689,37 @@ REMOVE the below and see if it will call list_utils
             <xsl:text> in </xsl:text>
             <xsl:value-of select="/MBooksTop/AdvancedSearch/group/Clause/Field"/>
             <xsl:text> returned zero hits.</xsl:text>
-	    <xsl:call-template name="showSelected"/>
+            <br /><xsl:text>You searched for:</xsl:text>
+            <xsl:call-template name="advanced" />
+	          <xsl:call-template name="showSelected">
+              <xsl:with-param name="prompt">Remove limit(s)</xsl:with-param>
+              <xsl:with-param name="include-query">true</xsl:with-param>
+            </xsl:call-template>
+          </div> -->
+
+          <div class="LSerror alert  alert-error">
+            <xsl:text>Your search </xsl:text>
+            <xsl:if test="$gIsCollSearch = 'TRUE'">
+              <xsl:text>  in the collection </xsl:text>
+              <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}"><xsl:value-of select="$gCollName"/></a>
+              <xsl:text> </xsl:text>
+            </xsl:if>
+            <xsl:text>returned zero hits.</xsl:text>
+            <div id="AdvancedLSerrorSearchStuff">
+              <xsl:text>You searched for:</xsl:text>
+              <xsl:call-template name="advanced" />
+              <xsl:call-template name="showSelected">
+                <xsl:with-param name="prompt">Remove limit(s)</xsl:with-param>
+                <xsl:with-param name="include-query">false</xsl:with-param>
+              </xsl:call-template>
+            </div>
+
+            <p>
+              <xsl:call-template name="action_start_over" />
+            </p>
+
           </div>
 
-          <p>
-            <xsl:call-template name="action_start_over" />
-          </p>
 <!--tbw XXX
           <xsl:if test="false() and $gIsCollSearch = 'TRUE'">
             <xsl:call-template name="collSearchWidget"/>
@@ -664,8 +776,9 @@ REMOVE the below and see if it will call list_utils
       <!--tbw MAY10 debugging missing error facets              <xsl:if test="/MBooksTop/Facets/facetsSelected='true' and count(/MBooksTop/Facets/SelectedFacets/facetValue) &gt; 0">-->
       <xsl:if test="/MBooksTop/Facets/facetsSelected='true'">
         <div id="LimitsError">
-          <xsl:text>With these limits </xsl:text>
-          <xsl:call-template name="showSelected"/>
+          <xsl:call-template name="showSelected">
+            <xsl:with-param name="prompt">With limit(s)</xsl:with-param>
+          </xsl:call-template>
         </div>
       </xsl:if>
       <xsl:if test="$limitByInst = 'True'">
@@ -685,6 +798,7 @@ REMOVE the below and see if it will call list_utils
       </xsl:if>
     </div>
     <div class="modify_link" id="modify_link">
+      <xsl:call-template name="action_start_over" />
       <a class="btn btn-inverse">
         <xsl:attribute name="href">
           <xsl:value-of select="AdvancedSearch/ModifyAdvancedSearchURL"/>
@@ -1184,15 +1298,16 @@ REMOVE the below and see if it will call list_utils
       </div>
     </div>
   </xsl:template>
-  <!--XXX what does the isAdvanced code below do?  Does it work with changed isAdvanced criteria? -->
+
 
   <xsl:template name="showSelected">
-    <xsl:param name="isAdvanced" value="false"/>
+    <xsl:param name="prompt"></xsl:param>
+    <xsl:param name="include-query">false</xsl:param>
     <div>
       <xsl:attribute name="id">selectedFacets</xsl:attribute>
       <xsl:attribute name="class">
         <xsl:choose>
-          <xsl:when test="$isAdvanced = 'false'">
+          <xsl:when test="$gIsAdvanced = 'false'">
             <xsl:text>selectedFacets"</xsl:text>
           </xsl:when>
           <xsl:otherwise>
@@ -1200,16 +1315,18 @@ REMOVE the below and see if it will call list_utils
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
-      <xsl:if test="$isAdvanced = 'false'">
-        <h1>Results refined by:</h1>
+     
+      <xsl:if test="normalize-space($prompt)">
+        <p><xsl:value-of select="$prompt" />:</p>
       </xsl:if>
       <ul class="filters">
+        <xsl:if test="$include-query = 'true'">
+          <xsl:call-template name="includeQueryAsFacet" />
+        </xsl:if>
         <xsl:call-template name="multiselectFacets"/>
         <xsl:call-template name="daterangeFacets"/>
         <!--XXX remove fake facet      <xsl:call-template name="selectedViewabilityFacet"/>-->
         <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
-          <xsl:text>
-        </xsl:text>
           <li>
             <xsl:variable name="value">
               <xsl:value-of select="@name"/>
@@ -1231,6 +1348,21 @@ REMOVE the below and see if it will call list_utils
         </xsl:for-each>
       </ul>
     </div>
+  </xsl:template>
+
+  <xsl:template name="includeQueryAsFacet">
+    <xsl:if test="normalize-space(/MBooksTop/QueryString)">
+      <li>
+        <a href="{/MBooksTop/AdvancedSearch/group/Clause/unselectURL};q1=*" class="unselect">
+          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
+        </a>
+        <span class="selectedfieldname">
+          <xsl:value-of select="/MBooksTop/AdvancedSearch/group/Clause/Field" />
+          <xsl:text>: </xsl:text>
+        </span>
+        <xsl:value-of select="/MBooksTop/QueryString" />
+      </li>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="daterangeFacets">
@@ -1493,22 +1625,29 @@ REMOVE the below and see if it will call list_utils
   </xsl:template>
 
   <xsl:template name="action_start_over">
-    <xsl:if test="$gIsCollSearch = 'TRUE'">
-      <!-- <a class="btn" href="/cgi/mb?c={$coll_id};a=listis">Start Over</a> -->
-      <a class="btn" xhref="/cgi/ls?coll_id={$coll_id};a=srchls;q1=*">
-        <xsl:attribute name="href">
-          <xsl:text>/cgi/ls?coll_id=</xsl:text>
-          <xsl:value-of select="$coll_id" />
-          <xsl:text>;a=srchls;q1=*</xsl:text>
-          <xsl:for-each select="//CurrentCgi/Param[@name='facet']">
-            <xsl:text>;facet=</xsl:text>
-            <xsl:value-of select="." />
-          </xsl:for-each>
-        </xsl:attribute>
-        <xsl:text>Start Over</xsl:text>
-      </a>
-      <xsl:text> </xsl:text>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="$gIsCollSearch = 'TRUE'">
+        <a class="btn" xhref="/cgi/ls?coll_id={$coll_id};a=srchls;q1=*">
+          <xsl:attribute name="href">
+            <xsl:text>/cgi/ls?</xsl:text>
+            <xsl:text>?a=srchls;q1=*</xsl:text>
+  <!--           <xsl:for-each select="//CurrentCgi/Param[@name='facet']">
+              <xsl:text>;facet=</xsl:text>
+              <xsl:value-of select="." />
+            </xsl:for-each> -->
+            <xsl:if test="$coll_id">
+              <xsl:text>;coll_id=</xsl:text>
+              <xsl:value-of select="$coll_id" />
+            </xsl:if>
+          </xsl:attribute>
+          <xsl:text>Start Over</xsl:text>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+        <a class="btn" href="https://www.hathitrust.org">Start Over</a>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text> </xsl:text>
   </xsl:template>
 
 </xsl:stylesheet>

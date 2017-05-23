@@ -40,6 +40,56 @@ ul.filters li{
     font-weight: bold;
 }
 
+#selectedFacets {
+  p {
+    margin-top: 1em; margin-bottom: 0.5em;
+  }
+}
+
+.query-summary {
+
+  display: block;
+  // background: #eee;
+  margin: 8px 0;
+
+  ul {
+    padding: 0;
+    li {
+      float: left;
+      display: block;
+      // background: #ccc;
+      margin-right: 4px;
+      margin-bottom: 4px;
+      padding: 4px;
+      height: 40px;
+      border: 1px solid #ddd;
+
+      &:first-child {
+        border: 1px solid transparent;
+
+        .btn {
+          padding: 4px 12px;
+        }
+      }
+
+      > * {
+        display: inline-block;
+        padding: 4px 0;
+        margin-bottom: 0;
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+    }
+  }
+
+  &:after {
+    display: table;
+    content: '';
+    clear: both;
+  }
+}
+
 
 *.showfacet
 { 
