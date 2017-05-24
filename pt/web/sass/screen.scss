@@ -55,6 +55,10 @@ body {
 
 .navbar-inner {
 
+    #nav {
+        z-index: 1000;
+    }
+
     .search-form {
 
         fieldset {
@@ -139,6 +143,7 @@ body {
 
             &.focused {
                 width: 430px;
+                z-index: 1001;
 
                 .bg {
                     display: block;
