@@ -1448,7 +1448,8 @@ sub __get_unselect_url
 {
     my $facet_hash = shift;
     #add qoutes to the facet string
-    my $facet_string=$facet_hash->{facet_name} . ':"' . $facet_hash->{'value'}. '"';
+    my $quoted_facet_string=$facet_hash->{facet_name} . ':"' . $facet_hash->{'value'}. '"';
+    my $facet_string = $facet_hash->{facet_name} . ':' . $facet_hash->{value};
     # convert from xml friendly to url friendly 
 
     Utils::remap_cers_to_chars(\$facet_string);       
@@ -1469,7 +1470,7 @@ sub __get_unselect_url
     foreach my $f (@facets)
     {
         Utils::remap_cers_to_chars(\$f);       
-        if ($facet_string eq $f)
+        if ($facet_string eq $f || $quoted_facet_string eq $f)
         {
             $debug=$1;
         }

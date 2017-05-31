@@ -185,6 +185,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:attribute name="class">
         <xsl:text>main clearfix</xsl:text> 
         <xsl:if test="$gIsCollSearch = 'TRUE'"> mb</xsl:if>
+        <xsl:if test="count(SearchResults/A_RESULTS/Item) = 0"> noresults</xsl:if>
       </xsl:attribute>
 
       <xsl:if test="$gIsCollSearch = 'TRUE'">
@@ -434,9 +435,16 @@ REMOVE the below and see if it will call list_utils
               <xsl:when test="(count(/MBooksTop/AdvancedSearch/group) = 1) and (count(/MBooksTop/AdvancedSearch/group/Clause) = 1) and (/MBooksTop/AdvancedSearch/group/Clause/Query = '*')" />
               <xsl:otherwise>
                 <xsl:for-each select="/MBooksTop/AdvancedSearch/group">
-                  <xsl:call-template name="summarize-search-group">
+                  <xsl:for-each select="Clause">
+                    <li>
+                      <xsl:call-template name="advancedContent">
+                        <xsl:with-param name="position" select="position()" />
+                      </xsl:call-template>
+                    </li>
+                  </xsl:for-each>
+<!--                   <xsl:call-template name="summarize-search-group">
                     <xsl:with-param name="position" select="position()" />
-                  </xsl:call-template>
+                  </xsl:call-template> -->
                 </xsl:for-each>
               </xsl:otherwise>
             </xsl:choose>
@@ -452,22 +460,24 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="otherFacets">
     <xsl:for-each select="/MBooksTop/Facets/SelectedFacets/facetValue">
       <li>
-        <xsl:variable name="value">
+        <span class="query-item">
+          <xsl:variable name="value">
+            <xsl:value-of select="@name"/>
+          </xsl:variable>
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
+            </xsl:attribute>
+            <xsl:attribute name="class">unselect</xsl:attribute>
+            <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
+          </xsl:element>
+          <span class="selectedfieldname">
+            <xsl:value-of select="fieldName"/>
+          </span>
+          <xsl:text>:  </xsl:text>
           <xsl:value-of select="@name"/>
-        </xsl:variable>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="unselectURL"/>
-          </xsl:attribute>
-          <xsl:attribute name="class">unselect</xsl:attribute>
-          <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
-          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
-        </xsl:element>
-        <span class="selectedfieldname">
-          <xsl:value-of select="fieldName"/>
         </span>
-        <xsl:text>:  </xsl:text>
-        <xsl:value-of select="@name"/>
       </li>
     </xsl:for-each>
   </xsl:template>
@@ -551,6 +561,12 @@ REMOVE the below and see if it will call list_utils
   </xsl:template>
 
   <xsl:template name="advancedContent">
+    <span class="query-item">
+      <xsl:call-template name="advancedContent--actual" />
+    </span>
+  </xsl:template>
+
+  <xsl:template name="advancedContent--actual">
     <xsl:if test="count(/MBooksTop/AdvancedSearch/group/Clause) &gt; 0">
       <a>
         <xsl:attribute name="href">
@@ -653,6 +669,11 @@ REMOVE the below and see if it will call list_utils
     <xsl:if test="$all_items_count &gt; 0">
       <xsl:call-template name="Refine"/>
     </xsl:if>
+
+    <xsl:if test="$gIsCollSearch = 'TRUE' and /MBooksTop/AdvancedSearch/isAdvanced != 'true'">
+      <xsl:call-template name="collSearchWidget"/>
+    </xsl:if>
+
     <div class="ColContent" id="ColContentLSerror">
       <!--       <div class="LSerror">-->
       <xsl:choose>
@@ -666,8 +687,8 @@ REMOVE the below and see if it will call list_utils
                  Should this logic be in the PI filler instead of the XSL?
                  -->
         <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'">
-	  <xsl:call-template name="AdvancedNoResults"/>
-	</xsl:when>
+	       <xsl:call-template name="AdvancedNoResults"/>
+	      </xsl:when>
         <xsl:otherwise>
           <!-- tbw need to fix this for big coll search-->
           <!-- need to still display search collection box and to mention collection in error-->
@@ -1334,19 +1355,21 @@ REMOVE the below and see if it will call list_utils
             <xsl:variable name="value">
               <xsl:value-of select="@name"/>
             </xsl:variable>
-            <xsl:element name="a">
-              <xsl:attribute name="href">
-                <xsl:value-of select="unselectURL"/>
-              </xsl:attribute>
-              <xsl:attribute name="class">unselect</xsl:attribute>
-              <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
-              <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
-            </xsl:element>
-            <span class="selectedfieldname">
-              <xsl:value-of select="fieldName"/>
+            <span class="query-item">
+              <xsl:element name="a">
+                <xsl:attribute name="href">
+                  <xsl:value-of select="unselectURL"/>
+                </xsl:attribute>
+                <xsl:attribute name="class">unselect</xsl:attribute>
+                <!--   <img alt="Delete" src="/ls/common-web/graphics/delete.png" />-->
+                <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
+              </xsl:element>
+              <span class="selectedfieldname">
+                <xsl:value-of select="fieldName"/>
+              </span>
+              <xsl:text>:  </xsl:text>
+              <xsl:value-of select="@name"/>
             </span>
-            <xsl:text>:  </xsl:text>
-            <xsl:value-of select="@name"/>
           </li>
         </xsl:for-each>
       </ul>
@@ -1373,19 +1396,21 @@ REMOVE the below and see if it will call list_utils
       <xsl:text>
         </xsl:text>
       <li>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="unselectURL"/>
-          </xsl:attribute>
-          <xsl:attribute name="class">
-              unselect
+        <span class="query-item">
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
             </xsl:attribute>
-          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
-        </xsl:element>
-        <span class="selectedfieldname">
-          <xsl:text>Date: </xsl:text>
+            <xsl:attribute name="class">
+                unselect
+              </xsl:attribute>
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
+          </xsl:element>
+          <span class="selectedfieldname">
+            <xsl:text>Date: </xsl:text>
+          </span>
+          <xsl:value-of select="facetString"/>
         </span>
-        <xsl:value-of select="facetString"/>
       </li>
     </xsl:for-each>
   </xsl:template>
@@ -1398,21 +1423,23 @@ REMOVE the below and see if it will call list_utils
         <xsl:variable name="value">
           <xsl:value-of select="@name"/>
         </xsl:variable>
-        <xsl:element name="a">
-          <xsl:attribute name="href">
-            <xsl:value-of select="unselectURL"/>
-          </xsl:attribute>
-          <xsl:attribute name="class">
-              unselect
+        <span class="query-item">
+          <xsl:element name="a">
+            <xsl:attribute name="href">
+              <xsl:value-of select="unselectURL"/>
             </xsl:attribute>
-          <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
-        </xsl:element>
-        <span class="selectedfieldname">
-          <xsl:value-of select="fieldName"/>
+            <xsl:attribute name="class">
+                unselect
+              </xsl:attribute>
+            <img alt="Delete" src="/ls/common-web/graphics/cancel.png" class="removeFacetIcon"/>
+          </xsl:element>
+          <span class="selectedfieldname">
+            <xsl:value-of select="fieldName"/>
+          </span>
+          <xsl:text>:  </xsl:text>
+          <!--<xsl:value-of select="@name"/>-->
+          <xsl:value-of select="facetValue"/>
         </span>
-        <xsl:text>:  </xsl:text>
-        <!--<xsl:value-of select="@name"/>-->
-        <xsl:value-of select="facetValue"/>
       </li>
     </xsl:for-each>
   </xsl:template>

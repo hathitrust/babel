@@ -14,6 +14,12 @@ ls.css
 ***/
 
 
+.main.noresults .mainsearch {
+  margin-left: 5rem;
+  width: 72%;
+  border-bottom-color: transparent;
+}
+
 .zero
 {
         background:#000000;
@@ -59,10 +65,9 @@ ul.filters li{
       display: block;
       // background: #ccc;
       margin-right: 4px;
-      margin-bottom: 4px;
-      padding: 4px;
-      height: 40px;
-      border: 1px solid #ddd;
+      margin-bottom: 0;
+      padding: 0;
+      // height: 40px;
 
       &:first-child {
         border: 1px solid transparent;
@@ -72,12 +77,19 @@ ul.filters li{
         }
       }
 
-      > * {
+      > .query-item {
         display: inline-block;
-        padding: 4px 0;
-        margin-bottom: 0;
+        padding: 4px;
+        margin-bottom: 4px;
         font-size: 14px;
         line-height: 20px;
+        border: 1px solid #ddd;
+        font-weight: normal;
+
+        &:hover {
+          background: #e6e6e6;
+          cursor: pointer; 
+        }
       }
 
     }

@@ -56,6 +56,14 @@ head.ready(function()
               event.preventDefault();
             }
             );
+
+    $(".query-summary").on('click', '.query-item', function(e) {
+      var $a = $(this).find("a");
+      if ( $a.size() ) {
+        var href = $a.attr('href');
+        window.location.href = href;
+      }
+    });
   }
 
   );
