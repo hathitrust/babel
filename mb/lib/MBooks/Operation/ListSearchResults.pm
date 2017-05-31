@@ -120,6 +120,14 @@ sub execute_operation
     my $status = $self->test_ownership($C, $co, $act, $coll_id, $owner);
     return $status unless ($status == $ST_OK);
 
+    my $user_query_string = $cgi->param('q1');
+
+    if ( $co->collection_is_large($coll_id) ) {
+        my $user_query_string = $cgi->param('q1');
+        print $cgi->redirect("/cgi/ls?a=srchls;coll_id=$coll_id;q1=$user_query_string");
+        exit;
+    }
+
     # get collection owner for subnav header
     my $coll_owner_display = $co->get_coll_owner_display_name($coll_id);
     $act->set_transient_facade_member_data($C,'coll_owner_display', $coll_owner_display);

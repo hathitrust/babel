@@ -110,6 +110,7 @@
                 <li class="active"><a href="#" data-target="all" class="active">All</a></li>
                 <li><a href="#" data-target="updated" class="">Recently Updated</a></li>
                 <li><a href="#" data-target="featured" class="">Featured</a></li>
+                <li><a href="#" data-target="mondo" class="">Mondo</a></li>
                 <li><a href="#" data-target="my-collections" class="">My Collections</a></li>
               </ul>
             </div>
@@ -165,7 +166,7 @@
         <h3 class="offscreen">List of collections</h3>
 
         <script type="text/javascript">
-          var bucket = { 'html': [], 'featured': [], 'cols':[] };
+          var bucket = { 'html': [], 'featured': [], 'cols':[], 'mondo': [] };
           var html; var featured;
           bucket.cols = [
             'CollId',
@@ -177,6 +178,7 @@
             'Updated',
             'Updated_Display',
             'Featured',
+            'Mondo',
             'Shared',
             'DeleteCollHref'
           ];
@@ -200,6 +202,11 @@
               html.push(featured);
               if ( featured ) {
                 bucket.featured.push(<xsl:value-of select="position() - 1" />);
+              }
+              mondo = '<xsl:value-of select="Mondo" />';
+              html.push(mondo);
+              if ( mondo ) {
+                bucket.mondo.push(<xsl:value-of select="position() - 1" />);
               }
               html.push('<xsl:value-of select="Shared" />');
               html.push('<xsl:value-of select="DeleteCollHref" />');

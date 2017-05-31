@@ -161,6 +161,9 @@ sub get_coll_xml
     my $coll_hashref = shift;
     my $s = '';
 
+    my $config = $C->get_object('MdpConfig');
+    my $min_mondo_n = 5000; # $config->get('filter_query_max_item_ids')
+
     $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName', [['e', uri_escape_utf8($$coll_hashref{'collname'})]]);
     my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'}, 1);
     my $owner_affiliation = MBooks::PIFiller::ListUtils::get_owner_affiliation($C, $$coll_hashref{'owner'}, $$coll_hashref{'owner_name'});
@@ -174,6 +177,7 @@ sub get_coll_xml
     $s .= wrap_string_in_tag($$coll_hashref{'modified'},      'Updated');
     $s .= wrap_string_in_tag($$coll_hashref{'modified_display'},      'Updated_Display');
     $s .= wrap_string_in_tag($$coll_hashref{'featured'},      'Featured');
+    $s .= wrap_string_in_tag($$coll_hashref{'num_items'} >= $min_mondo_n, 'Mondo');
     
     
     my $all_indexed = "FALSE";

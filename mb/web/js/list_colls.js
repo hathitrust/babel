@@ -281,6 +281,7 @@ var ListBrowser = {
     self.cache = {};
     self.cache.html = bucket.html;
     self.cache.featured = bucket.featured;
+    self.cache.mondo = bucket.mondo;
     self.cache.normalized = [];
     
     var num_cells = self.cache.html[0].length;
@@ -384,7 +385,7 @@ var ListBrowser = {
     console.log("TOGGLING", rel);
     this.view = rel;
 
-    if ( this.view == 'my-collections' || this.view == 'featured' ) {
+    if ( this.view == 'my-collections' || this.view == 'featured' || this.view == 'mondo' ) {
       this.filter_min_items(0);
     }
 
@@ -398,6 +399,8 @@ var ListBrowser = {
         return ( tr[self.idx.Updated] >= self.recent_timepoint );
       } else if ( self.view == "featured" ) {
         return ( tr[self.idx.Featured] != '' );
+      } else if ( self.view == "mondo" ) {
+        return ( tr[self.idx.Mondo] != '' );
       } else if ( self.view == "my-collections" ) {
         return ( tr[self.idx.DeleteCollHref] != '' );
       } else if ( self.view == "all" ) {
@@ -674,6 +677,7 @@ var ListBrowser = {
       }
       data.shared = row[self.idx.Shared];
       data.featured = row[self.idx.Featured];
+      data.mondo = row[self.idx.Mondo];
       data.updated = row[self.idx.Updated_Display];
       
       if ( data.owner_affiliation ) {
@@ -710,7 +714,11 @@ var ListBrowser = {
       
       html.push('<div class="left">');
       html.push('<h4 class="collname">');
-      html.push('<a href="mb?a=listis;c=' + data.collid + '">' + data.collname + '</a>');
+      if ( data.mondo ) {
+        html.push('<a href="ls?a=srchls;q1=*;coll_id=' + data.collid + '">' + data.collname + '</a>');
+      } else {
+        html.push('<a href="mb?a=listis;c=' + data.collid + '">' + data.collname + '</a>');
+      }
       if ( data.featured ) {
         html.push('<span class="featured"> (Featured Collection)</span>');
       }
@@ -796,6 +804,9 @@ var ListBrowser = {
         } else if ( this.view == 'featured' ) {
           message += this.paginator.describe() + " of featured";
           title = "Featured Collections";
+        } else if ( this.view == 'mondo' ) {
+          message += this.paginator.describe() + " of mondo";
+          title = "Mondo Collections";
         } else {
           //message += " collections";
           // message += "all " + totalRows;

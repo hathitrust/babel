@@ -117,6 +117,12 @@ sub execute_operation
     my $status = $self->test_ownership($C, $co, $act, $coll_id, $owner);
     return $status unless ($status == $ST_OK);
 
+    if ( $co->collection_is_large($coll_id) ) {
+        my $cgi = $C->get_object('CGI');
+        print $cgi->redirect("/cgi/ls?a=srchls;coll_id=$coll_id;q1=*");
+        exit;
+    }
+
     # this is a reference to an array where each member is a rights
     # attribute valid for this context
     my $rights_ref = $self->get_rights($C);
@@ -127,8 +133,8 @@ sub execute_operation
     
     # get total number of records
     my $all_count = $co->count_all_items_for_coll($coll_id);
-    $act->set_transient_facade_member_data($C, 'all_count', $all_count);    
-    
+    $act->set_transient_facade_member_data($C, 'all_count', $all_count);
+
     my $pager_count = $all_count;
     if ($cgi->param('lmt') eq 'ft')
     {

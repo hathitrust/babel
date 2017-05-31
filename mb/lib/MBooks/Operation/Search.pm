@@ -105,15 +105,20 @@ sub execute_operation
 
     # This assertion should never get triggered because of the logic above    
     ASSERT($CS->exists_coll_id($coll_id), qq{Collection="$coll_id" does not exist});
-    
+
+    my $user_query_string = $cgi->param('q1');
+
+    if ( $co->collection_is_large($coll_id) ) {
+        print $cgi->redirect("/cgi/ls?a=srchls;coll_id=$coll_id;q1=$user_query_string");
+        exit;
+    }
+
     # pass along collection name for AJAX PI filler
     my $coll_name = $co->get_coll_name($coll_id);
     $act->set_persistent_facade_member_data($C, 'search_coll_name', $coll_name);
 
     $C->set_object('Collection', $co);
 
-    my $user_query_string = $cgi->param('q1');
-    
     my $Q = new MBooks::Query::FullText($C, $user_query_string);
     my $rs = new MBooks::Result::FullText($coll_id);
 
