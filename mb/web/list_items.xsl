@@ -37,9 +37,32 @@
   <xsl:template name="sidebar">
     <div class="sidebar" role="complementary">
 
-      <xsl:call-template name="display-collection-metadata" />
+      <xsl:call-template name="display-collection-metadata-details" />
 
     </div>
+  </xsl:template>
+
+  <xsl:template name="display-collection-metadata-details">
+    <xsl:call-template name="list-surveys" />
+
+    <xsl:call-template name="share-links" />
+
+    <h3>About this collection</h3>
+    <dl class="collection">
+      <dt>Owner</dt>
+      <dd>
+        <xsl:value-of select="//CollectionOwner" />
+      </dd>
+      <dt>Status</dt>
+      <dd class="status"><xsl:value-of select="//EditCollectionWidget/Status" /></dd>
+
+      <xsl:if test="//EditCollectionWidget/OwnedByUser='yes' ">
+        <xsl:call-template name="collection-edit-metadata" />
+      </xsl:if>
+    </dl>
+
+    <xsl:call-template name="DownloadMetadataForm" />
+
   </xsl:template>
 
   <xsl:template name="display-collection-metadata">
@@ -88,6 +111,12 @@
 
     </dl>
 
+    <xsl:call-template name="share-links" />
+    <xsl:call-template name="DownloadMetadataForm" />
+
+  </xsl:template>
+
+  <xsl:template name="share-links">
     <div class="shareLinks">
 
       <h3>Share</h3>
@@ -118,11 +147,7 @@
           </xsl:attribute>
         </xsl:element>
       </form>
-
-      <xsl:call-template name="DownloadMetadataForm" />
-
     </div>
-
   </xsl:template>
 
   <xsl:template name="collection-edit-metadata">
@@ -164,6 +189,24 @@
     </xsl:variable>
     <h2 class="offscreen"><xsl:value-of select="$title" /></h2>
     <div id="mbContentContainer" class="main clearfix" tabindex="-1">
+
+      <div style="width: 100%; margin-bottom: 1rem">
+        <div class="row">
+          <div class="span12">
+            <h2 style="margin-top: 0"><xsl:value-of select="$coll_name" /></h2>
+            <xsl:if test="normalize-space(//EditCollectionWidget/CollDesc)">
+              <p>
+                <xsl:value-of select="//EditCollectionWidget/CollDesc"/>
+              </p>
+            </xsl:if>
+            <xsl:if test="//CollectionFeatured/text()">
+              <p>
+                <img src="{//CollectionFeatured}" alt=" " aria-hide="true" style="max-width: 100%" />
+              </p>
+            </xsl:if>
+          </div>
+        </div>
+      </div>
 
       <xsl:call-template name="SearchResults_status"/>
       <xsl:call-template name="DisplaySearchWidgetLogic"/>
@@ -460,45 +503,47 @@
   </xsl:template>
 
   <xsl:template name="DownloadMetadataForm">
-    <xsl:choose>
-      <xsl:when test="//TotalRecords = 0">
-        <p style="margin-top: 4rem">
-          <em>No records to download</em>
-        </p>
-      </xsl:when>
-      <xsl:otherwise>
+    <div class="downloadLinks">
+      <xsl:choose>
+        <xsl:when test="//TotalRecords = 0">
+          <p style="margin-top: 4rem">
+            <em>No records to download</em>
+          </p>
+        </xsl:when>
+        <xsl:otherwise>
 
-        <form class="form-download-metadata" method="POST" action="{//DownloadMetadataAction}">
-          <input type="hidden" name="c" value="{//Param[@name='c']}" />
-          <input type="hidden" name="a" value="download" />
-          <xsl:choose>
-            <xsl:when test="//Param[@name='q1']">
-              <input type="hidden" name="q1" value="{//Param[@name='q1']}" />
-            </xsl:when>
-            <xsl:otherwise>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:if test="//Param[@name='lmt']">
-            <input type="hidden" name="lmt" value="{//Param[@name='lmt']}" />
-          </xsl:if>
-          <!-- <input type="hidden" name="debug" value="attachment" />
-          <input type="hidden" name="format" value="json" /> -->
+          <form class="form-download-metadata" method="POST" action="{//DownloadMetadataAction}">
+            <input type="hidden" name="c" value="{//Param[@name='c']}" />
+            <input type="hidden" name="a" value="download" />
+            <xsl:choose>
+              <xsl:when test="//Param[@name='q1']">
+                <input type="hidden" name="q1" value="{//Param[@name='q1']}" />
+              </xsl:when>
+              <xsl:otherwise>
+              </xsl:otherwise>
+            </xsl:choose>
+            <xsl:if test="//Param[@name='lmt']">
+              <input type="hidden" name="lmt" value="{//Param[@name='lmt']}" />
+            </xsl:if>
+            <!-- <input type="hidden" name="debug" value="attachment" />
+            <input type="hidden" name="format" value="json" /> -->
 
-          <xsl:choose>
-            <xsl:when test="//Param[@name='debug'] = 'dropdown'">
-              <xsl:call-template name="action-metadata-download-dropdown" />
-            </xsl:when>
-            <xsl:when test="//Param[@name='debug'] = 'select'">
-              <xsl:call-template name="action-metadata-download-select" />
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:call-template name="action-metadata-download-dropdown" />
-            </xsl:otherwise>
-          </xsl:choose>
-        </form>
+            <xsl:choose>
+              <xsl:when test="//Param[@name='debug'] = 'dropdown'">
+                <xsl:call-template name="action-metadata-download-dropdown" />
+              </xsl:when>
+              <xsl:when test="//Param[@name='debug'] = 'select'">
+                <xsl:call-template name="action-metadata-download-select" />
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:call-template name="action-metadata-download-dropdown" />
+              </xsl:otherwise>
+            </xsl:choose>
+          </form>
 
-      </xsl:otherwise>
-    </xsl:choose>
+        </xsl:otherwise>
+      </xsl:choose>
+    </div>
 
   </xsl:template>
 
