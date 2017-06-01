@@ -510,7 +510,7 @@
     <div style="font-size: 11px; margin-top: 8px">
       <span>Format: </span>
       <select size="1" name="format" style="width: auto; font-size: 11px; vertical-align: baseline">
-        <option value="text">Text (CSV)</option>
+        <option value="text">Text (TSV)</option>
         <option value="json">JSON</option>
       </select>
     </div>
@@ -526,10 +526,10 @@
       </button>
       <ul class="dropdown-menu">
         <li>
-          <a href="#" style="width: auto; background-image: none; text-indent: 0; text-transform: none; clip: auto; text-decoration: none; line-height: 12px" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('text'); $form.submit(); return false">Download Metadata: Text (CSV)</a>
+          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('text'); $form.submit(); return false">Download Metadata: Text (CSV)</a>
         </li>
         <li>
-          <a href="#" style="width: auto; background-image: none; text-indent: 0; text-transform: none; clip: auto; text-decoration: none; line-height: 12px" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download Metadata: JSON</a>
+          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download Metadata: JSON</a>
         </li>
       </ul>
     </div>
