@@ -3,9 +3,7 @@ head.ready(function() {
     if ( $(".navbar-static-top").data('loggedin') != 'YES' && window.location.protocol == 'https:' ) {
         // horrible hack
         var target = window.location.href.replace(/\$/g, '%24');
-        var href = 'https://weblogin.umich.edu/?cosign-___HOST___&___TARGET___'
-        href = href.replace('___TARGET___', target);
-        href = href.replace('___HOST___', window.location.hostname);
+        var href = 'https://' + window.location.hostname + '/Shibboleth.sso/Login?entityID=https://shibboleth.umich.edu/idp/shibboleth&target=' + target;
         window.location.href = href;
         return;
     }
