@@ -179,10 +179,60 @@ sub execute_operation
     }
 
     if ( $format eq 'json' ) {
-        # unshift @$content, { total_results => scalar @$result_id_arrayref };
-        my $result = { items => $content };
+        my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
+
+        my $emit = sub {
+            my ( $key, $value, $last ) = @_;
+            my $suffix = $last ? '' : ',';
+            return sprintf(qq{%s: %s%s}, $json->encode($key), $json->encode($value), $suffix);
+        };
+
         # and add metadata about this collection
         my $coll_record = $co->get_coll_record($coll_id);
+
+        my $buf = [];
+        push @$buf, "  " . $emit->("id", "https://babel.hathitrust.org/cgi/mb?a=listis;c=$coll_id");
+        push @$buf, "  " . $emit->("type", "http://purl.org/dc/dcmitype/Collection");
+        push @$buf, "  " . $emit->("description", $$coll_record{description});
+        push @$buf, "  " . $emit->("created", $$coll_record{owner_name});
+        push @$buf, "  " . $emit->("extent", $$coll_record{num_items});
+        push @$buf, "  " . $emit->("formats", "text/txt");
+        push @$buf, "  " . $emit->("publisher", { "id" => "https://www.hathitrust.org" });
+        push @$buf, "  " . $emit->("title", $$coll_record{collname});
+        push @$buf, "  " . $emit->("visibility", $$coll_record{shared} ? 'publish' : 'private');
+
+        push @$buf, "  " . $json->encode("gathers") . ": [";
+
+        foreach my $item ( @$content ) {
+            my $last = $$item{htitem_id} eq $$content[-1]{htitem_id};
+            push @$buf, "    {";
+            my $keys = [ qw/title author date rights codes__oclc codes__lccn codes__isbn catalog_url htitem_id/ ];
+            foreach my $key ( @$keys ) {
+                my $value = $$item{$key};
+                my $last = $key eq $$keys[-1];
+                if ( $key =~ m,^codes__, ) {
+                    my @tmp = split(/__/, $key);
+                    $key = $tmp[-1];
+                    $value = $$item{codes}{uc $key};
+                }
+                push @$buf, "      " . $emit->($key, $value, $last);
+            }
+            push @$buf, "    }" . ( $last ? '' : ',');
+        }
+
+        push @$buf, "  ]";
+
+        $content = "{\n" . join("\n", @$buf) . "\n}";
+    }
+    elsif ( $format eq 'jsonXXX' ) {
+
+        # and add metadata about this collection
+        my $coll_record = $co->get_coll_record($coll_id);
+
+        my $result = {};
+        $$result{id} = "https://babel.hathitrust.org/cgi/mb?a=listis;c=$coll_id";
+        $$result{type} = 
+
         $$result{collection} = {};
         $$result{collection}{MColl_ID} = $coll_id;
         $$result{collection}{title} = $$coll_record{collname};
@@ -219,8 +269,8 @@ sub _fill_contents {
     foreach my $row ( @$rows ) {
         # my ( $htitem_id, $title, $author, $date, $book_id, $bib_id ) = @$row;
         $$row{codes} = {};
-        $$row{catalog_url} = qq{http://catalog.hathitrust.org/Record/$$row{bib_id}};
-        $$row{handle_url} = qq{http://hdl.handle.net/2027/$$row{htitem_id}};
+        $$row{catalog_url} = qq{https://catalog.hathitrust.org/Record/$$row{bib_id}};
+        $$row{handle_url} = qq{https://hdl.handle.net/2027/$$row{htitem_id}};
         $$row{rights} = $RightsGlobals::g_attribute_keys{$$row{rights}};
 
         my @parts = split(/,/, $$row{book_id});

@@ -36,9 +36,9 @@
 
   <xsl:template name="sidebar">
     <div class="sidebar" role="complementary">
-        
+
       <xsl:call-template name="display-collection-metadata" />
-      
+
     </div>
   </xsl:template>
 
@@ -134,9 +134,9 @@
       </xsl:choose>
     </xsl:variable>
     <p>
-      <a 
+      <a
         href="#" id="trigger-editc"
-        class="btn btn-small" 
+        class="btn btn-small"
         data-desc="{normalize-space(EditCollectionWidget/CollDesc)}"
         data-cn="{$coll_name}"
         data-c="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']}"
@@ -194,7 +194,7 @@
     </div>
 
   </xsl:template>
-  
+
   <xsl:template name="SearchResults_status">
     <xsl:choose>
       <xsl:when test="SearchResults/Item">
@@ -212,7 +212,7 @@
           <xsl:value-of select="/MBooksTop/CollectionOwner"/>
           <xsl:text>'s </xsl:text>
           <a href="{/MBooksTop/OperationResults/CollHref}">
-            <xsl:value-of select="/MBooksTop/CollectionName"/>    
+            <xsl:value-of select="/MBooksTop/CollectionName"/>
             <xsl:text> collection</xsl:text>
           </a>
           <xsl:if test="string-length(/MBooksTop/MBooksGlobals/EnvHT_DEV)&gt;1">
@@ -220,11 +220,11 @@
             <xsl:value-of select="/MBooksTop/SearchResults/QueryTime"/>
             <xsl:text> sec.</xsl:text>
           </xsl:if>
-          
+
           <xsl:if test="$debug='YES'">
             <span class="debug">DEBUG </span>
           </xsl:if>
-          
+
         </div>
       </xsl:when>
       <xsl:when test="SearchResults">
@@ -238,7 +238,7 @@
           <xsl:value-of select="/MBooksTop/CollectionOwner"/>
           <xsl:text>'s </xsl:text>
           <a href="{/MBooksTop/OperationResults/CollHref}">
-            <xsl:value-of select="/MBooksTop/CollectionName"/>    
+            <xsl:value-of select="/MBooksTop/CollectionName"/>
             <xsl:text> collection</xsl:text>
           </a>
         </div>
@@ -248,8 +248,8 @@
           <xsl:text>Your search for "</xsl:text>
           <xsl:value-of select="/MBooksTop/QueryString"/>
           <xsl:text>" in the </xsl:text>
-          <span class="colName"><xsl:value-of select="$coll_name"/></span> 
-          <xsl:text> collection returned zero hits.</xsl:text> 
+          <span class="colName"><xsl:value-of select="$coll_name"/></span>
+          <xsl:text> collection returned zero hits.</xsl:text>
         </div>
         <p>
           <a href="{//CollHref}">Back to the collection</a>
@@ -279,7 +279,7 @@
     </xsl:if>
 
   </xsl:template>
-    
+
   <!-- Edit Collection Widget  (refine results needs separate pi/widget) -->
   <xsl:template name="EditCollectionWidget">
     <div class="ColSidebar" role="complementary">
@@ -296,17 +296,17 @@
       </div>
     </div>
   </xsl:template>
-  
+
   <xsl:template name="EditCollectionWidgetOwned">
     <div class="editOwned">
       <!-- <h4><xsl:text>Edit options</xsl:text></h4> -->
       <h3>Edit options</h3>
-      
+
       <form id="editcoll" name="editcoll" method="get" action="mb?">
         <xsl:copy-of select="$hidden_c_param"/>
         <input type="hidden" name="a" value="editc"/>
-        <xsl:call-template name="HiddenDebug"/>  
-        
+        <xsl:call-template name="HiddenDebug"/>
+
         <div class="formElement">
           <div class="colNameLabel">
             <label for="CollNameEdit">
@@ -333,7 +333,7 @@
             </textarea>
           </div>
         </div>
-        
+
         <div class="formElement">
           <label for="private_radio">
             <xsl:text>Private</xsl:text>
@@ -343,7 +343,7 @@
               </xsl:if>
             </input>
           </label>
-          
+
           <xsl:if test="EditCollectionWidget/Temporary!='1'">
             <label for="public_radio">
               <xsl:text>Public</xsl:text>
@@ -355,28 +355,28 @@
             </label>
           </xsl:if>
         </div>
-        
+
         <button id="editc" value="editc">
           <xsl:text>Save Changes</xsl:text>
         </button>
       </form>
     </div>
   </xsl:template>
-  
+
   <xsl:template name="EditCollectionWidgetViewOnly">
     <div class="editViewOnly">
-      
+
       <xsl:if test="//CollectionFeatured/text()">
         <div class="colFeatured">
           <img src="{//CollectionFeatured}" alt=" " />
         </div>
       </xsl:if>
-      
+
       <h3>Collection Name</h3>
       <div class="colNameLabel">
         <span class="colName"><xsl:value-of select="$spaced_coll_name"/></span>
       </div>
-      
+
       <xsl:if test="normalize-space(EditCollectionWidget/CollDesc)">
           <h3>Collection Description</h3>
         <div class="colDescLabel">
@@ -385,17 +385,17 @@
           </p>
         </div>
       </xsl:if>
-      
+
       <xsl:if test="normalize-space(//CollectionContactInfo)">
         <div class="ownerLink">
           <h3 class="offscreen">Contact Information</h3>
           <xsl:apply-templates select="//CollectionContactInfo" mode="copy-guts" />
         </div>
       </xsl:if>
-      
+
     </div>
   </xsl:template>
-    
+
   <xsl:template name ="DisplaySearchWidgetLogic">
     <div class="mainsearch" role="search">
       <xsl:choose>
@@ -415,8 +415,8 @@
         <xsl:text>Your search for "</xsl:text>
         <xsl:value-of select="/MBooksTop/QueryString"/>
         <xsl:text>" in the </xsl:text>
-        <span class="colName"><xsl:value-of select="$coll_name"/></span> 
-        <xsl:text> collection returned zero hits.</xsl:text> 
+        <span class="colName"><xsl:value-of select="$coll_name"/></span>
+        <xsl:text> collection returned zero hits.</xsl:text>
       </p>
       <br />
       <xsl:call-template name="SearchWidget">
@@ -488,8 +488,11 @@
             <xsl:when test="//Param[@name='debug'] = 'dropdown'">
               <xsl:call-template name="action-metadata-download-dropdown" />
             </xsl:when>
-            <xsl:otherwise>
+            <xsl:when test="//Param[@name='debug'] = 'select'">
               <xsl:call-template name="action-metadata-download-select" />
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:call-template name="action-metadata-download-dropdown" />
             </xsl:otherwise>
           </xsl:choose>
         </form>
@@ -514,7 +517,7 @@
   </xsl:template>
 
   <xsl:template name="action-metadata-download-dropdown">
-    <input type="hidden" name="format" value="text" /> 
+    <input type="hidden" name="format" value="text" />
     <div class="btn-group">
       <xsl:call-template name="btn-metadata-download" />
       <button type="button" class="btn btn-mini dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -523,7 +526,10 @@
       </button>
       <ul class="dropdown-menu">
         <li>
-          <a href="#" style="width: auto; background-image: none; text-indent: 0; text-transform: none; clip: auto; text-decoration: none; line-height: 12px" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download JSON</a>
+          <a href="#" style="width: auto; background-image: none; text-indent: 0; text-transform: none; clip: auto; text-decoration: none; line-height: 12px" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('text'); $form.submit(); return false">Download Metadata: Text (CSV)</a>
+        </li>
+        <li>
+          <a href="#" style="width: auto; background-image: none; text-indent: 0; text-transform: none; clip: auto; text-decoration: none; line-height: 12px" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download Metadata: JSON</a>
         </li>
       </ul>
     </div>
@@ -548,7 +554,7 @@
   <xsl:template match="*" mode="copy-guts">
     <xsl:apply-templates select="*|text()" mode="copy" />
   </xsl:template>
-  
+
   <xsl:template match="a" mode="copy">
     <xsl:copy>
       <xsl:apply-templates select="@*" mode="copy" />
@@ -556,7 +562,7 @@
       <xsl:apply-templates select="*|text()" mode="copy" />
     </xsl:copy>
   </xsl:template>
-  
+
   <xsl:template match="@*|*|text()" mode="copy">
     <xsl:copy>
       <xsl:apply-templates select="@*|*|text()" mode="copy" />
