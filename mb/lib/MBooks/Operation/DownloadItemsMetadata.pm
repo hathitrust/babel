@@ -171,7 +171,7 @@ sub execute_operation
         $suffix .= "-ft";
     }
 
-    $sql .= qq{ ORDER BY title};
+    $sql .= qq{ ORDER BY sort_title};
     my $sth = $dbh->prepare($sql);
     $sth->execute(@params);
 

@@ -571,10 +571,10 @@
       </button>
       <ul class="dropdown-menu">
         <li>
-          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('text'); $form.submit(); return false">Download Metadata: Text (CSV)</a>
+          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('text'); $form.submit(); return false">Download Item Metadata: Tab-Delimited Text (TSV)</a>
         </li>
         <li>
-          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download Metadata: JSON</a>
+          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download Collection + Item Metadata: Linked Data (JSON)</a>
         </li>
       </ul>
     </div>
