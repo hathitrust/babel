@@ -118,18 +118,40 @@ ul.filters li {
   cursor: default;
 }
 
-/* line 131, ../sass/ls.scss */
+/* line 126, ../sass/ls.scss */
+.form-download-metadata {
+  margin-top: 1.5rem;
+}
+/* line 129, ../sass/ls.scss */
+.form-download-metadata a.download-help-link {
+  display: inline-block;
+  position: relative;
+  height: 18px ;
+  height: 1.8rem ;
+  width: 18px ;
+  width: 1.8rem ;
+  margin-left: 5px ;
+  margin-left: 0.5rem ;
+  background-image: url(/common/unicorn/img/icon_question.png);
+  background-repeat: no-repeat;
+  text-indent: -10000px;
+  text-transform: capitalize;
+  clip: rect(0, 0, 0, 0);
+  cursor: pointer;
+}
+
+/* line 151, ../sass/ls.scss */
 *.hidefacet {
   display: none;
   visibility: hidden;
 }
 
-/* line 137, ../sass/ls.scss */
+/* line 157, ../sass/ls.scss */
 span.moreless {
   font-style: italic;
 }
 
-/* line 141, ../sass/ls.scss */
+/* line 161, ../sass/ls.scss */
 #DlpsDev {
   position: absolute;
   right: 10px;
@@ -138,12 +160,12 @@ span.moreless {
   padding: 8px;
 }
 
-/* line 149, ../sass/ls.scss */
+/* line 169, ../sass/ls.scss */
 .mainsearch {
   margin-bottom: 16px ;
   margin-bottom: 1.6rem ;
 }
-/* line 150, ../sass/ls.scss */
+/* line 170, ../sass/ls.scss */
 .mainsearch .search-extra-options {
   margin-top: 0;
   font-size: 90%;
@@ -151,7 +173,7 @@ span.moreless {
   padding-bottom: 1.6rem ;
 }
 
-/* line 160, ../sass/ls.scss */
+/* line 180, ../sass/ls.scss */
 .SearchResults_status {
   padding-top: 20px ;
   padding-top: 2rem ;
@@ -160,24 +182,24 @@ span.moreless {
   font-size: 16px ;
   font-size: 1.6rem ;
 }
-/* line 166, ../sass/ls.scss */
+/* line 186, ../sass/ls.scss */
 .SearchResults_status span {
   font-weight: bold;
 }
 
-/* line 172, ../sass/ls.scss */
+/* line 192, ../sass/ls.scss */
 .main.mb .SearchResults_status {
   font-size: 13px ;
   font-size: 1.3rem ;
 }
 
-/* line 177, ../sass/ls.scss */
+/* line 197, ../sass/ls.scss */
 .modify_link {
   margin-top: 16px ;
   margin-top: 1.6rem ;
 }
 
-/* line 192, ../sass/ls.scss */
+/* line 212, ../sass/ls.scss */
 span.AnyAll {
   font-weight: normal;
   font-style: italic;

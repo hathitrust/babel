@@ -207,7 +207,7 @@ REMOVE the below and see if it will call list_utils
               <p><xsl:value-of select="//COLL_INFO/COLL_DESC" /></p>
               <xsl:if test="//COLL_INFO/COLL_FEATURED">
                 <p>
-                  <img src="{//COLL_INFO/COLL_FEATURED}" style="max-width: 100%" />
+                  <img src="{//COLL_INFO/COLL_FEATURED}" style="max-width: 100%" aria-hide="true" alt="" />
                 </p>
               </xsl:if>
             </div>
@@ -1259,7 +1259,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:variable name="facetsSelected">
         <xsl:value-of select="/MBooksTop/Facets/facetsSelected"/>
       </xsl:variable>
-      <xsl:if test="$facetsSelected = 'true'">
+      <xsl:if test="false() and $facetsSelected = 'true'">
         <xsl:call-template name="showSelected"/>
       </xsl:if>
       <!--  unselected facets ##########################################################   -->
@@ -1713,7 +1713,85 @@ REMOVE the below and see if it will call list_utils
           </xsl:element>
         </form>
       </div>
+      <xsl:call-template name="DownloadMetadataForm" />
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="DownloadMetadataForm">
+    <div class="downloadLinks">
+      <xsl:choose>
+        <xsl:when test="//TotalRecords = 0">
+          <p style="margin-top: 4rem">
+            <em>No records to download</em>
+          </p>
+        </xsl:when>
+        <xsl:otherwise>
+
+          <form class="form-download-metadata" method="POST" action="/cgi/mb">
+            <input type="hidden" name="c" value="{//Param[@name='coll_id']}" />
+            <input type="hidden" name="a" value="download" />
+            <xsl:choose>
+              <xsl:when test="//Param[@name='q1']">
+                <input type="hidden" name="q1" value="{//Param[@name='q1']}" />
+              </xsl:when>
+              <xsl:otherwise>
+              </xsl:otherwise>
+            </xsl:choose>
+            <xsl:choose>
+              <xsl:when test="//Param[@name='facet']">
+                <xsl:for-each select="//Param[@name='facet']">
+                  <input type="hidden" name="facet" value="{.}" />
+                </xsl:for-each>
+              </xsl:when>
+              <xsl:otherwise />
+            </xsl:choose>
+            <xsl:if test="//Param[@name='lmt']">
+              <input type="hidden" name="lmt" value="{//Param[@name='lmt']}" />
+            </xsl:if>
+            <!-- <input type="hidden" name="debug" value="attachment" />
+            <input type="hidden" name="format" value="json" /> -->
+
+            <xsl:call-template name="action-metadata-download-dropdown" />
+          </form>
+
+        </xsl:otherwise>
+      </xsl:choose>
+    </div>
+
+  </xsl:template>
+
+  <xsl:template name="action-metadata-download-dropdown">
+    <input type="hidden" name="format" value="text" />
+    <div class="btn-group">
+      <xsl:call-template name="btn-metadata-download" />
+      <button type="button" class="btn btn-mini dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="offscreen">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('text'); $form.submit(); return false">Download Item Metadata: Tab-Delimited Text (TSV)</a>
+        </li>
+        <li>
+          <a href="#" onClick="$form = $(this).parents('form'); $form.find('input[name=format]').val('json'); $form.submit(); return false">Download Collection + Item Metadata: Linked Data (JSON)</a>
+        </li>
+      </ul>
+    </div>
+    <xsl:text> </xsl:text>
+    <a href="#" class="download-help-link">Help about Downloading Metadata</a>
+  </xsl:template>
+
+  <xsl:template name="btn-metadata-download">
+    <button class="btn btn-mini">
+      <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+      <xsl:attribute name="data-tracking-action">MB Download Metadata</xsl:attribute>
+      <xsl:attribute name="data-tracking-label">
+        <xsl:value-of select="//EditCollectionWidget/CollName" />
+        <xsl:text>: </xsl:text>
+        <xsl:value-of select="//EditCollectionWidget/CollId" />
+      </xsl:attribute>
+      <i class="icomoon icomoon-download"></i>
+      <xsl:text> Download Metadata</xsl:text>
+    </button>
+  </xsl:template>
 </xsl:stylesheet>
