@@ -129,6 +129,7 @@ sub execute_view
 
     if ($status == $Operation::Status::ST_OK && ! ref($$self{template_action}))
     {
+
         if ( $$self{template_name} ) {
             $self->SUPER::execute_view(@_);
         } else {
@@ -298,7 +299,8 @@ sub output
     }
     elsif ( exists($$self{output}) ) {
         my $output = $$self{output};
-        $self->output_HTTP($C, \$output, $content_type);
+        my $ref = ref($output) ? $output : \$output;
+        $self->output_HTTP($C, $ref, $content_type);
     }
     else
     {
@@ -401,6 +403,39 @@ sub get_redirect_url
     return($redirect_cgi->self_url());
 }
 
+sub output_HTTP {
+    my $self = shift;
+    my ($C, $data_ref, $content_type) = @_ ;
+
+    if ( ref($data_ref) eq 'File::Temp' ) {
+        P_output_glob_data_HTTP($C, $data_ref, $content_type);
+    } else {
+        View::P_output_data_HTTP($C, $data_ref, $content_type);
+    }
+}
+
+
+sub P_output_glob_data_HTTP {
+    my ($C, $data_ref, $content_type, $status) = @_ ;
+
+    $content_type = 'text/plain'
+        if (! $content_type);
+
+    $status = 200 unless ( $status );
+
+    my $charset = 'UTF-8';
+    
+    Utils::add_header($C, 'Content-type' => qq{$content_type; charset=$charset});
+    
+    my $headers_ref = $C->get_object('HTTP::Headers');
+    
+    print STDOUT "Status: $status" . $CGI::CRLF;
+    print STDOUT $headers_ref->as_string($CGI::CRLF);
+    print STDOUT $CGI::CRLF;
+    while ( my $line = <$data_ref> ) {
+        print STDOUT $line;
+    }
+}
 
 1;
 

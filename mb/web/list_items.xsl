@@ -46,6 +46,7 @@
     <xsl:call-template name="list-surveys" />
 
     <xsl:call-template name="share-links" />
+    <xsl:call-template name="DownloadMetadataForm" />
 
     <h3>About this collection</h3>
     <dl class="collection">
@@ -60,8 +61,6 @@
         <xsl:call-template name="collection-edit-metadata" />
       </xsl:if>
     </dl>
-
-    <xsl:call-template name="DownloadMetadataForm" />
 
   </xsl:template>
 

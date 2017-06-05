@@ -34,6 +34,8 @@ use MBooks::Query::FullText;
 use MBooks::Result::FullText;
 use MBooks::Searcher::FullText;
 
+use Utils::Cache::Storable;
+
 sub new
 {
     my $class = shift;
@@ -61,6 +63,11 @@ sub _initialize
 
     my $C = $$attr_ref{'C'};
     my $act = $$attr_ref{'act'};
+
+    # my $cache_key = qq{mb__search};
+    # my $cache_dir = Utils::get_true_cache_dir($C, 'mb_cache_dir');
+    # my $cache = Utils::Cache::Storable->new($cache_dir, 600);
+    # $$self{cache} = $cache;
 
     $self->SUPER::_initialize($C, $act);
 }
@@ -136,7 +143,7 @@ sub execute_operation
     # "search failed" message
     my $ses = $C->get_object('Session');
     $ses->set_persistent('search_result_object', $rs);
-
+    $$self{cache}->Set("search_result_object__$coll_id", $rs);
     # Pass result along for possible use by an AJAX PI filler
     # regardless of success or failure
     my %search_result_data = 

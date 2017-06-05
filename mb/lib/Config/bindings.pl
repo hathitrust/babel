@@ -38,6 +38,7 @@
      'testUser' => '.*',
      'callback' => '.*',
      'format'   => 'text|json',
+     'facet' => '.*',
      '_' => '.*',
     );
 

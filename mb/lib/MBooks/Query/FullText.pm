@@ -106,6 +106,7 @@ sub get_Solr_query_string
 {
     my $self = shift;
     my $C = shift;
+    my $cgi = $C->get_object('CGI');
 
     # Massage the raw query string from the user
     my $user_query_string = $self->get_processed_user_query_string();
@@ -115,6 +116,8 @@ sub get_Solr_query_string
     
     # The common Solr query parameters
     my $USER_Q = qq{q=$user_query_string};
+    $USER_Q = "q=*" if ( $USER_Q eq 'q=' && scalar $cgi->multi_param('facet') );
+
     my $FL = qq{&fl=id,score,rights};
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $START_ROWS = qq{&start=0&rows=1000000};
@@ -124,7 +127,7 @@ sub get_Solr_query_string
     # ids requested or to limit to the collection field itself
     my $FQ;
     my $co = $C->get_object('Collection');
-    my $coll_id = $C->get_object('CGI')->param('c');
+    my $coll_id = $cgi->param('c');
 
     if ($co->collection_is_large($coll_id)) {    
         $FQ = $self->get_coll_id_FQ();
@@ -133,10 +136,17 @@ sub get_Solr_query_string
         $FQ = $self->get_id_FQ();
     }
 
+    if ( my @facets = $cgi->multi_param('facet') ) {
+        foreach my $facet ( @facets ) {
+            $FQ .= qq{&fq=$facet};
+        }
+    }
+
     # q=dog*&fl=id,score&fq=coll_id:(276)&$version=2.2,&start=0&rows=1000000&indent=off
     # q=dog*&fl=id,score&fq=extern_id:(mdp.3910534567+OR+mdp.3910523456+OR+mdp.3910512345)&$version=2.2,&start=0&rows=1000000&indent=off
 
     my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT;
+    print STDERR "AHOY SOLR QUERY $solr_query_string\n";
 
 
 if (DEBUG('query')||DEBUG('all')) {
