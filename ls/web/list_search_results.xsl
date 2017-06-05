@@ -1720,8 +1720,13 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="DownloadMetadataForm">
     <div class="downloadLinks">
       <xsl:choose>
+        <xsl:when test="$gIsAdvanced = 'true'">
+          <p style="margin-top: 2rem">
+            <em>Download of advanced search results is not supported at this time.</em>
+          </p>
+        </xsl:when>
         <xsl:when test="//TotalRecords = 0">
-          <p style="margin-top: 4rem">
+          <p style="margin-top: 2rem">
             <em>No records to download</em>
           </p>
         </xsl:when>
