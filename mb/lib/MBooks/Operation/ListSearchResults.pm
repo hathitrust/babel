@@ -38,6 +38,7 @@ use MBooks::Result::FullText;
 use MBooks::Operation::Status;
 require "MBooks/Operation/OpListUtils.pl";
 
+use MBooks::Utils::ResultsCache;
 
 sub new
 {
@@ -146,8 +147,8 @@ sub execute_operation
     my $solr_error_msg;
 
     # Result object
-    my $ses = $C->get_object('Session');
-    my $rs = $ses->get_persistent('search_result_object');
+    my $search_result_object = MBooks::Utils::ResultsCache->new($C, $coll_id)->get();
+    my $rs = defined $search_result_object ? $$search_result_object{result_object} : undef;
 
     # If the session expired the rs object will be undef.  Redo the
     # search by redirection.

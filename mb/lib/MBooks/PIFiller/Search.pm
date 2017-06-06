@@ -24,6 +24,8 @@ use PIFiller;
 use base qw(PIFiller);
 use MBooks::Index;
 
+use MBooks::Utils::ResultsCache;
+
 # ---------------------------------------------------------------------
 
 =item handle_OPERATION_RESULTS_PI
@@ -41,8 +43,8 @@ sub handle_OPERATION_RESULTS_PI
     my ($C, $act, $piParamHashRef) = @_;
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
     # How did search?
-    my $search_result_data_hashref
-        = $act->get_persistent_facade_member_data($C, 'search_result_data');
+    my $search_result_data_hashref = MBooks::Utils::ResultsCache->new($C, $coll_id)->get();
+
     my $rs = $$search_result_data_hashref{'result_object'};
 
     my $cgi = $C->get_object('CGI');

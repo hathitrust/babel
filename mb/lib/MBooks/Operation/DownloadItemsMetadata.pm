@@ -48,6 +48,8 @@ use utf8;
 delete $INC{"MBooks/Operation/OpListUtils.pl"};
 require "MBooks/Operation/OpListUtils.pl";
 
+use MBooks::Utils::ResultsCache;
+
 sub new
 {
     my $class = shift;
@@ -137,9 +139,14 @@ sub execute_operation
     my $rights_ref = $self->get_rights($C);
 
     # Result object
-    my $ses = $C->get_object('Session');
-    my $rs = defined $cgi->param('q1') ? $ses->get_persistent('search_result_object') : undef;
+    my $rs;
     if ( defined $cgi->param('q1') ) {
+        my $search_result_object = MBooks::Utils::ResultsCache->new($C, $coll_id)->get();
+        $rs = $$search_result_object{result_object};
+    }
+
+    if ( ! defined $rs ) {
+        # stale session OR query from download
         if ( defined $cgi->param('q1') && 
                 ( $cgi->param('q1') ne '*' ) || 
                 ( scalar $cgi->multi_param('facet') ) ) {

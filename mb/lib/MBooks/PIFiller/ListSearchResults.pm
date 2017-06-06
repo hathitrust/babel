@@ -35,6 +35,8 @@ use MBooks::Utils::Sort;
 use MBooks::PIFiller::ListUtils;
 use MBooks::PIFiller::Survey;
 
+use MBooks::Utils::ResultsCache;
+
 use Namespaces;
 
 use utf8;
@@ -78,7 +80,9 @@ sub handle_SEARCH_RESULTS_PI
     $output .= wrap_string_in_tag($coll_empty, 'CollEmpty');
 
     # Is the query a well-formed-formula (WFF)?
-    my $search_result_data_hashref = $act->get_persistent_facade_member_data($C, 'search_result_data');
+    my $search_result_data_hashref = MBooks::Utils::ResultsCache->new($C, $coll_id)->get();
+
+
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
     my $well_formed = $wff_hashref->{'all'};
     $output .= wrap_string_in_tag($well_formed, 'WellFormed');

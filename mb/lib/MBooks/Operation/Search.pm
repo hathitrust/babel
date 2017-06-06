@@ -34,7 +34,7 @@ use MBooks::Query::FullText;
 use MBooks::Result::FullText;
 use MBooks::Searcher::FullText;
 
-use Utils::Cache::Storable;
+use MBooks::Utils::ResultsCache;
 
 sub new
 {
@@ -141,9 +141,7 @@ sub execute_operation
     # search results by relevance and also pass it along in the
     # %search_result_data to the PIFIller if we need to post the ajax
     # "search failed" message
-    my $ses = $C->get_object('Session');
-    $ses->set_persistent('search_result_object', $rs);
-    $$self{cache}->Set("search_result_object__$coll_id", $rs);
+
     # Pass result along for possible use by an AJAX PI filler
     # regardless of success or failure
     my %search_result_data = 
@@ -155,7 +153,7 @@ sub execute_operation
                           },
         );
 
-    $act->set_persistent_facade_member_data($C, 'search_result_data', \%search_result_data);
+    my $cache = MBooks::Utils::ResultsCache->new($C, $coll_id)->set(\%search_result_data);
 
     return $ST_OK;
 }

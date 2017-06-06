@@ -146,7 +146,6 @@ sub get_Solr_query_string
     # q=dog*&fl=id,score&fq=extern_id:(mdp.3910534567+OR+mdp.3910523456+OR+mdp.3910512345)&$version=2.2,&start=0&rows=1000000&indent=off
 
     my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT;
-    print STDERR "AHOY SOLR QUERY $solr_query_string\n";
 
 
 if (DEBUG('query')||DEBUG('all')) {
