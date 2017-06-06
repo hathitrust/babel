@@ -505,7 +505,7 @@
     <div class="downloadLinks">
       <xsl:choose>
         <xsl:when test="//TotalRecords = 0">
-          <p style="margin-top: 4rem">
+          <p style="margin-top: 2rem">
             <em>No records to download</em>
           </p>
         </xsl:when>
