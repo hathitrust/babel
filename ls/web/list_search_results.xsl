@@ -1725,6 +1725,11 @@ REMOVE the below and see if it will call list_utils
             <em>Download of advanced search results is not supported at this time.</em>
           </p>
         </xsl:when>
+        <xsl:when test="count(//Facets/SelectedFacets/facetValue) > 0 or //Param[@name='q1'] != '*'">
+          <p style="margin-top: 2rem">
+            <em>Download of search results is not supported at this time.</em>
+          </p>
+        </xsl:when>
         <xsl:when test="//TotalRecords = 0">
           <p style="margin-top: 2rem">
             <em>No records to download</em>
