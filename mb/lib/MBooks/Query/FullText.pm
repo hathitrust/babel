@@ -27,6 +27,8 @@ use Collection;
 use base qw(Search::Query);
 use URI::Escape;
 
+our $COUNTS = 1;
+
 
 # ---------------------------------------------------------------------
 
@@ -142,16 +144,22 @@ sub get_Solr_query_string
         }
     }
 
+    if ( $$self{disable_sort} && $USER_Q ne 'q=*' ) {
+        $USER_Q =~ s,q=,,;
+        $FQ .= qq{&fq=__query__:{!type=edismax}$USER_Q};
+        $USER_Q = q{q=*};
+    }
+
     # q=dog*&fl=id,score&fq=coll_id:(276)&$version=2.2,&start=0&rows=1000000&indent=off
     # q=dog*&fl=id,score&fq=extern_id:(mdp.3910534567+OR+mdp.3910523456+OR+mdp.3910512345)&$version=2.2,&start=0&rows=1000000&indent=off
 
     my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT;
 
 
-if (DEBUG('query')||DEBUG('all')) {
-    my $debug_solr_query_string = $solr_query_string;
-    Utils::map_chars_to_cers(\$debug_solr_query_string, [q{"}, q{'}]) if Debug::DUtils::under_server();
-    DEBUG('query', qq{Solr query="$debug_solr_query_string"});
+    if (DEBUG('query')||DEBUG('all')) {
+        my $debug_solr_query_string = $solr_query_string;
+        Utils::map_chars_to_cers(\$debug_solr_query_string, [q{"}, q{'}]) if Debug::DUtils::under_server();
+        DEBUG('query', qq{Solr query="$debug_solr_query_string"});
         
     }
     return $solr_query_string;
@@ -233,6 +241,11 @@ sub get_Solr_internal_query_string
         $INTERN_Q . $FL . $VERSION . $START_ROWS . $INDENT;
 
     return $solr_query_string;
+}
+
+sub disable_sort {
+    my $self = shift;
+    $$self{disable_sort} = 1;
 }
 
 1;

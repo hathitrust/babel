@@ -540,6 +540,20 @@
             </xsl:choose>
           </form>
 
+          <xsl:choose>
+            <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='lmt']='ft'">
+              <p><em>Metadata will be limited to full view items.</em></p>
+            </xsl:when>
+            <xsl:otherwise/>
+          </xsl:choose>
+
+          <xsl:choose>
+            <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
+              <p><em>Metadata will be limited to these search results.</em></p>
+            </xsl:when>
+            <xsl:otherwise/>
+          </xsl:choose>
+
         </xsl:otherwise>
       </xsl:choose>
     </div>

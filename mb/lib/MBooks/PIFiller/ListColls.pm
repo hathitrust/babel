@@ -177,7 +177,7 @@ sub get_coll_xml
     $s .= wrap_string_in_tag($$coll_hashref{'modified'},      'Updated');
     $s .= wrap_string_in_tag($$coll_hashref{'modified_display'},      'Updated_Display');
     $s .= wrap_string_in_tag($$coll_hashref{'featured'},      'Featured');
-    $s .= wrap_string_in_tag($$coll_hashref{'num_items'} >= $min_mondo_n, 'Mondo');
+    ### $s .= wrap_string_in_tag($$coll_hashref{'num_items'} >= $min_mondo_n, 'Mondo');
     
     
     my $all_indexed = "FALSE";

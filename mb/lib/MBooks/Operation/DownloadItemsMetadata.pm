@@ -160,6 +160,7 @@ sub execute_operation
 
             my $user_query_string = $cgi->param('q1');
             my $Q = new MBooks::Query::FullText($C, $user_query_string);
+            $Q->disable_sort();
             $rs = new MBooks::Result::FullText($coll_id);
 
             my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
@@ -211,20 +212,6 @@ sub execute_operation
             $suffix = "-$suffix";
         }
     }
-    # if ( $rs ) {
-    #     $result_id_arrayref = $rs->get_result_ids();
-    #     unless ( scalar @$result_id_arrayref ) {
-    #         $result_id_arrayref = [ 'zzz-not-found-zzz' ];
-    #     }
-    #     $sql .= q{ AND b.extern_item_id IN ( } . ( join(',', map { '?' } @$result_id_arrayref) ) . q{)};
-    #     push @params, @$result_id_arrayref;
-    #     require HTML::Entities;
-    #     $suffix = lc HTML::Entities::decode_entities(uri_unescape($cgi->param('q1')));
-    #     $suffix =~ s,[^a-z],-,g;
-    #     $suffix =~ s,-+,-,g;
-    #     $suffix = "-$suffix";
-    # }
-
 
     my $cls = "Download::Builder::" . uc $format;
     my $builder = $cls->new(coll_record => $coll_record, coll_id => $coll_id, include => $include_hashref);
