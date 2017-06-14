@@ -231,6 +231,8 @@ sub execute_operation
     my $op = DEBUG('attachment') ? "" : "attachment; ";
     my $ext = ( $format eq 'json' ? 'json' : 'txt' );
     Utils::add_header($C, 'Content-Disposition' => qq{$op filename="$coll_id$suffix.$ext});
+    Utils::add_header($C, 'Cookie' => qq{download$coll_id=1; Path=/});
+    # Utils::add_header($C, 'Cookie' => qq{downloadStarted=1});
     $act->set_transient_facade_member_data($C, 'output', $fh);
 
     return $ST_OK;
