@@ -140,18 +140,61 @@ ul.filters li {
   cursor: pointer;
 }
 
-/* line 151, ../sass/ls.scss */
+/* line 146, ../sass/ls.scss */
+.spinner-download-metadata {
+  margin-left: 8px;
+  height: 10px;
+  position: relative;
+  display: inline-block;
+  background: white;
+}
+
+/*Typing Loader*/
+/* line 155, ../sass/ls.scss */
+.spinner-download-metadata.active .typing_loader {
+  width: 6px;
+  height: 6px;
+  top: 2px;
+  border-radius: 50%;
+  -webkit-animation: typing 1s linear infinite alternate;
+  -moz-animation: Typing 1s linear infinite alternate;
+  animation: typing 1s linear infinite alternate;
+  margin: 0 auto;
+  position: relative;
+}
+
+@keyframes typing {
+  /* line 170, ../sass/ls.scss */
+  0% {
+    background-color: black;
+    box-shadow: 12px 0px 0px 0px rgba(0, 0, 0, 0.2), 24px 0px 0px 0px rgba(0, 0, 0, 0.2);
+  }
+
+  /* line 175, ../sass/ls.scss */
+  25% {
+    background-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 12px 0px 0px 0px black, 24px 0px 0px 0px rgba(0, 0, 0, 0.2);
+  }
+
+  /* line 180, ../sass/ls.scss */
+  75% {
+    background-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 12px 0px 0px 0px rgba(0, 0, 0, 0.2), 24px 0px 0px 0px black;
+  }
+}
+
+/* line 191, ../sass/ls.scss */
 *.hidefacet {
   display: none;
   visibility: hidden;
 }
 
-/* line 157, ../sass/ls.scss */
+/* line 197, ../sass/ls.scss */
 span.moreless {
   font-style: italic;
 }
 
-/* line 161, ../sass/ls.scss */
+/* line 201, ../sass/ls.scss */
 #DlpsDev {
   position: absolute;
   right: 10px;
@@ -160,12 +203,12 @@ span.moreless {
   padding: 8px;
 }
 
-/* line 169, ../sass/ls.scss */
+/* line 209, ../sass/ls.scss */
 .mainsearch {
   margin-bottom: 16px ;
   margin-bottom: 1.6rem ;
 }
-/* line 170, ../sass/ls.scss */
+/* line 210, ../sass/ls.scss */
 .mainsearch .search-extra-options {
   margin-top: 0;
   font-size: 90%;
@@ -173,7 +216,7 @@ span.moreless {
   padding-bottom: 1.6rem ;
 }
 
-/* line 180, ../sass/ls.scss */
+/* line 220, ../sass/ls.scss */
 .SearchResults_status {
   padding-top: 20px ;
   padding-top: 2rem ;
@@ -182,24 +225,24 @@ span.moreless {
   font-size: 16px ;
   font-size: 1.6rem ;
 }
-/* line 186, ../sass/ls.scss */
+/* line 226, ../sass/ls.scss */
 .SearchResults_status span {
   font-weight: bold;
 }
 
-/* line 192, ../sass/ls.scss */
+/* line 232, ../sass/ls.scss */
 .main.mb .SearchResults_status {
   font-size: 13px ;
   font-size: 1.3rem ;
 }
 
-/* line 197, ../sass/ls.scss */
+/* line 237, ../sass/ls.scss */
 .modify_link {
   margin-top: 16px ;
   margin-top: 1.6rem ;
 }
 
-/* line 212, ../sass/ls.scss */
+/* line 252, ../sass/ls.scss */
 span.AnyAll {
   font-weight: normal;
   font-style: italic;

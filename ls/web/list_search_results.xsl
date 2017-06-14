@@ -1789,6 +1789,7 @@ REMOVE the below and see if it will call list_utils
     </div>
     <xsl:text> </xsl:text>
     <a href="#" class="download-help-link">Help about Downloading Metadata</a>
+    <div data-role="progress" class="spinner-download-metadata"><div class="typing_loader"></div></div>
   </xsl:template>
 
   <xsl:template name="btn-metadata-download">
