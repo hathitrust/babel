@@ -613,6 +613,9 @@
 
   <xsl:template name="BuildItemSelectActions">
     <div class="SelectedItemActions">
+      <xsl:if test="/MBooksTop/EditCollectionWidget/OwnedByUser='yes'">
+        <xsl:attribute name="style">width: 100%</xsl:attribute>
+      </xsl:if>
       <xsl:call-template name="BuildCollectionSelect"/>
 
       <input type="hidden" name="a" id="a"/>
@@ -622,12 +625,16 @@
       <!-- if they don't own the collection they shouldn't be able to delete (or move) items -->
       <xsl:choose>
         <xsl:when test="/MBooksTop/EditCollectionWidget/OwnedByUser='yes' ">
-          <button class="btn btn-small" id="movit" value="movit">Move Selected</button>
-          <button class="btn btn-small" id="delit" value="delit">Remove Selected</button>
+          <xsl:call-template name="BuildItemSelectedOwnerActions"/>
         </xsl:when>
         <xsl:otherwise></xsl:otherwise>
       </xsl:choose>
     </div>
+  </xsl:template>
+
+  <xsl:template name="BuildItemSelectedOwnerActions">
+    <button class="btn btn-small" id="movit" value="movit">Move Selected</button>
+    <button class="btn btn-small" id="delit" value="delit">Remove Selected</button>
   </xsl:template>
 
 
@@ -1103,22 +1110,31 @@
 
   <xsl:template name="SearchWidget">
     <xsl:param name="label">Search in this collection</xsl:param>
-    <xsl:if test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
-      <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
-        <xsl:call-template name="HiddenDebug"/>
-        <label for="q1"><xsl:value-of select="$label" /></label>
-        <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge">
-          <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
-            <xsl:attribute name="value">
-              <xsl:value-of select="/MBooksTop/QueryString"/>
-            </xsl:attribute>
-          </xsl:if>
-        </input>
-        <input type="hidden" name="a" value="srch"/>
-        <button class="btn" type="submit" name="a" id="srch" value="srch">Find</button>
-        <xsl:copy-of select="$hidden_c_param"/>
-      </form>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="//Param[@name='adm'] = '1'">
+        <div class="alert alert-warning alert-block">
+          <p>You are managing this collection.</p>
+          <p><a href="/cgi/ls?c={//Param[@name='c']};a=srchls;q1=*">Search this collection</a></p>
+        </div>
+      </xsl:when>
+      <xsl:when test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
+        <form id="itemlist_searchform" method="get" action="mb" name="searchcoll" class="form-inline">
+          <xsl:call-template name="HiddenDebug"/>
+          <label for="q1"><xsl:value-of select="$label" /></label>
+          <input type="text" size="30" maxlength="150" name="q1" id="q1" class="input-xlarge">
+            <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
+              <xsl:attribute name="value">
+                <xsl:value-of select="/MBooksTop/QueryString"/>
+              </xsl:attribute>
+            </xsl:if>
+          </input>
+          <input type="hidden" name="a" value="srch"/>
+          <button class="btn" type="submit" name="a" id="srch" value="srch">Find</button>
+          <xsl:copy-of select="$hidden_c_param"/>
+        </form>
+      </xsl:when>
+      <xsl:otherwise />
+    </xsl:choose>
   </xsl:template>
 
 
