@@ -40,6 +40,7 @@
      'format'   => 'text|json',
      'facet' => '.*',
      '_' => '.*',
+     'adm'   => '1',
     );
 
 %g_url_to_field_name_map =

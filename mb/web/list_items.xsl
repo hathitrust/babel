@@ -309,7 +309,7 @@
 
   <xsl:template name="status-update">
     <!-- Special case show index status message only for listsrch page -->
-    <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch'">
+    <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='a']='listsrch' or //Param[@name='adm'] = '1'">
       <xsl:call-template name="IndexingStatusMsg"/>
     </xsl:if>
 

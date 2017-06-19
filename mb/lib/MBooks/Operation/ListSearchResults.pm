@@ -125,7 +125,7 @@ sub execute_operation
 
     if ( $co->collection_is_large($coll_id) ) {
         my $user_query_string = $cgi->param('q1');
-        print $cgi->redirect("/cgi/ls?a=srchls;coll_id=$coll_id;q1=$user_query_string");
+        print $cgi->redirect("/cgi/ls?a=srchls;c=$coll_id;q1=$user_query_string");
         exit;
     }
 

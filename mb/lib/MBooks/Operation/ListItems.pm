@@ -117,9 +117,9 @@ sub execute_operation
     my $status = $self->test_ownership($C, $co, $act, $coll_id, $owner);
     return $status unless ($status == $ST_OK);
 
-    if ( $co->collection_is_large($coll_id) ) {
+    if ( $co->collection_is_large($coll_id) && ! defined $cgi->param('adm') ) {
         my $cgi = $C->get_object('CGI');
-        print $cgi->redirect("/cgi/ls?a=srchls;coll_id=$coll_id;q1=*");
+        print $cgi->redirect("/cgi/ls?a=srchls;c=$coll_id;q1=*");
         exit;
     }
 

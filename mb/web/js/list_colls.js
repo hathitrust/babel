@@ -711,7 +711,7 @@ var ListBrowser = {
       html.push('<div class="left">');
       html.push('<h4 class="collname">');
       if ( parseInt(data.num_items, 10) > 1000 ) {
-        html.push('<a href="ls?a=srchls;q1=*;coll_id=' + data.collid + '">' + data.collname + '</a>');
+        html.push('<a href="ls?a=srchls;q1=*;c=' + data.collid + '">' + data.collname + '</a>');
       } else {
         html.push('<a href="mb?a=listis;c=' + data.collid + '">' + data.collname + '</a>');
       }
