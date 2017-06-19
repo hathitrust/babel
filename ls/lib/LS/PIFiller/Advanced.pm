@@ -395,8 +395,8 @@ sub __get_coll_info
     my $coll_name;
     my $coll_status;
     
-    if(defined ($cgi->param('coll_id')))  {
-	my $coll_id = $cgi->param('coll_id');
+    if(defined ($cgi->param('c')))  {
+	my $coll_id = $cgi->param('c');
 	#check for empty or space only param
 	$coll_id=~s/s+//g;
 	if ($coll_id ne ''){

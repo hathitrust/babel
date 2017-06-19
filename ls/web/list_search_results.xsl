@@ -3,7 +3,7 @@
   <!-- XXX unicorn version-->
   <!--## Global Variables ##-->
   <xsl:variable name="gIsAdvanced" select="/MBooksTop/AdvancedSearch/isAdvanced"/>
-  <xsl:variable name="gCollSearch" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
+  <xsl:variable name="gCollSearch" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']"/>
   <xsl:variable name="g_current_sort_param" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='sort']"/>
   <!-- need to separate sort and dir from sort param i.e. title_d = sort=title dir=d -->
   <xsl:variable name="g_current_sort" select="substring-before($g_current_sort_param,'_')"/>
@@ -73,7 +73,7 @@
       <xsl:text>True</xsl:text>
     </xsl:if>
   </xsl:variable>
-  <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
+  <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']"/>
   <xsl:variable name="gIsCollSearch">
     <xsl:choose>
       <xsl:when test="normalize-space($coll_id) != ''">
@@ -213,6 +213,9 @@ REMOVE the below and see if it will call list_utils
             </div>
           </div>
         </div>
+
+        <xsl:call-template name="status-update" />
+
       </xsl:if>
 
       <!--AB addition-->
@@ -304,7 +307,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:text> items found </xsl:text>
       <xsl:if test="$gIsCollSearch = 'TRUE'">
         <xsl:text> in the collection </xsl:text>
-        <a href="/cgi/ls?coll_id={$coll_id};a=srchls;q1=*"><xsl:value-of select="$gCollName" /></a>
+        <a href="/cgi/ls?c={$coll_id};a=srchls;q1=*"><xsl:value-of select="$gCollName" /></a>
         <xsl:text> </xsl:text>
       </xsl:if>
       <!-- <xsl:text> for</xsl:text> -->
@@ -391,7 +394,7 @@ REMOVE the below and see if it will call list_utils
             <li class="search-advanced-link-collection">
               <xsl:element name="a">
                 <xsl:attribute name="href">
-                  <xsl:text>/cgi/ls?a=page;page=advanced;coll_id=</xsl:text>
+                  <xsl:text>/cgi/ls?a=page;page=advanced;c=</xsl:text>
                   <xsl:value-of select="$coll_id"/>
                   <xsl:text>;q1=</xsl:text>
                   <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
@@ -701,7 +704,7 @@ REMOVE the below and see if it will call list_utils
             <xsl:text>Your search </xsl:text>
             <xsl:if test="$gIsCollSearch = 'TRUE'">
               <xsl:text>  in the collection </xsl:text>
-              <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}"><xsl:value-of select="$gCollName"/></a>
+              <a href="/cgi/ls?a=srchls;q1=*;c={$coll_id}"><xsl:value-of select="$gCollName"/></a>
               <xsl:text> </xsl:text>
             </xsl:if>
             <xsl:text> for "</xsl:text>
@@ -722,7 +725,7 @@ REMOVE the below and see if it will call list_utils
             <xsl:text>Your search </xsl:text>
             <xsl:if test="$gIsCollSearch = 'TRUE'">
               <xsl:text>  in the collection </xsl:text>
-              <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}"><xsl:value-of select="$gCollName"/></a>
+              <a href="/cgi/ls?a=srchls;q1=*;c={$coll_id}"><xsl:value-of select="$gCollName"/></a>
               <xsl:text> </xsl:text>
             </xsl:if>
             <xsl:text>returned zero hits.</xsl:text>
@@ -780,7 +783,7 @@ REMOVE the below and see if it will call list_utils
       <xsl:choose>
         <xsl:when test="$gIsCollSearch = 'TRUE'">
           <xsl:text>Your search in the collection </xsl:text>
-          <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}"><xsl:value-of select="$gCollName"/></a>
+          <a href="/cgi/ls?a=srchls;q1=*;c={$coll_id}"><xsl:value-of select="$gCollName"/></a>
           <xsl:text> returned zero results  </xsl:text>
         </xsl:when>
         <xsl:otherwise>
@@ -1491,13 +1494,18 @@ REMOVE the below and see if it will call list_utils
 
   <xsl:template name="get-page-title">
     <xsl:choose>
+      <xsl:when test="$gIsCollSearch = 'TRUE'">
+        <xsl:text>Collections: </xsl:text>
+        <xsl:value-of select="//OperationResults/CollName" />
+      </xsl:when>
       <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced='true'">
-        <xsl:text>Full-text Advanced Search Results</xsl:text>
+        <xsl:text>Full-text Advanced </xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>Full-text Search Results</xsl:text>
+        <xsl:text>Full-text </xsl:text>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:text>Search Results</xsl:text>
   </xsl:template>
   <!--XXX temporary overide of template in list_utilsxsl-->
   <!--#################################
@@ -1657,7 +1665,7 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="action_start_over">
     <xsl:choose>
       <xsl:when test="$gIsCollSearch = 'TRUE'">
-        <a class="btn" xhref="/cgi/ls?coll_id={$coll_id};a=srchls;q1=*">
+        <a class="btn" xhref="/cgi/ls?c={$coll_id};a=srchls;q1=*">
           <xsl:attribute name="href">
             <xsl:text>/cgi/ls</xsl:text>
             <xsl:text>?a=srchls;q1=*</xsl:text>
@@ -1666,7 +1674,7 @@ REMOVE the below and see if it will call list_utils
               <xsl:value-of select="." />
             </xsl:for-each> -->
             <xsl:if test="$coll_id">
-              <xsl:text>;coll_id=</xsl:text>
+              <xsl:text>;c=</xsl:text>
               <xsl:value-of select="$coll_id" />
             </xsl:if>
           </xsl:attribute>
@@ -1738,7 +1746,7 @@ REMOVE the below and see if it will call list_utils
         <xsl:otherwise>
 
           <form class="form-download-metadata" method="POST" action="/cgi/mb">
-            <input type="hidden" name="c" value="{//Param[@name='coll_id']}" />
+            <input type="hidden" name="c" value="{//Param[@name='c']}" />
             <input type="hidden" name="a" value="download" />
             <xsl:choose>
               <xsl:when test="//Param[@name='q1']">
@@ -1805,4 +1813,24 @@ REMOVE the below and see if it will call list_utils
       <xsl:text> Download Metadata</xsl:text>
     </button>
   </xsl:template>
+
+  <xsl:template name="status-update">
+    <!--ADDITION: Added: overlay is displayed here-->
+    <xsl:if test="$action='copyit' or $action='movit'or $action='copyitnc' or $action='movitnc' or $action='delit'">
+      <div class="alert alert-success">
+        <xsl:call-template name="OperationResults" />
+      </div>
+    </xsl:if>
+    <xsl:if test="//CollNumItems != //CollNumItemsIndexed">
+      <div class="alert alert-warning">
+        The collection index is out of date and has been queued to be indexed, usually within 48 hours.
+      </div>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="BuildItemSelectedOwnerActions">
+      <a href="/cgi/mb?c={$coll_id};a=listis;adm=1" class="btn btn-small btn-inverse" style="float: right; margin-right: 4rem">Manage Collection</a>
+  </xsl:template>
+
+
 </xsl:stylesheet>

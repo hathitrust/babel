@@ -33,6 +33,8 @@
   <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
   <CollectionSizesJs><?COLLECTION_SIZES_JS?></CollectionSizesJs>  
 
+  <EditCollectionWidget><?EDIT_COLLECTION_WIDGET?></EditCollectionWidget>
+  
   <!-- Main -->
   <HeaderSearchSelect><?HEADER_SEARCH_SELECT?></HeaderSearchSelect>
   <OperationResults><?OPERATION_RESULTS?></OperationResults>

@@ -35,6 +35,8 @@ use Operation::Status;
 use LS::View;
 use LS::Result::FullText;
 
+use LS::Operation::CollectionUtil;
+
 
 sub new
 {
@@ -89,6 +91,8 @@ sub execute_operation
     my $cgi = $C->get_object('CGI');
     my $act = $self->get_action();
     ASSERT(defined($act), qq{action not defined});
+
+    LS::Operation::CollectionUtil::test_collection($C, $act);
 
     # Result object
 

@@ -42,7 +42,7 @@
    'pdate_end'    => '\d+',
    'srch'   =>'.*',
    'heldby' =>'.*',
-   'coll_id'   =>'.*',
+   'c'   =>'.*',
   );
 
 # Specification of global *database* operations to be executed before
