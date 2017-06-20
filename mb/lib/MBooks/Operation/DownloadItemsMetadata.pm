@@ -202,7 +202,6 @@ sub execute_operation
     my $include_hashref; 
     if ( $rs ) {
         my $result_id_arrayref = $rs->get_result_ids();
-        print STDERR "AHOY AHOY AHOY $num_items :: " . scalar @$result_id_arrayref . "\n";
         unless ( scalar @$result_id_arrayref == $num_items ) {
             $include_hashref = { map { $_ => 1 } @$result_id_arrayref };
             require HTML::Entities;
