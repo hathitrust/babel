@@ -328,6 +328,7 @@
             // Custom page title
             if (data.title) {
                 this.options.title = data.title;
+                this.options.post_title = this.options.title;
                 delete data.title;
             }
 
