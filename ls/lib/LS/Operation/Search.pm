@@ -41,6 +41,7 @@ use LS::Searcher::Facets;
 use LS::Interleaver::Balanced;
 use LS::Interleaver::AA;
 
+use LS::Operation::CollectionUtil;
 
 sub new
 {
@@ -95,6 +96,8 @@ sub execute_operation
 
     my $cgi = $C->get_object('CGI');
     my $act = $self->get_action();
+
+    LS::Operation::CollectionUtil::test_collection($C, $act);
 
     my $AB_config=$C->get_object('AB_test_config');
     my $use_interleave=$AB_config->{'_'}->{'use_interleave'};

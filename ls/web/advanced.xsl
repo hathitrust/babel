@@ -28,6 +28,16 @@
     </xsl:if>
   </xsl:variable>
 
+  
+  <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']"/>
+  <xsl:variable name="isCollSearch">
+
+    <!--    <xsl:if test="(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']) and (normalize-space($coll_id) != '') ">-->
+    
+    <xsl:if test="normalize-space($coll_id) != ''">
+      <xsl:text>True</xsl:text>
+    </xsl:if>
+  </xsl:variable>
 
   <!-- ## end Global Variables ##-->
 
@@ -56,13 +66,31 @@
         <div class="betasearch">
           <div class="AdvancedLabelRow">
 
-            <span id="AdvancedCatalogLink">
-              <xsl:text>Prefer to search words</xsl:text>
-              <em> about</em>
-              <xsl:text> the items in an</xsl:text>
-              <a href="http://catalog.hathitrust.org/Search/Advanced"> Advanced Catalog Search?</a>
-            </span>
-            <h2 id="advancedLabel">Advanced  Full-text Search:</h2>
+            <xsl:if test="$isCollSearch != 'True'">
+              <span id="AdvancedCatalogLink">
+                <xsl:text>Prefer to search words</xsl:text>
+                <em> about</em>
+                <xsl:text> the items in an</xsl:text>
+                <a href="http://catalog.hathitrust.org/Search/Advanced"> Advanced Catalog Search?</a>
+              </span>
+            </xsl:if>
+            <h2 id="advancedLabel">Advanced  Full-text Search
+	    <xsl:choose>
+	      <xsl:when test="$isCollSearch = 'True'">
+		
+		<span class="big_coll_name">
+		  <xsl:text>in the collection </xsl:text>
+      <a href="/cgi/ls?a=srchls;q1=*;c={$coll_id}">
+		    <xsl:value-of select="/MBooksTop/AdvancedSearch/COLL_INFO/COLL_NAME"/>
+		  </a>
+		</span>
+		
+	      </xsl:when>
+	      <xsl:otherwise>
+		<xsl:text>:</xsl:text>
+	      </xsl:otherwise>
+	    </xsl:choose>
+	    </h2>
             <!--XXX should be pi but hardcode for now-->
             <div id="AdvancedExplanation">Search information <em>within or about</em> an item</div>
             <!--XXX should probably have a PI instead of being hard-coded-->
@@ -84,8 +112,14 @@
               <!--
               Show relevance data (dev only)  <input type="checkbox" name="debug" value="explain"/>
               -->
-                  <input type="hidden" name="a" value="srchls" />
-
+              <input type="hidden" name="a" value="srchls" />
+	      <xsl:if test="$isCollSearch = 'True' ">
+		<input type="hidden" name="c">
+		  <xsl:attribute name="value">
+		    <xsl:value-of select="$coll_id"/>
+		  </xsl:attribute>
+		</input>
+	      </xsl:if>
               <!--XXX lets start by converting the query rows from a table to css and then do the rest-->
 
                 <xsl:for-each select="AdvancedSearch/groups/group">
@@ -174,8 +208,8 @@
               <legend class="limitTo">Limit to: </legend>
 
 
-           <div id="limits">
-             <br clear="both"></br>
+           <div id="limits" style="margin-top: 0">
+             <!-- <br clear="both"></br> -->
              <!-- XXX if logged in add a limit to my institution checkbox
                   TODO: check tab order and other accessibility maybe get ux to help
                   -->
@@ -210,6 +244,22 @@
             </span>
             <div id="yopErrMsg"></div>
             
+            <xsl:if test="false and //AdvancedSearch/facets/checkable/facet">
+              <div id="checkableFacets" style="margin-top: 1em; font-size: 14px">
+                <p>Selected facets:</p>
+                <ul>
+                  <xsl:for-each select="//AdvancedSearch/facets/checkable/facet">
+                    <li>
+                      <label>
+                        <input type="checkbox" name="facet" value="{@term}:{.}" checked="checked" />
+                        <xsl:text> </xsl:text>
+                        <xsl:value-of select="@label" />: <xsl:value-of select="." />
+                      </label>
+                    </li>
+                  </xsl:for-each>
+                </ul>
+              </div>
+            </xsl:if>
             
             
             <div id="multiFacets">
@@ -228,6 +278,24 @@
                   <xsl:apply-templates select="AdvancedSearch/facets/formats_list/*" mode="copy-elements" />
                 </select>
               </div>
+
+              <xsl:if test="//AdvancedSearch/facets/checkable/facet">
+                <div class="multiFacets" id="checkableFacets">
+                  <p>Additional facets:</p>
+                  <ul>
+                    <xsl:for-each select="//AdvancedSearch/facets/checkable/facet">
+                      <li>
+                        <label>
+                          <input type="checkbox" name="facet" value="{@term}:{.}" checked="checked" />
+                          <xsl:text> </xsl:text>
+                          <strong><xsl:value-of select="@label" /></strong>: <xsl:value-of select="." />
+                        </label>
+                      </li>
+                    </xsl:for-each>
+                  </ul>
+                </div>
+              </xsl:if>
+
             </div>
           </div><!-- end multiFacets -->
         </fieldset>

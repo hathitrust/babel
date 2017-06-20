@@ -62,6 +62,13 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     my $field;
     my $qParams="";
     my $xml;
+
+    # add collection info
+    my $coll_info = __get_coll_info($C,$act);
+    if(defined($coll_info))
+    {
+	    $xml.= wrap_string_in_tag($coll_info, 'COLL_INFO');
+    }
     
     # do we want to allow more fields than the number specified in the defaults?
     my $MAXFIELDS  = scalar(@{$default_fields});
@@ -131,7 +138,17 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     $facets .=  wrap_string_in_tag($list,'formats_list') . "\n";         
 #    $list = getDropdown($cgi,'language',$language_list);
     $list = getDropdown($cgi,'language008_full',$language_list);
-    $facets .=  wrap_string_in_tag($list,'language_list') . "\n";         
+    $facets .=  wrap_string_in_tag($list,'language_list') . "\n";
+
+    my $checkable_facets;
+    foreach my $facet ( $cgi->multi_param('facet') ) {
+        next if ( $facet =~ m,format:, || $facet =~ m,language008_full:, );
+        my ( $term, $value ) = split(/:/, $facet);
+        my $label = $fconfig->{facet_mapping}{$term};
+        $value =~ s,\042,,g;
+        $checkable_facets .= qq{<facet term="$term" label="$label">$value</facet>};
+    }
+    $facets .= "<checkable>$checkable_facets</checkable>" if ( $checkable_facets );
 
     $xml.=wrap_string_in_tag($facets,'facets') . "\n";         
     return $xml;
@@ -272,6 +289,13 @@ sub getDropdown
     {
         $param_hash->{$param}++;
     }
+    # pick up any facets declared via the "facet" parameter
+    foreach my $value ( $cgi->multi_param('facet') ) {
+        if ( $value =~ m,$list_type:, ) {
+            $value =~ s,\042,,g;
+            $param_hash->{$value}++;
+        }
+    }
     my $FACET_SELECTED;
 
     # check if option is in cgi parameters
@@ -356,6 +380,42 @@ sub getRow
     $row .= wrap_string_in_tag($q,'q') . "\n";         
     return $row;
 }
+
+# ---------------------------------------------------------------------
+
+sub __get_coll_info
+{
+    my $C     = shift;
+    my $act   = shift;
+    my $cgi = $C->get_object('CGI');
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    
+    my $coll_info;
+    my $coll_desc;
+    my $coll_name;
+    my $coll_status;
+    
+    if(defined ($cgi->param('c')))  {
+	my $coll_id = $cgi->param('c');
+	#check for empty or space only param
+	$coll_id=~s/s+//g;
+	if ($coll_id ne ''){
+	    if($co->get_shared_status($coll_id) ne "public")
+	    {
+		return($coll_info);
+	    }
+	    $coll_desc   = $co->get_description($coll_id);
+	    $coll_name   = $co->get_coll_name($coll_id);
+	    $coll_info ='<COLL_DESC>'. $coll_desc . '</COLL_DESC>';
+	    $coll_info .='<COLL_NAME>'. $coll_name . '</COLL_NAME>';
+	}
+    }
+    
+    return($coll_info);
+	
+}	
+# ---------------------------------------------------------------------
+
 
 
 

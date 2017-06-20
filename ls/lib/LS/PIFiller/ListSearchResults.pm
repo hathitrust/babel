@@ -286,8 +286,14 @@ sub handle_OPERATION_RESULTS_PI
 
     my $s;
 
-    $s .= wrap_string_in_tag($coll_name, 'CollName');
-    $s .= wrap_string_in_tag($coll_href, 'CollHref');
+    my $cgi = $C->get_object('CGI');
+    if ( $cgi->param('c') ) {
+        $s .= _handle_mb_operations($C, $act, $piParamHashRef);
+    } else {
+        $s .= wrap_string_in_tag($coll_name, 'CollName');
+        $s .= wrap_string_in_tag($coll_href, 'CollHref');
+    }
+
 
     return $s;
 }
@@ -569,11 +575,55 @@ sub handle_SEARCH_RESULTS_PI
     #need to fix any xml chars before output
     
   #  $processed =clean_for_xml($processed);
+    # add collection info
+    my $coll_info = __get_coll_info($C,$act);
+    if(defined($coll_info))
+    {
+	    $output.= wrap_string_in_tag($coll_info, 'COLL_INFO');
+    }
     
     return $output;
 }
+# ---------------------------------------------------------------------
 
-
+sub __get_coll_info
+{
+    my $C     = shift;
+    my $act   = shift;
+    my $cgi = $C->get_object('CGI');
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    
+    my $coll_info;
+    my $coll_desc;
+    my $coll_name;
+    my $coll_status;
+    my $coll_featured;
+    my $coll_contact_info;
+    
+    if(defined ($cgi->param('c')))  {
+    	my $coll_id = $cgi->param('c');
+        print STDERR "AHOY COLLECTION: $coll_id\n";
+    	#check for empty or space only param
+    	$coll_id=~s/s+//g;
+    	if ($coll_id ne ''){
+    	    if(0 && $co->get_shared_status($coll_id) ne "public")
+    	    {
+    		  return($coll_info);
+    	    }
+    	    $coll_desc   = $co->get_description($coll_id);
+    	    $coll_name   = $co->get_coll_name($coll_id);
+            $coll_featured = $co->get_coll_featured($coll_id);
+            $coll_contact_info = $co->get_coll_contact_info($coll_id);
+    	    $coll_info ='<COLL_DESC>'. $coll_desc . '</COLL_DESC>';
+    	    $coll_info .='<COLL_NAME>'. $coll_name . '</COLL_NAME>';
+            $coll_info .= '<COLL_FEATURED>' . $coll_featured . '</COLL_FEATURED>' if ( $coll_featured );
+            $coll_info .= '<COLL_CONTACT_INFO>' . $coll_contact_info . '</COLL_CONTACT_INFO>' if ( $coll_contact_info );
+    	}
+    }
+    
+    return($coll_info);
+	
+}	
 # ---------------------------------------------------------------------
 
 =item handle_QUERY_STRING_PI
@@ -608,6 +658,8 @@ sub handle_HELDBY_PI
     my $xml = wrap_string_in_tag($url,'unselectURL') . "\n";
     return $xml;
 }
+
+# ---------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------
@@ -670,8 +722,30 @@ sub pdate_selected
               );
 }
 
-#----------------------------------------------------------------------    
+# ---------------------------------------------------------------------
+sub isFacetSelected
+{
+    my $cgi_facets  = shift;
+    my $facet_name  = shift;
+    my $facet_value = shift;
+    #if there is a cgi facet with matching name, verify that they have same value
+    foreach my $facet (@{$cgi_facets})
+    {
+	my ($cgi_facet_name,@rest)=split(/\:/,$facet);
+	my $cgi_facet_value = join (':', @rest);
+	if ($facet_name eq $cgi_facet_name)
+	{
+	    if (doFacetValuesMatch($facet_value,$cgi_facet_value) eq "true")
+	    {
+		return ("true");
+	    }                    
+	}
+    }
+}
 
+
+
+# ---------------------------------------------------------------------
 sub get_selected_unselected 
 
 {
@@ -680,39 +754,13 @@ sub get_selected_unselected
 
     my @selected;
     my $unselected={};
-
-    #XXX hack to cause pdate facet to show up as selected if pdate was used in advanced search
-    #XXX if facet_hash is empty because we got zero results
+    my $EMPTY_FACETS="true";
+    my @cgi_facets = $cgi->multi_param('facet');
+  
     
     foreach my $facet_name (keys %{$facet_hash})
     {
-        #--------------------------------------------------
-        #XXX hack for pdate and no results
-        # how do we know no results?
-        # 
-        
-#        if ($facet_name eq 'publishDateRange')
-#          {
-#            # pdate param removed by now and put back in Facet:publishDateRange
-#            my @facets = $cgi->param('facet');
-#            my $pdate= $facets[0];
-#            if (defined($pdate) && $pdate ne "")
-#            {
-                
-#                # need test for zero results and pdate param
-#                my $hash={};
-#                $hash->{'selected'}   = "true";
-#                $hash->{'count'}      = 0;
-#                $hash->{'facet_name'} = $facet_name;
-                
-#                my ($junk, $facet_value) = split(/\:/,$pdate); #fix this
-#                $hash->{'value'}      = clean_for_xml($facet_value);
-#                $hash->{'unselect_url'}=__get_unselect_url($hash,$cgi);
-#                push (@selected,$hash);
-#            }
-#        }
-        
-        my $ary_for_this_facet_name=[];
+	my $ary_for_this_facet_name=[];
         my $facet_list_ref=$facet_hash->{$facet_name};
         foreach my $facet_ary (@{$facet_list_ref})
         {
@@ -725,27 +773,14 @@ sub get_selected_unselected
             # clean facet data from json Solr response so we can output it in XML
             $hash->{'value'}      = clean_for_xml($facet_value);
 
-
-
-            my @cgi_facets = $cgi->multi_param('facet');
-            if (@cgi_facets){    
-                # XXX move this loop into isFacetSelected
-                # test the facet names for a match first before comparing the values and
-                # then just compare values!
-                foreach my $facet (@cgi_facets)
-                {
-                    my ($cgi_facet_name,@rest)=split(/\:/,$facet);
-                    my $cgi_facet_value = join (':', @rest);
-                    if ($facet_name eq $cgi_facet_name)
-                    {
-                        if (isFacetSelected($facet_value,$cgi_facet_value)eq "true")
-                        {
-                            $hash->{'selected'} = "true";
-                        }                    
-                    }
-                }
-            }
-            
+	    if (@cgi_facets)
+	    {
+	     	if (isFacetSelected(\@cgi_facets,$facet_name,$facet_value) eq "true")
+	     	{
+		    $hash->{'selected'} = "true";
+	     	}
+	    }
+	    
             if ($hash->{'selected'} eq "true")
             {
                 # add the unselect url to the hash
@@ -761,15 +796,46 @@ sub get_selected_unselected
             # unselected needs array of array of hashes
             # facet1->hashes for facet 1
             # facet2->hashes for facet 2
-
             push (@{$ary_for_this_facet_name},$hash); 
         }
-        $unselected->{$facet_name}=$ary_for_this_facet_name;
+	if (scalar(@{$facet_list_ref}) >0)
+	{
+	    $EMPTY_FACETS="false";
+	}
+	$unselected->{$facet_name}=$ary_for_this_facet_name;
+    }
+    # Handle search with no results for sticky facets
+    if ($EMPTY_FACETS eq "true")
+    {
+	@selected = get_selected_from_cgi($cgi,\@cgi_facets)
     }
     return (\@selected,$unselected);
 }
+#----------------------------------------------------------------------
+sub get_selected_from_cgi
+{
+    my $cgi = shift;
+    my $cgi_facets  = shift;
+    my @selected;
 
-
+          
+    foreach my $facet (@{$cgi_facets})
+    {
+	my $hash={};
+	my ($cgi_facet_name,@rest)=split(/\:/,$facet);
+	my $facet_value = join (':', @rest);
+	# remove leading/trailing quotes XXX is this right place?
+	$facet_value=~s/^\"//g;
+	$facet_value=~s/\"$//g;
+	# clean facet data from json Solr response so we can output it in XML
+	$hash->{'value'}      = clean_for_xml($facet_value);
+	$hash->{'facet_name'} = $cgi_facet_name;
+	$hash->{'unselect_url'}=__get_unselect_url($hash,$cgi);
+	push (@selected,$hash);
+    }
+    return (@selected);
+}	
+#----------------------------------------------------------------------    
 sub make_selected_facets_xml
 {
     my $selected = shift;
@@ -1149,6 +1215,66 @@ sub handle_ADVANCED_SEARCH_PI
   }
 
 # ---------------------------------------------------------------------
+
+=item handle_EDIT_COLLECTION_WIDGET_PI
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_EDIT_COLLECTION_WIDGET_PI
+  : PI_handler(EDIT_COLLECTION_WIDGET)
+{
+  my ($C, $act, $piParamHashRef) = @_;
+
+  my $cgi = $C->get_object('CGI');
+  my $coll_id = $cgi->param('c');
+  return unless ( $coll_id );
+
+  my $auth = $C->get_object('Auth');
+  my $user_id = $auth->get_user_name($C);
+
+
+  my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+
+  my $coll_owned_by_user = "no";
+  # what if the call fails? do we really want it set to no if call failed?
+  if ($co->coll_owned_by_user($coll_id, $user_id))
+  {
+      $coll_owned_by_user = "yes" ;
+  }
+  my $status =  $co->get_shared_status($coll_id);
+  my $coll_name = $co->get_coll_name($coll_id);
+  if (length($coll_name) > 100) {
+      $coll_name = substr($coll_name, 0, 100);
+  }
+  my $spaced_coll_name = getSpacedCollName($coll_name, 16);
+  if (length($spaced_coll_name) > 100) {
+      $spaced_coll_name = substr($spaced_coll_name, 0, 100);
+  }
+  my $coll_desc = $co->get_description($coll_id);
+  if (length($coll_desc) > 255) {
+      $coll_desc = substr($coll_desc, 0, 255);
+  }
+
+  # is this even possible?
+  my $is_temporary = 0;
+
+  my $s = "";
+  $s .= wrap_string_in_tag($coll_id, 'CollId');
+  $s .= wrap_string_in_tag($coll_name, 'CollName');
+  $s .= wrap_string_in_tag($spaced_coll_name, 'SpacedCollName');
+  $s .= wrap_string_in_tag($coll_desc, 'CollDesc');
+  $s .= wrap_string_in_tag($status, 'Status');
+  $s .= wrap_string_in_tag($coll_owned_by_user, 'OwnedByUser');
+  $s .= wrap_string_in_tag($status, 'PublicStatus');
+  $s .= wrap_string_in_tag($is_temporary, 'Temporary');
+
+  return $s;
+}
+
+# ---------------------------------------------------------------------
 #======================================================================
 #
 #              P I    H a n d l e r   H e l p e r s
@@ -1365,6 +1491,10 @@ sub getUnselectAdvancedClauseURL
     $temp_cgi->delete("$field");
 
     my $url=$temp_cgi->self_url();
+    if ( $url !~ m,q\d+=,) {
+        # no query parameters
+        $url .= ";q1=*";
+    }
     return $url;
 }
 
@@ -1385,7 +1515,8 @@ sub __get_unselect_url
 {
     my $facet_hash = shift;
     #add qoutes to the facet string
-    my $facet_string=$facet_hash->{facet_name} . ':"' . $facet_hash->{'value'}. '"';
+    my $quoted_facet_string=$facet_hash->{facet_name} . ':"' . $facet_hash->{'value'}. '"';
+    my $facet_string = $facet_hash->{facet_name} . ':' . $facet_hash->{value};
     # convert from xml friendly to url friendly 
 
     Utils::remap_cers_to_chars(\$facet_string);       
@@ -1406,7 +1537,7 @@ sub __get_unselect_url
     foreach my $f (@facets)
     {
         Utils::remap_cers_to_chars(\$f);       
-        if ($facet_string eq $f)
+        if ($facet_string eq $f || $quoted_facet_string eq $f)
         {
             $debug=$1;
         }
@@ -1460,7 +1591,8 @@ sub clean_for_xml
 }
 
 
-sub isFacetSelected
+
+sub doFacetValuesMatch
 {
 
     my $facet_value = shift;
@@ -2093,6 +2225,195 @@ sub add_result_arrays
     }
     return $g_hashref
 }
+
+sub _handle_mb_operations {
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+    return unless ( $coll_id );
+
+    my $ses = $C->get_object('Session');
+    my $facade_data = $ses->get_persistent('facade');
+    my $copy_items_hashref =
+     $$facade_data{mb}{copy_items_data};
+
+    $copy_items_hashref = $act->get_persistent_facade_member_data($C, 'copy_items_data');
+
+
+    my $coll_href = make_coll_href($cgi,$coll_id);
+
+    # Generate href for the link to the collection things were copied/moved to
+    # This should always be a list items
+    my $to_coll_id = $copy_items_hashref->{'to_coll_id'};
+    my $to_coll_href = make_coll_href($cgi, $to_coll_id);
+
+    # get coll_name and to_coll_name
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    my $coll_name = $co->get_coll_name ($coll_id);
+    my $to_coll_name;
+
+    if (defined ($to_coll_id)) {
+     $to_coll_name = $co->get_coll_name ($to_coll_id);
+    }
+
+    my $s;
+
+    # can we get the indexed counts?
+    require LS::Searcher::FullText;
+    require LS::Result::FullText;
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
+    my $searcher = new LS::Searcher::FullText($engine_uri, undef, 1);
+    my $query_string = qq{q=*&fq=coll_id:$coll_id&fl=id&start=0&rows=0};
+    my $rs = new LS::Result::FullText();
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
+    my $num_indexed = $rs->get_num_found();
+
+    $s .= wrap_string_in_tag($coll_name, 'CollName');
+    $s .= wrap_string_in_tag($coll_href, 'CollHref');
+    $s .= wrap_string_in_tag($co->count_all_items_for_coll($coll_id), 'CollNumItems');
+    $s .= wrap_string_in_tag($num_indexed, 'CollNumItemsIndexed');
+    $s .= wrap_string_in_tag($to_coll_name, 'ToCollName');
+    $s .= wrap_string_in_tag($to_coll_id, 'ToCollID');
+    $s .= wrap_string_in_tag($to_coll_href, 'ToCollHref');
+
+
+    # get counts and info on items operated on
+
+    my $valid_ids_ref = $copy_items_hashref->{'valid_ids'};
+    my $action_type = $copy_items_hashref->{'action'};
+
+    my $already_in_coll2_ref = $copy_items_hashref->{'already_in_coll2'};
+    my $key = "";
+    my $valid_count = 0;
+    my $already_count = 0;
+    my $id = "";
+
+    foreach $id (@$valid_ids_ref) {
+     $valid_count++;
+     $s .= wrap_string_in_tag($id, 'ValidId');
+    }
+
+    foreach $id (@$already_in_coll2_ref) {
+     $already_count++;
+     $s .= wrap_string_in_tag($id, 'AlreadyInColl2');
+    }
+
+    $s .= wrap_string_in_tag($valid_count, 'IdsAdded');
+    $s .= wrap_string_in_tag($already_count, 'AlreadyInColl2Count');
+    $s .= wrap_string_in_tag($action_type, 'CopyActionType');
+
+    # my $delete_items_hashref = $$facade_data{mb}{delete_items_data};
+    my $delete_items_hashref = $act->get_persistent_facade_member_data($C, 'delete_items_data');
+
+    my $del_from_id = $delete_items_hashref->{'coll_id'};
+    my $del_from_name = '';
+    if (defined ($del_from_id)) {
+     $del_from_name = $co->get_coll_name($del_from_id);
+    }
+
+    my $del_action_type = $delete_items_hashref->{'action'};
+    my $del_valid_ids = $delete_items_hashref->{'valid_ids'};
+    my $del_valid_count = 0;
+
+    # set view if this is from a search result!  XXX start with undo
+    # param being a param for action where do we get it if this is a
+    # redirect list rather than the initial action?  i.e. delit is
+    # followed by redirect to listit or listsrch Generalized undo
+    # would have to have the action or op put something in the
+    # persistent data, probably somewhere in execute operation so that
+    # a redirect UI action could then retrieve it.
+
+    my $undo_cgi = new CGI($cgi);
+    $undo_cgi->param('undo', 'delit');
+    $undo_cgi->param('a', 'copyit');
+    $undo_cgi->param('c2', "$del_from_id");
+    # delete any ids in cgi
+    $undo_cgi->delete('id');
+    # add back ids that were deleted from collection
+    $undo_cgi->param('id', @$del_valid_ids);
+    # if the items were deleted from a search result set
+    # page=srchresult (otherwise copyit will go to list items instead
+    # of back to search results)
+    if ($cgi->param('a') eq 'listsrch') {
+     $undo_cgi->param('page', 'srch');
+    }
+
+    my $undo_del_href = CGI::self_url($undo_cgi);
+
+    my $d = '';
+    $d .= wrap_string_in_tag($del_action_type, 'DelActionType');
+    $d .= wrap_string_in_tag($del_from_id, 'DeleteFromCollId');
+    $d .= wrap_string_in_tag($del_from_name, 'DeleteFromCollName');
+    foreach $id (@$del_valid_ids) {
+     $del_valid_count++;
+     $d .= wrap_string_in_tag($id, 'DelValidId');
+    }
+
+    $d .= wrap_string_in_tag($del_valid_count, 'DelValidCount');
+    $d .= wrap_string_in_tag($undo_del_href, 'UndoDelHref');
+    $s .= wrap_string_in_tag($d, 'DeleteItemsInfo');
+
+    # check to see copy items was called with an undo param
+    my $undo_op = $copy_items_hashref->{'undo_op'};
+
+    $s .= wrap_string_in_tag($undo_op, 'UndoOp');
+
+    open(OUT, ">", "/tmp/mb.action.xml");
+    chmod(0666, "/tmp/mb.action.xml");
+    print OUT $s;
+    close(OUT);
+
+    return $s;
+}
+
+sub make_coll_href
+{
+    my $cgi = shift;
+    my $coll_id = shift;
+
+    my $temp_cgi = new CGI ({}) ;
+
+    $temp_cgi->param('c', $coll_id);
+    $temp_cgi->param('a', 'listis');
+    $temp_cgi->param('sz', scalar $cgi->param('sz'));
+    $temp_cgi->param('debug', scalar $cgi->param('debug'));
+    if (! $cgi->param('sort') =~m,rel,)
+    {
+        $temp_cgi->param('sort', scalar $cgi->param('sort'));
+    }
+    my $coll_href = CGI::self_url($temp_cgi);
+
+    return $coll_href;
+}
+
+# ---------------------------------------------------------------------
+sub getSpacedCollName
+{
+    my $coll_name = shift;
+    my $max_len = shift;
+    my @spaced_words;
+    my @words = split(/\s+/, $coll_name, 1000);
+
+    foreach my $word (@words)
+    {
+        my $l = length($word);
+        if ($l > $max_len)
+        {
+            my $first = substr($word, 0, $max_len);
+            my $last = substr($word, $max_len);
+            my $spaced = $first . " " . $last;
+            push (@spaced_words, $spaced);
+        }
+        else
+        {
+            push (@spaced_words, $word);
+        }
+    }
+    my $out = join(" ", @spaced_words);
+    return $out;
+}
+
 #----------------------------------------------------------------------
 sub __truncate_ary_ref
 {

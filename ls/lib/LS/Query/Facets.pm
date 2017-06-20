@@ -366,9 +366,19 @@ sub get_Solr_query_string
         $EXPLAIN='&debugQuery=on';
     }
 
+    my $COLL='';
 
+    if(defined ($cgi->param('c')))  {
+	my $coll_id = $cgi->param('c');
+	#check for empty or space only param
+	$coll_id=~s/s+//g;
+	if ($coll_id ne ''){
+	    $COLL='&fq=coll_id:' . $coll_id;
+	}
+    }
+    
 
-    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ .$HELDBY . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY .$DATE_RANGE .  $EXPLAIN;    
+    my $solr_query_string = $Q . $ADVANCED . $FL . $FQ .$HELDBY . $VERSION . $START_ROWS . $INDENT . $FACETS . $WRITER . $FACETQUERY .$FACET_OR_QUERY .$DATE_RANGE .  $EXPLAIN . $COLL;    
     
     # for debugging  we need a debug switch to hide the dismax stuff if we want it hidden
     #    my $solr_query_string = 'q=id:uc1.$b333205' . $WRITER;

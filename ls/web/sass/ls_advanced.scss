@@ -232,6 +232,24 @@ label.xSearchLabel
            float:left;
  }
 
+#checkableFacets {
+  float: left;
+  margin-left: 5em;
+  p {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+
+  ul {
+    padding-left: 0;
+    margin-top: 0;
+  }
+
+  li {
+    list-style-type: none;
+  }
+}
+
 select.orFacet{
                 margin-left:0;
  }
