@@ -72,7 +72,7 @@
             <xsl:call-template name="build-idp-list" />
             
             <div id="no-institution-listed">
-              <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">Don't see your institution listed? &#x00bb;</a>
+              <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">Don't see your institution listed? &#x27a4;</a>
             </div>
           </div>
         </div>
@@ -95,12 +95,12 @@
             <div>
               <h3 class="friend-cell-title">Not with a partner institution?</h3>
               <p class="friend-cell-text">
-                <xsl:text>You can create or log in with a guest </xsl:text>
-                <xsl:call-template name="build-friend-link">
+                <xsl:text>You can log in with a guest "Friend" </xsl:text>
+                <!-- <xsl:call-template name="build-friend-link">
                   <xsl:with-param name="link-text">
                     <xsl:value-of select="'Friend'" />
                   </xsl:with-param>
-                </xsl:call-template>
+                </xsl:call-template> -->
                 <xsl:text> account. You won't be able to download PDFs, but you will be able to create and share your own collections.</xsl:text>
               </p>
             </div>
@@ -131,9 +131,12 @@
             <p>
               <xsl:call-template name="build-friend-link">
                 <xsl:with-param name="link-text">
-                  <xsl:value-of select="'Create or login with a guest Friend account for limited access to items and features. &#x00bb;'" />
+                  <xsl:value-of select="'Login with a guest Friend account for limited access to items and features. &#x27a4;'" />
                 </xsl:with-param>
               </xsl:call-template>
+            </p>
+            <p>
+              <a href="https://friend.weblogin.umich.edu/friend/">Need a "Friend" account?</a>
             </p>
           </div>
         </div>
