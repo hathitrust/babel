@@ -1823,7 +1823,7 @@ REMOVE the below and see if it will call list_utils
     </xsl:if>
     <xsl:if test="//CollNumItems != //CollNumItemsIndexed">
       <div class="alert alert-warning">
-        The collection index is out of date and has been queued to be indexed, usually within 48 hours.
+        The collection index is out of date, and search results may be inaccurate. This collection has been queued to be indexed, which is usually done within 48 hours.
       </div>
     </xsl:if>
   </xsl:template>

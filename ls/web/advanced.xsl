@@ -29,7 +29,7 @@
   </xsl:variable>
 
   
-  <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']"/>
+  <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']"/>
   <xsl:variable name="isCollSearch">
 
     <!--    <xsl:if test="(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='coll_id']) and (normalize-space($coll_id) != '') ">-->
@@ -80,7 +80,7 @@
 		
 		<span class="big_coll_name">
 		  <xsl:text>in the collection </xsl:text>
-      <a href="/cgi/ls?a=srchls;q1=*;coll_id={$coll_id}">
+      <a href="/cgi/ls?a=srchls;q1=*;c={$coll_id}">
 		    <xsl:value-of select="/MBooksTop/AdvancedSearch/COLL_INFO/COLL_NAME"/>
 		  </a>
 		</span>
@@ -114,7 +114,7 @@
               -->
               <input type="hidden" name="a" value="srchls" />
 	      <xsl:if test="$isCollSearch = 'True' ">
-		<input type="hidden" name="coll_id">
+		<input type="hidden" name="c">
 		  <xsl:attribute name="value">
 		    <xsl:value-of select="$coll_id"/>
 		  </xsl:attribute>
