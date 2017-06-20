@@ -379,7 +379,7 @@ REMOVE the below and see if it will call list_utils
         <button value="srch" id="srch" name="a" type="submit" class="btn">Find</button>
         <input type="hidden">
           <xsl:attribute name="name">
-            <xsl:text>coll_id</xsl:text>
+            <xsl:text>c</xsl:text>
           </xsl:attribute>
           <xsl:attribute name="value">
             <xsl:value-of select="$coll_id"/>
@@ -1665,7 +1665,7 @@ REMOVE the below and see if it will call list_utils
   <xsl:template name="action_start_over">
     <xsl:choose>
       <xsl:when test="$gIsCollSearch = 'TRUE'">
-        <a class="btn" xhref="/cgi/ls?c={$coll_id};a=srchls;q1=*">
+        <a class="btn">
           <xsl:attribute name="href">
             <xsl:text>/cgi/ls</xsl:text>
             <xsl:text>?a=srchls;q1=*</xsl:text>

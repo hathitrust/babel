@@ -71,7 +71,7 @@ head.ready(function() {
     $btn.find("button").attr("disabled", "disabled");
     var $progress = $form.find("[data-role=progress]").addClass("active");
 
-    var collid = (location.search.match(/coll_id=(\d+)/))[1];
+    var collid = (location.search.match(/c=(\d+)/))[1];
     var cookieName = "download" + collid;
 
     var downloadTimeout;
