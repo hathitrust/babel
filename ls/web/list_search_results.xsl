@@ -1821,9 +1821,56 @@ REMOVE the below and see if it will call list_utils
         <xsl:call-template name="OperationResults" />
       </div>
     </xsl:if>
-    <xsl:if test="//CollNumItems != //CollNumItemsIndexed">
+    <xsl:if test="//AllItemsIndexed != 'TRUE'">
+      <xsl:variable name="num_in_collection" select="//NumItemsInCollection"/>
+      <xsl:variable name="num_not_indexed" select="//NumNotIndexed"/>
+      <xsl:variable name="num_deleted" select="//NumDeleted"/>
+      <xsl:variable name="num_queued" select="$num_not_indexed - $num_deleted"/>
+
+      <xsl:variable name="num_not_indexed_verb">
+        <xsl:choose>
+          <xsl:when test="$num_not_indexed > 1">
+            <xsl:text> items are </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text> item is </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+
+      <xsl:variable name="num_queued_verb">
+        <xsl:choose>
+          <xsl:when test="$num_queued > 1">
+            <xsl:text> items are </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text> item is </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+
+      <xsl:variable name="num_deleted_verb">
+        <xsl:choose>
+          <xsl:when test="$num_deleted > 1">
+            <xsl:text> items have been</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text> item has been</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
       <div class="alert alert-warning">
-        The collection index is out of date, and search results may be inaccurate. This collection has been queued to be indexed, which is usually done within 48 hours.
+        <xsl:text>Of </xsl:text><xsl:value-of select="$num_in_collection"/><xsl:text> items in this collection, </xsl:text>
+        <xsl:value-of select="$num_not_indexed"/><xsl:value-of select="$num_not_indexed_verb"/><xsl:text>not available for searching. </xsl:text>
+
+        <xsl:if test="$num_deleted > 0">
+          <xsl:value-of select="$num_deleted"/><xsl:value-of select="$num_deleted_verb"/><xsl:text> deleted from the repository. </xsl:text>
+        </xsl:if>
+
+        <xsl:if test="$num_queued > 0">
+          <xsl:value-of select="$num_queued"/><xsl:value-of select="$num_queued_verb"/>
+          <xsl:text> queued to be indexed, usually within 48 hours.</xsl:text>
+        </xsl:if>
       </div>
     </xsl:if>
   </xsl:template>

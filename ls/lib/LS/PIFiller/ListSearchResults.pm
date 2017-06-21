@@ -2267,12 +2267,28 @@ sub _handle_mb_operations {
     my $query_string = qq{q=*&fq=coll_id:$coll_id&fl=id&start=0&rows=0};
     my $rs = new LS::Result::FullText();
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
+
+    my $all_indexed = 1;
+    my $num_not_indexed = 0;
+    my $num_in_collection = $co->count_all_items_for_coll($coll_id);
     my $num_indexed = $rs->get_num_found();
+    my $num_not_indexed = $num_in_collection - $num_indexed;
+
+    $all_indexed = ($num_not_indexed == 0);
+
+    # determine if some are not indexed because they are attr=8
+    my $num_deleted = 0;
+    unless ($all_indexed) {
+        $num_deleted = $co->count_rights_for_coll($coll_id, 8);
+    }
 
     $s .= wrap_string_in_tag($coll_name, 'CollName');
     $s .= wrap_string_in_tag($coll_href, 'CollHref');
-    $s .= wrap_string_in_tag($co->count_all_items_for_coll($coll_id), 'CollNumItems');
-    $s .= wrap_string_in_tag($num_indexed, 'CollNumItemsIndexed');
+    $s .= wrap_string_in_tag($all_indexed ? 'TRUE' : 'FALSE', 'AllItemsIndexed');
+    $s .= wrap_string_in_tag($num_in_collection, 'NumItemsInCollection');
+    $s .= wrap_string_in_tag($num_indexed, 'NumItemsIndexed');
+    $s .= wrap_string_in_tag($num_not_indexed, 'NumNotIndexed');
+    $s .= wrap_string_in_tag($num_deleted, 'NumDeleted');
     $s .= wrap_string_in_tag($to_coll_name, 'ToCollName');
     $s .= wrap_string_in_tag($to_coll_id, 'ToCollID');
     $s .= wrap_string_in_tag($to_coll_href, 'ToCollHref');
