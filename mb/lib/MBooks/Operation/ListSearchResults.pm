@@ -123,11 +123,8 @@ sub execute_operation
 
     my $user_query_string = $cgi->param('q1');
 
-    if ( $co->collection_is_large($coll_id) ) {
-        my $user_query_string = $cgi->param('q1');
-        print $cgi->redirect("/cgi/ls?a=srchls;c=$coll_id;q1=$user_query_string");
-        exit;
-    }
+    # may exit with redirect
+    $self->test_mondo_collection($C, $co, $act, $coll_id, $user_query_string);
 
     # get collection owner for subnav header
     my $coll_owner_display = $co->get_coll_owner_display_name($coll_id);

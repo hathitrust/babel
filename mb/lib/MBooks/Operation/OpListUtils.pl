@@ -293,8 +293,31 @@ sub get_item_data {
     return $item_arr_ref;
 }
 
+# ---------------------------------------------------------------------
 
+=item test_mondo_collection
 
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub test_mondo_collection {
+    my $self = shift;
+    my ($C, $co, $act, $coll_id, $user_query_string ) = @_;
+    my $cgi = $C->get_object('CGI');
+
+    my $mondo_check_max_item_ids = $co->get_config()->get('mondo_check_max_item_ids');
+    if ( ! defined $cgi->param('adm') &&
+         $co->collection_is_large($coll_id) &&
+         $co->count_all_items_for_coll($coll_id) >= $mondo_check_max_item_ids    
+       ) {
+        $user_query_string = '*' unless ( $user_query_string );
+        print $cgi->redirect("/cgi/ls?a=srchls;c=$coll_id;q1=$user_query_string");
+        exit;        
+    }
+
+}
 
 # ---------------------------------------------------------------------
 
