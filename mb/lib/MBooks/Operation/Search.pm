@@ -35,6 +35,7 @@ use MBooks::Result::FullText;
 use MBooks::Searcher::FullText;
 
 use MBooks::Utils::ResultsCache;
+require "MBooks/Operation/OpListUtils.pl";
 
 sub new
 {
@@ -115,10 +116,8 @@ sub execute_operation
 
     my $user_query_string = $cgi->param('q1');
 
-    if ( $co->collection_is_large($coll_id) ) {
-        print $cgi->redirect("/cgi/ls?a=srchls;coll_id=$coll_id;q1=$user_query_string");
-        exit;
-    }
+    # may exit with redirect
+    $self->test_mondo_collection($C, $co, $act, $coll_id, $user_query_string);
 
     # pass along collection name for AJAX PI filler
     my $coll_name = $co->get_coll_name($coll_id);
