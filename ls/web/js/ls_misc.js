@@ -90,6 +90,36 @@ head.ready(function() {
     setTimeout(checkDownloadCookie, 1000);
   });
 
+  // SEARCH FORM
+  var $coll_form = $("#coll_searchform");
+  $coll_form.submit(function(event) {
+     //check for blank
+     var $input = $(this).find("input[name=q1]");
+     var query = $input.val();
+     query = $.trim(query);
+     if (query === '') {
+       bootbox.alert("Please enter a search term.");
+       $input.trigger('blur');
+       return false;
+     }
+
+     // check for truncation
+     var MIN_CHARS = 3; //minimum number of characters before the truncation operatior can be used
+     var msg ="You must have at least " + MIN_CHARS + " characters before using the \"*\"  truncation operator";
+     if ( query.indexOf('*') > -1 ) {
+        var words = query.split(" ");
+        for (i=0; i< words.length;i++){
+          //alert( "i is " + i + "word is " +words[i]);
+          var wordindex=words[i].indexOf('*');
+          if (wordindex !== -1 && wordindex < MIN_CHARS ){
+            bootbox.alert(msg);
+            $input.trigger('blur');
+            return false;
+          }
+        }
+     }
+  });
+
 });
 
 function getFacetClass(selected)
