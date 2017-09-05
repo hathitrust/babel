@@ -10,7 +10,8 @@
 
   <xsl:variable name="gExclusiveAccessFail">
     <xsl:choose>
-      <xsl:when test="$gRightsAttribute='3' and ($gHathiTrustAffiliate='true' or $gIsInLibrary='YES') and $gBrittleHeld='YES'">
+      <!-- $gHathiTrustAffiliate='true' or $gIsInLibrary='YES' -->
+      <xsl:when test="$gRightsAttribute='3' and ($gIsInLibrary='YES') and $gBrittleHeld='YES'">
         <xsl:value-of select="'YES'"/>
       </xsl:when>
       <xsl:otherwise>
