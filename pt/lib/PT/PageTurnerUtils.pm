@@ -153,31 +153,24 @@ sub _get_OWNERID {
    
    my $seq = 0;
    my $MdpItem = $C->get_object('MdpItem');
-   my $zipfile = $MdpItem->Get('zipfile');
-   
-   if (defined $zipfile) {
-       # Get the Google METS to disk -- there's only on in the zip but we
-       # don't know its name
-       my $file_pattern_ref = ['*.xml'];
-       my $file_sys_location = Identifier::get_item_location($id);
-       my $concat_ocr_file_dir =
-         Utils::Extract::extract_dir_to_temp_cache
-             (
-              $id,
-              $file_sys_location,
-              $file_pattern_ref
-             );
-       chomp($concat_ocr_file_dir);
+   my $root = $MdpItem->_GetMetsRoot();
+   my $source_mets = $root->findvalue(q{//METS:fileGrp[@USE='source METS']//METS:FLocat/@xlink:href});
 
-       my $google_METS_filename = `ls $concat_ocr_file_dir/*.xml 2> /dev/null`;
-       chomp($google_METS_filename);
+   my $zipfile = $MdpItem->Get('zipfile');
+
+   if (defined $zipfile && defined $source_mets) {
+       # Get the source METS to disk --  should
+       # <strike>there's only on in the zip but we don't know its name</strike>
+       my $file_sys_location = Identifier::get_item_location($id);
+
+       my $source_METS_filename = Utils::Extract::extract_file_to_temp_cache($id, $file_sys_location, $source_mets);
 
        # If there is a Google METS, read and parse and get OWNERID
        # attribute value
        $seq = $C->get_object('CGI')->param( 'seq' );
 
-       if ($google_METS_filename) {
-           my $metsXmlRef = Utils::read_file($google_METS_filename, 1);
+       if ($source_METS_filename) {
+           my $metsXmlRef = Utils::read_file($source_METS_filename, 1);
            if ($$metsXmlRef) {
                my $parser = XML::LibXML->new();
                my $tree = $parser->parse_string($$metsXmlRef);
@@ -190,7 +183,7 @@ sub _get_OWNERID {
                foreach my $node ($root->findnodes($xpath)) {
                    # There's just one <METS:file> selected by the XPath
                    eval {
-                       $OWNERID = $node->findvalue('@OWNERID');
+                       $OWNERID = $node->findvalue('@OWNERID') || $OWNERID;
                    };
                    $OWNERID = 'error parsing OWNER id attribute' if $@;
                }
