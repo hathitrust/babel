@@ -31,15 +31,21 @@ sub __populate_HT_hash {
         Utils::map_chars_to_cers(\$name, [q{"}, q{'}], 1);
 
         my $enabled  = $hashref->{enabled};
+        my $social   = $hashref->{social};
         my $inst_id  = $hashref->{inst_id};
         my $template = $hashref->{template};
         my $authtype = $hashref->{authtype};
+
+        print STDERR "AHOY : $name : $enabled : $social\n";
 
         my $h = {
                  'name' => $name,
                  'authtype' => $authtype,
                  'template' => $template,
                  'enabled' => $enabled,
+                 'social' => $social,
+                 'inst_id' => $inst_id,
+                 'entityID' => $$hashref{entityID},
                 };
 
         $HathiTrust_Institutions->{$inst_id} = $h;

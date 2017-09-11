@@ -20,6 +20,14 @@ $cell-border: 1px solid #e8e4e4;
 
 /* -------------------------------------------------------------------------*/
 /* Layout */
+body {
+  @include rem(font-size, 16);
+}
+
+h4 {
+  @include rem(font-size, 18);
+}
+
 .container {
   @include rem(padding, 20);
   @include rem(padding-right, 65);
@@ -28,9 +36,16 @@ $cell-border: 1px solid #e8e4e4;
 }
 
 .container.centered {
-  @include rem(width, 1050);
+  @include rem(width, 950);
+  @include rem(max-width, 1050);
   min-width: inherit;
   max-width: none;
+}
+
+.container.page.centered {
+  @include rem(margin-top, -40);
+  @include rem(padding-left, 40);
+  @include rem(padding-right, 40);
 }
 
 .main-section-title {
@@ -38,6 +53,35 @@ $cell-border: 1px solid #e8e4e4;
   @include rem(margin-top, 0);
   text-align: center;
   @include rem(margin-bottom, 20);
+}
+
+.back-to-referer {
+  width: 200px;
+  margin: 0.5em auto 1.5em; 
+  text-align: center;
+}
+
+.row.versus {
+  display: table;
+  padding: 0;
+
+  > div {
+    display: table-cell; 
+    width: 50%; 
+    // padding-left: 2em; 
+    // padding: 2em;
+
+    > div {
+      padding: 1.4em;
+    }
+
+    &:first-child {
+      border-right: 1px solid #666; 
+      // padding-right: 2em; 
+      // padding-left: 0;
+      // background-color: #f9f8f5;
+    }
+  }
 }
 
 /* Top row */
@@ -68,23 +112,38 @@ $cell-border: 1px solid #e8e4e4;
 .partner-cell-text {
   @include rem(font-size, 16);
   @include rem(margin-bottom, 30);
+  @include rem(min-height, 65);
 }
 
 .partner-can-do-cells-wrapper {
-  @include rem(width, 440);
+  // @include rem(width, 440);
+  // @include rem(max-width, 440);
+  width: 100%;
+  @include rem(min-height, 250);
   margin: auto;
+  text-align: center;
+
+  p {
+    text-align: left;
+  }
 }
 
+$can-do-cell-width: 175;
 .partner-can-do-cell {
   background-color: $page-bgcolor;
   border: $cell-border;
-  display: inline;
+  display: inline-block;;
   float: left;
-  @include rem(width, 190);
-  @include rem(height, 145);
-  @include rem(margin-right, 30);
+  @include rem(width, $can-do-cell-width);
+  @include rem(height, 175); // 175
+  @include rem(margin-right, 10);
+  @include rem(margin-bottom, 30);
   text-align: center;
   position: relative;
+
+  // &:last-of-type {
+  //   margin-right: 0;
+  // }
 }
 
 .partner-can-do-cell > div {
@@ -107,7 +166,8 @@ $cell-border: 1px solid #e8e4e4;
 }
 
 .partner-can-do-cell p {
-  @include rem(font-size, 12);
+  @include rem(font-size, 14);
+  @include rem(height, 90);
   text-align: left;
 }
 
@@ -148,11 +208,12 @@ $cell-border: 1px solid #e8e4e4;
 
 
 /* Middle row */
-#not-provided-msg-text {
+.not-provided-msg-text {
   font-style: italic;
-  @include rem(font-size, 12);
+  @include rem(font-size, 14);
   color: $diminished-text-color;
   @include rem(margin-left, 15);
+  margin-top: 0;
 }
 
 
@@ -187,7 +248,9 @@ $cell-border: 1px solid #e8e4e4;
 }
 
 .friend-can-do-cells-wrapper {
-  @include rem(width, 440);
+  @include rem(max-width, 440);
+  text-align: center;
+  width: 100%;
   margin: auto;
 }
 
@@ -211,12 +274,12 @@ $cell-border: 1px solid #e8e4e4;
   background-color: $friend-cannot-bgcolor-css3;
 }
 
-.friend-cannot-do-cell > div, .friend-can-do-cell > div {
-  @include rem(padding-right, 16);
-  @include rem(padding-left, 16);
-  @include rem(padding-top, 16);
-  @include rem(padding-bottom, 8);
-}
+// .friend-cannot-do-cell > div, .friend-can-do-cell > div {
+//   @include rem(padding-right, 16);
+//   @include rem(padding-left, 16);
+//   @include rem(padding-top, 16);
+//   @include rem(padding-bottom, 8);
+// }
 
 .friend-cannot-do-cell i {
   color: gray;
@@ -239,7 +302,7 @@ $cell-border: 1px solid #e8e4e4;
 }
 
 .friend-cannot-do-cell p, .friend-can-do-cell p {
-  @include rem(font-size, 11);
+  @include rem(font-size, 14);
   text-align: left;
 }
 
@@ -257,3 +320,82 @@ $cell-border: 1px solid #e8e4e4;
 #friend-cell-right p {
   @include rem(font-size, 14);
 }
+
+input.select2-search__field {
+  height: 2em;
+}
+
+#no-institution-listed {
+  @include rem(margin-top, 25);
+  @include rem(font-size, 16);
+}
+
+.icomoon-blank:before {
+  content: '.';
+}
+
+@media all and (max-width: 900px) {
+  .container.centered {
+    width: 95%;
+  }
+ .navbar-inner {
+   width: auto;
+ }
+
+ .navbar-static-top.navbar-inverse {
+   min-width: 0;
+ } 
+}
+
+@media all and (max-width: 480px) {
+
+  .container.page.centered {
+    // padding-left: 0;
+    // padding-right: 0;
+    padding-left: 1em;
+    padding-right: 1em;
+
+  }
+
+  .row.versus {
+    width: 100%;
+  }
+  .row.versus > div {
+    display: table;
+    width: 100%;
+    padding-left: 0;
+    // padding: 2em !important;
+    &:first-child {
+      border-right: none;
+      padding-right: 0;
+      border-bottom: 1px solid #666; 
+      padding-bottom: 2em; 
+    }
+  }
+
+  .partner-can-do-cells-wrapper, .friend-can-do-cells-wrapper {
+    display: none;
+  }
+
+  .search-form {
+    height: 0 !important;
+  }
+
+  #header {
+    margin-bottom: 2em;
+  }
+
+  .navbar-inner {
+    width: auto;
+  }
+
+  .navbar-static-top.navbar-inverse {
+    min-width: 0;
+    display: none;
+  }
+
+  .navbar-static-bottom {
+    display: none;
+  }
+}
+

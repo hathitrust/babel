@@ -12,7 +12,9 @@
    </XslFileList>
 
   <IdP_List><?IDP_LIST?></IdP_List>
+  <SocialIdP_List><?SOCIAL_IDP_LIST ?></SocialIdP_List>
   <FriendLoginLink><?FRIEND_LOGIN_LINK?></FriendLoginLink>
+  <BackToRefererLink><?BACK_TO_REFERER_LINK?></BackToRefererLink>
 
 </MBooksTop>
 

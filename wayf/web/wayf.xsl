@@ -4,7 +4,7 @@
   xmlns:exsl="http://exslt.org/common"
   xmlns:h="http://www.hathitrust.org"
   xmlns="http://www.w3.org/1999/xhtml"
-  extension-element-prefixes="exsl">
+  extension-element-prefixes="exsl h">
 
   <!-- Main template lives in skeleton.xsl -->
 
@@ -13,10 +13,11 @@
   <xsl:template name="setup-extra-header">
     <link rel="stylesheet" type="text/css" href="/wayf/css/screen.css" />
     <script type="text/javascript" src="/wayf/js/login.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   </xsl:template>
 
   <xsl:template name="setup-body-class">
-    <xsl:text> no-search</xsl:text>
+    <xsl:text> no-search no-login</xsl:text>
   </xsl:template>
 
   <xsl:template name="get-page-title">
@@ -30,119 +31,129 @@
   <!-- main TEMPLATE -->
 
   <xsl:template name="contents">
+    <style>
+
+
+    </style>
+
     <h2 id="main" class="main-section-title">Log in to get the most out of HathiTrust.</h2>
+    <xsl:if test="normalize-space(//BackToRefererLink)">
+      <div class="back-to-referer">
+        <a class="btn"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go back</a>
+      </div>
+    </xsl:if>
 
     <!-- PARTNERS -->
-    <div class="row">
-      <div id="top-row-cells-wrapper" class="clearfix">
+    <div class="row versus">
+      <div>
+        <div>
+          <h3 class="partner-cell-title">Members of partner institutions</h3>
+          <p class="partner-cell-text">Members of partner institutions get access to the largest number of volumes and features by logging in through their institution.</p>
 
-        <!-- top row, left cell -->
-        <div id="partner-cell-left" class="kill-span-right-margin span7_5">
-          <div>
-            <div>
-              <h3 class="partner-cell-title">Members of partner institutions</h3>
-              <p class="partner-cell-text">Members of partner institutions get access to the largest number of volumes and features by logging in through their institution.</p>
-            </div>
-            <div class="row">
-              <div class="partner-can-do-cells-wrapper">
-                <div class="partner-can-do-cell">
-                  <div>
-                    <div><i class="icomoon icomoon-checkmark"/></div>
-                    <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-partner.png" /></div>
-                    <p>Members can create &amp; share permanent collections</p>
-                  </div>
-                </div>
-                <div class="partner-can-do-cell">
-                  <div>
-                    <div><i class="icomoon icomoon-checkmark"/></div>
-                    <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-partner.png" /></div>
-                    <p>Members can download PDFs of available items*</p>
-                  </div>
-                </div>
+          <div class="partner-can-do-cells-wrapper">
+            <div class="partner-can-do-cell">
+              <div>
+                <div><i class="icomoon icomoon-checkmark"/></div>
+                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-partner.png" /></div>
+                <p>Create &amp; share permanent collections</p>
               </div>
             </div>
+            <div class="partner-can-do-cell">
+              <div>
+                <div><i class="icomoon icomoon-checkmark"/></div>
+                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-partner.png" /></div>
+                <p>Download PDFs of all available items*</p>
+              </div>
+            </div>
+            <br clear="both" />
+            <p class="not-provided-msg-text">*Logging in does not provide access to page images of "Limited (search-only)" items</p>
           </div>
-        </div>
-      
-        <!-- top row, right cell -->
-        <div id="partner-cell-right" class="span4_5">
-          <div>
-            <p>Log in with your partner institution &#x2014; no signup is necessary.</p>
+
+
+          <div style="margin-top: 16px">
+            <h4>Find your partner institution:</h4>
             
             <xsl:call-template name="build-idp-list" />
             
-            <div id="no-institution-listed">
-              <a href="http://www.hathitrust.org/help_digital_library#LoginNotListed">Don't see your institution listed? &#x27a4;</a>
+            <div id="no-institution-listed" style="text-align: left; xmargin-top: 0;">
+              <a href="https://www.hathitrust.org/help_digital_library#LoginNotListed">Why isn't my institution listed?</a>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <div class="row">
-      <div class="column-left span12">
-        <p id="not-provided-msg-text">*Logging in does not provide access to page images of "Limited (search-only)" items</p>
-      </div>
-    </div>
-    
-    <!-- GENERAL PUBLIC -->
-    <div class="row">
-      <div id="bottom-row-cells-wrapper" class="clearfix">
 
-        <!-- bottom row, left cell -->
-        <div id="friend-cell-left" class="kill-span-right-margin span7_5">
-          <div>
-            <div>
-              <h3 class="friend-cell-title">Not with a partner institution?</h3>
-              <p class="friend-cell-text">
-                <xsl:text>You can log in with a guest "Friend" </xsl:text>
-                <!-- <xsl:call-template name="build-friend-link">
-                  <xsl:with-param name="link-text">
-                    <xsl:value-of select="'Friend'" />
-                  </xsl:with-param>
-                </xsl:call-template> -->
-                <xsl:text> account. You won't be able to download PDFs, but you will be able to create and share your own collections.</xsl:text>
-              </p>
-            </div>
-            <div class="row">
-              <div class="friend-can-do-cells-wrapper">
-                <div class="friend-do-cell-common friend-can-do-cell">
-                  <div>
-                    <div><i class="icomoon icomoon-checkmark"/></div>
-                    <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-friend.png" /></div>
-                    <p>Friends can create &amp; share permanent collections</p>
-                  </div>
-                </div>
-                <div class="friend-do-cell-common friend-cannot-do-cell">
-                  <div>
-                    <div><i class="icomoon icomoon-cancel"/></div>
-                    <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-friend.png" /></div>
-                    <p>Friends cannot download PDFs of available items</p>
-                  </div>
-                </div>
+      <div>
+        <div>
+          <h3 class="partner-cell-title">Guests</h3>
+          <p class="partner-cell-text">
+            Single page downloads are available without logging in. Guests have the ability to create and share your own collections when logged in.
+          </p>
+          <div class="partner-can-do-cells-wrapper">
+            <div class="partner-can-do-cell" xclass="friend-do-cell-common friend-can-do-cell">
+              <div>
+                <div><i class="icomoon icomoon-checkmark"/></div>
+                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-friend.png" /></div>
+                <p>Create &amp; share permanent collections</p>
               </div>
             </div>
+            <div class="partner-can-do-cell friend-cannot-do-cell">
+              <div>
+                <div><i class="icomoon icomoon-cancel"  style="font-size: 3.4rem" /></div>
+                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-friend.png" /></div>
+                <p>Download PDFs of all certain public domain items.</p>
+              </div>
+            </div>
+
+            <br clear="both" />
+            <p class="not-provided-msg-text" style="visibility: hidden" aria-hidden="true">*Logging in does not provide access to page images of "Limited (search-only)" items</p>
           </div>
-        </div>
-      
-        <!-- bottom row, right cell -->
-        <div id="friend-cell-right" class="span4_5">
-          <div>
-            <p>
-              <xsl:call-template name="build-friend-link">
-                <xsl:with-param name="link-text">
-                  <xsl:value-of select="'Login with a guest Friend account for limited access to items and features. &#x27a4;'" />
-                </xsl:with-param>
-              </xsl:call-template>
-            </p>
-            <p>
-              <a href="https://friend.weblogin.umich.edu/friend/">Need a "Friend" account?</a>
-            </p>
+
+          <div style="margin-top: 16px">
+            <h4>Log in with:</h4>
+            <ul class="unstyled">
+              <xsl:apply-templates select="SocialIdP_List/IdP_Site" />
+              <li><a href="{build-friend-link}">University of Michigan Friend Account</a></li>
+            </ul>
+
+            <div id="no-institution-listed" style="text-align: left; xmargin-top: 0;">
+              <p>
+                Still need a way to log in? <a href="https://friend.weblogin.umich.edu/friend/">Create a University of Michigan Friend Account</a>
+              </p>
+            </div>
+
+
           </div>
-        </div>
+        </div> 
       </div>
     </div>
 
+  </xsl:template>
+
+  <xsl:template match="IdP_Site">
+    <li>
+      <xsl:call-template name="get-provider-badge">
+        <xsl:with-param name="inst_id" select="InstID" />
+      </xsl:call-template>
+      <a href="{Url}"><xsl:value-of select="LinkText" /></a>
+    </li>
+  </xsl:template>
+
+  <!-- TEMPLATE -->
+  <xsl:template name="get-provider-badge">
+    <xsl:param name="inst_id" />
+    <xsl:variable name="klass">
+      <xsl:choose>
+        <xsl:when test="$inst_id = 'google'">icomoon-google</xsl:when>
+        <xsl:when test="$inst_id = 'twitter'">icomoon-twitter2</xsl:when>
+        <xsl:when test="$inst_id = 'facebook'">icomoon-facebook</xsl:when>
+        <xsl:when test="$inst_id = 'linkedin'">icomoon-linkedin</xsl:when>
+        <xsl:when test="$inst_id = 'live'">icomoon-windows8</xsl:when>
+        <xsl:when test="$inst_id = 'yahoo'">icomoon-yahoo</xsl:when>
+        <xsl:when test="$inst_id = 'aol'">icomoon-aol</xsl:when>
+        <xsl:otherwise>icomoon-blank</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <i class="icomoon {$klass}" aria-hidden="true"></i><xsl:text> </xsl:text>
   </xsl:template>
 
   <!-- TEMPLATE -->
@@ -161,8 +172,8 @@
     <xsl:choose>
       <xsl:when test="IdP_List!=''">
         <form onsubmit="return goto_page(this.idp.options[this.idp.selectedIndex].value)">
-          <label for="idp" id="Selectyourinstitution-ariaLabel" class="SkipLink">Choose your partner institution</label>
-          <div>
+          <div class="wayf-list" style="padding-bottom: 8px; padding-top: 0">
+            <label for="idp" id="Selectyourinstitution-ariaLabel" class="SkipLink">Choose your partner institution</label>
             <select id="idp" name="idp" aria-labelledby="Selectyourinstitution-ariaLabel">
               <option value="0">Choose your partner institution</option>
               <xsl:for-each select="IdP_List/IdP_Site">
@@ -180,7 +191,7 @@
               </xsl:for-each>
             </select>
           </div>
-          <div id="continue-button">
+          <div class="actions" style="padding-left: 0; text-align: right">
             <button class="button continue log-in" type="submit">CONTINUE</button>
           </div>
         </form>

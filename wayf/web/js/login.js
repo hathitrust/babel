@@ -9,3 +9,11 @@ function goto_page(url) {
     }
     return false;
 }
+
+head.ready(function() {
+  $("form select").selectWoo({
+    allowCear: true,
+    width: '100%'
+  });  
+})
+

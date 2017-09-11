@@ -77,6 +77,25 @@ sub handle_FRIEND_LOGIN_LINK
 
 # ---------------------------------------------------------------------
 
+=item handle_BACK_TO_REFERER_LINK_PI : PI_handler(BACK_TO_REFERER_LINK)
+
+Handler for BACK_TO_REFERER_LINK
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_BACK_TO_REFERER_LINK
+    : PI_handler(BACK_TO_REFERER_LINK) {
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    if ( my $referer_link = $cgi->referer() ) {
+        return $referer_link;
+    }
+}
+
+# ---------------------------------------------------------------------
+
 =item handle_IDP_LIST_PI : PI_handler(IDP_LIST)
 
 Handler for IDP_LIST
@@ -88,6 +107,40 @@ sub handle_IDP_LIST_PI
     : PI_handler(IDP_LIST) {
     my ($C, $act, $piParamHashRef) = @_;
 
+    # To preselect user's UNMAPPED institution in list. Option 0 in
+    # menu is in the xsl
+    my $HT_list = WAYF::IdpConfig::get_HathiTrust_Institutions_List($C);
+    my $idp_keys = [ sort
+                        {
+                             $HT_list->{$a}->{name} cmp $HT_list->{$b}->{name}
+                        } keys %$HT_list 
+                  ];
+
+    return _list2xml($C, $idp_keys, $HT_list, 0);
+}
+
+sub handle_SOCIAL_IDP_LIST_PI
+    : PI_handler(SOCIAL_IDP_LIST) {
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $HT_list = WAYF::IdpConfig::get_HathiTrust_Institutions_List($C);
+    my $idp_keys = [ 'google', 'facebook', 'twitter' ];
+    foreach my $idp_key ( sort
+                        {
+                             $HT_list->{$a}->{name} cmp $HT_list->{$b}->{name}
+                        } keys %$HT_list
+                        ) {
+        next if ( grep(/$idp_key/, @$idp_keys) );
+        push @$idp_keys, $idp_key;
+    }
+    return _list2xml($C, $idp_keys, $HT_list, 1);
+}
+
+sub _list2xml {
+    my ($C, $idp_keys, $HT_list, $social ) = @_;
+
+    my $enabled = $social ? 3 : 1;
+
     my $s;
     my $target = $C->get_object('CGI')->param('target');
     if (! defined($target)) {
@@ -97,36 +150,24 @@ sub handle_IDP_LIST_PI
         $target = Utils::url_over_SSL_to($target);
     }
     
-    # To preselect user's UNMAPPED institution in list. Option 0 in
-    # menu is in the xsl
-    my $HT_list = WAYF::IdpConfig::get_HathiTrust_Institutions_List($C);
-
-    # Add UM shibboleth SSO in dev
-    if ( defined $ENV{HT_DEV} ) {
-        $HT_list->{uoms}->{authtype} = 'shibboleth';
-        $HT_list->{uoms}->{enabled}  = 0;
-        $HT_list->{uoms}->{name} = 'University of Michigan (Shibboleth)';
-        $HT_list->{uoms}->{template} = 'https://___HOST___/Shibboleth.sso/uom?target=___TARGET___';
-        $HT_list->{uoms}->{domain} = 'umich.edu';
-        $HT_list->{uoms}->{us} = 1;
-        $HT_list->{uoms}->{entityID} = 'https://shibboleth.umich.edu/idp/shibboleth';
-    }    
-
     my $inst = $C->get_object('Auth')->get_institution_code($C) || 'notaninstitution';
-    foreach my $idp_key (sort 
-                         {
-                             $HT_list->{$a}->{name} cmp $HT_list->{$b}->{name}
-                         } keys %$HT_list) {
+    foreach my $idp_key ( @$idp_keys ) {
         
         my $add_to_list = 0;
         my $development = 0;
-        if ( $HT_list->{$idp_key}->{enabled} == 0 ) {
+        if ( $HT_list->{$idp_key}->{enabled} == 0 && ! $social ) {
             if ( defined $ENV{HT_DEV} ) {
                 $add_to_list = 1;
                 $development = 1;
             }
         }
-        elsif ( $HT_list->{$idp_key}->{enabled} == 1 ) {
+        elsif ( $$HT_list{$idp_key}{enabled} < 0 ) {
+            if ( defined $ENV{HT_DEV} && abs($$HT_list{$idp_key}{enabled}) == $enabled ) {
+                $add_to_list = 1;
+                $development = 1;
+            }
+        }
+        elsif ( $HT_list->{$idp_key}->{enabled} == $enabled ) {
             $add_to_list = 1;
         }
         elsif ( $HT_list->{$idp_key}->{enabled} == 2 ) {
@@ -155,12 +196,13 @@ sub handle_IDP_LIST_PI
         if ($inst eq $idp_key) {
             $site .= wrap_string_in_tag('1', 'Selected');
         }
+        $site .= wrap_string_in_tag($$HT_list{$idp_key}{social}, 'Social');
+        $site .= wrap_string_in_tag($$HT_list{$idp_key}{inst_id}, 'InstID');
         $s .= wrap_string_in_tag($site, 'IdP_Site');
     }
 
-    return $s;
+    return $s;    
 }
-
 
 1;
 
