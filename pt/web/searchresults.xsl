@@ -96,7 +96,7 @@
       <div class="alert alert-warning alert-block alert-banner">
         <xsl:choose>
           <xsl:when test="$gRightsAttribute='26'">
-            <xsl:text>Full view is not available for this item due privacy concerns. Page numbers with matches are displayed but text snippets cannot be shown.</xsl:text>
+            <xsl:text>Full view is not available for this item due to privacy concerns. Page numbers with matches are displayed but text snippets cannot be shown.</xsl:text>
           </xsl:when>
           <xsl:otherwise>
             <xsl:text>Full view is not available for this item due to copyright &#169; restrictions.</xsl:text>
