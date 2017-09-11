@@ -1,1 +1,80 @@
-body{margin-top:0;min-width:inherit;width:100%}.view-restricted{margin:0}.view-restricted .container .main{padding-top:48px ;padding-top:4.8rem }.view-restricted .container .main>div{padding:24px ;padding:2.4rem ;background-color:#eee;width:95%;margin:8px auto;font-size:14px ;font-size:1.4rem }.view-restricted .container .main>div .span8.border-right,.view-restricted .container .main>div .span6{border-right:1px transparent solid;display:block;width:99%;margin-bottom:8px ;margin-bottom:0.8rem }.view-restricted .container .main>div .no_access_search_help_eg{display:none}.view-restricted .container .main .alert{font-size:18px ;font-size:1.8rem }.view-restricted #search-page .search-results>li{cursor:default}.view-restricted #search-page .search-results li{cursor:default}.view-restricted #search-page .search-results li span{cursor:default}.cbp-spmenu-top{top:0px}.cbp-spmenu-bottom{bottom:0px}#action-toggle-toolbars{display:none}#action-settings,#action-search-inside{display:none}#action-table-of-contents{display:none}
+/* line 4, ../../sass/mobile/restricted.scss */
+body {
+  margin-top: 0;
+  min-width: inherit;
+  width: 100%;
+}
+
+/* line 10, ../../sass/mobile/restricted.scss */
+.view-restricted {
+  margin: 0;
+}
+/* line 16, ../../sass/mobile/restricted.scss */
+.view-restricted .container .main {
+  padding-top: 48px ;
+  padding-top: 4.8rem ;
+}
+/* line 19, ../../sass/mobile/restricted.scss */
+.view-restricted .container .main > div {
+  padding: 24px ;
+  padding: 2.4rem ;
+  background-color: #eee;
+  width: 95%;
+  margin: 8px auto;
+  font-size: 14px ;
+  font-size: 1.4rem ;
+}
+/* line 27, ../../sass/mobile/restricted.scss */
+.view-restricted .container .main > div .span8.border-right, .view-restricted .container .main > div .span6 {
+  border-right: 1px transparent solid;
+  display: block;
+  width: 99%;
+  margin-bottom: 8px ;
+  margin-bottom: 0.8rem ;
+}
+/* line 34, ../../sass/mobile/restricted.scss */
+.view-restricted .container .main > div .no_access_search_help_eg {
+  display: none;
+}
+/* line 40, ../../sass/mobile/restricted.scss */
+.view-restricted .container .main .alert {
+  font-size: 18px ;
+  font-size: 1.8rem ;
+}
+/* line 51, ../../sass/mobile/restricted.scss */
+.view-restricted #search-page .search-results > li {
+  cursor: default;
+}
+/* line 55, ../../sass/mobile/restricted.scss */
+.view-restricted #search-page .search-results li {
+  cursor: default;
+}
+/* line 57, ../../sass/mobile/restricted.scss */
+.view-restricted #search-page .search-results li span {
+  cursor: default;
+}
+
+/* line 66, ../../sass/mobile/restricted.scss */
+.cbp-spmenu-top {
+  top: 0px;
+}
+
+/* line 70, ../../sass/mobile/restricted.scss */
+.cbp-spmenu-bottom {
+  bottom: 0px;
+}
+
+/* line 74, ../../sass/mobile/restricted.scss */
+#action-toggle-toolbars {
+  display: none;
+}
+
+/* line 79, ../../sass/mobile/restricted.scss */
+#action-settings, #action-search-inside {
+  display: none;
+}
+
+/* line 83, ../../sass/mobile/restricted.scss */
+#action-table-of-contents {
+  display: none;
+}
