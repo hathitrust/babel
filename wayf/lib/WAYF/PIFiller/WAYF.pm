@@ -29,6 +29,7 @@ use Institutions;
 
 use WAYF::IdpConfig;
 
+require "PIFiller/Common/Globals.pm";
 
 # ---------------------------------------------------------------------
 
@@ -162,7 +163,7 @@ sub _list2xml {
             }
         }
         elsif ( $$HT_list{$idp_key}{enabled} < 0 ) {
-            if ( defined $ENV{HT_DEV} && abs($$HT_list{$idp_key}{enabled}) == $enabled ) {
+            if ( 0 && defined $ENV{HT_DEV} && abs($$HT_list{$idp_key}{enabled}) == $enabled ) {
                 $add_to_list = 1;
                 $development = 1;
             }

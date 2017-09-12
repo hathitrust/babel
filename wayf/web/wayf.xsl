@@ -50,24 +50,38 @@
           <h3 class="partner-cell-title">Members of partner institutions</h3>
           <p class="partner-cell-text">Members of partner institutions get access to the largest number of volumes and features by logging in through their institution.</p>
 
-          <div class="partner-can-do-cells-wrapper">
-            <div class="partner-can-do-cell">
-              <div>
-                <div><i class="icomoon icomoon-checkmark"/></div>
-                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-partner.png" /></div>
-                <p>Create &amp; share permanent collections</p>
-              </div>
-            </div>
-            <div class="partner-can-do-cell">
-              <div>
-                <div><i class="icomoon icomoon-checkmark"/></div>
-                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-partner.png" /></div>
-                <p>Download PDFs of all available items*</p>
-              </div>
-            </div>
-            <br clear="both" />
-            <p class="not-provided-msg-text">*Logging in does not provide access to page images of "Limited (search-only)" items</p>
+          <div class="can-do-list {//Param[@name='debug']}">
+            <p><a href="https://www.hathitrust.org/help_digital_library#MemberLogin">What are the benefits of logging in as a member?</a></p>
+            <xsl:if test="//Param[@name='debug'] = 'explain'">
+            <ul>
+              <li>Download public domain works that have download restrictions (see “Can I download a whole book?” for more information)</li>
+              <li>Create, save and share public or private collections</li>
+              <li>Access copyrighted works lawfully in appropriate circumstances (see <a target="_blank" href="https://www.hathitrust.org/accessibility">accessibility</a> and <a target="_blank" href="https://www.hathitrust.org/out-of-print-brittle">out-of-print and brittle</a> for more information)</li>
+            </ul>
+            <p>Members can not view or download works that are “limited (search-only)”. See <a href="https://www.hathitrust.org/help_digital_library#LimitedView">“Is it possible to view a volume that is Limited (search-only)?”</a> for more information.</p>              
+            </xsl:if> 
           </div>
+
+          <xsl:if test="false()">
+            <div class="partner-can-do-cells-wrapper">
+              <div class="partner-can-do-cell">
+                <div>
+                  <div><i class="icomoon icomoon-checkmark"/></div>
+                  <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-partner.png" /></div>
+                  <p>Create &amp; share permanent collections</p>
+                </div>
+              </div>
+              <div class="partner-can-do-cell">
+                <div>
+                  <div><i class="icomoon icomoon-checkmark"/></div>
+                  <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-partner.png" /></div>
+                  <p>Download PDFs of all available items*</p>
+                </div>
+              </div>
+              <br clear="both" />
+              <p class="not-provided-msg-text">*Logging in does not provide access to page images of "Limited (search-only)" items</p>
+            </div>
+          </xsl:if>
 
 
           <div style="margin-top: 16px">
@@ -86,27 +100,40 @@
         <div>
           <h3 class="partner-cell-title">Guests</h3>
           <p class="partner-cell-text">
-            Single page downloads are available without logging in. Guests have the ability to create and share your own collections when logged in.
+            Guests have the ability to create and share their own collections when logged in.
           </p>
-          <div class="partner-can-do-cells-wrapper">
-            <div class="partner-can-do-cell" xclass="friend-do-cell-common friend-can-do-cell">
-              <div>
-                <div><i class="icomoon icomoon-checkmark"/></div>
-                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-friend.png" /></div>
-                <p>Create &amp; share permanent collections</p>
-              </div>
-            </div>
-            <div class="partner-can-do-cell friend-cannot-do-cell">
-              <div>
-                <div><i class="icomoon icomoon-cancel"  style="font-size: 3.4rem" /></div>
-                <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-friend.png" /></div>
-                <p>Download PDFs of all certain public domain items.</p>
-              </div>
-            </div>
 
-            <br clear="both" />
-            <p class="not-provided-msg-text" style="visibility: hidden" aria-hidden="true">*Logging in does not provide access to page images of "Limited (search-only)" items</p>
-          </div>
+          <div class="can-do-list {//Param[@name='debug']}">
+            <p>See <a href="https://www.hathitrust.org/help_digital_library#NoLogin">“What can I access without logging in?”</a> for information about what all users can do without logging in.</p>
+            <xsl:if test="//Param[@name='debug'] = 'explain'">
+            <ul>
+              <li>Create, save and share public or private collections</li>
+            </ul>
+            <p>Members can not view or download works that are “limited (search-only)”. See <a href="https://www.hathitrust.org/help_digital_library#LimitedView">“Is it possible to view a volume that is Limited (search-only)?”</a> for more information.</p>
+          </xsl:if>
+          </div>              
+
+          <xsl:if test="false()">
+            <div class="partner-can-do-cells-wrapper">
+              <div class="partner-can-do-cell" xclass="friend-do-cell-common friend-can-do-cell">
+                <div>
+                  <div><i class="icomoon icomoon-checkmark"/></div>
+                  <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/collections-friend.png" /></div>
+                  <p>Create &amp; share permanent collections</p>
+                </div>
+              </div>
+              <div class="partner-can-do-cell friend-cannot-do-cell">
+                <div>
+                  <div><i class="icomoon icomoon-cancel"  style="font-size: 3.4rem" /></div>
+                  <div><img aria-hidden="true" alt="" src="/common/web/unicorn/img/WAYF/download-friend.png" /></div>
+                  <p>Download PDFs of all certain public domain items.</p>
+                </div>
+              </div>
+
+              <br clear="both" />
+              <p class="not-provided-msg-text" style="visibility: hidden" aria-hidden="true">*Logging in does not provide access to page images of "Limited (search-only)" items</p>
+            </div>
+          </xsl:if>
 
           <div style="margin-top: 16px">
             <h4>Log in with:</h4>

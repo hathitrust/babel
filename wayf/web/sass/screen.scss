@@ -111,8 +111,8 @@ h4 {
 
 .partner-cell-text {
   @include rem(font-size, 16);
-  @include rem(margin-bottom, 30);
-  @include rem(min-height, 65);
+  @include rem(margin-bottom, 10);
+  @include rem(min-height, 60);
 }
 
 .partner-can-do-cells-wrapper {
@@ -128,7 +128,7 @@ h4 {
   }
 }
 
-$can-do-cell-width: 175;
+$can-do-cell-width: 165;
 .partner-can-do-cell {
   background-color: $page-bgcolor;
   border: $cell-border;
@@ -332,6 +332,19 @@ input.select2-search__field {
 
 .icomoon-blank:before {
   content: '.';
+}
+
+.can-do-list {
+  ul {
+    font-size: 90%;
+    margin: 0; 
+    padding: 0 0 0.25em 1em; 
+  }
+  min-height: 8.5rem;
+  &.explain {
+    min-height: 26rem;
+  }
+  // background: aliceblue;
 }
 
 @media all and (max-width: 900px) {

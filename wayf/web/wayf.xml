@@ -11,6 +11,7 @@
     <Filename>wayf.xsl</Filename>
    </XslFileList>
 
+  <CurrentCgi><?CGI_GLOBALS?></CurrentCgi>
   <IdP_List><?IDP_LIST?></IdP_List>
   <SocialIdP_List><?SOCIAL_IDP_LIST ?></SocialIdP_List>
   <FriendLoginLink><?FRIEND_LOGIN_LINK?></FriendLoginLink>
