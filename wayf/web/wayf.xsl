@@ -51,14 +51,14 @@
           <p class="partner-cell-text">Members of partner institutions get access to the largest number of volumes and features by logging in through their institution.</p>
 
           <div class="can-do-list {//Param[@name='debug']}">
-            <p><a href="https://www.hathitrust.org/help_digital_library#MemberLogin">What are the benefits of logging in as a member?</a></p>
+            <p><a target="_help" href="https://www.hathitrust.org/help_digital_library#MemberLogin">What are the benefits of logging in as a member?</a></p>
             <xsl:if test="//Param[@name='debug'] = 'explain'">
             <ul>
               <li>Download public domain works that have download restrictions (see “Can I download a whole book?” for more information)</li>
               <li>Create, save and share public or private collections</li>
-              <li>Access copyrighted works lawfully in appropriate circumstances (see <a target="_blank" href="https://www.hathitrust.org/accessibility">accessibility</a> and <a target="_blank" href="https://www.hathitrust.org/out-of-print-brittle">out-of-print and brittle</a> for more information)</li>
+              <li>Access copyrighted works lawfully in appropriate circumstances (see <a target="_help" href="https://www.hathitrust.org/accessibility">accessibility</a> and <a target="_help" href="https://www.hathitrust.org/out-of-print-brittle">out-of-print and brittle</a> for more information)</li>
             </ul>
-            <p>Members can not view or download works that are “limited (search-only)”. See <a href="https://www.hathitrust.org/help_digital_library#LimitedView">“Is it possible to view a volume that is Limited (search-only)?”</a> for more information.</p>              
+            <p>Members can not view or download works that are “limited (search-only)”. See <a target="_help" href="https://www.hathitrust.org/help_digital_library#LimitedView">“Is it possible to view a volume that is Limited (search-only)?”</a> for more information.</p>              
             </xsl:if> 
           </div>
 
@@ -90,7 +90,7 @@
             <xsl:call-template name="build-idp-list" />
             
             <div id="no-institution-listed" style="text-align: left; xmargin-top: 0;">
-              <a href="https://www.hathitrust.org/help_digital_library#LoginNotListed">Why isn't my institution listed?</a>
+              <a target="_help" href="https://www.hathitrust.org/help_digital_library#LoginNotListed">Why isn't my institution listed?</a>
             </div>
           </div>
         </div>
@@ -104,12 +104,12 @@
           </p>
 
           <div class="can-do-list {//Param[@name='debug']}">
-            <p>See <a href="https://www.hathitrust.org/help_digital_library#NoLogin">“What can I access without logging in?”</a> for information about what all users can do without logging in.</p>
+            <p>See <a target="_help" href="https://www.hathitrust.org/help_digital_library#NoLogin">“What can I access without logging in?”</a> for information about what all users can do without logging in.</p>
             <xsl:if test="//Param[@name='debug'] = 'explain'">
             <ul>
               <li>Create, save and share public or private collections</li>
             </ul>
-            <p>Members can not view or download works that are “limited (search-only)”. See <a href="https://www.hathitrust.org/help_digital_library#LimitedView">“Is it possible to view a volume that is Limited (search-only)?”</a> for more information.</p>
+            <p>Members can not view or download works that are “limited (search-only)”. See <a target="_help" href="https://www.hathitrust.org/help_digital_library#LimitedView">“Is it possible to view a volume that is Limited (search-only)?”</a> for more information.</p>
           </xsl:if>
           </div>              
 
@@ -139,7 +139,7 @@
             <h4>Log in with:</h4>
             <ul class="unstyled">
               <xsl:apply-templates select="SocialIdP_List/IdP_Site" />
-              <li><a href="{build-friend-link}">University of Michigan Friend Account</a></li>
+              <li><a target="_help" href="{build-friend-link}">University of Michigan Friend Account</a></li>
             </ul>
 
             <div id="no-institution-listed" style="text-align: left; xmargin-top: 0;">
