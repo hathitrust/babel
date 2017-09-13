@@ -1173,15 +1173,28 @@
 
     <xsl:variable name="fulltext_class">
       <xsl:choose>
-        <xsl:when test="fulltext=1">fulltext icomoon-document-2</xsl:when>
+        <xsl:when test="fulltext=1">fulltext </xsl:when>
         <xsl:otherwise>
           <xsl:choose>
             <xsl:when test="rights=8"></xsl:when>
-            <xsl:otherwise>viewonly icomoon-locked</xsl:otherwise>
+            <xsl:otherwise>viewonly </xsl:otherwise>
           </xsl:choose>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
+
+    <xsl:variable name="fulltext_icon_class">
+      <xsl:choose>
+        <xsl:when test="fulltext=1">icomoon icomoon-document-2</xsl:when>
+        <xsl:otherwise>
+          <xsl:choose>
+            <xsl:when test="rights=8"></xsl:when>
+            <xsl:otherwise>icomoon icomoon-locked</xsl:otherwise>
+          </xsl:choose>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
 
     <xsl:variable name="showing-collections">
       <xsl:choose>
@@ -1336,8 +1349,9 @@
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
                 </xsl:attribute>
                 <xsl:attribute name="class">
-                  <xsl:text>cataloglinkhref icomoon-info-circle</xsl:text>
+                  <xsl:text>cataloglinkhref</xsl:text>
                 </xsl:attribute>
+                <i class="icomoon icomoon-info-circle" aria-hidden="true"></i><xsl:text> </xsl:text>
                 <xsl:text>Catalog Record</xsl:text>
               </xsl:element>
             </li>
@@ -1360,6 +1374,7 @@
                 <xsl:attribute name="title">
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
                 </xsl:attribute>
+                <i class="icomoon {$fulltext_icon_class}" aria-hidden="true"></i><xsl:text> </xsl:text>
                 <xsl:value-of select="$fulltext_link_string"/>
               </xsl:element>
             </li>
@@ -1485,8 +1500,9 @@
                   <xsl:text>for item </xsl:text><xsl:value-of select="$item-number" />
                 </xsl:attribute>
                 <xsl:attribute name="class">
-                  <xsl:text>cataloglinkhref icomoon-info-circle</xsl:text>
+                  <xsl:text>cataloglinkhref </xsl:text>
                 </xsl:attribute>
+                <i class="icomoon icomoon-info-circle" aria-hidden="true"></i><xsl:text> </xsl:text>
                 <xsl:text>Catalog Record</xsl:text>
               </xsl:element>
             </li>
