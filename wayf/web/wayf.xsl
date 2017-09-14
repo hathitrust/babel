@@ -39,7 +39,7 @@
     <h2 id="main" class="main-section-title">Log in to get the most out of HathiTrust.</h2>
     <xsl:if test="normalize-space(//BackToRefererLink)">
       <div class="back-to-referer">
-        <a class="btn"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go back</a>
+        <a class="btn" href="{//BackToRefererLink}"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go back</a>
       </div>
     </xsl:if>
 

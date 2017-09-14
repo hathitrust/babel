@@ -91,7 +91,7 @@ sub handle_BACK_TO_REFERER_LINK
 
     my $cgi = $C->get_object('CGI');
     if ( my $referer_link = $cgi->referer() ) {
-        return $referer_link;
+        return Utils::xml_escape_url_separators($referer_link);
     }
 }
 
