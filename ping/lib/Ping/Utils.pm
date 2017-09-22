@@ -1,6 +1,8 @@
 package Ping::Utils;
 
 use Auth::Auth;
+use Institutions;
+use Utils;
 
 sub identify_user {
 
@@ -12,6 +14,12 @@ sub identify_user {
     my $institution_code = $auth->get_institution_code($C, 'mapped');
     my $institution_name = $auth->get_institution_name($C, 'mapped');
     my $print_disabled = $auth->get_eduPersonEntitlement_print_disabled($C);
+
+    my $provider = $auth->get_institution_name($C, 'mapped', 1);
+    if ( $provider eq 'University of Michigan' && ! $institution_name && ! Utils::Get_Remote_User() !~ m,^[a-z]$, ) {
+        # make this obvious you're a friend
+        $provider .= " - Friend";
+    }
 
     my $auth_type;
     if ( $auth->auth_sys_is_SHIBBOLETH($C) ) {
@@ -30,6 +38,7 @@ sub identify_user {
              displayName => $displayName, 
              affiliation => $institution_name, 
              institution => $institution_code,
+             provider => $provider,
              u => $print_disabled };
 
 }

@@ -107,10 +107,6 @@ HT.login_status.idp_list = $idp_list_json;
 HT.is_cosign_active = $is_cosign_active;
 JAVASCRIPT
         
-        if ( $callback ) {
-            $retval .= "\n" . qq{$callback(HT.login_status);} . "\n";
-        }
-        
         $retval .= <<JAVASCRIPT;
 HT.shibboleth_alert = function() {
     alert("Please quit your browser to log out of Shibboleth.");
@@ -152,6 +148,9 @@ HT.login_link = function() {
 }
 JAVASCRIPT
         
+        if ( $callback ) {
+            $retval .= "\n" . qq{$callback(HT.login_status);} . "\n";
+        }
     }
     
     my $C = new Context;
@@ -189,9 +188,17 @@ JAVASCRIPT
             $response->cookies->{HT_AUTHTYPE} = { 
                 'value' => 'shibboleth', 
                 'path' => '/',
-                'domain' => '.hathitrust.org'
+                'domain' => '.hathitrust.org',
+                'secure' => 1,
             };
         }
+        $response->cookies->{HTprovider} = {
+            value => $$info{provider},
+            path => '/',
+            domain => '.hathitrust.org',
+            secure => 1,
+        } unless ( exists($request->cookies->{HTprovider}) );
+
         my $displayName = uri_escape($$info{displayName});
         my $affiliation = uri_escape($$info{affiliation});
         $response->body(_body($callback, 'true', $displayName, $affiliation, $$info{authType}, $$info{u}, "LOGGED IN", 0));
