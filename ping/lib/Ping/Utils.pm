@@ -16,7 +16,7 @@ sub identify_user {
     my $print_disabled = $auth->get_eduPersonEntitlement_print_disabled($C);
 
     my $provider = $auth->get_institution_name($C, 'mapped', 1);
-    if ( $provider eq 'University of Michigan' && ! $institution_name && ! Utils::Get_Remote_User() !~ m,^[a-z]$, ) {
+    if ( $provider eq 'University of Michigan' && ! $institution_name && ! Utils::Get_Remote_User() !~ m,^[a-z]+$, ) {
         # make this obvious you're a friend
         $provider .= " - Friend";
     }
