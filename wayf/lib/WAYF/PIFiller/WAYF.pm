@@ -27,6 +27,8 @@ use Utils;
 use Debug::DUtils;
 use Institutions;
 
+use URI::Escape;
+
 use WAYF::IdpConfig;
 
 require "PIFiller/Common/Globals.pm";
@@ -65,15 +67,15 @@ sub handle_FRIEND_LOGIN_LINK
     : PI_handler(FRIEND_LOGIN_LINK) {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $friend_href = $C->get_object('CGI')->param('target');
-    if (! $friend_href) {
-        $friend_href = $C->get_object('MdpConfig')->get('default_friend_login');
-    }
-    else {
-        $friend_href = Utils::url_over_SSL_to($friend_href);
-    }
+    my $target = $C->get_object('CGI')->param('target');
 
-    return $friend_href;
+    if (! $target) {
+        $target = $C->get_object('MdpConfig')->get('default_target');
+    }
+    $target = Utils::url_over_SSL_to($target);
+    $target = uri_escape($target);
+
+    return qq{https://$ENV{HTTP_HOST}/Shibboleth.sso/umich?target=$target};
 }
 
 # ---------------------------------------------------------------------

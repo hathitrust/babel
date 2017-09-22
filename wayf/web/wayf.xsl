@@ -139,7 +139,11 @@
             <h4>Log in with:</h4>
             <ul class="unstyled">
               <xsl:apply-templates select="SocialIdP_List/IdP_Site" />
-              <li><a href="{build-friend-link}">University of Michigan Friend Account</a></li>
+              <li>
+                <xsl:call-template name="build-friend-link">
+                  <xsl:with-param name="link-text">University of Michigan Friend Account</xsl:with-param>
+                </xsl:call-template>
+              </li>
             </ul>
 
             <div id="no-institution-listed" style="text-align: left; xmargin-top: 0;">
