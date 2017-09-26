@@ -13,7 +13,7 @@
   exclude-result-prefixes="h exsl"
   extension-element-prefixes="exsl">
   
-  <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
+  <xsl:variable name="gFinalAccessStatus" select="/MBooksTp/MBooksGlobals/FinalAccessStatus"/>
   <xsl:variable name="gHttpHost" select="/MBooksTop/MBooksGlobals/HttpHost"/>
   <xsl:variable name="gHtId" select="/MBooksTop/MBooksGlobals/HtId"/>
 
@@ -168,7 +168,17 @@
         </ul>
         <xsl:if test="$gLoggedIn = 'YES'">
           <ul id="person-nav" class="nav pull-right">
-            <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li>
+            <!-- <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li> -->
+            <li>
+              <span>
+                <xsl:value-of select="//Header/UserAffiliation" />
+                <xsl:if test="//Header/ProviderName">
+                  <xsl:text> (</xsl:text>
+                  <xsl:value-of select="//Header/ProviderName" />
+                  <xsl:text>)</xsl:text>
+                </xsl:if>
+              </span>
+            </li>
             <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
             <li><a id="logout-link" href="{//Header/LoginLink}">Logout</a></li>
           </ul>

@@ -3,6 +3,8 @@
 <Header>
   <UserName><?USER_NAME?></UserName>
   <UserId><?USER_ID?></UserId>
+  <UserAffiliation><?USER_AFFILIATION?></UserAffiliation>
+  <ProviderName><?PROVIDER_NAME?></ProviderName>
   <LoginLink><?LOGIN_LINK?></LoginLink>
   <PubCollLink><?PUB_COLL_LINK?></PubCollLink>
   <PrivCollLink><?PRIV_COLL_LINK?></PrivCollLink>
