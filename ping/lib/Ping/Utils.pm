@@ -13,13 +13,10 @@ sub identify_user {
     my $displayName = $auth->get_user_display_name($C, 'unscoped');
     my $institution_code = $auth->get_institution_code($C, 'mapped');
     my $institution_name = $auth->get_institution_name($C, 'mapped');
+    my $affiliation = $auth->get_eduPersonUnScopedAffiliation($C);
     my $print_disabled = $auth->get_eduPersonEntitlement_print_disabled($C);
 
-    my $provider = $auth->get_institution_name($C, 'mapped', 1);
-    if ( $provider eq 'University of Michigan' && Utils::Get_Remote_User() !~ m,^[a-z]+$, ) {
-        # make this obvious you're a friend
-        $provider .= " - Friend";
-    }
+    my $providerName = $auth->get_institution_name($C, 'mapped', 1);
 
     my $auth_type;
     if ( $auth->auth_sys_is_SHIBBOLETH($C) ) {
@@ -36,9 +33,10 @@ sub identify_user {
     
     return { authType => $auth_type, 
              displayName => $displayName, 
-             affiliation => $institution_name, 
-             institution => $institution_code,
-             provider => $provider,
+             institution_name => $institution_name,
+             institution_code => $institution_code,
+             providerName => $providerName,
+             affiliation => $affiliation,
              u => $print_disabled };
 
 }
