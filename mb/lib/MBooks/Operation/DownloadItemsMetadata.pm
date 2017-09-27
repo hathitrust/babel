@@ -311,6 +311,8 @@ sub _fill_contents {
     foreach my $row ( @$rows ) {
         next unless ( $self->_include($row) );
         $self->_process_row($row);
+        $$row{catalog_url} = qq{https://catalog.hathitrust.org/Record/$$row{bib_id}};
+        $$row{handle_url} = qq{https://hdl.handle.net/2027/$$row{htitem_id}};
 
         foreach my $code ( keys %{$$row{codes}} ) {
             $$row{codes}{$code} = join(',', @{ $$row{codes}{$code} });
