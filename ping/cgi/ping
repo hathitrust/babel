@@ -145,12 +145,11 @@ HT.login_link = function() {
     var href = HT.login_href();
     var link;
     if ( HT.login_status.logged_in ) {
-        link = 'Hi ' + HT.login_status.displayName + '! ';
-        link += '<a href="' + href + '"';
-        if ( HT.login_status.authType == 'shibboleth' ) {
-            link += ' onclick="return HT.shibboleth_alert();"';
+        link = HT.login_status.affiliation;
+        if ( HT.login_status.providerName ) {
+            link += " (" + HT.login_status.providerName + ")";
         }
-        link += ' id="loginLink">(logout)</a>';
+        link += ' <a href="https://$ENV{SERVER_NAME}/cgi/logout" id="loginLink">(logout)</a>';
     } else {
         link = '<a href="' + href + '">Login</a>';
     }
