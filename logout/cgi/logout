@@ -2,13 +2,17 @@
 
 use strict;
 use CGI;
+use URI::Escape;
 
 # change 'central' to the url of your weblogin server.
 my $central = "https://weblogin.umich.edu/cgi-bin/logout";
-my $query_string = "";
+my $redirect = "";
 
-if ( $ENV{ QUERY_STRING } =~ m|^(https?://.*)$| ) {
-    $query_string = "?$1";
+print STDERR "AHOY AHOY $ENV{QUERY_STRING}\n";
+if ( $ENV{ QUERY_STRING } =~ m{^(https?://.*|https?%3A%2F%2F.*)$}i ) {
+    $redirect = "$1";
+    $redirect = uri_unescape($redirect);
+    print STDERR "AHOY REDIRECT $redirect\n";
 }
 
 # perform any local cleanup here
@@ -25,6 +29,7 @@ use Context;
 use MdpConfig;
 use Database;
 use Session;
+use Auth::Auth;
 
 my $C = new Context;
 
@@ -38,26 +43,75 @@ $C->set_object('MdpConfig', $config);
 my $cookie_name = $config->get('cookie_name');
 
 my %cookies = fetch CGI::Cookie;
+my $instituion_name;
 if (defined($cookies{$cookie_name}))
 {
     my $db = new Database('ht_web');
     $C->set_object('Database', $db);
+
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+    $instituion_name = $auth->get_institution_name($C);
 
     my $sid = $cookies{$cookie_name}->value;
     my $ses = new Session($C, $sid, 0);
 
     $ses->set_persistent('authenticated_via', undef);
     $ses->close();
-}            
+}
+
+my $shib_session_cookie_name;
+foreach my $key ( keys %cookies ) {
+    if ( $key =~ m,_shibsession_, ) {
+        $shib_session_cookie_name = $key;
+        print STDERR "AHOY LOGOUT $shib_session_cookie_name\n";
+        last;
+    }
+}
 
 # redirect to central weblogin server
+# print "Status: 302" . $CGI::CRLF;
+
+# # expire and nullify service cookie
+# my $cookie_domain = Utils::get_cookie_domain();
+# print( "Set-Cookie: $ENV{ COSIGN_SERVICE }=null; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
+# print( "Set-Cookie: HTstatus=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
+
+# print( "Location: $central$query_string" . $CGI::CRLF . $CGI::CRLF );
+
 print "Status: 302" . $CGI::CRLF;
+print "Content-Type: text/html" . $CGI::CRLF;
 
 # expire and nullify service cookie
 my $cookie_domain = Utils::get_cookie_domain();
-print( "Set-Cookie: $ENV{ COSIGN_SERVICE }=null; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
+print( "Set-Cookie: MDPsid}=null; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
 print( "Set-Cookie: HTstatus=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
+print( "Set-Cookie: _saml_idp=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
+print( "Set-Cookie: $shib_session_cookie_name=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF ) if ( $shib_session_cookie_name );
+print( "Location: $redirect" . $CGI::CRLF);
 
-print( "Location: $central$query_string" . $CGI::CRLF . $CGI::CRLF );
+print $CGI::CRLF;
+print <<HTML;
+<html>
+  <head>
+    <title>HathiTrust - Logout</title>
+    <link rel="stylesheet" href="/common/unicorn/css/common.css" />
+  </head>
+
+  <body>
+    <div class="container centered">
+        <div class"row">
+            <div class="span8 push2">
+                <div class="alert alert-success alert-block">
+                    <p>You have logged out!</p>
+                    <p>You are still logged in to $instituion_name.</p>
+                    <p><a class="btn" href="$redirect"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go Back</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>
+HTML
 
 exit( 0 );
