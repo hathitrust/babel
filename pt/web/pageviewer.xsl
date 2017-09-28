@@ -251,7 +251,16 @@
   <xsl:template name="navbar-user-links">
     <xsl:choose>
       <xsl:when test="$gLoggedIn = 'YES'">
-        <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li>
+        <li>
+          <span>
+            <xsl:value-of select="//Header/UserAffiliation" />
+            <xsl:if test="//Header/ProviderName">
+              <xsl:text> (</xsl:text>
+              <xsl:value-of select="//Header/ProviderName" />
+              <xsl:text>)</xsl:text>
+            </xsl:if>
+          </span>
+        </li>
         <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
         <li><a id="logout-link" href="{//Header/LoginLink}">Logout</a></li>
       </xsl:when>
