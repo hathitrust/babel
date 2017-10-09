@@ -84,12 +84,13 @@ my $app = sub {
     
     sub _body {
         # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
-        my ( $callback, $logged_in, $displayName, $institution_name, $affiliation, $providerName, $auth_type, $print_disabled, $msg, $idp_list, $expired ) = @_;
+        my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $msg, $idp_list, $expired ) = @_;
         $print_disabled = $print_disabled ? 'true' : 'false';
         $expired = $expired ? 'true' : 'false';
         my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
         $displayName = $displayName || '';
         $institution_name = $institution_name || '';
+        $institution_code || $institution_code || '';
         $providerName = $providerName || '';
         $affiliation = $affiliation || '';
         unless ( $affiliation ) {
@@ -108,6 +109,7 @@ HT.login_status = {};
 HT.login_status.logged_in = $logged_in;
 HT.login_status.displayName = decodeURIComponent('$displayName');
 HT.login_status.institutionName = decodeURIComponent('$institution_name');
+HT.login_status.institutionCode = decodeURIComponent('$institution_code');
 HT.login_status.affiliation = decodeURIComponent('$affiliation');
 HT.login_status.providerName = decodeURIComponent('$providerName');
 HT.login_status.expired = $expired;
@@ -212,8 +214,9 @@ JAVASCRIPT
         my $displayName = uri_escape($$info{displayName});
         my $affiliation = uri_escape($$info{affiliation});
         my $institution_name = uri_escape($$info{institution_name});
+        my $institution_code = uri_escape($$info{institution_code});
         my $providerName = uri_escape($$info{providerName});
-        $response->body(_body($callback, 'true', $displayName, $institution_name, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN", 0));
+        $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN", 0));
         return $response->finalize;
     }    
 
@@ -253,7 +256,7 @@ JAVASCRIPT
         if ( $$env{HTTPS} && $$env{HTTPS} eq 'on' ) {
             $response = Plack::Response->new(200);
             $response->content_type('text/javascript');
-            $response->body(_body($callback, 'false', "", "", "", "", 'null', 0, "NOT LOGGED IN: SESSION BUT NO AUTH", $idp_list, $ses->get_persistent('logged_out', 0)));
+            $response->body(_body($callback, 'false', "", "", "", "", "", 'null', 0, "NOT LOGGED IN: SESSION BUT NO AUTH", $idp_list, $ses->get_persistent('logged_out', 0)));
             return $response->finalize;
         }
     }
@@ -261,7 +264,7 @@ JAVASCRIPT
     # decidedly not authenticated
     $response = Plack::Response->new(200);
     $response->content_type('text/javascript');
-    $response->body(_body($callback, 'false', "", "", "", "", 'null', 0, "NOT LOGGED IN: NO AUTHENTICATED VIA", $idp_list, 0));
+    $response->body(_body($callback, 'false', "", "", "", "", "", 'null', 0, "NOT LOGGED IN: NO AUTHENTICATED VIA", $idp_list, 0));
     return $response->finalize;
     
 };
