@@ -8,11 +8,12 @@ use URI::Escape;
 my $central = "https://weblogin.umich.edu/cgi-bin/logout";
 my $redirect = "";
 
-print STDERR "AHOY AHOY $ENV{QUERY_STRING}\n";
+# print STDERR "AHOY AHOY $ENV{QUERY_STRING} :: $ENV{HTTP_REFERER}\n";
 if ( $ENV{ QUERY_STRING } =~ m{^(https?://.*|https?%3A%2F%2F.*)$}i ) {
     $redirect = "$1";
     $redirect = uri_unescape($redirect);
-    print STDERR "AHOY REDIRECT $redirect\n";
+} elsif ( $ENV{HTTP_REFERER} =~ m,\.hathitrust\.org, ) {
+    $redirect = $ENV{HTTP_REFERER};
 }
 
 # perform any local cleanup here
@@ -64,7 +65,7 @@ my $shib_session_cookie_name;
 foreach my $key ( keys %cookies ) {
     if ( $key =~ m,_shibsession_, ) {
         $shib_session_cookie_name = $key;
-        print STDERR "AHOY LOGOUT $shib_session_cookie_name\n";
+        # print STDERR "AHOY LOGOUT $shib_session_cookie_name\n";
         last;
     }
 }
@@ -79,7 +80,8 @@ foreach my $key ( keys %cookies ) {
 
 # print( "Location: $central$query_string" . $CGI::CRLF . $CGI::CRLF );
 
-print "Status: 302" . $CGI::CRLF;
+my $status = $redirect ? 302 : 200;
+print "Status: $status" . $CGI::CRLF;
 print "Content-Type: text/html" . $CGI::CRLF;
 
 # expire and nullify service cookie
@@ -88,7 +90,14 @@ print( "Set-Cookie: MDPsid}=null; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT;
 print( "Set-Cookie: HTstatus=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
 print( "Set-Cookie: _saml_idp=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
 print( "Set-Cookie: $shib_session_cookie_name=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF ) if ( $shib_session_cookie_name );
-print( "Location: $redirect" . $CGI::CRLF);
+print( "Location: $redirect" . $CGI::CRLF) if ( $status == 302 );
+
+if ( $status == 302 ) {
+    $redirect = qq{href="$redirect"};
+} else {
+    # no redirect so punt
+    $redirect = qq{href="#" onclick="history.back(); return false"};
+}
 
 print $CGI::CRLF;
 print <<HTML;
@@ -96,6 +105,23 @@ print <<HTML;
   <head>
     <title>HathiTrust - Logout</title>
     <link rel="stylesheet" href="/common/unicorn/css/common.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <style>
+        \@media all and (max-width: 900px) {
+          .container.centered {
+            width: 95%;
+          }
+
+        \@media all and (max-width: 480px) {
+
+          .container.page.centered {
+            // padding-left: 0;
+            // padding-right: 0;
+            padding-left: 1em;
+            padding-right: 1em;
+
+          }
+    </style>
   </head>
 
   <body>
@@ -105,7 +131,7 @@ print <<HTML;
                 <div class="alert alert-success alert-block">
                     <p>You have logged out!</p>
                     <p>You are still logged in to $instituion_name.</p>
-                    <p><a class="btn" href="$redirect"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go Back</a></p>
+                    <p><a class="btn" $redirect><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go Back</a></p>
                 </div>
             </div>
         </div>
