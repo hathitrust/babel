@@ -4,6 +4,119 @@ use strict;
 use CGI;
 use URI::Escape;
 
+{
+    package Net::Google::Analytics::MeasurementProtocol;
+    use strict;
+    use warnings;
+    use Carp ();
+
+    our $VERSION = 0.02;
+
+    sub new {
+        my $class = shift;
+        my %args = (@_ == 1 ? %{$_[0]} : @_ );
+
+        Carp::croak 'tracking_id (tid) missing or invalid'
+            unless $args{tid} && $args{tid} =~ /^(?:UA|MO|YT)-\d+-\d+$/;
+
+        # If the 'aip' key exists, even if set to 0, the ip will be anonymized.
+        # So we only push it to our args if user set it to 1.
+        delete $args{aip} if exists $args{aip} && !$args{aip};
+
+        # default settings:
+        $args{ua}  ||= __PACKAGE__ . "/$VERSION";
+        $args{cid} ||= _gen_uuid_v4();
+        $args{v}   ||= 1;
+        $args{cd}  ||= '/';
+        $args{an}  ||= 'My App';
+        $args{ds}  ||= 'app';
+
+        my $debug = delete $args{debug};
+        return bless {
+            args  => \%args,
+            debug => $debug,
+            ua    => _build_user_agent( $args{ua} ),
+        }, $class;
+    }
+
+    sub send {
+        my ($self, $hit_type, $args) = @_;
+
+        my %args = (%{$self->{args}}, %$args, t => $hit_type);
+        my %required = (
+            pageview    => [qw(v tid cid cd an)],
+            screenview  => [qw(v tid cid cd an)],
+            event       => [qw(v tid cid cd an ec ea)],
+            transaction => [qw(v tid cid cd an ti)],
+            item        => [qw(v tid cid cd an ti in)],
+            social      => [qw(v tid cid cd an sn sa st)],
+            exception   => [qw(v tid cid cd an)],
+            timing      => [qw(v tid cid cd an utc utv utt)],
+        );
+        Carp::croak("invalid hit type $hit_type") unless $required{$hit_type};
+
+        foreach my $required ( @{$required{$hit_type}} ) {
+            Carp::croak("argument '$required' is required for '$hit_type' hit type. See https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#$required for more information")
+                unless $args{$required};
+        }
+        Carp::croak('for "pageview" hit types you must set either "dl" or both "dh" and "dp"')
+            if $hit_type eq 'pageview' && !($args{dl} || ($args{dh} && $args{dp}));
+
+        return $self->_request(\%args);
+    }
+
+    sub _request {
+        my ($self, $args) = @_;
+
+        my $ua = $self->{ua};
+        my $target = $self->{debug}
+            ? 'https://www.google-analytics.com/debug/collect'
+            : 'https://www.google-analytics.com/collect'
+            ;
+
+        if ( $self->{debug} ) {
+            print STDERR Data::Dumper::Dumper($args);
+        }
+
+        my $res = $ua->post( $target, $args );
+        if ($self->{debug}) {
+            return $res;
+        }
+        else {
+            return substr($res->status_line, 0, 1) == 2;
+        }
+    }
+
+    sub _build_user_agent {
+        my ($ua) = @_;
+        # require Furl;
+        # return Furl->new( agent => $ua, timeout => 5 );
+
+        require LWP::UserAgent;
+        return LWP::UserAgent->new( agent => $ua, timeout => 5 );
+    }
+
+    # UUID v4 (pseudo-random) generator based on UUID::Tiny
+    sub _gen_uuid_v4 {
+        my $uuid = '';
+        for ( 1 .. 4 ) {
+            my $v1 = int(rand(65536)) % 65536;
+            my $v2 = int(rand(65536)) % 65536;
+            my $rand_32bit = ($v1 << 16) | $v2;
+            $uuid .= pack 'I', $rand_32bit;
+        }
+        substr $uuid, 6, 1, chr( ord( substr( $uuid, 6, 1 ) ) & 0x0f | 0x40 );
+        substr $uuid, 8, 1, chr( ord( substr( $uuid, 8, 1 ) ) & 0x3f | 0x80 );
+
+        # uuid is created. Convert to string:
+        return join '-',
+               map { unpack 'H*', $_ }
+               map { substr $uuid, 0, $_, '' }
+               ( 4, 2, 2, 2, 6 );
+    }
+
+}
+
 # change 'central' to the url of your weblogin server.
 my $central = "https://weblogin.umich.edu/cgi-bin/logout";
 my $redirect = "";
@@ -80,6 +193,9 @@ foreach my $key ( keys %cookies ) {
 
 # print( "Location: $central$query_string" . $CGI::CRLF . $CGI::CRLF );
 
+_log_ga($C, $instituion_name);
+
+
 my $status = $redirect ? 302 : 200;
 print "Status: $status" . $CGI::CRLF;
 print "Content-Type: text/html" . $CGI::CRLF;
@@ -141,3 +257,41 @@ print <<HTML;
 HTML
 
 exit( 0 );
+
+sub _log_ga {
+    my ( $C, $instituion_name ) = @_;
+
+    # require Net::Google::Analytics::MeasurementProtocol;
+    require UUID::Tiny;
+
+    # hard-coded values, bleh!
+    my $debug = 0;
+    my $ga = Net::Google::Analytics::MeasurementProtocol->new(
+                tid => 'UA-954893-23', 
+                cid => '565e2af8-cf17-42bb-bef5-9b4cbc80aeb4',
+                ua  => 'HathiTrust/logout',
+                an => 'logout',
+                debug => $debug,
+            );
+
+    my @dp = ( qq{/cgi/logout/} );
+    push @dp, $instituion_name;
+    my $dp = join('', @dp);
+    my $dl = ( $ENV{SERVER_PORT} eq 443 ? 'https://' : 'http://' ) . $ENV{SERVER_NAME} . $dp;
+
+    my $cid = UUID::Tiny::create_uuid_as_string(5, $ENV{REMOTE_ADDR});
+    my $res = $ga->send(
+        'pageview', {
+            dt => 'Logout',
+            ds => 'logout', 
+            dh => $ENV{SERVER_NAME},
+            dl => $dl,
+            dp => $dp,
+            cd => $dl,
+            ua  => $ENV{HTTP_USER_AGENT},
+            uip => ( $ENV{REMOTE_ADDR} || q{127.0.0.1} ),
+        }
+    );
+
+    print STDERR $res->content if ( $debug );
+}
