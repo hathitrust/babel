@@ -90,7 +90,7 @@ my $app = sub {
         my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
         $displayName = $displayName || '';
         $institution_name = $institution_name || '';
-        $institution_code || $institution_code || '';
+        $institution_code = $institution_code || '';
         $providerName = $providerName || '';
         $affiliation = $affiliation || '';
         unless ( $affiliation ) {
