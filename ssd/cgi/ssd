@@ -117,7 +117,7 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'a
     # Log ic access to the HTTP header
     if ( Auth::Logging::log_incopyright_access($C, $id) ) {
         Auth::ACL::a_Increment_accesscount($id);
-        Auth::Logging::log_successful_access($C, $gId, 'ssd');
+        Auth::Logging::log_successful_access($C, $id, 'ssd');
     }
 
     # Limited, page at a time OCR navigation is handled here by the
