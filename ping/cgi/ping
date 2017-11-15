@@ -58,6 +58,9 @@ use URI::Escape;
 use Ping::Utils;
 use JSON::XS;
 
+use MIME::Base64;
+
+use Auth::Logging;
 
 {
     package App;
@@ -84,13 +87,15 @@ my $app = sub {
     
     sub _body {
         # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
-        my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $msg, $idp_list, $expired ) = @_;
+        my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $msg, $idp_list, $expired ) = @_;
         $print_disabled = $print_disabled ? 'true' : 'false';
         $expired = $expired ? 'true' : 'false';
         my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
         $displayName = $displayName || '';
         $institution_name = $institution_name || '';
         $institution_code = $institution_code || '';
+        $mapped_institution_name = $mapped_institution_name || '';
+        $mapped_institution_name = $mapped_institution_name || '';
         $providerName = $providerName || '';
         $affiliation = $affiliation || '';
         unless ( $affiliation ) {
@@ -110,6 +115,8 @@ HT.login_status.logged_in = $logged_in;
 HT.login_status.displayName = decodeURIComponent('$displayName');
 HT.login_status.institutionName = decodeURIComponent('$institution_name');
 HT.login_status.institutionCode = decodeURIComponent('$institution_code');
+HT.login_status.mappedInstitutionName = decodeURIComponent('$mapped_institution_name');
+HT.login_status.mappedInstitutionCode = decodeURIComponent('$mapped_institution_code');
 HT.login_status.affiliation = decodeURIComponent('$affiliation');
 HT.login_status.providerName = decodeURIComponent('$providerName');
 HT.login_status.expired = $expired;
@@ -167,7 +174,9 @@ JAVASCRIPT
     
     my $C = new Context;
     $C->set_object('App', new App);
-    
+
+    my $original_request = $request->referer || '';
+
     my $callback = $request->param('callback') || qq{ping_handler};
     
     # configuration; do we need our own config?
@@ -178,19 +187,51 @@ JAVASCRIPT
                               );
     $C->set_object('MdpConfig', $config);
 
+    # now need to hit the database
+    $C->set_object('MdpConfig', $config);
+
+    my $cgi = new CGI;
+    $C->set_object('CGI', $cgi);
+
+    # Database connection
+    my $db = new Database('ht_web');
+    $C->set_object('Database', $db);
+
+    # get an Auth object to trigger cgi/shcgi redirection
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+
+    # Session
+    # by putting this here, we are saying that EVERYONE will get a session
+    # even just by browsing www and catalog
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+
+    if ( my @tmp = ( $original_request =~ m{/cgi/(mb)|/cgi/(ls)|(catalog).hathitrust.org|(www).hathitrust.org} ) ) {
+        # my $original_referer = MIME::Base64::decode_base64(substr(($request->path_info || '/'), 1));
+        my $original_referer = $request->param('ref');
+        my ( $original_host, $original_request_uri ) = ( $original_request =~ m{https://([^/]+)(/.*)});
+        my $app_name = (grep /\w+/, @tmp)[0];
+        Auth::Logging::log_access($C, $app_name, undef, { 
+            HTTP_REFERER => $original_referer, 
+            REQUEST_URI => $original_request_uri,
+            HTTP_HOST   => $original_host,
+        });
+    }
+
     # if REMOTE_USER is set, we're done
     if ( $$env{REMOTE_USER} ) {
 
-        # Database connection to look up mdp.ht_institutions table
-        my $db = new Database('ht_web');
-        $C->set_object('Database', $db);
+        # # Database connection to look up mdp.ht_institutions table
+        # my $db = new Database('ht_web');
+        # $C->set_object('Database', $db);
 
-        my $cgi = new CGI;
-        $C->set_object('CGI', $cgi);
+        # my $cgi = new CGI;
+        # $C->set_object('CGI', $cgi);
 
-        # Session
-        my $ses = Session::start_session($C);
-        $C->set_object('Session', $ses);
+        # # Session
+        # my $ses = Session::start_session($C);
+        # $C->set_object('Session', $ses);
 
         my $info = Ping::Utils::identify_user($C, $env, $config);
 
@@ -215,56 +256,26 @@ JAVASCRIPT
         my $affiliation = uri_escape($$info{affiliation});
         my $institution_name = uri_escape($$info{institution_name});
         my $institution_code = uri_escape($$info{institution_code});
+        my $mapped_institution_name = uri_escape($$info{mapped_institution_name});
+        my $mapped_institution_code = uri_escape($$info{mapped_institution_code});
         my $providerName = uri_escape($$info{providerName});
-        $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN", 0));
+        $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN", undef, 0));
         return $response->finalize;
     }    
-
-    # now need to hit the database
-    $C->set_object('MdpConfig', $config);
-
-    my $cgi = new CGI;
-    $C->set_object('CGI', $cgi);
-
-    # Database connection
-    my $db = new Database('ht_web');
-    $C->set_object('Database', $db);
-
-    # get an Auth object to trigger cgi/shcgi redirection
-    my $auth = new Auth::Auth($C);
-    $C->set_object('Auth', $auth);
 
     # get the institutions
     my $idp_list = Institutions::get_idp_list($C);
 
-    # don't create a session unless absolutely necessary
     my $cookies = $request->cookies;
-    if ( $$cookies{$config->get('cookie_name')} ) {
-        # Session
 
-        my $ses = Session::start_session($C);
-        $C->set_object('Session', $ses);
-
-        my $auth_type = $ses->get_persistent('authenticated_via');
-        if ( ! $MdpGlobals::is_cosign_active || $auth_type && $auth_type eq Auth::Auth::SHIBBOLETH ) {
-            # reinitialize Auth to trigger cgi/shcgi redirection / session expiration
-            $auth->_initialize($C);            
-        }
-
-        # if this is https:// AND there's no REMOTE_USER then
-        # we're still not logged in
-        if ( $$env{HTTPS} && $$env{HTTPS} eq 'on' ) {
-            $response = Plack::Response->new(200);
-            $response->content_type('text/javascript');
-            $response->body(_body($callback, 'false', "", "", "", "", "", 'null', 0, "NOT LOGGED IN: SESSION BUT NO AUTH", $idp_list, $ses->get_persistent('logged_out', 0)));
-            return $response->finalize;
-        }
-    }
-
-    # decidedly not authenticated
     $response = Plack::Response->new(200);
     $response->content_type('text/javascript');
-    $response->body(_body($callback, 'false', "", "", "", "", "", 'null', 0, "NOT LOGGED IN: NO AUTHENTICATED VIA", $idp_list, 0));
+
+    my $cookie = $ses->get_cookie();
+    $response->headers([ "Set-Cookie", $cookie ]);
+
+    # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
+    $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         "NOT LOGGED IN", $idp_list, $ses->get_persistent('logged_out', 0)));
     return $response->finalize;
     
 };

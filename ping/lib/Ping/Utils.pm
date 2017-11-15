@@ -10,14 +10,6 @@ sub identify_user {
 
     my $auth = new Auth::Auth($C);
 
-    my $displayName = $auth->get_user_display_name($C, 'unscoped');
-    my $institution_code = $auth->get_institution_code($C, 'mapped');
-    my $institution_name = $auth->get_institution_name($C, 'mapped');
-    my $affiliation = ucfirst($auth->get_eduPersonUnScopedAffiliation($C));
-    my $print_disabled = $auth->get_eduPersonEntitlement_print_disabled($C);
-
-    my $providerName = $auth->get_institution_name($C, 'mapped', 1);
-
     my $auth_type;
     if ( $auth->auth_sys_is_SHIBBOLETH($C) ) {
         $auth_type = 'shibboleth';
@@ -29,16 +21,25 @@ sub identify_user {
         $auth_type = '';
     } 
 
+    my $retval = {authType => $authType};
 
+    $$retval{displayName} = $auth->get_user_display_name($C, 'unscoped');
+    $$retval{institution_code} = $auth->get_institution_code($C);
+    $$retval{institution_name} = $auth->get_institution_name($C);
+
+    if ( ( my $mapped = $auth->get_institution_code($C, 'mapped') ) ne $$retval{institution_code} ) {
+        $$retval{mapped_institution_code} = $mapped;
+    }
+    if ( ( my $mapped = $auth->get_institution_name($C, 'mapped') ) ne $$retval{institution_name} ) {
+        $$retval{mapped_institution_name} = $mapped;
+    }
+    $$retval{affiliation} = ucfirst($auth->get_eduPersonUnScopedAffiliation($C));
+    $$retval{u} = $auth->get_eduPersonEntitlement_print_disabled($C);
+
+    $$retval{providerName} = $auth->get_institution_name($C, undef, 1);
+
+    return $retval;
     
-    return { authType => $auth_type, 
-             displayName => $displayName, 
-             institution_name => $institution_name,
-             institution_code => $institution_code,
-             providerName => $providerName,
-             affiliation => $affiliation,
-             u => $print_disabled };
-
 }
 
 1;
