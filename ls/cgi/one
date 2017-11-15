@@ -33,10 +33,10 @@ my $dest_url; my $dest_base;
 my $LS_DOMAIN = qq{babel.hathitrust.org};
 my $CATALOG_DOMAIN = qq{catalog.hathitrust.org};
 
-my $SCHEME = qq{http};
-if ( $cgi->https() ) {
-    $SCHEME = qq{https};
-}
+my $SCHEME = qq{https};
+# if ( $cgi->https() ) {
+#     $SCHEME = qq{https};
+# }
 
 my $referer = $cgi->referer();
 if ( ( $referer =~ m,/test\., && $referer !~ m,\.babel, ) || $referer =~ m,/beta-3, ) {
