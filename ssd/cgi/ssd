@@ -87,6 +87,7 @@ $mdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues);
 # are responsible for being authenticated when they arrive here if
 # they want access.  They are not forced to login.
 
+Auth::Logging::log_access($C, 'ssd');
 if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'allow' ) {
     # We reached this point because
     # (1) authed SSD user of ic on US soil or of pd where pd for non-US affiliates does not include pdus
@@ -117,7 +118,7 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'a
     # Log ic access to the HTTP header
     if ( Auth::Logging::log_incopyright_access($C, $id) ) {
         Auth::ACL::a_Increment_accesscount($id);
-        Auth::Logging::log_successful_access($C, $id, 'ssd');
+        # Auth::Logging::log_successful_access($C, $id, 'ssd');
     }
 
     # Limited, page at a time OCR navigation is handled here by the
@@ -134,7 +135,7 @@ if ( $C->get_object('Access::Rights')->assert_final_access_status($C, $id) eq 'a
     }
 }
 else {
-    Auth::Logging::log_failed_access($C, $id, 'ssd');
+    # Auth::Logging::log_failed_access($C, $id, 'ssd');
 }
 
 
