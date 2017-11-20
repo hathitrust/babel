@@ -314,10 +314,12 @@ HT.Reader = {
             var size = Math.ceil(zoom * 100);
             HT.params.size = size;
             HT.engines.manager.update_zoom(self.getView(), size);
+            self._logPageview(null, "zoom:" + size);
         })
 
         $.subscribe("update.rotate.orient", function(e, orient) {
             HT.params.orient = orient;
+            self._logPageview(null, "rotate:" + orient);
         })
 
         $.subscribe("update.focus.page", function(e, seq) {
@@ -345,6 +347,10 @@ HT.Reader = {
             $.publish("enable.rotate");
             $.publish("enable.download.page");
             $.publish("enable.toggle.fullscreen");
+        })
+
+        $("a[data-tracking-category='outLinks']").on('click', function(e) {
+            self._logPageview(null, "out:" + $(this).attr('href'));
         })
 
         var $e = get_resize_root();
