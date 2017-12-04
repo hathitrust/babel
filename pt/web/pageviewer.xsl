@@ -63,6 +63,9 @@
     <xsl:copy-of select="exsl:node-set($ns)/*/namespace::*" />
     <xsl:attribute name="version">XHTML+RDFa 1.0</xsl:attribute>
     <xsl:attribute name="data-content-provider"><xsl:value-of select="/MBooksTop/MBooksGlobals/ContentProvider" /></xsl:attribute>
+    <xsl:if test="//CurrentCgi/Param[@name='page'] = 'root' and //FinalAccessStatus = 'allow'">
+      <xsl:attribute name="data-analytics-skip">true</xsl:attribute>
+    </xsl:if>
     <xsl:call-template name="setup-extra-html-attributes" />
   </xsl:template>
 

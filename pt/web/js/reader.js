@@ -49,6 +49,8 @@ HT.Reader = {
             }
         }
 
+        self._trackPageview();
+        HT.analytics.deQ();
     },
 
     updateView: function(view) {
@@ -542,7 +544,9 @@ HT.Reader = {
     },
 
     _trackPageview: function(href) {
-        if ( this._tracking && HT.analytics && HT.analytics.enabled ) {
+        // if ( this._tracking && HT.analytics && HT.analytics.enabled ) {
+        if ( this._tracking && HT.analytics ) {
+    				console.log("AHOY AM TRACKING", this._tracking, HT.analytics.enabled, HT.analytics._simplifyPageHref(href));
             HT.analytics.trackPageview(HT.analytics._simplifyPageHref(href));
             // if we were still doing the experiment, we'd do it here
             // HT.analytics.trackPageview(alternate_href, alternate_profile_id);
