@@ -102,6 +102,17 @@
   </xsl:template>
   <!--  pass params from basic search on to advanced search-->
 
+  <xsl:template name="setup-html-data-attributes">
+    <xsl:if test="//MBooksGlobals/CurrentCgi/Param[@name='c']">
+      <xsl:attribute name="data-anlaytics-dimension">
+        <xsl:text>dimension2=</xsl:text>
+        <xsl:text>:</xsl:text>
+        <xsl:value-of select="//MBooksGlobals/CurrentCgi/Param[@name='c']" />
+        <xsl:text>:</xsl:text>
+      </xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template name="GetAdvancedFullTextHref">
     <xsl:value-of select="AdvancedSearch/AdvancedSearchURL"/>
   </xsl:template>
