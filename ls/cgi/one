@@ -25,6 +25,7 @@ my $base = $cgi->url(-full => 1);
 
 my $target = $cgi->param('target');
 my $searchtype = $cgi->param('searchtype');
+$searchtype = 'isn' if ( $searchtype eq 'isbn' );
 my $q1 = $cgi->param('q1');
 my $ft = $cgi->param('ft');
 my $dest_cgi = new CGI({});
