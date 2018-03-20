@@ -8,7 +8,9 @@ BEGIN {
 }
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use BadActors;
 use Vendors __FILE__;
+
 
 use Attribute::Handlers;
 
