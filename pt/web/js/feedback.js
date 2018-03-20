@@ -67,6 +67,15 @@ HT.feedback.dialog = function() {
     $("<input type='hidden' name='SysID' />").val(HT.params.id).appendTo($form);
     $("<input type='hidden' name='RecordURL' />").val(HT.params.RecordURL).appendTo($form);
 
+    if ( HT.crms_state ) {
+        $("<input type='hidden' name='CRMS' />").val(HT.crms_state).appendTo($form);
+        var $email = $form.find("#email");
+        $email.val(HT.crms_state);
+        $email.hide();
+        $("<span>" + HT.crms_state + "</span><br />").insertAfter($email);
+        $form.find(".help-block").hide();
+    }
+
     if ( HT.reader ) {
         $("<input type='hidden' name='SeqNo' />").val(HT.reader.getCurrentSeq()).appendTo($form);
     } else if ( HT.params.seq ) {
@@ -74,9 +83,9 @@ HT.feedback.dialog = function() {
     }
     $("<input type='hidden' name='view' />").val(HT.params.view).appendTo($form);
 
-    if ( HT.crms_state ) {
-        $form.find("#email").val(HT.crms_state);
-    }
+    // if ( HT.crms_state ) {
+    //     $form.find("#email").val(HT.crms_state);
+    // }
 
 
     return $form;
