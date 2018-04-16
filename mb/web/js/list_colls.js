@@ -1100,6 +1100,12 @@ head.ready(function() {
     HT.track_event({ action : 'MB Collection Status', label : (label + " " + href.replace(/.*c=(\d+).*/, "$1"))});
     return true;
   })
+
+  // --- DEBUGGING colltype=priv
+  var $check = $("a[href]").filter(function() { return $(this).attr('href').indexOf('colltype=my-collections') >= 0 });
+  if ( $check.size() > 0 ) {
+    $("body").append('<img src="/mb/common-web/graphics/harmony/1x1.png?' + $check.size() + '" />');
+  }
   
 });
 // })(jQuery);
