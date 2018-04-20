@@ -703,13 +703,16 @@ HT.Reader = {
             var seq = $page.data('seq');
             var num = HT.engines.manager.getPageNumForSeq(seq) || "n" + seq;
             $page.data('num', num);
-            $page.append('<label class="selectable" data-toggle="tooltip" data-placement="bottom"><span class="offscreen directions" data-num="{NUM}">Select page {NUM} to download</span><input type="checkbox" name="selected" class="selectable offscreen" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
-            $page.find("label").tooltip({
-                trigger: 'manual',
-                title: function() {
-                    return $(this).find("span").text()
-                }
-            })
+            if ( ! $page.data('selectified') ) {
+                $page.append('<label class="selectable" data-toggle="tooltip" data-placement="bottom"><span class="offscreen directions" data-num="{NUM}">Select page {NUM} to download</span><input type="checkbox" name="selected" class="selectable offscreen" id="print-{SEQ}" value="{SEQ}" /></label>'.replace(/\{SEQ\}/g, seq).replace(/\{NUM\}/g, num));
+                $page.find("label").tooltip({
+                    trigger: 'manual',
+                    title: function() {
+                        return $(this).find("span").text()
+                    }
+                })
+                $page.data('selectified', true);
+            }
             if ( _.indexOf(printable, seq) > -1 ) {
                 $page.find("input.selectable").prop('checked', true);
                 var $span = $page.find("label.selectable span.directions");
