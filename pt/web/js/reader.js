@@ -1001,7 +1001,7 @@ head.ready(function() {
 
     var test = window.getComputedStyle(document.getElementById('toolbar-horizontal'));
     var testBackgroundColor = test.backgroundColor == 'rgba(0, 0, 0, 0)';
-    if ( testBackgroundColor ) {
+    if ( testBackgroundColor && ! ( HT.params.view == 'image' || HT.params.view == 'plaintext' ) ) {
         // no style
         var new_href = location.href;
         if ( new_href.indexOf('view=') > -1 ) {
