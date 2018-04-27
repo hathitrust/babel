@@ -999,6 +999,20 @@ head.ready(function() {
         return;
     }
 
+    var test = window.getComputedStyle(document.getElementById('toolbar-horizontal'));
+    var testBackgroundColor = test.backgroundColor == 'rgba(0, 0, 0, 0)';
+    if ( testBackgroundColor ) {
+        // no style
+        var new_href = location.href;
+        if ( new_href.indexOf('view=') > -1 ) {
+            new_href = new_href.replace(/view=\w+/, 'view=image');
+        } else {
+            new_href += ( ( new_href.indexOf('&') > -1 ) ? '&' : ';' ) + 'view=image';
+        }
+        window.location.href = new_href;
+        return;
+    }
+
     // update HT.params based on the hash
     if ( window.location.hash ) {
         var tmp1 = window.location.hash.substr(1).split(";");
