@@ -995,7 +995,7 @@ HT.Reader = {
 
 head.ready(function() {
 
-    if ( window.location.href.indexOf("skin=mobile") > -1 ) {
+    if ( window.location.href.indexOf("skin=mobile") > -1 || window.location.href.indexOf("ui=embed") > -1 ) {
         return;
     }
 
