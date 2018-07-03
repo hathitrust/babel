@@ -22,8 +22,8 @@ interleaver_class = LS::Interleaver::Balanced
 # get the name so we can substitute all instances of A with B
 
 
-A_core_name = core-1
-B_core_name = core-2
+A_core_name = x
+B_core_name = y
 
 A_yaml_file_name = dismax_A.yaml
 B_yaml_file_name = dismax_B.yaml
