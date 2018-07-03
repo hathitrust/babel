@@ -73,30 +73,15 @@ sub __Solr_result {
 }
 
 # HACK XXX overide Search::Searcher::__get_Solr_select_url
-# here we can either overide more stuff or hack the shards param and engine url
-# but we need to know AB here
-# can we store it on context object instead of passing it around?
+# and other subroutines so we can pass A or B and get A or B configs from config file
+# can we store $AB on context object instead of passing it around?
 # ---------------------------------------------------------------------
 sub __get_Solr_select_url {
     my $self = shift;
     my ($C, $query_string, $AB) = @_;
 
-    my $shards_param = $self->use_ls_shards() ? $self->__get_LS_Solr_shards_param($C) : undef;
+    my $shards_param = $self->use_ls_shards() ? $self->__get_LS_Solr_shards_param($C,$AB) : undef;
     my $primary_engine_uri = $self->get_engine_uri();
-    #XXX Hack  should at least read config file to get core name of B
-    if ($AB eq 'B')
-    {
-	my $AB_config=$C->get_object('AB_test_config');
-	my $B_core_name = $AB_config->{'_'}->{'B_core_name'};
-	my $A_core_name = $AB_config->{'_'}->{'A_core_name'};
-	
-	#get B core name
-	# replace it
-	$shards_param =~s/$A_core_name/$B_core_name/g;
-	$primary_engine_uri =~s/$A_core_name/$B_core_name/g;
-
-    }
-    
     
     my $script = $C->get_object('MdpConfig')->get('solr_select_script');
     my $url = 
@@ -112,6 +97,96 @@ sub __get_Solr_select_url {
 
 
 # ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+
+=item get_random_shard_solr_engine_uri OVERIDE BASE CLASS METHOD
+
+
+Overide base class to get either A or B urls. Randomize the primary Solr instance for multishard queries to
+distribute the result merge load. Want index of the shard in the array
+of mbooks_solr_engines URIs.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_random_shard_solr_engine_uri {
+    my $C  = shift;
+    my $AB = shift;
+    
+
+    my $config = $C->get_object('MdpConfig');
+    
+    my @engine_uris;
+    if ($AB eq 'A')
+    {
+	@engine_uris = $config->get('A_mbooks_solr_engines');
+    }
+    elsif ($AB eq 'B')
+    {
+	@engine_uris = $config->get('B_mbooks_solr_engines');
+    }
+    
+    my @num_shards_list = $config->get('num_shards_list');
+
+    my $random_shard = $num_shards_list[ int rand @num_shards_list ];
+    my ($index_of_random_shard) = grep { $num_shards_list[$_] eq $random_shard } 0..$#num_shards_list;
+    
+    return $engine_uris[ $index_of_random_shard ];
+}
+
+
+# ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+
+=item __get_LS_Solr_shards_param
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_LS_Solr_shards_param {
+    my $self = shift;
+    my $C    = shift;
+    my $AB   = shift;
+    
+    my $shards_param;
+    my $config = $C->get_object('MdpConfig');
+    
+    my @shard_engine_uris;
+    if ($AB eq 'A')
+    {
+	@shard_engine_uris = $config->get('A_mbooks_solr_engines');
+    }
+    elsif ($AB eq 'B')
+    {
+	@shard_engine_uris = $config->get('B_mbooks_solr_engines');
+    }
+    my @num_shards_list = $config->get('num_shards_list');
+    if (scalar(@num_shards_list) > 1) {
+        my @active_shard_engine_uris;
+        foreach my $shard (@num_shards_list) {
+            push(@active_shard_engine_uris, $shard_engine_uris[$shard-1]);
+        }
+        map {$_ =~ s,^http://,,} @active_shard_engine_uris;
+        
+        $shards_param = 'shards=' . join(',', @active_shard_engine_uris);
+    }
+
+    return $shards_param;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __get_Solr_select_url
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+
 # ---------------------------------------------------------------------
 =item get_Solr_internal_query_result
 
