@@ -138,7 +138,7 @@
           <div style="margin-top: 16px; position: relative">
             <h4>Log in with:</h4>
 
-            <div class="alert alert-block alert-warning" style="color: #000">
+            <div class="alert alert-block alert-warning" style="color: #000; font-size: 14px">
               <h5 class="offscreen">AOL Deprecation Notice</h5>
               <p style="margin-top: 0">
                 <strong>You can no longer login with AOL.</strong>
