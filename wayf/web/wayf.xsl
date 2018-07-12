@@ -135,8 +135,20 @@
             </div>
           </xsl:if>
 
-          <div style="margin-top: 16px">
+          <div style="margin-top: 16px; position: relative">
             <h4>Log in with:</h4>
+
+            <div class="alert alert-block alert-warning" style="color: #000">
+              <h5 class="offscreen">AOL Deprecation Notice</h5>
+              <p style="margin-top: 0">
+                <strong>You can no longer login with AOL.</strong>
+              </p>
+              <p>To access collections you’ve previously built, create a <a href="https://friend.weblogin.umich.edu/friend/">University of Michigan Friend Account</a> that uses the same AOL email address.
+              </p>
+              <p>Contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> for help. We apologize for the inconvenience.
+              </p>
+            </div>
+
             <ul class="unstyled">
               <xsl:apply-templates select="SocialIdP_List/IdP_Site" />
               <li>
