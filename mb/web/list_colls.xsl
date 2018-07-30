@@ -177,6 +177,7 @@
             'Updated',
             'Updated_Display',
             'Featured',
+            'Branding',
             'Shared',
             'DeleteCollHref'
           ];
@@ -201,6 +202,7 @@
               if ( featured ) {
                 bucket.featured.push(<xsl:value-of select="position() - 1" />);
               }
+              html.push('<xsl:value-of select="Branding" />');
               html.push('<xsl:value-of select="Shared" />');
               html.push('<xsl:value-of select="DeleteCollHref" />');
               bucket.html.push(html);

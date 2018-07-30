@@ -117,6 +117,8 @@ sub bc_Usage {
 
     print qq{       [EXPUNGE] batch-collection.pl -X coll_id -o superuserid\n\n};
 
+    print qq{       [UPDATE]  batch-collection.pl -u coll_id [-t 'quoted title'] [-d 'quoted description'] [-o userid] [-O 'quoted owner name'] [-s <public|private|draft>]\n\n};
+
     print qq{       [QUERY]   batch-collection.pl -c -t title -o userid\n\n};
 
     print qq{       [QUERY]   batch-collection.pl -C <coll_id>\n\n};
@@ -143,8 +145,8 @@ sub bc_Usage {
 
 }
 
-our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X, $opt_M);
-getopts('ct:d:o:f:a:D:C:X:M:');
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X, $opt_M, $opt_O, $opt_u, $opt_s);
+getopts('ct:d:o:f:a:D:C:X:M:O:u:s:');
 
 my $INPUT_FILE = $opt_f || 'general';
 
@@ -198,6 +200,7 @@ my $DELETE = $opt_D;
 my $EXPUNGE = $opt_X;
 my $USERID = $opt_C;
 my $DUMP = $opt_M;
+my $UPDATE = $opt_u;
 
 my $CREATE = 0;
 
@@ -267,6 +270,13 @@ elsif ($COLL_ID) {
 }
 elsif ($USERID) {
 }
+elsif ($UPDATE) {
+    unless ( $opt_t || $opt_d || $opt_o || $opt_O || $opt_s ) {
+        Log_print( qq{missing -t/-d/-o/-O/-s options for collection metadata update\n\n} );
+        bc_Usage();
+        exit 1;        
+    }
+}
 else {
     if ($opt_t && ((! $opt_d) || (! $opt_o) || (! $opt_f))) {
         Log_print( qq{missing -d or -o or -f options for collection creation operation\n\n} );
@@ -295,15 +305,16 @@ else {
     $CREATE = 1;
 }
 
-my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID);
+my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID, $C_STATUS);
 if ($APPEND) {
     ($C_OWNER, $C_OWNER_NAME, $C_COLL_ID) =
-      ($opt_o, $opt_o, $opt_a,);
+      ($opt_o, $opt_O || $opt_o, $opt_a,);
 }
 else {
     ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME) =
-      ($opt_t, $opt_d, $opt_o, $opt_o,);
+      ($opt_t, $opt_d, $opt_o, $opt_O || $opt_o,);
 }
+$C_STATUS = $opt_s;
 
 Utils::map_chars_to_cers(\$C_DESC, [q{"}, q{'}]);
 Utils::map_chars_to_cers(\$C_TITLE, [q{"}, q{'}]);
@@ -450,13 +461,18 @@ elsif ($USERID) {
     }
 }
 elsif ($COLL_ID) {
-    my $coll_id = $CO->get_coll_id_for_collname_and_user($C_TITLE, $C_OWNER_NAME);
+    my $coll_id = $CO->get_coll_id_for_collname_and_user($C_TITLE, $C_OWNER);
     if ($coll_id) {
-        Log_print( qq{\nCollection id = $coll_id for collection="$C_TITLE" and owner="$C_OWNER_NAME"\n} );
+        Log_print( qq{\nCollection id = $coll_id for collection="$C_TITLE" and owner="$C_OWNER"\n} );
     }
     else {
         Log_print( qq{\nERROR: could not determine Collection id for collection="$C_TITLE" and owner="$C_OWNER_NAME"\n} );
     }
+}
+elsif ($UPDATE) {
+    my $coll_id = $UPDATE;
+    my @log = bc_handle_metadata_update($C, $coll_id);
+    Log_print( qq{\nUpdated collection id = $coll_id with\n    } . join("\n    ", @log) . qq{\n} );
 }
 else {
     Log_print( qq{Begin "$C_TITLE" collection creation\n} );
@@ -743,6 +759,65 @@ sub bc_handle_add_items_to {
     }
 }
 
+sub bc_handle_metadata_update {
+    my ( $C, $coll_id ) = @_;
+    my $dbh = $CO->get_dbh();
+    my $update_sql = qq{UPDATE mb_collection SET };
+    my @params = ();
+    my @expr = ();
+    my @log = ();
+    if ( $C_OWNER ) {
+        push @expr, q{owner = ?};
+        push @params, $C_OWNER;
+        push @log, qq{owner = $C_OWNER};
+    }
+    if ( $C_OWNER_NAME ) {
+        push @expr, q{owner_name = ?};
+        push @params, $C_OWNER_NAME;
+        push @log, qq{owner = $C_OWNER_NAME};
+    }
+    if ( $C_TITLE ) {
+        push @expr, q{collname = ?};
+        push @params, $C_TITLE;
+        push @log, qq{owner = $C_TITLE};
+    }
+    if ( $C_DESC ) {
+        if ( $C_DESC eq 'NULL' ) {
+            push @expr, q{colldesc = NULL};
+            push @log, qq{colldesc = NULL};
+        } else {
+            push @expr, q{colldesc = ?};
+            push @params, $C_DESC;
+            push @log, qq{owner = $C_DESC};    
+        }
+    }
+    if ( $C_STATUS ) {
+        push @expr, q{shared = ?};
+        push @log, qq{shared = $C_STATUS};
+        if ( $C_STATUS eq 'draft' ) {
+            push @params, -1;
+        } elsif ( $C_STATUS eq 'public' ) {
+            push @params, 1;
+        } elsif ( $C_STATUS eq 'private' ) {
+            push @params, 0;
+        } else {
+            pop @expr;
+            pop @log;
+        }
+    }
+
+    unless ( scalar @params ) {
+        return ( "nop" );
+    }
+
+    $update_sql .= join(', ', @expr) . q{ WHERE MColl_ID = ?};
+    push @params, $coll_id;
+
+    print STDERR "AHOY : $update_sql : @params\n";
+    $dbh->do($update_sql, undef, @params);
+    return @log;
+}
+
 # ---------------------------------------------------------------------
 
 =item bc_create_collection
@@ -754,7 +829,7 @@ Description
 # ---------------------------------------------------------------------
 sub bc_create_collection {
 
-    if ($WHO_I_AM ne $C_OWNER) {
+    if ($NON_SUPERUSER && $WHO_I_AM ne $C_OWNER) {
         Log_print( qq{ERROR: $WHO_I_AM does not match -o argument value: $C_OWNER\n} );
         exit 1;
     }

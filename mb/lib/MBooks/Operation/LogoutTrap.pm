@@ -120,7 +120,7 @@ sub execute_operation
     my $coll_id = $cgi->param('c');
     silent_ASSERT($coll_id, qq{Missing 'c' parameter in LogoutTrap});
 
-    if ($co->get_shared_status($coll_id) eq 'public')
+    if ($co->get_shared_status($coll_id) =~ m,public|draft,)
     {
         return $ST_OK;
     }

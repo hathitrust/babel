@@ -968,7 +968,7 @@ var ListBrowser = {
             '<a href="mb?a=listis;c=${collid}">${collname}</a>' + 
           '</span>' + 
           '<a href="mb?a=listis;c=${collid}" aria-hidden="true">' + 
-            '<img alt=" " class="imgLeft" src="${featured}" />' + 
+            '<img alt=" " class="imgLeft" src="${branding}" />' + 
           '</a>' + 
           '<p class="hyphenate">' + 
             '${description}' +
@@ -986,7 +986,8 @@ var ListBrowser = {
         collid : featured[this.idx.CollId],
         collname : featured[this.idx.CollName],
         description : featured[this.idx.Description],
-        featured : featured[this.idx.Featured]
+        featured : featured[this.idx.Featured],
+        branding: featured[this.idx.Branding]
       };
       
       // $("#featured-template").tmpl(tmplData).appendTo(this.$sidebar);
@@ -1100,12 +1101,6 @@ head.ready(function() {
     HT.track_event({ action : 'MB Collection Status', label : (label + " " + href.replace(/.*c=(\d+).*/, "$1"))});
     return true;
   })
-
-  // --- DEBUGGING colltype=priv
-  var $check = $("a[href]").filter(function() { return $(this).attr('href').indexOf('colltype=my-collections') >= 0 });
-  if ( $check.size() > 0 ) {
-    $("body").append('<img src="/mb/common-web/graphics/harmony/1x1.png?' + $check.size() + '" />');
-  }
   
 });
 // })(jQuery);

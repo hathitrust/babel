@@ -111,11 +111,14 @@ sub execute_operation
     {
         $shared = 'private';
     }
-    elsif ($shared_code == 1)
+    elsif (abs($shared_code) == 1)
     {
         # Do not allow edits to make a temporary collection public -- security
         if (MBooks::Utils::TempColl::coll_is_temporary($C, $co, $coll_id)) {
             $shared = 'private';
+        }
+        elsif ($shared_code < 0) {
+            $shared = 'draft';
         }
         else {
             $shared = 'public';

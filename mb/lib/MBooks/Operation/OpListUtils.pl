@@ -25,6 +25,10 @@ sub test_ownership {
     my $self = shift;
     my ($C, $co, $act, $coll_id, $owner) = @_;
 
+    if($co->get_shared_status($coll_id) eq "draft") {
+        return $ST_OK;
+    }
+
     # only if collection not public do we care about owner!!
     if (($co->get_shared_status($coll_id) eq "private")
         &&
