@@ -774,21 +774,21 @@ sub bc_handle_metadata_update {
     if ( $C_OWNER_NAME ) {
         push @expr, q{owner_name = ?};
         push @params, $C_OWNER_NAME;
-        push @log, qq{owner = $C_OWNER_NAME};
+        push @log, qq{owner name = $C_OWNER_NAME};
     }
     if ( $C_TITLE ) {
         push @expr, q{collname = ?};
         push @params, $C_TITLE;
-        push @log, qq{owner = $C_TITLE};
+        push @log, qq{title = $C_TITLE};
     }
     if ( $C_DESC ) {
         if ( $C_DESC eq 'NULL' ) {
-            push @expr, q{colldesc = NULL};
-            push @log, qq{colldesc = NULL};
+            push @expr, q{description = NULL};
+            push @log, qq{description = NULL};
         } else {
-            push @expr, q{colldesc = ?};
+            push @expr, q{description = ?};
             push @params, $C_DESC;
-            push @log, qq{owner = $C_DESC};    
+            push @log, qq{description = $C_DESC};    
         }
     }
     if ( $C_STATUS ) {
@@ -813,6 +813,7 @@ sub bc_handle_metadata_update {
     $update_sql .= join(', ', @expr) . q{ WHERE MColl_ID = ?};
     push @params, $coll_id;
 
+    # print STDERR "AHOY : $update_sql :: @params\n";
     $dbh->do($update_sql, undef, @params);
     return @log;
 }
