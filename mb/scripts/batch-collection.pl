@@ -813,7 +813,6 @@ sub bc_handle_metadata_update {
     $update_sql .= join(', ', @expr) . q{ WHERE MColl_ID = ?};
     push @params, $coll_id;
 
-    print STDERR "AHOY : $update_sql : @params\n";
     $dbh->do($update_sql, undef, @params);
     return @log;
 }
