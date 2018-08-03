@@ -117,7 +117,7 @@ sub bc_Usage {
 
     print qq{       [EXPUNGE] batch-collection.pl -X coll_id -o superuserid\n\n};
 
-    print qq{       [UPDATE]  batch-collection.pl -u coll_id [-t 'quoted title'] [-d 'quoted description'] [-o userid] [-O 'quoted owner name'] [-s <public|private|draft>]\n\n};
+    print qq{       [UPDATE]  batch-collection.pl -u coll_id [-t 'quoted title'] [-d 'quoted description'] [-o userid] [-O 'quoted owner name'] [-s <public|private|draft>] [-Q | -q YYYY-MM-DD | -q 0000-00-00]\n\n};
 
     print qq{       [QUERY]   batch-collection.pl -c -t title -o userid\n\n};
 
@@ -142,11 +142,15 @@ sub bc_Usage {
     print qq{       IDs are HathiTrust IDs, e.g. mdp.39015012345\n};
     print qq{       Blank lines or lines beginning with a '#' are ignored in input files\n};
     print qq{       Set the BATCH_COLLECTION_USER environment variable to over-ride whoami for group-owned collections\n\n};
+    print qq{On making a collection featured (for superusers):\n};
+    print qq{       -Q sets a collection as perpetually featured (expiration is 9999-12-31)\n};
+    print qq{       -q YYYY-MM-DD sets the feature to expire on YYYY-MM-DD\n};
+    print qq{       -q 0000-00-00 immediately removes the featured status\n\n};
 
 }
 
-our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X, $opt_M, $opt_O, $opt_u, $opt_s);
-getopts('ct:d:o:f:a:D:C:X:M:O:u:s:');
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X, $opt_M, $opt_O, $opt_u, $opt_s, $opt_q, $opt_Q);
+getopts('ct:d:o:f:a:D:C:X:M:O:u:s:q:Q');
 
 my $INPUT_FILE = $opt_f || 'general';
 
@@ -271,8 +275,13 @@ elsif ($COLL_ID) {
 elsif ($USERID) {
 }
 elsif ($UPDATE) {
-    unless ( $opt_t || $opt_d || $opt_o || $opt_O || $opt_s ) {
-        Log_print( qq{missing -t/-d/-o/-O/-s options for collection metadata update\n\n} );
+    unless ( $opt_t || $opt_d || $opt_o || $opt_O || $opt_s || $opt_q || $opt_Q ) {
+        Log_print( qq{missing -t/-d/-o/-O/-s/-q/-Q options for collection metadata update\n\n} );
+        bc_Usage();
+        exit 1;        
+    }
+    if ( $opt_q && $opt_q ne '0000-00-00' && $opt_q !~ m,^\d{4}-\d{2}-\d{2}$, ) {
+        Log_print( qq{-q should be in YYYY-mm-dd format\n\n} );
         bc_Usage();
         exit 1;        
     }
@@ -305,7 +314,7 @@ else {
     $CREATE = 1;
 }
 
-my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID, $C_STATUS);
+my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID, $C_STATUS, $C_FEATURED);
 if ($APPEND) {
     ($C_OWNER, $C_OWNER_NAME, $C_COLL_ID) =
       ($opt_o, $opt_O || $opt_o, $opt_a,);
@@ -315,6 +324,9 @@ else {
       ($opt_t, $opt_d, $opt_o, $opt_O || $opt_o,);
 }
 $C_STATUS = $opt_s;
+if ( $SUPERUSER ) {
+    $C_FEATURED = ( $opt_Q ? '9999-12-31' : $opt_q );
+}
 
 Utils::map_chars_to_cers(\$C_DESC, [q{"}, q{'}]);
 Utils::map_chars_to_cers(\$C_TITLE, [q{"}, q{'}]);
@@ -805,8 +817,18 @@ sub bc_handle_metadata_update {
             pop @log;
         }
     }
+    if ( $C_FEATURED ) {
+        if ( $C_FEATURED eq '0000-00-00' ) {
+            push @expr, q{featured = NULL};
+            push @log, q{featured IS OFF};
+        } else {
+            push @expr, q{featured = ?};
+            push @log, qq{featured IS ON ($C_FEATURED)};
+            push @params, $C_FEATURED;
+        }
+    }
 
-    unless ( scalar @params ) {
+    unless ( scalar @expr ) {
         return ( "nop" );
     }
 
