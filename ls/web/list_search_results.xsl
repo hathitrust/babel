@@ -203,22 +203,22 @@ REMOVE the below and see if it will call list_utils
         <div class="" style="width: 100%">
           <xsl:variable name="spanN">
             <xsl:choose>
-              <xsl:when test="//COLL_INFO/COLL_FEATURED">span12</xsl:when>
+              <xsl:when test="//COLL_INFO/COLL_BRANDING">span12</xsl:when>
               <xsl:otherwise>span12</xsl:otherwise>
             </xsl:choose>
           </xsl:variable>
           <div class="row">
-            <xsl:if test="false() and //COLL_INFO/COLL_FEATURED">
+            <xsl:if test="false() and //COLL_INFO/COLL_BRANDING">
               <div class="span3" style="padding-top: 8px">
-                <img src="{//COLL_INFO/COLL_FEATURED}" style="max-width: 100%" />
+                <img src="{//COLL_INFO/COLL_BRANDING}" style="max-width: 100%" />
               </div>
             </xsl:if>
             <div class="{$spanN}">
               <h2 style="margin-top: 0"><xsl:value-of select="//COLL_INFO/COLL_NAME" /></h2>
               <p><xsl:value-of select="//COLL_INFO/COLL_DESC" /></p>
-              <xsl:if test="//COLL_INFO/COLL_FEATURED">
+              <xsl:if test="//COLL_INFO/COLL_BRANDING">
                 <p>
-                  <img src="{//COLL_INFO/COLL_FEATURED}" style="max-width: 100%" aria-hide="true" alt="" />
+                  <img src="{//COLL_INFO/COLL_BRANDING}" style="max-width: 100%" aria-hide="true" alt="" />
                 </p>
               </xsl:if>
             </div>
