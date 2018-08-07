@@ -260,6 +260,19 @@ sub handle_COLLECTION_FEATURED_PI
     return ($coll_featured);
 }
 
+sub handle_COLLECTION_BRANDING_PI
+    : PI_handler(COLLECTION_BRANDING)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+    my $co = $act->get_transient_facade_member_data($C, 'collection_object');
+    my $record = $co->get_coll_record($coll_id);
+
+    return ($$record{branding});
+}
+
 sub handle_COLLECTION_CONTACT_INFO_PI
     : PI_handler(COLLECTION_CONTACT_INFO)
 {

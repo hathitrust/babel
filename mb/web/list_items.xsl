@@ -68,9 +68,9 @@
 
     <h2 class="offscreen">About this collection</h2>
 
-    <xsl:if test="//CollectionFeatured/text()">
+    <xsl:if test="//CollectionBranding/text()">
       <div class="col-featured">
-        <img src="{//CollectionFeatured}" alt=" " aria-hide="true" />
+        <img src="{//CollectionBranding}" alt=" " aria-hide="true" />
       </div>
     </xsl:if>
 
@@ -198,9 +198,9 @@
                 <xsl:value-of select="//EditCollectionWidget/CollDesc"/>
               </p>
             </xsl:if>
-            <xsl:if test="//CollectionFeatured/text()">
+            <xsl:if test="//CollectionBranding/text()">
               <p>
-                <img src="{//CollectionFeatured}" alt=" " aria-hide="true" style="max-width: 100%" />
+                <img src="{//CollectionBranding}" alt=" " aria-hide="true" style="max-width: 100%" />
               </p>
             </xsl:if>
           </div>

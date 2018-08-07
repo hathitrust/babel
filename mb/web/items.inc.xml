@@ -6,6 +6,7 @@
 
   <CollectionName><?COLLECTION_NAME?></CollectionName>
   <CollectionFeatured><?COLLECTION_FEATURED?></CollectionFeatured>
+  <CollectionBranding><?COLLECTION_BRANDING?></CollectionBranding>
   <CollectionContactInfo><?COLLECTION_CONTACT_INFO?></CollectionContactInfo>
   <OperationResults><?OPERATION_RESULTS?></OperationResults>
   <ItemList><?ITEM_LIST?></ItemList>
