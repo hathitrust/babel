@@ -268,9 +268,9 @@ sub handle_COLLECTION_BRANDING_PI
     my $cgi = $C->get_object('CGI');
     my $coll_id = $cgi->param('c');
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
-    my $record = $co->get_coll_record($coll_id);
+    my $coll_branding = $co->get_coll_branding ($coll_id);
 
-    return ($$record{branding});
+    return ($coll_branding);
 }
 
 sub handle_COLLECTION_CONTACT_INFO_PI
