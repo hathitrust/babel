@@ -1,4 +1,5 @@
 .gitignore
+\#*\#
 /lib/Config/AB_test_config
 /lib/Config/local.conf
 /cgi/testUTF.pl
