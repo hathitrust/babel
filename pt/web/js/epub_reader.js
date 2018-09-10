@@ -86,6 +86,7 @@ head.ready(function() {
     $(btn).addClass("active");
     var flow = $(btn).data('target');
     // $("body").removeClass("view-1up").removeClass("view-2up").addClass("view-" + cls);
+    if ( flow == 'scrolled-doc' ) { manager = 'continuous'; }
     reader.reopen({ flow: flow });
   }
 
@@ -101,16 +102,14 @@ head.ready(function() {
     resetFlow(this);
   })
 
-  var TEXT_SIZES = [ 'small', 'default', 'large' ];
-  var text_size_index = 1;
+  var text_size = 100;
 
   var resetTextSize = function(delta) {
-    text_size_index += delta;
-    var text_size = TEXT_SIZES[text_size_index];
-    if ( text_size == 'large' ) {
+    text_size += ( delta * 10 );
+    if ( text_size == 200 ) {
       $("#action-zoom-in").attr("disabled", "disabled");
       $("#action-zoom-out").attr("disabled", null);
-    } else if ( text_size == 'small' ) {
+    } else if ( text_size == 70 ) {
       $("#action-zoom-in").attr("disabled", null);
       $("#action-zoom-out").attr("disabled", "disabled");
     } else {
@@ -150,39 +149,23 @@ head.ready(function() {
     return retval;
   };
 
-  var $menu = $(".table-of-contents ul");
-  reader.on('update-contents', function(data) {
-    if ( data ) {
-      var $ul = $menu;
-      var items = _filter(data.toc, null, 0, $ul);
-      while ( items.length ) {
-        var tuple = items.shift();
-        var item = tuple[0];
-        var $ul = tuple[2];
-        console.log("AHOY MENU", $ul, $ul.get(0).tagName);
-        if ( $ul.get(0).tagName == 'LI' ) {
-          var $tmp = $ul.find("ul");
-          if ( ! $tmp.size() ) {
-            $tmp = $("<ul></ul>").appendTo($ul);
-            console.log("AHOY WHAT?");
-          }
-          $ul = $tmp;
-        }
-        var $li = $("<li><a></a></li>").appendTo($ul);
-        var $a = $li.find("a");
-        $a.attr("href", item.href);
-        $a.text(item.label);
-        $.each(_filter(data.toc, item.id, tuple[1] + 1, $li).reverse(), function() {
-          items.unshift(this);
-        })
+  var _process_menu = function(items, tabindex, $parent) {
+    items.forEach(function(item) {
+      var $li = $("<li><a></a></li>").appendTo($parent);
+      var $a = $li.find("a");
+      $a.attr("href", item.href);
+      $a.text(item.label);
+      if ( item.subitems.length ) {
+        var $ul = $("<ul></ul>").appendTo($li);
+        _process_menu(item.subitems, tabindex + 1, $ul);
       }
+    })
+  }
 
-      // $.each(data.toc, function() {
-      //   var $li = $("<li><a></a></li>").appendTo($menu);
-      //   var $a = $li.find("a");
-      //   $a.attr("href", this.href);
-      //   $a.text(this.label);
-      // })
+  var $menu = $(".table-of-contents ul");
+  reader.on('updateContents', function(data) {
+    if ( data ) {
+      _process_menu(data.toc, 0, $menu);
     }
   });
   $menu.on('click', 'a', function(e) {
@@ -191,12 +174,6 @@ head.ready(function() {
     console.log("AHOY GO TO", target);
     reader.gotoPage(target);
   })
-
-  // reader.start(function() {
-  //   setTimeout(function() {
-  //     if ( start_cfi ) { reader.gotoPage(start_cfi); }
-  //   }, 100)
-  // });
 
   var highlights = HT.params.h;
   if ( highlights ) { highlights = highlights.split(":"); }
@@ -207,7 +184,7 @@ head.ready(function() {
   
   window.DEBUG = window.DEBUG || {};
 
-  reader.on("update-section", function(location) {
+  reader.on("updateSection", function(location) {
     var view = reader._rendition.manager.current();
     if ( ! view ) { return; }
     var section = view.section;
@@ -235,7 +212,7 @@ head.ready(function() {
     }
   });
 
-  reader.on("update-section", function() {
+  reader.on("updateSection", function() {
     // var cfi_href = reader.currentLocation().start.cfi;
     // location.hash = '#' + cfi_href.substr(8, cfi_href.length - 8 - 1);
 

@@ -15,10 +15,17 @@
   <!-- Global Variables -->
   <xsl:variable name="gCurrentPageFeatures" select="/MBooksTop/MdpApp/CurrentPageFeatures"/>
   <xsl:variable name="gUsingBookReader">true</xsl:variable>
-  <xsl:variable name="gCurrentView">paginate</xsl:variable>
+  <xsl:variable name="gCurrentView">paginated</xsl:variable>
   <xsl:variable name="gUsingSearch">true</xsl:variable>
 
   <xsl:template name="setup-extra-header-extra">
+
+    <script>
+      COZY_EPUB_ENGINE_HREF = '/pt/vendor/cozy-sun-bear/vendor/javascripts/engines/epub.js';
+    </script>
+    <script src="/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.js"></script>
+
+    <link rel="stylesheet" href="/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.css" />
     <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
     <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
     <link rel="stylesheet" href="/pt/css/print.css{$timestamp}" media="print" />
@@ -81,7 +88,7 @@
             <xsl:with-param name="view">scrolled-doc</xsl:with-param>
           </xsl:call-template>
           <xsl:call-template name="action-view-button">
-            <xsl:with-param name="view">paginate</xsl:with-param>
+            <xsl:with-param name="view">paginated</xsl:with-param>
           </xsl:call-template>
 <!--           <xsl:call-template name="action-view-button">
             <xsl:with-param name="view">plaintext</xsl:with-param>
@@ -111,7 +118,7 @@
     <xsl:variable name="options">
       <h:select>
         <h:option name="scrolled-doc" value="icomoon icomoon-scroll">Scroll</h:option>
-        <h:option name="paginate" value="icomoon icomoon-book-alt2">Flip</h:option>
+        <h:option name="paginated" value="icomoon icomoon-book-alt2">Flip</h:option>
         <!-- <h:option name="plaintext" value="icomoon icomoon-article" accesskey="5">Plain Text</h:option> -->
       </h:select>
     </xsl:variable>
