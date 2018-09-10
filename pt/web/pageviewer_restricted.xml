@@ -39,7 +39,7 @@
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
     <Filename>pageviewer.xsl</Filename>
-    <?ITEM_STYLESHEET?>
+    <Filename>pageviewer_restricted.xsl</Filename>
   </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->

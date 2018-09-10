@@ -41,6 +41,7 @@ Section:LOCAL_JS
 #Test:$gSkin='default'
 # These should be listed with the unminimized name.
 # The script will run yuicompress on them
+/pt/web/vendor/screenfull.js
 //common-web/jquery/jQuery-URL-Parser/purl.js
 /pt/web/js/base.js
 /pt/web/js/feedback.js
@@ -77,6 +78,12 @@ Test://ItemType='volume'
 /pt/web/js/view/thumb.js
 /pt/web/js/view/flip.js
 /pt/web/js/view/plaintext.js
+
+Section:PAGETURNER_VOLUME_EPUB_JS
+Test://ItemType='volume/epub'
+/pt/web/vendor/nanoscroller/jquery.nanoscroller.js
+/pt/web/js/sidebar.js
+/pt/web/js/epub_reader.js
 
 # Section:PAGETURNER_SEARCH_JS
 # Test:$gUsingSearch='true'

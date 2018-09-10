@@ -39,7 +39,7 @@
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
     <Filename>pageviewer.xsl</Filename>
-    <?ITEM_STYLESHEET?>
+    <Filename>pageviewer_volume.xsl</Filename>
   </XslFileList>
 
   <!-- Custom OPTIONAL XML for top-level file -->
@@ -52,7 +52,11 @@
     <PageLink><?PAGE_LINK?></PageLink>
     <InCopyright><?IN_COPYRIGHT?></InCopyright>
     <ItemType><?ITEM_TYPE?></ItemType>
-    <?ITEM_CHUNK?>
+    <CurrentPageImageSource><?CURRENT_PAGE_IMG_SRC?></CurrentPageImageSource>
+    <CurrentPageImageWidth><?CURRENT_PAGE_IMG_WIDTH?></CurrentPageImageWidth>
+    <CurrentPageImageHeight><?CURRENT_PAGE_IMG_HEIGHT?></CurrentPageImageHeight>
+    <CurrentPageOcr><?CURRENT_PAGE_OCR?></CurrentPageOcr>
+    <CurrentView><?CURRENT_VIEW?></CurrentView>
   </MBooksGlobals>
 
   <?CHUNK filename="header.xml"?>

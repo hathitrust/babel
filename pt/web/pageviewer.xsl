@@ -314,8 +314,8 @@
     <form class="form-inline" method="get" id="form-search-volume">
       <xsl:attribute name="action">
         <xsl:choose>
-          <xsl:when test="$gUsingSearch = 'true'">search</xsl:when>
-          <xsl:otherwise>pt/search</xsl:otherwise>
+          <xsl:when test="$gUsingSearch = 'true'">/cgi/pt/search</xsl:when>
+          <xsl:otherwise>/cgi/pt/search</xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
       <label for="input-search-text">Search in this text </label>

@@ -97,6 +97,38 @@ sub get_action_pifiller_name
     return $pifiller_name;
 }
 
+sub get_action_template_name
+{
+    my $self = shift;
+    my $C = shift;
+
+    my $action_name = $self->get_action_name($C);
+    my $cgi = $C->get_object('CGI');
+
+    my $page = $cgi->param('page') || 'default';
+
+    my $ui_hashref = $Action::Bind::g_action_bindings{$action_name}{'view'}{$page};
+    my $template_name = $$ui_hashref{'template'};
+
+    my $item_type;
+    my $id = $cgi->param('id');
+    my $finalAccessStatus =
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+
+    if ( $finalAccessStatus ne 'allow' ) { $item_type = 'restricted'; }
+    else {
+        my $mdpItem = $C->get_object('MdpItem');
+        $item_type = lc $mdpItem->GetItemType();
+        if ( my $item_sub_type = $mdpItem->GetItemSubType() ) {
+            $item_type .= ( lc "_$item_sub_type" );
+        }
+    }
+
+    $template_name =~ s,\{ITEM_TYPE\},$item_type,;
+
+    return $template_name;
+}
+
 # ---------------------------------------------------------------------
 
 =item get_operation_params_hashref

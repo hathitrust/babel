@@ -31,8 +31,16 @@ use SLIP_Utils::Common;
 use URI::Escape;
 use POSIX qw(floor ceil);
 
+use File::Basename qw();
+use List::MoreUtils;
+
 # Number of allowed links for pagination. Set this so page links fit on one line.
 use constant MAX_PAGELABELS=>11;
+
+# use feature qw(say);
+# our $DEBUG_LOGFILE;
+# open($DEBUG_LOGFILE, ">", "/ram/search.txt");
+# chmod(0666, "/ram/search.txt");
 
 # ---------------------------  Utilities  -----------------------------
 #
@@ -364,6 +372,231 @@ sub WrapSearchResultsInXml {
     return $XML_result;
 }
 
+sub WrapFragmentSearchResultsInXml {
+    my ($C, $rs, $finalAccessStatus) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $tempCgi = new CGI($cgi);
+    # my $view = $tempCgi->param('view');
+    # if ($view eq 'thumb') {
+    #     $tempCgi->param('view', '1up');
+    # }
+    $tempCgi->delete('type');
+    $tempCgi->delete('orient');
+    $tempCgi->delete('u');
+
+    my $XML_result = '';
+
+    # Server/Query/Network error
+    if (! $rs->http_status_ok()) {
+        $XML_result = wrap_string_in_tag('true', 'SearchError');
+        return $XML_result;
+    }
+
+    my $Q = $C->get_object('Query');
+    my $valid_boolean = $Q->parse_was_valid_boolean_expression();
+    $XML_result .= wrap_string_in_tag($valid_boolean, 'ValidBooleanExpression');
+
+    my $fileid = $mdpItem->GetPackageId();
+    my $epub_filename = $mdpItem->GetFilePathMaybeExtract($fileid, 'epubfile');
+    my $epub_pathname = $epub_filename . "_unpacked";
+
+    my $xpc = XML::LibXML::XPathContext->new();
+    $xpc->registerNs("opf", "http://www.idpf.org/2007/opf");
+    $xpc->registerNs("xhtml", "http://www.w3.org/1999/xhtml");
+    $xpc->registerNs('container', 'urn:oasis:names:tc:opendocument:xmlns:container');
+
+    my $container_filename = qq{$epub_pathname/META-INF/container.xml};
+    my $container_doc = XML::LibXML->load_xml(location => $container_filename);
+
+    my $package_filename = $xpc->findvalue(q{//container:rootfile/@full-path}, $container_doc);
+    my $package_dirname = File::Basename::dirname($package_filename);
+    my $package_doc = XML::LibXML->load_xml(location => qq{$epub_pathname/$package_filename});
+
+    my $manifest = ($xpc->findnodes(qq{//opf:manifest}, $package_doc))[0];
+    my $spine = ($xpc->findnodes(qq{//opf:spine}, $package_doc))[0];
+
+    my $map = {}; my $idref_map = {};
+    my $seq = 0;
+    my @itemrefs = $xpc->findnodes(qq{opf:itemref}, $spine);
+    foreach my $itemref ( @itemrefs ) {
+        $seq += 1;
+        my $idref = $itemref->getAttribute('idref');
+        my $item = ($xpc->find(qq{opf:item[\@id="$idref"]}, $manifest))->[0];
+        my $filename = $item->getAttribute('href');
+        if ( $filename !~ m,^$package_dirname, ) {
+            $filename = "$package_dirname/$filename";
+        }
+        $$map{$seq} = $filename;
+        $$idref_map{$seq} = $idref;
+    }
+
+    $rs->init_iterator();
+    my $item_no = 0;
+
+    my $MAX_SNIPPET_WORDS = 50;
+    my $MAX_SNIPPETS = 10;
+
+    while (my $Page_result = $rs->get_next_Page_result()) {
+
+        my $snip_list = $Page_result->{snip_list};
+        my $pgnum = $Page_result->{pgnum};
+        my $seq = $mdpItem->GetVirtualPageSequence($Page_result->{seq});
+        my $id = $Page_result->{id};
+        my $vol_id = $Page_result->{vol_id};
+
+        my $chapter_filename = $$map{$seq};
+        my $chapter_index = $seq * 2 ; # ( $seq - 1 ) * 2;
+        print STDERR "AHOY PAGING $seq : $chapter_index : $chapter_filename\n";
+        my $chapter_title = $mdpItem->GetPageFeature($seq);
+        my $chapter = XML::LibXML->load_xml(location => join("/", $epub_pathname, $chapter_filename));
+        unless ( $chapter_title ) {
+            if ( $xpc->findvalue(q{//node()/@epub:type}, $chapter) =~ m,titlepage, ) {
+                $chapter_title = "(Title Page)";
+            } elsif ( my $h2 = $xpc->findvalue(qq{//xhtml:h2[1]}, $chapter) ) {
+                $chapter_title = $h2;
+            } else {
+                # this may be a horrible hack
+                $chapter_title = "(" . File::Basename::basename($chapter_filename, ".xhtml", ".html") . ")";
+                $chapter_title =~ s,([a-z])([A-Z]),$1 $2,g;
+                $chapter_title =~ s,_, ,g;
+            }
+        } 
+
+        $XML_result .=
+          qq{<Page>\n} .
+            wrap_string_in_tag($seq, 'Sequence') .
+              wrap_string_in_tag($pgnum, 'PageNumber') .
+                wrap_string_in_tag($chapter_title, 'Label');
+
+        my $idref = $$idref_map{$seq};
+        my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]");
+        # $temperCgi->param('num', join('/', @$offset));
+        my $temperCgi = new CGI($tempCgi);
+        $temperCgi->param('num', $cfi_path);
+        my $href = Utils::url_to($temperCgi, $PTGlobals::gPageturnerCgiRoot);
+
+        $XML_result .= wrap_string_in_tag($href, 'Link');
+
+        my @matched_words = ();
+        foreach my $snip_ref ( @$snip_list ) {
+            my @matched = $$snip_ref =~ /\[\[([^\]]+)\]\]/g;
+            push @matched_words, @matched;
+        }
+
+        @matched_words = List::MoreUtils::distinct(@matched_words);
+
+        print STDERR "AHOY WRAP @matched_words\n";
+        my $expr = join('|', map { qr/\Q$_/i } @matched_words);
+        my @nodes = map { [ [4], $_ ] } $xpc->findnodes(".//xhtml:body", $chapter);
+        my @possibles = ();
+        while ( scalar @nodes ) {
+            my $tuple = shift @nodes;
+            my ( $offset, $node ) = @$tuple;
+            my $content = $node->textContent;
+            if ( $content =~ m,$expr,i ) {
+
+                push @possibles, [ [ @$offset ], $content ];
+
+                my @children = ();
+                foreach my $child ( $node->nonBlankChildNodes() ) { # $xpc->findnodes("node()", $node);
+                    next unless ( $child->nodeType == 1 );
+                    push @children, $child;
+                }
+                if ( scalar @children ) {
+                    my $_offset = 0;
+                    foreach my $child ( @children ) {
+                        $_offset += 2;
+                        push @nodes, [ [ @$offset, $_offset ], $child ];
+                    }
+                }
+            }
+        }
+
+        my $last_path;
+        my $num_snippets = 0;
+        while ( my $possible = pop @possibles ) {
+            my ( $offset, $content ) = @$possible;
+            my @words = split(/\s/, $content);
+            my $path = join('/', @$offset);
+
+            next if ( scalar @possibles && scalar @words < 10 );
+
+            next if ( $last_path && $last_path =~ m,^$path/, );
+            $last_path = $path;
+
+            $item_no += 1;
+
+            my @chunks = split(/($expr)/, $content);
+            my $__n = 0;
+            my @tmp = ();
+            my $last_idx = -1;
+            while ( scalar @chunks ) {
+                $__n += 1;
+                last if ( $__n > 100 );
+                my $idx = List::MoreUtils::firstidx { $_ =~ m,$expr, } @chunks;
+                last if ( $idx < 0);
+                last if ( scalar @tmp > $MAX_SNIPPET_WORDS );
+                if ( $last_idx >= 0 && $idx - $last_idx > 2 ) {
+                    push @tmp, "...";
+                }
+                $last_idx = $idx;
+                my @words = split(/\s/, $chunks[$idx - 1]);
+                my $p0 = scalar @words - $MAX_SNIPPET_WORDS / 2;
+                $p0 = 0 if ( $p0 < 0 );
+                push @tmp, @words[$p0 .. $#words] if ( scalar @words );
+                push @tmp, qq{<strong class="solr_highlight_1">$chunks[$idx]</strong>&#160;};
+                @chunks = splice(@chunks, $idx + 1);
+            }
+            if ( scalar @chunks && scalar @tmp < $MAX_SNIPPET_WORDS  ) {
+                my $n = scalar @tmp;
+                my @words = split(/\s/, $chunks[0]);
+                push @tmp, @words[ 0 .. $MAX_SNIPPET_WORDS - $n ];
+            }
+            @words = @tmp;
+            $content = join(' ', @words);
+
+            $XML_result .= '<Result>';
+
+            $XML_result .= wrap_string_in_tag(join('|', @matched_words), 'Highlight');
+            my $temperCgi = new CGI($tempCgi);
+
+            my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]") . "!/" . join("/", @$offset) . "/1:0";
+            # $temperCgi->param('num', $cfi_path);
+            $temperCgi->param('h', join(':', @matched_words));
+            my $href = Utils::url_to($temperCgi, $PTGlobals::gPageturnerCgiRoot);
+
+            # my $hash = qq{/$chapter_filename};
+            # $hash =~ s,$epub_pathname,,;
+            my $hash = $cfi_path;
+            $href .= '#' . $hash;
+
+            $XML_result .= wrap_string_in_tag($href, 'Link');
+
+            # escape entities and ampersands
+            $content =~ s,&([\#a-z0-9A-Z]+);,__AMP__$1__SEMI__,gsm;
+            $content =~ s,&,&amp;,gsm;
+            $content =~ s,__AMP__,&,gsm;
+            $content =~ s,__SEMI__,;,gsm;
+
+            $XML_result .= wrap_string_in_tag($content, 'Kwic', [ [ 'path', $path ] ]);
+            # calculating $term_hits does not work
+            my $term_hits = () = $content =~ /$expr/g;
+            $XML_result .= wrap_string_in_tag($term_hits, 'Hits');
+
+            $XML_result .= '</Result>';
+
+            $num_snippets += 1;
+            last if ( $num_snippets >= $MAX_SNIPPETS );
+        }
+
+        $XML_result .= '</Page>';
+    }
+
+    return $XML_result;
+}
 
 # ---------------------------  Handlers  ------------------------------
 #
@@ -552,6 +785,24 @@ sub handle_ITEM_SEARCH_RESULTS_PI
     }
 }
 
+sub handle_ITEM_FRAGMENT_SEARCH_RESULTS_PI
+    : PI_handler(ITEM_FRAGMENT_SEARCH_RESULTS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    my $rs = $C->get_object('Search::Result::Page');
+
+    my $final_access_status =
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+
+    if ($rs) {
+        return WrapFragmentSearchResultsInXml($C, $rs, $final_access_status);
+    }
+    else {
+        return 'INVALID_SEARCH_TERMS';
+    }
+}
 
 # ---------------------------------------------------------------------
 

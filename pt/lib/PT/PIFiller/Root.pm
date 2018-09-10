@@ -237,8 +237,32 @@ sub GetItemType
 
     # pull from mdpItem
     my $item_type = $mdpItem->GetItemType();
+    if ( my $item_sub_type = $mdpItem->GetItemSubType() ) {
+        $item_type .= "/" . lc $item_sub_type;
+    }
 
     return $item_type;
+}
+
+sub GetItemSubType 
+{
+    my ( $C ) = @_;
+
+    my $mdpItem = $C->get_object('MdpItem');
+    my $id = $C->get_object('CGI')->param('id');
+
+    my $finalAccessStatus =
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+        
+    if ( $finalAccessStatus ne 'allow' )
+    {
+        return undef;
+    }
+
+    # pull from mdpItem
+    my $item_type = $mdpItem->GetItemSubType() || '';
+
+    return lc $item_type;
 }
 
 sub handle_ITEM_TYPE_PI
@@ -263,7 +287,23 @@ sub handle_ITEM_STYLESHEET_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $item_type = GetItemType($C);
-    return qq{pageviewer_${item_type}.xsl};
+    my $item_sub_type = GetItemSubType($C);
+    if ( $item_sub_type ) { $item_type .= "_$item_sub_type"; }
+    my $xml = qq{<Filename>pageviewer_${item_type}.xsl</Filename>};
+    return $xml;
+}
+
+sub handle_ITEM_CHUNK_PI
+  : PI_handler(ITEM_CHUNK) 
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $item_type = GetItemType($C);
+    my $item_sub_type = GetItemSubType($C);
+    if ( $item_sub_type ) { $item_type .= "_$item_sub_type"; }
+    my $xml = qq{<?CHUNK filename="_pageviewer_${item_type}.xml"?>};
+    print STDERR "AHOY RETURNING $xml\n";
+    return $xml;
 }
   
 # ---------------------------------------------------------------------
@@ -921,6 +961,32 @@ sub handle_PAGE_LINK_PI
     }
     
     return Utils::url_to($tempCgi);
+}
+
+sub handle_EPUB_ROOT_PI
+    : PI_handler(EPUB_ROOT)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $fileid = $mdpItem->GetPackageId();
+    my $epub_filename = $mdpItem->GetFilePathMaybeExtract($fileid, 'epubfile');
+
+    print STDERR "AHOY EPUB FILENAME $epub_filename\n";
+
+    my $unpacked_epub = $epub_filename . "_unpacked";
+    unless ( -d $unpacked_epub ) {
+        my @unzip;
+        my @yes;
+        push @yes, "echo", "n";
+        my $UNZIP_PROG = "/l/local/bin/unzip";
+        push @unzip, $UNZIP_PROG,"-qq", "-d", $unpacked_epub, $epub_filename;
+        IPC::Run::run \@yes, '|',  \@unzip, ">", "/dev/null", "2>&1";
+    }
+
+    my $unpacked_root = $unpacked_epub . '/';
+    $unpacked_root =~ s,$ENV{SDRROOT},,;
+    return $unpacked_root;
 }
 
 

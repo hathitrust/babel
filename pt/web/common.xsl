@@ -725,10 +725,10 @@
       <xsl:attribute name="action">
         <xsl:choose>
           <xsl:when test="$gUsingSearch = 'true'">
-            <xsl:text>search</xsl:text>
+            <xsl:text>/cgi/pt/search</xsl:text>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text>pt/search</xsl:text>
+            <xsl:text>/cgi/pt/search</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>

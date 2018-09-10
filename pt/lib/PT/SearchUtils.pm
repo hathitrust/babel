@@ -458,9 +458,18 @@ sub Solr_search_item {
         my $snip = $config->get('solr_hl_snippets');
         my $frag = $config->get('solr_hl_fragsize');
 
+        my $mdpItem = $C->get_object('MdpItem');
+        if ( $mdpItem->GetItemSubType() eq 'EPUB' ) {
+            $frag = 10000;
+        }
+
         # Must wrap query string with outermost parens so that +-
         # operators are handled as ocr:(-foo +bar) -ocr:foo +ocr:bar
         my $query = qq{q=ocr:($q_str)&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag&$solr_q_op_param};
+
+        if ( 1 && $mdpItem->GetItemSubType() eq 'EPUB' ) {
+            $query .= qq{&hl.tag.pre=[[&hl.tag.post=]]};
+        }
 
         $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
 

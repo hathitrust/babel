@@ -177,11 +177,18 @@ HT.Reader = {
         // dyanmic in every view
 
         var $btn_fullScreen = $("#action-toggle-fullscreen");
-        this._bindAction("toggle.fullscreen", this._toggleFullScreen);
-        $(window).bind('fullscreen-toggle', function(e, state) { self._manageFullScreen(state); })
-                 .bind('fullscreen-on',     function(e)        { self._manageFullScreen(true)  })
-                 .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
-                 .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
+        $btn_fullScreen.on('click', function(e) {
+            if ( screenfull.enabled ) {
+              // this._preResize();
+              e.preventDefault();
+              screenfull.toggle($(".container.page.centered").get(0));
+            }
+        })
+        // this._bindAction("toggle.fullscreen", this._toggleFullScreen);
+        // $(window).bind('fullscreen-toggle', function(e, state) { self._manageFullScreen(state); })
+        //          .bind('fullscreen-on',     function(e)        { self._manageFullScreen(true)  })
+        //          .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
+        //          .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
 
 
 
@@ -411,6 +418,13 @@ HT.Reader = {
 
     _manageFullScreen: function(state) {
         var self = this;
+
+        if ( screenfull.enabled ) {
+          // this._preResize();
+          screenfull.toggle($(".container.page.centered").get(0));
+        }
+
+        return;
         
         var $btn = $("#action-toggle-fullscreen");
         var $sidebar = $(".sidebar");
@@ -849,31 +863,31 @@ HT.Reader = {
     },
 
     _getFlattenedSelection: function(printable) {
-        var seq = [];
+        var list = [];
         _.each(printable.sort(function(a, b) { return a - b; }), function(val) {
-            if ( seq.length == 0 ) {
-                seq.push([val, -1]);
+            if ( list.length == 0 ) {
+                list.push([val, -1]);
             } else {
-                var last = seq[seq.length - 1];
+                var last = list[list.length - 1];
                 if ( last[1] < 0 && val - last[0] == 1 ) {
                     last[1] = val;
                 } else if ( val - last[1] == 1 ) {
                     last[1] = val;
                 } else {
-                    seq.push([val, -1]);
+                    list.push([val, -1]);
                 }
             }
         })
 
-        for(var i = 0; i < seq.length; i++) {
-            var tmp = seq[i];
+        for(var i = 0; i < list.length; i++) {
+            var tmp = list[i];
             if ( tmp[1] < 0 ) {
-                seq[i] = tmp[0];
+                list[i] = tmp[0];
             } else {
-                seq[i] = tmp[0] + "-" + tmp[1];
+                list[i] = tmp[0] + "-" + tmp[1];
             }
         }
-        return seq;
+        return list;
     },
 
     _updateSelectionContents: function(printable) {
@@ -891,19 +905,21 @@ HT.Reader = {
         $menu.find("button").removeClass('disabled');
         $menu.find(".msg").text(printable.length + " pages");
         var $ul = $menu.find("ul.dropdown-menu");
+        console.log("AHOY MENU LIST", $ul);
         $ul.find("li").remove();
         var list = self._getFlattenedSelection(printable);
         _.each(list, function(args) {
-            var seq = args;
+            var s = args;
             var postscript = "";
             if ( typeof(args) == "string" ) {
                 var tmp = args.split("-");
-                seq = tmp[0];
+                s = tmp[0];
                 postscript = "<br /><span>(" + ( parseInt(tmp[1], 10) - parseInt(tmp[0], 10) + 1 ) + " pages)</span>";
             }
-            $ul.append('<li><a href="{URL}" data-seq="{SEQ}"><img src="//babel.hathitrust.org/cgi/imgsrv/thumbnail?id={ID};seq={SEQ};width=75" />{POSTSCRIPT}</a></li>'
-                .replace('{URL}', window.location.href.replace(/seq=\d+/, "seq=" + seq))
-                .replace(/{SEQ}/g, seq)
+            $ul.append('<li><a href="{URL}" data-seq="{SEQ}"><img src="//{HOSTNAME}/cgi/imgsrv/thumbnail?id={ID};seq={SEQ};width=75" />{POSTSCRIPT}</a></li>'
+                .replace('{HOSTNAME}', window.location.hostname)
+                .replace('{URL}', window.location.href.replace(/seq=\d+/, "seq=" + s))
+                .replace(/{SEQ}/g, s)
                 .replace(/{ARGS}/g, args)
                 .replace(/num=\d+/, '')
                 .replace('{ID}', HT.params.id)

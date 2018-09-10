@@ -24,6 +24,7 @@
      'ptsop'    => 'AND|OR|and|or',
      'index'    => '1',
      'a'        => '\w+',
+     'h'        => '.*',
     );
 
 # Specification of global *database* operations to be executed before
@@ -49,7 +50,7 @@ $g_late_operations = [
                         ],
       'view'         => {'root' =>   {
                                       'builders' => [],
-                                      'template' => 'pageviewer.xml',
+                                      'template' => 'pageviewer_{ITEM_TYPE}.xml',
                                       'filler'   => 'PT::PIFiller::Root',
                                       },
                         },
@@ -62,7 +63,7 @@ $g_late_operations = [
       'operations'   => [],
       'view'         => {'search' => {
                                        'builders' => [],
-                                       'template' => 'searchresults.xml',
+                                       'template' => 'searchresults_{ITEM_TYPE}.xml',
                                        'filler'   => 'PT::PIFiller::Search',
                                       },
                         },
