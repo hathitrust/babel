@@ -18,6 +18,11 @@ Synchronize the LS index with the CB database tables.
 
 use strict;
 use open qw/:std :utf8/;
+# tbw for developing with slip-lib dependencies!
+BEGIN {
+     $ENV{DEBUG_LOCAL} = 1;
+}
+
 
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
@@ -50,6 +55,8 @@ use Db;
 
 use Collection;
 use CollectionSet;
+
+
 
 
 my $INTERACTIVE = $ENV{TERM};
@@ -593,7 +600,11 @@ sub handle_inverse_synchronization {
 
         my $searcher = SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
         my $rs = new Result::SLIP();
+	# These are designed to be able to handle mondo collections using the export handler and doc values
+	my $mondo_searcher = SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
+        my $mondo_rs = new Result::SLIP();
 
+	
         my $s;
         my $ok;
         my $id_ct = 0;
@@ -616,6 +627,9 @@ sub handle_inverse_synchronization {
         my %missing_coll_ids = ();
         my %small_coll_ids = ();
 
+	# create new searcher and result
+
+	
         while (1) {
 
             __exit_STOPSLIP();
@@ -624,9 +638,9 @@ sub handle_inverse_synchronization {
             my $query = $COLL_ID
               ? qq{q=coll_id:$COLL_ID&start=$start&rows=$SLICE_SIZE&fl=coll_id,id}
                 : qq{q=coll_id:[1 TO *]&start=$start&rows=$SLICE_SIZE&fl=coll_id,id};
-            $rs = __handle_query($C, $query, $searcher, $rs);
+            $mondo_rs = __handle_mondo_query($C, $query, $mondo_searcher, $mondo_rs);
 
-            my $rows_returned = $rs->get_rows_returned();
+            my $rows_returned = $mondo_rs->get_rows_returned();
             last if ($rows_returned == 0);
             $start += $SLICE_SIZE;
             l__output($C, qq{.$rows_returned ids.}, 1, 0, 0);
@@ -635,7 +649,7 @@ sub handle_inverse_synchronization {
             # Parse and return optimized list of ids to test
             my ($id_hashref_of_coll_id_arr_ref, $small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref)
               = __parse_result_docs(
-                                    $C, $rs, $large_coll_id_arr_ref,
+                                    $C, $mondo_rs, $large_coll_id_arr_ref,
                                     \%missing_coll_ids,
                                     \%small_coll_ids
                                    );
