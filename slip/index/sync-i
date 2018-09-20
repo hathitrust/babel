@@ -464,8 +464,23 @@ sub handle_synchronization {
                 $ids_missing_in_Solr++;
                 $missing_ids_over_colls++;
             }
-
-            if (($id_ct % 100) == 0) {
+	    #XXX
+	    my $REPORT_OUT = 100;
+	    
+	    if ($num_ids_in_coll > 1000 && $num_ids_in_coll < 10000)
+	    {
+		$REPORT_OUT=1000;
+	    }
+	    elsif($num_ids_in_coll > 10000 && $num_ids_in_coll < 100000)
+	    {
+		$REPORT_OUT=10000;
+	    }
+	    else
+	    {
+		$REPORT_OUT=100000;
+	    }
+	    
+            if (($id_ct % $REPORT_OUT) == 0) {
                 l__output($C, "($id_ct)", 1);
                 # throttle solr requests to prevent 500's
                 # sleep 1;
@@ -696,15 +711,30 @@ sub handle_inverse_synchronization {
 	
 	$small_ids_to_enqueue_arr_ref = [];
 	$missing_ids_to_enqueue_arr_ref = [];
+	my $all_count = scalar(keys %$id_hashref_of_coll_id_arr_ref);
+	my $REPORT_OUT=100;
+	if ($all_count > 1000 && $all_count < 10000)
+	{
+	    $REPORT_OUT=1000;
+	}
+	elsif($all_count > 10000 && $all_count < 100000)
+	{
+	    $REPORT_OUT=10000;
+	}
+	else
+	{
+	    $REPORT_OUT=100000;
+	}
 	
+
 	foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
 	    my $ids_to_enqueue_arr_ref = [];
 	    
 	    my $coll_id_arr_ref = $id_hashref_of_coll_id_arr_ref->{$id};
 	    
 	    $id_ct++;
-	    
-	    l__output($C, qq{($id_ct)}, 1, 0, 0) if (($id_ct % 100) == 0);
+	   # l__output($C, qq{($id_ct)}, 1, 0, 0) if (($id_ct % 100) == 0);
+	    l__output($C, qq{($id_ct)}, 1, 0, 0) if (($id_ct % $REPORT_OUT) == 0);
 	    
 	    # Check that this id is in each of these coll_ids
 	    foreach my $coll_id (@$coll_id_arr_ref) {
