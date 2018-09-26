@@ -1191,14 +1191,59 @@
   margin-top: 10vh;
   height: 90vh;
   width: 100vw;
+  overflow: hidden;
   padding-bottom: 0px;
 }
-/* line 9, ../sass/volume/epub.scss */
+/* line 10, ../sass/volume/epub.scss */
+.view-epub .container.page.centered {
+  -ms-display: grid;
+  -ms-grid-columns: auto minmax(min-content, 1fr);
+  -ms-grid-rows: 1fr;
+  display: block;
+  display: grid;
+  grid-template-columns: auto minmax(min-content, 1fr);
+  grid-template-rows: 1fr;
+  max-width: 96vw;
+  max-height: 84vh;
+  margin: 0 auto;
+  overflow: hidden;
+}
+/* line 25, ../sass/volume/epub.scss */
+.view-epub #sidebar {
+  -ms-grid-column: 1;
+  -ms-grid-row: 1;
+  grid-column: 1;
+  display: inline-block;
+  overflow: hidden;
+  max-height: 80vh;
+  overflow: auto;
+}
+/* line 36, ../sass/volume/epub.scss */
+.view-epub #sidebar .bibLinks {
+  background: #fffefb;
+  padding-bottom: 20px;
+  z-index: 500;
+}
+/* line 42, ../sass/volume/epub.scss */
+.view-epub #sidebar .scrollable {
+  padding-left: 0;
+  padding-bottom: 20px;
+}
+/* line 49, ../sass/volume/epub.scss */
+.view-epub #main {
+  -ms-grid-column: 2;
+  -ms-grid-row: 1;
+  grid-column: 2;
+  display: inline-block;
+  height: 80vh;
+  width: calc(96vw - 25rem);
+}
+/* line 58, ../sass/volume/epub.scss */
 .view-epub #content {
   margin-top: 0;
   margin-bottom: 0;
 }
-/* line 16, ../sass/volume/epub.scss */
+/* line 65, ../sass/volume/epub.scss */
 .view-epub .u-screenreader {
   clip: rect(1px, 1px, 1px, 1px);
   height: 1px;
@@ -1206,68 +1251,70 @@
   position: absolute !important;
   width: 1px;
 }
-/* line 24, ../sass/volume/epub.scss */
+/* line 73, ../sass/volume/epub.scss */
 .view-epub #main {
   position: relative;
   padding: 0;
   padding-right: 40px;
-  height: 80vh;
 }
-/* line 31, ../sass/volume/epub.scss */
+/* line 80, ../sass/volume/epub.scss */
 .view-epub #scrolling {
   height: 100%;
   width: 100%;
+  margin-top: 0px !important;
   position: absolute;
+  top: 0px;
   bottom: 0px;
   left: 0px;
   right: 0px;
 }
-/* line 40, ../sass/volume/epub.scss */
+/* line 91, ../sass/volume/epub.scss */
 .view-epub .cozy-container {
   height: 100%;
   width: 100%;
   background: inherit;
 }
-/* line 46, ../sass/volume/epub.scss */
+/* line 97, ../sass/volume/epub.scss */
 .view-epub .cozy-container div[class^='cozy-'] {
   border: 0px solid #666666;
 }
-/* line 51, ../sass/volume/epub.scss */
+/* line 102, ../sass/volume/epub.scss */
 .view-epub .toolbar-horizontal .cozy-control {
   display: inline-flex;
 }
-/* line 56, ../sass/volume/epub.scss */
+/* line 107, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-module-main {
   height: 91%;
   width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   /*margin-bottom: 20em;*/
 }
-/* line 62, ../sass/volume/epub.scss */
+/* line 115, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-module-main div[class^='cozy-module-book'] {
   height: 98%;
   width: 100%;
 }
-/* line 67, ../sass/volume/epub.scss */
-.view-epub .cozy-module-main {
-  /*max-width: 1000px !important;*/
-  width: 98%;
-  margin-left: auto;
-  margin-right: auto;
+/* line 120, ../sass/volume/epub.scss */
+.view-epub .cozy-container .cozy-module-main div.cozy-module-book-cover {
+  width: 90%;
+  margin-left: 5%;
+  margin-right: 5%;
 }
-/* line 74, ../sass/volume/epub.scss */
+/* line 126, ../sass/volume/epub.scss */
 .view-epub .navbar-static-bottom {
   position: fixed;
   margin-bottom: 0;
 }
-/* line 79, ../sass/volume/epub.scss */
+/* line 131, ../sass/volume/epub.scss */
 .view-epub .container.page.centered {
   /*height: 80vh;*/
 }
-/* line 84, ../sass/volume/epub.scss */
+/* line 136, ../sass/volume/epub.scss */
 .view-epub .dropdown-menu ul {
   list-style-type: none;
 }
-/* line 89, ../sass/volume/epub.scss */
+/* line 141, ../sass/volume/epub.scss */
 .view-epub .cozy-module-book .cozy-panel-navigator {
   position: absolute;
   bottom: 0.75em;
@@ -1277,11 +1324,11 @@
   z-index: 10;
   opacity: 0.2;
 }
-/* line 102, ../sass/volume/epub.scss */
+/* line 154, ../sass/volume/epub.scss */
 .view-epub .cozy-module-book .cozy-panel-navigator:hover {
   opacity: 1.0;
 }
-/* line 107, ../sass/volume/epub.scss */
+/* line 159, ../sass/volume/epub.scss */
 .view-epub .cozy-module-bottom {
   height: 60px;
   background: #fffefb;
@@ -1289,28 +1336,28 @@
   align-items: center;
   justify-content: center;
 }
-/* line 115, ../sass/volume/epub.scss */
+/* line 167, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator {
   width: 100%;
   flex-grow: 0;
 }
-/* line 121, ../sass/volume/epub.scss */
+/* line 173, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator {
   width: 100%;
   opacity: 0;
   transition: opacity 0.5s;
   flex-grow: 0;
 }
-/* line 128, ../sass/volume/epub.scss */
+/* line 180, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator.initialized {
   opacity: 1.0;
 }
-/* line 132, ../sass/volume/epub.scss */
+/* line 184, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range__status {
   width: 100%;
   text-align: center;
 }
-/* line 137, ../sass/volume/epub.scss */
+/* line 189, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range {
   width: 90%;
   height: 1.5em;
@@ -1321,7 +1368,7 @@
   margin: 0 auto;
   margin-bottom: 10px;
 }
-/* line 148, ../sass/volume/epub.scss */
+/* line 200, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range] {
   -webkit-appearance: none;
   font-size: 1em;
@@ -1336,7 +1383,7 @@
   background-color: transparent;
   transition: all 0.3s ease-in-out;
 }
-/* line 163, ../sass/volume/epub.scss */
+/* line 215, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range .cozy-navigator-range__background {
   width: 100%;
   pointer-events: none;
@@ -1346,7 +1393,7 @@
   background-repeat: no-repeat, no-repeat;
   background-position: 100% 0%, left top;
 }
-/* line 177, ../sass/volume/epub.scss */
+/* line 229, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range]::-webkit-slider-thumb {
   box-shadow: 0px 0px 0px black;
   border: 1px solid #666666;
@@ -1358,7 +1405,7 @@
   -webkit-appearance: none;
   box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.4);
 }
-/* line 191, ../sass/volume/epub.scss */
+/* line 243, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range]::-moz-range-thumb {
   box-shadow: 0px 0px 0px black;
   border: 1px solid #2497e3;
@@ -1368,7 +1415,7 @@
   background: #A1D0FF;
   cursor: pointer;
 }
-/* line 201, ../sass/volume/epub.scss */
+/* line 253, ../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range]::-ms-thumb {
   margin-top: 1px;
   box-shadow: 0px 0px 0px black;
@@ -1381,19 +1428,19 @@
 }
 
 @keyframes pulse {
-  /* line 223, ../sass/volume/epub.scss */
+  /* line 275, ../sass/volume/epub.scss */
   0% {
     -webkit-transform: scale(1);
     transform: scale(1);
   }
 
-  /* line 228, ../sass/volume/epub.scss */
+  /* line 280, ../sass/volume/epub.scss */
   50% {
     -webkit-transform: scale(0.01);
     transform: scale(0.01);
   }
 
-  /* line 233, ../sass/volume/epub.scss */
+  /* line 285, ../sass/volume/epub.scss */
   100% {
     -webkit-transform: scale(1);
     transform: scale(1);
@@ -1401,17 +1448,17 @@
 }
 
 @keyframes fade {
-  /* line 240, ../sass/volume/epub.scss */
+  /* line 292, ../sass/volume/epub.scss */
   0% {
     background: #707B7C;
   }
 
-  /* line 245, ../sass/volume/epub.scss */
+  /* line 297, ../sass/volume/epub.scss */
   50% {
     background: #99A3A4;
   }
 
-  /* line 250, ../sass/volume/epub.scss */
+  /* line 302, ../sass/volume/epub.scss */
   100% {
     background: #707B7C;
   }

@@ -6,8 +6,10 @@
 
   <xsl:template name="load_skin_js">
     <!-- Default is empty template to be overridden in skin specific template-->
-    <script type="text/javascript">head.load('/pt/js/view/plaintext.scroll.js');</script>
-    <script type="text/javascript">head.load('/pt/mobile/reader.js');</script>
+    <xsl:if test="//ItemType = 'volume'">
+      <script type="text/javascript">head.load('/pt/js/view/plaintext.scroll.js');</script>
+      <script type="text/javascript">head.load('/pt/mobile/reader.js');</script>
+    </xsl:if>
   </xsl:template>
 
 

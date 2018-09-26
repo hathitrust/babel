@@ -26,7 +26,9 @@ head.ready(function() {
   var start,end, range, s, pos;
   function highlight(c, s, element, text){
       var hrefs = [];
-      element.querySelectorAll("p").forEach(function(e, i) {
+      var elements = element.querySelectorAll("p");
+      for(var i = 0; i < elements.length; i++) {
+        var e = elements[i];
         start = e.innerText.toLowerCase().indexOf(text.toLowerCase());
         if ( start > -1 ) {
           range = element.ownerDocument.createRange();
@@ -40,15 +42,38 @@ head.ready(function() {
         } else {
           // console.log("AHOY NO", e, text);
         }
-      })
+      }
       return hrefs;
       // s.addRange(range);
+  }
+
+
+  var calculate_height = function() {
+      $navbar  = $(".navbar-static-top");
+      var window_h = $(window).height();
+      var h = $(window).height() - $navbar.height() - $(".toolbar-horizontal").outerHeight() - 20;
+      var main_h = $("#scrolling").height();
+      if ( h > main_h ) { h = main_h ; }
+      var h2 = h - $(".bibLinks").height() - 10;
+      console.log("CALCULATING SCROLLABLE HEIGHT", h, main_h, h2);
+      return h2;
   }
 
   console.log("AHOY READER");
   // var book_href = "https://roger-full.babel.hathitrust.org/cgi/imgsrv/files/epub.buell/";
   var book_href = $("html").data('epub-root');
   var flow = 'paginated';
+
+  var $container = $("#main").parent();
+  // $container.height($(window).height() - 150);
+
+  var $sidebar_scrollable = $("#sidebar .scrollable");
+  var $sidebar_biblinks = $("#sidebar .bibLinks");
+  $sidebar_biblinks.css({ position: 'fixed', width: $("#sidebar").width() - 0 });
+  $sidebar_scrollable.css({ paddingTop: $sidebar_biblinks.outerHeight() + 0 });
+
+  console.log("AHOY", $(window).height(), $(window).height() - 200);
+
 
   var start_cfi;
   // if ( HT.params.num ) {
@@ -70,14 +95,23 @@ head.ready(function() {
   var reader = cozy.reader('content', { href: book_href, flow: flow });
   HT.reader = reader;
 
-  var $toolbar = $("#action-go-prev").parent();
+  var $toolbar = $("#action-go-first").parent();
   console.log("AHOY TOOLBAR", $toolbar);
+  cozy.control.pagePrevious({ region: 'left.sidebar' }).addTo(reader);
+  cozy.control.pageNext({ region: 'right.sidebar' }).addTo(reader);
   cozy.control.pageFirst({ container: $toolbar.get(0) }).addTo(reader);
   cozy.control.pagePrevious({ container: $toolbar.get(0) }).addTo(reader);
-  cozy.control.pageNext({ container: $toolbar.get(0) }).addTo(reader);
-  cozy.control.pageLast({ container: $toolbar.get(0) }).addTo(reader);
-  // cozy.control.navigator({ region: 'book.navigator' }).addTo(reader);
+  // cozy.control.pageNext({ container: $toolbar.get(0) }).addTo(reader);
+  // cozy.control.pageLast({ container: $toolbar.get(0) }).addTo(reader);
   cozy.control.navigator({ region: 'bottom.navigator' }).addTo(reader);
+
+  $("#action-go-prev").on('click', function() {
+    reader.prev();
+  })
+
+  $("#action-go-next").on('click', function() {
+    reader.next();
+  })
 
   // because HT doesn't have a _preferences_ panel, per se
   var resetFlow = function(btn) {
@@ -96,7 +130,7 @@ head.ready(function() {
     resetFlow(this);
   })
 
-  $("a[data-target=paginate]").on('click', function(e) {
+  $("a[data-target=paginated]").on('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     resetFlow(this);
@@ -105,11 +139,11 @@ head.ready(function() {
   var text_size = 100;
 
   var resetTextSize = function(delta) {
-    text_size += ( delta * 10 );
+    text_size += ( delta * 20 );
     if ( text_size == 200 ) {
       $("#action-zoom-in").attr("disabled", "disabled");
       $("#action-zoom-out").attr("disabled", null);
-    } else if ( text_size == 70 ) {
+    } else if ( text_size == 40 ) {
       $("#action-zoom-in").attr("disabled", null);
       $("#action-zoom-out").attr("disabled", "disabled");
     } else {
@@ -131,11 +165,26 @@ head.ready(function() {
     resetTextSize(-1);
   })
 
-  $("#action-toggle-fullscreen").on('click', function(e) {
+  var $fullscreen_btn = $("#action-toggle-fullscreen");
+  $fullscreen_btn.on('click', function(e) {
     // reader.requestFullscreen();
     if ( screenfull.enabled ) {
       // this._preResize();
       screenfull.toggle($(".container.page.centered").get(0));
+      $(this).toggleClass("active");
+    }
+  })
+
+  screenfull.on('change', function() {
+    if ( screenfull.isFullscreen ) {
+      $("#scrolling").css({ 'padding-top': '120px' });
+      $fullscreen_btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
+    } else {
+      $("#scrolling").css({ 'padding-top': '' });
+      $fullscreen_btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
+      setTimeout(function() {
+        HT.reader._rendition.resize();
+      }, 0);
     }
   })
 

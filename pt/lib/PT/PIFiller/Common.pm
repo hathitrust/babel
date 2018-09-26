@@ -1220,6 +1220,8 @@ sub handle_SEARCH_RESULTS_LINK_PI
         }
     }
 
+    $href = '' if ( $href =~ m,/cgi/pt, );
+
     return $href;
 }
 

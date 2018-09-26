@@ -5,6 +5,55 @@
   margin-top: 10vh;
   height: 90vh;
   width: 100vw;
+  overflow: hidden;
+
+  .container.page.centered {
+    -ms-display: grid;
+    -ms-grid-columns: auto minmax(min-content, 1fr);
+    -ms-grid-rows: 1fr;
+    display: block;
+    display: grid;
+    grid-template-columns: auto minmax(min-content, 1fr);
+    grid-template-rows: 1fr;
+    // grid-template-rows: auto minmax(min-content, 1fr) auto;
+    max-width: 96vw;
+    max-height: 84vh;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  #sidebar {
+    -ms-grid-column: 1;
+    -ms-grid-row: 1;
+    grid-column: 1;
+    display: inline-block;
+    overflow: hidden;
+    max-height: 80vh;
+    overflow: auto;
+    // max-height: 78vh;
+    // overflow: hidden;
+
+    .bibLinks {
+      background: #fffefb;
+      padding-bottom: 20px;
+      z-index: 500;
+    }
+
+    .scrollable {
+      // overflow: auto;
+      padding-left: 0;
+      padding-bottom: 20px;
+    }
+  }
+
+  #main {
+    -ms-grid-column: 2;
+    -ms-grid-row: 1;
+    grid-column: 2;
+    display: inline-block;
+    height: 80vh;
+    width: calc(96vw - 25rem);
+  }
 
   #content {
     margin-top: 0;
@@ -25,13 +74,15 @@
     position: relative;
     padding: 0;    
     padding-right: 40px;
-    height: 80vh;     
+    // height: 100%;
   }
 
   #scrolling {
       height: 100%;
       width: 100%;
+      margin-top: 0px !important;
       position: absolute;
+      top: 0px;
       bottom: 0px;
       left: 0px;
       right: 0px;
@@ -56,6 +107,8 @@
   .cozy-container .cozy-module-main {
       height: 91%;
       width: 100%;
+      margin-left: auto;
+      margin-right: auto;
       /*margin-bottom: 20em;*/
   }
 
@@ -64,11 +117,10 @@
       width: 100%;
   }
 
-  .cozy-module-main {
-    /*max-width: 1000px !important;*/
-    width: 98%;
-    margin-left: auto;
-    margin-right: auto;
+  .cozy-container .cozy-module-main div.cozy-module-book-cover {
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
   }
 
   .navbar-static-bottom {

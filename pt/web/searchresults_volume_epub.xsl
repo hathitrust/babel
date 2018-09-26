@@ -266,6 +266,26 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="download-links">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <li>
+      <xsl:element name="a">
+        <xsl:attribute name="title">Download whole book (EPUB)</xsl:attribute>
+        <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+        <xsl:attribute name="data-toggle">tracking-action download</xsl:attribute>
+        <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+        <xsl:attribute name="data-tracking-action">PT Download EPUB - whole book</xsl:attribute>
+        <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+        <xsl:attribute name="href">
+          <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+        </xsl:attribute>
+        <xsl:text>Download whole book (EPUB)</xsl:text>
+      </xsl:element>
+      <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+        <p class="pdfPartnerLoginLinkMessage">Partner login required</p>
+      </xsl:if>
+    </li>
+  </xsl:template>
 
   <!-- -->
   <xsl:template name="BuildSearchSummary">

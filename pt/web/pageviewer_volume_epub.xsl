@@ -16,10 +16,10 @@
   <xsl:variable name="gCurrentPageFeatures" select="/MBooksTop/MdpApp/CurrentPageFeatures"/>
   <xsl:variable name="gUsingBookReader">true</xsl:variable>
   <xsl:variable name="gCurrentView">paginated</xsl:variable>
-  <xsl:variable name="gUsingSearch">true</xsl:variable>
 
   <xsl:template name="setup-extra-header-extra">
 
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
     <script>
       COZY_EPUB_ENGINE_HREF = '/pt/vendor/cozy-sun-bear/vendor/javascripts/engines/epub.js';
     </script>
@@ -76,6 +76,23 @@
         <xsl:call-template name="page-content" />
       </div>
     </div>
+  </xsl:template>
+
+  <xsl:template name="display-catalog-record-not-available">
+    <!-- <xsl:text>Catalog record not available</xsl:text> -->
+    <span>Catalog record not available</span>
+    <br />
+    <span>Rekord katalogu nie jest dostępny</span>
+    <br />
+    <span>Registro de catálogo no disponible</span>
+    <br />
+    <span>Katalogo įrašas nėra</span>
+    <br />
+    <span>カタログレコードが利用できません</span>
+    <br />
+    <span>目录记录不可用</span>
+    <br />
+    <span>Nid yw'r cofnod catalog ar gael</span>
   </xsl:template>
 
   <xsl:template name="get-view-title">Main Content</xsl:template>
@@ -201,6 +218,27 @@
   <xsl:template name="page-content">
     <div id="content">
     </div>
+  </xsl:template>
+
+  <xsl:template name="download-links">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <li>
+      <xsl:element name="a">
+        <xsl:attribute name="title">Download whole book (EPUB)</xsl:attribute>
+        <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+        <xsl:attribute name="data-toggle">tracking-action download</xsl:attribute>
+        <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+        <xsl:attribute name="data-tracking-action">PT Download EPUB - whole book</xsl:attribute>
+        <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
+        <xsl:attribute name="href">
+          <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+        </xsl:attribute>
+        <xsl:text>Download whole book (EPUB)</xsl:text>
+      </xsl:element>
+      <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
+        <p class="pdfPartnerLoginLinkMessage">Partner login required</p>
+      </xsl:if>
+    </li>
   </xsl:template>
 
   <xsl:template match="node()" mode="copy-guts">

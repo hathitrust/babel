@@ -64,6 +64,7 @@
             to_load.push("/pt/js/view/plaintext.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     <xsl:if test="//ItemType='volume/epub'">
+            to_load.push("/pt/vendor/jquery.sticky-kit.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/nanoscroller/jquery.nanoscroller.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/sidebar.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/epub_reader.js<xsl:value-of select="$timestamp" />");

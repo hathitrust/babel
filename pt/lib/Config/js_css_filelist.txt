@@ -82,6 +82,7 @@ Test://ItemType='volume'
 Section:PAGETURNER_VOLUME_EPUB_JS
 Test://ItemType='volume/epub'
 /pt/web/vendor/nanoscroller/jquery.nanoscroller.js
+/pt/web/vendor/jquery.sticky-kit.js
 /pt/web/js/sidebar.js
 /pt/web/js/epub_reader.js
 
