@@ -24,7 +24,7 @@ BEGIN {
      $ENV{DEBUG_LOCAL} = 1;
 }
 
-
+#test  2
 # ----------------------------------------------------------------------
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
@@ -454,12 +454,11 @@ sub __get_solr_id_hashref_for_coll
 }
 
 # ---------------------------------------------------------------------
-# ---------------------------------------------------------------------
 sub __mondo_get_solr_id_hashref_for_coll
 {
     my ($C, $coll_id ) =@_;
     my $hashref={};
-    my $id_array_ref =__export_search($C,$coll_id);
+    my $id_array_ref =__export_search_ids_in_coll($C,$coll_id);
     foreach my $id (@{$id_array_ref}){
 	$hashref->{$id}=1;
     }
@@ -467,21 +466,18 @@ sub __mondo_get_solr_id_hashref_for_coll
 }
 # ---------------------------------------------------------------------
 
-=item __export_search
+=item __export_search_ids_in_coll
 
 Uses export handler to efficiently retrieve very large solr result sets
 Queries every shard (export handler does not support distributed search)
 Currently hard-coded to return an array_ref of ids
-Consider whether we can combine results from each shard and return a result set instead of an array_ref
-Consider whether to take parameters to specify fields to return
+Consider whether to take parameters to specify fields to return and change name 
 
 =cut
 
-
-
 # ---------------------------------------------------------------------
 
-sub __export_search
+sub __export_search_ids_in_coll
 {
     my $C = shift;
     my $coll_id = shift;
@@ -593,7 +589,7 @@ sub handle_synchronization {
 	
 	if ($num_ids_in_coll > $MAX_NON_MONDO_COLL_SIZE){
 	    # delegate shard handling to __mondo_get...
-	    $solr_id_hashref_for_coll= __mondo_get_solr_id_hashref_for_coll($C, $coll_id, $MAX_NON_MONDO_COLL_SIZE)
+	    $solr_id_hashref_for_coll= __mondo_get_solr_id_hashref_for_coll($C, $coll_id);
 	}
 	else {
 	    
@@ -627,10 +623,11 @@ sub handle_synchronization {
 		# do nothing but code is a bit easier to parse
 	    }
 	    else{  #coll_id missing for this id.  if id is in Solr then enqueue the id
-		l__output($C, qq{\nID=$id in Solr missing coll_id=$coll_id field. Enqueue unless NOOP.\n}, 1, 1, 1);
 
 		if (__id_exists_in_solr($C, $id, $searcher, $rs)){
-		    $coll_id_missing_in_Solr++; # only count it  as a missing coll_id if its not an id deleted from solr    
+		    $coll_id_missing_in_Solr++; # only count it  as a missing coll_id if its not an id deleted from solr
+		    l__output($C, qq{\nID=$id in Solr missing coll_id=$coll_id field. Enqueue unless NOOP.\n}, 1, 1, 1);
+
 		    if (! $NOOP) {
 			$ok = SharedQueue::enqueue_item_ids($C, $DBH, [$id]);
 			__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
@@ -667,22 +664,6 @@ sub handle_synchronization {
 
         l__output($C, qq{$s$ig\n}, 1, 1, 1);
     } # end foreach coll_id
-
-    #XXX handle mondo colls over $MAX_NON_MONDO_COLL_SIZE in size here and adjust stats
-    my $stats_hash_ref={
-			'coll_ct' => $coll_ct,
-			'ids_in_colls' => $ids_in_colls,
-			'$missing_ids_over_colls' => $missing_ids_over_colls,
-			's' =>$s
-			# ,
-			#'' => ,
-			#'' => ,
-
-		       };
-    
-    $stats_hash_ref= __handle_mondo_colls($mondo_colls_arr_ref,$stats_hash_ref);
-    
-    #XXX redo the stats to separate out regular and mondo
     
     my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
     $s = $NOOP ? '' : ", $total_ids_queued added to shared queue";
@@ -696,29 +677,6 @@ sub handle_synchronization {
 
     
 
-}
-
-# ---------------------------------------------------------------------
-
-=item __handle_mondo_colls
-
-For colls over $MAX_NON_MONDO_COLL_SIZE we need to use the export handler to grab a
-
-
-=cut
-
-
-# ---------------------------------------------------------------------
-sub __handle_mondo_colls
-{
-    my $coll_ary       = shift;
-    my $stats_hash_ref = shift;
-    
-    foreach my $coll_id (@{$coll_ary})
-    {
-	print STDERR "would handle mondo coll id $coll_id if __handle_mondo_colls was implemented\n";
-	
-    }
 }
 
 # ---------------------------------------------------------------------
@@ -752,6 +710,10 @@ sub __parse_result_docs {
     my %local_small_ids_to_enqueue = ();
     my %local_missing_ids_to_enqueue = ();
 
+    my $hash_of_coll_id_hashes={};
+    
+    # XXX this hack uses the get_complete_result and then hacks results if working on
+    # a single collection.  Is it worth changing search, i.e. not asking for other fields?
     my $ret_to_arr_of_hashref = $rs->get_complete_result();
     foreach my $hashref (@$ret_to_arr_of_hashref) {
         my $coll_ids_arr_ref = [];
@@ -764,6 +726,7 @@ sub __parse_result_docs {
         my $id = $hashref->{id};
 
         $id_to_coll_id_hash{$id} = $coll_ids_arr_ref;
+	
     }
 
     # Optimization: If any of the coll_ids don't exist or are a
@@ -771,8 +734,12 @@ sub __parse_result_docs {
     # re-indexed" list so we don't have to query MySQL redundantly for
     # every id that's in a non-existent or non-large collection.
     # TBW adds maximum time mysql called instead of reading hash is total number of large collections which is < 200
+    my $colls_seen ={};
+    
     foreach my $id (keys %id_to_coll_id_hash) {
         foreach my $coll_id (@{ $id_to_coll_id_hash{$id} }) {
+	    $colls_seen->{$coll_id}++;
+	    
 	    if ($ok_coll_ids_hashref->{$coll_id}){
 		# we already checked it so we know its not missing or small
 	    }
@@ -810,8 +777,51 @@ sub __parse_result_docs {
     my @small_ids_to_enqueue = keys %local_small_ids_to_enqueue;
     my @missing_ids_to_enqueue = keys %local_missing_ids_to_enqueue;
 
-    return (\%id_to_coll_id_hash, \@small_ids_to_enqueue, \@missing_ids_to_enqueue);
+    return ($colls_seen, \%id_to_coll_id_hash, \@small_ids_to_enqueue, \@missing_ids_to_enqueue);
 }
+#----------------------------------------------------------------------
+sub __get_hash_of_ids_in_coll
+{
+    my $coll_id = shift;
+    my $hashref = {};
+    my $id_arr_ref = $CO->get_ids_for_coll($coll_id);
+    foreach my $id (@{$id_arr_ref}){
+	$hashref->{$id} = 1;
+    }
+    return $hashref;
+}
+#----------------------------------------------------------------------
+sub __get_hash_of_coll_hashes
+{
+    my $colls_seen = shift;
+    my $hash_of_coll_hashes = {};
+    
+    foreach my $coll_id  (keys (%{$colls_seen})){
+	    my $hash_of_ids_in_coll = __get_hash_of_ids_in_coll($coll_id);
+	    $hash_of_coll_hashes->{$coll_id} = $hash_of_ids_in_coll;
+	}
+    return ($hash_of_coll_hashes);
+}
+
+#----------------------------------------------------------------------
+# if we have the info for the coll in a hash use that
+# if we don't go back to mysql query for one id in coll
+
+sub __id_exists_in_coll
+{
+    my $coll_id = shift;
+    my $id = shift;
+    my $hash_of_coll_hashes = shift;
+    
+    if  (exists($hash_of_coll_hashes->{$coll_id})){
+	return ($hash_of_coll_hashes->{$coll_id}->{$id} ==1)
+    }
+    else
+    {
+	return $CO->one_or_more_items_in_coll($coll_id, [$id])
+    }
+}	
+	
 
 
 # ---------------------------------------------------------------------
@@ -932,8 +942,8 @@ sub handle_inverse_synchronization {
 	# so what is left at the end is only ids that are not already in a list of ids to be enqueued for those two reasons
 	# so after we run this $id_hashref_of_coll_id_arr_ref contains ids that are not already to be enqueued because
 	# they had a coll_id that was small or missing
-	#foofoo
-	my ($id_hashref_of_coll_id_arr_ref, $small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref)
+	# Add hash of colls_seen in this chunk of result docs
+	my ($colls_seen, $id_hashref_of_coll_id_arr_ref, $small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref)
 	= __parse_result_docs(
 			      $C, $mondo_rs, $large_coll_id_arr_ref,
 			      \%missing_coll_ids,
@@ -981,6 +991,15 @@ sub handle_inverse_synchronization {
 	
 	my $all_count = scalar(keys %$id_hashref_of_coll_id_arr_ref);
 	my $REPORT_OUT=__get_report_out_number($all_count);
+
+	# get list of ids for each of the colls in this slice?
+	# consider processing parse_result_docs in slices and doing the rest of this per slice
+	# while caching coll_ids already seen?
+	# do we want to cache this to avoid future sql querie for rest of the shards?
+	# need to determine memory
+	
+	my $hash_of_coll_hashes = __get_hash_of_coll_hashes($colls_seen);
+	
 	
 	foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
 	    my $ids_to_enqueue_arr_ref = [];
@@ -993,7 +1012,12 @@ sub handle_inverse_synchronization {
 	    
 	    # Check that this id is in each of these coll_ids
 	    foreach my $coll_id (@$coll_id_arr_ref) {
-		unless ($CO->one_or_more_items_in_coll($coll_id, [$id])) {
+		
+		# replace the $CO-> call with an
+		# id_exists_in_coll
+	#	unless ($CO->one_or_more_items_in_coll($coll_id, [$id])) {
+		unless (__id_exists_in_coll($coll_id, $id, $hash_of_coll_hashes)){
+		    
 		    $s = $NOOP ? '' : "\n\t--> queue id (unless already in queue)";
 		    l__output($C, qq{\n\tid NOT IN MySQL COLLECTION: id=$id, coll_id=$coll_id $s\n}, 1, 0, 1);
 		    
@@ -1047,11 +1071,12 @@ sub l__output {
 
 =head1 AUTHOR
 
+Tom Burton-West, University of Michigan, tburtonw@umich.edu
 Phillip Farber, University of Michigan, pfarber@umich.edu
 
 =head1 COPYRIGHT
 
-Copyright 2011-2015 ©, The Regents of The University of Michigan, All Rights Reserved
+Copyright 2011-2018 ©, The Regents of The University of Michigan, All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
