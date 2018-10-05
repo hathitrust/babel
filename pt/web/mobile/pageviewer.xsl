@@ -115,6 +115,15 @@
       </div>
     </div>
 
+    <xsl:call-template name="build-toolbar-footer" />
+
+    <xsl:call-template name="build-settings-panel" />
+    <xsl:call-template name="build-info-panel" />
+    <xsl:call-template name="build-get-book-panel" />
+
+  </xsl:template>
+
+  <xsl:template name="build-toolbar-footer">
     <div id="toolbar-footer" class="cbp-spmenu-bottom cbp-spmenu cbp-spmenu-open">
       <a href="#" id="action-toggle-toolbars"></a>
       <nav class="cbp-spmenu-horizontal">
@@ -126,12 +135,6 @@
       </nav>
       <div class="slider-park"></div>
     </div>
-
-
-    <xsl:call-template name="build-settings-panel" />
-    <xsl:call-template name="build-info-panel" />
-    <xsl:call-template name="build-get-book-panel" />
-
   </xsl:template>
 
 <!--   <div class="slider-horizontal">

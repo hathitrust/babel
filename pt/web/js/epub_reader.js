@@ -47,33 +47,18 @@ head.ready(function() {
       // s.addRange(range);
   }
 
-
-  var calculate_height = function() {
-      $navbar  = $(".navbar-static-top");
-      var window_h = $(window).height();
-      var h = $(window).height() - $navbar.height() - $(".toolbar-horizontal").outerHeight() - 20;
-      var main_h = $("#scrolling").height();
-      if ( h > main_h ) { h = main_h ; }
-      var h2 = h - $(".bibLinks").height() - 10;
-      console.log("CALCULATING SCROLLABLE HEIGHT", h, main_h, h2);
-      return h2;
-  }
-
   console.log("AHOY READER");
-  // var book_href = "https://roger-full.babel.hathitrust.org/cgi/imgsrv/files/epub.buell/";
   var book_href = $("html").data('epub-root');
   var flow = 'paginated';
 
   var $container = $("#main").parent();
-  // $container.height($(window).height() - 150);
 
   var $sidebar_scrollable = $("#sidebar .scrollable");
   var $sidebar_biblinks = $("#sidebar .bibLinks");
-  $sidebar_biblinks.css({ position: 'fixed', width: $("#sidebar").width() - 0 });
-  $sidebar_scrollable.css({ paddingTop: $sidebar_biblinks.outerHeight() + 0 });
-
-  console.log("AHOY", $(window).height(), $(window).height() - 200);
-
+  if ( $sidebar_biblinks.length ) {
+    $sidebar_biblinks.css({ position: 'fixed', width: $("#sidebar").width() - 0 });
+    $sidebar_scrollable.css({ paddingTop: $sidebar_biblinks.outerHeight() + 0 });
+  }
 
   var start_cfi;
   // if ( HT.params.num ) {
@@ -96,13 +81,12 @@ head.ready(function() {
   HT.reader = reader;
 
   var $toolbar = $("#action-go-first").parent();
-  console.log("AHOY TOOLBAR", $toolbar);
   cozy.control.pagePrevious({ region: 'left.sidebar' }).addTo(reader);
   cozy.control.pageNext({ region: 'right.sidebar' }).addTo(reader);
-  cozy.control.pageFirst({ container: $toolbar.get(0) }).addTo(reader);
-  cozy.control.pagePrevious({ container: $toolbar.get(0) }).addTo(reader);
-  // cozy.control.pageNext({ container: $toolbar.get(0) }).addTo(reader);
-  // cozy.control.pageLast({ container: $toolbar.get(0) }).addTo(reader);
+  if ( $toolbar.length ) {
+    cozy.control.pageFirst({ container: $toolbar.get(0) }).addTo(reader);
+    cozy.control.pagePrevious({ container: $toolbar.get(0) }).addTo(reader);
+  }
   cozy.control.navigator({ region: 'bottom.navigator' }).addTo(reader);
 
   $("#action-go-prev").on('click', function() {
@@ -136,7 +120,8 @@ head.ready(function() {
     resetFlow(this);
   })
 
-  var text_size = 100;
+  var text_size = reader.options.text_size || 100;
+  var initial_text_size = text_size;
 
   var resetTextSize = function(delta) {
     text_size += ( delta * 20 );
@@ -163,6 +148,13 @@ head.ready(function() {
     e.preventDefault();
     e.stopPropagation();
     resetTextSize(-1);
+  })
+
+  $("#action-zoom-reset").on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    text_size = 100;
+    reader.reopen({ text_size: initial_text_size });
   })
 
   var $fullscreen_btn = $("#action-toggle-fullscreen");
@@ -198,7 +190,8 @@ head.ready(function() {
     return retval;
   };
 
-  var _process_menu = function(items, tabindex, $parent) {
+  var _process_menu = {};
+  _process_menu.default = function(items, tabindex, $parent) {
     items.forEach(function(item) {
       var $li = $("<li><a></a></li>").appendTo($parent);
       var $a = $li.find("a");
@@ -211,10 +204,28 @@ head.ready(function() {
     })
   }
 
+  _process_menu.mobile = function(items, tabindex, $parent) {
+    items.forEach(function(item) {
+      var $li = $("<li><div class='resulttext'><a><span class='offscreen'></span></a><ul class='mdpInnerList'><li><span></span></ul></div></li>").appendTo($parent);
+      var $a = $li.find("a");
+      $a.attr("href", item.href);
+      $a.find("span").text()
+
+      var $span = $li.find(".mdpInnerList span");
+      $span.text(item.label);
+      $span.css({ display: 'inline-block', 'padding-left': ( tabindex * 5 ) + 'px' });
+      if ( item.subitems.length ) {
+        // var $ul = $("<ul></ul>").appendTo($li);
+        _process_menu(item.subitems, tabindex + 1, $ul);
+      }
+    })
+  }
+
   var $menu = $(".table-of-contents ul");
   reader.on('updateContents', function(data) {
+    var fn = $("html").is(".mobile") ? "mobile" : "default";
     if ( data ) {
-      _process_menu(data.toc, 0, $menu);
+      _process_menu[fn](data.toc, 0, $menu);
     }
   });
   $menu.on('click', 'a', function(e) {
