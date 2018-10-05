@@ -173,6 +173,9 @@
       <div class="options">
         <div class="btn-group btn-group-vertical action-views">
           <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">plaintext</xsl:with-param>
+          </xsl:call-template>
+          <xsl:call-template name="action-view-button">
             <xsl:with-param name="view">1up</xsl:with-param>
           </xsl:call-template>
           <xsl:call-template name="action-view-button">
@@ -183,9 +186,6 @@
           </xsl:call-template>
           <xsl:call-template name="action-view-button">
             <xsl:with-param name="view">image</xsl:with-param>
-          </xsl:call-template>
-          <xsl:call-template name="action-view-button">
-            <xsl:with-param name="view">plaintext</xsl:with-param>
           </xsl:call-template>
         </div>
         <xsl:call-template name="action-fullscreen" />

@@ -1139,6 +1139,25 @@ Handler for ALLOW_FULL_PDF.
 =cut
 
 # ---------------------------------------------------------------------
+sub handle_ALLOW_SINGLE_PAGE_PDF_PI
+    : PI_handler(ALLOW_SINGLE_PAGE_PDF)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    return $C->get_object('Access::Rights')->get_single_page_PDF_access_status($C, $id);
+}
+
+#
+# ---------------------------------------------------------------------
+
+=item handle_ALLOW_FULL_PDF_PI : PI_handler(ALLOW_FULL_PDF)
+
+Handler for ALLOW_FULL_PDF.
+
+=cut
+
+# ---------------------------------------------------------------------
 sub handle_ALLOW_FULL_PDF_PI
     : PI_handler(ALLOW_FULL_PDF)
 {

@@ -44,6 +44,7 @@
     </xsl:choose>
   </xsl:variable>
 
+  <xsl:variable name="gSinglePagePdfAccess" select="/MBooksTop/MdpApp/AllowSinglePagePDF"/>
   <xsl:variable name="gFullPdfAccess" select="/MBooksTop/MdpApp/AllowFullPDF"/>
   <xsl:variable name="gFullPdfAccessMessage" select="/MBooksTop/MdpApp/FullPDFAccessMessage"/>
   <xsl:variable name="gCollectionList" select="/MBooksTop/MdpApp/CollectionList"/>
@@ -1001,7 +1002,7 @@
 
   <xsl:template name="download-links">
     <xsl:param name="pViewTypeList" />
-    <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
+    <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess = 'allow'">
       <li>
         <xsl:element name="a">
           <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
@@ -1061,7 +1062,12 @@
               <xsl:attribute name="data-tracking-action">PT Download PDF - whole book</xsl:attribute>
               <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
               <xsl:attribute name="href">
-                <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+                <xsl:choose>
+                  <xsl:when test="$gLoggedIn = 'NO'">
+                    <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+                  </xsl:when>
+                  <xsl:otherwise>#</xsl:otherwise>
+                </xsl:choose>
               </xsl:attribute>
               <xsl:text>Download whole book (PDF)</xsl:text>
             </xsl:element>

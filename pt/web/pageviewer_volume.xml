@@ -68,6 +68,7 @@
     <DefaultCollid><?DEFAULT_COLLID?></DefaultCollid>
     <CollectionList><?COLLECTION_LIST?></CollectionList>
     <LoginLink><?LOGIN_LINK?></LoginLink>
+    <AllowSinglePagePDF><?ALLOW_SINGLE_PAGE_PDF?></AllowSinglePagePDF>
     <AllowFullPDF><?ALLOW_FULL_PDF?></AllowFullPDF>
     <FullPDFAccessMessage><?FULL_PDF_ACCESS_MESSAGE?></FullPDFAccessMessage>
     <Section108><?SECTION_108?></Section108>
