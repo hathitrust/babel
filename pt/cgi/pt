@@ -262,19 +262,21 @@ sub ValidityChecks {
         if ( $prefs ) {
             eval {
                 $prefs = decode_json($prefs);
+                $view = $$prefs{'pt'}{'view'};
+                $cgi->param('view', $view);
             };
             if ( $@ ) {
-                # fake it
-                $prefs = { pt => { view => $PTGlobals::gDefaultView } };
+                # ignore
+                # $prefs = { pt => { view => $PTGlobals::gDefaultView } };
             }
-
-            $view = $$prefs{'pt'}{'view'};
-            $cgi->param('view', $view);
         }
     }
 
     if ( ! $view ||
          ! grep(/^$view$/, (@PTGlobals::gViewTypes, @PTGlobals::gAuthdViewTypes))) {
+
+        $rc |= PT::Prolog::ST_VIEW_NOT_SUPPLIED;
+
         if ( $cgi->param( 'ssd' ) ) {
             # 'ssd' URL param is deprecated
             $cgi->param( 'view', $PTGlobals::gDefaultSsdView );
