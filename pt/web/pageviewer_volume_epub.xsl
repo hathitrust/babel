@@ -27,11 +27,7 @@
 
     <link rel="stylesheet" href="/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.css" />
     <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
-    <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
     <link rel="stylesheet" href="/pt/css/print.css{$timestamp}" media="print" />
-
-    <!-- <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" /> -->
-
   </xsl:template>
 
   <xsl:template name="setup-body-class">
