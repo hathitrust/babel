@@ -6,7 +6,19 @@
   overflow: hidden;
   padding-bottom: 0px;
 }
-/* line 10, ../../sass/volume/epub.scss */
+/* line 11, ../../sass/volume/epub.scss */
+.view-epub.fullscreen .container.page.centered {
+  height: 100%;
+}
+/* line 19, ../../sass/volume/epub.scss */
+.view-epub.fullscreen #main {
+  height: 95vh;
+}
+/* line 22, ../../sass/volume/epub.scss */
+.view-epub.fullscreen #main .cozy-module-book-epub {
+  padding-top: 120px;
+}
+/* line 29, ../../sass/volume/epub.scss */
 .view-epub .container.page.centered {
   -ms-display: grid;
   -ms-grid-columns: auto minmax(min-content, 1fr);
@@ -20,7 +32,7 @@
   margin: 0 auto;
   overflow: hidden;
 }
-/* line 25, ../../sass/volume/epub.scss */
+/* line 44, ../../sass/volume/epub.scss */
 .view-epub #sidebar {
   -ms-grid-column: 1;
   -ms-grid-row: 1;
@@ -30,18 +42,18 @@
   max-height: 80vh;
   overflow: auto;
 }
-/* line 36, ../../sass/volume/epub.scss */
+/* line 55, ../../sass/volume/epub.scss */
 .view-epub #sidebar .bibLinks {
   background: #fffefb;
   padding-bottom: 20px;
   z-index: 500;
 }
-/* line 42, ../../sass/volume/epub.scss */
+/* line 61, ../../sass/volume/epub.scss */
 .view-epub #sidebar .scrollable {
   padding-left: 0;
   padding-bottom: 20px;
 }
-/* line 49, ../../sass/volume/epub.scss */
+/* line 68, ../../sass/volume/epub.scss */
 .view-epub #main {
   -ms-grid-column: 2;
   -ms-grid-row: 1;
@@ -50,12 +62,12 @@
   height: 80vh;
   width: calc(96vw - 25rem);
 }
-/* line 58, ../../sass/volume/epub.scss */
+/* line 77, ../../sass/volume/epub.scss */
 .view-epub #content {
   margin-top: 0;
   margin-bottom: 0;
 }
-/* line 65, ../../sass/volume/epub.scss */
+/* line 84, ../../sass/volume/epub.scss */
 .view-epub .u-screenreader {
   clip: rect(1px, 1px, 1px, 1px);
   height: 1px;
@@ -63,13 +75,13 @@
   position: absolute !important;
   width: 1px;
 }
-/* line 73, ../../sass/volume/epub.scss */
+/* line 92, ../../sass/volume/epub.scss */
 .view-epub #main {
   position: relative;
   padding: 0;
   padding-right: 40px;
 }
-/* line 80, ../../sass/volume/epub.scss */
+/* line 99, ../../sass/volume/epub.scss */
 .view-epub #scrolling {
   height: 100%;
   width: 100%;
@@ -80,21 +92,25 @@
   left: 0px;
   right: 0px;
 }
-/* line 91, ../../sass/volume/epub.scss */
+/* line 110, ../../sass/volume/epub.scss */
 .view-epub .cozy-container {
   height: 100%;
   width: 100%;
   background: inherit;
 }
-/* line 97, ../../sass/volume/epub.scss */
+/* line 116, ../../sass/volume/epub.scss */
 .view-epub .cozy-container div[class^='cozy-'] {
   border: 0px solid #666666;
 }
-/* line 102, ../../sass/volume/epub.scss */
+/* line 120, ../../sass/volume/epub.scss */
+.view-epub .toolbar-horizontal {
+  width: auto;
+}
+/* line 122, ../../sass/volume/epub.scss */
 .view-epub .toolbar-horizontal .cozy-control {
   display: inline-flex;
 }
-/* line 107, ../../sass/volume/epub.scss */
+/* line 127, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-module-main {
   height: 91%;
   width: 100%;
@@ -102,31 +118,31 @@
   margin-right: auto;
   /*margin-bottom: 20em;*/
 }
-/* line 115, ../../sass/volume/epub.scss */
+/* line 135, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-module-main div[class^='cozy-module-book'] {
   height: 98%;
   width: 100%;
 }
-/* line 120, ../../sass/volume/epub.scss */
+/* line 140, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-module-main div.cozy-module-book-cover {
   width: 90%;
   margin-left: 5%;
   margin-right: 5%;
 }
-/* line 126, ../../sass/volume/epub.scss */
+/* line 146, ../../sass/volume/epub.scss */
 .view-epub .navbar-static-bottom {
   position: fixed;
   margin-bottom: 0;
 }
-/* line 131, ../../sass/volume/epub.scss */
+/* line 151, ../../sass/volume/epub.scss */
 .view-epub .container.page.centered {
   /*height: 80vh;*/
 }
-/* line 136, ../../sass/volume/epub.scss */
+/* line 156, ../../sass/volume/epub.scss */
 .view-epub .dropdown-menu ul {
   list-style-type: none;
 }
-/* line 141, ../../sass/volume/epub.scss */
+/* line 161, ../../sass/volume/epub.scss */
 .view-epub .cozy-module-book .cozy-panel-navigator {
   position: absolute;
   bottom: 0.75em;
@@ -136,11 +152,11 @@
   z-index: 10;
   opacity: 0.2;
 }
-/* line 154, ../../sass/volume/epub.scss */
+/* line 174, ../../sass/volume/epub.scss */
 .view-epub .cozy-module-book .cozy-panel-navigator:hover {
   opacity: 1.0;
 }
-/* line 159, ../../sass/volume/epub.scss */
+/* line 179, ../../sass/volume/epub.scss */
 .view-epub .cozy-module-bottom {
   height: 60px;
   background: #fffefb;
@@ -148,28 +164,28 @@
   align-items: center;
   justify-content: center;
 }
-/* line 167, ../../sass/volume/epub.scss */
+/* line 187, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator {
   width: 100%;
   flex-grow: 0;
 }
-/* line 173, ../../sass/volume/epub.scss */
+/* line 193, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator {
   width: 100%;
   opacity: 0;
   transition: opacity 0.5s;
   flex-grow: 0;
 }
-/* line 180, ../../sass/volume/epub.scss */
+/* line 200, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator.initialized {
   opacity: 1.0;
 }
-/* line 184, ../../sass/volume/epub.scss */
+/* line 204, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range__status {
   width: 100%;
   text-align: center;
 }
-/* line 189, ../../sass/volume/epub.scss */
+/* line 209, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range {
   width: 90%;
   height: 1.5em;
@@ -180,7 +196,7 @@
   margin: 0 auto;
   margin-bottom: 10px;
 }
-/* line 200, ../../sass/volume/epub.scss */
+/* line 220, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range] {
   -webkit-appearance: none;
   font-size: 1em;
@@ -195,7 +211,7 @@
   background-color: transparent;
   transition: all 0.3s ease-in-out;
 }
-/* line 215, ../../sass/volume/epub.scss */
+/* line 235, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range .cozy-navigator-range__background {
   width: 100%;
   pointer-events: none;
@@ -205,7 +221,7 @@
   background-repeat: no-repeat, no-repeat;
   background-position: 100% 0%, left top;
 }
-/* line 229, ../../sass/volume/epub.scss */
+/* line 249, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range]::-webkit-slider-thumb {
   box-shadow: 0px 0px 0px black;
   border: 1px solid #666666;
@@ -217,7 +233,7 @@
   -webkit-appearance: none;
   box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.4);
 }
-/* line 243, ../../sass/volume/epub.scss */
+/* line 263, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range]::-moz-range-thumb {
   box-shadow: 0px 0px 0px black;
   border: 1px solid #2497e3;
@@ -227,7 +243,7 @@
   background: #A1D0FF;
   cursor: pointer;
 }
-/* line 253, ../../sass/volume/epub.scss */
+/* line 273, ../../sass/volume/epub.scss */
 .view-epub .cozy-container .cozy-panel-navigator .cozy-control-navigator .cozy-navigator-range input[type=range]::-ms-thumb {
   margin-top: 1px;
   box-shadow: 0px 0px 0px black;
@@ -240,19 +256,19 @@
 }
 
 @keyframes pulse {
-  /* line 275, ../../sass/volume/epub.scss */
+  /* line 295, ../../sass/volume/epub.scss */
   0% {
     -webkit-transform: scale(1);
     transform: scale(1);
   }
 
-  /* line 280, ../../sass/volume/epub.scss */
+  /* line 300, ../../sass/volume/epub.scss */
   50% {
     -webkit-transform: scale(0.01);
     transform: scale(0.01);
   }
 
-  /* line 285, ../../sass/volume/epub.scss */
+  /* line 305, ../../sass/volume/epub.scss */
   100% {
     -webkit-transform: scale(1);
     transform: scale(1);
@@ -260,17 +276,17 @@
 }
 
 @keyframes fade {
-  /* line 292, ../../sass/volume/epub.scss */
+  /* line 312, ../../sass/volume/epub.scss */
   0% {
     background: #707B7C;
   }
 
-  /* line 297, ../../sass/volume/epub.scss */
+  /* line 317, ../../sass/volume/epub.scss */
   50% {
     background: #99A3A4;
   }
 
-  /* line 302, ../../sass/volume/epub.scss */
+  /* line 322, ../../sass/volume/epub.scss */
   100% {
     background: #707B7C;
   }

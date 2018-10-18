@@ -85,7 +85,7 @@ head.ready(function() {
   cozy.control.pageNext({ region: 'right.sidebar' }).addTo(reader);
   if ( $toolbar.length ) {
     cozy.control.pageFirst({ container: $toolbar.get(0) }).addTo(reader);
-    cozy.control.pagePrevious({ container: $toolbar.get(0) }).addTo(reader);
+    cozy.control.pageLast({ container: $toolbar.get(0) }).addTo(reader);
   }
   cozy.control.navigator({ region: 'bottom.navigator' }).addTo(reader);
 
@@ -169,13 +169,16 @@ head.ready(function() {
 
   screenfull.on('change', function() {
     if ( screenfull.isFullscreen ) {
-      $("#scrolling").css({ 'padding-top': '120px' });
-      $fullscreen_btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
-    } else {
-      $("#scrolling").css({ 'padding-top': '' });
+      $("body").addClass("fullscreen");
       $fullscreen_btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
+      // $("#scrolling").css({ 'padding-top': '120px' });
+    } else {
+      $("body").removeClass("fullscreen");
+      // $("#scrolling").css({ 'padding-top': '' });
+      $fullscreen_btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
       setTimeout(function() {
-        HT.reader._rendition.resize();
+        $(window).resize();
+        // HT.reader._rendition.resize();
       }, 0);
     }
   })
@@ -199,7 +202,7 @@ head.ready(function() {
       $a.text(item.label);
       if ( item.subitems.length ) {
         var $ul = $("<ul></ul>").appendTo($li);
-        _process_menu(item.subitems, tabindex + 1, $ul);
+        _process_menu.default(item.subitems, tabindex + 1, $ul);
       }
     })
   }

@@ -163,9 +163,9 @@
           <xsl:call-template name="action-table-of-contents" />
         </div>
 
-        <div class="btn-group table-of-contents" id="selection-contents">
+        <!-- <div class="btn-group table-of-contents" id="selection-contents">
           <xsl:call-template name="action-selection-contents" />
-        </div>
+        </div> -->
 
         <xsl:call-template name="action-search-volume" />
 

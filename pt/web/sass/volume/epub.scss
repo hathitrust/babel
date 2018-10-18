@@ -7,6 +7,25 @@
   width: 100vw;
   overflow: hidden;
 
+  &.fullscreen {
+    .container.page.centered {
+      height: 100%;
+    }
+
+    #scrolling {
+
+    }
+
+    #main {
+      height: 95vh;
+
+      .cozy-module-book-epub {
+        // @include rem(padding-top, 120);
+        padding-top: 120px;
+      }
+    }
+  }
+
   .container.page.centered {
     -ms-display: grid;
     -ms-grid-columns: auto minmax(min-content, 1fr);
@@ -99,6 +118,7 @@
   }
 
   .toolbar-horizontal {
+    width: auto;
     .cozy-control {
       display: inline-flex;
     }
