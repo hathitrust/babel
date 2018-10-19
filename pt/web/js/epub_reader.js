@@ -170,12 +170,14 @@ head.ready(function() {
   screenfull.on('change', function() {
     if ( screenfull.isFullscreen ) {
       $("body").addClass("fullscreen");
-      $fullscreen_btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
+      $fullscreen_btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
+      $fullscreen_btn.addClas("active");
       // $("#scrolling").css({ 'padding-top': '120px' });
     } else {
       $("body").removeClass("fullscreen");
       // $("#scrolling").css({ 'padding-top': '' });
-      $fullscreen_btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
+      $fullscreen_btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
+      $fullscreen_btn.removeClass("active");
       setTimeout(function() {
         $(window).resize();
         // HT.reader._rendition.resize();
