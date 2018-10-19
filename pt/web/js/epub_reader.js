@@ -277,12 +277,15 @@ head.ready(function() {
     }
   });
 
+  var base_href = $("#permURL").val(); // https://hdl.handle.net/2027/test.buell
   reader.on("updateSection", function() {
     // var cfi_href = reader.currentLocation().start.cfi;
     // location.hash = '#' + cfi_href.substr(8, cfi_href.length - 8 - 1);
 
     sessionStorage.setItem('id', HT.params.id);
     sessionStorage.setItem('hash', window.location.hash);
+
+    $("#pageURL").val(base_href + '?urlappend=%23' + window.location.hash);
 
   });
 
