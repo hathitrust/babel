@@ -763,7 +763,7 @@ sub __check_for_missing_or_small_coll_ids {
     foreach my $id (keys %local_missing_ids_to_enqueue) {
         delete $id_to_coll_id_hashref->{$id};
     }
-    foreach my $id (keys %local_missing_ids_to_enqueue) {
+    foreach my $id (keys %local_small_ids_to_enqueue) {
         delete $id_to_coll_id_hashref->{$id};
     }
 
@@ -981,7 +981,7 @@ sub handle_inverse_synchronization {
         my $ok;
         my $id_ct = 0;
 
-	my $items_in_collections = __get_num_items_in_colls_for_shard();
+	my $items_in_collections = __get_num_items_in_colls_for_shard($C, $shard);
 	l__output($C, qq{Solr (shard=$shard) has $items_in_collections items in collections (or in -C $COLL_ID)\n}, 1, 1, 1);
 
 	# Get all  Solr documents with non-empty coll_id field(s) from the export handler
@@ -991,8 +991,8 @@ sub handle_inverse_synchronization {
 	
 	#process Solr results into hashref key=$id, value= array_ref of coll_ids for that id
 	my $id_hashref_of_coll_id_arr_ref = __parse_result_docs($mondo_rs);
-	
-	my ($colls_seen, $small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref)
+
+	my ($colls_seen,  $id_to_coll_id_hashref,$small_ids_to_enqueue_arr_ref, $missing_ids_to_enqueue_arr_ref)
 	= __check_for_missing_or_small_coll_ids(
 			      $C, $id_hashref_of_coll_id_arr_ref, $large_coll_id_arr_ref,
 			      $missing_coll_ids_hashref,
