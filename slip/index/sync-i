@@ -510,8 +510,6 @@ sub __export_search_ids_in_coll
 
     return ($id_arr_ref);
 }
-
-
 # ---------------------------------------------------------------------
 
 =item handle_synchronization
@@ -571,6 +569,8 @@ sub handle_synchronization {
     my $coll_ct = 0;                #number of collections processed
     my $ids_in_colls = 0;           #Total number of collection-volume_id pairs (if id 123 is in two collections it gets counted twice)
     my $missing_ids_over_colls = 0; #number of collection-volume_id pairs where coll_id is missing in the Solr doc for that volume id
+    my $would_be_enqueued_count = 0; #number of items that would be enqueued if not $NOOP
+    
     my $ids_available_to_no_one_hashref = __get_ids_available_to_no_one_hashref();
     
     foreach my $coll_id (@$coll_id_arr_ref) {
@@ -621,16 +621,15 @@ sub handle_synchronization {
 		    $missing_ids_over_colls++;
      		    l__output($C, qq{\nID=$id in Solr missing coll_id=$coll_id field. Enqueue unless NOOP.\n}, 1, 1, 1);
 
-		    if (! $NOOP) {
-			$ok = SharedQueue::enqueue_item_ids($C, $DBH, [$id]);
+		    if ($NOOP){
+			$would_be_enqueued_count++;
+		    }else{
+			$ok = SharedQueue::enqueue_item_ids($C, $DBH, $id_arr_ref);
 			__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
 				    qq{Failed to enqueue id=$id for coll_id=$coll_id\n});
 		    }
-		    else{
-			# increment items_that would have been enqueued counter
-		    }
-		    
 		}
+
 		else{
 		    # id is not in Solr at all.
 		    #This checks to see if it is
@@ -648,8 +647,6 @@ sub handle_synchronization {
 	    
             if (($id_ct % $REPORT_OUT) == 0) {
                 l__output($C, "($id_ct)", 1);
-                # throttle solr requests to prevent 500's
-                # sleep 1;
                 l__output($C, '.', 1);
             }
         } #end foreach id
@@ -676,8 +673,15 @@ sub handle_synchronization {
 
     } # end foreach coll_id
     
-    my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
-    $s = $NOOP ? '' : ", $total_ids_queued added to shared queue";
+    my $total_ids_queued;
+
+    if ($NOOP){
+	$s = "$would_be_enqueued_count would have been added to shared queue";
+    }else{
+	$total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
+	$s = "$total_ids_queued added to shared queue";
+    }
+    
     my $ss = qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls\n\t missing in Solr over all colls=$missing_ids_over_colls$s\n};
     l__output($C, $ss, 1, 1, 1);
 
@@ -942,22 +946,29 @@ sub handle_inverse_synchronization {
 
     my $total_ids_queued_over_shards = 0;
     my $total_ids_processed_over_shards = 0;
-    # test caching coll_id, ids hash of hashes between shards
-    my $hash_of_coll_hashes ={};   
-
-    my $noop_total_ids_queued_over_shards;
+    
+    #$would_be_enqueued_count
+    my $would_be_enqueued_over_shards_count;
     if ($NOOP)
     {
-	$noop_total_ids_queued_over_shards=0;
+	$would_be_enqueued_over_shards_count=0;
     }
 
-    # These are passed into the routine that checks whether a collection is either no longer in mysql or no longer a "large" collection
-    # i.e. process_result_docs
+    # Global to avoid mysql query looking up all the ids in a collection if we already did that for that coll_id for another shard
+    my $hash_of_coll_hashes ={}; #key = coll_id, value= hash of volume_ids for that coll with key = id value=1   
+
+    # These are passed into __check_for_missing_or_small_coll_ids which  checks
+    # whether a collection is either no longer in mysql or no longer a "large" collection
     # Since checking is expensive and most coll_ids will be repeated in each shard we pass these around as globals
     
     my $missing_coll_ids_hashref = {};  # coll_ids no longer in mysql
     my $small_coll_ids_hashref   = {};  # coll_ids for collections that now have fewer than xxx i.e. don't need to be indexed in Solr
     my $ok_coll_ids_hashref      = {};  # coll_ids we already checked for the two conditions above so we don't check them again
+
+    # get array_ref of coll_ids for all coll_ids that are "large" and therefore should be indexed in Solr
+    my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
+    __handle_rc($_ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
+                    qq{Failed to get large coll_ids\n});
 
     
     foreach my $shard (@SHARDS) {
@@ -970,14 +981,9 @@ sub handle_inverse_synchronization {
         my $ok;
         my $id_ct = 0;
 
-	my $num_found = __get_num_items_in_colls_for_shard();
-	l__output($C, qq{Solr (shard=$shard) has $num_found items in collections (or in -C $COLL_ID)\n}, 1, 1, 1);
+	my $items_in_collections = __get_num_items_in_colls_for_shard();
+	l__output($C, qq{Solr (shard=$shard) has $items_in_collections items in collections (or in -C $COLL_ID)\n}, 1, 1, 1);
 
-	# get array_ref of coll_ids for all coll_ids that are "large" and therefore should be indexed in Solr
-        my ($_ok, $large_coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
-        __handle_rc($_ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-                    qq{Failed to get large coll_ids\n});
-	
 	# Get all  Solr documents with non-empty coll_id field(s) from the export handler
 	my $mondo_rs = __get_solr_results_for_shard($C, $shard);
 	my $rows_returned = $mondo_rs->get_rows_returned();
@@ -1001,7 +1007,9 @@ sub handle_inverse_synchronization {
 	if ($num_ids_from_missing_coll_ids);
 	
 	if ($num_ids_missing) {
-	    unless ($NOOP) {
+	    if ($NOOP){
+		#noop increment enque
+	    }else {
 		l__output($C, "\n\t--> queue $num_ids_missing ids\n", 1, 1, 1);
 		#XXX check max size SharedQueue::enqueue_item_ids can handle.  If we find more than assert or split and loop
 		$ok = SharedQueue::enqueue_item_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref);
@@ -1011,14 +1019,15 @@ sub handle_inverse_synchronization {
 	}
 
 	# Enqueue ids that had a coll_id that is no longer a large collection in MySQL
-	
 	my $num_ids_small = scalar(@$small_ids_to_enqueue_arr_ref);
 	$num_ids_from_small_coll_ids += $num_ids_small;
 	l__output($C, qq{\nSolr now has $num_ids_from_small_coll_ids ids in SMALL MySQL coll_ids\n}, 1, 1, 1 )
 	if ($num_ids_from_small_coll_ids);
 	
 	if ($num_ids_small) {
-	    unless ($NOOP) {
+	    if ($NOOP){
+		# noop increment enque count
+	    }else {
 		l__output($C, "\n\t--> queue $num_ids_small ids\n", 1, 1, 1);
 		#XXX check max size SharedQueue::enqueue_item_ids can handle.  If we find more than assert or split and loop
 		$ok = SharedQueue::enqueue_item_ids($C, $DBH, $small_ids_to_enqueue_arr_ref);
@@ -1045,45 +1054,38 @@ sub handle_inverse_synchronization {
 	
 	foreach my $id (keys %$id_hashref_of_coll_id_arr_ref) {
 	    my $ids_to_enqueue_arr_ref = [];
-	    
 	    my $coll_id_arr_ref = $id_hashref_of_coll_id_arr_ref->{$id};
 	    
 	    $id_ct++;
-	   # l__output($C, qq{($id_ct)}, 1, 0, 0) if (($id_ct % 100) == 0);
 	    l__output($C, qq{($id_ct)}, 1, 0, 0) if (($id_ct % $REPORT_OUT) == 0);
 	    
 	    # Check that this id is in each of these coll_ids
 	    foreach my $coll_id (@$coll_id_arr_ref) {
-		# replace the $CO-> call with an
-		# id_exists_in_coll
-	#	unless ($CO->one_or_more_items_in_coll($coll_id, [$id])) {
 		unless (__id_exists_in_coll($coll_id, $id, $hash_of_coll_hashes)){
 		    #XXXtbw increment some counter about id missing and maybe colls missing ids?
 		    
 		    $s = $NOOP ? '' : "\n\t--> queue id (unless already in queue)";
 		    l__output($C, qq{\n\tid NOT IN MySQL COLLECTION: id=$id, coll_id=$coll_id $s\n}, 1, 0, 1);
-		    
 		    push(@$ids_to_enqueue_arr_ref, $id);
 		}
 	    }
 
-	    unless ($NOOP) {
-		if (scalar(@$ids_to_enqueue_arr_ref)) {
+	    if (scalar(@$ids_to_enqueue_arr_ref)) {
+		if ($NOOP){
+		    if (scalar(@$ids_to_enqueue_arr_ref)) {
+			my $would_be_enqueued_count =	scalar(@$ids_to_enqueue_arr_ref);
+			$would_be_enqueued_over_shards_count += $would_be_enqueued_count;
+		    }
+		}
+		else{
 		    #XXX check max size SharedQueue::enqueue_item_ids can handle.  If we find more than assert or split and loop
 		    $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
 		    __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
 				qq{Failed to enqueue ids not in collection\n});
 		}
 	    }
-	    if ($NOOP){
-		if (scalar(@$ids_to_enqueue_arr_ref)) {
-		    my $noop_total_ids_queued =	scalar(@$ids_to_enqueue_arr_ref);
-		    $noop_total_ids_queued_over_shards += $noop_total_ids_queued;
-		}
-	    }
-	    
 	}
-        
+	        
         my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
         my $total_ids_processed = $id_ct + $num_ids_from_missing_coll_ids + $num_ids_from_small_coll_ids;
 
@@ -1091,13 +1093,18 @@ sub handle_inverse_synchronization {
         $total_ids_processed_over_shards += $total_ids_processed;
     
 	
-    }
+    } #end for each shard
+
+    my $s;
     if ($NOOP){
-	my $s =qq{$noop_total_ids_queued_over_shards would have been enqueued};
+	$s =qq{$would_be_enqueued_over_shards_count would have been enqueued};
 	l__output ($C, $s,1,1,1);
     }
+    else{
+	$s = "$total_ids_queued_over_shards added to shared queue";
+    }
+    
 
-    my $s = $NOOP ? '' : "$total_ids_queued_over_shards added to shared queue";
     l__output($C, qq{\n\nPhase II processed $total_ids_processed_over_shards id occurrences in colls (or in -C COLL_ID)\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll (or not in -C COLL_ID) in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n}, 1, 1, 1);
 
     my $phase_2_elapsed = time() - $phase_2_start;
