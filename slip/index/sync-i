@@ -511,6 +511,44 @@ sub __export_search_ids_in_coll
 
     return ($id_arr_ref);
 }
+
+
+# ---------------------------------------------------------------------
+
+=item   __enqueue_ids
+
+Replacement for SharedQueue::enqueue_item_ids code 
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub __enqueue_ids
+{
+    my ($C, $DBH, $to_enqueue_ary_ref, $failure_message) =@_;
+    my $run = 11; #hard coded!!
+
+    # consider doing our own iteration so we can output the 1000 ids that caused the error
+    # alternative, debugging flag to do 1 or 1000 at a time?
+    my $total_inserted = 0;
+    
+    eval{
+	$total_inserted = Db::handle_queue_insert($C, $DBH,$run,$to_enqueue_ary_ref);
+    };
+    
+    if ($@) {
+	# log failed ids?
+	my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+	my $s = qq{CRITICAL ERROR: sync-i: $failure_message $@\n};
+	l__output($C, $s, 1, 1, 1);
+	__non_interactive_err_output($rc, $s);
+	exit $rc;
+    }
+
+    return ($total_inserted);
+    
+		
+}
 # ---------------------------------------------------------------------
 
 =item handle_synchronization
@@ -574,7 +612,6 @@ sub handle_synchronization {
    
     
     my $ids_available_to_no_one_hashref = __get_ids_available_to_no_one_hashref();
-    my $to_enqueue_ary_ref =[];
     my $to_enqueue_hashref = {};  # key = id, value = 1
     
     
@@ -677,18 +714,22 @@ sub handle_synchronization {
 
     } # end foreach coll_id
 
-	
+    # XXX replace noop counts etc with 
     # enqueue the ids 
 	
-		    # 	XXX move this
-		    # 	$ok = SharedQueue::enqueue_item_ids($C, $DBH, [$id] );
-		    # 	__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-		    # 		    qq{Failed to enqueue id=$id for coll_id=$coll_id\n});
-		    # }
-
-	
-    #XXX get count of ids enqueued and if more than XXX loop and enqueue
-
+    my $to_enqueue_ary_ref = keys(%{$to_enqueue_hashref});
+    my $number_to_enqueue;
+    if ($to_enqueue_ary_ref){
+	$number_to_enqueue = scalar(@{$to_enqueue_ary_ref});
+    }
+    
+    my $failure_message  = qq{Failed to enqueue $number_to_enqueue ids with missing coll_ids.};
+    
+    my $number_enqueued=0;
+    # enqueue items
+    if (! $NOOP){
+	$number_enqueued =__enqueue_ids($C, $DBH, $to_enqueue_ary_ref,$failure_message);
+    }
     
     my $total_ids_queued;
 
@@ -970,7 +1011,13 @@ sub handle_inverse_synchronization {
     {
 	$would_be_enqueued_over_shards_count=0;
     }
-
+    my $failure_message='';
+    my $missing_enqueued;
+    my $small_enqueued;
+    my $ids_missing_coll_id_enqueued;
+    
+   # my $
+    
     # Global to avoid mysql query looking up all the ids in a collection if we already did that for that coll_id for another shard
     my $hash_of_coll_hashes ={}; #key = coll_id, value= hash of volume_ids for that coll with key = id value=1   
 
@@ -1028,10 +1075,8 @@ sub handle_inverse_synchronization {
 		#noop increment enque
 	    }else {
 		l__output($C, "\n\t--> queue $num_ids_missing ids\n", 1, 1, 1);
-		#XXX check max size SharedQueue::enqueue_item_ids can handle.  If we find more than assert or split and loop
-		$ok = SharedQueue::enqueue_item_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref);
-		__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-			    qq{Failed to enqueue ids from missing optimize step\n});
+		$failure_message= qq{Failed to enqueue ids from missing optimize step for shard $shard\n};
+		$missing_enqueued =__enqueue_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref,$failure_message);
 	    }
 	}
 
@@ -1047,9 +1092,8 @@ sub handle_inverse_synchronization {
 	    }else {
 		l__output($C, "\n\t--> queue $num_ids_small ids\n", 1, 1, 1);
 		#XXX check max size SharedQueue::enqueue_item_ids can handle.  If we find more than assert or split and loop
-		$ok = SharedQueue::enqueue_item_ids($C, $DBH, $small_ids_to_enqueue_arr_ref);
-		__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-			    qq{Failed to enqueue ids from small optimize step\n});
+		$failure_message= qq{Failed to enqueue ids from small optimize step for shard $shard\n};
+		$small_enqueued =__enqueue_ids($C, $DBH,  $small_ids_to_enqueue_arr_ref,$failure_message);	   
 	    }
 	}
 	# we reset these guys for the loop which no longer exists??
@@ -1084,6 +1128,7 @@ sub handle_inverse_synchronization {
 		    $s = $NOOP ? '' : "\n\t--> queue id (unless already in queue)";
 		    l__output($C, qq{\n\tid NOT IN MySQL COLLECTION: id=$id, coll_id=$coll_id $s\n}, 1, 0, 1);
 		    push(@$ids_to_enqueue_arr_ref, $id);
+		    #should this be a hash since an id might be missing for multiple coll_ids?
 		}
 	    }
 
@@ -1095,10 +1140,8 @@ sub handle_inverse_synchronization {
 		    }
 		}
 		else{
-		    #XXX check max size SharedQueue::enqueue_item_ids can handle.  If we find more than assert or split and loop
-		    $ok = SharedQueue::enqueue_item_ids($C, $DBH, $ids_to_enqueue_arr_ref);
-		    __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-				qq{Failed to enqueue ids not in collection\n});
+		    $failure_message = qq{Failed to enqueue ids missing coll_ids in solr for shard $shard\n};
+		    $ids_missing_coll_id_enqueued =__enqueue_ids($C, $DBH,  $ids_to_enqueue_arr_ref,$failure_message);	   
 		}
 	    }
 	}
