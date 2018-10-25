@@ -571,8 +571,12 @@ sub handle_synchronization {
     my $ids_in_colls = 0;           #Total number of collection-volume_id pairs (if id 123 is in two collections it gets counted twice)
     my $missing_ids_over_colls = 0; #number of collection-volume_id pairs where coll_id is missing in the Solr doc for that volume id
     my $would_be_enqueued_count = 0; #number of items that would be enqueued if not $NOOP
+   
     
     my $ids_available_to_no_one_hashref = __get_ids_available_to_no_one_hashref();
+    my $to_enqueue_ary_ref =[];
+    my $to_enqueue_hashref = {};  # key = id, value = 1
+    
     
     foreach my $coll_id (@$coll_id_arr_ref) {
 	#ok less than 200 large colls
@@ -625,10 +629,7 @@ sub handle_synchronization {
 		    if ($NOOP){
 			$would_be_enqueued_count++;
 		    }else{
-			#XXX consider accumulating, then testing for count and limiting rate of enqueuing
-			$ok = SharedQueue::enqueue_item_ids($C, $DBH, $id_arr_ref);
-			__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
-				    qq{Failed to enqueue id=$id for coll_id=$coll_id\n});
+			$to_enqueue_hashref->{$id} = 1;
 		    }
 		}
 
@@ -676,6 +677,16 @@ sub handle_synchronization {
 
     } # end foreach coll_id
 
+	
+    # enqueue the ids 
+	
+		    # 	XXX move this
+		    # 	$ok = SharedQueue::enqueue_item_ids($C, $DBH, [$id] );
+		    # 	__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
+		    # 		    qq{Failed to enqueue id=$id for coll_id=$coll_id\n});
+		    # }
+
+	
     #XXX get count of ids enqueued and if more than XXX loop and enqueue
 
     
