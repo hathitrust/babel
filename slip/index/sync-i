@@ -187,6 +187,7 @@ eval {
 
     sy_final_report($C, $DBH);
 };
+#why does everything else use handle_rc but this one does not??
 if ($@) {
     my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
     my $s = qq{CRITICAL ERROR: sync-i: $@\n};
@@ -624,6 +625,7 @@ sub handle_synchronization {
 		    if ($NOOP){
 			$would_be_enqueued_count++;
 		    }else{
+			#XXX consider accumulating, then testing for count and limiting rate of enqueuing
 			$ok = SharedQueue::enqueue_item_ids($C, $DBH, $id_arr_ref);
 			__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
 				    qq{Failed to enqueue id=$id for coll_id=$coll_id\n});
@@ -636,6 +638,7 @@ sub handle_synchronization {
 		    # not in Solr because it was deleted due to a rights change to available to no one
 		    if (__id_deleted_available_to_no_one($id, $ids_available_to_no_one_hashref)){
 			$num_ignored_as_deleted++;
+			l__output($C, qq{\nID=$id in coll_id=$coll_id is deleted from Solr(rights=avail no-one)\n}, 1, 0, 1);
 		    }
 		    else{
 			l__output($C, qq{\nID=$id in coll_id=$coll_id does not exist in Solr\n}, 1, 0, 1);
@@ -672,6 +675,9 @@ sub handle_synchronization {
         l__output($C, qq{$s$ig\n}, 1, 1, 1);
 
     } # end foreach coll_id
+
+    #XXX get count of ids enqueued and if more than XXX loop and enqueue
+
     
     my $total_ids_queued;
 
@@ -682,7 +688,7 @@ sub handle_synchronization {
 	$s = "$total_ids_queued added to shared queue";
     }
     
-    my $ss = qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls\n\t missing in Solr over all colls=$missing_ids_over_colls$s\n};
+    my $ss = qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls\n\t missing in Solr over all colls=$missing_ids_over_colls. $s\n};
     l__output($C, $ss, 1, 1, 1);
 
     my $phase_1_elapsed = time() - $phase_1_start;
@@ -978,7 +984,7 @@ sub handle_inverse_synchronization {
 	__exit_STOPSLIP();
 
         my $s;
-        my $ok;
+        my $ok=1;
         my $id_ct = 0;
 
 	my $items_in_collections = __get_num_items_in_colls_for_shard($C, $shard);
