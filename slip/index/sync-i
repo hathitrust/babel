@@ -162,6 +162,10 @@ my $CS = new CollectionSet($DBH, $config, undef);
 my @num_shards_list = $config->get('num_shards_list');
 my @SHARDS = (@num_shards_list);
 
+
+my $Phase_1_summary;
+
+
 my $PROCESS_START = time();
 
 eval {
@@ -254,7 +258,8 @@ sub handle_synchronization {
     my $C = shift;
 
     my $phase_1_start = time();
-
+    my $timing;
+    
     l__output($C, qq{\n***\n*** Begin Phase I synchronization ... if ID in large coll then large coll coll_id is in Solr doc for that ID ...\n***\n\n}, 1, 1, 1);
 
     my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
@@ -281,14 +286,19 @@ sub handle_synchronization {
     
     my $s;
     my $ct = 0;
-    my $coll_ct = 0;                #number of collections processed
-    my $ids_in_colls = 0;           #Total number of collection-volume_id pairs (if id 123 is in two collections it gets counted twice)
-    my $missing_ids_over_colls = 0; #number of collection-volume_id pairs where coll_id is missing in the Solr doc for that volume id
+    my $coll_ct = 0;         #number of collections processed
+    my $ids_in_colls=0;          #Total number of collection-volume_id pairs (if id 123 is in two collections it gets counted twice)
+    my $missing_ids_over_colls = 0;       #number of collection-volume_id pairs where coll_id is missing in the Solr doc for that volume id
     my $would_be_enqueued_count = 0; #number of items that would be enqueued if not $NOOP
-   
+    #XXX fixme Foobar
+    my $ids_missing_in_Solr_over_colls = 0;     # volume id does not exist in Solr.  Gets counted for each coll_id that has this id
+    my $num_ignored_as_deleted_over_colls = 0; # number of volume_ids in Solr missing the coll_id for one or more  collection.
+
     
     my $ids_available_to_no_one_hashref = __get_ids_available_to_no_one_hashref();
     my $to_enqueue_hashref = {};  # key = id, value = 1
+
+
     
     
     foreach my $coll_id (@$coll_id_arr_ref) {
@@ -363,6 +373,7 @@ sub handle_synchronization {
 		    else{
 			l__output($C, qq{\nID=$id in coll_id=$coll_id does not exist in Solr\n}, 1, 0, 1);
 			$ids_missing_in_Solr++;
+
 		    }
 		}
 	    }
@@ -395,6 +406,10 @@ sub handle_synchronization {
 	    $s .= qq{\n\tIgnored $num_ignored_as_deleted ids avail to no one.};
 	}
 	l__output($C, qq{\n$s\n}, 1, 1, 1);
+
+	$ids_missing_in_Solr_over_colls += $ids_missing_in_Solr;   
+        $num_ignored_as_deleted_over_colls += $num_ignored_as_deleted; 
+
     } # end foreach coll_id
 
     # XXX replace noop counts etc with 
@@ -426,20 +441,37 @@ sub handle_synchronization {
     
     if ($coll_ct == 0)
     {
-	$ss = qq{\nPhase I  skipped because there were no collections with items in  MySQL\n};
+	if ($COLL_ID){
+	    $ss = qq{\nPhase I  skipped because collection $COLL_ID is missing or empty in  MySQL\n};
+	}
+	else{
+	    $ss = qq{\nPhase I  skipped because there were no collections with items in  MySQL\n};
+	}
+	
 	l__output($C, $ss, 1, 1, 1);
     }
     else{
+
+
 	
-	$ss = qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls\n\t missing in Solr over all colls=$missing_ids_over_colls. $s\n};
-	l__output($C, $ss, 1, 1, 1);
+	$ss = qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls\n\t missing in Solr over all colls=$missing_ids_over_colls. $s};
+
+	if ($ids_missing_in_Solr_over_colls > 0){
+	    $ss .= qq{\n\tIgnored $ids_missing_in_Solr_over_colls ids that do not exist in in Solr};
+	}
+	if ($num_ignored_as_deleted_over_colls > 0){
+	    $ss .= qq{\n\tIgnored $num_ignored_as_deleted_over_colls ids avail to no one.};
+	}
+	
+
+	l__output($C, "$ss\n", 1, 1, 1);
 
 	my $phase_1_elapsed = time() - $phase_1_start;
 	my $elapsed_min = sprintf("%.2f", $phase_1_elapsed/60);
-	$ss = qq{\nelapsed minutes=$elapsed_min\n};
-	l__output($C, $ss, 1, 1, 1);
+	$timing = qq{\nelapsed minutes=$elapsed_min\n};
+	l__output($C, $timing, 1, 1, 1);
     }
-    
+    $Phase_1_summary = $ss . ' ' . $timing;
 }
 # ---------------------------------------------------------------------
 
@@ -466,6 +498,14 @@ sub handle_inverse_synchronization {
 
     l__output($C, qq{\n***\n*** Begin Phase II synchronization ... if Solr doc has a coll_id then the Solr doc ID is in MySQL collection with that coll_id\n***\n\n}, 1, 1, 1);
 
+    my $TEST_COLLS_STRING;
+    
+    if ($TEST_COLLS)
+    {
+	$TEST_COLLS_STRING = join(',',@{$TEST_COLLS});
+    }
+    
+    
     my $initial_shared_queue_ct = SharedQueue::count_shared_queue_ids($C, $DBH);
     l__output($C, qq{Initial shared queue count=$initial_shared_queue_ct\n}, 1, 1, 1);
 
@@ -476,10 +516,13 @@ sub handle_inverse_synchronization {
     my $total_ids_processed_over_shards = 0;
     
     #$would_be_enqueued_count
-    my $would_be_enqueued_over_shards_count;
+    # number of ids that would be enqueued
+    my $would_be_enqueued_over_shards_counts ={};
     if ($NOOP)
     {
-	$would_be_enqueued_over_shards_count=0;
+	$would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'}=0;
+	$would_be_enqueued_over_shards_counts->{'small_coll_id'}=0;
+	$would_be_enqueued_over_shards_counts->{'volume_id_missing_in_mysql'}=0;
     }
     my $failure_message='';
     my $missing_enqueued;
@@ -516,7 +559,18 @@ sub handle_inverse_synchronization {
         my $id_ct = 0;
 
 	my $items_in_collections = __get_num_items_in_colls_for_shard($C, $shard);
-	l__output($C, qq{Solr (shard=$shard) has $items_in_collections items in collections (or in -C $COLL_ID)\n}, 1, 1, 1);
+	#XXX fix reporting for $TEST_COLLS
+	$s = qq{Solr (shard=$shard) has $items_in_collections items in collections};
+	
+	if ($COLL_ID){
+	    $s .= qq{(or in -C $COLL_ID)};
+	}
+	elsif($TEST_COLLS)
+	{
+	    $s .= qq{(or in -T $TEST_COLLS_STRING)};
+	}
+	
+	l__output($C, qq{$s\n}, 1, 1, 1);
 
 	# Get all  Solr documents with non-empty coll_id field(s) from the export handler
 	my $mondo_rs = __get_solr_results_for_shard($C, $shard);
@@ -542,7 +596,7 @@ sub handle_inverse_synchronization {
 	
 	if ($num_ids_missing) {
 	    if ($NOOP){
-		#noop increment enque
+		$would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'} += $num_ids_missing;
 	    }else {
 		l__output($C, "\n\t--> queue $num_ids_missing ids\n", 1, 1, 1);
 		$failure_message= qq{Failed to enqueue ids from missing optimize step for shard $shard\n};
@@ -558,17 +612,12 @@ sub handle_inverse_synchronization {
 	
 	if ($num_ids_small) {
 	    if ($NOOP){
-		# noop increment enque count
+		$would_be_enqueued_over_shards_counts->{'small_coll_id'} += $num_ids_small;
 	    }else {
 		l__output($C, "\n\t--> queue $num_ids_small ids\n", 1, 1, 1);
-		#XXX check max size SharedQueue::enqueue_item_ids can handle.  If we find more than assert or split and loop
 		$failure_message= qq{Failed to enqueue ids from small optimize step for shard $shard\n};
-		$small_enqueued =__enqueue_ids($C, $DBH,  $small_ids_to_enqueue_arr_ref,$failure_message);	   
-	    }
+		$small_enqueued =__enqueue_ids($C, $DBH,  $small_ids_to_enqueue_arr_ref,$failure_message);	  	    }
 	}
-	# we reset these guys for the loop which no longer exists??
-	$small_ids_to_enqueue_arr_ref = [];
-	$missing_ids_to_enqueue_arr_ref = [];
 
 	# XXX Can we put this in a well named subroutine?
 	
@@ -577,8 +626,13 @@ sub handle_inverse_synchronization {
 	# in MySQL and if not, enqueue that id
 	
 	my $all_count = scalar(keys %$id_hashref_of_coll_id_arr_ref);
-	my $REPORT_OUT=__get_report_out_number($all_count);
-
+       	my $REPORT_OUT=__get_report_out_number($all_count);
+	if ($all_count == 0)
+	{
+	    my $msg = qq{ All ids in Shard $shard will be enqueued because they are in missing or small collections\n\tSkipping check for missing Solr ids for Shard $shard };
+	    l__output($C, qq{($msg)}, 1, 1, 1)
+	}
+	
 	# query mysql to get list of ids for each of the colls in this shard
 	# passing $hash_of_coll_hashes to avoid mysql queries for collections we already have mysql results for
 	my $hash_of_coll_hashes = __get_hash_of_coll_hashes($colls_seen, $hash_of_coll_hashes);
@@ -606,7 +660,7 @@ sub handle_inverse_synchronization {
 		if ($NOOP){
 		    if (scalar(@$ids_to_enqueue_arr_ref)) {
 			my $would_be_enqueued_count =	scalar(@$ids_to_enqueue_arr_ref);
-			$would_be_enqueued_over_shards_count += $would_be_enqueued_count;
+			$would_be_enqueued_over_shards_counts->{'volume_id_missing_in_mysql'} += $would_be_enqueued_count;
 		    }
 		}
 		else{
@@ -618,29 +672,44 @@ sub handle_inverse_synchronization {
 	        
         my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
         my $total_ids_processed = $id_ct + $num_ids_from_missing_coll_ids + $num_ids_from_small_coll_ids;
-
         $total_ids_queued_over_shards += $total_ids_queued;
-        $total_ids_processed_over_shards += $total_ids_processed;
-    
+#        $total_ids_processed_over_shards += $total_ids_processed;
+#	print "DEBUG $total_ids_processed_over_shards,id_ct = $id_ct missing= $num_ids_from_missing_coll_ids, small=  $num_ids_from_small_coll_ids";
 	
     } #end for each shard
 
+
+    if (defined ($Phase_1_summary)){
+	l__output ($C, "\n==============\n$Phase_1_summary\n",1,1,1);
+    } 
+    
     my $s;
-    if ($NOOP){
-	$s =qq{$would_be_enqueued_over_shards_count would have been enqueued};
-	l__output ($C, $s,1,1,1);
-    }
-    else{
-	$s = "$total_ids_queued_over_shards added to shared queue";
-    }
+
+    my $would_be_enqueued_total=	$would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'}+ $would_be_enqueued_over_shards_counts->{'small_coll_id'} + $would_be_enqueued_over_shards_counts->{'volume_id_missing_in_mysql'};
     
 
-    l__output($C, qq{\n\nPhase II processed $total_ids_processed_over_shards id occurrences in colls (or in -C COLL_ID)\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll (or not in -C COLL_ID) in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n}, 1, 1, 1);
+    $s = qq{\n\t$would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'} ids with coll_ids that no longer exist};
+    $s .= qq{\n\t$would_be_enqueued_over_shards_counts->{'small_coll_id'} ids in collections that are no longer large collectionss};
+    $s .= qq{\n\t$would_be_enqueued_over_shards_counts->{'volume_id_missing_in_mysql'} ids deleted from collections}; 
+    
+    if ($NOOP){
+	$s =qq{$would_be_enqueued_total ids  would have been enqueued\:} . $s;
+	#l__output ($C, "\n$s",1,1,1);
+    }
+    else{
+	$s = "$total_ids_queued_over_shards added to shared queue" . $s;
+    }
+    my $ss = qq{\n==============\nPhase II } . $s;
+    
+#XXX check and remove variables used in this old version of summary for Phase II
+#    l__output($C, qq{\n\nPhase II processed $total_ids_processed_over_shards id occurrences in colls (or in -C COLL_ID)\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll (or not in -C COLL_ID) in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n}, 1, 1, 1);
+
+        l__output($C, $ss, 1, 1, 1);
 
     my $phase_2_elapsed = time() - $phase_2_start;
     my $elapsed_min = sprintf("%.2f", $phase_2_elapsed/60);
-    my $ss = qq{\nelapsed minutes=$elapsed_min\n};
-    l__output($C, $ss, 1, 1, 1);
+    my $sss = qq{\nelapsed minutes=$elapsed_min\n};
+    l__output($C, $sss, 1, 1, 1);
 }
 
 # ---------------------------------------------------------------------
@@ -1150,6 +1219,10 @@ sub __parse_result_docs
         if ($COLL_ID) {
             $coll_ids_arr_ref = [$COLL_ID];
         }
+	elsif($TEST_COLLS){
+	    $coll_ids_arr_ref = $TEST_COLLS;
+	}
+	
         else {
             $coll_ids_arr_ref = $hashref->{coll_ids};
         }
@@ -1159,6 +1232,25 @@ sub __parse_result_docs
 	
     }
     return \%id_to_coll_id_hash;
+}
+# ---------------------------------------------------------------------
+sub __get_COLL_query
+{
+    my $C = shift;
+    my $COLL_QUERY ='coll_id:[1 TO *]';
+    
+    if (defined($TEST_COLLS) && scalar(@{$TEST_COLLS}) == 1){
+	$COLL_QUERY = "coll_id:$TEST_COLLS->[0]";
+    }
+    elsif($COLL_ID){
+	$COLL_QUERY = "coll_id:$COLL_ID";
+    }
+    elsif ($TEST_COLLS){
+	my $COLL_CLAUSE = join(' OR ',@{$TEST_COLLS}) ;
+	
+	$COLL_QUERY = 'coll_id:(' . $COLL_CLAUSE . ')';
+    }
+    return $COLL_QUERY;
 }
 
 # ---------------------------------------------------------------------
@@ -1171,10 +1263,11 @@ sub  __get_num_items_in_colls_for_shard
     my $rs = new Result::SLIP();
     # zero is reserved for the coll_id field for items that are not in
     # any collection. Limit to one coll_id for -C option
-    my $item_query = $COLL_ID
-    ? qq{q=coll_id:$COLL_ID&start=0&rows=0&fl=coll_id,id}
-             : qq{q=coll_id:[1 TO *]&start=0&rows=0&fl=coll_id,id};
-
+    #XXX fix for TEST_COLLS foobar
+    my $COLL_QUERY = __get_COLL_query($C);
+    my $item_query = qq{q=$COLL_QUERY&start=0&rows=0&fl=coll_id,id};
+    #XXXprint "DEBUG $item_query item query num items\n";
+    
     $rs =__handle_query($C, $item_query, $searcher, $rs);
     return ( $rs->get_num_found());
 }
@@ -1187,14 +1280,11 @@ sub __get_solr_results_for_shard
     # These are designed to be able to handle mondo collections using the export handler and doc values
     my $mondo_searcher = SLIP_Utils::Solr::create_export_prod_shard_Searcher_by_alias($C, $shard);
     my $mondo_rs = new Result::JSON::Export();
+    #XXX fix for TEST_COLLS  foobar
+    my $COLL_QUERY = __get_COLL_query($C);
+    my $query = 'q=*%3A*&fl=id_dv,coll_id&sort=id_dv+desc&indent=on&fq=' . $COLL_QUERY;
+    #XXXprint "DEBUG $query query Solr results for shard\n";
 
-    my $CFQ = qq{fq=coll_id:[1 TO *]};
-    if ($COLL_ID)
-    {
-	$CFQ = qq{fq=coll_id:$COLL_ID};
-    }
-    
-    my $query = 'q=*%3A*&fl=id_dv,coll_id&sort=id_dv+desc&indent=on&'. $CFQ;
     $mondo_rs = __handle_query($C, $query, $mondo_searcher, $mondo_rs);
 }
 
