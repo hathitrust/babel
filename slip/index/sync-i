@@ -7,7 +7,7 @@ sync-i
 
 =head1 USAGE
 
-% sync-i -r run [-C coll_id] [-s <slice_size>][-d][-n][-q][-P 1|2]
+% sync-i [-L][-C LARGE_coll_id][-d][-n][-P 1|2] [-T "coll_id1,coll_id2..."  <test coll ids>]
 
 =head1 DESCRIPTION
 
@@ -85,25 +85,26 @@ Description
 
 # ---------------------------------------------------------------------
 sub sync_get_usage {
-    my $s .= qq{Usage: sync-i [-L][-C LARGE_coll_id] [-s <slice_size>][-d][-n][-P 1|2] [-T "coll_id1,coll_id2..."  <test coll ids>]
+    my $s .= qq{Usage: sync-i [-L][-C LARGE_coll_id][-d][-n][-P 1|2] [-T "coll_id1,coll_id2..."  <test coll ids>]
                   where the collection Builder tables are synched vs. the run-11 (production) index
                         -L L)ive otherwise print this message
-                        -s is slice size of Solr and Mysql id query
                         -P run only phase 1 or 2
                         -C just do one LARGE coll_id
-                        -n ids are not queued, just reported\n};
+                        -T  One or more collections -T "coll_id1, coll_id2, ... coll_idN"
+                        -n ids are not queued, just reported
+                        -d debug
+\n
+};
     return $s;
 }
 
 
-our ($opt_s, $opt_d, $opt_n, $opt_T, $opt_P, $opt_C, $opt_L);
+our ($opt_d, $opt_n, $opt_T, $opt_P, $opt_C, $opt_L);
 
 my $ops = getopts('s:dnT:qP:C:L');
 
-my $RUN = 11;
+my $RUN = 11;  # Need this to tell log_sync_i where to log
 
-use constant DEFAULT_SLICE_SIZE => 10000;
-my $SLICE_SIZE = defined($opt_s) ? $opt_s : DEFAULT_SLICE_SIZE; # optional
 
 my $MAX_EMAIL_BUF_SIZE = 99 * 1024; # less than 100K
 
@@ -233,18 +234,13 @@ sub do_Sync {
 
 =item handle_synchronization
 
-XXX still needs rewrite
-For a LARGE coll_id, test for every ID in mysql for the  Collection that the coll_id is a field value in the ID's Solr doc
+
+For a every LARGE coll_id,  for every ID in mysql for the  Collection, test that the coll_id is a field value in the ID's Solr doc
 If it does not have the coll_id as a field value, check to see if the id is in Solr at all.
 If it is in Solr,   enqueue the ID so that when it gets re-indexed the coll_id will be added as a field.
 
 If the ID is not in Solr, we assume the ID has been deleted from Solr and
 either deleted from the repository or has rights= available to no one.
-
-Counters and count logic goes here
-
-
-
 
 IDs not in Solr, must have been deleted from the index so they are
 orphaned from the Collection so we nothing by policy (Collection
@@ -273,16 +269,15 @@ sub handle_synchronization {
     if ($COLL_ID) {
         ($ok, $coll_id_arr_ref) = (1, [$COLL_ID]);
     }
+    elsif($TEST_COLLS){
+        ($ok, $coll_id_arr_ref) = (1, $TEST_COLLS );
+    }
     else {
         ($ok, $coll_id_arr_ref) = SharedQueue::get_large_coll_coll_ids($C, $DBH);
     }
     __handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
                 qq{Failed to get large coll_ids\n});
 
-    if (defined($TEST_COLLS) )
-    {
-	$coll_id_arr_ref=$TEST_COLLS;
-    }
     
     my $s;
     my $ct = 0;
@@ -290,16 +285,10 @@ sub handle_synchronization {
     my $ids_in_colls=0;          #Total number of collection-volume_id pairs (if id 123 is in two collections it gets counted twice)
     my $missing_ids_over_colls = 0;       #number of collection-volume_id pairs where coll_id is missing in the Solr doc for that volume id
     my $would_be_enqueued_count = 0; #number of items that would be enqueued if not $NOOP
-    #XXX fixme Foobar
     my $ids_missing_in_Solr_over_colls = 0;     # volume id does not exist in Solr.  Gets counted for each coll_id that has this id
-    my $num_ignored_as_deleted_over_colls = 0; # number of volume_ids in Solr missing the coll_id for one or more  collection.
-
-    
+    my $num_ignored_as_deleted_over_colls = 0; #  volume id does not exist in Solr because it is rights=8 available_to_no_one
     my $ids_available_to_no_one_hashref = __get_ids_available_to_no_one_hashref();
     my $to_enqueue_hashref = {};  # key = id, value = 1
-
-
-    
     
     foreach my $coll_id (@$coll_id_arr_ref) {
 	#ok less than 200 large colls
@@ -337,13 +326,11 @@ sub handle_synchronization {
         my $id_ct = 0; #total ids processed for this collection. Currently just used to check stopslip
         foreach my $id (@$id_arr_ref) {
 	    my $CHECK_STOPSLIP =20000; #XXX move to config file?
-	    
 	    if ($id_ct % $CHECK_STOPSLIP == 0)
 	    {
 		__exit_STOPSLIP();
 	    }
-	    
-            $id_ct++;
+	    $id_ct++;
             
 	    if  (__coll_id_exists_for_this_id_in_solr($C, $id, $solr_id_hashref_for_coll) ) {
 		# do nothing but code is a bit easier to parse
@@ -361,7 +348,6 @@ sub handle_synchronization {
 			$to_enqueue_hashref->{$id} = 1;
 		    }
 		}
-
 		else{
 		    # id is not in Solr at all.
 		    #This checks to see if it is
@@ -373,31 +359,22 @@ sub handle_synchronization {
 		    else{
 			l__output($C, qq{\nID=$id in coll_id=$coll_id does not exist in Solr\n}, 1, 0, 1);
 			$ids_missing_in_Solr++;
-
 		    }
 		}
 	    }
-	
-	    
-            if (($id_ct % $REPORT_OUT) == 0) {
+	    if (($id_ct % $REPORT_OUT) == 0) {
                 l__output($C, "($id_ct)", 1);
                 l__output($C, '.', 1);
             }
         } #end foreach id
 
-	# Double check this against original code and see if Phils logic was indeed wrong
-	# For each collection lets summarize
-	# 1) how many ids in the mysql collection don't have the corresponding coll_id
-	# 2) how many ids in the mysql collection don't exist in solr
-	# 3) of those that don't exist in Solr, how many have rights attr available to no one
-	#  Consider correct logic for 2 and 3 and what ids ignored means or should mean
-	
 	if ($coll_id_missing_in_Solr){
 	    $s = qq{$coll_id_missing_in_Solr ids have coll_ids missing in Solr for for collection ($coll_name) coll_id=$coll_id};
 	}
 	else{
 	    $s = qq{All Solr ids present for collection ($coll_name) coll_id=$coll_id [num in coll=$num_ids_in_coll]};
 	}
+
        	if ($ids_missing_in_Solr > 0){
 	    $s .= qq{\n\tIgnored $ids_missing_in_Solr ids that do not exist in in Solr.};
 	}
@@ -412,23 +389,21 @@ sub handle_synchronization {
 
     } # end foreach coll_id
 
-    # XXX replace noop counts etc with 
-    # enqueue the ids 
-	
-    my $to_enqueue_ary_ref = keys(%{$to_enqueue_hashref});
+    # enqueue  items
+    my @temp_array = keys %{$to_enqueue_hashref};
+    my $to_enqueue_ary_ref = \@temp_array;
     my $number_to_enqueue;
     if ($to_enqueue_ary_ref){
 	$number_to_enqueue = scalar(@{$to_enqueue_ary_ref});
     }
-    
     my $failure_message  = qq{Failed to enqueue $number_to_enqueue ids with missing coll_ids.};
-    
     my $number_enqueued=0;
     # enqueue items
     if (! $NOOP){
 	$number_enqueued =__enqueue_ids($C, $DBH, $to_enqueue_ary_ref,$failure_message);
     }
-    
+    #---
+    #   Report out
     my $total_ids_queued;
 
     if ($NOOP){
@@ -451,9 +426,6 @@ sub handle_synchronization {
 	l__output($C, $ss, 1, 1, 1);
     }
     else{
-
-
-	
 	$ss = qq{\nPhase I processed MySQL large coll_ids=$coll_ct items=$ids_in_colls\n\t missing in Solr over all colls=$missing_ids_over_colls. $s};
 
 	if ($ids_missing_in_Solr_over_colls > 0){
@@ -463,7 +435,6 @@ sub handle_synchronization {
 	    $ss .= qq{\n\tIgnored $num_ignored_as_deleted_over_colls ids avail to no one.};
 	}
 	
-
 	l__output($C, "$ss\n", 1, 1, 1);
 
 	my $phase_1_elapsed = time() - $phase_1_start;
@@ -678,6 +649,7 @@ sub handle_inverse_synchronization {
 	
     } #end for each shard
 
+    #--- Report out ---#
 
     if (defined ($Phase_1_summary)){
 	l__output ($C, "\n==============\n$Phase_1_summary\n",1,1,1);
@@ -700,18 +672,13 @@ sub handle_inverse_synchronization {
 	$s = "$total_ids_queued_over_shards added to shared queue" . $s;
     }
     my $ss = qq{\n==============\nPhase II } . $s;
-    
-#XXX check and remove variables used in this old version of summary for Phase II
-#    l__output($C, qq{\n\nPhase II processed $total_ids_processed_over_shards id occurrences in colls (or in -C COLL_ID)\n\thad $num_ids_from_missing_coll_ids in Solr not in any coll (or not in -C COLL_ID) in MySQL\n\thad $num_ids_from_small_coll_ids in small MySQL colls\n\t$s\n\n}, 1, 1, 1);
-
-        l__output($C, $ss, 1, 1, 1);
+    l__output($C, $ss, 1, 1, 1);
 
     my $phase_2_elapsed = time() - $phase_2_start;
     my $elapsed_min = sprintf("%.2f", $phase_2_elapsed/60);
     my $sss = qq{\nelapsed minutes=$elapsed_min\n};
     l__output($C, $sss, 1, 1, 1);
 }
-
 # ---------------------------------------------------------------------
 
 =item Log_sync_i
@@ -746,6 +713,9 @@ sub sy_final_report {
 
     my $s = qq{\nsync-i update: elapsed minutes=$process_elapsed_min\n};
     l__output($C, $s . Utils::Time::iso_Time() . qq{\n}, 1, 1, 1);
+    
+    # rest of this is to format the e-mail report
+    #XXX consider a more useful e-mail report with the idea of checking the logs for details
     $s .= $MESSAGE_BUFFER;
     $s =~ s,\n\n,\n,gs;
 
@@ -839,15 +809,58 @@ sub __get_report_out_number
 	    
     return ($REPORT_OUT);
 }
+# ---------------------------------------------------------------------
+
+=item l__output
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub l__output {
+    my ($C, $msg, $print_msg, $buffer_msg, $log_msg) = @_;
+
+    Log_sync_i($C, $RUN, $msg) if ($log_msg);  # add timestam and log to sync-i log
+    $MESSAGE_BUFFER .= $msg if ($buffer_msg);
+    print STDOUT qq{$msg} if ($print_msg);
+}
+
+# ---------------------------------------------------------------------
+
+sub __enqueue_ids
+{
+    my ($C, $DBH, $to_enqueue_ary_ref, $failure_message) =@_;
+    my $run = 11; #hard coded!!
+
+    # consider doing our own iteration so we can output the 1000 ids that caused the error
+    # alternative, debugging flag to do 1 or 1000 at a time?
+    my $total_inserted = 0;
+
+    #XXX this Db call inserts into regular queue not shared queue!
+    eval{
+	$total_inserted = Db::handle_queue_insert($C, $DBH,$run,$to_enqueue_ary_ref);
+    };
+    
+    if ($@) {
+	# log failed ids?
+	my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+	my $s = qq{CRITICAL ERROR: sync-i: $failure_message $@\n};
+	l__output($C, $s, 1, 1, 1);
+	__non_interactive_err_output($rc, $s);
+	exit $rc;
+    }
+
+    return ($total_inserted);
+}
 
 
 #======================================================================
-#  tests
-# ---------------------------------------------------------------------
+#  Mysql tests
+#======================================================================
 
 =item __id_exists_in_solr
 
-Description
 
 =cut
 
@@ -864,18 +877,6 @@ sub __id_exists_in_solr {
     return ($num_found > 0);
 }
 
-# ---------------------------------------------------------------------
-# Was it "available_to_no_one?"
-sub __id_deleted_available_to_no_one
-{
-    my $id = shift;
-    my $ids_deleted_hashref = shift;
-    if (exists($ids_deleted_hashref->{$id}))
-    {
-	return "TRUE";
-    }
-    return (0);#false
-}
 
 
 # ---------------------------------------------------------------------
@@ -896,6 +897,23 @@ sub __coll_id_exists_for_this_id_in_solr {
     }
     return 0;
 }
+
+# ---------------------------------------------------------------------
+#  Solr tests
+# ---------------------------------------------------------------------
+# Was it "available_to_no_one?"
+sub __id_deleted_available_to_no_one
+{
+    my $id = shift;
+    my $ids_deleted_hashref = shift;
+    if (exists($ids_deleted_hashref->{$id}))
+    {
+	return "TRUE";
+    }
+    return (0);#false
+}
+
+
 #----------------------------------------------------------------------
 # if we have the info for the coll in a hash use that
 # if we don't go back to mysql query for one id in coll
@@ -915,15 +933,12 @@ sub __id_exists_in_coll
     }
 }	
 
-
-# ---------------------------------------------------------------------
-
 #======================================================================
 #
 #    Get data from Mysql or Solr and load into data structure for efficient lookup
 #
 #======================================================================
-
+#  MySQL data getters
 # ---------------------------------------------------------------------
 
 =item __get_ids_available_to_no_one_hashref
@@ -948,82 +963,6 @@ sub __get_ids_available_to_no_one_hashref
 }
 
 
-# ---------------------------------------------------------------------
-sub __get_solr_id_hashref_for_coll
-{
-    my ($C,  $searcher, $rs, $coll_id, $max_rows) =@_;
-    my $hashref={};
-    
-    my $query = qq{q=coll_id:$coll_id&start=0&rows=$max_rows&fl=id};
-    $rs = __handle_query($C, $query, $searcher, $rs);
-    my $id_array_ref =$rs->get_result_ids();
-    foreach my $id (@{$id_array_ref}){
-	$hashref->{$id}=1;
-    }
-    return $hashref;
-}
-
-# ---------------------------------------------------------------------
-sub __mondo_get_solr_id_hashref_for_coll
-{
-    my ($C, $coll_id ) =@_;
-    my $hashref={};
-    my $id_array_ref =__export_search_ids_in_coll($C,$coll_id);
-    foreach my $id (@{$id_array_ref}){
-	$hashref->{$id}=1;
-    }
-    return $hashref;
-}
-# ---------------------------------------------------------------------
-
-=item __export_search_ids_in_coll
-
-Uses export handler to efficiently retrieve very large solr result sets
-Queries every shard (export handler does not support distributed search)
-Currently hard-coded to return an array_ref of ids
-Consider whether to take parameters to specify fields to return and change name 
-
-=cut
-
-# ---------------------------------------------------------------------
-#XXX RENAME __get_ids_in_coll_from_Solr or something like that
-sub __export_search_ids_in_coll
-{
-    my $C = shift;
-    my $coll_id = shift;
-
-    my $debug="TRUE";#XXX TODO decide whether to change from hard coded to param
-    
-    my $CFQ                = qq{fq=coll_id:$coll_id};
-    my $query              = 'q=*%3A*&fl=id_dv&sort=id_dv+desc&indent=on&'. $CFQ;
-    my $id_arr_ref         = [];
-    my $hash_of_ids        = {};
-
-    
-    foreach my $shard (@SHARDS)
-    {
-	my $mondo_searcher = SLIP_Utils::Solr::create_export_prod_shard_Searcher_by_alias($C, $shard);
-	my $mondo_rs = new Result::JSON::Export();
-	$mondo_rs = __handle_query($C, $query, $mondo_searcher, $mondo_rs);
-
-	# only report counts/shard if debugging!!
-	#if ($debug = "mondo_search")
-	if ($debug)
-	{
-    	    my $rows_returned = $mondo_rs->get_rows_returned();
-	    l__output($C, qq{coll_id $coll_id shard $shard $rows_returned ids.}, 1, 0, 0);
-	}
-
-        my $shard_id_arr_ref = $mondo_rs->get_result_ids();
-	# check for 0 results for a shard
-	if (defined($shard_id_arr_ref)){
-	    @{$id_arr_ref} = (@{$id_arr_ref},@{$shard_id_arr_ref});
-	}
-	
-    }
-
-    return ($id_arr_ref);
-}
 
 #----------------------------------------------------------------------
 
@@ -1078,6 +1017,181 @@ sub __get_hash_of_coll_hashes
     return ($hash_of_coll_hashes);
 }
 #===============================================================================
+#   Solr data getters
+#===============================================================================
+
+# ---------------------------------------------------------------------
+sub __get_solr_id_hashref_for_coll
+{
+    my ($C,  $searcher, $rs, $coll_id, $max_rows) =@_;
+    my $hashref={};
+    
+    my $query = qq{q=coll_id:$coll_id&start=0&rows=$max_rows&fl=id};
+    $rs = __handle_query($C, $query, $searcher, $rs);
+    my $id_array_ref =$rs->get_result_ids();
+    foreach my $id (@{$id_array_ref}){
+	$hashref->{$id}=1;
+    }
+    return $hashref;
+}
+
+# ---------------------------------------------------------------------
+sub __mondo_get_solr_id_hashref_for_coll
+{
+    my ($C, $coll_id ) =@_;
+    my $hashref={};
+    my $id_array_ref =__export_search_ids_in_coll($C,$coll_id);
+    foreach my $id (@{$id_array_ref}){
+	$hashref->{$id}=1;
+    }
+    return $hashref;
+}
+# ---------------------------------------------------------------------
+#XXX needs better name
+=item __export_search_ids_in_coll
+
+Uses export handler to efficiently retrieve very large solr result sets
+Queries every shard (export handler does not support distributed search)
+Currently hard-coded to return an array_ref of ids
+Consider whether to take parameters to specify fields to return and change name 
+
+=cut
+
+# ---------------------------------------------------------------------
+#XXX RENAME __get_ids_in_coll_from_Solr or something like that
+sub __export_search_ids_in_coll
+{
+    my $C = shift;
+    my $coll_id = shift;
+
+    my $debug;#="TRUE";#XXX TODO decide whether to change from hard coded to param
+    
+    my $CFQ                = qq{fq=coll_id:$coll_id};
+    my $query              = 'q=*%3A*&fl=id_dv&sort=id_dv+desc&indent=on&'. $CFQ;
+    my $id_arr_ref         = [];
+    my $hash_of_ids        = {};
+
+    
+    foreach my $shard (@SHARDS)
+    {
+	my $mondo_searcher = SLIP_Utils::Solr::create_export_prod_shard_Searcher_by_alias($C, $shard);
+	my $mondo_rs = new Result::JSON::Export();
+	$mondo_rs = __handle_query($C, $query, $mondo_searcher, $mondo_rs);
+
+	# only report counts/shard if debugging!!
+	#if ($debug = "mondo_search")
+	if ($debug)
+	{
+    	    my $rows_returned = $mondo_rs->get_rows_returned();
+	    l__output($C, qq{coll_id $coll_id shard $shard $rows_returned ids.}, 1, 0, 0);
+	}
+
+        my $shard_id_arr_ref = $mondo_rs->get_result_ids();
+	# check for 0 results for a shard
+	if (defined($shard_id_arr_ref)){
+	    @{$id_arr_ref} = (@{$id_arr_ref},@{$shard_id_arr_ref});
+	}
+	
+    }
+
+    return ($id_arr_ref);
+}
+# ---------------------------------------------------------------------
+sub  __get_num_items_in_colls_for_shard
+{
+    my $C     = shift;
+    my $shard = shift;
+    
+    my $searcher = SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
+    my $rs = new Result::SLIP();
+    #XXX fix for TEST_COLLS foobar
+    my $COLL_QUERY = __get_COLL_query($C);
+    my $item_query = qq{q=$COLL_QUERY&start=0&rows=0&fl=coll_id,id};
+    #XXXprint "DEBUG $item_query item query num items\n";
+    
+    $rs =__handle_query($C, $item_query, $searcher, $rs);
+    return ( $rs->get_num_found());
+}
+# ---------------------------------------------------------------------
+sub __get_solr_results_for_shard
+{
+    my $C =     shift;
+    my $shard = shift;
+
+    # These are designed to be able to handle mondo collections using the export handler and doc values
+    my $mondo_searcher = SLIP_Utils::Solr::create_export_prod_shard_Searcher_by_alias($C, $shard);
+    my $mondo_rs = new Result::JSON::Export();
+    #XXX fix for TEST_COLLS  foobar
+    my $COLL_QUERY = __get_COLL_query($C);
+    my $query = 'q=*%3A*&fl=id_dv,coll_id&sort=id_dv+desc&indent=on&fq=' . $COLL_QUERY;
+    #XXXprint "DEBUG $query query Solr results for shard\n";
+
+    $mondo_rs = __handle_query($C, $query, $mondo_searcher, $mondo_rs);
+}
+#----------------------------------------------------------------------
+
+=item __parse_result_docs
+
+Grab data from result set and transform  to
+$id_to_coll_id_hash
+key   = $volume_id
+value = arrayref of coll_ids for that volume id 
+
+=cut
+
+#----------------------------------------------------------------------
+sub __parse_result_docs
+{
+    my $rs = shift;
+    my $ret_to_arr_of_hashref = $rs->get_complete_result();
+       
+    my %id_to_coll_id_hash = ();
+
+    foreach my $hashref (@$ret_to_arr_of_hashref) {
+        my $coll_ids_arr_ref = [];
+        if ($COLL_ID) {
+            $coll_ids_arr_ref = [$COLL_ID];
+        }
+	elsif($TEST_COLLS){
+	    $coll_ids_arr_ref = $TEST_COLLS;
+	}
+	
+        else {
+            $coll_ids_arr_ref = $hashref->{coll_ids};
+        }
+        my $id = $hashref->{id};
+	
+        $id_to_coll_id_hash{$id} = $coll_ids_arr_ref;
+	
+    }
+    return \%id_to_coll_id_hash;
+}
+# ---------------------------------------------------------------------
+sub __get_COLL_query
+{
+    my $C = shift;
+    # zero is reserved for the coll_id field for items that are not in
+    # any collection. 
+
+    my $COLL_QUERY ='coll_id:[1 TO *]';
+    
+    if (defined($TEST_COLLS) && scalar(@{$TEST_COLLS}) == 1){
+	$COLL_QUERY = "coll_id:$TEST_COLLS->[0]";
+    }
+    elsif($COLL_ID){
+	$COLL_QUERY = "coll_id:$COLL_ID";
+    }
+    elsif ($TEST_COLLS){
+	my $COLL_CLAUSE = join(' OR ',@{$TEST_COLLS}) ;
+	
+	$COLL_QUERY = 'coll_id:(' . $COLL_CLAUSE . ')';
+    }
+    return $COLL_QUERY;
+}
+
+#======================================================================
+
+
 # ---------------------------------------------------------------------
 
 =item   __enqueue_ids
@@ -1086,34 +1200,6 @@ Replacement for SharedQueue::enqueue_item_ids code
 
 =cut
 
-# ---------------------------------------------------------------------
-
-sub __enqueue_ids
-{
-    my ($C, $DBH, $to_enqueue_ary_ref, $failure_message) =@_;
-    my $run = 11; #hard coded!!
-
-    # consider doing our own iteration so we can output the 1000 ids that caused the error
-    # alternative, debugging flag to do 1 or 1000 at a time?
-    my $total_inserted = 0;
-    
-    eval{
-	$total_inserted = Db::handle_queue_insert($C, $DBH,$run,$to_enqueue_ary_ref);
-    };
-    
-    if ($@) {
-	# log failed ids?
-	my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
-	my $s = qq{CRITICAL ERROR: sync-i: $failure_message $@\n};
-	l__output($C, $s, 1, 1, 1);
-	__non_interactive_err_output($rc, $s);
-	exit $rc;
-    }
-
-    return ($total_inserted);
-    
-		
-}
 
 # ---------------------------------------------------------------------
 
@@ -1195,115 +1281,8 @@ sub __check_for_missing_or_small_coll_ids {
 
     return ($colls_seen, $id_to_coll_id_hashref, \@small_ids_to_enqueue, \@missing_ids_to_enqueue);
 }
-#----------------------------------------------------------------------
-
-=item __parse_result_docs
-
-Grab data from result set and transform  to
-$id_to_coll_id_hash
-key   = $volume_id
-value = arrayref of coll_ids for that volume id 
-
-=cut
-
-#----------------------------------------------------------------------
-sub __parse_result_docs
-{
-    my $rs = shift;
-    my $ret_to_arr_of_hashref = $rs->get_complete_result();
-       
-    my %id_to_coll_id_hash = ();
-
-    foreach my $hashref (@$ret_to_arr_of_hashref) {
-        my $coll_ids_arr_ref = [];
-        if ($COLL_ID) {
-            $coll_ids_arr_ref = [$COLL_ID];
-        }
-	elsif($TEST_COLLS){
-	    $coll_ids_arr_ref = $TEST_COLLS;
-	}
-	
-        else {
-            $coll_ids_arr_ref = $hashref->{coll_ids};
-        }
-        my $id = $hashref->{id};
-	
-        $id_to_coll_id_hash{$id} = $coll_ids_arr_ref;
-	
-    }
-    return \%id_to_coll_id_hash;
-}
-# ---------------------------------------------------------------------
-sub __get_COLL_query
-{
-    my $C = shift;
-    my $COLL_QUERY ='coll_id:[1 TO *]';
-    
-    if (defined($TEST_COLLS) && scalar(@{$TEST_COLLS}) == 1){
-	$COLL_QUERY = "coll_id:$TEST_COLLS->[0]";
-    }
-    elsif($COLL_ID){
-	$COLL_QUERY = "coll_id:$COLL_ID";
-    }
-    elsif ($TEST_COLLS){
-	my $COLL_CLAUSE = join(' OR ',@{$TEST_COLLS}) ;
-	
-	$COLL_QUERY = 'coll_id:(' . $COLL_CLAUSE . ')';
-    }
-    return $COLL_QUERY;
-}
 
 # ---------------------------------------------------------------------
-sub  __get_num_items_in_colls_for_shard
-{
-    my $C     = shift;
-    my $shard = shift;
-    
-    my $searcher = SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
-    my $rs = new Result::SLIP();
-    # zero is reserved for the coll_id field for items that are not in
-    # any collection. Limit to one coll_id for -C option
-    #XXX fix for TEST_COLLS foobar
-    my $COLL_QUERY = __get_COLL_query($C);
-    my $item_query = qq{q=$COLL_QUERY&start=0&rows=0&fl=coll_id,id};
-    #XXXprint "DEBUG $item_query item query num items\n";
-    
-    $rs =__handle_query($C, $item_query, $searcher, $rs);
-    return ( $rs->get_num_found());
-}
-# ---------------------------------------------------------------------
-sub __get_solr_results_for_shard
-{
-    my $C =     shift;
-    my $shard = shift;
-
-    # These are designed to be able to handle mondo collections using the export handler and doc values
-    my $mondo_searcher = SLIP_Utils::Solr::create_export_prod_shard_Searcher_by_alias($C, $shard);
-    my $mondo_rs = new Result::JSON::Export();
-    #XXX fix for TEST_COLLS  foobar
-    my $COLL_QUERY = __get_COLL_query($C);
-    my $query = 'q=*%3A*&fl=id_dv,coll_id&sort=id_dv+desc&indent=on&fq=' . $COLL_QUERY;
-    #XXXprint "DEBUG $query query Solr results for shard\n";
-
-    $mondo_rs = __handle_query($C, $query, $mondo_searcher, $mondo_rs);
-}
-
-# ---------------------------------------------------------------------
-
-=item l__output
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub l__output {
-    my ($C, $msg, $print_msg, $buffer_msg, $log_msg) = @_;
-
-    Log_sync_i($C, $RUN, $msg) if ($log_msg);  # add timestam and log to sync-i log
-    $MESSAGE_BUFFER .= $msg if ($buffer_msg);
-    print STDOUT qq{$msg} if ($print_msg);
-}
 
 1;
 
