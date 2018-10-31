@@ -21,7 +21,7 @@ use strict;
 use open qw/:std :utf8/;
 # tbw for developing with slip-lib dependencies!
 BEGIN {
-     $ENV{DEBUG_LOCAL} = 1;
+   ##  $ENV{DEBUG_LOCAL} = 1;
 }
 
 #test  2
