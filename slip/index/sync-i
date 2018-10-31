@@ -489,12 +489,10 @@ sub handle_inverse_synchronization {
     #$would_be_enqueued_count
     # number of ids that would be enqueued
     my $would_be_enqueued_over_shards_counts ={};
-    if ($NOOP)
-    {
-	$would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'}=0;
-	$would_be_enqueued_over_shards_counts->{'small_coll_id'}=0;
-	$would_be_enqueued_over_shards_counts->{'volume_id_missing_in_mysql'}=0;
-    }
+    $would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'}=0;
+    $would_be_enqueued_over_shards_counts->{'small_coll_id'}=0;
+    $would_be_enqueued_over_shards_counts->{'volume_id_missing_in_mysql'}=0;
+
     my $failure_message='';
     my $missing_enqueued;
     my $small_enqueued;
@@ -566,9 +564,8 @@ sub handle_inverse_synchronization {
 	if ($num_ids_from_missing_coll_ids);
 	
 	if ($num_ids_missing) {
-	    if ($NOOP){
-		$would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'} += $num_ids_missing;
-	    }else {
+	    $would_be_enqueued_over_shards_counts->{'coll_id_missing_in_mysql'} += $num_ids_missing;
+	    if (! $NOOP) {
 		l__output($C, "\n\t--> queue $num_ids_missing ids\n", 1, 1, 1);
 		$failure_message= qq{Failed to enqueue ids from missing optimize step for shard $shard\n};
 		$missing_enqueued =__enqueue_ids($C, $DBH, $missing_ids_to_enqueue_arr_ref,$failure_message);
@@ -582,9 +579,8 @@ sub handle_inverse_synchronization {
 	if ($num_ids_from_small_coll_ids);
 	
 	if ($num_ids_small) {
-	    if ($NOOP){
-		$would_be_enqueued_over_shards_counts->{'small_coll_id'} += $num_ids_small;
-	    }else {
+	    $would_be_enqueued_over_shards_counts->{'small_coll_id'} += $num_ids_small;
+	    if (! $NOOP){
 		l__output($C, "\n\t--> queue $num_ids_small ids\n", 1, 1, 1);
 		$failure_message= qq{Failed to enqueue ids from small optimize step for shard $shard\n};
 		$small_enqueued =__enqueue_ids($C, $DBH,  $small_ids_to_enqueue_arr_ref,$failure_message);	  	    }
@@ -644,6 +640,8 @@ sub handle_inverse_synchronization {
         my $total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
         my $total_ids_processed = $id_ct + $num_ids_from_missing_coll_ids + $num_ids_from_small_coll_ids;
         $total_ids_queued_over_shards += $total_ids_queued;
+	print "DEBUG $total_ids_queued_over_shards =total over shards $total_ids_queued = total queued";
+	
 #        $total_ids_processed_over_shards += $total_ids_processed;
 #	print "DEBUG $total_ids_processed_over_shards,id_ct = $id_ct missing= $num_ids_from_missing_coll_ids, small=  $num_ids_from_small_coll_ids";
 	
@@ -664,12 +662,14 @@ sub handle_inverse_synchronization {
     $s .= qq{\n\t$would_be_enqueued_over_shards_counts->{'small_coll_id'} ids in collections that are no longer large collectionss};
     $s .= qq{\n\t$would_be_enqueued_over_shards_counts->{'volume_id_missing_in_mysql'} ids deleted from collections}; 
     
+
     if ($NOOP){
 	$s =qq{$would_be_enqueued_total ids  would have been enqueued\:} . $s;
 	#l__output ($C, "\n$s",1,1,1);
     }
     else{
-	$s = "$total_ids_queued_over_shards added to shared queue" . $s;
+	my $grand_total_ids_queued = SharedQueue::count_shared_queue_ids($C, $DBH) - $initial_shared_queue_ct;
+	$s = "Grand total ids queued for all reasons= $grand_total_ids_queued\n$total_ids_queued_over_shards added to shared queue" . $s;
     }
     my $ss = qq{\n==============\nPhase II } . $s;
     l__output($C, $ss, 1, 1, 1);
@@ -833,24 +833,34 @@ sub __enqueue_ids
     my ($C, $DBH, $to_enqueue_ary_ref, $failure_message) =@_;
     my $run = 11; #hard coded!!
 
-    # consider doing our own iteration so we can output the 1000 ids that caused the error
-    # alternative, debugging flag to do 1 or 1000 at a time?
     my $total_inserted = 0;
+    my $ok=1;
+    # SharedQueue::enqueue_item_ids has DbUtils::begin_work and commit so its one transaction
+    # tested with 390 items guess 500 will be ok, need to test
 
-    #XXX this Db call inserts into regular queue not shared queue!
-    eval{
-	$total_inserted = Db::handle_queue_insert($C, $DBH,$run,$to_enqueue_ary_ref);
-    };
-    
-    if ($@) {
-	# log failed ids?
-	my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
-	my $s = qq{CRITICAL ERROR: sync-i: $failure_message $@\n};
-	l__output($C, $s, 1, 1, 1);
-	__non_interactive_err_output($rc, $s);
-	exit $rc;
+    my $total_start = time;
+
+    while (1) {
+        my $start = time;
+
+        # Insert in blocks of 500
+        my @queue_array = splice(@$to_enqueue_ary_ref, 0, 500);
+        last
+          if (scalar(@queue_array) <= 0);
+
+	my $to_insert_count = scalar(@queue_array);
+	# do we need to profile to see if this is too expensive to do
+	my $id_list = join(',',@queue_array);
+	my $msg = $failure_message . "\nFailed to enqueue ids:\n $id_list";
+	
+	$ok = SharedQueue::enqueue_item_ids($C, $DBH, \@queue_array);
+	
+	__handle_rc($ok ? $SLIP_Utils::States::RC_OK : $SLIP_Utils::States::RC_CRITICAL_ERROR,
+		    qq{$msg\n});
+	$total_inserted += $to_insert_count;
+	# do we want elapsed time stats here?
     }
-
+    # do we want elapsed time stats here?
     return ($total_inserted);
 }
 
