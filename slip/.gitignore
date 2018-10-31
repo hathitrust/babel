@@ -2,3 +2,5 @@ logs/
 \#*
 *~
 /lib/Config/local.conf
+*,v
+RCS
