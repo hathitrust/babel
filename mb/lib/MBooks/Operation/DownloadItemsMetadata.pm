@@ -121,8 +121,9 @@ sub execute_operation
     {
         # Note: we would like to give the user the collection name if they clicked on a link to a non-existent
         # collection, but we can't get it.  
-        my $msg = q{Collection "} . $coll_id .  q{" does not exist. };  
+        my $msg = q{Collection "} . $coll_id .  q{" does not exist. };
         $act->set_error_record($C, $act->make_error_record($C, $msg));
+        $$C{'http.status'} = 404;
         return $ST_NOT_OK;
     }
     # This assertion should never get triggered because of the logic above    

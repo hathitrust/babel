@@ -406,11 +406,12 @@ sub get_redirect_url
 sub output_HTTP {
     my $self = shift;
     my ($C, $data_ref, $content_type) = @_ ;
+    my $status = $C->get_object('Action')->get_transient_facade_member_data('status');
 
     if ( ref($data_ref) eq 'File::Temp' ) {
-        P_output_glob_data_HTTP($C, $data_ref, $content_type);
+        P_output_glob_data_HTTP($C, $data_ref, $content_type, $$C{'http.status'});
     } else {
-        View::P_output_data_HTTP($C, $data_ref, $content_type);
+        View::P_output_data_HTTP($C, $data_ref, $content_type, $$C{'http.status'});
     }
 }
 
