@@ -406,7 +406,7 @@ sub get_redirect_url
 sub output_HTTP {
     my $self = shift;
     my ($C, $data_ref, $content_type) = @_ ;
-    my $status = $$C{'http.status'};
+    my $status = get_response_status($C);
 
     if ( ref($data_ref) eq 'File::Temp' ) {
         P_output_glob_data_HTTP($C, $data_ref, $content_type, $status);
@@ -436,6 +436,14 @@ sub P_output_glob_data_HTTP {
     while ( my $line = <$data_ref> ) {
         print STDOUT $line;
     }
+}
+
+sub get_response_status {
+    my ( $C ) = @_;
+    if ( my $resp = $C->get_object('HTTP::Response', 1) ) {
+        return $resp->code;
+    }
+    return 200;
 }
 
 1;

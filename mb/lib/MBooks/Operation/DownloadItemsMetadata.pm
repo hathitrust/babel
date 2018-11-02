@@ -123,7 +123,9 @@ sub execute_operation
         # collection, but we can't get it.  
         my $msg = q{Collection "} . $coll_id .  q{" does not exist. };
         $act->set_error_record($C, $act->make_error_record($C, $msg));
-        $$C{'http.status'} = 404;
+
+        require HTTP::Response;
+        $C->set_object('HTTP::Response', HTTP::Response->new(404));
         return $ST_NOT_OK;
     }
     # This assertion should never get triggered because of the logic above    
