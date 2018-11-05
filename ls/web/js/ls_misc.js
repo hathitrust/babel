@@ -103,21 +103,6 @@ head.ready(function() {
        return false;
      }
 
-     // check for truncation
-     var MIN_CHARS = 3; //minimum number of characters before the truncation operatior can be used
-     var msg ="You must have at least " + MIN_CHARS + " characters before using the \"*\"  truncation operator";
-     if ( query.indexOf('*') > -1 ) {
-        var words = query.split(" ");
-        for (i=0; i< words.length;i++){
-          //alert( "i is " + i + "word is " +words[i]);
-          var wordindex=words[i].indexOf('*');
-          if (wordindex !== -1 && wordindex < MIN_CHARS ){
-            bootbox.alert(msg);
-            $input.trigger('blur');
-            return false;
-          }
-        }
-     }
   });
 
 });
