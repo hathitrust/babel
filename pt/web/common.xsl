@@ -779,9 +779,11 @@
             </xsl:if>
             <xsl:choose>
               <xsl:when test="$gHasOcr='YES'">
-                <xsl:attribute name="value">
-                  <xsl:value-of select="$gCurrentQ1"/>
-                </xsl:attribute>
+                <xsl:if test="$gCurrentQ1 != '*'">
+                  <xsl:attribute name="value">
+                    <xsl:value-of select="$gCurrentQ1"/>
+                  </xsl:attribute>
+                </xsl:if>
               </xsl:when>
               <xsl:otherwise>
                 <xsl:attribute name="value">
@@ -840,10 +842,32 @@
   </xsl:template>
 
   <xsl:template name="access-overview-block">
+    <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
     <div class="accessOverview" rel="note">
       <h3>Text Only Views</h3>
         <xsl:if test="$gHtId">
-          <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
+          <p>
+            <xsl:text>Go to the </xsl:text>
+            <xsl:element name="a">
+              <xsl:attribute name="id">ssd-link</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:text>/cgi/ssd?id=</xsl:text>
+                <xsl:value-of select="$gHtId"/>
+                <xsl:choose>
+                  <xsl:when test="$seq != '' and $gFullPdfAccess = 'allow'">
+                    <xsl:text>#seq</xsl:text>
+                    <xsl:value-of select="$seq" />
+                  </xsl:when>
+                  <xsl:when test="$seq">
+                    <xsl:text>;seq=</xsl:text>
+                    <xsl:value-of select="$seq" />
+                  </xsl:when>
+                  <xsl:otherwise />
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:text>text-only view of this item.</xsl:text>
+            </xsl:element>
+          </p>
         </xsl:if>
 <!--         <xsl:if test="$gInCopyright = 'false'">
           <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
