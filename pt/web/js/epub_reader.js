@@ -196,7 +196,7 @@ head.ready(function() {
   };
 
   var _process_menu = {};
-  _process_menu.default = function(items, tabindex, $parent) {
+  _process_menu['default'] = function(items, tabindex, $parent) {
     items.forEach(function(item) {
       var $li = $("<li><a></a></li>").appendTo($parent);
       var $a = $li.find("a");
@@ -204,12 +204,12 @@ head.ready(function() {
       $a.text(item.label);
       if ( item.subitems.length ) {
         var $ul = $("<ul></ul>").appendTo($li);
-        _process_menu.default(item.subitems, tabindex + 1, $ul);
+        _process_menu['default'](item.subitems, tabindex + 1, $ul);
       }
     })
   }
 
-  _process_menu.mobile = function(items, tabindex, $parent) {
+  _process_menu['mobile'] = function(items, tabindex, $parent) {
     items.forEach(function(item) {
       var $li = $("<li><div class='resulttext'><a><span class='offscreen'></span></a><ul class='mdpInnerList'><li><span></span></ul></div></li>").appendTo($parent);
       var $a = $li.find("a");
@@ -221,7 +221,7 @@ head.ready(function() {
       $span.css({ display: 'inline-block', 'padding-left': ( tabindex * 5 ) + 'px' });
       if ( item.subitems.length ) {
         // var $ul = $("<ul></ul>").appendTo($li);
-        _process_menu(item.subitems, tabindex + 1, $ul);
+        _process_menu['mobile'](item.subitems, tabindex + 1, $ul);
       }
     })
   }
@@ -255,24 +255,18 @@ head.ready(function() {
     var section = view.section;
     if ( ! highlighted[section.href] ) {
       highlighted[section.href] = true;
-      console.log("AHOY", section.href, highlights);
-      DEBUG.view = view;
       if ( true && view.contents && highlights.length > 0) {
-        console.log("AHOY WIDTH 1", $(view.contents.window).width());
           highlights.forEach(function(word) {
               s = view.contents.window.getSelection();
               var e = view.contents.document.getElementsByTagName('body').item(0);
               var hrefs = highlight(view.contents, s, e, word);
               if ( hrefs.length ) {
                 hrefs.forEach(function(href) {
-                  console.log("AHOY HIGHLIGHTING", href, word);
+                  // console.log("AHOY HIGHLIGHTING", href, word);
                   reader.annotations.highlight(href);
                 })
               }
           })
-          setTimeout(function() {
-            console.log("AHOY WIDTH 2", $(view.contents.window).width());
-          }, 500);
       }
     }
   });
@@ -290,8 +284,5 @@ head.ready(function() {
   });
 
   reader.start(start_cfi);
-
-  setTimeout(function() {
-  }, 100);
 
 });

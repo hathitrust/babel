@@ -2,7 +2,7 @@
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
       <xsl:output method="html"/>
        
-  <xsl:variable name="timestamp" select="'?_=1536597480'" />
+  <xsl:variable name="timestamp" select="'?_=1542129559'" />
   <xsl:template name="load_concat_js_file">
     <script type="text/javascript">
         var HT = HT || {};
@@ -64,8 +64,8 @@
             to_load.push("/pt/js/view/plaintext.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
     <xsl:if test="//ItemType='volume/epub'">
-            to_load.push("/pt/vendor/jquery.sticky-kit.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/vendor/nanoscroller/jquery.nanoscroller.js<xsl:value-of select="$timestamp" />");
+            to_load.push("/pt/vendor/jquery.sticky-kit.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/sidebar.js<xsl:value-of select="$timestamp" />");
             to_load.push("/pt/js/epub_reader.js<xsl:value-of select="$timestamp" />");
     </xsl:if>
