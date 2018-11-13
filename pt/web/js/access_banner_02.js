@@ -31,7 +31,7 @@ $(document).ready(function() {
 
             function showAlert() {
                 var html = $('#accessBannerID').html();
-                var $alert = bootbox.dialog(html, [{ label: "OK", "class" : "btn-primary btn-dismiss" }], { header : 'Special access' });
+                var $alert = bootbox.dialog(html, [{ label: "OK", "class" : "btn-primary btn-dismiss" }], { header : 'Special access', role: 'alertdialog' });
             }
             window.setTimeout(showAlert, 3000, true);
         }
