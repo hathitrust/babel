@@ -179,7 +179,7 @@ sub OcrHandler {
     my $self = shift;
     my $C = shift;
 
-        my $text = '';
+    my $text = '';
     my $ocrTextRef = \$text;
 
     my $q1 = $C->get_object('CGI')->param('q1');
@@ -192,22 +192,37 @@ sub OcrHandler {
     elsif ($q1) {
         my $id = $self->Get('id');
         $ocrTextRef = PT::SearchUtils::Solr_retrieve_OCR_page($C, $id, $self->GetPhysicalPageSequence($seq));
+        unless ( $$ocrTextRef ) {
+            # maybe the solr failed
+            $ocrTextRef = $self->_load_ocr_file($C, $seq);
+        }
         DEBUG('all', qq{Solr retrieve OCR for seq=$seq});
     }
     else {
-        my $ocrFile = $self->GetFilePathMaybeExtract($seq, 'ocrfile') ;
-            
-        if ($ocrFile) {
-            $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
-            SLIP_Utils::Common::clean_xml($ocrTextRef);
-        }
-        DEBUG('all', qq{zip retrieve ocr from file="$ocrFile" for seq=$seq});
+        $ocrTextRef = $self->_load_ocr_file($C, $seq);
     }
 
     $self->{'ocrtextref'} =  $ocrTextRef;
 
 
     return $self->{'ocrtextref'};
+}
+
+sub _load_ocr_file {
+    my $self = shift;
+    my ( $C, $seq ) = @_;
+
+    my $text = '';
+    my $ocrTextRef = \$text;
+
+    my $ocrFile = $self->GetFilePathMaybeExtract($seq, 'ocrfile') ;
+        
+    if ($ocrFile) {
+        $ocrTextRef = Utils::read_file($ocrFile, 0, 1);
+        SLIP_Utils::Common::clean_xml($ocrTextRef);
+    }
+    DEBUG('all', qq{zip retrieve ocr from file="$ocrFile" for seq=$seq});
+    return $ocrTextRef;
 }
 
 # ---------------------------------------------------------------------

@@ -385,7 +385,7 @@
           </xsl:choose>
         </xsl:attribute>
         <xsl:attribute name="value">
-          <xsl:if test="$gHasOcr = 'YES'">
+          <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
             <xsl:value-of select="$gCurrentQ1" />
           </xsl:if>
         </xsl:attribute>
