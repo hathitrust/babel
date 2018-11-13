@@ -257,11 +257,14 @@
         <li>
           <span>
             <xsl:value-of select="//Header/UserAffiliation" />
+            <!-- ProviderName causes collisions with search navbar -->
+            <!--
             <xsl:if test="//Header/ProviderName">
               <xsl:text> (</xsl:text>
               <xsl:value-of select="//Header/ProviderName" />
               <xsl:text>)</xsl:text>
             </xsl:if>
+            -->
           </span>
         </li>
         <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
@@ -334,7 +337,7 @@
           </xsl:choose>
         </xsl:attribute>
         <xsl:attribute name="value">
-          <xsl:if test="$gHasOcr = 'YES'">
+          <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
             <xsl:value-of select="$gCurrentQ1" />
           </xsl:if>
         </xsl:attribute>
@@ -373,15 +376,15 @@
   </xsl:template>
 
   <xsl:template name="access_banner_ssd">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work may be in copyright. You have full view access to this item based on your account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.<br /><br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work may be in copyright. You have full view access to this item based on your account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>.<br /><br />A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p></div></div>
   </xsl:template>
 
   <xsl:template name="access_banner">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work may be in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>Hi <xsl:value-of select="$gUserName"/>! This work may be in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>.</p></div></div>
   </xsl:template>
 
   <xsl:template name="access_banner_local">
-    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>This work may be in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p></div></div>
+    <div id="accessBannerID" class="hidden"><div class="accessBannerText"><p>This work may be in copyright. You have full view access to this item based on your affiliation or account privileges.<br /><br />Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>.</p></div></div>
   </xsl:template>
 
   <xsl:template name="html-tag-extra-attributes" />
