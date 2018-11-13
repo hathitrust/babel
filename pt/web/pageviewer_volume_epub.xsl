@@ -227,7 +227,7 @@
         <xsl:attribute name="data-tracking-action">PT Download EPUB - whole book</xsl:attribute>
         <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
         <xsl:attribute name="href">
-          <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
+          <xsl:value-of select="$pViewTypeList/ViewTypeFullEpubLink"/>
         </xsl:attribute>
         <xsl:text>Download whole book (EPUB)</xsl:text>
       </xsl:element>
