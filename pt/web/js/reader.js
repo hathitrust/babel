@@ -582,6 +582,7 @@ HT.Reader = {
         self._updateLinkSeq($("#pageURL"), seq);
         self._updateLinkSeq($("input[name=seq]"), seq);
         self._updateLinkSeq($("#login-button"), seq);
+        self._updateLinkSeq($("#ssd-link"), seq);
     },
 
     _updateLinkSeq: function($link, seq) {
@@ -631,7 +632,11 @@ HT.Reader = {
         if ( ! $link.length ) { return ; }
         var href = $link.attr("href");
         var regex = new RegExp(key + "(=|%3D)");
-        if ( ! regex.test(href) ) {
+        if ( href.indexOf('#' + key) > -1 ) {
+            regex = new RegExp('#' + key + '\\d+');
+            href = href.replace(regex, '#' + key + value);
+            $link.attr('href', href);
+        } else if ( ! regex.test(href) ) {
             // key not in href
             var text = key + "=" + value;
             var target_href = href;
