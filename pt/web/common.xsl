@@ -1025,7 +1025,7 @@
   </xsl:template>
 
   <xsl:template name="download-links">
-    <xsl:param name="pViewTypeList" />
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess = 'allow'">
       <li>
         <xsl:element name="a">
@@ -1087,7 +1087,7 @@
               <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
               <xsl:attribute name="href">
                 <xsl:choose>
-                  <xsl:when test="$gLoggedIn = 'NO'">
+                  <xsl:when test="$gLoggedIn = 'NO' or $gFullPdfAccessMessage = ''">
                     <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
                   </xsl:when>
                   <xsl:otherwise>#</xsl:otherwise>
