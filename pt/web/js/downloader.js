@@ -39,8 +39,9 @@ HT.Downloader = {
     },
 
     explainPdfAccess: function(link) {
-        var $html = $("#noPdfAccess").html();
-        this.$dialog = bootbox.alert($html);
+        var html = $("#noDownloadAccess").html();
+        html = html.replace('{DOWNLOAD_LINK}', $(this).attr("href"));
+        this.$dialog = bootbox.alert(html);
         this.$dialog.addClass("login");
     },
 

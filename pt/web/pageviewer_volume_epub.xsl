@@ -222,6 +222,7 @@
       <xsl:element name="a">
         <xsl:attribute name="title">Download whole book (EPUB)</xsl:attribute>
         <xsl:attribute name="id">fullPdfLink</xsl:attribute>
+        <xsl:attribute name="data-title">EPUB</xsl:attribute>
         <xsl:attribute name="data-toggle">tracking-action download</xsl:attribute>
         <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
         <xsl:attribute name="data-tracking-action">PT Download EPUB - whole book</xsl:attribute>

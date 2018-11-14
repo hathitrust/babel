@@ -176,20 +176,20 @@ HT.Reader = {
 
         // dyanmic in every view
 
-        // var $btn_fullScreen = $("#action-toggle-fullscreen");
-        // $btn_fullScreen.on('click', function(e) {
-        //     e.preventDefault();
-        //     if ( screenfull.enabled ) {
-        //       // this._preResize();
-        //       // screenfull.toggle($(".container.page.centered").get(0));
-        //       self._manageFullScreen(true);
-        //     }
-        // })
-        this._bindAction("toggle.fullscreen", this._toggleFullScreen);
-        $(window).bind('fullscreen-toggle', function(e, state) { self._manageFullScreen(state); })
-                 .bind('fullscreen-on',     function(e)        { self._manageFullScreen(true)  })
-                 .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
-                 .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
+        var $btn_fullScreen = $("#action-toggle-fullscreen");
+        $btn_fullScreen.on('click', function(e) {
+            e.preventDefault();
+            if ( screenfull.enabled ) {
+              // this._preResize();
+              // screenfull.toggle($(".container.page.centered").get(0));
+              self._manageFullScreen(true);
+            }
+        })
+        // this._bindAction("toggle.fullscreen", this._toggleFullScreen);
+        // $(window).bind('fullscreen-toggle', function(e, state) { self._manageFullScreen(state); })
+        //          .bind('fullscreen-on',     function(e)        { self._manageFullScreen(true)  })
+        //          .bind('fullscreen-off',    function(e)        { self._manageFullScreen(false); })
+        //          .bind('fullscreen-key',    function(e, k, a)  { self._manageFullScreen() });
 
 
 
@@ -427,6 +427,16 @@ HT.Reader = {
         // }
 
         // return;
+
+        if ( $(window).width() <= 1400 ) {
+            var $sidebar = $(".sidebar");
+            $sidebar.hide("fast", function() {
+                $(window).scroll();
+            });
+        }
+
+        launchFullscreen(document.documentElement);
+        return;
         
         var $btn = $("#action-toggle-fullscreen");
         var $sidebar = $(".sidebar");
