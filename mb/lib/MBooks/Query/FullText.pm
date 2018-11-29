@@ -94,6 +94,49 @@ sub get_id_arr_ref
     my $self = shift;
     return $self->{'id_arr_ref'};
 }
+# ---------------------------------------------------------------------
+
+=item get_processed_user_query_string
+
+Overide base class to handle asterisk
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub get_processed_user_query_string {
+    my $self = shift;
+    my $query_string = shift;
+
+    my $user_query_string;
+
+    if (defined ($query_string))
+    {
+        $user_query_string= $query_string;
+    }
+    else
+    {
+        $user_query_string = $self->get_query_string();
+    }
+    #insert code from ls here
+    if ($user_query_string eq "*")
+    {
+	#do stuff in ls
+	
+        $user_query_string ='*:*';
+        # set various stuff to a-OK
+        #$self->set_unbalanced_quotes(0,1);
+        $self->set_processed_query_string('* = EVERYTHING',1);
+        $self->set_was_valid_boolean_expression(1);
+        $self->set_well_formed(1,1);
+	return $user_query_string;
+    }
+    else
+    {
+	$user_query_string = $self->SUPER::get_processed_user_query_string($query_string);
+    }
+    
+}
 
 # ---------------------------------------------------------------------
 
