@@ -270,7 +270,7 @@ sub P_redirect_HTTP
         print STDOUT CGI::redirect(
                                    -uri     => $url,
                                    -cookie  => $cookie,
-                                   -status  => 301,
+                                   -status  => 302,
                                   );
     }
 
