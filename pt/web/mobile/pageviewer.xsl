@@ -180,8 +180,7 @@
                 </p>
               </xsl:when>
               <xsl:otherwise>
-                <a href="{//ViewTypeFullPdfLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="PDF" rel="{$gFullPdfAccess}" id="fullPdfLink">Download PDF</a>
-                <a href="{//ViewTypeFullEpubLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="EPUB" rel="{$gFullPdfAccess}" id="epubLink">Download EPUB</a>
+                <xsl:call-template name="build-full-download-links" />
                 <xsl:if test="$gFullPdfAccessMessage = 'NOT_AFFILIATED'">
                   <p class="pdfPartnerLoginLinkMessage">Partner login required</p>
                 </xsl:if>
@@ -238,6 +237,11 @@
         <button class="btn btn-primary btn-large" data-dismiss="modal">OK</button>
       </div>
     </div>
+  </xsl:template>
+
+  <xsl:template name="build-full-download-links">
+    <a href="{//ViewTypeFullPdfLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="PDF" rel="{$gFullPdfAccess}" id="fullPdfLink">Download PDF</a>
+    <a href="{//ViewTypeFullEpubLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="EPUB" rel="{$gFullPdfAccess}" id="epubLink">Download EPUB</a>
   </xsl:template>
 
   <xsl:template name="build-info-panel">

@@ -87,7 +87,7 @@ head.ready(function() {
         }
     })
 
-    $("body").on('click', '.search-results > li', function(e) {
+    $("body").on('click', '.search-results li > a', function(e) {
         e.preventDefault();
         if ( $("body").is(".view-restricted") ) {
             return;
@@ -99,7 +99,13 @@ head.ready(function() {
         } else {
             $("#action-search-inside").click();
         }
-        $.publish("action.go.page", (seq));
+        // $.publish("action.go.page", (seq));
+        var href = $(this).attr('href');
+        var hash = href.split('#');
+        hash = hash.pop();
+        var cfi = "epubcfi(" + hash + ")";
+        console.log("AHOY HREF", $(this), href, cfi);
+        HT.reader.gotoPage(cfi);
     });
 
     $("#mdpTextDeny form").on('submit', function(e) {
@@ -205,6 +211,30 @@ head.ready(function() {
     //     HT.engines.reader.params = HT.params;
     // }
 
+    var vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+
+    $(window).on("resize", function() {
+        var vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', vh + 'px');
+    })
+
+    $(window).on("orientationchange", function() {
+        setTimeout(function() {
+            var vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', vh + 'px');
+            // alert(`AHOY orientationchange: ${vh}`);
+        }, 100);
+        // setTimeout(function() {
+        //     vh = window.innerHeight * 0.01;
+        //     alert(`AHOY orientationchange: ${vh}`);
+        // }, 1000);
+    })
+
+    window.addEventListener("orientationchange", function() {
+        // Announce the new orientation number
+        alert(window.orientation);
+    }, false);
 
     setTimeout(function() {
         $("#action-toggle-toolbars").click();

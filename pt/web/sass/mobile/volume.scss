@@ -1,5 +1,10 @@
 @import "../../../../common/web/unicorn/sass/base";
 
+html {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+}
+
 
 body {
     margin-top: 0;
@@ -174,6 +179,91 @@ body {
             height: 2400px !important;
         }
     }
+}
+
+.view-epub {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    margin-top: 0;
+
+    .container.page.centered {
+        height: 100%;
+        width: 100vw;
+        max-height: none;
+        max-width: 100vw;
+        grid-template-columns: 1fr;
+        margin: 0;
+        position: relative;
+        overflow: hidden;
+        grid-template-rows: 100vh;
+        grid-template-rows: calc(var(--vh, 1vh) * 100);
+    }
+
+    #main {
+        grid-column: 1;
+        padding-right: 0;
+        height: 100%;
+        width: 100%;
+    }
+
+    .cozy-container .cozy-panel-navigator {
+        width: 50%;
+        margin: 0 auto;
+    }
+
+    #scrolling {
+        background: #fff;
+    }
+
+    #content {
+        padding-top: 20px;
+    }
+
+    #search-page, #contents-page {
+        overflow: auto;
+        height: auto;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+
+        & > li ul {
+            width: 100%;
+            margin-right: 2%;
+            margin-top: 8px;            
+        }
+
+        & > li a {
+            width: 100%;
+            display: inline-block;
+            height: auto;
+            float: none;
+        }
+
+        & > li .mdpInnerList {
+            width: 100%;
+
+            a {
+                background-position: right 0% center;
+                padding-right: 40px;
+            }
+        }
+    }
+
+    .slider-park {
+        height: 0;
+    }
+
+    .cbp-spmenu-bottom {
+        margin-bottom: 30px;
+
+        &.cbp-spmenu-open {
+            margin-bottom: 0;
+        }
+    }
+
 }
 
 .slider-park {

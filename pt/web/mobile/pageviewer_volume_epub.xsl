@@ -17,12 +17,19 @@
 
   <xsl:template name="setup-extra-header-extra">
 
+    <xsl:if test="//Param[@name='debug'] = 'vorlon'">
+      <script src="http://141.211.43.136:1337/vorlon.js"></script>
+    </xsl:if>
+
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
     <script>
       COZY_EPUB_ENGINE_HREF = '/pt/vendor/cozy-sun-bear/vendor/javascripts/engines/epub.js';
     </script>
-    <script src="/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.js"></script>
-    <script src="/pt/mobile/epub_reader_mobile.js"></script>
+    <!-- <script src="/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.js{$timestamp}"></script> -->
+    <script>
+      head.js("/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.js?_=" + Date.now());
+    </script>
+    <script src="/pt/mobile/epub_reader_mobile.js{$timestamp}"></script>
 
     <link rel="stylesheet" href="/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.css" />
     <link rel="stylesheet" href="/pt/css/volume.css{$timestamp}" />
@@ -30,66 +37,8 @@
 
     <style>
       <xsl:text disable-output-escaping="yes">
-      .view-epub {
-        margin-top: 0;
-      }
 
-      .view-epub .container.page.centered {
-        max-height: 100vh;
-        width: 100vw;
-        height: 100vh;
-        max-width: 100vw;
-        grid-template-columns: 1fr;
-        margin: 0;
-        position: relative;
-      }
 
-      .view-epub #main {
-        grid-column: 1;
-        padding-right: 0;
-        height: 100vh; /* will need to change this for reals */
-        width: 100vw;
-      }
-
-      .view-epub .cozy-container .cozy-panel-navigator {
-        width: 50%;
-        margin: 0 auto;
-      }
-
-      .view-epub #scrolling {
-        background: #fff;
-      }
-
-      .view-epub #content {
-        padding-top: 20px;
-      }
-
-      .view-epub #search-page, .view-epub #contents-page {
-        overflow: auto;
-        height: auto;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 100;
-      }
-
-      /* #search-page .search-results>li a, #contents-page .search-results>li a */
-      .view-epub #search-page .search-results>li a {
-        width: 100%;
-        display: inline-block;
-        height: auto;
-      }
-
-      .view-epub #search-page .search-results>li .mdpInnerList {
-        width: 100%;
-      }
-
-      .view-epub #search-page .search-results>li .mdpInnerList a {
-        background-position: right 0% center;
-        padding-right: 40px;
-      }
       </xsl:text>
     </style>
   </xsl:template>
@@ -98,6 +47,11 @@
     <xsl:call-template name="build-search-inside" />
     <xsl:call-template name="build-contents" />
     <xsl:call-template name="main" />
+  </xsl:template>
+
+  <xsl:template name="build-full-download-links">
+    <!-- <a href="{//ViewTypeFullPdfLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="PDF" rel="{$gFullPdfAccess}" id="fullPdfLink">Download PDF</a> -->
+    <a href="{//ViewTypeFullEpubLink}" class="btn btn-full btn-inverse btn-large" data-toggle="download" data-title="EPUB" rel="{$gFullPdfAccess}" id="epubLink">Download EPUB</a>
   </xsl:template>
 
   <xsl:template name="xx-build-search-inside">

@@ -1,5 +1,10 @@
 head.ready(function() {
 
+  if ( HT.reader ) {
+    alert("AHOY DOUBLE EXECUTION");
+    return;
+  }
+
   function dig(el){
       $(el).contents().each(function(i,e){
           if (e.nodeType==1){
@@ -77,7 +82,9 @@ head.ready(function() {
     }
   }
 
-  var reader = cozy.reader('content', { href: book_href, flow: flow });
+  console.log("AHOY BEFORE cozy.reader", book_href);
+
+  var reader = cozy.reader('content', { href: book_href, flow: flow, mobileMediaQuery: '(min-device-width : 100px) and (max-device-width : 150px)' });
   HT.reader = reader;
 
   var $toolbar = $("#action-go-first").parent();
@@ -167,23 +174,25 @@ head.ready(function() {
     }
   })
 
-  screenfull.on('change', function() {
-    if ( screenfull.isFullscreen ) {
-      $("body").addClass("fullscreen");
-      $fullscreen_btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
-      $fullscreen_btn.addClas("active");
-      // $("#scrolling").css({ 'padding-top': '120px' });
-    } else {
-      $("body").removeClass("fullscreen");
-      // $("#scrolling").css({ 'padding-top': '' });
-      $fullscreen_btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
-      $fullscreen_btn.removeClass("active");
-      setTimeout(function() {
-        $(window).resize();
-        // HT.reader._rendition.resize();
-      }, 0);
-    }
-  })
+  if ( screenfull.enabled ) {
+    screenfull.on('change', function() {
+      if ( screenfull.isFullscreen ) {
+        $("body").addClass("fullscreen");
+        $fullscreen_btn.find(".icomoon-fullscreen").removeClass("icomoon-fullscreen").addClass("icomoon-fullscreen-exit");
+        $fullscreen_btn.addClas("active");
+        // $("#scrolling").css({ 'padding-top': '120px' });
+      } else {
+        $("body").removeClass("fullscreen");
+        // $("#scrolling").css({ 'padding-top': '' });
+        $fullscreen_btn.find(".icomoon-fullscreen-exit").removeClass("icomoon-fullscreen-exit").addClass("icomoon-fullscreen");
+        $fullscreen_btn.removeClass("active");
+        setTimeout(function() {
+          $(window).resize();
+          // HT.reader._rendition.resize();
+        }, 0);
+      }
+    })
+  }
 
   var _filter = function(list, parent_id, tabindex, parent) {
     var retval = [];
@@ -221,7 +230,7 @@ head.ready(function() {
       $span.css({ display: 'inline-block', 'padding-left': ( tabindex * 5 ) + 'px' });
       if ( item.subitems.length ) {
         // var $ul = $("<ul></ul>").appendTo($li);
-        _process_menu['mobile'](item.subitems, tabindex + 1, $ul);
+        _process_menu['mobile'](item.subitems, tabindex + 1, $parent);
       }
     })
   }
@@ -229,6 +238,7 @@ head.ready(function() {
   var $menu = $(".table-of-contents ul");
   reader.on('updateContents', function(data) {
     var fn = $("html").is(".mobile") ? "mobile" : "default";
+    fn = 'default';
     if ( data ) {
       _process_menu[fn](data.toc, 0, $menu);
     }
@@ -284,6 +294,7 @@ head.ready(function() {
 
   });
 
-  reader.start(start_cfi);
+  reader.start(start_cfi, function() {
+  });
 
 });
