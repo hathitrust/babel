@@ -1979,9 +1979,28 @@ sub _ls_wrap_result_data {
         };
         $access_status = 'deny'         
             if ($@);
-        
+
+
+	#----------------------------------------------------------------------
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
-        $s .= wrap_string_in_tag($fulltext_flag, 'fulltext');
+
+        #XXX new years hack
+	# check if item is in 1923 coll and if so overide
+
+	# get CO
+	my $co = $C->get_object('Collection');
+	my $coll_id= '149827760';
+	
+	if ($co->item_in_collection($id,$coll_id)){
+	    $fulltext_flag ='1';
+	    
+	}
+	#----------------------------------------------------------------------
+
+
+
+
+	$s .= wrap_string_in_tag($fulltext_flag, 'fulltext');
 
         my $record_no = $doc_data->{'record_no'};
         
