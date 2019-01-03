@@ -34,6 +34,8 @@ use Utils;
 use Namespaces;
 # for logging in json
 use JSON::XS;
+# for New Years hack
+use Date::Calc;
 
 
 BEGIN
@@ -1980,21 +1982,24 @@ sub _ls_wrap_result_data {
         $access_status = 'deny'         
             if ($@);
 
-
-	#----------------------------------------------------------------------
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
-
+	
+	#----------------------------------------------------------------------
         #XXX new years hack
 	# check if item is in 1923 coll and if so overide
 
+	my $config = $C->get_object('MdpConfig');	
 	# get CO
 	my $co = $C->get_object('Collection');
-	my $coll_id= '149827760';
-	
-	if ($co->item_in_collection($id,$coll_id)){
-	    $fulltext_flag ='1';
-	    
+	my $new_years_pd_coll_id = $config->get('new_years_pd_coll_id');
+	#my $coll_id= '149827760';
+	if (__now_in_date_range_new_years($C))
+	{
+	    if ($co->item_in_collection($id,$new_years_pd_coll_id)){
+		$fulltext_flag ='1';
+	    }
 	}
+	
 	#----------------------------------------------------------------------
 
 
@@ -2466,7 +2471,48 @@ sub __truncate_ary_ref
 }
 
 #----------------------------------------------------------------------
+### New Years Hack for full view label
+# ---------------------------------------------------------------------
+sub __now_in_date_range_new_years
+{
 
+    my $C                  = shift;
+    my $config             = $C->get_object('MdpConfig');
+    my $pd_check_start_date = $config->get('pd_check_start_date');
+    my $pd_check_end_date   = $config->get('pd_check_end_date');
+    my $start_ary          = __datetime_string_to_array_ref($pd_check_start_date);
+    my $end_ary            = __datetime_string_to_array_ref($pd_check_end_date);
+
+    # $t? param true= use gmt, no param = local??
+    #XXX fix bug in slip-lib/Result/Query!!!
+    
+    my @now_date   = Date::Calc::Today_and_Now();
+    my $pd_start_time = Date::Calc::Date_to_Time(@{$start_ary});
+    my $pd_end_time   = Date::Calc::Date_to_Time(@{$end_ary});
+    my $now_time   =  Date::Calc::Date_to_Time(@now_date);
+					      
+    if ($now_time >=$pd_start_time && $now_time < $pd_end_time)
+    {				      					      
+   	return (1);
+    }
+    return (0);				      
+}
+# ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
+sub __datetime_string_to_array_ref
+{
+    my $date_string = shift;
+    my ($date_part, $time_part) = split(/\s+/,$date_string);
+    my @date=split(/\-/,$date_part);
+    my @time=split(/\:/,$time_part);
+    my @out = (@date,@time);
+    return \@out;
+}
+
+# ---------------------------------------------------------------------
+
+#
 1;
 
 __END__
