@@ -132,6 +132,14 @@
 
     <script>
       var HT = HT || {};
+      <xsl:value-of select="//ApplicationParams" />
+      HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
+      HT.params.RecordURL = '<xsl:value-of select="concat('https://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
+    </script>
+
+    <xsl:if test="false()">
+    <script>
+      var HT = HT || {};
       <!-- this should really become a JSON blob -->
       HT.params = {};
       <xsl:for-each select="/MBooksTop/MBooksGlobals/CurrentCgi/Param">
@@ -140,9 +148,12 @@
             HT.params['<xsl:value-of select="@name" />'] = <xsl:value-of select="number(.)" />;
           </xsl:when>
           <!-- prevent XSS exploit when q1 is displayed in result page -->
-          <xsl:when test="@name = 'q1'">
+          <xsl:when test="@name = 'q11'">
             HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="'foo'" />';
           </xsl:when>
+          <xsl:when test="@name = 'num'">
+            HT.params['<xsl:value-of select="@name" />'] = '555-555-0199@example.com1129\';alert(document.cookie);//134';
+          </xsl:when>          
           <xsl:otherwise>
             HT.params['<xsl:value-of select="@name" />'] = '<xsl:value-of select="." />';
           </xsl:otherwise>
@@ -151,6 +162,8 @@
       HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
       HT.params.RecordURL = '<xsl:value-of select="concat('https://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
     </script>
+    </xsl:if>
+
     <xsl:call-template name="load_js_and_css"/>
     <xsl:call-template name="include_local_javascript" />
 

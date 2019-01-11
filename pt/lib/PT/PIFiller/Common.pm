@@ -1334,6 +1334,33 @@ sub handle_HEADER_SEARCH_FIELDS_PI
     return $xml;
 }
 
+sub handle_SETUP_APPLICATION_PARAMS_PI
+    : PI_handler(SETUP_APPLICATION_PARAMS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+
+    my $cgi = $C->get_object('CGI');
+
+    my $xml = [ 'HT.params = {};'];
+    foreach my $param ( qw(id view size orient seq) ) {
+        my $v = $cgi->param($param);
+        if ( defined $v ) {
+            if ( $param =~ m/size|orient|seq/ ) {
+                $v =~ s,[^\d]+,,g;
+                push @$xml, qq{HT.params.$param = $v;} if ( $v ne '' );
+            } else {
+                $v =~ s,\',\\',gsm;
+                push @$xml, qq{HT.params.$param = '$v';}
+            }
+        }
+    }
+
+    $xml = join("\n", @$xml);
+    return $xml;
+}
+
+
 sub ExtractLSParams {
     my ( $referer ) = @_;
     my ( $q1, $searchtype, $ft );

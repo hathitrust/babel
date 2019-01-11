@@ -483,7 +483,7 @@ sub WrapFragmentSearchResultsInXml {
                 wrap_string_in_tag($chapter_title, 'Label');
 
         my $idref = $$idref_map{$seq};
-        my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]!/1");
+        my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]!/4");
         # $temperCgi->param('num', join('/', @$offset));
         my $temperCgi = new CGI($tempCgi);
         # $temperCgi->param('num', $cfi_path);

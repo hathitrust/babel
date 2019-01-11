@@ -98,6 +98,8 @@
       <?FEEDBACK_CGI_URL?>
     </FeedbackForm>
 
+    <ApplicationParams><?SETUP_APPLICATION_PARAMS?></ApplicationParams>
+
     <DownloadProgressBase><?DOWNLOAD_PROGRESS_BASE?></DownloadProgressBase>
 
   </MdpApp>

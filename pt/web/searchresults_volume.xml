@@ -94,6 +94,8 @@
       <CollectionSelect><?COLLECTION_SELECT?></CollectionSelect>
     </AddToCollectionForm>
 
+    <ApplicationParams><?SETUP_APPLICATION_PARAMS?></ApplicationParams>
+
     <DownloadProgressBase><?DOWNLOAD_PROGRESS_BASE?></DownloadProgressBase>
 
   </MdpApp>

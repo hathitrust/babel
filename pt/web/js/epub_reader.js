@@ -76,7 +76,7 @@ head.ready(function() {
     console.log("AHOY STARTING WITH", location.hash, start_cfi);
     // location.hash = "";
   } else {
-    if ( sessionStorage.getItem('id') == HT.params.id ) {
+    if ( 0 && sessionStorage.getItem('id') == HT.params.id ) {
       start_cfi = "epubcfi(" + sessionStorage.getItem('hash').substr(1) + ")";
       console.log("AHOY STARTING WITH SAVED", start_cfi);
     }
