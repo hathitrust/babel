@@ -15,13 +15,13 @@
   <!-- Global Variables -->
   <xsl:variable name="gCurrentPageFeatures" select="/MBooksTop/MdpApp/CurrentPageFeatures"/>
   <xsl:variable name="gUsingBookReader">true</xsl:variable>
-  <xsl:variable name="gCurrentView">paginated</xsl:variable>
+  <xsl:variable name="gCurrentView" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']" />
 
   <xsl:template name="setup-extra-header-extra">
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
     <script>
-      COZY_EPUB_ENGINE_HREF = '/pt/vendor/cozy-sun-bear/vendor/javascripts/engines/epub.js';
+      // COZY_EPUB_ENGINE_HREF = '/pt/vendor/cozy-sun-bear/vendor/javascripts/engines/epub.js';
     </script>
     <script src="/pt/vendor/cozy-sun-bear/dist/cozy-sun-bear.js"></script>
 
@@ -68,7 +68,7 @@
       </h2>
       <xsl:call-template name="toolbar-horizontal" />
       <xsl:call-template name="toolbar-vertical" />
-      <div id="scrolling">
+      <div id="slot">
         <xsl:call-template name="page-content" />
       </div>
     </div>
@@ -98,10 +98,10 @@
       <div class="options">
         <div class="btn-group btn-group-vertical action-views">
           <xsl:call-template name="action-view-button">
-            <xsl:with-param name="view">scrolled-doc</xsl:with-param>
+            <xsl:with-param name="view">1up</xsl:with-param>
           </xsl:call-template>
           <xsl:call-template name="action-view-button">
-            <xsl:with-param name="view">paginated</xsl:with-param>
+            <xsl:with-param name="view">2up</xsl:with-param>
           </xsl:call-template>
 <!--           <xsl:call-template name="action-view-button">
             <xsl:with-param name="view">plaintext</xsl:with-param>
@@ -130,8 +130,8 @@
     <xsl:param name="view" />
     <xsl:variable name="options">
       <h:select>
-        <h:option name="scrolled-doc" value="icomoon icomoon-scroll">Scroll</h:option>
-        <h:option name="paginated" value="icomoon icomoon-book-alt2">Flip</h:option>
+        <h:option name="1up" value="icomoon icomoon-scroll">Scroll</h:option>
+        <h:option name="2up" value="icomoon icomoon-book-alt2">Flip</h:option>
         <!-- <h:option name="plaintext" value="icomoon icomoon-article" accesskey="5">Plain Text</h:option> -->
       </h:select>
     </xsl:variable>

@@ -14,7 +14,7 @@ head.ready(function() {
         return;
     }
 
-    if ( $("body").is(".view-image") || $("body").is(".view-plaintext") ) {
+    if ( $("body").is(".view-image") || $("body").is(".view-plaintext") || $("body").is(".view-epub") ) {
         return; // don't bother
     }
 

@@ -5,6 +5,12 @@ head.ready(function() {
     return;
   }
 
+  var VIEW_FLOW_MAP = {};
+  VIEW_FLOW_MAP['1up'] = 'scrolled-doc';
+  VIEW_FLOW_MAP['2up'] = 'paginated';
+  VIEW_FLOW_MAP['thumb'] = 'paginated';
+  VIEW_FLOW_MAP['plaintext'] = 'paginated';
+
   function dig(el){
       $(el).contents().each(function(i,e){
           if (e.nodeType==1){
@@ -54,17 +60,36 @@ head.ready(function() {
 
   console.log("AHOY READER");
   var book_href = $("html").data('epub-root');
-  var flow = 'paginated';
+  var prefs = HT.prefs.get();
+  var flow;
+  var prefs = sessionStorage.getItem('pt.epub');
+  if ( prefs && prefs.view ) {
+    flow = VIEW_FLOW_MAP[prefs.view];
+  } else {
+    var view = $("a[data-target].active").data('target');
+    var regex = 'view=' + view;
+    if ( ! window.location.href.match(regex) ) {
+      view = '2up';
+      $("a[data-target].active").removeClass('active');
+      $("a[data-target=2up]").addClass('active');
+    }
+    flow = VIEW_FLOW_MAP[view];
+  }
 
   var $container = $("#main").parent();
 
-  var $sidebar_scrollable = $("#sidebar .scrollable");
-  var $sidebar_biblinks = $("#sidebar .bibLinks");
-  if ( $sidebar_biblinks.length ) {
-    $sidebar_biblinks.css({ position: 'fixed', width: $("#sidebar").width() - 0 });
-    $sidebar_scrollable.css({ paddingTop: $sidebar_biblinks.outerHeight() + 0 });
+  var $sidebar = $("#sidebar");
+  if ( $sidebar.length ) {
+    $("#sidebar").css({ maxHeight: '90%', position: 'relative' });
+    $("#sidebar .sidebar-wrap").css({ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 });
+    var $sidebar_scrollable = $("#sidebar .scrollable");
+    var $sidebar_biblinks = $("#sidebar .bibLinks");
+    if ( $sidebar_biblinks.length ) {
+      $sidebar_biblinks.css({ position: 'fixed', width: $("#sidebar").width() - 0 });
+      $sidebar_scrollable.css({ marginTop: $sidebar_biblinks.outerHeight() - 0, paddingBottom: 0 });
+    }
   }
-
+  
   var start_cfi;
   // if ( HT.params.num ) {
   //   start_cfi = "epubcfi(" + HT.params.num + ")";
@@ -96,32 +121,38 @@ head.ready(function() {
   }
   cozy.control.navigator({ region: 'bottom.navigator' }).addTo(reader);
 
-  $("#action-go-prev").on('click', function() {
+  $("#action-go-prev").on('click', function(e) {
+    e.preventDefault();
     reader.prev();
   })
 
-  $("#action-go-next").on('click', function() {
+  $("#action-go-next").on('click', function(e) {
+    e.preventDefault();
     reader.next();
   })
 
   // because HT doesn't have a _preferences_ panel, per se
   var resetFlow = function(btn) {
     target = reader.currentLocation();
-    $("a[data-target].active").removeClass("active");
+    $(".action-views a[data-target].active").removeClass("active");
     $(btn).addClass("active");
-    var flow = $(btn).data('target');
+    var view = $(btn).data('target');
+    var prefs = sessionStorage.getItem('pt.epub') || {};
+    prefs.view = view;
+    sessionStorage.setItem('pt.epub', prefs);
+    flow = VIEW_FLOW_MAP[view];
     // $("body").removeClass("view-1up").removeClass("view-2up").addClass("view-" + cls);
-    if ( flow == 'scrolled-doc' ) { manager = 'continuous'; }
+    // if ( flow == 'scrolled-doc' ) { manager = 'continuous'; }
     reader.reopen({ flow: flow });
   }
 
-  $("a[data-target=scrolled-doc]").on('click', function(e) {
+  $("a[data-target=1up]").on('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     resetFlow(this);
   })
 
-  $("a[data-target=paginated]").on('click', function(e) {
+  $("a[data-target=2up]").on('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     resetFlow(this);
@@ -293,6 +324,18 @@ head.ready(function() {
     $("#pageURL").val(base_href + '?urlappend=%23' + window.location.hash);
 
   });
+
+  // window.scrollTo = function(a, b) {
+  //   console.log("AHOY scrollTo", a, b);
+  // }
+
+  // window.scrollBy = function() {
+  //   console.log("AHOY scrollBy", arguments);
+  // }
+
+  // $("#sidebar").hide();
+  // $("#sidebar .scrollable").css({ 'padding-top': 0 });
+  $("html").css({ height: '100vh', width: '100vw', overflow: 'hidden' });
 
   reader.start(start_cfi, function() {
   });

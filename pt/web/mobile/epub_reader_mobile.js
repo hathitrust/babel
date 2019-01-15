@@ -101,11 +101,15 @@ head.ready(function() {
         }
         // $.publish("action.go.page", (seq));
         var href = $(this).attr('href');
-        var hash = href.split('#');
-        hash = hash.pop();
-        var cfi = "epubcfi(" + hash + ")";
-        console.log("AHOY HREF", $(this), href, cfi);
-        HT.reader.gotoPage(cfi);
+        if ( $(this).parents("#contents-page").length ) {
+
+        } else {
+            var hash = href.split('#');
+            hash = hash.pop();
+            href = "epubcfi(" + hash + ")";
+        }
+        console.log("AHOY HREF", $(this), href);
+        HT.reader.gotoPage(href);
     });
 
     $("#mdpTextDeny form").on('submit', function(e) {
@@ -233,7 +237,7 @@ head.ready(function() {
 
     window.addEventListener("orientationchange", function() {
         // Announce the new orientation number
-        alert(window.orientation);
+        // alert(window.orientation);
     }, false);
 
     setTimeout(function() {

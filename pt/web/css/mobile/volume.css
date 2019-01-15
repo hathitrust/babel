@@ -164,40 +164,26 @@ body {
   height: calc(var(--vh, 1vh) * 100);
   margin-top: 0;
 }
-/* line 189, ../../sass/mobile/volume.scss */
-.view-epub .container.page.centered {
-  height: 100%;
-  width: 100vw;
-  max-height: none;
-  max-width: 100vw;
-  grid-template-columns: 1fr;
-  margin: 0;
-  position: relative;
-  overflow: hidden;
-  grid-template-rows: 100vh;
-  grid-template-rows: calc(var(--vh, 1vh) * 100);
-}
-/* line 202, ../../sass/mobile/volume.scss */
-.view-epub #main {
-  grid-column: 1;
-  padding-right: 0;
-  height: 100%;
-  width: 100%;
-}
 /* line 209, ../../sass/mobile/volume.scss */
 .view-epub .cozy-container .cozy-panel-navigator {
   width: 50%;
   margin: 0 auto;
 }
 /* line 214, ../../sass/mobile/volume.scss */
+.view-epub .container.page.centered {
+  width: 100vw;
+  height: 100%;
+  min-height: 100%;
+}
+/* line 220, ../../sass/mobile/volume.scss */
 .view-epub #scrolling {
   background: #fff;
 }
-/* line 218, ../../sass/mobile/volume.scss */
+/* line 224, ../../sass/mobile/volume.scss */
 .view-epub #content {
   padding-top: 20px;
 }
-/* line 222, ../../sass/mobile/volume.scss */
+/* line 228, ../../sass/mobile/volume.scss */
 .view-epub #search-page, .view-epub #contents-page {
   overflow: auto;
   height: auto;
@@ -208,48 +194,48 @@ body {
   right: 0;
   z-index: 100;
 }
-/* line 232, ../../sass/mobile/volume.scss */
-.view-epub #search-page > li ul, .view-epub #contents-page > li ul {
+/* line 239, ../../sass/mobile/volume.scss */
+.view-epub #search-page .search-results > li ul, .view-epub #contents-page .search-results > li ul {
   width: 100%;
   margin-right: 2%;
   margin-top: 8px;
 }
-/* line 238, ../../sass/mobile/volume.scss */
-.view-epub #search-page > li a, .view-epub #contents-page > li a {
+/* line 245, ../../sass/mobile/volume.scss */
+.view-epub #search-page .search-results > li a, .view-epub #contents-page .search-results > li a {
   width: 100%;
   display: inline-block;
   height: auto;
   float: none;
 }
-/* line 245, ../../sass/mobile/volume.scss */
-.view-epub #search-page > li .mdpInnerList, .view-epub #contents-page > li .mdpInnerList {
+/* line 252, ../../sass/mobile/volume.scss */
+.view-epub #search-page .search-results > li .mdpInnerList, .view-epub #contents-page .search-results > li .mdpInnerList {
   width: 100%;
 }
-/* line 248, ../../sass/mobile/volume.scss */
-.view-epub #search-page > li .mdpInnerList a, .view-epub #contents-page > li .mdpInnerList a {
+/* line 255, ../../sass/mobile/volume.scss */
+.view-epub #search-page .search-results > li .mdpInnerList a, .view-epub #contents-page .search-results > li .mdpInnerList a {
   background-position: right 0% center;
   padding-right: 40px;
 }
-/* line 255, ../../sass/mobile/volume.scss */
+/* line 263, ../../sass/mobile/volume.scss */
 .view-epub .slider-park {
   height: 0;
 }
-/* line 259, ../../sass/mobile/volume.scss */
+/* line 267, ../../sass/mobile/volume.scss */
 .view-epub .cbp-spmenu-bottom {
   margin-bottom: 30px;
 }
-/* line 262, ../../sass/mobile/volume.scss */
+/* line 270, ../../sass/mobile/volume.scss */
 .view-epub .cbp-spmenu-bottom.cbp-spmenu-open {
   margin-bottom: 0;
 }
 
-/* line 269, ../../sass/mobile/volume.scss */
+/* line 277, ../../sass/mobile/volume.scss */
 .slider-park {
   height: 30px;
   background: #555;
 }
 
-/* line 276, ../../sass/mobile/volume.scss */
+/* line 284, ../../sass/mobile/volume.scss */
 .slider.slider-horizontal {
   height: 30px;
   width: 100%;
@@ -260,7 +246,7 @@ body {
   position: relative;
   margin-top: 0;
 }
-/* line 287, ../../sass/mobile/volume.scss */
+/* line 295, ../../sass/mobile/volume.scss */
 .slider.slider-horizontal .slider-track {
   height: 10px;
   width: 98%;
@@ -272,26 +258,26 @@ body {
   margin-left: -49%;
   background: #ccc;
 }
-/* line 298, ../../sass/mobile/volume.scss */
+/* line 306, ../../sass/mobile/volume.scss */
 .slider.slider-horizontal .slider-track .slider-handle {
   background-color: #EEE;
   opacity: 1.0;
 }
 
-/* line 310, ../../sass/mobile/volume.scss */
+/* line 318, ../../sass/mobile/volume.scss */
 .tooltip.in {
   opacity: 0.8;
   filter: alpha(opacity=80);
   z-index: 5000;
 }
 
-/* line 316, ../../sass/mobile/volume.scss */
+/* line 324, ../../sass/mobile/volume.scss */
 .tooltip.top {
   padding: 5px 0;
   margin-top: -3px;
 }
 
-/* line 321, ../../sass/mobile/volume.scss */
+/* line 329, ../../sass/mobile/volume.scss */
 input.nob {
   margin: 0;
   padding: 0;
@@ -300,7 +286,7 @@ input.nob {
 
 /* MEDIA QUERIES */
 @media only screen and (max-width: 480px) {
-  /* line 332, ../../sass/mobile/volume.scss */
+  /* line 340, ../../sass/mobile/volume.scss */
   .view-1up .page-item {
     width: 320px;
     height: 473px;
@@ -308,7 +294,7 @@ input.nob {
     margin-bottom: 0.1em;
   }
 
-  /* line 343, ../../sass/mobile/volume.scss */
+  /* line 351, ../../sass/mobile/volume.scss */
   .view-plaintext #content .page-item {
     width: 98%;
     height: 473px;
@@ -316,37 +302,37 @@ input.nob {
     font-size: 16px ;
     font-size: 1.6rem ;
   }
-  /* line 352, ../../sass/mobile/volume.scss */
+  /* line 360, ../../sass/mobile/volume.scss */
   .view-plaintext.zoom50 .page-item {
     font-size: 12px !important;
     font-size: 1.2rem !important;
     height: 236px !important;
   }
-  /* line 359, ../../sass/mobile/volume.scss */
+  /* line 367, ../../sass/mobile/volume.scss */
   .view-plaintext.zoom75 .page-item {
     font-size: 14px !important;
     font-size: 1.4rem !important;
     height: 354px !important;
   }
-  /* line 366, ../../sass/mobile/volume.scss */
+  /* line 374, ../../sass/mobile/volume.scss */
   .view-plaintext.zoom125 .page-item {
     font-size: 18px !important;
     font-size: 1.8rem !important;
     height: 592px !important;
   }
-  /* line 374, ../../sass/mobile/volume.scss */
+  /* line 382, ../../sass/mobile/volume.scss */
   .view-plaintext.zoom150 .page-item {
     font-size: 20px !important;
     font-size: 2rem !important;
     height: 710px !important;
   }
-  /* line 382, ../../sass/mobile/volume.scss */
+  /* line 390, ../../sass/mobile/volume.scss */
   .view-plaintext.zoom175 .page-item {
     font-size: 24px !important;
     font-size: 2.4rem !important;
     height: 828px !important;
   }
-  /* line 389, ../../sass/mobile/volume.scss */
+  /* line 397, ../../sass/mobile/volume.scss */
   .view-plaintext.zoom200 .page-item {
     font-size: 38px !important;
     font-size: 3.8rem !important;
