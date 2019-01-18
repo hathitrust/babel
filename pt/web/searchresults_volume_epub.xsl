@@ -87,6 +87,17 @@
         <xsl:call-template name="BuildFisheyeTable" />
       </xsl:if>
     </div>
+
+    <script>
+      <xsl:text disable-output-escaping="yes">
+        head.ready(function() {
+        $("[data-highlight]").on('click', function() {
+          var highlight = $(this).data('highlight');
+          sessionStorage.setItem('highlight', JSON.stringify(highlight));
+        })
+        })
+      </xsl:text>
+    </script>
   </xsl:template>
 
   <!-- Messages -->
@@ -192,6 +203,9 @@
                   <xsl:attribute name="href">
                     <xsl:value-of select="Link"/>
                   </xsl:attribute>
+                  <xsl:attribute name="data-highlight">
+                    <xsl:value-of select="Highlight"/>
+                  </xsl:attribute>
                   <xsl:value-of select="$page_label"/>
                 </xsl:element>
               </xsl:when>
@@ -220,7 +234,7 @@
               <xsl:for-each select="Result">
                 <!-- <li><a href="{Link}">VISIT</a><xsl:text> </xsl:text>&#x2026;<xsl:apply-templates select="Kwic"/>&#x2026;</li> -->
                 <li>
-                  <a href="{Link}">
+                  <a href="{Link}" data-highlight="{Highlight}">
                     <span class="visit">➤</span>
                     <xsl:text> </xsl:text>
                     <xsl:text>&#x2026;</xsl:text>

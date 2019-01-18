@@ -34,6 +34,8 @@ use POSIX qw(floor ceil);
 use File::Basename qw();
 use List::MoreUtils;
 
+use JSON::XS;
+
 # Number of allowed links for pagination. Set this so page links fit on one line.
 use constant MAX_PAGELABELS=>11;
 
@@ -465,21 +467,6 @@ sub WrapFragmentSearchResultsInXml {
             }
         } 
 
-        $XML_result .=
-          qq{<Page>\n} .
-            wrap_string_in_tag($seq, 'Sequence') .
-              wrap_string_in_tag($pgnum, 'PageNumber') .
-                wrap_string_in_tag($chapter_title, 'Label');
-
-        my $idref = $$idref_map{$seq};
-        my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]");
-        # $temperCgi->param('num', join('/', @$offset));
-        my $temperCgi = new CGI($tempCgi);
-        $temperCgi->param('num', $cfi_path);
-        my $href = Utils::url_to($temperCgi, $PTGlobals::gPageturnerCgiRoot);
-
-        $XML_result .= wrap_string_in_tag($href, 'Link');
-
         my @matched_words = ();
         foreach my $snip_ref ( @$snip_list ) {
             my @matched = $$snip_ref =~ /\[\[([^\]]+)\]\]/g;
@@ -487,8 +474,25 @@ sub WrapFragmentSearchResultsInXml {
         }
 
         @matched_words = List::MoreUtils::distinct(@matched_words);
-
         print STDERR "AHOY WRAP @matched_words\n";
+
+        $XML_result .=
+          qq{<Page>\n} .
+            wrap_string_in_tag($seq, 'Sequence') .
+              wrap_string_in_tag($pgnum, 'PageNumber') .
+                wrap_string_in_tag($chapter_title, 'Label');
+
+        my $idref = $$idref_map{$seq};
+        my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]!/1");
+        # $temperCgi->param('num', join('/', @$offset));
+        my $temperCgi = new CGI($tempCgi);
+        # $temperCgi->param('num', $cfi_path);
+        my $href = Utils::url_to($temperCgi, $PTGlobals::gPageturnerCgiRoot);
+        $href .= '#' . $cfi_path;
+
+        $XML_result .= wrap_string_in_tag($href, 'Link');
+        $XML_result .= wrap_string_in_tag(JSON::XS::encode_json(\@matched_words), 'Highlight');
+
         my $expr = join('|', map { qr/\Q$_/i } @matched_words);
         my @nodes = map { [ [4], $_ ] } $xpc->findnodes(".//xhtml:body", $chapter);
         my @possibles = ();
@@ -560,20 +564,21 @@ sub WrapFragmentSearchResultsInXml {
 
             $XML_result .= '<Result>';
 
-            $XML_result .= wrap_string_in_tag(join('|', @matched_words), 'Highlight');
+            # $XML_result .= wrap_string_in_tag(join('|', @matched_words), 'Highlight');
             my $temperCgi = new CGI($tempCgi);
 
             my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]") . "!/" . join("/", @$offset) . "/1:0";
             # $temperCgi->param('num', $cfi_path);
-            $temperCgi->param('h', join(':', @matched_words));
+            # $temperCgi->param('h', join(':', @matched_words));
             my $href = Utils::url_to($temperCgi, $PTGlobals::gPageturnerCgiRoot);
 
             # my $hash = qq{/$chapter_filename};
             # $hash =~ s,$epub_pathname,,;
             my $hash = $cfi_path;
-            $href .= '#' . $hash;
+            # $href .= '#' . $hash;
 
-            $XML_result .= wrap_string_in_tag($href, 'Link');
+            $XML_result .= wrap_string_in_tag("$href#$cfi_path", 'Link');
+            $XML_result .= wrap_string_in_tag(JSON::XS::encode_json(\@matched_words), 'Highlight');
 
             # escape entities and ampersands
             $content =~ s,&([\#a-z0-9A-Z]+);,__AMP__$1__SEMI__,gsm;

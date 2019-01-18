@@ -69,7 +69,7 @@ head.ready(function() {
   if ( location.hash && location.hash.startsWith("#/6") ) {
     start_cfi = "epubcfi(" + location.hash.substr(1) + ")";
     console.log("AHOY STARTING WITH", location.hash, start_cfi);
-    location.hash = "";
+    // location.hash = "";
   } else {
     if ( sessionStorage.getItem('id') == HT.params.id ) {
       start_cfi = "epubcfi(" + sessionStorage.getItem('hash').substr(1) + ")";
@@ -240,10 +240,11 @@ head.ready(function() {
     reader.gotoPage(target);
   })
 
-  var highlights = HT.params.h;
-  if ( highlights ) { highlights = highlights.split(":"); }
+  var highlights = sessionStorage.getItem('highlight') || '[]';
+  if ( highlights ) { highlights = JSON.parse(highlights); }
   else { highlights = []; }
   var highlighted = {};
+  sessionStorage.removeItem('highlight');
 
   // highlights = [ 'Russian Futurism', 'successivity', 'Šklovskij' ]; // 'Šklovskij', 
   
