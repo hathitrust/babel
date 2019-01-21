@@ -1123,6 +1123,7 @@
   </xsl:template>
 
   <xsl:template name="no-download-access">
+    <xsl:param name="type" select="'PDF'" />
     <xsl:if test="$gFullPdfAccess = 'deny'">
       <div id="noDownloadAccess" style="display: none">
         <xsl:choose>
