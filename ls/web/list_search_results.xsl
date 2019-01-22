@@ -1880,7 +1880,7 @@ REMOVE the below and see if it will call list_utils
 
         <xsl:if test="$num_queued > 0">
           <xsl:value-of select="$num_queued"/><xsl:value-of select="$num_queued_verb"/>
-          <xsl:text> queued to be indexed, usually within 48 hours.</xsl:text>
+	  <xsl:text> queued to be indexed, usually within 1-5 days.</xsl:text>
         </xsl:if>
       </div>
     </xsl:if>
