@@ -138,6 +138,11 @@
           <div style="margin-top: 16px; position: relative">
             <h4>Log in with:</h4>
 
+            <div class="alert alert-warning alert-block">
+              <h5 style="margin-top: 0; font-size: 120%">Login to HathiTrust via Yahoo is currently unavailable.</h5>
+              <p style="margin-top: 0">Yahoo is working on the problem, and there is no estimate for when service will be restored.</p>
+            </div>
+
             <ul class="unstyled">
               <xsl:apply-templates select="SocialIdP_List/IdP_Site" />
               <li>
