@@ -48,6 +48,7 @@ use utf8;
 delete $INC{"MBooks/Operation/OpListUtils.pl"};
 require "MBooks/Operation/OpListUtils.pl";
 
+use Auth::Logging;
 use MBooks::Utils::ResultsCache;
 
 sub new
@@ -97,7 +98,7 @@ sub execute_operation
     # TODO:  Break this up into a bunch of methods called by execute_operation
     my $self = shift;
     my $C = shift;
-    
+
     $self->SUPER::execute_operation($C);
 
     DEBUG('op', qq{execute operation="ListItems"});
@@ -142,8 +143,8 @@ sub execute_operation
     my $rights_ref = $self->get_rights($C);
 
     # Result object
-    my $rs;
-    if ( defined $cgi->param('q1') ) {
+    my $rs; my $q1;
+    if ( $q1 = defined $cgi->param('q1') ) {
         my $search_result_object = MBooks::Utils::ResultsCache->new($C, $coll_id)->get();
         $rs = $$search_result_object{result_object};
     }
@@ -236,6 +237,13 @@ sub execute_operation
     Utils::add_header($C, 'Cookie' => qq{download$coll_id=1; Path=/});
     # Utils::add_header($C, 'Cookie' => qq{downloadStarted=1});
     $act->set_transient_facade_member_data($C, 'output', $fh);
+
+    my $request_uri = qq{$ENV{REQUEST_URI}?a=download;c=$coll_id;format=$format};
+    if ( defined $q1 && $q1 ) { $request_uri .= "q1=$q1"; }
+    if ( defined $cgi->param('lmt') ) { $request_uri .= ";lmt=" . $cgi->param('lmt'); }
+    Auth::Logging::log_access($C, 'mb', undef, {
+        REQUEST_URI => $request_uri
+    });
 
     return $ST_OK;
 }
