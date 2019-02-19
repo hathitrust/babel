@@ -100,9 +100,9 @@
           </xsl:when>
           <xsl:otherwise>
             <xsl:text>Full view is not available for this item due to copyright &#169; restrictions.</xsl:text>
-            <xsl:if test="$gLoggedIn='NO'">
+            <!-- <xsl:if test="$gLoggedIn='NO'">
               <xsl:text>  Snippets may be available for some items if you log in.</xsl:text>
-            </xsl:if>
+            </xsl:if> -->
           </xsl:otherwise>
         </xsl:choose>
       </div>
@@ -411,20 +411,22 @@
   </xsl:template>
 
   <xsl:template name="backToBeginning">
-    <div class="mdpGoToBeginning">
-      <span>
-       <xsl:element name="img">
-         <xsl:attribute name="src">//common-web/graphics/triangle_left.gif</xsl:attribute>
-         <xsl:attribute name="alt"> </xsl:attribute>
-       </xsl:element>
-      </span>
-      <xsl:element name="a">
-        <xsl:attribute name="href">
-        <xsl:value-of select="$gBeginningLink"/>
-        </xsl:attribute>
-        Go to the beginning of the book
-      </xsl:element>
-    </div>
+    <xsl:if test="$gFinalAccessStatus = 'allow'">
+      <div class="mdpGoToBeginning">
+        <span>
+         <xsl:element name="img">
+           <xsl:attribute name="src">//common-web/graphics/triangle_left.gif</xsl:attribute>
+           <xsl:attribute name="alt"> </xsl:attribute>
+         </xsl:element>
+        </span>
+        <xsl:element name="a">
+          <xsl:attribute name="href">
+          <xsl:value-of select="$gBeginningLink"/>
+          </xsl:attribute>
+          Go to the beginning of the book
+        </xsl:element>
+      </div>
+    </xsl:if>
   </xsl:template>
 
 </xsl:stylesheet>
