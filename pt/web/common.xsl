@@ -376,16 +376,25 @@
 
   <!-- METADATA: published metadata helper -->
   <xsl:template name="MetadataPublishedHelper">
-    <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='a']">
-      <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='a']"/>
-      &#x20;
+    <xsl:if test="normalize-space($gMdpMetadata/datafield[@tag='260'])">
+      <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='a']">
+        <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='a']"/>
+        &#x20;
+      </xsl:if>
+      <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='b']">
+        <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='b']"/>
+        &#x20;
+      </xsl:if>
+      <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']">
+        <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']"/>
+      </xsl:if>
     </xsl:if>
-    <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='b']">
-      <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='b']"/>
-      &#x20;
-    </xsl:if>
-    <xsl:if test="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']">
-      <xsl:value-of select="$gMdpMetadata/datafield[@tag='260']/subfield[@code='c']"/>
+    <xsl:if test="normalize-space($gMdpMetadata/datafield[@tag='264'])">
+      <xsl:if test="normalize-space($gMdpMetadata/datafield[@tag='260'])"><xsl:text> / </xsl:text></xsl:if>
+      <xsl:for-each select="$gMdpMetadata/datafield[@tag='264']/subfield">
+        <xsl:value-of select="." />
+        <xsl:if test="position() != last()"><xsl:text> </xsl:text></xsl:if>
+      </xsl:for-each>
     </xsl:if>
 
   </xsl:template>
