@@ -320,7 +320,7 @@ sub clean_sessions
     my $s = "timestamp=" . Utils::Time::iso_Time('datetime');
     my $hostname = `hostname`; chomp $hostname;
     $s .= "|hostname=$hostname";
-    $s .= "|processed=$checked_count|deleted=$ses_deleted_count|$colls_deleted_count=$colls_deleted_count";
+    $s .= "|processed=$checked_count|deleted=$ses_deleted_count|colls_deleted_count=$colls_deleted_count";
     if ( $checked_count ) {
         $s .= sprintf("|freshness=%.1f", (($checked_count - $ses_deleted_count)/$checked_count)*100);
     } else {
