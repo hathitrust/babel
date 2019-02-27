@@ -36,7 +36,7 @@ BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
 }
 
-our ( $opt_m, $opt_a, $opt_i );
+our ( $opt_m, $opt_a, $opt_i, $opt_v );
 
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors;
@@ -50,6 +50,9 @@ use Database;
 use Session;
 use CollectionSet;
 use Utils::GlobalSwitch;
+
+use Utils::Logger;
+use Utils::Time qw();
 
 use Storable;      # for thawing data
 
@@ -76,7 +79,7 @@ my $g_default_age = '120';
 
 check_usage();
 
-print "Operating ...\n";
+print "Operating ...\n" if ( $opt_v );
 
 if ($opt_m eq 'list')
 {
@@ -267,7 +270,7 @@ sub clean_sessions
     my $now = format_timestamp(time);
 
     print STDOUT qq{Will delete inactive sessions that are older than } .
-        $cutoff_age . qq{ minutes from now ($now)\n};
+        $cutoff_age . qq{ minutes from now ($now)\n} if ( $opt_v );
 
     my $sth = $g_dbh->prepare_cached('SELECT id FROM ht_sessions;')
         or die "Couldn't prepare statement: " . $g_dbh->errstr;
@@ -309,14 +312,33 @@ sub clean_sessions
     $sth->finish();
     $g_dbh->disconnect();
 
-    print STDOUT "Processed $checked_count sessions\n";
-    print STDOUT "Deleted $ses_deleted_count sessions\n";
-    print STDOUT "Deleted $colls_deleted_count temporary collections\n";
-    if ($checked_count) {
-        printf("Freshness: %.1f %\n", (($checked_count - $ses_deleted_count)/$checked_count)*100);
+    my $C = new Context;
+    $C->set_object('MdpConfig', $g_config);
+    ## hacking the logfile key
+    $$g_config{config}{_}{managembooksessions_logfile} = 'sessions___DATE___.log';
+
+    my $s = "timestamp=" . Utils::Time::iso_Time('datetime');
+    my $hostname = `hostname`; chomp $hostname;
+    $s .= "|hostname=$hostname";
+    $s .= "|processed=$checked_count|deleted=$ses_deleted_count|$colls_deleted_count=$colls_deleted_count";
+    if ( $checked_count ) {
+        $s .= sprintf("|freshness=%.1f", (($checked_count - $ses_deleted_count)/$checked_count)*100);
+    } else {
+        $s .= "freshness=100";
     }
-    else {
-        print("Freshness: 100 %\n");
+
+    Utils::Logger::__Log_string($C, $s, 'managembooksessions_logfile', '___QUERY___', 'managembooksessions');
+
+    if ( $opt_v ) {
+        print STDOUT "Processed $checked_count sessions\n";
+        print STDOUT "Deleted $ses_deleted_count sessions\n";
+        print STDOUT "Deleted $colls_deleted_count temporary collections\n";
+        if ($checked_count) {
+            printf("Freshness: %.1f %\n", (($checked_count - $ses_deleted_count)/$checked_count)*100);
+        }
+        else {
+            print("Freshness: 100 %\n");
+        }
     }
 }
 
@@ -435,7 +457,7 @@ sub delete_temporary_collections
 sub check_usage
 {
     # get command line options
-    getopt('m:a:i:');
+    getopts('vm:a:i:');
 
     if (! $opt_m  ||
          ($opt_m  ne 'list' &&
