@@ -16,6 +16,8 @@ use API::HTD_Log;
 use API::DbIF;
 use API::HTD::HCodes;
 
+use Socket;
+
 my $DBH = API::DbIF::databaseConnect('ht_maintenance');
 
 my $GEOIP            = "$ENV{SDRROOT}/mdp-misc/scripts/geoip.pl";
@@ -126,21 +128,23 @@ sub sort_uniq_ip_addr_list {
 
 
 # ---------------------------------------------------------------------
+our $DOMAIN_CACHE = {};
 sub get_domain {
     my $ip = shift;
 
     $ip =~ s,\s,,g;
-    if ($ip) {
-        my $regexp = qr(\cIname\s+=\s+(.*?)\.$);
 
-        chomp(my @nslookup = `nslookup $ip`);
-        foreach my $line (@nslookup) {
-            if (my ($domain) = ($line =~ m,$regexp,)) {
-                return $domain;
-            }
+    my $domain = 'none';
+
+    if ( $ip ) {
+        unless ( exists $$DOMAIN_CACHE{$ip} ) {
+            my $domain = gethostbyaddr(inet_aton($ip), AF_INET);
+            $$DOMAIN_CACHE{$ip} = $domain || 'none';
         }
+        $domain = $$DOMAIN_CACHE{$ip};
     }
-    return 'none';
+
+    return $domain;
 }
 
 
@@ -337,6 +341,9 @@ sub Total_Auth_ERRORS_ByIP_ByResource {
             push(@orig_IPs, $ip) if ($ip);
 
             my ($ns, $bc) = ($err_line =~ m,ns="(.*?)".*?bc="(.*?)",);
+            unless ( $ns ) {
+                ($bc, $ns) = ($err_line =~ m,bc="(.*?)".*?ns="(.*?)",);
+            }
             push(@denied_IDs, "$ns.$bc");
 
             my ($fail) = ($err_line =~ m,failpoint=(.*?)$,);
