@@ -252,6 +252,7 @@ sub stage_origin_master_branch {
         list_submodule_dependencies($app_dir);
 
         handle_staging_rdist_hook($app);
+        emulate_rdist_bin_timestamp($app);
 
         PrintY("Begin sanity checks ...\n");
         print `$LOCATION/sanity-app -s$STAGE $app`;
@@ -328,6 +329,7 @@ sub stage_topic_branch {
     PrintY(qq{Staging via clone succeeds\n}) unless ($rc);
 
     handle_staging_rdist_hook($app, $STAGE, $dest_app_root);
+    emulate_rdist_bin_timestamp($app, $dest_app_root);
 
     return $rc;
 }
@@ -384,6 +386,18 @@ sub handle_staging_rdist_hook {
     }
 
     return 1;
+}
+
+sub emulate_rdist_bin_timestamp {
+    my $app = shift;
+    my $dest_app_root = shift;
+
+    my ($dest_repo_root, $dest_app_root) = get_HTDE_roots($STAGE);
+    my $dest_app_dir = "$dest_app_root/$app";
+
+    open(OUT, ">", "$dest_app_dir/bin/rdist.timestamp");
+    print OUT "$app\_" . time(). "\n";
+    close(OUT);
 }
 
 __END__;
