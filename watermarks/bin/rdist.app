@@ -19,6 +19,6 @@ APP_dest = ( /htapps/babel/watermarks )
 #
 ( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
         install -oremove ${APP_dest};
-        except_pat ( \\.git );
+        except_pat ( \\.git scripts );
         notify hathitrust-release@umich.edu ;
 
