@@ -395,9 +395,15 @@ sub emulate_rdist_bin_timestamp {
     my ($dest_repo_root, $dest_app_root) = get_HTDE_roots($STAGE);
     my $dest_app_dir = "$dest_app_root/$app";
 
-    open(OUT, ">", "$dest_app_dir/bin/rdist.timestamp");
-    print OUT "$app\_" . time(). "\n";
-    close(OUT);
+    my ($src_repo_root, $src_app_root) = get_HTDE_roots();
+
+    my $stage_rdist_script = qq{$src_app_root/$app/bin/rdist.app.stage};
+
+    if ( -f qq{$src_app_root/$app/bin/rdist.app.timestamp} ) {
+        open(OUT, ">", "$dest_app_dir/bin/rdist.timestamp");
+        print OUT "$app\_" . time(). "\n";
+        close(OUT);
+    }
 }
 
 __END__;
