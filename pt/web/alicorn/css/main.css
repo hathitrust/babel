@@ -940,7 +940,7 @@ section .page .info {
   opacity: 0.4;
 }
 
-section canvas {
+section canvas, section img {
   margin: 0 auto;
   display: block;
 }

@@ -20,7 +20,7 @@ var handleObserver = function(entries, observer) {
   entries.forEach(entry => {
     var div = entry.target;
     var seq = div.dataset.seq;
-    var viewed = div.querySelector('canvas');
+    var viewed = div.querySelector('img');
     if ( entry.isIntersecting && entry.intersectionRatio > 0.0  ) {
       console.log("AHOY OBSERVING", entries.length, seq, 'onEnter', entry.intersectionRatio);
       if ( entry.intersectionRatio > current.ratio ) {
@@ -51,7 +51,7 @@ var $observer = new IntersectionObserver(handleObserver, {
 });
 
 var resizePage = function(page) {
-  var canvas = page.querySelector('canvas');
+  var canvas = page.querySelector('img');
   if ( ! canvas ) { return ; }
 
   if ( page.dataset.loading !== 'false' ) {
@@ -150,22 +150,29 @@ var loadImage = function(page, check_scroll) {
     return;
   }
 
-  var canvas = document.createElement('canvas');
-  canvas.dataset.seq = seq;
+  // var canvas = document.createElement('canvas');
+  // canvas.dataset.seq = seq;
 
   var page_height = page.offsetHeight;
   var page_width = page.offsetWidth;
   // canvas.height = page_height;
-  canvas.width = page_width;
-  canvas.style.visibility = 'hidden';
-  page.appendChild(canvas);
+  // canvas.width = page_width;
+  // canvas.style.visibility = 'hidden';
+  // page.appendChild(canvas);
 
   var img = new Image();
+  img.alt = `Page scan of sequence ${seq}`;
 
   page.dataset.loading = true;
   img.addEventListener('load', function() {
     page.dataset.loading = false;
-    fitImageOn(canvas, this);
+    // /fitImageOn(canvas, this);
+
+    var imageAspectRatio = img.width / img.height;
+    img.style.width = page_width;
+    img.style.height = page_width / imageAspectRatio;
+    page.appendChild(img);
+
     if ( check_scroll || $main.dataset.view == 'thumbnail' ) { resizePage(page); }
     // var updated_rect = page.getBoundingClientRect();
     // if ( check_scroll && rect.bottom <= bounds.bottom && rect.top < 0 ) {
