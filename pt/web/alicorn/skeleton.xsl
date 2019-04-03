@@ -89,12 +89,15 @@
 
         <!-- <xsl:call-template name="access-overview" /> -->
 
-        <xsl:call-template name="navbar" />
-        <xsl:call-template name="header" />
+        <div class="site">
 
-        <xsl:call-template name="page-contents" />
+          <xsl:call-template name="navbar" />
+          <xsl:call-template name="header" />
 
-        <xsl:call-template name="footer" />
+          <xsl:call-template name="page-contents" />
+
+          <xsl:call-template name="footer" />
+        </div>
       </body>
 
     </html>

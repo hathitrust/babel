@@ -288,8 +288,17 @@
       <button class="button">Search</button>
     <!-- </fieldset> -->
   </xsl:template>
+
   <xsl:template name="contents">
+    <aside><xsl:call-template name="sidebar" /></aside>
+    <main>
+      <xsl:call-template name="main" />
+    </main>    
+  </xsl:template>
+
+  <xsl:template name="contents-grid1">
     <!-- h2 ? -->
+
     <main>
       <div class="container">
         <aside><xsl:call-template name="sidebar" /></aside>

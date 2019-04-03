@@ -308,58 +308,58 @@ if ( $main.dataset.view == 'thumbnail' ) {
 }
 
 var $data;
-fetch(`/cgi/imgsrv/meta?id=${HT.params.id}`)
-  .then(function(response) {
-    return response.json();
-  })
-  .then(function(data) {
+// fetch(`/cgi/imgsrv/meta?id=${HT.params.id}`)
+//   .then(function(response) {
+//     return response.json();
+//   })
+//   .then(function(data) {
 
-    $data = data;
+//     $data = data;
 
-    $navigator.input.max = data.items.length;
-    $navigator.input.min = 1;
-    $navigator.input.style.backgroundSize = '0% 100%';
-    // $navigator.status.setAttribute('style', 'background-position: ' + (0) + '% 0%, left top;');
+//     $navigator.input.max = data.items.length;
+//     $navigator.input.min = 1;
+//     $navigator.input.style.backgroundSize = '0% 100%';
+//     // $navigator.status.setAttribute('style', 'background-position: ' + (0) + '% 0%, left top;');
 
-    var meta = $data.items[0];
-    var r = meta.height / meta.width;
+//     var meta = $data.items[0];
+//     var r = meta.height / meta.width;
 
-    data.items.forEach(function(item) {
-      var page = document.createElement('div');
-      page.style.height = `${min_width * r * scale}px`;
-      page.style.width = `${min_width * scale}px`;
-      page.dataset.bestFit = ( scale <= 1 );
+//     data.items.forEach(function(item) {
+//       var page = document.createElement('div');
+//       page.style.height = `${min_width * r * scale}px`;
+//       page.style.width = `${min_width * scale}px`;
+//       page.dataset.bestFit = ( scale <= 1 );
 
-      // if ( $main.dataset.view == 'image' ) {
-      //   page.style.marginLeft = `-${(min_width * r * scale) / 2}px`;
-      // }
+//       // if ( $main.dataset.view == 'image' ) {
+//       //   page.style.marginLeft = `-${(min_width * r * scale) / 2}px`;
+//       // }
 
-      // if ( $main.dataset.view == 'image' ) {
-      //   page.style.top = '0px';
-      //   page.style.left = `${- ( item.seq - 1 ) * min_width}px`;
-      // }
+//       // if ( $main.dataset.view == 'image' ) {
+//       //   page.style.top = '0px';
+//       //   page.style.left = `${- ( item.seq - 1 ) * min_width}px`;
+//       // }
 
-      page.classList.add('page');
-      page.dataset.seq = item.seq;
-      page.innerHTML = `<div class="page-text"></div><div class="info">${item.seq}</div>`;
-      $inner.appendChild(page);
-    })
+//       page.classList.add('page');
+//       page.dataset.seq = item.seq;
+//       page.innerHTML = `<div class="page-text"></div><div class="info">${item.seq}</div>`;
+//       $inner.appendChild(page);
+//     })
 
-    var pages = document.querySelectorAll('.page');
-    for(var i = 0; i < pages.length; i++) {
-      if ( $main.dataset.view == 'image' ) {
-        pages[i].dataset.visible = false;
-        $observer.inactive = true;
-      } else {
-        $observer.observe(pages[i]);
-      }
-    }
+//     var pages = document.querySelectorAll('.page');
+//     for(var i = 0; i < pages.length; i++) {
+//       if ( $main.dataset.view == 'image' ) {
+//         pages[i].dataset.visible = false;
+//         $observer.inactive = true;
+//       } else {
+//         $observer.observe(pages[i]);
+//       }
+//     }
 
-    var page = document.querySelector('.page[data-seq="25"]');
-    setTimeout(function() {
-      is_active = true;
-      gotoPage(25);
-      // var offsetTop = page.offsetTop;
-      // $inner.scrollTop = offsetTop;
-    }, 100);
-  })
+//     var page = document.querySelector('.page[data-seq="25"]');
+//     setTimeout(function() {
+//       is_active = true;
+//       gotoPage(25);
+//       // var offsetTop = page.offsetTop;
+//       // $inner.scrollTop = offsetTop;
+//     }, 100);
+//   })

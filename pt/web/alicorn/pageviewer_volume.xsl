@@ -150,6 +150,20 @@
 
   <xsl:template name="main">
     <xsl:call-template name="toolbar-horizontal" />
+    <div class="inner main">
+      <section class="viewer">
+        <div class="viewer-inner"></div>
+      </section>
+      <xsl:call-template name="toolbar-vertical" />
+    </div>
+    <div class="navigator">
+      <input id="control-navigator" type="range" name="locations-range-value" min="0" max="100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0% • Page scan 0 of ?" value="0" data-background-position="0" />
+    </div>
+    <!-- <script type="text/javascript" src="/pt/alicorn/js/main.js"></script> -->
+  </xsl:template>
+
+  <xsl:template name="xxx-main">
+    <xsl:call-template name="toolbar-horizontal" />
     <xsl:call-template name="toolbar-vertical" />
     <!-- <div class="main-wrap"> -->
       <div class="pages">
@@ -157,7 +171,10 @@
       </div>
       <div class="navigator">
         <!-- <input type="range" id="control-navigator" /> -->
-        <input class="cozy-navigator-range__input" id="control-navigator" type="range" name="locations-range-value" min="0" max="100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0% • Location 0 of ?" value="0" data-background-position="0" />
+        <input class="cozy-navigator-range__input" id="control-navigator" type="range" name="locations-range-value" min="0" max="100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0% • Page Scan 0 of ?" value="0" data-background-position="0" />
+        <xsl:text> </xsl:text>
+        <output>Page Scan <span>0</span> of <span>N</span></output>
+        <button>Go...</button>
         <!-- <div class="navigator-range__background"></div> -->
       </div>
     <!-- </div> -->
