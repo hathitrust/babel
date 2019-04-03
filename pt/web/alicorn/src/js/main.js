@@ -145,13 +145,17 @@ var loadImage = function(page, check_scroll) {
 
   // var image_url = `/cgi/imgsrv/image?id=${HT.params.id};seq=${seq};size=100`;
   var image_url = `/cgi/imgsrv/image?id=${HT.params.id};seq=${seq};width=${page.offsetWidth}`;
-  if ( page.querySelector('canvas') ) {
+  var html_url = `/cgi/imgsrv/html?id=${HT.params.id};seq=${seq}`;
+
+  if ( page.querySelector('img') ) {
     // preloadImages(page);
     return;
   }
 
   // var canvas = document.createElement('canvas');
   // canvas.dataset.seq = seq;
+
+  var html_request = fetch(html_url);
 
   var page_height = page.offsetHeight;
   var page_width = page.offsetWidth;
@@ -172,6 +176,16 @@ var loadImage = function(page, check_scroll) {
     img.style.width = page_width;
     img.style.height = page_width / imageAspectRatio;
     page.appendChild(img);
+
+    html_request
+      .then(function(response) {
+        return response.text();
+      })
+      .then(function(text) {
+        var page_text = page.querySelector('.page-text');
+        page_text.innerHTML = text;
+      });
+
 
     if ( check_scroll || $main.dataset.view == 'thumbnail' ) { resizePage(page); }
     // var updated_rect = page.getBoundingClientRect();
@@ -195,10 +209,12 @@ var loadImage = function(page, check_scroll) {
 var unloadImage = function(page) {
   if ( page.dataset.preloaded ) { return; }
   if ( page.dataset.loading ) { return ; }
-  var canvas = page.querySelector('canvas');
+  var canvas = page.querySelector('img');
   if ( canvas ) {
     page.removeChild(canvas);
   }
+  var page_text = page.querySelector('.page-text');
+  page_text.innerHTML = '';
   page.dataset.preloaded = false;
 }
 
@@ -325,7 +341,7 @@ fetch(`/cgi/imgsrv/meta?id=${HT.params.id}`)
 
       page.classList.add('page');
       page.dataset.seq = item.seq;
-      page.innerHTML = `<div class="info">${item.seq}</div>`;
+      page.innerHTML = `<div class="page-text"></div><div class="info">${item.seq}</div>`;
       $inner.appendChild(page);
     })
 
