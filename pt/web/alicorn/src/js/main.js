@@ -1,18 +1,44 @@
-// var $section = document.querySelector('main section');
+var HT = window.HT || {};
+HT.controls = HT.controls || {};
+
+var Reader = class {
+  constructor(options={}) {
+    this.options = Object.assign({}, options);
+    this.emitter = new NanoEvents();
+    this.controls = {};
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    /* NOOP */
+  }
+
+  on() {
+    return this.emitter.on.apply(this.emitter, arguments)
+  }
+}
+
+var reader = new Reader();
+
+// var $viewer = document.querySelector('main section');
 var $main = document.querySelector('main');
-var $section = document.querySelector('section .pages');
-var $inner = document.querySelector('section .pages .pages-inner');
+var $viewer = $main.querySelector('.viewer');
+var $inner = $viewer.querySelector('.viewer-inner');
 var is_active = false;
 var scale = 0.75;
 var image_width = 680;
 
-var $navigator = { 
+reader.controls.navigator = new HT.controls.Navigator({
   input: document.querySelector('input[type="range"]'),
-  status: document.querySelector('.navigator-range__background')
-};
-$navigator.input.addEventListener('change', function(event) {
-  var seq = this.value;
-  gotoPage(seq);
+  output: document.querySelector('.navigator .output .current-seq')
+})
+
+// reader.on('gotoPage', function() {
+//   console.log("AHOY gotoPage", arguments);
+// })
+
+reader.controls.navigator.on('gotoPage', function() {
+  console.log("AHOY gotoPage", arguments);
 })
 
 var handleObserver = function(entries, observer) {
@@ -45,7 +71,7 @@ var handleObserver = function(entries, observer) {
 };
 
 var $observer = new IntersectionObserver(handleObserver, {
-    root: $section,
+    root: $viewer,
     rootMargin: '0px',
     threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
 });
@@ -58,7 +84,7 @@ var resizePage = function(page) {
     return;
   }
 
-  var bounds = $section.getBoundingClientRect();
+  var bounds = $viewer.getBoundingClientRect();
   var rect = page.getBoundingClientRect();
 
   if ( canvas.height < parseInt(page.style.height) ) {
@@ -66,18 +92,18 @@ var resizePage = function(page) {
   }
   page.style.height = `${canvas.height}px`;
   var updated_rect = page.getBoundingClientRect();
-  var scrollTop = $section.scrollTop;
+  var scrollTop = $viewer.scrollTop;
 
   if ( $main.dataset.view == '1up' && rect.bottom <= bounds.bottom && rect.top < 0 ) {
     setTimeout(function() {
       delta = updated_rect.height - rect.height;
-      if ( $section.scrollTop == scrollTop ) {
+      if ( $viewer.scrollTop == scrollTop ) {
         // delta /= this.settings.scale;
         // console.log("AHOY afterResized", view.index, this.container.scrollTop, view.element.getBoundingClientRect().height, rect.height, delta / this.settings.scale);
-        $section.scrollTop += Math.ceil(delta);
-        console.log("AHOY afterResized", page.dataset.seq, scrollTop, $section.scrollTop, delta);
+        $viewer.scrollTop += Math.ceil(delta);
+        console.log("AHOY afterResized", page.dataset.seq, scrollTop, $viewer.scrollTop, delta);
       } else {
-        console.log("AHOY donotResized", page.dataset.seq, scrollTop, $section.scrollTop, delta);
+        console.log("AHOY donotResized", page.dataset.seq, scrollTop, $viewer.scrollTop, delta);
       }
     }, 500);
   }
@@ -138,7 +164,7 @@ var fitImageOn = function(canvas, imageObj) {
 var loadImage = function(page, check_scroll) {
   if ( ! is_active ) { return ; }
   var seq = page.dataset.seq;
-  var bounds = $section.getBoundingClientRect();
+  var bounds = $viewer.getBoundingClientRect();
   var rect = page.getBoundingClientRect();
 
   console.log("AHOY LOADING", seq);
@@ -193,7 +219,7 @@ var loadImage = function(page, check_scroll) {
     //   delta = updated_rect.height - rect.height;
     //   // delta /= this.settings.scale;
     //   // console.log("AHOY afterResized", view.index, this.container.scrollTop, view.element.getBoundingClientRect().height, rect.height, delta / this.settings.scale);
-    //   $section.scrollTop += Math.ceil(delta);
+    //   $viewer.scrollTop += Math.ceil(delta);
     // } else {
     //   console.log("AHOY NO CHANGE?")
     // }
@@ -299,8 +325,8 @@ var update_navigator = function(page) {
   // $navigator.status.setAttribute('style', 'background-position: ' + (-percentage) + '% 0%, left top;');
 }
 
-var min_height = $section.offsetHeight;
-var min_width = $section.offsetWidth * 0.80;
+var min_height = $viewer.offsetHeight;
+var min_width = $viewer.offsetWidth * 0.80;
 $main.dataset.view = 'image';
 
 if ( $main.dataset.view == 'thumbnail' ) {

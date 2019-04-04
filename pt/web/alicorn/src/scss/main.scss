@@ -125,12 +125,14 @@ button {
   display: inline-block;
   margin: 0;
   padding: .5rem 1rem;
-  background: #126dc1;
-  color: #fff;
+  background: #f5f5f5; // #126dc1;
+  color: #333; // #fff;
   font-size: 1rem;
   border-radius: 4px;
-  border: none;
-  border-bottom: 3px solid #0c5292;
+  // border: none;
+  // border-bottom: 3px solid #0c5292;
+  border: 1px solid #bbb;
+  border-color: #00000026 #00000026 #00000040;
   cursor: pointer;
   text-decoration: none;
   line-height: inherit;
@@ -476,7 +478,7 @@ aside {
   
   grid-area: sidebar;
 
-  border-right: 1px solid #e1dfdf;
+  // border-right: 1px solid #e1dfdf;
 
   display: flex;
   flex-direction: column;
@@ -575,8 +577,9 @@ main .inner.main {
 
 main .navigator {
   // padding: 0.5rem 1rem 1rem;
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
   background: #666; // #E3E2DF;
+  color: #fff;
   text-align: center;
   position: relative;
   display: flex;
@@ -589,9 +592,10 @@ main .navigator {
 
   input[type=range] {
       margin: auto;
+      margin-right: 1rem;
       // outline: none;
       padding: 0;
-      width: 80%;
+      flex-grow: 1;
       height: 16px;
       background-color: #bab9b7; // #feebc5;
       background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, $range-gradient-start), color-stop(100%, $range-gradient-start));
@@ -653,6 +657,12 @@ main .navigator {
     box-shadow: 0 0 1px 0px rgba(0,0,0,0.1);
     cursor: pointer;
   }
+
+  .output {
+    margin-right: 1rem;
+    display: inline-block;
+  }
+
 }
 
 .viewer {

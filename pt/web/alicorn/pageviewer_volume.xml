@@ -164,6 +164,14 @@
       <?HEADER_SEARCH_FIELDS?>
     </SearchForm>
 
+    <Manifest>
+      <!-- DO NOT FORGET READING ORDER -->
+      <FeatureList><?FEATURE_LIST_JSON?></FeatureList>
+      <FirstPageSeq><?FIRST_PAGE_SEQUENCE?></FirstPageSeq>
+      <DefaultSeq><?DEFAULT_SEQ?></DefaultSeq>
+      <BaseImage><?BASE_IMAGE_DIMENSIONS?></BaseImage>
+    </Manifest>
+
     <FeedbackForm>
       <?FEEDBACK_CGI_URL?>
     </FeedbackForm>

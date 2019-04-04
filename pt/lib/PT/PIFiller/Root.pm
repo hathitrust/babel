@@ -32,6 +32,8 @@ use base qw(PIFiller);
 
 use PT::PIFiller::Common;
 
+use JSON::XS qw(encode_json);
+
  
 # ---------------------------------------------------------------------
 
@@ -987,6 +989,181 @@ sub handle_EPUB_ROOT_PI
     my $unpacked_root = $unpacked_epub . '/';
     $unpacked_root =~ s,$ENV{SDRROOT},,;
     return $unpacked_root;
+}
+
+# ---------------------------------------------------------------------
+sub handle_BASE_IMAGE_DIMENSIONS
+    : PI_handler(BASE_IMAGE_DIMENSIONS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    require Image::ExifTool;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $pageinfo_sequence = $mdpItem->Get('pageinfo')->{'sequence'};
+    my @items = sort { int($a) <=> int($b) } keys %{ $pageinfo_sequence };
+
+    my ( $use_width, $use_height, $use_filename );
+    my $tries = 0;
+    while ( ! $use_filename ) {
+        my $seq = $items[int(rand(scalar @items))];
+        next if ( grep(/MISSING_PAGE/, $mdpItem->GetPageFeatures($seq)) );
+        my $filename = $mdpItem->GetFilePathMaybeExtract($seq, 'imagefile');
+
+        # my ( $width, $height, $type_or_error ) = Process::Image::imgsize($filename);
+        my $info = Image::ExifTool::ImageInfo($filename);
+        my ( $width, $height ) = ( $$info{ImageWidth}, $$info{ImageHeight} );
+
+        $tries += 1;
+
+        if ( $width < $height && $height > 1024 || $tries > 1) {
+            $use_filename = $filename;
+            ( $use_width, $use_height ) = ( $width, $height );
+        } else {
+            unlink($filename);
+        }
+    }
+
+    $use_height = int($use_height * ( 680.0 / $use_width ));
+    $use_width = 680;
+
+    return qq{<Width>$use_width</Width><Height>$use_height</Height>};
+
+}
+
+# ---------------------------------------------------------------------
+sub handle_FIRST_PAGE_SEQUENCE
+    : PI_handler(FIRST_PAGE_SEQUENCE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    return $mdpItem->GetFirstPageSequence;
+
+}
+
+# ---------------------------------------------------------------------
+sub handle_DEFAULT_SEQ
+    : PI_handler(DEFAULT_SEQ)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $seq;
+    if ( $seq = $mdpItem->HasTitleFeature()) {
+        $cgi->param('seq', $seq );
+    }
+    elsif ($seq = $mdpItem->HasTOCFeature()) {
+        $cgi->param('seq', $seq );
+    } else {
+        $seq = 1;
+    }
+
+    return $seq;
+}
+
+# ---------------------------------------------------------------------
+sub handle_FEATURE_LIST_JSON
+    : PI_handler(FEATURE_LIST_JSON)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    $mdpItem->InitFeatureIterator();
+    my $featureRef;
+
+    my $seenFirstTOC = 0;
+    my $seenFirstIndex = 0;
+    my $seenSection = 0;
+
+    my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
+    my $featureList = [];
+
+    my $i = 1;
+    while ($featureRef = $mdpItem->GetNextFeature(), $$featureRef) {
+        my $tag   = $$$featureRef{'tag'};
+        my $label = $$$featureRef{'label'};
+        my $page  = $$$featureRef{'pg'};
+        my $seq   = $$$featureRef{'seq'};
+
+        if  ($tag =~ m,FIRST_CONTENT_CHAPTER_START|1STPG,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^CHAPTER_START$,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^MULTIWORK_BOUNDARY$,) {
+            # Suppress redundant link on MULTIWORK_BOUNDARY seq+1
+            # if its seq matches the next CHAPTER seq.
+            my $nextFeatureRef = $mdpItem->PeekNextFeature();
+            if ($$nextFeatureRef
+                && (
+                    ($$$nextFeatureRef{'tag'} =~ m,^CHAPTER_START$,)
+                    &&
+                    ($$$nextFeatureRef{'seq'} eq $seq))
+               ) {
+                # Skip CHAPTER_START
+                $mdpItem->GetNextFeature();
+            }
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+
+        if ($seenSection) {
+            $seenFirstTOC = 0;
+            $seenFirstIndex = 0;
+        }
+
+        # Repetition suppression
+        if  ($tag =~ m,TABLE_OF_CONTENTS|TOC,) {
+            $seenSection = 0;
+            if ($seenFirstTOC) {
+                next;
+            }
+            else {
+                $seenFirstTOC = 1;
+            }
+        }
+
+        if  ($tag =~ m,INDEX|IND,) {
+            $seenSection = 0;
+            if ($seenFirstIndex) {
+                next;
+            }
+            else {
+                $seenFirstIndex = 1;
+            }
+        }
+
+        # y $url = BuildContentsItemLink($cgi, $seq, $page);
+
+        push @{$featureList}, '{' .
+            q{"tag":} . $json->encode($tag) . ', ' .
+            q{"label":} . $json->encode($label) . ',' .
+            q{"page":} . $json->encode($page) . '}';
+
+        # my $featureItem =
+        #     wrap_string_in_tag($tag, 'Tag') .
+        #         wrap_string_in_tag($label, 'Label') .
+        #             wrap_string_in_tag($page, 'Page') .
+        #                 wrap_string_in_tag($seq, 'Seq') .
+        #                     wrap_string_in_tag($url, 'Link');
+
+        # $featureXML .=
+        #     wrap_string_in_tag($featureItem, 'Feature');
+    }
+
+    return '[' . join(',', @$featureList) . ']';
 }
 
 

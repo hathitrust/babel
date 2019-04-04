@@ -149,6 +149,14 @@
   </xsl:template>
 
   <xsl:template name="main">
+    <xsl:variable name="totalSeq" select="count(//METS:div[@TYPE='volume']/METS:div[@ORDER])" />
+    <xsl:attribute name="data-total-seq"><xsl:value-of select="$totalSeq" /></xsl:attribute>
+    <xsl:attribute name="data-default-seq"><xsl:value-of select="//Manifest/DefaultSeq" /></xsl:attribute>
+    <xsl:attribute name="data-first-seq"><xsl:value-of select="//Manifest/FirstPageSeq" /></xsl:attribute>
+    <xsl:attribute name="data-default-height"><xsl:value-of select="//Manifest/BaseImage/Height" /></xsl:attribute>
+    <xsl:attribute name="data-default-width"><xsl:value-of select="//Manifest/BaseImage/Width" /></xsl:attribute>
+    <xsl:attribute name="data-feature-list"><xsl:value-of select="//Manifest/FeatureList" /></xsl:attribute>
+
     <xsl:call-template name="toolbar-horizontal" />
     <div class="inner main">
       <section class="viewer">
@@ -157,9 +165,13 @@
       <xsl:call-template name="toolbar-vertical" />
     </div>
     <div class="navigator">
-      <input id="control-navigator" type="range" name="locations-range-value" min="0" max="100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0% • Page scan 0 of ?" value="0" data-background-position="0" />
+      <input id="control-navigator" type="range" name="locations-range-value" min="0" max="{$totalSeq}" aria-valuemin="0" aria-valuemax="{$totalSeq}" aria-valuenow="0" aria-valuetext="0% • Page scan 0 of {$totalSeq}" value="0" data-background-position="0" />
+      <xsl:text> </xsl:text>
+      <div class="output">Page Scan <span data-slot="current-seq">0</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
+      <xsl:text> </xsl:text>
+      <button id="action-prompt-seq">Go...</button>      
     </div>
-    <!-- <script type="text/javascript" src="/pt/alicorn/js/main.js"></script> -->
+    <script type="text/javascript" src="/pt/alicorn/js/main.js"></script>
   </xsl:template>
 
   <xsl:template name="xxx-main">
@@ -172,9 +184,6 @@
       <div class="navigator">
         <!-- <input type="range" id="control-navigator" /> -->
         <input class="cozy-navigator-range__input" id="control-navigator" type="range" name="locations-range-value" min="0" max="100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0% • Page Scan 0 of ?" value="0" data-background-position="0" />
-        <xsl:text> </xsl:text>
-        <output>Page Scan <span>0</span> of <span>N</span></output>
-        <button>Go...</button>
         <!-- <div class="navigator-range__background"></div> -->
       </div>
     <!-- </div> -->
@@ -273,7 +282,7 @@
   <xsl:template name="toolbar-horizontal">
     <div id="toolbar-horizontal" class="toolbar toolbar-horizontal" role="toolbar" aria-label="Volume Navigation">
 
-      <xsl:call-template name="action-go-page" />
+      <!-- <xsl:call-template name="action-go-page" /> -->
 
       <div class="btn-group table-of-contents">
         <xsl:call-template name="action-table-of-contents" />
