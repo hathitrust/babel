@@ -11,6 +11,10 @@ var concat = require('gulp-concat');
 var rename = require('gulp-rename');  
 // var uglify = require('gulp-uglify'); 
 
+var compiler = require('webpack');
+var webpack = require('webpack-stream');
+
+
 var stylesheets = {};
 stylesheets.input = [ './vendor/**/*.css', './src/scss/main.scss' ];
 stylesheets.concat = [ './vendor/**/*.css' ];
@@ -51,13 +55,31 @@ gulp.task('sass', function() {
     .pipe(gulp.dest(stylesheets.output));
 });
 
+// gulp.task('scripts', function() {
+//   return gulp.src(javascripts.input)
+//     .pipe(sourcemaps.init())
+//       .pipe(concat('main.js'))
+//     .pipe(sourcemaps.write())
+//     .pipe(gulp.dest(javascripts.output))
+// })
+
 gulp.task('scripts', function() {
-  return gulp.src(javascripts.input)
-    .pipe(sourcemaps.init())
-      .pipe(concat('main.js'))
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest(javascripts.output))
-})
+  return gulp.src('./src/js/main.js')
+    .pipe(webpack({
+      watch: false,
+      devtool: 'inline-source-map',
+      mode: 'development',
+      entry: {
+        main: [ 'intersection-observer', './src/js/main.js']
+      },
+      output: {
+        filename: 'main.js'
+      }
+    }, compiler, function(err, stats) {
+
+    }))
+    .pipe(gulp.dest(javascripts.output));
+});
 
 gulp.task('sass:watch', function () {
   gulp.watch(stylesheets.watch, gulp.parallel('sass'));

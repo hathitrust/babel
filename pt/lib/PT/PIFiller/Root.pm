@@ -1087,6 +1087,87 @@ sub handle_FEATURE_LIST_JSON
     my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
     my $featureList = [];
 
+    my $pageinfo_sequence = $mdpItem->Get('pageinfo')->{'sequence'};
+    my @items = sort { int($a) <=> int($b) } keys %{ $pageinfo_sequence };
+
+    my $i = 0;
+    foreach my $seq ( @items ) {
+        my $features = [ $mdpItem->GetPageFeatures($seq) ];
+        next unless ( scalar @$features );
+        my $pageNum = $$pageinfo_sequence{ $seq }{ 'pagenumber' };
+        ## label is trickier
+        # my $label = $$featureHashRef{$seqFeature};
+        my $label;
+        my $feature_map = { map { $_ => 1 } @$features };
+        if ( $$feature_map{FIRST_CONTENT_CHAPTER_START} || $$feature_map{'1STPG'} ) {
+            $label = $$MdpGlobals::gPageFeatureHashRef{FIRST_CONTENT_CHAPTER_START} . " " . $i++;
+            $seenSection = 1;
+        } elsif ( $$feature_map{CHAPTER_START} ) {
+            $label = $$MdpGlobals::gPageFeatureHashRef{CHAPTER_START} . " " . $i++;
+            $seenSection = 1;
+        } elsif ( $$feature_map{MULTIWORK_BOUNDARY} ) {
+            if ( $$feature_map{CHAPTER_START} ) {
+                # do nothing
+            } else {
+                $label = $$MdpGlobals::gPageFeatureHashRef{MULTIWORK_BOUNDARY} . " " . $i++;
+                $seenSection = 1;
+            }
+        }
+
+        if ( $seenSection ) {
+            $seenFirstTOC = 0;
+            $seenFirstIndex = 0;
+        }
+
+        # Repetition suppression
+        if  ( $$feature_map{TABLE_OF_CONTENTS} || $$feature_map{TOC} ) {
+            $seenSection = 0;
+            if ($seenFirstTOC) {
+                # next;
+            }
+            else {
+                $seenFirstTOC = 1;
+            }
+        }
+
+        if  ( $$feature_map{INDEX} || $$feature_map{IND} ) {
+            $seenSection = 0;
+            if ($seenFirstIndex) {
+                # next;
+            }
+            else {
+                $seenFirstIndex = 1;
+            }
+        }
+
+        push @{$featureList}, '{' .
+            q{"seq":} . $json->encode($seq) . ', ' .
+            q{"features":} . $json->encode($features) . ', ' .
+            q{"label":} . $json->encode($label) . ',' .
+            q{"pageNum":} . $json->encode($pageNum) . '}';
+    }
+
+    return '[' . join(',', @$featureList) . ']';
+}
+
+sub handle_FEATURE_LIST_JSON_XX
+    : PI_handler(FEATURE_LIST_JSON_XX)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    $mdpItem->InitFeatureIterator();
+    my $featureRef;
+
+    my $seenFirstTOC = 0;
+    my $seenFirstIndex = 0;
+    my $seenSection = 0;
+
+    my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
+    my $featureList = [];
+
     my $i = 1;
     while ($featureRef = $mdpItem->GetNextFeature(), $$featureRef) {
         my $tag   = $$$featureRef{'tag'};
@@ -1148,6 +1229,7 @@ sub handle_FEATURE_LIST_JSON
         # y $url = BuildContentsItemLink($cgi, $seq, $page);
 
         push @{$featureList}, '{' .
+            q{"seq":} . $json->encode($seq) . ', ' .
             q{"tag":} . $json->encode($tag) . ', ' .
             q{"label":} . $json->encode($label) . ',' .
             q{"page":} . $json->encode($page) . '}';
@@ -1165,7 +1247,6 @@ sub handle_FEATURE_LIST_JSON
 
     return '[' . join(',', @$featureList) . ']';
 }
-
 
 1;
 

@@ -667,7 +667,7 @@ main .navigator {
 
 .viewer {
   display: flex;
-  flex-row: 1;
+  flex-grow: 1;
   flex-direction: row;
   margin-right: 0.5rem;
 }
@@ -684,6 +684,8 @@ section {
   background: #fffefb;
   border: 1px solid #d5d3d3;
   box-shadow: rgba(0,0,0,0.1) 0 1px 10px;
+
+  position: relative;
 
   // .main-wrap {
   //   display: grid;
@@ -708,6 +710,15 @@ section {
       right: 0;
       overflow: auto;
     }
+  }
+
+  .viewer-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
   }
 
   .page {
@@ -745,6 +756,10 @@ section {
       right: 0;
       background: #eee;
       opacity: 0.4;
+
+      &:hover {
+        opacity: 0;
+      }
     }
 
   }

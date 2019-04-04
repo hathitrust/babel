@@ -926,7 +926,9 @@ main .navigator .output {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  flex-row: 1;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
       -ms-flex-direction: row;
@@ -951,6 +953,7 @@ section {
   border: 1px solid #d5d3d3;
   -webkit-box-shadow: rgba(0, 0, 0, 0.1) 0 1px 10px;
           box-shadow: rgba(0, 0, 0, 0.1) 0 1px 10px;
+  position: relative;
 }
 
 section .pages {
@@ -962,6 +965,15 @@ section .pages {
 }
 
 section .pages .pages-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+}
+
+section .viewer-inner {
   position: absolute;
   top: 0;
   left: 0;
@@ -1007,6 +1019,10 @@ section .page .page-text {
   right: 0;
   background: #eee;
   opacity: 0.4;
+}
+
+section .page .page-text:hover {
+  opacity: 0;
 }
 
 section canvas, section img {
