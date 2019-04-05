@@ -16,7 +16,7 @@ export var Base = class {
   }
 
   render() {
-    var minWidth = this.container.parentNode.offsetWidth * 0.80;
+    var minWidth = this.minWidth(); 
     var scale = this.scale;
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
       var page = document.createElement('div');
@@ -80,12 +80,15 @@ export var Base = class {
 
     console.log("AHOY LOADING", seq);
 
-    // var image_url = `/cgi/imgsrv/image?id=${HT.params.id};seq=${seq};size=100`;
-    var image_url = this.service.image({ seq: seq, width: page.offsetWidth, mode: this.mode });
+    var image_url = this.imageUrl({ seq: seq, width: page.offsetWidth });
     var html_url = this.service.html({ seq: seq });
 
     if ( page.querySelector('img') ) {
       // preloadImages(page);
+      return;
+    }
+
+    if ( page.dataset.loading == "true" ) {
       return;
     }
 
@@ -164,6 +167,14 @@ export var Base = class {
       }
       delta += 1;
     }
+  }
+
+  imageUrl(params) {
+    return this.service.image(params);
+  }
+
+  minWidth() {
+    return this.container.parentNode.offsetWidth * 0.80;
   }
 
   on() {

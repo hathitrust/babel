@@ -812,11 +812,12 @@ main[data-view="thumbnail"] {
       display: flex;
       flex-wrap: wrap;
       align-items: flex-start;
+      justify-content: center;
       flex-direction: row;
     }
 
     .page {
-      
+      margin: 2rem 2rem;
     }
   }
 }

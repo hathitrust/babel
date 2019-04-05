@@ -1069,10 +1069,17 @@ main[data-view="thumbnail"] section .viewer-inner {
   -webkit-box-align: start;
       -ms-flex-align: start;
           align-items: flex-start;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
       -ms-flex-direction: row;
           flex-direction: row;
+}
+
+main[data-view="thumbnail"] section .page {
+  margin: 2rem 2rem;
 }
 
 /* UTILITY */

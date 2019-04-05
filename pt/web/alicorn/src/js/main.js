@@ -70,8 +70,8 @@ reader.controls.navigator.on('updateLocation', (params) => {
   reader.view.display(params.seq);
 })
 
-$main.dataset.view = 'thumbnail';
-reader.view = new View.Thumbnail({
+$main.dataset.view = '1up';
+reader.view = new View.Scroll({
   reader: reader,
   service: service
 })
