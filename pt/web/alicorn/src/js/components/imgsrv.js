@@ -15,6 +15,23 @@ export var Manifest = class {
     this.featureList.forEach(function(item) {
       this.featureMap[item.seq] = item;
     }.bind(this))
+
+    this.manifest = {};
+  }
+
+  update(seq, meta) {
+    var ratio = this.defaultImage.width / meta.width;
+    this.manifest[seq] = {
+      width: this.defaultImage.width,
+      height: meta.height * ratio
+    }
+  }
+
+  meta(seq) {
+    if ( this.manifest[seq] ) {
+      return this.manifest[seq];
+    }
+    return this.defaultImage;
   }
 }
 
@@ -27,7 +44,8 @@ export var Service = class {
   }
 
   image(options={}) {
-    return `/cgi/imgsrv/image?id=${this.identifier};seq=${options.seq};width=${options.width || 680}`;
+    var action = options.mode == 'thumbnail' ? 'thumbnail' : 'image';
+    return `/cgi/imgsrv/${action}?id=${this.identifier};seq=${options.seq};width=${options.width || 680}`;
   }
 
   html(options={}) {

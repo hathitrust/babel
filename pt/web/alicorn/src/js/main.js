@@ -11,11 +11,10 @@ var $inner = $viewer.querySelector('.viewer-inner');
 
 var min_height = $viewer.offsetHeight;
 var min_width = $viewer.offsetWidth * 0.80;
-$main.dataset.view = '1up';
 
-if ( $main.dataset.view == 'thumbnail' ) {
-  scale = 0.25;
-}
+// if ( $main.dataset.view == 'thumbnail' ) {
+//   scale = 0.25;
+// }
 
 var Reader = class {
   constructor(options={}) {
@@ -41,6 +40,7 @@ var Reader = class {
 
 var reader = new Reader({ identifier: HT.params.id });
 HT.reader = reader;
+HT.View = View;
 
 var service = new Service({
   manifest: {
@@ -67,9 +67,11 @@ reader.controls.navigator = new Control.Navigator({
 
 reader.controls.navigator.on('updateLocation', (params) => {
   console.log("AHOY updateLocation", params.seq);
+  reader.view.display(params.seq);
 })
 
-reader.view = new View.Scroll({
+$main.dataset.view = 'thumbnail';
+reader.view = new View.Thumbnail({
   reader: reader,
   service: service
 })

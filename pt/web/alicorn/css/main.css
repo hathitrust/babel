@@ -1060,7 +1060,7 @@ main[data-view="image"] section .page[data-visible="true"] {
   transition: visibility 0s linear 0s, opacity 300ms;
 }
 
-main[data-view="thumbnail"] section .pages {
+main[data-view="thumbnail"] section .viewer-inner {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
