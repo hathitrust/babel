@@ -386,6 +386,10 @@ button {
   line-height: inherit;
 }
 
+button[disabled] {
+  opacity: 0.65;
+}
+
 input[type=text] + button {
   margin-left: 0.25rem;
 }
@@ -545,7 +549,7 @@ nav form select {
   margin-left: -0.5rem;
 }
 
-.btn-group button:hover, .btn-group button:focus {
+.btn-group button:hover:enabled, .btn-group button:focus:enabled {
   z-index: 2;
   text-decoration: none;
   background: #39383a;
@@ -625,7 +629,7 @@ nav form select {
   background: rgba(0, 0, 0, 0.8);
 }
 
-.toolbar button:hover {
+.toolbar button:hover:enabled {
   background: rgba(0, 0, 0, 0.8);
 }
 
@@ -1034,6 +1038,13 @@ main[data-view="1up"] section .page {
   width: 80%;
 }
 
+main[data-view="1up"] section .page[data-rotate]:not([data-rotate="0"]) {
+  -webkit-transform: rotate(var(--rotate));
+          transform: rotate(var(--rotate));
+  margin-top: var(--rotate-margin);
+  margin-bottom: var(--rotate-margin);
+}
+
 main[data-view="1up"] button[data-target="1up"] {
   background: rgba(0, 0, 0, 0.8);
 }
@@ -1042,6 +1053,13 @@ main[data-view="image"] section .page {
   width: 80%;
   position: absolute;
   top: 0;
+}
+
+main[data-view="image"] section .page[data-rotate]:not([data-rotate="0"]) {
+  -webkit-transform: rotate(var(--rotate));
+          transform: rotate(var(--rotate));
+  margin-top: var(--rotate-margin);
+  margin-bottom: var(--rotate-margin);
 }
 
 main[data-view="image"] section .page[data-best-fit="true"] {

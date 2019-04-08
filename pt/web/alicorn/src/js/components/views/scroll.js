@@ -5,6 +5,7 @@ export var Scroll = class extends Base {
   constructor(options={}) {
     super(options);
     this.mode = 'scroll';
+    this.pageOptions = {};
     this.embedHtml = true;
   }
 
@@ -100,20 +101,45 @@ export var Scroll = class extends Base {
     }
   }
 
+  updatePageRotation(target, rotate) {
+    var margin = ( rotate % 180 == 0 ) ? 0 : ( target.offsetHeight - target.offsetWidth ) / 2;
+    target.dataset.rotate = rotate;
+    target.style.setProperty('--rotate', `${rotate}deg`);
+    target.style.setProperty('--rotate-margin', `-${margin}px`);
+    this.reader.pagedetails.rotate[target.dataset.seq] = rotate;
+  }
+
   bindEvents() {
+    var self = this;
+
     super.bindEvents();
     this.observer = new IntersectionObserver(this.handleObserver.bind(this), {
         root: this.container,
         rootMargin: '0px',
         threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
     });
+
+    this._handlers.rotate = this.reader.on('rotate', function(delta) {
+      var seq = self.currentLocation();
+      var target = self.container.querySelector(`.page[data-seq="${seq}"]`);
+      var rotate = parseInt(target.dataset.rotate || 0, 10);
+      rotate += delta;
+      rotate = rotate % 360;
+      self.updatePageRotation(target, rotate);
+    });
   }
 
   bindPageEvents(page) {
     this.observer.observe(page);
+    if ( this.reader.pagedetails.rotate[page.dataset.seq] ) {
+      page.dataset.rotate = this.reader.pagedetails.rotate[page.dataset.seq];
+      this.updatePageRotation(page, page.dataset.rotate);
+    }
   }
 
   destroy() {
+    super.destroy();
+    this._handlers.rotate();
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
       this.observer.unobserve(pages[i]);

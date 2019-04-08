@@ -20,9 +20,10 @@ var min_width = $viewer.offsetWidth * 0.80;
 
 var Reader = class {
   constructor(options={}) {
-    this.options = Object.assign({}, options);
+    this.options = Object.assign({ scale: 1.0 }, options);
     this.emitter = new NanoEvents();
     this.controls = {};
+    this.pagedetails = { rotate: {}, scale: {} };
     this.bindEvents();
   }
 
@@ -32,14 +33,17 @@ var Reader = class {
         this.view.display(params.seq || 1);
       }.bind(this);
     }
-    $main.dataset.view = params.view;
-    this.setView({ view: params.view });
+    if ( params.view ) {
+      $main.dataset.view = params.view;
+    }
+    if ( params.scale ) { this.options.scale = params.scale; }
+    this.setView({ view: $main.dataset.view });
     this.view.attachTo($inner, cb);
   }
 
   restart(params) {
     var current = params.seq || this.view.currentLocation();
-    if ( this.view ) { this.view.destroy(); }
+    if ( this.view ) { this.view.destroy(); this.view = null; }
     this.start(params, function() {
       this.view.display(current);
     }.bind(this));
@@ -47,7 +51,8 @@ var Reader = class {
 
   setView(params) {
     var cls = View.for(params.view);
-    this.view = new cls({ reader: this, service: this.service, scale: 1.0 });
+    this.view = new cls({ reader: this, service: this.service, scale: this.options.scale });
+    this.emit('configure', this.view.config());
   }
 
   next() {
@@ -123,7 +128,25 @@ reader.controls.navigator.on('updateLocation', (params) => {
   reader.view.display(params.seq);
 })
 
-reader.start({ view: '2up' });
+reader.controls.zoominator = new Control.Zoominator({
+  input: document.querySelector('.action-zoom'),
+  reader: reader
+})
+
+reader.controls.rotator = new Control.Rotator({
+  input: document.querySelector('.action-rotate'),
+  reader: reader
+})
+reader.controls.rotator.on('rotate', function(delta) {
+  // var seq = this.view.currentLocation();
+  // var rotate = this.pagedetails.rotate[seq] || 0;
+  // rotate = ( rotate + delta ) % 360;
+  // this.pagedetails.rotate[seq] = rotate;
+  console.log("AHOY controls.rotator", delta);
+  this.emit('rotate', delta);
+}.bind(reader))
+
+reader.start({ view: '1up', seq: 10 });
 
 
 

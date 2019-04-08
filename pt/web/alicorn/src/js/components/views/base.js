@@ -1,4 +1,5 @@
 import NanoEvents from 'nanoevents';
+import unbindAll from 'nanoevents/unbind-all';
 
 export var Base = class {
   constructor(options={}) {
@@ -7,6 +8,8 @@ export var Base = class {
     this.scale = options.scale || 1.0;
     this.mode = 'scroll';
     this.emitter = new NanoEvents();
+    this._handlers = {};
+    this.id = (new Date()).getTime();
   }
 
   attachTo(element, cb) {
@@ -19,6 +22,7 @@ export var Base = class {
     var minWidth = this.minWidth();
     var scale = this.scale;
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
+
       var page = document.createElement('div');
 
       var meta = this.service.manifest.meta(1);
@@ -198,6 +202,14 @@ export var Base = class {
   bindPageEvents(page) {
   }
 
+  config() {
+    // the empty set supports everything
+    return {};
+  }
+
+  destroy() {
+    unbindAll(this.emitter);
+  }
 
 }
 

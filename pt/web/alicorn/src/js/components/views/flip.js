@@ -287,10 +287,17 @@ export var Flip = class extends Base {
   }
 
   destroy() {
+    super.destroy();
     var pages = this.container.querySelectorAll('.slice');
     for(var i = 0; i < pages.length; i++) {
       this.container.removeChild(pages[i]);
     }
+  }
+
+  config() {
+    var retval = super.config();
+    retval.rotate = false;
+    return retval;
   }
 
 };

@@ -87,15 +87,37 @@ export var Single = class extends Base {
     }
   }
 
+  updatePageRotation(target, rotate) {
+    var margin = ( rotate % 180 == 0 ) ? 0 : ( target.offsetHeight - target.offsetWidth ) / 2;
+    target.dataset.rotate = rotate;
+    target.style.setProperty('--rotate', `${rotate}deg`);
+    target.style.setProperty('--rotate-margin', `-${margin}px`);
+    this.reader.pagedetails.rotate[target.dataset.seq] = rotate;
+  }
+
   bindEvents() {
     super.bindEvents();
+    this._handlers.rotate = this.reader.on('rotate', function(delta) {
+      var seq = self.currentLocation();
+      var target = self.container.querySelector(`.page[data-seq="${seq}"]`);
+      var rotate = parseInt(target.dataset.rotate || 0, 10);
+      rotate += delta;
+      rotate = rotate % 360;
+      self.updatePageRotation(target, rotate);
+    });
   }
 
   bindPageEvents(page) {
     page.dataset.visible = false;
+    if ( this.reader.pagedetails.rotate[page.dataset.seq] ) {
+      page.dataset.rotate = this.reader.pagedetails.rotate[page.dataset.seq];
+      this.updatePageRotation(page, page.dataset.rotate);
+    }
   }
 
   destroy() {
+    super.destroy();
+    this._handlers.rotate();
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
       this.container.removeChild(pages[i]);

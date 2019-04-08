@@ -10,6 +10,11 @@ export var Thumbnail = class extends Scroll {
   }
 
   imageUrl(params) {
+    if ( params instanceof HTMLElement ) {
+      var element = params; params = {};
+      params.seq = element.dataset.seq;
+      params.width = element.offsetWidth;
+    }
     return this.service.thumbnail(params);
   }
 
@@ -25,6 +30,13 @@ export var Thumbnail = class extends Scroll {
       console.log("AHOY CLICK", this.dataset.seq);
       self.reader.restart({ view: '1up', seq: this.dataset.seq });
     })
+  }
+
+  config() {
+    var retval = super.config();
+    retval.zoom = false;
+    retval.rotate = false;
+    return retval;
   }
 
 };
