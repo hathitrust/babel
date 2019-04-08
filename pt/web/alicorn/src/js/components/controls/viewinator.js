@@ -1,0 +1,33 @@
+import NanoEvents from 'nanoevents';
+
+export var Viewinator = class {
+  constructor(options={}) {
+    // this.options = Object.assign({}, options);
+    this.input = options.input;
+    this.reader = options.reader;
+    this.emitter = new NanoEvents();
+    this.bindEvents();
+  }
+
+  on() {
+    return this.emitter.on.apply(this.emitter, arguments)
+  }
+
+  bindEvents() {
+    var self = this;
+    var buttons = this.input.querySelectorAll('[data-target]');
+    for (var i = 0; i < buttons.length; i++) {
+      var button = buttons[i];
+      button.addEventListener('click', function(event) {
+        var target = this.dataset.target;
+        self.reader.restart({ view: target });
+      })
+    }
+  }
+
+
+  render(slot, value) {
+    var span = this.output.querySelector(`[data-slot="${slot}"]`);
+    span.innerText = value;
+  }
+}
