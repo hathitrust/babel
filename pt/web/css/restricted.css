@@ -1,1 +1,36 @@
-.view-restricted .no_access_text{font-style:italic;font-size:120%}.view-restricted .alert-banner{font-size:120%;position:static;text-align:left;margin-bottom:20px;animation:none}.view-restricted .row{padding-left:0}.view-restricted .row .row{padding-left:0}.view-restricted .border-right{border-right:2px solid #e1dfdf;padding-right:20px}.view-restricted .searchForm{list-style:none;padding-left:0}.view-restricted #in_copyright{font-weight:bold;font-size:110%}.view-restricted #mdpSearchButton{margin-bottom:10px}.view-restricted .no_access_search_help_eg{margin-left:0.25em}
+/* line 3, ../sass/restricted.scss */
+.view-restricted .no_access_text {
+  font-style: italic;
+  font-size: 120%;
+}
+/* line 8, ../sass/restricted.scss */
+.view-restricted .row {
+  padding-left: 0;
+}
+/* line 12, ../sass/restricted.scss */
+.view-restricted .row .row {
+  padding-left: 0;
+}
+/* line 16, ../sass/restricted.scss */
+.view-restricted .border-right {
+  border-right: 2px solid #e1dfdf;
+  padding-right: 20px;
+}
+/* line 21, ../sass/restricted.scss */
+.view-restricted .searchForm {
+  list-style: none;
+  padding-left: 0;
+}
+/* line 26, ../sass/restricted.scss */
+.view-restricted #in_copyright {
+  font-weight: bold;
+  font-size: 110%;
+}
+/* line 31, ../sass/restricted.scss */
+.view-restricted #mdpSearchButton {
+  margin-bottom: 10px;
+}
+/* line 35, ../sass/restricted.scss */
+.view-restricted .no_access_search_help_eg {
+  margin-left: 0.25em;
+}

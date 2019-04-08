@@ -294,6 +294,16 @@ body {
     position: relative;
 }
 
+.container .alert-banner {
+    font-size: initial;
+    position: relative;
+    text-align: left;
+    @include rem(margin-bottom, 20);
+    animation: none;
+    border-top: 1px solid #fbeed5;
+    @include rem(padding-left, 32);
+}
+
 // should be in commmon?
 .container .sidebar {
 
