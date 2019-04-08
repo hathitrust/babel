@@ -271,7 +271,7 @@
       </xsl:choose>
     </xsl:variable>
 
-    <button href="{$href}" data-target="{$option/@name}" type="button" class="btn square {$active}" data-toggle="tooltip tracking" data-tracking-action="PT {$option}">
+    <button href="{$href}" data-target="{$option/@name}" type="button" class="btn square" data-toggle="tooltip tracking" data-tracking-action="PT {$option}">
       <xsl:if test="$option/@accesskey">
         <xsl:attribute name="accesskey"><xsl:value-of select="$option/@accesskey" /></xsl:attribute>
       </xsl:if>

@@ -50,8 +50,8 @@ export var Service = class {
 
   image(options={}) {
     var action = 'image'; // options.mode == 'thumbnail' ? 'thumbnail' : 'image';
-    var size = this.bestFit(options.width);
-    return `/cgi/imgsrv/${action}?id=${this.identifier};seq=${options.seq};size=${size}`;
+    var param = this.bestFit(options);
+    return `/cgi/imgsrv/${action}?id=${this.identifier};seq=${options.seq};${param.param}=${param.value}`;
   }
 
   html(options={}) {
@@ -66,12 +66,20 @@ export var Service = class {
 
   }
 
-  bestFit(width=680) {
+  bestFit(params) {
     var possibles = [50, 75, 100, 125, 150, 175, 200];
-    return possibles.find(function(possible) {
-      var check = 680 * ( possible / 100.0 );
-      return width <= check;
-    })
+    var retval = {};
+    if ( params.width ) {
+      retval.param = 'size';
+      retval.value = possibles.find(function(possible) {
+        var check = 680 * ( possible / 100.0 );
+        return params.width <= check;
+      })
+    } else if ( params.height ) {
+      retval.param = 'height';
+      retval.value = params.height;
+    }
+    return retval;
   }
 
 };

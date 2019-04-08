@@ -61,7 +61,7 @@ body {
 
 @media (min-width: 45em) {
     .site {
-        grid-template:"header header" auto "sidebar main" 1fr "footer footer" auto/minmax(10rem,20rem) minmax(0,1fr)
+        grid-template:"header header" auto "sidebar main" 1fr "footer footer" auto/minmax(10rem,18rem) minmax(0,1fr)
     }
 }
 
@@ -191,7 +191,7 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   button {
     font-size: 100%;
   }
@@ -199,7 +199,7 @@ nav {
   ul {
     a {
       padding: 0.8rem 1rem;
-      
+
       color: $navbar-link-color;
       text-decoration: none;
       display: block;
@@ -208,7 +208,7 @@ nav {
         background: $navbar-bgcolor-hover; // #F9F8F5;
         color: $navbar-link-hover-color; // #39383A;
       }
-      
+
       &.action-login {
         background: $login-bgcolor;
         color: #000; // $text-color;
@@ -219,7 +219,7 @@ nav {
           border-color: #fcde5b;
         }
       }
-      
+
       &.action-home {
         background-image: url(https://babel.hathitrust.org/pt/graphics/HT-logo-square-sm.png);
         background-repeat: no-repeat;
@@ -230,23 +230,23 @@ nav {
       }
 
     }
-    
+
     // li.divider-left a::before {
     //   content: "";
     //   display: block;
     //   border-left: 1px solid #6b6a6b;
     //   margin-left: 4px;
     // }
-    
+
   }
-  
+
   > ul {
-    display: flex;    
+    display: flex;
     li {
       & > ul {
         display: none;
       }
-            
+
       &:hover > ul, > a:focus + ul {
         display: flex;
         position: absolute;
@@ -256,7 +256,7 @@ nav {
       }
     }
   }
-  
+
   form {
     display: flex;
     margin-left: 8px;
@@ -320,10 +320,10 @@ nav {
   &.btn-group-vertical {
     flex-direction: column;
     display: flex;
-    
+
     button {
       text-align: center;
-      width: 3rem; 
+      width: 3rem;
       height: 2.8rem;
 
       & + button {
@@ -368,7 +368,7 @@ nav {
     &.active {
       background: rgba(0,0,0,0.8);
     }
-    
+
     &:hover {
       background: rgba(0,0,0,0.8);
     }
@@ -380,13 +380,13 @@ nav {
   z-index: 1000;
   justify-content: flex-end;
   align-items: center;
-  
+
   > * {
     margin-right: 0.25rem;
   }
 
   // input[type=text] { width: auto; }
-  
+
   form {
     flex-basis: auto;
     display: flex;
@@ -402,16 +402,16 @@ nav {
   .dropdown-menu {
     display: none;
   }
-  
+
   ul {
     button {
       text-align: center;
-      width: 3rem; 
+      width: 3rem;
       height: 2.8rem;
       margin-left: 0.25rem;
     }
   }
-  
+
 }
 
 #toolbar-vertical {
@@ -422,9 +422,9 @@ nav {
 
   flex-shrink: 0;
   flex-basis: 3rem;
-  
+
   flex-direction: column;
-  
+
   .btn-group + .btn-group {
     margin-top: 10px;
   }
@@ -437,12 +437,12 @@ mainxx {
   // min-height: 80vh;
 
   flex-grow: 1;
-  
+
   width: 98vw;
   margin: 1rem auto;
   margin-top: 3.5rem;
   overflow: hidden;
-  
+
   border: 1px solid #d5d3d3;
   box-shadow: rgba(0,0,0,0.1) 0 1px 10px;
 }
@@ -474,8 +474,8 @@ mainxx .container {
 }
 
 aside {
-  
-  
+
+
   grid-area: sidebar;
 
   // border-right: 1px solid #e1dfdf;
@@ -492,7 +492,7 @@ aside {
     width: 95%;
     margin: 0 auto;
   }
-  
+
   .panel {
     padding: 1rem;
     margin: 0 auto;
@@ -501,7 +501,7 @@ aside {
     &.bibLinks {
       padding-top: 0;
     }
-    
+
     h2, h3 {
       font-size: 110%;
       font-weight: bold;
@@ -509,51 +509,51 @@ aside {
       border-bottom: 1px solid #ddd;
       padding-bottom: 0.5rem;
     }
-    
+
     p {
       margin-top: 1rem;
       margin-bottom: 1rem;
     }
-    
+
     p:first-child {
       margin-top: 0;
     }
-    
+
     p + p {
       margin-bottom: 0;
     }
-    
+
     ul {
       // margin-bottom: 1rem;
     }
-    
+
     li + li {
       margin-top: 0.25rem;
     }
-    
+
     form {
       margin-top: 0.5rem;
       margin-bottom: 0.25rem;
-      
+
       label {
         display: block;
         margin-bottom: 0.25rem;
       }
-      
+
       input[type=text] {
         margin-bottom: 1rem;
       }
     }
-    
+
     select {
       width: 100%;
       font-size: 100%;
       margin-top: 0.25rem;
       margin-bottom: 0.25rem;
     }
-        
+
   }
-  
+
   .scrollable {
     overflow: auto;
     margin-bottom: 1rem;
@@ -728,7 +728,7 @@ section {
 
     box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0,0,0,0);
     border: 1px solid #ddd;
-    
+
     .info {
       display: block;
       padding: 1rem;
@@ -776,6 +776,10 @@ main[data-view="1up"] {
       width: 80%;
     }
   }
+
+  button[data-target="1up"] {
+    background: rgba(0,0,0,0.8);
+  }
 }
 
 main[data-view="image"] {
@@ -803,9 +807,72 @@ main[data-view="image"] {
       }
     }
   }
+
+  button[data-target="image"] {
+    background: rgba(0,0,0,0.8);
+  }
 }
 
-main[data-view="thumbnail"] {
+main[data-view="2up"] {
+  section {
+    .slice {
+      width: 100%;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+
+      &[data-visible="false"] {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s linear 300s, opacity 300ms;
+      }
+
+      &[data-visible="true"] {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s linear 0s, opacity 300ms;
+      }
+    }
+
+    .page {
+      width: 50%;
+      margin: 0;
+
+      img {
+        height: 100%;
+      }
+    }
+
+    .edge {
+      height: 96%;
+      background: #ddd;
+      background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAFCAYAAABirU3bAAAAG0lEQVQIW2O8c+fOTCEhIYZ3794xgGhGKggAAJf0H/UWcK5GAAAAAElFTkSuQmCC);
+
+      &.recto {
+        border-right: 8px solid #666;
+      }
+
+      &.verso {
+        border-left: 8px solid #666;
+      }
+
+
+    }
+  }
+
+  button[data-target="2up"] {
+    background: rgba(0,0,0,0.8);
+  }
+}
+
+main[data-view="thumb"] {
   section {
 
     .viewer-inner {
@@ -818,7 +885,12 @@ main[data-view="thumbnail"] {
 
     .page {
       margin: 2rem 2rem;
+      cursor: pointer;
     }
+  }
+
+  button[data-target="thumb"] {
+    background: rgba(0,0,0,0.8);
   }
 }
 

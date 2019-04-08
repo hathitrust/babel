@@ -9,14 +9,14 @@ export var Base = class {
     this.emitter = new NanoEvents();
   }
 
-  attachTo(element) {
+  attachTo(element, cb) {
     this.container = element;
     this.bindEvents();
-    this.render();
+    this.render(cb);
   }
 
-  render() {
-    var minWidth = this.minWidth(); 
+  render(cb) {
+    var minWidth = this.minWidth();
     var scale = this.scale;
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
       var page = document.createElement('div');
@@ -36,16 +36,20 @@ export var Base = class {
 
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
-      if ( this.mode == 'image' ) {
-        pages[i].dataset.visible = false;
-        this.observer.inactive = true;
-      } else {
-        this.observer.observe(pages[i]);
-      }
+      this.bindPageEvents(pages[i]);
+      // if ( this.mode == 'image' ) {
+      //   pages[i].dataset.visible = false;
+      //   this.observer.inactive = true;
+      // } else {
+      //   this.observer.observe(pages[i]);
+      // }
     }
 
     this.is_active = true;
     this.loadImage(this.container.querySelector('[data-seq="1"]'), true);
+    if ( cb ) {
+      cb();
+    }
   }
 
   resizePage(page) {
@@ -59,7 +63,7 @@ export var Base = class {
     var bounds = this.container.getBoundingClientRect();
     var rect = page.getBoundingClientRect();
 
-    if ( canvas.height < parseInt(page.style.height) ) {
+    if ( canvas.height < parseInt(page.style.height, 10) ) {
       console.log("AHOY shrinking", page.dataset.seq, page.style.height, canvas.height);
     }
     page.style.height = `${canvas.height}px`;
@@ -80,7 +84,7 @@ export var Base = class {
 
     console.log("AHOY LOADING", seq);
 
-    var image_url = this.imageUrl({ seq: seq, width: page.offsetWidth });
+    var image_url = this.imageUrl(page);
     var html_url = this.service.html({ seq: seq });
 
     if ( page.querySelector('img') ) {
@@ -113,6 +117,7 @@ export var Base = class {
       img.style.width = page_width;
       img.style.height = page_width / imageAspectRatio;
       page.appendChild(img);
+      page.dataset.loaded = true;
 
       if ( html_request ) {
         html_request
@@ -145,6 +150,7 @@ export var Base = class {
     var page_text = page.querySelector('.page-text');
     page_text.innerHTML = '';
     page.dataset.preloaded = false;
+    page.dataset.loaded = false;
   }
 
   preloadImages(page) {
@@ -170,6 +176,11 @@ export var Base = class {
   }
 
   imageUrl(params) {
+    if ( params instanceof HTMLElement ) {
+      var element = params; params = {};
+      params.seq = element.dataset.seq;
+      params.width = element.offsetWidth;
+    }
     return this.service.image(params);
   }
 
@@ -183,6 +194,10 @@ export var Base = class {
 
   bindEvents() {
   }
+
+  bindPageEvents(page) {
+  }
+
 
 }
 

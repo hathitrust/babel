@@ -9,6 +9,8 @@ var $main = document.querySelector('main');
 var $viewer = $main.querySelector('.viewer');
 var $inner = $viewer.querySelector('.viewer-inner');
 
+var $toolbar = $main.querySelector('#toolbar-vertical');
+
 var min_height = $viewer.offsetHeight;
 var min_width = $viewer.offsetWidth * 0.80;
 
@@ -22,6 +24,46 @@ var Reader = class {
     this.emitter = new NanoEvents();
     this.controls = {};
     this.bindEvents();
+  }
+
+  start(params, cb) {
+    if ( cb === undefined ) {
+      cb = function() {
+        this.view.display(params.seq || 1);
+      }.bind(this);
+    }
+    $main.dataset.view = params.view;
+    this.setView({ view: params.view });
+    this.view.attachTo($inner, cb);
+  }
+
+  restart(params) {
+    var current = params.seq || this.view.currentLocation();
+    if ( this.view ) { this.view.destroy(); }
+    this.start(params, function() {
+      this.view.display(current);
+    }.bind(this));
+  }
+
+  setView(params) {
+    var cls = View.for(params.view);
+    this.view = new cls({ reader: this, service: this.service, scale: 1.0 });
+  }
+
+  next() {
+    this.view.next();
+  }
+
+  prev() {
+    this.view.prev();
+  }
+
+  first() {
+    this.view.display(1);
+  }
+
+  last() {
+    this.view.display(this.service.manifest.totalSeq);
   }
 
   on() {
@@ -38,10 +80,6 @@ var Reader = class {
 
 }
 
-var reader = new Reader({ identifier: HT.params.id });
-HT.reader = reader;
-HT.View = View;
-
 var service = new Service({
   manifest: {
     totalSeq: $main.dataset.totalSeq,
@@ -55,6 +93,11 @@ var service = new Service({
 })
 HT.service = service;
 
+var reader = new Reader({ identifier: HT.params.id });
+reader.service = service;
+HT.reader = reader;
+HT.View = View;
+
 var is_active = false;
 var scale = 0.75;
 var image_width = 680;
@@ -65,66 +108,23 @@ reader.controls.navigator = new Control.Navigator({
   reader: reader
 })
 
+reader.controls.paginator = new Control.Paginator({
+  input: document.querySelector('#toolbar-horizontal'),
+  reader: reader
+});
+
+reader.controls.viewinator = new Control.Viewinator({
+  input: document.querySelector('.action-views'),
+  reader: reader
+});
+
 reader.controls.navigator.on('updateLocation', (params) => {
   console.log("AHOY updateLocation", params.seq);
   reader.view.display(params.seq);
 })
 
-$main.dataset.view = '1up';
-reader.view = new View.Scroll({
-  reader: reader,
-  service: service
-})
-reader.view.attachTo($inner);
+reader.start({ view: '2up' });
 
-var getPage = function(seq) {
-  return document.querySelector(`.page[data-seq="${seq}"]`);
-}
 
-var gotoPage = function(seq, delta) {
-  var currentSeq = parseInt($navigator.input.value, 10);
-  if ( ! seq ) {
-    seq = currentSeq;
-  }
-  if ( delta ) {
-    seq += delta;
-  }
 
-  var currentPage = getPage(currentSeq);
-  console.log("AHOY AHOY", currentSeq, currentPage);
-  if ( currentPage ) {
-    // currentPage.addEventListener('animationend', function exitPage() {
-    //   console.log("AHOY ANIMATION ENDED", currentPage);
-    //   currentPage.classList.remove('pt-page-moveToLeft');
-    //   currentPage.dataset.visible = false;
-    //   currentPage.removeEventListener('animationend', exitPage);
-    //   unloadImage(currentPage);
-    // })
-    // currentPage.classList.add('pt-page-moveToLeft');
-
-    currentPage.dataset.visible = false;
-    setTimeout(function() {
-      unloadImage(currentPage);
-    })
-  }
-
-  var target = getPage(seq);
-  // target.addEventListener('animationend', function enterPage() {
-  //   target.classList.remove('pt-page-moveFromRight');
-  //   target.removeEventListener('animationend', enterPage);
-  // })
-  // target.classList.add('pt-page-moveFromRight');
-  target.dataset.visible = true;
-  target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
-  if ( $observer.inactive ) { loadImage(target, true); update_navigator(target);}
-  // target.scrollIntoView(false);
-}
-
-var nextPage = function() {
-  gotoPage(null, 1);
-}
-
-var previousPage = function() {
-  gotoPage(null, -1);
-}
 

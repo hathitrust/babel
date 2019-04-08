@@ -17,4 +17,14 @@ export var Thumbnail = class extends Scroll {
     // best guess
     return 160;
   }
+
+  bindPageEvents(page) {
+    var self = this;
+    super.bindPageEvents(page);
+    page.addEventListener('click', function(event) {
+      console.log("AHOY CLICK", this.dataset.seq);
+      self.reader.restart({ view: '1up', seq: this.dataset.seq });
+    })
+  }
+
 };
