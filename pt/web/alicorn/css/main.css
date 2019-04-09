@@ -1089,7 +1089,7 @@ main[data-view="image"] button[data-target="image"] {
 }
 
 main[data-view="2up"] section .slice {
-  width: 100%;
+  width: var(--slice-width);
   position: absolute;
   top: 0;
   bottom: 0;

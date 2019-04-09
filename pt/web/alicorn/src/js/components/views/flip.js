@@ -37,7 +37,8 @@ export var Flip = class extends Base {
 
     var maxHeight = this.container.offsetHeight * 0.95;
     console.log("AHOY AHOY", maxHeight);
-    this.container.style.setProperty('--page-height', `${maxHeight}px`);
+    this.container.style.setProperty('--page-height', `${maxHeight * this.scale}px`);
+    this.container.style.setProperty('--slice-width', `${this.container.offsetWidth * this.scale}px`);
 
     var max_edge_width = 0;
     var max_slice_width = 0;
@@ -135,8 +136,9 @@ export var Flip = class extends Base {
       slice.appendChild(page);
 
       if ( this.scale > 1.0 ) {
-        slice.style.height = `${slice_height}px`;
-        slice.style.width = `${slice_width * 1.2}px`;
+        // slice.style.height = `${slice_height}px`;
+        // slice.style.width = `${slice_width * 1.2}px`;
+        // slice.style.width = `${this.`
       }
 
       if ( max_slice_width < slice_width ) {
@@ -159,7 +161,7 @@ export var Flip = class extends Base {
       this.container.appendChild(slice);
     }
 
-    var max_edge_width = ( ( this.container.offsetWidth - max_slice_width ) * 0.85 ) / 2;
+    var max_edge_width = ( ( this.container.offsetWidth - ( max_slice_width / this.scale ) ) * 0.85 ) / 2;
     var page_factor = 10;
     var edge_width = 3 * Math.ceil(this.service.manifest.totalSeq / page_factor);
     if ( edge_width > max_edge_width ) { edge_width = max_edge_width; }
@@ -226,6 +228,12 @@ export var Flip = class extends Base {
   }
 
   currentLocation() {
+    var slice = this.container.querySelector('.slice[data-visible="true"]');
+    var page = slice.querySelector('.page[data-seq]');
+    return page.dataset.seq;
+  }
+
+  currentLocationXX() {
     return 1;
     var current_percentage = 0;
     var current;
@@ -318,7 +326,8 @@ export var Flip = class extends Base {
     super.bindEvents();
 
     this._resizer = debounce(function() {
-      self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95}px`);
+      self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95 * self.scale}px`);
+      self.container.style.setProperty('--slice-width', `${self.container.offsetWidth * self.scale}px`)
       console.log("AHOY flip.resize", self.container.style.getPropertyValue('--page-height'));
     }, 50);
 

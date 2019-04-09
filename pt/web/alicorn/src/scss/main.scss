@@ -848,7 +848,7 @@ main[data-view="image"] {
 main[data-view="2up"] {
   section {
     .slice {
-      width: 100%;
+      width: var(--slice-width); // 100%
       position: absolute;
       top: 0;
       bottom: 0;

@@ -53,6 +53,7 @@ var Reader = class {
     var current = params.seq || this.view.currentLocation();
     if ( this.view ) { this.view.destroy(); this.view = null; }
     this.start(params, function() {
+      console.log("AHOY TRYING TO GO TO", current);
       this.view.display(current);
     }.bind(this));
   }
