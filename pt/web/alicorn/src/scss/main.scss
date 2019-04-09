@@ -781,8 +781,15 @@ main[data-view="1up"] {
 
       &[data-rotate]:not([data-rotate="0"]) {
         transform: rotate(var(--rotate));
-        margin-top: var(--rotate-margin);
-        margin-bottom: var(--rotate-margin);
+        margin: var(--rotate-margin);
+        // margin-top: -var(--rotate-margin);
+        // margin-bottom: -var(--rotate-margin);
+        // margin-left: var(--rotate-margin);
+        // margin-right: var(--rotate-margin);
+      }
+
+      img {
+        width: 100%;
       }
 
     }
@@ -903,6 +910,10 @@ main[data-view="thumb"] {
     .page {
       margin: 2rem 2rem;
       cursor: pointer;
+
+      img {
+        max-width: 100%;
+      }
     }
   }
 

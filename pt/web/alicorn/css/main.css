@@ -1041,8 +1041,11 @@ main[data-view="1up"] section .page {
 main[data-view="1up"] section .page[data-rotate]:not([data-rotate="0"]) {
   -webkit-transform: rotate(var(--rotate));
           transform: rotate(var(--rotate));
-  margin-top: var(--rotate-margin);
-  margin-bottom: var(--rotate-margin);
+  margin: var(--rotate-margin);
+}
+
+main[data-view="1up"] section .page img {
+  width: 100%;
 }
 
 main[data-view="1up"] button[data-target="1up"] {
@@ -1168,6 +1171,10 @@ main[data-view="thumb"] section .viewer-inner {
 main[data-view="thumb"] section .page {
   margin: 2rem 2rem;
   cursor: pointer;
+}
+
+main[data-view="thumb"] section .page img {
+  max-width: 100%;
 }
 
 main[data-view="thumb"] button[data-target="thumb"] {

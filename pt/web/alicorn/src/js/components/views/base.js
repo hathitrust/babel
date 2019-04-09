@@ -25,11 +25,18 @@ export var Base = class {
 
       var page = document.createElement('div');
 
-      var meta = this.service.manifest.meta(1);
+      var meta = this.service.manifest.meta(seq);
       var ratio = meta.height / meta.width;
 
-      page.style.height = `${minWidth * ratio * scale}px`;
-      page.style.width = `${minWidth * scale}px`;
+      var h = minWidth * ratio * scale;
+      var w = minWidth * scale;
+      // if ( meta.rotation % 180 != 0 ) {
+      //   w = minWidth * ratio * scale;
+      //   h = minWidth * scale;
+      // }
+
+      page.style.height = `${h}px`;
+      page.style.width = `${w}px`;
       page.dataset.bestFit = ( scale <= 1 );
 
       page.classList.add('page');
@@ -101,7 +108,7 @@ export var Base = class {
     }
 
     var html_request;
-    if ( this.embedHtml) {
+    if ( false && this.embedHtml) {
       html_request = fetch(html_url);
     }
 
@@ -112,7 +119,7 @@ export var Base = class {
     img.alt = `Page scan of sequence ${seq}`;
 
     page.dataset.loading = true;
-    img.addEventListener('load', function() {
+    img.addEventListener('load', function _imgHandler() {
       page.dataset.loading = false;
 
       this.service.manifest.update(seq, { width: img.width, height: img.height });
@@ -135,7 +142,8 @@ export var Base = class {
       }
 
       if ( check_scroll || this.mode == 'thumbnail' ) { this.resizePage(page); }
-    }.bind(this))
+      img.removeEventListener('load', _imgHandler, true);
+    }.bind(this), true)
 
     img.src = image_url;
 
@@ -144,9 +152,24 @@ export var Base = class {
     }
   }
 
+  redrawPage(page) {
+    if ( typeof(page) == "number" || typeof(page) == "string" ) {
+      page = this.container.querySelector(`[data-seq="${page}"]`);
+    }
+    var image_url = this.imageUrl(page);
+    var img = page.querySelector('img');
+    var new_img = new Image();
+    new_img.addEventListener('load', function _redrawHandler() {
+      page.replaceChild(new_img, img);
+      this.resizePage(page);
+      new_img.removeEventListener('load', _redrawHandler, true);
+    }.bind(this), true);
+    new_img.src = image_url;
+  }
+
   unloadImage(page) {
-    if ( page.dataset.preloaded ) { return; }
-    if ( page.dataset.loading ) { return ; }
+    if ( page.dataset.preloaded == "true" ) { return; }
+    if ( page.dataset.loading == "true" ) { return ; }
     var canvas = page.querySelector('img');
     if ( canvas ) {
       page.removeChild(canvas);
@@ -185,6 +208,9 @@ export var Base = class {
       params.seq = element.dataset.seq;
       params.width = element.offsetWidth;
     }
+    // if ( this.reader.pagedetails.rotate[params.seq] ) {
+    //   params.rotation = this.reader.pagedetails.rotate[params.seq];
+    // }
     return this.service.image(params);
   }
 

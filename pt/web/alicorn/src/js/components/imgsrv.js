@@ -8,7 +8,8 @@ export var Manifest = class {
     this.firstSeq = parseInt(options.firstSeq, 10);
     this.defaultImage = {
       height: parseInt(options.defaultHeight, 10),
-      width: parseInt(options.defaultWidth, 10)
+      width: parseInt(options.defaultWidth, 10),
+      rotation: 0
     };
     this.featureList = options.featureList;
     this.featureMap = {};
@@ -20,18 +21,41 @@ export var Manifest = class {
   }
 
   update(seq, meta) {
+    if ( meta.rotation != null && meta.width === undefined ) {
+      // just updating rotation
+      this.manifest[seq].rotation = meta.rotation;
+      return;
+    }
+    // ... which will help with switching lanes and rotating
+    if ( this.manifest[seq] && this.manifest[seq].width ) { return ; }
     var ratio = this.defaultImage.width / meta.width;
     this.manifest[seq] = {
       width: this.defaultImage.width,
-      height: meta.height * ratio
+      height: meta.height * ratio,
+      rotation: meta.rotation || 0
     }
   }
 
   meta(seq) {
     if ( this.manifest[seq] ) {
-      return this.manifest[seq];
+      var meta = this.manifest[seq];
+      if ( meta.rotation % 180 != 0 ) {
+        return { height: meta.width, width: meta.height, rotation: meta.rotation };
+      }
+      return meta;
     }
     return this.defaultImage;
+  }
+
+  rotateBy(seq, delta) {
+    var rotation;
+    // this shouldn't happen
+    if ( ! this.manifest[seq] ) { return; }
+    rotation = this.manifest[seq].rotation;
+    if ( rotation == 0 ) { rotation = 360; }
+    rotation += delta;
+    rotation = rotation % 360;
+    this.manifest[seq].rotation = rotation;
   }
 }
 
@@ -45,13 +69,17 @@ export var Service = class {
 
   thumbnail(options={}) {
     var width = 250; // one size fits all
-    return `/cgi/imgsrv/thumbnail?id=${this.identifier};seq=${options.seq};width=${width}`;
+    var meta = this.manifest.meta(options.seq);
+    var rotation = meta.rotation || 0;
+    return `/cgi/imgsrv/thumbnail?id=${this.identifier};seq=${options.seq};width=${width};rotation=${rotation}`;
   }
 
   image(options={}) {
     var action = 'image'; // options.mode == 'thumbnail' ? 'thumbnail' : 'image';
     var param = this.bestFit(options);
-    return `/cgi/imgsrv/${action}?id=${this.identifier};seq=${options.seq};${param.param}=${param.value}`;
+    var meta = this.manifest.meta(options.seq);
+    var rotation = meta.rotation || 0;
+    return `/cgi/imgsrv/${action}?id=${this.identifier};seq=${options.seq};${param.param}=${param.value};rotation=${rotation}`;
   }
 
   html(options={}) {

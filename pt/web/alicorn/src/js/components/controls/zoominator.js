@@ -7,7 +7,7 @@ export var Zoominator = class {
     this.input = options.input;
     this.reader = options.reader;
     // this.possibles = [ 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
-    this.possibles = [ 0.75, 1.0, 1.25 ];
+    this.possibles = [ 0.75, 1.0, 1.25, 1.5 ];
     this.emitter = new NanoEvents();
     this.bindEvents();
   }
