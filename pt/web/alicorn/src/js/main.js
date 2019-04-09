@@ -8,6 +8,7 @@ var HT = window.HT || {}; window.HT = HT;
 var $main = document.querySelector('main');
 var $viewer = $main.querySelector('.viewer');
 var $inner = $viewer.querySelector('.viewer-inner');
+console.log("AHOY AHOY $inner", $inner.offsetHeight);
 
 var $toolbar = $main.querySelector('#toolbar-vertical');
 
@@ -35,10 +36,17 @@ var Reader = class {
     }
     if ( params.view ) {
       $main.dataset.view = params.view;
+      console.log("AHOY AHOY $inner.view", $inner.offsetHeight);
+      setTimeout(function() {
+        console.log("AHOY AHOY $inner.view later", $inner.offsetHeight);
+      }, 2000);
     }
     if ( params.scale ) { this.options.scale = params.scale; }
     this.setView({ view: $main.dataset.view });
-    this.view.attachTo($inner, cb);
+    setTimeout(function() {
+      console.log("AHOY AHOY $inner.view timeout", $inner.offsetHeight);
+      this.view.attachTo($inner, cb);
+    }.bind(this), 0);
   }
 
   restart(params) {
@@ -146,7 +154,7 @@ reader.controls.rotator.on('rotate', function(delta) {
   this.emit('rotate', delta);
 }.bind(reader))
 
-reader.start({ view: '1up', seq: 10 });
+reader.start({ view: '2up', seq: 10 });
 
 
 

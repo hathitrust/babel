@@ -1,6 +1,8 @@
 import NanoEvents from 'nanoevents';
 import {Base} from './base';
 
+import debounce from 'lodash/debounce';
+
 export var Flip = class extends Base {
   constructor(options={}) {
     super(options);
@@ -31,13 +33,19 @@ export var Flip = class extends Base {
     var minWidth = this.minWidth();
     minWidth /= 2;
 
-    var maxHeight = this.container.offsetHeight * 0.90;
+    // return;
+
+    var maxHeight = this.container.offsetHeight * 0.95;
+    console.log("AHOY AHOY", maxHeight);
+    this.container.style.setProperty('--page-height', `${maxHeight}px`);
+
+    var max_edge_width = 0;
+    var max_slice_width = 0;
 
     var scale = this.scale;
 
     // group into pages
     var slices = this.slices;
-    var max_edge_width = 50;
 
     for(var slice_idx = 0; slice_idx < slices.length; slice_idx++ ) {
       var tuple = slices[slice_idx];
@@ -47,7 +55,8 @@ export var Flip = class extends Base {
 
       var edge = document.createElement('div');
       edge.classList.add('edge', 'verso');
-      edge.style.width = `${(slice_idx / slices.length) * max_edge_width}px`;
+      edge.style.setProperty('--fraction', slice_idx / slices.length);
+      // edge.style.width = `${(slice_idx / slices.length) * max_edge_width}px`;
       slice.appendChild(edge);
 
       var page = document.createElement('div');
@@ -64,8 +73,9 @@ export var Flip = class extends Base {
         // page.style.height = `${minWidth * ratio * scale}px`;
         // page.style.width = `${minWidth * scale}px`;
 
-        page.style.height = `${maxHeight * scale}px`;
-        page.style.width = `${maxHeight * scale / ratio}px`;
+        page.style.setProperty('--page-ratio', meta.width / meta.height);
+        // page.style.height = `${maxHeight * scale}px`;
+        // page.style.width = `${maxHeight * scale / ratio}px`;
 
         slice_height = maxHeight * scale;
         slice_width = maxHeight * scale / ratio;
@@ -77,8 +87,11 @@ export var Flip = class extends Base {
       } else {
         var meta = this.service.manifest.meta(1);
         var ratio = meta.height / meta.width;
-        page.style.height = `${maxHeight * scale}px`;
-        page.style.width = `${maxHeight * scale / ratio}px`;
+        page.style.setProperty('--page-ratio', meta.width / meta.height);
+
+        // page.style.height = `${maxHeight * scale}px`;
+        // page.style.width = `${maxHeight * scale / ratio}px`;
+
         page.innerHTML = `<div class="page-text"></div><div class="info">NIL</div>`;
         slice_width = maxHeight * scale / ratio;
       }
@@ -94,8 +107,10 @@ export var Flip = class extends Base {
         // page.style.height = `${minWidth * ratio * scale}px`;
         // page.style.width = `${minWidth * scale}px`;
 
-        page.style.height = `${maxHeight * scale}px`;
-        page.style.width = `${maxHeight * scale / ratio}px`;
+        page.style.setProperty('--page-ratio', meta.width / meta.height);
+
+        // page.style.height = `${maxHeight * scale}px`;
+        // page.style.width = `${maxHeight * scale / ratio}px`;
         page.dataset.bestFit = ( scale <= 1 );
 
         slice_height = slice_height || ( maxHeight * scale );
@@ -107,8 +122,11 @@ export var Flip = class extends Base {
       } else {
         var meta = this.service.manifest.meta(1);
         var ratio = meta.height / meta.width;
-        page.style.height = `${maxHeight * scale}px`;
-        page.style.width = `${maxHeight * scale / ratio}px`;
+
+        page.style.setProperty('--page-ratio', meta.width / meta.height);
+
+        // page.style.height = `${maxHeight * scale}px`;
+        // page.style.width = `${maxHeight * scale / ratio}px`;
 
         slice_width += ( maxHeight * scale / ratio );
 
@@ -121,14 +139,19 @@ export var Flip = class extends Base {
         slice.style.width = `${slice_width * 1.2}px`;
       }
 
+      if ( max_slice_width < slice_width ) {
+        max_slice_width = slice_width;
+      }
+
       edge = document.createElement('div');
       edge.classList.add('edge', 'recto');
-      edge.style.width = `${(( slices.length - slice_idx ) / slices.length) * max_edge_width}px`;
+      edge.style.setProperty('--fraction', (( slices.length - slice_idx ) / slices.length));
 
-      edge.style.height = `${slice_height * 0.95}px`; // this is complicated
+      // edge.style.width = `${(( slices.length - slice_idx ) / slices.length) * max_edge_width}px`;
+      // edge.style.height = `${slice_height * 0.95}px`; // this is complicated
 
       slice.appendChild(edge);
-      slice.querySelector('.edge.verso').style.height = edge.style.height;
+      // slice.querySelector('.edge.verso').style.height = edge.style.height;
 
       slice.dataset.visible = false;
       slice.dataset.slice = slice_idx;
@@ -136,11 +159,19 @@ export var Flip = class extends Base {
       this.container.appendChild(slice);
     }
 
+    var max_edge_width = ( ( this.container.offsetWidth - max_slice_width ) * 0.85 ) / 2;
+    var page_factor = 10;
+    var edge_width = 3 * Math.ceil(this.service.manifest.totalSeq / page_factor);
+    if ( edge_width > max_edge_width ) { edge_width = max_edge_width; }
+    this.container.style.setProperty('--edge-width', `${edge_width}px`);
+
     this.is_active = true;
     this.loadSlice(this.container.querySelector('.slice'));
     if ( cb ) {
       cb();
     }
+
+    console.log("AHOY AHOY RENDER", this.container.offsetHeight);
   }
 
   imageUrl(params) {
@@ -162,6 +193,9 @@ export var Flip = class extends Base {
 
   unloadSlice(slice) {
 
+  }
+
+  resizePage(page) {
   }
 
   display(seq) {
@@ -279,7 +313,17 @@ export var Flip = class extends Base {
   }
 
   bindEvents() {
+    var self = this;
+
     super.bindEvents();
+
+    this._resizer = debounce(function() {
+      self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95}px`);
+      console.log("AHOY flip.resize", self.container.style.getPropertyValue('--page-height'));
+    }, 50);
+
+    window.addEventListener('resize', this._resizer);
+
   }
 
   bindPageEvents(page) {
@@ -292,6 +336,7 @@ export var Flip = class extends Base {
     for(var i = 0; i < pages.length; i++) {
       this.container.removeChild(pages[i]);
     }
+    window.removeEventListener('resize', this._resizer);
   }
 
   config() {
