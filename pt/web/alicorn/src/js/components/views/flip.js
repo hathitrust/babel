@@ -201,6 +201,7 @@ export var Flip = class extends Base {
   }
 
   display(seq) {
+    seq = parseInt(seq, 10);
     var current = this.container.querySelector(`.slice[data-visible="true"]`);
     var slice_idx = this.seq2slice[seq];
     var target = this.container.querySelector(`.slice[data-slice="${slice_idx}"]`);
@@ -325,6 +326,8 @@ export var Flip = class extends Base {
 
     super.bindEvents();
 
+    this.container.addEventListener('click', this.clickHandler.bind(this));
+
     this._resizer = debounce(function() {
       self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95 * self.scale}px`);
       self.container.style.setProperty('--slice-width', `${self.container.offsetWidth * self.scale}px`)
@@ -337,6 +340,52 @@ export var Flip = class extends Base {
 
   bindPageEvents(page) {
     page.parentElement.dataset.visible = false;
+  }
+
+  clickHandler(event) {
+    var element = event.target;
+    if ( element.classList.contains('edge') ) {
+      return this._clickHandlerEdge(element, event);
+    }
+    // check that this is a page
+    element = element.closest('.page');
+    if ( element ) {
+      return this._clickHandlerPage(element, event);
+    }
+    console.log("AHOY AHOY flip.click NOP", event.target);
+  }
+
+  _clickHandlerPage(page, event) {
+    console.log("AHOY AHOY flip.click page", event.target, page);
+    if ( page.classList.contains('verso') ) {
+      // navigating back
+      this.prev();
+    } else {
+      // navigating next
+      this.next();
+    }
+  }
+
+  _clickHandlerEdge(edge, event) {
+    var offsetX = event.offsetX;
+    var edge_width = edge.offsetWidth;
+    var totalSeq = this.service.manifest.totalSeq;
+    var target_slice; var target_seq;
+    if ( edge.classList.contains('recto') ) {
+      // recto edge
+      var page = edge.parentElement.querySelector('.page.recto');
+      var seq = parseInt(page.dataset.seq, 10);
+      target_seq = Math.ceil(seq + ( totalSeq - seq ) * ( offsetX / edge_width ));
+      if ( target_seq > totalSeq ) { target_seq = totalSeq; }
+    } else {
+      // verso edge
+      var page = edge.parentElement.querySelector('.page.verso');
+      var seq = parseInt(page.dataset.seq, 10);
+      target_seq = Math.ceil(seq - ( seq ) * ( ( edge_width - offsetX ) / edge_width ));
+      if ( target_seq < 1 ) { target_seq = 1; }
+    }
+    // console.log("AHOY AHOY flip.click edge", event.target, offsetX, seq, target_seq, ( edge_width - offsetX ) / edge_width);
+    this.display(target_seq);
   }
 
   destroy() {
