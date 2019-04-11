@@ -2,6 +2,12 @@
 // @use postcss-simple-vars;
 // @use postcss-preset-env;
 
+:root {
+  --microtip-transition-delay: 0.25s;
+}
+
+@import 'microtip/microtip';
+
 $icomoon-font-path: "/common/unicorn/vendor/icomoon/fonts";
 @import "../../../common/web/unicorn/vendor/icomoon/style.scss";
 
@@ -70,7 +76,15 @@ strong {
 }
 
 em {
-  font-style: italics;
+  font-style: italic;
+}
+
+p + p {
+  margin-top: 1rem;
+}
+
+p.larger {
+  font-size: 1.2rem;
 }
 
 a {
@@ -102,7 +116,7 @@ a {
     clip: auto;
 }
 
-input[type=date], input[type=email], input[type=search], input[type=tel], input[type=text] {
+input[type=date], input[type=email], input[type=search], input[type=tel], input[type=text], textarea {
     margin: 0;
     font-size: 1rem;
     border: 1px solid #0000004d;
@@ -381,7 +395,7 @@ nav {
 
 #toolbar-horizontal {
   width: 100%;
-  z-index: 1000;
+  z-index: 5;
   justify-content: flex-end;
   align-items: center;
 
@@ -422,7 +436,7 @@ nav {
 
   // margin-top: -3rem;
   // border: 1px solid green;
-  z-index: 1000;
+  z-index: 5;
 
   flex-shrink: 0;
   flex-basis: 3rem;
@@ -519,7 +533,7 @@ aside {
       margin-bottom: 1rem;
     }
 
-    p:first-child {
+    p:first-of-type, p:first-child {
       margin-top: 0;
     }
 
@@ -948,6 +962,57 @@ main[data-view="thumb"] {
   font-style: italic;
   color: #666;
   margin-top: 0.25rem;
+}
+
+.help-block {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.embedUrlContainer {
+  position: reliatve;
+    h3 {
+        display: block;
+        font-weight: bold;
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    input[type="radio"] {
+      padding-left: 1.2rem;
+    }
+
+    textarea {
+        width: 95%;
+        margin-bottom: 0.5rem;
+    }
+
+    label {
+      padding-right: 1rem;
+    }
+
+    label.radio .icomoon-scroll {
+      font-size: 1rem;
+    }
+    label.radio .icomoon-book-alt2 {
+      font-size: 1rem;
+    }
+
+    #embedHelpIcon {
+      display: inline-block;
+      position: relative;
+      height: 18px;
+      width: 18px;
+      top: 0;
+      right: 0;
+      margin-left: 1rem;
+      line-height: 1.2;
+      // margin-left: 20rem;
+      // margin-bottom: 1rem;
+      background-image: url(/common/unicorn/img/icon_question.png);
+      background-repeat: no-repeat;
+      text-indent: -10000px;
+    }
 }
 
 /* ANIMATION */

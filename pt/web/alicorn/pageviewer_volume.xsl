@@ -231,22 +231,22 @@
       <xsl:call-template name="action-resize" />
 
       <div class="btn-group btn-group-vertical action-rotate">
-        <button href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Counterclockwise"><i class="icomoon icomoon-reload-CCW"></i><span class="toolbar-label"> Rotate left</span></button>
-        <button href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Clockwise"><i class="icomoon icomoon-reload-CW"></i><span class="toolbar-label"> Rotate right</span></button>
+        <button href="{//RotateLinks/CounterClockwiseLink}" id="action-rotate-counterclockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Counterclockwise" aria-label="Rotate Counter-clockwise" data-microtip-position="left" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-reload-CCW"></i></button>
+        <button href="{//RotateLinks/ClockwiseLink}" id="action-rotate-clockwise" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Rotate Clockwise" aria-label="Rotate Clockwise" data-microtip-position="left" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-reload-CW"></i></button>
       </div>
     </div>
   </xsl:template>
 
   <xsl:template name="action-fullscreen">
     <div class="btn-group btn-group-vertical">
-      <button id="action-toggle-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen"><i class="icomoon icomoon-fullscreen"></i><span class="toolbar-label"> Full Screen</span></button>
+      <button id="action-toggle-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="Full Screen" data-microtip-position="left" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-fullscreen"></i></button>
     </div>
   </xsl:template>
 
   <xsl:template name="action-resize">
     <div class="btn-group btn-group-vertical action-zoom">
-      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In"><i class="icomoon icomoon-iconmonstr-magnifier-6-icon" style=""></i><span class="toolbar-label"> Zoom In</span></button>
-      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out"><i class="icomoon icomoon-iconmonstr-magnifier-7-icon" style=""></i><span class="toolbar-label"> Zoom Out</span></button>
+      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In" aria-label="Zoom In" data-microtip-position="left" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-iconmonstr-magnifier-6-icon" style=""></i></button>
+      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out" aria-label="Zoom Out" data-microtip-position="left" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-iconmonstr-magnifier-7-icon" style=""></i></button>
     </div>
   </xsl:template>
 
@@ -271,11 +271,12 @@
       </xsl:choose>
     </xsl:variable>
 
-    <button href="{$href}" data-target="{$option/@name}" type="button" class="btn square" data-toggle="tooltip tracking" data-tracking-action="PT {$option}">
+    <button href="{$href}" data-target="{$option/@name}" type="button" class="btn square" data-toggle="tooltip tracking" data-tracking-action="PT {$option}" aria-label="{$option}" data-microtip-position="left" data-microtip-size="small" role="tooltip">
       <xsl:if test="$option/@accesskey">
         <xsl:attribute name="accesskey"><xsl:value-of select="$option/@accesskey" /></xsl:attribute>
       </xsl:if>
-      <i class="{$option/@value}"></i> <span class="toolbar-label"><xsl:value-of select="$option" /></span>
+      <i class="{$option/@value}"></i>
+      <!-- <i class="{$option/@value}"></i> <span class="toolbar-label"><xsl:value-of select="$option" /></span> -->
     </button>
   </xsl:template>
 
@@ -327,15 +328,15 @@
   </xsl:template>
 
   <xsl:template name="action-page-navigation">
-    <button id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f"><i class="icomoon icomoon-first"></i><span class="toolbar-label"> First</span></button>
-    <button id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square"><i class="icomoon icomoon-go-previous" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p"></i><span class="toolbar-label"> Previous</span></button>
-    <button id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n"><i class="icomoon icomoon-go-next"></i><span class="toolbar-label"> Next</span></button>
-    <button id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l"><i class="icomoon icomoon-last"></i><span class="toolbar-label"> Last</span></button>
+    <button id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f" aria-label="Go to first page scan" data-microtip-position="bottom" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-first"></i></button>
+    <button id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p" aria-label="Go to previous page scan" data-microtip-position="bottom" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-go-previous"></i></button>
+    <button id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n" aria-label="Go to next page scan" data-microtip-position="bottom" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-go-next"></i></button>
+    <button id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l" aria-label="Go to last page scan" data-microtip-position="bottom" data-microtip-size="small" role="tooltip"><i class="icomoon icomoon-last"></i></button>
   </xsl:template>
 
   <xsl:template name="action-table-of-contents">
-    <button type="button" class="btn dropdown-toggle square" data-toggle="dropdown">
-      <i class="icomoon icomoon-list"></i><span class="toolbar-label"> Jump to section</span> <span class="caret"></span>
+    <button type="button" class="btn dropdown-toggle square" data-toggle="dropdown" aria-label="Jump to section" data-microtip-position="bottom" data-microtip-size="small" role="tooltip">
+      <i class="icomoon icomoon-list"></i><span class="caret"></span>
     </button>
     <ul class="dropdown-menu scrollable-list">
       <xsl:for-each select="$gFeatureList/Feature">
@@ -353,8 +354,8 @@
   </xsl:template>
 
   <xsl:template name="action-selection-contents">
-    <button type="button" class="btn dropdown-toggle square disabled" data-toggle="dropdown">
-      <i class="icomoon icomoon-attachment"></i><span class="toolbar-label"> Jump to selected page</span> <span class="msg"></span> <span class="caret"></span>
+    <button type="button" class="btn dropdown-toggle square disabled" data-toggle="dropdown" aria-label="Jump to selected page" data-microtip-position="bottom" data-microtip-size="small" role="tooltip">
+      <i class="icomoon icomoon-attachment"></i><span class="caret"></span>
     </button>
     <ul class="dropdown-menu scrollable-list"></ul>
   </xsl:template>

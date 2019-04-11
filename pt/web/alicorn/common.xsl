@@ -1206,7 +1206,7 @@
       <div class="btn-group share-toolbar share-toolbar-seven social-links">
         <button data-service="facebook" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-facebook2"></i><span class="offscreen"> Share via Facebook</span></button>
         <button data-service="twitter" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-twitter2"></i><span class="offscreen"> Share via Twitter</span></button>
-        <button data-service="plusone" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button>
+        <!-- <button data-service="plusone" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button> -->
         <button data-service="reddit" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-reddit"></i><span class="offscreen"> Share via reddit</span></button>
         <button data-service="tumblr" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i><span class="offscreen"> Share via Tumblr</span></button>
         <button data-service="vkontakte" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-vk"></i><span class="offscreen"> Share via VK</span></button>
@@ -1275,15 +1275,9 @@
     <div class="versionContainer panel" style="margin-top: 2rem">
       <h3 class="offscreen">About versions</h3>
       <strong>Version: </strong><xsl:value-of select="$gVersionLabel"/>
-      <xsl:element name="a">
-        <xsl:attribute name="id">versionIcon</xsl:attribute>
-        <xsl:attribute name="default-form">data-default-form</xsl:attribute>
-        <xsl:attribute name="href">
-          <xsl:value-of select="' '"/>
-        </xsl:attribute>
-        <span class="offscreen"><xsl:text>version label for this item</xsl:text></span>
+      <button id="versionIcon" default-form="data-default-form" aria-label="version label for this item">
         <i class="far fa-question-circle"></i>
-      </xsl:element>
+      </button>
     </div>
   </xsl:template>
 

@@ -23,17 +23,18 @@ stylesheets.output = './css';
 
 var javascripts = {};
 javascripts.input = [];
-// javascripts.input.push('./vendor/leaflet/dist/leaflet-src.js');
-// javascripts.input.push('./vendor/leaflet/plugins/leaflet-iiif.js');
-// javascripts.input.push('./vendor/leaflet/plugins/tooltip.patches.js');
-// javascripts.input.push('./vendor/leaflet/plugins/easy-button.js');
-// javascripts.input.push('./vendor/bigfoot/dist/bigfoot.js');
-javascripts.input.push('./src/js/components/**/*.js', './src/js/main.js')
+javascripts.input.push('./src/js/utils/**/*.js')
 javascripts.output = './js';
+
+var apps = {};
+apps.input = [];
+apps.input.push('./src/js/components/**/*.js', './src/js/main.js');
+apps.output = "./js";
 
 stylesheets.options = {
   errLogToConsole: true,
-  outputStyle: 'expanded'
+  outputStyle: 'expanded',
+  includePaths: ['node_modules']
 };
 
 var autoprefixerOptions = {
@@ -55,15 +56,15 @@ gulp.task('sass', function() {
     .pipe(gulp.dest(stylesheets.output));
 });
 
-// gulp.task('scripts', function() {
-//   return gulp.src(javascripts.input)
-//     .pipe(sourcemaps.init())
-//       .pipe(concat('main.js'))
-//     .pipe(sourcemaps.write())
-//     .pipe(gulp.dest(javascripts.output))
-// })
-
 gulp.task('scripts', function() {
+  return gulp.src(javascripts.input)
+    .pipe(sourcemaps.init())
+      .pipe(concat('utils.js'))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(javascripts.output))
+})
+
+gulp.task('app', function() {
   return gulp.src('./src/js/main.js')
     .pipe(webpack({
       watch: false,
@@ -89,5 +90,9 @@ gulp.task('scripts:watch', function () {
   gulp.watch(javascripts.input, gulp.parallel('scripts'));
 });
 
-gulp.task('default', gulp.parallel('sass:watch', 'scripts:watch'));
+gulp.task('app:watch', function () {
+  gulp.watch(apps.input, gulp.parallel('app'));
+});
+
+gulp.task('default', gulp.parallel('sass:watch', 'app:watch', 'scripts:watch'));
 gulp.task('run', gulp.series('sass', 'scripts'));
