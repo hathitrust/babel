@@ -582,7 +582,7 @@ body {
   line-height: 1.25;
 }
 
-.site {
+#root {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
@@ -591,7 +591,7 @@ body {
 }
 
 @media (min-width: 45em) {
-  .site {
+  #root {
     grid-template: "header header" auto "sidebar main" 1fr "footer footer" auto/minmax(10rem, 18rem) minmax(0, 1fr);
   }
 }
@@ -686,27 +686,35 @@ input[type=text] + button {
   margin-left: 0.25rem;
 }
 
-header, footer {
+header.site-navigation, footer.site-navigation {
   background: #39383a;
   color: #d0cfcd;
 }
 
-header nav, footer nav {
+header.site-navigation nav, footer.site-navigation nav {
   padding: 0;
   margin: 0 auto;
   max-width: 80vw;
 }
 
-header {
+header.site-navigation {
   grid-area: header;
 }
 
-footer {
+header.site-navigation nav > ul + ul::before {
+  content: "";
+  display: block;
+  border-left: 1px solid #6b6a6b;
+  margin-right: 1rem;
+  margin-left: -2rem;
+}
+
+footer.site-navigation {
   z-index: 1;
   grid-area: footer;
 }
 
-footer nav {
+footer.site-navigation nav {
   -webkit-box-pack: end;
       -ms-flex-pack: end;
           justify-content: flex-end;
@@ -721,14 +729,6 @@ footer nav {
   width: 40px;
   padding: 0;
   margin-top: 2px;
-}
-
-header nav > ul + ul::before {
-  content: "";
-  display: block;
-  border-left: 1px solid #6b6a6b;
-  margin-right: 1rem;
-  margin-left: -2rem;
 }
 
 nav {
@@ -988,23 +988,7 @@ nav form select {
   margin-top: 10px;
 }
 
-mainxx {
-  display: grid;
-  grid-template-columns: 20rem repeat(3, 1fr);
-  grid-gap: 0px;
-  -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
-  width: 98vw;
-  margin: 1rem auto;
-  margin-top: 3.5rem;
-  overflow: hidden;
-  border: 1px solid #d5d3d3;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.1) 0 1px 10px;
-          box-shadow: rgba(0, 0, 0, 0.1) 0 1px 10px;
-}
-
-main {
+main.main-container {
   grid-area: main;
   margin: 0;
   overflow: hidden;
@@ -1018,21 +1002,7 @@ main {
   padding: 0.75rem 1rem;
 }
 
-mainxx .container {
-  margin: 1rem auto;
-  overflow: hidden;
-  -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  border: 1px solid #d5d3d3;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.1) 0 1px 10px;
-          box-shadow: rgba(0, 0, 0, 0.1) 0 1px 10px;
-}
-
-aside {
+aside.side-container {
   grid-area: sidebar;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1045,23 +1015,23 @@ aside {
   margin-top: 4.2rem;
 }
 
-aside #mdpBackToResults {
+aside.side-container #mdpBackToResults {
   padding: 1rem 1rem 0.5rem;
   width: 95%;
   margin: 0 auto;
 }
 
-aside .panel {
+aside.side-container .panel {
   padding: 1rem;
   margin: 0 auto;
   width: 95%;
 }
 
-aside .panel.bibLinks {
+aside.side-container .panel.bibLinks {
   padding-top: 0;
 }
 
-aside .panel h2, aside .panel h3 {
+aside.side-container .panel h2, aside.side-container .panel h3 {
   font-size: 110%;
   font-weight: bold;
   margin-bottom: 0.75rem;
@@ -1069,45 +1039,45 @@ aside .panel h2, aside .panel h3 {
   padding-bottom: 0.5rem;
 }
 
-aside .panel p {
+aside.side-container .panel p {
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
 
-aside .panel p:first-of-type, aside .panel p:first-child {
+aside.side-container .panel p:first-of-type, aside.side-container .panel p:first-child {
   margin-top: 0;
 }
 
-aside .panel p + p {
+aside.side-container .panel p + p {
   margin-bottom: 0;
 }
 
-aside .panel li + li {
+aside.side-container .panel li + li {
   margin-top: 0.25rem;
 }
 
-aside .panel form {
+aside.side-container .panel form {
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
 }
 
-aside .panel form label {
+aside.side-container .panel form label {
   display: block;
   margin-bottom: 0.25rem;
 }
 
-aside .panel form input[type=text] {
+aside.side-container .panel form input[type=text] {
   margin-bottom: 1rem;
 }
 
-aside .panel select {
+aside.side-container .panel select {
   width: 100%;
   font-size: 100%;
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
 
-aside .scrollable {
+aside.side-container .scrollable {
   overflow: auto;
   margin-bottom: 1rem;
 }

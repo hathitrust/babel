@@ -80,6 +80,10 @@ var Reader = class {
     this.view.display(this.service.manifest.totalSeq);
   }
 
+  display(seq) {
+    this.view.display(seq);
+  }
+
   on() {
     return this.emitter.on.apply(this.emitter, arguments)
   }
@@ -154,6 +158,11 @@ reader.controls.rotator.on('rotate', function(delta) {
   console.log("AHOY controls.rotator", delta);
   this.emit('rotate', delta);
 }.bind(reader))
+
+reader.controls.contentsnator = new Control.Contentsnator({
+  input: document.querySelector('.table-of-contents'),
+  reader: reader
+});
 
 reader.start({ view: '2up', seq: 10 });
 

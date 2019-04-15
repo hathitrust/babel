@@ -207,7 +207,7 @@
   <xsl:template name="header" />
 
   <xsl:template name="navbar">
-    <header>
+    <header class="site-navigation">
       <nav aria-label="Site Navigation">
         <ul id="nav" class="nav">
           <li><a class="home-link" href="https://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
@@ -290,8 +290,8 @@
   </xsl:template>
 
   <xsl:template name="contents">
-    <aside><xsl:call-template name="sidebar" /></aside>
-    <main>
+    <aside class="side-container"><xsl:call-template name="sidebar" /></aside>
+    <main class="main-container">
       <xsl:call-template name="main" />
     </main>    
   </xsl:template>

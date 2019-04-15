@@ -94,7 +94,7 @@
 
         <!-- <xsl:call-template name="access-overview" /> -->
 
-        <div class="site">
+        <div id="root">
 
           <xsl:call-template name="navbar" />
           <xsl:call-template name="header" />
@@ -274,7 +274,7 @@
 
   <xsl:template name="footer">
     <xsl:variable name="inst" select="/MBooksTop/MBooksGlobals/InstitutionName"/>
-    <footer>
+    <footer class="site-navigation">
       <nav>
         <xsl:if test="$inst != ''">
           <ul class="nav">
