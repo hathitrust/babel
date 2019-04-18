@@ -137,7 +137,7 @@
   <xsl:template name="skip-to-main-link">
     <div id="skiplinks" role="complementary" aria-label="Skip links">
       <ul>
-        <li><a href="#main">Skip to page content</a></li>
+        <li><a href="#section">Skip to page content</a></li>
         <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
         <li><a href="#input-search-text">Skip to search in this text</a></li>
         <li><a href="#sidebar">Skip to book options</a></li>

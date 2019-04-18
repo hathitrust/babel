@@ -29,10 +29,10 @@
   </xsl:template>
 
   <xsl:template name="contents">
-    <main class="main-container">
-      <div class="container container-medium flex-container" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
-        <div class="side-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
-        <section id="main">
+    <main class="main-container" id="main">
+      <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
+        <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
+        <section class="section-container" id="section">
           <xsl:call-template name="main" />
         </section>
       </div>
