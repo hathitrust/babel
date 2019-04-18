@@ -169,7 +169,7 @@
     <div class="navigator">
       <form>
         <label class="offscreen" for="control-navigator">Location: </label>
-        <input id="control-navigator" type="range" name="locations-range-value" min="0" max="{$totalSeq}" aria-valuemin="0" aria-valuemax="{$totalSeq}" aria-valuenow="0" aria-valuetext="0% • Page scan 0 of {$totalSeq}" value="0" data-background-position="0" />
+        <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 0 of {$totalSeq}" value="1" data-background-position="0" />
         <xsl:text> </xsl:text>
         <div class="output">Page Scan <span data-slot="current-seq">0</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
         <xsl:text> </xsl:text>

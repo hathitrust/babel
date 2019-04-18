@@ -23,13 +23,23 @@ export var Thumbnail = class extends Scroll {
     return 160;
   }
 
-  bindPageEvents(page) {
-    var self = this;
-    super.bindPageEvents(page);
-    page.addEventListener('click', function(event) {
-      console.log("AHOY CLICK", this.dataset.seq);
-      self.reader.restart({ view: '1up', seq: this.dataset.seq });
-    })
+  bindEvents() {
+    super.bindEvents();
+    this._clickHandler = this.clickHandler.bind(this);
+    this.container.addEventListener('click', this._clickHandler);
+  }
+
+  clickHandler(event) {
+    var element = event.target;
+    element = element.closest('.page');
+    if ( element ) {
+      this.reader.restart({ view: '1up', seq: element.dataset.seq });
+    }
+  }
+
+  destroy() {
+    super.destroy();
+    this.container.removeEventListener('click', this._clickHandler);
   }
 
   config() {

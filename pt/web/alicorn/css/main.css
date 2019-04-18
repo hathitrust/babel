@@ -669,6 +669,9 @@ header nav form select, footer nav form select {
 
 .container-boxed .section-container {
   margin: 1.5rem 2rem;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
 }
 
 .container-medium {
@@ -1412,13 +1415,20 @@ nav.pagination-container ul li a.page-advance-link {
   margin-bottom: 1rem;
 }
 
-body {
+html, body {
   overflow: hidden;
   height: 100vh;
 }
 
 main > .container {
   width: 100%;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  grid-template: "header" auto "main" 1fr "footer" auto/minmax(0, 1fr);
 }
 
 .toolbar {
@@ -1531,84 +1541,16 @@ main.main-container {
           flex-direction: column;
 }
 
-.xxxside-container {
-  grid-area: sidebar;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  overflow: hidden;
-  margin-top: 4.2rem;
+.container-full {
+  height: 100%;
 }
 
-.xxxside-container #mdpBackToResults {
-  padding: 1rem 1rem 0.5rem;
-  width: 95%;
-  margin: 0 auto;
+.container-boxed .section-container {
+  margin: 0;
 }
 
-.xxxside-container .panel {
-  padding: 1rem;
-  margin: 0 auto;
-  width: 95%;
-}
-
-.xxxside-container .panel.bibLinks {
-  padding-top: 0;
-}
-
-.xxxside-container .panel h2, .xxxside-container .panel h3 {
-  font-size: 110%;
-  font-weight: bold;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 0.5rem;
-}
-
-.xxxside-container .panel p {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-
-.xxxside-container .panel p:first-of-type, .xxxside-container .panel p:first-child {
-  margin-top: 0;
-}
-
-.xxxside-container .panel p + p {
-  margin-bottom: 0;
-}
-
-.xxxside-container .panel li + li {
-  margin-top: 0.25rem;
-}
-
-.xxxside-container .panel form {
-  margin-top: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.xxxside-container .panel form label {
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.xxxside-container .panel form input[type=text] {
-  margin-bottom: 1rem;
-}
-
-.xxxside-container .panel select {
-  width: 100%;
-  font-size: 100%;
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
-}
-
-.xxxside-container .scrollable {
+.sidebar-container .scrollable {
   overflow: auto;
-  margin-bottom: 1rem;
 }
 
 main .inner.main {
@@ -1627,7 +1569,7 @@ main .inner.main {
           flex-direction: row;
 }
 
-.section-main .navigator {
+.section-container .navigator {
   padding: 0.5rem 1rem;
   background: #666;
   color: #fff;
@@ -1644,7 +1586,7 @@ main .inner.main {
           align-items: center;
 }
 
-.section-main .navigator form {
+.section-container .navigator form {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1659,7 +1601,7 @@ main .inner.main {
           flex-grow: 1;
 }
 
-.section-main .navigator input[type=range] {
+.section-container .navigator input[type=range] {
   margin: auto;
   margin-right: 1rem;
   padding: 0;
@@ -1677,7 +1619,7 @@ main .inner.main {
   -webkit-appearance: none;
 }
 
-.section-main .navigator input[type=range]::-webkit-slider-runnable-track {
+.section-container .navigator input[type=range]::-webkit-slider-runnable-track {
   -webkit-box-shadow: none;
           box-shadow: none;
   border: none;
@@ -1685,17 +1627,17 @@ main .inner.main {
   -webkit-appearance: none;
 }
 
-.section-main .navigator input[type=range]::-moz-range-track {
+.section-container .navigator input[type=range]::-moz-range-track {
   box-shadow: none;
   border: none;
   background: transparent;
 }
 
-.section-main .navigator input[type=range]::-moz-focus-outer {
+.section-container .navigator input[type=range]::-moz-focus-outer {
   border: 0;
 }
 
-.section-main .navigator input[type=range]::-webkit-slider-thumb {
+.section-container .navigator input[type=range]::-webkit-slider-thumb {
   width: 24px;
   height: 24px;
   border: 0;
@@ -1706,7 +1648,7 @@ main .inner.main {
   -webkit-appearance: none;
 }
 
-.section-main .navigator input[type=range]::-moz-range-thumb {
+.section-container .navigator input[type=range]::-moz-range-thumb {
   width: 24px;
   height: 24px;
   border: 0;
@@ -1715,7 +1657,7 @@ main .inner.main {
   box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
 }
 
-.section-main .navigator input[type=range]::-ms-thumb {
+.section-container .navigator input[type=range]::-ms-thumb {
   margin-top: 1px;
   box-shadow: 0px 0px 0px #000000;
   border: 1px solid #2497E3;
@@ -1727,7 +1669,7 @@ main .inner.main {
   cursor: pointer;
 }
 
-.section-main .navigator .output {
+.section-container .navigator .output {
   margin-right: 1rem;
   display: inline-block;
 }
@@ -1789,7 +1731,7 @@ section section .viewer-inner {
 }
 
 section section .page {
-  margin: 2rem auto;
+  margin: 0rem auto 2rem;
   position: relative;
   overflow: hidden;
   -webkit-box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
@@ -1835,55 +1777,59 @@ section section canvas, section section img {
   display: block;
 }
 
-main[data-view="1up"] section .page {
+section[data-view="1up"] section .page {
   width: 80%;
 }
 
-main[data-view="1up"] section .page[data-rotate]:not([data-rotate="0"]) {
+section[data-view="1up"] section .page[data-rotate]:not([data-rotate="0"]) {
   -webkit-transform: rotate(var(--rotate));
           transform: rotate(var(--rotate));
   margin: var(--rotate-margin);
 }
 
-main[data-view="1up"] section .page img {
+section[data-view="1up"] section .page img {
   width: 100%;
 }
 
-main[data-view="1up"] button[data-target="1up"] {
+section[data-view="1up"] button[data-target="1up"] {
   background: rgba(0, 0, 0, 0.8);
 }
 
-main[data-view="image"] section .page {
+section[data-view="image"] section .page {
   width: 80%;
   position: absolute;
   top: 0;
 }
 
-main[data-view="image"] section .page[data-best-fit="true"] {
+section[data-view="image"] section .page[data-best-fit="true"] {
   left: 50%;
   -webkit-transform: translate(-50%);
           transform: translate(-50%);
 }
 
-main[data-view="image"] section .page[data-visible="false"] {
+section[data-view="image"] section .page[data-visible="false"] {
   visibility: hidden;
   opacity: 0;
   -webkit-transition: visibility 0s linear 300s, opacity 300ms;
   transition: visibility 0s linear 300s, opacity 300ms;
 }
 
-main[data-view="image"] section .page[data-visible="true"] {
+section[data-view="image"] section .page[data-visible="true"] {
   visibility: visible;
   opacity: 1;
   -webkit-transition: visibility 0s linear 0s, opacity 300ms;
   transition: visibility 0s linear 0s, opacity 300ms;
 }
 
-main[data-view="image"] button[data-target="image"] {
+section[data-view="image"] section .page img {
+  width: 100%;
+}
+
+section[data-view="image"] button[data-target="image"] {
   background: rgba(0, 0, 0, 0.8);
 }
 
-main[data-view="2up"] section .slice {
+section[data-view="2up"] section .slice {
   width: var(--slice-width);
   position: absolute;
   top: 0;
@@ -1903,59 +1849,59 @@ main[data-view="2up"] section .slice {
           justify-content: center;
 }
 
-main[data-view="2up"] section .slice[data-visible="false"] {
+section[data-view="2up"] section .slice[data-visible="false"] {
   visibility: hidden;
   opacity: 0;
   -webkit-transition: visibility 0s linear 300s, opacity 300ms;
   transition: visibility 0s linear 300s, opacity 300ms;
 }
 
-main[data-view="2up"] section .slice[data-visible="true"] {
+section[data-view="2up"] section .slice[data-visible="true"] {
   visibility: visible;
   opacity: 1;
   -webkit-transition: visibility 0s linear 0s, opacity 300ms;
   transition: visibility 0s linear 0s, opacity 300ms;
 }
 
-main[data-view="2up"] section .page {
+section[data-view="2up"] section .page {
   margin: 0;
 }
 
-main[data-view="2up"] section .page.verso {
+section[data-view="2up"] section .page.verso {
   height: var(--page-height);
   width: calc(var(--page-height) * var(--page-ratio));
 }
 
-main[data-view="2up"] section .page.recto {
+section[data-view="2up"] section .page.recto {
   height: var(--page-height);
   width: calc(var(--page-height) * var(--page-ratio));
 }
 
-main[data-view="2up"] section .page img {
+section[data-view="2up"] section .page img {
   height: 100%;
 }
 
-main[data-view="2up"] section .edge {
+section[data-view="2up"] section .edge {
   height: calc(var(--page-height) * 0.98);
   background: #ddd;
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAFCAYAAABirU3bAAAAG0lEQVQIW2O8c+fOTCEhIYZ3794xgGhGKggAAJf0H/UWcK5GAAAAAElFTkSuQmCC);
 }
 
-main[data-view="2up"] section .edge.recto {
+section[data-view="2up"] section .edge.recto {
   border-right: 8px solid #666;
   width: calc(var(--fraction) * var(--edge-width));
 }
 
-main[data-view="2up"] section .edge.verso {
+section[data-view="2up"] section .edge.verso {
   border-left: 8px solid #666;
   width: calc(var(--fraction) * var(--edge-width));
 }
 
-main[data-view="2up"] button[data-target="2up"] {
+section[data-view="2up"] button[data-target="2up"] {
   background: rgba(0, 0, 0, 0.8);
 }
 
-main[data-view="thumb"] section .viewer-inner {
+section[data-view="thumb"] section .viewer-inner {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1973,20 +1919,20 @@ main[data-view="thumb"] section .viewer-inner {
           flex-direction: row;
 }
 
-main[data-view="thumb"] section .page {
+section[data-view="thumb"] section .page {
   margin: 2rem 2rem;
   cursor: pointer;
 }
 
-main[data-view="thumb"] section .page img {
+section[data-view="thumb"] section .page img {
   max-width: 100%;
 }
 
-main[data-view="thumb"] button[data-target="thumb"] {
+section[data-view="thumb"] button[data-target="thumb"] {
   background: rgba(0, 0, 0, 0.8);
 }
 
-main[data-view="plaintext"] section .page {
+section[data-view="plaintext"] section .page {
   width: 90%;
   max-width: 80rem;
   min-height: 90vh;
@@ -1994,27 +1940,27 @@ main[data-view="plaintext"] section .page {
   top: 0;
 }
 
-main[data-view="plaintext"] section .page[data-best-fit="true"] {
+section[data-view="plaintext"] section .page[data-best-fit="true"] {
   left: 50%;
   -webkit-transform: translate(-50%);
           transform: translate(-50%);
 }
 
-main[data-view="plaintext"] section .page[data-visible="false"] {
+section[data-view="plaintext"] section .page[data-visible="false"] {
   visibility: hidden;
   opacity: 0;
   -webkit-transition: visibility 0s linear 300s, opacity 300ms;
   transition: visibility 0s linear 300s, opacity 300ms;
 }
 
-main[data-view="plaintext"] section .page[data-visible="true"] {
+section[data-view="plaintext"] section .page[data-visible="true"] {
   visibility: visible;
   opacity: 1;
   -webkit-transition: visibility 0s linear 0s, opacity 300ms;
   transition: visibility 0s linear 0s, opacity 300ms;
 }
 
-main[data-view="plaintext"] section .page .page-text {
+section[data-view="plaintext"] section .page .page-text {
   display: block;
   height: 100%;
   width: 100%;
@@ -2029,16 +1975,16 @@ main[data-view="plaintext"] section .page .page-text {
   clip-path: none;
 }
 
-main[data-view="plaintext"] section .page .page-text .ocr_page, main[data-view="plaintext"] section .page .page-text .ocrx_block {
+section[data-view="plaintext"] section .page .page-text .ocr_page, section[data-view="plaintext"] section .page .page-text .ocrx_block {
   font-size: inherit;
 }
 
-main[data-view="plaintext"] section .page .page-text .ocrx_block {
+section[data-view="plaintext"] section .page .page-text .ocrx_block {
   margin-bottom: 1rem;
   line-height: 1.5;
 }
 
-main[data-view="plaintext"] button[data-target="plaintext"] {
+section[data-view="plaintext"] button[data-target="plaintext"] {
   background: rgba(0, 0, 0, 0.8);
 }
 

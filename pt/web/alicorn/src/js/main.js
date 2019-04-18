@@ -7,10 +7,10 @@ import {View} from './components/views';
 import debounce from 'lodash/debounce';
 
 var HT = window.HT || {}; window.HT = HT;
-var $main = document.querySelector('main');
+var $main = document.querySelector('section#section');
 var $viewer = $main.querySelector('.viewer');
 var $inner = $viewer.querySelector('.viewer-inner');
-console.log("AHOY AHOY $inner", $inner.offsetHeight);
+var $status = document.querySelector('div[role="status"]');
 
 var $toolbar = $main.querySelector('#toolbar-vertical');
 
@@ -96,6 +96,14 @@ var Reader = class {
 
   bindEvents() {
     /* NOOP */
+    this.on('status', (message) => {
+      setTimeout(() => {
+        $status.innerText = message;
+      }, 50);
+      setTimeout(() => {
+        $status.innerText = '';
+      }, 500);
+    });
   }
 
 }

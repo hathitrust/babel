@@ -125,6 +125,10 @@ export var PlainText = class extends Single {
       }
     }.bind(this), 50);
 
+    this.reader.on('relocated', (params) => {
+      this.reader.emit('status', `Showing page scan ${params.seq}`);
+    });
+
     window.addEventListener('resize', this._resizer);
 
   }

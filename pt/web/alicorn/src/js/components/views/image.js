@@ -106,6 +106,10 @@ export var Single = class extends Base {
       rotate = rotate % 360;
       self.updatePageRotation(target, rotate);
     });
+
+    this.reader.on('relocated', (params) => {
+      this.reader.emit('status', `Showing page scan ${params.seq}`);
+    });
   }
 
   bindPageEvents(page) {

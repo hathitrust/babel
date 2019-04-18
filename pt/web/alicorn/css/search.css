@@ -669,6 +669,9 @@ header nav form select, footer nav form select {
 
 .container-boxed .section-container {
   margin: 1.5rem 2rem;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
 }
 
 .container-medium {

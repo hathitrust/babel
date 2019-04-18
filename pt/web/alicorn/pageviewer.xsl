@@ -291,7 +291,7 @@
 
   <xsl:template name="contents">
     <main class="main-container" id="main">
-      <div class="container flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
+      <div class="container flex-container container-boxed container-full">
         <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
         <section class="section-container" id="section">
           <xsl:call-template name="main" />

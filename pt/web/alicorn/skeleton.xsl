@@ -96,6 +96,8 @@
 
         <div id="root">
 
+          <div role="status" aria-atomic="true" aria-live="polite" class="offscreen"></div>
+
           <xsl:call-template name="navbar" />
           <xsl:call-template name="header" />
 
