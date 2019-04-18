@@ -274,7 +274,7 @@
 
   <xsl:template name="footer">
     <xsl:variable name="inst" select="/MBooksTop/MBooksGlobals/InstitutionName"/>
-    <footer class="site-navigation">
+    <footer class="site-navigation" role="contentinfo">
       <nav>
         <xsl:if test="$inst != ''">
           <ul class="nav">

@@ -16,7 +16,7 @@ var webpack = require('webpack-stream');
 
 
 var stylesheets = {};
-stylesheets.input = [ './vendor/**/*.css', './src/scss/main.scss' ];
+stylesheets.input = [ './src/scss/*.scss' ];
 stylesheets.concat = [ './vendor/**/*.css' ];
 stylesheets.watch = [ './vendor/**/*.css', './vendor/**/*.scss', './src/scss/**/*.scss' ];
 stylesheets.output = './css';
@@ -46,12 +46,18 @@ gulp.task('sass', function() {
 
   var vendorFiles = gulp.src(stylesheets.concat);
 
-  var localFiles = gulp.src('./src/scss/main.scss')
-    .pipe(sass(stylesheets.options).on('error', sass.logError))
-    .pipe(autoprefixer(autoprefixerOptions));
+  // var localFiles = gulp.src('./src/scss/main.scss')
+  //   .pipe(sass(stylesheets.options).on('error', sass.logError))
+  //   .pipe(autoprefixer(autoprefixerOptions));
 
-  return es.concat(vendorFiles, localFiles)
-    .pipe(concat('main.css'))
+  // return es.concat(vendorFiles, localFiles)
+  //   .pipe(concat('main.css'))
+  //   .pipe(sourcemaps.write())
+  //   .pipe(gulp.dest(stylesheets.output));
+
+  return gulp.src(stylesheets.input)
+    .pipe(sass(stylesheets.options).on('error', sass.logError))
+    .pipe(autoprefixer(autoprefixerOptions))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(stylesheets.output));
 });

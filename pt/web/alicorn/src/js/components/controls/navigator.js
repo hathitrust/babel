@@ -23,6 +23,10 @@ export var Navigator = class {
     this.reader.on('relocated', (params) => {
       this.render('current-seq', params.seq);
       this.input.value = params.seq;
+      this.input.setAttribute('aria-valuenow', params.seq);
+
+      var percent = Math.ceil((parseInt(params.seq, 10) / parseInt(this.input.max, 10)) * 100.0);
+      this.input.setAttribute('aria-valuetext', `${percent}% • Page scan ${params.seq} of ${this.input.max}`);
     })
   }
 

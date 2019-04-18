@@ -4,6 +4,8 @@ import {Control} from './components/controls';
 import {Service} from './components/imgsrv';
 import {View} from './components/views';
 
+import debounce from 'lodash/debounce';
+
 var HT = window.HT || {}; window.HT = HT;
 var $main = document.querySelector('main');
 var $viewer = $main.querySelector('.viewer');
@@ -107,7 +109,8 @@ var service = new Service({
     defaultWidth: $main.dataset.defaultWidth,
     featureList: JSON.parse($main.dataset.featureList)
   },
-  identifier: HT.params.id
+  identifier: HT.params.id,
+  q1: HT.params.q1
 })
 HT.service = service;
 
@@ -164,8 +167,14 @@ reader.controls.contentsnator = new Control.Contentsnator({
   reader: reader
 });
 
-reader.start({ view: '2up', seq: 10 });
+var _scrollCheck = debounce(function() {
+  window.scrollTo(0,0);
+}, 50);
+window.addEventListener('scroll', _scrollCheck);
 
 
+reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10 });
+
+/* AND THE WINDOW */
 
 

@@ -584,6 +584,7 @@
   <!-- Link to OCLC Get Book -->
   <xsl:template name="FindInALibraryLink">
     <xsl:param name="class" />
+    <xsl:param name="label">Find in a library</xsl:param>
     <xsl:for-each select="$gMdpMetadata/datafield[@tag='035'][contains(.,'OCoLC)ocm') or contains(.,'OCoLC') or contains(.,'oclc') or contains(.,'ocm') or contains(.,'ocn')][1]">
       <xsl:variable name="oclc-number">
         <xsl:choose>
@@ -617,7 +618,7 @@
         <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
         <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
 
-        <xsl:text>Find in a library</xsl:text>
+        <xsl:value-of select="$label" />
 
       </xsl:element>
     </xsl:for-each>

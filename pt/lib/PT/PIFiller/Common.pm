@@ -1343,7 +1343,7 @@ sub handle_SETUP_APPLICATION_PARAMS_PI
     my $cgi = $C->get_object('CGI');
 
     my $xml = [ 'HT.params = {};'];
-    foreach my $param ( qw(id view size orient seq debug) ) {
+    foreach my $param ( qw(id view size orient seq debug q1) ) {
         my $v = $cgi->param($param);
         if ( defined $v ) {
             if ( $param =~ m/size|orient|seq/ ) {

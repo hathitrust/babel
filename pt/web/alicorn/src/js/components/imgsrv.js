@@ -63,6 +63,7 @@ export var Service = class {
   constructor(options={}) {
     this.manifest = new Manifest(options.manifest);
     this.identifier = options.identifier;
+    this.q1 = options.q1;
     this.emitter = new NanoEvents();
     this.bindEvents();
   }
@@ -83,7 +84,11 @@ export var Service = class {
   }
 
   html(options={}) {
-    return `/cgi/imgsrv/html?id=${this.identifier};seq=${options.seq}`;
+    var url = `/cgi/imgsrv/html?id=${this.identifier};seq=${options.seq}`;
+    if ( this.q1 ) {
+      url += `;q1=${this.q1}`;
+    }
+    return url;
   }
 
   on() {

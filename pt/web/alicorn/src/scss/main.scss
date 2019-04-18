@@ -1,12 +1,10 @@
-// @use postcss-nested;
-// @use postcss-simple-vars;
-// @use postcss-preset-env;
-
 :root {
   --microtip-transition-delay: 0.25s;
 }
 
 @import 'microtip/microtip';
+@import 'alerts';
+@import 'skiplinks';
 
 $icomoon-font-path: "/common/unicorn/vendor/icomoon/fonts";
 @import "../../../common/web/unicorn/vendor/icomoon/style.scss";
@@ -434,7 +432,7 @@ nav {
 
   // margin-top: -3rem;
   // border: 1px solid green;
-  z-index: 5;
+  z-index: 2;
 
   flex-shrink: 0;
   flex-basis: 3rem;
@@ -573,6 +571,13 @@ main .navigator {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+  }
 
   // height: 54px;
 
@@ -799,11 +804,11 @@ main[data-view="image"] {
       position: absolute;
       top: 0;
 
-      &[data-rotate]:not([data-rotate="0"]) {
-        transform: rotate(var(--rotate));
-        margin-top: var(--rotate-margin);
-        margin-bottom: var(--rotate-margin);
-      }
+      // &[data-rotate]:not([data-rotate="0"]) {
+      //   transform: rotate(var(--rotate));
+      //   margin-top: var(--rotate-margin);
+      //   margin-bottom: var(--rotate-margin);
+      // }
 
       &[data-best-fit="true"] {
         left: 50%;
@@ -926,7 +931,77 @@ main[data-view="thumb"] {
   }
 }
 
+main[data-view="plaintext"] {
+  section {
+    .page {
+      width: 90%;
+      max-width: 80rem;
+      min-height: 90vh;
+      position: absolute;
+      top: 0;
+
+      &[data-best-fit="true"] {
+        left: 50%;
+        transform: translate(-50%);
+      }
+
+      &[data-visible="false"] {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s linear 300s, opacity 300ms;
+      }
+
+      &[data-visible="true"] {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s linear 0s, opacity 300ms;
+      }
+
+      .page-text {
+        display: block;
+        height: 100%;
+        width: 100%;
+        padding: 1rem;
+        background: transparent;
+
+        font-size: 1.25rem;
+        line-height: 1.25;
+
+        clip: unset;
+        clip: unset;
+        clip-path: none;
+        clip-path: none;
+
+        .ocr_page, .ocrx_block { font-size: inherit; }
+        .ocrx_block {
+          margin-bottom: 1rem;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+
+  button[data-target="plaintext"] {
+    background: rgba(0,0,0,0.8);
+  }
+}
+
 /* UTILITY */
+
+.btn-loading {
+  padding-right: 34px;
+  background-image: url(/common/unicorn/img/throbber.gif);
+  background-repeat: no-repeat;
+  background-position: 90% 50%;
+}
+
+.toolbar {
+  .btn-loading {
+    background-image: url(/common/unicorn/img/throbber-dark.gif);
+    background-repeat: no-repeat;
+    background-position: 90% 50%;
+  }
+}
 
 .pdfPartnerLoginLinkMessage {
   font-style: italic;
@@ -983,6 +1058,38 @@ main[data-view="thumb"] {
       background-repeat: no-repeat;
       text-indent: -10000px;
     }
+}
+
+/* SEARCH RESULTS */
+/* SOLR HIGHLIGHTING */
+.solr_highlight_1 {
+  background: #ffff00;
+  font-weight: bold;
+}
+
+.solr_highlight_2 {
+  background: #00ff00;
+  font-weight: bold;
+}
+
+.solr_highlight_3 {
+  background: #ff9900;
+  font-weight: bold;
+}
+
+.solr_highlight_4 {
+  background: #00ffcc;
+  font-weight: bold;
+}
+
+.solr_highlight_5 {
+  background: #00cccc;
+  font-weight: bold;
+}
+
+.solr_highlight_6 {
+  background: #0099cc;
+  font-weight: bold;
 }
 
 /* ANIMATION */

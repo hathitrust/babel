@@ -326,7 +326,8 @@ export var Flip = class extends Base {
 
     super.bindEvents();
 
-    this.container.addEventListener('click', this.clickHandler.bind(this));
+    this._clickHandler = this.clickHandler.bind(this);
+    this.container.addEventListener('click', this._clickHandler);
 
     this._resizer = debounce(function() {
       self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95 * self.scale}px`);
@@ -394,7 +395,10 @@ export var Flip = class extends Base {
     for(var i = 0; i < pages.length; i++) {
       this.container.removeChild(pages[i]);
     }
+    this.container.removeEventListener('click', this._clickHandler);
     window.removeEventListener('resize', this._resizer);
+    console.log("AHOY AHOY flip.destroy");
+
   }
 
   config() {

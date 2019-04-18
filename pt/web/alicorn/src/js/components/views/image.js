@@ -9,6 +9,7 @@ export var Single = class extends Base {
   }
 
   display(seq) {
+    seq = parseInt(seq, 10);
     var current = this.container.querySelector(`.page[data-visible="true"]`);
     var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }

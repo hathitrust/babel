@@ -207,8 +207,8 @@
   <xsl:template name="header" />
 
   <xsl:template name="navbar">
-    <header class="site-navigation">
-      <nav aria-label="Site Navigation">
+    <header class="site-navigation" role="banner">
+      <nav aria-label="about the site">
         <ul id="nav" class="nav">
           <li><a class="home-link" href="https://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
           <li><a href="https://www.hathitrust.org/about">About</a>
@@ -258,7 +258,7 @@
   </xsl:template>
 
   <xsl:template name="nav-search-form">
-    <form class="form-inline relative" action="/cgi/ls/one" method="GET">
+    <form class="form-inline relative" action="/cgi/ls/one" method="GET" role="search">
       <xsl:call-template name="global-search-form-fieldset" />
       <!-- <div class="bg">
           <div class="bg-inner">
@@ -290,8 +290,8 @@
   </xsl:template>
 
   <xsl:template name="contents">
-    <aside class="side-container"><xsl:call-template name="sidebar" /></aside>
-    <main class="main-container">
+    <aside class="side-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></aside>
+    <main class="main-container" id="main" tabindex="0">
       <xsl:call-template name="main" />
     </main>    
   </xsl:template>
@@ -302,7 +302,7 @@
     <main>
       <div class="container">
         <aside><xsl:call-template name="sidebar" /></aside>
-        <section><xsl:call-template name="main" /></section>
+        <section id="main" tabindex="0"><xsl:call-template name="main" /></section>
       </div>
     </main>
     <!-- <xsl:call-template name="pageviewer-contents" />
@@ -324,7 +324,7 @@
 
   <xsl:template name="action-search-volume">
     <h3 class="offscreen">Search in this volume</h3>
-    <form class="form-inline" method="get" id="form-search-volume">
+    <form class="form-inline" method="get" id="form-search-volume" role="search">
       <xsl:attribute name="action">
         <xsl:choose>
           <xsl:when test="$gUsingSearch = 'true'">/cgi/pt/search</xsl:when>
