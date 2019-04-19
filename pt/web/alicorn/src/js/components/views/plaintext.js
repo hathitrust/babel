@@ -6,7 +6,7 @@ import debounce from 'lodash/debounce';
 export var PlainText = class extends Single {
   constructor(options={}) {
     super(options);
-    this.mode = 'plaintext';
+    this.mode = this.name = 'plaintext';
   }
 
   render(cb) {
@@ -32,14 +32,15 @@ export var PlainText = class extends Single {
     }
 
     this.is_active = true;
-    this.loadImage(this.container.querySelector('[data-seq="1"]'), true);
+    this.loadImage(this.container.querySelector('[data-seq="1"]'), {check_scroll: true});
     if ( cb ) {
       cb();
     }
   }
 
-  loadImage(page, check_scroll) {
+  loadImage(page, options={}) {
     if ( ! this.is_active ) { return ; }
+    options = Object.assign({ check_scroll: false, preload: true }, options);
     var seq = page.dataset.seq;
     var rect = page.getBoundingClientRect();
 
@@ -97,7 +98,7 @@ export var PlainText = class extends Single {
         }
       });
 
-    if ( ! page.dataset.preloaded ) {
+    if ( ! page.dataset.preloaded && options.preload ) {
       this.preloadImages(page);
     }
   }

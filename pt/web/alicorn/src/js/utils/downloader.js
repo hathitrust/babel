@@ -82,7 +82,7 @@ HT.Downloader = {
                     'class' : 'btn-dismiss',
                     callback: function() {
                         if ( self.$dialog.data('deactivated') ) {
-                            self.$dialog.modal('hide');
+                            self.$dialog.closeModal();
                             return;
                         }
                         $.ajax({
@@ -91,7 +91,7 @@ HT.Downloader = {
                             cache: false,
                             error: function(req, textStatus, errorThrown) {
                                 console.log("DOWNLOAD CANCELLED ERROR");
-                                self.$dialog.modal('hide');
+                                self.$dialog.closeModal();
                                 console.log(req, textStatus, errorThrown);
                                 if ( req.status == 503 ) {
                                     self.displayWarning(req);
@@ -125,7 +125,7 @@ HT.Downloader = {
             data: data,
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
-                if ( self.$dialog ) { self.$dialog.modal('hide'); }
+                if ( self.$dialog ) { self.$dialog.closeModal(); }
                 if ( req.status == 503 ) {
                     self.displayWarning(req);
                 } else {
@@ -138,7 +138,7 @@ HT.Downloader = {
     cancelDownload: function(progress_url, download_url, total) {
         var self = this;
         self.clearTimer();
-        self.$dialog.modal('hide');
+        self.$dialog.closeModal();
     },
 
     startDownloadMonitor: function(progress_url, download_url, total) {
@@ -177,19 +177,19 @@ HT.Downloader = {
                 if ( status.done ) {
                     self.clearTimer();
                 } else if ( status.error && status.num_attempts > 100 ) {
-                    self.$dialog.modal('hide');
+                    self.$dialog.closeModal();
                     self.displayProcessError();
                     self.clearTimer();
                     self.logError();
                 } else if ( status.error ) {
-                    self.$dialog.modal('hide');
+                    self.$dialog.closeModal();
                     self.displayError();
                     self.clearTimer();
                 }
             },
             error : function(req, textStatus, errorThrown) {
                 console.log("FAILED: ", req, "/", textStatus, "/", errorThrown);
-                self.$dialog.modal('hide');
+                self.$dialog.closeModal();
                 self.clearTimer();
                 if ( req.status == 404 && (self.i > 25 || self.num_processed > 0) ) {
                     self.displayError();
@@ -237,12 +237,13 @@ HT.Downloader = {
             var $download_btn = self.$dialog.find('.download-pdf');
             if ( ! $download_btn.length ) {
                 $download_btn = $('<a class="download-pdf btn btn-primary">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
-                $download_btn.appendTo(self.$dialog.find(".modal-footer")).on('click', function(e) {
+                $download_btn.appendTo(self.$dialog.find(".modal__footer")).on('click', function(e) {
                     self.$link.trigger("click.google");
                     setTimeout(function() {
-                        self.$dialog.modal('hide');
+                        self.$dialog.closeModal();
                         $download_btn.remove();
-                        HT.engines.reader._clearSelection();
+                        HT.reader.controls.selectinator._clearSelection();
+                        // HT.reader.emit('downloadDone');
                     }, 1500);
                     e.stopPropagation();
                 })
@@ -377,6 +378,47 @@ head.ready(function() {
     })
 
     HT.downloader.start();
+
+    // and do this here
+    $("#selectedPagesPdfLink").on('click', function(e) {
+        e.preventDefault();
+
+        var printable = HT.reader.controls.selectinator._getPageSelection();
+
+        if ( printable.length == 0 ) {
+            var buttons = [];
+
+            var msg = [ "<p>You haven't selected any pages to print.</p>" ];
+            if ( HT.reader.view.name == '2up' ) {
+                msg.push("<p>To select pages, click in the upper left or right corner of the page.");
+                msg.push("<p class=\"centered\"><img src=\"/pt/web/graphics/view-flip.gif\" /></p>");
+            } else {
+                msg.push("<p>To select pages, click in the upper right corner of the page.");
+                if ( HT.reader.view.name == 'thumb' ) {
+                    msg.push("<p class=\"centered\"><img src=\"/pt/web/graphics/view-thumb.gif\" /></p>");
+                } else {
+                    msg.push("<p class=\"centered\"><img src=\"/pt/web/graphics/view-scroll.gif\" /></p>");
+                }
+            }
+            msg.push("<p><tt>shift + click</tt> to de/select the pages between this page and a previously selected page.");
+            msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"icomoon icomoon-attachment\" style=\"color: white; font-size: 14px;\" /></button>");
+
+            msg = msg.join("\n");
+
+            buttons.push({
+                label: "OK",
+                'class' : 'btn-dismiss'
+            });
+            bootbox.dialog(msg, buttons);
+            return false;
+        }
+
+
+        var seq = HT.reader.controls.selectinator._getFlattenedSelection(printable);
+
+        $(this).data('seq', seq);
+        HT.downloader.downloadPdf(this);
+    });
 
 });
 

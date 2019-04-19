@@ -100,7 +100,7 @@ input.input-small {
   width: 9rem;
 }
 
-button, input[type=submit] {
+button, input[type=submit], a.btn {
   display: inline-block;
   margin: 0;
   padding: .5rem 1rem;
@@ -115,6 +115,16 @@ button, input[type=submit] {
   cursor: pointer;
   text-decoration: none;
   line-height: inherit;
+}
+
+.btn.btn-primary {
+  background: #666;
+  border-color: #333 #333 #000;
+  color: #eee;
+
+  &:hover {
+    background: #000;
+  }
 }
 
 button[disabled] {
@@ -422,3 +432,6 @@ header nav, footer nav {
   }
 }
 
+.hide {
+  display: none;
+}

@@ -38,10 +38,12 @@ export var Base = class {
       page.style.height = `${h}px`;
       page.style.width = `${w}px`;
       page.dataset.bestFit = ( scale <= 1 );
+      page.style.setProperty('--width', page.style.width);
 
       page.classList.add('page');
       page.dataset.seq = seq;
       page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
+      this._renderr(page);
       this.container.appendChild(page);
     }
 
@@ -57,10 +59,14 @@ export var Base = class {
     }
 
     this.is_active = true;
-    this.loadImage(this.container.querySelector('[data-seq="1"]'), true);
+    this.loadImage(this.container.querySelector('[data-seq="1"]'), { check_scroll: true });
     if ( cb ) {
       cb();
     }
+  }
+
+  _renderr(page) {
+    /* NOP */
   }
 
   resizePage(page) {
@@ -78,6 +84,8 @@ export var Base = class {
       console.log("AHOY shrinking", page.dataset.seq, page.style.height, canvas.height);
     }
     page.style.height = `${canvas.height}px`;
+    page.style.setProperty('--width', `${canvas.width}px`);
+    
     var updated_rect = page.getBoundingClientRect();
     var scrollTop = this.container.scrollTop;
 
@@ -88,8 +96,9 @@ export var Base = class {
 
   }
 
-  loadImage(page, check_scroll) {
+  loadImage(page, options={}) {
     if ( ! this.is_active ) { return ; }
+    options = Object.assign({ check_scroll: false, preload: true }, options);
     var seq = page.dataset.seq;
     var rect = page.getBoundingClientRect();
 
@@ -141,13 +150,13 @@ export var Base = class {
           });
       }
 
-      if ( check_scroll || this.mode == 'thumbnail' ) { this.resizePage(page); }
+      if ( options.check_scroll || this.mode == 'thumbnail' ) { this.resizePage(page); }
       img.removeEventListener('load', _imgHandler, true);
     }.bind(this), true)
 
     img.src = image_url;
 
-    if ( ! page.dataset.preloaded ) {
+    if ( ! page.dataset.preloaded && options.preload ) {
       this.preloadImages(page);
     }
   }

@@ -5,6 +5,7 @@ export var Single = class extends Base {
   constructor(options={}) {
     super(options);
     this.mode = 'image';
+    this.name = 'image';
     this.embedHtml = true;
   }
 

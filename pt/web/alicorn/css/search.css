@@ -384,7 +384,7 @@ input.input-small {
   width: 9rem;
 }
 
-button, input[type=submit] {
+button, input[type=submit], a.btn {
   display: inline-block;
   margin: 0;
   padding: .5rem 1rem;
@@ -397,6 +397,16 @@ button, input[type=submit] {
   cursor: pointer;
   text-decoration: none;
   line-height: inherit;
+}
+
+.btn.btn-primary {
+  background: #666;
+  border-color: #333 #333 #000;
+  color: #eee;
+}
+
+.btn.btn-primary:hover {
+  background: #000;
 }
 
 button[disabled] {
@@ -715,6 +725,10 @@ header nav form select, footer nav form select {
   background-image: url(/common/unicorn/img/throbber-dark.gif);
   background-repeat: no-repeat;
   background-position: 90% 50%;
+}
+
+.hide {
+  display: none;
 }
 
 /* -------------------------------------------------------------------
@@ -1329,6 +1343,10 @@ nav.pagination-container ul li a.page-advance-link {
   margin-bottom: 0;
 }
 
+.sidebar-container .panel li {
+  position: relative;
+}
+
 .sidebar-container .panel li + li {
   margin-top: 0.25rem;
 }
@@ -1413,6 +1431,18 @@ nav.pagination-container ul li a.page-advance-link {
 .help-block {
   display: block;
   margin-bottom: 1rem;
+}
+
+.btn-mini {
+  font-size: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+#action-clear-selection {
+  position: absolute;
+  right: 0;
+  margin-left: -8px;
+  visibility: hidden;
 }
 
 article.result {

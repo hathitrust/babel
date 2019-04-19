@@ -7,6 +7,7 @@ export var Flip = class extends Base {
   constructor(options={}) {
     super(options);
     this.mode = 'image';
+    this.name = '2up';
     this.embedHtml = true;
     this.setupSlices();
     this.is_active = false;
@@ -188,7 +189,7 @@ export var Flip = class extends Base {
   loadSlice(slice) {
     var pages = slice.querySelectorAll('.page[data-seq]');
     for(var i = 0; i < pages.length; i++) {
-      this.loadImage(pages[i], true);
+      this.loadImage(pages[i], { check_scroll: true });
     }
     slice.dataset.visible = true;
   }
@@ -306,7 +307,7 @@ export var Flip = class extends Base {
       var prev_page = this.container.querySelector(`.page[data-seq="${seq - delta}"]`);
       if ( prev_page ) {
         prev_page.dataset.preloaded = true;
-        this.loadImage(prev_page, true);
+        this.loadImage(prev_page, { check_scroll: true });
       }
       delta += 1;
     }
@@ -315,7 +316,7 @@ export var Flip = class extends Base {
       var next_page = this.container.querySelector(`.page[data-seq="${seq + delta}"]`);
       if ( next_page ) {
         next_page.dataset.preloaded = true;
-        this.loadImage(next_page, true);
+        this.loadImage(next_page, { check_scroll: true });
       }
       delta += 1;
     }
@@ -348,10 +349,12 @@ export var Flip = class extends Base {
     if ( element.classList.contains('edge') ) {
       return this._clickHandlerEdge(element, event);
     }
-    // check that this is a page
-    element = element.closest('.page');
-    if ( element ) {
-      return this._clickHandlerPage(element, event);
+    if ( element.tagName.toLowerCase() != 'button' ) {
+      // check that this is a page
+      element = element.closest('.page');
+      if ( element ) {
+        return this._clickHandlerPage(element, event);
+      }
     }
     console.log("AHOY AHOY flip.click NOP", event.target);
   }

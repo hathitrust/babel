@@ -27,6 +27,7 @@ var Reader = class {
     this.emitter = new NanoEvents();
     this.controls = {};
     this.pagedetails = { rotate: {}, scale: {} };
+    this.identifier = this.options.identifier;
     this.bindEvents();
   }
 
@@ -38,6 +39,11 @@ var Reader = class {
     }
     if ( params.view ) {
       $main.dataset.view = params.view;
+
+      if ( params.restarting ) {
+        this.emit('status', `Switching to ${params.view} view`);
+      }
+
       console.log("AHOY AHOY $inner.view", $inner.offsetHeight);
       setTimeout(function() {
         console.log("AHOY AHOY $inner.view later", $inner.offsetHeight);
@@ -48,11 +54,13 @@ var Reader = class {
     setTimeout(function() {
       console.log("AHOY AHOY $inner.view timeout", $inner.offsetHeight);
       this.view.attachTo($inner, cb);
+      this.emit('ready', this.view.mode);
     }.bind(this), 0);
   }
 
   restart(params) {
     var current = params.seq || this.view.currentLocation();
+    params.restarting = true;
     if ( this.view ) { this.view.destroy(); this.view = null; }
     this.start(params, function() {
       console.log("AHOY TRYING TO GO TO", current);
@@ -137,6 +145,11 @@ reader.controls.navigator = new Control.Navigator({
   reader: reader
 })
 
+reader.controls.navigator.on('updateLocation', (params) => {
+  console.log("AHOY updateLocation", params.seq);
+  reader.view.display(params.seq);
+})
+
 reader.controls.paginator = new Control.Paginator({
   input: document.querySelector('#toolbar-horizontal'),
   reader: reader
@@ -146,11 +159,6 @@ reader.controls.viewinator = new Control.Viewinator({
   input: document.querySelector('.action-views'),
   reader: reader
 });
-
-reader.controls.navigator.on('updateLocation', (params) => {
-  console.log("AHOY updateLocation", params.seq);
-  reader.view.display(params.seq);
-})
 
 reader.controls.zoominator = new Control.Zoominator({
   input: document.querySelector('.action-zoom'),
@@ -162,11 +170,6 @@ reader.controls.rotator = new Control.Rotator({
   reader: reader
 })
 reader.controls.rotator.on('rotate', function(delta) {
-  // var seq = this.view.currentLocation();
-  // var rotate = this.pagedetails.rotate[seq] || 0;
-  // rotate = ( rotate + delta ) % 360;
-  // this.pagedetails.rotate[seq] = rotate;
-  console.log("AHOY controls.rotator", delta);
   this.emit('rotate', delta);
 }.bind(reader))
 
@@ -175,11 +178,19 @@ reader.controls.contentsnator = new Control.Contentsnator({
   reader: reader
 });
 
+reader.controls.selectinator = new Control.Selectinator({
+  reader: reader,
+  input: document.querySelector('.table-of-selections'),
+  link: document.querySelector('#selectedPagesPdfLink'),
+  reset: document.querySelector('#action-clear-selection')
+});
+
 var _scrollCheck = debounce(function() {
   window.scrollTo(0,0);
 }, 50);
 window.addEventListener('scroll', _scrollCheck);
 
+$main.dataset.selected = 0;
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10 });
 

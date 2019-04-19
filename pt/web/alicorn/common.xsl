@@ -1070,7 +1070,7 @@
           </xsl:attribute>
           <xsl:text>Download pages (PDF)</xsl:text>
         </xsl:element>
-        <button data-toggle="tooltip" class="btn btn-mini" id="action-clear-selection"><i class="icomoon icomoon-cancel"></i><span class="offscreen"> Clear Selection</span></button>
+        <button data-toggle="tooltip" class="btn btn-mini" id="action-clear-selection" aria-label="Clear selection"><i class="icomoon icomoon-cancel"></i></button>
       </li>
     </xsl:if>
 

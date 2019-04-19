@@ -384,7 +384,7 @@ input.input-small {
   width: 9rem;
 }
 
-button, input[type=submit] {
+button, input[type=submit], a.btn {
   display: inline-block;
   margin: 0;
   padding: .5rem 1rem;
@@ -397,6 +397,16 @@ button, input[type=submit] {
   cursor: pointer;
   text-decoration: none;
   line-height: inherit;
+}
+
+.btn.btn-primary {
+  background: #666;
+  border-color: #333 #333 #000;
+  color: #eee;
+}
+
+.btn.btn-primary:hover {
+  background: #000;
 }
 
 button[disabled] {
@@ -715,6 +725,10 @@ header nav form select, footer nav form select {
   background-image: url(/common/unicorn/img/throbber-dark.gif);
   background-repeat: no-repeat;
   background-position: 90% 50%;
+}
+
+.hide {
+  display: none;
 }
 
 /* -------------------------------------------------------------------
@@ -1329,6 +1343,10 @@ nav.pagination-container ul li a.page-advance-link {
   margin-bottom: 0;
 }
 
+.sidebar-container .panel li {
+  position: relative;
+}
+
 .sidebar-container .panel li + li {
   margin-top: 0.25rem;
 }
@@ -1415,6 +1433,139 @@ nav.pagination-container ul li a.page-advance-link {
   margin-bottom: 1rem;
 }
 
+.btn-mini {
+  font-size: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+#action-clear-selection {
+  position: absolute;
+  right: 0;
+  margin-left: -8px;
+  visibility: hidden;
+}
+
+@-webkit-keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.progress {
+  overflow: hidden;
+  height: 20px;
+  margin-bottom: 20px;
+  background-color: #f6f6f6;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(whitesmoke), to(#f9f9f9));
+  background-image: linear-gradient(to bottom, whitesmoke, #f9f9f9);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFF5F5F5', endColorstr='#FFF9F9F9', GradientType=0);
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.progress .bar {
+  width: 0%;
+  height: 100%;
+  color: white;
+  float: left;
+  font-size: 12px;
+  text-align: center;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  background-color: #0d90d1;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#149bdf), to(#0480be));
+  background-image: linear-gradient(to bottom, #149bdf, #0480be);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FF149BDF', endColorstr='#FF0480BE', GradientType=0);
+  -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: width 0.6s ease;
+  transition: width 0.6s ease;
+}
+
+.progress .bar + .bar {
+  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.progress-striped .bar {
+  background-color: #149bdf;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-size: 40px 40px;
+}
+
+.progress.active .bar {
+  -webkit-animation: progress-bar-stripes 2s linear infinite;
+  animation: progress-bar-stripes 2s linear infinite;
+}
+
+.progress-danger .bar, .progress .bar-danger {
+  background-color: #dd514b;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ee5f5b), to(#c43c35));
+  background-image: linear-gradient(to bottom, #ee5f5b, #c43c35);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFEE5F5B', endColorstr='#FFC43C35', GradientType=0);
+}
+
+.progress-danger.progress-striped .bar, .progress-striped .bar-danger {
+  background-color: #ee5f5b;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
+.progress-success .bar, .progress .bar-success {
+  background-color: #5db95d;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#62c462), to(#57a957));
+  background-image: linear-gradient(to bottom, #62c462, #57a957);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FF62C462', endColorstr='#FF57A957', GradientType=0);
+}
+
+.progress-success.progress-striped .bar, .progress-striped .bar-success {
+  background-color: #62c462;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
+.progress-info .bar, .progress .bar-info {
+  background-color: #4bb1cf;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5bc0de), to(#339bb9));
+  background-image: linear-gradient(to bottom, #5bc0de, #339bb9);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FF5BC0DE', endColorstr='#FF339BB9', GradientType=0);
+}
+
+.progress-info.progress-striped .bar, .progress-striped .bar-info {
+  background-color: #5bc0de;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
+.progress-warning .bar, .progress .bar-warning {
+  background-color: #f9a732;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#fbb450), to(#f89406));
+  background-image: linear-gradient(to bottom, #fbb450, #f89406);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFBB450', endColorstr='#FFF89406', GradientType=0);
+}
+
+.progress-warning.progress-striped .bar, .progress-striped .bar-warning {
+  background-color: #fbb450;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
 html, body {
   overflow: hidden;
   height: 100vh;
@@ -1497,6 +1648,34 @@ main > .container {
   width: 3rem;
   height: 2.8rem;
   margin-left: 0.25rem;
+}
+
+.selected-list {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.selected-list a {
+  display: inline-block;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.selected-list a > span {
+  display: block;
+  margin-top: 0px;
+}
+
+.selected-list img {
+  border: 1px solid #666;
+  padding: 2px;
+  margin: 0 0.25rem;
 }
 
 #toolbar-vertical {
@@ -1731,12 +1910,37 @@ section section .viewer-inner {
 }
 
 section section .page {
+  --width: 400px;
   margin: 0rem auto 2rem;
   position: relative;
   overflow: hidden;
   -webkit-box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
           box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
   border: 1px solid #ddd;
+}
+
+section section .page[data-selected="true"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-width: 0 calc(var(--width) * 0.08) calc(var(--width) * 0.08) 0;
+  border-style: solid;
+  /*border-color: #658E15 #fff;*/
+  border-color: #fff #fff #ef7c22 #ef7c22;
+  /* A bit more verbose to work with .rounded too */
+  background: #ef7c22;
+  /* For when also applying a border-radius */
+  border-color: #fff #fff rgba(239, 124, 34, 0.75) rgba(239, 124, 34, 0.75);
+  background: rgba(239, 124, 34, 0.75);
+  border-radius: 0 0 0 5px;
+  display: block;
+  width: 0;
+}
+
+section section .page[data-selected="true"] img {
+  padding: 2% !important;
+  background: #ef7c2280 !important;
 }
 
 section section .page .info {
@@ -1770,6 +1974,40 @@ section section .page .page-text {
   clip: rect(1px 1px 1px 1px);
   /* IE6, IE7 */
   clip: rect(1px, 1px, 1px, 1px);
+}
+
+section section .page button.action-load-page {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+}
+
+section section .page[data-loaded="true"] button.action-load-page {
+  display: none;
+}
+
+section section .page button.action-toggle-selection {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 10%;
+  width: 25%;
+  min-height: 4rem;
+  min-width: 4rem;
+  background: transparent 0 0 repeat scroll url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+  border: none;
+  cursor: pointer;
+}
+
+section section .page button.action-toggle-selection:focus, section section .page button.action-toggle-selection:hover, section section .page button.action-toggle-selection.focused {
+  border: 2px dotted #666;
+}
+
+section section .page button.action-toggle-selection[aria-pressed="true"] {
+  -webkit-filter: invert(1);
+          filter: invert(1);
 }
 
 section section canvas, section section img {
@@ -1872,6 +2110,11 @@ section[data-view="2up"] section .page.verso {
   width: calc(var(--page-height) * var(--page-ratio));
 }
 
+section[data-view="2up"] section .page.verso button.action-toggle-selection {
+  right: auto;
+  left: 0;
+}
+
 section[data-view="2up"] section .page.recto {
   height: var(--page-height);
   width: calc(var(--page-height) * var(--page-ratio));
@@ -1879,6 +2122,10 @@ section[data-view="2up"] section .page.recto {
 
 section[data-view="2up"] section .page img {
   height: 100%;
+}
+
+section[data-view="2up"] section .page button.action-toggle-selection {
+  width: 50%;
 }
 
 section[data-view="2up"] section .edge {
@@ -1926,6 +2173,12 @@ section[data-view="thumb"] section .page {
 
 section[data-view="thumb"] section .page img {
   max-width: 100%;
+}
+
+section[data-view="thumb"] section .page button.action-toggle-selection {
+  right: 0;
+  left: 0;
+  width: 100%;
 }
 
 section[data-view="thumb"] button[data-target="thumb"] {

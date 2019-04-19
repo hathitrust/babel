@@ -4,6 +4,7 @@ export var Thumbnail = class extends Scroll {
   constructor(options={}) {
     super(options);
     this.mode = 'thumbnail';
+    this.name = 'thumb';
     // this.scale = 0.25;
     this.scale = 1.0;
     this.embedHtml = false;
@@ -31,9 +32,11 @@ export var Thumbnail = class extends Scroll {
 
   clickHandler(event) {
     var element = event.target;
-    element = element.closest('.page');
-    if ( element ) {
-      this.reader.restart({ view: '1up', seq: element.dataset.seq });
+    if ( element.tagName.toLowerCase() != 'button' ) {
+      element = element.closest('.page');
+      if ( element ) {
+        this.reader.restart({ view: '1up', seq: element.dataset.seq });
+      }
     }
   }
 

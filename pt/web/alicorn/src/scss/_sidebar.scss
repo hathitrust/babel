@@ -48,6 +48,10 @@
       // margin-bottom: 1rem;
     }
 
+    li {
+      position: relative;
+    }
+
     li + li {
       margin-top: 0.25rem;
     }
@@ -138,4 +142,22 @@
   display: block;
   margin-bottom: 1rem;
 }
+
+.btn-mini {
+  font-size: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+#action-clear-selection {
+  position: absolute;
+  right: 0;
+  margin-left: -8px;
+  visibility: hidden;
+}
+
+// section[data-selected="0"] {
+//   #action-clear-selection {
+//     visibility: hidden;
+//   }
+// }
 

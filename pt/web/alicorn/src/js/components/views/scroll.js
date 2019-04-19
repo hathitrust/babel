@@ -5,8 +5,17 @@ export var Scroll = class extends Base {
   constructor(options={}) {
     super(options);
     this.mode = 'scroll';
+    this.name = '1up';
     this.pageOptions = {};
     this.embedHtml = true;
+  }
+
+  _renderr(page) {
+    var button = document.createElement('button');
+    button.classList.add('button', 'btn-sm', 'action-load-page');
+    button.dataset.seq = page.dataset.seq;
+    button.innerText = 'Load page';
+    page.appendChild(button);
   }
 
   display(seq) {
@@ -14,6 +23,7 @@ export var Scroll = class extends Base {
     if ( ! target ) { return; }
     target.dataset.visible = true;
     target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
+    this.reader.emit('relocated', { seq: target.dataset.seq });
   }
 
   handleObserver(entries, observer) {
@@ -30,7 +40,7 @@ export var Scroll = class extends Base {
         }
         if ( ! viewed ) {
           // console.log("AHOY OBSERVING", entries.length, seq, 'onEnter');
-          this.loadImage(div, true);
+          this.loadImage(div, { check_scroll: true });
         } else if (  div.dataset.preloaded ) {
           div.dataset.preloaded = false;
           this.resizePage(div);
@@ -124,10 +134,22 @@ export var Scroll = class extends Base {
       self.service.manifest.rotateBy(seq, delta);
       self.redrawPage(seq);
     });
+
+    this._clickHandler = this.clickHandler.bind(this);
+    this.container.addEventListener('click', this._clickHandler);
   }
 
   bindPageEvents(page) {
     this.observer.observe(page);
+  }
+
+  clickHandler(event) {
+    var element = event.target;
+    if ( element.tagName.toLowerCase() == 'button' && element.classList.contains('action-load-page') ) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.loadImage(element.parentNode, { preload: false });
+    }
   }
 
   destroy() {
@@ -139,6 +161,7 @@ export var Scroll = class extends Base {
       this.container.removeChild(pages[i]);
     }
     this.observer = null;
+    this.container.removeEventListener('click', this._clickHandler);
   }
 
 };

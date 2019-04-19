@@ -169,9 +169,9 @@
     <div class="navigator">
       <form>
         <label class="offscreen" for="control-navigator">Location: </label>
-        <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 0 of {$totalSeq}" value="1" data-background-position="0" />
+        <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 1 of {$totalSeq}" value="1" data-background-position="0" />
         <xsl:text> </xsl:text>
-        <div class="output">Page Scan <span data-slot="current-seq">0</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
+        <div class="output">Page Scan <span data-slot="current-seq">1</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
         <xsl:text> </xsl:text>
         <button id="action-prompt-seq" aria-label="Go to location">Go...</button>    
       </form>
@@ -294,7 +294,7 @@
         <xsl:call-template name="action-table-of-contents" />
       </div>
 
-      <div class="btn-group table-of-contents" id="selection-contents">
+      <div class="btn-group table-of-selections" id="selection-contents">
         <xsl:call-template name="action-selection-contents" />
       </div>
 
@@ -361,8 +361,9 @@
   <xsl:template name="action-selection-contents">
     <button type="button" class="btn dropdown-toggle square disabled" data-toggle="dropdown" aria-label="Jump to selected page" data-microtip-position="bottom" data-microtip-size="small" data-role="tooltip">
       <i class="icomoon icomoon-attachment"></i><span class="caret"></span>
+      <span class="msg"></span>
     </button>
-    <ul class="dropdown-menu scrollable-list"></ul>
+    <ul class="dropdown-menu scrollable-list selected-list"></ul>
   </xsl:template>
 
   <xsl:template name="page-content">
