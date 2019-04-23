@@ -118,9 +118,8 @@ export var PlainText = class extends Single {
   }
 
   bindEvents() {
-    this._resizer = debounce(function() {
-      // self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95 * self.scale}px`);
-      // self.container.style.setProperty('--slice-width', `${self.container.offsetWidth * self.scale}px`)
+
+    this._resizer = this.reader.on('resize', () => {
       var loaded = this.container.querySelectorAll('[data-loaded="true"]');
       for(var i = 0; i < loaded.length; i++) {
         var page = loaded[i];
@@ -129,7 +128,7 @@ export var PlainText = class extends Single {
           page.style.height = `${page_text.scrollHeight}px`;
         }
       }
-    }.bind(this), 50);
+    })
 
     this.reader.on('relocated', (params) => {
       this.reader.emit('status', `Showing page scan ${params.seq}`);
@@ -145,7 +144,8 @@ export var PlainText = class extends Single {
 
   destroy() {
     super.destroy();
-    window.removeEventListener('resize', this._resizer);
+    this._resizer();
+    // window.removeEventListener('resize', this._resizer);
   }
 
   config() {

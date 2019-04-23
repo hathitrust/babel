@@ -373,13 +373,19 @@ export var Flip = class extends Base {
     this._clickHandler = this.clickHandler.bind(this);
     this.container.addEventListener('click', this._clickHandler);
 
-    this._resizer = debounce(function() {
+    this._resizer = this.reader.on('resize', () => {
       self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95 * self.scale}px`);
       self.container.style.setProperty('--slice-width', `${self.container.offsetWidth * self.scale}px`)
       console.log("AHOY flip.resize", self.container.style.getPropertyValue('--page-height'));
-    }, 50);
+    });
 
-    window.addEventListener('resize', this._resizer);
+    // this._resizer = debounce(function() {
+    //   self.container.style.setProperty('--page-height', `${self.container.offsetHeight * 0.95 * self.scale}px`);
+    //   self.container.style.setProperty('--slice-width', `${self.container.offsetWidth * self.scale}px`)
+    //   console.log("AHOY flip.resize", self.container.style.getPropertyValue('--page-height'));
+    // }, 50);
+
+    // window.addEventListener('resize', this._resizer);
 
   }
 
@@ -470,7 +476,7 @@ export var Flip = class extends Base {
       this.container.removeChild(pages[i]);
     }
     this.container.removeEventListener('click', this._clickHandler);
-    window.removeEventListener('resize', this._resizer);
+    this._resizer();
     console.log("AHOY AHOY flip.destroy");
 
   }

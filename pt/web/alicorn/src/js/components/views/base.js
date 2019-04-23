@@ -246,6 +246,14 @@ export var Base = class {
   bindPageEvents(page) {
   }
 
+  first() {
+    this.display(1);
+  }
+
+  last() {
+    this.display(this.service.manifest.totalSeq);
+  }
+
   config() {
     // the empty set supports everything
     return {};

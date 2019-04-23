@@ -6,6 +6,7 @@ export var Navigator = class {
     this.input = options.input;
     this.output = options.output;
     this.reader = options.reader;
+    this.prompt = options.prompt;
     this.emitter = new NanoEvents();
     this.bindEvents();
   }
@@ -24,6 +25,31 @@ export var Navigator = class {
     this.input.addEventListener('input', (event) => {
       this.output.classList.add('updating');
       this.render('current-seq', this.input.value);
+    })
+
+    this.prompt.addEventListener('click', (event) => {
+      event.preventDefault();
+      bootbox.dialog(
+        `<p>Jump to which page scan?</p><p><input type="text" name="seq" class="input-medium" placeholder="Enter a page scan sequence (e.g. 1-${this.reader.service.manifest.totalSeq})" /></p>`,
+        [ 
+          { label: "Close", class: 'btn-dismiss' },
+          { 
+            label: "Jump", 
+            class: 'btn-dismiss btn btn-primary',
+            callback: function(modal) {
+              var input = modal.modal.querySelector('input[name="seq"]');
+              var seq = input.value;
+              if ( seq && seq >= 1 && seq <= this.reader.service.manifest.totalSeq ) {
+                this.reader.display(seq);
+              }
+              return true;
+            }.bind(this)
+          }
+        ],
+        {
+          header: "Jump to page scan"
+        }
+      )
     })
 
     this.reader.on('relocated', (params) => {

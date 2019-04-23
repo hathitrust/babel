@@ -179,7 +179,7 @@
         <xsl:text> </xsl:text>
         <div class="output">Page Scan <span data-slot="current-seq">1</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
         <xsl:text> </xsl:text>
-        <button id="action-prompt-seq" aria-label="Go to location">Go...</button>
+        <button id="action-prompt-seq" aria-label="Go to location">Jump...</button>
       </form>
     </div>
     <script type="text/javascript" src="/pt/alicorn/js/main.js"></script>

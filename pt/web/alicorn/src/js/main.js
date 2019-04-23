@@ -133,6 +133,12 @@ var Reader = class {
 
       this._updateLinks(params.seq);
     });
+
+    this._resizer = debounce(function() {
+      this.emit('resize');
+    }.bind(this), 100);
+
+    window.addEventListener('resize', this._resizer);
   }
 
   _updateLinks(seq) {
@@ -261,6 +267,7 @@ var image_width = 680;
 reader.controls.navigator = new Control.Navigator({
   input: document.querySelector('input[type="range"]'),
   output: document.querySelector('.navigator .output'),
+  prompt: document.querySelector('#action-prompt-seq'),
   reader: reader
 })
 
