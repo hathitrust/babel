@@ -534,6 +534,9 @@ header nav > ul, footer nav > ul {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 header nav > ul li > ul, footer nav > ul li > ul {
@@ -1128,7 +1131,7 @@ header nav form select, footer nav form select {
   padding-left: 2rem;
 }
 
-.alert-warning:before {
+.alert-warning:not(.alert-plain):before {
   content: "?";
   font-family: 'icomoon';
   font-style: normal;
@@ -1402,16 +1405,46 @@ button.control-search:hover {
 
 .global-search-options {
   margin-bottom: 1rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
 }
 
 .global-search-links {
   border-top: 1px solid #ddd;
+  margin-top: 1rem;
 }
 
 .global-search-links ul {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+}
+
+.global-search-links ul li {
+  margin-right: 0.5rem;
+}
+
+.global-search-links ul li:not(:last-child)::after {
+  display: inline-block;
+  margin: 0 0.25em;
+  -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+  border-right: 0.1em solid currentColor;
+  height: 0.8em;
+  content: '';
+  color: #ddd;
+}
+
+.global-search-links ul a {
+  margin-right: 0.5rem;
 }
 
 .sidebar-container {

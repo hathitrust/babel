@@ -1,5 +1,6 @@
 head.ready(function() {
-    var $form = $(".nav-search-form");
+
+    var $form = $("#search-modal form");
 
     var $input = $form.find("input.search-input-text");
     var $input_label = $form.find("label[for='q1-input']");
@@ -8,6 +9,15 @@ head.ready(function() {
     var $ft = $form.find("span.funky-full-view");
 
     var $backdrop = null;
+
+    var $action = $("#action-search-hathitrust");
+    $action.on('click', function() {
+        bootbox.show('search-modal', {
+            onShow: function(modal) {
+                $input.focus();
+            }
+        });
+    })
 
     var _setup = {};
     _setup.ls = function() {
@@ -36,41 +46,42 @@ head.ready(function() {
         HT.analytics.trackEvent({ label : "-", category : "HT Search", action : target });
     })
 
-    $form.delegate(':input', 'focus change', function(e) {
-        console.log("FOCUSING", this);
-        $form.addClass("focused");
-        if ( $backdrop == null ) {
-            $backdrop = $('<div class="modal__overlay invisible"></div>');
-            $backdrop.on('click', function() {
-                close_search_form();
-            });
-        }
-        $backdrop.appendTo($("body")).show();
-    })
+    // $form.delegate(':input', 'focus change', function(e) {
+    //     console.log("FOCUSING", this);
+    //     $form.addClass("focused");
+    //     if ( $backdrop == null ) {
+    //         $backdrop = $('<div class="modal__overlay invisible"></div>');
+    //         $backdrop.on('click', function() {
+    //             close_search_form();
+    //         });
+    //     }
+    //     $backdrop.appendTo($("body")).show();
+    // })
 
-    $("body").on('focus', ':input,a', function(e) {
-        var $this = $(this);
-        if ( ! $this.closest(".nav-search-form").length ) {
-            close_search_form();
-        }
-    });
+    // $("body").on('focus', ':input,a', function(e) {
+    //     var $this = $(this);
+    //     if ( ! $this.closest(".nav-search-form").length ) {
+    //         close_search_form();
+    //     }
+    // });
 
-    var close_search_form = function() {
-        $form.removeClass("focused");
-        if ( $backdrop != null ) {
-            $backdrop.detach();
-            $backdrop.hide();
-        }
-    }
-
-    window.focus_form = function() {
-        $form.toggleClass("focused");
-    }
+    // var close_search_form = function() {
+    //     $form.removeClass("focused");
+    //     if ( $backdrop != null ) {
+    //         $backdrop.detach();
+    //         $backdrop.hide();
+    //     }
+    // }
 
     // add event handler for submit to check for empty query or asterisk
-    $form.submit(function(event) 
+    $form.submit(function(event)
          {
 
+
+            if ( ! this.checkValidity() ) {
+                this.reportValidity();
+                return false;
+            }
 
            //check for blank or single asterisk
            var $input = $(this).find("input[name=q1]");
@@ -78,18 +89,18 @@ head.ready(function() {
            query = $.trim(query);
            if (query === '')
            {
-             bootbox.alert("Please enter a search term.");
+             alert("Please enter a search term.");
              $input.trigger('blur');
              return false;
            }
-           /**  Bill says go ahead and forward a query with an asterisk   ######
-           else if (query === '*')
-           {
-             change q1 to blank
-             $("#q1-input").val("")
-             $(".search-form").submit(); 
-           }
-           ##################################################################**/
+           // // *  Bill says go ahead and forward a query with an asterisk   ######
+           // else if (query === '*')
+           // {
+           //   // change q1 to blank
+           //   $("#q1-input").val("")
+           //   $(".search-form").submit();
+           // }
+           // ##################################################################*
            else
            {
 

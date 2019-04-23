@@ -173,7 +173,7 @@
 
     <xsl:if test="//CurrentPageImageSource">
       <meta name="twitter:image" content="{//CurrentPageImageSource}" />
-    </xsl:if>    
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="setup-social-facebook">
@@ -223,13 +223,19 @@
           <!-- <li class="divider-vertical"></li> -->
           <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
           <xsl:call-template name="li-feedback" />
+          <xsl:call-template name="li-search-action" />
         </ul>
-        <xsl:call-template name="nav-search-form" />
         <ul id="person-nav" class="nav pull-right">
           <xsl:call-template name="navbar-user-links" />
         </ul>
       </nav>
     </header>
+  </xsl:template>
+
+  <xsl:template name="li-search-action">
+    <li>
+      <button class="btn btn-primary" id="action-search-hathitrust">Search HathiTrust</button>
+    </li>
   </xsl:template>
 
   <xsl:template name="navbar-user-links">
@@ -257,19 +263,40 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template name="nav-search-form">
+  <xsl:template name="setup-body-tail">
+    <!-- define a modal -->
+    <div class="modal micromodal-slide" id="search-modal" aria-hidden="true">
+        <div class="modal__overlay" tabindex="-1" data-micromodal-close="true">
+          <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+            <form action="/cgi/ls/one" method="GET" role="search">
+              <div class="modal__header">
+                <h2 class="modal__title" id="search-modal-title">
+                  Search HathiTrust
+                </h2>
+                <button class="modal__close" aria-label="Close modal" data-micromodal-close="true"></button>
+              </div>
+              <div class="modal__content" id="search-modal-content">
+                 <!-- <form class="nav-search-form form-inline" action="/cgi/ls/one" method="GET" role="search"> -->
+                   <xsl:call-template name="global-search-form-fieldset" />
+                   <xsl:call-template name="global-search-form-options" />
+                <!-- </form> -->
+              </div>
+              <div class="modal__footer">
+                <button class="modal__btn" data-micromodal-close="true" aria-label="Close modal">Close</button>
+                <button class="modal__btn btn btn-primary">Search</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+  </xsl:template>
+
+
+  <xsl:template name="nav-search-form" mode="old">
     <form class="nav-search-form form-inline relative" action="/cgi/ls/one" method="GET" role="search">
       <xsl:call-template name="global-search-form-fieldset" />
       <xsl:call-template name="global-search-form-options" />
-      <!-- <div class="bg">
-          <div class="bg-inner">
-          </div>
-          <div class="search-tabs">
-            <xsl:call-template name="header-search-tabs" />
-          </div>
-          <xsl:call-template name="global-search-form-options" />
-      </div> -->
-    </form>
+   </form>
   </xsl:template>
 
   <xsl:template name="global-search-form-fieldset">
@@ -278,7 +305,7 @@
     </xsl:variable>
     <div class="control control-q1">
       <label for="q1-input" class="offscreen" >Search</label>
-      <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
+      <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" required="required" pattern="^(?!\s*$).+">
         <xsl:attribute name="value">
           <xsl:call-template name="header-search-q1-value" />
         </xsl:attribute>
@@ -293,10 +320,24 @@
         <xsl:call-template name="search-input-select-options" />
       </select>
     </div>
-    <button class="button control control-search">Search</button>
+    <!-- <button class="button control control-search">Search</button> -->
   </xsl:template>
 
   <xsl:template name="global-search-form-options">
+    <div class="global-search-options">
+      <div class="search-target">
+        <xsl:call-template name="global-search-target-options" />
+      </div>
+      <div class="global-search-ft">
+        <xsl:call-template name="global-search-ft-options" />
+      </div>
+    </div>
+    <div class="global-search-links">
+      <xsl:call-template name="global-search-links" />
+    </div>
+  </xsl:template>
+
+  <xsl:template name="global-search-form-options-modal">
     <div class="global-search-modal">
       <div class="global-search-modal-inner">
         <div class="global-search-options">
@@ -374,7 +415,7 @@
     <aside class="side-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></aside>
     <main class="main-container" id="main" tabindex="0">
       <xsl:call-template name="main" />
-    </main>    
+    </main>
   </xsl:template>
 
   <xsl:template name="contents-grid1">

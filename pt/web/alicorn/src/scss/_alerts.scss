@@ -96,7 +96,7 @@
     padding-left: 2rem;
   }
 
-  .alert-warning:before {
+  .alert-warning:not(.alert-plain):before {
     @include alert-badge("?");
   }
 

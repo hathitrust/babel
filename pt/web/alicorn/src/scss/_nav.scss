@@ -63,9 +63,9 @@ nav.pagination-container {
   border: 0px solid #666;
   box-shadow: 16px 20px 35px rgba(0,0,0,0.8);
   z-index: 40;
-  
+
   color: black;
-  
+
   a {
     color: #924a0b;
     text-decoration: underline;
@@ -83,7 +83,7 @@ nav.pagination-container {
 .global-search-modal-inner {
   margin-top: 3rem;
   padding: 0 1rem 1rem;
-  
+
   > div {
     display: flex;
     flex-direction: row;
@@ -113,11 +113,40 @@ button.control-search {
 
 .global-search-options {
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .global-search-links {
   border-top: 1px solid #ddd;
+  margin-top: 1rem;
   ul {
-    display: flex;  
+    display: flex;
+
+    li {
+      margin-right: 0.5rem;
+
+      // &:not(:last-child)::after {
+      //   content: " | ";
+      //   display: inline-block;
+      //   color: #666;
+      //   speak: none;
+      // }
+
+      &:not(:last-child)::after {
+        display: inline-block;
+        margin: 0 0.25em;
+        transform: rotate(0deg);
+        border-right: 0.1em solid currentColor;
+        height: 0.8em;
+        content: '';
+        color: #ddd;
+      }
+    }
+
+    a {
+      margin-right: 0.5rem;
+    }
   }
 }

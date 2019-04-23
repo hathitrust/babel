@@ -107,11 +107,14 @@
 
           <xsl:call-template name="footer" />
         </div>
+        <xsl:call-template name="setup-body-tail" />
       </body>
 
     </html>
 
   </xsl:template>
+
+  <xsl:template name="setup-body-tail"></xsl:template>
 
   <xsl:template name="skip-to-main-link" />
 

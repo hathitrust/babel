@@ -253,6 +253,8 @@ header nav, footer nav {
 
   > ul {
     display: flex;
+    align-items: center;
+
     li {
       & > ul {
         display: none;
