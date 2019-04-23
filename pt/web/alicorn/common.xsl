@@ -1032,9 +1032,8 @@
   <xsl:template name="download-links">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess = 'allow'">
-      <li>
+      <li data-view-target="1up image plaintext">
         <xsl:element name="a">
-          <xsl:attribute name="title">Download this page (PDF)</xsl:attribute>
           <xsl:attribute name="id">pagePdfLink</xsl:attribute>
           <xsl:attribute name="class">page-pdf-link</xsl:attribute>
           <xsl:attribute name="data-toggle">tracking</xsl:attribute>
@@ -1047,6 +1046,38 @@
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
           <xsl:text>Download this page (PDF)</xsl:text>
+        </xsl:element>
+      </li>
+      <li data-view-target="2up">
+        <xsl:element name="a">
+          <xsl:attribute name="id">pagePdfLink1</xsl:attribute>
+          <xsl:attribute name="class">page-pdf-link</xsl:attribute>
+          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Download PDF - left page</xsl:attribute>
+          <xsl:attribute name="href">
+            <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
+          </xsl:attribute>
+          <xsl:attribute name="target">
+            <xsl:text>pdf</xsl:text>
+          </xsl:attribute>
+          <xsl:text>Download left page (PDF)</xsl:text>
+        </xsl:element>
+      </li>
+      <li data-view-target="2up">
+        <xsl:element name="a">
+          <xsl:attribute name="id">pagePdfLink2</xsl:attribute>
+          <xsl:attribute name="class">page-pdf-link</xsl:attribute>
+          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+          <xsl:attribute name="data-tracking-action">PT Download PDF - right page</xsl:attribute>
+          <xsl:attribute name="href">
+            <xsl:value-of select="$pViewTypeList/ViewTypePdfLink"/>
+          </xsl:attribute>
+          <xsl:attribute name="target">
+            <xsl:text>pdf</xsl:text>
+          </xsl:attribute>
+          <xsl:text>Download right page (PDF)</xsl:text>
         </xsl:element>
       </li>
     </xsl:if>
@@ -1194,7 +1225,7 @@
       <xsl:text>?urlappend=%3Bseq=</xsl:text>
       <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']"/>
     </xsl:if>
-  </xsl:template>    
+  </xsl:template>
 
   <xsl:template name="share-this-book">
     <xsl:variable name="pageLink">
@@ -1355,7 +1386,7 @@
           <xsl:with-param name="class" select="'mdpColSelectMenu'"/>
         </xsl:call-template>
       </xsl:for-each>
-      <br />
+      <!-- <br /> -->
       <button id="PTaddItemBtn" class="btn btn-small">Add</button>
     </div>
   </xsl:template>

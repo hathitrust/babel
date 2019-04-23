@@ -258,8 +258,9 @@
   </xsl:template>
 
   <xsl:template name="nav-search-form">
-    <form class="form-inline relative" action="/cgi/ls/one" method="GET" role="search">
+    <form class="nav-search-form form-inline relative" action="/cgi/ls/one" method="GET" role="search">
       <xsl:call-template name="global-search-form-fieldset" />
+      <xsl:call-template name="global-search-form-options" />
       <!-- <div class="bg">
           <div class="bg-inner">
           </div>
@@ -272,21 +273,90 @@
   </xsl:template>
 
   <xsl:template name="global-search-form-fieldset">
-    <!-- <fieldset> -->
+    <xsl:variable name="target">
+      <xsl:call-template name="header-search-target" />
+    </xsl:variable>
+    <div class="control control-q1">
       <label for="q1-input" class="offscreen" >Search</label>
       <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
         <xsl:attribute name="value">
           <xsl:call-template name="header-search-q1-value" />
         </xsl:attribute>
       </input>
-      <div class="search-input-options">
-        <label for="search-input-select" class="offscreen">Search Field List</label>
-        <select id="search-input-select" size="1" class="search-input-select" name="searchtype">
-          <xsl:call-template name="search-input-select-options" />
-        </select>
+    </div>
+    <div class="control control-searchtype">
+      <xsl:if test="$target = 'ls'">
+        <xsl:attribute name="style">display: none;</xsl:attribute>
+      </xsl:if>
+      <label for="search-input-select" class="offscreen">Search Field List</label>
+      <select id="search-input-select" size="1" class="search-input-select" name="searchtype">
+        <xsl:call-template name="search-input-select-options" />
+      </select>
+    </div>
+    <button class="button control control-search">Search</button>
+  </xsl:template>
+
+  <xsl:template name="global-search-form-options">
+    <div class="global-search-modal">
+      <div class="global-search-modal-inner">
+        <div class="global-search-options">
+          <div class="search-target">
+            <xsl:call-template name="global-search-target-options" />
+          </div>
+          <div class="global-search-ft">
+            <xsl:call-template name="global-search-ft-options" />
+          </div>
+        </div>
+        <div class="global-search-links">
+          <xsl:call-template name="global-search-links" />
+        </div>
       </div>
-      <button class="button">Search</button>
-    <!-- </fieldset> -->
+    </div>
+  </xsl:template>
+
+  <xsl:template name="global-search-target-options">
+    <xsl:variable name="target">
+      <xsl:call-template name="header-search-target" />
+    </xsl:variable>
+    <input name="target" type="radio" id="option-full-text-search" value="ls">
+      <xsl:if test="$target = 'ls'">
+        <xsl:attribute name="checked">checked</xsl:attribute>
+      </xsl:if>
+    </input>
+    <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
+    <input name="target" type="radio" id="option-catalog-search" value="catalog">
+      <xsl:if test="$target = 'catalog'">
+        <xsl:attribute name="checked">checked</xsl:attribute>
+      </xsl:if>
+    </input>
+    <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
+  </xsl:template>
+
+  <xsl:template name="global-search-ft-options">
+    <xsl:variable name="checked">
+      <xsl:call-template name="header-search-ft-value" />
+    </xsl:variable>
+    <input type="checkbox" name="ft" value="ft" id="global-search-ft">
+      <xsl:if test="normalize-space($checked)">
+        <xsl:attribute name="checked">checked</xsl:attribute>
+      </xsl:if>
+    </input>
+    <label for="global-search-ft">Full view only</label>
+  </xsl:template>
+
+  <xsl:template name="global-search-links">
+    <ul class="search-links">
+      <li class="search-advanced-link">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:call-template name="GetAdvancedFullTextHref"/>
+          </xsl:attribute>
+          <xsl:text>Advanced full-text search</xsl:text>
+        </a>
+      </li>
+      <li class="search-catalog-link"><a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
+      <li><a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
+    </ul>
   </xsl:template>
 
   <xsl:template name="contents">

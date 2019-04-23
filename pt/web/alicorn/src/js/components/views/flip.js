@@ -11,6 +11,7 @@ export var Flip = class extends Base {
     this.embedHtml = true;
     this.setupSlices();
     this.is_active = false;
+    this._checkForFoldouts = this.checkForFoldouts.bind(this);
   }
 
   setupSlices() {
@@ -75,7 +76,12 @@ export var Flip = class extends Base {
         // page.style.height = `${minWidth * ratio * scale}px`;
         // page.style.width = `${minWidth * scale}px`;
 
-        page.style.setProperty('--page-ratio', meta.width / meta.height);
+        if ( meta.width > meta.height ) {
+          var r = minWidth / meta.width;
+          page.style.setProperty('--page-ratio', meta.height / meta.width );
+        } else {
+          page.style.setProperty('--page-ratio', meta.width / meta.height);
+        }
         // page.style.height = `${maxHeight * scale}px`;
         // page.style.width = `${maxHeight * scale / ratio}px`;
 
@@ -189,7 +195,7 @@ export var Flip = class extends Base {
   loadSlice(slice) {
     var pages = slice.querySelectorAll('.page[data-seq]');
     for(var i = 0; i < pages.length; i++) {
-      this.loadImage(pages[i], { check_scroll: true });
+      this.loadImage(pages[i], { check_scroll: true, callback: this._checkForFoldouts });
     }
     slice.dataset.visible = true;
   }
@@ -307,7 +313,7 @@ export var Flip = class extends Base {
       var prev_page = this.container.querySelector(`.page[data-seq="${seq - delta}"]`);
       if ( prev_page ) {
         prev_page.dataset.preloaded = true;
-        this.loadImage(prev_page, { check_scroll: true });
+        this.loadImage(prev_page, { check_scroll: true, callback: this._checkForFoldouts });
       }
       delta += 1;
     }
@@ -316,7 +322,7 @@ export var Flip = class extends Base {
       var next_page = this.container.querySelector(`.page[data-seq="${seq + delta}"]`);
       if ( next_page ) {
         next_page.dataset.preloaded = true;
-        this.loadImage(next_page, { check_scroll: true });
+        this.loadImage(next_page, { check_scroll: true, callback: this._checkForFoldouts });
       }
       delta += 1;
     }
@@ -349,7 +355,24 @@ export var Flip = class extends Base {
     if ( element.classList.contains('edge') ) {
       return this._clickHandlerEdge(element, event);
     }
-    if ( element.tagName.toLowerCase() != 'button' ) {
+    if ( element.tagName.toLowerCase() == 'button' ) {
+      if ( element.classList.contains('action-view-foldout') ) {
+        event.preventDefault();
+        event.stopPropagation();
+        var page = element.closest('.page'); 
+        var img = page.querySelector('img.foldout');
+        var new_img = `<div><img src="${img.src}" height="${img.dataset.height}" width="${img.dataset.width}" /></div>`;
+        bootbox.dialog(new_img, 
+          [{ label: 'Close', class: 'btn-dismiss' }], 
+          { 
+            lightbox: true, 
+            header: `View page scan ${page.dataset.seq} foldout`,
+            width: img.dataset.width,
+            height: img.dataset.height
+          }
+        );
+      }
+    } else {
       // check that this is a page
       element = element.closest('.page');
       if ( element ) {
@@ -390,6 +413,17 @@ export var Flip = class extends Base {
     }
     // console.log("AHOY AHOY flip.click edge", event.target, offsetX, seq, target_seq, ( edge_width - offsetX ) / edge_width);
     this.display(target_seq);
+  }
+
+  checkForFoldouts(img) {
+    if ( img.classList.contains('foldout') ) {
+      var page = img.parentElement;
+      var button = document.createElement('button');
+      button.classList.add('btn', 'btn-mini', 'action-view-foldout');
+      button.innerText = 'View Foldout';
+      button.dataset.seq = page.dataset.seq;
+      page.appendChild(button);
+    }
   }
 
   destroy() {

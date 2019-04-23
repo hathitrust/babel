@@ -65,6 +65,11 @@ export var PlainText = class extends Single {
       .then(function(text) {
         var page_text = page.querySelector('.page-text');
         page_text.innerHTML = text;
+
+        if ( page_text.textContent.trim() == "" ) {
+          page_text.innerHTML = `<div class="alert alert-block alert-info alert-headline"><p>NO TEXT ON PAGE</p></div><p>This page does not contain any text recoverable by the OCR engine.</p>`;
+        }
+
         page.dataset.loaded = true;
 
         if ( page_text.offsetHeight < page_text.scrollHeight ) {

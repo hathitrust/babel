@@ -5,6 +5,7 @@
 @import 'alerts';
 @import 'skiplinks';
 @import "nav";
+@import "form";
 @import "sidebar";
 @import "download";
 
@@ -137,6 +138,8 @@ main.main-container {
   margin: 0;
   overflow: hidden;
 
+  height: 100%;
+
   display: flex;
   flex-direction: column;
 
@@ -268,7 +271,12 @@ main .inner.main {
 
   .output {
     margin-right: 1rem;
+    padding: 0.5rem;
     display: inline-block;
+
+    &.updating {
+      background: #000;
+    }
   }
 
 }
@@ -509,6 +517,17 @@ section[data-view="image"] {
 }
 
 section[data-view="2up"] {
+
+  .inner.main {
+    margin: 0;
+    section.viewer {
+    }
+  }
+
+  #toolbar-vertical {
+    margin-top: 1rem;
+  }
+
   section {
     .slice {
       width: var(--slice-width); // 100%
@@ -558,10 +577,22 @@ section[data-view="2up"] {
 
       img {
         height: 100%;
+
+        &.foldout {
+          height: auto;
+          width: 100%;
+        }
       }
 
       button.action-toggle-selection {
         width: 50%;
+      }
+
+      button.action-view-foldout {
+        position: absolute;
+        bottom: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
       }
 
     }
@@ -630,6 +661,7 @@ section[data-view="plaintext"] {
       max-width: 80rem;
       min-height: 90vh;
       position: absolute;
+      background: #fff;
       top: 0;
 
       &[data-best-fit="true"] {

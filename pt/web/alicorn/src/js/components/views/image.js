@@ -53,7 +53,6 @@ export var Single = class extends Base {
         current_percentage = percentage;
         current = page;
       }
-      console.log("AHOY currentLocation", page.dataset.seq, percentage);
     }
     return current.dataset.seq;
   }
@@ -123,7 +122,9 @@ export var Single = class extends Base {
 
   destroy() {
     super.destroy();
-    this._handlers.rotate();
+    if ( this._handlers.rotate ){
+      this._handlers.rotate();
+    }
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
       this.container.removeChild(pages[i]);

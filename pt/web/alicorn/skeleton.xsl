@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE xsl:stylesheet [ 
-<!ENTITY nbsp "&#160;"> 
+<!DOCTYPE xsl:stylesheet [
+<!ENTITY nbsp "&#160;">
 <!ENTITY copy "&#169;">
-<!ENTITY raquo "»"> 
-<!ENTITY laquo "«"> 
+<!ENTITY raquo "»">
+<!ENTITY laquo "«">
 ]>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0"
@@ -12,7 +12,7 @@
   xmlns="http://www.w3.org/1999/xhtml"
   exclude-result-prefixes="h exsl"
   extension-element-prefixes="exsl">
-  
+
   <xsl:variable name="timestamp" select="'?_=1548180869'" />
 
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTp/MBooksGlobals/FinalAccessStatus"/>
@@ -79,6 +79,8 @@
           <xsl:call-template name="setup-page-title" />
         </title>
 
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
       </head>
 
       <body>
@@ -129,7 +131,7 @@
         <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
         <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
         <li>See the <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
-      </ul>      
+      </ul>
     </div>
   </xsl:template>
 
@@ -143,7 +145,7 @@
         <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
         <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
         <li>See the <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
-      </ul>      
+      </ul>
     </div>
   </xsl:template>
 
@@ -211,7 +213,7 @@
       <xsl:call-template name="header-search-form" />
 
       <xsl:call-template name="login-block" />
-    </div>    
+    </div>
   </xsl:template>
 
   <xsl:template name="header-search-form">
@@ -275,14 +277,16 @@
   <xsl:template name="header-search-q1-value" />
 
   <xsl:template name="footer">
-    <xsl:variable name="inst" select="/MBooksTop/MBooksGlobals/InstitutionName"/>
+    <!-- <xsl:variable name="inst" select="/MBooksTop/MBooksGlobals/InstitutionName"/> -->
+    <xsl:variable name="inst">University At Buffalo, The State University of New York</xsl:variable>
     <footer class="site-navigation" role="contentinfo">
       <nav>
-        <xsl:if test="$inst != ''">
+        <xsl:if test="false() and $inst != ''">
           <ul class="nav">
             <li>
-              <span><xsl:value-of select="$inst" /><br />Member, HathiTrust
-              </span>
+              <span class="institution-label" aria-label="${inst}" data-role="tooltip" data-microtip-position="top" data-microtip-size="small"><xsl:value-of select="$inst" /></span>
+              <!-- <span style="font-size: 0.8rem"><xsl:value-of select="$inst" /><br />HathiTrust
+              </span> -->
             </li>
           </ul>
         </xsl:if>
@@ -427,7 +431,7 @@
           <xsl:apply-templates select="Desc" mode="copy-guts" />
         </p>
       </xsl:for-each>
-    </div>  
+    </div>
   </xsl:template>
 
   <xsl:template name="debug-messages">

@@ -16,8 +16,14 @@ export var Navigator = class {
 
   bindEvents() {
     this.input.addEventListener('change', (event) => {
+      this.output.classList.remove('updating');
       this.render('current-seq', this.input.value);
       this.emitter.emit('updateLocation', { seq: this.input.value });
+    })
+
+    this.input.addEventListener('input', (event) => {
+      this.output.classList.add('updating');
+      this.render('current-seq', this.input.value);
     })
 
     this.reader.on('relocated', (params) => {

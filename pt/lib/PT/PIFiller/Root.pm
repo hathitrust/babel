@@ -1057,10 +1057,10 @@ sub handle_DEFAULT_SEQ
 
     my $seq;
     if ( $seq = $mdpItem->HasTitleFeature()) {
-        $cgi->param('seq', $seq );
+        # $cgi->param('seq', $seq );
     }
     elsif ($seq = $mdpItem->HasTOCFeature()) {
-        $cgi->param('seq', $seq );
+        # $cgi->param('seq', $seq );
     } else {
         $seq = 1;
     }

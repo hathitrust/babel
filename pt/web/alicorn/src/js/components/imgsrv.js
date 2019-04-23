@@ -57,6 +57,14 @@ export var Manifest = class {
     rotation = rotation % 360;
     this.manifest[seq].rotation = rotation;
   }
+
+  checkFeatures(seq, feature) {
+    var data = this.featureMap[seq];
+    if ( data && data.features ) {
+      return ( data.features.indexOf(feature) > -1 );
+    }
+    return false;
+  }
 }
 
 export var Service = class {

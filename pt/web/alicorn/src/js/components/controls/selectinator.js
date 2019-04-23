@@ -62,10 +62,15 @@ export var Selectinator = class {
     this._updateSelectionLabel(printable.length);
     this._updateSelectionContents(printable);
 
+    var manifest = this.reader.service.manifest;
+
     var pages = this.reader.view.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
       var page = pages[i];
       if ( ! page.dataset.seq ) {
+        continue;
+      }
+      if ( manifest.checkFeatures(page.dataset.seq, 'MISSING_PAGE') ) {
         continue;
       }
       var button = document.createElement('button');

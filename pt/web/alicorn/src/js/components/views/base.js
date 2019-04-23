@@ -102,8 +102,6 @@ export var Base = class {
     var seq = page.dataset.seq;
     var rect = page.getBoundingClientRect();
 
-    console.log("AHOY LOADING", seq);
-
     var image_url = this.imageUrl(page);
     var html_url = this.service.html({ seq: seq });
 
@@ -133,9 +131,17 @@ export var Base = class {
 
       this.service.manifest.update(seq, { width: img.width, height: img.height });
 
+      if ( img.width > img.height ) {
+        img.classList.add('foldout');
+        img.dataset.width = img.width;
+        img.dataset.height = img.height;
+      }
+
+
       var imageAspectRatio = img.width / img.height;
       img.style.width = page_width;
       img.style.height = page_width / imageAspectRatio;
+
       page.appendChild(img);
       page.dataset.loaded = true;
 
@@ -152,6 +158,9 @@ export var Base = class {
 
       if ( options.check_scroll || this.mode == 'thumbnail' ) { this.resizePage(page); }
       img.removeEventListener('load', _imgHandler, true);
+      if ( options.callback ) {
+        options.callback(img);
+      }
     }.bind(this), true)
 
     img.src = image_url;

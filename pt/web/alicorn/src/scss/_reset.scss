@@ -92,6 +92,10 @@ input[type=date], input[type=email], input[type=search], input[type=tel], input[
     width: 100%;
 }
 
+input[type=text], input[type=search], input[type=email], textarea {
+  font-family: $base-font-family;
+}
+
 input.input-mini {
   width: 4rem;
 }
@@ -127,8 +131,10 @@ button, input[type=submit], a.btn {
   }
 }
 
-button[disabled] {
+button[disabled], a[disabled] {
   opacity: 0.65;
+  pointer-events: none;
+  cursor: default;
 }
 
 input[type=text] + button {
@@ -141,7 +147,8 @@ header.site-navigation, footer.site-navigation {
   nav {
     padding: 0; // 0.5rem;
     margin: 0 auto;
-    max-width: 80vw;
+    // max-width: 80vw;
+    max-width: 60rem;
   }
 }
 
@@ -164,6 +171,7 @@ footer.site-navigation {
   grid-area: footer;
   nav {
     justify-content: flex-end;
+    // font-size: 0.75rem;
   }
 }
 
@@ -188,8 +196,20 @@ header nav, footer nav {
   }
 
   ul {
+    span {
+      padding: 0.8rem 1rem;
+      display: block;
+
+      &.institution-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 15rem;
+      }
+    }
     a {
       padding: 0.8rem 1rem;
+      white-space: nowrap;
 
       color: $navbar-link-color;
       text-decoration: none;
@@ -252,7 +272,8 @@ header nav, footer nav {
     display: flex;
     margin-left: 8px;
     margin-right: 8px;
-    flex-basis: 50%;
+    // flex-basis: 50%;
+    flex-grow: 1;
 
     input[name=q1] {
       width: 100%;

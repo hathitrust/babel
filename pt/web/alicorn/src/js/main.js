@@ -7,6 +7,7 @@ import {View} from './components/views';
 import debounce from 'lodash/debounce';
 
 var HT = window.HT || {}; window.HT = HT;
+var $root = document.querySelector('main');
 var $main = document.querySelector('section#section');
 var $viewer = $main.querySelector('.viewer');
 var $inner = $viewer.querySelector('.viewer-inner');
@@ -72,6 +73,7 @@ var Reader = class {
     var cls = View.for(params.view);
     this.view = new cls({ reader: this, service: this.service, scale: this.options.scale });
     this.emit('configure', this.view.config());
+    this._updateViews(params.view);
   }
 
   next() {
@@ -112,6 +114,119 @@ var Reader = class {
         $status.innerText = '';
       }, 500);
     });
+
+    this.on('relocated', (params) => {
+      var href = window.location.pathname + location.search;
+      var argv = [];
+      argv.push(`id=${this.identifier}`);
+      argv.push(`view=${this.view.name}`);
+      argv.push(`seq=${params.seq || HT.params.seq}`);
+      if ( HT.params.skin ) { argv.push(`skin=${HT.params.skin}`); }
+      if ( HT.params.debug ) { argv.push(`debug=${HT.params.debug}`); }
+      var new_href = location.pathname + '?' + argv.join(';');
+      window.history.replaceState(null, document.title, new_href);
+
+      // legacy
+      HT.params.seq = params.seq;
+      HT.params.view = this.view.name;
+
+      this._updateLinks(params.seq);
+    });
+  }
+
+  _updateLinks(seq) {
+    var self = this;
+    if ( ! seq ) { seq = this.view.currentLocation(); }
+    if ( this.view.name == '2up' ) {
+      // this is way more complicated
+      var verso = this.view.container.querySelector('.slice[data-visible="true"] .page.verso');
+      var recto = this.view.container.querySelector('.slice[data-visible="true"] .page.recto');
+      self._updateLinkSeq(document.querySelector(`#pagePdfLink1`), verso ? verso.dataset.seq : null);
+      self._updateLinkSeq(document.querySelector(`#pagePdfLink2`), recto ? recto.dataset.seq : null);
+    } else {
+        var $link = document.querySelector("#pagePdfLink");
+        self._updateLinkSeq($link, seq);
+    }
+    self._updateLinkSeq(document.querySelector("#pageURL"), seq);
+    self._updateLinkSeq(document.querySelector("input[name=seq]"), seq);
+    self._updateLinkSeq(document.querySelector("#login-link"), seq);
+    self._updateLinkSeq(document.querySelector("#ssd-link"), seq);
+  }
+
+  _updateViews(view) {
+    var self = this;
+    if ( ! view ) { view = this.view.name; }
+    self._updateLinkAttribute(document.querySelector("#login-button"), "view", view);
+    var inputs = document.querySelectorAll("input[name='view']");
+    for(var i = 0; i < inputs.length; i++) {
+      inputs[i].value = view;
+    }
+    $root.dataset.view = view;
+  }
+
+  _updateLinkSeq($link, seq, disabled) {
+    if ( ! $link ) { return ; }
+    if ( seq == null || disabled == true ) {
+      $link.setAttribute('disabled', 'disabled');
+      $link.setAttribute('tabindex', -1);
+      // $link.classList.add('disabled');
+      if ( $link.tagName.toLowerCase() == 'a' ) {
+        $link.dataset.href = $link.getAttribute('href');
+        $link.setAttribute('href', 'javascript:function() { return false; }');
+      }
+    } else {
+      if ( ! $link.classList.contains('disabled') && $link.getAttribute('disabled') == 'disabled' ) {
+        $link.removeAttribute('disabled');
+        $link.removeAttribute('tabindex');
+        if ( $link.tagName.toLowerCase() == 'a' ) {
+          $link.setAttribute('href', $link.dataset.href);
+        }
+      }
+      if ( $link.tagName.toLowerCase() == 'input' && $link.getAttribute("name") == "seq" ) {
+          $link.value = seq;
+      } else if ( $link.tagName.toLowerCase() == 'input' ) {
+          var href = $link.value;
+          $link.value = href.replace(/seq=\d+/, "seq=" + seq);
+      } else {
+          this._updateLinkAttribute($link, "seq", seq);
+      }
+    }
+  }
+
+  _updateLinkAttribute($link, key, value) {
+    if ( ! $link ) { return ; }
+    var href = $link.getAttribute("href");
+    var regex = new RegExp(key + "(=|%3D)");
+    if ( href.indexOf('#' + key) > -1 ) {
+        regex = new RegExp('#' + key + '\\d+');
+        href = href.replace(regex, '#' + key + value);
+        $link.setAttribute('href', href);
+    } else if ( ! regex.test(href) ) {
+        // key not in href
+        var text = key + "=" + value;
+        var target_href = href;
+        var idx;
+        if ( ( idx = target_href.indexOf('target=') ) > -1 ) {
+            // extract the target url
+            idx += "target=".length;
+            target_href = decodeURIComponent(href.substr(idx));
+        }
+        var sep = ';';
+        if ( target_href.indexOf("&") > -1 ) {
+            // add to parameters - semicolon
+            sep = '&';
+        }
+        target_href += sep + text;
+        if ( idx > -1 ) {
+            // re-encode
+            target_href = href.substr(0, idx) + encodeURIComponent(target_href);
+        }
+        $link.setAttribute("href", target_href);
+    } else {
+        // replace existing key
+        regex = new RegExp(key + "(=|%3D)" + "\\w+(;|&|%3B|%26)?");
+        $link.setAttribute("href", href.replace(regex, key + "$1" + value + "$2"));
+    }
   }
 
 }
@@ -178,12 +293,17 @@ reader.controls.contentsnator = new Control.Contentsnator({
   reader: reader
 });
 
-reader.controls.selectinator = new Control.Selectinator({
-  reader: reader,
-  input: document.querySelector('.table-of-selections'),
-  link: document.querySelector('#selectedPagesPdfLink'),
-  reset: document.querySelector('#action-clear-selection')
-});
+var selectedPagesPdfLink = document.querySelector('#selectedPagesPdfLink');
+if ( selectedPagesPdfLink ) {
+  reader.controls.selectinator = new Control.Selectinator({
+    reader: reader,
+    input: document.querySelector('.table-of-selections'),
+    link: selectedPagesPdfLink,
+    reset: document.querySelector('#action-clear-selection')
+  });
+} else {
+  document.querySelector('.table-of-selections').querySelector('button').disabled = true;
+}
 
 var _scrollCheck = debounce(function() {
   window.scrollTo(0,0);
@@ -193,6 +313,14 @@ window.addEventListener('scroll', _scrollCheck);
 $main.dataset.selected = 0;
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10 });
+
+HT.mobify = function() {
+  $("header").hide();
+  $("footer").hide();
+  $('.sidebar-container').hide();
+  $("#toolbar-vertical").hide();
+  $("#toolbar-horizontal").hide();
+}
 
 /* AND THE WINDOW */
 

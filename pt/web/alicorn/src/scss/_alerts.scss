@@ -125,4 +125,15 @@
       left: auto;
       right: 0.6rem;
     }
-  }  
+  }
+
+  .alert-headline {
+      text-align: center;
+      margin-top: 2rem;
+
+      >p {
+          font-size: 200%;
+          font-weight: bold;
+      }
+
+  }
