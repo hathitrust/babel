@@ -34,7 +34,7 @@ use PT::PIFiller::Common;
 
 use JSON::XS qw(encode_json);
 
- 
+
 # ---------------------------------------------------------------------
 
 =item BuildRotateLink
@@ -191,20 +191,20 @@ sub BuildPageNavLink
 sub BuildImageServerImageUrl
 {
     my ( $cgi ) = @_;
-    
+
     my $tempCgi = new CGI ("");
-    
+
     my $path;
     my $action = 'image';
     # copy params
     foreach my $p (qw(id orient size attr src u seq num)) {
         $tempCgi->param($p, scalar $cgi->param($p));
     }
-    
+
     if ( $cgi->param('debug') ) {
         $tempCgi->param('debug', scalar $cgi->param('debug'));
     }
-    
+
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
     return $href;
 }
@@ -222,7 +222,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub GetItemType 
+sub GetItemType
 {
     my ( $C ) = @_;
 
@@ -231,7 +231,7 @@ sub GetItemType
 
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-        
+
     if ( $finalAccessStatus ne 'allow' )
     {
         return qq{restricted};
@@ -246,7 +246,7 @@ sub GetItemType
     return $item_type;
 }
 
-sub GetItemSubType 
+sub GetItemSubType
 {
     my ( $C ) = @_;
 
@@ -255,7 +255,7 @@ sub GetItemSubType
 
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-        
+
     if ( $finalAccessStatus ne 'allow' )
     {
         return undef;
@@ -268,10 +268,10 @@ sub GetItemSubType
 }
 
 sub handle_ITEM_TYPE_PI
-  : PI_handler(ITEM_TYPE) 
+  : PI_handler(ITEM_TYPE)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     return GetItemType($C);
 }
 
@@ -284,7 +284,7 @@ Description
 =cut
 # ---------------------------------------------------------------------
 sub handle_ITEM_STYLESHEET_PI
-  : PI_handler(ITEM_STYLESHEET) 
+  : PI_handler(ITEM_STYLESHEET)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
@@ -296,7 +296,7 @@ sub handle_ITEM_STYLESHEET_PI
 }
 
 sub handle_ITEM_CHUNK_PI
-  : PI_handler(ITEM_CHUNK) 
+  : PI_handler(ITEM_CHUNK)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
@@ -307,7 +307,7 @@ sub handle_ITEM_CHUNK_PI
     print STDERR "AHOY RETURNING $xml\n";
     return $xml;
 }
-  
+
 # ---------------------------------------------------------------------
 
 =item handle_IN_COPYRIGHT_PI : PI_handler(IN_COPYRIGHT)
@@ -318,7 +318,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_IN_COPYRIGHT_PI
-  : PI_handler(IN_COPYRIGHT) 
+  : PI_handler(IN_COPYRIGHT)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
@@ -328,8 +328,8 @@ sub handle_IN_COPYRIGHT_PI
     }
     return 'false';
 }
-  
-      
+
+
 # ---------------------------------------------------------------------
 
 =item handle_CURRENT_PAGE_IMG_SRC_PI : PI_handler(CURRENT_PAGE_IMG_SRC)
@@ -347,7 +347,7 @@ sub handle_CURRENT_PAGE_IMG_SRC_PI
     my $id = $C->get_object('CGI')->param('id');
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-        
+
     my $cgi = $C->get_object('CGI');
 
     my $href = '';
@@ -371,7 +371,7 @@ sub handle_CURRENT_PAGE_IMG_WIDTH_PI
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
 
     my $value = '';
-    
+
     if ( $finalAccessStatus eq 'allow' ) {
         $value = $C->get_object('MdpItem')->GetTargetImageFileInfo()->{width};
     }
@@ -441,7 +441,7 @@ sub handle_SECTION_108_PI
     $date =~ s/,.*//; # strip year
     my $time = Utils::Time::friendly_iso_Time($expires, 'time');
     $time =~ s,(\d+:\d+):\d+( .*),$1$2,;
-    
+
     my $expiration = "$date at $time";
 
     return (
@@ -669,7 +669,7 @@ sub handle_URL_ROOTS_PI
     : PI_handler(URL_ROOTS)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     my $toReturn = '';
     $toReturn .= wrap_string_in_tag( $PTGlobals::gCollectionBuilderCgiRoot, 'Variable', [ [ 'name', 'cgi/mb' ] ] );
     $toReturn .= wrap_string_in_tag( $PTGlobals::gPageturnerCgiRoot, 'Variable', [ [ 'name', 'cgi/pt' ] ] );
@@ -793,9 +793,9 @@ sub handle_HIDDEN_SEQUENCE_PI
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
     my $defaultSeq = $cgi->param( 'seq' ) ? $cgi->param( 'seq' ) : 1;
-    
+
     my $sequence;
-    
+
     if ($form eq 'PageXofYForm' ) {
         # Sequence number is a function of the user-entered number
         # from the go-to page form
@@ -806,7 +806,7 @@ sub handle_HIDDEN_SEQUENCE_PI
         # Sequence number is the defaultSeq number
         $sequence = $defaultSeq;
     }
-    
+
 
     return wrap_string_in_tag( $sequence, 'Variable', [ [ 'name', 'seq' ] ] );
 }
@@ -961,7 +961,7 @@ sub handle_PAGE_LINK_PI
     if ( $tempCgi->param('orient') == 0 ) {
         $tempCgi->delete('orient');
     }
-    
+
     return Utils::url_to($tempCgi);
 }
 
@@ -1066,6 +1066,18 @@ sub handle_DEFAULT_SEQ
     }
 
     return $seq;
+}
+
+# ---------------------------------------------------------------------
+sub handle_READING_ORDER
+    : PI_handler(READING_ORDER)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    return $mdpItem->Get('readingOrder');
 }
 
 # ---------------------------------------------------------------------

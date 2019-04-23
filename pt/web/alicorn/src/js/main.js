@@ -38,6 +38,7 @@ var Reader = class {
         this.view.display(params.seq || 1);
       }.bind(this);
     }
+
     if ( params.view ) {
       $main.dataset.view = params.view;
 
@@ -85,11 +86,11 @@ var Reader = class {
   }
 
   first() {
-    this.view.display(1);
+    this.view.first();
   }
 
   last() {
-    this.view.display(this.service.manifest.totalSeq);
+    this.view.last();
   }
 
   display(seq) {
@@ -233,6 +234,7 @@ var Reader = class {
 
 var service = new Service({
   manifest: {
+    readingOrder: $main.dataset.readingOrder,
     totalSeq: $main.dataset.totalSeq,
     defaultSeq: $main.dataset.defaultSeq,
     firstSeq: $main.dataset.firstSeq,
@@ -249,6 +251,8 @@ var reader = new Reader({ identifier: HT.params.id });
 reader.service = service;
 HT.reader = reader;
 HT.View = View;
+
+$main.dataset.readingOrder = service.manifest.options.readingOrder;
 
 var is_active = false;
 var scale = 0.75;

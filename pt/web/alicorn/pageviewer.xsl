@@ -234,7 +234,7 @@
 
   <xsl:template name="li-search-action">
     <li>
-      <button class="btn btn-primary" id="action-search-hathitrust">Search HathiTrust</button>
+      <button class="btn btn-primary" id="action-search-hathitrust">Search HathiTrust <i class="icomoon icomoon-search" aria-hidden="true"></i></button>
     </li>
   </xsl:template>
 

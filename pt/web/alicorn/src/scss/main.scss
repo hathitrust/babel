@@ -645,12 +645,17 @@ section[data-view="thumb"] {
         left: 0;
         width: 100%;
       }
-
     }
   }
 
   button[data-target="thumb"] {
     background: rgba(0,0,0,0.8);
+  }
+
+  &[data-reading-order="right-to-left"] {
+    .viewer-inner {
+      flex-direction: row-reverse;
+    }
   }
 }
 

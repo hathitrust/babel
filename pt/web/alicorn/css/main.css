@@ -2508,6 +2508,13 @@ section[data-view="thumb"] button[data-target="thumb"] {
   background: rgba(0, 0, 0, 0.8);
 }
 
+section[data-view="thumb"][data-reading-order="right-to-left"] .viewer-inner {
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: reverse;
+      -ms-flex-direction: row-reverse;
+          flex-direction: row-reverse;
+}
+
 section[data-view="plaintext"] section .page {
   width: 90%;
   max-width: 80rem;

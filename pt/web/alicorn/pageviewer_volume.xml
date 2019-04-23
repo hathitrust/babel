@@ -170,6 +170,7 @@
       <FirstPageSeq><?FIRST_PAGE_SEQUENCE?></FirstPageSeq>
       <DefaultSeq><?DEFAULT_SEQ?></DefaultSeq>
       <BaseImage><?BASE_IMAGE_DIMENSIONS?></BaseImage>
+      <ReadingOrder><?READING_ORDER?></ReadingOrder>
     </Manifest>
 
     <FeedbackForm>

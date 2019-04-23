@@ -9,26 +9,38 @@ export var Flip = class extends Base {
     this.mode = 'image';
     this.name = '2up';
     this.embedHtml = true;
-    this.setupSlices();
     this.is_active = false;
+    this.isRTL = this.service.manifest.options.readingOrder  == 'right-to-left';
     this._checkForFoldouts = this.checkForFoldouts.bind(this);
+    this.setupSlices();
   }
 
   setupSlices() {
+    var totalSeq = this.service.manifest.totalSeq;
+    var num_slices = Math.ceil((this.service.manifest.totalSeq - 2) / 2) + 2;
     this.seq2slice = {};
     this.slices = [];
     this.slices.push([ null, 1 ]);
-    this.seq2slice[1] = 0;
-    for(var seq = 2; seq <= this.service.manifest.totalSeq; seq += 2) {
+    for(var seq = 2; seq <= totalSeq; seq += 2) {
       var next_seq = seq + 1;
       if ( next_seq > this.service.manifest.totalSeq ) {
         next_seq = null;
       }
       this.slices.push([ seq, next_seq ]);
-      this.seq2slice[seq] = this.slices.length - 1;
-      if ( next_seq ) { this.seq2slice[next_seq] = this.slices.length - 1; }
     }
 
+    if ( this.isRTL ) {
+      this.slices.reverse();
+    }
+
+    this.slices.forEach((tuple, slice_idx) => {
+      if ( this.isRTL ) { tuple.reverse(); }
+      tuple.forEach((seq) => {
+        if ( seq !== null ) {
+          this.seq2slice[seq] = slice_idx;
+        }
+      })
+    })
   }
 
   render(cb) {
@@ -50,7 +62,14 @@ export var Flip = class extends Base {
     // group into pages
     var slices = this.slices;
 
-    for(var slice_idx = 0; slice_idx < slices.length; slice_idx++ ) {
+    var slices_indexes = [];
+    for(var slice_idx = 0; slice_idx < slices.length; slice_idx++) {
+      slices_indexes.push(slice_idx);
+    }
+    // if ( this.isRTL ) { slices_indexes.reverse(); }
+
+    for(var j = 0; j < slices_indexes.length; j++ ) {
+      var slice_idx = slices_indexes[j];
       var tuple = slices[slice_idx];
 
       var slice = document.createElement('div');
@@ -272,18 +291,36 @@ export var Flip = class extends Base {
     return current.dataset.seq;
   }
 
+  _calculateSeq(direction) {
+    if ( this.isRTL ) { direction = -direction; }
+    var delta;
+    if ( direction > 0 ) {
+      delta = this.currentSeq == 1 ? 1 : 2;
+    } else {
+      delta = -2;
+    }
+    var seq = this.currentSeq + delta;
+    if ( seq <= 0 ) { seq = 1; }
+    if ( seq > this.service.manifest.totalSeq ) { seq = this.service.manifest.totalSeq; }
+    return seq;
+  }
+
   next() {
     this.container.scrollTop = 0;
-    var delta = this.currentSeq == 1 ? 1 : 2;
-    this.display(this.currentSeq + delta);
+    this.display(this._calculateSeq(1));
   }
 
   prev() {
     this.container.scrollTop = 0;
-    var delta = 2; // this.currentSeq == this.service.manifest.totalSeq ? 1 : 2;
-    var seq = this.currentSeq - delta;
-    if ( seq <= 0 ) { seq = 1; }
-    this.display(seq);
+    this.display(this._calculateSeq(-1));
+  }
+
+  first() {
+    this.display(this.isRTL ? this.service.manifest.totalSeq : 1);
+  }
+
+  last() {
+    this.display(this.isRTL ? 1 : this.service.manifest.totalSeq);
   }
 
   _postResizePage(bounds, rect) {
@@ -359,13 +396,13 @@ export var Flip = class extends Base {
       if ( element.classList.contains('action-view-foldout') ) {
         event.preventDefault();
         event.stopPropagation();
-        var page = element.closest('.page'); 
+        var page = element.closest('.page');
         var img = page.querySelector('img.foldout');
         var new_img = `<div><img src="${img.src}" height="${img.dataset.height}" width="${img.dataset.width}" /></div>`;
-        bootbox.dialog(new_img, 
-          [{ label: 'Close', class: 'btn-dismiss' }], 
-          { 
-            lightbox: true, 
+        bootbox.dialog(new_img,
+          [{ label: 'Close', class: 'btn-dismiss' }],
+          {
+            lightbox: true,
             header: `View page scan ${page.dataset.seq} foldout`,
             width: img.dataset.width,
             height: img.dataset.height
