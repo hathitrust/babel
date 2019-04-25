@@ -203,3 +203,14 @@ main[data-view="plaintext"] {
   }
 }
 
+#modal-download {
+  .modal__content {
+    > div > div {
+      margin: 1rem;
+    }
+  }
+}
+
+#selection-contents {
+  white-space: nowrap;
+}

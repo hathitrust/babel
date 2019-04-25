@@ -8,21 +8,6 @@ head.ready(function() {
     var $toolbar = $(".collectionLinks .select-collection");
     var $errormsg = $(".errormsg");
     var $infomsg = $(".infomsg");
-    var $status = $("div[role=status]");
-
-    var lastMessage;
-    HT.update_status = function(message) {
-        setTimeout(() => {
-          if ( message != lastMessage ) {
-            $status.text(message);
-            console.log("-- status:", message);
-          }
-          lastMessage = message;
-        }, 50);
-        setTimeout(() => {
-          $status.get(0).innerText = '';
-        }, 500);
-    }
 
     function display_error(msg) {
         if ( ! $errormsg.length ) {

@@ -126,7 +126,7 @@ var Reader = class {
     this.on('status', (message) => {
       if ( lastMessage != message ) {
         lastMessage = message;
-        if ( statusTimer ) { clearTimeout(statusTimer); }
+        if ( statusTimer ) { clearTimeout(statusTimer); statusTimer = null; }
         setTimeout(() => {
           if ( message != lastMessage ) {
             $status.innerText = message;
@@ -165,6 +165,13 @@ var Reader = class {
     this._resizer = debounce(function() {
       this.emit('resize');
     }.bind(this), 100);
+
+    var jump = document.querySelector('#action-focus-current-page');
+    jump.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.view.focus();
+      return false;
+    })
 
     window.addEventListener('resize', this._resizer);
   }

@@ -283,6 +283,12 @@ export var Flip = class extends Base {
     return page.dataset.seq;
   }
 
+  currentPage() {
+    var slice = this.container.querySelector('.slice[data-visible="true"]');
+    var page = slice.querySelector('.page[data-seq]');
+    return page;
+  }
+
   currentLocationXX() {
     return 1;
     var current_percentage = 0;

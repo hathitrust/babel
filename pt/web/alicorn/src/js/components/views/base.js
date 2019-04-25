@@ -249,18 +249,29 @@ export var Base = class {
     this.display(this.service.manifest.totalSeq);
   }
 
+  currentPage() {
+    if ( this._currentPage ) {
+      return this._currentPage;
+    }
+    return null;
+  }
+
   bindEvents() {
   }
 
   bindPageEvents(page) {
   }
 
-  focus(page) {
-    page.setAttribute('accesskey', "9");
+  focus() {
+    // page.setAttribute('accesskey', "9");
+    var page = this.currentPage();
+    if ( page ){
+      page.focus();
+    }
   }
 
   unfocus(page) {
-    page.removeAttribute('accesskey');
+    // page.removeAttribute('accesskey');
   }
 
   config() {

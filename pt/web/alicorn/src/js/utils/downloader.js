@@ -59,13 +59,14 @@ HT.Downloader = {
 
         var html =
             // '<p>Building your PDF...</p>' +
-            '<div class="initial"><p>Setting up download...</p></div>' +
-            '<div class="progress progress-striped active hide">' +
+            `<div class="initial" aria-live="polite"><p>Setting up the download...</div>` +
+            '<div class="progress progress-striped active hide" aria-hidden="true">' +
                 '<div class="bar" width="0%"></div>' +
             '</div>' +
-            '<div class="done hide">' +
-                '<p>All done!</p>' +
-            '</div>';
+            // '<div class="alert alert-block alert-success done hide">' +
+            //     '<p>All done!</p>' +
+            // '</div>' + 
+            `<div><p><a href="https://www.hathitrust.org/help_digital_library#Download" target="_blank">What's the deal with downloads?</a></p></div>`;
 
         var header = 'Building your ' + self.item_title;
         var total = self.$link.data('total') || 0;
@@ -79,7 +80,7 @@ HT.Downloader = {
             [
                 {
                     label : 'Cancel',
-                    'class' : 'btn-dismiss',
+                    'class' : 'btn-x-dismiss',
                     callback: function() {
                         if ( self.$dialog.data('deactivated') ) {
                             self.$dialog.closeModal();
@@ -91,7 +92,7 @@ HT.Downloader = {
                             cache: false,
                             error: function(req, textStatus, errorThrown) {
                                 console.log("DOWNLOAD CANCELLED ERROR");
-                                self.$dialog.closeModal();
+                                // self.$dialog.closeModal();
                                 console.log(req, textStatus, errorThrown);
                                 if ( req.status == 503 ) {
                                     self.displayWarning(req);
@@ -104,9 +105,12 @@ HT.Downloader = {
                 }
             ],
             {
-                header: header 
+                header: header,
+                id: 'download'
             }
         );
+
+        // HT.update_status(`Building your ${self.item_title}.`);
 
         self.requestDownload();
 
@@ -225,7 +229,7 @@ HT.Downloader = {
         }
 
         if ( self.$dialog.find(".initial").is(":visible") ) {
-            self.$dialog.find(".initial").hide();
+            self.$dialog.find(".initial").html(`<p>Please wait while we build your ${self.item_title}...</p>`);
             self.$dialog.find(".progress").removeClass("hide");
         }
 
@@ -233,7 +237,8 @@ HT.Downloader = {
 
         if ( percent == 100 ) {
             self.$dialog.find(".progress").hide();
-            self.$dialog.find(".done").show();
+            self.$dialog.find(".initial").html(`<p>All done! Your ${self.item_title} is ready for download. <span clsas="offscreen">Press return to download.</span></p>`);
+            // self.$dialog.find(".done").show();
             var $download_btn = self.$dialog.find('.download-pdf');
             if ( ! $download_btn.length ) {
                 $download_btn = $('<a class="download-pdf btn btn-primary">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
@@ -247,9 +252,14 @@ HT.Downloader = {
                     }, 1500);
                     e.stopPropagation();
                 })
+                $download_btn.focus();
             }
             self.$dialog.data('deactivated', true);
+            // HT.update_status(`Your ${self.item_title} is ready for download. Press return to download.`);
             // still could cancel
+        } else {
+            self.$dialog.find(".initial").text(`Please wait while we build your ${self.item_title} (${Math.ceil(percent)}% completed)...`);
+            // HT.update_status(`${Math.ceil(percent)}% of the ${self.item_title} has been built.`);
         }
 
         return status;

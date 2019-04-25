@@ -1,5 +1,7 @@
 head.ready(function() {
 
+    var inited = false;
+
     var $form = $("#search-modal form");
 
     var $input = $form.find("input.search-input-text");
@@ -24,16 +26,23 @@ head.ready(function() {
         $select.hide();
         $input.attr('placeholder', 'Search words about or within the items');
         $input_label.text('Search full-text index');
+        if ( inited ) {
+            HT.update_status("Search will use the full-text index.");
+        }
     }
 
     _setup.catalog = function() {
         $select.show();
         $input.attr('placeholder', 'Search words about the items');
         $input_label.text('Search catalog index');
+        if ( inited ) {
+            HT.update_status("Search will use the catalog index; you can limit your search to a selection of fields.");
+        }
     }
 
     var target = $search_target.find("input:checked").val();
     _setup[target]();
+    inited = true;
 
     var prefs = HT.prefs.get();
     if ( prefs.search && prefs.search.ft ) {
