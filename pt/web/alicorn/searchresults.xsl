@@ -108,7 +108,7 @@
   </xsl:template>
 
   <xsl:template name="msg-access-info">
-    <xsl:if test="true() or $gFinalAccessStatus='deny' and $gPagesFound > 0">
+    <xsl:if test="$gFinalAccessStatus='deny' and $gPagesFound > 0">
       <div class="alert alert-warning alert-block">
         <xsl:choose>
           <xsl:when test="$gRightsAttribute='26'">

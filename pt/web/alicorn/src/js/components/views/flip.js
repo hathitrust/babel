@@ -128,7 +128,10 @@ export var Flip = class extends Base {
         page.dataset.bestFit = ( scale <= 1 );
 
         page.dataset.seq = seq;
+        page.setAttribute('tabindex', 0);
+
         page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
+
       } else {
         var meta = this.service.manifest.meta(1);
         var ratio = meta.height / meta.width;
@@ -162,6 +165,8 @@ export var Flip = class extends Base {
         slice_width += ( maxHeight * scale / ratio );
 
         page.dataset.seq = seq;
+        page.setAttribute('tabindex', 0);
+
         page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
         slice.appendChild(page);
       } else {

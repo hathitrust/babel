@@ -8,12 +8,28 @@ head.ready(function() {
     var $toolbar = $(".collectionLinks .select-collection");
     var $errormsg = $(".errormsg");
     var $infomsg = $(".infomsg");
+    var $status = $("div[role=status]");
+
+    var lastMessage;
+    HT.update_status = function(message) {
+        setTimeout(() => {
+          if ( message != lastMessage ) {
+            $status.text(message);
+            console.log("-- status:", message);
+          }
+          lastMessage = message;
+        }, 50);
+        setTimeout(() => {
+          $status.get(0).innerText = '';
+        }, 500);
+    }
 
     function display_error(msg) {
         if ( ! $errormsg.length ) {
             $errormsg = $('<div class="alert alert-error errormsg" style="margin-top: 0.5rem"></div>').insertAfter($toolbar);
         }
         $errormsg.text(msg).show();
+        HT.update_status(msg);
     }
 
     function display_info(msg) {
@@ -21,6 +37,7 @@ head.ready(function() {
             $infomsg = $('<div class="alert alert-info infomsg" style="margin-top: 0.5rem"></div>').insertAfter($toolbar);
         }
         $infomsg.text(msg).show();
+        HT.update_status(msg);
     }
 
     function hide_error() {
@@ -194,6 +211,8 @@ head.ready(function() {
         // and then filter out the list from the select
         var $option = $toolbar.find("option[value='" + params.coll_id + "']");
         $option.remove();
+
+        HT.update_status(`Added item to collection ${params.coll_name}`);
     }
 
     function confirm_large(collSize, addNumItems, callback) {
@@ -251,7 +270,7 @@ head.ready(function() {
         //     $form.submit();
         // })
 
-        display_info("Submitting; please wait...");
+        display_info("Adding item to your collection; please wait...");
         submit_post({
             c2 : selected_collection_id,
             a  : 'addits'

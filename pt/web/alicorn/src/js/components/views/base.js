@@ -24,6 +24,7 @@ export var Base = class {
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
 
       var page = document.createElement('div');
+      page.setAttribute('tabindex', '0');
 
       var meta = this.service.manifest.meta(seq);
       var ratio = meta.height / meta.width;
@@ -115,7 +116,7 @@ export var Base = class {
     }
 
     var html_request;
-    if ( false && this.embedHtml) {
+    if ( this.embedHtml) {
       html_request = fetch(html_url);
     }
 
@@ -240,18 +241,26 @@ export var Base = class {
     return this.emitter.on.apply(this.emitter, arguments)
   }
 
-  bindEvents() {
-  }
-
-  bindPageEvents(page) {
-  }
-
   first() {
     this.display(1);
   }
 
   last() {
     this.display(this.service.manifest.totalSeq);
+  }
+
+  bindEvents() {
+  }
+
+  bindPageEvents(page) {
+  }
+
+  focus(page) {
+    page.setAttribute('accesskey', "9");
+  }
+
+  unfocus(page) {
+    page.removeAttribute('accesskey');
   }
 
   config() {

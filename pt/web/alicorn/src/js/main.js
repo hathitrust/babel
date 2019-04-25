@@ -122,13 +122,22 @@ var Reader = class {
 
   bindEvents() {
     /* NOOP */
+    var lastMessage; var statusTimer;
     this.on('status', (message) => {
-      setTimeout(() => {
-        $status.innerText = message;
-      }, 50);
-      setTimeout(() => {
-        $status.innerText = '';
-      }, 500);
+      if ( lastMessage != message ) {
+        lastMessage = message;
+        if ( statusTimer ) { clearTimeout(statusTimer); }
+        setTimeout(() => {
+          if ( message != lastMessage ) {
+            $status.innerText = message;
+            console.log("-- status:", message);
+          }
+          lastMessage = message;
+        }, 50);
+        statusTimer = setTimeout(() => {
+          $status.innerText = '';
+        }, 500);
+      }
     });
 
     this.on('relocated', (params) => {
@@ -148,6 +157,10 @@ var Reader = class {
 
       this._updateLinks(params.seq);
     });
+
+    this.on('relocated', (params) => {
+      this.emit('status', `Showing page scan ${params.seq}`);
+    })
 
     this._resizer = debounce(function() {
       this.emit('resize');
@@ -352,6 +365,18 @@ HT.mobify = function() {
   $('.sidebar-container').hide();
   $("#toolbar-vertical").hide();
   $("#toolbar-horizontal").hide();
+}
+
+var daInterval;
+HT.debugActive = function() {
+  if ( daInterval ) {
+    clearInterval(daInterval);
+    daInterval = null;
+  } else {
+    daInterval = setInterval(function() {
+      console.log(document.activeElement)
+    }, 1000);
+  }
 }
 
 /* AND THE WINDOW */

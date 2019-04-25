@@ -137,7 +137,7 @@
   <xsl:template name="skip-to-main-link">
     <div id="skiplinks" role="complementary" aria-label="Skip links">
       <ul>
-        <li><a href="#section">Skip to page content</a></li>
+        <li><a href="#section" accesskey="2">Skip to page content</a></li>
         <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
         <li><a href="#input-search-text">Skip to search in this text</a></li>
         <li><a href="#sidebar">Skip to book options</a></li>
@@ -161,6 +161,12 @@
     <xsl:attribute name="data-default-width"><xsl:value-of select="//Manifest/BaseImage/Width" /></xsl:attribute>
     <xsl:attribute name="data-feature-list"><xsl:value-of select="//Manifest/FeatureList" /></xsl:attribute>
 
+    <h2 class="offscreen">
+      <xsl:call-template name="get-view-title" />
+      <xsl:if test="$gHasOcr = 'YES'">
+        <xsl:text> (use access key 5 to view full text / OCR mode)</xsl:text>
+      </xsl:if>
+    </h2>
     <xsl:call-template name="toolbar-horizontal" />
     <div class="inner main">
       <section class="viewer">

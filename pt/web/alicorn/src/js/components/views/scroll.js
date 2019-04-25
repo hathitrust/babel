@@ -1,6 +1,8 @@
 import NanoEvents from 'nanoevents';
 import {Base} from './base';
 
+import debounce from 'lodash/debounce';
+
 export var Scroll = class extends Base {
   constructor(options={}) {
     super(options);
@@ -23,21 +25,22 @@ export var Scroll = class extends Base {
     if ( ! target ) { return; }
     target.dataset.visible = true;
     target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
+    this.currentSeq = seq;
+    if ( this._currentPage ) {
+      this._currentPage.removeAttribute("accesskey");
+    }
+    this._currentPage = target;
+    this._currentPage.setAttribute('accesskey', '9');
     this.reader.emit('relocated', { seq: target.dataset.seq });
   }
 
   handleObserver(entries, observer) {
-    var current = { page: null, ratio: 0 };
     entries.forEach(entry => {
       var div = entry.target;
       var seq = div.dataset.seq;
       var viewed = div.querySelector('img');
       if ( entry.isIntersecting && entry.intersectionRatio > 0.0  ) {
-        console.log("AHOY OBSERVING", entries.length, seq, 'onEnter', entry.intersectionRatio);
-        if ( entry.intersectionRatio > current.ratio ) {
-          current.ratio = entry.intersectionRatio;
-          current.page = div;
-        }
+        // console.log("AHOY OBSERVING", entries.length, seq, 'onEnter', entry.intersectionRatio);
         if ( ! viewed ) {
           // console.log("AHOY OBSERVING", entries.length, seq, 'onEnter');
           this.loadImage(div, { check_scroll: true });
@@ -50,12 +53,20 @@ export var Scroll = class extends Base {
         this.unloadImage(div);
       }
     })
-    if ( current.page ) {
-      this.reader.emit('relocated', { seq: current.page.dataset.seq });
-    }
+
+    this.emitter.emit('scrolled');
+
+    // if ( current.page ) {
+    //   this.reader.emit('relocated', { seq: current.page.dataset.seq });
+    // }
   };
 
   currentLocation() {
+    var page = this.currentPage();
+    return page ? page.dataset.seq : null;
+  }
+
+  currentPage() {
     var current_percentage = 0;
     var current;
     var bounds = this.container.getBoundingClientRect();
@@ -82,7 +93,7 @@ export var Scroll = class extends Base {
       }
       console.log("AHOY currentLocation", page.dataset.seq, percentage);
     }
-    return current.dataset.seq;
+    return current ? current : null;
   }
 
   next() {
@@ -135,8 +146,23 @@ export var Scroll = class extends Base {
       self.redrawPage(seq);
     });
 
-    this._clickHandler = this.clickHandler.bind(this);
-    this.container.addEventListener('click', this._clickHandler);
+    this._handlers.scrolled = this.on('scrolled', debounce(function() {
+      var page = this.currentPage();
+      if ( page != null && this.currentSeq != page.dataset.seq ) {
+        var seq = page.dataset.seq;
+        this.reader.emit('relocated', { seq: seq });
+        this.currentSeq = seq;
+        this.unfocus(this._currentPage);
+        this.focus(page);
+        this._currentPage = page;
+      }
+    }.bind(this), 50));
+
+    this._handlers.focus = this.focusHandler.bind(this);
+    this.container.addEventListener('focusin', this._handlers.focus);
+
+    this._handlers.click = this.clickHandler.bind(this);
+    this.container.addEventListener('click', this._handlers.click);
   }
 
   bindPageEvents(page) {
@@ -152,16 +178,24 @@ export var Scroll = class extends Base {
     }
   }
 
+  focusHandler(event) {
+    var target = event.target;
+    if ( target.tagName.toLowerCase() == 'div' && target.classList.contains('page') ) {
+      target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
+    }
+  }
+
   destroy() {
     super.destroy();
     this._handlers.rotate();
+    this.container.removeEventListener('focusin', this._handlers.focus);
+    this.container.removeEventListener('click', this._handlers.click);
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
       this.observer.unobserve(pages[i]);
       this.container.removeChild(pages[i]);
     }
     this.observer = null;
-    this.container.removeEventListener('click', this._clickHandler);
   }
 
 };

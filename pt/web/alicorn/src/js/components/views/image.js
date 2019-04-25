@@ -25,38 +25,16 @@ export var Single = class extends Base {
     target.dataset.visible = true;
     this.loadImage(target, true);
     this.reader.emit('relocated', { seq: target.dataset.seq });
+    if ( this._currentPage ) {
+      this.unfocus(this._currentPage);
+    }
+    this._currentPage = target;
+    this.focus(this._currentPage);
     this.currentSeq = seq;
   }
 
   currentLocation() {
     return this.currentSeq;
-    
-    var current_percentage = 0;
-    var current;
-    var bounds = this.container.getBoundingClientRect();
-    var scrollTop = this.container.scrollTop;
-    var visible = this.container.querySelectorAll('.page[data-loaded="true"]');
-    for(var i = 0; i < visible.length; i++) {
-      var page = visible[i];
-      var page_bounds = page.getBoundingClientRect();
-      if ( page.offsetTop > ( scrollTop + bounds.height ) ) { continue; }
-      if ( current_percentage < 1.0 && page.offsetTop >= scrollTop && (page.offsetTop + page_bounds.height) <= scrollTop + bounds.height ) {
-        current_percentage = 1.0;
-        current = page;
-        continue;
-      }
-
-      var y1 = Math.abs(scrollTop - page.offsetTop);
-      var y2 = Math.abs( ( scrollTop + bounds.height ) - ( page.offsetTop + page_bounds.height ) );
-      var h = page_bounds.height - y1 - y2;
-      var percentage = h / bounds.height;
-      if ( percentage < 0 ) { continue; }
-      if ( percentage > current_percentage ) {
-        current_percentage = percentage;
-        current = page;
-      }
-    }
-    return current.dataset.seq;
   }
 
   next() {
@@ -100,17 +78,19 @@ export var Single = class extends Base {
 
   bindEvents() {
     super.bindEvents();
+    // this._handlers.rotate = this.reader.on('rotate', function(delta) {
+    //   var seq = self.currentLocation();
+    //   var target = self.container.querySelector(`.page[data-seq="${seq}"]`);
+    //   var rotate = parseInt(target.dataset.rotate || 0, 10);
+    //   rotate += delta;
+    //   rotate = rotate % 360;
+    //   self.updatePageRotation(target, rotate);
+    // });
+
     this._handlers.rotate = this.reader.on('rotate', function(delta) {
       var seq = self.currentLocation();
-      var target = self.container.querySelector(`.page[data-seq="${seq}"]`);
-      var rotate = parseInt(target.dataset.rotate || 0, 10);
-      rotate += delta;
-      rotate = rotate % 360;
-      self.updatePageRotation(target, rotate);
-    });
-
-    this.reader.on('relocated', (params) => {
-      this.reader.emit('status', `Showing page scan ${params.seq}`);
+      self.service.manifest.rotateBy(seq, delta);
+      self.redrawPage(seq);
     });
   }
 
