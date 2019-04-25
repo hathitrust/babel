@@ -148,6 +148,12 @@
   padding: 0.25rem 0.5rem;
 }
 
+.share-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
 #action-clear-selection {
   position: absolute;
   right: 0;

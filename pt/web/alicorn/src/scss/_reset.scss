@@ -20,6 +20,12 @@ body {
   line-height: 1.25;
 }
 
+$outline-color: #4d90fe;
+:focus {
+  outline: $outline-color auto 5px;
+  // outline: --webkit-focus-ring-color auto 5px;
+}
+
 #root {
   min-height: 100vh;
   max-width: 100vw;
@@ -40,6 +46,12 @@ strong {
 
 em {
   font-style: italic;
+}
+
+h3 {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
 }
 
 ul.bullets {
@@ -68,9 +80,9 @@ a {
       text-decoration: none;
   }
 
-  &:focus {
-    outline: medium solid;
-  }
+  // &:focus {
+  //   outline: medium solid;
+  // }
 }
 
 .offscreen, .SkipLink, .hidden, .toolbar-label {
@@ -186,6 +198,8 @@ footer.site-navigation {
   margin-top: 2px;
 }
 
+$navbar-item-padding: 0.5rem 1rem;
+$navbar-item-margin: 0.25rem 0.25rem 0.25rem;
 header nav, footer nav {
   display: flex;
   justify-content: space-between;
@@ -197,7 +211,9 @@ header nav, footer nav {
 
   ul {
     span {
-      padding: 0.8rem 1rem;
+      padding: $navbar-item-padding;
+      margin: $navbar-item-margin;
+
       display: block;
 
       &.institution-label {
@@ -208,7 +224,10 @@ header nav, footer nav {
       }
     }
     a {
-      padding: 0.8rem 1rem;
+      // padding: 0.8rem 1rem;
+      padding: $navbar-item-padding;
+      margin: $navbar-item-margin;
+
       white-space: nowrap;
 
       color: $navbar-link-color;
@@ -260,12 +279,17 @@ header nav, footer nav {
         display: none;
       }
 
-      &:hover > ul, > a:focus + ul {
+      &:hover > ul, > a:focus + ul, a[data-expanded="true"] + ul {
         display: flex;
         position: absolute;
         z-index: 500;
         flex-direction: column;
         background: $navbar-bgcolor;
+      }
+
+      a[data-expanded="true"] {
+        background: $navbar-bgcolor-hover; // #F9F8F5;
+        color: $navbar-link-hover-color; // #39383A;
       }
     }
   }
@@ -457,4 +481,12 @@ header nav, footer nav {
 
 .hide {
   display: none;
+}
+
+
+table {
+  td {
+    margin: 0.5rem;
+    padding: 0.5rem;
+  }
 }

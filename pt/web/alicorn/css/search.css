@@ -302,6 +302,10 @@ body {
   line-height: 1.25;
 }
 
+:focus {
+  outline: #4d90fe auto 5px;
+}
+
 #root {
   min-height: 100vh;
   max-width: 100vw;
@@ -321,6 +325,12 @@ strong {
 
 em {
   font-style: italic;
+}
+
+h3 {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
 }
 
 ul.bullets {
@@ -348,10 +358,6 @@ a {
 a:hover {
   color: #d56d11;
   text-decoration: none;
-}
-
-a:focus {
-  outline: medium solid;
 }
 
 .offscreen, .SkipLink, .hidden, .toolbar-label {
@@ -485,7 +491,8 @@ header nav button, footer nav button {
 }
 
 header nav ul span, footer nav ul span {
-  padding: 0.8rem 1rem;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem 0.25rem 0.25rem;
   display: block;
 }
 
@@ -497,7 +504,8 @@ header nav ul span.institution-label, footer nav ul span.institution-label {
 }
 
 header nav ul a, footer nav ul a {
-  padding: 0.8rem 1rem;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem 0.25rem 0.25rem;
   white-space: nowrap;
   color: #f9f8f5;
   text-decoration: none;
@@ -543,7 +551,7 @@ header nav > ul li > ul, footer nav > ul li > ul {
   display: none;
 }
 
-header nav > ul li:hover > ul, header nav > ul li > a:focus + ul, footer nav > ul li:hover > ul, footer nav > ul li > a:focus + ul {
+header nav > ul li:hover > ul, header nav > ul li > a:focus + ul, header nav > ul li a[data-expanded="true"] + ul, footer nav > ul li:hover > ul, footer nav > ul li > a:focus + ul, footer nav > ul li a[data-expanded="true"] + ul {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -554,6 +562,11 @@ header nav > ul li:hover > ul, header nav > ul li > a:focus + ul, footer nav > u
       -ms-flex-direction: column;
           flex-direction: column;
   background: #39383a;
+}
+
+header nav > ul li a[data-expanded="true"], footer nav > ul li a[data-expanded="true"] {
+  background: #6b6a6b;
+  color: #fcfcfc;
 }
 
 header nav form, footer nav form {
@@ -752,6 +765,11 @@ header nav form select, footer nav form select {
 
 .hide {
   display: none;
+}
+
+table td {
+  margin: 0.5rem;
+  padding: 0.5rem;
 }
 
 /* -------------------------------------------------------------------
@@ -1125,6 +1143,12 @@ header nav form select, footer nav form select {
 
 .alert {
   position: relative;
+}
+
+.alert-help {
+  font-size: 90%;
+  color: #666;
+  margin: 0.5rem 2rem;
 }
 
 .alert-warning, .alert-error, .alert-success, .alert-notice {
@@ -1589,6 +1613,17 @@ button.control-search:hover {
 .btn-mini {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
+}
+
+.share-toolbar {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
 }
 
 #action-clear-selection {

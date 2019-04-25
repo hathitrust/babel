@@ -62,7 +62,12 @@ var Reader = class {
 
   restart(params) {
     var current = params.seq || this.view.currentLocation();
+
+    if ( params.view == this.view.name && params.view == 'plaintext' ) { params.view = '1up'; }
+    if ( params.view == this.view.name ) { return ; }
+
     params.restarting = true;
+
     if ( this.view ) { this.view.destroy(); this.view = null; }
     this.start(params, function() {
       console.log("AHOY TRYING TO GO TO", current);
@@ -95,6 +100,16 @@ var Reader = class {
 
   display(seq) {
     this.view.display(seq);
+  }
+
+  jump(delta) {
+    var seq = parseInt(this.view.currentLocation(), 10);
+    var target = seq + delta;
+    if ( target < 0 ) { target = 1; }
+    else if ( target > this.service.manifest.totalSeq ) {
+      target = this.service.manifest.totalSeq;
+    }
+    this.display(target);
   }
 
   on() {
@@ -268,6 +283,7 @@ reader.controls.navigator = new Control.Navigator({
   input: document.querySelector('input[type="range"]'),
   output: document.querySelector('.navigator .output'),
   prompt: document.querySelector('#action-prompt-seq'),
+  form: document.querySelector('#form-go-page'),
   reader: reader
 })
 
@@ -301,6 +317,11 @@ reader.controls.rotator.on('rotate', function(delta) {
 
 reader.controls.contentsnator = new Control.Contentsnator({
   input: document.querySelector('.table-of-contents'),
+  reader: reader
+});
+
+reader.controls.expandinator = new Control.Expandinator({
+  input: document.querySelector('.action-fullscreen'),
   reader: reader
 });
 

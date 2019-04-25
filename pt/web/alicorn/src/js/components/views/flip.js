@@ -20,13 +20,31 @@ export var Flip = class extends Base {
     var num_slices = Math.ceil((this.service.manifest.totalSeq - 2) / 2) + 2;
     this.seq2slice = {};
     this.slices = [];
-    this.slices.push([ null, 1 ]);
-    for(var seq = 2; seq <= totalSeq; seq += 2) {
+
+    var startSeq = 1;
+    var endSeq = this.service.manifest.totalSeq;
+
+    if ( this.service.manifest.checkFeatures(1, "FRONT_COVER") || ( this.service.manifest.checkFeatures(1, "COVER") && this.service.manifest.checkFeatures(1, "RIGHT") ) || this.service.manifest.checkFeatures(1, "COVER") || ! this.service.manifest.checkFeatures(1) ) {
+        // first page is a cover
+        this.slices.push([ null, 1 ]);
+        startSeq = 2;
+    }
+    var lastSlice;
+    if ( this.service.manifest.checkFeatures(endSeq, "BACK_COVER") || ( this.service.manifest.checkFeatures(endSeq, "COVER") && this.service.manifest.checkFeatures(endSeq, "LEFT") ) ) {
+        lastSlice = [ end_seq, null ];
+        endSeq -= 1;
+    }
+
+    for(var seq = startSeq; seq <= endSeq; seq += 2) {
       var next_seq = seq + 1;
       if ( next_seq > this.service.manifest.totalSeq ) {
         next_seq = null;
       }
       this.slices.push([ seq, next_seq ]);
+    }
+
+    if ( lastSlice ) {
+      this.slices.push(lastSlice);
     }
 
     if ( this.isRTL ) {

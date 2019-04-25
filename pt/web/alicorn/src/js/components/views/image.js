@@ -29,6 +29,8 @@ export var Single = class extends Base {
   }
 
   currentLocation() {
+    return this.currentSeq;
+    
     var current_percentage = 0;
     var current;
     var bounds = this.container.getBoundingClientRect();

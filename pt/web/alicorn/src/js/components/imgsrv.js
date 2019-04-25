@@ -13,8 +13,17 @@ export var Manifest = class {
     };
     this.featureList = options.featureList;
     this.featureMap = {};
+    this._seq2num = {};
+    this._num2seq = {};
+    this._pageNum = { first: null, last: null };
     this.featureList.forEach(function(item) {
       this.featureMap[item.seq] = item;
+      if ( item.pageNum && ! this._seq2num[item.seq] ) {
+        this._seq2num[item.seq] = item.pageNum;
+        this._num2seq[item.pageNum] = item.seq;
+        if ( this._pageNum.first == null ) { this._pageNum.first = item.pageNum; }
+        this._pageNum.last = item.pageNum;
+      }
     }.bind(this))
 
     this.manifest = {};
@@ -61,9 +70,25 @@ export var Manifest = class {
   checkFeatures(seq, feature) {
     var data = this.featureMap[seq];
     if ( data && data.features ) {
+      if ( feature === undefined ) { return data.features.length() > 1 };
       return ( data.features.indexOf(feature) > -1 );
     }
     return false;
+  }
+
+  pageNum(seq) {
+    var value = this._seq2num[seq];
+    if ( value ) { value = `p.${value}`; }
+    return value;
+  }
+
+  pageNumRange() {
+    if ( this._pageNum.first == null ) { return null; }
+    return `p.${this._pageNum.first}-p.${this._pageNum.last}`;
+  }
+
+  seq(pageNum) {
+    return this._num2seq[pageNum];
   }
 }
 

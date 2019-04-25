@@ -77,6 +77,12 @@
       position: relative;
   }
 
+  .alert-help {
+    font-size: 90%;
+    color: #666;
+    margin: 0.5rem 2rem;
+  }
+
   @mixin alert-badge($icon, $top:25) {
       content: $icon;
       font-family: 'icomoon';

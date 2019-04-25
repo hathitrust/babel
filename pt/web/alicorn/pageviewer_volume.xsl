@@ -249,8 +249,9 @@
   </xsl:template>
 
   <xsl:template name="action-fullscreen">
-    <div class="btn-group btn-group-vertical">
-      <button id="action-toggle-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="Full Screen" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-fullscreen"></i></button>
+    <div class="btn-group btn-group-vertical action-fullscreen" data-expanded="false">
+      <button data-target="enter-fullscreen" id="action-toggle-enter-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="View Full Screen" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-fullscreen"></i></button>
+      <button data-target="exit-fullscreen" id="action-toggle-exit-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="Exit Full Screen" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-fullscreen-exit"></i></button>
     </div>
   </xsl:template>
 
@@ -294,7 +295,7 @@
   <xsl:template name="toolbar-horizontal">
     <div id="toolbar-horizontal" class="toolbar toolbar-horizontal" role="toolbar" aria-label="Volume Navigation">
 
-      <!-- <xsl:call-template name="action-go-page" /> -->
+      <xsl:call-template name="action-go-page" />
 
       <div class="btn-group table-of-contents">
         <xsl:call-template name="action-table-of-contents" />

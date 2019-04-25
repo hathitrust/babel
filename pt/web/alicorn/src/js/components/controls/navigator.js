@@ -7,6 +7,7 @@ export var Navigator = class {
     this.output = options.output;
     this.reader = options.reader;
     this.prompt = options.prompt;
+    this.form = options.form;
     this.emitter = new NanoEvents();
     this.bindEvents();
   }
@@ -27,21 +28,47 @@ export var Navigator = class {
       this.render('current-seq', this.input.value);
     })
 
+    var pageNumRange = this.reader.service.manifest.pageNumRange();
+
+    var promptHTML = `
+    <p>Jump to a page scan by <strong>page number</strong> or <strong>page scan sequence</strong>.</p>
+    <p><label for="navigator-jump" class="offscreen">Page number or sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
+    <h3>Hints</h3>
+    <ul class="bullets">
+      <li>Page numbers are entered as <tt>p.<em>number</em></tt>, e.g. <strong><tt>p.10</tt></strong></li>
+      <li>Use a page scan sequence between 1-${this.reader.service.manifest.totalSeq}</li>
+      <li>Use a page number between ${pageNumRange}</li>
+      <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
+      <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
+    </ul>
+    `;
+
+    if ( ! pageNumRange ) {
+      promptHTML = `
+          <p>Jump to a page scan by <strong>page scan sequence</strong>.</p>
+          <p><label for="navigator-jump" class="offscreen">Page sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
+          <h3>Hints</h3>
+          <ul class="bullets">
+            <li>Use a page scan sequence between 1-${this.reader.service.manifest.totalSeq}</li>
+            <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
+            <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
+          </ul>
+          `;
+    }
+
     this.prompt.addEventListener('click', (event) => {
       event.preventDefault();
       bootbox.dialog(
-        `<p>Jump to which page scan?</p><p><input type="text" name="seq" class="input-medium" placeholder="Enter a page scan sequence (e.g. 1-${this.reader.service.manifest.totalSeq})" /></p>`,
-        [ 
+        // `<p>Jump to which page scan?</p><p><input type="text" name="seq" class="input-medium" placeholder="Enter a page scan sequence (e.g. 1-${this.reader.service.manifest.totalSeq})" /></p>`,
+        promptHTML,
+        [
           { label: "Close", class: 'btn-dismiss' },
-          { 
-            label: "Jump", 
+          {
+            label: "Jump",
             class: 'btn-dismiss btn btn-primary',
             callback: function(modal) {
               var input = modal.modal.querySelector('input[name="seq"]');
-              var seq = input.value;
-              if ( seq && seq >= 1 && seq <= this.reader.service.manifest.totalSeq ) {
-                this.reader.display(seq);
-              }
+              this.handleValue(input.value);
               return true;
             }.bind(this)
           }
@@ -52,6 +79,19 @@ export var Navigator = class {
       )
     })
 
+    if ( this.form ) {
+      var input = this.form.querySelector('input[type="text"]');
+      this.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        var value = (input.value || '').trim();
+        if ( ! value ) {
+          return;
+        }
+        this.handleValue(value);
+        return false;
+      })
+    }
+
     this.reader.on('relocated', (params) => {
       this.render('current-seq', params.seq);
       this.input.value = params.seq;
@@ -60,6 +100,35 @@ export var Navigator = class {
       var percent = Math.ceil((parseInt(params.seq, 10) / parseInt(this.input.max, 10)) * 100.0);
       this.input.setAttribute('aria-valuetext', `${percent}% • Page scan ${params.seq} of ${this.input.max}`);
     })
+
+    if ( this.form && this.reader.service.manifest.pageNumRange() ) {
+      this.reader.on('relocated', (params) => {
+        var pageNum = this.reader.service.manifest.pageNum(params.seq);
+        this.form.querySelector('input[type="text"]').value = pageNum || '';
+      });
+    }
+  }
+
+  handleValue(value) {
+    var seq;
+    if ( value.substr(0, 1) == '+' || value.substr(0, 1) == '-' ) {
+      var delta = value.substr(0, 1) == '+' ? +1 : -1;
+      value = parseInt(value.substr(1), 10);
+      this.reader.jump(delta * value);
+      return;
+    }
+
+    if ( value.substr(0, 2) == 'p.' ) {
+      // sequence
+      seq = this.reader.service.manifest.seq(value.substr(2));
+    } else if ( value.substr(0, 1) == 'p' ) {
+      seq = this.reader.service.manifest.seq(value.substr(1));
+    } else {
+      seq = parseInt(value, 10);
+    }
+    if ( seq && seq >= 1 && seq <= this.reader.service.manifest.totalSeq ) {
+      this.reader.display(seq);
+    }
   }
 
   render(slot, value) {
