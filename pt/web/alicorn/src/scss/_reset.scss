@@ -228,6 +228,8 @@ header nav, footer nav {
       padding: $navbar-item-padding;
       margin: $navbar-item-margin;
 
+      position: relative;
+
       white-space: nowrap;
 
       color: $navbar-link-color;
@@ -275,23 +277,52 @@ header nav, footer nav {
     align-items: center;
 
     li {
-      & > ul {
-        display: none;
-      }
+      // & > ul {
+      //   display: none;
+      // }
 
-      &:hover > ul, > a:focus + ul, a[data-expanded="true"] + ul {
-        display: flex;
-        position: absolute;
-        z-index: 500;
-        flex-direction: column;
-        background: $navbar-bgcolor;
-      }
+      // &:hover > ul, > a:focus + ul, a[data-expanded="true"] + ul {
+      //   display: flex;
+      //   position: absolute;
+      //   z-index: 500;
+      //   flex-direction: column;
+      //   background: $navbar-bgcolor;
+      // }
 
-      a[data-expanded="true"] {
-        background: $navbar-bgcolor-hover; // #F9F8F5;
-        color: $navbar-link-hover-color; // #39383A;
+      // a[data-expanded="true"] {
+      //   background: $navbar-bgcolor-hover; // #F9F8F5;
+      //   color: $navbar-link-hover-color; // #39383A;
+      // }
+
+      &.active {
+        // > a {
+        //   background: $navbar-bgcolor-hover; // #F9F8F5;
+        //   color: $navbar-link-hover-color; // #39383A;
+        // }
       }
     }
+  }
+
+  .nav-menu {
+    position: relative;
+
+    &:hover, &.active {
+      .navbar-menu-children {
+        display: flex;
+        position: absolute;
+      }
+    }
+  }
+
+  .navbar-menu-children {
+    position: absolute;
+    left: 0;
+    top: auto;
+    width: inherit;
+    z-index: 50;
+    flex-direction: column;
+    background: $navbar-bgcolor;
+    display: none;
   }
 
   form {

@@ -125,14 +125,11 @@ var Reader = class {
     var lastMessage; var statusTimer;
     this.on('status', (message) => {
       if ( lastMessage != message ) {
-        lastMessage = message;
         if ( statusTimer ) { clearTimeout(statusTimer); statusTimer = null; }
         setTimeout(() => {
-          if ( message != lastMessage ) {
-            $status.innerText = message;
-            console.log("-- status:", message);
-          }
+          $status.innerText = message;
           lastMessage = message;
+          console.log("-- status:", message);
         }, 50);
         statusTimer = setTimeout(() => {
           $status.innerText = '';

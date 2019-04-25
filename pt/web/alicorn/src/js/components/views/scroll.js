@@ -71,7 +71,7 @@ export var Scroll = class extends Base {
     var current;
     var bounds = this.container.getBoundingClientRect();
     var scrollTop = this.container.scrollTop;
-    var visible = this.container.querySelectorAll('.page[data-loaded="true"]');
+    var visible = this.container.querySelectorAll('.page[data-loaded="true"],.page[data-loading="true"]');
     for(var i = 0; i < visible.length; i++) {
       var page = visible[i];
       var page_bounds = page.getBoundingClientRect();
@@ -91,7 +91,7 @@ export var Scroll = class extends Base {
         current_percentage = percentage;
         current = page;
       }
-      console.log("AHOY currentLocation", page.dataset.seq, percentage);
+      // console.log("AHOY currentLocation", page.dataset.seq, percentage);
     }
     return current ? current : null;
   }
