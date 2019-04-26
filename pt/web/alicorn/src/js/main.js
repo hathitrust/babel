@@ -153,6 +153,7 @@ var Reader = class {
       HT.params.view = this.view.name;
 
       this._updateLinks(params.seq);
+      this.emit('track');
     });
 
     this.on('relocated', (params) => {
@@ -360,6 +361,12 @@ var _scrollCheck = debounce(function() {
 window.addEventListener('scroll', _scrollCheck);
 
 $main.dataset.selected = 0;
+
+reader.on('track', () => {
+  if ( HT.analytics ) {
+    HT.analytics.trackPageview(HT.analytics._simplifyPageHref(location.href));
+  }
+})
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10 });
 

@@ -23,6 +23,7 @@ stylesheets.output = './css';
 
 var javascripts = {};
 javascripts.input = [];
+javascripts.input.push(`${process.env.SDRROOT}/mdp-web/jquery/jQuery-URL-Parser/purl.js`);
 javascripts.input.push('./src/js/utils/**/*.js')
 javascripts.output = './js';
 
