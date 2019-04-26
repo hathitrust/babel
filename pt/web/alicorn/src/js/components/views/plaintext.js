@@ -15,7 +15,7 @@ export var PlainText = class extends Single {
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
 
       var page = document.createElement('div');
-      page.setAttribute('tabindex', '0');
+      page.setAttribute('tabindex', '-1');
 
       // page.style.height = `${h}px`;
       // page.style.width = `${w}px`;

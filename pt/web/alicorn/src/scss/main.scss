@@ -489,12 +489,20 @@ section section {
       border: none;
       cursor: pointer;
 
+      display: none;
+
       &:focus, &:hover, &.focused {
         border: 2px dotted #666;
       }
 
       &[aria-pressed="true"] {
         filter: invert(1);
+      }
+    }
+
+    &[data-loaded="true"], &[data-loading="true"] {
+      button.action-toggle-selection {
+        display: block;
       }
     }
   }

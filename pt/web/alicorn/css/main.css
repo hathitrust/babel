@@ -2297,13 +2297,13 @@ section section .page[data-loading="true"]:not([data-loaded="true"])::before, se
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u5f950c19 1s linear alternate infinite;
-          animation: loader12-u5f950c19 1s linear alternate infinite;
+  -webkit-animation: loader12-u9ff889cf 1s linear alternate infinite;
+          animation: loader12-u9ff889cf 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u5f950c19 {
+@-webkit-keyframes loader12-u9ff889cf {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2326,7 +2326,7 @@ section section .page[data-loading="true"]:not([data-loaded="true"])::before, se
   }
 }
 
-@keyframes loader12-u5f950c19 {
+@keyframes loader12-u9ff889cf {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2446,6 +2446,7 @@ section section .page button.action-toggle-selection {
   background: transparent 0 0 repeat scroll url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
   border: none;
   cursor: pointer;
+  display: none;
 }
 
 section section .page button.action-toggle-selection:focus, section section .page button.action-toggle-selection:hover, section section .page button.action-toggle-selection.focused {
@@ -2455,6 +2456,10 @@ section section .page button.action-toggle-selection:focus, section section .pag
 section section .page button.action-toggle-selection[aria-pressed="true"] {
   -webkit-filter: invert(1);
           filter: invert(1);
+}
+
+section section .page[data-loaded="true"] button.action-toggle-selection, section section .page[data-loading="true"] button.action-toggle-selection {
+  display: block;
 }
 
 section section canvas, section section img {
@@ -2647,14 +2652,14 @@ section[data-view="thumb"] section .page:not([data-loaded="true"])::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u8b71057e 1s linear alternate infinite;
-          animation: loader12-u8b71057e 1s linear alternate infinite;
+  -webkit-animation: loader12-u051253f5 1s linear alternate infinite;
+          animation: loader12-u051253f5 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-u8b71057e {
+@-webkit-keyframes loader12-u051253f5 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -2677,7 +2682,7 @@ section[data-view="thumb"] section .page:not([data-loaded="true"])::before {
   }
 }
 
-@keyframes loader12-u8b71057e {
+@keyframes loader12-u051253f5 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);

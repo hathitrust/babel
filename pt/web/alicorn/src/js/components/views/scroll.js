@@ -17,6 +17,7 @@ export var Scroll = class extends Base {
     button.classList.add('button', 'btn-sm', 'action-load-page');
     button.dataset.seq = page.dataset.seq;
     button.innerText = 'Load page';
+    button.setAttribute('tabindex', '-1');
     page.appendChild(button);
   }
 
@@ -48,9 +49,11 @@ export var Scroll = class extends Base {
           div.dataset.preloaded = false;
           this.resizePage(div);
         }
+        this.focus(div);
       } else if ( viewed && ! div.dataset.preloaded ) {
         console.log("AHOY OBSERVING", entries.length, seq, 'onExit');
         this.unloadImage(div);
+        this.unfocus(div);
       }
     })
 
@@ -158,11 +161,12 @@ export var Scroll = class extends Base {
       }
     }.bind(this), 50));
 
-    this._handlers.focus = this.focusHandler.bind(this);
-    this.container.addEventListener('focusin', this._handlers.focus);
-
     this._handlers.click = this.clickHandler.bind(this);
     this.container.addEventListener('click', this._handlers.click);
+
+    this.on('loaded', (page) => {
+      page.querySelector('.action-load-page').setAttribute('tabindex', '-1');
+    })
   }
 
   bindPageEvents(page) {
@@ -179,6 +183,7 @@ export var Scroll = class extends Base {
   }
 
   focusHandler(event) {
+    super.focusHandler();
     var target = event.target;
     if ( target.tagName.toLowerCase() == 'div' && target.classList.contains('page') ) {
       target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
@@ -188,7 +193,6 @@ export var Scroll = class extends Base {
   destroy() {
     super.destroy();
     this._handlers.rotate();
-    this.container.removeEventListener('focusin', this._handlers.focus);
     this.container.removeEventListener('click', this._handlers.click);
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {

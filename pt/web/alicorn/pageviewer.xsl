@@ -406,7 +406,7 @@
     <main class="main-container" id="main">
       <div class="container flex-container container-boxed container-full">
         <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
-        <section class="section-container" id="section">
+        <section class="section-container" id="section" tabindex="0">
           <xsl:call-template name="main" />
         </section>
       </div>

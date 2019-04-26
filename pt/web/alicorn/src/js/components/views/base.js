@@ -24,17 +24,13 @@ export var Base = class {
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
 
       var page = document.createElement('div');
-      page.setAttribute('tabindex', '0');
+      page.setAttribute('tabindex', '-1');
 
       var meta = this.service.manifest.meta(seq);
       var ratio = meta.height / meta.width;
 
       var h = minWidth * ratio * scale;
       var w = minWidth * scale;
-      // if ( meta.rotation % 180 != 0 ) {
-      //   w = minWidth * ratio * scale;
-      //   h = minWidth * scale;
-      // }
 
       page.style.height = `${h}px`;
       page.style.width = `${w}px`;
@@ -51,12 +47,6 @@ export var Base = class {
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
       this.bindPageEvents(pages[i]);
-      // if ( this.mode == 'image' ) {
-      //   pages[i].dataset.visible = false;
-      //   this.observer.inactive = true;
-      // } else {
-      //   this.observer.observe(pages[i]);
-      // }
     }
 
     this.is_active = true;
@@ -129,6 +119,8 @@ export var Base = class {
     page.dataset.loading = true;
     img.addEventListener('load', function _imgHandler() {
       page.dataset.loading = false;
+
+      this.emitter.emit('loaded', page);
 
       this.service.manifest.update(seq, { width: img.width, height: img.height });
 
@@ -257,21 +249,38 @@ export var Base = class {
   }
 
   bindEvents() {
+    this._handlers.focus = this.focusHandler.bind(this);
+    this.container.addEventListener('focusin', this._handlers.focus);
   }
 
   bindPageEvents(page) {
   }
 
-  focus() {
+  focusHandler(event) {
+    var target = event.target;
+    if ( target.tagName.toLowerCase() == 'div' && target.classList.contains('page') ) {
+      this._enableControlTabIndex(target);
+    }
+  }
+
+  focus(page, invoke=false) {
     // page.setAttribute('accesskey', "9");
-    var page = this.currentPage();
-    if ( page ){
+    if ( ! page ) {
+      page = this.currentPage();
+    }
+    page.setAttribute('tabindex', '0');
+    this._enableControlTabIndex(page);
+    if ( invoke ){
       page.focus();
     }
   }
 
   unfocus(page) {
-    // page.removeAttribute('accesskey');
+    page.setAttribute('tabindex', '-1');
+    var page_controls = page.querySelectorAll('[tabindex="0"]');
+    for(var i = 0; i < page_controls.length; i++) {
+      page_controls[i].setAttribute('tabindex', '-1');
+    }
   }
 
   config() {
@@ -281,6 +290,17 @@ export var Base = class {
 
   destroy() {
     unbindAll(this.emitter);
+    if ( this._handlers.focus ) {
+      this.container.removeEventListener('focusin', this._handlers.focus);
+    }
+  }
+
+  _enableControlTabIndex(page) {
+    var page_controls = page.querySelectorAll('[tabindex="-1"]');
+    for(var i = 0; i < page_controls.length; i++) {
+      page_controls[i].setAttribute('tabindex', '0');
+      console.log("--- AHOY", page_controls[i]);
+    }
   }
 
 }

@@ -35,7 +35,14 @@ var Reader = class {
   start(params, cb) {
     if ( cb === undefined ) {
       cb = function() {
+        this.emit('ready', this.view.name);
         this.view.display(params.seq || 1);
+      }.bind(this);
+    } else {
+      var original_cb = cb;
+      cb = function() {
+        this.emit('ready', this.view.name);
+        original_cb();
       }.bind(this);
     }
 
@@ -56,7 +63,7 @@ var Reader = class {
     setTimeout(function() {
       console.log("AHOY AHOY $inner.view timeout", $inner.offsetHeight);
       this.view.attachTo($inner, cb);
-      this.emit('ready', this.view.mode);
+      // this.emit('ready', this.view.mode);
     }.bind(this), 0);
   }
 
