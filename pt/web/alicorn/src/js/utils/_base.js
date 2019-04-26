@@ -19,4 +19,5 @@ head.ready(function() {
 
       }
   }
+
 })

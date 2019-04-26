@@ -27,6 +27,13 @@
   <xsl:variable name="gHTDEV" select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
   <xsl:variable name="gSuppressAccessBanner" select="/MBooksTop/MBooksGlobals/SuppressAccessBanner"/>
 
+  <xsl:variable name="gIsCRMS">
+    <xsl:choose>
+      <xsl:when test="contains(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug'], 'crms')">true</xsl:when>
+      <xsl:otherwise>false</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:variable name="gCurrentUi">
     <xsl:choose>
       <xsl:when test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='ui']">
@@ -43,6 +50,9 @@
   <xsl:template name="setup-html-class">
     <xsl:if test="$gHTDEV != ''">
       <xsl:text> htdev </xsl:text>
+    </xsl:if>
+    <xsl:if test="$gIsCRMS = 'true'">
+      <xsl:text> crms </xsl:text>
     </xsl:if>
     <xsl:call-template name="setup-login-status-class" />
     <xsl:call-template name="setup-extra-html-class" />
@@ -209,29 +219,48 @@
   <xsl:template name="navbar">
     <header class="site-navigation" role="banner">
       <nav aria-label="about the site">
-        <ul id="nav" class="nav">
-          <li><a class="home-link" href="https://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
-          <li class="nav-menu">
-            <!-- <a href="https://www.hathitrust.org/about">About</a> -->
-            <a href="#" aria-haspopup="true" id="about-menu">About <i class="icomoon icomoon-triangle" aria-hidden="true" style="position: absolute; top: 35%"></i></a>
-            <ul class="navbar-menu-children" role="menu" aria-labelledby="about-menu" aria-hidden="true">
-              <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
-              <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
-              <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
-              <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+        <xsl:if test="$gIsCRMS = 'false'">
+          <xsl:call-template name="navbar-site-links" />
+        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="$gIsCRMS = 'true'">
+            <ul id="person-nav" class="nav pull-right">
+              <xsl:if test="$gLoggedIn = 'YES'">
+                <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li>
+              </xsl:if>
+              <li class="help"><a href="http://www.hathitrust.org/help">Help</a></li>
+              <xsl:call-template name="li-feedback" />
             </ul>
-          </li>
-          <li><a href="/cgi/mb">Collections</a></li>
-          <!-- <li class="divider-vertical"></li> -->
-          <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
-          <xsl:call-template name="li-feedback" />
-          <xsl:call-template name="li-search-action" />
-        </ul>
-        <ul id="person-nav" class="nav pull-right">
-          <xsl:call-template name="navbar-user-links" />
-        </ul>
+          </xsl:when>
+          <xsl:otherwise>
+            <ul id="person-nav" class="nav pull-right">
+              <xsl:call-template name="navbar-user-links" />
+            </ul>
+          </xsl:otherwise>
+        </xsl:choose>
       </nav>
     </header>
+  </xsl:template>
+
+  <xsl:template name="navbar-site-links">
+    <ul id="nav" class="nav">
+      <li><a class="home-link" href="https://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
+      <li class="nav-menu">
+        <!-- <a href="https://www.hathitrust.org/about">About</a> -->
+        <a href="#" aria-haspopup="true" id="about-menu">About <i class="icomoon icomoon-triangle" aria-hidden="true" style="position: absolute; top: 35%"></i></a>
+        <ul class="navbar-menu-children" role="menu" aria-labelledby="about-menu" aria-hidden="true">
+          <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
+          <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
+          <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
+          <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+        </ul>
+      </li>
+      <li><a href="/cgi/mb">Collections</a></li>
+      <!-- <li class="divider-vertical"></li> -->
+      <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
+      <xsl:call-template name="li-feedback" />
+      <xsl:call-template name="li-search-action" />
+    </ul>
   </xsl:template>
 
   <xsl:template name="li-search-action">
