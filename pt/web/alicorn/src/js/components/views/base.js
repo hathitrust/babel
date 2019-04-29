@@ -107,7 +107,7 @@ export var Base = class {
 
     var html_request;
     if ( this.embedHtml) {
-      html_request = fetch(html_url);
+      html_request = fetch(html_url, { credentials: 'include' });
     }
 
     var page_height = page.offsetHeight;

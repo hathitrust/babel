@@ -9,6 +9,8 @@ var es = require('event-stream');
 
 var concat = require('gulp-concat');  
 var rename = require('gulp-rename');  
+var babel = require('gulp-babel');
+
 // var uglify = require('gulp-uglify'); 
 
 var compiler = require('webpack');
@@ -63,10 +65,16 @@ gulp.task('sass', function() {
     .pipe(gulp.dest(stylesheets.output));
 });
 
+var presets_v6 = [ 'babel-preset-env' ].map(require.resolve);
 gulp.task('scripts', function() {
   return gulp.src(javascripts.input)
     .pipe(sourcemaps.init())
-      .pipe(concat('utils.js'))
+    .pipe(babel({
+      babelrc: false,
+      presets: presets_v6
+      // exclude: [ 'node_modules/**' ]
+    }))
+    .pipe(concat('utils.js'))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(javascripts.output))
 })
@@ -78,14 +86,39 @@ gulp.task('app', function() {
       devtool: 'inline-source-map',
       mode: 'development',
       entry: {
-        main: [ 'intersection-observer', './src/js/main.js']
+        main: [ 'intersection-observer', 'babel-polyfill', 'whatwg-fetch', './src/js/main.js']
       },
       output: {
         filename: 'main.js'
+      },
+      module: {
+        rules: [
+          { test: /\.js$/, 
+            use: {
+              loader: 'babel-loader',
+              options: {
+                presets: [ 'env' ]
+              }
+            }
+          }
+        ]
+        // loaders: {
+        //   test: /\.js$/,
+        //   loader: "babel-loader",
+        //   presets: ['es2015'],
+        //   plugins: [
+        //     "add-module-exports",
+        //   ]
+        // }
       }
     }, compiler, function(err, stats) {
 
     }))
+    // .pipe(babel({
+    //   babelrc: false,
+    //   presets: presets_v6
+    //   // exclude: [ 'node_modules/**' ]
+    // }))
     .pipe(gulp.dest(javascripts.output));
 });
 
@@ -102,4 +135,4 @@ gulp.task('app:watch', function () {
 });
 
 gulp.task('default', gulp.parallel('sass:watch', 'app:watch', 'scripts:watch'));
-gulp.task('run', gulp.series('sass', 'scripts'));
+gulp.task('run', gulp.series('sass', 'scripts', 'app'));
