@@ -25,6 +25,8 @@
      'index'    => '1',
      'a'        => '\w+',
      'h'        => '.*',
+     'l11_tracking' => '.*',
+     'l11_uid' => '.*',
     );
 
 # Specification of global *database* operations to be executed before

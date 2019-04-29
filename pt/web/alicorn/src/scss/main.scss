@@ -96,6 +96,10 @@ main > .container {
 
 }
 
+#form-go-page {
+  display: none !important;
+}
+
 .selected-list {
   display: flex;
   flex-wrap: wrap;
