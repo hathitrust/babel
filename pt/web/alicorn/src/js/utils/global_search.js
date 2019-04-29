@@ -3,6 +3,7 @@ head.ready(function() {
     var inited = false;
 
     var $form = $("#search-modal form");
+    $form.attr('action', '/pt/search_complete.html');
 
     var $input = $form.find("input.search-input-text");
     var $input_label = $form.find("label[for='q1-input']");
