@@ -24,6 +24,8 @@ main > .container {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  -ms-grid-columns: 1fr;
+  -ms-grid-rows:auto 1fr auto;
   grid-template:"header" auto "main" 1fr "footer" auto/minmax(0,1fr)
 }
 
@@ -155,6 +157,7 @@ main > .container {
 }
 
 main.main-container {
+  -ms-grid-row: 2;
   grid-area: main;
 
   margin: 0;
@@ -372,35 +375,59 @@ section section {
     overflow: auto;
   }
 
+  .viewer-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: hidden;
+
+    &::after {
+      display: block;
+      content: "";
+      @include loader12($size: 20px, $gap: 30px, $color: $hathitrust-orange-color, $align: middle);
+    }
+  }
+
   .page {
     --width: 400px;
     margin: 0rem auto 2rem;
     position: relative;
     overflow: hidden;
 
+    background: $body-bgcolor;
+
     box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0,0,0,0);
     border: 1px solid #ddd;
 
-    &[data-loading="true"]:not([data-loaded="true"])::before, &[data-loading="true"]:not([data-loaded="true"])::after {
+    &.page--visible {
+      z-index: 1;
+    }
+
+    // &[data-loading="true"]:not([data-loaded="true"])::before, &[data-loading="true"]:not([data-loaded="true"])::after {
+    &.page--loading:not(.page--loaded)::before, &.page--loading:not(.page--loaded)::after {
       display: block;
       content: "";
       // @include loader02($size: 60px, $border-size: 8px, $color: $hathitrust-orange-color, $align: middle);
       @include loader12($size: 20px, $gap: 30px, $color: $hathitrust-orange-color, $align: middle);
     }
 
-    &[data-loading="true"]:not([data-loaded="true"])::before {
+    &.page--loading:not(.page--loaded)::before {
       top: 10%;
     }
 
-    &[data-loading="true"]:not([data-loaded="true"])::after {
+    &.page--loading:not(.page--loaded)::after {
       top: 90%;
     }
 
-    &[data-selected="true"]::before {
+    // &[data-selected="true"]::before {
+    &.page--visible.page--selected::before {
       content: "";
       position: absolute;
       top: 0;
       right: 0;
+      border-width: 0 2rem 2rem 0;
       border-width: 0 calc(var(--width) * 0.08) calc(var(--width) * 0.08) 0;
       border-style: solid;
       /*border-color: #658E15 #fff;*/
@@ -416,16 +443,19 @@ section section {
       width: 0;
     }
 
-    &[data-loaded="true"] {
+    // &[data-loaded="true"] {
+    &.page--loaded {
       .info {
         display: none;
       }
     }
 
-    &[data-selected="true"] {
+    // &[data-selected="true"] {
+    &.page--selected {
       img {
         padding: 2% !important;
-        background: #ef7c2280 !important;
+        // background: #ef7c2280 !important;
+        background: rgba(239, 124, 34, 0.7) !important;
       }
     }
 
@@ -476,7 +506,8 @@ section section {
       opacity: 1.0;
     }
 
-    &[data-loaded="true"] {
+    // &[data-loaded="true"] {
+    &.page--loaded {
       button.action-load-page {
         display: none !important;
       }
@@ -505,7 +536,8 @@ section section {
       }
     }
 
-    &[data-loaded="true"], &[data-loading="true"] {
+    // &[data-loaded="true"], &[data-loading="true"] {
+    &.page--loaded, &.page--loading {
       button.action-toggle-selection {
         display: block;
       }
@@ -518,19 +550,20 @@ section section {
   }
 }
 
-section[data-view="1up"] {
+// section[data-view="1up"] {
+section.view--1up {
   section {
     .page {
       width: 80%;
 
-      &[data-rotate]:not([data-rotate="0"]) {
-        transform: rotate(var(--rotate));
-        margin: var(--rotate-margin);
-        // margin-top: -var(--rotate-margin);
-        // margin-bottom: -var(--rotate-margin);
-        // margin-left: var(--rotate-margin);
-        // margin-right: var(--rotate-margin);
-      }
+      // &[data-rotate]:not([data-rotate="0"]) {
+      //   transform: rotate(var(--rotate));
+      //   margin: var(--rotate-margin);
+      //   // margin-top: -var(--rotate-margin);
+      //   // margin-bottom: -var(--rotate-margin);
+      //   // margin-left: var(--rotate-margin);
+      //   // margin-right: var(--rotate-margin);
+      // }
 
       img {
         width: 100%;
@@ -544,38 +577,37 @@ section[data-view="1up"] {
   }
 }
 
-section[data-view="image"] {
+// section[data-view="image"] {
+section.view--image {
   section {
     .page {
       width: 80%;
       position: absolute;
       top: 0;
 
-      // &[data-rotate]:not([data-rotate="0"]) {
-      //   transform: rotate(var(--rotate));
-      //   margin-top: var(--rotate-margin);
-      //   margin-bottom: var(--rotate-margin);
-      // }
-
-      &[data-best-fit="true"] {
+      // &[data-best-fit="true"] {
+      &.page--best-fit {
         left: 50%;
         transform: translate(-50%);
       }
 
-      &[data-visible="false"] {
+      // &[data-visible="false"] {
+      & {
         visibility: hidden;
         opacity: 0;
         transition: visibility 0s linear 300s, opacity 300ms;
       }
 
-      &[data-visible="true"] {
+      // &[data-visible="true"] {
+      &.page--visible {
         visibility: visible;
         opacity: 1;
         transition: visibility 0s linear 0s, opacity 300ms;
       }
 
       img {
-        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
       }
     }
   }
@@ -585,7 +617,8 @@ section[data-view="image"] {
   }
 }
 
-section[data-view="2up"] {
+// section[data-view="2up"] {
+section.view--2up {
 
   .inner.main {
     margin: 0;
@@ -599,7 +632,8 @@ section[data-view="2up"] {
 
   section {
     .slice {
-      width: var(--slice-width); // 100%
+      // width: var(--slice-width);
+      width: 100%;
       position: absolute;
       top: 0;
       bottom: 0;
@@ -611,13 +645,15 @@ section[data-view="2up"] {
       align-items: center;
       justify-content: center;
 
-      &[data-visible="false"] {
+      // &[data-visible="false"] {
+      &:not(.slice--visible) {
         visibility: hidden;
         opacity: 0;
         transition: visibility 0s linear 300s, opacity 300ms;
       }
 
-      &[data-visible="true"] {
+      // &[data-visible="true"] {
+      &.slice--visible {
         visibility: visible;
         opacity: 1;
         transition: visibility 0s linear 0s, opacity 300ms;
@@ -629,8 +665,10 @@ section[data-view="2up"] {
       margin: 0;
 
       &.verso {
-        height: var(--page-height);
-        width: calc(var(--page-height) * var(--page-ratio));
+        // height: var(--page-height);
+        // width: calc(var(--page-height) * var(--page-ratio));
+        height: 100%;
+        width: 100%;
 
         button.action-toggle-selection {
           right: auto;
@@ -640,8 +678,10 @@ section[data-view="2up"] {
       }
 
       &.recto {
-        height: var(--page-height);
-        width: calc(var(--page-height) * var(--page-ratio));
+        // height: var(--page-height);
+        // width: calc(var(--page-height) * var(--page-ratio));
+        height: 100%;
+        width: 100%;
       }
 
       img {
@@ -668,18 +708,21 @@ section[data-view="2up"] {
     }
 
     .edge {
-      height: calc(var(--page-height) * 0.98);
+      // height: calc(var(--page-height) * 0.98);
+      height: 100%;
       background: #ddd;
       background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAFCAYAAABirU3bAAAAG0lEQVQIW2O8c+fOTCEhIYZ3794xgGhGKggAAJf0H/UWcK5GAAAAAElFTkSuQmCC);
 
       &.recto {
         border-right: 8px solid #666;
-        width: calc(var(--fraction) * var(--edge-width));
+        width: 0;
+        // width: calc(var(--fraction) * var(--edge-width));
       }
 
       &.verso {
         border-left: 8px solid #666;
-        width: calc(var(--fraction) * var(--edge-width));
+        width: 0;
+        // width: calc(var(--fraction) * var(--edge-width));
       }
 
 
@@ -691,7 +734,8 @@ section[data-view="2up"] {
   }
 }
 
-section[data-view="thumb"] {
+// section[data-view="thumb"] {
+section.view--thumb {
   section {
 
     .viewer-inner {
@@ -706,14 +750,16 @@ section[data-view="thumb"] {
       margin: 2rem 2rem;
       cursor: pointer;
 
-      &:not([data-loaded="true"])::before {
+      // &:not([data-loaded="true"])::before {
+      &:not(.page--loaded)::before {
         display: block;
         content: "";
         @include loader12($size: 8px, $gap: 10px, $color: $hathitrust-orange-color, $align: middle);
         top: 10%;
       }
 
-      &:not([data-loaded="true"])::after {
+      // &:not([data-loaded="true"])::after {
+      &:not(.page--loaded)::after {
         display: none !important;
       }
 
@@ -734,14 +780,16 @@ section[data-view="thumb"] {
     background: rgba(0,0,0,0.8);
   }
 
-  &[data-reading-order="right-to-left"] {
+  // &[data-reading-order="right-to-left"] {
+  &.reading-order--rtl {
     .viewer-inner {
       flex-direction: row-reverse;
     }
   }
 }
 
-section[data-view="plaintext"] {
+// section[data-view="plaintext"] {
+section.view--plaintext {
   section {
     .page {
       width: 90%;
@@ -751,28 +799,32 @@ section[data-view="plaintext"] {
       background: #fff;
       top: 0;
 
-      &:not([data-loaded="true"])::before {
+      // &:not([data-loaded="true"])::before {
+      &:not(.page--loaded) {
         top: 80px;
       }
 
-      &:not([data-loaded="true"])::after {
+      // &:not([data-loaded="true"])::after {
+      &:not(.page--loaded)::after {
         top: auto;
         bottom: 80px;
       }
 
-
-      &[data-best-fit="true"] {
+      // &[data-best-fit="true"] {
+      &.page--best-fit {
         left: 50%;
         transform: translate(-50%);
       }
 
-      &[data-visible="false"] {
+      // &[data-visible="false"] {
+      &:not(.page--visible) {
         visibility: hidden;
         opacity: 0;
         transition: visibility 0s linear 300s, opacity 300ms;
       }
 
-      &[data-visible="true"] {
+      // &[data-visible="true"] {
+      &.page--visible {
         visibility: visible;
         opacity: 1;
         transition: visibility 0s linear 0s, opacity 300ms;
@@ -788,9 +840,7 @@ section[data-view="plaintext"] {
         font-size: 1.25rem;
         line-height: 1.25;
 
-        clip: unset;
-        clip: unset;
-        clip-path: none;
+        clip: auto;
         clip-path: none;
 
         .ocr_page, .ocrx_block { font-size: inherit; }

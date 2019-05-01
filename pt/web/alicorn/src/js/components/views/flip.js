@@ -12,6 +12,7 @@ export var Flip = class extends Base {
     this.is_active = false;
     this.isRTL = this.service.manifest.options.readingOrder  == 'right-to-left';
     this._checkForFoldouts = this.checkForFoldouts.bind(this);
+    this._edges = {};
     this.setupSlices();
   }
 
@@ -65,12 +66,13 @@ export var Flip = class extends Base {
     var minWidth = this.minWidth();
     minWidth /= 2;
 
-    // return;
-
     var maxHeight = this.container.offsetHeight * 0.95;
+    var pageHeight = maxHeight * this.scale;
+    var offsetWidth = this.container.offsetWidth;
+    var sliceWidth = offsetWidth * this.scale;
     console.log("AHOY AHOY", maxHeight);
     this.container.style.setProperty('--page-height', `${maxHeight * this.scale}px`);
-    this.container.style.setProperty('--slice-width', `${this.container.offsetWidth * this.scale}px`);
+    this.container.style.setProperty('--slice-width', `${offsetWidth * this.scale}px`);
 
     var max_edge_width = 0;
     var max_slice_width = 0;
@@ -84,20 +86,28 @@ export var Flip = class extends Base {
     for(var slice_idx = 0; slice_idx < slices.length; slice_idx++) {
       slices_indexes.push(slice_idx);
     }
-    // if ( this.isRTL ) { slices_indexes.reverse(); }
+    
+    this.container.style.display = 'none';
+
+    var fragment = document.createDocumentFragment();
 
     for(var j = 0; j < slices_indexes.length; j++ ) {
       var slice_idx = slices_indexes[j];
       var tuple = slices[slice_idx];
+      this._edges[slice_idx] = { recto: {}, verso: {} };
 
       var slice = document.createElement('div');
       slice.classList.add('slice');
+      slice.style.width = `${sliceWidth}px`;
 
       var edge = document.createElement('div');
       edge.classList.add('edge', 'verso');
       edge.style.setProperty('--fraction', slice_idx / slices.length);
+      this._edges[slice_idx].verso.fraction = slice_idx / slices.length;
+      edge.style.height = `${pageHeight * 0.98}px`;
       // edge.style.width = `${(slice_idx / slices.length) * max_edge_width}px`;
       slice.appendChild(edge);
+      var verso_edge = edge;
 
       var page = document.createElement('div');
       page.classList.add('page');
@@ -109,36 +119,41 @@ export var Flip = class extends Base {
       if ( tuple[0] ) {
         seq = tuple[0];
         var meta = this.service.manifest.meta(tuple[0]);
-        var ratio = meta.height / meta.width;
-        // page.style.height = `${minWidth * ratio * scale}px`;
-        // page.style.width = `${minWidth * scale}px`;
 
+        var ratio;
         if ( meta.width > meta.height ) {
-          var r = minWidth / meta.width;
+          ratio = meta.height / meta.width;
           page.style.setProperty('--page-ratio', meta.height / meta.width );
         } else {
+          ratio = meta.width / meta.height;
           page.style.setProperty('--page-ratio', meta.width / meta.height);
         }
-        // page.style.height = `${maxHeight * scale}px`;
-        // page.style.width = `${maxHeight * scale / ratio}px`;
+        page.style.height = `${pageHeight}px`;
+        page.style.width = `${pageHeight * ratio}px`;
 
         slice_height = maxHeight * scale;
         slice_width = maxHeight * scale / ratio;
 
-        page.dataset.bestFit = ( scale <= 1 );
+        page.dataset.bestFit = ( scale <= 1 ); page.classList.toggle('page--best-fit', ( scale <= 1 ));
 
         page.dataset.seq = seq;
-        page.setAttribute('tabindex', 0);
+        page.setAttribute('tabindex', -1);
 
         page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
 
       } else {
         var meta = this.service.manifest.meta(1);
-        var ratio = meta.height / meta.width;
-        page.style.setProperty('--page-ratio', meta.width / meta.height);
+        var ratio;
+        if ( meta.width > meta.height ) {
+          ratio = meta.height / meta.width;
+          page.style.setProperty('--page-ratio', meta.height / meta.width );
+        } else {
+          ratio = meta.width / meta.height;
+          page.style.setProperty('--page-ratio', meta.width / meta.height);
+        }
 
-        // page.style.height = `${maxHeight * scale}px`;
-        // page.style.width = `${maxHeight * scale / ratio}px`;
+        page.style.height = `${pageHeight}px`;
+        page.style.width = `${pageHeight * ratio}px`;
 
         page.innerHTML = `<div class="page-text"></div><div class="info">NIL</div>`;
         slice_width = maxHeight * scale / ratio;
@@ -151,15 +166,20 @@ export var Flip = class extends Base {
       if ( tuple[1] ) {
         seq = tuple[1];
         var meta = this.service.manifest.meta(tuple[1]);
-        var ratio = meta.height / meta.width;
-        // page.style.height = `${minWidth * ratio * scale}px`;
-        // page.style.width = `${minWidth * scale}px`;
-
         page.style.setProperty('--page-ratio', meta.width / meta.height);
 
-        // page.style.height = `${maxHeight * scale}px`;
-        // page.style.width = `${maxHeight * scale / ratio}px`;
-        page.dataset.bestFit = ( scale <= 1 );
+        var ratio;
+        if ( meta.width > meta.height ) {
+          ratio = meta.height / meta.width;
+          page.style.setProperty('--page-ratio', meta.height / meta.width );
+        } else {
+          ratio = meta.width / meta.height;
+          page.style.setProperty('--page-ratio', meta.width / meta.height);
+        }
+        page.style.height = `${pageHeight}px`;
+        page.style.width = `${pageHeight * ratio}px`;
+
+        page.dataset.bestFit = ( scale <= 1 ); page.classList.toggle('page--best-fit', ( scale <= 1 ));
 
         slice_height = slice_height || ( maxHeight * scale );
         slice_width += ( maxHeight * scale / ratio );
@@ -171,12 +191,20 @@ export var Flip = class extends Base {
         slice.appendChild(page);
       } else {
         var meta = this.service.manifest.meta(1);
-        var ratio = meta.height / meta.width;
+        var ratio;
+        if ( meta.width > meta.height ) {
+          ratio = meta.height / meta.width;
+          page.style.setProperty('--page-ratio', meta.height / meta.width );
+        } else {
+          ratio = meta.width / meta.height;
+          page.style.setProperty('--page-ratio', meta.width / meta.height);
+        }
 
-        page.style.setProperty('--page-ratio', meta.width / meta.height);
+        page.style.height = `${pageHeight}px`;
+        page.style.width = `${pageHeight * ratio}px`;
 
-        // page.style.height = `${maxHeight * scale}px`;
-        // page.style.width = `${maxHeight * scale / ratio}px`;
+        page.style.height = `${pageHeight}px`;
+        page.style.width = `${pageHeight * ratio}px`;
 
         slice_width += ( maxHeight * scale / ratio );
 
@@ -197,6 +225,8 @@ export var Flip = class extends Base {
       edge = document.createElement('div');
       edge.classList.add('edge', 'recto');
       edge.style.setProperty('--fraction', (( slices.length - slice_idx ) / slices.length));
+      edge.style.height = `${pageHeight * 0.98}px`;
+      this._edges[slice_idx].recto.fraction = (( slices.length - slice_idx ) / slices.length);
 
       // edge.style.width = `${(( slices.length - slice_idx ) / slices.length) * max_edge_width}px`;
       // edge.style.height = `${slice_height * 0.95}px`; // this is complicated
@@ -204,17 +234,29 @@ export var Flip = class extends Base {
       slice.appendChild(edge);
       // slice.querySelector('.edge.verso').style.height = edge.style.height;
 
-      slice.dataset.visible = false;
+      slice.dataset.visible = false; slice.classList.remove('slice--visible');
       slice.dataset.slice = slice_idx;
 
-      this.container.appendChild(slice);
+      // this.container.appendChild(slice);
+      fragment.appendChild(slice);
     }
 
-    var max_edge_width = ( ( this.container.offsetWidth - ( max_slice_width / this.scale ) ) * 0.85 ) / 2;
+    var max_edge_width = Math.abs(( ( offsetWidth - ( max_slice_width / this.scale ) ) * 0.85 ) / 2);
     var page_factor = 10;
     var edge_width = 3 * Math.ceil(this.service.manifest.totalSeq / page_factor);
     if ( edge_width > max_edge_width ) { edge_width = max_edge_width; }
+
+    var slices__ = fragment.querySelectorAll('.slice');
+    for(var i = 0; i < slices__.length; i++) {
+      var slice = slices__[i];
+      var edgedata = this._edges[i];
+      slice.querySelector('.edge.verso').style.width = `${edge_width * edgedata.verso.fraction}px`;
+      slice.querySelector('.edge.recto').style.width = `${edge_width * edgedata.recto.fraction}px`;
+    }
+
+    this.container.appendChild(fragment);
     this.container.style.setProperty('--edge-width', `${edge_width}px`);
+    this.container.style.display = 'block';
 
     this.is_active = true;
     this.loadSlice(this.container.querySelector('.slice'));
@@ -239,7 +281,7 @@ export var Flip = class extends Base {
     for(var i = 0; i < pages.length; i++) {
       this.loadImage(pages[i], { check_scroll: true, callback: this._checkForFoldouts });
     }
-    slice.dataset.visible = true;
+    slice.dataset.visible = true; slice.classList.add('slice--visible');
   }
 
   unloadSlice(slice) {
@@ -258,13 +300,13 @@ export var Flip = class extends Base {
     if ( ! target ) { return; }
 
     if ( current ) {
-      current.dataset.visible = false;
+      current.dataset.visible = false; current.classList.remove('slice--visible');
       setTimeout(function() {
         this.unloadSlice(current);
       }.bind(this))
     }
 
-    target.dataset.visible = true;
+    target.dataset.visible = true; target.classList.add('slice--visible');
     this.loadSlice(target);
     // this.loadImage(target, true);
     this.reader.emit('relocated', { seq: this.slice2seq(slice_idx) });

@@ -68,7 +68,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css" />
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous" />
 
-        <script type="text/javascript" src="/pt/alicorn/js/utils.js"></script>
+        <!-- <script type="text/javascript" src="/pt/alicorn/js/utils.js"></script> -->
+        <script type="text/javascript">head.load('/pt/alicorn/js/utils.js')</script>
 
 
         <xsl:call-template name="setup-extra-header" />

@@ -25,9 +25,4 @@ export var Viewinator = class {
     }
   }
 
-
-  render(slot, value) {
-    var span = this.output.querySelector(`[data-slot="${slot}"]`);
-    span.innerText = value;
-  }
 }

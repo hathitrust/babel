@@ -29,6 +29,7 @@ $outline-color: #4d90fe;
 #root {
   min-height: 100vh;
   max-width: 100vw;
+  display:-ms-grid;
   display: grid;
   grid-template: 'header' 'main' 'footer'/1fr;
 }
@@ -165,6 +166,7 @@ header.site-navigation, footer.site-navigation {
 }
 
 header.site-navigation {
+  -ms-grid-row: 1;
   grid-area: header;
 
   nav {
@@ -180,6 +182,7 @@ header.site-navigation {
 
 footer.site-navigation {
   z-index: 1;
+  -ms-grid-row: 3;
   grid-area: footer;
   nav {
     justify-content: flex-end;

@@ -10,6 +10,7 @@ export var Scroll = class extends Base {
     this.name = '1up';
     this.pageOptions = {};
     this.embedHtml = true;
+    this._debugLog = [];
   }
 
   _renderr(page) {
@@ -24,14 +25,10 @@ export var Scroll = class extends Base {
   display(seq) {
     var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }
-    target.dataset.visible = true;
+    target.dataset.visible = true; target.classList.add('page--visible');
     target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
     this.currentSeq = seq;
-    if ( this._currentPage ) {
-      this._currentPage.removeAttribute("accesskey");
-    }
     this._currentPage = target;
-    this._currentPage.setAttribute('accesskey', '9');
     this.reader.emit('relocated', { seq: target.dataset.seq });
   }
 
@@ -135,13 +132,18 @@ export var Scroll = class extends Base {
 
   bindEvents() {
     var self = this;
-
     super.bindEvents();
+
+    var threshold = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+    if ( document.querySelector('html').classList.contains('gt-ie9') ) {
+      threshold = [ 0, 0.25, 0.5, 0.75, 1 ];
+    }
     this.observer = new IntersectionObserver(this.handleObserver.bind(this), {
         root: this.container,
         rootMargin: '0px',
-        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        threshold: threshold
     });
+    // this.observer.USE_MUTATION_OBSERVER = false;
 
     this._handlers.rotate = this.reader.on('rotate', function(delta) {
       var seq = self.currentLocation();
@@ -155,7 +157,9 @@ export var Scroll = class extends Base {
         var seq = page.dataset.seq;
         this.reader.emit('relocated', { seq: seq });
         this.currentSeq = seq;
-        this.unfocus(this._currentPage);
+        if ( this._currentPage ) {
+          this.unfocus(this._currentPage);
+        }
         this.focus(page);
         this._currentPage = page;
       }
@@ -195,6 +199,7 @@ export var Scroll = class extends Base {
     this._handlers.rotate();
     this.container.removeEventListener('click', this._handlers.click);
     var pages = this.container.querySelectorAll('.page');
+    this.observer.disconnect();
     for(var i = 0; i < pages.length; i++) {
       this.observer.unobserve(pages[i]);
       this.container.removeChild(pages[i]);

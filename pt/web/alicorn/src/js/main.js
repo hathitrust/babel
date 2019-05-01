@@ -73,22 +73,20 @@ var Reader = class {
     }
 
     if ( params.view ) {
-      $main.dataset.view = params.view;
+      $main.dataset.view = params.view; $main.classList.add(`view--${params.view}`);
 
       if ( params.restarting ) {
         this.emit('status', `Switching to ${params.view} view`);
       }
-
-      console.log("AHOY AHOY $inner.view", $inner.offsetHeight);
-      setTimeout(function() {
-        console.log("AHOY AHOY $inner.view later", $inner.offsetHeight);
-      }, 2000);
     }
     if ( params.scale ) { this.options.scale = params.scale; }
     this.setView({ view: $main.dataset.view });
     setTimeout(function() {
       console.log("AHOY AHOY $inner.view timeout", $inner.offsetHeight);
+      var t0 = performance.now();
       this.view.attachTo($inner, cb);
+      var t1 = performance.now();
+      console.log(`BENCHMARK attachTo ${t1 - t0}`);
       // this.emit('ready', this.view.mode);
     }.bind(this), 0);
   }
@@ -101,7 +99,7 @@ var Reader = class {
 
     params.restarting = true;
 
-    if ( this.view ) { this.view.destroy(); this.view = null; }
+    if ( this.view ) { $main.classList.remove(`view--${this.view.name}`); this.view.destroy(); this.view = null; }
     this.start(params, function() {
       console.log("AHOY TRYING TO GO TO", current);
       this.view.display(current);
@@ -109,10 +107,14 @@ var Reader = class {
   }
 
   setView(params) {
+    var t0 = performance.now();
     var cls = View.for(params.view);
+    var t1 = performance.now();
     this.view = new cls({ reader: this, service: this.service, scale: this.options.scale });
+    var t2 = performance.now();
     this.emit('configure', this.view.config());
     this._updateViews(params.view);
+    console.log(`BENCHMARK setView: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
   }
 
   next() {
@@ -327,6 +329,7 @@ HT.reader = reader;
 HT.View = View;
 
 $main.dataset.readingOrder = service.manifest.options.readingOrder;
+$main.classList.toggle('reading-order--rtl', $main.dataset.readingOrder == 'right-to-left');
 
 var is_active = false;
 var scale = 0.75;

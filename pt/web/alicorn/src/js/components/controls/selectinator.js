@@ -1,6 +1,14 @@
 import NanoEvents from 'nanoevents';
 
-import _ from 'lodash';
+// import _ from 'lodash';
+// import array from 'lodash/array';
+// import collection from 'lodash/collection';
+
+// var _ = {};
+// _.each = collection.each;
+// _.indexOf = array.indexOf;
+// _.union = array.union;
+// _.difference = array.difference;
 
 export var Selectinator = class {
   constructor(options={}) {
@@ -78,12 +86,13 @@ export var Selectinator = class {
       button.dataset.seq = page.dataset.seq;
       button.setAttribute('aria-label', `Select page scan ${page.dataset.seq} to download`);
       button.setAttribute('type', 'button');
-      button.setAttribute('aria-pressed', _.indexOf(printable, parseInt(page.dataset.seq, 10)) > -1);
+      // button.setAttribute('aria-pressed', _.indexOf(printable, parseInt(page.dataset.seq, 10)) > -1);
+      button.setAttribute('aria-pressed', printable.indexOf(parseInt(page.dataset.seq, 10)) > -1);
       button.setAttribute('data-role', 'tooltip');
       button.setAttribute('data-microtip-position', 'bottom');
       button.setAttribute('data-microtip-size', 'small');
       button.setAttribute('tabindex', '-1');
-      page.dataset.selected = button.getAttribute('aria-pressed');
+      page.dataset.selected = button.getAttribute('aria-pressed'); page.classList.toggle('page--selected', button.getAttribute('aria-pressed') == 'true');
       page.appendChild(button);
     }
   }
@@ -139,7 +148,7 @@ export var Selectinator = class {
       var is_adding = checked; // $input.prop('checked');
       var to_process = [ seq ];
 
-      page.dataset.selected = checked;
+      page.dataset.selected = checked; page.classList.toggle('page--selected', checked);
 
       input.setAttribute('aria-pressed', checked);
       page.setAttribute('aria-label', checked ? `Page scan ${seq} is selected for download` : '');
@@ -147,7 +156,7 @@ export var Selectinator = class {
       if ( evt && evt.shiftKey && self._last_selected_seq ) {
           // there should be an earlier selection
           var prev_until;
-          var fn = checked ? function(seq) { return _.indexOf(printable, seq) > -1 } : function(seq) { return _.indexOf(printable, seq) < 0 };
+          var fn = checked ? function(seq) { return printable.indexOf(seq) > -1 } : function(seq) { return printable.indexOf(seq) < 0 };
 
           var start_seq; var end_seq; var delta;
           if ( seq > self._last_selected_seq ) {
@@ -166,14 +175,14 @@ export var Selectinator = class {
               }
           }
 
-          if ( prev_until == 1 && _.indexOf(printable, 1) < 0 ) {
+          if ( prev_until == 1 && printable.indexOf(1) < 0 ) {
               bootbox.alert("<p>Sorry.</p><p>Shift-click selects the pages between this page and an earlier selection, and we didn't find an earlier selected page.</p>");
           } else {
             var container = this.reader.view.container;
             for(var prev=start_seq; prev >= prev_until; prev--) {
               var page_prev = container.querySelector(`.page[data-seq="${prev}"]`);
               if ( page_prev ) {
-                page_prev.dataset.selected = checked;
+                page_prev.dataset.selected = checked; page_prev.classList.toggle('page--selected', checked);
                 page_prev.querySelector('button.action-toggle-selection').setAttribute('aria-pressed', checked);
                 page_prev.setAttribute('aria-label', checked ? `Page scan ${prev} is selected for download` : '');
               }
@@ -183,9 +192,13 @@ export var Selectinator = class {
       }
 
       if ( is_adding ) {
-          printable = _.union(printable, to_process);
+          // printable = _.union(printable, to_process);
+          var set = new Set(printable.concat(to_process));
+          printable = [...set];
       } else {
-          printable = _.difference(printable, to_process)
+          // printable = _.difference(printable, to_process)
+          var set = new Set([...printable].filter(x => ! to_process.includes(x)));
+          printable = [...set];
       }
 
       self._setSelection(printable);
@@ -228,7 +241,8 @@ export var Selectinator = class {
 
   _getFlattenedSelection(printable) {
       var list = [];
-      _.each(printable.sort(function(a, b) { return a - b; }), function(val) {
+      // _.each(printable.sort(function(a, b) { return a - b; }), function(val) {
+      printable.sort(function(a, b) { return a - b; }).forEach(function(val) {
           if ( list.length == 0 ) {
               list.push([val, -1]);
           } else {
@@ -273,7 +287,7 @@ export var Selectinator = class {
       this.datalist.innerHTML = '';
 
       var list = self._getFlattenedSelection(printable);
-      _.each(list, function(args) {
+      list.forEach(function(args) {
           var s = args;
           var postscript = `<span><span class="offscreen">Selected page scans </span>${args}</span>`;
           if ( typeof(args) == "string" ) {
@@ -313,7 +327,7 @@ export var Selectinator = class {
       for(var i = 0; i < toggles.length; i++) {
         var toggle = toggles[i];
         toggle.setAttribute('aria-pressed', false);
-        toggle.parentNode.dataset.selected = false;
+        toggle.parentNode.dataset.selected = false; toggle.parentNode.classList.remove('page--selected');
       }
 
       self._setSelection(null);

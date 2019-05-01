@@ -1,5 +1,8 @@
 var HT = HT || {};
+console.log("AHOY AHOY pt analytics start");
 head.ready(function() {
+
+  console.log("AHOY AHOY pt analytics ready!");
 
   HT.analytics.getContentGroupData = function() {
     // cheat

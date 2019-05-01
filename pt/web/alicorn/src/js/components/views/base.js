@@ -14,13 +14,23 @@ export var Base = class {
 
   attachTo(element, cb) {
     this.container = element;
+    var t0 = performance.now();
     this.bindEvents();
+    var t1 = performance.now();
     this.render(cb);
+    var t2 = performance.now();
+    console.log(`BENCHMARK view.attachTo: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
   }
 
   render(cb) {
     var minWidth = this.minWidth();
     var scale = this.scale;
+
+    this.container.style.display = 'none';
+
+    var t0 = performance.now();
+    var fragment = document.createDocumentFragment();
+
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
 
       var page = document.createElement('div');
@@ -34,20 +44,36 @@ export var Base = class {
 
       page.style.height = `${h}px`;
       page.style.width = `${w}px`;
-      page.dataset.bestFit = ( scale <= 1 );
+      page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
+      if ( scale <= 1 ) {
+        page.classList.add('page--best-fit');
+      }
       page.style.setProperty('--width', page.style.width);
 
       page.classList.add('page');
       page.dataset.seq = seq;
       page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
       this._renderr(page);
-      this.container.appendChild(page);
+
+      fragment.appendChild(page);
     }
 
+    var t11 = performance.now();
+    console.log(`-- BENCHMARK render loop ${t11 - t0}`);
+
+    this.container.appendChild(fragment);
+    this.container.style.display = 'block';
+
+    var t1 = performance.now();
+
     var pages = this.container.querySelectorAll('.page');
+    var t2 = performance.now();
+
     for(var i = 0; i < pages.length; i++) {
       this.bindPageEvents(pages[i]);
     }
+    var t3 = performance.now();
+    console.log(`BENCHMARK base.render: ${t3 - t0} / ${t1 - t0} / ${t2 - t1} / ${t3 - t2} / ${t1 - t11}`);
 
     this.is_active = true;
     this.loadImage(this.container.querySelector('[data-seq="1"]'), { check_scroll: true });
@@ -70,6 +96,25 @@ export var Base = class {
 
     var bounds = this.container.getBoundingClientRect();
     var rect = page.getBoundingClientRect();
+
+    console.log(`AHOY resizePage ${page.dataset.seq} : ${canvas} : ${canvas.width} x ${canvas.height}`);
+
+    if ( canvas.height == 0 ) {
+      // punt? I guess?
+      var x = ( page.dataset.attempts || 1 ) - 0;
+      x += 1;
+      if ( x < 3 ) {
+        console.log(`--- AHOY ATTEMPTING resizePage ${page.dataset.seq} : ${x}`);
+        page.dataset.attempts = x;
+        setTimeout(function() {
+          this.resizePage(page);
+        }.bind(this), 0);
+        return;
+      } else {
+        console.log(`--- AHOY PUNTING resizePage ${page.dataset.seq} : ${x}`);
+        return;
+      }
+    }
 
     if ( canvas.height < parseInt(page.style.height, 10) ) {
       console.log("AHOY shrinking", page.dataset.seq, page.style.height, canvas.height);
@@ -98,6 +143,7 @@ export var Base = class {
 
     if ( page.querySelector('img') ) {
       // preloadImages(page);
+      console.log(`AHOY loadImage ${seq} PRELOADED`);
       return;
     }
 
@@ -117,8 +163,10 @@ export var Base = class {
     img.alt = `Page scan of sequence ${seq}`;
 
     page.dataset.loading = true;
+    page.classList.add('page--loading');
     img.addEventListener('load', function _imgHandler() {
       page.dataset.loading = false;
+      page.classList.remove('page--loading');
 
       this.emitter.emit('loaded', page);
 
@@ -132,11 +180,16 @@ export var Base = class {
 
 
       var imageAspectRatio = img.width / img.height;
-      img.style.width = page_width;
-      img.style.height = page_width / imageAspectRatio;
+      console.log(`AHOY LOAD ${seq} : ${img.width} x ${img.height} : ${page_width}`);
+      // img.style.width = `${page_width}px`;
+      // img.style.height = `${page_width / imageAspectRatio}px`;
+      img.width = `${page_width}`;
+      img.height = `${page_width / imageAspectRatio}`;
+      console.log(`AHOY LOAD ${seq} REDUX : ${img.width} x ${img.height} : ${img.style.width} x ${img.style.height} : ${page_width}`);
 
       page.appendChild(img);
       page.dataset.loaded = true;
+      page.classList.add('page--loaded');
 
       if ( html_request ) {
         html_request
@@ -149,7 +202,9 @@ export var Base = class {
           });
       }
 
-      if ( options.check_scroll || this.mode == 'thumbnail' ) { this.resizePage(page); }
+      if ( options.check_scroll || this.mode == 'thumbnail' ) {
+        this.resizePage(page); 
+      }
       img.removeEventListener('load', _imgHandler, true);
       if ( options.callback ) {
         options.callback(img);
@@ -188,7 +243,7 @@ export var Base = class {
     var page_text = page.querySelector('.page-text');
     page_text.innerHTML = '';
     page.dataset.preloaded = false;
-    page.dataset.loaded = false;
+    page.dataset.loaded = false; page.classList.remove('page--loaded');
   }
 
   preloadImages(page) {

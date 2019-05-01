@@ -12,6 +12,8 @@ export var PlainText = class extends Single {
   render(cb) {
     // var minWidth = this.minWidth();
     // var scale = this.scale;
+
+    var fragment = document.createDocumentFragment();
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
 
       var page = document.createElement('div');
@@ -19,14 +21,15 @@ export var PlainText = class extends Single {
 
       // page.style.height = `${h}px`;
       // page.style.width = `${w}px`;
-      page.dataset.bestFit = true;
+      page.dataset.bestFit = true; page.classList.add('page--best-fit');
 
       page.classList.add('page');
       page.dataset.seq = seq;
       page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
-      this.container.appendChild(page);
+      fragment.appendChild(page);
     }
 
+    this.container.appendChild(fragment);
     var pages = this.container.querySelectorAll('.page');
     for(var i = 0; i < pages.length; i++) {
       this.bindPageEvents(pages[i]);
@@ -58,7 +61,7 @@ export var PlainText = class extends Single {
     var html_request;
     html_request = fetch(html_url);
 
-    page.dataset.loading = true;
+    page.dataset.loading = true; page.classList.add('page--loading');
     html_request
       .then(function(response) {
         return response.text();
@@ -71,7 +74,7 @@ export var PlainText = class extends Single {
           page_text.innerHTML = `<div class="alert alert-block alert-info alert-headline"><p>NO TEXT ON PAGE</p></div><p>This page does not contain any text recoverable by the OCR engine.</p>`;
         }
 
-        page.dataset.loaded = true;
+        page.dataset.loaded = true; page.classList.add('page--loaded');
 
         if ( page_text.offsetHeight < page_text.scrollHeight ) {
           page.style.height = `${page_text.scrollHeight}px`;
@@ -115,7 +118,7 @@ export var PlainText = class extends Single {
     var page_text = page.querySelector('.page-text');
     page_text.innerHTML = '';
     page.dataset.preloaded = false;
-    page.dataset.loaded = false;
+    page.dataset.loaded = false; page.classList.remove('page--loaded');
   }
 
   bindEvents() {

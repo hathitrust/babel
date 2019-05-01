@@ -170,6 +170,7 @@
     <xsl:call-template name="toolbar-horizontal" />
     <div class="inner main">
       <section class="viewer">
+        <div class="viewer-loader"></div>
         <div class="viewer-inner"></div>
       </section>
       <xsl:call-template name="toolbar-vertical" />
@@ -189,7 +190,8 @@
         <button id="action-focus-current-page" aria-hidden="true" style="display: none" accesskey="9">Show Current Page</button>
       </form>
     </div>
-    <script type="text/javascript" src="/pt/alicorn/js/main.js"></script>
+    <!-- <script type="text/javascript" src="/pt/alicorn/js/main.js"></script> -->
+    <script type="text/javascript">head.load('/pt/alicorn/js/main.js')</script>
   </xsl:template>
 
   <xsl:template name="xxx-main">
