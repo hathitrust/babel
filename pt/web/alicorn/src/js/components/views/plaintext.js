@@ -7,6 +7,7 @@ export var PlainText = class extends Single {
   constructor(options={}) {
     super(options);
     this.mode = this.name = 'plaintext';
+    this.trackResize = false;
   }
 
   render(cb) {
@@ -123,7 +124,7 @@ export var PlainText = class extends Single {
 
   bindEvents() {
 
-    this._resizer = this.reader.on('resize', () => {
+    this._handlers.resize = this.reader.on('resize', () => {
       var loaded = this.container.querySelectorAll('[data-loaded="true"]');
       for(var i = 0; i < loaded.length; i++) {
         var page = loaded[i];
@@ -148,7 +149,7 @@ export var PlainText = class extends Single {
 
   destroy() {
     super.destroy();
-    this._resizer();
+    this._handlers.resize();
     // window.removeEventListener('resize', this._resizer);
   }
 

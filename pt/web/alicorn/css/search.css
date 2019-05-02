@@ -5,8 +5,8 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?dsjm9z");
-  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?dsjm9z#iefix") format("embedded-opentype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.ttf?dsjm9z") format("truetype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.woff?dsjm9z") format("woff"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.svg?dsjm9z#icomoon") format("svg");
+  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?oauh0b");
+  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?oauh0b#iefix") format("embedded-opentype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.ttf?oauh0b") format("truetype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.woff?oauh0b") format("woff"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.svg?oauh0b#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -25,68 +25,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icomoon-exclamation-triangle:before {
-  content: "";
+.icomoon-zoom_out:before {
+  content: "";
 }
 
-.icomoon-twitter2:before {
-  content: "";
+.icomoon-zoom_in:before {
+  content: "";
 }
 
-.icomoon-google-plus:before {
-  content: "";
+.icomoon-zoom-out:before {
+  content: "";
 }
 
-.icomoon-tumblr:before {
-  content: "";
-}
-
-.icomoon-vk:before {
-  content: "";
-}
-
-.icomoon-reddit:before {
-  content: "";
-}
-
-.icomoon-pinterest-p:before {
-  content: "";
-}
-
-.icomoon-warning:before {
-  content: "";
-}
-
-.icomoon-link:before {
-  content: "";
-}
-
-.icomoon-google:before {
-  content: "";
-}
-
-.icomoon-yahoo:before {
-  content: "";
-}
-
-.icomoon-windows8:before {
-  content: "";
-}
-
-.icomoon-linkedin:before {
-  content: "";
-}
-
-.icomoon-attachment:before {
-  content: "";
-}
-
-.icomoon-facebook2:before {
-  content: "";
-}
-
-.icomoon-search:before {
-  content: "";
+.icomoon-zoom-in:before {
+  content: "";
 }
 
 .icomoon-aol:before {
@@ -121,7 +73,7 @@
   content: "#";
 }
 
-.icomoon-documents:before {
+.icomoon-documents1:before {
   content: "$";
 }
 
@@ -279,6 +231,98 @@
 
 .icomoon-signup:before {
   content: "";
+}
+
+.icomoon-search-minus:before {
+  content: "";
+}
+
+.icomoon-search-plus:before {
+  content: "";
+}
+
+.icomoon-exclamation-triangle:before {
+  content: "";
+}
+
+.icomoon-twitter2:before {
+  content: "";
+}
+
+.icomoon-google-plus:before {
+  content: "";
+}
+
+.icomoon-tumblr:before {
+  content: "";
+}
+
+.icomoon-vk:before {
+  content: "";
+}
+
+.icomoon-reddit:before {
+  content: "";
+}
+
+.icomoon-pinterest-p:before {
+  content: "";
+}
+
+.icomoon-files-empty:before {
+  content: "";
+}
+
+.icomoon-files:before {
+  content: "";
+}
+
+.icomoon-documents:before {
+  content: "";
+}
+
+.icomoon-papers:before {
+  content: "";
+}
+
+.icomoon-pages:before {
+  content: "";
+}
+
+.icomoon-warning:before {
+  content: "";
+}
+
+.icomoon-link:before {
+  content: "";
+}
+
+.icomoon-google:before {
+  content: "";
+}
+
+.icomoon-yahoo:before {
+  content: "";
+}
+
+.icomoon-windows8:before {
+  content: "";
+}
+
+.icomoon-linkedin:before {
+  content: "";
+}
+
+.icomoon-attachment:before {
+  content: "";
+}
+
+.icomoon-facebook2:before {
+  content: "";
+}
+
+.icomoon-search:before {
+  content: "";
 }
 
 *, *::after, *::before {

@@ -8,6 +8,7 @@ export var Thumbnail = class extends Scroll {
     // this.scale = 0.25;
     this.scale = 1.0;
     this.embedHtml = false;
+    this.trackResize = false;
   }
 
   imageUrl(params) {

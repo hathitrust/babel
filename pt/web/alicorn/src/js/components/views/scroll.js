@@ -152,6 +152,7 @@ export var Scroll = class extends Base {
     });
 
     this._handlers.scrolled = this.on('scrolled', debounce(function() {
+      if ( this._scrollPause ) { return ; }
       var page = this.currentPage();
       if ( page != null && this.currentSeq != page.dataset.seq ) {
         var seq = page.dataset.seq;
@@ -187,7 +188,7 @@ export var Scroll = class extends Base {
   }
 
   focusHandler(event) {
-    super.focusHandler();
+    super.focusHandler(event);
     var target = event.target;
     if ( target.tagName.toLowerCase() == 'div' && target.classList.contains('page') ) {
       target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;

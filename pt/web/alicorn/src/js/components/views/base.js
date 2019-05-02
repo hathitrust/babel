@@ -10,6 +10,8 @@ export var Base = class {
     this.emitter = new NanoEvents();
     this._handlers = {};
     this.id = (new Date()).getTime();
+    this.pages = [];
+    this.trackResize = true;
   }
 
   attachTo(element, cb) {
@@ -26,7 +28,7 @@ export var Base = class {
     var minWidth = this.minWidth();
     var scale = this.scale;
 
-    this.container.style.display = 'none';
+    // this.container.style.display = 'none';
 
     var t0 = performance.now();
     var fragment = document.createDocumentFragment();
@@ -56,13 +58,14 @@ export var Base = class {
       this._renderr(page);
 
       fragment.appendChild(page);
+      this.pages.push(page);
     }
 
     var t11 = performance.now();
     console.log(`-- BENCHMARK render loop ${t11 - t0}`);
 
     this.container.appendChild(fragment);
-    this.container.style.display = 'block';
+    // this.container.style.display = 'block';
 
     var t1 = performance.now();
 
@@ -97,27 +100,25 @@ export var Base = class {
     var bounds = this.container.getBoundingClientRect();
     var rect = page.getBoundingClientRect();
 
-    console.log(`AHOY resizePage ${page.dataset.seq} : ${canvas} : ${canvas.width} x ${canvas.height}`);
-
     if ( canvas.height == 0 ) {
       // punt? I guess?
       var x = ( page.dataset.attempts || 1 ) - 0;
       x += 1;
       if ( x < 3 ) {
-        console.log(`--- AHOY ATTEMPTING resizePage ${page.dataset.seq} : ${x}`);
+        // console.log(`--- AHOY ATTEMPTING resizePage ${page.dataset.seq} : ${x}`);
         page.dataset.attempts = x;
         setTimeout(function() {
           this.resizePage(page);
         }.bind(this), 0);
         return;
       } else {
-        console.log(`--- AHOY PUNTING resizePage ${page.dataset.seq} : ${x}`);
+        // console.log(`--- AHOY PUNTING resizePage ${page.dataset.seq} : ${x}`);
         return;
       }
     }
 
     if ( canvas.height < parseInt(page.style.height, 10) ) {
-      console.log("AHOY shrinking", page.dataset.seq, page.style.height, canvas.height);
+      // console.log("AHOY shrinking", page.dataset.seq, page.style.height, canvas.height);
     }
     page.style.height = `${canvas.height}px`;
     page.style.setProperty('--width', `${canvas.width}px`);
@@ -143,7 +144,7 @@ export var Base = class {
 
     if ( page.querySelector('img') ) {
       // preloadImages(page);
-      console.log(`AHOY loadImage ${seq} PRELOADED`);
+      // console.log(`AHOY loadImage ${seq} PRELOADED`);
       return;
     }
 
@@ -180,12 +181,12 @@ export var Base = class {
 
 
       var imageAspectRatio = img.width / img.height;
-      console.log(`AHOY LOAD ${seq} : ${img.width} x ${img.height} : ${page_width}`);
+      // console.log(`AHOY LOAD ${seq} : ${img.width} x ${img.height} : ${page_width}`);
       // img.style.width = `${page_width}px`;
       // img.style.height = `${page_width / imageAspectRatio}px`;
       img.width = `${page_width}`;
       img.height = `${page_width / imageAspectRatio}`;
-      console.log(`AHOY LOAD ${seq} REDUX : ${img.width} x ${img.height} : ${img.style.width} x ${img.style.height} : ${page_width}`);
+      // console.log(`AHOY LOAD ${seq} REDUX : ${img.width} x ${img.height} : ${img.style.width} x ${img.style.height} : ${page_width}`);
 
       page.appendChild(img);
       page.dataset.loaded = true;
@@ -281,7 +282,9 @@ export var Base = class {
   }
 
   minWidth() {
-    return this.container.parentNode.offsetWidth * 0.80;
+    var minWidth = this.container.parentNode.offsetWidth * 0.80;
+    if ( minWidth < 680 ) { minWidth = 680; }
+    return minWidth;
   }
 
   on() {
@@ -306,6 +309,33 @@ export var Base = class {
   bindEvents() {
     this._handlers.focus = this.focusHandler.bind(this);
     this.container.addEventListener('focusin', this._handlers.focus);
+
+    if ( this.trackResize ) {
+      this._handlers.resize = this.reader.on('resize', () => {
+
+        this._scrollPause = true;
+        var minWidth = this.minWidth();
+        var scale = this.scale;
+        var currentSeq = this.currentLocation();
+        this.pages.forEach((page) => {
+          var seq = parseInt(page.dataset.seq, 10);
+          var meta = this.service.manifest.meta(seq);
+          var ratio = meta.height / meta.width;
+
+          var h = minWidth * ratio * scale;
+          var w = minWidth * scale;
+
+          page.style.height = `${h}px`;
+          page.style.width = `${w}px`;
+          page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
+          if ( scale <= 1 ) {
+            page.classList.add('page--best-fit');
+          }
+        })
+        this.display(currentSeq);
+        this._scrollPause = false;
+      })
+    }
   }
 
   bindPageEvents(page) {
@@ -347,6 +377,9 @@ export var Base = class {
     unbindAll(this.emitter);
     if ( this._handlers.focus ) {
       this.container.removeEventListener('focusin', this._handlers.focus);
+    }
+    if ( this._handlers.resize ) {
+      this._handlers.resize();
     }
   }
 

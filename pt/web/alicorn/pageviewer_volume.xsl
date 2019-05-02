@@ -169,7 +169,7 @@
     </h2>
     <xsl:call-template name="toolbar-horizontal" />
     <div class="inner main">
-      <section class="viewer">
+      <section class="viewer viewer--setup">
         <div class="viewer-loader"></div>
         <div class="viewer-inner"></div>
       </section>
@@ -266,8 +266,8 @@
 
   <xsl:template name="action-resize">
     <div class="btn-group btn-group-vertical action-zoom">
-      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In" aria-label="Zoom In" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-iconmonstr-magnifier-6-icon" style=""></i></button>
-      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out" aria-label="Zoom Out" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-iconmonstr-magnifier-7-icon" style=""></i></button>
+      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In" aria-label="Zoom In" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-in" style=""></i></button>
+      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out" aria-label="Zoom Out" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-out" style=""></i></button>
     </div>
   </xsl:template>
 
@@ -376,7 +376,7 @@
 
   <xsl:template name="action-selection-contents">
     <button type="button" class="btn dropdown-toggle square disabled" data-toggle="dropdown" aria-label="Jump to selected page" data-microtip-position="bottom" data-microtip-size="small" data-role="tooltip">
-      <i class="icomoon icomoon-attachment"></i><span class="caret"></span>
+      <i class="icomoon icomoon-papers"></i><span class="caret"></span>
       <span class="msg"></span>
     </button>
     <ul class="dropdown-menu scrollable-list selected-list"></ul>

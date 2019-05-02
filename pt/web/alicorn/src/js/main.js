@@ -62,15 +62,19 @@ var Reader = class {
     if ( cb === undefined ) {
       cb = function() {
         this.emit('ready', this.view.name);
+        $viewer.classList.remove('viewer--setup');
         this.view.display(params.seq || 1);
       }.bind(this);
     } else {
       var original_cb = cb;
       cb = function() {
         this.emit('ready', this.view.name);
+        $viewer.classList.remove('viewer--setup');
         original_cb();
       }.bind(this);
     }
+
+    $viewer.classList.add('viewer--setup');
 
     if ( params.view ) {
       $main.dataset.view = params.view; $main.classList.add(`view--${params.view}`);

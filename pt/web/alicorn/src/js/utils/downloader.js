@@ -411,7 +411,7 @@ head.ready(function() {
                 }
             }
             msg.push("<p><tt>shift + click</tt> to de/select the pages between this page and a previously selected page.");
-            msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"icomoon icomoon-attachment\" style=\"color: white; font-size: 14px;\" /></button>");
+            msg.push("<p>Pages you select will appear in the selection contents <button style=\"background-color: #666; border-color: #eee\" class=\"btn square\"><i class=\"icomoon icomoon-papers\" style=\"color: white; font-size: 14px;\" /></button>");
 
             msg = msg.join("\n");
 

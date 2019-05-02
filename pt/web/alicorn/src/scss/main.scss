@@ -137,6 +137,14 @@ main > .container {
     margin-top: 10px;
   }
 
+  #action-zoom-in, #action-zoom-out {
+    .icomoon {
+      font-size: 135%;
+      margin-left: -4px;
+      margin-top: -2px;
+    }
+  }
+
   .action-fullscreen {
     button {
       display: none;
@@ -373,6 +381,12 @@ section section {
     bottom: 0;
     right: 0;
     overflow: auto;
+
+    // &:empty::after {
+    //   display: block;
+    //   content: "";
+    //   @include loader12($size: 20px, $gap: 30px, $color: $hathitrust-orange-color, $align: middle);
+    // }
   }
 
   .viewer-loader {
@@ -382,11 +396,23 @@ section section {
     bottom: 0;
     right: 0;
     overflow: hidden;
+    display: none;
 
-    &::after {
+    &.viewer-loader {
+      &::after {
+        display: block;
+        content: "";
+        @include loader12($size: 20px, $gap: 30px, $color: $hathitrust-orange-color, $align: middle);
+      }
+    }
+  }
+
+  &.viewer.viewer--setup {
+    .viewer-inner {
+      display: none;
+    }
+    .viewer-loader {
       display: block;
-      content: "";
-      @include loader12($size: 20px, $gap: 30px, $color: $hathitrust-orange-color, $align: middle);
     }
   }
 
@@ -567,6 +593,7 @@ section.view--1up {
 
       img {
         width: 100%;
+        height: auto;
       }
 
     }
@@ -670,6 +697,20 @@ section.view--2up {
         height: 100%;
         width: 100%;
 
+        &.page--visible.page--selected::before {
+          right: auto;
+          left: 0;
+          border-width: 0 0 2rem 2rem;
+          border-width: 0 0 calc(var(--width) * 0.08) calc(var(--width) * 0.08);
+          border-color: rgb(239, 124, 34) #fff rgb(239,124,34) #fff;
+          border-color: rgba(239, 124, 34, 0.75) #fff rgba(239, 124, 34, 0.75) #fff;
+          border-radius: 0 0 5px 0px;
+        }
+
+        img {
+          right: 0;
+        }
+
         button.action-toggle-selection {
           right: auto;
           left: 0;
@@ -682,11 +723,16 @@ section.view--2up {
         // width: calc(var(--page-height) * var(--page-ratio));
         height: 100%;
         width: 100%;
+
+        img {
+          left: 0;
+        }
       }
 
       img {
         height: 100%;
-        width: 100%;
+        width: auto;
+        // position: absolute;
 
         &.foldout {
           height: auto;
