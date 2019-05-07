@@ -443,6 +443,11 @@ Construct the clause to a filter query (fq) informed by the
 authentication, institution and holdings environment. Construction
 varies:
 
+XXX tbw WARNING!!!   This code needs checking against any changes in rights policies for
+SSD, SSDPROXY NFB-ENHANCED... and rules about holdings and brittle books
+Is the following still true?
+Does the code do what the following says?
+
 There are two cases that turn on attr:3 (OP)
 
 1) The SSD user query only requires holdings because OP implies IC so
@@ -454,14 +459,21 @@ fq=((rights:1+OR+rights:7+OR+...)+OR+(ht_heldby:inst+AND+attr:3)+OR+(ht_heldby:i
 
 fq=((rights:1+OR+rights:7+OR+...)+OR+(ht_heldby_brlm:inst+AND+attr:3)+OR+(ht_heldby:inst+AND+attr:4))
 
+
+XXX Add nfb
+
+
 =cut
 
 # ---------------------------------------------------------------------
 
 # ---------------------------------------------------------------------
 sub __HELPER_get_Solr_fulltext_filter_query_arg {
+
     my $self = shift;
     my $C = shift;
+
+    my $fulltext_FQ_string;
     
     # These are the attrs, for this users authorization type
     # (e.g. SSD, HT affiliate, in-library), geo location and
@@ -471,41 +483,57 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
     # brittle, and qualifies accordingly.
     my $fulltext_attr_list_ref = Access::Rights::get_fulltext_attr_list($C);
 
-    # unqualified string = OR query clause for rights attributes that don't need to be combined with holdings
-    # holdings_qualified_attr_list = list of rights attr for this user/ip or other conditions that must be qualified by holdings
+        
+    # enhanced user access rights not affected by institution or holdings
+    my $access_type = Access::Rights::get_access_type_determination($C);
+    if ($access_type eq $RightsGlobals::ENHANCED_TEXT_USER)
+    {
+	$fulltext_FQ_string = 
+	'(rights:(' . join('+OR+', @{$fulltext_attr_list_ref} ) . '))';
+    }
+     else
+     {
+	#split rights attributes into those not needing holdings information = unqualified_string
+	# and holdings_qualified_string which specified combinations of rights and holdings
+	
+	# unqualified string = OR query clause for rights attributes that don't need to be combined with holdings
+	# holdings_qualified_attr_list = list of rights attr for this user/ip or other conditions that must be qualified by holdings
     
-    my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_holdings_qualified_attr_list_and_unqualified_string($fulltext_attr_list_ref);
+	my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_holdings_qualified_attr_list_and_unqualified_string($fulltext_attr_list_ref);
 
     
-    # Now qualify by holdings.  If there is no institution, there
-    # cannot be a clause qualified by institution holdings at all.
-    my $holdings_qualified_string;
-    my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
-    if ($inst)
-    {
-	$holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list, $inst);
-    }
-    my $fulltext_FQ_string;
-    
-    if ($holdings_qualified_string)
-    {
-     	$fulltext_FQ_string = '(' . $unqualified_string . '+OR+' . $holdings_qualified_string . ')';
-    }
-    else
-    {
-	$fulltext_FQ_string = '(' . $unqualified_string . ')';
+	# Now qualify by holdings.  If there is no institution, there
+	# cannot be a clause qualified by institution holdings at all.
+	my $holdings_qualified_string;
+	my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+	if ($inst)
+	{
+	    $holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list, $inst);
+	}
+
+	
+	if ($holdings_qualified_string)
+	{
+	    $fulltext_FQ_string = '(' . $unqualified_string . '+OR+' . $holdings_qualified_string . ')';
+	}
+	else
+	{
+	    $fulltext_FQ_string = '(' . $unqualified_string . ')';
+	}
     }
     
 
     #XXX todo  make same fix for string below and ternary operator
     
     #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
+
+    #XXX for now comment this out.  Rewrite it to take full_text_FQ_string as input
     
-    if ($self-> __now_in_date_range_new_years($C))
-    {
-	my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
-        $fulltext_FQ_string = '(' . $unqualified_string . ($holdings_qualified_string ? '+OR+' . $holdings_qualified_string : '') . '+OR+'. $new_years_pd_Q_string . ')';
-    }
+    # if ($self-> __now_in_date_range_new_years($C))
+    # {
+    # 	my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
+    #     $fulltext_FQ_string = '(' . $unqualified_string . ($holdings_qualified_string ? '+OR+' . $holdings_qualified_string : '') . '+OR+'. $new_years_pd_Q_string . ')';
+    # }
     
     return $fulltext_FQ_string;
 }
