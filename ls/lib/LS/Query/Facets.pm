@@ -403,6 +403,154 @@ sub get_Solr_query_string
 
     return $solr_query_string;
 }
+#====================
+# START REFACTOR tbw foobar
+# XXX copied from slip-lib/Search/Query   when done testing
+# remove and move refactored stuff there
+
+# ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+
+=item get_Solr_fulltext_filter_query
+
+Construct a full filter query (fq) informed by the
+authentication and holdings environment.
+tbw added code to add items from a specified collection to the full-text tab on January 1, 2019 (configurable) 
+
+=cut
+
+
+# ---------------------------------------------------------------------
+
+sub __get_Solr_fulltext_filter_query {
+    my $self = shift;
+    my $C = shift;
+    
+    my $full_fulltext_FQ_string = 'fq=' . $self->__HELPER_get_Solr_fulltext_filter_query_arg($C);
+
+    DEBUG('query', qq{<font color="blue">FQ: </font>$full_fulltext_FQ_string});
+    return $full_fulltext_FQ_string;
+}
+
+
+
+# ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+
+=item __HELPER_get_Solr_fulltext_filter_query_arg
+
+Construct the clause to a filter query (fq) informed by the
+authentication, institution and holdings environment. Construction
+varies:
+
+There are two cases that turn on attr:3 (OP)
+
+1) The SSD user query only requires holdings because OP implies IC so
+their query is e.g. 
+
+fq=((rights:1+OR+rights:7+OR+...)+OR+(ht_heldby:inst+AND+attr:3)+OR+(ht_heldby:inst+AND+attr:4))
+
+2) HT affiliates or in-library users require holdings AND brittle so their query is e.g.
+
+fq=((rights:1+OR+rights:7+OR+...)+OR+(ht_heldby_brlm:inst+AND+attr:3)+OR+(ht_heldby:inst+AND+attr:4))
+
+=cut
+
+# ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
+sub __HELPER_get_Solr_fulltext_filter_query_arg {
+    my $self = shift;
+    my $C = shift;
+    
+    # These are the attrs, for this users authorization type
+    # (e.g. SSD, HT affiliate, in-library), geo location and
+    # institution that equate to the 'allow' status, i.e. fulltext.
+    # This code takes into account whether the attr requires
+    # institution to hold the volumes, whether the holding have to be
+    # brittle, and qualifies accordingly.
+    my $fulltext_attr_list_ref = Access::Rights::get_fulltext_attr_list($C);
+
+    my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_unqualified_attr_list($fulltext_attr_list_ref);
+
+    
+    # Now qualify by holdings.  If there is no institution, there
+    # cannot be a clause qualified by institution holdings at all.
+    my $holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list);
+    
+    my $fulltext_FQ_string = '(' . $unqualified_string . ($holdings_qualified_string ? '+OR+' . $holdings_qualified_string : '') . ')';
+    #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
+    
+    if ($self-> __now_in_date_range_new_years($C))
+    {
+	my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
+        $fulltext_FQ_string = '(' . $unqualified_string . ($holdings_qualified_string ? '+OR+' . $holdings_qualified_string : '') . '+OR+'. $new_years_pd_Q_string . ')';
+    }
+    
+    return $fulltext_FQ_string;
+}
+#----------------------------------------------------------------------
+sub __get_unqualified_attr_list
+{
+    my $self = shift;
+    my $fulltext_attr_list_ref = shift;
+    my @unqualified_attr_list = @$fulltext_attr_list_ref;
+    my @holdings_qualified_attr_list = ();
+	
+    # Remove any attributes that must be qualified by holdings of the
+    # user's institution
+    foreach my $fulltext_attr (@$fulltext_attr_list_ref) {
+        if (grep(/^$fulltext_attr$/, @RightsGlobals::g_access_requires_holdings_attribute_values)) {
+            push(@holdings_qualified_attr_list, $fulltext_attr);
+            @unqualified_attr_list = grep(! /^$fulltext_attr$/, @unqualified_attr_list);
+        }
+    }
+    
+    my $unqualified_string = '';
+    if (scalar @unqualified_attr_list) {
+        $unqualified_string = 
+	'(rights:(' . join('+OR+', @unqualified_attr_list) . '))';
+    }
+    return( \@holdings_qualified_attr_list,  $unqualified_string)
+}
+
+#----------------------------------------------------------------------
+sub __get_holdings_qualified_string
+{
+    my $self = shift;
+    my $C    = shift;
+    my $holdings_qualified_attr_list = shift;
+    
+    my $holdings_qualified_string = '';
+    
+    # @OPB
+    my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+    if ($inst) {
+	my @qualified_OR_clauses = ();
+	my $access_type = Access::Rights::get_access_type_determination($C);
+	
+	foreach my $attr (@{$holdings_qualified_attr_list}) {
+	    if (($access_type ne $RightsGlobals::SSD_USER)
+		&&
+		($attr eq $RightsGlobals::g_access_requires_brittle_holdings_attribute_value)) {
+		push(@qualified_OR_clauses, qq{(ht_heldby_brlm:$inst+AND+rights:$attr)});
+	    }
+	    else {
+		push(@qualified_OR_clauses, qq{(ht_heldby:$inst+AND+rights:$attr)});
+	    }
+	}
+	$holdings_qualified_string = (scalar @qualified_OR_clauses) ? '(' . join('+OR+', @qualified_OR_clauses) . ')' : '';
+    }
+    return $holdings_qualified_string;
+}
+#----------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------
+
+
+# END REFACTOR tbw foobar
+#======================================================================
 #----------------------------------------------------------------------
 #
 #  If javascript does not remove the "All" value from facet_lang or facet_format
