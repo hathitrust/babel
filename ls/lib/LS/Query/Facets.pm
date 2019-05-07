@@ -471,14 +471,34 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
     # brittle, and qualifies accordingly.
     my $fulltext_attr_list_ref = Access::Rights::get_fulltext_attr_list($C);
 
-    my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_unqualified_attr_list($fulltext_attr_list_ref);
+    # unqualified string = OR query clause for rights attributes that don't need to be combined with holdings
+    # holdings_qualified_attr_list = list of rights attr for this user/ip or other conditions that must be qualified by holdings
+    
+    my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_holdings_qualified_attr_list_and_unqualified_string($fulltext_attr_list_ref);
 
     
     # Now qualify by holdings.  If there is no institution, there
     # cannot be a clause qualified by institution holdings at all.
-    my $holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list);
+    my $holdings_qualified_string;
+    my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+    if ($inst)
+    {
+	$holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list, $inst);
+    }
+    my $fulltext_FQ_string;
     
-    my $fulltext_FQ_string = '(' . $unqualified_string . ($holdings_qualified_string ? '+OR+' . $holdings_qualified_string : '') . ')';
+    if ($holdings_qualified_string)
+    {
+     	$fulltext_FQ_string = '(' . $unqualified_string . '+OR+' . $holdings_qualified_string . ')';
+    }
+    else
+    {
+	$fulltext_FQ_string = '(' . $unqualified_string . ')';
+    }
+    
+
+    #XXX todo  make same fix for string below and ternary operator
+    
     #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
     
     if ($self-> __now_in_date_range_new_years($C))
@@ -490,7 +510,7 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
     return $fulltext_FQ_string;
 }
 #----------------------------------------------------------------------
-sub __get_unqualified_attr_list
+sub __get_holdings_qualified_attr_list_and_unqualified_string
 {
     my $self = shift;
     my $fulltext_attr_list_ref = shift;
@@ -520,27 +540,27 @@ sub __get_holdings_qualified_string
     my $self = shift;
     my $C    = shift;
     my $holdings_qualified_attr_list = shift;
-    
+    my $inst = shift;
     my $holdings_qualified_string = '';
     
     # @OPB
-    my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
-    if ($inst) {
-	my @qualified_OR_clauses = ();
-	my $access_type = Access::Rights::get_access_type_determination($C);
+
+    my @qualified_OR_clauses = ();
+    my $access_type = Access::Rights::get_access_type_determination($C);
 	
-	foreach my $attr (@{$holdings_qualified_attr_list}) {
-	    if (($access_type ne $RightsGlobals::SSD_USER)
-		&&
-		($attr eq $RightsGlobals::g_access_requires_brittle_holdings_attribute_value)) {
-		push(@qualified_OR_clauses, qq{(ht_heldby_brlm:$inst+AND+rights:$attr)});
-	    }
-	    else {
-		push(@qualified_OR_clauses, qq{(ht_heldby:$inst+AND+rights:$attr)});
-	    }
+    foreach my $attr (@{$holdings_qualified_attr_list}) {
+	if (($access_type ne $RightsGlobals::SSD_USER)
+	    &&
+	    ($attr eq $RightsGlobals::g_access_requires_brittle_holdings_attribute_value)) {
+	    push(@qualified_OR_clauses, qq{(ht_heldby_brlm:$inst+AND+rights:$attr)});
 	}
-	$holdings_qualified_string = (scalar @qualified_OR_clauses) ? '(' . join('+OR+', @qualified_OR_clauses) . ')' : '';
+	else {
+	    push(@qualified_OR_clauses, qq{(ht_heldby:$inst+AND+rights:$attr)});
+	}
     }
+#FIXME
+    $holdings_qualified_string = (scalar @qualified_OR_clauses) ? '(' . join('+OR+', @qualified_OR_clauses) . ')' : '';
+    
     return $holdings_qualified_string;
 }
 #----------------------------------------------------------------------
