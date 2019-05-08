@@ -184,7 +184,7 @@
           </xsl:if>
         </input>
         <xsl:text> </xsl:text>
-        <div class="output">Page Scan <span data-slot="current-seq">1</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
+        <div class="output">Page Scan <span data-slot="current-seq">1</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span><span data-slot="current-page-number"></span></div>
         <xsl:text> </xsl:text>
         <button id="action-prompt-seq" aria-label="Go to location">Jump...</button>
         <button id="action-focus-current-page" aria-hidden="true" style="display: none" accesskey="9">Show Current Page</button>

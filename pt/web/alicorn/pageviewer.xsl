@@ -334,22 +334,24 @@
     <xsl:variable name="target">
       <xsl:call-template name="header-search-target" />
     </xsl:variable>
-    <div class="control control-q1">
-      <label for="q1-input" class="offscreen" >Search</label>
-      <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" required="required" pattern="^(?!\s*$).+">
-        <xsl:attribute name="value">
-          <xsl:call-template name="header-search-q1-value" />
-        </xsl:attribute>
-      </input>
-    </div>
-    <div class="control control-searchtype">
-      <xsl:if test="$target = 'ls'">
-        <xsl:attribute name="style">display: none;</xsl:attribute>
-      </xsl:if>
-      <label for="search-input-select" class="offscreen">Search Field List</label>
-      <select id="search-input-select" size="1" class="search-input-select" name="searchtype">
-        <xsl:call-template name="search-input-select-options" />
-      </select>
+    <div style="display: flex">
+      <div class="control control-q1">
+        <label for="q1-input" class="offscreen" >Search</label>
+        <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" required="required" pattern="^(?!\s*$).+">
+          <xsl:attribute name="value">
+            <xsl:call-template name="header-search-q1-value" />
+          </xsl:attribute>
+        </input>
+      </div>
+      <div class="control control-searchtype">
+        <xsl:if test="$target = 'ls'">
+          <xsl:attribute name="style">display: none;</xsl:attribute>
+        </xsl:if>
+        <label for="search-input-select" class="offscreen">Search Field List</label>
+        <select id="search-input-select" size="1" class="search-input-select" name="searchtype" style="font-size: 1rem">
+          <xsl:call-template name="search-input-select-options" />
+        </select>
+      </div>
     </div>
     <!-- <button class="button control control-search">Search</button> -->
   </xsl:template>

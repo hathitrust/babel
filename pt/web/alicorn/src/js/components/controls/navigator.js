@@ -20,23 +20,27 @@ export var Navigator = class {
     this.input.addEventListener('change', (event) => {
       this.output.classList.remove('updating');
       this.render('current-seq', this.input.value);
+      this._renderCurrentPage(this.input.value);
       this.emitter.emit('updateLocation', { seq: this.input.value });
     })
 
     this.input.addEventListener('input', (event) => {
       this.output.classList.add('updating');
       this.render('current-seq', this.input.value);
+      this._renderCurrentPage(this.input.value);
     })
 
     var pageNumRange = this.reader.service.manifest.pageNumRange();
+    this._hasPageNum = ( pageNumRange != null );
 
     var promptHTML = `
     <p>Jump to a page scan by <strong>page number</strong> or <strong>page scan sequence</strong>.</p>
     <p><label for="navigator-jump" class="offscreen">Page number or sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
     <h3>Hints</h3>
     <ul class="bullets">
-      <li>Page numbers are entered as <tt>p.<em>number</em></tt>, e.g. <strong><tt>p.10</tt></strong></li>
-      <li>Use a page scan sequence between 1-${this.reader.service.manifest.totalSeq}</li>
+      <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>
+      <li>Page scan sequences are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
+      <li>Use a page scan sequence between #1-#${this.reader.service.manifest.totalSeq}</li>
       <li>Use a page number between ${pageNumRange}</li>
       <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
       <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
@@ -49,7 +53,8 @@ export var Navigator = class {
           <p><label for="navigator-jump" class="offscreen">Page sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
           <h3>Hints</h3>
           <ul class="bullets">
-            <li>Use a page scan sequence between 1-${this.reader.service.manifest.totalSeq}</li>
+            <li>Page scan sequences are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
+            <li>Use a page scan sequence between #1-#${this.reader.service.manifest.totalSeq}</li>
             <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
             <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
           </ul>
@@ -94,6 +99,7 @@ export var Navigator = class {
 
     this.reader.on('relocated', (params) => {
       this.render('current-seq', params.seq);
+      this._renderCurrentPage(params.seq);
       this.input.value = params.seq;
       this.input.setAttribute('aria-valuenow', params.seq);
 
@@ -123,8 +129,11 @@ export var Navigator = class {
       seq = this.reader.service.manifest.seq(value.substr(2));
     } else if ( value.substr(0, 1) == 'p' ) {
       seq = this.reader.service.manifest.seq(value.substr(1));
+    } else if ( value.substr(0, 1) == '#' || value.substr(0, 1) == 'n' ) {
+      seq = parseInt(value.substr(1), 10);
     } else {
-      seq = parseInt(value, 10);
+      // seq = parseInt(value, 10);
+      seq = this.reader.service.manifest.seq(value);
     }
     if ( seq && seq >= 1 && seq <= this.reader.service.manifest.totalSeq ) {
       this.reader.display(seq);
@@ -134,5 +143,16 @@ export var Navigator = class {
   render(slot, value) {
     var span = this.output.querySelector(`[data-slot="${slot}"]`);
     span.innerText = value;
+  }
+
+  _renderCurrentPage(value) {
+    if ( this.reader.service.manifest.hasPageNum() ) {
+      var page_num = this.reader.service.manifest.pageNum(value);
+      if ( page_num ) {
+        this.render('current-page-number', ` (${page_num})`);
+      } else {
+        this.render('current-page-number', '');
+      }
+    }
   }
 }

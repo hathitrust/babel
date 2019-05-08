@@ -418,6 +418,7 @@ HT.mobify = function() {
   $('.sidebar-container').hide();
   $("#toolbar-vertical").hide();
   $("#toolbar-horizontal").hide();
+  reader.emit('resize');
 }
 
 var daInterval;

@@ -78,17 +78,21 @@ export var Manifest = class {
 
   pageNum(seq) {
     var value = this._seq2num[seq];
-    if ( value ) { value = `p.${value}`; }
-    return value;
+    if ( value ) { value = `p.${value}`; return value; }
+    return null;
   }
 
   pageNumRange() {
     if ( this._pageNum.first == null ) { return null; }
-    return `p.${this._pageNum.first}-p.${this._pageNum.last}`;
+    return `${this._pageNum.first}-${this._pageNum.last}`;
+  }
+
+  hasPageNum() {
+    return ! ( this._pageNum.first == null );
   }
 
   seq(pageNum) {
-    return this._num2seq[pageNum];
+    return this._num2seq[pageNum] || seq;
   }
 }
 

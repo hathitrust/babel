@@ -87,7 +87,7 @@
       <xsl:call-template name="msg-access-info" />
       <xsl:call-template name="build-search-summary" />
       <xsl:if test="$gPagesFound > 0">
-        <xsl:call-template name="build-fisheye-links" />
+        <!-- <xsl:call-template name="build-fisheye-links" /> -->
         <xsl:call-template name="build-results-list" />
         <xsl:call-template name="build-fisheye-links" />
       </xsl:if>
@@ -137,13 +137,13 @@
 
     <xsl:choose>
       <xsl:when test="$gSearchFatalError='true'">
-        <div class="alert alert-error alert-block alert-banner">
+        <div class="alert alert-error alert-block">
           <xsl:text>Sorry! There was a system error while conducting your search.  Please check back later.</xsl:text>
         </div>
       </xsl:when>
 
       <xsl:when test="$gPagesFound = 0">
-        <div class="alert alert-error alert-block alert-banner">
+        <div class="alert alert-error alert-block">
           <xsl:text>Your search for </xsl:text>
           <span class="mdpEmp">
             <xsl:value-of select="$vNatLangQuery"/>
@@ -324,7 +324,7 @@
   <!-- -->
   <xsl:template name="msgAccessInfo">
     <xsl:if test="$gFinalAccessStatus='deny' and $gPagesFound > 0">
-      <div class="alert alert-warning alert-block alert-banner">
+      <div class="alert alert-warning alert-block">
         <xsl:choose>
           <xsl:when test="$gRightsAttribute='26'">
             <xsl:text>Full view is not available for this item due to privacy concerns. Page numbers with matches are displayed but text snippets cannot be shown.</xsl:text>
@@ -504,7 +504,7 @@
       <xsl:choose>
         <xsl:when test="$gSearchFatalError='true'">
           <div class="mdpSearchSummary">
-            <div class="alert alert-error alert-block alert-banner">
+            <div class="alert alert-error alert-block">
               <xsl:text>Sorry! There was a system error while conducting your search.  Please check back later.</xsl:text>
             </div>
           </div>
@@ -512,7 +512,7 @@
 
         <xsl:when test="$gPagesFound = 0">
           <div class="mdpSearchSummary">
-            <div class="alert alert-error alert-block alert-banner">
+            <div class="alert alert-error alert-block">
               <xsl:text>Your search for </xsl:text>
               <span class="mdpEmp">
                 <xsl:value-of select="$vNatLangQuery"/>
@@ -520,7 +520,7 @@
               <xsl:text> did not match any pages in this item.</xsl:text>
             </div>
           <xsl:if test="$gSearchOp='OR'">
-            <div class="alert alert-warning alert-block alert-banner">
+            <div class="alert alert-warning alert-block">
               "Search in this text" can fail to find matching pages if you arrived at this item from a HathiTrust search that used bibliographic metadata terms <span class="mdpEmp"><em>about</em></span> the item that do not occur <span class="mdpEmp"><em>within</em></span> it. 
             </div>
           </xsl:if>
