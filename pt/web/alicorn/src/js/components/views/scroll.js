@@ -41,15 +41,20 @@ export var Scroll = class extends Base {
         // console.log("AHOY OBSERVING", entries.length, seq, 'onEnter', entry.intersectionRatio);
         if ( ! viewed ) {
           // console.log("AHOY OBSERVING", entries.length, seq, 'onEnter');
-          this.loadImage(div, { check_scroll: true });
+          this.loadImage(div, { check_scroll: true, callback: function(img) { div.dataset.visible = true; div.classList.add('page--visible'); } });
         } else if (  div.dataset.preloaded ) {
           div.dataset.preloaded = false;
           this.resizePage(div);
         }
         this.focus(div);
+        if ( div.dataset.visible != 'true' ) {
+          div.dataset.visible = true;
+          div.classList.add('page--visible');
+        }
       } else if ( viewed && ! div.dataset.preloaded ) {
         console.log("AHOY OBSERVING", entries.length, seq, 'onExit');
         this.unloadImage(div);
+        div.dataset.visible = false; div.classList.remove('page--visible');
         this.unfocus(div);
       }
     })

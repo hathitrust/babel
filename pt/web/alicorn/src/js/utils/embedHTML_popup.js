@@ -6,6 +6,7 @@ head.ready(function() {
     var htId = HT.params.id;
     var embedHelpLink = "https://www.hathitrust.org/embed";
 
+    var codeblock_txt;
     var codeblock_txt_a = function(w,h) {return '<iframe width="' + w + '" height="' + h + '" ';}
     var codeblock_txt_b = 'src="https://hdl.handle.net/2027/' + htId + '?urlappend=%3Bui=embed"></iframe>';
 
@@ -20,13 +21,13 @@ head.ready(function() {
         '    <textarea class="input-xlarge" id="codeblock" name="codeblock" rows="3">' +
         codeblock_txt_a(side_short, side_long) + codeblock_txt_b + '</textarea>' + 
         '<div class="controls">' + 
-            '<label class="radio inline">' +
-                '<input type="radio" name="view" id="view-scroll" value="0" checked="checked" >' +
-        '<span class="icomoon icomoon-scroll"/> Scroll View ' +
+            '<input type="radio" name="view" id="view-scroll" value="0" checked="checked" >' +
+            '<label class="radio inline" for="view-scroll">' +
+                '<span class="icomoon icomoon-scroll"/> Scroll View ' +
             '</label>' + 
-            '<label class="radio inline">' +
-                '<input type="radio" name="view" id="view-flip" value="1" >' +
-        '<span class="icomoon icomoon-book-alt2"/> Flip View ' +
+            '<input type="radio" name="view" id="view-flip" value="1" >' +
+            '<label class="radio inline" for="view-flip">' +
+                '<span class="icomoon icomoon-book-alt2"/> Flip View ' +
             '</label>' +
         '</div>' +
         '</form>' +

@@ -146,7 +146,7 @@ export var Navigator = class {
   }
 
   _renderCurrentPage(value) {
-    if ( this.reader.service.manifest.hasPageNum() ) {
+    if ( false && this.reader.service.manifest.hasPageNum() ) {
       var page_num = this.reader.service.manifest.pageNum(value);
       if ( page_num ) {
         this.render('current-page-number', ` (${page_num})`);

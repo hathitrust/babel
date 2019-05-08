@@ -66,7 +66,7 @@ HT.Downloader = {
             // '<div class="alert alert-block alert-success done hide">' +
             //     '<p>All done!</p>' +
             // '</div>' + 
-            `<div><p><a href="https://www.hathitrust.org/help_digital_library#Download" target="_blank">What's the deal with downloads?</a></p></div>`;
+            `<div><p><a href="https://www.hathitrust.org/help_digital_library#DownloadTime" target="_blank">What affects the download speed?</a></p></div>`;
 
         var header = 'Building your ' + self.item_title;
         var total = self.$link.data('total') || 0;
@@ -229,7 +229,7 @@ HT.Downloader = {
         }
 
         if ( self.$dialog.find(".initial").is(":visible") ) {
-            self.$dialog.find(".initial").html(`<p>Please wait while we build your ${self.item_title}...</p>`);
+            self.$dialog.find(".initial").html(`<p>Please wait while we build your ${self.item_title}.</p>`);
             self.$dialog.find(".progress").removeClass("hide");
         }
 
@@ -237,7 +237,8 @@ HT.Downloader = {
 
         if ( percent == 100 ) {
             self.$dialog.find(".progress").hide();
-            self.$dialog.find(".initial").html(`<p>All done! Your ${self.item_title} is ready for download. <span clsas="offscreen">Press return to download.</span></p>`);
+            var download_key = navigator.userAgent.indexOf('Mac OS X') != -1 ? 'RETURN' : 'ENTER';
+            self.$dialog.find(".initial").html(`<p>All done! Your ${self.item_title} is ready for download. <span class="offscreen">Select ${download_key} to download.</span></p>`);
             // self.$dialog.find(".done").show();
             var $download_btn = self.$dialog.find('.download-pdf');
             if ( ! $download_btn.length ) {
@@ -258,7 +259,7 @@ HT.Downloader = {
             // HT.update_status(`Your ${self.item_title} is ready for download. Press return to download.`);
             // still could cancel
         } else {
-            self.$dialog.find(".initial").text(`Please wait while we build your ${self.item_title} (${Math.ceil(percent)}% completed)...`);
+            self.$dialog.find(".initial").text(`Please wait while we build your ${self.item_title} (${Math.ceil(percent)}% completed).`);
             // HT.update_status(`${Math.ceil(percent)}% of the ${self.item_title} has been built.`);
         }
 
