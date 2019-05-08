@@ -5,8 +5,8 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?oauh0b");
-  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?oauh0b#iefix") format("embedded-opentype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.ttf?oauh0b") format("truetype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.woff?oauh0b") format("woff"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.svg?oauh0b#icomoon") format("svg");
+  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?x0anx2");
+  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?x0anx2#iefix") format("embedded-opentype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.ttf?x0anx2") format("truetype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.woff?x0anx2") format("woff"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.svg?x0anx2#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -267,6 +267,30 @@
 
 .icomoon-pinterest-p:before {
   content: "";
+}
+
+.icomoon-copy:before {
+  content: "";
+}
+
+.icomoon-duplicate:before {
+  content: "";
+}
+
+.icomoon-files1:before {
+  content: "";
+}
+
+.icomoon-pages1:before {
+  content: "";
+}
+
+.icomoon-papers1:before {
+  content: "";
+}
+
+.icomoon-documents2:before {
+  content: "";
 }
 
 .icomoon-files-empty:before {
@@ -2408,13 +2432,13 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u10ed544a 1s linear alternate infinite;
-          animation: loader12-u10ed544a 1s linear alternate infinite;
+  -webkit-animation: loader12-u92ff293f 1s linear alternate infinite;
+          animation: loader12-u92ff293f 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u10ed544a {
+@-webkit-keyframes loader12-u92ff293f {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2437,7 +2461,7 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
-@keyframes loader12-u10ed544a {
+@keyframes loader12-u92ff293f {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2490,13 +2514,13 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u6b70a9cb 1s linear alternate infinite;
-          animation: loader12-u6b70a9cb 1s linear alternate infinite;
+  -webkit-animation: loader12-u354322dc 1s linear alternate infinite;
+          animation: loader12-u354322dc 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u6b70a9cb {
+@-webkit-keyframes loader12-u354322dc {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2519,7 +2543,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
-@keyframes loader12-u6b70a9cb {
+@keyframes loader12-u354322dc {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2550,33 +2574,13 @@ section section .page.page--loading:not(.page--loaded)::after {
   top: 90%;
 }
 
-section section .page.page--visible.page--selected::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  border-width: 0 2rem 2rem 0;
-  border-width: 0 calc(var(--width) * 0.08) calc(var(--width) * 0.08) 0;
-  border-style: solid;
-  /*border-color: #658E15 #fff;*/
-  border-color: #fff #fff #ef7c22 #ef7c22;
-  /* A bit more verbose to work with .rounded too */
-  background: #ef7c22;
-  /* For when also applying a border-radius */
-  border-color: #fff #fff rgba(239, 124, 34, 0.75) rgba(239, 124, 34, 0.75);
-  background: rgba(239, 124, 34, 0.75);
-  border-radius: 0 0 0 5px;
-  display: block;
-  width: 0;
-}
-
 section section .page.page--loaded .info {
   display: none;
 }
 
 section section .page.page--selected img {
   padding: 2% !important;
-  background: rgba(239, 124, 34, 0.7) !important;
+  background: rgba(239, 124, 34, 0.45) !important;
 }
 
 section section .page .info {
@@ -2640,6 +2644,7 @@ section section .page button.action-toggle-selection {
   background: transparent 0 0 repeat scroll url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
   border: none;
   cursor: pointer;
+  border: 2px dotted transparent;
   display: none;
 }
 
@@ -2647,12 +2652,29 @@ section section .page button.action-toggle-selection:focus, section section .pag
   border: 2px dotted #666;
 }
 
-section section .page button.action-toggle-selection[aria-pressed="true"] {
-  -webkit-filter: invert(1);
-          filter: invert(1);
+section section .page button.action-toggle-selection > span {
+  color: rgba(239, 124, 34, 0.75);
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: none;
+  content: "";
+  border-width: 0 4rem 4rem 0;
+  border-style: solid;
+  /* border-color: #658E15 #fff; */
+  border-color: #fff #fff #ef7c22 #ef7c22;
+  background: #ef7c22;
+  border-color: #fff #fff rgba(239, 124, 34, 0.75) rgba(239, 124, 34, 0.75);
+  background: rgba(239, 124, 34, 0.75);
+  border-radius: 0 0 0 5px;
+  width: 0;
 }
 
 section section .page.page--loaded button.action-toggle-selection, section section .page.page--loading button.action-toggle-selection {
+  display: block;
+}
+
+section section .page.page--visible.page--selected button.action-toggle-selection span {
   display: block;
 }
 
@@ -2760,16 +2782,6 @@ section.view--2up section .page.verso {
   width: 100%;
 }
 
-section.view--2up section .page.verso.page--visible.page--selected::before {
-  right: auto;
-  left: 0;
-  border-width: 0 0 2rem 2rem;
-  border-width: 0 0 calc(var(--width) * 0.08) calc(var(--width) * 0.08);
-  border-color: #ef7c22 #fff #ef7c22 #fff;
-  border-color: rgba(239, 124, 34, 0.75) #fff rgba(239, 124, 34, 0.75) #fff;
-  border-radius: 0 0 5px 0px;
-}
-
 section.view--2up section .page.verso img {
   right: 0;
 }
@@ -2777,6 +2789,15 @@ section.view--2up section .page.verso img {
 section.view--2up section .page.verso button.action-toggle-selection {
   right: auto;
   left: 0;
+}
+
+section.view--2up section .page.verso button.action-toggle-selection > span {
+  right: auto;
+  left: -2px;
+  border-width: 0 0 4rem 4rem;
+  border-color: #ef7c22 #fff #ef7c22 #fff;
+  border-color: rgba(239, 124, 34, 0.75) #fff rgba(239, 124, 34, 0.75) #fff;
+  border-radius: 0 0 5px 0px;
 }
 
 section.view--2up section .page.recto {
@@ -2790,7 +2811,7 @@ section.view--2up section .page.recto img {
 
 section.view--2up section .page img {
   height: 100%;
-  width: auto;
+  max-width: 100%;
 }
 
 section.view--2up section .page img.foldout {
@@ -2860,14 +2881,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ud2c4e220 1s linear alternate infinite;
-          animation: loader12-ud2c4e220 1s linear alternate infinite;
+  -webkit-animation: loader12-u3d50528c 1s linear alternate infinite;
+          animation: loader12-u3d50528c 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-ud2c4e220 {
+@-webkit-keyframes loader12-u3d50528c {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -2890,7 +2911,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
-@keyframes loader12-ud2c4e220 {
+@keyframes loader12-u3d50528c {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);

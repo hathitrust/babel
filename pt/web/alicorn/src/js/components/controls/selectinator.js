@@ -92,6 +92,11 @@ export var Selectinator = class {
       button.setAttribute('data-microtip-position', 'bottom');
       button.setAttribute('data-microtip-size', 'small');
       button.setAttribute('tabindex', '-1');
+
+      var span = document.createElement('span');
+      span.setAttribute('aria-hidden', 'true');
+      button.appendChild(span);
+
       page.dataset.selected = button.getAttribute('aria-pressed'); page.classList.toggle('page--selected', button.getAttribute('aria-pressed') == 'true');
       page.appendChild(button);
     }

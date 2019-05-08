@@ -379,7 +379,7 @@
 
   <xsl:template name="action-selection-contents">
     <button type="button" class="btn dropdown-toggle square disabled" data-toggle="dropdown" aria-label="Jump to selected page" data-microtip-position="bottom" data-microtip-size="small" data-role="tooltip">
-      <i class="icomoon icomoon-papers"></i><span class="caret"></span>
+      <i class="icomoon icomoon-copy"></i><span class="caret"></span>
       <span class="msg"></span>
     </button>
     <ul class="dropdown-menu scrollable-list selected-list"></ul>

@@ -5,8 +5,8 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?oauh0b");
-  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?oauh0b#iefix") format("embedded-opentype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.ttf?oauh0b") format("truetype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.woff?oauh0b") format("woff"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.svg?oauh0b#icomoon") format("svg");
+  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?x0anx2");
+  src: url("/common/unicorn/vendor/icomoon/fonts/icomoon.eot?x0anx2#iefix") format("embedded-opentype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.ttf?x0anx2") format("truetype"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.woff?x0anx2") format("woff"), url("/common/unicorn/vendor/icomoon/fonts/icomoon.svg?x0anx2#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -267,6 +267,30 @@
 
 .icomoon-pinterest-p:before {
   content: "";
+}
+
+.icomoon-copy:before {
+  content: "";
+}
+
+.icomoon-duplicate:before {
+  content: "";
+}
+
+.icomoon-files1:before {
+  content: "";
+}
+
+.icomoon-pages1:before {
+  content: "";
+}
+
+.icomoon-papers1:before {
+  content: "";
+}
+
+.icomoon-documents2:before {
+  content: "";
 }
 
 .icomoon-files-empty:before {
