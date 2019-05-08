@@ -403,15 +403,19 @@ sub get_Solr_query_string
 
     return $solr_query_string;
 }
-#====================
-# START REFACTOR tbw foobar
-# XXX copied from slip-lib/Search/Query   when done testing
-# remove and move refactored stuff there
 
-# ---------------------------------------------------------------------
+
+#======================================================================
+# Start REFACTOR tbw foobar
 # ---------------------------------------------------------------------
 
 =item get_Solr_fulltext_filter_query
+
+# XXX copied from slip-lib/Search/Query to override.  
+# XXX TODO: Check all users of slip-lib/SearchQuery::get_Solr_fulltext_filter_query
+# And if there are no other users remove this and    __HELPER_get_Solr_fulltext_filter_query_arg($C);
+# From base class
+# If there are other users, then replace base class routines with these and test
 
 Construct a full filter query (fq) informed by the
 authentication and holdings environment.
@@ -431,19 +435,16 @@ sub __get_Solr_fulltext_filter_query {
     DEBUG('query', qq{<font color="blue">FQ: </font>$full_fulltext_FQ_string});
     return $full_fulltext_FQ_string;
 }
-
-
-
-# ---------------------------------------------------------------------
 # ---------------------------------------------------------------------
 
 =item __HELPER_get_Solr_fulltext_filter_query_arg
 
+#XXX See note above re: base class and removing this and sub above from base class
 Construct the clause to a filter query (fq) informed by the
 authentication, institution and holdings environment. Construction
 varies:
 
-XXX tbw WARNING!!!   This code needs checking against any changes in rights policies for
+XXX tbw WARNING!!!   This code and comments need checking against any changes in rights policies for
 SSD, SSDPROXY NFB-ENHANCED... and rules about holdings and brittle books
 Is the following still true?
 Does the code do what the following says?
@@ -460,12 +461,8 @@ fq=((rights:1+OR+rights:7+OR+...)+OR+(ht_heldby:inst+AND+attr:3)+OR+(ht_heldby:i
 fq=((rights:1+OR+rights:7+OR+...)+OR+(ht_heldby_brlm:inst+AND+attr:3)+OR+(ht_heldby:inst+AND+attr:4))
 
 
-XXX Add nfb
-
 
 =cut
-
-# ---------------------------------------------------------------------
 
 # ---------------------------------------------------------------------
 sub __HELPER_get_Solr_fulltext_filter_query_arg {
@@ -474,15 +471,16 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
     my $C = shift;
 
     my $fulltext_FQ_string;
-    
+
+    #XXX TODO  check that the statement below and the code comply with current rights rules
     # These are the attrs, for this users authorization type
     # (e.g. SSD, HT affiliate, in-library), geo location and
     # institution that equate to the 'allow' status, i.e. fulltext.
     # This code takes into account whether the attr requires
     # institution to hold the volumes, whether the holding have to be
     # brittle, and qualifies accordingly.
-    my $fulltext_attr_list_ref = Access::Rights::get_fulltext_attr_list($C);
 
+    my $fulltext_attr_list_ref = Access::Rights::get_fulltext_attr_list($C);
         
     # enhanced user access rights not affected by institution or holdings
     my $access_type = Access::Rights::get_access_type_determination($C);
@@ -491,8 +489,8 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
 	$fulltext_FQ_string = 
 	'(rights:(' . join('+OR+', @{$fulltext_attr_list_ref} ) . '))';
     }
-     else
-     {
+    else
+    {
 	#split rights attributes into those not needing holdings information = unqualified_string
 	# and holdings_qualified_string which specified combinations of rights and holdings
 	
@@ -501,8 +499,7 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
     
 	my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_holdings_qualified_attr_list_and_unqualified_string($fulltext_attr_list_ref);
 
-    
-	# Now qualify by holdings.  If there is no institution, there
+    	# Now qualify by holdings.  If there is no institution, there
 	# cannot be a clause qualified by institution holdings at all.
 	my $holdings_qualified_string;
 	my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
@@ -510,7 +507,6 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
 	{
 	    $holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list, $inst);
 	}
-
 	
 	if ($holdings_qualified_string)
 	{
@@ -522,18 +518,14 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
 	}
     }
     
-
-    #XXX todo  make same fix for string below and ternary operator
-    
-    #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
-
-    #XXX for now comment this out.  Rewrite it to take full_text_FQ_string as input
-    
-    # if ($self-> __now_in_date_range_new_years($C))
-    # {
-    # 	my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
-    #     $fulltext_FQ_string = '(' . $unqualified_string . ($holdings_qualified_string ? '+OR+' . $holdings_qualified_string : '') . '+OR+'. $new_years_pd_Q_string . ')';
-    # }
+        #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
+    if ($self-> __now_in_date_range_new_years($C))
+    {
+    	my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
+	# remove closing paren from  $fulltext_FQ_string
+	$fulltext_FQ_string =~s/\)$//;
+	$fulltext_FQ_string = $fulltext_FQ_string . '+OR+'. $new_years_pd_Q_string . ')';
+    }
     
     return $fulltext_FQ_string;
 }
@@ -569,7 +561,6 @@ sub __get_holdings_qualified_string
     my $C    = shift;
     my $holdings_qualified_attr_list = shift;
     my $inst = shift;
-    my $holdings_qualified_string = '';
     
     # @OPB
 
@@ -586,17 +577,16 @@ sub __get_holdings_qualified_string
 	    push(@qualified_OR_clauses, qq{(ht_heldby:$inst+AND+rights:$attr)});
 	}
     }
-#FIXME
-    $holdings_qualified_string = (scalar @qualified_OR_clauses) ? '(' . join('+OR+', @qualified_OR_clauses) . ')' : '';
+
+    my $holdings_qualified_string = '';
+    if (scalar @qualified_OR_clauses > 0)
+    {
+	$holdings_qualified_string = '(' . join('+OR+', @qualified_OR_clauses) . ')';
+    }
     
     return $holdings_qualified_string;
 }
 #----------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------
-
-
 # END REFACTOR tbw foobar
 #======================================================================
 #----------------------------------------------------------------------
