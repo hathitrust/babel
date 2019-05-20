@@ -89,6 +89,11 @@ if ( $target eq 'ls' ) {
 
 }
 
+my @filters = $cgi->param('filter[]');
+if ( scalar @filters ) {
+    $dest_cgi->param('filter[]', @filters);
+}
+
 my $dest_url = $dest_cgi->url(-full=>1, -query=>1);
 $dest_url =~ s,$base,$dest_base,;
 if ( $target eq 'catalog' ) {

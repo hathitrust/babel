@@ -99,6 +99,7 @@
     <link rel="stylesheet" type="text/css" href="/ls/css/ls.css"/>
     <xsl:call-template name="include_local_javascript"/>
     <xsl:call-template name="load_js_and_css"/>
+    <script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.js"></script>
   </xsl:template>
   <!--  pass params from basic search on to advanced search-->
 
@@ -161,6 +162,22 @@
       </div>
     </xsl:if>
     <xsl:call-template name="list-items-results"/>
+    <script>
+      // .mbContentContainer
+      // .facetlist
+      var pjax1 = new Pjax({
+        selectors: [
+          "#mbContentContainer",
+          "#facetlist",
+        ],
+        elements: [ "#facetlist a[href]", ".query-summary a[href]" ]
+      })
+
+      var pjax2 = new Pjax({
+        selectors: [ '#mbContentContainer' ],
+        elements: [ '.pagingNav a[href]' ]
+      });
+    </script>
   </xsl:template>
 
   <xsl:template name="sidebar">
