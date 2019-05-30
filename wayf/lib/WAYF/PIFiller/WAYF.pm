@@ -75,7 +75,7 @@ sub handle_FRIEND_LOGIN_LINK
     $target = Utils::url_over_SSL_to($target);
     $target = uri_escape($target);
 
-    return qq{https://$ENV{HTTP_HOST}/Shibboleth.sso/umich?target=$target};
+    return qq{https://$ENV{HTTP_HOST}/Shibboleth.sso/Login?entityID=https://shibboleth.umich.edu/idp/shibboleth&amp;target=$target};
 }
 
 # ---------------------------------------------------------------------
