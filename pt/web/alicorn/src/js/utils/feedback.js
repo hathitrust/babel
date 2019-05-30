@@ -15,7 +15,7 @@ HT.feedback.dialog = function() {
         '        <div class="alert alert-help">Select one option that applies</div>' +
         '        <div class="control">' +
         '            <input type="radio" name="Quality" id="pt-feedback-quality-1" value="readable" />' +
-        '            <label class="radio" for="pt-feedback-quality" >' +
+        '            <label class="radio" for="pt-feedback-quality-1" >' +
         '                Few problems, entire page is readable' +
         '            </label>' +
         '        </div>' +
@@ -43,19 +43,19 @@ HT.feedback.dialog = function() {
         '        <div class="alert alert-help">Select any that apply</div>' +
         '        <div class="control">' +
         '            <input type="checkbox" name="blurry" value="1" id="pt-feedback-problems-1" />' +
-        '            <label class="checkbox" for="pt-feedback-problems-1">' +
+        '            <label for="pt-feedback-problems-1">' +
         '                Missing parts of the page' +
         '            </label>' +
         '        </div>' +
         '        <div class="control">' +
         '            <input type="checkbox" name="blurry" value="1" id="pt-feedback-problems-2"  />' +
-        '            <label class="checkbox" for="pt-feedback-problems-2">' +
+        '            <label for="pt-feedback-problems-2">' +
         '                Blurry text' +
         '            </label>' +
         '        </div>' +
         '        <div class="control">' +
         '            <input type="checkbox" name="curved" value="1" id="pt-feedback-problems-3"  />' +
-        '            <label class="checkbox" for="pt-feedback-problems-3">' +
+        '            <label for="pt-feedback-problems-3">' +
         '                Curved or distorted text' +
         '            </label>' +
         '        </div>' +
@@ -71,19 +71,19 @@ HT.feedback.dialog = function() {
         '        <div class="alert alert-help">Select one option that applies</div>' +
         '        <div class="control">' +
         '            <input type="radio" name="Rights" value="noaccess" id="pt-feedback-access-1" />' +
-        '            <label class="radio" for="pt-feedback-access-1">' +
+        '            <label for="pt-feedback-access-1">' +
         '                This item is in the public domain, but I don\'t have access to it.' +
         '            </label>' +
         '        </div>' +
         '        <div class="control">' +
         '            <input type="radio" name="Rights" value="access" id="pt-feedback-access-2" />' +
-        '            <label class="radio" for="pt-feedback-access-2">' +
+        '            <label for="pt-feedback-access-2">' +
         '                    I have access to this item, but should not.' +
         '            </label>' +
         '        </div>' +
         '        <div class="control">' +
         '            <input type="radio" name="Rights" value="none" checked="checked" id="pt-feedback-access-3" />' +
-        '            <label class="radio" for="pt-feedback-access-3">' +
+        '            <label for="pt-feedback-access-3">' +
         '                (No problems)' +
         '            </label>' +
         '        </div>' +

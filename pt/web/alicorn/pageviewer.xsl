@@ -29,7 +29,7 @@
 
   <xsl:variable name="gIsCRMS">
     <xsl:choose>
-      <xsl:when test="contains(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug'], 'crms')">true</xsl:when>
+      <xsl:when test="contains(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='skin'], 'crms')">true</xsl:when>
       <xsl:otherwise>false</xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -145,6 +145,8 @@
       HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
       HT.params.RecordURL = '<xsl:value-of select="concat('https://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
     </script>
+
+    <script type="text/javascript" src="/pt/alicorn/js/utils.js"></script>
 
     <!-- <xsl:call-template name="load_js_and_css"/> -->
     <xsl:call-template name="include_local_javascript" />
@@ -265,7 +267,7 @@
 
   <xsl:template name="li-search-action">
     <li>
-      <button class="btn btn-primary" id="action-search-hathitrust">Search HathiTrust <i class="icomoon icomoon-search" aria-hidden="true"></i></button>
+      <button class="btn btn-primary" id="action-search-hathitrust"><i class="icomoon icomoon-search" aria-hidden="true"></i> Search HathiTrust</button>
     </li>
   </xsl:template>
 
@@ -289,7 +291,7 @@
         <li><a id="logout-link" href="{//Header/LoginLink}">Logout</a></li>
       </xsl:when>
       <xsl:otherwise>
-        <li><a id="login-link" class="trigger-login action-login" data-close-target=".modal.login" href="{//Header/LoginLink}">Login</a></li>
+        <li><a id="login-link" class="trigger-login action-login" data-close-target=".modal.login" href="{//Header/LoginLink}">Log in</a></li>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -433,7 +435,7 @@
     </ul>
   </xsl:template>
 
-  <xsl:template name="contents">
+  <xsl:template name="build-main-container">
     <main class="main-container" id="main">
       <div class="container flex-container container-boxed container-full">
         <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>

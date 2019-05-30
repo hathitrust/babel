@@ -195,7 +195,10 @@
     </div>
     <!-- <script type="text/javascript" src="/pt/alicorn/js/main.js"></script> -->
     <script type="text/javascript">head.load('/pt/alicorn/js/main.js')</script>
+    <xsl:call-template name="load-extra-main-script" />
   </xsl:template>
+
+  <xsl:template name="load-extra-main-script" />
 
   <xsl:template name="xxx-main">
     <xsl:call-template name="toolbar-horizontal" />

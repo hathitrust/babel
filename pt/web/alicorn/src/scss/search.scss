@@ -1,11 +1,7 @@
 @import "variables";
-@import "../../../common/web/unicorn/vendor/icomoon/style.scss";
-@import "reset";
+// @import "../../../common/web/unicorn/vendor/icomoon/style.scss";
 @import 'microtip/microtip';
-@import 'alerts';
-@import 'skiplinks';
 @import "nav";
-@import "form";
 @import "sidebar";
 
 main.main-container {

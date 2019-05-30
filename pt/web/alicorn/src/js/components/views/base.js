@@ -120,8 +120,15 @@ export var Base = class {
     if ( canvas.height < parseInt(page.style.height, 10) ) {
       // console.log("AHOY shrinking", page.dataset.seq, page.style.height, canvas.height);
     }
-    page.style.height = `${canvas.height}px`;
-    page.style.setProperty('--width', `${canvas.width}px`);
+
+    var pageHeight = canvas.height;
+    // var pageHeight = canvas.naturalHeight;
+    // if ( canvas.naturalHeight < canvas.naturalWidth ) {
+    //   pageHeight = canvas.height;
+    // }
+
+    page.style.height = `${pageHeight}px`;
+    // page.style.setProperty('--width', `${canvas.naturalWidth}px`);
     
     var updated_rect = page.getBoundingClientRect();
     var scrollTop = this.container.scrollTop;
@@ -184,8 +191,10 @@ export var Base = class {
       // console.log(`AHOY LOAD ${seq} : ${img.width} x ${img.height} : ${page_width}`);
       // img.style.width = `${page_width}px`;
       // img.style.height = `${page_width / imageAspectRatio}px`;
+
       img.width = `${page_width}`;
       img.height = `${page_width / imageAspectRatio}`;
+
       // console.log(`AHOY LOAD ${seq} REDUX : ${img.width} x ${img.height} : ${img.style.width} x ${img.style.height} : ${page_width}`);
 
       page.appendChild(img);
@@ -311,6 +320,13 @@ export var Base = class {
     this.container.addEventListener('focusin', this._handlers.focus);
 
     if ( this.trackResize ) {
+
+      this.reader.on('redraw', (params) => {
+        console.log("AHOY PARAMS", params);
+        this.scale = params.scale;
+        this.reader.emit('resize');
+      });
+
       this._handlers.resize = this.reader.on('resize', () => {
 
         this._scrollPause = true;
@@ -350,6 +366,10 @@ export var Base = class {
 
   focus(page, invoke=false) {
     // page.setAttribute('accesskey', "9");
+    if ( page === true || page === false ) {
+      invoke = page;
+      page = null;
+    }
     if ( ! page ) {
       page = this.currentPage();
     }

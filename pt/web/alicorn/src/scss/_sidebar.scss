@@ -1,97 +1,97 @@
-.sidebar-container {
+// .sidebar-container {
 
-  display: flex;
-  flex-direction: column;
-  // height: 100%;
-  // overflow: hidden;
+//   display: flex;
+//   flex-direction: column;
+//   // height: 100%;
+//   // overflow: hidden;
 
-  margin-top: 1.5rem;
-  min-width: 18rem;
+//   margin-top: 1.5rem;
+//   min-width: 18rem;
 
-  #mdpBackToResults {
-    padding: 1rem 1rem 0.5rem;
-    width: 95%;
-    margin: 0 auto;
-  }
+//   #mdpBackToResults {
+//     padding: 1rem 1rem 0.5rem;
+//     width: 95%;
+//     margin: 0 auto;
+//   }
 
-  .panel {
-    padding: 1rem;
-    margin: 0 auto;
-    width: 95%;
+//   .panel {
+//     padding: 1rem;
+//     margin: 0 auto;
+//     width: 95%;
 
-    &.bibLinks {
-      padding-top: 0;
-      // height: 100%;
-    }
+//     &.bibLinks {
+//       padding-top: 0;
+//       // height: 100%;
+//     }
 
-    h2, h3 {
-      font-size: 110%;
-      font-weight: bold;
-      margin-bottom: 0.75rem;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 0.5rem;
-    }
+//     h2, h3 {
+//       font-size: 110%;
+//       font-weight: bold;
+//       margin-bottom: 0.75rem;
+//       border-bottom: 1px solid #ddd;
+//       padding-bottom: 0.5rem;
+//     }
 
-    p {
-      margin-top: 1rem;
-      margin-bottom: 1rem;
-    }
+//     p {
+//       margin-top: 1rem;
+//       margin-bottom: 1rem;
+//     }
 
-    p:first-of-type, p:first-child {
-      margin-top: 0;
-    }
+//     p:first-of-type, p:first-child {
+//       margin-top: 0;
+//     }
 
-    p + p {
-      margin-bottom: 0;
-    }
+//     p + p {
+//       margin-bottom: 0;
+//     }
 
-    ul {
-      // margin-bottom: 1rem;
-    }
+//     ul {
+//       // margin-bottom: 1rem;
+//     }
 
-    li {
-      position: relative;
-    }
+//     li {
+//       position: relative;
+//     }
 
-    li + li {
-      margin-top: 0.25rem;
-    }
+//     li + li {
+//       margin-top: 0.25rem;
+//     }
 
-    form {
-      margin-top: 0.5rem;
-      margin-bottom: 0.25rem;
+//     form {
+//       margin-top: 0.5rem;
+//       margin-bottom: 0.25rem;
 
-      label {
-        display: block;
-        margin-bottom: 0.25rem;
-      }
+//       label {
+//         display: block;
+//         margin-bottom: 0.25rem;
+//       }
 
-      input[type=text] {
-        margin-bottom: 1rem;
-      }
-    }
+//       input[type=text] {
+//         margin-bottom: 1rem;
+//       }
+//     }
 
-    select {
-      width: 100%;
-      font-size: 100%;
-      margin-top: 0.25rem;
-      margin-bottom: 0.25rem;
-    }
+//     select {
+//       width: 100%;
+//       font-size: 100%;
+//       margin-top: 0.25rem;
+//       margin-bottom: 0.25rem;
+//     }
 
-  }
+//   }
 
-  .scrollable {
-    // overflow: auto;
-    margin-bottom: 1rem;
-  }
+//   .scrollable {
+//     // overflow: auto;
+//     margin-bottom: 1rem;
+//   }
 
-}
+// }
 
-html.gt-ie10 {
-  .bibLinks {
-    height: 100%;
-  }
-}
+// html.gt-ie10 {
+//   .bibLinks {
+//     height: 100%;
+//   }
+// }
 
 .embedUrlContainer {
   position: reliatve;
@@ -122,21 +122,30 @@ html.gt-ie10 {
       font-size: 1rem;
     }
 
-    #embedHelpIcon {
-      display: inline-block;
-      position: relative;
-      height: 18px;
-      width: 18px;
-      top: 0;
-      right: 0;
-      margin-left: 1rem;
-      line-height: 1.2;
-      // margin-left: 20rem;
-      // margin-bottom: 1rem;
-      background-image: url(/common/unicorn/img/icon_question.png);
-      background-repeat: no-repeat;
-      text-indent: -10000px;
-    }
+    // #embedHelpIcon {
+    //   display: inline-block;
+    //   position: relative;
+    //   height: 18px;
+    //   width: 18px;
+    //   top: 0;
+    //   right: 0;
+    //   margin-left: 1rem;
+    //   line-height: 1.2;
+    //   // margin-left: 20rem;
+    //   // margin-bottom: 1rem;
+    //   background-image: url(/common/unicorn/img/icon_question.png);
+    //   background-repeat: no-repeat;
+    //   text-indent: -10000px;
+    // }
+}
+
+.versionContainer {
+  .version-label {
+    white-space: nowrap;
+  }
+  a {
+    font-size: .9rem;
+  }  
 }
 
 .pdfPartnerLoginLinkMessage {

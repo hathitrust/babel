@@ -197,7 +197,7 @@ head.ready(function() {
         var $option = $toolbar.find("option[value='" + params.coll_id + "']");
         $option.remove();
 
-        HT.update_status(`Added item to collection ${params.coll_name}`);
+        HT.update_status(`Added collection ${params.coll_name} to your list.`);
     }
 
     function confirm_large(collSize, addNumItems, callback) {

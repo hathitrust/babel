@@ -11,6 +11,7 @@ export var Single = class extends Base {
 
   display(seq) {
     seq = parseInt(seq, 10);
+    if ( seq == this.currentSeq ) { return ; }
     var current = this.container.querySelector(`.page[data-visible="true"]`);
     var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }
@@ -22,7 +23,13 @@ export var Single = class extends Base {
       }.bind(this))
     }
 
-    this.loadImage(target, { check_scroll: true });
+    var viewed = target.querySelector('img');
+    if ( ! viewed ) {
+      this.loadImage(target, { check_scroll: true });
+    } else {
+      this.resizePage(target);
+    }
+
     this.reader.emit('relocated', { seq: target.dataset.seq });
     if ( this._currentPage ) {
       console.log(`AHOY display currentPage = ${this._currentPage.dataset.seq}`);
@@ -71,6 +78,8 @@ export var Single = class extends Base {
   }
 
   bindEvents() {
+    var self = this;
+
     super.bindEvents();
 
     this._handlers.rotate = this.reader.on('rotate', function(delta) {

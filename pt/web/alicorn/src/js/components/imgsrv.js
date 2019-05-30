@@ -146,8 +146,15 @@ export var Service = class {
         return params.width <= check;
       })
     } else if ( params.height ) {
-      retval.param = 'height';
-      retval.value = params.height;
+      // retval.param = 'height';
+      // retval.value = params.height;
+      retval.param = 'size';
+      var meta = this.manifest.meta(params.seq);
+      var r = meta.height / meta.width;
+      retval.value = possibles.find(function(possible) {
+        var check = ( 680 * ( possible / 100.0 ) ) * r;
+        return params.height <= check;
+      });    
     }
     return retval;
   }

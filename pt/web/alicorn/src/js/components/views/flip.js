@@ -83,6 +83,10 @@ export var Flip = class extends Base {
 
     this._updateLayoutEdges();
 
+    slices.forEach((datum) => {
+      this._updateLayoutSliceSize(datum);
+    });
+
     this.container.appendChild(fragment);
     // this.container.style.display = 'block';
 
@@ -94,15 +98,15 @@ export var Flip = class extends Base {
   }
 
   _updateLayout() {
-    this._layout.minWidth = this.minWidth() / 2;
-    this._layout.maxHeight = this.container.parentNode.offsetHeight * 0.95;
-    this._layout.offsetWidth = this.minWidth();
+    this._layout.minWidth = ( this.minWidth() / 2 ) * this.scale;
+    this._layout.maxHeight = this.container.parentNode.offsetHeight * 0.95 * this.scale;
+    this._layout.offsetWidth = this.minWidth() * this.scale;
     this._layout.pageHeight = this._layout.maxHeight * this.scale;
     this._layout.edgeHeight = this._layout.pageHeight * 0.98;
-    this._layout.sliceWidth = this._layout.offsetWidth * this.scale;
+    this._layout.containerWidth = this.container.parentNode.offsetWidth;
 
-    this.container.style.setProperty('--page-height', `${this._layout.pageHeight}px`);
-    this.container.style.setProperty('--slice-width', `${this._layout.sliceWidth}px`);
+    // this.container.style.setProperty('--page-height', `${this._layout.pageHeight}px`);
+    // this.container.style.setProperty('--slice-width', `${this._layout.sliceWidth}px`);
 
     this._layout.maxEdgeWidth = 0;
     this._layout.maxSliceWidth = 0;
@@ -130,225 +134,39 @@ export var Flip = class extends Base {
     if ( slice_width > this._layout.maxSliceWidth ) {
       this._layout.maxSliceWidth = slice_width;
     }
+
+    if ( this.scale > 1.0 ) {
+      slice.style.height = `${this._layout.pageHeight * 1.02}px`;
+    } else {
+      slice.style.height = 'auto';
+    }
+  }
+
+  _updateLayoutSliceSize(datum) {
+    var slice = datum.slice;
+    var sliceWidth = this._layout.sliceWidth;
+    slice.style.width = `${sliceWidth}px`;
   }
 
   _updateLayoutEdges() {
-    var max_edge_width = Math.abs(( ( this._layout.offsetWidth - ( this._layout.maxSliceWidth / this.scale ) ) * 0.85 ) / 2);
+    // var max_edge_width = Math.abs(( ( this._layout.offsetWidth - ( this._layout.maxSliceWidth / this.scale ) ) * 0.85 ) / 2);
+    var max_edge_width = this._layout.maxSliceWidth * 0.25;
     var page_factor = 10;
     var edge_width = 3 * Math.ceil(this.service.manifest.totalSeq / page_factor);
     if ( edge_width > max_edge_width ) { edge_width = max_edge_width; }
+    this._layout.maxEdgeWidth = edge_width;
 
     this.slices.forEach((datum) => {
       var slice = datum.slice;
       slice.querySelector('.edge.verso').style.width = `${edge_width * datum[0].edgeFraction}px`;
       slice.querySelector('.edge.recto').style.width = `${edge_width * datum[1].edgeFraction}px`;
     })
-  }
 
-  renderXX(cb) {
-    var minWidth = this.minWidth();
-    minWidth /= 2;
-
-    var maxHeight = this.container.offsetHeight * 0.95;
-    var pageHeight = maxHeight * this.scale;
-    var offsetWidth = this.container.offsetWidth;
-    var sliceWidth = offsetWidth * this.scale;
-    this.container.style.setProperty('--page-height', `${maxHeight * this.scale}px`);
-    this.container.style.setProperty('--slice-width', `${offsetWidth * this.scale}px`);
-
-    var max_edge_width = 0;
-    var max_slice_width = 0;
-
-    var scale = this.scale;
-
-    // group into pages
-    var slices = this.slices;
-
-    var slices_indexes = [];
-    for(var slice_idx = 0; slice_idx < slices.length; slice_idx++) {
-      slices_indexes.push(slice_idx);
-    }
-    
-    // this.container.style.display = 'none';
-
-    var fragment = document.createDocumentFragment();
-
-    slices.forEach((datum, slice_idx) => {
-      var slice = this._buildSlice(datum, slice_idx);
-      fragment.appendChild(slice);
-      datum.slice = slice;
-      this._updateLayoutSlice(slice);
-    })
-
-    for(var j = 0; j < slices_indexes.length; j++ ) {
-      var slice_idx = slices_indexes[j];
-      var tuple = slices[slice_idx];
-      this._edges[slice_idx] = { recto: {}, verso: {} };
-
-      var slice = document.createElement('div');
-      slice.classList.add('slice');
-      slice.style.width = `${sliceWidth}px`;
-
-      var edge = document.createElement('div');
-      edge.classList.add('edge', 'verso');
-      this._edges[slice_idx].verso.fraction = slice_idx / slices.length;
-      edge.style.setProperty('--fraction', this._edges[slice_idx]);
-      edge.style.height = `${pageHeight * 0.98}px`;
-      slice.appendChild(edge);
-
-      var page = document.createElement('div');
-      page.classList.add('page', 'verso');
-
-      var seq;
-      var slice_width = 0;
-      var slice_height = 0;
-      if ( tuple[0] ) {
-        seq = tuple[0];
-        var meta = this.service.manifest.meta(tuple[0]);
-
-        var ratio;
-        if ( meta.width > meta.height ) {
-          ratio = meta.height / meta.width;
-          page.style.setProperty('--page-ratio', meta.height / meta.width );
-        } else {
-          ratio = meta.width / meta.height;
-          page.style.setProperty('--page-ratio', meta.width / meta.height);
-        }
-        page.style.height = `${pageHeight}px`;
-        page.style.width = `${pageHeight * ratio}px`;
-
-        slice_height = maxHeight * scale;
-        slice_width = maxHeight * scale / ratio;
-
-        page.dataset.bestFit = ( scale <= 1 ); page.classList.toggle('page--best-fit', ( scale <= 1 ));
-
-        page.dataset.seq = seq;
-        page.setAttribute('tabindex', -1);
-
-        page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
-
-      } else {
-        var meta = this.service.manifest.meta(1);
-        var ratio;
-        if ( meta.width > meta.height ) {
-          ratio = meta.height / meta.width;
-          page.style.setProperty('--page-ratio', meta.height / meta.width );
-        } else {
-          ratio = meta.width / meta.height;
-          page.style.setProperty('--page-ratio', meta.width / meta.height);
-        }
-
-        page.style.height = `${pageHeight}px`;
-        page.style.width = `${pageHeight * ratio}px`;
-
-        page.innerHTML = `<div class="page-text"></div><div class="info">NIL</div>`;
-        slice_width = maxHeight * scale / ratio;
-      }
-      slice.appendChild(page);
-      this._slices.push(slice);
-
-      page = document.createElement('div');
-      page.classList.add('page');
-      page.classList.add('recto');
-      if ( tuple[1] ) {
-        seq = tuple[1];
-        var meta = this.service.manifest.meta(tuple[1]);
-        page.style.setProperty('--page-ratio', meta.width / meta.height);
-
-        var ratio;
-        if ( meta.width > meta.height ) {
-          ratio = meta.height / meta.width;
-          page.style.setProperty('--page-ratio', meta.height / meta.width );
-        } else {
-          ratio = meta.width / meta.height;
-          page.style.setProperty('--page-ratio', meta.width / meta.height);
-        }
-        page.style.height = `${pageHeight}px`;
-        page.style.width = `${pageHeight * ratio}px`;
-
-        page.dataset.bestFit = ( scale <= 1 ); page.classList.toggle('page--best-fit', ( scale <= 1 ));
-
-        slice_height = slice_height || ( maxHeight * scale );
-        slice_width += ( maxHeight * scale / ratio );
-
-        page.dataset.seq = seq;
-        page.setAttribute('tabindex', 0);
-
-        page.innerHTML = `<div class="page-text"></div><div class="info">${seq}</div>`;
-        slice.appendChild(page);
-      } else {
-        var meta = this.service.manifest.meta(1);
-        var ratio;
-        if ( meta.width > meta.height ) {
-          ratio = meta.height / meta.width;
-          page.style.setProperty('--page-ratio', meta.height / meta.width );
-        } else {
-          ratio = meta.width / meta.height;
-          page.style.setProperty('--page-ratio', meta.width / meta.height);
-        }
-
-        page.style.height = `${pageHeight}px`;
-        page.style.width = `${pageHeight * ratio}px`;
-
-        page.style.height = `${pageHeight}px`;
-        page.style.width = `${pageHeight * ratio}px`;
-
-        slice_width += ( maxHeight * scale / ratio );
-
-        page.innerHTML = `<div class="page-text"></div><div class="info">NIL</div>`;
-      }
-      slice.appendChild(page);
-
-      if ( this.scale > 1.0 ) {
-        // slice.style.height = `${slice_height}px`;
-        // slice.style.width = `${slice_width * 1.2}px`;
-        // slice.style.width = `${this.`
-      }
-
-      if ( max_slice_width < slice_width ) {
-        max_slice_width = slice_width;
-      }
-
-      edge = document.createElement('div');
-      edge.classList.add('edge', 'recto');
-      edge.style.setProperty('--fraction', (( slices.length - slice_idx ) / slices.length));
-      edge.style.height = `${pageHeight * 0.98}px`;
-      this._edges[slice_idx].recto.fraction = (( slices.length - slice_idx ) / slices.length);
-
-      // edge.style.width = `${(( slices.length - slice_idx ) / slices.length) * max_edge_width}px`;
-      // edge.style.height = `${slice_height * 0.95}px`; // this is complicated
-
-      slice.appendChild(edge);
-      // slice.querySelector('.edge.verso').style.height = edge.style.height;
-
-      slice.dataset.visible = false; slice.classList.remove('slice--visible');
-      slice.dataset.slice = slice_idx;
-
-      // this.container.appendChild(slice);
-      fragment.appendChild(slice);
-    }
-
-    var max_edge_width = Math.abs(( ( offsetWidth - ( max_slice_width / this.scale ) ) * 0.85 ) / 2);
-    var page_factor = 10;
-    var edge_width = 3 * Math.ceil(this.service.manifest.totalSeq / page_factor);
-    if ( edge_width > max_edge_width ) { edge_width = max_edge_width; }
-
-    // var slices__ = fragment.querySelectorAll('.slice');
-    for(var i = 0; i < this._slices.length; i++) {
-      var slice = this._slices[i];
-      var edgedata = this._edges[i];
-      slice.querySelector('.edge.verso').style.width = `${edge_width * edgedata.verso.fraction}px`;
-      slice.querySelector('.edge.recto').style.width = `${edge_width * edgedata.recto.fraction}px`;
-    }
-
-    this.container.appendChild(fragment);
-    this.container.style.setProperty('--edge-width', `${edge_width}px`);
-    // this.container.style.display = 'block';
-
-    this.is_active = true;
-    this.loadSlice(this.container.querySelector('.slice'));
-    if ( cb ) {
-      cb();
+    this._layout.sliceWidth = this._layout.maxSliceWidth + ( this._layout.maxEdgeWidth * 1.10 );
+    if ( this._layout.sliceWidth < this._layout.containerWidth ) {
+      this.container.classList.add('viewer--centered');
+    } else {
+      this.container.classList.remove('viewer--centered');
     }
   }
 
@@ -357,6 +175,7 @@ export var Flip = class extends Base {
 
     slice = document.createElement('div');
     slice.classList.add('slice');
+    // slice.style.width = `${this._layout.sliceWidth}px`;
 
     datum[0].edgeFraction = slice_idx / this.slices.length;
     edge = this._buildEdge('verso', datum[0].edgeFraction);
@@ -388,7 +207,7 @@ export var Flip = class extends Base {
       return this._buildNull(side, datum);
     }
 
-    var page = document.createElement('page');
+    var page = document.createElement('div');
     page.classList.add('page', side);
     var seq = datum.seq;
 
@@ -403,11 +222,11 @@ export var Flip = class extends Base {
   }
 
   _buildNull(side, datum) {
-    var page = document.createElement('page');
-    page.classList.add('page', side);
+    var page = document.createElement('div');
+    page.classList.add('page', 'page--null', side);
     datum.ratio = this._pageRatio(1);
     page.style.setProperty('--page-ratio', datum.ratio);
-    page.innerHTML = `<div class="page-text"></div><div class="info">NIL</div>`;
+    page.innerHTML = `<div class="page-text"></div>`;
 
     return page;
   }
@@ -441,11 +260,16 @@ export var Flip = class extends Base {
   }
 
   unloadSlice(slice) {
-
+    var pages = slice.querySelectorAll('.page[data-seq]');
+    for(var i = 0; i < pages.length; i++) {
+      this.unloadImage(pages[i]);
+      this.unfocus(pages[i]);
+    }
+    slice.dataset.visible = false; slice.classList.remove('slice--visible');
   }
 
-  resizePage(page) {
-  }
+  // resizePage(page) {
+  // }
 
   display(seq) {
     seq = parseInt(seq, 10);
@@ -454,6 +278,7 @@ export var Flip = class extends Base {
     var target = this.container.querySelector(`.slice[data-slice="${slice_idx}"]`);
     // var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }
+    if ( target == current ) { return ; }
 
     if ( current ) {
       // current.dataset.visible = false; current.classList.remove('slice--visible');
@@ -538,7 +363,27 @@ export var Flip = class extends Base {
   }
 
   minWidth() {
-    return this.container.parentNode.offsetWidth;
+    if ( ! this._max ) {
+      var max = null;
+      for(var seq = 1; seq < this.service.manifest.totalSeq; seq++) {
+        var meta = this.service.manifest.meta(seq);
+        if ( max === null || meta.width > max.width ) {
+          max = meta;
+        }
+      }
+      this._max = max;
+    }
+
+    var w = this.container.parentNode.offsetWidth;
+    var h = this.container.parentNode.offsetHeight;
+
+    var r = h / this._max.height;
+    var ideal_w = ( this._max.width * r * 2 );
+    if ( ideal_w < w ) { this._minWidth = w; }
+    else if ( ideal_w / w < 1.125 ) { this._minWidth = w; }
+    else { this._minWidth = ideal_w; }
+
+    return this._minWidth;
   }
 
   preloadImages(page) {
@@ -571,6 +416,11 @@ export var Flip = class extends Base {
     this._clickHandler = this.clickHandler.bind(this);
     this.container.addEventListener('click', this._clickHandler);
 
+    this.reader.on('redraw', (params) => {
+      this.scale = params.scale;
+      this.reader.emit('resize');
+    });
+
     this._handlers.resize = this.reader.on('resize', () => {
 
       this._updateLayout();
@@ -580,6 +430,11 @@ export var Flip = class extends Base {
       });
 
       this._updateLayoutEdges();
+
+      this.slices.forEach((datum) => {
+        this._updateLayoutSliceSize(datum);
+      });
+
     })
   }
 
@@ -598,16 +453,29 @@ export var Flip = class extends Base {
         event.stopPropagation();
         var page = element.closest('.page');
         var img = page.querySelector('img.foldout');
-        var new_img = `<div><img src="${img.src}" height="${img.dataset.height}" width="${img.dataset.width}" /></div>`;
-        bootbox.dialog(new_img,
+
+        var zoom_h = window.innerHeight * 0.80;
+        var r = zoom_h / img.dataset.height ;
+        var zoom_w = img.dataset.width * r;
+
+        var zoom_img_src = this.imageUrl({ seq: page.dataset.seq, width: zoom_w });
+
+        var new_img = `<div class="loading foldout"><img style="visibility: hidden" height="${zoom_h}" width="${zoom_w}" /></div>`;
+        var dialog = bootbox.dialog(new_img,
           [{ label: 'Close', class: 'btn-dismiss' }],
           {
             lightbox: true,
             header: `View page scan ${page.dataset.seq} foldout`,
-            width: img.dataset.width,
-            height: img.dataset.height
+            width: zoom_w,
+            height: zoom_h
           }
         );
+        var $zoom_img = dialog.find("img");
+        $zoom_img.on('load', function() {
+          $zoom_img.css({ visibility: 'visible' });
+          $zoom_img.parent().removeClass('loading');
+        })
+        $zoom_img.attr('src', zoom_img_src);
       }
     } else {
       // check that this is a page

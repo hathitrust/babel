@@ -22,7 +22,16 @@ export var Thumbnail = class extends Scroll {
 
   minWidth() {
     // best guess
-    return 160;
+    // return 160;
+    var max = null;
+    for(var seq = 1; seq < this.service.manifest.totalSeq; seq++) {
+      var meta = this.service.manifest.meta(seq);
+      if ( max === null || meta.width > max.width ) {
+        max = meta;
+      }
+    }
+    var r = 250 / max.height;
+    return max.width * r;
   }
 
   bindEvents() {

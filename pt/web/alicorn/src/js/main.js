@@ -183,6 +183,7 @@ var Reader = class {
       argv.push(`view=${this.view.name}`);
       argv.push(`seq=${params.seq || HT.params.seq}`);
       if ( HT.params.skin ) { argv.push(`skin=${HT.params.skin}`); }
+      if ( this.options.scale != 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
       if ( HT.params.debug ) { argv.push(`debug=${HT.params.debug}`); }
       if ( HT.params.l11_tracking ) { argv.push(`l11_tracking=${HT.params.l11_tracking}`); }
       if ( HT.params.l11_uid ) { argv.push(`l11_uid=${HT.params.l11_uid}`); }
@@ -208,7 +209,8 @@ var Reader = class {
     var jump = document.querySelector('#action-focus-current-page');
     jump.addEventListener('click', (event) => {
       event.preventDefault();
-      this.view.focus();
+      this.view.focus(true);
+      console.log("AHOY FOCUS CURRENT PAGE");
       return false;
     })
 
@@ -380,10 +382,13 @@ reader.controls.contentsnator = new Control.Contentsnator({
   reader: reader
 });
 
-reader.controls.expandinator = new Control.Expandinator({
-  input: document.querySelector('.action-fullscreen'),
-  reader: reader
-});
+var actionFullScreen = document.querySelector('.action-fullscreen');
+if ( actionFullScreen ) {
+  reader.controls.expandinator = new Control.Expandinator({
+    input: actionFullScreen,
+    reader: reader
+  });
+}
 
 var selectedPagesPdfLink = document.querySelector('#selectedPagesPdfLink');
 if ( selectedPagesPdfLink ) {
@@ -410,7 +415,30 @@ reader.on('track', () => {
   }
 })
 
-reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10 });
+document.body.addEventListener('keydown', function(event) {
+  var IGNORE_TARGETS = [ 'input', 'textarea' ];
+  if ( IGNORE_TARGETS.indexOf(event.target.localName) >= 0 ) {
+    return;
+  }
+  if ( event.key == 'ArrowLeft' ) {
+    reader.prev();
+  } else if ( event.key == 'ArrowRight' ) {
+    reader.next();
+  }
+})
+
+var scale = 1.0;
+if ( HT.params.size  ) {
+  var size = parseInt(HT.params.size, 10);
+  if ( ! isNaN(size) ) {
+    var value = size / 100.0;
+    if ( reader.controls.zoominator.check(value) ) {
+      scale = value;
+    }
+  }
+}
+
+reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
 
 HT.mobify = function() {
   $("header").hide();

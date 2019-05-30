@@ -47,4 +47,14 @@ html.crms {
     display: none;
   }
 
+  .action-contents-navigation {
+    max-height: 15rem;
+    overflow: auto;
+  }
+
+  #form-go-page {
+    display: flex !important;
+  }
+
+
 }

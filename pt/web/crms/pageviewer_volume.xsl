@@ -4,11 +4,35 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
 
-  <xsl:import href="../pageviewer_volume.xsl" />
+  <xsl:import href="../alicorn/pageviewer_volume.xsl" />
 
   <xsl:template name="action-fullscreen" />
 
-  <xsl:template name="action-resize-menu">
+  <xsl:template name="build-extra-sidebar-panels">
+    <div class="panel" rel="note">
+      <h3>Table of Contents</h3>
+      <ul class="scrollable-list action-contents-navigation">
+        <xsl:for-each select="$gFeatureList/Feature">
+          <li>
+            <a href="{Link}" data-seq="{Seq}">
+              <xsl:value-of select="Label" />
+              <xsl:if test="normalize-space(Page)">
+                <xsl:text> - </xsl:text>
+                <xsl:value-of select="Page" />
+              </xsl:if>
+            </a>
+          </li>
+        </xsl:for-each>
+      </ul>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="load-extra-main-script">
+    <script type="text/javascript">head.load('/pt/crms/crms.js')</script>
+  </xsl:template>
+
+
+  <xsl:template name="action-resize-menu-xx">
     <div class="btn-group btn-group-vertical" style="margin-left: -3px">
       <button id="xxx" type="button" class="btn square alone dropdown-toggle" data-toggle="dropdown">
         <i class="icomoon-iconmonstr-magnifier-6-icon" style=""></i>

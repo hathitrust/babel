@@ -1,11 +1,6 @@
 @import "variables";
-@import "../../../common/web/unicorn/vendor/icomoon/style.scss";
-@import "reset";
 @import 'microtip/microtip';
-@import 'alerts';
-@import 'skiplinks';
 @import "nav";
-@import "form";
 @import "sidebar";
 @import "download";
 @import "spinthatshit/src/loaders";
@@ -192,11 +187,13 @@ main.main-container {
   // padding: 0.75rem 1rem;
 }
 
-.container-full {
+.container.container-full {
   height: 100%;
 }
 
-.container-boxed {
+.container.container-boxed {
+  margin-top: 0;
+  margin-bottom: 0;
   .section-container {
     margin: 0;
   }
@@ -660,8 +657,10 @@ section.view--image {
       }
 
       img {
-        max-width: 100%;
+        // max-width: 100%;
         max-height: 100%;
+        width: 100%;
+        height: auto;
       }
     }
   }
@@ -711,6 +710,14 @@ section.view--2up {
         visibility: visible;
         opacity: 1;
         transition: visibility 0s linear 0s, opacity 300ms;
+      }
+
+    }
+
+    .viewer-inner.viewer--centered {
+      .slice {
+        left: 50%;
+        transform: translateX(-50%);
       }
     }
 
@@ -767,8 +774,12 @@ section.view--2up {
       }
 
       img {
-        height: 100%;
-        max-width: 100%;
+        // max-height: 100%;
+        // max-width: 100%;
+
+        width: 100%;
+        height: auto;
+
         // position: absolute;
 
         &.foldout {
@@ -957,63 +968,6 @@ section.view--plaintext {
   }
 }
 
-.pdfPartnerLoginLinkMessage {
-  font-style: italic;
-  color: #666;
-  margin-top: 0.25rem;
-}
-
-.help-block {
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.embedUrlContainer {
-  position: reliatve;
-    h3 {
-        display: block;
-        font-weight: bold;
-        position: relative;
-        margin-bottom: 1rem;
-    }
-
-    input[type="radio"] {
-      padding-left: 1.2rem;
-    }
-
-    textarea {
-        width: 95%;
-        margin-bottom: 0.5rem;
-    }
-
-    label {
-      padding-right: 1rem;
-    }
-
-    label.radio .icomoon-scroll {
-      font-size: 1rem;
-    }
-    label.radio .icomoon-book-alt2 {
-      font-size: 1rem;
-    }
-
-    #embedHelpIcon {
-      display: inline-block;
-      position: relative;
-      height: 18px;
-      width: 18px;
-      top: 0;
-      right: 0;
-      margin-left: 1rem;
-      line-height: 1.2;
-      // margin-left: 20rem;
-      // margin-bottom: 1rem;
-      background-image: url(/common/unicorn/img/icon_question.png);
-      background-repeat: no-repeat;
-      text-indent: -10000px;
-    }
-}
-
 /* SEARCH RESULTS */
 /* SOLR HIGHLIGHTING */
 .solr_highlight_1 {
@@ -1044,6 +998,31 @@ section.view--plaintext {
 .solr_highlight_6 {
   background: #0099cc;
   font-weight: bold;
+}
+
+/* FOLDOUTS */
+.modal__content > div {
+  height: 100%;
+}
+.modal__content div.foldout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  &.loading {
+    &::before {
+      display: block;
+      content: "";  
+      @include loader12($size: 20px, $gap: 30px, $color: $hathitrust-orange-color, $align: middle);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }    
+  }
+
+  img {
+    margin: auto;
+  }
 }
 
 /* ANIMATION */

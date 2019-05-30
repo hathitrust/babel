@@ -6,8 +6,8 @@ export var Zoominator = class {
     this.scale = parseInt(options.scale || 1.0, 10);
     this.input = options.input;
     this.reader = options.reader;
-    // this.possibles = [ 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
-    this.possibles = [ 0.75, 1.0, 1.25, 1.5 ];
+    this.possibles = [ 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
+    // this.possibles = [ 0.75, 1.0, 1.25, 1.5 ];
     this.emitter = new NanoEvents();
     this.bindEvents();
   }
@@ -48,6 +48,11 @@ export var Zoominator = class {
     this.scale = this.possibles[idx];
     this.input.zoom_in.disabled = ( idx == ( this.possibles.length - 1 ) );
     this.input.zoom_out.disabled = ( idx == 0 );
-    this.reader.restart({ scale: this.scale });
+    this.reader.emit('redraw', { scale: this.scale });
+    // this.reader.restart({ scale: this.scale });
+  }
+
+  check(value) {
+    return this.possibles.indexOf(value) > -1;
   }
 }

@@ -59,7 +59,7 @@ HT.Downloader = {
 
         var html =
             // '<p>Building your PDF...</p>' +
-            `<div class="initial" aria-live="polite"><p>Setting up the download...</div>` +
+            `<div class="initial"><p>Setting up the download...</div>` +
             '<div class="progress progress-striped active hide" aria-hidden="true">' +
                 '<div class="bar" width="0%"></div>' +
             '</div>' +
@@ -231,6 +231,7 @@ HT.Downloader = {
         if ( self.$dialog.find(".initial").is(":visible") ) {
             self.$dialog.find(".initial").html(`<p>Please wait while we build your ${self.item_title}.</p>`);
             self.$dialog.find(".progress").removeClass("hide");
+            HT.update_status(`Please wait while we build your ${self.item_title}.`)
         }
 
         self.$dialog.find(".bar").css({ width : percent + '%'});
@@ -239,6 +240,8 @@ HT.Downloader = {
             self.$dialog.find(".progress").hide();
             var download_key = navigator.userAgent.indexOf('Mac OS X') != -1 ? 'RETURN' : 'ENTER';
             self.$dialog.find(".initial").html(`<p>All done! Your ${self.item_title} is ready for download. <span class="offscreen">Select ${download_key} to download.</span></p>`);
+            HT.update_status(`All done! Your ${self.item_title} is ready for download. Select ${download_key} to download.`);
+
             // self.$dialog.find(".done").show();
             var $download_btn = self.$dialog.find('.download-pdf');
             if ( ! $download_btn.length ) {
@@ -260,7 +263,7 @@ HT.Downloader = {
             // still could cancel
         } else {
             self.$dialog.find(".initial").text(`Please wait while we build your ${self.item_title} (${Math.ceil(percent)}% completed).`);
-            // HT.update_status(`${Math.ceil(percent)}% of the ${self.item_title} has been built.`);
+            HT.update_status(`${Math.ceil(percent)}% completed`);
         }
 
         return status;

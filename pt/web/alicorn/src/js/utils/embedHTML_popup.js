@@ -12,9 +12,9 @@ head.ready(function() {
 
     var $block = $(
     '<div class="embedUrlContainer">' +
-        '<h3>Embed This Book' +
-    '<a id="embedHelpIcon" default-form="data-default-form" ' +
-      'href="' + embedHelpLink + '" target="_blank">Help</a></h3>' +
+        '<h3>Embed This Book ' +
+            '<a id="embedHelpIcon" default-form="data-default-form" ' +
+                'href="' + embedHelpLink + '" target="_blank"><i class="icomoon icomoon-help" aria-hidden="true"></i><span class="offscreen">Help: Embedding HathiTrust Books</span></a></h3>' +
         '<form>' + 
         '    <span class="help-block">Copy the code below and paste it into the HTML of any website or blog.</span>' +
         '    <label for="codeblock" class="offscreen">Code Block</label>' +

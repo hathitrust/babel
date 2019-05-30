@@ -4,7 +4,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
 
-  <xsl:import href="../pageviewer.xsl" />
+  <xsl:import href="../alicorn/pageviewer.xsl" />
 
   <xsl:template name="header" />
   <xsl:template name="action-search-volume" />
@@ -13,7 +13,7 @@
   <xsl:template name="find-in-library" />
   <xsl:template name="buy-this-item" />
 
-  <xsl:template name="navbar">
+  <!-- <xsl:template name="navbar">
     <div class="navbar navbar-static-top navbar-inverse" data-loggedin="{$gLoggedIn}">
       <div class="navbar-inner" id="navbar-inner">
         <h2 class="offscreen">
@@ -29,9 +29,9 @@
         </ul>
       </div>
     </div>
-  </xsl:template>
+  </xsl:template> -->
 
-  <xsl:template name="share-this-book">
+  <xsl:template name="share-this-book-xx">
     <div class="shareLinks">
       <h3>Share</h3>
       <form action="" name="urlForm" id="urlForm">

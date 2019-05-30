@@ -837,6 +837,7 @@
 
     <xsl:call-template name="sidebar-about-this-book" />
     <div class="scrollable">
+      <xsl:call-template name="build-extra-sidebar-panels" />
       <xsl:call-template name="get-this-book" />
       <xsl:call-template name="access-overview-block" />
       <xsl:call-template name="collect-this-book" />
@@ -844,6 +845,8 @@
       <xsl:call-template name="versionLabel" />
     </div>
   </xsl:template>
+
+  <xsl:template name="build-extra-sidebar-panels" />
 
   <xsl:template name="access-overview-block">
     <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
@@ -1235,17 +1238,9 @@
     <div class="shareLinks panel">
       <h3>Share</h3>
 
-      <div class="btn-group share-toolbar share-toolbar-seven social-links">
-        <button data-service="facebook" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-facebook2"></i><span class="offscreen"> Share via Facebook</span></button>
-        <button data-service="twitter" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-twitter2"></i><span class="offscreen"> Share via Twitter</span></button>
-        <!-- <button data-service="plusone" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button> -->
-        <button data-service="reddit" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-reddit"></i><span class="offscreen"> Share via reddit</span></button>
-        <button data-service="tumblr" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i><span class="offscreen"> Share via Tumblr</span></button>
-        <button data-service="vkontakte" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-vk"></i><span class="offscreen"> Share via VK</span></button>
-        <xsl:if test="$gUsingSearch = 'false'">
-          <button data-service="pinterest" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-pinterest-p"></i><span class="offscreen"> Share via Pinterest</span></button>
-        </xsl:if>
-      </div>
+      <xsl:call-template name="build-share-social-links">
+        <xsl:with-param name="pageLink" select="$pageLink" />
+      </xsl:call-template>
 
       <form action="" name="urlForm" id="urlForm">
         <label class="smaller" for="permURL">Permanent link to this book</label>
@@ -1302,13 +1297,39 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="build-share-social-links">
+    <xsl:param name="pageLink" />
+    <div class="btn-group share-toolbar share-toolbar-seven social-links">
+      <button data-service="facebook" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-facebook2"></i><span class="offscreen"> Share via Facebook</span></button>
+      <button data-service="twitter" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-twitter2"></i><span class="offscreen"> Share via Twitter</span></button>
+      <!-- <button data-service="plusone" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-google-plus"></i><span class="offscreen"> Share via Google+</span></button> -->
+      <button data-service="reddit" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-reddit"></i><span class="offscreen"> Share via reddit</span></button>
+      <button data-service="tumblr" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-tumblr"></i><span class="offscreen"> Share via Tumblr</span></button>
+      <button data-service="vkontakte" data-url="{$pageLink}" class="btn"><i class="icomoon icomoon-vk"></i><span class="offscreen"> Share via VK</span></button>
+      <xsl:if test="$gUsingSearch = 'false'">
+        <button data-service="pinterest" data-url="{$pageLink}" data-media="" class="btn"><i class="icomoon icomoon-pinterest-p"></i><span class="offscreen"> Share via Pinterest</span></button>
+      </xsl:if>
+    </div>
+  </xsl:template>
+
   <!-- -->
   <xsl:template name="versionLabel">
+    <div class="versionContainer panel">
+      <h3>Version</h3>
+      <p>
+        <span class="version-label"><xsl:value-of select="$gVersionLabel" /></span>
+        <br />
+        <a id="versionIcon" href="#">About the version <i class="icomoon icomoon-help" aria-hidden="true"></i></a>
+      </p>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="versionLabel-xx">
     <div class="versionContainer panel" style="margin-top: 2rem">
       <h3 class="offscreen">About versions</h3>
       <strong>Version: </strong><xsl:value-of select="$gVersionLabel"/>
       <button id="versionIcon" default-form="data-default-form" aria-label="version label for this item">
-        <i class="far fa-question-circle"></i>
+        <i class="icomoon icomoon-help" aria-hidden="true"></i>
       </button>
     </div>
   </xsl:template>

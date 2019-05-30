@@ -1,12 +1,12 @@
 head.ready(function() {
 
-    if ( $(".navbar-static-top").data('loggedin') != 'YES' && window.location.protocol == 'https:' ) {
-        // horrible hack
-        var target = window.location.href.replace(/\$/g, '%24');
-        var href = 'https://' + window.location.hostname + '/Shibboleth.sso/Login?entityID=https://shibboleth.umich.edu/idp/shibboleth&target=' + target;
-        window.location.href = href;
-        return;
-    }
+    // if ( $(".navbar-static-top").data('loggedin') != 'YES' && window.location.protocol == 'https:' ) {
+    //     // horrible hack
+    //     var target = window.location.href.replace(/\$/g, '%24');
+    //     var href = 'https://' + window.location.hostname + '/Shibboleth.sso/Login?entityID=https://shibboleth.umich.edu/idp/shibboleth&target=' + target;
+    //     window.location.href = href;
+    //     return;
+    // }
 
     // define CRMS state
     HT.crms_state = 'CRMS-US';
@@ -15,13 +15,22 @@ head.ready(function() {
         HT.crms_state = 'CRMS-World';
     }
 
-    // display bib information
-    var $div = $(".bibLinks");
-    var $p = $div.find("p:first");
-    $p.find("span:empty").each(function() {
-        // $(this).text($(this).attr("content")).addClass("blocked");
-        var fragment = '<span class="blocked"><strong>{label}:</strong> {content}</span>';
-        fragment = fragment.replace('{label}', $(this).attr('property').substr(3)).replace('{content}', $(this).attr("content"));
-        $p.append(fragment);
+    // // display bib information
+    // var $div = $(".bibLinks");
+    // var $p = $div.find("p:first");
+    // $p.find("span:empty").each(function() {
+    //     // $(this).text($(this).attr("content")).addClass("blocked");
+    //     var fragment = '<span class="blocked"><strong>{label}:</strong> {content}</span>';
+    //     fragment = fragment.replace('{label}', $(this).attr('property').substr(3)).replace('{content}', $(this).attr("content"));
+    //     $p.append(fragment);
+    // })
+
+    $(".action-contents-navigation").on('click', 'a', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        var seq = $(this).data('seq');
+        HT.reader.display(seq);
     })
+
+
 })
