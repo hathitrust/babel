@@ -120,7 +120,8 @@ my $app = sub {
     $response->cookies->{$cookie_name} = { 
         'value' => $ses->get_session_id(), 
         'path' => '/',
-        'domain' => Utils::get_cookie_domain()
+        'domain' => Utils::get_cookie_domain(),
+        'httponly' => 1
     };
     
     # return session information

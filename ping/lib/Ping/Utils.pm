@@ -21,7 +21,7 @@ sub identify_user {
         $auth_type = '';
     } 
 
-    my $retval = {authType => $authType};
+    my $retval = {authType => $auth_type, auth_type => $auth_type};
 
     $$retval{displayName} = $auth->get_user_display_name($C, 'unscoped');
     $$retval{institution_code} = $auth->get_institution_code($C);

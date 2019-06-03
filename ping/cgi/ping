@@ -95,7 +95,7 @@ my $app = sub {
         $institution_name = $institution_name || '';
         $institution_code = $institution_code || '';
         $mapped_institution_name = $mapped_institution_name || '';
-        $mapped_institution_name = $mapped_institution_name || '';
+        $mapped_institution_code = $mapped_institution_code || '';
         $providerName = $providerName || '';
         $affiliation = $affiliation || '';
         unless ( $affiliation ) {
@@ -236,7 +236,7 @@ JAVASCRIPT
         my $info = Ping::Utils::identify_user($C, $env, $config);
 
         $response = Plack::Response->new(200);
-        $response->content_type('text/javascript');
+        $response->content_type('application/javascript');
         if ( $$info{auth_type} && $$info{auth_type} eq 'shibboleth' && ! exists($request->cookies->{HT_AUTHTYPE}) ) {
             $response->cookies->{HT_AUTHTYPE} = { 
                 'value' => 'shibboleth', 
@@ -251,6 +251,11 @@ JAVASCRIPT
             domain => '.hathitrust.org',
             secure => 1,
         } unless ( exists($request->cookies->{HTproviderName}) && $request->cookies->{HTproviderName} eq $$info{providerName} );
+        $response->cookies->{'HTstatus'} = {
+            'value' => encode_json($info),
+            'path'  => '/',
+            'domain' => Utils::get_cookie_domain()
+        }; #  unless ( exists($request->cookies->{HTstatus}) && $request->cookies->{HTstatus} eq $$info{providerName} );;
 
         my $displayName = uri_escape($$info{displayName});
         my $affiliation = uri_escape($$info{affiliation});
@@ -269,13 +274,29 @@ JAVASCRIPT
     my $cookies = $request->cookies;
 
     $response = Plack::Response->new(200);
-    $response->content_type('text/javascript');
+    $response->content_type('application/javascript');
 
-    my $cookie = $ses->get_cookie();
-    $response->headers([ "Set-Cookie", $cookie ]);
+    my $cookie_name = $config->get('cookie_name');
+    $response->cookies->{$cookie_name} = { 
+        'value' => $ses->get_session_id(), 
+        'path' => '/',
+        'domain' => Utils::get_cookie_domain(),
+        'httponly' => 1
+    };
+
+    my $logged_out = $ses->get_persistent('logged_out', 0);
+    if ( exists($request->cookies->{HTstatus}) && $request->cookies->{HTstatus} ne '' ) {
+        $logged_out = 1;
+    }
+    $response->cookies->{'HTstatus'} = {
+        value  => '',
+        path   => '/',
+        domain => Utils::get_cookie_domain(),
+        expires => 'Thu, 01-Jan-1970 00:00:00 GMT'
+    };
 
     # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
-    $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         "NOT LOGGED IN", $idp_list, $ses->get_persistent('logged_out', 0)));
+    $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         "NOT LOGGED IN", $idp_list, $logged_out));
     return $response->finalize;
     
 };
