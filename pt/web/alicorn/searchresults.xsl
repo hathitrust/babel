@@ -68,7 +68,7 @@
     </main>
   </xsl:template>
 
-  <xsl:template name="contents">
+  <xsl:template name="build-main-container">
     <main class="main-container" id="main">
       <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
         <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>

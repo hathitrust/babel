@@ -47,6 +47,9 @@
 
   <xsl:variable name="gCurrentReaderMode">full</xsl:variable>
 
+  <xsl:template name="load_concat_js_file" />
+  <xsl:template name="load_uncompressed_js" />
+
   <xsl:template name="setup-html-class">
     <xsl:if test="$gHTDEV != ''">
       <xsl:text> htdev </xsl:text>
