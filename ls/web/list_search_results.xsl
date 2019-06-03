@@ -1697,13 +1697,17 @@ REMOVE the below and see if it will call list_utils
           <xsl:attribute name="href">
             <xsl:text>/cgi/ls</xsl:text>
             <xsl:text>?a=srchls;q1=*</xsl:text>
-  <!--           <xsl:for-each select="//CurrentCgi/Param[@name='facet']">
-              <xsl:text>;facet=</xsl:text>
-              <xsl:value-of select="." />
-            </xsl:for-each> -->
             <xsl:if test="$coll_id">
               <xsl:text>;c=</xsl:text>
               <xsl:value-of select="$coll_id" />
+            </xsl:if>
+            <xsl:text>;lmt=</xsl:text>
+            <xsl:variable name="//LimitToFullText/LimitType" />
+            <xsl:if test="//Param[@name='facet']">
+              <xsl:for-each select="//Param[@name='facet']">
+                <xsl:text>;facet=</xsl:text>
+                <xsl:value-of select="." />
+              </xsl:for-each>
             </xsl:if>
           </xsl:attribute>
           <xsl:text>Start Over</xsl:text>
