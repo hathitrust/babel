@@ -391,17 +391,11 @@
             <xsl:value-of select="$num_deleted"/><xsl:value-of select="$num_deleted_verb"/><xsl:text> deleted from the repository. </xsl:text>
           </xsl:if>
 
-          <!-- STANDARD MESSAGE: DISABLED FOR JANUARY 2019 -->
-          <!-- <xsl:if test="$num_queued > 0">
-            <xsl:value-of select="$num_queued"/><xsl:value-of select="$num_queued_verb"/>
-            <xsl:text> queued to be indexed, usually within 48 hours.</xsl:text>
-          </xsl:if> -->
-
-          <!-- REMOVE AFTER JANUARY 2 -->
+          
           <xsl:if test="$num_queued > 0">
             <xsl:value-of select="$num_queued"/><xsl:value-of select="$num_queued_verb"/>
-            <xsl:text> queued to be indexed. Due to seasonal maintenance, index updates will resume early January 2019.</xsl:text>
-          </xsl:if>
+            <xsl:text> queued to be indexed, usually within 1-5 days.</xsl:text>
+          </xsl:if> 
 
         </xsl:element>
       </xsl:element>
@@ -426,8 +420,7 @@
   <xsl:template name="OperationResults">
 
     <xsl:variable name="already_count">
-      <xsl:value-of select="OperationResults/AlreadyInColl2Count"/>
-    </xsl:variable>
+      <xsl:value-of select="OperationResults/AlreadyInColl2Count"/>    </xsl:variable>
 
     <xsl:variable name="added_count">
       <xsl:value-of select="OperationResults/IdsAdded"/>
