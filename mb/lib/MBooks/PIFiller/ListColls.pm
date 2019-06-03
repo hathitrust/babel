@@ -30,6 +30,7 @@ use MBooks::PIFiller::ListUtils;
 
 use URI::Escape;
 use Time::HiRes qw(time);
+use Date::Manip::Date;
 
 BEGIN
 {
@@ -56,15 +57,35 @@ sub coll_list_helper
 
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
     $C->set_object('Collection', $co);
+
+    my $cgi = $C->get_object('CGI');
+    my $colltype = $cgi->param('colltype') || 'featured';
+
     my $output = '';
 
     my $start = time();
+
+    my $updated_limit_date = new Date::Manip::Date;
+    $updated_limit_date->parse("30 days ago");
+    my $updated_limit = $updated_limit_date->printf("%Y-%m-%d %H:%M:%S");
 
     my $data_ref = $act->get_transient_facade_member_data($C, $data_key);
     foreach my $coll_hashref (@$data_ref)
     {
         my $s = get_coll_xml($C, $coll_hashref);
-        $output .= wrap_string_in_tag($s, 'Collection');
+
+        my $featured = $$coll_hashref{featured} ne '' ? 'TRUE' : 'FALSE';
+        my $recently_updated = 'FALSE';
+        my $recently_updated = $$coll_hashref{modified} ge $updated_limit ? 'TRUE' : 'FALSE';
+        my $owned = $$coll_hashref{is_owned} ? 'TRUE' : 'FALSE';
+
+        my $selected = 'FALSE';
+        if ( $colltype eq 'featured' ) { $selected = 'TRUE' if ( $featured eq 'TRUE' ); }
+        elsif ( $colltype eq 'updated' ) { $selected = 'TRUE' if ( $recently_updated eq 'TRUE' ); }
+        elsif ( $colltype eq 'my-collections' || $colltype eq 'priv' ) { $selected = 'TRUE' if ( $$coll_hashref{is_owned} ); }
+        else { $selected = 'TRUE'; }
+
+        $output .= wrap_string_in_tag($s, 'Collection', [['featured', $featured], ['updated', $recently_updated], ['selected', $selected], ['owned',$owned]]);
     }
 
     ## print STDERR "COLL_LIST_HELPER : " . ( time() - $start ) . "\n";
@@ -164,6 +185,8 @@ sub get_coll_xml
     my $config = $C->get_object('MdpConfig');
     my $min_mondo_n = 5000; # $config->get('filter_query_max_item_ids')
 
+    $$coll_hashref{'num_items'} = 0 unless ( defined($$coll_hashref{'num_items'}) );
+
     $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName', [['e', uri_escape_utf8($$coll_hashref{'collname'})]]);
     my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'}, 1);
     my $owner_affiliation = MBooks::PIFiller::ListUtils::get_owner_affiliation($C, $$coll_hashref{'owner'}, $$coll_hashref{'owner_name'});
@@ -173,20 +196,32 @@ sub get_coll_xml
     $s .= wrap_string_in_tag($$coll_hashref{'MColl_ID'},    'CollId');
     $s .= wrap_string_in_tag($$coll_hashref{'description'}, 'Description', [['e', uri_escape_utf8($$coll_hashref{'description'})]]);
     $s .= wrap_string_in_tag($$coll_hashref{'num_items'},   'NumItems');
+    $s .= wrap_string_in_tag(MBooks::PIFiller::ListUtils::commify($$coll_hashref{'num_items'}),   'NumItems_Display');
     $s .= wrap_string_in_tag($$coll_hashref{'shared'},      'Shared');
     $s .= wrap_string_in_tag($$coll_hashref{'modified'},      'Updated');
     $s .= wrap_string_in_tag($$coll_hashref{'modified_display'},      'Updated_Display');
     $s .= wrap_string_in_tag($$coll_hashref{'featured'},      'Featured');
     $s .= wrap_string_in_tag($$coll_hashref{'branding'},      'Branding');
+
+    $s .= wrap_string_in_tag(lc $$coll_hashref{collname}, 'CollName_Sort');
+    $s .= wrap_string_in_tag(lc $owner_string, 'OwnerString_Sort');
+
+    # my $buffer = [];
+    # push @$buffer, lc $$coll_hashref{collname};
+    # push @$buffer, lc $owner_string;
+    # push @$buffer, lc $owner_affiliation if ( $owner_affiliation );
+    # push @$buffer, lc $$coll_hashref{description} if ( $$coll_hashref{description} );
+    # $s .= wrap_string_in_tag(join(' ', @$buffer), 'Buffer');
+
     ### $s .= wrap_string_in_tag($$coll_hashref{'num_items'} >= $min_mondo_n, 'Mondo');
-    
-    
+
+
     my $all_indexed = "FALSE";
 
     # XXX don't run these solr queries if we aren't putting search
     # boxes in list_colls
 #     my $ix = new MBooks::Index;
-#     my ($solr_all_indexed,$item_status_hashref) = 
+#     my ($solr_all_indexed,$item_status_hashref) =
 #         $ix->get_coll_id_indexed_status($C,$$coll_hashref{'MColl_ID'});
 #     if ($solr_all_indexed) {
 #         $all_indexed="TRUE";
@@ -194,17 +229,18 @@ sub get_coll_xml
     $s .= wrap_string_in_tag($all_indexed, 'AllItemsIndexed');
 
     # Should only bother if we own coll!
-    my $current_user = $C->get_object('Auth')->get_user_name($C);    
+    my $current_user = $C->get_object('Auth')->get_user_name($C);
     if ($current_user eq $$coll_hashref{'owner'}) {
-        my $cgi = $C->get_object('CGI');  
+        $$coll_hashref{is_owned} = 1;
+        my $cgi = $C->get_object('CGI');
         my $temp_cgi = new CGI($cgi);
         $temp_cgi->param('a', 'delc');
         $temp_cgi->param('c', $$coll_hashref{'MColl_ID'});
         $temp_cgi->delete('cn');
         $temp_cgi->delete('desc');
         $temp_cgi->delete('shd');
-        
-        my $delete_coll_href = $temp_cgi->self_url();        
+
+        my $delete_coll_href = $temp_cgi->self_url();
         $s .= wrap_string_in_tag($delete_coll_href, 'DeleteCollHref');
     }
 
@@ -243,7 +279,7 @@ sub handle_NUM_ITEMS_SORT_HREF_PI
     : PI_handler(NUM_ITEMS_SORT_HREF)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'num')    
+    return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'num')
 }
 
 # ---------------------------------------------------------------------

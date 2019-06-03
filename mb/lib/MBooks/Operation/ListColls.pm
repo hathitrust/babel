@@ -84,7 +84,7 @@ sub execute_operation
 
     my %colltype_map = (
         priv => 'my-collections',
-        pub  => 'all_colls'
+        pub  => 'all' # all_cools
     );
 
     DEBUG('op', qq{execute operation="ListColls"});
@@ -97,14 +97,18 @@ sub execute_operation
     my $cgi = $C->get_object('CGI');
     my $ab = $C->get_object('Bind');
 
-    my $sortkey =$ab->mapurl_param_to_field($C, scalar $cgi->param('sort'));    
+    my $sortkey =$ab->mapurl_param_to_field($C, scalar $cgi->param('sort'));
     my $dir = MBooks::Utils::Sort::get_dir_from_sort_param(scalar $cgi->param('sort'));
-    
+
     my $colltype = $cgi->param('colltype');
     unless ( $cgi->param('page') eq 'ajax' ) {
         $colltype = 'all_colls';
     } else {
         $colltype = $colltype_map{$colltype} ? $colltype_map{$colltype} : $colltype;
+    }
+
+    if ( $cgi->param('colltype') eq 'my-collections' && ! $ENV{REMOTE_USER} ) {
+        $cgi->param('colltype', 'featured');
     }
 
     my $callback = $cgi->param('callback');
@@ -114,13 +118,13 @@ sub execute_operation
     if ($callback) {
         $act->set_transient_facade_member_data($C, 'jsonCallback', $callback);
     }
-    
+
     my $coll_arr_ref;
     eval {
         $coll_arr_ref = $cs->list_colls($colltype, $sortkey,$dir );
     };
     die $@ if ( $@ );
-    
+
     $act->set_transient_facade_member_data($C, 'list_colls_data', $coll_arr_ref);
 
     return $ST_OK;

@@ -29,6 +29,7 @@
      'id'       => '.*',
      'rattr'    => '\d+',
      'sz'       => '^([1-9]|[1-9][0-9]|100)$', # 1 <= sz <= 100
+     'min_items'=> '25|50|100|250|500|1000$',
      'solridx'  => 'text|author|title|subject|isbn',
      'solrfct'  => '.*',
      'start'    => '\d+',
@@ -127,7 +128,7 @@ $g_late_operations = [
                                                            'a'     => 'listcs',
                                                           },
                                           'opt_params' => {
-                                                           'colltype' => 'pub',
+                                                           'colltype' => 'featured', # pub
                                                            'sort'     => 'cn_a',
                                                            'skin'     => undef,
                                                           }

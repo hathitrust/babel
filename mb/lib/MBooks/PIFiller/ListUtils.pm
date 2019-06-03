@@ -443,8 +443,12 @@ sub handle_SORT_WIDGET_PI
     my $name = 'sort';
     my $pulldown = Utils::build_HTML_pulldown_XML($name, \@sortkeys, $label_hashref, $default);
 
+    my $temp_cgi = new CGI($cgi);
+    $temp_cgi->delete('sort');
+    my $temp_href = $temp_cgi->self_url() . ';sort=';
+
     my $s;
-    $s .= wrap_string_in_tag($pulldown, 'SortWidgetSort');
+    $s .= wrap_string_in_tag($pulldown, 'SortWidgetSort', [['href', $temp_href]]);
     return $s;
 }
 
@@ -650,7 +654,7 @@ sub handle_PAGING_PI
     $s .= wrap_string_in_tag($middle_pagelinks, 'MiddlePageLinks');
     $s .= wrap_string_in_tag($end_pagelinks, 'EndPageLinks');
 
-
+    $pager->current_page($current_page);
     $s .= wrap_string_in_tag($pager->last_page, 'TotalPages');
     $s .= wrap_string_in_tag($pager->entries_on_this_page, 'NumRecsOnThisPage');
     $s .= wrap_string_in_tag($pager->entries_per_page, 'RecsPerPage');
@@ -667,8 +671,12 @@ sub handle_PAGING_PI
         $current_value = $current_sz
     }
 
+    my $temp_cgi = new CGI($cgi);
+    $temp_cgi->delete('sz');
+    $temp_cgi->delete('pn');
+    my $temp_href = $temp_cgi->self_url() . ';sz=';
     my @values= $config->get('slice_sizes');
-    $s .= wrap_string_in_tag(make_slice_size_widget($current_value,\@values), 'SliceSizeWidget');
+    $s .= wrap_string_in_tag(make_slice_size_widget($current_value,\@values), 'SliceSizeWidget', [['href', $temp_href]]);
 
     return $s;
 }
@@ -1049,15 +1057,27 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     $all_temp_cgi->delete('lmt');
     my $all_href = $all_temp_cgi->self_url();
 
+    my $num_full_text_display=commify($num_full_text);
+    my $num_all_display=commify($num_all);
+
     my $s = "";
     $s .= wrap_string_in_tag($isLimitOn, 'Limit');
     $s .= wrap_string_in_tag($all_href, 'AllHref');
     $s .= wrap_string_in_tag($full_text_href, 'FullTextHref');
     $s .= wrap_string_in_tag($num_full_text, 'FullTextCount');
+    $s .= wrap_string_in_tag($num_full_text_display, 'FullTextCountDisplay');
     $s .= wrap_string_in_tag($num_all, 'AllItemsCount');
+    $s .= wrap_string_in_tag($num_all_display, 'AllItemsCountDisplay');
 
 
     return $s;
+}
+
+sub commify
+{
+    my $text = reverse $_[0];       
+    $text =~s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+    return scalar reverse $text
 }
 
 sub handle_DOWNLOAD_METADATA_BASE_PI 
