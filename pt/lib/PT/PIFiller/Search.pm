@@ -354,7 +354,7 @@ sub WrapSearchResultsInXml {
         $tempCgi->param('seq', $seq);
         $tempCgi->param('num', $pgnum) if ($pgnum);
 
-            my $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
+        my $href = Utils::url_to($tempCgi, $PTGlobals::gPageturnerCgiRoot);
         $XML_result .= wrap_string_in_tag($href, 'Link');
 
         my $term_hit_ct = 0;
@@ -364,8 +364,8 @@ sub WrapSearchResultsInXml {
             if ($finalAccessStatus eq 'allow') {
                 PT::PageTurnerUtils::format_OCR_text( $snip_ref );
                 $XML_result .= wrap_string_in_tag_by_ref($snip_ref, 'Kwic')
+            }
         }
-    }
         $XML_result .= wrap_string_in_tag($term_hit_ct/2, 'Hits');
 
         $XML_result .= qq{</Page>\n};

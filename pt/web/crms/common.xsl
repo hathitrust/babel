@@ -4,8 +4,10 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
 
-  <xsl:import href="../common.xsl" />
+  <xsl:import href="../alicorn/common.xsl" />
 
-  <xsl:variable name="gSkin" select="'default'" />
+  <xsl:variable name="gSkin" select="'alicorn'" />
+
+  <xsl:template name="build-share-social-links" />
 
 </xsl:stylesheet>

@@ -1,0 +1,610 @@
+:root {
+  --microtip-transition-delay: 0.25s;
+}
+
+/* -------------------------------------------------------------------
+  Microtip
+
+  Modern, lightweight css-only tooltips
+  Just 1kb minified and gzipped
+
+  @author Ghosh
+  @package Microtip
+
+----------------------------------------------------------------------
+  1. Base Styles
+  2. Direction Modifiers
+  3. Position Modifiers
+--------------------------------------------------------------------*/
+/* ------------------------------------------------
+  [1] Base Styles
+-------------------------------------------------*/
+[aria-label][data-role~="tooltip"] {
+  position: relative;
+}
+
+[aria-label][data-role~="tooltip"]::before,
+[aria-label][data-role~="tooltip"]::after {
+  -webkit-transform: translate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-transition: all var(--microtip-transition-duration, 0.18s) var(--microtip-transition-easing, ease-in-out) var(--microtip-transition-delay, 0s);
+  transition: all var(--microtip-transition-duration, 0.18s) var(--microtip-transition-easing, ease-in-out) var(--microtip-transition-delay, 0s);
+  position: absolute;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  z-index: 10;
+  -webkit-transform-origin: top;
+          transform-origin: top;
+}
+
+[aria-label][data-role~="tooltip"]::before {
+  background-size: 100% auto !important;
+  content: "";
+}
+
+[aria-label][data-role~="tooltip"]::after {
+  background: rgba(17, 17, 17, 0.9);
+  border-radius: 4px;
+  color: #ffffff;
+  content: attr(aria-label);
+  font-size: var(--microtip-font-size, 13px);
+  font-weight: var(--microtip-font-weight, normal);
+  text-transform: var(--microtip-text-transform, none);
+  padding: .5em 1em;
+  white-space: nowrap;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
+}
+
+[aria-label][data-role~="tooltip"]:hover::before,
+[aria-label][data-role~="tooltip"]:hover::after,
+[aria-label][data-role~="tooltip"]:focus::before,
+[aria-label][data-role~="tooltip"]:focus::after {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------
+  [2] Position Modifiers
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position|="top"]::before {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2236px%22%20height%3D%2212px%22%3E%3Cpath%20fill%3D%22rgba%2817,%2017,%2017,%200.9%29%22%20transform%3D%22rotate%280%29%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E") no-repeat;
+  height: 6px;
+  width: 18px;
+  margin-bottom: 5px;
+}
+
+[data-role~="tooltip"][data-microtip-position|="top"]::after {
+  margin-bottom: 11px;
+}
+
+[data-role~="tooltip"][data-microtip-position|="top"]::before {
+  -webkit-transform: translate3d(-50%, 0, 0);
+          transform: translate3d(-50%, 0, 0);
+  bottom: 100%;
+  left: 50%;
+}
+
+[data-role~="tooltip"][data-microtip-position|="top"]:hover::before {
+  -webkit-transform: translate3d(-50%, -5px, 0);
+          transform: translate3d(-50%, -5px, 0);
+}
+
+[data-role~="tooltip"][data-microtip-position|="top"]::after {
+  -webkit-transform: translate3d(-50%, 0, 0);
+          transform: translate3d(-50%, 0, 0);
+  bottom: 100%;
+  left: 50%;
+}
+
+[data-role~="tooltip"][data-microtip-position="top"]:hover::after {
+  -webkit-transform: translate3d(-50%, -5px, 0);
+          transform: translate3d(-50%, -5px, 0);
+}
+
+/* ------------------------------------------------
+  [2.1] Top Left
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position="top-left"]::after {
+  -webkit-transform: translate3d(calc(-100% + 16px), 0, 0);
+          transform: translate3d(calc(-100% + 16px), 0, 0);
+  bottom: 100%;
+}
+
+[data-role~="tooltip"][data-microtip-position="top-left"]:hover::after {
+  -webkit-transform: translate3d(calc(-100% + 16px), -5px, 0);
+          transform: translate3d(calc(-100% + 16px), -5px, 0);
+}
+
+/* ------------------------------------------------
+  [2.2] Top Right
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position="top-right"]::after {
+  -webkit-transform: translate3d(calc(0% + -16px), 0, 0);
+          transform: translate3d(calc(0% + -16px), 0, 0);
+  bottom: 100%;
+}
+
+[data-role~="tooltip"][data-microtip-position="top-right"]:hover::after {
+  -webkit-transform: translate3d(calc(0% + -16px), -5px, 0);
+          transform: translate3d(calc(0% + -16px), -5px, 0);
+}
+
+/* ------------------------------------------------
+  [2.3] Bottom
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position|="bottom"]::before {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2236px%22%20height%3D%2212px%22%3E%3Cpath%20fill%3D%22rgba%2817,%2017,%2017,%200.9%29%22%20transform%3D%22rotate%28180%2018%206%29%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E") no-repeat;
+  height: 6px;
+  width: 18px;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+[data-role~="tooltip"][data-microtip-position|="bottom"]::after {
+  margin-top: 11px;
+}
+
+[data-role~="tooltip"][data-microtip-position|="bottom"]::before {
+  -webkit-transform: translate3d(-50%, -10px, 0);
+          transform: translate3d(-50%, -10px, 0);
+  bottom: auto;
+  left: 50%;
+  top: 100%;
+}
+
+[data-role~="tooltip"][data-microtip-position|="bottom"]:hover::before {
+  -webkit-transform: translate3d(-50%, 0, 0);
+          transform: translate3d(-50%, 0, 0);
+}
+
+[data-role~="tooltip"][data-microtip-position|="bottom"]::after {
+  -webkit-transform: translate3d(-50%, -10px, 0);
+          transform: translate3d(-50%, -10px, 0);
+  top: 100%;
+  left: 50%;
+}
+
+[data-role~="tooltip"][data-microtip-position="bottom"]:hover::after {
+  -webkit-transform: translate3d(-50%, 0, 0);
+          transform: translate3d(-50%, 0, 0);
+}
+
+/* ------------------------------------------------
+  [2.4] Bottom Left
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position="bottom-left"]::after {
+  -webkit-transform: translate3d(calc(-100% + 16px), -10px, 0);
+          transform: translate3d(calc(-100% + 16px), -10px, 0);
+  top: 100%;
+}
+
+[data-role~="tooltip"][data-microtip-position="bottom-left"]:hover::after {
+  -webkit-transform: translate3d(calc(-100% + 16px), 0, 0);
+          transform: translate3d(calc(-100% + 16px), 0, 0);
+}
+
+/* ------------------------------------------------
+  [2.5] Bottom Right
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position="bottom-right"]::after {
+  -webkit-transform: translate3d(calc(0% + -16px), -10px, 0);
+          transform: translate3d(calc(0% + -16px), -10px, 0);
+  top: 100%;
+}
+
+[data-role~="tooltip"][data-microtip-position="bottom-right"]:hover::after {
+  -webkit-transform: translate3d(calc(0% + -16px), 0, 0);
+          transform: translate3d(calc(0% + -16px), 0, 0);
+}
+
+/* ------------------------------------------------
+  [2.6] Left
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position="left"]::before,
+[data-role~="tooltip"][data-microtip-position="left"]::after {
+  bottom: auto;
+  left: auto;
+  right: 100%;
+  top: 50%;
+  -webkit-transform: translate3d(10px, -50%, 0);
+          transform: translate3d(10px, -50%, 0);
+}
+
+[data-role~="tooltip"][data-microtip-position="left"]::before {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2212px%22%20height%3D%2236px%22%3E%3Cpath%20fill%3D%22rgba%2817,%2017,%2017,%200.9%29%22%20transform%3D%22rotate%28-90%2018%2018%29%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E") no-repeat;
+  height: 18px;
+  width: 6px;
+  margin-right: 5px;
+  margin-bottom: 0;
+}
+
+[data-role~="tooltip"][data-microtip-position="left"]::after {
+  margin-right: 11px;
+}
+
+[data-role~="tooltip"][data-microtip-position="left"]:hover::before,
+[data-role~="tooltip"][data-microtip-position="left"]:hover::after {
+  -webkit-transform: translate3d(0, -50%, 0);
+          transform: translate3d(0, -50%, 0);
+}
+
+/* ------------------------------------------------
+  [2.7] Right
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-position="right"]::before,
+[data-role~="tooltip"][data-microtip-position="right"]::after {
+  bottom: auto;
+  left: 100%;
+  top: 50%;
+  -webkit-transform: translate3d(-10px, -50%, 0);
+          transform: translate3d(-10px, -50%, 0);
+}
+
+[data-role~="tooltip"][data-microtip-position="right"]::before {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2212px%22%20height%3D%2236px%22%3E%3Cpath%20fill%3D%22rgba%2817,%2017,%2017,%200.9%29%22%20transform%3D%22rotate%2890%206%206%29%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E") no-repeat;
+  height: 18px;
+  width: 6px;
+  margin-bottom: 0;
+  margin-left: 5px;
+}
+
+[data-role~="tooltip"][data-microtip-position="right"]::after {
+  margin-left: 11px;
+}
+
+[data-role~="tooltip"][data-microtip-position="right"]:hover::before,
+[data-role~="tooltip"][data-microtip-position="right"]:hover::after {
+  -webkit-transform: translate3d(0, -50%, 0);
+          transform: translate3d(0, -50%, 0);
+}
+
+/* ------------------------------------------------
+  [3] Size
+-------------------------------------------------*/
+[data-role~="tooltip"][data-microtip-size="small"]::after {
+  white-space: initial;
+  width: 80px;
+}
+
+[data-role~="tooltip"][data-microtip-size="medium"]::after {
+  white-space: initial;
+  width: 150px;
+}
+
+[data-role~="tooltip"][data-microtip-size="large"]::after {
+  white-space: initial;
+  width: 260px;
+}
+
+nav.pagination-container {
+  display: grid;
+  grid-column-gap: 1rem;
+  grid-template-columns: 8rem auto 8rem;
+  -webkit-box-align: baseline;
+      -ms-flex-align: baseline;
+          align-items: baseline;
+}
+
+nav.pagination-container ul {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+nav.pagination-container ul li a, nav.pagination-container ul li span {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  min-width: 1.5rem;
+  min-height: 2rem;
+  margin: 0 0.125rem;
+}
+
+nav.pagination-container ul li a.break, nav.pagination-container ul li span.break {
+  min-width: auto;
+}
+
+nav.pagination-container ul li a {
+  text-decoration: none;
+}
+
+nav.pagination-container ul li a:hover {
+  text-decoration: underline;
+}
+
+nav.pagination-container ul li a.page-advance-link {
+  min-width: 8rem;
+}
+
+.relative {
+  position: relative;
+  padding: 0 0.5rem;
+}
+
+.nav-search-form.focused .global-search-modal {
+  display: block;
+}
+
+.global-search-modal {
+  display: none;
+  position: absolute;
+  height: 10rem;
+  top: -5px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 0px solid #666;
+  -webkit-box-shadow: 16px 20px 35px rgba(0, 0, 0, 0.8);
+          box-shadow: 16px 20px 35px rgba(0, 0, 0, 0.8);
+  z-index: 40;
+  color: black;
+}
+
+.global-search-modal a {
+  color: #924a0b;
+  text-decoration: underline;
+  padding-left: 0.5em;
+}
+
+.global-search-modal a:hover {
+  background: transparent;
+  color: #d56d11;
+  text-decoration: none;
+}
+
+.global-search-modal-inner {
+  margin-top: 3rem;
+  padding: 0 1rem 1rem;
+}
+
+.global-search-modal-inner > div {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.control {
+  z-index: 50;
+  margin-right: 0.25rem;
+}
+
+.control-q1 {
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+}
+
+button.control-search {
+  background-color: #666;
+  color: #eee;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
+  border-color: #333;
+}
+
+button.control-search:hover, button.control-search:focus {
+  background: #000c;
+}
+
+.global-search-options {
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.global-search-links {
+  border-top: 1px solid #ddd;
+  margin-top: 1rem;
+}
+
+.global-search-links ul {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.global-search-links ul li {
+  margin-right: 0.5rem;
+}
+
+.global-search-links ul li:not(:last-child)::after {
+  display: inline-block;
+  margin: 0 0.25em;
+  -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+  border-right: 0.1em solid currentColor;
+  height: 0.8em;
+  content: '';
+  color: #ddd;
+}
+
+.global-search-links ul a {
+  margin-right: 0.5rem;
+}
+
+.embedUrlContainer {
+  position: reliatve;
+}
+
+.embedUrlContainer h3 {
+  display: block;
+  font-weight: bold;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.embedUrlContainer input[type="radio"] {
+  padding-left: 1.2rem;
+}
+
+.embedUrlContainer textarea {
+  width: 95%;
+  margin-bottom: 0.5rem;
+}
+
+.embedUrlContainer label {
+  padding-right: 1rem;
+}
+
+.embedUrlContainer label.radio .icomoon-scroll {
+  font-size: 1rem;
+}
+
+.embedUrlContainer label.radio .icomoon-book-alt2 {
+  font-size: 1rem;
+}
+
+.versionContainer .version-label {
+  white-space: nowrap;
+}
+
+.versionContainer a {
+  font-size: .9rem;
+}
+
+.pdfPartnerLoginLinkMessage {
+  font-style: italic;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.help-block {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.btn-mini {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.share-toolbar {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+#action-clear-selection {
+  position: absolute;
+  right: 0;
+  margin-left: -8px;
+  visibility: hidden;
+}
+
+article.result {
+  margin: 1rem 0 1.5rem;
+}
+
+article.result h3 {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+article.result p.kwic {
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+section {
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+}
+
+.results-search-form {
+  margin: 1rem 0;
+  border-bottom: 1px dotted #666;
+  padding-bottom: 1rem;
+}
+
+.results-search-form label {
+  font-weight: bold;
+}
+
+.results-search-form input[type=text] {
+  width: 20rem;
+}
+
+.mdpEmp {
+  font-weight: bold;
+}
+
+a.worldcat.inline {
+  font-weight: bold;
+}
+
+#mdpTextDeny .form-inline {
+  margin-top: 1.5rem;
+}
+
+/* SOLR HIGHLIGHTING */
+.solr_highlight_1 {
+  background: #ffff00;
+  font-weight: bold;
+}
+
+.solr_highlight_2 {
+  background: #00ff00;
+  font-weight: bold;
+}
+
+.solr_highlight_3 {
+  background: #ff9900;
+  font-weight: bold;
+}
+
+.solr_highlight_4 {
+  background: #00ffcc;
+  font-weight: bold;
+}
+
+.solr_highlight_5 {
+  background: #00cccc;
+  font-weight: bold;
+}
+
+.solr_highlight_6 {
+  background: #0099cc;
+  font-weight: bold;
+}

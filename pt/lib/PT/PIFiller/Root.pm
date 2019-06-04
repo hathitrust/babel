@@ -32,7 +32,9 @@ use base qw(PIFiller);
 
 use PT::PIFiller::Common;
 
- 
+use JSON::XS qw(encode_json);
+
+
 # ---------------------------------------------------------------------
 
 =item BuildRotateLink
@@ -189,20 +191,20 @@ sub BuildPageNavLink
 sub BuildImageServerImageUrl
 {
     my ( $cgi ) = @_;
-    
+
     my $tempCgi = new CGI ("");
-    
+
     my $path;
     my $action = 'image';
     # copy params
     foreach my $p (qw(id orient size attr src u seq num)) {
         $tempCgi->param($p, scalar $cgi->param($p));
     }
-    
+
     if ( $cgi->param('debug') ) {
         $tempCgi->param('debug', scalar $cgi->param('debug'));
     }
-    
+
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
     return $href;
 }
@@ -220,7 +222,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
-sub GetItemType 
+sub GetItemType
 {
     my ( $C ) = @_;
 
@@ -229,7 +231,7 @@ sub GetItemType
 
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-        
+
     if ( $finalAccessStatus ne 'allow' )
     {
         return qq{restricted};
@@ -244,7 +246,7 @@ sub GetItemType
     return $item_type;
 }
 
-sub GetItemSubType 
+sub GetItemSubType
 {
     my ( $C ) = @_;
 
@@ -253,7 +255,7 @@ sub GetItemSubType
 
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-        
+
     if ( $finalAccessStatus ne 'allow' )
     {
         return undef;
@@ -266,10 +268,10 @@ sub GetItemSubType
 }
 
 sub handle_ITEM_TYPE_PI
-  : PI_handler(ITEM_TYPE) 
+  : PI_handler(ITEM_TYPE)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     return GetItemType($C);
 }
 
@@ -282,7 +284,7 @@ Description
 =cut
 # ---------------------------------------------------------------------
 sub handle_ITEM_STYLESHEET_PI
-  : PI_handler(ITEM_STYLESHEET) 
+  : PI_handler(ITEM_STYLESHEET)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
@@ -294,7 +296,7 @@ sub handle_ITEM_STYLESHEET_PI
 }
 
 sub handle_ITEM_CHUNK_PI
-  : PI_handler(ITEM_CHUNK) 
+  : PI_handler(ITEM_CHUNK)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
@@ -305,7 +307,7 @@ sub handle_ITEM_CHUNK_PI
     print STDERR "AHOY RETURNING $xml\n";
     return $xml;
 }
-  
+
 # ---------------------------------------------------------------------
 
 =item handle_IN_COPYRIGHT_PI : PI_handler(IN_COPYRIGHT)
@@ -316,7 +318,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub handle_IN_COPYRIGHT_PI
-  : PI_handler(IN_COPYRIGHT) 
+  : PI_handler(IN_COPYRIGHT)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
@@ -326,8 +328,8 @@ sub handle_IN_COPYRIGHT_PI
     }
     return 'false';
 }
-  
-      
+
+
 # ---------------------------------------------------------------------
 
 =item handle_CURRENT_PAGE_IMG_SRC_PI : PI_handler(CURRENT_PAGE_IMG_SRC)
@@ -345,7 +347,7 @@ sub handle_CURRENT_PAGE_IMG_SRC_PI
     my $id = $C->get_object('CGI')->param('id');
     my $finalAccessStatus =
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-        
+
     my $cgi = $C->get_object('CGI');
 
     my $href = '';
@@ -369,7 +371,7 @@ sub handle_CURRENT_PAGE_IMG_WIDTH_PI
         $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
 
     my $value = '';
-    
+
     if ( $finalAccessStatus eq 'allow' ) {
         $value = $C->get_object('MdpItem')->GetTargetImageFileInfo()->{width};
     }
@@ -439,7 +441,7 @@ sub handle_SECTION_108_PI
     $date =~ s/,.*//; # strip year
     my $time = Utils::Time::friendly_iso_Time($expires, 'time');
     $time =~ s,(\d+:\d+):\d+( .*),$1$2,;
-    
+
     my $expiration = "$date at $time";
 
     return (
@@ -667,7 +669,7 @@ sub handle_URL_ROOTS_PI
     : PI_handler(URL_ROOTS)
 {
     my ($C, $act, $piParamHashRef) = @_;
-    
+
     my $toReturn = '';
     $toReturn .= wrap_string_in_tag( $PTGlobals::gCollectionBuilderCgiRoot, 'Variable', [ [ 'name', 'cgi/mb' ] ] );
     $toReturn .= wrap_string_in_tag( $PTGlobals::gPageturnerCgiRoot, 'Variable', [ [ 'name', 'cgi/pt' ] ] );
@@ -791,9 +793,9 @@ sub handle_HIDDEN_SEQUENCE_PI
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
     my $defaultSeq = $cgi->param( 'seq' ) ? $cgi->param( 'seq' ) : 1;
-    
+
     my $sequence;
-    
+
     if ($form eq 'PageXofYForm' ) {
         # Sequence number is a function of the user-entered number
         # from the go-to page form
@@ -804,7 +806,7 @@ sub handle_HIDDEN_SEQUENCE_PI
         # Sequence number is the defaultSeq number
         $sequence = $defaultSeq;
     }
-    
+
 
     return wrap_string_in_tag( $sequence, 'Variable', [ [ 'name', 'seq' ] ] );
 }
@@ -959,7 +961,7 @@ sub handle_PAGE_LINK_PI
     if ( $tempCgi->param('orient') == 0 ) {
         $tempCgi->delete('orient');
     }
-    
+
     return Utils::url_to($tempCgi);
 }
 
@@ -989,6 +991,274 @@ sub handle_EPUB_ROOT_PI
     return $unpacked_root;
 }
 
+# ---------------------------------------------------------------------
+sub handle_BASE_IMAGE_DIMENSIONS
+    : PI_handler(BASE_IMAGE_DIMENSIONS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    require Image::ExifTool;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $pageinfo_sequence = $mdpItem->Get('pageinfo')->{'sequence'};
+    my @items = sort { int($a) <=> int($b) } keys %{ $pageinfo_sequence };
+
+    my ( $use_width, $use_height, $use_filename );
+    my $tries = 0;
+    while ( ! $use_filename ) {
+        my $seq = $items[int(rand(scalar @items))];
+        next if ( grep(/MISSING_PAGE/, $mdpItem->GetPageFeatures($seq)) );
+        my $filename = $mdpItem->GetFilePathMaybeExtract($seq, 'imagefile');
+
+        # my ( $width, $height, $type_or_error ) = Process::Image::imgsize($filename);
+        my $info = Image::ExifTool::ImageInfo($filename);
+        my ( $width, $height ) = ( $$info{ImageWidth}, $$info{ImageHeight} );
+
+        $tries += 1;
+
+        if ( $width < $height && $height > 1024 || $tries > 1) {
+            $use_filename = $filename;
+            ( $use_width, $use_height ) = ( $width, $height );
+        } else {
+            unlink($filename);
+        }
+    }
+
+    $use_height = int($use_height * ( 680.0 / $use_width ));
+    $use_width = 680;
+
+    return qq{<Width>$use_width</Width><Height>$use_height</Height>};
+
+}
+
+# ---------------------------------------------------------------------
+sub handle_FIRST_PAGE_SEQUENCE
+    : PI_handler(FIRST_PAGE_SEQUENCE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    return $mdpItem->GetFirstPageSequence;
+
+}
+
+# ---------------------------------------------------------------------
+sub handle_DEFAULT_SEQ
+    : PI_handler(DEFAULT_SEQ)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $seq;
+    if ( $seq = $mdpItem->HasTitleFeature()) {
+        # $cgi->param('seq', $seq );
+    }
+    elsif ($seq = $mdpItem->HasTOCFeature()) {
+        # $cgi->param('seq', $seq );
+    } else {
+        $seq = 1;
+    }
+
+    return $seq;
+}
+
+# ---------------------------------------------------------------------
+sub handle_READING_ORDER
+    : PI_handler(READING_ORDER)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    return $mdpItem->Get('readingOrder');
+}
+
+# ---------------------------------------------------------------------
+sub handle_FEATURE_LIST_JSON
+    : PI_handler(FEATURE_LIST_JSON)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    $mdpItem->InitFeatureIterator();
+    my $featureRef;
+
+    my $seenFirstTOC = 0;
+    my $seenFirstIndex = 0;
+    my $seenSection = 0;
+
+    my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
+    my $featureList = [];
+
+    my $pageinfo_sequence = $mdpItem->Get('pageinfo')->{'sequence'};
+    my @items = sort { int($a) <=> int($b) } keys %{ $pageinfo_sequence };
+
+    my $i = 0;
+    foreach my $seq ( @items ) {
+        my $features = [ $mdpItem->GetPageFeatures($seq) ];
+        next unless ( scalar @$features );
+        my $pageNum = $$pageinfo_sequence{ $seq }{ 'pagenumber' };
+        ## label is trickier
+        # my $label = $$featureHashRef{$seqFeature};
+        my $label;
+        my $feature_map = { map { $_ => 1 } @$features };
+        if ( $$feature_map{FIRST_CONTENT_CHAPTER_START} || $$feature_map{'1STPG'} ) {
+            $label = $$MdpGlobals::gPageFeatureHashRef{FIRST_CONTENT_CHAPTER_START} . " " . $i++;
+            $seenSection = 1;
+        } elsif ( $$feature_map{CHAPTER_START} ) {
+            $label = $$MdpGlobals::gPageFeatureHashRef{CHAPTER_START} . " " . $i++;
+            $seenSection = 1;
+        } elsif ( $$feature_map{MULTIWORK_BOUNDARY} ) {
+            if ( $$feature_map{CHAPTER_START} ) {
+                # do nothing
+            } else {
+                $label = $$MdpGlobals::gPageFeatureHashRef{MULTIWORK_BOUNDARY} . " " . $i++;
+                $seenSection = 1;
+            }
+        }
+
+        if ( $seenSection ) {
+            $seenFirstTOC = 0;
+            $seenFirstIndex = 0;
+        }
+
+        # Repetition suppression
+        if  ( $$feature_map{TABLE_OF_CONTENTS} || $$feature_map{TOC} ) {
+            $seenSection = 0;
+            if ($seenFirstTOC) {
+                # next;
+            }
+            else {
+                $seenFirstTOC = 1;
+            }
+        }
+
+        if  ( $$feature_map{INDEX} || $$feature_map{IND} ) {
+            $seenSection = 0;
+            if ($seenFirstIndex) {
+                # next;
+            }
+            else {
+                $seenFirstIndex = 1;
+            }
+        }
+
+        push @{$featureList}, '{' .
+            q{"seq":} . $json->encode($seq) . ', ' .
+            q{"features":} . $json->encode($features) . ', ' .
+            q{"label":} . $json->encode($label) . ',' .
+            q{"pageNum":} . $json->encode($pageNum) . '}';
+    }
+
+    return '[' . join(',', @$featureList) . ']';
+}
+
+sub handle_FEATURE_LIST_JSON_XX
+    : PI_handler(FEATURE_LIST_JSON_XX)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    $mdpItem->InitFeatureIterator();
+    my $featureRef;
+
+    my $seenFirstTOC = 0;
+    my $seenFirstIndex = 0;
+    my $seenSection = 0;
+
+    my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
+    my $featureList = [];
+
+    my $i = 1;
+    while ($featureRef = $mdpItem->GetNextFeature(), $$featureRef) {
+        my $tag   = $$$featureRef{'tag'};
+        my $label = $$$featureRef{'label'};
+        my $page  = $$$featureRef{'pg'};
+        my $seq   = $$$featureRef{'seq'};
+
+        if  ($tag =~ m,FIRST_CONTENT_CHAPTER_START|1STPG,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^CHAPTER_START$,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^MULTIWORK_BOUNDARY$,) {
+            # Suppress redundant link on MULTIWORK_BOUNDARY seq+1
+            # if its seq matches the next CHAPTER seq.
+            my $nextFeatureRef = $mdpItem->PeekNextFeature();
+            if ($$nextFeatureRef
+                && (
+                    ($$$nextFeatureRef{'tag'} =~ m,^CHAPTER_START$,)
+                    &&
+                    ($$$nextFeatureRef{'seq'} eq $seq))
+               ) {
+                # Skip CHAPTER_START
+                $mdpItem->GetNextFeature();
+            }
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+
+        if ($seenSection) {
+            $seenFirstTOC = 0;
+            $seenFirstIndex = 0;
+        }
+
+        # Repetition suppression
+        if  ($tag =~ m,TABLE_OF_CONTENTS|TOC,) {
+            $seenSection = 0;
+            if ($seenFirstTOC) {
+                next;
+            }
+            else {
+                $seenFirstTOC = 1;
+            }
+        }
+
+        if  ($tag =~ m,INDEX|IND,) {
+            $seenSection = 0;
+            if ($seenFirstIndex) {
+                next;
+            }
+            else {
+                $seenFirstIndex = 1;
+            }
+        }
+
+        # y $url = BuildContentsItemLink($cgi, $seq, $page);
+
+        push @{$featureList}, '{' .
+            q{"seq":} . $json->encode($seq) . ', ' .
+            q{"tag":} . $json->encode($tag) . ', ' .
+            q{"label":} . $json->encode($label) . ',' .
+            q{"page":} . $json->encode($page) . '}';
+
+        # my $featureItem =
+        #     wrap_string_in_tag($tag, 'Tag') .
+        #         wrap_string_in_tag($label, 'Label') .
+        #             wrap_string_in_tag($page, 'Page') .
+        #                 wrap_string_in_tag($seq, 'Seq') .
+        #                     wrap_string_in_tag($url, 'Link');
+
+        # $featureXML .=
+        #     wrap_string_in_tag($featureItem, 'Feature');
+    }
+
+    return '[' . join(',', @$featureList) . ']';
+}
 
 1;
 
