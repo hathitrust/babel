@@ -101,6 +101,7 @@ export var Service = class {
     this.manifest = new Manifest(options.manifest);
     this.identifier = options.identifier;
     this.q1 = options.q1;
+    this.hasOcr = options.hasOcr;
     this.emitter = new NanoEvents();
     this.bindEvents();
   }
