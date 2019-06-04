@@ -23,6 +23,11 @@ export var Viewinator = class {
         self.reader.restart({ view: target });
       })
     }
+
+    if ( ! this.reader.service.hasOcr ) {
+      var button = this.input.querySelector('[data-target="plaintext"]');
+      button.disabled = true;
+    }
   }
 
 }

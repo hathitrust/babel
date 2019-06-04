@@ -129,7 +129,7 @@ export var Base = class {
 
     page.style.height = `${pageHeight}px`;
     // page.style.setProperty('--width', `${canvas.naturalWidth}px`);
-    
+
     var updated_rect = page.getBoundingClientRect();
     var scrollTop = this.container.scrollTop;
 
@@ -160,7 +160,7 @@ export var Base = class {
     }
 
     var html_request;
-    if ( this.embedHtml) {
+    if ( this.embedHtml && html_url ) {
       html_request = fetch(html_url, { credentials: 'include' });
     }
 
@@ -213,7 +213,7 @@ export var Base = class {
       }
 
       if ( options.check_scroll || this.mode == 'thumbnail' ) {
-        this.resizePage(page); 
+        this.resizePage(page);
       }
       img.removeEventListener('load', _imgHandler, true);
       if ( options.callback ) {

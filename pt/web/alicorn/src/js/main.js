@@ -325,7 +325,8 @@ var service = new Service({
     featureList: JSON.parse($main.dataset.featureList)
   },
   identifier: HT.params.id,
-  q1: HT.params.q1
+  q1: HT.params.q1,
+  hasOcr: $main.dataset.hasOcr == 'true'
 })
 HT.service = service;
 

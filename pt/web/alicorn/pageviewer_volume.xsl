@@ -153,6 +153,12 @@
   <xsl:template name="main">
     <xsl:variable name="totalSeq" select="count(//METS:div[@TYPE='volume']/METS:div[@ORDER])" />
     <xsl:variable name="readingOrder" select="//Manifest/ReadingOrder" />
+    <xsl:attribute name="data-has-ocr">
+      <xsl:choose>
+        <xsl:when test="$gHasOcr = 'YES'">true</xsl:when>
+        <xsl:otherwise>false</xsl:otherwise>
+      </xsl:choose>
+    </xsl:attribute>
     <xsl:attribute name="data-reading-order"><xsl:value-of select="$readingOrder" /></xsl:attribute>
     <xsl:attribute name="data-total-seq"><xsl:value-of select="$totalSeq" /></xsl:attribute>
     <xsl:attribute name="data-default-seq"><xsl:value-of select="//Manifest/DefaultSeq" /></xsl:attribute>

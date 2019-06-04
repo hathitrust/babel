@@ -839,7 +839,9 @@
     <div class="scrollable">
       <xsl:call-template name="build-extra-sidebar-panels" />
       <xsl:call-template name="get-this-book" />
-      <xsl:call-template name="access-overview-block" />
+      <xsl:if test="$gHasOcr = 'YES'">
+        <xsl:call-template name="access-overview-block" />
+      </xsl:if>
       <xsl:call-template name="collect-this-book" />
       <xsl:call-template name="share-this-book" />
       <xsl:call-template name="versionLabel" />

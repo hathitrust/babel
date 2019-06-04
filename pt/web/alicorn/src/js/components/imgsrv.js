@@ -121,6 +121,7 @@ export var Service = class {
   }
 
   html(options={}) {
+    if ( ! this.hasOcr ) { return null; }
     var url = `/cgi/imgsrv/html?id=${this.identifier};seq=${options.seq}`;
     if ( this.q1 ) {
       url += `;q1=${this.q1}`;
@@ -154,7 +155,7 @@ export var Service = class {
       retval.value = possibles.find(function(possible) {
         var check = ( 680 * ( possible / 100.0 ) ) * r;
         return params.height <= check;
-      });    
+      });
     }
     return retval;
   }
