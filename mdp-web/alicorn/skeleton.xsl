@@ -68,7 +68,7 @@
         <script type="text/javascript" src="/common/alicorn/js/utils.js?_{$gTimestamp}"></script>
 
         <!-- <link rel="stylesheet" type="text/css" href="/common/unicorn/css/common.css{$timestamp}" /> -->
-        <link rel="stylesheet" type="text/css" href="/common/alicorn/css/dev.css?_{$gTimestamp}" />
+        <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.css?_{$gTimestamp}" />
 
         <xsl:call-template name="setup-extra-header" />
 
@@ -475,7 +475,7 @@
         <xsl:if test="normalize-space($checked)">
           <xsl:attribute name="checked">checked</xsl:attribute>
         </xsl:if>
-      </input>      
+      </input>
       <label for="global-search-ft">Full view only</label>
     </div>
   </xsl:template>
@@ -565,50 +565,50 @@
           </g>
         </g>
       </symbol>
-      <symbol                               
-         className="svg"                             
-         fill="currentColor"                
-         preserveAspectRatio="xMidYMid meet"                 
-         height="16" 
-         width="16"                               
-         viewBox="0 0 16 16"   
-         id="radio-empty"                          
-      >                               
-         <circle                                 
-            className="radioOutline"                              
+      <symbol
+         className="svg"
+         fill="currentColor"
+         preserveAspectRatio="xMidYMid meet"
+         height="16"
+         width="16"
+         viewBox="0 0 16 16"
+         id="radio-empty"
+      >
+         <circle
+            className="radioOutline"
             cx="8"
-            cy="8"                                 
-            r="6.5"                                 
-            fill="none"                                 
-            stroke="black"                                 
-            stroke-width="2.5"                               
-         />                               
-      </symbol>
-      <symbol                               
-         className="svg"                             
-         fill="currentColor"                
-         preserveAspectRatio="xMidYMid meet"                 
-         height="16" 
-         width="16"                               
-         viewBox="0 0 16 16"   
-         id="radio-checked"                          
-      >                               
-         <circle                                 
-            className="radioOutline"                              
-            cx="8"
-            cy="8"                                 
-            r="6.5"                                 
-            fill="none"                                 
-            stroke="black"                                 
+            cy="8"
+            r="6.5"
+            fill="none"
+            stroke="black"
             stroke-width="2.5"
-         />                               
-         <circle 
-            className="radioDot" 
-            cx="8" 
-            cy="8" 
-            r="3.5" 
-            fill="black" 
-         />                             
+         />
+      </symbol>
+      <symbol
+         className="svg"
+         fill="currentColor"
+         preserveAspectRatio="xMidYMid meet"
+         height="16"
+         width="16"
+         viewBox="0 0 16 16"
+         id="radio-checked"
+      >
+         <circle
+            className="radioOutline"
+            cx="8"
+            cy="8"
+            r="6.5"
+            fill="none"
+            stroke="black"
+            stroke-width="2.5"
+         />
+         <circle
+            className="radioDot"
+            cx="8"
+            cy="8"
+            r="3.5"
+            fill="black"
+         />
       </symbol>
     </svg>
   </xsl:template>
