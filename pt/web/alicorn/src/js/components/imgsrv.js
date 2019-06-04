@@ -101,6 +101,7 @@ export var Service = class {
     this.manifest = new Manifest(options.manifest);
     this.identifier = options.identifier;
     this.q1 = options.q1;
+    this.debug = options.debug;
     this.hasOcr = options.hasOcr;
     this.emitter = new NanoEvents();
     this.bindEvents();
@@ -110,7 +111,16 @@ export var Service = class {
     var width = 250; // one size fits all
     var meta = this.manifest.meta(options.seq);
     var rotation = meta.rotation || 0;
-    return `/cgi/imgsrv/thumbnail?id=${this.identifier};seq=${options.seq};width=${width};rotation=${rotation}`;
+    var params = [];
+    params.push(`id=${this.identifier}`);
+    params.push(`seq=${options.seq}`);
+    params.push(`width=${width}`);
+    params.push(`rotation=${rotation}`);
+    if ( this.debug ) {
+      params.push(`debug=${this.debug}`);
+    }
+    return `/cgi/imgsrv/thumbnail?${params.join(';')}`;
+    // return `/cgi/imgsrv/thumbnail?id=${this.identifier};seq=${options.seq};width=${width};rotation=${rotation}`;
   }
 
   image(options={}) {
@@ -118,7 +128,15 @@ export var Service = class {
     var param = this.bestFit(options);
     var meta = this.manifest.meta(options.seq);
     var rotation = meta.rotation || 0;
-    return `/cgi/imgsrv/${action}?id=${this.identifier};seq=${options.seq};${param.param}=${param.value};rotation=${rotation}`;
+    var params = [];
+    params.push(`id=${this.identifier}`);
+    params.push(`seq=${options.seq}`);
+    params.push(`${param.param}=${param.value}`);
+    params.push(`rotation=${rotation}`);
+    if ( this.debug ) {
+      params.push(`debug=${this.debug}`);
+    }
+    return `/cgi/imgsrv/${action}?${params.join(';')}`;
   }
 
   html(options={}) {
@@ -126,6 +144,9 @@ export var Service = class {
     var url = `/cgi/imgsrv/html?id=${this.identifier};seq=${options.seq}`;
     if ( this.q1 ) {
       url += `;q1=${this.q1}`;
+    }
+    if ( this.debug ) {
+      url += `;debug=${this.debug}`;
     }
     return url;
   }

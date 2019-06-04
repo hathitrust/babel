@@ -326,6 +326,7 @@ var service = new Service({
   },
   identifier: HT.params.id,
   q1: HT.params.q1,
+  debug: HT.params.debug,
   hasOcr: $main.dataset.hasOcr == 'true'
 })
 HT.service = service;
