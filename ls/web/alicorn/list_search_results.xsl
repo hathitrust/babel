@@ -172,6 +172,12 @@
     <xsl:call-template name="check-processing-errors" />
 
     <div class="results-container">
+      <xsl:attribute name="data-gdata">
+        <xsl:value-of select="/MBooksTop/SearchResults/G_CLICK_DATA" />
+      </xsl:attribute>
+      <xsl:attribute name="data-logger-url">
+        <xsl:value-of select="/MBooksTop/SearchResults/LoggerURL" />
+      </xsl:attribute>
       <!-- <h2 class="offscreen">Search Results</h2> -->
       <div class="results-summary-container">
         <h2 class="results-summary">
@@ -210,6 +216,9 @@
       <xsl:call-template name="build-collections-toolbar" />
       <xsl:call-template name="build-results-list" />
       <xsl:call-template name="build-nav-pagination" />
+      <script type="text/javascript">
+        head.js("/ls/alicorn/js/ls_clicklog.js");
+      </script>
     </div>
   </xsl:template>
 
@@ -223,7 +232,7 @@
     </xsl:if> -->
 
     <div class="results-container">
-      
+
       <xsl:call-template name="check-processing-errors" />
 
       <div class="results-summary-container">
@@ -388,9 +397,22 @@
           </div>
           <div class="resource-access-container">
             <ul>
-              <li><a href="http://catalog.hathitrust.org/Record/{record}"><i class="icomoon icomoon-info-circle" aria-hidden="true"></i> Catalog Record</a></li>
+              <li>
+                <a href="http://catalog.hathitrust.org/Record/{record}">
+                  <xsl:attribute name="data-clickdata">
+                    <xsl:value-of select="ItemClickData"/>
+                  </xsl:attribute>
+                  <xsl:attribute name="data-clicktype">catalog</xsl:attribute>
+                  <i class="icomoon icomoon-info-circle" aria-hidden="true"></i>
+                  <xsl:text> Catalog Record</xsl:text>
+                </a>
+              </li>
               <li>
                 <a href="https://babel.hathitrust.org/cgi/pt?id={ItemID}">
+                  <xsl:attribute name="data-clickdata">
+                    <xsl:value-of select="ItemClickData"/>
+                  </xsl:attribute>
+                  <xsl:attribute name="data-clicktype">pt</xsl:attribute>
                   <xsl:choose>
                     <xsl:when test="fulltext=1">
                       <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Full View</xsl:text>
