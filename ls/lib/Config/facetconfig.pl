@@ -181,9 +181,15 @@ $anyall_2_display = {"any"=>"any of these words",
 $yop_default ='after';
 $yop_order =["before","after","between","in"];
 
+# $yop_map = {
+#             "before" => "Before or during",
+#             "after" => "During or after",
+#             "between" => "Between",
+#             "in" => "Only during",
+#            };
 $yop_map = {
-            "before" => "Before or during",
-            "after" => "During or after",
+            "before" => "Before",
+            "after" => "After",
             "between" => "Between",
             "in" => "Only during",
            };

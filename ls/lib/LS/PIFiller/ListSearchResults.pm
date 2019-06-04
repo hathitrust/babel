@@ -232,6 +232,9 @@ sub handle_PAGING_PI
         $next_page =  'None';
     }
 
+    # reset pager to correct current page
+    $pager->current_page($current_page);
+
     # Wrap output in XML
     my $s = '';
     $s .= wrap_string_in_tag($pagelinks, 'PageLinks');
@@ -260,7 +263,11 @@ sub handle_PAGING_PI
     }
 
     my @values = $config->get('slice_sizes');
-    $s .= wrap_string_in_tag(_ls_make_slice_size_widget($current_value, \@values), 'SliceSizeWidget');
+    my $temp_cgi = new CGI($cgi);
+    $temp_cgi->delete('sz');
+    $temp_cgi->delete('pn');
+    my $temp_href = $temp_cgi->self_url() . ';sz=';
+    $s .= wrap_string_in_tag(_ls_make_slice_size_widget($current_value, \@values), 'SliceSizeWidget', [['href', $temp_href]]);
 
     return $s;
 }
@@ -2461,6 +2468,7 @@ sub getSpacedCollName
 sub __truncate_ary_ref
 {
     my $ary_ref=shift;
+    $ary_ref = [] unless ( ref($ary_ref) );
     my $length_limit = shift;
     my $new_length=$length_limit -1;
     my @temp=@{$ary_ref};

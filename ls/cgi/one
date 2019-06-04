@@ -40,17 +40,31 @@ my $SCHEME = qq{https};
 # }
 
 my $referer = $cgi->referer();
-if ( ( $referer =~ m,/test\., && $referer !~ m,\.babel, ) || $referer =~ m,/beta-3, ) {
+if ( $referer =~ m,mrnibbs.umdl.umich.edu, ) {
+    $LS_DOMAIN = qq{mrnibbs.umdl.umich.edu};
+    $CATALOG_DOMAIN = qq{mrnibbs.umdl.umich.edu};
+} elsif ( $referer =~ m,test\.www\.hathitrust\.org, ) {
+    $LS_DOMAIN = qq{beta-3.babel.hathitrust.org};
+    $CATALOG_DOMAIN = qq{beta-3.catalog.hathitrust.org};
+} elsif ( $referer =~ m,beta-3, ) {
+    $LS_DOMAIN = qq{beta-3.babel.hathitrust.org};
+    $CATALOG_DOMAIN = qq{beta-3.catalog.hathitrust.org};
+} elsif ( ( $referer =~ m,/test\., && $referer !~ m,\.babel, ) || $referer =~ m,/xxbeta-3, ) {
     # referer is a dev instance; update links
     $LS_DOMAIN = qq{test.$LS_DOMAIN};
     $CATALOG_DOMAIN = qq{test.$CATALOG_DOMAIN};
 } elsif ( $referer =~ m,/(.*)\.babel, ) {
     # referer is a babel dev instance
+    my $babel_prefix = (split(/\./, $ENV{SERVER_NAME}))[0];
+    my $prefix = $babel_prefix; $prefix =~ s,\-full,,;
     $LS_DOMAIN = $ENV{SERVER_NAME};
-    $CATALOG_DOMAIN = qq{test.$CATALOG_DOMAIN};
+    $CATALOG_DOMAIN = qq{$prefix.$CATALOG_DOMAIN};
 } elsif ( my ( $prefix ) = $referer =~ m,https?://(.*)\.catalog., ) {
     # referer is a catalog dev instance
     $CATALOG_DOMAIN = qq{$prefix.$CATALOG_DOMAIN};
+    my $babel_prefix = $prefix;
+    unless ( $babel_prefix =~ m,^beta, ) { $babel_prefix .= '-full'; }
+    $LS_DOMAIN = qq{$babel_prefix.$LS_DOMAIN};
 }
 # still needs to handle case of a catalog dev server
 
@@ -87,6 +101,11 @@ if ( $target eq 'ls' ) {
         $dest_cgi->param('setft', 'false');
     }
 
+}
+
+my @filters = $cgi->param('filter[]');
+if ( scalar @filters ) {
+    $dest_cgi->param('filter[]', @filters);
 }
 
 my $dest_url = $dest_cgi->url(-full=>1, -query=>1);

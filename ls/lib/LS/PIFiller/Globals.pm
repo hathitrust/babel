@@ -45,6 +45,19 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
+sub handle_TIMESTAMP_PI
+    : PI_handler(TIMESTAMP)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $href = $$piParamHashRef{href};
+    my $pathname = $href;
+    $pathname =~ s,/(^[/]+)/(.*)$,/$1/web/$2,;
+    my $mtime = (stat (qq{$ENV{SDRROOT}/$pathanme}))[9];
+
+    return "?_=$mtime";
+}
+
 sub handle_COLLECTION_NAME_PI
     : PI_handler(COLLECTION_NAME)
 {
@@ -55,6 +68,7 @@ sub handle_COLLECTION_NAME_PI
 
     return $coll_name;
 }
+
 
 # ---------------------------------------------------------------------
 
