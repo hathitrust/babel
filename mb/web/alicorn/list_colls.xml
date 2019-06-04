@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+
+  <!-- list_colls.xml -->
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>skeleton.xsl</Filename>
+    <Filename>js_utils.xsl</Filename>
+    <Filename>list_utils.xsl</Filename>
+    <!-- <Filename>loads.xsl</Filename> -->
+    <!-- <Filename>loads_helper_mb.xsl</Filename> -->
+    <!-- <Filename>coll.xsl</Filename> -->
+    <Filename>skin.xsl</Filename>
+    <Filename>common.xsl</Filename>
+    <Filename>list_colls.xsl</Filename>
+    <Filename>xsl2htmlutils.xsl</Filename>
+
+  </XslFileList>
+
+
+  <!-- Custom OPTIONAL XML for top-level file -->
+  <CustomXml><?CHUNK filename="list_colls_extra.xml" optional="1"?></CustomXml>
+
+  <?CHUNK filename="mbooks_globals.xml"?>
+  <?CHUNK filename="header.xml"?>
+  <?CHUNK filename="footer.xml"?>
+  <AddCollHref><?ADD_COLL_LINK?></AddCollHref>
+  <CollNameSortHref><?COLLNAME_SORT_HREF?></CollNameSortHref>
+  <OwnerSortHref><?OWNER_SORT_HREF?></OwnerSortHref>
+  <NumItemsSortHref><?NUM_ITEMS_SORT_HREF?></NumItemsSortHref>
+  <SharedSortHref><?SHARED_SORT_HREF?></SharedSortHref>
+  <CollectionsOwnedJs><?COLLECTIONS_OWNED_JS?></CollectionsOwnedJs>
+  <CollectionSizesJs><?COLLECTION_SIZES_JS?></CollectionSizesJs>  
+
+  <SortWidget>
+    <SortWidgetSort>
+      <Option>
+        <Label>Collection Title</Label>
+        <Value>CollName</Value>
+        <Focus>true</Focus>
+      </Option>
+      <Option>
+        <Label>Owner</Label>
+        <Value>OwnerString</Value>
+      </Option>
+      <Option data-sort="desc">
+        <Label>Last Updated</Label>
+        <Value>Updated</Value>
+      </Option>
+      <Option>
+        <Label>Items (low to high)</Label>
+        <Value>NumItems</Value>
+      </Option>
+      <Option data-sort="desc">
+        <Label>Items (high to low)</Label>
+        <Value>NumItems</Value>
+      </Option>
+    </SortWidgetSort>
+  </SortWidget>
+
+  <SliceSizeWidget>
+    <Option>
+      <Label>25</Label>
+      <Value>25</Value>
+      <Focus>true</Focus>
+    </Option>
+    <Option>
+      <Label>50</Label>
+      <Value>50</Value>
+    </Option>
+    <Option>
+      <Label>100</Label>
+      <Value>100</Value>
+    </Option>
+  </SliceSizeWidget>
+
+  <CollList><?COLL_LIST?></CollList>
+  <!-- DEPRECATED
+  <MyCollList>< ?MY_COLL_LIST? ></MyCollList>
+  <RecentlyAdded>< ?RECENTLY_ADDED list_size="3"? ></RecentlyAdded>
+  -->
+
+  <GoogleAnalytics/>
+
+</MBooksTop>
