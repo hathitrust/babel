@@ -276,6 +276,9 @@ export var Flip = class extends Base {
     var current = this.container.querySelector(`.slice[data-visible="true"]`);
     var slice_idx = this.seq2slice[seq];
     var target = this.container.querySelector(`.slice[data-slice="${slice_idx}"]`);
+
+    this.currentSeq = seq;
+
     // var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }
     if ( target == current ) { return ; }
@@ -293,7 +296,6 @@ export var Flip = class extends Base {
     this.loadSlice(target);
     // this.loadImage(target, true);
     this.reader.emit('relocated', { seq: this.slice2seq(slice_idx) });
-    this.currentSeq = seq;
   }
 
   _visible(target) {

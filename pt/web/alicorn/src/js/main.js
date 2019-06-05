@@ -414,7 +414,7 @@ window.addEventListener('scroll', _scrollCheck);
 $main.dataset.selected = 0;
 
 reader.on('track', () => {
-  if ( HT.analytics ) {
+  if ( HT.analytics && HT.analytics._simplifyPageHref ) {
     HT.analytics.trackPageview(HT.analytics._simplifyPageHref(location.href));
   }
 })

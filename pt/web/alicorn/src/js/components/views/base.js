@@ -279,14 +279,20 @@ export var Base = class {
   }
 
   imageUrl(params) {
+    var oprams =  params;
     if ( params instanceof HTMLElement ) {
       var element = params; params = {};
       params.seq = element.dataset.seq;
-      params.width = element.offsetWidth;
+      params.width = element.offsetWidth || 680;
     }
     // if ( this.reader.pagedetails.rotate[params.seq] ) {
     //   params.rotation = this.reader.pagedetails.rotate[params.seq];
     // }
+
+    if ( ! params.width && ! params.height ) {
+      console.log("AHOY IMAGEURL PROBLEM", params, oprams);
+    }
+
     return this.service.image(params);
   }
 
