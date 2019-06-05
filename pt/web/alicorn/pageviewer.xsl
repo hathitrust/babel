@@ -249,7 +249,8 @@
 
   <xsl:template name="navbar-site-links">
     <ul id="nav" class="nav">
-      <li><a class="home-link" href="https://www.hathitrust.org"><span class="offscreen">Home</span></a></li>
+      <li><a class="home-link" href="https://www.hathitrust.org" aria-hidden="true"><span class="offscreen">Home</span></a></li>
+      <!-- <li><a href="https://www.hathitrust.org">Home</a></li> -->
       <li class="nav-menu">
         <!-- <a href="https://www.hathitrust.org/about">About</a> -->
         <a href="#" aria-haspopup="true" id="about-menu">About <i class="icomoon icomoon-triangle" aria-hidden="true" style="position: absolute; top: 35%"></i></a>
