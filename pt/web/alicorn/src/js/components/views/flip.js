@@ -316,7 +316,7 @@ export var Flip = class extends Base {
 
   slice2seq(slice_idx) {
     var tuple = this.slices[slice_idx];
-    if ( tuple[0] ) { return tuple[0].seq; }
+    if ( tuple[0] && tuple[0].seq ) { return tuple[0].seq; }
     return tuple[1].seq;
   }
 
