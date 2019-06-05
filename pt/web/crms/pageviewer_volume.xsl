@@ -28,7 +28,7 @@
   </xsl:template>
 
   <xsl:template name="load-extra-main-script">
-    <script type="text/javascript">head.load('/pt/crms/crms.js')</script>
+    <script type="text/javascript"><xsl:text>head.load('/pt/crms/crms.js</xsl:text><xsl:value-of select="$timestamp" /><xsl:text>')</xsl:text></script>
   </xsl:template>
 
 
