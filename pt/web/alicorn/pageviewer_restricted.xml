@@ -34,9 +34,9 @@
     <Filename>skeleton.xsl</Filename>
     <Filename>common.xsl</Filename>
     <Filename>js_utils.xsl</Filename>
-    <!-- <Filename>loads.xsl</Filename> -->
-    <!-- <Filename>loads_helper_pt.xsl</Filename> -->
-    <!-- <Filename>coll.xsl</Filename> -->
+    <Filename>loads.xsl</Filename>
+    <Filename>loads_helper_pt.xsl</Filename>
+    <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
     <Filename>pageviewer.xsl</Filename>
     <Filename>pageviewer_restricted.xsl</Filename>
