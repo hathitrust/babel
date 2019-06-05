@@ -92,7 +92,7 @@ export var Manifest = class {
   }
 
   seq(pageNum) {
-    return this._num2seq[pageNum] || seq;
+    return this._num2seq[pageNum] || pageNum;
   }
 }
 
