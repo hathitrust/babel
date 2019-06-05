@@ -254,6 +254,7 @@
         <!-- <a href="https://www.hathitrust.org/about">About</a> -->
         <a href="#" aria-haspopup="true" id="about-menu">About <i class="icomoon icomoon-triangle" aria-hidden="true" style="position: absolute; top: 35%"></i></a>
         <ul class="navbar-menu-children" role="menu" aria-labelledby="about-menu" aria-hidden="true">
+          <li><a href="https://www.hathitrust.org/about">Welcome to HathiTrust</a></li>
           <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
           <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
           <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
