@@ -79,7 +79,10 @@ export var Navigator = class {
           }
         ],
         {
-          header: "Jump to page scan"
+          header: "Jump to page scan",
+          onShow: function(modal) {
+            modal.querySelector("input[name='seq']").focus();
+          }
         }
       );
       var input_seq = $dialog.modal.querySelector('input[name="seq"]');
