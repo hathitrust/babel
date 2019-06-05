@@ -118,6 +118,8 @@ var Reader = class {
     var t2 = performance.now();
     this.emit('configure', this.view.config());
     this._updateViews(params.view);
+
+    HT.prefs.set({ pt : { view : params.view } })
     console.log(`BENCHMARK setView: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
   }
 

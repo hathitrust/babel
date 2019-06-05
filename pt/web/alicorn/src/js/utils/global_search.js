@@ -86,7 +86,6 @@ head.ready(function() {
     $form.submit(function(event)
          {
 
-
             if ( ! this.checkValidity() ) {
                 this.reportValidity();
                 return false;

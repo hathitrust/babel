@@ -319,7 +319,7 @@
                 <!-- </form> -->
               </div>
               <div class="modal__footer">
-                <button class="modal__btn" data-micromodal-close="true" aria-label="Close modal">Close</button>
+                <button class="modal__btn btn" data-micromodal-close="true" aria-label="Close modal">Close</button>
                 <button class="modal__btn btn btn-primary">Search</button>
               </div>
             </form>
