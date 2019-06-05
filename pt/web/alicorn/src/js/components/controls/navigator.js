@@ -63,7 +63,7 @@ export var Navigator = class {
 
     this.prompt.addEventListener('click', (event) => {
       event.preventDefault();
-      bootbox.dialog(
+      var $dialog = bootbox.dialog(
         // `<p>Jump to which page scan?</p><p><input type="text" name="seq" class="input-medium" placeholder="Enter a page scan sequence (e.g. 1-${this.reader.service.manifest.totalSeq})" /></p>`,
         promptHTML,
         [
@@ -81,7 +81,15 @@ export var Navigator = class {
         {
           header: "Jump to page scan"
         }
-      )
+      );
+      var input_seq = $dialog.modal.querySelector('input[name="seq"]');
+      input_seq.addEventListener('keydown', function(event) {
+        if ( event.keyCode == 13 ) {
+          event.preventDefault();
+          this.handleValue(input_seq.value);
+          $dialog.closeModal();
+        }
+      }.bind(this));
     })
 
     if ( this.form ) {
