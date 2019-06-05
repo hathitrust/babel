@@ -447,6 +447,7 @@
           <xsl:call-template name="main" />
         </section>
       </div>
+      <xsl:call-template name="get-access-statements" />
     </main>
   </xsl:template>
 
