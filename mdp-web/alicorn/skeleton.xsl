@@ -229,7 +229,7 @@
           </span>
         </li>
         <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
-        <li><a id="logout-link" href="{//Header/LoginLink}">Logout</a></li>
+        <li><a id="logout-link" href="{//Header/LoginLink}">Log out</a></li>
       </xsl:when>
       <xsl:otherwise>
         <li><a id="login-link" class="trigger-login action-login" data-close-target=".modal.login" href="{//Header/LoginLink}">Log in</a></li>
