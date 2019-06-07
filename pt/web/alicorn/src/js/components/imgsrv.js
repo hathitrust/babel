@@ -70,7 +70,7 @@ export var Manifest = class {
   checkFeatures(seq, feature) {
     var data = this.featureMap[seq];
     if ( data && data.features ) {
-      if ( feature === undefined ) { return data.features.length() > 1 };
+      if ( feature === undefined ) { return data.features.length > 1 };
       return ( data.features.indexOf(feature) > -1 );
     }
     return false;
