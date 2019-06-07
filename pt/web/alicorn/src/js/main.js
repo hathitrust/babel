@@ -179,18 +179,8 @@ var Reader = class {
     });
 
     this.on('relocated', (params) => {
-      var href = window.location.pathname + location.search;
-      var argv = [];
-      argv.push(`id=${this.identifier}`);
-      argv.push(`view=${this.view.name}`);
-      argv.push(`seq=${params.seq || HT.params.seq}`);
-      if ( HT.params.skin ) { argv.push(`skin=${HT.params.skin}`); }
-      if ( this.options.scale != 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
-      if ( HT.params.debug ) { argv.push(`debug=${HT.params.debug}`); }
-      if ( HT.params.l11_tracking ) { argv.push(`l11_tracking=${HT.params.l11_tracking}`); }
-      if ( HT.params.l11_uid ) { argv.push(`l11_uid=${HT.params.l11_uid}`); }
-      var new_href = location.pathname + '?' + argv.join('&');
-      window.history.replaceState(null, document.title, new_href);
+
+      this._updateHistoryUrl(params);
 
       // legacy
       HT.params.seq = params.seq;
@@ -247,6 +237,7 @@ var Reader = class {
       inputs[i].value = view;
     }
     $root.dataset.view = view;
+    this._updateHistoryUrl({ view: view });
   }
 
   _updateLinkSeq($link, seq, disabled) {
@@ -276,6 +267,21 @@ var Reader = class {
           this._updateLinkAttribute($link, "seq", seq);
       }
     }
+  }
+
+  _updateHistoryUrl(params) {
+    var href = window.location.pathname + location.search;
+    var argv = [];
+    argv.push(`id=${this.identifier}`);
+    argv.push(`view=${params.view || this.view.name}`);
+    argv.push(`seq=${params.seq || HT.params.seq}`);
+    if ( HT.params.skin ) { argv.push(`skin=${HT.params.skin}`); }
+    if ( this.options.scale != 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
+    if ( HT.params.debug ) { argv.push(`debug=${HT.params.debug}`); }
+    if ( HT.params.l11_tracking ) { argv.push(`l11_tracking=${HT.params.l11_tracking}`); }
+    if ( HT.params.l11_uid ) { argv.push(`l11_uid=${HT.params.l11_uid}`); }
+    var new_href = location.pathname + '?' + argv.join('&');
+    window.history.replaceState(null, document.title, new_href);
   }
 
   _updateLinkAttribute($link, key, value) {
