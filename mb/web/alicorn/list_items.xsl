@@ -602,7 +602,7 @@
             <xsl:apply-templates select="//Paging/StartPageLinks/PageURL" />
           </xsl:if>
           <xsl:if test="//Paging/MiddlePageLinks/PageURL">
-            <xsl:apply-templates select="//Paging/StartPageLinks/PageURL" />
+            <xsl:apply-templates select="//Paging/MiddlePageLinks/PageURL" />
           </xsl:if>
           <xsl:if test="(//Paging/StartPageLinks = 'None' or count(//Paging/StartPageLinks) = 1) and //Paging/MiddlePageLinks = 'None' and //Paging/EndPageLinks/PageURL">
             <xsl:apply-templates select="//Paging/EndPageLinks/PageURL" />

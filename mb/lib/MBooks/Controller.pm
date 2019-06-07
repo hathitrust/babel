@@ -203,7 +203,7 @@ sub handle_error
     
     $error_cgi->param('a', 'page');
     $error_cgi->param('page', 'error');
-    $error_cgi->param('debug', $cgi->param('debug'));
+    $error_cgi->param('debug', scalar $cgi->param('debug'));
     $C->set_object('CGI', $error_cgi);
 
     $self->___core_initialize($C);
