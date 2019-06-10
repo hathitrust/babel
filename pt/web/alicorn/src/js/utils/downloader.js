@@ -60,6 +60,7 @@ HT.Downloader = {
         var html =
             // '<p>Building your PDF...</p>' +
             `<div class="initial"><p>Setting up the download...</div>` +
+            `<div class="offscreen" role="status" aria-atomic="true" aria-live="polite"></div>` +
             '<div class="progress progress-striped active hide" aria-hidden="true">' +
                 '<div class="bar" width="0%"></div>' +
             '</div>' +
@@ -80,7 +81,7 @@ HT.Downloader = {
             [
                 {
                     label : 'Cancel',
-                    'class' : 'btn-x-dismiss',
+                    'class' : 'btn-x-dismiss btn',
                     callback: function() {
                         if ( self.$dialog.data('deactivated') ) {
                             self.$dialog.closeModal();
@@ -109,8 +110,9 @@ HT.Downloader = {
                 id: 'download'
             }
         );
+        self.$status = self.$dialog.find("div[role=status]");
 
-        // HT.update_status(`Building your ${self.item_title}.`);
+        // self.updateStatusText(`Building your ${self.item_title}.`);
 
         self.requestDownload();
 
@@ -231,7 +233,7 @@ HT.Downloader = {
         if ( self.$dialog.find(".initial").is(":visible") ) {
             self.$dialog.find(".initial").html(`<p>Please wait while we build your ${self.item_title}.</p>`);
             self.$dialog.find(".progress").removeClass("hide");
-            HT.update_status(`Please wait while we build your ${self.item_title}.`)
+            self.updateStatusText(`Please wait while we build your ${self.item_title}.`)
         }
 
         self.$dialog.find(".bar").css({ width : percent + '%'});
@@ -240,7 +242,7 @@ HT.Downloader = {
             self.$dialog.find(".progress").hide();
             var download_key = navigator.userAgent.indexOf('Mac OS X') != -1 ? 'RETURN' : 'ENTER';
             self.$dialog.find(".initial").html(`<p>All done! Your ${self.item_title} is ready for download. <span class="offscreen">Select ${download_key} to download.</span></p>`);
-            HT.update_status(`All done! Your ${self.item_title} is ready for download. Select ${download_key} to download.`);
+            self.updateStatusText(`All done! Your ${self.item_title} is ready for download. Select ${download_key} to download.`);
 
             // self.$dialog.find(".done").show();
             var $download_btn = self.$dialog.find('.download-pdf');
@@ -259,11 +261,11 @@ HT.Downloader = {
                 $download_btn.focus();
             }
             self.$dialog.data('deactivated', true);
-            // HT.update_status(`Your ${self.item_title} is ready for download. Press return to download.`);
+            // self.updateStatusText(`Your ${self.item_title} is ready for download. Press return to download.`);
             // still could cancel
         } else {
             self.$dialog.find(".initial").text(`Please wait while we build your ${self.item_title} (${Math.ceil(percent)}% completed).`);
-            HT.update_status(`${Math.ceil(percent)}% completed`);
+            self.updateStatusText(`${Math.ceil(percent)}% completed`);
         }
 
         return status;
@@ -381,6 +383,22 @@ HT.Downloader = {
         $.get(self.src + ';num_attempts=' + self.num_attempts);
     },
 
+    updateStatusText: function(message) {
+        var self = this;
+        if ( self._lastMessage != message ) {
+          if ( self._lastTimer ) { clearTimeout(self._lastTimer); self._lastTimer = null; }
+
+          setTimeout(() => {
+            self.$status.text(message);
+            self._lastMessage = message;
+            console.log("-- status:", message);
+          }, 50);
+          self._lastTimer = setTimeout(() => {
+            self.$status.get(0).innerText = '';
+          }, 500);
+
+        }
+    },
 
     EOT: true
 
