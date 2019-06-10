@@ -524,6 +524,9 @@
       <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
         <input type="hidden" name="num" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']}" />
       </xsl:if>
+      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
+        <input type="hidden" name="debug" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']}" />
+      </xsl:if>
     </form>
   </xsl:template>
 
