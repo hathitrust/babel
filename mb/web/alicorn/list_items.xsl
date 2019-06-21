@@ -46,6 +46,20 @@
       <xsl:value-of select="//CollectionSizesJs" />
     </script>
     <style type="text/css">
+      html.debugpolite div[role="status"] {
+
+        position: fixed !important;
+        top: 10px;
+        right: 10px;
+        clip: unset;
+        width: 50vw;
+        height: 1.5rem;
+        border: 1px solid green;
+        background: white;
+        color: black;
+        text-align: right;
+
+      }
     </style>
   </xsl:template>
 
@@ -189,7 +203,7 @@
         </xsl:if>
         <xsl:attribute name="data-href"><xsl:value-of select="$href" /></xsl:attribute>
       </xsl:if>
-      <span class="offscreen" id="{$label}">View</span>
+      <!-- <span class="offscreen" id="{$label}">View</span> -->
       <div class="checkbox">
         <svg xmlns="http://www.w3.org/2000/svg" class="icon">
           <use>
@@ -204,7 +218,7 @@
           </use>
         </svg>
       </div>
-      <span class="flex-space-between flex-center">
+      <span class="flex-space-between flex-center" id="${label}">
         <span class="filter-name"><xsl:value-of select="$name" /><xsl:text> </xsl:text></span>
         <xsl:if test="$count > 0">
           <span class="filter-count"><xsl:value-of select="$display" /></span>
@@ -570,7 +584,7 @@
             </xsl:element>
           </xsl:for-each>
         </select>
-        <button class="button btn btn-primary" id="addits">Add Selected</button>
+        <button class="button btn" id="addits">Add Selected</button>
         <xsl:if test="/MBooksTop/EditCollectionWidget/OwnedByUser='yes' ">
           <xsl:call-template name="build-item-selected-owner-actions"/>
         </xsl:if>

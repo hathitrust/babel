@@ -51,10 +51,14 @@
         margin: auto;
       }
 
-      .record-title {
+      .record-title-actions {
         display: flex;
         align-items: center;
         justify-content: space-between;
+      }
+
+      .record-title {
+        flex-grow: 1;
       }
 
       .results-summary {
@@ -348,8 +352,10 @@
       </div>
       <div class="record-container record-medium-container">
         <div class="record-title-and-actions-container">
-          <h3 class="record-title">
-            <a href="/cgi/mb?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
+          <div class="record-title-actions">
+            <h3 class="record-title">
+              <a href="/cgi/mb?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
+            </h3>
             <xsl:if test="@featured = 'TRUE' or Owner = $gUserId">
               <div class="actions">
                 <xsl:if test="@featured = 'TRUE'">
@@ -369,7 +375,7 @@
                 </xsl:if>
               </div>
             </xsl:if>
-          </h3>
+          </div>
           <dl style="font-size: .9rem">
             <dt>Updated</dt>
             <dd><xsl:value-of select="Updated_Display" /></dd>

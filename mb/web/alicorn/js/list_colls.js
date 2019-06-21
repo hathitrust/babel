@@ -321,26 +321,28 @@ var ListBrowser = function(argv, elem) {
     // var template = document.querySelector('#article-template');
 
     var template =
-     '<article class="record">' + 
-        '<div class="cover">' + 
-        '</div>' + 
-        '<div class="record-container record-medium-container">' + 
-          '<div class="record-title-and-actions-container">' + 
-            '<h3 class="record-title">' + 
-              '<a data-key="CollName" href="#"></a>' + 
-              '<div class="actions"></div>' + 
-            '</h3>' + 
-            '<dl style="font-size: .9rem">' + 
-              '<dt>Updated</dt>' + 
-              '<dd data-key="Updated_Display"></dd>' + 
-              '<dt>Owner</dt>' + 
-              '<dd data-key="OwnerName"></dd>' + 
-              '<dt>Number of items</dt>' + 
-              '<dd data-key="NumItems_Display"></dd>' + 
-            '</dl>' + 
-          '</div>' + 
-          '<div class="resource-access-container" data-key="Description"></div>' + 
-        '</div>' + 
+     '<article class="record">' +
+        '<div class="cover">' +
+        '</div>' +
+        '<div class="record-container record-medium-container">' +
+          '<div class="record-title-and-actions-container">' +
+            '<div class="record-title-actions">' +
+              '<h3 class="record-title">' +
+                '<a data-key="CollName" href="#"></a>' +
+              '</h3>' +
+              '<div class="actions"></div>' +
+            '</div>' +
+            '<dl style="font-size: .9rem">' +
+              '<dt>Updated</dt>' +
+              '<dd data-key="Updated_Display"></dd>' +
+              '<dt>Owner</dt>' +
+              '<dd data-key="OwnerName"></dd>' +
+              '<dt>Number of items</dt>' +
+              '<dd data-key="NumItems_Display"></dd>' +
+            '</dl>' +
+          '</div>' +
+          '<div class="resource-access-container" data-key="Description"></div>' +
+        '</div>' +
       '</article>'
 
     var fragment = document.createDocumentFragment();
@@ -382,7 +384,7 @@ var ListBrowser = function(argv, elem) {
                 '<button class="btn btn-sm action-delete" data-href="{HREF}">Delete</button>'
                 .replace('{HREF}', datum.DeleteCollHref);
             }
-            node = node.parentNode.querySelector('.actions');
+            node = node.parentNode.parentNode.querySelector('.actions');
             node.innerHTML = html;
           }
         }
@@ -577,8 +579,8 @@ var ListBrowser = function(argv, elem) {
 
     var idx = options.min_items_possibles.indexOf(options.min_items);
     options.max_items = options.min_items_possibles[idx - 1] || Number.POSITIVE_INFINITY;
-    root.add_filter({ 
-      type : "min_items", 
+    root.add_filter({
+      type : "min_items",
       value: options.min_items,
       message: options.min_items + " items (up to " + options.max_items + ")",
       fn : function(tr) {
