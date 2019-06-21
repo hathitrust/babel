@@ -1042,7 +1042,7 @@ sub handle_BASE_IMAGE_DIMENSIONS
             }
         }
 
-        $cache->Set($mdpItem->GetId(), $cache_key, $info);
+        $cache->Set($mdpItem->GetId(), $cache_key, { ImageWidth => $$info{ImageWidth}, ImageHeight => $$info{ImageHeight} });
     }
 
     my $use_height = int($$info{ImageHeight} * ( 680.0 / $$info{ImageWidth} ));
