@@ -616,7 +616,7 @@
         </xsl:if>
         <xsl:attribute name="data-href"><xsl:value-of select="$href" /></xsl:attribute>
       </xsl:if>
-      <span class="offscreen" id="{$label}">View</span>
+      <!-- <span class="offscreen" id="{$label}">View</span> -->
       <div class="checkbox">
         <svg xmlns="http://www.w3.org/2000/svg" class="icon">
           <use>
@@ -631,7 +631,7 @@
           </use>
         </svg>
       </div>
-      <span class="flex-space-between flex-center">
+      <span class="flex-space-between flex-center" id="{$label}">
         <span class="filter-name"><xsl:value-of select="$name" /><xsl:text> </xsl:text></span>
         <xsl:if test="$count > 0">
           <span class="filter-count"><xsl:value-of select="$display" /></span>
