@@ -1,1 +1,550 @@
-.row .kill-span-right-margin{margin-right:0}body{font-size:16px ;font-size:1.6rem }h4{font-size:18px ;font-size:1.8rem }.container{padding:20px ;padding:2rem ;padding-right:65px ;padding-right:6.5rem ;padding-left:65px ;padding-left:6.5rem ;padding-bottom:33px ;padding-bottom:3.3rem }.container.centered{width:950px ;width:95rem ;max-width:1050px ;max-width:105rem ;min-width:inherit;max-width:none}.container.page.centered{margin-top:-40px ;margin-top:-4rem ;padding-left:40px ;padding-left:4rem ;padding-right:40px ;padding-right:4rem }.main-section-title{font-size:24px ;font-size:2.4rem ;margin-top:0px ;margin-top:0rem ;text-align:center;margin-bottom:20px ;margin-bottom:2rem }.back-to-referer{width:200px;margin:0.5em auto 1.5em;text-align:center}.row.versus{display:table;padding:0}.row.versus>div{display:table-cell;width:50%}.row.versus>div>div{padding:1.4em}.row.versus>div:first-child{border-right:1px solid #666}#top-row-cells-wrapper{background-color:#fcf5d9}#partner-cell-left{background:url("/common/unicorn/img/homepage/stripes.png");background-color:#fffefb;margin-right:0}#partner-cell-left>div{padding:20px ;padding:2rem ;padding-top:15px ;padding-top:1.5rem }.partner-cell-title{font-size:20px ;font-size:2rem ;font-weight:bold;margin-top:0px ;margin-top:0rem ;margin-bottom:10px ;margin-bottom:1rem }.partner-cell-text{font-size:16px ;font-size:1.6rem ;margin-bottom:10px ;margin-bottom:1rem ;min-height:60px ;min-height:6rem }.partner-can-do-cells-wrapper{width:100%;min-height:250px ;min-height:25rem ;margin:auto;text-align:center}.partner-can-do-cells-wrapper p{text-align:left}.partner-can-do-cell{background-color:#fffefb;border:1px solid #e8e4e4;display:inline-block;float:left;width:165px ;width:16.5rem ;height:175px ;height:17.5rem ;margin-right:10px ;margin-right:1rem ;margin-bottom:30px ;margin-bottom:3rem ;text-align:center;position:relative}.partner-can-do-cell>div{padding-right:11px ;padding-right:1.1rem ;padding-left:11px ;padding-left:1.1rem ;padding-top:16px ;padding-top:1.6rem ;padding-bottom:0px ;padding-bottom:0rem }.partner-can-do-cell i{font-size:34px ;font-size:3.4rem ;color:#ef7c22;position:absolute;top:-23px ;top:-2.3rem ;left:-8px ;left:-0.8rem }.partner-can-do-cell img{height:72px ;height:7.2rem }.partner-can-do-cell p{font-size:14px ;font-size:1.4rem ;height:90px ;height:9rem ;text-align:left}#partner-cell-right>div{padding:25px ;padding:2.5rem }#partner-cell-right p{font-size:16px ;font-size:1.6rem }#continue-button{text-align:right}.button.continue{padding-top:4px ;padding-top:0.4rem ;padding-bottom:4px ;padding-bottom:0.4rem ;margin-top:0px ;margin-top:0rem ;margin-right:0px ;margin-right:0rem }#idp{width:100%;font-size:12px ;font-size:1.2rem }#no-institution-listed{font-size:12px ;font-size:1.2rem ;text-align:right;margin-top:25px ;margin-top:2.5rem }.not-provided-msg-text{font-style:italic;font-size:14px ;font-size:1.4rem ;color:#6d6d6d;margin-left:15px ;margin-left:1.5rem ;margin-top:0}#bottom-row-cells-wrapper{background-color:#f9f8f5}#friend-cell-left{background:url("/common/unicorn/img/WAYF/stripes-lighter.png");background-color:#fffefb;margin-right:0}#friend-cell-left>div{padding:20px ;padding:2rem ;padding-top:4px ;padding-top:0.4rem }.friend-cell-title{font-size:16px ;font-size:1.6rem ;font-weight:bold;margin-bottom:7px ;margin-bottom:0.7rem }.friend-cell-text{font-size:14px ;font-size:1.4rem ;margin-bottom:20px ;margin-bottom:2rem }.friend-can-do-cells-wrapper{max-width:440px ;max-width:44rem ;text-align:center;width:100%;margin:auto}.friend-do-cell-common{border:1px solid #e8e4e4;display:inline;float:left;width:170px ;width:17rem ;height:125px ;height:12.5rem ;text-align:center;position:relative}.friend-can-do-cell{background-color:#fffefb;margin-right:40px ;margin-right:4rem ;margin-left:10px ;margin-left:1rem }.friend-cannot-do-cell{background-color:#e4e4e4;background-color:rgba(105,105,105,0.1)}.friend-cannot-do-cell i{color:gray;font-size:20px ;font-size:2rem }.friend-can-do-cell i{color:#ef7c22;font-size:28px ;font-size:2.8rem }.friend-cannot-do-cell i,.friend-can-do-cell i{position:absolute;top:-15px ;top:-1.5rem ;left:-8px ;left:-0.8rem }.friend-can-do-cell img{height:54px ;height:5.4rem }.friend-cannot-do-cell p,.friend-can-do-cell p{font-size:14px ;font-size:1.4rem ;text-align:left}#friend-cell-right{margin-top:15px ;margin-top:1.5rem }#friend-cell-right>div{padding-top:15px ;padding-top:1.5rem ;padding-left:25px ;padding-left:2.5rem ;padding-right:25px ;padding-right:2.5rem }#friend-cell-right p{font-size:14px ;font-size:1.4rem }input.select2-search__field{height:2em}#no-institution-listed{margin-top:25px ;margin-top:2.5rem ;font-size:16px ;font-size:1.6rem }.icomoon-blank:before{content:'.'}.can-do-list{min-height:8.5rem}.can-do-list ul{font-size:90%;margin:0;padding:0 0 0.25em 1em}.can-do-list.explain{min-height:26rem}@media all and (max-width: 900px){.container.centered{width:95%}.navbar-inner{width:auto}.navbar-static-top.navbar-inverse{min-width:0}}@media all and (max-width: 480px){.container.page.centered{padding-left:1em;padding-right:1em}.row.versus{width:100%}.row.versus>div{display:table;width:100%;padding-left:0}.row.versus>div:first-child{border-right:none;padding-right:0;border-bottom:1px solid #666;padding-bottom:2em}.partner-can-do-cells-wrapper,.friend-can-do-cells-wrapper{display:none}.search-form{height:0 !important}#header{margin-bottom:2em}.navbar-inner{width:auto}.navbar-static-top.navbar-inverse{min-width:0;display:none}.navbar-static-bottom{display:none}}
+/* -------------------------------------------------------------------------*/
+/* Variables */
+/* -------------------------------------------------------------------------*/
+/* Utils */
+/* line 17, ../sass/screen.scss */
+.row .kill-span-right-margin {
+  margin-right: 0;
+}
+
+/* -------------------------------------------------------------------------*/
+/* Layout */
+/* line 24, ../sass/screen.scss */
+body {
+  font-size: 16px ;
+  font-size: 1rem ;
+}
+
+/* line 28, ../sass/screen.scss */
+h4 {
+  font-size: 18px ;
+  font-size: 1.125rem ;
+}
+
+/* line 32, ../sass/screen.scss */
+.container {
+  padding: 20px ;
+  padding: 1.25rem ;
+  padding-right: 65px ;
+  padding-right: 4.0625rem ;
+  padding-left: 65px ;
+  padding-left: 4.0625rem ;
+  padding-bottom: 33px ;
+  padding-bottom: 2.0625rem ;
+}
+
+/* line 39, ../sass/screen.scss */
+.container.centered {
+  width: 950px ;
+  width: 59.375rem ;
+  max-width: 1050px ;
+  max-width: 65.625rem ;
+  min-width: inherit;
+  max-width: none;
+}
+
+/* line 46, ../sass/screen.scss */
+.container.page.centered {
+  margin-top: -40px ;
+  margin-top: -2.5rem ;
+  padding-left: 40px ;
+  padding-left: 2.5rem ;
+  padding-right: 40px ;
+  padding-right: 2.5rem ;
+}
+
+/* line 52, ../sass/screen.scss */
+.main-section-title {
+  font-size: 24px ;
+  font-size: 1.5rem ;
+  margin-top: 0px ;
+  margin-top: 0rem ;
+  text-align: center;
+  margin-bottom: 20px ;
+  margin-bottom: 1.25rem ;
+}
+
+/* line 59, ../sass/screen.scss */
+.back-to-referer {
+  width: 200px;
+  margin: 0.5em auto 1.5em;
+  text-align: center;
+}
+
+/* line 65, ../sass/screen.scss */
+.row.versus {
+  display: table;
+  padding: 0;
+}
+/* line 69, ../sass/screen.scss */
+.row.versus > div {
+  display: table-cell;
+  width: 50%;
+}
+/* line 75, ../sass/screen.scss */
+.row.versus > div > div {
+  padding: 1.4em;
+}
+/* line 79, ../sass/screen.scss */
+.row.versus > div:first-child {
+  border-right: 1px solid #666666;
+}
+
+/* Top row */
+/* line 89, ../sass/screen.scss */
+#top-row-cells-wrapper {
+  background-color: #fcf5d9;
+}
+
+/* Top row, left cell */
+/* line 95, ../sass/screen.scss */
+#partner-cell-left {
+  background: url("/common/unicorn/img/homepage/stripes.png");
+  background-color: #fffefb;
+  margin-right: 0;
+}
+
+/* line 101, ../sass/screen.scss */
+#partner-cell-left > div {
+  padding: 20px ;
+  padding: 1.25rem ;
+  padding-top: 15px ;
+  padding-top: 0.9375rem ;
+}
+
+/* line 106, ../sass/screen.scss */
+.partner-cell-title {
+  font-size: 20px ;
+  font-size: 1.25rem ;
+  font-weight: bold;
+  margin-top: 0px ;
+  margin-top: 0rem ;
+  margin-bottom: 10px ;
+  margin-bottom: 0.625rem ;
+}
+
+/* line 113, ../sass/screen.scss */
+.partner-cell-text {
+  font-size: 16px ;
+  font-size: 1rem ;
+  margin-bottom: 10px ;
+  margin-bottom: 0.625rem ;
+  min-height: 60px ;
+  min-height: 3.75rem ;
+}
+
+/* line 119, ../sass/screen.scss */
+.partner-can-do-cells-wrapper {
+  width: 100%;
+  min-height: 250px ;
+  min-height: 15.625rem ;
+  margin: auto;
+  text-align: center;
+}
+/* line 127, ../sass/screen.scss */
+.partner-can-do-cells-wrapper p {
+  text-align: left;
+}
+
+/* line 133, ../sass/screen.scss */
+.partner-can-do-cell {
+  background-color: #fffefb;
+  border: 1px solid #e8e4e4;
+  display: inline-block;
+  float: left;
+  width: 165px ;
+  width: 10.3125rem ;
+  height: 175px ;
+  height: 10.9375rem ;
+  margin-right: 10px ;
+  margin-right: 0.625rem ;
+  margin-bottom: 30px ;
+  margin-bottom: 1.875rem ;
+  text-align: center;
+  position: relative;
+}
+
+/* line 150, ../sass/screen.scss */
+.partner-can-do-cell > div {
+  padding-right: 11px ;
+  padding-right: 0.6875rem ;
+  padding-left: 11px ;
+  padding-left: 0.6875rem ;
+  padding-top: 16px ;
+  padding-top: 1rem ;
+  padding-bottom: 0px ;
+  padding-bottom: 0rem ;
+}
+
+/* line 157, ../sass/screen.scss */
+.partner-can-do-cell i {
+  font-size: 34px ;
+  font-size: 2.125rem ;
+  color: #ef7c22;
+  position: absolute;
+  top: -23px ;
+  top: -1.4375rem ;
+  left: -8px ;
+  left: -0.5rem ;
+}
+
+/* line 165, ../sass/screen.scss */
+.partner-can-do-cell img {
+  height: 72px ;
+  height: 4.5rem ;
+}
+
+/* line 169, ../sass/screen.scss */
+.partner-can-do-cell p {
+  font-size: 14px ;
+  font-size: 0.875rem ;
+  height: 90px ;
+  height: 5.625rem ;
+  text-align: left;
+}
+
+/* Top row, right cell */
+/* line 179, ../sass/screen.scss */
+#partner-cell-right > div {
+  padding: 25px ;
+  padding: 1.5625rem ;
+}
+
+/* line 183, ../sass/screen.scss */
+#partner-cell-right p {
+  font-size: 16px ;
+  font-size: 1rem ;
+}
+
+/* line 188, ../sass/screen.scss */
+#continue-button {
+  text-align: right;
+}
+
+/* line 192, ../sass/screen.scss */
+.button.continue {
+  padding-top: 4px ;
+  padding-top: 0.25rem ;
+  padding-bottom: 4px ;
+  padding-bottom: 0.25rem ;
+  margin-top: 0px ;
+  margin-top: 0rem ;
+  margin-right: 0px ;
+  margin-right: 0rem ;
+}
+
+/* line 199, ../sass/screen.scss */
+#idp {
+  width: 100%;
+  font-size: 12px ;
+  font-size: 0.75rem ;
+}
+
+/* line 204, ../sass/screen.scss */
+#no-institution-listed {
+  font-size: 12px ;
+  font-size: 0.75rem ;
+  text-align: right;
+  margin-top: 25px ;
+  margin-top: 1.5625rem ;
+}
+
+/* Middle row */
+/* line 212, ../sass/screen.scss */
+.not-provided-msg-text {
+  font-style: italic;
+  font-size: 14px ;
+  font-size: 0.875rem ;
+  color: #6d6d6d;
+  margin-left: 15px ;
+  margin-left: 0.9375rem ;
+  margin-top: 0;
+}
+
+/* Bottom row */
+/* line 223, ../sass/screen.scss */
+#bottom-row-cells-wrapper {
+  background-color: #f9f8f5;
+}
+
+/* Bottom row, left cell */
+/* line 229, ../sass/screen.scss */
+#friend-cell-left {
+  background: url("/common/unicorn/img/WAYF/stripes-lighter.png");
+  background-color: #fffefb;
+  margin-right: 0;
+}
+
+/* line 235, ../sass/screen.scss */
+#friend-cell-left > div {
+  padding: 20px ;
+  padding: 1.25rem ;
+  padding-top: 4px ;
+  padding-top: 0.25rem ;
+}
+
+/* line 240, ../sass/screen.scss */
+.friend-cell-title {
+  font-size: 16px ;
+  font-size: 1rem ;
+  font-weight: bold;
+  margin-bottom: 7px ;
+  margin-bottom: 0.4375rem ;
+}
+
+/* line 246, ../sass/screen.scss */
+.friend-cell-text {
+  font-size: 14px ;
+  font-size: 0.875rem ;
+  margin-bottom: 20px ;
+  margin-bottom: 1.25rem ;
+}
+
+/* line 251, ../sass/screen.scss */
+.friend-can-do-cells-wrapper {
+  max-width: 440px ;
+  max-width: 27.5rem ;
+  text-align: center;
+  width: 100%;
+  margin: auto;
+}
+
+/* line 258, ../sass/screen.scss */
+.friend-do-cell-common {
+  border: 1px solid #e8e4e4;
+  display: inline;
+  float: left;
+  width: 170px ;
+  width: 10.625rem ;
+  height: 125px ;
+  height: 7.8125rem ;
+  text-align: center;
+  position: relative;
+}
+
+/* line 267, ../sass/screen.scss */
+.friend-can-do-cell {
+  background-color: #fffefb;
+  margin-right: 40px ;
+  margin-right: 2.5rem ;
+  margin-left: 10px ;
+  margin-left: 0.625rem ;
+}
+
+/* line 273, ../sass/screen.scss */
+.friend-cannot-do-cell {
+  background-color: #e4e4e4;
+  background-color: rgba(105, 105, 105, 0.1);
+}
+
+/* line 285, ../sass/screen.scss */
+.friend-cannot-do-cell i {
+  color: gray;
+  font-size: 20px ;
+  font-size: 1.25rem ;
+}
+
+/* line 290, ../sass/screen.scss */
+.friend-can-do-cell i {
+  color: #ef7c22;
+  font-size: 28px ;
+  font-size: 1.75rem ;
+}
+
+/* line 295, ../sass/screen.scss */
+.friend-cannot-do-cell i, .friend-can-do-cell i {
+  position: absolute;
+  top: -15px ;
+  top: -0.9375rem ;
+  left: -8px ;
+  left: -0.5rem ;
+}
+
+/* line 301, ../sass/screen.scss */
+.friend-can-do-cell img {
+  height: 54px ;
+  height: 3.375rem ;
+}
+
+/* line 305, ../sass/screen.scss */
+.friend-cannot-do-cell p, .friend-can-do-cell p {
+  font-size: 14px ;
+  font-size: 0.875rem ;
+  text-align: left;
+}
+
+/* Bottom row, right cell */
+/* line 311, ../sass/screen.scss */
+#friend-cell-right {
+  margin-top: 15px ;
+  margin-top: 0.9375rem ;
+}
+
+/* line 315, ../sass/screen.scss */
+#friend-cell-right > div {
+  padding-top: 15px ;
+  padding-top: 0.9375rem ;
+  padding-left: 25px ;
+  padding-left: 1.5625rem ;
+  padding-right: 25px ;
+  padding-right: 1.5625rem ;
+}
+
+/* line 321, ../sass/screen.scss */
+#friend-cell-right p {
+  font-size: 14px ;
+  font-size: 0.875rem ;
+}
+
+/* line 325, ../sass/screen.scss */
+input.select2-search__field {
+  height: 2em;
+}
+
+/* line 329, ../sass/screen.scss */
+#no-institution-listed {
+  margin-top: 25px ;
+  margin-top: 1.5625rem ;
+  font-size: 16px ;
+  font-size: 1rem ;
+}
+
+/* line 334, ../sass/screen.scss */
+.icomoon-blank:before {
+  content: '.';
+}
+
+/* line 338, ../sass/screen.scss */
+.can-do-list {
+  min-height: 5rem;
+}
+/* line 339, ../sass/screen.scss */
+.can-do-list ul {
+  font-size: 90%;
+  margin: 0;
+  padding: 0 0 0.25em 1em;
+}
+/* line 345, ../sass/screen.scss */
+.can-do-list.explain {
+  min-height: 1.75rem;
+}
+
+@media all and (max-width: 900px) {
+  /* line 352, ../sass/screen.scss */
+  .container.centered {
+    width: 95%;
+  }
+
+  /* line 355, ../sass/screen.scss */
+  .navbar-inner {
+    width: auto;
+  }
+
+  /* line 359, ../sass/screen.scss */
+  .navbar-static-top.navbar-inverse {
+    min-width: 0;
+  }
+}
+@media all and (max-width: 768px) {
+  /* line 365, ../sass/screen.scss */
+  footer {
+    display: none;
+  }
+
+  /* line 369, ../sass/screen.scss */
+  html.desktop.no-mobile body {
+    min-width: 0;
+  }
+
+  /* line 373, ../sass/screen.scss */
+  html.desktop.no-mobile main > .container {
+    min-width: 0;
+  }
+
+  /* line 377, ../sass/screen.scss */
+  .container-narrow {
+    width: 100%;
+    min-width: 0 !important;
+  }
+}
+@media all and (max-width: 480px) {
+  /* line 385, ../sass/screen.scss */
+  header, footer {
+    display: none;
+  }
+
+  /* line 389, ../sass/screen.scss */
+  .container.container-medium {
+    min-width: 0 !important;
+    padding: 0;
+    margin-top: 0 !important;
+  }
+
+  /* line 395, ../sass/screen.scss */
+  .container.container-narrow {
+    min-width: 0 !important;
+    margin-top: 0.5rem;
+    padding: 0;
+  }
+
+  /* line 401, ../sass/screen.scss */
+  .container.page.centered {
+    padding-left: 1em;
+    padding-right: 1em;
+  }
+
+  /* line 409, ../sass/screen.scss */
+  .container-boxed .section-container {
+    margin: 1.5rem 0.5rem;
+  }
+
+  /* line 413, ../sass/screen.scss */
+  .row.versus {
+    width: 100%;
+  }
+
+  /* line 416, ../sass/screen.scss */
+  .row.versus > div {
+    display: table;
+    width: 100%;
+    padding-left: 0;
+  }
+  /* line 421, ../sass/screen.scss */
+  .row.versus > div:first-child {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid #666666;
+    padding-bottom: 2em;
+  }
+
+  /* line 429, ../sass/screen.scss */
+  .partner-can-do-cells-wrapper, .friend-can-do-cells-wrapper {
+    display: none;
+  }
+
+  /* line 433, ../sass/screen.scss */
+  .search-form {
+    height: 0 !important;
+  }
+
+  /* line 437, ../sass/screen.scss */
+  #header {
+    margin-bottom: 2em;
+  }
+
+  /* line 441, ../sass/screen.scss */
+  .navbar-inner {
+    width: auto;
+  }
+
+  /* line 445, ../sass/screen.scss */
+  .navbar-static-top.navbar-inverse {
+    min-width: 0;
+    display: none;
+  }
+
+  /* line 450, ../sass/screen.scss */
+  .navbar-static-bottom {
+    display: none;
+  }
+}

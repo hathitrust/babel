@@ -11,10 +11,13 @@
   <!-- TEMPLATE over-rides -->
   <xsl:template name="login-block"/>
   <xsl:template name="setup-extra-header">
+    <link rel="stylesheet" type="text/css" href="/common/alicorn/main.css" />
     <link rel="stylesheet" type="text/css" href="/wayf/css/screen.css" />
     <script type="text/javascript" src="/wayf/js/login.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   </xsl:template>
+
+  <xsl:template name="navbar-user-links"></xsl:template>
 
   <xsl:template name="setup-body-class">
     <xsl:text> no-search no-login</xsl:text>
@@ -28,20 +31,52 @@
     <a class="offscreen skip-link" href="#main">Skip to main</a>
   </xsl:template>
 
+  <xsl:template name="header">
+
+    <div class="container container-medium flex-container" style="flex-direction: row; margin-top: 1.75rem; width: 100%; padding: 1rem; max-width: 62rem">
+      <div class="logo">
+        <a href="https://www.hathitrust.org">
+          <span class="offscreen">HathiTrust Digital Library</span>
+        </a>
+      </div>
+    </div>
+  </xsl:template>
+
   <!-- main TEMPLATE -->
 
   <xsl:template name="contents">
     <style>
 
+      .button.continue {
+        padding-right: 15px;
+      }
+      .button.continue::after {
+        content: "";
+        font-size: 0;
+      }
+
+      h4 {
+        font-weight: bold;
+        margin: 1rem 0;
+      }
+
+      h5 {
+        font-weight: bold;
+        font-size: 1rem;
+      }
 
     </style>
 
-    <h2 id="main" class="main-section-title">Log in to get the most out of HathiTrust.</h2>
-    <xsl:if test="normalize-space(//BackToRefererLink)">
-      <div class="back-to-referer">
-        <a class="btn" href="{//BackToRefererLink}"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go back</a>
-      </div>
-    </xsl:if>
+    <div class="container flex-container container-boxed container-narrow">
+      <section class="section-container" id="section" tabindex="0">
+
+        <h2 id="main" class="main-section-title">Log in to get the most out of HathiTrust.</h2>
+        <xsl:if test="normalize-space(//BackToRefererLink)">
+          <div class="back-to-referer">
+            <a class="btn" href="{//BackToRefererLink}"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go back</a>
+          </div>
+        </xsl:if>
+
 
     <!-- PARTNERS -->
     <div class="row versus">
@@ -84,7 +119,7 @@
           </xsl:if>
 
 
-          <div style="margin-top: 16px">
+          <div style="margin-top: 16px" class="login-wayf">
             <h4>Find your partner institution:</h4>
             
             <xsl:call-template name="build-idp-list" />
@@ -139,8 +174,8 @@
             <h4>Log in with:</h4>
 
             <div class="alert alert-warning alert-block">
-              <h5 style="margin-top: 0; font-size: 120%">Login to HathiTrust via Yahoo is currently unavailable.</h5>
-              <p style="margin-top: 0">Yahoo is working on the problem, and there is no estimate for when service will be restored.</p>
+              <h5 style="margin-top: 0">Login to HathiTrust via Yahoo is currently unavailable.</h5>
+              <p style="margin-top: 1rem">Yahoo is working on the problem, and there is no estimate for when service will be restored.</p>
             </div>
 
             <ul class="unstyled">
@@ -164,6 +199,9 @@
       </div>
     </div>
 
+      </section>
+    </div>
+
   </xsl:template>
 
   <xsl:template match="IdP_Site">
@@ -171,7 +209,10 @@
       <xsl:call-template name="get-provider-badge">
         <xsl:with-param name="inst_id" select="InstID" />
       </xsl:call-template>
-      <a href="{Url}"><xsl:value-of select="LinkText" /></a>
+      <a href="{Url}">
+        <span class="offscreen">Log in with </span>
+        <xsl:value-of select="LinkText" />
+      </a>
     </li>
   </xsl:template>
 
@@ -229,7 +270,7 @@
             </select>
           </div>
           <div class="actions" style="padding-left: 0; text-align: right">
-            <button class="button continue log-in" type="submit">CONTINUE</button>
+            <button class="button continue log-in" type="submit">CONTINUE <i class="icomoon icomoon-arrow-right" aria-hidden="true"></i></button>
           </div>
         </form>
       </xsl:when>

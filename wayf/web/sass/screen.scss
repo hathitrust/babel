@@ -2,6 +2,7 @@
 // Imports
 
 @import "../../../common/web/unicorn/sass/base";
+$baseline-px: 16;
 
 /* -------------------------------------------------------------------------*/
 /* Variables */
@@ -340,9 +341,9 @@ input.select2-search__field {
     margin: 0; 
     padding: 0 0 0.25em 1em; 
   }
-  min-height: 8.5rem;
+  min-height: 5rem;
   &.explain {
-    min-height: 26rem;
+    min-height: 1.75rem;
   }
   // background: aliceblue;
 }
@@ -360,7 +361,42 @@ input.select2-search__field {
  } 
 }
 
+@media all and (max-width: 768px) {
+  footer {
+    display: none;
+  }
+
+  html.desktop.no-mobile body {
+    min-width: 0;
+  }
+
+  html.desktop.no-mobile main > .container {
+    min-width: 0;
+  }
+
+  .container-narrow {
+    width: 100%;
+    min-width: 0 !important;
+  }
+}
+
 @media all and (max-width: 480px) {
+
+  header, footer {
+    display: none;
+  }
+
+  .container.container-medium {
+    min-width: 0 !important;
+    padding: 0;
+    margin-top: 0 !important;
+  }
+
+  .container.container-narrow {
+    min-width: 0 !important;
+    margin-top: 0.5rem;
+    padding: 0;
+  }
 
   .container.page.centered {
     // padding-left: 0;
@@ -368,6 +404,10 @@ input.select2-search__field {
     padding-left: 1em;
     padding-right: 1em;
 
+  }
+
+  .container-boxed .section-container {
+    margin: 1.5rem 0.5rem;
   }
 
   .row.versus {
