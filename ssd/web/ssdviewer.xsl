@@ -186,6 +186,15 @@
           <xsl:text> | HathiTrust Digital Library</xsl:text>
         </xsl:element>
 
+        <p>
+          <a style="font-weight: bold">
+            <xsl:attribute name="href">
+              <xsl:value-of select="$gItemHandle"/>
+            </xsl:attribute>
+            View this item in the fully-styled HathiTrust interface.
+          </a>
+        </p>
+
         <xsl:if test="$gFinalAccessStatus='allow'">
           <p>Use of this online version is subject to all U.S. copyright laws. Please do not save or redistribute this file.</p>
           <xsl:call-template name="question_or_comments"/>
@@ -529,28 +538,28 @@
       <xsl:when test="$gViewingMode='page-at-a-time'">
         <xsl:element name="div">
           <p>You have one page at a time access to this item. Authenticated members of HathiTrust institutions who have a print disability may have full-text access to this item. <xsl:call-template name="maybe_login"/>  For more information, see <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a>.  Page at a time access to this item is also available via our fully-styled HathiTrust interface.</p>
-          <p>
+          <!-- <p>
             <a>
               <xsl:attribute name="href">
                 <xsl:value-of select="$gItemHandle"/>
               </xsl:attribute>
               View this item in the fully-styled HathiTrust interface.
             </a>
-          </p>
+          </p> -->
         </xsl:element>
       </xsl:when>
 
       <xsl:when test="$gViewingMode='entire-volume' and $gInCopyright='true'">
         <xsl:element name="div">
           <p>You have full view access to this item based on your account privileges. This work is in copyright (see the <a href="http://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>). More information is available at <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a></p>
-          <p>
+          <!-- <p>
             <a>
               <xsl:attribute name="href">
                 <xsl:value-of select="$gItemHandle"/>
               </xsl:attribute>
               View this item in the fully-styled HathiTrust interface.
             </a>
-          </p>
+          </p> -->
         </xsl:element>
       </xsl:when>
 
