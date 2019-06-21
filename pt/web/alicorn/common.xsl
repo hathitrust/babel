@@ -1387,8 +1387,6 @@
       </xsl:choose>
     </ul>
 
-    <h4 class="offscreen">Add Item to Collection</h4>
-
     <xsl:call-template name="BuildAddToCollectionControl"/>
 
     <!-- add COinS -->

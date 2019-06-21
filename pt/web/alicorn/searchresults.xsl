@@ -54,10 +54,10 @@
 
   <xsl:template name="skip-to-main-link">
     <ul id="skiplinks">
-      <li><a href="#mdpResultsContainer">Skip to resultst</a></li>
+      <li><a href="#section">Skip to results</a></li>
       <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
       <li><a href="#input-search-text">Skip to search in this text</a></li>
-      <li><a href="#sidebar">Skip to book options</a></li>
+      <!-- <li><a href="#sidebar">Skip to book options</a></li> -->
     </ul>
   </xsl:template>
 
@@ -72,7 +72,7 @@
     <main class="main-container" id="main">
       <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
         <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
-        <section class="section-container" id="section">
+        <section class="section-container" id="section" tabindex="0">
           <xsl:call-template name="build-results-container" />
         </section>
       </div>

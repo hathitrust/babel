@@ -55,6 +55,11 @@ var Reader = class {
     this.controls = {};
     this.pagedetails = { rotate: {}, scale: {} };
     this.identifier = this.options.identifier;
+    this._trigger = null;
+    this.trigger = { 
+      push: function(value) { this._trigger = value; },
+      pop: function() { var retval = this._trigger; this._trigger = null; return retval; }
+    }
     this.bindEvents();
   }
 
@@ -98,7 +103,7 @@ var Reader = class {
   restart(params) {
     var current = params.seq || this.view.currentLocation();
 
-    if ( params.view == this.view.name && params.view == 'plaintext' ) { params.view = '1up'; }
+    if ( params.view == this.view.name && params.view == 'plaintext' && params.clicked ) { params.view = '1up'; }
     if ( params.view == this.view.name ) { return ; }
 
     params.restarting = true;
@@ -118,6 +123,8 @@ var Reader = class {
     var t2 = performance.now();
     this.emit('configure', this.view.config());
     this._updateViews(params.view);
+
+    HT.update_status(`Viewing book in ${this.view.displayLabel} view.`);
 
     HT.prefs.set({ pt : { view : params.view } })
     console.log(`BENCHMARK setView: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
@@ -194,6 +201,14 @@ var Reader = class {
       this.emit('status', `Showing page scan ${params.seq}`);
     })
 
+    this.on('redraw', (params) => {
+      if ( params.scale ) {
+        this.controls.flexinator.sidebar(params.scale <= 1.0);
+        this.trigger.push(`zoom:${params.scale}`); // triggers track
+        // this._logAction(undefined, `zoom:${params.scale}`);
+      }
+    })
+
     this._resizer = debounce(function() {
       this.emit('resize');
     }.bind(this), 100);
@@ -202,6 +217,7 @@ var Reader = class {
     jump.addEventListener('click', (event) => {
       event.preventDefault();
       this.view.focus(true);
+      this._logAction(undefined, 'action-focus-current-page');
       console.log("AHOY FOCUS CURRENT PAGE");
       return false;
     })
@@ -320,6 +336,12 @@ var Reader = class {
     }
   }
 
+  _logAction(href, trigger) {
+    if ( HT.analytics && HT.analytics.logAction ) {
+      HT.analytics.logAction(href, trigger);
+    }
+  }
+
 }
 
 var service = new Service({
@@ -384,6 +406,7 @@ reader.controls.rotator = new Control.Rotator({
   reader: reader
 })
 reader.controls.rotator.on('rotate', function(delta) {
+  this._logAction(undefined, `rotate:${delta}`);
   this.emit('rotate', delta);
 }.bind(reader))
 
@@ -399,6 +422,8 @@ if ( actionFullScreen ) {
     reader: reader
   });
 }
+
+reader.controls.flexinator = new Control.Flexinator({ reader: reader });
 
 var selectedPagesPdfLink = document.querySelector('#selectedPagesPdfLink');
 if ( selectedPagesPdfLink ) {
@@ -423,6 +448,7 @@ reader.on('track', () => {
   if ( HT.analytics && HT.analytics._simplifyPageHref ) {
     HT.analytics.trackPageview(HT.analytics._simplifyPageHref(location.href));
   }
+  reader._logAction(undefined, reader.trigger.pop());
 })
 
 document.body.addEventListener('keydown', function(event) {

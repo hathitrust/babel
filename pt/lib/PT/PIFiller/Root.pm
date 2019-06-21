@@ -34,6 +34,8 @@ use PT::PIFiller::Common;
 
 use JSON::XS qw(encode_json);
 
+use Utils::Cache::JSON;
+
 
 # ---------------------------------------------------------------------
 
@@ -997,37 +999,54 @@ sub handle_BASE_IMAGE_DIMENSIONS
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    require Image::ExifTool;
-
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
 
-    my $pageinfo_sequence = $mdpItem->Get('pageinfo')->{'sequence'};
-    my @items = sort { int($a) <=> int($b) } keys %{ $pageinfo_sequence };
+    my $ignore_existing_cache = $cgi->param('newsid') || 0;
+    my $cache_key = qq{base_image_dimensions};
+    my $cache_max_age = 0;
+    my $cache_dir = Utils::get_true_cache_dir($C, 'mdpitem_cache_dir');
+    my $cache = Utils::Cache::JSON->new($cache_dir, $cache_max_age, $mdpItem->get_modtime);
 
-    my ( $use_width, $use_height, $use_filename );
-    my $tries = 0;
-    while ( ! $use_filename ) {
-        my $seq = $items[int(rand(scalar @items))];
-        next if ( grep(/MISSING_PAGE/, $mdpItem->GetPageFeatures($seq)) );
-        my $filename = $mdpItem->GetFilePathMaybeExtract($seq, 'imagefile');
+    my $info;
+    $info = $cache->Get($mdpItem->GetId(), $cache_key) unless ( $ignore_existing_cache );
+    print STDERR "AHOY IMAGE CACHE " . ref($info) . "\n";
 
-        # my ( $width, $height, $type_or_error ) = Process::Image::imgsize($filename);
-        my $info = Image::ExifTool::ImageInfo($filename);
-        my ( $width, $height ) = ( $$info{ImageWidth}, $$info{ImageHeight} );
+    unless ( ref($info) ) {
 
-        $tries += 1;
+        require Image::ExifTool;
 
-        if ( $width < $height && $height > 1024 || $tries > 1) {
-            $use_filename = $filename;
-            ( $use_width, $use_height ) = ( $width, $height );
-        } else {
-            unlink($filename);
+
+        my $pageinfo_sequence = $mdpItem->Get('pageinfo')->{'sequence'};
+        my @items = sort { int($a) <=> int($b) } keys %{ $pageinfo_sequence };
+
+        my ( $use_width, $use_height, $use_filename );
+        my $tries = 0;
+        while ( ! $use_filename ) {
+            my $seq = $items[int(rand(scalar @items))];
+            next if ( grep(/MISSING_PAGE/, $mdpItem->GetPageFeatures($seq)) );
+            my $filename = $mdpItem->GetFilePathMaybeExtract($seq, 'imagefile');
+
+            # my ( $width, $height, $type_or_error ) = Process::Image::imgsize($filename);
+            my $info_ = Image::ExifTool::ImageInfo($filename);
+            my ( $width, $height ) = ( $$info_{ImageWidth}, $$info_{ImageHeight} );
+
+            $tries += 1;
+
+            if ( $width < $height && $height > 1024 || $tries > 1) {
+                $use_filename = $filename;
+                $info = $info_;
+                # ( $use_width, $use_height ) = ( $width, $height );
+            } else {
+                unlink($filename);
+            }
         }
+
+        $cache->Set($mdpItem->GetId(), $cache_key, $info);
     }
 
-    $use_height = int($use_height * ( 680.0 / $use_width ));
-    $use_width = 680;
+    my $use_height = int($$info{ImageHeight} * ( 680.0 / $$info{ImageWidth} ));
+    my $use_width = 680;
 
     return qq{<Width>$use_width</Width><Height>$use_height</Height>};
 
@@ -1089,6 +1108,16 @@ sub handle_FEATURE_LIST_JSON
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
 
+    my $ignore_existing_cache = $cgi->param('newsid') || 0;
+    my $cache_key = qq{featureList};
+    my $cache_max_age = 0;
+    my $cache_dir = Utils::get_true_cache_dir($C, 'mdpitem_cache_dir');
+    my $cache = Utils::Cache::JSON->new($cache_dir, $cache_max_age, $mdpItem->get_modtime);
+
+    my $featureList;
+    $featureList = $cache->Get($mdpItem->GetId(), $cache_key) unless ( $ignore_existing_cache );
+    return '[' . join(',', @$featureList) . ']' if ( ref($featureList) );
+
     $mdpItem->InitFeatureIterator();
     my $featureRef;
 
@@ -1105,7 +1134,7 @@ sub handle_FEATURE_LIST_JSON
     my $i = 0;
     foreach my $seq ( @items ) {
         my $features = [ $mdpItem->GetPageFeatures($seq) ];
-        next unless ( scalar @$features );
+        # next unless ( scalar @$features );
         my $pageNum = $$pageinfo_sequence{ $seq }{ 'pagenumber' };
         ## label is trickier
         # my $label = $$featureHashRef{$seqFeature};
@@ -1152,13 +1181,18 @@ sub handle_FEATURE_LIST_JSON
             }
         }
 
-        push @{$featureList}, '{' .
-            q{"seq":} . $json->encode($seq) . ', ' .
-            q{"features":} . $json->encode($features) . ', ' .
-            q{"label":} . $json->encode($label) . ',' .
-            q{"pageNum":} . $json->encode($pageNum) . '}';
+        next unless ( scalar @$features || $pageNum );
+
+        my $feature_json = [];
+        push @$feature_json, q{"seq":} . $json->encode($seq);
+        push @$feature_json, q{"features":} . $json->encode($features) if ( scalar @$features );
+        push @$feature_json, q{"label":} . $json->encode($label) if ( $label );
+        push @$feature_json, q{"pageNum":} . $json->encode($pageNum) if ( $pageNum );
+
+        push @{$featureList}, '{' . join(',', @$feature_json) . '}';
     }
 
+    $cache->Set($mdpItem->GetId(), $cache_key, $featureList);
     return '[' . join(',', @$featureList) . ']';
 }
 

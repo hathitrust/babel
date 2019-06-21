@@ -45,7 +45,7 @@ head.ready(function() {
         var retval = {};
         var tmp = data.split("|");
         for(var i = 0; i < tmp.length; i++) {
-            kv = tmp[i].split("=");
+            var kv = tmp[i].split("=");
             retval[kv[0]] = kv[1];
         }
         return retval;

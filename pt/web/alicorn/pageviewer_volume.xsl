@@ -126,11 +126,15 @@
     <xsl:if test="$gUsingBookReader = 'true'">
       <xsl:attribute name="data-analytics-skip">true</xsl:attribute>
     </xsl:if>
+    <xsl:attribute name="data-sidebar-collapsible">true</xsl:attribute>
   </xsl:template>
 
   <xsl:template name="setup-extra-html-class">
     <xsl:if test="$gSuppressAccessBanner = 'true'">
       <xsl:text> supaccban </xsl:text>
+    </xsl:if>
+    <xsl:if test="//Param[@name='debug'] = 'polite'">
+      <xsl:text> debugpolite</xsl:text>
     </xsl:if>
   </xsl:template>
 
@@ -140,7 +144,7 @@
         <li><a href="#section" accesskey="2">Skip to page content</a></li>
         <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
         <li><a href="#input-search-text">Skip to search in this text</a></li>
-        <li><a href="#sidebar">Skip to book options</a></li>
+        <!-- <li><a href="#sidebar">Skip to book options</a></li> -->
       </ul>
     </div>
   </xsl:template>
@@ -195,7 +199,7 @@
         </xsl:if>
         <div class="output"><span class="offscreen">Page Scan </span><span data-slot="current-seq">1</span> / <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
         <xsl:text> </xsl:text>
-        <button class="btn" id="action-prompt-seq" aria-label="Go to location">Jump...</button>
+        <button class="btn" id="action-prompt-seq" aria-label="Jump to location">Jump...</button>
         <button class="btn" id="action-focus-current-page" aria-hidden="true" style="display: none" accesskey="9">Show Current Page</button>
       </form>
     </div>

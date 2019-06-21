@@ -7,6 +7,7 @@ export var PlainText = class extends Single {
   constructor(options={}) {
     super(options);
     this.mode = this.name = 'plaintext';
+    this.displayLabel = 'plaintext';
     this.trackResize = false;
   }
 

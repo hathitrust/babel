@@ -6,6 +6,7 @@ import {Rotator} from './rotator';
 import {Contentsnator} from './contentsnator'
 import {Selectinator} from './selectinator'
 import {Expandinator} from './expandinator';
+import {Flexinator} from './flexinator';
 
 var Control = {};
 Control.Navigator = Navigator;
@@ -16,5 +17,6 @@ Control.Rotator = Rotator;
 Control.Contentsnator = Contentsnator;
 Control.Selectinator = Selectinator;
 Control.Expandinator = Expandinator;
+Control.Flexinator = Flexinator;
 
 export {Control};

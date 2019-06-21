@@ -16,21 +16,25 @@ export var Paginator = class {
   bindEvents() {
     this.input.querySelector('#action-go-next').addEventListener('click', (event) => {
       // this.emitter.emit('updateLocation', { seq: this.input.value });
+      this.reader.trigger.push('action-go-next');
       this.reader.next();
     })
 
     this.input.querySelector('#action-go-prev').addEventListener('click', (event) => {
       // this.emitter.emit('updateLocation', { seq: this.input.value });
+      this.reader.trigger.push('action-go-prev');
       this.reader.prev();
     })
 
     this.input.querySelector('#action-go-first').addEventListener('click', (event) => {
       // this.emitter.emit('updateLocation', { seq: this.input.value });
+      this.reader.trigger.push('action-go-first');
       this.reader.first();
     })
 
     this.input.querySelector('#action-go-last').addEventListener('click', (event) => {
       // this.emitter.emit('updateLocation', { seq: this.input.value });
+      this.reader.trigger.push('action-go-last');
       this.reader.last();
     })
 

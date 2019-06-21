@@ -444,6 +444,12 @@
     <main class="main-container" id="main">
       <div class="container flex-container container-boxed container-full">
         <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
+        <div class="sidebar-toggle">
+          <button id="action-toggle-sidebar" aria-expanded="true">
+            <i class="icomoon toggle-sidebar"></i>
+            <span class="offscreen">About this Book/Tools Sidebar</span>
+          </button>
+        </div>
         <section class="section-container" id="section" tabindex="0">
           <xsl:call-template name="main" />
         </section>

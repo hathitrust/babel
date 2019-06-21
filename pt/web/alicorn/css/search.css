@@ -1,3 +1,4 @@
+@charset "UTF-8";
 :root {
   --microtip-transition-delay: 0.25s;
 }
@@ -456,6 +457,80 @@ button.control-search:hover, button.control-search:focus {
 
 .global-search-links ul a {
   margin-right: 0.5rem;
+}
+
+.sidebar-toggle {
+  border-right: 1px solid #ddd;
+  margin-right: 1rem;
+  width: 1rem;
+  display: none;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: flex-start;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+  padding-top: 1.5rem;
+}
+
+.sidebar-toggle button {
+  -webkit-box-flex: 0;
+      -ms-flex-positive: 0;
+          flex-grow: 0;
+  height: auto;
+  white-space: nowrap;
+  padding: 1rem 0.5rem;
+  font-size: 1rem;
+  z-index: 25;
+}
+
+.sidebar-toggle button[aria-expanded="true"] {
+  opacity: 0.5;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+}
+
+.sidebar-toggle button[aria-expanded="true"] .icomoon:before {
+  content: "";
+}
+
+.sidebar-toggle button:hover, .sidebar-toggle button:focus {
+  opacity: 1.0;
+}
+
+.sidebar-toggle button[aria-expanded="false"] {
+  opacity: 1.0;
+  background: rgba(0, 0, 0, 0.8);
+  color: #eee;
+  font-size: 2rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+  margin-right: -3rem;
+}
+
+.sidebar-toggle button[aria-expanded="false"] .icomoon:before {
+  content: "";
+}
+
+html[data-sidebar-collapsible] .sidebar-toggle {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+html[data-sidebar-collapsible] .sidebar-container {
+  border-right: none;
+  margin-right: 0;
+}
+
+html[data-sidebar-collapsible] .sidebar-container[hidden] + .sidebar-toggle {
+  margin-left: -1rem;
+}
+
+*[hidden] {
+  display: none;
 }
 
 .embedUrlContainer {

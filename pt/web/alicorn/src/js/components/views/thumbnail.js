@@ -5,6 +5,7 @@ export var Thumbnail = class extends Scroll {
     super(options);
     this.mode = 'thumbnail';
     this.name = 'thumb';
+    this.displayLabel = 'thumbnail';
     // this.scale = 0.25;
     this.scale = 1.0;
     this.embedHtml = false;

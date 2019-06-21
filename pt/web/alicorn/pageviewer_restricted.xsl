@@ -144,12 +144,7 @@
         </xsl:if>
         <strong>search in this text</strong><xsl:text> to find the frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, etc.</xsl:text>
       </p>
-      <p>
-        <em>Example:</em>
-        <br />
-        <img src="//common-web/graphics/LimitedSample.png" alt="" />
-      </p>
-
+      <!-- <xsl:call-template name="build-results-example-as-text" /> -->
     </div>
   </xsl:template>
 
@@ -178,13 +173,34 @@
         </xsl:if>
         <strong>search in this text</strong><xsl:text> to find the frequency and page number of specific words and phrases. This can be especially useful to help you decide if the book is worth buying, checking out from a library, etc.</xsl:text>
       </p>
-      <p>
-        <em>Example:</em>
-        <br />
-        <img src="//common-web/graphics/LimitedSample.png" alt="" />
-      </p>
-
     </div>
+    <!-- <xsl:call-template name="build-results-example-as-img" /> -->
+  </xsl:template>
+
+  <xsl:template name="build-results-example-as-text">
+    <h3 style="margin-top: 1rem">Example</h3>
+    <figure>
+      <div style="padding: 1rem; border-left: 1px solid #ccc; border-right: 1px solid #ccc; width: 90%; transform: scale(0.9)" class="content-box">
+        <div class="alert alert-info alert-block">
+          <p>Showing 1 - 10 of  Results for <span class="mdpEmp">elephant</span></p>
+        </div>
+        <article class="result"><h3 class="results-header"><a href="#" disabled="disabled">Page 8</a>&#160;-&#160;25&#160;matching terms</h3></article>
+        <article class="result"><h3 class="results-header"><a href="#" disabled="disabled">Page 3</a>&#160;-&#160;14&#160;matching terms</h3></article>
+        <article class="result"><h3 class="results-header"><a href="#" disabled="disabled">Page 12</a>&#160;-&#160;16&#160;matching terms</h3></article>
+        <article class="result"><h3 class="results-header"><a href="#" disabled="disabled">Page 297</a>&#160;-&#160;4&#160;matching terms</h3></article>
+      </div>
+      <figcaption>
+        Example of the information returned when searching <strong><i class="icomoon icomoon-lock" aria-hidden="true"></i> Limited - search only</strong> books.
+      </figcaption>
+    </figure>
+  </xsl:template>
+
+  <xsl:template name="build-results-example-as-img">
+    <p>
+      <em>Example:</em>
+      <br />
+      <img src="//common-web/graphics/LimitedSample.png" alt="Search results showing page numbers and frequency counts." />
+    </p>
   </xsl:template>
 
   <!-- VIEWING AREA -->

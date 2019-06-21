@@ -21,6 +21,7 @@ export var Navigator = class {
       this.output.classList.remove('updating');
       this.render('current-seq', this.input.value);
       this._renderCurrentPage(this.input.value);
+      this.reader.trigger.push('control-navigator');
       this.emitter.emit('updateLocation', { seq: this.input.value });
     })
 
@@ -35,7 +36,9 @@ export var Navigator = class {
 
     var promptHTML = `
     <p>Jump to a page scan by <strong>page number</strong> or <strong>page scan sequence</strong>.</p>
-    <p><label for="navigator-jump" class="offscreen">Page number or sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
+    <div class="alert alert-error alert-block" role="alert" aria-atomic="true"></div>
+    <p><label for="navigator-jump" class="offscreen">Page number or sequence: </label><input id="navigator-jump" aria-describedby="navigator-hint-info" type="text" name="seq" class="input-medium" /></p>
+    <p class="offscreen" id="navigator-hint-info">Hints follow.</p>
     <h3>Hints</h3>
     <ul class="bullets">
       <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>
@@ -50,6 +53,7 @@ export var Navigator = class {
     if ( ! pageNumRange ) {
       promptHTML = `
           <p>Jump to a page scan by <strong>page scan sequence</strong>.</p>
+          <div class="alert alert-error alert-block" role="alert" aria-atomic="true"></div>
           <p><label for="navigator-jump" class="offscreen">Page sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
           <h3>Hints</h3>
           <ul class="bullets">
@@ -73,8 +77,12 @@ export var Navigator = class {
             class: 'btn-dismiss btn btn-primary',
             callback: function(modal) {
               var input = modal.modal.querySelector('input[name="seq"]');
-              this.handleValue(input.value);
-              return true;
+              var retval = this.handleValue(input.value);
+              if ( retval ) {
+                return true;
+              }
+              this.handleError($dialog);
+              return false;
             }.bind(this)
           }
         ],
@@ -127,7 +135,7 @@ export var Navigator = class {
   }
 
   handleValue(value) {
-    var seq;
+    var seq; var retval = true;
     if ( value.substr(0, 1) == '+' || value.substr(0, 1) == '-' ) {
       var delta = value.substr(0, 1) == '+' ? +1 : -1;
       value = parseInt(value.substr(1), 10);
@@ -147,8 +155,24 @@ export var Navigator = class {
       seq = this.reader.service.manifest.seq(value);
     }
     if ( seq && seq >= 1 && seq <= this.reader.service.manifest.totalSeq ) {
+      this.reader.trigger.push('action-prompt-seq');
       this.reader.display(seq);
+    } else {
+      retval = false;
     }
+    return retval;
+  }
+
+  handleError($dialog) {
+    var div = $dialog.modal.querySelector('div[role="alert"]');
+    var input = $dialog.modal.querySelector('input[name="seq"]');
+    var value = input.value;
+    var possible = '';
+    var pageNumRange = this.reader.service.manifest.pageNumRange();
+    if ( pageNumRange ) { possible = `page number between ${pageNumRange} or `; }
+    possible += `a sequence between #1-#${this.reader.service.manifest.totalSeq}`;
+    div.innerHTML = `<p>Could not find a page scan that matched ${value}; enter a ${possible}.`;
+    input.focus();
   }
 
   render(slot, value) {

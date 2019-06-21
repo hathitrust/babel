@@ -20,7 +20,7 @@ export var Viewinator = class {
       var button = buttons[i];
       button.addEventListener('click', function(event) {
         var target = this.dataset.target;
-        self.reader.restart({ view: target });
+        self.reader.restart({ view: target, clicked: event.detail == 1 });
       })
     }
 
