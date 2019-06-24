@@ -53,7 +53,7 @@ export var Navigator = class {
     if ( ! pageNumRange ) {
       promptHTML = `
           <p>Jump to a page scan by <strong>page scan sequence</strong>.</p>
-          <div class="alert alert-error alert-block" role="alert" aria-atomic="true"></div>
+          <div class="alert alert-error alert-block" role="alert" aria-atomic="true" aria-live="assertive"></div>
           <p><label for="navigator-jump" class="offscreen">Page sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
           <h3>Hints</h3>
           <ul class="bullets">
