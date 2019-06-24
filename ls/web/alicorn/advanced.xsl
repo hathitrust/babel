@@ -229,7 +229,7 @@
     <div class="advanced-search-filter-container">
       <h4 class="advanced-filter-label-text">Date of Publication</h4>
       <div class="advanced-filter-inner-container">
-        <div class="alert alert-error alert-block" role="alert" aria-atomic="true"></div>
+        <div class="alert alert-error alert-block" role="alert" aria-atomic="true" aria-live="assertive"></div>
         <div class="date-range-input">
           <fieldset class="no-margin choice-container">
             <legend class="offscreen">Select the type of date range to search on</legend>
@@ -346,7 +346,7 @@
     <xsl:param name="index" />
     <fieldset class="group parenthesis04">
       <legend class="offscreen">Search group <xsl:value-of select="$index" /></legend>
-      <div class="alert alert-error alert-block" role="alert" aria-atomic="true"></div>
+      <div class="alert alert-error alert-block" role="alert" aria-atomic="true" aria-live="assertive"></div>
       <xsl:for-each select="row">
         <xsl:apply-templates select=".">
           <xsl:with-param name="group-index" select="$index" />
