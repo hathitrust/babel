@@ -97,8 +97,12 @@ export var Navigator = class {
       input_seq.addEventListener('keydown', function(event) {
         if ( event.keyCode == 13 ) {
           event.preventDefault();
-          this.handleValue(input_seq.value);
-          $dialog.closeModal();
+          var retval = this.handleValue(input_seq.value);
+          if ( retval ) {
+            $dialog.closeModal();
+            return;            
+          }
+          this.handleError($dialog);
         }
       }.bind(this));
     })
