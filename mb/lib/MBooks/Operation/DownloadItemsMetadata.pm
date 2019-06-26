@@ -134,6 +134,10 @@ sub execute_operation
     
     # only if collection not public do we care about owner!!
     my $status = $self->test_ownership($C, $co, $act, $coll_id, $owner);
+    unless ( $status == $ST_OK ) {
+        require HTTP::Response;
+        $C->set_object('HTTP::Response', HTTP::Response->new(401));
+    }
     return $status unless ($status == $ST_OK);
 
     my $coll_record = $co->get_coll_record($coll_id);
