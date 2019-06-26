@@ -424,6 +424,12 @@ if ( actionFullScreen ) {
 }
 
 reader.controls.flexinator = new Control.Flexinator({ reader: reader });
+reader.controls.flexinator.on('track', (trigger) => {
+  reader._logAction(undefined, trigger);
+  if ( HT.analytics && HT.analytics.trackEvent ) {
+    HT.analytics.trackEvent({ label : "-", category : "HT Reader", action : `HT Reader: ${trigger}` });
+  }
+});
 
 var selectedPagesPdfLink = document.querySelector('#selectedPagesPdfLink');
 if ( selectedPagesPdfLink ) {
