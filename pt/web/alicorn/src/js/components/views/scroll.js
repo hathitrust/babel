@@ -196,7 +196,7 @@ export var Scroll = class extends Base {
   focusHandler(event) {
     super.focusHandler(event);
     var target = event.target;
-    if ( target.tagName.toLowerCase() == 'div' && target.classList.contains('page') ) {
+    if ( target.tagName.toLowerCase() == 'div' && target.classList.contains('page') && ! window.reactivated ) {
       target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
     }
   }

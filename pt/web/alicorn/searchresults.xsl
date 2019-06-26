@@ -152,7 +152,7 @@
         </div>
         <xsl:if test="$gSearchOp='OR'">
           <div class="alert alert-warning alert-block">
-            "Search in this text" can fail to find matching pages if you arrived at this item from a HathiTrust search that used bibliographic metadata terms <span class="mdpEmp"><em>about</em></span> the item that do not occur <span class="mdpEmp"><em>within</em></span> it. 
+            "Search in this text" can fail to find matching pages if you arrived at this item from a HathiTrust search that used bibliographic metadata terms <span class="mdpEmp"><em>about</em></span> the item that do not occur <span class="mdpEmp"><em>within</em></span> it.
           </div>
         </xsl:if>
       </xsl:when>
@@ -171,7 +171,31 @@
       </xsl:otherwise>
     </xsl:choose>
 
-    <!-- <xsl:call-template name="msgRepeatSearch"/> -->
+    <xsl:call-template name="build-repeat-search-message"/>
+  </xsl:template>
+
+  <xsl:template name="build-repeat-search-message">
+    <xsl:choose>
+      <xsl:when test="($gSearchOp='AND' and $gMultiTerm = 'true' )">
+        <xsl:call-template name="build-repeat-search-message-or"/>
+      </xsl:when>
+      <xsl:when test="($gSearchOp='OR' and $gMultiTerm = 'true' and $gPagesFound > 1)">
+        <xsl:call-template name="build-repeat-search-message-and"/>
+      </xsl:when>
+      <xsl:otherwise></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="build-repeat-search-message-and">
+    <p>
+      <a href="{/MBooksTop/MdpApp/RepeatSearchLink}">Broaden your search to find pages having just <strong>one or more</strong> of your terms.</a>
+    </p>
+  </xsl:template>
+
+  <xsl:template name="build-repeat-search-message-or">
+    <p>
+      <a href="{/MBooksTop/MdpApp/RepeatSearchLink}">Narrow your search to find just pages having <strong>all</strong> of your terms.</a>
+    </p>
   </xsl:template>
 
   <xsl:template name="build-fisheye-links">
@@ -521,7 +545,7 @@
             </div>
           <xsl:if test="$gSearchOp='OR'">
             <div class="alert alert-warning alert-block">
-              "Search in this text" can fail to find matching pages if you arrived at this item from a HathiTrust search that used bibliographic metadata terms <span class="mdpEmp"><em>about</em></span> the item that do not occur <span class="mdpEmp"><em>within</em></span> it. 
+              "Search in this text" can fail to find matching pages if you arrived at this item from a HathiTrust search that used bibliographic metadata terms <span class="mdpEmp"><em>about</em></span> the item that do not occur <span class="mdpEmp"><em>within</em></span> it.
             </div>
           </xsl:if>
           </div>

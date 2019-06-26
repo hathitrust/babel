@@ -56,7 +56,7 @@ var Reader = class {
     this.pagedetails = { rotate: {}, scale: {} };
     this.identifier = this.options.identifier;
     this._trigger = null;
-    this.trigger = { 
+    this.trigger = {
       push: function(value) { this._trigger = value; },
       pop: function() { var retval = this._trigger; this._trigger = null; return retval; }
     }
@@ -505,4 +505,29 @@ HT.debugActive = function() {
 
 /* AND THE WINDOW */
 
+function handleVisibilityChange() {
+  if (document.hidden) {
+    handleWindowBlur();
+  } else  {
+    handleWindowFocus();
+  }
+}
 
+function handleWindowFocus() {
+  if ( window.inactivated ) {
+    window.inactivated = false;
+    window.reactivated = true;
+    setTimeout(function() {
+      window.reactivated = false;
+    }, 500)
+  }
+}
+
+function handleWindowBlur() {
+  window.inactivated = true;
+  window.reactivated = false;
+}
+
+document.addEventListener("visibilitychange", handleVisibilityChange, false);
+window.addEventListener("focus", handleWindowFocus, false);
+window.addEventListener("blur", handleWindowBlur, false);
