@@ -93,7 +93,7 @@ $::VERSION = 1.1200;
     unless ( $ENV{QUERY_STRING} =~ m,skin=, || $ENV{TERM} ) {
         require HTTP::BrowserDetect;
         my $browser = HTTP::BrowserDetect->new();
-        if ( $browser->mobile() ) {
+        if ( $browser->mobile() || $browser->tablet() ) {
             # redirect out of here
             my $url = $ENV{REQUEST_URI};
             my $join = ";";
