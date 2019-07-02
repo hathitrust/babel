@@ -72,7 +72,7 @@ var ListBrowser = function(argv, elem) {
   var cache = {};
 
   var labels = {};
-  labels.min_items = 'Collections with at least';
+  labels.min_items = 'Collections with';
   labels.search = 'Collections matching';
 
   this.construct = function(argv, e) {

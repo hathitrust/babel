@@ -498,7 +498,7 @@
     <li class="filter-group filter-group-multiselect">
       <button class="filter-group-toggle-show-button" aria-expanded="true">
         <span class="flex-space-between flex-center">
-          <h3 class="filter-group-heading">Collections with at least</h3>
+          <h3 class="filter-group-heading">Collections with</h3>
           <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-expanded"></use></svg>
         </span>
       </button>
