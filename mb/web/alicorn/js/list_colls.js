@@ -579,10 +579,15 @@ var ListBrowser = function(argv, elem) {
 
     var idx = options.min_items_possibles.indexOf(options.min_items);
     options.max_items = options.min_items_possibles[idx - 1] || Number.POSITIVE_INFINITY;
+    var message;
+    if ( options.max_items == 25 ) { message = 'up to 25 items'; }
+    else if ( options.max_items == Number.POSITIVE_INFINITY ) { message = '1000 items or more'; }
+    else { message = options.min_items + '-' + options.max_items + " items"; }
     root.add_filter({
       type : "min_items",
       value: options.min_items,
-      message: options.min_items + " items (up to " + options.max_items + ")",
+      // message: options.min_items + " items (up to " + options.max_items + ")",
+      message: message,
       fn : function(tr) {
         var num_items = tr.NumItems;
         return ( num_items >= options.min_items && num_items < options.max_items);

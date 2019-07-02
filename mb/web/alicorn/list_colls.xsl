@@ -483,12 +483,13 @@
 
     <xsl:variable name="size-list-template">
       <h:list>
-        <h:option value="1000">1000 items</h:option>
-        <h:option value="500">500 items</h:option>
-        <h:option value="250">250 items</h:option>
-        <h:option value="100">100 items</h:option>
-        <h:option value="50">50 items</h:option>
-        <h:option value="25">25 items</h:option>
+        <h:option value="1000">1000 items or more</h:option>
+        <h:option value="500">500-1000 items</h:option>
+        <h:option value="250">250-500 items</h:option>
+        <h:option value="100">100-250 items</h:option>
+        <h:option value="50">50-100 items</h:option>
+        <h:option value="25">25-50 items</h:option>
+        <h:option value="0">up to 25 items</h:option>
       </h:list>
     </xsl:variable>
     <xsl:variable name="size-list" select="exsl:node-set($size-list-template)" />
