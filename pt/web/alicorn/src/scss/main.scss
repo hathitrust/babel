@@ -46,7 +46,8 @@ html.ie {
   }
 }
 
-html.desktop.no-mobile {
+// html.desktop.no-mobile
+html.skin-default {
 
   $min-viewer-width: 56rem;
 
@@ -58,13 +59,30 @@ html.desktop.no-mobile {
     }
   }
 
+  .flex-container {
+    display: flex;
+  }
+
   // #section {
   //   min-width: $min-viewer-width;
   // }
 }
 
+@media screen and ( max-width: 768px ) {
+  html.skin-default {
+    .sidebar-container {
+      min-width: 14rem;
+      max-width: 16rem;
+    }
+
+    footer {
+      display: none !important;
+    }
+  }
+}
+
 @media screen and ( max-height: 650px ) {
-  html.desktop.no-mobile {
+  html.skin-default {
 
     main {
       padding: 0;

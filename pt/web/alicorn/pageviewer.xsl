@@ -57,6 +57,12 @@
     <xsl:if test="$gIsCRMS = 'true'">
       <xsl:text> crms </xsl:text>
     </xsl:if>
+    <xsl:choose>
+      <xsl:when test="//Param[@name='skin']">
+        <xsl:text> skin-</xsl:text><xsl:value-of select="//Param[@name='skin']" />
+      </xsl:when>
+      <xsl:otherwise><xsl:text> skin-default</xsl:text></xsl:otherwise>
+    </xsl:choose>
     <xsl:call-template name="setup-login-status-class" />
     <xsl:call-template name="setup-extra-html-class" />
   </xsl:template>
