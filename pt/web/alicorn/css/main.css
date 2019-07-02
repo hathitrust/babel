@@ -716,10 +716,12 @@ html.mobile .panel.options button > span {
 html.mobile #action-toggle-sidebar {
   position: fixed;
   top: 10vh;
+  background: #fff;
+  color: #666;
   height: auto;
   white-space: nowrap;
   padding: 1rem 0.5rem;
-  font-size: 1rem;
+  font-size: 1.8rem;
   z-index: 25;
 }
 
@@ -743,7 +745,7 @@ html.mobile #action-toggle-sidebar[aria-expanded="false"] {
   opacity: 1.0;
   background: rgba(0, 0, 0, 0.8);
   color: #eee;
-  font-size: 2rem;
+  font-size: 1.8rem;
   left: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
@@ -1188,9 +1190,12 @@ section section .viewer-loader.viewer-loader::after {
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u8dbb78b5 1s linear alternate infinite;
           animation: loader12-u8dbb78b5 1s linear alternate infinite;
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
   -webkit-animation: loader12-ua2a3c40f 1s linear alternate infinite;
           animation: loader12-ua2a3c40f 1s linear alternate infinite;
@@ -1198,20 +1203,36 @@ section section .viewer-loader.viewer-loader::after {
   -webkit-animation: loader12-u5a8eebd6 1s linear alternate infinite;
           animation: loader12-u5a8eebd6 1s linear alternate infinite;
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+  -webkit-animation: loader12-u895a7f49 1s linear alternate infinite;
+          animation: loader12-u895a7f49 1s linear alternate infinite;
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   top: 50%;
   margin: -50px auto 0;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u8dbb78b5 {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @-webkit-keyframes loader12-ua2a3c40f {
 =======
 @-webkit-keyframes loader12-u5a8eebd6 {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@-webkit-keyframes loader12-u895a7f49 {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1235,14 +1256,23 @@ section section .viewer-loader.viewer-loader::after {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u8dbb78b5 {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @keyframes loader12-ua2a3c40f {
 =======
 @keyframes loader12-u5a8eebd6 {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@keyframes loader12-u895a7f49 {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1296,9 +1326,12 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-udba3a580 1s linear alternate infinite;
           animation: loader12-udba3a580 1s linear alternate infinite;
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
   -webkit-animation: loader12-u53dbb551 1s linear alternate infinite;
           animation: loader12-u53dbb551 1s linear alternate infinite;
@@ -1306,20 +1339,36 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   -webkit-animation: loader12-u686f1ce0 1s linear alternate infinite;
           animation: loader12-u686f1ce0 1s linear alternate infinite;
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+  -webkit-animation: loader12-ua8395b2f 1s linear alternate infinite;
+          animation: loader12-ua8395b2f 1s linear alternate infinite;
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   top: 50%;
   margin: -50px auto 0;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-udba3a580 {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @-webkit-keyframes loader12-u53dbb551 {
 =======
 @-webkit-keyframes loader12-u686f1ce0 {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@-webkit-keyframes loader12-ua8395b2f {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1343,14 +1392,23 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-udba3a580 {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @keyframes loader12-u53dbb551 {
 =======
 @keyframes loader12-u686f1ce0 {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@keyframes loader12-ua8395b2f {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1696,9 +1754,12 @@ section.view--thumb section .page:not(.page--loaded)::before {
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-uf8c79d51 1s linear alternate infinite;
           animation: loader12-uf8c79d51 1s linear alternate infinite;
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
   -webkit-animation: loader12-u6e079c15 1s linear alternate infinite;
           animation: loader12-u6e079c15 1s linear alternate infinite;
@@ -1706,21 +1767,37 @@ section.view--thumb section .page:not(.page--loaded)::before {
   -webkit-animation: loader12-u6cca701a 1s linear alternate infinite;
           animation: loader12-u6cca701a 1s linear alternate infinite;
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+  -webkit-animation: loader12-u38eb7628 1s linear alternate infinite;
+          animation: loader12-u38eb7628 1s linear alternate infinite;
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-uf8c79d51 {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @-webkit-keyframes loader12-u6e079c15 {
 =======
 @-webkit-keyframes loader12-u6cca701a {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@-webkit-keyframes loader12-u38eb7628 {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1744,14 +1821,23 @@ section.view--thumb section .page:not(.page--loaded)::before {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-uf8c79d51 {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @keyframes loader12-u6e079c15 {
 =======
 @keyframes loader12-u6cca701a {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@keyframes loader12-u38eb7628 {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1933,9 +2019,12 @@ section.view--plaintext button[data-target="plaintext"] {
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u2de7c16c 1s linear alternate infinite;
           animation: loader12-u2de7c16c 1s linear alternate infinite;
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
   -webkit-animation: loader12-ud5c474a2 1s linear alternate infinite;
           animation: loader12-ud5c474a2 1s linear alternate infinite;
@@ -1943,7 +2032,14 @@ section.view--plaintext button[data-target="plaintext"] {
   -webkit-animation: loader12-u685e1f5a 1s linear alternate infinite;
           animation: loader12-u685e1f5a 1s linear alternate infinite;
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+  -webkit-animation: loader12-u373ae706 1s linear alternate infinite;
+          animation: loader12-u373ae706 1s linear alternate infinite;
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1953,14 +2049,23 @@ section.view--plaintext button[data-target="plaintext"] {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u2de7c16c {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @-webkit-keyframes loader12-ud5c474a2 {
 =======
 @-webkit-keyframes loader12-u685e1f5a {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@-webkit-keyframes loader12-u373ae706 {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1984,14 +2089,23 @@ section.view--plaintext button[data-target="plaintext"] {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u2de7c16c {
 =======
+=======
+>>>>>>> 1dfdc68... alicorn on mobile
 <<<<<<< HEAD
 @keyframes loader12-ud5c474a2 {
 =======
 @keyframes loader12-u685e1f5a {
 >>>>>>> b93e4b8... alicorn on mobile
+<<<<<<< HEAD
 >>>>>>> b5941aa... alicorn on mobile
+=======
+=======
+@keyframes loader12-u373ae706 {
+>>>>>>> 94018de... alicorn on mobile
+>>>>>>> 1dfdc68... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

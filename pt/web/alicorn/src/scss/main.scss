@@ -215,10 +215,13 @@ html.mobile {
     position: fixed;
     top: 10vh;
 
+    background: #fff;
+    color: #666;
+
     height: auto;
     white-space: nowrap;
     padding: 1rem 0.5rem;
-    font-size: 1rem; // 2rem;
+    font-size: 1.8rem; // 2rem;
     // margin-left: $sidebar-buffer;
     z-index: 25;
 
@@ -245,7 +248,7 @@ html.mobile {
       opacity: 1.0;
       background: rgba(0, 0, 0, 0.8);
       color: #eee;
-      font-size: 2rem;
+      font-size: 1.8rem;
 
       left: 0;
 
