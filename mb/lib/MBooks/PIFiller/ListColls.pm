@@ -229,8 +229,10 @@ sub get_coll_xml
     $s .= wrap_string_in_tag($all_indexed, 'AllItemsIndexed');
 
     # Should only bother if we own coll!
-    my $current_user = $C->get_object('Auth')->get_user_name($C);
-    if ($current_user eq $$coll_hashref{'owner'}) {
+    # my $current_user = $C->get_object('Auth')->get_user_name($C);
+    my %current_user = map { $_ => 1 } $C->get_object('Auth')->get_user_names($C);
+    # if ($current_user eq $$coll_hashref{'owner'}) {
+    if ( $current_user{$$coll_hashref{owner}} ) {
         $$coll_hashref{is_owned} = 1;
         my $cgi = $C->get_object('CGI');
         my $temp_cgi = new CGI($cgi);

@@ -91,19 +91,20 @@ sub execute_operation
     my $description = $cgi->param('desc');
     my $shared = $cgi->param('shrd');
 
+    # maybe check here for which user name is being used for collections!
     my $owner = $auth->get_user_name($C);
     my $owner_name = $auth->get_user_display_name($C);
 
     # Avoid error if collname exists for owner. Collname already
     # exists so make this a no-op XXX need error messages
     return 
-        if ($cs->exists_coll_name_for_owner($collname, $owner));
+        if ($cs->exists_coll_name_for_owner($collname, $auth));
 
     my $coll_data_hashref = {
                              'collname'    => $collname,
                              'description' => $description,
                              'shared'      => $shared,
-                             'owner'       => $owner,
+                             'owner'       => $auth,
                              'owner_name'  => $owner_name,
                             };
 

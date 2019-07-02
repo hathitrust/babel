@@ -95,7 +95,7 @@ sub execute_operation {
 
     # Avoid error if coll not owned by owner  XXX implement error messages
     return
-        if (! $co->coll_owned_by_user($coll_id, $owner));
+        if (! $co->coll_owned_by_user($coll_id, $auth));
 
     my $ok = ManageDeleteCollection($C, $co, $coll_id);
     ASSERT($ok, qq{Operation DeleteColl error:$@});

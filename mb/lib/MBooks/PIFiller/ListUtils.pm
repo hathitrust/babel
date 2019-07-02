@@ -301,7 +301,7 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
     my ($C, $act, $piParamHashRef) = @_;
 
     my $auth = $C->get_object('Auth');
-    my $user_id = $auth->get_user_name($C);
+    # my $user_id = $auth->get_user_name($C);
 
     my $cgi = $C->get_object('CGI');
     my $coll_id = $cgi->param('c');
@@ -310,7 +310,7 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
 
     my $coll_owned_by_user = "no";
     # what if the call fails? do we really want it set to no if call failed?
-    if ($co->coll_owned_by_user($coll_id, $user_id))
+    if ($co->coll_owned_by_user($coll_id, $auth))
     {
         $coll_owned_by_user = "yes" ;
     }
