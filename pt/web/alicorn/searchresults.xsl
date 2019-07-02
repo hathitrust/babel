@@ -186,13 +186,13 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template name="build-repeat-search-message-and">
+  <xsl:template name="build-repeat-search-message-or">
     <p>
       <a href="{/MBooksTop/MdpApp/RepeatSearchLink}">Broaden your search to find pages having just <strong>one or more</strong> of your terms.</a>
     </p>
   </xsl:template>
 
-  <xsl:template name="build-repeat-search-message-or">
+  <xsl:template name="build-repeat-search-message-and">
     <p>
       <a href="{/MBooksTop/MdpApp/RepeatSearchLink}">Narrow your search to find just pages having <strong>all</strong> of your terms.</a>
     </p>
