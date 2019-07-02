@@ -244,6 +244,21 @@
 
   <xsl:template name="get-view-title">Main Content</xsl:template>
 
+  <xsl:template name="build-pre-sidebar-panels">
+    <div class="panel options for-mobile">
+      <h3>Options</h3>
+      <ul>
+        <li><button class="btn" data-trigger="contents"><span><i class="icomoon icomoon-list" aria-hidden="true"></i> Contents</span></button></li>
+        <li style="margin-bottom: 1rem;"><button class="btn" data-trigger="search"><span><i class="icomoon icomoon-search" aria-hidden="true"></i> Search Inside</span></button></li>
+        <li><button class="btn action-zoom-in"><span><i class="icomoon icomoon-zoom-in" aria-hidden="true"></i> Zoom In</span></button></li>
+        <li><button class="btn action-zoom-out"><span><i class="icomoon icomoon-zoom-out" aria-hidden="true"></i> Zoom Out</span></button></li>
+        <li><button class="btn action-zoom-reset"><span><i class="icomoon icomoon-document" aria-hidden="true"></i> Fit to Page</span></button></li>
+        <li style="margin-top: 1rem"><button class="btn action-view" data-target="plaintext"><span><i class="icomoon icomoon-article" aria-hidden="true"></i> Plain Text</span></button></li>
+        <li><button class="btn active action-view" data-target="1up"><span><i class="icomoon icomoon-scroll" aria-hidden="true"></i> Scanned Page</span></button></li>
+      </ul>
+    </div>
+  </xsl:template>
+
   <xsl:template name="toolbar-vertical">
     <div id="toolbar-vertical" class="toolbar toolbar-vertical" role="toolbar" aria-label="Viewing Options">
       <div class="btn-group btn-group-vertical action-views">
@@ -282,8 +297,8 @@
 
   <xsl:template name="action-resize">
     <div class="btn-group btn-group-vertical action-zoom">
-      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In" aria-label="Zoom In" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-in" style=""></i></button>
-      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out" aria-label="Zoom Out" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-out" style=""></i></button>
+      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square action-zoom-in" data-toggle="tracking" data-tracking-action="PT Zoom In" aria-label="Zoom In" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-in" aria-hidden="true"></i></button>
+      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square action-zoom-out" data-toggle="tracking" data-tracking-action="PT Zoom Out" aria-label="Zoom Out" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-out" aria-hidden="true"></i></button>
     </div>
   </xsl:template>
 

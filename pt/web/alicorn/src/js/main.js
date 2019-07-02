@@ -480,15 +480,114 @@ if ( HT.params.size  ) {
   }
 }
 
+reader.is_mobile = $("html").is(".mobile") || ( HT.params.debug && HT.params.debug.indexOf('mobile') > -1 );
+if ( reader.is_mobile ) {
+  scale = ( ( $(window).width() * 0.98 ) / 680 );
+  reader.options.bestFitScale = scale;
+}
+
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
 
+var $menu; var $trigger;
 HT.mobify = function() {
+
+  if ( $("html").is(".desktop") ) {
+    $("html").addClass("mobile").removeClass("desktop").removeClass("no-mobile");
+  }
+
   $("header").hide();
-  $("footer").hide();
-  $('.sidebar-container').hide();
-  $("#toolbar-vertical").hide();
-  $("#toolbar-horizontal").hide();
+  $(".navigator").hide();
+
+  var menu_html = `
+<div id="mobile-menu" class="modal micromodal-slide" tabindex="-1" aria-hidden="true">
+  <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="menu-modal-title">
+      <div class="modal__header">
+        <h2 class="modal__title">Menu</h2>
+      </div>
+      <div id="menu-modal-content" class="modal__content">
+
+      </div>
+    </div>
+  </div>
+</div>
+`;
+  $menu = $(menu_html).appendTo("body");
+  $menu.find("#menu-modal-content").append($("#sidebar"));
+  HT.$menu = $menu;
+
+
+  var $sidebar = $menu.find("#sidebar");
+
+  $trigger = $(`<button id="action-toggle-sidebar" aria-expanded="false">
+                    <i class="icomoon toggle-sidebar"></i>
+                    <span class="offscreen">About this Book/Tools Sidebar</span>
+                    </button>`);
+
+  $trigger.appendTo("body");
+  $trigger.on('click', function() {
+    var expanded = $trigger.attr('aria-expanded') == 'true';
+    HT.toggle(!expanded);
+    // var next_expanded;
+    // if ( expanded == 'true' ) {
+    //   next_expanded = 'false';
+    // } else {
+    //   next_expanded = 'true';
+    // }
+    // $trigger.attr('aria-expanded', next_expanded);
+    // HT.toggle(next_expanded);
+  })
+
+  reader.controls.mobile = {};
+
+  reader.controls.mobile.zoominator = new Control.Zoominator({
+    input: $sidebar.get(0),
+    reader: reader
+  });
+
+  reader.on('redraw', function() {
+    HT.toggle(false);
+  });
+
+  $sidebar.on('click', '[data-trigger="contents"]', function(event) {
+    event.preventDefault();
+    $(".table-of-contents button").trigger('click');
+  })
+
+  $sidebar.on('click', '.action-view', function(event) {
+    var target = $(this).data('target');
+    if ( target == reader.view.name ) {
+      return;
+    }
+    $sidebar.find(".action-view.active").removeClass("active");
+    $(this).addClass("active");
+    reader.restart({ view: target, clicked: event.detail == 1 });
+    reader.emit('redraw', {});
+  })
+
   reader.emit('resize');
+}
+
+HT.toggle = function(state) {
+  $("header").toggle(state);
+  $(".navigator").toggle(state);
+  $trigger.attr('aria-expanded', state);
+
+  if ( $("header").is(":visible") ) {
+    bootbox.show('mobile-menu', {
+      onClose: function() {
+        if ( $("header").is(":visible") ) {
+          HT.toggle(false);
+        }
+      }
+    });
+  } else {
+    bootbox.close();
+  }
+}
+
+if ( reader.is_mobile ) {
+  setTimeout(HT.mobify, 1000);
 }
 
 var daInterval;

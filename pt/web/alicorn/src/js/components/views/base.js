@@ -344,8 +344,10 @@ export var Base = class {
 
       this.reader.on('redraw', (params) => {
         console.log("AHOY PARAMS", params);
-        this.scale = params.scale;
-        this.reader.emit('resize');
+        if ( params.scale && params.scale != this.scale ) {
+          this.scale = params.scale;
+          this.reader.emit('resize');
+        }
       });
 
       this._handlers.resize = this.reader.on('resize', () => {

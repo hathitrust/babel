@@ -25,19 +25,29 @@ export var Zoominator = class {
 
   bindEvents() {
     var self = this;
-    this.input.zoom_in = this.input.querySelector('#action-zoom-in');
+    this.input.zoom_in = this.input.querySelector('.action-zoom-in');
     this.input.zoom_in.addEventListener('click', function(event) {
       var idx = self.possibles.indexOf(self.scale);
       idx += 1;
       self.update(idx);
     })
 
-    this.input.zoom_out = this.input.querySelector('#action-zoom-out');
+    this.input.zoom_out = this.input.querySelector('.action-zoom-out');
     this.input.zoom_out.addEventListener('click', function(event) {
       var idx = self.possibles.indexOf(self.scale);
       idx -= 1;
       self.update(idx);
     })
+
+    this.input.zoom_reset = this.input.querySelector('.action-zoom-reset');
+    if ( this.input.zoom_reset ) {
+      this.input.zoom_reset.addEventListener('click', function(event) {
+        self.update(-1);
+        // this.input.zoom_in.disabled = false;
+        // this.input.zoom_out.disabled = false;
+        // this.reader.emit('redraw', { scale: this.reader.options.bestFitScale });
+      })
+    }
 
     this.reader.on('configure', function(config) {
       if ( config.zoom === false ) {
@@ -53,7 +63,7 @@ export var Zoominator = class {
   }
 
   update(idx) {
-    this.scale = this.possibles[idx];
+    this.scale = idx < 0 ? this.reader.options.bestFitScale : this.possibles[idx];
     this.input.zoom_in.disabled = ( idx == ( this.possibles.length - 1 ) );
     this.input.zoom_out.disabled = ( idx == 0 );
     this.reader.emit('redraw', { scale: this.scale });

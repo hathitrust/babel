@@ -835,6 +835,8 @@
     <xsl:call-template name="BuildBackToResultsLink" />
     <xsl:call-template name="list-surveys" />
 
+    <xsl:call-template name="build-pre-sidebar-panels" />
+
     <xsl:call-template name="sidebar-about-this-book" />
     <div class="scrollable">
       <xsl:call-template name="build-extra-sidebar-panels" />
@@ -848,6 +850,7 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="build-pre-sidebar-panels" />
   <xsl:template name="build-extra-sidebar-panels" />
 
   <xsl:template name="access-overview-block">

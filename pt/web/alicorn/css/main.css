@@ -578,6 +578,7 @@ html.skin-default main > .container {
   min-width: calc(18rem + 56rem + 2rem);
 }
 
+<<<<<<< HEAD
 html.skin-default .flex-container {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -592,6 +593,167 @@ html.skin-default .flex-container {
   html.skin-default footer {
     display: none !important;
   }
+=======
+.for-mobile {
+  display: none;
+}
+
+html.mobile .for-mobile {
+  display: block;
+}
+
+html.mobile header {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+}
+
+html.mobile main {
+  padding: 0;
+}
+
+html.mobile main > .container {
+  padding: 0;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+html.mobile #sidebar {
+  display: none;
+}
+
+html.mobile #toolbar-vertical {
+  display: none;
+}
+
+html.mobile #toolbar-horizontal {
+  display: none;
+}
+
+html.mobile .sidebar-toggle {
+  display: none;
+}
+
+html.mobile main .inner.main {
+  margin: 0.25rem auto;
+}
+
+html.mobile section section .page {
+  margin-bottom: 0.5rem;
+}
+
+html.mobile footer {
+  display: none !important;
+}
+
+html.mobile .modal__overlay {
+  background: transparent;
+  height: 100vh;
+}
+
+html.mobile .modal__container {
+  height: 95%;
+  border-radius: 0;
+  display: grid;
+  grid-template: "header" auto "main" 1fr "footer" auto/minmax(0, 1fr);
+}
+
+html.mobile .modal__content {
+  max-height: none;
+  padding-right: 1rem;
+  padding-left: 4rem;
+}
+
+html.mobile .modal__header, html.mobile .modal__footer {
+  padding-right: 1rem;
+  padding-left: 4rem;
+}
+
+html.mobile #mobile-menu .modal__container {
+  height: 100%;
+}
+
+html.mobile #mobile-menu .modal__header, html.mobile #mobile-menu .modal__footer {
+  padding-right: 1rem;
+  padding-left: 0.8rem;
+}
+
+html.mobile #mobile-menu .modal__overlay {
+  background: transparent;
+  height: 85vh;
+  top: 7.5vh;
+}
+
+html.mobile #mobile-menu .modal__content {
+  max-height: 78vh;
+  padding-right: 1rem;
+  padding-left: 0.8rem;
+}
+
+html.mobile #mobile-menu .modal__content #sidebar {
+  display: block;
+  margin-top: 0.5rem;
+  max-width: none;
+}
+
+html.mobile #mobile-menu .modal__content #sidebar .scrollable {
+  overflow: visible;
+}
+
+html.mobile .panel.options button {
+  width: 100%;
+  text-align: center;
+}
+
+html.mobile .panel.options button > span {
+  white-space: nowrap;
+  display: inline-block;
+}
+
+html.mobile #action-toggle-sidebar {
+  position: fixed;
+  top: 10vh;
+  height: auto;
+  white-space: nowrap;
+  padding: 1rem 0.5rem;
+  font-size: 1rem;
+  z-index: 25;
+}
+
+html.mobile #action-toggle-sidebar[aria-expanded="true"] {
+  opacity: 1.0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+  right: 0;
+}
+
+html.mobile #action-toggle-sidebar[aria-expanded="true"] .icomoon:before {
+  content: "";
+}
+
+html.mobile #action-toggle-sidebar:hover, html.mobile #action-toggle-sidebar:focus {
+  opacity: 1.0;
+}
+
+html.mobile #action-toggle-sidebar[aria-expanded="false"] {
+  opacity: 1.0;
+  background: rgba(0, 0, 0, 0.8);
+  color: #eee;
+  font-size: 2rem;
+  left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+  margin-right: -3rem;
+}
+
+html.mobile #action-toggle-sidebar[aria-expanded="false"] .icomoon:before {
+  content: "";
+>>>>>>> b93e4b8... alicorn on mobile
 }
 
 @media screen and (max-height: 650px) {
@@ -1025,13 +1187,31 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-u8dbb78b5 1s linear alternate infinite;
           animation: loader12-u8dbb78b5 1s linear alternate infinite;
+=======
+<<<<<<< HEAD
+  -webkit-animation: loader12-ua2a3c40f 1s linear alternate infinite;
+          animation: loader12-ua2a3c40f 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-u5a8eebd6 1s linear alternate infinite;
+          animation: loader12-u5a8eebd6 1s linear alternate infinite;
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u8dbb78b5 {
+=======
+<<<<<<< HEAD
+@-webkit-keyframes loader12-ua2a3c40f {
+=======
+@-webkit-keyframes loader12-u5a8eebd6 {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1054,7 +1234,15 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-u8dbb78b5 {
+=======
+<<<<<<< HEAD
+@keyframes loader12-ua2a3c40f {
+=======
+@keyframes loader12-u5a8eebd6 {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1107,13 +1295,31 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-udba3a580 1s linear alternate infinite;
           animation: loader12-udba3a580 1s linear alternate infinite;
+=======
+<<<<<<< HEAD
+  -webkit-animation: loader12-u53dbb551 1s linear alternate infinite;
+          animation: loader12-u53dbb551 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-u686f1ce0 1s linear alternate infinite;
+          animation: loader12-u686f1ce0 1s linear alternate infinite;
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-udba3a580 {
+=======
+<<<<<<< HEAD
+@-webkit-keyframes loader12-u53dbb551 {
+=======
+@-webkit-keyframes loader12-u686f1ce0 {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1136,7 +1342,15 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-udba3a580 {
+=======
+<<<<<<< HEAD
+@keyframes loader12-u53dbb551 {
+=======
+@keyframes loader12-u686f1ce0 {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1481,14 +1695,32 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-uf8c79d51 1s linear alternate infinite;
           animation: loader12-uf8c79d51 1s linear alternate infinite;
+=======
+<<<<<<< HEAD
+  -webkit-animation: loader12-u6e079c15 1s linear alternate infinite;
+          animation: loader12-u6e079c15 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-u6cca701a 1s linear alternate infinite;
+          animation: loader12-u6cca701a 1s linear alternate infinite;
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-uf8c79d51 {
+=======
+<<<<<<< HEAD
+@-webkit-keyframes loader12-u6e079c15 {
+=======
+@-webkit-keyframes loader12-u6cca701a {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1511,7 +1743,15 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-uf8c79d51 {
+=======
+<<<<<<< HEAD
+@keyframes loader12-u6e079c15 {
+=======
+@keyframes loader12-u6cca701a {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1692,8 +1932,18 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-u2de7c16c 1s linear alternate infinite;
           animation: loader12-u2de7c16c 1s linear alternate infinite;
+=======
+<<<<<<< HEAD
+  -webkit-animation: loader12-ud5c474a2 1s linear alternate infinite;
+          animation: loader12-ud5c474a2 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-u685e1f5a 1s linear alternate infinite;
+          animation: loader12-u685e1f5a 1s linear alternate infinite;
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1702,7 +1952,15 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u2de7c16c {
+=======
+<<<<<<< HEAD
+@-webkit-keyframes loader12-ud5c474a2 {
+=======
+@-webkit-keyframes loader12-u685e1f5a {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1725,7 +1983,15 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-u2de7c16c {
+=======
+<<<<<<< HEAD
+@keyframes loader12-ud5c474a2 {
+=======
+@keyframes loader12-u685e1f5a {
+>>>>>>> b93e4b8... alicorn on mobile
+>>>>>>> b5941aa... alicorn on mobile
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
