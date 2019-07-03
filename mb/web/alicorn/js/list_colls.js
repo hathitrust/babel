@@ -572,10 +572,10 @@ var ListBrowser = function(argv, elem) {
       options.min_items = min_items;
     }
 
-    // if ( options.min_items == 0 ) {
-    //   root.remove_filter({ type : "min_items" });
-    //   return;
-    // }
+    if ( options.min_items == 0 ) {
+      root.remove_filter({ type : "min_items" });
+      return;
+    }
 
     var idx = options.min_items_possibles.indexOf(options.min_items);
     options.max_items = options.min_items_possibles[idx - 1] || Number.POSITIVE_INFINITY;
