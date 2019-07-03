@@ -660,10 +660,14 @@ var ListBrowser = function(argv, elem) {
     var filters = options.filters;
 
     cache.filtered = [];
-    cache.counts = { 25: 0, 50: 0, 100: 0, 250: 0, 500: 0, 1000: 0 };
+    cache.counts = {};
     cache.view_counts = { all: 0, updated: 0, featured: 0, 'my-collections': 0 };
-    var possible_counts = [ 25, 50, 100, 250, 500, 1000 ];
+    var possible_counts = [ -1, 25, 50, 100, 250, 500, 1000 ];
     var p_total = possible_counts.length;
+    for(var i = 0; i < p_total; i++) {
+      cache.counts[possible_counts[i]] = 0;
+    }
+    // cache.counts = { -1: 0, 25: 0, 50: 0, 100: 0, 250: 0, 500: 0, 1000: 0 };
     var bucket = HT.listcs.bucket;
     var totalRows = bucket.length;
 
