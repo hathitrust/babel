@@ -166,6 +166,7 @@ $g_late_operations = [
                                                            'pn'    => '1',
                                                            'sz'    =>  undef,
                                                            'skin'  => undef,
+                                                           'lmt'   => undef,
                                                           }
                                          },
 

@@ -90,10 +90,10 @@
         </xsl:call-template>
       </xsl:when>
       <xsl:when test="SearchResults[CollEmpty='FALSE']">
-        <!-- zero results -->
+        <xsl:call-template name="build-no-results-container"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:call-template name="build-empty-collection"/>
+        <xsl:call-template name="build-empty-collection-container"/>
       </xsl:otherwise>
     </xsl:choose>
     <script>
@@ -564,7 +564,64 @@
     </xsl:for-each>
   </xsl:template>
 
-  <xsl:template name="build-empty-collection" />
+  <xsl:template name="build-no-results-container">
+    <xsl:variable name="limitType">
+      <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
+    </xsl:variable>
+
+    <xsl:call-template name="build-mondo-collection-header" />
+    <xsl:call-template name="build-operation-status-summary" />
+
+    <div class="results-container">
+      <div class="results-summary-container">
+        <h2 class="results-summary"><b>No results</b> matched your search.</h2>
+      </div>
+
+      <div class="results-container-inner">
+
+        <h3>Suggestions</h3>
+        <ul class="bullets">
+          <li>Revise your search term</li>
+          <xsl:if test="($limitType = 'ft') and ($all_items_count &gt; 0) and ($full_text_count = 0)">
+            <li>Filter by <strong>All Items</strong></li>
+          </xsl:if>
+          <li>Remove some filters</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </xsl:template>
+
+  <xsl:template name="build-empty-collection-container">
+    <xsl:call-template name="build-mondo-collection-header" />
+    <xsl:call-template name="build-operation-status-summary" />
+
+    <div class="results-container">
+      <div class="results-summary-container">
+        <h2 class="results-summary">This collection is empty.</h2>
+      </div>
+
+      <div class="results-container-inner">
+        <h3>Suggestions</h3>
+        <ul>
+          <li>
+            <xsl:text>Copy or move items from </xsl:text>
+            <a href="{/MBooksTop/Header/PubCollLink}">a public collection</a>
+            <xsl:if test="//LoggedIn='YES'">
+              <xsl:text> or </xsl:text>
+              <a href="{MBooksTop/Header/PrivCollLink}">another of your collections</a>
+            </xsl:if>
+          </li>
+          <li>
+            <a href="https://www.hathitrust.org/">Search HathiTrust</a>
+            <xsl:text> for new items</xsl:text>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </xsl:template>
 
   <xsl:template name="build-collections-toolbar">
     <div class="collections-action-container">
@@ -679,7 +736,10 @@
         <!-- <xsl:call-template name="build-collection-branding" /> -->
       </div>
       <xsl:call-template name="build-mondo-collection-status-update" />
-      <xsl:call-template name="build-mondo-collection-search-form" />
+
+      <xsl:if test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
+        <xsl:call-template name="build-mondo-collection-search-form" />
+      </xsl:if>
     </div>
   </xsl:template>
 
@@ -737,14 +797,38 @@
       </div>
 
       <!-- <input type="hidden" value="srchls" name="a"/> -->
-      <input type="hidden">
+
+      <xsl:variable name="search-params-tmpl">
+        <dc:select>
+        <dc:option name="c" />
+        <dc:option name="pn" />
+        <dc:option name="sort" />
+        <dc:option name="dir" />
+        <dc:option name="sz" />
+        <dc:option name="debug" />
+        </dc:select>
+      </xsl:variable>
+      <xsl:variable name="search-params" select="exsl:node-set($search-params-tmpl)" />
+
+      <!-- <input type="hidden">
         <xsl:attribute name="name">
           <xsl:text>c</xsl:text>
         </xsl:attribute>
         <xsl:attribute name="value">
           <xsl:value-of select="$coll_id"/>
         </xsl:attribute>
-      </input>
+      </input> -->
+
+      <xsl:variable name="CurrentCgi" select="//CurrentCgi" />
+      <xsl:for-each select="$search-params//dc:option">
+        <xsl:variable name="name" select="@name" />
+        <xsl:if test="normalize-space($CurrentCgi/Param[@name=$name])">
+          <input type="hidden" name="{$name}" value="{$CurrentCgi/Param[@name=$name]}" />
+        </xsl:if>
+      </xsl:for-each>
+
+      <input type="hidden" name="a" value="srch"/>
+
       <xsl:for-each select="//CurrentCgi/Param[@name='facet']">
         <input type="hidden" name="facet" value="{.}" />
       </xsl:for-each>
