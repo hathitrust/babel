@@ -534,6 +534,116 @@ html.crms #form-go-page {
   display: flex !important;
 }
 
+html.mobile #mobile-menu .modal__footer .navigator, .section-container .navigator {
+  padding: 0.5rem 1rem;
+  background: #666;
+  color: #fff;
+  text-align: center;
+  position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator form, .section-container .navigator form {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator input[type=range], .section-container .navigator input[type=range] {
+  margin: auto;
+  margin-right: 1rem;
+  padding: 0;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  height: 16px;
+  background-color: #bab9b7;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#2497e3), to(#2497e3));
+  background-image: linear-gradient(#2497e3, #2497e3);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator input[type=range]::-webkit-slider-runnable-track, .section-container .navigator input[type=range]::-webkit-slider-runnable-track {
+  -webkit-box-shadow: none;
+          box-shadow: none;
+  border: none;
+  background: transparent;
+  -webkit-appearance: none;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator input[type=range]::-moz-range-track, .section-container .navigator input[type=range]::-moz-range-track {
+  box-shadow: none;
+  border: none;
+  background: transparent;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator input[type=range]::-moz-focus-outer, .section-container .navigator input[type=range]::-moz-focus-outer {
+  border: 0;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator input[type=range]::-webkit-slider-thumb, .section-container .navigator input[type=range]::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: #fff;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
+  -webkit-appearance: none;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator input[type=range]::-moz-range-thumb, .section-container .navigator input[type=range]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
+}
+
+html.mobile #mobile-menu .modal__footer .navigator input[type=range]::-ms-thumb, .section-container .navigator input[type=range]::-ms-thumb {
+  margin-top: 1px;
+  box-shadow: 0px 0px 0px #000000;
+  border: 1px solid #2497E3;
+  height: 24px;
+  width: 24px;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator .output, .section-container .navigator .output {
+  margin-right: 1rem;
+  padding: 0.5rem;
+  display: inline-block;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator .output.updating, .section-container .navigator .output.updating {
+  background: #000;
+}
+
 html, body {
   overflow: hidden;
   height: 100vh;
@@ -559,6 +669,7 @@ html.debugpolite div[role="status"] {
 
 #root {
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
   overflow: hidden;
   -ms-grid-columns: 1fr;
@@ -570,16 +681,15 @@ html.ie #action-toggle-sidebar {
   display: none !important;
 }
 
-html.skin-default main {
+html.skin-default.no-mobile main {
   overflow-x: auto;
 }
 
-html.skin-default main > .container {
+html.skin-default.no-mobile main > .container {
   min-width: calc(18rem + 56rem + 2rem);
 }
 
-<<<<<<< HEAD
-html.skin-default .flex-container {
+html.skin-default.no-mobile .flex-container {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -593,13 +703,27 @@ html.skin-default .flex-container {
   html.skin-default footer {
     display: none !important;
   }
-=======
+}
+
 .for-mobile {
   display: none;
 }
 
+:root {
+  --background: #39383a;
+}
+
+html.mobile {
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
 html.mobile .for-mobile {
   display: block;
+}
+
+html.mobile .section-container .navigator {
+  display: none;
 }
 
 html.mobile header {
@@ -609,6 +733,32 @@ html.mobile header {
   left: 0;
   right: 0;
   z-index: 500;
+}
+
+html.mobile header nav ul#nav {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  margin-right: 1.5rem;
+  background-image: -webkit-gradient(linear, left top, right top, from(var(--background)), to(var(--background))), -webkit-gradient(linear, left top, right top, from(var(--background)), to(var(--background))), -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0.5)), to(rgba(0, 0, 0, 0))), -webkit-gradient(linear, right top, left top, from(rgba(255, 255, 255, 0.5)), to(rgba(0, 0, 0, 0)));
+  background-image: linear-gradient(to right, var(--background), var(--background)), linear-gradient(to right, var(--background), var(--background)), linear-gradient(to right, rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0)), linear-gradient(to left, rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0));
+  background-position: left center, right center, left center, right center;
+  background-repeat: no-repeat;
+  background-color: var(--background);
+  background-size: 2rem 100%, 2rem 100%, 1rem 100%, 1rem 100%;
+  /* Opera doesn't support this in the shorthand */
+  background-attachment: local, local, scroll, scroll;
+}
+
+html.mobile header nav ul#nav > * {
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+}
+
+html.mobile header nav ul#nav::-webkit-scrollbar {
+  height: 0;
+  width: 0;
 }
 
 html.mobile main {
@@ -649,13 +799,20 @@ html.mobile footer {
   display: none !important;
 }
 
+html.mobile section section .viewer-inner {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
 html.mobile .modal__overlay {
   background: transparent;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  z-index: 50;
 }
 
 html.mobile .modal__container {
-  height: 95%;
+  height: 100%;
   border-radius: 0;
   display: grid;
   grid-template: "header" auto "main" 1fr "footer" auto/minmax(0, 1fr);
@@ -664,12 +821,12 @@ html.mobile .modal__container {
 html.mobile .modal__content {
   max-height: none;
   padding-right: 1rem;
-  padding-left: 4rem;
+  padding-left: 1rem;
 }
 
 html.mobile .modal__header, html.mobile .modal__footer {
   padding-right: 1rem;
-  padding-left: 4rem;
+  padding-left: 1rem;
 }
 
 html.mobile #mobile-menu .modal__container {
@@ -683,13 +840,11 @@ html.mobile #mobile-menu .modal__header, html.mobile #mobile-menu .modal__footer
 
 html.mobile #mobile-menu .modal__overlay {
   background: transparent;
-  height: 85vh;
-  top: 7.5vh;
+  z-index: 5;
 }
 
 html.mobile #mobile-menu .modal__content {
-  max-height: 78vh;
-  padding-right: 1rem;
+  padding-right: 1.5rem;
   padding-left: 0.8rem;
 }
 
@@ -701,6 +856,14 @@ html.mobile #mobile-menu .modal__content #sidebar {
 
 html.mobile #mobile-menu .modal__content #sidebar .scrollable {
   overflow: visible;
+}
+
+html.mobile #mobile-menu .modal__footer {
+  padding: 0;
+}
+
+html.mobile #mobile-menu .modal__footer .navigator .output {
+  white-space: nowrap;
 }
 
 html.mobile .panel.options button {
@@ -755,7 +918,6 @@ html.mobile #action-toggle-sidebar[aria-expanded="false"] {
 
 html.mobile #action-toggle-sidebar[aria-expanded="false"] .icomoon:before {
   content: "";
->>>>>>> b93e4b8... alicorn on mobile
 }
 
 @media screen and (max-height: 650px) {
@@ -1006,116 +1168,6 @@ main .inner.main {
           flex-direction: row;
 }
 
-.section-container .navigator {
-  padding: 0.5rem 1rem;
-  background: #666;
-  color: #fff;
-  text-align: center;
-  position: relative;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-}
-
-.section-container .navigator form {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
-}
-
-.section-container .navigator input[type=range] {
-  margin: auto;
-  margin-right: 1rem;
-  padding: 0;
-  -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
-  height: 16px;
-  background-color: #bab9b7;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#2497e3), to(#2497e3));
-  background-image: linear-gradient(#2497e3, #2497e3);
-  background-size: 0% 100%;
-  background-repeat: no-repeat;
-  border-radius: 4px;
-  cursor: pointer;
-  -webkit-appearance: none;
-}
-
-.section-container .navigator input[type=range]::-webkit-slider-runnable-track {
-  -webkit-box-shadow: none;
-          box-shadow: none;
-  border: none;
-  background: transparent;
-  -webkit-appearance: none;
-}
-
-.section-container .navigator input[type=range]::-moz-range-track {
-  box-shadow: none;
-  border: none;
-  background: transparent;
-}
-
-.section-container .navigator input[type=range]::-moz-focus-outer {
-  border: 0;
-}
-
-.section-container .navigator input[type=range]::-webkit-slider-thumb {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: #fff;
-  border-radius: 4px;
-  -webkit-box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
-          box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
-  -webkit-appearance: none;
-}
-
-.section-container .navigator input[type=range]::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
-}
-
-.section-container .navigator input[type=range]::-ms-thumb {
-  margin-top: 1px;
-  box-shadow: 0px 0px 0px #000000;
-  border: 1px solid #2497E3;
-  height: 24px;
-  width: 24px;
-  border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 0 1px 0px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-
-.section-container .navigator .output {
-  margin-right: 1rem;
-  padding: 0.5rem;
-  display: inline-block;
-}
-
-.section-container .navigator .output.updating {
-  background: #000;
-}
-
 .viewer {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1191,6 +1243,7 @@ section section .viewer-loader.viewer-loader::after {
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u8dbb78b5 1s linear alternate infinite;
           animation: loader12-u8dbb78b5 1s linear alternate infinite;
 =======
@@ -1211,10 +1264,15 @@ section section .viewer-loader.viewer-loader::after {
           animation: loader12-u895a7f49 1s linear alternate infinite;
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+  -webkit-animation: loader12-u4dcccdef 1s linear alternate infinite;
+          animation: loader12-u4dcccdef 1s linear alternate infinite;
+>>>>>>> f5c354a... aggressively modify the document
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 @-webkit-keyframes loader12-u8dbb78b5 {
@@ -1233,6 +1291,9 @@ section section .viewer-loader.viewer-loader::after {
 @-webkit-keyframes loader12-u895a7f49 {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@-webkit-keyframes loader12-u4dcccdef {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1257,6 +1318,7 @@ section section .viewer-loader.viewer-loader::after {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u8dbb78b5 {
 =======
 =======
@@ -1273,6 +1335,9 @@ section section .viewer-loader.viewer-loader::after {
 @keyframes loader12-u895a7f49 {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@keyframes loader12-u4dcccdef {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1327,6 +1392,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-udba3a580 1s linear alternate infinite;
           animation: loader12-udba3a580 1s linear alternate infinite;
 =======
@@ -1347,10 +1413,15 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
           animation: loader12-ua8395b2f 1s linear alternate infinite;
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+  -webkit-animation: loader12-ufa11a5ef 1s linear alternate infinite;
+          animation: loader12-ufa11a5ef 1s linear alternate infinite;
+>>>>>>> f5c354a... aggressively modify the document
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 @-webkit-keyframes loader12-udba3a580 {
@@ -1369,6 +1440,9 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 @-webkit-keyframes loader12-ua8395b2f {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@-webkit-keyframes loader12-ufa11a5ef {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1393,6 +1467,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-udba3a580 {
 =======
 =======
@@ -1409,6 +1484,9 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 @keyframes loader12-ua8395b2f {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@keyframes loader12-ufa11a5ef {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1755,6 +1833,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-uf8c79d51 1s linear alternate infinite;
           animation: loader12-uf8c79d51 1s linear alternate infinite;
 =======
@@ -1775,11 +1854,16 @@ section.view--thumb section .page:not(.page--loaded)::before {
           animation: loader12-u38eb7628 1s linear alternate infinite;
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+  -webkit-animation: loader12-ua6a4a536 1s linear alternate infinite;
+          animation: loader12-ua6a4a536 1s linear alternate infinite;
+>>>>>>> f5c354a... aggressively modify the document
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 @-webkit-keyframes loader12-uf8c79d51 {
@@ -1798,6 +1882,9 @@ section.view--thumb section .page:not(.page--loaded)::before {
 @-webkit-keyframes loader12-u38eb7628 {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@-webkit-keyframes loader12-ua6a4a536 {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1822,6 +1909,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-uf8c79d51 {
 =======
 =======
@@ -1838,6 +1926,9 @@ section.view--thumb section .page:not(.page--loaded)::before {
 @keyframes loader12-u38eb7628 {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@keyframes loader12-ua6a4a536 {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -2020,6 +2111,7 @@ section.view--plaintext button[data-target="plaintext"] {
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u2de7c16c 1s linear alternate infinite;
           animation: loader12-u2de7c16c 1s linear alternate infinite;
 =======
@@ -2040,6 +2132,10 @@ section.view--plaintext button[data-target="plaintext"] {
           animation: loader12-u373ae706 1s linear alternate infinite;
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+  -webkit-animation: loader12-u74966775 1s linear alternate infinite;
+          animation: loader12-u74966775 1s linear alternate infinite;
+>>>>>>> f5c354a... aggressively modify the document
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -2048,6 +2144,7 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 @-webkit-keyframes loader12-u2de7c16c {
@@ -2066,6 +2163,9 @@ section.view--plaintext button[data-target="plaintext"] {
 @-webkit-keyframes loader12-u373ae706 {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@-webkit-keyframes loader12-u74966775 {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2090,6 +2190,7 @@ section.view--plaintext button[data-target="plaintext"] {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u2de7c16c {
 =======
 =======
@@ -2106,6 +2207,9 @@ section.view--plaintext button[data-target="plaintext"] {
 @keyframes loader12-u373ae706 {
 >>>>>>> 94018de... alicorn on mobile
 >>>>>>> 1dfdc68... alicorn on mobile
+=======
+@keyframes loader12-u74966775 {
+>>>>>>> f5c354a... aggressively modify the document
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

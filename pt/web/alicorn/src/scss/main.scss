@@ -6,6 +6,114 @@
 @import "spinthatshit/src/loaders";
 @import "crms";
 
+%navigator-component {
+
+  .navigator {
+    // padding: 0.5rem 1rem 1rem;
+    padding: 0.5rem 1rem;
+    background: #666; // #E3E2DF;
+    color: #fff;
+    text-align: center;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+    }
+
+    // height: 54px;
+
+    $thumb-size: 24px;
+    $range-gradient-start: #2497e3; // #9e6957
+    $range-gradient-end: #a2d3f5; // #51475a
+
+    input[type=range] {
+        margin: auto;
+        margin-right: 1rem;
+        // outline: none;
+        padding: 0;
+        flex-grow: 1;
+        height: 16px;
+        background-color: #bab9b7; // #feebc5;
+        background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, $range-gradient-start), color-stop(100%, $range-gradient-start));
+        background-image: -webkit-linear-gradient($range-gradient-start, $range-gradient-start);
+        background-image: -moz-linear-gradient($range-gradient-start, $range-gradient-start);
+        background-image: -o-linear-gradient($range-gradient-start, $range-gradient-start);
+        background-image: linear-gradient($range-gradient-start, $range-gradient-start);
+        background-size: 0% 100%;
+        background-repeat: no-repeat;
+        border-radius: 4px;
+        cursor: pointer;
+        -webkit-appearance: none;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        box-shadow: none;
+        border: none;
+        background: transparent;
+        -webkit-appearance: none;
+    }
+
+    input[type=range]::-moz-range-track {
+        box-shadow: none;
+        border: none;
+        background: transparent;
+    }
+
+    input[type=range]::-moz-focus-outer {
+        border: 0;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        width: $thumb-size;
+        height: $thumb-size;
+        border: 0;
+        background: #fff;
+        border-radius: 4px;
+        box-shadow: 0 0 1px 0px rgba(0,0,0,0.1);
+        -webkit-appearance: none;
+    }
+
+    input[type=range]::-moz-range-thumb {
+        width: $thumb-size;
+        height: $thumb-size;
+        border: 0;
+        background: #fff;
+        border-radius: 4px;
+        box-shadow: 0 0 1px 0px rgba(0,0,0,0.1);
+    }
+
+    input[type=range]::-ms-thumb {
+      margin-top: 1px;
+      box-shadow: 0px 0px 0px #000000;
+      border: 1px solid #2497E3;
+      height: $thumb-size;
+      width: $thumb-size;
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 0 1px 0px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+
+    .output {
+      margin-right: 1rem;
+      padding: 0.5rem;
+      display: inline-block;
+
+      &.updating {
+        background: #000;
+      }
+    }
+
+  }
+
+}
+
 html, body {
   overflow: hidden;
   height: 100vh;
@@ -31,6 +139,8 @@ html.debugpolite div[role="status"] {
 
 #root {
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+
   width: 100vw;
   overflow: hidden;
 
@@ -47,7 +157,7 @@ html.ie {
 }
 
 // html.desktop.no-mobile
-html.skin-default {
+html.skin-default.no-mobile {
 
   $min-viewer-width: 56rem;
 
@@ -85,10 +195,23 @@ html.skin-default {
   display: none;
 }
 
+:root {
+  --background: #39383a;
+}
+
 html.mobile {
+
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
 
   .for-mobile {
     display: block;
+  }
+
+  .section-container {
+    .navigator {
+      display: none;
+    }
   }
 
   header {
@@ -98,6 +221,49 @@ html.mobile {
     left: 0;
     right: 0;
     z-index: 500;
+
+    nav {
+      // display: contents;
+
+      ul#nav {
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+
+        margin-right: 1.5rem;
+
+        background-image: 
+            
+            /* Shadows */ 
+            linear-gradient(to right, var(--background), var(--background)),
+            linear-gradient(to right, var(--background), var(--background)),
+          
+            /* Shadow covers */ 
+            // linear-gradient(to right, rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0)),
+            // linear-gradient(to left, rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0));   
+            linear-gradient(to right, rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0)),
+            linear-gradient(to left, rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0));   
+
+          background-position: left center, right center, left center, right center;
+            background-repeat: no-repeat;
+            background-color: var(--background);
+            background-size: 2rem 100%, 2rem 100%, 1rem 100%, 1rem 100%;
+            
+            /* Opera doesn't support this in the shorthand */
+            background-attachment: local, local, scroll, scroll;
+
+        & > * {
+          flex-shrink: 0;
+        }
+
+        &::-webkit-scrollbar {
+          height: 0;
+          width: 0;
+        }
+
+      }
+    }
   }
 
   main {
@@ -137,13 +303,20 @@ html.mobile {
     display: none !important;
   }
 
+  section section .viewer-inner {
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .modal__overlay {
     background: transparent;
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    z-index: 50;
   }
 
   .modal__container {
-    height: 95%;
+    height: 100%;
     border-radius: 0;
     display: grid;
     grid-template:"header" auto "main" 1fr "footer" auto/minmax(0,1fr);
@@ -152,12 +325,12 @@ html.mobile {
   .modal__content {
     max-height: none;
     padding-right: 1rem;
-    padding-left: 4rem;
+    padding-left: 1rem;
   }
 
   .modal__header, .modal__footer {
     padding-right: 1rem;
-    padding-left: 4rem;
+    padding-left: 1rem;
   }
 
   #mobile-menu {
@@ -173,13 +346,14 @@ html.mobile {
 
     .modal__overlay {
       background: transparent;
-      height: 85vh;
-      top: 7.5vh;
+      // height: 85vh;
+      // top: 7.5vh;
+      z-index: 5;
     }
 
     .modal__content {
-      max-height: 78vh;
-      padding-right: 1rem;
+      // max-height: 78vh;
+      padding-right: 1.5rem;
       padding-left: 0.8rem;
 
       #sidebar {
@@ -190,6 +364,18 @@ html.mobile {
 
         .scrollable {
           overflow: visible;
+        }
+      }
+    }
+
+    .modal__footer {
+      padding: 0;
+      @extend %navigator-component;
+      .navigator {
+        // padding: 0.125rem 1rem;
+
+        .output {
+          white-space: nowrap;
         }
       }
     }
@@ -515,108 +701,8 @@ main .inner.main {
 
 }
 
-.section-container .navigator {
-  // padding: 0.5rem 1rem 1rem;
-  padding: 0.5rem 1rem;
-  background: #666; // #E3E2DF;
-  color: #fff;
-  text-align: center;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-  }
-
-  // height: 54px;
-
-  $thumb-size: 24px;
-  $range-gradient-start: #2497e3; // #9e6957
-  $range-gradient-end: #a2d3f5; // #51475a
-
-  input[type=range] {
-      margin: auto;
-      margin-right: 1rem;
-      // outline: none;
-      padding: 0;
-      flex-grow: 1;
-      height: 16px;
-      background-color: #bab9b7; // #feebc5;
-      background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, $range-gradient-start), color-stop(100%, $range-gradient-start));
-      background-image: -webkit-linear-gradient($range-gradient-start, $range-gradient-start);
-      background-image: -moz-linear-gradient($range-gradient-start, $range-gradient-start);
-      background-image: -o-linear-gradient($range-gradient-start, $range-gradient-start);
-      background-image: linear-gradient($range-gradient-start, $range-gradient-start);
-      background-size: 0% 100%;
-      background-repeat: no-repeat;
-      border-radius: 4px;
-      cursor: pointer;
-      -webkit-appearance: none;
-  }
-
-  input[type=range]::-webkit-slider-runnable-track {
-      box-shadow: none;
-      border: none;
-      background: transparent;
-      -webkit-appearance: none;
-  }
-
-  input[type=range]::-moz-range-track {
-      box-shadow: none;
-      border: none;
-      background: transparent;
-  }
-
-  input[type=range]::-moz-focus-outer {
-      border: 0;
-  }
-
-  input[type=range]::-webkit-slider-thumb {
-      width: $thumb-size;
-      height: $thumb-size;
-      border: 0;
-      background: #fff;
-      border-radius: 4px;
-      box-shadow: 0 0 1px 0px rgba(0,0,0,0.1);
-      -webkit-appearance: none;
-  }
-
-  input[type=range]::-moz-range-thumb {
-      width: $thumb-size;
-      height: $thumb-size;
-      border: 0;
-      background: #fff;
-      border-radius: 4px;
-      box-shadow: 0 0 1px 0px rgba(0,0,0,0.1);
-  }
-
-  input[type=range]::-ms-thumb {
-    margin-top: 1px;
-    box-shadow: 0px 0px 0px #000000;
-    border: 1px solid #2497E3;
-    height: $thumb-size;
-    width: $thumb-size;
-    border-radius: 4px;
-    background: #fff;
-    box-shadow: 0 0 1px 0px rgba(0,0,0,0.1);
-    cursor: pointer;
-  }
-
-  .output {
-    margin-right: 1rem;
-    padding: 0.5rem;
-    display: inline-block;
-
-    &.updating {
-      background: #000;
-    }
-  }
-
+.section-container {
+  @extend %navigator-component;
 }
 
 .viewer {

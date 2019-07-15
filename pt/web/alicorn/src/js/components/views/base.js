@@ -61,22 +61,22 @@ export var Base = class {
       this.pages.push(page);
     }
 
-    var t11 = performance.now();
-    console.log(`-- BENCHMARK render loop ${t11 - t0}`);
+    // var t11 = performance.now();
+    // console.log(`-- BENCHMARK render loop ${t11 - t0}`);
 
     this.container.appendChild(fragment);
     // this.container.style.display = 'block';
 
-    var t1 = performance.now();
+    // var t1 = performance.now();
 
     var pages = this.container.querySelectorAll('.page');
-    var t2 = performance.now();
+    // var t2 = performance.now();
 
     for(var i = 0; i < pages.length; i++) {
       this.bindPageEvents(pages[i]);
     }
-    var t3 = performance.now();
-    console.log(`BENCHMARK base.render: ${t3 - t0} / ${t1 - t0} / ${t2 - t1} / ${t3 - t2} / ${t1 - t11}`);
+    // var t3 = performance.now();
+    // console.log(`BENCHMARK base.render: ${t3 - t0} / ${t1 - t0} / ${t2 - t1} / ${t3 - t2} / ${t1 - t11}`);
 
     this.is_active = true;
     this.loadImage(this.container.querySelector('[data-seq="1"]'), { check_scroll: true });

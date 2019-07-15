@@ -160,7 +160,7 @@
       <xsl:when test="$slice-end >= $slice-start">
         <div class="alert alert-info alert-block">
           <p>
-            <xsl:value-of select="concat('Showing ',$slice-start,' - ',$slice-end,' of ',TotalPages,' Results for ')"/>
+            <xsl:value-of select="concat('Showing ',$slice-start,' - ',$slice-end,' of ',//TotalPages,' Results for ')"/>
             <span class="mdpEmp"><xsl:value-of select="$vNatLangQuery"/></span>
           </p>
         </div>
@@ -206,7 +206,7 @@
 
   <xsl:template match="SliceNavigationLinks">
     <xsl:if test="End >= Start">
-      <nav class="pagination-container" aria-label="Pagination">
+      <nav class="pagination-container" aria-label="Pagination" data-total-pages="{End}" data-current-page="{Start}">
         <div class="page-advance-link">
           <xsl:if test="PrevHitsLink != ''">
             <a class="page-advance-link" href="{PrevHitsLink}">
@@ -301,7 +301,7 @@
       </xsl:variable>
       <article class="result">
         <h3 class="results-header">
-          <a href="{Link}"><xsl:value-of select="$page_label" /></a>
+          <a href="{Link}" data-seq="{Sequence}"><xsl:value-of select="$page_label" /></a>
           <xsl:text>&#xa0;-&#xa0;</xsl:text>
           <xsl:value-of select="Hits" />
           <xsl:choose>

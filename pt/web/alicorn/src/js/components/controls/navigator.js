@@ -22,7 +22,7 @@ export var Navigator = class {
       this.render('current-seq', this.input.value);
       this._renderCurrentPage(this.input.value);
       this.reader.trigger.push('control-navigator');
-      this.emitter.emit('updateLocation', { seq: this.input.value });
+      this.emitter.emit('updateLocation', { seq: this.input.value, trigger: 'control-navigator' });
     })
 
     this.input.addEventListener('input', (event) => {

@@ -482,7 +482,7 @@ if ( HT.params.size  ) {
 
 reader.is_mobile = $("html").is(".mobile") || ( HT.params.debug && HT.params.debug.indexOf('mobile') > -1 );
 if ( reader.is_mobile ) {
-  scale = ( ( $(window).width() * 0.98 ) / 680 );
+  scale = ( ( $(window).width() * 0.95 ) / 680 );
   reader.options.bestFitScale = scale;
 }
 
@@ -501,12 +501,12 @@ HT.mobify = function() {
   var menu_html = `
 <div id="mobile-menu" class="modal micromodal-slide" tabindex="-1" aria-hidden="true">
   <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="menu-modal-title">
+    <div class="modal__container" role="dialog" aria-modal="true" aria-label="Menu">
       <div class="modal__header">
-        <h2 class="modal__title">Menu</h2>
       </div>
       <div id="menu-modal-content" class="modal__content">
-
+      </div>
+      <div class="modal__footer">
       </div>
     </div>
   </div>
@@ -514,8 +514,14 @@ HT.mobify = function() {
 `;
   $menu = $(menu_html).appendTo("body");
   $menu.find("#menu-modal-content").append($("#sidebar"));
-  HT.$menu = $menu;
 
+  $menu.find(".modal__header").append($("header"));
+  $menu.find(".modal__footer").append($(".navigator"));
+
+  $("header").show();
+  $(".navigator").show();
+
+  HT.$menu = $menu;
 
   var $sidebar = $menu.find("#sidebar");
 
@@ -545,9 +551,20 @@ HT.mobify = function() {
     reader: reader
   });
 
+  reader.controls.mobile.searchinator = new Control.Searchinator({
+    input: $sidebar.get(0),
+    reader: reader
+  });
+
   reader.on('redraw', function() {
     HT.toggle(false);
   });
+
+  reader.controls.navigator.on('updateLocation', (params) => {
+    if ( params.trigger && params.trigger == 'control-navigator' ) {
+      HT.toggle(false);
+    }
+  })
 
   $sidebar.on('click', '[data-trigger="contents"]', function(event) {
     event.preventDefault();
@@ -565,20 +582,48 @@ HT.mobify = function() {
     reader.emit('redraw', {});
   })
 
+  var vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', vh + 'px');
+
+  $(window).on("resize", function() {
+      var vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', vh + 'px');
+  })
+
+  $(window).on("orientationchange", function() {
+      setTimeout(function() {
+          var vh = window.innerHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', vh + 'px');
+          // alert(`AHOY orientationchange: ${vh}`);
+      }, 100);
+      // setTimeout(function() {
+      //     vh = window.innerHeight * 0.01;
+      //     alert(`AHOY orientationchange: ${vh}`);
+      // }, 1000);
+  })
+
+
   reader.emit('resize');
 }
 
 HT.toggle = function(state) {
-  $("header").toggle(state);
-  $(".navigator").toggle(state);
+  // $("header").toggle(state);
+  // $(".navigator").toggle(state);
+
   $trigger.attr('aria-expanded', state);
 
-  if ( $("header").is(":visible") ) {
+  // if ( $("header").is(":visible") ) {
+  if ( state ) {
     bootbox.show('mobile-menu', {
       onClose: function() {
-        if ( $("header").is(":visible") ) {
-          HT.toggle(false);
-        }
+        // if ( $menu.attr("aria-hidden") == 'true' ) {
+        //   HT.toggle(false);
+        // }
+
+        $trigger.attr('aria-expanded', false);
+        // if ( $("header").is(":visible") ) {
+        //   HT.toggle(false);
+        // }
       }
     });
   } else {
