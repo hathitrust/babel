@@ -285,11 +285,14 @@ var ListBrowser = function(argv, elem) {
 
     controls.$pagination_summary.text(controls.paginator.describe());
 
-    var subtitle = $("label[data-target='" + options.view + "'] .filter-name").text();
-    if ( options.view != 'my-collections' ) {
+    var subtitle = $("button[data-target='" + options.view + "'] .filter-name").text();
+    var document_title = subtitle;
+    if ( subtitle.indexOf('Collection') < 0 ) {
       subtitle += ' Collections';
     }
     controls.$subtitle.text(subtitle);
+    // and the document title
+    document.title = document_title + ' | Collections | HathiTrust Digital Library';
 
     HT.update_status("Showing " + controls.paginator.describe() + " " + subtitle);
 
@@ -438,7 +441,7 @@ var ListBrowser = function(argv, elem) {
     })
 
     $.each(cache.view_counts, function(key, value) {
-      var $button = $('label[data-target="' + key + '"]');
+      var $button = $('button[data-target="' + key + '"]');
       $button.find(".filter-count").text(value);
       $button.attr('aria-label', $button.find('.filter-name').text() + ' - ' + value);
     })
