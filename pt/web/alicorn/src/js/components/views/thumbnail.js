@@ -6,7 +6,7 @@ export var Thumbnail = class extends Scroll {
     this.mode = 'thumbnail';
     this.name = 'thumb';
     this.displayLabel = 'thumbnail';
-    // this.scale = 0.25;
+    this.possibles = [ 0.5, 0.75, 1.0 ];
     this.scale = 1.0;
     this.embedHtml = false;
     this.trackResize = false;
@@ -39,6 +39,24 @@ export var Thumbnail = class extends Scroll {
     super.bindEvents();
     this._clickHandler = this.clickHandler.bind(this);
     this.container.addEventListener('click', this._clickHandler);
+
+    this.reader.on('redraw', (params) => {
+      if ( ! params.scale ) { return; }
+      this.scale = params.scale;
+      this._resizePages();
+    });
+  }
+
+  _resizePageByPages(page) {
+    var img = page.querySelector('img');
+    if ( img ) {
+      img.style.width = page.style.width;
+      img.style.height = page.style.height;
+    }
+  }
+
+  redrawPageImages() {
+    this._redrawPageImagesTimer = null;
   }
 
   clickHandler(event) {
@@ -58,7 +76,7 @@ export var Thumbnail = class extends Scroll {
 
   config() {
     var retval = super.config();
-    retval.zoom = false;
+    retval.zoom = true;
     retval.rotate = false;
     return retval;
   }
