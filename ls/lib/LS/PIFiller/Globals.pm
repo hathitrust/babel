@@ -53,7 +53,7 @@ sub handle_TIMESTAMP_PI
     my $href = $$piParamHashRef{href};
     my $pathname = $href;
     $pathname =~ s,/(^[/]+)/(.*)$,/$1/web/$2,;
-    my $mtime = (stat (qq{$ENV{SDRROOT}/$pathanme}))[9];
+    my $mtime = (stat (qq{$ENV{SDRROOT}/$pathname}))[9];
 
     return "?_=$mtime";
 }

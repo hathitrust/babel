@@ -612,7 +612,6 @@ sub __get_coll_info
     
     if(defined ($cgi->param('c')))  {
     	my $coll_id = $cgi->param('c');
-        print STDERR "AHOY COLLECTION: $coll_id\n";
     	#check for empty or space only param
     	$coll_id=~s/s+//g;
     	if ($coll_id ne ''){

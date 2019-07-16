@@ -46,12 +46,11 @@ sub after_initialize
     my $config = $C->get_object('MdpConfig');
 
     my $dbh = $db->get_DBH();
-    my $user_id = $auth->get_user_name($C);
 
-    my $co = new Collection($dbh, $config, $user_id);
+    my $co = new Collection($dbh, $config, $auth);
     $C->set_object('Collection', $co);
 
-    my $cs = new CollectionSet($dbh, $config, $user_id);
+    my $cs = new CollectionSet($dbh, $config, $auth);
     $C->set_object('CollectionSet', $cs);
 
     $self->set_transient_facade_member_data($C, 'collection_object', $co);
