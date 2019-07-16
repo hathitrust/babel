@@ -741,10 +741,10 @@ sub handle_COLLECTIONS_OWNED_JS_PI
 
     my $dbh = $C->get_object('Database')->get_DBH();
     my $config = $C->get_object('MdpConfig');
-    my $user_id = $C->get_object('Auth')->get_user_name($C);
+    my $auth = $C->get_object('Auth');
 
-    my $CS = CollectionSet->new($dbh, $config, $user_id) ;
-    my $coll_hashref = $CS->get_coll_data_from_user_id($user_id);
+    my $CS = CollectionSet->new($dbh, $config, $auth) ;
+    my $coll_hashref = $CS->get_coll_data_from_user_id($auth);
 
     my @coll_names;
     foreach my $row (@{$coll_hashref})
@@ -773,7 +773,7 @@ sub handle_COLLECTION_LIST_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $user_id = $C->get_object('Auth')->get_user_name($C);
+    my $auth = $C->get_object('Auth');
     my $co = $C->get_object('Collection');
 
     my $cgi = $C->get_object('CGI');
@@ -783,7 +783,7 @@ sub handle_COLLECTION_LIST_PI
     if ($co->item_exists($id))
     {
         my $coll_data_arrayref =
-            $co->get_coll_data_for_item_and_user($id, $user_id);
+            $co->get_coll_data_for_item_and_user($id, $auth);
 
         foreach my $coll_hashref (@$coll_data_arrayref)
         {
@@ -830,8 +830,8 @@ sub handle_COLLECTION_SELECT_PI
     $coll_names{'b'} = '[CREATE NEW COLLECTION]';
 
     # Get list of collections owned by user
-    my $user_id = $C->get_object('Auth')->get_user_name($C);
-    my $coll_data_arrayref = $cs->get_coll_data_from_user_id($user_id);
+    my $auth = $C->get_object('Auth');
+    my $coll_data_arrayref = $cs->get_coll_data_from_user_id($auth);
 
     # Add collections not containing the item to the pulldown.  If the
     # item has never been added by anyone it will not 'exist' so it will
