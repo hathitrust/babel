@@ -91,7 +91,7 @@ sub execute_operation
     # Parameter validation et. al.
     $self->SUPER::execute_operation($C);
 
-    my $LIST_MY_COLLS_PARAMS = 'a=listcs;colltype=priv';
+    my $LIST_MY_COLLS_PARAMS = 'a=listcs;colltype=my-collections';
 
     # check for action names and also format of url
     my $action2redir_params

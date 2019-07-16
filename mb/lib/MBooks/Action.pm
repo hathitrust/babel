@@ -57,12 +57,13 @@ sub after_initialize
 
     my $dbh = $C->get_object('Database')->get_DBH();
     my $config = $C->get_object('MdpConfig');
-    my $user_id = $C->get_object('Auth')->get_user_name($C);
+    my $auth = $C->get_object('Auth');
+    # my $user_id = $C->get_object('Auth')->get_user_name($C);
 
-    my $co = Collection->new($dbh, $config, $user_id);
+    my $co = Collection->new($dbh, $config, $auth);
     $self->set_transient_facade_member_data($C, 'collection_object', $co);
 
-    my $CS = CollectionSet->new($dbh, $config, $user_id) ;
+    my $CS = CollectionSet->new($dbh, $config, $auth) ;
     $self->set_transient_facade_member_data($C, 'collection_set_object', $CS);
 
     $self->set_back_to_app_url($C);
