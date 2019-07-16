@@ -141,6 +141,7 @@ export var Flip = class extends Base {
     } else {
       slice.style.height = 'auto';
     }
+
   }
 
   _updateLayoutSliceSize(datum) {
@@ -437,6 +438,11 @@ export var Flip = class extends Base {
       this.slices.forEach((datum) => {
         this._updateLayoutSliceSize(datum);
       });
+
+      if ( this._redrawPageImagesTimer ) { clearTimeout(this._redrawPageImagesTimer); }
+      this._redrawPageImagesTimer = setTimeout(() => {
+        this.redrawPageImages();
+      }, 100);
 
     })
   }

@@ -41,8 +41,8 @@ export var Base = class {
       var meta = this.service.manifest.meta(seq);
       var ratio = meta.height / meta.width;
 
-      var h = minWidth * ratio * scale;
-      var w = minWidth * scale;
+      var h = Math.ceil(minWidth * ratio * scale);
+      var w = Math.ceil(minWidth * scale);
 
       page.style.height = `${h}px`;
       page.style.width = `${w}px`;
@@ -122,9 +122,10 @@ export var Base = class {
     }
 
     var pageHeight = canvas.height;
-    // var pageHeight = canvas.naturalHeight;
-    // if ( canvas.naturalHeight < canvas.naturalWidth ) {
-    //   pageHeight = canvas.height;
+
+    // if ( page.dataset.scale ) {
+    //   var scale = parseFloat(page.dataset.scale);
+    //   pageHeight *= scale;
     // }
 
     page.style.height = `${pageHeight}px`;
@@ -164,15 +165,15 @@ export var Base = class {
       html_request = fetch(html_url, { credentials: 'include' });
     }
 
-    var page_height = page.offsetHeight;
-    var page_width = page.offsetWidth;
-
     var img = new Image();
     img.alt = `Page scan of sequence ${seq}`;
 
     page.dataset.loading = true;
     page.classList.add('page--loading');
     img.addEventListener('load', function _imgHandler() {
+      var page_height = page.offsetHeight;
+      var page_width = page.offsetWidth;
+
       page.dataset.loading = false;
       page.classList.remove('page--loading');
 
@@ -234,13 +235,27 @@ export var Base = class {
     }
     var image_url = this.imageUrl(page);
     var img = page.querySelector('img');
+    if ( ! img || img.getAttribute('src') == image_url ) { return ; }
     var new_img = new Image();
     new_img.addEventListener('load', function _redrawHandler() {
-      page.replaceChild(new_img, img);
-      this.resizePage(page);
-      new_img.removeEventListener('load', _redrawHandler, true);
+      if ( img && img.parentElement && img.parentElement == page ) {
+        page.replaceChild(new_img, img);
+        this.resizePage(page);
+        new_img.removeEventListener('load', _redrawHandler, true);
+      }
+      delete page.dataset.reloading;
     }.bind(this), true);
     new_img.src = image_url;
+  }
+
+  redrawPageImages() {
+    var images = this.container.querySelectorAll('.page img');
+    for(var i = 0; i < images.length; i++) {
+      var img = images[i];
+      var page = img.parentElement;
+      this.redrawPage(page);
+    }
+    this._redrawPageImagesTimer = null;
   }
 
   unloadImage(page) {
@@ -334,28 +349,7 @@ export var Base = class {
       });
 
       this._handlers.resize = this.reader.on('resize', () => {
-
-        this._scrollPause = true;
-        var minWidth = this.minWidth();
-        var scale = this.scale;
-        var currentSeq = this.currentLocation();
-        this.pages.forEach((page) => {
-          var seq = parseInt(page.dataset.seq, 10);
-          var meta = this.service.manifest.meta(seq);
-          var ratio = meta.height / meta.width;
-
-          var h = minWidth * ratio * scale;
-          var w = minWidth * scale;
-
-          page.style.height = `${h}px`;
-          page.style.width = `${w}px`;
-          page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
-          if ( scale <= 1 ) {
-            page.classList.add('page--best-fit');
-          }
-        })
-        this.display(currentSeq);
-        this._scrollPause = false;
+        this._resizePages();
       })
     }
   }
@@ -413,8 +407,50 @@ export var Base = class {
     var page_controls = page.querySelectorAll('[tabindex="-1"]');
     for(var i = 0; i < page_controls.length; i++) {
       page_controls[i].setAttribute('tabindex', '0');
-      console.log("--- AHOY", page_controls[i]);
+      // console.log("--- AHOY", page_controls[i]);
     }
+  }
+
+  _resizePages() {
+    this._scrollPause = true;
+    var minWidth = this.minWidth();
+    var scale = this.scale;
+    var currentSeq = this.currentLocation();
+    var dirty = false;
+    this.pages.forEach((page) => {
+      var seq = parseInt(page.dataset.seq, 10);
+      var meta = this.service.manifest.meta(seq);
+      var ratio = meta.height / meta.width;
+
+      var h = Math.ceil(minWidth * ratio * scale);
+      var w = Math.ceil(minWidth * scale);
+
+      // console.log("AHOY _resizePages", seq, page.style.width, "x", page.style.height, "/", w, "x", h);
+
+      dirty = dirty || ( page.style.height != `${h}px` );
+
+      page.style.height = `${h}px`;
+      page.style.width = `${w}px`;
+      page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
+      if ( scale <= 1 ) {
+        page.classList.add('page--best-fit');
+      }
+      this._resizePageByPages(page);
+    })
+
+    if ( dirty ) {
+      if ( this._redrawPageImagesTimer ) { clearTimeout(this._redrawPageImagesTimer); }
+      this._redrawPageImagesTimer = setTimeout(() => {
+        this.redrawPageImages();
+      }, 100);
+    }
+
+    this.display(currentSeq);
+    this._scrollPause = false;
+  }
+
+  _resizePageByPages() {
+    /* NOP */
   }
 
 }
