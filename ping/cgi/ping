@@ -211,7 +211,7 @@ JAVASCRIPT
         # my $original_referer = MIME::Base64::decode_base64(substr(($request->path_info || '/'), 1));
         my $original_referer = $request->param('ref');
         my ( $original_host, $original_request_uri ) = ( $original_request =~ m{https://([^/]+)(/.*)});
-        my $app_name = (grep /\w+/, @tmp)[0];
+        my $app_name = (grep defined && /\w+/,@tmp)[0];
         Auth::Logging::log_access($C, $app_name, undef, { 
             HTTP_REFERER => $original_referer, 
             REQUEST_URI => $original_request_uri,
