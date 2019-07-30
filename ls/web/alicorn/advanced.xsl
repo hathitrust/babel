@@ -202,7 +202,7 @@
       </div>
 
       <input type="hidden" name="a" value="srchls"/>
-      <xsl:if test="$isCollSearch = 'True' ">
+      <xsl:if test="$isCollSearch = 'TRUE' ">
         <input type="hidden" name="c" value="{$coll_id}" />
       </xsl:if>
 
