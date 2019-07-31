@@ -148,8 +148,10 @@ sub Log_elapsed {
     }
 
     my $log_string = qq{$ipaddr $session_id $$ }
-        . Utils::Time::iso_Time('time')
-            . qq{ total elapsed=$elapsed sec. $timeout};
+    . Utils::Time::iso_Time('time');
+    # output actual time query arrived in ls cgi script. 
+    $log_string .=  qq{ realStart=$main::realSTART};
+    $log_string .=  qq{  elapsed=$elapsed sec. $timeout};
 
 
     Utils::Logger::__Log_string($C, $log_string,

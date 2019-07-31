@@ -1870,6 +1870,61 @@ sub set_processed_query_string {
 
 
 #----------------------------------------------------------------------
+# XXX TODO verify no one is using slip-lib Search::Query
+# in the meantime just overide it here for ls purposes rather than keep messing with submodules
+# ---------------------------------------------------------------------
+sub log_query {
+    my $self = shift;
+    my $C = shift;
+    my $searcher = shift;
+    my $rs = shift;
+    my $query_dir_part = shift;
+    my $AB = shift;
+    
+    # get current time in milliseconds
+    # see http://stackoverflow.com/questions/18100208/how-to-get-milliseconds-as-a-part-of-time-in-perl
+
+    my $time = Time::HiRes::time;
+    my $date_temp = POSIX::strftime "%Y%m%d %H:%M:%S", localtime($time);
+    my $timestamp_ms = $date_temp . sprintf ".%03d", ($time-int($time))*1000; # without rounding
+
+    # Log
+    my $ipaddr = ($ENV{REMOTE_ADDR} ? $ENV{REMOTE_ADDR} : '0.0.0.0');
+    my $Qtime = $rs->get_query_time();
+    my $num_found = $rs->get_num_found();
+    my $config = $C->get_object('MdpConfig');
+    my $Solr_url = $searcher->get_engine_uri() . '?' . $self->get_Solr_query_string($C);
+    $Solr_url =~ s, ,+,g;
+    # add cgi params for better tracking
+    my $tempcgi = $C->get_object('CGI');
+    my $appURL=$tempcgi->url(-query=>1);
+    my $referer=$ENV{REFERER} ||$tempcgi->referer();
+    my $session_id = $C->get_object('Session')->get_session_id();
+
+    #add logged_in
+    my $auth = $C->get_object('Auth');
+    my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
+
+    my $log_string = qq{$ipaddr $session_id $$ }
+        . Utils::Time::iso_Time('time')
+            . qq{ qtime=$Qtime numfound=$num_found url=$Solr_url cgi=$appURL }
+	    . qq{ referer=$referer logged_in=$is_logged_in}
+    	    . qq{ timestamp_ms=$timestamp_ms};
+
+    if ($AB=~/[AB]/)
+    {
+	$log_string .= qq{ AB=$AB};
+    }
+    # July 31 2019  Add main
+    $log_string .= qq{ realStart=$main::realSTART};
+    
+    Utils::Logger::__Log_string($C, $log_string,
+                                     'query_logfile', '___QUERY___', $query_dir_part);
+}
+
+
+
+# ---------------------------------------------------------------------
 
 
 
