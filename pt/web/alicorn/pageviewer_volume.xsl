@@ -186,6 +186,7 @@
       <xsl:call-template name="toolbar-vertical" />
     </div>
     <div class="navigator">
+      <button class="action-expando for-mobile" aria-label="Toggle Menu"><i class="icomoon" aria-hidden="true"></i></button>
       <form>
         <label class="offscreen" for="control-navigator">Location: </label>
         <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 1 of {$totalSeq}" value="1" data-background-position="0">
@@ -200,12 +201,17 @@
         <div class="output"><span class="offscreen">Page Scan </span><span data-slot="current-seq">1</span> / <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
         <xsl:text> </xsl:text>
         <button class="btn" id="action-prompt-seq" aria-label="Jump to location">Jump...</button>
+
         <button class="btn" id="action-focus-current-page" aria-hidden="true" style="display: none" accesskey="9">Show Current Page</button>
       </form>
     </div>
     <!-- <script type="text/javascript" src="/pt/alicorn/js/main.js"></script> -->
     <script type="text/javascript">head.load('/pt/alicorn/js/main.js')</script>
     <xsl:call-template name="load-extra-main-script" />
+  </xsl:template>
+
+  <xsl:template name="build-main-container-extra">
+    <button data-target="enter-fullscreen" id="action-mobile-toggle-fullscreen" type="button" class="btn square alone for-mobile" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="View Full Screen"><i class="icomoon"></i></button>
   </xsl:template>
 
   <xsl:template name="load-extra-main-script" />
@@ -246,7 +252,7 @@
 
   <xsl:template name="build-pre-sidebar-panels">
     <div class="panel options for-mobile">
-      <h3>Options</h3>
+      <h3 class="offscreen">View Options</h3>
       <ul>
         <li><button class="btn" data-trigger="contents"><span><i class="icomoon icomoon-list" aria-hidden="true"></i> Contents</span></button></li>
         <li style="margin-bottom: 1rem;"><button class="btn" data-trigger="search"><span><i class="icomoon icomoon-search" aria-hidden="true"></i> Search Inside</span></button></li>

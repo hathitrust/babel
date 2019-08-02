@@ -449,7 +449,16 @@
   <xsl:template name="build-main-container">
     <main class="main-container" id="main">
       <div class="container flex-container container-boxed container-full">
-        <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
+        <div class="sidebar-container" id="sidebar" tabindex="0">
+          <button class="sr-only filter-group-toggle-show-button" aria-expanded="false">
+            <span class="flex-space-between flex-center">
+              <h3 class="filter-group-heading">Options</h3>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg>
+            </span>
+          </button>
+
+          <xsl:call-template name="sidebar" />
+        </div>
         <div class="sidebar-toggle">
           <button id="action-toggle-sidebar" aria-expanded="true">
             <i class="icomoon toggle-sidebar"></i>
@@ -461,8 +470,11 @@
         </section>
       </div>
       <xsl:call-template name="get-access-statements" />
+      <xsl:call-template name="build-main-container-extra" />
     </main>
   </xsl:template>
+
+  <xsl:template name="build-main-container-extra" />
 
   <xsl:template name="contents-boo">
     <aside class="side-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></aside>

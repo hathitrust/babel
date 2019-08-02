@@ -104,6 +104,7 @@
       margin-right: 1rem;
       padding: 0.5rem;
       display: inline-block;
+      white-space: nowrap;
 
       &.updating {
         background: #000;
@@ -112,6 +113,39 @@
 
   }
 
+  @media screen and ( max-width: 400px ) {
+    .navigator {
+
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      
+      justify-content: flex-start;
+
+      form {
+        width: 80%;
+        background: green;
+        flex-grow: 0;
+        flex-flow: row;
+        // align-content: flex-start;
+      }
+
+      .output {
+        margin-right: 0;
+        white-space: nowrap;
+      }
+
+      input[type="range"] {
+        margin-right: 0;
+        width: 100%;
+        flex-basis: 100%;
+      }
+
+      #action-prompt-seq {
+        display: none;
+      }
+
+    }
+  }
 }
 
 html, body {
@@ -208,19 +242,75 @@ html.mobile {
     display: block;
   }
 
+  &[data-view="options"] {
+
+    #sidebar {
+      position: fixed;
+      display: block;
+      background: #fff;
+      z-index: 5;
+    }
+
+    section#section {
+      // display: none;
+    }
+
+    #action-mobile-toggle-fullscreen {
+      // display: none;
+    }
+  }
+
+  .btn.for-mobile {
+    display: inline-block;
+  }
+
   .section-container {
     .navigator {
-      display: none;
+      // position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 1;
+
+      transition: bottom 0.2s ease-out;
+
+      .action-expando {
+        position: absolute;
+        top: -2.8rem;
+        left: 1rem;
+        height: 3rem;
+        width: 3rem;
+        background: #666;
+        border: none;
+        color: #fff;
+
+        .icomoon::before {
+          content: "\43";
+        }
+      }
+
+      // &[data-expanded="false"] {
+      //   padding-top: 0;
+
+      //   .icomoon::before {
+      //     content: "\f0c9";
+      //   }
+
+      //   form {
+      //     display: none;
+      //   }
+      // }
     }
   }
 
   header {
-    display: block;
-    position: fixed;
+    // display: block;
+    // position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 500;
+
+    transition: top 0.2s ease-out;
 
     nav {
       // display: contents;
@@ -266,17 +356,91 @@ html.mobile {
     }
   }
 
+  &[data-expanded="false"] {
+    header {
+      display: none;
+    }
+
+    .section-container {
+      .navigator {
+        padding-top: 0;
+        padding-bottom: 0.25rem;
+        background: rgba(102, 102, 102, 0.75);
+
+        // bottom: var(--height);
+
+        form {
+          display: none;
+        }
+
+        .action-expando {
+          .icomoon::before {
+            content: "\f0c9";
+          }
+        }
+
+        // form {
+        //   display: none;
+        // }
+      }
+    }
+
+    #sidebar {
+      display: none;
+      // transition: max-height 0.2s ease-out;
+    }
+  }
+
   main {
     padding: 0;
+    display: block;
 
     & > .container {
+      margin: 0;
       padding: 0;
       box-shadow: none;
+      display: flex;
+      flex-direction: column;
+
+      min-width: 0;
+      border: 0;
     }
   }
 
   #sidebar {
-    display: none;
+    // display: none;
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+
+    transition: max-height 0.2s ease-out;
+
+    button[aria-expanded] {
+      background: #666;
+      color: #fff;
+
+      &[aria-expanded="true"] {
+        margin-bottom: 1rem;
+      }
+    }
+
+    button[aria-expanded="false"] ~ .panel, button[aria-expanded="false"] ~ .scrollable {
+      display: none;
+    }
+
+    .scrollable {
+      overflow: visible;
+    }
+
+    .panel {
+      margin-bottom: 1.25rem;
+    }
+
   }
 
   #toolbar-vertical {
@@ -293,6 +457,10 @@ html.mobile {
 
   main .inner.main {
     margin: 0.25rem auto;
+
+    section.viewer {
+      margin-right: 0;
+    }
   }
 
   section section .page {
@@ -333,55 +501,6 @@ html.mobile {
     padding-left: 1rem;
   }
 
-  #mobile-menu {
-
-    .modal__container {
-      height: 100%;
-    }
-
-    .modal__header, .modal__footer {
-      padding-right: 1rem;
-      padding-left: 0.8rem;
-    }
-
-    .modal__overlay {
-      background: transparent;
-      // height: 85vh;
-      // top: 7.5vh;
-      z-index: 5;
-    }
-
-    .modal__content {
-      // max-height: 78vh;
-      padding-right: 1.5rem;
-      padding-left: 0.8rem;
-
-      #sidebar {
-        display: block;
-        // overflow: auto;
-        margin-top: 0.5rem;
-        max-width: none;
-
-        .scrollable {
-          overflow: visible;
-        }
-      }
-    }
-
-    .modal__footer {
-      padding: 0;
-      @extend %navigator-component;
-      .navigator {
-        // padding: 0.125rem 1rem;
-
-        .output {
-          white-space: nowrap;
-        }
-      }
-    }
-
-  }
-
   .panel.options {
     button {
       width: 100%;
@@ -394,6 +513,33 @@ html.mobile {
         display: inline-block;
         // text-align: left;
       }
+    }
+  }
+
+  #action-mobile-toggle-fullscreen {
+    position: fixed;
+    height: 2.75rem;
+    // width: 2.75rem;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    right: 1rem;
+    bottom: 0.75rem;
+
+    background: #666;
+    color: #fff;
+
+    z-index: 50;
+
+    .icomoon::before {
+      content: "\49";
+    }
+
+    &[data-expanded="true"] {
+      .icomoon::before {
+        content: " ";
+      } 
     }
   }
 
@@ -627,22 +773,22 @@ html.mobile {
       margin-top: -2px;
     }
   }
+}
 
-  .action-fullscreen {
-    button {
-      display: none;
+.action-fullscreen {
+  button {
+    display: none;
+  }
+
+  &[data-expanded="false"] {
+    [data-target="enter-fullscreen"] {
+      display: block;
     }
+  }
 
-    &[data-expanded="false"] {
-      #action-toggle-enter-fullscreen {
-        display: block;
-      }
-    }
-
-    &[data-expanded="true"] {
-      #action-toggle-exit-fullscreen {
-        display: block;
-      }
+  &[data-expanded="true"] {
+    [data-target="exit-fullscreen"] {
+      display: block;
     }
   }
 }

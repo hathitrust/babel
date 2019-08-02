@@ -202,7 +202,7 @@ var Reader = class {
     })
 
     this.on('redraw', (params) => {
-      if ( params.scale ) {
+      if ( params.scale && ! this.is_mobile ) {
         this.controls.flexinator.sidebar(params.scale <= 1.0);
         this.trigger.push(`zoom:${params.scale}`); // triggers track
         // this._logAction(undefined, `zoom:${params.scale}`);
@@ -222,7 +222,7 @@ var Reader = class {
       return false;
     })
 
-    window.addEventListener('resize', this._resizer);
+    // window.addEventListener('resize', this._resizer);
   }
 
   _updateLinks(seq) {
@@ -488,61 +488,71 @@ if ( reader.is_mobile ) {
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
 
-var $menu; var $trigger;
+var $menu; var $trigger; var $header; var $navigator;
 HT.mobify = function() {
 
   if ( $("html").is(".desktop") ) {
     $("html").addClass("mobile").removeClass("desktop").removeClass("no-mobile");
   }
 
-  $("header").hide();
-  $(".navigator").hide();
+  // $("header").hide();
+  // $(".navigator").hide();
 
-  var menu_html = `
-<div id="mobile-menu" class="modal micromodal-slide" tabindex="-1" aria-hidden="true">
-  <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-    <div class="modal__container" role="dialog" aria-modal="true" aria-label="Menu">
-      <div class="modal__header">
-      </div>
-      <div id="menu-modal-content" class="modal__content">
-      </div>
-      <div class="modal__footer">
-      </div>
-    </div>
-  </div>
-</div>
-`;
-  $menu = $(menu_html).appendTo("body");
-  $menu.find("#menu-modal-content").append($("#sidebar"));
+  // $("header").show();
+  // $(".navigator").show();
 
-  $menu.find(".modal__header").append($("header"));
-  $menu.find(".modal__footer").append($(".navigator"));
+  $header = $("header");
+  $navigator = $(".navigator");
+  $navigator.get(0).style.setProperty('--height', `-${$navigator.outerHeight() * 0.90}px`);
 
-  $("header").show();
-  $(".navigator").show();
+  var $expando = $navigator.find(".action-expando");
+  $expando.on('click', function() {
+    document.documentElement.dataset.expanded = ! ( document.documentElement.dataset.expanded == 'true' );
+  })
 
   HT.$menu = $menu;
 
-  var $sidebar = $menu.find("#sidebar");
+  var $sidebar = $("#sidebar");
 
-  $trigger = $(`<button id="action-toggle-sidebar" aria-expanded="false">
-                    <i class="icomoon toggle-sidebar"></i>
-                    <span class="offscreen">About this Book/Tools Sidebar</span>
-                    </button>`);
-
-  $trigger.appendTo("body");
-  $trigger.on('click', function() {
-    var expanded = $trigger.attr('aria-expanded') == 'true';
-    HT.toggle(!expanded);
-    // var next_expanded;
-    // if ( expanded == 'true' ) {
-    //   next_expanded = 'false';
-    // } else {
-    //   next_expanded = 'true';
-    // }
-    // $trigger.attr('aria-expanded', next_expanded);
-    // HT.toggle(next_expanded);
+  $trigger = $sidebar.find("button[aria-expanded]");
+  $trigger.on('clicked', function(event) {
+    var active = $trigger.attr('aria-expanded') == 'true';
+    $("html").get(0).dataset.view = active ? 'options' : 'viewer';
   })
+
+  // // $trigger.on('click', function() {
+  // //   var wtf = $trigger.attr('aria-expanded');
+  // //   $trigger.attr('aria-expanded', ! ( $trigger.attr('aria-expanded') == 'true' ) );
+  // //   console.log("AHOY TRIGGER", wtf, $trigger.attr('aria-expanded'), $trigger.get(0).getAttribute('aria-expanded'));
+  // //   var icon = '#panel-collapsed';
+  // //   var $use = $trigger.find("use");
+  // //   if ( $trigger.attr('aria-expanded') == 'true' ) {
+  // //     icon = '#panel-expanded';
+  // //   }
+  // //   $use.attr('xlink:href', icon);
+  // //   setTimeout(function() {
+  // //     console.log("AHOY TRIGGER", wtf, $trigger.attr('aria-expanded'), $trigger.get(0).getAttribute('aria-expanded'));
+  // //   }, 100)
+  // })
+
+  // $trigger = $(`<button id="action-toggle-sidebar" aria-expanded="false">
+  //                   <i class="icomoon toggle-sidebar"></i>
+  //                   <span class="offscreen">About this Book/Tools Sidebar</span>
+  //                   </button>`);
+
+  // $trigger.appendTo("body");
+  // $trigger.on('click', function() {
+  //   var expanded = $trigger.attr('aria-expanded') == 'true';
+  //   HT.toggle(!expanded);
+  //   // var next_expanded;
+  //   // if ( expanded == 'true' ) {
+  //   //   next_expanded = 'false';
+  //   // } else {
+  //   //   next_expanded = 'true';
+  //   // }
+  //   // $trigger.attr('aria-expanded', next_expanded);
+  //   // HT.toggle(next_expanded);
+  // })
 
   reader.controls.mobile = {};
 
@@ -582,6 +592,11 @@ HT.mobify = function() {
     reader.emit('redraw', {});
   })
 
+  $sidebar.on('click', function(event) {
+    // hide the sidebar
+    HT.toggle(false);
+  })
+
   var vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--vh', vh + 'px');
 
@@ -604,6 +619,11 @@ HT.mobify = function() {
 
 
   reader.emit('resize');
+  document.documentElement.dataset.expanded = 'true';
+
+  // setTimeout(function() {
+  //   document.documentElement.dataset.expanded = 'false';
+  // }, 100);
 }
 
 HT.toggle = function(state) {
@@ -611,24 +631,34 @@ HT.toggle = function(state) {
   // $(".navigator").toggle(state);
 
   $trigger.attr('aria-expanded', state);
+  $("html").get(0).dataset.view = state ? 'options' : 'viewer';
 
-  // if ( $("header").is(":visible") ) {
-  if ( state ) {
-    bootbox.show('mobile-menu', {
-      onClose: function() {
-        // if ( $menu.attr("aria-hidden") == 'true' ) {
-        //   HT.toggle(false);
-        // }
-
-        $trigger.attr('aria-expanded', false);
-        // if ( $("header").is(":visible") ) {
-        //   HT.toggle(false);
-        // }
-      }
-    });
+  var xlink_href;
+  if ( $trigger.attr('aria-expanded') == 'true' ) {
+    xlink_href = '#panel-expanded';
   } else {
-    bootbox.close();
+    xlink_href = '#panel-collapsed';
   }
+  $trigger.find("svg use").attr("xlink:href", xlink_href);
+
+
+  // // if ( $("header").is(":visible") ) {
+  // if ( state ) {
+  //   bootbox.show('mobile-menu', {
+  //     onClose: function() {
+  //       // if ( $menu.attr("aria-hidden") == 'true' ) {
+  //       //   HT.toggle(false);
+  //       // }
+
+  //       $trigger.attr('aria-expanded', false);
+  //       // if ( $("header").is(":visible") ) {
+  //       //   HT.toggle(false);
+  //       // }
+  //     }
+  //   });
+  // } else {
+  //   bootbox.close();
+  // }
 }
 
 if ( reader.is_mobile ) {
