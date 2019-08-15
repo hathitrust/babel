@@ -5,6 +5,7 @@
 @import "download";
 @import "spinthatshit/src/loaders";
 @import "crms";
+@import "responsive";
 
 %navigator-component {
 
@@ -113,7 +114,7 @@
 
   }
 
-  @media screen and ( max-width: 400px ) {
+  @media screen and ( max-width: 450px ), screen and ( max-height: 450px ) {
     .navigator {
 
       padding-top: 1rem;
@@ -122,7 +123,7 @@
       justify-content: flex-start;
 
       form {
-        width: 80%;
+        width: 100%; // unless there's a full-screen button
         background: green;
         flex-grow: 0;
         flex-flow: row;
@@ -151,6 +152,7 @@
 html, body {
   overflow: hidden;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 main > .container {
@@ -174,6 +176,7 @@ html.debugpolite div[role="status"] {
 #root {
   height: 100vh;
   height: calc(var(--vh, 1vh) * 100);
+  min-height: 0;
 
   width: 100vw;
   overflow: hidden;
@@ -234,12 +237,169 @@ html.skin-default.no-mobile {
 }
 
 html.mobile {
+  #sidebar {
+    background: #fff;
+    position: fixed;
+  }
+
+  &[data-view="options"] {
+
+    #sidebar {
+      position: fixed;
+      display: block;
+      background: #fff;
+      z-index: 5;
+    }
+
+  }
+
+  .inner.main {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0.4;
+  }
+
+  #root .section-container {
+    flex-grow: 0;
+    margin: 0;
+    height: 100%;
+    justify-content: flex-end;
+    background: azure;
+
+    .navigator {
+      width: 100%;
+      z-index: 1;
+      margin-top: 3rem;
+
+      .action-expando {
+        position: absolute;
+        top: -2.8rem;
+        left: 1rem;
+        height: 3rem;
+        width: 3rem;
+        background: #666;
+        border: none;
+        color: #fff;
+
+        .icomoon::before {
+          content: "\43";
+        }
+      }
+    }
+  }
+
+  &[data-expanded="false"] {
+    header {
+      display: none;
+    }
+
+    #root .section-container {
+
+      height: 100%;
+      justify-content: flex-end;
+
+      .navigator {
+        padding-top: 0;
+        padding-bottom: 0.25rem;
+        background: rgba(102, 102, 102, 0.75);
+
+        // bottom: var(--height);
+
+        form {
+          display: none;
+        }
+
+        .action-expando {
+          .icomoon::before {
+            content: "\f0c9";
+          }
+        }
+
+        // form {
+        //   display: none;
+        // }
+      }
+    }
+
+    #sidebar {
+      display: none;
+      // transition: max-height 0.2s ease-out;
+    }
+  }
+
+  #toolbar-vertical {
+    display: none;
+  }
+
+  #toolbar-horizontal {
+    display: none;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  main .inner.main {
+    margin: 0.25rem auto;
+
+    section.viewer {
+      margin-right: 0;
+    }
+  }
+
+  section section .page {
+    margin-bottom: 0.5rem;
+  }
+
+  section section .viewer-inner {
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #action-mobile-toggle-fullscreen {
+    position: fixed;
+    height: 2.75rem;
+    // width: 2.75rem;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    right: 1rem;
+    bottom: 0.75rem;
+
+    background: #666;
+    color: #fff;
+
+    z-index: 50;
+
+    .icomoon::before {
+      content: "\49";
+    }
+
+    &[data-expanded="true"] {
+      .icomoon::before {
+        content: " ";
+      } 
+    }
+  }
+
+}
+
+html.xxmobile {
 
   height: 100vh;
   height: calc(var(--vh, 1vh) * 100);
 
   .for-mobile {
     display: block;
+  }
+
+  #sidebar {
+    background: #fff;
+    position: fixed;
   }
 
   &[data-view="options"] {
@@ -260,18 +420,29 @@ html.mobile {
     }
   }
 
+  .inner.main {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0.4;
+  }
+
   .btn.for-mobile {
     display: inline-block;
   }
 
-  .section-container {
+  #root .section-container {
+    flex-grow: 0;
+    height: 100%;
+    justify-content: flex-end;
+    background: azure;
+
     .navigator {
-      // position: fixed;
-      bottom: 0;
       width: 100%;
       z-index: 1;
-
-      transition: bottom 0.2s ease-out;
+      margin-top: 3rem;
 
       .action-expando {
         position: absolute;
@@ -308,7 +479,8 @@ html.mobile {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 500;
+    z-index: 1;
+    // z-index: 500;
 
     transition: top 0.2s ease-out;
 
@@ -362,6 +534,10 @@ html.mobile {
     }
 
     .section-container {
+
+      height: 100%;
+      justify-content: flex-end;
+
       .navigator {
         padding-top: 0;
         padding-bottom: 0.25rem;
@@ -402,6 +578,9 @@ html.mobile {
       display: flex;
       flex-direction: column;
 
+      justify-content: space-between;
+      background: chocolate;
+
       min-width: 0;
       border: 0;
     }
@@ -417,8 +596,7 @@ html.mobile {
     margin-top: 0;
     margin-bottom: 0;
     padding: 0;
-
-    transition: max-height 0.2s ease-out;
+    z-index: 1;
 
     button[aria-expanded] {
       background: #666;
@@ -517,6 +695,7 @@ html.mobile {
   }
 
   #action-mobile-toggle-fullscreen {
+
     position: fixed;
     height: 2.75rem;
     // width: 2.75rem;
@@ -600,7 +779,7 @@ html.mobile {
 }
 
 @media screen and ( max-height: 650px ) {
-  html.skin-default {
+  html.skin-default.no-mobile {
 
     main {
       padding: 0;

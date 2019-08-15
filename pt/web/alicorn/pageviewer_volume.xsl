@@ -211,7 +211,7 @@
   </xsl:template>
 
   <xsl:template name="build-main-container-extra">
-    <button data-target="enter-fullscreen" id="action-mobile-toggle-fullscreen" type="button" class="btn square alone for-mobile" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="View Full Screen"><i class="icomoon"></i></button>
+    <!-- <button data-target="enter-fullscreen" id="action-mobile-toggle-fullscreen" type="button" class="btn square alone for-mobile" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="View Full Screen"><i class="icomoon"></i></button> -->
   </xsl:template>
 
   <xsl:template name="load-extra-main-script" />
@@ -255,12 +255,50 @@
       <h3 class="offscreen">View Options</h3>
       <ul>
         <li><button class="btn" data-trigger="contents"><span><i class="icomoon icomoon-list" aria-hidden="true"></i> Contents</span></button></li>
-        <li style="margin-bottom: 1rem;"><button class="btn" data-trigger="search"><span><i class="icomoon icomoon-search" aria-hidden="true"></i> Search Inside</span></button></li>
+        <li style="margin-top: 1rem; margin-bottom: 1rem;">
+          <form action="/cgi/pt/search" id="form-search-volume" role="search" style="padding: 0.5rem; border: 1px solid #ddd">
+            <label style="text-align: center" for="input-search-text">Search in this text </label>
+            <input id="input-search-text" name="q1" type="text" style="width: 100%; margin-bottom: 0.25rem; display: block">
+              <xsl:if test="$gHasOcr!='YES'">
+                <xsl:attribute name="disabled">disabled</xsl:attribute>
+              </xsl:if>
+              <xsl:attribute name="placeholder">
+                <xsl:choose>
+                  <xsl:when test="$gHasOcr = 'YES'">
+                    <!-- <xsl:text>Search in this text</xsl:text> -->
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>No text to search in this item</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:attribute name="value">
+                <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
+                  <xsl:value-of select="$gCurrentQ1" />
+                </xsl:if>
+              </xsl:attribute>
+            </input>
+            <button class="btn" style="display: block; margin-left: 0" data-trigger="search"><span><i class="icomoon icomoon-search" aria-hidden="true"></i> Find</span></button>
+            <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
+            <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
+            <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+              <input type="hidden" name="seq" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']}" />
+            </xsl:if>
+            <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
+              <input type="hidden" name="num" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']}" />
+            </xsl:if>
+            <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
+              <input type="hidden" name="debug" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']}" />
+            </xsl:if>
+          </form>
+        </li>
+        <!-- <li style="margin-bottom: 1rem;"><button class="btn" data-trigger="search"><span><i class="icomoon icomoon-search" aria-hidden="true"></i> Search Inside</span></button></li> -->
         <li><button class="btn action-zoom-in"><span><i class="icomoon icomoon-zoom-in" aria-hidden="true"></i> Zoom In</span></button></li>
         <li><button class="btn action-zoom-out"><span><i class="icomoon icomoon-zoom-out" aria-hidden="true"></i> Zoom Out</span></button></li>
         <li><button class="btn action-zoom-reset"><span><i class="icomoon icomoon-document" aria-hidden="true"></i> Fit to Page</span></button></li>
         <li style="margin-top: 1rem"><button class="btn action-view" data-target="plaintext"><span><i class="icomoon icomoon-article" aria-hidden="true"></i> Plain Text</span></button></li>
-        <li><button class="btn active action-view" data-target="1up"><span><i class="icomoon icomoon-scroll" aria-hidden="true"></i> Scanned Page</span></button></li>
+        <li><button class="btn active action-view" data-target="1up"><span><i class="icomoon icomoon-scroll" aria-hidden="true"></i> Scroll Page Scans</span></button></li>
+        <li><button class="btn action-view" data-target="2up"><span><i class="icomoon icomoon-book-alt2" aria-hidden="true"></i> Flip Page Scans</span></button></li>
       </ul>
     </div>
   </xsl:template>

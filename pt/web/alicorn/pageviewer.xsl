@@ -450,7 +450,7 @@
     <main class="main-container" id="main">
       <div class="container flex-container container-boxed container-full">
         <div class="sidebar-container" id="sidebar" tabindex="0">
-          <button class="sr-only filter-group-toggle-show-button" aria-expanded="false">
+          <button class="for-mobile sr-only filter-group-toggle-show-button" aria-expanded="false">
             <span class="flex-space-between flex-center">
               <h3 class="filter-group-heading">Options</h3>
               <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg>

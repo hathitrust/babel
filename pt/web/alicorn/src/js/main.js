@@ -292,7 +292,7 @@ var Reader = class {
     argv.push(`view=${params.view || this.view.name}`);
     argv.push(`seq=${params.seq || HT.params.seq}`);
     if ( HT.params.skin ) { argv.push(`skin=${HT.params.skin}`); }
-    if ( this.options.scale != 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
+    if ( this.options.scale > 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
     if ( HT.params.debug ) { argv.push(`debug=${HT.params.debug}`); }
     if ( HT.params.l11_tracking ) { argv.push(`l11_tracking=${HT.params.l11_tracking}`); }
     if ( HT.params.l11_uid ) { argv.push(`l11_uid=${HT.params.l11_uid}`); }
@@ -334,6 +334,12 @@ var Reader = class {
         regex = new RegExp(key + "(=|%3D)" + "\\w+(;|&|%3B|%26)?");
         $link.setAttribute("href", href.replace(regex, key + "$1" + value + "$2"));
     }
+  }
+
+  _bestFitScale() {
+    var scale = ( ( $(window).width() * 0.95 ) / 680 );
+    this.options.bestFitScale = scale;
+    return scale;
   }
 
   _logAction(href, trigger) {
@@ -481,78 +487,11 @@ if ( HT.params.size  ) {
 }
 
 reader.is_mobile = $("html").is(".mobile") || ( HT.params.debug && HT.params.debug.indexOf('mobile') > -1 );
+
 if ( reader.is_mobile ) {
-  scale = ( ( $(window).width() * 0.95 ) / 680 );
-  reader.options.bestFitScale = scale;
-}
-
-reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
-
-var $menu; var $trigger; var $header; var $navigator;
-HT.mobify = function() {
-
-  if ( $("html").is(".desktop") ) {
-    $("html").addClass("mobile").removeClass("desktop").removeClass("no-mobile");
-  }
-
-  // $("header").hide();
-  // $(".navigator").hide();
-
-  // $("header").show();
-  // $(".navigator").show();
-
-  $header = $("header");
-  $navigator = $(".navigator");
-  $navigator.get(0).style.setProperty('--height', `-${$navigator.outerHeight() * 0.90}px`);
-
-  var $expando = $navigator.find(".action-expando");
-  $expando.on('click', function() {
-    document.documentElement.dataset.expanded = ! ( document.documentElement.dataset.expanded == 'true' );
-  })
-
-  HT.$menu = $menu;
-
   var $sidebar = $("#sidebar");
 
-  $trigger = $sidebar.find("button[aria-expanded]");
-  $trigger.on('clicked', function(event) {
-    var active = $trigger.attr('aria-expanded') == 'true';
-    $("html").get(0).dataset.view = active ? 'options' : 'viewer';
-  })
-
-  // // $trigger.on('click', function() {
-  // //   var wtf = $trigger.attr('aria-expanded');
-  // //   $trigger.attr('aria-expanded', ! ( $trigger.attr('aria-expanded') == 'true' ) );
-  // //   console.log("AHOY TRIGGER", wtf, $trigger.attr('aria-expanded'), $trigger.get(0).getAttribute('aria-expanded'));
-  // //   var icon = '#panel-collapsed';
-  // //   var $use = $trigger.find("use");
-  // //   if ( $trigger.attr('aria-expanded') == 'true' ) {
-  // //     icon = '#panel-expanded';
-  // //   }
-  // //   $use.attr('xlink:href', icon);
-  // //   setTimeout(function() {
-  // //     console.log("AHOY TRIGGER", wtf, $trigger.attr('aria-expanded'), $trigger.get(0).getAttribute('aria-expanded'));
-  // //   }, 100)
-  // })
-
-  // $trigger = $(`<button id="action-toggle-sidebar" aria-expanded="false">
-  //                   <i class="icomoon toggle-sidebar"></i>
-  //                   <span class="offscreen">About this Book/Tools Sidebar</span>
-  //                   </button>`);
-
-  // $trigger.appendTo("body");
-  // $trigger.on('click', function() {
-  //   var expanded = $trigger.attr('aria-expanded') == 'true';
-  //   HT.toggle(!expanded);
-  //   // var next_expanded;
-  //   // if ( expanded == 'true' ) {
-  //   //   next_expanded = 'false';
-  //   // } else {
-  //   //   next_expanded = 'true';
-  //   // }
-  //   // $trigger.attr('aria-expanded', next_expanded);
-  //   // HT.toggle(next_expanded);
-  // })
+  scale = reader._bestFitScale();
 
   reader.controls.mobile = {};
 
@@ -561,10 +500,10 @@ HT.mobify = function() {
     reader: reader
   });
 
-  reader.controls.mobile.searchinator = new Control.Searchinator({
-    input: $sidebar.get(0),
-    reader: reader
-  });
+  // reader.controls.mobile.searchinator = new Control.Searchinator({
+  //   input: $sidebar.get(0),
+  //   reader: reader
+  // });
 
   reader.on('redraw', function() {
     HT.toggle(false);
@@ -586,83 +525,165 @@ HT.mobify = function() {
     if ( target == reader.view.name ) {
       return;
     }
-    $sidebar.find(".action-view.active").removeClass("active");
-    $(this).addClass("active");
-    reader.restart({ view: target, clicked: event.detail == 1 });
-    reader.emit('redraw', {});
+    HT.utils.switch_view(target, event.detail == 1);
   })
-
-  $sidebar.on('click', function(event) {
-    // hide the sidebar
-    HT.toggle(false);
-  })
-
-  var vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', vh + 'px');
-
-  $(window).on("resize", function() {
-      var vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', vh + 'px');
-  })
-
-  $(window).on("orientationchange", function() {
-      setTimeout(function() {
-          var vh = window.innerHeight * 0.01;
-          document.documentElement.style.setProperty('--vh', vh + 'px');
-          // alert(`AHOY orientationchange: ${vh}`);
-      }, 100);
-      // setTimeout(function() {
-      //     vh = window.innerHeight * 0.01;
-      //     alert(`AHOY orientationchange: ${vh}`);
-      // }, 1000);
-  })
-
-
-  reader.emit('resize');
-  document.documentElement.dataset.expanded = 'true';
-
-  // setTimeout(function() {
-  //   document.documentElement.dataset.expanded = 'false';
-  // }, 100);
 }
 
-HT.toggle = function(state) {
-  // $("header").toggle(state);
-  // $(".navigator").toggle(state);
+HT.utils = HT.utils || {};
+HT.utils.switch_view = function(target, event_detail) {
+  $sidebar.find(".action-view.active").removeClass("active");
+  $sidebar.find(`button[data-target="${target}"]`).addClass("active");
+  var scale = reader._bestFitScale();
+  reader.restart({ view: target, clicked: event_detail == 1, scale: scale });
+  reader.emit('redraw', {});
+}
 
-  $trigger.attr('aria-expanded', state);
-  $("html").get(0).dataset.view = state ? 'options' : 'viewer';
-
-  var xlink_href;
-  if ( $trigger.attr('aria-expanded') == 'true' ) {
-    xlink_href = '#panel-expanded';
+HT.utils.handleOrientationChange = function() {
+  if ( Math.abs(window.orientation) == 90 ) {
+    // enable the 2up button
+    $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
   } else {
-    xlink_href = '#panel-collapsed';
+    // disable the 2up and switch views
+    $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
+    if ( reader.view.name == '2up' ) {
+      HT.utils.switch_view('1up');
+    }
   }
-  $trigger.find("svg use").attr("xlink:href", xlink_href);
-
-
-  // // if ( $("header").is(":visible") ) {
-  // if ( state ) {
-  //   bootbox.show('mobile-menu', {
-  //     onClose: function() {
-  //       // if ( $menu.attr("aria-hidden") == 'true' ) {
-  //       //   HT.toggle(false);
-  //       // }
-
-  //       $trigger.attr('aria-expanded', false);
-  //       // if ( $("header").is(":visible") ) {
-  //       //   HT.toggle(false);
-  //       // }
-  //     }
-  //   });
-  // } else {
-  //   bootbox.close();
-  // }
 }
+
+reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
+
+var $menu; var $trigger; var $header; var $navigator;
+// HT.mobify = function() {
+
+//   if ( $("html").is(".desktop") ) {
+//     $("html").addClass("mobile").removeClass("desktop").removeClass("no-mobile");
+//   }
+
+//   $header = $("header");
+//   $navigator = $(".navigator");
+//   $navigator.get(0).style.setProperty('--height', `-${$navigator.outerHeight() * 0.90}px`);
+
+//   var $expando = $navigator.find(".action-expando");
+//   $expando.on('click', function() {
+//     document.documentElement.dataset.expanded = ! ( document.documentElement.dataset.expanded == 'true' );
+//   })
+
+//   HT.$menu = $menu;
+
+//   var $sidebar = $("#sidebar");
+
+//   $trigger = $sidebar.find("button[aria-expanded]");
+//   $trigger.on('clicked', function(event) {
+//     var active = $trigger.attr('aria-expanded') == 'true';
+//     $("html").get(0).dataset.view = active ? 'options' : 'viewer';
+//   })
+
+//   $("#action-mobile-toggle-fullscreen").on('click', function() {
+//     document.documentElement.requestFullScreen();
+//   })
+
+//   reader.controls.mobile = {};
+
+//   reader.controls.mobile.zoominator = new Control.Zoominator({
+//     input: $sidebar.get(0),
+//     reader: reader
+//   });
+
+//   reader.controls.mobile.searchinator = new Control.Searchinator({
+//     input: $sidebar.get(0),
+//     reader: reader
+//   });
+
+//   reader.on('redraw', function() {
+//     HT.toggle(false);
+//   });
+
+//   reader.controls.navigator.on('updateLocation', (params) => {
+//     if ( params.trigger && params.trigger == 'control-navigator' ) {
+//       HT.toggle(false);
+//     }
+//   })
+
+//   HT.utils = HT.utils || {};
+//   HT.utils.switch_view = function(target, event_detail) {
+//     $sidebar.find(".action-view.active").removeClass("active");
+//     $sidebar.find(`button[data-target="${target}"]`).addClass("active");
+//     var scale = reader._bestFitScale();
+//     reader.restart({ view: target, clicked: event_detail == 1, scale: scale });
+//     reader.emit('redraw', {});
+//   }
+
+//   HT.utils.handleOrientationChange = function() {
+//     if ( Math.abs(window.orientation) == 90 ) {
+//       // enable the 2up button
+//       $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
+//     } else {
+//       // disable the 2up and switch views
+//       $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
+//       if ( reader.view.name == '2up' ) {
+//         HT.utils.switch_view('1up');
+//       }
+//     }
+//   }
+
+//   $sidebar.on('click', '[data-trigger="contents"]', function(event) {
+//     event.preventDefault();
+//     $(".table-of-contents button").trigger('click');
+//   })
+
+//   $sidebar.on('click', '.action-view', function(event) {
+//     var target = $(this).data('target');
+//     if ( target == reader.view.name ) {
+//       return;
+//     }
+//     HT.utils.switch_view(target, event.detail == 1);
+//   })
+
+//   $sidebar.on('click', function(event) {
+//     // hide the sidebar
+//     HT.toggle(false);
+//   })
+
+//   var vh = window.innerHeight * 0.01;
+//   document.documentElement.style.setProperty('--vh', vh + 'px');
+
+//   $(window).on("resize", function() {
+//       var vh = window.innerHeight * 0.01;
+//       document.documentElement.style.setProperty('--vh', vh + 'px');
+//   })
+
+//   $(window).on("orientationchange", function() {
+//       setTimeout(function() {
+//           var vh = window.innerHeight * 0.01;
+//           document.documentElement.style.setProperty('--vh', vh + 'px');
+
+//           HT.utils.handleOrientationChange();
+//       }, 100);
+//   })
+
+
+//   reader.emit('resize');
+//   document.documentElement.dataset.expanded = 'true';
+// }
+
+// HT.toggle = function(state) {
+
+//   $trigger.attr('aria-expanded', state);
+//   $("html").get(0).dataset.view = state ? 'options' : 'viewer';
+
+//   var xlink_href;
+//   if ( $trigger.attr('aria-expanded') == 'true' ) {
+//     xlink_href = '#panel-expanded';
+//   } else {
+//     xlink_href = '#panel-collapsed';
+//   }
+//   $trigger.find("svg use").attr("xlink:href", xlink_href);
+// }
 
 if ( reader.is_mobile ) {
-  setTimeout(HT.mobify, 1000);
+  // HT.mobify
+  setTimeout(function() { reader.emit('resize') }, 1000);
 }
 
 var daInterval;
