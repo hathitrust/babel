@@ -16,6 +16,7 @@
   <xsl:variable name="gAccessUseIcon" select="/MBooksTop/MBooksGlobals/AccessUse/Icon"/>
   <xsl:variable name="gAccessUseAuxIcon" select="/MBooksTop/MBooksGlobals/AccessUse/AuxIcon"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
+  <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
   <xsl:variable name="gPodUrl" select="/MBooksTop/MBooksGlobals/Pod/Url"/>
   <xsl:variable name="gSkin" select="/MBooksTop/MBooksGlobals/Skin"/>
   <xsl:variable name="gSdrInst" select="/MBooksTop/MBooksGlobals/EnvSDRINST"/>
@@ -851,6 +852,40 @@
   <xsl:template name="build-extra-sidebar-panels" />
 
   <xsl:template name="access-overview-block">
+
+    <xsl:variable name="gViewingMode">
+      <xsl:choose>
+        <xsl:when test="$gFinalAccessStatus='allow'">
+          <xsl:choose>
+            <!-- Case (1) SSD: display entire volume -->
+            <xsl:when test="$gSSD_Session='true'">
+              <xsl:value-of select="'entire-volume'"/>
+            </xsl:when>
+            <!-- non-SSD cases -->
+            <xsl:when test="$gSSD_Session='false'">
+              <xsl:choose>
+                <!-- Case (2) non-SSD page-at-a-time -->
+                <xsl:when test="$gInCopyright='false' and $gLoggedIn='NO'">
+                  <xsl:value-of select="'page-at-a-time'"/>
+                </xsl:when>
+                <!-- Case (3) non-SSD: entire volume-->
+                <xsl:when test="$gInCopyright='false' and $gLoggedIn='YES'">
+                  <xsl:value-of select="'entire-volume'"/>
+                </xsl:when>
+                <!-- Case (4) non-SSD: page-at-a-time -->
+                <xsl:when test="$gInCopyright='true' and $gLoggedIn='YES'">
+                  <xsl:value-of select="'page-at-a-time'"/>
+                </xsl:when>
+              </xsl:choose>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="'no-view'"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
     <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
     <div class="accessOverview panel" rel="note">
       <h3>Text Only Views</h3>
@@ -863,7 +898,7 @@
                 <xsl:text>/cgi/ssd?id=</xsl:text>
                 <xsl:value-of select="$gHtId"/>
                 <xsl:choose>
-                  <xsl:when test="$seq != '' and $gFullPdfAccess = 'allow'">
+                  <xsl:when test="$seq != '' and $gViewingMode = 'entire-volume'">
                     <xsl:text>#seq</xsl:text>
                     <xsl:value-of select="$seq" />
                   </xsl:when>
