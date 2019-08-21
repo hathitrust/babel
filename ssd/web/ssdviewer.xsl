@@ -613,9 +613,9 @@
 
   <!-- -->
   <xsl:template match="Page">
-    <div class="Page">
+    <div class="Page" id="seq{Seq}">
       <xsl:choose>
-        <xsl:when test="PageNum">
+        <xsl:when test="normalize-space(PageNum)">
           <xsl:apply-templates select="PageNum"/>
         </xsl:when>
         <xsl:otherwise>
@@ -647,7 +647,7 @@
 
   <!-- -->
   <xsl:template match="Seq">
-    <div class="Seq">Page <xsl:apply-templates/> </div>
+    <div class="Seq">Page Scan <xsl:apply-templates/> </div>
   </xsl:template>
 
   <!-- -->
