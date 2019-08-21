@@ -368,20 +368,22 @@ html.ie {
   }
 }
 
-main.main-container {
-  -ms-grid-row: 2;
-  grid-area: main;
+@media (min-width: 62em) {
+  main.main-container {
+    -ms-grid-row: 2;
+    grid-area: main;
 
-  margin: 0;
-  overflow: hidden;
+    margin: 0;
+    overflow: hidden;
 
-  // padding: 0 1rem;
-  // padding-top: 2.7rem;
+    // padding: 0 1rem;
+    // padding-top: 2.7rem;
 
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem;
+  }
 }
 
 .section-container {
@@ -1174,7 +1176,7 @@ section.view--plaintext {
 
   #sidebar {
     background: #fff;
-    position: fixed;
+    // position: fixed;
   }
 
   &[data-view="options"] {
@@ -1183,26 +1185,42 @@ section.view--plaintext {
       position: fixed;
       display: block;
       background: #fff;
-      z-index: 5;
+      z-index: 15;
     }
 
   }
 
-  .inner.main {
+  section.viewer {
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-    // opacity: 0.4;
   }
+
+
+  // .outer.main {
+  //   position: fixed;
+  //   top: 0;
+  //   bottom: 0;
+  //   left: 0;
+  //   right: 0;
+  // }
+
+  // .inner.main {
+  //   position: fixed;
+  //   top: 0;
+  //   bottom: 0;
+  //   left: 0;
+  //   right: 0;
+  // }
 
   #root .section-container {
     flex-grow: 0;
     margin: 0;
     height: 100%;
-    // justify-content: flex-end;
-    justify-content: space-between;
+    justify-content: flex-end;
+    // justify-content: space-between;
     // background: azure;
 
     .navigator {
@@ -1280,6 +1298,7 @@ section.view--plaintext {
 
   main .inner.main {
     margin: 0.25rem auto;
+    justify-content: flex-end;
 
     section.viewer {
       margin-right: 0;
@@ -1323,24 +1342,33 @@ section.view--plaintext {
   }
 
   #toolbar-horizontal {
-    margin-top: 0rem;
+    // margin-top: 0rem;
     background: #fff;
   }
 
   #toolbar-vertical {
-    margin-top: 3rem;
+    // margin-top: 3rem;
   }
 
   html[data-expanded="true"] {
     #toolbar-horizontal {
-      margin-top: 3rem;
+      // margin-top: 3rem;
     }
     
     #toolbar-vertical {
-      margin-top: 9rem;
+      // margin-top: 9rem;
     }
   }
 
+}
+
+@media only screen and (max-width: 625px) {
+  #toolbar-horizontal {
+    .table-of-contents { display: none; }
+    .table-of-selections { display: none; }
+    h3 { display: none; }
+    form[role='search'] { display: none; }
+  }
 }
 
 @media only screen and (min-width:500px) {

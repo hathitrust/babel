@@ -177,13 +177,15 @@
         <xsl:text> (use access key 5 to view full text / OCR mode)</xsl:text>
       </xsl:if>
     </h2>
-    <xsl:call-template name="toolbar-horizontal" />
-    <div class="inner main">
-      <section class="viewer viewer--setup">
-        <div class="viewer-loader"></div>
-        <div class="viewer-inner"></div>
-      </section>
-      <xsl:call-template name="toolbar-vertical" />
+    <div class="outer main" style="display: flex; flex-direction: column; flex-grow: 1">
+      <xsl:call-template name="toolbar-horizontal" />
+      <div class="inner main" style="flex-grow: 1">
+        <section class="viewer viewer--setup">
+          <div class="viewer-loader"></div>
+          <div class="viewer-inner"></div>
+        </section>
+        <xsl:call-template name="toolbar-vertical" />
+      </div>
     </div>
     <div class="navigator">
       <button class="action-expando for-mobile" aria-label="Toggle Menu"><i class="icomoon" aria-hidden="true"></i></button>
