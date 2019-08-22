@@ -182,7 +182,7 @@ export var Service = class {
       var r = meta.height / meta.width;
       retval.value = possibles.find(function(possible) {
         // var check = ( 680 * ( possible / 100.0 ) ) * r;
-        var check = 680 * possible;
+        var check = ( 680 * possible ) * r;
         return params.height <= check;
       });
       if ( retval.value === undefined ) {

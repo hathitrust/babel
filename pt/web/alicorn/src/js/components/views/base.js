@@ -181,20 +181,22 @@ export var Base = class {
 
       this.service.manifest.update(seq, { width: img.width, height: img.height });
 
-      if ( img.width > img.height ) {
-        img.classList.add('foldout');
-        img.dataset.width = img.width;
-        img.dataset.height = img.height;
-      }
-
-
       var imageAspectRatio = img.width / img.height;
       // console.log(`AHOY LOAD ${seq} : ${img.width} x ${img.height} : ${page_width}`);
       // img.style.width = `${page_width}px`;
       // img.style.height = `${page_width / imageAspectRatio}px`;
 
+      var adjusted_img_height = page_width / imageAspectRatio;
+
+      if ( img.width > img.height || adjusted_img_height / page_height > 1.2 ) {
+        img.classList.add('foldout');
+        img.dataset.width = img.width;
+        img.dataset.height = img.height;
+        img.dataset.adjustedHeight = adjusted_img_height;
+      }
+
       img.width = `${page_width}`;
-      img.height = `${page_width / imageAspectRatio}`;
+      img.height = `${adjusted_img_height}`;
 
       // console.log(`AHOY LOAD ${seq} REDUX : ${img.width} x ${img.height} : ${img.style.width} x ${img.style.height} : ${page_width}`);
 

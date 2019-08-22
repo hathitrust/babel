@@ -201,7 +201,7 @@ button.control-search:hover, button.control-search:focus {
   white-space: nowrap;
   padding: 1rem 0.5rem;
   font-size: 1rem;
-  z-index: 25;
+  z-index: 4;
 }
 
 .sidebar-toggle button[aria-expanded="true"] {
@@ -1025,13 +1025,13 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u8dbb78b5 1s linear alternate infinite;
-          animation: loader12-u8dbb78b5 1s linear alternate infinite;
+  -webkit-animation: loader12-u267c92d2 1s linear alternate infinite;
+          animation: loader12-u267c92d2 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u8dbb78b5 {
+@-webkit-keyframes loader12-u267c92d2 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1054,7 +1054,7 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
-@keyframes loader12-u8dbb78b5 {
+@keyframes loader12-u267c92d2 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1107,13 +1107,13 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-udba3a580 1s linear alternate infinite;
-          animation: loader12-udba3a580 1s linear alternate infinite;
+  -webkit-animation: loader12-u031c7d94 1s linear alternate infinite;
+          animation: loader12-u031c7d94 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-udba3a580 {
+@-webkit-keyframes loader12-u031c7d94 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1136,7 +1136,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
-@keyframes loader12-udba3a580 {
+@keyframes loader12-u031c7d94 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1363,6 +1363,7 @@ section.view--2up section .slice:not(.slice--visible) {
 section.view--2up section .slice.slice--visible {
   visibility: visible;
   opacity: 1;
+  z-index: 1;
   -webkit-transition: visibility 0s linear 0s, opacity 300ms;
   transition: visibility 0s linear 0s, opacity 300ms;
 }
@@ -1383,7 +1384,7 @@ section.view--2up section .page.verso {
 }
 
 section.view--2up section .page.verso img {
-  right: 0;
+  margin-right: 0;
 }
 
 section.view--2up section .page.verso button.action-toggle-selection {
@@ -1406,17 +1407,15 @@ section.view--2up section .page.recto {
 }
 
 section.view--2up section .page.recto img {
-  left: 0;
+  margin-left: 0;
 }
 
 section.view--2up section .page img {
-  width: 100%;
+  width: auto;
   height: auto;
-}
-
-section.view--2up section .page img.foldout {
-  height: auto;
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0 auto;
 }
 
 section.view--2up section .page button.action-toggle-selection {
@@ -1429,6 +1428,8 @@ section.view--2up section .page button.action-view-foldout {
   left: 50%;
   -webkit-transform: translateX(-50%);
           transform: translateX(-50%);
+  -webkit-box-shadow: 0px 0px 10px 6px #999;
+          box-shadow: 0px 0px 10px 6px #999;
 }
 
 section.view--2up section .edge {
@@ -1481,14 +1482,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-uf8c79d51 1s linear alternate infinite;
-          animation: loader12-uf8c79d51 1s linear alternate infinite;
+  -webkit-animation: loader12-u53b33569 1s linear alternate infinite;
+          animation: loader12-u53b33569 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-uf8c79d51 {
+@-webkit-keyframes loader12-u53b33569 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1511,7 +1512,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
-@keyframes loader12-uf8c79d51 {
+@keyframes loader12-u53b33569 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1692,8 +1693,8 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u2de7c16c 1s linear alternate infinite;
-          animation: loader12-u2de7c16c 1s linear alternate infinite;
+  -webkit-animation: loader12-u7fcb8bb6 1s linear alternate infinite;
+          animation: loader12-u7fcb8bb6 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1702,7 +1703,7 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-u2de7c16c {
+@-webkit-keyframes loader12-u7fcb8bb6 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1725,7 +1726,7 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
-@keyframes loader12-u2de7c16c {
+@keyframes loader12-u7fcb8bb6 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1815,4 +1816,11 @@ section.view--plaintext button[data-target="plaintext"] {
     -webkit-transform: translateX(-50%);
             transform: translateX(-50%);
   }
+}
+
+.modal.lightbox .modal__container .modal__content img {
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  display: block;
 }

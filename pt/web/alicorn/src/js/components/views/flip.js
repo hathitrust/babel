@@ -121,6 +121,7 @@ export var Flip = class extends Base {
 
     page = slice.querySelector('.page.verso');
     page.style.height = `${this._layout.pageHeight}px`;
+    page.style.maxHeight = page.style.height;
     page.style.width = `${this._layout.pageHeight * datum[0].ratio}px`;
     slice_width = this._layout.pageHeight * datum[0].ratio;
 
@@ -129,6 +130,7 @@ export var Flip = class extends Base {
 
     page = slice.querySelector('.page.recto');
     page.style.height = `${this._layout.pageHeight}px`;
+    page.style.maxHeight = page.style.height;
     page.style.width = `${this._layout.pageHeight * datum[1].ratio}px`;
     slice_width += this._layout.pageHeight * datum[1].ratio;
 
@@ -463,9 +465,15 @@ export var Flip = class extends Base {
         var page = element.closest('.page');
         var img = page.querySelector('img.foldout');
 
+        var img_height = parseInt(img.dataset.height, 10);
+        var img_width = parseInt(img.dataset.width, 10);
+
         var zoom_h = window.innerHeight * 0.80;
-        var r = zoom_h / img.dataset.height ;
-        var zoom_w = img.dataset.width * r;
+        var r = zoom_h / img_height;
+        var zoom_w = img_width * r;
+
+        zoom_w = window.innerWidth * 0.80;
+        zoom_h = zoom_w / r;
 
         var zoom_img_src = this.imageUrl({ seq: page.dataset.seq, width: zoom_w });
 
@@ -475,8 +483,8 @@ export var Flip = class extends Base {
           {
             lightbox: true,
             header: `View page scan ${page.dataset.seq} foldout`,
-            width: zoom_w,
-            height: zoom_h
+            width: ( window.innerWidth * 0.80 ), // zoom_w,
+            height: ( window.innerHeight * 0.80 )
           }
         );
         var $zoom_img = dialog.find("img");

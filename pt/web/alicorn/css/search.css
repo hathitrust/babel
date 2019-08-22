@@ -481,7 +481,7 @@ button.control-search:hover, button.control-search:focus {
   white-space: nowrap;
   padding: 1rem 0.5rem;
   font-size: 1rem;
-  z-index: 25;
+  z-index: 4;
 }
 
 .sidebar-toggle button[aria-expanded="true"] {
