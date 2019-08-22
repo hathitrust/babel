@@ -542,6 +542,12 @@ export var Flip = class extends Base {
       button.classList.add('btn', 'btn-mini', 'action-view-foldout');
       button.innerText = 'View Foldout';
       button.dataset.seq = page.dataset.seq;
+      var marginLeft = ( ( page.offsetWidth - img.offsetWidth ) / 2 ) / page.offsetWidth * 100.0;
+      var delta = '';
+      if ( page.classList.contains('recto') ) {
+        delta = '-';
+      }
+      button.style.marginLeft = `${delta}${marginLeft}%`;
       page.appendChild(button);
     }
   }
