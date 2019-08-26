@@ -224,7 +224,7 @@
           </xsl:if>
         </div>
 
-        <ul class="no-mobile">
+        <ul class="not-mobile">
           <xsl:if test="EndPageLink[@page='first']/Href">
             <li>
               <a href="{EndPageLink[@page='first']/Href}"><xsl:value-of select="EndPageLink[@page='first']/LinkNumber"/></a>
