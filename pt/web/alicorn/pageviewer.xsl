@@ -85,6 +85,7 @@
     <xsl:if test="//CurrentCgi/Param[@name='page'] = 'root' and //FinalAccessStatus = 'allow'">
       <xsl:attribute name="data-analytics-skip">true</xsl:attribute>
     </xsl:if>
+    <xsl:attribute name="data-app">pt</xsl:attribute>
     <xsl:call-template name="setup-extra-html-attributes" />
   </xsl:template>
 
@@ -225,9 +226,9 @@
 
   <xsl:template name="setup-extra-header-extra" />
 
-  <xsl:template name="header" />
+  <!-- <xsl:template name="header" /> -->
 
-  <xsl:template name="navbar">
+  <xsl:template name="navbar-xxx">
     <header class="site-navigation" role="banner">
       <nav aria-label="about the site">
         <xsl:if test="$gIsCRMS = 'false'">
@@ -253,13 +254,13 @@
     </header>
   </xsl:template>
 
-  <xsl:template name="navbar-site-links">
+  <xsl:template name="navbar-site-links-xxx">
     <ul id="nav" class="nav">
       <!-- <li><a class="home-link" href="https://www.hathitrust.org" aria-hidden="true"><span class="offscreen">Home</span></a></li> -->
       <!-- <li><a href="https://www.hathitrust.org">Home</a></li> -->
 
       <li>
-        <a class="home-link always-branded" href="https://www.hathitrust.org">
+        <a class="home-link always-branded include-branding" href="https://www.hathitrust.org">
           <span class="offscreen">Home</span>
         </a>
       </li>
@@ -290,7 +291,7 @@
     </li>
   </xsl:template>
 
-  <xsl:template name="navbar-user-links">
+  <xsl:template name="navbar-user-links-xx">
     <xsl:choose>
       <xsl:when test="$gLoggedIn = 'YES'">
         <li>
@@ -456,12 +457,14 @@
 
   <xsl:template name="build-main-container">
     <main class="main-container" id="main">
+      <xsl:call-template name="header" />
       <div class="container flex-container container-boxed container-full">
         <div class="sidebar-container" id="sidebar" tabindex="0">
-          <button class="for-mobile sr-only filter-group-toggle-show-button" aria-expanded="false">
+          <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
             <span class="flex-space-between flex-center">
               <h3 class="filter-group-heading">Options</h3>
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg>
+              <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg> -->
+              <i class="icomoon icomoon-sidebar-toggle" aria-hidden="true"></i>
             </span>
           </button>
 

@@ -529,6 +529,13 @@ html[data-sidebar-collapsible] .sidebar-container[hidden] + .sidebar-toggle {
   margin-left: -1rem;
 }
 
+@media only screen and (max-width: 62em) {
+  html.mobile.ios[data-expanded="true"] .sidebar-container {
+    position: fixed;
+    z-index: 100;
+  }
+}
+
 *[hidden] {
   display: none;
 }
@@ -611,7 +618,7 @@ html[data-sidebar-collapsible] .sidebar-container[hidden] + .sidebar-toggle {
   html[data-view="options"] #sidebar {
     display: block;
     background: #fff;
-    z-index: 5;
+    z-index: 15;
   }
   html[data-expanded="false"] header {
     display: none;

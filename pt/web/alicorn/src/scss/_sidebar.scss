@@ -169,6 +169,16 @@ html[data-sidebar-collapsible] {
   }
 }
 
+// -- BROWSER HACK
+@media only screen and ( max-width: 62em ) {
+  html.mobile.ios[data-expanded="true"] {
+    .sidebar-container {
+      position: fixed;
+      z-index: 100;
+    }
+  }
+}
+
 *[hidden] {
   display: none;
 }

@@ -123,7 +123,7 @@
 
       form {
         width: 100%; // unless there's a full-screen button
-        background: green;
+        // background: green;
         flex-grow: 0;
         flex-flow: row;
         // align-content: flex-start;
@@ -1022,6 +1022,7 @@ section.view--plaintext {
       // &[data-visible="false"] {
       &:not(.page--visible) {
         visibility: hidden;
+        max-height: 100%;
         opacity: 0;
         transition: visibility 0s linear 300s, opacity 300ms;
       }
@@ -1035,7 +1036,9 @@ section.view--plaintext {
 
       .page-text {
         display: block;
-        height: 100%;
+        position: static !important;
+        height: auto;
+        // height: 100%;
         width: 100%;
         padding: 1rem;
         background: transparent;
@@ -1382,9 +1385,28 @@ section.view--plaintext {
 
 @media only screen and (max-width: 499px) {
   // all the toolbars are hidden
+
+  // #toolbar-horizontal {
+  //   display: flex;
+
+  //   #action-go-first, #action-go-last {
+  //     display: none;
+  //   }
+
+  //   // position: fixed;
+  //   // width: auto;
+  //   // right: 0;
+  // }
+
   #root .section-container {
     justify-content: flex-end;
   }
+
+  // --- does not work for longer pages
+  // section.view--plaintext section .page.page--visible {
+  //   top: 50%;
+  //   transform: translate(-50%,-50%);
+  // }
 }
 
 // @media only screen and (max-width: 499px) and (min-width: 350px) {
@@ -1419,7 +1441,7 @@ section.view--plaintext {
       }
     }
 
-    button:not([class]), input[type="submit"], a.btn, button.btn, button.btn-dismiss {
+    button:not([class]), input[type="submit"], a.btn, button.btn, button.btn-dismiss, #login-link {
       font-size: 0.875rem;
     }
 

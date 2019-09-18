@@ -1,5 +1,7 @@
 head.ready(function() {
 
+    return;
+
     var inited = false;
 
     var $form = $("#search-modal form");

@@ -249,6 +249,13 @@ html[data-sidebar-collapsible] .sidebar-container[hidden] + .sidebar-toggle {
   margin-left: -1rem;
 }
 
+@media only screen and (max-width: 62em) {
+  html.mobile.ios[data-expanded="true"] .sidebar-container {
+    position: fixed;
+    z-index: 100;
+  }
+}
+
 *[hidden] {
   display: none;
 }
@@ -655,7 +662,6 @@ html.crms #form-go-page {
   }
   .section-container .navigator form {
     width: 100%;
-    background: green;
     -webkit-box-flex: 0;
         -ms-flex-positive: 0;
             flex-grow: 0;
@@ -1010,13 +1016,13 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ub9e9f07e 1s linear alternate infinite;
-          animation: loader12-ub9e9f07e 1s linear alternate infinite;
+  -webkit-animation: loader12-ue89b1880 1s linear alternate infinite;
+          animation: loader12-ue89b1880 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-ub9e9f07e {
+@-webkit-keyframes loader12-ue89b1880 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1039,7 +1045,7 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
-@keyframes loader12-ub9e9f07e {
+@keyframes loader12-ue89b1880 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1092,13 +1098,13 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u2719c7f6 1s linear alternate infinite;
-          animation: loader12-u2719c7f6 1s linear alternate infinite;
+  -webkit-animation: loader12-u0e54f31a 1s linear alternate infinite;
+          animation: loader12-u0e54f31a 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u2719c7f6 {
+@-webkit-keyframes loader12-u0e54f31a {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1121,7 +1127,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
-@keyframes loader12-u2719c7f6 {
+@keyframes loader12-u0e54f31a {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1466,14 +1472,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u600d5b49 1s linear alternate infinite;
-          animation: loader12-u600d5b49 1s linear alternate infinite;
+  -webkit-animation: loader12-ufae497a2 1s linear alternate infinite;
+          animation: loader12-ufae497a2 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-u600d5b49 {
+@-webkit-keyframes loader12-ufae497a2 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1496,7 +1502,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
-@keyframes loader12-u600d5b49 {
+@keyframes loader12-ufae497a2 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1575,6 +1581,7 @@ section.view--plaintext section .page.page--best-fit {
 
 section.view--plaintext section .page:not(.page--visible) {
   visibility: hidden;
+  max-height: 100%;
   opacity: 0;
   -webkit-transition: visibility 0s linear 300s, opacity 300ms;
   transition: visibility 0s linear 300s, opacity 300ms;
@@ -1589,7 +1596,8 @@ section.view--plaintext section .page.page--visible {
 
 section.view--plaintext section .page .page-text {
   display: block;
-  height: 100%;
+  position: static !important;
+  height: auto;
   width: 100%;
   padding: 1rem;
   background: transparent;
@@ -1677,8 +1685,8 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ubcee35f7 1s linear alternate infinite;
-          animation: loader12-ubcee35f7 1s linear alternate infinite;
+  -webkit-animation: loader12-ub0ba3bd5 1s linear alternate infinite;
+          animation: loader12-ub0ba3bd5 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1687,7 +1695,7 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-ubcee35f7 {
+@-webkit-keyframes loader12-ub0ba3bd5 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1710,7 +1718,7 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
-@keyframes loader12-ubcee35f7 {
+@keyframes loader12-ub0ba3bd5 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1806,7 +1814,7 @@ section.view--plaintext button[data-target="plaintext"] {
   html[data-view="options"] #sidebar {
     display: block;
     background: #fff;
-    z-index: 5;
+    z-index: 15;
   }
   html[data-expanded="false"] header {
     display: none;
@@ -1986,7 +1994,7 @@ section.view--plaintext button[data-target="plaintext"] {
   html .toolbar label {
     font-size: 0.875rem;
   }
-  html button:not([class]), html input[type="submit"], html a.btn, html button.btn, html button.btn-dismiss {
+  html button:not([class]), html input[type="submit"], html a.btn, html button.btn, html button.btn-dismiss, html #login-link {
     font-size: 0.875rem;
   }
   html .section-container .navigator {
