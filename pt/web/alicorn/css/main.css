@@ -1016,13 +1016,13 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ue89b1880 1s linear alternate infinite;
-          animation: loader12-ue89b1880 1s linear alternate infinite;
+  -webkit-animation: loader12-udfa6957c 1s linear alternate infinite;
+          animation: loader12-udfa6957c 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-ue89b1880 {
+@-webkit-keyframes loader12-udfa6957c {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1045,7 +1045,7 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
-@keyframes loader12-ue89b1880 {
+@keyframes loader12-udfa6957c {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1098,13 +1098,13 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u0e54f31a 1s linear alternate infinite;
-          animation: loader12-u0e54f31a 1s linear alternate infinite;
+  -webkit-animation: loader12-u9db28727 1s linear alternate infinite;
+          animation: loader12-u9db28727 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u0e54f31a {
+@-webkit-keyframes loader12-u9db28727 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1127,7 +1127,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
-@keyframes loader12-u0e54f31a {
+@keyframes loader12-u9db28727 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1472,14 +1472,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ufae497a2 1s linear alternate infinite;
-          animation: loader12-ufae497a2 1s linear alternate infinite;
+  -webkit-animation: loader12-ud3bf74ca 1s linear alternate infinite;
+          animation: loader12-ud3bf74ca 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-ufae497a2 {
+@-webkit-keyframes loader12-ud3bf74ca {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1502,7 +1502,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
-@keyframes loader12-ufae497a2 {
+@keyframes loader12-ud3bf74ca {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1556,21 +1556,23 @@ section.view--thumb.reading-order--rtl .viewer-inner {
 }
 
 section.view--plaintext section .page {
-  width: 90%;
+  width: 94%;
   max-width: 80rem;
   min-height: 90vh;
   position: absolute;
   background: #fff;
   top: 0;
+  margin: 2rem 0 4rem;
 }
 
-section.view--plaintext section .page:not(.page--loaded) {
-  top: 80px;
+section.view--plaintext section .page:not(.page--loaded)::before {
+  margin-top: 50%;
 }
 
 section.view--plaintext section .page:not(.page--loaded)::after {
   top: auto;
-  bottom: 80px;
+  margin-top: 90%;
+  bottom: 0px;
 }
 
 section.view--plaintext section .page.page--best-fit {
@@ -1600,6 +1602,7 @@ section.view--plaintext section .page .page-text {
   height: auto;
   width: 100%;
   padding: 1rem;
+  padding-top: 2rem;
   background: transparent;
   font-size: 1.25rem;
   line-height: 1.25;
@@ -1685,8 +1688,8 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ub0ba3bd5 1s linear alternate infinite;
-          animation: loader12-ub0ba3bd5 1s linear alternate infinite;
+  -webkit-animation: loader12-u951f0a2d 1s linear alternate infinite;
+          animation: loader12-u951f0a2d 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1695,7 +1698,7 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-ub0ba3bd5 {
+@-webkit-keyframes loader12-u951f0a2d {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1718,7 +1721,7 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
-@keyframes loader12-ub0ba3bd5 {
+@keyframes loader12-u951f0a2d {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1824,8 +1827,33 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
-#toolbar-vertical, #toolbar-horizontal {
+#toolbar-vertical {
   display: none;
+}
+
+#toolbar-horizontal {
+  position: fixed;
+  right: 0;
+  width: auto;
+}
+
+#toolbar-horizontal #action-go-first, #toolbar-horizontal #action-go-last {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+#toolbar-horizontal #action-go-prev {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  margin-left: 0;
+}
+
+#toolbar-horizontal #action-go-next {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 @media only screen and (max-width: 62em) {
@@ -1940,6 +1968,9 @@ section.view--plaintext button[data-target="plaintext"] {
   #toolbar-horizontal {
     background: #fff;
   }
+  html[data-expanded="true"] section section .viewer-inner {
+    margin: 6rem 0;
+  }
 }
 
 @media only screen and (max-width: 625px) {
@@ -1964,9 +1995,10 @@ section.view--plaintext button[data-target="plaintext"] {
     display: flex;
   }
   #toolbar-horizontal {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
+    position: static !important;
+    clip: unset;
+    height: auto;
+    width: auto;
   }
 }
 

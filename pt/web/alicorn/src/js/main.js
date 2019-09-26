@@ -488,52 +488,43 @@ if ( HT.params.size  ) {
 
 reader.is_mobile = $("html").is(".mobile") || ( HT.params.debug && HT.params.debug.indexOf('mobile') > -1 );
 
-if ( reader.is_mobile ) {
-  var $sidebar = $("#sidebar");
+var $sidebar = $("#sidebar");
+// scale = reader._bestFitScale();
 
-  scale = reader._bestFitScale();
+reader.controls.mobile = {};
+reader.controls.mobile.zoominator = new Control.Zoominator({
+  input: $sidebar.get(0),
+  reader: reader
+});
 
-  reader.controls.mobile = {};
+reader.on('redraw', function() {
+  HT.toggle(false);
+});
 
-  reader.controls.mobile.zoominator = new Control.Zoominator({
-    input: $sidebar.get(0),
-    reader: reader
-  });
-
-  // reader.controls.mobile.searchinator = new Control.Searchinator({
-  //   input: $sidebar.get(0),
-  //   reader: reader
-  // });
-
-  reader.on('redraw', function() {
+reader.controls.navigator.on('updateLocation', (params) => {
+  if ( params.trigger && params.trigger == 'control-navigator' ) {
     HT.toggle(false);
-  });
+  }
+})
 
-  reader.controls.navigator.on('updateLocation', (params) => {
-    if ( params.trigger && params.trigger == 'control-navigator' ) {
-      HT.toggle(false);
-    }
-  })
+$sidebar.on('click', '[data-trigger="contents"]', function(event) {
+  event.preventDefault();
+  $(".table-of-contents button").trigger('click');
+})
 
-  $sidebar.on('click', '[data-trigger="contents"]', function(event) {
-    event.preventDefault();
-    $(".table-of-contents button").trigger('click');
-  })
-
-  $sidebar.on('click', '.action-view', function(event) {
-    var target = $(this).data('target');
-    if ( target == reader.view.name ) {
-      return;
-    }
-    HT.utils.switch_view(target, event.detail == 1);
-  })
-}
+$sidebar.on('click', '.action-view', function(event) {
+  var target = $(this).data('target');
+  if ( target == reader.view.name ) {
+    return;
+  }
+  HT.utils.switch_view(target, event.detail == 1);
+})
 
 HT.utils = HT.utils || {};
 HT.utils.switch_view = function(target, event_detail) {
   $sidebar.find(".action-view.active").removeClass("active");
   $sidebar.find(`button[data-target="${target}"]`).addClass("active");
-  var scale = reader._bestFitScale();
+  var scale = 1.0; // reader._bestFitScale();
   reader.restart({ view: target, clicked: event_detail == 1, scale: scale });
   reader.emit('redraw', {});
 }
@@ -554,137 +545,56 @@ HT.utils.handleOrientationChange = function() {
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
 
 var $menu; var $trigger; var $header; var $navigator;
-// HT.mobify = function() {
-
-//   if ( $("html").is(".desktop") ) {
-//     $("html").addClass("mobile").removeClass("desktop").removeClass("no-mobile");
-//   }
-
-//   $header = $("header");
-//   $navigator = $(".navigator");
-//   $navigator.get(0).style.setProperty('--height', `-${$navigator.outerHeight() * 0.90}px`);
-
-//   var $expando = $navigator.find(".action-expando");
-//   $expando.on('click', function() {
-//     document.documentElement.dataset.expanded = ! ( document.documentElement.dataset.expanded == 'true' );
-//   })
-
-//   HT.$menu = $menu;
-
-//   var $sidebar = $("#sidebar");
-
-//   $trigger = $sidebar.find("button[aria-expanded]");
-//   $trigger.on('clicked', function(event) {
-//     var active = $trigger.attr('aria-expanded') == 'true';
-//     $("html").get(0).dataset.view = active ? 'options' : 'viewer';
-//   })
-
-//   $("#action-mobile-toggle-fullscreen").on('click', function() {
-//     document.documentElement.requestFullScreen();
-//   })
-
-//   reader.controls.mobile = {};
-
-//   reader.controls.mobile.zoominator = new Control.Zoominator({
-//     input: $sidebar.get(0),
-//     reader: reader
-//   });
-
-//   reader.controls.mobile.searchinator = new Control.Searchinator({
-//     input: $sidebar.get(0),
-//     reader: reader
-//   });
-
-//   reader.on('redraw', function() {
-//     HT.toggle(false);
-//   });
-
-//   reader.controls.navigator.on('updateLocation', (params) => {
-//     if ( params.trigger && params.trigger == 'control-navigator' ) {
-//       HT.toggle(false);
-//     }
-//   })
-
-//   HT.utils = HT.utils || {};
-//   HT.utils.switch_view = function(target, event_detail) {
-//     $sidebar.find(".action-view.active").removeClass("active");
-//     $sidebar.find(`button[data-target="${target}"]`).addClass("active");
-//     var scale = reader._bestFitScale();
-//     reader.restart({ view: target, clicked: event_detail == 1, scale: scale });
-//     reader.emit('redraw', {});
-//   }
-
-//   HT.utils.handleOrientationChange = function() {
-//     if ( Math.abs(window.orientation) == 90 ) {
-//       // enable the 2up button
-//       $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
-//     } else {
-//       // disable the 2up and switch views
-//       $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
-//       if ( reader.view.name == '2up' ) {
-//         HT.utils.switch_view('1up');
-//       }
-//     }
-//   }
-
-//   $sidebar.on('click', '[data-trigger="contents"]', function(event) {
-//     event.preventDefault();
-//     $(".table-of-contents button").trigger('click');
-//   })
-
-//   $sidebar.on('click', '.action-view', function(event) {
-//     var target = $(this).data('target');
-//     if ( target == reader.view.name ) {
-//       return;
-//     }
-//     HT.utils.switch_view(target, event.detail == 1);
-//   })
-
-//   $sidebar.on('click', function(event) {
-//     // hide the sidebar
-//     HT.toggle(false);
-//   })
-
-//   var vh = window.innerHeight * 0.01;
-//   document.documentElement.style.setProperty('--vh', vh + 'px');
-
-//   $(window).on("resize", function() {
-//       var vh = window.innerHeight * 0.01;
-//       document.documentElement.style.setProperty('--vh', vh + 'px');
-//   })
-
-//   $(window).on("orientationchange", function() {
-//       setTimeout(function() {
-//           var vh = window.innerHeight * 0.01;
-//           document.documentElement.style.setProperty('--vh', vh + 'px');
-
-//           HT.utils.handleOrientationChange();
-//       }, 100);
-//   })
-
-
-//   reader.emit('resize');
-//   document.documentElement.dataset.expanded = 'true';
-// }
-
-// HT.toggle = function(state) {
-
-//   $trigger.attr('aria-expanded', state);
-//   $("html").get(0).dataset.view = state ? 'options' : 'viewer';
-
-//   var xlink_href;
-//   if ( $trigger.attr('aria-expanded') == 'true' ) {
-//     xlink_href = '#panel-expanded';
+var touches = {
+  startTime: -1,
+  allowedTime: 200,
+  threshold: 150,
+  touchstart: {x: -1, y: -1},
+  touchmove: {x: -1, y: -1},
+  touchend: false,
+  direction: 'undetermined'
+};
+// $inner.addEventListener("touchstart", function(event) {
+//   if (event.touches.length >= 2) {
 //   } else {
-//     xlink_href = '#panel-collapsed';
+//     var touch = event.touches[0];
+//     touches.touchstart.x = touch.pageX;
+//     touches.touchstart.y = touch.pageY;
+//     touches.canceled = false;
+//     touches.startTime = new Date().getTime();
+//     event.preventDefault();
 //   }
-//   $trigger.find("svg use").attr("xlink:href", xlink_href);
-// }
-
-if ( reader.is_mobile ) {
-  // HT.mobify
-  setTimeout(function() { reader.emit('resize') }, 1000);
-}
+// });
+// $inner.addEventListener("touchmove", function(event) {
+//   if (event.touches.length >= 2) {
+//   } else {
+//     var touch = event.touches[0];
+//     touches.touchmove.x = touch.pageX;
+//     touches.touchmove.y = touch.pageY;
+//     // event.preventDefault();
+//   }
+// });
+// $inner.addEventListener("touchcancel", function(event) {
+//   touches.canceled = true;
+// })
+// $inner.addEventListener("touchend", function(event) {
+//   touches.touchend = true;
+//   if ( touches.canceled ) { return ; }
+//   if (touches.touchstart.x > -1 && touches.touchmove.x > -1) {
+//     var elapsedTime = new Date().getTime() - touches.startTime;
+//     var dist = touches.touchmove.x - touches.touchstart.x;
+//     console.log("AHOY TOUCHEND", elapsedTime, dist, touches.allowedTime);
+//     if ( elapsedTime <= touches.allowedTime && dist >= touches.threshold ) {
+//       touches.direction = touches.touchstart.x < touches.touchmove.x ? "right" : "left";
+//       if ( touches.direction == 'right' ) {
+//         reader.next();
+//       } else {
+//         reader.prev();
+//       }
+//       event.preventDefault();
+//     }
+//   }
+// });
 
 var daInterval;
 HT.debugActive = function() {

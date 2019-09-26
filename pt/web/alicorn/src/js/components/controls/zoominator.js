@@ -62,6 +62,14 @@ export var Zoominator = class {
     }.bind(this));
   }
 
+  pinch(delta) {
+    if ( delta < 0 ) {
+      this.input.zoom_out.click();
+    } else {
+      this.input.zoom_in.click();
+    }
+  }
+
   update(idx) {
     this.scale = idx < 0 ? this.reader.options.bestFitScale : this.possibles[idx];
     this.input.zoom_in.disabled = ( idx == ( this.possibles.length - 1 ) );

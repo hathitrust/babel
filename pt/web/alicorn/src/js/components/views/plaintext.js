@@ -79,6 +79,12 @@ export var PlainText = class extends Single {
         page.dataset.loaded = true; page.classList.add('page--loaded');
 
         page.style.height = 'auto';
+
+        // console.log("AHOY PAGES", seq, page_text.offsetHeight, page.offsetHeight, page_text.offsetHeight / page.offsetHeight);
+        // if ( page_text.offsetHeight / page.offsetHeight < 0.50 ) {
+        //   page_text.style.paddingTop = '3rem';
+        // }
+
         // if ( page_text.offsetHeight < page_text.scrollHeight ) {
         //   page.style.height = `${page_text.scrollHeight}px`;
         // }
