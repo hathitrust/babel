@@ -163,7 +163,7 @@ export var Service = class {
     // var possibles = [50, 75, 100, 125, 150, 175, 200];
     var possibles = [ 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
 
-    var baseWidth = ( window.outerWidth >= 680 ) ? 680 : ( window.outerWidth * 0.95 );
+    var baseWidth = ( window.innerWidth >= 680 ) ? 680 : ( window.innerWidth * 0.95 );
     baseWidth = 680;
 
     var retval = {};

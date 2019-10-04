@@ -37,37 +37,43 @@ head.ready(function() {
     $sidebar.on('click', function(event) {
       // hide the sidebar
       var $this = $(event.target);
-      if ( $this.is("input[type='text']") ) {
+      if ( $this.is("input[type='text'],select") ) {
         return;
       }
       if ( $this.parents("#form-search-volume").length ) {
         return;
       }
-      HT.toggle(false);
+      if ( $this.is("button,a") ) {
+        HT.toggle(false);
+      }
     })
 
-    var vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', vh + 'px');
+    // var vh = window.innerHeight * 0.01;
+    // document.documentElement.style.setProperty('--vh', vh + 'px');
 
-    $(window).on("resize", function() {
-        var vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', vh + 'px');
-    })
+    // $(window).on("resize", function() {
+    //     var vh = window.innerHeight * 0.01;
+    //     document.documentElement.style.setProperty('--vh', vh + 'px');
+    // })
 
-    $(window).on("orientationchange", function() {
-        setTimeout(function() {
-            var vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', vh + 'px');
+    // $(window).on("orientationchange", function() {
+    //     setTimeout(function() {
+    //         var vh = window.innerHeight * 0.01;
+    //         document.documentElement.style.setProperty('--vh', vh + 'px');
 
-            HT.utils.handleOrientationChange();
-        }, 100);
-    })
+    //         HT.utils.handleOrientationChange();
+    //     }, 100);
+    // })
+    if ( HT && HT.utils && HT.utils.handleOrientationChange ) {
+      HT.utils.handleOrientationChange();
+    }
     document.documentElement.dataset.expanded = 'true';
   }
 
   HT.toggle = function(state) {
 
     $trigger.attr('aria-expanded', state);
+    $("html").get(0).dataset.sidebarExpanded = state;
     $("html").get(0).dataset.view = state ? 'options' : 'viewer';
 
     // var xlink_href;

@@ -1119,11 +1119,11 @@
         <xsl:with-param name="type" select="'PDF'" />
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullPdfLink" />
       </xsl:call-template>
-<!--       <xsl:call-template name="download-full-book">
+      <xsl:call-template name="download-full-book">
         <xsl:with-param name="id" select="'fullEpubLink'" />
         <xsl:with-param name="type" select="'EPUB'" />
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
-      </xsl:call-template> -->
+      </xsl:call-template>
     </xsl:if>
   </xsl:template>
 
@@ -1131,7 +1131,7 @@
     <xsl:param name="id" />
     <xsl:param name="type" />
     <xsl:param name="link" />
-    <li>
+    <li class="download-item--{$type}">
       <xsl:choose>
         <xsl:when test="$gFullPdfAccessMessage='RESTRICTED_SOURCE'">
           <xsl:text>Download whole book (</xsl:text><xsl:value-of select="$type" /><xsl:text>)</xsl:text>

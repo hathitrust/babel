@@ -313,8 +313,8 @@ export var Base = class {
 
   minWidth() {
     var minWidth = this.container.parentNode.offsetWidth * 0.80;
-    if ( minWidth < 680 && window.outerWidth >= 680 ) { minWidth = 680; }
-    else if ( window.outerWidth < 680 ) { minWidth = window.outerWidth * 0.95; }
+    if ( minWidth < 680 && window.innerWidth >= 680 ) { minWidth = 680; }
+    else if ( window.innerWidth < 680 ) { minWidth = window.innerWidth * 0.95; }
     return minWidth;
   }
 

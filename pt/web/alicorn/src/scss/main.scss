@@ -482,6 +482,8 @@ section section {
     bottom: 0;
     right: 0;
     overflow: auto;
+    // --- hides scrollbar, but this needs to scroll!
+    // overflow-y: hidden;
 
     // &:empty::after {
     //   display: block;
@@ -739,6 +741,7 @@ section.view--image {
       width: 80%;
       position: absolute;
       top: 0;
+      margin: 2rem 0 4rem;
 
       // &[data-best-fit="true"] {
       &.page--best-fit {
@@ -976,6 +979,10 @@ section.view--thumb {
         left: 0;
         width: 100%;
       }
+
+      @media (min-width: 32em) {
+        margin: 0.25rem 0.5rem;
+      }
     }
   }
 
@@ -1185,6 +1192,7 @@ section.view--plaintext {
   // clip: rect(1px, 1px, 1px, 1px);
   position: fixed;
   right: 0;
+  margin-right: 1rem;
   width: auto;
   #action-go-first, #action-go-last {
     position: absolute !important;
@@ -1230,6 +1238,10 @@ section.view--plaintext {
     bottom: 0;
     left: 0;
     right: 0;
+  }
+
+  #toolbar-vertical, #toolbar-horizontal {
+    margin-right: 1.5rem;
   }
 
 
@@ -1409,7 +1421,14 @@ section.view--plaintext {
   }
 }
 
+li.toggle--500 {
+  display: list-item;
+}
+
 @media only screen and (min-width:500px) {
+  li.toggle--500 {
+    display: none;
+  }
   #toolbar-vertical {
     display: flex;
   }

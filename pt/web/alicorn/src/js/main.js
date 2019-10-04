@@ -210,6 +210,7 @@ var Reader = class {
     })
 
     this._resizer = debounce(function() {
+      this.handleOrientationChange(true)
       this.emit('resize');
     }.bind(this), 100);
 
@@ -509,6 +510,7 @@ reader.controls.navigator.on('updateLocation', (params) => {
 
 $sidebar.on('click', '[data-trigger="contents"]', function(event) {
   event.preventDefault();
+  HT.toggle(false);
   $(".table-of-contents button").trigger('click');
 })
 
@@ -518,7 +520,7 @@ $sidebar.on('click', '.action-view', function(event) {
     return;
   }
   HT.utils.switch_view(target, event.detail == 1);
-})
+});
 
 HT.utils = HT.utils || {};
 HT.utils.switch_view = function(target, event_detail) {
@@ -529,20 +531,28 @@ HT.utils.switch_view = function(target, event_detail) {
   reader.emit('redraw', {});
 }
 
-HT.utils.handleOrientationChange = function() {
-  if ( Math.abs(window.orientation) == 90 ) {
-    // enable the 2up button
-    $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
-  } else {
-    // disable the 2up and switch views
-    $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
-    if ( reader.view.name == '2up' ) {
-      HT.utils.switch_view('1up');
+HT.utils.handleOrientationChange = function(ignore) {
+  if ( window.outerWidth < 800 ) {
+    if ( Math.abs(window.orientation) == 90 ) {
+      // enable the 2up button
+      // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
+      $(`button[data-target="2up"]`).attr('disabled', false);
+    } else {
+      // disable the 2up and switch views
+      // $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
+      $(`button[data-target="2up"]`).attr('disabled', true);
+      if ( reader.view.name == '2up' && ignore !== true ) {
+        HT.utils.switch_view('1up');
+      }
     }
+  } else {
+    // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
+    $(`button[data-target="2up"]`).attr('disabled', false);
   }
 }
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
+$sidebar.find(`.action-view[data-target="${$main.dataset.view}"]`).addClass('active');
 
 var $menu; var $trigger; var $header; var $navigator;
 var touches = {
