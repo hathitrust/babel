@@ -46,6 +46,18 @@ export var Expandinator = class {
         self.do(target);
       })
     }
+
+    ['fullscreenchange', 'MSFullscreenChange' ].forEach((eventName) => {
+      document.addEventListener(eventName, (event) => {
+        var check = ( 
+          document.webkitFullscreenElement || 
+          document.msFullscreenElement || 
+          document.fullscreenElement || 
+          null );
+        self.input.dataset.expanded = ( check != null );
+      });
+    })
+
   }
 
   do(target) {
