@@ -1193,9 +1193,10 @@ section.view--plaintext {
   position: fixed;
   right: 0;
   margin-right: 1rem;
+  margin-bottom: 0.5rem;
   width: auto;
   #action-go-first, #action-go-last {
-    position: absolute !important;
+    position: absolute;
     height: 1px; width: 1px;
     overflow: hidden;
     clip: rect(1px, 1px, 1px, 1px);
@@ -1213,6 +1214,28 @@ section.view--plaintext {
   }
 }
 
+@media only screen and ( min-width: 32rem ) {
+  #toolbar-horizontal {
+    #action-go-first, #action-go-last {
+      clip: unset;
+      position: static;
+      height: auto;
+      width: auto;
+    }
+
+    #action-go-prev {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0px;
+      margin-left: -0.5rem;
+    }
+
+    #action-go-next {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0px;
+    }
+  }
+}
+
 // html.mobile {
 @media only screen and (max-width:62em) {
 
@@ -1224,7 +1247,7 @@ section.view--plaintext {
   &[data-view="options"] {
 
     #sidebar {
-      position: fixed;
+      // position: fixed;
       display: block;
       background: #fff;
       z-index: 15;
@@ -1232,7 +1255,7 @@ section.view--plaintext {
 
   }
 
-  section.viewer {
+  xxxsection.viewer {
     position: fixed;
     top: 0;
     bottom: 0;
@@ -1272,7 +1295,7 @@ section.view--plaintext {
     .navigator {
       width: 100%;
       z-index: 1;
-      margin-top: 3rem;
+      // margin-top: 3rem;
 
       .action-expando {
         position: absolute;
@@ -1406,7 +1429,7 @@ section.view--plaintext {
     }
 
     section section .viewer-inner {
-      margin: 6rem 0;
+      // margin: 6rem 0;
     }
   }
 
@@ -1533,3 +1556,25 @@ li.toggle--500 {
   }  
 }
 
+#gesture-logger {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  pointer-events: none;
+
+  align-items: center;
+  justify-content: center;
+
+  span {
+    display: block;
+    font-size: 2rem;
+    font-family: monospace;
+    padding: 2rem;
+    background: rgba(0,0,0,0.75);
+    color: #eee;
+    pointer-events: none;
+  }
+}

@@ -202,7 +202,8 @@ var Reader = class {
     })
 
     this.on('redraw', (params) => {
-      if ( params.scale && ! this.is_mobile ) {
+      if ( params.scale ) { // && ! this.is_mobile
+        this.options.scale = params.scale;
         this.controls.flexinator.sidebar(params.scale <= 1.0);
         this.trigger.push(`zoom:${params.scale}`); // triggers track
         // this._logAction(undefined, `zoom:${params.scale}`);
@@ -450,10 +451,56 @@ if ( selectedPagesPdfLink ) {
   document.querySelector('.table-of-selections').querySelector('button').disabled = true;
 }
 
-var _scrollCheck = debounce(function() {
+var _scrollCheck = debounce(function(event) {
+  // if ( window.outerHeight != window.innerHeight ) 
+  // console.log("AHOY AHOY AHOY", window.innerWidth, );
+  // var x = 0;
+  // if ( window.innerWidth != document.documentElement.clientWidth ) {
+  //   x = window.scrollX;
+  // }
   window.scrollTo(0,0);
 }, 50);
-window.addEventListener('scroll', _scrollCheck);
+if ( true || ! ( $("html").is(".mobile") && $("html").is(".ios") ) ) {
+  window.addEventListener('scroll', _scrollCheck);
+}
+
+// GESTURES
+var $gestureLogger = $(`<div id="gesture-logger" class="hidden"><span></span></div>`).appendTo("body");
+var gesture_scale;
+var gesture_checkTimeout;
+var _gestureCheck = function() {
+  // in case the gesturened doesn't fire
+  _gestureHandler({ scale: gesture_scale, preventDefault: function() { } });
+}
+var _gestureHandler = debounce(function(event) {
+  event.preventDefault();
+  clearTimeout(gesture_checkTimeout);
+  var scale = reader.options.scale * event.scale;
+  var possibles = HT.reader.view.possibles || HT.reader.controls.zoominator._possibles;
+  var nearest_scale = possibles.find(function(possible) {
+    // var check = 680 * ( possible / 100.0 );
+    return scale <= possible;
+  })
+  reader.emit('redraw', { scale: nearest_scale })
+  $gestureLogger.addClass("hidden");
+})
+
+var _gestureChangeHandler = function(event) {
+  gesture_scale = event.scale;
+  var scale = reader.options.scale * event.scale;
+  $gestureLogger.find("span").text(Math.floor(scale * 100.0) / 100.0);
+  clearTimeout(gesture_checkTimeout);
+  gesture_checkTimeout = setTimeout(_gestureCheck, 100);
+}
+document.addEventListener('gesturestart', function(event) { 
+  event.preventDefault(); 
+  if ( $gestureLogger.is(".hidden") ) {
+    $gestureLogger.removeClass("hidden");
+  }
+  gesture_checkTimeout = setTimeout(_gestureCheck, 100);
+}, false);
+document.addEventListener('gestureend', _gestureHandler, false);
+document.addEventListener('gesturechange', _gestureChangeHandler, false);
 
 $main.dataset.selected = 0;
 
@@ -493,10 +540,10 @@ var $sidebar = $("#sidebar");
 // scale = reader._bestFitScale();
 
 reader.controls.mobile = {};
-reader.controls.mobile.zoominator = new Control.Zoominator({
-  input: $sidebar.get(0),
-  reader: reader
-});
+// reader.controls.mobile.zoominator = new Control.Zoominator({
+//   input: $sidebar.get(0),
+//   reader: reader
+// });
 
 reader.on('redraw', function() {
   HT.toggle(false);
@@ -532,7 +579,7 @@ HT.utils.switch_view = function(target, event_detail) {
 }
 
 HT.utils.handleOrientationChange = function(ignore) {
-  if ( window.outerWidth < 800 ) {
+  if ( window.innerWidth < 800 ) {
     if ( Math.abs(window.orientation) == 90 ) {
       // enable the 2up button
       // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);

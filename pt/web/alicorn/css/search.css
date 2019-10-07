@@ -636,7 +636,6 @@ html.mobile li.download-item--EPUB {
 
 @media only screen and (max-width: 62em) {
   html[data-view="options"] #sidebar {
-    display: block;
     background: #fff;
     z-index: 15;
   }

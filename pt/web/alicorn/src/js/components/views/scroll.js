@@ -112,9 +112,10 @@ export var Scroll = class extends Base {
     this.container.scrollTop -= this.container.offsetHeight;
   }
 
-  _postResizePage(bounds, rect) {
+  _postResizePage(page, bounds, rect) {
     if ( rect.bottom <= bounds.bottom && rect.top < 0 ) {
       setTimeout(function() {
+        var updated_rect = page.getBoundingClientRect();
         delta = updated_rect.height - rect.height;
         if ( this.container.scrollTop == scrollTop ) {
           // delta /= this.settings.scale;

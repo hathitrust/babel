@@ -134,10 +134,10 @@ export var Base = class {
     var updated_rect = page.getBoundingClientRect();
     var scrollTop = this.container.scrollTop;
 
-    this._postResizePage(rect, bounds);
+    this._postResizePage(page, rect, bounds);
   }
 
-  _postResizePage(rect, bounds) {
+  _postResizePage(page, rect, bounds) {
 
   }
 

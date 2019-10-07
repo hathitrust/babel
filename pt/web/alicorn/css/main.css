@@ -1036,13 +1036,13 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-uebf05c99 1s linear alternate infinite;
-          animation: loader12-uebf05c99 1s linear alternate infinite;
+  -webkit-animation: loader12-u260973b9 1s linear alternate infinite;
+          animation: loader12-u260973b9 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-uebf05c99 {
+@-webkit-keyframes loader12-u260973b9 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1065,7 +1065,7 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
-@keyframes loader12-uebf05c99 {
+@keyframes loader12-u260973b9 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1118,13 +1118,13 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u839a70a6 1s linear alternate infinite;
-          animation: loader12-u839a70a6 1s linear alternate infinite;
+  -webkit-animation: loader12-u73c82ab3 1s linear alternate infinite;
+          animation: loader12-u73c82ab3 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u839a70a6 {
+@-webkit-keyframes loader12-u73c82ab3 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1147,7 +1147,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
-@keyframes loader12-u839a70a6 {
+@keyframes loader12-u73c82ab3 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1493,14 +1493,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ud2c474ae 1s linear alternate infinite;
-          animation: loader12-ud2c474ae 1s linear alternate infinite;
+  -webkit-animation: loader12-uacd4eea6 1s linear alternate infinite;
+          animation: loader12-uacd4eea6 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-ud2c474ae {
+@-webkit-keyframes loader12-uacd4eea6 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1523,7 +1523,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
-@keyframes loader12-ud2c474ae {
+@keyframes loader12-uacd4eea6 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1715,8 +1715,8 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u5801a1ca 1s linear alternate infinite;
-          animation: loader12-u5801a1ca 1s linear alternate infinite;
+  -webkit-animation: loader12-u0074bc76 1s linear alternate infinite;
+          animation: loader12-u0074bc76 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1725,7 +1725,7 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-u5801a1ca {
+@-webkit-keyframes loader12-u0074bc76 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1748,7 +1748,7 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
-@keyframes loader12-u5801a1ca {
+@keyframes loader12-u0074bc76 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1842,7 +1842,6 @@ section.view--plaintext button[data-target="plaintext"] {
 
 @media only screen and (max-width: 62em) {
   html[data-view="options"] #sidebar {
-    display: block;
     background: #fff;
     z-index: 15;
   }
@@ -1862,11 +1861,12 @@ section.view--plaintext button[data-target="plaintext"] {
   position: fixed;
   right: 0;
   margin-right: 1rem;
+  margin-bottom: 0.5rem;
   width: auto;
 }
 
 #toolbar-horizontal #action-go-first, #toolbar-horizontal #action-go-last {
-  position: absolute !important;
+  position: absolute;
   height: 1px;
   width: 1px;
   overflow: hidden;
@@ -1884,17 +1884,34 @@ section.view--plaintext button[data-target="plaintext"] {
   border-bottom-right-radius: 4px;
 }
 
+@media only screen and (min-width: 32rem) {
+  #toolbar-horizontal #action-go-first, #toolbar-horizontal #action-go-last {
+    clip: unset;
+    position: static;
+    height: auto;
+    width: auto;
+  }
+  #toolbar-horizontal #action-go-prev {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0px;
+    margin-left: -0.5rem;
+  }
+  #toolbar-horizontal #action-go-next {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0px;
+  }
+}
+
 @media only screen and (max-width: 62em) {
   #sidebar {
     background: #fff;
   }
   [data-view="options"] #sidebar {
-    position: fixed;
     display: block;
     background: #fff;
     z-index: 15;
   }
-  section.viewer {
+  xxxsection.viewer {
     position: fixed;
     top: 0;
     bottom: 0;
@@ -1917,7 +1934,6 @@ section.view--plaintext button[data-target="plaintext"] {
   #root .section-container .navigator {
     width: 100%;
     z-index: 1;
-    margin-top: 3rem;
   }
   #root .section-container .navigator .action-expando {
     position: absolute;
@@ -1998,9 +2014,6 @@ section.view--plaintext button[data-target="plaintext"] {
   }
   #toolbar-horizontal {
     background: #fff;
-  }
-  html[data-expanded="true"] section section .viewer-inner {
-    margin: 6rem 0;
   }
 }
 
@@ -2089,4 +2102,32 @@ li.toggle--500 {
   html footer {
     display: none !important;
   }
+}
+
+#gesture-logger {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  pointer-events: none;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+#gesture-logger span {
+  display: block;
+  font-size: 2rem;
+  font-family: monospace;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: #eee;
+  pointer-events: none;
 }
