@@ -30,6 +30,7 @@ export var Flexinator = class {
   }
 
   sidebar(expand) {
+    if ( getComputedStyle(this.$sidebarToggle.parentNode).display == 'none' ) { return; }
     if ( expand === undefined ) {
       expand = this.$sidebarToggle.getAttribute('aria-expanded') == 'true' ? false : true;
     }
