@@ -645,6 +645,14 @@ html.mobile li.download-item--EPUB {
   html[data-expanded="false"] #sidebar {
     display: none;
   }
+  html[data-sidebar-expanded="true"] #sidebar {
+    -ms-flex-preferred-size: 100vh;
+        flex-basis: 100vh;
+  }
+  html[data-sidebar-expanded="true"] #section {
+    -ms-flex-preferred-size: 0;
+        flex-basis: 0;
+  }
 }
 
 :root {

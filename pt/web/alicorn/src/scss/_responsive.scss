@@ -24,5 +24,15 @@
     }
   }
 
+  html[data-sidebar-expanded="true"] {
+    #sidebar {
+      flex-basis: 100vh;
+    }
+
+    #section {
+      flex-basis: 0;
+    }
+  }
+
 }
 
