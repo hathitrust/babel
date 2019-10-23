@@ -183,39 +183,48 @@
   <xsl:template name="config-include-logo">FALSE</xsl:template>
 
   <xsl:template name="navbar-site-links">
-    <xsl:variable name="include-logo">
-      <xsl:call-template name="config-include-logo" />
-    </xsl:variable>
     <ul id="nav" class="nav">
-      <xsl:if test="$include-logo = 'TRUE'">
-        <li>
-          <a class="home-link" aria-hidden="true" href="https://www.hathitrust.org" tabindex="-1"><span class="offscreen">Home</span></a>
-        </li>
-      </xsl:if>
-      <li><a href="https://www.hathitrust.org">Home</a></li>
-      <li class="nav-menu">
-        <!-- <a href="https://www.hathitrust.org/about">About</a> -->
-        <a href="#" aria-haspopup="true" id="about-menu">About <i class="icomoon icomoon-triangle" aria-hidden="true" style="position: absolute; top: 35%"></i></a>
-        <ul class="navbar-menu-children" role="menu" aria-labelledby="about-menu" aria-hidden="true">
-          <li><a href="https://www.hathitrust.org/about">Welcome to HathiTrust</a></li>
-          <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
-          <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
-          <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
-          <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
-          <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+      <li>
+        <a class="home-link" href="https://www.hathitrust.org">
+          <span class="offscreen-for-narrowest">Home</span>
+        </a>
+      </li>
+      <li class="menu nav-links">
+        <a aria-expanded="false" class="menu" href="#" id="burger-menu"><i class="icomoon icomoon-reorder" aria-hidden="true"></i> Menu</a>
+        <ul>
+          <li class="menu">
+            <a href="#" class="menu" aria-expanded="false" aria-haspopup="true" id="about-menu">About <span class="caret" aria-hidden="true"></span></a>
+            <ul role="menu" aria-labelledby="about-menu" aria-hidden="true">
+              <li><a href="https://www.hathitrust.org/about">Welcome to HathiTrust</a></li>
+              <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
+              <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
+              <li><a href="https://www.hathitrust.org/collaborative-programs">Our Collaborative Programs</a></li>
+              <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
+              <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
+            </ul>
+          </li>
+          <xsl:if test="$gLoggedIn = 'YES'">
+            <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
+          </xsl:if>
+          <li><a href="/cgi/mb">Collections</a></li>
+          <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
+          <xsl:call-template name="li-feedback" />
+          <xsl:if test="false() and $gLoggedIn = 'YES'">
+            <li class="on-for-narrowest"><a class="logout-link" href="{//Header/LoginLink}">Log out</a></li>
+          </xsl:if>
         </ul>
       </li>
-      <li><a href="/cgi/mb">Collections</a></li>
-      <!-- <li class="divider-vertical"></li> -->
-      <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
-      <xsl:call-template name="li-feedback" />
     </ul>
   </xsl:template>
 
   <xsl:template name="navbar-user-links">
+    <li class="on-for-pt on-for-narrow">
+      <button class="btn action-search-hathitrust control-search">
+        <i class="icomoon icomoon-search"></i><span class="off-for-narrowest"> Search</span> HathiTrust</button>
+    </li>
     <xsl:choose>
       <xsl:when test="$gLoggedIn = 'YES'">
-        <li>
+        <li class="item-vanishing">
           <span>
             <xsl:value-of select="//Header/UserAffiliation" />
             <!-- ProviderName causes collisions with search navbar -->
@@ -228,8 +237,7 @@
             -->
           </span>
         </li>
-        <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
-        <li><a id="logout-link" href="{//Header/LoginLink}">Log out</a></li>
+        <li class="x--off-for-narrowest"><a class="logout-link" href="{//Header/LoginLink}">Log out</a></li>
       </xsl:when>
       <xsl:otherwise>
         <li><a id="login-link" class="trigger-login action-login" data-close-target=".modal.login" href="{//Header/LoginLink}">Log in</a></li>
@@ -239,14 +247,14 @@
 
   <xsl:template name="header">
 
-    <div class="container container-medium flex-container" style="flex-direction: row; margin-top: 1.75rem; width: 100%; padding: 1rem; max-width: 62rem">
+    <div class="container container-medium flex-container container-header">
       <div class="logo">
         <a href="https://www.hathitrust.org">
           <span class="offscreen">HathiTrust Digital Library</span>
         </a>
       </div>
-      <div id="search-modal-content" style="flex-grow: 1">
-        <form id="ht-search-form" method="GET" action="/cgi/ls/one">
+      <div id="search-modal-content" class="search-modal-content">
+        <form id="ht-search-form" class="ht-search-form" method="GET" action="/cgi/ls/one">
           <div style="display: flex; flex-direction: row">
             <div style="flex-grow: 1">
               <div style="display: flex">
@@ -275,25 +283,25 @@
                 </fieldset>
                 <xsl:call-template name="header-search-ft-checkbox" />
               </div>
-              <div class="global-search-links" style="padding-top: 1rem; margin-top: -1rem">
-                <ul class="search-links">
-                  <li class="search-advanced-link">
-                    <a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a>
-                  </li>
-                  <li class="search-catalog-link">
-                    <a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a>
-                  </li>
-                  <li>
-                    <a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a>
-                  </li>
-                </ul>
-              </div>
             </div>
             <div style="flex-grow: 0">
               <div class="control">
                 <button class="btn btn-primary" id="action-search-hathitrust"><i class="icomoon icomoon-search" aria-hidden="true"></i> Search HathiTrust</button>
               </div>
             </div>
+          </div>
+          <div class="global-search-links" style="padding-top: 1rem; margin-top: -1rem">
+            <ul class="search-links">
+              <li class="search-advanced-link">
+                <a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a>
+              </li>
+              <li class="search-catalog-link">
+                <a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a>
+              </li>
+              <li>
+                <a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a>
+              </li>
+            </ul>
           </div>
         </form>
       </div>
