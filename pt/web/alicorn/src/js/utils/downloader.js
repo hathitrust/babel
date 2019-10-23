@@ -247,7 +247,10 @@ HT.Downloader = {
             // self.$dialog.find(".done").show();
             var $download_btn = self.$dialog.find('.download-pdf');
             if ( ! $download_btn.length ) {
-                $download_btn = $('<a class="download-pdf btn btn-primary">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
+                $download_btn = $('<a class="download-pdf btn btn-primary" download="download">Download {ITEM_TITLE}</a>'.replace('{ITEM_TITLE}', self.item_title)).attr('href', self.pdf.download_url);
+                if ( $download_btn.get(0).download == undefined ) {
+                    $download_btn.attr('target', '_blank');
+                }
                 $download_btn.appendTo(self.$dialog.find(".modal__footer")).on('click', function(e) {
                     self.$link.trigger("click.google");
                     setTimeout(function() {

@@ -14,6 +14,13 @@ var $inner = $viewer.querySelector('.viewer-inner');
 var $status = document.querySelector('div[role="status"]');
 
 var $toolbar = $main.querySelector('#toolbar-vertical');
+// // --- need to do something about the toolbar height
+// setTimeout(() => {
+//   // $toolbar.style.height = `${getComputedStyle($toolbar).height}`;
+//   var h = parseInt(getComputedStyle($toolbar).height);
+
+//   $toolbar.style.overflowY = 'auto';
+// }, 100);
 
 var min_height = $viewer.offsetHeight;
 var min_width = $viewer.offsetWidth * 0.80;
@@ -211,8 +218,9 @@ var Reader = class {
     })
 
     this._resizer = debounce(function() {
-      this.handleOrientationChange(true)
+      // this.handleOrientationChange(true)
       this.emit('resize');
+      this._checkToolbar();
     }.bind(this), 100);
 
     var jump = document.querySelector('#action-focus-current-page');
@@ -224,7 +232,7 @@ var Reader = class {
       return false;
     })
 
-    // window.addEventListener('resize', this._resizer);
+    window.addEventListener('resize', this._resizer);
   }
 
   _updateLinks(seq) {
@@ -347,6 +355,32 @@ var Reader = class {
   _logAction(href, trigger) {
     if ( HT.analytics && HT.analytics.logAction ) {
       HT.analytics.logAction(href, trigger);
+    }
+  }
+
+  _checkToolbar() {
+    var originalHeight;
+    if ( ! $toolbar.dataset.originalHeight ) {
+      originalHeight = 0;
+      for(var i = 0; i < $toolbar.children.length; i++) {
+        originalHeight += $toolbar.children[i].offsetHeight;
+      }
+      $toolbar.dataset.originalHeight = originalHeight;
+    } else {
+      originalHeight =  parseInt($toolbar.dataset.originalHeight, 10);
+    }
+    var toolbarHeight = $toolbar.offsetHeight;
+    var navigatorHeight = document.querySelector('.navigator').offsetHeight;
+    var r = originalHeight / window.innerHeight;
+    console.log("AHOY CHECK TOOLBAR", originalHeight, window.innerHeight, r);
+    if ( r > 0.57 ) {
+      $toolbar.style.height = `${( $main.offsetHeight - 40 ) * 0.8}px`;
+      $toolbar.classList.add('toolbar--shrunken');
+      $toolbar.style.overflowY = 'auto';
+    } else {
+      $toolbar.style.overflowY = 'hidden';
+      $toolbar.style.height = 'auto';
+      $toolbar.classList.remove('toolbar--shrunken');
     }
   }
 
@@ -693,3 +727,9 @@ function handleWindowBlur() {
 document.addEventListener("visibilitychange", handleVisibilityChange, false);
 window.addEventListener("focus", handleWindowFocus, false);
 window.addEventListener("blur", handleWindowBlur, false);
+
+setTimeout(() => {
+    var event = document.createEvent('UIEvents');
+    event.initEvent('resize', true, false, window, 0);
+    window.dispatchEvent(event)
+}, 100);

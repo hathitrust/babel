@@ -19,6 +19,7 @@ export var Navigator = class {
   bindEvents() {
     this.input.addEventListener('change', (event) => {
       this.output.classList.remove('updating');
+      this._updateInputBackground();
       this.render('current-seq', this.input.value);
       this._renderCurrentPage(this.input.value);
       this.reader.trigger.push('control-navigator');
@@ -124,6 +125,7 @@ export var Navigator = class {
       this.render('current-seq', params.seq);
       this._renderCurrentPage(params.seq);
       this.input.value = params.seq;
+      this._updateInputBackground();
       this.input.setAttribute('aria-valuenow', params.seq);
 
       var percent = Math.ceil((parseInt(params.seq, 10) / parseInt(this.input.max, 10)) * 100.0);
@@ -193,5 +195,14 @@ export var Navigator = class {
         this.render('current-page-number', '');
       }
     }
+  }
+
+  _updateInputBackground() {
+    var val = parseInt(this.input.value, 10);
+    var total = parseInt(this.input.max, 10);
+    var p = Math.ceil(( ( val - 1 ) / ( total - 1 ) ) * 100);
+    var fill = '#ff9f1a';
+    var end = '#444';
+    this.input.style.background = `linear-gradient(to right, ${fill} 0%, ${fill} ${p}%, ${end} ${p}%, ${end} 100%)`;
   }
 }

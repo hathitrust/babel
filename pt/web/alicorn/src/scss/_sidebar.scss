@@ -189,6 +189,20 @@ html.mobile {
       display: none;
     }
   }
+
+  html[data-sidebar-expanded="false"] {
+    &[data-expanded="true"] {
+      #toolbar-horizontal {
+        top: var(--toolbar-horizontal-top, 5.5rem);
+      }
+    }
+
+    &[data-expanded="false"] {
+      #toolbar-horizontal {
+        top: 0;
+      }
+    }
+  }
 }
 
 
@@ -299,6 +313,16 @@ html.mobile {
   right: 0;
   margin-left: -8px;
   visibility: hidden;
+}
+
+#sidebar {
+  input[type=text], select {
+    font-size: 1rem;
+  }
+
+  #input-search-text {
+    font-size: 1rem !important;
+  }
 }
 
 // section[data-selected="0"] {

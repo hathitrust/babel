@@ -544,6 +544,12 @@ html.mobile li.download-item--EPUB {
   html[data-sidebar-expanded="true"] #toolbar-horizontal {
     display: none;
   }
+  html[data-sidebar-expanded="false"][data-expanded="true"] #toolbar-horizontal {
+    top: var(--toolbar-horizontal-top, 5.5rem);
+  }
+  html[data-sidebar-expanded="false"][data-expanded="false"] #toolbar-horizontal {
+    top: 0;
+  }
 }
 
 @media only screen and (max-width: 62em) {
@@ -634,10 +640,21 @@ html.mobile li.download-item--EPUB {
   visibility: hidden;
 }
 
+#sidebar input[type=text], #sidebar select {
+  font-size: 1rem;
+}
+
+#sidebar #input-search-text {
+  font-size: 1rem !important;
+}
+
 @media only screen and (max-width: 62em) {
   html[data-view="options"] #sidebar {
     background: #fff;
     z-index: 15;
+  }
+  #sidebar:not(.sidebar-container--right) {
+    width: 100%;
   }
   html[data-expanded="false"] header {
     display: none;

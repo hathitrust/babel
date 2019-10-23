@@ -103,8 +103,19 @@ export var Selectinator = class {
   }
 
   clickHandler(event) {
-    var element = event.target;
-    if ( element.tagName.toLowerCase() == 'button' && element.classList.contains('action-toggle-selection') ) {
+    var element = event.target.closest('button');
+    if ( ! element ) {
+      var page = event.target.closest('.page');
+      if ( ! page ) { return ; }
+      var button = page.querySelector('.action-toggle-selection');
+      var x = event.clientX - button.offsetLeft + this.reader.view.container.scrollLeft;
+      var y = event.clientY - button.offsetTop + this.reader.view.container.scrollTop;
+      console.log("AHOY AHOY SELECT", event.clientX, event.clientY, "/", x, y);
+      if ( ( x >= 0 && x <= button.offsetLeft ) && ( y >= 0 && y <= button.outerHeight ) ) {
+        element = button;
+      }
+    }
+    if ( element && element.tagName.toLowerCase() == 'button' && element.classList.contains('action-toggle-selection') ) {
       event.preventDefault();
       event.stopPropagation();
       var page = element.parentNode;

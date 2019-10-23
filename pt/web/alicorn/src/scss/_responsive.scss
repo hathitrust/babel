@@ -13,6 +13,10 @@
 
   }
 
+  #sidebar:not(.sidebar-container--right) {
+    width: 100%;
+  }
+
   html[data-expanded="false"] {
     header {
       display: none;

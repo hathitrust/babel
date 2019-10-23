@@ -191,11 +191,13 @@
       <button class="action-expando for-mobile" aria-label="Toggle Menu"><i class="icomoon" aria-hidden="true"></i></button>
       <form>
         <label class="offscreen" for="control-navigator">Location: </label>
-        <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 1 of {$totalSeq}" value="1" data-background-position="0">
-          <xsl:if test="$readingOrder = 'right-to-left'">
-            <xsl:attribute name="dir">rtl</xsl:attribute>
-          </xsl:if>
-        </input>
+        <div class="control-navigator--wrap">
+          <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 1 of {$totalSeq}" value="1" data-background-position="0">
+            <xsl:if test="$readingOrder = 'right-to-left'">
+              <xsl:attribute name="dir">rtl</xsl:attribute>
+            </xsl:if>
+          </input>
+        </div>
         <xsl:text> </xsl:text>
         <xsl:if test="false()">
           <div class="output">Page Scan <span data-slot="current-seq">1</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span><span data-slot="current-page-number"></span></div>

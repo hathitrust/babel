@@ -339,7 +339,7 @@ export var Base = class {
 
   bindEvents() {
     this._handlers.focus = this.focusHandler.bind(this);
-    this.container.addEventListener('focusin', this._handlers.focus);
+    // this.container.addEventListener('focusin', this._handlers.focus);
 
     if ( this.trackResize ) {
 
