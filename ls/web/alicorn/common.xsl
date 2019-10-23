@@ -23,6 +23,19 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="setup-html-attributes">
+    <xsl:attribute name="data-app">
+      <xsl:choose>
+        <xsl:when test="normalize-space(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c'])">
+          <xsl:text>mb</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>ls</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:attribute>
+  </xsl:template>
+
   <xsl:template name="build-sidebar-container" />
   <xsl:template name="get-container-class">container-medium</xsl:template>
 
