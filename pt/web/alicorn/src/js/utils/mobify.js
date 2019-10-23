@@ -16,6 +16,12 @@ head.ready(function() {
       $expando.on('click', function() {
         document.documentElement.dataset.expanded = ! ( document.documentElement.dataset.expanded == 'true' );
       })
+
+      if ( HT.params.ui == 'embed' ) {
+        setTimeout(() => {
+          $expando.trigger('click');
+        }, 1000);
+      }
     }
 
     HT.$menu = $menu;

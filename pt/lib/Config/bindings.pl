@@ -9,7 +9,7 @@
      'seq'      => '\d+',
      'size'     => '\d+',
      'sz'     => '\d+',
-     'view'     => 'image|text|1up|2up|thumb|plaintext|search',
+     'view'     => 'image|text|1up|2up|thumb|plaintext|search|default',
      'debug'    => '.*',
      'newsid'   => '1|[a-z0-9]{32}',
      'attr'     => '\d+',

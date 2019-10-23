@@ -374,7 +374,12 @@ var Reader = class {
     var r = originalHeight / window.innerHeight;
     console.log("AHOY CHECK TOOLBAR", originalHeight, window.innerHeight, r);
     if ( r > 0.57 ) {
-      $toolbar.style.height = `${( $main.offsetHeight - 40 ) * 0.8}px`;
+      toolbarHeight = window.innerHeight - 
+        document.querySelector('header').offsetHeight - 
+        document.querySelector('#sidebar').offsetHeight - 
+        document.querySelector('.navigator').offsetHeight;
+      toolbarHeight *= 0.8;
+      $toolbar.style.height = `${toolbarHeight}px`;
       $toolbar.classList.add('toolbar--shrunken');
       $toolbar.style.overflowY = 'auto';
     } else {
@@ -631,6 +636,13 @@ HT.utils.handleOrientationChange = function(ignore) {
     $(`button[data-target="2up"]`).attr('disabled', false);
   }
 }
+
+if ( HT.params.ui && HT.params.ui == 'embed' && HT.params.view == 'default' ) {
+  if ( window.innerWidth > window.innerHeight ) {
+    HT.params.view = '2up';
+  }
+}
+if ( HT.params.view == 'default' ) { HT.params.view = '1up'; }
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
 $sidebar.find(`.action-view[data-target="${$main.dataset.view}"]`).addClass('active');

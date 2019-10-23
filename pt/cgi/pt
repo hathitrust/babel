@@ -256,8 +256,10 @@ sub ValidityChecks {
     my $view = $cgi->param( 'view' );
     my $size = $cgi->param( 'size' );
     my $orient = $cgi->param( 'orient' );
+    my $ui = defined $cgi->param('ui') ? $cgi->param('ui') : 'default';
 
-    unless ( $view ) {
+    print STDERR "AHOY HEY : $view :: $ui\n";
+    unless ( $view || $ui eq 'embed'  ) {
         my $prefs = $cgi->cookie('HT.prefs');
         if ( $prefs ) {
             eval {
@@ -280,6 +282,10 @@ sub ValidityChecks {
         if ( $cgi->param( 'ssd' ) ) {
             # 'ssd' URL param is deprecated
             $cgi->param( 'view', $PTGlobals::gDefaultSsdView );
+        }
+        elsif ( defined $ui && $ui eq 'embed' ) {
+            $cgi->param('view', 'default');
+            print STDERR "AHOY AHOY AHOY $ui " . $cgi->param('view') . "\n";
         }
         else {
             $cgi->param( 'view', $PTGlobals::gDefaultView );
