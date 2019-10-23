@@ -61,22 +61,22 @@ export var Base = class {
       this.pages.push(page);
     }
 
-    var t11 = performance.now();
-    console.log(`-- BENCHMARK render loop ${t11 - t0}`);
+    // var t11 = performance.now();
+    // console.log(`-- BENCHMARK render loop ${t11 - t0}`);
 
     this.container.appendChild(fragment);
     // this.container.style.display = 'block';
 
-    var t1 = performance.now();
+    // var t1 = performance.now();
 
     var pages = this.container.querySelectorAll('.page');
-    var t2 = performance.now();
+    // var t2 = performance.now();
 
     for(var i = 0; i < pages.length; i++) {
       this.bindPageEvents(pages[i]);
     }
-    var t3 = performance.now();
-    console.log(`BENCHMARK base.render: ${t3 - t0} / ${t1 - t0} / ${t2 - t1} / ${t3 - t2} / ${t1 - t11}`);
+    // var t3 = performance.now();
+    // console.log(`BENCHMARK base.render: ${t3 - t0} / ${t1 - t0} / ${t2 - t1} / ${t3 - t2} / ${t1 - t11}`);
 
     this.is_active = true;
     this.loadImage(this.container.querySelector('[data-seq="1"]'), { check_scroll: true });
@@ -134,10 +134,10 @@ export var Base = class {
     var updated_rect = page.getBoundingClientRect();
     var scrollTop = this.container.scrollTop;
 
-    this._postResizePage(rect, bounds);
+    this._postResizePage(page, rect, bounds);
   }
 
-  _postResizePage(rect, bounds) {
+  _postResizePage(page, rect, bounds) {
 
   }
 
@@ -315,7 +315,8 @@ export var Base = class {
 
   minWidth() {
     var minWidth = this.container.parentNode.offsetWidth * 0.80;
-    if ( minWidth < 680 ) { minWidth = 680; }
+    if ( minWidth < 680 && window.innerWidth >= 680 ) { minWidth = 680; }
+    else if ( window.innerWidth < 680 ) { minWidth = window.innerWidth * 0.95; }
     return minWidth;
   }
 
@@ -340,14 +341,16 @@ export var Base = class {
 
   bindEvents() {
     this._handlers.focus = this.focusHandler.bind(this);
-    this.container.addEventListener('focusin', this._handlers.focus);
+    // this.container.addEventListener('focusin', this._handlers.focus);
 
     if ( this.trackResize ) {
 
       this.reader.on('redraw', (params) => {
         console.log("AHOY PARAMS", params);
-        this.scale = params.scale;
-        this.reader.emit('resize');
+        if ( params.scale && params.scale != this.scale ) {
+          this.scale = params.scale;
+          this.reader.emit('resize');
+        }
       });
 
       this._handlers.resize = this.reader.on('resize', () => {

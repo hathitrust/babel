@@ -481,7 +481,7 @@ button.control-search:hover, button.control-search:focus {
   white-space: nowrap;
   padding: 1rem 0.5rem;
   font-size: 1rem;
-  z-index: 4;
+  z-index: 24;
 }
 
 .sidebar-toggle button[aria-expanded="true"] {
@@ -527,6 +527,39 @@ html[data-sidebar-collapsible] .sidebar-container {
 
 html[data-sidebar-collapsible] .sidebar-container[hidden] + .sidebar-toggle {
   margin-left: -1rem;
+}
+
+li.download-item--EPUB {
+  display: none;
+}
+
+html.mobile li.download-item--EPUB {
+  display: list-item;
+}
+
+@media only screen and (max-width: 62em) {
+  #sidebar:not(.sidebar-container--right) {
+    max-height: 100vh;
+  }
+  html[data-sidebar-expanded="true"] #toolbar-horizontal {
+    display: none;
+  }
+  html[data-sidebar-expanded="false"][data-expanded="true"] #toolbar-horizontal {
+    top: var(--toolbar-horizontal-top, 5.5rem);
+  }
+  html[data-sidebar-expanded="false"][data-expanded="false"] #toolbar-horizontal {
+    top: 0;
+  }
+}
+
+@media only screen and (max-width: 62em) {
+  #sidebar button.sidebar-toggle-button[aria-expanded="true"] {
+    position: fixed;
+    z-index: 2;
+  }
+  #sidebar button.sidebar-toggle-button[aria-expanded="true"] + div {
+    padding-top: 4rem;
+  }
 }
 
 *[hidden] {
@@ -605,6 +638,42 @@ html[data-sidebar-collapsible] .sidebar-container[hidden] + .sidebar-toggle {
   right: 0;
   margin-left: -8px;
   visibility: hidden;
+}
+
+#sidebar input[type=text], #sidebar select {
+  font-size: 1rem;
+}
+
+#sidebar #input-search-text {
+  font-size: 1rem !important;
+}
+
+@media only screen and (max-width: 62em) {
+  html[data-view="options"] #sidebar {
+    background: #fff;
+    z-index: 15;
+  }
+  #sidebar:not(.sidebar-container--right) {
+    width: 100%;
+  }
+  html[data-expanded="false"] header {
+    display: none;
+  }
+  html[data-expanded="false"] #sidebar {
+    display: none;
+  }
+  html[data-sidebar-expanded="true"] #sidebar {
+    -ms-flex-preferred-size: 100vh;
+        flex-basis: 100vh;
+  }
+  html[data-sidebar-expanded="true"] #section {
+    -ms-flex-preferred-size: 0;
+        flex-basis: 0;
+  }
+}
+
+:root {
+  --background: #39383a;
 }
 
 article.result {

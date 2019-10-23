@@ -78,9 +78,16 @@ export var PlainText = class extends Single {
 
         page.dataset.loaded = true; page.classList.add('page--loaded');
 
-        if ( page_text.offsetHeight < page_text.scrollHeight ) {
-          page.style.height = `${page_text.scrollHeight}px`;
-        }
+        page.style.height = 'auto';
+
+        // console.log("AHOY PAGES", seq, page_text.offsetHeight, page.offsetHeight, page_text.offsetHeight / page.offsetHeight);
+        // if ( page_text.offsetHeight / page.offsetHeight < 0.50 ) {
+        //   page_text.style.paddingTop = '3rem';
+        // }
+
+        // if ( page_text.offsetHeight < page_text.scrollHeight ) {
+        //   page.style.height = `${page_text.scrollHeight}px`;
+        // }
 
         var page_div = page_text.children[0];
         var words = page_div.dataset.words;
@@ -131,7 +138,8 @@ export var PlainText = class extends Single {
         var page = loaded[i];
         var page_text = page.querySelector('.page-text');
         if ( page_text.offsetHeight < page_text.scrollHeight ) {
-          page.style.height = `${page_text.scrollHeight}px`;
+          // page.style.height = `${page_text.scrollHeight}px`;
+          page.style.height = 'auto';
         }
       }
     })

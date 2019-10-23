@@ -423,7 +423,9 @@ export var Flip = class extends Base {
     this.container.addEventListener('click', this._clickHandler);
 
     this.reader.on('redraw', (params) => {
-      this.scale = params.scale;
+      if ( params.scale ) {
+        this.scale = params.scale;
+      }
       this.reader.emit('resize');
     });
 

@@ -7,6 +7,8 @@ import {Contentsnator} from './contentsnator'
 import {Selectinator} from './selectinator'
 import {Expandinator} from './expandinator';
 import {Flexinator} from './flexinator';
+import {Searchinator} from './searchinator';
+
 
 var Control = {};
 Control.Navigator = Navigator;
@@ -18,5 +20,6 @@ Control.Contentsnator = Contentsnator;
 Control.Selectinator = Selectinator;
 Control.Expandinator = Expandinator;
 Control.Flexinator = Flexinator;
+Control.Searchinator = Searchinator;
 
 export {Control};

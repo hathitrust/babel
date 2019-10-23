@@ -177,22 +177,27 @@
         <xsl:text> (use access key 5 to view full text / OCR mode)</xsl:text>
       </xsl:if>
     </h2>
-    <xsl:call-template name="toolbar-horizontal" />
-    <div class="inner main">
-      <section class="viewer viewer--setup">
-        <div class="viewer-loader"></div>
-        <div class="viewer-inner"></div>
-      </section>
-      <xsl:call-template name="toolbar-vertical" />
+    <div class="outer main" style="display: flex; flex-direction: column; flex-grow: 1">
+      <xsl:call-template name="toolbar-horizontal" />
+      <div class="inner main" style="flex-grow: 1">
+        <section class="viewer viewer--setup">
+          <div class="viewer-loader"></div>
+          <div class="viewer-inner"></div>
+        </section>
+        <xsl:call-template name="toolbar-vertical" />
+      </div>
     </div>
     <div class="navigator">
+      <button class="action-expando for-mobile" aria-label="Toggle Menu"><i class="icomoon" aria-hidden="true"></i></button>
       <form>
         <label class="offscreen" for="control-navigator">Location: </label>
-        <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 1 of {$totalSeq}" value="1" data-background-position="0">
-          <xsl:if test="$readingOrder = 'right-to-left'">
-            <xsl:attribute name="dir">rtl</xsl:attribute>
-          </xsl:if>
-        </input>
+        <div class="control-navigator--wrap">
+          <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 1 of {$totalSeq}" value="1" data-background-position="0">
+            <xsl:if test="$readingOrder = 'right-to-left'">
+              <xsl:attribute name="dir">rtl</xsl:attribute>
+            </xsl:if>
+          </input>
+        </div>
         <xsl:text> </xsl:text>
         <xsl:if test="false()">
           <div class="output">Page Scan <span data-slot="current-seq">1</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span><span data-slot="current-page-number"></span></div>
@@ -200,12 +205,17 @@
         <div class="output"><span class="offscreen">Page Scan </span><span data-slot="current-seq">1</span> / <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
         <xsl:text> </xsl:text>
         <button class="btn" id="action-prompt-seq" aria-label="Jump to location">Jump...</button>
+
         <button class="btn" id="action-focus-current-page" aria-hidden="true" style="display: none" accesskey="9">Show Current Page</button>
       </form>
     </div>
     <!-- <script type="text/javascript" src="/pt/alicorn/js/main.js"></script> -->
     <script type="text/javascript">head.load('/pt/alicorn/js/main.js')</script>
     <xsl:call-template name="load-extra-main-script" />
+  </xsl:template>
+
+  <xsl:template name="build-main-container-extra">
+    <!-- <button data-target="enter-fullscreen" id="action-mobile-toggle-fullscreen" type="button" class="btn square alone for-mobile" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="View Full Screen"><i class="icomoon"></i></button> -->
   </xsl:template>
 
   <xsl:template name="load-extra-main-script" />
@@ -243,6 +253,94 @@
   </xsl:template>
 
   <xsl:template name="get-view-title">Main Content</xsl:template>
+
+  <xsl:template name="build-pre-sidebar-panels">
+    <div class="panel options for-mobile">
+      <h3 class="offscreen">View Options</h3>
+      <ul>
+        <li><button class="btn" data-trigger="contents"><span><i class="icomoon icomoon-list" aria-hidden="true"></i> Contents</span></button></li>
+        <li style="margin-top: 1rem; margin-bottom: 1rem;">
+          <form action="/cgi/pt/search" id="form-search-volume" role="search" style="padding: 0.5rem; border: 1px solid #ddd">
+            <label style="text-align: center" for="input-search-text">Search in this text </label>
+            <input id="input-search-text" name="q1" type="text" style="width: 100%; margin-bottom: 0.25rem; display: block">
+              <xsl:if test="$gHasOcr!='YES'">
+                <xsl:attribute name="disabled">disabled</xsl:attribute>
+              </xsl:if>
+              <xsl:attribute name="placeholder">
+                <xsl:choose>
+                  <xsl:when test="$gHasOcr = 'YES'">
+                    <!-- <xsl:text>Search in this text</xsl:text> -->
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>No text to search in this item</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:attribute name="value">
+                <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
+                  <xsl:value-of select="$gCurrentQ1" />
+                </xsl:if>
+              </xsl:attribute>
+            </input>
+            <button class="btn" style="display: block; margin-left: 0" data-trigger="search"><span><i class="icomoon icomoon-search"></i> Find</span></button>
+            <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
+            <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
+            <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+              <input type="hidden" name="seq" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']}" />
+            </xsl:if>
+            <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
+              <input type="hidden" name="num" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']}" />
+            </xsl:if>
+            <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
+              <input type="hidden" name="debug" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']}" />
+            </xsl:if>
+          </form>
+        </li>
+
+        <li class="toggle--500"><button class="btn action-zoom-in"><span><i class="icomoon icomoon-zoom-in"></i> Zoom In</span></button></li>
+        <li class="toggle--500"><button class="btn action-zoom-out"><span><i class="icomoon icomoon-zoom-out"></i> Zoom Out</span></button></li>
+        <li class="toggle--500"><button class="btn action-zoom-reset"><span><i class="icomoon icomoon-document"></i> Fit to Page</span></button></li>
+
+        <li class="toggle--500" style="margin-top: 1rem">
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">plaintext</xsl:with-param>
+            <xsl:with-param name="show-label">TRUE</xsl:with-param>
+          </xsl:call-template>
+        </li>
+        <li class="toggle--500">
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">1up</xsl:with-param>
+            <xsl:with-param name="show-label">TRUE</xsl:with-param>
+          </xsl:call-template>
+        </li>
+        <li class="toggle--500">
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">2up</xsl:with-param>
+            <xsl:with-param name="show-label">TRUE</xsl:with-param>
+          </xsl:call-template>
+        </li>
+        <li class="toggle--500">
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">thumb</xsl:with-param>
+            <xsl:with-param name="show-label">TRUE</xsl:with-param>
+          </xsl:call-template>
+        </li>
+        <li class="toggle--500">
+          <xsl:call-template name="action-view-button">
+            <xsl:with-param name="view">image</xsl:with-param>
+            <xsl:with-param name="show-label">TRUE</xsl:with-param>
+          </xsl:call-template>
+        </li>
+
+
+<!--         <li style="margin-top: 1rem"><button class="btn action-view" data-target="plaintext"><span><i class="icomoon icomoon-article"></i> View Plain Text</span></button></li>
+        <li><button class="btn action-view" data-target="1up"><span><i class="icomoon icomoon-scroll"></i> Scroll Page Scans</span></button></li>
+        <li><button class="btn action-view" data-target="2up"><span><i class="icomoon icomoon-book-alt2"></i> Flip Page Scans</span></button></li>
+        <li><button class="btn action-view" data-target="2up"><span><i class="icomoon icomoon-gridview"></i> View Thumbnails</span></button></li>
+        <li><button class="btn action-view" data-target="2up"><span><i class="icomoon icomoon-documents"></i> View Page by Page</span></button></li>
+ -->      </ul>
+    </div>
+  </xsl:template>
 
   <xsl:template name="toolbar-vertical">
     <div id="toolbar-vertical" class="toolbar toolbar-vertical" role="toolbar" aria-label="Viewing Options">
@@ -282,20 +380,21 @@
 
   <xsl:template name="action-resize">
     <div class="btn-group btn-group-vertical action-zoom">
-      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom In" aria-label="Zoom In" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-in" style=""></i></button>
-      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Zoom Out" aria-label="Zoom Out" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-out" style=""></i></button>
+      <button href="{//ResizeLinks/ResizeInLink}" id="action-zoom-in" type="button" class="btn square action-zoom-in" data-toggle="tracking" data-tracking-action="PT Zoom In" aria-label="Zoom In" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-in" aria-hidden="true"></i></button>
+      <button href="{//ResizeLinks/ResizeOutLink}" id="action-zoom-out" type="button" class="btn square action-zoom-out" data-toggle="tracking" data-tracking-action="PT Zoom Out" aria-label="Zoom Out" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-zoom-out" aria-hidden="true"></i></button>
     </div>
   </xsl:template>
 
   <xsl:template name="action-view-button">
     <xsl:param name="view" />
+    <xsl:param name="show-label" />
     <xsl:variable name="options">
       <h:select>
-        <h:option name="1up" value="icomoon icomoon-scroll">Scroll</h:option>
-        <h:option name="2up" value="icomoon icomoon-book-alt2">Flip</h:option>
-        <h:option name="thumb" value="icomoon icomoon-gridview">Thumbnail</h:option>
-        <h:option name="image" value="icomoon icomoon-documents">Page by Page</h:option>
-        <h:option name="plaintext" value="icomoon icomoon-article" accesskey="5">Plain Text</h:option>
+        <h:option name="1up" value="icomoon icomoon-scroll">Scroll Page Scans</h:option>
+        <h:option name="2up" value="icomoon icomoon-book-alt2">Flip Page Scans</h:option>
+        <h:option name="thumb" value="icomoon icomoon-gridview">View Thumbnails</h:option>
+        <h:option name="image" value="icomoon icomoon-documents">View Page by Page</h:option>
+        <h:option name="plaintext" value="icomoon icomoon-article" accesskey="5">View Plain Text</h:option>
       </h:select>
     </xsl:variable>
 
@@ -308,12 +407,14 @@
       </xsl:choose>
     </xsl:variable>
 
-    <button href="{$href}" data-target="{$option/@name}" type="button" class="btn square" data-toggle="tooltip tracking" data-tracking-action="PT {$option}" aria-label="{$option}" data-microtip-position="left" data-microtip-size="small" data-role="tooltip">
+    <button href="{$href}" data-target="{$option/@name}" type="button" class="action-view btn square" data-toggle="tooltip tracking" data-tracking-action="PT {$option}" aria-label="{$option}" data-microtip-position="left" data-microtip-size="small" data-role="tooltip">
       <xsl:if test="$option/@accesskey">
         <xsl:attribute name="accesskey"><xsl:value-of select="$option/@accesskey" /></xsl:attribute>
       </xsl:if>
       <i class="{$option/@value}"></i>
-      <!-- <i class="{$option/@value}"></i> <span class="toolbar-label"><xsl:value-of select="$option" /></span> -->
+      <xsl:if test="$show-label = 'TRUE'">
+        <span aria-hidden="true"><xsl:value-of select="$option" /></span>
+      </xsl:if>
     </button>
   </xsl:template>
 

@@ -114,7 +114,7 @@ $sidebar-buffer: 1.0rem;
     padding: 1rem 0.5rem;
     font-size: 1rem; // 2rem;
     // margin-left: $sidebar-buffer;
-    z-index: 4;
+    z-index: 24;
 
     &[aria-expanded="true"] {
       opacity: 0.5;
@@ -166,6 +166,64 @@ html[data-sidebar-collapsible] .sidebar-container {
 html[data-sidebar-collapsible] {
   .sidebar-container[hidden] + .sidebar-toggle {
     margin-left: -$sidebar-buffer;
+  }
+}
+
+li.download-item--EPUB {
+  display: none;
+}
+
+html.mobile {
+  li.download-item--EPUB {
+    display: list-item;
+  }
+}
+
+@media only screen and (max-width: 62em) {
+  #sidebar:not(.sidebar-container--right) {
+    max-height: 100vh;
+  }
+
+  html[data-sidebar-expanded="true"] {
+    #toolbar-horizontal {
+      display: none;
+    }
+  }
+
+  html[data-sidebar-expanded="false"] {
+    &[data-expanded="true"] {
+      #toolbar-horizontal {
+        top: var(--toolbar-horizontal-top, 5.5rem);
+      }
+    }
+
+    &[data-expanded="false"] {
+      #toolbar-horizontal {
+        top: 0;
+      }
+    }
+  }
+}
+
+
+// -- BROWSER HACK
+@media only screen and ( max-width: 62em ) {
+  // html.mobile.ios[data-expanded="true"] {
+  //   .sidebar-container {
+  //     position: fixed;
+  //     z-index: 100;
+  //   }
+  // }
+
+  #sidebar {
+    button.sidebar-toggle-button[aria-expanded="true"] {
+      position: fixed;
+      z-index: 2;
+
+      & + div {
+        padding-top: 4rem;
+      }
+    }
   }
 }
 
@@ -255,6 +313,16 @@ html[data-sidebar-collapsible] {
   right: 0;
   margin-left: -8px;
   visibility: hidden;
+}
+
+#sidebar {
+  input[type=text], select {
+    font-size: 1rem;
+  }
+
+  #input-search-text {
+    font-size: 1rem !important;
+  }
 }
 
 // section[data-selected="0"] {

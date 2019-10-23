@@ -3,6 +3,11 @@
 @import 'microtip/microtip';
 @import "nav";
 @import "sidebar";
+@import "responsive";
+
+:root {
+  --background: #39383a;
+}
 
 main.main-container {
 }

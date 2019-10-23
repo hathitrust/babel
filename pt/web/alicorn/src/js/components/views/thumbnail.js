@@ -31,8 +31,16 @@ export var Thumbnail = class extends Scroll {
         max = meta;
       }
     }
+    // calculate a ratio based on the max height of a thumbnail,
+    // since most page scans are taller than wider
     var r = 250 / max.height;
-    return max.width * r;
+    var w = max.width * r;
+
+    if ( window.innerWidth < 680 ) {
+      w *= ( window.innerWidth / 680 );
+    }
+    
+    return w;
   }
 
   bindEvents() {

@@ -161,13 +161,18 @@ export var Service = class {
 
   bestFit(params) {
     // var possibles = [50, 75, 100, 125, 150, 175, 200];
-    var possibles = [ 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
+    var possibles = [ 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
+
+    var baseWidth = ( window.innerWidth >= 680 ) ? 680 : ( window.innerWidth * 0.95 );
+    baseWidth = 680;
+
     var retval = {};
+    // var scale = ( window.outerWidth >= 680 ) ? 1.0 : ( window.outerWidth * 0.95 / 680.0 );
     if ( params.width ) {
       retval.param = 'size';
       retval.value = possibles.find(function(possible) {
         // var check = 680 * ( possible / 100.0 );
-        var check = 680 * possible;
+        var check = baseWidth * possible;
         return params.width <= check;
       })
       if ( retval.value === undefined ) {
@@ -182,7 +187,8 @@ export var Service = class {
       var r = meta.height / meta.width;
       retval.value = possibles.find(function(possible) {
         // var check = ( 680 * ( possible / 100.0 ) ) * r;
-        var check = ( 680 * possible ) * r;
+        // var check = meta.height * possible * r;
+        var check = ( baseWidth * possible ) / r;
         return params.height <= check;
       });
       if ( retval.value === undefined ) {

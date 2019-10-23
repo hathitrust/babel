@@ -1002,7 +1002,7 @@ sub handle_BASE_IMAGE_DIMENSIONS
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
 
-    my $ignore_existing_cache = $cgi->param('newsid') || 0;
+    my $ignore_existing_cache = $cgi->param('newsid') || 1;
     my $cache_key = qq{base_image_dimensions};
     my $cache_max_age = 0;
     my $cache_dir = Utils::get_true_cache_dir($C, 'mdpitem_cache_dir');
@@ -1042,7 +1042,7 @@ sub handle_BASE_IMAGE_DIMENSIONS
             }
         }
 
-        $cache->Set($mdpItem->GetId(), $cache_key, { ImageWidth => $$info{ImageWidth}, ImageHeight => $$info{ImageHeight} });
+        $cache->Set($mdpItem->GetId(), $cache_key, { ImageWidth => $$info{ImageWidth}, ImageHeight => $$info{ImageHeight} }, 1);
     }
 
     my $use_height = int($$info{ImageHeight} * ( 680.0 / $$info{ImageWidth} ));

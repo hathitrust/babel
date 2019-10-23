@@ -71,7 +71,15 @@
   <xsl:template name="build-main-container">
     <main class="main-container" id="main">
       <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
-        <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></div>
+        <div class="sidebar-container" id="sidebar" tabindex="0">
+          <button class="for-mobile sr-only filter-group-toggle-show-button" aria-expanded="false">
+            <span class="flex-space-between flex-center">
+              <h3 class="filter-group-heading">Options</h3>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg>
+            </span>
+          </button>
+          <xsl:call-template name="sidebar" />
+        </div>
         <section class="section-container" id="section" tabindex="0">
           <xsl:call-template name="build-results-container" />
         </section>
@@ -160,7 +168,7 @@
       <xsl:when test="$slice-end >= $slice-start">
         <div class="alert alert-info alert-block">
           <p>
-            <xsl:value-of select="concat('Showing ',$slice-start,' - ',$slice-end,' of ',TotalPages,' Results for ')"/>
+            <xsl:value-of select="concat('Showing ',$slice-start,' - ',$slice-end,' of ',//TotalPages,' Results for ')"/>
             <span class="mdpEmp"><xsl:value-of select="$vNatLangQuery"/></span>
           </p>
         </div>
@@ -206,7 +214,7 @@
 
   <xsl:template match="SliceNavigationLinks">
     <xsl:if test="End >= Start">
-      <nav class="pagination-container" aria-label="Pagination">
+      <nav class="pagination-container" aria-label="Pagination" data-total-pages="{End}" data-current-page="{Start}">
         <div class="page-advance-link">
           <xsl:if test="PrevHitsLink != ''">
             <a class="page-advance-link" href="{PrevHitsLink}">
@@ -216,15 +224,7 @@
           </xsl:if>
         </div>
 
-        <ul>
-          <xsl:if test="false() and PrevHitsLink != ''">
-            <li>
-              <a class="page-advance-link" href="{PrevHitsLink}">
-                <i class="icomoon icomoon-arrow-left" aria-hidden="true"></i>
-                <span style="margin-left: 4px">Previous page </span>
-              </a>
-            </li>
-          </xsl:if>
+        <ul class="not-mobile">
           <xsl:if test="EndPageLink[@page='first']/Href">
             <li>
               <a href="{EndPageLink[@page='first']/Href}"><xsl:value-of select="EndPageLink[@page='first']/LinkNumber"/></a>
@@ -240,15 +240,16 @@
               <a href="{EndPageLink[@page='last']/Href}"><xsl:value-of select="EndPageLink[@page='last']/LinkNumber" /></a>
             </li>
           </xsl:if>
-          <xsl:if test="false() and NextHitsLink != ''">
-            <li>
-              <a class="page-advance-link" href="{NextHitsLink}">
-                <span style="margin-right: 4px">Next page </span>
-                <i class="icomoon icomoon-arrow-right" aria-hidden="true"></i>
-              </a>
-            </li>
-          </xsl:if>
         </ul>
+
+        <span class="for-mobile" style="white-space: nowrap">
+          <xsl:if test="count(FisheyeLinks/FisheyeLink) &gt; 1">
+            <xsl:text>Page </xsl:text>
+            <input id="action-start-jump" name="start" type="number" size="5" min="1" max="{$gPagesFound}" value="{FisheyeLinks/FisheyeLink[Href = '']/LinkNumber}" data-sz="{//Param[@name='sz']}" style="width: 5rem; text-align: center" />
+            <xsl:text>  of </xsl:text>
+            <xsl:value-of select="count(FisheyeLinks/FisheyeLink)" />
+          </xsl:if>
+        </span>
 
         <div class="page-advance-link">
           <xsl:if test="NextHitsLink != ''">
@@ -301,7 +302,7 @@
       </xsl:variable>
       <article class="result">
         <h3 class="results-header">
-          <a href="{Link}"><xsl:value-of select="$page_label" /></a>
+          <a href="{Link}" data-seq="{Sequence}"><xsl:value-of select="$page_label" /></a>
           <xsl:text>&#xa0;-&#xa0;</xsl:text>
           <xsl:value-of select="Hits" />
           <xsl:choose>

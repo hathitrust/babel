@@ -752,6 +752,14 @@ sub handle_BEGINNING_LINK_PI
     my $temp_cgi = new CGI('');
     $temp_cgi->param('id', $id);
     $temp_cgi->param('debug', scalar $cgi->param('debug'));
+    my $skin = $cgi->param('skin');
+    if ( defined $skin ) {
+        $temp_cgi->param('skin', $skin);
+    }
+    # my $seq = $cgi->param('seq');
+    # if ( defined $seq ) {
+    #     $cgi->param('seq', $seq);
+    # }
 
     my $url = Utils::url_to($temp_cgi, $PTGlobals::gPageturnerCgiRoot);
 

@@ -14,6 +14,13 @@ var $inner = $viewer.querySelector('.viewer-inner');
 var $status = document.querySelector('div[role="status"]');
 
 var $toolbar = $main.querySelector('#toolbar-vertical');
+// // --- need to do something about the toolbar height
+// setTimeout(() => {
+//   // $toolbar.style.height = `${getComputedStyle($toolbar).height}`;
+//   var h = parseInt(getComputedStyle($toolbar).height);
+
+//   $toolbar.style.overflowY = 'auto';
+// }, 100);
 
 var min_height = $viewer.offsetHeight;
 var min_width = $viewer.offsetWidth * 0.80;
@@ -202,7 +209,8 @@ var Reader = class {
     })
 
     this.on('redraw', (params) => {
-      if ( params.scale ) {
+      if ( params.scale ) { // && ! this.is_mobile
+        this.options.scale = params.scale;
         this.controls.flexinator.sidebar(params.scale <= 1.0);
         this.trigger.push(`zoom:${params.scale}`); // triggers track
         // this._logAction(undefined, `zoom:${params.scale}`);
@@ -210,7 +218,9 @@ var Reader = class {
     })
 
     this._resizer = debounce(function() {
+      // this.handleOrientationChange(true)
       this.emit('resize');
+      this._checkToolbar();
     }.bind(this), 100);
 
     var jump = document.querySelector('#action-focus-current-page');
@@ -292,7 +302,7 @@ var Reader = class {
     argv.push(`view=${params.view || this.view.name}`);
     argv.push(`seq=${params.seq || HT.params.seq}`);
     if ( HT.params.skin ) { argv.push(`skin=${HT.params.skin}`); }
-    if ( this.options.scale != 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
+    if ( this.options.scale > 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
     if ( HT.params.debug ) { argv.push(`debug=${HT.params.debug}`); }
     if ( HT.params.l11_tracking ) { argv.push(`l11_tracking=${HT.params.l11_tracking}`); }
     if ( HT.params.l11_uid ) { argv.push(`l11_uid=${HT.params.l11_uid}`); }
@@ -336,9 +346,41 @@ var Reader = class {
     }
   }
 
+  _bestFitScale() {
+    var scale = ( ( $(window).width() * 0.95 ) / 680 );
+    this.options.bestFitScale = scale;
+    return scale;
+  }
+
   _logAction(href, trigger) {
     if ( HT.analytics && HT.analytics.logAction ) {
       HT.analytics.logAction(href, trigger);
+    }
+  }
+
+  _checkToolbar() {
+    var originalHeight;
+    if ( ! $toolbar.dataset.originalHeight ) {
+      originalHeight = 0;
+      for(var i = 0; i < $toolbar.children.length; i++) {
+        originalHeight += $toolbar.children[i].offsetHeight;
+      }
+      $toolbar.dataset.originalHeight = originalHeight;
+    } else {
+      originalHeight =  parseInt($toolbar.dataset.originalHeight, 10);
+    }
+    var toolbarHeight = $toolbar.offsetHeight;
+    var navigatorHeight = document.querySelector('.navigator').offsetHeight;
+    var r = originalHeight / window.innerHeight;
+    console.log("AHOY CHECK TOOLBAR", originalHeight, window.innerHeight, r);
+    if ( r > 0.57 ) {
+      $toolbar.style.height = `${( $main.offsetHeight - 40 ) * 0.8}px`;
+      $toolbar.classList.add('toolbar--shrunken');
+      $toolbar.style.overflowY = 'auto';
+    } else {
+      $toolbar.style.overflowY = 'hidden';
+      $toolbar.style.height = 'auto';
+      $toolbar.classList.remove('toolbar--shrunken');
     }
   }
 
@@ -443,10 +485,56 @@ if ( selectedPagesPdfLink ) {
   document.querySelector('.table-of-selections').querySelector('button').disabled = true;
 }
 
-var _scrollCheck = debounce(function() {
+var _scrollCheck = debounce(function(event) {
+  // if ( window.outerHeight != window.innerHeight ) 
+  // console.log("AHOY AHOY AHOY", window.innerWidth, );
+  // var x = 0;
+  // if ( window.innerWidth != document.documentElement.clientWidth ) {
+  //   x = window.scrollX;
+  // }
   window.scrollTo(0,0);
 }, 50);
-window.addEventListener('scroll', _scrollCheck);
+if ( true || ! ( $("html").is(".mobile") && $("html").is(".ios") ) ) {
+  window.addEventListener('scroll', _scrollCheck);
+}
+
+// GESTURES
+var $gestureLogger = $(`<div id="gesture-logger" class="hidden"><span></span></div>`).appendTo("body");
+var gesture_scale;
+var gesture_checkTimeout;
+var _gestureCheck = function() {
+  // in case the gesturened doesn't fire
+  _gestureHandler({ scale: gesture_scale, preventDefault: function() { } });
+}
+var _gestureHandler = debounce(function(event) {
+  event.preventDefault();
+  clearTimeout(gesture_checkTimeout);
+  var scale = reader.options.scale * event.scale;
+  var possibles = HT.reader.view.possibles || HT.reader.controls.zoominator._possibles;
+  var nearest_scale = possibles.find(function(possible) {
+    // var check = 680 * ( possible / 100.0 );
+    return scale <= possible;
+  })
+  reader.emit('redraw', { scale: nearest_scale })
+  $gestureLogger.addClass("hidden");
+})
+
+var _gestureChangeHandler = function(event) {
+  gesture_scale = event.scale;
+  var scale = reader.options.scale * event.scale;
+  $gestureLogger.find("span").text(Math.floor(scale * 100.0) / 100.0);
+  clearTimeout(gesture_checkTimeout);
+  gesture_checkTimeout = setTimeout(_gestureCheck, 100);
+}
+document.addEventListener('gesturestart', function(event) { 
+  event.preventDefault(); 
+  if ( $gestureLogger.is(".hidden") ) {
+    $gestureLogger.removeClass("hidden");
+  }
+  gesture_checkTimeout = setTimeout(_gestureCheck, 100);
+}, false);
+document.addEventListener('gestureend', _gestureHandler, false);
+document.addEventListener('gesturechange', _gestureChangeHandler, false);
 
 $main.dataset.selected = 0;
 
@@ -480,16 +568,124 @@ if ( HT.params.size  ) {
   }
 }
 
-reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
+reader.is_mobile = $("html").is(".mobile") || ( HT.params.debug && HT.params.debug.indexOf('mobile') > -1 );
 
-HT.mobify = function() {
-  $("header").hide();
-  $("footer").hide();
-  $('.sidebar-container').hide();
-  $("#toolbar-vertical").hide();
-  $("#toolbar-horizontal").hide();
-  reader.emit('resize');
+var $sidebar = $("#sidebar");
+// scale = reader._bestFitScale();
+
+reader.controls.mobile = {};
+// reader.controls.mobile.zoominator = new Control.Zoominator({
+//   input: $sidebar.get(0),
+//   reader: reader
+// });
+
+reader.on('redraw', function() {
+  HT.toggle(false);
+});
+
+reader.controls.navigator.on('updateLocation', (params) => {
+  if ( params.trigger && params.trigger == 'control-navigator' ) {
+    HT.toggle(false);
+  }
+})
+
+$sidebar.on('click', '[data-trigger="contents"]', function(event) {
+  event.preventDefault();
+  HT.toggle(false);
+  $(".table-of-contents button").trigger('click');
+})
+
+$sidebar.on('click', '.action-view', function(event) {
+  var target = $(this).data('target');
+  if ( target == reader.view.name ) {
+    return;
+  }
+  HT.utils.switch_view(target, event.detail == 1);
+});
+
+HT.utils = HT.utils || {};
+HT.utils.switch_view = function(target, event_detail) {
+  $sidebar.find(".action-view.active").removeClass("active");
+  $sidebar.find(`button[data-target="${target}"]`).addClass("active");
+  var scale = 1.0; // reader._bestFitScale();
+  reader.restart({ view: target, clicked: event_detail == 1, scale: scale });
+  reader.emit('redraw', {});
 }
+
+HT.utils.handleOrientationChange = function(ignore) {
+  if ( window.innerWidth < 800 ) {
+    if ( Math.abs(window.orientation) == 90 ) {
+      // enable the 2up button
+      // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
+      $(`button[data-target="2up"]`).attr('disabled', false);
+    } else {
+      // disable the 2up and switch views
+      // $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
+      $(`button[data-target="2up"]`).attr('disabled', true);
+      if ( reader.view.name == '2up' && ignore !== true ) {
+        HT.utils.switch_view('1up');
+      }
+    }
+  } else {
+    // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
+    $(`button[data-target="2up"]`).attr('disabled', false);
+  }
+}
+
+reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
+$sidebar.find(`.action-view[data-target="${$main.dataset.view}"]`).addClass('active');
+
+var $menu; var $trigger; var $header; var $navigator;
+var touches = {
+  startTime: -1,
+  allowedTime: 200,
+  threshold: 150,
+  touchstart: {x: -1, y: -1},
+  touchmove: {x: -1, y: -1},
+  touchend: false,
+  direction: 'undetermined'
+};
+// $inner.addEventListener("touchstart", function(event) {
+//   if (event.touches.length >= 2) {
+//   } else {
+//     var touch = event.touches[0];
+//     touches.touchstart.x = touch.pageX;
+//     touches.touchstart.y = touch.pageY;
+//     touches.canceled = false;
+//     touches.startTime = new Date().getTime();
+//     event.preventDefault();
+//   }
+// });
+// $inner.addEventListener("touchmove", function(event) {
+//   if (event.touches.length >= 2) {
+//   } else {
+//     var touch = event.touches[0];
+//     touches.touchmove.x = touch.pageX;
+//     touches.touchmove.y = touch.pageY;
+//     // event.preventDefault();
+//   }
+// });
+// $inner.addEventListener("touchcancel", function(event) {
+//   touches.canceled = true;
+// })
+// $inner.addEventListener("touchend", function(event) {
+//   touches.touchend = true;
+//   if ( touches.canceled ) { return ; }
+//   if (touches.touchstart.x > -1 && touches.touchmove.x > -1) {
+//     var elapsedTime = new Date().getTime() - touches.startTime;
+//     var dist = touches.touchmove.x - touches.touchstart.x;
+//     console.log("AHOY TOUCHEND", elapsedTime, dist, touches.allowedTime);
+//     if ( elapsedTime <= touches.allowedTime && dist >= touches.threshold ) {
+//       touches.direction = touches.touchstart.x < touches.touchmove.x ? "right" : "left";
+//       if ( touches.direction == 'right' ) {
+//         reader.next();
+//       } else {
+//         reader.prev();
+//       }
+//       event.preventDefault();
+//     }
+//   }
+// });
 
 var daInterval;
 HT.debugActive = function() {
@@ -531,3 +727,9 @@ function handleWindowBlur() {
 document.addEventListener("visibilitychange", handleVisibilityChange, false);
 window.addEventListener("focus", handleWindowFocus, false);
 window.addEventListener("blur", handleWindowBlur, false);
+
+setTimeout(() => {
+    var event = document.createEvent('UIEvents');
+    event.initEvent('resize', true, false, window, 0);
+    window.dispatchEvent(event)
+}, 100);
