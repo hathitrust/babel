@@ -85,6 +85,7 @@ h4 {
   }
 }
 
+
 /* Top row */
 #top-row-cells-wrapper {
   background-color: $login-bgcolor;  
@@ -386,6 +387,10 @@ input.select2-search__field {
     display: none;
   }
 
+  main > .container:first-child {
+    display: none;
+  }
+
   .container.container-medium {
     min-width: 0 !important;
     padding: 0;
@@ -448,6 +453,37 @@ input.select2-search__field {
   }
 
   .navbar-static-bottom {
+    display: none;
+  }
+}
+
+@media screen and ( max-width: 38rem ) {
+  .row.versus {
+    display: block;
+
+    > div {
+      display: block;
+      width: 100%;
+
+      &:first-child {
+        border-right: none;
+        border-bottom: 1px solid #666;
+      }
+    }
+  }
+
+  .can-do-list {
+    min-height: 0;
+  }
+
+  .partner-cell-text {
+    min-height: 0;
+    margin-bottom: 1rem;
+  }
+}
+
+@media screen and ( max-width: 62rem ) {
+  main > .container:first-child {
     display: none;
   }
 }

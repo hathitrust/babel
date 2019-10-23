@@ -11,7 +11,7 @@
   <!-- TEMPLATE over-rides -->
   <xsl:template name="login-block"/>
   <xsl:template name="setup-extra-header">
-    <link rel="stylesheet" type="text/css" href="/common/alicorn/main.css" />
+    <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.css" />
     <link rel="stylesheet" type="text/css" href="/wayf/css/screen.css" />
     <script type="text/javascript" src="/wayf/js/login.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
