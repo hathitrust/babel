@@ -112,6 +112,14 @@
     <xsl:variable name="q" select="normalize-space(//QueryString)" />
 
     <div class="sidebar-container" id="sidebar">
+      <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
+        <span class="flex-space-between flex-center">
+          <h3 class="filter-group-heading">Options/Filters<span class="total-filter-count"></span></h3>
+          <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg> -->
+          <i class="icomoon icomoon-sidebar-toggle" aria-hidden="true"></i>
+        </span>
+      </button>
+
       <xsl:call-template name="list-surveys" />
       <xsl:call-template name="build-collection-branding" />
       <xsl:call-template name="sidebar-filter" />
@@ -745,7 +753,7 @@
 
   <xsl:template name="build-collection-branding">
     <xsl:if test="normalize-space(//CollectionBranding)">
-      <p class="collection-branding">
+      <p class="collection-branding not-mobile">
         <img src="{//CollectionBranding}" style="max-width: 100%" aria-hidden="true" alt="" />
       </p>
     </xsl:if>

@@ -44,81 +44,7 @@
       <xsl:value-of select="//CollectionSizesJs" />
     </script>
     <style type="text/css">
-      .listcs-intro {
-        font-size: .9rem;
-        text-align: left;
-        width: 95%;
-        margin: auto;
-      }
 
-      .record-title-actions {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .record-title {
-        flex-grow: 1;
-      }
-
-      .results-summary {
-        margin-right: 0.5rem;
-      }
-
-      .results-actions {
-        white-space: nowrap;
-      }
-
-      .resource-access-container:empty {
-        display: none;
-      }
-
-      .record.record--featured {
-        border: 2px solid #ea7612;
-        border-radius: 8px;
-      }
-
-      .record.record--owned {
-        border: 2px solid #999;
-        border-radius: 8px;
-      }
-
-      .record .xbadge {
-        margin-left: 0.25rem;
-      }
-
-      .pagination-summary::after {
-        content: ": ";
-      }
-
-      .pagination-summary:empty {
-        display: none;
-      }
-
-      .active-filters--empty [class*=active-filters] {
-        display: none;
-      }
-
-      .sidebar-container .filter-list-container ul li.filter-item:nth-child(n+6) {
-          display: list-item;
-      }
-
-      label[aria-role="radio"] {
-        -moz-user-focus: normal;
-      }
-
-      .xbadge-secondary {
-        color: #fff;
-        background-color: #6c757d;
-      }
-
-      .actions {
-        white-space: nowrap;
-      }
-
-      .actions button, .actions span {
-        margin-right: 0.25rem;
-      }
 
     </style>
   </xsl:template>
@@ -179,7 +105,7 @@
       </div>
       <div class="results-summary-container" style="justify-content: space-between">
         <!-- row 2! -->
-        <div class="results-actions" style="justify-content: flex-start">
+        <div class="results-actions not-mobile" style="justify-content: flex-start">
           <label for="filter-q">Find </label>
           <input type="text" name="q" id="filter-q" style="width: 15rem" placeholder="Find a collection" />
         </div>
@@ -416,6 +342,14 @@
 
   <xsl:template name="build-sidebar-container">
     <div class="sidebar-container active-filters--empty" id="sidebar">
+      <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
+        <span class="flex-space-between flex-center">
+          <h3 class="filter-group-heading">Options/Filters<span class="total-filter-count"></span></h3>
+          <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg> -->
+          <i class="icomoon icomoon-sidebar-toggle" aria-hidden="true"></i>
+        </span>
+      </button>
+
       <h2 class="active-filters-heading">Current Filters</h2>
       <ul class="active-filters-list">
       </ul>
