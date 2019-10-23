@@ -117,6 +117,7 @@
           </xsl:call-template>
         </title>
 
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="/ssd/web/ssdstyles.css" type="text/css" />
       </head>
 
