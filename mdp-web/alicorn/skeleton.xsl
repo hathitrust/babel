@@ -65,10 +65,17 @@
 
         <!-- <script type="text/javascript" src="/common/unicorn/js/head.min.js"></script> -->
         <!-- <script type="text/javascript" src="/common/unicorn/js/common.js"></script> -->
-        <script type="text/javascript" src="/common/alicorn/js/utils.js?_{$gTimestamp}"></script>
+        <!-- <script type="text/javascript" src="/common/alicorn/js/utils.js?_{$gTimestamp}"></script> -->
 
         <!-- <link rel="stylesheet" type="text/css" href="/common/unicorn/css/common.css{$timestamp}" /> -->
-        <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.css?_{$gTimestamp}" />
+        <!-- <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.css?_{$gTimestamp}" /> -->
+
+        <xsl:call-template name="build-js-link">
+          <xsl:with-param name="href">/common/alicorn/js/utils.js</xsl:with-param>
+        </xsl:call-template>
+        <xsl:call-template name="build-css-link">
+          <xsl:with-param name="href">/common/alicorn/css/main.css</xsl:with-param>
+        </xsl:call-template>
 
         <xsl:call-template name="setup-extra-header" />
 
@@ -619,6 +626,18 @@
          />
       </symbol>
     </svg>
+  </xsl:template>
+
+  <xsl:template name="build-css-link">
+    <xsl:param name="href" />
+    <xsl:variable name="modtime" select="//Timestamp[@href=$href]/@modtime" />
+    <link rel="stylesheet" href="{$href}?_{$modtime}" />
+  </xsl:template>
+
+  <xsl:template name="build-js-link">
+    <xsl:param name="href" />
+    <xsl:variable name="modtime" select="//Timestamp[@href=$href]/@modtime" />
+    <script type="text/javascript" src="{$href}?_{$modtime}"></script>
   </xsl:template>
 
 </xsl:stylesheet>

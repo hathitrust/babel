@@ -17,6 +17,6 @@
   <InstitutionCode><?INSTITUTION_CODE?></InstitutionCode>
   <Surveys><?MB_SURVEY?></Surveys>
 </MBooksGlobals>
-
-
+<?CACHE_TIMESTAMP href="/common/alicorn/css/main.css" ?>
+<?CACHE_TIMESTAMP href="/common/alicorn/js/utils.js" ?>
 

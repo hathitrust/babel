@@ -37,4 +37,13 @@
 <SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
 <Surveys><?PT_SURVEY?></Surveys>
 <Collections><?ITEM_IN_COLLECTIONS?></Collections>
+<?CACHE_TIMESTAMP href="/common/alicorn/css/main.css" ?>
+<?CACHE_TIMESTAMP href="/common/alicorn/js/utils.js" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/css/main.css" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/css/search.css" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/js/utils.js" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/js/main.js" ?>
+
+
+
 
